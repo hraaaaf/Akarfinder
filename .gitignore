@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+.next/
+out/
+dist/
+build/
+
+# Environment secrets — NEVER commit
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# Vercel
+.vercel/
+
+# SQLite database files
+db/*.db
+db/*.db-shm
+db/*.db-wal
+*.db
+*.db-shm
+*.db-wal
+
+# Scraped data outputs
+scripts/scrapers/output/
+
+# Server logs
+*.log
+build-server*.log
+dev-server.log
+
+# Documentation screenshots (large PNGs, not app assets)
+public/screenshots/
+
+# Debug/QA screenshots at project root (dev artifacts)
+/*.png
+/*.jpg
+/*.patch
+/.next-dev.err
+/.api-listings.json
+/STATE.md
+/AGENTS.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts

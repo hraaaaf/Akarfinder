@@ -1,0 +1,2281 @@
+ROADMAP.md — AkarFinder Roadmap Produit & Business
+Version : 2026-06-25 — UI-PREMIUM-HOMEPAGE completed
+
+====================================================
+UI-PREMIUM-HOMEPAGE — Completed 2026-06-25
+
+Statut : COMPLÉTÉE
+Objectif : Refonte visuelle premium homepage inspirée du design Kimi.
+Build : OK · Tests : 388 scrapers + 51 API (0 fail)
+Screenshots : 5 captures public/screenshots/ui-premium-home-*.png
+
+Livré :
+* Hero pleine hauteur (min-h-[100dvh]) avec photo Casablanca, titre premium, search box, animations CSS
+* Header transparent scroll-aware (fixed overlay sur hero → dark glass après 60px scroll)
+* Section "Notre différence" 01/02/03 sur fond crème (#FBFAF5)
+* Section stats dark (#0C0C0C) avec vraies données API ou labels indicatifs
+* Section villes premium (Casa/Marrakech/Rabat/Tanger/Agadir) avec cards aspect-[3/4]
+* CTA final dark premium 3 boutons (Voir biens / Dossier acheteur / Espace Pro)
+* Footer pur noir (#0C0C0C)
+* Aucune stat fake · Wording interdit respecté · Positionnement moteur de recherche conservé
+* Routes existantes non cassées (/search, /listings/[id], /map, /onboarding, /pro, /pro/leads)
+
+Ne pas modifier : P11E, P11F, P12B, P13, P14
+
+====================================================
+ROADMAP.md — AkarFinder Roadmap Produit & Business
+Version originale : 2026-06-23 — Refonte complète post-P6
+
+====================================================
+PHILOSOPHIE
+
+La roadmap est divisée en 9 phases claires.
+Chaque phase a un objectif unique, un périmètre strict et un statut.
+Ce qui n'est pas dans la phase active ne se construit pas.
+Un agent IA ou un développeur doit pouvoir lire ce fichier et comprendre
+immédiatement où en est AkarFinder, ce qu'on construit, et ce qu'on ne
+construit pas encore.
+
+====================================================
+ÉTAT ACTUEL AU 2026-06-23
+
+Pipeline scraping/data : P0 → P6 complétés et validés.
+Frontend produit : homepage + /search + /listings/[id] complétés.
+Tests : 110 tests scrapers (0 fail) + 22 tests API (0 fail).
+Build : OK (0 erreur TypeScript).
+
+Acquis techniques validés :
+* scraping public safe (Mubawab ; Avito/Sarouty en attente partner feed)
+* normalisation prix / surface / ville / type
+* export propre + quality report
+* ingestion SQLite (scrape_runs, raw_listings, property_listings, listing_sources)
+* duplicate_group_id + duplicate_score
+* reliability_score + reliability_badge + reliability_reasons
+* enrichissement persistant full DB (P6)
+* API /api/listings (Node.js runtime, SQLite → frontend)
+* /search wired to SQLite avec fallback mocks propre
+* /listings/[id] wired to SQLite
+* homepage data proof
+
+====================================================
+PHASES
+
+====================================================
+PHASE 1 — MVP crédible public
+
+Statut : COMPLÉTÉE EN LOCAL / PRÉ-PRODUCTION
+
+Objectif
+Avoir un moteur immobilier public crédible avec données réelles.
+
+Ce qui est livré
+* Homepage premium (design "moteur de recherche immobilier du Maroc")
+* /search avec listings SQLite réels + fallback mocks propre
+* /listings/[id] dossier de décision style Zillow Morocco
+* Scoring visible (reliability_score, reliability_badge)
+* Badges fiabilité (élevée / moyenne / faible) + MRE badge
+* Prix/m² sur toutes les fiches
+* Source visible + fraîcheur
+* Fallback mocks si DB absente
+* UX premium responsive (desktop + mobile)
+* Build 0 erreur TypeScript
+* 132 tests verts (110 scrapers + 22 API)
+
+Contraintes respectées
+* Aucune claim fausse (pas de "+150 000 annonces", pas d'"Estimation IA")
+* Pas de nom de portail tiers sans accord
+* "Repère marché indicatif" uniquement — jamais "Zestimate" ou "certifié"
+* WhatsApp comme CTA principal
+* Crédibilité safe pour le lancement
+
+====================================================
+PHASE 2 — Data intelligence
+
+Statut : EN COURS (partiellement livré — voir détail ci-dessous)
+
+Objectif
+Transformer AkarFinder en moteur intelligent : les données enrichissent
+l'expérience utilisateur et créent un avantage concurrentiel visible.
+
+Ce qui est déjà livré (P5/P6)
+* duplicate_group_id (groupes de doublons détectés)
+* duplicate_score (score de doublon par annonce)
+* reliability_score (0–100, déterministe)
+* reliability_badge (élevée / moyenne / faible)
+* reliability_reasons (liste des raisons du score)
+* enrichissement full DB persistant (enrich:p6)
+* prix/m² calculé et stocké
+
+Ce qui reste à construire
+* Score opportunité : prix/m² vs repère quartier → signal "en dessous du marché"
+* Filtres avancés wiring complet : tri par fiabilité, tri par opportunité
+* Nouvelles sources safe : partenariats CSV/XML agences ou promoteurs
+* Extension scraping : Sarouty via Playwright, Avito via partner feed
+* Carte de chaleur par quartier (préparation données lat/lng)
+* Score de complétude visible côté UI (data_completeness_score)
+* Tableau data premium sur la homepage : top villes, repères prix/m²
+  (données indicatives issues du scraping, disclaimées)
+
+Contraintes
+* Pas de "carte interactive production" avant Phase 5 / P10B-DB (Supabase prod + DB geo requis)
+  → Exception documentée : P10B-REAL a été livrée comme validation produit locale/mock
+    (MapLibre + geoEnrichedMockListings) sans DB migration ni clé API — autorisée et complétée.
+* Pas de prix garantis, pas de fourchettes officielles
+* Tout affichage data : labellisé "Données indicatives issues de l'analyse"
+
+====================================================
+PHASE 2.5 — Data Proof UI (P6.5)
+
+Statut : NON DÉMARRÉE
+
+Prérequis : Phase 2 complétée (score opportunité calculé en DB)
+
+Objectif
+Rendre visible dans le produit public ce que le pipeline data a déjà produit.
+Pas de nouvelle feature backend — uniquement brancher l'UI sur les données
+que P5/P6 ont déjà calculées et stockées.
+
+Ce que cette phase apporte
+* Tri par reliability_score dans /search (les plus fiables d'abord)
+* Filtre par reliability_badge dans /search (Élevée / Moyenne / Faible)
+* Tri par score d'opportunité (opportunite_score DESC)
+* Bloc "Repères marché" sur la homepage : prix/m² médian par ville,
+  nombre d'annonces analysées, répartition types de biens
+  (données indicatives issues du scraping AkarFinder, disclaimées)
+* Mise en avant des annonces les plus fiables (bloc "Sélection AkarFinder"
+  ou tri automatique par fiabilité en position haute)
+* data_completeness_score visible côté UI (badge ou tooltip sur fiche)
+
+Ce que cette phase n'est PAS
+* Pas de nouvelle source de données
+* Pas de Supabase (Phase 3)
+* Pas de Typesense (Phase 4)
+* Pas de carte interactive (Phase 5)
+* Pas d'espace B2B (Phase 6)
+
+Libellé obligatoire sur tous les blocs data homepage
+"Données indicatives issues de l'analyse AkarFinder — non officielles."
+
+Exit criteria
+* /search peut être trié par fiabilité et filtré par badge
+* /search peut être trié par score d'opportunité
+* Homepage affiche un bloc data indicatif avec prix/m² par ville
+* Les annonces les plus fiables sont mises en avant visuellement
+* Build passe, 0 erreur TypeScript
+* Aucune claim non vérifiée n'est introduite
+
+====================================================
+PHASE 3 — Supabase / production
+
+Statut : COMPLÉTÉE — 2026-06-25
+
+Objectif
+Sortir du SQLite local. Passer AkarFinder en infrastructure production-ready.
+
+Périmètre livré
+* Supabase PostgreSQL — schéma appliqué (scripts/scrapers/db/supabase-migration.sql)
+* DATABASE_PROVIDER : switch sqlite (dev) / supabase (prod) via variable d'environnement
+* Sync SQLite → Supabase : scripts/sync-supabase.ts (upsert idempotent par canonical_fingerprint)
+* Vérification : scripts/check-supabase.ts (npm run check:supabase — 8/8 OK)
+* RLS activé sur toutes les tables ; politique service_role_all (full access backend)
+* Politique anon_read commentée — toutes les lectures passent par les routes Next.js serveur
+* SUPABASE_SERVICE_ROLE_KEY : serveur uniquement — jamais NEXT_PUBLIC_, jamais client
+* /api/listings, /api/search, /api/stats : tournent sur Supabase en production
+* /search et /listings/[id] : données réelles Supabase confirmées
+* Build clean (0 erreur TypeScript) — 265/265 scrapers, 51/51 API
+* Documentation : docs/SUPABASE_SETUP.md créé
+
+Ce qui N'est PAS dans cette phase
+* Typesense (Phase 4)
+* Carte interactive production (Phase 5 / P10B-DB)
+* Espaces B2B (Phase 6)
+* Rate limiting / CI/CD / monitoring (non bloquants — reportés)
+
+Vérification P3-QA (2026-06-25)
+* check:supabase   : 8/8 ✅ (82 rows property_listings, 83 listing_sources)
+* Sécurité         : NEXT_PUBLIC_SUPABASE absent partout ✅
+* service_role     : absent de app/ et components/ ✅
+* RLS              : activé sur les 4 tables ✅
+* /api/stats       : { total_listings: 82 } ✅
+* /api/listings    : données réelles Supabase ✅
+* /listings/137    : HTTP 200 ✅
+* /search          : HTTP 200 ✅
+* Stack traces     : non exposées dans les réponses API ✅
+* .env.local.example : placeholders uniquement ✅
+
+====================================================
+PHASE 4 — Search avancée / Typesense
+
+Statut : NON DÉMARRÉE
+
+Prérequis : Phase 3 complétée (Supabase en prod)
+
+Objectif
+Recherche rapide, filtrage premium, et tri par intelligence.
+
+Périmètre
+* Intégration Typesense (ou Meilisearch — à valider selon volume)
+* Indexation des property_listings dans Typesense
+* Tri par fiabilité (reliability_score DESC)
+* Tri par opportunité (score_opportunite DESC)
+* Filtres : ville / surface / prix / type / transaction / score / MRE
+* URL sync des filtres (bookmarkable, shareable)
+* Recherche naturelle basique : "Appartement Casablanca moins de 1M"
+* Pagination propre
+
+Ce qui N'est PAS dans cette phase
+* NLP avancé (Phase 9+)
+* Recherche vocale
+* Recommandations personnalisées
+
+====================================================
+PHASE 5 — Carte interactive production (P10B-DB requis)
+
+Statut : NON DÉMARRÉE (production)
+
+CLARIFICATION IMPORTANTE — historique carte :
+* P10A (geo foundation) : COMPLÉTÉE — champs lat/lng préparés sur le type frontend
+* P10B (carte mock/enriched) : COMPLÉTÉE — carte statique CSS avec asset Maroc premium
+* P10B-QA : COMPLÉTÉE (2026-06-24) — validation visuelle, 168/168 tests, 51/51 API
+* P10B-REAL (MapLibre MVP) : COMPLÉTÉE (2026-06-24) — vraie carte MapLibre GL JS
+  avec tuiles OSM live, pan/zoom natif, markers prix HTML, clusters, side panel,
+  bottom sheet mobile. Input : geoEnrichedMockListings. Sans DB migration ni clé API.
+
+P10B-REAL était autorisée comme validation produit locale/mock avant Supabase.
+Elle prouve l'expérience utilisateur sans dépendre d'une infrastructure production.
+
+La Phase 5 en production (Phase 5 / P10B-DB) nécessite encore :
+* Phase 3 complétée (Supabase prod)
+* Colonnes lat/lng persistées en DB (P10B-DB)
+* Géocoding Nominatim contrôlé avec cache (P10F)
+
+Prérequis production : Phase 3 complétée + P10B-DB + P10F
+
+Objectif production
+Exposer la carte MapLibre sur des données réelles Supabase avec géolocalisation
+persistée, géocoding Nominatim supervisé, et attribution OSM conforme.
+
+Périmètre production (au-delà du MVP P10B-REAL déjà livré)
+* Migrations SQLite/Supabase pour lat/lng, geo_precision, geo_label, geo_source
+* Géocoding Nominatim avec cache obligatoire, limite stricte, User-Agent, attribution
+* Centroïdes de fallback (ville/quartier) persistés en DB
+* Carte /map branchée sur Supabase (remplace geoEnrichedMockListings)
+* Heatmap densité optionnelle (quand volume suffisant)
+
+Contraintes importantes
+* Pas de promesse de données officielles
+* Pas de "carte en temps réel" sans pipeline continu validé
+* Coordonnées approximatives au niveau quartier, jamais à l'adresse exacte
+* Libellé : "Localisation approximative — à vérifier avant visite"
+* Attribution "© OpenStreetMap contributors" obligatoire (déjà présente dans P10B-REAL)
+
+====================================================
+PHASES P10 — CARTE INTERACTIVE + PROXIMITÉ + PACKAGE SCORE
+Objectif : expérience produit 8.7/10
+
+Ces phases s'intercalent entre Phase 3 (Supabase) et Phase 6 (B2B).
+Elles transforment AkarFinder d'un agrégateur d'annonces en moteur de décision
+immobilière : carte Airbnb-like, proximité adaptée au Maroc, prix observé,
+et package score multi-dimensionnel.
+
+Ordre recommandé : P10A → P10B/P10B-REAL → P10C → P10IMG (si besoin visuel) → P10D → P10E.
+P10IMG peut être lancé avant P10D si le niveau visuel des annonces bloque la conversion.
+Prérequis production : Phase 3 (Supabase prod) pour brancher les données réelles ;
+exceptions locales/mock déjà validées : P10A, P10B, P10B-QA, P10B-REAL, P10C.
+
+====================================================
+P10A — GEO FOUNDATION
+
+Statut : COMPLÉTÉE
+
+Objectif
+Préparer les données géographiques propres pour alimenter la carte interactive
+et les blocs de proximité. Aucune interface à construire dans cette phase.
+
+Champs à calculer et stocker en DB
+* latitude             — coordonnée géographique (float, nullable)
+* longitude            — coordonnée géographique (float, nullable)
+* geo_label            — label textuel de localisation résolu
+* geo_precision        — "exact" | "neighborhood" | "city" | "null"
+* geo_source           — "geocoding_nominatim" | "centroid_city" | "centroid_neighborhood" | "manual" | null
+* centroid_ville       — centroïde de la ville (fallback si quartier absent)
+* centroid_quartier    — centroïde du quartier (plus précis si disponible)
+* fallback             — ville si quartier absent, null si localisation insuffisante
+
+Règle produit fondamentale
+NE JAMAIS inventer une position exacte.
+Si la position est approximative (centroïde ville ou quartier), l'interface DOIT
+afficher "Position approximative".
+Si la localisation est insuffisante, la valeur est null et le bien n'apparaît
+pas sur la carte (mais reste visible dans la liste).
+
+Source de geocoding pour le MVP
+Nominatim (OpenStreetMap) — gratuit, sans clé API.
+Google Maps / Mapbox uniquement si décision explicite future validée
+(coût et dépendance à évaluer).
+
+Exit criteria
+* Tous les property_listings en DB ont latitude/longitude ou null justifié
+* geo_precision renseigné sur chaque entrée
+* Aucune position inventée : si doute → null
+* Libellé "Position approximative" documenté dans le design system
+
+====================================================
+P10B — CARTE INTERACTIVE MVP
+
+Statut : COMPLÉTÉE (MVP mock/enriched, sans DB migration)
+
+Prérequis : P10A complétée (geoEnrichedMockListings disponibles)
+
+Objectif
+Créer une vraie expérience carte type Airbnb/Booking.com adaptée au Maroc.
+L'utilisateur cherche un bien sur la carte, filtre par fiabilité,
+comprend rapidement les zones intéressantes.
+
+À construire
+
+Page et navigation
+* Page /map dédiée
+* Navigation "Carte" vers /map
+* Lien /search → /map avec filtres utiles transmis en query params
+
+Carte
+* Carte produit statique interactive basée sur l'asset Maroc premium existant
+* Aucune tuile live chargée, aucun bulk downloading, aucune clé API
+* Markers prix (afficher le prix DH sur chaque marker)
+* Clusters par ville / zone active
+* Recalage visuel contrôlé des pins pour éviter les points hors carte
+
+Side panel (desktop)
+* Liste des listings visibles dans la vue carte
+* Sélection liste ↔ marker (interaction bidirectionnelle)
+* Filtres : ville / type / budget / fiabilité / score min / masquer doublons
+
+Bottom sheet (mobile)
+* Panneau mobile empilé sous la carte
+* Liste visible et bien sélectionné affichés sans horizontal overflow
+* Draggable sheet repoussé à un polish ultérieur
+
+Filtres sur la carte
+* Slider score de confiance 0–100
+* Masquer les doublons (duplicate_score > seuil)
+* Type de bien
+* Budget min/max
+
+Credibility guardrails
+* Libellé "Position approximative" visible sur les markers non-exacts
+* Aucun "carte en temps réel" sans pipeline continu validé
+* Coordonnées au niveau quartier, jamais à l'adresse exacte
+* Attribution / note OpenStreetMap prévue si tuiles live activées plus tard
+
+Contraintes techniques
+* Pas de migration SQLite/Supabase dans P10B
+* Pas de Nominatim dans P10B
+* Pas de nouvelle dépendance cartographique dans P10B
+* Google Maps / Mapbox uniquement si décision future validée
+* Pas de dépendance npm privée non auditée
+
+Exit criteria
+* /map existe et build
+* Markers et clusters visibles sur les 5 villes principales
+* Interaction liste ↔ carte fonctionnelle
+* Filtres fiabilité opérationnels sur la carte
+* "Position approximative" affiché là où nécessaire
+* /search pointe vers /map sans régression
+* Build 0 erreur TypeScript
+
+----------------------------------------------------
+P10B-QA — VALIDATION VISUELLE MAP MVP
+
+Statut : COMPLÉTÉE (2026-06-24)
+
+Résultats
+* 4 screenshots générés : desktop, mobile, desktop-selected, mobile-selected
+* 1 bug visuel corrigé : grille filtres mobile trop haute (5 colonnes → 2 colonnes)
+* Tests : 168/168 scrapers, 51/51 API
+* Build : OK (0 erreur TypeScript)
+* Verdict /map MVP : Accepté
+
+Fichier modifié
+* components/map/MapExperience.tsx — grille filtres 2 colonnes mobile
+
+P10B-DB : Non démarrée
+P10F : Non démarrée
+
+----------------------------------------------------
+P10B-REAL — MAPLIBRE REAL INTERACTIVE MAP
+
+Statut : COMPLÉTÉE (2026-06-24)
+
+Objectif
+Remplacer la carte mock (canvas statique + image Maroc) par une vraie
+expérience MapLibre GL JS avec tuiles OSM live, pan/zoom natif,
+markers HTML prix interactifs, clusters dynamiques, side panel desktop,
+et bottom sheet mobile.
+
+Ce qui a été construit
+* MapLibre GL JS v5.24.0 installé (maplibre-gl, no API key required)
+* Tuiles : OpenFreeMap style "liberty" (OSM, gratuit, no key)
+* Carte plein viewport (calc(100vh - 64px))
+* Initialisation au Maroc (lng: -6.3, lat: 31.8, zoom: 5.5)
+* Pan/zoom natif MapLibre (mouse + touch)
+* Attribution "© OpenStreetMap contributors" visible bottom-right
+* Custom HTML price markers ("850 k DH") via MapLibre Marker API
+* Marker sélectionné : couleur bronze/AkarFinder, ring visible
+* "Position approximative" tooltip sur markers non-exact
+* Click marker → select listing in side panel + flyTo
+* Clusters de villes quand zoom < 8 (count + prix moyen)
+* Click cluster → zoom vers la ville
+* Zoom >= 8 → markers individuels prix
+* Side panel desktop (lg) scrollable, bidirectionnel avec carte
+* Bottom sheet mobile : collapsed (prix + badge) / expanded (full card)
+  — drag handle, "Voir le bien" CTA, WhatsApp button
+* City filter → flyTo city centroid (zoom 10–12)
+* Réinitialiser → flyTo Morocco overview
+* Disclaimer "Localisations approximatives — à vérifier avant visite"
+* Dynamic import avec ssr: false (wrapper client MapExperienceClient)
+
+Contraintes respectées
+* Aucune migration SQLite/Supabase
+* Aucun Nominatim
+* Aucune clé API (NEXT_PUBLIC_MAPS_KEY etc.)
+* Aucune nouvelle route backend
+* Source : geoEnrichedMockListings uniquement
+* P10C / P10D / P10E non démarrées
+
+Fichiers créés
+* components/map/MapExperience.tsx — remplacement complet (MapLibre)
+* components/map/MapBottomSheet.tsx — mobile bottom sheet
+* components/map/MapSidePanel.tsx — desktop side panel
+* components/map/MapExperienceClient.tsx — wrapper client (ssr: false)
+* scripts/screenshot-map.js — Playwright screenshot generator
+
+Fichiers modifiés
+* app/map/page.tsx — utilise MapExperienceClient + dynamic import
+* lib/map/listing-map.ts — ajout FlyToTarget, MOROCCO_OVERVIEW, CITY_FLY_TARGETS, getCityFlyTarget
+* app/globals.css — import 'maplibre-gl/dist/maplibre-gl.css'
+* package.json — maplibre-gl@5.24.0 dans dependencies
+
+Tests
+* npm run test:scrapers : 168/168
+* npm run test:api : 51/51
+* Build : OK (0 erreur TypeScript)
+
+Screenshots générés (public/screenshots/)
+* p10b-real-map-desktop.png (1280x800)
+* p10b-real-map-mobile.png (390x844)
+* p10b-real-map-selected-desktop.png (1280x800, Casablanca + side panel)
+* p10b-real-map-selected-mobile.png (390x844, bottom sheet expanded)
+
+Score estimé /map après MapLibre
+* Desktop : 8.8/10
+* Mobile : 8.2/10
+
+P10B-DB : Non démarrée
+P10F : Non démarrée
+P10C : Non démarrée
+
+====================================================
+P10C — À PROXIMITÉ MAROC
+
+Statut : COMPLÉTÉE (2026-06-24)
+
+Prérequis : P10A complétée (lat/lng en DB)
+
+Objectif
+Adapter l'expérience "vie autour du bien" au contexte marocain.
+Ne pas copier un "Walk Score" occidental : créer une terminologie AkarFinder
+qui reflète les besoins réels des acheteurs au Maroc.
+
+Terminologie AkarFinder
+"Score vie quotidienne" ou "Score proximité"
+(ne pas utiliser "Walk Score" — marque déposée + non adapté au Maroc)
+
+Bloc "Vie autour du bien" à construire
+Catégories à inclure (données indicatives issues de sources ouvertes) :
+* Marché / souk traditionnel
+* Supermarché (grande surface)
+* Hanout / commerces de proximité
+* Station de taxis
+* Bus / tram / gare
+* Pharmacie
+* École / crèche / collège
+* Mosquée
+* Clinique / médecin / hôpital
+* Banque / ATM
+* Parking
+* Café / boulangerie / snack
+* Espace vert / plage / corniche (selon ville : mer à Agadir, montagne à Ifrane…)
+
+Chaque lieu doit afficher
+* Catégorie (icône + libellé)
+* Distance indicative (en minutes à pied ou en voiture, selon la distance)
+* Niveau de confiance de la donnée (élevé / moyen / indicatif)
+* Source si pertinente (OpenStreetMap, Nominatim, etc.)
+
+Règles produit
+* Libellé obligatoire : "Données indicatives — à vérifier avant décision"
+* Pas de promesse de données en temps réel
+* Pas de Foursquare / Google Places sans partenariat validé
+  → Source ouverte (Overpass API / OSM) privilégiée pour le MVP
+* Les lieux spécifiquement marocains (souk, hanout, mosquée) sont prioritaires
+  sur les catégories standard importées de modèles occidentaux
+
+Exit criteria
+* Bloc "Vie autour du bien" visible dans /listings/[id] ✓
+* Au moins 8 catégories couvertes pour les biens géolocalisés ✓
+* Disclaimer "données indicatives" affiché ✓
+* Score vie quotidienne calculé et visible (si suffisamment de données) ✓
+
+Résultats (2026-06-24)
+* lib/proximity/types.ts, morocco-proximity.ts, get-listing-proximity.ts créés
+* components/listings/ProximityBlock.tsx créé
+* ListingDetail.tsx intégré (bloc après NeighborhoodAmenities)
+* 14 quartiers couverts × 13 catégories chacun + fallback 6 villes
+* 39 tests p10c-proximity.test.ts — 207/207 scrapers, 51/51 API
+* Build : OK (0 erreur TypeScript)
+* Screenshots : p10c-proximity-desktop.png, p10c-proximity-mobile.png
+* P10C-B polish validé humainement : wording "repères disponibles", badges confiance lisibles,
+  tri prioritaire des catégories marocaines, CSS final validé sur captures manuelles
+
+====================================================
+P10IMG — REAL LISTING IMAGES FOUNDATION
+
+Statut : COMPLÉTÉE — 2026-06-24
+
+Objectif
+Préparer l'utilisation progressive de vraies photos d'annonces sans fragiliser
+AkarFinder juridiquement, techniquement ou en crédibilité.
+AkarFinder garde l'ambition "tout l'immobilier marocain en une seule recherche",
+mais distingue clairement indexation, preview et publication complète.
+
+Principe produit
+Tout peut être indexé.
+Tout ne peut pas être recopié.
+AkarFinder indexe, normalise, compare et score les annonces scrappées.
+AkarFinder affiche complètement les annonces uniquement quand la source est
+autorisée ou partenaire.
+
+Statuts d'accès source
+* indexed_only
+  - annonce scrappée ou analysée publiquement ;
+  - infos normalisées, score, lien source, fallback visuel premium ;
+  - pas de galerie copiée ;
+  - pas de téléphone/email scrapé ;
+  - CTA principal : "Voir l'annonce source" ou contact indirect selon accord.
+
+* preview_allowed
+  - thumbnail/preview autorisée ou risque validé ;
+  - image affichée avec source claire ;
+  - lien vers la source ;
+  - fallback SVG si l'image casse ou si le statut devient incertain.
+
+* partner_full
+  - agence, promoteur, exposant Sakan Expo ou import autorisé ;
+  - photos réelles + galerie complète ;
+  - contact direct / WhatsApp ;
+  - leads AkarFinder ;
+  - analytics et boost possibles.
+
+Champs média à prévoir
+* main_image_url
+* gallery_image_urls[]
+* image_source
+* image_source_url
+* image_permission_status :
+  - allowed
+  - source_link_only
+  - unknown
+  - forbidden
+* image_last_checked_at
+* image_fallback_type
+* image_attribution_label
+* source_access_level :
+  - indexed_only
+  - preview_allowed
+  - partner_full
+
+Règles photos
+* Citer la source ne suffit pas à autoriser la réutilisation d'une image.
+* Ne pas rehoster de photos scrappées sans accord clair.
+* Ne pas copier une galerie complète depuis un portail sans accord.
+* Les annonces partenaires peuvent utiliser vraies photos + galerie.
+* Les annonces scrappées sans droit clair gardent ListingVisual / fallback SVG.
+* Les photos cassées retombent automatiquement sur fallback SVG premium.
+* La source doit rester visible sur toute preview image.
+* Aucun logo/source tiers ne doit suggérer un partenariat non signé.
+
+Sources prioritaires pour vraies photos
+1. Promoteurs partenaires
+2. Agences premium avec import CSV/XML autorisé
+3. Exposants Sakan Expo
+4. Biens de démonstration validés
+5. Plus tard : propriétaires vérifiés avec consentement explicite
+
+Traitement des annonces scrappées
+Les annonces scrappées servent à :
+* remplir l'index national ;
+* calculer prix/m² observé ;
+* détecter doublons ;
+* alimenter fiabilité, carte, proximité, package score ;
+* identifier sources/agences/promoteurs à approcher ;
+* envoyer l'utilisateur vers la source quand l'annonce n'est pas partenaire.
+
+Elles ne deviennent pas automatiquement des annonces complètes AkarFinder.
+
+Affichage produit
+* /search : image réelle si allowed/partner_full, sinon ListingVisual fallback.
+* /listings/[id] : galerie complète seulement si partner_full.
+* /map : thumbnails uniquement si allowed/partner_full, sinon fallback compact.
+* Badge discret possible :
+  - "Annonce analysée"
+  - "Source identifiée"
+  - "Annonce partenaire"
+* Ne pas utiliser "Données vérifiées" sans vérification humaine réelle.
+
+Exit criteria
+* Modèle média documenté et/ou typé.
+* source_access_level disponible sur listings.
+* image_permission_status disponible.
+* Fallback visuel maintenu.
+* Aucune galerie scrappée réaffichée sans permission.
+* Build 0 erreur TypeScript si implémenté.
+* Documentation claire pour agences/promoteurs : vraies photos = avantage partenaire.
+
+====================================================
+====================================================
+P10D — PRIX MOYEN OBSERVÉ
+
+Statut : COMPLÉTÉE — 2026-06-24
+
+Objectif
+Commencer à apprendre progressivement les prix moyens à partir des annonces
+analysées. Ne jamais promettre une valeur officielle ou garantie.
+
+Ce qui est calculé et stocké
+* prix/m² observé par ville
+* prix/m² observé par quartier
+* prix/m² observé par type de bien (appartement, villa, terrain, etc.)
+* nombre d'annonces utilisées pour le calcul
+* niveau de confiance (élevé si N ≥ 30 ; moyen si N 10–29 ; faible si N < 10)
+* date de calcul (les repères vieillissent)
+
+Wording obligatoire
+Utiliser : "prix/m² observé" ou "prix moyen observé"
+NE JAMAIS écrire : "prix officiel", "valeur garantie", "estimation certifiée"
+
+Exemples de libellés autorisés
+"Prix/m² observé : 13 800 MAD/m²"
+"Basé sur 42 annonces similaires"
+"Confiance : moyenne (29 annonces)"
+"Données indicatives issues de l'analyse AkarFinder — non officielles."
+
+Affichage dans le produit
+* Bloc "Repère marché" dans /listings/[id] : comparaison bien vs repère quartier
+* Bloc "Repères prix" en homepage : tableau par ville (indicatif)
+* Carte de chaleur prix/m² sur /map (optionnel, si volume suffisant)
+
+Exit criteria
+* prix_observe_quartier et prix_observe_ville calculés et stockés en DB
+* Affiché dans /listings/[id] avec label obligatoire
+* Niveau de confiance affiché systématiquement
+* Aucune claim "officielle" dans l'interface
+
+Livraison MVP (2026-06-24)
+* MarketReferenceBlock sur /listings/[id] : comparaison bien vs repère + confidence badge
+* Badge compact sur cards /search
+* getListingObservedPriceComparison() helper + 8 tests
+* Dataset : STATIQUE (lib/market/morocco-market-prices.ts — références initiales manuelles)
+
+Limitation MVP — dette technique documentée
+Les références actuelles (sample_count, médiane, range) sont des valeurs de
+démarrage définies manuellement dans morocco-market-prices.ts.
+Elles ne sont PAS calculées dynamiquement à partir des annonces property_listings.
+→ Afficher la confidence et la source aide les utilisateurs à jauger la précision.
+→ Le calcul dynamique depuis Supabase property_listings est explicitement repoussé à Phase 3.
+
+Dette P10D-LIVE (Phase 3+)
+* Calculer prix/m², médiane, sample_count réels depuis property_listings
+* Persister en table market_references (ville, quartier, type, transaction_type)
+* Recalculer à chaque ingest batch
+* Remplacer morocco-market-prices.ts statique par une requête DB live
+
+====================================================
+P10E — PACKAGE SCORE AKARFINDER
+
+Statut : COMPLÉTÉE — 2026-06-24
+
+Prérequis : P10C (proximité) + P10D (prix observé) complétées
+
+Objectif
+Ne plus juger un bien uniquement par son prix ou sa fiche.
+Évaluer le package complet : qualité de l'annonce + vie autour du bien
++ cohérence du prix avec le marché.
+
+Trois scores indépendants
+
+1. Score fiabilité annonce (existant, à afficher de façon renforcée)
+   Composantes : complétude des données, absence de doublon, cohérence prix,
+   identification de la source, fraîcheur.
+
+2. Score vie quotidienne (P10C)
+   Composantes : marché, supermarché, transport, pharmacie, école, mosquée,
+   parking, commerces de proximité.
+   Pondéré selon le profil déclaré (famille, investisseur, MRE…) si connu.
+
+3. Score prix marché (P10D)
+   Composantes : prix/m² du bien vs prix/m² observé quartier,
+   comparaison avec annonces similaires récentes,
+   niveau de confiance selon volume de données disponibles.
+
+Résumé package (niveau synthèse)
+Calculé à partir des 3 scores.
+Libellés autorisés :
+* "Excellent package"     — les 3 scores élevés
+* "Bon package"           — 2 scores élevés, 1 moyen
+* "Package correct"       — scores moyens
+* "À analyser"            — données insuffisantes ou scores mixtes
+* "Données insuffisantes" — moins de 2 scores calculables
+
+Exemples de résumés affichables
+"Bon package quartier"
+"Annonce fiable · Proximité forte · Prix cohérent"
+
+"Package correct"
+"Annonce fiable · Données proximité limitées · Prix légèrement au-dessus du marché"
+
+"À analyser"
+"Complétude partielle · Peu de données de référence disponibles"
+
+Règles produit
+* Les 3 scores sont indépendants et toujours affichés séparément
+* Le résumé est informatif, pas prescriptif
+* Pas de "ce bien est un bon investissement" — AkarFinder ne conseille pas
+* Chaque score affiche son niveau de confiance
+* Si données insuffisantes pour un score → "Données insuffisantes" affiché,
+  pas de valeur inventée
+
+Affichage dans le produit
+* Bloc "Package AkarFinder" dans /listings/[id] (remplace ou enrichit le bloc Score)
+* Badge compact "Bon package" sur les cards /search (si données suffisantes)
+* Filtre "Afficher les biens avec bon package" dans /search
+
+Exit criteria
+* 3 scores séparés calculés et visibles dans /listings/[id]
+* Résumé package affiché avec niveau de confiance
+* Badge compact opérationnel sur les cards
+* Aucune claim de conseil financier ou d'investissement
+* Build 0 erreur TypeScript
+
+Livraison MVP — 2026-06-24
+* lib/package-score/types.ts (PackageScoreLabel, PackageScoreSignal, PackageScoreResult)
+* lib/package-score/calculate-package-score.ts (3 signaux → label global)
+* components/listings/PackageScoreBlock.tsx (bloc /listings/[id])
+* Badge package sur PhotoFirstListingCard (remplace badge marché si calculable)
+* Filtre "Bon package" dans QuickFilters + LightZillowSearchShell (client-side)
+* Mobile debt corrigé : pb-40 → pb-52 dans ListingDetail
+* 10 tests P10E (254/254 scrapers ✅, 51/51 API ✅, build clean ✅)
+* Screenshots : p10e-package-score-desktop.png, p10e-package-score-mobile.png, p10e-package-card-badge.png
+
+====================================================
+OBJECTIF EXPÉRIENCE 8.7/10
+
+Pour atteindre ce niveau, AkarFinder doit combiner :
+* Recherche rapide (Typesense — Phase 4)
+* Carte interactive type Airbnb (P10B)
+* Données géographiques propres (P10A)
+* Score de fiabilité annonce renforcé (P10E composante 1)
+* Score proximité marocain (P10C)
+* Prix moyen observé (P10D)
+* Package score multi-dimensionnel (P10E)
+* Images réelles autorisées / fallback premium maîtrisé (P10IMG)
+* Onboarding acheteur indicatif pour qualifier l'intention (P12A)
+* Mobile bottom sheet et interaction fluide (P10B)
+* Transparence sur la précision des données (toutes les phases)
+* Wording honnête : "observé", "indicatif", "approximatif"
+
+Score estimé par phase
+* Phase 1 complétée (état actuel) : ~7.0/10
+* + UX/UI polish (P9B refonte) : ~8.0/10
+* + Carte interactive MVP (P10B) : ~8.3/10
+* + Proximité Maroc (P10C) : ~8.5/10
+* + Images réelles autorisées / fallback maîtrisé (P10IMG) : ~8.6/10
+* + Package Score (P10E) : ~8.7/10
+* + Onboarding acheteur indicatif (P12A) : améliore surtout conversion/leads, pas seulement UX
+
+====================================================
+CONTRAINTES PERMANENTES PHASES P10
+
+Ces contraintes s'appliquent à toutes les phases P10 sans exception :
+
+* Pas de position exacte inventée — null si incertitude géographique
+* Pas de prix officiel, garanti ou certifié — "observé" et "indicatif" uniquement
+* Pas de promesse de garantie sur les données de proximité
+* Pas de téléphone, email, formulaire de contact, ni données derrière login/captcha scrapés
+* Aucune clé API exposée côté client (pas de NEXT_PUBLIC_MAPS_KEY, etc.)
+* Pas de dépendance Google Maps obligatoire — MapLibre / tiles gratuits pour le MVP
+* Google Maps / Mapbox uniquement si décision future explicitement validée
+* Pas de "Walk Score" (marque déposée) — utiliser "Score vie quotidienne" AkarFinder
+* Pas de conseil financier ou d'investissement — AkarFinder informe, ne conseille pas
+* Libellé "Position approximative" obligatoire si geo_precision ≠ "exact"
+* Disclaimer "données indicatives" obligatoire sur tout bloc de données estimées
+* Photos réelles uniquement si droit/autorisation/source_access_level compatible
+* Attribution source obligatoire mais jamais suffisante seule pour réutiliser une image
+* Annonces scrappées : indexées et enrichies, pas recopiées comme annonces complètes sans accord
+
+====================================================
+P11 — AKARFINDER PRO (CÔTÉ OFFRE B2B)
+
+Statut : NON DÉMARRÉE
+
+Inspiration stratégique
+Zillow a un deuxième côté produit pour les utilisateurs "offre" :
+post listing, rental manager, Premier Agent, advertising.
+AkarFinder a besoin de son propre côté B2B/pro adapté au Maroc.
+
+Règle fondamentale
+Ne pas ouvrir la publication publique libre aux particuliers en V1.
+Priorité : agences, promoteurs, exposants Sakan Expo.
+Particuliers vérifiés uniquement si process qualité existant.
+
+----------------------------------------------------
+P11A — PAGE LANDING PRO
+
+Statut : COMPLÉTÉE — 2026-06-24
+
+Périmètre
+* Page pour agences et promoteurs
+* Expliquer la valeur : leads qualifiés, visibilité, package score, intégration Sakan Expo
+* CTA : demande d'accès / réservation de démo
+
+----------------------------------------------------
+P11B — WORKFLOW D'IMPORT AGENCE
+
+Statut : NON DÉMARRÉE
+
+Périmètre
+* Import CSV/XML
+* Validation des données
+* Rapport qualité
+* Détection de doublons
+* Badge de confiance source
+* Pas de publication publique sans validation
+
+----------------------------------------------------
+P11C — PAGES PROJET PROMOTEUR
+
+Statut : NON DÉMARRÉE
+
+Périmètre
+* Profil de projet
+* Unités / typologies
+* Fourchettes de prix si fournies
+* CTA brochure
+* Demande de visite
+* Tracking QR Sakan Expo
+
+----------------------------------------------------
+P11D — BOÎTE RÉCEPTION LEADS / CRM WHATSAPP
+
+Statut : COMPLÉTÉE — 2026-06-25
+
+Périmètre
+* Leads par listing/projet
+* Score chaud/tiède/froid
+* Budget, ville, type, timeline, statut MRE
+* Canal source : web / carte / Sakan Expo / QR / onboarding acheteur
+* Dossier acheteur indicatif : budget, apport, financement, timing, zones recherchées
+
+Livraison MVP (2026-06-25)
+* db/supabase-leads-migration.sql — table buyer_leads avec RLS (service_role_all, no anon)
+* lib/leads/types.ts — LeadApiPayload, LeadApiResponse, BuyerLeadRow, LeadStatus
+* lib/leads/validate.ts — validateLeadPayload, normalizePhone, extractLeadPayload (testable, no I/O)
+* app/api/leads/route.ts — POST only, double consent requis, température recalculée serveur-side
+* /onboarding — soumission connectée à l'API, spinner de loading, bannière succès/erreur
+* app/pro/leads/page.tsx — inbox interne MVP, token URL (LEADS_ADMIN_TOKEN), tabs statut, WhatsApp links
+* app/pro/page.tsx — CTA "Boîte réception leads" ajouté (section InboxCTA)
+* scripts/apply-leads-migration.ts — npm run apply:leads-migration (Management API ou instructions manuelles)
+* 44 tests P11D (309/309 scrapers ✅, 51/51 API ✅, build clean ✅)
+* 4 screenshots : p11d-onboarding-submit-success.png, p11d-lead-inbox-cta.png,
+                   p11d-lead-inbox-desktop.png, p11d-lead-inbox-mobile.png
+
+P11D-C — Demande de visite — Completed ✅
+* components/listings/VisitRequestPanel.tsx — formulaire créneau + daypart + contact + consent
+* lib/leads/visit-request.ts — validation, normalisation, buildVisitLeadInsert (snapshot listing)
+* app/api/visit-requests/route.ts — POST, insert buyer_leads avec lead_type=visit_request
+* db/supabase-visit-requests-migration.sql — extension buyer_leads : lead_type, visit_status,
+  visit_preferred_slot_1/2, visit_preferred_daypart, visit_message, listing snapshot fields
+* scripts/apply-visit-requests-migration.ts — application via Management API si SUPABASE_ACCESS_TOKEN disponible
+* Temperature forcée "chaud" pour tout visit_request
+* 341/341 tests scrapers, 51/51 tests API, build clean ✅
+* 4 screenshots UI générés : p11d-c-visit-form-desktop.png, p11d-c-visit-form-mobile.png,
+  p11d-c-leads-inbox-visit-desktop.png, p11d-c-leads-inbox-visit-mobile.png
+* Screenshot succès live non généré : migration Supabase appliquée ✅ (2026-06-25)
+
+P11D-C-UX — UX polish + libellés FR — Completed ✅ (2026-06-25)
+* VisitRequestPanel refondu : compact trigger → modal centré desktop / bottom sheet mobile
+  - Champs confortables : Nom, Téléphone WhatsApp, Créneaux 1+2, Moment préféré (chips), Message, Consentement
+  - Notice "La visite reste en attente de confirmation." intégrée
+  - Bouton principal "Envoyer ma demande de visite"
+  - État succès clair : titre + description + pendingLabel + bouton Fermer
+  - Pas de succès mélangé avec le formulaire
+* /pro/leads libellés corrigés :
+  - visit_request → "Demande de visite" (badge + source_channel)
+  - buyer_profile → "Dossier acheteur"
+  - new → "Nouveau", contacted → "Contacté", qualified → "Qualifié", archived → "Archivé"
+  - reschedule_requested → "Créneau à modifier"
+* 341/341 tests scrapers, 51/51 tests API, build clean ✅
+* 5 screenshots UI : p11d-c-visit-modal-desktop.png, p11d-c-visit-modal-mobile.png,
+  p11d-c-visit-success-desktop.png, p11d-c-visit-success-mobile.png, p11d-c-leads-inbox-fr-desktop.png
+* Limitations maintenues :
+  - Pas d'envoi automatique au propriétaire/agence
+  - Pas de SMS
+  - Pas de calendrier
+  - Visite non confirmée automatiquement — en attente de confirmation manuelle
+
+P11D-D — CRM interne minimal — Completed ✅ (2026-06-25)
+* lib/leads/lead-admin.ts — validateLeadAdminToken, ALLOWED_LEAD_STATUSES, ALLOWED_VISIT_STATUSES,
+  validateLeadStatusUpdate, validateVisitStatusUpdate, normalizeInternalNotes,
+  normalizeFollowUpDate, mapLeadStatusLabel, mapVisitStatusLabel
+* app/api/leads/[id]/route.ts — PATCH endpoint, auth via x-leads-admin-token header ou ?token=,
+  mise à jour status/visit_status/internal_notes/next_follow_up_at/mark_contacted
+* db/supabase-p11d-d-migration.sql — add if not exists: internal_notes, last_contacted_at,
+  next_follow_up_at + extended status constraint + indexes
+* components/leads/LeadCrmCard.tsx — client component "use client": dropdown statuts lead/visite,
+  textarea notes internes, date prochain suivi, boutons Enregistrer/Contacté/Archiver, feedback FR
+* app/pro/leads/page.tsx — intègre LeadCrmCard, token passé en prop, statuts P11D-D ajoutés au filtre
+* lib/leads/types.ts — BuyerLeadRow étendu : internal_notes, last_contacted_at, next_follow_up_at;
+  LeadStatus étendu : visit_confirmed, reschedule_requested
+* scripts/scrapers/__tests__/p11d-lead-crm.test.ts — 47 tests CRM helpers
+* 388/388 scrapers tests ✅, 51/51 API tests ✅, build clean ✅
+* Migration Supabase appliquée : db/supabase-p11d-d-migration.sql ✅ 2026-06-25
+* WhatsApp manuel conservé — pas d'API WA, pas de SMS, pas de calendrier
+
+Limitations documentées (à résoudre en phases futures)
+* Authentification complète non construite — accès inbox par token URL uniquement
+* Distribution de leads non automatisée — consultation manuelle uniquement
+* Aucune notification automatique propriétaire/agence/source pour les annonces indexed_only
+* Aucune visite n'est confirmée sans validation manuelle
+* buyer_leads table appliquée dans Supabase ✅ (2026-06-25)
+    + db/supabase-visit-requests-migration.sql ✅ (2026-06-25)
+    + db/supabase-p11d-d-migration.sql ✅ (2026-06-25)
+
+Note : P11D est le premier pont de monétisation — les soumissions onboarding P12A
+deviennent des leads acheteurs consentis visibles dans la boîte Pro interne.
+Aucun lead n'est distribué ou vendu sans workflow de consentement validé.
+
+----------------------------------------------------
+P11E — BOOST / PLACEMENTS SPONSORISÉS
+
+Statut : NON DÉMARRÉE
+
+Périmètre
+* Booster les listings/projets dans les résultats
+* Label "Sponsorisé" toujours visible
+* Le boost ne cache jamais le score de fiabilité
+* Pas de faux claim de partenariat
+
+----------------------------------------------------
+P11F — ANALYTICS ET RAPPORTS
+
+Statut : NON DÉMARRÉE
+
+Périmètre
+* Vues, leads, indicateurs de conversion
+* Top villes/quartiers
+* Distribution du package score
+* Rapport post-événement Sakan Expo
+
+----------------------------------------------------
+P11G — TESTS DE TARIFICATION
+
+Statut : NON DÉMARRÉE
+
+Périmètre
+* Tarification lead qualifié
+* Package promoteur mensuel
+* Package agence premium
+* Package digital Sakan Expo
+* Tarification campagne boost
+
+Exit criteria pour P11
+* Proposition de valeur Pro documentée
+* Workflow B2B documenté
+* Modèle de lead documenté
+* Chemins de monétisation documentés
+* Règles de crédibilité documentées
+
+====================================================
+P12 — ONBOARDING ACHETEUR + FINANCEMENT IMMOBILIER
+
+Statut : NON DÉMARRÉE
+
+Inspiration stratégique
+Trulia/Zillow proposent des tunnels de préqualification et de financement.
+AkarFinder doit adapter cette logique au Maroc sans promettre une vraie
+préqualification bancaire tant qu'aucun partenaire/process n'est validé.
+
+Positionnement
+Ne pas appeler cela "préqualification crédit" au départ.
+Nom recommandé :
+* "Onboarding acheteur"
+* "Profil de recherche"
+* "Dossier acheteur indicatif"
+
+Objectif
+Transformer un visiteur anonyme en lead qualifié, utile pour :
+* agences ;
+* promoteurs ;
+* banques plus tard ;
+* Sakan Expo ;
+* relance WhatsApp ;
+* scoring chaud/tiède/froid.
+
+----------------------------------------------------
+P12A — ONBOARDING ACHETEUR / DOSSIER INDICATIF
+
+Statut : COMPLÉTÉE — 2026-06-25
+
+Objectif
+Créer un tunnel simple permettant à l'utilisateur de clarifier son projet,
+son budget, son timing et son mode de financement.
+Ce tunnel ne valide pas un crédit. Il prépare un dossier indicatif.
+
+Tunnel proposé
+
+Étape 1 — Projet
+* Acheter
+* Louer
+* Neuf
+* Investir
+* MRE
+
+Étape 2 — Zone
+* Ville
+* Quartier
+* Zones acceptées
+* Option carte plus tard
+
+Étape 3 — Budget
+* Budget total
+* Apport disponible
+* Besoin de crédit : oui/non
+* Mensualité cible indicative
+* Devise/pays de résidence si MRE
+
+Étape 4 — Bien recherché
+* Appartement
+* Villa
+* Terrain
+* Studio
+* Bureau
+* Surface cible
+* Chambres
+* Neuf / ancien
+
+Étape 5 — Timing
+* Urgent
+* 1–3 mois
+* 3–6 mois
+* Simple veille
+
+Étape 6 — Contact et consentement
+* Nom
+* Téléphone / WhatsApp
+* Pays si MRE
+* Consentement clair pour être recontacté
+* Consentement séparé si transmission à partenaire bancaire/pro
+
+Sorties produit
+* Profil de recherche enregistré
+* Score lead chaud/tiède/froid
+* Biens compatibles avec le budget
+* Alertes personnalisées
+* Dossier transmis à AkarFinder Pro uniquement avec consentement
+* Préparation future lead bancaire si P12B/P12C activés
+
+CTA possibles
+* Sur /listings/[id] :
+  "Vérifier si ce bien correspond à mon budget"
+* Sur /map :
+  "Voir les biens compatibles avec mon budget"
+* Pour MRE :
+  "Créer mon dossier d'achat depuis l'étranger"
+* Sur homepage ou /search :
+  "Créer mon profil de recherche"
+
+Wording autorisé
+* "Dossier acheteur indicatif"
+* "Budget estimatif"
+* "Simulation indicative"
+* "À confirmer avec votre banque"
+* "Préqualification possible" uniquement si partenaire/process validé
+
+Wording interdit
+* "Vous êtes préqualifié"
+* "Crédit accepté"
+* "Crédit garanti"
+* "Taux officiel"
+* "Accord bancaire assuré"
+* "Capacité d'achat certifiée"
+
+Guardrails
+* Pas de conseil financier.
+* Pas de décision bancaire simulée comme validée.
+* Consentement obligatoire avant transmission d'un lead.
+* Données sensibles minimisées.
+* Pas de revente de données sans opt-in clair.
+* Toujours distinguer estimation indicative et validation bancaire réelle.
+
+Exit criteria P12A
+* Tunnel documenté.
+* Champs lead documentés.
+* Wording safe documenté.
+* Connexion future à P11D lead inbox documentée.
+* Aucune promesse de crédit.
+
+----------------------------------------------------
+P12B — SIMULATEUR CRÉDIT INDICATIF
+
+Statut : NON DÉMARRÉE
+
+Périmètre
+* Calculateur mensualité intégré dans /listings/[id] ou onboarding.
+* Entrées : prix, apport, durée, taux indicatif.
+* Output : mensualité estimée, coût total indicatif.
+* Label obligatoire : "Simulation indicative — à confirmer avec votre banque".
+* Pas de taux en temps réel sans partenariat validé.
+
+----------------------------------------------------
+P12C — LEADS BANCAIRES PARTENAIRES
+
+Statut : NON DÉMARRÉE
+
+Périmètre
+* Formulaire de lead bancaire partenaire.
+* Routing vers banque partenaire.
+* Lead qualifié financement : budget, ville, statut professionnel, MRE, apport.
+* Badge "financement possible" seulement si process validé avec partenaire.
+* Reporting leads banque.
+
+----------------------------------------------------
+P12D — PARCOURS FINANCEMENT MRE
+
+Statut : NON DÉMARRÉE
+
+Périmètre
+* Checklist achat depuis l'étranger.
+* Simulation indicative en MAD.
+* Informations documents à préparer.
+* Connexion future à banques partenaires MRE.
+* Wording prudent : information et préparation, jamais accord bancaire garanti.
+
+====================================================
+====================================================
+P13 — SEO IMMOBILIER MAROC
+
+Statut : NON DÉMARRÉE
+
+Inspiration stratégique
+Zillow utilise des pages de villes, quartiers, guides et pages
+informatives pour capter la demande de recherche.
+
+Périmètre
+* Pages villes : immobilier Casablanca, Rabat, Marrakech, Tanger, Agadir
+* Pages quartiers : Maârif, Hay Riad, Agdal, Malabata, etc.
+* Guides MRE
+* Guides achat
+* Guides location
+* Pages prix/m² observés (quand volume suffisant)
+* Pages Sakan Expo
+* Pas de pages spam autogénérées vides
+
+Règles
+* Chaque page doit avoir du contenu local utile
+* Utiliser "prix observé" uniquement quand le volume de données est suffisant
+* Afficher le niveau de confiance
+* Ne jamais écrire "prix officiel"
+
+====================================================
+P14 — ASSISTANT DE RECHERCHE AKARFINDER
+
+Statut : NON DÉMARRÉE
+
+Inspiration stratégique
+Zillow évolue vers la découverte assistée par IA.
+AkarFinder doit utiliser l'IA uniquement comme aide à la décision,
+pas comme estimateur magique.
+
+Périmètre
+* Comparer 2–3 annonces
+* Expliquer le package score
+* Résumer quartier / proximité / prix observé
+* Préparer les questions à poser à l'agence/promoteur
+* Checklist de décision MRE
+* Recommandations d'alertes
+
+Garde-fous
+* Pas de conseil juridique
+* Pas de conseil financier
+* Pas de claims d'investissement garanties
+* Pas de données hallucinées
+* Chaque réponse doit distinguer données connues vs données manquantes
+
+====================================================
+PHASE 6 — Monétisation B2B
+
+Statut : NON DÉMARRÉE
+
+Prérequis : Phase 3 complétée (prod) + volume listings crédible
+
+Objectif
+Commencer à vendre. Transformer AkarFinder en business.
+
+Acteurs cibles prioritaires
+1. Promoteurs immobiliers
+2. Agences immobilières premium
+3. Sakan Expo / salons immobiliers
+
+Périmètre
+
+Espaces B2B
+* Espace Promoteur : profil + projets + leads reçus + badge vérifié
+* Espace Agence : profil + listings importés + badge vérifié + leads
+* Espace Vendeur particulier (phase ultérieure, pas B2B, hors scope ici)
+
+Annonces sponsorisées
+* Boost d'annonces sur /search (label "Sponsorisé" visible)
+* Boost de projets neuf en homepage
+* Règle : le boost ne cache pas le score de fiabilité — un bien sponsorisé
+  conserve son badge fiabilité réel
+
+Publicité native homepage
+* Projets de promoteurs partenaires (bloc "Projets mis en avant")
+* Événements immobiliers (Sakan Expo, salons, lancements)
+* Lancement de nouvelles résidences / programmes
+
+Leads qualifiés
+* Formulaire lead avec : budget / ville / type / timeline / MRE status /
+  WhatsApp / financement
+* Dossier acheteur indicatif issu de l'onboarding (si renseigné)
+* Scoring chaud/tiède/froid
+* Distribution de leads aux promoteurs/agences selon profil
+* Export leads (manuel d'abord, puis API)
+
+Sakan Expo package
+* Page projet sur AkarFinder
+* QR code sur stand expo
+* Formulaire brochure / visite
+* Capture lead expo (source_channel = "sakan_expo")
+* Rapport post-expo (leads générés, consultations, conversions)
+
+Modèle commercial initial (à valider manuellement)
+* Lead qualifié : prix à la pièce (chaud > tiède > froid)
+* Package mensuel promoteur : visibilité + leads + badge
+* Package Sakan Expo : page projet + QR + rapport
+* Boost annonce/projet : CPM ou forfait campagne
+
+Règles de crédibilité commerciale
+* Pas de "badge vérifié AkarFinder" sans process de vérification réel
+* Pas de "partenaire officiel" sans accord signé
+* Boost label "Sponsorisé" toujours visible
+* Leads ne sont jamais vendus sans consentement RGPD-like
+
+====================================================
+PHASE 7 — Partenariats financiers
+
+Statut : NON DÉMARRÉE
+
+Prérequis : Phase 6 activée (trafic et leads prouvés)
+
+Objectif
+Connecter immobilier + crédit + investissement.
+Créer un deuxième axe de revenu B2B en lien avec le financement.
+
+Acteurs cibles
+* Banques marocaines (Attijariwafa, CIH, BMCE, Banque Populaire, …)
+* Organismes de crédit immobilier
+* OPCIM / fonds d'investissement immobilier
+* Assurances habitation
+
+Périmètre
+
+Simulateur de crédit
+* Calculateur mensualité intégré dans /listings/[id]
+* Entrées : prix, apport, durée, taux
+* Output : mensualité estimée, coût total
+* Label "Simulation indicative — à confirmer avec votre banque"
+* Pas de taux en temps réel sans partenariat validé
+
+Dossier crédit en ligne
+* Formulaire de dossier crédit simplifié
+* Routing vers banque partenaire
+* Lead qualifié financement (budget + ville + statut professionnel + MRE)
+
+OPCIM / investissement immobilier
+* Bloc "Investissement immobilier" sur fiches et homepage
+* Mise en avant de projets adaptés à l'investissement locatif
+* Partenariat affiché uniquement si accord signé
+
+Modèle commercial
+* Commission sur lead financement transmis à banque partenaire
+* Publicité native banque sur pages stratégiques
+* Co-branding événement avec banque (Sakan Expo)
+
+====================================================
+PHASE 8 — Lancement XXL
+
+Statut : NON DÉMARRÉE
+
+Prérequis : Phase 6 active + quelques premiers contrats signés
+
+Objectif
+Créer la marque. Passer d'un produit validé à une marque connue.
+
+Positionnement à ancrer
+* AkarFinder est le moteur immobilier intelligent du Maroc.
+* Pas un simple site d'annonces : un moteur de recherche avec fiabilité,
+  carte, scoring, et connexion Sakan Expo.
+* Tagline principale : "Toutes les annonces immobilières du Maroc. Une seule recherche."
+* Tagline produit : "Cherchez moins. Trouvez mieux."
+
+Périmètre
+
+Branding
+* Finaliser identité visuelle (logo vectoriel, design system)
+* Brand guide complet (couleurs, typo, ton éditorial, règles visuelles)
+* Assets : bannières, présentations, one-pagers, emailings
+
+Campagne de lancement
+* Lancement "bêta publique" avec liste d'attente + invitations
+* Campagne de contenu : articles, vidéos, tutoriels (recherche immobilière au Maroc)
+* Influence : partenariat youtubeurs / influenceurs immobilier marocains
+* Presse : communiqué de presse immobilier marocain
+* LinkedIn : thought leadership immobilier + proptech Maroc
+
+Sakan Expo intégration lancement
+* Présence physique ou digitale à Sakan Expo
+* Démonstration live AkarFinder sur stand
+* Acquisition directe de promoteurs partenaires
+
+MRE acquisition
+* Campagne ciblée diaspora marocaine (Europe, Amérique du Nord, Golfe)
+* Partenariat média MRE : radios, médias communautaires, Facebook groups
+* WhatsApp groups premium MRE (consentement)
+
+CRM et outreach
+* Campagnes emailing avec consentement explicite
+* SMS + WhatsApp uniquement avec opt-in
+* Segmentation : acheteurs / MRE / promoteurs / agences
+
+Métriques de succès lancement
+* Nombre de sessions mois 1
+* Taux de retour semaine 2
+* Leads qualifiés générés
+* Premiers contrats B2B signés
+* Couverture presse / mentions
+
+====================================================
+PHASE 9 — Internationalisation
+
+Statut : NON DÉMARRÉE
+
+Prérequis : Phase 8 complétée + Maroc stabilisé
+
+Objectif
+Préparer une marque scalable. Etendre AkarFinder sans diluer la marque Maroc.
+
+Stratégie
+
+Étape 1 : Consolider le Maroc
+* Être le moteur de référence immobilier marocain.
+* Toutes les grandes villes couvertes.
+* B2B rentable et scalable.
+* Données fiables et exhaustives.
+
+Étape 2 : Marchés MRE
+* Adapter l'expérience pour les acheteurs diaspora.
+* Pages en français + arabe.
+* Contenu ciblé par pays de résidence (France, Espagne, Belgique, Italie, Golfe).
+* Partenariats locaux pour la confiance (banques MRE, associations).
+
+Étape 3 : Expansion régionale
+* Autres marchés Maghreb ou Afrique francophone.
+* Évaluer : Tunisie, Sénégal, Côte d'Ivoire.
+* Marque internationale possible : House Finder / House Scanner (à valider).
+* Ne pas diluer AkarFinder trop tôt — attendre que la marque soit solide au Maroc.
+
+Règle d'or
+AkarFinder d'abord. Marque internationale ensuite.
+L'internationalisation ne commence pas avant que le Maroc soit profitable.
+
+====================================================
+RÉSUMÉ PAR HORIZON
+
+Phase   | Statut                          | Objectif court
+--------|---------------------------------|------------------------------------------
+1       | Complétée en local/pré-prod     | MVP crédible (pipeline + UI + scoring)
+2       | En cours                        | Data intelligence (scores calculés en DB)
+2.5     | Non démarrée — prochaine        | Data Proof UI (tri fiabilité, bloc data)
+3       | COMPLÉTÉE — 2026-06-25          | Supabase / production
+4       | Non démarrée (après Phase 3)    | Search avancée / Typesense
+5       | Non démarrée (après Phase 3)    | Carte interactive
+6       | Non démarrée                    | Monétisation B2B
+7       | Non démarrée (après Phase 6)    | Partenariats financiers
+8       | Non démarrée (après contrats)   | Lancement XXL
+9       | Non démarrée (après Maroc rent.)| Internationalisation
+
+V1 — Livré en local/pré-production (Phases 1 + 2 partielle)
+* Homepage + /search + /listings wired SQLite
+* Pipeline data P0 → P6 (scraping, dedup, scoring, enrichissement)
+* reliability_score, duplicate_score, reliability_badge, reliability_reasons
+* 132 tests verts, build OK
+
+V2 — Prochain horizon (Phases 2 fin + 2.5 + 3)
+* Score opportunité visible dans le produit (Phase 2 fin)
+* Tri et filtre par fiabilité dans /search (Phase 2.5)
+* Bloc data indicatif homepage (Phase 2.5)
+* Supabase production (Phase 3)
+
+V3 — Produit complet (Phases 4 + 5)
+* Typesense search avancée
+* Carte interactive /carte
+
+V4 — Lancement commercial (Phases 6 + 7 + 8)
+* Espaces B2B, leads qualifiés, Sakan Expo package, AkarFinder Pro
+* Onboarding acheteur indicatif puis partenariats financiers
+* Campagne de lancement
+
+V5 — Scale (Phase 9)
+* Extension MRE ciblée, marchés internationaux
+
+====================================================
+CE QUI VA OÙ
+
+Sur le site public
+* Listings réels avec score visible
+* Badges fiabilité
+* Prix/m²
+* Carte statique premium (Phase 1 — déjà là)
+* Tableau data indicatif homepage (Phase 2)
+* Carte interactive (Phase 5 / P10B-REAL déjà validée en local mock)
+* Photos réelles sur annonces autorisées/partenaires ; fallback SVG sinon (P10IMG)
+* Onboarding acheteur / dossier indicatif (P12A)
+* Simulateur crédit indicatif (Phase 7 / P12B)
+* Projets sponsorisés (Phase 6, labellisés)
+
+Dans la stratégie business (docs internes)
+* SWOT → docs/BUSINESS_MODEL.md
+* Modèle économique → docs/BUSINESS_MODEL.md
+* Plan commercial → docs/GO_TO_MARKET.md
+* Offre promoteurs / agences → docs/MONETIZATION.md
+
+Dans le deck investisseur
+* SWOT synthétique
+* Pipeline data comme barrier to entry
+* Modèle économique V1/V2/V3
+* Traction early : listings, tests, partenariats
+* Roadmap business (Phases 6–9)
+* Vision internationale (Phase 9)
+
+====================================================
+PROCHAINE PHASE TECHNIQUE RECOMMANDÉE
+
+Branche produit immédiate si l'objectif est de continuer l'expérience 8.7/10 :
+P10D — Prix moyen observé → P10E — Package Score.
+P10IMG peut être lancé avant P10D si les visuels annonces deviennent le frein principal.
+
+Branche infrastructure production :
+Phase 2 (fin) → Phase 2.5 (Data Proof UI) → Phase 3 (Supabase)
+
+Étape A — Finir Phase 2 (data backend)
+1. Calculer opportunite_score par listing (prix/m² vs médiane ville/quartier)
+2. Stocker opportunite_score dans property_listings (migration SQLite)
+
+Étape B — Lancer Phase 2.5 (data visible dans le produit)
+3. Ajouter tri reliability_score DESC et filtre reliability_badge dans /search
+4. Ajouter tri opportunite_score DESC dans /search
+5. Bloc "Repères marché" homepage : prix/m² médian par ville, label "indicatif"
+6. Mise en avant des annonces fiabilité élevée (tri automatique ou bloc dédié)
+
+Étape C — Préparer Phase 3 (Supabase)
+7. Appliquer db/supabase-migration.sql en staging Supabase
+8. Tester le switch DATABASE_URL SQLite (dev) → Supabase (prod)
+
+====================================================
+PROCHAINE PHASE BUSINESS RECOMMANDÉE
+
+Phase 6 (préparation commerciale)
+
+Actions immédiates :
+1. Créer le one-pager promoteur (offre, tarifs, leads, Sakan Expo)
+2. Identifier 3–5 promoteurs à approcher manuellement pour validation offre
+3. Construire la demo deck commerciale (homepage + /search + scoring + leads)
+4. Cibler Sakan Expo comme premier canal d'acquisition B2B
+5. Définir les prix de test (leads, packages, boosts) à valider manuellement
+6. Préparer l'offre "photos + galerie + leads" réservée aux annonces partner_full
+7. Définir le tunnel onboarding acheteur comme source de leads qualifiés
+
+====================================================
+EXPLORER-MAROC — HUB CARTE INTELLIGENTE ACTIONNABLE
+Statut : COMPLÉTÉE — 2026-06-25
+
+Objectif
+Transformer la section "Carte intelligente" (SignatureMapSection) en hub d'exploration
+actionnable "Explorer le Maroc", avec CTAs visibles, descriptions villes, et bloc visite.
+
+Livré
+* SignatureMapSection — 3 CTAs : "Voir la carte interactive" (/map), "Explorer par ville" (/#villes), "Créer mon dossier acheteur" (/onboarding)
+* Sous-texte mis à jour : "repères indicatifs, prix observés, fiabilité, proximité, signaux de confiance"
+* 4 signal cards mises à jour : Quartiers lisibles, Fiabilité visible, Prix observés, Proximité utile
+* Bloc pédagogique "Quand un bien vous intéresse…" + CTA "Voir les biens disponibles" → /search
+* lib/cities.ts — champ description ajouté sur les 5 villes
+* CityIntentGrid — id="villes" (ancre) + description visible sous le tag sur chaque carte
+* MreTrustSection — 2 CTAs : "Créer mon dossier acheteur" → /onboarding + "Explorer les biens" → /search
+
+Screenshots
+* public/screenshots/explorer-maroc-desktop.png
+* public/screenshots/explorer-maroc-mobile.png
+* public/screenshots/explorer-maroc-cities-desktop.png
+* public/screenshots/explorer-maroc-cities-mobile.png
+
+Build : OK · P15A : COMPLÉTÉE 2026-06-25 · P15B : COMPLÉTÉE 2026-06-25 · P16A : COMPLÉTÉE 2026-06-25 · P16B : Not started
+
+====================================================
+POST-P11D — ZILLOW-INSPIRED DECISION ENGINE ROADMAP
+Version : 2026-06-25
+Ajouté suite à l'audit Zillow — fonctionnalités adaptées au marché marocain.
+
+Principe directeur
+AkarFinder ne copie pas Zillow tel quel.
+Il transforme les patterns Zillow utiles en un parcours AkarFinder Maroc :
+
+  chercher
+  → comparer
+  → sauvegarder
+  → recevoir alertes
+  → vérifier budget indicatif
+  → demander visite
+  → suivi CRM / Pro
+
+Ordre produit P15 → P21
+  1.  P15A — Comparateur de biens          [Completed 2026-06-25]
+  2.  P15B — Favoris / shortlist persistante
+  3.  P16A — Pages par intention
+  4.  P16B — Page Location dédiée
+  5.  P16C — Page Neuf / Promoteurs
+  6.  P17A — Pages promoteurs partenaires
+  7.  P17B — Packs promoteurs
+  8.  P18A — Alertes sauvegardées réelles
+  9.  P18B — Calculateur mensualité / budget indicatif Maroc-MRE
+  10. P19A — Historique prix/statut annonce
+  11. P19B — Pages marché locales SEO
+  12. P20A — Dossier quartier enrichi
+  13. P20B — Recherche multi-zones
+  14. P21A — Visites organisées / portes ouvertes
+  15. P21B — Visite virtuelle / vidéo / plan interactif partenaire
+
+Raison de cet ordre : décision acheteur d'abord, puis pages thématiques SEO et
+monétisation promoteurs, puis signaux avancés, puis couches visite.
+
+----------------------------------------------------
+P15A — COMPARATEUR DE BIENS
+
+Statut : COMPLÉTÉE — 2026-06-25 (reprise après arrêt Codex)
+
+Objectif
+Comparer 2 à 5 biens côte à côte.
+
+Données comparées
+* prix
+* prix/m²
+* ville / quartier
+* surface
+* chambres / SDB
+* type de bien
+* score fiabilité
+* package score
+* prix observé
+* proximité
+* doublons possibles
+* accès source / photos autorisées
+* demande de visite disponible
+
+Pourquoi
+C'est la fonctionnalité la plus alignée avec "Comparez avant de contacter."
+Elle valorise directement les données que le pipeline produit déjà
+(fiabilité, package score, prix observé, proximité).
+
+Wording autorisé
+* "Comparer les biens"
+* "Tableau comparatif indicatif"
+* "Données issues de l'analyse AkarFinder — non officielles"
+
+Guardrails
+* Pas de "meilleur choix garanti"
+* Pas de conseil d'investissement
+* Chaque score affiche son niveau de confiance
+
+----------------------------------------------------
+P15B — FAVORIS / SHORTLIST PERSISTANTE
+
+Statut : COMPLÉTÉE 2026-06-25.
+Build : OK · Tests : 419 scrapers + 51 API (0 fail)
+
+Objectif
+Permettre à l'utilisateur de sauvegarder des biens dans une shortlist
+persistante (localStorage, sans auth) pour construire une shortlist avant
+comparaison, contact ou demande de visite.
+
+Livré
+* lib/favorites/favorites-storage.ts — FAVORITES_STORAGE_KEY, FAVORITES_STORAGE_EVENT,
+  parseFavoriteIds, readFavoriteIds, addFavoriteId, removeFavoriteId, toggleFavoriteId,
+  clearFavoriteIds, isFavorited, dispatchFavoritesUpdated. Pas de limite (vs 4 max pour compare).
+* components/favorites/useFavoriteSelection.ts — hook miroir de useCompareSelection,
+  sync via storage + CustomEvent.
+* components/favorites/FavoriteToggleButton.tsx — variantes "icon" (cards) et "block" (detail sidebar).
+  Lecture localStorage via useEffect (hydration-safe). Feedback textuel 2.2s après toggle.
+* components/favorites/FavoritesPageShell.tsx — empty state, grid listing cards (Voir / Comparer / Visite / Retirer),
+  bouton "Tout vider", fallback mockListings si API indisponible.
+* app/favorites/page.tsx — route /favorites, dynamic = "force-dynamic".
+* PhotoFirstListingCard.tsx — remplace wishlisted local useState par FavoriteToggleButton.
+* ListingDetail.tsx — FavoriteToggleButton variant="block" ajouté (mobile + sidebar desktop).
+* scripts/scrapers/__tests__/p15b-favorites.test.ts — 10 tests unitaires.
+* Screenshots : p15b-favorites-empty-desktop/mobile.png, p15b-favorites-list-desktop/mobile.png,
+  p15b-heart-button-search.png.
+
+Guardrails respectés
+* localStorage uniquement — pas de Supabase, pas d'auth, pas de sync serveur
+* Pas de mention wording interdit
+* Composants isolés — pas de modification scraper ni Supabase
+
+----------------------------------------------------
+P16A — PAGES PAR INTENTION
+
+Statut : COMPLÉTÉE 2026-06-25.
+Build : OK · Tests : 419 scrapers + 51 API (0 fail)
+
+Objectif
+Créer des pages shell stratégiques par intention utilisateur, orientées vers
+les features existantes, avec wording conforme et disclaimer indicatif.
+
+Pages créées (toutes statiques — ○ dans la route table)
+* /acheter  — Achat avec méthode (recherche, compare, favoris, fiabilité, visite)
+* /louer    — Location (budget mensuel, types, proximité, shortlist, alertes futures)
+* /neuf     — Programmes neufs et promoteurs partenaires (wording strict)
+* /investir — Repères de marché indicatifs (aucun conseil financier)
+* /mre      — Achat à distance pour Marocains résidant à l'étranger
+* /promoteurs — Espace B2B promoteurs (page projet, leads, Sakan Expo)
+
+Composant partagé
+* components/intent/IntentPageShell.tsx — shell serveur réutilisable (hero dark + grid blocks + callout + disclaimer)
+
+Modifications connexes
+* lib/site.ts — navItems mis à jour : Acheter → /acheter, Louer → /louer, Neuf → /neuf
+
+Screenshots
+* public/screenshots/p16a-{acheter,louer,neuf,investir,mre,promoteurs}-{desktop,mobile}.png (12 captures)
+
+Guardrails respectés
+* Wording interdit absent (garanti, certifié, officiel, vérifié, conseil financier)
+* Disclaimer indicatif sur toutes les pages
+* Pas de Supabase, pas d'API nouvelle, pas de scraper modifié
+* P16B, P16C, P17, DATA-A restent Not started
+
+----------------------------------------------------
+P16B — PAGE LOCATION DÉDIÉE
+
+Statut : COMPLÉTÉE 2026-06-25.
+Build : OK · Tests : 419 scrapers + 51 API (0 fail)
+
+Objectif
+Transformer /louer d'une page shell générique en une vraie expérience dédiée location.
+
+Livré
+* components/location/LouerPageShell.tsx — composant serveur dédié (fetch réel transaction_type=rent)
+  - Hero teal (#0e4756) avec CTAs : Voir locations / Ma shortlist / Comparer
+  - Bloc 1 Budget mensuel : 4 chips par fourchette de loyer (< 2K / 2-5K / 5-10K / >10K DH)
+  - Bloc 2 Type de location : chips Studio/Appartement/Villa/Bureau/Meublé/Vide
+  - Bloc 3 Vie quotidienne : 6 items (bureau, école, transport, pharmacie, supermarché, carte)
+  - Section biens à louer : listings réels via searchListings({ transaction_type: "rent" })
+    → 2 biens en base affichés avec mini-cartes + CTA Voir fiche + favoris
+    → Fallback texte si aucun bien disponible
+  - Bloc 4 Shortlist + Comparateur : 2 cartes côte à côte
+  - Bloc 5 Alertes futures : badge "À venir", 4 cas documentés sans implémentation
+  - Callout final + disclaimer loyer indicatif
+* app/louer/page.tsx — remplacé (dynamic = "force-dynamic", import LouerPageShell)
+
+Wording respecté
+* "loyer indicatif", "à confirmer auprès de la source", "repères indicatifs",
+  "vie quotidienne", "shortlist", "comparer avant de visiter"
+* Aucun wording interdit
+
+/louer route : ƒ (dynamique, server-rendered) car fetch données réelles
+
+Screenshots
+* public/screenshots/p16b-louer-{desktop,mobile}.png
+* public/screenshots/p16b-budget-desktop.png
+* public/screenshots/p16b-vie-quotidienne-mobile.png
+* public/screenshots/p16b-shortlist-ctas-desktop.png
+
+P16C, P17, DATA-A restent Not started
+
+----------------------------------------------------
+P16C — PAGE NEUF / PROMOTEURS
+
+Statut : Not started.
+
+Objectif
+Page /neuf dédiée aux biens neufs et aux projets promoteurs partenaires.
+
+Contenu
+* Projets en cours et à venir (données fournies par le promoteur)
+* Badge "Projet partenaire"
+* Formulaire demande d'information
+* Intégration Sakan Expo possible
+
+Guardrails
+* Wording : "données fournies par le promoteur"
+* Pas de "projet vérifié" ou "livraison garantie" sans accord écrit
+* Pas de visite confirmée sans validation manuelle
+
+----------------------------------------------------
+P17A — PAGES PROMOTEURS PARTENAIRES
+
+Statut : Not started.
+
+Objectif
+Créer des pages dédiées par promoteur partenaire, affichant leurs projets
+et permettant une prise de contact qualifiée.
+
+Contenu
+* Présentation du promoteur (données fournies par le promoteur)
+* Projets actifs et à venir
+* Galerie autorisée (partner_full uniquement)
+* Formulaire contact / demande de visite
+* Badge "Partenaire AkarFinder"
+
+Pourquoi
+Différenciateur B2B. Les promoteurs veulent de la visibilité qualifiée, pas
+juste un listing parmi d'autres. Une page dédiée justifie un pack payant.
+
+Guardrails
+* Contenu fourni par le promoteur, non généré automatiquement
+* Pas de "meilleur promoteur" ou classement non fondé
+* Mentions légales obligatoires sur chaque page promoteur
+
+----------------------------------------------------
+P17B — PACKS PROMOTEURS
+
+Statut : Not started.
+
+Objectif
+Offrir des packs payants aux promoteurs pour une visibilité premium sur
+AkarFinder : page dédiée, leads qualifiés, analytics, reporting marché.
+
+Contenu d'un pack
+* Page promoteur dédiée (P17A)
+* Mise en avant des projets sur /neuf et /search
+* Reporting mensuel indicatif (annonces consultées, leads générés)
+* Badge "Partenaire AkarFinder" sur toutes les fiches liées
+* Accès dashboard analytics interne (DATA-F)
+
+Guardrails
+* Pas de volume de leads garanti
+* Reporting indicatif uniquement — données issues de l'analyse AkarFinder
+* Pas de "données certifiées" ou "audience officielle"
+
+----------------------------------------------------
+P15C — NOTES PERSONNELLES + PARTAGE FAMILLE
+
+Statut : Not started. (couche optionnelle — prérequis P15B)
+
+Prérequis : P15B complétée
+
+Objectif
+Ajouter des notes privées sur les biens sauvegardés et permettre le partage simple.
+
+MVP
+* Note personnelle libre (textarea, max 500 chars)
+* Tags : à visiter / à comparer / trop cher / intéressant
+* Lien de partage read-only (hash URL) plus tard
+
+Pourquoi
+L'achat immobilier au Maroc = décision familiale.
+MRE en particulier consultent leur famille avant chaque décision.
+
+Guardrails
+* Notes privées uniquement — pas de partage public sans action explicite
+* Aucune note transmise à des tiers sans consentement
+
+----------------------------------------------------
+P18A — ALERTES SAUVEGARDÉES RÉELLES
+
+Statut : Not started.
+
+Prérequis : P15B complétée + Phase 3 (Supabase)
+
+Objectif
+Créer des alertes persistantes à partir d'une recherche.
+
+MVP
+* Critères : ville/quartier, budget min/max, transaction type, type bien
+* Fréquence indicative (journalière, hebdomadaire)
+* Historique des alertes créées
+* Aucun envoi email/SMS automatique au début si non implémenté
+* CTA depuis /search et /listings/[id]
+
+Wording autorisé
+* "Alertes sauvegardées"
+* "Recevoir les nouveaux biens correspondant à ma recherche"
+* "Alerte créée — vous serez notifié selon la disponibilité du service"
+
+Wording interdit
+* "alerte garantie"
+* "temps réel" si non live
+* "tous les nouveaux biens" si le scraping n'est pas continu
+
+Guardrails
+* Consentement obligatoire pour tout envoi de notification
+* Pas de promesse de complétude du flux
+
+----------------------------------------------------
+P18B — CALCULATEUR MENSUALITÉ / BUDGET INDICATIF MAROC-MRE
+
+Statut : Not started.
+
+Objectif
+Transformer budget / apport / durée / taux indicatif en mensualité estimative.
+
+Entrées
+* Prix du bien
+* Apport disponible
+* Durée souhaitée (en années)
+* Taux indicatif (valeur de marché non officielle)
+* Devise (MAD / EUR / USD pour les MRE)
+
+Sortie
+* Mensualité estimative
+* Coût total indicatif
+* Ratio apport / financement
+
+Important
+Ce n'est pas une préqualification bancaire.
+
+Wording autorisé
+* "Simulation indicative"
+* "Mensualité estimative"
+* "À confirmer avec votre banque"
+* "Capacité estimative — non officielle"
+
+Wording interdit
+* "crédit accepté"
+* "taux garanti"
+* "capacité certifiée"
+* "préqualification bancaire"
+* tout lien avec une banque partenaire sans accord signé
+
+Guardrails
+* Label "Simulation indicative — à confirmer avec votre banque" obligatoire
+* Pas de taux en temps réel sans partenariat validé
+* Pas de stockage de données financières sans consentement
+
+----------------------------------------------------
+P19A — HISTORIQUE PRIX / STATUT ANNONCE
+
+Statut : Not started.
+
+Prérequis : Phase 3 (Supabase) + pipeline import continu
+
+Objectif
+Suivre les changements d'une annonce entre deux scrapes :
+
+* prix baissé
+* prix augmenté
+* republié (même fingerprint réapparu après disparition)
+* retiré (fingerprint absent du dernier run)
+* doublon réapparu
+* source changée
+
+Pourquoi
+Très fort pour la confiance et la négociation.
+"Ce bien a baissé de 15% en 3 mois" est un signal de négociation.
+
+MVP
+* Table listing_snapshots ou listing_events (diff entre imports)
+* Affichage indicatif sur detail page (/listings/[id])
+* Label "Données indicatives issues de l'analyse AkarFinder"
+* Pas de promesse de complétude temporelle
+
+Guardrails
+* Pas de "prix historique officiel"
+* Variation affichée avec niveau de confiance et sample count
+* Données indicatives uniquement
+
+----------------------------------------------------
+P19B — PAGES MARCHÉ LOCALES SEO
+
+Statut : Not started.
+
+Prérequis : P19A complétée + volume suffisant (N ≥ 20 annonces par zone)
+
+Objectif
+Créer des pages ville/quartier utiles pour la recherche organique.
+
+Contenu de chaque page
+* Prix observé / m² (avec confidence level)
+* Types de biens disponibles
+* Annonces récentes
+* Proximité quartier (si P10C disponible)
+* Tendances indicatives (si P19A disponible)
+
+Exemples d'URL
+* /marche/casablanca
+* /marche/rabat/hay-riad
+* /marche/marrakech/gueliz
+* /marche/tanger/malabata
+* /marche/agadir
+
+Important
+* Pas de thin SEO spam autogénéré
+* Afficher uniquement si données suffisantes (N ≥ 20)
+* Sinon : page pilote / données limitées déclarées
+* Label "Données indicatives issues de l'analyse AkarFinder — non officielles" obligatoire
+
+Guardrails
+* Pas de "prix officiel du quartier"
+* Pas de prévision de prix
+* Pas de "meilleur quartier pour investir"
+
+----------------------------------------------------
+P20A — DOSSIER QUARTIER ENRICHI
+
+Statut : Not started.
+
+Prérequis : P10C (proximité) complétée + DATA-E (prix/m² observé enrichi)
+
+Objectif
+Transformer la proximité indicative en vrai dossier quartier :
+
+* Transport (bus, tram, taxi, gare)
+* Écoles / crèches / collèges
+* Commerces (marché, supermarché, hanout)
+* Santé (pharmacie, clinique, hôpital)
+* Mosquées
+* Taxis / stations
+* Temps d'accès indicatifs
+* Scoring quartier (extension du score vie quotidienne P10C)
+
+Guardrails
+* Toutes données indicatives issues d'OpenStreetMap / Overpass API
+* "À vérifier avant décision" obligatoire
+* Pas de Foursquare / Google Places sans partenariat validé
+
+----------------------------------------------------
+P20B — RECHERCHE MULTI-ZONES
+
+Statut : Not started.
+
+Objectif
+Permettre une recherche sur plusieurs villes/quartiers simultanément.
+
+Exemples
+* Rabat Hay Riad + Agdal + Souissi
+* Casablanca Maârif + Gauthier + Racine
+* Tanger Malabata + Centre + Médina
+
+Pourquoi
+Très utile MRE et acheteurs flexibles sur la localisation.
+
+MVP
+* Sélecteur multi-zones sur /search
+* Résultats filtrés sur l'union des zones sélectionnées
+* Carte multi-zones si P10B-DB disponible
+
+----------------------------------------------------
+P21A — VISITES ORGANISÉES / PORTES OUVERTES
+
+Statut : Not started.
+
+Objectif
+Adapter le concept Zillow open houses au Maroc :
+
+* Créneaux organisés par promoteur / agence
+* Visites groupées (événement, showroom, lancement)
+* Intégration Sakan Expo / événements partenaires
+* Demande d'inscription depuis AkarFinder
+
+Important
+* Pas de "visite confirmée" sans validation manuelle
+* Wording : "Demande d'inscription envoyée — en attente de confirmation"
+* Les créneaux sont fournis par le partenaire, pas générés par AkarFinder
+
+Guardrails
+* Aucune confirmation automatique
+* Aucun SMS / notification sans consentement
+* Partenaire responsable de la confirmation et de l'organisation
+
+----------------------------------------------------
+P21B — VISITE VIRTUELLE / VIDÉO / PLAN INTERACTIF PARTENAIRE
+
+Statut : Not started.
+
+Objectif
+Offrir une valeur premium aux agences et promoteurs partenaires :
+
+* Vidéo de présentation
+* Visite virtuelle (iframe ou partenaire externe)
+* Plan interactif (SVG ou partenaire)
+* Galerie photos autorisées (partner_full)
+* Badge partenaire "Contenu enrichi"
+
+Important
+* Disponible uniquement pour annonces partner_full
+* Les biens indexed_only conservent le fallback SVG sans visite virtuelle
+* Aucun contenu copié sans autorisation explicite
+
+Guardrails
+* source_access_level === "partner_full" requis
+* Pas de copie de visites virtuelles depuis des portails tiers
+* Iframe uniquement si partenariat signé avec la source
+
+====================================================
+RÈGLES PERMANENTES
+
+* Ne pas tout mettre en V1.
+* Ne pas lancer Typesense ou /carte avant que Supabase soit en production.
+* Ne pas promettre "certifié" ou "garanti" sans process juridique.
+* Ne pas afficher de publicité cheap qui détruit le premium.
+* Ne pas diluer AkarFinder vers l'international avant d'être rentable au Maroc.
+* SWOT / BCG restent dans les docs internes — jamais dans l'interface publique.
+* Boost sponsorisé : toujours labellisé, jamais masqué.
+* WhatsApp CTA : toujours primaire dans le produit.
+* Attribution d'une photo/source ne vaut pas autorisation de réutilisation commerciale.
+* Onboarding acheteur : toujours "indicatif", jamais "préqualification" sans partenaire bancaire validé.
+====================================================
+UI-MARKET-PULSE - Completed 2026-06-25
+
+Statut : COMPLETEE
+Objectif : Ajouter une bande premium "Dernieres annonces analysees" sur la homepage premium pour montrer l'activite recente du moteur sans revendiquer de temps reel.
+Build : OK - Tests : 403 scrapers + 51 API (0 fail)
+Screenshots : 3 captures public/screenshots/ui-market-pulse-*.png
+
+Livre :
+* Nouveau helper serveur `lib/market-pulse/get-market-pulse-listings.ts`
+* Source des annonces : `queryListings()` (Supabase / SQLite fallback) + `mapDbRowToListing()` + mocks uniquement si aucun provider n'est disponible
+* Filtrage qualite : id + title + city requis ; transaction_type mappe ; reliability_score >= 50 si dispo ; duplicate_score < 80 ; data_completeness_score >= 40 si dispo ; prix ou detail utile requis
+* Bande premium sous le hero, non sticky, fond dark premium coherent avec UI-PREMIUM-HOMEPAGE
+* Items cliquables vers `/listings/[id]`
+* Desktop : marquee lent avec pause au hover
+* Mobile : scroll horizontal manuel, sans animation agressive
+* `prefers-reduced-motion` respecte : animation desactivee automatiquement
+* Wording safe : "Dernieres annonces analysees" / "Biens recemment integres a l'index AkarFinder." ; aucun "temps reel", aucune "donnee verifiee"
+
+====================================================
+TRACK DATA ENGINE — Moteur d'intelligence immobilière Maroc
+Version : 2026-06-25 — Documenté post-P15A
+
+====================================================
+DESCRIPTION
+
+AkarFinder repose sur deux couches complémentaires :
+
+  AkarFinder Site   = interface utilisateur (recherche, comparateur, carte, fiches, onboarding, Pro)
+  AkarFinder Engine = collecte publique + nettoyage + normalisation + déduplication + scoring +
+                      historique + analytics marché
+
+Le Track Data Engine est une piste parallèle permanente. Il nourrit :
+* P15A — Comparateur de biens (prix observé, package score, proximité, doublons)
+* P15B — Favoris / shortlist (données enrichies des biens sauvegardés)
+* P16A/B/C — Pages par intention, Location, Neuf (données filtrées par type)
+* P17A/B — Pages et packs promoteurs (données projets + analytics)
+* P18A — Alertes (flux de nouvelles annonces)
+* P18B — Calculateur (prix/m² observé pour simulation)
+* P19A — Historique prix/statut (DATA-D)
+* P19B — Pages marché locales SEO (DATA-E)
+* P20A — Dossier quartier enrichi (DATA-E + proximité)
+* P20B — Recherche multi-zones
+* P21A/B — Visites organisées et visite virtuelle
+* Package Score (P10E)
+* Prix observé (P10D / DATA-E)
+* Proximité (P10C)
+* Fiabilité et doublons (P5/P6)
+* Dashboard promoteurs (DATA-F)
+* Rapports marché (DATA-H)
+
+Séparation des responsabilités
+* features produit → roadmap P15 → P21
+* chantiers infrastructure/data → roadmap DATA-A → DATA-H
+* DATA-A ne démarre pas avant stabilisation P15B+
+
+Ce track est indépendant du track produit (P15B, P16, P17...).
+Il ne commence pas maintenant (DATA-A = not started).
+Il est documenté pour orienter la roadmap data à moyen terme.
+
+====================================================
+STATUTS
+
+DATA-A : Not started
+DATA-B : Not started
+DATA-C : Partiellement couvert (normalisation + déduplication déjà en prod via P5/P6)
+DATA-D : Not started
+DATA-E : Partiellement couvert (prix/m² observé par ville/quartier via P10D)
+DATA-F : Not started
+DATA-G : Partiellement couvert (contraintes PII déjà respectées dans scraper existant)
+DATA-H : Not started
+
+====================================================
+DATA-A — SOURCE REGISTRY
+
+Statut : Not started
+
+Objectif
+Maintenir un registre structuré des sources publiques immobilières analysées.
+
+Contenu
+* nom et URL de la source
+* type : portail public, agence, promoteur, import partenaire
+* couverture villes / quartiers
+* fréquence de collecte autorisée
+* qualité moyenne observée (taux de champs remplis)
+* taux d'erreur ou d'échec de collecte
+* contraintes techniques connues
+* politique image et contact par source
+* statut actif / en pause / suspendu
+
+====================================================
+DATA-B — COLLECTE PUBLIQUE PROGRAMMÉE
+
+Statut : Not started
+
+Objectif
+Automatiser la collecte de manière prudente et contrôlée.
+
+Principes
+* pas de collecte live pendant la navigation utilisateur
+* runs programmés à heures fixes
+* logs horodatés par source
+* comptage : nouvelles annonces / mises à jour / erreurs
+* fréquence contrôlée par source (respecter les contraintes DATA-A)
+* pas de surcharge des sources
+* arrêt automatique en cas de taux d'erreur anormal
+
+====================================================
+DATA-C — NORMALISATION + DÉDUPLICATION
+
+Statut : Partiellement couvert (P5/P6 en prod)
+
+Ce qui est déjà fait
+* normalisation prix, surface, ville, quartier, type de bien
+* transaction : achat / location / neuf
+* duplicate_score et duplicate_group_id calculés et stockés
+* canonical listing maintenu
+
+Ce qui reste
+* extension multi-sources si nouvelles sources ajoutées
+* amélioration du rapprochement cross-source
+
+====================================================
+DATA-D — HISTORIQUE PRIX / STATUT
+
+Statut : Not started
+
+Objectif
+Suivre dans le temps l'évolution des annonces.
+
+Données à suivre
+* prix initial
+* prix actuel
+* delta prix (baisse / hausse)
+* annonce active / disparue / réapparue
+* durée de présence sur le marché
+* statut observé dans le temps
+
+Usage futur
+* base de données pour P19A — Historique prix/statut annonce (fiche /listings/[id])
+* input pour analytics marché (DATA-F)
+
+====================================================
+DATA-E — PRIX/M² OBSERVÉ
+
+Statut : Partiellement couvert (P10D en prod)
+
+Ce qui est déjà fait
+* prix/m² observé par ville
+* prix/m² par quartier
+* prix/m² par type de bien
+* position marché (coherent / high / low)
+
+Ce qui reste
+* médiane sur volume suffisant plutôt que moyenne simple
+* affichage du niveau de confiance (volume d'annonces utilisées)
+* seuil minimum de données avant affichage public
+* historique du prix/m² dans le temps (dépend de DATA-D)
+
+Wording obligatoire
+* "prix observé" — jamais "prix officiel" ou "prix garanti"
+
+====================================================
+DATA-F — DASHBOARD ANALYTICS INTERNE
+
+Statut : Not started
+
+Objectif
+Tableau de bord interne pour piloter la qualité du moteur.
+
+Métriques à afficher
+* volumes collectés par source et par ville
+* qualité par source (taux de champs remplis)
+* prix/m² observé par ville et quartier
+* quartiers les plus actifs
+* volume de doublons détectés
+* nouvelles annonces / annonces disparues
+* tendances de marché observées
+* anomalies détectées
+* sources en erreur ou en pause
+
+====================================================
+DATA-G — DATA QUALITY & COMPLIANCE
+
+Statut : Partiellement couvert (contraintes respectées dans scraper existant)
+
+Contraintes permanentes — non négociables
+* pas d'extraction de téléphone ou d'email depuis les annonces publiques
+* pas de PII (données personnelles identifiables)
+* pas de login utilisateur ou de contournement de captcha
+* pas de contournement technique des protections des sources
+* sources publiques uniquement, ou imports partenaires formellement acceptés
+* pas de réhébergement d'images non autorisées
+* logs auditables par opération de collecte
+
+Wording public obligatoire
+* "annonces publiques analysées" — jamais "scraping" dans les interfaces publiques
+* "données indicatives" — jamais "données vérifiées" ou "base officielle"
+
+====================================================
+DATA-H — MARKET INTELLIGENCE API
+
+Statut : Not started
+
+Objectif
+Exposer les données du moteur via des API internes structurées.
+
+API prévues
+* /api/market/price-per-m2 — prix observé par ville / quartier / type
+* /api/market/neighborhood — données agrégées par quartier
+* /api/market/history — historique prix (dépend de DATA-D)
+* /api/internal/dashboard — alimentation DATA-F
+* /api/compare — déjà partiellement utilisé par P15A via /api/search
+* /api/seo/local — pages SEO locales futures
+* /api/pro/reporting — dashboards promoteurs (phase ultérieure)
+
+====================================================
+ORDRE RECOMMANDÉ
+
+Si le Track Data Engine est activé à l'avenir :
+DATA-A (registry) → DATA-B (collecte) → DATA-C (extension) → DATA-D (historique)
+→ DATA-E (prix/m² enrichi) → DATA-F (dashboard) → DATA-G (compliance) → DATA-H (API)
+
+DATA-G s'applique dès DATA-A et ne se "termine" jamais — c'est un garde-fou permanent.
+
+Ne pas démarrer avant que le track produit (P15B, P16, P17...) soit stabilisé.

@@ -1,0 +1,318 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { WishlistButton } from "@/components/landing/WishlistButton";
+import { Container } from "@/components/ui/Container";
+import { listingPreviewItems, type ListingPreviewItem } from "@/lib/site";
+import type { Listing } from "@/lib/listings/types";
+
+const chips = [
+  { label: "Acheter", href: "/search?type=buy", active: true },
+  { label: "Louer", href: "/search?type=rent" },
+  { label: "Neuf", href: "/search?type=new" },
+  { label: "MRE", href: "/search?mre=true" },
+];
+
+function reliabilityClasses(score?: number) {
+  if (score && score >= 80) return "bg-[#dcfce7] text-[#16a34a]";
+  if (score && score >= 50) return "bg-[#fef9c3] text-[#a16207]";
+  return "bg-[#fee2e2] text-[#dc2626]";
+}
+
+function badgeStyle(badge: string, isNew?: boolean) {
+  if (isNew || badge === "Nouveau") return "bg-[#2563eb] text-white";
+  if (badge === "MRE") return "bg-[#7c3aed] text-white";
+  if (badge === "Signal fort") return "bg-[#16a34a] text-white";
+  if (badge === "TOP") return "bg-[#ea580c] text-white";
+  return "bg-gray-800/75 text-white";
+}
+
+function ChevronLeft() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  );
+}
+
+function ChevronRight() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
+}
+
+function BedIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2 4v16" />
+      <path d="M2 8h18a2 2 0 0 1 2 2v10" />
+      <path d="M2 17h20" />
+      <path d="M6 8v9" />
+    </svg>
+  );
+}
+
+function SqmIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M9 21V9" />
+    </svg>
+  );
+}
+
+function mapApiListingToPreview(listing: Listing): ListingPreviewItem {
+  const priceMad = listing.price_mad ?? 0;
+  const pricePerM2 = listing.price_per_m2 ?? 0;
+  const surface = listing.surface_m2 ?? 0;
+  const reliability = listing.reliability_score ?? 0;
+
+  return {
+    title: listing.title,
+    location: listing.district
+      ? `${listing.district}, ${listing.city}`
+      : listing.city,
+    price: priceMad > 0 ? `${priceMad.toLocaleString()} DH` : "Prix sur demande",
+    pricePerSquareMeter:
+      pricePerM2 > 0 ? `${pricePerM2.toLocaleString()} DH/m²` : "Non specifie",
+    bedrooms: listing.bedrooms_count,
+    surface: surface > 0 ? `${surface} m²` : "Surface inconnue",
+    freshness: listing.freshness_label || "Recent",
+    reliability: reliability >= 80 ? "Fiabilite elevee" : "A verifier",
+    reliabilityTone: reliability >= 80 ? "high" : "medium",
+    sourceType: listing.source_name || "AkarFinder",
+    imageUrl: listing.image_url || "/skyline-bluehour.jpg",
+    badge: listing.is_mre_friendly ? "MRE" : reliability >= 80 ? "TOP" : "",
+    isNew: false,
+    isFeatured: reliability >= 80,
+    listingId: listing.id,
+  };
+}
+
+export function ListingPreview() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [items, setItems] = useState<ListingPreviewItem[]>(listingPreviewItems);
+
+  useEffect(() => {
+    async function fetchListings() {
+      try {
+        const res = await fetch("/api/listings?limit=20");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.listings && data.listings.length > 0) {
+            const sorted = [...data.listings].sort(
+              (
+                a: { reliability_score?: number },
+                b: { reliability_score?: number }
+              ) => (b.reliability_score ?? 0) - (a.reliability_score ?? 0)
+            );
+            setItems(sorted.map(mapApiListingToPreview));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch listings for preview, using mocks", err);
+      }
+    }
+    void fetchListings();
+  }, []);
+
+  const scroll = (dir: -1 | 1) => {
+    if (!scrollRef.current) return;
+    const card = scrollRef.current.querySelector("article");
+    if (!card) return;
+    const gap = 20;
+    scrollRef.current.scrollBy({
+      left: dir * (card.clientWidth + gap),
+      behavior: "smooth",
+    });
+  };
+
+  return (
+    <section id="annonces" className="bg-[#f8fafc] py-10 sm:py-12">
+      <Container>
+        <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#2563eb]">
+              Biens analyses par AkarFinder
+            </p>
+            <h2 className="mt-3 text-2xl font-extrabold tracking-[-0.04em] text-gray-950 sm:text-4xl">
+              Les annonces les plus fiables
+            </h2>
+            <p className="mt-2 max-w-2xl text-[15.5px] leading-7 text-gray-600">
+              Triees par score de fiabilite AkarFinder - donnees issues de
+              sources publiques consolidees.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex rounded-full border border-gray-200 bg-white p-1 shadow-sm">
+              {chips.map((chip) => (
+                <Link
+                  key={chip.label}
+                  href={chip.href}
+                  className={`rounded-full px-3.5 py-2 text-[12px] font-extrabold transition ${
+                    chip.active
+                      ? "bg-[#0b2345] text-white shadow-sm"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-[#0b2345]"
+                  }`}
+                >
+                  {chip.label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => scroll(-1)}
+                aria-label="Precedent"
+                className="grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white shadow-sm transition hover:bg-gray-50 active:scale-95"
+              >
+                <ChevronLeft />
+              </button>
+              <button
+                onClick={() => scroll(1)}
+                aria-label="Suivant"
+                className="grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white shadow-sm transition hover:bg-gray-50 active:scale-95"
+              >
+                <ChevronRight />
+              </button>
+            </div>
+
+            <Link
+              href="/search"
+              className="hidden text-[14px] font-bold text-[#2563eb] transition hover:text-[#1d4ed8] sm:block"
+            >
+              Voir toutes les annonces →
+            </Link>
+          </div>
+        </div>
+
+        <div
+          ref={scrollRef}
+          className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-5 lg:overflow-visible lg:pb-0"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {items.slice(0, 5).map((item, i) => (
+            <article
+              key={item.listingId || item.title + i}
+              className="group min-w-[82vw] shrink-0 snap-start overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_4px_18px_rgba(15,40,80,0.07)] transition hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(15,40,80,0.13)] sm:min-w-[330px] lg:min-w-0"
+            >
+              <div
+                className="relative h-44 bg-cover bg-center bg-gray-100 sm:h-48"
+                style={{ backgroundImage: `url(${item.imageUrl})` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-transparent" />
+                {item.badge && (
+                  <span
+                    className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${badgeStyle(item.badge, item.isNew)}`}
+                  >
+                    {item.isNew ? "NOUVEAU" : item.isFeatured ? "TOP" : item.badge}
+                  </span>
+                )}
+                <WishlistButton />
+                <span className="absolute bottom-3 left-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-semibold text-white">
+                  {item.sourceType}
+                </span>
+              </div>
+
+              <div className="p-4">
+                <h3 className="truncate text-[15px] font-extrabold leading-5 text-gray-950">
+                  {item.title}
+                </h3>
+                <p className="mt-1 truncate text-[13px] font-semibold text-gray-500">
+                  {item.location}
+                </p>
+
+                <p className="mt-3 text-[1.35rem] font-black tracking-[-0.035em] text-gray-950">
+                  {item.price}
+                </p>
+                <p className="mt-0.5 text-[12px] font-bold text-gray-400">
+                  {item.pricePerSquareMeter}
+                </p>
+
+                <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px] font-semibold text-gray-500">
+                  {item.bedrooms != null && item.bedrooms > 0 && (
+                    <span className="flex items-center gap-1">
+                      <BedIcon />
+                      {item.bedrooms} ch.
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1">
+                    <SqmIcon />
+                    {item.surface}
+                  </span>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span
+                    className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-bold ${reliabilityClasses(
+                      item.reliabilityTone === "high"
+                        ? 85
+                        : item.reliabilityTone === "medium"
+                          ? 55
+                          : 20
+                    )}`}
+                  >
+                    {item.reliability}
+                  </span>
+                  <Link
+                    href={item.listingId ? `/listings/${item.listingId}` : "/search"}
+                    className="rounded-full bg-[#0b2345] px-3.5 py-2 text-[12px] font-extrabold text-white transition hover:bg-[#123767]"
+                  >
+                    Voir le bien
+                  </Link>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="mt-5 text-center sm:hidden">
+          <Link href="/search" className="text-[14px] font-bold text-[#2563eb]">
+            Voir toutes les annonces →
+          </Link>
+        </div>
+      </Container>
+    </section>
+  );
+}

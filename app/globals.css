@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* MapLibre GL CSS */
+@import 'maplibre-gl/dist/maplibre-gl.css';
+
+:root {
+  color-scheme: light;
+
+  /* === AkarFinder official brand tokens (brand board) === */
+  --brand-deepblue: #071B33;
+  --brand-deepblue-700: #0C2746;
+  --brand-bronze: #9B7838;
+  --brand-bronze-light: #C2A368;
+  --brand-premium-white: #F7F5EF;
+  --brand-mono: #0B0B0C;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #fafaf7;
+  color: #111827;
+  font-family: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+/* === Focus clavier accessible, cohérent marque (P10A.2) === */
+:where(a, button, select, input, textarea):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fafaf7, 0 0 0 4px var(--brand-bronze);
+  border-radius: 0.5rem;
+}
+
+::selection {
+  background: rgba(155, 120, 56, 0.18);
+}
+
+@keyframes heart-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+.heart-pop {
+  animation: heart-pop 300ms ease;
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stat-enter {
+  animation: count-up 0.5s ease forwards;
+}
+
+/* === UI-PREMIUM-HOMEPAGE — Hero animations === */
+@keyframes hero-label {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-title {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-sub {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes hero-search {
+  from { opacity: 0; transform: translateY(28px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes hero-ctas {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-scroll {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-[hero-"] {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* --- Level 2D.1 wow pass --- */
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Gentle float for the floating preview card */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.float-y {
+  animation: float-y 5.5s ease-in-out infinite;
+}
+
+/* Soft pulse glow */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.12); }
+}
+.glow-pulse {
+  animation: glow-pulse 4s ease-in-out infinite;
+}
+
+/* Gradient text */
+.text-gradient-blue {
+  background: linear-gradient(100deg, #071B33 0%, #13355C 55%, #071B33 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Premium bronze gradient accent */
+.text-gradient-bronze {
+  background: linear-gradient(100deg, #9B7838 0%, #C2A368 55%, #9B7838 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Level 2D.3 signature Morocco map moment */
+@keyframes signature-card-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes signature-pin-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.18); opacity: 0.78; }
+}
+
+@keyframes signature-orb-pulse {
+  0%, 100% { opacity: 0.42; transform: translateX(-50%) scale(1); }
+  50% { opacity: 0.68; transform: translateX(-50%) scale(1.1); }
+}
+
+.signature-card {
+  animation: signature-card-float 6s ease-in-out infinite;
+}
+
+.signature-card:nth-of-type(2) {
+  animation-delay: 900ms;
+}
+
+.signature-card:nth-of-type(3) {
+  animation-delay: 1400ms;
+}
+
+.signature-card:nth-of-type(4) {
+  animation-delay: 2100ms;
+}
+
+.signature-pin {
+  animation: signature-pin-pulse 2.8s ease-in-out infinite;
+}
+
+.signature-orb {
+  animation: signature-orb-pulse 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .float-y, .glow-pulse, .signature-card, .signature-pin, .signature-orb { animation: none; }
+  html { scroll-behavior: auto; }
+}
+
+@keyframes market-pulse-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.market-pulse-track {
+  animation: market-pulse-marquee 34s linear infinite;
+  will-change: transform;
+}
+
+.market-pulse-marquee:hover .market-pulse-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .market-pulse-track {
+    animation: none !important;
+    transform: none !important;
+  }
+}
