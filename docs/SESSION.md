@@ -8,7 +8,10 @@ Codex must update this file after every meaningful change.
 
 Current phase
 
-VERCEL-DEPLOY — DÉPLOIEMENT PRODUCTION — COMPLÉTÉ 2026-06-25 ✅
+P16C — PAGE NEUF / PROMOTEURS — COMPLÉTÉE 2026-06-25 ✅
+/neuf devient NeufPageShell dédié · hero amber · 6 sections · listings réels · 419+51 tests 0 fail
+
+Précédente: VERCEL-DEPLOY — DÉPLOIEMENT PRODUCTION — COMPLÉTÉ 2026-06-25 ✅
 URL: https://akarfinder.vercel.app · 13/13 pages HTTP 200 · aucun secret exposé
 ⚠️ Supabase vide (0 listings) — sync DB requise avant démo
 
@@ -24,6 +27,45 @@ Précédente mission: ROADMAP-ZILLOW-FEATURES — Roadmap POST-P11D documentée 
 Avant ça: UI-PREMIUM-HOMEPAGE — HOMEPAGE PREMIUM POLISH FINAL — ACCEPTED ✅
 
 ---
+
+----------------------------------------------------
+P16C — PAGE NEUF / PROMOTEURS — 2026-06-25
+
+Status: Livré ✅
+
+Fichiers lus
+* docs/SESSION.md, app/neuf/page.tsx, app/promoteurs/page.tsx
+* components/intent/IntentPageShell.tsx, components/location/LouerPageShell.tsx
+
+Fichiers créés
+* components/neuf/NeufPageShell.tsx — server component async, force-dynamic
+
+Fichiers modifiés
+* app/neuf/page.tsx — remplace IntentPageShell par NeufPageShell
+* docs/ROADMAP.md — P16C Completed
+* docs/SESSION.md — mise à jour
+
+Résumé P16C
+/neuf transformée en page dédiée programmes neufs avec hero amber (#78350f),
+6 sections opérationnelles, listings réels (transaction_type: buy), blocs promoteur,
+brochure/WhatsApp/dossier acheteur, comparaison neuf vs ancien.
+/promoteurs inchangée — cohérente, pas de pricing ni garanties.
+
+Build: OK · test:scrapers: 419 (0 fail) · test:api: 51 (0 fail)
+
+Screenshots générés (public/screenshots/p16c/)
+* neuf-desktop-full.png
+* neuf-mobile-full.png
+* neuf-desktop-projets.png
+* neuf-mobile-brochure.png
+* neuf-desktop-comparaison.png
+* promoteurs-desktop-full.png
+
+Dettes restantes
+* Supabase n'a pas de champ "neuf" distinct — les listings affichés sont tous
+  transaction_type:buy, pas spécifiquement des programmes neufs.
+* La section brochure/WhatsApp est documentaire (pas de formulaire fonctionnel)
+* P17A (pages promoteurs individuelles) reste Not started
 
 ----------------------------------------------------
 VERCEL-DEPLOY — DÉPLOIEMENT PRODUCTION — 2026-06-25

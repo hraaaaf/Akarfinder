@@ -1723,21 +1723,35 @@ P16C, P17, DATA-A restent Not started
 ----------------------------------------------------
 P16C — PAGE NEUF / PROMOTEURS
 
-Statut : Not started.
+Statut : Completed 2026-06-25 ✅
+Build : OK · Tests : 419 scrapers + 51 API (0 fail) · 6 screenshots
 
-Objectif
-Page /neuf dédiée aux biens neufs et aux projets promoteurs partenaires.
+Livré
+* /neuf transformée en NeufPageShell (server component async, force-dynamic)
+* Hero amber (#78350f) — "Programmes neufs au Maroc"
+* Bloc 1 : Projets par ville (6 chips)
+* Bloc 2 : Budget / Prix à partir de (4 chips)
+* Bloc 3 : Typologies & surfaces (6 chips)
+* Section listings réels (transaction_type: buy, limit: 6, fallback CTA)
+* Section Projets partenaires promoteurs (3 mini-cards)
+* Section Brochure / WhatsApp / Dossier acheteur
+* Section Shortlist + Comparaison neuf vs ancien
+* Callout → /promoteurs → /pro
+* Disclaimer complet wording interdit respecté
+* /promoteurs inchangée (cohérente, pas de pricing, pas de garanties)
 
-Contenu
-* Projets en cours et à venir (données fournies par le promoteur)
-* Badge "Projet partenaire"
-* Formulaire demande d'information
-* Intégration Sakan Expo possible
+Fichiers créés
+* components/neuf/NeufPageShell.tsx
 
-Guardrails
-* Wording : "données fournies par le promoteur"
-* Pas de "projet vérifié" ou "livraison garantie" sans accord écrit
-* Pas de visite confirmée sans validation manuelle
+Fichiers modifiés
+* app/neuf/page.tsx (IntentPageShell → NeufPageShell, force-dynamic)
+
+Guardrails respectés
+* Wording : "données fournies par le promoteur", "prix à partir de",
+  "à confirmer auprès du promoteur", "repères indicatifs"
+* Wording interdit absent : pas de "garanti", "certifié", "officiel",
+  "leads garantis", "promoteur validé"
+* Pas de /promoteurs/[slug], /projets/[slug], pricing, auth
 
 ----------------------------------------------------
 P17A — PAGES PROMOTEURS PARTENAIRES
