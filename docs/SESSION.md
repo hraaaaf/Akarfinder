@@ -8,7 +8,11 @@ Codex must update this file after every meaningful change.
 
 Current phase
 
-P16B — PAGE LOCATION DÉDIÉE — COMPLÉTÉE 2026-06-25 ✅
+VERCEL-DEPLOY — DÉPLOIEMENT PRODUCTION — COMPLÉTÉ 2026-06-25 ✅
+URL: https://akarfinder.vercel.app · 13/13 pages HTTP 200 · aucun secret exposé
+⚠️ Supabase vide (0 listings) — sync DB requise avant démo
+
+Précédente: P16B — PAGE LOCATION DÉDIÉE — COMPLÉTÉE 2026-06-25 ✅
 /louer devient expérience dédiée avec 2 vrais biens en location · LouerPageShell server component
 419 tests 0 fail · 51 API 0 fail · build clean · 5 screenshots
 
@@ -20,6 +24,26 @@ Précédente mission: ROADMAP-ZILLOW-FEATURES — Roadmap POST-P11D documentée 
 Avant ça: UI-PREMIUM-HOMEPAGE — HOMEPAGE PREMIUM POLISH FINAL — ACCEPTED ✅
 
 ---
+
+----------------------------------------------------
+VERCEL-DEPLOY — DÉPLOIEMENT PRODUCTION — 2026-06-25
+
+Status: Livré ✅
+
+Résumé
+- git init + commit initial (295 fichiers, 0 secret, 0 .db)
+- Vercel CLI linked → achraf-benmoussa-s-projects/akarfinder
+- 4 env vars Vercel Production: DATABASE_PROVIDER, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, LEADS_ADMIN_TOKEN (toutes chiffrées)
+- Deploy → https://akarfinder.vercel.app (production auto-promue, première déployée)
+- Smoke test 13/13 HTTP 200: / /acheter /louer /neuf /investir /mre /promoteurs /search /compare /favorites /map /onboarding /pro
+- API /api/search → JSON propre, aucun secret dans HTML
+- Listing 404 → correct (pas 500)
+- /pro/leads → 200
+
+Problème connu
+Supabase est vide (0 listings, stats à 0). Les données locales SQLite n'ont pas été synchronisées.
+Prochaine étape requise avant démo: lancer `npx ts-node scripts/sync-supabase.ts` localement
+pour pousser les ~400 annonces de SQLite vers Supabase.
 
 ----------------------------------------------------
 P16B — PAGE LOCATION DÉDIÉE — 2026-06-25
