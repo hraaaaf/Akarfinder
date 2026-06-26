@@ -38,17 +38,19 @@ export function ProductHero() {
 
           {/* Main title */}
           <h1 className="opacity-0 animate-[hero-title_0.8s_cubic-bezier(0.16,1,0.3,1)_0.35s_forwards] text-[2.1rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.85)] sm:text-5xl lg:text-[4.25rem]">
-            Le 1er moteur de recherche immobilier au Maroc.
+            Tout l&apos;immobilier marocain.{" "}
+            <br className="hidden sm:block" />
+            Dans un seul endroit.
           </h1>
 
           {/* Subtitle — hidden on smallest mobile to reduce density */}
           <p className="opacity-0 animate-[hero-sub_0.7s_ease_0.6s_forwards] mt-4 hidden max-w-[640px] text-[1rem] leading-relaxed text-white/85 [text-shadow:0_1px_8px_rgba(0,0,0,0.7)] sm:mt-5 sm:block sm:text-[1.15rem]">
-            Tout l'immobilier marocain dans un seul endroit : annonces analysées, doublons détectés et repères de fiabilité visibles pour comparer et contacter avec plus de confiance.
+            Annonces analysées, doublons détectés et repères de fiabilité visibles pour comparer et contacter avec plus de confiance.
           </p>
           {/* Short version on mobile only */}
           <div className="opacity-0 animate-[hero-sub_0.7s_ease_0.6s_forwards] mt-3 max-w-[340px] rounded-2xl border border-white/10 bg-black/30 px-4 py-3 backdrop-blur-[2px] sm:hidden">
             <p className="text-[0.95rem] leading-relaxed text-white/85 [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">
-              Tout l'immobilier marocain dans un seul endroit : annonces analysées, doublons détectés et repères de fiabilité visibles pour comparer et contacter avec plus de confiance.
+              Annonces analysées, doublons détectés et repères de fiabilité visibles pour comparer et contacter avec plus de confiance.
             </p>
           </div>
           {/* Search box */}
