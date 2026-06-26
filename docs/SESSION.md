@@ -1,5 +1,42 @@
 SESSION.md - Current Project Session
 
+----------------------------------------------------
+HERO-COPY-V2 + MAP-UX-2 — COMPLÉTÉS 2026-06-26 ✅
+
+HERO-COPY-V2 — Hiérarchie texte hero corrigée
+* Fichier : components/landing/ProductHero.tsx
+* Label/eyebrow : "1er moteur de recherche immobilier au Maroc" (inchangé, uppercase CSS)
+* Titre H1 AVANT : "Le 1er moteur de recherche immobilier au Maroc."
+* Titre H1 APRÈS : "Tout l'immobilier marocain. Dans un seul endroit."
+  → <br className="hidden sm:block" /> entre les deux phrases pour retour ligne desktop propre
+* Sous-titre AVANT : "Tout l'immobilier marocain dans un seul endroit : annonces analysées…"
+* Sous-titre APRÈS : "Annonces analysées, doublons détectés et repères de fiabilité visibles…"
+  → répétition du claim supprimée dans les deux versions (desktop + mobile card)
+* Build : OK · commit 8944b1f
+* Preview : https://akarfinder-57gggig0i-achraf-benmoussa-s-projects.vercel.app ✅
+* Production : https://akarfinder.vercel.app ✅
+* Smoke test : build propre, pas de TypeScript error, déploiement READY
+
+MAP-UX-2 — Corrections zones mobiles + routing carte
+* CityIntentGrid.tsx : mobileCollageZones recalibrées (casablanca 21%, marrakech 34.5%,
+  rabat 48%, tanger 61.5%, agadir 75%) — corrige "Casablanca sans bouton" + "Marrakech→Casablanca"
+* SignatureMapSection.tsx : tous les hrefs ville /search?city=X → /map?city=X
+  (desktopPins × 6, mobilePins × 6, mobileCityRows × 6, ALL_CITIES × 6)
+  CTA "Explorer les annonces" reste sur /search
+* MapExperience.tsx : city overlay immersif sur /map?city=X
+  Photo ville + gradient thématique + nom + tag + description + CTA "Explorer [Ville] sur la carte →"
+  Dismiss sur clic bouton ou clic overlay · fade-out 400ms · carte révélée filtrée + centrée
+* Commits : 3c9c713 + e131129
+* Production : https://akarfinder.vercel.app ✅
+
+Position roadmap verrouillée :
+  MAP-UX-2       → Completed (à valider QA-PROD-MOBILE-FINAL sur iPhone réel)
+  P17B           → HOLD faute de partenaire réel
+  DATA-A         → Not started
+  P18A Alertes   → Next — sur ordre de mission explicite après QA mobile
+
+----------------------------------------------------
+
 Purpose
 
 This file tracks what has been done, what is pending, and what the next agent should know.
