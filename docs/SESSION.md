@@ -1,6 +1,22 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+MAP-PINS-MOBILE — COMPLÉTÉ 2026-06-26 ✅
+
+Fichier : components/landing/SignatureMapSection.tsx
+* Suppression de mobileCityRows (6 zones basses décalées sur iPhone)
+* Remplacement des pins transparents invisibles (h-10 w-10) par des badges visuels premium :
+  deepblue/78 + border bronze/45 + dot glow bronze + label ville (9px extrabold)
+  backdrop-blur-sm · hover : border bronze/80 + bg deepblue + shadow glow
+  focus-visible : outline bronze (accessibilité clavier)
+* 6 villes conservées sur la carte : Tanger, Fès, Rabat, Casablanca, Marrakech, Agadir → /map?city=X
+* Zones bas d'image (Explorer [Ville]) : supprimées
+* Desktop pins et CTA /search : inchangés
+* Build : OK · commit d2aa42f
+* Preview : https://akarfinder-dkiynz8x5-achraf-benmoussa-s-projects.vercel.app ✅
+* Production : https://akarfinder.vercel.app ✅
+
+----------------------------------------------------
 HERO-COPY-V2 + MAP-UX-2 — COMPLÉTÉS 2026-06-26 ✅
 
 HERO-COPY-V2 — Hiérarchie texte hero corrigée
