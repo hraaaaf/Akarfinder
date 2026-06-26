@@ -1,21 +1,17 @@
-import { BRAND_MARK_PATH, BRAND_MARK_VIEWBOX } from "./brand-mark-path";
+import Image from "next/image";
 
 /**
- * BrandLogo — composant centralisé de la marque AkarFinder.
- * Référence unique : brand board officielle.
+ * BrandLogo — logo officiel AkarFinder via les assets PNG de la brand board.
  *
  * variant:
- *   - "default"     logo sans tagline (header, navigation, app)
- *   - "official"    logo avec baseline "Intelligence immobilière au Maroc"
- *   - "icon"        monogramme AF seul (favicon, loader, badges)
- *   - "dark"        version fond sombre / texte clair
- *   - "monochrome"  noir (fond clair) ou blanc (fond sombre)
+ *   - "default"     logo sans tagline, fond clair
+ *   - "dark"        logo sans tagline, fond sombre
+ *   - "official"    logo + baseline, fond clair
+ *   - "icon"        mark AF seul (favicon, loader, badges)
+ *   - "monochrome"  alias de default/dark selon onDark
  *
- * showTagline: force l'affichage/masquage de la baseline (override du variant).
+ * showTagline: force l'affichage de la baseline (override du variant).
  * size: "sm" | "md" | "lg"
- *
- * Règle de marque : le symbole reste TOUJOURS bronze (sauf monochrome).
- * La baseline n'apparaît jamais en petit format (size="sm").
  */
 
 export type BrandLogoVariant = "default" | "official" | "icon" | "dark" | "monochrome";
@@ -26,40 +22,15 @@ type BrandLogoProps = {
   showTagline?: boolean;
   size?: BrandLogoSize;
   className?: string;
-  /** true si posé sur un fond sombre (utile pour variant monochrome/par défaut) */
+  /** true si posé sur un fond sombre */
   onDark?: boolean;
 };
 
-const MARK_SIZES: Record<BrandLogoSize, string> = {
-  sm: "h-9",
-  md: "h-11",
-  lg: "h-16",
+const LOGO_HEIGHT: Record<BrandLogoSize, number> = {
+  sm: 30,
+  md: 40,
+  lg: 56,
 };
-
-const WORD_SIZES: Record<BrandLogoSize, string> = {
-  sm: "text-[1.24rem] sm:text-[1.4rem]",
-  md: "text-[1.5rem] sm:text-[1.7rem]",
-  lg: "text-[2.1rem] sm:text-[2.4rem]",
-};
-
-const TAGLINE_SIZES: Record<BrandLogoSize, string> = {
-  sm: "text-[10px]",
-  md: "text-[11px]",
-  lg: "text-[13px]",
-};
-
-function BrandMark({ colorClass, sizeClass }: { colorClass: string; sizeClass: string }) {
-  return (
-    <svg
-      viewBox={BRAND_MARK_VIEWBOX}
-      role="img"
-      aria-label="AkarFinder"
-      className={`${sizeClass} w-auto shrink-0 ${colorClass}`}
-    >
-      <path d={BRAND_MARK_PATH} fill="currentColor" />
-    </svg>
-  );
-}
 
 export function BrandLogo({
   variant = "default",
@@ -69,64 +40,49 @@ export function BrandLogo({
   onDark,
 }: BrandLogoProps) {
   const isDark = variant === "dark" || onDark === true;
-  const isMono = variant === "monochrome";
+  const wantTagline = (showTagline ?? variant === "official") && size !== "sm";
+  const h = LOGO_HEIGHT[size];
 
-  // Symbole : bronze par défaut ; bronze clair sur fond sombre ; mono = couleur du texte.
-  const markColor = isMono
-    ? isDark
-      ? "text-white"
-      : "text-mono"
-    : isDark
-      ? "text-bronze-500"
-      : "text-bronze-700";
-
-  // Wordmark
-  const wordColor = isMono
-    ? isDark
-      ? "text-white"
-      : "text-mono"
-    : isDark
-      ? "text-white"
-      : "text-deepblue";
-
-  const taglineColor = isMono
-    ? isDark
-      ? "text-white/70"
-      : "text-mono/60"
-    : isDark
-      ? "text-bronze-400"
-      : "text-bronze-700/80";
-
-  // Icône seule
+  // Mark seul — icon variant
   if (variant === "icon") {
     return (
-      <span className={`inline-flex ${className}`} aria-label="AkarFinder">
-        <BrandMark colorClass={markColor} sizeClass={MARK_SIZES[size]} />
+      <span className={`inline-flex items-center ${className}`} aria-label="AkarFinder">
+        <Image
+          src={isDark ? "/brand/mark-bronze.png" : "/brand/mark-deepblue.png"}
+          alt="AkarFinder"
+          height={h}
+          width={h}
+          className="w-auto"
+          style={{ height: h }}
+          priority={false}
+        />
       </span>
     );
   }
 
-  // Baseline : jamais en "sm". Par défaut visible uniquement en "official".
-  const taglineDefault = variant === "official";
-  const wantTagline = (showTagline ?? taglineDefault) && size !== "sm";
+  // Sélection du PNG selon variant + tagline
+  const src = wantTagline
+    ? isDark
+      ? "/brand/logo-official-dark.png"
+      : "/brand/logo-official.png"
+    : isDark
+      ? "/brand/logo-default-dark.png"
+      : "/brand/logo-default.png";
+
+  // Largeur estimée pour le layout Next.js (le rendu réel suit l'aspect ratio via w-auto)
+  const w = Math.round(h * (wantTagline ? 3.6 : 4.8));
 
   return (
-    <span className={`flex min-w-0 items-center gap-2.5 sm:gap-3 ${className}`}>
-      <BrandMark colorClass={markColor} sizeClass={MARK_SIZES[size]} />
-      <span className="min-w-0">
-        <span
-          className={`block truncate font-extrabold leading-none tracking-[-0.045em] ${WORD_SIZES[size]} ${wordColor}`}
-        >
-          AkarFinder
-        </span>
-        {wantTagline ? (
-          <span
-            className={`mt-1 block font-semibold uppercase tracking-[0.13em] ${TAGLINE_SIZES[size]} ${taglineColor}`}
-          >
-            Intelligence immobilière au Maroc
-          </span>
-        ) : null}
-      </span>
+    <span className={`inline-flex items-center ${className}`}>
+      <Image
+        src={src}
+        alt="AkarFinder"
+        height={h}
+        width={w}
+        className="w-auto"
+        style={{ height: h }}
+        priority={false}
+      />
     </span>
   );
 }
