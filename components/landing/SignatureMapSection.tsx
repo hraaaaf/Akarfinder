@@ -8,9 +8,11 @@ type MapCity = {
   slug: string;
   label: string;
   tag: string;
+  description: string;
   href: string;
   image: string | null;
   alt: string;
+  // Pin in % of the 2000×2000 SVG viewBox (from MoroccoOfficialMap exact coords)
   pin: { x: string; y: string };
 };
 
@@ -18,97 +20,132 @@ const MAP_CITIES: MapCity[] = [
   {
     slug: "casablanca",
     label: "Casablanca",
-    tag: "Business & littoral",
+    tag: "Économique & Affaires",
+    description: "Pôle économique, CBD moderne et quartiers d'affaires actifs.",
     href: "/map?city=Casablanca",
     image: "/images/cities/casablanca.jpg",
     alt: "Skyline nocturne de Casablanca avec la mosquée Hassan II",
-    pin: { x: "53%", y: "28%" },
+    pin: { x: "57.25%", y: "20.1%" },
   },
   {
     slug: "rabat",
     label: "Rabat",
-    tag: "Capitale & administratif",
+    tag: "Capitale & Administration",
+    description: "Capitale administrative, quartiers résidentiels calmes et bien équipés.",
     href: "/map?city=Rabat",
     image: "/images/cities/rabat.jpg",
     alt: "Tour Hassan et mausolée Mohammed V à Rabat",
-    pin: { x: "58%", y: "21%" },
+    pin: { x: "60.95%", y: "17.65%" },
   },
   {
     slug: "tanger",
     label: "Tanger",
-    tag: "Nord & mobilité",
+    tag: "Portuaire & International",
+    description: "Porte de l'Europe, port stratégique et immobilier en forte croissance.",
     href: "/map?city=Tanger",
     image: "/images/cities/tanger.jpg",
     alt: "Baie de Tanger vue de la Casbah",
-    pin: { x: "67%", y: "11%" },
+    pin: { x: "66.25%", y: "7.75%" },
   },
   {
     slug: "fes",
     label: "Fès",
-    tag: "Patrimoine & intérieur",
+    tag: "Patrimoine & Intérieur",
+    description: "Médina classée Unesco, tissu historique dense et marché résidentiel authentique.",
     href: "/map?city=F%C3%A8s",
     image: null,
     alt: "Médina de Fès",
-    pin: { x: "72%", y: "22%" },
+    pin: { x: "70.25%", y: "17.6%" },
   },
   {
     slug: "marrakech",
     label: "Marrakech",
-    tag: "Lifestyle & investissement",
+    tag: "Tourisme & Patrimoine",
+    description: "Médina classée, Palmeraie et marché immobilier touristique porteur.",
     href: "/map?city=Marrakech",
     image: "/images/cities/marrakech.jpg",
     alt: "Coucher de soleil sur la Koutoubia à Marrakech",
-    pin: { x: "57%", y: "43%" },
+    pin: { x: "55.15%", y: "31.25%" },
   },
   {
     slug: "agadir",
     label: "Agadir",
-    tag: "Littoral & résidence",
+    tag: "Balnéaire & Détente",
+    description: "Station balnéaire de référence, cadre de vie agréable et marché en expansion.",
     href: "/map?city=Agadir",
     image: "/images/cities/agadir.jpg",
     alt: "Corniche d'Agadir et plage atlantique",
-    pin: { x: "37%", y: "54%" },
+    pin: { x: "47.1%", y: "38.15%" },
   },
 ];
 
-function CityCard({ city }: { city: MapCity }) {
+// Desktop card: portrait (photo top, text bottom)
+function CityCardDesktop({ city }: { city: MapCity }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0D2545] shadow-[0_8px_40px_rgba(0,0,0,0.55)]">
-      <div className="relative h-44 w-full overflow-hidden">
+      <div className="relative h-52 w-full overflow-hidden">
         {city.image ? (
-          <Image
-            src={city.image}
-            alt={city.alt}
-            fill
-            sizes="(max-width: 1024px) 100vw, 320px"
-            className="object-cover"
-          />
+          <Image src={city.image} alt={city.alt} fill sizes="320px" className="object-cover" />
         ) : (
           <div className="h-full w-full bg-gradient-to-br from-[#13305e] to-[#1a5080]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0D2545]/75 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0D2545]/80 via-transparent to-transparent" />
       </div>
       <div className="p-5">
         <p className="mb-1 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#C2A368]">
           {city.tag}
         </p>
         <h3 className="text-xl font-extrabold text-white">{city.label}</h3>
+        <p className="mt-1.5 text-[13px] leading-relaxed text-white/55">{city.description}</p>
         <Link
           href={city.href}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#C2A368]/40 bg-[#C2A368]/10 px-4 py-2.5 text-sm font-semibold text-[#C2A368] transition duration-200 hover:border-[#C2A368]/70 hover:bg-[#C2A368]/20"
         >
           Explorer {city.label}
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path
-              d="M3 8h10M9 4l4 4-4 4"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </Link>
       </div>
+    </div>
+  );
+}
+
+// Mobile card: landscape (text left, photo right) — like Image #8
+function CityCardMobile({ city }: { city: MapCity }) {
+  return (
+    <div className="relative flex min-h-[130px] overflow-hidden rounded-2xl border border-white/10 bg-[#0D2545] shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+      {/* Text */}
+      <div className="flex flex-1 flex-col justify-center px-5 py-4 pr-2">
+        <p className="mb-1 text-[9px] font-extrabold uppercase tracking-[0.18em] text-[#C2A368]">
+          {city.tag}
+        </p>
+        <h3 className="text-[1.15rem] font-extrabold leading-tight text-white">{city.label}</h3>
+        <p className="mt-1.5 text-[12px] leading-relaxed text-white/55 line-clamp-3">
+          {city.description}
+        </p>
+      </div>
+
+      {/* Photo */}
+      <div className="relative w-[42%] flex-shrink-0 overflow-hidden">
+        {city.image ? (
+          <Image src={city.image} alt={city.alt} fill sizes="160px" className="object-cover" />
+        ) : (
+          <div className="h-full w-full bg-gradient-to-br from-[#13305e] to-[#1a5080]" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0D2545] via-transparent to-transparent" />
+      </div>
+
+      {/* Arrow CTA */}
+      <Link
+        href={city.href}
+        aria-label={`Explorer ${city.label}`}
+        className="absolute bottom-4 right-4 flex h-9 w-9 items-center justify-center rounded-full border border-[#C2A368]/50 bg-[#C2A368]/15 text-[#C2A368] transition hover:border-[#C2A368]/90 hover:bg-[#C2A368]/30"
+      >
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </Link>
     </div>
   );
 }
@@ -147,11 +184,7 @@ function MapPins({
               <span
                 className={`flex-shrink-0 rounded-full transition-all duration-200 ${
                   mobile ? "h-[4px] w-[4px]" : "h-[5px] w-[5px]"
-                } ${
-                  isActive
-                    ? "bg-[#C2A368] shadow-[0_0_6px_rgba(194,163,104,1)]"
-                    : "bg-[#C2A368]/55"
-                }`}
+                } ${isActive ? "bg-[#C2A368] shadow-[0_0_6px_rgba(194,163,104,1)]" : "bg-[#C2A368]/55"}`}
               />
               {city.label}
             </span>
@@ -169,6 +202,7 @@ export function SignatureMapSection() {
   return (
     <section id="signature-map" className="bg-[#071B33] py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
         {/* Header */}
         <div className="mb-12 text-center lg:mb-16">
           <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#C2A368]">
@@ -188,7 +222,6 @@ export function SignatureMapSection() {
           {/* Morocco SVG map */}
           <div className="relative min-w-0 flex-1">
             <div className="relative mx-auto max-w-[580px]">
-              {/* Glow halo behind map */}
               <div className="absolute inset-0 scale-90 rounded-full bg-[#0f3a6e]/40 blur-3xl" />
               <img
                 src="/maps/morocco-official.svg"
@@ -204,9 +237,9 @@ export function SignatureMapSection() {
             </div>
           </div>
 
-          {/* City card + quick selector */}
+          {/* Desktop city card + quick selector */}
           <div className="w-72 flex-shrink-0 xl:w-80">
-            <CityCard city={activeCity} />
+            <CityCardDesktop city={activeCity} />
             <div className="mt-4 flex flex-wrap gap-2">
               {MAP_CITIES.filter((c) => c.slug !== activeCity.slug).map((city) => (
                 <button
@@ -223,7 +256,7 @@ export function SignatureMapSection() {
 
         {/* ── Mobile layout ── */}
         <div className="lg:hidden">
-          {/* Compact map with pins */}
+          {/* Compact map */}
           <div className="relative mx-auto max-w-[340px]">
             <div className="absolute inset-0 scale-90 rounded-full bg-[#0f3a6e]/35 blur-2xl" />
             <img
@@ -239,7 +272,7 @@ export function SignatureMapSection() {
             </div>
           </div>
 
-          {/* City pill selector */}
+          {/* Pill selector */}
           <div className="mt-5 flex flex-wrap justify-center gap-2">
             {MAP_CITIES.map((city) => (
               <button
@@ -256,9 +289,9 @@ export function SignatureMapSection() {
             ))}
           </div>
 
-          {/* Active city card */}
+          {/* Mobile city card (landscape) */}
           <div className="mt-5">
-            <CityCard city={activeCity} />
+            <CityCardMobile city={activeCity} />
           </div>
         </div>
 
@@ -268,7 +301,7 @@ export function SignatureMapSection() {
         </p>
       </div>
 
-      {/* Accessibility: screen-reader links */}
+      {/* Accessibility links */}
       <ul className="sr-only">
         {MAP_CITIES.map(({ label, href }) => (
           <li key={label}>
