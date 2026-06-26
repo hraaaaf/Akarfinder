@@ -4,41 +4,41 @@ import Link from "next/link";
 // Zones cliquables sur le desktop (image 1586×992)
 // Le panneau carte est à droite (~37% à ~98% de la largeur)
 const desktopPins = [
-  { city: "Tanger",     href: "/search?city=Tanger",     top: "15%", left: "69%" },
-  { city: "Fès",        href: "/search?city=F%C3%A8s",   top: "31%", left: "74%" },
-  { city: "Rabat",      href: "/search?city=Rabat",      top: "30%", left: "59%" },
-  { city: "Casablanca", href: "/search?city=Casablanca", top: "39%", left: "56%" },
-  { city: "Marrakech",  href: "/search?city=Marrakech",  top: "51%", left: "64%" },
-  { city: "Agadir",     href: "/search?city=Agadir",     top: "60%", left: "52%" },
+  { city: "Tanger",     href: "/map?city=Tanger",     top: "15%", left: "69%" },
+  { city: "Fès",        href: "/map?city=F%C3%A8s",   top: "31%", left: "74%" },
+  { city: "Rabat",      href: "/map?city=Rabat",      top: "30%", left: "59%" },
+  { city: "Casablanca", href: "/map?city=Casablanca", top: "39%", left: "56%" },
+  { city: "Marrakech",  href: "/map?city=Marrakech",  top: "51%", left: "64%" },
+  { city: "Agadir",     href: "/map?city=Agadir",     top: "60%", left: "52%" },
 ];
 
 // Zones cliquables sur les pins de la carte mobile (image 941×1672)
 const mobilePins = [
-  { city: "Tanger",     href: "/search?city=Tanger",     top: "27%", left: "64%" },
-  { city: "Fès",        href: "/search?city=F%C3%A8s",   top: "35%", left: "73%" },
-  { city: "Rabat",      href: "/search?city=Rabat",      top: "33%", left: "50%" },
-  { city: "Casablanca", href: "/search?city=Casablanca", top: "37%", left: "46%" },
-  { city: "Marrakech",  href: "/search?city=Marrakech",  top: "44%", left: "59%" },
-  { city: "Agadir",     href: "/search?city=Agadir",     top: "50%", left: "36%" },
+  { city: "Tanger",     href: "/map?city=Tanger",     top: "27%", left: "64%" },
+  { city: "Fès",        href: "/map?city=F%C3%A8s",   top: "35%", left: "73%" },
+  { city: "Rabat",      href: "/map?city=Rabat",      top: "33%", left: "50%" },
+  { city: "Casablanca", href: "/map?city=Casablanca", top: "37%", left: "46%" },
+  { city: "Marrakech",  href: "/map?city=Marrakech",  top: "44%", left: "59%" },
+  { city: "Agadir",     href: "/map?city=Agadir",     top: "50%", left: "36%" },
 ];
 
 // Zones cliquables sur les lignes "Explorer [Ville]" mobile
 const mobileCityRows = [
-  { city: "Casablanca", href: "/search?city=Casablanca", top: "61.5%", height: "5.8%" },
-  { city: "Rabat",      href: "/search?city=Rabat",      top: "67.3%", height: "5.8%" },
-  { city: "Tanger",     href: "/search?city=Tanger",     top: "73.1%", height: "5.8%" },
-  { city: "Fès",        href: "/search?city=F%C3%A8s",   top: "78.9%", height: "5.8%" },
-  { city: "Marrakech",  href: "/search?city=Marrakech",  top: "84.7%", height: "5.8%" },
-  { city: "Agadir",     href: "/search?city=Agadir",     top: "90.5%", height: "5.8%" },
+  { city: "Casablanca", href: "/map?city=Casablanca", top: "61.5%", height: "5.8%" },
+  { city: "Rabat",      href: "/map?city=Rabat",      top: "67.3%", height: "5.8%" },
+  { city: "Tanger",     href: "/map?city=Tanger",     top: "73.1%", height: "5.8%" },
+  { city: "Fès",        href: "/map?city=F%C3%A8s",   top: "78.9%", height: "5.8%" },
+  { city: "Marrakech",  href: "/map?city=Marrakech",  top: "84.7%", height: "5.8%" },
+  { city: "Agadir",     href: "/map?city=Agadir",     top: "90.5%", height: "5.8%" },
 ];
 
 const ALL_CITIES = [
-  { city: "Casablanca", href: "/search?city=Casablanca" },
-  { city: "Rabat",      href: "/search?city=Rabat" },
-  { city: "Tanger",     href: "/search?city=Tanger" },
-  { city: "Fès",        href: "/search?city=F%C3%A8s" },
-  { city: "Marrakech",  href: "/search?city=Marrakech" },
-  { city: "Agadir",     href: "/search?city=Agadir" },
+  { city: "Casablanca", href: "/map?city=Casablanca" },
+  { city: "Rabat",      href: "/map?city=Rabat" },
+  { city: "Tanger",     href: "/map?city=Tanger" },
+  { city: "Fès",        href: "/map?city=F%C3%A8s" },
+  { city: "Marrakech",  href: "/map?city=Marrakech" },
+  { city: "Agadir",     href: "/map?city=Agadir" },
 ];
 
 export function SignatureMapSection() {

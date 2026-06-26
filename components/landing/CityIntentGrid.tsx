@@ -24,11 +24,11 @@ const collageZones: CityZone[] = [
 
 // Zones cliquables sur le collage mobile (image 941×1672)
 const mobileCollageZones: CityZone[] = [
-  { slug: "casablanca", left: "0%", top: "26.5%", width: "100%", height: "13.5%" },
-  { slug: "marrakech",  left: "0%", top: "40.0%", width: "100%", height: "13.5%" },
-  { slug: "rabat",      left: "0%", top: "53.5%", width: "100%", height: "13.5%" },
-  { slug: "tanger",     left: "0%", top: "67.0%", width: "100%", height: "13.5%" },
-  { slug: "agadir",     left: "0%", top: "80.5%", width: "100%", height: "13.5%" },
+  { slug: "casablanca", left: "0%", top: "21%",   width: "100%", height: "13.5%" },
+  { slug: "marrakech",  left: "0%", top: "34.5%", width: "100%", height: "13.5%" },
+  { slug: "rabat",      left: "0%", top: "48%",   width: "100%", height: "13.5%" },
+  { slug: "tanger",     left: "0%", top: "61.5%", width: "100%", height: "13.5%" },
+  { slug: "agadir",     left: "0%", top: "75%",   width: "100%", height: "13.5%" },
 ];
 
 function getCityAriaLabel(city: CityConfig) {
