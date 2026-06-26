@@ -3,6 +3,7 @@ import { MarketPulse } from "@/components/landing/MarketPulse";
 import { WhySection } from "@/components/landing/WhySection";
 import { DataProofBlock } from "@/components/landing/DataProofBlock";
 import { CityIntentGrid } from "@/components/landing/CityIntentGrid";
+import { SignatureMapSection } from "@/components/landing/SignatureMapSection";
 import { ListingPreview } from "@/components/landing/ListingPreview";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { MreTrustSection } from "@/components/landing/MreTrustSection";
@@ -20,6 +21,7 @@ export default async function HomePage() {
       <Reveal><WhySection /></Reveal>
       <DataProofBlock />
       <Reveal><CityIntentGrid /></Reveal>
+      <SignatureMapSection />
       <Reveal><ListingPreview /></Reveal>
       <Reveal><HowItWorks /></Reveal>
       <Reveal><MreTrustSection /></Reveal>
