@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import type { Map as MapLibreMap, Marker } from "maplibre-gl";
+import Image from "next/image";
 import Link from "next/link";
 import type {
   Listing,
@@ -19,6 +20,7 @@ import {
   type MapFilters,
 } from "@/lib/map/listing-map";
 import { getMarketReference } from "@/lib/market/get-market-reference";
+import { CITIES } from "@/lib/cities";
 import { MapBottomSheet } from "./MapBottomSheet";
 import { MapSidePanel } from "./MapSidePanel";
 
@@ -171,6 +173,24 @@ export function MapExperience({ listings, initialFilters, totalAnalyzed, positio
     ...initialFilters,
   });
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // City overlay — shown on initial load when a city is pre-selected via URL
+  const initialCityConfig = useMemo(
+    () => CITIES.find((c) => c.label.toLowerCase() === (initialFilters?.city ?? "").toLowerCase()),
+    // stable — derived from SSR prop, never changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+  const [showCityOverlay, setShowCityOverlay] = useState(() => !!initialCityConfig);
+  const [overlayExiting, setOverlayExiting] = useState(false);
+
+  const dismissOverlay = useCallback(() => {
+    setOverlayExiting(true);
+    setTimeout(() => {
+      setShowCityOverlay(false);
+      setOverlayExiting(false);
+    }, 400);
+  }, []);
 
   const cities = useMemo(() => getCitiesWithGeo(listings), [listings]);
   const propertyTypes = useMemo(() => getPropertyTypes(listings), [listings]);
@@ -385,7 +405,7 @@ export function MapExperience({ listings, initialFilters, totalAnalyzed, positio
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100vh - 64px)" }}>
+    <div className="relative flex flex-col" style={{ height: "calc(100vh - 64px)" }}>
       {/* ── Filter bar ──────────────────────────────────────────────────── */}
       <section className="flex-shrink-0 border-b border-[#eadfca] bg-deepblue text-white z-10">
         <div className="mx-auto max-w-[1480px] px-4 py-4 sm:px-6">
@@ -611,6 +631,61 @@ export function MapExperience({ listings, initialFilters, totalAnalyzed, positio
         listing={selectedListing}
         onDismiss={() => setSelectedId(null)}
       />
+
+      {/* ── City overlay — aparece cuando se llega desde la sección carte intelligente ── */}
+      {showCityOverlay && initialCityConfig && (
+        <div
+          className="absolute inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
+          style={{ transition: "opacity 0.4s ease", opacity: overlayExiting ? 0 : 1 }}
+          onClick={dismissOverlay}
+        >
+          {/* Background image */}
+          {initialCityConfig.image && (
+            <Image
+              src={initialCityConfig.image}
+              alt=""
+              fill
+              className="absolute inset-0 object-cover"
+              priority
+            />
+          )}
+          {/* Gradient scrim */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(to bottom, ${initialCityConfig.overlayFrom} 0%, rgba(7,27,51,0.96) 100%)`,
+            }}
+          />
+          {/* Content */}
+          <div
+            className="relative z-10 flex flex-col items-center px-6 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-[#C2A368]">
+              Carte immobilière · AkarFinder
+            </p>
+            <h1 className="mt-4 text-[3.2rem] font-extrabold leading-[1.02] tracking-[-0.04em] text-white sm:text-[4.5rem]">
+              {initialCityConfig.label}
+            </h1>
+            <p className="mt-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#C2A368]/85">
+              {initialCityConfig.tag}
+            </p>
+            <p className="mt-5 max-w-[320px] text-[15px] leading-relaxed text-white/68">
+              {initialCityConfig.description}
+            </p>
+            <button
+              type="button"
+              onClick={dismissOverlay}
+              className="mt-8 rounded-full bg-[#9B7838] px-8 py-3.5 text-[14px] font-extrabold text-white shadow-[0_8px_24px_rgba(155,120,56,0.45)] transition hover:bg-[#b08c44] hover:shadow-[0_8px_32px_rgba(155,120,56,0.6)]"
+            >
+              Explorer {initialCityConfig.label} sur la carte →
+            </button>
+            <p className="mt-4 text-[11px] text-white/35">
+              ou appuyez n&apos;importe où pour passer
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
