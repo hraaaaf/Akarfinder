@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="mk-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a0602"/>
+      <stop offset="25%" stop-color="#2c0d05"/>
+      <stop offset="55%" stop-color="#5c2208"/>
+      <stop offset="80%" stop-color="#8a3c10"/>
+      <stop offset="100%" stop-color="#a84e18"/>
+    </linearGradient>
+    <linearGradient id="mk-horizon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c4640a" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#8a3c10" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="mk-ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7a3010"/>
+      <stop offset="100%" stop-color="#1a0602"/>
+    </linearGradient>
+    <radialGradient id="mk-sun" cx="62%" cy="72%" r="22%">
+      <stop offset="0%" stop-color="#f09040" stop-opacity="0.45"/>
+      <stop offset="50%" stop-color="#c0600a" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#8a3c10" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="600" height="800" fill="url(#mk-sky)"/>
+  <!-- Sunset glow -->
+  <rect width="600" height="800" fill="url(#mk-sun)"/>
+
+  <!-- Horizon atmospheric haze -->
+  <rect x="0" y="480" width="600" height="120" fill="url(#mk-horizon)"/>
+
+  <!-- Atlas Mountains silhouette (background, subtle) -->
+  <polygon points="0,540 80,480 160,510 240,462 320,490 400,450 480,478 560,460 600,472 600,570 0,570" fill="#3d1205" opacity="0.7"/>
+  <polygon points="0,570 0,620 600,620 600,570 560,568 480,570 400,566 320,572 240,568 160,572 80,568 0,570" fill="#2a0d04"/>
+
+  <!-- Medina walls / rooftops -->
+  <rect x="0" y="590" width="600" height="100" fill="#1a0802"/>
+
+  <!-- Medina rooftops detailed -->
+  <rect x="0" y="572" width="70" height="38" fill="#280d06"/>
+  <rect x="64" y="560" width="55" height="50" fill="#1e0904"/>
+  <rect x="112" y="575" width="45" height="35" fill="#230b05"/>
+  <rect x="150" y="565" width="60" height="45" fill="#1e0804"/>
+
+  <!-- Koutoubia Mosque - center -->
+  <!-- Base / prayer hall -->
+  <rect x="230" y="548" width="140" height="82" fill="#1c0905"/>
+  <!-- Arcade arches suggestion -->
+  <path d="M 240 570 Q 250 555 260 570" fill="none" stroke="#300e06" stroke-width="2"/>
+  <path d="M 265 570 Q 275 555 285 570" fill="none" stroke="#300e06" stroke-width="2"/>
+  <path d="M 315 570 Q 325 555 335 570" fill="none" stroke="#300e06" stroke-width="2"/>
+  <path d="M 340 570 Q 350 555 360 570" fill="none" stroke="#300e06" stroke-width="2"/>
+
+  <!-- Koutoubia Minaret - iconic octagonal tower -->
+  <!-- Main shaft -->
+  <rect x="290" y="330" width="20" height="218" fill="#1e0a05"/>
+  <!-- Upper shaft (smaller) -->
+  <rect x="292" y="255" width="16" height="78" fill="#220c06"/>
+  <!-- Decorative band -->
+  <rect x="290" y="362" width="20" height="3" fill="#6a2808" opacity="0.6"/>
+  <rect x="290" y="408" width="20" height="3" fill="#6a2808" opacity="0.6"/>
+  <rect x="290" y="454" width="20" height="3" fill="#6a2808" opacity="0.6"/>
+  <rect x="290" y="498" width="20" height="3" fill="#6a2808" opacity="0.6"/>
+  <!-- Lantern / crown -->
+  <rect x="290" y="242" width="20" height="16" fill="#2a1008"/>
+  <polygon points="287,244 313,244 300,222" fill="#341408"/>
+  <!-- Finials (stacked balls) -->
+  <circle cx="300" cy="220" r="5" fill="#3c1808"/>
+  <circle cx="300" cy="211" r="4" fill="#401a08"/>
+  <circle cx="300" cy="203" r="3" fill="#44200a"/>
+
+  <!-- Decorative window lights on minaret -->
+  <rect x="295" y="350" width="10" height="7" rx="5" ry="5" fill="#f09040" opacity="0.25"/>
+  <rect x="295" y="400" width="10" height="7" rx="5" ry="5" fill="#f09040" opacity="0.20"/>
+  <rect x="295" y="450" width="10" height="7" rx="5" ry="5" fill="#f09040" opacity="0.18"/>
+
+  <!-- Palm trees -->
+  <!-- Left palm -->
+  <rect x="195" y="510" width="6" height="100" fill="#2a1005"/>
+  <!-- Palm fronds left -->
+  <path d="M 198 512 Q 165 490 148 468" fill="none" stroke="#2a1a08" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 198 518 Q 172 505 158 492" fill="none" stroke="#2a1a08" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M 198 512 Q 220 488 228 465" fill="none" stroke="#2a1a08" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 198 518 Q 208 505 212 492" fill="none" stroke="#2a1a08" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M 198 514 Q 192 484 190 460" fill="none" stroke="#2a1a08" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- Right palm -->
+  <rect x="399" y="520" width="6" height="90" fill="#2a1005"/>
+  <path d="M 402 522 Q 370 500 355 480" fill="none" stroke="#2a1a08" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M 402 522 Q 418 498 425 478" fill="none" stroke="#2a1a08" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M 402 524 Q 426 510 435 498" fill="none" stroke="#2a1a08" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 402 522 Q 398 494 396 472" fill="none" stroke="#2a1a08" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- More rooftops right -->
+  <rect x="370" y="568" width="65" height="42" fill="#200a04"/>
+  <rect x="428" y="558" width="50" height="52" fill="#1c0803"/>
+  <rect x="472" y="572" width="60" height="38" fill="#210b05"/>
+  <rect x="525" y="562" width="75" height="48" fill="#1e0904"/>
+</svg>

@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/Container";
 import { CITIES, type CityConfig } from "@/lib/cities";
 
 const COLLAGE_IMAGE = "/images/cities/immobilier-dans-les-grandes-villes-du-maroc.png";
+const COLLAGE_MOBILE_IMAGE = "/images/cities/immobilier-dans-les-grandes-villes-du-maroc-mobile.png";
 
 type CityZone = {
   slug: CityConfig["slug"];
@@ -19,6 +20,15 @@ const collageZones: CityZone[] = [
   { slug: "rabat", left: "50.4%", top: "15.4%", width: "20.7%", height: "45.4%" },
   { slug: "tanger", left: "72.2%", top: "15.4%", width: "20.7%", height: "45.4%" },
   { slug: "agadir", left: "17.4%", top: "62.6%", width: "64.1%", height: "26.2%" },
+];
+
+// Zones cliquables sur le collage mobile (image 941×1672)
+const mobileCollageZones: CityZone[] = [
+  { slug: "casablanca", left: "0%", top: "26.5%", width: "100%", height: "13.5%" },
+  { slug: "marrakech",  left: "0%", top: "40.0%", width: "100%", height: "13.5%" },
+  { slug: "rabat",      left: "0%", top: "53.5%", width: "100%", height: "13.5%" },
+  { slug: "tanger",     left: "0%", top: "67.0%", width: "100%", height: "13.5%" },
+  { slug: "agadir",     left: "0%", top: "80.5%", width: "100%", height: "13.5%" },
 ];
 
 function getCityAriaLabel(city: CityConfig) {
@@ -98,32 +108,57 @@ export function CityIntentGrid() {
         </div>
 
         <div className="md:hidden">
-          <div className="mb-12">
-            <span className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-[#9B7838]">
-              Villes principales
-            </span>
-            <h2 className="mt-4 text-[2rem] font-extrabold leading-[1.08] tracking-[-0.03em] text-[#071B33]">
-              L&apos;immobilier dans les grandes villes du Maroc.
-            </h2>
-          </div>
+          <div className="relative overflow-hidden rounded-[2rem] shadow-[0_24px_80px_rgba(155,120,56,0.18)]">
+            <Image
+              src={COLLAGE_MOBILE_IMAGE}
+              alt="L'immobilier dans les grandes villes du Maroc : Casablanca, Marrakech, Rabat, Tanger et Agadir."
+              width={941}
+              height={1672}
+              priority={false}
+              className="h-auto w-full"
+              sizes="(max-width: 767px) 100vw, 480px"
+            />
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            {CITIES.slice(0, 4).map((city) => (
-              <CityCard key={city.slug} city={city} tall />
-            ))}
-            <div className="col-span-2">
-              <CityCard city={CITIES[4]} tall={false} />
-            </div>
-          </div>
+            {mobileCollageZones.map((zone) => {
+              const city = CITIES.find((item) => item.slug === zone.slug);
+              if (!city) return null;
+              return (
+                <Link
+                  key={city.slug}
+                  href={city.href}
+                  aria-label={getCityAriaLabel(city)}
+                  title={getCityAriaLabel(city)}
+                  className="group absolute block cursor-pointer"
+                  style={{
+                    left: zone.left,
+                    top: zone.top,
+                    width: zone.width,
+                    height: zone.height,
+                  }}
+                >
+                  <span className="absolute inset-0 bg-transparent transition duration-300 group-hover:bg-white/[0.06]" />
+                </Link>
+              );
+            })}
 
-          <div className="mt-10 text-center">
+            {/* CTA button zone */}
             <Link
               href="/search"
-              className="inline-flex items-center gap-2 rounded-full border border-[#9B7838]/50 bg-white px-8 py-3 text-[14px] font-bold text-[#9B7838] shadow-[0_2px_12px_rgba(155,120,56,0.12)] transition hover:border-[#9B7838] hover:bg-[#fef8ed] hover:shadow-[0_4px_20px_rgba(155,120,56,0.2)]"
-            >
-              Voir les biens analyses →
-            </Link>
+              aria-label="Voir les biens analysés"
+              className="absolute bottom-[2.5%] left-1/2 h-[6%] w-[72%] -translate-x-1/2 cursor-pointer rounded-full"
+            />
           </div>
+
+          <ul className="sr-only">
+            {CITIES.map((city) => (
+              <li key={city.slug}>
+                <Link href={city.href}>{getCityAriaLabel(city)}</Link>
+              </li>
+            ))}
+            <li>
+              <Link href="/search">Voir les biens analysés</Link>
+            </li>
+          </ul>
         </div>
       </Container>
     </section>

@@ -49,8 +49,8 @@ export type CitySpotlight = {
 export const siteCopy = {
   badge: "Version bêta",
   brand: "AkarFinder",
-  headline: "La carte intelligente de l'immobilier marocain",
-  subheadline: "Cherchez moins. Trouvez mieux."
+  headline: "Le 1er moteur de recherche immobilier au Maroc.",
+  subheadline: "Tout l'immobilier marocain dans un seul endroit : explorez, comparez et contactez avec plus de confiance."
 };
 
 export const navItems: NavItem[] = [
@@ -59,7 +59,7 @@ export const navItems: NavItem[] = [
   { href: "/louer", label: "Louer" },
   { href: "/neuf", label: "Neuf" },
   { href: "/map", label: "Carte" },
-  { href: "/search", label: "Alertes" },
+  { href: "/search", label: "Recherche" },
 ];
 
 export const searchTabs = ["Achat", "Location", "Neuf"] as const;

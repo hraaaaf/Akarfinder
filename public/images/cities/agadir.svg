@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="ag-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#020c18"/>
+      <stop offset="30%" stop-color="#051c32"/>
+      <stop offset="62%" stop-color="#083a56"/>
+      <stop offset="100%" stop-color="#0e5272"/>
+    </linearGradient>
+    <linearGradient id="ag-ocean" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0b3a58"/>
+      <stop offset="60%" stop-color="#062030"/>
+      <stop offset="100%" stop-color="#020c18"/>
+    </linearGradient>
+    <linearGradient id="ag-beach" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0e4a68"/>
+      <stop offset="100%" stop-color="#0a2e44"/>
+    </linearGradient>
+    <radialGradient id="ag-moon" cx="68%" cy="22%" r="16%">
+      <stop offset="0%" stop-color="#a8cce8" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#051c32" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ag-glow" cx="50%" cy="70%" r="40%">
+      <stop offset="0%" stop-color="#1060a0" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#083a56" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="600" height="800" fill="url(#ag-sky)"/>
+  <rect width="600" height="800" fill="url(#ag-moon)"/>
+  <rect width="600" height="800" fill="url(#ag-glow)"/>
+
+  <!-- Stars -->
+  <circle cx="42" cy="55" r="1.1" fill="#b8d4ea" opacity="0.60"/>
+  <circle cx="120" cy="38" r="0.8" fill="#b8d4ea" opacity="0.52"/>
+  <circle cx="185" cy="72" r="1.0" fill="#b8d4ea" opacity="0.55"/>
+  <circle cx="260" cy="28" r="0.7" fill="#b8d4ea" opacity="0.45"/>
+  <circle cx="155" cy="115" r="0.8" fill="#b8d4ea" opacity="0.38"/>
+  <circle cx="340" cy="52" r="0.9" fill="#b8d4ea" opacity="0.48"/>
+  <circle cx="500" cy="40" r="1.2" fill="#b8d4ea" opacity="0.62"/>
+  <circle cx="548" cy="78" r="0.8" fill="#b8d4ea" opacity="0.48"/>
+  <circle cx="85" cy="178" r="0.7" fill="#b8d4ea" opacity="0.35"/>
+  <circle cx="442" cy="100" r="0.8" fill="#b8d4ea" opacity="0.40"/>
+  <circle cx="310" cy="88" r="0.7" fill="#b8d4ea" opacity="0.35"/>
+
+  <!-- Moon -->
+  <circle cx="408" cy="110" r="21" fill="#d8eaf8" opacity="0.82"/>
+  <circle cx="417" cy="104" r="16" fill="#030c1a" opacity="0.96"/>
+
+  <!-- Kasbah hill silhouette (left, elevated) -->
+  <polygon points="0,420 60,340 130,310 200,340 240,380 260,430 260,580 0,580" fill="#040e1c"/>
+  <!-- Kasbah ruins on hilltop -->
+  <rect x="80" y="318" width="90" height="35" fill="#060f20"/>
+  <!-- Battlement details on kasbah -->
+  <rect x="82" y="308" width="10" height="14" fill="#07112a"/>
+  <rect x="100" y="308" width="10" height="14" fill="#07112a"/>
+  <rect x="118" y="308" width="10" height="14" fill="#07112a"/>
+  <rect x="136" y="308" width="10" height="14" fill="#07112a"/>
+  <rect x="154" y="308" width="10" height="14" fill="#07112a"/>
+  <!-- Wall along hill -->
+  <path d="M 60 342 Q 80 330 130 312 Q 160 302 200 342" fill="none" stroke="#07112a" stroke-width="4"/>
+
+  <!-- Hill terrain right slope down -->
+  <polygon points="260,430 340,480 380,500 380,580 260,580" fill="#050c1a"/>
+
+  <!-- City / resort buildings (center-right, flat coastal area) -->
+  <!-- Beachfront towers -->
+  <rect x="340" y="460" width="30" height="150" fill="#060e1e"/>
+  <rect x="365" y="480" width="28" height="130" fill="#07101f"/>
+  <rect x="388" y="470" width="32" height="140" fill="#060d1c"/>
+  <rect x="415" y="490" width="26" height="120" fill="#070f1e"/>
+  <rect x="436" y="475" width="30" height="135" fill="#060e1c"/>
+  <rect x="461" y="488" width="28" height="122" fill="#07101e"/>
+  <rect x="484" y="462" width="34" height="148" fill="#060d1c"/>
+  <rect x="513" y="478" width="28" height="132" fill="#070f1e"/>
+  <rect x="536" y="468" width="35" height="142" fill="#060e1c"/>
+  <rect x="566" y="484" width="34" height="126" fill="#07101f"/>
+
+  <!-- Building lights (windows) -->
+  <rect x="348" y="500" width="6" height="4" fill="#2868b0" opacity="0.30"/>
+  <rect x="348" y="520" width="6" height="4" fill="#2868b0" opacity="0.25"/>
+  <rect x="348" y="540" width="6" height="4" fill="#2868b0" opacity="0.22"/>
+  <rect x="396" y="508" width="6" height="4" fill="#2868b0" opacity="0.28"/>
+  <rect x="396" y="528" width="6" height="4" fill="#2868b0" opacity="0.22"/>
+  <rect x="444" y="495" width="6" height="4" fill="#2868b0" opacity="0.30"/>
+  <rect x="444" y="515" width="6" height="4" fill="#2868b0" opacity="0.25"/>
+  <rect x="492" y="500" width="6" height="4" fill="#2868b0" opacity="0.28"/>
+  <rect x="492" y="522" width="6" height="4" fill="#2868b0" opacity="0.22"/>
+  <rect x="544" y="488" width="6" height="4" fill="#2868b0" opacity="0.30"/>
+  <rect x="544" y="510" width="6" height="4" fill="#2868b0" opacity="0.25"/>
+
+  <!-- Bay crescent beach (curved) -->
+  <path d="M 260 610 Q 380 595 600 615 L 600 640 Q 380 622 260 635 Z" fill="#0a2e46"/>
+
+  <!-- Ocean / Atlantic -->
+  <rect x="0" y="610" width="600" height="190" fill="url(#ag-ocean)"/>
+
+  <!-- Bay arc city lights reflection -->
+  <path d="M 260 628 Q 380 612 600 630" fill="none" stroke="#1a5888" stroke-width="1.5" opacity="0.22"/>
+
+  <!-- Moon reflection -->
+  <ellipse cx="408" cy="640" rx="35" ry="7" fill="#b0cce8" opacity="0.09"/>
+  <ellipse cx="408" cy="660" rx="20" ry="4" fill="#b0cce8" opacity="0.06"/>
+
+  <!-- Kasbah lights -->
+  <circle cx="108" cy="335" r="2" fill="#4080c0" opacity="0.40"/>
+  <circle cx="130" cy="328" r="2" fill="#4080c0" opacity="0.35"/>
+  <circle cx="152" cy="332" r="2" fill="#4080c0" opacity="0.30"/>
+
+  <!-- Coastal road lights arc -->
+  <path d="M 270 598 Q 380 585 560 600" fill="none" stroke="#2868a0" stroke-width="1.5" opacity="0.28"/>
+  <path d="M 280 604 Q 380 592 555 606" fill="none" stroke="#2868a0" stroke-width="1" opacity="0.18"/>
+</svg>

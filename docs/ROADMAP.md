@@ -1,4 +1,211 @@
 ROADMAP.md — AkarFinder Roadmap Produit & Business
+Version : 2026-06-26 — P17B-0 Cadrage Packs Promoteurs completed
+
+====================================================
+P17B-0 — CADRAGE PACKS PROMOTEURS — Completed 2026-06-26
+
+Statut : COMPLÉTÉE — documentation et cadrage produit uniquement
+Objectif : Définir sans pricing chiffré les 4 packs promoteurs AkarFinder,
+           la matrice des droits, les métriques reporting futures et le wording autorisé.
+Nature : Documentation uniquement. Aucun fichier applicatif modifié.
+         Aucun paiement. Aucune auth. Supabase untouched. DATA-A untouched.
+
+Livré :
+
+---------------------------------------------------------------------
+PACKS PROMOTEURS AKARFINDER — CADRAGE V1 (sans prix chiffré)
+---------------------------------------------------------------------
+
+Pack Starter
+Destination : promoteur débutant, 1 projet, découverte de la plateforme.
+* Page promoteur dédiée (/promoteurs/[slug])
+* 1 page projet (/projets/[slug])
+* CTA WhatsApp ou formulaire de rappel
+* Formulaire lead simple (nom, téléphone, message, consentement)
+* Badge "Projet partenaire" sur la page projet
+* Mention "Données fournies par le promoteur"
+* Visibilité standard (pas de mise en avant /neuf)
+* Pas de reporting (inclus ultérieurement)
+
+Pack Pro
+Destination : promoteur actif avec plusieurs projets, besoin de leads qualifiés.
+* Page promoteur dédiée (/promoteurs/[slug])
+* Jusqu'à 3 pages projets (/projets/[slug])
+* CTA WhatsApp + formulaire lead
+* Badge "Projet partenaire" sur toutes les pages projets
+* Reporting simple : vues pages, clics WhatsApp, leads reçus (quand implémenté)
+* Statistiques vues / clics / formulaires envoyés
+* Mention "Données fournies par le promoteur" sur chaque page
+
+Pack Premium
+Destination : promoteur établi, programmes majeurs, visibilité maximale.
+* Page promoteur dédiée (/promoteurs/[slug])
+* Nombre de pages projets étendu
+* Mise en avant sur /neuf (bloc "Projets partenaires")
+* Badge "Projet partenaire" renforcé
+* Landing projet premium (galerie autorisée si partner_full)
+* Campagne lead-gen dédiée
+* Reporting avancé : leads qualifiés, source, campagne, période
+* Export leads (quand implémenté)
+* Visibilité renforcée dans les résultats de recherche
+
+Pack Expo / Launch
+Destination : lancement commercial d'un projet, présence salon (Sakan Expo).
+* Page projet dédiée (/projets/[slug])
+* QR code salon pointant vers la page projet
+* Formulaire lead rapide adapté au contexte salon
+* Reporting post-événement : leads générés, profils, source="sakan_expo"
+* Campagne dédiée sur la durée de l'événement
+* Accompagnement lancement commercial AkarFinder
+* Mention source_channel = "sakan_expo" sur chaque lead tracé
+
+---------------------------------------------------------------------
+MATRICE DES DROITS PAR PACK
+---------------------------------------------------------------------
+
+Droit / Feature             | Starter | Pro | Premium | Expo/Launch
+----------------------------|---------|-----|---------|------------
+Page promoteur (/promoteurs)| ✅      | ✅  | ✅      | —
+Page(s) projet (/projets)   | 1       | ≤ 3 | Étendu | 1 dédiée
+Nombre de projets           | 1       | ≤ 3 | Étendu | 1
+CTA WhatsApp                | ✅      | ✅  | ✅      | ✅
+Brochure PDF                | —       | ✅  | ✅      | ✅
+Formulaire lead             | Simple  | ✅  | ✅      | Rapide
+Mise en avant /neuf         | —       | —   | ✅      | —
+Reporting                   | —       | Simple | Avancé | Post-event
+QR code salon               | —       | —   | —       | ✅
+Campagne événementielle     | —       | —   | ✅      | ✅
+Export leads                | —       | —   | ✅      | ✅
+Accompagnement lancement    | —       | —   | —       | ✅
+
+Note : aucun prix chiffré défini à ce stade (P17B-0).
+Note : aucun volume de leads garanti. "leads qualifiés" = leads consentis avec profil complet.
+
+---------------------------------------------------------------------
+MÉTRIQUES REPORTING FUTURES
+---------------------------------------------------------------------
+
+Objectifs produit futurs — non tous implémentés à ce stade.
+Implémentation progressive à mesure que DATA-F et P17B full avancent.
+
+* vues page promoteur (par période)
+* vues page projet (par période)
+* clics CTA WhatsApp (comptage événement click)
+* demandes de rappel (formulaire rappel soumis)
+* formulaires lead envoyés (total)
+* leads qualifiés (score chaud/tiède/froid)
+* source du lead (web / carte / Sakan Expo / QR scan / /neuf)
+* campagne associée (si campagne dédiée active)
+* QR code salon (source_channel = "sakan_expo" tracé)
+* période de mesure (jour / semaine / mois / post-événement)
+
+Wording obligatoire dans les rapports :
+"Données indicatives issues de l'analyse AkarFinder — non officielles."
+"Leads consentis — non garantis en volume."
+
+---------------------------------------------------------------------
+WORDING AUTORISÉ / INTERDIT — PACKS PROMOTEURS
+---------------------------------------------------------------------
+
+Autorisé
+* Projet partenaire
+* Données fournies par le promoteur
+* leads qualifiés
+* reporting
+* campagne dédiée
+* page projet
+* page promoteur
+* visibilité renforcée
+* leads consentis
+* reporting indicatif
+* biens positionnés
+* annonces analysées
+
+Interdit
+* leads garantis
+* ventes garanties
+* projet vérifié
+* promoteur certifié
+* prix officiel
+* résultats garantis
+* exclusivité garantie
+* audience certifiée
+* données officielles
+* partenaire officiel (sans accord signé)
+
+Bilan
+* Packs Starter/Pro/Premium/Expo/Launch documentés : OUI
+* Matrice droits/livrables créée : OUI
+* Métriques reporting futures documentées : OUI
+* Prix chiffré absent : OUI
+* Promesse de leads garantis absente : OUI
+* Fichiers applicatifs modifiés : NON
+* Supabase untouched : OUI
+* Scraper untouched : OUI
+* DATA-A untouched : OUI
+* P17B full started : NON
+* Tests lancés : NON (documentation uniquement)
+* Vercel déployé : NON (documentation uniquement)
+
+Dettes restantes P17B-0
+* P17B full (implémentation packs dans le produit) : Not started
+* Reporting réel (métriques live) : dépend de DATA-F
+* Export leads : dépend de P17B full + auth
+* QR code salon : dépend de P17B full (source_channel déjà tracé dans buyer_leads)
+* Pricing chiffré : à valider avec les premiers partenaires avant P17B full
+
+====================================================
+P17A-2 — DÉMO INTERNE PROMOTEURS/PROJETS — Completed 2026-06-26
+
+Statut : COMPLÉTÉE
+Objectif : Démo interne non publique via ?preview=demo.
+Build : OK · Tests : 452 scrapers + 51 API (0 fail)
+URLs demo : /promoteurs/promoteur-demo-akarfinder?preview=demo · /projets/residence-demo-akarfinder?preview=demo
+
+Livré :
+* getDemoPromoter / getDemoPromoterProjects / getDemoProject — getters dédiés demo
+* app/promoteurs/[slug]/page.tsx — force-dynamic + handler ?preview=demo
+* app/projets/[slug]/page.tsx — force-dynamic + handler ?preview=demo
+* PromoterPageShell — bandeau ⚠ + CTA "Demander une page promoteur" en mode démo
+* ProjectPageShell — bandeau ⚠ + lien retour promoteur avec ?preview=demo
+* 14 tests P17A-2 demo (isolation, qualité données, wording)
+* Sans preview → 404 propre · Avec preview=demo → 200 + bandeau orange
+* noindex/nofollow sur pages demo · Aucun faux partenaire public
+* Supabase untouched · Scraper untouched · P17B untouched · DATA-A untouched
+
+P17A full remains In progress (pas de vraie page active publique).
+
+====================================================
+HOTFIX-MAP-UX — Completed 2026-06-26
+
+Statut : COMPLÉTÉE
+Objectif : Carte cliquable, géographiquement crédible, sans frontières internes.
+
+Livré :
+* Cluster markers → liens <a href="/search?city=City"> avec aria-label
+* Titre "Carte AkarFinder · MapLibre" → "Carte indicative · Repères simplifiés"
+* Disclaimer → "Carte indicative — repères simplifiés pour l'exploration"
+* Code pour masquer les layers de frontières administratives internes après map load
+* Positions des villes inchangées (déjà correctes via CITY_FLY_TARGETS avec vraies coordonnées)
+* Aucune nouvelle lib cartographique · Supabase untouched · Scraper untouched
+
+====================================================
+HOTFIX-NAV-INTENT — Completed 2026-06-26
+
+Statut : COMPLÉTÉE
+Objectif : Navigation mobile intentions + contraste desktop corrigé.
+
+Livré :
+* SiteHeader — contraste corrigé : isDark || transparentActive → isDark || isTransparent
+  (fix "black on black" au scroll sur homepage transparent header)
+* Chips mobile ajoutées dans SiteHeader (lg:hidden) :
+  Acheter / Louer / Neuf / Promoteurs / Recherche
+  → Horizontal scroll, aria-labels, focus ring, état actif deepblue/bronze
+* BrandLogo variant corrigé sur header scrollé transparent
+* Espace Pro + "Se connecter" contraste corrigé pour tous états transparency
+* Supabase untouched · Scraper untouched · P17A/P17B untouched · DATA-A untouched
+
+====================================================
 Version : 2026-06-25 — UI-PREMIUM-HOMEPAGE completed
 
 ====================================================
@@ -1754,9 +1961,66 @@ Guardrails respectés
 * Pas de /promoteurs/[slug], /projets/[slug], pricing, auth
 
 ----------------------------------------------------
+P17A-0 — PRÉFLIGHT PAGES PROMOTEURS PARTENAIRES
+
+Statut : Complété 2026-06-25.
+Périmètre : cadrage documentaire uniquement. Aucune page dynamique créée.
+
+Contrats définis
+* Promoter : id / slug / name / logo_url? / city / description / contact_whatsapp? /
+  contact_email? / website_url? / partner_status (none|partner|featured) /
+  source_note / created_at / updated_at
+* NewProject : id / slug / promoter_id / name / city / neighborhood? / address_label? /
+  price_from / currency / property_types[] / typologies[] / surfaces{min,max,unit} /
+  delivery_date_label? / brochure_url? / main_image_url? / gallery_urls? /
+  latitude? / longitude? / project_status (upcoming|active|delivered|paused) /
+  partner_badge / lead_cta_type (whatsapp|callback|form) /
+  source_access_level / image_permission_status / disclaimer
+
+Pages cibles cadrées
+* /promoteurs/[slug] : 7 blocs (hero, présentation, projets actifs, villes/quartiers,
+  CTA whatsapp/rappel, reporting futur placeholder, disclaimer)
+* /projets/[slug] : 12 blocs (hero, prix à partir de, typologies, surfaces,
+  localisation, brochure, rappel, WhatsApp, biens similaires, proximité,
+  package score, disclaimer)
+
+Stratégie MVP
+* MVP 1 local : seed TypeScript 2-3 promoteurs/projets exemples, pages SSG,
+  contenu clairement "exemple partenaire" dans l'interface, sans Supabase.
+  Alternative validée : attendre vrais partenaires → évite risque wording.
+* MVP 2 Supabase : migration promoteurs/projets, import CSV partenaires,
+  dashboard leads/reporting dans phase ultérieure.
+* Décision MVP 1 vs attente vrais partenaires : à trancher avec le propriétaire
+  avant de lancer P17A full.
+
+Anti-PII
+* contact_whatsapp / contact_email → uniquement depuis formulaire /pro,
+  import CSV partenaire ou accord direct. Jamais depuis scraping annonces publiques.
+
+Wording interdit absent : OUI
+P17A full implementation : Not started
+P17B : Not started
+DATA-A : Not started
+
+Voir détail complet dans docs/SESSION.md (section P17A-0 Préflight).
+
+----------------------------------------------------
 P17A — PAGES PROMOTEURS PARTENAIRES
 
-Statut : Not started.
+Statut : Partiellement complétée (P17A-1 scaffolding livré 2026-06-26).
+Pas de vraie page active publique — en attente d'un vrai partenaire.
+
+P17A-1 livré
+* Routes /promoteurs/[slug] et /projets/[slug] créées (SSG, vides)
+* Data locale typée lib/promoters/ (types, data, getters)
+* PromoterPageShell + ProjectPageShell templates prêts
+* visibility_status active/demo/draft : seul "active" est public
+* 404 propre confirmé pour les entrées demo
+* 14 nouveaux tests (438 scrapers 0 fail · 51 API 0 fail)
+* Build OK ● (SSG 0 pages pré-rendues)
+
+Pour compléter P17A
+→ Ajouter un vrai partenaire avec visibility_status: "active" dans promoters-data.ts
 
 Objectif
 Créer des pages dédiées par promoteur partenaire, affichant leurs projets
@@ -1781,7 +2045,7 @@ Guardrails
 ----------------------------------------------------
 P17B — PACKS PROMOTEURS
 
-Statut : Not started.
+Statut : Not started (P17B-0 cadrage Completed 2026-06-26 — voir section P17B-0 en tête de roadmap).
 
 Objectif
 Offrir des packs payants aux promoteurs pour une visibilité premium sur

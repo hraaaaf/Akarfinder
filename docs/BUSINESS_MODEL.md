@@ -1,5 +1,5 @@
 BUSINESS_MODEL.md — AkarFinder Modèle Économique & Stratégie
-Version : 2026-06-25 — Mise à jour post-P15A / roadmap P15→P21
+Version : 2026-06-26 — Mise à jour P17B-0 Cadrage Packs Promoteurs
 
 Note de cohérence avec la roadmap produit
 * P17A (Pages promoteurs partenaires) et P17B (Packs promoteurs) sont les features produit
@@ -279,6 +279,109 @@ La crédibilité est le produit. Aucun flux de revenu ne peut détruire la confi
 * Score de fiabilité : jamais modifiable par un client payant
 * Prix observé : jamais présenté comme prix officiel ou garanti
 * Lead : jamais vendu sans consentement explicite de l'acheteur
+
+====================================================
+PACKS PROMOTEURS AKARFINDER — CADRAGE V1
+
+Cadré : 2026-06-26 (P17B-0)
+Statut de l'offre : cadrage validé, implémentation (P17B full) : Not started
+Pricing chiffré : non défini à ce stade — à valider avec les premiers partenaires
+Volume de leads : non garanti — jamais promettre un nombre de leads
+
+Pack Starter
+Destination : promoteur débutant, 1 projet, découverte AkarFinder.
+* Page promoteur dédiée (/promoteurs/[slug])
+* 1 page projet (/projets/[slug])
+* CTA WhatsApp ou formulaire de rappel
+* Formulaire lead simple (nom, téléphone, message, consentement)
+* Badge "Projet partenaire"
+* Mention "Données fournies par le promoteur"
+* Visibilité standard — pas de mise en avant /neuf
+
+Pack Pro
+Destination : promoteur actif, plusieurs projets, leads qualifiés.
+* Page promoteur dédiée
+* Jusqu'à 3 pages projets
+* CTA WhatsApp + formulaire lead
+* Badge "Projet partenaire" sur tous les projets
+* Reporting simple : vues, clics WhatsApp, formulaires envoyés (quand implémenté)
+* Mention "Données fournies par le promoteur"
+
+Pack Premium
+Destination : promoteur établi, programmes majeurs, visibilité maximale.
+* Page promoteur dédiée
+* Pages projets étendues
+* Mise en avant sur /neuf (bloc "Projets partenaires")
+* Landing projet premium + galerie (partner_full uniquement)
+* Campagne lead-gen dédiée
+* Reporting avancé : leads qualifiés, source, campagne, période
+* Export leads (quand implémenté)
+* Visibilité renforcée dans les résultats
+
+Pack Expo / Launch
+Destination : lancement projet, présence Sakan Expo ou salon.
+* Page projet dédiée
+* QR code salon → page projet
+* Formulaire lead rapide contexte salon
+* Reporting post-événement : leads, profils, source="sakan_expo"
+* Campagne dédiée pendant l'événement
+* Accompagnement lancement commercial AkarFinder
+* source_channel = "sakan_expo" tracé sur chaque lead
+
+Matrice des droits
+
+Droit / Feature             | Starter | Pro | Premium | Expo/Launch
+----------------------------|---------|-----|---------|------------
+Page promoteur (/promoteurs)| ✅      | ✅  | ✅      | —
+Page(s) projet (/projets)   | 1       | ≤ 3 | Étendu | 1 dédiée
+Nombre de projets           | 1       | ≤ 3 | Étendu | 1
+CTA WhatsApp                | ✅      | ✅  | ✅      | ✅
+Brochure PDF                | —       | ✅  | ✅      | ✅
+Formulaire lead             | Simple  | ✅  | ✅      | Rapide
+Mise en avant /neuf         | —       | —   | ✅      | —
+Reporting                   | —       | Simple | Avancé | Post-event
+QR code salon               | —       | —   | —       | ✅
+Campagne événementielle     | —       | —   | ✅      | ✅
+Export leads                | —       | —   | ✅      | ✅
+Accompagnement lancement    | —       | —   | —       | ✅
+
+Métriques reporting futures (non toutes implémentées à ce stade)
+* vues page promoteur
+* vues page projet
+* clics CTA WhatsApp
+* demandes de rappel
+* formulaires lead envoyés
+* leads qualifiés (chaud / tiède / froid)
+* source du lead (web / carte / Sakan Expo / QR / /neuf)
+* campagne associée
+* QR code salon (source_channel = "sakan_expo")
+* période (jour / semaine / mois / post-événement)
+
+Wording autorisé dans l'offre et les rapports
+* Projet partenaire · Données fournies par le promoteur
+* leads qualifiés · leads consentis · reporting · reporting indicatif
+* campagne dédiée · page projet · page promoteur · visibilité renforcée
+* biens positionnés · annonces analysées
+
+Wording interdit dans l'offre et les rapports
+* leads garantis · ventes garanties · projet vérifié · promoteur certifié
+* prix officiel · résultats garantis · exclusivité garantie
+* audience certifiée · données officielles · partenaire officiel (sans accord signé)
+
+Dette Data Engine / géo-enrichment (issue carte)
+22 biens positionnés sur 82 analysés — ce n'est plus un bug UI.
+C'est une dette Data Engine (géo-enrichment, geocoding Nominatim).
+À ne pas traiter avant P17B full sauf urgence.
+Le produit l'explique correctement avec le badge "X biens positionnés · sur Y annonces analysées".
+Traitement futur : DATA-B (collecte) + DATA-C (normalisation) + P10B-DB (geocoding persistant).
+
+Contraintes permanentes packs
+* Pas de prix chiffré dans l'interface ou les docs publics avant validation partenaires
+* Pas de volume de leads dans les supports commerciaux
+* Reporting obligatoirement labellisé "indicatif"
+* Score fiabilité : jamais modifiable par un client payant
+* Boost sponsorisé : toujours label "Sponsorisé" visible
+* Leads : jamais vendus sans consentement explicite
 
 ====================================================
 RÈGLES DE CRÉDIBILITÉ COMMERCIALE

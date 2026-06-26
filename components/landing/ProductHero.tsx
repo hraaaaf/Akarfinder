@@ -32,24 +32,25 @@ export function ProductHero() {
           {/* Eyebrow label */}
           <div className="mb-5 opacity-0 animate-[hero-label_0.6s_ease_0.2s_forwards]">
             <span className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#C2A368] [text-shadow:0_1px_6px_rgba(0,0,0,0.6)] sm:text-[10.5px]">
-              Moteur de recherche immobilier au Maroc
+              1er moteur de recherche immobilier au Maroc
             </span>
           </div>
 
           {/* Main title */}
           <h1 className="opacity-0 animate-[hero-title_0.8s_cubic-bezier(0.16,1,0.3,1)_0.35s_forwards] text-[2.1rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.85)] sm:text-5xl lg:text-[4.25rem]">
-            Trouvez votre bien avec&nbsp;plus&nbsp;de&nbsp;confiance.
+            Le 1er moteur de recherche immobilier au Maroc.
           </h1>
 
           {/* Subtitle — hidden on smallest mobile to reduce density */}
-          <p className="opacity-0 animate-[hero-sub_0.7s_ease_0.6s_forwards] mt-4 hidden max-w-[640px] text-[1rem] leading-relaxed text-white/82 sm:mt-5 sm:block sm:text-[1.15rem]">
-            AkarFinder centralise les annonces, repère les doublons et compare les signaux de marché pour vous aider à décider avant de contacter.
+          <p className="opacity-0 animate-[hero-sub_0.7s_ease_0.6s_forwards] mt-4 hidden max-w-[640px] text-[1rem] leading-relaxed text-white/85 [text-shadow:0_1px_8px_rgba(0,0,0,0.7)] sm:mt-5 sm:block sm:text-[1.15rem]">
+            Tout l'immobilier marocain dans un seul endroit : annonces analysées, doublons détectés et repères de fiabilité visibles pour comparer et contacter avec plus de confiance.
           </p>
           {/* Short version on mobile only */}
-          <p className="opacity-0 animate-[hero-sub_0.7s_ease_0.6s_forwards] mt-3 max-w-[340px] text-[0.95rem] leading-relaxed text-white/80 sm:hidden">
-            Comparez les annonces. Repérez les doublons. Décidez mieux.
-          </p>
-
+          <div className="opacity-0 animate-[hero-sub_0.7s_ease_0.6s_forwards] mt-3 max-w-[340px] rounded-2xl border border-white/10 bg-black/30 px-4 py-3 backdrop-blur-[2px] sm:hidden">
+            <p className="text-[0.95rem] leading-relaxed text-white/85 [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">
+              Tout l'immobilier marocain dans un seul endroit : annonces analysées, doublons détectés et repères de fiabilité visibles pour comparer et contacter avec plus de confiance.
+            </p>
+          </div>
           {/* Search box */}
           <div className="opacity-0 animate-[hero-search_0.8s_cubic-bezier(0.16,1,0.3,1)_0.85s_forwards] mt-8 w-full max-w-[740px]">
             <SearchPanel />

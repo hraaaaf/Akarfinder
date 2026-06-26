@@ -14,13 +14,13 @@ export function MapPreview({ cityCounts }: MapPreviewProps) {
   return (
     <aside className="rounded-[1.8rem] border border-navy/10 bg-[#06172f] p-5 text-white shadow-[0_18px_65px_rgba(0,0,0,0.2)] sm:p-6">
       <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#ffb266]">
-        Carte preview
+        Carte de recherche
       </p>
       <h2 className="mt-2 text-[1.6rem] font-bold tracking-[-0.03em]">
-        Repartition des resultats
+        Répartition des résultats
       </h2>
       <p className="mt-3 text-[14px] leading-7 text-white/72">
-        Apercu visuel sans dependance externe. Les points montrent seulement les villes presentes dans les mock listings filtres.
+        Repères indicatifs — les points indiquent les zones où des annonces sont disponibles. La position peut être approximative selon la précision des données.
       </p>
 
       <div className="relative mt-6 overflow-hidden rounded-[1.5rem] border border-white/12 bg-[radial-gradient(circle_at_65%_15%,rgba(255,255,255,0.12),transparent_20%),linear-gradient(180deg,#0b2345_0%,#06172f_100%)] p-4">

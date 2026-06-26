@@ -67,7 +67,7 @@ export function CityMapPanel({ city, listingCount }: CityMapPanelProps) {
               {displayCity}
             </h2>
             <p className="mt-1 text-[13.5px] font-semibold text-gray-500">
-              {listingCount} annonce{listingCount > 1 ? "s" : ""} affichée{listingCount > 1 ? "s" : ""}
+              {listingCount} annonce{listingCount > 1 ? "s" : ""} analysée{listingCount > 1 ? "s" : ""}
             </p>
           </div>
           <span className="rounded-full bg-[#f7f3ea] px-3 py-1.5 text-[11px] font-bold text-gray-500">
@@ -110,7 +110,7 @@ export function CityMapPanel({ city, listingCount }: CityMapPanelProps) {
             Repères indicatifs
           </p>
           <p className="mt-1 text-[13px] leading-6 text-white/74">
-            Les pins illustrent les zones de recherche et les quartiers actifs. Données mockées, sans carte live.
+            Les points indiquent les zones où des annonces sont disponibles. La position peut être approximative selon la précision des données.
           </p>
         </div>
       </div>

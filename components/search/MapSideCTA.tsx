@@ -58,9 +58,6 @@ export function MapSideCTA({ city }: MapSideCTAProps) {
         >
           Ouvrir la carte
         </Link>
-        <p className="mt-3 text-[11px] leading-5 text-gray-500">
-          Actions de démonstration — aucune donnée n'est envoyée.
-        </p>
       </div>
     </aside>
   );

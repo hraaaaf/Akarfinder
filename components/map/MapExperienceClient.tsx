@@ -28,6 +28,8 @@ const MapExperienceDynamic = dynamic(
 type MapExperienceClientProps = {
   listings: Listing[];
   initialFilters?: Partial<MapFilters>;
+  totalAnalyzed?: number;
+  positionedCount?: number;
 };
 
 export function MapExperienceClient(props: MapExperienceClientProps) {

@@ -1,7 +1,8 @@
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MapExperienceClient } from "@/components/map/MapExperienceClient";
-import { geoEnrichedMockListings } from "@/lib/listings/mock-listings";
+import { applyGeoEnrichment } from "@/lib/listings/apply-geo-enrichment";
+import { searchListings } from "@/lib/search";
 import type {
   ListingPropertyType,
   ListingTransactionType,
@@ -62,12 +63,25 @@ export default async function MapPage({ searchParams }: MapPageProps) {
   const minReliabilityScore =
     Number(pickFirst(params.minReliabilityScore)) || 50;
 
+  // Fetch all real listings (up to 500) and apply geo enrichment
+  const searchResult = await searchListings({ limit: 500, offset: 0 }).catch(() => ({
+    listings: [],
+    total: 0,
+  }));
+  const totalAnalyzed = searchResult.total;
+  const enrichedListings = applyGeoEnrichment(searchResult.listings);
+  const positionedCount = enrichedListings.filter(
+    (l) => l.latitude != null && l.longitude != null
+  ).length;
+
   return (
     <main className="flex flex-col" style={{ minHeight: "100svh" }}>
       <SiteHeader />
       <div className="flex-1">
         <MapExperienceClient
-          listings={geoEnrichedMockListings}
+          listings={enrichedListings}
+          totalAnalyzed={totalAnalyzed}
+          positionedCount={positionedCount}
           initialFilters={{
             city,
             transactionType: type as "all" | ListingTransactionType,

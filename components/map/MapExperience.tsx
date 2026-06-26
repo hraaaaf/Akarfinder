@@ -32,6 +32,8 @@ const TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 type MapExperienceProps = {
   listings: Listing[];
   initialFilters?: Partial<MapFilters>;
+  totalAnalyzed?: number;
+  positionedCount?: number;
 };
 
 type CityCluster = {
@@ -140,21 +142,23 @@ function createClusterMarkerEl(
   city: string,
   count: number,
   avgPrice: number
-): HTMLElement {
-  const el = document.createElement("button");
-  el.type = "button";
+): HTMLAnchorElement {
+  const el = document.createElement("a");
+  el.href = `/search?city=${encodeURIComponent(city)}`;
+  el.setAttribute("aria-label", `Explorer les annonces à ${city} (${count} bien${count > 1 ? "s" : ""})`);
   el.className =
-    "maplibre-cluster-marker cursor-pointer rounded-2xl bg-white border border-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.22)] px-3 py-2 text-left min-w-[90px] transition-transform hover:scale-105 focus:outline-none";
+    "maplibre-cluster-marker cursor-pointer rounded-2xl bg-white border border-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.22)] px-3 py-2 text-left min-w-[90px] transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-bronze-500";
   el.innerHTML = `
     <span class="block text-[12px] font-extrabold text-[#071B33]">${city}</span>
     <span class="block text-[11px] font-bold text-[#9B7838]">${count} bien${count > 1 ? "s" : ""} · ${formatShortPrice(avgPrice)}</span>
+    <span class="block text-[10px] font-bold text-[#071B33]/50 mt-0.5">Explorer →</span>
   `;
   return el;
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-export function MapExperience({ listings, initialFilters }: MapExperienceProps) {
+export function MapExperience({ listings, initialFilters, totalAnalyzed, positionedCount }: MapExperienceProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const markersRef = useRef<Marker[]>([]);
@@ -256,6 +260,17 @@ export function MapExperience({ listings, initialFilters }: MapExperienceProps) 
       mapRef.current = mapInstance;
 
       mapInstance.on("load", () => {
+        // Masquer les frontières administratives internes du Maroc (régions)
+        // Les noms de layers suivent la convention OpenMapTiles (OpenFreeMap liberty)
+        const internalBoundaryLayers = [
+          "boundary_3", "boundary_4", "boundary_3_z3z4", "boundary_4_z5",
+          "admin_level_3", "admin_level_4",
+        ];
+        for (const layerId of internalBoundaryLayers) {
+          if (mapInstance.getLayer(layerId)) {
+            mapInstance.setLayoutProperty(layerId, "visibility", "none");
+          }
+        }
         setMapLoaded(true);
       });
 
@@ -308,22 +323,13 @@ export function MapExperience({ listings, initialFilters }: MapExperienceProps) 
       clusterMarkersRef.current = [];
 
       if (showClusters) {
-        // Render cluster markers
+        // Render cluster markers — each is a link to /search?city=City
         for (const cluster of clusters) {
           const el = createClusterMarkerEl(
             cluster.city,
             cluster.count,
             cluster.averagePrice
           );
-          el.addEventListener("click", () => {
-            const target = getCityFlyTarget(cluster.city);
-            mapRef.current?.flyTo({
-              center: [target.lng, target.lat],
-              zoom: Math.max(CLUSTER_ZOOM_THRESHOLD + 1, target.zoom),
-              duration: 900,
-            });
-            updateFilter("city", cluster.city);
-          });
 
           const marker = new Marker({ element: el, anchor: "center" })
             .setLngLat([cluster.lng, cluster.lat])
@@ -387,7 +393,7 @@ export function MapExperience({ listings, initialFilters }: MapExperienceProps) 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-bronze-400">
-                Carte AkarFinder · MapLibre
+                Carte indicative · Repères simplifiés
               </p>
               <h1 className="mt-1 text-[1.4rem] font-extrabold tracking-[-0.04em] sm:text-[1.8rem]">
                 Explorez les biens sur la carte du Maroc
@@ -538,10 +544,10 @@ export function MapExperience({ listings, initialFilters }: MapExperienceProps) 
           <div className="absolute bottom-8 left-4 right-4 sm:right-auto sm:max-w-sm z-10 pointer-events-none">
             <div className="rounded-2xl border border-white/15 bg-[#071B33]/88 p-3 backdrop-blur">
               <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#C2A368]">
-                Localisations approximatives
+                Carte indicative — repères simplifiés
               </p>
               <p className="mt-1 text-[11px] leading-5 text-white/70">
-                Positions au niveau ville/quartier — à vérifier avant visite.
+                Repères simplifiés pour l'exploration. Positions au niveau ville/quartier — à vérifier avant visite.
               </p>
               <p className="mt-1 text-[10px] text-white/45">
                 Tuiles ©{" "}
@@ -574,9 +580,13 @@ export function MapExperience({ listings, initialFilters }: MapExperienceProps) 
             <div className="absolute top-4 left-4 z-10">
               <div className="rounded-xl border border-white/15 bg-[#071B33]/80 px-3 py-2 backdrop-blur">
                 <p className="text-[12px] font-extrabold text-white">
-                  {visibleListings.length} annonce
-                  {visibleListings.length !== 1 ? "s" : ""}
+                  {visibleListings.length} bien{visibleListings.length !== 1 ? "s" : ""} positionné{visibleListings.length !== 1 ? "s" : ""}
                 </p>
+                {totalAnalyzed != null && totalAnalyzed > (positionedCount ?? visibleListings.length) && (
+                  <p className="mt-0.5 text-[10px] text-white/60">
+                    sur {totalAnalyzed} annonce{totalAnalyzed !== 1 ? "s" : ""} analysée{totalAnalyzed !== 1 ? "s" : ""}
+                  </p>
+                )}
               </div>
             </div>
           )}

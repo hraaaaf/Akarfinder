@@ -4,7 +4,6 @@ import { WhySection } from "@/components/landing/WhySection";
 import { DataProofBlock } from "@/components/landing/DataProofBlock";
 import { CityIntentGrid } from "@/components/landing/CityIntentGrid";
 import { ListingPreview } from "@/components/landing/ListingPreview";
-import { SignatureMapSection } from "@/components/landing/SignatureMapSection";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { MreTrustSection } from "@/components/landing/MreTrustSection";
 import { HomeFinalCTA } from "@/components/landing/HomeFinalCTA";
@@ -22,7 +21,6 @@ export default async function HomePage() {
       <DataProofBlock />
       <Reveal><CityIntentGrid /></Reveal>
       <Reveal><ListingPreview /></Reveal>
-      <Reveal><SignatureMapSection /></Reveal>
       <Reveal><HowItWorks /></Reveal>
       <Reveal><MreTrustSection /></Reveal>
       <HomeFinalCTA />

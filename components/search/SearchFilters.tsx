@@ -31,13 +31,13 @@ export function SearchFilters({
       <div className="flex flex-col gap-5">
         <div>
           <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#145ee8]">
-            Recherche mock
+            Recherche immobilière
           </p>
           <h1 className="mt-2 text-[1.9rem] font-bold tracking-[-0.04em] text-navy sm:text-[2.4rem]">
             Comparez les annonces du Maroc dans une seule interface.
           </h1>
           <p className="mt-3 max-w-3xl text-[15px] leading-7 text-stone">
-            Cette page simule le futur moteur de recherche AkarFinder avec des annonces mockees uniquement.
+            Annonces analysées depuis plusieurs sources marocaines. Repères indicatifs à confirmer auprès de la source.
           </p>
         </div>
 
@@ -243,7 +243,7 @@ export function SearchFilters({
             Reinitialiser les filtres
           </button>
           <p className="text-[13px] text-stone">
-            Aucun appel API. Toutes les annonces affichees ici sont des mock data locales.
+            Repères indicatifs — données à confirmer auprès de la source avant tout engagement.
           </p>
         </div>
       </div>

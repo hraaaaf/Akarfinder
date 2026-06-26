@@ -8,13 +8,214 @@ Codex must update this file after every meaningful change.
 
 Current phase
 
-P16C — PAGE NEUF / PROMOTEURS — COMPLÉTÉE 2026-06-25 ✅
+P17B-0 — CADRAGE PACKS PROMOTEURS — COMPLÉTÉ 2026-06-26 ✅
+Documentation + cadrage offre partenaires sans pricing chiffré ni code applicatif.
+
+HOTFIX-MAP-SECTION-MOBILE — COMPLÉTÉ 2026-06-26 ✅
+public/images/map-section-mobile.png : screenshot iPhone parasite (barre 12:47, Safari, URL) remplacé
+  par screenshot propre Playwright de /map (sans chrome navigateur)
+  · CityIntentGrid (#villes) + SignatureMapSection (#signature-map) désormais distincts visuellement
+  · Plus de doublon apparent villes mobile · build OK · Production https://akarfinder.vercel.app
+
+HOTFIX-MAP-MARKERS — COMPLÉTÉ 2026-06-26 ✅
+Carte /map : données mock (11 annonces) → données réelles Supabase (82 annonces analysées, 22 positionnées)
+  · app/map/page.tsx : searchListings({ limit:500 }) + applyGeoEnrichment + totalAnalyzed/positionedCount
+  · MapExperienceClient.tsx : props totalAnalyzed/positionedCount ajoutées
+  · MapExperience.tsx : badge "X biens positionnés sur Y annonces analysées" affiché
+  · 452 scrapers + 51 API 0 fail · build OK · Preview + Production Vercel déployées
+  · URL Production : https://akarfinder.vercel.app · smoke test 4/4 HTTP 200
+
+HOTFIX-NAV-INTENT + HOTFIX-MAP-UX + P17A-2 — COMPLÉTÉS 2026-06-26 ✅
+
+P17A-2 : Démo interne /promoteurs/promoteur-demo-akarfinder?preview=demo · /projets/residence-demo-akarfinder?preview=demo
+  · sans ?preview=demo → 404 propre · avec param → 200 + bandeau ⚠ amber · noindex pages demo
+  · getDemoPromoter / getDemoProject / getDemoPromoterProjects · force-dynamic ajouté aux pages
+  · 14 tests demo · 452 scrapers + 51 API 0 fail · screenshots p17a2/*.png
+  · Slugs finaux confirmés 2026-06-26 : promoteur-demo-akarfinder / residence-demo-akarfinder
+
+HOTFIX-MAP-UX : Carte indicative · titre "Carte indicative · Repères simplifiés" · disclaimer corrigé
+  · Cluster markers → <a href="/search?city=City"> + aria-label · boundary layers internes masqués
+
+HOTFIX-NAV-INTENT : isDark || isTransparent partout (contraste scrollé corrigé)
+  · Chips mobile (lg:hidden) : Acheter / Louer / Neuf / Promoteurs / Recherche
+  · Horizontal scroll · aria-labels · focus ring · état actif deepblue/bronze
+
+Précédente: CITY-MOBILE — COLLAGE VILLES MOBILE — COMPLÉTÉE 2026-06-26 ✅
+Section villes mobile remplacée par collage image premium · zones cliquables overlay par ville
+Desktop inchangé · lib/cities.ts inchangé · build OK
+
+Précédente: P17A-1 — SCAFFOLDING PROMOTEURS/PROJETS — COMPLÉTÉE 2026-06-26 ✅
+Routes /promoteurs/[slug] + /projets/[slug] créées · data locale typée · visibility_status active/demo/draft
+Aucun faux partenaire public · demo → 404 propre · build ● SSG vide · 438+51 tests 0 fail
+
+Précédente: P17A-0 — PRÉFLIGHT PROMOTEURS — COMPLÉTÉE 2026-06-25 ✅
+Contrats Promoter + NewProject définis · pages cadrées · stratégie MVP documentée
+
+Précédente: P16D — SEARCH MAP WORDING — COMPLÉTÉE 2026-06-25 ✅
+Suppression du wording prototype/mock sur /search · header nav "Alertes" → "Recherche" · build 11/11 OK
+
+Précédente: P16C — PAGE NEUF / PROMOTEURS — COMPLÉTÉE 2026-06-25 ✅
 /neuf devient NeufPageShell dédié · hero amber · 6 sections · listings réels · 419+51 tests 0 fail
 
 Précédente: VERCEL-DEPLOY — DÉPLOIEMENT PRODUCTION — COMPLÉTÉ 2026-06-25 ✅
 URL: https://akarfinder.vercel.app · 13/13 pages HTTP 200 · aucun secret exposé
 ⚠️ Supabase vide (0 listings) — sync DB requise avant démo
 
+----------------------------------------------------
+P17B-0 — CADRAGE PACKS PROMOTEURS — 2026-06-26
+
+Status: Livré ✅
+
+Nature
+Documentation et cadrage produit/business uniquement.
+Aucun fichier applicatif modifié.
+Aucun paiement. Aucune auth. Supabase untouched. Scraper untouched. DATA-A untouched.
+
+Fichiers lus
+* docs/SESSION.md
+* docs/ROADMAP.md
+* docs/BUSINESS_MODEL.md
+
+Fichiers modifiés
+* docs/ROADMAP.md — P17B-0 Completed ajouté en tête ; version mise à jour ;
+  section P17B-0 avec packs, matrice, métriques, wording autorisé/interdit ;
+  statut P17B mis à jour (P17B-0 cadrage Completed, P17B full Not started)
+* docs/BUSINESS_MODEL.md — version mise à jour ;
+  section PACKS PROMOTEURS AKARFINDER CADRAGE V1 ajoutée ;
+  dette Data Engine géo-enrichment documentée
+* docs/SESSION.md — ce fichier
+
+Packs cadrés
+* Pack Starter : page promoteur + 1 projet + formulaire lead + CTA WhatsApp
+* Pack Pro : page promoteur + ≤3 projets + reporting simple + WhatsApp
+* Pack Premium : mise en avant /neuf + projets étendus + campagne + reporting avancé + export leads
+* Pack Expo/Launch : page projet + QR salon + formulaire rapide + reporting post-event
+
+Matrice droits/livrables
+Droit / Feature             | Starter | Pro | Premium | Expo/Launch
+----------------------------|---------|-----|---------|------------
+Page promoteur              | ✅      | ✅  | ✅      | —
+Pages projets               | 1       | ≤3  | Étendu  | 1 dédiée
+CTA WhatsApp                | ✅      | ✅  | ✅      | ✅
+Brochure PDF                | —       | ✅  | ✅      | ✅
+Formulaire lead             | Simple  | ✅  | ✅      | Rapide
+Mise en avant /neuf         | —       | —   | ✅      | —
+Reporting                   | —       | Simple | Avancé | Post-event
+QR code salon               | —       | —   | —       | ✅
+Campagne événementielle     | —       | —   | ✅      | ✅
+Export leads                | —       | —   | ✅      | ✅
+Accompagnement lancement    | —       | —   | —       | ✅
+
+Métriques reporting futures (objectifs produit — pas tous implémentés)
+* vues page promoteur / vues page projet
+* clics CTA WhatsApp / demandes de rappel / formulaires envoyés
+* leads qualifiés (chaud/tiède/froid) / source du lead / campagne / QR code / période
+
+Wording autorisé
+Projet partenaire · Données fournies par le promoteur · leads qualifiés · reporting
+campagne dédiée · page projet · page promoteur · visibilité renforcée · leads consentis
+
+Wording interdit
+leads garantis · ventes garanties · projet vérifié · promoteur certifié
+prix officiel · résultats garantis · exclusivité garantie · audience certifiée
+
+Bilan
+* Packs Starter/Pro/Premium/Expo/Launch documentés : OUI
+* Matrice droits/livrables créée : OUI
+* Métriques reporting futures documentées : OUI
+* Prix chiffré absent : OUI
+* Promesse de leads garantis absente : OUI
+* ROADMAP.md mis à jour : OUI
+* BUSINESS_MODEL.md mis à jour : OUI
+* SESSION.md mis à jour : OUI
+* Fichiers applicatifs modifiés : NON
+* Supabase untouched : OUI
+* Scraper untouched : OUI
+* DATA-A remains Not started : OUI
+* P17B full started : NON
+* Tests lancés : NON — documentation uniquement
+* Vercel déployé : NON — documentation uniquement
+
+Dette Data Engine documentée
+22 biens positionnés sur 82 analysés — ce n'est plus un bug UI.
+C'est une dette Data Engine (géo-enrichment / geocoding Nominatim).
+À ne pas traiter avant P17B full sauf urgence.
+Traitement futur : DATA-B + DATA-C + P10B-DB.
+
+Dettes restantes P17B-0
+* P17B full (implémentation packs dans le produit) : Not started
+* Reporting réel (métriques live) : dépend de DATA-F
+* Export leads : dépend de P17B full + auth
+* QR code salon : dépend de P17B full (source_channel déjà tracé dans buyer_leads)
+* Pricing chiffré : à valider avec les premiers partenaires avant P17B full
+
+----------------------------------------------------
+HOTFIX-MAP-MARKERS — 2026-06-26
+
+Status: Livré ✅
+
+Cause identifiée
+app/map/page.tsx passait geoEnrichedMockListings (11 annonces mock statiques)
+au lieu de données réelles Supabase → seules 9-11 annonces visibles sur la carte.
+
+Fichiers lus
+* docs/SESSION.md
+* app/map/page.tsx
+* components/map/MapExperienceClient.tsx
+* components/map/MapExperience.tsx
+* lib/map/listing-map.ts
+* lib/listings/mock-listings.ts
+* lib/listings/apply-geo-enrichment.ts
+* lib/search/index.ts, lib/search/types.ts
+
+Fichiers modifiés
+* app/map/page.tsx — searchListings({ limit:500 }) + applyGeoEnrichment
+  + totalAnalyzed/positionedCount calculés et passés au composant
+* components/map/MapExperienceClient.tsx — props totalAnalyzed/positionedCount ajoutées
+* components/map/MapExperience.tsx — badge "X biens positionnés sur Y annonces analysées"
+
+Fichiers créés
+* scripts/screenshots-hotfix-map.mjs — script screenshots (temporaire)
+* public/screenshots/hotfix-map/map-desktop.png
+* public/screenshots/hotfix-map/map-mobile.png
+
+Résultats
+* Avant : 9–11 annonces mock
+* Après : 82 annonces analysées, 22 biens positionnés sur la carte (données Supabase réelles)
+* Badge affiché : "22 biens positionnés · sur 82 annonces analysées"
+* Wording autorisé uniquement : biens positionnés, annonces analysées
+* Wording interdit absent : OUI
+
+Build: OK · 452 scrapers (0 fail) · 51 API (0 fail)
+
+Déploiement
+* Preview : https://akarfinder-ohxux0ybs-achraf-benmoussa-s-projects.vercel.app
+* Production : https://akarfinder.vercel.app
+* Smoke test 4/4 HTTP 200 : / /map /search /search?city=Casablanca
+
+Bilan
+* cause limite 9 identifiée : OUI (mock statique)
+* slice/limit/pageSize 9 trouvé : NON
+* fallback/mock encore utilisé sur /map : NON (corrigé)
+* total API vérifié : OUI (82)
+* biens géolocalisables comptés : OUI (22)
+* markers affichés cohérents : OUI
+* mention "X biens positionnés sur Y annonces analysées" ajoutée : OUI
+* mobile OK : OUI
+* desktop OK : OUI
+* port 3000 utilisé : OUI
+* Preview Vercel déployée : OUI
+* Production Vercel mise à jour : OUI
+* Supabase untouched : OUI
+* scraper untouched : OUI
+* DATA-A untouched : OUI
+
+Dettes restantes
+* Si Supabase se vide (sync non relancée), la carte retombe à 0 markers
+* Clustering MapLibre non ajouté (hors scope hotfix) — affichage individuel OK pour 22 markers
+* scripts/screenshots-hotfix-map.mjs peut être supprimé après revue
+
+----------------------------------------------------
 Précédente: P16B — PAGE LOCATION DÉDIÉE — COMPLÉTÉE 2026-06-25 ✅
 /louer devient expérience dédiée avec 2 vrais biens en location · LouerPageShell server component
 419 tests 0 fail · 51 API 0 fail · build clean · 5 screenshots
@@ -66,6 +267,294 @@ Dettes restantes
   transaction_type:buy, pas spécifiquement des programmes neufs.
 * La section brochure/WhatsApp est documentaire (pas de formulaire fonctionnel)
 * P17A (pages promoteurs individuelles) reste Not started
+
+----------------------------------------------------
+P17A-1 — SCAFFOLDING PAGES PROMOTEURS/PROJETS — 2026-06-26
+
+Status: Livré ✅
+
+Fichiers lus
+* docs/SESSION.md
+* app/promoteurs/page.tsx, app/neuf/page.tsx
+* components/neuf/NeufPageShell.tsx, components/intent/IntentPageShell.tsx
+* lib/site.ts, lib/search/types.ts, lib/proximity/types.ts
+* lib/package-score/types.ts, components/listings/NeighborhoodAmenities.tsx
+
+Fichiers créés
+* lib/promoters/types.ts — Promoter + NewProject typés (VisibilityStatus active|demo|draft)
+* lib/promoters/promoters-data.ts — 1 promoteur demo + 1 projet demo (non publics)
+* lib/promoters/get-promoter.ts — getActivePromoter / getActivePromoterProjects / getAllActivePromoterSlugs
+* lib/promoters/get-project.ts — getActiveProject / getProjectPromoter / getAllActiveProjectSlugs
+* components/promoters/PromoterPageShell.tsx — 7 blocs (hero, présentation, projets, villes, CTA, reporting, disclaimer)
+* components/promoters/ProjectPageShell.tsx — 12 blocs async (prix, typos, surfaces, localisation, brochure, contact, proximité, similaires, disclaimer)
+* app/promoteurs/[slug]/page.tsx — generateStaticParams (vide) + notFound() si non-active
+* app/projets/[slug]/page.tsx — generateStaticParams (vide) + notFound() si non-active
+* scripts/scrapers/__tests__/p17a1-promoters.test.ts — 14 tests (données, visibilité, wording, PII)
+* scripts/screenshots-p17a1.mjs — script screenshots 404
+
+Fichiers modifiés
+* package.json — test:scrapers inclut p17a1-promoters.test.ts
+
+Résumé P17A-1
+* visibility_status: "active" requis pour apparaître publiquement
+* demo/draft → getActivePromoter/getActiveProject retournent null → notFound()
+* generateStaticParams retourne [] (aucune entrée active) → routes SSG vides
+* Aucun faux partenaire public — données demo seulement pour tests internes
+* build: ● (SSG 0 pages pre-rendues) pour /promoteurs/[slug] et /projets/[slug]
+* notFound() confirmé via HTTP 404 pour /promoteurs/exemple-promoteur et /projets/exemple-programme
+
+Build: OK · 438 scrapers (0 fail) · 51 API (0 fail)
+
+Screenshots générés (public/screenshots/p17a1/)
+* p17a1-404-promoteur-desktop.png — 404 propre Next.js pour slug demo
+* p17a1-404-projet-mobile.png — 404 propre Next.js pour slug demo
+
+Bilan
+* data locale promoteurs créée : OUI
+* visibility_status draft/demo/active : OUI
+* /promoteurs/[slug] créée : OUI
+* /projets/[slug] créée : OUI
+* demo/draft non publics : OUI (notFound() confirmé)
+* faux partenaires publics : NON
+* 404 propre si absent : OUI
+* wording interdit absent : OUI
+* Supabase untouched : OUI
+* scraper untouched : OUI
+* P17B remains Not started : OUI
+* DATA-A remains Not started : OUI
+* P17A completed : NON — pas de vraie page active publique
+
+Dettes restantes
+* Aucune entrée active : pages ne se génèrent pas encore (attendu)
+* Pour activer : changer visibility_status → "active" d'un vrai partenaire
+* app/not-found.tsx personnalisé non créé (utilise le 404 Next.js par défaut)
+* ProjectPageShell similaires : si DB vide, section biens similaires est absente (silencieux)
+
+----------------------------------------------------
+P17A-0 — PRÉFLIGHT PAGES PROMOTEURS PARTENAIRES — 2026-06-25
+
+Status: Complété ✅ — cadrage documentaire uniquement, aucune page créée.
+
+Fichiers lus
+* docs/SESSION.md
+* app/neuf/page.tsx
+* app/promoteurs/page.tsx
+* components/neuf/NeufPageShell.tsx
+* components/intent/IntentPageShell.tsx
+
+Fichiers créés : aucun (documentation seulement)
+Fichiers modifiés
+* docs/ROADMAP.md — section P17A-0 ajoutée avant P17A
+* docs/SESSION.md — ce fichier
+
+---
+
+CONTRAT PROMOTER
+
+Champ               | Type              | Règle
+--------------------|-------------------|-------------------------------------------
+id                  | string (uuid)     | généré auto
+slug                | string            | url-safe, unique (ex: "alliances-immobilier")
+name                | string            | nom commercial du promoteur
+logo_url            | string?           | uniquement si fourni par le promoteur
+city                | string            | ville principale
+description         | string            | ≤ 280 chars, fournie par le promoteur
+contact_whatsapp    | string?           | PARTENAIRE UNIQUEMENT — jamais scrappé
+contact_email       | string?           | PARTENAIRE UNIQUEMENT — jamais scrappé
+website_url         | string?           | optionnel
+partner_status      | enum              | "none" | "partner" | "featured"
+source_note         | string (fixe)     | "Données fournies par le promoteur"
+created_at          | datetime          | auto
+updated_at          | datetime          | auto
+
+Anti-PII : contact_whatsapp et contact_email ne peuvent provenir
+que d'un formulaire /pro, d'un import CSV partenaire ou d'un accord
+direct. Jamais depuis le scraping d'annonces publiques.
+
+---
+
+CONTRAT NEWPROJECT
+
+Champ                    | Type           | Règle
+-------------------------|----------------|-------------------------------------------
+id                       | string         | généré auto
+slug                     | string         | url-safe, unique
+promoter_id              | string (FK)    | → Promoter.id
+name                     | string         | nom du programme
+city                     | string         |
+neighborhood             | string?        |
+address_label            | string?        | libellé indicatif (pas d'adresse exacte)
+price_from               | number         | prix à partir de en MAD
+currency                 | "MAD"          | fixe
+property_types           | string[]       | ["Appartement", "Villa", "Studio", ...]
+typologies               | string[]       | ["T2", "T3", "T4", "Studio", ...]
+surfaces                 | {min?,max?,unit:"m²"} |
+delivery_date_label      | string?        | ex: "Prévu 2026", "Livraison en cours"
+brochure_url             | string?        | PDF fourni par le promoteur
+main_image_url           | string?        | uniquement si image_permission_status = "partner_full"
+gallery_urls             | string[]?      | idem
+latitude / longitude     | number?        | optionnel — repère indicatif
+project_status           | enum           | "upcoming" | "active" | "delivered" | "paused"
+partner_badge            | enum (fixe)    | "Projet partenaire" | "Données fournies par le promoteur"
+lead_cta_type            | enum           | "whatsapp" | "callback" | "form"
+source_access_level      | enum           | "public" | "partner_full"
+image_permission_status  | enum           | "no_permission" | "partner_full" | "fallback_visual"
+disclaimer               | string         | texte légal standard
+
+---
+
+PAGE /promoteurs/[slug] — BLOCS CADRÉS
+
+1. Hero promoteur
+   - Logo (optionnel, partner_full uniquement)
+   - Nom promoteur, ville
+   - Badge "Projet partenaire" (amber)
+   - Description courte (fournie par le promoteur)
+   - CTA : voir les projets / contacter
+
+2. Présentation
+   - Texte fourni par le promoteur
+   - Mention visible : "Données fournies par le promoteur"
+
+3. Projets actifs
+   - Cards NewProject.project_status: "active" ou "upcoming"
+   - prix à partir de · typologies · localisation
+
+4. Villes / quartiers
+   - Chips de filtre (city, neighborhood)
+   - Liens vers /search?city=X&transaction_type=buy
+
+5. CTA contact
+   - WhatsApp si contact_whatsapp présent (fourni partenaire)
+   - Sinon : formulaire rappel léger (nom, téléphone, message, consentement)
+
+6. Reporting futur
+   - Placeholder badge "À venir"
+   - "Suivi des vues, demandes de brochure et leads — disponible prochainement."
+
+7. Disclaimer
+   - "Données fournies par le promoteur. Informations à confirmer directement
+     auprès de lui avant tout engagement. AkarFinder n'est pas partie à la transaction."
+
+---
+
+PAGE /projets/[slug] — BLOCS CADRÉS
+
+1. Hero projet
+   - Image principale (partner_full) ou ListingVisual fallback
+   - Nom du projet, badge, city/quartier
+
+2. Prix à partir de
+   - price_from DH · "hors frais notariaux et charges"
+
+3. Typologies
+   - Chips typologies[] : Studio / T2 / T3 / T4 / Villa / Duplex
+
+4. Surfaces
+   - Fourchette surfaces.min–surfaces.max m²
+
+5. Localisation
+   - CityMapPanel repère indicatif (pas Google Maps, pas geocoding)
+   - "Position approximative selon disponibilité des données"
+
+6. Brochure
+   - CTA téléchargement si brochure_url présent
+   - "Brochure fournie par le promoteur"
+
+7. Demande de rappel
+   - Formulaire léger : Nom, Téléphone WhatsApp, Message, Consentement
+   - Submit → /api/leads (pattern existant)
+
+8. WhatsApp direct
+   - Si contact_whatsapp présent : lien wa.me/
+   - Mention : "Coordonnées fournies par le promoteur partenaire"
+
+9. Biens similaires
+   - searchListings({ city, transaction_type:"buy", limit:3 })
+   - Réutilise PhotoFirstListingCard
+
+10. Proximité indicative
+    - NeighborhoodAmenities (composant existant, repères indicatifs)
+
+11. Package quartier
+    - calculatePackageScore (lib/package-score/calculate-package-score.ts)
+    - Label Excellent / Bon / Correct / Faible
+
+12. Disclaimer
+    - Texte standard conforme wording autorisé
+
+---
+
+STRATÉGIE MVP
+
+MVP 1 — Local seed (sans Supabase)
+- Créer lib/promoteurs/seed-data.ts → 2-3 objets Promoter typés
+- Créer lib/projets/seed-data.ts → 2-3 objets NewProject typés
+- Pages /promoteurs/[slug] et /projets/[slug] en SSG (generateStaticParams)
+- Chaque entrée porte le badge "Exemple partenaire" SI données inventées
+- Alternative validée : ne pas afficher de données inventées — attendre
+  de vrais partenaires avant d'ouvrir les pages. Évite tout risque de
+  confusion public/promoteur sur la nature des données.
+→ Décision MVP 1 vs attente vrais partenaires : à trancher avant P17A full.
+
+MVP 2 — Supabase (après vrais partenaires)
+- Migration Supabase : tables promoters + new_projects
+- Import CSV partenaires via formulaire /pro ou outil interne
+- Dashboard leads/reporting → phase ultérieure (P17B)
+- Aucune modification du scraper
+
+---
+
+WORDING
+
+Autorisé (identique P16C)
+Projet partenaire · Données fournies par le promoteur · Prix à partir de
+Informations à confirmer auprès du promoteur · Brochure fournie par le promoteur
+Repères indicatifs · Prix observé
+
+Interdit
+projet vérifié · promoteur vérifié · prix officiel · garanti · certifié
+livraison garantie · programme officiel · promoteur validé · leads garantis
+
+---
+
+BILAN P17A-0
+
+* Fichiers applicatifs modifiés : NON
+* Contrat Promoter documenté : OUI
+* Contrat NewProject documenté : OUI
+* Pages /promoteurs/[slug] cadrées : OUI
+* Pages /projets/[slug] cadrées : OUI
+* Stratégie MVP local/Supabase documentée : OUI
+* Contraintes anti-PII documentées : OUI
+* Wording interdit absent : OUI
+* P17A full implementation started : NON
+* P17B remains Not started : OUI
+* DATA-A remains Not started : OUI
+* Tests lancés : NON — documentation uniquement, aucun fichier applicatif modifié
+
+Dettes restantes
+* Décision MVP 1 (seed exemples) vs attente vrais partenaires → à confirmer
+* Tables Supabase promoters/new_projects non encore définies (MVP 2)
+* /projets/[slug] dépend de NewProject.image_permission_status — pipeline
+  permission images non encore appliqué aux projets (seulement aux listings)
+* lead_cta_type "form" nécessite un formulaire de rappel dédié (pattern /api/leads
+  existant peut être réutilisé mais needs un champ project_id)
+
+----------------------------------------------------
+P16D — SEARCH MAP WORDING — 2026-06-25
+
+Status: Livré ✅
+
+Fichiers modifiés
+* components/search/CityMapPanel.tsx — "Données mockées, sans carte live" → "Repères indicatifs" · "affichées" → "analysées"
+* components/search/MapSideCTA.tsx — suppression "Actions de démonstration — aucune donnée n'est envoyée."
+* components/search/SearchFilters.tsx — "Recherche mock" → "Recherche immobilière" · suppression wording mockees
+* components/search/SearchResultsGrid.tsx — suppression "mock" dans empty state
+* components/search/MapPreview.tsx — "Carte preview / Repartition des resultats / mock listings filtres" corrigé
+* lib/site.ts — navItem "/search" label: "Alertes" → "Recherche"
+
+Build: OK · 11/11 pages · aucun wording mock/fake/prototype visible utilisateur
 
 ----------------------------------------------------
 VERCEL-DEPLOY — DÉPLOIEMENT PRODUCTION — 2026-06-25
@@ -4311,3 +4800,27 @@ Track Data Engine ajouté: OUI (déjà fait, lien enrichi) ✅
 DATA-A à DATA-H documentés: OUI ✅
 Tests lancés: NON (documentation uniquement)
 Code applicatif modifié: NON
+
+----------------------------------------------------
+HERO-HOME-TEXT — 2026-06-26
+
+Status: Livré ✅
+
+Nature
+* Mise à jour du texte hero de la page d'accueil sans toucher au design ni aux composants.
+* Ajustement couleur du sous-titre vers un ton ambre/bronzé pour améliorer le contraste visuel sur le fond sombre.
+
+Fichiers modifiés
+* components/landing/ProductHero.tsx — subtitle mobile et desktop actualisés avec le texte demandé et la couleur ambre.
+
+Résultats
+* Headline appliqué : oui
+* Sous-titre appliqué : oui
+* Design untouched : oui
+* Build OK : oui
+* Screenshots fournis : oui
+
+Screenshots
+* public/screenshots/home-hero-desktop.png
+* public/screenshots/home-hero-mobile.png
+
