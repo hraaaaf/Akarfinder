@@ -67,7 +67,7 @@ const MAP_CITIES: MapCity[] = [
     href: "/map?city=Agadir",
     image: "/images/cities/agadir.jpg",
     alt: "Corniche d'Agadir et plage atlantique",
-    pin: { x: "44%", y: "53%" },
+    pin: { x: "37%", y: "54%" },
   },
 ];
 
