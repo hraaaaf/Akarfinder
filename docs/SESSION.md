@@ -8,7 +8,10 @@ Codex must update this file after every meaningful change.
 
 Current phase
 
-P17B-0 — CADRAGE PACKS PROMOTEURS — COMPLÉTÉ 2026-06-26 ✅
+CHECKPOINT-POST-MIMO — STABILISATION — COMPLÉTÉ 2026-06-26 ✅
+Stash Mimo restauré · hero copy validé · nav mobile intentions · section villes mobile PNG · build OK · Production https://akarfinder.vercel.app
+
+Précédente: P17B-0 — CADRAGE PACKS PROMOTEURS — COMPLÉTÉ 2026-06-26 ✅
 Documentation + cadrage offre partenaires sans pricing chiffré ni code applicatif.
 
 HOTFIX-MAP-SECTION-MOBILE — COMPLÉTÉ 2026-06-26 ✅
@@ -25,6 +28,74 @@ Carte /map : données mock (11 annonces) → données réelles Supabase (82 anno
   · 452 scrapers + 51 API 0 fail · build OK · Preview + Production Vercel déployées
   · URL Production : https://akarfinder.vercel.app · smoke test 4/4 HTTP 200
 
+----------------------------------------------------
+CHECKPOINT-POST-MIMO — STABILISATION — 2026-06-26
+
+Status: Livré ✅
+
+Contexte
+Mimo avait travaillé pendant l'absence de Claude. Les changements étaient dans le stash
+(auto-stash du /teleport). Ce checkpoint restaure, audite, corrige et déploie.
+
+Fichiers Mimo restaurés (stash → working tree)
+* components/landing/ProductHero.tsx — hero copy : "Le 1er moteur de recherche immobilier au Maroc."
+* components/landing/SignatureMapSection.tsx — rebuild image réelle + pins /search?city= cliquables
+* components/layout/SiteHeader.tsx — chips intentions mobile (Acheter/Louer/Neuf/Promoteurs/Recherche)
+* lib/site.ts — headline/subheadline mis à jour, "Alertes"→"Recherche" dans navItems
+* app/map/page.tsx — real listings via searchListings() au lieu de geoEnrichedMockListings
+* app/page.tsx — SignatureMapSection retirée de la homepage (image-based section séparée)
+* components/promoters/PromoterPageShell.tsx + ProjectPageShell.tsx (P17A1)
+* app/promoteurs/[slug]/page.tsx + app/projets/[slug]/page.tsx (nouvelles routes)
+* lib/promoters/ — types, get-promoter, get-project, promoters-data
+* public/images/ — map-section-desktop.png, map-section-mobile.png, map.png, SVGs villes
+* Scripts screenshots Mimo (nombreux .mjs temporaires)
+* Tests : scripts/scrapers/__tests__/p17a1-promoters.test.ts + p17a2-demo.test.ts
+
+Corrections Claude (CHECKPOINT)
+* ProductHero.tsx — supprimé bare <p> sm:hidden redondant (double sous-titre mobile)
+* CityIntentGrid.tsx mobile — remplacé CityCard grid par PNG collage cliquable
+  (immobilier-dans-les-grandes-villes-du-maroc-mobile.png + zones /search?city= par ville)
+  · casablanca, marrakech, rabat, tanger, agadir : zones transparent Link
+  · CTA "Voir les biens analysés" : zone Link en bas de l'image
+
+Bilan textes hero
+* Headline : "Le 1er moteur de recherche immobilier au Maroc." ✅
+* Sous-titre : "Tout l'immobilier marocain dans un seul endroit : annonces analysées,
+  doublons détectés et repères de fiabilité visibles pour comparer et contacter avec plus de confiance." ✅
+* Desktop : text-white/85 + [text-shadow] ✅
+* Mobile : bg-black/30 card + backdrop-blur + même texte ✅
+
+Build : OK · test:scrapers : 452 (0 fail) · test:api : 51 (0 fail)
+
+Screenshots générés
+* public/screenshots/checkpoint-home-desktop.png
+* public/screenshots/checkpoint-home-mobile.png
+* public/screenshots/checkpoint-hero-mobile.png
+* public/screenshots/checkpoint-map.png
+* public/screenshots/checkpoint-search-casa.png
+* public/screenshots/checkpoint-search-fes.png
+
+Smoke test Preview (7/7 HTTP 200 après redirect)
+/ · /search · /map · /acheter · /louer · /neuf · /promoteurs
+
+Déploiement
+* Preview : https://akarfinder-km1wlimrn-achraf-benmoussa-s-projects.vercel.app ✅
+* Production : https://akarfinder.vercel.app ✅
+
+Dettes restantes
+* Zones mobileCollageZones pas vérifiées sur la PNG réelle (estimées par Mimo)
+  → à affiner visuellement si les zones ne correspondent pas aux cartes villes
+* lib/cities.ts référence des .jpg (casablanca.jpg…) mais les stash SVGs sont .svg
+  → vérifier les chemins si les images ne chargent pas
+* P18A remains Not started ✅
+* P17B remains Not started ✅
+* DATA-A remains Not started ✅
+
+Prochaine étape recommandée
+* Vérifier visuellement la section mobile villes sur production
+* Puis lancer P18A ou DATA-A selon la priorité
+
+----------------------------------------------------
 HOTFIX-NAV-INTENT + HOTFIX-MAP-UX + P17A-2 — COMPLÉTÉS 2026-06-26 ✅
 
 P17A-2 : Démo interne /promoteurs/promoteur-demo-akarfinder?preview=demo · /projets/residence-demo-akarfinder?preview=demo
