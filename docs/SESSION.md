@@ -1,6 +1,17 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+INTENT-RELOOKING-2 — LOUER — MINI-POLISH 2026-06-27 ⏳ (attente validation Achraf)
+
+Mini-polish ciblé (pas de refonte), LouerPageShell uniquement :
+1. Header/top mobile allégé : hero pt-10 → pt-7 (mobile seul, desktop sm:pt-20 inchangé)
+2. Espace autour du bloc Fiabilité location mobile : bande pleine largeur (border-b, py-4)
+   → carte encartée (rounded-2xl border bg-white/[0.05]) dans wrapper pb-5/pt-3 = respiration
+3. Vérifié : SiteHeader dark = sticky top-0 (pas fixed) → aucune section ne passe dessous
+Acheter non touché (SiteHeader partagé inchangé). Build OK · 503 tests pass.
+URL Production : https://akarfinder.vercel.app/louer
+
+----------------------------------------------------
 INTENT-RELOOKING-2 — LOUER — LIVRÉ 2026-06-27 ⏳ (attente validation Achraf)
 
 Date : 2026-06-27

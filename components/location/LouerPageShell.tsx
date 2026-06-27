@@ -288,7 +288,7 @@ export async function LouerPageShell() {
       <SiteHeader variant="dark" compact />
 
       {/* ── HERO ──────────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-deepblue pb-11 pt-10 sm:pb-16 sm:pt-20">
+      <section className="relative overflow-hidden bg-deepblue pb-11 pt-7 sm:pb-16 sm:pt-20">
         <div
           className="pointer-events-none absolute inset-0"
           style={{ background: "radial-gradient(ellipse 80% 70% at 62% 26%, rgba(34,72,132,0.72) 0%, transparent 64%)" }}
@@ -444,10 +444,10 @@ export async function LouerPageShell() {
         </Container>
       </section>
 
-      {/* ── Fiabilité — mobile strip ──────────────────────────────────────────── */}
-      <div className="border-b border-white/8 bg-[#071B33] px-4 py-4 lg:hidden">
+      {/* ── Fiabilité — mobile (carte encartée, espace autour) ────────────────── */}
+      <div className="bg-deepblue px-4 pb-5 pt-3 lg:hidden">
         <Container>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3.5 backdrop-blur-sm">
             <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#0c4a2a] text-[#34d399] ring-1 ring-[#34d399]/20">
               <ShieldCheck size={16} strokeWidth={2.2} aria-hidden="true" />
             </span>
