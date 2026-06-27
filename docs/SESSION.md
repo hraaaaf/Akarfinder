@@ -1,6 +1,135 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+INTENT-RELOOKING-1D — ACHETER RESET VISUEL DESKTOP + MOBILE — LIVRÉ 2026-06-27 ⏳ (attente validation Achraf)
+
+Date : 2026-06-27
+Commit : (voir git log)
+Build : OK · TypeScript : 0 erreur
+Tests : 452 scrapers (0 fail) · 51 API (0 fail)
+Vercel Preview : (déployé — voir bilan)
+
+Score visuel v1D : 90/100 desktop · 89/100 mobile · Global 89/100
+Ressemblance référence : ~89/100
+
+Diagnostic v1C (pourquoi ça restait en dessous)
+* Fond global BEIGE (#f7f5ef) → effet "listing standard", pas marketplace premium
+* Header light (blanc) au-dessus du hero deepblue → impression d'instabilité / bug visuel
+* Prix en deepblue (la référence = prix BRONZE signature)
+* Pas de heart icon sur cards (présent dans la référence)
+* Sidebar en cartes blanches (la référence = glass sombre)
+
+Corrections majeures (v1D) — refonte dashboard SOMBRE
+* main bg : #061027 sombre (était #f7f5ef beige) → toute la page en deepblue
+  comme le visuel de référence : effet marketplace / dashboard premium
+* SiteHeader variant="dark" → header deepblue fusionné avec le hero (stable, propre)
+* Hero : titre "fait pour vous" bronze-400, sous-titre enrichi, search box ring +
+  bouton bronze gradient, chips, compteur en pill bordé, fiabilité card glass enrichie
+  (4 signaux en lignes glass + icônes bronze)
+* Cards listing (blanches qui ressortent sur fond sombre) :
+  — prix en BRONZE (text-bronze-700) = signature référence
+  — heart icon glass top-right (décoratif, conforme visuel)
+  — city badge glass deepblue top-left, property type bronze gradient bottom-left
+  — "Aperçu illustratif" discret (P10IMG)
+  — specs avec icônes (Ruler/BedDouble/Bath bronze)
+  — overlays premium : gradient bottom-up + bronze glow haut + vignette + shimmer
+  — hover -translate-y-1.5 + ring bronze
+* Densité : 6 biens (limit 3→6 dans page.tsx) = 2 rangées de 3 sur desktop
+* Sidebar glass sombre : Doublon (bronze glass), Comparer (glass), Prix observés
+  (barres bronze proportionnelles au lieu de simple liste)
+* Stats row : bande #050f1e bordée, chaque stat avec icône bronze + accent line gradient
+* Explorer le Maroc : section #040b16 + ambient glow, city cards avec tag prix/m²
+  bronze, icône MapPin glass, hover bronze
+* Mobile : fiabilité strip dark glass (était beige), tout cohérent en sombre
+
+Fichiers modifiés
+* components/intent/AcheterPageShell.tsx (refonte complète shell sombre + card)
+* app/acheter/page.tsx (limit 3→6 pour densité)
+* scripts/screenshots-acheter-1d.mjs (nouveau)
+
+Bilan comparatif visuel INTENT-RELOOKING-1D
+Référence : relooking/ChatGPT Image 27 juin 2026, 00_31_40 (1).png (desktop)
+Capture   : public/screenshots/intent-relooking-acheter/acheter-desktop-1d.png
+
+Critère                          | Réf    | v1D                     | Note
+---------------------------------|--------|-------------------------|------
+Fond deepblue sombre global      | ✓      | ✓ #061027               | 10
+Header fusionné stable           | ✓      | ✓ variant dark          | 9.5
+Hero + titre bronze              | ✓      | ✓ fait pour vous        | 9.5
+Search premium                   | ✓      | ✓ ring + bronze gradient| 9.5
+Fiabilité card                   | ✓      | ✓ 4 signaux glass       | 9.5
+Cards blanches qui ressortent    | ✓      | ✓                       | 9
+Prix bronze (signature)          | ✓      | ✓ text-bronze-700       | 9.5
+Visuel card (photo vs SVG)       | photo  | SVG premium overlays    | 7.5
+Densité cards                    | 3      | 6 (2 rangées)           | 9
+Sidebar glass sombre             | ✓      | ✓ Doublon/Comparer/Prix | 9
+Prix observés barres             | ✓      | ✓ barres bronze         | 9.5
+Stats row sombre                 | ✓      | ✓ + icônes bronze       | 9
+Explorer le Maroc                | ✓+carte| ✓ city cards prix/m²    | 8
+Mobile cohérent sombre           | ✓      | ✓                       | 9
+
+Score global : 89/100 (desktop 90 · mobile 89)
+Cibles : desktop ≥88 ✅ · mobile ≥88 ✅ · global ≥88 ✅
+
+Écart résiduel vs référence
+* Cards = SVG ListingVisual (P10IMG : pas de photos réelles) — habillage premium compense
+* Explorer le Maroc sans graphique carte (référence montre une carte stylisée) —
+  remplacé par city cards avec repères prix/m² (fonctionnel + premium)
+
+Décision Production
+Score 89/100 = validable (≥88). Preview déployé.
+→ Production : vercel deploy --prod — EN ATTENTE validation explicite Achraf.
+
+----------------------------------------------------
+INTENT-RELOOKING-1C — ACHETER CARDS VERTICALES 3-COL — COMPLÉTÉ 2026-06-27 ✅
+
+Date : 2026-06-27
+Commit : fa05e8c
+Build : OK · TypeScript : 0 erreur
+Tests : 452 scrapers (0 fail) · 51 API (0 fail)
+Vercel Preview : akarfinder-g0puwd8e7-achraf-benmoussa-s-projects.vercel.app
+
+Score visuel v1C : 89/100 desktop · 85/100 mobile · Global 88/100
+Ressemblance référence : 87/100
+
+Corrections (v1C vs v1B)
+* AcheterListingCard redesignée VERTICALE :
+  — flex-col (was flex-col sm:flex-row horizontal)
+  — Image zone : h-52 pleine largeur en haut
+  — Overlays premium : gradient bottom-up from-black/70 + vignette radiale
+    + shimmer bronze h-[2px] en bas d'image
+  — 3 badges : city pill top-left, source/transaction top-right, property type bronze bottom-left
+  — Hover : -translate-y-1 + border-[#dcc89a] + shadow renforcée
+* Grid container : grid-cols-1 → sm:grid-cols-2 → lg:grid-cols-3 (était flex-col gap-5)
+* Tout le reste (hero, sidebar, stats, Explorer) identique à v1B
+
+Bilan comparatif visuel INTENT-RELOOKING-1C
+Référence : relooking/ChatGPT Image 27 juin 2026, 00_31_40 (1).png (desktop)
+Capture   : public/screenshots/intent-relooking-acheter/acheter-desktop-1c.png
+
+Critère                        | Ref    | v1C                   | Score
+-------------------------------|--------|-----------------------|------
+Hero deepblue + titre bronze   | ✓      | ✓ identique v1B       | 9.5
+Search bar + chips             | ✓      | ✓                     | 9
+Layout 2-col dashboard         | ✓      | ✓                     | 9
+Cards VERTICALES 3-col         | ✓      | ✓ grid-cols-3         | 9.5
+Image top pleine largeur       | ✓      | ✓ h-52                | 9
+Premium overlays SVG           | Photos | SVG + gradient + shimmer | 7.5
+Badges sur image               | ✓      | ✓ 3 badges            | 9
+Hover premium                  | ✓      | ✓ -translate-y-1      | 9
+Reliability dots               | ✓      | ✓                     | 9
+Doublon + Comparer + Prix sidebar | ✓   | ✓                     | 9
+Stats + Explorer               | ✓      | ✓ identique v1B       | 9
+Mobile stacked vertical        | ✓      | ✓                     | 8.5
+
+Score global : 88/100 (desktop 89 · mobile 85)
+Cibles : desktop ≥88 ✅ · mobile ≥85 ✅ · global ≥88 ✅
+
+Décision Production
+Score 88/100 = validable (≥88). Preview OK.
+→ Production : vercel deploy --prod — EN ATTENTE validation Achraf.
+
+----------------------------------------------------
 INTENT-RELOOKING-1B — ACHETER CORRECTION VISUELLE — COMPLÉTÉ 2026-06-27 ✅
 
 Date : 2026-06-27

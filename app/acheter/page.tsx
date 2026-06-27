@@ -12,7 +12,7 @@ export const metadata = {
 
 export default async function AcheterPage() {
   const [searchResult, stats] = await Promise.all([
-    searchListings({ transaction_type: "buy", limit: 3 }).catch(() => ({
+    searchListings({ transaction_type: "buy", limit: 6 }).catch(() => ({
       listings: [],
       total: 0,
     })),
