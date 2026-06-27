@@ -1,6 +1,99 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+INTENT-RELOOKING-3 — NEUF — LIVRÉ 2026-06-27 ⏳ (attente validation Achraf)
+
+Date : 2026-06-27
+Build : OK · TypeScript : 0 erreur
+Tests : 452 scrapers (0 fail) · 51 API (0 fail)
+Smoke local : /neuf /acheter /louer /  /search /compare → tous HTTP 200
+
+Score visuel : 89/100 desktop · 89/100 mobile · Global 89/100 (notation stricte)
+
+Standard Acheter/Louer repris
+* main bg #061027, SiteHeader variant="dark" compact, hero deepblue + accent bronze
+* dashboard 2-col [contenu | sidebar glass], stats row sombre, callout final dark
+* cards glass, prix bronze, badges, overlays premium
+
+Adaptations Neuf
+* hero : label NEUF, titre "Découvrez les nouveaux projets au Maroc" (bronze sur
+  "projets au Maroc"), sous-titre, CTA (Voir le projet / Espace promoteurs),
+  note "Données fournies par le promoteur — informations indicatives"
+* hero-right : card "Repères Neuf" = 4 repères (Projets récents, Emplacements recherchés,
+  Plans & brochures, Repères indicatifs) → sur mobile rendus en 2×2
+* GRANDE CARD PROJET (Aperçu/Exemple) : visuel ListingVisual motif "neuf", badge
+  "Projet partenaire" + ruban "Aperçu · exemple", nom (Résidence Al Manar), ville/quartier,
+  "850 000 DH / prix à partir de" (bronze), pill "Données fournies par le promoteur — à
+  confirmer", typologies/surfaces/livraison, blocs Plan type + Brochure ("Bientôt disponible"),
+  CTA "Découvrir le projet" + "Parler à un conseiller" (WhatsApp vert),
+  disclaimer "Aperçu illustratif — aucun projet partenaire actif pour le moment"
+* NEUF VS ANCIEN : comparaison indicative (Neuf à partir de 850 000 DH / dès 45 m² /
+  frais réduits ; Ancien ≈ 13 000 DH/m² observé / surface variable / frais variables),
+  VS central, disclaimer "comparaison indicative — à confirmer avec promoteur/notaire"
+* sidebar : Promoteur (aucun actif → CTA "Présenter un projet" + "Voir les autres projets"),
+  Contact (WhatsApp + Être rappelé → /onboarding, PAS de faux numéro), Guide d'achat Neuf
+* stats row (Partenaire / À partir de / Plans / Indicatif) + callout promoteurs
+
+Données projet utilisées
+* lib/promoters/ : AUCUN promoteur visibility_status="active" (seule une entrée "demo"
+  gated via ?preview=demo) → pas de vrai projet public à afficher
+* Décision : card projet = EXEMPLE illustratif inline (clairement "Aperçu · exemple",
+  "aucun projet partenaire actif"), valeurs illustratives (850 000 DH, Studio/T2/T3,
+  45–120 m², livraison 2026 à confirmer). JAMAIS présenté comme réel.
+* repère "ancien" = prix observé indicatif (≈ 13 000 DH/m², repère marché Casa)
+
+Fallbacks / sécurité
+* aucun faux projet réel ; ruban "Aperçu · exemple" + disclaimer explicite
+* WhatsApp/rappel → /onboarding (lead réel), aucun numéro inventé, aucune donnée privée
+* brochure sans asset → "Bientôt disponible" (pas de fausse brochure)
+* P10IMG : visuel projet = ListingVisual SVG (image_permission fallback)
+
+Fichiers
+* Lus : SESSION.md, ROADMAP.md (INTENT-RELOOKING), PRODUCT.md (pages d'intention),
+  app/neuf/page.tsx, components/neuf/NeufPageShell.tsx, AcheterPageShell.tsx (réf standard),
+  LouerPageShell.tsx (réf), lib/promoters/{promoters-data,types,get-project,get-promoter}.ts,
+  relooking/ visuels Neuf desktop+mobile
+* Modifiés : components/neuf/NeufPageShell.tsx (refonte complète dark premium),
+  docs/SESSION.md, docs/ROADMAP.md
+* Créés : scripts/screenshots-neuf-3.mjs
+* app/neuf/page.tsx : inchangé
+
+Comparaison stricte vs référence (relooking/ 00_31_41 (3) desktop · 00_31_25 (4) mobile)
+Critère                          | v3                           | Note
+---------------------------------|------------------------------|------
+Hero "Découvrez les projets" bronze | ✓                         | 9.5
+4 repères Neuf                   | ✓ card + 2×2 mobile          | 9.5
+Grande card projet premium       | ✓ badge + prix bronze        | 9
+Visuel projet (SVG vs photo réf) | SVG neuf (P10IMG)            | 7
+Badge Projet partenaire          | ✓ + ruban Aperçu/exemple     | 9.5
+Données fournies par promoteur   | ✓ visible (pill + disclaimer)| 10
+Prix à partir de                 | ✓ 850 000 DH bronze          | 9.5
+Bloc promoteur                   | ✓ CTA présenter projet       | 9
+CTA WhatsApp/rappel              | ✓ (→ /onboarding)            | 9
+Brochure/plan                    | ✓ "bientôt disponible"       | 8.5
+Neuf vs Ancien                   | ✓ comparaison indicative     | 9
+Dark premium cohérent            | ✓                            | 10
+Mobile (compact, sans overflow)  | ✓                            | 9
+
+Score global : 89/100 (desktop 89 · mobile 89) — cibles ≥88 atteintes
+Écart résiduel : card projet en SVG fallback (P10IMG + aucun partenaire actif) ;
+pas de galerie/plan réel (asset absent) → "bientôt disponible".
+
+Dettes restantes
+* aucun promoteur/projet actif → quand vrai partenaire : remplacer l'exemple par projet réel
+  (visibility_status="active"), brancher brochure_url + photo partner_full + WhatsApp réel
+* P17B full reste HOLD ; P18A / DATA-A Not started
+
+Décision Production
+Score 89/100 validable. Preview déployée (akarfinder-9oksouc2v-…).
+Production : push validé explicitement par Achraf (revue iPhone) — 2026-06-27.
+URL Production : https://akarfinder.vercel.app/neuf
+Smoke test prod : /neuf /acheter /louer /  /search /compare → tous HTTP 200.
+Validation visuelle finale Achraf : EN ATTENTE (ROADMAP-3 reste In progress jusqu'au feu vert).
+
+Recommandation : après validation Achraf de /neuf → passer à INTENT-RELOOKING-4 (Promoteurs).
+
+----------------------------------------------------
 INTENT-RELOOKING-2 — LOUER — MINI-POLISH 2026-06-27 ⏳ (attente validation Achraf)
 
 Mini-polish ciblé (pas de refonte), LouerPageShell uniquement :

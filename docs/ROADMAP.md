@@ -2095,7 +2095,7 @@ Statut général
 * INTENT-RELOOKING-0 — Cadrage visuel              : Completed 2026-06-27
 * INTENT-RELOOKING-1 — Acheter                     : Completed 2026-06-27 (1E — score 89/100 — validé visuellement par Achraf)
 * INTENT-RELOOKING-2 — Louer                       : In progress 2026-06-27 (refonte dark premium en cours)
-* INTENT-RELOOKING-3 — Neuf                        : Not started
+* INTENT-RELOOKING-3 — Neuf                        : In progress 2026-06-27 (refonte dark premium — score 89/100 — attente validation Achraf)
 * INTENT-RELOOKING-4 — Promoteurs                  : Not started
 * INTENT-RELOOKING-5 — Vendre                      : Not started
 * INTENT-RELOOKING-6 — QA globale mobile/desktop/perf : Not started
@@ -2313,8 +2313,12 @@ Exit criteria
 ----------------------------------------------------
 INTENT-RELOOKING-3 — NEUF
 
-Statut : Not started.
-Prérequis : INTENT-RELOOKING-0 complétée. (NeufPageShell P16C existe déjà — à enrichir.)
+Statut : In progress 2026-06-27 — refonte dark premium livrée (score 89/100), attente validation Achraf.
+Build : OK · Tests : 452 scrapers + 51 API (0 fail)
+Données : aucun promoteur actif (lib/promoters = entrée demo gated) → card projet rendue
+en APERÇU / EXEMPLE clairement labellisé + CTA "Présenter un projet". Jamais présenté comme réel.
+P17B full : HOLD · P18A : Not started · DATA-A : Not started.
+Prérequis : INTENT-RELOOKING-0 complétée. (NeufPageShell P16C existait — refondu.)
 
 Objectif
 Transformer /neuf en page premium pour découvrir les projets neufs,

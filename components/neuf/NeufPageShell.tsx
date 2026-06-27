@@ -2,503 +2,526 @@ import Link from "next/link";
 import {
   ArrowRight,
   Building2,
-  Calculator,
+  Compass,
   FileText,
-  Heart,
-  LayoutGrid,
+  ShieldCheck,
   MapPin,
   MessageCircle,
   Phone,
   Scale,
   Star,
-  Wallet,
+  Ruler,
+  LayoutGrid,
+  CalendarClock,
+  Info,
+  Download,
+  TrendingUp,
+  Sparkles,
 } from "lucide-react";
+
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { Container } from "@/components/ui/Container";
 import { ListingVisual } from "@/components/listings/ListingVisual";
-import { searchListings } from "@/lib/search";
-import { formatPrice, formatSurface } from "@/lib/listings/utils";
-import { getListingImageMode } from "@/lib/listings/image-policy";
 import type { Listing } from "@/lib/listings/types";
 
-const VILLE_CHIPS = [
-  { label: "Casablanca", href: "/search?city=Casablanca&transaction_type=buy" },
-  { label: "Marrakech", href: "/search?city=Marrakech&transaction_type=buy" },
-  { label: "Rabat", href: "/search?city=Rabat&transaction_type=buy" },
-  { label: "Tanger", href: "/search?city=Tanger&transaction_type=buy" },
-  { label: "Agadir", href: "/search?city=Agadir&transaction_type=buy" },
-  { label: "Fès", href: "/search?city=F%C3%A8s&transaction_type=buy" },
+// ── Repères Neuf (hero) ──────────────────────────────────────────────────────
+const REPERES_NEUF = [
+  { icon: Sparkles,  label: "Projets récents",        note: "Programmes neufs sélectionnés" },
+  { icon: Compass,   label: "Emplacements recherchés", note: "Quartiers prisés au Maroc" },
+  { icon: FileText,  label: "Plans & brochures",       note: "Fournis par le promoteur" },
+  { icon: ShieldCheck, label: "Repères indicatifs",    note: "À confirmer avant décision" },
 ];
 
-const PRIX_CHIPS = [
-  { label: "< 500 000 DH", href: "/search?transaction_type=buy&maxPrice=500000" },
-  { label: "500K – 1,5M DH", href: "/search?transaction_type=buy&minPrice=500000&maxPrice=1500000" },
-  { label: "1,5M – 3M DH", href: "/search?transaction_type=buy&minPrice=1500000&maxPrice=3000000" },
-  { label: "> 3M DH", href: "/search?transaction_type=buy&minPrice=3000000" },
-];
+// ── Projet exemple — APERÇU clairement labellisé (aucun partenaire actif) ─────
+// Données illustratives. Jamais présenté comme un projet réel actif.
+const EXAMPLE_PROJECT = {
+  name: "Résidence Al Manar",
+  city: "Casablanca",
+  neighborhood: "Maârif",
+  priceFrom: 850_000,
+  typologies: ["Studio", "T2", "T3"],
+  surfaceMin: 45,
+  surfaceMax: 120,
+  delivery: "Livraison prévue 2026 — à confirmer",
+};
 
-const TYPO_CHIPS = [
-  { label: "Studio", href: "/search?transaction_type=buy&property_type=Studio" },
-  { label: "Appartement", href: "/search?transaction_type=buy&property_type=Appartement" },
-  { label: "Villa", href: "/search?transaction_type=buy&property_type=Villa" },
-  { label: "Duplex", href: "/search?transaction_type=buy&property_type=Appartement" },
-  { label: "Lots & terrains", href: "/search?transaction_type=buy&property_type=Terrain" },
-  { label: "Bureau / local", href: "/search?transaction_type=buy&property_type=Bureau" },
-];
+// Objet minimal pour réutiliser ListingVisual (motif "neuf" → grue de chantier).
+const EXAMPLE_VISUAL = {
+  id: "neuf-example-al-manar",
+  transaction_type: "new",
+  property_type: "Appartement",
+  city: "Casablanca",
+} as unknown as Listing;
 
-const PROMOTEUR_BLOCS = [
-  {
-    icon: <Star size={18} strokeWidth={2.2} />,
-    bg: "bg-amber-600",
-    title: "Projet partenaire",
-    body: "Les projets affichés sur cette page sont des projets partenaires référencés avec l'accord du promoteur. Données fournies par le promoteur, à confirmer directement auprès d'eux avant tout engagement.",
+// Repères Neuf vs Ancien — comparaison indicative (prudente).
+const NEUF_VS_ANCIEN = {
+  neuf: {
+    prix: "À partir de 850 000 DH",
+    surface: "Dès 45 m²",
+    frais: "Frais d'enregistrement réduits",
+    extra: "Aux normes récentes",
   },
-  {
-    icon: <Building2 size={18} strokeWidth={2.2} />,
-    bg: "bg-[#92400e]",
-    title: "Informations promoteur",
-    body: "Nom du promoteur, localisation du projet, typologies disponibles et prix à partir de. Ces informations sont fournies par le promoteur partenaire et constituent des repères indicatifs.",
+  ancien: {
+    prix: "≈ 13 000 DH/m² observé",
+    surface: "Surface variable",
+    frais: "Frais variables",
+    extra: "Disponible immédiatement",
   },
-  {
-    icon: <FileText size={18} strokeWidth={2.2} />,
-    bg: "bg-[#78350f]",
-    title: "Brochure fournie par le promoteur",
-    body: "Certains projets partenaires mettent à disposition une brochure PDF téléchargeable directement depuis la fiche projet. Contenu sous la responsabilité du promoteur partenaire.",
-  },
-];
+};
 
-function NewListingCard({ listing }: { listing: Listing }) {
-  const imageMode = getListingImageMode(listing);
+export function NeufPageShell() {
   return (
-    <article className="flex flex-col overflow-hidden rounded-[1.2rem] border border-[#eadfca] bg-white shadow-[0_6px_22px_rgba(7,27,51,0.06)]">
-      <Link
-        href={`/listings/${listing.id}`}
-        className="relative block h-[160px] overflow-hidden bg-[#fef3c7]"
-      >
-        {imageMode !== "fallback_visual" && listing.main_image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={listing.main_image_url}
-            alt={listing.title}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <ListingVisual listing={listing} className="h-full w-full" />
-        )}
-        <span className="absolute left-2.5 top-2.5 rounded-full bg-amber-700/90 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.08em] text-white">
-          {listing.property_type ?? "Bien"}
-        </span>
-      </Link>
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <p className="text-[1.3rem] font-extrabold leading-none tracking-[-0.04em] text-deepblue">
-          {formatPrice(listing.price, listing.currency)}
-          <span className="ml-1 text-[11px] font-bold text-gray-400">prix à partir de</span>
-        </p>
-        {listing.price_per_m2 > 0 ? (
-          <p className="text-[11.5px] font-bold text-amber-700">
-            {listing.price_per_m2.toLocaleString("fr-FR")} DH/m² · prix observé
-          </p>
-        ) : null}
-        <Link href={`/listings/${listing.id}`} className="mt-1 block">
-          <h3 className="line-clamp-2 text-[0.9rem] font-extrabold leading-snug text-gray-950">
-            {listing.title}
-          </h3>
-          <p className="mt-0.5 text-[12px] text-gray-500">
-            {listing.neighborhood
-              ? `${listing.city}, ${listing.neighborhood}`
-              : listing.city}
-          </p>
-        </Link>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-bold text-gray-600">
-          <span>{formatSurface(listing.surface_m2)}</span>
-          {listing.bedrooms > 0 ? <span>{listing.bedrooms} ch.</span> : null}
-        </div>
-        <div className="mt-3 flex gap-2">
-          <Link
-            href={`/listings/${listing.id}`}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-deepblue px-3 py-2.5 text-[12px] font-extrabold text-white transition hover:bg-[#0d2a4d]"
-          >
-            Voir la fiche
-            <ArrowRight size={12} strokeWidth={2.4} aria-hidden="true" />
-          </Link>
-          <Link
-            href="/compare"
-            aria-label="Comparer"
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[#eadfca] bg-[#fffdf8] text-gray-400 transition hover:border-amber-200 hover:text-amber-600"
-          >
-            <Scale size={14} strokeWidth={2} aria-hidden="true" />
-          </Link>
-        </div>
-      </div>
-    </article>
-  );
-}
+    <main className="min-h-screen bg-[#061027] text-white">
+      <SiteHeader variant="dark" compact />
 
-export async function NeufPageShell() {
-  let newListings: Listing[] = [];
-  try {
-    const result = await searchListings({ transaction_type: "buy", limit: 6 });
-    newListings = result.listings ?? [];
-  } catch {
-    // fallback: no listings, CTA shown
-  }
+      {/* ── HERO ──────────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-deepblue pb-11 pt-7 sm:pb-16 sm:pt-20">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: "radial-gradient(ellipse 80% 70% at 62% 26%, rgba(34,72,132,0.72) 0%, transparent 64%)" }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: "radial-gradient(60% 50% at 95% 100%, rgba(194,163,104,0.10) 0%, transparent 60%)" }}
+        />
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-bronze-500/45 to-transparent" />
 
-  return (
-    <main className="min-h-screen bg-[#f8f9fa] text-gray-900">
-      <SiteHeader />
+        <Container className="relative">
+          <div className="grid gap-12 lg:grid-cols-[1fr_360px]">
 
-      {/* ── Hero ── */}
-      <section className="bg-[#78350f] px-4 py-16 text-white sm:py-20">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-amber-300">
-            Immobilier neuf
-          </p>
-          <h1 className="mt-3 text-[2.2rem] font-extrabold leading-[1.12] tracking-[-0.05em] sm:text-[3rem]">
-            Programmes neufs au Maroc
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-[15px] leading-7 text-white/72">
-            Projets partenaires référencés sur AkarFinder. Informations fournies par les promoteurs —
-            prix à partir de, hors frais notariaux. À confirmer directement auprès du promoteur
-            avant tout engagement.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/search?transaction_type=buy"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white transition hover:bg-white/20"
-            >
-              Voir les programmes
-              <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
-            </Link>
-            <Link
-              href="/onboarding"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white transition hover:bg-white/20"
-            >
-              Créer mon dossier acheteur
-              <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
-            </Link>
-            <Link
-              href="/promoteurs"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white transition hover:bg-white/20"
-            >
-              Espace promoteurs
-              <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
-            </Link>
+            {/* LEFT */}
+            <div className="max-w-2xl">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-8 bg-bronze-500/70" aria-hidden="true" />
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-bronze-400">Neuf</p>
+              </div>
+              <h1 className="mt-4 text-[2.3rem] font-extrabold leading-[1.05] tracking-[-0.05em] text-white sm:mt-5 sm:text-[3.4rem]">
+                Découvrez les nouveaux<br className="hidden sm:block" />{" "}
+                <span className="text-bronze-400">projets au Maroc</span>
+              </h1>
+              <p className="mt-3.5 max-w-xl text-[14.5px] leading-6 text-white/65 sm:mt-5 sm:text-[15.5px] sm:leading-7">
+                Programmes neufs, données fournies par le promoteur et repères indicatifs
+                pour vous projeter avec plus de clarté.
+              </p>
+
+              {/* CTAs */}
+              <div className="mt-6 flex flex-wrap gap-3 sm:mt-8">
+                <Link
+                  href="#projet"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.4)] transition hover:from-bronze-600"
+                >
+                  Voir le projet
+                  <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
+                </Link>
+                <Link
+                  href="/promoteurs"
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white/90 transition hover:border-bronze-500/40 hover:bg-white/16"
+                >
+                  Espace promoteurs
+                  <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
+                </Link>
+              </div>
+
+              {/* Counter / note */}
+              <div className="mt-5 sm:mt-6">
+                <p className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-semibold text-white/70">
+                  <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-bronze-500/20">
+                    <Info size={11} className="text-bronze-400" aria-hidden="true" />
+                  </span>
+                  Données fournies par le promoteur — informations indicatives
+                </p>
+              </div>
+            </div>
+
+            {/* RIGHT — Repères Neuf (mobile : 2×2) */}
+            <aside className="lg:flex lg:flex-col lg:justify-center">
+              <div className="overflow-hidden rounded-2xl border border-white/12 bg-white/[0.06] shadow-[0_20px_50px_rgba(2,10,24,0.4)] backdrop-blur-md">
+                <div className="border-b border-white/10 bg-white/[0.03] px-5 py-4">
+                  <p className="text-[13px] font-extrabold text-white">Repères Neuf</p>
+                  <p className="mt-0.5 text-[11px] leading-4 text-white/55">Ce que vous trouverez ici</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 p-3 lg:grid-cols-1">
+                  {REPERES_NEUF.map(({ icon: Icon, label, note }) => (
+                    <div
+                      key={label}
+                      className="flex items-start gap-2.5 rounded-xl border border-white/8 bg-white/[0.04] px-3 py-2.5 transition hover:border-bronze-500/25 hover:bg-white/[0.07]"
+                    >
+                      <span className="inline-grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-bronze-500/15 text-bronze-400">
+                        <Icon size={14} aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-extrabold leading-tight text-white/90">{label}</p>
+                        <p className="mt-0.5 text-[10px] leading-tight text-white/45">{note}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </aside>
           </div>
-        </div>
+        </Container>
       </section>
 
-      <Container className="space-y-12 py-12 lg:py-16">
-
-        {/* ── Bloc 1 : Projets par ville ── */}
-        <section>
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 inline-grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-amber-700 text-white">
-              <MapPin size={19} strokeWidth={2.2} aria-hidden="true" />
-            </span>
+      {/* ── DASHBOARD — [projet + neuf/ancien | sidebar contact] ──────────────── */}
+      <section id="projet" className="relative scroll-mt-20 bg-gradient-to-b from-deepblue to-[#050f1e] py-12 lg:py-16">
+        <Container>
+          <div className="mb-7 flex items-end justify-between gap-4">
             <div>
-              <h2 className="text-[1.3rem] font-extrabold tracking-[-0.03em] text-deepblue">
-                Projets par ville
+              <div className="flex items-center gap-2.5">
+                <span className="h-px w-6 bg-bronze-500/60" aria-hidden="true" />
+                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400">Projet partenaire</p>
+              </div>
+              <h2 className="mt-2 text-[1.5rem] font-extrabold tracking-[-0.04em] text-white">
+                Aperçu d'un projet partenaire
               </h2>
-              <p className="mt-1 max-w-2xl text-[13.5px] leading-6 text-gray-500">
-                Programmes neufs référencés dans les principales villes marocaines.
-                Quartiers, disponibilités et prix à partir de — à confirmer auprès du promoteur.
-              </p>
             </div>
           </div>
-          <div className="mt-5 flex flex-wrap gap-2.5">
-            {VILLE_CHIPS.map((chip) => (
-              <Link
-                key={chip.label}
-                href={chip.href}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#d8c8a3] bg-white px-4 py-2 text-[13px] font-bold text-deepblue transition hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700"
-              >
-                {chip.label}
-                <ArrowRight size={11} strokeWidth={2.5} aria-hidden="true" />
-              </Link>
-            ))}
-          </div>
-        </section>
 
-        {/* ── Bloc 2 : Prix à partir de ── */}
-        <section>
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 inline-grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#92400e] text-white">
-              <Calculator size={19} strokeWidth={2.2} aria-hidden="true" />
-            </span>
-            <div>
-              <h2 className="text-[1.3rem] font-extrabold tracking-[-0.03em] text-deepblue">
-                Budget d'acquisition
-              </h2>
-              <p className="mt-1 max-w-2xl text-[13.5px] leading-6 text-gray-500">
-                Filtrez par budget. Les prix affichés sont des prix à partir de issus des annonces
-                analysées — repères indicatifs, hors frais notariaux, charges et frais d'agence.
-                À confirmer auprès du promoteur.
-              </p>
+          <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
+
+            {/* LEFT — grande card projet (exemple) + Neuf vs Ancien */}
+            <div className="flex flex-col gap-8">
+
+              {/* PROJECT CARD */}
+              <article className="overflow-hidden rounded-[20px] border border-white/10 bg-white/[0.04] shadow-[0_18px_50px_rgba(2,10,24,0.4)] backdrop-blur-sm">
+                {/* Visuel */}
+                <div className="relative h-[230px] overflow-hidden sm:h-[300px]">
+                  <ListingVisual listing={EXAMPLE_VISUAL} className="h-full w-full" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#03101f]/85 via-[#03101f]/20 to-transparent" />
+                  <div
+                    className="pointer-events-none absolute inset-0"
+                    style={{ background: "radial-gradient(120% 80% at 50% -10%, rgba(194,163,104,0.16) 0%, transparent 55%)" }}
+                  />
+                  {/* Badge Projet partenaire */}
+                  <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-bronze-700 to-bronze-600 px-3 py-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-white shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+                    <Star size={11} fill="currentColor" aria-hidden="true" />
+                    Projet partenaire
+                  </span>
+                  {/* Ruban APERÇU / EXEMPLE — non trompeur */}
+                  <span className="absolute right-4 top-4 rounded-full bg-[#071B33]/80 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-bronze-200 ring-1 ring-bronze-500/30 backdrop-blur-md">
+                    Aperçu · exemple
+                  </span>
+                  <span className="absolute bottom-3 right-4 rounded-full bg-black/30 px-2 py-1 text-[9px] font-medium text-white/55 backdrop-blur-sm">
+                    Aperçu illustratif
+                  </span>
+                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-bronze-500/60 to-transparent" />
+                </div>
+
+                {/* Contenu projet */}
+                <div className="p-5 sm:p-6">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-[1.3rem] font-extrabold tracking-[-0.03em] text-white">{EXAMPLE_PROJECT.name}</h3>
+                      <p className="mt-1 flex items-center gap-1.5 text-[12.5px] font-semibold text-white/60">
+                        <MapPin size={12} className="text-bronze-400" aria-hidden="true" />
+                        {EXAMPLE_PROJECT.city}, {EXAMPLE_PROJECT.neighborhood}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[1.6rem] font-extrabold leading-none tracking-[-0.04em] text-bronze-400">
+                        {EXAMPLE_PROJECT.priceFrom.toLocaleString("fr-FR")} DH
+                      </p>
+                      <p className="mt-1 text-[11px] font-bold text-white/50">prix à partir de</p>
+                    </div>
+                  </div>
+
+                  {/* Données fournies par le promoteur */}
+                  <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-bronze-500/10 px-3 py-1 text-[10.5px] font-bold text-bronze-300">
+                    <Info size={11} aria-hidden="true" />
+                    Données fournies par le promoteur — à confirmer
+                  </p>
+
+                  {/* Caractéristiques */}
+                  <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    <div className="rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3">
+                      <div className="flex items-center gap-1.5 text-bronze-400">
+                        <LayoutGrid size={13} aria-hidden="true" />
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-white/45">Typologies</span>
+                      </div>
+                      <p className="mt-1.5 text-[12.5px] font-extrabold text-white">{EXAMPLE_PROJECT.typologies.join(" · ")}</p>
+                    </div>
+                    <div className="rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3">
+                      <div className="flex items-center gap-1.5 text-bronze-400">
+                        <Ruler size={13} aria-hidden="true" />
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-white/45">Surfaces</span>
+                      </div>
+                      <p className="mt-1.5 text-[12.5px] font-extrabold text-white">{EXAMPLE_PROJECT.surfaceMin}–{EXAMPLE_PROJECT.surfaceMax} m²</p>
+                    </div>
+                    <div className="col-span-2 rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3 sm:col-span-1">
+                      <div className="flex items-center gap-1.5 text-bronze-400">
+                        <CalendarClock size={13} aria-hidden="true" />
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-white/45">Livraison</span>
+                      </div>
+                      <p className="mt-1.5 text-[12.5px] font-extrabold text-white">{EXAMPLE_PROJECT.delivery}</p>
+                    </div>
+                  </div>
+
+                  {/* Plan type + brochure */}
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <div className="flex flex-1 items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3">
+                      <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-bronze-500/15 text-bronze-400">
+                        <LayoutGrid size={15} aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-extrabold text-white">Plan type</p>
+                        <p className="text-[10.5px] text-white/50">Fourni par le promoteur sur la fiche projet</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-1 items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3">
+                      <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-bronze-500/15 text-bronze-400">
+                        <FileText size={15} aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-extrabold text-white">Brochure fournie par le promoteur</p>
+                        <p className="inline-flex items-center gap-1 text-[10.5px] text-white/45">
+                          <Download size={10} aria-hidden="true" /> Bientôt disponible
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CTAs */}
+                  <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
+                    <Link
+                      href="/promoteurs"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-deepblue px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_4px_14px_rgba(7,27,51,0.3)] ring-1 ring-white/10 transition hover:bg-deepblue-700"
+                    >
+                      Découvrir le projet
+                      <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
+                    </Link>
+                    <Link
+                      href="/onboarding"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#0e7d4f] px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_4px_14px_rgba(14,125,79,0.3)] transition hover:bg-[#0c6c44]"
+                    >
+                      <MessageCircle size={14} strokeWidth={2.2} aria-hidden="true" />
+                      Parler à un conseiller
+                    </Link>
+                  </div>
+
+                  {/* Disclaimer projet */}
+                  <p className="mt-4 flex items-start gap-1.5 text-[11px] leading-5 text-white/40">
+                    <Info size={12} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden="true" />
+                    Aperçu illustratif d'une présentation promoteur — aucun projet partenaire actif
+                    pour le moment. Prix à partir de, hors frais notariaux et charges. À confirmer
+                    auprès du promoteur avant tout engagement.
+                  </p>
+                </div>
+              </article>
+
+              {/* NEUF VS ANCIEN */}
+              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="flex items-start gap-2.5 border-b border-white/10 bg-white/[0.03] px-5 py-4">
+                  <Scale size={16} className="mt-0.5 shrink-0 text-bronze-400" aria-hidden="true" />
+                  <div>
+                    <p className="text-[13px] font-extrabold text-white">Neuf vs Ancien</p>
+                    <p className="text-[10.5px] text-white/45">Comparaison indicative — les prix et frais peuvent varier</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-0">
+                  {/* NEUF */}
+                  <div className="p-5">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-bronze-400">Neuf</p>
+                    <ul className="mt-3 space-y-2.5">
+                      {[NEUF_VS_ANCIEN.neuf.prix, NEUF_VS_ANCIEN.neuf.surface, NEUF_VS_ANCIEN.neuf.frais, NEUF_VS_ANCIEN.neuf.extra].map((v, i) => (
+                        <li key={v} className="flex items-start gap-2 text-[12.5px] font-semibold text-white/80">
+                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-bronze-400" aria-hidden="true" />
+                          <span className={i === 0 ? "font-extrabold text-white" : ""}>{v}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  {/* VS */}
+                  <div className="flex items-center justify-center px-1">
+                    <span className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-white/[0.06] text-[11px] font-extrabold text-bronze-400" aria-hidden="true">
+                      VS
+                    </span>
+                  </div>
+                  {/* ANCIEN */}
+                  <div className="border-l border-white/8 p-5">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-white/55">Ancien</p>
+                    <ul className="mt-3 space-y-2.5">
+                      {[NEUF_VS_ANCIEN.ancien.prix, NEUF_VS_ANCIEN.ancien.surface, NEUF_VS_ANCIEN.ancien.frais, NEUF_VS_ANCIEN.ancien.extra].map((v, i) => (
+                        <li key={v} className="flex items-start gap-2 text-[12.5px] font-semibold text-white/80">
+                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white/30" aria-hidden="true" />
+                          <span className={i === 0 ? "font-extrabold text-white" : ""}>{v}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                <div className="flex items-start gap-1.5 border-t border-white/8 bg-white/[0.02] px-5 py-3">
+                  <Info size={11} strokeWidth={2} className="mt-0.5 shrink-0 text-white/40" aria-hidden="true" />
+                  <p className="text-[10.5px] leading-4 text-white/45">
+                    Comparaison indicative — à confirmer avec le promoteur / notaire.
+                    Prix observé ancien issu d'annonces analysées.
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {/* RIGHT — sidebar contact */}
+            <aside className="flex flex-col gap-5">
+
+              {/* Promoteur */}
+              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="border-b border-white/10 bg-white/[0.03] px-5 py-4">
+                  <div className="flex items-center gap-2.5">
+                    <Building2 size={15} className="text-bronze-400" aria-hidden="true" />
+                    <p className="text-[13px] font-extrabold text-white">Promoteur</p>
+                  </div>
+                  <p className="mt-1 text-[11.5px] text-white/50">Données fournies par le promoteur</p>
+                </div>
+                <div className="p-5">
+                  <p className="text-[13px] leading-6 text-white/65">
+                    Aucun promoteur partenaire actif pour le moment. Vous êtes promoteur ?
+                    Présentez votre projet neuf sur AkarFinder.
+                  </p>
+                  <Link
+                    href="/promoteurs"
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-2.5 text-[12.5px] font-extrabold text-white shadow-[0_6px_16px_rgba(155,120,56,0.3)] transition hover:from-bronze-600"
+                  >
+                    Présenter un projet
+                    <ArrowRight size={13} aria-hidden="true" />
+                  </Link>
+                  <Link
+                    href="/promoteurs"
+                    className="mt-2 flex w-full items-center justify-center gap-1.5 text-[12px] font-bold text-white/55 transition hover:text-bronze-300"
+                  >
+                    Voir les autres projets
+                    <ArrowRight size={12} aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Contact — WhatsApp / rappel / conseiller */}
+              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="border-b border-white/10 bg-white/[0.03] px-5 py-4">
+                  <p className="text-[13px] font-extrabold text-white">Parler à un conseiller</p>
+                  <p className="mt-1 text-[11.5px] text-white/50">Sur votre projet neuf</p>
+                </div>
+                <div className="space-y-2.5 p-4">
+                  <Link
+                    href="/onboarding"
+                    className="flex items-center gap-3 rounded-xl bg-[#0e7d4f] px-4 py-3 text-white shadow-[0_4px_14px_rgba(14,125,79,0.3)] transition hover:bg-[#0c6c44]"
+                  >
+                    <MessageCircle size={16} strokeWidth={2.2} aria-hidden="true" />
+                    <span className="text-[12.5px] font-extrabold">Contacter sur WhatsApp</span>
+                  </Link>
+                  <Link
+                    href="/onboarding"
+                    className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white/85 transition hover:border-bronze-500/30 hover:bg-white/[0.07]"
+                  >
+                    <Phone size={15} strokeWidth={2.2} className="text-bronze-400" aria-hidden="true" />
+                    <span className="text-[12.5px] font-extrabold">Être rappelé</span>
+                  </Link>
+                  <p className="px-1 pt-1 text-[10.5px] leading-4 text-white/40">
+                    Contact direct disponible sur les projets partenaires. En attendant,
+                    un conseiller AkarFinder peut vous orienter.
+                  </p>
+                </div>
+              </div>
+
+              {/* Guide d'achat Neuf */}
+              <div className="overflow-hidden rounded-2xl border border-bronze-500/25 bg-gradient-to-br from-bronze-500/[0.14] to-bronze-500/[0.03] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-bronze-500/20 text-bronze-300 ring-1 ring-bronze-500/30">
+                      <FileText size={16} strokeWidth={2.2} aria-hidden="true" />
+                    </span>
+                    <p className="text-[13.5px] font-extrabold text-bronze-100">Guide d'achat Neuf</p>
+                  </div>
+                  <p className="mt-3 text-[12.5px] leading-5 text-white/65">
+                    Frais notariaux réduits, étapes VEFA, points à vérifier avant de réserver.
+                    Repères indicatifs à confirmer avec le promoteur et le notaire.
+                  </p>
+                </div>
+                <div className="border-t border-bronze-500/20 bg-bronze-500/[0.06] px-5 py-3">
+                  <Link
+                    href="/onboarding"
+                    className="flex items-center justify-between text-[12.5px] font-extrabold text-bronze-300 transition hover:text-bronze-200"
+                  >
+                    Créer mon dossier acheteur
+                    <ArrowRight size={13} aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+
+            </aside>
           </div>
-          <div className="mt-5 flex flex-wrap gap-2.5">
-            {PRIX_CHIPS.map((chip) => (
-              <Link
-                key={chip.label}
-                href={chip.href}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#d8c8a3] bg-white px-4 py-2 text-[13px] font-bold text-deepblue transition hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700"
-              >
-                {chip.label}
-                <ArrowRight size={11} strokeWidth={2.5} aria-hidden="true" />
-              </Link>
+        </Container>
+      </section>
+
+      {/* ── STATS / repères ───────────────────────────────────────────────────── */}
+      <section className="border-y border-white/8 bg-[#050f1e] py-11 lg:py-14">
+        <Container>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4">
+            {[
+              { value: "Partenaire", label: "données fournies par le promoteur", icon: Building2 },
+              { value: "À partir de", label: "prix indicatifs, hors frais", icon: TrendingUp },
+              { value: "Plans", label: "& brochures promoteur", icon: FileText },
+              { value: "Indicatif", label: "à confirmer avant décision", icon: ShieldCheck },
+            ].map((stat) => (
+              <div key={stat.label} className="flex flex-col">
+                <span className="mb-3 inline-grid h-9 w-9 place-items-center rounded-xl bg-bronze-500/12 text-bronze-400 ring-1 ring-bronze-500/20">
+                  <stat.icon size={15} aria-hidden="true" />
+                </span>
+                <p className="text-[1.5rem] font-extrabold leading-tight tracking-[-0.03em] text-white">{stat.value}</p>
+                <p className="mt-2 text-[12px] font-semibold text-white/50">{stat.label}</p>
+                <div className="mt-3 h-0.5 w-8 rounded-full bg-gradient-to-r from-bronze-500 to-transparent" />
+              </div>
             ))}
           </div>
-        </section>
+        </Container>
+      </section>
 
-        {/* ── Bloc 3 : Typologies ── */}
-        <section>
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 inline-grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#78350f] text-white">
-              <LayoutGrid size={19} strokeWidth={2.2} aria-hidden="true" />
-            </span>
-            <div>
-              <h2 className="text-[1.3rem] font-extrabold tracking-[-0.03em] text-deepblue">
-                Typologies & surfaces
-              </h2>
-              <p className="mt-1 max-w-2xl text-[13.5px] leading-6 text-gray-500">
-                Studio, appartement, villa, duplex ou lot. Surfaces et plans à confirmer
-                auprès du promoteur. Disponibilité des typologies à vérifier directement.
-              </p>
+      {/* ── CALLOUT PROMOTEURS ────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-[#040b16] py-14 lg:py-20">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: "radial-gradient(70% 80% at 88% 30%, rgba(34,72,132,0.35) 0%, transparent 60%)" }}
+        />
+        <Container className="relative">
+          <div className="overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-8 backdrop-blur-sm sm:p-10">
+            <div className="flex items-center gap-2.5">
+              <span className="h-px w-6 bg-bronze-500/60" aria-hidden="true" />
+              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400">Espace promoteurs</p>
             </div>
-          </div>
-          <div className="mt-5 flex flex-wrap gap-2.5">
-            {TYPO_CHIPS.map((chip) => (
-              <Link
-                key={chip.label}
-                href={chip.href}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#d8c8a3] bg-white px-4 py-2 text-[13px] font-bold text-deepblue transition hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700"
-              >
-                {chip.label}
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Section programmes neufs (données réelles) ── */}
-        <section>
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <h2 className="text-[1.3rem] font-extrabold tracking-[-0.03em] text-deepblue">
-              Biens et programmes disponibles
+            <h2 className="mt-3 max-w-xl text-[1.7rem] font-extrabold leading-tight tracking-[-0.04em] text-white">
+              Vous êtes promoteur ? Présentez vos projets sur AkarFinder
             </h2>
-            <Link
-              href="/search?transaction_type=buy"
-              className="inline-flex items-center gap-1.5 text-[12.5px] font-extrabold text-amber-700 transition hover:text-deepblue"
-            >
-              Voir toutes les annonces
-              <ArrowRight size={12} strokeWidth={2.5} aria-hidden="true" />
-            </Link>
-          </div>
-
-          {newListings.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {newListings.map((listing) => (
-                <NewListingCard key={listing.id} listing={listing} />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-[1.4rem] border border-dashed border-[#d8c8a3] bg-white p-8 text-center">
-              <p className="text-[14px] font-bold text-gray-500">
-                Aucun programme disponible en ce moment dans notre base.
-              </p>
+            <p className="mt-3 max-w-xl text-[14px] leading-7 text-white/60">
+              Pages projet dédiées, présentation soignée et mise en relation avec des acheteurs.
+              Données fournies par le promoteur — sans promesse de volume ni garantie de résultats.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                href="/search?transaction_type=buy"
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-deepblue px-5 py-3 text-[13px] font-extrabold text-white transition hover:bg-[#0d2a4d]"
+                href="/promoteurs"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.35)] transition hover:from-bronze-600"
               >
-                Rechercher un programme neuf
+                Découvrir l'espace promoteurs
+                <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
+              </Link>
+              <Link
+                href="/pro"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white/90 transition hover:border-bronze-500/40 hover:bg-white/16"
+              >
+                Accéder à AkarFinder Pro
                 <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
               </Link>
             </div>
-          )}
-          <p className="mt-3 text-[11.5px] text-gray-400">
-            Prix à partir de issus d'annonces analysées — repères indicatifs. Disponibilité et
-            conditions à confirmer auprès du promoteur ou de l'agence source.
+          </div>
+
+          {/* Disclaimer */}
+          <p className="mt-6 flex items-start gap-1.5 text-[11.5px] leading-5 text-white/40">
+            <Info size={12} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden="true" />
+            Les informations sur les projets neufs sont fournies par les promoteurs partenaires
+            (données partenaires), à titre indicatif. Prix à partir de, hors frais notariaux et
+            charges. Disponibilité, typologies et plans à confirmer directement auprès du promoteur
+            avant tout engagement. AkarFinder n'est pas partie à la transaction.
           </p>
-        </section>
-
-        {/* ── Bloc Promoteur ── */}
-        <section>
-          <h2 className="mb-5 text-[1.3rem] font-extrabold tracking-[-0.03em] text-deepblue">
-            Projets partenaires promoteurs
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {PROMOTEUR_BLOCS.map((bloc) => (
-              <article
-                key={bloc.title}
-                className="flex flex-col gap-3 rounded-[1.2rem] border border-[#eadfca] bg-white p-5 shadow-[0_6px_22px_rgba(7,27,51,0.04)]"
-              >
-                <span className={`inline-grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${bloc.bg} text-white`}>
-                  {bloc.icon}
-                </span>
-                <h3 className="text-[0.95rem] font-extrabold tracking-[-0.02em] text-deepblue">
-                  {bloc.title}
-                </h3>
-                <p className="text-[13px] leading-6 text-gray-500">{bloc.body}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Bloc Brochure / Rappel / WhatsApp ── */}
-        <section className="rounded-[1.7rem] border border-amber-200 bg-amber-50 p-6 sm:p-8">
-          <h2 className="mb-1 text-[1.3rem] font-extrabold tracking-[-0.03em] text-deepblue">
-            Demander des informations sur un projet
-          </h2>
-          <p className="mb-6 max-w-xl text-[13.5px] leading-6 text-gray-600">
-            Brochure, demande de rappel, contact WhatsApp ou dossier acheteur — plusieurs façons
-            d'entrer en contact avec un promoteur partenaire.
-          </p>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="flex items-start gap-3 rounded-[1.1rem] border border-amber-200 bg-white p-4">
-              <span className="mt-0.5 inline-grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-amber-700 text-white">
-                <FileText size={16} strokeWidth={2.2} aria-hidden="true" />
-              </span>
-              <div>
-                <h3 className="text-[0.88rem] font-extrabold text-deepblue">
-                  Brochure promoteur
-                </h3>
-                <p className="mt-1 text-[12px] leading-5 text-gray-500">
-                  Brochure fournie par le promoteur — téléchargeable depuis la fiche projet.
-                  Disponible sur les projets partenaires.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 rounded-[1.1rem] border border-amber-200 bg-white p-4">
-              <span className="mt-0.5 inline-grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-[#92400e] text-white">
-                <MessageCircle size={16} strokeWidth={2.2} aria-hidden="true" />
-              </span>
-              <div>
-                <h3 className="text-[0.88rem] font-extrabold text-deepblue">
-                  Contact WhatsApp
-                </h3>
-                <p className="mt-1 text-[12px] leading-5 text-gray-500">
-                  Disponible depuis chaque fiche projet partenaire. Coordonnées fournies
-                  par le promoteur.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 rounded-[1.1rem] border border-amber-200 bg-white p-4">
-              <span className="mt-0.5 inline-grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-[#78350f] text-white">
-                <Phone size={16} strokeWidth={2.2} aria-hidden="true" />
-              </span>
-              <div>
-                <h3 className="text-[0.88rem] font-extrabold text-deepblue">
-                  Dossier acheteur
-                </h3>
-                <p className="mt-1 text-[12px] leading-5 text-gray-500">
-                  Créez votre dossier acheteur indicatif sur AkarFinder — transmis au
-                  promoteur partenaire sans engagement.
-                </p>
-                <Link
-                  href="/onboarding"
-                  className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-extrabold text-deepblue transition hover:text-amber-700"
-                >
-                  Créer mon dossier
-                  <ArrowRight size={10} strokeWidth={2.5} aria-hidden="true" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Bloc Shortlist + Comparaison neuf vs ancien ── */}
-        <section className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-[1.4rem] border border-[#eadfca] bg-white p-5 shadow-[0_6px_22px_rgba(7,27,51,0.04)]">
-            <span className="inline-grid h-10 w-10 place-items-center rounded-2xl bg-red-500 text-white">
-              <Heart size={19} strokeWidth={2.2} aria-hidden="true" />
-            </span>
-            <h3 className="mt-3 text-[1rem] font-extrabold tracking-[-0.02em] text-deepblue">
-              Shortlist de programmes
-            </h3>
-            <p className="mt-2 text-[13.5px] leading-6 text-gray-500">
-              Sauvegardez les projets qui vous intéressent dans votre shortlist. Retrouvez-les
-              pour comparer prix, surfaces et localisation avant de contacter un promoteur.
-            </p>
-            <Link
-              href="/favorites"
-              className="mt-4 inline-flex items-center gap-1.5 text-[12.5px] font-extrabold text-deepblue transition hover:text-red-500"
-            >
-              Mes favoris
-              <ArrowRight size={12} strokeWidth={2.5} aria-hidden="true" />
-            </Link>
-          </div>
-
-          <div className="rounded-[1.4rem] border border-[#eadfca] bg-white p-5 shadow-[0_6px_22px_rgba(7,27,51,0.04)]">
-            <span className="inline-grid h-10 w-10 place-items-center rounded-2xl bg-[#1a4a8a] text-white">
-              <Scale size={19} strokeWidth={2.2} aria-hidden="true" />
-            </span>
-            <h3 className="mt-3 text-[1rem] font-extrabold tracking-[-0.02em] text-deepblue">
-              Comparer neuf vs ancien
-            </h3>
-            <p className="mt-2 text-[13.5px] leading-6 text-gray-500">
-              Comparez un programme neuf avec des biens existants dans le même quartier —
-              prix/m² observé, surface, package score. Repères indicatifs à compléter
-              par votre propre analyse.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Link
-                href="/compare"
-                className="inline-flex items-center gap-1.5 text-[12.5px] font-extrabold text-deepblue transition hover:text-[#1a4a8a]"
-              >
-                Ouvrir le comparateur
-                <ArrowRight size={12} strokeWidth={2.5} aria-hidden="true" />
-              </Link>
-              <Link
-                href="/search?transaction_type=buy"
-                className="inline-flex items-center gap-1.5 text-[12.5px] font-bold text-gray-500 transition hover:text-deepblue"
-              >
-                Voir les biens existants
-                <ArrowRight size={12} strokeWidth={2.5} aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Callout Promoteurs ── */}
-        <section className="rounded-[1.7rem] bg-deepblue p-8 text-white">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-amber-300">
-            Espace promoteurs
-          </p>
-          <h2 className="mt-2 text-[1.5rem] font-extrabold tracking-[-0.04em]">
-            Vous êtes promoteur ?
-          </h2>
-          <p className="mt-3 max-w-xl text-[14px] leading-7 text-white/72">
-            Référencez vos projets neufs sur AkarFinder. Pages projet dédiées, accès aux acheteurs
-            qualifiés et présence aux événements sectoriels comme Sakan Expo.
-            Sans promesse de volume de leads ni garantie de résultats.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href="/promoteurs"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white transition hover:bg-white/20"
-            >
-              Découvrir l'espace promoteurs
-              <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
-            </Link>
-            <Link
-              href="/pro"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white transition hover:bg-white/20"
-            >
-              Accéder à AkarFinder Pro
-              <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
-            </Link>
-          </div>
-        </section>
-
-        {/* ── Disclaimer ── */}
-        <p className="rounded-xl border border-[#eadfca] bg-[#fffdf8] px-4 py-3 text-[12px] leading-5 text-gray-500">
-          Les informations affichées sur les projets neufs sont fournies par les promoteurs partenaires
-          (données partenaires). Prix à partir de, hors frais notariaux et charges. Disponibilité,
-          typologies et plans à confirmer directement auprès du promoteur avant tout engagement.
-          AkarFinder n'est pas partie à la transaction et ne garantit aucun résultat commercial.
-        </p>
-
-      </Container>
+        </Container>
+      </section>
 
       <SiteFooter />
     </main>
