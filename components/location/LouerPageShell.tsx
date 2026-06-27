@@ -11,7 +11,6 @@ import {
   ArrowRight,
   Star,
   Heart,
-  Bell,
   Ruler,
   BedDouble,
   Bath,
@@ -33,6 +32,7 @@ import { ListingVisual } from "@/components/listings/ListingVisual";
 import { searchListings } from "@/lib/search";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import { getListingImageMode } from "@/lib/listings/image-policy";
+import { RentAlertForm } from "@/components/alerts/RentAlertForm";
 import type { Listing } from "@/lib/listings/types";
 
 // Repères de loyer indicatifs par quartier (DH/mois, appartement) — repères observés.
@@ -550,35 +550,8 @@ export async function LouerPageShell() {
                 </div>
               </div>
 
-              {/* Alerte location — À venir */}
-              <div className="overflow-hidden rounded-2xl border border-bronze-500/25 bg-gradient-to-br from-bronze-500/[0.14] to-bronze-500/[0.03] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
-                <div className="px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-bronze-500/20 text-bronze-300 ring-1 ring-bronze-500/30">
-                      <Bell size={16} strokeWidth={2.2} aria-hidden="true" />
-                    </span>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-[13.5px] font-extrabold text-bronze-100">Alerte location</p>
-                      <span className="rounded-full border border-bronze-500/40 bg-bronze-500/15 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.08em] text-bronze-200">
-                        À venir
-                      </span>
-                    </div>
-                  </div>
-                  <p className="mt-3 text-[12.5px] leading-5 text-white/65">
-                    Bientôt : soyez prévenu dès qu'une location correspond à votre budget et
-                    votre quartier. Fonctionnalité en cours de développement.
-                  </p>
-                </div>
-                <div className="border-t border-bronze-500/20 bg-bronze-500/[0.06] px-5 py-3">
-                  <Link
-                    href="/search?transaction_type=rent"
-                    className="flex items-center justify-between text-[12.5px] font-extrabold text-bronze-300 transition hover:text-bronze-200"
-                  >
-                    Explorer en attendant
-                    <ArrowRight size={13} aria-hidden="true" />
-                  </Link>
-                </div>
-              </div>
+              {/* Alerte location — P18A */}
+              <RentAlertForm />
 
               {/* Ma sélection */}
               <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">

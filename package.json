@@ -15,6 +15,7 @@
     "check:supabase": "tsx scripts/check-supabase.ts",
     "apply:leads-migration": "tsx scripts/apply-leads-migration.ts",
     "apply:visit-migration": "tsx scripts/apply-visit-requests-migration.ts",
+    "apply:alerts-migration": "tsx scripts/apply-alerts-migration.ts",
     "search:index": "tsx scripts/search-index.ts",
     "test": "npm run test:scrapers && npm run test:api"
   },

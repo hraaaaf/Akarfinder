@@ -1,6 +1,62 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+P18A — ALERTES SAUVEGARDÉES MVP — COMPLETED 2026-06-27 ✅
+
+Objectif : créer le MVP d'alertes location — transformer le bloc "À venir" /louer en formulaire fonctionnel.
+
+Décision stockage
+* Table saved_alerts créée (séparée de buyer_leads pour ne pas polluer les leads)
+* Champs : id, created_at, transaction_type, city, budget_min, budget_max, property_type, phone_whatsapp, email, consent, status
+* RLS activé (service_role_all, no anon)
+* Contrainte : status IN ('active', 'archived')
+
+Fichiers créés
+* db/supabase-p18a-alerts-migration.sql — DDL saved_alerts + RLS + index
+* scripts/apply-alerts-migration.ts — apply script (nécessite SUPABASE_ACCESS_TOKEN)
+* lib/alerts/types.ts — AlertApiPayload, AlertApiResponse, SavedAlertRow
+* app/api/alerts/route.ts — POST /api/alerts (phone OU email requis + consent)
+* app/api/alerts/export/route.ts — GET /api/alerts/export?token=... (CSV BOM UTF-8)
+* components/alerts/RentAlertForm.tsx — "use client" · form dark deepblue/bronze
+  (phone requis, ville/budget_max/type optionnels, consentement obligatoire)
+  success state "Alerte enregistrée · Vous serez recontacté selon disponibilité"
+  wording: non contractuel · repères indicatifs · pas d'alerte automatique garantie
+* app/pro/alerts/page.tsx — page admin /pro/alerts?token=... (liste alertes, export CSV, lien leads)
+
+Fichiers modifiés
+* components/location/LouerPageShell.tsx — bloc "À venir" remplacé par <RentAlertForm />
+  import Bell supprimé · import RentAlertForm ajouté
+* app/pro/leads/page.tsx — lien "Alertes →" ajouté dans le header
+* package.json — script apply:alerts-migration ajouté
+
+Smoke local port 3000
+* /louer : 200 · RentAlertForm présent · badge "À venir" absent ✅
+* /pro/alerts sans token : AccessDenied ✅
+* /pro/alerts avec token : 200 page "Alertes location" ✅
+* Lien "Alertes →" dans /pro/leads ✅
+* POST /api/alerts sans phone → 400 ✅
+* POST /api/alerts sans consent → 400 ✅
+* POST /api/alerts bon payload → 500 (table non créée — migration manuelle requise)
+* GET /api/alerts/export?token=WRONG → 401 ✅
+* Non-régression : /acheter /vendre /promoteurs /pro /onboarding → 200 ✅
+
+Build / Tests
+* npm run build : OK (0 erreur TS) · /louer 213 B → 2.55 kB (RentAlertForm hydraté) ✅
+* test:scrapers : 452/452 ✅ · test:api : 51/51 ✅
+
+⚠ MIGRATION MANUELLE REQUISE avant que le submit alerte fonctionne
+Aller sur : https://supabase.com/dashboard → SQL Editor → coller + exécuter :
+db/supabase-p18a-alerts-migration.sql
+Après migration : POST /api/alerts → ok=true, alert_id visible dans /pro/alerts
+
+Wording vérifié : pas de "alerte garantie", "disponibilité garantie", "résultat garanti".
+"Alerte indicative — disponibilité selon les annonces analysées. Pas d'alerte automatique garantie."
+
+P18A : Completed 2026-06-27 ✅
+Prochaine étape recommandée : appliquer la migration Supabase puis deploy prod.
+Après : P18B (Calculateur mensualité indicatif) ou CREDIT-MVP.
+
+----------------------------------------------------
 QA-PROD-TUNNELS-1 — QA PRODUCTION 3 TUNNELS — COMPLETED 2026-06-27 ✅
 
 Objectif : valider end-to-end les 3 tunnels (acheteur/locataire, vendeur, promoteur) avant P18A.

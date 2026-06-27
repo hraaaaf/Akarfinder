@@ -527,6 +527,12 @@ export default async function LeadsPage({ searchParams }: Props) {
             >
               Exporter CSV
             </a>
+            <Link
+              href={`/pro/alerts?token=${encodeURIComponent(token)}`}
+              className="text-[13px] font-bold text-bronze-700 hover:underline"
+            >
+              Alertes →
+            </Link>
             <Link href="/pro" className="text-[13px] font-bold text-bronze-700 hover:underline">
               ← AkarFinder Pro
             </Link>
