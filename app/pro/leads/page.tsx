@@ -136,6 +136,7 @@ function sourceChannelLabel(channel?: string | null): string {
   if (channel === "buyer_profile") return "Dossier acheteur";
   if (channel === "contact_request") return "Demande de contact";
   if (channel === "seller") return "Vendeur";
+  if (channel === "promoter") return "Promoteur";
   return channel ?? "—";
 }
 
@@ -143,6 +144,14 @@ function sellerBadge() {
   return (
     <span className="inline-flex items-center rounded-full bg-bronze-100 px-2.5 py-0.5 text-[11px] font-extrabold text-bronze-800">
       Vendeur
+    </span>
+  );
+}
+
+function promoterBadge() {
+  return (
+    <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-[11px] font-extrabold text-purple-800">
+      Promoteur
     </span>
   );
 }
@@ -185,6 +194,7 @@ function LeadCard({ lead, adminToken }: { lead: BuyerLeadRow; adminToken: string
   const leadType = lead.lead_type ?? "buyer_profile";
   const isVisit = leadType === "visit_request";
   const isSeller = lead.source_channel === "seller";
+  const isPromoter = lead.source_channel === "promoter";
   const visitMessage = lead.visit_message ?? lead.message;
   const location =
     lead.listing_neighborhood && lead.listing_city
@@ -204,7 +214,7 @@ function LeadCard({ lead, adminToken }: { lead: BuyerLeadRow; adminToken: string
     <div className="rounded-[1.3rem] border border-[#eadfca] bg-white p-5 shadow-[0_2px_10px_rgba(7,27,51,0.06)]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          {isSeller ? sellerBadge() : leadTypeBadge(leadType)}
+          {isPromoter ? promoterBadge() : isSeller ? sellerBadge() : leadTypeBadge(leadType)}
           {tempBadge(lead.lead_temperature)}
           {lead.is_mre ? (
             <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-extrabold text-blue-800">
@@ -435,11 +445,16 @@ export default async function LeadsPage({ searchParams }: Props) {
     }
 
     if (filter === "buyer_profile") {
-      q = q.eq("lead_type", "buyer_profile").neq("source_channel", "seller");
+      q = q
+        .eq("lead_type", "buyer_profile")
+        .neq("source_channel", "seller")
+        .neq("source_channel", "promoter");
     } else if (filter === "visit_request") {
       q = q.eq("lead_type", "visit_request");
     } else if (filter === "seller") {
       q = q.eq("source_channel", "seller");
+    } else if (filter === "promoter") {
+      q = q.eq("source_channel", "promoter");
     } else if (filter === "chaud") {
       q = q.eq("lead_temperature", "chaud");
     } else if (filter === "new") {
@@ -465,14 +480,19 @@ export default async function LeadsPage({ searchParams }: Props) {
   const chaud = normalizedLeads.filter((lead) => lead.lead_temperature === "chaud");
   const visitRequests = normalizedLeads.filter((lead) => lead.lead_type === "visit_request");
   const sellers = normalizedLeads.filter((lead) => lead.source_channel === "seller");
+  const promoters = normalizedLeads.filter((lead) => lead.source_channel === "promoter");
   const buyerProfiles = normalizedLeads.filter(
-    (lead) => lead.lead_type !== "visit_request" && lead.source_channel !== "seller"
+    (lead) =>
+      lead.lead_type !== "visit_request" &&
+      lead.source_channel !== "seller" &&
+      lead.source_channel !== "promoter"
   );
 
   const filterTabs: Array<{ label: string; value: string }> = [
     { label: "Tous", value: "" },
     { label: "Dossiers acheteurs", value: "buyer_profile" },
     { label: "Vendeurs", value: "seller" },
+    { label: "Promoteurs", value: "promoter" },
     { label: "Demandes de visite", value: "visit_request" },
     { label: "Chaud", value: "chaud" },
     { label: "Nouveau", value: "new" },
@@ -496,7 +516,7 @@ export default async function LeadsPage({ searchParams }: Props) {
               Boîte réception leads
             </h1>
             <p className="mt-1 text-[13.5px] text-gray-500">
-              {total} lead{total !== 1 ? "s" : ""} total · {sellers.length} vendeur{sellers.length !== 1 ? "s" : ""} · {visitRequests.length} demande{visitRequests.length !== 1 ? "s" : ""} de visite · {chaud.length} chaud{chaud.length !== 1 ? "s" : ""}
+              {total} lead{total !== 1 ? "s" : ""} total · {sellers.length} vendeur{sellers.length !== 1 ? "s" : ""} · {promoters.length} promoteur{promoters.length !== 1 ? "s" : ""} · {visitRequests.length} demande{visitRequests.length !== 1 ? "s" : ""} de visite · {chaud.length} chaud{chaud.length !== 1 ? "s" : ""}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -566,7 +586,7 @@ export default async function LeadsPage({ searchParams }: Props) {
             <li>La mise à jour du statut (lead et visite), les notes internes et la date de suivi sont disponibles via le panneau &quot;Suivi interne&quot; de chaque lead.</li>
           </ul>
           <p className="mt-3 text-[12px] text-amber-700/90">
-            Dossiers acheteurs : {buyerProfiles.length} · Vendeurs : {sellers.length} · Demandes de visite : {visitRequests.length}
+            Dossiers acheteurs : {buyerProfiles.length} · Vendeurs : {sellers.length} · Promoteurs : {promoters.length} · Demandes de visite : {visitRequests.length}
           </p>
         </div>
       </Container>

@@ -1,6 +1,52 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+PROMOTER-MVP — CAPTURE LEADS PROMOTEURS — COMPLETED 2026-06-27 ✅
+
+Objectif : activer le tunnel promoteur réel /promoteurs → /pro → submit → /pro/leads → export CSV.
+
+Décision stockage (Option B — 0 migration, calque SELLER-MVP)
+* buyer_leads réutilisée : source_channel="promoter", project_type=type choisi (agence/promoteur/exposant), source_page="/pro"
+* Société composée dans message ("Société : X — <message>") → pas de colonne dédiée, pas de migration
+* Température fixée "tiède" (branche promoter dans /api/leads, calque seller/visit)
+
+Fichiers
+* components/pro/ProLeadForm.tsx — NOUVEAU : LeadForm /pro extrait en client component interactif
+  (nom, société, téléphone, type projet, ville, message + consentement obligatoire) → POST /api/leads
+* app/pro/page.tsx — LeadForm inline disabled SUPPRIMÉ → import + <ProLeadForm /> (page reste server component)
+* app/api/leads/route.ts — branche température "promoter" → "tiède"
+* app/pro/leads/page.tsx — badge "Promoteur" (purple) · onglet filtre "Promoteurs" · compteur · buyer_profile exclut seller+promoter
+
+LeadForm /pro activé
+* Avant : 6 inputs disabled + bouton disabled + "Formulaire non encore opérationnel — données non collectées"
+* Après : form interactif, submit réel, état succès "Demande envoyée", consentement obligatoire
+* Bouton désactivé tant que (phone≥8 + type sélectionné + consentement) non remplis
+
+Smoke local port 3000
+* /promoteurs : 13 liens → /pro ✅
+* /pro : "Demander un accès Pro" présent · ancien "non encore opérationnel" disparu ✅
+* POST /api/leads (source_channel=promoter) → ok=true lead_id=52cde12b… ✅
+* /pro/leads : lead visible · badge Promoteur · onglet Promoteurs ✅
+* filter=promoter : isole les promoteurs · seller + acheteur ne fuient pas ✅
+* filter=buyer_profile : exclut les promoteurs ✅
+* export CSV : ligne promoteur (Projet=promoteur · Source=/pro · tiède) ✅
+* non-régression : /acheter /louer /vendre /vendre/dossier /promoteurs /pro /onboarding → 200 ✅
+
+Wording : "offre pilote", "liste d'attente", "aucun résultat ni volume de leads garanti".
+Interdit absent : pas de "leads garantis / résultat garanti".
+
+Build / Tests
+* npm run build : OK (0 erreur TS) · /pro 178 B → 2.51 kB (client component hydraté) ✅
+* test:scrapers : 452/452 ✅ · test:api : 51/51 ✅
+
+⚠ Lead de test en base prod (à supprimer) :
+* 52cde12b-b57a-469a-b59d-7f8c42515624 (nom "SMOKE TEST PROMOTER-MVP")
+
+PROMOTER-MVP : Completed 2026-06-27 ✅
+Les 3 tunnels business sont câblés : acheteur/locataire (LEADS-MVP) · vendeur (SELLER-MVP) · promoteur (PROMOTER-MVP).
+Prochaine étape recommandée : P18A (Alertes MVP) ou QA-PROD globale des 3 tunnels.
+
+----------------------------------------------------
 SELLER-MVP — TUNNEL VENDEUR RÉEL — COMPLETED 2026-06-27 ✅
 
 Objectif : /vendre/dossier — vrai tunnel vendeur. Fin des CTA "Préparer ma vente" vers onboarding acheteur.

@@ -12,6 +12,7 @@ import {
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { Container } from "@/components/ui/Container";
+import { ProLeadForm } from "@/components/pro/ProLeadForm";
 
 export const metadata: Metadata = {
   title: "AkarFinder Pro — Développez vos ventes immobilières au Maroc",
@@ -382,125 +383,6 @@ function InboxCTA() {
   );
 }
 
-// ── Lead form ─────────────────────────────────────────────────────────────────
-
-function LeadForm() {
-  return (
-    <section id="contact" className="bg-deepblue py-16 lg:py-20">
-      <Container>
-        <div className="mx-auto max-w-2xl">
-          <div className="mb-8 text-center">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-bronze-400">
-              Accès Pro
-            </p>
-            <h2 className="mt-3 text-[1.8rem] font-extrabold tracking-[-0.04em] text-white sm:text-[2.2rem]">
-              Préparer ma démo Pro
-            </h2>
-            <p className="mt-3 text-[14px] leading-6 text-white/65">
-              Offre pilote en cours de lancement. Remplissez ce formulaire pour rejoindre la liste d&apos;attente
-              et être contacté en priorité.
-            </p>
-          </div>
-
-          <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-7 backdrop-blur-sm sm:p-8">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="pro-nom" className="block text-[12px] font-extrabold uppercase tracking-[0.1em] text-white/60">
-                  Nom
-                </label>
-                <input
-                  id="pro-nom"
-                  type="text"
-                  placeholder="Votre nom"
-                  disabled
-                  className="mt-1.5 w-full rounded-xl border border-white/15 bg-white/8 px-4 py-3 text-[14px] text-white placeholder:text-white/30 outline-none disabled:cursor-not-allowed"
-                />
-              </div>
-              <div>
-                <label htmlFor="pro-societe" className="block text-[12px] font-extrabold uppercase tracking-[0.1em] text-white/60">
-                  Société
-                </label>
-                <input
-                  id="pro-societe"
-                  type="text"
-                  placeholder="Nom de votre agence ou société"
-                  disabled
-                  className="mt-1.5 w-full rounded-xl border border-white/15 bg-white/8 px-4 py-3 text-[14px] text-white placeholder:text-white/30 outline-none disabled:cursor-not-allowed"
-                />
-              </div>
-              <div>
-                <label htmlFor="pro-tel" className="block text-[12px] font-extrabold uppercase tracking-[0.1em] text-white/60">
-                  Téléphone / WhatsApp
-                </label>
-                <input
-                  id="pro-tel"
-                  type="tel"
-                  placeholder="+212 6XX XXX XXX"
-                  disabled
-                  className="mt-1.5 w-full rounded-xl border border-white/15 bg-white/8 px-4 py-3 text-[14px] text-white placeholder:text-white/30 outline-none disabled:cursor-not-allowed"
-                />
-              </div>
-              <div>
-                <label htmlFor="pro-type" className="block text-[12px] font-extrabold uppercase tracking-[0.1em] text-white/60">
-                  Type
-                </label>
-                <select
-                  id="pro-type"
-                  disabled
-                  className="mt-1.5 w-full rounded-xl border border-white/15 bg-white/8 px-4 py-3 text-[14px] text-white/50 outline-none disabled:cursor-not-allowed"
-                >
-                  <option value="">Agence / Promoteur / Exposant</option>
-                  <option value="agence">Agence</option>
-                  <option value="promoteur">Promoteur</option>
-                  <option value="exposant">Exposant Sakan Expo</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="pro-ville" className="block text-[12px] font-extrabold uppercase tracking-[0.1em] text-white/60">
-                  Ville
-                </label>
-                <input
-                  id="pro-ville"
-                  type="text"
-                  placeholder="Casablanca, Rabat..."
-                  disabled
-                  className="mt-1.5 w-full rounded-xl border border-white/15 bg-white/8 px-4 py-3 text-[14px] text-white placeholder:text-white/30 outline-none disabled:cursor-not-allowed"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label htmlFor="pro-message" className="block text-[12px] font-extrabold uppercase tracking-[0.1em] text-white/60">
-                  Message
-                </label>
-                <textarea
-                  id="pro-message"
-                  rows={3}
-                  placeholder="Nombre de biens, type de projet, besoins spécifiques..."
-                  disabled
-                  className="mt-1.5 w-full resize-none rounded-xl border border-white/15 bg-white/8 px-4 py-3 text-[14px] text-white placeholder:text-white/30 outline-none disabled:cursor-not-allowed"
-                />
-              </div>
-            </div>
-
-            <button
-              type="button"
-              disabled
-              aria-disabled="true"
-              className="mt-5 w-full cursor-not-allowed rounded-xl bg-bronze-700/50 px-6 py-3.5 text-[15px] font-extrabold text-white/60"
-            >
-              Préparer ma démo Pro
-            </button>
-
-            <p className="mt-4 text-center text-[12.5px] leading-5 text-white/40">
-              Formulaire non encore opérationnel — accès pilote en préparation.
-              Les données indicatives de ce formulaire ne sont pas collectées.
-            </p>
-          </div>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
 // ── Metrics strip ─────────────────────────────────────────────────────────────
 
 function MetricsStrip() {
@@ -540,7 +422,7 @@ export default function ProPage() {
       <Offers />
       <TrustRules />
       <InboxCTA />
-      <LeadForm />
+      <ProLeadForm />
       <SiteFooter />
     </main>
   );

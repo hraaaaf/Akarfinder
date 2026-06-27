@@ -69,6 +69,13 @@ export async function POST(request: NextRequest) {
           reason: "Demande d'accompagnement vendeur via /vendre/dossier.",
           color: "amber",
         }
+      : source_channel === "promoter"
+      ? {
+          temperature: "tiède" as const,
+          label: "Demande promoteur",
+          reason: "Demande d'accès Pro promoteur via /pro.",
+          color: "amber",
+        }
       : computeLeadTemperature(buyerProfile);
 
   const userAgent = request.headers.get("user-agent") ?? undefined;
