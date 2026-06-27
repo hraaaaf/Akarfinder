@@ -43,11 +43,12 @@ const FILTER_CHIPS = [
   { label: "Plus de filtres", href: "/search" },
 ];
 
+// level = repère relatif du prix/m² (1-4) pour le mini-indicateur visuel
 const EXPLORER_CITIES = [
-  { city: "Casablanca", tag: "≈ 13 000 DH/m²", href: "/map?city=Casablanca" },
-  { city: "Rabat",      tag: "≈ 13 000 DH/m²", href: "/map?city=Rabat" },
-  { city: "Marrakech",  tag: "≈ 12 500 DH/m²", href: "/map?city=Marrakech" },
-  { city: "Tanger",     tag: "≈ 11 500 DH/m²", href: "/map?city=Tanger" },
+  { city: "Casablanca", price: 13000, level: 4, href: "/map?city=Casablanca" },
+  { city: "Rabat",      price: 13000, level: 4, href: "/map?city=Rabat" },
+  { city: "Marrakech",  price: 12500, level: 3, href: "/map?city=Marrakech" },
+  { city: "Tanger",     price: 11500, level: 3, href: "/map?city=Tanger" },
 ];
 
 export type AcheterPageShellProps = {
@@ -234,10 +235,10 @@ export function AcheterPageShell({
 
   return (
     <main className="min-h-screen bg-[#061027] text-white">
-      <SiteHeader variant="dark" />
+      <SiteHeader variant="dark" compact />
 
       {/* ── HERO ──────────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-deepblue pb-16 pt-14 sm:pt-20">
+      <section className="relative overflow-hidden bg-deepblue pb-11 pt-10 sm:pb-16 sm:pt-20">
         {/* Ambient glow */}
         <div
           className="pointer-events-none absolute inset-0"
@@ -268,17 +269,17 @@ export function AcheterPageShell({
                   Acheter
                 </p>
               </div>
-              <h1 className="mt-5 text-[2.9rem] font-extrabold leading-[1.04] tracking-[-0.05em] text-white sm:text-[3.7rem]">
+              <h1 className="mt-4 text-[2.5rem] font-extrabold leading-[1.05] tracking-[-0.05em] text-white sm:mt-5 sm:text-[3.7rem]">
                 Trouvez le bien<br className="hidden sm:block" />{" "}
                 <span className="text-bronze-400">fait pour vous</span>
               </h1>
-              <p className="mt-5 max-w-lg text-[15.5px] leading-7 text-white/65">
+              <p className="mt-3.5 max-w-lg text-[14.5px] leading-6 text-white/65 sm:mt-5 sm:text-[15.5px] sm:leading-7">
                 Achetez en toute clarté grâce à nos repères de marché au Maroc —
                 prix observés, doublons détectés et fiabilité visible.
               </p>
 
               {/* Search form */}
-              <form action="/search" method="get" className="mt-8">
+              <form action="/search" method="get" className="mt-6 sm:mt-8">
                 <div className="flex overflow-hidden rounded-2xl bg-white p-1 shadow-[0_18px_60px_rgba(0,0,0,0.4)] ring-1 ring-white/20">
                   <div className="flex flex-1 items-center gap-2.5 px-4">
                     <Search
@@ -335,7 +336,7 @@ export function AcheterPageShell({
               </div>
 
               {/* Counter */}
-              <div className="mt-6">
+              <div className="mt-4 sm:mt-6">
                 {totalListings !== null && totalListings > 0 ? (
                   <p className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[13.5px] font-semibold text-white/80">
                     <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-bronze-500/20">
@@ -742,21 +743,48 @@ export function AcheterPageShell({
               <Link
                 key={item.city}
                 href={item.href}
-                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-5 transition duration-200 hover:border-bronze-500/30 hover:bg-white/[0.08]"
+                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.07] to-white/[0.02] p-5 transition duration-200 hover:border-bronze-500/35 hover:from-white/[0.10] hover:to-white/[0.03]"
               >
                 {/* Accent glow */}
-                <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-bronze-500/8 blur-xl transition group-hover:bg-bronze-500/16" />
+                <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-bronze-500/10 blur-2xl transition group-hover:bg-bronze-500/22" />
 
-                <span className="relative inline-grid h-10 w-10 place-items-center rounded-xl bg-bronze-500/12 text-bronze-400 ring-1 ring-bronze-500/20 transition group-hover:bg-bronze-500/20">
-                  <MapPin size={17} strokeWidth={2} aria-hidden="true" />
-                </span>
-                <p className="relative mt-3.5 text-[15px] font-extrabold text-white">{item.city}</p>
-                <p className="relative mt-0.5 text-[11.5px] font-semibold text-bronze-400/80">{item.tag}</p>
-                <div className="relative mt-3 flex items-center gap-1.5 text-[11.5px] font-semibold text-white/45">
-                  Voir les biens
+                {/* Top row : icône + mini-indicateur de niveau de prix */}
+                <div className="relative flex items-start justify-between">
+                  <span className="inline-grid h-10 w-10 place-items-center rounded-xl bg-bronze-500/12 text-bronze-400 ring-1 ring-bronze-500/20 transition group-hover:bg-bronze-500/20">
+                    <MapPin size={17} strokeWidth={2} aria-hidden="true" />
+                  </span>
+                  <div className="flex items-end gap-0.5 pt-1.5" aria-hidden="true">
+                    {[1, 2, 3, 4].map((b) => (
+                      <span
+                        key={b}
+                        className={`w-1 rounded-full ${b <= item.level ? "bg-bronze-400" : "bg-white/15"}`}
+                        style={{ height: `${5 + b * 3}px` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <p className="relative mt-4 text-[15.5px] font-extrabold text-white">{item.city}</p>
+
+                {/* Repère prix/m² */}
+                <div className="relative mt-1 flex items-baseline gap-1">
+                  <span className="text-[13.5px] font-extrabold text-bronze-400">
+                    {item.price.toLocaleString("fr-FR")}
+                  </span>
+                  <span className="text-[10px] font-semibold text-white/45">DH/m²</span>
+                </div>
+                <p className="relative mt-0.5 text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35">
+                  Repères de marché
+                </p>
+
+                {/* CTA */}
+                <div className="relative mt-4 flex items-center justify-between border-t border-white/8 pt-3">
+                  <span className="text-[11.5px] font-bold text-white/55 transition group-hover:text-white/85">
+                    Voir les biens
+                  </span>
                   <ArrowRight
-                    size={12}
-                    className="text-bronze-400/70 transition group-hover:translate-x-1"
+                    size={13}
+                    className="text-bronze-400/80 transition group-hover:translate-x-1"
                     aria-hidden="true"
                   />
                 </div>

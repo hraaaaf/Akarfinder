@@ -1,6 +1,77 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+INTENT-RELOOKING-1E — ACHETER POLISH FINAL — LIVRÉ 2026-06-27 ⏳ (attente validation finale Achraf)
+
+Date : 2026-06-27
+Build : OK · TypeScript : 0 erreur
+Tests : 452 scrapers (0 fail) · 51 API (0 fail)
+Smoke local : /acheter /  /search /compare → tous HTTP 200
+
+Score visuel v1E : 90/100 desktop · 89/100 mobile · Global 89/100 (notation stricte)
+
+Contexte : v1D a donné la bonne direction (dark premium validée comme base).
+Polish ciblé demandé avant de marquer /acheter terminé — pas de refonte.
+
+Corrections v1E (3 points ciblés)
+1. Header mobile allégé
+   * SiteHeader : nouvelle prop optionnelle `compact` (default false → /louer /neuf
+     /promoteurs INCHANGÉS, rétrocompatible). /acheter passe `compact`.
+   * mobile : padding Container py-3→py-2.5, chips wrapper py-2→py-1.5,
+     chips px-3.5/py-1.5/12px → px-3/py-1/11.5px. Desktop (sm:) inchangé.
+   * Logo + Se connecter + chips toujours lisibles, header stable (pas de flou).
+2. Hero mobile compacté
+   * section pt-14/pb-16 → pt-10/pb-11 sur mobile (sm: garde pt-20/pb-16)
+   * titre mobile 2.9rem → 2.5rem (sm: 3.7rem inchangé), accent bronze "fait pour vous" gardé
+   * sous-titre 15.5→14.5px mobile, gaps mt-5/mt-8/mt-6 → mt-4/mt-6/mt-4 mobile
+   * Résultat : "Biens analysés en ce moment" + début cards visibles bien plus tôt.
+3. Explorer le Maroc enrichi
+   * city cards : icône MapPin glass + MINI-INDICATEUR de niveau de prix (4 barres bronze)
+   * repère prix/m² en bronze (Casablanca 13 000, Rabat 13 000, Marrakech 12 500, Tanger 11 500)
+   * micro-label "REPÈRES DE MARCHÉ"
+   * CTA "Voir les biens →" sur ligne séparée par divider
+   * fond gradient glass + glow bronze renforcé au hover
+   * PAS de carte Maroc, PAS d'asset externe (conforme brief)
+
+Conservé tel quel (validé v1D) : direction dark premium, cards biens, prix bronze,
+badges glass, Doublon dark, Comparer dark, Prix observés barres bronze, stats row dark,
+P10IMG (SVG ListingVisual), wording prudent.
+
+Fichiers modifiés
+* components/layout/SiteHeader.tsx (prop `compact` rétrocompatible)
+* components/intent/AcheterPageShell.tsx (hero mobile compacté + Explorer enrichi)
+* scripts/screenshots-acheter-1e.mjs (nouveau)
+* docs/SESSION.md · docs/ROADMAP.md
+
+Screenshots (public/screenshots/intent-relooking-acheter/)
+* acheter-mobile-hero-1e.png · acheter-mobile-1e.png (full)
+* acheter-desktop-1e.png (full) · acheter-desktop-hero-1e.png
+
+Comparaison stricte vs référence (relooking/ChatGPT … 00_31_40 (1).png + 00_31_24 (1).png)
+Critère                          | v1E                          | Note
+---------------------------------|------------------------------|------
+Header mobile compact/stable     | ✓ prop compact               | 9
+Hero mobile compacté             | ✓ cards visibles + tôt       | 9
+Hero desktop (intact)            | ✓ non cassé                  | 9.5
+Cards (bronze, glass, premium)   | ✓ conservées                 | 9
+Visuel card (SVG vs photo réf)   | SVG premium overlays         | 7.5
+Sidebar glass sombre             | ✓                            | 9
+Stats row sombre                 | ✓                            | 9
+Explorer enrichi (barres+prix)   | ✓ valeur visible             | 9
+Direction dark premium           | ✓ conservée                  | 10
+Mobile cohérent                  | ✓                            | 9
+
+Score global : 89/100 (desktop 90 · mobile 89) — cibles ≥88 atteintes
+Écart résiduel : cards SVG (P10IMG, pas de photos) ; pas de carte (par design brief).
+
+Décision Production
+Score 89/100 validable. Preview déployée (akarfinder-ie4la9b3v-…).
+Production : push validé explicitement par Achraf (revue iPhone) — 2026-06-27.
+URL Production : https://akarfinder.vercel.app/acheter
+Smoke test prod : /acheter /  /search /compare → tous HTTP 200.
+Validation visuelle finale Achraf : EN ATTENTE (ROADMAP-1 reste In progress jusqu'au feu vert).
+
+----------------------------------------------------
 INTENT-RELOOKING-1D — ACHETER RESET VISUEL DESKTOP + MOBILE — LIVRÉ 2026-06-27 ⏳ (attente validation Achraf)
 
 Date : 2026-06-27

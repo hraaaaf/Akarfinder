@@ -11,9 +11,11 @@ import { navItems } from "@/lib/site";
 
 type SiteHeaderProps = {
   variant?: "light" | "dark" | "transparent";
+  /** Allège la hauteur du header + chips sur mobile (desktop inchangé). */
+  compact?: boolean;
 };
 
-export function SiteHeader({ variant = "light" }: SiteHeaderProps) {
+export function SiteHeader({ variant = "light", compact = false }: SiteHeaderProps) {
   const pathname = usePathname();
   const isDark = variant === "dark";
   const isTransparent = variant === "transparent";
@@ -45,7 +47,7 @@ export function SiteHeader({ variant = "light" }: SiteHeaderProps) {
           : "border-gray-200/90 bg-white/96 text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.06)] backdrop-blur supports-[backdrop-filter]:bg-white/88"
       }`}
     >
-      <Container className="flex items-center justify-between gap-3 py-3 sm:gap-5 sm:py-4">
+      <Container className={`flex items-center justify-between gap-3 sm:gap-5 sm:py-4 ${compact ? "py-2.5" : "py-3"}`}>
         <Link href="/" className="min-w-0" aria-label="AkarFinder - accueil">
           <BrandLogo
             variant={isDark || isTransparent ? "dark" : "default"}
@@ -125,7 +127,7 @@ export function SiteHeader({ variant = "light" }: SiteHeaderProps) {
           ? "border-white/8 bg-transparent"
           : "border-gray-100 bg-white/96"
       }`}>
-        <div className="flex gap-2 px-4 py-2">
+        <div className={`flex gap-2 px-4 ${compact ? "py-1.5" : "py-2"}`}>
           {[
             { href: "/acheter", label: "Acheter", aria: "Explorer les biens à acheter" },
             { href: "/louer", label: "Louer", aria: "Explorer les locations" },
@@ -139,7 +141,7 @@ export function SiteHeader({ variant = "light" }: SiteHeaderProps) {
                 key={chip.href}
                 href={chip.href}
                 aria-label={chip.aria}
-                className={`flex-shrink-0 rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition focus:outline-none focus:ring-2 focus:ring-bronze-500 ${
+                className={`flex-shrink-0 rounded-full border font-bold transition focus:outline-none focus:ring-2 focus:ring-bronze-500 ${compact ? "px-3 py-1 text-[11.5px]" : "px-3.5 py-1.5 text-[12px]"} ${
                   isActive
                     ? isDark || isTransparent
                       ? "border-bronze-500/60 bg-bronze-700/20 text-white"

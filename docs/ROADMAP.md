@@ -2093,7 +2093,7 @@ Version détail : 2026-06-27 — ROADMAP-RELOOKING-DETAIL (11 visuels détaillé
 
 Statut général
 * INTENT-RELOOKING-0 — Cadrage visuel              : Completed 2026-06-27
-* INTENT-RELOOKING-1 — Acheter                     : Completed 2026-06-27 (v1B — score 86/100)
+* INTENT-RELOOKING-1 — Acheter                     : In progress 2026-06-27 (1E livré — score 89/100 — attente validation finale Achraf)
 * INTENT-RELOOKING-2 — Louer                       : Not started
 * INTENT-RELOOKING-3 — Neuf                        : Not started
 * INTENT-RELOOKING-4 — Promoteurs                  : Not started
@@ -2186,13 +2186,18 @@ Nature : Documentation uniquement. Aucun fichier applicatif modifié.
 ----------------------------------------------------
 INTENT-RELOOKING-1 — ACHETER
 
-Statut : Completed 2026-06-27.
+Statut : In progress 2026-06-27 — 1E (polish final) livré, attente validation finale Achraf.
 Build : OK · Tests : 452 scrapers + 51 API (0 fail)
-Commit v1  : 4b88124 (livraison initiale — score 82/100 — non déployé production)
-Commit v1B : 393a077 (correction visuelle INTENT-RELOOKING-1B — score 86/100)
-Vercel Preview v1B : akarfinder-itdw6bdo5-achraf-benmoussa-s-projects.vercel.app (200 OK)
-Score visuel : 86/100 (87 desktop · 85 mobile — acceptable, seuil 85 atteint)
-Production : EN ATTENTE validation Achraf — vercel deploy --prod prêt
+Itérations
+* v1  : 4b88124 (livraison initiale — score 82/100 — non déployé)
+* v1B : 393a077 (correction visuelle — score 86/100)
+* v1C : fa05e8c (cards verticales 3-col — score 88/100)
+* v1D : 489c1e6 (RESET visuel dashboard SOMBRE deepblue global — score 89/100)
+       → Production https://akarfinder.vercel.app/acheter (push validé Achraf pour revue iPhone)
+* v1E : polish final (header mobile + hero mobile compactés, Explorer le Maroc enrichi)
+        — score 90 desktop · 89 mobile · 89 global
+Score visuel final : 89/100 (desktop 90 · mobile 89 — seuils ≥88 atteints)
+Passage en Completed : conditionné à la validation visuelle explicite d'Achraf (1E).
 Prérequis : INTENT-RELOOKING-0 complétée.
 
 Objectif
