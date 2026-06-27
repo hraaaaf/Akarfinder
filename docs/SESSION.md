@@ -1,6 +1,86 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+INTENT-RELOOKING-4 — PROMOTEURS — LIVRÉ 2026-06-27 ⏳ (attente validation Achraf)
+
+Date : 2026-06-27
+Build : OK · TypeScript : 0 erreur
+Tests : 452 scrapers (0 fail) · 51 API (0 fail)
+Smoke local : /promoteurs /acheter /louer /neuf /  /search /compare → tous HTTP 200
+
+Score visuel : 89/100 desktop · 89/100 mobile · Global 89/100 (notation stricte)
+
+Standard repris : dark premium deepblue/bronze (Acheter/Louer/Neuf), SiteHeader
+variant="dark" compact, dashboard 2-col, cards glass, stats/features strip, callout.
+
+Structure /promoteurs (dashboard B2B)
+* hero : label PROMOTEURS, titre "Présentez vos projets." + bronze "Recevez des leads
+  qualifiés.", sous-titre, CTA (Demander une page promoteur / Comparer les packs),
+  hero-right card "Ce qu'AkarFinder propose" (3 repères)
+* dashboard : card PROJET (Aperçu·exemple, Résidence Akar Garden, typologies/surface/
+  livraison/à partir de) + REPORTING (badge Simulation : Vues 8 742, Clics 812, Leads 146
+  + sparklines) | sidebar LEADS QUALIFIÉS (badge Aperçu, 3 leads exemples, "non des
+  demandes réelles") + WHATSAPP (activer la discussion)
+* outils : Brochure PDF, QR salon/Expo (icône QR), Formulaire intelligent
+* PACKS (#packs) : Starter / Pro / Premium (Populaire) / Expo + "Comparer les packs"
+* features strip : Diffusion multicanale / Formulaire intelligent / Notifications /
+  Données sécurisées
+* callout "Référencez votre projet" + disclaimer global
+
+Mocks labellisés (exigence brief)
+* projet : "Aperçu · exemple de page projet" + "Données fournies par le promoteur"
+* leads : badge "Aperçu" + "Exemples illustratifs — non des demandes réelles"
+* reporting : badge "Simulation" + "Données simulées — reporting réel dans l'espace Pro"
+* QR : "Aperçu — QR généré sur les pages actives" ; brochure : "Disponible sur les pages actives"
+* disclaimer global : "leads, reporting, QR codes et pages projet sont des aperçus
+  illustratifs (exemples / simulations) et non des résultats réels"
+
+Wording : aucun terme interdit (pas de "leads garantis / ventes garanties / résultat
+garanti / promoteur vérifié / performance garantie / partenaire officiel"). Packs : "sans
+promesse de volume ni garantie de résultats".
+
+Fichiers
+* Lus : SESSION.md, ROADMAP.md (INTENT-RELOOKING), app/promoteurs/page.tsx,
+  components/intent/{IntentPageShell,AcheterPageShell}.tsx, components/location/LouerPageShell,
+  components/neuf/NeufPageShell (réf standard), relooking/ visuels Promoteurs desktop+mobile
+* Créés : components/promoteurs/PromoteursPageShell.tsx, scripts/screenshots-promoteurs-4.mjs
+* Modifiés : app/promoteurs/page.tsx (pointe le nouveau shell), docs/SESSION.md, docs/ROADMAP.md
+* IntentPageShell générique : NON modifié (laissé pour d'autres usages éventuels)
+
+Comparaison stricte vs référence (relooking/ 00_31_41 (5) desktop · 00_31_25 (5) mobile)
+Critère                          | v4                           | Note
+---------------------------------|------------------------------|------
+Hero "Présentez vos projets" bronze | ✓                         | 9.5
+Card projet aperçu premium       | ✓ badge + specs              | 9
+Visuel projet (SVG vs photo réf) | SVG (P10IMG)                 | 7
+Leads qualifiés (labellisé)      | ✓ Aperçu                     | 9.5
+WhatsApp                         | ✓                            | 9.5
+Reporting indicatif (simulation) | ✓ + sparklines               | 9
+Brochure PDF + QR salon/Expo     | ✓                            | 9
+Packs Starter/Pro/Premium/Expo   | ✓ Premium "Populaire"        | 9.5
+Diffusion/formulaire/notif/sécu  | ✓ features strip             | 9
+Dark premium cohérent            | ✓                            | 10
+Mocks labellisés Aperçu/Exemple/Simulation | ✓                  | 10
+Mobile (compact, sans overflow)  | ✓                            | 9
+
+Score global : 89/100 (desktop 89 · mobile 89) — cibles ≥88 atteintes
+Écart résiduel : card projet en SVG fallback (P10IMG + exemple, pas de galerie photo).
+
+Dettes restantes
+* quand vrai promoteur partenaire : remplacer projet/leads/reporting exemples par données
+  réelles (espace Pro), brancher brochure_url + QR réel + WhatsApp promoteur
+* P17B full reste HOLD ; P18A / DATA-A Not started
+
+Décision Production
+Score 89/100 validable. Preview déployée (akarfinder-6c93ygrs5-…).
+Production : push validé explicitement par Achraf (revue iPhone) — 2026-06-27.
+URL Production : https://akarfinder.vercel.app/promoteurs
+Smoke test prod : /promoteurs /neuf /louer /acheter /  /search /compare → tous HTTP 200.
+Validation visuelle finale Achraf : EN ATTENTE (ROADMAP-4 reste In progress jusqu'au feu vert).
+
+Recommandation : après validation Achraf de /promoteurs → /vendre (INTENT-RELOOKING-5).
+
+----------------------------------------------------
 INTENT-RELOOKING-3 — NEUF — VALIDÉ ACHRAF + MICRO-CLARIFICATION 2026-06-27 ✅
 
 Neuf validé visuellement ("on garde la structure et le design"). Micro-passe de

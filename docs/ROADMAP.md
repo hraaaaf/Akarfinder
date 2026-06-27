@@ -2378,7 +2378,11 @@ Exit criteria
 ----------------------------------------------------
 INTENT-RELOOKING-4 — PROMOTEURS
 
-Statut : In progress 2026-06-27 (prochaine page — standard dark premium à appliquer).
+Statut : In progress 2026-06-27 — refonte dark premium livrée (score 89/100), attente validation Achraf.
+Build : OK · Tests : 452 scrapers + 51 API (0 fail)
+Shell dédié créé : components/promoteurs/PromoteursPageShell.tsx (remplace IntentPageShell générique).
+Tous les mocks (projet, leads, reporting, QR) labellisés Aperçu / Exemple / Simulation.
+Wording prudent (pas de "leads garantis / résultat garanti / promoteur vérifié / officiel").
 Prérequis : INTENT-RELOOKING-0 complétée + P17A-1 scaffolding disponible.
 
 Objectif
