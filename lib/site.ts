@@ -58,6 +58,7 @@ export const navItems: NavItem[] = [
   { href: "/acheter", label: "Acheter" },
   { href: "/louer", label: "Louer" },
   { href: "/neuf", label: "Neuf" },
+  { href: "/vendre", label: "Vendre" },
   { href: "/map", label: "Carte" },
   { href: "/search", label: "Recherche" },
 ];

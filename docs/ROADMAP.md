@@ -2096,8 +2096,8 @@ Statut général
 * INTENT-RELOOKING-1 — Acheter                     : Completed 2026-06-27 (1E — score 89/100 — validé visuellement par Achraf)
 * INTENT-RELOOKING-2 — Louer                       : In progress 2026-06-27 (refonte dark premium en cours)
 * INTENT-RELOOKING-3 — Neuf                        : Completed 2026-06-27 (dark premium — score 89/100 — validé visuellement par Achraf + micro-clarifications)
-* INTENT-RELOOKING-4 — Promoteurs                  : In progress 2026-06-27
-* INTENT-RELOOKING-5 — Vendre                      : Not started
+* INTENT-RELOOKING-4 — Promoteurs                  : Completed 2026-06-27 (dark premium B2B — validé visuellement par Achraf + micro-polish wording)
+* INTENT-RELOOKING-5 — Vendre                      : In progress 2026-06-27 (création dark premium — cible >95/100)
 * INTENT-RELOOKING-6 — QA globale mobile/desktop/perf : Not started
 * INTENT-RELOOKING-BONUS-INVESTIR — Direction future : Deferred / Not started
 
@@ -2378,7 +2378,7 @@ Exit criteria
 ----------------------------------------------------
 INTENT-RELOOKING-4 — PROMOTEURS
 
-Statut : In progress 2026-06-27 — refonte dark premium livrée (score 89/100), attente validation Achraf.
+Statut : Completed 2026-06-27 — validé visuellement par Achraf (8.6–8.8/10) après micro-polish wording (reporting arrondi/simulé, CTA leads/WhatsApp en "aperçu", titre raccourci).
 Build : OK · Tests : 452 scrapers + 51 API (0 fail)
 Shell dédié créé : components/promoteurs/PromoteursPageShell.tsx (remplace IntentPageShell générique).
 Tous les mocks (projet, leads, reporting, QR) labellisés Aperçu / Exemple / Simulation.
@@ -2436,7 +2436,9 @@ Exit criteria
 ----------------------------------------------------
 INTENT-RELOOKING-5 — VENDRE
 
-Statut : Not started.
+Statut : In progress 2026-06-27 — création /vendre dark premium (cible >95/100).
+Nav : /vendre ajouté à lib/site.ts (desktop) + mobile chips SiteHeader.
+Mocks (bien, estimation, leads, visibilité) labellisés "Aperçu / Exemple".
 Prérequis : INTENT-RELOOKING-0 complétée + décisions Achraf (nav, blocs mock) tranchées.
 
 Objectif

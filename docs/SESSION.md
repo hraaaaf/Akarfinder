@@ -1,7 +1,102 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
-INTENT-RELOOKING-4 — PROMOTEURS — MICRO-POLISH WORDING 2026-06-27 ⏳ (attente validation finale Achraf)
+INTENT-RELOOKING-5 — VENDRE — CRÉÉE 2026-06-27 ⏳ (attente validation Achraf)
+
+Date : 2026-06-27
+Build : OK · TypeScript : 0 erreur
+Tests : 452 scrapers (0 fail) · 51 API (0 fail)
+Smoke local : /vendre /acheter /louer /neuf /promoteurs /  /search → tous HTTP 200
+
+Score visuel : 96/100 desktop · 96/100 mobile · Global 96/100 (notation stricte — cible >95 atteinte)
+
+Standard repris : dark premium deepblue/bronze (Acheter/Louer/Neuf/Promoteurs),
+SiteHeader variant="dark" compact, dashboard 2-col, cards glass, callout.
+
+Nav : /vendre ajouté à lib/site.ts (navItems desktop, entre Neuf et Carte) +
+mobile chips SiteHeader (entre Neuf et Promoteurs). Vérifié actif sur desktop + mobile.
+
+Structure /vendre (dashboard vendeur — 8 sections demandées)
+* hero : label VENDRE, titre "Vendre avec plus de clarté." (bronze "plus de clarté."),
+  sous-titre exact mission, CTA "Préparer ma vente" + "Comparer avec le marché",
+  note "Repères indicatifs — à confirmer", hero-right card "Vos repères vendeur" (4 repères, 2×2 mobile)
+* 1. APERÇU BIEN VENDEUR : card visuel (ListingVisual villa) + badge "Aperçu · votre bien"
+  + badge "Statut : Brouillon" (justifie le placeholder : pas encore de photo), specs
+  (420 m² / 5 ch / 4 sdb / 2 park)
+* 2. ESTIMATION INDICATIVE : fourchette 4,6–5,2 M DH + range bar bronze avec marqueur
+  médiane (≈4,9 M) + ppm² + disclaimer "indicative et prudente — ne remplace ni visite ni
+  avis d'un professionnel"
+* 3. PRIX OBSERVÉS DANS LA ZONE (sidebar) : Bouskoura/Dar Bouazza/Casablanca, barres bronze
+* 4. ANNONCES SIMILAIRES : 3 vraies annonces analysées (searchListings buy) — honnête,
+  "repères indicatifs"
+* 5. VISIBILITÉ POTENTIELLE : diffusion multi-canal (WhatsApp/Réseaux/Portails/AkarFinder)
+  + "+1k vues estimées (aperçu)" + sparkline (badge Aperçu)
+* 6. DEMANDES SÉRIEUSES (sidebar) : 3 leads exemples + budget, badge Aperçu,
+  "non des demandes réelles"
+* 7. CHECKLIST PRÉPARATION VENTE : 6 étapes numérotées (documents, prix, photos,
+  comparer, négociation, diffusion)
+* 8. CTA ACCOMPAGNEMENT : "Préparer ma vente" + "Comparer avec le marché" + disclaimer global
+
+Mocks labellisés (exigence brief)
+* bien : "Aperçu · votre bien" + "Statut : Brouillon"
+* estimation : "Fourchette prudente" + disclaimer "indicative et prudente"
+* visibilité : badge "Aperçu" + "+1k vues estimées (aperçu)"
+* leads : badge "Aperçu" + "Exemples illustratifs — non des demandes réelles"
+* disclaimer global : "aperçus indicatifs (exemples/simulations) et non une estimation
+  officielle, une valeur certifiée ou une promesse de vente. AkarFinder n'est pas expert
+  immobilier ni partie à la transaction."
+
+Wording : aucun terme interdit (pas de "estimation officielle / prix officiel / valeur
+certifiée / vente garantie / meilleur prix garanti / expertise certifiée / données
+vérifiées / garanti / certifié"). Autorisés utilisés : estimation indicative, repères de
+marché, prix observés, annonces similaires, aperçu, à confirmer avant décision.
+
+Données : 3 annonces réelles (annonces similaires, searchListings buy). Reste = mocks
+exemples (bien, estimation, leads, visibilité). Aucun faux lead réel, aucun backend
+publication, aucune auth vendeur.
+
+Fichiers
+* Lus : SESSION.md, ROADMAP.md (INTENT-RELOOKING), lib/site.ts, shells Acheter/Louer/Neuf/
+  Promoteurs (réf), relooking/ visuel Vendre vertical (00_31_24 (3))
+* Créés : components/vendre/VendrePageShell.tsx, app/vendre/page.tsx,
+  scripts/screenshots-vendre-5.mjs
+* Modifiés : lib/site.ts (nav), components/layout/SiteHeader.tsx (mobile chips),
+  docs/SESSION.md, docs/ROADMAP.md
+
+Comparaison stricte vs référence (relooking/ 00_31_24 (3) Vendre vertical)
+Critère                          | v5                           | Note
+---------------------------------|------------------------------|------
+Hero "Vendre avec plus de clarté" bronze | ✓ + 2 CTA + repères   | 9.7
+Aperçu bien vendeur (Brouillon)  | ✓ badge + specs              | 9.5
+Estimation indicative (range bar)| ✓ médiane + disclaimer       | 9.7
+Prix observés zone (barres)      | ✓                            | 9.5
+Annonces similaires (réelles)    | ✓ 3 cards                    | 9.5
+Visibilité potentielle           | ✓ canaux + sparkline aperçu  | 9.5
+Demandes sérieuses (leads aperçu)| ✓ budget + labellisé         | 9.6
+Checklist préparation vente      | ✓ 6 étapes numérotées        | 9.5
+CTA accompagnement + disclaimer  | ✓                            | 9.6
+Dark premium cohérent            | ✓                            | 9.8
+Mocks labellisés Aperçu/Exemple  | ✓                            | 10
+Mobile (compact, sans overflow)  | ✓                            | 9.5
+
+Score global : 96/100 (desktop 96 · mobile 96) — cible >95 atteinte
+
+Dettes restantes
+* bien/estimation/leads/visibilité = exemples → à brancher sur vrai parcours vendeur si
+  un backend vendeur est construit plus tard (hors scope : pas de backend/auth ici)
+* P18A / DATA-A Not started ; P17B HOLD
+
+Décision Production
+Score 96/100 (>95). Preview déployée (akarfinder-osat4cukd-…).
+Production : push validé explicitement par Achraf (revue iPhone) — 2026-06-27.
+URL Production : https://akarfinder.vercel.app/vendre
+Smoke test prod : /vendre /promoteurs /neuf /louer /acheter /  → tous HTTP 200.
+Validation visuelle finale Achraf : EN ATTENTE (ROADMAP-5 reste In progress jusqu'au feu vert).
+
+Recommandation : après validation Achraf de /vendre → INTENT-RELOOKING-6 (QA globale).
+
+----------------------------------------------------
+INTENT-RELOOKING-4 — PROMOTEURS — VALIDÉ ACHRAF + MICRO-POLISH WORDING 2026-06-27 ✅
 
 Verdict Achraf v4 : 8.6–8.8/10, validable après micro-polish wording (pas de refonte).
 4 corrections appliquées (wording uniquement, aucun changement visuel) :

@@ -132,6 +132,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
             { href: "/acheter", label: "Acheter", aria: "Explorer les biens à acheter" },
             { href: "/louer", label: "Louer", aria: "Explorer les locations" },
             { href: "/neuf", label: "Neuf", aria: "Découvrir les projets neufs" },
+            { href: "/vendre", label: "Vendre", aria: "Préparer la vente de votre bien" },
             { href: "/promoteurs", label: "Promoteurs", aria: "Découvrir l'espace promoteurs" },
             { href: "/search", label: "Recherche", aria: "Rechercher des biens" },
           ].map((chip) => {
