@@ -38,9 +38,9 @@ const PRIX_MAX = Math.max(...PRIX_OBSERVES.map((r) => r.median));
 
 const FILTER_CHIPS = [
   { label: "Acheter",         href: "/search?transaction_type=buy" },
-  { label: "Type de bien",    href: "/search" },
-  { label: "Prix max",        href: "/search" },
-  { label: "Plus de filtres", href: "/search" },
+  { label: "Type de bien",    href: "/search?transaction_type=buy" },
+  { label: "Prix max",        href: "/search?transaction_type=buy" },
+  { label: "Plus de filtres", href: "/search?transaction_type=buy" },
 ];
 
 // level = repère relatif du prix/m² (1-4) pour le mini-indicateur visuel
@@ -525,10 +525,10 @@ export function AcheterPageShell({
                 </div>
                 <div className="border-t border-bronze-500/20 bg-bronze-500/[0.06] px-5 py-3">
                   <Link
-                    href="/search"
+                    href="/search?transaction_type=buy"
                     className="flex items-center justify-between text-[12.5px] font-extrabold text-bronze-300 transition hover:text-bronze-200"
                   >
-                    Voir les doublons
+                    Explorer les annonces
                     <ArrowRight size={13} aria-hidden="true" />
                   </Link>
                 </div>

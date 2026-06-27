@@ -1,6 +1,65 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+FUNCTIONAL-FIXES-0 + LEADS-PREFLIGHT — COMPLETED 2026-06-27 ✅
+
+Périmètre : fixes rapides CTA + audit complet de l'état réel du tunnel leads.
+
+Fixes appliqués — AcheterPageShell.tsx
+* FILTER_CHIPS "Type de bien", "Prix max", "Plus de filtres" : href="/search" → "/search?transaction_type=buy" ✅
+  Note : maxPrice non supporté par /search (lit seulement transaction_type, city, mre). Param ignoré.
+* CTA "Voir les doublons" : href="/search" → "/search?transaction_type=buy" + label "Explorer les annonces" ✅
+  Raison : /search ne supporte pas has_duplicates → label honnête. Filtre doublon = future extension /search.
+
+/map?city= — Vérifié
+* app/map/page.tsx ligne 62 : const city = pickFirst(params.city) ?? "all" → lu + passé à initialFilters ✅
+* EXPLORER_CITIES dans AcheterPageShell déjà correct : /map?city=Casablanca etc. ✅
+
+État réel de /onboarding
+* BuyerOnboardingFlow.tsx : flow 6 étapes complet, Étape 6 → submitLead() → fetch POST /api/leads ✅
+* Source tracé : source_channel="onboarding", source_page="/onboarding"
+* listingId supporté via ?listing= param sur la page
+* ⚠️ source_page HARDCODÉ = "/onboarding" — ne distingue pas si l'utilisateur vient de /acheter ou /louer
+* ⚠️ Aucun CTA "Créer mon dossier" visible sur /acheter ou /louer → tunnel existe mais pas d'entrée visible !
+
+État réel de /api/leads
+* app/api/leads/route.ts : POST entièrement câblé ✅
+* Validation payload via lib/leads/validate → validateLeadPayload + extractLeadPayload
+* Temperature recalculée server-side via computeLeadTemperature (client ne peut pas truquer)
+* Insert → buyer_leads (Supabase) → retourne { ok: true, lead_id: data.id, next: "/search" }
+* PATCH /api/leads/[id] : mise à jour statut/notes/follow-up via token admin ✅
+* visit_request type supporté (source_channel = "visit_request" → temperature = "chaud" automatique)
+
+État réel de /pro/leads
+* app/pro/leads/page.tsx : page fonctionnelle ✅
+* Auth : LEADS_ADMIN_TOKEN env + ?token= query param (MVP — token-in-URL, auth réelle à venir)
+* Affiche buyer_leads triés par created_at desc, limit 200
+* Filtres : Tous / Dossiers acheteurs / Demandes de visite / Chaud / Nouveau
+* WhatsApp CTA par lead, lien vers /listings/{id}, statut, notes internes, suivi (LeadCrmCard)
+* Sépare visit_request vs buyer_profile
+
+Décision LEADS-MVP : OUI, peut démarrer ✅
+Infrastructure complète :
+  ✅ /api/leads POST → buyer_leads (opérationnel)
+  ✅ /onboarding → flow 6 étapes → submit réel
+  ✅ /pro/leads → inbox interne avec filtres et CRM minimal
+  ✅ /api/leads/[id] PATCH → gestion statut
+Ce qui manque pour LEADS-MVP :
+  ❌ CTAs hooks sur /acheter et /louer → aucun bouton visible qui amène à /onboarding
+  ❌ source_page dynamique (actuellement hardcodé "/onboarding")
+  ❌ Export CSV /pro/leads
+  ❌ CTA contextuel listing cards → /onboarding?listing={id}
+
+Build / Tests
+* npm run build : OK (0 erreur TypeScript) ✅
+* test:scrapers  : 452/452 pass ✅
+* test:api       : 51/51 pass ✅
+
+FUNCTIONAL-FIXES-0 : Completed 2026-06-27 ✅
+LEADS-PREFLIGHT : Completed 2026-06-27 ✅
+Prochaine étape recommandée : LEADS-MVP — CTAs hooks /acheter /louer + source_page dynamique + export CSV
+
+----------------------------------------------------
 INTENT-RELOOKING-6 — QA GLOBALE — COMPLETED 2026-06-27 ✅
 
 Périmètre : QA desktop + mobile des 5 pages d'intention validées.
