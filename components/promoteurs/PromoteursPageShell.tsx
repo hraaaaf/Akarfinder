@@ -59,11 +59,11 @@ const EXAMPLE_LEADS = [
   { initials: "K", name: "Khalid F.",  detail: "Studio · Casablanca" },
 ];
 
-// Reporting exemple (simulation).
+// Reporting exemple (simulation) — valeurs volontairement arrondies, non des vrais chiffres.
 const EXAMPLE_REPORTING = [
-  { label: "Vues de la page", value: "8 742" },
-  { label: "Clics sur contact", value: "812" },
-  { label: "Leads reçus", value: "146" },
+  { label: "Vues simulées", value: "+8k" },
+  { label: "Clics simulés", value: "+800" },
+  { label: "Leads simulés", value: "+140" },
 ];
 
 // Packs (offres) — sans promesse de résultat.
@@ -184,7 +184,7 @@ export function PromoteursPageShell() {
                 <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400">Aperçu</p>
               </div>
               <h2 className="mt-2 text-[1.5rem] font-extrabold tracking-[-0.04em] text-white">
-                Votre espace promoteur en un coup d'œil
+                Votre espace promoteur
               </h2>
               <p className="mt-1.5 text-[12.5px] text-white/50">
                 Exemples illustratifs — les données affichées sont des simulations.
@@ -309,7 +309,7 @@ export function PromoteursPageShell() {
                     href="/pro"
                     className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-[12px] font-extrabold text-white/85 transition hover:border-bronze-500/30 hover:bg-white/[0.07]"
                   >
-                    Voir tous les leads
+                    Voir l'aperçu des leads
                     <ArrowRight size={12} aria-hidden="true" />
                   </Link>
                 </div>
@@ -331,7 +331,7 @@ export function PromoteursPageShell() {
                 </div>
                 <div className="border-t border-white/8 bg-white/[0.02] px-5 py-3">
                   <Link href="/pro" className="flex items-center justify-between text-[12.5px] font-extrabold text-[#34d399] transition hover:text-[#6ee7b7]">
-                    Activer la discussion
+                    Découvrir l'aperçu WhatsApp
                     <ArrowRight size={13} aria-hidden="true" />
                   </Link>
                 </div>

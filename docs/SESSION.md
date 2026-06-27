@@ -1,7 +1,20 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
-INTENT-RELOOKING-4 — PROMOTEURS — LIVRÉ 2026-06-27 ⏳ (attente validation Achraf)
+INTENT-RELOOKING-4 — PROMOTEURS — MICRO-POLISH WORDING 2026-06-27 ⏳ (attente validation finale Achraf)
+
+Verdict Achraf v4 : 8.6–8.8/10, validable après micro-polish wording (pas de refonte).
+4 corrections appliquées (wording uniquement, aucun changement visuel) :
+1. Métriques reporting trop précises → arrondies + labellisées simulé :
+   "8 742 / 812 / 146" → "+8k / +800 / +140" ; labels "Vues simulées / Clics simulés /
+   Leads simulés" (badge "Simulation" + footer "Données simulées" conservés).
+2. CTA leads "Voir tous les leads" → "Voir l'aperçu des leads".
+3. WhatsApp "Activer la discussion" → "Découvrir l'aperçu WhatsApp" (moins fonctionnel).
+4. Titre "Votre espace promoteur en un coup d'œil" → "Votre espace promoteur" (mobile).
+Build OK · 503 tests pass · /promoteurs 200. Standard visuel inchangé.
+
+----------------------------------------------------
+INTENT-RELOOKING-4 — PROMOTEURS — LIVRÉ 2026-06-27 (refonte initiale)
 
 Date : 2026-06-27
 Build : OK · TypeScript : 0 erreur
