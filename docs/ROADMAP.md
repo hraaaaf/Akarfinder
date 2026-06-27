@@ -2097,7 +2097,7 @@ Statut général
 * INTENT-RELOOKING-2 — Louer                       : In progress 2026-06-27 (dark premium — score 95/100 après uplift visuel — attente validation)
 * INTENT-RELOOKING-3 — Neuf                        : Completed 2026-06-27 (dark premium — score 95/100 après uplift visuel cards)
 * INTENT-RELOOKING-4 — Promoteurs                  : Completed 2026-06-27 (dark premium B2B — score 95/100 après uplift visuel cards)
-* INTENT-RELOOKING-5 — Vendre                      : In progress 2026-06-27 (création dark premium — score 96/100 — attente validation)
+* INTENT-RELOOKING-5 — Vendre                      : Completed 2026-06-27 (dark premium — score 96/100 — validé visuellement par Achraf)
 * INTENT-RELOOKING-6 — QA globale mobile/desktop/perf : Not started
 * INTENT-RELOOKING-BONUS-INVESTIR — Direction future : Deferred / Not started
 
@@ -2436,7 +2436,7 @@ Exit criteria
 ----------------------------------------------------
 INTENT-RELOOKING-5 — VENDRE
 
-Statut : In progress 2026-06-27 — création /vendre dark premium (cible >95/100).
+Statut : Completed 2026-06-27 — validé visuellement par Achraf (score 96/100). Production OK.
 Nav : /vendre ajouté à lib/site.ts (desktop) + mobile chips SiteHeader.
 Mocks (bien, estimation, leads, visibilité) labellisés "Aperçu / Exemple".
 Prérequis : INTENT-RELOOKING-0 complétée + décisions Achraf (nav, blocs mock) tranchées.

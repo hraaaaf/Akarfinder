@@ -46,7 +46,17 @@ URL Production : https://akarfinder.vercel.app (toutes pages d'intention).
 Smoke test prod : /acheter /louer /neuf /promoteurs /vendre / → tous HTTP 200.
 
 ----------------------------------------------------
-INTENT-RELOOKING-5 — VENDRE — CRÉÉE 2026-06-27 ⏳ (attente validation Achraf)
+INTENT-RELOOKING-5 — VENDRE — VALIDÉ ACHRAF · COMPLETED 2026-06-27 ✅
+
+Validation : /vendre validé visuellement par Achraf. Score final 96/100.
+INTENT-RELOOKING-5 — Vendre : Completed. Prochaine étape : INTENT-RELOOKING-6 (QA globale).
+Production autorisée et déployée : https://akarfinder.vercel.app/vendre
+Smoke test prod (post déploiement) : /vendre /acheter /louer /neuf /promoteurs / /search
+/compare → tous HTTP 200. P18A Not started · DATA-A Not started · P17B HOLD.
+
+(détails de création ci-dessous)
+----------------------------------------------------
+INTENT-RELOOKING-5 — VENDRE — CRÉÉE 2026-06-27 (détail création)
 
 Date : 2026-06-27
 Build : OK · TypeScript : 0 erreur
