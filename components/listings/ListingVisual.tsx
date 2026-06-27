@@ -75,8 +75,9 @@ function getMotif(listing: Listing): "appartement" | "villa" | "studio" | "terra
   }
 }
 
-// Window grid for a building rect.
-function windows(rng: () => number, x: number, y: number, w: number, h: number, color: string, key: string) {
+// Window grid for a building rect. `warm` = couleur dorée pour quelques fenêtres allumées
+// (rendu soir premium). Si absent, toutes les fenêtres utilisent `color`.
+function windows(rng: () => number, x: number, y: number, w: number, h: number, color: string, key: string, warm?: string) {
   const cols = Math.max(2, Math.round(w / 16));
   const rows = Math.max(2, Math.round(h / 18));
   const gapX = w / cols;
@@ -87,6 +88,7 @@ function windows(rng: () => number, x: number, y: number, w: number, h: number, 
   for (let r = 0; r < rows; r += 1) {
     for (let c = 0; c < cols; c += 1) {
       if (rng() < 0.28) continue; // some windows dark
+      const lit = warm && rng() < 0.34;
       cells.push(
         <rect
           key={`${key}-${r}-${c}`}
@@ -95,8 +97,8 @@ function windows(rng: () => number, x: number, y: number, w: number, h: number, 
           width={ww}
           height={wh}
           rx={1}
-          fill={color}
-          opacity={0.55 + rng() * 0.4}
+          fill={lit ? warm : color}
+          opacity={lit ? 0.82 + rng() * 0.18 : 0.5 + rng() * 0.4}
         />
       );
     }
@@ -132,9 +134,9 @@ export function ListingVisual({ listing, className = "", rounded = false }: List
           blocks.push(<rect key={`b-${i}`} x={cx} y={by} width={bw} height={bh} fill={fill} />);
           if (motif === "bureau") {
             // glass facade: vertical mullions + window grid
-            blocks.push(...windows(rng, cx + 4, by + 6, bw - 8, bh - 10, palette.window, `w-${i}`));
+            blocks.push(...windows(rng, cx + 4, by + 6, bw - 8, bh - 10, palette.window, `w-${i}`, palette.sun));
           } else {
-            blocks.push(...windows(rng, cx + 5, by + 8, bw - 10, bh - 14, palette.window, `w-${i}`));
+            blocks.push(...windows(rng, cx + 5, by + 8, bw - 10, bh - 14, palette.window, `w-${i}`, palette.sun));
           }
           // rooftop accent
           blocks.push(<rect key={`r-${i}`} x={cx + bw / 2 - 1.5} y={by - 12} width={3} height={12} fill={palette.accent} opacity={0.8} />);
@@ -165,7 +167,7 @@ export function ListingVisual({ listing, className = "", rounded = false }: List
           <g key="villa">
             <rect x={vx} y={vy} width={vw} height={78} fill={palette.structure} />
             <rect x={vx} y={vy + 30} width={vw} height={48} fill={palette.structureAlt} opacity={0.65} />
-            {windows(rng, vx + 12, vy + 14, vw - 24, 24, palette.window, "vw")}
+            {windows(rng, vx + 12, vy + 14, vw - 24, 24, palette.window, "vw", palette.sun)}
             <rect x={vx + 18} y={vy + 44} width={20} height={34} fill={palette.accent} opacity={0.85} />
             {/* pool */}
             <rect x={36} y={horizon - 26} width={96} height={26} rx={6} fill={palette.accent} opacity={0.32} />
@@ -186,7 +188,7 @@ export function ListingVisual({ listing, className = "", rounded = false }: List
           <g key="maison">
             <rect x={hx} y={hy} width={hw} height={70} fill={palette.structure} />
             <path d={`M${hx - 14} ${hy} L${hx + hw / 2} ${hy - 42} L${hx + hw + 14} ${hy} Z`} fill={palette.structureAlt} />
-            {windows(rng, hx + 14, hy + 12, hw - 28, 28, palette.window, "hw")}
+            {windows(rng, hx + 14, hy + 12, hw - 28, 28, palette.window, "hw", palette.sun)}
             <rect x={hx + hw / 2 - 13} y={hy + 34} width={26} height={36} fill={palette.accent} opacity={0.85} />
             {/* garden hedge */}
             <rect x={40} y={horizon - 16} width={72} height={16} rx={8} fill={palette.accent} opacity={0.28} />
@@ -202,7 +204,7 @@ export function ListingVisual({ listing, className = "", rounded = false }: List
           <g key="studio">
             <rect x={sx} y={sy} width={sw} height={120} fill={palette.structure} />
             <rect x={sx} y={sy} width={sw} height={120} fill="none" stroke={palette.accent} strokeWidth={2} opacity={0.5} />
-            {windows(rng, sx + 12, sy + 12, sw - 24, 96, palette.window, "sw")}
+            {windows(rng, sx + 12, sy + 12, sw - 24, 96, palette.window, "sw", palette.sun)}
             <rect x={sx + sw / 2 - 16} y={horizon - 30} width={32} height={30} fill={palette.accent} opacity={0.8} />
           </g>
         );
@@ -255,33 +257,74 @@ export function ListingVisual({ listing, className = "", rounded = false }: List
       <defs>
         <linearGradient id={`${gid}-sky`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={palette.sky[0]} />
-          <stop offset="100%" stopColor={palette.sky[1]} />
+          <stop offset="55%" stopColor={palette.sky[1]} />
+          <stop offset="100%" stopColor={palette.sunGlow} stopOpacity="0.32" />
         </linearGradient>
         <radialGradient id={`${gid}-sun`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor={palette.sun} stopOpacity="0.95" />
-          <stop offset="45%" stopColor={palette.sunGlow} stopOpacity="0.45" />
+          <stop offset="0%" stopColor={palette.sun} stopOpacity="1" />
+          <stop offset="32%" stopColor={palette.sun} stopOpacity="0.5" />
+          <stop offset="68%" stopColor={palette.sunGlow} stopOpacity="0.26" />
           <stop offset="100%" stopColor={palette.sunGlow} stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id={`${gid}-haze`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={palette.sunGlow} stopOpacity="0" />
+          <stop offset="100%" stopColor={palette.sun} stopOpacity="0.22" />
+        </linearGradient>
+        <linearGradient id={`${gid}-refl`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={palette.sun} stopOpacity="0.16" />
+          <stop offset="58%" stopColor={palette.sun} stopOpacity="0" />
+        </linearGradient>
+        <radialGradient id={`${gid}-vig`} cx="50%" cy="42%" r="75%">
+          <stop offset="58%" stopColor="#000000" stopOpacity="0" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0.28" />
         </radialGradient>
         <linearGradient id={`${gid}-scrim`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#000000" stopOpacity="0" />
-          <stop offset="100%" stopColor="#000000" stopOpacity="0.34" />
+          <stop offset="60%" stopColor="#000000" stopOpacity="0" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0.42" />
         </linearGradient>
       </defs>
 
       <rect width={W} height={H} fill={`url(#${gid}-sky)`} />
-      <circle cx={sunX} cy={sunY} r={70} fill={`url(#${gid}-sun)`} />
-      <circle cx={sunX} cy={sunY} r={13} fill={palette.sun} opacity={0.9} />
+
+      {/* sun — halo, light streak, core */}
+      <circle cx={sunX} cy={sunY} r={96} fill={`url(#${gid}-sun)`} />
+      <rect x={0} y={sunY - 1.5} width={W} height={3} fill={palette.sun} opacity={0.1} />
+      <circle cx={sunX} cy={sunY} r={14} fill={palette.sun} opacity={0.95} />
 
       {/* faint stars / texture dots */}
       {Array.from({ length: 10 }).map((_, i) => (
-        <circle key={`star-${i}`} cx={20 + rng() * 360} cy={16 + rng() * 120} r={rng() * 1.2} fill={palette.window} opacity={0.25} />
+        <circle key={`star-${i}`} cx={20 + rng() * 360} cy={16 + rng() * 110} r={rng() * 1.2} fill={palette.window} opacity={0.22} />
       ))}
+
+      {/* distant skyline — profondeur (rng séparé, ne perturbe pas le motif) */}
+      {(() => {
+        const r2 = mulberry32(seed ^ 0x9e3779b9);
+        const out = [];
+        let cx = -8;
+        let i = 0;
+        while (cx < W + 8) {
+          const bw = 22 + Math.floor(r2() * 30);
+          const bh = 26 + Math.floor(r2() * 62);
+          out.push(<rect key={`dist-${i}`} x={cx} y={horizon - bh} width={bw} height={bh} fill={palette.structure} opacity={0.4} rx={1} />);
+          cx += bw + 2 + Math.floor(r2() * 6);
+          i += 1;
+        }
+        return out;
+      })()}
+
+      {/* horizon haze */}
+      <rect x={0} y={horizon - 46} width={W} height={54} fill={`url(#${gid}-haze)`} />
 
       {buildings()}
 
-      {/* ground */}
+      {/* ground + reflet */}
       <rect x={0} y={horizon} width={W} height={H - horizon} fill={palette.ground} />
-      <rect x={0} y={horizon} width={W} height={3} fill={palette.accent} opacity={0.35} />
+      <rect x={0} y={horizon} width={W} height={H - horizon} fill={`url(#${gid}-refl)`} />
+      <rect x={0} y={horizon} width={W} height={2} fill={palette.accent} opacity={0.45} />
+
+      {/* atmosphère + cadrage */}
+      <rect width={W} height={H} fill={`url(#${gid}-vig)`} />
       <rect width={W} height={H} fill={`url(#${gid}-scrim)`} />
     </svg>
   );

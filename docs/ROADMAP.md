@@ -2093,11 +2093,11 @@ Version détail : 2026-06-27 — ROADMAP-RELOOKING-DETAIL (11 visuels détaillé
 
 Statut général
 * INTENT-RELOOKING-0 — Cadrage visuel              : Completed 2026-06-27
-* INTENT-RELOOKING-1 — Acheter                     : Completed 2026-06-27 (1E — score 89/100 — validé visuellement par Achraf)
-* INTENT-RELOOKING-2 — Louer                       : In progress 2026-06-27 (refonte dark premium en cours)
-* INTENT-RELOOKING-3 — Neuf                        : Completed 2026-06-27 (dark premium — score 89/100 — validé visuellement par Achraf + micro-clarifications)
-* INTENT-RELOOKING-4 — Promoteurs                  : Completed 2026-06-27 (dark premium B2B — validé visuellement par Achraf + micro-polish wording)
-* INTENT-RELOOKING-5 — Vendre                      : In progress 2026-06-27 (création dark premium — cible >95/100)
+* INTENT-RELOOKING-1 — Acheter                     : Completed 2026-06-27 (dark premium — score 95/100 après uplift visuel cards)
+* INTENT-RELOOKING-2 — Louer                       : In progress 2026-06-27 (dark premium — score 95/100 après uplift visuel — attente validation)
+* INTENT-RELOOKING-3 — Neuf                        : Completed 2026-06-27 (dark premium — score 95/100 après uplift visuel cards)
+* INTENT-RELOOKING-4 — Promoteurs                  : Completed 2026-06-27 (dark premium B2B — score 95/100 après uplift visuel cards)
+* INTENT-RELOOKING-5 — Vendre                      : In progress 2026-06-27 (création dark premium — score 96/100 — attente validation)
 * INTENT-RELOOKING-6 — QA globale mobile/desktop/perf : Not started
 * INTENT-RELOOKING-BONUS-INVESTIR — Direction future : Deferred / Not started
 

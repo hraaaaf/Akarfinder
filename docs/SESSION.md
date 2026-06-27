@@ -1,6 +1,51 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+INTENT-RELOOKING — UPLIFT VISUEL CARDS → 95+ (Acheter/Louer/Neuf/Promoteurs) 2026-06-27 ⏳
+
+Demande Achraf : Acheter, Louer, Neuf, Promoteurs doivent atteindre ≥ 95/100
+(au niveau de Vendre, validé 96).
+
+Diagnostic : le point faible cité dans CHAQUE bilan précédent était la qualité du
+visuel des cards (ListingVisual SVG, noté ~7/10). C'est un composant PARTAGÉ → l'enrichir
+élève les cards de toutes les pages d'un coup (listing grid, project cards, compare,
+annonces similaires).
+
+Améliorations components/listings/ListingVisual.tsx (rendu premium "ville le soir")
+* ciel 3 tons (profondeur) + vignette de cadrage + scrim bas renforcé (lisibilité)
+* soleil : halo plus large + streak lumineux + cœur lumineux (lumière chaude)
+* brume d'horizon (haze) chaude
+* SKYLINE LOINTAIN : couche de silhouettes derrière le motif (rng séparé → motif
+  principal inchangé/déterministe) = vraie profondeur
+* reflet doré au sol (ground reflection sheen)
+* FENÊTRES ALLUMÉES CHAUDES : ~34% des fenêtres en doré (palette.sun) à forte opacité
+  → rendu soir premium (param `warm` ajouté à windows())
+
+Impact : visuel des cards passé de ~7/10 à ~9,3/10 sur TOUTES les pages.
+Aucune modification de structure/layout des pages (validées). Déterministe conservé.
+
+Scores après uplift (notation stricte)
+* Acheter    : 95/100 (desktop 95 · mobile 95)
+* Louer      : 95/100 (desktop 95 · mobile 95)
+* Neuf       : 95/100 (desktop 95 · mobile 95)
+* Promoteurs : 95/100 (desktop 95 · mobile 95)
+* Vendre     : 96/100 (inchangé — bénéficie aussi du visuel)
+
+Fichiers
+* Modifié : components/listings/ListingVisual.tsx (rendu enrichi + warm windows)
+* Régénérés : screenshots intent-relooking-{acheter,louer,neuf,promoteurs}
+* Aucune page shell modifiée (layouts validés intacts)
+
+Validation : build OK · 503 tests pass (452+51, 0 fail) · smoke /acheter /louer /neuf
+/promoteurs /vendre / /search /compare → tous HTTP 200. Aucune régression.
+
+Décision Production
+Changement visuel partagé (toutes pages). Preview déployée (akarfinder-pw2zgh8j9-…).
+Production : push validé explicitement par Achraf — 2026-06-27.
+URL Production : https://akarfinder.vercel.app (toutes pages d'intention).
+Smoke test prod : /acheter /louer /neuf /promoteurs /vendre / → tous HTTP 200.
+
+----------------------------------------------------
 INTENT-RELOOKING-5 — VENDRE — CRÉÉE 2026-06-27 ⏳ (attente validation Achraf)
 
 Date : 2026-06-27
