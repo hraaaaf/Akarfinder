@@ -1,7 +1,54 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
-INTENT-RELOOKING — UPLIFT VISUEL CARDS → 95+ (Acheter/Louer/Neuf/Promoteurs) 2026-06-27 ⏳
+INTENT-RELOOKING-6 — QA GLOBALE — COMPLETED 2026-06-27 ✅
+
+Périmètre : QA desktop + mobile des 5 pages d'intention validées.
+Déclencheur : toutes les pages INTENT-RELOOKING-1 à 5 validées par Achraf.
+
+Avant QA
+* INTENT-RELOOKING-2 Louer mis à jour : In progress → Completed (validé "Validé aussi!" Achraf)
+* INTENT-RELOOKING-6 mis à jour : Not started → In progress
+
+Build / Tests
+* npm run build : OK (0 erreur TypeScript) ✅
+* test:scrapers  : 452/452 pass, 0 fail ✅
+* test:api       : 51/51 pass, 0 fail ✅
+
+Smoke test HTTP 200 (10 routes)
+/ → 200 · /acheter → 200 · /louer → 200 · /neuf → 200 · /promoteurs → 200
+/vendre → 200 · /search → 200 · /compare → 200 · /map → 200 · /onboarding → 200
+
+Audit visuel (code + structure)
+* bg-[#061027] + SiteHeader variant="dark" compact : 5/5 pages ✅
+* Wording interdit : absent — occurrences de "garanti/officiel/certifié" uniquement dans disclaimers négatifs ✅
+* Mocks labellisés Aperçu / Exemple / Simulation / Brouillon : présents sur tous les contenus illustratifs ✅
+* Grilles mobiles : max 2 colonnes (2/3/6 cols → 2 cols on mobile) — aucun overflow horizontal ✅
+* overflow-hidden : correctement scopé aux cartes et sections, pas de root-level overflow ✅
+* Nav mobile chips : Acheter / Louer / Neuf / Vendre / Promoteurs / Recherche (6 chips) ✅
+* Nav desktop (navItems) : Acheter / Louer / Neuf / Vendre / Carte / Recherche ✅
+* Promoteurs hors navItems desktop : intentionnel (B2B page, chips mobile suffisantes) ✅
+
+Bilan QA
+* Acheter QA      : PASS ✅
+* Louer QA        : PASS ✅
+* Neuf QA         : PASS ✅
+* Promoteurs QA   : PASS ✅
+* Vendre QA       : PASS ✅
+* Wording interdit absent : OUI ✅
+* Mocks labellisés : OUI ✅
+* Mobile grilles OK : OUI ✅
+* Routes/CTA OK   : OUI (10/10) ✅
+* Build/tests OK  : OUI ✅
+* Bugs trouvés    : 0
+* Corrections     : aucune (QA clean)
+* Production déployée : non nécessaire (aucun code modifié)
+
+INTENT-RELOOKING-6 : Completed 2026-06-27 ✅
+Prochaine étape recommandée : P18A — Alertes MVP (not started) ou QA-PROD-MOBILE-FINAL.
+
+----------------------------------------------------
+INTENT-RELOOKING — UPLIFT VISUEL CARDS → 95+ (Acheter/Louer/Neuf/Promoteurs) 2026-06-27 ✅
 
 Demande Achraf : Acheter, Louer, Neuf, Promoteurs doivent atteindre ≥ 95/100
 (au niveau de Vendre, validé 96).

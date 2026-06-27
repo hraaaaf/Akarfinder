@@ -2094,11 +2094,11 @@ Version détail : 2026-06-27 — ROADMAP-RELOOKING-DETAIL (11 visuels détaillé
 Statut général
 * INTENT-RELOOKING-0 — Cadrage visuel              : Completed 2026-06-27
 * INTENT-RELOOKING-1 — Acheter                     : Completed 2026-06-27 (dark premium — score 95/100 après uplift visuel cards)
-* INTENT-RELOOKING-2 — Louer                       : In progress 2026-06-27 (dark premium — score 95/100 après uplift visuel — attente validation)
+* INTENT-RELOOKING-2 — Louer                       : Completed 2026-06-27 (dark premium — score 95/100 — validé visuellement par Achraf)
 * INTENT-RELOOKING-3 — Neuf                        : Completed 2026-06-27 (dark premium — score 95/100 après uplift visuel cards)
 * INTENT-RELOOKING-4 — Promoteurs                  : Completed 2026-06-27 (dark premium B2B — score 95/100 après uplift visuel cards)
 * INTENT-RELOOKING-5 — Vendre                      : Completed 2026-06-27 (dark premium — score 96/100 — validé visuellement par Achraf)
-* INTENT-RELOOKING-6 — QA globale mobile/desktop/perf : Not started
+* INTENT-RELOOKING-6 — QA globale mobile/desktop/perf : Completed 2026-06-27 (10/10 routes 200 · 452+51 tests 0 fail · wording OK · mocks labellisés · dark cohérent)
 * INTENT-RELOOKING-BONUS-INVESTIR — Direction future : Deferred / Not started
 
 Verrous roadmap (inchangés)
@@ -2258,7 +2258,7 @@ Exit criteria
 ----------------------------------------------------
 INTENT-RELOOKING-2 — LOUER
 
-Statut : In progress 2026-06-27 — refonte dark premium (standard Acheter 1E) en cours.
+Statut : Completed 2026-06-27 — validé visuellement par Achraf (Production). Score 95/100.
 Prérequis : INTENT-RELOOKING-0 complétée + INTENT-RELOOKING-1 (Acheter) validé.
 
 Objectif
@@ -2498,9 +2498,22 @@ Exit criteria
 ----------------------------------------------------
 INTENT-RELOOKING-6 — QA GLOBALE MOBILE / DESKTOP / PERFORMANCE
 
-Statut : Not started.
-Prérequis : INTENT-RELOOKING-1 à 5 complétées.
+Statut : Completed 2026-06-27.
+Prérequis : INTENT-RELOOKING-1 à 5 complétées (toutes complétées).
 Objectif : Vérifier le rendu iPhone, desktop, poids images, absence d'overflow.
+
+Résultats QA (2026-06-27)
+* Smoke test HTTP 200 : 10/10 routes (/ /acheter /louer /neuf /promoteurs /vendre /search /compare /map /onboarding)
+* Build : OK (0 erreur TypeScript)
+* Tests : 452 scrapers + 51 API (0 fail)
+* Dark premium cohérent : bg-[#061027] + SiteHeader variant=dark compact sur les 5 pages ✅
+* Wording interdit : absent — toutes les occurrences de garanti/certifié/officiel sont des disclaimers négatifs ✅
+* Mocks labellisés : Aperçu / Exemple / Simulation / Brouillon sur tous les contenus illustratifs ✅
+* Grilles mobiles : max 2 colonnes sur mobile — aucun overflow horizontal détecté ✅
+* Nav mobile chips : 5 pages d'intention + Recherche (Acheter / Louer / Neuf / Vendre / Promoteurs / Recherche) ✅
+* Nav desktop navItems : Acheter / Louer / Neuf / Vendre / Carte / Recherche ✅
+* Promoteurs hors navItems desktop (B2B, accessible via chips mobile) — intentionnel ✅
+* Aucun bug trouvé. Aucune correction nécessaire.
 
 Checklist
 * Smoke test HTTP 200 : /acheter / /louer / /neuf / /promoteurs / /vendre
