@@ -483,9 +483,18 @@ export default async function LeadsPage({ searchParams }: Props) {
               {total} lead{total !== 1 ? "s" : ""} total · {visitRequests.length} demande{visitRequests.length !== 1 ? "s" : ""} de visite · {chaud.length} chaud{chaud.length !== 1 ? "s" : ""}
             </p>
           </div>
-          <Link href="/pro" className="text-[13px] font-bold text-bronze-700 hover:underline">
-            ← AkarFinder Pro
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href={`/api/leads/export?token=${encodeURIComponent(token)}`}
+              download
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#d8c8a3] bg-white px-4 py-2.5 text-[13px] font-bold text-deepblue transition hover:bg-[#f7f3ea]"
+            >
+              Exporter CSV
+            </a>
+            <Link href="/pro" className="text-[13px] font-bold text-bronze-700 hover:underline">
+              ← AkarFinder Pro
+            </Link>
+          </div>
         </div>
 
         <div className="mb-6 flex flex-wrap gap-2">

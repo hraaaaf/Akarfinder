@@ -1,6 +1,49 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+LEADS-MVP — TUNNELS ACHETEUR/LOCATAIRE — COMPLETED 2026-06-27 ✅
+
+Périmètre : brancher /acheter et /louer sur l'infrastructure leads existante.
+
+Fichiers modifiés
+* app/onboarding/page.tsx         — lit ?intent= + dérive sourcePage (/acheter ou /louer)
+* components/onboarding/BuyerOnboardingFlow.tsx — props intent + sourcePage · pré-sélection step1 · source_page dynamique
+* components/intent/AcheterPageShell.tsx — card CTA "Préparer mon dossier pour ce bien" + sidebar block "Préparer mon dossier acheteur"
+* components/location/LouerPageShell.tsx — card CTA "Préparer mon dossier pour ce logement" + sidebar block "Préparer mon dossier locataire"
+* app/api/leads/export/route.ts   — NOUVEAU : GET export CSV (token admin, 14 champs, BOM UTF-8)
+* app/pro/leads/page.tsx          — bouton "Exporter CSV" → /api/leads/export?token=...
+
+Hooks /acheter
+* Sidebar : bloc "Préparer mon dossier acheteur" → /onboarding?intent=acheter ✅
+* Cards   : CTA "Préparer mon dossier pour ce bien" → /onboarding?intent=acheter&listing={id} ✅
+
+Hooks /louer
+* Sidebar : bloc "Préparer mon dossier locataire" → /onboarding?intent=louer ✅
+* Cards   : CTA "Préparer mon dossier pour ce logement" → /onboarding?intent=louer&listing={id} ✅
+
+intent transmis ....... OUI ✅
+  /acheter → /onboarding?intent=acheter → step 1 pré-sélectionné "Acheter"
+  /louer   → /onboarding?intent=louer   → step 1 pré-sélectionné "Louer"
+listing_id transmis ... OUI ✅ (via ?listing= param déjà supporté)
+source_page dynamique .. OUI ✅
+  intent=acheter → source_page="/acheter" tracé dans buyer_leads
+  intent=louer   → source_page="/louer"   tracé dans buyer_leads
+export CSV ............ OUI ✅ (/api/leads/export — 14 champs, BOM UTF-8, token admin)
+
+Wording appliqué (conforme)
+* "Préparer mon dossier" / "Créer mon dossier" / "Dossier indicatif · non contractuel"
+* Aucun "garanti / réservé / réponse garantie"
+
+Build / Tests
+* npm run build : OK (0 erreur TypeScript) ✅
+* test:scrapers  : 452/452 pass ✅
+* test:api       : 51/51 pass ✅
+* /api/leads/export dans le build manifest ✅
+
+LEADS-MVP : Completed 2026-06-27 ✅
+Prochaine étape recommandée : SELLER-MVP ou P18A
+
+----------------------------------------------------
 FUNCTIONAL-FIXES-0 + LEADS-PREFLIGHT — COMPLETED 2026-06-27 ✅
 
 Périmètre : fixes rapides CTA + audit complet de l'état réel du tunnel leads.

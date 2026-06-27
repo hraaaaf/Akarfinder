@@ -445,13 +445,25 @@ function Step6Contact({
 
 // ── Main flow ─────────────────────────────────────────────────────────────────
 
-const INITIAL_PROFILE: BuyerProfile = {};
+function initialProfileFromIntent(intent?: string): BuyerProfile {
+  if (intent === "acheter") return { project: "acheter" };
+  if (intent === "louer")   return { project: "louer" };
+  return {};
+}
 
 type SubmissionResult = { ok: true; leadId: string } | { ok: false; error: string } | null;
 
-export function BuyerOnboardingFlow({ listingId }: { listingId?: string }) {
+export function BuyerOnboardingFlow({
+  listingId,
+  intent,
+  sourcePage,
+}: {
+  listingId?: string;
+  intent?: string;
+  sourcePage?: string;
+}) {
   const [step, setStep] = useState(1);
-  const [profile, setProfile] = useState<BuyerProfile>(INITIAL_PROFILE);
+  const [profile, setProfile] = useState<BuyerProfile>(() => initialProfileFromIntent(intent));
   const [done, setDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submissionResult, setSubmissionResult] = useState<SubmissionResult>(null);
@@ -469,7 +481,7 @@ export function BuyerOnboardingFlow({ listingId }: { listingId?: string }) {
         body: JSON.stringify({
           profile: finalProfile,
           source_channel: "onboarding",
-          source_page: "/onboarding",
+          source_page: sourcePage ?? "/onboarding",
           listing_id: listingId,
         }),
       });
@@ -503,7 +515,7 @@ export function BuyerOnboardingFlow({ listingId }: { listingId?: string }) {
   }
 
   function restart() {
-    setProfile(INITIAL_PROFILE);
+    setProfile(initialProfileFromIntent(intent));
     setStep(1);
     setDone(false);
     setSubmitting(false);

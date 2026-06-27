@@ -10,10 +10,15 @@ export const metadata: Metadata = {
     "Créez votre profil de recherche immobilière au Maroc en 6 étapes. Budget estimatif, zone, type de bien, timing. Dossier indicatif — non contractuel.",
 };
 
-type Props = { searchParams: Promise<{ listing?: string }> };
+type Props = { searchParams: Promise<{ listing?: string; intent?: string }> };
 
 export default async function OnboardingPage({ searchParams }: Props) {
-  const { listing } = await searchParams;
+  const { listing, intent } = await searchParams;
+
+  const sourcePage =
+    intent === "acheter" ? "/acheter" :
+    intent === "louer"   ? "/louer"   :
+    "/onboarding";
 
   return (
     <main className="min-h-screen bg-[#fffdf8]">
@@ -21,7 +26,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
 
       <section className="pt-12 pb-16 lg:pt-16 lg:pb-20">
         <Container>
-          <BuyerOnboardingFlow listingId={listing} />
+          <BuyerOnboardingFlow listingId={listing} intent={intent} sourcePage={sourcePage} />
         </Container>
       </section>
 

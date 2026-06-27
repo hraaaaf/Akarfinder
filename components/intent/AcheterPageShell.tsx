@@ -219,6 +219,15 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
             </a>
           )}
         </div>
+
+        {/* Lead CTA — dossier acheteur pour ce bien */}
+        <Link
+          href={`/onboarding?intent=acheter&listing=${listing.id}`}
+          className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#e5dcc8] bg-[#fdfbf7] px-4 py-2 text-[11.5px] font-extrabold text-bronze-700 transition hover:border-bronze-500/60 hover:bg-[#f7f3ea]"
+        >
+          Préparer mon dossier pour ce bien
+          <ArrowRight size={11} strokeWidth={2.6} aria-hidden="true" />
+        </Link>
       </div>
     </article>
   );
@@ -615,6 +624,33 @@ export function AcheterPageShell({
                   >
                     Voir le comparatif
                     <ArrowRight size={13} aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Dossier acheteur — CTA lead */}
+              <div className="overflow-hidden rounded-2xl border border-bronze-500/30 bg-gradient-to-br from-bronze-500/[0.18] to-bronze-500/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="px-5 py-5">
+                  <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-400">
+                    Accompagnement
+                  </p>
+                  <h3 className="mt-2 text-[1rem] font-extrabold leading-snug text-white">
+                    Préparer mon dossier acheteur
+                  </h3>
+                  <p className="mt-2 text-[12px] leading-5 text-white/60">
+                    Budget, zone, type de bien, timing — recevez les biens compatibles avec votre projet.
+                  </p>
+                  <p className="mt-2 text-[10.5px] text-white/35">
+                    Dossier indicatif · non contractuel.
+                  </p>
+                </div>
+                <div className="border-t border-bronze-500/20 bg-bronze-500/[0.06] px-5 py-3">
+                  <Link
+                    href="/onboarding?intent=acheter"
+                    className="flex items-center justify-between text-[13px] font-extrabold text-bronze-300 transition hover:text-bronze-200"
+                  >
+                    Créer mon dossier
+                    <ArrowRight size={14} aria-hidden="true" />
                   </Link>
                 </div>
               </div>
