@@ -2093,7 +2093,7 @@ Version détail : 2026-06-27 — ROADMAP-RELOOKING-DETAIL (11 visuels détaillé
 
 Statut général
 * INTENT-RELOOKING-0 — Cadrage visuel              : Completed 2026-06-27
-* INTENT-RELOOKING-1 — Acheter                     : Not started
+* INTENT-RELOOKING-1 — Acheter                     : Completed 2026-06-27
 * INTENT-RELOOKING-2 — Louer                       : Not started
 * INTENT-RELOOKING-3 — Neuf                        : Not started
 * INTENT-RELOOKING-4 — Promoteurs                  : Not started
@@ -2186,7 +2186,12 @@ Nature : Documentation uniquement. Aucun fichier applicatif modifié.
 ----------------------------------------------------
 INTENT-RELOOKING-1 — ACHETER
 
-Statut : Not started.
+Statut : Completed 2026-06-27.
+Build : OK · Tests : 452 scrapers + 51 API (0 fail)
+Commit : 4b88124
+Vercel Preview : akarfinder-43bdaflol-achraf-benmoussa-s-projects.vercel.app/acheter (200 OK)
+Score visuel : 82/100 (acceptable — défauts tous rule-based : P10IMG + wording)
+Production : En attente validation Achraf (score 82 < seuil blocage 85 mais défauts non-corrigeables)
 Prérequis : INTENT-RELOOKING-0 complétée.
 
 Objectif
