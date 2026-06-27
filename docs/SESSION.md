@@ -36,25 +36,30 @@ Smoke local port 3000
 * Lien "Alertes →" dans /pro/leads ✅
 * POST /api/alerts sans phone → 400 ✅
 * POST /api/alerts sans consent → 400 ✅
-* POST /api/alerts bon payload → 500 (table non créée — migration manuelle requise)
+* POST /api/alerts bon payload → ok=true (après migration) ✅
 * GET /api/alerts/export?token=WRONG → 401 ✅
 * Non-régression : /acheter /vendre /promoteurs /pro /onboarding → 200 ✅
+
+Smoke production (post-migration Supabase 2026-06-27)
+* /louer : 200 · RentAlertForm présent ✅
+* POST /api/alerts (phone+city+budget+type+consent) → ok=true · alert_id ✅
+* GET /api/alerts/export?token=VALID → 200 CSV BOM UTF-8 ✅
+* GET /api/alerts/export?token=WRONG → 401 ✅
+* /pro/alerts?token=VALID : alerte visible · badge Location · statut Active · téléphone · bouton WhatsApp ✅
+* /pro/alerts?token=WRONG : AccessDenied ✅
 
 Build / Tests
 * npm run build : OK (0 erreur TS) · /louer 213 B → 2.55 kB (RentAlertForm hydraté) ✅
 * test:scrapers : 452/452 ✅ · test:api : 51/51 ✅
 
-⚠ MIGRATION MANUELLE REQUISE avant que le submit alerte fonctionne
-Aller sur : https://supabase.com/dashboard → SQL Editor → coller + exécuter :
-db/supabase-p18a-alerts-migration.sql
-Après migration : POST /api/alerts → ok=true, alert_id visible dans /pro/alerts
+Migration Supabase : appliquée manuellement le 2026-06-27 via SQL Editor Supabase Dashboard.
+saved_alerts table créée + RLS activé + indexes.
 
 Wording vérifié : pas de "alerte garantie", "disponibilité garantie", "résultat garanti".
 "Alerte indicative — disponibilité selon les annonces analysées. Pas d'alerte automatique garantie."
 
 P18A : Completed 2026-06-27 ✅
-Prochaine étape recommandée : appliquer la migration Supabase puis deploy prod.
-Après : P18B (Calculateur mensualité indicatif) ou CREDIT-MVP.
+Prochaine étape : P18B (Calculateur mensualité indicatif) ou CREDIT-MVP selon confirmation.
 
 ----------------------------------------------------
 QA-PROD-TUNNELS-1 — QA PRODUCTION 3 TUNNELS — COMPLETED 2026-06-27 ✅

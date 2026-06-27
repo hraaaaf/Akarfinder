@@ -2106,7 +2106,7 @@ Statut général
 * SELLER-MVP — Tunnel vendeur réel : Completed 2026-06-27 (/vendre/dossier · form vendeur · buyer_leads source_channel=seller · /pro/leads badge+filtre Vendeur · export inclus · 0 migration)
 * PROMOTER-MVP — Capture leads promoteurs : Completed 2026-06-27 (LeadForm /pro activé · source_channel=promoter · /pro/leads badge+filtre Promoteur · export inclus · 0 migration)
 * QA-PROD-TUNNELS-1 — QA production 3 tunnels : Completed 2026-06-27 (10/10 routes 200 · 4 tunnels POST ok · isolation filtres parfaite · export CSV 200 · 401 bad token · 452+51 tests 0 fail · 0 bug)
-* P18A — Alertes sauvegardées MVP : Completed 2026-06-27 (RentAlertForm /louer · saved_alerts table · /api/alerts POST · /api/alerts/export · /pro/alerts admin · migration manuelle requise · 0 bug code)
+* P18A — Alertes sauvegardées MVP : Completed 2026-06-27 (RentAlertForm /louer · saved_alerts table migrée · /api/alerts POST ok=true · /api/alerts/export CSV 200/401 · /pro/alerts admin · 452+51 tests 0 fail · smoke prod validé · 0 bug)
 
 Verrous roadmap (inchangés)
 * P18B — Calculateur mensualité indicatif : Not started
@@ -2329,7 +2329,7 @@ Micro-clarifications (post-validation) : label unique "Aperçu · exemple" (supp
 badge "Projet partenaire" contradictoire) ; CTA réduits (suppression "Découvrir le projet",
 "Voir les autres projets", WhatsApp dupliqué) ; libellés prudents ("Données illustratives —
 exemple de présentation", note WhatsApp réservée aux projets partenaires actifs).
-P17B full : HOLD · P18A : Not started · DATA-A : Not started.
+P17B full : HOLD · P18A : Completed 2026-06-27 · DATA-A : Not started.
 Prérequis : INTENT-RELOOKING-0 complétée. (NeufPageShell P16C existait — refondu.)
 
 Objectif
