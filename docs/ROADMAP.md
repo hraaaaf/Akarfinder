@@ -2103,6 +2103,7 @@ Statut général
 * INTENT-FUNCTIONAL-AUDIT-1 — Audit CTA/mock/route/réel avant tunnels : Completed 2026-06-27 (5 pages auditées · matrice tunnels · ordre construction établi)
 * FUNCTIONAL-FIXES-0 — Fixes rapides CTA + preflight leads : Completed 2026-06-27 (chips buy+type · doublons CTA · /map?city= vérifié · leads e2e validé)
 * LEADS-MVP — Tunnels acheteur/locataire câblés : Completed 2026-06-27 (hooks /acheter + /louer · cards CTA · intent+source_page dyn · export CSV /api/leads/export)
+* SELLER-MVP — Tunnel vendeur réel : Completed 2026-06-27 (/vendre/dossier · form vendeur · buyer_leads source_channel=seller · /pro/leads badge+filtre Vendeur · export inclus · 0 migration)
 
 Verrous roadmap (inchangés)
 * P18A — Alertes sauvegardées MVP : Not started

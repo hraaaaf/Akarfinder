@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
   };
 
   // Visit requests are always "chaud" — explicit intent to physically visit.
+  // Seller leads use a fixed "tiède" — buyer-oriented scoring doesn't apply.
   const tempResult =
     source_channel === "visit_request"
       ? {
@@ -60,6 +61,13 @@ export async function POST(request: NextRequest) {
           label: "Demande de visite",
           reason: "Demande de visite directe sur la fiche annonce.",
           color: "emerald",
+        }
+      : source_channel === "seller"
+      ? {
+          temperature: "tiède" as const,
+          label: "Demande vendeur",
+          reason: "Demande d'accompagnement vendeur via /vendre/dossier.",
+          color: "amber",
         }
       : computeLeadTemperature(buyerProfile);
 

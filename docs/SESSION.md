@@ -1,6 +1,51 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+SELLER-MVP — TUNNEL VENDEUR RÉEL — COMPLETED 2026-06-27 ✅
+
+Objectif : /vendre/dossier — vrai tunnel vendeur. Fin des CTA "Préparer ma vente" vers onboarding acheteur.
+
+Décision stockage (Option B — 0 migration)
+* Table seller_leads INEXISTANTE → réutilisation buyer_leads
+* Marqueurs : source_channel="seller", project_type="vendre", source_page="/vendre/dossier"
+* CHECK constraint lead_type (3 valeurs) respectée → lead_type reste "buyer_profile" (DB default)
+* source_channel + project_type sont des colonnes libres (pas de CHECK) → sûr
+
+Fichiers
+* app/vendre/dossier/page.tsx          — NOUVEAU : page dossier vendeur (light)
+* components/vendre/SellerLeadForm.tsx — NOUVEAU : form client (nom, tel, ville, type, surface, prix, délai, commentaire, consentement) → POST /api/leads
+* app/api/leads/route.ts               — branche température "seller" → "tiède" (calque visit_request, évite scoring acheteur inadapté)
+* components/vendre/VendrePageShell.tsx — 3 CTA /onboarding → /vendre/dossier
+* app/pro/leads/page.tsx               — badge "Vendeur" · onglet filtre "Vendeurs" (source_channel=seller) · compteurs · buyer_profile exclut désormais les vendeurs
+
+Mapping form → buyer_leads
+* nom→full_name · tel→phone_whatsapp · ville→city · type→property_type
+* surface→desired_surface_m2 · prix souhaité→budget_total · délai→timing · commentaire→message
+* consentement unique → consentContact + consentIndicatif = true (validation API satisfaite)
+
+Smoke local port 3000
+* /vendre : 3 liens /vendre/dossier · 0 résidu /onboarding ✅
+* /vendre/dossier : form rendu (h1, phone, price, délai) ✅
+* POST /api/leads (source_channel=seller) → ok=true lead_id=64e8629f… ✅
+* /pro/leads : lead visible · badge Vendeur · onglet Vendeurs ✅
+* filter=seller : isole les vendeurs · leads acheteurs ne fuient pas ✅
+* export CSV : ligne vendeur (Projet=vendre · Source=/vendre/dossier · tiède) ✅
+* non-régression : /acheter /louer /onboarding /vendre → 200 ✅
+
+Wording : "demande d'accompagnement", "estimation indicative", "non contractuelle", "repères de marché".
+Interdit absent : pas de "estimation officielle / vente garantie / réponse garantie".
+
+Build / Tests
+* npm run build : OK (0 erreur TS) · /vendre/dossier dans le manifest ✅
+* test:scrapers : 452/452 ✅ · test:api : 51/51 ✅
+
+⚠ Lead de test en base prod (à supprimer) :
+* 64e8629f-ce6c-4387-a7ee-04c9244e17b5 (nom "SMOKE TEST SELLER-MVP")
+
+SELLER-MVP : Completed 2026-06-27 ✅
+Prochaine étape recommandée : PROMOTER-MVP (P18A reste après)
+
+----------------------------------------------------
 LEADS-MVP — TUNNELS ACHETEUR/LOCATAIRE — COMPLETED 2026-06-27 ✅
 
 Périmètre : brancher /acheter et /louer sur l'infrastructure leads existante.

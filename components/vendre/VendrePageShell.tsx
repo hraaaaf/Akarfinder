@@ -148,7 +148,7 @@ export async function VendrePageShell() {
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3 sm:mt-8">
-                <Link href="/onboarding" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.4)] transition hover:from-bronze-600">
+                <Link href="/vendre/dossier" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.4)] transition hover:from-bronze-600">
                   Préparer ma vente
                   <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
                 </Link>
@@ -383,8 +383,8 @@ export async function VendrePageShell() {
                 </div>
                 <div className="border-t border-white/8 px-4 py-3">
                   <p className="mb-2 text-[10px] text-white/40">Exemples illustratifs — non des demandes réelles</p>
-                  <Link href="/onboarding" className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-[12px] font-extrabold text-white/85 transition hover:border-bronze-500/30 hover:bg-white/[0.07]">
-                    Voir l'aperçu des demandes
+                  <Link href="/vendre/dossier" className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-[12px] font-extrabold text-white/85 transition hover:border-bronze-500/30 hover:bg-white/[0.07]">
+                    Préparer ma vente
                     <ArrowRight size={12} aria-hidden="true" />
                   </Link>
                 </div>
@@ -491,7 +491,7 @@ export async function VendrePageShell() {
               avant décision.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/onboarding" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.35)] transition hover:from-bronze-600">
+              <Link href="/vendre/dossier" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.35)] transition hover:from-bronze-600">
                 Préparer ma vente
                 <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
               </Link>
