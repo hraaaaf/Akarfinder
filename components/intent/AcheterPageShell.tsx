@@ -57,138 +57,144 @@ function getReliability(score: number) {
   return             { label: "À vérifier",  dots: 1, color: "#ef4444" };
 }
 
-// ─── Premium listing card — horizontal desktop / stacked mobile ───────────────
-// Image = ListingVisual SVG (P10IMG compliant) with gradient overlay.
-// Labellisé "Aperçu illustratif" pour clarté.
+// ─── Premium listing card — vertical (image top, content bottom) ─────────────
+// Layout : 1-col mobile · 2-col tablet · 3-col desktop (dans sidebar dashboard)
+// Image = ListingVisual SVG (P10IMG) avec gradient premium + vignette + badges.
 function AcheterListingCard({ listing }: { listing: Listing }) {
   const reliability = getReliability(listing.reliability_score ?? 0);
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-[#eadfca] bg-white shadow-[0_4px_20px_rgba(7,27,51,0.07)] transition duration-300 hover:shadow-[0_20px_48px_rgba(7,27,51,0.14)]">
-      <div className="flex flex-col sm:flex-row">
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-[#eadfca] bg-white shadow-[0_4px_20px_rgba(7,27,51,0.07)] transition duration-300 hover:-translate-y-1 hover:border-[#dcc89a] hover:shadow-[0_22px_48px_rgba(7,27,51,0.16)]">
 
-        {/* ── Image zone ─────────────────────────────────────────────────── */}
-        <Link
-          href={`/listings/${listing.id}`}
-          aria-label={`Voir le bien : ${listing.title}`}
-          className="relative block h-56 shrink-0 overflow-hidden sm:h-auto sm:min-h-[210px] sm:w-[260px]"
-        >
-          <div className="absolute inset-0 transition duration-500 group-hover:scale-[1.04]">
-            <ListingVisual listing={listing} className="h-full w-full" />
-          </div>
+      {/* ── Image zone — pleine largeur en haut ──────────────────────── */}
+      <Link
+        href={`/listings/${listing.id}`}
+        aria-label={`Voir le bien : ${listing.title}`}
+        className="relative block h-52 overflow-hidden"
+      >
+        <div className="absolute inset-0 transition duration-500 group-hover:scale-[1.04]">
+          <ListingVisual listing={listing} className="h-full w-full" />
+        </div>
 
-          {/* Bottom-to-top gradient for depth */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        {/* Gradient bottom-to-top — profondeur premium */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
 
-          {/* City badge */}
-          <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/92 px-3 py-1.5 text-[11px] font-extrabold text-deepblue shadow-sm backdrop-blur-sm">
-            <MapPin size={10} className="text-bronze-700" aria-hidden="true" />
-            {listing.city}
-          </span>
+        {/* Vignette latérale douce */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.25) 100%)",
+          }}
+        />
 
-          {/* Transaction type badge */}
-          <span className="absolute right-3 top-3 rounded-full bg-deepblue/88 px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-white backdrop-blur-sm">
-            Achat
-          </span>
+        {/* City badge — top-left blanc */}
+        <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-white/92 px-2.5 py-1.5 text-[10.5px] font-extrabold text-deepblue shadow-sm backdrop-blur-sm">
+          <MapPin size={9} className="text-bronze-700" aria-hidden="true" />
+          {listing.city}
+        </span>
 
-          {/* Property type badge — bronze bottom-left */}
-          <span className="absolute bottom-3 left-3 rounded-full bg-[#9B7838]/90 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.06em] text-white shadow-sm backdrop-blur-sm">
-            {listing.property_type}
-          </span>
+        {/* Source / transaction badge — top-right */}
+        <span className="absolute right-3 top-3 rounded-full bg-deepblue/88 px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.06em] text-white backdrop-blur-sm">
+          {listing.source_name ?? "Achat"}
+        </span>
 
-          {/* Aperçu label — P10IMG disclosure */}
-          <span className="absolute bottom-3 right-3 rounded-full bg-black/28 px-2 py-1 text-[9.5px] text-white/62 backdrop-blur-sm">
-            Aperçu illustratif
-          </span>
+        {/* Property type — bottom-left bronze */}
+        <span className="absolute bottom-3 left-3 rounded-full bg-[#9B7838]/90 px-2.5 py-1 text-[9.5px] font-extrabold uppercase tracking-[0.06em] text-white shadow-sm backdrop-blur-sm">
+          {listing.property_type}
+        </span>
+
+        {/* Bronze shimmer line bas d'image */}
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-bronze-500/50 to-transparent" />
+      </Link>
+
+      {/* ── Content ──────────────────────────────────────────────────── */}
+      <div className="flex flex-1 flex-col p-4">
+
+        {/* Price */}
+        <p className="text-[1.5rem] font-extrabold leading-none tracking-[-0.045em] text-deepblue">
+          {formatPrice(listing.price, listing.currency)}
+        </p>
+        {listing.price_per_m2 > 0 && (
+          <p className="mt-1 text-[11.5px] font-bold text-bronze-700">
+            {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
+          </p>
+        )}
+
+        {/* Title + location */}
+        <Link href={`/listings/${listing.id}`} className="mt-2.5 block">
+          <h2 className="line-clamp-2 text-[13.5px] font-extrabold leading-snug text-gray-900 transition group-hover:text-deepblue-600">
+            {listing.title}
+          </h2>
+          <p className="mt-1 flex items-center gap-1.5 text-[12px] font-semibold text-gray-500">
+            <MapPin size={11} strokeWidth={2.2} className="shrink-0 text-bronze-700" aria-hidden="true" />
+            <span className="truncate">
+              {listing.neighborhood
+                ? `${listing.city}, ${listing.neighborhood}`
+                : listing.city}
+            </span>
+          </p>
         </Link>
 
-        {/* ── Content ────────────────────────────────────────────────────── */}
-        <div className="flex flex-1 flex-col p-5">
-          {/* Price */}
-          <p className="text-[1.65rem] font-extrabold leading-none tracking-[-0.045em] text-deepblue">
-            {formatPrice(listing.price, listing.currency)}
-          </p>
-          {listing.price_per_m2 > 0 && (
-            <p className="mt-1 text-[12px] font-bold text-bronze-700">
-              {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
-            </p>
+        {/* Specs */}
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#f0e6d2] pt-3 text-[12.5px] font-bold text-gray-700">
+          {listing.surface_m2 > 0 && <span>{formatSurface(listing.surface_m2)}</span>}
+          {listing.bedrooms > 0 && <span>{listing.bedrooms} ch.</span>}
+          {listing.bathrooms > 0 && <span>{listing.bathrooms} sdb</span>}
+          {listing.freshness_label && (
+            <>
+              <span className="text-gray-300" aria-hidden="true">·</span>
+              <span className="text-gray-400">{listing.freshness_label}</span>
+            </>
           )}
+        </div>
 
-          {/* Title + location */}
-          <Link href={`/listings/${listing.id}`} className="mt-3 block">
-            <h2 className="line-clamp-2 text-[14px] font-extrabold leading-snug text-gray-900 transition group-hover:text-deepblue-600">
-              {listing.title}
-            </h2>
-            <p className="mt-1.5 flex items-center gap-1.5 text-[13px] font-semibold text-gray-500">
-              <MapPin size={12} strokeWidth={2.2} className="shrink-0 text-bronze-700" aria-hidden="true" />
-              <span className="truncate">
-                {listing.neighborhood
-                  ? `${listing.city}, ${listing.neighborhood}`
-                  : listing.city}
-              </span>
-            </p>
+        {/* Reliability dots */}
+        <div className="mt-3 flex items-center gap-2">
+          <div className="flex items-center gap-0.5" aria-hidden="true">
+            {[1, 2, 3, 4].map((d) => (
+              <span
+                key={d}
+                className="inline-block h-1.5 w-1.5 rounded-full"
+                style={{ background: d <= reliability.dots ? reliability.color : "#e5e7eb" }}
+              />
+            ))}
+          </div>
+          <span className="text-[11.5px] font-semibold text-gray-500">
+            Repères de fiabilité :{" "}
+            <span className="font-extrabold text-gray-700">{reliability.label}</span>
+          </span>
+        </div>
+
+        {/* CTAs */}
+        <div className="mt-auto flex flex-col gap-2 pt-4">
+          <Link
+            href={`/listings/${listing.id}`}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-deepblue px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_4px_14px_rgba(7,27,51,0.22)] transition hover:bg-deepblue-700 group-hover:gap-3"
+          >
+            Voir le bien
+            <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
           </Link>
-
-          {/* Specs row */}
-          <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#f0e6d2] pt-3.5 text-[13px] font-bold text-gray-700">
-            {listing.surface_m2 > 0 && <span>{formatSurface(listing.surface_m2)}</span>}
-            {listing.bedrooms > 0 && <span>{listing.bedrooms} ch.</span>}
-            {listing.bathrooms > 0 && <span>{listing.bathrooms} sdb</span>}
-            {listing.freshness_label && (
-              <>
-                <span className="text-gray-300" aria-hidden="true">·</span>
-                <span className="text-gray-400">{listing.freshness_label}</span>
-              </>
-            )}
-          </div>
-
-          {/* Reliability dots */}
-          <div className="mt-3.5 flex items-center gap-2.5">
-            <div className="flex items-center gap-0.5" aria-hidden="true">
-              {[1, 2, 3, 4].map((d) => (
-                <span
-                  key={d}
-                  className="inline-block h-2 w-2 rounded-full"
-                  style={{ background: d <= reliability.dots ? reliability.color : "#e5e7eb" }}
-                />
-              ))}
-            </div>
-            <span className="text-[12px] font-semibold text-gray-500">
-              Repères de fiabilité :{" "}
-              <span className="font-extrabold text-gray-700">{reliability.label}</span>
-            </span>
-          </div>
-
-          {/* CTAs */}
-          <div className="mt-auto flex flex-wrap gap-2 pt-4">
-            <Link
-              href={`/listings/${listing.id}`}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-deepblue px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_4px_14px_rgba(7,27,51,0.22)] transition hover:bg-deepblue-700"
+          {listing.listing_url && (
+            <a
+              href={listing.listing_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center rounded-xl border border-[#eadfca] px-4 py-2.5 text-[12.5px] font-bold text-gray-600 transition hover:bg-[#f7f3ea] hover:text-deepblue"
             >
-              Voir le bien
-              <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
-            </Link>
-            {listing.listing_url && (
-              <a
-                href={listing.listing_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center rounded-xl border border-[#eadfca] px-4 py-3 text-[13px] font-bold text-gray-600 transition hover:bg-[#f7f3ea] hover:text-deepblue"
-              >
-                Voir la source
-              </a>
-            )}
-          </div>
+              Voir la source
+            </a>
+          )}
+        </div>
 
-          <div className="mt-2.5 text-center">
-            <Link
-              href="/compare"
-              className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-gray-400 transition hover:text-deepblue"
-            >
-              <Scale size={12} aria-hidden="true" />
-              Comparer
-            </Link>
-          </div>
+        <div className="mt-2.5 text-center">
+          <Link
+            href="/compare"
+            className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-gray-400 transition hover:text-deepblue"
+          >
+            <Scale size={11} aria-hidden="true" />
+            Comparer
+          </Link>
         </div>
       </div>
     </article>
@@ -432,7 +438,7 @@ export function AcheterPageShell({
               </div>
 
               {listings.length > 0 ? (
-                <div className="flex flex-col gap-5">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {listings.map((listing) => (
                     <AcheterListingCard key={listing.id} listing={listing} />
                   ))}
