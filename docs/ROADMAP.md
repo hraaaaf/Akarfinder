@@ -2095,8 +2095,8 @@ Statut général
 * INTENT-RELOOKING-0 — Cadrage visuel              : Completed 2026-06-27
 * INTENT-RELOOKING-1 — Acheter                     : Completed 2026-06-27 (1E — score 89/100 — validé visuellement par Achraf)
 * INTENT-RELOOKING-2 — Louer                       : In progress 2026-06-27 (refonte dark premium en cours)
-* INTENT-RELOOKING-3 — Neuf                        : In progress 2026-06-27 (refonte dark premium — score 89/100 — attente validation Achraf)
-* INTENT-RELOOKING-4 — Promoteurs                  : Not started
+* INTENT-RELOOKING-3 — Neuf                        : Completed 2026-06-27 (dark premium — score 89/100 — validé visuellement par Achraf + micro-clarifications)
+* INTENT-RELOOKING-4 — Promoteurs                  : In progress 2026-06-27
 * INTENT-RELOOKING-5 — Vendre                      : Not started
 * INTENT-RELOOKING-6 — QA globale mobile/desktop/perf : Not started
 * INTENT-RELOOKING-BONUS-INVESTIR — Direction future : Deferred / Not started
@@ -2313,10 +2313,15 @@ Exit criteria
 ----------------------------------------------------
 INTENT-RELOOKING-3 — NEUF
 
-Statut : In progress 2026-06-27 — refonte dark premium livrée (score 89/100), attente validation Achraf.
+Statut : Completed 2026-06-27 — validé visuellement par Achraf (Production) + micro-passe de clarification.
 Build : OK · Tests : 452 scrapers + 51 API (0 fail)
+Score visuel : 89/100 (desktop 89 · mobile 89).
 Données : aucun promoteur actif (lib/promoters = entrée demo gated) → card projet rendue
-en APERÇU / EXEMPLE clairement labellisé + CTA "Présenter un projet". Jamais présenté comme réel.
+en APERÇU / EXEMPLE clairement labellisé. Jamais présenté comme réel.
+Micro-clarifications (post-validation) : label unique "Aperçu · exemple" (suppression du
+badge "Projet partenaire" contradictoire) ; CTA réduits (suppression "Découvrir le projet",
+"Voir les autres projets", WhatsApp dupliqué) ; libellés prudents ("Données illustratives —
+exemple de présentation", note WhatsApp réservée aux projets partenaires actifs).
 P17B full : HOLD · P18A : Not started · DATA-A : Not started.
 Prérequis : INTENT-RELOOKING-0 complétée. (NeufPageShell P16C existait — refondu.)
 
@@ -2373,7 +2378,7 @@ Exit criteria
 ----------------------------------------------------
 INTENT-RELOOKING-4 — PROMOTEURS
 
-Statut : Not started.
+Statut : In progress 2026-06-27 (prochaine page — standard dark premium à appliquer).
 Prérequis : INTENT-RELOOKING-0 complétée + P17A-1 scaffolding disponible.
 
 Objectif

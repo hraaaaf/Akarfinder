@@ -1,7 +1,29 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
-INTENT-RELOOKING-3 — NEUF — LIVRÉ 2026-06-27 ⏳ (attente validation Achraf)
+INTENT-RELOOKING-3 — NEUF — VALIDÉ ACHRAF + MICRO-CLARIFICATION 2026-06-27 ✅
+
+Neuf validé visuellement ("on garde la structure et le design"). Micro-passe de
+clarification appliquée AVANT passage Completed (pas de refonte) :
+1. Ambiguïté supprimée : la card affichait à la fois "Projet partenaire" ET
+   "Aperçu · exemple" → un seul label "Aperçu · exemple". Eyebrow section
+   "Projet partenaire" → "Exemple de présentation". Titre "Aperçu d'un projet
+   partenaire" → "À quoi ressemble une présentation promoteur" + sous-titre
+   "Exemple illustratif — aucun projet partenaire actif pour le moment".
+2. CTA réduits/clarifiés : suppression "Découvrir le projet" (trompeur, pas de vrai
+   projet), "Voir les autres projets" (il n'y en a pas), WhatsApp sidebar dupliqué.
+   Card = 1 CTA "Parler à un conseiller AkarFinder" ; Promoteur = 1 CTA "Présenter
+   un projet" ; Contact = 1 CTA "Être rappelé".
+3. Libellés prudents : pill "Données fournies par le promoteur" → "Données
+   illustratives — exemple de présentation" ; disclaimer card clarifié (valeurs
+   illustratives) ; note "contact direct WhatsApp avec le promoteur sera disponible
+   sur les projets partenaires actifs".
+Import Star retiré (badge supprimé). Build OK · 503 tests pass · /neuf 200.
+ROADMAP : Neuf → Completed (validé Achraf) · Promoteurs → In progress.
+URL Production : https://akarfinder.vercel.app/neuf
+
+----------------------------------------------------
+INTENT-RELOOKING-3 — NEUF — LIVRÉ 2026-06-27 (refonte initiale)
 
 Date : 2026-06-27
 Build : OK · TypeScript : 0 erreur

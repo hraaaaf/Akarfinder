@@ -9,7 +9,6 @@ import {
   MessageCircle,
   Phone,
   Scale,
-  Star,
   Ruler,
   LayoutGrid,
   CalendarClock,
@@ -170,11 +169,14 @@ export function NeufPageShell() {
             <div>
               <div className="flex items-center gap-2.5">
                 <span className="h-px w-6 bg-bronze-500/60" aria-hidden="true" />
-                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400">Projet partenaire</p>
+                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400">Exemple de présentation</p>
               </div>
               <h2 className="mt-2 text-[1.5rem] font-extrabold tracking-[-0.04em] text-white">
-                Aperçu d'un projet partenaire
+                À quoi ressemble une présentation promoteur
               </h2>
+              <p className="mt-1.5 max-w-xl text-[12.5px] leading-5 text-white/50">
+                Exemple illustratif — aucun projet partenaire actif pour le moment.
+              </p>
             </div>
           </div>
 
@@ -193,13 +195,9 @@ export function NeufPageShell() {
                     className="pointer-events-none absolute inset-0"
                     style={{ background: "radial-gradient(120% 80% at 50% -10%, rgba(194,163,104,0.16) 0%, transparent 55%)" }}
                   />
-                  {/* Badge Projet partenaire */}
-                  <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-bronze-700 to-bronze-600 px-3 py-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-white shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
-                    <Star size={11} fill="currentColor" aria-hidden="true" />
-                    Projet partenaire
-                  </span>
-                  {/* Ruban APERÇU / EXEMPLE — non trompeur */}
-                  <span className="absolute right-4 top-4 rounded-full bg-[#071B33]/80 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-bronze-200 ring-1 ring-bronze-500/30 backdrop-blur-md">
+                  {/* Label unique — exemple illustratif (non trompeur) */}
+                  <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-[#071B33]/80 px-3 py-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-bronze-200 shadow-[0_2px_8px_rgba(0,0,0,0.3)] ring-1 ring-bronze-500/35 backdrop-blur-md">
+                    <Info size={11} aria-hidden="true" />
                     Aperçu · exemple
                   </span>
                   <span className="absolute bottom-3 right-4 rounded-full bg-black/30 px-2 py-1 text-[9px] font-medium text-white/55 backdrop-blur-sm">
@@ -226,10 +224,10 @@ export function NeufPageShell() {
                     </div>
                   </div>
 
-                  {/* Données fournies par le promoteur */}
+                  {/* Libellé prudent — contenu illustratif (pas de promoteur actif) */}
                   <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-bronze-500/10 px-3 py-1 text-[10.5px] font-bold text-bronze-300">
                     <Info size={11} aria-hidden="true" />
-                    Données fournies par le promoteur — à confirmer
+                    Données illustratives — exemple de présentation
                   </p>
 
                   {/* Caractéristiques */}
@@ -281,30 +279,23 @@ export function NeufPageShell() {
                     </div>
                   </div>
 
-                  {/* CTAs */}
-                  <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
-                    <Link
-                      href="/promoteurs"
-                      className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-deepblue px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_4px_14px_rgba(7,27,51,0.3)] ring-1 ring-white/10 transition hover:bg-deepblue-700"
-                    >
-                      Découvrir le projet
-                      <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
-                    </Link>
+                  {/* CTA unique — conseiller AkarFinder (l'exemple n'est pas un projet réel) */}
+                  <div className="mt-5">
                     <Link
                       href="/onboarding"
-                      className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#0e7d4f] px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_4px_14px_rgba(14,125,79,0.3)] transition hover:bg-[#0c6c44]"
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0e7d4f] px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_4px_14px_rgba(14,125,79,0.3)] transition hover:bg-[#0c6c44]"
                     >
                       <MessageCircle size={14} strokeWidth={2.2} aria-hidden="true" />
-                      Parler à un conseiller
+                      Parler à un conseiller AkarFinder
                     </Link>
                   </div>
 
                   {/* Disclaimer projet */}
                   <p className="mt-4 flex items-start gap-1.5 text-[11px] leading-5 text-white/40">
                     <Info size={12} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden="true" />
-                    Aperçu illustratif d'une présentation promoteur — aucun projet partenaire actif
-                    pour le moment. Prix à partir de, hors frais notariaux et charges. À confirmer
-                    auprès du promoteur avant tout engagement.
+                    Exemple de présentation — aucun projet partenaire actif pour le moment. Les valeurs
+                    (prix, surfaces, livraison) sont illustratives. Sur un vrai projet, ces données
+                    seraient fournies par le promoteur et à confirmer avant tout engagement.
                   </p>
                 </div>
               </article>
@@ -384,30 +375,16 @@ export function NeufPageShell() {
                     Présenter un projet
                     <ArrowRight size={13} aria-hidden="true" />
                   </Link>
-                  <Link
-                    href="/promoteurs"
-                    className="mt-2 flex w-full items-center justify-center gap-1.5 text-[12px] font-bold text-white/55 transition hover:text-bronze-300"
-                  >
-                    Voir les autres projets
-                    <ArrowRight size={12} aria-hidden="true" />
-                  </Link>
                 </div>
               </div>
 
               {/* Contact — WhatsApp / rappel / conseiller */}
               <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
                 <div className="border-b border-white/10 bg-white/[0.03] px-5 py-4">
-                  <p className="text-[13px] font-extrabold text-white">Parler à un conseiller</p>
-                  <p className="mt-1 text-[11.5px] text-white/50">Sur votre projet neuf</p>
+                  <p className="text-[13px] font-extrabold text-white">Une question sur le neuf ?</p>
+                  <p className="mt-1 text-[11.5px] text-white/50">Un conseiller AkarFinder peut vous orienter</p>
                 </div>
                 <div className="space-y-2.5 p-4">
-                  <Link
-                    href="/onboarding"
-                    className="flex items-center gap-3 rounded-xl bg-[#0e7d4f] px-4 py-3 text-white shadow-[0_4px_14px_rgba(14,125,79,0.3)] transition hover:bg-[#0c6c44]"
-                  >
-                    <MessageCircle size={16} strokeWidth={2.2} aria-hidden="true" />
-                    <span className="text-[12.5px] font-extrabold">Contacter sur WhatsApp</span>
-                  </Link>
                   <Link
                     href="/onboarding"
                     className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white/85 transition hover:border-bronze-500/30 hover:bg-white/[0.07]"
@@ -416,8 +393,8 @@ export function NeufPageShell() {
                     <span className="text-[12.5px] font-extrabold">Être rappelé</span>
                   </Link>
                   <p className="px-1 pt-1 text-[10.5px] leading-4 text-white/40">
-                    Contact direct disponible sur les projets partenaires. En attendant,
-                    un conseiller AkarFinder peut vous orienter.
+                    Le contact direct WhatsApp avec le promoteur sera disponible sur les projets
+                    partenaires actifs.
                   </p>
                 </div>
               </div>
