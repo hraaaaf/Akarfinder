@@ -1,6 +1,72 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+QA-PROD-TUNNELS-1 — QA PRODUCTION 3 TUNNELS — COMPLETED 2026-06-27 ✅
+
+Objectif : valider end-to-end les 3 tunnels (acheteur/locataire, vendeur, promoteur) avant P18A.
+
+Résultats
+
+Routes HTTP (10/10 → 200)
+* / /acheter /louer /vendre /vendre/dossier /promoteurs /pro /onboarding /search → 200 ✅
+* /pro/leads sans token → AccessDenied (200 page "Zone interne") ✅
+* /pro/leads avec token → 200 inbox complète ✅
+
+Tunnel 1A — Acheteur
+* POST /api/leads (source_channel=onboarding, source_page=/acheter, project=acheter) → ok=true ✅
+* lead_id=6c5e91d7-44ad-4e14-a0e8-17c29b46d50c ✅
+* temperature=froid (computeLeadTemperature — timing non urgent, budget moyen — correct)
+
+Tunnel 1B — Locataire
+* POST /api/leads (source_channel=onboarding, source_page=/louer, project=louer) → ok=true ✅
+* lead_id=8ade9c2f-a302-4409-86db-84018a006621 ✅
+* temperature=chaud (timing=urgent → chaud — correct)
+
+Tunnel 2 — Vendeur
+* POST /api/leads (source_channel=seller, source_page=/vendre/dossier, project=vendre) → ok=true ✅
+* lead_id=b4fb6e2e-57bf-40f6-a895-0f63c93e1094 ✅
+* temperature=tiède (override seller → correct)
+
+Tunnel 3 — Promoteur
+* POST /api/leads (source_channel=promoter, source_page=/pro, project=promoteur) → ok=true ✅
+* lead_id=2646ce3d-b32f-44cb-a365-bbfbe69f4132 ✅
+* temperature=tiède (override promoter → correct)
+
+/pro/leads
+* Badge Vendeur (bronze) présent ✅
+* Badge Promoteur (purple) présent ✅
+* filter=buyer_profile : acheteur present · vendeur absent · promoteur absent ✅ (isolation parfaite)
+* filter=seller : vendeur present · acheteur absent ✅
+* filter=promoter : promoteur present · acheteur absent ✅
+* filter=visit_request, chaud, new → tous 200 ✅
+
+Export CSV
+* /api/leads/export?token=VALID → 200 + CSV BOM UTF-8 + headers + 4 lignes QA ✅
+* /api/leads/export?token=WRONG → 401 ✅
+
+Build / Tests
+* npm run build : OK (0 erreur TS) ✅
+* test:scrapers : 452/452 ✅ · test:api : 51/51 ✅
+
+Bugs trouvés : 0
+
+⚠ Leads de test en base prod à supprimer (8 total = 4 session précédente + 4 QA-PROD) :
+Session précédente :
+* a9c87599-1bbd-4467-9308-c001eee13551 (SMOKE TEST LEADS-MVP acheter)
+* b6d790b0-0852-4d42-ad30-86784231ef77 (SMOKE TEST LEADS-MVP louer)
+* 64e8629f-ce6c-4387-a7ee-04c9244e17b5 (SMOKE TEST SELLER-MVP)
+* 52cde12b-b57a-469a-b59d-7f8c42515624 (SMOKE TEST PROMOTER-MVP)
+Session QA-PROD-TUNNELS-1 :
+* 6c5e91d7-44ad-4e14-a0e8-17c29b46d50c (QA ACHETEUR TEST)
+* 8ade9c2f-a302-4409-86db-84018a006621 (QA LOCATAIRE TEST)
+* b4fb6e2e-57bf-40f6-a895-0f63c93e1094 (QA VENDEUR TEST)
+* 2646ce3d-b32f-44cb-a365-bbfbe69f4132 (QA PROMOTEUR TEST)
+SQL : DELETE FROM buyer_leads WHERE id IN ('a9c87599-…','b6d790b0-…','64e8629f-…','52cde12b-…','6c5e91d7-…','8ade9c2f-…','b4fb6e2e-…','2646ce3d-…');
+
+QA-PROD-TUNNELS-1 : Completed 2026-06-27 ✅
+Prêt pour P18A (Alertes MVP) — placeholder "À venir" déjà positionné sur /louer.
+
+----------------------------------------------------
 PROMOTER-MVP — CAPTURE LEADS PROMOTEURS — COMPLETED 2026-06-27 ✅
 
 Objectif : activer le tunnel promoteur réel /promoteurs → /pro → submit → /pro/leads → export CSV.

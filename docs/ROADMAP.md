@@ -2105,6 +2105,7 @@ Statut général
 * LEADS-MVP — Tunnels acheteur/locataire câblés : Completed 2026-06-27 (hooks /acheter + /louer · cards CTA · intent+source_page dyn · export CSV /api/leads/export)
 * SELLER-MVP — Tunnel vendeur réel : Completed 2026-06-27 (/vendre/dossier · form vendeur · buyer_leads source_channel=seller · /pro/leads badge+filtre Vendeur · export inclus · 0 migration)
 * PROMOTER-MVP — Capture leads promoteurs : Completed 2026-06-27 (LeadForm /pro activé · source_channel=promoter · /pro/leads badge+filtre Promoteur · export inclus · 0 migration)
+* QA-PROD-TUNNELS-1 — QA production 3 tunnels : Completed 2026-06-27 (10/10 routes 200 · 4 tunnels POST ok · isolation filtres parfaite · export CSV 200 · 401 bad token · 452+51 tests 0 fail · 0 bug)
 
 Verrous roadmap (inchangés)
 * P18A — Alertes sauvegardées MVP : Not started
