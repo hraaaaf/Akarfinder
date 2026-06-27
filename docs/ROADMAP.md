@@ -2093,8 +2093,8 @@ Version détail : 2026-06-27 — ROADMAP-RELOOKING-DETAIL (11 visuels détaillé
 
 Statut général
 * INTENT-RELOOKING-0 — Cadrage visuel              : Completed 2026-06-27
-* INTENT-RELOOKING-1 — Acheter                     : In progress 2026-06-27 (1E livré — score 89/100 — attente validation finale Achraf)
-* INTENT-RELOOKING-2 — Louer                       : Not started
+* INTENT-RELOOKING-1 — Acheter                     : Completed 2026-06-27 (1E — score 89/100 — validé visuellement par Achraf)
+* INTENT-RELOOKING-2 — Louer                       : In progress 2026-06-27 (refonte dark premium en cours)
 * INTENT-RELOOKING-3 — Neuf                        : Not started
 * INTENT-RELOOKING-4 — Promoteurs                  : Not started
 * INTENT-RELOOKING-5 — Vendre                      : Not started
@@ -2186,7 +2186,7 @@ Nature : Documentation uniquement. Aucun fichier applicatif modifié.
 ----------------------------------------------------
 INTENT-RELOOKING-1 — ACHETER
 
-Statut : In progress 2026-06-27 — 1E (polish final) livré, attente validation finale Achraf.
+Statut : Completed 2026-06-27 — validé visuellement par Achraf (revue iPhone sur Production).
 Build : OK · Tests : 452 scrapers + 51 API (0 fail)
 Itérations
 * v1  : 4b88124 (livraison initiale — score 82/100 — non déployé)
@@ -2197,7 +2197,10 @@ Itérations
 * v1E : polish final (header mobile + hero mobile compactés, Explorer le Maroc enrichi)
         — score 90 desktop · 89 mobile · 89 global
 Score visuel final : 89/100 (desktop 90 · mobile 89 — seuils ≥88 atteints)
-Passage en Completed : conditionné à la validation visuelle explicite d'Achraf (1E).
+Validation : ACQUISE — Achraf a validé visuellement 1E (Production akarfinder.vercel.app).
+Standard validé réutilisé pour les pages suivantes : dark premium deepblue dominant,
+bronze (CTA/prix/accents), cards verticales blanches sur fond sombre, badges glass,
+dashboard 2-col, sidebar glass, stats row sombre, SiteHeader variant=dark compact.
 Prérequis : INTENT-RELOOKING-0 complétée.
 
 Objectif
@@ -2255,8 +2258,8 @@ Exit criteria
 ----------------------------------------------------
 INTENT-RELOOKING-2 — LOUER
 
-Statut : Not started.
-Prérequis : INTENT-RELOOKING-0 complétée.
+Statut : In progress 2026-06-27 — refonte dark premium (standard Acheter 1E) en cours.
+Prérequis : INTENT-RELOOKING-0 complétée + INTENT-RELOOKING-1 (Acheter) validé.
 
 Objectif
 Transformer /louer en expérience location claire : budget mensuel, logement,

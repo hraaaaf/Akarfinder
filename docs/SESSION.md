@@ -1,7 +1,103 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
-INTENT-RELOOKING-1E — ACHETER POLISH FINAL — LIVRÉ 2026-06-27 ⏳ (attente validation finale Achraf)
+INTENT-RELOOKING-2 — LOUER — LIVRÉ 2026-06-27 ⏳ (attente validation Achraf)
+
+Date : 2026-06-27
+Build : OK · TypeScript : 0 erreur
+Tests : 452 scrapers (0 fail) · 51 API (0 fail)
+Smoke local : /louer /acheter /  /search /compare → tous HTTP 200
+
+Score visuel : 89/100 desktop · 89/100 mobile · Global 89/100 (notation stricte)
+
+Contexte
+* Acheter (INTENT-RELOOKING-1) validé visuellement par Achraf → standard dark premium
+  deepblue/bronze réutilisé comme base pour /louer.
+
+Standard Acheter repris
+* main bg #061027, SiteHeader variant="dark" compact
+* hero deepblue + accent bronze, search box ring + bouton bronze gradient
+* cards verticales blanches sur fond sombre, prix bronze, badges glass, overlays premium
+* dashboard 2-col [cards | sidebar glass], stats row sombre, section type-Explorer
+
+Adaptations Louer (univers différencié mais cohérent)
+* hero : label LOUER, titre "Louer au Maroc, simple et clair." (bronze sur "simple et clair.")
+* sous-titre : "Des annonces analysées, des repères de loyer et des signaux utiles
+  pour louer avec plus de clarté."
+* chips BUDGET MENSUEL (fourchettes DH/mois) + chips type + toggle Meublé/Vide
+  (indicateur visuel non trompeur — DB non filtrable, signalé)
+* hero-right : card "Fiabilité location" (Prix observé, Demande locative, Tension, Qualité)
+* cards location : prix en DH/mois (suffixe /mois), DH/m²/mois, badge "À louer" bronze,
+  badge "Repères indicatifs", specs surface/ch/sdb/étage
+* sidebar : Vie quotidienne (6 repères proximité, grille 2-col), Alerte location badge
+  "À venir" (CTA "Explorer en attendant" → /search, PAS de système d'alerte créé),
+  Ma sélection (Favoris + Comparer)
+* stats row : locations analysées (réel) / Mensuel / Quartier / Récent
+* CARTE DES LOYERS : 6 quartiers (Maârif, Racine, Gauthier, Aïn Diab, Agdal, Guéliz)
+  avec mini-barres de niveau + loyer DH/mois indicatif + disclaimer
+  "Carte indicative des loyers — repères observés, à confirmer avant décision."
+
+Données utilisées
+* searchListings({ transaction_type: "rent", limit: 6 }) → 2 locations réelles en base
+  (Rabat Villa 45 000 DH/mois, Marrakech Appartement 13 000 DH/mois)
+* total réel affiché dans hero + stats (2)
+
+Fallbacks
+* 2 locations réelles < 3 → ajout d'une tuile CTA "Explorer toutes les locations"
+  (SearchTile) pour compléter la grille SANS inventer de faux listing
+* si 0 location : bloc vide + CTA recherche
+
+P10IMG
+* cards utilisent getListingImageMode → ListingVisual SVG si photo non autorisée
+  (label "Aperçu illustratif"), img réelle seulement si autorisée
+
+Fichiers
+* Lus : docs/SESSION.md, docs/ROADMAP.md (INTENT-RELOOKING), docs/PRODUCT.md (pages d'intention),
+  app/louer/page.tsx, components/location/LouerPageShell.tsx, components/intent/AcheterPageShell.tsx
+  (référence standard), components/layout/SiteHeader.tsx, lib/listings/types.ts,
+  relooking/ visuels Louer desktop+mobile
+* Modifiés : components/location/LouerPageShell.tsx (refonte complète dark premium),
+  docs/SESSION.md, docs/ROADMAP.md
+* Créés : scripts/screenshots-louer-2.mjs
+* app/louer/page.tsx : inchangé (importe déjà LouerPageShell)
+
+Comparaison stricte vs référence (relooking/ 00_31_41 (2) desktop · 00_31_24 (2) mobile)
+Critère                          | v2                           | Note
+---------------------------------|------------------------------|------
+Hero "Louer simple et clair" bronze | ✓                         | 9.5
+Search + budget mensuel + meublé/vide | ✓                       | 9
+Cards location prix DH/mois bronze | ✓                          | 9
+Visuel card (SVG vs photo réf)   | SVG premium (P10IMG)         | 7.5
+Fiabilité location               | ✓ 4 signaux glass            | 9
+Vie quotidienne                  | ✓ 6 repères 2-col            | 9
+Alerte location "À venir"        | ✓ sans CTA trompeur          | 9
+Ma sélection (favoris/comparer)  | ✓                            | 9
+Stats row sombre                 | ✓                            | 9
+Carte des loyers indicative      | cards quartiers (réf=carte)  | 8
+Direction dark premium           | ✓ cohérente Acheter          | 10
+Mobile (compact, sans overflow)  | ✓                            | 9
+
+Score global : 89/100 (desktop 89 · mobile 89) — cibles ≥88 atteintes
+Écart résiduel : cards SVG (P10IMG) ; Carte des loyers = cards quartiers et non
+carte stylisée (brief interdit vraie heatmap/Mapbox → choix conforme).
+
+Dettes restantes
+* Meublé/Vide non filtrable en DB (indicateur visuel) — à brancher si DATA évolue
+* Alerte location réelle = P18A (Not started)
+* Carte des loyers = repères statiques (pas de heatmap data-driven)
+* Peu de locations en base (2) — densité dépend de DATA
+
+Décision Production
+Score 89/100 validable. Preview déployée (akarfinder-3bng8g7z9-…).
+Production : push validé explicitement par Achraf (revue iPhone) — 2026-06-27.
+URL Production : https://akarfinder.vercel.app/louer
+Smoke test prod : /louer /acheter /  /search /compare → tous HTTP 200.
+Validation visuelle finale Achraf : EN ATTENTE (ROADMAP-2 reste In progress jusqu'au feu vert).
+
+Recommandation : après validation Achraf de /louer → passer à INTENT-RELOOKING-3 (Neuf).
+
+----------------------------------------------------
+INTENT-RELOOKING-1E — ACHETER POLISH FINAL — VALIDÉ ACHRAF 2026-06-27 ✅
 
 Date : 2026-06-27
 Build : OK · TypeScript : 0 erreur
