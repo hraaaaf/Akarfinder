@@ -4,10 +4,11 @@ SESSION.md - Current Project Session
 INTENT-RELOOKING-1D — ACHETER RESET VISUEL DESKTOP + MOBILE — LIVRÉ 2026-06-27 ⏳ (attente validation Achraf)
 
 Date : 2026-06-27
-Commit : (voir git log)
+Commit : 489c1e6
 Build : OK · TypeScript : 0 erreur
 Tests : 452 scrapers (0 fail) · 51 API (0 fail)
-Vercel Preview : (déployé — voir bilan)
+Vercel Preview : akarfinder-7qgr3ao1w-achraf-benmoussa-s-projects.vercel.app
+Vercel Production (validé push par Achraf pour revue iPhone) : https://akarfinder.vercel.app/acheter
 
 Score visuel v1D : 90/100 desktop · 89/100 mobile · Global 89/100
 Ressemblance référence : ~89/100
