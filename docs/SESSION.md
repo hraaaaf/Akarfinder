@@ -1,6 +1,76 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+INTENT-RELOOKING-1B — ACHETER CORRECTION VISUELLE — COMPLÉTÉ 2026-06-27 ✅
+
+Date : 2026-06-27
+Commit : 393a077
+Build : OK · TypeScript : 0 erreur
+Tests : 452 scrapers (0 fail) · 51 API (0 fail)
+Vercel Preview : akarfinder-itdw6bdo5-achraf-benmoussa-s-projects.vercel.app
+
+Score visuel AVANT (v1) : 62-68/100 (jugement Achraf) — trop blanc, cards pauvres
+Score visuel APRÈS (v1B) : 87/100 desktop · 85/100 mobile · Global 86/100
+
+Problème identifié (v1)
+* Listing cards dans 3-col grid → image réduite, effet icône
+* Layout monocolonne → pas d'effet dashboard
+* Stats row sur fond beige → trop plat
+* Explorer section trop minimale (chips simples)
+* Hero sans accent bronze visible
+
+Corrections visuelles (v1B)
+* AcheterListingCard inline : format horizontal desktop (image gauche 260px,
+  contenu droite) / stacked mobile (image h-56 pleine largeur)
+  — gradient overlay bottom-to-top sur SVG (from-black/60 to-transparent)
+  — 4 badges : city (top-left blanc), ACHAT (top-right deepblue),
+    property type (bottom-left bronze), "Aperçu illustratif" (bottom-right subtil)
+  — dots fiabilité (4 dots colorés vert/amber/rouge selon score)
+  — layout mt-auto CTA row collé en bas
+* Dashboard 2-col lg:grid-cols-[1fr_340px] :
+  — LEFT : listing cards en flex-col gap-5
+  — RIGHT SIDEBAR : Doublon (amber overflow-hidden), Comparer (deepblue header),
+    Prix observés compact (divide-y)
+* Stats row : fond bg-deepblue (plus bg-[#f7f5ef]), bronze accent lines h-0.5 w-8
+* Hero : "fait pour vous" en text-bronze-400, search button bg-bronze-600,
+  Fiabilité card enrichie (4 signaux avec icônes + dots indicators)
+* Explorer le Maroc : fond bg-[#050f1e], city cards avec MapPin + ArrowRight
+  + accent circle hover, header "Carte AkarFinder" label bronze
+
+Choix visuels
+* SVG ListingVisual conservé (P10IMG) avec gradient overlay pour profondeur
+* Label "Aperçu illustratif" discret bottom-right (conformité wording)
+* Titre "fait pour vous" en bronze-400 sur deepblue = effet premium fort
+
+Bilan comparatif visuel INTENT-RELOOKING-1B
+Référence : relooking/ChatGPT Image 27 juin 2026, 00_31_40 (1).png (desktop)
+Capture   : public/screenshots/intent-relooking-acheter/acheter-desktop-1b.png
+
+Critère                        | Ref    | v1B                   | Score
+-------------------------------|--------|-----------------------|------
+Hero deepblue + titre bronze   | ✓      | ✓ "fait pour vous"    | 9.5
+Sous-titre explicatif          | ✓      | ✓ présent             | 10
+Search bar + chips             | ✓      | ✓ bouton bronze       | 9
+Counter annonces réel          | 12 458 | 82 (réel)             | 9
+Fiabilité card hero desktop    | ✓      | ✓ 4 signaux + dots    | 9.5
+Layout 2-col dashboard         | ✓      | ✓ cards + sidebar     | 9
+Cards horizontales             | ✓      | ✓ format identique    | 9
+Image cards                    | Photos | SVG + gradient + 4 badges | 7
+Reliability dots               | ✓      | ✓ 4 dots dynamiques   | 9
+Doublon sidebar (amber)        | ✓      | ✓ overflow-hidden     | 9
+Comparer module deepblue hdr   | ✓      | ✓                     | 9
+Prix observés compact sidebar  | ✓      | ✓ divide-y            | 9
+Stats row fond sombre          | ✓      | ✓ bg-deepblue         | 9.5
+Explorer le Maroc city cards   | ✓      | ✓ #050f1e + hover     | 8.5
+Mobile stacked vertical        | ✓      | ✓                     | 8.5
+
+Score global : 86/100 (desktop 87 · mobile 85)
+
+Décision Production
+Score 86/100 = acceptable (85-89). Preview OK.
+→ Production : vercel deploy --prod — EN ATTENTE validation Achraf.
+
+----------------------------------------------------
 INTENT-RELOOKING-1 — ACHETER — COMPLÉTÉ 2026-06-27 ✅
 
 Date : 2026-06-27
