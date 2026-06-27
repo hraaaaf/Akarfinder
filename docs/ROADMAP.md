@@ -2087,6 +2087,522 @@ Guardrails
 * Aucune note transmise à des tiers sans consentement
 
 ----------------------------------------------------
+INTENT-RELOOKING — REFONTE PREMIUM DES PAGES D'INTENTION
+
+Version détail : 2026-06-27 — ROADMAP-RELOOKING-DETAIL (11 visuels détaillés page par page)
+
+Statut général
+* INTENT-RELOOKING-0 — Cadrage visuel              : Completed 2026-06-27
+* INTENT-RELOOKING-1 — Acheter                     : Not started
+* INTENT-RELOOKING-2 — Louer                       : Not started
+* INTENT-RELOOKING-3 — Neuf                        : Not started
+* INTENT-RELOOKING-4 — Promoteurs                  : Not started
+* INTENT-RELOOKING-5 — Vendre                      : Not started
+* INTENT-RELOOKING-6 — QA globale mobile/desktop/perf : Not started
+* INTENT-RELOOKING-BONUS-INVESTIR — Direction future : Deferred / Not started
+
+Verrous roadmap (inchangés)
+* P18A — Alertes sauvegardées MVP : Not started
+* DATA-A : Not started
+* P17B full : HOLD tant qu'il n'y a pas de vrai partenaire promoteur signé
+
+Objectif
+Transformer les pages d'intention AkarFinder (Acheter, Louer, Neuf, Promoteurs, Vendre)
+en landing pages fonctionnelles premium, inspirées des expériences modernes type
+Booking / Airbnb / marketplace immobilière, avec l'identité AkarFinder deepblue / bronze.
+
+Nature de la phase
+Documentation, cadrage et intégration visuelle progressive, page par page.
+Aucune modification Supabase. Aucun scraper. DATA-A untouched.
+
+Source de référence
+Dossier : public/relooking/
+11 visuels ChatGPT générés le 2026-06-27 — direction artistique officielle validée par Achraf.
+
+Décision produit actée
+Les pages d'intention AkarFinder ne sont plus de simples pages éditoriales.
+Elles deviennent des landing pages premium fonctionnelles :
+* mobile-first ;
+* visuelles ;
+* orientées conversion ;
+* inspirées marketplace immobilière moderne ;
+* style AkarFinder deepblue / bronze ;
+* données réelles quand disponibles ;
+* mocks uniquement avec label Exemple / Aperçu ;
+* wording prudent obligatoire.
+
+Univers par page
+* Acheter    = décision achat + comparaison
+* Louer      = budget + quartier + vie quotidienne
+* Neuf       = projet partenaire + brochure + promoteur
+* Promoteurs = B2B leads + page projet + reporting
+* Vendre     = préparation vente + repères indicatifs
+* Investir   = bonus futur, données marché, prudence financière
+
+----------------------------------------------------
+MAPPING OFFICIEL DES 11 VISUELS — INTENT-RELOOKING
+
+| Page       | Type     | Fichier actuel dans relooking/                 | Statut             | Rôle                                      |
+|------------|----------|------------------------------------------------|--------------------|-------------------------------------------|
+| Acheter    | Desktop  | ChatGPT Image 27 juin 2026, 00_31_40 (1).png   | Référence validée  | Direction visuelle (pas screenshot à coller) |
+| Acheter    | Mobile   | ChatGPT Image 27 juin 2026, 00_31_24 (1).png   | Référence validée  | Direction visuelle (pas screenshot à coller) |
+| Louer      | Desktop  | ChatGPT Image 27 juin 2026, 00_31_41 (2).png   | Référence validée  | Direction visuelle (pas screenshot à coller) |
+| Louer      | Mobile   | ChatGPT Image 27 juin 2026, 00_31_24 (2).png   | Référence validée  | Direction visuelle (pas screenshot à coller) |
+| Vendre     | Vertical | ChatGPT Image 27 juin 2026, 00_31_24 (3).png   | Référence validée  | Direction visuelle unique (pas de desktop séparé) |
+| Neuf       | Desktop  | ChatGPT Image 27 juin 2026, 00_31_41 (3).png   | Référence validée  | Direction visuelle (pas screenshot à coller) |
+| Neuf       | Mobile   | ChatGPT Image 27 juin 2026, 00_31_25 (4).png   | Référence validée  | Direction visuelle (pas screenshot à coller) |
+| Promoteurs | Desktop  | ChatGPT Image 27 juin 2026, 00_31_41 (5).png   | Référence validée  | Direction visuelle B2B (pas screenshot à coller) |
+| Promoteurs | Mobile   | ChatGPT Image 27 juin 2026, 00_31_25 (5).png   | Référence validée  | Direction visuelle B2B (pas screenshot à coller) |
+| Investir   | Desktop  | ChatGPT Image 27 juin 2026, 00_31_41 (4).png   | Référence bonus    | Direction future (deferred)               |
+| Investir   | Mobile   | ChatGPT Image 27 juin 2026, 00_31_25 (6).png   | Référence bonus    | Direction future (deferred)               |
+
+Note : 11 visuels au total (pas 10). VENDRE n'a qu'un seul visuel (format vertical, pas de desktop séparé).
+INVESTIR (2 visuels) n'était pas dans le brief initial — livré en bonus, traité en direction future.
+
+Renommage recommandé (NON exécuté dans cette mission — documentation seulement)
+Les noms actuels sont génériques ("ChatGPT Image…"). Renommage propre recommandé avant intégration :
+* 00_31_40 (1).png  → acheter-desktop-reference.png
+* 00_31_24 (1).png  → acheter-mobile-reference.png
+* 00_31_41 (2).png  → louer-desktop-reference.png
+* 00_31_24 (2).png  → louer-mobile-reference.png
+* 00_31_24 (3).png  → vendre-vertical-reference.png
+* 00_31_41 (3).png  → neuf-desktop-reference.png
+* 00_31_25 (4).png  → neuf-mobile-reference.png
+* 00_31_41 (5).png  → promoteurs-desktop-reference.png
+* 00_31_25 (5).png  → promoteurs-mobile-reference.png
+* 00_31_41 (4).png  → investir-desktop-reference.png
+* 00_31_25 (6).png  → investir-mobile-reference.png
+À exécuter dans une mission dédiée (renommage + mise à jour de ce mapping), pas maintenant.
+
+----------------------------------------------------
+INTENT-RELOOKING-0 — CADRAGE VISUEL
+
+Statut : Completed 2026-06-27
+Objectif : Identifier, mapper et détailler les 11 visuels de référence.
+Livré : mapping officiel des visuels / pages / formats + détail page par page
+        + règles techniques globales + wording autorisé/interdit.
+Nature : Documentation uniquement. Aucun fichier applicatif modifié.
+
+----------------------------------------------------
+INTENT-RELOOKING-1 — ACHETER
+
+Statut : Not started.
+Prérequis : INTENT-RELOOKING-0 complétée.
+
+Objectif
+Transformer /acheter en expérience produit premium pour convertir un visiteur qui veut
+acheter en acheteur qualifié prêt à rechercher, comparer et contacter.
+
+Visuels
+* desktop : ChatGPT Image 27 juin 2026, 00_31_40 (1).png
+* mobile  : ChatGPT Image 27 juin 2026, 00_31_24 (1).png
+
+Promesse
+"Trouvez le bien fait pour vous, avec les données du marché pour choisir avec clarté."
+
+Éléments à recréer
+* hero Acheter (image Casablanca de fond + overlay deepblue) ;
+* barre de recherche (ville/quartier + sélecteur Maroc + CTA bronze "Explorer") ;
+* chips Acheter / Type de bien / Prix max / Plus de filtres ;
+* compteur "annonces analysées" branché sur /api/stats (jamais hardcodé) ;
+* 3 cards biens réels via searchListings (limit 3, tri fiabilité) ;
+* badges ville sur chaque card ;
+* prix DH lisible ;
+* surface / chambres / SDB / parking ;
+* badge repères de fiabilité par card ;
+* bloc "Fiabilité visible" (4 repères éducatifs : historique des prix, qualité de l'annonce,
+  similarité du bien, activité du marché) ;
+* bloc "Doublon possible" (conditionné à duplicate_score disponible) ;
+* bloc Comparer branché sur /compare ;
+* bloc Prix observés (indicatifs, disclaimés) ;
+* mini carte / section "Explorer le Maroc" (Tanger / Casablanca / Marrakech → /map?city=X) ;
+* CTA : /search, /compare, /onboarding, /map.
+
+Approche technique
+* ne pas intégrer l'image comme page ;
+* recréer en composants React/Tailwind ;
+* utiliser les visuels comme direction artistique uniquement ;
+* hero = next/image (WebP) + overlay + HTML superposé ;
+* données réelles quand possible, fallback propre si pas assez de listings ;
+* stats jamais hardcodées (toujours /api/stats).
+
+Risques
+* ne pas hardcoder "12 458 annonces" — toujours /api/stats ;
+* ne pas utiliser de photos scrappées non autorisées (P10IMG : indexed_only → fallback SVG) ;
+* bloc "Doublon possible" affiché seulement si duplicate_score disponible dans les données ;
+* prix observés toujours indicatifs et disclaimés.
+
+Exit criteria
+* /acheter desktop enrichie ;
+* /acheter mobile enrichie (aucun overflow horizontal) ;
+* données réelles ou fallback propre ;
+* wording interdit absent ;
+* build + test:scrapers + test:api OK ;
+* screenshots desktop + mobile ;
+* Preview Vercel puis Production si Preview OK.
+
+----------------------------------------------------
+INTENT-RELOOKING-2 — LOUER
+
+Statut : Not started.
+Prérequis : INTENT-RELOOKING-0 complétée.
+
+Objectif
+Transformer /louer en expérience location claire : budget mensuel, logement,
+vie quotidienne, repères de loyer. (LouerPageShell P16B existe déjà — à enrichir.)
+
+Visuels
+* desktop : ChatGPT Image 27 juin 2026, 00_31_41 (2).png
+* mobile  : ChatGPT Image 27 juin 2026, 00_31_24 (2).png
+
+Promesse
+"Louer au Maroc, simple et clair."
+
+Éléments à recréer
+* hero Louer (ton teal/deepblue distinct d'Acheter) ;
+* stats location (annonces / évolution / délai moyen) — via /api/stats si possible ;
+* barre recherche ville/quartier ;
+* chips budget mensuel (fourchettes DH/mois) ;
+* chips type de bien ;
+* chips meublé/vide visuels (DB non filtrable → cosmétique, à signaler) ;
+* cards location réelles via searchListings transaction_type=rent ;
+* prix DH/mois (pas DH total) ;
+* repères de loyer observé par card ;
+* bloc Vie quotidienne (transport, école, marché, pharmacie, bureau, carte) ;
+* bloc Repères de fiabilité location (prix observé, demande locative, tenure...) ;
+* bloc Alerte location — badge "À venir" (jusqu'à P18A) ;
+* bloc Ma sélection (favoris / comparateur) ;
+* carte des loyers indicative par quartier (Maârif / Racine / Gauthier).
+
+Approche technique
+* enrichir LouerPageShell existant (ne pas repartir de zéro) ;
+* pas de vraie heatmap si data absente ;
+* carte des loyers = CSS/SVG indicatif avec disclaimer ;
+* meublé/vide = chips visuels si DB non filtrable ;
+* alerte location = "À venir" → lien /search jusqu'à P18A (pas de CTA trompeur).
+
+Risques
+* peu de biens location en DB (≈ 2 actuellement) → fallback si < 3 locations ;
+* ne pas promettre d'alerte réelle tant que P18A non livré ;
+* ne jamais afficher "loyer garanti" ;
+* bien signaler "repères indicatifs".
+
+Exit criteria
+* /louer desktop enrichie ;
+* /louer mobile enrichie (aucun overflow) ;
+* fallback propre si moins de 3 locations ;
+* wording interdit absent ;
+* build + test:scrapers + test:api OK ;
+* screenshots desktop + mobile ;
+* Preview Vercel puis Production si Preview OK.
+
+----------------------------------------------------
+INTENT-RELOOKING-3 — NEUF
+
+Statut : Not started.
+Prérequis : INTENT-RELOOKING-0 complétée. (NeufPageShell P16C existe déjà — à enrichir.)
+
+Objectif
+Transformer /neuf en page premium pour découvrir les projets neufs,
+en restant prudent sur les données promoteur.
+
+Visuels
+* desktop : ChatGPT Image 27 juin 2026, 00_31_41 (3).png
+* mobile  : ChatGPT Image 27 juin 2026, 00_31_25 (4).png
+
+Promesse
+"Découvrez les nouveaux projets au Maroc, avec des données fournies par le promoteur
+et des repères indicatifs."
+
+Éléments à recréer
+* hero Neuf ;
+* 4 repères (projets récents / emplacements / plans & brochures / repères indicatifs) ;
+* card projet partenaire (badge "Projet partenaire") ;
+* photo programme (partner_full uniquement) ;
+* prix "à partir de" (jamais "prix officiel") ;
+* typologies ;
+* surfaces ;
+* livraison prévue (jamais "livraison garantie") ;
+* plan / brochure ("Brochure fournie par le promoteur") ;
+* bloc "Données fournies par le promoteur" systématique ;
+* bloc promoteur (nom, présentation, lien autres projets) ;
+* CTA WhatsApp / rappel ;
+* bloc Neuf vs Ancien (comparaison indicative) ;
+* guide d'achat neuf (frais notaire / frais réduits) si présent.
+
+Approche technique
+* enrichir NeufPageShell existant ;
+* utiliser données promoteur seulement si autorisées ;
+* si pas de partenaire actif : ne pas inventer un faux projet public ;
+* bloc exemple seulement si clairement marqué "Aperçu / Exemple".
+
+Risques
+* faux projet public présenté comme réel → interdit ;
+* "prix officiel" interdit ;
+* "livraison garantie" interdit ;
+* données promoteur non confirmées → mention obligatoire ;
+* photos uniquement si autorisées (partner_full).
+
+Exit criteria
+* /neuf desktop enrichie ;
+* /neuf mobile enrichie ;
+* source des données claire (fournie par le promoteur) ;
+* wording interdit absent ;
+* build + test:scrapers + test:api OK ;
+* screenshots desktop + mobile ;
+* Preview Vercel puis Production si Preview OK.
+
+----------------------------------------------------
+INTENT-RELOOKING-4 — PROMOTEURS
+
+Statut : Not started.
+Prérequis : INTENT-RELOOKING-0 complétée + P17A-1 scaffolding disponible.
+
+Objectif
+Transformer /promoteurs en page B2B premium qui montre la valeur pour les promoteurs
+sans promettre de résultats garantis.
+
+Visuels
+* desktop : ChatGPT Image 27 juin 2026, 00_31_41 (5).png
+* mobile  : ChatGPT Image 27 juin 2026, 00_31_25 (5).png
+
+Promesse
+"Présentez vos projets. Recevez des leads qualifiés."
+
+Éléments à recréer
+* hero Promoteurs (deepblue / bronze) ;
+* value props (pages premium / leads / outils / données) ;
+* card projet (lien page projet demo P17A-2 si disponible) ;
+* leads qualifiés (mock labellisé "Exemple") ;
+* WhatsApp ;
+* reporting (mock labellisé / placeholder "disponible avec votre pack") ;
+* brochure PDF ;
+* QR salon / expo (placeholder, pas trompeur) ;
+* packs Starter / Pro / Premium / Expo (sans prix chiffré — P17B-0) ;
+* diffusion multicanale ;
+* formulaire intelligent ;
+* notifications (marquer "À venir" si non livré) ;
+* données sécurisées.
+
+Approche technique
+* enrichir /promoteurs existant ;
+* mocks autorisés uniquement avec label Exemple / Aperçu ;
+* pas de vrais leads publics (les vrais leads restent dans /pro/leads token-gated) ;
+* pas de prix pack chiffré ;
+* pas de fausse promesse.
+
+Risques
+* leads/reporting mock non labellisés → interdit (toujours "Exemple") ;
+* QR demo trompeur → placeholder avec mention ;
+* prix packs absents → expliquer avec CTA "Nous contacter / Réserver une démo" ;
+* notifications non livrées → marquer "À venir" si besoin.
+
+Exit criteria
+* /promoteurs desktop enrichie ;
+* /promoteurs mobile enrichie ;
+* mocks clairement labellisés Exemple / Aperçu ;
+* wording interdit absent ;
+* build + test:scrapers + test:api OK ;
+* screenshots desktop + mobile ;
+* Preview Vercel puis Production si Preview OK.
+
+----------------------------------------------------
+INTENT-RELOOKING-5 — VENDRE
+
+Statut : Not started.
+Prérequis : INTENT-RELOOKING-0 complétée + décisions Achraf (nav, blocs mock) tranchées.
+
+Objectif
+Créer ou enrichir /vendre pour aider un propriétaire à préparer sa vente avec des
+repères indicatifs, sans promettre d'estimation officielle ni vente garantie.
+
+Visuel
+* vertical : ChatGPT Image 27 juin 2026, 00_31_24 (3).png
+* desktop séparé : absent (à concevoir nativement en Tailwind responsive)
+
+Promesse
+"Vendre avec plus de clarté et de confiance."
+
+Éléments à recréer
+* page /vendre ;
+* hero Vendre ;
+* card bien vendeur ;
+* estimation indicative (fourchette large, fort disclaimer) ;
+* visibilité de l'annonce (diffusion multi-canal Acheter/Louer/Neuf/Google) ;
+* demandes de visite (mock labellisé "Aperçu") ;
+* leads qualifiés (mock labellisé "Aperçu") ;
+* prix observés dans la zone (tableau ville/quartier/m²) ;
+* annonce similaire détectée (via searchListings) ;
+* CTA "préparer ma vente" / "demander un accompagnement" ;
+* lien vers /pro ou formulaire contact.
+
+Décision à documenter (à confirmer par Achraf)
+/vendre doit être ajoutée dans :
+* nav principale ;
+* chips mobile ;
+* éventuellement footer.
+MAIS la page ne doit pas promettre de dépôt instantané d'annonce.
+
+Approche technique
+* créer app/vendre/page.tsx si absent ;
+* créer components/vendre/VendrePageShell.tsx si nécessaire ;
+* données estimation statiques ou semi-dynamiques avec disclaimer fort ;
+* pas de backend publication ;
+* pas d'auth vendeur dans cette phase.
+
+Risques
+* estimation trop précise → perte de crédibilité (fourchette large obligatoire) ;
+* "publier mon bien" mal compris → pas de dépôt automatique ;
+* leads/visites mock non labellisés → toujours "Aperçu / Exemple" ;
+* confusion avec une agence immobilière → wording prudent ;
+* aucun dépôt automatique d'annonce.
+
+Exit criteria
+* /vendre créée ;
+* nav mise à jour (selon décision Achraf) ;
+* mobile OK (aucun overflow) ;
+* wording prudent, pas de promesse officielle ;
+* build + test:scrapers + test:api OK ;
+* screenshots mobile + desktop responsive ;
+* Preview Vercel puis Production si Preview OK.
+
+----------------------------------------------------
+INTENT-RELOOKING-6 — QA GLOBALE MOBILE / DESKTOP / PERFORMANCE
+
+Statut : Not started.
+Prérequis : INTENT-RELOOKING-1 à 5 complétées.
+Objectif : Vérifier le rendu iPhone, desktop, poids images, absence d'overflow.
+
+Checklist
+* Smoke test HTTP 200 : /acheter / /louer / /neuf / /promoteurs / /vendre
+* Rendu iPhone (390px) : aucun overflow, texte lisible, CTA accessibles
+* Rendu desktop (1280px) : layout conforme aux visuels de référence
+* Poids images : optimisées (next/image + WebP)
+* Build propre : npm run build 0 erreur TypeScript
+* test:scrapers : 0 fail
+* test:api : 0 fail
+* Wording interdit absent sur les 5 pages
+* Vercel Preview déployée avant Production
+* Smoke test Production après déploiement
+
+----------------------------------------------------
+INTENT-RELOOKING-BONUS-INVESTIR — DIRECTION FUTURE
+
+Statut : Deferred / Not started.
+Position : après les 5 pages principales, ou avec DATA-E (prix observés renforcés).
+
+Visuels
+* desktop : ChatGPT Image 27 juin 2026, 00_31_41 (4).png
+* mobile  : ChatGPT Image 27 juin 2026, 00_31_25 (6).png
+
+Objectif futur
+Transformer /investir en page d'aide à la décision avec prix observés, comparatif villes,
+quartiers actifs et méthodologie — sans conseil financier.
+
+Éléments visuels
+* prix/m² observé (P10D) ;
+* comparatif villes ;
+* quartiers actifs ;
+* zones en mouvement (carte heatmap indicative) ;
+* opportunités à surveiller ;
+* tableau comparatif ;
+* méthodologie ("comment ces données sont calculées") ;
+* disclaimer de prudence décisionnelle.
+
+Raison du report
+* wording financier sensible ;
+* besoin de données plus solides (DATA-E / prix observés renforcés) ;
+* risque de conseil financier implicite ;
+* à traiter après les 5 pages principales, sous mission dédiée avec validation wording.
+
+Wording interdit (spécifique Investir)
+* rendement garanti
+* investissement sûr
+* plus-value garantie
+* conseil financier
+* prix officiel
+* données certifiées
+
+Exit criteria futur
+* données suffisamment solides ;
+* méthodologie claire et visible ;
+* disclaimers de prudence visibles ;
+* aucun conseil financier.
+
+----------------------------------------------------
+RÈGLES TECHNIQUES GLOBALES — INTENT-RELOOKING
+
+Approche d'intégration commune
+* les images du dossier relooking sont des références de direction artistique ;
+* ne pas coller les visuels comme screenshots de page ;
+* recréer en composants React/Tailwind ;
+* utiliser next/image uniquement pour les photos / fonds (priority + sizes, WebP, < 200 Ko) ;
+* textes importants en HTML (pas dans l'image) ;
+* CTA en vrais liens (/search, /compare, /onboarding, /map, /pro, wa.me) ;
+* stats via /api/stats (jamais hardcodées) ;
+* listings via searchListings (fallback propre si données insuffisantes) ;
+* prix observés avec disclaimer indicatif ;
+* mocks uniquement avec label Exemple / Aperçu ;
+* pas de photos non autorisées (P10IMG : indexed_only → fallback SVG) ;
+* pas d'overflow mobile ;
+* mobile-first ;
+* pas de nouvelle dépendance npm non auditée.
+
+Règle de test (intégration séparée page par page)
+Chaque intégration page doit être faite séparément, dans cet ordre :
+1. Acheter
+2. Louer
+3. Neuf
+4. Promoteurs
+5. Vendre
+Investir après validation séparée (mission dédiée).
+
+Chaque page intégrée doit avoir
+* screenshot desktop ;
+* screenshot mobile ;
+* build OK ;
+* test:scrapers OK ;
+* test:api OK ;
+* wording interdit absent ;
+* Preview Vercel ;
+* Production seulement si Preview OK.
+
+----------------------------------------------------
+WORDING GLOBAL — INTENT-RELOOKING
+
+Wording autorisé
+* annonces analysées
+* repères indicatifs
+* prix observés
+* signaux de fiabilité visibles
+* données fournies par le promoteur
+* source identifiée
+* à confirmer avant décision
+* à confirmer auprès du promoteur
+* estimation indicative
+* leads qualifiés
+* aperçu
+* exemple
+
+Wording interdit
+* prix officiel
+* estimation officielle
+* données vérifiées
+* garanti
+* certifié
+* fiable à 100 %
+* vente garantie
+* leads garantis
+* estimation certifiée
+* rendement garanti
+* investissement sûr
+* plus-value garantie
+* conseil financier
+* promoteur vérifié
+* projet certifié
+* livraison garantie
+
+----------------------------------------------------
 P18A — ALERTES SAUVEGARDÉES RÉELLES
 
 Statut : Not started.

@@ -458,3 +458,67 @@ Label obligatoire :
 Ce n'est pas une étude de marché officielle.
 C'est la donnée du scraping propre, affichée avec transparence.
 C'est la différence entre AkarFinder et un simple site d'annonces.
+
+====================================================
+DIRECTION PAGES D'INTENTION — MISE À JOUR 2026-06-27
+
+Les pages d'intention AkarFinder (Acheter, Louer, Vendre, Neuf, Promoteurs)
+ne sont plus de simples pages éditoriales.
+
+Direction cible : landing pages fonctionnelles premium.
+
+Caractéristiques obligatoires
+* Visuel fort : hero dark deepblue / bronze, photographie immobilière de qualité
+* Expérience mobile-first : aucun overflow, CTA plein écran, chips scrollables
+* Cards immobilières réalistes avec données réelles si disponibles en base
+* Repères de fiabilité visibles (badges, signaux, historique indicatif)
+* Prix observés (indicatifs, disclaimés — jamais "officiels" ou "garantis")
+* CTA clairs : Rechercher / WhatsApp / Comparer / Favoris / Créer dossier
+* Wording prudent conforme à la charte AkarFinder
+
+Inspiration
+* Booking.com : clarté des résultats, confiance immédiate
+* Airbnb : qualité visuelle, UX mobile premium
+* Marketplace immobilière moderne : fonctionnelle, pas juste éditoriale
+* Identité AkarFinder : deepblue / bronze, pas blanc/bleu générique
+
+Source de référence direction artistique
+* Dossier : public/relooking/ — 11 visuels validés le 2026-06-27
+* Chaque page a ses visuels desktop + mobile dans ce dossier
+
+Principe directeur
+* Chaque page d'intention a son propre univers (pas un template générique répété).
+* Chaque visuel sert une action (recherche, comparaison, contact, lead, préparation vente).
+* Pas de visuel purement décoratif — tout élément visuel porte une fonction produit.
+
+Univers par page (direction validée 2026-06-27)
+* Acheter    = décision achat + comparaison
+* Louer      = budget + quartier + vie quotidienne
+* Neuf       = projet partenaire + brochure + promoteur
+* Promoteurs = B2B leads + page projet + reporting
+* Vendre     = préparation vente + repères indicatifs
+* Investir   = bonus futur, données marché, prudence financière (deferred)
+
+Pages concernées
+* /acheter    : landing achat immobilier premium (décision + comparaison)
+* /louer      : landing location dédiée (budget mensuel + vie quotidienne)
+* /neuf       : programmes neufs et projets partenaires (données promoteur)
+* /promoteurs : espace B2B promoteurs (leads qualifiés + page projet + reporting)
+* /vendre     : page vendeur (à créer — direction visuelle validée, repères indicatifs)
+* /investir   : bonus futur (deferred — données marché, wording financier prudent)
+
+Wording interdit sur toutes les pages d'intention
+* prix officiel / estimation officielle / données vérifiées / garanti / certifié
+* fiable à 100 % / vente garantie / leads garantis / estimation certifiée
+
+Wording autorisé
+* annonces analysées / repères indicatifs / prix observés
+* signaux de fiabilité visibles / données fournies par le promoteur
+* à confirmer avant décision / source identifiée
+
+Intégration technique
+* Composants React/Tailwind privilégiés sur les images de fond texte
+* next/image avec priority + sizes pour toutes les images hero
+* Format WebP optimisé (< 200 Ko si possible)
+* Pas de nouvelle dépendance npm sans audit
+* Roadmap d'intégration : voir INTENT-RELOOKING dans ROADMAP.md

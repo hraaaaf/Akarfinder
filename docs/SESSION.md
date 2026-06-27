@@ -1,6 +1,174 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+ROADMAP-RELOOKING-DETAIL — COMPLÉTÉ 2026-06-27 ✅
+
+Date : 2026-06-27
+Nature : Documentation et roadmap uniquement. Aucun fichier applicatif modifié.
+
+Dossier source : public/relooking/
+Nombre de visuels : 11 (Investir = bonus/deferred)
+
+Objet
+Détailler chaque visuel validé dans la roadmap pour permettre des intégrations
+page par page sans confusion. Section INTENT-RELOOKING réécrite et enrichie.
+
+Pages détaillées (sous-phases re-numérotées par priorité)
+* INTENT-RELOOKING-1 — Acheter    : Not started
+* INTENT-RELOOKING-2 — Louer      : Not started
+* INTENT-RELOOKING-3 — Neuf       : Not started
+* INTENT-RELOOKING-4 — Promoteurs : Not started
+* INTENT-RELOOKING-5 — Vendre     : Not started
+* INTENT-RELOOKING-6 — QA globale mobile/desktop/perf : Not started
+* INTENT-RELOOKING-BONUS-INVESTIR : Deferred / Not started
+
+Chaque page détaillée avec : objectif, visuels (desktop/mobile), promesse,
+éléments à recréer, approche technique, risques, exit criteria.
+
+Mapping officiel des 11 visuels (noms exacts actuels documentés dans ROADMAP.md)
+Acheter desktop    : ChatGPT Image 27 juin 2026, 00_31_40 (1).png
+Acheter mobile     : ChatGPT Image 27 juin 2026, 00_31_24 (1).png
+Louer desktop      : ChatGPT Image 27 juin 2026, 00_31_41 (2).png
+Louer mobile       : ChatGPT Image 27 juin 2026, 00_31_24 (2).png
+Vendre vertical    : ChatGPT Image 27 juin 2026, 00_31_24 (3).png
+Neuf desktop       : ChatGPT Image 27 juin 2026, 00_31_41 (3).png
+Neuf mobile        : ChatGPT Image 27 juin 2026, 00_31_25 (4).png
+Promoteurs desktop : ChatGPT Image 27 juin 2026, 00_31_41 (5).png
+Promoteurs mobile  : ChatGPT Image 27 juin 2026, 00_31_25 (5).png
+Investir desktop   : ChatGPT Image 27 juin 2026, 00_31_41 (4).png (bonus)
+Investir mobile    : ChatGPT Image 27 juin 2026, 00_31_25 (6).png (bonus)
+
+Renommage propre recommandé (NON exécuté — documenté dans ROADMAP.md)
+acheter/louer/vendre/neuf/promoteurs/investir-{desktop,mobile,vertical}-reference.png
+
+Ajouts ROADMAP.md
+* Mapping officiel des 11 visuels (table Page | Type | Fichier | Statut | Rôle)
+* Détail page par page (Acheter, Louer, Neuf, Promoteurs, Vendre, Investir bonus)
+* Règles techniques globales (recréation React/Tailwind, pas de screenshot collé,
+  stats /api/stats, listings searchListings, mocks labellisés, mobile-first)
+* Wording global autorisé / interdit
+* Règle de test : intégration séparée page par page + Preview avant Production
+
+Fichiers modifiés
+* docs/ROADMAP.md — section INTENT-RELOOKING réécrite et détaillée
+* docs/PRODUCT.md — univers par page + principe "chaque visuel sert une action"
+* docs/SESSION.md — ce bloc
+
+Statuts inchangés confirmés
+* P18A — Alertes sauvegardées MVP : Not started ✅
+* DATA-A : Not started ✅
+* P17B full : HOLD (sans partenaire réel) ✅
+* Supabase : untouched ✅
+* Scraper : untouched ✅
+* Fichiers applicatifs modifiés : AUCUN ✅
+* Vercel : non déployé (documentation uniquement) ✅
+
+Bilan
+* dossier relooking analysé : OUI
+* 11 visuels détaillés : OUI
+* chaque page documentée : OUI
+* Acheter détaillé : OUI
+* Louer détaillé : OUI
+* Neuf détaillé : OUI
+* Promoteurs détaillé : OUI
+* Vendre détaillé : OUI
+* Investir bonus détaillé : OUI
+* règles techniques globales ajoutées : OUI
+* wording global ajouté : OUI
+* PRODUCT.md mis à jour : OUI
+* ROADMAP.md mis à jour : OUI
+* SESSION.md mis à jour : OUI
+* aucun fichier applicatif modifié : OUI
+* P18A reste Not started : OUI
+* DATA-A reste Not started : OUI
+* P17B full reste HOLD : OUI
+* Vercel non déployé : OUI
+
+Prochaine étape recommandée
+INTENT-RELOOKING-1 — Acheter (sur ordre de mission explicite uniquement).
+
+----------------------------------------------------
+ROADMAP-RELOOKING-INTENT — COMPLÉTÉ 2026-06-27 ✅
+
+Date : 2026-06-27
+Nature : Documentation et roadmap uniquement. Aucun fichier applicatif modifié.
+
+Dossier source : public/relooking/
+Nombre de visuels : 11 (pas 10 — Vendre 1 seul visuel + Investir bonus non listé)
+
+Fichiers lus
+* docs/SESSION.md
+* docs/ROADMAP.md
+* docs/PRODUCT.md
+* public/relooking/ (11 images analysées visuellement)
+
+Fichiers modifiés
+* docs/ROADMAP.md — section INTENT-RELOOKING ajoutée avant P18A :
+  INTENT-RELOOKING-0 (Cadrage, Completed 2026-06-27) + INTENT-RELOOKING-1 à 6 (Not started)
+  Mapping visuels / pages / formats documenté
+  Règle produit "pages d'intention = landing pages premium" actée
+  Règles d'intégration visuels documentées
+  Wording interdit / autorisé documenté
+* docs/PRODUCT.md — section "DIRECTION PAGES D'INTENTION 2026-06-27" ajoutée
+  Direction cible, inspiration, wording, intégration technique documentés
+* docs/SESSION.md — ce fichier
+
+Pages concernées par INTENT-RELOOKING
+* /acheter    — Acheter desktop + mobile
+* /louer      — Louer desktop + mobile
+* /vendre     — Vendre (1 seul visuel vertical — page à créer)
+* /neuf       — Neuf desktop + mobile
+* /promoteurs — Promoteurs desktop + mobile
+* /investir   — Investir desktop + mobile (bonus — non dans brief initial)
+
+Mapping visuels confirmé
+Fichier                                        | Page        | Format
+-----------------------------------------------|-------------|--------
+ChatGPT Image 27 juin 2026, 00_31_24 (1).png  | ACHETER     | Mobile
+ChatGPT Image 27 juin 2026, 00_31_40 (1).png  | ACHETER     | Desktop
+ChatGPT Image 27 juin 2026, 00_31_24 (2).png  | LOUER       | Mobile
+ChatGPT Image 27 juin 2026, 00_31_41 (2).png  | LOUER       | Desktop
+ChatGPT Image 27 juin 2026, 00_31_24 (3).png  | VENDRE      | Unique (vertical)
+ChatGPT Image 27 juin 2026, 00_31_25 (4).png  | NEUF        | Mobile
+ChatGPT Image 27 juin 2026, 00_31_41 (3).png  | NEUF        | Desktop
+ChatGPT Image 27 juin 2026, 00_31_25 (5).png  | PROMOTEURS  | Mobile
+ChatGPT Image 27 juin 2026, 00_31_41 (5).png  | PROMOTEURS  | Desktop
+ChatGPT Image 27 juin 2026, 00_31_25 (6).png  | INVESTIR    | Mobile (bonus)
+ChatGPT Image 27 juin 2026, 00_31_41 (4).png  | INVESTIR    | Desktop (bonus)
+
+Décision produit actée
+Les pages d'intention ne sont plus de simples pages éditoriales.
+Elles deviennent des landing pages fonctionnelles premium :
+* visuel fort / mobile-first / cards réalistes / repères fiabilité
+* prix observés / CTA clairs / wording prudent / aucun claim garanti.
+
+Statuts inchangés confirmés
+* P18A — Alertes sauvegardées MVP : Not started ✅
+* DATA-A : Not started ✅
+* P17B full : Not started (P17B-0 cadrage complété, HOLD sans partenaire réel) ✅
+* Supabase : untouched ✅
+* Scraper : untouched ✅
+* Fichiers applicatifs modifiés : AUCUN ✅
+* Vercel : non déployé (documentation uniquement) ✅
+
+Bilan
+* dossier relooking analysé : OUI (11 visuels)
+* 11 visuels identifiés : OUI
+* ROADMAP.md mis à jour : OUI
+* PRODUCT.md mis à jour : OUI
+* SESSION.md mis à jour : OUI
+* section INTENT-RELOOKING ajoutée : OUI
+* P18A reste Not started : OUI
+* DATA-A reste Not started : OUI
+* P17B full reste HOLD : OUI
+* aucun fichier applicatif modifié : OUI
+* Vercel non déployé (doc-only) : OUI
+
+Prochaine étape recommandée
+INTENT-RELOOKING-1 — Acheter — intégration direction visuelle dans /acheter.
+(Sur ordre de mission explicite uniquement)
+
+----------------------------------------------------
 MAP-PINS-MOBILE — COMPLÉTÉ 2026-06-26 ✅
 
 Fichier : components/landing/SignatureMapSection.tsx
