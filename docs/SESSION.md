@@ -1,6 +1,69 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+HOMEPAGE-HERO-POLISH-1 — POLISH HERO HOMEPAGE — COMPLETED 2026-06-28 ✅
+
+Objectif : hero homepage plus premium/wow sur mobile + desktop, sans casser
+lisibilité ni conversion.
+
+Version retenue : GLASS PREMIUM HYBRIDE (search card)
+* bg-white 82–90% + backdrop-blur-xl + ring-white/50 + ombre layered douce
+  + hairline bronze (#C2A368) en haut
+* inputs opaques (#fdfaf5) → lisibilité parfaite, fusion avec le hero
+* évite l'effet "bloc formulaire brut", sobre/crédible/immobilier
+
+Mobile
+* header homepage en mode compact (hauteur −~13%)
+* bouton "Se connecter" réduit (px-3 py-1.5 text-12 mobile)
+* chips nav resserrés (gap-1.5, px-2.5 text-11, whitespace-nowrap) → "Promoteurs" 100% lisible
+* titre hero 1.92rem / leading 1.04 + pt mobile allégé → hero moins encombré
+
+Desktop
+* overlay allégé (responsive sm:) → image premium récupérée (wow)
+* voile radial centré (desktop) → contraste derrière le texte, coins lumineux gardés
+* sous-titre : text-shadow renforcé + opacité 90 → très lisible
+
+Fichiers modifiés
+* app/page.tsx (SiteHeader compact sur home)
+* components/layout/SiteHeader.tsx (Se connecter + chips)
+* components/landing/ProductHero.tsx (titre, overlay, voile radial, sous-titre)
+* components/landing/SearchPanel.tsx (search card glass)
+
+Validation
+* build OK ✅ · Commit 116f239
+* Smoke prod (akarfinder.vercel.app) : / 200 · hero webp desktop+mobile ·
+  glass (backdrop-blur-xl) · hairline bronze · chip Promoteurs lisible ·
+  Se connecter · CTA Rechercher · input recherche ✅
+* Vérif visuelle prod desktop + mobile : OK ✅
+* Garde-fous : logique métier, recherche, CTA, navigation, responsive intacts ✅
+
+Score : desktop 9.5/10 · mobile 9.5/10 · global 9.5/10
+HOMEPAGE-HERO-POLISH-1 : Completed 2026-06-28 ✅
+
+----------------------------------------------------
+HERO-IMAGE-REPLACE-1 — NOUVEAU HERO RÉSIDENCE SUNSET — COMPLETED 2026-06-28 ✅
+
+Objectif : remplacer l'image hero par les nouvelles images sans watermark.
+
+* Desktop 1672x941 → WebP 130 KB (akar-residence-sunset-desktop.webp)
+* Mobile 941x1672 → WebP 109 KB (akar-residence-sunset-mobile.webp)
+* ProductHero : <picture> art-direction (1 seule image par breakpoint),
+  fetchPriority=high pour le LCP · overlay deepblue léger
+* Aucun watermark, aucun texte intégré, pas de layout shift
+* scripts/optimize-hero-images.mjs (sharp) · scripts/screenshot-hero-new.mjs (playwright)
+* Ancien hero (casablanca-golden-hour) retiré du code
+* build OK · Commit 1e899b5 · déployé prod 2026-06-28 ✅
+
+----------------------------------------------------
+CREDIT-UX-1 — PRÉREMPLIR LE SIMULATEUR DEPUIS LA CARD — COMPLETED 2026-06-28 ✅
+
+* components/credit/SimulateCreditButton.tsx ("use client") : clic → CustomEvent
+  avec le prix du bien + scroll fluide #financement, sans rechargement
+* CreditSimulator : listener window → setPrice + apport 20%
+* AcheterListingCard : <SimulateCreditButton price={listing.price}>
+* build OK · 452+51 tests 0 fail · Commit c1a9b03 · déployé prod 2026-06-28 ✅
+
+----------------------------------------------------
 CREDIT-MVP — SIMULATEUR MENSUALITÉ + LEAD FINANCEMENT — COMPLETED 2026-06-28 ✅
 
 Objectif : MVP crédit — calculateur mensualité indicatif + CTA "Être rappelé pour

@@ -2108,6 +2108,9 @@ Statut général
 * QA-PROD-TUNNELS-1 — QA production 3 tunnels : Completed 2026-06-27 (10/10 routes 200 · 4 tunnels POST ok · isolation filtres parfaite · export CSV 200 · 401 bad token · 452+51 tests 0 fail · 0 bug)
 * P18A — Alertes sauvegardées MVP : Completed 2026-06-27 (RentAlertForm /louer · saved_alerts table migrée · /api/alerts POST ok=true · /api/alerts/export CSV 200/401 · /pro/alerts admin · 452+51 tests 0 fail · smoke prod validé · 0 bug)
 * CREDIT-MVP — Simulateur mensualité + lead financement : Completed 2026-06-28 (CreditSimulator /acheter+/neuf · annuité indicative · lead source_channel=credit via /api/leads · badge+filtre+compteur Crédit /pro/leads · export CSV colonnes Canal+Apport · 452+51 tests 0 fail · smoke prod validé · wording prudent · 0 bug)
+* CREDIT-UX-1 — Préremplir le simulateur depuis la card : Completed 2026-06-28 (SimulateCreditButton event prix + scroll #financement · CreditSimulator listener setPrice+apport · build OK · prod déployée)
+* HERO-IMAGE-REPLACE-1 — Nouveau hero résidence sunset : Completed 2026-06-28 (WebP desktop 130KB + mobile 109KB · <picture> art-direction · fetchPriority LCP · sans watermark · 0 layout shift · prod déployée)
+* HOMEPAGE-HERO-POLISH-1 — Polish hero homepage : Completed 2026-06-28 (search card glass premium hybride · header mobile compact · Promoteurs lisible · overlay desktop allégé + voile radial · 9.5/10 desktop/mobile/global · prod déployée)
 
 Verrous roadmap (inchangés)
 * P18B — Calculateur mensualité indicatif : Couvert par CREDIT-MVP (2026-06-28)
