@@ -1,0 +1,11 @@
+import { chromium } from "playwright";
+const file = process.argv[2];
+const out = process.argv[3] ?? "public/screenshots/logo-preview.png";
+const browser = await chromium.launch();
+const ctx = await browser.newContext({ viewport: { width: 760, height: 760 }, deviceScaleFactor: 2 });
+const page = await ctx.newPage();
+await page.goto("file:///" + file.replace(/\\/g, "/"), { waitUntil: "networkidle" });
+await page.waitForTimeout(500);
+await page.screenshot({ path: out, fullPage: true });
+await browser.close();
+console.log("saved", out);

@@ -1,0 +1,11 @@
+import { chromium } from "playwright";
+const BASE = process.env.BASE ?? "http://localhost:3010";
+const browser = await chromium.launch();
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
+const page = await ctx.newPage();
+await page.goto(BASE + "/", { waitUntil: "networkidle", timeout: 45000 });
+await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+await page.waitForTimeout(1500);
+await page.screenshot({ path: "public/screenshots/footer-logo.png", fullPage: false });
+await browser.close();
+console.log("done");
