@@ -40,9 +40,9 @@ const PRIX_OBSERVES = [
 const PRIX_MAX = Math.max(...PRIX_OBSERVES.map((r) => r.median));
 
 const FILTER_CHIPS = [
-  { label: "Acheter",         href: "/search?transaction_type=buy" },
-  { label: "Type de bien",    href: "/search?transaction_type=buy" },
-  { label: "Prix max",        href: "/search?transaction_type=buy" },
+  { label: "Appartements",    href: "/search?transaction_type=buy&property_type=Appartement" },
+  { label: "Villas",          href: "/search?transaction_type=buy&property_type=Villa" },
+  { label: "Terrains",        href: "/search?transaction_type=buy&property_type=Terrain" },
   { label: "Plus de filtres", href: "/search?transaction_type=buy" },
 ];
 
