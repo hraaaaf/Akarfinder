@@ -1,6 +1,31 @@
 SESSION.md - Current Project Session
 
 ====================================================
+SEARCH-MAP-RELOOKING-2 — 2026-06-28 (carte /search premium)
+====================================================
+
+TÂCHE TERMINÉE : refonte de la carte /search (7→9.3+). Commit b3fbe9d. NON déployé prod.
+
+CHANGEMENTS
+* Abandon silhouette plate + grille dashboard → landmass Maroc REMPLIE (SVG path
+  inline, lib/search/morocco-path.ts) + côte dorée + halo doux + graticule subtil
+  clippé sur les terres → rendu géographique crédible type Mapbox dark.
+* Clusters gold-centric élégants (or vif/or/ardoise claire/ardoise) — moins bruyants,
+  halos doux. Palette : lib/search/city-coords.ts CLUSTER_TIERS.
+* Labels MASQUÉS par défaut (hover/actif uniquement) → déclutter Rabat/Salé/Témara/Casa.
+* Pins uniquement villes à coords validées, aucun pin random, clic→filtre ville conservé.
+* Dark navy + accents gold, lisible mobile 390px (no overflow), légende conservée.
+
+FICHIERS : lib/search/morocco-path.ts (créé), lib/search/city-coords.ts (tiers),
+components/search/SearchMapPanel.tsx (réécrit). Cards annonces NON touchées.
+
+TESTS : build OK · test:api 51/51 · test:scrapers 452/452 · no overflow mobile 390/390.
+CAPTURES : search-map-zoom, search-mobile-carte, search-desktop, search-mobile.
+
+PROCHAINE ÉTAPE : valider visuellement (preview), puis autoriser deploy prod
+(SEARCH-RELOOKING-1 + MAP-2 ensemble).
+
+====================================================
 SEARCH-RELOOKING-1 — 2026-06-28 (refonte /search dark premium)
 ====================================================
 
