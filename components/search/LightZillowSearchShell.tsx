@@ -251,31 +251,31 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
             <div className="min-w-0">
               <p className="flex items-center gap-2 text-[1.05rem] font-extrabold tracking-[-0.02em] text-white sm:text-[1.15rem]">
                 {isLoading ? <Loader2 size={16} strokeWidth={2.5} className="animate-spin text-bronze-400" aria-hidden="true" /> : null}
-                {filteredListings.length} bien{filteredListings.length > 1 ? "s" : ""} à {displayCity}
+                <span>{filteredListings.length} bien{filteredListings.length > 1 ? "s" : ""} à {displayCity}</span>
               </p>
               <p className="mt-0.5 line-clamp-1 text-[12.5px] font-medium text-white/45 sm:text-[13.5px]">
                 {getIntentLabel(filters.transactionType)} · tri {sortBy === "recommended" ? "recommandé" : sortBy === "reliability" ? "fiabilité" : sortBy === "price-asc" ? "prix ↑" : "prix ↓"}
               </p>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
-              <select aria-label="Trier les résultats" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}
-                className="rounded-full border border-white/12 bg-white/[0.06] px-3 py-2.5 text-[12px] font-bold text-white outline-none [color-scheme:dark] sm:px-4 sm:text-[13px]">
-                <option value="recommended">Tri recommandé</option>
-                <option value="reliability">Meilleures annonces</option>
-                <option value="price-asc">Prix croissant</option>
-                <option value="price-desc">Prix décroissant</option>
-              </select>
+            <select aria-label="Trier les résultats" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}
+              className="shrink-0 rounded-full border border-white/12 bg-white/[0.06] px-3 py-2.5 text-[12px] font-bold text-white outline-none [color-scheme:dark] sm:px-4 sm:text-[13px]">
+              <option value="recommended">Tri recommandé</option>
+              <option value="reliability">Meilleures annonces</option>
+              <option value="price-asc">Prix croissant</option>
+              <option value="price-desc">Prix décroissant</option>
+            </select>
+          </div>
 
-              <div className="flex rounded-full border border-white/12 bg-white/[0.06] p-1 lg:hidden">
-                {(["Liste", "Carte"] as ActiveTab[]).map((tab) => (
-                  <button key={tab} type="button" onClick={() => setActiveTab(tab)}
-                    className={activeTab === tab ? "rounded-full bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-2 text-[13px] font-extrabold text-white" : "rounded-full px-4 py-2 text-[13px] font-bold text-white/55"}>
-                    {tab}
-                  </button>
-                ))}
-              </div>
-            </div>
+          {/* Onglets Liste/Carte sur leur propre rangée mobile — évite de voler
+              l'espace du count "X biens à Maroc" */}
+          <div className="mt-2.5 flex rounded-full border border-white/12 bg-white/[0.06] p-1 lg:hidden">
+            {(["Liste", "Carte"] as ActiveTab[]).map((tab) => (
+              <button key={tab} type="button" onClick={() => setActiveTab(tab)}
+                className={`flex-1 rounded-full py-2 text-[13px] font-extrabold transition ${activeTab === tab ? "bg-gradient-to-br from-bronze-500 to-bronze-700 text-white" : "text-white/55"}`}>
+                {tab}
+              </button>
+            ))}
           </div>
 
           {activeChips.length > 0 ? (

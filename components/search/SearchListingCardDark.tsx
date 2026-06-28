@@ -80,7 +80,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
         className="block"
         aria-label={`Voir le bien ${listing.title}`}
       >
-        <div className="relative h-[210px] overflow-hidden">
+        <div className="relative h-[220px] overflow-hidden">
           <div className="absolute inset-0 transition duration-500 group-hover:scale-[1.04]">
             {imageMode !== "fallback_visual" ? (
               <Image src={listing.main_image_url!} alt={listing.title} fill className="object-cover" sizes="(max-width: 640px) 100vw, 420px" />
@@ -145,31 +145,26 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           <span className="text-white/45">{listing.freshness_label}</span>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          {showReliability ? (
-            <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${rel.cls}`}>{rel.label}</span>
-          ) : null}
-          {listing.is_mre_friendly ? (
-            <span className="rounded-full border border-blue-400/30 bg-blue-400/12 px-2.5 py-1 text-[11px] font-bold text-blue-300">MRE-friendly</span>
-          ) : null}
-          {listing.data_completeness_score != null ? (
-            <span className="rounded-full border border-white/15 bg-white/6 px-2.5 py-1 text-[11px] font-bold text-white/70">
-              Indice AkarFinder : {listing.data_completeness_score}/100
-            </span>
-          ) : null}
-          {listing.duplicate_score != null && listing.duplicate_score >= 0.7 ? (
-            <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-2.5 py-1 text-[11px] font-bold text-amber-200">Doublon possible</span>
-          ) : null}
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {hasPackage ? (
             <PackageBadge label={packageScore.overall_label} />
           ) : marketRef && marketRef.confidence !== "faible" ? (
-            <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${
+            <span className={`rounded-full border px-2.5 py-1 text-[10.5px] font-bold ${
               marketRef.position === "coherent" ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
                 : marketRef.position === "high" ? "border-rose-400/30 bg-rose-400/10 text-rose-300"
                 : "border-blue-400/30 bg-blue-400/10 text-blue-300"
             }`}>
               {marketRef.position === "coherent" ? "Prix cohérent" : marketRef.position === "high" ? "Prix supérieur au repère" : "Prix inférieur au repère"}
             </span>
+          ) : null}
+          {showReliability ? (
+            <span className={`rounded-full border px-2.5 py-1 text-[10.5px] font-bold ${rel.cls}`}>{rel.label}</span>
+          ) : null}
+          {listing.duplicate_score != null && listing.duplicate_score >= 0.7 ? (
+            <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-2.5 py-1 text-[10.5px] font-bold text-amber-200">Doublon possible</span>
+          ) : null}
+          {listing.is_mre_friendly ? (
+            <span className="rounded-full border border-blue-400/30 bg-blue-400/12 px-2.5 py-1 text-[10.5px] font-bold text-blue-300">MRE-friendly</span>
           ) : null}
         </div>
 

@@ -31,10 +31,12 @@ export function SearchMapPanel({
     .filter((c): c is CityCount & { coord: { x: number; y: number } } => c.coord !== null)
     .sort((a, b) => a.count - b.count);
 
-  // SEARCH-RELOOKING-1B — labels des villes principales BIEN SÉPARÉES visibles par
-  // défaut (placement prouvable). Rabat/Tétouan/Salé/Témara (zone côtière dense) en
-  // hover/actif seul pour éviter le chevauchement.
+  // SEARCH-RELOOKING-1C — labels responsive :
+  // Mobile (<640px) : 3 villes max (les plus éloignées géographiquement) pour éviter
+  // tout chevauchement sur carte compressée.
+  // Desktop (≥640px) : 5 villes principales visibles par défaut.
   const PRIMARY_LABELS = new Set(["casablanca", "marrakech", "tanger", "agadir", "fes"]);
+  const MOBILE_LABELS = new Set(["casablanca", "marrakech", "agadir"]);
 
   const activeCoord = activeCity !== "all" ? getCityCoord(activeCity) : null;
 
@@ -53,7 +55,7 @@ export function SearchMapPanel({
       </div>
 
       {/* Map zone */}
-      <div className="relative min-h-[420px] overflow-hidden lg:min-h-[560px]">
+      <div className="relative min-h-[480px] overflow-hidden lg:min-h-[640px]">
         {/* Eau / fond océan-navy */}
         <div className="absolute inset-0" style={{ background: "radial-gradient(120% 90% at 60% 30%, #0a2038 0%, #061528 45%, #04101f 100%)" }} />
         {/* Lueur ambiante or très douce */}
@@ -111,7 +113,9 @@ export function SearchMapPanel({
         {pins.map((pin) => {
           const tier = getClusterTier(pin.count);
           const isActive = activeCity !== "all" && pin.city.toLowerCase() === activeCity.toLowerCase();
-          const showLabel = isActive || PRIMARY_LABELS.has(normalizeCityKey(pin.city));
+          const cityKey = normalizeCityKey(pin.city);
+          const showLabelMobile = isActive || MOBILE_LABELS.has(cityKey);
+          const showLabelDesktopOnly = !showLabelMobile && PRIMARY_LABELS.has(cityKey);
           return (
             <button
               key={pin.city}
@@ -133,9 +137,9 @@ export function SearchMapPanel({
               >
                 {pin.count}
               </span>
-              {/* Label — villes principales visibles, petites en survol */}
+              {/* Label — responsive : 3 villes sur mobile, 5 sur desktop */}
               <span
-                className={`pointer-events-none absolute left-1/2 top-[calc(100%+5px)] -translate-x-1/2 whitespace-nowrap rounded-md bg-[#050f1f]/90 px-2 py-0.5 text-[10px] font-extrabold tracking-[0.02em] text-white ring-1 ring-white/10 backdrop-blur-sm transition-opacity duration-150 ${showLabel ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                className={`pointer-events-none absolute left-1/2 top-[calc(100%+5px)] -translate-x-1/2 whitespace-nowrap rounded-md bg-[#050f1f]/90 px-2 py-0.5 text-[9.5px] font-extrabold tracking-[0.02em] text-white ring-1 ring-white/10 backdrop-blur-sm transition-opacity duration-150 ${showLabelMobile ? "opacity-100" : showLabelDesktopOnly ? "opacity-0 sm:opacity-100 group-hover:opacity-100" : "opacity-0 group-hover:opacity-100"}`}
               >
                 {pin.city}
               </span>
@@ -143,32 +147,39 @@ export function SearchMapPanel({
           );
         })}
 
-        {/* Légende */}
-        <div className="absolute left-4 top-4 z-10 rounded-xl border border-white/10 bg-[#050f1f]/80 p-3 backdrop-blur">
-          <p className="mb-1.5 text-[9.5px] font-extrabold uppercase tracking-[0.12em] text-white/40">Volume</p>
-          <ul className="space-y-1">
+        {/* Légende — compact sur mobile (dots seuls), détaillée sur desktop */}
+        <div className="absolute left-3 top-3 z-10 rounded-xl border border-white/10 bg-[#050f1f]/85 p-2 backdrop-blur sm:left-4 sm:top-4 sm:p-3">
+          <p className="mb-1.5 hidden text-[9.5px] font-extrabold uppercase tracking-[0.12em] text-white/40 sm:block">Volume</p>
+          <ul className="flex items-center gap-1.5 sm:flex-col sm:items-start sm:gap-0 sm:space-y-1">
             {CLUSTER_TIERS.map((t) => (
-              <li key={t.label} className="flex items-center gap-2 text-[10.5px] font-semibold text-white/60">
-                <span className="inline-block h-2.5 w-2.5 rounded-full ring-1 ring-white/30" style={{ backgroundColor: t.color }} />
-                {t.label}
+              <li key={t.label} className="flex items-center gap-1.5 sm:gap-2">
+                <span className="inline-block h-2 w-2 rounded-full ring-1 ring-white/30 sm:h-2.5 sm:w-2.5" style={{ backgroundColor: t.color }} />
+                <span className="hidden text-[10.5px] font-semibold text-white/60 sm:inline">{t.label}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Repères footer */}
-        <div className="absolute bottom-4 left-4 right-4 z-10 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-[#050f1f]/80 p-3 text-white backdrop-blur sm:grid-cols-4">
-          {[
-            { k: "Annonces", v: String(stats.total) },
-            { k: "Villes couvertes", v: String(stats.citiesCovered) },
-            { k: "Indice moyen", v: stats.avgIndex != null ? `${stats.avgIndex}/100` : "—" },
-            { k: "Mise à jour", v: stats.updatedLabel },
-          ].map((s) => (
-            <div key={s.k}>
-              <p className="text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/40">{s.k}</p>
-              <p className="mt-0.5 text-[13px] font-extrabold text-white">{s.v}</p>
+        {/* Stats footer — 3 colonnes clés, plus aéré */}
+        <div className="absolute bottom-3 left-3 right-3 z-10 flex items-center gap-3 rounded-xl border border-white/10 bg-[#050f1f]/85 px-4 py-2.5 text-white backdrop-blur sm:bottom-4 sm:left-4 sm:right-4 sm:gap-5 sm:rounded-2xl sm:px-5 sm:py-3">
+          <div className="shrink-0">
+            <p className="text-[8.5px] font-bold uppercase tracking-[0.1em] text-white/35 sm:text-[9.5px]">Annonces</p>
+            <p className="mt-0.5 text-[12px] font-extrabold text-white sm:text-[13px]">{stats.total}</p>
+          </div>
+          <div className="shrink-0 border-l border-white/10 pl-3 sm:pl-5">
+            <p className="text-[8.5px] font-bold uppercase tracking-[0.1em] text-white/35 sm:text-[9.5px]">Villes</p>
+            <p className="mt-0.5 text-[12px] font-extrabold text-white sm:text-[13px]">{stats.citiesCovered}</p>
+          </div>
+          {stats.avgIndex != null ? (
+            <div className="shrink-0 border-l border-white/10 pl-3 sm:pl-5">
+              <p className="text-[8.5px] font-bold uppercase tracking-[0.1em] text-white/35 sm:text-[9.5px]">Score moy.</p>
+              <p className="mt-0.5 text-[12px] font-extrabold text-white sm:text-[13px]">{stats.avgIndex}/100</p>
             </div>
-          ))}
+          ) : null}
+          <div className="ml-auto shrink-0 text-right">
+            <p className="text-[8px] font-extrabold uppercase tracking-[0.1em] text-bronze-400/60 sm:text-[9px]">AkarFinder</p>
+            <p className="mt-0.5 text-[8.5px] font-medium text-white/35 sm:text-[9.5px]">Carte indicative</p>
+          </div>
         </div>
       </div>
 
