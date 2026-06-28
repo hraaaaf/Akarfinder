@@ -47,15 +47,18 @@ export type ClusterTier = {
   label: string;
   color: string; // couleur du pin
   glow: string;  // couleur du halo
+  text: string;  // couleur du chiffre
   size: number;  // diamètre px du pin
 };
 
+// SEARCH-MAP-RELOOKING-2 — palette élégante gold-dominante (moins bruyante) :
+// or vif → or → ardoise claire → ardoise. Halos doux.
 // Ordre décroissant : on prend le premier dont count >= min.
 export const CLUSTER_TIERS: ClusterTier[] = [
-  { min: 30, label: "30+ biens", color: "#C2A368", glow: "rgba(194,163,104,0.55)", size: 34 },
-  { min: 10, label: "10–30 biens", color: "#57a6ff", glow: "rgba(87,166,255,0.5)", size: 28 },
-  { min: 5, label: "5–10 biens", color: "#34d399", glow: "rgba(52,211,153,0.5)", size: 24 },
-  { min: 1, label: "1–5 biens", color: "#9fb4cc", glow: "rgba(159,180,204,0.45)", size: 20 },
+  { min: 30, label: "30+ biens", color: "#E4CB82", glow: "rgba(228,203,130,0.45)", text: "#1a1205", size: 30 },
+  { min: 10, label: "10–30 biens", color: "#C2A368", glow: "rgba(194,163,104,0.4)", text: "#1a1205", size: 26 },
+  { min: 5, label: "5–10 biens", color: "#7d9bc4", glow: "rgba(125,155,196,0.38)", text: "#0a1422", size: 22 },
+  { min: 1, label: "1–5 biens", color: "#5c7aa0", glow: "rgba(92,122,160,0.32)", text: "#eaf1fb", size: 19 },
 ];
 
 export function getClusterTier(count: number): ClusterTier {
