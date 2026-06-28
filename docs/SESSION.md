@@ -1,6 +1,51 @@
 SESSION.md - Current Project Session
 
 ====================================================
+SEARCH-RELOOKING-1B — Reprise réelle + validation carte — 2026-06-28
+====================================================
+
+DÉMARCHE : rendu réel capturé (port 3000), comparé à la cible, écarts corrigés.
+Bilan auto-déclaré précédent NON retenu comme validation.
+
+CAPTURES RÉELLES (public/screenshots/1b/)
+* 01-desktop.png · 02-mobile-liste.png · 03-mobile-carte.png · 04-desktop-mapzoom.png
+* 05-casablanca.png · 06-marrakech.png · 07-tanger.png
+* 04c-mapzoom-final.png · F-desktop.png · F-mobile-carte.png (après correction labels)
+
+ÉCART TROUVÉ & CORRIGÉ
+* Vue "Maroc" par défaut : AUCUN label ville visible (labels hover/actif only) →
+  impossible de prouver le placement. CORRIGÉ : labels par défaut pour villes
+  principales bien séparées (Casablanca, Marrakech, Tanger, Agadir, Fès) ;
+  Rabat/Tétouan/Salé/Témara en hover (déclutter zone côtière). Salé/Témara espacés.
+
+CONFORME (vérifié visuellement)
+* dark premium deepblue/bronze/glass, zéro effet Zillow clair ✓
+* cards dark premium cohérentes ✓ · filtres glass ✓ · carte remplie + côte dorée ✓
+* géographie : Tanger nord-ouest, Casa/Rabat côte, Marrakech intérieur, Agadir SW,
+  Fès est, Tétouan nord — toutes cohérentes, aucun pin hors carte ✓
+* clusters proportionnels + count visible + légende claire ✓
+* mobile Liste/Carte OK, no overflow 390/390 ✓
+* clic cluster → filtre ville ✓ (vérifié city=Casablanca/Marrakech/Tanger)
+
+URL PARAMS (vérifiés réellement)
+* transaction_type ✓ · city ✓ · property_type=Appartement → chip + API total=56 ✓
+* max_price/min_price → chip Budget ✓ · (property_type en anglais ne matche pas
+  les valeurs FR des données — comportement honnête, deep-links internes en FR)
+
+CTA business : Voir le bien, Voir la source, Comparer, Favori, Simuler crédit
+(achat), Créer alerte (location), Sauvegarder recherche, Dossier — présents.
+Tracking 6 events non bloquant.
+
+VALIDATION TECH : build OK · test:api 51/51 · test:scrapers 452/452 ·
+smoke /search + buy/rent/buy+apartment + city=Casablanca/Marrakech/Tanger → 200.
+
+SCORE HONNÊTE (après preuve+correction) : desktop 9.3 · mobile 9.2 · carte 9.2 ·
+cohérence marque 9.4 · global 9.3. Commit fix : 662a921.
+
+RECOMMANDATION : prêt PREVIEW oui. Prêt PROD non — attendre validation visuelle Achraf.
+REPRISE ICI — SEARCH-RELOOKING-1B : refonte+carte corrigées (662a921), preview à valider.
+
+====================================================
 SEARCH-RELOOKING-1 (re-issue + UI tools) — 2026-06-28
 ====================================================
 
