@@ -2111,6 +2111,8 @@ Statut général
 * CREDIT-UX-1 — Préremplir le simulateur depuis la card : Completed 2026-06-28 (SimulateCreditButton event prix + scroll #financement · CreditSimulator listener setPrice+apport · build OK · prod déployée)
 * HERO-IMAGE-REPLACE-1 — Nouveau hero résidence sunset : Completed 2026-06-28 (WebP desktop 130KB + mobile 109KB · <picture> art-direction · fetchPriority LCP · sans watermark · 0 layout shift · prod déployée)
 * HOMEPAGE-HERO-POLISH-1 — Polish hero homepage : Completed 2026-06-28 (search card glass premium hybride · header mobile compact · Promoteurs lisible · overlay desktop allégé + voile radial · 9.5/10 desktop/mobile/global · prod déployée)
+* LOGO-REFINE-1 / LOGO-ASSETS-INTEGRATION-1 — Logo V2 : Completed 2026-06-28 (assets V2 rangés logo-v2/ · favicon V2 · header/footer PNG détouré transparent · prod déployée)
+* OVERNIGHT-MVP-HARDENING-1 — Conversion + tracking MVP : Completed 2026-06-28 (P1 credit prefill listing_id · P2 tracking conversion_events 9 events non bloquant · P3 /pro/analytics token · P4 purge SQL non destructif · build+452+51 OK · migration conversion_events à appliquer · NON poussé prod)
 
 Verrous roadmap (inchangés)
 * P18B — Calculateur mensualité indicatif : Couvert par CREDIT-MVP (2026-06-28)

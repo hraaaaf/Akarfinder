@@ -1,5 +1,64 @@
 SESSION.md - Current Project Session
 
+====================================================
+OVERNIGHT-MVP-HARDENING-1 — 2026-06-28 (autonome)
+====================================================
+
+TÂCHE EN COURS : aucune — 4 phases terminées, validation globale OK.
+                 Prêt pour prod (NON poussé — attend validation Achraf).
+
+TÂCHES TERMINÉES
+* Phase 1 — Credit prefill listing_id : DONE (commit 667ce36)
+* Phase 2 — Tracking conversion MVP : DONE (commit 7d31059)
+* Phase 3 — /pro/analytics : DONE (commit cdab5f9)
+* Phase 4 — Purge test data (non destructif) : DONE (commit d6a0889)
+* LOGO-ASSETS-INTEGRATION-1 header/footer V2 détouré : DONE + déployé prod (6fd5752)
+
+FICHIERS MODIFIÉS / CRÉÉS
+Phase 1 : components/credit/SimulateCreditButton.tsx, CreditSimulator.tsx,
+          components/intent/AcheterPageShell.tsx
+Phase 2 : db/supabase-conversion-events-migration.sql, lib/tracking/{types,log-event,track}.ts,
+          app/api/track/route.ts, components/tracking/TrackedLink.tsx,
+          app/api/leads/route.ts, app/api/alerts/route.ts,
+          components/landing/SearchPanel.tsx, components/credit/SimulateCreditButton.tsx,
+          components/{intent/AcheterPageShell,location/LouerPageShell,vendre/VendrePageShell,promoters/PromoterPageShell}.tsx
+Phase 3 : app/pro/analytics/page.tsx
+Phase 4 : scripts/maintenance/purge-smoke-leads.sql, docs/TEST_DATA_CLEANUP.md
+
+TESTS LANCÉS
+* npm run build : OK (compiled successfully)
+* npm run test:scrapers : 452/452 ✅
+* npm run test:api : 51/51 ✅
+* Smoke routes (port 3000) : / /acheter /louer /neuf /vendre /vendre/dossier
+  /promoteurs /pro → 200 ; /pro/leads /pro/alerts /pro/analytics → token 200, bad token AccessDenied
+* Submits : credit/seller/promoter/alert → ok=true ; export CSV 200 (Canal+Apport), bad token 401
+* /api/track : ok (events valides + inconnus), formulaires non bloqués
+
+EVENTS TRACKÉS (allowlist 9)
+* serveur : lead_submit_success, credit_lead_submit (/api/leads), alert_submit (/api/alerts)
+* client : hero_search_submit, credit_simulator_open, buyer/renter/seller/promoter_cta_click
+
+BUGS / BLOCAGES
+* Aucun bug. Tracking best-effort : la table conversion_events doit être migrée
+  manuellement (db/supabase-conversion-events-migration.sql via SQL Editor) pour
+  que les events soient stockés. SANS migration, les formulaires fonctionnent
+  normalement (insert tracking ignoré). /pro/analytics affiche un message tant que
+  la table est absente.
+* Smokes ont créé des leads/alertes de test en base prod → listés dans
+  scripts/maintenance/purge-smoke-leads.sql (à exécuter par Achraf).
+
+MIGRATIONS SUPABASE À APPLIQUER (manuel, SQL Editor)
+1. db/supabase-conversion-events-migration.sql  (active le tracking + /pro/analytics events)
+
+PROCHAINE ACTION EXACTE
+1. (Achraf) appliquer la migration conversion_events si on veut activer le tracking.
+2. (Achraf) valider visuellement puis autoriser `npx vercel deploy --prod` pour
+   pousser les Phases 1-4 (logo V2 déjà en prod).
+3. (Achraf) exécuter purge-smoke-leads.sql après validation.
+
+REPRISE ICI : tout est commité localement sur master (jusqu'à d6a0889 + maj SQL).
+Rien n'est en attente côté code. Si besoin de déployer : `npx vercel deploy --prod`.
+
 ----------------------------------------------------
 HOMEPAGE-HERO-POLISH-1 — POLISH HERO HOMEPAGE — COMPLETED 2026-06-28 ✅
 

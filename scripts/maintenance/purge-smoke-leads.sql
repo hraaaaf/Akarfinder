@@ -41,7 +41,11 @@ DELETE FROM buyer_leads WHERE id IN (
   '7b036c0f-fb16-4941-8c5d-656b8a458f4f', -- PROD SMOKE CREDIT
   -- Ajoutés pendant OVERNIGHT-MVP-HARDENING-1 (smokes Phase 1 & 2) :
   '5455c64c-8e08-4f5a-a493-d2360b299de5', -- P1 CREDIT LISTING (smoke listing_id)
-  '09e40b8a-e16f-4ecd-b61c-0e0bb73ccae5'  -- P2 TRACK LEAD (smoke tracking)
+  '09e40b8a-e16f-4ecd-b61c-0e0bb73ccae5', -- P2 TRACK LEAD (smoke tracking)
+  -- Smokes validation globale OVERNIGHT :
+  'de803af5-7d59-4412-8162-d70aeaa9d81e', -- VG credit
+  '2844860e-bb83-4b2b-a3cc-ca82c4f276f7', -- VG seller
+  '6f2246b8-2c2e-4f8f-9561-fed1c40f8bf7'  -- VG promoter
 );
 
 -- ── 3) PURGE saved_alerts (alertes de test connues) ─────────────────────────
@@ -49,7 +53,8 @@ DELETE FROM buyer_leads WHERE id IN (
 DELETE FROM saved_alerts WHERE id IN (
   '495be25d-8b01-4de7-973c-4453e7c72f46', -- smoke P18A alerte (Casablanca)
   '0ba027ea-99d9-4245-83c1-4af612668d1c', -- smoke P18A alerte (Rabat)
-  '74801cc9-a9bb-4502-a7c1-fd38399f747c'  -- smoke P2 alerte (Casablanca)
+  '74801cc9-a9bb-4502-a7c1-fd38399f747c', -- smoke P2 alerte (Casablanca)
+  'b969664d-5540-46ef-a57d-8ea9e52dda98'  -- smoke VG alerte (Tanger)
 );
 
 -- ── 4) (Optionnel) conversion_events de test ────────────────────────────────
