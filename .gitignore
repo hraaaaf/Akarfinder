@@ -56,3 +56,6 @@ Thumbs.db
 next-env.d.ts
 
 .vercel
+
+# Local AI tooling (UI UX Pro Max skills + local Claude settings) — not app code
+.claude/

@@ -1,6 +1,36 @@
 SESSION.md - Current Project Session
 
 ====================================================
+SEARCH-RELOOKING-1 (re-issue + UI tools) — 2026-06-28
+====================================================
+
+PHASE 0 — INSTALL UI TOOLS
+* UI UX Pro Max : INSTALLÉ via `npx ui-ux-pro-max-cli@2.9.0 init --ai claude`.
+  Fichiers créés (projet-level) : .claude/skills/{ui-ux-pro-max,brand,design,
+  design-system,ui-styling,banner-design,slides} + .claude/settings.local.json.
+  → Outils de tooling local (pas du code app) → ajoutés à .gitignore (.claude/),
+  NON committés (conforme "ne pas committer de fichiers inutiles"). Skill disponible.
+* 21st.dev Magic : NON INSTALLÉ — API key 21st.dev manquante (non bloquant).
+  Aucun secret commité. settings.local.json = permissions only (aucune clé).
+
+PHASES 1-7 — DÉJÀ LIVRÉES dans SEARCH-RELOOKING-1 + SEARCH-MAP-RELOOKING-2
+(commits 9708f94, b3fbe9d) : shell dark premium, SearchListingCardDark (clone,
+PhotoFirstListingCard non modifiée), filtres glass, URL deep-links, carte
+géographique dark (landmass remplie + côte dorée + clusters gold + labels
+hover/actif), CTAs business + tracking 6 events, suppression 7 composants morts.
+
+VALIDATION (cette passe)
+* build OK · test:api 51/51 · test:scrapers 452/452
+* smoke : /search + buy/rent/buy+apartment/city=Casablanca/Marrakech/Tanger → 200
+* géographie carte validée (Marrakech intérieur, Tanger nord, Agadir SW, etc.)
+* aucune dépendance carte externe, clic cluster → filtre ville OK
+
+Direction artistique : dark premium deepblue/bronze/glass — INCHANGÉE (UI tools
+utilisés en QA/inspiration uniquement, pas de style SaaS générique introduit).
+
+PROCHAINE ÉTAPE : valider visuellement (preview) puis autoriser deploy prod.
+
+====================================================
 SEARCH-MAP-RELOOKING-2 — 2026-06-28 (carte /search premium)
 ====================================================
 
