@@ -1,6 +1,65 @@
 SESSION.md - Current Project Session
 
 ----------------------------------------------------
+CREDIT-MVP — SIMULATEUR MENSUALITÉ + LEAD FINANCEMENT — COMPLETED 2026-06-28 ✅
+
+Objectif : MVP crédit — calculateur mensualité indicatif + CTA "Être rappelé pour
+mon financement" + stockage lead crédit + affichage /pro/leads + export CSV.
+
+Fichiers créés
+* components/credit/CreditSimulator.tsx — "use client" · calculateur annuité
+  (prix, apport, durée 10/15/20/25 ans, taux indicatif modifiable) → mensualité
+  estimée + montant financé + coût total indicatif. Mini-form lead (nom, ville,
+  téléphone requis, consentement) → POST /api/leads. Réutilisable via props
+  (sourcePage, defaultPrice, id ancre). Thème dark deepblue/bronze, mobile-first.
+
+Fichiers modifiés
+* app/api/leads/route.ts — branch température source_channel="credit" → tiède
+  (label "Demande financement")
+* app/api/leads/export/route.ts — colonnes ajoutées : Canal (source_channel) + Apport (down_payment)
+* components/intent/AcheterPageShell.tsx — <CreditSimulator sourcePage="/acheter"
+  id="financement"> en tête de sidebar + CTA "Simuler le crédit" (ancre #financement) sur chaque card
+* components/neuf/NeufPageShell.tsx — <CreditSimulator sourcePage="/neuf"
+  defaultPrice=850k> en tête de sidebar (bloc "Mensualité indicative")
+* app/pro/leads/page.tsx — creditBadge() teal · filtre "Crédit" · compteur crédit
+  (header + footer) · exclusion source_channel=credit du filtre/compteur buyer_profile
+
+Stockage : réutilise buyer_leads via /api/leads. source_channel="credit",
+project_type="credit", source_page="/acheter"|"/neuf". Aucune migration Supabase.
+
+Smoke local port 3000
+* /acheter : 200 · simulateur présent · CTA "Simuler le crédit" sur cards ✅
+* /neuf : 200 · simulateur présent ✅
+* POST /api/leads credit (acheter + neuf) → ok=true ✅
+* POST sans consentIndicatif → 400 ✅
+* /pro/leads?filter=credit : badge Crédit · leads QA visibles · tab filtre ✅
+* Export CSV : colonne Canal · ligne credit présente ✅
+* Export ?token=WRONG → 401 ✅
+* Non-régression : /louer /vendre /vendre/dossier /promoteurs /pro /onboarding / → 200 ✅
+* /louer RentAlertForm (P18A) + /pro/alerts intacts ✅
+
+Build / Tests
+* npm run build : OK (0 erreur TS) ✅
+* test:scrapers : 452/452 ✅ · test:api : 51/51 ✅
+
+Smoke production (akarfinder.vercel.app, deploy 2026-06-28)
+* /acheter + /neuf simulateur présent ✅ · CTA card ✅
+* POST /api/leads credit → ok=true (id 7b036c0f...) ✅
+* /pro/leads?filter=credit : badge + smoke lead visible ✅
+* Export CSV Canal + credit row ✅ · bad token 401 ✅
+* Non-régression /louer /vendre /promoteurs /pro + P18A intacts ✅
+Note : preview Vercel protégé par SSO (smoke HTTP impossible) → validation via
+smoke local port 3000 + smoke production publique.
+
+Wording vérifié : "Estimation indicative", "Non contractuelle", "À confirmer auprès
+d'un organisme de financement", "AkarFinder ne fournit pas de conseil financier".
+Aucun : taux garanti, pré-accord garanti, financement garanti, conseil financier.
+
+CREDIT-MVP : Completed 2026-06-28 ✅
+Prochaine étape recommandée : observer les premiers leads crédit, puis envisager
+préremplissage du prix depuis la card (montant du bien) ou P17B si partenaire signé.
+
+----------------------------------------------------
 P18A — ALERTES SAUVEGARDÉES MVP — COMPLETED 2026-06-27 ✅
 
 Objectif : créer le MVP d'alertes location — transformer le bloc "À venir" /louer en formulaire fonctionnel.

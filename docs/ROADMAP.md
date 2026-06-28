@@ -2107,9 +2107,10 @@ Statut général
 * PROMOTER-MVP — Capture leads promoteurs : Completed 2026-06-27 (LeadForm /pro activé · source_channel=promoter · /pro/leads badge+filtre Promoteur · export inclus · 0 migration)
 * QA-PROD-TUNNELS-1 — QA production 3 tunnels : Completed 2026-06-27 (10/10 routes 200 · 4 tunnels POST ok · isolation filtres parfaite · export CSV 200 · 401 bad token · 452+51 tests 0 fail · 0 bug)
 * P18A — Alertes sauvegardées MVP : Completed 2026-06-27 (RentAlertForm /louer · saved_alerts table migrée · /api/alerts POST ok=true · /api/alerts/export CSV 200/401 · /pro/alerts admin · 452+51 tests 0 fail · smoke prod validé · 0 bug)
+* CREDIT-MVP — Simulateur mensualité + lead financement : Completed 2026-06-28 (CreditSimulator /acheter+/neuf · annuité indicative · lead source_channel=credit via /api/leads · badge+filtre+compteur Crédit /pro/leads · export CSV colonnes Canal+Apport · 452+51 tests 0 fail · smoke prod validé · wording prudent · 0 bug)
 
 Verrous roadmap (inchangés)
-* P18B — Calculateur mensualité indicatif : Not started
+* P18B — Calculateur mensualité indicatif : Couvert par CREDIT-MVP (2026-06-28)
 * DATA-A : Not started
 * P17B full : HOLD tant qu'il n'y a pas de vrai partenaire promoteur signé
 
