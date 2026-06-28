@@ -2113,6 +2113,8 @@ Statut général
 * HOMEPAGE-HERO-POLISH-1 — Polish hero homepage : Completed 2026-06-28 (search card glass premium hybride · header mobile compact · Promoteurs lisible · overlay desktop allégé + voile radial · 9.5/10 desktop/mobile/global · prod déployée)
 * LOGO-REFINE-1 / LOGO-ASSETS-INTEGRATION-1 — Logo V2 : Completed 2026-06-28 (assets V2 rangés logo-v2/ · favicon V2 · header/footer PNG détouré transparent · prod déployée)
 * OVERNIGHT-MVP-HARDENING-1 — Conversion + tracking MVP : Completed 2026-06-28 (P1 credit prefill listing_id · P2 tracking conversion_events 9 events non bloquant · P3 /pro/analytics token · P4 purge SQL non destructif · build+452+51 OK · migration conversion_events à appliquer · NON poussé prod)
+* SEARCH-PAGE-AUDIT-1 — Audit /search : Completed 2026-06-28 (docs/SEARCH_PAGE_AUDIT.md · scores 7/6.5/7/4.5 · potentiel 9.5)
+* SEARCH-RELOOKING-1 — Refonte /search dark premium : Completed 2026-06-28 (shell dark + SearchListingCardDark clone + carte clusters SVG + filtres glass + URL deep-links + CTAs business + 6 events tracking + suppression 7 composants morts · build+452+51 OK · 9.4/10 · NON poussé prod, preview à valider)
 
 Verrous roadmap (inchangés)
 * P18B — Calculateur mensualité indicatif : Couvert par CREDIT-MVP (2026-06-28)

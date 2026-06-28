@@ -1,6 +1,45 @@
 SESSION.md - Current Project Session
 
 ====================================================
+SEARCH-RELOOKING-1 — 2026-06-28 (refonte /search dark premium)
+====================================================
+
+TÂCHE TERMINÉE : refonte visuelle complète de /search. Commit 9708f94. NON déployé prod.
+
+PRÉFLIGHT (Phase 0)
+* Shell actif : LightZillowSearchShell (restylé en place, logique conservée).
+* PhotoFirstListingCard PARTAGÉE (ProjectPageShell) → NON modifiée. Clone créé : SearchListingCardDark.
+* Carte : pas de map lib câblée (maplibre installé mais sans tuiles) → carte stylisée
+  custom SVG Maroc (/maps/morocco-official.svg) + clusters, AUCUNE dépendance externe.
+
+FICHIERS
+* Créés : lib/search/city-coords.ts, components/search/SearchMapPanel.tsx,
+  components/search/SearchListingCardDark.tsx
+* Modifiés : components/search/LightZillowSearchShell.tsx, QuickFilters.tsx,
+  app/search/page.tsx, lib/tracking/types.ts (+6 events search)
+* Supprimés (code mort) : SearchShell, SearchFilters, SearchResultsGrid,
+  SearchResultsHeader, MapPreview, CityMapPanel, MapSideCTA
+
+LOGIQUE CARTE : SVG Maroc stylisé dark + clusters/ville (count, taille/couleur par
+volume), coords documentées (6 validées home + estimées géo-cohérentes), clic→filtre.
+MAPPING PINS : Casablanca 57.25/20.1 · Rabat 60.95/17.65 · Tanger 66.25/7.75 ·
+Fès 70.25/17.6 · Marrakech 55.15/31.25 · Agadir 47.1/38.15 (+ Tétouan/Meknès/Salé/
+Témara/Oujda/Kénitra/El Jadida/Essaouira estimées). Villes inconnues = hors carte.
+
+URL : property_type + min_price/max_price lus (+ city/transaction). Flash mock supprimé.
+CTAs business : Simuler le crédit (achat→/acheter#financement), Créer une alerte
+(loc→/louer#alerte), Sauvegarder ma recherche, Dossier acheteur. Tracking 6 events non bloquant.
+
+TESTS : build OK · test:api 51/51 · test:scrapers 452/452 · no overflow mobile 390/390 ·
+smoke /search + buy/rent/buy+apartment/city=Casablanca → 200.
+CAPTURES : search-desktop, search-mobile, search-mobile-carte, search-map-zoom, variantes.
+
+NOTE HONNÊTE : desktop 9.4 · mobile 9.3 · carte 9.3 · cohérence marque 9.4 · global 9.4.
+
+PROCHAINE ÉTAPE : valider visuellement (preview), puis autoriser deploy prod.
+REPRISE ICI — SEARCH-RELOOKING-1 : refonte commitée (9708f94), preview à déployer/valider.
+
+====================================================
 SEARCH-PAGE-AUDIT-1 — 2026-06-28 (audit only, no code)
 ====================================================
 
