@@ -409,7 +409,7 @@ export async function VendrePageShell() {
                 <p className="mt-1.5 text-[12.5px] text-white/50">Repères indicatifs issus d'annonces publiques analysées.</p>
               </div>
               <Link href="/search?transaction_type=buy" className="group hidden shrink-0 items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-4 py-2 text-[12.5px] font-bold text-bronze-400 transition hover:border-bronze-500/40 hover:bg-white/10 sm:inline-flex">
-                Voir plus
+                Voir les annonces dans la recherche
                 <ArrowRight size={12} strokeWidth={2.4} className="transition group-hover:translate-x-0.5" aria-hidden="true" />
               </Link>
             </div>
@@ -496,7 +496,7 @@ export async function VendrePageShell() {
                 Préparer ma vente
                 <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
               </Link>
-              <Link href="/search?transaction_type=buy" className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white/90 transition hover:border-bronze-500/40 hover:bg-white/16">
+              <Link href="#estimation" className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white/90 transition hover:border-bronze-500/40 hover:bg-white/16">
                 Comparer avec le marché
                 <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
               </Link>

@@ -1,6 +1,35 @@
 SESSION.md - Current Project Session
 
 ====================================================
+INTENT-CTA-CONTEXT-FIX-1 — Corrections CTAs inter-espaces — 2026-06-28
+====================================================
+
+MISSION : Auditer et corriger tous les CTAs qui expulsaient vers /search sans contexte explicite.
+Règle produit : chips/filtres restent dans leur espace courant. /search uniquement via wording explicite.
+
+FICHIERS MODIFIÉS
+* app/louer/page.tsx — refactorisé en async Server Component (searchParams + fetch), passe props à LouerPageShell
+* components/location/LouerPageShell.tsx — refactorisé en composant sync acceptant props (Listing[], totalListings, selectedPropertyType, selectedBudgetMax, selectedBudgetMin) ; BUDGET_CHIPS → /louer?budget_max=X ; TYPE_CHIPS → /louer?property_type=X ; active states bronze ; CTA budget explicite conditionnel ; getSectionTitle / getSearchCTALabel dynamiques
+* components/vendre/VendrePageShell.tsx — "Voir plus" → "Voir les annonces dans la recherche" ; "Comparer avec le marché" (callout final) → #estimation
+* components/landing/ListingPreview.tsx — chips Acheter/Louer/Neuf/MRE → /acheter /louer /neuf /mre (étaient /search?type=buy/rent/new)
+
+CORRECTIONS (7 issues)
+1. /acheter FILTER_CHIPS (sessions précédentes) — labels correspondants aux params
+2. /louer BUDGET_CHIPS → restent sur /louer (plus d'expulsion vers /search)
+3. /louer TYPE_CHIPS → restent sur /louer + filtrage server-side
+4. /louer page → refactorisé (searchParams Next.js 15 + props pattern)
+5. /vendre "Voir plus" → wording explicite "Voir les annonces dans la recherche"
+6. /vendre callout "Comparer" → #estimation (ancre locale)
+7. Homepage ListingPreview chips → espaces dédiés (pas /search)
+
+VALIDATION TECH
+* npm run build → ✅ zéro erreur TypeScript, toutes routes compilées
+* Smoke test HTTP 200 → 9/9 : / /acheter /louer /louer?property_type=Studio /louer?budget_max=3000 /neuf /vendre /promoteurs /search
+* HTML vérifié : budget chips → /louer?budget_max=X ✅ ; type chips → /louer?property_type=X ✅ ; /vendre callout → #estimation ✅
+
+STATUT : COMPLET — prêt pour déploiement preview
+
+====================================================
 SEARCH-RELOOKING-1B — Reprise réelle + validation carte — 2026-06-28
 ====================================================
 

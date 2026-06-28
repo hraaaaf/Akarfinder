@@ -8,10 +8,10 @@ import { listingPreviewItems, type ListingPreviewItem } from "@/lib/site";
 import type { Listing } from "@/lib/listings/types";
 
 const chips = [
-  { label: "Acheter", href: "/search?type=buy", active: true },
-  { label: "Louer", href: "/search?type=rent" },
-  { label: "Neuf", href: "/search?type=new" },
-  { label: "MRE", href: "/search?mre=true" },
+  { label: "Acheter", href: "/acheter", active: true },
+  { label: "Louer",   href: "/louer" },
+  { label: "Neuf",    href: "/neuf" },
+  { label: "MRE",     href: "/mre" },
 ];
 
 function reliabilityClasses(score?: number) {

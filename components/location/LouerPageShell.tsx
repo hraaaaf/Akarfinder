@@ -30,7 +30,6 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { TrackedLink } from "@/components/tracking/TrackedLink";
 import { ListingVisual } from "@/components/listings/ListingVisual";
-import { searchListings } from "@/lib/search";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import { getListingImageMode } from "@/lib/listings/image-policy";
 import { RentAlertForm } from "@/components/alerts/RentAlertForm";
@@ -48,22 +47,56 @@ const LOYERS_QUARTIERS = [
 const LOYER_MAX = Math.max(...LOYERS_QUARTIERS.map((r) => r.loyer));
 
 const BUDGET_CHIPS = [
-  { label: "< 3 000 DH",        href: "/search?transaction_type=rent&maxPrice=3000" },
-  { label: "3 000 – 5 000 DH",  href: "/search?transaction_type=rent&minPrice=3000&maxPrice=5000" },
-  { label: "5 000 – 8 000 DH",  href: "/search?transaction_type=rent&minPrice=5000&maxPrice=8000" },
-  { label: "8 000 – 12 000 DH", href: "/search?transaction_type=rent&minPrice=8000&maxPrice=12000" },
-  { label: "12 000+ DH",        href: "/search?transaction_type=rent&minPrice=12000" },
+  { label: "< 3 000 DH",        budgetKey: "max3000",   searchHref: "/search?transaction_type=rent&maxPrice=3000",              href: "/louer?budget_max=3000" },
+  { label: "3 000 – 5 000 DH",  budgetKey: "3to5k",    searchHref: "/search?transaction_type=rent&minPrice=3000&maxPrice=5000", href: "/louer?budget_min=3000&budget_max=5000" },
+  { label: "5 000 – 8 000 DH",  budgetKey: "5to8k",    searchHref: "/search?transaction_type=rent&minPrice=5000&maxPrice=8000", href: "/louer?budget_min=5000&budget_max=8000" },
+  { label: "8 000 – 12 000 DH", budgetKey: "8to12k",   searchHref: "/search?transaction_type=rent&minPrice=8000&maxPrice=12000", href: "/louer?budget_min=8000&budget_max=12000" },
+  { label: "12 000+ DH",        budgetKey: "min12000", searchHref: "/search?transaction_type=rent&minPrice=12000",              href: "/louer?budget_min=12000" },
 ];
 
 const TYPE_CHIPS = [
-  { label: "Studio",      href: "/search?transaction_type=rent&property_type=Studio" },
-  { label: "Appartement", href: "/search?transaction_type=rent&property_type=Appartement" },
-  { label: "Villa",       href: "/search?transaction_type=rent&property_type=Villa" },
-  { label: "Bureau",      href: "/search?transaction_type=rent&property_type=Bureau" },
+  { label: "Studio",      propertyType: "Studio",      href: "/louer?property_type=Studio" },
+  { label: "Appartement", propertyType: "Appartement", href: "/louer?property_type=Appartement" },
+  { label: "Villa",       propertyType: "Villa",        href: "/louer?property_type=Villa" },
+  { label: "Bureau",      propertyType: "Bureau",       href: "/louer?property_type=Bureau" },
 ];
 
 // Meublé / Vide — la DB n'est pas filtrable sur ce critère → indicateur visuel non trompeur.
 const MEUBLE_CHIPS = ["Meublé", "Vide"];
+
+export type LouerPageShellProps = {
+  listings: Listing[];
+  totalListings: number | null;
+  selectedPropertyType?: string;
+  selectedBudgetMax?: string;
+  selectedBudgetMin?: string;
+};
+
+function getBudgetKey(budgetMax?: string, budgetMin?: string): string | null {
+  if (!budgetMax && !budgetMin) return null;
+  if (budgetMax === "3000" && !budgetMin) return "max3000";
+  if (budgetMin === "3000" && budgetMax === "5000") return "3to5k";
+  if (budgetMin === "5000" && budgetMax === "8000") return "5to8k";
+  if (budgetMin === "8000" && budgetMax === "12000") return "8to12k";
+  if (budgetMin === "12000" && !budgetMax) return "min12000";
+  return null;
+}
+
+function getSectionTitle(pt: string | undefined) {
+  if (pt === "Studio")      return "Studios à louer";
+  if (pt === "Appartement") return "Appartements à louer";
+  if (pt === "Villa")       return "Villas à louer";
+  if (pt === "Bureau")      return "Bureaux à louer";
+  return "Locations analysées";
+}
+
+function getSearchCTALabel(pt: string | undefined) {
+  if (pt === "Studio")      return "Voir tous les studios dans la recherche";
+  if (pt === "Appartement") return "Voir tous les appartements à louer dans la recherche";
+  if (pt === "Villa")       return "Voir toutes les villas à louer dans la recherche";
+  if (pt === "Bureau")      return "Voir tous les bureaux à louer dans la recherche";
+  return "Voir toutes les locations dans la recherche";
+}
 
 const VIE_QUOTIDIENNE = [
   { icon: Bus,           label: "Transports & taxi" },
@@ -279,19 +312,21 @@ function SearchTile() {
   );
 }
 
-export async function LouerPageShell() {
-  let rentListings: Listing[] = [];
-  let rentTotal: number | null = null;
-  try {
-    const result = await searchListings({ transaction_type: "rent", limit: 6 });
-    rentListings = result.listings ?? [];
-    rentTotal = result.total ?? null;
-  } catch {
-    // fallback: no listings, CTA tiles shown
-  }
-
-  // Remplit la grille à 3 colonnes sans fabriquer de faux biens.
+export function LouerPageShell({
+  listings,
+  totalListings,
+  selectedPropertyType,
+  selectedBudgetMax,
+  selectedBudgetMin,
+}: LouerPageShellProps) {
+  const rentListings = listings;
+  const rentTotal = totalListings;
   const showSearchTile = rentListings.length < 3;
+  const searchHref = selectedPropertyType
+    ? `/search?transaction_type=rent&property_type=${selectedPropertyType}`
+    : "/search?transaction_type=rent";
+  const activeBudgetKey = getBudgetKey(selectedBudgetMax, selectedBudgetMin);
+  const activeBudgetChip = BUDGET_CHIPS.find((c) => c.budgetKey === activeBudgetKey);
 
   return (
     <main className="min-h-screen bg-[#061027] text-white">
@@ -361,29 +396,52 @@ export async function LouerPageShell() {
                   Budget mensuel
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {BUDGET_CHIPS.map((chip) => (
-                    <Link
-                      key={chip.label}
-                      href={chip.href}
-                      className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-[12px] font-semibold text-white/85 transition hover:border-bronze-500/40 hover:bg-white/16"
-                    >
-                      {chip.label}
-                    </Link>
-                  ))}
+                  {BUDGET_CHIPS.map((chip) => {
+                    const isActive = chip.budgetKey === activeBudgetKey && activeBudgetKey !== null;
+                    return (
+                      <Link
+                        key={chip.label}
+                        href={chip.href}
+                        className={`inline-flex items-center rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition ${
+                          isActive
+                            ? "border-bronze-500/60 bg-gradient-to-br from-bronze-500 to-bronze-700 text-white shadow-[0_4px_14px_rgba(155,120,56,0.35)]"
+                            : "border-white/15 bg-white/10 text-white/85 hover:border-bronze-500/40 hover:bg-white/16"
+                        }`}
+                      >
+                        {chip.label}
+                      </Link>
+                    );
+                  })}
                 </div>
+                {activeBudgetChip && (
+                  <Link
+                    href={activeBudgetChip.searchHref}
+                    className="mt-2.5 inline-flex items-center gap-1.5 text-[11.5px] font-extrabold text-bronze-400 transition hover:text-bronze-300"
+                  >
+                    Voir les locations dans ce budget dans la recherche
+                    <ArrowRight size={11} strokeWidth={2.4} aria-hidden="true" />
+                  </Link>
+                )}
               </div>
 
               {/* Type + meublé/vide */}
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                {TYPE_CHIPS.map((chip) => (
-                  <Link
-                    key={chip.label}
-                    href={chip.href}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-[12px] font-semibold text-white/85 transition hover:border-bronze-500/40 hover:bg-white/16"
-                  >
-                    {chip.label}
-                  </Link>
-                ))}
+                {TYPE_CHIPS.map((chip) => {
+                  const isActive = chip.propertyType === selectedPropertyType;
+                  return (
+                    <Link
+                      key={chip.label}
+                      href={chip.href}
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition ${
+                        isActive
+                          ? "border-bronze-500/60 bg-gradient-to-br from-bronze-500 to-bronze-700 text-white shadow-[0_4px_14px_rgba(155,120,56,0.35)]"
+                          : "border-white/15 bg-white/10 text-white/85 hover:border-bronze-500/40 hover:bg-white/16"
+                      }`}
+                    >
+                      {chip.label}
+                    </Link>
+                  );
+                })}
                 <span className="mx-1 hidden h-4 w-px bg-white/15 sm:inline-block" aria-hidden="true" />
                 {/* Meublé/Vide — indicateur visuel (DB non filtrable) */}
                 <span className="inline-flex overflow-hidden rounded-full border border-bronze-500/30 bg-bronze-500/[0.08]" title="Indicateur visuel — à confirmer auprès de la source">
@@ -483,14 +541,14 @@ export async function LouerPageShell() {
                     <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400">À louer</p>
                   </div>
                   <h2 className="mt-2 text-[1.5rem] font-extrabold tracking-[-0.04em] text-white">
-                    Locations analysées
+                    {getSectionTitle(selectedPropertyType)}
                   </h2>
                 </div>
                 <Link
-                  href="/search?transaction_type=rent"
+                  href={searchHref}
                   className="group shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-4 py-2 text-[12.5px] font-bold text-bronze-400 transition hover:border-bronze-500/40 hover:bg-white/10"
                 >
-                  Voir tout
+                  Voir toutes les locations
                   <ArrowRight size={12} strokeWidth={2.4} className="transition group-hover:translate-x-0.5" aria-hidden="true" />
                 </Link>
               </div>
@@ -519,6 +577,16 @@ export async function LouerPageShell() {
                   </Link>
                 </div>
               )}
+
+              <div className="mt-8 text-center">
+                <Link
+                  href={searchHref}
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/8 px-5 py-3 text-[13.5px] font-extrabold text-bronze-300 transition hover:border-bronze-500/35 hover:bg-white/12"
+                >
+                  {getSearchCTALabel(selectedPropertyType)}
+                  <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
+                </Link>
+              </div>
 
               <p className="mt-4 flex items-start gap-1.5 text-[11.5px] leading-5 text-white/40">
                 <AlertCircle size={12} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden="true" />

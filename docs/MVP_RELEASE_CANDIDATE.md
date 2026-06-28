@@ -22,8 +22,8 @@
 | /acheter | "Créer mon dossier" (sidebar) | — | ✅ | `/onboarding?intent=acheter` | idem | intent=acheter | ✅ OK | NON | Onboarding explicite |
 | /acheter | "Explorer les annonces" | ✅ | ✅ | `/search?transaction_type=buy` | idem | transaction_type=buy | ✅ OK | NON | Wording explicitement navigation |
 | /acheter | EXPLORER_CITIES → ville | ✅ | ✅ | `/map?city=X` | idem | city=X | ✅ OK | NON | Destination carte ville |
-| /louer | BUDGET_CHIPS (< 3 000 DH…) | ✅ | ✅ | `/search?transaction_type=rent&maxPrice=3000` | idem | rent + maxPrice | ✅ OK | NON | Label = valeur du filtre, param transmis |
-| /louer | TYPE_CHIPS (Studio, Appartement…) | ✅ | ✅ | `/search?transaction_type=rent&property_type=Studio` | idem | rent + property_type | ✅ OK | NON | Label = valeur du filtre, param transmis |
+| /louer | BUDGET_CHIPS (< 3 000 DH…) | ✅ | ✅ | `/louer?budget_max=3000` (+ CTA explicit `/search` si actif) | idem | budget_max/min | ✅ OK | **OUI** — chips restent sur /louer, server-side non filtrable, CTA conditionnel vers /search | Chips ne quittent plus l'espace louer; recherche budget explicite uniquement si chip actif |
+| /louer | TYPE_CHIPS (Studio, Appartement…) | ✅ | ✅ | `/louer?property_type=Studio` | idem | property_type | ✅ OK | **OUI** — chips restent sur /louer, server-side filtering via searchListings | Label = param transmis, active state bronze, filtrage côté serveur |
 | /louer | MEUBLE_CHIPS | ✅ | ✅ | — (static `<span>`) | idem | — | ✅ OK | NON | Non-link correct : DB non filtrable sur ce critère |
 | /louer | "Voir tout" | ✅ | ✅ | `/search?transaction_type=rent` | idem | transaction_type=rent | ✅ OK | NON | Wording explicite |
 | /louer | "Explorer toutes les locations" | ✅ | ✅ | `/search?transaction_type=rent` | idem | transaction_type=rent | ✅ OK | NON | Wording explicite |
@@ -43,10 +43,10 @@
 | /vendre | "Comparer avec le marché" (hero) | ✅ | ✅ | `#estimation` | idem | — | ✅ OK | NON | Ancre sur même page |
 | /vendre | "Voir le détail par zone" | ✅ | ✅ | `/map` | idem | — | ✅ OK | NON | Section explicitement marquée "repères de zone" |
 | /vendre | "Préparer ma vente" (section leads) | ✅ | ✅ | `/vendre/dossier` | idem | — | ✅ OK | NON | — |
-| /vendre | "Voir plus" (annonces similaires) | — | ✅ | `/search?transaction_type=buy` | idem | transaction_type=buy | ✅ OK | NON | Section "Pour vous situer", wording explicite |
+| /vendre | "Voir les annonces dans la recherche" (annonces similaires) | — | ✅ | `/search?transaction_type=buy` | idem | transaction_type=buy | ✅ OK | **OUI** — était "Voir plus" (wording ambigu) → renommé | Wording désormais explicitement navigation |
 | /vendre | Cards annonces similaires | ✅ | ✅ | `/listings/[id]` | idem | — | ✅ OK | NON | — |
 | /vendre | "Préparer ma vente" (callout) | ✅ | ✅ | `/vendre/dossier` | idem | — | ✅ OK | NON | — |
-| /vendre | "Comparer avec le marché" (callout) | ✅ | ✅ | `/search?transaction_type=buy` | idem | transaction_type=buy | ✅ OK | NON | Wording "Comparer" explicite, section repères |
+| /vendre | "Comparer avec le marché" (callout) | ✅ | ✅ | `#estimation` | idem | — | ✅ OK | **OUI** — était `/search?transaction_type=buy` → ancre locale | Reste dans l'espace /vendre, scroll vers bloc estimation |
 | /promoteurs | "Demander une page promoteur" (hero) | ✅ | ✅ | `/pro` | idem | — | ✅ OK | NON | — |
 | /promoteurs | "Comparer les packs" (hero) | ✅ | ✅ | `#packs` | idem | — | ✅ OK | NON | Ancre sur même page |
 | /promoteurs | "Voir la page de projet" | ✅ | ✅ | `/pro` | idem | — | ✅ OK | NON | — |
@@ -72,18 +72,17 @@
 
 ## Résumé des issues
 
-### Issues critiques corrigées
+### Issues critiques corrigées (INTENT-CTA-CONTEXT-FIX-1)
 
 | # | Page | Problème | Fix |
 |---|------|---------|-----|
-| 1 | `/acheter` FILTER_CHIPS | "Acheter" (redondant), "Type de bien" (label filtre sans param), "Prix max" (label filtre sans param) → tous pointaient vers la même URL `/search?transaction_type=buy` | Remplacés par "Appartements" (`+property_type=Appartement`), "Villas" (`+property_type=Villa`), "Terrains" (`+property_type=Terrain`) — labels = params transmis |
-
-### Issues borderline (acceptables, pas de fix)
-
-| Page | CTA | Raison |
-|------|-----|--------|
-| `/louer` | BUDGET_CHIPS / TYPE_CHIPS → /search | Params transmis correspondent aux labels (< 3 000 DH → maxPrice=3000, Studio → property_type=Studio). Navigation contextuelle acceptable. |
-| `/vendre` | "Comparer avec le marché" → /search?buy | Section explicitement marquée "repères de marché", wording "Comparer" communique la navigation. |
+| 1 | `/acheter` FILTER_CHIPS | "Acheter" (redondant), "Type de bien" (label filtre sans param), "Prix max" (label filtre sans param) → tous pointaient vers `/search?transaction_type=buy` | Remplacés par "Appartements", "Villas", "Terrains" — labels = params transmis |
+| 2 | `/louer` BUDGET_CHIPS | Chips pointaient vers `/search?...maxPrice=X` — expulsaient hors de l'espace louer | Hrefs → `/louer?budget_max=X`, active state bronze, CTA explicite `/search` conditionnel (uniquement si chip actif) |
+| 3 | `/louer` TYPE_CHIPS | Chips pointaient vers `/search?...property_type=X` — expulsaient hors de l'espace louer | Hrefs → `/louer?property_type=X`, server-side filtering, active state bronze |
+| 4 | `/louer` page | Composant async avec fetch interne — incompatible avec searchParams Next.js 15 | Refactorisé en composant sync acceptant props, async fetch déplacé dans `app/louer/page.tsx` |
+| 5 | `/vendre` "Voir plus" | Wording ambigu ("Voir plus") sur lien vers /search | Renommé "Voir les annonces dans la recherche" — wording explicite |
+| 6 | `/vendre` "Comparer avec le marché" (callout final) | Envoyait vers `/search?transaction_type=buy` — expulsait de l'espace /vendre | Changé en `#estimation` — scroll local vers le bloc estimation |
+| 7 | Homepage ListingPreview chips | Chips "Acheter/Louer/Neuf/MRE" pointaient vers `/search?type=buy/rent/new` | Corrigés vers `/acheter`, `/louer`, `/neuf`, `/mre` — espaces dédiés |
 
 ### Issues inexistantes (zéro problème)
 
@@ -98,9 +97,12 @@
 | Critère | Statut |
 |---------|--------|
 | Audit CTA complet (6 pages) | ✅ Terminé |
-| Issues critiques résolues | ✅ 1/1 fixée |
-| Build propre | À valider |
-| Smoke test 6 pages | À valider |
+| Issues critiques résolues | ✅ 7/7 fixées (INTENT-CTA-CONTEXT-FIX-1) |
+| Build propre | ✅ `npm run build` — zéro erreur TS (2026-06-28) |
+| Smoke test 9 routes HTTP 200 | ✅ `/` `/acheter` `/louer` `/louer?property_type=Studio` `/louer?budget_max=3000` `/neuf` `/vendre` `/promoteurs` `/search` |
+| Chips budget restent sur /louer | ✅ Vérifié HTML |
+| Chips type restent sur /louer | ✅ Vérifié HTML |
+| /vendre callout → #estimation | ✅ Vérifié HTML |
 
 ---
 
