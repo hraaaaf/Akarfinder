@@ -7,7 +7,7 @@
 // AUCUNE dépendance carte externe. Pins uniquement sur villes à coords validées.
 
 import { useId } from "react";
-import { getCityCoord, getClusterTier, CLUSTER_TIERS } from "@/lib/search/city-coords";
+import { getCityCoord, getClusterTier, CLUSTER_TIERS, normalizeCityKey } from "@/lib/search/city-coords";
 import { MOROCCO_PATH, MOROCCO_VIEWBOX } from "@/lib/search/morocco-path";
 
 export type CityCount = { city: string; count: number };
@@ -30,6 +30,11 @@ export function SearchMapPanel({
     .map((c) => ({ ...c, coord: getCityCoord(c.city) }))
     .filter((c): c is CityCount & { coord: { x: number; y: number } } => c.coord !== null)
     .sort((a, b) => a.count - b.count);
+
+  // SEARCH-RELOOKING-1B — labels des villes principales BIEN SÉPARÉES visibles par
+  // défaut (placement prouvable). Rabat/Tétouan/Salé/Témara (zone côtière dense) en
+  // hover/actif seul pour éviter le chevauchement.
+  const PRIMARY_LABELS = new Set(["casablanca", "marrakech", "tanger", "agadir", "fes"]);
 
   const activeCoord = activeCity !== "all" ? getCityCoord(activeCity) : null;
 
@@ -106,6 +111,7 @@ export function SearchMapPanel({
         {pins.map((pin) => {
           const tier = getClusterTier(pin.count);
           const isActive = activeCity !== "all" && pin.city.toLowerCase() === activeCity.toLowerCase();
+          const showLabel = isActive || PRIMARY_LABELS.has(normalizeCityKey(pin.city));
           return (
             <button
               key={pin.city}
@@ -127,9 +133,9 @@ export function SearchMapPanel({
               >
                 {pin.count}
               </span>
-              {/* Label — masqué par défaut, visible au survol / actif */}
+              {/* Label — villes principales visibles, petites en survol */}
               <span
-                className={`pointer-events-none absolute left-1/2 top-[calc(100%+4px)] -translate-x-1/2 whitespace-nowrap rounded-md bg-[#050f1f]/90 px-2 py-0.5 text-[10px] font-extrabold tracking-[0.02em] text-white ring-1 ring-white/10 backdrop-blur-sm transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                className={`pointer-events-none absolute left-1/2 top-[calc(100%+5px)] -translate-x-1/2 whitespace-nowrap rounded-md bg-[#050f1f]/90 px-2 py-0.5 text-[10px] font-extrabold tracking-[0.02em] text-white ring-1 ring-white/10 backdrop-blur-sm transition-opacity duration-150 ${showLabel ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
               >
                 {pin.city}
               </span>

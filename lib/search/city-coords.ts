@@ -20,8 +20,8 @@ export const CITY_COORDS: Record<string, CityCoord> = {
   // ── Estimées (relatives aux ancres, géographie respectée) ─────────────────
   tetouan: { x: 69.0, y: 9.8 },   // nord, SE de Tanger
   meknes: { x: 66.8, y: 17.6 },   // intérieur, juste ouest de Fès
-  sale: { x: 61.6, y: 16.7 },     // accolée à Rabat (nord-est)
-  temara: { x: 60.2, y: 18.9 },   // juste au sud de Rabat
+  sale: { x: 62.3, y: 16.1 },     // accolée à Rabat (nord-est), espacée pour lisibilité
+  temara: { x: 59.5, y: 19.5 },   // juste au sud de Rabat, espacée pour lisibilité
   oujda: { x: 86.0, y: 13.5 },    // nord-est, proche frontière orientale
   kenitra: { x: 60.0, y: 15.4 },  // côte, au nord de Rabat
   eljadida: { x: 53.0, y: 23.2 }, // côte, au sud-ouest de Casablanca
