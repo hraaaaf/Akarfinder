@@ -1,9 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 import { SearchPanel } from "@/components/landing/SearchPanel";
 import { Container } from "@/components/ui/Container";
 
-const heroImage = "/images/hero/casablanca-golden-hour-hero.webp";
+// HERO-IMAGE-REPLACE-1 — art-direction : image verticale sur mobile,
+// horizontale sur desktop. <picture> ne télécharge que la source qui matche.
+const HERO_DESKTOP = "/images/hero/akar-residence-sunset-desktop.webp";
+const HERO_MOBILE = "/images/hero/akar-residence-sunset-mobile.webp";
 
 export function ProductHero() {
   return (
@@ -11,19 +13,23 @@ export function ProductHero() {
       id="recherche"
       className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[#071B33]"
     >
-      {/* Background image */}
-      <Image
-        src={heroImage}
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="absolute inset-0 object-cover object-[center_right]"
-      />
+      {/* Background image — art-directed (mobile vertical / desktop horizontal) */}
+      <picture>
+        <source media="(max-width: 639px)" srcSet={HERO_MOBILE} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={HERO_DESKTOP}
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+      </picture>
 
-      {/* Gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/65" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/10 to-transparent" />
+      {/* Overlays deepblue — lisibilité du texte + cohérence charte dark premium */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#03101F]/75 via-[#071B33]/35 to-[#03101F]/80" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#03101F]/60 via-[#071B33]/12 to-transparent" />
 
       {/* Content */}
       <Container className="relative z-10 w-full pb-12 pt-28 sm:pb-20 sm:pt-36 lg:pb-24 lg:pt-44">
