@@ -40,11 +40,25 @@ const PRIX_OBSERVES = [
 const PRIX_MAX = Math.max(...PRIX_OBSERVES.map((r) => r.median));
 
 const FILTER_CHIPS = [
-  { label: "Appartements",    href: "/search?transaction_type=buy&property_type=Appartement" },
-  { label: "Villas",          href: "/search?transaction_type=buy&property_type=Villa" },
-  { label: "Terrains",        href: "/search?transaction_type=buy&property_type=Terrain" },
-  { label: "Plus de filtres", href: "/search?transaction_type=buy" },
-];
+  { label: "Appartements",    propertyType: "Appartement" as const, href: "/acheter?property_type=Appartement" },
+  { label: "Villas",          propertyType: "Villa"       as const, href: "/acheter?property_type=Villa" },
+  { label: "Terrains",        propertyType: "Terrain"     as const, href: "/acheter?property_type=Terrain" },
+  { label: "Plus de filtres", propertyType: null,                   href: "/search?transaction_type=buy" },
+] as const;
+
+function getSectionTitle(pt: string | undefined) {
+  if (pt === "Appartement") return "Appartements à acheter";
+  if (pt === "Villa")       return "Villas à acheter";
+  if (pt === "Terrain")     return "Terrains à acheter";
+  return "Biens analysés en ce moment";
+}
+
+function getSearchCTALabel(pt: string) {
+  if (pt === "Appartement") return "Voir tous les appartements dans la recherche";
+  if (pt === "Villa")       return "Voir toutes les villas dans la recherche";
+  if (pt === "Terrain")     return "Voir tous les terrains dans la recherche";
+  return `Voir tous les biens dans la recherche`;
+}
 
 // level = repère relatif du prix/m² (1-4) pour le mini-indicateur visuel
 const EXPLORER_CITIES = [
@@ -58,6 +72,7 @@ export type AcheterPageShellProps = {
   listings: Listing[];
   totalListings: number | null;
   duplicatesDetected: number;
+  selectedPropertyType?: string;
 };
 
 function getReliability(score: number) {
@@ -244,9 +259,13 @@ export function AcheterPageShell({
   listings,
   totalListings,
   duplicatesDetected,
+  selectedPropertyType,
 }: AcheterPageShellProps) {
   const hasDuplicates = duplicatesDetected > 0;
   const compareListings = listings.slice(0, 2);
+  const searchHref = selectedPropertyType
+    ? `/search?transaction_type=buy&property_type=${selectedPropertyType}`
+    : "/search?transaction_type=buy";
 
   return (
     <main className="min-h-screen bg-[#061027] text-white">
@@ -331,18 +350,25 @@ export function AcheterPageShell({
 
               {/* Filter chips */}
               <div className="mt-4 flex flex-wrap gap-2">
-                {FILTER_CHIPS.map((chip) => (
-                  <Link
-                    key={chip.label}
-                    href={chip.href}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[12.5px] font-semibold text-white/85 transition hover:border-bronze-500/40 hover:bg-white/16"
-                  >
-                    {chip.label}
-                    <ChevronDown size={11} aria-hidden="true" />
-                  </Link>
-                ))}
+                {FILTER_CHIPS.map((chip) => {
+                  const isActive = chip.propertyType !== null && chip.propertyType === selectedPropertyType;
+                  return (
+                    <Link
+                      key={chip.label}
+                      href={chip.href}
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-[12.5px] font-semibold transition ${
+                        isActive
+                          ? "border-bronze-500/60 bg-gradient-to-br from-bronze-500 to-bronze-700 text-white shadow-[0_4px_14px_rgba(155,120,56,0.35)]"
+                          : "border-white/15 bg-white/10 text-white/85 hover:border-bronze-500/40 hover:bg-white/16"
+                      }`}
+                    >
+                      {chip.label}
+                      {chip.propertyType !== null && <ChevronDown size={11} aria-hidden="true" />}
+                    </Link>
+                  );
+                })}
                 <Link
-                  href="/search"
+                  href={searchHref}
                   aria-label="Filtres avancés"
                   className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3.5 py-2 text-white/60 transition hover:bg-white/16"
                 >
@@ -476,11 +502,11 @@ export function AcheterPageShell({
                     </p>
                   </div>
                   <h2 className="mt-2 text-[1.5rem] font-extrabold tracking-[-0.04em] text-white">
-                    Biens analysés en ce moment
+                    {getSectionTitle(selectedPropertyType)}
                   </h2>
                 </div>
                 <Link
-                  href="/search?transaction_type=buy"
+                  href={searchHref}
                   className="group shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-4 py-2 text-[12.5px] font-bold text-bronze-400 transition hover:border-bronze-500/40 hover:bg-white/10"
                 >
                   Voir tout
@@ -494,11 +520,22 @@ export function AcheterPageShell({
               </div>
 
               {listings.length > 0 ? (
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {listings.map((listing) => (
-                    <AcheterListingCard key={listing.id} listing={listing} />
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {listings.map((listing) => (
+                      <AcheterListingCard key={listing.id} listing={listing} />
+                    ))}
+                  </div>
+                  <div className="mt-8 text-center">
+                    <Link
+                      href={searchHref}
+                      className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/8 px-5 py-3 text-[13.5px] font-extrabold text-bronze-300 transition hover:border-bronze-500/35 hover:bg-white/12"
+                    >
+                      {selectedPropertyType ? getSearchCTALabel(selectedPropertyType) : "Voir toutes les annonces dans la recherche"}
+                      <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
+                    </Link>
+                  </div>
+                </>
               ) : (
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-14 text-center backdrop-blur-sm">
                   <p className="text-[15px] font-semibold text-white/70">

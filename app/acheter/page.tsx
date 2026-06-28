@@ -10,12 +10,20 @@ export const metadata = {
     "Recherchez, comparez et shortlistez des biens immobiliers au Maroc avec des signaux de fiabilité lisibles avant de contacter.",
 };
 
-export default async function AcheterPage() {
+export default async function AcheterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ property_type?: string }>;
+}) {
+  const params = await searchParams;
+  const propertyType = params.property_type;
+
   const [searchResult, stats] = await Promise.all([
-    searchListings({ transaction_type: "buy", limit: 6 }).catch(() => ({
-      listings: [],
-      total: 0,
-    })),
+    searchListings({
+      transaction_type: "buy",
+      limit: 6,
+      ...(propertyType ? { property_type: propertyType } : {}),
+    }).catch(() => ({ listings: [], total: 0 })),
     queryStats().catch(() => ({
       total_listings: 0,
       avg_completeness: 0,
@@ -29,6 +37,7 @@ export default async function AcheterPage() {
       listings={searchResult.listings}
       totalListings={stats.total_listings > 0 ? stats.total_listings : null}
       duplicatesDetected={stats.duplicates_detected ?? 0}
+      selectedPropertyType={propertyType}
     />
   );
 }
