@@ -16,12 +16,14 @@ import {
   Ruler,
   BedDouble,
   Bath,
+  Calculator,
 } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { ListingVisual } from "@/components/listings/ListingVisual";
+import { CreditSimulator } from "@/components/credit/CreditSimulator";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import type { Listing } from "@/lib/listings/types";
 
@@ -227,6 +229,15 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
         >
           Préparer mon dossier pour ce bien
           <ArrowRight size={11} strokeWidth={2.6} aria-hidden="true" />
+        </Link>
+
+        {/* CREDIT-MVP — Simuler le crédit pour ce bien */}
+        <Link
+          href="#financement"
+          className="mt-1.5 flex w-full items-center justify-center gap-1.5 text-[11px] font-bold text-gray-500 transition hover:text-bronze-700"
+        >
+          <Calculator size={11} strokeWidth={2.4} aria-hidden="true" />
+          Simuler le crédit
         </Link>
       </div>
     </article>
@@ -514,6 +525,9 @@ export function AcheterPageShell({
 
             {/* ── RIGHT SIDEBAR — cartes glass sombres ──────────────────── */}
             <aside className="flex flex-col gap-5">
+
+              {/* CREDIT-MVP — Simulateur de financement */}
+              <CreditSimulator sourcePage="/acheter" id="financement" defaultPrice={1_200_000} />
 
               {/* Doublon block — bronze glass */}
               <div className="overflow-hidden rounded-2xl border border-bronze-500/25 bg-gradient-to-br from-bronze-500/[0.14] to-bronze-500/[0.03] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">

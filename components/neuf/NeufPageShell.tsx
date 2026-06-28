@@ -22,6 +22,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { Container } from "@/components/ui/Container";
 import { ListingVisual } from "@/components/listings/ListingVisual";
+import { CreditSimulator } from "@/components/credit/CreditSimulator";
 import type { Listing } from "@/lib/listings/types";
 
 // ── Repères Neuf (hero) ──────────────────────────────────────────────────────
@@ -353,6 +354,9 @@ export function NeufPageShell() {
 
             {/* RIGHT — sidebar contact */}
             <aside className="flex flex-col gap-5">
+
+              {/* CREDIT-MVP — Mensualité indicative */}
+              <CreditSimulator sourcePage="/neuf" id="financement" defaultPrice={850_000} />
 
               {/* Promoteur */}
               <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">

@@ -76,6 +76,13 @@ export async function POST(request: NextRequest) {
           reason: "Demande d'accès Pro promoteur via /pro.",
           color: "amber",
         }
+      : source_channel === "credit"
+      ? {
+          temperature: "tiède" as const,
+          label: "Demande financement",
+          reason: "Demande de rappel financement via simulateur crédit.",
+          color: "amber",
+        }
       : computeLeadTemperature(buyerProfile);
 
   const userAgent = request.headers.get("user-agent") ?? undefined;

@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase
       .from("buyer_leads")
       .select(
-        "full_name, phone_whatsapp, city, budget_total, currency, project_type, source_page, lead_temperature, status, is_mre, timing, property_type, internal_notes, created_at"
+        "full_name, phone_whatsapp, city, budget_total, down_payment, currency, project_type, source_channel, source_page, lead_temperature, status, is_mre, timing, property_type, internal_notes, created_at"
       )
       .order("created_at", { ascending: false })
       .limit(1000);
@@ -48,8 +48,10 @@ export async function GET(request: NextRequest) {
       "Téléphone/WhatsApp",
       "Ville",
       "Budget",
+      "Apport",
       "Devise",
       "Projet",
+      "Canal",
       "Source",
       "Température",
       "Statut",
@@ -65,8 +67,10 @@ export async function GET(request: NextRequest) {
       cell(lead.phone_whatsapp),
       cell(lead.city),
       cell(lead.budget_total),
+      cell(lead.down_payment),
       cell(lead.currency),
       cell(lead.project_type),
+      cell(lead.source_channel),
       cell(lead.source_page),
       cell(lead.lead_temperature),
       cell(lead.status),
