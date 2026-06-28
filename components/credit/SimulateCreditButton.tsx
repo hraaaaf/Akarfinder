@@ -8,20 +8,22 @@ import { Calculator } from "lucide-react";
 
 export const SIMULATE_CREDIT_EVENT = "akar:simulate-credit";
 
-export type SimulateCreditDetail = { price: number };
+export type SimulateCreditDetail = { price: number; listingId?: string };
 
 export function SimulateCreditButton({
   price,
+  listingId,
   className,
 }: {
   price: number;
+  listingId?: string;
   className?: string;
 }) {
   function handleClick() {
     if (price > 0) {
       window.dispatchEvent(
         new CustomEvent<SimulateCreditDetail>(SIMULATE_CREDIT_EVENT, {
-          detail: { price },
+          detail: { price, listingId },
         })
       );
     }

@@ -45,9 +45,11 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
   const [apport, setApport] = useState<string>(String(Math.round(defaultPrice * 0.2)));
   const [years, setYears] = useState<number>(20);
   const [rate, setRate] = useState<string>("4.5");
+  // CREDIT-UX-1 / OVERNIGHT P1 — bien d'origine si la simulation vient d'une card.
+  const [listingId, setListingId] = useState<string | undefined>(undefined);
 
   // CREDIT-UX-1 — préremplissage depuis la card cliquée (event global).
-  // Met à jour prix + apport (20 % par défaut) sans recharger la page.
+  // Met à jour prix + apport (20 % par défaut) + listing_id, sans recharger la page.
   useEffect(() => {
     function onSimulate(e: Event) {
       const detail = (e as CustomEvent<SimulateCreditDetail>).detail;
@@ -56,6 +58,7 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
         setPrice(String(p));
         setApport(String(Math.round(p * 0.2)));
       }
+      setListingId(detail?.listingId || undefined);
     }
     window.addEventListener(SIMULATE_CREDIT_EVENT, onSimulate);
     return () => window.removeEventListener(SIMULATE_CREDIT_EVENT, onSimulate);
@@ -125,6 +128,7 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
           },
           source_channel: "credit",
           source_page: sourcePage,
+          listing_id: listingId,
         }),
       });
       const data = (await res.json()) as { ok: boolean; error?: string };

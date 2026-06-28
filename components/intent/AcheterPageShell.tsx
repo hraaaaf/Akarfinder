@@ -231,8 +231,8 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
           <ArrowRight size={11} strokeWidth={2.6} aria-hidden="true" />
         </Link>
 
-        {/* CREDIT-MVP / CREDIT-UX-1 — Simuler le crédit pour ce bien (prix prérempli) */}
-        <SimulateCreditButton price={listing.price} />
+        {/* CREDIT-MVP / CREDIT-UX-1 — Simuler le crédit pour ce bien (prix + listing_id prérempli) */}
+        <SimulateCreditButton price={listing.price} listingId={listing.id} />
       </div>
     </article>
   );
