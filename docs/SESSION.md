@@ -1,6 +1,37 @@
 SESSION.md - Current Project Session
 
 ====================================================
+SEARCH-PAGE-AUDIT-1 — 2026-06-28 (audit only, no code)
+====================================================
+
+TÂCHE TERMINÉE : audit /search avant refonte. Aucun code applicatif modifié.
+
+LIVRABLE : docs/SEARCH_PAGE_AUDIT.md (diagnostic complet).
+
+CONSTATS CLÉS
+* /search = marketplace clair "Zillow-style" (LightZillowSearchShell + PhotoFirstListingCard),
+  fonctionnelle et data-riche, mais HORS charte dark premium (fond clair, cards blanches).
+* Données solides déjà câblées (fiabilité, package score, repère prix, doublon, MRE,
+  favoris, comparer) + filtres complets + tri + carte. API /api/search = vraies données.
+* Faiblesses : thème clair, visuels SVG illustratifs (pas de photos), flash mock→réel,
+  pas de pagination, property_type/prix URL non lus dans page.tsx, pas de CTA business
+  (crédit/alerte) dans les résultats.
+* Code mort confirmé : components/search/{SearchShell,SearchFilters,SearchResultsGrid,
+  SearchResultsHeader,MapPreview}.tsx (non importés par la page active).
+
+SCORES : desktop 7.0 · mobile 6.5 · UX 7.0 · cohérence marque 4.5 · potentiel 9.5 /10
+
+CAPTURES (public/screenshots/) : search-desktop, search-mobile, search-buy-desktop,
+search-rent-desktop, search-buy-apartment-desktop.
+
+TESTS : build OK (aucun code changé) · smoke /search + 3 variantes query → 200.
+
+PROCHAINE ÉTAPE : SEARCH-RELOOKING-1 (reskin dark premium + quick wins). Cloner la
+card (ne pas modifier PhotoFirstListingCard partagée), passer le shell en dark, glass
+filters, CTA business, lire property_type/prix depuis l'URL, supprimer mock + code mort.
+Ne rien déployer sans validation Achraf.
+
+====================================================
 OVERNIGHT-MVP-HARDENING-1 — 2026-06-28 (autonome)
 ====================================================
 
