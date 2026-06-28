@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
+import { track } from "@/lib/tracking/track";
 
 const TRANSACTION_TYPES = [
   { value: "buy",  label: "Acheter" },
@@ -101,6 +102,14 @@ export function SearchPanel() {
         {/* CTA */}
         <Link
           href={searchHref}
+          onClick={() =>
+            track({
+              event_name: "hero_search_submit",
+              source_page: "/",
+              intent: txType,
+              metadata: { q: location.trim() || null, property_type: propType },
+            })
+          }
           className="ml-1.5 flex shrink-0 items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#b8893b_0%,#8f6a2a_100%)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_6px_22px_rgba(143,106,42,0.42),inset_0_1px_0_rgba(255,255,255,0.18)] transition hover:brightness-105 hover:shadow-[0_10px_28px_rgba(143,106,42,0.52)] active:scale-[0.98] sm:px-7 sm:text-[15px]"
         >
           <SearchIcon />

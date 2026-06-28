@@ -12,6 +12,7 @@ import {
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { Container } from "@/components/ui/Container";
+import { TrackedLink } from "@/components/tracking/TrackedLink";
 import type { Promoter, NewProject } from "@/lib/promoters/types";
 
 type PromoterPageShellProps = {
@@ -219,13 +220,14 @@ export function PromoterPageShell({ promoter, projects, isDemo }: PromoterPageSh
               Cette page est un exemple de démonstration. Demandez à rejoindre l'espace
               promoteurs partenaires AkarFinder — votre profil, vos projets, vos leads.
             </p>
-            <Link
+            <TrackedLink
               href="/pro"
+              event={{ event_name: "promoter_cta_click", source_page: "/promoteurs", source_channel: "promoter", intent: "promoteur" }}
               className="inline-flex items-center gap-2 rounded-xl bg-deepblue px-5 py-3 text-[13.5px] font-extrabold text-white transition hover:bg-[#0d2a4d]"
             >
               <Building2 size={15} strokeWidth={2} aria-hidden="true" />
               Demander une page promoteur
-            </Link>
+            </TrackedLink>
           </section>
         ) : (
           <section className="rounded-[1.7rem] border border-amber-200 bg-amber-50 p-6 sm:p-8">

@@ -24,6 +24,7 @@ import { SiteFooter } from "@/components/landing/SiteFooter";
 import { ListingVisual } from "@/components/listings/ListingVisual";
 import { CreditSimulator } from "@/components/credit/CreditSimulator";
 import { SimulateCreditButton } from "@/components/credit/SimulateCreditButton";
+import { TrackedLink } from "@/components/tracking/TrackedLink";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import type { Listing } from "@/lib/listings/types";
 
@@ -653,13 +654,14 @@ export function AcheterPageShell({
                   </p>
                 </div>
                 <div className="border-t border-bronze-500/20 bg-bronze-500/[0.06] px-5 py-3">
-                  <Link
+                  <TrackedLink
                     href="/onboarding?intent=acheter"
+                    event={{ event_name: "buyer_cta_click", source_page: "/acheter", source_channel: "onboarding", intent: "acheter" }}
                     className="flex items-center justify-between text-[13px] font-extrabold text-bronze-300 transition hover:text-bronze-200"
                   >
                     Créer mon dossier
                     <ArrowRight size={14} aria-hidden="true" />
-                  </Link>
+                  </TrackedLink>
                 </div>
               </div>
 

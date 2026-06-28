@@ -4,6 +4,7 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { logConversionEvent } from "@/lib/tracking/log-event";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -84,6 +85,18 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // OVERNIGHT P2 — tracking conversion (best-effort)
+    await logConversionEvent(
+      {
+        event_name: "alert_submit",
+        source_page: "/louer",
+        source_channel: "alert",
+        intent: row.transaction_type,
+        metadata: { city: row.city, budget_max: row.budget_max, property_type: row.property_type },
+      },
+      request.headers.get("user-agent")
+    );
 
     return NextResponse.json({ ok: true, alert_id: data.id });
   } catch (err) {

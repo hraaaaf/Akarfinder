@@ -27,6 +27,7 @@ import {
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { Container } from "@/components/ui/Container";
+import { TrackedLink } from "@/components/tracking/TrackedLink";
 import { ListingVisual } from "@/components/listings/ListingVisual";
 import { searchListings } from "@/lib/search";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
@@ -148,10 +149,10 @@ export async function VendrePageShell() {
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3 sm:mt-8">
-                <Link href="/vendre/dossier" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.4)] transition hover:from-bronze-600">
+                <TrackedLink href="/vendre/dossier" event={{ event_name: "seller_cta_click", source_page: "/vendre", source_channel: "seller", intent: "vendre" }} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.4)] transition hover:from-bronze-600">
                   Préparer ma vente
                   <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
-                </Link>
+                </TrackedLink>
                 <Link href="#estimation" className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white/90 transition hover:border-bronze-500/40 hover:bg-white/16">
                   Comparer avec le marché
                   <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />

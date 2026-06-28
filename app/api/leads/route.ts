@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { validateLeadPayload, extractLeadPayload, normalizePhone } from "@/lib/leads/validate";
 import { computeLeadTemperature } from "@/lib/onboarding/lead-temperature";
+import { logConversionEvent } from "@/lib/tracking/log-event";
 import type { BuyerProfile } from "@/lib/onboarding/types";
 
 export const runtime = "nodejs";
@@ -131,6 +132,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { ok: false, error: "Enregistrement impossible. Veuillez réessayer." },
         { status: 500 }
+      );
+    }
+
+    // OVERNIGHT P2 — tracking conversion (best-effort, ne bloque pas la réponse)
+    await logConversionEvent(
+      {
+        event_name: "lead_submit_success",
+        source_page: source_page ?? null,
+        source_channel: row.source_channel,
+        intent: profile.project ?? null,
+        listing_id: listing_id ?? null,
+        lead_id: data.id,
+      },
+      userAgent
+    );
+    if (row.source_channel === "credit") {
+      await logConversionEvent(
+        {
+          event_name: "credit_lead_submit",
+          source_page: source_page ?? null,
+          source_channel: "credit",
+          intent: "credit",
+          listing_id: listing_id ?? null,
+          lead_id: data.id,
+        },
+        userAgent
       );
     }
 

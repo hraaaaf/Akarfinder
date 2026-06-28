@@ -28,6 +28,7 @@ import {
 import { Container } from "@/components/ui/Container";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
+import { TrackedLink } from "@/components/tracking/TrackedLink";
 import { ListingVisual } from "@/components/listings/ListingVisual";
 import { searchListings } from "@/lib/search";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
@@ -599,13 +600,14 @@ export async function LouerPageShell() {
                   </p>
                 </div>
                 <div className="border-t border-bronze-500/20 bg-bronze-500/[0.06] px-5 py-3">
-                  <Link
+                  <TrackedLink
                     href="/onboarding?intent=louer"
+                    event={{ event_name: "renter_cta_click", source_page: "/louer", source_channel: "onboarding", intent: "louer" }}
                     className="flex items-center justify-between text-[13px] font-extrabold text-bronze-300 transition hover:text-bronze-200"
                   >
                     Créer mon dossier
                     <ArrowRight size={14} aria-hidden="true" />
-                  </Link>
+                  </TrackedLink>
                 </div>
               </div>
 

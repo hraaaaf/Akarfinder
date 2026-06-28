@@ -5,6 +5,7 @@
 // vers la section #financement. Aucun rechargement de page.
 
 import { Calculator } from "lucide-react";
+import { track } from "@/lib/tracking/track";
 
 export const SIMULATE_CREDIT_EVENT = "akar:simulate-credit";
 
@@ -27,6 +28,13 @@ export function SimulateCreditButton({
         })
       );
     }
+    track({
+      event_name: "credit_simulator_open",
+      source_page: "/acheter",
+      source_channel: "credit",
+      intent: "credit",
+      listing_id: listingId ?? null,
+    });
     const el = document.getElementById("financement");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
