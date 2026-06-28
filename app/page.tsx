@@ -15,7 +15,7 @@ import { Reveal } from "@/components/ui/Reveal";
 export default async function HomePage() {
   return (
     <main className="min-h-screen bg-white text-gray-900">
-      <SiteHeader variant="transparent" />
+      <SiteHeader variant="transparent" compact />
       <ProductHero />
       <MarketPulse />
       <Reveal><WhySection /></Reveal>

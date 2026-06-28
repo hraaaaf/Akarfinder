@@ -27,12 +27,17 @@ export function ProductHero() {
         />
       </picture>
 
-      {/* Overlays deepblue — lisibilité du texte + cohérence charte dark premium */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#03101F]/75 via-[#071B33]/35 to-[#03101F]/80" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#03101F]/60 via-[#071B33]/12 to-transparent" />
+      {/* Overlays deepblue — plus marqués sur mobile (texte sur image verticale),
+          allégés sur desktop pour récupérer du wow visuel. Lisibilité préservée
+          via text-shadow du titre/sous-titre + search card opaque. */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#03101F]/72 via-[#071B33]/32 to-[#03101F]/80 sm:from-[#03101F]/52 sm:via-[#071B33]/14 sm:to-[#03101F]/64" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#03101F]/55 via-[#071B33]/10 to-transparent sm:from-[#03101F]/42 sm:via-transparent" />
+      {/* Voile radial centré (desktop) — concentre le contraste derrière le texte
+          tout en gardant les coins lumineux (bâtiment + coucher de soleil) = wow */}
+      <div className="absolute inset-0 hidden sm:block" style={{ background: "radial-gradient(ellipse 62% 52% at 50% 44%, rgba(3,16,31,0.46) 0%, transparent 70%)" }} />
 
       {/* Content */}
-      <Container className="relative z-10 w-full pb-12 pt-28 sm:pb-20 sm:pt-36 lg:pb-24 lg:pt-44">
+      <Container className="relative z-10 w-full pb-12 pt-24 sm:pb-20 sm:pt-36 lg:pb-24 lg:pt-44">
         <div className="mx-auto flex max-w-[820px] flex-col items-center text-center">
 
           {/* Eyebrow label */}
@@ -43,14 +48,14 @@ export function ProductHero() {
           </div>
 
           {/* Main title */}
-          <h1 className="opacity-0 animate-[hero-title_0.8s_cubic-bezier(0.16,1,0.3,1)_0.35s_forwards] text-[2.1rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.85)] sm:text-5xl lg:text-[4.25rem]">
+          <h1 className="opacity-0 animate-[hero-title_0.8s_cubic-bezier(0.16,1,0.3,1)_0.35s_forwards] text-[1.92rem] font-extrabold leading-[1.04] tracking-[-0.035em] text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.8)] sm:text-5xl sm:leading-[1.05] sm:tracking-[-0.03em] lg:text-[4.25rem]">
             Tout l&apos;immobilier marocain.{" "}
             <br className="hidden sm:block" />
             Dans un seul endroit.
           </h1>
 
           {/* Subtitle — hidden on smallest mobile to reduce density */}
-          <p className="opacity-0 animate-[hero-sub_0.7s_ease_0.6s_forwards] mt-4 hidden max-w-[640px] text-[1rem] leading-relaxed text-white/85 [text-shadow:0_1px_8px_rgba(0,0,0,0.7)] sm:mt-5 sm:block sm:text-[1.15rem]">
+          <p className="opacity-0 animate-[hero-sub_0.7s_ease_0.6s_forwards] mt-4 hidden max-w-[640px] text-[1rem] leading-relaxed text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.55),0_2px_14px_rgba(0,0,0,0.6)] sm:mt-5 sm:block sm:text-[1.15rem]">
             Annonces analysées, doublons détectés et repères de fiabilité visibles pour comparer et contacter avec plus de confiance.
           </p>
           {/* Short version on mobile only */}

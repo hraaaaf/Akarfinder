@@ -47,10 +47,13 @@ export function SearchPanel() {
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-white shadow-[0_28px_80px_rgba(4,18,42,0.38)] ring-1 ring-white/20">
+    <div className="relative overflow-hidden rounded-[20px] bg-white/[0.9] shadow-[0_30px_80px_-12px_rgba(4,18,42,0.55),0_8px_24px_-8px_rgba(4,18,42,0.3)] ring-1 ring-white/50 backdrop-blur-xl supports-[backdrop-filter]:bg-white/[0.82]">
+
+      {/* Hairline bronze — fusion premium avec le hero */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#C2A368]/70 to-transparent" />
 
       {/* ── Tab strip ── */}
-      <div className="flex border-b border-[#e8deca]">
+      <div className="flex border-b border-[#e8deca]/70">
         {TRANSACTION_TYPES.map((t) => (
           <button
             key={t.value}

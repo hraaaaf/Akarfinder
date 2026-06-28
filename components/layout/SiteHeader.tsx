@@ -110,7 +110,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
           </Link>
           <Link
             href="/search"
-            className={`rounded-xl px-4 py-2 text-[13px] font-bold transition sm:px-5 sm:py-2.5 ${
+            className={`rounded-xl px-3 py-1.5 text-[12px] font-bold transition sm:px-5 sm:py-2.5 sm:text-[13px] ${
               isDark || isTransparent
                 ? "border border-bronze-500/60 bg-white/5 text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] hover:bg-bronze-500 hover:text-deepblue"
                 : "bg-deepblue text-white shadow-[0_4px_14px_rgba(7,27,51,0.26)] hover:bg-deepblue-700"
@@ -127,7 +127,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
           ? "border-white/8 bg-transparent"
           : "border-gray-100 bg-white/96"
       }`}>
-        <div className={`flex gap-2 px-4 ${compact ? "py-1.5" : "py-2"}`}>
+        <div className={`flex px-4 ${compact ? "gap-1.5 py-1.5" : "gap-2 py-2"}`}>
           {[
             { href: "/acheter", label: "Acheter", aria: "Explorer les biens à acheter" },
             { href: "/louer", label: "Louer", aria: "Explorer les locations" },
@@ -142,7 +142,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
                 key={chip.href}
                 href={chip.href}
                 aria-label={chip.aria}
-                className={`flex-shrink-0 rounded-full border font-bold transition focus:outline-none focus:ring-2 focus:ring-bronze-500 ${compact ? "px-3 py-1 text-[11.5px]" : "px-3.5 py-1.5 text-[12px]"} ${
+                className={`flex-shrink-0 whitespace-nowrap rounded-full border font-bold transition focus:outline-none focus:ring-2 focus:ring-bronze-500 ${compact ? "px-2.5 py-1 text-[11px]" : "px-3.5 py-1.5 text-[12px]"} ${
                   isActive
                     ? isDark || isTransparent
                       ? "border-bronze-500/60 bg-bronze-700/20 text-white"
