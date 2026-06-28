@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
-import { BrandLogo } from "@/components/ui/BrandLogo";
 import { Container } from "@/components/ui/Container";
 import { useFavoriteSelection } from "@/components/favorites/useFavoriteSelection";
 import { navItems } from "@/lib/site";
@@ -48,11 +47,15 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
       }`}
     >
       <Container className={`flex items-center justify-between gap-3 sm:gap-5 sm:py-4 ${compact ? "py-2.5" : "py-3"}`}>
-        <Link href="/" className="min-w-0" aria-label="AkarFinder - accueil">
-          <BrandLogo
-            variant={isDark || isTransparent ? "dark" : "default"}
-            size="md"
-            className={`origin-left scale-[0.95] sm:scale-105 ${transparentActive ? "drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]" : ""}`}
+        <Link href="/" className="flex min-w-0 items-center" aria-label="AkarFinder - accueil">
+          {/* LOGO-ASSETS-INTEGRATION-1 — logo V2 (PNG détouré), blanc sur fond
+              sombre/transparent, encre deepblue sur fond clair. */}
+          <img
+            src={isDark || isTransparent ? "/brand/logo-v2/logo-header-dark.png" : "/brand/logo-v2/logo-header-light.png"}
+            alt="AkarFinder"
+            width={132}
+            height={33}
+            className={`h-[30px] w-auto sm:h-[34px] ${transparentActive ? "drop-shadow-[0_1px_8px_rgba(0,0,0,0.55)]" : ""}`}
           />
         </Link>
 

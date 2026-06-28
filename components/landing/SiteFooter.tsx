@@ -1,4 +1,3 @@
-import { BrandLogo } from "@/components/ui/BrandLogo";
 import { Container } from "@/components/ui/Container";
 
 const footerLinks = {
@@ -51,7 +50,13 @@ export function SiteFooter() {
       <Container>
         {/* Mobile : compact single column */}
         <div className="lg:hidden">
-          <BrandLogo variant="dark" showTagline size="md" />
+          <img
+            src="/brand/logo-v2/logo-header-dark.png"
+            alt="AkarFinder"
+            width={184}
+            height={46}
+            className="h-[42px] w-auto"
+          />
           <p className="mt-3 text-[13.5px] leading-6 text-white/60">
             AkarFinder — moteur de recherche immobilier du Maroc.
             Comparez avant de contacter.
@@ -83,7 +88,13 @@ export function SiteFooter() {
         {/* Desktop : full footer */}
         <div className="hidden gap-10 lg:grid lg:grid-cols-[1.15fr_2fr_1fr]">
           <div>
-            <BrandLogo variant="dark" showTagline size="md" />
+            <img
+            src="/brand/logo-v2/logo-header-dark.png"
+            alt="AkarFinder"
+            width={184}
+            height={46}
+            className="h-[42px] w-auto"
+          />
             <p className="mt-4 max-w-sm text-[14.5px] leading-7 text-white/64">
               AkarFinder centralise la recherche immobilière au Maroc, aide à repérer les doublons et prépare une meilleure qualification de la demande acheteur.
             </p>
