@@ -7,8 +7,9 @@
 // "À confirmer auprès d'un organisme de financement".
 // Aucune promesse de financement, aucun taux garanti, aucun pré-accord.
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Calculator, ArrowRight, CheckCircle2, Info, Phone } from "lucide-react";
+import { SIMULATE_CREDIT_EVENT, type SimulateCreditDetail } from "./SimulateCreditButton";
 
 const CITIES = [
   "Casablanca", "Rabat", "Marrakech", "Tanger", "Agadir",
@@ -44,6 +45,21 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
   const [apport, setApport] = useState<string>(String(Math.round(defaultPrice * 0.2)));
   const [years, setYears] = useState<number>(20);
   const [rate, setRate] = useState<string>("4.5");
+
+  // CREDIT-UX-1 — préremplissage depuis la card cliquée (event global).
+  // Met à jour prix + apport (20 % par défaut) sans recharger la page.
+  useEffect(() => {
+    function onSimulate(e: Event) {
+      const detail = (e as CustomEvent<SimulateCreditDetail>).detail;
+      if (detail?.price && detail.price > 0) {
+        const p = Math.round(detail.price);
+        setPrice(String(p));
+        setApport(String(Math.round(p * 0.2)));
+      }
+    }
+    window.addEventListener(SIMULATE_CREDIT_EVENT, onSimulate);
+    return () => window.removeEventListener(SIMULATE_CREDIT_EVENT, onSimulate);
+  }, []);
 
   // ── Lead financement ──────────────────────────────────────────────────────
   const [lead, setLead] = useState<LeadState>({ name: "", phone: "", city: "", consent: false });

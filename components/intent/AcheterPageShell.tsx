@@ -16,7 +16,6 @@ import {
   Ruler,
   BedDouble,
   Bath,
-  Calculator,
 } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
@@ -24,6 +23,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { ListingVisual } from "@/components/listings/ListingVisual";
 import { CreditSimulator } from "@/components/credit/CreditSimulator";
+import { SimulateCreditButton } from "@/components/credit/SimulateCreditButton";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import type { Listing } from "@/lib/listings/types";
 
@@ -231,14 +231,8 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
           <ArrowRight size={11} strokeWidth={2.6} aria-hidden="true" />
         </Link>
 
-        {/* CREDIT-MVP — Simuler le crédit pour ce bien */}
-        <Link
-          href="#financement"
-          className="mt-1.5 flex w-full items-center justify-center gap-1.5 text-[11px] font-bold text-gray-500 transition hover:text-bronze-700"
-        >
-          <Calculator size={11} strokeWidth={2.4} aria-hidden="true" />
-          Simuler le crédit
-        </Link>
+        {/* CREDIT-MVP / CREDIT-UX-1 — Simuler le crédit pour ce bien (prix prérempli) */}
+        <SimulateCreditButton price={listing.price} />
       </div>
     </article>
   );
