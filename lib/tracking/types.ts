@@ -10,6 +10,13 @@ export const CONVERSION_EVENTS = [
   "credit_lead_submit",
   "alert_submit",
   "lead_submit_success",
+  // SEARCH-RELOOKING-1 — évènements page /search
+  "search_filter_change",
+  "search_result_click",
+  "search_credit_click",
+  "search_alert_click",
+  "search_map_pin_click",
+  "search_save_click",
 ] as const;
 
 export type ConversionEventName = (typeof CONVERSION_EVENTS)[number];

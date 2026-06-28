@@ -1,7 +1,6 @@
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LightZillowSearchShell } from "@/components/search/LightZillowSearchShell";
-import { mockListings } from "@/lib/listings/mock-listings";
 import type { ListingFiltersState } from "@/lib/listings/types";
 
 export const dynamic = "force-dynamic";
@@ -38,17 +37,24 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     pickFirst(params.type) ?? pickFirst(params.transaction_type)
   );
   const city = pickFirst(params.city) ?? "all";
-  const mreOnly =
-    (pickFirst(params.mre) ?? "").toLowerCase() === "true";
+  const mreOnly = (pickFirst(params.mre) ?? "").toLowerCase() === "true";
+
+  // SEARCH-RELOOKING-1 — deep-links : property_type + prix min/max depuis l'URL.
+  const propertyType = pickFirst(params.property_type) ?? "all";
+  const minBudget = pickFirst(params.min_price) ?? pickFirst(params.budget_min) ?? "";
+  const maxBudget = pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "";
 
   return (
-    <main className="min-h-screen bg-[#f8f9fa] text-gray-900">
-      <SiteHeader />
+    <main className="min-h-screen bg-[#061027] text-white">
+      <SiteHeader variant="dark" />
       <LightZillowSearchShell
-        initialListings={mockListings}
+        initialListings={[]}
         initialFilters={{
           transactionType,
           city,
+          propertyType,
+          minBudget,
+          maxBudget,
           mreOnly,
         }}
       />
