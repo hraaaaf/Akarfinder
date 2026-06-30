@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: ["selector", '[data-theme="dark"]'],
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}"
@@ -11,6 +12,29 @@ const config: Config = {
         sans: ["var(--font-jakarta)", "Plus Jakarta Sans", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       colors: {
+        // === THEME SYSTEM — semantic tokens (flip light/dark via CSS vars) ===
+        background: "rgb(var(--background) / <alpha-value>)",
+        foreground: "rgb(var(--foreground) / <alpha-value>)",
+        surface: {
+          DEFAULT: "rgb(var(--surface) / <alpha-value>)",
+          muted: "rgb(var(--surface-muted) / <alpha-value>)",
+        },
+        card: {
+          DEFAULT: "rgb(var(--card) / <alpha-value>)",
+          foreground: "rgb(var(--card-foreground) / <alpha-value>)",
+        },
+        border: "rgb(var(--border) / <alpha-value>)",
+        muted: {
+          DEFAULT: "rgb(var(--muted) / <alpha-value>)",
+          foreground: "rgb(var(--muted-foreground) / <alpha-value>)",
+        },
+        accent: "rgb(var(--accent) / <alpha-value>)",
+        "primary-token": "rgb(var(--primary) / <alpha-value>)",
+        "primary-token-foreground": "rgb(var(--primary-foreground) / <alpha-value>)",
+        "brand-navy": "rgb(var(--brand-navy) / <alpha-value>)",
+        "brand-bronze": "rgb(var(--brand-bronze) / <alpha-value>)",
+        "brand-ivory": "rgb(var(--brand-ivory) / <alpha-value>)",
+
         // === AkarFinder official brand board ===
         // Deep Blue — institutionnel, fond sombre premium, wordmark
         deepblue: {

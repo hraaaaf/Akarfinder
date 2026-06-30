@@ -19,18 +19,18 @@ function Check() {
 
 export function MreTrustSection() {
   return (
-    <section className="bg-white py-14 sm:py-18">
+    <section className="bg-background py-14 sm:py-18">
       <Container>
-        <div className="overflow-hidden rounded-3xl border border-[#e9d5ff] bg-gradient-to-br from-[#faf5ff] via-white to-white">
+        <div className="overflow-hidden rounded-3xl border border-border/15 bg-card">
           <div className="grid gap-0 lg:grid-cols-[1fr_1.3fr]">
             <div className="flex flex-col justify-center p-8 sm:p-10">
-              <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[#ede9fe] px-3 py-1 text-[12px] font-bold uppercase tracking-[0.14em] text-[#7c3aed]">
+              <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[#7c3aed]/15 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.14em] text-[#7c3aed]">
                 Pensé pour les MRE
               </span>
-              <h2 className="mt-4 text-3xl font-bold leading-tight tracking-[-0.03em] text-gray-900 sm:text-[2.3rem]">
+              <h2 className="mt-4 text-3xl font-bold leading-tight tracking-[-0.03em] text-card-foreground sm:text-[2.3rem]">
                 Décider à distance, en confiance.
               </h2>
-              <p className="mt-4 text-[15px] leading-7 text-gray-600">
+              <p className="mt-4 text-[15px] leading-7 text-muted-foreground">
                 Les Marocains du monde achètent souvent sans visite. AkarFinder réunit les repères
                 qui aident à juger un bien et à contacter rapidement le bon interlocuteur.
               </p>
@@ -38,7 +38,7 @@ export function MreTrustSection() {
                 <Link href="/onboarding" className="w-fit rounded-xl bg-[#7c3aed] px-5 py-3 text-[14px] font-bold text-white shadow-[0_8px_20px_rgba(124,58,237,0.25)] transition hover:bg-[#6d28d9]">
                   Créer mon dossier acheteur →
                 </Link>
-                <Link href="/search?mre=true" className="w-fit rounded-xl border border-[#7c3aed]/30 px-5 py-3 text-[14px] font-bold text-[#7c3aed] transition hover:bg-[#ede9fe]">
+                <Link href="/search?mre=true" className="w-fit rounded-xl border border-[#7c3aed]/30 px-5 py-3 text-[14px] font-bold text-[#7c3aed] transition hover:bg-[#7c3aed]/10">
                   Explorer les biens →
                 </Link>
               </div>
@@ -46,12 +46,12 @@ export function MreTrustSection() {
 
             <div className="grid content-center gap-3 p-8 sm:grid-cols-2 sm:p-10">
               {points.map((pt) => (
-                <div key={pt.title} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                <div key={pt.title} className="rounded-xl border border-border/15 bg-surface p-4 shadow-sm">
                   <div className="flex items-center gap-2">
-                    <span className="grid h-5 w-5 place-items-center rounded-full bg-[#ede9fe]"><Check /></span>
-                    <p className="text-[14px] font-bold text-gray-900">{pt.title}</p>
+                    <span className="grid h-5 w-5 place-items-center rounded-full bg-[#7c3aed]/15"><Check /></span>
+                    <p className="text-[14px] font-bold text-card-foreground">{pt.title}</p>
                   </div>
-                  <p className="mt-1.5 text-[13px] leading-6 text-gray-600">{pt.body}</p>
+                  <p className="mt-1.5 text-[13px] leading-6 text-muted-foreground">{pt.body}</p>
                 </div>
               ))}
             </div>

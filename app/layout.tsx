@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider, NO_FLASH_SCRIPT } from "@/components/theme/ThemeProvider";
 
 export const viewport: Viewport = {
   themeColor: "#071B33",
@@ -56,8 +57,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={jakartaSans.variable}>
-      <body>{children}</body>
+    <html lang="fr" className={jakartaSans.variable} suppressHydrationWarning>
+      <head>
+        {/* Applies the persisted/system theme before paint — avoids flash. */}
+        <script dangerouslySetInnerHTML={{ __html: NO_FLASH_SCRIPT }} />
+      </head>
+      <body>
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

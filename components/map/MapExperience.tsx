@@ -23,11 +23,31 @@ import { getMarketReference } from "@/lib/market/get-market-reference";
 import { CITIES } from "@/lib/cities";
 import { MapBottomSheet } from "./MapBottomSheet";
 import { MapSidePanel } from "./MapSidePanel";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
 const CLUSTER_ZOOM_THRESHOLD = 8;
-const TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+// Theme-aware basemap styles (both free, no API key).
+const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+const DARK_TILE_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
+
+function styleForTheme(theme: string | undefined) {
+  return theme === "dark" ? DARK_TILE_STYLE : LIGHT_TILE_STYLE;
+}
+
+/** Hide internal Moroccan administrative boundaries (region lines). */
+function hideInternalBoundaries(map: MapLibreMap) {
+  const internalBoundaryLayers = [
+    "boundary_3", "boundary_4", "boundary_3_z3z4", "boundary_4_z5",
+    "admin_level_3", "admin_level_4",
+  ];
+  for (const layerId of internalBoundaryLayers) {
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(layerId, "visibility", "none");
+    }
+  }
+}
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -165,6 +185,7 @@ export function MapExperience({ listings, initialFilters, totalAnalyzed, positio
   const mapRef = useRef<MapLibreMap | null>(null);
   const markersRef = useRef<Marker[]>([]);
   const clusterMarkersRef = useRef<Marker[]>([]);
+  const { theme } = useTheme();
 
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapZoom, setMapZoom] = useState(MOROCCO_OVERVIEW.zoom);
@@ -267,9 +288,13 @@ export function MapExperience({ listings, initialFilters, totalAnalyzed, positio
         // already loaded or unavailable — safe to ignore
       });
 
+      // Read the theme the no-flash script already applied — reliable at init.
+      const initialTheme =
+        typeof document !== "undefined" ? document.documentElement.dataset.theme : "light";
+
       mapInstance = new MapLibreMapClass({
         container: mapContainerRef.current,
-        style: TILE_STYLE,
+        style: styleForTheme(initialTheme),
         center: [MOROCCO_OVERVIEW.lng, MOROCCO_OVERVIEW.lat],
         zoom: MOROCCO_OVERVIEW.zoom,
         attributionControl: {
@@ -280,17 +305,7 @@ export function MapExperience({ listings, initialFilters, totalAnalyzed, positio
       mapRef.current = mapInstance;
 
       mapInstance.on("load", () => {
-        // Masquer les frontières administratives internes du Maroc (régions)
-        // Les noms de layers suivent la convention OpenMapTiles (OpenFreeMap liberty)
-        const internalBoundaryLayers = [
-          "boundary_3", "boundary_4", "boundary_3_z3z4", "boundary_4_z5",
-          "admin_level_3", "admin_level_4",
-        ];
-        for (const layerId of internalBoundaryLayers) {
-          if (mapInstance.getLayer(layerId)) {
-            mapInstance.setLayoutProperty(layerId, "visibility", "none");
-          }
-        }
+        hideInternalBoundaries(mapInstance);
         setMapLoaded(true);
       });
 
@@ -328,6 +343,23 @@ export function MapExperience({ listings, initialFilters, totalAnalyzed, positio
       });
     }
   }, [filters.city, mapLoaded]);
+
+  // ─── Swap basemap style when the theme changes (light/dark) ─────────────────
+
+  const styleInitRef = useRef(true);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoaded) return;
+    // Skip the first run — the init style already matches the current theme.
+    if (styleInitRef.current) {
+      styleInitRef.current = false;
+      return;
+    }
+    // HTML markers (price/cluster) survive setStyle; only re-hide boundaries.
+    map.setStyle(styleForTheme(theme));
+    map.once("style.load", () => hideInternalBoundaries(map));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [theme]);
 
   // ─── Render / update markers ──────────────────────────────────────────────
 

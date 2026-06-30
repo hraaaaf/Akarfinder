@@ -130,6 +130,23 @@ export type Listing = {
   image_fallback_type?: ImageFallbackType;
   source_access_level?: SourceAccessLevel;
 
+  // V9.5 — Source Display Policy (ENGINE-DISPLAY-POLICY-EXPORT-1, additive opt-in).
+  // All fields optional — site works without them for legacy listings.
+  source_display_type?: string;        // "public_index_source" | "partner_source" | "audit_source" | …
+  source_badge?: string;               // "public_indexed" | "premium_partner" | "market_signal" | …
+  display_depth?: string;              // "full" | "rich" | "limited_preview" | "market_signal_only" | …
+  allowed_ctas?: string[];             // ["view_original", "view_source", "compare"] — gates CTA rendering
+  thumbnail_policy?: string;           // "full_gallery_allowed" | "single_thumbnail_allowed" | "no_listing_image"
+  display_policy_reason?: string;      // human-readable policy rationale
+  original_source_required?: boolean;  // true → CTA must redirect to source, no copy
+  source_attribution_label?: string;   // "Source publique indexée" | "Partenaire premium" | …
+  display_images?: { policy?: string; urls?: string[] }; // policy-gated image view (≠ image_urls)
+  reliability_info?: {                 // V9.5 reliability object — separate from reliability_badge (string)
+    label?: string;
+    score?: number | null;
+    reasons?: string[];
+  };
+
   // P8A — advanced property characteristics (absent when not extracted).
   built_surface_m2?: number;
   plot_surface_m2?: number;

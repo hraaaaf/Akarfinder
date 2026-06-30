@@ -8,6 +8,8 @@ import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButto
 import { ListingVisual } from "@/components/listings/ListingVisual";
 import { MreBadge } from "@/components/ui/MreBadge";
 import { ReliabilityBadge } from "@/components/ui/ReliabilityBadge";
+import { SourceBadge, deriveBadge } from "@/components/badges/SourceBadge";
+import { SourceAttribution } from "@/components/badges/SourceAttribution";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-policy";
 import { getMarketReference, getListingObservedPriceComparison } from "@/lib/market/get-market-reference";
@@ -156,6 +158,14 @@ export function PhotoFirstListingCard({ listing }: PhotoFirstListingCardProps) {
         </div>
 
         <div className="mt-3.5 flex flex-wrap items-center gap-2">
+          {/* V9.5 Source Badge */}
+          {deriveBadge(listing.source_badge, listing.source_access_level) && (
+            <SourceBadge
+              badge={listing.source_badge}
+              sourceAccessLevel={listing.source_access_level}
+              variant="light"
+            />
+          )}
           {showReliability ? (
             <ReliabilityBadge level={reliabilityLevel} label={reliabilityLabel} />
           ) : null}
@@ -197,6 +207,14 @@ export function PhotoFirstListingCard({ listing }: PhotoFirstListingCardProps) {
           )}
         </div>
 
+        {/* V9.5 Source Attribution */}
+        <SourceAttribution
+          sourceAttributionLabel={listing.source_attribution_label}
+          displayPolicyReason={listing.display_policy_reason}
+          sourceName={listing.source_name}
+          variant="light"
+        />
+
         <div className="mt-5 flex flex-col gap-2 sm:flex-row">
           <Link
             href={`/listings/${listing.id}`}
@@ -213,7 +231,7 @@ export function PhotoFirstListingCard({ listing }: PhotoFirstListingCardProps) {
               rel="noopener noreferrer"
               className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#eadfca] bg-transparent px-4 py-3 text-[13px] font-bold text-gray-600 transition hover:bg-[#f7f3ea] hover:text-deepblue"
             >
-              Voir la source
+              {listing.original_source_required ? "Voir sur le site original" : "Voir la source"}
             </a>
           ) : null}
         </div>

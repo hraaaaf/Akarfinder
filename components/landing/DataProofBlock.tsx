@@ -105,7 +105,7 @@ function AnimatedCounter({
     <span>
       {display}
       {suffix && (
-        <span className="text-[1.6rem] text-[#9B7838] sm:text-[2.2rem]">{suffix}</span>
+        <span className="text-[1.6rem] text-accent sm:text-[2.2rem]">{suffix}</span>
       )}
     </span>
   );
@@ -153,16 +153,16 @@ export function DataProofBlock() {
   const hasRealData = stats.total_listings > 0;
 
   return (
-    <section ref={sectionRef} className="bg-[#0C0C0C] py-24 sm:py-32">
+    <section ref={sectionRef} className="bg-surface py-24 sm:py-32">
       <Container>
         <div className="mb-14 text-center">
-          <span className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-[#C2A368]">
+          <span className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-accent">
             Analyse intelligente du marché
           </span>
-          <p className="mt-3 text-[14.5px] text-white/50">
+          <p className="mt-3 text-[14.5px] text-muted-foreground">
             Données indicatives générées à partir d&apos;annonces publiques analysées automatiquement.
             {!hasRealData && loaded && (
-              <span className="ml-1 text-white/30">(données en cours de collecte)</span>
+              <span className="ml-1 text-muted-foreground/60">(données en cours de collecte)</span>
             )}
           </p>
         </div>
@@ -175,7 +175,7 @@ export function DataProofBlock() {
             return (
               <div key={key} className="flex flex-col items-center text-center">
                 {hasValue ? (
-                  <p className="tabular-nums text-[3rem] font-extrabold leading-none tracking-[-0.04em] text-[#C2A368] sm:text-[4rem]">
+                  <p className="tabular-nums text-[3rem] font-extrabold leading-none tracking-[-0.04em] text-accent sm:text-[4rem]">
                     <AnimatedCounter
                       target={raw}
                       suffix={suffix}
@@ -185,21 +185,21 @@ export function DataProofBlock() {
                     />
                   </p>
                 ) : (
-                  <p className="text-[1.6rem] font-extrabold leading-none tracking-tight text-[#C2A368] sm:text-[1.9rem]">
+                  <p className="text-[1.6rem] font-extrabold leading-none tracking-tight text-accent sm:text-[1.9rem]">
                     {fallbackLabel}
                   </p>
                 )}
 
                 {/* Progress bar */}
-                <div className="mt-5 h-[2px] w-full overflow-hidden rounded-full bg-white/10">
+                <div className="mt-5 h-[2px] w-full overflow-hidden rounded-full bg-foreground/10">
                   <div
-                    className="h-full rounded-full bg-[#9B7838] transition-all duration-[2000ms] ease-out"
+                    className="h-full rounded-full bg-accent transition-all duration-[2000ms] ease-out"
                     style={{ width: triggered && hasValue ? "100%" : "0%" }}
                   />
                 </div>
 
-                <p className="mt-4 text-[14px] font-semibold text-white/80">{label}</p>
-                <p className="mt-1 text-[11.5px] leading-snug text-white/38">{sub}</p>
+                <p className="mt-4 text-[14px] font-semibold text-foreground">{label}</p>
+                <p className="mt-1 text-[11.5px] leading-snug text-muted-foreground">{sub}</p>
               </div>
             );
           })}

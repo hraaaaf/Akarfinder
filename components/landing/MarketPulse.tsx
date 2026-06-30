@@ -8,10 +8,10 @@ import {
 function OperationBadge({ label }: { label: MarketPulseItem["operationLabel"] }) {
   const badgeClass =
     label === "Location"
-      ? "border-[#C2A368]/40 bg-[#C2A368]/14 text-[#E7D0A0]"
+      ? "border-accent/40 bg-accent/14 text-accent"
       : label === "Neuf"
-        ? "border-[#D8B97A]/45 bg-[#D8B97A]/16 text-[#F4DFC0]"
-        : "border-white/14 bg-white/8 text-white";
+        ? "border-accent/45 bg-accent/16 text-accent"
+        : "border-border/20 bg-surface-muted text-foreground";
 
   return (
     <span
@@ -24,7 +24,7 @@ function OperationBadge({ label }: { label: MarketPulseItem["operationLabel"] })
 
 function MarketPulseCard({ item }: { item: MarketPulseItem }) {
   const content = (
-    <div className="group/item inline-flex min-w-[290px] max-w-[360px] items-center gap-3 rounded-full border border-white/10 bg-white/[0.055] px-3.5 py-2.5 text-sm text-white/84 backdrop-blur-md transition duration-300 hover:border-[#C2A368]/40 hover:bg-white/[0.085] hover:text-white hover:shadow-[0_0_0_1px_rgba(194,163,104,0.1),0_14px_28px_rgba(0,0,0,0.18)] md:min-w-[360px]">
+    <div className="group/item inline-flex min-w-[290px] max-w-[360px] items-center gap-3 rounded-full border border-border/15 bg-card px-3.5 py-2.5 text-sm text-card-foreground backdrop-blur-md transition duration-300 hover:border-accent/40 hover:shadow-[0_0_0_1px_rgba(194,163,104,0.1),0_14px_28px_rgba(0,0,0,0.18)] md:min-w-[360px]">
       <OperationBadge label={item.operationLabel} />
       <span className="min-w-0 truncate text-[13px] font-medium leading-6">
         {item.lineLabel}
@@ -58,16 +58,16 @@ export async function MarketPulse() {
   return (
     <section
       aria-label="Dernières annonces analysées"
-      className="relative overflow-hidden border-y border-[#C2A368]/18 bg-[#08131D] text-[#F7F5EF]"
+      className="relative overflow-hidden border-y border-border/15 bg-surface-muted text-foreground"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(194,163,104,0.16),transparent_38%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(194,163,104,0.12),transparent_38%)]" />
       <Container className="relative py-5 sm:py-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-[#C2A368]">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-accent">
               Dernières annonces analysées
             </p>
-            <p className="mt-2 max-w-[680px] text-[13px] leading-6 text-white/64 sm:text-[13.5px]">
+            <p className="mt-2 max-w-[680px] text-[13px] leading-6 text-muted-foreground sm:text-[13.5px]">
               Biens récemment intégrés à l&apos;index AkarFinder.
             </p>
           </div>
@@ -85,8 +85,8 @@ export async function MarketPulse() {
         </div>
 
         <div className="relative mt-4 hidden md:block">
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-[#08131D] to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-[#08131D] to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-surface-muted to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-surface-muted to-transparent" />
           <div className="market-pulse-marquee overflow-hidden">
             <div className="market-pulse-track flex w-max items-center gap-4">
               {loopItems.map((item, index) => (

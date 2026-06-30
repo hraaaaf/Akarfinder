@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { useFavoriteSelection } from "@/components/favorites/useFavoriteSelection";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { navItems } from "@/lib/site";
 
 type SiteHeaderProps = {
@@ -82,6 +83,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
         </nav>
 
         <div className="flex items-center gap-2.5">
+          <ThemeToggle />
           <Link
             href="/favorites"
             aria-label={favoriteCount > 0 ? `Mes favoris (${favoriteCount})` : "Mes favoris"}

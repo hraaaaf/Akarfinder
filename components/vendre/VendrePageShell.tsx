@@ -122,12 +122,12 @@ export async function VendrePageShell() {
   const medianPct = Math.round(((ESTIMATION.median - ESTIMATION.min) / (ESTIMATION.max - ESTIMATION.min)) * 100);
 
   return (
-    <main className="min-h-screen bg-[#061027] text-white">
+    <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" compact />
 
       {/* ── HERO ──────────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-deepblue pb-11 pt-7 sm:pb-16 sm:pt-20">
-        <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 70% at 62% 26%, rgba(34,72,132,0.72) 0%, transparent 64%)" }} />
+      <section className="relative overflow-hidden bg-surface pb-11 pt-7 sm:pb-16 sm:pt-20">
+        <div className="pointer-events-none absolute inset-0 hidden dark:block" style={{ background: "radial-gradient(ellipse 80% 70% at 62% 26%, rgba(34,72,132,0.72) 0%, transparent 64%)" }} />
         <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(60% 50% at 95% 100%, rgba(194,163,104,0.10) 0%, transparent 60%)" }} />
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-bronze-500/45 to-transparent" />
 
@@ -139,11 +139,11 @@ export async function VendrePageShell() {
                 <span className="h-px w-8 bg-bronze-500/70" aria-hidden="true" />
                 <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-bronze-400">Vendre</p>
               </div>
-              <h1 className="mt-4 text-[2.4rem] font-extrabold leading-[1.04] tracking-[-0.05em] text-white sm:mt-5 sm:text-[3.5rem]">
+              <h1 className="mt-4 text-[2.4rem] font-extrabold leading-[1.04] tracking-[-0.05em] text-foreground sm:mt-5 sm:text-[3.5rem]">
                 Vendre avec<br className="hidden sm:block" />{" "}
                 <span className="text-bronze-400">plus de clarté.</span>
               </h1>
-              <p className="mt-3.5 max-w-xl text-[14.5px] leading-6 text-white/65 sm:mt-5 sm:text-[15.5px] sm:leading-7">
+              <p className="mt-3.5 max-w-xl text-[14.5px] leading-6 text-muted-foreground sm:mt-5 sm:text-[15.5px] sm:leading-7">
                 Comparez votre bien aux annonces similaires, observez les prix du marché et
                 préparez votre mise en vente avec des repères indicatifs.
               </p>
@@ -153,14 +153,14 @@ export async function VendrePageShell() {
                   Préparer ma vente
                   <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
                 </TrackedLink>
-                <Link href="#estimation" className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white/90 transition hover:border-bronze-500/40 hover:bg-white/16">
+                <Link href="#estimation" className="inline-flex items-center gap-2 rounded-xl border border-border/15 bg-surface-muted px-5 py-3 text-[13.5px] font-extrabold text-foreground transition hover:border-bronze-500/40 hover:bg-surface-muted">
                   Comparer avec le marché
                   <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
                 </Link>
               </div>
 
               <div className="mt-5 sm:mt-6">
-                <p className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-semibold text-white/70">
+                <p className="inline-flex items-center gap-2.5 rounded-full border border-border/15 bg-surface-muted px-4 py-2 text-[13px] font-semibold text-muted-foreground">
                   <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-bronze-500/20">
                     <Info size={11} className="text-bronze-400" aria-hidden="true" />
                   </span>
@@ -171,20 +171,20 @@ export async function VendrePageShell() {
 
             {/* RIGHT — Repères vendeur (mobile : 2×2) */}
             <aside className="lg:flex lg:flex-col lg:justify-center">
-              <div className="overflow-hidden rounded-2xl border border-white/12 bg-white/[0.06] shadow-[0_20px_50px_rgba(2,10,24,0.4)] backdrop-blur-md">
-                <div className="border-b border-white/10 bg-white/[0.03] px-5 py-4">
-                  <p className="text-[13px] font-extrabold text-white">Vos repères vendeur</p>
-                  <p className="mt-0.5 text-[11px] leading-4 text-white/55">Pour préparer la mise en vente</p>
+              <div className="overflow-hidden rounded-2xl border border-border/15 bg-card shadow-[0_20px_50px_rgba(2,10,24,0.4)] backdrop-blur-md">
+                <div className="border-b border-border/15 bg-card px-5 py-4">
+                  <p className="text-[13px] font-extrabold text-foreground">Vos repères vendeur</p>
+                  <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">Pour préparer la mise en vente</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2 p-3 lg:grid-cols-1">
                   {REPERES.map(({ icon: Icon, label, note }) => (
-                    <div key={label} className="flex items-start gap-2.5 rounded-xl border border-white/8 bg-white/[0.04] px-3 py-2.5 transition hover:border-bronze-500/25 hover:bg-white/[0.07]">
+                    <div key={label} className="flex items-start gap-2.5 rounded-xl border border-border/15 bg-card px-3 py-2.5 transition hover:border-bronze-500/25 hover:bg-card">
                       <span className="inline-grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-bronze-500/15 text-bronze-400">
                         <Icon size={14} aria-hidden="true" />
                       </span>
                       <div className="min-w-0">
-                        <p className="text-[12px] font-extrabold leading-tight text-white/90">{label}</p>
-                        <p className="mt-0.5 text-[10px] leading-tight text-white/45">{note}</p>
+                        <p className="text-[12px] font-extrabold leading-tight text-foreground">{label}</p>
+                        <p className="mt-0.5 text-[10px] leading-tight text-muted-foreground">{note}</p>
                       </div>
                     </div>
                   ))}
@@ -196,15 +196,15 @@ export async function VendrePageShell() {
       </section>
 
       {/* ── DASHBOARD VENDEUR ─────────────────────────────────────────────────── */}
-      <section id="estimation" className="relative scroll-mt-20 bg-gradient-to-b from-deepblue to-[#050f1e] py-12 lg:py-16">
+      <section id="estimation" className="relative scroll-mt-20 bg-background py-12 lg:py-16">
         <Container>
           <div className="mb-7">
             <div className="flex items-center gap-2.5">
               <span className="h-px w-6 bg-bronze-500/60" aria-hidden="true" />
               <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400">Tableau de bord vendeur</p>
             </div>
-            <h2 className="mt-2 text-[1.5rem] font-extrabold tracking-[-0.04em] text-white">Votre vente en un coup d'œil</h2>
-            <p className="mt-1.5 text-[12.5px] text-white/50">Exemple illustratif — les données affichées sont des aperçus.</p>
+            <h2 className="mt-2 text-[1.5rem] font-extrabold tracking-[-0.04em] text-foreground">Votre vente en un coup d'œil</h2>
+            <p className="mt-1.5 text-[12.5px] text-muted-foreground">Exemple illustratif — les données affichées sont des aperçus.</p>
           </div>
 
           <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
@@ -212,7 +212,7 @@ export async function VendrePageShell() {
             <div className="flex flex-col gap-8">
 
               {/* 1. APERÇU BIEN VENDEUR */}
-              <article className="overflow-hidden rounded-[20px] border border-white/10 bg-white/[0.04] shadow-[0_18px_50px_rgba(2,10,24,0.4)] backdrop-blur-sm">
+              <article className="overflow-hidden rounded-[20px] border border-border/15 bg-card shadow-[0_18px_50px_rgba(2,10,24,0.4)] backdrop-blur-sm">
                 <div className="relative h-[210px] overflow-hidden sm:h-[260px]">
                   <ListingVisual listing={VENDOR_VISUAL} className="h-full w-full" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#03101f]/85 via-[#03101f]/20 to-transparent" />
@@ -220,13 +220,13 @@ export async function VendrePageShell() {
                     <Info size={11} aria-hidden="true" />
                     Aperçu · votre bien
                   </span>
-                  <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.06em] text-white/90 ring-1 ring-white/20 backdrop-blur-md">
+                  <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-card px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.06em] text-foreground ring-1 ring-border/20 backdrop-blur-md">
                     Statut : {VENDOR_BIEN.statut}
                   </span>
                   <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-bronze-500/60 to-transparent" />
                   <div className="absolute bottom-4 left-4">
-                    <h3 className="text-[1.25rem] font-extrabold tracking-[-0.03em] text-white">{VENDOR_BIEN.name}</h3>
-                    <p className="mt-1 flex items-center gap-1.5 text-[12px] font-semibold text-white/75">
+                    <h3 className="text-[1.25rem] font-extrabold tracking-[-0.03em] text-foreground">{VENDOR_BIEN.name}</h3>
+                    <p className="mt-1 flex items-center gap-1.5 text-[12px] font-semibold text-muted-foreground">
                       <MapPin size={12} className="text-bronze-300" aria-hidden="true" />
                       {VENDOR_BIEN.city}, {VENDOR_BIEN.neighborhood}
                     </p>
@@ -239,55 +239,55 @@ export async function VendrePageShell() {
                     { icon: Bath, k: "Salles de bain", v: `${VENDOR_BIEN.bathrooms}` },
                     { icon: Car, k: "Parking", v: `${VENDOR_BIEN.parking}` },
                   ].map(({ icon: Icon, k, v }) => (
-                    <div key={k} className="rounded-xl border border-white/8 bg-white/[0.04] px-3.5 py-3">
+                    <div key={k} className="rounded-xl border border-border/15 bg-card px-3.5 py-3">
                       <div className="flex items-center gap-1.5 text-bronze-400">
                         <Icon size={12} aria-hidden="true" />
-                        <span className="text-[9.5px] font-bold uppercase tracking-wide text-white/45">{k}</span>
+                        <span className="text-[9.5px] font-bold uppercase tracking-wide text-muted-foreground">{k}</span>
                       </div>
-                      <p className="mt-1.5 text-[13px] font-extrabold text-white">{v}</p>
+                      <p className="mt-1.5 text-[13px] font-extrabold text-foreground">{v}</p>
                     </div>
                   ))}
                 </div>
               </article>
 
               {/* 2. ESTIMATION INDICATIVE */}
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
-                <div className="flex items-center justify-between gap-2 border-b border-white/10 bg-white/[0.03] px-5 py-4">
+              <div className="overflow-hidden rounded-2xl border border-border/15 bg-card shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="flex items-center justify-between gap-2 border-b border-border/15 bg-card px-5 py-4">
                   <div className="flex items-center gap-2.5">
                     <TrendingUp size={16} className="text-bronze-400" aria-hidden="true" />
-                    <p className="text-[13px] font-extrabold text-white">Estimation indicative</p>
+                    <p className="text-[13px] font-extrabold text-foreground">Estimation indicative</p>
                   </div>
                   <span className="rounded-full bg-bronze-500/15 px-2.5 py-1 text-[9.5px] font-extrabold uppercase tracking-[0.06em] text-bronze-300">Fourchette prudente</span>
                 </div>
                 <div className="p-5 sm:p-6">
                   <div className="flex items-end justify-between gap-3">
                     <div>
-                      <p className="text-[11px] font-bold uppercase tracking-wide text-white/45">Fourchette indicative</p>
+                      <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Fourchette indicative</p>
                       <p className="mt-1 text-[1.5rem] font-extrabold leading-none tracking-[-0.04em] text-bronze-400 sm:text-[1.7rem]">
                         {(ESTIMATION.min / 1_000_000).toLocaleString("fr-FR")} – {(ESTIMATION.max / 1_000_000).toLocaleString("fr-FR")} M DH
                       </p>
                     </div>
-                    <p className="text-right text-[11px] font-semibold text-white/45">
+                    <p className="text-right text-[11px] font-semibold text-muted-foreground">
                       {ESTIMATION.ppm2Min.toLocaleString("fr-FR")} – {ESTIMATION.ppm2Max.toLocaleString("fr-FR")}<br />DH/m²
                     </p>
                   </div>
 
                   {/* Range bar */}
                   <div className="mt-5">
-                    <div className="relative h-2.5 rounded-full bg-white/8">
+                    <div className="relative h-2.5 rounded-full bg-foreground/10">
                       <div className="absolute inset-y-0 left-0 right-0 rounded-full bg-gradient-to-r from-bronze-700/40 via-bronze-500/70 to-bronze-700/40" />
                       <div className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-[#061027] bg-bronze-400 shadow-[0_0_0_3px_rgba(194,163,104,0.25)]" style={{ left: `calc(${medianPct}% - 8px)` }} aria-hidden="true" />
                     </div>
-                    <div className="mt-2 flex justify-between text-[10.5px] font-semibold text-white/45">
+                    <div className="mt-2 flex justify-between text-[10.5px] font-semibold text-muted-foreground">
                       <span>{(ESTIMATION.min / 1_000_000).toLocaleString("fr-FR")} M</span>
                       <span className="text-bronze-300">médiane ≈ {(ESTIMATION.median / 1_000_000).toLocaleString("fr-FR")} M</span>
                       <span>{(ESTIMATION.max / 1_000_000).toLocaleString("fr-FR")} M</span>
                     </div>
                   </div>
 
-                  <div className="mt-5 flex items-start gap-2 rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                  <div className="mt-5 flex items-start gap-2 rounded-xl border border-border/15 bg-card px-4 py-3">
                     <ShieldCheck size={14} className="mt-0.5 shrink-0 text-bronze-400" aria-hidden="true" />
-                    <p className="text-[11.5px] leading-5 text-white/60">
+                    <p className="text-[11.5px] leading-5 text-muted-foreground">
                       Estimation indicative et prudente — elle ne remplace ni une visite ni l'avis
                       d'un professionnel. À confirmer avant décision.
                     </p>
@@ -296,30 +296,30 @@ export async function VendrePageShell() {
               </div>
 
               {/* 5. VISIBILITÉ POTENTIELLE */}
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
-                <div className="flex items-center justify-between gap-2 border-b border-white/10 bg-white/[0.03] px-5 py-4">
+              <div className="overflow-hidden rounded-2xl border border-border/15 bg-card shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="flex items-center justify-between gap-2 border-b border-border/15 bg-card px-5 py-4">
                   <div className="flex items-center gap-2.5">
                     <Eye size={16} className="text-bronze-400" aria-hidden="true" />
-                    <p className="text-[13px] font-extrabold text-white">Visibilité potentielle</p>
+                    <p className="text-[13px] font-extrabold text-foreground">Visibilité potentielle</p>
                   </div>
                   <span className="rounded-full bg-bronze-500/15 px-2.5 py-1 text-[9.5px] font-extrabold uppercase tracking-[0.06em] text-bronze-300">Aperçu</span>
                 </div>
                 <div className="grid gap-5 p-5 sm:grid-cols-[1fr_auto] sm:items-center sm:p-6">
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-white/45">Diffusion multi-canal</p>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Diffusion multi-canal</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {CANAUX.map(({ icon: Icon, label }) => (
-                        <span key={label} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11.5px] font-semibold text-white/80">
+                        <span key={label} className="inline-flex items-center gap-1.5 rounded-full border border-border/15 bg-card px-3 py-1.5 text-[11.5px] font-semibold text-foreground">
                           <Icon size={12} className="text-bronze-400" aria-hidden="true" />
                           {label}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                  <div className="flex items-center gap-3 rounded-xl border border-border/15 bg-card px-4 py-3">
                     <div>
-                      <p className="text-[1.3rem] font-extrabold leading-none tracking-[-0.04em] text-white">+1k</p>
-                      <p className="mt-1 text-[10.5px] font-semibold text-white/50">vues estimées (aperçu)</p>
+                      <p className="text-[1.3rem] font-extrabold leading-none tracking-[-0.04em] text-foreground">+1k</p>
+                      <p className="mt-1 text-[10.5px] font-semibold text-muted-foreground">vues estimées (aperçu)</p>
                     </div>
                     <Sparkline />
                   </div>
@@ -330,30 +330,30 @@ export async function VendrePageShell() {
             {/* RIGHT SIDEBAR */}
             <aside className="flex flex-col gap-5">
               {/* 3. PRIX OBSERVÉS DANS LA ZONE */}
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
-                <div className="flex items-start gap-2.5 border-b border-white/10 bg-white/[0.03] px-5 py-4">
+              <div className="overflow-hidden rounded-2xl border border-border/15 bg-card shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="flex items-start gap-2.5 border-b border-border/15 bg-card px-5 py-4">
                   <BarChart2 size={16} className="mt-0.5 shrink-0 text-bronze-400" aria-hidden="true" />
                   <div>
-                    <p className="text-[13px] font-extrabold text-white">Prix observés dans la zone</p>
-                    <p className="text-[10.5px] text-white/45">Repères DH/m² — indicatifs</p>
+                    <p className="text-[13px] font-extrabold text-foreground">Prix observés dans la zone</p>
+                    <p className="text-[10.5px] text-muted-foreground">Repères DH/m² — indicatifs</p>
                   </div>
                 </div>
                 <div className="space-y-3 px-5 py-4">
                   {PRIX_ZONE.map((row) => (
                     <div key={row.quartier}>
                       <div className="flex items-center justify-between">
-                        <span className="text-[12px] font-semibold text-white/75">{row.quartier}</span>
-                        <span className="text-[12.5px] font-extrabold text-white">
-                          {row.ppm2.toLocaleString("fr-FR")}<span className="ml-1 text-[9.5px] font-semibold text-white/40">DH/m²</span>
+                        <span className="text-[12px] font-semibold text-muted-foreground">{row.quartier}</span>
+                        <span className="text-[12.5px] font-extrabold text-foreground">
+                          {row.ppm2.toLocaleString("fr-FR")}<span className="ml-1 text-[9.5px] font-semibold text-muted-foreground">DH/m²</span>
                         </span>
                       </div>
-                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/8">
+                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-foreground/10">
                         <div className="h-full rounded-full bg-gradient-to-r from-bronze-600 to-bronze-400" style={{ width: `${Math.round((row.ppm2 / PRIX_MAX) * 100)}%` }} />
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="border-t border-white/8 bg-white/[0.02] px-5 py-3">
+                <div className="border-t border-border/15 bg-surface px-5 py-3">
                   <Link href="/map" className="flex items-center justify-between text-[11.5px] font-extrabold text-bronze-300 transition hover:text-bronze-200">
                     Voir le détail par zone
                     <ArrowRight size={12} aria-hidden="true" />
@@ -362,11 +362,11 @@ export async function VendrePageShell() {
               </div>
 
               {/* 6. DEMANDES SÉRIEUSES / LEADS APERÇU */}
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
-                <div className="flex items-center justify-between gap-2 border-b border-white/10 bg-white/[0.03] px-5 py-4">
+              <div className="overflow-hidden rounded-2xl border border-border/15 bg-card shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="flex items-center justify-between gap-2 border-b border-border/15 bg-card px-5 py-4">
                   <div className="flex items-center gap-2.5">
                     <Users size={15} className="text-bronze-400" aria-hidden="true" />
-                    <p className="text-[13px] font-extrabold text-white">Demandes sérieuses</p>
+                    <p className="text-[13px] font-extrabold text-foreground">Demandes sérieuses</p>
                   </div>
                   <span className="rounded-full bg-bronze-500/15 px-2.5 py-1 text-[9.5px] font-extrabold uppercase tracking-[0.06em] text-bronze-300">Aperçu</span>
                 </div>
@@ -375,16 +375,16 @@ export async function VendrePageShell() {
                     <div key={l.name} className="flex items-center gap-3 px-4 py-3">
                       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-bronze-500/15 text-[13px] font-extrabold text-bronze-300">{l.initials}</span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-[12.5px] font-extrabold text-white">{l.name}</p>
-                        <p className="truncate text-[11px] text-white/50">{l.note}</p>
+                        <p className="text-[12.5px] font-extrabold text-foreground">{l.name}</p>
+                        <p className="truncate text-[11px] text-muted-foreground">{l.note}</p>
                       </div>
-                      <span className="shrink-0 rounded-full bg-white/[0.06] px-2.5 py-1 text-[10.5px] font-extrabold text-bronze-300">{l.budget}</span>
+                      <span className="shrink-0 rounded-full bg-card px-2.5 py-1 text-[10.5px] font-extrabold text-bronze-300">{l.budget}</span>
                     </div>
                   ))}
                 </div>
-                <div className="border-t border-white/8 px-4 py-3">
-                  <p className="mb-2 text-[10px] text-white/40">Exemples illustratifs — non des demandes réelles</p>
-                  <Link href="/vendre/dossier" className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-[12px] font-extrabold text-white/85 transition hover:border-bronze-500/30 hover:bg-white/[0.07]">
+                <div className="border-t border-border/15 px-4 py-3">
+                  <p className="mb-2 text-[10px] text-muted-foreground">Exemples illustratifs — non des demandes réelles</p>
+                  <Link href="/vendre/dossier" className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-border/15 bg-card px-4 py-2.5 text-[12px] font-extrabold text-foreground transition hover:border-bronze-500/30 hover:bg-card">
                     Préparer ma vente
                     <ArrowRight size={12} aria-hidden="true" />
                   </Link>
@@ -397,7 +397,7 @@ export async function VendrePageShell() {
 
       {/* ── 4. ANNONCES SIMILAIRES ────────────────────────────────────────────── */}
       {similar.length > 0 && (
-        <section className="border-t border-white/8 bg-[#050f1e] py-12 lg:py-14">
+        <section className="border-t border-border/15 bg-[#050f1e] py-12 lg:py-14">
           <Container>
             <div className="mb-7 flex items-end justify-between gap-4">
               <div>
@@ -405,10 +405,10 @@ export async function VendrePageShell() {
                   <span className="h-px w-6 bg-bronze-500/60" aria-hidden="true" />
                   <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400">Pour vous situer</p>
                 </div>
-                <h2 className="mt-2 text-[1.4rem] font-extrabold tracking-[-0.04em] text-white">Annonces similaires analysées</h2>
-                <p className="mt-1.5 text-[12.5px] text-white/50">Repères indicatifs issus d'annonces publiques analysées.</p>
+                <h2 className="mt-2 text-[1.4rem] font-extrabold tracking-[-0.04em] text-foreground">Annonces similaires analysées</h2>
+                <p className="mt-1.5 text-[12.5px] text-muted-foreground">Repères indicatifs issus d'annonces publiques analysées.</p>
               </div>
-              <Link href="/search?transaction_type=buy" className="group hidden shrink-0 items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-4 py-2 text-[12.5px] font-bold text-bronze-400 transition hover:border-bronze-500/40 hover:bg-white/10 sm:inline-flex">
+              <Link href="/search?transaction_type=buy" className="group hidden shrink-0 items-center gap-1.5 rounded-full border border-border/15 bg-surface-muted px-4 py-2 text-[12.5px] font-bold text-bronze-400 transition hover:border-bronze-500/40 hover:bg-surface-muted sm:inline-flex">
                 Voir les annonces dans la recherche
                 <ArrowRight size={12} strokeWidth={2.4} className="transition group-hover:translate-x-0.5" aria-hidden="true" />
               </Link>
@@ -416,24 +416,24 @@ export async function VendrePageShell() {
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {similar.map((listing) => (
-                <article key={listing.id} className="group flex flex-col overflow-hidden rounded-[18px] border border-white/10 bg-white/[0.04] shadow-[0_12px_36px_rgba(2,10,24,0.35)] backdrop-blur-sm transition hover:-translate-y-1 hover:border-bronze-500/30">
+                <article key={listing.id} className="group flex flex-col overflow-hidden rounded-[18px] border border-border/15 bg-card shadow-[0_12px_36px_rgba(2,10,24,0.35)] backdrop-blur-sm transition hover:-translate-y-1 hover:border-bronze-500/30">
                   <Link href={`/listings/${listing.id}`} className="relative block h-[150px] overflow-hidden">
                     <div className="absolute inset-0 transition duration-700 group-hover:scale-[1.05]">
                       <ListingVisual listing={listing} className="h-full w-full" />
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-[#03101f]/80 to-transparent" />
-                    <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-[#071B33]/75 px-2.5 py-1 text-[10px] font-extrabold text-white ring-1 ring-white/15 backdrop-blur-md">
+                    <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-[#071B33]/75 px-2.5 py-1 text-[10px] font-extrabold text-white ring-1 ring-border/20 backdrop-blur-md">
                       <MapPin size={9} className="text-bronze-400" aria-hidden="true" />
                       {listing.city}
                     </span>
                   </Link>
                   <div className="flex flex-1 flex-col p-4">
                     <p className="text-[1.15rem] font-extrabold leading-none tracking-[-0.04em] text-bronze-400">{formatPrice(listing.price, listing.currency)}</p>
-                    <h3 className="mt-2 line-clamp-1 text-[12.5px] font-extrabold text-white">{listing.title}</h3>
-                    <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-white/8 pt-2.5 text-[11.5px] font-bold text-white/70">
+                    <h3 className="mt-2 line-clamp-1 text-[12.5px] font-extrabold text-foreground">{listing.title}</h3>
+                    <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border/15 pt-2.5 text-[11.5px] font-bold text-muted-foreground">
                       {listing.surface_m2 > 0 && <span>{formatSurface(listing.surface_m2)}</span>}
                       {listing.bedrooms > 0 && <span>{listing.bedrooms} ch.</span>}
-                      {listing.price_per_m2 > 0 && <span className="text-white/45">{listing.price_per_m2.toLocaleString("fr-FR")} DH/m²</span>}
+                      {listing.price_per_m2 > 0 && <span className="text-muted-foreground">{listing.price_per_m2.toLocaleString("fr-FR")} DH/m²</span>}
                     </div>
                   </div>
                 </article>
@@ -446,26 +446,26 @@ export async function VendrePageShell() {
       {/* ── 7. CHECKLIST PRÉPARATION VENTE ────────────────────────────────────── */}
       <section className="bg-[#050f1e] pb-12 lg:pb-14">
         <Container>
-          <div className="overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-6 backdrop-blur-sm sm:p-8">
+          <div className="overflow-hidden rounded-[24px] border border-border/15 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-6 backdrop-blur-sm sm:p-8">
             <div className="flex items-center gap-2.5">
               <span className="h-px w-6 bg-bronze-500/60" aria-hidden="true" />
               <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400">Étapes clés</p>
             </div>
-            <h2 className="mt-2 text-[1.4rem] font-extrabold tracking-[-0.04em] text-white">Checklist de préparation à la vente</h2>
-            <p className="mt-1.5 text-[12.5px] text-white/50">Des repères pour avancer sereinement — à adapter à votre situation.</p>
+            <h2 className="mt-2 text-[1.4rem] font-extrabold tracking-[-0.04em] text-foreground">Checklist de préparation à la vente</h2>
+            <p className="mt-1.5 text-[12.5px] text-muted-foreground">Des repères pour avancer sereinement — à adapter à votre situation.</p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {CHECKLIST.map(({ icon: Icon, label, note }, i) => (
-                <div key={label} className="flex items-start gap-3 rounded-2xl border border-white/8 bg-white/[0.04] p-4 transition hover:border-bronze-500/25 hover:bg-white/[0.06]">
+                <div key={label} className="flex items-start gap-3 rounded-2xl border border-border/15 bg-card p-4 transition hover:border-bronze-500/25 hover:bg-card">
                   <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-bronze-500/12 text-bronze-400 ring-1 ring-bronze-500/20">
                     <Icon size={15} aria-hidden="true" />
                   </span>
                   <div className="min-w-0">
-                    <p className="flex items-center gap-1.5 text-[12.5px] font-extrabold text-white">
+                    <p className="flex items-center gap-1.5 text-[12.5px] font-extrabold text-foreground">
                       <span className="text-bronze-400/70">{String(i + 1).padStart(2, "0")}</span>
                       {label}
                     </p>
-                    <p className="mt-0.5 text-[11px] leading-4 text-white/50">{note}</p>
+                    <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">{note}</p>
                   </div>
                 </div>
               ))}
@@ -478,15 +478,15 @@ export async function VendrePageShell() {
       <section className="relative overflow-hidden bg-[#040b16] py-14 lg:py-20">
         <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(70% 80% at 88% 30%, rgba(34,72,132,0.35) 0%, transparent 60%)" }} />
         <Container className="relative">
-          <div className="overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-8 backdrop-blur-sm sm:p-10">
+          <div className="overflow-hidden rounded-[24px] border border-border/15 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-8 backdrop-blur-sm sm:p-10">
             <div className="flex items-center gap-2.5">
               <span className="h-px w-6 bg-bronze-500/60" aria-hidden="true" />
               <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400">Accompagnement</p>
             </div>
-            <h2 className="mt-3 max-w-xl text-[1.7rem] font-extrabold leading-tight tracking-[-0.04em] text-white">
+            <h2 className="mt-3 max-w-xl text-[1.7rem] font-extrabold leading-tight tracking-[-0.04em] text-foreground">
               Préparez votre vente avec des repères clairs
             </h2>
-            <p className="mt-3 max-w-xl text-[14px] leading-7 text-white/60">
+            <p className="mt-3 max-w-xl text-[14px] leading-7 text-muted-foreground">
               Estimation indicative, prix observés et annonces similaires réunis pour vous aider à
               fixer le bon prix et toucher des acheteurs sérieux. Repères indicatifs — à confirmer
               avant décision.
@@ -496,14 +496,14 @@ export async function VendrePageShell() {
                 Préparer ma vente
                 <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
               </Link>
-              <Link href="#estimation" className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white/90 transition hover:border-bronze-500/40 hover:bg-white/16">
+              <Link href="#estimation" className="inline-flex items-center gap-2 rounded-xl border border-border/15 bg-surface-muted px-5 py-3 text-[13.5px] font-extrabold text-foreground transition hover:border-bronze-500/40 hover:bg-surface-muted">
                 Comparer avec le marché
                 <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
               </Link>
             </div>
           </div>
 
-          <p className="mt-6 flex items-start gap-1.5 text-[11.5px] leading-5 text-white/40">
+          <p className="mt-6 flex items-start gap-1.5 text-[11.5px] leading-5 text-muted-foreground">
             <Info size={12} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden="true" />
             Les estimations, demandes et chiffres de visibilité présentés sont des aperçus indicatifs
             (exemples / simulations) et non une estimation officielle, une valeur certifiée ou une

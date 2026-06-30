@@ -37,7 +37,7 @@ function getCityAriaLabel(city: CityConfig) {
 
 export function CityIntentGrid() {
   return (
-    <section id="villes" className="bg-[#EFEBE0] py-20 sm:py-28">
+    <section id="villes" className="bg-surface-muted py-20 sm:py-28">
       <Container>
         <div className="sr-only">
           <h2>L&apos;immobilier dans les grandes villes du Maroc.</h2>

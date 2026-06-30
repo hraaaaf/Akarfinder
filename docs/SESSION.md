@@ -6689,3 +6689,33 @@ Screenshots
 * public/screenshots/home-hero-desktop.png
 * public/screenshots/home-hero-mobile.png
 
+----------------------------------------------------
+SIGNATURE MAP RELooking - 2026-06-29
+
+Status: Livre ✅
+
+Mission
+Faire en sorte que la section "La carte intelligente de l'immobilier marocain" ressemble au plus pres des maquettes fournies, sans elargir le scope produit.
+
+Fichiers modifies
+* components/landing/SignatureMapSection.tsx - refonte complete de la section desktop/mobile
+
+Changements livres
+* Desktop reconstruit en composition 2 colonnes proche maquette: bloc editorial a gauche, carte Maroc premium, filtre par ville, grille 3x2 de cards et bandeau CTA bas.
+* Mobile reconstruit en pile proche reference: titre serif, carte hero, cards villes verticales, blocs de signaux et CTA final.
+* Liens fonctionnels conserves vers `/search?city=...` pour Tanger, Rabat, Casablanca, Fes, Marrakech et Agadir.
+* Wording garde prudent: pas de stats fake, pas de "temps reel", pas de claims non verifies.
+* Chargement des images des cards force dans cette section pour securiser le rendu visuel.
+
+Validation
+* `npm run build` ✅
+* Verification visuelle locale sur `http://localhost:3100` ✅
+
+Screenshots
+* public/screenshots/signature-map-section-desktop-2026-06-29.png
+* public/screenshots/signature-map-section-mobile-2026-06-29.png
+
+Issues / dettes restantes
+* Le header sticky global de la homepage recouvre une petite partie du haut de la section pendant certaines captures pleine page; la section elle-meme est correcte.
+* Si une correspondance pixel-perfect stricte est voulue, il faudra probablement valider ou remplacer les photos villes actuelles selon les visuels definitifs de reference.
+

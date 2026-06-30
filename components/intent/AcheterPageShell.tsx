@@ -25,6 +25,7 @@ import { ListingVisual } from "@/components/listings/ListingVisual";
 import { CreditSimulator } from "@/components/credit/CreditSimulator";
 import { SimulateCreditButton } from "@/components/credit/SimulateCreditButton";
 import { TrackedLink } from "@/components/tracking/TrackedLink";
+import { SourceBadge, deriveBadge } from "@/components/badges/SourceBadge";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import type { Listing } from "@/lib/listings/types";
 
@@ -88,7 +89,7 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
   const reliability = getReliability(listing.reliability_score ?? 0);
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-[20px] bg-white shadow-[0_14px_44px_rgba(2,10,24,0.4)] ring-1 ring-white/10 transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_64px_rgba(2,10,24,0.55)] hover:ring-bronze-500/40">
+    <article className="group flex flex-col overflow-hidden rounded-[20px] bg-card shadow-[0_14px_44px_rgba(2,10,24,0.4)] ring-1 ring-border/20 transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_64px_rgba(2,10,24,0.55)] hover:ring-bronze-500/40">
 
       {/* ── Image zone — pleine largeur en haut ──────────────────────── */}
       <Link
@@ -120,7 +121,7 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
         />
 
         {/* City badge — top-left glass deepblue */}
-        <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-[#071B33]/70 px-2.5 py-1.5 text-[11px] font-extrabold text-white shadow-[0_2px_8px_rgba(0,0,0,0.3)] ring-1 ring-white/15 backdrop-blur-md">
+        <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-[#071B33]/70 px-2.5 py-1.5 text-[11px] font-extrabold text-white shadow-[0_2px_8px_rgba(0,0,0,0.3)] ring-1 ring-border/20 backdrop-blur-md">
           <MapPin size={10} className="text-bronze-400" aria-hidden="true" />
           {listing.city}
         </span>
@@ -128,7 +129,7 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
         {/* Heart — top-right glass (décoratif, conforme visuel référence) */}
         <span
           aria-hidden="true"
-          className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-white/15 text-white shadow-[0_2px_8px_rgba(0,0,0,0.3)] ring-1 ring-white/25 backdrop-blur-md transition group-hover:bg-white/25"
+          className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-white/15 text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.3)] ring-1 ring-border/20 backdrop-blur-md transition group-hover:bg-white/25"
         >
           <Heart size={14} strokeWidth={2.2} />
         </span>
@@ -139,7 +140,7 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
         </span>
 
         {/* Aperçu illustratif — bottom-right discret (P10IMG) */}
-        <span className="absolute bottom-3 right-3 rounded-full bg-black/30 px-2 py-1 text-[9px] font-medium text-white/55 backdrop-blur-sm">
+        <span className="absolute bottom-3 right-3 rounded-full bg-black/30 px-2 py-1 text-[9px] font-medium text-muted-foreground backdrop-blur-sm">
           Aperçu illustratif
         </span>
 
@@ -162,13 +163,13 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
           {formatPrice(listing.price, listing.currency)}
         </p>
         {listing.price_per_m2 > 0 && (
-          <p className="mt-1 text-[11px] font-bold text-gray-400">
+          <p className="mt-1 text-[11px] font-bold text-muted-foreground">
             {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
           </p>
         )}
 
         {/* Location */}
-        <p className="mt-2 flex items-center gap-1.5 text-[12px] font-semibold text-gray-500">
+        <p className="mt-2 flex items-center gap-1.5 text-[12px] font-semibold text-muted-foreground">
           <MapPin size={11} strokeWidth={2.2} className="shrink-0 text-bronze-600" aria-hidden="true" />
           <span className="truncate">
             {listing.neighborhood
@@ -199,28 +200,36 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
           )}
         </div>
 
-        {/* Reliability */}
-        <div className="mt-3 flex items-center gap-2">
-          <div className="flex items-center gap-0.5" aria-hidden="true">
-            {[1, 2, 3, 4].map((d) => (
-              <span
-                key={d}
-                className="inline-block h-1.5 w-1.5 rounded-full"
-                style={{ background: d <= reliability.dots ? reliability.color : "#e5e7eb" }}
-              />
-            ))}
+        {/* V9.5 Source Badge + Reliability */}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {deriveBadge(listing.source_badge, listing.source_access_level) && (
+            <SourceBadge
+              badge={listing.source_badge}
+              sourceAccessLevel={listing.source_access_level}
+              variant="light"
+            />
+          )}
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-0.5" aria-hidden="true">
+              {[1, 2, 3, 4].map((d) => (
+                <span
+                  key={d}
+                  className="inline-block h-1.5 w-1.5 rounded-full"
+                  style={{ background: d <= reliability.dots ? reliability.color : "#e5e7eb" }}
+                />
+              ))}
+            </div>
+            <span className="text-[11px] font-semibold text-muted-foreground">
+              {reliability.label}
+            </span>
           </div>
-          <span className="text-[11px] font-semibold text-gray-500">
-            Repères de fiabilité :{" "}
-            <span className="font-extrabold text-gray-700">{reliability.label}</span>
-          </span>
         </div>
 
         {/* CTAs */}
         <div className="mt-auto flex items-center gap-2 pt-4">
           <Link
             href={`/listings/${listing.id}`}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-deepblue px-4 py-2.5 text-[12.5px] font-extrabold text-white shadow-[0_4px_14px_rgba(7,27,51,0.25)] transition hover:bg-deepblue-700 group-hover:gap-3"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary-token px-4 py-2.5 text-[12.5px] font-extrabold text-primary-token-foreground shadow-[0_4px_14px_rgba(7,27,51,0.25)] transition hover:bg-deepblue-700 group-hover:gap-3"
           >
             Voir le bien
             <ArrowRight size={13} strokeWidth={2.4} aria-hidden="true" />
@@ -231,7 +240,7 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Voir la source de l'annonce"
-              className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-xl border border-[#eadfca] text-gray-500 transition hover:border-bronze-500 hover:bg-[#f7f3ea] hover:text-deepblue"
+              className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-xl border border-border/15 text-muted-foreground transition hover:border-bronze-500 hover:bg-surface-muted hover:text-deepblue"
             >
               <ArrowRight size={15} className="-rotate-45" aria-hidden="true" />
             </a>
@@ -241,7 +250,7 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
         {/* Lead CTA — dossier acheteur pour ce bien */}
         <Link
           href={`/onboarding?intent=acheter&listing=${listing.id}`}
-          className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#e5dcc8] bg-[#fdfbf7] px-4 py-2 text-[11.5px] font-extrabold text-bronze-700 transition hover:border-bronze-500/60 hover:bg-[#f7f3ea]"
+          className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-border/15 bg-surface-muted px-4 py-2 text-[11.5px] font-extrabold text-bronze-700 transition hover:border-bronze-500/60 hover:bg-surface-muted"
         >
           Préparer mon dossier pour ce bien
           <ArrowRight size={11} strokeWidth={2.6} aria-hidden="true" />
@@ -268,14 +277,14 @@ export function AcheterPageShell({
     : "/search?transaction_type=buy";
 
   return (
-    <main className="min-h-screen bg-[#061027] text-white">
+    <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" compact />
 
       {/* ── HERO ──────────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-deepblue pb-11 pt-10 sm:pb-16 sm:pt-20">
+      <section className="relative overflow-hidden bg-surface pb-11 pt-10 sm:pb-16 sm:pt-20">
         {/* Ambient glow */}
         <div
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-0 hidden dark:block"
           style={{
             background:
               "radial-gradient(ellipse 80% 70% at 62% 26%, rgba(34,72,132,0.72) 0%, transparent 64%)",
@@ -303,23 +312,23 @@ export function AcheterPageShell({
                   Acheter
                 </p>
               </div>
-              <h1 className="mt-4 text-[2.5rem] font-extrabold leading-[1.05] tracking-[-0.05em] text-white sm:mt-5 sm:text-[3.7rem]">
+              <h1 className="mt-4 text-[2.5rem] font-extrabold leading-[1.05] tracking-[-0.05em] text-foreground sm:mt-5 sm:text-[3.7rem]">
                 Trouvez le bien<br className="hidden sm:block" />{" "}
                 <span className="text-bronze-400">fait pour vous</span>
               </h1>
-              <p className="mt-3.5 max-w-lg text-[14.5px] leading-6 text-white/65 sm:mt-5 sm:text-[15.5px] sm:leading-7">
+              <p className="mt-3.5 max-w-lg text-[14.5px] leading-6 text-muted-foreground sm:mt-5 sm:text-[15.5px] sm:leading-7">
                 Achetez en toute clarté grâce à nos repères de marché au Maroc —
                 prix observés, doublons détectés et fiabilité visible.
               </p>
 
               {/* Search form */}
               <form action="/search" method="get" className="mt-6 sm:mt-8">
-                <div className="flex overflow-hidden rounded-2xl bg-white p-1 shadow-[0_18px_60px_rgba(0,0,0,0.4)] ring-1 ring-white/20">
+                <div className="flex overflow-hidden rounded-2xl bg-white p-1 shadow-[0_18px_60px_rgba(0,0,0,0.4)] ring-1 ring-border/20">
                   <div className="flex flex-1 items-center gap-2.5 px-4">
                     <Search
                       size={17}
                       strokeWidth={2.2}
-                      className="shrink-0 text-gray-400"
+                      className="shrink-0 text-muted-foreground"
                       aria-hidden="true"
                     />
                     <input
@@ -329,15 +338,15 @@ export function AcheterPageShell({
                       className="w-full bg-transparent py-3.5 text-[14px] text-gray-800 placeholder-gray-400 outline-none"
                     />
                   </div>
-                  <div className="hidden items-center gap-1.5 border-l border-gray-100 px-4 sm:flex">
+                  <div className="hidden items-center gap-1.5 border-l border-border/15 px-4 sm:flex">
                     <MapPin
                       size={13}
                       strokeWidth={2.2}
                       className="shrink-0 text-bronze-600"
                       aria-hidden="true"
                     />
-                    <span className="text-[13px] font-semibold text-gray-600">Maroc</span>
-                    <ChevronDown size={12} className="text-gray-400" aria-hidden="true" />
+                    <span className="text-[13px] font-semibold text-muted-foreground">Maroc</span>
+                    <ChevronDown size={12} className="text-muted-foreground" aria-hidden="true" />
                   </div>
                   <button
                     type="submit"
@@ -359,7 +368,7 @@ export function AcheterPageShell({
                       className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-[12.5px] font-semibold transition ${
                         isActive
                           ? "border-bronze-500/60 bg-gradient-to-br from-bronze-500 to-bronze-700 text-white shadow-[0_4px_14px_rgba(155,120,56,0.35)]"
-                          : "border-white/15 bg-white/10 text-white/85 hover:border-bronze-500/40 hover:bg-white/16"
+                          : "border-border/15 bg-white/10 text-muted-foreground hover:border-bronze-500/40 hover:bg-white/16"
                       }`}
                     >
                       {chip.label}
@@ -370,7 +379,7 @@ export function AcheterPageShell({
                 <Link
                   href={searchHref}
                   aria-label="Filtres avancés"
-                  className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3.5 py-2 text-white/60 transition hover:bg-white/16"
+                  className="inline-flex items-center rounded-full border border-border/15 bg-white/10 px-3.5 py-2 text-muted-foreground transition hover:bg-white/16"
                 >
                   <SlidersHorizontal size={13} aria-hidden="true" />
                 </Link>
@@ -379,7 +388,7 @@ export function AcheterPageShell({
               {/* Counter */}
               <div className="mt-4 sm:mt-6">
                 {totalListings !== null && totalListings > 0 ? (
-                  <p className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[13.5px] font-semibold text-white/80">
+                  <p className="inline-flex items-center gap-2.5 rounded-full border border-border/15 bg-white/5 px-4 py-2 text-[13.5px] font-semibold text-muted-foreground">
                     <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-bronze-500/20">
                       <Star
                         size={11}
@@ -389,14 +398,14 @@ export function AcheterPageShell({
                       />
                     </span>
                     <span>
-                      <strong className="text-white">
+                      <strong className="text-foreground">
                         {totalListings.toLocaleString("fr-FR")}
                       </strong>{" "}
                       annonces analysées
                     </span>
                   </p>
                 ) : (
-                  <p className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[13.5px] font-semibold text-white/60">
+                  <p className="inline-flex items-center gap-2.5 rounded-full border border-border/15 bg-white/5 px-4 py-2 text-[13.5px] font-semibold text-muted-foreground">
                     <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-bronze-500/15">
                       <Star
                         size={11}
@@ -413,16 +422,16 @@ export function AcheterPageShell({
 
             {/* ── RIGHT — Fiabilité visible card ─────────────────────────── */}
             <aside className="hidden lg:flex lg:flex-col lg:justify-center">
-              <div className="overflow-hidden rounded-2xl border border-white/12 bg-white/[0.06] shadow-[0_20px_50px_rgba(2,10,24,0.4)] backdrop-blur-md">
+              <div className="overflow-hidden rounded-2xl border border-border/15 bg-card shadow-[0_20px_50px_rgba(2,10,24,0.4)] backdrop-blur-md">
                 {/* Card header */}
-                <div className="border-b border-white/10 bg-white/[0.03] px-6 py-5">
+                <div className="border-b border-border/15 bg-card px-6 py-5">
                   <div className="flex items-center gap-3">
                     <span className="inline-grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#0c4a2a] text-[#34d399] ring-1 ring-[#34d399]/20">
                       <ShieldCheck size={18} strokeWidth={2.2} aria-hidden="true" />
                     </span>
                     <div>
-                      <p className="text-[14px] font-extrabold text-white">Fiabilité visible</p>
-                      <p className="mt-0.5 text-[11.5px] leading-5 text-white/55">
+                      <p className="text-[14px] font-extrabold text-foreground">Fiabilité visible</p>
+                      <p className="mt-0.5 text-[11.5px] leading-5 text-muted-foreground">
                         Signaux de marché pour chaque annonce
                       </p>
                     </div>
@@ -439,12 +448,12 @@ export function AcheterPageShell({
                   ].map(({ label, icon: Icon }) => (
                     <div
                       key={label}
-                      className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3 transition hover:border-bronze-500/25 hover:bg-white/[0.07]"
+                      className="flex items-center gap-3 rounded-xl border border-border/15 bg-card px-4 py-3 transition hover:border-bronze-500/25 hover:bg-card"
                     >
                       <span className="inline-grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-bronze-500/15 text-bronze-400">
                         <Icon size={13} aria-hidden="true" />
                       </span>
-                      <span className="flex-1 text-[12.5px] font-semibold text-white/80">
+                      <span className="flex-1 text-[12.5px] font-semibold text-muted-foreground">
                         {label}
                       </span>
                       <div className="flex gap-0.5" aria-hidden="true">
@@ -460,8 +469,8 @@ export function AcheterPageShell({
                 </div>
 
                 {/* Footer note */}
-                <div className="border-t border-white/8 px-6 py-3.5">
-                  <p className="text-[11px] text-white/45">
+                <div className="border-t border-border/15 px-6 py-3.5">
+                  <p className="text-[11px] text-muted-foreground">
                     Repères indicatifs — à confirmer avant décision
                   </p>
                 </div>
@@ -472,14 +481,14 @@ export function AcheterPageShell({
       </section>
 
       {/* ── Fiabilité — mobile strip (dark glass) ─────────────────────────────── */}
-      <div className="border-b border-white/8 bg-[#071B33] px-4 py-4 lg:hidden">
+      <div className="border-b border-border/15 bg-[#071B33] px-4 py-4 lg:hidden">
         <Container>
           <div className="flex items-center gap-3">
             <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#0c4a2a] text-[#34d399] ring-1 ring-[#34d399]/20">
               <ShieldCheck size={16} strokeWidth={2.2} aria-hidden="true" />
             </span>
-            <p className="text-[12.5px] font-semibold text-white/70">
-              <span className="font-extrabold text-white">Fiabilité visible</span>
+            <p className="text-[12.5px] font-semibold text-muted-foreground">
+              <span className="font-extrabold text-foreground">Fiabilité visible</span>
               {" · "}Historique prix · Qualité · Similarité · Activité
             </p>
           </div>
@@ -487,7 +496,7 @@ export function AcheterPageShell({
       </div>
 
       {/* ── DASHBOARD — 2-col [listing cards | sidebar] sur fond sombre ────────── */}
-      <section className="relative bg-gradient-to-b from-deepblue to-[#050f1e] py-12 lg:py-16">
+      <section className="relative bg-background py-12 lg:py-16">
         <Container>
           <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
 
@@ -501,13 +510,13 @@ export function AcheterPageShell({
                       En direct
                     </p>
                   </div>
-                  <h2 className="mt-2 text-[1.5rem] font-extrabold tracking-[-0.04em] text-white">
+                  <h2 className="mt-2 text-[1.5rem] font-extrabold tracking-[-0.04em] text-foreground">
                     {getSectionTitle(selectedPropertyType)}
                   </h2>
                 </div>
                 <Link
                   href={searchHref}
-                  className="group shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-4 py-2 text-[12.5px] font-bold text-bronze-400 transition hover:border-bronze-500/40 hover:bg-white/10"
+                  className="group shrink-0 inline-flex items-center gap-1.5 rounded-full border border-border/15 bg-white/5 px-4 py-2 text-[12.5px] font-bold text-bronze-400 transition hover:border-bronze-500/40 hover:bg-white/10"
                 >
                   Voir tout
                   <ArrowRight
@@ -529,7 +538,7 @@ export function AcheterPageShell({
                   <div className="mt-8 text-center">
                     <Link
                       href={searchHref}
-                      className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/8 px-5 py-3 text-[13.5px] font-extrabold text-bronze-300 transition hover:border-bronze-500/35 hover:bg-white/12"
+                      className="inline-flex items-center gap-2 rounded-xl border border-border/15 bg-white/8 px-5 py-3 text-[13.5px] font-extrabold text-bronze-300 transition hover:border-bronze-500/35 hover:bg-white/12"
                     >
                       {selectedPropertyType ? getSearchCTALabel(selectedPropertyType) : "Voir toutes les annonces dans la recherche"}
                       <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
@@ -537,11 +546,11 @@ export function AcheterPageShell({
                   </div>
                 </>
               ) : (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-14 text-center backdrop-blur-sm">
-                  <p className="text-[15px] font-semibold text-white/70">
+                <div className="rounded-2xl border border-border/15 bg-card px-6 py-14 text-center backdrop-blur-sm">
+                  <p className="text-[15px] font-semibold text-muted-foreground">
                     Aucune annonce disponible pour le moment.
                   </p>
-                  <p className="mt-2 text-[13px] text-white/45">
+                  <p className="mt-2 text-[13px] text-muted-foreground">
                     Lancez une recherche pour explorer toutes les annonces analysées.
                   </p>
                   <Link
@@ -572,7 +581,7 @@ export function AcheterPageShell({
                       Doublon possible
                     </p>
                   </div>
-                  <p className="mt-3 text-[12.5px] leading-5 text-white/65">
+                  <p className="mt-3 text-[12.5px] leading-5 text-muted-foreground">
                     {hasDuplicates
                       ? `${duplicatesDetected.toLocaleString("fr-FR")} signaux de doublons détectés parmi les annonces analysées.`
                       : "Quand un bien semble publié plusieurs fois, AkarFinder peut le signaler avant que vous contactiez."}
@@ -590,13 +599,13 @@ export function AcheterPageShell({
               </div>
 
               {/* Comparer module — glass sombre */}
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
-                <div className="border-b border-white/10 bg-white/[0.03] px-5 py-4">
+              <div className="overflow-hidden rounded-2xl border border-border/15 bg-card shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="border-b border-border/15 bg-card px-5 py-4">
                   <div className="flex items-center gap-2.5">
                     <Scale size={15} className="text-bronze-400" aria-hidden="true" />
-                    <p className="text-[13px] font-extrabold text-white">Comparer des biens</p>
+                    <p className="text-[13px] font-extrabold text-foreground">Comparer des biens</p>
                   </div>
-                  <p className="mt-1 text-[11.5px] text-white/50">
+                  <p className="mt-1 text-[11.5px] text-muted-foreground">
                     Sélectionnez des biens pour les comparer côte à côte.
                   </p>
                 </div>
@@ -605,18 +614,18 @@ export function AcheterPageShell({
                   {compareListings.length >= 2 ? (
                     <div className="flex items-center gap-2">
                       {/* Card A */}
-                      <div className="min-w-0 flex-1 overflow-hidden rounded-xl border border-white/10">
+                      <div className="min-w-0 flex-1 overflow-hidden rounded-xl border border-border/15">
                         <div className="relative h-[72px]">
                           <ListingVisual
                             listing={compareListings[0]}
                             className="h-full w-full"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                          <p className="absolute bottom-1.5 left-2 truncate pr-1 text-[10.5px] font-extrabold text-white">
+                          <p className="absolute bottom-1.5 left-2 truncate pr-1 text-[10.5px] font-extrabold text-foreground">
                             {formatPrice(compareListings[0].price, "DH")}
                           </p>
                         </div>
-                        <p className="truncate bg-white/[0.04] px-2 py-1.5 text-[10px] font-bold text-white/75">
+                        <p className="truncate bg-card px-2 py-1.5 text-[10px] font-bold text-muted-foreground">
                           {compareListings[0].city}
                         </p>
                       </div>
@@ -629,18 +638,18 @@ export function AcheterPageShell({
                       </span>
 
                       {/* Card B */}
-                      <div className="min-w-0 flex-1 overflow-hidden rounded-xl border border-white/10">
+                      <div className="min-w-0 flex-1 overflow-hidden rounded-xl border border-border/15">
                         <div className="relative h-[72px]">
                           <ListingVisual
                             listing={compareListings[1]}
                             className="h-full w-full"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                          <p className="absolute bottom-1.5 left-2 truncate pr-1 text-[10.5px] font-extrabold text-white">
+                          <p className="absolute bottom-1.5 left-2 truncate pr-1 text-[10.5px] font-extrabold text-foreground">
                             {formatPrice(compareListings[1].price, "DH")}
                           </p>
                         </div>
-                        <p className="truncate bg-white/[0.04] px-2 py-1.5 text-[10px] font-bold text-white/75">
+                        <p className="truncate bg-card px-2 py-1.5 text-[10px] font-bold text-muted-foreground">
                           {compareListings[1].city}
                         </p>
                       </div>
@@ -650,9 +659,9 @@ export function AcheterPageShell({
                       {[1, 2].map((n) => (
                         <div
                           key={n}
-                          className="flex-1 rounded-xl border-2 border-dashed border-white/15 bg-white/[0.03] py-5 text-center"
+                          className="flex-1 rounded-xl border-2 border-dashed border-border/15 bg-card py-5 text-center"
                         >
-                          <p className="text-[11px] text-white/40">Bien {n}</p>
+                          <p className="text-[11px] text-muted-foreground">Bien {n}</p>
                         </div>
                       ))}
                       <span
@@ -680,13 +689,13 @@ export function AcheterPageShell({
                   <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-400">
                     Accompagnement
                   </p>
-                  <h3 className="mt-2 text-[1rem] font-extrabold leading-snug text-white">
+                  <h3 className="mt-2 text-[1rem] font-extrabold leading-snug text-foreground">
                     Préparer mon dossier acheteur
                   </h3>
-                  <p className="mt-2 text-[12px] leading-5 text-white/60">
+                  <p className="mt-2 text-[12px] leading-5 text-muted-foreground">
                     Budget, zone, type de bien, timing — recevez les biens compatibles avec votre projet.
                   </p>
-                  <p className="mt-2 text-[10.5px] text-white/35">
+                  <p className="mt-2 text-[10.5px] text-foreground/35">
                     Dossier indicatif · non contractuel.
                   </p>
                 </div>
@@ -703,16 +712,16 @@ export function AcheterPageShell({
               </div>
 
               {/* Prix observés — glass sombre avec barres */}
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
-                <div className="flex items-start gap-2.5 border-b border-white/10 bg-white/[0.03] px-5 py-4">
+              <div className="overflow-hidden rounded-2xl border border-border/15 bg-card shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="flex items-start gap-2.5 border-b border-border/15 bg-card px-5 py-4">
                   <TrendingUp
                     size={16}
                     className="mt-0.5 shrink-0 text-bronze-400"
                     aria-hidden="true"
                   />
                   <div>
-                    <p className="text-[13px] font-extrabold text-white">Prix observés</p>
-                    <p className="text-[10.5px] text-white/45">
+                    <p className="text-[13px] font-extrabold text-foreground">Prix observés</p>
+                    <p className="text-[10.5px] text-muted-foreground">
                       Appartement · achat · repères indicatifs
                     </p>
                   </div>
@@ -722,12 +731,12 @@ export function AcheterPageShell({
                   {PRIX_OBSERVES.map((row) => (
                     <div key={row.city}>
                       <div className="flex items-center justify-between">
-                        <span className="text-[12px] font-semibold text-white/75">
+                        <span className="text-[12px] font-semibold text-muted-foreground">
                           {row.city}
                         </span>
-                        <span className="text-[12.5px] font-extrabold text-white">
+                        <span className="text-[12.5px] font-extrabold text-foreground">
                           {row.median.toLocaleString("fr-FR")}
-                          <span className="ml-1 text-[9.5px] font-semibold text-white/40">DH/m²</span>
+                          <span className="ml-1 text-[9.5px] font-semibold text-muted-foreground">DH/m²</span>
                         </span>
                       </div>
                       <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/8">
@@ -740,14 +749,14 @@ export function AcheterPageShell({
                   ))}
                 </div>
 
-                <div className="flex items-start gap-1.5 border-t border-white/8 bg-white/[0.02] px-5 py-3">
+                <div className="flex items-start gap-1.5 border-t border-border/15 bg-card px-5 py-3">
                   <AlertCircle
                     size={11}
                     strokeWidth={2}
-                    className="mt-0.5 shrink-0 text-white/40"
+                    className="mt-0.5 shrink-0 text-muted-foreground"
                     aria-hidden="true"
                   />
-                  <p className="text-[10.5px] leading-4 text-white/45">
+                  <p className="text-[10.5px] leading-4 text-muted-foreground">
                     Repères indicatifs — à confirmer avant décision
                   </p>
                 </div>
@@ -759,7 +768,7 @@ export function AcheterPageShell({
       </section>
 
       {/* ── STATS ROW — bande sombre + bronze ─────────────────────────────────── */}
-      <section className="border-y border-white/8 bg-[#050f1e] py-11 lg:py-14">
+      <section className="border-y border-border/15 bg-[#050f1e] py-11 lg:py-14">
         <Container>
           <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4">
             {[
@@ -772,10 +781,10 @@ export function AcheterPageShell({
                 <span className="mb-3 inline-grid h-9 w-9 place-items-center rounded-xl bg-bronze-500/12 text-bronze-400 ring-1 ring-bronze-500/20">
                   <stat.icon size={15} aria-hidden="true" />
                 </span>
-                <p className="text-[2rem] font-extrabold leading-none tracking-[-0.04em] text-white">
+                <p className="text-[2rem] font-extrabold leading-none tracking-[-0.04em] text-foreground">
                   {stat.value}
                 </p>
-                <p className="mt-2 text-[12px] font-semibold text-white/50">
+                <p className="mt-2 text-[12px] font-semibold text-muted-foreground">
                   {stat.label}
                 </p>
                 <div className="mt-3 h-0.5 w-8 rounded-full bg-gradient-to-r from-bronze-500 to-transparent" />
@@ -789,7 +798,7 @@ export function AcheterPageShell({
       <section className="relative overflow-hidden bg-[#040b16] py-14 lg:py-20">
         {/* Ambient map glow */}
         <div
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-0 hidden dark:block"
           style={{
             background:
               "radial-gradient(70% 80% at 88% 30%, rgba(34,72,132,0.35) 0%, transparent 60%)",
@@ -804,10 +813,10 @@ export function AcheterPageShell({
                   Carte AkarFinder
                 </p>
               </div>
-              <h2 className="mt-2 text-[1.55rem] font-extrabold tracking-[-0.04em] text-white">
+              <h2 className="mt-2 text-[1.55rem] font-extrabold tracking-[-0.04em] text-foreground">
                 Explorer le Maroc
               </h2>
-              <p className="mt-2 max-w-md text-[14px] leading-6 text-white/55">
+              <p className="mt-2 max-w-md text-[14px] leading-6 text-muted-foreground">
                 Parcourez les repères de prix par ville et trouvez votre prochain
                 bien là où le marché vous parle.
               </p>
@@ -826,7 +835,7 @@ export function AcheterPageShell({
               <Link
                 key={item.city}
                 href={item.href}
-                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.07] to-white/[0.02] p-5 transition duration-200 hover:border-bronze-500/35 hover:from-white/[0.10] hover:to-white/[0.03]"
+                className="group relative overflow-hidden rounded-2xl border border-border/15 bg-gradient-to-b from-white/[0.07] to-white/[0.02] p-5 transition duration-200 hover:border-bronze-500/35 hover:from-white/[0.10] hover:to-white/[0.03]"
               >
                 {/* Accent glow */}
                 <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-bronze-500/10 blur-2xl transition group-hover:bg-bronze-500/22" />
@@ -847,22 +856,22 @@ export function AcheterPageShell({
                   </div>
                 </div>
 
-                <p className="relative mt-4 text-[15.5px] font-extrabold text-white">{item.city}</p>
+                <p className="relative mt-4 text-[15.5px] font-extrabold text-foreground">{item.city}</p>
 
                 {/* Repère prix/m² */}
                 <div className="relative mt-1 flex items-baseline gap-1">
                   <span className="text-[13.5px] font-extrabold text-bronze-400">
                     {item.price.toLocaleString("fr-FR")}
                   </span>
-                  <span className="text-[10px] font-semibold text-white/45">DH/m²</span>
+                  <span className="text-[10px] font-semibold text-muted-foreground">DH/m²</span>
                 </div>
-                <p className="relative mt-0.5 text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35">
+                <p className="relative mt-0.5 text-[9.5px] font-bold uppercase tracking-[0.12em] text-foreground/35">
                   Repères de marché
                 </p>
 
                 {/* CTA */}
-                <div className="relative mt-4 flex items-center justify-between border-t border-white/8 pt-3">
-                  <span className="text-[11.5px] font-bold text-white/55 transition group-hover:text-white/85">
+                <div className="relative mt-4 flex items-center justify-between border-t border-border/15 pt-3">
+                  <span className="text-[11.5px] font-bold text-muted-foreground transition group-hover:text-muted-foreground">
                     Voir les biens
                   </span>
                   <ArrowRight

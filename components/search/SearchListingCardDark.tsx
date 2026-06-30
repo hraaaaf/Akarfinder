@@ -12,6 +12,8 @@ import { MapPin, ArrowRight, Calculator, BellPlus } from "lucide-react";
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { ListingVisual } from "@/components/listings/ListingVisual";
+import { SourceBadge, deriveBadge } from "@/components/badges/SourceBadge";
+import { SourceAttribution } from "@/components/badges/SourceAttribution";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-policy";
 import { getMarketReference, getListingObservedPriceComparison } from "@/lib/market/get-market-reference";
@@ -146,6 +148,14 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          {/* V9.5 Source Badge — shown first if source_badge or source_access_level available */}
+          {deriveBadge(listing.source_badge, listing.source_access_level) && (
+            <SourceBadge
+              badge={listing.source_badge}
+              sourceAccessLevel={listing.source_access_level}
+              variant="dark"
+            />
+          )}
           {hasPackage ? (
             <PackageBadge label={packageScore.overall_label} />
           ) : marketRef && marketRef.confidence !== "faible" ? (
@@ -167,28 +177,46 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             <span className="rounded-full border border-blue-400/30 bg-blue-400/12 px-2.5 py-1 text-[10.5px] font-bold text-blue-300">MRE-friendly</span>
           ) : null}
         </div>
+        {/* V9.5 Source Attribution — compact policy reason line */}
+        <SourceAttribution
+          sourceAttributionLabel={listing.source_attribution_label}
+          displayPolicyReason={listing.display_policy_reason}
+          sourceName={listing.source_name}
+          variant="dark"
+        />
 
-        {/* CTAs */}
-        <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-          <Link
-            href={`/listings/${listing.id}`}
-            onClick={() => track({ event_name: "search_result_click", source_page: "/search", listing_id: listing.id, intent: transactionType })}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.35)] transition hover:from-bronze-600 group-hover:gap-3"
-          >
-            Voir le bien
-            <ArrowRight size={15} strokeWidth={2.4} aria-hidden="true" />
-          </Link>
-          {listing.listing_url ? (
-            <a
-              href={listing.listing_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-white/12 bg-white/[0.04] px-4 py-3 text-[12.5px] font-bold text-white/70 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white"
-            >
-              Voir la source
-            </a>
-          ) : null}
-        </div>
+        {/* CTAs — respect allowed_ctas when provided, fall back to default behavior */}
+        {(() => {
+          const ctas = listing.allowed_ctas;
+          const showOriginal = listing.listing_url && (
+            !ctas || ctas.includes("view_original") || ctas.includes("view_source")
+          );
+          const originalLabel = listing.original_source_required
+            ? "Voir sur le site original"
+            : "Voir la source";
+          return (
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+              <Link
+                href={`/listings/${listing.id}`}
+                onClick={() => track({ event_name: "search_result_click", source_page: "/search", listing_id: listing.id, intent: transactionType })}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.35)] transition hover:from-bronze-600 group-hover:gap-3"
+              >
+                Voir le bien
+                <ArrowRight size={15} strokeWidth={2.4} aria-hidden="true" />
+              </Link>
+              {showOriginal ? (
+                <a
+                  href={listing.listing_url!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-white/12 bg-white/[0.04] px-4 py-3 text-[12.5px] font-bold text-white/70 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white"
+                >
+                  {originalLabel}
+                </a>
+              ) : null}
+            </div>
+          );
+        })()}
 
         {/* CTA contextuel : crédit (achat) / alerte (location) */}
         <div className="mt-2 flex items-center gap-2">

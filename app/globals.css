@@ -6,15 +6,59 @@
 @import 'maplibre-gl/dist/maplibre-gl.css';
 
 :root {
-  color-scheme: light;
-
-  /* === AkarFinder official brand tokens (brand board) === */
+  /* === AkarFinder official brand tokens (brand board) — fixed, theme-agnostic === */
   --brand-deepblue: #071B33;
   --brand-deepblue-700: #0C2746;
   --brand-bronze: #9B7838;
   --brand-bronze-light: #C2A368;
   --brand-premium-white: #F7F5EF;
   --brand-mono: #0B0B0C;
+}
+
+/* ============================================================================
+   THEME SYSTEM — semantic tokens (RGB triplets, for Tailwind alpha support)
+   Light is the default (:root). Dark overrides via [data-theme="dark"].
+   Set on <html> by the ThemeProvider (+ no-flash inline script in layout).
+   ========================================================================== */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --background: 251 250 245;        /* #FBFAF5 ivory / warm off-white */
+  --foreground: 7 27 51;            /* #071B33 deep navy */
+  --surface: 247 245 239;           /* #F7F5EF cream */
+  --surface-muted: 239 235 224;     /* #EFEBE0 sand */
+  --card: 255 255 255;              /* white */
+  --card-foreground: 7 27 51;       /* navy */
+  --border: 155 120 56;             /* bronze (used at low alpha) */
+  --muted: 239 235 224;             /* sand */
+  --muted-foreground: 107 114 128;  /* slate */
+  --brand-navy: 7 27 51;
+  --brand-bronze: 155 120 56;       /* bronze mat */
+  --brand-ivory: 247 245 239;
+  --accent: 155 120 56;             /* bronze mat */
+  --primary: 11 35 69;              /* navy CTA */
+  --primary-foreground: 255 255 255;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --background: 7 27 51;            /* #071B33 deep navy */
+  --foreground: 247 245 239;       /* #F7F5EF ivory */
+  --surface: 12 39 70;             /* #0C2746 navy clair */
+  --surface-muted: 13 37 69;       /* #0D2545 navy card */
+  --card: 13 37 69;                /* #0D2545 */
+  --card-foreground: 247 245 239;  /* ivory */
+  --border: 194 163 104;           /* bronze light (used at low alpha) */
+  --muted: 12 39 70;
+  --muted-foreground: 124 141 166; /* #7C8DA6 cool slate */
+  --brand-navy: 7 27 51;
+  --brand-bronze: 194 163 104;     /* bronze clair sur fond sombre */
+  --brand-ivory: 247 245 239;
+  --accent: 194 163 104;           /* bronze light */
+  --primary: 194 163 104;          /* bronze CTA sur fond sombre */
+  --primary-foreground: 7 27 51;
 }
 
 * {
@@ -28,10 +72,11 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: #fafaf7;
-  color: #111827;
+  background: rgb(var(--background));
+  color: rgb(var(--foreground));
   font-family: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {

@@ -46,18 +46,25 @@ const socials = [
 
 export function SiteFooter() {
   return (
-    <footer id="footer" className="bg-[#0C0C0C] py-10 text-white lg:py-12">
+    <footer id="footer" className="bg-surface-muted py-10 text-foreground lg:py-12">
       <Container>
         {/* Mobile : compact single column */}
         <div className="lg:hidden">
+          <img
+            src="/brand/logo-v2/logo-header-light.png"
+            alt="AkarFinder"
+            width={184}
+            height={46}
+            className="h-[42px] w-auto dark:hidden"
+          />
           <img
             src="/brand/logo-v2/logo-header-dark.png"
             alt="AkarFinder"
             width={184}
             height={46}
-            className="h-[42px] w-auto"
+            className="hidden h-[42px] w-auto dark:block"
           />
-          <p className="mt-3 text-[13.5px] leading-6 text-white/60">
+          <p className="mt-3 text-[13.5px] leading-6 text-muted-foreground">
             AkarFinder — moteur de recherche immobilier du Maroc.
             Comparez avant de contacter.
           </p>
@@ -67,20 +74,20 @@ export function SiteFooter() {
                 key={label}
                 href="#"
                 aria-label={label}
-                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white/70 transition hover:bg-bronze-700 hover:text-white"
+                className="grid h-9 w-9 place-items-center rounded-full bg-foreground/10 text-muted-foreground transition hover:bg-bronze-700 hover:text-white"
               >
                 <Icon />
               </a>
             ))}
           </div>
-          <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-white/56">
-            <a href="#" className="hover:text-white">Acheter</a>
-            <a href="#" className="hover:text-white">Louer</a>
-            <a href="#" className="hover:text-white">Comment ça marche</a>
-            <a href="#" className="hover:text-white">FAQ</a>
-            <a href="#" className="hover:text-white">Contact</a>
+          <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-muted-foreground">
+            <a href="#" className="hover:text-foreground">Acheter</a>
+            <a href="#" className="hover:text-foreground">Louer</a>
+            <a href="#" className="hover:text-foreground">Comment ça marche</a>
+            <a href="#" className="hover:text-foreground">FAQ</a>
+            <a href="#" className="hover:text-foreground">Contact</a>
           </div>
-          <div className="mt-6 border-t border-white/10 pt-5 text-[11.5px] text-white/36">
+          <div className="mt-6 border-t border-border/15 pt-5 text-[11.5px] text-muted-foreground">
             © 2026 AkarFinder.ma — Version bêta
           </div>
         </div>
@@ -89,13 +96,20 @@ export function SiteFooter() {
         <div className="hidden gap-10 lg:grid lg:grid-cols-[1.15fr_2fr_1fr]">
           <div>
             <img
+            src="/brand/logo-v2/logo-header-light.png"
+            alt="AkarFinder"
+            width={184}
+            height={46}
+            className="h-[42px] w-auto dark:hidden"
+          />
+            <img
             src="/brand/logo-v2/logo-header-dark.png"
             alt="AkarFinder"
             width={184}
             height={46}
-            className="h-[42px] w-auto"
+            className="hidden h-[42px] w-auto dark:block"
           />
-            <p className="mt-4 max-w-sm text-[14.5px] leading-7 text-white/64">
+            <p className="mt-4 max-w-sm text-[14.5px] leading-7 text-muted-foreground">
               AkarFinder centralise la recherche immobilière au Maroc, aide à repérer les doublons et prépare une meilleure qualification de la demande acheteur.
             </p>
             <div className="mt-5 flex gap-2.5">
@@ -104,7 +118,7 @@ export function SiteFooter() {
                   key={label}
                   href="#"
                   aria-label={label}
-                  className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white/70 transition hover:bg-bronze-700 hover:text-white"
+                  className="grid h-9 w-9 place-items-center rounded-full bg-foreground/10 text-muted-foreground transition hover:bg-bronze-700 hover:text-white"
                 >
                   <Icon />
                 </a>
@@ -115,10 +129,10 @@ export function SiteFooter() {
           <div className="grid gap-6 sm:grid-cols-4">
             {Object.entries(footerLinks).map(([title, links]) => (
               <div key={title}>
-                <h3 className="text-[14px] font-bold text-white">{title}</h3>
-                <div className="mt-4 grid gap-2.5 text-[13.5px] text-white/56">
+                <h3 className="text-[14px] font-bold text-foreground">{title}</h3>
+                <div className="mt-4 grid gap-2.5 text-[13.5px] text-muted-foreground">
                   {links.map((link) => (
-                    <a key={link} href="#" className="transition hover:text-white">
+                    <a key={link} href="#" className="transition hover:text-foreground">
                       {link}
                     </a>
                   ))}
@@ -128,15 +142,15 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <h3 className="text-[14px] font-bold text-white">Restez informé</h3>
-            <p className="mt-3 text-[13.5px] leading-6 text-white/56">
+            <h3 className="text-[14px] font-bold text-foreground">Restez informé</h3>
+            <p className="mt-3 text-[13.5px] leading-6 text-muted-foreground">
               Recevez les prochaines nouveautés lorsque les alertes seront activées.
             </p>
-            <div className="mt-5 flex overflow-hidden rounded-xl bg-white/10 ring-1 ring-white/10 transition focus-within:ring-bronze-500">
+            <div className="mt-5 flex overflow-hidden rounded-xl bg-card ring-1 ring-border/15 transition focus-within:ring-bronze-500">
               <input
                 aria-label="Email pour les alertes"
                 placeholder="Votre email"
-                className="min-w-0 flex-1 bg-transparent px-4 py-3 text-[13.5px] text-white outline-none placeholder:text-white/36"
+                className="min-w-0 flex-1 bg-transparent px-4 py-3 text-[13.5px] text-foreground outline-none placeholder:text-muted-foreground"
               />
               <button className="bg-bronze-700 px-5 text-[13px] font-bold text-white transition hover:bg-bronze-800">
                 OK
@@ -145,7 +159,7 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-8 hidden flex-col gap-2 border-t border-white/10 pt-6 text-[12px] leading-6 text-white/42 sm:flex-row sm:items-center sm:justify-between lg:flex">
+        <div className="mt-8 hidden flex-col gap-2 border-t border-border/15 pt-6 text-[12px] leading-6 text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:flex">
           <span>© 2026 AkarFinder.ma — Version bêta</span>
           <span>Les informations affichées servent d&apos;aperçu produit ; aucun partenariat, volume ou statut de vérification n&apos;est revendiqué sans validation.</span>
         </div>

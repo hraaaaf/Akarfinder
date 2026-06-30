@@ -168,32 +168,32 @@ export function ListingPreview() {
   };
 
   return (
-    <section id="annonces" className="bg-[#f8fafc] py-10 sm:py-12">
+    <section id="annonces" className="bg-surface py-10 sm:py-12">
       <Container>
         <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#2563eb]">
               Biens analyses par AkarFinder
             </p>
-            <h2 className="mt-3 text-2xl font-extrabold tracking-[-0.04em] text-gray-950 sm:text-4xl">
+            <h2 className="mt-3 text-2xl font-extrabold tracking-[-0.04em] text-foreground sm:text-4xl">
               Les annonces les plus fiables
             </h2>
-            <p className="mt-2 max-w-2xl text-[15.5px] leading-7 text-gray-600">
+            <p className="mt-2 max-w-2xl text-[15.5px] leading-7 text-muted-foreground">
               Triees par score de fiabilite AkarFinder - donnees issues de
               sources publiques consolidees.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex rounded-full border border-gray-200 bg-white p-1 shadow-sm">
+            <div className="flex rounded-full border border-border/15 bg-card p-1 shadow-sm">
               {chips.map((chip) => (
                 <Link
                   key={chip.label}
                   href={chip.href}
                   className={`rounded-full px-3.5 py-2 text-[12px] font-extrabold transition ${
                     chip.active
-                      ? "bg-[#0b2345] text-white shadow-sm"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-[#0b2345]"
+                      ? "bg-primary-token text-primary-token-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-surface-muted hover:text-foreground"
                   }`}
                 >
                   {chip.label}
@@ -205,14 +205,14 @@ export function ListingPreview() {
               <button
                 onClick={() => scroll(-1)}
                 aria-label="Precedent"
-                className="grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white shadow-sm transition hover:bg-gray-50 active:scale-95"
+                className="grid h-9 w-9 place-items-center rounded-full border border-border/15 bg-card text-foreground shadow-sm transition hover:bg-surface-muted active:scale-95"
               >
                 <ChevronLeft />
               </button>
               <button
                 onClick={() => scroll(1)}
                 aria-label="Suivant"
-                className="grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white shadow-sm transition hover:bg-gray-50 active:scale-95"
+                className="grid h-9 w-9 place-items-center rounded-full border border-border/15 bg-card text-foreground shadow-sm transition hover:bg-surface-muted active:scale-95"
               >
                 <ChevronRight />
               </button>
@@ -235,7 +235,7 @@ export function ListingPreview() {
           {items.slice(0, 5).map((item, i) => (
             <article
               key={item.listingId || item.title + i}
-              className="group min-w-[82vw] shrink-0 snap-start overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_4px_18px_rgba(15,40,80,0.07)] transition hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(15,40,80,0.13)] sm:min-w-[330px] lg:min-w-0"
+              className="group min-w-[82vw] shrink-0 snap-start overflow-hidden rounded-2xl border border-border/15 bg-card shadow-[0_4px_18px_rgba(15,40,80,0.07)] transition hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(15,40,80,0.13)] sm:min-w-[330px] lg:min-w-0"
             >
               <div
                 className="relative h-44 bg-cover bg-center bg-gray-100 sm:h-48"
@@ -256,21 +256,21 @@ export function ListingPreview() {
               </div>
 
               <div className="p-4">
-                <h3 className="truncate text-[15px] font-extrabold leading-5 text-gray-950">
+                <h3 className="truncate text-[15px] font-extrabold leading-5 text-card-foreground">
                   {item.title}
                 </h3>
-                <p className="mt-1 truncate text-[13px] font-semibold text-gray-500">
+                <p className="mt-1 truncate text-[13px] font-semibold text-muted-foreground">
                   {item.location}
                 </p>
 
-                <p className="mt-3 text-[1.35rem] font-black tracking-[-0.035em] text-gray-950">
+                <p className="mt-3 text-[1.35rem] font-black tracking-[-0.035em] text-card-foreground">
                   {item.price}
                 </p>
-                <p className="mt-0.5 text-[12px] font-bold text-gray-400">
+                <p className="mt-0.5 text-[12px] font-bold text-muted-foreground">
                   {item.pricePerSquareMeter}
                 </p>
 
-                <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px] font-semibold text-gray-500">
+                <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px] font-semibold text-muted-foreground">
                   {item.bedrooms != null && item.bedrooms > 0 && (
                     <span className="flex items-center gap-1">
                       <BedIcon />
@@ -297,7 +297,7 @@ export function ListingPreview() {
                   </span>
                   <Link
                     href={item.listingId ? `/listings/${item.listingId}` : "/search"}
-                    className="rounded-full bg-[#0b2345] px-3.5 py-2 text-[12px] font-extrabold text-white transition hover:bg-[#123767]"
+                    className="rounded-full bg-primary-token px-3.5 py-2 text-[12px] font-extrabold text-primary-token-foreground transition hover:opacity-90"
                   >
                     Voir le bien
                   </Link>

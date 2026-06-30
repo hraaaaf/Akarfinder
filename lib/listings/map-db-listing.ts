@@ -69,6 +69,41 @@ function parseJsonSafe<T>(s: string | null | undefined): T | null {
   try { return JSON.parse(s) as T; } catch { return null; }
 }
 
+// V9.5 — computed display policy from source name (no DB migration required).
+// Never assigns premium_partner / authorized_source / contact by fallback.
+type V95DisplayPolicy = {
+  source_display_type?: string;
+  source_badge?: string;
+  display_depth?: string;
+  original_source_required?: boolean;
+  allowed_ctas?: string[];
+  source_attribution_label?: string;
+  display_policy_reason?: string;
+};
+
+function deriveSourceDisplayPolicy(rawSourceName: string | null): V95DisplayPolicy {
+  const src = (rawSourceName ?? "").toLowerCase().trim();
+  if (src === "mubawab") {
+    return {
+      source_display_type: "public_index_source",
+      source_badge: "public_indexed",
+      display_depth: "limited_preview",
+      original_source_required: true,
+      allowed_ctas: ["view_original", "view_source", "compare"],
+      source_attribution_label: "Source publique indexée",
+      display_policy_reason:
+        "Source publique indexée — aperçu limité, redirection vers le site original.",
+    };
+  }
+  if (src === "avito") {
+    return {
+      source_display_type: "market_signal_only",
+      display_depth: "no_listing_image",
+    };
+  }
+  return {};
+}
+
 export type DuplicateOverride = {
   group_id: string;
   score: number;
@@ -185,5 +220,7 @@ export function mapDbRowToListing(
     has_european_living_room: !!(row.has_european_living_room),
     has_equipped_kitchen: !!(row.has_equipped_kitchen),
     premium_features: parseJsonSafe<string[]>(row.premium_features) ?? [],
+    // V9.5 — source display policy (computed from source_name, additive opt-in).
+    ...deriveSourceDisplayPolicy(row.source_name),
   };
 }
