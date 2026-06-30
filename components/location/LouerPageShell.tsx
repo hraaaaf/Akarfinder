@@ -48,11 +48,11 @@ const LOYERS_QUARTIERS = [
 const LOYER_MAX = Math.max(...LOYERS_QUARTIERS.map((r) => r.loyer));
 
 const BUDGET_CHIPS = [
-  { label: "< 3 000 DH",        budgetKey: "max3000",   searchHref: "/search?transaction_type=rent&maxPrice=3000",              href: "/louer?budget_max=3000" },
-  { label: "3 000 – 5 000 DH",  budgetKey: "3to5k",    searchHref: "/search?transaction_type=rent&minPrice=3000&maxPrice=5000", href: "/louer?budget_min=3000&budget_max=5000" },
-  { label: "5 000 – 8 000 DH",  budgetKey: "5to8k",    searchHref: "/search?transaction_type=rent&minPrice=5000&maxPrice=8000", href: "/louer?budget_min=5000&budget_max=8000" },
-  { label: "8 000 – 12 000 DH", budgetKey: "8to12k",   searchHref: "/search?transaction_type=rent&minPrice=8000&maxPrice=12000", href: "/louer?budget_min=8000&budget_max=12000" },
-  { label: "12 000+ DH",        budgetKey: "min12000", searchHref: "/search?transaction_type=rent&minPrice=12000",              href: "/louer?budget_min=12000" },
+  { label: "< 3 000 DH",        budgetKey: "max3000",   searchHref: "/louer?budget_max=3000",                       href: "/louer?budget_max=3000" },
+  { label: "3 000 – 5 000 DH",  budgetKey: "3to5k",    searchHref: "/louer?budget_min=3000&budget_max=5000",       href: "/louer?budget_min=3000&budget_max=5000" },
+  { label: "5 000 – 8 000 DH",  budgetKey: "5to8k",    searchHref: "/louer?budget_min=5000&budget_max=8000",       href: "/louer?budget_min=5000&budget_max=8000" },
+  { label: "8 000 – 12 000 DH", budgetKey: "8to12k",   searchHref: "/louer?budget_min=8000&budget_max=12000",      href: "/louer?budget_min=8000&budget_max=12000" },
+  { label: "12 000+ DH",        budgetKey: "min12000", searchHref: "/louer?budget_min=12000",                      href: "/louer?budget_min=12000" },
 ];
 
 const TYPE_CHIPS = [
@@ -92,11 +92,11 @@ function getSectionTitle(pt: string | undefined) {
 }
 
 function getSearchCTALabel(pt: string | undefined) {
-  if (pt === "Studio")      return "Voir tous les studios dans la recherche";
-  if (pt === "Appartement") return "Voir tous les appartements à louer dans la recherche";
-  if (pt === "Villa")       return "Voir toutes les villas à louer dans la recherche";
-  if (pt === "Bureau")      return "Voir tous les bureaux à louer dans la recherche";
-  return "Voir toutes les locations dans la recherche";
+  if (pt === "Studio")      return "Voir tous les studios";
+  if (pt === "Appartement") return "Voir tous les appartements à louer";
+  if (pt === "Villa")       return "Voir toutes les villas à louer";
+  if (pt === "Bureau")      return "Voir tous les bureaux à louer";
+  return "Voir toutes les locations";
 }
 
 const VIE_QUOTIDIENNE = [
@@ -302,7 +302,7 @@ function RentCard({ listing }: { listing: Listing }) {
 function SearchTile() {
   return (
     <Link
-      href="/search?transaction_type=rent"
+      href="/louer"
       className="group flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-[20px] border border-dashed border-border/15 bg-card p-6 text-center transition hover:border-bronze-500/40 hover:bg-card"
     >
       <span className="inline-grid h-14 w-14 place-items-center rounded-2xl bg-bronze-500/12 text-bronze-400 ring-1 ring-bronze-500/25 transition group-hover:bg-bronze-500/20">
@@ -311,7 +311,7 @@ function SearchTile() {
       <div>
         <p className="text-[14px] font-extrabold text-foreground">Explorer toutes les locations</p>
         <p className="mt-1.5 text-[12px] leading-5 text-muted-foreground">
-          Affinez par ville, budget mensuel et type de bien dans la recherche complète.
+          Affinez par ville, budget mensuel et type de bien sur cette page.
         </p>
       </div>
       <span className="inline-flex items-center gap-1.5 text-[12.5px] font-extrabold text-bronze-400">
@@ -333,8 +333,8 @@ export function LouerPageShell({
   const rentTotal = totalListings;
   const showSearchTile = rentListings.length < 3;
   const searchHref = selectedPropertyType
-    ? `/search?transaction_type=rent&property_type=${selectedPropertyType}`
-    : "/search?transaction_type=rent";
+    ? `/louer?property_type=${selectedPropertyType}`
+    : "/louer";
   const activeBudgetKey = getBudgetKey(selectedBudgetMax, selectedBudgetMin);
   const activeBudgetChip = BUDGET_CHIPS.find((c) => c.budgetKey === activeBudgetKey);
 
@@ -428,7 +428,7 @@ export function LouerPageShell({
                     href={activeBudgetChip.searchHref}
                     className="mt-2.5 inline-flex items-center gap-1.5 text-[11.5px] font-extrabold text-bronze-400 transition hover:text-bronze-300"
                   >
-                    Voir les locations dans ce budget dans la recherche
+                    Voir les locations dans ce budget
                     <ArrowRight size={11} strokeWidth={2.4} aria-hidden="true" />
                   </Link>
                 )}
@@ -579,10 +579,10 @@ export function LouerPageShell({
                     Lancez une recherche pour explorer toutes les locations analysées.
                   </p>
                   <Link
-                    href="/search?transaction_type=rent"
+                    href="/louer"
                     className="mt-5 inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.35)] transition hover:from-bronze-600"
                   >
-                    Rechercher une location
+                    Voir les locations
                     <ArrowRight size={14} aria-hidden="true" />
                   </Link>
                 </div>

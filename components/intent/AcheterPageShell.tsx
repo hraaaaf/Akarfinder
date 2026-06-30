@@ -44,7 +44,7 @@ const FILTER_CHIPS = [
   { label: "Appartements",    propertyType: "Appartement" as const, href: "/acheter?property_type=Appartement" },
   { label: "Villas",          propertyType: "Villa"       as const, href: "/acheter?property_type=Villa" },
   { label: "Terrains",        propertyType: "Terrain"     as const, href: "/acheter?property_type=Terrain" },
-  { label: "Plus de filtres", propertyType: null,                   href: "/search?transaction_type=buy" },
+  { label: "Plus de filtres", propertyType: null,                   href: "/acheter" },
 ] as const;
 
 function getSectionTitle(pt: string | undefined) {
@@ -55,10 +55,10 @@ function getSectionTitle(pt: string | undefined) {
 }
 
 function getSearchCTALabel(pt: string) {
-  if (pt === "Appartement") return "Voir tous les appartements dans la recherche";
-  if (pt === "Villa")       return "Voir toutes les villas dans la recherche";
-  if (pt === "Terrain")     return "Voir tous les terrains dans la recherche";
-  return `Voir tous les biens dans la recherche`;
+  if (pt === "Appartement") return "Voir tous les appartements";
+  if (pt === "Villa")       return "Voir toutes les villas";
+  if (pt === "Terrain")     return "Voir tous les terrains";
+  return "Voir tous les biens";
 }
 
 // level = repère relatif du prix/m² (1-4) pour le mini-indicateur visuel
@@ -273,8 +273,8 @@ export function AcheterPageShell({
   const hasDuplicates = duplicatesDetected > 0;
   const compareListings = listings.slice(0, 2);
   const searchHref = selectedPropertyType
-    ? `/search?transaction_type=buy&property_type=${selectedPropertyType}`
-    : "/search?transaction_type=buy";
+    ? `/acheter?property_type=${selectedPropertyType}`
+    : "/acheter";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -554,10 +554,10 @@ export function AcheterPageShell({
                     Lancez une recherche pour explorer toutes les annonces analysées.
                   </p>
                   <Link
-                    href="/search"
+                    href="/acheter"
                     className="mt-5 inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.35)] transition hover:from-bronze-600"
                   >
-                    Lancer une recherche
+                    Rafraîchir les annonces
                     <ArrowRight size={14} aria-hidden="true" />
                   </Link>
                 </div>
@@ -589,7 +589,7 @@ export function AcheterPageShell({
                 </div>
                 <div className="border-t border-bronze-500/20 bg-bronze-500/[0.06] px-5 py-3">
                   <Link
-                    href="/search?transaction_type=buy"
+                    href="/acheter"
                     className="flex items-center justify-between text-[12.5px] font-extrabold text-bronze-300 transition hover:text-bronze-200"
                   >
                     Explorer les annonces

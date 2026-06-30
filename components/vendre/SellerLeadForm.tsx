@@ -146,7 +146,7 @@ export function SellerLeadForm() {
             <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
           </Link>
           <Link
-            href="/search?transaction_type=buy"
+            href="/vendre"
             className="inline-flex items-center gap-2 rounded-xl border border-[#d8c8a3] bg-white px-5 py-3 text-[13.5px] font-extrabold text-deepblue transition hover:bg-[#f7f3ea]"
           >
             Comparer avec le marché

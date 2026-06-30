@@ -408,8 +408,8 @@ export async function VendrePageShell() {
                 <h2 className="mt-2 text-[1.4rem] font-extrabold tracking-[-0.04em] text-foreground">Annonces similaires analysées</h2>
                 <p className="mt-1.5 text-[12.5px] text-muted-foreground">Repères indicatifs issus d'annonces publiques analysées.</p>
               </div>
-              <Link href="/search?transaction_type=buy" className="group hidden shrink-0 items-center gap-1.5 rounded-full border border-border/15 bg-surface-muted px-4 py-2 text-[12.5px] font-bold text-bronze-400 transition hover:border-bronze-500/40 hover:bg-surface-muted sm:inline-flex">
-                Voir les annonces dans la recherche
+              <Link href="/acheter" className="group hidden shrink-0 items-center gap-1.5 rounded-full border border-border/15 bg-surface-muted px-4 py-2 text-[12.5px] font-bold text-bronze-400 transition hover:border-bronze-500/40 hover:bg-surface-muted sm:inline-flex">
+                Voir les annonces similaires
                 <ArrowRight size={12} strokeWidth={2.4} className="transition group-hover:translate-x-0.5" aria-hidden="true" />
               </Link>
             </div>
