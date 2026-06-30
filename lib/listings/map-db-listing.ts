@@ -71,34 +71,48 @@ function parseJsonSafe<T>(s: string | null | undefined): T | null {
 
 // V9.5 — computed display policy from source name (no DB migration required).
 // Never assigns premium_partner / authorized_source / contact by fallback.
+// Exported for unit tests (source-display-policy.test.ts).
 type V95DisplayPolicy = {
   source_display_type?: string;
   source_badge?: string;
   display_depth?: string;
+  thumbnail_policy?: string;
   original_source_required?: boolean;
   allowed_ctas?: string[];
   source_attribution_label?: string;
   display_policy_reason?: string;
+  display_images?: { policy?: string; urls?: string[] };
 };
 
-function deriveSourceDisplayPolicy(rawSourceName: string | null): V95DisplayPolicy {
+export function deriveSourceDisplayPolicy(rawSourceName: string | null): V95DisplayPolicy {
   const src = (rawSourceName ?? "").toLowerCase().trim();
   if (src === "mubawab") {
     return {
       source_display_type: "public_index_source",
       source_badge: "public_indexed",
       display_depth: "limited_preview",
+      thumbnail_policy: "single_thumbnail_allowed",
       original_source_required: true,
       allowed_ctas: ["view_original", "view_source", "compare"],
       source_attribution_label: "Source publique indexée",
       display_policy_reason:
         "Source publique indexée — aperçu limité, redirection vers le site original.",
+      // urls: [] — DB row has only images_count, no URL array at this layer.
+      display_images: { policy: "single_thumbnail_allowed", urls: [] },
     };
   }
   if (src === "avito") {
     return {
-      source_display_type: "market_signal_only",
-      display_depth: "no_listing_image",
+      source_display_type: "audit_source",
+      source_badge: "market_signal",
+      display_depth: "market_signal_only",
+      thumbnail_policy: "no_listing_image",
+      original_source_required: true,
+      allowed_ctas: ["view_market_signal", "view_source"],
+      source_attribution_label: "Signal marché",
+      display_policy_reason:
+        "Source utilisée uniquement comme signal marché. Aucune annonce n'est republiée.",
+      display_images: { policy: "no_listing_image", urls: [] },
     };
   }
   return {};

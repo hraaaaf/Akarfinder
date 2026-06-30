@@ -56,7 +56,10 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   const reliabilityLevel = getReliabilityLevel(listing.reliability_score);
   const rel = reliabilityStyle(reliabilityLevel);
   const showReliability = listing.reliability_available !== false;
-  const imageMode = getListingImageMode(listing);
+  const rawImageMode = getListingImageMode(listing);
+  // display_images.policy guard: "no_listing_image" forces fallback even if permission granted.
+  const imageMode =
+    listing.display_images?.policy === "no_listing_image" ? "fallback_visual" : rawImageMode;
   const attribution = getImageAttribution(listing);
   const transactionType = listing.transaction_type === "rent" ? "rent" : "buy";
   const proximityPoints = getListingProximity(listing.city, listing.neighborhood);
