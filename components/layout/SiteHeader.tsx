@@ -44,24 +44,43 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
           ? "border-white/10 bg-black/10 backdrop-blur-[2px] text-white shadow-none"
           : isDark || (isTransparent && scrolled)
           ? "border-white/10 bg-[rgba(7,27,51,0.97)] text-white shadow-[0_18px_45px_rgba(2,10,24,0.32)] backdrop-blur"
-          : "border-gray-200/90 bg-white/96 text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.06)] backdrop-blur supports-[backdrop-filter]:bg-white/88"
+          : "border-border/20 dark:border-white/10 bg-white/96 dark:bg-[rgba(7,27,51,0.97)] text-foreground dark:text-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:shadow-[0_18px_45px_rgba(2,10,24,0.32)] backdrop-blur supports-[backdrop-filter]:bg-white/88 dark:supports-[backdrop-filter]:bg-[rgba(7,27,51,0.95)]"
       }`}
     >
       <Container className={`flex items-center justify-between gap-3 sm:gap-5 sm:py-4 ${compact ? "py-2.5" : "py-3"}`}>
         <Link href="/" className="flex min-w-0 items-center" aria-label="AkarFinder - accueil">
           {/* LOGO-ASSETS-INTEGRATION-1 — logo V2 (PNG détouré), blanc sur fond
               sombre/transparent, encre deepblue sur fond clair. */}
-          <img
-            src={isDark || isTransparent ? "/brand/logo-v2/logo-header-dark.png" : "/brand/logo-v2/logo-header-light.png"}
-            alt="AkarFinder"
-            width={132}
-            height={33}
-            className={`h-[30px] w-auto sm:h-[34px] ${transparentActive ? "drop-shadow-[0_1px_8px_rgba(0,0,0,0.55)]" : ""}`}
-          />
+          {isDark || isTransparent ? (
+            <img
+              src="/brand/logo-v2/logo-header-dark.png"
+              alt="AkarFinder"
+              width={132}
+              height={33}
+              className={`h-[30px] w-auto sm:h-[34px] ${transparentActive ? "drop-shadow-[0_1px_8px_rgba(0,0,0,0.55)]" : ""}`}
+            />
+          ) : (
+            <>
+              <img
+                src="/brand/logo-v2/logo-header-light.png"
+                alt="AkarFinder"
+                width={132}
+                height={33}
+                className="h-[30px] w-auto sm:h-[34px] dark:hidden"
+              />
+              <img
+                src="/brand/logo-v2/logo-header-dark.png"
+                alt="AkarFinder"
+                width={132}
+                height={33}
+                className="hidden h-[30px] w-auto sm:h-[34px] dark:block"
+              />
+            </>
+          )}
         </Link>
 
         <nav aria-label="Navigation principale" className="hidden lg:block">
-          <ul className={`flex items-center gap-6 text-[13.5px] font-semibold ${isDark || isTransparent ? "text-white/88" : "text-gray-700"}`}>
+          <ul className={`flex items-center gap-6 text-[13.5px] font-semibold ${isDark || isTransparent ? "text-white/88" : "text-foreground/80 dark:text-white/88"}`}>
             {navItems.map((item) => {
               const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href.split("?")[0]) && item.href !== "/";
               return (
@@ -70,9 +89,9 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
                     href={item.href}
                     className={`relative rounded-full px-1.5 py-1 pb-1.5 transition-colors ${
                       isActive
-                        ? `${isDark || isTransparent ? "text-white" : "text-deepblue"} after:absolute after:bottom-0 after:left-1.5 after:right-1.5 after:h-[2px] after:rounded-full after:bg-bronze-700 after:content-['']`
+                        ? `${isDark || isTransparent ? "text-white" : "text-foreground dark:text-white"} after:absolute after:bottom-0 after:left-1.5 after:right-1.5 after:h-[2px] after:rounded-full after:bg-bronze-700 after:content-['']`
                         : ""
-                    } ${isDark || isTransparent ? "hover:text-white" : "hover:bg-[#f7f3ea] hover:text-gray-900"}`}
+                    } ${isDark || isTransparent ? "hover:text-white" : "hover:bg-surface-muted dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white"}`}
                   >
                     {item.label}
                   </Link>
@@ -88,7 +107,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
             href="/favorites"
             aria-label={favoriteCount > 0 ? `Mes favoris (${favoriteCount})` : "Mes favoris"}
             className={`relative flex h-9 w-9 items-center justify-center rounded-full transition ${
-              isDark || isTransparent ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-gray-400 hover:bg-red-50 hover:text-red-400"
+              isDark || isTransparent ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-muted-foreground dark:text-white/70 hover:bg-red-50 dark:hover:bg-white/10 hover:text-red-400 dark:hover:text-white"
             }`}
           >
             <Heart
@@ -108,7 +127,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
             className={`hidden rounded-xl px-4 py-2 text-[13px] font-bold transition lg:block ${
               isDark || isTransparent
                 ? "border border-bronze-500/40 bg-white/5 text-bronze-400 hover:bg-bronze-700/20 hover:text-bronze-300"
-                : "border border-bronze-700/30 bg-[#fffdf8] text-bronze-700 hover:border-bronze-700/60 hover:bg-[#fef8ed]"
+                : "border border-bronze-700/30 dark:border-bronze-500/40 bg-card dark:bg-white/5 text-bronze-700 dark:text-bronze-400 hover:border-bronze-700/60 dark:hover:bg-bronze-700/20 hover:bg-[#fef8ed] dark:hover:text-bronze-300"
             } ${pathname.startsWith("/pro") ? "border-bronze-700/60" : ""}`}
           >
             Espace Pro
@@ -118,7 +137,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
             className={`rounded-xl px-3 py-1.5 text-[12px] font-bold transition sm:px-5 sm:py-2.5 sm:text-[13px] ${
               isDark || isTransparent
                 ? "border border-bronze-500/60 bg-white/5 text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] hover:bg-bronze-500 hover:text-deepblue"
-                : "bg-deepblue text-white shadow-[0_4px_14px_rgba(7,27,51,0.26)] hover:bg-deepblue-700"
+                : "border border-bronze-500/60 dark:border-bronze-500/60 bg-deepblue dark:bg-white/5 text-white shadow-[0_4px_14px_rgba(7,27,51,0.26)] hover:bg-deepblue-700 dark:hover:bg-bronze-500 dark:hover:text-deepblue"
             }`}
           >
             Se connecter
@@ -130,7 +149,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
       <div className={`lg:hidden overflow-x-auto border-t scrollbar-none ${
         isDark || isTransparent
           ? "border-white/8 bg-transparent"
-          : "border-gray-100 bg-white/96"
+          : "border-border/10 dark:border-white/8 bg-white/96 dark:bg-transparent"
       }`}>
         <div className={`flex px-4 ${compact ? "gap-1.5 py-1.5" : "gap-2 py-2"}`}>
           {[
@@ -154,7 +173,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
                       : "border-deepblue bg-deepblue text-white"
                     : isDark || isTransparent
                     ? "border-white/15 bg-white/6 text-white/80 hover:bg-white/12 hover:text-white"
-                    : "border-[#e2d9c9] bg-[#f7f3ea] text-deepblue hover:border-[#c9b99a] hover:bg-[#f0e9d8]"
+                    : "border-border/20 dark:border-white/15 bg-surface-muted dark:bg-white/6 text-foreground dark:text-white/80 hover:border-bronze-500/40 dark:hover:border-white/25 hover:bg-surface dark:hover:bg-white/12"
                 }`}
               >
                 {chip.label}
