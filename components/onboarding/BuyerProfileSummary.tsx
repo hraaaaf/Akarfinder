@@ -39,11 +39,11 @@ type SummaryRowProps = { label: string; value: string };
 function SummaryRow({ label, value }: SummaryRowProps) {
   if (!value || value === "—") return null;
   return (
-    <div className="flex items-start justify-between gap-4 py-3 border-b border-[#f0e8da] last:border-0">
-      <span className="text-[12.5px] font-extrabold uppercase tracking-[0.09em] text-gray-400 shrink-0">
+    <div className="flex items-start justify-between gap-4 py-3 border-b border-border/15 dark:border-white/10 last:border-0">
+      <span className="text-[12.5px] font-extrabold uppercase tracking-[0.09em] text-muted-foreground shrink-0">
         {label}
       </span>
-      <span className="text-[14px] font-bold text-deepblue text-right">{value}</span>
+      <span className="text-[14px] font-bold text-foreground text-right">{value}</span>
     </div>
   );
 }
@@ -74,10 +74,10 @@ export function BuyerProfileSummary({ profile, onRestart, submissionResult }: Pr
         <span className="inline-block rounded-full border border-bronze-500/40 bg-bronze-700/10 px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.16em] text-bronze-700">
           Dossier acheteur indicatif
         </span>
-        <h2 className="mt-4 text-[1.7rem] font-extrabold tracking-[-0.04em] text-deepblue sm:text-[2rem]">
+        <h2 className="mt-4 text-[1.7rem] font-extrabold tracking-[-0.04em] text-foreground sm:text-[2rem]">
           Votre profil de recherche
         </h2>
-        <p className="mt-2 text-[13.5px] leading-6 text-gray-500">
+        <p className="mt-2 text-[13.5px] leading-6 text-muted-foreground">
           Récapitulatif indicatif — à confirmer avec votre banque et votre conseiller.
         </p>
       </div>
@@ -96,8 +96,8 @@ export function BuyerProfileSummary({ profile, onRestart, submissionResult }: Pr
       </div>
 
       {/* Summary card */}
-      <div className="rounded-[1.6rem] border border-[#eadfca] bg-white p-6 shadow-[0_12px_38px_rgba(7,27,51,0.08)] sm:p-8">
-        <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-gray-400">
+      <div className="rounded-[1.6rem] border border-border/20 dark:border-white/10 bg-card p-6 shadow-[0_12px_38px_rgba(7,27,51,0.08)] dark:shadow-[0_12px_38px_rgba(0,0,0,0.3)] sm:p-8">
+        <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground">
           Synthèse indicative
         </p>
 
@@ -118,8 +118,8 @@ export function BuyerProfileSummary({ profile, onRestart, submissionResult }: Pr
         ) : null}
 
         {/* Disclaimer */}
-        <div className="mt-5 rounded-xl bg-[#f7f5ef] px-4 py-3.5">
-          <p className="text-[12px] leading-5 text-gray-500">
+        <div className="mt-5 rounded-xl bg-surface-muted dark:bg-white/[0.04] px-4 py-3.5">
+          <p className="text-[12px] leading-5 text-muted-foreground">
             Ce dossier est <strong>indicatif</strong> et ne constitue pas une préqualification bancaire,
             un crédit accordé, ni un engagement de financement.
             À confirmer avec votre banque avant toute décision.
@@ -171,7 +171,7 @@ export function BuyerProfileSummary({ profile, onRestart, submissionResult }: Pr
         <button
           type="button"
           onClick={onRestart}
-          className="w-full rounded-xl border border-[#d8c8a3] bg-white px-6 py-3 text-[14px] font-bold text-deepblue transition hover:bg-[#f7f3ea]"
+          className="w-full rounded-xl border border-border/20 dark:border-white/12 bg-card dark:bg-white/[0.04] px-6 py-3 text-[14px] font-bold text-foreground transition hover:bg-surface-muted dark:hover:bg-white/[0.08]"
         >
           Recommencer le profil
         </button>

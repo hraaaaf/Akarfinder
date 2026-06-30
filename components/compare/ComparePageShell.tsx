@@ -22,14 +22,14 @@ type ApiSearchResponse = {
 
 function EmptyState() {
   return (
-    <section className="rounded-[1.6rem] border border-dashed border-[#d8c8a3] bg-white p-10 text-center shadow-[0_8px_24px_rgba(7,27,51,0.04)]">
-      <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#f7f3ea]">
-        <Scale size={24} strokeWidth={2.3} className="text-bronze-700" aria-hidden="true" />
+    <section className="rounded-[1.6rem] border border-dashed border-border/20 dark:border-white/12 bg-card p-10 text-center shadow-[0_8px_24px_rgba(7,27,51,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.2)]">
+      <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-surface-muted dark:bg-white/[0.06]">
+        <Scale size={24} strokeWidth={2.3} className="text-bronze-700 dark:text-bronze-400" aria-hidden="true" />
       </span>
-      <h1 className="mt-4 text-[1.5rem] font-extrabold tracking-[-0.04em] text-deepblue">
+      <h1 className="mt-4 text-[1.5rem] font-extrabold tracking-[-0.04em] text-foreground">
         Comparateur de biens
       </h1>
-      <p className="mt-2 text-[14px] leading-7 text-gray-500">
+      <p className="mt-2 text-[14px] leading-7 text-muted-foreground">
         Ajoutez 2 à 4 biens depuis la recherche ou une fiche détail pour voir les signaux indicatifs côte à côte.
       </p>
       <Link
@@ -44,14 +44,14 @@ function EmptyState() {
 
 function OneItemState() {
   return (
-    <section className="rounded-[1.6rem] border border-[#eadfca] bg-white p-10 text-center shadow-[0_8px_24px_rgba(7,27,51,0.04)]">
-      <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#f7f3ea]">
-        <SearchX size={24} strokeWidth={2.3} className="text-bronze-700" aria-hidden="true" />
+    <section className="rounded-[1.6rem] border border-border/20 dark:border-white/12 bg-card p-10 text-center shadow-[0_8px_24px_rgba(7,27,51,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.2)]">
+      <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-surface-muted dark:bg-white/[0.06]">
+        <SearchX size={24} strokeWidth={2.3} className="text-bronze-700 dark:text-bronze-400" aria-hidden="true" />
       </span>
-      <h1 className="mt-4 text-[1.5rem] font-extrabold tracking-[-0.04em] text-deepblue">
+      <h1 className="mt-4 text-[1.5rem] font-extrabold tracking-[-0.04em] text-foreground">
         Ajoutez au moins 2 biens
       </h1>
-      <p className="mt-2 text-[14px] leading-7 text-gray-500">
+      <p className="mt-2 text-[14px] leading-7 text-muted-foreground">
         Le comparateur devient utile à partir de 2 biens. Vous pouvez en sélectionner jusqu’à {MAX_COMPARE_LISTINGS}.
       </p>
       <Link
@@ -147,7 +147,7 @@ export function ComparePageShell() {
         )}
 
         {isLoading ? (
-          <p className="mt-4 text-[12px] font-medium text-gray-400">
+          <p className="mt-4 text-[12px] font-medium text-muted-foreground">
             Chargement des biens comparables…
           </p>
         ) : null}

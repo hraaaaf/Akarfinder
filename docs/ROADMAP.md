@@ -1,5 +1,130 @@
 ROADMAP.md — AkarFinder Roadmap Produit & Business
-Version : 2026-06-26 — P17B-0 Cadrage Packs Promoteurs completed
+Version : 2026-06-30 — V9.5 Source Display Policy + Google-like Homepage + SITE-SOURCE-BADGES-HARDENING-1
+
+====================================================
+V9.5 — SOURCE DISPLAY POLICY ENGINE + SITE BADGES — État consolidé 2026-06-30
+
+====================================================
+MISSIONS COMPLÉTÉES (contexte précédent — sessions V9.5)
+
+SOURCE-POLICY-FOUNDATION-1   : COMPLÉTÉE côté Engine (repo séparé — DATA Engine)
+ENGINE-DISPLAY-POLICY-EXPORT-1: COMPLÉTÉE (export policy runtime depuis Engine)
+SITE-SOURCE-BADGES-1          : COMPLÉTÉE (badges SourceBadge + SourceAttribution branchés côté site)
+DATA-BRIDGE-V9.5-SOURCE-BADGES-1: COMPLÉTÉE (/api/listings retourne champs V9.5)
+SOURCE-BADGES-PREPROD-QA-1    : COMPLÉTÉE (QA badges en preprod validée)
+SITE-SOURCE-BADGES-HARDENING-1: COMPLÉTÉE 2026-06-30 (voir section détail ci-dessous)
+GOOGLE-LIKE-HOMEPAGE-1        : COMPLÉTÉE (homepage Google-like search UX validée)
+HERO-PHOTO-RESTORE-1          : COMPLÉTÉE (photo premium hero restaurée sans casser le search UX)
+TUNNEL-CTA-CONTAINMENT-1      : COMPLÉTÉE (0 fuite /search depuis pages /acheter /louer /vendre)
+
+====================================================
+ÉTAT V9.5 CONSOLIDÉ — Source Display Policy
+
+Mubawab → public_index_source / public_indexed / limited_preview
+* source_display_type : "public_index_source"
+* source_badge        : "public_indexed"
+* display_depth       : "limited_preview"
+* thumbnail_policy    : "single_thumbnail_allowed"
+* display_images.policy : "single_thumbnail_allowed"
+* allowed_ctas        : ["view_original", "view_source", "compare"]
+* original_source_required : true
+* INTERDIT : contact, whatsapp, request_visit, full_gallery, premium_partner
+
+Avito → audit_source / market_signal / market_signal_only
+* source_display_type : "audit_source"
+* source_badge        : "market_signal"
+* display_depth       : "market_signal_only"
+* thumbnail_policy    : "no_listing_image"
+* display_images.policy : "no_listing_image"
+* allowed_ctas        : ["view_market_signal", "view_source"]
+* original_source_required : true
+* INTERDIT : fiche annonce, photo annonce, contact, whatsapp, view_full_listing
+
+Source inconnue / null → {} (aucun badge, aucun CTA, aucun droit)
+
+Invariants vérifiés :
+* SourceBadge ≠ ReliabilityBadge — concepts orthogonaux
+* reliability_score élevé ne peut pas élargir display_depth
+* premium_partner jamais assigné par fallback
+* authorized_source jamais assigné par fallback
+* image_urls jamais muté — display_images est un champ séparé
+* Guard display_images.policy === "no_listing_image" actif dans SearchListingCardDark + PhotoFirstListingCard
+
+Tests : 534/534 PASS (483 scrapers + 51 API). Build OK.
+31 tests unitaires dédiés : scripts/scrapers/__tests__/source-display-policy.test.ts
+
+====================================================
+SITE-SOURCE-BADGES-HARDENING-1 — Completed 2026-06-30
+
+Statut : COMPLÉTÉE
+Objectif : Durcir la display policy V9.5 — corriger Avito mapping, enrichir Mubawab,
+           ajouter guards UI, 31 tests unitaires, documentation.
+
+Livré :
+* lib/listings/map-db-listing.ts
+  — V95DisplayPolicy type étendu (thumbnail_policy + display_images)
+  — deriveSourceDisplayPolicy() exportée (testable)
+  — Avito : valeurs swappées corrigées (source_display_type="audit_source", display_depth="market_signal_only")
+  — Mubawab : thumbnail_policy + display_images.policy peuplés
+* components/search/SearchListingCardDark.tsx
+  — Guard : display_images.policy === "no_listing_image" → force fallback_visual
+* components/listings/PhotoFirstListingCard.tsx
+  — Guard identique
+* scripts/scrapers/__tests__/source-display-policy.test.ts (31 tests, 4 suites)
+* docs/SITE_SOURCE_BADGES_POLICY.md (créé)
+* package.json : source-display-policy.test.ts ajouté à test:scrapers
+
+Build : OK (0 erreur TypeScript)
+Tests : 534/534 PASS
+Commit : acffa1a
+
+====================================================
+GOOGLE-LIKE-HOMEPAGE-1 — Completed
+
+Statut : COMPLÉTÉE
+Objectif : Homepage style Google search — barre de recherche centrale, photo premium, sections premium.
+
+Livré :
+* GoogleLikeHero — barre de recherche centrale, chips rapides, exemples de recherche
+* Photo premium akar-residence-sunset-desktop.webp + mobile — restaurée avec overlay stack
+  (top fade navy, bottom vignette, radial veil, bronze halo, tint global #061027/38)
+* Sections premium conservées (stats, villes, carte signature, MRE, CTA final)
+* UX validée : recherche de type Google avec photo de fond lisible
+
+====================================================
+HERO-PHOTO-RESTORE-1 — Completed
+
+Statut : COMPLÉTÉE
+Objectif : Restaurer photo premium dans GoogleLikeHero sans casser le search UX.
+
+Livré :
+* <picture> en background absolu (desktop .webp + mobile .webp)
+* Overlay stack : top fade → bottom vignette → radial veil → bronze halo → tint global
+* HomeSearchBar + chips + exemples préservés intacts
+* fetchPriority="high" + decoding="async"
+Commit : fb88e35
+
+====================================================
+TUNNEL-CTA-CONTAINMENT-1 — Completed
+
+Statut : COMPLÉTÉE
+Objectif : 0 fuite vers /search depuis les pages tunnel /acheter /louer /vendre.
+
+Livré :
+* components/intent/AcheterPageShell.tsx — searchHref → /acheter?property_type=...
+* components/location/LouerPageShell.tsx — searchHref → /louer?budget_max=... ou /louer?property_type=...
+* components/vendre/VendrePageShell.tsx — CTA "Voir des biens comparables" → /acheter
+* components/vendre/SellerLeadForm.tsx — "Comparer avec le marché" → /vendre
+Commit : 9fb65a9
+
+====================================================
+PROCHAINE ÉTAPE V9.5
+
+1. PROD-DEPLOY — déployer prod avec validation Achraf (vercel --prod)
+2. MVP-RC-1 final — validation release candidate complète
+
+====================================================
+Version originale : 2026-06-26 — P17B-0 Cadrage Packs Promoteurs completed
 
 ====================================================
 P17B-0 — CADRAGE PACKS PROMOTEURS — Completed 2026-06-26

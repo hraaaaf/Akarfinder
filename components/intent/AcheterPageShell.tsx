@@ -153,7 +153,7 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
 
         {/* Title */}
         <Link href={`/listings/${listing.id}`} className="block">
-          <h3 className="line-clamp-1 text-[14px] font-extrabold leading-snug text-deepblue transition group-hover:text-bronze-700">
+          <h3 className="line-clamp-1 text-[14px] font-extrabold leading-snug text-foreground transition group-hover:text-bronze-700">
             {listing.title}
           </h3>
         </Link>
@@ -179,7 +179,7 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
         </p>
 
         {/* Specs */}
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-[#f0e6d2] pt-3 text-[12px] font-bold text-gray-700">
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-border/15 dark:border-white/10 pt-3 text-[12px] font-bold text-foreground/75 dark:text-white/70">
           {listing.surface_m2 > 0 && (
             <span className="inline-flex items-center gap-1">
               <Ruler size={12} className="text-bronze-600" aria-hidden="true" />
@@ -323,7 +323,7 @@ export function AcheterPageShell({
 
               {/* Search form */}
               <form action="/search" method="get" className="mt-6 sm:mt-8">
-                <div className="flex overflow-hidden rounded-2xl bg-white p-1 shadow-[0_18px_60px_rgba(0,0,0,0.4)] ring-1 ring-border/20">
+                <div className="flex overflow-hidden rounded-2xl bg-card dark:bg-white/[0.06] p-1 shadow-[0_18px_60px_rgba(0,0,0,0.4)] dark:shadow-[0_18px_60px_rgba(0,0,0,0.6)] ring-1 ring-border/20 dark:ring-white/12">
                   <div className="flex flex-1 items-center gap-2.5 px-4">
                     <Search
                       size={17}
@@ -335,7 +335,7 @@ export function AcheterPageShell({
                       name="q"
                       type="text"
                       placeholder="Ville, quartier, résidence, référence..."
-                      className="w-full bg-transparent py-3.5 text-[14px] text-gray-800 placeholder-gray-400 outline-none"
+                      className="w-full bg-transparent py-3.5 text-[14px] text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-white/35 outline-none dark:[color-scheme:dark]"
                     />
                   </div>
                   <div className="hidden items-center gap-1.5 border-l border-border/15 px-4 sm:flex">
@@ -368,7 +368,7 @@ export function AcheterPageShell({
                       className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-[12.5px] font-semibold transition ${
                         isActive
                           ? "border-bronze-500/60 bg-gradient-to-br from-bronze-500 to-bronze-700 text-white shadow-[0_4px_14px_rgba(155,120,56,0.35)]"
-                          : "border-border/15 bg-white/10 text-muted-foreground hover:border-bronze-500/40 hover:bg-white/16"
+                          : "border-border/15 bg-surface dark:bg-white/10 text-muted-foreground hover:border-bronze-500/40 hover:bg-surface-muted dark:hover:bg-white/16"
                       }`}
                     >
                       {chip.label}
@@ -379,7 +379,7 @@ export function AcheterPageShell({
                 <Link
                   href={searchHref}
                   aria-label="Filtres avancés"
-                  className="inline-flex items-center rounded-full border border-border/15 bg-white/10 px-3.5 py-2 text-muted-foreground transition hover:bg-white/16"
+                  className="inline-flex items-center rounded-full border border-border/15 bg-surface dark:bg-white/10 px-3.5 py-2 text-muted-foreground transition hover:bg-surface-muted dark:hover:bg-white/16"
                 >
                   <SlidersHorizontal size={13} aria-hidden="true" />
                 </Link>
@@ -388,7 +388,7 @@ export function AcheterPageShell({
               {/* Counter */}
               <div className="mt-4 sm:mt-6">
                 {totalListings !== null && totalListings > 0 ? (
-                  <p className="inline-flex items-center gap-2.5 rounded-full border border-border/15 bg-white/5 px-4 py-2 text-[13.5px] font-semibold text-muted-foreground">
+                  <p className="inline-flex items-center gap-2.5 rounded-full border border-border/15 bg-surface dark:bg-white/5 px-4 py-2 text-[13.5px] font-semibold text-muted-foreground">
                     <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-bronze-500/20">
                       <Star
                         size={11}
@@ -405,7 +405,7 @@ export function AcheterPageShell({
                     </span>
                   </p>
                 ) : (
-                  <p className="inline-flex items-center gap-2.5 rounded-full border border-border/15 bg-white/5 px-4 py-2 text-[13.5px] font-semibold text-muted-foreground">
+                  <p className="inline-flex items-center gap-2.5 rounded-full border border-border/15 bg-surface dark:bg-white/5 px-4 py-2 text-[13.5px] font-semibold text-muted-foreground">
                     <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-bronze-500/15">
                       <Star
                         size={11}
@@ -481,7 +481,7 @@ export function AcheterPageShell({
       </section>
 
       {/* ── Fiabilité — mobile strip (dark glass) ─────────────────────────────── */}
-      <div className="border-b border-border/15 bg-[#071B33] px-4 py-4 lg:hidden">
+      <div className="border-b border-border/15 bg-surface-muted dark:bg-[#071B33] px-4 py-4 lg:hidden">
         <Container>
           <div className="flex items-center gap-3">
             <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#0c4a2a] text-[#34d399] ring-1 ring-[#34d399]/20">
@@ -516,7 +516,7 @@ export function AcheterPageShell({
                 </div>
                 <Link
                   href={searchHref}
-                  className="group shrink-0 inline-flex items-center gap-1.5 rounded-full border border-border/15 bg-white/5 px-4 py-2 text-[12.5px] font-bold text-bronze-400 transition hover:border-bronze-500/40 hover:bg-white/10"
+                  className="group shrink-0 inline-flex items-center gap-1.5 rounded-full border border-border/15 bg-surface dark:bg-white/5 px-4 py-2 text-[12.5px] font-bold text-bronze-400 transition hover:border-bronze-500/40 hover:bg-surface-muted dark:hover:bg-white/10"
                 >
                   Voir tout
                   <ArrowRight
@@ -538,7 +538,7 @@ export function AcheterPageShell({
                   <div className="mt-8 text-center">
                     <Link
                       href={searchHref}
-                      className="inline-flex items-center gap-2 rounded-xl border border-border/15 bg-white/8 px-5 py-3 text-[13.5px] font-extrabold text-bronze-300 transition hover:border-bronze-500/35 hover:bg-white/12"
+                      className="inline-flex items-center gap-2 rounded-xl border border-border/15 bg-surface dark:bg-white/[0.08] px-5 py-3 text-[13.5px] font-extrabold text-bronze-300 transition hover:border-bronze-500/35 hover:bg-surface-muted dark:hover:bg-white/[0.12]"
                     >
                       {selectedPropertyType ? getSearchCTALabel(selectedPropertyType) : "Voir toutes les annonces dans la recherche"}
                       <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
@@ -739,7 +739,7 @@ export function AcheterPageShell({
                           <span className="ml-1 text-[9.5px] font-semibold text-muted-foreground">DH/m²</span>
                         </span>
                       </div>
-                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/8">
+                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-muted dark:bg-white/[0.08]">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-bronze-600 to-bronze-400"
                           style={{ width: `${Math.round((row.median / PRIX_MAX) * 100)}%` }}

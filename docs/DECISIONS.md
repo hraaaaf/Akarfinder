@@ -1110,3 +1110,33 @@ Impact:
 - Aucun code ne change — restructuration documentaire uniquement.
 - Le Track Data Engine reste une piste parallèle indépendante (DATA-A→DATA-H).
 - P15B/P16A ne démarrent pas maintenant.
+
+## 2026-06-30 - V9.5 Source Display Policy — adoption et durcissement
+
+Status: Validated
+
+Decision:
+- `deriveSourceDisplayPolicy()` est la fonction unique de calcul des droits d'affichage par source.
+- Mubawab → `public_index_source` / `public_indexed` / `limited_preview`.
+- Avito → `audit_source` / `market_signal` / `market_signal_only`.
+- Source inconnue / null → `{}` (aucun badge, aucun CTA par défaut).
+- `display_images` est un champ séparé de `image_urls` — `image_urls` n'est jamais muté.
+- `SourceBadge` et `ReliabilityBadge` sont deux composants orthogonaux : un score élevé
+  ne peut pas élargir les droits d'affichage d'une source.
+- `contact`, `whatsapp`, `request_visit`, `request_brochure`, `view_full_listing` sont
+  interdits dans `allowed_ctas` pour toute source non `partner_source`.
+- `premium_partner` et `authorized_source` ne sont jamais assignés par fallback.
+
+Reason:
+- Séparer la politique d'affichage de l'évaluation de la fiabilité permet d'évoluer
+  les deux dimensions indépendamment.
+- Calculer la policy runtime (pas de migration DB) permet d'ajouter de nouvelles sources
+  sans toucher le schéma.
+- Exporter `deriveSourceDisplayPolicy()` rend la policy testable et auditablee.
+
+Impact:
+- 31 tests unitaires couvrent les invariants de la policy.
+- Guard UI actif dans SearchListingCardDark + PhotoFirstListingCard.
+- SITE-SOURCE-BADGES-HARDENING-1 complétée : 534/534 PASS, build OK.
+- SOURCE-POLICY-FOUNDATION-1 (Engine, repo séparé) : complétée indépendamment.
+- Prochaine source à mapper : Yakeey, Sarouty (un bloc `if` dans deriveSourceDisplayPolicy).

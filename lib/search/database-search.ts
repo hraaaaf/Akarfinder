@@ -11,6 +11,15 @@ function normalize(value: string) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+// Noise words we skip during tokenized text matching.
+// Pure digits and short tokens (< 3 chars) are also skipped.
+const TEXT_STOP_WORDS = new Set([
+  "a", "au", "aux", "de", "du", "des", "le", "la", "les",
+  "en", "et", "ou", "un", "une", "par", "sur", "pour",
+  "dh", "mad", "dirhams", "moins", "plus", "avec", "sans",
+  "max", "maxi", "budget", "prix",
+]);
+
 function matchesText(listing: Listing, q?: string) {
   if (!q?.trim()) return true;
   const haystack = normalize(
@@ -25,7 +34,13 @@ function matchesText(listing: Listing, q?: string) {
       .filter(Boolean)
       .join(" ")
   );
-  return haystack.includes(normalize(q.trim()));
+  // Tokenized matching: every meaningful token must appear somewhere in haystack.
+  // Tolerates word order, multi-field hits, and budget/stop words in the query.
+  const tokens = normalize(q.trim())
+    .split(/\s+/)
+    .filter((t) => t.length >= 3 && !TEXT_STOP_WORDS.has(t) && !/^\d+$/.test(t));
+  if (tokens.length === 0) return true;
+  return tokens.every((token) => haystack.includes(token));
 }
 
 function matchesFilters(listing: Listing, query: SearchQuery) {

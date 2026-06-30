@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { track } from "@/lib/tracking/track";
+import { parseNaturalSearchQuery, parsedQueryToParams } from "@/lib/search/natural-query-parser";
 
 const INTENT_CHIPS = [
   { label: "Acheter",  type: "buy",  property_type: undefined },
@@ -32,47 +33,54 @@ export function HomeSearchBar() {
     type: "buy",
   });
 
-  const buildHref = useCallback(
-    (q: string, override?: { type: string; property_type?: string }) => {
-      const { type, property_type } = override ?? intent;
-      const params = new URLSearchParams();
-      if (type !== "buy") params.set("type", type);
-      if (property_type) params.set("property_type", property_type);
-      const effectiveQ = q.trim();
-      if (effectiveQ) params.set("q", effectiveQ);
-      const qs = params.toString();
-      return `/search${qs ? `?${qs}` : ""}`;
-    },
-    [intent]
-  );
-
   const handleSearch = useCallback(
     (overrideQ?: string) => {
       const q = overrideQ ?? query;
+      const parsed = parseNaturalSearchQuery(q);
+
+      // Chip property_type (Villa, Terrain, Bureau) wins over parser.
+      // Chip type acts as fallback when parser didn't detect an intent.
+      // "Meublé" chip adds furnished=true even if parser misses the accent.
+      const isMeuble = activeChip === "Meublé" || parsed.furnished;
+      if (isMeuble && !parsed.furnished) parsed.furnished = true;
+
+      const params = parsedQueryToParams(
+        parsed,
+        intent.type as "buy" | "rent" | "new",
+        intent.property_type
+      );
+
       track({
         event_name: "hero_search_submit",
         source_page: "/",
-        intent: intent.type,
-        metadata: { q: q.trim() || null, chip: activeChip },
+        intent: parsed.intent ?? intent.type,
+        metadata: {
+          q: q.trim() || null,
+          chip: activeChip,
+          city: parsed.city ?? null,
+          budget_max: parsed.budget_max ?? null,
+        },
       });
-      router.push(buildHref(q));
+
+      const qs = params.toString();
+      router.push(`/search${qs ? `?${qs}` : ""}`);
     },
-    [query, intent, activeChip, buildHref, router]
+    [query, intent, activeChip, router]
   );
 
   const applyChip = (chip: (typeof INTENT_CHIPS)[number]) => {
     setActiveChip(chip.label);
     setIntent({ type: chip.type, property_type: chip.property_type });
-    // "Meublé" pre-fills the query
     if (chip.label === "Meublé") {
       setQuery("meublé");
       inputRef.current?.focus();
     }
   };
 
+  // Clicking an example fills the input AND triggers the search immediately.
   const applyExample = (ex: string) => {
     setQuery(ex);
-    inputRef.current?.focus();
+    handleSearch(ex);
   };
 
   return (

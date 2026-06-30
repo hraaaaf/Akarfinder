@@ -6,6 +6,7 @@
 // Wording obligatoire : "Estimation indicative" · "Non contractuelle" ·
 // "À confirmer auprès d'un organisme de financement".
 // Aucune promesse de financement, aucun taux garanti, aucun pré-accord.
+// THEME-SYSTEM-V1-P0 — Rendu theme-safe (light/dark) via tokens système.
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Calculator, ArrowRight, CheckCircle2, Info, Phone } from "lucide-react";
@@ -49,7 +50,6 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
   const [listingId, setListingId] = useState<string | undefined>(undefined);
 
   // CREDIT-UX-1 — préremplissage depuis la card cliquée (event global).
-  // Met à jour prix + apport (20 % par défaut) + listing_id, sans recharger la page.
   useEffect(() => {
     function onSimulate(e: Event) {
       const detail = (e as CustomEvent<SimulateCreditDetail>).detail;
@@ -147,16 +147,16 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
   return (
     <div
       id={id}
-      className="scroll-mt-24 overflow-hidden rounded-2xl border border-white/12 bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-md"
+      className="scroll-mt-24 overflow-hidden rounded-2xl border border-border/20 dark:border-white/12 bg-card dark:bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.1)] dark:shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-md"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 border-b border-white/10 bg-white/[0.03] px-5 py-4">
-        <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-bronze-500/20 text-bronze-300 ring-1 ring-bronze-500/30">
+      <div className="flex items-center gap-3 border-b border-border/15 dark:border-white/10 bg-surface dark:bg-white/[0.03] px-5 py-4">
+        <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-bronze-500/20 text-bronze-500 dark:text-bronze-300 ring-1 ring-bronze-500/30">
           <Calculator size={16} strokeWidth={2.2} aria-hidden="true" />
         </span>
         <div>
-          <p className="text-[13.5px] font-extrabold text-white">Simuler mon financement</p>
-          <p className="text-[11px] text-white/45">Estimation indicative · non contractuelle</p>
+          <p className="text-[13.5px] font-extrabold text-foreground">Simuler mon financement</p>
+          <p className="text-[11px] text-muted-foreground">Estimation indicative · non contractuelle</p>
         </div>
       </div>
 
@@ -164,7 +164,7 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
         {/* ── Paramètres ──────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="credit-price" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-white/50">
+            <label htmlFor="credit-price" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
               Prix du bien (DH)
             </label>
             <input
@@ -174,11 +174,11 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
               step={50000}
               value={price}
               onChange={(e) => setPrice(e.target.value)}
-              className="w-full rounded-xl border border-white/12 bg-white/[0.07] px-3 py-2.5 text-[13px] text-white placeholder-white/25 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30"
+              className="w-full rounded-xl border border-border/20 dark:border-white/12 bg-background dark:bg-white/[0.07] px-3 py-2.5 text-[13px] text-foreground dark:text-white placeholder:text-muted-foreground/50 dark:placeholder-white/25 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30"
             />
           </div>
           <div>
-            <label htmlFor="credit-apport" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-white/50">
+            <label htmlFor="credit-apport" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
               Apport (DH)
             </label>
             <input
@@ -188,18 +188,18 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
               step={10000}
               value={apport}
               onChange={(e) => setApport(e.target.value)}
-              className="w-full rounded-xl border border-white/12 bg-white/[0.07] px-3 py-2.5 text-[13px] text-white placeholder-white/25 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30"
+              className="w-full rounded-xl border border-border/20 dark:border-white/12 bg-background dark:bg-white/[0.07] px-3 py-2.5 text-[13px] text-foreground dark:text-white placeholder:text-muted-foreground/50 dark:placeholder-white/25 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30"
             />
           </div>
           <div>
-            <label htmlFor="credit-years" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-white/50">
+            <label htmlFor="credit-years" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
               Durée (ans)
             </label>
             <select
               id="credit-years"
               value={years}
               onChange={(e) => setYears(Number(e.target.value))}
-              className="w-full rounded-xl border border-white/12 bg-[#061027] px-3 py-2.5 text-[13px] text-white/85 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30"
+              className="w-full rounded-xl border border-border/20 dark:border-white/12 bg-background dark:bg-[#061027] px-3 py-2.5 text-[13px] text-foreground dark:text-white/85 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30 dark:[color-scheme:dark]"
             >
               {DURATIONS.map((d) => (
                 <option key={d} value={d}>{d} ans</option>
@@ -207,7 +207,7 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
             </select>
           </div>
           <div>
-            <label htmlFor="credit-rate" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-white/50">
+            <label htmlFor="credit-rate" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
               Taux indicatif (%)
             </label>
             <input
@@ -217,31 +217,31 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
               step={0.1}
               value={rate}
               onChange={(e) => setRate(e.target.value)}
-              className="w-full rounded-xl border border-white/12 bg-white/[0.07] px-3 py-2.5 text-[13px] text-white placeholder-white/25 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30"
+              className="w-full rounded-xl border border-border/20 dark:border-white/12 bg-background dark:bg-white/[0.07] px-3 py-2.5 text-[13px] text-foreground dark:text-white placeholder:text-muted-foreground/50 dark:placeholder-white/25 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30"
             />
           </div>
         </div>
 
         {/* ── Résultats ───────────────────────────────────────────────────── */}
         <div className="mt-4 rounded-2xl border border-bronze-500/25 bg-gradient-to-br from-bronze-500/[0.16] to-bronze-500/[0.03] p-4">
-          <p className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-bronze-400">
+          <p className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-bronze-600 dark:text-bronze-400">
             Mensualité estimée
           </p>
-          <p className="mt-1 text-[2rem] font-extrabold leading-none tracking-[-0.04em] text-white">
+          <p className="mt-1 text-[2rem] font-extrabold leading-none tracking-[-0.04em] text-foreground">
             {formatDH(calc.monthly)}
-            <span className="ml-1.5 text-[12px] font-bold text-white/40">/ mois</span>
+            <span className="ml-1.5 text-[12px] font-bold text-muted-foreground">/ mois</span>
           </p>
           <div className="mt-3 grid grid-cols-2 gap-3 border-t border-bronze-500/20 pt-3">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wide text-white/40">Montant financé</p>
-              <p className="mt-0.5 text-[13px] font-extrabold text-white/90">{formatDH(calc.principal)}</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Montant financé</p>
+              <p className="mt-0.5 text-[13px] font-extrabold text-foreground">{formatDH(calc.principal)}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wide text-white/40">Coût total indicatif</p>
-              <p className="mt-0.5 text-[13px] font-extrabold text-white/90">{formatDH(calc.totalCost)}</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Coût total indicatif</p>
+              <p className="mt-0.5 text-[13px] font-extrabold text-foreground">{formatDH(calc.totalCost)}</p>
             </div>
           </div>
-          <p className="mt-3 flex items-start gap-1.5 text-[10.5px] leading-4 text-white/45">
+          <p className="mt-3 flex items-start gap-1.5 text-[10.5px] leading-4 text-muted-foreground">
             <Info size={11} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden="true" />
             Estimation indicative et non contractuelle. À confirmer auprès d&apos;un organisme de financement.
           </p>
@@ -250,45 +250,45 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
         {/* ── Lead financement ────────────────────────────────────────────── */}
         {success ? (
           <div className="mt-4 flex flex-col items-center rounded-2xl border border-emerald-400/25 bg-emerald-400/[0.08] px-5 py-6 text-center">
-            <CheckCircle2 size={30} className="text-emerald-400" aria-hidden="true" />
-            <p className="mt-3 text-[14px] font-extrabold text-white">Demande enregistrée</p>
-            <p className="mt-2 text-[12px] leading-5 text-white/60">
+            <CheckCircle2 size={30} className="text-emerald-500 dark:text-emerald-400" aria-hidden="true" />
+            <p className="mt-3 text-[14px] font-extrabold text-foreground">Demande enregistrée</p>
+            <p className="mt-2 text-[12px] leading-5 text-muted-foreground">
               Vous serez recontacté selon disponibilité pour échanger sur votre financement.
             </p>
-            <p className="mt-2 text-[10.5px] text-white/35">
+            <p className="mt-2 text-[10.5px] text-muted-foreground/60">
               Non contractuel · à confirmer auprès d&apos;un organisme de financement.
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-3 border-t border-white/10 pt-4">
+          <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-3 border-t border-border/15 dark:border-white/10 pt-4">
             <div className="flex items-center gap-2">
-              <Phone size={14} className="text-bronze-400" aria-hidden="true" />
-              <p className="text-[12.5px] font-extrabold text-white">Être rappelé pour mon financement</p>
+              <Phone size={14} className="text-bronze-500 dark:text-bronze-400" aria-hidden="true" />
+              <p className="text-[12.5px] font-extrabold text-foreground">Être rappelé pour mon financement</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label htmlFor="credit-name" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-white/50">
-                  Nom <span className="font-normal normal-case text-white/30">(optionnel)</span>
+                <label htmlFor="credit-name" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
+                  Nom <span className="font-normal normal-case text-muted-foreground/60">(optionnel)</span>
                 </label>
                 <input
                   id="credit-name"
                   type="text"
                   value={lead.name}
                   onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))}
-                  className="w-full rounded-xl border border-white/12 bg-white/[0.07] px-3 py-2.5 text-[13px] text-white placeholder-white/25 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30"
+                  className="w-full rounded-xl border border-border/20 dark:border-white/12 bg-background dark:bg-white/[0.07] px-3 py-2.5 text-[13px] text-foreground dark:text-white placeholder:text-muted-foreground/50 dark:placeholder-white/25 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30"
                   autoComplete="name"
                 />
               </div>
               <div>
-                <label htmlFor="credit-city" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-white/50">
-                  Ville <span className="font-normal normal-case text-white/30">(optionnel)</span>
+                <label htmlFor="credit-city" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
+                  Ville <span className="font-normal normal-case text-muted-foreground/60">(optionnel)</span>
                 </label>
                 <select
                   id="credit-city"
                   value={lead.city}
                   onChange={(e) => setLead((l) => ({ ...l, city: e.target.value }))}
-                  className="w-full rounded-xl border border-white/12 bg-[#061027] px-3 py-2.5 text-[13px] text-white/85 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30"
+                  className="w-full rounded-xl border border-border/20 dark:border-white/12 bg-background dark:bg-[#061027] px-3 py-2.5 text-[13px] text-foreground dark:text-white/85 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30 dark:[color-scheme:dark]"
                 >
                   <option value="">—</option>
                   {CITIES.map((c) => (
@@ -299,8 +299,8 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
             </div>
 
             <div>
-              <label htmlFor="credit-phone" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-white/50">
-                Téléphone / WhatsApp <span className="text-bronze-400">*</span>
+              <label htmlFor="credit-phone" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
+                Téléphone / WhatsApp <span className="text-bronze-500 dark:text-bronze-400">*</span>
               </label>
               <input
                 id="credit-phone"
@@ -308,7 +308,7 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
                 placeholder="+212 6..."
                 value={lead.phone}
                 onChange={(e) => setLead((l) => ({ ...l, phone: e.target.value }))}
-                className="w-full rounded-xl border border-white/12 bg-white/[0.07] px-3.5 py-2.5 text-[13px] text-white placeholder-white/25 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30"
+                className="w-full rounded-xl border border-border/20 dark:border-white/12 bg-background dark:bg-white/[0.07] px-3.5 py-2.5 text-[13px] text-foreground dark:text-white placeholder:text-muted-foreground/50 dark:placeholder-white/25 outline-none transition focus:border-bronze-400/60 focus:ring-1 focus:ring-bronze-400/30"
                 autoComplete="tel"
               />
             </div>
@@ -320,14 +320,14 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
                 onChange={(e) => setLead((l) => ({ ...l, consent: e.target.checked }))}
                 className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-bronze-400"
               />
-              <span className="text-[11px] leading-4 text-white/50">
+              <span className="text-[11px] leading-4 text-muted-foreground">
                 J&apos;accepte d&apos;être recontacté au sujet de mon financement.{" "}
-                <span className="text-white/30">Non contractuel · estimation indicative.</span>
+                <span className="text-muted-foreground/60">Non contractuel · estimation indicative.</span>
               </span>
             </label>
 
             {error ? (
-              <p className="text-[12px] text-red-400" role="alert">{error}</p>
+              <p className="text-[12px] text-red-500 dark:text-red-400" role="alert">{error}</p>
             ) : null}
 
             <button
@@ -342,8 +342,8 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
         )}
       </div>
 
-      <div className="border-t border-white/8 bg-white/[0.02] px-5 py-3">
-        <p className="text-[10.5px] leading-4 text-white/35">
+      <div className="border-t border-border/10 dark:border-white/8 bg-surface/50 dark:bg-white/[0.02] px-5 py-3">
+        <p className="text-[10.5px] leading-4 text-muted-foreground/70">
           Estimation indicative et non contractuelle — hors assurance et frais.
           À confirmer auprès d&apos;un organisme de financement. AkarFinder ne fournit pas de conseil financier.
         </p>

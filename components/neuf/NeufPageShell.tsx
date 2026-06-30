@@ -25,6 +25,8 @@ import { ListingVisual } from "@/components/listings/ListingVisual";
 import { CreditSimulator } from "@/components/credit/CreditSimulator";
 import type { Listing } from "@/lib/listings/types";
 
+// THEME-SYSTEM-V1-P0 — P0-D: rendu theme-safe via tokens système + dark: prefix.
+
 // ── Repères Neuf (hero) ──────────────────────────────────────────────────────
 const REPERES_NEUF = [
   { icon: Sparkles,  label: "Projets récents",        note: "Programmes neufs sélectionnés" },
@@ -72,17 +74,17 @@ const NEUF_VS_ANCIEN = {
 
 export function NeufPageShell() {
   return (
-    <main className="min-h-screen bg-[#061027] text-white">
+    <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" compact />
 
       {/* ── HERO ──────────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-deepblue pb-11 pt-7 sm:pb-16 sm:pt-20">
+      <section className="relative overflow-hidden bg-surface dark:bg-deepblue pb-11 pt-7 sm:pb-16 sm:pt-20">
         <div
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-0 hidden dark:block"
           style={{ background: "radial-gradient(ellipse 80% 70% at 62% 26%, rgba(34,72,132,0.72) 0%, transparent 64%)" }}
         />
         <div
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-0 hidden dark:block"
           style={{ background: "radial-gradient(60% 50% at 95% 100%, rgba(194,163,104,0.10) 0%, transparent 60%)" }}
         />
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-bronze-500/45 to-transparent" />
@@ -94,13 +96,13 @@ export function NeufPageShell() {
             <div className="max-w-2xl">
               <div className="flex items-center gap-3">
                 <span className="h-px w-8 bg-bronze-500/70" aria-hidden="true" />
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-bronze-400">Neuf</p>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-bronze-500 dark:text-bronze-400">Neuf</p>
               </div>
-              <h1 className="mt-4 text-[2.3rem] font-extrabold leading-[1.05] tracking-[-0.05em] text-white sm:mt-5 sm:text-[3.4rem]">
+              <h1 className="mt-4 text-[2.3rem] font-extrabold leading-[1.05] tracking-[-0.05em] text-foreground sm:mt-5 sm:text-[3.4rem]">
                 Découvrez les nouveaux<br className="hidden sm:block" />{" "}
-                <span className="text-bronze-400">projets au Maroc</span>
+                <span className="text-bronze-500 dark:text-bronze-400">projets au Maroc</span>
               </h1>
-              <p className="mt-3.5 max-w-xl text-[14.5px] leading-6 text-white/65 sm:mt-5 sm:text-[15.5px] sm:leading-7">
+              <p className="mt-3.5 max-w-xl text-[14.5px] leading-6 text-muted-foreground sm:mt-5 sm:text-[15.5px] sm:leading-7">
                 Programmes neufs, données fournies par le promoteur et repères indicatifs
                 pour vous projeter avec plus de clarté.
               </p>
@@ -116,7 +118,7 @@ export function NeufPageShell() {
                 </Link>
                 <Link
                   href="/promoteurs"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white/90 transition hover:border-bronze-500/40 hover:bg-white/16"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border/20 dark:border-white/15 bg-surface dark:bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-foreground dark:text-white/90 transition hover:border-bronze-500/40"
                 >
                   Espace promoteurs
                   <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
@@ -125,9 +127,9 @@ export function NeufPageShell() {
 
               {/* Counter / note */}
               <div className="mt-5 sm:mt-6">
-                <p className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-semibold text-white/70">
+                <p className="inline-flex items-center gap-2.5 rounded-full border border-border/15 dark:border-white/10 bg-surface/50 dark:bg-white/5 px-4 py-2 text-[13px] font-semibold text-muted-foreground dark:text-white/70">
                   <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-bronze-500/20">
-                    <Info size={11} className="text-bronze-400" aria-hidden="true" />
+                    <Info size={11} className="text-bronze-500 dark:text-bronze-400" aria-hidden="true" />
                   </span>
                   Données fournies par le promoteur — informations indicatives
                 </p>
@@ -136,23 +138,23 @@ export function NeufPageShell() {
 
             {/* RIGHT — Repères Neuf (mobile : 2×2) */}
             <aside className="lg:flex lg:flex-col lg:justify-center">
-              <div className="overflow-hidden rounded-2xl border border-white/12 bg-white/[0.06] shadow-[0_20px_50px_rgba(2,10,24,0.4)] backdrop-blur-md">
-                <div className="border-b border-white/10 bg-white/[0.03] px-5 py-4">
-                  <p className="text-[13px] font-extrabold text-white">Repères Neuf</p>
-                  <p className="mt-0.5 text-[11px] leading-4 text-white/55">Ce que vous trouverez ici</p>
+              <div className="overflow-hidden rounded-2xl border border-border/20 dark:border-white/12 bg-card dark:bg-white/[0.06] shadow-[0_20px_50px_rgba(2,10,24,0.15)] dark:shadow-[0_20px_50px_rgba(2,10,24,0.4)] backdrop-blur-md">
+                <div className="border-b border-border/15 dark:border-white/10 bg-surface dark:bg-white/[0.03] px-5 py-4">
+                  <p className="text-[13px] font-extrabold text-foreground">Repères Neuf</p>
+                  <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">Ce que vous trouverez ici</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2 p-3 lg:grid-cols-1">
                   {REPERES_NEUF.map(({ icon: Icon, label, note }) => (
                     <div
                       key={label}
-                      className="flex items-start gap-2.5 rounded-xl border border-white/8 bg-white/[0.04] px-3 py-2.5 transition hover:border-bronze-500/25 hover:bg-white/[0.07]"
+                      className="flex items-start gap-2.5 rounded-xl border border-border/12 dark:border-white/8 bg-background dark:bg-white/[0.04] px-3 py-2.5 transition hover:border-bronze-500/25 dark:hover:bg-white/[0.07]"
                     >
-                      <span className="inline-grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-bronze-500/15 text-bronze-400">
+                      <span className="inline-grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-bronze-500/15 text-bronze-500 dark:text-bronze-400">
                         <Icon size={14} aria-hidden="true" />
                       </span>
                       <div className="min-w-0">
-                        <p className="text-[12px] font-extrabold leading-tight text-white/90">{label}</p>
-                        <p className="mt-0.5 text-[10px] leading-tight text-white/45">{note}</p>
+                        <p className="text-[12px] font-extrabold leading-tight text-foreground">{label}</p>
+                        <p className="mt-0.5 text-[10px] leading-tight text-muted-foreground">{note}</p>
                       </div>
                     </div>
                   ))}
@@ -164,18 +166,18 @@ export function NeufPageShell() {
       </section>
 
       {/* ── DASHBOARD — [projet + neuf/ancien | sidebar contact] ──────────────── */}
-      <section id="projet" className="relative scroll-mt-20 bg-gradient-to-b from-deepblue to-[#050f1e] py-12 lg:py-16">
+      <section id="projet" className="relative scroll-mt-20 bg-background dark:bg-deepblue py-12 lg:py-16">
         <Container>
           <div className="mb-7 flex items-end justify-between gap-4">
             <div>
               <div className="flex items-center gap-2.5">
                 <span className="h-px w-6 bg-bronze-500/60" aria-hidden="true" />
-                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400">Exemple de présentation</p>
+                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-500 dark:text-bronze-400">Exemple de présentation</p>
               </div>
-              <h2 className="mt-2 text-[1.5rem] font-extrabold tracking-[-0.04em] text-white">
+              <h2 className="mt-2 text-[1.5rem] font-extrabold tracking-[-0.04em] text-foreground">
                 À quoi ressemble une présentation promoteur
               </h2>
-              <p className="mt-1.5 max-w-xl text-[12.5px] leading-5 text-white/50">
+              <p className="mt-1.5 max-w-xl text-[12.5px] leading-5 text-muted-foreground">
                 Exemple illustratif — aucun projet partenaire actif pour le moment.
               </p>
             </div>
@@ -187,7 +189,7 @@ export function NeufPageShell() {
             <div className="flex flex-col gap-8">
 
               {/* PROJECT CARD */}
-              <article className="overflow-hidden rounded-[20px] border border-white/10 bg-white/[0.04] shadow-[0_18px_50px_rgba(2,10,24,0.4)] backdrop-blur-sm">
+              <article className="overflow-hidden rounded-[20px] border border-border/15 dark:border-white/10 bg-card dark:bg-white/[0.04] shadow-[0_18px_50px_rgba(2,10,24,0.12)] dark:shadow-[0_18px_50px_rgba(2,10,24,0.4)] backdrop-blur-sm">
                 {/* Visuel */}
                 <div className="relative h-[230px] overflow-hidden sm:h-[300px]">
                   <ListingVisual listing={EXAMPLE_VISUAL} className="h-full w-full" />
@@ -211,69 +213,69 @@ export function NeufPageShell() {
                 <div className="p-5 sm:p-6">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <h3 className="text-[1.3rem] font-extrabold tracking-[-0.03em] text-white">{EXAMPLE_PROJECT.name}</h3>
-                      <p className="mt-1 flex items-center gap-1.5 text-[12.5px] font-semibold text-white/60">
-                        <MapPin size={12} className="text-bronze-400" aria-hidden="true" />
+                      <h3 className="text-[1.3rem] font-extrabold tracking-[-0.03em] text-foreground">{EXAMPLE_PROJECT.name}</h3>
+                      <p className="mt-1 flex items-center gap-1.5 text-[12.5px] font-semibold text-muted-foreground">
+                        <MapPin size={12} className="text-bronze-500 dark:text-bronze-400" aria-hidden="true" />
                         {EXAMPLE_PROJECT.city}, {EXAMPLE_PROJECT.neighborhood}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[1.6rem] font-extrabold leading-none tracking-[-0.04em] text-bronze-400">
+                      <p className="text-[1.6rem] font-extrabold leading-none tracking-[-0.04em] text-bronze-500 dark:text-bronze-400">
                         {EXAMPLE_PROJECT.priceFrom.toLocaleString("fr-FR")} DH
                       </p>
-                      <p className="mt-1 text-[11px] font-bold text-white/50">prix à partir de</p>
+                      <p className="mt-1 text-[11px] font-bold text-muted-foreground">prix à partir de</p>
                     </div>
                   </div>
 
                   {/* Libellé prudent — contenu illustratif (pas de promoteur actif) */}
-                  <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-bronze-500/10 px-3 py-1 text-[10.5px] font-bold text-bronze-300">
+                  <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-bronze-500/10 px-3 py-1 text-[10.5px] font-bold text-bronze-500 dark:text-bronze-300">
                     <Info size={11} aria-hidden="true" />
                     Données illustratives — exemple de présentation
                   </p>
 
                   {/* Caractéristiques */}
                   <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    <div className="rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3">
-                      <div className="flex items-center gap-1.5 text-bronze-400">
+                    <div className="rounded-xl border border-border/12 dark:border-white/8 bg-background dark:bg-white/[0.04] px-4 py-3">
+                      <div className="flex items-center gap-1.5 text-bronze-500 dark:text-bronze-400">
                         <LayoutGrid size={13} aria-hidden="true" />
-                        <span className="text-[10px] font-bold uppercase tracking-wide text-white/45">Typologies</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Typologies</span>
                       </div>
-                      <p className="mt-1.5 text-[12.5px] font-extrabold text-white">{EXAMPLE_PROJECT.typologies.join(" · ")}</p>
+                      <p className="mt-1.5 text-[12.5px] font-extrabold text-foreground">{EXAMPLE_PROJECT.typologies.join(" · ")}</p>
                     </div>
-                    <div className="rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3">
-                      <div className="flex items-center gap-1.5 text-bronze-400">
+                    <div className="rounded-xl border border-border/12 dark:border-white/8 bg-background dark:bg-white/[0.04] px-4 py-3">
+                      <div className="flex items-center gap-1.5 text-bronze-500 dark:text-bronze-400">
                         <Ruler size={13} aria-hidden="true" />
-                        <span className="text-[10px] font-bold uppercase tracking-wide text-white/45">Surfaces</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Surfaces</span>
                       </div>
-                      <p className="mt-1.5 text-[12.5px] font-extrabold text-white">{EXAMPLE_PROJECT.surfaceMin}–{EXAMPLE_PROJECT.surfaceMax} m²</p>
+                      <p className="mt-1.5 text-[12.5px] font-extrabold text-foreground">{EXAMPLE_PROJECT.surfaceMin}–{EXAMPLE_PROJECT.surfaceMax} m²</p>
                     </div>
-                    <div className="col-span-2 rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3 sm:col-span-1">
-                      <div className="flex items-center gap-1.5 text-bronze-400">
+                    <div className="col-span-2 rounded-xl border border-border/12 dark:border-white/8 bg-background dark:bg-white/[0.04] px-4 py-3 sm:col-span-1">
+                      <div className="flex items-center gap-1.5 text-bronze-500 dark:text-bronze-400">
                         <CalendarClock size={13} aria-hidden="true" />
-                        <span className="text-[10px] font-bold uppercase tracking-wide text-white/45">Livraison</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Livraison</span>
                       </div>
-                      <p className="mt-1.5 text-[12.5px] font-extrabold text-white">{EXAMPLE_PROJECT.delivery}</p>
+                      <p className="mt-1.5 text-[12.5px] font-extrabold text-foreground">{EXAMPLE_PROJECT.delivery}</p>
                     </div>
                   </div>
 
                   {/* Plan type + brochure */}
                   <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-                    <div className="flex flex-1 items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3">
-                      <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-bronze-500/15 text-bronze-400">
+                    <div className="flex flex-1 items-center gap-3 rounded-xl border border-border/12 dark:border-white/8 bg-background dark:bg-white/[0.04] px-4 py-3">
+                      <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-bronze-500/15 text-bronze-500 dark:text-bronze-400">
                         <LayoutGrid size={15} aria-hidden="true" />
                       </span>
                       <div className="min-w-0">
-                        <p className="text-[12px] font-extrabold text-white">Plan type</p>
-                        <p className="text-[10.5px] text-white/50">Fourni par le promoteur sur la fiche projet</p>
+                        <p className="text-[12px] font-extrabold text-foreground">Plan type</p>
+                        <p className="text-[10.5px] text-muted-foreground">Fourni par le promoteur sur la fiche projet</p>
                       </div>
                     </div>
-                    <div className="flex flex-1 items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3">
-                      <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-bronze-500/15 text-bronze-400">
+                    <div className="flex flex-1 items-center gap-3 rounded-xl border border-border/12 dark:border-white/8 bg-background dark:bg-white/[0.04] px-4 py-3">
+                      <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-bronze-500/15 text-bronze-500 dark:text-bronze-400">
                         <FileText size={15} aria-hidden="true" />
                       </span>
                       <div className="min-w-0">
-                        <p className="text-[12px] font-extrabold text-white">Brochure fournie par le promoteur</p>
-                        <p className="inline-flex items-center gap-1 text-[10.5px] text-white/45">
+                        <p className="text-[12px] font-extrabold text-foreground">Brochure fournie par le promoteur</p>
+                        <p className="inline-flex items-center gap-1 text-[10.5px] text-muted-foreground">
                           <Download size={10} aria-hidden="true" /> Bientôt disponible
                         </p>
                       </div>
@@ -292,7 +294,7 @@ export function NeufPageShell() {
                   </div>
 
                   {/* Disclaimer projet */}
-                  <p className="mt-4 flex items-start gap-1.5 text-[11px] leading-5 text-white/40">
+                  <p className="mt-4 flex items-start gap-1.5 text-[11px] leading-5 text-muted-foreground">
                     <Info size={12} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden="true" />
                     Exemple de présentation — aucun projet partenaire actif pour le moment. Les valeurs
                     (prix, surfaces, livraison) sont illustratives. Sur un vrai projet, ces données
@@ -302,49 +304,49 @@ export function NeufPageShell() {
               </article>
 
               {/* NEUF VS ANCIEN */}
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
-                <div className="flex items-start gap-2.5 border-b border-white/10 bg-white/[0.03] px-5 py-4">
-                  <Scale size={16} className="mt-0.5 shrink-0 text-bronze-400" aria-hidden="true" />
+              <div className="overflow-hidden rounded-2xl border border-border/15 dark:border-white/10 bg-card dark:bg-white/[0.04] shadow-[0_14px_40px_rgba(2,10,24,0.1)] dark:shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="flex items-start gap-2.5 border-b border-border/15 dark:border-white/10 bg-surface dark:bg-white/[0.03] px-5 py-4">
+                  <Scale size={16} className="mt-0.5 shrink-0 text-bronze-500 dark:text-bronze-400" aria-hidden="true" />
                   <div>
-                    <p className="text-[13px] font-extrabold text-white">Neuf vs Ancien</p>
-                    <p className="text-[10.5px] text-white/45">Comparaison indicative — les prix et frais peuvent varier</p>
+                    <p className="text-[13px] font-extrabold text-foreground">Neuf vs Ancien</p>
+                    <p className="text-[10.5px] text-muted-foreground">Comparaison indicative — les prix et frais peuvent varier</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-0">
                   {/* NEUF */}
                   <div className="p-5">
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-bronze-400">Neuf</p>
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-bronze-500 dark:text-bronze-400">Neuf</p>
                     <ul className="mt-3 space-y-2.5">
                       {[NEUF_VS_ANCIEN.neuf.prix, NEUF_VS_ANCIEN.neuf.surface, NEUF_VS_ANCIEN.neuf.frais, NEUF_VS_ANCIEN.neuf.extra].map((v, i) => (
-                        <li key={v} className="flex items-start gap-2 text-[12.5px] font-semibold text-white/80">
-                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-bronze-400" aria-hidden="true" />
-                          <span className={i === 0 ? "font-extrabold text-white" : ""}>{v}</span>
+                        <li key={v} className="flex items-start gap-2 text-[12.5px] font-semibold text-foreground/80">
+                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-bronze-500 dark:bg-bronze-400" aria-hidden="true" />
+                          <span className={i === 0 ? "font-extrabold text-foreground" : ""}>{v}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                   {/* VS */}
                   <div className="flex items-center justify-center px-1">
-                    <span className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-white/[0.06] text-[11px] font-extrabold text-bronze-400" aria-hidden="true">
+                    <span className="grid h-9 w-9 place-items-center rounded-full border border-border/20 dark:border-white/15 bg-surface dark:bg-white/[0.06] text-[11px] font-extrabold text-bronze-500 dark:text-bronze-400" aria-hidden="true">
                       VS
                     </span>
                   </div>
                   {/* ANCIEN */}
-                  <div className="border-l border-white/8 p-5">
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-white/55">Ancien</p>
+                  <div className="border-l border-border/12 dark:border-white/8 p-5">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground">Ancien</p>
                     <ul className="mt-3 space-y-2.5">
                       {[NEUF_VS_ANCIEN.ancien.prix, NEUF_VS_ANCIEN.ancien.surface, NEUF_VS_ANCIEN.ancien.frais, NEUF_VS_ANCIEN.ancien.extra].map((v, i) => (
-                        <li key={v} className="flex items-start gap-2 text-[12.5px] font-semibold text-white/80">
-                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white/30" aria-hidden="true" />
-                          <span className={i === 0 ? "font-extrabold text-white" : ""}>{v}</span>
+                        <li key={v} className="flex items-start gap-2 text-[12.5px] font-semibold text-foreground/80">
+                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-foreground/30" aria-hidden="true" />
+                          <span className={i === 0 ? "font-extrabold text-foreground" : ""}>{v}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                 </div>
-                <div className="flex items-start gap-1.5 border-t border-white/8 bg-white/[0.02] px-5 py-3">
-                  <Info size={11} strokeWidth={2} className="mt-0.5 shrink-0 text-white/40" aria-hidden="true" />
-                  <p className="text-[10.5px] leading-4 text-white/45">
+                <div className="flex items-start gap-1.5 border-t border-border/12 dark:border-white/8 bg-surface/50 dark:bg-white/[0.02] px-5 py-3">
+                  <Info size={11} strokeWidth={2} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                  <p className="text-[10.5px] leading-4 text-muted-foreground">
                     Comparaison indicative — à confirmer avec le promoteur / notaire.
                     Prix observé ancien issu d'annonces analysées.
                   </p>
@@ -359,16 +361,16 @@ export function NeufPageShell() {
               <CreditSimulator sourcePage="/neuf" id="financement" defaultPrice={850_000} />
 
               {/* Promoteur */}
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
-                <div className="border-b border-white/10 bg-white/[0.03] px-5 py-4">
+              <div className="overflow-hidden rounded-2xl border border-border/15 dark:border-white/10 bg-card dark:bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.1)] dark:shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="border-b border-border/15 dark:border-white/10 bg-surface dark:bg-white/[0.03] px-5 py-4">
                   <div className="flex items-center gap-2.5">
-                    <Building2 size={15} className="text-bronze-400" aria-hidden="true" />
-                    <p className="text-[13px] font-extrabold text-white">Promoteur</p>
+                    <Building2 size={15} className="text-bronze-500 dark:text-bronze-400" aria-hidden="true" />
+                    <p className="text-[13px] font-extrabold text-foreground">Promoteur</p>
                   </div>
-                  <p className="mt-1 text-[11.5px] text-white/50">Données fournies par le promoteur</p>
+                  <p className="mt-1 text-[11.5px] text-muted-foreground">Données fournies par le promoteur</p>
                 </div>
                 <div className="p-5">
-                  <p className="text-[13px] leading-6 text-white/65">
+                  <p className="text-[13px] leading-6 text-muted-foreground">
                     Aucun promoteur partenaire actif pour le moment. Vous êtes promoteur ?
                     Présentez votre projet neuf sur AkarFinder.
                   </p>
@@ -383,20 +385,20 @@ export function NeufPageShell() {
               </div>
 
               {/* Contact — WhatsApp / rappel / conseiller */}
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
-                <div className="border-b border-white/10 bg-white/[0.03] px-5 py-4">
-                  <p className="text-[13px] font-extrabold text-white">Une question sur le neuf ?</p>
-                  <p className="mt-1 text-[11.5px] text-white/50">Un conseiller AkarFinder peut vous orienter</p>
+              <div className="overflow-hidden rounded-2xl border border-border/15 dark:border-white/10 bg-card dark:bg-white/[0.05] shadow-[0_14px_40px_rgba(2,10,24,0.1)] dark:shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+                <div className="border-b border-border/15 dark:border-white/10 bg-surface dark:bg-white/[0.03] px-5 py-4">
+                  <p className="text-[13px] font-extrabold text-foreground">Une question sur le neuf ?</p>
+                  <p className="mt-1 text-[11.5px] text-muted-foreground">Un conseiller AkarFinder peut vous orienter</p>
                 </div>
                 <div className="space-y-2.5 p-4">
                   <Link
                     href="/onboarding"
-                    className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white/85 transition hover:border-bronze-500/30 hover:bg-white/[0.07]"
+                    className="flex items-center gap-3 rounded-xl border border-border/15 dark:border-white/10 bg-background dark:bg-white/[0.04] px-4 py-3 text-foreground/85 dark:text-white/85 transition hover:border-bronze-500/30 dark:hover:bg-white/[0.07]"
                   >
-                    <Phone size={15} strokeWidth={2.2} className="text-bronze-400" aria-hidden="true" />
+                    <Phone size={15} strokeWidth={2.2} className="text-bronze-500 dark:text-bronze-400" aria-hidden="true" />
                     <span className="text-[12.5px] font-extrabold">Être rappelé</span>
                   </Link>
-                  <p className="px-1 pt-1 text-[10.5px] leading-4 text-white/40">
+                  <p className="px-1 pt-1 text-[10.5px] leading-4 text-muted-foreground">
                     Le contact direct WhatsApp avec le promoteur sera disponible sur les projets
                     partenaires actifs.
                   </p>
@@ -404,15 +406,15 @@ export function NeufPageShell() {
               </div>
 
               {/* Guide d'achat Neuf */}
-              <div className="overflow-hidden rounded-2xl border border-bronze-500/25 bg-gradient-to-br from-bronze-500/[0.14] to-bronze-500/[0.03] shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
+              <div className="overflow-hidden rounded-2xl border border-bronze-500/25 bg-gradient-to-br from-bronze-500/[0.14] to-bronze-500/[0.03] shadow-[0_14px_40px_rgba(2,10,24,0.1)] dark:shadow-[0_14px_40px_rgba(2,10,24,0.3)] backdrop-blur-sm">
                 <div className="px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-bronze-500/20 text-bronze-300 ring-1 ring-bronze-500/30">
+                    <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-bronze-500/20 text-bronze-500 dark:text-bronze-300 ring-1 ring-bronze-500/30">
                       <FileText size={16} strokeWidth={2.2} aria-hidden="true" />
                     </span>
-                    <p className="text-[13.5px] font-extrabold text-bronze-100">Guide d'achat Neuf</p>
+                    <p className="text-[13.5px] font-extrabold text-foreground dark:text-bronze-300">Guide d'achat Neuf</p>
                   </div>
-                  <p className="mt-3 text-[12.5px] leading-5 text-white/65">
+                  <p className="mt-3 text-[12.5px] leading-5 text-muted-foreground">
                     Frais notariaux réduits, étapes VEFA, points à vérifier avant de réserver.
                     Repères indicatifs à confirmer avec le promoteur et le notaire.
                   </p>
@@ -420,7 +422,7 @@ export function NeufPageShell() {
                 <div className="border-t border-bronze-500/20 bg-bronze-500/[0.06] px-5 py-3">
                   <Link
                     href="/onboarding"
-                    className="flex items-center justify-between text-[12.5px] font-extrabold text-bronze-300 transition hover:text-bronze-200"
+                    className="flex items-center justify-between text-[12.5px] font-extrabold text-bronze-500 dark:text-bronze-300 transition hover:text-bronze-600 dark:hover:text-bronze-200"
                   >
                     Créer mon dossier acheteur
                     <ArrowRight size={13} aria-hidden="true" />
@@ -434,7 +436,7 @@ export function NeufPageShell() {
       </section>
 
       {/* ── STATS / repères ───────────────────────────────────────────────────── */}
-      <section className="border-y border-white/8 bg-[#050f1e] py-11 lg:py-14">
+      <section className="border-y border-border/12 dark:border-white/8 bg-surface-muted dark:bg-[#050f1e] py-11 lg:py-14">
         <Container>
           <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4">
             {[
@@ -444,11 +446,11 @@ export function NeufPageShell() {
               { value: "Indicatif", label: "à confirmer avant décision", icon: ShieldCheck },
             ].map((stat) => (
               <div key={stat.label} className="flex flex-col">
-                <span className="mb-3 inline-grid h-9 w-9 place-items-center rounded-xl bg-bronze-500/12 text-bronze-400 ring-1 ring-bronze-500/20">
+                <span className="mb-3 inline-grid h-9 w-9 place-items-center rounded-xl bg-bronze-500/12 text-bronze-500 dark:text-bronze-400 ring-1 ring-bronze-500/20">
                   <stat.icon size={15} aria-hidden="true" />
                 </span>
-                <p className="text-[1.5rem] font-extrabold leading-tight tracking-[-0.03em] text-white">{stat.value}</p>
-                <p className="mt-2 text-[12px] font-semibold text-white/50">{stat.label}</p>
+                <p className="text-[1.5rem] font-extrabold leading-tight tracking-[-0.03em] text-foreground">{stat.value}</p>
+                <p className="mt-2 text-[12px] font-semibold text-muted-foreground">{stat.label}</p>
                 <div className="mt-3 h-0.5 w-8 rounded-full bg-gradient-to-r from-bronze-500 to-transparent" />
               </div>
             ))}
@@ -457,21 +459,21 @@ export function NeufPageShell() {
       </section>
 
       {/* ── CALLOUT PROMOTEURS ────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#040b16] py-14 lg:py-20">
+      <section className="relative overflow-hidden bg-surface dark:bg-[#040b16] py-14 lg:py-20">
         <div
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-0 hidden dark:block"
           style={{ background: "radial-gradient(70% 80% at 88% 30%, rgba(34,72,132,0.35) 0%, transparent 60%)" }}
         />
         <Container className="relative">
-          <div className="overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-8 backdrop-blur-sm sm:p-10">
+          <div className="overflow-hidden rounded-[24px] border border-border/15 dark:border-white/10 bg-card dark:bg-gradient-to-br dark:from-white/[0.06] dark:to-white/[0.02] p-8 backdrop-blur-sm sm:p-10">
             <div className="flex items-center gap-2.5">
               <span className="h-px w-6 bg-bronze-500/60" aria-hidden="true" />
-              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400">Espace promoteurs</p>
+              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-500 dark:text-bronze-400">Espace promoteurs</p>
             </div>
-            <h2 className="mt-3 max-w-xl text-[1.7rem] font-extrabold leading-tight tracking-[-0.04em] text-white">
+            <h2 className="mt-3 max-w-xl text-[1.7rem] font-extrabold leading-tight tracking-[-0.04em] text-foreground">
               Vous êtes promoteur ? Présentez vos projets sur AkarFinder
             </h2>
-            <p className="mt-3 max-w-xl text-[14px] leading-7 text-white/60">
+            <p className="mt-3 max-w-xl text-[14px] leading-7 text-muted-foreground">
               Pages projet dédiées, présentation soignée et mise en relation avec des acheteurs.
               Données fournies par le promoteur — sans promesse de volume ni garantie de résultats.
             </p>
@@ -485,7 +487,7 @@ export function NeufPageShell() {
               </Link>
               <Link
                 href="/pro"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-white/90 transition hover:border-bronze-500/40 hover:bg-white/16"
+                className="inline-flex items-center gap-2 rounded-xl border border-border/20 dark:border-white/15 bg-surface dark:bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-foreground dark:text-white/90 transition hover:border-bronze-500/40"
               >
                 Accéder à AkarFinder Pro
                 <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
@@ -494,7 +496,7 @@ export function NeufPageShell() {
           </div>
 
           {/* Disclaimer */}
-          <p className="mt-6 flex items-start gap-1.5 text-[11.5px] leading-5 text-white/40">
+          <p className="mt-6 flex items-start gap-1.5 text-[11.5px] leading-5 text-muted-foreground">
             <Info size={12} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden="true" />
             Les informations sur les projets neufs sont fournies par les promoteurs partenaires
             (données partenaires), à titre indicatif. Prix à partir de, hors frais notariaux et

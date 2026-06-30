@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default function ComparePage() {
   return (
-    <main className="min-h-screen bg-[#f8f9fa] text-gray-900">
+    <main className="min-h-screen bg-background text-foreground">
       <SiteHeader />
       <Container>
         <ComparePageShell />

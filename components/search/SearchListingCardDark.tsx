@@ -5,9 +5,11 @@
 // Même richesse data, thème dark deepblue/bronze. CTAs : Voir le bien, Voir la
 // source, Comparer, Favori + contextuel (Simuler le crédit / Créer une alerte).
 // Wording prudent : Indice AkarFinder, repères indicatifs, source visible.
+// THEME-SYSTEM-V1-P0 — Rendu theme-safe via tokens + dark: prefix.
 
 import Image from "next/image";
 import Link from "next/link";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { MapPin, ArrowRight, Calculator, BellPlus } from "lucide-react";
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
@@ -28,8 +30,8 @@ function PackageBadge({ label }: { label: PackageScoreLabel }) {
     "Excellent package": "border-emerald-400/30 bg-emerald-400/15 text-emerald-300",
     "Bon package": "border-emerald-400/25 bg-emerald-400/10 text-emerald-300",
     "Package correct": "border-amber-300/30 bg-amber-300/10 text-amber-200",
-    "À analyser": "border-white/15 bg-white/5 text-white/55",
-    "Données insuffisantes": "border-white/12 bg-white/5 text-white/40",
+    "À analyser": "border-border/20 dark:border-white/15 bg-surface dark:bg-white/5 text-muted-foreground dark:text-white/55",
+    "Données insuffisantes": "border-border/15 dark:border-white/12 bg-surface dark:bg-white/5 text-muted-foreground/80 dark:text-white/40",
   };
   return <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${styles[label]}`}>{label}</span>;
 }
@@ -53,6 +55,7 @@ function getTransactionLabel(type: Listing["transaction_type"]) {
 }
 
 export function SearchListingCardDark({ listing }: { listing: Listing }) {
+  const { theme } = useTheme();
   const reliabilityLevel = getReliabilityLevel(listing.reliability_score);
   const rel = reliabilityStyle(reliabilityLevel);
   const showReliability = listing.reliability_available !== false;
@@ -78,7 +81,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   const isRent = listing.transaction_type === "rent";
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] shadow-[0_14px_40px_rgba(2,10,24,0.4)] backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-bronze-500/40 hover:shadow-[0_26px_56px_rgba(2,10,24,0.55)]">
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border/15 dark:border-white/10 bg-card dark:bg-white/[0.045] shadow-[0_14px_40px_rgba(2,10,24,0.15)] dark:shadow-[0_14px_40px_rgba(2,10,24,0.4)] backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-bronze-500/40 hover:shadow-[0_26px_56px_rgba(2,10,24,0.3)] dark:hover:shadow-[0_26px_56px_rgba(2,10,24,0.55)]">
       <Link
         href={`/listings/${listing.id}`}
         onClick={() => track({ event_name: "search_result_click", source_page: "/search", listing_id: listing.id, intent: transactionType, metadata: { city: listing.city } })}
@@ -124,7 +127,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
               {formatPrice(listing.price, listing.currency)}
             </p>
             {listing.price_per_m2 > 0 ? (
-              <p className="mt-1 text-[12px] font-bold text-white/45">
+              <p className="mt-1 text-[12px] font-bold text-muted-foreground">
                 {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
               </p>
             ) : null}
@@ -133,21 +136,21 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
         </div>
 
         <Link href={`/listings/${listing.id}`} className="mt-3 block">
-          <h2 className="line-clamp-1 text-[1.02rem] font-extrabold leading-snug text-white transition group-hover:text-bronze-300">
+          <h2 className="line-clamp-1 text-[1.02rem] font-extrabold leading-snug text-foreground dark:text-white transition group-hover:text-bronze-300">
             {listing.title}
           </h2>
-          <p className="mt-1.5 flex items-center gap-1.5 text-[13px] font-semibold text-white/55">
+          <p className="mt-1.5 flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground">
             <MapPin size={13} strokeWidth={2.2} className="shrink-0 text-bronze-500" aria-hidden="true" />
             <span className="truncate">{listing.neighborhood ? `${listing.city}, ${listing.neighborhood}` : listing.city}</span>
           </p>
         </Link>
 
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-white/8 pt-3 text-[13px] font-bold text-white/75">
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-border/12 dark:border-white/8 pt-3 text-[13px] font-bold text-foreground/75">
           <span>{formatSurface(listing.surface_m2)}</span>
           {listing.bedrooms > 0 ? <span>{listing.bedrooms} ch.</span> : null}
           {listing.bathrooms > 0 ? <span>{listing.bathrooms} sdb</span> : null}
-          <span className="text-white/25">·</span>
-          <span className="text-white/45">{listing.freshness_label}</span>
+          <span className="text-foreground/25">·</span>
+          <span className="text-muted-foreground">{listing.freshness_label}</span>
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
@@ -156,7 +159,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             <SourceBadge
               badge={listing.source_badge}
               sourceAccessLevel={listing.source_access_level}
-              variant="dark"
+              variant={theme === "dark" ? "dark" : "light"}
             />
           )}
           {hasPackage ? (
@@ -185,7 +188,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           sourceAttributionLabel={listing.source_attribution_label}
           displayPolicyReason={listing.display_policy_reason}
           sourceName={listing.source_name}
-          variant="dark"
+          variant={theme === "dark" ? "dark" : "light"}
         />
 
         {/* CTAs — respect allowed_ctas when provided, fall back to default behavior */}
@@ -212,7 +215,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
                   href={listing.listing_url!}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-white/12 bg-white/[0.04] px-4 py-3 text-[12.5px] font-bold text-white/70 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white"
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.04] px-4 py-3 text-[12.5px] font-bold text-foreground/70 dark:text-white/70 transition hover:border-border/35 dark:hover:border-white/25 hover:bg-surface/80 dark:hover:bg-white/[0.08] hover:text-foreground dark:hover:text-white"
                 >
                   {originalLabel}
                 </a>

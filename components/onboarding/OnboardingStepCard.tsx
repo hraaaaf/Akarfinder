@@ -39,14 +39,14 @@ export function OnboardingStepCard({
             <button
               type="button"
               onClick={onBack}
-              className="flex items-center gap-1 text-[12.5px] font-semibold text-gray-500 hover:text-deepblue transition"
+              className="flex items-center gap-1 text-[12.5px] font-semibold text-muted-foreground hover:text-foreground transition"
             >
               <ChevronLeft size={14} strokeWidth={2.5} aria-hidden="true" />
               Retour
             </button>
           ) : null}
         </div>
-        <div className="h-1.5 w-full rounded-full bg-[#f0e6d2]">
+        <div className="h-1.5 w-full rounded-full bg-surface-muted dark:bg-white/10">
           <div
             className="h-1.5 rounded-full bg-bronze-700 transition-all duration-500"
             style={{ width: `${progress}%` }}
@@ -55,12 +55,12 @@ export function OnboardingStepCard({
       </div>
 
       {/* Card */}
-      <div className="rounded-[1.6rem] border border-[#eadfca] bg-white p-6 shadow-[0_12px_38px_rgba(7,27,51,0.08)] sm:p-8">
-        <h2 className="text-[1.5rem] font-extrabold tracking-[-0.04em] text-deepblue sm:text-[1.8rem]">
+      <div className="rounded-[1.6rem] border border-border/20 dark:border-white/10 bg-card p-6 shadow-[0_12px_38px_rgba(7,27,51,0.08)] dark:shadow-[0_12px_38px_rgba(0,0,0,0.3)] sm:p-8">
+        <h2 className="text-[1.5rem] font-extrabold tracking-[-0.04em] text-foreground sm:text-[1.8rem]">
           {title}
         </h2>
         {subtitle ? (
-          <p className="mt-2 text-[14px] leading-6 text-gray-500">{subtitle}</p>
+          <p className="mt-2 text-[14px] leading-6 text-muted-foreground">{subtitle}</p>
         ) : null}
 
         <div className="mt-6">{children}</div>

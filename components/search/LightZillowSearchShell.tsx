@@ -32,6 +32,7 @@ type LightZillowSearchShellProps = {
     maxBudget: string;
     minBudget: string;
     mreOnly: boolean;
+    search: string;
   }>;
 };
 
@@ -75,13 +76,13 @@ function getIntentLabel(t: string) {
 
 function SkeletonCard() {
   return (
-    <div className="animate-pulse overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]">
-      <div className="h-[210px] bg-white/10" />
+    <div className="animate-pulse overflow-hidden rounded-2xl border border-border/15 dark:border-white/10 bg-card dark:bg-white/[0.04]">
+      <div className="h-[210px] bg-surface dark:bg-white/10" />
       <div className="space-y-3 p-5">
-        <div className="h-6 w-2/3 rounded-full bg-white/10" />
-        <div className="h-4 w-1/3 rounded-full bg-white/10" />
-        <div className="h-4 w-1/2 rounded-full bg-white/10" />
-        <div className="mt-2 h-10 rounded-xl bg-white/10" />
+        <div className="h-6 w-2/3 rounded-full bg-surface dark:bg-white/10" />
+        <div className="h-4 w-1/3 rounded-full bg-surface dark:bg-white/10" />
+        <div className="h-4 w-1/2 rounded-full bg-surface dark:bg-white/10" />
+        <div className="mt-2 h-10 rounded-xl bg-surface dark:bg-white/10" />
       </div>
     </div>
   );
@@ -89,12 +90,12 @@ function SkeletonCard() {
 
 function EmptyState({ onReset }: { onReset: () => void }) {
   return (
-    <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-12 text-center">
-      <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-white/5">
-        <SearchX size={24} strokeWidth={2} className="text-white/40" aria-hidden="true" />
+    <div className="rounded-2xl border border-dashed border-border/20 dark:border-white/15 bg-surface/50 dark:bg-white/[0.03] p-12 text-center">
+      <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-surface dark:bg-white/5">
+        <SearchX size={24} strokeWidth={2} className="text-muted-foreground" aria-hidden="true" />
       </span>
-      <p className="mt-4 text-[1.1rem] font-extrabold text-white">Aucune annonce trouvée</p>
-      <p className="mt-2 text-[14px] leading-6 text-white/50">Élargissez la ville, le budget ou le type de bien.</p>
+      <p className="mt-4 text-[1.1rem] font-extrabold text-foreground">Aucune annonce trouvée</p>
+      <p className="mt-2 text-[14px] leading-6 text-muted-foreground">Élargissez la ville, le budget ou le type de bien.</p>
       <button type="button" onClick={onReset} className="mt-5 rounded-full bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-2.5 text-[13px] font-extrabold text-white transition hover:from-bronze-600">
         Réinitialiser les filtres
       </button>
@@ -111,6 +112,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     maxBudget: initialFilters?.maxBudget ?? defaultListingFilters.maxBudget,
     minBudget: initialFilters?.minBudget ?? defaultListingFilters.minBudget,
     mreOnly: initialFilters?.mreOnly ?? defaultListingFilters.mreOnly,
+    search: initialFilters?.search ?? defaultListingFilters.search,
   });
   const [activeTab, setActiveTab] = useState<ActiveTab>("Liste");
   const [sortBy, setSortBy] = useState<SortBy>("recommended");
@@ -218,10 +220,10 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   const showSkeleton = isLoading && filteredListings.length === 0;
 
   return (
-    <div className="min-h-screen bg-[#061027] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Hero + filtres */}
-      <section className="relative overflow-hidden border-b border-white/8 bg-deepblue">
-        <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse 70% 60% at 60% 20%, rgba(34,72,132,0.6) 0%, transparent 62%)" }} />
+      <section className="relative overflow-hidden border-b border-border/12 dark:border-white/8 bg-surface dark:bg-deepblue">
+        <div className="pointer-events-none absolute inset-0 hidden dark:block" style={{ background: "radial-gradient(ellipse 70% 60% at 60% 20%, rgba(34,72,132,0.6) 0%, transparent 62%)" }} />
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-bronze-500/40 to-transparent" />
         <div className="relative mx-auto max-w-[1480px] px-4 py-6 sm:px-6 lg:py-9">
           <div className="mb-4 flex items-end justify-between gap-3">
@@ -230,12 +232,12 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                 <span className="h-px w-7 bg-bronze-500/70" aria-hidden="true" />
                 <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400 sm:text-[11px]">Marketplace immobilier AkarFinder</p>
               </div>
-              <h1 className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.045em] text-white sm:text-[2.7rem]">Trouvez votre bien au Maroc</h1>
-              <p className="mt-2 hidden max-w-2xl text-[14.5px] leading-7 text-white/60 sm:block">
+              <h1 className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.045em] text-foreground sm:text-[2.7rem]">Trouvez votre bien au Maroc</h1>
+              <p className="mt-2 hidden max-w-2xl text-[14.5px] leading-7 text-muted-foreground sm:block">
                 Annonces analysées, repères de lecture et source visible avant de décider.
               </p>
             </div>
-            <span className="shrink-0 rounded-full border border-white/12 bg-white/[0.06] px-3 py-1.5 text-[11px] font-bold text-white/75 sm:px-4 sm:py-2 sm:text-[12.5px]">
+            <span className="shrink-0 rounded-full border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-3 py-1.5 text-[11px] font-bold text-foreground/75 sm:px-4 sm:py-2 sm:text-[12.5px]">
               {filteredListings.length} bien{filteredListings.length > 1 ? "s" : ""} analysé{filteredListings.length > 1 ? "s" : ""}
             </span>
           </div>
@@ -246,20 +248,20 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
 
       {/* Résultats */}
       <section className="mx-auto max-w-[1480px] px-4 py-5 sm:px-6 lg:py-6">
-        <div className="border-b border-white/8 pb-3.5">
+        <div className="border-b border-border/12 dark:border-white/8 pb-3.5">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="flex items-center gap-2 text-[1.05rem] font-extrabold tracking-[-0.02em] text-white sm:text-[1.15rem]">
+              <p className="flex items-center gap-2 text-[1.05rem] font-extrabold tracking-[-0.02em] text-foreground sm:text-[1.15rem]">
                 {isLoading ? <Loader2 size={16} strokeWidth={2.5} className="animate-spin text-bronze-400" aria-hidden="true" /> : null}
                 <span>{filteredListings.length} bien{filteredListings.length > 1 ? "s" : ""} à {displayCity}</span>
               </p>
-              <p className="mt-0.5 line-clamp-1 text-[12.5px] font-medium text-white/45 sm:text-[13.5px]">
+              <p className="mt-0.5 line-clamp-1 text-[12.5px] font-medium text-muted-foreground sm:text-[13.5px]">
                 {getIntentLabel(filters.transactionType)} · tri {sortBy === "recommended" ? "recommandé" : sortBy === "reliability" ? "fiabilité" : sortBy === "price-asc" ? "prix ↑" : "prix ↓"}
               </p>
             </div>
 
             <select aria-label="Trier les résultats" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}
-              className="shrink-0 rounded-full border border-white/12 bg-white/[0.06] px-3 py-2.5 text-[12px] font-bold text-white outline-none [color-scheme:dark] sm:px-4 sm:text-[13px]">
+              className="shrink-0 rounded-full border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-3 py-2.5 text-[12px] font-bold text-foreground outline-none dark:[color-scheme:dark] sm:px-4 sm:text-[13px]">
               <option value="recommended">Tri recommandé</option>
               <option value="reliability">Meilleures annonces</option>
               <option value="price-asc">Prix croissant</option>
@@ -269,10 +271,10 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
 
           {/* Onglets Liste/Carte sur leur propre rangée mobile — évite de voler
               l'espace du count "X biens à Maroc" */}
-          <div className="mt-2.5 flex rounded-full border border-white/12 bg-white/[0.06] p-1 lg:hidden">
+          <div className="mt-2.5 flex rounded-full border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] p-1 lg:hidden">
             {(["Liste", "Carte"] as ActiveTab[]).map((tab) => (
               <button key={tab} type="button" onClick={() => setActiveTab(tab)}
-                className={`flex-1 rounded-full py-2 text-[13px] font-extrabold transition ${activeTab === tab ? "bg-gradient-to-br from-bronze-500 to-bronze-700 text-white" : "text-white/55"}`}>
+                className={`flex-1 rounded-full py-2 text-[13px] font-extrabold transition ${activeTab === tab ? "bg-gradient-to-br from-bronze-500 to-bronze-700 text-white" : "text-foreground/55"}`}>
                 {tab}
               </button>
             ))}
@@ -287,7 +289,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                 </button>
               ))}
               {activeChips.length > 1 ? (
-                <button type="button" onClick={handleReset} className="rounded-full px-3 py-1.5 text-[12px] font-bold text-white/45 transition hover:text-white">Tout effacer</button>
+                <button type="button" onClick={handleReset} className="rounded-full px-3 py-1.5 text-[12px] font-bold text-muted-foreground transition hover:text-foreground">Tout effacer</button>
               ) : null}
             </div>
           ) : null}
@@ -322,9 +324,9 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
               <div className="px-5 py-4">
                 <div className="flex items-center gap-3">
                   <span className="inline-grid h-9 w-9 place-items-center rounded-xl bg-bronze-500/20 text-bronze-300 ring-1 ring-bronze-500/30"><BellPlus size={16} strokeWidth={2.2} aria-hidden="true" /></span>
-                  <p className="text-[13.5px] font-extrabold text-bronze-100">Sauvegarder ma recherche</p>
+                  <p className="text-[13.5px] font-extrabold text-foreground dark:text-bronze-300">Sauvegarder ma recherche</p>
                 </div>
-                <p className="mt-2 text-[12.5px] leading-5 text-white/60">Soyez informé selon disponibilité des annonces correspondant à vos critères.</p>
+                <p className="mt-2 text-[12.5px] leading-5 text-muted-foreground">Soyez informé selon disponibilité des annonces correspondant à vos critères.</p>
               </div>
               <div className="border-t border-bronze-500/20 bg-bronze-500/[0.06] px-5 py-3">
                 <Link href="/louer#alerte" onClick={() => track({ event_name: "search_save_click", source_page: "/search", intent: filters.transactionType, metadata: { city: filters.city } })}
@@ -335,14 +337,14 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
             </div>
 
             {/* Dossier acheteur/locataire */}
-            <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-sm">
+            <div className="overflow-hidden rounded-2xl border border-border/15 dark:border-white/10 bg-card dark:bg-white/[0.04] backdrop-blur-sm">
               <div className="px-5 py-4">
-                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-400">Accompagnement</p>
-                <p className="mt-1.5 text-[1rem] font-extrabold text-white">Clarifier mon projet</p>
-                <p className="mt-1.5 text-[12.5px] leading-5 text-white/55">Budget, zone, type de bien et timing — recevez les biens compatibles.</p>
+                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-500 dark:text-bronze-400">Accompagnement</p>
+                <p className="mt-1.5 text-[1rem] font-extrabold text-foreground">Clarifier mon projet</p>
+                <p className="mt-1.5 text-[12.5px] leading-5 text-muted-foreground">Budget, zone, type de bien et timing — recevez les biens compatibles.</p>
               </div>
-              <div className="border-t border-white/8 px-5 py-3">
-                <Link href="/onboarding" className="flex items-center justify-between text-[13px] font-extrabold text-white/85 transition hover:text-white">
+              <div className="border-t border-border/12 dark:border-white/8 px-5 py-3">
+                <Link href="/onboarding" className="flex items-center justify-between text-[13px] font-extrabold text-foreground/80 dark:text-white/85 transition hover:text-foreground">
                   Créer mon dossier<ArrowRight size={14} aria-hidden="true" />
                 </Link>
               </div>
@@ -350,7 +352,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
 
             {/* Voir la carte plein écran */}
             <Link href={`/map${filters.city !== "all" ? `?city=${encodeURIComponent(filters.city)}` : ""}`}
-              className="flex items-center justify-center gap-2 rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3 text-[13px] font-extrabold text-white/80 transition hover:border-bronze-500/40 hover:text-white">
+              className="flex items-center justify-center gap-2 rounded-2xl border border-border/20 dark:border-white/12 bg-card dark:bg-white/[0.04] px-4 py-3 text-[13px] font-extrabold text-foreground/75 dark:text-white/80 transition hover:border-bronze-500/40 hover:text-foreground dark:hover:text-white">
               <MapIcon size={15} aria-hidden="true" /> Ouvrir la carte complète
             </Link>
           </div>

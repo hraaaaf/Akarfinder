@@ -40,12 +40,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const mreOnly = (pickFirst(params.mre) ?? "").toLowerCase() === "true";
 
   // SEARCH-RELOOKING-1 — deep-links : property_type + prix min/max depuis l'URL.
+  // GOOGLE-LIKE-SEARCH-QA-1 — q param from homepage hero search + budget_max.
   const propertyType = pickFirst(params.property_type) ?? "all";
   const minBudget = pickFirst(params.min_price) ?? pickFirst(params.budget_min) ?? "";
   const maxBudget = pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "";
+  const search = pickFirst(params.q) ?? "";
 
   return (
-    <main className="min-h-screen bg-[#061027] text-white">
+    <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" />
       <LightZillowSearchShell
         initialListings={[]}
@@ -56,6 +58,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           minBudget,
           maxBudget,
           mreOnly,
+          search,
         }}
       />
       <SiteFooter />

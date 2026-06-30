@@ -90,9 +90,17 @@ Fichier : `scripts/scrapers/__tests__/source-display-policy.test.ts`
 - authorized_source jamais assigné par fallback
 - display_policy_reason présent pour sources connues
 
-## Ce qui reste à faire (hors périmètre de ce repo)
+## Ce qui reste à faire
 
-- SOURCE-POLICY-FOUNDATION-1 Data Engine : non traité ici
+- SOURCE-POLICY-FOUNDATION-1 Data Engine : **COMPLÉTÉE côté Engine (repo séparé)**
+- SITE-SOURCE-BADGES-HARDENING-1 : COMPLÉTÉE 2026-06-30 (commit acffa1a, 534 tests PASS)
 - Mapper nouvelles sources (Yakeey, Sarouty) dès qu'elles entrent en DB
+  → Ajouter `if (src === "yakeey") { ... }` dans `deriveSourceDisplayPolicy()`
 - Peupler `display_images.urls` quand la DB expose des tableaux d'URLs
+  → `display_images.urls: []` correct tant que DB n'expose que `images_count`
 - Tests UI d'intégration badges (extension Chrome requise)
+
+## Prochaine étape recommandée
+
+1. PROD-DEPLOY — `vercel --prod` après validation Achraf
+2. MVP-RC-1 final — validation release candidate complète

@@ -1,6 +1,77 @@
 SESSION.md - Current Project Session
 
 ====================================================
+THEME-SYSTEM-V1-P1 — Corrections thème P1 — 2026-06-30
+====================================================
+
+MISSION : Corriger les incohérences thème P1 après P0. Rendre les pages et composants light/dark cohérents.
+
+FICHIERS MODIFIÉS (P1)
+* app/onboarding/page.tsx — bg-[#fffdf8] → bg-background
+* app/compare/page.tsx — bg-[#f8f9fa] text-gray-900 → bg-background text-foreground
+* components/onboarding/OnboardingStepCard.tsx — card bg-white/border/titles → tokens sémantiques
+* components/onboarding/BuyerOnboardingFlow.tsx — chips, inputs, labels, consent block → tokens + dark: variants
+* components/onboarding/BuyerProfileSummary.tsx — summary card, labels, bouton restart → tokens
+* components/intent/AcheterPageShell.tsx — search form, chips, counter, card titles, specs border → tokens
+* components/location/LouerPageShell.tsx — mêmes patterns que Acheter
+* components/compare/ComparePageShell.tsx — EmptyState, OneItemState → tokens sémantiques
+
+EXCEPTIONS DOCUMENTÉES (dark-only acceptées)
+* GoogleLikeHero + HomeSearchBar : hero photo (dark overlay permanent)
+* HomeResultPreview : "bloc data intelligence" homepage (bg-[#050d1b])
+* AcheterPageShell stats section : bg-[#050f1e] (premium stats band)
+* AcheterPageShell explorer section : bg-[#040b16] (carte Maroc premium)
+* LouerPageShell stats section + carte loyers : même pattern premium
+
+PATTERN APPLIQUÉ
+* bg-white → bg-card / bg-background
+* text-gray-X → text-muted-foreground / text-foreground
+* border-[#eadfca] → border-border/20 dark:border-white/10
+* bg-white/5 (chips/badges) → bg-surface dark:bg-white/5
+* text-deepblue (card titles) → text-foreground
+* Chips selected: deepblue → + dark:border-bronze-500/50 dark:bg-bronze-500/15
+
+VALIDATION
+* build OK (0 erreurs TypeScript)
+* 51/51 tests pass
+* smoke 10/10 routes HTTP 200 (/, /search, /acheter, /louer, /onboarding, /compare, /neuf, /map, /vendre, /pro)
+
+STATUT : THEME-SYSTEM-V1-P1 Completed.
+
+====================================================
+THEME-AUDIT-INVENTORY-1 — Audit système thème AkarFinder — 2026-06-30
+====================================================
+
+MISSION : Audit complet du système de thème avant correction. Aucune modification de code.
+
+LIVRABLE : docs/THEME_AUDIT_INVENTORY.md
+
+CONSTATS CLÉS
+* ThemeProvider + ThemeToggle + variables CSS existent et fonctionnent — le système est câblé.
+* Le problème principal : ~60% des composants ignorent le toggle thème (hardcodés dark ou light).
+* 4 problèmes P0 : CreditSimulator (illisible en light), /search (hardcodé dark), /neuf (hardcodé dark), SearchListingCardDark (hardcodé dark).
+* 12 problèmes P1 : ProductHero, SearchPanel, BuyerOnboardingFlow, AcheterPageShell, LouerPageShell, etc.
+* Les tokens CSS et Tailwind sont bien configurés — le problème est l'utilisation, pas l'architecture.
+* Les badges (SourceBadge, ReliabilityBadge) supportent déjà variant light/dark.
+* Les sections dark alternées (stats, cartes géo) peuvent rester dark si documentées.
+
+PAGES AUDITÉES : 11 (/  /search  /acheter  /louer  /neuf  /vendre  /promoteurs  /onboarding  /pro  /favorites  /compare)
+SECTIONS AUDITÉES : ~60
+
+BILAN LIGHT
+* OK : /vendre, /promoteurs, /favorites
+* Partiel : /, /acheter, /louer, /compare
+* Cassé : /search, /neuf, /onboarding, /promoteurs/[slug]
+
+BILAN DARK
+* OK : 7 pages (tokens fonctionnent en dark)
+* Problème : les pages hardcodées dark /search, /neuf ignorent le toggle
+
+STATUT : THEME-AUDIT-INVENTORY-1 Completed. THEME-SYSTEM-V1 Not started.
+
+PROCHAINE ÉTAPE : Lancer THEME-SYSTEM-V1 basée sur ce rapport — Phase 1 (P0) en priorité.
+
+====================================================
 INTENT-CTA-CONTEXT-FIX-1 — Corrections CTAs inter-espaces — 2026-06-28
 ====================================================
 
@@ -6718,4 +6789,83 @@ Screenshots
 Issues / dettes restantes
 * Le header sticky global de la homepage recouvre une petite partie du haut de la section pendant certaines captures pleine page; la section elle-meme est correcte.
 * Si une correspondance pixel-perfect stricte est voulue, il faudra probablement valider ou remplacer les photos villes actuelles selon les visuels definitifs de reference.
+
+====================================================
+PROJECT-STATE-SYNC-1 — Synchronisation roadmap/docs post-V9.5 — 2026-06-30
+====================================================
+
+Missions complétées (résumé depuis la session précédente compressée)
+
+SOURCE-POLICY-FOUNDATION-1   Complétée côté Engine (repo séparé)
+ENGINE-DISPLAY-POLICY-EXPORT-1 Complétée (export policy depuis Engine)
+SITE-SOURCE-BADGES-1          Complétée (SourceBadge + SourceAttribution branchés site)
+DATA-BRIDGE-V9.5-SOURCE-BADGES-1 Complétée (/api/listings retourne champs V9.5)
+SOURCE-BADGES-PREPROD-QA-1    Complétée (QA badges preprod)
+SITE-SOURCE-BADGES-HARDENING-1 Complétée 2026-06-30 — voir détail ROADMAP.md
+GOOGLE-LIKE-HOMEPAGE-1        Complétée (homepage Google search UX validée)
+HERO-PHOTO-RESTORE-1          Complétée (fb88e35 — photo premium restaurée)
+TUNNEL-CTA-CONTAINMENT-1      Complétée (9fb65a9 — 0 fuite /search depuis tunnels)
+
+----------------------------------------------------
+SITE-SOURCE-BADGES-HARDENING-1 — Détail technique
+
+Fichiers modifiés
+* lib/listings/map-db-listing.ts
+  — deriveSourceDisplayPolicy() exportée
+  — Avito mapping corrigé (valeurs étaient swappées)
+  — Mubawab : thumbnail_policy + display_images enrichis
+* components/search/SearchListingCardDark.tsx
+  — Guard no_listing_image → force fallback_visual
+* components/listings/PhotoFirstListingCard.tsx
+  — Guard identique
+* package.json — source-display-policy.test.ts ajouté à test:scrapers
+
+Fichiers créés
+* scripts/scrapers/__tests__/source-display-policy.test.ts (31 tests, 4 suites)
+* docs/SITE_SOURCE_BADGES_POLICY.md
+
+Résultats
+* npm test : 534/534 PASS (483 scrapers + 51 API), 0 fail
+* npm run build : OK, 0 erreur TypeScript
+* Commit : acffa1a
+
+----------------------------------------------------
+GOOGLE-LIKE-HOMEPAGE-1 + HERO-PHOTO-RESTORE-1
+
+* GoogleLikeHero : barre de recherche centrale + chips + exemples
+* Photo premium : <picture> background absolu (desktop + mobile .webp)
+  Overlay stack : top fade navy + bottom vignette + radial veil + bronze halo + tint #061027/38
+* HomeSearchBar + chips + exemples préservés intacts
+* Commit : fb88e35
+
+----------------------------------------------------
+TUNNEL-CTA-CONTAINMENT-1
+
+Règle : 0 fuite vers /search depuis /acheter /louer /vendre
+* AcheterPageShell — searchHref → /acheter?property_type=...
+* LouerPageShell — BUDGET_CHIPS + TYPE_CHIPS → /louer
+* VendrePageShell — CTA → "Voir des biens comparables" → /acheter
+* SellerLeadForm — "Comparer avec le marché" → /vendre
+Commit : 9fb65a9
+
+----------------------------------------------------
+ÉTAT V9.5 CONSOLIDÉ
+
+Data Engine V9.5 : généré et complété côté Engine
+Display policy  : runtime via deriveSourceDisplayPolicy() — 0 migration DB
+/api/listings   : retourne source_badge, source_display_type, display_depth,
+                  thumbnail_policy, display_images, allowed_ctas, source_attribution_label,
+                  display_policy_reason, original_source_required
+Mubawab         : public_index_source / public_indexed / limited_preview
+Avito           : audit_source / market_signal / market_signal_only
+image_urls      : jamais muté
+display_images  : champ séparé contrôlant l'affichage UI
+
+----------------------------------------------------
+PROCHAINE ÉTAPE RECOMMANDÉE
+
+1. PROD-DEPLOY — vercel --prod après validation Achraf (permission obligatoire)
+2. MVP-RC-1 final — validation release candidate complète
+
+Tests actuels : 534/534 PASS · Build : OK · Dernière prod : commits à déployer
 

@@ -21,7 +21,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
     "/onboarding";
 
   return (
-    <main className="min-h-screen bg-[#fffdf8]">
+    <main className="min-h-screen bg-background">
       <SiteHeader variant="light" />
 
       <section className="pt-12 pb-16 lg:pt-16 lg:pb-20">

@@ -32,8 +32,8 @@ function Chip({
       onClick={onClick}
       className={`rounded-xl border-2 px-4 py-3 text-[14px] font-bold transition active:scale-[0.97] ${
         selected
-          ? "border-deepblue bg-deepblue text-white shadow-[0_4px_14px_rgba(7,27,51,0.22)]"
-          : "border-[#d8c8a3] bg-white text-deepblue hover:border-deepblue/50 hover:bg-[#f7f3ea]"
+          ? "border-deepblue bg-deepblue text-white shadow-[0_4px_14px_rgba(7,27,51,0.22)] dark:border-bronze-500/50 dark:bg-bronze-500/15 dark:text-bronze-200"
+          : "border-border/20 bg-background text-foreground hover:border-bronze-500/40 hover:bg-surface-muted dark:border-white/12 dark:bg-white/[0.04] dark:text-white/85 dark:hover:border-white/25 dark:hover:bg-white/[0.08]"
       }`}
     >
       {label}
@@ -62,9 +62,9 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="block text-[12px] font-extrabold uppercase tracking-[0.1em] text-gray-500">
+      <label htmlFor={id} className="block text-[12px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
         {label}
-        {optional ? <span className="ml-1.5 normal-case font-normal text-gray-400">(optionnel)</span> : null}
+        {optional ? <span className="ml-1.5 normal-case font-normal text-muted-foreground/70">(optionnel)</span> : null}
       </label>
       <input
         id={id}
@@ -72,7 +72,7 @@ function Field({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-[#d8c8a3] bg-white px-4 py-3 text-[14px] text-deepblue placeholder:text-gray-400 outline-none focus:border-deepblue focus:ring-2 focus:ring-deepblue/10 transition"
+        className="mt-2 w-full rounded-xl border border-border/20 dark:border-white/12 bg-background dark:bg-white/[0.06] px-4 py-3 text-[14px] text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-white/35 outline-none focus:border-bronze-400/70 focus:ring-2 focus:ring-bronze-400/15 dark:[color-scheme:dark] transition"
       />
     </div>
   );
@@ -104,14 +104,14 @@ function Step1Projet({
           onClick={() => onChange({ project: value })}
           className={`rounded-xl border-2 p-4 text-left transition active:scale-[0.98] ${
             profile.project === value
-              ? "border-deepblue bg-deepblue text-white shadow-[0_4px_14px_rgba(7,27,51,0.22)]"
-              : "border-[#d8c8a3] bg-white hover:border-deepblue/50 hover:bg-[#f7f3ea]"
+              ? "border-deepblue bg-deepblue text-white shadow-[0_4px_14px_rgba(7,27,51,0.22)] dark:border-bronze-500/50 dark:bg-bronze-500/15"
+              : "border-border/20 bg-background hover:border-bronze-500/40 hover:bg-surface-muted dark:border-white/12 dark:bg-white/[0.04] dark:hover:border-white/25 dark:hover:bg-white/[0.08]"
           }`}
         >
-          <p className={`text-[15px] font-extrabold ${profile.project === value ? "text-white" : "text-deepblue"}`}>
+          <p className={`text-[15px] font-extrabold ${profile.project === value ? "text-white dark:text-bronze-200" : "text-foreground"}`}>
             {label}
           </p>
-          <p className={`mt-0.5 text-[12px] ${profile.project === value ? "text-white/75" : "text-gray-500"}`}>
+          <p className={`mt-0.5 text-[12px] ${profile.project === value ? "text-white/75 dark:text-bronze-300/80" : "text-muted-foreground"}`}>
             {desc}
           </p>
         </button>
@@ -175,7 +175,7 @@ function Step3Budget({
     <div className="space-y-4">
       {isMRE ? (
         <div>
-          <label className="block text-[12px] font-extrabold uppercase tracking-[0.1em] text-gray-500 mb-2">
+          <label className="block text-[12px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground mb-2">
             Devise
           </label>
           <div className="flex flex-wrap gap-2">
@@ -210,7 +210,7 @@ function Step3Budget({
       />
 
       <div>
-        <p className="text-[12px] font-extrabold uppercase tracking-[0.1em] text-gray-500 mb-2">
+        <p className="text-[12px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground mb-2">
           Besoin de crédit
         </p>
         <div className="flex gap-2.5">
@@ -237,7 +237,7 @@ function Step3Budget({
         />
       ) : null}
 
-      <p className="text-[11.5px] leading-5 text-gray-400">
+      <p className="text-[11.5px] leading-5 text-muted-foreground">
         Budget estimatif — à confirmer avec votre banque. Aucune préqualification bancaire.
       </p>
     </div>
@@ -271,7 +271,7 @@ function Step4Bien({
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-[12px] font-extrabold uppercase tracking-[0.1em] text-gray-500 mb-2">
+        <p className="text-[12px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground mb-2">
           Type de bien
         </p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -308,7 +308,7 @@ function Step4Bien({
       </div>
 
       <div>
-        <p className="text-[12px] font-extrabold uppercase tracking-[0.1em] text-gray-500 mb-2">
+        <p className="text-[12px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground mb-2">
           État du bien
         </p>
         <div className="flex flex-wrap gap-2.5">
@@ -351,14 +351,14 @@ function Step5Timing({
           onClick={() => onChange({ timing: value })}
           className={`rounded-xl border-2 p-4 text-left transition active:scale-[0.98] ${
             profile.timing === value
-              ? "border-deepblue bg-deepblue text-white shadow-[0_4px_14px_rgba(7,27,51,0.22)]"
-              : "border-[#d8c8a3] bg-white hover:border-deepblue/50 hover:bg-[#f7f3ea]"
+              ? "border-deepblue bg-deepblue text-white shadow-[0_4px_14px_rgba(7,27,51,0.22)] dark:border-bronze-500/50 dark:bg-bronze-500/15"
+              : "border-border/20 bg-background hover:border-bronze-500/40 hover:bg-surface-muted dark:border-white/12 dark:bg-white/[0.04] dark:hover:border-white/25 dark:hover:bg-white/[0.08]"
           }`}
         >
-          <p className={`text-[15px] font-extrabold ${profile.timing === value ? "text-white" : "text-deepblue"}`}>
+          <p className={`text-[15px] font-extrabold ${profile.timing === value ? "text-white dark:text-bronze-200" : "text-foreground"}`}>
             {label}
           </p>
-          <p className={`mt-0.5 text-[12px] ${profile.timing === value ? "text-white/75" : "text-gray-500"}`}>
+          <p className={`mt-0.5 text-[12px] ${profile.timing === value ? "text-white/75 dark:text-bronze-300/80" : "text-muted-foreground"}`}>
             {desc}
           </p>
         </button>
@@ -415,26 +415,26 @@ function Step6Contact({
         optional
       />
 
-      <div className="space-y-3 rounded-xl bg-[#f7f5ef] p-4">
+      <div className="space-y-3 rounded-xl bg-surface-muted dark:bg-white/[0.04] p-4">
         <label className="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
-            className="mt-0.5 h-4.5 w-4.5 shrink-0 rounded border-[#d8c8a3] accent-deepblue"
+            className="mt-0.5 h-4.5 w-4.5 shrink-0 rounded border-border/20 dark:border-white/20 accent-deepblue dark:accent-bronze-500"
             checked={profile.consentContact ?? false}
             onChange={(e) => onChange({ consentContact: e.target.checked })}
           />
-          <span className="text-[13px] leading-5 text-gray-700">
+          <span className="text-[13px] leading-5 text-foreground/80 dark:text-white/80">
             J&apos;accepte d&apos;être recontacté au sujet de ma recherche.
           </span>
         </label>
         <label className="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
-            className="mt-0.5 h-4.5 w-4.5 shrink-0 rounded border-[#d8c8a3] accent-deepblue"
+            className="mt-0.5 h-4.5 w-4.5 shrink-0 rounded border-border/20 dark:border-white/20 accent-deepblue dark:accent-bronze-500"
             checked={profile.consentIndicatif ?? false}
             onChange={(e) => onChange({ consentIndicatif: e.target.checked })}
           />
-          <span className="text-[13px] leading-5 text-gray-700">
+          <span className="text-[13px] leading-5 text-foreground/80 dark:text-white/80">
             Je comprends que ce dossier est indicatif et ne constitue pas une préqualification bancaire.
           </span>
         </label>
@@ -525,8 +525,8 @@ export function BuyerOnboardingFlow({
   if (submitting) {
     return (
       <div className="mx-auto w-full max-w-lg py-16 text-center">
-        <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-deepblue border-t-transparent" aria-label="Enregistrement en cours" />
-        <p className="mt-5 text-[14px] font-semibold text-gray-500">
+        <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-foreground dark:border-white border-t-transparent" aria-label="Enregistrement en cours" />
+        <p className="mt-5 text-[14px] font-semibold text-muted-foreground">
           Enregistrement de votre dossier…
         </p>
       </div>
