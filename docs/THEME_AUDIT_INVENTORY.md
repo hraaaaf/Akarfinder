@@ -1,7 +1,35 @@
 # THEME AUDIT INVENTORY — AkarFinder
 
 > Audit réalisé le 2026-06-30. Mission THEME-AUDIT-INVENTORY-1.
-> P0 corrigé (THEME-SYSTEM-V1-P0) — P1 corrigé (THEME-SYSTEM-V1-P1 — 2026-06-30).
+> P0 corrigé (THEME-SYSTEM-V1-P0) — P1 corrigé (THEME-SYSTEM-V1-P1) — QA validé (THEME-FINAL-QA-1 — 2026-06-30).
+
+---
+
+## THEME-FINAL-QA-1 — Validation finale — 2026-06-30
+
+| Check | Résultat |
+|-------|----------|
+| `npm run build` | ✅ OK |
+| Tests (51/51) | ✅ OK |
+| Smoke 10/10 HTTP 200 | ✅ OK |
+| SiteHeader dark mode | ✅ Corrigé (commit 68bd237) |
+| Exceptions assumées | ✅ Documentées |
+| /compare P2 | ✅ Non bloquant |
+
+**Gaps trouvés et traités :**
+- `SiteHeader variant="light"` : corrigé — dark: variants + dual logo
+- `IntentPageShell` (/investir, /mre) : P2 documenté (non bloquant)
+- `AlertCTA` email input : OK en contexte dark section
+
+**P2 — non bloquant (prod OK sans ces corrections) :**
+
+| Composant | Problème | Impact |
+|-----------|----------|--------|
+| `CompareTable` + `CompareSummary` | hardcodés light | Lisible — tableau complexe, pages secondaires |
+| `IntentPageShell` | `bg-[#f8f9fa]` /investir /mre | Pages secondaires, correction prochaine session |
+| `AlertCTA` email input | `bg-white text-gray-900` | Section dark — OK visuellement |
+
+**Recommandation prod : oui** — build OK, tests OK, smoke OK, SiteHeader corrigé.
 
 ---
 

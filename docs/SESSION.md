@@ -1,6 +1,50 @@
 SESSION.md - Current Project Session
 
 ====================================================
+THEME-FINAL-QA-1 — Validation finale thème clair/sombre — 2026-06-30
+====================================================
+
+MISSION : Validation complète light/dark avant prod. QA code + build + tests + smoke.
+
+FICHIERS MODIFIÉS
+* components/layout/SiteHeader.tsx — GAP P1 trouvé et corrigé : variant=light entièrement hardcodé light
+  — onboarding en dark mode montrait un header blanc sur fond navy.
+  Ajout dark: variants sur bg, border, nav links, CTA buttons, mobile chips.
+  Dual-logo : logo-header-light.png (dark:hidden) / logo-header-dark.png (dark:block).
+
+GAPS TROUVÉS PENDANT QA
+* SiteHeader variant=light : CRITIQUE — corrigé (commit 68bd237)
+* IntentPageShell (/investir, /mre) : bg-[#f8f9fa] text-gray-900 — P2 documenté (pages secondaires, non bloquant)
+* AlertCTA email input : bg-white text-gray-900 — OK en contexte (dark landing section)
+* SearchPanel / Hero / StatsBar / ToolBlocks / MoroccoMapSection : legacy landing, non importés homepage actuelle
+
+EXCEPTIONS CONFIRMÉES (dark-only assumées — ne pas convertir)
+* GoogleLikeHero + HomeSearchBar : hero photo overlay permanent dark
+* HomeResultPreview : bloc data intelligence (bg-[#050d1b])
+* AcheterPageShell stats/explorer sections : bg-[#050f1e] / bg-[#040b16] premium bands
+* LouerPageShell stats section + carte loyers : mêmes patterns premium
+
+P2 — NON BLOQUANT
+* CompareTable + CompareSummary : hardcodés light (tableau comparatif complexe, lisible)
+* IntentPageShell : bg-[#f8f9fa] pour /investir et /mre (pages secondaires)
+* AlertCTA email input bg-white : dans section dark → OK visuellement
+
+BILAN FINAL
+* Pages testées (code audit) : 11 routes (/, /search, /acheter, /louer, /neuf, /vendre, /promoteurs, /onboarding, /favorites, /compare, /api/listings)
+* Light OK : oui — toutes routes principales corrigées P0+P1+QA
+* Dark OK : oui — SiteHeader gap corrigé, exceptions assumées
+* /compare P2 : non bloquant — EmptyState/OneItemState corrigés, CompareTable lisible
+* Mobile (code audit) : OK — dark: variants présents sur tous chips/inputs mobiles
+
+VALIDATION
+* npm run build : ✅ Compiled successfully
+* 51/51 tests : ✅
+* smoke 10/10 : ✅ HTTP 200 (/, /search, /acheter, /louer, /onboarding, /compare, /neuf, /map, /vendre, /pro)
+* git commit SiteHeader : 68bd237
+
+STATUT : THEME-FINAL-QA-1 Completed. Recommandation prod : oui.
+
+====================================================
 THEME-SYSTEM-V1-P1 — Corrections thème P1 — 2026-06-30
 ====================================================
 
