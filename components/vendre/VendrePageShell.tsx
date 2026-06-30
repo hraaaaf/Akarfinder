@@ -409,7 +409,7 @@ export async function VendrePageShell() {
                 <p className="mt-1.5 text-[12.5px] text-muted-foreground">Repères indicatifs issus d'annonces publiques analysées.</p>
               </div>
               <Link href="/acheter" className="group hidden shrink-0 items-center gap-1.5 rounded-full border border-border/15 bg-surface-muted px-4 py-2 text-[12.5px] font-bold text-bronze-400 transition hover:border-bronze-500/40 hover:bg-surface-muted sm:inline-flex">
-                Voir les annonces similaires
+                Voir des biens comparables
                 <ArrowRight size={12} strokeWidth={2.4} className="transition group-hover:translate-x-0.5" aria-hidden="true" />
               </Link>
             </div>
