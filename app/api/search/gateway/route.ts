@@ -118,7 +118,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const deduped = dedupeSearchGatewayResults(normalized);
 
     // Apply ranking (SEARCH-GATEWAY-MULTISOURCE-SERP-RANKING-1)
-    const queryTerms = [input.q, input.city, input.property_type].filter(Boolean) as string[];
+    const queryTerms = [query, city, propertyType].filter(Boolean) as string[];
     const ranked = rankSearchGatewayResults(deduped, queryTerms);
     // Remove ranking metadata before returning to client
     const results = ranked.map((r) => {
