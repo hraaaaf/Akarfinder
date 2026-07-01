@@ -96,7 +96,7 @@ export function HomeSearchBar() {
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             placeholder="Rechercher un bien..."
             aria-label="Recherche de bien immobilier au Maroc"
-            className="min-w-0 flex-1 bg-transparent py-3.5 text-[15px] font-medium text-[#0B1F3A] outline-none placeholder:text-slate-400 sm:py-4 sm:text-[16px] sm:text-white sm:placeholder:text-white/30"
+            className="min-w-0 flex-1 bg-transparent py-3.5 text-[15px] font-medium text-[#0B1F3A] outline-none placeholder:text-slate-400 sm:py-4 sm:text-[16px] sm:text-[#061B33] sm:placeholder:text-slate-500"
           />
         </div>
 
@@ -133,13 +133,13 @@ export function HomeSearchBar() {
       </div>
 
       <div className="mt-3 hidden flex-wrap items-center gap-x-1.5 gap-y-2 sm:flex">
-        <span className="text-[11px] font-semibold text-white/30">Exemples :</span>
+        <span className="text-[11px] font-semibold text-white/70">Exemples :</span>
         {EXAMPLES.map((example) => (
           <button
             key={example}
             type="button"
             onClick={() => applyExample(example)}
-            className="rounded-full border border-white/[0.08] px-3 py-1 text-[11px] text-white/42 transition hover:border-[#BFDBFE]/24 hover:text-white/72"
+            className="rounded-full border border-white/30 px-3 py-1 text-[11px] text-white/85 transition hover:border-white/60 hover:text-white"
           >
             {example}
           </button>
