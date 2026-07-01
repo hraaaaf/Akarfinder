@@ -94,7 +94,7 @@ export function HomeSearchBar() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="Appartement meuble a Casablanca Maarif moins de 8 000 DH..."
+            placeholder="Rechercher un bien..."
             aria-label="Recherche de bien immobilier au Maroc"
             className="min-w-0 flex-1 bg-transparent py-3.5 text-[15px] font-medium text-[#0B1F3A] outline-none placeholder:text-slate-400 sm:py-4 sm:text-[16px] sm:text-white sm:placeholder:text-white/30"
           />

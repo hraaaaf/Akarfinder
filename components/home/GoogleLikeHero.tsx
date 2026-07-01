@@ -24,11 +24,11 @@ export function GoogleLikeHero() {
       </picture>
 
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(248,250,252,0.65)] via-[rgba(248,250,252,0.35)] to-[rgba(6,27,51,0.15)] sm:hidden" />
-        <div className="absolute inset-x-0 top-0 h-[34%] bg-gradient-to-b from-[rgba(255,255,255,0.45)] via-[rgba(248,250,252,0.15)] to-transparent sm:hidden" />
-        <div className="absolute inset-x-0 bottom-0 h-[26%] bg-gradient-to-t from-[rgba(6,27,51,0.25)] to-transparent sm:hidden" />
-        <div className="absolute inset-x-0 top-0 hidden h-[40%] bg-gradient-to-b from-[rgba(3,16,31,0.55)] via-[rgba(3,16,31,0.35)] to-transparent sm:block" />
-        <div className="absolute inset-x-0 bottom-0 hidden h-[40%] bg-gradient-to-t from-[rgba(3,16,31,0.45)] to-transparent sm:block" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(3,16,31,0.55)] via-[rgba(3,16,31,0.35)] to-[rgba(6,27,51,0.15)] sm:hidden" />
+        <div className="absolute inset-x-0 top-0 h-[34%] bg-gradient-to-b from-[rgba(3,16,31,0.55)] via-[rgba(3,16,31,0.25)] to-transparent sm:hidden" />
+        <div className="absolute inset-x-0 bottom-0 h-[26%] bg-gradient-to-t from-[rgba(6,27,51,0.35)] to-transparent sm:hidden" />
+        <div className="absolute inset-x-0 top-0 hidden h-[40%] bg-gradient-to-b from-[rgba(3,16,31,0.60)] via-[rgba(3,16,31,0.40)] to-transparent sm:block" />
+        <div className="absolute inset-x-0 bottom-0 hidden h-[40%] bg-gradient-to-t from-[rgba(3,16,31,0.50)] to-transparent sm:block" />
         <div
           className="absolute inset-0 hidden sm:block"
           style={{
