@@ -123,8 +123,8 @@ export function HomeSearchBar() {
             onClick={() => applyChip(chip)}
             className={`shrink-0 rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition sm:px-4 sm:text-[12.5px] ${
               activeChip === chip.label
-                ? "border-[#60A5FA]/60 bg-[#0B63CE]/18 text-[#BFDBFE]"
-                : "border-white/12 bg-white/[0.04] text-white/62 hover:border-[#BFDBFE]/24 hover:text-white/85"
+                ? "border-[#0B63CE] bg-[#0B63CE] text-white shadow-[0_2px_8px_rgba(11,99,206,0.3)] hover:bg-[#084BA8]"
+                : "border-[#BFDBFE]/40 bg-white/88 text-[#061B33] hover:border-[#60A5FA] hover:bg-blue-50"
             }`}
           >
             {chip.label}
