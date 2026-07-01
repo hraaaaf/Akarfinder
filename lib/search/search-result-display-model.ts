@@ -9,7 +9,7 @@ export type SearchResultDisplayPolicy = {
   can_show_snippet: boolean;
   can_show_contact: boolean;
   can_show_gallery: boolean;
-  primary_cta: string | null;
+  primary_cta?: string;
   production_allowed: boolean;
   production_block_reason?: string;
 };
