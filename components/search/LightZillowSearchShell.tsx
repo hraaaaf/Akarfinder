@@ -2,16 +2,19 @@
 
 // SEARCH-RELOOKING-1 — Shell /search dark premium ("cockpit AkarFinder").
 // Logique de recherche/filtres/tri/fetch INCHANGÉE ; thème refondu en dark premium.
+// SEARCH-GATEWAY-MULTISOURCE-SERP-UI-INTEGRATION-1 — External indexed results integration
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Loader2, Map as MapIcon, SearchX, X, BellPlus, ArrowRight } from "lucide-react";
 import { CompareBar } from "@/components/compare/CompareBar";
 import { SearchListingCardDark } from "@/components/search/SearchListingCardDark";
+import { ExternalIndexedResultsSection } from "@/components/search/ExternalIndexedResultsSection";
 import { SearchMapPanel, type CityCount } from "@/components/search/SearchMapPanel";
 import { QuickFilters } from "@/components/search/QuickFilters";
 import { track } from "@/lib/tracking/track";
 import { getCityCoord } from "@/lib/search/city-coords";
 import type { Listing, ListingFiltersState } from "@/lib/listings/types";
+import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 import {
   defaultListingFilters,
   getPropertyTypes,
@@ -119,6 +122,11 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   const [listings, setListings] = useState(initialListings);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Search Gateway — external indexed results
+  const [gatewayResults, setGatewayResults] = useState<SearchGatewayNormalizedResult[]>([]);
+  const [isGatewayLoading, setIsGatewayLoading] = useState(false);
+  const gatewayEnabled = process.env.NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED === "true";
+
   // Tracking filtre (non bloquant) — clés structurantes seulement.
   function handleFilterChange(next: ListingFiltersState) {
     if (
@@ -148,6 +156,41 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     }, delay);
     return () => { cancelled = true; clearTimeout(timer); };
   }, [filters, sortBy]);
+
+  // Search Gateway — fetch external indexed results in parallel
+  useEffect(() => {
+    if (!gatewayEnabled) {
+      setGatewayResults([]);
+      return;
+    }
+    let cancelled = false;
+    const delay = filters.search ? 300 : 0;
+    const timer = setTimeout(async () => {
+      if (cancelled) return;
+      setIsGatewayLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (filters.search.trim()) params.set("q", filters.search.trim());
+        if (filters.city !== "all") params.set("city", filters.city);
+        if (filters.propertyType !== "all") params.set("property_type", filters.propertyType);
+        const url = `/api/search/gateway?${params.toString()}`;
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok || cancelled) {
+          setGatewayResults([]);
+          return;
+        }
+        const payload = await response.json();
+        if (!cancelled && payload.results && Array.isArray(payload.results)) {
+          setGatewayResults(payload.results);
+        }
+      } catch {
+        // Fail silently, keep current
+      } finally {
+        if (!cancelled) setIsGatewayLoading(false);
+      }
+    }, delay);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [filters, gatewayEnabled]);
 
   const filteredListings = useMemo(() => {
     const minBudget = Number(filters.minBudget) || 0;
@@ -306,6 +349,14 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
               <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
                 {filteredListings.map((listing) => <SearchListingCardDark key={listing.id} listing={listing} />)}
               </div>
+            )}
+
+            {/* Search Gateway — External Indexed Results */}
+            {gatewayEnabled && (
+              <ExternalIndexedResultsSection
+                results={gatewayResults}
+                isLoading={isGatewayLoading}
+              />
             )}
           </div>
 
