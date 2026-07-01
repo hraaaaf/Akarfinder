@@ -1,0 +1,92 @@
+{
+  "generated_at": "2026-06-23T21:54:18.560Z",
+  "sources": {
+    "avito": {
+      "attempted": 0,
+      "succeeded": 0,
+      "failed": 0,
+      "average_completeness_score": 0,
+      "field_fill_rate": {
+        "price_mad": 0,
+        "city": 0,
+        "district": 0,
+        "surface_m2": 0,
+        "rooms_count": 0,
+        "bedrooms_count": 0,
+        "bathrooms": 0,
+        "description_snippet": 0,
+        "seller_name": 0,
+        "images_count": 0
+      },
+      "average_images_count": null,
+      "common_missing_fields": [
+        "price_mad",
+        "city",
+        "district",
+        "surface_m2",
+        "rooms_count",
+        "bedrooms_count",
+        "bathrooms",
+        "description_snippet",
+        "seller_name",
+        "images_count"
+      ],
+      "errors_count": 1
+    },
+    "mubawab": {
+      "attempted": 30,
+      "succeeded": 30,
+      "failed": 0,
+      "average_completeness_score": 81,
+      "field_fill_rate": {
+        "price_mad": 0.97,
+        "city": 0.93,
+        "district": 0,
+        "surface_m2": 1,
+        "rooms_count": 0.9,
+        "bedrooms_count": 0.93,
+        "bathrooms": 0.9,
+        "description_snippet": 1,
+        "seller_name": 0.73,
+        "images_count": 1
+      },
+      "average_images_count": 16,
+      "common_missing_fields": [
+        "district"
+      ],
+      "errors_count": 0
+    },
+    "sarouty": {
+      "attempted": 0,
+      "succeeded": 0,
+      "failed": 0,
+      "average_completeness_score": 0,
+      "field_fill_rate": {
+        "price_mad": 0,
+        "city": 0,
+        "district": 0,
+        "surface_m2": 0,
+        "rooms_count": 0,
+        "bedrooms_count": 0,
+        "bathrooms": 0,
+        "description_snippet": 0,
+        "seller_name": 0,
+        "images_count": 0
+      },
+      "average_images_count": null,
+      "common_missing_fields": [
+        "price_mad",
+        "city",
+        "district",
+        "surface_m2",
+        "rooms_count",
+        "bedrooms_count",
+        "bathrooms",
+        "description_snippet",
+        "seller_name",
+        "images_count"
+      ],
+      "errors_count": 1
+    }
+  }
+}

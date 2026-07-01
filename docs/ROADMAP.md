@@ -3584,3 +3584,7 @@ Missions suivantes recommandees
 * `SEARCH-API-MULTI-SOURCE-AUDIT-1` - mesurer la qualite provider domaine par domaine
 * `PROMOTER-SITE-AUDIT-1` - audit public des sites promoteurs neufs
 * `SOURCE-CANDIDATE-AUDIT-2` - confirme `Agenz` et `Logic-Immo Maroc` comme high-confidence candidates `public_index_source`, sans ouverture prod
+* `YAKEEY-PRICE-REFERENCE-ENGINE-AUDIT-1` - benchmark source only : referentiel public Yakeey (58 villes, 458 quartiers, integrate_as_benchmark_source)
+* `DATA-ENGINE-YAKEEY-BENCHMARK-WIRING-1` - registry benchmark + calculateur price_gap (Data Engine only, no frontend)
+* `MARKET-PRICE-SCORE-PRODUCT-POLICY-1` - policy wording + badges pour les statuts Yakeey avant UI
+* `MARKET-PRICE-SCORE-FRONTEND-DISPLAY-1` - badge Yakeey sur cartes structurees uniquement, pas sur search gateway

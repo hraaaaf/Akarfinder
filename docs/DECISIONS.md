@@ -1298,3 +1298,81 @@ Impact:
 - Avito reste `audit_source` avec voie `thin_indexed_result` via Search API uniquement.
 - Agenz et Logic-Immo Maroc deviennent les deux meilleurs candidats pour le prochain audit direct-source approfondi.
 - Sarouty, MarocAnnonces et Yakeey restent dans un parcours audit-first sans ouverture prod immediate.
+
+## 2026-07-01 - Yakeey price reference benchmark source
+
+Status: Validated
+
+Decision:
+- Yakeey price reference is classified as `benchmark_source`.
+- `not_listing_source = true`.
+- `can_create_listing = false`.
+- `can_compute_market_benchmark = true`.
+- `can_compute_price_gap = true`.
+- `attribution_required = true`.
+- The source is used only for aggregated market price benchmark data.
+- No listing creation, no contact collection, no image collection, no login bypass, no production frontend activation are part of this mission.
+
+Reason:
+- Yakeey exposes public city and quartier price tables that are structurally useful as a market benchmark layer.
+- The source can support price-gap comparisons without becoming a listings source.
+- The audit stayed within the no-bypass doctrine and avoided listings or contact data.
+
+Impact:
+- Yakeey can feed benchmark and price-gap computations in the Data Engine.
+- The audit result supports `integrate_as_benchmark_source`.
+- Production integration remains separate from this audit mission.
+
+## 2026-07-01 - Yakeey benchmark wiring in Data Engine
+
+Status: Validated
+
+Decision:
+- `lib/market/market-benchmark-registry.ts` exposes the validated Yakeey audit as a read-only benchmark registry.
+- `lib/market/price-gap-calculator.ts` computes `price_per_m2`, `benchmark_price_per_m2`, `price_gap_percent`, `price_gap_score`, and a simple market position.
+- The calculator supports city and neighborhood matching, apartment and villa types, and returns `insufficient_data` when any essential input or benchmark is missing.
+- The benchmark source remains `yakeey` only; this wiring does not create listings, touch production DBs, or activate frontend badges.
+
+Reason:
+- The Data Engine needs a small, testable benchmark layer before any site exposure.
+- Keeping the benchmark registry separate from listing pipelines preserves the source classification and avoids accidental product coupling.
+
+Impact:
+- The Data Engine can now compute market gap signals from the validated Yakeey reference data.
+- Future site exposure can consume this layer without reworking the source audit.
+
+## 2026-07-01 - Yakeey market price score product policy
+
+Status: Validated
+
+Decision:
+- `below_market`, `near_market`, `above_market`, `overpriced`, and `insufficient_data` are product labels only; they are not UI code and do not change the calculator.
+- The recommended presentation is a short user label, a one-line explanation, a color badge, and a confidence level derived from benchmark scope.
+- `insufficient_data` must remain a neutral fallback and must not be framed as a market signal.
+- The product wording must stay indicative and avoid claims such as official, certified, guaranteed, verified, or exact pricing truth.
+
+Reason:
+- The frontend needs a stable wording policy before any visual integration.
+- A strict wording policy prevents the benchmark from being interpreted as a valuation service.
+
+Impact:
+- The next UI mission can reuse this policy directly.
+- The Data Engine remains unchanged; only documentation is added.
+
+## 2026-07-01 - Yakeey market price score frontend display
+
+Status: Validated
+
+Decision:
+- The Yakeey market price score badge is displayed only on structured listing cards, not on `external_indexed_result` or Search Gateway results.
+- The visible labels are limited to `Sous le marché`, `Aligné marché`, `Au-dessus du marché`, and `Fortement au-dessus`.
+- `Données insuffisantes` stays hidden from the UI and is treated as a non-display state.
+- The badge is derived from the existing Engine calculator; the frontend only maps the result to a cautious presentation.
+
+Reason:
+- The product needs a controlled market signal on structured ads without creating a hard valuation claim.
+- Restricting the badge to structured cards avoids confusing public indexed results with benchmarked inventory.
+
+Impact:
+- Structured inventory pages can now show a cautious market-price signal.
+- Search result cards and gateway results remain unchanged.

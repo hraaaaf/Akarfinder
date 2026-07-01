@@ -1,0 +1,22 @@
+[
+  {
+    "source": "avito",
+    "stage": "fetch",
+    "url": "https://www.avito.ma/fr/maroc/immobilier-%C3%A0_vendre",
+    "message": "HTTP 403 for https://www.avito.ma/fr/maroc/immobilier-%C3%A0_vendre",
+    "at": "2026-06-23T21:50:05.717Z"
+  },
+  {
+    "source": "sarouty",
+    "stage": "parse",
+    "url": "https://www.sarouty.ma/fr/%C3%A0-vendre/immobilier/maroc/",
+    "message": "No listings extracted (source blocked, empty page, or HTML changed)",
+    "at": "2026-06-23T21:54:18.557Z"
+  },
+  {
+    "source": "agenz",
+    "stage": "policy",
+    "message": "Agenz is not scraped automatically. Status: partnership_or_csv_import_only.",
+    "at": "2026-06-23T21:54:18.558Z"
+  }
+]

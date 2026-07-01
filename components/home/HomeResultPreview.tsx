@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { SourceBadge, deriveBadge } from "@/components/badges/SourceBadge";
+import { MarketPriceScoreBadge } from "@/components/badges/MarketPriceScoreBadge";
 import { SourceAttribution } from "@/components/badges/SourceAttribution";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import { geoEnrichedMockListings } from "@/lib/listings/mock-listings";
@@ -89,6 +90,7 @@ function ResultCard({ listing, isApprox }: { listing: Listing; isApprox: boolean
             variant="dark"
           />
         )}
+        <MarketPriceScoreBadge listing={listing} variant="dark" />
         {listing.reliability_score > 0 && (
           <ReliabilityDot score={listing.reliability_score} />
         )}

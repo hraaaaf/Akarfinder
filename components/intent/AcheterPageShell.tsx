@@ -26,6 +26,7 @@ import { CreditSimulator } from "@/components/credit/CreditSimulator";
 import { SimulateCreditButton } from "@/components/credit/SimulateCreditButton";
 import { TrackedLink } from "@/components/tracking/TrackedLink";
 import { SourceBadge, deriveBadge } from "@/components/badges/SourceBadge";
+import { MarketPriceScoreBadge } from "@/components/badges/MarketPriceScoreBadge";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import type { Listing } from "@/lib/listings/types";
 
@@ -209,6 +210,7 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
               variant="light"
             />
           )}
+          <MarketPriceScoreBadge listing={listing} variant="light" />
           <div className="flex items-center gap-1.5">
             <div className="flex items-center gap-0.5" aria-hidden="true">
               {[1, 2, 3, 4].map((d) => (

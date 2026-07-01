@@ -9,6 +9,7 @@ import { ListingVisual } from "@/components/listings/ListingVisual";
 import { MreBadge } from "@/components/ui/MreBadge";
 import { ReliabilityBadge } from "@/components/ui/ReliabilityBadge";
 import { SourceBadge, deriveBadge } from "@/components/badges/SourceBadge";
+import { MarketPriceScoreBadge } from "@/components/badges/MarketPriceScoreBadge";
 import { SourceAttribution } from "@/components/badges/SourceAttribution";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-policy";
@@ -174,6 +175,7 @@ export function PhotoFirstListingCard({ listing }: PhotoFirstListingCardProps) {
               variant="light"
             />
           )}
+          <MarketPriceScoreBadge listing={listing} variant="light" />
           {showReliability ? (
             <ReliabilityBadge level={reliabilityLevel} label={reliabilityLabel} />
           ) : null}

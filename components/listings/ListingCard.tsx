@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
+import { MarketPriceScoreBadge } from "@/components/badges/MarketPriceScoreBadge";
 import type { Listing } from "@/lib/listings/types";
 
 function reliabilityTone(score: number) {
@@ -75,6 +76,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
           >
             {listing.reliability_badge ?? listing.reliability_label}
           </span>
+          <MarketPriceScoreBadge listing={listing} variant="light" />
           <span className="rounded-full bg-[#f4f6fa] px-3 py-1.5 text-[12px] font-semibold text-navy/70">
             Score {listing.reliability_score}/100
           </span>

@@ -1,0 +1,90 @@
+// SEARCH-GATEWAY-MULTISOURCE-SERP-1A
+// Normalize raw Search API results to safe SearchGatewayNormalizedResult
+
+import type {
+  SearchGatewayRawResult,
+  SearchGatewayNormalizedResult,
+} from "./search-gateway-types";
+import { getSearchGatewaySourceById } from "./search-gateway-sources";
+
+export function normalizeSearchGatewayResult(
+  raw: SearchGatewayRawResult,
+  sourceId: string
+): SearchGatewayNormalizedResult | null {
+  const sourceConfig = getSearchGatewaySourceById(sourceId);
+  if (!sourceConfig) return null;
+
+  // Title is mandatory
+  const title = (raw.title ?? "").trim();
+  if (!title) return null;
+
+  // Original URL is mandatory
+  const originalUrl = (raw.link ?? raw.url ?? "").trim();
+  if (!originalUrl) return null;
+
+  // Verify URL belongs to the source domain
+  try {
+    const url = new URL(originalUrl);
+    if (!url.hostname.includes(sourceConfig.domain)) {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
+  // Display URL (host + path)
+  let displayUrl = originalUrl;
+  try {
+    const url = new URL(originalUrl);
+    displayUrl = url.hostname + (url.pathname.length > 1 ? url.pathname : "");
+  } catch {
+    // fallback to original URL
+  }
+
+  // Snippet
+  const snippet = (raw.snippet ?? "").trim();
+
+  // Generate unique ID from URL hash
+  const id = `gateway_${sourceId}_${hashString(originalUrl)}`;
+
+  // Thumbnails (simple version: don't call Images API yet)
+  const canShowThumbnail = false; // Images API integration is a future mission
+  const thumbnailUrl = undefined;
+
+  return {
+    id,
+    title,
+    snippet: snippet || undefined,
+    original_url: originalUrl,
+    display_url: displayUrl,
+    source_id: sourceConfig.source_id,
+    source_name: sourceConfig.source_name,
+    domain: sourceConfig.domain,
+    result_origin: "search_api",
+    search_result_display_mode: "thin_indexed_result",
+    source_badge: sourceConfig.source_badge,
+    production_allowed: true, // TODO: read from env flags
+    can_show_result: true,
+    can_show_thumbnail: canShowThumbnail,
+    can_show_contact: false, // Always false for external sources
+    can_show_gallery: false, // Always false for external sources
+    can_cache_thumbnail: false, // Never cache third-party images
+    can_download_thumbnail: false, // Never download third-party images
+    primary_cta: "view_original",
+    primary_cta_label: `Voir sur ${sourceConfig.source_name}`,
+    result_attribution_label: "Résultat issu d'un index de recherche",
+    thumbnail_url: thumbnailUrl,
+    thumbnail_provider_name: undefined,
+    thumbnail_risk_accepted: sourceConfig.thumbnail_risk_accepted,
+  };
+}
+
+function hashString(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash).toString(16);
+}

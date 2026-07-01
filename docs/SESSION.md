@@ -1,6 +1,129 @@
 SESSION.md - Current Project Session
 
 ====================================================
+MARKET-PRICE-SCORE-FRONTEND-DISPLAY-1 -- Completed 2026-07-01
+====================================================
+
+STATUT : COMPLETED
+
+LIVRES :
+* components/badges/MarketPriceScoreBadge.tsx (cree — badge Yakeey pour cartes structurees)
+* lib/market/market-price-score-display.ts (cree — mapping display pur + policy)
+* components/listings/PhotoFirstListingCard.tsx (mis a jour — badge sur cartes structurees)
+* components/listings/ListingCard.tsx (mis a jour — badge sur cartes structurees)
+* components/intent/AcheterPageShell.tsx (mis a jour — badge sur cartes structurees)
+* components/home/HomeResultPreview.tsx (mis a jour — badge sur apercus structurees)
+* scripts/scrapers/__tests__/market-price-score-display.test.ts (cree — tests policy affichage)
+* package.json (mis a jour — test:scrapers inclut la nouvelle suite)
+
+CONTRAINTES RESPECTEES :
+  Aucun changement du calcul Engine
+  Aucun changement du benchmark Yakeey
+  Aucun changement de Search Gateway
+  Aucun affichage sur external_indexed_result
+  Aucun wording interdit
+  Aucun changement DB
+
+POINT D'ATTENTION :
+  Build final bloque sur `app/api/search/gateway/route.ts:167` (type mismatch `SearchGatewayNormalizedResult[]`), hors perimetre autorise de cette mission.
+
+====================================================
+MARKET-PRICE-SCORE-PRODUCT-POLICY-1 -- Completed 2026-07-01
+====================================================
+
+STATUT : COMPLETED
+
+LIVRES :
+* docs/MARKET_PRICE_SCORE_PRODUCT_POLICY.md (cree — politique d’affichage produit)
+  -- labels utilisateurs, descriptions courtes, couleurs/badges, niveau de confiance
+  -- wording interdit et conditions d’affichage definis
+* docs/DECISIONS.md (decision produit ajoutee)
+* docs/ROADMAP.md (entree policy ajoutee)
+
+POLITIQUE :
+  below_market -> Sous le marché
+  near_market -> Aligné marché
+  above_market -> Au-dessus du marché
+  overpriced -> Fortement au-dessus
+  insufficient_data -> Données insuffisantes
+
+CONTRAINTES RESPECTEES :
+  Aucun changement du calcul
+  Aucun changement de /search
+  Aucun changement DB
+  Aucune UI codee
+
+====================================================
+DATA-ENGINE-YAKEEY-BENCHMARK-WIRING-1 -- Completed 2026-07-01
+====================================================
+
+STATUT : COMPLETED
+
+LIVRES :
+* lib/market/market-benchmark-registry.ts (cree — registry benchmark Yakeey en lecture seule)
+  -- getMarketBenchmarkRegistry(), listMarketBenchmarkEntries(), findMarketBenchmark()
+  -- matching ville / quartier avec normalisation des accents
+  -- source_type=benchmark_source, not_listing_source=true, attribution_required=true
+* lib/market/price-gap-calculator.ts (cree — calculateur price_gap marché)
+  -- price_per_m2, benchmark_price_per_m2, price_gap_percent, price_gap_score
+  -- positions: below_market / near_market / above_market / overpriced / insufficient_data
+* scripts/scrapers/__tests__/market-benchmark.test.ts (cree — 16 tests)
+* package.json (mis a jour — nouveau test dans `test:scrapers`)
+* docs/DECISIONS.md (decision benchmark wiring ajoutee)
+* docs/ROADMAP.md (entree wiring benchmark ajoutee)
+
+RESULTAT :
+  Matching ville/quartier valide
+  Appartement vs villa valide
+  Calcul prix/m² et price_gap valide
+  Couverture des cas insuffisants valide
+
+CONTRAINTES RESPECTEES :
+  Aucun listing Yakeey cree
+  Aucun contact collecte
+  Aucune image collectee
+  Aucun bypass
+  Aucun frontend touche
+  Aucune migration DB
+
+====================================================
+YAKEEY-PRICE-REFERENCE-ENGINE-AUDIT-1 -- Completed 2026-07-01
+====================================================
+
+STATUT : COMPLETED
+
+LIVRES :
+* lib/market/yakeey-price-reference.ts (cree â€” policy benchmark + parseur pur)
+  -- YAKEEY_PRICE_REFERENCE_POLICY : benchmark_source / not_listing_source=true / attribution_required=true
+  -- parseYakeeyPriceCell(), extractYakeeyReferenceRows(), extractYakeeyDistrictReferenceRows()
+* scripts/audits/audit-yakeey-price-reference.ts (cree â€” audit live + generation JSON/MD)
+* scripts/scrapers/__tests__/yakeey-price-reference-audit.test.ts (cree â€” 17 tests, 5 suites)
+* scripts/scrapers/__tests__/fixtures/yakeey-*.html (crees â€” fixtures locales)
+* data/audits/yakeey_price_reference_audit.json (genere)
+* docs/YAKEEY_PRICE_REFERENCE_AUDIT.md (genere)
+* docs/DECISIONS.md â€” decision benchmark Yakeey ajoutee
+* docs/ROADMAP.md â€” entree Yakeey benchmark ajoutee
+
+RESULTAT AUDIT :
+  Page racine Yakeey : 58 villes trouvees
+  Villes avec prix appartement : 33
+  Villes avec prix villa : 33
+  4 pages ville auditees : Casablanca, Rabat, Marrakech, Tanger
+  Quartiers trouves : 458
+  Quartiers avec prix appartement : 398
+  Quartiers avec prix villa : 274
+  Recommendation : integrate_as_benchmark_source
+
+CONTRAINTES RESPECTEES :
+  Aucun listing Yakeey cree
+  Aucun contact collecte
+  Aucune image collectee
+  Aucun login
+  Aucun bypass
+  Aucun frontend touche
+  Aucune migration DB
+
+====================================================
 AVITO-THUMBNAILS-RISK-ACTIVATION-1 -- Completed 2026-07-01
 ====================================================
 

@@ -7,7 +7,7 @@ import { normalizeSearchGatewayResult } from "@/lib/search-gateway/search-gatewa
 import { dedupeSearchGatewayResults } from "@/lib/search-gateway/search-gateway-dedupe";
 import { rankSearchGatewayResults } from "@/lib/search-gateway/search-gateway-ranking";
 import { getEnabledSearchGatewaySources } from "@/lib/search-gateway/search-gateway-sources";
-import type { SearchGatewayRouteResponse } from "@/lib/search-gateway/search-gateway-types";
+import type { SearchGatewayRouteResponse, SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -120,12 +120,32 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Apply ranking (SEARCH-GATEWAY-MULTISOURCE-SERP-RANKING-1)
     const queryTerms = [query, city, propertyType].filter(Boolean) as string[];
     const ranked = rankSearchGatewayResults(deduped, queryTerms);
-    // Remove ranking metadata before returning to client
-    const results = ranked.map((r) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { _ranking, ...rest } = r;
-      return rest;
-    });
+    const results: SearchGatewayNormalizedResult[] = ranked.map((result) => ({
+      id: result.id,
+      title: result.title,
+      snippet: result.snippet,
+      original_url: result.original_url,
+      display_url: result.display_url,
+      source_id: result.source_id,
+      source_name: result.source_name,
+      domain: result.domain,
+      result_origin: result.result_origin,
+      search_result_display_mode: result.search_result_display_mode,
+      source_badge: result.source_badge,
+      production_allowed: result.production_allowed,
+      can_show_result: result.can_show_result,
+      can_show_thumbnail: result.can_show_thumbnail,
+      can_show_contact: result.can_show_contact,
+      can_show_gallery: result.can_show_gallery,
+      can_cache_thumbnail: result.can_cache_thumbnail,
+      can_download_thumbnail: result.can_download_thumbnail,
+      primary_cta: result.primary_cta,
+      primary_cta_label: result.primary_cta_label,
+      result_attribution_label: result.result_attribution_label,
+      thumbnail_url: result.thumbnail_url,
+      thumbnail_provider_name: result.thumbnail_provider_name,
+      thumbnail_risk_accepted: result.thumbnail_risk_accepted,
+    }));
 
     const response: SearchGatewayRouteResponse = {
       ok: true,
