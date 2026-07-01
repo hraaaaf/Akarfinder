@@ -80,7 +80,7 @@ export function HomeSearchBar() {
 
   return (
     <div className="w-full">
-      <div className="flex items-stretch overflow-hidden rounded-2xl border border-[#BFDBFE]/20 bg-white/85 shadow-[0_12px_32px_rgba(15,23,42,0.18)] backdrop-blur-md transition-all focus-within:border-[#60A5FA]/55 focus-within:shadow-[0_12px_42px_rgba(37,99,235,0.18),0_0_0_1px_rgba(96,165,250,0.22)] sm:bg-white/[0.08] sm:shadow-[0_12px_48px_rgba(0,0,0,0.45)] sm:focus-within:shadow-[0_12px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(96,165,250,0.22)]">
+      <div className="flex items-stretch overflow-hidden rounded-2xl border border-[#BFDBFE]/20 bg-white/85 shadow-[0_12px_32px_rgba(15,23,42,0.18)] backdrop-blur-md transition-all focus-within:border-[#60A5FA]/55 focus-within:shadow-[0_12px_42px_rgba(37,99,235,0.18),0_0_0_1px_rgba(96,165,250,0.22)] sm:bg-white/30 sm:shadow-[0_12px_48px_rgba(0,0,0,0.45)] sm:focus-within:shadow-[0_12px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(96,165,250,0.22)]">
         <div className="flex flex-1 items-center gap-3 px-4 py-0.5 sm:px-5 sm:py-1">
           <Search
             size={18}

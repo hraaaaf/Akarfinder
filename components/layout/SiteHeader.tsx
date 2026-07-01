@@ -38,7 +38,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
         isTransparent ? "fixed left-0 right-0 top-0" : "sticky top-0 z-30"
       } ${
         transparentActive
-          ? "border-white/10 bg-black/10 text-white shadow-none backdrop-blur-[2px]"
+          ? "border-white/0 bg-black/0 text-white shadow-none backdrop-blur-[0px]"
           : isDark || (isTransparent && scrolled)
           ? "border-white/10 bg-[rgba(7,27,51,0.97)] text-white shadow-[0_18px_45px_rgba(2,10,24,0.32)] backdrop-blur"
           : "border-border/20 bg-white/96 text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.06)] backdrop-blur supports-[backdrop-filter]:bg-white/88 dark:border-white/10 dark:bg-[rgba(7,27,51,0.97)] dark:text-white dark:shadow-[0_18px_45px_rgba(2,10,24,0.32)] dark:supports-[backdrop-filter]:bg-[rgba(7,27,51,0.95)]"
