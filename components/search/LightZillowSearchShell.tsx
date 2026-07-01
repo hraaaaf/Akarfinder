@@ -91,17 +91,18 @@ function SkeletonCard() {
   );
 }
 
-function EmptyState({ onReset, city }: { onReset: () => void; city?: string }) {
+function EmptyState({ onReset, city, hasWebResults }: { onReset: () => void; city?: string; hasWebResults?: boolean }) {
   return (
     <div className="rounded-2xl border border-dashed border-border/20 dark:border-white/15 bg-surface/50 dark:bg-white/[0.03] p-12 text-center">
       <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-surface dark:bg-white/5">
         <SearchX size={24} strokeWidth={2} className="text-muted-foreground" aria-hidden="true" />
       </span>
-      <p className="mt-4 text-[1.1rem] font-extrabold text-foreground">Aucune annonce trouvée</p>
+      <p className="mt-4 text-[1.1rem] font-extrabold text-foreground">Aucune annonce structurée AkarFinder</p>
       <p className="mt-2 text-[14px] leading-6 text-muted-foreground">
         {city && city !== "all"
-          ? `Aucun bien structuré trouvé à ${city} pour ces filtres.`
+          ? `Aucune annonce AkarFinder trouvée à ${city} pour ces filtres.`
           : "Élargissez la ville, le budget ou le type de bien."}
+        {hasWebResults ? <span className="block mt-1 text-blue-500 dark:text-blue-400">Des résultats du web sont disponibles ci-dessous.</span> : null}
       </p>
       <button type="button" onClick={onReset} className="mt-5 rounded-full bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-2.5 text-[13px] font-extrabold text-white transition hover:from-bronze-600">
         Réinitialiser les filtres
@@ -303,10 +304,16 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
             <div className="min-w-0">
               <p className="flex items-center gap-2 text-[1.05rem] font-extrabold tracking-[-0.02em] text-foreground sm:text-[1.15rem]">
                 {isLoading ? <Loader2 size={16} strokeWidth={2.5} className="animate-spin text-bronze-400" aria-hidden="true" /> : null}
-                <span>{filteredListings.length} bien{filteredListings.length > 1 ? "s" : ""} à {displayCity}</span>
+                <span>
+                  {filters.search.trim()
+                    ? `Résultats pour "${filters.search.trim()}"${filters.city !== "all" ? ` à ${filters.city}` : ""}`
+                    : `${filteredListings.length} annonce${filteredListings.length > 1 ? "s" : ""} AkarFinder à ${displayCity}`}
+                </span>
               </p>
               <p className="mt-0.5 line-clamp-1 text-[12.5px] font-medium text-muted-foreground sm:text-[13.5px]">
-                {getIntentLabel(filters.transactionType)} · tri {sortBy === "recommended" ? "recommandé" : sortBy === "reliability" ? "fiabilité" : sortBy === "price-asc" ? "prix ↑" : "prix ↓"}
+                {filters.search.trim()
+                  ? `${filteredListings.length} annonce${filteredListings.length > 1 ? "s" : ""} AkarFinder${gatewayResults.length > 0 ? ` · ${gatewayResults.length} résultats du web immobilier` : ""}`
+                  : `${getIntentLabel(filters.transactionType)} · tri ${sortBy === "recommended" ? "recommandé" : sortBy === "reliability" ? "fiabilité" : sortBy === "price-asc" ? "prix ↑" : "prix ↓"}`}
               </p>
             </div>
 
@@ -351,7 +358,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
             {showSkeleton ? (
               <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">{[1, 2, 3, 4].map((n) => <SkeletonCard key={n} />)}</div>
             ) : filteredListings.length === 0 ? (
-              <EmptyState onReset={handleReset} city={filters.city} />
+              <EmptyState onReset={handleReset} city={filters.city} hasWebResults={gatewayResults.length > 0} />
             ) : (
               <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
                 {filteredListings.map((listing) => <SearchListingCardDark key={listing.id} listing={listing} />)}

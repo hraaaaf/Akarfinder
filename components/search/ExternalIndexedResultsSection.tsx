@@ -25,10 +25,10 @@ export function ExternalIndexedResultsSection({
       {/* Section Header */}
       <div className="border-t border-border/15 dark:border-white/10 pt-6 sm:pt-8">
         <h2 className="text-[16px] sm:text-[18px] font-bold text-foreground dark:text-white/90 mb-1">
-          Résultats issus d'un index de recherche
+          Résultats du web immobilier
         </h2>
         <p className="text-[12px] sm:text-[13px] text-muted-foreground dark:text-white/50">
-          Aperçus limités avec source visible. AkarFinder redirige vers le site original.
+          {results.length > 0 ? `${results.length} résultat${results.length > 1 ? "s" : ""} · ` : ""}Aperçus limités avec source visible — AkarFinder redirige vers le site original.
         </p>
       </div>
 
