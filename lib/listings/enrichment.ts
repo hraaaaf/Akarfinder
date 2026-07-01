@@ -97,8 +97,9 @@ function deriveHistory(listing: Listing) {
   };
 }
 
-// Per-neighborhood indicative minute spreads, varied so the block does not
-// read as a uniform template. [transport, school, shop, mosque, health, far]
+// NEIGHBORHOOD-PROXIMITY-AUDIT-1: these profiles are indicative heuristics only.
+// No GPS, no OSM, no external API. Minutes are NOT measured distances.
+// Display must use qualitative labels, never raw minutes.
 const proximityProfiles: Record<string, number[]> = {
   "Finance City": [4, 8, 6, 5, 11, 16],
   "Maârif": [3, 6, 2, 4, 7, 13],
@@ -115,21 +116,30 @@ const proximityProfiles: Record<string, number[]> = {
 
 const defaultProfile = [6, 7, 5, 5, 10, 13];
 
+// Converts heuristic minutes to a qualitative label — never show raw minutes
+// to the user since this data has no verified geographic source.
+function toQualitativeLabel(minutes: number): string {
+  if (minutes <= 5) return "à proximité";
+  if (minutes <= 10) return "dans le secteur";
+  if (minutes <= 15) return "accessible";
+  return "à vérifier";
+}
+
 function deriveNearbyPlaces(listing: Listing): NearbyPlace[] {
   const t = proximityProfiles[listing.neighborhood] ?? defaultProfile;
 
   const places: NearbyPlace[] = [
-    { label: "Transport en commun", time: `${t[0]} min`, icon: "transport" },
-    { label: "École / établissement", time: `${t[1]} min`, icon: "school" },
-    { label: "Supermarché", time: `${t[2]} min`, icon: "shop" },
-    { label: "Mosquée", time: `${t[3]} min`, icon: "mosque" },
-    { label: "Clinique / pharmacie", time: `${t[4]} min`, icon: "health" }
+    { label: "Transport en commun", time: toQualitativeLabel(t[0]), icon: "transport" },
+    { label: "École / établissement", time: toQualitativeLabel(t[1]), icon: "school" },
+    { label: "Supermarché", time: toQualitativeLabel(t[2]), icon: "shop" },
+    { label: "Mosquée", time: toQualitativeLabel(t[3]), icon: "mosque" },
+    { label: "Clinique / pharmacie", time: toQualitativeLabel(t[4]), icon: "health" }
   ];
 
   if (coastalCities.has(listing.city)) {
-    places.push({ label: "Plage / corniche", time: `${t[5]} min`, icon: "coast" });
+    places.push({ label: "Plage / corniche", time: toQualitativeLabel(t[5]), icon: "coast" });
   } else {
-    places.push({ label: "Gare", time: `${t[5]} min`, icon: "station" });
+    places.push({ label: "Gare", time: toQualitativeLabel(t[5]), icon: "station" });
   }
 
   return places;

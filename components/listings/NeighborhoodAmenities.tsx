@@ -43,13 +43,13 @@ export function NeighborhoodAmenities({ enrichment }: NeighborhoodAmenitiesProps
               </span>
               {place.label}
             </span>
-            <span className="text-[13px] font-bold text-gray-900">{place.time}</span>
+            <span className="text-[12px] font-semibold text-gray-500 italic">{place.time}</span>
           </div>
         ))}
       </div>
 
       <p className="mt-3 text-[12px] text-gray-400">
-        Repères indicatifs, temps approximatifs à vérifier avant décision.
+        Repères indicatifs à confirmer lors de la visite — présence dans le secteur selon l&apos;adresse.
       </p>
     </div>
   );

@@ -1,6 +1,55 @@
 SESSION.md - Current Project Session
 
 ====================================================
+NEIGHBORHOOD-PROXIMITY-AUDIT-1 -- Completed 2026-07-01
+====================================================
+
+STATUT : COMPLETED
+
+AUDIT :
+  - Deux systèmes trouvés pour le bloc quartier/proximité
+  - SYSTÈME 1 (problématique): enrichment.ts → deriveNearbyPlaces() → proximityProfiles hardcodé
+    * Source: AUCUNE. Lookup table de minutes fictives (ex: defaultProfile = [6, 7, 5, 5, 10, 13])
+    * Affiché dans: NeighborhoodAmenities.tsx ("Quartier & proximité")
+    * CONFIRMATION: defaultProfile = [6, 7, 5, 5, 10, 13] correspond EXACTEMENT à l'exemple ODM
+  - SYSTÈME 2 (acceptable): morocco-proximity.ts → NEIGHBORHOOD_PROXIMITY / CITY_PROXIMITY
+    * Source: OpenStreetMap — dataset statique, déclaré comme "indicatif"
+    * Affiché dans: ProximityBlock.tsx ("Vie autour du bien")
+    * Déjà labellisé avec confidence tags + disclaimer "non officielles"
+
+RÉPONSES AUX QUESTIONS ODM :
+  - Données de la DB ? NON
+  - Données du Data Engine ? NON
+  - Données de la Search Gateway ? NON
+  - Données hardcodées ? OUI (proximityProfiles + defaultProfile dans enrichment.ts)
+  - Données heuristiques ? OUI (lookup par neighborhood, fallback sur defaultProfile)
+  - Calcul GPS ? NON
+  - Source externe réelle ? NON (ni Google Maps, ni Mapbox, ni requête OSM live)
+
+CORRECTIONS APPLIQUÉES :
+  - lib/listings/enrichment.ts: ajout de toQualitativeLabel() qui convertit les minutes en labels prudents
+    * ≤5 min → "à proximité"
+    * 6-10 min → "dans le secteur"
+    * 11-15 min → "accessible"
+    * >15 min → "à vérifier"
+  - components/listings/NeighborhoodAmenities.tsx:
+    * Styling du label: gras/noir → italique/gris (signale l'estimation)
+    * Footer: "Repères indicatifs à confirmer lors de la visite — présence dans le secteur selon l'adresse."
+  - components/listings/ProximityBlock.tsx:
+    * Footer renforcé: "Repères indicatifs à confirmer lors de la visite — données issues d'OpenStreetMap, non vérifiées en temps réel."
+    * Note: minutes gardées ici car source OSM déclarée + confidence tag par point
+
+INTERDIT RESPECTÉ :
+  - Aucun "5 min / 6 min" affiché sans source réelle dans NeighborhoodAmenities
+  - Aucune mention "vérifié", "certifié", "exact"
+  - Wording obligatoire "à confirmer lors de la visite" présent
+
+RISQUE RESTANT :
+  - ProximityBlock affiche toujours des minutes (ex: "6 min à pied") mais avec source OSM déclarée et confidence tag
+  - Les DB listings qui ont nearby_places pré-remplis pourraient encore avoir des "X min" — à migrer si nécessaire
+  - morocco-proximity.ts est un dataset statique, pas une requête live OSM
+
+====================================================
 MARKET-PRICE-SCORE-FRONTEND-DISPLAY-1 -- Completed 2026-07-01
 ====================================================
 
@@ -7858,6 +7907,37 @@ Points bloquants / vigilance
 Decision
 * Release candidate non validee a ce stade.
 ----------------------------------------------------
+AKARFINDER-RC-WORDING-SAFETY-FIX-1 - 2026-07-01
+
+Status: completed
+
+Mission
+* Retirer le wording interdit visible sur la home.
+* Supprimer toute exposition visible de WhatsApp / contact dans le smoke release candidate.
+
+Fichiers modifies
+* components/landing/MreTrustSection.tsx
+* components/landing/WhySection.tsx
+* components/landing/HowItWorks.tsx
+* components/credit/CreditSimulator.tsx
+* components/search/ExternalIndexedResultCard.tsx
+* docs/SESSION.md
+
+Livraison
+* Wording home nettoye : suppression de `officielle` et reformulation prudente.
+* Wording WhatsApp retire des sections home et du simulateur credit.
+* Snippets externes nettoyes pour supprimer les coordonnees visibles et URLs de contact.
+* Smoke desktop/mobile releve :
+  `/`, `/search?q=appartement%20casablanca`, `/search?q=villa%20marrakech`, `/search?q=terrain%20rabat`, `/acheter`
+* Search Gateway visible, badges marche visibles sur annonces structurees, aucun badge sur resultats externes, aucun wording interdit detecte, aucun secret detecte.
+
+Validation
+* `npm test` OK
+* `npm run build` OK
+
+Decision
+* Release candidate validee pour lancement public.
+----------------------------------------------------
 SOURCE-CANDIDATE-AUDIT-1 - 2026-07-01
 
 Status: Documentation completee, aucun changement prod
@@ -7948,3 +8028,97 @@ Validation
 Points de vigilance restants
 * La preuve technique est forte, mais elle ne vaut pas validation contractuelle ou ToS.
 * Les pages detail exposees publiquement contiennent des signaux contact/galerie cote source : AkarFinder doit conserver `contact_allowed=false` et `gallery_allowed=false` hors partenariat.
+----------------------------------------------------
+AKARFINDER-PROD-DEPLOY-CHECKLIST-1 - 2026-07-01
+
+Status: ready_for_deploy
+
+Mission
+* Preparer le deploiement production Vercel de la release candidate AkarFinder.
+* Verifier les prerequis de configuration et la ligne documentaire manquante.
+
+Fichiers modifies
+* docs/SESSION.md
+
+Livraison
+* Branche locale courante : `master`.
+* Variables verifiees localement dans `.env.local` :
+  `DATABASE_PROVIDER=supabase`
+  `SUPABASE_URL`
+  `SUPABASE_SERVICE_ROLE_KEY`
+  `SEARCH_API_ENDPOINT=https://google.serper.dev/search`
+  `NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED=true`
+* La ligne documentaire manquante est completee :
+  `Badge absent sur external_indexed_result : oui`
+
+Validation
+* Les checks fonctionnels RC restent valides sur la base locale deja reconstruite.
+* `SEARCH_API_KEY` reste cote serveur uniquement dans la configuration.
+* `SEARCH_API_ENDPOINT` pointe vers Serper.
+
+Points de vigilance
+* Le deploiement Vercel n'a pas ete execute depuis cet environnement.
+* La verification finale post-deploiement devra etre revalidee sur l'URL Vercel cible.
+----------------------------------------------------
+AKARFINDER-VERCEL-LIVE-GO-NOGO-1 - 2026-07-01
+
+Status: partial
+
+Mission
+* Deployer la release candidate sur Vercel puis valider le live en production.
+* Verifier les variables prod et les pages publiques critiques.
+
+Fichiers modifies
+* docs/SESSION.md
+
+Livraison
+* Deploiement production Vercel lance avec succes.
+* URL production : `https://akarfinder.vercel.app`
+* Branche deployee : `master`
+* Variables prod verifiees / alignees :
+  `NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED=true`
+  `SEARCH_API_KEY` server-side only
+  `SEARCH_API_ENDPOINT=https://google.serper.dev/search`
+  `DATABASE_PROVIDER=supabase`
+  `SUPABASE_URL`
+  `SUPABASE_SERVICE_ROLE_KEY`
+* Le navigateur ne voit pas `SEARCH_API_KEY`, `NEXT_PUBLIC_SEARCH_API_KEY`, `api_key`, `serper`, `private` dans HTML/JS rendu.
+
+Validation live
+* HTTP 200 sur les pages teste es.
+* `/acheter` affiche bien les badges prix marche prudents.
+* `/search` affiche le gateway externe apres le bloc de recherche, mais ne rend pas les resultats DB structures dans le DOM live.
+
+Decision
+* Production live non validee a ce stade.
+* Cause bloquante : la condition `Search Gateway visible after DB` n'est pas satisfaite en live sur `/search`.
+----------------------------------------------------
+ROADMAP-NOTE-MARKET-INTELLIGENCE-1 - 2026-07-01
+
+Status: completed
+
+Mission
+* Ajouter dans la roadmap une future brique "Market Intelligence / Carte du marche".
+* Documenter des principes prudents, internes et progressifs.
+
+Fichiers modifies
+* docs/ROADMAP.md
+* docs/SESSION.md
+
+Livraison
+* Nouvelle section ajoutee dans `docs/ROADMAP.md` : `FUTURE — MARKET INTELLIGENCE / CARTE DU MARCHÉ`.
+* Position : juste apres `P20B — RECHERCHE MULTI-ZONES` et avant `P21A — VISITES ORGANISÉES / PORTES OUVERTES`.
+* Contenu documente :
+  * V1 ville : volume, prix median au m², fiabilite moyenne, cards "zones actives"
+  * V2 quartier : heatmap activite/prix/fiabilite, filtres, liens annonces
+  * V3 avancee : carte interactive, historique, alertes, comparaison multi-zones
+* Guardrails notes :
+  * donnees internes AkarFinder uniquement
+  * pas de scraping concurrent
+  * pas de wording officiel
+  * disclaimer indicatif obligatoire
+  * mediane preferee a la moyenne quand possible
+
+Validation
+* Aucune implementation UI / API / engine.
+* Aucun nouveau fichier fonctionnel hors roadmap / session.

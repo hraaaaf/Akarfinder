@@ -171,10 +171,10 @@ export function ProximityBlock({ city, points }: ProximityBlockProps) {
       {/* Footer disclaimer */}
       <div className="mt-4 space-y-1 border-t border-[#f0e6d2] pt-3">
         <p className="text-[11.5px] font-semibold text-gray-500">
-          Données indicatives OpenStreetMap — non officielles
+          Repères indicatifs à confirmer lors de la visite — données issues d'OpenStreetMap, non vérifiées en temps réel.
         </p>
         <p className="text-[11px] text-gray-400">
-          indicatif — à vérifier avant décision
+          Durées estimées selon le quartier. À confirmer selon adresse exacte.
         </p>
       </div>
     </div>
