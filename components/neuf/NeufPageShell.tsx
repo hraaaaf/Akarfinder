@@ -75,7 +75,7 @@ const NEUF_VS_ANCIEN = {
 export function NeufPageShell() {
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader variant="dark" compact />
+      <SiteHeader compact />
 
       {/* ── HERO ──────────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-surface dark:bg-deepblue pb-11 pt-7 sm:pb-16 sm:pt-20">
