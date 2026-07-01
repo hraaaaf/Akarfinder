@@ -8,7 +8,7 @@ function normalize(value: string) {
   return value
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .replace(/[̀-ͯ]/g, "");
 }
 
 // Noise words we skip during tokenized text matching.
@@ -43,10 +43,40 @@ function matchesText(listing: Listing, q?: string) {
   return tokens.every((token) => haystack.includes(token));
 }
 
+// Normalise property_type to the mapped UI label so that both raw DB values
+// ("apartment") and UI values ("Appartement") work in matchesFilters.
+function toMappedPropertyType(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  const n = raw.trim().toLowerCase();
+  if (n === "apartment" || n === "appartement") return "Appartement";
+  if (n === "villa") return "Villa";
+  if (n === "land" || n === "terrain") return "Terrain";
+  if (n === "office" || n === "bureau") return "Bureau";
+  if (n === "studio") return "Studio";
+  if (n === "maison") return "Maison";
+  return raw; // pass-through unknown values
+}
+
+// Normalise transaction_type to the Listing model values ("buy"/"rent"/"new").
+function toMappedTransactionType(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  const n = raw.trim().toLowerCase();
+  if (n === "buy" || n === "sale" || n === "achat") return "buy";
+  if (n === "rent" || n === "location") return "rent";
+  if (n === "new" || n === "neuf") return "new";
+  return raw;
+}
+
 function matchesFilters(listing: Listing, query: SearchQuery) {
   if (query.city && listing.city !== query.city) return false;
-  if (query.property_type && listing.property_type !== query.property_type) return false;
-  if (query.transaction_type && listing.transaction_type !== query.transaction_type) return false;
+  if (query.property_type) {
+    const mapped = toMappedPropertyType(query.property_type);
+    if (mapped && listing.property_type !== mapped) return false;
+  }
+  if (query.transaction_type) {
+    const mapped = toMappedTransactionType(query.transaction_type);
+    if (mapped && listing.transaction_type !== mapped) return false;
+  }
   if (
     query.minReliabilityScore != null &&
     listing.reliability_score < query.minReliabilityScore
@@ -74,7 +104,25 @@ function sortListings(listings: Listing[], sort?: string) {
 export async function searchDatabase(query: SearchQuery = {}): Promise<SearchResult> {
   const limit = Math.min(Math.max(query.limit ?? 50, 1), 100);
   const offset = Math.max(query.offset ?? 0, 0);
-  const base = await queryListings({ limit: 100, offset: 0 });
+
+  // Push available filters to the DB layer for efficiency — avoids fetching
+  // unneeded rows when the DB grows beyond 100 listings. The query always
+  // over-fetches (limit=200) so client-side text-search and budget filters
+  // can still apply without being truncated.
+  const base = await queryListings({
+    city: query.city,
+    property_type: query.property_type,
+    transaction_type: query.transaction_type,
+    limit: 200,
+    offset: 0,
+  });
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log(
+      `[search:db] provider=database rows=${base.listings.length} total=${base.total}`,
+      { city: query.city, property_type: query.property_type, transaction_type: query.transaction_type }
+    );
+  }
 
   const allPersisted = base.listings.every(
     (row) => row.reliability_score != null && row.duplicate_score != null
@@ -93,6 +141,10 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
     listings.filter((listing) => matchesFilters(listing, query)),
     query.sort
   );
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[search:db] after client-side filter: ${filtered.length} listings`);
+  }
 
   return {
     listings: filtered.slice(offset, offset + limit),

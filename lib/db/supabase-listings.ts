@@ -169,7 +169,9 @@ export async function querySupabaseListings(
   query: DbListingsQuery = {}
 ): Promise<DbListingsResult> {
   const supabase = getSupabaseServerClient();
-  const limit = Math.min(Math.max(query.limit ?? 50, 1), 100);
+  // Allow up to 500 rows for internal pre-filtering calls (searchDatabase passes
+  // limit=200 to pre-filter at DB level before client-side text/budget filters).
+  const limit = Math.min(Math.max(query.limit ?? 50, 1), 500);
   const offset = Math.max(query.offset ?? 0, 0);
 
   let q = supabase

@@ -1,6 +1,37 @@
 SESSION.md - Current Project Session
 
 ====================================================
+SEARCH-LIVE-DB-PUBLICATION-FIX-1 -- Completed 2026-07-02
+====================================================
+
+STATUT : COMPLETED
+
+CAUSE RACINE :
+  searchDatabase passait uniquement { limit: 100 } a queryListings — aucun filtre
+  city/property_type/transaction_type n'atteignait Supabase.
+  matchesFilters comparait listing.property_type ("Appartement") avec query.property_type
+  ("apartment" depuis URL) => strict !== => 0 resultats sur deep-links depuis la home.
+  Logs absents => fallback SQLite silencieux en prod si DATABASE_PROVIDER non defini.
+
+FICHIERS MODIFIES :
+  - lib/search/database-search.ts
+      toMappedPropertyType() + toMappedTransactionType() : normalisation bi-directionnelle
+      matchesFilters() : comparaisons via labels normalises
+      searchDatabase() : passe city/property_type/transaction_type + limit:200 a queryListings
+      logs diagnostiques (dev uniquement)
+  - lib/db/index.ts
+      logProvider() toujours actif (prod inclus) : via=supabase|sqlite
+      log count rows retournes par Supabase (visible Vercel logs)
+  - lib/db/supabase-listings.ts
+      cap limit releve de 100 -> 500 (supporte limit:200 de searchDatabase)
+
+VARIABLES VERCEL REQUISES :
+  DATABASE_PROVIDER=supabase  SUPABASE_URL=<url>  SUPABASE_SERVICE_ROLE_KEY=<key>
+  Si DATABASE_PROVIDER absent => fallback SQLite => 0 resultats (maintenant loggue)
+
+TESTS : 678/678 pass (0 fail) -- BUILD : Compiled successfully
+
+====================================================
 REAL-PROXIMITY-ENGINE-1 -- Completed 2026-07-02
 ====================================================
 
@@ -8222,4 +8253,35 @@ Conclusion
 * L'existant est suffisament solide pour servir de base canonique listings + sources.
 * La grosse pipeline staging/publication ne doit pas etre reconstruite avant d'avoir traite le besoin produit prioritaire.
 * Prochaine mission unique recommandee : reparer/fiabiliser la publication live `/search` si les resultats DB structures ne remontent toujours pas correctement en production.
+----------------------------------------------------
+AKARFINDER-LIVE-SEARCH-DB-RESULTS-FIX-1 - 2026-07-02
+
+Status: completed
+
+Mission
+* Diagnostiquer pourquoi `/search` live rendait le gateway externe avant les annonces DB structurées.
+* Corriger le bootstrapping du read-model sans toucher a l'ingestion, au gateway ni au badge prix.
+
+Fichiers modifies
+* app/search/page.tsx
+* lib/search/search-page-query.ts
+* scripts/scrapers/__tests__/search-page-query.test.ts
+
+Cause identifiee
+* La page `/search` servait `initialListings=[]` au shell client et dependait uniquement du fetch client-side.
+* Cela pouvait laisser le DOM initial sans annonces DB structurées, surtout avant hydration.
+
+Correction appliquee
+* Prechargement serveur des annonces via `searchListings(buildSearchPageQuery(params))`.
+* Passage des listings DB precharges a `LightZillowSearchShell`.
+* Ajout d'un helper pur de mapping des search params + test anti-regression.
+
+Validation
+* `npm test` OK.
+* `npm run build` OK.
+* Smoke live sur `https://akarfinder.vercel.app/search?q=appartement%20casablanca`, `villa%20marrakech`, `terrain%20rabat` :
+  articles DB visibles, gateway visible, pas de contact/WhatsApp/galerie/secrets exposes.
+
+Decision
+* `/search` live est corrige pour le chemin SSR/read-model.
 

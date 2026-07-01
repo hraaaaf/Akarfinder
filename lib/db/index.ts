@@ -29,15 +29,29 @@ function useSupabase(): boolean {
   return getDbProvider() === "supabase" && isSupabaseConfigured();
 }
 
+// Logs the active DB provider — visible in Vercel Functions logs to diagnose
+// silent fallback to SQLite (which returns 0 rows on Vercel where the DB file
+// is absent).
+function logProvider(via: "supabase" | "sqlite" | "sqlite_fallback") {
+  const configured = isSupabaseConfigured();
+  const provider = getDbProvider();
+  console.log(`[db] provider=${provider} supabase_configured=${configured} via=${via}`);
+}
+
 export async function queryListings(
   query: DbListingsQuery = {}
 ): Promise<DbListingsResult> {
   if (useSupabase()) {
+    logProvider("supabase");
     try {
-      return await querySupabaseListings(query);
+      const result = await querySupabaseListings(query);
+      console.log(`[db] supabase returned ${result.listings.length}/${result.total} rows`);
+      return result;
     } catch (err) {
       console.error("[db] Supabase query failed, falling back to SQLite:", err);
     }
+  } else {
+    logProvider("sqlite");
   }
   // Dynamic import: node:sqlite only loaded when this code path executes.
   const { queryDbListings } = await import("@/lib/listings/db-listings");
