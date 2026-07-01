@@ -7832,6 +7832,32 @@ Validation
 Points de vigilance restants
 * Aucun deploy prod lance dans cette passe.
 ----------------------------------------------------
+AKARFINDER-PROD-RELEASE-CANDIDATE-LOCK-1 - 2026-07-01
+
+Status: partial
+
+Mission
+* Verifier l'aptitude release candidate avant lancement public.
+* Confirmer Search Gateway texte, badges prix marché, build et tests.
+
+Fichiers modifies
+* docs/SESSION.md
+
+Livraison
+* `npm test` : OK (`558` tests, `119` suites, `0` echec).
+* `npm run build` : OK apres reconstruction propre de `.next`.
+* `next start` : serveur local stable apres suppression de `.next` et rebuild.
+* `/search` : ordre DB + external gateway observe, CTA `Voir sur source` present, badges prix marche absents des resultats externes.
+* `/acheter` : badges prix marche presents sur annonces structurees eligibles.
+* Responsive smoke desktop/mobile : OK sur les pages testees.
+
+Points bloquants / vigilance
+* Wording interdit detecte sur la home : `officielle` dans `sans estimation officielle ni promesse trompeuse`.
+* Cette presence empeche de declarer la release candidate comme totalement validee.
+
+Decision
+* Release candidate non validee a ce stade.
+----------------------------------------------------
 SOURCE-CANDIDATE-AUDIT-1 - 2026-07-01
 
 Status: Documentation completee, aucun changement prod

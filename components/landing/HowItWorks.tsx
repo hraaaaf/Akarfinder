@@ -13,8 +13,8 @@ const steps = [
   },
   {
     n: "3",
-    title: "Contactez via WhatsApp",
-    body: "Un contact direct, adapté à un achat sur place comme à distance pour les MRE."
+    title: "Contactez le bon interlocuteur",
+    body: "Un échange direct, adapté à un achat sur place comme à distance pour les MRE."
   }
 ];
 

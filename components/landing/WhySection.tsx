@@ -14,7 +14,7 @@ const pillars = [
   {
     num: "03",
     title: "Contact mieux qualifié",
-    body: "Dossier acheteur, demande de visite et WhatsApp permettent de contacter avec plus de contexte et moins d'incertitude.",
+    body: "Dossier acheteur et demande de visite permettent de contacter avec plus de contexte et moins d'incertitude.",
   },
 ];
 

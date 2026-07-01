@@ -300,7 +300,7 @@ export function CreditSimulator({ sourcePage, defaultPrice = 1_200_000, id }: Cr
 
             <div>
               <label htmlFor="credit-phone" className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
-                Téléphone / WhatsApp <span className="text-bronze-500 dark:text-bronze-400">*</span>
+                Téléphone <span className="text-bronze-500 dark:text-bronze-400">*</span>
               </label>
               <input
                 id="credit-phone"
