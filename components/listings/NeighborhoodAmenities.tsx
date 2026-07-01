@@ -1,6 +1,7 @@
 import { Bus, GraduationCap, ShoppingBag, Plus, Building, Waves, Train, MapPin } from "lucide-react";
 import type { NearbyPlace } from "@/lib/listings/types";
 import type { ListingEnrichment } from "@/lib/listings/enrichment";
+import { sanitizeNearbyPlaceTime } from "@/lib/listings/sanitize-nearby-place";
 
 type NeighborhoodAmenitiesProps = {
   enrichment: ListingEnrichment;
@@ -43,7 +44,9 @@ export function NeighborhoodAmenities({ enrichment }: NeighborhoodAmenitiesProps
               </span>
               {place.label}
             </span>
-            <span className="text-[12px] font-semibold text-gray-500 italic">{place.time}</span>
+            <span className="text-[12px] font-semibold text-gray-500 italic">
+              {sanitizeNearbyPlaceTime(place.time).display_label}
+            </span>
           </div>
         ))}
       </div>

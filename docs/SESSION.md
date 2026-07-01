@@ -1,6 +1,43 @@
 SESSION.md - Current Project Session
 
 ====================================================
+NEIGHBORHOOD-PROXIMITY-DB-SANITIZE-1 -- Completed 2026-07-01
+====================================================
+
+STATUT : COMPLETED
+
+CONSTAT :
+  - NearbyPlace (type DB) n'a pas de champ source/confidence
+  - Tout nearby_places DB avec "X min" est non sourcé par définition
+  - ProximityBlock (ProximityPoint) a source + confidence — non touché
+  - Risque réel confirmé : listing DB avec { time: "6 min" } était affiché sans garde
+
+IMPLEMENTATION :
+  - Cree: lib/listings/sanitize-nearby-place.ts
+    * sanitizeNearbyPlaceTime(input) -> SanitizedProximityLabel
+    * "6 min" -> { display_label: "dans le secteur", is_estimated: true }
+    * labels qualitatifs deja corrects -> preserves sans mutation
+    * should_show_exact_minutes: false (invariant, NearbyPlace jamais sourcee)
+  - Modifie: components/listings/NeighborhoodAmenities.tsx
+    * import + place.time -> sanitizeNearbyPlaceTime(place.time).display_label
+  - Cree: scripts/scrapers/__tests__/sanitize-nearby-place.test.ts (23 tests)
+  - Modifie: package.json -> test:scrapers inclut le nouveau test
+
+DISTINCTION SYSTEMES :
+  - NearbyPlace (enrichment.ts / NeighborhoodAmenities): TOUJOURS sanitize
+  - ProximityPoint (morocco-proximity.ts / ProximityBlock): minutes OK si source OSM + confidence
+
+MAPPING APPLIQUE :
+  <=5 min  -> "a proximite"
+  6-10 min -> "dans le secteur"
+  11-15 min -> "accessible"
+  >15 min  -> "a verifier"
+
+TESTS : 582/582 pass (0 fail)
+BUILD : Compiled successfully
+DB MIGRATION : Aucune
+
+====================================================
 NEIGHBORHOOD-PROXIMITY-AUDIT-1 -- Completed 2026-07-01
 ====================================================
 
@@ -8122,3 +8159,34 @@ Livraison
 Validation
 * Aucune implementation UI / API / engine.
 * Aucun nouveau fichier fonctionnel hors roadmap / session.
+----------------------------------------------------
+DB-INGESTION-EXISTING-BASE-AUDIT-1 - 2026-07-01
+
+Status: completed
+
+Mission
+* Auditer l'existant ingestion / DB / dedup / publication avant toute pipeline massive.
+* Identifier ce qui existe deja, ce qui manque, et ce qui doit absolument rester intact.
+
+Fichiers modifies
+* docs/SESSION.md
+* docs/DECISIONS.md
+
+Livraison
+* Schema effectif confirme en local SQLite : `scrape_runs`, `raw_listings`, `property_listings`, `listing_sources`.
+* Supervision Supabase confirmee via `check:supabase` : `property_listings` et `listing_sources` accessibles, colonnes P6/P8A presentes, relation active, donnees scorees disponibles.
+* Volume local confirme : `scrape_runs=4`, `raw_listings=90`, `property_listings=134`, `listing_sources=139`.
+* Ingestion actuelle confirmee : `scraper/source -> extraction -> normalisation -> dedup/scoring -> upsert property_listings + listing_sources`.
+* PII guard confirme : pas de telephone/email inseres par la voie d'ingestion.
+* `avito`, `mubawab`, `sarouty` sont les sources scrapees automatiquement ; `agenz` reste `partnership_or_csv_import_only`.
+* `duplicate_group_id`, `duplicate_score`, `reliability_score`, `reliability_badge`, `reliability_reasons`, `source_name`, `source_url` sont bien presentes ; `external_id` et `dedup_signature` ne sont pas implementes.
+* Pas de staging table operationnelle, pas d'import CSV/JSON de listings, pas de pipeline `publishValidStagingListings`.
+* `raw_listings` et `scrape_runs` existent comme audit log, mais `sync:supabase` ne synchronise que `property_listings` et `listing_sources`.
+* Images : pas de colonnes URL image dans le schema ; seulement `images_count`.
+* Contacts : pas de stockage de contact externe via ingestion ; la doctrine PII reste respectee.
+
+Conclusion
+* L'existant est suffisament solide pour servir de base canonique listings + sources.
+* La grosse pipeline staging/publication ne doit pas etre reconstruite avant d'avoir traite le besoin produit prioritaire.
+* Prochaine mission unique recommandee : reparer/fiabiliser la publication live `/search` si les resultats DB structures ne remontent toujours pas correctement en production.
+
