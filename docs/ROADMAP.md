@@ -1,5 +1,304 @@
 ROADMAP.md — AkarFinder Roadmap Produit & Business
-Version : 2026-06-30 — V9.5 Source Display Policy + Google-like Homepage + SITE-SOURCE-BADGES-HARDENING-1
+Version : 2026-06-30 — GOOGLE-LIKE-FIRST-STRATEGY-DOCS-1 + V9.5 Source Display Policy + SITE-SOURCE-BADGES-HARDENING-1
+
+====================================================
+GOOGLE-LIKE FIRST STRATEGY — Décision stratégique 2026-06-30
+
+====================================================
+
+AkarFinder devient d'abord un moteur de recherche immobilier Google-like.
+
+Phrase produit officielle :
+"AkarFinder référence les annonces immobilières publiquement indexables au Maroc,
+les classe par fiabilité et redirige vers la source originale."
+
+----------------------------------------------------
+DOCTRINE PRODUIT
+
+Tout résultat immobilier publiquement indexable doit pouvoir apparaître dans la
+recherche AkarFinder. Le niveau de détail dépend du statut source.
+
+La SERP doit englober :
+* Résultats partenaires complets
+* Sources publiques indexables (aperçu limité + miniature + source + lien original)
+* Liens source (pour les sources partiellement accessibles)
+* Signaux internes (couche Engine — non exposée directement en SERP)
+
+La priorité produit devient : indexation + ranking + fiabilité + redirection source.
+
+----------------------------------------------------
+NOUVEAU MODÈLE DE RÉSULTAT SERP
+
+full_partner_listing
+  Pour agences/promoteurs partenaires.
+  → fiche complète, galerie, contact, WhatsApp, demande visite, brochure, lead AkarFinder
+
+rich_authorized_result
+  Pour source explicitement autorisée.
+  → fiche riche, source affichée, lien source, comparaison possible
+
+indexed_result
+  Pour annonce publique indexable.
+  → miniature unique, titre, prix si disponible, surface/ville si disponible,
+    score fiabilité, source visible, lien vers annonce originale
+  → INTERDIT : contact, WhatsApp, lead AkarFinder, galerie
+
+thin_indexed_result
+  Pour page publique partiellement indexable.
+  → titre ou résumé court, source, lien original, peu ou pas de données structurées
+  → pas de miniature si non disponible/propre
+
+source_search_link
+  Pour source dont les pages détail ne sont pas indexables mais dont une page
+  recherche/catégorie est utile.
+  → lien vers la recherche sur la source, pas d'annonce individuelle
+
+suppressed
+  Pour source bloquée / captcha / login / noindex / interdiction / risque.
+  → non affiché en SERP, utilisation interne éventuelle comme signal
+
+----------------------------------------------------
+AVITO — NOUVELLE DÉCISION STRATÉGIQUE
+
+Ancienne logique : Avito = market_signal_only partout (trop restrictif)
+
+Nouvelle logique :
+  Avito annonce publiquement indexable proprement
+  → search_result_display_mode = indexed_result
+  → source_badge = public_indexed
+  → thumbnail_policy = single_thumbnail_allowed si image proprement disponible
+  → CTA principal = Voir l'annonce originale sur Avito
+  → INTERDIT : contact, WhatsApp, galerie complète
+
+  Avito non indexable / bloqué / challenge / noindex
+  → search_result_display_mode = suppressed ou source_search_link
+  → signal marché interne uniquement
+
+----------------------------------------------------
+SIGNAL MARCHÉ — COUCHE INTERNE ENGINE
+
+signal_status (Engine) ≠ search_result_display_mode (SERP utilisateur)
+
+Une source peut être :
+  audit_source côté Engine
+  ET produire un indexed_result côté SERP si certaines annonces sont indexables proprement.
+
+Le signal marché est une notion interne Engine, pas une limitation produit par défaut
+pour les résultats de recherche.
+
+----------------------------------------------------
+WORDING AUTORISÉ GOOGLE-LIKE
+
+À utiliser :
+  "Résultat indexé"
+  "Source publique indexée"
+  "Aperçu limité"
+  "Voir l'annonce originale"
+  "Prix observé"
+  "Score de fiabilité"
+  "Source affichée"
+  (lien source obligatoire)
+
+À ne JAMAIS utiliser :
+  "AkarFinder copie toutes les annonces"
+  "AkarFinder possède toutes les annonces"
+  "Annonces vérifiées" (si non partenaire)
+  "Prix officiel"
+  "Annonce certifiée"
+
+----------------------------------------------------
+TRI SERP
+
+La SERP est triée par :
+  1. Pertinence de la requête
+  2. reliability_score
+  3. freshness_score
+  4. completeness_score
+  5. source confidence
+  6. Cohérence prix/m²
+  7. Duplicate risk
+  8. Display eligibility
+
+Règle : le score de fiabilité ne donne jamais plus de droits d'affichage.
+Règle : le badge source ne remplace jamais le score de fiabilité.
+
+Exemples de labels SERP :
+  "Source publique indexée · Fiable 82/100"
+  "Source publique indexée · À vérifier 61/100"
+  "Partenaire premium · Très fiable 94/100"
+
+----------------------------------------------------
+DOCTRINE NO-BYPASS (invariante, même en mode Google-like first)
+
+  no bypass
+  no proxy
+  no stealth
+  no fake Googlebot
+  no captcha solving
+  no login
+  respect robots.txt / source status
+  respect noindex / nosnippet / noimage si détecté
+  pas de contact vendeur pour sources publiques
+  pas de galerie complète pour sources publiques
+  source visible
+  lien original obligatoire
+  opt-out / retrait source à prévoir
+
+----------------------------------------------------
+ROADMAP MISSIONS GOOGLE-LIKE FIRST
+
+1. GOOGLE-LIKE-FIRST-STRATEGY-DOCS-1   ← COMPLÉTÉE 2026-06-30
+   Documentation stratégique du switch Google-like first.
+
+2. WEB-INDEXING-ELIGIBILITY-1           ← COMPLÉTÉE 2026-06-30
+   Module pur computeWebIndexingEligibility() — types, règles, 45 tests.
+   lib/indexing/web-indexing-eligibility.ts · 559/559 PASS · Build OK
+   docs/WEB_INDEXING_ELIGIBILITY.md créé.
+
+3. AVITO-GOOGLE-LIKE-AUDIT-1            COMPLETEE 2026-06-30
+   Audit propre : Avito peut-il produire indexed_result limite ?
+   Regle : aucun scraping massif, no bypass, no proxy.
+   Resultat : robots.txt OK (categories immobilier autorisees) mais HTTP 403
+   sur la page categorie avec AkarFinderBot/0.1. Doctrine no-bypass respectee.
+   Verdict : suppressed / market_signal_only maintenu. Ne pas promouvoir vers indexed_result.
+   614/614 tests PASS. Build OK.
+   Outputs : data/audits/avito-google-like/avito_google_like_audit.json
+             docs/AVITO_GOOGLE_LIKE_AUDIT.md
+   Modules : scripts/audits/avito-audit-helpers.ts
+             scripts/audits/audit-avito-google-like.ts
+             scripts/scrapers/__tests__/avito-google-like-audit.test.ts
+
+3b. AVITO-SITEMAP-DETAIL-AUDIT-1         COMPLETEE 2026-06-30
+    Deuxieme voie : sitemap public Avito.
+    robots.txt OK, 1 sitemap declare (sitemap.xml).
+    sitemap.xml → HTTP 403 Forbidden avec AkarFinderBot/0.1.
+    Doctrine no-bypass respectee : arret immediat.
+    Verdict : suppressed confirme — Avito bloque systematiquement les requetes
+    non-navigateur sur sitemap ET pages categorie.
+    675/675 tests PASS. Build OK.
+    Outputs : data/audits/avito-sitemap-detail/avito_sitemap_detail_audit.json
+              docs/AVITO_SITEMAP_DETAIL_AUDIT.md
+    Modules : scripts/audits/avito-sitemap-helpers.ts
+              scripts/audits/audit-avito-sitemap-detail.ts
+              scripts/scrapers/__tests__/avito-sitemap-detail-audit.test.ts
+
+3c. SEARCH-API-AVITO-RESULTS-AUDIT-1     COMPLETEE 2026-06-30
+    Troisieme voie : Search API autorisee (index tiers).
+    Mode fixture_only (aucune cle API configuree) — aucun appel reseau.
+    Normalizer valide : 8/12 resultats bruts passes, 3 login/profil rejetes, 1 non-avito rejete.
+    Classification : 3 indexable_possible (avec miniature), 5 thin_indexable (sans miniature).
+    Recommandation : provider_not_configured — configurer SEARCH_API_KEY pour resultats reels.
+    745/745 tests PASS. Build OK.
+    Outputs : data/audits/search-api-avito/search_api_avito_audit.json
+              docs/SEARCH_API_AVITO_RESULTS_AUDIT.md
+    Modules : lib/search-api/search-api-types.ts
+              lib/search-api/search-api-normalizer.ts
+              scripts/audits/audit-search-api-avito-results.ts
+              scripts/scrapers/__tests__/search-api-avito-results-audit.test.ts
+
+3d. SEARCH-API-PROVIDER-REAL-AUDIT-1    COMPLETEE 2026-06-30
+    Quatrieme voie : adapter multi-shape + audit provider reel.
+    Provider adapter cree (lib/search-api/search-api-provider-adapter.ts) :
+      Shape A SerpAPI/ValueSERP (organic_results[].link + thumbnail.src)
+      Shape B Generic results[] (url + thumbnailUrl)
+      Shape C Generic items[] (url)
+      Shape D Bing Search v7 (webPages.value[].url + thumbnailUrl)
+      Shape E Serper.dev (organic[].link + imageUrl)
+    Script audit separe (audit_type: "search_api_avito_real_provider").
+    Mode sans cle : provider_not_configured propre, 0 reseau, 0 secret logue.
+    Mode avec cle : 4 requetes site:avito.ma, extract + normalize + classify.
+    20 tests (5 provider shapes + invariants + PII + secrets + eligibility).
+    .gitignore verifie : .env, .env.local, .env.*.local couverts.
+    765/765 tests PASS. Build OK.
+    Outputs : data/audits/search-api-avito/search_api_avito_real_provider_audit.json
+              docs/SEARCH_API_AVITO_REAL_PROVIDER_AUDIT.md
+    Modules : lib/search-api/search-api-provider-adapter.ts
+              scripts/audits/audit-search-api-avito-real-provider.ts
+              scripts/scrapers/__tests__/search-api-provider-real-audit.test.ts
+
+3e. SEARCH-API-AVITO-REAL-RUN-1         COMPLETEE 2026-07-01
+    Run reel avec Serper.dev (2500 credits free tier, 4 requetes utilisees).
+    Loader .env.local integre dans le script (Node.js 24, pas de dotenv).
+    Shape E detectee automatiquement (Serper organic[].link).
+    40 resultats bruts / 33 normalises / 0 miniatures / 0 cle loggee.
+    CONSTAT : Search API retourne pages de categories Avito, pas fiches individuelles.
+      Exemples : /fr/casablanca/appartements-a_vendre (11641 annonces)
+                 /fr/rabat/immobilier (11291 annonces)
+    Classification : 33 thin_indexable (pas de miniature Serper pour site: queries).
+    Recommandation : thin_indexed_result_possible_via_search_api.
+    Verdict : Avito via Search API viable pour thin_indexed_result.
+              Ne pas marquer indexed_result avant validation ToS + miniatures.
+    765/765 tests PASS. Build OK.
+    Outputs : data/audits/search-api-avito/search_api_avito_real_provider_audit.json (mis a jour)
+              docs/SEARCH_API_AVITO_REAL_PROVIDER_AUDIT.md (mis a jour)
+
+3f. SEARCH-API-THUMBNAIL-PROVIDER-AUDIT-1  COMPLETEE 2026-07-01
+    Audit miniatures pour resultats Avito via Search API images.
+    Shape F ajoutee au provider adapter : Serper Images API images[].{title, link, thumbnailUrl}.
+    thumbnailUrl = proxy Google (gstatic.com) / imageUrl direct Avito IGNORE (doctrine).
+    lib/search-api/thumbnail-provider-policy.ts cree : types + fonctions pures.
+      evaluateThumbnailResult() / classifyThumbnailResult() / ThumbnailProviderAuditReport
+    Invariants types literaux : can_cache_thumbnail=false, can_download_thumbnail=false.
+    40 resultats bruts / 37 normalises / 37 miniatures (100% -- proxy Google).
+    Classification : tos_review_required (ToS Serper non valide formellement).
+    Recommandation : tos_review_required -- miniatures disponibles, validation ToS requise.
+    Pour indexed_result_with_provider_thumbnail : valider ToS Serper + politique Avito.
+    781/781 tests PASS. Build OK.
+    Outputs : data/audits/search-api-thumbnails/search_api_thumbnail_provider_audit.json
+              docs/SEARCH_API_THUMBNAIL_PROVIDER_AUDIT.md
+    Modules : lib/search-api/thumbnail-provider-policy.ts
+              scripts/audits/audit-search-api-thumbnail-providers.ts
+              scripts/scrapers/__tests__/search-api-thumbnail-provider-audit.test.ts
+
+4. SEARCH-RESULT-DISPLAY-MODEL-1        COMPLETEE 2026-07-01
+   Modele SERP Google-like unifie : SearchResultDisplayMode + SearchResultDisplayPolicy.
+   lib/search/search-result-display-model.ts : computeSearchResultDisplayPolicy() -- module pur.
+   lib/search-api/search-api-to-serp-result.ts : normalizedResultToSerpResult().
+   Arbre de decision 10 regles : partner→full_partner / Mubawab→indexed_result /
+     Avito direct→suppressed / Avito search_api sans thumb→thin_indexed_result /
+     Avito search_api + provider thumb→indexed_result_with_provider_thumbnail.
+   UI guards : can_show_result=false → return null. production_allowed=false en prod → return null.
+   Invariants : can_cache_thumbnail=false, can_download_thumbnail=false (typed literals).
+   Avito thumbnails en prod bloquees tant que ToS Serper non valide (tos_review_required).
+   21 tests PASS. 802/802 suite complete. TypeScript OK.
+   Composants mis a jour : SearchListingCardDark, PhotoFirstListingCard, HomeResultPreview.
+
+4b. SERPER-TOS-THUMBNAILS-VALIDATION-1  COMPLETEE 2026-07-01 (VERDICT: unclear)
+    Audit ToS Serper pour usage commercial des thumbnails (encrypted-tbn0.gstatic.com).
+    Verdict : unclear — 3 gaps bloquants identifies.
+    Gap 1 (BLOQUANT) : Serper ToS n'autorise pas explicitement l'affichage commercial des thumbnailUrl.
+    Gap 2 (BLOQUANT) : Clause B2B Serper — ambiguité sur l'exposition aux consommateurs finals.
+    Gap 3 (RISQUE) : CGU Avito inaccessibles (403) — politique third-party display inconnue.
+    Attenants positifs : hotlink-only (pas de cache/download), server test (Perfect 10), attribution conforme.
+    Email Serper pret : docs/SERPER_TOS_THUMBNAILS_VALIDATION.md#email-serper-support
+    Action requise : envoyer email → attendre confirmation ecrite → passer thumbnail_tos_review_required=false.
+    Docs : docs/SERPER_TOS_THUMBNAILS_VALIDATION.md
+           data/audits/legal/serper_tos_thumbnails_validation.json
+
+4c. AVITO-THUMBNAILS-RISK-ACTIVATION-1  COMPLETEE 2026-07-01
+    Activation miniatures provider Avito en mode "risk-accepted" (pas de validation ToS formelle).
+    Decision : docs/DECISIONS.md (2026-07-01).
+    Flags requis : ENABLE_AVITO_PROVIDER_THUMBNAILS=true + AVITO_THUMBNAILS_RISK_ACCEPTED=true.
+    Invariants : can_cache_thumbnail=false / can_download_thumbnail=false / hotlink only.
+    Attribution "Source : Avito" + redirection Avito sur chaque resultat.
+    Fallback gracieux : onerror → thin layout, pas de crash.
+    6 tests ajoutes (Suite 8, tests 22-27). 27/27 PASS.
+    Fichiers : lib/search/thumbnail-activation-config.ts
+               lib/search/search-result-display-model.ts (Rule 6 + thumbnail_risk_accepted)
+               lib/search-api/search-api-to-serp-result.ts (options signature)
+               components/search-api/SearchApiResultCard.tsx
+
+5. SERP-RANKING-RELIABILITY-1           Not started
+   Trier la SERP par pertinence + fiabilité + fraîcheur + complétude + eligibility.
+   Implémenter le modèle de tri multi-critères.
+
+6. SOURCE-OPT-OUT-POLICY-1              Not started
+   Préparer mécanisme de retrait / opt-out source.
+   Format : fichier ou API interne, applicable par domaine ou par annonce.
+
+7. DATA-ENGINE-SOURCE-POLICY-FOUNDATION-1  Not started (repo Engine séparé)
+   Remonter la display policy dans le Data Engine.
+   SOURCE-POLICY-FOUNDATION-1 côté Engine reste pending.
 
 ====================================================
 V9.5 — SOURCE DISPLAY POLICY ENGINE + SITE BADGES — État consolidé 2026-06-30
@@ -3255,3 +3554,33 @@ DATA-A (registry) → DATA-B (collecte) → DATA-C (extension) → DATA-D (histo
 DATA-G s'applique dès DATA-A et ne se "termine" jamais — c'est un garde-fou permanent.
 
 Ne pas démarrer avant que le track produit (P15B, P16, P17...) soit stabilisé.
+====================================================
+SOURCE-CANDIDATE-AUDIT-1
+
+Statut : Completed (documentation only, aucun changement prod)
+
+Livrables
+* `docs/SOURCE_CANDIDATE_AUDIT.md`
+* `data/source-candidate-audit.json`
+
+Synthese
+* P0 sources auditees techniquement : Mubawab, Avito, Sarouty, Agenz, MarocAnnonces, Logic-Immo Maroc, Yakeey
+* `public_index_source` candidates : Mubawab, Agenz, Logic-Immo Maroc
+* `thin_indexed_result` candidate prouve : Avito via Search API uniquement
+* `audit_source` / `source_search_link` : Sarouty, MarocAnnonces, Yakeey
+* `promoter_site_source` backlog : Addoha, Prestigia, Groupe Al Omrane, CGI
+* `benchmark_source` : Bank Al-Maghrib, HCP, ANCFCC, DGI
+* `social_signal_source` : Facebook, Instagram, TikTok publics
+
+Contraintes validees
+* aucun scraping de production ajoute
+* aucune migration DB
+* aucun bypass / proxy / stealth / faux user-agent
+* aucun contact / galerie / image rehost active
+
+Missions suivantes recommandees
+* `SOURCE-CANDIDATE-AUDIT-2` - deep audit `Agenz` + `Logic-Immo Maroc`
+* `SOURCE-CANDIDATE-AUDIT-3` - listing URL discovery `Sarouty` + `Yakeey`
+* `SEARCH-API-MULTI-SOURCE-AUDIT-1` - mesurer la qualite provider domaine par domaine
+* `PROMOTER-SITE-AUDIT-1` - audit public des sites promoteurs neufs
+* `SOURCE-CANDIDATE-AUDIT-2` - confirme `Agenz` et `Logic-Immo Maroc` comme high-confidence candidates `public_index_source`, sans ouverture prod

@@ -27,45 +27,39 @@ export function ProductHero() {
         />
       </picture>
 
-      {/* Overlays deepblue — plus marqués sur mobile (texte sur image verticale),
-          allégés sur desktop pour récupérer du wow visuel. Lisibilité préservée
-          via text-shadow du titre/sous-titre + search card opaque. */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#03101F]/72 via-[#071B33]/32 to-[#03101F]/80 sm:from-[#03101F]/52 sm:via-[#071B33]/14 sm:to-[#03101F]/64" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#03101F]/55 via-[#071B33]/10 to-transparent sm:from-[#03101F]/42 sm:via-transparent" />
-      {/* Voile radial centré (desktop) — concentre le contraste derrière le texte
-          tout en gardant les coins lumineux (bâtiment + coucher de soleil) = wow */}
-      <div className="absolute inset-0 hidden sm:block" style={{ background: "radial-gradient(ellipse 62% 52% at 50% 44%, rgba(3,16,31,0.46) 0%, transparent 70%)" }} />
+      {/* Overlays CLAIR blanc/bleu — photo visible, texte lisible */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/28 to-[rgba(248,250,252,0.15)] sm:from-white/45 sm:via-white/32 sm:to-[rgba(248,250,252,0.18)]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-white/22 via-transparent to-transparent sm:from-white/28 sm:via-transparent" />
+      {/* Voile radial bleu très léger au centre (desktop) */}
+      <div className="absolute inset-0 hidden sm:block" style={{ background: "radial-gradient(ellipse 65% 55% at 50% 45%, rgba(11,99,206,0.12) 0%, transparent 72%)" }} />
 
       {/* Content */}
-      <Container className="relative z-10 w-full pb-12 pt-24 sm:pb-20 sm:pt-36 lg:pb-24 lg:pt-44">
+      <Container className="relative z-10 w-full pb-8 pt-16 sm:pb-20 sm:pt-36 lg:pb-24 lg:pt-44">
         <div className="mx-auto flex max-w-[820px] flex-col items-center text-center">
 
           {/* Eyebrow label */}
-          <div className="mb-5 opacity-0 animate-[hero-label_0.6s_ease_0.2s_forwards]">
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#C2A368] [text-shadow:0_1px_6px_rgba(0,0,0,0.6)] sm:text-[10.5px]">
-              1er moteur de recherche immobilier au Maroc
+          <div className="mb-3 opacity-0 animate-[hero-label_0.6s_ease_0.2s_forwards] sm:mb-5">
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE] drop-shadow-[0_1px_3px_rgba(0,0,0,0.2)] sm:text-[10.5px] sm:text-blue-600">
+              <span className="sm:hidden">Le moteur immobilier du Maroc</span>
+              <span className="hidden sm:inline">Trouvez, comparez et analysez les biens au Maroc</span>
             </span>
           </div>
 
           {/* Main title */}
-          <h1 className="opacity-0 animate-[hero-title_0.8s_cubic-bezier(0.16,1,0.3,1)_0.35s_forwards] text-[1.92rem] font-extrabold leading-[1.04] tracking-[-0.035em] text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.8)] sm:text-5xl sm:leading-[1.05] sm:tracking-[-0.03em] lg:text-[4.25rem]">
-            Tout l&apos;immobilier marocain.{" "}
-            <br className="hidden sm:block" />
-            Dans un seul endroit.
+          <h1 className="opacity-0 animate-[hero-title_0.8s_cubic-bezier(0.16,1,0.3,1)_0.35s_forwards] text-[1.92rem] font-extrabold leading-[1.04] tracking-[-0.035em] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)] sm:text-5xl sm:leading-[1.05] sm:tracking-[-0.03em] lg:text-[4.25rem]">
+            Le 1er moteur de recherche immobilier au Maroc
           </h1>
 
-          {/* Subtitle — hidden on smallest mobile to reduce density */}
-          <p className="opacity-0 animate-[hero-sub_0.7s_ease_0.6s_forwards] mt-4 hidden max-w-[640px] text-[1rem] leading-relaxed text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.55),0_2px_14px_rgba(0,0,0,0.6)] sm:mt-5 sm:block sm:text-[1.15rem]">
-            Annonces analysées, doublons détectés et repères de fiabilité visibles pour comparer et contacter avec plus de confiance.
+          {/* Subtitle — desktop only */}
+          <p className="opacity-0 animate-[hero-sub_0.7s_ease_0.6s_forwards] mt-4 hidden max-w-[640px] text-[1rem] leading-relaxed text-white/90 font-medium drop-shadow-[0_1px_6px_rgba(0,0,0,0.2)] sm:mt-5 sm:block sm:text-[1.15rem]">
+            Comparez les annonces, les prix et les signaux de fiabilité avant de contacter.
           </p>
           {/* Short version on mobile only */}
-          <div className="opacity-0 animate-[hero-sub_0.7s_ease_0.6s_forwards] mt-3 max-w-[340px] rounded-2xl border border-white/10 bg-black/30 px-4 py-3 backdrop-blur-[2px] sm:hidden">
-            <p className="text-[0.95rem] leading-relaxed text-white/85 [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">
-              Annonces analysées, doublons détectés et repères de fiabilité visibles pour comparer et contacter avec plus de confiance.
-            </p>
-          </div>
+          <p className="opacity-0 animate-[hero-sub_0.7s_ease_0.6s_forwards] mt-2.5 max-w-[320px] text-[0.9rem] leading-relaxed text-white/90 font-medium drop-shadow-[0_1px_6px_rgba(0,0,0,0.2)] sm:hidden sm:mt-5">
+            Comparez les annonces, les prix et les signaux de fiabilité avant de contacter.
+          </p>
           {/* Search box */}
-          <div className="opacity-0 animate-[hero-search_0.8s_cubic-bezier(0.16,1,0.3,1)_0.85s_forwards] mt-8 w-full max-w-[740px]">
+          <div className="opacity-0 animate-[hero-search_0.8s_cubic-bezier(0.16,1,0.3,1)_0.85s_forwards] mt-5 w-full max-w-[740px] sm:mt-8">
             <SearchPanel />
           </div>
 
@@ -73,13 +67,13 @@ export function ProductHero() {
           <div className="opacity-0 animate-[hero-ctas_0.6s_ease_1.1s_forwards] mt-6 hidden flex-wrap items-center justify-center gap-3 sm:flex">
             <Link
               href="/onboarding"
-              className="rounded-full border border-white/25 bg-white/8 px-6 py-2.5 text-[13px] font-semibold text-white/90 backdrop-blur-sm transition hover:border-white/40 hover:bg-white/15 hover:text-white"
+              className="rounded-full border border-[#0B63CE]/50 bg-[#0B63CE]/12 px-6 py-2.5 text-[13px] font-semibold text-[#0B63CE] backdrop-blur-sm transition hover:border-[#0B63CE]/80 hover:bg-[#0B63CE]/22"
             >
               Créer mon dossier acheteur
             </Link>
             <Link
               href="/map"
-              className="rounded-full border border-[#C2A368]/45 bg-[#C2A368]/12 px-6 py-2.5 text-[13px] font-semibold text-[#C2A368] backdrop-blur-sm transition hover:border-[#C2A368]/70 hover:bg-[#C2A368]/22"
+              className="rounded-full border border-[#071B33]/40 bg-[#071B33]/8 px-6 py-2.5 text-[13px] font-semibold text-[#071B33] backdrop-blur-sm transition hover:border-[#071B33]/60 hover:bg-[#071B33]/15"
             >
               Voir la carte
             </Link>
@@ -89,8 +83,8 @@ export function ProductHero() {
 
       {/* Scroll indicator — desktop only */}
       <div className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 opacity-0 animate-[hero-scroll_0.5s_ease_1.5s_forwards] sm:flex">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/45">Découvrir</span>
-        <div className="h-9 w-px bg-gradient-to-b from-white/35 to-transparent" />
+        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#071B33]/60">Découvrir</span>
+        <div className="h-9 w-px bg-gradient-to-b from-[#0B63CE]/50 to-transparent" />
       </div>
     </section>
   );

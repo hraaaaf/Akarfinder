@@ -1,6 +1,620 @@
 SESSION.md - Current Project Session
 
 ====================================================
+AVITO-THUMBNAILS-RISK-ACTIVATION-1 -- Completed 2026-07-01
+====================================================
+
+STATUT : COMPLETED
+
+MODE : risk-accepted — ToS status unclear — PAS de validation ToS formelle
+
+LIVRES :
+* lib/search/thumbnail-activation-config.ts (cree — feature flags module)
+  -- getThumbnailActivationConfig() : lit ENABLE_AVITO_PROVIDER_THUMBNAILS + AVITO_THUMBNAILS_RISK_ACCEPTED
+  -- isThumbnailActivated(config) : true seulement si LES DEUX flags = "true"
+  -- Invariants typed : can_cache_thumbnail=false, can_download_thumbnail=false
+* lib/search/search-result-display-model.ts (mis a jour)
+  -- SearchResultDisplayInput : + thumbnail_risk_accepted?: boolean
+  -- Rule 6 (Avito search_api + provider thumbnail) : riskAccepted || !tosRequired → production_allowed=true
+  -- display_reason : "Risque assume (risk_accepted) - ToS provider unclear, decision business."
+* lib/search-api/search-api-to-serp-result.ts (mis a jour)
+  -- normalizedResultToSerpResult() : signature options? { thumbnailTosReviewRequired?, thumbnailRiskAccepted? }
+* components/search-api/SearchApiResultCard.tsx (cree — composant UI)
+  -- indexed_result_with_provider_thumbnail : affiche thumbnail si production_allowed=true
+  -- Fallback gracieux : onerror → setImageError(true) → layout thin (pas de crash)
+  -- Attribution "Source : Avito" visible, CTA "Voir sur Avito" uniquement
+  -- Interdit : gallery, multi-image, fullscreen, contact, WhatsApp, cached images
+* scripts/scrapers/__tests__/search-result-display-model.test.ts (mis a jour)
+  -- Suite 8 ajoutee : 6 tests (22-27)
+  -- Test 22 : risk_accepted=true → production_allowed=true
+  -- Test 23 : risk_accepted=false → production_allowed=false (regression guard)
+  -- Test 24 : display_reason contient "Risque assume"
+  -- Test 25 : invariants preserves (no contact/gallery/cache/download)
+  -- Test 26 : Mubawab non affecte par le flag
+  -- Test 27 : thin_indexed_result non promu en thumbnail par le flag
+* docs/DECISIONS.md — decision 2026-07-01 ajoutee (risk-accepted, NOT tos_validated)
+* docs/ROADMAP.md — entree 4c ajoutee
+* docs/SEARCH_API_THUMBNAIL_PROVIDER_AUDIT.md — prochaines etapes mises a jour
+
+ACTIVATION EN PRODUCTION :
+  ENABLE_AVITO_PROVIDER_THUMBNAILS=true
+  AVITO_THUMBNAILS_RISK_ACCEPTED=true
+  → dans .env.local (ne pas committer)
+
+ROLLBACK IMMEDIAT SI OBJECTION :
+  Passer ENABLE_AVITO_PROVIDER_THUMBNAILS=false
+  → production_allowed revient a false sans aucun changement de code
+
+RECOMMANDATION :
+  Envoyer email Serper (docs/SERPER_TOS_THUMBNAILS_VALIDATION.md)
+  pour convertir risk_accepted → formellement valide
+
+====================================================
+WEB-INDEXING-ELIGIBILITY-1 -- Completed 2026-06-30
+====================================================
+
+STATUT : COMPLETED
+
+LIVRES :
+* lib/indexing/web-indexing-eligibility.ts (cree -- module pur, 0 IO reseau)
+  -- Types : WebIndexEligibility, SnippetPolicy, ThumbnailEligibility, IndexingBlockReason
+  -- Input : WebIndexingInput (19 champs optionnels)
+  -- Output : WebIndexingResult (12 champs)
+  -- Fonction : computeWebIndexingEligibility()
+* scripts/scrapers/__tests__/web-indexing-eligibility.test.ts (cree -- 45 tests, 7 suites)
+* package.json -- test:scrapers mis a jour (web-indexing-eligibility.test.ts ajoute)
+* docs/WEB_INDEXING_ELIGIBILITY.md (cree -- reference complete)
+* docs/ROADMAP.md -- WEB-INDEXING-ELIGIBILITY-1 marquee COMPLETED
+* docs/SITE_SOURCE_BADGES_POLICY.md -- prochaines etapes mises a jour
+
+REGLES IMPLEMENTEES :
+  indexable          -- 200 + robots OK + pas noindex/captcha/login + titre + contenu
+  thin_indexable     -- memes conditions mais donnees partielles (titre seul)
+  source_search_link_only -- page bloquee + use_source_search_link=true
+  suppressed         -- robots/noindex/403/429/captcha/login/missing_url/benchmark
+
+INVARIANTS VERIFIES :
+  can_show_contact = false    (toujours)
+  can_show_gallery = false    (toujours)
+  original_source_required = true (toujours)
+  reliability_score n'affecte pas l'eligibilite (hors input)
+
+SCENARIOS AVITO TESTES :
+  Avito 200 propre --> indexable (ou thin si donnees partielles)
+  Avito 403 --> suppressed (http_403)
+  Avito captcha --> suppressed (captcha_or_challenge)
+  Avito sans image --> indexable, no_thumbnail
+  Avito noindex --> suppressed
+  Avito login --> suppressed
+  Avito bloque + use_source_search_link --> source_search_link_only
+
+RESULTATS :
+  npm test : 559/559 PASS (534 existants + 25 nouveaux)
+  npm run build : OK (0 erreur TypeScript)
+
+ETAT DES MISSIONS GOOGLE-LIKE FIRST :
+* GOOGLE-LIKE-FIRST-STRATEGY-DOCS-1   COMPLETED 2026-06-30
+* WEB-INDEXING-ELIGIBILITY-1          COMPLETED 2026-06-30
+* AVITO-GOOGLE-LIKE-AUDIT-1           COMPLETED 2026-06-30
+
+====================================================
+AVITO-GOOGLE-LIKE-AUDIT-1 -- Completed 2026-06-30
+====================================================
+
+STATUT : COMPLETED
+
+LIVRES :
+* scripts/audits/avito-audit-helpers.ts (cree -- helpers purs, 0 IO reseau)
+  -- isRobotsAllowed(), extractMetaRobots(), extractXRobotsFromHeader()
+  -- detectCaptchaOrChallenge(), detectLoginRequired()
+  -- extractDetailLinks(), extractListingMeta(), sanitizeAuditUrl()
+* scripts/audits/audit-avito-google-like.ts (cree -- script audit principal)
+  -- User-Agent : AkarFinderBot/0.1 (contact: benmoussa.achraf@gmail.com)
+  -- Delai poli : 2500ms entre requetes
+  -- Max detail pages : 5
+  -- Stop immediatement sur 403/429/captcha/login
+* scripts/scrapers/__tests__/avito-google-like-audit.test.ts (cree -- 55 tests, 8 suites)
+* package.json -- test:scrapers et audit:avito-google-like mis a jour
+* data/audits/avito-google-like/avito_google_like_audit.json (genere)
+* docs/AVITO_GOOGLE_LIKE_AUDIT.md (genere par le script)
+* docs/ROADMAP.md -- AVITO-GOOGLE-LIKE-AUDIT-1 marquee COMPLETEE
+
+RESULTAT AUDIT :
+  Phase 1 (robots.txt)   : HTTP 200, fetche proprement
+                           -- /fr/maroc/immobilier NOT in Disallow -> allowed
+                           -- Detail pages immobilier -> allowed
+  Phase 2 (category page): HTTP 403 Forbidden -- stop per doctrine no-bypass
+  Phase 3-4 (detail pages): Non execute (403 sur category)
+
+VERDICT :
+  Avito bloque les requetes non-navigateur (AkarFinderBot) sur la page categorie.
+  robots.txt autorise les categories immobilier mais le serveur retourne 403.
+  Doctrine no-bypass respectee : arret immediat, aucune tentative de contournement.
+  Recommandation : maintenir suppressed / market_signal_only pour Avito.
+  Ne pas promouvoir vers indexed_result tant que 403 persiste.
+
+RESULTATS TESTS :
+  npm test : 614/614 PASS (55 nouveaux tests avito-google-like-audit)
+  npm run build : OK (0 erreur TypeScript)
+
+PROCHAINE ETAPE :
+  AVITO-SITEMAP-DETAIL-AUDIT-1 (immediatement apres)
+
+====================================================
+AVITO-SITEMAP-DETAIL-AUDIT-1 -- Completed 2026-06-30
+====================================================
+
+STATUT : COMPLETED
+
+LIVRES :
+* scripts/audits/avito-sitemap-helpers.ts (cree -- helpers purs sitemap, 0 IO reseau)
+  -- parseSitemapsFromRobotsTxt(), isSitemapIndex(), parseSitemapIndexUrls()
+  -- parseSitemapLocUrls(), isRealEstateDetailUrl(), isRealEstateSitemap()
+  -- filterAndLimitDetailUrls(), countRealEstateDetailCandidates()
+  -- sampleRealEstateDetailUrls(), decodeXmlEntities()
+* scripts/audits/audit-avito-sitemap-detail.ts (cree -- script audit principal)
+* scripts/scrapers/__tests__/avito-sitemap-detail-audit.test.ts (cree -- 61 tests, 11 suites)
+* package.json -- test:scrapers et audit:avito-sitemap-detail mis a jour
+* data/audits/avito-sitemap-detail/avito_sitemap_detail_audit.json (genere)
+* docs/AVITO_SITEMAP_DETAIL_AUDIT.md (genere par le script)
+* docs/ROADMAP.md -- AVITO-SITEMAP-DETAIL-AUDIT-1 marquee COMPLETEE
+* docs/AVITO_GOOGLE_LIKE_AUDIT.md -- section suite ajoutee
+
+RESULTAT AUDIT :
+  Phase 1 (robots.txt)   : HTTP 200, 1 sitemap declare (https://www.avito.ma/sitemap.xml)
+                           -- /fr/maroc/immobilier NOT in Disallow -> allowed
+                           -- detail pages -> allowed
+  Phase 2 (sitemap.xml)  : HTTP 403 Forbidden -- stop per doctrine no-bypass
+  Phases 3-6             : Non executees (403 sur sitemap)
+
+VERDICT CONSOLIDE (AVITO-GOOGLE-LIKE-AUDIT-1 + AVITO-SITEMAP-DETAIL-AUDIT-1) :
+  Avito bloque systematiquement les requetes non-navigateur (AkarFinderBot/0.1)
+  sur TOUTES les URLs testees :
+    * /fr/maroc/immobilier (categorie) → 403
+    * /sitemap.xml → 403
+  robots.txt accessible mais ne suffit pas : le serveur filtre par UA.
+  Doctrine no-bypass respectee dans les deux audits.
+  Verdict final : suppressed / market_signal_only maintenu pour Avito.
+  Ne pas promouvoir vers indexed_result.
+
+RESULTATS TESTS :
+  npm test : 675/675 PASS (61 nouveaux tests avito-sitemap-detail-audit)
+  npm run build : OK (0 erreur TypeScript)
+
+ETAT DES MISSIONS GOOGLE-LIKE FIRST :
+* GOOGLE-LIKE-FIRST-STRATEGY-DOCS-1   COMPLETED 2026-06-30
+* WEB-INDEXING-ELIGIBILITY-1          COMPLETED 2026-06-30
+* AVITO-GOOGLE-LIKE-AUDIT-1           COMPLETED 2026-06-30 (403 sur categorie)
+* AVITO-SITEMAP-DETAIL-AUDIT-1        COMPLETED 2026-06-30 (403 sur sitemap)
+* SEARCH-RESULT-DISPLAY-MODEL-1       Not started
+
+PROCHAINE ETAPE :
+  SEARCH-API-AVITO-RESULTS-AUDIT-1 (immediatement apres)
+
+====================================================
+SEARCH-API-AVITO-RESULTS-AUDIT-1 -- Completed 2026-06-30
+====================================================
+
+STATUT : COMPLETED
+
+LIVRES :
+* lib/search-api/search-api-types.ts (cree -- types provider abstraction)
+  -- SearchApiProvider, SearchApiRawResult, NormalizedSearchApiResult
+  -- SearchApiQuery, SearchApiConfig, SearchApiQueryResult, SearchApiAuditReport
+* lib/search-api/search-api-normalizer.ts (cree -- normalizer pur, 0 IO reseau)
+  -- isValidAvitoUrl(), isUsableTitle(), stripPii(), sanitizeThumbnailUrl()
+  -- normalizeSearchApiResult(), normalizeSearchApiResults()
+  -- readSearchApiConfig() (jamais retourne la cle)
+* scripts/audits/audit-search-api-avito-results.ts (cree -- script audit principal)
+  -- Mode A (fixture_only) : pas de reseau, fixtures locales
+  -- Mode B (provider configure) : appels API avec cle depuis env
+  -- Requetes : 4 queries site:avito.ma immobilier
+* scripts/scrapers/__tests__/search-api-avito-results-audit.test.ts (70 tests, 10 suites)
+* package.json -- test:scrapers et audit:search-api-avito mis a jour
+* data/audits/search-api-avito/search_api_avito_audit.json (genere)
+* docs/SEARCH_API_AVITO_RESULTS_AUDIT.md (genere par le script)
+* docs/ROADMAP.md -- SEARCH-API-AVITO-RESULTS-AUDIT-1 marquee COMPLETEE
+
+RESULTAT AUDIT (mode fixture_only) :
+  Requetes testees   : 4
+  Resultats bruts    : 12 (dont 11 avito.ma)
+  Resultats rejetes  : 4 (3 login/profil, 1 domaine non-avito)
+  Resultats normalises : 8
+  Avec miniature     : 3
+  indexable_possible : 3 (via thumbnail Search API)
+  thin_indexable     : 5 (titre + snippet + lien, sans miniature)
+  Reseau appele      : non (fixture_only)
+  Secrets logges     : non
+
+CLASSIFICATION FIXTURE :
+  Fixtures avec thumbnail -> computeWebIndexingEligibility -> "indexable"
+  Fixtures sans thumbnail -> computeWebIndexingEligibility -> "thin_indexable"
+  Invariants : can_show_contact=false, can_show_gallery=false, original_source_required=true
+
+RECOMMANDATION :
+  provider_not_configured
+  Pour activer resultats reels : SEARCH_API_KEY + SEARCH_API_ENDPOINT + SEARCH_API_PROVIDER dans .env.local
+  Si resultats confirmes par provider reel -> SEARCH-RESULT-DISPLAY-MODEL-1 avec result_origin=search_api
+
+RESULTATS TESTS :
+  npm test : 745/745 PASS (70 nouveaux tests search-api-avito-results-audit)
+  npm run build : OK (0 erreur TypeScript)
+
+ETAT DES MISSIONS GOOGLE-LIKE FIRST :
+* GOOGLE-LIKE-FIRST-STRATEGY-DOCS-1       COMPLETED 2026-06-30
+* WEB-INDEXING-ELIGIBILITY-1              COMPLETED 2026-06-30
+* AVITO-GOOGLE-LIKE-AUDIT-1              COMPLETED 2026-06-30 (403 categorie)
+* AVITO-SITEMAP-DETAIL-AUDIT-1           COMPLETED 2026-06-30 (403 sitemap)
+* SEARCH-API-AVITO-RESULTS-AUDIT-1       COMPLETED 2026-06-30 (fixture_only, provider a configurer)
+* SEARCH-RESULT-DISPLAY-MODEL-1          Not started
+
+PROCHAINE ETAPE :
+  SEARCH-API-PROVIDER-REAL-AUDIT-1 (immediatement apres)
+
+====================================================
+SEARCH-API-PROVIDER-REAL-AUDIT-1 -- Completed 2026-06-30
+====================================================
+
+STATUT : COMPLETED
+
+LIVRES :
+* lib/search-api/search-api-provider-adapter.ts (cree -- adapter multi-shape, 0 IO reseau)
+  -- extractResultsFromProviderResponse(raw: unknown): SearchApiRawResult[]
+  -- Shapes supportees :
+     A. SerpAPI/ValueSERP (organic_results[].link + thumbnail.src)
+     B. Generic results[] (title + url + thumbnailUrl)
+     C. Generic items[] (title + url)
+     D. Bing Search v7 (webPages.value[].name + url + thumbnailUrl)
+  -- Wrapper { data: ... } automatiquement deballee
+  -- Retourne [] pour toute shape inconnue / null / non-object
+* lib/search-api/search-api-types.ts (modifie -- audit_type elargi)
+  -- SearchApiAuditReport.audit_type : "search_api_avito_results" | "search_api_avito_real_provider"
+* scripts/audits/audit-search-api-avito-real-provider.ts (cree -- script audit real provider)
+  -- Mode A (no key) : rapport provider_not_configured propre, 0 reseau
+  -- Mode B (key configure) : 4 requetes reelles site:avito.ma + extraction + normalisation
+  -- SEARCH_API_KEY jamais loggue / jamais ecrit dans le rapport
+  -- Appel fetch avec AbortSignal.timeout(15000ms)
+  -- Classifie chaque resultat : indexable (thumbnail) / thin_indexable (sans thumbnail)
+* scripts/scrapers/__tests__/search-api-provider-real-audit.test.ts (cree -- 18 tests, 9 suites)
+  -- Suite 1 Shape A (SerpAPI organic_results) : 2 tests
+  -- Suite 2 Shape B (results[]) : 1 test
+  -- Suite 3 Shape C (items[]) : 1 test
+  -- Suite 4 Shape D (Bing webPages.value[]) : 1 test
+  -- Suite 5 Unknown/null/empty : 3 tests
+  -- Suite 6 Secrets guard (readSearchApiConfig sans cle dans objet) : 2 tests
+  -- Suite 7 Invariants (contact/gallery/source false/false/true) : 3 tests
+  -- Suite 8 Guards (URL HTTP, /profil/, PII phone) : 3 tests
+  -- Suite 9 computeWebIndexingEligibility integration : 2 tests
+* package.json -- audit:search-api-avito-real ajoute, test:scrapers mis a jour
+* data/audits/search-api-avito/search_api_avito_real_provider_audit.json (genere)
+  -- audit_type : "search_api_avito_real_provider"
+* docs/SEARCH_API_AVITO_REAL_PROVIDER_AUDIT.md (genere par le script)
+* docs/ROADMAP.md -- SEARCH-API-PROVIDER-REAL-AUDIT-1 marquee COMPLETEE
+* docs/SITE_SOURCE_BADGES_POLICY.md -- audit 3d enregistre
+* docs/WEB_INDEXING_ELIGIBILITY.md -- table missions mise a jour
+* docs/SEARCH_API_AVITO_RESULTS_AUDIT.md -- suite 3d ajoutee
+
+RESULTAT AUDIT (mode provider_not_configured) :
+  Provider configure : non (SEARCH_API_KEY absent)
+  Reseau appele      : non
+  Resultats bruts    : 0
+  Resultats normalises : 0
+  Recommandation     : provider_not_configured
+  Adapter shapes     : 4 shapes supportees (A SerpAPI, B generic results, C items, D Bing v7)
+  Secrets logges     : non (jamais, par construction)
+
+VERIFICATION .gitignore :
+  .env           : couvert
+  .env.local     : couvert
+  .env.*.local   : couvert
+  .env.production : couvert
+  Aucune correction necessaire.
+
+RESULTATS TESTS :
+  npm test : 763/763 PASS (+18 nouveaux tests search-api-provider-real-audit)
+  npm run build : OK (0 erreur TypeScript)
+
+ETAT DES MISSIONS GOOGLE-LIKE FIRST :
+* GOOGLE-LIKE-FIRST-STRATEGY-DOCS-1       COMPLETED 2026-06-30
+* WEB-INDEXING-ELIGIBILITY-1              COMPLETED 2026-06-30
+* AVITO-GOOGLE-LIKE-AUDIT-1              COMPLETED 2026-06-30 (403 categorie)
+* AVITO-SITEMAP-DETAIL-AUDIT-1           COMPLETED 2026-06-30 (403 sitemap)
+* SEARCH-API-AVITO-RESULTS-AUDIT-1       COMPLETED 2026-06-30 (fixture_only, normalizer valide)
+* SEARCH-API-PROVIDER-REAL-AUDIT-1       COMPLETED 2026-06-30 (adapter multi-shape, provider a configurer)
+* SEARCH-RESULT-DISPLAY-MODEL-1          Not started
+* SERP-RANKING-RELIABILITY-1             Not started
+* SOURCE-OPT-OUT-POLICY-1               Not started
+* DATA-ENGINE-SOURCE-POLICY-FOUNDATION-1  Pending (repo Engine separe)
+
+PROCHAINE ETAPE :
+  SEARCH-API-AVITO-REAL-RUN-1 (run reel Serper)
+
+====================================================
+SEARCH-API-AVITO-REAL-RUN-1 -- Completed 2026-07-01
+====================================================
+
+STATUT : COMPLETED
+
+CHANGEMENTS CODE :
+* lib/search-api/search-api-provider-adapter.ts -- Shape E ajoutee (Serper organic[])
+  -- fromShapeE() : organic[].link + imageUrl->thumbnailUrl
+  -- Ordre detection : A(SerpAPI) -> E(Serper) -> B(results) -> C(items) -> D(Bing)
+* scripts/audits/audit-search-api-avito-real-provider.ts -- 2 modifications
+  -- loadEnvFile() IIFE : charge .env.local (tsx ne le fait pas)
+     Node.js 24 / --env-file bloque dans NODE_OPTIONS / pas de dotenv
+  -- buildProviderRequest() : provider=serper -> POST JSON + X-API-KEY
+     Autres providers : GET queryparams + Authorization Bearer (inchange)
+* scripts/scrapers/__tests__/search-api-provider-real-audit.test.ts -- 2 tests ajoutes
+  -- Shape E avec imageUrl / Shape E sans imageUrl
+  -- Total : 20 tests / 10 suites
+* .env.local -- SEARCH_API_PROVIDER + SEARCH_API_ENDPOINT + SEARCH_API_KEY ajoutes
+  (jamais committed / jamais logues / jamais ecrits dans rapports)
+* data/audits/search-api-avito/search_api_avito_real_provider_audit.json (regenere)
+* docs/SEARCH_API_AVITO_REAL_PROVIDER_AUDIT.md (regenere avec donnees reelles)
+* docs/ROADMAP.md -- SEARCH-API-AVITO-REAL-RUN-1 marquee COMPLETEE
+
+RESULTAT AUDIT (run reel Serper.dev) :
+  Provider        : configured_authorized_provider (Serper.dev)
+  Shape detectee  : E (organic[].link)
+  Requetes        : 4 (site:avito.ma/fr [type] [ville])
+  Resultats bruts : 40 (10 par requete)
+  Resultats rejetes : 7 (non-avito.ma ou paths exclus login/profil)
+  Resultats normalises : 33
+  Avec miniature  : 0 (Serper ne retourne pas imageUrl pour site: queries)
+  thin_indexable  : 33
+  Reseau appele   : oui (4 POST -> google.serper.dev/search)
+  Cle loggee      : non (jamais)
+
+CONSTAT CRITIQUE :
+  Les 33 URLs retournees sont des pages de categories Avito, pas des fiches individuelles.
+  Google indexe prioritairement les pages stables a fort trafic.
+    /fr/casablanca/appartements-a_vendre (11641 annonces)
+    /fr/rabat/immobilier (11291 annonces)
+    /fr/marrakech/villa--a_vendre (3570 annonces)
+  Pas de fiches individuelles (/fr/annonce/xxx) retournees.
+  Pas de prix structure, pas de surface, pas de reference individuelle.
+
+VERDICT :
+  Avito via Search API Serper = viable pour thin_indexed_result
+  Display mode : thin_indexed_result / CTA : "Voir les annonces sur Avito"
+  Ne pas marquer indexed_result avant thumbnails + validation ToS
+
+RESULTATS TESTS :
+  npm test : 765/765 PASS (+2 tests Shape E)
+  npm run build : OK (0 erreur TypeScript)
+
+ETAT DES MISSIONS GOOGLE-LIKE FIRST :
+* GOOGLE-LIKE-FIRST-STRATEGY-DOCS-1       COMPLETED 2026-06-30
+* WEB-INDEXING-ELIGIBILITY-1              COMPLETED 2026-06-30
+* AVITO-GOOGLE-LIKE-AUDIT-1              COMPLETED 2026-06-30 (403 categorie)
+* AVITO-SITEMAP-DETAIL-AUDIT-1           COMPLETED 2026-06-30 (403 sitemap)
+* SEARCH-API-AVITO-RESULTS-AUDIT-1       COMPLETED 2026-06-30 (fixture_only)
+* SEARCH-API-PROVIDER-REAL-AUDIT-1       COMPLETED 2026-06-30 (adapter 5 shapes)
+* SEARCH-API-AVITO-REAL-RUN-1           COMPLETED 2026-07-01 (33 thin_indexable Serper)
+* SEARCH-RESULT-DISPLAY-MODEL-1          Not started
+* SERP-RANKING-RELIABILITY-1             Not started
+* SOURCE-OPT-OUT-POLICY-1               Not started
+
+PROCHAINE ETAPE :
+  SEARCH-API-THUMBNAIL-PROVIDER-AUDIT-1 (audit miniatures)
+
+====================================================
+SEARCH-API-THUMBNAIL-PROVIDER-AUDIT-1 -- Completed 2026-07-01
+====================================================
+
+STATUT : COMPLETED
+
+LIVRES :
+* lib/search-api/thumbnail-provider-policy.ts (cree -- types + fonctions pures, 0 IO reseau)
+  -- Types : ThumbnailProviderStatus, ThumbnailDisplayMode, ThumbnailAuditResult
+             ThumbnailResultClassification, ThumbnailQueryResult, ThumbnailProviderAuditReport
+  -- evaluateThumbnailResult(thumbnailUrl, providerName): ThumbnailAuditResult (pure)
+  -- classifyThumbnailResult(hasSnippet, thumbnailEval): ThumbnailResultClassification (pure)
+  -- Invariants coded as literal types : can_cache_thumbnail=false, can_download_thumbnail=false
+* lib/search-api/search-api-types.ts (modifie -- champs optionnels thumbnail sur NormalizedSearchApiResult)
+  -- thumbnail_source?, thumbnail_display_mode?, thumbnail_tos_review_required? ajoutes
+* lib/search-api/search-api-provider-adapter.ts (modifie -- Shape F ajoutee)
+  -- fromShapeF() : Serper Images API images[].{title, link, thumbnailUrl}
+  -- thumbnailUrl = proxy Google (gstatic.com) / imageUrl ignore (doctrine no-image-rehosting)
+  -- Ordre detection : A(SerpAPI) -> E(Serper web) -> F(Serper images) -> B -> C -> D
+* scripts/audits/audit-search-api-thumbnail-providers.ts (cree -- script audit miniatures)
+  -- Mode A (fixture_only) : fixtures locales (11 resultats, mix thumbnail/sans thumbnail)
+  -- Mode B (real_provider) : appels Serper Images API (https://google.serper.dev/images)
+  -- Detection provider : THUMBNAIL_SEARCH_API_KEY > SEARCH_API_KEY + serper
+  -- Requetes : 4 queries site:avito.ma/fr [type] [ville]
+  -- loadEnvFile() IIFE identique audit precedent
+* scripts/scrapers/__tests__/search-api-thumbnail-provider-audit.test.ts (cree -- 16 tests, 6 suites)
+  -- Suite 1 evaluateThumbnailResult thumbnail available : 4 tests
+  -- Suite 2 evaluateThumbnailResult no thumbnail : 3 tests
+  -- Suite 3 evaluateThumbnailResult forbidden URL : 3 tests
+  -- Suite 4 Hard invariants can_download/cache=false : 2 tests
+  -- Suite 5 classifyThumbnailResult product classification : 3 tests
+  -- Suite 6 Shape F + normalizer integration guard : 1 test
+* package.json -- audit:search-api-thumbnails ajoute, test:scrapers mis a jour
+* data/audits/search-api-thumbnails/search_api_thumbnail_provider_audit.json (genere)
+* docs/SEARCH_API_THUMBNAIL_PROVIDER_AUDIT.md (genere par le script)
+* docs/ROADMAP.md -- SEARCH-API-THUMBNAIL-PROVIDER-AUDIT-1 marquee COMPLETEE
+* docs/SITE_SOURCE_BADGES_POLICY.md -- audit 3f enregistre
+
+RESULTAT AUDIT (run reel Serper Images API) :
+  Provider        : serper_images (Serper.dev /images endpoint)
+  Shape detectee  : F (images[].{title, link, thumbnailUrl})
+  Endpoint        : https://google.serper.dev/images
+  Requetes        : 4 (site:avito.ma/fr [type] [ville])
+  Resultats bruts : 40 (10 par requete)
+  Resultats normalises : 37 (3 rejetes : paths exclus ou non-avito)
+  Avec miniature  : 37 / 37 (100%) -- gstatic.com proxy Google
+  thin_indexable sans miniature : 0
+  Cle loggee      : non (jamais)
+
+CONSTAT MAJEUR :
+  Serper Images API retourne DES MINIATURES pour 100% des resultats Avito.
+  Les miniatures sont des proxys Google (encrypted-tbn0.gstatic.com) -- pas de hotlink Avito.
+  Contrairement au web search (/search qui retourne 0 miniature pour site: queries),
+  le endpoint /images retourne des miniatures pour chaque image indexee par Google.
+  Thumbnail source : Google-cached proxy (safe pour hotlink).
+  Direct avito.ma imageUrl : IGNOREE (doctrine no-image-rehosting).
+
+VERDICT :
+  37 miniatures disponibles via Serper Images API.
+  Classification : tos_review_required (ToS Serper non formellement valide).
+  Pour passer a indexed_result_with_provider_thumbnail :
+    1. Valider ToS Serper pour usage commercial
+    2. Valider politique Avito pour affichage miniature via proxy Google
+    3. Ne pas cacher / ne pas telecharger les miniatures
+  Recommandation : tos_review_required -- miniatures disponibles, validation ToS requise.
+
+INVARIANTS MINIATURE CONFIRMES :
+  can_cache_thumbnail    = false (toujours, literal type)
+  can_download_thumbnail = false (toujours, literal type)
+  no_image_rehosting     = true (doctrine)
+  can_hotlink_thumbnail  = true (proxy Google gstatic.com)
+  tos_review_required    = true (aucun provider pre-valide)
+
+RESULTATS TESTS :
+  npm test:scrapers : 781/781 PASS (+16 tests search-api-thumbnail-provider-audit)
+  npm run build : OK (a verifier apres)
+
+====================================================
+SEARCH-RESULT-DISPLAY-MODEL-1 -- Completed 2026-07-01
+====================================================
+
+STATUT : COMPLETED
+
+LIVRES :
+* lib/search/search-result-display-model.ts (cree -- module pur, 0 IO)
+  -- Types : SearchResultDisplayMode, ResultOrigin, SearchResultDisplayPolicy, SearchResultDisplayInput
+  -- Fonction : computeSearchResultDisplayPolicy() -- arbre de decision 10 regles
+  -- Invariants types literals : can_cache_thumbnail=false, can_download_thumbnail=false
+* lib/search-api/search-api-to-serp-result.ts (cree -- helper preparatoire)
+  -- Type : SearchApiSerpResult
+  -- Fonction : normalizedResultToSerpResult(result, thumbnailTosReviewRequired?)
+* lib/listings/types.ts (modifie -- 10 champs SERP optionnels ajoutes additivement)
+* lib/listings/map-db-listing.ts (modifie -- integration computeSearchResultDisplayPolicy)
+  -- Mubawab → indexed_result production_allowed=true
+  -- Avito DB → suppressed production_block_reason=direct_avito_blocked
+* components/search/SearchListingCardDark.tsx (modifie -- guards SERP)
+* components/listings/PhotoFirstListingCard.tsx (modifie -- idem)
+* components/home/HomeResultPreview.tsx (modifie -- idem)
+  -- can_show_result===false → return null
+  -- production && production_allowed===false → return null
+* scripts/scrapers/__tests__/search-result-display-model.test.ts (cree -- 21 tests, 7 suites)
+* package.json (modifie -- search-result-display-model.test.ts ajoute)
+* docs/SEARCH_RESULT_DISPLAY_MODEL.md (cree -- reference complete)
+
+ARBRE DE DECISION (10 regles, premiere regle qui match gagne) :
+  1. partner                          → full_partner_listing (contact+gallery OK)
+  2. source inconnue                  → suppressed (unknown_source)
+  3. original_url manquante           → suppressed (missing_original_url)
+  4. web_index_eligibility=suppressed → suppressed
+  5. Avito + result_origin≠search_api → suppressed (direct_avito_blocked)
+  6. Avito + search_api + thumb       → indexed_result_with_provider_thumbnail
+     production_allowed = !thumbnail_tos_review_required
+  7. Avito + search_api (sans thumb)  → thin_indexed_result production_allowed=true
+  8. public_index_source (Mubawab)    → indexed_result
+  9. audit_source / market_signal     → source_search_link (view_source)
+  10. defaut                          → suppressed
+
+RESULTATS TESTS :
+  search-result-display-model.test.ts : 21/21 PASS (7 suites)
+  npm run test (suite complete) : 802/802 PASS (+21 tests vs 781)
+  TypeScript tsc --noEmit : OK (0 erreurs)
+
+ETAT DES MISSIONS GOOGLE-LIKE FIRST :
+* GOOGLE-LIKE-FIRST-STRATEGY-DOCS-1       COMPLETED 2026-06-30
+* WEB-INDEXING-ELIGIBILITY-1              COMPLETED 2026-06-30
+* AVITO-GOOGLE-LIKE-AUDIT-1              COMPLETED 2026-06-30 (403 categorie)
+* AVITO-SITEMAP-DETAIL-AUDIT-1           COMPLETED 2026-06-30 (403 sitemap)
+* SEARCH-API-AVITO-RESULTS-AUDIT-1       COMPLETED 2026-06-30 (fixture_only)
+* SEARCH-API-PROVIDER-REAL-AUDIT-1       COMPLETED 2026-06-30 (adapter 5 shapes)
+* SEARCH-API-AVITO-REAL-RUN-1           COMPLETED 2026-07-01 (33 thin_indexable Serper)
+* SEARCH-API-THUMBNAIL-PROVIDER-AUDIT-1 COMPLETED 2026-07-01 (37/37 miniatures via Serper images)
+* SEARCH-RESULT-DISPLAY-MODEL-1         COMPLETED 2026-07-01 (21 tests, 802/802)
+* SERP-RANKING-RELIABILITY-1             Not started
+* SOURCE-OPT-OUT-POLICY-1               Not started
+
+====================================================
+SERPER-TOS-THUMBNAILS-VALIDATION-1 -- Completed 2026-07-01
+====================================================
+
+STATUT : COMPLETED (audit) -- VERDICT : unclear
+
+LIVRES :
+* docs/SERPER_TOS_THUMBNAILS_VALIDATION.md (cree -- audit complet + email Serper)
+* data/audits/legal/serper_tos_thumbnails_validation.json (cree -- matrice JSON)
+
+SOURCES CONSULTEES :
+  Serper ToS (https://serper.dev/terms) -- fetched
+  Avito robots.txt -- fetched (Googlebot autorise sur listings)
+  Avito CGU -- HTTP 403 inaccessible
+  Perfect 10 v. Amazon (9th Cir. 2007) -- server test
+  Nicklen v. Sinclair (SDNY 2021) -- display test
+
+VERDICT : unclear
+  GAP 1 (BLOQUANT) : Serper ToS sans clause d'autorisation explicite affichage commercial thumbnails
+  GAP 2 (BLOQUANT) : Clause B2B Serper ambigue -- "not for consumer services"
+  GAP 3 (RISQUE) : CGU Avito inaccessibles -- politique third-party display inconnue
+
+MITIGANTS :
+  - Hotlink uniquement (pas cache/download/rehost) -- server test favorable
+  - Attribution "Source: Avito" + redirection Avito -- conformite clauses non-misrepresentation
+  - Tous SERP API providers retournent ces URLs et clients les utilisent sans probleme connu
+
+ACTION REQUISE :
+  Envoyer email Serper support (cf. docs/SERPER_TOS_THUMBNAILS_VALIDATION.md#email-serper-support)
+  Attendre confirmation ecrite (~3-7 jours)
+  Si oui : passer thumbnail_tos_review_required=false → production_allowed=true automatiquement
+
+STATUT PRODUCTION :
+  thin_indexed_result (texte seul) : peut etre active independamment -- pas affecte par cette validation
+  indexed_result_with_provider_thumbnail : bloque jusqu'a confirmation Serper
+
+PROCHAINE ETAPE :
+  Envoyer email Serper → confirmer ToS thumbnails → activer indexed_result_with_provider_thumbnail
+  OU commencer SERP-RANKING-RELIABILITY-1 en parallele
+
+====================================================
+GOOGLE-LIKE-FIRST-STRATEGY-DOCS-1 — Switch stratégique validé — 2026-06-30
+====================================================
+
+STATUT : COMPLÉTÉE
+
+SWITCH STRATÉGIQUE VALIDÉ :
+AkarFinder passe en Google-like first.
+
+Objectif : référencer toutes les annonces immobilières publiquement indexables au Maroc,
+afficher aperçu limité + miniature + source + lien original, puis trier par fiabilité.
+
+LIVRÉ :
+* docs/ROADMAP.md — section GOOGLE-LIKE FIRST STRATEGY ajoutée (nouvelle roadmap missions 1-7)
+* docs/DECISIONS.md — décision "AkarFinder switches to Google-like first" ajoutée (2026-06-30)
+* docs/SESSION.md — état session mis à jour
+* docs/SITE_SOURCE_BADGES_POLICY.md — Avito new path documenté (indexed_result si éligible)
+
+ÉTAT ACTUEL DES MISSIONS :
+* SITE-SOURCE-BADGES-HARDENING-1       COMPLÉTÉE 2026-06-30
+* GOOGLE-LIKE-FIRST-STRATEGY-DOCS-1   COMPLÉTÉE 2026-06-30
+* SOURCE-POLICY-FOUNDATION-1 Data Engine   PENDING (repo Engine séparé)
+
+PROCHAINES MISSIONS RECOMMANDÉES :
+1. WEB-INDEXING-ELIGIBILITY-1     — définir eligibility (robots, noindex, structure)
+2. AVITO-GOOGLE-LIKE-AUDIT-1      � audit Avito : annonces �ligibles � indexed_result ?
+3. SEARCH-RESULT-DISPLAY-MODEL-1  — implémenter search_result_display_mode séparé
+4. SERP-RANKING-RELIABILITY-1     — tri multi-critères SERP
+5. SOURCE-OPT-OUT-POLICY-1        — mécanisme retrait source
+
+DOCTRINE CONSERVÉE :
+  no bypass / no proxy / no stealth / no fake Googlebot / no captcha solving
+  no login / respect robots.txt / respect noindex/nosnippet/noimage
+  source visible / lien original obligatoire / pas contact pour sources publiques
+
+AUCUN CODE FONCTIONNEL MODIFIÉ :
+  aucun scraper modifié
+  aucun adapter modifié
+  aucune migration DB
+  aucun composant UI modifié
+
+====================================================
 THEME-FINAL-QA-1 — Validation finale thème clair/sombre — 2026-06-30
 ====================================================
 
@@ -124,9 +738,9 @@ Règle produit : chips/filtres restent dans leur espace courant. /search uniquem
 
 FICHIERS MODIFIÉS
 * app/louer/page.tsx — refactorisé en async Server Component (searchParams + fetch), passe props à LouerPageShell
-* components/location/LouerPageShell.tsx — refactorisé en composant sync acceptant props (Listing[], totalListings, selectedPropertyType, selectedBudgetMax, selectedBudgetMin) ; BUDGET_CHIPS → /louer?budget_max=X ; TYPE_CHIPS → /louer?property_type=X ; active states bronze ; CTA budget explicite conditionnel ; getSectionTitle / getSearchCTALabel dynamiques
+* components/location/LouerPageShell.tsx � refactoris� en composant sync acceptant props (Listing[], totalListings, selectedPropertyType, selectedBudgetMax, selectedBudgetMin) ; BUDGET_CHIPS ? /louer?budget_max=X ; TYPE_CHIPS ? /louer?property_type=X ; active states bronze ; CTA budget explicite conditionnel ; getSectionTitle / getSearchCTALabel dynamiques
 * components/vendre/VendrePageShell.tsx — "Voir plus" → "Voir les annonces dans la recherche" ; "Comparer avec le marché" (callout final) → #estimation
-* components/landing/ListingPreview.tsx — chips Acheter/Louer/Neuf/MRE → /acheter /louer /neuf /mre (étaient /search?type=buy/rent/new)
+* components/landing/ListingPreview.tsx � chips Acheter/Louer/Neuf/MRE ? /acheter /louer /neuf /mre (�taient /search?type=buy/rent/new)
 
 CORRECTIONS (7 issues)
 1. /acheter FILTER_CHIPS (sessions précédentes) — labels correspondants aux params
@@ -139,8 +753,8 @@ CORRECTIONS (7 issues)
 
 VALIDATION TECH
 * npm run build → ✅ zéro erreur TypeScript, toutes routes compilées
-* Smoke test HTTP 200 → 9/9 : / /acheter /louer /louer?property_type=Studio /louer?budget_max=3000 /neuf /vendre /promoteurs /search
-* HTML vérifié : budget chips → /louer?budget_max=X ✅ ; type chips → /louer?property_type=X ✅ ; /vendre callout → #estimation ✅
+* Smoke test HTTP 200 ? 9/9 : / /acheter /louer /louer?property_type=Studio /louer?budget_max=3000 /neuf /vendre /promoteurs /search
+* HTML v�rifi� : budget chips ? /louer?budget_max=X ? ; type chips ? /louer?property_type=X ? ; /vendre callout ? #estimation ?
 
 STATUT : COMPLET — prêt pour déploiement preview
 
@@ -468,9 +1082,9 @@ Smoke local port 3000
 * /neuf : 200 · simulateur présent ✅
 * POST /api/leads credit (acheter + neuf) → ok=true ✅
 * POST sans consentIndicatif → 400 ✅
-* /pro/leads?filter=credit : badge Crédit · leads QA visibles · tab filtre ✅
+* /pro/leads?filter=credit : badge Cr�dit � leads QA visibles � tab filtre ?
 * Export CSV : colonne Canal · ligne credit présente ✅
-* Export ?token=WRONG → 401 ✅
+* Export ?token=WRONG ? 401 ?
 * Non-régression : /louer /vendre /vendre/dossier /promoteurs /pro /onboarding / → 200 ✅
 * /louer RentAlertForm (P18A) + /pro/alerts intacts ✅
 
@@ -481,7 +1095,7 @@ Build / Tests
 Smoke production (akarfinder.vercel.app, deploy 2026-06-28)
 * /acheter + /neuf simulateur présent ✅ · CTA card ✅
 * POST /api/leads credit → ok=true (id 7b036c0f...) ✅
-* /pro/leads?filter=credit : badge + smoke lead visible ✅
+* /pro/leads?filter=credit : badge + smoke lead visible ?
 * Export CSV Canal + credit row ✅ · bad token 401 ✅
 * Non-régression /louer /vendre /promoteurs /pro + P18A intacts ✅
 Note : preview Vercel protégé par SSO (smoke HTTP impossible) → validation via
@@ -511,12 +1125,12 @@ Fichiers créés
 * scripts/apply-alerts-migration.ts — apply script (nécessite SUPABASE_ACCESS_TOKEN)
 * lib/alerts/types.ts — AlertApiPayload, AlertApiResponse, SavedAlertRow
 * app/api/alerts/route.ts — POST /api/alerts (phone OU email requis + consent)
-* app/api/alerts/export/route.ts — GET /api/alerts/export?token=... (CSV BOM UTF-8)
+* app/api/alerts/export/route.ts � GET /api/alerts/export?token=... (CSV BOM UTF-8)
 * components/alerts/RentAlertForm.tsx — "use client" · form dark deepblue/bronze
   (phone requis, ville/budget_max/type optionnels, consentement obligatoire)
   success state "Alerte enregistrée · Vous serez recontacté selon disponibilité"
   wording: non contractuel · repères indicatifs · pas d'alerte automatique garantie
-* app/pro/alerts/page.tsx — page admin /pro/alerts?token=... (liste alertes, export CSV, lien leads)
+* app/pro/alerts/page.tsx � page admin /pro/alerts?token=... (liste alertes, export CSV, lien leads)
 
 Fichiers modifiés
 * components/location/LouerPageShell.tsx — bloc "À venir" remplacé par <RentAlertForm />
@@ -532,16 +1146,16 @@ Smoke local port 3000
 * POST /api/alerts sans phone → 400 ✅
 * POST /api/alerts sans consent → 400 ✅
 * POST /api/alerts bon payload → ok=true (après migration) ✅
-* GET /api/alerts/export?token=WRONG → 401 ✅
+* GET /api/alerts/export?token=WRONG ? 401 ?
 * Non-régression : /acheter /vendre /promoteurs /pro /onboarding → 200 ✅
 
 Smoke production (post-migration Supabase 2026-06-27)
 * /louer : 200 · RentAlertForm présent ✅
 * POST /api/alerts (phone+city+budget+type+consent) → ok=true · alert_id ✅
-* GET /api/alerts/export?token=VALID → 200 CSV BOM UTF-8 ✅
-* GET /api/alerts/export?token=WRONG → 401 ✅
-* /pro/alerts?token=VALID : alerte visible · badge Location · statut Active · téléphone · bouton WhatsApp ✅
-* /pro/alerts?token=WRONG : AccessDenied ✅
+* GET /api/alerts/export?token=VALID ? 200 CSV BOM UTF-8 ?
+* GET /api/alerts/export?token=WRONG ? 401 ?
+* /pro/alerts?token=VALID : alerte visible � badge Location � statut Active � t�l�phone � bouton WhatsApp ?
+* /pro/alerts?token=WRONG : AccessDenied ?
 
 Build / Tests
 * npm run build : OK (0 erreur TS) · /louer 213 B → 2.55 kB (RentAlertForm hydraté) ✅
@@ -597,8 +1211,8 @@ Tunnel 3 — Promoteur
 * filter=visit_request, chaud, new → tous 200 ✅
 
 Export CSV
-* /api/leads/export?token=VALID → 200 + CSV BOM UTF-8 + headers + 4 lignes QA ✅
-* /api/leads/export?token=WRONG → 401 ✅
+* /api/leads/export?token=VALID ? 200 + CSV BOM UTF-8 + headers + 4 lignes QA ?
+* /api/leads/export?token=WRONG ? 401 ?
 
 Build / Tests
 * npm run build : OK (0 erreur TS) ✅
@@ -719,25 +1333,25 @@ LEADS-MVP — TUNNELS ACHETEUR/LOCATAIRE — COMPLETED 2026-06-27 ✅
 Périmètre : brancher /acheter et /louer sur l'infrastructure leads existante.
 
 Fichiers modifiés
-* app/onboarding/page.tsx         — lit ?intent= + dérive sourcePage (/acheter ou /louer)
+* app/onboarding/page.tsx         � lit ?intent= + d�rive sourcePage (/acheter ou /louer)
 * components/onboarding/BuyerOnboardingFlow.tsx — props intent + sourcePage · pré-sélection step1 · source_page dynamique
 * components/intent/AcheterPageShell.tsx — card CTA "Préparer mon dossier pour ce bien" + sidebar block "Préparer mon dossier acheteur"
 * components/location/LouerPageShell.tsx — card CTA "Préparer mon dossier pour ce logement" + sidebar block "Préparer mon dossier locataire"
 * app/api/leads/export/route.ts   — NOUVEAU : GET export CSV (token admin, 14 champs, BOM UTF-8)
-* app/pro/leads/page.tsx          — bouton "Exporter CSV" → /api/leads/export?token=...
+* app/pro/leads/page.tsx          � bouton "Exporter CSV" ? /api/leads/export?token=...
 
 Hooks /acheter
-* Sidebar : bloc "Préparer mon dossier acheteur" → /onboarding?intent=acheter ✅
-* Cards   : CTA "Préparer mon dossier pour ce bien" → /onboarding?intent=acheter&listing={id} ✅
+* Sidebar : bloc "Pr�parer mon dossier acheteur" ? /onboarding?intent=acheter ?
+* Cards   : CTA "Pr�parer mon dossier pour ce bien" ? /onboarding?intent=acheter&listing={id} ?
 
 Hooks /louer
-* Sidebar : bloc "Préparer mon dossier locataire" → /onboarding?intent=louer ✅
-* Cards   : CTA "Préparer mon dossier pour ce logement" → /onboarding?intent=louer&listing={id} ✅
+* Sidebar : bloc "Pr�parer mon dossier locataire" ? /onboarding?intent=louer ?
+* Cards   : CTA "Pr�parer mon dossier pour ce logement" ? /onboarding?intent=louer&listing={id} ?
 
 intent transmis ....... OUI ✅
-  /acheter → /onboarding?intent=acheter → step 1 pré-sélectionné "Acheter"
-  /louer   → /onboarding?intent=louer   → step 1 pré-sélectionné "Louer"
-listing_id transmis ... OUI ✅ (via ?listing= param déjà supporté)
+  /acheter ? /onboarding?intent=acheter ? step 1 pr�-s�lectionn� "Acheter"
+  /louer   ? /onboarding?intent=louer   ? step 1 pr�-s�lectionn� "Louer"
+listing_id transmis ... OUI ? (via ?listing= param d�j� support�)
 source_page dynamique .. OUI ✅
   intent=acheter → source_page="/acheter" tracé dans buyer_leads
   intent=louer   → source_page="/louer"   tracé dans buyer_leads
@@ -762,19 +1376,19 @@ FUNCTIONAL-FIXES-0 + LEADS-PREFLIGHT — COMPLETED 2026-06-27 ✅
 Périmètre : fixes rapides CTA + audit complet de l'état réel du tunnel leads.
 
 Fixes appliqués — AcheterPageShell.tsx
-* FILTER_CHIPS "Type de bien", "Prix max", "Plus de filtres" : href="/search" → "/search?transaction_type=buy" ✅
+* FILTER_CHIPS "Type de bien", "Prix max", "Plus de filtres" : href="/search" ? "/search?transaction_type=buy" ?
   Note : maxPrice non supporté par /search (lit seulement transaction_type, city, mre). Param ignoré.
-* CTA "Voir les doublons" : href="/search" → "/search?transaction_type=buy" + label "Explorer les annonces" ✅
+* CTA "Voir les doublons" : href="/search" ? "/search?transaction_type=buy" + label "Explorer les annonces" ?
   Raison : /search ne supporte pas has_duplicates → label honnête. Filtre doublon = future extension /search.
 
-/map?city= — Vérifié
-* app/map/page.tsx ligne 62 : const city = pickFirst(params.city) ?? "all" → lu + passé à initialFilters ✅
-* EXPLORER_CITIES dans AcheterPageShell déjà correct : /map?city=Casablanca etc. ✅
+/map?city= � V�rifi�
+* app/map/page.tsx ligne 62 : const city = pickFirst(params.city) ?? "all" ? lu + pass� � initialFilters ?
+* EXPLORER_CITIES dans AcheterPageShell d�j� correct : /map?city=Casablanca etc. ?
 
 État réel de /onboarding
 * BuyerOnboardingFlow.tsx : flow 6 étapes complet, Étape 6 → submitLead() → fetch POST /api/leads ✅
 * Source tracé : source_channel="onboarding", source_page="/onboarding"
-* listingId supporté via ?listing= param sur la page
+* listingId support� via ?listing= param sur la page
 * ⚠️ source_page HARDCODÉ = "/onboarding" — ne distingue pas si l'utilisateur vient de /acheter ou /louer
 * ⚠️ Aucun CTA "Créer mon dossier" visible sur /acheter ou /louer → tunnel existe mais pas d'entrée visible !
 
@@ -788,7 +1402,7 @@ Fixes appliqués — AcheterPageShell.tsx
 
 État réel de /pro/leads
 * app/pro/leads/page.tsx : page fonctionnelle ✅
-* Auth : LEADS_ADMIN_TOKEN env + ?token= query param (MVP — token-in-URL, auth réelle à venir)
+* Auth : LEADS_ADMIN_TOKEN env + ?token= query param (MVP � token-in-URL, auth r�elle � venir)
 * Affiche buyer_leads triés par created_at desc, limit 200
 * Filtres : Tous / Dossiers acheteurs / Demandes de visite / Chaud / Nouveau
 * WhatsApp CTA par lead, lien vers /listings/{id}, statut, notes internes, suivi (LeadCrmCard)
@@ -804,7 +1418,7 @@ Ce qui manque pour LEADS-MVP :
   ❌ CTAs hooks sur /acheter et /louer → aucun bouton visible qui amène à /onboarding
   ❌ source_page dynamique (actuellement hardcodé "/onboarding")
   ❌ Export CSV /pro/leads
-  ❌ CTA contextuel listing cards → /onboarding?listing={id}
+  ? CTA contextuel listing cards ? /onboarding?listing={id}
 
 Build / Tests
 * npm run build : OK (0 erreur TypeScript) ✅
@@ -1163,7 +1777,7 @@ Adaptations Neuf
 
 Données projet utilisées
 * lib/promoters/ : AUCUN promoteur visibility_status="active" (seule une entrée "demo"
-  gated via ?preview=demo) → pas de vrai projet public à afficher
+  gated via ?preview=demo) ? pas de vrai projet public � afficher
 * Décision : card projet = EXEMPLE illustratif inline (clairement "Aperçu · exemple",
   "aucun projet partenaire actif"), valeurs illustratives (850 000 DH, Studio/T2/T3,
   45–120 m², livraison 2026 à confirmer). JAMAIS présenté comme réel.
@@ -1640,7 +2254,7 @@ Sections livrées
 5. Comparer les biens  — 2 mini-cards ListingVisual VS divider CTA /compare
 6. Prix observés  — table 5 villes (Casa/Rabat/Marrakech/Tanger/Agadir) + disclaimer
 7. Stats row  — totalListings + Multi/Récent/Méthode (labels descriptifs, aucun chiffre fake)
-8. Explorer le Maroc  — deepblue section + 4 city chips /map?city=X + CTA carte
+8. Explorer le Maroc  � deepblue section + 4 city chips /map?city=X + CTA carte
 
 Wording interdit : aucune occurrence (garanti/certifié/officiel/fiable à 100%/etc.)
 Wording autorisé : annonces analysées / doublons détectés / prix observés / repères indicatifs / à confirmer
@@ -1865,7 +2479,7 @@ Fichier : components/landing/SignatureMapSection.tsx
   deepblue/78 + border bronze/45 + dot glow bronze + label ville (9px extrabold)
   backdrop-blur-sm · hover : border bronze/80 + bg deepblue + shadow glow
   focus-visible : outline bronze (accessibilité clavier)
-* 6 villes conservées sur la carte : Tanger, Fès, Rabat, Casablanca, Marrakech, Agadir → /map?city=X
+* 6 villes conserv�es sur la carte : Tanger, F�s, Rabat, Casablanca, Marrakech, Agadir ? /map?city=X
 * Zones bas d'image (Explorer [Ville]) : supprimées
 * Desktop pins et CTA /search : inchangés
 * Build : OK · commit d2aa42f
@@ -1892,7 +2506,7 @@ HERO-COPY-V2 — Hiérarchie texte hero corrigée
 MAP-UX-2 — Corrections zones mobiles + routing carte
 * CityIntentGrid.tsx : mobileCollageZones recalibrées (casablanca 21%, marrakech 34.5%,
   rabat 48%, tanger 61.5%, agadir 75%) — corrige "Casablanca sans bouton" + "Marrakech→Casablanca"
-* SignatureMapSection.tsx : tous les hrefs ville /search?city=X → /map?city=X
+* SignatureMapSection.tsx : tous les hrefs ville /search?city=X ? /map?city=X
   (desktopPins × 6, mobilePins × 6, mobileCityRows × 6, ALL_CITIES × 6)
   CTA "Explorer les annonces" reste sur /search
 * MapExperience.tsx : city overlay immersif sur /map?city=X
@@ -1948,7 +2562,7 @@ Mimo avait travaillé pendant l'absence de Claude. Les changements étaient dans
 
 Fichiers Mimo restaurés (stash → working tree)
 * components/landing/ProductHero.tsx — hero copy : "Le 1er moteur de recherche immobilier au Maroc."
-* components/landing/SignatureMapSection.tsx — rebuild image réelle + pins /search?city= cliquables
+* components/landing/SignatureMapSection.tsx � rebuild image r�elle + pins /search?city= cliquables
 * components/layout/SiteHeader.tsx — chips intentions mobile (Acheter/Louer/Neuf/Promoteurs/Recherche)
 * lib/site.ts — headline/subheadline mis à jour, "Alertes"→"Recherche" dans navItems
 * app/map/page.tsx — real listings via searchListings() au lieu de geoEnrichedMockListings
@@ -2007,14 +2621,14 @@ Prochaine étape recommandée
 ----------------------------------------------------
 HOTFIX-NAV-INTENT + HOTFIX-MAP-UX + P17A-2 — COMPLÉTÉS 2026-06-26 ✅
 
-P17A-2 : Démo interne /promoteurs/promoteur-demo-akarfinder?preview=demo · /projets/residence-demo-akarfinder?preview=demo
-  · sans ?preview=demo → 404 propre · avec param → 200 + bandeau ⚠ amber · noindex pages demo
+P17A-2 : D�mo interne /promoteurs/promoteur-demo-akarfinder?preview=demo � /projets/residence-demo-akarfinder?preview=demo
+  � sans ?preview=demo ? 404 propre � avec param ? 200 + bandeau ? amber � noindex pages demo
   · getDemoPromoter / getDemoProject / getDemoPromoterProjects · force-dynamic ajouté aux pages
   · 14 tests demo · 452 scrapers + 51 API 0 fail · screenshots p17a2/*.png
   · Slugs finaux confirmés 2026-06-26 : promoteur-demo-akarfinder / residence-demo-akarfinder
 
 HOTFIX-MAP-UX : Carte indicative · titre "Carte indicative · Repères simplifiés" · disclaimer corrigé
-  · Cluster markers → <a href="/search?city=City"> + aria-label · boundary layers internes masqués
+  � Cluster markers ? <a href="/search?city=City"> + aria-label � boundary layers internes masqu�s
 
 HOTFIX-NAV-INTENT : isDark || isTransparent partout (contraste scrollé corrigé)
   · Chips mobile (lg:hidden) : Acheter / Louer / Neuf / Promoteurs / Recherche
@@ -2339,8 +2953,8 @@ name                | string            | nom commercial du promoteur
 logo_url            | string?           | uniquement si fourni par le promoteur
 city                | string            | ville principale
 description         | string            | ≤ 280 chars, fournie par le promoteur
-contact_whatsapp    | string?           | PARTENAIRE UNIQUEMENT — jamais scrappé
-contact_email       | string?           | PARTENAIRE UNIQUEMENT — jamais scrappé
+contact_whatsapp    | string?           | PARTENAIRE UNIQUEMENT � jamais scrapp�
+contact_email       | string?           | PARTENAIRE UNIQUEMENT � jamais scrapp�
 website_url         | string?           | optionnel
 partner_status      | enum              | "none" | "partner" | "featured"
 source_note         | string (fixe)     | "Données fournies par le promoteur"
@@ -2363,17 +2977,17 @@ promoter_id              | string (FK)    | → Promoter.id
 name                     | string         | nom du programme
 city                     | string         |
 neighborhood             | string?        |
-address_label            | string?        | libellé indicatif (pas d'adresse exacte)
+address_label            | string?        | libell� indicatif (pas d'adresse exacte)
 price_from               | number         | prix à partir de en MAD
 currency                 | "MAD"          | fixe
 property_types           | string[]       | ["Appartement", "Villa", "Studio", ...]
 typologies               | string[]       | ["T2", "T3", "T4", "Studio", ...]
-surfaces                 | {min?,max?,unit:"m²"} |
-delivery_date_label      | string?        | ex: "Prévu 2026", "Livraison en cours"
+surfaces                 | {min?,max?,unit:"m�"} |
+delivery_date_label      | string?        | ex: "Pr�vu 2026", "Livraison en cours"
 brochure_url             | string?        | PDF fourni par le promoteur
 main_image_url           | string?        | uniquement si image_permission_status = "partner_full"
 gallery_urls             | string[]?      | idem
-latitude / longitude     | number?        | optionnel — repère indicatif
+latitude / longitude     | number?        | optionnel � rep�re indicatif
 project_status           | enum           | "upcoming" | "active" | "delivered" | "paused"
 partner_badge            | enum (fixe)    | "Projet partenaire" | "Données fournies par le promoteur"
 lead_cta_type            | enum           | "whatsapp" | "callback" | "form"
@@ -3351,7 +3965,7 @@ Files modified
 
 * app/search/page.tsx — replaced SearchShell with LightZillowSearchShell, updated background color
 * components/listings/ListingDetail.tsx — gradient hero (280px min), ReliabilityBadge, MreBadge, WhatsAppCTA primary, Repere marche indicatif block, source/freshness block
-* lib/listings/types.ts — added whatsapp?: string field to Listing type
+* lib/listings/types.ts � added whatsapp?: string field to Listing type
 * lib/listings/mock-listings.ts — added whatsapp numbers to 6 MRE-friendly listings
 * docs/ROADMAP.md — added Level 2C section, marked Completed
 * docs/DECISIONS.md — added 2026-06-19 Light Zillow Morocco decision
@@ -4596,7 +5210,7 @@ pour alimenter les 16 champs P8A sur les listings Supabase.
 Ensuite : Typesense (P8B) ou carte interactive selon roadmap.
 ---
 
-## Session â€” 2026-06-23 â€” P8A.2
+## Session — 2026-06-23 — P8A.2
 
 ### Ce qui a ete fait
 
@@ -4734,7 +5348,7 @@ Conclusion :
 
 ---
 
-## Session â€” 2026-06-23 â€” P8A.3
+## Session — 2026-06-23 — P8A.3
 
 ### Ce qui a ete fait
 
@@ -4798,7 +5412,7 @@ Corrections ciblees :
 
 ---
 
-## Session â€” 2026-06-23 â€” P8A.4
+## Session — 2026-06-23 — P8A.4
 
 ### Ce qui a ete fait
 
@@ -5067,7 +5681,7 @@ Impact premium (15) · Clarté parcours (15) · Page détail (20) · Mobile (15)
 1. **Cards similaires** : différenciation visuelle (badge prix/m², freshness_label) — +2 pts
 2. **Search UX** : état de chargement, count animé, feedback filtres — +2 pts  
 3. **Page détail** : image hero réelle quand disponible, ou fallback "visuel illustratif" discret — +2 pts
-4. **Homepage** : bloc "Pourquoi cette annonce est fiable ?" (data proof visible dès la homepage) — +2 pts
+4. **Homepage** : bloc "Pourquoi cette annonce est fiable ?" (data proof visible d�s la homepage) � +2 pts
 5. **Mobile** : accordion sur blocs secondaires (MarketReference, NeighborhoodAmenities, History) — +2 pts
 
 ### Limites restantes
@@ -5641,7 +6255,7 @@ Aucun appel API temps réel, aucune migration DB, aucun nouveau package nécessi
 
 * lib/proximity/types.ts — ProximityPoint, ProximityCategory, ProximityMode, ProximityConfidence
 * lib/proximity/morocco-proximity.ts — Dataset statique indicatif OpenStreetMap (13 catégories × 14 quartiers + 6 villes fallback)
-* lib/proximity/get-listing-proximity.ts — getListingProximity(city, neighborhood?) → ProximityPoint[]
+* lib/proximity/get-listing-proximity.ts � getListingProximity(city, neighborhood?) ? ProximityPoint[]
 * components/listings/ProximityBlock.tsx — Bloc "Vie autour du bien" avec score, grille, disclaimer
 * scripts/scrapers/__tests__/p10c-proximity.test.ts — 39 tests (couverture, champs, score, normalisation)
 * scripts/screenshot-p10c.js — Script Playwright pour les captures
@@ -6162,7 +6776,7 @@ Dossier indicatif uniquement. Aucune préqualification bancaire, aucune transmis
 
 ### Fichiers modifiés
 * package.json — p12a-onboarding.test.ts ajouté à test:scrapers
-* components/listings/ListingDetail.tsx — CTA sidebar desktop "Vérifier si ce bien correspond à mon budget" → /onboarding?listing=<id> + CTA inline mobile
+* components/listings/ListingDetail.tsx � CTA sidebar desktop "V�rifier si ce bien correspond � mon budget" ? /onboarding?listing=<id> + CTA inline mobile
 * components/search/LightZillowSearchShell.tsx — CTA sidebar droite "Créer mon profil de recherche" → /onboarding
 * docs/ROADMAP.md — P12A COMPLÉTÉE 2026-06-25
 
@@ -6189,7 +6803,7 @@ Toujours : "dossier indicatif", "à confirmer avec votre banque", "simulation in
 * Checkbox 2 (obligatoire pour finaliser) : "Je comprends que ce dossier est indicatif et ne constitue pas une préqualification bancaire."
 
 ### CTA entry points
-* /listings/[id] sidebar : "Vérifier si ce bien correspond à mon budget" → /onboarding?listing=<id>
+* /listings/[id] sidebar : "V�rifier si ce bien correspond � mon budget" ? /onboarding?listing=<id>
 * /listings/[id] mobile inline : même CTA après Package Score accordion
 * /search sidebar droite : "Créer mon profil de recherche" → /onboarding
 
@@ -6224,13 +6838,13 @@ Dans l'état summary, ce bloc page + le header de BuyerProfileSummary créaient 
 ### Fix appliqué
 **app/onboarding/page.tsx** :
 * Suppression du bloc intro redondant (badge "Profil de recherche" + h1 + description)
-* Le step card affiche déjà "Étape 1/6 — Quel est votre projet ?" et la summary a son propre h2
+* Le step card affiche d�j� "�tape 1/6 � Quel est votre projet ?" et la summary a son propre h2
 * Section padding : `py-10 lg:py-14` → `pt-12 pb-16 lg:pt-16 lg:pb-20`
   (48px top au lieu de 40px — respiration suffisante depuis le sticky header)
 
 ### Vérification step 1 post-fix
 * Progress bar "Étape 1/6" : visible ✅
-* Titre "Quel est votre projet ?" : visible ✅
+* Titre "Quel est votre projet ?" : visible ?
 * Chips projets : correctement espacées ✅
 * Bouton "Continuer" : visible sans scroll sur mobile ✅
 
@@ -6477,7 +7091,7 @@ Fichiers modifiés
 * lib/cities.ts — champ description ajouté sur les 5 villes
 * components/landing/SignatureMapSection.tsx — 3 CTAs, sous-texte, 4 signal cards mises à jour, bloc visite
 * components/landing/CityIntentGrid.tsx — id="villes" + description affichée sous le tag
-* components/landing/MreTrustSection.tsx — 2 CTAs : /onboarding + /search?mre=true
+* components/landing/MreTrustSection.tsx � 2 CTAs : /onboarding + /search?mre=true
 * docs/ROADMAP.md — section EXPLORER-MAROC ajoutée ✅
 * docs/DECISIONS.md — décision validée ajoutée ✅
 
@@ -6886,7 +7500,7 @@ GOOGLE-LIKE-HOMEPAGE-1 + HERO-PHOTO-RESTORE-1
 TUNNEL-CTA-CONTAINMENT-1
 
 Règle : 0 fuite vers /search depuis /acheter /louer /vendre
-* AcheterPageShell — searchHref → /acheter?property_type=...
+* AcheterPageShell � searchHref ? /acheter?property_type=...
 * LouerPageShell — BUDGET_CHIPS + TYPE_CHIPS → /louer
 * VendrePageShell — CTA → "Voir des biens comparables" → /acheter
 * SellerLeadForm — "Comparer avec le marché" → /vendre
@@ -6913,3 +7527,275 @@ PROCHAINE ÉTAPE RECOMMANDÉE
 
 Tests actuels : 534/534 PASS · Build : OK · Dernière prod : commits à déployer
 
+
+----------------------------------------------------
+BRAND-THEME-BLUE-WHITE-V1 - 2026-06-30
+
+Status: Livre localement OK
+
+Mission
+Repositionner AkarFinder sur une direction bleu/blanc plus claire et plus search-first, sans supprimer la photo hero, la search bar Google-like ni le claim homepage.
+
+Fichiers modifies
+* app/globals.css
+* tailwind.config.ts
+* components/home/GoogleLikeHero.tsx
+* components/home/HomeSearchBar.tsx
+* components/search/SearchMapPanel.tsx
+* components/badges/SourceBadge.tsx
+* docs/THEME_AUDIT_INVENTORY.md
+* docs/DECISIONS.md
+* docs/SESSION.md
+
+Changements livres
+* Tokens light refondus vers blanc/bleu : fond clair `#F8FAFC`, surfaces blanches, texte navy, CTA bleus.
+* Tokens dark refondus vers navy/blue : fond `#06162D`, cards bleu nuit, accents bleus.
+* Alias legacy `bronze/gold` remappes visuellement vers bleu dans `tailwind.config.ts` pour faire heriter une grande partie de l'UI sans patch massif.
+* Focus ring, selection texte et gradients marque bascules du bronze vers le bleu.
+* Homepage hero conservee avec photo + search bar + chips + exemples, et claim explicite :
+  "1er moteur de recherche immobilier au Maroc".
+* `HomeSearchBar` recolorisee en bleu/blanc.
+* `SearchMapPanel` recolorisee en navy/blue.
+* `SourceBadge` : `market_signal` et `promoter_site` bascules vers un rendu bleu au lieu d'un ambre/dore dominant.
+
+Validation
+* `npm run build` OK
+* `npm test` OK (514 scrapers + 51 API = 565/565 PASS)
+* Smoke `http://127.0.0.1:3000` OK :
+  `/`, `/search`, `/acheter`, `/louer`, `/neuf`, `/vendre`, `/promoteurs`, `/onboarding`, `/favorites`, `/compare`, `/api/listings`
+* Claim homepage verifie dans le HTML rendu OK
+* QA visuelle Playwright desktop/mobile light/dark OK
+* Overflow mobile sur les pages QA prioritaires : aucun
+
+Screenshots
+* public/screenshots/brand-theme-blue-white-v1/home-light-desktop.png
+* public/screenshots/brand-theme-blue-white-v1/home-dark-desktop.png
+* public/screenshots/brand-theme-blue-white-v1/search-light-desktop.png
+* public/screenshots/brand-theme-blue-white-v1/search-dark-desktop.png
+* public/screenshots/brand-theme-blue-white-v1/home-light-mobile.png
+* public/screenshots/brand-theme-blue-white-v1/home-dark-mobile.png
+* public/screenshots/brand-theme-blue-white-v1/search-light-mobile.png
+* public/screenshots/brand-theme-blue-white-v1/search-dark-mobile.png
+* public/screenshots/brand-theme-blue-white-v1/acheter-light-desktop.png
+* public/screenshots/brand-theme-blue-white-v1/acheter-dark-desktop.png
+* public/screenshots/brand-theme-blue-white-v1/louer-light-desktop.png
+* public/screenshots/brand-theme-blue-white-v1/louer-dark-desktop.png
+* public/screenshots/brand-theme-blue-white-v1/neuf-light-desktop.png
+* public/screenshots/brand-theme-blue-white-v1/neuf-dark-desktop.png
+* public/screenshots/brand-theme-blue-white-v1/onboarding-light-desktop.png
+* public/screenshots/brand-theme-blue-white-v1/onboarding-dark-desktop.png
+
+Points de vigilance restants
+* La migration s'appuie en partie sur le remap des aliases legacy `bronze/gold` vers du bleu : efficace pour cette mission, mais la nomenclature interne reste a nettoyer si une V2 design-system plus stricte est voulue.
+* Certaines sections dark assumees (hero photo, modules data/carto) restent sombres en light mode, mais avec accents bleus et contraste coherent.
+* Les docs `ROADMAP.md`, `SITE_SOURCE_BADGES_POLICY.md` et autres fichiers deja modifies dans le worktree n'ont pas ete reecrits dans cette mission.
+
+Recommandation prod
+* NON automatiquement. Validation Achraf toujours requise avant tout `vercel --prod`.
+
+
+----------------------------------------------------
+BRAND-ASSETS-LOGO-HERO-1 - 2026-06-30
+
+Status: Livre en preview
+
+Mission
+* Remplacer le pack logo AkarFinder par la nouvelle direction bleue fournie par reference image.
+* Mettre a jour le hero background homepage desktop + mobile avec les deux nouveaux visuels fournis.
+
+Fichiers modifies
+* components/landing/SiteFooter.tsx
+* public/brand/logo-v2/*
+* public/brand/favicon*.png
+* public/brand/favicon.ico
+* public/brand/apple-touch-icon.png
+* public/brand/app-icon-*.png
+* public/brand/icon-maskable-512.png
+* public/images/hero/akar-residence-sunset-desktop.webp
+* public/images/hero/akar-residence-sunset-mobile.webp
+* docs/SESSION.md
+
+Livraison
+* Header light: nouveau wordmark bleu/blanc remplace l'ancien logo bronze.
+* Header dark: nouveau wordmark dark remplace l'ancien logo bronze.
+* Footer light: version bilingue integree.
+* Favicon / app icons / PWA icons remplaces par la nouvelle icone carree.
+* Hero homepage desktop/mobile remplace par les nouveaux visuels fournis.
+* Claim hero conserve: "1er moteur de recherche immobilier au Maroc".
+
+Validation
+* npm run build: OK
+* Preview publique verifiee: homepage light/dark desktop/mobile OK
+* Footer bilingual detecte en light preview OK
+* Hero input + claim toujours visibles OK
+
+Preview
+* https://akarfinder-kxd9ksthm-achraf-benmoussa-s-projects.vercel.app
+
+
+----------------------------------------------------
+BRAND-THEME-BLUE-WHITE-V1-FOLLOWUP - 2026-07-01
+
+Status: QA locale OK, deploiement demande
+
+Mission
+* Retirer les derniers accents gold/bronze visibles sur la homepage apres la premiere bascule bleu/blanc.
+* Mettre a jour le hero background avec les nouveaux visuels fournis.
+
+Fichiers modifies
+* components/home/GoogleLikeHero.tsx
+* components/home/HomeResultPreview.tsx
+* components/landing/CityIntentGrid.tsx
+* components/landing/ProductHero.tsx
+* components/landing/SignatureMapSection.tsx
+* public/images/hero/akar-residence-sunset-desktop-v2.jpg
+* public/images/hero/akar-residence-sunset-mobile-v2.jpg
+* docs/SESSION.md
+* docs/DECISIONS.md
+* docs/THEME_AUDIT_INVENTORY.md
+
+Livraison
+* `HomeResultPreview` : CTA, hover, labels et signal intermediaire bascules du bronze vers le bleu.
+* `SignatureMapSection` : carte du Maroc, pins, halos et etats actifs bascules vers une palette blue/white.
+* `CityIntentGrid` : remplacement du collage image bronze par une grille de cards live blue/white basee sur `lib/cities`.
+* Hero homepage : nouveaux visuels desktop/mobile branches sans toucher au claim ni a la search bar.
+
+Validation
+* `npm run build` OK
+* `npm test` OK (832/832 PASS)
+* Smoke `http://127.0.0.1:3000` OK :
+  `/`, `/search`, `/acheter`, `/louer`, `/neuf`, `/vendre`, `/promoteurs`, `/onboarding`, `/favorites`, `/compare`, `/api/listings`
+* Claim homepage verifie sur capture mobile OK
+* Captures locales :
+  `tmp-final-preview-check/home-desktop.png`
+  `tmp-final-preview-check/home-mobile.png`
+
+Points de vigilance restants
+* `next start` doit etre lance directement sur `3000`; un ancien process local demarrait parfois sur `3004`.
+* Les nouveaux hero assets sont actuellement references via `*-v2.jpg`; les anciens `.webp` restent presents dans `public/images/hero`.
+
+
+----------------------------------------------------
+HERO-MOBILE-LIGHTENING-1 - 2026-07-01
+
+Status: QA locale OK
+
+Mission
+* Eclaircir le hero mobile homepage sans changer la structure globale.
+* Compacter legerement le header mobile et reduire le bruit visuel autour de la search bar.
+
+Fichiers modifies
+* components/home/GoogleLikeHero.tsx
+* components/home/HomeSearchBar.tsx
+* components/layout/SiteHeader.tsx
+* docs/SESSION.md
+* docs/DECISIONS.md
+
+Livraison
+* Hero mobile : overlays separes mobile/desktop avec fond nettement plus blanc/bleu et voile sombre reduit.
+* Badge mobile raccourci en `Le moteur immobilier du Maroc`.
+* Sous-texte mobile raccourci en `Comparez les annonces, les prix et les signaux de fiabilite avant de contacter.`
+* Exemples de recherche masques sur mobile, conserves sur desktop.
+* Header mobile : logo, toggle, CTA et chips compactes pour laisser respirer le premier ecran.
+
+Validation
+* `npm run build` OK
+* Smoke `http://127.0.0.1:3000` OK :
+  `/`, `/search`, `/acheter`, `/louer`, `/neuf`, `/onboarding`
+* Capture mobile locale :
+  `tmp-final-preview-check/home-mobile-hero-lightened.png`
+* `Exemples` confirme masque visuellement sur mobile
+
+Points de vigilance restants
+* Aucun deploy prod lance dans cette passe.
+----------------------------------------------------
+SOURCE-CANDIDATE-AUDIT-1 - 2026-07-01
+
+Status: Documentation completee, aucun changement prod
+
+Mission
+* Enumerer les sources immobilieres marocaines candidates et les classer source par source.
+* Auditer techniquement les P0 sans bypass, sans proxy, sans login, sans captcha solving.
+
+Fichiers modifies
+* docs/SOURCE_CANDIDATE_AUDIT.md
+* data/source-candidate-audit.json
+* docs/ROADMAP.md
+* docs/DECISIONS.md
+* docs/SESSION.md
+
+Livraison
+* Matrice centrale creee avec colonnes :
+  `Source / Domaine / Categorie / Statut acces / Robots / Sitemap / Categorie publique / Detail annonce / Images / Search API / Risque ToS / Source type recommande / SERP mode recommande / Production allowed / Notes`
+* 7 sources P0 auditees techniquement :
+  `Mubawab`, `Avito Immobilier`, `Sarouty`, `Agenz`, `MarocAnnonces Immobilier`, `Logic-Immo Maroc`, `Yakeey`
+* JSON d'audit cree pour exploitation future :
+  `data/source-candidate-audit.json`
+* Backlog source etendu ajoute :
+  `SeleKtimmo`, `Immobilier.ma`, `Addoha`, `Prestigia`, `Groupe Al Omrane`, `CGI`, `Bank Al-Maghrib`, `HCP`, `ANCFCC`, `DGI`, `Facebook/Instagram/TikTok`
+
+Synthese decisions
+* `public_index_source` candidates :
+  `Mubawab`, `Agenz`, `Logic-Immo Maroc`
+* `thin_indexed_result` prouve :
+  `Avito` via Search API uniquement
+* `audit_source` / `source_search_link` :
+  `Sarouty`, `MarocAnnonces`, `Yakeey`
+* `promoter_site_source` backlog :
+  `Addoha`, `Prestigia`, `Groupe Al Omrane`, `CGI`
+* `benchmark_source` :
+  `Bank Al-Maghrib`, `HCP`, `ANCFCC`, `DGI`
+* `social_signal_source` :
+  `Facebook`, `Instagram`, `TikTok` publics
+
+Validation
+* Requetes live limitees et prudentes executees avec `AkarFinderBot/0.1`
+* Search API provider reel verifie :
+  `SEARCH_API_PROVIDER=serper`, endpoint `google.serper.dev`
+* 1 requete Search API par domaine P0 executee sans log de secret
+* Aucun changement code applicatif, aucun scraping de prod, aucune migration DB
+
+Points de vigilance restants
+* `Agenz` et `Logic-Immo Maroc` sont de bons candidats techniques, mais `production_allowed=false` reste volontaire tant qu'une review policy/ToS dediee n'est pas validee.
+* `MarocAnnonces` expose des pages publiques mais `robots` wildcard disallow le crawl generique : traiter la source en audit-first, pas en crawl direct.
+* `Yakeey` sert un script `challenge-platform` sur la page categorie auditee : no-bypass applique, approfondissement stoppe.
+* `Sarouty` demande une mission de discovery plus propre pour separer homepage/editorial vs vrais chemins listing/detail.
+
+----------------------------------------------------
+SOURCE-CANDIDATE-AUDIT-2 - 2026-07-01
+
+Status: Deep audit documentaire complete, aucun changement prod
+
+Mission
+* Approfondir les deux meilleurs candidats directs apres SOURCE-CANDIDATE-AUDIT-1 :
+  `Agenz` et `Logic-Immo Maroc`
+* Verifier plus finement : robots, sitemaps, meta robots, details publics, Search API ciblee
+
+Fichiers modifies
+* docs/SOURCE_CANDIDATE_AUDIT.md
+* data/source-candidate-audit.json
+* docs/ROADMAP.md
+* docs/SESSION.md
+
+Livraison
+* `Agenz` confirme :
+  `robots.txt` lisible, `sitemap.xml` public, ordre de grandeur `2133` URLs, environ `248` detail-like visibles, page categorie `200`, detail `200`, canonical detail present, aucun `noindex` detecte
+* `Logic-Immo Maroc` confirme :
+  `robots.txt` ouvert, `property-sitemap.xml` public, ordre de grandeur `160` URLs, environ `105` detail-like visibles, page categorie `200`, detail `200`, meta robots `index, follow`, canonical detail present
+* Search API ciblee :
+  `Agenz` remonte de vraies fiches `fr/annonces/...`
+  `Logic-Immo Maroc` remonte categories, archives et vraies fiches detail
+
+Synthese decisions
+* `Agenz` = high-confidence `public_index_source` candidate
+* `Logic-Immo Maroc` = high-confidence `public_index_source` candidate
+* `production_allowed` reste `false` pour les deux dans ce registre tant qu'une review policy/ToS dediee n'est pas faite
+
+Validation
+* Requetes live limitees executees avec `AkarFinderBot/0.1`
+* Search API provider reel reutilise sans log de secret
+* `npm test` OK
+
+Points de vigilance restants
+* La preuve technique est forte, mais elle ne vaut pas validation contractuelle ou ToS.
+* Les pages detail exposees publiquement contiennent des signaux contact/galerie cote source : AkarFinder doit conserver `contact_allowed=false` et `gallery_allowed=false` hors partenariat.

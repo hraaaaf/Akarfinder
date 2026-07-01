@@ -7,22 +7,22 @@ import { track } from "@/lib/tracking/track";
 import { parseNaturalSearchQuery, parsedQueryToParams } from "@/lib/search/natural-query-parser";
 
 const INTENT_CHIPS = [
-  { label: "Acheter",  type: "buy",  property_type: undefined },
-  { label: "Louer",   type: "rent", property_type: undefined },
-  { label: "Neuf",    type: "new",  property_type: undefined },
-  { label: "Terrain", type: "buy",  property_type: "Terrain" },
-  { label: "Villa",   type: "buy",  property_type: "Villa"   },
-  { label: "Bureau",  type: "buy",  property_type: "Bureau"  },
-  { label: "Meublé",  type: "rent", property_type: undefined },
+  { label: "Acheter", type: "buy", property_type: undefined },
+  { label: "Louer", type: "rent", property_type: undefined },
+  { label: "Neuf", type: "new", property_type: undefined },
+  { label: "Terrain", type: "buy", property_type: "Terrain" },
+  { label: "Villa", type: "buy", property_type: "Villa" },
+  { label: "Bureau", type: "buy", property_type: "Bureau" },
+  { label: "Meuble", type: "rent", property_type: undefined },
 ] as const;
 
 const EXAMPLES = [
   "Appartement neuf Rabat Agdal",
   "Villa Dar Bouazza avec piscine",
-  "Terrain titré Marrakech",
-  "Studio meublé Casablanca",
-  "Bureau à louer Finance City",
-];
+  "Terrain titre Marrakech",
+  "Studio meuble Casablanca",
+  "Bureau a louer Finance City",
+] as const;
 
 export function HomeSearchBar() {
   const router = useRouter();
@@ -37,11 +37,7 @@ export function HomeSearchBar() {
     (overrideQ?: string) => {
       const q = overrideQ ?? query;
       const parsed = parseNaturalSearchQuery(q);
-
-      // Chip property_type (Villa, Terrain, Bureau) wins over parser.
-      // Chip type acts as fallback when parser didn't detect an intent.
-      // "Meublé" chip adds furnished=true even if parser misses the accent.
-      const isMeuble = activeChip === "Meublé" || parsed.furnished;
+      const isMeuble = activeChip === "Meuble" || parsed.furnished;
       if (isMeuble && !parsed.furnished) parsed.furnished = true;
 
       const params = parsedQueryToParams(
@@ -71,28 +67,25 @@ export function HomeSearchBar() {
   const applyChip = (chip: (typeof INTENT_CHIPS)[number]) => {
     setActiveChip(chip.label);
     setIntent({ type: chip.type, property_type: chip.property_type });
-    if (chip.label === "Meublé") {
-      setQuery("meublé");
+    if (chip.label === "Meuble") {
+      setQuery("meuble");
       inputRef.current?.focus();
     }
   };
 
-  // Clicking an example fills the input AND triggers the search immediately.
-  const applyExample = (ex: string) => {
-    setQuery(ex);
-    handleSearch(ex);
+  const applyExample = (example: string) => {
+    setQuery(example);
+    handleSearch(example);
   };
 
   return (
     <div className="w-full">
-      {/* ── Search input row ── */}
-      <div className="flex items-stretch overflow-hidden rounded-2xl border border-white/[0.12] bg-white/[0.06] shadow-[0_12px_48px_rgba(0,0,0,0.5)] backdrop-blur-md transition-all focus-within:border-[#C2A368]/45 focus-within:shadow-[0_12px_60px_rgba(0,0,0,0.55),0_0_0_1px_rgba(194,163,104,0.18)]">
-        {/* Input */}
-        <div className="flex flex-1 items-center gap-3 px-4 py-1 sm:px-5">
+      <div className="flex items-stretch overflow-hidden rounded-2xl border border-[#BFDBFE]/20 bg-white/85 shadow-[0_12px_32px_rgba(15,23,42,0.18)] backdrop-blur-md transition-all focus-within:border-[#60A5FA]/55 focus-within:shadow-[0_12px_42px_rgba(37,99,235,0.18),0_0_0_1px_rgba(96,165,250,0.22)] sm:bg-white/[0.08] sm:shadow-[0_12px_48px_rgba(0,0,0,0.45)] sm:focus-within:shadow-[0_12px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(96,165,250,0.22)]">
+        <div className="flex flex-1 items-center gap-3 px-4 py-0.5 sm:px-5 sm:py-1">
           <Search
             size={18}
             strokeWidth={2.2}
-            className="shrink-0 text-[#C2A368]/60"
+            className="shrink-0 text-[#0B63CE]/55 sm:text-[#BFDBFE]/70"
             aria-hidden="true"
           />
           <input
@@ -101,25 +94,23 @@ export function HomeSearchBar() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="Appartement meublé à Casablanca Maarif moins de 8 000 DH…"
+            placeholder="Appartement meuble a Casablanca Maarif moins de 8 000 DH..."
             aria-label="Recherche de bien immobilier au Maroc"
-            className="min-w-0 flex-1 bg-transparent py-4 text-[15px] font-medium text-white outline-none placeholder:text-white/25 sm:text-[16px]"
+            className="min-w-0 flex-1 bg-transparent py-3.5 text-[15px] font-medium text-[#0B1F3A] outline-none placeholder:text-slate-400 sm:py-4 sm:text-[16px] sm:text-white sm:placeholder:text-white/30"
           />
         </div>
 
-        {/* CTA button */}
         <button
           type="button"
           onClick={() => handleSearch()}
           aria-label="Lancer la recherche"
-          className="m-1.5 flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-br from-[#C2A368] to-[#8f6a2a] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_4px_20px_rgba(155,120,56,0.45)] transition hover:brightness-110 active:scale-[0.97] sm:px-7 sm:text-[15px]"
+          className="m-1.5 flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-br from-[#0B63CE] to-[#084FA8] px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_4px_20px_rgba(11,99,206,0.32)] transition hover:brightness-110 active:scale-[0.97] sm:px-7 sm:text-[15px]"
         >
           <Search size={15} strokeWidth={2.4} aria-hidden="true" />
           <span className="hidden sm:inline">Rechercher</span>
         </button>
       </div>
 
-      {/* ── Intent chips ── */}
       <div
         className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none]"
         role="group"
@@ -130,10 +121,10 @@ export function HomeSearchBar() {
             key={chip.label}
             type="button"
             onClick={() => applyChip(chip)}
-            className={`shrink-0 rounded-full border px-4 py-1.5 text-[12.5px] font-bold transition ${
+            className={`shrink-0 rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition sm:px-4 sm:text-[12.5px] ${
               activeChip === chip.label
-                ? "border-[#C2A368]/55 bg-[#C2A368]/15 text-[#C2A368]"
-                : "border-white/12 bg-white/[0.04] text-white/55 hover:border-white/22 hover:text-white/80"
+                ? "border-[#60A5FA]/60 bg-[#0B63CE]/18 text-[#BFDBFE]"
+                : "border-white/12 bg-white/[0.04] text-white/62 hover:border-[#BFDBFE]/24 hover:text-white/85"
             }`}
           >
             {chip.label}
@@ -141,17 +132,16 @@ export function HomeSearchBar() {
         ))}
       </div>
 
-      {/* ── Example searches ── */}
-      <div className="mt-3 flex flex-wrap items-center gap-x-1.5 gap-y-2">
-        <span className="text-[11px] font-semibold text-white/28">Exemples :</span>
-        {EXAMPLES.map((ex) => (
+      <div className="mt-3 hidden flex-wrap items-center gap-x-1.5 gap-y-2 sm:flex">
+        <span className="text-[11px] font-semibold text-white/30">Exemples :</span>
+        {EXAMPLES.map((example) => (
           <button
-            key={ex}
+            key={example}
             type="button"
-            onClick={() => applyExample(ex)}
-            className="rounded-full border border-white/[0.08] px-3 py-1 text-[11px] text-white/38 transition hover:border-white/18 hover:text-white/65"
+            onClick={() => applyExample(example)}
+            className="rounded-full border border-white/[0.08] px-3 py-1 text-[11px] text-white/42 transition hover:border-[#BFDBFE]/24 hover:text-white/72"
           >
-            {ex}
+            {example}
           </button>
         ))}
       </div>

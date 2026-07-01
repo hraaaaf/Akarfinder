@@ -110,29 +110,29 @@ const BOTTOM_SIGNALS = [
   },
 ];
 
-// Dark theme: deep navy Morocco with bronze glow.
+// Dark theme: deep navy Morocco with an electric-blue glow.
 const DARK_MAP_FILTER = [
   "brightness(0)",
   "invert(1)",
   "sepia(1)",
-  "saturate(5)",
-  "hue-rotate(185deg)",
-  "brightness(0.22)",
-  "drop-shadow(0 0 34px rgba(194,163,104,0.62))",
-  "drop-shadow(0 0 10px rgba(194,163,104,0.9))",
-  "drop-shadow(0 0 3px rgba(194,163,104,1))",
+  "saturate(5.4)",
+  "hue-rotate(184deg)",
+  "brightness(0.42)",
+  "drop-shadow(0 0 34px rgba(96,165,250,0.52))",
+  "drop-shadow(0 0 10px rgba(96,165,250,0.82))",
+  "drop-shadow(0 0 3px rgba(191,219,254,0.92))",
 ].join(" ");
 
-// Light theme: warm bronze/sand Morocco with a soft shadow.
+// Light theme: pale blue Morocco with a soft cloud-like shadow.
 const LIGHT_MAP_FILTER = [
   "brightness(0)",
-  "invert(62%)",
-  "sepia(45%)",
-  "saturate(520%)",
-  "hue-rotate(354deg)",
-  "brightness(92%)",
-  "drop-shadow(0 10px 22px rgba(155,120,56,0.28))",
-  "drop-shadow(0 0 1px rgba(120,90,40,0.5))",
+  "invert(72%)",
+  "sepia(18%)",
+  "saturate(1450%)",
+  "hue-rotate(181deg)",
+  "brightness(101%)",
+  "drop-shadow(0 10px 22px rgba(96,165,250,0.22))",
+  "drop-shadow(0 0 1px rgba(37,99,235,0.35))",
 ].join(" ");
 
 function Icon({ type, size = 16 }: { type: IconType; size?: number }) {
@@ -248,7 +248,7 @@ function Topography() {
           className="absolute inset-0"
           style={{
             backgroundImage: [
-              "radial-gradient(circle at 22% 82%, rgba(194,163,104,0.14) 0, rgba(194,163,104,0.02) 16%, transparent 32%)",
+              "radial-gradient(circle at 22% 82%, rgba(96,165,250,0.14) 0, rgba(96,165,250,0.02) 16%, transparent 32%)",
               "radial-gradient(circle at 76% 28%, rgba(75,123,197,0.18) 0, rgba(75,123,197,0.03) 20%, transparent 42%)",
             ].join(","),
           }}
@@ -270,7 +270,7 @@ function Topography() {
       </div>
       <div
         className="pointer-events-none absolute -left-24 bottom-0 h-72 w-72 rounded-full blur-3xl"
-        style={{ background: "rgba(194,163,104,0.12)" }}
+        style={{ background: "rgba(59,130,246,0.12)" }}
       />
       <div
         className="pointer-events-none absolute right-0 top-0 h-80 w-80 rounded-full blur-3xl"
@@ -286,27 +286,27 @@ function DropPin({ active }: { active: boolean }) {
       className="relative block h-10 w-8"
       style={{
         filter: active
-          ? "drop-shadow(0 0 10px rgba(255,205,122,0.95)) drop-shadow(0 0 22px rgba(255,205,122,0.45))"
-          : "drop-shadow(0 0 4px rgba(255,205,122,0.5))",
+          ? "drop-shadow(0 0 10px rgba(96,165,250,0.9)) drop-shadow(0 0 22px rgba(96,165,250,0.42))"
+          : "drop-shadow(0 0 4px rgba(96,165,250,0.36))",
       }}
     >
       <span
         className="absolute left-1/2 top-[3px] h-5 w-5 -translate-x-1/2 rounded-full"
         style={{
-          background: "radial-gradient(circle at 35% 35%, #ffe4a8 0%, #ffc56c 38%, #d89a43 72%, #6b4721 100%)",
-          boxShadow: active ? "0 0 18px rgba(255,201,108,0.85)" : "0 0 10px rgba(255,201,108,0.45)",
+          background: "radial-gradient(circle at 35% 35%, #dbeafe 0%, #60a5fa 42%, #2563eb 74%, #0b1f3a 100%)",
+          boxShadow: active ? "0 0 18px rgba(96,165,250,0.72)" : "0 0 10px rgba(96,165,250,0.34)",
         }}
       />
       <span
         className="absolute left-1/2 top-5 h-5 w-5 -translate-x-1/2 rotate-45 rounded-[0.3rem]"
         style={{
-          background: "linear-gradient(180deg, #efb45e 0%, #c98735 100%)",
+          background: "linear-gradient(180deg, #60a5fa 0%, #0b63ce 100%)",
           borderBottomRightRadius: "0.6rem",
         }}
       />
       <span
         className="absolute left-1/2 top-[9px] h-[7px] w-[7px] -translate-x-1/2 rounded-full"
-        style={{ background: "#fff8e5" }}
+        style={{ background: "#eff6ff" }}
       />
     </span>
   );
@@ -345,8 +345,8 @@ function MapPins({
               <span
                 className={`rounded-full border px-3 py-1 text-[11px] font-medium tracking-[0.01em] shadow-[0_16px_35px_rgba(0,0,0,0.25)] transition ${
                   isActive
-                    ? "border-accent bg-accent text-[#0a1528]"
-                    : "border-border/30 bg-card text-foreground group-hover:border-accent/60"
+                    ? "border-[#60A5FA]/60 bg-[#0B63CE] text-white"
+                    : "border-border/30 bg-card text-foreground group-hover:border-[#60A5FA]/60"
                 } ${compact ? "text-[10px]" : ""}`}
               >
                 {city.label}
@@ -435,8 +435,8 @@ function FilterPills({
             onClick={() => setFilter(item)}
             className={`rounded-full border px-5 py-2 text-[0.92rem] transition ${
               isActive
-                ? "border-accent bg-accent text-[#0a1528]"
-                : "border-border/20 bg-card text-foreground hover:border-accent/38"
+                ? "border-[#60A5FA]/60 bg-[#0B63CE] text-white"
+                : "border-border/20 bg-card text-foreground hover:border-[#60A5FA]/38"
             }`}
           >
             {label}
@@ -452,7 +452,7 @@ function CityCard({ city, highlighted }: { city: MapCity; highlighted: boolean }
     <article
       className={`overflow-hidden rounded-[1.45rem] border bg-card shadow-[0_24px_50px_rgba(0,0,0,0.12)] transition duration-300 ${
         highlighted
-          ? "border-accent/60 shadow-[0_0_0_1px_rgba(205,162,92,0.12),0_24px_55px_rgba(0,0,0,0.16)]"
+          ? "border-accent/60 shadow-[0_0_0_1px_rgba(59,130,246,0.16),0_24px_55px_rgba(0,0,0,0.16)]"
           : "border-border/15 hover:border-accent/34"
       }`}
     >
@@ -495,7 +495,7 @@ function DesktopBottomBar() {
   return (
     <div className="mt-5 flex items-center justify-between gap-6 rounded-[1.55rem] border border-border/15 bg-card px-7 py-6 shadow-[0_24px_50px_rgba(0,0,0,0.12)]">
       <div className="flex items-center gap-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full border border-accent/36 bg-surface-muted text-accent shadow-[0_0_30px_rgba(205,162,92,0.2)]">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full border border-accent/36 bg-surface-muted text-accent shadow-[0_0_30px_rgba(59,130,246,0.2)]">
           <Icon type="shield" size={18} />
         </div>
         <div>
@@ -552,7 +552,7 @@ export function SignatureMapSection() {
             }
           : {
               backgroundImage:
-                "radial-gradient(circle at 18% 12%, rgba(194,163,104,0.12) 0%, transparent 30%), radial-gradient(circle at 82% 18%, rgba(155,120,56,0.08) 0%, transparent 28%)",
+                "radial-gradient(circle at 18% 12%, rgba(96,165,250,0.12) 0%, transparent 30%), radial-gradient(circle at 82% 18%, rgba(56,189,248,0.08) 0%, transparent 28%)",
             }
       }
     >

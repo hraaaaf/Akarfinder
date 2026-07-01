@@ -13,8 +13,8 @@ const signals = [
     Icon: Search,
     title: "Source identifiée",
     desc: "L'origine de chaque annonce est visible avant tout contact ou déplacement.",
-    color: "text-deepblue",
-    bg: "bg-deepblue/8",
+    color: "text-deepblue dark:text-blue-200",
+    bg: "bg-blue-100 dark:bg-deepblue/8",
   },
   {
     Icon: Copy,
@@ -39,10 +39,10 @@ export function TrustSignalBlock() {
         <p className="text-center text-[11px] font-extrabold uppercase tracking-[0.2em] text-bronze-700">
           Moteur d&apos;analyse
         </p>
-        <h2 className="mt-2 text-center text-[1.7rem] font-extrabold tracking-[-0.04em] text-deepblue sm:text-[2.3rem]">
+        <h2 className="mt-2 text-center text-[1.7rem] font-extrabold tracking-[-0.04em] text-deepblue dark:text-white sm:text-[2.3rem]">
           Pourquoi cette annonce est fiable ?
         </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-center text-[15px] leading-7 text-gray-500">
+        <p className="mx-auto mt-4 max-w-2xl text-center text-[15px] leading-7 text-gray-500 dark:text-gray-400">
           AkarFinder analyse la source, le prix/m², les doublons, la fraîcheur
           et la complétude avant de vous laisser contacter.
         </p>
@@ -56,10 +56,10 @@ export function TrustSignalBlock() {
               <span className={`grid h-10 w-10 place-items-center rounded-xl ${bg} ${color}`}>
                 <Icon size={20} strokeWidth={2.2} aria-hidden="true" />
               </span>
-              <h3 className="mt-4 text-[1rem] font-extrabold tracking-[-0.02em] text-deepblue">
+              <h3 className="mt-4 text-[1rem] font-extrabold tracking-[-0.02em] text-deepblue dark:text-white">
                 {title}
               </h3>
-              <p className="mt-1.5 text-[13.5px] leading-6 text-gray-500">
+              <p className="mt-1.5 text-[13.5px] leading-6 text-gray-500 dark:text-gray-400">
                 {desc}
               </p>
             </div>

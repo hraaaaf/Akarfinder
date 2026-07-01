@@ -13,6 +13,7 @@ import {
   badgeFromScore,
   type ReliabilityBadgeLabel,
 } from "@/lib/listings/reliability";
+import { computeSearchResultDisplayPolicy } from "@/lib/search/search-result-display-model";
 
 const PHONE_RE = /(\+212|0[5-7])\d{8}/;
 const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
@@ -51,17 +52,17 @@ function mapTransactionType(raw: string | null): ListingTransactionType {
 function getFreshnessLabel(updatedAt: string) {
   const parsed = new Date(updatedAt).getTime();
   if (Number.isNaN(parsed)) {
-    return "Mise à jour récente";
+    return "Mise Ã  jour rÃ©cente";
   }
 
   const diffMs = Date.now() - parsed;
   const days = Math.max(0, Math.floor(diffMs / 86_400_000));
 
-  if (days === 0) return "Mise à jour aujourd'hui";
-  if (days === 1) return "Mise à jour hier";
-  if (days < 7) return `Mise à jour il y a ${days} j`;
-  if (days < 30) return `Mise à jour il y a ${Math.floor(days / 7)} sem.`;
-  return `Mise à jour il y a ${Math.floor(days / 30)} mois`;
+  if (days === 0) return "Mise Ã  jour aujourd'hui";
+  if (days === 1) return "Mise Ã  jour hier";
+  if (days < 7) return `Mise Ã  jour il y a ${days} j`;
+  if (days < 30) return `Mise Ã  jour il y a ${Math.floor(days / 7)} sem.`;
+  return `Mise Ã  jour il y a ${Math.floor(days / 30)} mois`;
 }
 
 function parseJsonSafe<T>(s: string | null | undefined): T | null {
@@ -69,7 +70,7 @@ function parseJsonSafe<T>(s: string | null | undefined): T | null {
   try { return JSON.parse(s) as T; } catch { return null; }
 }
 
-// V9.5 — computed display policy from source name (no DB migration required).
+// V9.5 â€” computed display policy from source name (no DB migration required).
 // Never assigns premium_partner / authorized_source / contact by fallback.
 // Exported for unit tests (source-display-policy.test.ts).
 type V95DisplayPolicy = {
@@ -84,23 +85,48 @@ type V95DisplayPolicy = {
   display_images?: { policy?: string; urls?: string[] };
 };
 
+function buildPublicIndexedPolicy(reason: string): V95DisplayPolicy {
+  return {
+    source_display_type: "public_index_source",
+    source_badge: "public_indexed",
+    display_depth: "limited_preview",
+    thumbnail_policy: "single_thumbnail_allowed",
+    original_source_required: true,
+    allowed_ctas: ["view_original", "view_source", "compare"],
+    source_attribution_label: "Source publique indexee",
+    display_policy_reason: reason,
+    display_images: { policy: "single_thumbnail_allowed", urls: [] },
+  };
+}
+
 export function deriveSourceDisplayPolicy(rawSourceName: string | null): V95DisplayPolicy {
   const src = (rawSourceName ?? "").toLowerCase().trim();
+
   if (src === "mubawab") {
-    return {
-      source_display_type: "public_index_source",
-      source_badge: "public_indexed",
-      display_depth: "limited_preview",
-      thumbnail_policy: "single_thumbnail_allowed",
-      original_source_required: true,
-      allowed_ctas: ["view_original", "view_source", "compare"],
-      source_attribution_label: "Source publique indexée",
-      display_policy_reason:
-        "Source publique indexée — aperçu limité, redirection vers le site original.",
-      // urls: [] — DB row has only images_count, no URL array at this layer.
-      display_images: { policy: "single_thumbnail_allowed", urls: [] },
-    };
+    return buildPublicIndexedPolicy(
+      "Source publique indexee - apercu limite, redirection vers le site original."
+    );
   }
+
+  if (src === "agenz") {
+    return buildPublicIndexedPolicy(
+      "Source publique indexee candidate - apercu limite autorise, review policy/ToS encore requise."
+    );
+  }
+
+  if (
+    src === "logicimmo" ||
+    src === "logic-immo" ||
+    src === "logic immo" ||
+    src === "logicimmo maroc" ||
+    src === "logic-immo maroc" ||
+    src === "logic immo maroc"
+  ) {
+    return buildPublicIndexedPolicy(
+      "Source publique indexee candidate - apercu limite autorise, review policy/ToS encore requise."
+    );
+  }
+
   if (src === "avito") {
     return {
       source_display_type: "audit_source",
@@ -109,12 +135,13 @@ export function deriveSourceDisplayPolicy(rawSourceName: string | null): V95Disp
       thumbnail_policy: "no_listing_image",
       original_source_required: true,
       allowed_ctas: ["view_market_signal", "view_source"],
-      source_attribution_label: "Signal marché",
+      source_attribution_label: "Signal marche",
       display_policy_reason:
-        "Source utilisée uniquement comme signal marché. Aucune annonce n'est republiée.",
+        "Source utilisee uniquement comme signal marche. Aucune annonce n'est republiee.",
       display_images: { policy: "no_listing_image", urls: [] },
     };
   }
+
   return {};
 }
 
@@ -197,8 +224,8 @@ export function mapDbRowToListing(
     bathrooms_count: row.bathrooms_count ?? undefined,
     district: row.district ?? undefined,
     freshness_label: getFreshnessLabel(row.updated_at),
-    source_type: "Source analysée",
-    reliability_label: "À vérifier",
+    source_type: "Source analysÃ©e",
+    reliability_label: "Ã€ vÃ©rifier",
     reliability_score: reliabilityScore,
     reliability_available: true,
     is_mre_friendly: false,
@@ -208,7 +235,7 @@ export function mapDbRowToListing(
     images_count: row.images_count ?? undefined,
     seller_name: sellerName,
     reliability_explanation:
-      "Score calculé sur la complétude, la cohérence des données et la présence de doublons.",
+      "Score calculÃ© sur la complÃ©tude, la cohÃ©rence des donnÃ©es et la prÃ©sence de doublons.",
     data_completeness_score: dataCompletenessScore,
     source_name: toTitleCase(row.source_name),
     listing_url: row.listing_url ?? undefined,
@@ -234,7 +261,38 @@ export function mapDbRowToListing(
     has_european_living_room: !!(row.has_european_living_room),
     has_equipped_kitchen: !!(row.has_equipped_kitchen),
     premium_features: parseJsonSafe<string[]>(row.premium_features) ?? [],
-    // V9.5 — source display policy (computed from source_name, additive opt-in).
+    // V9.5 â€” source display policy (computed from source_name, additive opt-in).
     ...deriveSourceDisplayPolicy(row.source_name),
+    // SEARCH-RESULT-DISPLAY-MODEL-1 â€” SERP display policy (additive).
+    ...(() => {
+      const dp = deriveSourceDisplayPolicy(row.source_name);
+      const serpPolicy = computeSearchResultDisplayPolicy({
+        source_id: row.source_name?.toLowerCase().trim() ?? null,
+        source_name: row.source_name ?? null,
+        source_display_type: dp.source_display_type ?? null,
+        source_badge: dp.source_badge ?? null,
+        display_depth: dp.display_depth ?? null,
+        result_origin: "direct_source",
+        original_url: row.listing_url ?? null,
+        is_partner: false,
+        has_title: !!(row.title),
+        has_snippet: !!description,
+        has_thumbnail: (dp.display_images?.urls?.length ?? 0) > 0,
+      });
+      return {
+        search_result_display_mode: serpPolicy.search_result_display_mode,
+        result_origin: serpPolicy.result_origin,
+        can_show_result: serpPolicy.can_show_result,
+        can_show_thumbnail: serpPolicy.can_show_thumbnail,
+        can_show_snippet: serpPolicy.can_show_snippet,
+        can_show_contact: serpPolicy.can_show_contact,
+        can_show_gallery: serpPolicy.can_show_gallery,
+        primary_cta: serpPolicy.primary_cta,
+        production_allowed: serpPolicy.production_allowed,
+        ...(serpPolicy.production_block_reason
+          ? { production_block_reason: serpPolicy.production_block_reason }
+          : {}),
+      };
+    })(),
   };
 }

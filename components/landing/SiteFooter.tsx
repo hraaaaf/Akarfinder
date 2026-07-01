@@ -51,11 +51,11 @@ export function SiteFooter() {
         {/* Mobile : compact single column */}
         <div className="lg:hidden">
           <img
-            src="/brand/logo-v2/logo-header-light.png"
+            src="/brand/logo-v2/logo-horizontal-bilingual.png"
             alt="AkarFinder"
-            width={184}
-            height={46}
-            className="h-[42px] w-auto dark:hidden"
+            width={260}
+            height={74}
+            className="h-[56px] w-auto dark:hidden"
           />
           <img
             src="/brand/logo-v2/logo-header-dark.png"
@@ -96,19 +96,19 @@ export function SiteFooter() {
         <div className="hidden gap-10 lg:grid lg:grid-cols-[1.15fr_2fr_1fr]">
           <div>
             <img
-            src="/brand/logo-v2/logo-header-light.png"
-            alt="AkarFinder"
-            width={184}
-            height={46}
-            className="h-[42px] w-auto dark:hidden"
-          />
+              src="/brand/logo-v2/logo-horizontal-bilingual.png"
+              alt="AkarFinder"
+              width={260}
+              height={74}
+              className="h-[56px] w-auto dark:hidden"
+            />
             <img
-            src="/brand/logo-v2/logo-header-dark.png"
-            alt="AkarFinder"
-            width={184}
-            height={46}
-            className="hidden h-[42px] w-auto dark:block"
-          />
+              src="/brand/logo-v2/logo-header-dark.png"
+              alt="AkarFinder"
+              width={184}
+              height={46}
+              className="hidden h-[42px] w-auto dark:block"
+            />
             <p className="mt-4 max-w-sm text-[14.5px] leading-7 text-muted-foreground">
               AkarFinder centralise la recherche immobilière au Maroc, aide à repérer les doublons et prépare une meilleure qualification de la demande acheteur.
             </p>

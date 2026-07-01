@@ -147,6 +147,20 @@ export type Listing = {
     reasons?: string[];
   };
 
+  // SEARCH-RESULT-DISPLAY-MODEL-1 — SERP display policy (additive, all optional).
+  // Computed by computeSearchResultDisplayPolicy() in map-db-listing.ts.
+  // Components must guard on can_show_result and production_allowed before rendering.
+  search_result_display_mode?: string; // "full_partner_listing" | "indexed_result" | "thin_indexed_result" | …
+  result_origin?: string;              // "direct_source" | "search_api" | "partner_feed" | …
+  can_show_result?: boolean;           // false → never render in SERP (suppressed)
+  can_show_thumbnail?: boolean;        // false → use fallback visual
+  can_show_snippet?: boolean;          // false → hide description snippet
+  can_show_contact?: boolean;          // false → no contact/WhatsApp CTA (always false outside partner)
+  can_show_gallery?: boolean;          // false → no gallery (always false outside partner)
+  primary_cta?: string;                // "view_original" | "view_source" | "view_full_listing" | "none"
+  production_allowed?: boolean;        // false → gate in prod (e.g. ToS pending)
+  production_block_reason?: string;    // "thumbnail_provider_tos_review_required" | "direct_avito_blocked" | …
+
   // P8A — advanced property characteristics (absent when not extracted).
   built_surface_m2?: number;
   plot_surface_m2?: number;

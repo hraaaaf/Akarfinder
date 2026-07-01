@@ -13,7 +13,7 @@ import type { Listing } from "@/lib/listings/types";
 // ── Reliability dot ─────────────────────────────────────────
 function ReliabilityDot({ score }: { score: number }) {
   const dot =
-    score >= 80 ? "bg-emerald-400" : score >= 50 ? "bg-amber-400" : "bg-rose-400";
+    score >= 80 ? "bg-emerald-400" : score >= 50 ? "bg-sky-400" : "bg-rose-400";
   const txt =
     score >= 80 ? "Fiable" : score >= 50 ? "À vérifier" : "Signal faible";
   return (
@@ -26,6 +26,11 @@ function ReliabilityDot({ score }: { score: number }) {
 
 // ── Single result card ───────────────────────────────────────
 function ResultCard({ listing, isApprox }: { listing: Listing; isApprox: boolean }) {
+  // Guard: suppressed results must never render
+  if (listing.can_show_result === false) return null;
+  // Guard: production-blocked results hidden in production (e.g. ToS pending)
+  if (process.env.NODE_ENV === "production" && listing.production_allowed === false) return null;
+
   const badge = deriveBadge(listing.source_badge, listing.source_access_level);
   const showOriginal =
     listing.listing_url &&
@@ -37,10 +42,10 @@ function ResultCard({ listing, isApprox }: { listing: Listing; isApprox: boolean
     : "Voir la source";
 
   return (
-    <article className="group relative flex flex-col gap-3.5 overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.038] p-4 shadow-[0_4px_24px_rgba(0,0,0,0.32)] transition duration-300 hover:border-[#C2A368]/22 hover:bg-white/[0.055] sm:p-5">
+    <article className="group relative flex flex-col gap-3.5 overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.038] p-4 shadow-[0_4px_24px_rgba(0,0,0,0.32)] transition duration-300 hover:border-[#60A5FA]/26 hover:bg-white/[0.055] sm:p-5">
       {/* Top meta row */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-[#061027]/80 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.09em] text-[#C2A368]/75 ring-1 ring-white/[0.06]">
+        <span className="rounded-full bg-[#061027]/80 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.09em] text-[#93C5FD] ring-1 ring-white/[0.06]">
           {listing.property_type}
         </span>
         <span className="text-[11px] font-medium text-white/32">
@@ -57,7 +62,7 @@ function ResultCard({ listing, isApprox }: { listing: Listing; isApprox: boolean
 
       {/* Title */}
       <Link href={`/listings/${listing.id}`} className="block">
-        <h3 className="line-clamp-2 text-[14.5px] font-extrabold leading-snug text-white transition group-hover:text-[#C2A368]">
+        <h3 className="line-clamp-2 text-[14.5px] font-extrabold leading-snug text-white transition group-hover:text-[#BFDBFE]">
           {listing.title}
         </h3>
       </Link>
@@ -159,7 +164,7 @@ export function HomeResultPreview() {
         {/* Section header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#C2A368]">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#93C5FD]">
               {isFromApi ? "Index AkarFinder" : "Aperçu de résultats"}
             </p>
             <h2 className="mt-2 text-[1.65rem] font-extrabold tracking-[-0.03em] text-white sm:text-[2.1rem]">
@@ -173,7 +178,7 @@ export function HomeResultPreview() {
 
           <Link
             href="/search"
-            className="inline-flex shrink-0 items-center gap-2 self-start rounded-xl border border-[#C2A368]/28 bg-[#C2A368]/10 px-5 py-3 text-[13px] font-extrabold text-[#C2A368] transition hover:border-[#C2A368]/45 hover:bg-[#C2A368]/16 sm:self-auto"
+            className="inline-flex shrink-0 items-center gap-2 self-start rounded-xl border border-[#60A5FA]/28 bg-[#0B63CE]/14 px-5 py-3 text-[13px] font-extrabold text-[#BFDBFE] transition hover:border-[#60A5FA]/45 hover:bg-[#0B63CE]/22 sm:self-auto"
           >
             Explorer tous les résultats
             <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
@@ -206,7 +211,7 @@ export function HomeResultPreview() {
         <div className="mt-8 text-center sm:hidden">
           <Link
             href="/search"
-            className="inline-flex items-center gap-2 rounded-xl border border-[#C2A368]/28 bg-[#C2A368]/10 px-6 py-3 text-[14px] font-extrabold text-[#C2A368]"
+            className="inline-flex items-center gap-2 rounded-xl border border-[#60A5FA]/28 bg-[#0B63CE]/14 px-6 py-3 text-[14px] font-extrabold text-[#BFDBFE]"
           >
             Explorer tous les résultats
             <ArrowRight size={15} aria-hidden="true" />

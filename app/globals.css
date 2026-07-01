@@ -8,10 +8,10 @@
 :root {
   /* === AkarFinder official brand tokens (brand board) — fixed, theme-agnostic === */
   --brand-deepblue: #071B33;
-  --brand-deepblue-700: #0C2746;
-  --brand-bronze: #9B7838;
-  --brand-bronze-light: #C2A368;
-  --brand-premium-white: #F7F5EF;
+  --brand-deepblue-700: #0A2547;
+  --brand-bronze: #0B63CE;
+  --brand-bronze-light: #60A5FA;
+  --brand-premium-white: #F8FAFC;
   --brand-mono: #0B0B0C;
 }
 
@@ -24,41 +24,107 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  --background: 251 250 245;        /* #FBFAF5 ivory / warm off-white */
-  --foreground: 7 27 51;            /* #071B33 deep navy */
-  --surface: 247 245 239;           /* #F7F5EF cream */
-  --surface-muted: 239 235 224;     /* #EFEBE0 sand */
-  --card: 255 255 255;              /* white */
-  --card-foreground: 7 27 51;       /* navy */
-  --border: 155 120 56;             /* bronze (used at low alpha) */
-  --muted: 239 235 224;             /* sand */
-  --muted-foreground: 107 114 128;  /* slate */
-  --brand-navy: 7 27 51;
-  --brand-bronze: 155 120 56;       /* bronze mat */
-  --brand-ivory: 247 245 239;
-  --accent: 155 120 56;             /* bronze mat */
-  --primary: 11 35 69;              /* navy CTA */
+  --bg-page: 248 250 252;
+  --bg-section: 255 255 255;
+  --bg-card: 255 255 255;
+  --bg-card-muted: 246 248 251;
+  --bg-elevated: 234 243 255;
+  --text-primary: 11 31 58;
+  --text-secondary: 82 101 122;
+  --text-muted: 100 116 139;
+  --text-inverted: 248 250 252;
+  --border-subtle: 221 231 242;
+  --border-strong: 196 212 230;
+  --brand-primary: 11 99 206;
+  --brand-primary-hover: 8 79 168;
+  --brand-primary-soft: 234 243 255;
+  --brand-blue: 10 102 216;
+  --brand-navy: 11 31 58;
+  --brand-white: 255 255 255;
+  --brand-surface: 238 246 255;
+  --button-primary-bg: 11 99 206;
+  --button-primary-text: 255 255 255;
+  --button-secondary-bg: 234 243 255;
+  --button-secondary-text: 11 31 58;
+  --input-bg: 255 255 255;
+  --input-text: 11 31 58;
+  --input-border: 221 231 242;
+  --chip-bg: 238 246 255;
+  --chip-text: 10 102 216;
+  --chip-active-bg: 11 99 206;
+  --chip-active-text: 255 255 255;
+  --badge-source-bg: 238 246 255;
+  --badge-source-text: 8 79 168;
+  --badge-reliability-bg: 240 249 255;
+  --badge-reliability-text: 3 105 161;
+
+  --background: var(--bg-page);
+  --foreground: var(--text-primary);
+  --surface: var(--bg-section);
+  --surface-muted: var(--bg-card-muted);
+  --card: var(--bg-card);
+  --card-foreground: var(--text-primary);
+  --border: var(--border-subtle);
+  --muted: var(--bg-card-muted);
+  --muted-foreground: var(--text-muted);
+  --brand-bronze: var(--brand-primary);
+  --brand-ivory: 248 250 252;
+  --accent: var(--brand-primary);
+  --primary: var(--brand-primary);
   --primary-foreground: 255 255 255;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --background: 7 27 51;            /* #071B33 deep navy */
-  --foreground: 247 245 239;       /* #F7F5EF ivory */
-  --surface: 12 39 70;             /* #0C2746 navy clair */
-  --surface-muted: 13 37 69;       /* #0D2545 navy card */
-  --card: 13 37 69;                /* #0D2545 */
-  --card-foreground: 247 245 239;  /* ivory */
-  --border: 194 163 104;           /* bronze light (used at low alpha) */
-  --muted: 12 39 70;
-  --muted-foreground: 124 141 166; /* #7C8DA6 cool slate */
-  --brand-navy: 7 27 51;
-  --brand-bronze: 194 163 104;     /* bronze clair sur fond sombre */
-  --brand-ivory: 247 245 239;
-  --accent: 194 163 104;           /* bronze light */
-  --primary: 194 163 104;          /* bronze CTA sur fond sombre */
-  --primary-foreground: 7 27 51;
+  --bg-page: 6 22 45;
+  --bg-section: 8 31 61;
+  --bg-card: 14 42 77;
+  --bg-card-muted: 10 37 71;
+  --bg-elevated: 12 47 96;
+  --text-primary: 248 250 252;
+  --text-secondary: 184 199 217;
+  --text-muted: 203 213 225;
+  --text-inverted: 6 22 45;
+  --border-subtle: 29 59 99;
+  --border-strong: 46 83 128;
+  --brand-primary: 96 165 250;
+  --brand-primary-hover: 59 130 246;
+  --brand-primary-soft: 14 42 77;
+  --brand-blue: 59 130 246;
+  --brand-navy: 6 22 45;
+  --brand-white: 248 250 252;
+  --brand-surface: 8 31 61;
+  --button-primary-bg: 59 130 246;
+  --button-primary-text: 248 250 252;
+  --button-secondary-bg: 14 42 77;
+  --button-secondary-text: 248 250 252;
+  --input-bg: 14 42 77;
+  --input-text: 248 250 252;
+  --input-border: 29 59 99;
+  --chip-bg: 14 42 77;
+  --chip-text: 184 199 217;
+  --chip-active-bg: 59 130 246;
+  --chip-active-text: 248 250 252;
+  --badge-source-bg: 14 42 77;
+  --badge-source-text: 191 219 254;
+  --badge-reliability-bg: 8 47 73;
+  --badge-reliability-text: 186 230 253;
+
+  --background: var(--bg-page);
+  --foreground: var(--text-primary);
+  --surface: var(--bg-section);
+  --surface-muted: var(--bg-card-muted);
+  --card: var(--bg-card);
+  --card-foreground: var(--text-primary);
+  --border: var(--border-subtle);
+  --muted: var(--bg-card-muted);
+  --muted-foreground: var(--text-secondary);
+  --brand-bronze: var(--brand-primary);
+  --brand-ivory: 248 250 252;
+  --accent: var(--brand-primary);
+  --primary: var(--brand-primary);
+  --primary-foreground: 248 250 252;
 }
 
 * {
@@ -92,12 +158,12 @@ input {
 /* === Focus clavier accessible, cohérent marque (P10A.2) === */
 :where(a, button, select, input, textarea):focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px #fafaf7, 0 0 0 4px var(--brand-bronze);
+  box-shadow: 0 0 0 2px rgb(var(--brand-white)), 0 0 0 4px rgb(var(--brand-primary));
   border-radius: 0.5rem;
 }
 
 ::selection {
-  background: rgba(155, 120, 56, 0.18);
+  background: rgba(11, 99, 206, 0.18);
 }
 
 @keyframes heart-pop {
@@ -187,15 +253,15 @@ input {
 
 /* Gradient text */
 .text-gradient-blue {
-  background: linear-gradient(100deg, #071B33 0%, #13355C 55%, #071B33 100%);
+  background: linear-gradient(100deg, #0B63CE 0%, #38BDF8 55%, #084FA8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-/* Premium bronze gradient accent */
+/* Brand accent gradient */
 .text-gradient-bronze {
-  background: linear-gradient(100deg, #9B7838 0%, #C2A368 55%, #9B7838 100%);
+  background: linear-gradient(100deg, #0B63CE 0%, #60A5FA 55%, #0A66D8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

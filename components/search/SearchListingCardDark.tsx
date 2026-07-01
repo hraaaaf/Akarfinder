@@ -55,6 +55,11 @@ function getTransactionLabel(type: Listing["transaction_type"]) {
 }
 
 export function SearchListingCardDark({ listing }: { listing: Listing }) {
+  // Guard: suppressed results must never render in SERP
+  if (listing.can_show_result === false) return null;
+  // Guard: production-blocked results hidden in production (e.g. ToS pending)
+  if (process.env.NODE_ENV === "production" && listing.production_allowed === false) return null;
+
   const { theme } = useTheme();
   const reliabilityLevel = getReliabilityLevel(listing.reliability_score);
   const rel = reliabilityStyle(reliabilityLevel);

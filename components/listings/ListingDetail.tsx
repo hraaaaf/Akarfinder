@@ -277,7 +277,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
             </p>
             <Link
               href={`/onboarding?listing=${listing.id}`}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-deepblue px-4 py-3 text-[13.5px] font-extrabold text-white transition hover:bg-[#0d2a4d]"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] dark:bg-deepblue px-4 py-3 text-[13.5px] font-extrabold text-white transition hover:bg-[#0d2a4d]"
             >
               Vérifier avec mon budget estimatif
             </Link>
@@ -330,7 +330,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
         <aside className="hidden space-y-4 lg:block lg:sticky lg:top-6">
           {/* Contact card */}
           <div className="overflow-hidden rounded-[1.4rem] border border-[#eadfca] bg-white shadow-[0_14px_38px_rgba(7,27,51,0.12)]">
-            <div className="bg-deepblue px-5 py-4 text-white">
+            <div className="bg-[#0B63CE] dark:bg-deepblue px-5 py-4 text-white">
               <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-bronze-400">
                 Contact
               </p>
@@ -410,7 +410,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
           <MreDecisionBlock listing={listing} enrichment={enrichment} />
 
           {/* Localisation */}
-          <div className="relative overflow-hidden rounded-[1.4rem] bg-deepblue p-5 text-white shadow-[0_8px_28px_rgba(7,27,51,0.14)]">
+          <div className="relative overflow-hidden rounded-[1.4rem] bg-[#0B63CE] dark:bg-deepblue p-5 text-white shadow-[0_8px_28px_rgba(7,27,51,0.14)]">
             <Image
               src="/images/morocco-map-complete-premium.png"
               alt=""

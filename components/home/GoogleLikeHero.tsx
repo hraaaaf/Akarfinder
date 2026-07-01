@@ -2,7 +2,7 @@ import { Container } from "@/components/ui/Container";
 import { HomeSearchBar } from "@/components/home/HomeSearchBar";
 
 const HERO_DESKTOP = "/images/hero/akar-residence-sunset-desktop.webp";
-const HERO_MOBILE  = "/images/hero/akar-residence-sunset-mobile.webp";
+const HERO_MOBILE = "/images/hero/akar-residence-sunset-mobile.webp";
 
 export function GoogleLikeHero() {
   return (
@@ -10,7 +10,6 @@ export function GoogleLikeHero() {
       id="recherche"
       className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[#061027]"
     >
-      {/* ── Photo premium background — art-directed ── */}
       <picture>
         <source media="(max-width: 639px)" srcSet={HERO_MOBILE} />
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -24,64 +23,71 @@ export function GoogleLikeHero() {
         />
       </picture>
 
-      {/* ── Overlays — lisibilité sans tuer la photo ── */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        {/* Top dark pour header */}
-        <div className="absolute inset-x-0 top-0 h-[38%] bg-gradient-to-b from-[#03101F]/80 via-[#061027]/40 to-transparent" />
-        {/* Bottom vignette */}
-        <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-[#040d1a]/90 to-transparent" />
-        {/* Voile radial centré — concentre lisibilité derrière titre+search */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(248,250,252,0.65)] via-[rgba(248,250,252,0.35)] to-[rgba(6,27,51,0.15)] sm:hidden" />
+        <div className="absolute inset-x-0 top-0 h-[34%] bg-gradient-to-b from-[rgba(255,255,255,0.45)] via-[rgba(248,250,252,0.15)] to-transparent sm:hidden" />
+        <div className="absolute inset-x-0 bottom-0 h-[26%] bg-gradient-to-t from-[rgba(6,27,51,0.25)] to-transparent sm:hidden" />
+        <div className="absolute inset-x-0 top-0 hidden h-[40%] bg-gradient-to-b from-[rgba(3,16,31,0.55)] via-[rgba(3,16,31,0.35)] to-transparent sm:block" />
+        <div className="absolute inset-x-0 bottom-0 hidden h-[40%] bg-gradient-to-t from-[rgba(3,16,31,0.45)] to-transparent sm:block" />
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 hidden sm:block"
           style={{
             background:
-              "radial-gradient(ellipse 75% 58% at 50% 42%, rgba(3,10,24,0.72) 0%, transparent 72%)",
+              "radial-gradient(ellipse 65% 52% at 50% 43%, rgba(3,16,31,0.50) 0%, transparent 70%)",
           }}
         />
-        {/* Halo bronze subtil — cohérence brand */}
-        <div className="absolute left-1/2 top-[-8%] h-[55%] w-[80%] -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,rgba(155,120,56,0.08)_0%,transparent_60%)]" />
-        {/* Léger voile global — évite que la photo brûle le texte */}
-        <div className="absolute inset-0 bg-[#061027]/38" />
+        <div
+          className="absolute inset-0 sm:hidden"
+          style={{
+            background:
+              "radial-gradient(ellipse 88% 54% at 50% 37%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 58%, transparent 74%)",
+          }}
+        />
+        <div className="absolute left-1/2 top-[-8%] hidden h-[55%] w-[80%] -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.16)_0%,transparent_60%)] sm:block" />
+        <div className="absolute left-1/2 top-[-4%] h-[42%] w-[95%] -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,rgba(96,165,250,0.16)_0%,transparent_66%)] sm:hidden" />
+        <div className="absolute inset-0 bg-[#061027]/8 sm:bg-[#061027]/12" />
       </div>
 
-      {/* ── Content ── */}
-      <Container className="relative z-10 w-full px-5 pb-16 pt-28 sm:pb-24 sm:pt-36 lg:pb-28 lg:pt-44">
+      <Container className="relative z-10 w-full px-5 pb-12 pt-[calc(env(safe-area-inset-top)+5.5rem)] sm:pb-24 sm:pt-36 lg:pb-28 lg:pt-44">
         <div className="mx-auto flex max-w-[860px] flex-col items-center text-center">
-
-          {/* Eyebrow pill */}
-          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[#C2A368]/22 bg-[#C2A368]/10 px-4 py-1.5 backdrop-blur-sm">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#60A5FA]/28 bg-[rgba(255,255,255,0.68)] px-3.5 py-1.5 backdrop-blur-md sm:mb-7 sm:bg-[#0B63CE]/14 sm:px-4">
             <span
-              className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#C2A368]"
+              className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#60A5FA]"
               aria-hidden="true"
             />
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#C2A368] [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">
-              Moteur de recherche immobilier — Maroc
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE] sm:tracking-[0.22em] sm:text-white">
+              <span className="sm:hidden">Le moteur immobilier du Maroc</span>
+              <span className="hidden sm:inline">
+                Trouvez, comparez et analysez les biens au Maroc
+              </span>
             </span>
           </div>
 
-          {/* H1 */}
-          <h1 className="text-[1.9rem] font-extrabold leading-[1.06] tracking-[-0.032em] text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.8)] sm:text-[3.4rem] sm:leading-[1.04] lg:text-[4.1rem]">
-            Le moteur de recherche{" "}
-            <span className="bg-gradient-to-r from-[#C2A368] via-[#e0c06a] to-[#C2A368] bg-clip-text text-transparent">
-              immobilier intelligent
+          <h1 className="text-[1.78rem] font-extrabold leading-[1.04] tracking-[-0.038em] text-[#071B33] sm:text-[3.4rem] sm:leading-[1.04] sm:text-white lg:text-[4.1rem]">
+            Le{" "}
+            <span className="bg-gradient-to-r from-[#0B63CE] via-[#60A5FA] to-[#0B63CE] bg-clip-text text-transparent">
+              1er moteur de recherche immobilier
             </span>{" "}
             au Maroc
           </h1>
 
-          {/* Subtitle */}
-          <p className="mt-5 max-w-[600px] text-[0.98rem] leading-relaxed text-white/70 [text-shadow:0_1px_8px_rgba(0,0,0,0.7)] sm:mt-6 sm:text-[1.1rem]">
-            Recherchez, comparez et explorez des biens observés avec sources
-            visibles, aperçus limités et signaux de fiabilité.
+          <p className="mt-4 max-w-[560px] text-[0.95rem] leading-relaxed text-[#334155] sm:mt-6 sm:text-[1.1rem] sm:text-white/85">
+            <span className="sm:hidden">
+              Comparez les annonces, les prix et les signaux de fiabilite avant de
+              contacter.
+            </span>
+            <span className="hidden sm:inline">
+              Recherchez, comparez et explorez des biens observes avec sources visibles,
+              apercus limites et signaux de fiabilite.
+            </span>
           </p>
 
-          {/* Search bar — centrepiece */}
-          <div className="mt-9 w-full sm:mt-11">
+          <div className="mt-6 w-full sm:mt-11">
             <HomeSearchBar />
           </div>
         </div>
       </Container>
 
-      {/* Scroll indicator — desktop only */}
       <div
         className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 sm:flex"
         aria-hidden="true"

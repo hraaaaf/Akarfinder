@@ -56,6 +56,11 @@ type PhotoFirstListingCardProps = {
 };
 
 export function PhotoFirstListingCard({ listing }: PhotoFirstListingCardProps) {
+  // Guard: suppressed results must never render
+  if (listing.can_show_result === false) return null;
+  // Guard: production-blocked results hidden in production (e.g. ToS pending)
+  if (process.env.NODE_ENV === "production" && listing.production_allowed === false) return null;
+
   const reliabilityLevel = getReliabilityLevel(listing.reliability_score);
   const reliabilityLabel = getReliabilityLabel(reliabilityLevel);
   const showReliability = listing.reliability_available !== false;

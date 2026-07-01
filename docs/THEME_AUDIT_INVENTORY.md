@@ -561,3 +561,117 @@ Aucun — tous les problèmes identifiés nécessitent une action.
 ---
 
 *Document généré par audit audit-only. Aucune modification de code effectuée.*
+
+---
+
+## BRAND-THEME-BLUE-WHITE-V1 - 2026-06-30
+
+### Decision brand
+
+- Direction majoritaire : `blanc / bleu` en light, `navy / bleu` en dark.
+- `gold / bronze` retrograde en micro-accent seulement ; plus aucune dominance sur les CTA principaux ni les gradients de marque.
+- Le light theme devient la reference principale.
+- Le dark theme conserve un rendu premium, mais passe de `navy + bronze` a `navy + blue + white`.
+- Claim homepage preserve : `1er moteur de recherche immobilier au Maroc`.
+
+### Tokens livres
+
+Variables CSS ajoutees / refondues dans `app/globals.css` :
+
+- `--bg-page`
+- `--bg-section`
+- `--bg-card`
+- `--bg-card-muted`
+- `--bg-elevated`
+- `--text-primary`
+- `--text-secondary`
+- `--text-muted`
+- `--text-inverted`
+- `--border-subtle`
+- `--border-strong`
+- `--brand-primary`
+- `--brand-primary-hover`
+- `--brand-primary-soft`
+- `--brand-blue`
+- `--brand-navy`
+- `--brand-white`
+- `--brand-surface`
+- `--button-primary-bg`
+- `--button-primary-text`
+- `--button-secondary-bg`
+- `--button-secondary-text`
+- `--input-bg`
+- `--input-text`
+- `--input-border`
+- `--chip-bg`
+- `--chip-text`
+- `--chip-active-bg`
+- `--chip-active-text`
+- `--badge-source-bg`
+- `--badge-source-text`
+- `--badge-reliability-bg`
+- `--badge-reliability-text`
+
+### Mapping avant / apres
+
+| Zone | Avant | Apres |
+|------|-------|--------|
+| Background light | beige/ivory chaud | `#F8FAFC` / blanc immobilier |
+| CTA primaire | navy + bronze | bleu confiance `#0B63CE` |
+| Accents de marque | bronze / gold | bleu clair / sky |
+| Background dark | deepblue + bronze | navy profond `#06162D` + bleu |
+| Focus ring | bronze | bleu |
+| Gradients texte marque | bronze | bleu |
+
+### Composants touches
+
+- `GoogleLikeHero`
+- `HomeSearchBar`
+- `SearchMapPanel`
+- `SourceBadge`
+- palette globale `globals.css`
+- palette Tailwind `tailwind.config.ts`
+
+### Exceptions assumees
+
+- Le hero photo homepage reste un module sombre assume, mais avec halo et accents bleus.
+- Certains modules data/cartographiques peuvent rester plus sombres, tant que la palette dominante n'est plus doree.
+
+### QA mission
+
+| Check | Resultat |
+|-------|----------|
+| `npm run build` | OK |
+| `npm test` | 565/565 PASS |
+| Smoke port `3000` | 11/11 OK |
+| Claim hero homepage | visible |
+| Desktop light/dark | captures generees |
+| Mobile light/dark | captures generees |
+| Overflow mobile | aucun sur les pages QA prioritaires |
+
+### Captures generees
+
+- `public/screenshots/brand-theme-blue-white-v1/*`
+
+### Statut
+
+- `BRAND-THEME-BLUE-WHITE-V1` : Completed local QA
+
+### Follow-up 2026-07-01
+
+| Zone | Avant | Apres |
+|------|-------|--------|
+| `HomeResultPreview` | CTA et labels bronze | CTA et labels bleus |
+| `SignatureMapSection` | map/pins/halos bronze | map/pins/halos blue/white |
+| `CityIntentGrid` | collage image avec accents bronze | grille de cards live blue/white |
+| Hero assets | premiere version photo | nouveaux visuels `desktop-v2` / `mobile-v2` |
+
+### QA follow-up
+
+| Check | Resultat |
+|-------|----------|
+| `npm run build` | OK |
+| `npm test` | 832/832 PASS |
+| Smoke port `3000` | 11/11 OK |
+| Capture mobile home | `tmp-final-preview-check/home-mobile.png` |
+| Capture desktop home | `tmp-final-preview-check/home-desktop.png` |

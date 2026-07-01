@@ -342,6 +342,47 @@ Impact:
 
 * Search filters and lead forms must include MRE-specific fields.
 
+## 2026-07-01 - AVITO-THUMBNAILS-RISK-ACTIVATION-1 — Provider thumbnails risk-accepted
+
+Status: Validated
+
+Decision:
+- AkarFinder activates Avito provider thumbnails (via Serper Images API) under risk-accepted policy.
+- ToS status: UNCLEAR (see docs/SERPER_TOS_THUMBNAILS_VALIDATION.md — audit SERPER-TOS-THUMBNAILS-VALIDATION-1).
+- This is a business decision to accept residual risk. It is NOT a ToS validation.
+- The terms "tos_validated", "legally_approved", "officially_authorized" MUST NEVER appear in code or docs for this feature.
+- Activation requires two environment flags both set to "true":
+    ENABLE_AVITO_PROVIDER_THUMBNAILS=true
+    AVITO_THUMBNAILS_RISK_ACCEPTED=true
+- Dual-gate prevents accidental activation. Single-flag = thumbnails stay OFF.
+- Implementation mode: HOTLINK ONLY. No cache. No download. No rehosting.
+- Invariants enforced in code (typed literal false):
+    can_cache_thumbnail = false
+    can_download_thumbnail = false
+- Attribution "Source : Avito" visible on every result with thumbnail.
+- CTA always redirects to original Avito URL (original_source_required=true).
+- Forbidden CTAs: contact, WhatsApp, request_visit, gallery, multi-image.
+- Graceful fallback: if gstatic.com URL breaks (onerror), thumbnail is hidden, falls back to thin result layout. No crash.
+- If Avito or Serper formally objects: disable by setting flags to false. Zero code change needed.
+
+Reason:
+- Serper's business model is to power SERP products — returning thumbnailUrl implies usage authorization even if not stated explicitly.
+- All major SERP API customers use gstatic.com thumbnail URLs commercially with no known enforcement action.
+- Hotlink-only approach (no cache/download/rehost) is the legally safer position (server test, Perfect 10 v. Amazon 2007).
+- Product benefit: visual search results improve user engagement and CTR on Avito listings.
+- Risk is real but low in current enforcement landscape. AkarFinder at Moroccan startup scale is not a primary enforcement target.
+- If risk materializes: immediate rollback via env flag, no code change.
+
+Impact:
+- indexed_result_with_provider_thumbnail mode activated in production when both flags true.
+- display model: thumbnail_risk_accepted=true → production_allowed=true (was: false).
+- display_reason: "Risque assumé (risk_accepted) — ToS provider unclear, décision business."
+- SearchApiResultCard: shows thumbnail when mode=indexed_result_with_provider_thumbnail + production_allowed=true.
+- Fallback: onerror → hide thumbnail → thin layout (no crash).
+- Serper email still recommended: send support@serper.dev to convert risk_accepted → formally_validated.
+- Files: lib/search/thumbnail-activation-config.ts, lib/search/search-result-display-model.ts,
+         lib/search-api/search-api-to-serp-result.ts, components/search-api/SearchApiResultCard.tsx.
+
 2026-06-19 - Qualified lead strategy
 
 Status: Validated
@@ -1111,6 +1152,46 @@ Impact:
 - Le Track Data Engine reste une piste parallèle indépendante (DATA-A→DATA-H).
 - P15B/P16A ne démarrent pas maintenant.
 
+## 2026-06-30 - AkarFinder switches to Google-like first
+
+Status: Validated
+
+Decision:
+- AkarFinder devient d'abord un moteur de recherche immobilier Google-like.
+- Phrase produit officielle : "AkarFinder référence les annonces immobilières publiquement
+  indexables au Maroc, les classe par fiabilité et redirige vers la source originale."
+- Tout résultat immobilier publiquement indexable peut apparaître dans la SERP AkarFinder,
+  avec un niveau de détail proportionnel au statut de la source.
+- Avito et autres sources publiques ne restent plus invisibles par défaut : si une annonce
+  est publiquement indexable proprement, elle peut apparaître en SERP (indexed_result).
+- Le signal marché (signal_status Engine) est une couche interne — il ne devient pas
+  automatiquement la limitation d'affichage utilisateur.
+- Nouveau modèle de résultats SERP :
+    full_partner_listing    → partenaires, fiche complète + contact + lead
+    rich_authorized_result  → source autorisée, fiche riche
+    indexed_result          → annonce publique indexable, aperçu limité + miniature + lien
+    thin_indexed_result     → page partiellement indexable, titre + source + lien
+    source_search_link      → lien vers recherche source, pas d'annonce individuelle
+    suppressed              → source bloquée / login / captcha / noindex
+
+Reason:
+- Le positionnement moteur de recherche est plus fort qu'un portail classique.
+- L'utilisateur doit pouvoir trouver toutes les annonces immobilières indexables,
+  pas uniquement les partenaires.
+- Les partenaires restent premium (fiche complète, contact, lead), mais ils ne doivent
+  pas limiter l'ambition de couverture de la SERP.
+- Avito et les portails publics indexables représentent une large part du volume disponible.
+
+Impact:
+- Avito peut apparaître en SERP si indexable proprement (indexed_result), sinon signal interne.
+- Les fiches complètes / contact / lead restent réservés aux partenaires.
+- Le lien vers la source originale devient obligatoire pour tous les résultats indexés.
+- Signal marché devient une couche interne Engine, pas un format utilisateur par défaut.
+- La doctrine no-bypass reste invariante (no proxy, no stealth, no captcha, respect robots.txt).
+- SOURCE-POLICY-FOUNDATION-1 Data Engine reste pending (repo Engine séparé).
+- Missions suivantes : WEB-INDEXING-ELIGIBILITY-1 → AVITO-GOOGLE-LIKE-AUDIT-1 →
+  SEARCH-RESULT-DISPLAY-MODEL-1 → SERP-RANKING-RELIABILITY-1.
+
 ## 2026-06-30 - V9.5 Source Display Policy — adoption et durcissement
 
 Status: Validated
@@ -1140,3 +1221,80 @@ Impact:
 - SITE-SOURCE-BADGES-HARDENING-1 complétée : 534/534 PASS, build OK.
 - SOURCE-POLICY-FOUNDATION-1 (Engine, repo séparé) : complétée indépendamment.
 - Prochaine source à mapper : Yakeey, Sarouty (un bloc `if` dans deriveSourceDisplayPolicy).
+
+## 2026-06-30 - Brand theme blue/white v1
+
+Status: Validated
+
+Decision:
+- AkarFinder adopte une direction visuelle majoritairement `blanc / bleu` en light theme et `navy / bleu` en dark theme.
+- Le `gold / bronze` n'est plus une couleur majeure de l'interface ; il peut subsister seulement comme micro-accent non dominant.
+- Le hero homepage conserve obligatoirement le claim `1er moteur de recherche immobilier au Maroc`.
+- La photo hero et la search bar Google-like sont preservees.
+- La migration doit prioriser les tokens globaux et l'heritage thematique plutot que des patches page par page.
+
+Reason:
+- Le produit doit ressembler davantage a un moteur de recherche immobilier fiable et accessible qu'a un site premium ferme a dominance doree.
+- Le bleu renforce la lecture search/PropTech/confiance tout en restant compatible avec les sections dark premium deja presentes.
+- Preserver le hero, la photo et la search bar garde la continuite produit tout en faisant evoluer l'identite.
+
+Impact:
+- `app/globals.css` et `tailwind.config.ts` deviennent la source principale de la nouvelle palette.
+- Les anciens accents legacy `bronze/gold` sont remappes visuellement vers du bleu pour accelerer l'heritage global.
+- Homepage, `/search`, `/acheter`, `/louer`, `/neuf` et `/onboarding` ont ete validees en QA light/dark desktop/mobile.
+- Aucune mise en production automatique n'est autorisee : validation Achraf requise avant deploiement.
+
+## 2026-07-01 - Homepage brand cleanup follow-up
+
+Status: Validated
+
+Decision:
+- Les derniers modules homepage encore pigments en `gold/bronze` doivent etre convertis explicitement, meme si les tokens globaux ont deja bascule.
+- `CityIntentGrid` ne doit plus dependre de collages images prebakes quand ils enferment une ancienne palette ; une composition en cards live est preferee.
+- Les nouveaux visuels hero utilisateur sont references directement dans `GoogleLikeHero` et `ProductHero` sans toucher au wording du claim.
+
+Reason:
+- Certains assets et styles inline contournaient l'heritage des tokens et laissaient un residu bronze visible sur mobile.
+- Une grille live gardera la palette future plus maitrisable qu'un asset composite exporte.
+
+Impact:
+- Homepage light est maintenant majoritairement blanc/bleu sur les sections `villes`, `carte intelligente` et `resultats observes`.
+- Le hero conserve `1er moteur de recherche immobilier au Maroc` avec nouveaux backgrounds desktop/mobile.
+
+## 2026-07-01 - Hero mobile lighten pass
+
+Status: Validated
+
+Decision:
+- Le hero homepage peut avoir une direction mobile specifique plus claire que desktop, tant que la photo, le claim et la search bar restent identitaires.
+- Les textes d'accompagnement mobile doivent etre plus courts que desktop quand ils ralentissent la lecture du premier ecran.
+- Les exemples de recherche ne sont pas prioritaires sur mobile et peuvent etre masques pour privilegier clarte et contraste.
+
+Reason:
+- Le hero etait coherent mais encore trop sombre pour l'objectif blanc/bleu accessible.
+- Le header et les exemples prenaient trop de hauteur utile sur iPhone Safari.
+
+Impact:
+- Overlay mobile eclairci, fumee autour du H1 reduite, search bar remontee visuellement dans le premier ecran.
+- Header mobile et chips de navigation compacts sans casser la structure existante.
+## 2026-07-01 - Source Candidate Audit foundation
+
+Status: Validated
+
+Decision:
+- `docs/SOURCE_CANDIDATE_AUDIT.md` devient le registre central de qualification source cote site web.
+- Une source ne devient pas `public_index_source` uniquement parce qu'elle existe ou repond en `200`.
+- `public_index_source` n'est recommande que si la homepage, une page categorie publique, et idealement un detail ou un sitemap public ont ete verifies sans blocage critique.
+- `audit_source` reste le statut par defaut pour toute source encore ambigue sur robots, ToS, challenge, ou profondeur de pages.
+- `benchmark_source` et `social_signal_source` ne doivent jamais etre traites comme des listings.
+
+Reason:
+- Le produit a besoin d'une matrice source exploitable avant toute nouvelle extension SERP multi-source.
+- Separer `candidate technique` et `production_allowed` evite de confondre accessibilite publique et droit d'usage produit.
+- Les classified/agency networks marocains montrent des comportements heterogenes : 403, redirect, challenge, wildcard disallow, sitemaps partiels.
+
+Impact:
+- Mubawab reste la reference `public_index_source` active.
+- Avito reste `audit_source` avec voie `thin_indexed_result` via Search API uniquement.
+- Agenz et Logic-Immo Maroc deviennent les deux meilleurs candidats pour le prochain audit direct-source approfondi.
+- Sarouty, MarocAnnonces et Yakeey restent dans un parcours audit-first sans ouverture prod immediate.

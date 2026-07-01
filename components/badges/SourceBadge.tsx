@@ -1,8 +1,3 @@
-// SITE-SOURCE-BADGES-1 — Source Badge component.
-// Displays the source category badge (public_indexed, premium_partner, market_signal, …).
-// Strictly separate from ReliabilityBadge (quality concept — orthogonal to source rights).
-// Wording doctrine: never "vérifié / officiel / certifié". See MARKET_SEARCH_POSITIONING.md.
-
 type Variant = "light" | "dark";
 
 type BadgeConfig = {
@@ -25,21 +20,21 @@ const BADGE_CONFIG: Record<string, BadgeConfig> = {
   public_indexed: {
     label: "Source publique indexée",
     lightCls: "border-slate-200 bg-slate-100 text-slate-600",
-    darkCls: "border-white/15 bg-white/[0.07] text-white/55",
+    darkCls: "border-white/15 bg-white/[0.07] text-white/60",
   },
   market_signal: {
     label: "Signal marché",
-    lightCls: "border-amber-200 bg-amber-50 text-amber-700",
-    darkCls: "border-amber-300/30 bg-amber-300/10 text-amber-200",
+    lightCls: "border-sky-200 bg-sky-50 text-sky-700",
+    darkCls: "border-sky-400/30 bg-sky-400/10 text-sky-200",
   },
   social_signal: {
     label: "Signal social",
-    lightCls: "border-purple-200 bg-purple-50 text-purple-700",
-    darkCls: "border-purple-400/30 bg-purple-400/12 text-purple-300",
+    lightCls: "border-blue-100 bg-blue-50 text-blue-700",
+    darkCls: "border-blue-400/30 bg-blue-400/12 text-blue-300",
   },
   promoter_site: {
     label: "Site promoteur",
-    lightCls: "border-[#dcc89a] bg-[#fdf6e8] text-[#7a5c1e]",
+    lightCls: "border-blue-200 bg-blue-50 text-blue-700",
     darkCls: "border-bronze-500/30 bg-bronze-500/10 text-bronze-300",
   },
   institutional_source: {
@@ -54,7 +49,6 @@ const BADGE_CONFIG: Record<string, BadgeConfig> = {
   },
 };
 
-// Derives a source badge from source_access_level when source_badge is absent (legacy listings).
 export function deriveBadge(
   badge?: string,
   sourceAccessLevel?: string
