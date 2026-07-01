@@ -91,7 +91,7 @@ export function buildSearchGatewayQueries(
         case "mubawab":
           // Weak source — try /fr path variant
           if (city && q) {
-            secondaryQuery = `site:mubawab.ma/fr ${q} ${city}`;
+            secondaryQuery = `site:${source.domain}/fr ${q} ${city}`;
           }
           break;
       }
