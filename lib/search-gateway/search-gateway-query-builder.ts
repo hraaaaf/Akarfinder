@@ -1,7 +1,7 @@
 // SEARCH-GATEWAY-MULTISOURCE-SERP-1A (improved)
 // Build Search API queries for multi-source Search Gateway
 // SEARCH-GATEWAY-QUERY-TUNING-1 — Enhanced query generation for better coverage
-// SEARCH-GATEWAY-QUERY-TUNING-QA-1 — Query deduplication verified
+// SEARCH-GATEWAY-QUERY-VARIANTS-REAL-1 — Real query variants per source
 
 import type { SearchGatewayQueryInput, SearchGatewayQuery } from "./search-gateway-types";
 import { getEnabledSearchGatewaySources, getSearchGatewaySourceById } from "./search-gateway-sources";
@@ -28,22 +28,21 @@ export function buildSearchGatewayQueries(
           .filter((s) => s !== null)
       : getEnabledSearchGatewaySources();
 
-  // Build queries with enhanced variations per source
+  // Build queries with real variants per source
   const queries: SearchGatewayQuery[] = [];
-  const maxTotalQueries = 12; // Max 12 total queries to Serper
-  const usedQueries = new Set<string>(); // Track to avoid duplicates
+  const maxTotalQueries = 12;
+  const usedQueries = new Set<string>();
 
   for (const source of availableSources) {
     if (queries.length >= maxTotalQueries) break;
 
-    // Primary query: direct combination
+    // Primary query: [q] [city] or [q] [propertyType] [city]
     const primaryTerms: string[] = [];
     if (q) primaryTerms.push(q);
     if (propertyType) primaryTerms.push(propertyType);
     if (city) primaryTerms.push(city);
     const primaryQuery = `site:${source.domain} ${primaryTerms.join(" ")}`;
 
-    // Only add if not a duplicate
     if (!usedQueries.has(primaryQuery)) {
       queries.push({
         source_id: source.source_id,
@@ -53,17 +52,56 @@ export function buildSearchGatewayQueries(
       usedQueries.add(primaryQuery);
     }
 
-    // Secondary query: alternative formulation for better coverage
-    if (queries.length < maxTotalQueries && (propertyType || q) && city) {
-      // Try alternative ordering: city first or inverted
-      const secondaryTerms: string[] = [];
-      if (city) secondaryTerms.push(city);
-      if (propertyType) secondaryTerms.push(propertyType);
-      if (q && q !== propertyType) secondaryTerms.push(q);
-      const secondaryQuery = `site:${source.domain} ${secondaryTerms.join(" ")}`;
+    // Secondary query: source-specific variant
+    if (queries.length < maxTotalQueries) {
+      let secondaryQuery = "";
 
-      // Only add if different from primary AND not already used
-      if (secondaryQuery !== primaryQuery && !usedQueries.has(secondaryQuery)) {
+      // Generate source-specific variants
+      switch (source.source_id) {
+        case "avito":
+          // "immobilier Casablanca appartement"
+          if (city && q) {
+            secondaryQuery = `site:${source.domain} immobilier ${city} ${q}`;
+          }
+          break;
+        case "sarouty":
+          // "Casablanca appartements vendre"
+          if (city && q) {
+            secondaryQuery = `site:${source.domain} ${city} ${q}s vendre`;
+          }
+          break;
+        case "yakeey":
+          // Use /fr path variant
+          if (city && q) {
+            secondaryQuery = `site:yakeey.com/fr ${city} ${q}`;
+          }
+          break;
+        case "agenz":
+          // "Casablanca appartement vendre"
+          if (city && q) {
+            secondaryQuery = `site:${source.domain} ${city} ${q} vendre`;
+          }
+          break;
+        case "logic-immo":
+          // "Casablanca immobilier"
+          if (city) {
+            secondaryQuery = `site:${source.domain} ${city} immobilier`;
+          }
+          break;
+        case "mubawab":
+          // "Casablanca appartement vendre"
+          if (city && q) {
+            secondaryQuery = `site:${source.domain} ${city} ${q} vendre`;
+          }
+          break;
+      }
+
+      // Only add if it's different and not used
+      if (
+        secondaryQuery &&
+        secondaryQuery !== primaryQuery &&
+        !usedQueries.has(secondaryQuery)
+      ) {
         queries.push({
           source_id: source.source_id,
           query: secondaryQuery,
