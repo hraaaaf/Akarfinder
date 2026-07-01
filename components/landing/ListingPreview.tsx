@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { WishlistButton } from "@/components/landing/WishlistButton";
 import { Container } from "@/components/ui/Container";
 import { listingPreviewItems, type ListingPreviewItem } from "@/lib/site";
@@ -132,8 +132,6 @@ function mapApiListingToPreview(listing: Listing): ListingPreviewItem {
 export function ListingPreview() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<ListingPreviewItem[]>(listingPreviewItems);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const pausedRef = useRef(false);
 
   useEffect(() => {
     async function fetchListings() {
@@ -158,15 +156,6 @@ export function ListingPreview() {
     void fetchListings();
   }, []);
 
-  const scrollToIndex = useCallback((index: number) => {
-    if (!scrollRef.current) return;
-    const cards = scrollRef.current.querySelectorAll("article");
-    const card = cards[index];
-    if (!card) return;
-    card.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
-    setActiveIndex(index);
-  }, []);
-
   const scroll = (dir: -1 | 1) => {
     if (!scrollRef.current) return;
     const card = scrollRef.current.querySelector("article");
@@ -177,50 +166,6 @@ export function ListingPreview() {
       behavior: "smooth",
     });
   };
-
-  // Auto-scroll on mobile only
-  useEffect(() => {
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) return;
-
-    const timer = setInterval(() => {
-      if (pausedRef.current) return;
-      setActiveIndex((prev) => {
-        const next = (prev + 1) % Math.min(items.length, 5);
-        // Delay scroll to next frame so DOM is ready
-        requestAnimationFrame(() => scrollToIndex(next));
-        return next;
-      });
-    }, 3500);
-
-    return () => clearInterval(timer);
-  }, [items.length, scrollToIndex]);
-
-  // Sync activeIndex on manual scroll
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    let frame: number;
-    const onScroll = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const cards = el.querySelectorAll("article");
-        const scrollLeft = el.scrollLeft;
-        let closest = 0;
-        let minDist = Infinity;
-        cards.forEach((card, i) => {
-          const dist = Math.abs(card.offsetLeft - scrollLeft);
-          if (dist < minDist) { minDist = dist; closest = i; }
-        });
-        setActiveIndex(closest);
-      });
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => { el.removeEventListener("scroll", onScroll); cancelAnimationFrame(frame); };
-  }, []);
-
-  const pauseAutoScroll = () => { pausedRef.current = true; };
-  const resumeAutoScroll = () => { pausedRef.current = false; };
 
   return (
     <section id="annonces" className="bg-surface py-10 sm:py-12">
@@ -282,22 +227,12 @@ export function ListingPreview() {
           </div>
         </div>
 
-        <div className="relative">
-          {/* Fade edge to hint horizontal scroll on mobile */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute right-0 top-0 z-10 h-full w-12 bg-gradient-to-l from-surface to-transparent lg:hidden"
-          />
-          <div
-            ref={scrollRef}
-            className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-5 lg:overflow-visible lg:pb-0"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            onTouchStart={pauseAutoScroll}
-            onTouchEnd={() => setTimeout(resumeAutoScroll, 4000)}
-            onMouseEnter={pauseAutoScroll}
-            onMouseLeave={resumeAutoScroll}
-          >
-            {items.slice(0, 5).map((item, i) => (
+        <div
+          ref={scrollRef}
+          className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-5 lg:overflow-visible lg:pb-0"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {items.slice(0, 5).map((item, i) => (
             <article
               key={item.listingId || item.title + i}
               className="group min-w-[82vw] shrink-0 snap-start overflow-hidden rounded-2xl border border-border/15 bg-card shadow-[0_4px_18px_rgba(15,40,80,0.07)] transition hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(15,40,80,0.13)] sm:min-w-[330px] lg:min-w-0"
@@ -369,23 +304,6 @@ export function ListingPreview() {
                 </div>
               </div>
             </article>
-          ))}
-          </div>
-        </div>
-
-        {/* Dot indicators — mobile only */}
-        <div className="mt-4 flex justify-center gap-2 lg:hidden" aria-label="Position du carrousel">
-          {items.slice(0, 5).map((item, i) => (
-            <button
-              key={item.listingId || `dot-${i}`}
-              onClick={() => { pauseAutoScroll(); scrollToIndex(i); setTimeout(resumeAutoScroll, 5000); }}
-              aria-label={`Aller à l'annonce ${i + 1}`}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                i === activeIndex
-                  ? "w-6 bg-[#2563eb]"
-                  : "w-2 bg-gray-300 dark:bg-gray-600"
-              }`}
-            />
           ))}
         </div>
 
