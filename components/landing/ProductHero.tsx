@@ -40,8 +40,7 @@ export function ProductHero() {
           {/* Eyebrow label */}
           <div className="mb-3 opacity-0 animate-[hero-label_0.6s_ease_0.2s_forwards] sm:mb-5">
             <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE] drop-shadow-[0_1px_3px_rgba(0,0,0,0.2)] sm:text-[10.5px] sm:text-blue-600">
-              <span className="sm:hidden">Le moteur immobilier du Maroc</span>
-              <span className="hidden sm:inline">Trouvez, comparez et analysez les biens au Maroc</span>
+              Le moteur immobilier du Maroc
             </span>
           </div>
 
