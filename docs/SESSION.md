@@ -1,6 +1,45 @@
 SESSION.md - Current Project Session
 
 ====================================================
+SEARCH-LIVE-DB-PROD-VERIFICATION-1 -- Completed 2026-07-02
+====================================================
+
+STATUT : COMPLETED
+
+URL : https://akarfinder.vercel.app
+
+VARIABLES VERCEL PRODUCTION VERIFIEES :
+  DATABASE_PROVIDER          : present
+  SUPABASE_URL               : present
+  SUPABASE_SERVICE_ROLE_KEY  : present
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED : present
+  SEARCH_API_KEY             : present
+  SEARCH_API_ENDPOINT        : present
+  NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY : ABSENT (correct, ne doit pas exister)
+
+LOGS VERCEL (build-time SSG confirme) :
+  [db] provider=supabase supabase_configured=true via=supabase
+  [db] supabase returned 36/82 rows (filtres SSG home page)
+
+API /api/search LIVE :
+  source=database  total=82  returned=5
+  city=Casablanca : 13 resultats
+  property_type=apartment (raw deep-link) : 45 resultats  [bug fixe confirme]
+  transaction_type=sale (raw deep-link)   : 80 resultats  [bug fixe confirme]
+  q=appartement casablanca                : 15 resultats
+
+GUARDS PII :
+  can_show_contact=false      OK
+  can_show_gallery=false      OK
+  0 numero de telephone reel expose (faux positifs = coords SVG)
+  0 email expose
+  0 cle Supabase exposee
+
+/listings/137 : HTTP 200 OK
+
+DECISION : AkarFinder /search live = corrige et production revalidable
+
+====================================================
 SEARCH-LIVE-DB-PUBLICATION-FIX-1 -- Completed 2026-07-02
 ====================================================
 
