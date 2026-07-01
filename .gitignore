@@ -19,16 +19,10 @@ build/
 # Vercel
 .vercel/
 
-# SQLite database files
+# SQLite database files (but keep akarfinder.db production database)
 db/*.db
 db/*.db-shm
 db/*.db-wal
-*.db
-*.db-shm
-*.db-wal
-
-# Scraped data outputs
-scripts/scrapers/output/
 
 # Server logs
 *.log
