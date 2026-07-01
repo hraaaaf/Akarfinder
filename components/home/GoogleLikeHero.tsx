@@ -56,10 +56,7 @@ export function GoogleLikeHero() {
               aria-hidden="true"
             />
             <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE] sm:tracking-[0.22em] sm:text-white">
-              <span className="sm:hidden">Le moteur immobilier du Maroc</span>
-              <span className="hidden sm:inline">
-                Trouvez, comparez et analysez les biens au Maroc
-              </span>
+              Trouvez, comparez et analysez les biens au Maroc
             </span>
           </div>
 
