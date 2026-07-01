@@ -41,6 +41,11 @@ public/screenshots/
 /STATE.md
 /AGENTS.md
 
+# Partner CSV imports (real data, not to be committed)
+data/imports/*.csv
+data/imports/*.xlsx
+data/imports/reports/*.json
+
 # OS
 .DS_Store
 Thumbs.db
