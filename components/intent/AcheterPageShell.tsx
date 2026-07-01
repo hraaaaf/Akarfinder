@@ -770,7 +770,7 @@ export function AcheterPageShell({
       </section>
 
       {/* ── STATS ROW — bande sombre + bronze ─────────────────────────────────── */}
-      <section className="border-y border-border/15 bg-[#050f1e] py-11 lg:py-14">
+      <section className="border-y border-border/15 bg-white dark:bg-[#050f1e] py-11 lg:py-14">
         <Container>
           <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4">
             {[
@@ -797,7 +797,7 @@ export function AcheterPageShell({
       </section>
 
       {/* ── EXPLORER LE MAROC — section sombre premium ───────────────────────── */}
-      <section className="relative overflow-hidden bg-[#040b16] py-14 lg:py-20">
+      <section className="relative overflow-hidden bg-[#f6f9ff] dark:bg-[#040b16] py-14 lg:py-20">
         {/* Ambient map glow */}
         <div
           className="pointer-events-none absolute inset-0 hidden dark:block"

@@ -397,7 +397,7 @@ export async function VendrePageShell() {
 
       {/* ── 4. ANNONCES SIMILAIRES ────────────────────────────────────────────── */}
       {similar.length > 0 && (
-        <section className="border-t border-border/15 bg-[#050f1e] py-12 lg:py-14">
+        <section className="border-t border-border/15 bg-white dark:bg-[#050f1e] py-12 lg:py-14">
           <Container>
             <div className="mb-7 flex items-end justify-between gap-4">
               <div>
@@ -444,7 +444,7 @@ export async function VendrePageShell() {
       )}
 
       {/* ── 7. CHECKLIST PRÉPARATION VENTE ────────────────────────────────────── */}
-      <section className="bg-[#050f1e] pb-12 lg:pb-14">
+      <section className="bg-white dark:bg-[#050f1e] pb-12 lg:pb-14">
         <Container>
           <div className="overflow-hidden rounded-[24px] border border-border/15 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-6 backdrop-blur-sm sm:p-8">
             <div className="flex items-center gap-2.5">
@@ -475,7 +475,7 @@ export async function VendrePageShell() {
       </section>
 
       {/* ── 8. CTA ACCOMPAGNEMENT ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#040b16] py-14 lg:py-20">
+      <section className="relative overflow-hidden bg-[#f6f9ff] dark:bg-[#040b16] py-14 lg:py-20">
         <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(70% 80% at 88% 30%, rgba(34,72,132,0.35) 0%, transparent 60%)" }} />
         <Container className="relative">
           <div className="overflow-hidden rounded-[24px] border border-border/15 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-8 backdrop-blur-sm sm:p-10">
