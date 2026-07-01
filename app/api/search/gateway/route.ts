@@ -5,6 +5,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { buildSearchGatewayQueries } from "@/lib/search-gateway/search-gateway-query-builder";
 import { normalizeSearchGatewayResult } from "@/lib/search-gateway/search-gateway-normalizer";
 import { dedupeSearchGatewayResults } from "@/lib/search-gateway/search-gateway-dedupe";
+import { rankSearchGatewayResults } from "@/lib/search-gateway/search-gateway-ranking";
 import { getEnabledSearchGatewaySources } from "@/lib/search-gateway/search-gateway-sources";
 import type { SearchGatewayRouteResponse } from "@/lib/search-gateway/search-gateway-types";
 
@@ -116,13 +117,23 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Dedupe
     const deduped = dedupeSearchGatewayResults(normalized);
 
+    // Apply ranking (SEARCH-GATEWAY-MULTISOURCE-SERP-RANKING-1)
+    const queryTerms = [input.q, input.city, input.property_type].filter(Boolean) as string[];
+    const ranked = rankSearchGatewayResults(deduped, queryTerms);
+    // Remove ranking metadata before returning to client
+    const results = ranked.map((r) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { _ranking, ...rest } = r;
+      return rest;
+    });
+
     const response: SearchGatewayRouteResponse = {
       ok: true,
       degraded: false,
       provider: "serper",
       sources_queried: gatewayQueries.map((q) => q.source_id),
-      results_count: deduped.length,
-      results: deduped,
+      results_count: results.length,
+      results: results,
     };
 
     return NextResponse.json(response);
