@@ -3,7 +3,7 @@
 // SEARCH-RELOOKING-1 — Shell /search dark premium ("cockpit AkarFinder").
 // Logique de recherche/filtres/tri/fetch INCHANGÉE ; thème refondu en dark premium.
 // SEARCH-GATEWAY-MULTISOURCE-SERP-UI-INTEGRATION-1 — External indexed results integration
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Loader2, Map as MapIcon, SearchX, X, BellPlus, ArrowRight } from "lucide-react";
 import { CompareBar } from "@/components/compare/CompareBar";
@@ -91,14 +91,18 @@ function SkeletonCard() {
   );
 }
 
-function EmptyState({ onReset }: { onReset: () => void }) {
+function EmptyState({ onReset, city }: { onReset: () => void; city?: string }) {
   return (
     <div className="rounded-2xl border border-dashed border-border/20 dark:border-white/15 bg-surface/50 dark:bg-white/[0.03] p-12 text-center">
       <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-surface dark:bg-white/5">
         <SearchX size={24} strokeWidth={2} className="text-muted-foreground" aria-hidden="true" />
       </span>
       <p className="mt-4 text-[1.1rem] font-extrabold text-foreground">Aucune annonce trouvée</p>
-      <p className="mt-2 text-[14px] leading-6 text-muted-foreground">Élargissez la ville, le budget ou le type de bien.</p>
+      <p className="mt-2 text-[14px] leading-6 text-muted-foreground">
+        {city && city !== "all"
+          ? `Aucun bien structuré trouvé à ${city} pour ces filtres.`
+          : "Élargissez la ville, le budget ou le type de bien."}
+      </p>
       <button type="button" onClick={onReset} className="mt-5 rounded-full bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-2.5 text-[13px] font-extrabold text-white transition hover:from-bronze-600">
         Réinitialiser les filtres
       </button>
@@ -234,9 +238,12 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     return { cityCounts: cc, otherCount: other, avgIndex: idxN ? Math.round(idxSum / idxN) : null };
   }, [filteredListings]);
 
+  const listRef = useRef<HTMLDivElement>(null);
+
   const handleSelectCity = (city: string) => {
     track({ event_name: "search_map_pin_click", source_page: "/search", metadata: { city } });
     setFilters((f) => ({ ...f, city: f.city.toLowerCase() === city.toLowerCase() ? "all" : city, neighborhood: "all" }));
+    setTimeout(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   };
 
   // Active filter chips
@@ -340,11 +347,11 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
 
         <div className="mt-4 grid grid-cols-1 gap-5 lg:mt-5 lg:grid-cols-[minmax(0,1fr)_minmax(390px,0.62fr)] lg:items-start">
           {/* Liste */}
-          <div className={`min-w-0 ${activeTab === "Carte" ? "hidden lg:block" : "block"}`}>
+          <div ref={listRef} className={`min-w-0 ${activeTab === "Carte" ? "hidden lg:block" : "block"}`}>
             {showSkeleton ? (
               <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">{[1, 2, 3, 4].map((n) => <SkeletonCard key={n} />)}</div>
             ) : filteredListings.length === 0 ? (
-              <EmptyState onReset={handleReset} />
+              <EmptyState onReset={handleReset} city={filters.city} />
             ) : (
               <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
                 {filteredListings.map((listing) => <SearchListingCardDark key={listing.id} listing={listing} />)}

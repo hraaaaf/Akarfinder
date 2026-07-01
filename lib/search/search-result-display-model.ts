@@ -49,7 +49,7 @@ export function computeSearchResultDisplayPolicy(
     };
   }
 
-  // Public indexed sources (Mubawab, Agenz, LogicImmo) - limited preview
+  // Public indexed sources (Mubawab, Agenz, LogicImmo) - limited preview allowed in production
   if (["mubawab", "agenz", "logicimmo", "logic-immo"].includes(sourceId ?? "")) {
     return {
       search_result_display_mode: "limited",
@@ -60,8 +60,7 @@ export function computeSearchResultDisplayPolicy(
       can_show_contact: false,
       can_show_gallery: false,
       primary_cta: "view_original",
-      production_allowed: false,
-      production_block_reason: "Public indexed source - preview with redirect to original",
+      production_allowed: true,
     };
   }
 
