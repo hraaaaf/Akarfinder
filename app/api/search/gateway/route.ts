@@ -67,10 +67,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    // Call Search API with gatewayQueries
+    // Call Search API with gatewayQueries (SEARCH-GATEWAY-QUERY-TUNING-1)
     let allResults: Array<any> = [];
+    const maxFinalResults = 30; // Limit total results to keep responses reasonable
 
     for (const gatewayQuery of gatewayQueries) {
+      if (allResults.length >= maxFinalResults) break; // Stop if we have enough results
+
       try {
         const searchApiResponse = await fetch(
           `${searchApiEndpoint}?q=${encodeURIComponent(gatewayQuery.query)}&num=${gatewayQuery.max_results}`,
@@ -88,12 +91,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         }
 
         const searchData = await searchApiResponse.json();
-        const resultsFromSource = (searchData.organic || searchData.results || []).map(
-          (result: any) => ({
+        const resultsFromSource = (searchData.organic || searchData.results || [])
+          .slice(0, gatewayQuery.max_results) // Respect max_results per query
+          .map((result: any) => ({
             ...result,
             source_id: gatewayQuery.source_id,
-          })
-        );
+          }));
 
         allResults = allResults.concat(resultsFromSource);
       } catch (err) {
