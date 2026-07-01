@@ -77,21 +77,21 @@ export function buildSearchGatewayQueries(
           }
           break;
         case "agenz":
-          // "Casablanca appartement vendre"
+          // Weak source — enhance with "immobilier" keyword
           if (city && q) {
-            secondaryQuery = `site:${source.domain} ${city} ${q} vendre`;
+            secondaryQuery = `site:${source.domain} immobilier ${city} ${q}`;
           }
           break;
         case "logic-immo":
-          // "Casablanca immobilier"
-          if (city) {
-            secondaryQuery = `site:${source.domain} ${city} immobilier`;
+          // Weak source — enhance with "Maroc" keyword
+          if (city && q) {
+            secondaryQuery = `site:${source.domain} Maroc ${q} ${city}`;
           }
           break;
         case "mubawab":
-          // "Casablanca appartement vendre"
+          // Weak source — try /fr path variant
           if (city && q) {
-            secondaryQuery = `site:${source.domain} ${city} ${q} vendre`;
+            secondaryQuery = `site:mubawab.ma/fr ${q} ${city}`;
           }
           break;
       }
