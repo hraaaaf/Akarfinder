@@ -68,7 +68,7 @@ export function GoogleLikeHero() {
             au Maroc
           </h1>
 
-          <p className="mt-4 max-w-[560px] text-[0.95rem] leading-relaxed text-[#334155] sm:mt-6 sm:text-[1.1rem] sm:text-white/85">
+          <p className="mt-4 max-w-[560px] text-[0.95rem] leading-relaxed text-[#334155] drop-shadow-[0_1px_6px_rgba(0,0,0,0.2)] sm:mt-6 sm:text-[1.1rem] sm:text-white sm:drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
             <span className="sm:hidden">
               Comparez les annonces, les prix et les signaux de fiabilite avant de
               contacter.
