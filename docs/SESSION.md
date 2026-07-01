@@ -1,6 +1,39 @@
 SESSION.md - Current Project Session
 
 ====================================================
+REAL-PROXIMITY-ENGINE-1 -- Completed 2026-07-02
+====================================================
+
+STATUT : COMPLETED
+
+FICHIERS CREES :
+  - lib/proximity/proximity-types.ts         (types unifies)
+  - lib/proximity/neighborhood-centroids.ts  (15 centroides GPS quartiers marocains)
+  - lib/proximity/proximity-confidence.ts    (Haversine + distanceToConfidence)
+  - lib/proximity/proximity-format.ts        (formatWalkingLabel + minutesToQualitative)
+  - lib/proximity/proximity-engine.ts        (computeRealProximityProfile + inferProximityInput)
+  - docs/REAL_PROXIMITY_ENGINE.md
+  - scripts/scrapers/__tests__/real-proximity-engine.test.ts (45 tests)
+
+FICHIERS MODIFIES :
+  - components/listings/ProximityBlock.tsx   (accepte RealProximityProfile)
+  - components/listings/ListingDetail.tsx    (appelle nouveau moteur)
+  - package.json                             (678 tests total)
+
+TROIS NIVEAUX :
+  - Niveau 1 (ville)    : qualitatif, confidence low
+  - Niveau 2 (quartier) : qualitatif, confidence medium
+  - Niveau 3 (GPS)      : minutes si <500m centroide (high), sinon qualitatif
+
+SOURCE POI :
+  - osm_static  : dataset morocco-proximity.ts
+  - gps_computed: Haversine listing -> centroide + osm_static POI
+  - Aucun appel externe live en production
+
+TESTS : 678/678 pass (0 fail) -- 45 nouveaux
+BUILD : Compiled successfully
+
+====================================================
 NEIGHBORHOOD-PROXIMITY-DB-SANITIZE-1 -- Completed 2026-07-01
 ====================================================
 

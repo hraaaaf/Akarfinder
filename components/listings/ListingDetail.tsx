@@ -12,6 +12,7 @@ import { NeighborhoodAmenities } from "@/components/listings/NeighborhoodAmeniti
 import { PackageScoreBlock } from "@/components/listings/PackageScoreBlock";
 import { ProximityBlock } from "@/components/listings/ProximityBlock";
 import { getListingProximity } from "@/lib/proximity/get-listing-proximity";
+import { computeRealProximityProfile, inferProximityInput } from "@/lib/proximity/proximity-engine";
 import { SimilarListings } from "@/components/listings/SimilarListings";
 import { StickyWhatsAppBar } from "@/components/listings/StickyWhatsAppBar";
 import { VisitRequestPanel } from "@/components/listings/VisitRequestPanel";
@@ -132,6 +133,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
   const attribution = getImageAttribution(listing);
 
   const proximityPoints = getListingProximity(listing.city, listing.neighborhood);
+  const proximityProfile = computeRealProximityProfile(inferProximityInput(listing));
   const priceComparison = getListingObservedPriceComparison(
     listing.city,
     listing.neighborhood,
@@ -314,10 +316,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
 
           {listing.city ? (
             <MobileAccordion title="Vie autour du bien">
-              <ProximityBlock
-                city={listing.city}
-                points={proximityPoints}
-              />
+              <ProximityBlock profile={proximityProfile} />
             </MobileAccordion>
           ) : null}
 
