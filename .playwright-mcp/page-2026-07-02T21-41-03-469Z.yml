@@ -1,0 +1,406 @@
+- generic [active] [ref=f18e1]:
+  - main [ref=f18e2]:
+    - generic [ref=f18e4]:
+      - link "AkarFinder - accueil" [ref=f18e5] [cursor=pointer]:
+        - /url: /
+        - img "AkarFinder" [ref=f18e6]
+      - navigation "Navigation principale" [ref=f18e7]:
+        - list [ref=f18e8]:
+          - listitem [ref=f18e9]:
+            - link "Accueil" [ref=f18e10] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f18e11]:
+            - link "Acheter" [ref=f18e12] [cursor=pointer]:
+              - /url: /acheter
+          - listitem [ref=f18e13]:
+            - link "Louer" [ref=f18e14] [cursor=pointer]:
+              - /url: /louer
+          - listitem [ref=f18e15]:
+            - link "Neuf" [ref=f18e16] [cursor=pointer]:
+              - /url: /neuf
+          - listitem [ref=f18e17]:
+            - link "Vendre" [ref=f18e18] [cursor=pointer]:
+              - /url: /vendre
+          - listitem [ref=f18e19]:
+            - link "Carte" [ref=f18e20] [cursor=pointer]:
+              - /url: /map
+          - listitem [ref=f18e21]:
+            - link "Recherche" [ref=f18e22] [cursor=pointer]:
+              - /url: /search
+      - generic [ref=f18e23]:
+        - button "Activer le thème sombre" [ref=f18e24] [cursor=pointer]:
+          - generic [ref=f18e25]: Activer le thème sombre
+          - img [ref=f18e26]
+        - link "Mes favoris" [ref=f18e28] [cursor=pointer]:
+          - /url: /favorites
+          - img [ref=f18e29]
+        - link "Espace Pro" [ref=f18e31] [cursor=pointer]:
+          - /url: /pro
+        - link "Se connecter" [ref=f18e32] [cursor=pointer]:
+          - /url: /search
+    - generic [ref=f18e33]:
+      - generic [ref=f18e34]:
+        - paragraph [ref=f18e35]: Intelligence quartier
+        - heading "Explorer les quartiers" [level=1] [ref=f18e36]
+        - paragraph [ref=f18e37]: "Comparez les quartiers avec des repères indicatifs : proximité, commodités, contexte local et accès à la recherche immobilière."
+        - generic [ref=f18e38]:
+          - link "Voir sur la carte" [ref=f18e39] [cursor=pointer]:
+            - /url: /map
+          - link "Rechercher dans cette ville" [ref=f18e40] [cursor=pointer]:
+            - /url: /search
+      - generic [ref=f18e41]:
+        - generic [ref=f18e42]:
+          - generic [ref=f18e43]:
+            - generic [ref=f18e44]:
+              - paragraph [ref=f18e45]: Ville
+              - heading "Agadir" [level=2] [ref=f18e46]
+            - link "Rechercher dans cette ville" [ref=f18e47] [cursor=pointer]:
+              - /url: /search?city=Agadir
+          - generic [ref=f18e48]:
+            - article [ref=f18e49]:
+              - paragraph [ref=f18e50]: Agadir
+              - heading "Founty" [level=3] [ref=f18e51]
+              - paragraph [ref=f18e52]: "Repère prix: ~12 000 DH/m²"
+              - paragraph [ref=f18e53]: "Confiance: medium · Données 2024-2025"
+              - generic [ref=f18e54]:
+                - generic [ref=f18e55]: mer
+                - generic [ref=f18e56]: tourisme
+                - generic [ref=f18e57]: résidentiel
+              - generic [ref=f18e58]:
+                - link "Explorer ce quartier" [ref=f18e59] [cursor=pointer]:
+                  - /url: /search?city=Agadir&q=Founty
+                - link "Retour carte" [ref=f18e60] [cursor=pointer]:
+                  - /url: /map
+            - article [ref=f18e61]:
+              - paragraph [ref=f18e62]: Agadir
+              - heading "Talborjt" [level=3] [ref=f18e63]
+              - paragraph [ref=f18e64]: "Repère prix: ~9 500 DH/m²"
+              - paragraph [ref=f18e65]: "Confiance: medium · Données 2024-2025"
+              - generic [ref=f18e66]:
+                - generic [ref=f18e67]: quartier
+                - generic [ref=f18e68]: proche centre
+                - generic [ref=f18e69]: services
+              - generic [ref=f18e70]:
+                - link "Explorer ce quartier" [ref=f18e71] [cursor=pointer]:
+                  - /url: /search?city=Agadir&q=Talborjt
+                - link "Retour carte" [ref=f18e72] [cursor=pointer]:
+                  - /url: /map
+        - generic [ref=f18e73]:
+          - generic [ref=f18e74]:
+            - generic [ref=f18e75]:
+              - paragraph [ref=f18e76]: Ville
+              - heading "Casablanca" [level=2] [ref=f18e77]
+            - link "Rechercher dans cette ville" [ref=f18e78] [cursor=pointer]:
+              - /url: /search?city=Casablanca
+          - generic [ref=f18e79]:
+            - article [ref=f18e80]:
+              - paragraph [ref=f18e81]: Casablanca
+              - heading "Finance City" [level=3] [ref=f18e82]
+              - paragraph [ref=f18e83]: "Repère prix: ~15 000 DH/m²"
+              - paragraph [ref=f18e84]: "Confiance: high · Données 2024-2025"
+              - generic [ref=f18e85]:
+                - generic [ref=f18e86]: bureau
+                - generic [ref=f18e87]: quartier d'affaires
+                - generic [ref=f18e88]: tram
+              - generic [ref=f18e89]:
+                - link "Explorer ce quartier" [ref=f18e90] [cursor=pointer]:
+                  - /url: /search?city=Casablanca&q=Finance+City
+                - link "Retour carte" [ref=f18e91] [cursor=pointer]:
+                  - /url: /map
+            - article [ref=f18e92]:
+              - paragraph [ref=f18e93]: Casablanca
+              - heading "Maârif" [level=3] [ref=f18e94]
+              - paragraph [ref=f18e95]: "Repère prix: ~14 000 DH/m²"
+              - paragraph [ref=f18e96]: "Confiance: high · Données 2024-2025"
+              - generic [ref=f18e97]:
+                - generic [ref=f18e98]: central
+                - generic [ref=f18e99]: commerces
+                - generic [ref=f18e100]: mobilité
+              - generic [ref=f18e101]:
+                - link "Explorer ce quartier" [ref=f18e102] [cursor=pointer]:
+                  - /url: /search?city=Casablanca&q=Ma%C3%A2rif
+                - link "Retour carte" [ref=f18e103] [cursor=pointer]:
+                  - /url: /map
+            - article [ref=f18e104]:
+              - paragraph [ref=f18e105]: Casablanca
+              - heading "Bouskoura" [level=3] [ref=f18e106]
+              - paragraph [ref=f18e107]: "Repère prix: ~13 000 DH/m²"
+              - paragraph [ref=f18e108]: "Confiance: medium · Données 2024-2025"
+              - generic [ref=f18e109]:
+                - generic [ref=f18e110]: villa
+                - generic [ref=f18e111]: résidentiel
+                - generic [ref=f18e112]: calme
+              - generic [ref=f18e113]:
+                - link "Explorer ce quartier" [ref=f18e114] [cursor=pointer]:
+                  - /url: /search?city=Casablanca&q=Bouskoura
+                - link "Retour carte" [ref=f18e115] [cursor=pointer]:
+                  - /url: /map
+        - generic [ref=f18e116]:
+          - generic [ref=f18e117]:
+            - generic [ref=f18e118]:
+              - paragraph [ref=f18e119]: Ville
+              - heading "Fès" [level=2] [ref=f18e120]
+            - link "Rechercher dans cette ville" [ref=f18e121] [cursor=pointer]:
+              - /url: /search?city=F%C3%A8s
+          - generic [ref=f18e122]:
+            - article [ref=f18e123]:
+              - paragraph [ref=f18e124]: Fès
+              - heading "Ville Nouvelle" [level=3] [ref=f18e125]
+              - paragraph [ref=f18e126]: "Repère prix: ~9 500 DH/m²"
+              - paragraph [ref=f18e127]: "Confiance: medium · Données 2024-2025"
+              - generic [ref=f18e128]:
+                - generic [ref=f18e129]: central
+                - generic [ref=f18e130]: services
+                - generic [ref=f18e131]: étudiant
+              - generic [ref=f18e132]:
+                - link "Explorer ce quartier" [ref=f18e133] [cursor=pointer]:
+                  - /url: /search?city=F%C3%A8s&q=Ville+Nouvelle
+                - link "Retour carte" [ref=f18e134] [cursor=pointer]:
+                  - /url: /map
+            - article [ref=f18e135]:
+              - paragraph [ref=f18e136]: Fès
+              - heading "Fès el-Bali" [level=3] [ref=f18e137]
+              - paragraph [ref=f18e138]: "Repère prix: ~8 000 DH/m²"
+              - paragraph [ref=f18e139]: "Confiance: low · Données 2024-2025"
+              - generic [ref=f18e140]:
+                - generic [ref=f18e141]: patrimoine
+                - generic [ref=f18e142]: médina
+                - generic [ref=f18e143]: commerce traditionnel
+              - generic [ref=f18e144]:
+                - link "Explorer ce quartier" [ref=f18e145] [cursor=pointer]:
+                  - /url: /search?city=F%C3%A8s&q=F%C3%A8s+el-Bali
+                - link "Retour carte" [ref=f18e146] [cursor=pointer]:
+                  - /url: /map
+        - generic [ref=f18e147]:
+          - generic [ref=f18e148]:
+            - generic [ref=f18e149]:
+              - paragraph [ref=f18e150]: Ville
+              - heading "Kénitra" [level=2] [ref=f18e151]
+            - link "Rechercher dans cette ville" [ref=f18e152] [cursor=pointer]:
+              - /url: /search?city=K%C3%A9nitra
+          - article [ref=f18e154]:
+            - paragraph [ref=f18e155]: Kénitra
+            - heading "Centre-ville" [level=3] [ref=f18e156]
+            - paragraph [ref=f18e157]: "Repère prix: ~8 000 DH/m²"
+            - paragraph [ref=f18e158]: "Confiance: medium · Données 2024-2025"
+            - generic [ref=f18e159]:
+              - generic [ref=f18e160]: centre
+              - generic [ref=f18e161]: services
+              - generic [ref=f18e162]: mobilité
+            - generic [ref=f18e163]:
+              - link "Explorer ce quartier" [ref=f18e164] [cursor=pointer]:
+                - /url: /search?city=K%C3%A9nitra&q=Centre-ville
+              - link "Retour carte" [ref=f18e165] [cursor=pointer]:
+                - /url: /map
+        - generic [ref=f18e166]:
+          - generic [ref=f18e167]:
+            - generic [ref=f18e168]:
+              - paragraph [ref=f18e169]: Ville
+              - heading "Marrakech" [level=2] [ref=f18e170]
+            - link "Rechercher dans cette ville" [ref=f18e171] [cursor=pointer]:
+              - /url: /search?city=Marrakech
+          - generic [ref=f18e172]:
+            - article [ref=f18e173]:
+              - paragraph [ref=f18e174]: Marrakech
+              - heading "Guéliz" [level=3] [ref=f18e175]
+              - paragraph [ref=f18e176]: "Repère prix: ~13 000 DH/m²"
+              - paragraph [ref=f18e177]: "Confiance: high · Données 2024-2025"
+              - generic [ref=f18e178]:
+                - generic [ref=f18e179]: central
+                - generic [ref=f18e180]: urbain
+                - generic [ref=f18e181]: commerces
+              - generic [ref=f18e182]:
+                - link "Explorer ce quartier" [ref=f18e183] [cursor=pointer]:
+                  - /url: /search?city=Marrakech&q=Gu%C3%A9liz
+                - link "Retour carte" [ref=f18e184] [cursor=pointer]:
+                  - /url: /map
+            - article [ref=f18e185]:
+              - paragraph [ref=f18e186]: Marrakech
+              - heading "Hivernage" [level=3] [ref=f18e187]
+              - paragraph [ref=f18e188]: "Repère prix: ~17 000 DH/m²"
+              - paragraph [ref=f18e189]: "Confiance: medium · Données 2024-2025"
+              - generic [ref=f18e190]:
+                - generic [ref=f18e191]: premium
+                - generic [ref=f18e192]: hôtellerie
+                - generic [ref=f18e193]: loisirs
+              - generic [ref=f18e194]:
+                - link "Explorer ce quartier" [ref=f18e195] [cursor=pointer]:
+                  - /url: /search?city=Marrakech&q=Hivernage
+                - link "Retour carte" [ref=f18e196] [cursor=pointer]:
+                  - /url: /map
+            - article [ref=f18e197]:
+              - paragraph [ref=f18e198]: Marrakech
+              - heading "Route de l'Ourika" [level=3] [ref=f18e199]
+              - paragraph [ref=f18e200]: "Repère prix: ~12 500 DH/m²"
+              - paragraph [ref=f18e201]: "Confiance: medium · Données 2024-2025"
+              - generic [ref=f18e202]:
+                - generic [ref=f18e203]: villa
+                - generic [ref=f18e204]: extérieur
+                - generic [ref=f18e205]: nature
+              - generic [ref=f18e206]:
+                - link "Explorer ce quartier" [ref=f18e207] [cursor=pointer]:
+                  - /url: /search?city=Marrakech&q=Ourika
+                - link "Retour carte" [ref=f18e208] [cursor=pointer]:
+                  - /url: /map
+        - generic [ref=f18e209]:
+          - generic [ref=f18e210]:
+            - generic [ref=f18e211]:
+              - paragraph [ref=f18e212]: Ville
+              - heading "Mohammedia" [level=2] [ref=f18e213]
+            - link "Rechercher dans cette ville" [ref=f18e214] [cursor=pointer]:
+              - /url: /search?city=Mohammedia
+          - article [ref=f18e216]:
+            - paragraph [ref=f18e217]: Mohammedia
+            - heading "Centre" [level=3] [ref=f18e218]
+            - paragraph [ref=f18e219]: "Repère prix: ~9 500 DH/m²"
+            - paragraph [ref=f18e220]: "Confiance: medium · Données 2024-2025"
+            - generic [ref=f18e221]:
+              - generic [ref=f18e222]: côte
+              - generic [ref=f18e223]: services
+              - generic [ref=f18e224]: connexion
+            - generic [ref=f18e225]:
+              - link "Explorer ce quartier" [ref=f18e226] [cursor=pointer]:
+                - /url: /search?city=Mohammedia&q=Centre
+              - link "Retour carte" [ref=f18e227] [cursor=pointer]:
+                - /url: /map
+        - generic [ref=f18e228]:
+          - generic [ref=f18e229]:
+            - generic [ref=f18e230]:
+              - paragraph [ref=f18e231]: Ville
+              - heading "Rabat" [level=2] [ref=f18e232]
+            - link "Rechercher dans cette ville" [ref=f18e233] [cursor=pointer]:
+              - /url: /search?city=Rabat
+          - generic [ref=f18e234]:
+            - article [ref=f18e235]:
+              - paragraph [ref=f18e236]: Rabat
+              - heading "Hay Riad" [level=3] [ref=f18e237]
+              - paragraph [ref=f18e238]: "Repère prix: ~13 500 DH/m²"
+              - paragraph [ref=f18e239]: "Confiance: high · Données 2024-2025"
+              - generic [ref=f18e240]:
+                - generic [ref=f18e241]: administratif
+                - generic [ref=f18e242]: résidentiel
+                - generic [ref=f18e243]: familial
+              - generic [ref=f18e244]:
+                - link "Explorer ce quartier" [ref=f18e245] [cursor=pointer]:
+                  - /url: /search?city=Rabat&q=Hay+Riad
+                - link "Retour carte" [ref=f18e246] [cursor=pointer]:
+                  - /url: /map
+            - article [ref=f18e247]:
+              - paragraph [ref=f18e248]: Rabat
+              - heading "Agdal" [level=3] [ref=f18e249]
+              - paragraph [ref=f18e250]: "Repère prix: ~15 000 DH/m²"
+              - paragraph [ref=f18e251]: "Confiance: high · Données 2024-2025"
+              - generic [ref=f18e252]:
+                - generic [ref=f18e253]: mixte
+                - generic [ref=f18e254]: étudiant
+                - generic [ref=f18e255]: commerces
+              - generic [ref=f18e256]:
+                - link "Explorer ce quartier" [ref=f18e257] [cursor=pointer]:
+                  - /url: /search?city=Rabat&q=Agdal
+                - link "Retour carte" [ref=f18e258] [cursor=pointer]:
+                  - /url: /map
+            - article [ref=f18e259]:
+              - paragraph [ref=f18e260]: Rabat
+              - heading "Hassan" [level=3] [ref=f18e261]
+              - paragraph [ref=f18e262]: "Repère prix: ~16 500 DH/m²"
+              - paragraph [ref=f18e263]: "Confiance: medium · Données 2024-2025"
+              - generic [ref=f18e264]:
+                - generic [ref=f18e265]: centre
+                - generic [ref=f18e266]: patrimoine
+                - generic [ref=f18e267]: transports
+              - generic [ref=f18e268]:
+                - link "Explorer ce quartier" [ref=f18e269] [cursor=pointer]:
+                  - /url: /search?city=Rabat&q=Hassan
+                - link "Retour carte" [ref=f18e270] [cursor=pointer]:
+                  - /url: /map
+        - generic [ref=f18e271]:
+          - generic [ref=f18e272]:
+            - generic [ref=f18e273]:
+              - paragraph [ref=f18e274]: Ville
+              - heading "Tanger" [level=2] [ref=f18e275]
+            - link "Rechercher dans cette ville" [ref=f18e276] [cursor=pointer]:
+              - /url: /search?city=Tanger
+          - generic [ref=f18e277]:
+            - article [ref=f18e278]:
+              - paragraph [ref=f18e279]: Tanger
+              - heading "Malabata" [level=3] [ref=f18e280]
+              - paragraph [ref=f18e281]: "Repère prix: ~12 000 DH/m²"
+              - paragraph [ref=f18e282]: "Confiance: medium · Données 2024-2025"
+              - generic [ref=f18e283]:
+                - generic [ref=f18e284]: bord de mer
+                - generic [ref=f18e285]: hôtellerie
+                - generic [ref=f18e286]: transports
+              - generic [ref=f18e287]:
+                - link "Explorer ce quartier" [ref=f18e288] [cursor=pointer]:
+                  - /url: /search?city=Tanger&q=Malabata
+                - link "Retour carte" [ref=f18e289] [cursor=pointer]:
+                  - /url: /map
+            - article [ref=f18e290]:
+              - paragraph [ref=f18e291]: Tanger
+              - heading "Ville Nouvelle" [level=3] [ref=f18e292]
+              - paragraph [ref=f18e293]: "Repère prix: ~11 000 DH/m²"
+              - paragraph [ref=f18e294]: "Confiance: high · Données 2024-2025"
+              - generic [ref=f18e295]:
+                - generic [ref=f18e296]: central
+                - generic [ref=f18e297]: services
+                - generic [ref=f18e298]: mobilité
+              - generic [ref=f18e299]:
+                - link "Explorer ce quartier" [ref=f18e300] [cursor=pointer]:
+                  - /url: /search?city=Tanger&q=Ville+Nouvelle
+                - link "Retour carte" [ref=f18e301] [cursor=pointer]:
+                  - /url: /map
+    - generic [ref=f18e303]:
+      - generic [ref=f18e304]:
+        - generic [ref=f18e305]:
+          - img "AkarFinder" [ref=f18e306]
+          - paragraph [ref=f18e307]: AkarFinder vous aide à chercher dans l'immobilier marocain. Comparez les repères du quartier et contactez les sources originales.
+        - generic [ref=f18e308]:
+          - generic [ref=f18e309]:
+            - heading "AkarFinder" [level=3] [ref=f18e310]
+            - generic [ref=f18e311]:
+              - link "À propos" [ref=f18e312] [cursor=pointer]:
+                - /url: /a-propos
+              - link "Comment ça marche" [ref=f18e313] [cursor=pointer]:
+                - /url: /comment-ca-marche
+          - generic [ref=f18e314]:
+            - heading "Explorer" [level=3] [ref=f18e315]
+            - generic [ref=f18e316]:
+              - link "Acheter" [ref=f18e317] [cursor=pointer]:
+                - /url: /acheter
+              - link "Louer" [ref=f18e318] [cursor=pointer]:
+                - /url: /louer
+              - link "Neuf" [ref=f18e319] [cursor=pointer]:
+                - /url: /neuf
+              - link "Carte des biens" [ref=f18e320] [cursor=pointer]:
+                - /url: /map
+          - generic [ref=f18e321]:
+            - heading "Outils" [level=3] [ref=f18e322]
+            - generic [ref=f18e323]:
+              - link "Repère marché" [ref=f18e324] [cursor=pointer]:
+                - /url: /acheter
+              - link "Comparateur" [ref=f18e325] [cursor=pointer]:
+                - /url: /compare
+          - generic [ref=f18e326]:
+            - heading "Aide" [level=3] [ref=f18e327]
+            - generic [ref=f18e328]:
+              - link "FAQ" [ref=f18e329] [cursor=pointer]:
+                - /url: /faq
+              - link "Contact" [ref=f18e330] [cursor=pointer]:
+                - /url: /contact
+              - link "Demande de retrait" [ref=f18e331] [cursor=pointer]:
+                - /url: /demande-retrait
+              - link "Conditions d'utilisation" [ref=f18e332] [cursor=pointer]:
+                - /url: /conditions-utilisation
+              - link "Politique de confidentialité" [ref=f18e333] [cursor=pointer]:
+                - /url: /politique-confidentialite
+        - generic [ref=f18e334]:
+          - heading "Restez informé" [level=3] [ref=f18e335]
+          - paragraph [ref=f18e336]: Recevez les prochaines nouveautés lorsque les alertes seront activées.
+          - generic [ref=f18e337]:
+            - textbox "Email pour les alertes" [ref=f18e338]:
+              - /placeholder: Votre email
+            - button "OK" [ref=f18e339] [cursor=pointer]
+      - generic [ref=f18e340]:
+        - generic [ref=f18e341]: © 2026 AkarFinder.ma — Version bêta
+        - generic [ref=f18e342]: Les repères affichés sont indicatifs. Chaque annonce affiche sa source d'origine et un lien direct vers elle.
+  - alert [ref=f18e343]

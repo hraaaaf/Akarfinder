@@ -1,0 +1,131 @@
+- generic [active] [ref=f4e1]:
+  - main [ref=f4e2]:
+    - generic [ref=f4e4]:
+      - link "AkarFinder - accueil" [ref=f4e5] [cursor=pointer]:
+        - /url: /
+        - img "AkarFinder" [ref=f4e6]
+      - navigation "Navigation principale" [ref=f4e7]:
+        - list [ref=f4e8]:
+          - listitem [ref=f4e9]:
+            - link "Accueil" [ref=f4e10] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f4e11]:
+            - link "Acheter" [ref=f4e12] [cursor=pointer]:
+              - /url: /acheter
+          - listitem [ref=f4e13]:
+            - link "Louer" [ref=f4e14] [cursor=pointer]:
+              - /url: /louer
+          - listitem [ref=f4e15]:
+            - link "Neuf" [ref=f4e16] [cursor=pointer]:
+              - /url: /neuf
+          - listitem [ref=f4e17]:
+            - link "Vendre" [ref=f4e18] [cursor=pointer]:
+              - /url: /vendre
+          - listitem [ref=f4e19]:
+            - link "Carte" [ref=f4e20] [cursor=pointer]:
+              - /url: /map
+          - listitem [ref=f4e21]:
+            - link "Recherche" [ref=f4e22] [cursor=pointer]:
+              - /url: /search
+      - generic [ref=f4e23]:
+        - button "Activer le thème sombre" [ref=f4e24] [cursor=pointer]:
+          - generic [ref=f4e25]: Activer le thème sombre
+          - img [ref=f4e26]
+        - link "Mes favoris" [ref=f4e28] [cursor=pointer]:
+          - /url: /favorites
+          - img [ref=f4e29]
+        - link "Espace Pro" [ref=f4e31] [cursor=pointer]:
+          - /url: /pro
+        - link "Se connecter" [ref=f4e32] [cursor=pointer]:
+          - /url: /search
+    - generic [ref=f4e34]:
+      - generic [ref=f4e36]:
+        - generic [ref=f4e37]:
+          - generic [ref=f4e38]:
+            - paragraph [ref=f4e39]: Intelligence quartier Â· RepÃ¨res indicatifs
+            - heading "Explorez les quartiers immobiliers du Maroc" [level=1] [ref=f4e40]
+          - generic [ref=f4e41]:
+            - paragraph [ref=f4e42]: 17 quartiers rÃ©pertoriÃ©s
+            - paragraph [ref=f4e43]: DonnÃ©es indicatives Â· sources visibles
+        - generic [ref=f4e44]:
+          - generic [ref=f4e45]:
+            - generic [ref=f4e46]: Ville
+            - combobox "Ville" [ref=f4e47]:
+              - option "Tout le Maroc" [selected]
+              - option "Agadir"
+              - option "Casablanca"
+              - option "Fès"
+              - option "Kénitra"
+              - option "Marrakech"
+              - option "Mohammedia"
+              - option "Rabat"
+              - option "Tanger"
+          - button "RÃ©initialiser" [ref=f4e48] [cursor=pointer]
+          - link "Rechercher dans cette zone â†’" [ref=f4e49] [cursor=pointer]:
+            - /url: /search
+      - generic [ref=f4e51]:
+        - paragraph [ref=f4e56]: Chargement de la carteâ€¦
+        - generic:
+          - generic:
+            - paragraph: Intelligence quartier â€” repÃ¨res indicatifs
+            - paragraph: DonnÃ©es indicatives OSM et observations de marchÃ© 2024â€“2025. Ã€ confirmer avant toute dÃ©cision d'achat ou location.
+            - paragraph:
+              - text: Tuiles Â©
+              - link "OpenStreetMap contributors" [ref=f4e57] [cursor=pointer]:
+                - /url: https://www.openstreetmap.org/copyright
+              - text: via OpenFreeMap
+    - generic [ref=f4e59]:
+      - generic [ref=f4e60]:
+        - generic [ref=f4e61]:
+          - img "AkarFinder" [ref=f4e62]
+          - paragraph [ref=f4e63]: AkarFinder vous aide à chercher dans l'immobilier marocain. Comparez les repères du quartier et contactez les sources originales.
+        - generic [ref=f4e64]:
+          - generic [ref=f4e65]:
+            - heading "AkarFinder" [level=3] [ref=f4e66]
+            - generic [ref=f4e67]:
+              - link "À propos" [ref=f4e68] [cursor=pointer]:
+                - /url: /a-propos
+              - link "Comment ça marche" [ref=f4e69] [cursor=pointer]:
+                - /url: /comment-ca-marche
+          - generic [ref=f4e70]:
+            - heading "Explorer" [level=3] [ref=f4e71]
+            - generic [ref=f4e72]:
+              - link "Acheter" [ref=f4e73] [cursor=pointer]:
+                - /url: /acheter
+              - link "Louer" [ref=f4e74] [cursor=pointer]:
+                - /url: /louer
+              - link "Neuf" [ref=f4e75] [cursor=pointer]:
+                - /url: /neuf
+              - link "Carte des biens" [ref=f4e76] [cursor=pointer]:
+                - /url: /map
+          - generic [ref=f4e77]:
+            - heading "Outils" [level=3] [ref=f4e78]
+            - generic [ref=f4e79]:
+              - link "Repère marché" [ref=f4e80] [cursor=pointer]:
+                - /url: /acheter
+              - link "Comparateur" [ref=f4e81] [cursor=pointer]:
+                - /url: /compare
+          - generic [ref=f4e82]:
+            - heading "Aide" [level=3] [ref=f4e83]
+            - generic [ref=f4e84]:
+              - link "FAQ" [ref=f4e85] [cursor=pointer]:
+                - /url: /faq
+              - link "Contact" [ref=f4e86] [cursor=pointer]:
+                - /url: /contact
+              - link "Demande de retrait" [ref=f4e87] [cursor=pointer]:
+                - /url: /demande-retrait
+              - link "Conditions d'utilisation" [ref=f4e88] [cursor=pointer]:
+                - /url: /conditions-utilisation
+              - link "Politique de confidentialité" [ref=f4e89] [cursor=pointer]:
+                - /url: /politique-confidentialite
+        - generic [ref=f4e90]:
+          - heading "Restez informé" [level=3] [ref=f4e91]
+          - paragraph [ref=f4e92]: Recevez les prochaines nouveautés lorsque les alertes seront activées.
+          - generic [ref=f4e93]:
+            - textbox "Email pour les alertes" [ref=f4e94]:
+              - /placeholder: Votre email
+            - button "OK" [ref=f4e95] [cursor=pointer]
+      - generic [ref=f4e96]:
+        - generic [ref=f4e97]: © 2026 AkarFinder.ma — Version bêta
+        - generic [ref=f4e98]: Les repères affichés sont indicatifs. Chaque annonce affiche sa source d'origine et un lien direct vers elle.
+  - alert [ref=f4e99]

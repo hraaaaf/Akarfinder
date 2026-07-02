@@ -1,0 +1,86 @@
+- generic [active] [ref=f26e1]:
+  - main [ref=f26e2]:
+    - generic [ref=f26e3]:
+      - generic [ref=f26e4]:
+        - link "AkarFinder - accueil" [ref=f26e5] [cursor=pointer]:
+          - /url: /
+          - img "AkarFinder" [ref=f26e6]
+        - generic [ref=f26e7]:
+          - button "Activer le thème sombre" [ref=f26e8] [cursor=pointer]:
+            - generic [ref=f26e9]: Activer le thème sombre
+            - img [ref=f26e10]
+          - link "Se connecter" [ref=f26e12] [cursor=pointer]:
+            - /url: /search
+      - generic [ref=f26e14]:
+        - link "Explorer les biens a acheter" [ref=f26e15] [cursor=pointer]:
+          - /url: /acheter
+          - text: Acheter
+        - link "Explorer les locations" [ref=f26e16] [cursor=pointer]:
+          - /url: /louer
+          - text: Louer
+        - link "Decouvrir les projets neufs" [ref=f26e17] [cursor=pointer]:
+          - /url: /neuf
+          - text: Neuf
+        - link "Preparer la vente de votre bien" [ref=f26e18] [cursor=pointer]:
+          - /url: /vendre
+          - text: Vendre
+        - link "Decouvrir l'espace promoteurs" [ref=f26e19] [cursor=pointer]:
+          - /url: /promoteurs
+          - text: Promoteurs
+        - link "Rechercher des biens" [ref=f26e20] [cursor=pointer]:
+          - /url: /search
+          - text: Recherche
+    - generic [ref=f26e21]:
+      - generic [ref=f26e23]:
+        - generic [ref=f26e24]:
+          - generic [ref=f26e25]:
+            - paragraph [ref=f26e28]: Marketplace immobilier AkarFinder
+            - heading "Trouvez votre bien au Maroc" [level=1] [ref=f26e29]
+          - generic [ref=f26e30]: 0 annonces partenaires
+        - generic [ref=f26e31]:
+          - generic [ref=f26e32]:
+            - generic [ref=f26e33]:
+              - generic:
+                - img
+              - textbox [ref=f26e34]:
+                - /placeholder: Ville, quartier, projet, promoteur...
+                - text: appartement casablanca
+            - generic [ref=f26e35]:
+              - button "Acheter" [ref=f26e36] [cursor=pointer]
+              - button "Louer" [ref=f26e37] [cursor=pointer]
+              - button "Neuf" [ref=f26e38] [cursor=pointer]
+          - button "Filtres" [ref=f26e40] [cursor=pointer]:
+            - img [ref=f26e41]
+            - text: Filtres
+            - img [ref=f26e42]
+      - generic [ref=f26e45]:
+        - generic [ref=f26e46]:
+          - generic [ref=f26e47]:
+            - paragraph [ref=f26e48]:
+              - img [ref=f26e49]
+              - generic [ref=f26e51]: Résultats pour "appartement casablanca"
+            - paragraph [ref=f26e52]: Recherche en cours…
+          - combobox "Trier les résultats" [ref=f26e53]:
+            - option "Tri recommandé" [selected]
+            - option "Meilleures annonces"
+            - option "Prix croissant"
+            - option "Prix décroissant"
+        - generic [ref=f26e54]:
+          - button "Liste" [ref=f26e55] [cursor=pointer]
+          - button "Carte" [ref=f26e56] [cursor=pointer]
+    - generic [ref=f26e90]:
+      - img "AkarFinder" [ref=f26e91]
+      - paragraph [ref=f26e92]: AkarFinder — moteur de recherche immobilier du Maroc. Comparez avant de contacter.
+      - generic [ref=f26e93]:
+        - link "Acheter" [ref=f26e94] [cursor=pointer]:
+          - /url: /acheter
+        - link "Louer" [ref=f26e95] [cursor=pointer]:
+          - /url: /louer
+        - link "Comment ça marche" [ref=f26e96] [cursor=pointer]:
+          - /url: /comment-ca-marche
+        - link "FAQ" [ref=f26e97] [cursor=pointer]:
+          - /url: /faq
+        - link "Demande de retrait" [ref=f26e98] [cursor=pointer]:
+          - /url: /demande-retrait
+      - generic [ref=f26e99]: © 2026 AkarFinder.ma — Version bêta
+  - alert [ref=f26e100]

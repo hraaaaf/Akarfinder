@@ -1,0 +1,202 @@
+- generic [active] [ref=f14e1]:
+  - main [ref=f14e2]:
+    - generic [ref=f14e4]:
+      - link "AkarFinder - accueil" [ref=f14e5] [cursor=pointer]:
+        - /url: /
+        - img "AkarFinder" [ref=f14e6]
+      - navigation "Navigation principale" [ref=f14e7]:
+        - list [ref=f14e8]:
+          - listitem [ref=f14e9]:
+            - link "Accueil" [ref=f14e10] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f14e11]:
+            - link "Acheter" [ref=f14e12] [cursor=pointer]:
+              - /url: /acheter
+          - listitem [ref=f14e13]:
+            - link "Louer" [ref=f14e14] [cursor=pointer]:
+              - /url: /louer
+          - listitem [ref=f14e15]:
+            - link "Neuf" [ref=f14e16] [cursor=pointer]:
+              - /url: /neuf
+          - listitem [ref=f14e17]:
+            - link "Vendre" [ref=f14e18] [cursor=pointer]:
+              - /url: /vendre
+          - listitem [ref=f14e19]:
+            - link "Carte" [ref=f14e20] [cursor=pointer]:
+              - /url: /map
+          - listitem [ref=f14e21]:
+            - link "Recherche" [ref=f14e22] [cursor=pointer]:
+              - /url: /search
+      - generic [ref=f14e23]:
+        - button "Activer le thème sombre" [ref=f14e24] [cursor=pointer]:
+          - generic [ref=f14e25]: Activer le thème sombre
+          - img [ref=f14e26]
+        - link "Mes favoris" [ref=f14e28] [cursor=pointer]:
+          - /url: /favorites
+          - img [ref=f14e29]
+        - link "Espace Pro" [ref=f14e31] [cursor=pointer]:
+          - /url: /pro
+        - link "Se connecter" [ref=f14e32] [cursor=pointer]:
+          - /url: /search
+    - generic [ref=f14e33]:
+      - generic [ref=f14e35]:
+        - generic [ref=f14e36]:
+          - generic [ref=f14e37]:
+            - paragraph [ref=f14e40]: Marketplace immobilier AkarFinder
+            - heading "Trouvez votre bien au Maroc" [level=1] [ref=f14e41]
+            - paragraph [ref=f14e42]: Sources originales, repères indicatifs et source visible avant de décider.
+          - generic [ref=f14e43]: 0 annonces partenaires
+        - generic [ref=f14e44]:
+          - generic [ref=f14e45]:
+            - generic [ref=f14e46]:
+              - generic:
+                - img
+              - textbox [ref=f14e47]:
+                - /placeholder: Ville, quartier, projet, promoteur...
+                - text: appartement casablanca
+            - generic [ref=f14e48]:
+              - button "Acheter" [ref=f14e49] [cursor=pointer]
+              - button "Louer" [ref=f14e50] [cursor=pointer]
+              - button "Neuf" [ref=f14e51] [cursor=pointer]
+          - generic [ref=f14e52]:
+            - combobox "Ville" [ref=f14e53]:
+              - option "Toutes les villes" [selected]
+            - spinbutton "Budget maximum" [ref=f14e54]
+            - combobox "Type de bien" [ref=f14e55]:
+              - option "Type de bien" [selected]
+            - spinbutton "Surface minimum" [ref=f14e56]
+            - combobox "Fiabilité" [ref=f14e57]:
+              - option "Toutes fiabilités" [selected]
+              - option "Très fiable"
+              - option "Fiable"
+              - option "À vérifier"
+              - option "Faible confiance"
+            - generic [ref=f14e58]:
+              - generic [ref=f14e59]:
+                - generic [ref=f14e60]: Score min. fiabilité
+                - generic [ref=f14e61]: Tous
+              - slider "Score minimum de fiabilité" [ref=f14e62] [cursor=pointer]: "0"
+            - button "MRE-friendly" [ref=f14e63] [cursor=pointer]
+            - button "Bon package" [ref=f14e64] [cursor=pointer]
+            - button "Réinitialiser" [ref=f14e65] [cursor=pointer]
+      - generic [ref=f14e66]:
+        - generic [ref=f14e68]:
+          - generic [ref=f14e69]:
+            - paragraph [ref=f14e70]:
+              - img [ref=f14e71]
+              - generic [ref=f14e73]: Résultats pour "appartement casablanca"
+            - paragraph [ref=f14e74]: Recherche en cours…
+          - combobox "Trier les résultats" [ref=f14e75]:
+            - option "Tri recommandé" [selected]
+            - option "Meilleures annonces"
+            - option "Prix croissant"
+            - option "Prix décroissant"
+        - generic [ref=f14e107]:
+          - complementary [ref=f14e108]:
+            - generic [ref=f14e109]:
+              - generic [ref=f14e110]:
+                - paragraph [ref=f14e111]: Carte de recherche
+                - heading "Maroc" [level=2] [ref=f14e112]
+                - paragraph [ref=f14e113]: 0 annonce analysée
+              - generic [ref=f14e114]: Carte indicative
+            - generic [ref=f14e115]:
+              - img [ref=f14e118]
+              - generic [ref=f14e123]:
+                - paragraph [ref=f14e124]: Volume
+                - list [ref=f14e125]:
+                  - listitem [ref=f14e126]:
+                    - generic [ref=f14e128]: 30+ biens
+                  - listitem [ref=f14e129]:
+                    - generic [ref=f14e131]: 10–30 biens
+                  - listitem [ref=f14e132]:
+                    - generic [ref=f14e134]: 5–10 biens
+                  - listitem [ref=f14e135]:
+                    - generic [ref=f14e137]: 1–5 biens
+              - generic [ref=f14e138]:
+                - generic [ref=f14e139]:
+                  - paragraph [ref=f14e140]: Annonces
+                  - paragraph [ref=f14e141]: "0"
+                - generic [ref=f14e142]:
+                  - paragraph [ref=f14e143]: Villes
+                  - paragraph [ref=f14e144]: "0"
+                - generic [ref=f14e145]:
+                  - paragraph [ref=f14e146]: AkarFinder
+                  - paragraph [ref=f14e147]: Carte indicative
+          - generic [ref=f14e148]:
+            - generic [ref=f14e149]:
+              - generic [ref=f14e150]:
+                - img [ref=f14e152]
+                - paragraph [ref=f14e155]: Sauvegarder ma recherche
+              - paragraph [ref=f14e156]: Soyez informé selon disponibilité des annonces correspondant à vos critères.
+            - link "Créer une alerte" [ref=f14e158] [cursor=pointer]:
+              - /url: /louer#alerte
+              - text: Créer une alerte
+              - img [ref=f14e159]
+          - generic [ref=f14e161]:
+            - generic [ref=f14e162]:
+              - paragraph [ref=f14e163]: Accompagnement
+              - paragraph [ref=f14e164]: Clarifier mon projet
+              - paragraph [ref=f14e165]: Budget, zone, type de bien et timing — recevez les biens compatibles.
+            - link "Créer mon dossier" [ref=f14e167] [cursor=pointer]:
+              - /url: /onboarding
+              - text: Créer mon dossier
+              - img [ref=f14e168]
+          - link "Ouvrir la carte complète" [ref=f14e170] [cursor=pointer]:
+            - /url: /map
+            - img [ref=f14e171]
+            - text: Ouvrir la carte complète
+    - generic [ref=f14e174]:
+      - generic [ref=f14e175]:
+        - generic [ref=f14e176]:
+          - img "AkarFinder" [ref=f14e177]
+          - paragraph [ref=f14e178]: AkarFinder vous aide à chercher dans l'immobilier marocain. Comparez les repères du quartier et contactez les sources originales.
+        - generic [ref=f14e179]:
+          - generic [ref=f14e180]:
+            - heading "AkarFinder" [level=3] [ref=f14e181]
+            - generic [ref=f14e182]:
+              - link "À propos" [ref=f14e183] [cursor=pointer]:
+                - /url: /a-propos
+              - link "Comment ça marche" [ref=f14e184] [cursor=pointer]:
+                - /url: /comment-ca-marche
+          - generic [ref=f14e185]:
+            - heading "Explorer" [level=3] [ref=f14e186]
+            - generic [ref=f14e187]:
+              - link "Acheter" [ref=f14e188] [cursor=pointer]:
+                - /url: /acheter
+              - link "Louer" [ref=f14e189] [cursor=pointer]:
+                - /url: /louer
+              - link "Neuf" [ref=f14e190] [cursor=pointer]:
+                - /url: /neuf
+              - link "Carte des biens" [ref=f14e191] [cursor=pointer]:
+                - /url: /map
+          - generic [ref=f14e192]:
+            - heading "Outils" [level=3] [ref=f14e193]
+            - generic [ref=f14e194]:
+              - link "Repère marché" [ref=f14e195] [cursor=pointer]:
+                - /url: /acheter
+              - link "Comparateur" [ref=f14e196] [cursor=pointer]:
+                - /url: /compare
+          - generic [ref=f14e197]:
+            - heading "Aide" [level=3] [ref=f14e198]
+            - generic [ref=f14e199]:
+              - link "FAQ" [ref=f14e200] [cursor=pointer]:
+                - /url: /faq
+              - link "Contact" [ref=f14e201] [cursor=pointer]:
+                - /url: /contact
+              - link "Demande de retrait" [ref=f14e202] [cursor=pointer]:
+                - /url: /demande-retrait
+              - link "Conditions d'utilisation" [ref=f14e203] [cursor=pointer]:
+                - /url: /conditions-utilisation
+              - link "Politique de confidentialité" [ref=f14e204] [cursor=pointer]:
+                - /url: /politique-confidentialite
+        - generic [ref=f14e205]:
+          - heading "Restez informé" [level=3] [ref=f14e206]
+          - paragraph [ref=f14e207]: Recevez les prochaines nouveautés lorsque les alertes seront activées.
+          - generic [ref=f14e208]:
+            - textbox "Email pour les alertes" [ref=f14e209]:
+              - /placeholder: Votre email
+            - button "OK" [ref=f14e210] [cursor=pointer]
+      - generic [ref=f14e211]:
+        - generic [ref=f14e212]: © 2026 AkarFinder.ma — Version bêta
+        - generic [ref=f14e213]: Les repères affichés sont indicatifs. Chaque annonce affiche sa source d'origine et un lien direct vers elle.
+  - alert [ref=f14e214]

@@ -1,0 +1,146 @@
+- generic [active] [ref=f16e1]:
+  - main [ref=f16e2]:
+    - generic [ref=f16e4]:
+      - link "AkarFinder - accueil" [ref=f16e5] [cursor=pointer]:
+        - /url: /
+        - img "AkarFinder" [ref=f16e6]
+      - navigation "Navigation principale" [ref=f16e7]:
+        - list [ref=f16e8]:
+          - listitem [ref=f16e9]:
+            - link "Accueil" [ref=f16e10] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f16e11]:
+            - link "Acheter" [ref=f16e12] [cursor=pointer]:
+              - /url: /acheter
+          - listitem [ref=f16e13]:
+            - link "Louer" [ref=f16e14] [cursor=pointer]:
+              - /url: /louer
+          - listitem [ref=f16e15]:
+            - link "Neuf" [ref=f16e16] [cursor=pointer]:
+              - /url: /neuf
+          - listitem [ref=f16e17]:
+            - link "Vendre" [ref=f16e18] [cursor=pointer]:
+              - /url: /vendre
+          - listitem [ref=f16e19]:
+            - link "Carte" [ref=f16e20] [cursor=pointer]:
+              - /url: /map
+          - listitem [ref=f16e21]:
+            - link "Recherche" [ref=f16e22] [cursor=pointer]:
+              - /url: /search
+      - generic [ref=f16e23]:
+        - button "Activer le thème sombre" [ref=f16e24] [cursor=pointer]:
+          - generic [ref=f16e25]: Activer le thème sombre
+          - img [ref=f16e26]
+        - link "Mes favoris" [ref=f16e28] [cursor=pointer]:
+          - /url: /favorites
+          - img [ref=f16e29]
+        - link "Espace Pro" [ref=f16e31] [cursor=pointer]:
+          - /url: /pro
+        - link "Se connecter" [ref=f16e32] [cursor=pointer]:
+          - /url: /search
+    - generic [ref=f16e34]:
+      - generic [ref=f16e36]:
+        - generic [ref=f16e37]:
+          - generic [ref=f16e38]:
+            - paragraph [ref=f16e39]: Intelligence quartier Â· RepÃ¨res indicatifs
+            - heading "Explorez les quartiers immobiliers du Maroc" [level=1] [ref=f16e40]
+          - generic [ref=f16e41]:
+            - paragraph [ref=f16e42]: 17 quartiers rÃ©pertoriÃ©s
+            - paragraph [ref=f16e43]: DonnÃ©es indicatives Â· sources visibles
+        - generic [ref=f16e44]:
+          - generic [ref=f16e45]:
+            - generic [ref=f16e46]: Ville
+            - combobox "Ville" [ref=f16e47]:
+              - option "Tout le Maroc" [selected]
+              - option "Agadir"
+              - option "Casablanca"
+              - option "Fès"
+              - option "Kénitra"
+              - option "Marrakech"
+              - option "Mohammedia"
+              - option "Rabat"
+              - option "Tanger"
+          - button "RÃ©initialiser" [ref=f16e48] [cursor=pointer]
+          - link "Rechercher dans cette zone â†’" [ref=f16e49] [cursor=pointer]:
+            - /url: /search
+      - generic [ref=f16e51]:
+        - generic [ref=f16e52]:
+          - region "Map" [ref=f16e53]
+          - group [ref=f16e54]:
+            - generic [ref=f16e55]:
+              - text: Â©
+              - link "OpenStreetMap contributors" [ref=f16e56] [cursor=pointer]:
+                - /url: https://www.openstreetmap.org/copyright
+              - text: "|"
+              - link "OpenFreeMap" [ref=f16e57] [cursor=pointer]:
+                - /url: https://openfreemap.org
+              - link "© OpenMapTiles" [ref=f16e58] [cursor=pointer]:
+                - /url: https://www.openmaptiles.org/
+              - text: Data from
+              - link "OpenStreetMap" [ref=f16e59] [cursor=pointer]:
+                - /url: https://www.openstreetmap.org/copyright
+        - paragraph [ref=f16e63]: Chargement de la carteâ€¦
+        - generic:
+          - generic:
+            - paragraph: Intelligence quartier â€” repÃ¨res indicatifs
+            - paragraph: DonnÃ©es indicatives OSM et observations de marchÃ© 2024â€“2025. Ã€ confirmer avant toute dÃ©cision d'achat ou location.
+            - paragraph:
+              - text: Tuiles Â©
+              - link "OpenStreetMap contributors" [ref=f16e64] [cursor=pointer]:
+                - /url: https://www.openstreetmap.org/copyright
+              - text: via OpenFreeMap
+    - generic [ref=f16e66]:
+      - generic [ref=f16e67]:
+        - generic [ref=f16e68]:
+          - img "AkarFinder" [ref=f16e69]
+          - paragraph [ref=f16e70]: AkarFinder vous aide à chercher dans l'immobilier marocain. Comparez les repères du quartier et contactez les sources originales.
+        - generic [ref=f16e71]:
+          - generic [ref=f16e72]:
+            - heading "AkarFinder" [level=3] [ref=f16e73]
+            - generic [ref=f16e74]:
+              - link "À propos" [ref=f16e75] [cursor=pointer]:
+                - /url: /a-propos
+              - link "Comment ça marche" [ref=f16e76] [cursor=pointer]:
+                - /url: /comment-ca-marche
+          - generic [ref=f16e77]:
+            - heading "Explorer" [level=3] [ref=f16e78]
+            - generic [ref=f16e79]:
+              - link "Acheter" [ref=f16e80] [cursor=pointer]:
+                - /url: /acheter
+              - link "Louer" [ref=f16e81] [cursor=pointer]:
+                - /url: /louer
+              - link "Neuf" [ref=f16e82] [cursor=pointer]:
+                - /url: /neuf
+              - link "Carte des biens" [ref=f16e83] [cursor=pointer]:
+                - /url: /map
+          - generic [ref=f16e84]:
+            - heading "Outils" [level=3] [ref=f16e85]
+            - generic [ref=f16e86]:
+              - link "Repère marché" [ref=f16e87] [cursor=pointer]:
+                - /url: /acheter
+              - link "Comparateur" [ref=f16e88] [cursor=pointer]:
+                - /url: /compare
+          - generic [ref=f16e89]:
+            - heading "Aide" [level=3] [ref=f16e90]
+            - generic [ref=f16e91]:
+              - link "FAQ" [ref=f16e92] [cursor=pointer]:
+                - /url: /faq
+              - link "Contact" [ref=f16e93] [cursor=pointer]:
+                - /url: /contact
+              - link "Demande de retrait" [ref=f16e94] [cursor=pointer]:
+                - /url: /demande-retrait
+              - link "Conditions d'utilisation" [ref=f16e95] [cursor=pointer]:
+                - /url: /conditions-utilisation
+              - link "Politique de confidentialité" [ref=f16e96] [cursor=pointer]:
+                - /url: /politique-confidentialite
+        - generic [ref=f16e97]:
+          - heading "Restez informé" [level=3] [ref=f16e98]
+          - paragraph [ref=f16e99]: Recevez les prochaines nouveautés lorsque les alertes seront activées.
+          - generic [ref=f16e100]:
+            - textbox "Email pour les alertes" [ref=f16e101]:
+              - /placeholder: Votre email
+            - button "OK" [ref=f16e102] [cursor=pointer]
+      - generic [ref=f16e103]:
+        - generic [ref=f16e104]: © 2026 AkarFinder.ma — Version bêta
+        - generic [ref=f16e105]: Les repères affichés sont indicatifs. Chaque annonce affiche sa source d'origine et un lien direct vers elle.
+  - alert [ref=f16e106]

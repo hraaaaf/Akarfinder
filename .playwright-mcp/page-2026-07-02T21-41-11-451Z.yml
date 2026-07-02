@@ -1,0 +1,134 @@
+- generic [active] [ref=f20e1]:
+  - main [ref=f20e2]:
+    - generic [ref=f20e4]:
+      - link "AkarFinder - accueil" [ref=f20e5] [cursor=pointer]:
+        - /url: /
+        - img "AkarFinder" [ref=f20e6]
+      - navigation "Navigation principale" [ref=f20e7]:
+        - list [ref=f20e8]:
+          - listitem [ref=f20e9]:
+            - link "Accueil" [ref=f20e10] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f20e11]:
+            - link "Acheter" [ref=f20e12] [cursor=pointer]:
+              - /url: /acheter
+          - listitem [ref=f20e13]:
+            - link "Louer" [ref=f20e14] [cursor=pointer]:
+              - /url: /louer
+          - listitem [ref=f20e15]:
+            - link "Neuf" [ref=f20e16] [cursor=pointer]:
+              - /url: /neuf
+          - listitem [ref=f20e17]:
+            - link "Vendre" [ref=f20e18] [cursor=pointer]:
+              - /url: /vendre
+          - listitem [ref=f20e19]:
+            - link "Carte" [ref=f20e20] [cursor=pointer]:
+              - /url: /map
+          - listitem [ref=f20e21]:
+            - link "Recherche" [ref=f20e22] [cursor=pointer]:
+              - /url: /search
+      - generic [ref=f20e23]:
+        - button "Activer le thème sombre" [ref=f20e24] [cursor=pointer]:
+          - generic [ref=f20e25]: Activer le thème sombre
+          - img [ref=f20e26]
+        - link "Mes favoris" [ref=f20e28] [cursor=pointer]:
+          - /url: /favorites
+          - img [ref=f20e29]
+        - link "Espace Pro" [ref=f20e31] [cursor=pointer]:
+          - /url: /pro
+        - link "Se connecter" [ref=f20e32] [cursor=pointer]:
+          - /url: /search
+    - generic [ref=f20e34]:
+      - paragraph [ref=f20e35]: Agadir
+      - heading "Founty" [level=1] [ref=f20e36]
+      - paragraph [ref=f20e37]: Repères indicatifs pour comprendre le quartier avant de lancer une recherche sur les sources originales.
+      - generic [ref=f20e38]:
+        - generic [ref=f20e39]:
+          - paragraph [ref=f20e40]: Repère prix
+          - paragraph [ref=f20e41]: ~12 000 DH/m²
+          - paragraph [ref=f20e42]: Données 2024-2025
+        - generic [ref=f20e43]:
+          - paragraph [ref=f20e44]: Confiance
+          - paragraph [ref=f20e45]: medium
+          - paragraph [ref=f20e46]: confidence / dataConfidence / benchmarkConfidence
+        - generic [ref=f20e47]:
+          - paragraph [ref=f20e48]: Transparence
+          - paragraph [ref=f20e49]: First-party
+          - paragraph [ref=f20e50]: Repères prudents, sans annonces tiers.
+      - generic [ref=f20e51]:
+        - paragraph [ref=f20e52]: Proximité / commodités
+        - generic [ref=f20e53]:
+          - generic [ref=f20e54]: Plage d'Agadir
+          - generic [ref=f20e55]: Souk El Had
+          - generic [ref=f20e56]: Zone hôtelière
+      - generic [ref=f20e57]:
+        - paragraph [ref=f20e58]: Lifestyle tags
+        - generic [ref=f20e59]:
+          - generic [ref=f20e60]: mer
+          - generic [ref=f20e61]: tourisme
+          - generic [ref=f20e62]: résidentiel
+      - generic [ref=f20e63]:
+        - link "Rechercher dans ce quartier" [ref=f20e64] [cursor=pointer]:
+          - /url: /search?city=Agadir&q=Founty
+        - link "Retour quartiers" [ref=f20e65] [cursor=pointer]:
+          - /url: /quartiers
+        - link "Retour carte" [ref=f20e66] [cursor=pointer]:
+          - /url: /map
+      - generic [ref=f20e67]:
+        - paragraph [ref=f20e68]: Méthode / transparence
+        - paragraph [ref=f20e69]: Cette page utilise uniquement la donnée quartier first-party validée. Les repères restent indicatifs et doivent être confirmés dans la recherche immobilière.
+    - generic [ref=f20e71]:
+      - generic [ref=f20e72]:
+        - generic [ref=f20e73]:
+          - img "AkarFinder" [ref=f20e74]
+          - paragraph [ref=f20e75]: AkarFinder vous aide à chercher dans l'immobilier marocain. Comparez les repères du quartier et contactez les sources originales.
+        - generic [ref=f20e76]:
+          - generic [ref=f20e77]:
+            - heading "AkarFinder" [level=3] [ref=f20e78]
+            - generic [ref=f20e79]:
+              - link "À propos" [ref=f20e80] [cursor=pointer]:
+                - /url: /a-propos
+              - link "Comment ça marche" [ref=f20e81] [cursor=pointer]:
+                - /url: /comment-ca-marche
+          - generic [ref=f20e82]:
+            - heading "Explorer" [level=3] [ref=f20e83]
+            - generic [ref=f20e84]:
+              - link "Acheter" [ref=f20e85] [cursor=pointer]:
+                - /url: /acheter
+              - link "Louer" [ref=f20e86] [cursor=pointer]:
+                - /url: /louer
+              - link "Neuf" [ref=f20e87] [cursor=pointer]:
+                - /url: /neuf
+              - link "Carte des biens" [ref=f20e88] [cursor=pointer]:
+                - /url: /map
+          - generic [ref=f20e89]:
+            - heading "Outils" [level=3] [ref=f20e90]
+            - generic [ref=f20e91]:
+              - link "Repère marché" [ref=f20e92] [cursor=pointer]:
+                - /url: /acheter
+              - link "Comparateur" [ref=f20e93] [cursor=pointer]:
+                - /url: /compare
+          - generic [ref=f20e94]:
+            - heading "Aide" [level=3] [ref=f20e95]
+            - generic [ref=f20e96]:
+              - link "FAQ" [ref=f20e97] [cursor=pointer]:
+                - /url: /faq
+              - link "Contact" [ref=f20e98] [cursor=pointer]:
+                - /url: /contact
+              - link "Demande de retrait" [ref=f20e99] [cursor=pointer]:
+                - /url: /demande-retrait
+              - link "Conditions d'utilisation" [ref=f20e100] [cursor=pointer]:
+                - /url: /conditions-utilisation
+              - link "Politique de confidentialité" [ref=f20e101] [cursor=pointer]:
+                - /url: /politique-confidentialite
+        - generic [ref=f20e102]:
+          - heading "Restez informé" [level=3] [ref=f20e103]
+          - paragraph [ref=f20e104]: Recevez les prochaines nouveautés lorsque les alertes seront activées.
+          - generic [ref=f20e105]:
+            - textbox "Email pour les alertes" [ref=f20e106]:
+              - /placeholder: Votre email
+            - button "OK" [ref=f20e107] [cursor=pointer]
+      - generic [ref=f20e108]:
+        - generic [ref=f20e109]: © 2026 AkarFinder.ma — Version bêta
+        - generic [ref=f20e110]: Les repères affichés sont indicatifs. Chaque annonce affiche sa source d'origine et un lien direct vers elle.
+  - alert [ref=f20e111]

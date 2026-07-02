@@ -1,0 +1,96 @@
+- generic [active] [ref=f28e1]:
+  - main [ref=f28e2]:
+    - generic [ref=f28e3]:
+      - generic [ref=f28e4]:
+        - link "AkarFinder - accueil" [ref=f28e5] [cursor=pointer]:
+          - /url: /
+          - img "AkarFinder" [ref=f28e6]
+        - generic [ref=f28e7]:
+          - button "Activer le thème sombre" [ref=f28e8] [cursor=pointer]:
+            - generic [ref=f28e9]: Activer le thème sombre
+            - img [ref=f28e10]
+          - link "Se connecter" [ref=f28e12] [cursor=pointer]:
+            - /url: /search
+      - generic [ref=f28e14]:
+        - link "Explorer les biens a acheter" [ref=f28e15] [cursor=pointer]:
+          - /url: /acheter
+          - text: Acheter
+        - link "Explorer les locations" [ref=f28e16] [cursor=pointer]:
+          - /url: /louer
+          - text: Louer
+        - link "Decouvrir les projets neufs" [ref=f28e17] [cursor=pointer]:
+          - /url: /neuf
+          - text: Neuf
+        - link "Preparer la vente de votre bien" [ref=f28e18] [cursor=pointer]:
+          - /url: /vendre
+          - text: Vendre
+        - link "Decouvrir l'espace promoteurs" [ref=f28e19] [cursor=pointer]:
+          - /url: /promoteurs
+          - text: Promoteurs
+        - link "Rechercher des biens" [ref=f28e20] [cursor=pointer]:
+          - /url: /search
+          - text: Recherche
+    - generic [ref=f28e22]:
+      - generic [ref=f28e24]:
+        - generic [ref=f28e26]:
+          - paragraph [ref=f28e27]: Intelligence quartier Â· RepÃ¨res indicatifs
+          - heading "Explorez les quartiers immobiliers du Maroc" [level=1] [ref=f28e28]
+        - generic [ref=f28e29]:
+          - generic [ref=f28e30]:
+            - generic [ref=f28e31]: Ville
+            - combobox "Ville" [ref=f28e32]:
+              - option "Tout le Maroc" [selected]
+              - option "Agadir"
+              - option "Casablanca"
+              - option "Fès"
+              - option "Kénitra"
+              - option "Marrakech"
+              - option "Mohammedia"
+              - option "Rabat"
+              - option "Tanger"
+          - button "RÃ©initialiser" [ref=f28e33] [cursor=pointer]
+          - link "Rechercher dans cette zone â†’" [ref=f28e34] [cursor=pointer]:
+            - /url: /search
+      - generic [ref=f28e36]:
+        - generic [ref=f28e37]:
+          - region "Map" [ref=f28e38]
+          - group [ref=f28e39]:
+            - generic "Toggle attribution" [ref=f28e40] [cursor=pointer]
+            - generic [ref=f28e41]:
+              - text: Â©
+              - link "OpenStreetMap contributors" [ref=f28e42] [cursor=pointer]:
+                - /url: https://www.openstreetmap.org/copyright
+              - text: "|"
+              - link "OpenFreeMap" [ref=f28e43] [cursor=pointer]:
+                - /url: https://openfreemap.org
+              - link "© OpenMapTiles" [ref=f28e44] [cursor=pointer]:
+                - /url: https://www.openmaptiles.org/
+              - text: Data from
+              - link "OpenStreetMap" [ref=f28e45] [cursor=pointer]:
+                - /url: https://www.openstreetmap.org/copyright
+        - paragraph [ref=f28e49]: Chargement de la carteâ€¦
+        - generic:
+          - generic:
+            - paragraph: Intelligence quartier â€” repÃ¨res indicatifs
+            - paragraph: DonnÃ©es indicatives OSM et observations de marchÃ© 2024â€“2025. Ã€ confirmer avant toute dÃ©cision d'achat ou location.
+            - paragraph:
+              - text: Tuiles Â©
+              - link "OpenStreetMap contributors" [ref=f28e50] [cursor=pointer]:
+                - /url: https://www.openstreetmap.org/copyright
+              - text: via OpenFreeMap
+    - generic [ref=f28e53]:
+      - img "AkarFinder" [ref=f28e54]
+      - paragraph [ref=f28e55]: AkarFinder — moteur de recherche immobilier du Maroc. Comparez avant de contacter.
+      - generic [ref=f28e56]:
+        - link "Acheter" [ref=f28e57] [cursor=pointer]:
+          - /url: /acheter
+        - link "Louer" [ref=f28e58] [cursor=pointer]:
+          - /url: /louer
+        - link "Comment ça marche" [ref=f28e59] [cursor=pointer]:
+          - /url: /comment-ca-marche
+        - link "FAQ" [ref=f28e60] [cursor=pointer]:
+          - /url: /faq
+        - link "Demande de retrait" [ref=f28e61] [cursor=pointer]:
+          - /url: /demande-retrait
+      - generic [ref=f28e62]: © 2026 AkarFinder.ma — Version bêta
+  - alert [ref=f28e63]

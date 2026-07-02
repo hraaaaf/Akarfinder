@@ -1,0 +1,452 @@
+- generic [active] [ref=f12e1]:
+  - main [ref=f12e2]:
+    - generic [ref=f12e4]:
+      - link "AkarFinder - accueil" [ref=f12e5] [cursor=pointer]:
+        - /url: /
+        - img "AkarFinder" [ref=f12e6]
+      - navigation "Navigation principale" [ref=f12e7]:
+        - list [ref=f12e8]:
+          - listitem [ref=f12e9]:
+            - link "Accueil" [ref=f12e10] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f12e11]:
+            - link "Acheter" [ref=f12e12] [cursor=pointer]:
+              - /url: /acheter
+          - listitem [ref=f12e13]:
+            - link "Louer" [ref=f12e14] [cursor=pointer]:
+              - /url: /louer
+          - listitem [ref=f12e15]:
+            - link "Neuf" [ref=f12e16] [cursor=pointer]:
+              - /url: /neuf
+          - listitem [ref=f12e17]:
+            - link "Vendre" [ref=f12e18] [cursor=pointer]:
+              - /url: /vendre
+          - listitem [ref=f12e19]:
+            - link "Carte" [ref=f12e20] [cursor=pointer]:
+              - /url: /map
+          - listitem [ref=f12e21]:
+            - link "Recherche" [ref=f12e22] [cursor=pointer]:
+              - /url: /search
+      - generic [ref=f12e23]:
+        - button "Activer le thème sombre" [ref=f12e24] [cursor=pointer]:
+          - generic [ref=f12e25]: Activer le thème sombre
+          - img [ref=f12e26]
+        - link "Mes favoris" [ref=f12e28] [cursor=pointer]:
+          - /url: /favorites
+          - img [ref=f12e29]
+        - link "Espace Pro" [ref=f12e31] [cursor=pointer]:
+          - /url: /pro
+        - link "Se connecter" [ref=f12e32] [cursor=pointer]:
+          - /url: /search
+    - generic [ref=f12e33]:
+      - img [ref=f12e34]
+      - generic [ref=f12e36]:
+        - generic [ref=f12e39]: Moteur de recherche immobilier au Maroc
+        - heading "Le 1er moteur de recherche immobilier au Maroc" [level=1] [ref=f12e40]
+        - paragraph [ref=f12e41]: "AkarFinder vous aide à trouver des résultats sur les sources originales et à comparer les repères du quartier : prix/m² indicatif, proximité et contexte local."
+        - generic [ref=f12e43]:
+          - generic [ref=f12e44]:
+            - generic [ref=f12e45]:
+              - img [ref=f12e46]
+              - textbox "Recherche de bien immobilier au Maroc" [ref=f12e49]:
+                - /placeholder: Rechercher un bien...
+            - button "Lancer la recherche" [ref=f12e50] [cursor=pointer]:
+              - img [ref=f12e51]
+              - generic [ref=f12e54]: Rechercher
+          - group "Type de recherche" [ref=f12e55]:
+            - button "Acheter" [ref=f12e56] [cursor=pointer]
+            - button "Louer" [ref=f12e57] [cursor=pointer]
+            - button "Neuf" [ref=f12e58] [cursor=pointer]
+            - button "Terrain" [ref=f12e59] [cursor=pointer]
+            - button "Villa" [ref=f12e60] [cursor=pointer]
+            - button "Bureau" [ref=f12e61] [cursor=pointer]
+            - button "Meuble" [ref=f12e62] [cursor=pointer]
+          - generic [ref=f12e63]:
+            - generic [ref=f12e64]: "Exemples :"
+            - button "Appartement neuf Rabat Agdal" [ref=f12e65] [cursor=pointer]
+            - button "Villa Dar Bouazza avec piscine" [ref=f12e66] [cursor=pointer]
+            - button "Terrain titre Marrakech" [ref=f12e67] [cursor=pointer]
+            - button "Studio meuble Casablanca" [ref=f12e68] [cursor=pointer]
+            - button "Bureau a louer Finance City" [ref=f12e69] [cursor=pointer]
+      - generic [ref=f12e71]: Explorer
+    - generic [ref=f12e75]:
+      - generic [ref=f12e76]:
+        - text: Notre différence
+        - heading "Comparez avant de contacter." [level=2] [ref=f12e77]
+        - paragraph [ref=f12e78]: AkarFinder vous aide à chercher sur plusieurs sources, comparer les repères de quartier, puis contacter la source originale.
+      - generic [ref=f12e79]:
+        - generic [ref=f12e80]:
+          - generic [ref=f12e81]: "01"
+          - heading "Cherchez plus simplement" [level=3] [ref=f12e82]
+          - paragraph [ref=f12e83]: Lancez une recherche immobilière depuis une seule interface et accédez aux sources originales.
+        - generic [ref=f12e84]:
+          - generic [ref=f12e85]: "02"
+          - heading "Comparez le quartier" [level=3] [ref=f12e86]
+          - paragraph [ref=f12e87]: Prix/m² indicatif, proximité, commodités et repères locaux vous aident à mieux situer le bien avant de contacter.
+        - generic [ref=f12e88]:
+          - generic [ref=f12e89]: "03"
+          - heading "Contactez à la source" [level=3] [ref=f12e90]
+          - paragraph [ref=f12e91]: "AkarFinder ne s'interpose pas : vous continuez sur le site d'origine ou auprès du partenaire autorisé."
+    - generic [ref=f12e93]:
+      - generic [ref=f12e94]:
+        - text: Analyse intelligente du marché
+        - paragraph [ref=f12e95]: Comparez les biens, les quartiers et les repères de prix avant de contacter une source.(données en cours de collecte)
+      - generic [ref=f12e96]:
+        - generic [ref=f12e97]:
+          - paragraph [ref=f12e98]: Multi-sources
+          - paragraph [ref=f12e100]: Annonces comparées
+          - paragraph [ref=f12e101]: biens, quartiers et repères de prix rassemblés
+        - generic [ref=f12e102]:
+          - paragraph [ref=f12e103]: Qualité visible
+          - paragraph [ref=f12e105]: Complétude moyenne
+          - paragraph [ref=f12e106]: niveau d'informations par annonce partenaire
+        - generic [ref=f12e107]:
+          - paragraph [ref=f12e108]: Score indicatif
+          - paragraph [ref=f12e110]: Repères comparatifs
+          - paragraph [ref=f12e111]: rapprochements par similitude pour un meilleur repérage
+        - generic [ref=f12e112]:
+          - paragraph [ref=f12e113]: Phase pilote
+          - paragraph [ref=f12e115]: Fiabilité moyenne
+          - paragraph [ref=f12e116]: score basé sur la qualité des données
+    - generic [ref=f12e120]:
+      - generic [ref=f12e121]:
+        - paragraph [ref=f12e122]: Villes principales
+        - heading "L'immobilier dans les grandes villes du Maroc." [level=2] [ref=f12e123]
+        - paragraph [ref=f12e124]: Explorez Casablanca, Marrakech, Rabat, Tanger et Agadir avec des reperes plus clairs, des ambiances locales assumees et un acces direct vers la recherche.
+      - generic [ref=f12e125]:
+        - link "Explorer les biens a Casablanca" [ref=f12e126] [cursor=pointer]:
+          - /url: /search?city=Casablanca
+          - generic [ref=f12e129]:
+            - heading "Casablanca" [level=3] [ref=f12e130]
+            - generic [ref=f12e131]: Économique & Affaires
+            - paragraph [ref=f12e132]: Pôle économique, CBD moderne et quartiers d'affaires actifs.
+          - generic [ref=f12e134]: →
+        - link "Explorer les biens a Marrakech" [ref=f12e135] [cursor=pointer]:
+          - /url: /search?city=Marrakech
+          - generic [ref=f12e138]:
+            - heading "Marrakech" [level=3] [ref=f12e139]
+            - generic [ref=f12e140]: Tourisme & Patrimoine
+            - paragraph [ref=f12e141]: Médina classée, Palmeraie et marché immobilier touristique porteur.
+          - generic [ref=f12e143]: →
+        - link "Explorer les biens a Rabat" [ref=f12e144] [cursor=pointer]:
+          - /url: /search?city=Rabat
+          - generic [ref=f12e147]:
+            - heading "Rabat" [level=3] [ref=f12e148]
+            - generic [ref=f12e149]: Capitale & Administration
+            - paragraph [ref=f12e150]: Capitale administrative, quartiers résidentiels calmes et bien équipés.
+          - generic [ref=f12e152]: →
+        - link "Explorer les biens a Tanger" [ref=f12e153] [cursor=pointer]:
+          - /url: /search?city=Tanger
+          - generic [ref=f12e156]:
+            - heading "Tanger" [level=3] [ref=f12e157]
+            - generic [ref=f12e158]: Portuaire & International
+            - paragraph [ref=f12e159]: Porte de l'Europe, port stratégique et immobilier en forte croissance.
+          - generic [ref=f12e161]: →
+        - link "Explorer les biens a Agadir" [ref=f12e163] [cursor=pointer]:
+          - /url: /search?city=Agadir
+          - generic [ref=f12e166]:
+            - heading "Agadir" [level=3] [ref=f12e167]
+            - generic [ref=f12e168]: Balnéaire & Détente
+            - paragraph [ref=f12e169]: Balnéaire atlantique, résidences secondaires et marché en expansion.
+          - generic [ref=f12e171]: →
+      - link "Rechercher sur ces villes" [ref=f12e173] [cursor=pointer]:
+        - /url: /search
+        - text: Rechercher sur ces villes
+        - generic [ref=f12e174]: →
+      - list [ref=f12e175]:
+        - listitem [ref=f12e176]:
+          - link "Explorer les biens a Casablanca" [ref=f12e177] [cursor=pointer]:
+            - /url: /search?city=Casablanca
+        - listitem [ref=f12e178]:
+          - link "Explorer les biens a Marrakech" [ref=f12e179] [cursor=pointer]:
+            - /url: /search?city=Marrakech
+        - listitem [ref=f12e180]:
+          - link "Explorer les biens a Rabat" [ref=f12e181] [cursor=pointer]:
+            - /url: /search?city=Rabat
+        - listitem [ref=f12e182]:
+          - link "Explorer les biens a Tanger" [ref=f12e183] [cursor=pointer]:
+            - /url: /search?city=Tanger
+        - listitem [ref=f12e184]:
+          - link "Explorer les biens a Agadir" [ref=f12e185] [cursor=pointer]:
+            - /url: /search?city=Agadir
+        - listitem [ref=f12e186]:
+          - link "Rechercher sur ces villes" [ref=f12e187] [cursor=pointer]:
+            - /url: /search
+    - generic [ref=f12e188]:
+      - generic [ref=f12e191]:
+        - generic [ref=f12e192]:
+          - generic:
+            - img
+          - generic [ref=f12e193]:
+            - generic [ref=f12e194]:
+              - paragraph [ref=f12e195]: Explorer le Maroc
+              - heading "La carte intelligente de l'immobilier marocain" [level=2] [ref=f12e197]:
+                - text: La carte intelligente
+                - text: de l'immobilier marocain
+              - paragraph [ref=f12e198]: Explorez les villes marocaines avec des reperes indicatifs et des signaux de fiabilite visibles pour mieux décider.
+            - generic [ref=f12e199]:
+              - generic [ref=f12e201]:
+                - generic [ref=f12e202]:
+                  - img [ref=f12e204]
+                  - generic [ref=f12e207]:
+                    - paragraph [ref=f12e208]: Villes cles
+                    - paragraph [ref=f12e209]: "6"
+                - generic [ref=f12e210]:
+                  - img [ref=f12e212]
+                  - generic [ref=f12e216]:
+                    - paragraph [ref=f12e217]: Sources visibles
+                    - paragraph [ref=f12e218]: Multi
+                - generic [ref=f12e219]:
+                  - img [ref=f12e221]
+                  - generic [ref=f12e224]:
+                    - paragraph [ref=f12e225]: Indices de fiabilite
+                    - paragraph [ref=f12e226]: Visible
+              - generic [ref=f12e227]:
+                - generic:
+                  - img
+                - img "Carte indicative du Maroc" [ref=f12e228]
+                - generic [ref=f12e229]:
+                  - button "Explorer Tanger" [ref=f12e230] [cursor=pointer]:
+                    - generic [ref=f12e237]: Tanger
+                  - button "Explorer Rabat" [ref=f12e238] [cursor=pointer]:
+                    - generic [ref=f12e245]: Rabat
+                  - button "Explorer Casablanca" [ref=f12e246] [cursor=pointer]:
+                    - generic [ref=f12e253]: Casablanca
+                  - button "Explorer Fes" [ref=f12e254] [cursor=pointer]:
+                    - generic [ref=f12e261]: Fes
+                  - button "Explorer Marrakech" [ref=f12e262] [cursor=pointer]:
+                    - generic [ref=f12e269]: Marrakech
+                  - button "Explorer Agadir" [ref=f12e270] [cursor=pointer]:
+                    - generic [ref=f12e277]: Agadir
+        - generic [ref=f12e278]:
+          - paragraph [ref=f12e279]: Explorer par ville
+          - generic [ref=f12e280]:
+            - button "Toutes" [ref=f12e281] [cursor=pointer]
+            - button "Tanger" [ref=f12e282] [cursor=pointer]
+            - button "Rabat" [ref=f12e283] [cursor=pointer]
+            - button "Casablanca" [ref=f12e284] [cursor=pointer]
+            - button "Fes" [ref=f12e285] [cursor=pointer]
+            - button "Marrakech" [ref=f12e286] [cursor=pointer]
+            - button "Agadir" [ref=f12e287] [cursor=pointer]
+          - generic [ref=f12e288]:
+            - article [ref=f12e289]:
+              - generic [ref=f12e290]:
+                - img "Port de Tanger avec vue sur le detroit de Gibraltar" [ref=f12e291]
+                - img [ref=f12e294]
+              - generic [ref=f12e297]:
+                - paragraph [ref=f12e298]: Port & International
+                - heading "Tanger" [level=3] [ref=f12e299]
+                - paragraph [ref=f12e300]: Ouverture internationale, front de mer et opportunites.
+                - link "Explorer Tanger" [ref=f12e301] [cursor=pointer]:
+                  - /url: /search?city=Tanger
+                  - text: Explorer Tanger
+                  - img [ref=f12e302]
+            - article [ref=f12e304]:
+              - generic [ref=f12e305]:
+                - img "Vue de Rabat avec architecture institutionnelle" [ref=f12e306]
+                - img [ref=f12e309]
+              - generic [ref=f12e311]:
+                - paragraph [ref=f12e312]: Capitale & Residentiel
+                - heading "Rabat" [level=3] [ref=f12e313]
+                - paragraph [ref=f12e314]: Stabilite, qualite de vie et quartiers d'exception.
+                - link "Explorer Rabat" [ref=f12e315] [cursor=pointer]:
+                  - /url: /search?city=Rabat
+                  - text: Explorer Rabat
+                  - img [ref=f12e316]
+            - article [ref=f12e318]:
+              - generic [ref=f12e319]:
+                - img "Skyline de Casablanca et marina" [ref=f12e320]
+                - img [ref=f12e323]
+              - generic [ref=f12e326]:
+                - paragraph [ref=f12e327]: Economique & Affaires
+                - heading "Casablanca" [level=3] [ref=f12e328]
+                - paragraph [ref=f12e329]: Dynamisme economique, CBD moderne et rendement.
+                - link "Explorer Casablanca" [ref=f12e330] [cursor=pointer]:
+                  - /url: /search?city=Casablanca
+                  - text: Explorer Casablanca
+                  - img [ref=f12e331]
+            - article [ref=f12e333]:
+              - generic [ref=f12e334]:
+                - img "Vue de Fes avec la medina et ses reliefs" [ref=f12e335]
+                - img [ref=f12e338]
+              - generic [ref=f12e340]:
+                - paragraph [ref=f12e341]: Historique & Culturelle
+                - heading "Fes" [level=3] [ref=f12e342]
+                - paragraph [ref=f12e343]: Patrimoine vivant, authenticite et art de vivre.
+                - link "Explorer Fes" [ref=f12e344] [cursor=pointer]:
+                  - /url: /search?city=F%C3%A8s
+                  - text: Explorer Fes
+                  - img [ref=f12e345]
+            - article [ref=f12e347]:
+              - generic [ref=f12e348]:
+                - img "Koutoubia et palmiers a Marrakech au coucher du soleil" [ref=f12e349]
+                - img [ref=f12e352]
+              - generic [ref=f12e354]:
+                - paragraph [ref=f12e355]: Touristique & Prestige
+                - heading "Marrakech" [level=3] [ref=f12e356]
+                - paragraph [ref=f12e357]: Attractivite touristique, villas et biens d'exception.
+                - link "Explorer Marrakech" [ref=f12e358] [cursor=pointer]:
+                  - /url: /search?city=Marrakech
+                  - text: Explorer Marrakech
+                  - img [ref=f12e359]
+            - article [ref=f12e361]:
+              - generic [ref=f12e362]:
+                - img "Plage et corniche d'Agadir" [ref=f12e363]
+                - img [ref=f12e366]
+              - generic [ref=f12e369]:
+                - paragraph [ref=f12e370]: Littoral & Douceur de Vivre
+                - heading "Agadir" [level=3] [ref=f12e371]
+                - paragraph [ref=f12e372]: Climat doux, front de mer et qualite de vie.
+                - link "Explorer Agadir" [ref=f12e373] [cursor=pointer]:
+                  - /url: /search?city=Agadir
+                  - text: Explorer Agadir
+                  - img [ref=f12e374]
+          - generic [ref=f12e376]:
+            - generic [ref=f12e377]:
+              - img [ref=f12e379]
+              - generic [ref=f12e382]:
+                - paragraph [ref=f12e383]: Signaux de fiabilite integres
+                - paragraph [ref=f12e384]: Prix indicatifs, tendances de marche, qualite des quartiers, notre scoring de fiabilite vous guide vers de meilleures decisions.
+            - link "Comprendre notre methode" [ref=f12e385] [cursor=pointer]:
+              - /url: /onboarding
+              - text: Comprendre notre methode
+              - img [ref=f12e386]
+      - list [ref=f12e388]:
+        - listitem [ref=f12e389]:
+          - link "Rechercher a Tanger" [ref=f12e390] [cursor=pointer]:
+            - /url: /search?city=Tanger
+        - listitem [ref=f12e391]:
+          - link "Rechercher a Rabat" [ref=f12e392] [cursor=pointer]:
+            - /url: /search?city=Rabat
+        - listitem [ref=f12e393]:
+          - link "Rechercher a Casablanca" [ref=f12e394] [cursor=pointer]:
+            - /url: /search?city=Casablanca
+        - listitem [ref=f12e395]:
+          - link "Rechercher a Fes" [ref=f12e396] [cursor=pointer]:
+            - /url: /search?city=F%C3%A8s
+        - listitem [ref=f12e397]:
+          - link "Rechercher a Marrakech" [ref=f12e398] [cursor=pointer]:
+            - /url: /search?city=Marrakech
+        - listitem [ref=f12e399]:
+          - link "Rechercher a Agadir" [ref=f12e400] [cursor=pointer]:
+            - /url: /search?city=Agadir
+    - generic [ref=f12e403]:
+      - generic [ref=f12e404]:
+        - paragraph [ref=f12e405]: Comment ça marche
+        - heading "Trois étapes, du repérage au contact." [level=2] [ref=f12e406]
+      - generic [ref=f12e407]:
+        - generic [ref=f12e408]:
+          - generic [ref=f12e409]: "1"
+          - heading "Cherchez par ville ou quartier" [level=3] [ref=f12e410]
+          - paragraph [ref=f12e411]: Lancez une recherche map-first et filtrez par budget, surface, type, fiabilité et profil MRE.
+        - generic [ref=f12e412]:
+          - generic [ref=f12e413]: "2"
+          - heading "Comparez les biens et les repères" [level=3] [ref=f12e414]
+          - paragraph [ref=f12e415]: Prix au m², repère marché indicatif du quartier et signaux de fiabilité côte à côte.
+        - generic [ref=f12e416]:
+          - generic [ref=f12e417]: "3"
+          - heading "Contactez le bon interlocuteur" [level=3] [ref=f12e418]
+          - paragraph [ref=f12e419]: Un échange direct, adapté à un achat sur place comme à distance pour les MRE.
+    - generic [ref=f12e424]:
+      - generic [ref=f12e425]:
+        - generic [ref=f12e426]: Pensé pour les MRE
+        - heading "Décider à distance, en confiance." [level=2] [ref=f12e427]
+        - paragraph [ref=f12e428]: Les Marocains du monde achètent souvent sans visite. AkarFinder réunit les repères qui aident à juger un bien et à contacter rapidement le bon interlocuteur.
+        - generic [ref=f12e429]:
+          - link "Créer mon dossier acheteur →" [ref=f12e430] [cursor=pointer]:
+            - /url: /onboarding
+          - link "Explorer les biens →" [ref=f12e431] [cursor=pointer]:
+            - /url: /search?mre=true
+      - generic [ref=f12e432]:
+        - generic [ref=f12e433]:
+          - generic [ref=f12e434]:
+            - img [ref=f12e436]
+            - paragraph [ref=f12e438]: Quartier lisible
+          - paragraph [ref=f12e439]: Repères de proximité indicatifs pour situer le bien sans être sur place.
+        - generic [ref=f12e440]:
+          - generic [ref=f12e441]:
+            - img [ref=f12e443]
+            - paragraph [ref=f12e445]: Source visible
+          - paragraph [ref=f12e446]: L'origine du résultat et sa fraîcheur sont affichées clairement.
+        - generic [ref=f12e447]:
+          - generic [ref=f12e448]:
+            - img [ref=f12e450]
+            - paragraph [ref=f12e452]: Repères indicatifs
+          - paragraph [ref=f12e453]: Repère marché du quartier, sans estimation présentée comme certaine ni promesse trompeuse.
+        - generic [ref=f12e454]:
+          - generic [ref=f12e455]:
+            - img [ref=f12e457]
+            - paragraph [ref=f12e459]: Contact direct
+          - paragraph [ref=f12e460]: Échange direct avec le vendeur, adapté à un achat à distance.
+        - generic [ref=f12e461]:
+          - generic [ref=f12e462]:
+            - img [ref=f12e464]
+            - paragraph [ref=f12e466]: Fiche décision claire
+          - paragraph [ref=f12e467]: Prix, prix/m², fiabilité et historique réunis sur une seule page.
+    - generic [ref=f12e470]:
+      - text: Commencez dès maintenant
+      - heading "Prêt à chercher avec plus de clarté ?" [level=2] [ref=f12e471]
+      - paragraph [ref=f12e472]: Comparez les biens, créez votre dossier acheteur indicatif ou demandez une visite depuis une fiche annonce.
+      - generic [ref=f12e473]:
+        - link "Lancer une recherche" [ref=f12e474] [cursor=pointer]:
+          - /url: /search
+        - link "Créer mon dossier acheteur" [ref=f12e475] [cursor=pointer]:
+          - /url: /onboarding
+        - link "Espace Pro" [ref=f12e476] [cursor=pointer]:
+          - /url: /pro
+      - paragraph [ref=f12e477]: Les informations affichées servent d'aperçu produit ; aucun partenariat, volume ou statut de vérification n'est revendiqué sans validation.
+    - generic [ref=f12e480]:
+      - generic [ref=f12e481]:
+        - generic [ref=f12e482]:
+          - img "AkarFinder" [ref=f12e483]
+          - paragraph [ref=f12e484]: AkarFinder vous aide à chercher dans l'immobilier marocain. Comparez les repères du quartier et contactez les sources originales.
+        - generic [ref=f12e485]:
+          - generic [ref=f12e486]:
+            - heading "AkarFinder" [level=3] [ref=f12e487]
+            - generic [ref=f12e488]:
+              - link "À propos" [ref=f12e489] [cursor=pointer]:
+                - /url: /a-propos
+              - link "Comment ça marche" [ref=f12e490] [cursor=pointer]:
+                - /url: /comment-ca-marche
+          - generic [ref=f12e491]:
+            - heading "Explorer" [level=3] [ref=f12e492]
+            - generic [ref=f12e493]:
+              - link "Acheter" [ref=f12e494] [cursor=pointer]:
+                - /url: /acheter
+              - link "Louer" [ref=f12e495] [cursor=pointer]:
+                - /url: /louer
+              - link "Neuf" [ref=f12e496] [cursor=pointer]:
+                - /url: /neuf
+              - link "Carte des biens" [ref=f12e497] [cursor=pointer]:
+                - /url: /map
+          - generic [ref=f12e498]:
+            - heading "Outils" [level=3] [ref=f12e499]
+            - generic [ref=f12e500]:
+              - link "Repère marché" [ref=f12e501] [cursor=pointer]:
+                - /url: /acheter
+              - link "Comparateur" [ref=f12e502] [cursor=pointer]:
+                - /url: /compare
+          - generic [ref=f12e503]:
+            - heading "Aide" [level=3] [ref=f12e504]
+            - generic [ref=f12e505]:
+              - link "FAQ" [ref=f12e506] [cursor=pointer]:
+                - /url: /faq
+              - link "Contact" [ref=f12e507] [cursor=pointer]:
+                - /url: /contact
+              - link "Demande de retrait" [ref=f12e508] [cursor=pointer]:
+                - /url: /demande-retrait
+              - link "Conditions d'utilisation" [ref=f12e509] [cursor=pointer]:
+                - /url: /conditions-utilisation
+              - link "Politique de confidentialité" [ref=f12e510] [cursor=pointer]:
+                - /url: /politique-confidentialite
+        - generic [ref=f12e511]:
+          - heading "Restez informé" [level=3] [ref=f12e512]
+          - paragraph [ref=f12e513]: Recevez les prochaines nouveautés lorsque les alertes seront activées.
+          - generic [ref=f12e514]:
+            - textbox "Email pour les alertes" [ref=f12e515]:
+              - /placeholder: Votre email
+            - button "OK" [ref=f12e516] [cursor=pointer]
+      - generic [ref=f12e517]:
+        - generic [ref=f12e518]: © 2026 AkarFinder.ma — Version bêta
+        - generic [ref=f12e519]: Les repères affichés sont indicatifs. Chaque annonce affiche sa source d'origine et un lien direct vers elle.
+  - alert [ref=f12e520]
