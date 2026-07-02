@@ -46,6 +46,9 @@ export type ScrapedListingP0 = {
   bathrooms: number | null;
   description_snippet: string | null;
   images_count: number | null;
+  // MUBAWAB-DB-THUMBNAILS-RISK-ACCEPTED-1: single public thumbnail (og:image),
+  // remote URL only — never downloaded, cached, or rehosted.
+  thumbnail_url: string | null;
   seller_name: string | null;
   published_at_raw: string | null;
   scraped_at: string;

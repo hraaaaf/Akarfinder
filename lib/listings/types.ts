@@ -161,6 +161,12 @@ export type Listing = {
   production_allowed?: boolean;        // false → gate in prod (e.g. ToS pending)
   production_block_reason?: string;    // "thumbnail_provider_tos_review_required" | "direct_avito_blocked" | …
 
+  // MUBAWAB-DB-THUMBNAILS-RISK-ACCEPTED-1 — single public thumbnail (risk accepted, additive).
+  // Render only when can_show_thumbnail=true AND NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED=true.
+  thumbnail_url?: string | null;       // remote URL only — never downloaded
+  can_cache_thumbnail?: boolean;       // always false — never cache third-party images
+  can_download_thumbnail?: boolean;    // always false — never download third-party images
+
   // P8A — advanced property characteristics (absent when not extracted).
   built_surface_m2?: number;
   plot_surface_m2?: number;

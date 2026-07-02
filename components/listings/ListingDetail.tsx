@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CompareBar } from "@/components/compare/CompareBar";
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
+import { DbProviderThumbnail } from "@/components/listings/DbProviderThumbnail";
 import { ListingHistory } from "@/components/listings/ListingHistory";
 import { ListingVisual } from "@/components/listings/ListingVisual";
 import { MarketReferenceBlock } from "@/components/listings/MarketReferenceBlock";
@@ -170,7 +171,14 @@ export function ListingDetail({ listing }: { listing: Listing }) {
 
           {/* Hero image */}
           <div className="relative h-[240px] overflow-hidden rounded-[1.6rem] shadow-[0_18px_54px_rgba(7,27,51,0.20)] sm:h-[440px]">
-            {imageMode !== "fallback_visual" ? (
+            {imageMode === "db_provider_thumbnail" ? (
+              <DbProviderThumbnail
+                listing={listing}
+                thumbnailUrl={listing.thumbnail_url!}
+                className="absolute inset-0 h-full w-full"
+                imgClassName="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : imageMode !== "fallback_visual" ? (
               <Image
                 src={listing.main_image_url!}
                 alt={listing.title}

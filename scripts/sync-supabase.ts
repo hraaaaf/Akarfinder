@@ -151,6 +151,7 @@ async function main() {
     bathrooms_count: number | null;
     description_snippet: string | null;
     images_count: number | null;
+    thumbnail_url: string | null;
     seller_name: string | null;
     data_completeness_score: number;
     field_confidence: string | null;
@@ -185,6 +186,7 @@ async function main() {
       `SELECT id, canonical_fingerprint, title, price_mad, city, district,
               property_type, transaction_type, surface_m2, rooms_count,
               bedrooms_count, bathrooms_count, description_snippet, images_count,
+              thumbnail_url,
               seller_name, data_completeness_score, field_confidence,
               created_at, updated_at,
               duplicate_group_id, duplicate_score, reliability_score,

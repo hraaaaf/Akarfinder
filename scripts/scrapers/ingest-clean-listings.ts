@@ -138,14 +138,14 @@ export async function ingestCleanListings(opts: {
         (canonical_fingerprint, title, price_mad, city, district,
          property_type, transaction_type, surface_m2,
          rooms_count, bedrooms_count, bathrooms_count,
-         description_snippet, images_count, seller_name,
+         description_snippet, images_count, thumbnail_url, seller_name,
          data_completeness_score, field_confidence,
          built_surface_m2, plot_surface_m2, condition, property_age_range,
          orientation, floor_type, floors_count, garden_m2, terrace_m2,
          garage_spaces, has_pool, has_concierge, has_moroccan_living_room,
          has_european_living_room, has_equipped_kitchen, premium_features,
          created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(canonical_fingerprint) DO UPDATE SET
         title               = CASE WHEN excluded.data_completeness_score >
                                         property_listings.data_completeness_score
@@ -163,6 +163,7 @@ export async function ingestCleanListings(opts: {
                                    THEN excluded.description_snippet
                                    ELSE property_listings.description_snippet END,
         images_count        = COALESCE(excluded.images_count, property_listings.images_count),
+        thumbnail_url        = COALESCE(excluded.thumbnail_url, property_listings.thumbnail_url),
         seller_name         = COALESCE(excluded.seller_name, property_listings.seller_name),
         data_completeness_score = MAX(excluded.data_completeness_score,
                                       property_listings.data_completeness_score),
@@ -250,6 +251,7 @@ export async function ingestCleanListings(opts: {
             listing.bathrooms ?? null,
             listing.description_snippet ?? null,
             listing.images_count ?? null,
+            listing.thumbnail_url ?? null,
             listing.seller_name ?? null,
             listing.data_completeness_score,
             jsonify(listing.field_confidence),

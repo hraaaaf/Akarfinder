@@ -266,6 +266,7 @@ export function mapDbRowToListing(
     // SEARCH-RESULT-DISPLAY-MODEL-1 â€” SERP display policy (additive).
     ...(() => {
       const dp = deriveSourceDisplayPolicy(row.source_name);
+      const hasThumbnail = !!row.thumbnail_url;
       const serpPolicy = computeSearchResultDisplayPolicy({
         source_id: row.source_name?.toLowerCase().trim() ?? null,
         source_name: row.source_name ?? null,
@@ -277,7 +278,7 @@ export function mapDbRowToListing(
         is_partner: false,
         has_title: !!(row.title),
         has_snippet: !!description,
-        has_thumbnail: (dp.display_images?.urls?.length ?? 0) > 0,
+        has_thumbnail: hasThumbnail,
       });
       return {
         search_result_display_mode: serpPolicy.search_result_display_mode,
@@ -292,6 +293,10 @@ export function mapDbRowToListing(
         ...(serpPolicy.production_block_reason
           ? { production_block_reason: serpPolicy.production_block_reason }
           : {}),
+        // MUBAWAB-DB-THUMBNAILS-RISK-ACCEPTED-1 — raw thumbnail data + hard policy.
+        thumbnail_url: row.thumbnail_url ?? undefined,
+        can_cache_thumbnail: false,
+        can_download_thumbnail: false,
       };
     })(),
   };

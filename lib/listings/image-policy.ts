@@ -1,9 +1,16 @@
 import type { Listing } from "./types";
 
 export type ListingImageMode =
-  | "real_image"       // partner_full + allowed — full-res photo from partner
-  | "preview_image"    // preview_allowed + allowed — thumbnail/preview only
-  | "fallback_visual"; // everything else — deterministic SVG scene
+  | "real_image"             // partner_full + allowed — full-res photo from partner
+  | "preview_image"          // preview_allowed + allowed — thumbnail/preview only
+  | "db_provider_thumbnail"  // MUBAWAB-DB-THUMBNAILS-RISK-ACCEPTED-1 — risk accepted, single public thumbnail
+  | "fallback_visual";       // everything else — deterministic SVG scene
+
+// Kill switch — when false, DB-provider risk-accepted thumbnails never render
+// (falls back to the existing placeholder visual, layout unaffected).
+export function isDbProviderThumbnailsEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_DB_PROVIDER_THUMBNAILS_ENABLED === "true";
+}
 
 /**
  * Returns true only when the listing has explicit image rights AND
@@ -44,9 +51,20 @@ export function getListingImageMode(listing: Listing): ListingImageMode {
   const hasUrl =
     typeof listing.main_image_url === "string" && listing.main_image_url.length > 0;
 
-  if (permission !== "allowed") return "fallback_visual";
-  if (access === "partner_full" && hasUrl) return "real_image";
-  if (access === "preview_allowed" && hasUrl) return "preview_image";
+  if (permission === "allowed") {
+    if (access === "partner_full" && hasUrl) return "real_image";
+    if (access === "preview_allowed" && hasUrl) return "preview_image";
+  }
+
+  // MUBAWAB-DB-THUMBNAILS-RISK-ACCEPTED-1 — separate, explicit "risk accepted"
+  // lane. Never implies partner rights; gated by kill switch + policy flag +
+  // presence of a real thumbnail URL.
+  const hasThumbnail =
+    typeof listing.thumbnail_url === "string" && listing.thumbnail_url.length > 0;
+  if (listing.can_show_thumbnail === true && hasThumbnail && isDbProviderThumbnailsEnabled()) {
+    return "db_provider_thumbnail";
+  }
+
   return "fallback_visual";
 }
 

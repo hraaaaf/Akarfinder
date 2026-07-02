@@ -98,6 +98,10 @@ ALTER TABLE property_listings ADD COLUMN IF NOT EXISTS has_european_living_room 
 ALTER TABLE property_listings ADD COLUMN IF NOT EXISTS has_equipped_kitchen    BOOLEAN DEFAULT FALSE;
 ALTER TABLE property_listings ADD COLUMN IF NOT EXISTS premium_features        JSONB;
 
+-- MUBAWAB-DB-THUMBNAILS-RISK-ACCEPTED-1: single public og:image URL only.
+-- Never a download/cache/rehost — remote URL reference only.
+ALTER TABLE property_listings ADD COLUMN IF NOT EXISTS thumbnail_url           TEXT;
+
 -- Enable Row Level Security (Supabase default best practice).
 -- ENABLE ROW LEVEL SECURITY is idempotent (safe to re-run).
 ALTER TABLE scrape_runs      ENABLE ROW LEVEL SECURITY;

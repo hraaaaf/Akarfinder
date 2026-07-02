@@ -23,7 +23,7 @@ export type CompareListingInsights = {
   observedPriceLabel: string;
   observedPriceDeltaLabel: string | null;
   reliabilityLabel: string;
-  imageMode: "real_image" | "preview_image" | "fallback_visual";
+  imageMode: "real_image" | "preview_image" | "db_provider_thumbnail" | "fallback_visual";
 };
 
 export type CompareSummaryCard = {

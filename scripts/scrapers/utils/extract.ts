@@ -306,6 +306,10 @@ export type DetailFields = {
   description_snippet: string | null;
   seller_name: string | null;
   images_count: number | null;
+  // MUBAWAB-DB-THUMBNAILS-RISK-ACCEPTED-1: single public thumbnail URL, read
+  // from the page's og:image meta tag (the canonical image the source site
+  // itself designates for public sharing — never a full gallery).
+  thumbnail_url: string | null;
   // Ordered breadcrumb/location strings (noise-filtered) for the caller to
   // resolve city/district against the known-city list.
   location_candidates: string[];
@@ -386,6 +390,7 @@ export function extractDetail(html: string): DetailFields {
     description_snippet: null,
     seller_name: null,
     images_count: null,
+    thumbnail_url: null,
     location_candidates: [],
     _confidence: conf,
     // P8A defaults
@@ -412,6 +417,17 @@ export function extractDetail(html: string): DetailFields {
     $ = loadHtml(html);
   } catch {
     return out;
+  }
+
+  // 0) Public thumbnail — the single og:image the source designates for
+  // sharing. Never the full gallery; never downloaded, only the remote URL.
+  try {
+    const ogImage = clean($('meta[property="og:image"]').attr("content"));
+    if (ogImage && /^https?:\/\//.test(ogImage)) {
+      out.thumbnail_url = ogImage;
+    }
+  } catch {
+    // best-effort — absence is not an error
   }
 
   // 1) JSON-LD (schema.org real-estate / product) — highest confidence source

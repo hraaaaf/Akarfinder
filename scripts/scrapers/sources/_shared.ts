@@ -152,6 +152,7 @@ export function mergeDetail(listing: ScrapedListingP0, d: DetailFields): void {
   if (listing.description_snippet == null) listing.description_snippet = snippet(d.description_snippet);
   if (listing.seller_name == null && d.seller_name) listing.seller_name = d.seller_name;
   if (listing.images_count == null) listing.images_count = d.images_count;
+  if (listing.thumbnail_url == null && d.thumbnail_url) listing.thumbnail_url = d.thumbnail_url;
 
   listing.data_completeness_score = computeCompleteness(listing);
   listing.field_confidence = computeFieldConfidence(listing, {
@@ -218,6 +219,7 @@ export function mapRaw(
     bathrooms: toInt(raw.bathrooms),
     description_snippet: snippet(raw.description_snippet),
     images_count: raw.images_count ?? null,
+    thumbnail_url: null,
     seller_name: raw.seller_name ?? null,
     published_at_raw: raw.published_at_raw ?? null,
     scraped_at: new Date().toISOString(),

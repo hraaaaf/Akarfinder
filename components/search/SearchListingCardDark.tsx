@@ -9,6 +9,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { MapPin, ArrowRight, Calculator, BellPlus } from "lucide-react";
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
@@ -61,13 +62,17 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   if (process.env.NODE_ENV === "production" && listing.production_allowed === false) return null;
 
   const { theme } = useTheme();
+  const [thumbnailError, setThumbnailError] = useState(false);
   const reliabilityLevel = getReliabilityLevel(listing.reliability_score);
   const rel = reliabilityStyle(reliabilityLevel);
   const showReliability = listing.reliability_available !== false;
   const rawImageMode = getListingImageMode(listing);
   // display_images.policy guard: "no_listing_image" forces fallback even if permission granted.
+  const policyBlocked = listing.display_images?.policy === "no_listing_image";
   const imageMode =
-    listing.display_images?.policy === "no_listing_image" ? "fallback_visual" : rawImageMode;
+    policyBlocked || (rawImageMode === "db_provider_thumbnail" && thumbnailError)
+      ? "fallback_visual"
+      : rawImageMode;
   const attribution = getImageAttribution(listing);
   const transactionType = listing.transaction_type === "rent" ? "rent" : "buy";
   const proximityPoints = getListingProximity(listing.city, listing.neighborhood);
@@ -95,7 +100,17 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
       >
         <div className="relative h-[220px] overflow-hidden">
           <div className="absolute inset-0 transition duration-500 group-hover:scale-[1.04]">
-            {imageMode !== "fallback_visual" ? (
+            {imageMode === "db_provider_thumbnail" ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={listing.thumbnail_url!}
+                alt={listing.title}
+                loading="lazy"
+                decoding="async"
+                onError={() => setThumbnailError(true)}
+                className="h-full w-full object-cover"
+              />
+            ) : imageMode !== "fallback_visual" ? (
               <Image src={listing.main_image_url!} alt={listing.title} fill className="object-cover" sizes="(max-width: 640px) 100vw, 420px" />
             ) : (
               <ListingVisual listing={listing} className="h-full w-full" />

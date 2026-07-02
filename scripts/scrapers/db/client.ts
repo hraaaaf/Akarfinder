@@ -43,6 +43,8 @@ const P6_COLUMNS: Array<{ name: string; def: string }> = [
   { name: "has_european_living_room", def: "INTEGER DEFAULT 0" },
   { name: "has_equipped_kitchen",    def: "INTEGER DEFAULT 0" },
   { name: "premium_features",        def: "TEXT" },
+  // MUBAWAB-DB-THUMBNAILS-RISK-ACCEPTED-1: public og:image URL only.
+  { name: "thumbnail_url",           def: "TEXT" },
 ];
 
 function runMigrations(db: DatabaseSync): void {

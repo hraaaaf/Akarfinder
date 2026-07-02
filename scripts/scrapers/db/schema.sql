@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS property_listings (
   bathrooms_count         INTEGER,
   description_snippet     TEXT,
   images_count            INTEGER,
+  thumbnail_url           TEXT,   -- public og:image URL only, never downloaded
   seller_name             TEXT,
   data_completeness_score INTEGER DEFAULT 0,
   field_confidence        TEXT,   -- JSON FieldConfidence object

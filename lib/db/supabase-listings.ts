@@ -39,6 +39,9 @@ type SupabaseListingRow = {
   bathrooms_count: number | null;
   description_snippet: string | null;
   images_count: number | null;
+  // MUBAWAB-DB-THUMBNAILS-RISK-ACCEPTED-1: absent/undefined until the Supabase
+  // migration (thumbnail_url column) is applied — SELECT * degrades gracefully.
+  thumbnail_url?: string | null;
   seller_name: string | null;
   data_completeness_score: number;
   field_confidence: unknown;
@@ -89,6 +92,7 @@ function mapToDbRow(row: SupabaseListingRow): DbListingRow {
     bathrooms_count: row.bathrooms_count,
     description_snippet: row.description_snippet,
     images_count: row.images_count,
+    thumbnail_url: row.thumbnail_url ?? null,
     seller_name: row.seller_name,
     data_completeness_score: row.data_completeness_score,
     // JSONB → JSON string so mapDbRowToListing's parseJsonSafe works unchanged
