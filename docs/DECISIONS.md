@@ -1668,3 +1668,20 @@ Impact:
 - `lib/map/neighborhood-data.ts` devient la couche centrale.
 - Les tests vÃ©rifient l'encodage des slugs, les CTA `/search`, les limites gÃ©ographiques plausibles et l'absence de wording risquÃ©.
 
+
+## 2026-07-02 - NEIGHBORHOOD-PAGES-MVP-1 - Pages quartier MVP first-party
+
+Status: Validated
+
+Decision:
+- AkarFinder crée des pages quartier MVP basées uniquement sur la donnée quartier first-party validée.
+- Usage: expliquer le quartier, afficher des repères prudents, proposer des CTA `/search` et soutenir l'exploration quartier.
+- Non-usage: pas de fiches annonces tierces, pas de `/listings`, pas de statistiques inventées, pas de prix/m² inventés.
+
+Reason:
+- La surface quartier doit rester informative et prudente avant la recherche sur les sources originales.
+- Le MVP doit réutiliser la couche quartier existante sans réactiver les logiques listings legacy.
+
+Impact:
+- Nouvelles routes `/quartiers` et `/quartiers/[citySlug]/[neighborhoodSlug]`.
+- Tests dédiés pour verrouiller les helpers, le routing, les CTA et le wording risqué.

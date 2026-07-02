@@ -8813,3 +8813,30 @@ Validation attendue
 * git status --short
 * npm test
 * npm run build
+----------------------------------------------------
+NEIGHBORHOOD-PAGES-MVP-1 - 2026-07-02
+
+Status: completed
+
+Mission
+* Créer les pages quartier MVP first-party `/quartiers` et `/quartiers/[citySlug]/[neighborhoodSlug]` sans toucher à l'ingestion, `/search`, `/listings`, Search Gateway, home, footer, source registry ou DB.
+* Conserver un wording prudent et utiliser uniquement la donnée quartier existante.
+
+Fichiers modifies
+* app/quartiers/page.tsx
+* app/quartiers/[citySlug]/[neighborhoodSlug]/page.tsx
+* lib/map/neighborhood-data.ts
+* scripts/scrapers/__tests__/neighborhood-pages.test.ts
+* docs/DECISIONS.md
+* docs/SESSION.md
+
+Livraison
+* Route `/quartiers` ajoutée avec villes couvertes, quartiers disponibles, CTA vers `/map` et `/search`.
+* Route dynamique `/quartiers/[citySlug]/[neighborhoodSlug]` ajoutée avec `notFound()` sur quartier inconnu, repère prix prudent, confiance, proximité, lifestyle tags et bloc méthode/transparence.
+* Helpers quartier réutilisés pour les slugs et les CTA encodés.
+* Aucun lien `/listings`, aucun prix/m² inventé, aucun helper ingestion/gateway touché.
+
+Validation
+* `git status --short`
+* `npm test`
+* `npm run build`

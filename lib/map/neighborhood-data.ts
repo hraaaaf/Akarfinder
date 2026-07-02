@@ -388,6 +388,28 @@ export function getNeighborhoodCities(): string[] {
   return Array.from(cities).sort((a, b) => a.localeCompare(b, "fr"));
 }
 
+export function getNeighborhoodCityEntries(): Array<{ city: string; citySlug: string }> {
+  const cities = new Map<string, string>();
+  for (const point of NEIGHBORHOOD_POINTS) {
+    cities.set(point.citySlug, point.city);
+  }
+  return Array.from(cities.entries())
+    .map(([citySlug, city]) => ({ city, citySlug }))
+    .sort((a, b) => a.city.localeCompare(b.city, "fr"));
+}
+
+export function getNeighborhoodCitiesForPages(): Array<{
+  city: string;
+  citySlug: string;
+  neighborhoods: NeighborhoodPoint[];
+}> {
+  return getNeighborhoodCityEntries().map(({ city, citySlug }) => ({
+    city,
+    citySlug,
+    neighborhoods: getNeighborhoodsByCity(city),
+  }));
+}
+
 export function filterNeighborhoodsByCity(city: string): NeighborhoodPoint[] {
   return getNeighborhoodsByCity(city);
 }
