@@ -10,6 +10,10 @@ export type SearchQuery = {
   sort?: string;
   limit?: number;
   offset?: number;
+  min_price?: number;
+  max_price?: number;
+  min_surface?: number;
+  max_surface?: number;
 };
 
 export type SearchResult = {

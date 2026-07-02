@@ -108,12 +108,16 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
 
   // Push available filters to the DB layer for efficiency — avoids fetching
   // unneeded rows when the DB grows beyond 100 listings. The query always
-  // over-fetches (limit=200) so client-side text-search and budget filters
-  // can still apply without being truncated.
+  // over-fetches (limit=200) so client-side text-search can still apply
+  // without being truncated. Price and surface filters are now handled server-side.
   const base = await queryListings({
     city: query.city,
     property_type: query.property_type,
     transaction_type: query.transaction_type,
+    min_price: query.min_price,
+    max_price: query.max_price,
+    min_surface: query.min_surface,
+    max_surface: query.max_surface,
     limit: 200,
     offset: 0,
   });

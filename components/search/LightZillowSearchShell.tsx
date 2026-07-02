@@ -249,7 +249,9 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     const clientFiltered = listings.filter((l) => {
       if (l.price < minBudget || l.price > maxBudget) return false;
       if (l.surface_m2 < minSurface) return false;
-      if (filters.mreOnly && !l.is_mre_friendly) return false;
+      // SEARCH-FILTERS-RELEVANCE-FIX-1: MRE filter disabled — is_mre_friendly field does not exist in DB/types
+      // TODO: Re-enable once is_mre_friendly is properly defined and populated
+      // if (filters.mreOnly && !l.is_mre_friendly) return false;
       if (filters.packageScore === "bon") {
         const tx = l.transaction_type === "rent" ? "rent" : "buy";
         const score = calculatePackageScore(

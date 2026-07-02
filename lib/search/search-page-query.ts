@@ -44,5 +44,17 @@ export function buildSearchPageQuery(searchParams: SearchPageParams): SearchQuer
   );
   if (transactionType) query.transaction_type = transactionType;
 
+  const minPrice = Number(pickFirst(searchParams.min_price) ?? pickFirst(searchParams.budget_min));
+  if (Number.isFinite(minPrice) && minPrice > 0) query.min_price = minPrice;
+
+  const maxPrice = Number(pickFirst(searchParams.max_price) ?? pickFirst(searchParams.budget_max));
+  if (Number.isFinite(maxPrice) && maxPrice > 0) query.max_price = maxPrice;
+
+  const minSurface = Number(pickFirst(searchParams.min_surface));
+  if (Number.isFinite(minSurface) && minSurface > 0) query.min_surface = minSurface;
+
+  const maxSurface = Number(pickFirst(searchParams.max_surface));
+  if (Number.isFinite(maxSurface) && maxSurface > 0) query.max_surface = maxSurface;
+
   return query;
 }
