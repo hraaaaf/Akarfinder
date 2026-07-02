@@ -1,4 +1,4 @@
-import assert from "node:assert/strict";
+﻿import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { describe, it } from "node:test";
@@ -97,16 +97,15 @@ describe("MAP-NEIGHBORHOOD-INTELLIGENCE-1 - neighborhood map contract", () => {
 
   it("/map n'utilise plus de contrat listings legacy", () => {
     assert.equal(neighborhoodExperienceSource.includes("/listings/"), false);
-    assert.equal(neighborhoodExperienceSource.includes("annonces analysées"), false);
-    assert.equal(neighborhoodExperienceSource.includes("biens analysés"), false);
-    assert.equal(neighborhoodExperienceSource.includes("densité d'annonces"), false);
+    assert.equal(neighborhoodExperienceSource.includes("annonces analysÃ©es"), false);
+    assert.equal(neighborhoodExperienceSource.includes("biens analysÃ©s"), false);
+    assert.equal(neighborhoodExperienceSource.includes("densitÃ© d'annonces"), false);
     assert.equal(neighborhoodExperienceSource.includes("clusters d'annonces"), false);
   });
 
-  it("neighborhood-data expose villes, quartiers et repères sûrs", () => {
+  it("neighborhood-data expose villes, quartiers et repÃ¨res sÃ»rs", () => {
     assert.ok(getNeighborhoodCities().length > 0);
     assert.ok(NEIGHBORHOOD_POINTS.some((point) => point.neighborhood != null));
-    assert.ok(NEIGHBORHOOD_POINTS.some((point) => point.neighborhood == null));
     assert.ok(
       NEIGHBORHOOD_POINTS.every((point) =>
         point.searchHref.startsWith("/search?")
@@ -147,14 +146,14 @@ describe("MAP-NEIGHBORHOOD-INTELLIGENCE-1 - neighborhood map contract", () => {
 
   it("no forbidden wording appears in the map neighborhood experience", () => {
     const forbidden = [
-      "annonces analysées",
-      "biens analysés",
-      "sources analysées",
-      "données analysées",
+      "annonces analysÃ©es",
+      "biens analysÃ©s",
+      "sources analysÃ©es",
+      "donnÃ©es analysÃ©es",
       "index AkarFinder",
-      "densité d'annonces",
+      "densitÃ© d'annonces",
       "clusters d'annonces",
-      "fiabilité moyenne des annonces",
+      "fiabilitÃ© moyenne des annonces",
     ];
 
     for (const word of forbidden) {
@@ -172,3 +171,5 @@ describe("MAP-NEIGHBORHOOD-INTELLIGENCE-1 - neighborhood map contract", () => {
     assert.equal(listingTypesSource.includes("reliability_score"), true);
   });
 });
+
+

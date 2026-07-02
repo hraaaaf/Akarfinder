@@ -1650,3 +1650,21 @@ Impact:
 - `/map` s'appuie sur `lib/map/neighborhood-data.ts` et l'expérience `MapNeighborhoodExperience`.
 - Les tests et la documentation sont alignés avec la nouvelle carte quartier.
 
+## 2026-07-02 - NEIGHBORHOOD-DATA-FIRST-PARTY-1 - Couche quartier first-party centralisée
+
+Status: Validated
+
+Decision:
+- AkarFinder maintient une couche quartier first-party, indépendante des annonces tierces legacy.
+- Usage autorisé: `/map`, futures pages quartier, CTA `/search`, repères quartier.
+- Non-usage: pas de scoring d'annonces tierces, pas de densité d'annonces, pas de prix/m² inventés.
+- Les helpers de quartier exposent des slugs, des CTA `/search` encodés, des coordonnées représentatives et des labels prudents.
+
+Reason:
+- La surface quartier doit pouvoir servir `/map` puis les futures pages quartier sans dépendre de listings legacy.
+- La source de vérité doit rester centralisée et testée pour éviter la dérive de labels, slugs et CTA.
+
+Impact:
+- `lib/map/neighborhood-data.ts` devient la couche centrale.
+- Les tests vérifient l'encodage des slugs, les CTA `/search`, les limites géographiques plausibles et l'absence de wording risqué.
+

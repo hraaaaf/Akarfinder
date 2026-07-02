@@ -8793,3 +8793,23 @@ Livraison
 Validation
 * `npm test` lancé.
 * `npm run build` lancé.
+----------------------------------------------------
+NEIGHBORHOOD-DATA-FIRST-PARTY-1 - 2026-07-02
+
+Status: in_progress
+
+Mission
+* Stabiliser la couche quartier first-party: types, helpers, slugs, searchHref, labels prudents et tests.
+* Garder /map comme surface d'intelligence quartier sans retour aux listings legacy.
+
+Fichiers modifies
+* lib/map/neighborhood-data.ts
+* components/map/MapNeighborhoodExperience.tsx
+* scripts/scrapers/__tests__/neighborhood-data.test.ts
+* docs/DECISIONS.md
+* docs/SESSION.md
+
+Validation attendue
+* git status --short
+* npm test
+* npm run build

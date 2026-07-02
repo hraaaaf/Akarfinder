@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import type { Map as MapLibreMap, Marker } from "maplibre-gl";
@@ -10,7 +10,7 @@ import {
   getBenchmarkLabel,
   getNeighborhoodCities,
   type NeighborhoodPoint,
-  type DataConfidence,
+  type NeighborhoodConfidence,
 } from "@/lib/map/neighborhood-data";
 import {
   getCityFlyTarget,
@@ -20,7 +20,7 @@ import {
 import { CITIES } from "@/lib/cities";
 import { useTheme } from "@/components/theme/ThemeProvider";
 
-// ─── Constants ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const CLUSTER_ZOOM_THRESHOLD = 8;
 const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
@@ -45,22 +45,21 @@ function hideInternalBoundaries(map: MapLibreMap) {
   }
 }
 
-// ─── Confidence badge color ────────────────────────────────────────────────────
+// â”€â”€â”€ Confidence badge color â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-function confidenceColor(c: DataConfidence): string {
+function confidenceColor(c: NeighborhoodConfidence): string {
   switch (c) {
-    case "élevée":
+    case "high":
       return "#22c55e"; // green-500
-    case "moyenne":
+    case "medium":
       return "#f59e0b"; // amber-500
-    case "faible":
+    case "low":
       return "#f97316"; // orange-500
-    case "en_preparation":
-      return "#94a3b8"; // slate-400
   }
+  return "#94a3b8";
 }
 
-// ─── Marker factories ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Marker factories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function createNeighborhoodMarkerEl(
   point: NeighborhoodPoint,
@@ -72,7 +71,7 @@ function createNeighborhoodMarkerEl(
   const label =
     point.neighborhood ?? point.city;
   const benchmarkLabel = getBenchmarkLabel(point);
-  const color = confidenceColor(point.dataConfidence);
+  const color = confidenceColor(point.confidence);
   const bgColor = isSelected ? "#9B7838" : "#ffffff";
   const textColor = isSelected ? "#ffffff" : "#071B33";
   const subColor = isSelected ? "rgba(255,255,255,0.75)" : "#6b7280";
@@ -110,19 +109,19 @@ function createCityClusterEl(
   el.href = `/search?city=${encodeURIComponent(city)}`;
   el.setAttribute(
     "aria-label",
-    `Explorer les repères immobiliers à ${city} (${count} quartier${count > 1 ? "s" : ""})`
+    `Explorer les repÃ¨res immobiliers Ã  ${city} (${count} quartier${count > 1 ? "s" : ""})`
   );
   el.className =
     "maplibre-cluster-marker cursor-pointer rounded-2xl bg-white border border-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.22)] px-3 py-2 text-left min-w-[90px] transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-bronze-500";
   el.innerHTML = `
     <span class="block text-[12px] font-extrabold text-[#071B33]">${city}</span>
-    <span class="block text-[11px] font-bold text-[#9B7838]">${count} quartier${count > 1 ? "s" : ""} · repères indicatifs</span>
-    <span class="block text-[10px] font-bold text-[#071B33]/50 mt-0.5">Explorer →</span>
+    <span class="block text-[11px] font-bold text-[#9B7838]">${count} quartier${count > 1 ? "s" : ""} Â· repÃ¨res indicatifs</span>
+    <span class="block text-[10px] font-bold text-[#071B33]/50 mt-0.5">Explorer â†’</span>
   `;
   return el;
 }
 
-// ─── Neighborhood detail panel (side / bottom) ────────────────────────────────
+// â”€â”€â”€ Neighborhood detail panel (side / bottom) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type NeighborhoodPanelProps = {
   point: NeighborhoodPoint | null;
@@ -132,19 +131,19 @@ type NeighborhoodPanelProps = {
 function NeighborhoodPanel({ point, onDismiss }: NeighborhoodPanelProps) {
   if (!point) return null;
   const benchmarkLabel = getBenchmarkLabel(point);
-  const color = confidenceColor(point.dataConfidence);
+  const color = confidenceColor(point.confidence);
 
   return (
     <div
       className="animate-in slide-in-from-bottom duration-300 border-t border-[#eadfca] bg-white"
-      aria-label={`Fiche repère quartier ${point.neighborhood ?? point.city}`}
+      aria-label={`Fiche repÃ¨re quartier ${point.neighborhood ?? point.city}`}
     >
       <div className="mx-auto max-w-xl px-4 py-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9B7838]">
-              Repère indicatif · {point.city}
+              RepÃ¨re indicatif Â· {point.city}
             </p>
             <h2 className="mt-1 text-[1.1rem] font-extrabold tracking-tight text-[#071B33]">
               {point.neighborhood ?? point.city}
@@ -156,7 +155,7 @@ function NeighborhoodPanel({ point, onDismiss }: NeighborhoodPanelProps) {
             className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:bg-gray-50"
             aria-label="Fermer"
           >
-            ✕
+            âœ•
           </button>
         </div>
 
@@ -169,13 +168,13 @@ function NeighborhoodPanel({ point, onDismiss }: NeighborhoodPanelProps) {
             className="text-[11px] font-extrabold uppercase tracking-[0.1em]"
             style={{ color }}
           >
-            Repère prix indicatif — {point.benchmark.period}
+            RepÃ¨re prix indicatif â€” {point.benchmark.period}
           </p>
           <p className="mt-1 text-[1.05rem] font-extrabold text-[#071B33]">
             {benchmarkLabel}
           </p>
           <p className="mt-0.5 text-[10px] text-gray-400">
-            Appartement · achat · non garanti · à confirmer
+            Appartement Â· achat Â· non garanti Â· Ã  confirmer
           </p>
         </div>
 
@@ -183,7 +182,7 @@ function NeighborhoodPanel({ point, onDismiss }: NeighborhoodPanelProps) {
         {point.highlights.length > 0 && (
           <div className="mt-3">
             <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-gray-400">
-              Vie autour du quartier · données indicatives OSM
+              Vie autour du quartier Â· donnÃ©es indicatives OSM
             </p>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {point.highlights.map((h, i) => (
@@ -204,10 +203,10 @@ function NeighborhoodPanel({ point, onDismiss }: NeighborhoodPanelProps) {
             href={point.searchHref}
             className="block w-full rounded-xl bg-[#071B33] px-4 py-2.5 text-center text-[13px] font-extrabold text-white hover:bg-[#0f2d52] transition-colors"
           >
-            Rechercher dans ce quartier →
+            Rechercher dans ce quartier â†’
           </Link>
           <p className="mt-2 text-[10px] text-center text-gray-400">
-            Repères indicatifs · sources visibles · à confirmer avant toute décision
+            RepÃ¨res indicatifs Â· sources visibles Â· Ã  confirmer avant toute dÃ©cision
           </p>
         </div>
       </div>
@@ -215,7 +214,7 @@ function NeighborhoodPanel({ point, onDismiss }: NeighborhoodPanelProps) {
   );
 }
 
-// ─── Component ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type MapNeighborhoodExperienceProps = {
   initialCity?: string;
@@ -284,7 +283,7 @@ export function MapNeighborhoodExperience({
     }));
   }, [visiblePoints]);
 
-  // ─── MapLibre init ──────────────────────────────────────────────────────────
+  // â”€â”€â”€ MapLibre init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -307,7 +306,7 @@ export function MapNeighborhoodExperience({
         zoom: MOROCCO_OVERVIEW.zoom,
         attributionControl: {
           customAttribution:
-            "© <a href='https://www.openstreetmap.org/copyright' target='_blank'>OpenStreetMap contributors</a>",
+            "Â© <a href='https://www.openstreetmap.org/copyright' target='_blank'>OpenStreetMap contributors</a>",
         },
       });
 
@@ -328,7 +327,7 @@ export function MapNeighborhoodExperience({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ─── City flyTo ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€ City flyTo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
@@ -344,7 +343,7 @@ export function MapNeighborhoodExperience({
     }
   }, [cityFilter, mapLoaded]);
 
-  // ─── Theme swap ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€ Theme swap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const styleInitRef = useRef(true);
   useEffect(() => {
@@ -356,7 +355,7 @@ export function MapNeighborhoodExperience({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [theme]);
 
-  // ─── Markers ────────────────────────────────────────────────────────────────
+  // â”€â”€â”€ Markers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
@@ -390,18 +389,18 @@ export function MapNeighborhoodExperience({
     });
   }, [mapLoaded, showClusters, cityClusters, visiblePoints, selectedId]);
 
-  // ─── Render ─────────────────────────────────────────────────────────────────
+  // â”€â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   return (
     <div className="relative flex flex-col" style={{ height: "calc(100vh - 64px)" }}>
 
-      {/* ── Filter bar ─────────────────────────────────────────────────────── */}
+      {/* â”€â”€ Filter bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="flex-shrink-0 border-b border-[#eadfca] bg-deepblue text-white z-10">
         <div className="mx-auto max-w-[1480px] px-4 py-4 sm:px-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-bronze-400">
-                Intelligence quartier · Repères indicatifs
+                Intelligence quartier Â· RepÃ¨res indicatifs
               </p>
               <h1 className="mt-1 text-[1.4rem] font-extrabold tracking-[-0.04em] sm:text-[1.8rem]">
                 Explorez les quartiers immobiliers du Maroc
@@ -409,10 +408,10 @@ export function MapNeighborhoodExperience({
             </div>
             <div className="text-right hidden sm:block">
               <p className="text-[12px] font-bold text-white/60">
-                {visiblePoints.length} quartier{visiblePoints.length !== 1 ? "s" : ""} répertorié{visiblePoints.length !== 1 ? "s" : ""}
+                {visiblePoints.length} quartier{visiblePoints.length !== 1 ? "s" : ""} rÃ©pertoriÃ©{visiblePoints.length !== 1 ? "s" : ""}
               </p>
               <p className="text-[10px] text-white/40 mt-0.5">
-                Données indicatives · sources visibles
+                DonnÃ©es indicatives Â· sources visibles
               </p>
             </div>
           </div>
@@ -445,20 +444,20 @@ export function MapNeighborhoodExperience({
               onClick={() => { setCityFilter("all"); setSelectedId(null); }}
               className="mt-5 h-10 rounded-xl border border-white/15 px-4 text-[12px] font-extrabold text-white/82 hover:bg-white/10 transition-colors"
             >
-              Réinitialiser
+              RÃ©initialiser
             </button>
 
             <Link
               href={cityFilter !== "all" ? `/search?city=${encodeURIComponent(cityFilter)}` : "/search"}
               className="mt-5 h-10 flex items-center rounded-xl bg-[#9B7838] px-4 text-[12px] font-extrabold text-white hover:bg-[#b08c44] transition-colors"
             >
-              Rechercher dans cette zone →
+              Rechercher dans cette zone â†’
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── Map + panel ────────────────────────────────────────────────────── */}
+      {/* â”€â”€ Map + panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="flex-1 relative flex flex-col overflow-hidden min-h-0">
         {/* Map */}
         <div className="relative flex-1 min-h-0">
@@ -470,7 +469,7 @@ export function MapNeighborhoodExperience({
               <div className="text-center text-white">
                 <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
                 <p className="text-[13px] font-bold text-white/72">
-                  Chargement de la carte…
+                  Chargement de la carteâ€¦
                 </p>
               </div>
             </div>
@@ -492,7 +491,7 @@ export function MapNeighborhoodExperience({
             <div className="absolute top-4 left-4 z-10">
               <div className="rounded-xl border border-white/15 bg-[#071B33]/80 px-3 py-2 backdrop-blur">
                 <p className="text-[12px] font-extrabold text-white">
-                  {visiblePoints.length} quartier{visiblePoints.length !== 1 ? "s" : ""} répertorié{visiblePoints.length !== 1 ? "s" : ""}
+                  {visiblePoints.length} quartier{visiblePoints.length !== 1 ? "s" : ""} rÃ©pertoriÃ©{visiblePoints.length !== 1 ? "s" : ""}
                 </p>
               </div>
             </div>
@@ -502,13 +501,13 @@ export function MapNeighborhoodExperience({
           <div className="absolute bottom-8 left-4 right-4 sm:right-auto sm:max-w-xs z-10 pointer-events-none">
             <div className="rounded-2xl border border-white/15 bg-[#071B33]/88 p-3 backdrop-blur">
               <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#C2A368]">
-                Intelligence quartier — repères indicatifs
+                Intelligence quartier â€” repÃ¨res indicatifs
               </p>
               <p className="mt-1 text-[11px] leading-5 text-white/70">
-                Données indicatives OSM et observations de marché 2024–2025. À confirmer avant toute décision d'achat ou location.
+                DonnÃ©es indicatives OSM et observations de marchÃ© 2024â€“2025. Ã€ confirmer avant toute dÃ©cision d'achat ou location.
               </p>
               <p className="mt-1 text-[10px] text-white/45">
-                Tuiles ©{" "}
+                Tuiles Â©{" "}
                 <a
                   href="https://www.openstreetmap.org/copyright"
                   target="_blank"
@@ -530,7 +529,7 @@ export function MapNeighborhoodExperience({
         />
       </div>
 
-      {/* ── City overlay ────────────────────────────────────────────────────── */}
+      {/* â”€â”€ City overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {showCityOverlay && initialCityConfig && (
         <div
           className="absolute inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
@@ -557,7 +556,7 @@ export function MapNeighborhoodExperience({
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-[#C2A368]">
-              Intelligence quartier · AkarFinder
+              Intelligence quartier Â· AkarFinder
             </p>
             <h1 className="mt-4 text-[3.2rem] font-extrabold leading-[1.02] tracking-[-0.04em] text-white sm:text-[4.5rem]">
               {initialCityConfig.label}
@@ -573,10 +572,10 @@ export function MapNeighborhoodExperience({
               onClick={dismissOverlay}
               className="mt-8 rounded-full bg-[#9B7838] px-8 py-3.5 text-[14px] font-extrabold text-white shadow-[0_8px_24px_rgba(155,120,56,0.45)] transition hover:bg-[#b08c44]"
             >
-              Explorer {initialCityConfig.label} sur la carte →
+              Explorer {initialCityConfig.label} sur la carte â†’
             </button>
             <p className="mt-4 text-[11px] text-white/35">
-              ou appuyez n&apos;importe où pour passer
+              ou appuyez n&apos;importe oÃ¹ pour passer
             </p>
           </div>
         </div>
@@ -584,3 +583,4 @@ export function MapNeighborhoodExperience({
     </div>
   );
 }
+
