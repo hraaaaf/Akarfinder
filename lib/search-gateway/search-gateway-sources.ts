@@ -15,7 +15,7 @@ const SEARCH_GATEWAY_SOURCES: Record<string, SearchGatewaySourceConfig> = {
     source_badge: "external_indexed",
     original_link_required: true,
     thumbnail_policy: "provider_optional",
-    thumbnail_risk_accepted: false,
+    thumbnail_risk_accepted: true,
     notes: "Direct crawl blocked (403). Search API only for market intelligence.",
   },
   sarouty: {
@@ -29,7 +29,7 @@ const SEARCH_GATEWAY_SOURCES: Record<string, SearchGatewaySourceConfig> = {
     source_badge: "external_indexed",
     original_link_required: true,
     thumbnail_policy: "provider_optional",
-    thumbnail_risk_accepted: false,
+    thumbnail_risk_accepted: true,
     notes: "Platform-independent listings aggregation.",
   },
   yakeey: {
@@ -43,7 +43,7 @@ const SEARCH_GATEWAY_SOURCES: Record<string, SearchGatewaySourceConfig> = {
     source_badge: "external_indexed",
     original_link_required: true,
     thumbnail_policy: "provider_optional",
-    thumbnail_risk_accepted: false,
+    thumbnail_risk_accepted: true,
     notes: "Challenge-platform detected in direct audit. Search API only.",
   },
   agenz: {
@@ -57,7 +57,7 @@ const SEARCH_GATEWAY_SOURCES: Record<string, SearchGatewaySourceConfig> = {
     source_badge: "external_indexed",
     original_link_required: true,
     thumbnail_policy: "provider_optional",
-    thumbnail_risk_accepted: false,
+    thumbnail_risk_accepted: true,
     notes: "Policy review required for production full indexed mode.",
   },
   "logic-immo": {
@@ -71,7 +71,7 @@ const SEARCH_GATEWAY_SOURCES: Record<string, SearchGatewaySourceConfig> = {
     source_badge: "external_indexed",
     original_link_required: true,
     thumbnail_policy: "provider_optional",
-    thumbnail_risk_accepted: false,
+    thumbnail_risk_accepted: true,
     notes: "Integrated real estate search platform.",
   },
   mubawab: {
@@ -85,7 +85,7 @@ const SEARCH_GATEWAY_SOURCES: Record<string, SearchGatewaySourceConfig> = {
     source_badge: "public_indexed",
     original_link_required: true,
     thumbnail_policy: "provider_optional",
-    thumbnail_risk_accepted: false,
+    thumbnail_risk_accepted: true,
     notes: "DB structured results remain primary. Search API for complementary coverage.",
   },
 };

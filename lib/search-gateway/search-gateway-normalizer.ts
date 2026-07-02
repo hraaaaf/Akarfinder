@@ -47,9 +47,15 @@ export function normalizeSearchGatewayResult(
   // Generate unique ID from URL hash
   const id = `gateway_${sourceId}_${hashString(originalUrl)}`;
 
-  // Thumbnails (simple version: don't call Images API yet)
-  const canShowThumbnail = false; // Images API integration is a future mission
-  const thumbnailUrl = undefined;
+  // Thumbnails — provider-served (Google-cached) images from Serper.
+  // Gated by: feature flag + source thumbnail_risk_accepted + non-empty imageUrl.
+  // Never downloaded/cached/proxied — raw remote URL only.
+  const thumbnailsEnabled =
+    process.env.NEXT_PUBLIC_SEARCH_GATEWAY_THUMBNAILS_ENABLED === "true";
+  const rawThumbnail = (raw.imageUrl ?? "").trim();
+  const canShowThumbnail =
+    thumbnailsEnabled && sourceConfig.thumbnail_risk_accepted && !!rawThumbnail;
+  const thumbnailUrl = canShowThumbnail ? rawThumbnail : undefined;
 
   return {
     id,

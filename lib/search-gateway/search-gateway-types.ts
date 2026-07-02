@@ -38,6 +38,9 @@ export type SearchGatewayRawResult = {
   url?: string;
   displayLink?: string;
   display_url?: string;
+  // Serper organic results include a provider-served thumbnail (Google-cached).
+  // Use only when thumbnail_risk_accepted=true and the feature flag is enabled.
+  imageUrl?: string;
 };
 
 export type SearchGatewayNormalizedResult = {
