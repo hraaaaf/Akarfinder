@@ -1,10 +1,36 @@
+import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 
-const footerLinks = {
-  AkarFinder: ["À propos", "Comment ça marche", "Nos partenaires", "Presse"],
-  Explorer: ["Acheter", "Louer", "Neuf", "Carte des biens"],
-  Outils: ["Repère marché", "Alertes", "Comparateur", "Conseils immo"],
-  Aide: ["FAQ", "Contact", "Conditions d'utilisation", "Politique de confidentialité"]
+type FooterLink = { label: string; href: string };
+
+// href="#" = no dedicated page yet (left as-is, not a real route to avoid
+// inventing pages outside this mission's scope). Real routes are wired below.
+const footerLinks: Record<string, FooterLink[]> = {
+  AkarFinder: [
+    { label: "À propos", href: "#" },
+    { label: "Comment ça marche", href: "#" },
+    { label: "Nos partenaires", href: "#" },
+    { label: "Presse", href: "#" },
+  ],
+  Explorer: [
+    { label: "Acheter", href: "/acheter" },
+    { label: "Louer", href: "/louer" },
+    { label: "Neuf", href: "/neuf" },
+    { label: "Carte des biens", href: "/map" },
+  ],
+  Outils: [
+    { label: "Repère marché", href: "#" },
+    { label: "Alertes", href: "#" },
+    { label: "Comparateur", href: "/compare" },
+    { label: "Conseils immo", href: "#" },
+  ],
+  Aide: [
+    { label: "FAQ", href: "#" },
+    { label: "Contact", href: "#" },
+    { label: "Demande de retrait", href: "/demande-retrait" },
+    { label: "Conditions d'utilisation", href: "/conditions-utilisation" },
+    { label: "Politique de confidentialité", href: "/politique-confidentialite" },
+  ],
 };
 
 // Social brand icons kept as SVG (not in Lucide)
@@ -81,11 +107,11 @@ export function SiteFooter() {
             ))}
           </div>
           <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-muted-foreground">
-            <a href="#" className="hover:text-foreground">Acheter</a>
-            <a href="#" className="hover:text-foreground">Louer</a>
+            <Link href="/acheter" className="hover:text-foreground">Acheter</Link>
+            <Link href="/louer" className="hover:text-foreground">Louer</Link>
             <a href="#" className="hover:text-foreground">Comment ça marche</a>
             <a href="#" className="hover:text-foreground">FAQ</a>
-            <a href="#" className="hover:text-foreground">Contact</a>
+            <Link href="/demande-retrait" className="hover:text-foreground">Demande de retrait</Link>
           </div>
           <div className="mt-6 border-t border-border/15 pt-5 text-[11.5px] text-muted-foreground">
             © 2026 AkarFinder.ma — Version bêta
@@ -131,11 +157,17 @@ export function SiteFooter() {
               <div key={title}>
                 <h3 className="text-[14px] font-bold text-foreground">{title}</h3>
                 <div className="mt-4 grid gap-2.5 text-[13.5px] text-muted-foreground">
-                  {links.map((link) => (
-                    <a key={link} href="#" className="transition hover:text-foreground">
-                      {link}
-                    </a>
-                  ))}
+                  {links.map((link) =>
+                    link.href === "#" ? (
+                      <a key={link.label} href="#" className="transition hover:text-foreground">
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link key={link.label} href={link.href} className="transition hover:text-foreground">
+                        {link.label}
+                      </Link>
+                    )
+                  )}
                 </div>
               </div>
             ))}

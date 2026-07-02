@@ -20,8 +20,8 @@ const FALLBACK: Stats = {
 const STAT_META = [
   {
     key: "total_listings" as const,
-    label: "Annonces analysées",
-    sub: "issues de sources publiques consolidées",
+    label: "Annonces comparées",
+    sub: "biens, quartiers et repères de prix rassemblés",
     fallbackLabel: "Multi-sources",
     suffix: "",
     decimals: 0,
@@ -160,7 +160,7 @@ export function DataProofBlock() {
             Analyse intelligente du marché
           </span>
           <p className="mt-3 text-[14.5px] text-muted-foreground">
-            Données indicatives générées à partir d&apos;annonces publiques analysées automatiquement.
+            Comparez les biens, les quartiers et les repères de prix avant de contacter une source.
             {!hasRealData && loaded && (
               <span className="ml-1 text-muted-foreground/60">(données en cours de collecte)</span>
             )}

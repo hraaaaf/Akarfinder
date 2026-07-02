@@ -57,7 +57,7 @@ export async function MarketPulse() {
 
   return (
     <section
-      aria-label="Dernières annonces analysées"
+      aria-label="Derniers biens à comparer"
       className="relative overflow-hidden border-y border-border/15 bg-surface-muted text-foreground"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(194,163,104,0.12),transparent_38%)]" />
@@ -65,10 +65,10 @@ export async function MarketPulse() {
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-accent">
-              Dernières annonces analysées
+              Derniers biens à comparer
             </p>
             <p className="mt-2 max-w-[680px] text-[13px] leading-6 text-muted-foreground sm:text-[13.5px]">
-              Biens récemment intégrés à l&apos;index AkarFinder.
+              Comparez les biens, les quartiers et les repères de prix avant de contacter une source.
             </p>
           </div>
         </div>

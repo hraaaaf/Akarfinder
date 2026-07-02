@@ -29,6 +29,7 @@ import type { Listing } from "@/lib/listings/types";
 import { getGeoPrecisionLabel } from "@/lib/geo/resolve-listing-geo";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-policy";
+import { canHaveInternalDetail, canShowContactActions } from "@/lib/listings/listing-boundary";
 import { calculatePackageScore } from "@/lib/package-score/calculate-package-score";
 import { getListingObservedPriceComparison } from "@/lib/market/get-market-reference";
 
@@ -132,6 +133,8 @@ export function ListingDetail({ listing }: { listing: Listing }) {
   const locationLabel = getLocationLabel(listing);
   const imageMode = getListingImageMode(listing);
   const attribution = getImageAttribution(listing);
+  const internalDetailAllowed = canHaveInternalDetail(listing);
+  const showContactActions = canShowContactActions(listing);
 
   const proximityPoints = getListingProximity(listing.city, listing.neighborhood);
   const proximityProfile = computeRealProximityProfile(inferProximityInput(listing));
@@ -297,9 +300,30 @@ export function ListingDetail({ listing }: { listing: Listing }) {
             </div>
           </div>
 
-          <div className="lg:hidden">
-            <VisitRequestPanel listing={listing} compact />
-          </div>
+          {showContactActions ? (
+            <div className="lg:hidden">
+              <VisitRequestPanel listing={listing} compact />
+            </div>
+          ) : null}
+
+          {!internalDetailAllowed ? (
+            <div className="rounded-[1.4rem] border border-[#c7dff7] bg-[#f0f7ff] p-4 lg:hidden">
+              <p className="text-[12px] font-bold leading-5 text-[#1a4a8a]">
+                {listing.source_attribution_label ??
+                  "Source publique indexée — aperçu limité, redirection vers le site original."}
+              </p>
+              {listing.listing_url ? (
+                <a
+                  href={listing.listing_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 flex w-full items-center justify-center rounded-xl bg-[#0B63CE] dark:bg-deepblue px-4 py-3 text-[13.5px] font-extrabold text-white transition hover:bg-[#0d2a4d]"
+                >
+                  Voir sur {listing.source_name ?? "la source"} →
+                </a>
+              ) : null}
+            </div>
+          ) : null}
 
           {/* Description */}
           <div className="rounded-[1.4rem] border border-[#eadfca] bg-white p-5 shadow-[0_6px_22px_rgba(7,27,51,0.04)]">
@@ -349,7 +373,25 @@ export function ListingDetail({ listing }: { listing: Listing }) {
               </p>
             </div>
             <div className="space-y-2.5 p-5">
-              {listing.whatsapp ? (
+              {!internalDetailAllowed ? (
+                <div className="rounded-xl border border-[#c7dff7] bg-[#f0f7ff] p-3.5">
+                  <p className="text-[12px] font-bold leading-5 text-[#1a4a8a]">
+                    {listing.source_attribution_label ??
+                      "Source publique indexée — aperçu limité, redirection vers le site original."}
+                  </p>
+                </div>
+              ) : null}
+              {!internalDetailAllowed && listing.listing_url ? (
+                <a
+                  href={listing.listing_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center rounded-xl bg-[#0B63CE] dark:bg-deepblue px-4 py-3.5 text-[14px] font-extrabold text-white transition hover:bg-[#0d2a4d]"
+                >
+                  Voir sur {listing.source_name ?? "la source"} →
+                </a>
+              ) : null}
+              {showContactActions && listing.whatsapp ? (
                 <WhatsAppCTA
                   phone={listing.whatsapp}
                   label="Contacter via WhatsApp"
@@ -357,10 +399,12 @@ export function ListingDetail({ listing }: { listing: Listing }) {
                   variant="primary"
                 />
               ) : null}
-              <VisitRequestPanel listing={listing} />
-              <button className="w-full rounded-xl border border-[#d8c8a3] bg-white px-4 py-3.5 text-[14px] font-extrabold text-deepblue transition hover:bg-[#f7f3ea]">
-                Demander plus d&apos;informations
-              </button>
+              {showContactActions ? <VisitRequestPanel listing={listing} /> : null}
+              {showContactActions ? (
+                <button className="w-full rounded-xl border border-[#d8c8a3] bg-white px-4 py-3.5 text-[14px] font-extrabold text-deepblue transition hover:bg-[#f7f3ea]">
+                  Demander plus d&apos;informations
+                </button>
+              ) : null}
               <Link
                 href={`/onboarding?listing=${listing.id}`}
                 className="flex w-full items-center justify-center rounded-xl border border-bronze-700/40 bg-[#fffdf8] px-4 py-3 text-[13.5px] font-extrabold text-bronze-700 transition hover:border-bronze-700/70 hover:bg-[#fef8ed]"
@@ -373,8 +417,9 @@ export function ListingDetail({ listing }: { listing: Listing }) {
                 Créer une alerte similaire
               </button>
               <p className="pt-1 text-[11px] leading-5 text-gray-500">
-                Les coordonnées de contact sont transmises par la source d&apos;origine.
-                Vérifiez toujours l&apos;annonce avant de vous déplacer.
+                {internalDetailAllowed
+                  ? "Les coordonnées de contact sont transmises par la source d'origine. Vérifiez toujours l'annonce avant de vous déplacer."
+                  : "Annonce indexée depuis une source publique tierce. AkarFinder ne gère ni le contact ni la visite — rendez-vous sur l'annonce d'origine."}
               </p>
             </div>
           </div>
@@ -447,7 +492,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
         <SimilarListings listings={similar} currentListing={listing} />
       </div>
 
-      <StickyWhatsAppBar listing={listing} />
+      {showContactActions ? <StickyWhatsAppBar listing={listing} /> : null}
       <CompareBar mobileOffsetClassName="bottom-24" />
     </section>
   );
