@@ -1615,3 +1615,38 @@ Impact:
 - Aucun lien /listings/ interne sur la home pour sources non autorisées.
 - /search, /map, /listings, /onboarding, ingestion, gateway, registry : inchangés.
 - Prochaine décision à anticiper : QA-PROD-MOBILE-FINAL avant P18A (Alertes MVP).
+
+## 2026-07-02 - MCP-SERVERS-INSTALLATION-1 - Installation et configuration de serveurs MCP (Figma, Playwright, Chrome DevTools, 21st.dev)
+
+Status: Validated
+
+Decision:
+- Ajout de serveurs MCP (Model Context Protocol) pour Figma, Playwright, Chrome DevTools et 21st.dev.
+- Configuration effectuée localement dans le fichier `.mcp.json` du projet.
+- Configuration effectuée globalement dans le fichier `mcp_config.json` de l'environnement Gemini.
+
+Reason:
+- Permettre à l'agent de développement d'automatiser des tests E2E via Playwright, d'inspecter et débugger le DOM/réseau via Chrome DevTools, et de concevoir des intégrations de design conformes à partir de Figma.
+
+Impact:
+- Les configurations locales et globales contiennent les définitions de serveurs Figma, Playwright, Chrome DevTools et 21st-dev magic.
+
+## 2026-07-02 - MAP-NEIGHBORHOOD-CORRECTION-1 - `/map` devient une carte d'intelligence quartier
+
+Status: Validated
+
+Decision:
+- `/map` ne publie plus les listings tiers legacy.
+- L'ancien contrat P10B "carte d'annonces géolocalisées" est superseded pour la Phase 1 moteur pur.
+- `searchListings` et `applyGeoEnrichment` restent hors `/map`.
+- `minReliabilityScore` n'est plus un filtre `/map`.
+- `reliability_score` global reste disponible hors `/map` pour les surfaces autorisées.
+
+Reason:
+- La Phase 1 AkarFinder doit rester un moteur pur + intelligence quartier.
+- La carte sert à l'exploration de quartiers avec repères indicatifs, pas à la publication de listings legacy géolocalisés.
+
+Impact:
+- `/map` s'appuie sur `lib/map/neighborhood-data.ts` et l'expérience `MapNeighborhoodExperience`.
+- Les tests et la documentation sont alignés avec la nouvelle carte quartier.
+

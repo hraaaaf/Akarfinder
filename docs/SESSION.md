@@ -8743,3 +8743,53 @@ Validation
 Decision
 * `/search` live est corrige pour le chemin SSR/read-model.
 
+----------------------------------------------------
+MCP-SERVERS-INSTALLATION-1 - 2026-07-02
+
+Status: completed
+
+Mission
+* Installer et configurer les serveurs MCP pour Figma, Playwright, Chrome DevTools et 21st.dev / shadcn.
+
+Fichiers modifies
+* .mcp.json
+* C:\Users\lenovo\.gemini\config\mcp_config.json
+* docs/DECISIONS.md
+* docs/SESSION.md
+
+Livraison
+* Configuration du serveur Figma (HTTP).
+* Configuration du serveur Playwright (@playwright/mcp@latest).
+* Configuration du serveur Chrome DevTools (@modelcontextprotocol/server-chrome-devtools).
+* Configuration du serveur 21st-dev Magic (@21st-dev/magic@latest).
+* Conservation de shadcn existant.
+
+Validation
+* Fichiers de configuration JSON validÃ©s syntaxiquement.
+
+
+
+----------------------------------------------------
+MAP-NEIGHBORHOOD-CORRECTION-1 - 2026-07-02
+
+Status: completed
+
+Mission
+* Stabiliser la nouvelle carte `/map` comme carte d'intelligence quartier.
+* Corriger la divergence des repères quartier, renforcer les tests et documenter le nouveau contrat.
+
+Fichiers modifies
+* lib/map/neighborhood-data.ts
+* scripts/scrapers/__tests__/p10b-map.test.ts
+* docs/DECISIONS.md
+* docs/SESSION.md
+
+Livraison
+* Les repères quartier s'appuient désormais sur `MARKET_DATA` pour les labels prix quand c'est possible.
+* Les cas sans repère sourcé restent prudents avec le label `Repère indicatif bientôt disponible`.
+* Les tests verrouillent l'absence de `searchListings`, `applyGeoEnrichment`, `minReliabilityScore` et du wording interdit sur `/map`.
+* La documentation enregistre explicitement que `/map` est une carte d'intelligence quartier et que le contrat P10B annonces est superseded pour cette surface.
+
+Validation
+* `npm test` lancé.
+* `npm run build` lancé.

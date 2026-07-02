@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import { describe, it } from "node:test";
 import { geoEnrichedMockListings } from "@/lib/listings/mock-listings";
 import {
@@ -8,12 +10,21 @@ import {
   getMapPoints,
   getMapSearchHref,
 } from "@/lib/map/listing-map";
+import {
+  NEIGHBORHOOD_POINTS,
+  filterNeighborhoodsByCity,
+  getBenchmarkLabel,
+  getNeighborhoodCities,
+} from "@/lib/map/neighborhood-data";
 
-describe("P10B - map MVP helpers", () => {
-  it("keeps only listings with geo coordinates and the configured reliability floor", () => {
+// NOTE: As of MAP-NEIGHBORHOOD-INTELLIGENCE-1, the /map page uses neighborhood-data.ts
+// and no longer uses filterMapListings or MapFilters for its UI.
+// These helpers are preserved here for backward compatibility only.
+
+describe("P10B - map helpers (listing-based, preserved for compat)", () => {
+  it("keeps only listings with geo coordinates", () => {
     const listings = filterMapListings(geoEnrichedMockListings, {
       ...defaultMapFilters,
-      minReliabilityScore: 80,
       hideDuplicates: false,
     });
 
@@ -22,8 +33,7 @@ describe("P10B - map MVP helpers", () => {
       listings.every(
         (listing) =>
           listing.latitude != null &&
-          listing.longitude != null &&
-          listing.reliability_score >= 80
+          listing.longitude != null
       )
     );
   });
@@ -38,7 +48,6 @@ describe("P10B - map MVP helpers", () => {
     const listings = filterMapListings([...geoEnrichedMockListings, duplicateLike], {
       ...defaultMapFilters,
       hideDuplicates: true,
-      minReliabilityScore: 0,
     });
 
     assert.equal(
@@ -61,13 +70,105 @@ describe("P10B - map MVP helpers", () => {
       ...defaultMapFilters,
       city: "Casablanca",
       transactionType: "buy",
-      minReliabilityScore: 70,
     });
 
     assert.ok(clusters.some((cluster) => cluster.city === "Casablanca"));
     assert.match(href, /^\/search\?/);
     assert.match(href, /city=Casablanca/);
     assert.match(href, /type=buy/);
-    assert.match(href, /minReliabilityScore=70/);
+  });
+});
+
+describe("MAP-NEIGHBORHOOD-INTELLIGENCE-1 - neighborhood map contract", () => {
+  const mapPageSource = fs.readFileSync(path.join(process.cwd(), "app/map/page.tsx"), "utf8");
+  const neighborhoodSource = fs.readFileSync(
+    path.join(process.cwd(), "lib/map/neighborhood-data.ts"),
+    "utf8"
+  );
+  const neighborhoodExperienceSource = fs.readFileSync(
+    path.join(process.cwd(), "components/map/MapNeighborhoodExperience.tsx"),
+    "utf8"
+  );
+
+  it("/map ne reference ni searchListings ni applyGeoEnrichment", () => {
+    assert.equal(mapPageSource.includes("searchListings"), false);
+    assert.equal(mapPageSource.includes("applyGeoEnrichment"), false);
+  });
+
+  it("/map n'utilise plus de contrat listings legacy", () => {
+    assert.equal(neighborhoodExperienceSource.includes("/listings/"), false);
+    assert.equal(neighborhoodExperienceSource.includes("annonces analysées"), false);
+    assert.equal(neighborhoodExperienceSource.includes("biens analysés"), false);
+    assert.equal(neighborhoodExperienceSource.includes("densité d'annonces"), false);
+    assert.equal(neighborhoodExperienceSource.includes("clusters d'annonces"), false);
+  });
+
+  it("neighborhood-data expose villes, quartiers et repères sûrs", () => {
+    assert.ok(getNeighborhoodCities().length > 0);
+    assert.ok(NEIGHBORHOOD_POINTS.some((point) => point.neighborhood != null));
+    assert.ok(NEIGHBORHOOD_POINTS.some((point) => point.neighborhood == null));
+    assert.ok(
+      NEIGHBORHOOD_POINTS.every((point) =>
+        point.searchHref.startsWith("/search?")
+      )
+    );
+    assert.ok(
+      filterNeighborhoodsByCity("Casablanca").some(
+        (point) => point.neighborhood === "Maârif"
+      )
+    );
+    assert.ok(
+      filterNeighborhoodsByCity("Marrakech").some(
+        (point) => point.neighborhood === "Guéliz"
+      )
+    );
+  });
+
+  it("searchHref and labels are encoded and non-invented", () => {
+    const maarif = NEIGHBORHOOD_POINTS.find(
+      (point) => point.neighborhood === "Maârif"
+    );
+    assert.ok(maarif);
+    assert.match(getBenchmarkLabel(maarif!), /^~\d[\d\s]* DH\/m²$/);
+
+    const ourika = NEIGHBORHOOD_POINTS.find(
+      (point) => point.neighborhood === "Route de l'Ourika"
+    );
+    assert.ok(ourika);
+    assert.equal(ourika?.searchHref, "/search?city=Marrakech&q=Ourika");
+    assert.match(getBenchmarkLabel(ourika!), /^~\d[\d\s]* DH\/m²$/);
+  });
+
+  it("MapNeighborhoodExperience contains markers and detail panel code paths", () => {
+    assert.ok(neighborhoodExperienceSource.includes("createNeighborhoodMarkerEl"));
+    assert.ok(neighborhoodExperienceSource.includes("NeighborhoodPanel"));
+    assert.ok(neighborhoodExperienceSource.includes("Rechercher dans ce quartier"));
+  });
+
+  it("no forbidden wording appears in the map neighborhood experience", () => {
+    const forbidden = [
+      "annonces analysées",
+      "biens analysés",
+      "sources analysées",
+      "données analysées",
+      "index AkarFinder",
+      "densité d'annonces",
+      "clusters d'annonces",
+      "fiabilité moyenne des annonces",
+    ];
+
+    for (const word of forbidden) {
+      assert.equal(neighborhoodExperienceSource.includes(word), false, word);
+      assert.equal(neighborhoodSource.includes(word), false, word);
+    }
+    assert.equal(mapPageSource.includes("minReliabilityScore"), false);
+  });
+
+  it("reliability_score global still exists outside /map", () => {
+    const listingTypesSource = fs.readFileSync(
+      path.join(process.cwd(), "lib/listings/types.ts"),
+      "utf8"
+    );
+    assert.equal(listingTypesSource.includes("reliability_score"), true);
   });
 });

@@ -17,7 +17,6 @@ export type MapFilters = {
   propertyType: "all" | ListingPropertyType;
   minBudget: string;
   maxBudget: string;
-  minReliabilityScore: number;
   hideDuplicates: boolean;
 };
 
@@ -68,7 +67,6 @@ export const defaultMapFilters: MapFilters = {
   propertyType: "all",
   minBudget: "",
   maxBudget: "",
-  minReliabilityScore: 50,
   hideDuplicates: true,
 };
 
@@ -121,7 +119,6 @@ export function filterMapListings(
         listing.property_type === filters.propertyType) &&
       listing.price >= minBudget &&
       listing.price <= maxBudget &&
-      (listing.reliability_score ?? 0) >= filters.minReliabilityScore &&
       (!filters.hideDuplicates || duplicateScore < 0.7)
     );
   });
@@ -197,10 +194,6 @@ export function getMapSearchHref(filters: MapFilters): string {
   if (filters.propertyType !== "all") params.set("property_type", filters.propertyType);
   if (filters.minBudget) params.set("min_price", filters.minBudget);
   if (filters.maxBudget) params.set("max_price", filters.maxBudget);
-  if (filters.minReliabilityScore > 0) {
-    params.set("minReliabilityScore", String(filters.minReliabilityScore));
-  }
-
   const query = params.toString();
   return query ? `/search?${query}` : "/search";
 }

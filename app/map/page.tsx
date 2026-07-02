@@ -1,96 +1,33 @@
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { MapExperienceClient } from "@/components/map/MapExperienceClient";
-import { applyGeoEnrichment } from "@/lib/listings/apply-geo-enrichment";
-import { searchListings } from "@/lib/search";
-import type {
-  ListingPropertyType,
-  ListingTransactionType,
-} from "@/lib/listings/types";
-import type { MapFilters } from "@/lib/map/listing-map";
+import { MapNeighborhoodClient } from "@/components/map/MapNeighborhoodClient";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Carte immobilière du Maroc — Repères quartier | AkarFinder",
+  description:
+    "Explorez les quartiers immobiliers marocains : repères prix indicatifs, commodités et proximité par zone. Données indicatives 2024–2025.",
+};
 
 type MapPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-function pickFirst(value: string | string[] | undefined) {
+function pickFirst(value: string | string[] | undefined): string | undefined {
   if (Array.isArray(value)) return value[0];
   return value;
 }
 
-function normalizeTransactionType(
-  raw?: string
-): MapFilters["transactionType"] {
-  switch (raw) {
-    case "rent":
-    case "location":
-      return "rent";
-    case "new":
-    case "neuf":
-      return "new";
-    case "buy":
-    case "sale":
-    case "achat":
-      return "buy";
-    default:
-      return "all";
-  }
-}
-
-function normalizePropertyType(raw?: string): MapFilters["propertyType"] {
-  if (
-    raw === "Appartement" ||
-    raw === "Villa" ||
-    raw === "Terrain" ||
-    raw === "Studio" ||
-    raw === "Bureau" ||
-    raw === "Maison"
-  ) {
-    return raw as ListingPropertyType;
-  }
-  return "all";
-}
-
 export default async function MapPage({ searchParams }: MapPageProps) {
   const params = searchParams ? await searchParams : {};
-  const type = normalizeTransactionType(
-    pickFirst(params.type) ?? pickFirst(params.transaction_type)
-  );
-  const propertyType = normalizePropertyType(pickFirst(params.property_type));
   const city = pickFirst(params.city) ?? "all";
-  const minReliabilityScore =
-    Number(pickFirst(params.minReliabilityScore)) || 50;
-
-  // Fetch all real listings (up to 500) and apply geo enrichment
-  const searchResult = await searchListings({ limit: 500, offset: 0 }).catch(() => ({
-    listings: [],
-    total: 0,
-  }));
-  const totalAnalyzed = searchResult.total;
-  const enrichedListings = applyGeoEnrichment(searchResult.listings);
-  const positionedCount = enrichedListings.filter(
-    (l) => l.latitude != null && l.longitude != null
-  ).length;
 
   return (
     <main className="flex flex-col" style={{ minHeight: "100svh" }}>
       <SiteHeader />
       <div className="flex-1">
-        <MapExperienceClient
-          listings={enrichedListings}
-          totalAnalyzed={totalAnalyzed}
-          positionedCount={positionedCount}
-          initialFilters={{
-            city,
-            transactionType: type as "all" | ListingTransactionType,
-            propertyType,
-            maxBudget: pickFirst(params.max_price) ?? "",
-            minBudget: pickFirst(params.min_price) ?? "",
-            minReliabilityScore,
-          }}
-        />
+        <MapNeighborhoodClient initialCity={city} />
       </div>
       <SiteFooter />
     </main>
