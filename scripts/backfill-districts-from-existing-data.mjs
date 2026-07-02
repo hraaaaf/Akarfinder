@@ -62,18 +62,18 @@ function matchDistrict(text, possibleDistricts) {
 }
 
 function findDistrict(city, title, description) {
-  if (!city) return { district: null, confidence: "low", source: "none" };
+  if (!city) return { district: null, confidence: "low", source: "none", applyEligible: false };
 
   const possibleDistricts = DISTRICTS[city] || [];
-  if (possibleDistricts.length === 0) return { district: null, confidence: "low", source: "none" };
+  if (possibleDistricts.length === 0) return { district: null, confidence: "low", source: "none", applyEligible: false };
 
   const titleMatch = matchDistrict(title, possibleDistricts);
-  if (titleMatch.district) return { ...titleMatch, source: "title" };
+  if (titleMatch.district) return { ...titleMatch, source: "title", applyEligible: titleMatch.confidence === "high" };
 
   const descMatch = matchDistrict(description, possibleDistricts);
-  if (descMatch.district) return { ...descMatch, source: "description" };
+  if (descMatch.district) return { ...descMatch, source: "description", applyEligible: descMatch.confidence === "high" };
 
-  return { district: null, confidence: "low", source: "none" };
+  return { district: null, confidence: "low", source: "none", applyEligible: false };
 }
 
 const dryRun = !process.argv.includes("--apply");
