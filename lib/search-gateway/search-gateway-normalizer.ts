@@ -6,6 +6,7 @@ import type {
   SearchGatewayNormalizedResult,
 } from "./search-gateway-types";
 import { getSearchGatewaySourceById } from "./search-gateway-sources";
+import { isRealEstateGatewayResult } from "./search-gateway-real-estate-filter";
 
 export function normalizeSearchGatewayResult(
   raw: SearchGatewayRawResult,
@@ -32,6 +33,12 @@ export function normalizeSearchGatewayResult(
     return null;
   }
 
+  // Real-estate-only filter — reject vehicle listings (Avito cars, etc.)
+  const snippet = (raw.snippet ?? "").trim();
+  if (!isRealEstateGatewayResult(title, snippet || undefined, originalUrl)) {
+    return null;
+  }
+
   // Display URL (host + path)
   let displayUrl = originalUrl;
   try {
@@ -40,9 +47,6 @@ export function normalizeSearchGatewayResult(
   } catch {
     // fallback to original URL
   }
-
-  // Snippet
-  const snippet = (raw.snippet ?? "").trim();
 
   // Generate unique ID from URL hash
   const id = `gateway_${sourceId}_${hashString(originalUrl)}`;
