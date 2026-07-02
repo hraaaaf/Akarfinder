@@ -3,18 +3,18 @@ import { Container } from "@/components/ui/Container";
 const pillars = [
   {
     num: "01",
-    title: "Recherche centralisée",
-    body: "AkarFinder rassemble les annonces disponibles pour limiter les recherches dispersées sur plusieurs portails.",
+    title: "Cherchez plus simplement",
+    body: "Lancez une recherche immobilière depuis une seule interface et accédez aux sources originales.",
   },
   {
     num: "02",
-    title: "Signaux de confiance",
-    body: "Les doublons, prix atypiques et données incomplètes sont signalés de manière indicative, avant que vous ne contactiez.",
+    title: "Comparez le quartier",
+    body: "Prix/m² indicatif, proximité, commodités et repères locaux vous aident à mieux situer le bien avant de contacter.",
   },
   {
     num: "03",
-    title: "Contact mieux qualifié",
-    body: "Dossier acheteur et demande de visite permettent de contacter avec plus de contexte et moins d'incertitude.",
+    title: "Contactez à la source",
+    body: "AkarFinder ne s'interpose pas : vous continuez sur le site d'origine ou auprès du partenaire autorisé.",
   },
 ];
 
@@ -31,7 +31,7 @@ export function WhySection() {
             Comparez avant de contacter.
           </h2>
           <p className="mx-auto mt-4 max-w-[520px] text-[15px] leading-7 text-muted-foreground">
-            AkarFinder ajoute une couche de lecture utile au marché marocain : données analysées, signaux indicatifs, contact contextualisé.
+            AkarFinder vous aide à chercher sur plusieurs sources, comparer les repères de quartier, puis contacter la source originale.
           </p>
         </div>
 

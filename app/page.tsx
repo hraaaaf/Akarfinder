@@ -1,5 +1,4 @@
 import { GoogleLikeHero } from "@/components/home/GoogleLikeHero";
-import { HomeResultPreview } from "@/components/home/HomeResultPreview";
 import { MarketPulse } from "@/components/landing/MarketPulse";
 import { WhySection } from "@/components/landing/WhySection";
 import { DataProofBlock } from "@/components/landing/DataProofBlock";
@@ -20,17 +19,13 @@ export default async function HomePage() {
       {/* ── Hero moteur de recherche (remplace ProductHero) ── */}
       <GoogleLikeHero />
 
-      {/* ── Ticker biens récemment analysés ── */}
+      {/* ── Repères récents (moteur pur — sources autorisées uniquement) ── */}
       <MarketPulse />
 
-      {/* ── Landing premium existante — inchangée ── */}
       <Reveal><WhySection /></Reveal>
       <DataProofBlock />
       <Reveal><CityIntentGrid /></Reveal>
       <SignatureMapSection />
-
-      {/* ── Résultats observés avec V9.5 badges (remplace ListingPreview) ── */}
-      <Reveal><HomeResultPreview /></Reveal>
 
       <Reveal><HowItWorks /></Reveal>
       <Reveal><MreTrustSection /></Reveal>

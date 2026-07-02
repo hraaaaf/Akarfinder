@@ -13,7 +13,7 @@
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import type {
   ScrapedListingP0,
@@ -23,6 +23,7 @@ import type {
   SourceResult,
 } from "./types";
 import { logger } from "./utils/logger";
+import { getThirdPartyIngestionGuard, printBlockedSummary } from "./utils/motor-purity-guard";
 import { safeDelay } from "./utils/safe-delay";
 import { runAvito } from "./sources/avito";
 import { runMubawab } from "./sources/mubawab";
@@ -122,7 +123,25 @@ function buildCleanListings(listings: ScrapedListingP0[]): ScrapedListingP0[] {
   });
 }
 
-async function main() {
+export type P0RunResult = {
+  blocked: boolean;
+  totalScraped: number;
+  totalClean: number;
+  errors: number;
+};
+
+export async function runP0Scrape(): Promise<P0RunResult> {
+  const guard = getThirdPartyIngestionGuard({ scriptName: "scrape:p0" });
+  if (guard.blocked) {
+    logger.warn(guard.message);
+    printBlockedSummary();
+    return {
+      blocked: true,
+      totalScraped: 0,
+      totalClean: 0,
+      errors: 0,
+    };
+  }
   logger.step("AkarFinder — P0 real-estate scraping (test mode)");
   logger.info("Sources: avito, mubawab, sarouty");
   logger.info(`Agenz: NOT scraped (status: ${AGENZ_STATUS})`);
@@ -241,9 +260,17 @@ async function main() {
         "blocking the research bot, requiring JS rendering, or have changed their HTML."
     );
   }
+  return {
+    blocked: false,
+    totalScraped: cleanedListings.length,
+    totalClean: cleanListings.length,
+    errors: allErrors.length,
+  };
 }
 
-main().catch(async (e) => {
+const isCli = import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isCli) {
+runP0Scrape().catch(async (e) => {
   // Last-resort guard: still try to persist the error so output stays valid.
   const message = e instanceof Error ? e.stack || e.message : String(e);
   logger.error(`Fatal: ${message}`);
@@ -263,3 +290,4 @@ main().catch(async (e) => {
   }
   process.exitCode = 1;
 });
+}

@@ -27,7 +27,7 @@ export function HomeFinalCTA() {
               href="/search"
               className="w-full rounded-xl bg-accent px-9 py-4 text-[15px] font-extrabold text-white shadow-[0_8px_32px_rgba(155,120,56,0.40)] transition hover:brightness-110 hover:shadow-[0_12px_40px_rgba(155,120,56,0.55)] active:scale-[0.98] sm:w-auto"
             >
-              Voir les biens analysés
+              Lancer une recherche
             </Link>
             <Link
               href="/onboarding"

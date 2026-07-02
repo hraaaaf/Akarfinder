@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { isAvailable, queryListings, type DbListingsQuery } from "@/lib/db";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
 import { assignDuplicateGroups } from "@/lib/listings/duplicate";
+import { canPublishDbRowToPublicSurface } from "@/lib/listings/public-listing-access";
 import { getDbProvider } from "@/lib/db/provider";
 
 export const runtime = "nodejs";
@@ -46,19 +47,22 @@ export async function GET(request: NextRequest) {
   try {
     const result = await queryListings(query);
 
+    // PUBLIC-READMODEL-AUTHORIZED-ONLY-1: pre-filter to authorized sources only.
+    const authorizedRows = result.listings.filter(canPublishDbRowToPublicSurface);
+
     // P6: if all rows have persisted P6 scores, skip batch computation.
-    const allPersisted = result.listings.every(
+    const allPersisted = authorizedRows.every(
       (r) => r.reliability_score != null && r.duplicate_score != null
     );
 
     let enrichedListings;
     if (allPersisted) {
-      enrichedListings = result.listings.map((r) => mapDbRowToListing(r));
+      enrichedListings = authorizedRows.map((r) => mapDbRowToListing(r));
     } else {
       // Fallback: P5 two-pass on-the-fly computation for rows without persisted values.
-      const partialListings = result.listings.map((r) => mapDbRowToListing(r));
+      const partialListings = authorizedRows.map((r) => mapDbRowToListing(r));
       const dupMap = assignDuplicateGroups(partialListings);
-      enrichedListings = result.listings.map((r) =>
+      enrichedListings = authorizedRows.map((r) =>
         mapDbRowToListing(r, dupMap.get(String(r.id)))
       );
     }

@@ -1,0 +1,25 @@
+{
+  "started_at": "2026-07-02T08:43:07.801Z",
+  "finished_at": "2026-07-02T08:58:21.761Z",
+  "cycles_requested": 2,
+  "cycles_completed": 2,
+  "sources_attempted": [
+    "avito",
+    "mubawab",
+    "sarouty"
+  ],
+  "raw_listings_before": 100,
+  "raw_listings_after": 160,
+  "property_listings_before": 139,
+  "property_listings_after": 179,
+  "listing_sources_before": 144,
+  "listing_sources_after": 181,
+  "created": 40,
+  "updated": 20,
+  "duplicates_skipped": 0,
+  "rejected": 0,
+  "errors": 0,
+  "supabase_sync_status": "skipped",
+  "supabase_before": -1,
+  "supabase_after": -1
+}

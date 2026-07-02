@@ -110,7 +110,7 @@ export function CityIntentGrid() {
               href="/search"
               className="inline-flex items-center gap-2 rounded-full border border-[#60A5FA]/30 bg-white px-5 py-3 text-[0.95rem] font-semibold text-[#0B63CE] shadow-[0_18px_40px_rgba(11,99,206,0.08)] transition hover:border-[#60A5FA]/50 hover:bg-[#EEF6FF]"
             >
-              Voir les biens analyses
+              Rechercher sur ces villes
               <span aria-hidden="true">→</span>
             </Link>
           </div>
@@ -122,7 +122,7 @@ export function CityIntentGrid() {
               </li>
             ))}
             <li>
-              <Link href="/search">Voir les biens analyses</Link>
+              <Link href="/search">Rechercher sur ces villes</Link>
             </li>
           </ul>
         </div>

@@ -85,7 +85,7 @@ const MAP_CITIES: MapCity[] = [
 
 const SIDE_STATS = [
   { value: "6", label: "Villes cles", icon: "pin" as const },
-  { value: "Multi", label: "Sources analysees", icon: "bar" as const },
+  { value: "Multi", label: "Sources visibles", icon: "bar" as const },
   { value: "Visible", label: "Indices de fiabilite", icon: "shield" as const },
 ];
 
@@ -97,9 +97,9 @@ const BOTTOM_SIGNALS = [
     icon: "shield" as const,
   },
   {
-    label: "Annonces analysees",
+    label: "Resultats web",
     description:
-      "Des annonces multi-sources structurees pour faire ressortir les reperes utiles a la decision.",
+      "Des resultats provenant des sources originales, avec source visible et lien direct vers l'annonce.",
     icon: "bar" as const,
   },
   {
@@ -568,7 +568,7 @@ export function SignatureMapSection() {
           de l&apos;immobilier marocain
         </h2>
         <p className="mt-5 max-w-[720px] text-[1.08rem] leading-[1.55] text-muted-foreground">
-          Explorez les villes marocaines avec des reperes indicatifs, des annonces analysees et des signaux de fiabilite visibles pour investir et habiter en toute confiance.
+          Explorez les villes marocaines avec des reperes indicatifs et des signaux de fiabilite visibles pour mieux décider.
         </p>
 
         <div className="mt-7">
@@ -610,7 +610,7 @@ export function SignatureMapSection() {
                     de l&apos;immobilier marocain
                   </h2>
                   <p className="mt-7 max-w-[500px] text-[1.14rem] leading-[1.65] text-muted-foreground">
-                    Explorez les villes marocaines avec des reperes indicatifs, des annonces analysees et des signaux de fiabilite visibles pour investir et habiter en toute confiance.
+                    Explorez les villes marocaines avec des reperes indicatifs et des signaux de fiabilite visibles pour mieux décider.
                   </p>
                 </div>
                 <div className="relative mt-10 pl-14">
@@ -641,7 +641,7 @@ export function SignatureMapSection() {
       <ul className="sr-only">
         {MAP_CITIES.map((city) => (
           <li key={city.slug}>
-            <Link href={city.href}>Explorer les annonces a {city.label}</Link>
+            <Link href={city.href}>Rechercher a {city.label}</Link>
           </li>
         ))}
       </ul>

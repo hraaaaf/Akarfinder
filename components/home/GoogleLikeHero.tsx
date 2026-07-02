@@ -56,7 +56,7 @@ export function GoogleLikeHero() {
               aria-hidden="true"
             />
             <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE] sm:tracking-[0.22em] sm:text-white">
-              Trouvez, comparez et analysez les biens au Maroc
+              Moteur de recherche immobilier au Maroc
             </span>
           </div>
 
@@ -70,12 +70,10 @@ export function GoogleLikeHero() {
 
           <p className="mt-4 max-w-[560px] text-[0.95rem] leading-relaxed text-[#334155] drop-shadow-[0_1px_6px_rgba(0,0,0,0.2)] sm:mt-6 sm:text-[1.1rem] sm:text-white sm:drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
             <span className="sm:hidden">
-              Comparez les annonces, les prix et les signaux de fiabilite avant de
-              contacter.
+              Cherchez dans l&apos;immobilier marocain. Comprenez le quartier avant de contacter.
             </span>
             <span className="hidden sm:inline">
-              Recherchez, comparez et explorez des biens observes avec sources visibles,
-              apercus limites et signaux de fiabilite.
+              AkarFinder vous aide à trouver des résultats sur les sources originales et à comparer les repères du quartier : prix/m² indicatif, proximité et contexte local.
             </span>
           </p>
 

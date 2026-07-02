@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://akarfinder.ma"),
   title: "AkarFinder — Intelligence immobilière au Maroc",
   description:
-    "AkarFinder centralise la recherche immobilière au Maroc : une plateforme premium pour comparer, fiabiliser et décider. Intelligence immobilière au Maroc.",
+    "AkarFinder est un moteur de recherche immobilier au Maroc. Cherchez sur les sources originales, comparez les repères du quartier, décidez en confiance.",
   applicationName: "AkarFinder",
   manifest: "/manifest.webmanifest",
   icons: {

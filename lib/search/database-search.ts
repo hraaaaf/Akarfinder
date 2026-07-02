@@ -1,6 +1,7 @@
 import { queryListings } from "@/lib/db";
 import { assignDuplicateGroups } from "@/lib/listings/duplicate";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
+import { canPublishDbRowToPublicSurface } from "@/lib/listings/public-listing-access";
 import type { Listing } from "@/lib/listings/types";
 import type { SearchQuery, SearchResult } from "./types";
 
@@ -124,15 +125,19 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
     );
   }
 
-  const allPersisted = base.listings.every(
+  // PUBLIC-READMODEL-AUTHORIZED-ONLY-1: discard rows whose source is not
+  // first_party or partner_authorized before mapping (cheap pre-filter).
+  const authorizedRows = base.listings.filter(canPublishDbRowToPublicSurface);
+
+  const allPersisted = authorizedRows.every(
     (row) => row.reliability_score != null && row.duplicate_score != null
   );
   const listings = allPersisted
-    ? base.listings.map((row) => mapDbRowToListing(row))
+    ? authorizedRows.map((row) => mapDbRowToListing(row))
     : (() => {
-        const partial = base.listings.map((row) => mapDbRowToListing(row));
+        const partial = authorizedRows.map((row) => mapDbRowToListing(row));
         const duplicateMap = assignDuplicateGroups(partial);
-        return base.listings.map((row) =>
+        return authorizedRows.map((row) =>
           mapDbRowToListing(row, duplicateMap.get(String(row.id)))
         );
       })();

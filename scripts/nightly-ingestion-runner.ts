@@ -27,19 +27,15 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 
-// Load .env.local (same approach as sync-supabase.ts)
-import { existsSync as existsSyncFs, readFileSync } from "node:fs";
-const envFile = join(process.cwd(), ".env.local");
-if (existsSyncFs(envFile)) {
-  for (const line of readFileSync(envFile, "utf8").split("\n")) {
-    const m = line.match(/^([^#\s][^=]*)=(.*)$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
-  }
-}
-
 import { ingestCleanListings, type IngestStats } from "./scrapers/ingest-clean-listings.js";
 import { enrichAll } from "./scrapers/enrich-p6.js";
 import { openDb, DEFAULT_DB_PATH } from "./scrapers/db/client.js";
+import {
+  getThirdPartyIngestionGuard,
+  isNightlyIngestionEnabled,
+  loadLocalEnvOnce,
+  printBlockedSummary,
+} from "./scrapers/utils/motor-purity-guard.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -118,8 +114,9 @@ export type NightlyDeps = {
 // ─── Config ────────────────────────────────────────────────────────────────────
 
 export function readNightlyConfig(): NightlyConfig {
+  loadLocalEnvOnce();
   return {
-    enabled: process.env.NIGHTLY_INGESTION_ENABLED !== "false",
+    enabled: isNightlyIngestionEnabled(),
     max_cycles: Math.max(1, parseInt(process.env.NIGHTLY_MAX_CYCLES ?? "3", 10)),
     delay_minutes: Math.max(0, parseFloat(process.env.NIGHTLY_DELAY_MINUTES ?? "20")),
     stop_on_error_count: Math.max(1, parseInt(process.env.NIGHTLY_STOP_ON_ERROR_COUNT ?? "2", 10)),
@@ -259,11 +256,30 @@ export async function runNightlyIngestion(
 ): Promise<NightlyReport> {
   const cfg = config ?? readNightlyConfig();
   const d = deps ?? buildDefaultDeps();
+  const guard =
+    deps == null
+      ? getThirdPartyIngestionGuard({
+          scriptName: "nightly:ingest",
+          requireNightlyFlag: true,
+        })
+      : {
+          blocked: false,
+          message: "[motor-purity] nightly:ingest test override",
+          thirdPartyEnabled: true,
+          nightlyEnabled: cfg.enabled,
+          mubawabExpansionEnabled: false,
+        };
 
   const startedAt = new Date();
   d.log(`[nightly] started — cycles=${cfg.max_cycles} delay=${cfg.delay_minutes}min sync=${cfg.sync_supabase}`);
 
-  if (!cfg.enabled) {
+  if (guard.blocked || !cfg.enabled) {
+    d.log(
+      guard.blocked
+        ? `[nightly] ${guard.message}`
+        : "[nightly] NIGHTLY_INGESTION_ENABLED=false â€” skipping"
+    );
+    if (guard.blocked) printBlockedSummary();
     d.log("[nightly] NIGHTLY_INGESTION_ENABLED=false — skipping");
     const report: NightlyReport = {
       started_at: startedAt.toISOString(),

@@ -22,10 +22,14 @@ import {
 import type { Listing } from "../../../lib/listings/types.js";
 
 const tmpFiles: string[] = [];
+const savedThirdPartyDbIngestion = process.env.THIRD_PARTY_DB_INGESTION_ENABLED;
+process.env.THIRD_PARTY_DB_INGESTION_ENABLED = "true";
 after(async () => {
   for (const f of tmpFiles) {
     try { await unlink(f); } catch { /* ignore */ }
   }
+  if (savedThirdPartyDbIngestion === undefined) delete process.env.THIRD_PARTY_DB_INGESTION_ENABLED;
+  else process.env.THIRD_PARTY_DB_INGESTION_ENABLED = savedThirdPartyDbIngestion;
 });
 
 // ─── Extraction: og:image ────────────────────────────────────────────────────

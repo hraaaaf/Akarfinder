@@ -26,6 +26,10 @@ import type { IngestStats } from "../../scrapers/ingest-clean-listings.js";
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const TMP_DIR = join(tmpdir(), "nightly-runner-tests-" + process.pid);
+const savedThirdPartyDbIngestion = process.env.THIRD_PARTY_DB_INGESTION_ENABLED;
+const savedNightlyIngestion = process.env.NIGHTLY_INGESTION_ENABLED;
+process.env.THIRD_PARTY_DB_INGESTION_ENABLED = "true";
+process.env.NIGHTLY_INGESTION_ENABLED = "true";
 
 const SUCCESS_SPAWN: SpawnResult = { success: true, output: "", duration_ms: 50 };
 const FAIL_SPAWN: SpawnResult = { success: false, output: "error", duration_ms: 10 };
@@ -80,16 +84,20 @@ before(() => {
 
 after(() => {
   try { rmSync(TMP_DIR, { recursive: true, force: true }); } catch {}
+  if (savedThirdPartyDbIngestion === undefined) delete process.env.THIRD_PARTY_DB_INGESTION_ENABLED;
+  else process.env.THIRD_PARTY_DB_INGESTION_ENABLED = savedThirdPartyDbIngestion;
+  if (savedNightlyIngestion === undefined) delete process.env.NIGHTLY_INGESTION_ENABLED;
+  else process.env.NIGHTLY_INGESTION_ENABLED = savedNightlyIngestion;
 });
 
 // ─── readNightlyConfig — defaults ─────────────────────────────────────────────
 
 describe("readNightlyConfig — default values", () => {
-  it("enabled=true when NIGHTLY_INGESTION_ENABLED not set", () => {
+  it("enabled=false when NIGHTLY_INGESTION_ENABLED not set", () => {
     const saved = process.env.NIGHTLY_INGESTION_ENABLED;
     delete process.env.NIGHTLY_INGESTION_ENABLED;
     const cfg = readNightlyConfig();
-    assert.equal(cfg.enabled, true);
+    assert.equal(cfg.enabled, false);
     if (saved !== undefined) process.env.NIGHTLY_INGESTION_ENABLED = saved;
   });
 
@@ -223,6 +231,31 @@ describe("runNightlyIngestion — disabled", () => {
     assert.equal(scrapeCallCount, 0);
     assert.equal(report.cycles_completed, 0);
     assert.equal(report.supabase_sync_status, "skipped");
+  });
+
+  it("does not call syncSupabase when motor purity guard blocks the run", async () => {
+    const savedThirdParty = process.env.THIRD_PARTY_DB_INGESTION_ENABLED;
+    const savedNightly = process.env.NIGHTLY_INGESTION_ENABLED;
+    delete process.env.THIRD_PARTY_DB_INGESTION_ENABLED;
+    process.env.NIGHTLY_INGESTION_ENABLED = "false";
+
+    let syncCalled = false;
+    const deps = mockDeps({
+      syncSupabase: async () => {
+        syncCalled = true;
+        return SUCCESS_SPAWN;
+      },
+    });
+
+    const report = await runNightlyIngestion(baseConfig({ enabled: false, sync_supabase: true }), deps);
+    assert.equal(report.cycles_completed, 0);
+    assert.equal(report.supabase_sync_status, "skipped");
+    assert.equal(syncCalled, false);
+
+    if (savedThirdParty !== undefined) process.env.THIRD_PARTY_DB_INGESTION_ENABLED = savedThirdParty;
+    else delete process.env.THIRD_PARTY_DB_INGESTION_ENABLED;
+    if (savedNightly !== undefined) process.env.NIGHTLY_INGESTION_ENABLED = savedNightly;
+    else delete process.env.NIGHTLY_INGESTION_ENABLED;
   });
 });
 

@@ -8,7 +8,7 @@
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import type { ScrapedListingP0 } from "./scrapers/types.js";
 import { runMubawabDepthExpansion, readMubawabExpansionConfig } from "./scrapers/sources/mubawab-depth-expansion.js";
@@ -16,6 +16,7 @@ import { ingestCleanListings } from "./scrapers/ingest-clean-listings.js";
 import { enrichAll } from "./scrapers/enrich-p6.js";
 import { getLocalDbCounts } from "./nightly-ingestion-runner.js";
 import { logger } from "./scrapers/utils/logger.js";
+import { getThirdPartyIngestionGuard, printBlockedSummary } from "./scrapers/utils/motor-purity-guard.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR = join(__dirname, "scrapers/output");
@@ -38,7 +39,28 @@ function buildCleanListings(listings: ScrapedListingP0[]): ScrapedListingP0[] {
   });
 }
 
-async function main() {
+export type MubawabExpansionRunResult = {
+  blocked: boolean;
+  created: number;
+  updated: number;
+  errors: number;
+};
+
+export async function runMubawabExpansionCli(): Promise<MubawabExpansionRunResult> {
+  const guard = getThirdPartyIngestionGuard({
+    scriptName: "mubawab:expand",
+    requireMubawabExpansionFlag: true,
+  });
+  if (guard.blocked) {
+    logger.warn(guard.message);
+    printBlockedSummary();
+    return {
+      blocked: true,
+      created: 0,
+      updated: 0,
+      errors: 0,
+    };
+  }
   logger.step("AkarFinder — Mubawab depth expansion");
   const config = readMubawabExpansionConfig();
   logger.info(
@@ -107,9 +129,19 @@ async function main() {
   };
   await writeFile(REPORT_PATH, JSON.stringify(report, null, 2), "utf8");
   logger.info(`Report written to ${REPORT_PATH}`);
+
+  return {
+    blocked: false,
+    created: ingestStats.insertedProperty,
+    updated: ingestStats.updatedProperty,
+    errors: ingestStats.errors + result.errors.length,
+  };
 }
 
-main().catch((e) => {
-  logger.error(e instanceof Error ? e.stack ?? e.message : String(e));
-  process.exitCode = 1;
-});
+const isCli = import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isCli) {
+  runMubawabExpansionCli().catch((e) => {
+    logger.error(e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  });
+}

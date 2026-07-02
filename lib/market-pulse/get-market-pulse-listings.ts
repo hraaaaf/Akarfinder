@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { queryListings } from "@/lib/db/index";
 import { getDbProvider, isSupabaseConfigured } from "@/lib/db/provider";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
+import { canPublishDbRowToPublicSurface } from "@/lib/listings/public-listing-access";
 import { mockListings } from "@/lib/listings/mock-listings";
 import type { Listing, ListingTransactionType } from "@/lib/listings/types";
 
@@ -179,7 +180,7 @@ export function buildMarketPulseItem(listing: Listing): MarketPulseItem | null {
   if (!operationLabel) return null;
 
   const priceLabel = formatMarketPulsePrice(listing.price, listing.transaction_type);
-  const shortDetail = getMarketPulseShortDetail(listing) || "Annonce analysée";
+  const shortDetail = getMarketPulseShortDetail(listing) || "Repère disponible";
   const locationLabel = listing.neighborhood?.trim()
     ? `${listing.city} — ${listing.neighborhood}`
     : listing.city;
@@ -241,7 +242,9 @@ export async function getMarketPulseListings(
   maxItems = 10
 ): Promise<MarketPulseItem[]> {
   const { listings } = await queryListings({ limit: 36 });
-  const dbListings = listings.map((row) => mapDbRowToListing(row));
+  // HOME-MOTOR-PURITY-WORDING-1: only authorized sources may appear on the home ticker.
+  const authorizedListings = listings.filter(canPublishDbRowToPublicSurface);
+  const dbListings = authorizedListings.map((row) => mapDbRowToListing(row));
   const dbItems = buildMarketPulseItems(dbListings, maxItems);
 
   if (dbItems.length > 0) {
@@ -254,7 +257,7 @@ export async function getMarketPulseListings(
 
   if (
     shouldUseMockMarketPulseFallback(
-      dbListings.length,
+      authorizedListings.length,
       hasSupabaseProvider,
       hasSqliteProvider
     )

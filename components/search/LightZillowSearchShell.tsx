@@ -111,6 +111,49 @@ function EmptyState({ onReset, city, hasWebResults }: { onReset: () => void; cit
   );
 }
 
+// SERP-PURE-GATEWAY-FIRST-1 — secondary section for partner / first-party listings
+// Shows only when there are authorized structured listings (first_party / partner_authorized).
+function PartnerListingsSection({
+  listings,
+  isLoading,
+}: {
+  listings: Listing[];
+  isLoading: boolean;
+}) {
+  return (
+    <section className="mt-8 space-y-4" aria-label="Annonces partenaires AkarFinder">
+      <div className="border-t border-border/15 dark:border-white/10 pt-6">
+        <h2 className="text-[15px] sm:text-[16px] font-bold text-foreground dark:text-white/90">
+          Annonces partenaires AkarFinder
+        </h2>
+        <p className="mt-0.5 text-[12px] sm:text-[13px] text-muted-foreground dark:text-white/50">
+          Annonces intégrées directement par nos partenaires.
+        </p>
+      </div>
+      <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
+        {listings.map((listing) => (
+          <SearchListingCardDark key={listing.id} listing={listing} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// SERP-PURE-GATEWAY-FIRST-1 — shown when no structured partner listings exist.
+// Does NOT replace gateway results — it appears below them as a contextual note.
+function PartnerEmptyNote({ city }: { city: string }) {
+  return (
+    <div className="mt-8 rounded-xl border border-dashed border-border/20 dark:border-white/10 bg-surface/50 dark:bg-white/[0.02] px-5 py-4">
+      <p className="text-[13px] font-semibold text-foreground/70 dark:text-white/60">
+        Aucune annonce partenaire AkarFinder{city !== "all" ? ` à ${city}` : ""} pour cette recherche.
+      </p>
+      <p className="mt-1 text-[12px] text-muted-foreground dark:text-white/40">
+        Voici les résultats trouvés sur les sources originales ci-dessus.
+      </p>
+    </div>
+  );
+}
+
 export function LightZillowSearchShell({ initialListings, initialFilters }: LightZillowSearchShellProps) {
   const [filters, setFilters] = useState<ListingFiltersState>({
     ...defaultListingFilters,
@@ -129,8 +172,10 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
 
   // Search Gateway — external indexed results
   const [gatewayResults, setGatewayResults] = useState<SearchGatewayNormalizedResult[]>([]);
-  const [isGatewayLoading, setIsGatewayLoading] = useState(false);
+  // Initialize as true when gateway is enabled so the section shows a loading skeleton
+  // immediately on first render — avoids a flash of empty content before the fetch fires.
   const gatewayEnabled = process.env.NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED === "true";
+  const [isGatewayLoading, setIsGatewayLoading] = useState(gatewayEnabled);
 
   // Tracking filtre (non bloquant) — clés structurantes seulement.
   function handleFilterChange(next: ListingFiltersState) {
@@ -285,11 +330,16 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
               </div>
               <h1 className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.045em] text-foreground sm:text-[2.7rem]">Trouvez votre bien au Maroc</h1>
               <p className="mt-2 hidden max-w-2xl text-[14.5px] leading-7 text-muted-foreground sm:block">
-                Annonces analysées, repères de lecture et source visible avant de décider.
+                Sources originales, repères indicatifs et source visible avant de décider.
               </p>
             </div>
             <span className="shrink-0 rounded-full border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-3 py-1.5 text-[11px] font-bold text-foreground/75 sm:px-4 sm:py-2 sm:text-[12.5px]">
-              {filteredListings.length} bien{filteredListings.length > 1 ? "s" : ""} analysé{filteredListings.length > 1 ? "s" : ""}
+              {(() => {
+                const total = filteredListings.length + gatewayResults.length;
+                return gatewayEnabled
+                  ? `${total} résultat${total !== 1 ? "s" : ""}`
+                  : `${filteredListings.length} annonce${filteredListings.length !== 1 ? "s" : ""} partenaire${filteredListings.length !== 1 ? "s" : ""}`;
+              })()}
             </span>
           </div>
 
@@ -303,16 +353,21 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="flex items-center gap-2 text-[1.05rem] font-extrabold tracking-[-0.02em] text-foreground sm:text-[1.15rem]">
-                {isLoading ? <Loader2 size={16} strokeWidth={2.5} className="animate-spin text-bronze-400" aria-hidden="true" /> : null}
+                {(isLoading || isGatewayLoading) ? <Loader2 size={16} strokeWidth={2.5} className="animate-spin text-bronze-400" aria-hidden="true" /> : null}
                 <span>
                   {filters.search.trim()
                     ? `Résultats pour "${filters.search.trim()}"${filters.city !== "all" ? ` à ${filters.city}` : ""}`
-                    : `${filteredListings.length} annonce${filteredListings.length > 1 ? "s" : ""} AkarFinder à ${displayCity}`}
+                    : gatewayEnabled
+                      ? `Résultats immobiliers à ${displayCity}`
+                      : `${filteredListings.length} annonce${filteredListings.length !== 1 ? "s" : ""} partenaire${filteredListings.length !== 1 ? "s" : ""} à ${displayCity}`}
                 </span>
               </p>
               <p className="mt-0.5 line-clamp-1 text-[12.5px] font-medium text-muted-foreground sm:text-[13.5px]">
                 {filters.search.trim()
-                  ? `${filteredListings.length} annonce${filteredListings.length > 1 ? "s" : ""} AkarFinder${gatewayResults.length > 0 ? ` · ${gatewayResults.length} résultats du web immobilier` : ""}`
+                  ? ([
+                      gatewayResults.length > 0 && `${gatewayResults.length} résultat${gatewayResults.length !== 1 ? "s" : ""} web`,
+                      filteredListings.length > 0 && `${filteredListings.length} annonce${filteredListings.length !== 1 ? "s" : ""} partenaire`,
+                    ].filter(Boolean).join(" · ") || (isGatewayLoading || isLoading ? "Recherche en cours…" : ""))
                   : `${getIntentLabel(filters.transactionType)} · tri ${sortBy === "recommended" ? "recommandé" : sortBy === "reliability" ? "fiabilité" : sortBy === "price-asc" ? "prix ↑" : "prix ↓"}`}
               </p>
             </div>
@@ -355,22 +410,36 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
         <div className="mt-4 grid grid-cols-1 gap-5 lg:mt-5 lg:grid-cols-[minmax(0,1fr)_minmax(390px,0.62fr)] lg:items-start">
           {/* Liste */}
           <div ref={listRef} className={`min-w-0 ${activeTab === "Carte" ? "hidden lg:block" : "block"}`}>
-            {showSkeleton ? (
-              <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">{[1, 2, 3, 4].map((n) => <SkeletonCard key={n} />)}</div>
-            ) : filteredListings.length === 0 ? (
-              <EmptyState onReset={handleReset} city={filters.city} hasWebResults={gatewayResults.length > 0} />
-            ) : (
-              <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
-                {filteredListings.map((listing) => <SearchListingCardDark key={listing.id} listing={listing} />)}
-              </div>
-            )}
+            {gatewayEnabled ? (
+              <>
+                {/* PRIMARY: Sources originales — web results first */}
+                <ExternalIndexedResultsSection
+                  results={gatewayResults}
+                  isLoading={isGatewayLoading}
+                />
 
-            {/* Search Gateway — External Indexed Results */}
-            {gatewayEnabled && (
-              <ExternalIndexedResultsSection
-                results={gatewayResults}
-                isLoading={isGatewayLoading}
-              />
+                {/* SECONDARY: Partner / first-party structured listings */}
+                {showSkeleton ? null : filteredListings.length > 0 ? (
+                  <PartnerListingsSection listings={filteredListings} isLoading={isLoading} />
+                ) : isLoading ? null : (
+                  <PartnerEmptyNote city={filters.city} />
+                )}
+              </>
+            ) : (
+              <>
+                {/* Fallback: gateway disabled, structured listings are primary */}
+                {showSkeleton ? (
+                  <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+                    {[1, 2, 3, 4].map((n) => <SkeletonCard key={n} />)}
+                  </div>
+                ) : filteredListings.length === 0 ? (
+                  <EmptyState onReset={handleReset} city={filters.city} hasWebResults={false} />
+                ) : (
+                  <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
+                    {filteredListings.map((listing) => <SearchListingCardDark key={listing.id} listing={listing} />)}
+                  </div>
+                )}
+              </>
             )}
           </div>
 

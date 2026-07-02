@@ -20,10 +20,10 @@ export default function DemandeRetraitPage() {
             Demande de retrait
           </h1>
           <p className="mt-4 text-[14.5px] leading-7 text-muted-foreground">
-            AkarFinder indexe des annonces publiques provenant de sources tierces (agences, plateformes
-            partenaires ou publiques) sous forme d&apos;aperçu limité — jamais de galerie complète, jamais de
+            AkarFinder affiche des résultats provenant de sources tierces (agences, plateformes partenaires
+            ou publiques) sous forme d&apos;aperçu limité — jamais de galerie complète, jamais de
             coordonnées de contact extraites. Si vous êtes le propriétaire, l&apos;agence ou le vendeur d&apos;une
-            annonce indexée et souhaitez son retrait, ou si vous souhaitez faire valoir vos droits sur vos
+            annonce affichée et souhaitez son retrait, ou si vous souhaitez faire valoir vos droits sur vos
             données personnelles, contactez-nous directement.
           </p>
 

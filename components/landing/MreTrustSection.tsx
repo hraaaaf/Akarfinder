@@ -3,7 +3,7 @@ import { Container } from "@/components/ui/Container";
 
 const points = [
   { title: "Quartier lisible", body: "Repères de proximité indicatifs pour situer le bien sans être sur place." },
-  { title: "Source analysée", body: "L'origine de l'annonce et sa fraîcheur sont affichées clairement." },
+  { title: "Source visible", body: "L'origine du résultat et sa fraîcheur sont affichées clairement." },
   { title: "Repères indicatifs", body: "Repère marché du quartier, sans estimation présentée comme certaine ni promesse trompeuse." },
   { title: "Contact direct", body: "Échange direct avec le vendeur, adapté à un achat à distance." },
   { title: "Fiche décision claire", body: "Prix, prix/m², fiabilité et historique réunis sur une seule page." }

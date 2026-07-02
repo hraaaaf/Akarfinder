@@ -24,10 +24,10 @@ export default function ConditionsUtilisationPage() {
             <section>
               <h2 className="text-[1.1rem] font-extrabold text-foreground">1. Nature du service</h2>
               <p className="mt-2">
-                AkarFinder est un moteur de comparaison immobilier. Il rassemble des repères indicatifs
-                (prix, quartiers, complétude des données) à partir d&apos;annonces publiques et d&apos;un index de
-                résultats web, et présente séparément les annonces de partenaires autorisés lorsqu&apos;ils existent.
-                AkarFinder n&apos;est ni agence immobilière, ni intermédiaire de transaction.
+                AkarFinder est un moteur de recherche immobilier. Il affiche des résultats provenant de
+                sources publiques et des annonces de partenaires autorisés, avec des repères indicatifs
+                (prix du marché, quartier, complétude des données). AkarFinder n&apos;est ni agence immobilière,
+                ni intermédiaire de transaction.
               </p>
             </section>
             <section>

@@ -3268,6 +3268,53 @@ MVP
 * Carte multi-zones si P10B-DB disponible
 
 ----------------------------------------------------
+FUTURE — MARKET INTELLIGENCE / CARTE DU MARCHÉ
+
+Statut : Idee future, non planifiee.
+
+Objectif
+Créer une future brique d'analyse marché basée uniquement sur les données internes AkarFinder
+pour aider à lire l'activité, les prix observés et la fiabilité par zone.
+
+Principes
+* Données internes AkarFinder uniquement
+* Pas de scraping Yakeey ni de copie concurrente
+* Jamais présenté comme officiel
+* Disclaimer obligatoire : "Repères indicatifs basés sur les annonces analysées. Ces données ne constituent pas une estimation officielle."
+* Commencer par une V1 simple par ville avant d'aller vers les quartiers
+* Utiliser la médiane plutôt que la moyenne quand possible
+* Afficher le niveau de confiance selon le volume de données
+* Préférer d'abord des cartes / tableaux simples puis une vraie carte interactive plus tard
+* Éviter toute carte géographique fausse ou sensible
+
+V1 future
+* Classement des villes par volume d'annonces
+* Prix médian au m² par ville
+* Score moyen de fiabilité par ville
+* Cards "zones actives"
+* Disclaimer clair
+
+V2 future
+* Analyse par quartier si le district est fiable
+* Heatmap activité / prix / fiabilité
+* Filtres achat / location / appartement / villa / neuf
+* Lien vers les annonces correspondantes
+
+V3 future
+* Carte interactive avancée
+* Historique d'évolution
+* Alertes marché
+* Comparaison entre villes et quartiers
+* Repères de prix par ville et quartier
+* Zones les plus actives
+* Zones à surveiller
+* Zones à prix observés modérés
+* Zones avec plus de biens fiables
+* Zones avec plus de sources analysées
+* Zones avec plus de signaux de fiabilité
+* Carte "activité / prix / fiabilité / repères marché"
+
+----------------------------------------------------
 P21A — VISITES ORGANISÉES / PORTES OUVERTES
 
 Statut : Not started.

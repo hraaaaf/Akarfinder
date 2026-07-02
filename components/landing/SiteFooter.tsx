@@ -3,14 +3,13 @@ import { Container } from "@/components/ui/Container";
 
 type FooterLink = { label: string; href: string };
 
-// href="#" = no dedicated page yet (left as-is, not a real route to avoid
-// inventing pages outside this mission's scope). Real routes are wired below.
+// FOOTER-LINKS-CLEANUP-1 — every visible link points to a real route.
+// Links without a ready destination (Nos partenaires, Presse, Alertes,
+// Conseils immo) are removed from the footer rather than left as dead "#".
 const footerLinks: Record<string, FooterLink[]> = {
   AkarFinder: [
-    { label: "À propos", href: "#" },
-    { label: "Comment ça marche", href: "#" },
-    { label: "Nos partenaires", href: "#" },
-    { label: "Presse", href: "#" },
+    { label: "À propos", href: "/a-propos" },
+    { label: "Comment ça marche", href: "/comment-ca-marche" },
   ],
   Explorer: [
     { label: "Acheter", href: "/acheter" },
@@ -19,56 +18,17 @@ const footerLinks: Record<string, FooterLink[]> = {
     { label: "Carte des biens", href: "/map" },
   ],
   Outils: [
-    { label: "Repère marché", href: "#" },
-    { label: "Alertes", href: "#" },
+    { label: "Repère marché", href: "/acheter" },
     { label: "Comparateur", href: "/compare" },
-    { label: "Conseils immo", href: "#" },
   ],
   Aide: [
-    { label: "FAQ", href: "#" },
-    { label: "Contact", href: "#" },
+    { label: "FAQ", href: "/faq" },
+    { label: "Contact", href: "/contact" },
     { label: "Demande de retrait", href: "/demande-retrait" },
     { label: "Conditions d'utilisation", href: "/conditions-utilisation" },
     { label: "Politique de confidentialité", href: "/politique-confidentialite" },
   ],
 };
-
-// Social brand icons kept as SVG (not in Lucide)
-function InstagramIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-    </svg>
-  );
-}
-function FacebookIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-    </svg>
-  );
-}
-function LinkedInIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>
-    </svg>
-  );
-}
-function YoutubeIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/>
-    </svg>
-  );
-}
-
-const socials = [
-  { label: "Instagram", Icon: InstagramIcon },
-  { label: "Facebook",  Icon: FacebookIcon  },
-  { label: "LinkedIn",  Icon: LinkedInIcon  },
-  { label: "YouTube",   Icon: YoutubeIcon   },
-];
 
 export function SiteFooter() {
   return (
@@ -94,23 +54,11 @@ export function SiteFooter() {
             AkarFinder — moteur de recherche immobilier du Maroc.
             Comparez avant de contacter.
           </p>
-          <div className="mt-4 flex gap-2">
-            {socials.map(({ label, Icon }) => (
-              <a
-                key={label}
-                href="#"
-                aria-label={label}
-                className="grid h-9 w-9 place-items-center rounded-full bg-foreground/10 text-muted-foreground transition hover:bg-bronze-700 hover:text-white"
-              >
-                <Icon />
-              </a>
-            ))}
-          </div>
           <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-muted-foreground">
             <Link href="/acheter" className="hover:text-foreground">Acheter</Link>
             <Link href="/louer" className="hover:text-foreground">Louer</Link>
-            <a href="#" className="hover:text-foreground">Comment ça marche</a>
-            <a href="#" className="hover:text-foreground">FAQ</a>
+            <Link href="/comment-ca-marche" className="hover:text-foreground">Comment ça marche</Link>
+            <Link href="/faq" className="hover:text-foreground">FAQ</Link>
             <Link href="/demande-retrait" className="hover:text-foreground">Demande de retrait</Link>
           </div>
           <div className="mt-6 border-t border-border/15 pt-5 text-[11.5px] text-muted-foreground">
@@ -136,20 +84,8 @@ export function SiteFooter() {
               className="hidden h-[42px] w-auto dark:block"
             />
             <p className="mt-4 max-w-sm text-[14.5px] leading-7 text-muted-foreground">
-              AkarFinder centralise la recherche immobilière au Maroc, aide à repérer les doublons et prépare une meilleure qualification de la demande acheteur.
+              AkarFinder vous aide à chercher dans l'immobilier marocain. Comparez les repères du quartier et contactez les sources originales.
             </p>
-            <div className="mt-5 flex gap-2.5">
-              {socials.map(({ label, Icon }) => (
-                <a
-                  key={label}
-                  href="#"
-                  aria-label={label}
-                  className="grid h-9 w-9 place-items-center rounded-full bg-foreground/10 text-muted-foreground transition hover:bg-bronze-700 hover:text-white"
-                >
-                  <Icon />
-                </a>
-              ))}
-            </div>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-4">
@@ -157,17 +93,11 @@ export function SiteFooter() {
               <div key={title}>
                 <h3 className="text-[14px] font-bold text-foreground">{title}</h3>
                 <div className="mt-4 grid gap-2.5 text-[13.5px] text-muted-foreground">
-                  {links.map((link) =>
-                    link.href === "#" ? (
-                      <a key={link.label} href="#" className="transition hover:text-foreground">
-                        {link.label}
-                      </a>
-                    ) : (
-                      <Link key={link.label} href={link.href} className="transition hover:text-foreground">
-                        {link.label}
-                      </Link>
-                    )
-                  )}
+                  {links.map((link) => (
+                    <Link key={link.label} href={link.href} className="transition hover:text-foreground">
+                      {link.label}
+                    </Link>
+                  ))}
                 </div>
               </div>
             ))}
@@ -193,7 +123,7 @@ export function SiteFooter() {
 
         <div className="mt-8 hidden flex-col gap-2 border-t border-border/15 pt-6 text-[12px] leading-6 text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:flex">
           <span>© 2026 AkarFinder.ma — Version bêta</span>
-          <span>Les informations affichées servent d&apos;aperçu produit ; aucun partenariat, volume ou statut de vérification n&apos;est revendiqué sans validation.</span>
+          <span>Les repères affichés sont indicatifs. Chaque annonce affiche sa source d'origine et un lien direct vers elle.</span>
         </div>
       </Container>
     </footer>

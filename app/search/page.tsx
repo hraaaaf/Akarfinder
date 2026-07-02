@@ -1,6 +1,8 @@
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LightZillowSearchShell } from "@/components/search/LightZillowSearchShell";
+import { searchListings } from "@/lib/search";
+import { buildSearchPageQuery } from "@/lib/search/search-page-query";
 import type { ListingFiltersState } from "@/lib/listings/types";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +35,7 @@ function normalizeTransactionType(raw?: string): ListingFiltersState["transactio
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = searchParams ? await searchParams : {};
+  const initialSearchResult = await searchListings(buildSearchPageQuery(params));
   const transactionType = normalizeTransactionType(
     pickFirst(params.type) ?? pickFirst(params.transaction_type)
   );
@@ -50,7 +53,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" />
       <LightZillowSearchShell
-        initialListings={[]}
+        initialListings={initialSearchResult.listings}
         initialFilters={{
           transactionType,
           city,

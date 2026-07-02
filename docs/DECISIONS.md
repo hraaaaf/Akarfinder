@@ -1376,3 +1376,242 @@ Reason:
 Impact:
 - Structured inventory pages can now show a cautious market-price signal.
 - Search result cards and gateway results remain unchanged.
+
+## 2026-07-01 - Existing ingestion base is canonical property_listings + listing_sources
+
+Status: Validated
+
+Decision:
+- The current operational publication layer is the canonical pair `property_listings` + `listing_sources`.
+- `scrape_runs` and `raw_listings` are audit/traceability tables, not the public read model.
+- `sync:supabase` intentionally syncs only `property_listings` and `listing_sources`.
+- `duplicate_group_id`, `duplicate_score`, `reliability_score`, `reliability_badge`, `reliability_reasons`, `source_name`, and `source_url` are the supported publication fields.
+- `external_id` and `dedup_signature` are not part of the current model.
+- No staging/publication queue exists yet for listings CSV/JSON imports.
+
+Reason:
+- The repo already has a working canonical listing layer, dedupe enrichment, and Supabase mirror.
+- Rebuilding a massive staging pipeline now would duplicate functionality and increase production risk.
+
+Impact:
+- Future ingestion work should extend the existing canonical model instead of replacing it.
+- Any new pipeline should be small, explicit, and validated against the current `/search` publication path.
+
+## 2026-07-02 - `/search` server preloads DB results
+
+Status: Validated
+
+Decision:
+- `/search` now preloads DB-backed listings on the server with `searchListings(buildSearchPageQuery(params))`.
+- `LightZillowSearchShell` receives non-empty `initialListings` for the current route params, so the structured DB results are present in the initial DOM instead of waiting for hydration alone.
+- The Search Gateway remains client-fetched and still renders after the DB block.
+
+Reason:
+- The previous `initialListings=[]` bootstrapping could leave the initial DOM empty on SSR.
+- Server preloading fixes the product requirement without changing ingestion, ranking, or the badge system.
+
+Impact:
+- `/search` now has a stable SSR read-model for structured listings.
+- The fix reduces the risk of an empty initial DOM and preserves the existing gateway integration.
+
+## 2026-07-02 - SOURCE-ACCESS-REGISTRY-1 — Registre central de classification des sources
+
+Status: Validated
+
+Decision:
+- AkarFinder dispose d'un registre central `lib/sources/source-access-registry.ts` classifiant toutes les sources connues.
+- Cinq types : `first_party`, `partner_authorized`, `public_external_live`, `third_party_legacy`, `benchmark_source`.
+- Seules les sources `first_party` et `partner_authorized` peuvent publier des annonces structurees AkarFinder.
+- Les sources tierces legacy (mubawab, avito, sarouty) sont classees `third_party_legacy` : leurs lignes DB sont gelees, elles ne sont plus publiables.
+- Les sources Search Gateway (serper, *_serper, search_gateway) sont `public_external_live` : interrogation a la volee uniquement, jamais persistees, jamais publiables comme annonces structurees.
+- Yakeey est `benchmark_source` : prix de reference uniquement, jamais listing.
+- Toute source inconnue retourne `third_party_legacy` par defaut (jamais auto-promue).
+
+Reason:
+- Ce registre prepare la migration vers un read-model public `authorized_only` (mission suivante : PUBLIC-READMODEL-AUTHORIZED-ONLY-1).
+- La classification centrale evite la duplication de logique de garde dans les differents modules.
+
+Impact:
+- `canPublishStructuredListing()` et `canShowInternalListingDetail()` : guards partageables par tous les modules futurs.
+- Aucun affichage public reffont dans cette mission : le registre seul, branchements futurs.
+- Search Gateway inchangee. Aucune purge DB. Aucune refonte produit.
+
+## 2026-07-02 - AkarFinder motor purity doctrine
+
+Status: Validated
+
+Decision:
+- AkarFinder migre vers un modele `moteur de recherche immobilier pur + intelligence quartier`.
+- AkarFinder ne doit plus persister ni exploiter publiquement des annonces tierces non autorisees comme inventaire structure.
+- Les annonces tierces non autorisees doivent passer par une interrogation a la volee, un affichage externe minimal, et une redirection vers la source originale.
+- La base publique AkarFinder doit etre reservee au contenu first-party, partenaire autorise, donnees quartier propres, donnees ouvertes/OSM, reperes quartier, leads/espace pro et donnees internes.
+
+Reason:
+- Le modele moteur pur reduit le risque de rehebbergement de contenu tiers et aligne le produit avec la valeur recherche + quartier.
+- Les partenaires gardent la richesse listing/contact/images lorsqu'une autorisation existe.
+
+Impact:
+- Les flux d'ingestion tierce legacy doivent etre geles avant toute nouvelle evolution produit.
+- `/search`, `/listings/[id]`, `/map`, home previews et APIs listings doivent migrer vers un read-model public `authorized_only`.
+- Search Gateway et intelligence quartier deviennent les briques centrales de la prochaine migration.
+
+## 2026-07-02 - PUBLIC-READMODEL-AUTHORIZED-ONLY-1 — Read-model public limité aux sources autorisées
+
+Status: Validated
+
+Decision:
+- Les surfaces publiques structurées AkarFinder (/api/listings, /api/search, /search, /map, home previews) n'exposent désormais que les listings de sources `first_party` ou `partner_authorized`.
+- Les sources `third_party_legacy` (mubawab, avito, sarouty), `public_external_live`, `benchmark_source` et inconnues sont filtrées avant mapping, donc invisibles en tant qu'annonces structurées.
+- Implémentation : `lib/listings/public-listing-access.ts` — `canPublishListingToPublicSurface()` et `canPublishDbRowToPublicSurface()`.
+- Filtre appliqué en deux points :
+  - `lib/search/database-search.ts` → couvre /api/search, /search SSR + client, /map.
+  - `app/api/listings/route.ts` → couvre home previews (HomeResultPreview) et tout consommateur /api/listings.
+- Le filtre est une pré-étape avant mapDbRowToListing (coût CPU réduit sur les gros volumes).
+- Pas de purge DB. Aucun enregistrement supprimé. Le filtre est applicatif uniquement.
+- Aucune ingestion réactivée. Motor purity guard inchangé.
+- Search Gateway inchangée — les résultats external live restent disponibles en parallèle.
+- L'état vide (/search sans listings autorisés) affiche "Aucune annonce structurée AkarFinder" + "Des résultats du web sont disponibles ci-dessous" si la gateway est active.
+
+Reason:
+- Le read-model public ne doit contenir que du contenu qu'AkarFinder peut légitimement présenter comme inventaire propre.
+- Les listings tiers legacy gelés ne disparaissent pas de la DB mais cessent d'être présentés comme annonces AkarFinder.
+- Cette mission complète la doctrine motor purity (freeze ingestion + registre sources + read-model authorized_only).
+
+Impact:
+- 966 tests (915 scrapers + 51 API), 0 échec. Build OK.
+- 30 tests dédiés dans `scripts/scrapers/__tests__/public-listing-access.test.ts`.
+- Toute source inconnue ou legacy insérée dans property_listings sera silencieusement filtrée côté public.
+- Les partenaires (partner_csv) et sources first_party (akarfinder, internal) restent pleinement publiés.
+- Prochaine migration : HOME-MOTOR-PURITY-WORDING-1 — nettoyage wording home page.
+
+## 2026-07-02 - SERP-PURE-GATEWAY-FIRST-1 — /search gateway-first
+
+Status: Validated
+
+Decision:
+- /search recomposé en SERP moteur pur : Search Gateway comme cœur visible, annonces structurées en section secondaire.
+- Nouvel ordre de la colonne liste :
+    1. ExternalIndexedResultsSection (PRIMARY — Sources originales, résultats web à la volée)
+    2. PartnerListingsSection ou PartnerEmptyNote (SECONDARY — uniquement si first_party/partner_authorized)
+- isGatewayLoading initialisé à `true` quand gateway activée : supprime le flash de contenu vide avant le premier fetch.
+- PartnerEmptyNote : "Aucune annonce partenaire AkarFinder pour cette recherche. Voici les résultats sur les sources originales ci-dessus." — ne masque jamais les résultats gateway.
+- Wording nettoyé :
+    Supprimé : "annonces analysées", "biens analysés", "annonces AkarFinder à [City]"
+    Ajouté : "Sources originales", "Résultats immobiliers à [City]", "Annonces partenaires AkarFinder"
+- Compteur hero : total gateway + structured (jamais "biens analysés").
+- Fallback sans gateway : structured listings restent primaires (comportement inchangé si NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED=false).
+- Gateway runtime (normalizer, policy, sources, ranking) : inchangée.
+- Ingestion, motor purity guard, source registry, DB schema : inchangés.
+
+Reason:
+- Après PUBLIC-READMODEL-AUTHORIZED-ONLY-1, la DB publique ne contient plus d'annonces legacy.
+  Sans gateway-first, /search serait vide pour les utilisateurs sans partenaires dans la DB.
+- Le moteur doit rester utile et crédible même avec zéro annonce partenaire en DB.
+- La gateway fournit un volume immédiat (avito, sarouty, agenz, logic-immo, mubawab, yakeey via Serper).
+
+Impact:
+- 1027 tests (976 scrapers + 51 API), 0 fail. Build OK.
+- 61 tests dédiés dans `scripts/scrapers/__tests__/serp-gateway-first.test.ts`.
+- /search affiche la gateway dès le premier render (isGatewayLoading=true → skeleton immédiat).
+- CTA externe = "Voir sur [source]" — jamais de fiche interne, contact, WhatsApp, galerie.
+- Miniatures contrôlées par NEXT_PUBLIC_SEARCH_GATEWAY_THUMBNAILS_ENABLED (layout propre si OFF).
+- partner_csv / first_party si présents → section "Annonces partenaires AkarFinder" visible.
+- Prochaine mission : HOME-MOTOR-PURITY-WORDING-1.
+
+## 2026-07-02 - LISTING-DETAIL-BOUNDARY-HARDENING-1 — /listings/[id] réservé first_party + partner_authorized
+
+Status: Validated
+
+Decision:
+- /listings/[id] applique désormais un guard au niveau de la route SSR.
+- Toute annonce dont la source n'est pas first_party ou partner_authorized
+  retourne 404 avant que ListingDetail ne soit chargé.
+- Guard : canShowInternalListingDetail(listing.source_name ?? "") importé de source-access-registry.
+- Sources bloquées : mubawab, avito, sarouty (third_party_legacy),
+  agenz, logic-immo (public_external_live), yakeey (benchmark_source), source inconnue.
+- Sources autorisées : akarfinder, internal, first_party, partner_csv (partner_authorized).
+- Fallback mock (getListingById) protégé aussi : mock listings ont source_name="Mubawab" → 404.
+- La double protection dans ListingDetail (canHaveInternalDetail sur display_depth) est conservée.
+- canShowInternalListingDetail était déjà défini dans source-access-registry.ts — pas de nouvelle fonction.
+
+Reason:
+- Après SERP-PURE-GATEWAY-FIRST-1, les CTA externes pointent vers la source originale.
+  Il restait une porte d'entrée directe : /listings/[id] pour les annonces legacy.
+  AkarFinder ne réhéberge pas les annonces tierces non autorisées.
+
+Impact:
+- /listings/137 (mubawab legacy) → 404 (NotFound).
+- 1084 tests (1033 scrapers + 51 api), 0 fail. Build OK.
+- 57 tests dédiés dans scripts/scrapers/__tests__/listing-detail-boundary.test.ts.
+- /search, /map, home inchangés et fonctionnels.
+
+## 2026-07-02 - FOOTER-LEGAL-TRANSPARENCY-1 — Footer propre + pages légales cohérentes moteur pur
+
+Status: Validated
+
+Decision:
+- Aucun lien footer ne pointe vers # (audit terminé, SiteFooter clean).
+- Description footer texte : "centralise" / "doublons" → "vous aide à chercher" / "repères du quartier".
+- Disclaimer footer : "aucun partenariat revendiqué" → "repères indicatifs + source visible + lien direct".
+- Meta description app/layout.tsx : "centralise" → moteur pur + repères quartier.
+- 7 pages légales corrigées pour wording cohérent :
+  - /a-propos : "rassemble" → "affiche des résultats"
+  - /demande-retrait : "indexe" → "affiche"
+  - /faq : "indexe" → "affiche des résultats"
+  - /conditions-utilisation : "rassemble" → "affiche + partenaires"
+  - /comment-ca-marche : OK (déjà aligné)
+  - /contact : OK (déjà aligné)
+  - /politique-confidentialite : OK (déjà aligné)
+- Wording interdit supprimé de partout : centralise, rassemble, indexe, doublons
+- Footer structure conservée (pas de refonte UI).
+- Toutes les pages retournent 200.
+
+Reason:
+- Après 6 missions Phase 1 alignées sur moteur pur + intelligence quartier,
+  les pages légales et footer encore contenaient du wording "annonces centralisées"
+  incompatible avec la doctrine.
+- Avant lancement public, la transparence doit être claire : sources originales,
+  retrait possible, contact fonctionnel, indicatif (non garanti).
+
+Impact:
+- / + 7 pages légales : 8/8 en 200.
+- 0 lien footer #.
+- Footer + meta description alignés moteur pur.
+- Pages légales mentionnent : source, retrait, correction, indicatif.
+- 1193 tests (1142 scrapers + 51 api), 0 fail. Build OK.
+- Prochaine décision : MAP-NEIGHBORHOOD-INTELLIGENCE-1 pour actif quartier.
+
+## 2026-07-02 - HOME-MOTOR-PURITY-WORDING-1 — Refonte wording home (moteur pur + intelligence quartier)
+
+Status: Validated
+
+Decision:
+- La home AkarFinder supprime tout wording "annonces analysées", "biens analysés", "données analysées",
+  "index AkarFinder", "biens indexés", "résultats observés récemment", "doublons détectés",
+  "sources analysées" et assimilés.
+- Positionnement cible établi : moteur de recherche immobilier pur + intelligence quartier.
+- HomeResultPreview (mur d'annonces) supprimé de app/page.tsx.
+- MarketPulse ticker filtre désormais vers les sources autorisées uniquement
+  (canPublishDbRowToPublicSurface avant mapDbRowToListing).
+- Fallback shortDetail : "Annonce analysée" → "Repère disponible".
+- Hero : chip → "Moteur de recherche immobilier au Maroc",
+  subtitle → "Cherchez dans l'immobilier marocain. Comprenez le quartier avant de contacter."
+- Photo hero, design global, palette, animations : CONSERVÉS.
+- Composants modifiés : GoogleLikeHero, WhySection, DataProofBlock, CityIntentGrid,
+  SignatureMapSection, HomeFinalCTA, MreTrustSection, MarketPulse,
+  get-market-pulse-listings.ts, app/page.tsx.
+- Tests dédiés : scripts/scrapers/__tests__/home-motor-purity.test.ts (109 tests).
+
+Reason:
+- LISTING-DETAIL-BOUNDARY-HARDENING-1 a bouclé la protection du read-model.
+  Il restait un écart de cohérence produit : la home utilisait encore des labels
+  hérités du modèle "agrégateur d'annonces" incompatibles avec le positionnement moteur pur.
+- Un moteur pur ne "centralise" pas les annonces, il redirige vers les sources originales.
+  Le wording doit refléter cela.
+
+Impact:
+- 1193 tests (1142 scrapers + 51 api), 0 fail. Build OK.
+- HTTP 200 confirmé sur /. 14/14 vérifications HTML clean.
+- Aucun lien /listings/ interne sur la home pour sources non autorisées.
+- /search, /map, /listings, /onboarding, ingestion, gateway, registry : inchangés.
+- Prochaine décision à anticiper : QA-PROD-MOBILE-FINAL avant P18A (Alertes MVP).

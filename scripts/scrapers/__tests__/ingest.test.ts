@@ -15,6 +15,8 @@ import type { ScrapedListingP0, FieldConfidence } from "../types.js";
 
 // Temp files created during tests — cleaned up in after().
 const tmpFiles: string[] = [];
+const savedThirdPartyDbIngestion = process.env.THIRD_PARTY_DB_INGESTION_ENABLED;
+process.env.THIRD_PARTY_DB_INGESTION_ENABLED = "true";
 
 async function writeTmp(name: string, content: string): Promise<string> {
   const p = join(tmpdir(), `akar-test-${Date.now()}-${name}`);
@@ -27,6 +29,8 @@ after(async () => {
   for (const f of tmpFiles) {
     try { await unlink(f); } catch { /* ignore */ }
   }
+  if (savedThirdPartyDbIngestion === undefined) delete process.env.THIRD_PARTY_DB_INGESTION_ENABLED;
+  else process.env.THIRD_PARTY_DB_INGESTION_ENABLED = savedThirdPartyDbIngestion;
 });
 
 function fakeListing(overrides: Partial<ScrapedListingP0> = {}): ScrapedListingP0 {

@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Container } from "@/components/ui/Container";
 import { queryListingById } from "@/lib/db/index";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
+import { canShowInternalListingDetail } from "@/lib/sources/source-access-registry";
 import { getListingById } from "@/lib/listings/utils";
 
 type ListingDetailPageProps = {
@@ -21,6 +22,12 @@ export default async function ListingDetailPage({
   const listing = dbListing ? mapDbRowToListing(dbListing) : getListingById(id);
 
   if (!listing) {
+    notFound();
+  }
+
+  // LISTING-DETAIL-BOUNDARY-HARDENING-1: only first_party and partner_authorized
+  // sources may be served as full internal detail pages.
+  if (!canShowInternalListingDetail(listing.source_name ?? "")) {
     notFound();
   }
 

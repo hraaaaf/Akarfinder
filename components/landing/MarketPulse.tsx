@@ -65,7 +65,7 @@ export async function MarketPulse() {
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-accent">
-              Derniers biens à comparer
+              Repères immobiliers récents
             </p>
             <p className="mt-2 max-w-[680px] text-[13px] leading-6 text-muted-foreground sm:text-[13.5px]">
               Comparez les biens, les quartiers et les repères de prix avant de contacter une source.

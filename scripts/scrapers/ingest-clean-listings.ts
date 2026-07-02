@@ -20,6 +20,7 @@ import type { ScrapedListingP0, SourceQualityReport } from "./types.js";
 import { openDb, hashContent, jsonify, parseJson, DEFAULT_DB_PATH } from "./db/client.js";
 import { buildCanonicalFingerprint } from "./utils/fingerprint.js";
 import { logger } from "./utils/logger.js";
+import { getThirdPartyIngestionGuard, printBlockedSummary } from "./utils/motor-purity-guard.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR = join(__dirname, "output");
@@ -65,6 +66,13 @@ export async function ingestCleanListings(opts: {
     skipped: 0,
     errors: 0,
   };
+
+  const guard = getThirdPartyIngestionGuard({ scriptName: "scrape:ingest" });
+  if (guard.blocked) {
+    logger.warn(guard.message);
+    printBlockedSummary();
+    return stats;
+  }
 
   // 1. Read input files.
   let listings: ScrapedListingP0[];
