@@ -4,6 +4,7 @@ import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
 import { canPublishDbRowToPublicSurface } from "@/lib/listings/public-listing-access";
 import type { Listing } from "@/lib/listings/types";
 import type { SearchQuery, SearchResult } from "./types";
+import { computeRankingScore } from "./ranking";
 
 function normalize(value: string) {
   return value
@@ -90,16 +91,19 @@ function matchesFilters(listing: Listing, query: SearchQuery) {
   return matchesText(listing, query.q);
 }
 
-function sortListings(listings: Listing[], sort?: string) {
+function sortListings(listings: Listing[], sort?: string, query?: SearchQuery) {
   const copy = [...listings];
   if (sort === "price_asc") return copy.sort((a, b) => a.price - b.price);
   if (sort === "price_desc") return copy.sort((a, b) => b.price - a.price);
   if (sort === "surface_desc") return copy.sort((a, b) => b.surface_m2 - a.surface_m2);
-  return copy.sort(
-    (a, b) =>
-      b.reliability_score - a.reliability_score ||
-      (b.data_completeness_score ?? 0) - (a.data_completeness_score ?? 0)
-  );
+
+  // Default: intelligent ranking based on search intent
+  // Priorise city, district, property type, transaction, text relevance, completeness
+  return copy.sort((a, b) => {
+    const scoreA = computeRankingScore(a, query ?? {});
+    const scoreB = computeRankingScore(b, query ?? {});
+    return scoreB - scoreA;
+  });
 }
 
 export async function searchDatabase(query: SearchQuery = {}): Promise<SearchResult> {
@@ -148,7 +152,8 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
 
   const filtered = sortListings(
     listings.filter((listing) => matchesFilters(listing, query)),
-    query.sort
+    query.sort,
+    query
   );
 
   if (process.env.NODE_ENV !== "production") {
