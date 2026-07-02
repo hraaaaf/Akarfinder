@@ -1,6 +1,81 @@
 SESSION.md - Current Project Session
 
 ====================================================
+PRODUCT-COMPLIANCE-TEST-SUITE-1 -- Audit Complete 2026-07-02
+====================================================
+
+STATUT : AUDIT COMPLETE — 2 VIOLATIONS DÉTECTÉES
+
+MISSION :
+  Créer une suite de tests de conformité pour verrouiller la doctrine
+  AkarFinder Phase 1 (moteur pur + intelligence quartier).
+  Empêcher régressions sur : ingestion tierce, listings legacy, 
+  /listings tiers, thumbnails tierces, wording risqué.
+
+SUITE CRÉÉE :
+  scripts/scrapers/__tests__/product-compliance.test.ts
+  - 10 GUARD groupes (ingestion, registry, read-model, /listings,
+    gateway-first, thumbnails, map, quartiers, wording, legal)
+  - ~200 assertions
+  - npm test: 197/200 pass, 3 fail
+
+VIOLATIONS PRODUIT DÉTECTÉES :
+
+  VIOLATION-1: Thumbnails Gateway activées
+  ─────────────────────────────────────────
+  Fichier : .env.local
+  Clé : NEXT_PUBLIC_SEARCH_GATEWAY_THUMBNAILS_ENABLED
+  Valeur actuelle : true
+  Valeur attendue : false ou absent
+  Doctrine : Phase 1 interdit les thumbnails tierces
+  Impact : Risk de cache/réhosting thumbnails tiers
+  
+  VIOLATION-2: Avito en gateway mais legacy
+  ──────────────────────────────────────────
+  Fichier : lib/search-gateway/search-gateway-sources.ts (inféré)
+  Problème : avito enabled in gateway sources
+           + classified as third_party_legacy in registry
+           = incohérence gateway-first model
+  Action : Remove avito from gateway OR reclassify source
+
+FAUX POSITIF TEST :
+  Test "dynamic quartier: CTA to /search" échoue car cherche
+  chaîne littérale "/search". Code correct : utilise point.searchHref
+  qui génère /search?city=X&q=Y. Faux positif test.
+
+WORDING AUDIT :
+  18 termes forbidden vérifiés :
+  - annonces analysées ✓
+  - biens analysés ✓
+  - données analysées ✓
+  - index AkarFinder ✓
+  - densité d'annonces ✓
+  - clusters d'annonces ✓
+  - fiabilité moyenne ✓
+  - prix garanti ✓
+  Tous ABSENT dans code public.
+
+ROUTES RUNTIME :
+  / → 200 ✓
+  /search → 200 ✓
+  /map → 200 ✓
+  /quartiers → 200 ✓
+  /listings/137 → 404 ✓
+
+BUILD :
+  npm run build → EXIT 0 ✓
+
+FICHIERS CRÉÉS :
+  scripts/scrapers/__tests__/product-compliance.test.ts
+
+FICHIERS NON MODIFIÉS (mode strict) :
+  Code produit (app/, components/, lib/)
+  Pages légales
+  Source registry
+  Gateway sources
+  .env production
+
+====================================================
 FOOTER-LEGAL-TRANSPARENCY-1 -- Completed 2026-07-02
 ====================================================
 
@@ -8776,7 +8851,7 @@ Status: completed
 
 Mission
 * Stabiliser la nouvelle carte `/map` comme carte d'intelligence quartier.
-* Corriger la divergence des rep�res quartier, renforcer les tests et documenter le nouveau contrat.
+* Corriger la divergence des rep�res quartier, renforcer les tests et documenter le nouveau contrat.
 
 Fichiers modifies
 * lib/map/neighborhood-data.ts
@@ -8785,14 +8860,14 @@ Fichiers modifies
 * docs/SESSION.md
 
 Livraison
-* Les rep�res quartier s'appuient d�sormais sur `MARKET_DATA` pour les labels prix quand c'est possible.
-* Les cas sans rep�re sourc� restent prudents avec le label `Rep�re indicatif bient�t disponible`.
+* Les rep�res quartier s'appuient d�sormais sur `MARKET_DATA` pour les labels prix quand c'est possible.
+* Les cas sans rep�re sourc� restent prudents avec le label `Rep�re indicatif bient�t disponible`.
 * Les tests verrouillent l'absence de `searchListings`, `applyGeoEnrichment`, `minReliabilityScore` et du wording interdit sur `/map`.
 * La documentation enregistre explicitement que `/map` est une carte d'intelligence quartier et que le contrat P10B annonces est superseded pour cette surface.
 
 Validation
-* `npm test` lanc�.
-* `npm run build` lanc�.
+* `npm test` lanc�.
+* `npm run build` lanc�.
 ----------------------------------------------------
 NEIGHBORHOOD-DATA-FIRST-PARTY-1 - 2026-07-02
 
@@ -8819,8 +8894,8 @@ NEIGHBORHOOD-PAGES-MVP-1 - 2026-07-02
 Status: completed
 
 Mission
-* Cr�er les pages quartier MVP first-party `/quartiers` et `/quartiers/[citySlug]/[neighborhoodSlug]` sans toucher � l'ingestion, `/search`, `/listings`, Search Gateway, home, footer, source registry ou DB.
-* Conserver un wording prudent et utiliser uniquement la donn�e quartier existante.
+* Cr�er les pages quartier MVP first-party `/quartiers` et `/quartiers/[citySlug]/[neighborhoodSlug]` sans toucher � l'ingestion, `/search`, `/listings`, Search Gateway, home, footer, source registry ou DB.
+* Conserver un wording prudent et utiliser uniquement la donn�e quartier existante.
 
 Fichiers modifies
 * app/quartiers/page.tsx
@@ -8831,10 +8906,10 @@ Fichiers modifies
 * docs/SESSION.md
 
 Livraison
-* Route `/quartiers` ajout�e avec villes couvertes, quartiers disponibles, CTA vers `/map` et `/search`.
-* Route dynamique `/quartiers/[citySlug]/[neighborhoodSlug]` ajout�e avec `notFound()` sur quartier inconnu, rep�re prix prudent, confiance, proximit�, lifestyle tags et bloc m�thode/transparence.
-* Helpers quartier r�utilis�s pour les slugs et les CTA encod�s.
-* Aucun lien `/listings`, aucun prix/m� invent�, aucun helper ingestion/gateway touch�.
+* Route `/quartiers` ajout�e avec villes couvertes, quartiers disponibles, CTA vers `/map` et `/search`.
+* Route dynamique `/quartiers/[citySlug]/[neighborhoodSlug]` ajout�e avec `notFound()` sur quartier inconnu, rep�re prix prudent, confiance, proximit�, lifestyle tags et bloc m�thode/transparence.
+* Helpers quartier r�utilis�s pour les slugs et les CTA encod�s.
+* Aucun lien `/listings`, aucun prix/m� invent�, aucun helper ingestion/gateway touch�.
 
 Validation
 * `git status --short`

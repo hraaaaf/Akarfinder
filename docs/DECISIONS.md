@@ -17,6 +17,44 @@ Reason:
 Impact:
 - ...
 
+## 2026-07-02 - PRODUCT-COMPLIANCE-TEST-SUITE-1
+
+Status: Audit Complete (2 violations detected)
+
+Decision:
+- AkarFinder creates a comprehensive compliance test suite to lock Phase 1 doctrine.
+- Suite contains 10 GUARD test groups with ~200 assertions across all motor-purity invariants.
+- File: scripts/scrapers/__tests__/product-compliance.test.ts
+- Tests cover: ingestion freeze, source registry, public read-model, /listings boundary,
+  gateway-first model, thumbnail controls, /map intelligence, /quartiers first-party,
+  risky wording absence, legal transparency.
+- Compliance test suite prevents future regressions on core doctrine pillars.
+
+Violations detected (2):
+1. NEXT_PUBLIC_SEARCH_GATEWAY_THUMBNAILS_ENABLED=true in .env.local
+   Should be: false or absent
+   Impact: Risk of third-party thumbnail caching/hosting
+2. avito included in gateway sources but classified as third_party_legacy
+   Should be: Remove from gateway sources OR reclassify in source registry
+   Impact: Gateway-first model broken if legacy data exposed live
+
+Test results: 197/200 pass, 3 fail
+- 2 real violations (above)
+- 1 false positive (test too strict on dynamic /search URL generation)
+
+Reason:
+- Phase 1 doctrine must be protected by automated tests.
+- Ingestion freeze, wording controls, and data boundaries are critical invariants.
+- Manual review alone is insufficient; tests prevent silent regressions.
+- Test suite captures all existing missions (motor-purity-freeze, source-access-registry,
+  listing-detail-boundary, serp-gateway-first, neighborhood-pages, etc.) in one place.
+
+Impact:
+- Future PRs must pass `npm test` â€” violations in these 10 GUARD areas block merge.
+- Phase 1 doctrine is now code-enforced, not documentation-only.
+- Next phase (Phase 2+) will extend compliance suite for new features.
+- Violations must be corrected before production Phase 1 soft launch.
+
 2026-06-19 - Project direction
 
 Status: Validated
@@ -1674,14 +1712,14 @@ Impact:
 Status: Validated
 
 Decision:
-- AkarFinder crée des pages quartier MVP basées uniquement sur la donnée quartier first-party validée.
-- Usage: expliquer le quartier, afficher des repères prudents, proposer des CTA `/search` et soutenir l'exploration quartier.
-- Non-usage: pas de fiches annonces tierces, pas de `/listings`, pas de statistiques inventées, pas de prix/m² inventés.
+- AkarFinder crï¿½e des pages quartier MVP basï¿½es uniquement sur la donnï¿½e quartier first-party validï¿½e.
+- Usage: expliquer le quartier, afficher des repï¿½res prudents, proposer des CTA `/search` et soutenir l'exploration quartier.
+- Non-usage: pas de fiches annonces tierces, pas de `/listings`, pas de statistiques inventï¿½es, pas de prix/mï¿½ inventï¿½s.
 
 Reason:
 - La surface quartier doit rester informative et prudente avant la recherche sur les sources originales.
-- Le MVP doit réutiliser la couche quartier existante sans réactiver les logiques listings legacy.
+- Le MVP doit rï¿½utiliser la couche quartier existante sans rï¿½activer les logiques listings legacy.
 
 Impact:
 - Nouvelles routes `/quartiers` et `/quartiers/[citySlug]/[neighborhoodSlug]`.
-- Tests dédiés pour verrouiller les helpers, le routing, les CTA et le wording risqué.
+- Tests dï¿½diï¿½s pour verrouiller les helpers, le routing, les CTA et le wording risquï¿½.

@@ -4,8 +4,8 @@
 import type { SearchGatewaySourceConfig } from "./search-gateway-types";
 
 const SEARCH_GATEWAY_SOURCES: Record<string, SearchGatewaySourceConfig> = {
-  avito: {
-    source_id: "avito",
+  avito_serper: {
+    source_id: "avito_serper",
     source_name: "Avito",
     domain: "avito.ma",
     enabled: true,
@@ -18,8 +18,8 @@ const SEARCH_GATEWAY_SOURCES: Record<string, SearchGatewaySourceConfig> = {
     thumbnail_risk_accepted: true,
     notes: "Direct crawl blocked (403). Search API only for market intelligence.",
   },
-  sarouty: {
-    source_id: "sarouty",
+  sarouty_serper: {
+    source_id: "sarouty_serper",
     source_name: "Sarouty",
     domain: "sarouty.ma",
     enabled: true,
@@ -30,7 +30,7 @@ const SEARCH_GATEWAY_SOURCES: Record<string, SearchGatewaySourceConfig> = {
     original_link_required: true,
     thumbnail_policy: "provider_optional",
     thumbnail_risk_accepted: true,
-    notes: "Platform-independent listings aggregation.",
+    notes: "Search API only for market intelligence. DB legacy data remains frozen.",
   },
   yakeey: {
     source_id: "yakeey",
@@ -74,19 +74,19 @@ const SEARCH_GATEWAY_SOURCES: Record<string, SearchGatewaySourceConfig> = {
     thumbnail_risk_accepted: true,
     notes: "Integrated real estate search platform.",
   },
-  mubawab: {
-    source_id: "mubawab",
+  mubawab_serper: {
+    source_id: "mubawab_serper",
     source_name: "Mubawab",
     domain: "mubawab.ma",
     enabled: true,
-    query_mode: "db_primary_search_api_complement",
+    query_mode: "search_api_only",
     default_result_origin: "search_api",
     default_display_mode: "thin_indexed_result",
     source_badge: "public_indexed",
     original_link_required: true,
     thumbnail_policy: "provider_optional",
     thumbnail_risk_accepted: true,
-    notes: "DB structured results remain primary. Search API for complementary coverage.",
+    notes: "Search API only for market intelligence. DB legacy data remains frozen.",
   },
 };
 

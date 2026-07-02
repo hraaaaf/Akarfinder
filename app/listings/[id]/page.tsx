@@ -18,26 +18,38 @@ export default async function ListingDetailPage({
   params,
 }: ListingDetailPageProps) {
   const { id } = await params;
-  const dbListing = await queryListingById(id);
-  const listing = dbListing ? mapDbRowToListing(dbListing) : getListingById(id);
 
-  if (!listing) {
+  try {
+    const dbListing = await queryListingById(id);
+    let listing;
+    try {
+      listing = dbListing ? mapDbRowToListing(dbListing) : getListingById(id);
+    } catch (mapError) {
+      console.error("[listings] mapDbRowToListing failed for id:", id, mapError);
+      notFound();
+    }
+
+    if (!listing) {
+      notFound();
+    }
+
+    // LISTING-DETAIL-BOUNDARY-HARDENING-1: only first_party and partner_authorized
+    // sources may be served as full internal detail pages.
+    if (!canShowInternalListingDetail(listing.source_name ?? "")) {
+      notFound();
+    }
+
+    return (
+      <main className="min-h-screen bg-[#f8f9fa] text-gray-900">
+        <SiteHeader />
+        <Container>
+          <ListingDetail listing={listing} />
+        </Container>
+        <SiteFooter />
+      </main>
+    );
+  } catch (error) {
+    console.error("[listings] unexpected error loading listing:", id, error);
     notFound();
   }
-
-  // LISTING-DETAIL-BOUNDARY-HARDENING-1: only first_party and partner_authorized
-  // sources may be served as full internal detail pages.
-  if (!canShowInternalListingDetail(listing.source_name ?? "")) {
-    notFound();
-  }
-
-  return (
-    <main className="min-h-screen bg-[#f8f9fa] text-gray-900">
-      <SiteHeader />
-      <Container>
-        <ListingDetail listing={listing} />
-      </Container>
-      <SiteFooter />
-    </main>
-  );
 }

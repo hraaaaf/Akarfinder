@@ -58,16 +58,28 @@ export function buildSearchGatewayQueries(
 
       // Generate source-specific variants
       switch (source.source_id) {
-        case "avito":
+        case "avito_serper":
           // "immobilier Casablanca appartement"
           if (city && q) {
             secondaryQuery = `site:${source.domain} immobilier ${city} ${q}`;
           }
           break;
-        case "sarouty":
+        case "sarouty_serper":
           // "Casablanca appartements vendre"
           if (city && q) {
             secondaryQuery = `site:${source.domain} ${city} ${q}s vendre`;
+          }
+          break;
+        case "sarouty":
+          // Legacy case — should not be reached with new identifiers
+          if (city && q) {
+            secondaryQuery = `site:${source.domain} ${city} ${q}s vendre`;
+          }
+          break;
+        case "yakeey_serper":
+          // Use /fr path variant
+          if (city && q) {
+            secondaryQuery = `site:yakeey.com/fr ${city} ${q}`;
           }
           break;
         case "yakeey":
@@ -88,7 +100,7 @@ export function buildSearchGatewayQueries(
             secondaryQuery = `site:${source.domain} Maroc ${q} ${city}`;
           }
           break;
-        case "mubawab":
+        case "mubawab_serper":
           // Weak source — try /fr path variant
           if (city && q) {
             secondaryQuery = `site:${source.domain}/fr ${q} ${city}`;

@@ -137,7 +137,7 @@ describe("serp-gateway-first — miniatures OFF quand flag absent", () => {
         link: "https://avito.ma/annonce/appartement-123",
         imageUrl: "https://gstatic.com/thumb-avito.jpg",
       },
-      "avito"
+      "avito_serper"
     );
     assert.ok(result !== null);
     assert.equal(result!.can_show_thumbnail, false);
