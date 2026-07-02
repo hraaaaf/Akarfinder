@@ -4,19 +4,47 @@
     "stage": "fetch",
     "url": "https://www.avito.ma/fr/maroc/immobilier-%C3%A0_vendre",
     "message": "HTTP 403 for https://www.avito.ma/fr/maroc/immobilier-%C3%A0_vendre",
-    "at": "2026-06-23T21:50:05.717Z"
+    "at": "2026-07-02T08:52:53.178Z"
+  },
+  {
+    "source": "mubawab",
+    "stage": "detail",
+    "url": "https://www.mubawab.ma/fr/pa/8345950/appartement-%C3%A0-vendre-%C3%A9ligible-%C3%A0-l-aide-au-logement",
+    "message": "fetch failed",
+    "at": "2026-07-02T08:53:40.581Z"
+  },
+  {
+    "source": "mubawab",
+    "stage": "detail",
+    "url": "https://www.mubawab.ma/fr/p/4466/evergreen",
+    "message": "fetch failed",
+    "at": "2026-07-02T08:53:57.602Z"
+  },
+  {
+    "source": "mubawab",
+    "stage": "detail",
+    "url": "https://www.mubawab.ma/fr/a/8371336/p%C3%A9pite-villa-plain-pied-398-m2-%C3%A0-vendre-%C3%A0-ain-diab-3-pi%C3%A8ces",
+    "message": "fetch failed",
+    "at": "2026-07-02T08:54:16.386Z"
+  },
+  {
+    "source": "mubawab",
+    "stage": "detail",
+    "url": "https://www.mubawab.ma/fr/a/8284019/a-vendre-appartement-3-ch-californie",
+    "message": "fetch failed",
+    "at": "2026-07-02T08:54:34.885Z"
   },
   {
     "source": "sarouty",
     "stage": "parse",
     "url": "https://www.sarouty.ma/fr/%C3%A0-vendre/immobilier/maroc/",
     "message": "No listings extracted (source blocked, empty page, or HTML changed)",
-    "at": "2026-06-23T21:54:18.557Z"
+    "at": "2026-07-02T08:58:21.432Z"
   },
   {
     "source": "agenz",
     "stage": "policy",
     "message": "Agenz is not scraped automatically. Status: partnership_or_csv_import_only.",
-    "at": "2026-06-23T21:54:18.558Z"
+    "at": "2026-07-02T08:58:21.432Z"
   }
 ]

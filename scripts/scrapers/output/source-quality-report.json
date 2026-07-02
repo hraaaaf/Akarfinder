@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-23T21:54:18.560Z",
+  "generated_at": "2026-07-02T08:58:21.434Z",
   "sources": {
     "avito": {
       "attempted": 0,
@@ -37,24 +37,24 @@
       "attempted": 30,
       "succeeded": 30,
       "failed": 0,
-      "average_completeness_score": 81,
+      "average_completeness_score": 75,
       "field_fill_rate": {
-        "price_mad": 0.97,
-        "city": 0.93,
+        "price_mad": 0.87,
+        "city": 0.83,
         "district": 0,
-        "surface_m2": 1,
-        "rooms_count": 0.9,
-        "bedrooms_count": 0.93,
-        "bathrooms": 0.9,
-        "description_snippet": 1,
+        "surface_m2": 0.9,
+        "rooms_count": 0.77,
+        "bedrooms_count": 0.87,
+        "bathrooms": 0.87,
+        "description_snippet": 0.87,
         "seller_name": 0.73,
         "images_count": 1
       },
-      "average_images_count": 16,
+      "average_images_count": 17,
       "common_missing_fields": [
         "district"
       ],
-      "errors_count": 0
+      "errors_count": 4
     },
     "sarouty": {
       "attempted": 0,

@@ -1,0 +1,32 @@
+{
+  "started_at": "2026-07-02T10:40:39.892Z",
+  "config": {
+    "max_list_pages_per_combo": 20,
+    "max_details": 300,
+    "delay_min_ms": 5000,
+    "delay_max_ms": 10000
+  },
+  "combos": [
+    {
+      "city": "Casablanca",
+      "category": "vente (mixte)",
+      "status": "ok",
+      "list_pages_opened": 11,
+      "listings_discovered": 300
+    }
+  ],
+  "list_pages_opened": 11,
+  "detail_pages_opened": 300,
+  "listings_discovered": 300,
+  "listings_valid": 300,
+  "rejected": 0,
+  "scrape_errors": 0,
+  "created": 205,
+  "updated": 95,
+  "duplicates_skipped": 0,
+  "ingest_errors": 0,
+  "property_listings_before": 179,
+  "property_listings_after": 384,
+  "listing_sources_before": 181,
+  "listing_sources_after": 457
+}
