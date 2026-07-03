@@ -167,14 +167,14 @@ export function HomeResultPreview() {
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#93C5FD]">
-              {isFromApi ? "Index AkarFinder" : "Aperçu de résultats"}
+              {isFromApi ? "Repères AkarFinder" : "Aperçu de résultats"}
             </p>
             <h2 className="mt-2 text-[1.65rem] font-extrabold tracking-[-0.03em] text-white sm:text-[2.1rem]">
               Résultats observés récemment
             </h2>
             <p className="mt-2 max-w-[580px] text-[13px] leading-relaxed text-white/40">
-              Un aperçu limité des biens indexés, avec source et niveau de
-              fiabilité visibles.
+              Un aperçu limité des résultats disponibles, avec source et niveau de
+              fiabilité indicatif.
             </p>
           </div>
 

@@ -39,7 +39,7 @@ function SimilarListingGrid({ listings }: { listings: Listing[] }) {
         ))}
       </div>
       <p className="mt-3 text-[11.5px] text-gray-400">
-        Prix observé — repères indicatifs issus des annonces analysées, à compléter
+        Prix observé — repères indicatifs issus des résultats disponibles, à compléter
         par votre propre analyse.
       </p>
     </section>

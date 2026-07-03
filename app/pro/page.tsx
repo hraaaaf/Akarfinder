@@ -391,7 +391,7 @@ function MetricsStrip() {
       <Container>
         <div className="grid grid-cols-2 gap-6 text-center lg:grid-cols-4">
           {[
-            { value: "Multi-sources", label: "Annonces analysées" },
+            { value: "Multi-sources", label: "Résultats web agrégés" },
             { value: "WhatsApp-first", label: "Canal de contact privilégié" },
             { value: "MRE", label: "Segment diaspora marocaine" },
             { value: "Offre pilote", label: "Phase de lancement" },

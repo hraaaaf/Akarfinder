@@ -348,7 +348,7 @@ export function NeufPageShell() {
                   <Info size={11} strokeWidth={2} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                   <p className="text-[10.5px] leading-4 text-muted-foreground">
                     Comparaison indicative — à confirmer avec le promoteur / notaire.
-                    Prix observé ancien issu d'annonces analysées.
+                    Prix observé ancien issu des résultats historiques.
                   </p>
                 </div>
               </div>

@@ -208,7 +208,7 @@ export function RentAlertForm() {
 
       <div className="border-t border-bronze-500/20 bg-bronze-500/[0.06] px-5 py-3">
         <p className="text-[10.5px] text-white/35">
-          Alerte indicative — disponibilité selon les annonces analysées.
+          Alerte indicative — basée sur les résultats disponibles.
           Pas d&apos;alerte automatique garantie.
         </p>
       </div>

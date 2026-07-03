@@ -368,7 +368,7 @@ export function LouerPageShell({
                 <span className="text-bronze-400">simple et clair.</span>
               </h1>
               <p className="mt-3.5 max-w-lg text-[14.5px] leading-6 text-muted-foreground sm:mt-5 sm:text-[15.5px] sm:leading-7">
-                Des annonces analysées, des repères de loyer et des signaux utiles
+                Des résultats disponibles, des repères de loyer et des signaux utiles
                 pour louer avec plus de clarté.
               </p>
 

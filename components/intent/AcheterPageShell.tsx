@@ -52,7 +52,7 @@ function getSectionTitle(pt: string | undefined) {
   if (pt === "Appartement") return "Appartements à acheter";
   if (pt === "Villa")       return "Villas à acheter";
   if (pt === "Terrain")     return "Terrains à acheter";
-  return "Biens analysés en ce moment";
+  return "Résultats en ce moment";
 }
 
 function getSearchCTALabel(pt: string) {
@@ -403,7 +403,7 @@ export function AcheterPageShell({
                       <strong className="text-foreground">
                         {totalListings.toLocaleString("fr-FR")}
                       </strong>{" "}
-                      annonces analysées
+                      résultats trouvés
                     </span>
                   </p>
                 ) : (
@@ -416,7 +416,7 @@ export function AcheterPageShell({
                         aria-hidden="true"
                       />
                     </span>
-                    Annonces analysées depuis plusieurs sources
+                    Résultats issus de plusieurs sources
                   </p>
                 )}
               </div>
@@ -553,7 +553,7 @@ export function AcheterPageShell({
                     Aucune annonce disponible pour le moment.
                   </p>
                   <p className="mt-2 text-[13px] text-muted-foreground">
-                    Lancez une recherche pour explorer toutes les annonces analysées.
+                    Lancez une recherche pour explorer tous les résultats disponibles.
                   </p>
                   <Link
                     href="/acheter"
@@ -585,7 +585,7 @@ export function AcheterPageShell({
                   </div>
                   <p className="mt-3 text-[12.5px] leading-5 text-muted-foreground">
                     {hasDuplicates
-                      ? `${duplicatesDetected.toLocaleString("fr-FR")} signaux de doublons détectés parmi les annonces analysées.`
+                      ? `${duplicatesDetected.toLocaleString("fr-FR")} signaux de potentiels doublons détectés parmi les résultats.`
                       : "Quand un bien semble publié plusieurs fois, AkarFinder peut le signaler avant que vous contactiez."}
                   </p>
                 </div>
@@ -774,8 +774,8 @@ export function AcheterPageShell({
         <Container>
           <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4">
             {[
-              { value: totalListings !== null && totalListings > 0 ? totalListings.toLocaleString("fr-FR") : "—", label: "annonces analysées", icon: BarChart2 },
-              { value: "Multi",   label: "sources analysées au Maroc", icon: Copy },
+              { value: totalListings !== null && totalListings > 0 ? totalListings.toLocaleString("fr-FR") : "—", label: "résultats trouvés", icon: BarChart2 },
+              { value: "Multi",   label: "sources publiques au Maroc", icon: Copy },
               { value: "Récent",  label: "mises à jour régulières",     icon: TrendingUp },
               { value: "Méthode", label: "analyse structurée",          icon: ShieldCheck },
             ].map((stat) => (
