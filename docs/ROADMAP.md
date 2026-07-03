@@ -288,6 +288,275 @@ ROADMAP MISSIONS GOOGLE-LIKE FIRST
                lib/search-api/search-api-to-serp-result.ts (options signature)
                components/search-api/SearchApiResultCard.tsx
 
+----------------------------------------------------
+SEARCH-INTELLIGENCE-UX STRATEGY — Expérience de recherche enrichie
+Version : 2026-07-02 — SEARCH-INTELLIGENCE-UX-ROADMAP-1
+
+====================================================
+
+Après stabilisation du Search Gateway provider et couverture externe, AkarFinder
+doit enrichir l'expérience de recherche pour aider l'utilisateur à comprendre
+l'adéquation réelle entre sa situation et les résultats proposés.
+
+Principe : Pas seulement afficher des résultats, mais aider à décider intelligemment.
+
+Vocabulaire clé (jamais utiliser les termes interdits) :
+  ✓ Score d'adéquation                 ✗ Score de fiabilité (si externe)
+  ✓ Points d'attention                 ✗ Points d'inconvénient
+  ✓ Confiance indicative               ✗ Prix certifié
+  ✓ Repères quartier                   ✗ Quartier dangereux
+  ✓ Résultats web externes             ✗ Annonces indexées
+  ✓ Source originale                   ✗ Données consolidées
+  ✓ Aperçu limité                      ✗ Annonce vérifiée
+
+Dépendance critique :
+  Cette initiative démarre APRÈS :
+    • SEARCH-GATEWAY-PROVIDER-CONFIG-1 (API key + endpoint configurés)
+    • SEARCH-GATEWAY-COVERAGE-OPTIMIZE-2 (couverture multi-source stable)
+  
+  Raison : Pas de résultats externes = pas de base pour le scoring d'adéquation.
+
+----------------------------------------------------
+MISSIONS SEARCH-INTELLIGENCE-UX
+
+1. USER-PROFILE-SEARCH-MODES-1          Planned
+   
+   Objectif :
+   Ajouter un mode de recherche temporaire permettant à l'utilisateur
+   de définir son profil pour enrichir les recommandations.
+
+   Scope :
+   - Créer widget profil sur /search (sélectionneur radio/boutons)
+   - Profils proposés :
+     • Jeune actif / studio
+     • Jeune couple
+     • Famille avec enfants
+     • Famille nombreuse
+     • MRE
+     • Investisseur
+     • Changement de logement familial
+   
+   - Associer chaque profil à des priorités UX :
+     budget, surface, calme, écoles, parking, transport,
+     centralité, liquidité, sécurité perçue, gestion à distance, services
+   
+   - Stocker choix en sessionStorage uniquement (pas de data personnelle)
+   - Utiliser profil pour influencer le score d'adéquation (mission 3)
+
+   Hors scope :
+   - Pas de persistance DB au MVP
+   - Pas de ML de profil utilisateur
+   - Pas de recommandation push basée sur profil
+   - Pas d'enrichissement des fiches /listings au MVP
+
+   Garde-fous :
+   - Aucune data personnelle stockée
+   - Profil = mode temporaire, réinitialisé en refresh
+   - Ne pas influencer les droits d'affichage (uniquement UI/score)
+
+   Critère de réussite :
+   - Widget visible et sélectionnable sur /search
+   - Profil stocké en sessionStorage
+   - Interface claire et accessible
+
+   ----
+
+2. NEIGHBORHOOD-ATTENTION-POINTS-1      Planned
+   
+   Objectif :
+   Maintenir un référentiel de points d'attention quartier pour guider
+   les utilisateurs sur les spécificités locales.
+
+   Scope :
+   - Définir base de données "attention points" :
+     • Stade proche (bruit, événements, circulation saisonnière)
+     • Écoles/crèches nombreuses (congestion matin/soir, parking)
+     • Zone commerciale dense (bruit, livraisons, parking limité)
+     • Axes routiers importants (bruit, circulation)
+     • Zone en développement (travaux, poussière, voirie incomplète)
+     • Zone touristique (saisonnalité, bruit, location courte durée)
+     • Périphérie (dépendance voiture, services moins proches)
+     • Zones d'expansion immobilière (futurs changements)
+   
+   - Données first-party curated (no scraping, no assumptions)
+   - Chaque point = description neutre, jamais "bon/mauvais"
+   - Associer points à villes/quartiers via données first-party
+   
+   - API interne pour récupérer points par (city, neighborhood)
+   - Afficher sur carte /map et sur cartes résultats /search
+
+   Hors scope :
+   - Pas de scraping OSM au MVP
+   - Pas de données utilisateur agrégées
+   - Pas de notation "quartier sûr/dangereux"
+   - Pas de données de criminalité ou violence
+
+   Garde-fous :
+   - Données curated only (first-party, audités)
+   - Formulation neutre ("point d'attention" pas "inconvénient")
+   - Pas de conclusion définitive (= "à vérifier lors de la visite")
+   - Attribution de source si données proviennent d'OSM/public
+
+   Critère de réussite :
+   - Table quartier_attention_points créée
+   - Minimum 30 quartiers couverts
+   - UI affiche 2-3 points pertinents par résultat
+   - Zéro affirmations absolues ("quartier X est mauvais")
+
+   ----
+
+3. RESULT-FIT-SCORE-GATEWAY-1           Planned
+   
+   Objectif :
+   Calculer un score indicatif sur les résultats Search Gateway indiquant
+   l'adéquation entre le résultat et le profil utilisateur + contexte quartier.
+
+   Scope :
+   - Créer fonction computeResultFitScore(result, userProfile, neighborhood) → [0, 100]
+   
+   - Facteurs pris en compte :
+     • Cohérence profil choisi (ex: famille → surface ≥ 80m²)
+     • Cohérence ville/quartier détecté vs requête
+     • Cohérence type de bien vs requête
+     • Prix détecté vs budget range du profil
+     • Surface détectée vs surface target du profil
+     • Source originale visible (bonus)
+     • Cohérence titre/requête (pas de bruit)
+     • Points d'attention quartier (facteur négatif si critiques pour profil)
+     • Confiance du repère quartier (fiable → poids plus fort)
+   
+   - Score ne représente PAS la "fiabilité annonce"
+   - Représente l'adéquation result/profil/quartier
+   
+   - Affichage recommandé :
+     "Score d'adéquation indicatif : 78/100"
+     "Basé sur votre profil de recherche et les repères quartier disponibles"
+     "À vérifier auprès de la source originale et lors de la visite"
+
+   Hors scope :
+   - Pas de prédiction ML (score règle-basé, déterministe)
+   - Pas de scoring de la "fiabilité de l'annonce"
+   - Pas de garant de qualité
+
+   Garde-fous :
+   - Aucune promesse de certitude (formulation = "indicatif")
+   - Disclaimer clair ("À vérifier auprès du vendeur et lors de la visite")
+   - Score basé sur data observable seulement (pas d'heuristiques floues)
+   - Pas de discrimination (pas de score pour quartier/ethnie/etc)
+   - Pas de conclusion "trop risqué / ne pas acheter"
+
+   Critère de réussite :
+   - Fonction pure testable, 25+ tests
+   - Score visible sur ExternalIndexedResultCard
+   - Répartition score : 90-100 (8%), 80-89 (12%), 70-79 (15%), < 70 (65%)
+   - Users ne confondent pas avec "annonce sûre/vérifiée"
+
+   ----
+
+4. SEARCH-UX-RICH-EXPERIENCE-1          Planned
+   
+   Objectif :
+   Intégrer profil, points d'attention et score d'adéquation dans l'UI /search.
+
+   Scope :
+   - Widget profil en haut /search (sticky ou visible)
+   - Chaque résultat externe affiche :
+     • Titre, prix détecté, surface
+     • Source originale (badge + lien)
+     • Score d'adéquation (couleur: rouge < 60, orange 60-79, vert 80+)
+     • Points favorables (2-3 éléments)
+     • Points d'attention (2-3 éléments si pertinents pour profil)
+     • Confiance indicative du repère ("Très fiable", "À vérifier", "Signal faible")
+     • CTA "Voir sur la source originale"
+   
+   - Responsif (mobile, tablet, desktop)
+   - Pas de lien /listings pour résultats externes
+   - Pas de contact/WhatsApp/galerie de sources externes
+   - Thumbnails tierces OFF sauf décision séparée
+
+   Hors scope :
+   - Pas de redesign global /search
+   - Pas de changement /map
+   - Pas de changement /quartiers
+
+   Garde-fous :
+   - Aucun lien /listings pour externe
+   - Aucun contact/WhatsApp copié
+   - Source originale toujours visible
+   - Disclaimer clair sur score
+   - Pas de formulation "annonce certifiée"
+
+   Critère de réussite :
+   - ExternalIndexedResultCard affiche profil + score + attention points
+   - UI lisible sur mobile (max 3 points d'attention visibles)
+   - Tests: externe ne produit jamais /listings link
+   - A/B test : utilisateurs comprennent que c'est un score indicatif (survey)
+
+   ----
+
+5. DATA-GOVERNANCE-SEARCH-INTELLIGENCE-1  Planned
+   
+   Objectif :
+   Définir et documenter les garde-fous de données et éthique pour la couche
+   Search Intelligence.
+
+   Scope :
+   - Document docs/SEARCH_INTELLIGENCE_DATA_GOVERNANCE.md :
+     • Principe zéro-stockage des résultats Search Gateway
+     • Principe zéro-stockage du profil utilisateur au MVP
+     • Pas de data personnelle sensible
+     • Pas de scoring discriminatoire
+     • Pas de promesse de certitude
+     • Pas de conclusion "bon/mauvais quartier"
+     • Attribution de source pour points d'attention si data publique
+     • Source originale toujours visible
+     • Disclaimer reproductible sur chaque résultat
+   
+   - Audit checklist :
+     ✓ Aucun résultat gateway stocké en DB
+     ✓ Aucun profil utilisateur stocké en DB (session only)
+     ✓ Score calculé au runtime, pas pré-calculé
+     ✓ Pas de ML discriminatoire
+     ✓ Wording conforme (pas "annonce vérifiée", "prix réel", etc.)
+     ✓ Disclaimer visible et compréhensible
+     ✓ Source originale linké sur chaque résultat externe
+     ✓ Pas de contact/WhatsApp/galerie de source externe
+   
+   - Processus de révision :
+     • Chaque PR touching Search Intelligence → review docs/SEARCH_INTELLIGENCE_DATA_GOVERNANCE.md
+     • Wording checker : grep scan pour termes interdits
+     • Test: Aucun /listings link pour résultat externe
+
+   Hors scope :
+   - Pas de décision RGPD Europe (AkarFinder = marché Maroc)
+   - Pas de décision politique publique (quartier = neutral)
+
+   Garde-fous :
+   - Documenté et accessible
+   - Partagé avec équipe légale
+   - Disclaimer testé auprès d'utilisateurs
+   - Révision semestrielle
+
+   Critère de réussite :
+   - Document > 500 mots, clair et actionnable
+   - Checklist implémentée en code review template
+   - 0 terme interdit détecté dans codebase post-merge
+
+----
+
+ORDRE ROADMAP RECOMMANDÉ
+(après Search Gateway Provider stable) :
+
+1. SEARCH-GATEWAY-PROVIDER-CONFIG-1         [infrastructure dépendance]
+2. SEARCH-GATEWAY-COVERAGE-OPTIMIZE-2       [couverture stable]
+3. USER-PROFILE-SEARCH-MODES-1              [foundation UX]
+4. NEIGHBORHOOD-ATTENTION-POINTS-1          [data première-partie]
+5. RESULT-FIT-SCORE-GATEWAY-1               [calcul scoring]
+6. SEARCH-UX-RICH-EXPERIENCE-1              [intégration UI]
+7. DATA-GOVERNANCE-SEARCH-INTELLIGENCE-1    [audit + compliance]
+
+----
+
 5. SERP-RANKING-RELIABILITY-1           Not started
    Trier la SERP par pertinence + fiabilité + fraîcheur + complétude + eligibility.
    Implémenter le modèle de tri multi-critères.
