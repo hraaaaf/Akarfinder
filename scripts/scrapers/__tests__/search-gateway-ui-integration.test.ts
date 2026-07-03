@@ -65,7 +65,7 @@ describe("Search Gateway UI — ExternalIndexedResultsSection", () => {
   });
 
   it("11. ExternalIndexedResultsSection affiche le titre de section si results > 0", () => {
-    // Le titre doit être: "Résultats issus d'un index de recherche"
+    // Le titre doit être: "Résultats web externes"
     // Testable avec React Testing Library
     expect(true).toBe(true);
   });
@@ -102,7 +102,7 @@ describe("Search Gateway UI — Security", () => {
       "sarouty"
     )!;
     expect(result.result_attribution_label).toBe(
-      "Résultat issu d'un index de recherche"
+      "Résultat web externe"
     );
   });
 

@@ -28,7 +28,7 @@ describe("Search Gateway Ranking", () => {
     primary_cta: "view_original",
     primary_cta_label: `Voir sur ${sourceId}`,
     search_result_display_mode: "thin_indexed_result",
-    result_attribution_label: "Résultat issu d'un index de recherche",
+    result_attribution_label: "Résultat web externe",
   });
 
   describe("Source scoring", () => {

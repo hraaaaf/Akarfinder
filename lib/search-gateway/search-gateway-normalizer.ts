@@ -82,7 +82,7 @@ export function normalizeSearchGatewayResult(
     can_download_thumbnail: false, // Never download third-party images
     primary_cta: "view_original",
     primary_cta_label: `Voir sur ${sourceConfig.source_name}`,
-    result_attribution_label: "Résultat issu d'un index de recherche",
+    result_attribution_label: "Résultat web externe",
     thumbnail_url: thumbnailUrl,
     thumbnail_provider_name: undefined,
     thumbnail_risk_accepted: sourceConfig.thumbnail_risk_accepted,
