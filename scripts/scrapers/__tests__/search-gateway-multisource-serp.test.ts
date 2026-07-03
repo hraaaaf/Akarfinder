@@ -219,6 +219,111 @@ describe("Search Gateway — Dedupe", () => {
     const deduped = dedupeSearchGatewayResults([result1, result2]);
     expect(deduped).toHaveLength(1);
   });
+
+  it("20a. Dedupe preserves cross-source results", () => {
+    const result1 = normalizeSearchGatewayResult(
+      {
+        title: "Apartment Casablanca",
+        link: "https://avito.ma/apartment-123",
+      },
+      "avito"
+    )!;
+    const result2 = normalizeSearchGatewayResult(
+      {
+        title: "Apartment Casablanca",
+        link: "https://mubawab.ma/apartment-456",
+      },
+      "mubawab"
+    )!;
+
+    const deduped = dedupeSearchGatewayResults([result1, result2]);
+    expect(deduped).toHaveLength(2); // Keep both different sources
+  });
+
+  it("20b. Dedupe removes tracking parameters from URLs", () => {
+    const result1 = normalizeSearchGatewayResult(
+      {
+        title: "Test Listing",
+        link: "https://avito.ma/apartment?utm_source=google&utm_medium=cpc",
+      },
+      "avito"
+    )!;
+    const result2 = normalizeSearchGatewayResult(
+      {
+        title: "Test Listing",
+        link: "https://avito.ma/apartment?fbclid=123",
+      },
+      "avito"
+    )!;
+
+    const deduped = dedupeSearchGatewayResults([result1, result2]);
+    expect(deduped).toHaveLength(1); // Same URL after removing tracking
+  });
+
+  it("20c. Dedupe limits Yakeey category pages", () => {
+    const results = [
+      normalizeSearchGatewayResult(
+        {
+          title: "10 Apartments in Casablanca",
+          link: "https://yakeey.com/fr-ma/achat/appartement/Casablanca",
+        },
+        "yakeey"
+      )!,
+      normalizeSearchGatewayResult(
+        {
+          title: "10 Apartments for rent in Casablanca",
+          link: "https://yakeey.com/fr-ma/location/appartement/Casablanca",
+        },
+        "yakeey"
+      )!,
+      normalizeSearchGatewayResult(
+        {
+          title: "Apartments with pool in Casablanca",
+          link: "https://yakeey.com/fr-ma/achat/appartement/Casablanca?feature=pool",
+        },
+        "yakeey"
+      )!,
+    ];
+
+    const deduped = dedupeSearchGatewayResults(results);
+    // Should deduplicate similar Yakeey category pages
+    expect(deduped.length).toBeLessThan(results.length);
+  });
+
+  it("20d. Dedupe protects single-source results", () => {
+    const result1 = normalizeSearchGatewayResult(
+      {
+        title: "Unique Result",
+        link: "https://logic-immo.ma/property-123",
+      },
+      "logic-immo"
+    )!;
+    const result2 = normalizeSearchGatewayResult(
+      {
+        title: "Common Title",
+        link: "https://avito.ma/property-456",
+      },
+      "avito"
+    )!;
+
+    const deduped = dedupeSearchGatewayResults([result1, result2]);
+    expect(deduped.some((r) => r.source_id === "logic-immo")).toBe(true); // Keep single source
+  });
+
+  it("20e. Dedupe maintains minimum coverage", () => {
+    const results = Array.from({ length: 25 }, (_, i) =>
+      normalizeSearchGatewayResult(
+        {
+          title: `Result ${i % 3}`, // Creates ~8 unique titles with dupes
+          link: `https://yakeey.com/property-${i}`,
+        },
+        "yakeey"
+      )!
+    );
+
+    const deduped = dedupeSearchGatewayResults(results);
+    expect(deduped.length).toBeGreaterThanOrEqual(10); // Don't reduce below 10
+  });
 });
 
 describe("Search Gateway — Security", () => {
