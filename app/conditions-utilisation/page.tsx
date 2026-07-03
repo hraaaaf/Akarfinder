@@ -34,9 +34,9 @@ export default function ConditionsUtilisationPage() {
               <h2 className="text-[1.1rem] font-extrabold text-foreground">2. Origine des annonces</h2>
               <p className="mt-2">
                 Trois catégories de contenu coexistent sur le site : les annonces de partenaires autorisés
-                (fiche complète), les annonces indexées depuis des sources tierces publiques (aperçu limité,
+                (fiche complète), les résultats web issus de sources publiques externes (aperçu limité,
                 redirection obligatoire vers la source d&apos;origine pour tout contact), et les résultats externes
-                du moteur de recherche (extraits indexés, toujours attribués à leur source). La source de chaque
+                du moteur de recherche (extraits web, toujours attribués à leur source). La source de chaque
                 annonce est systématiquement affichée.
               </p>
             </section>
@@ -45,8 +45,8 @@ export default function ConditionsUtilisationPage() {
               <p className="mt-2">
                 Les indices, scores et repères de prix affichés sont indicatifs et calculés automatiquement.
                 Ils ne constituent ni une expertise, ni un conseil financier, ni une garantie sur l&apos;exactitude,
-                la disponibilité ou le prix réel d&apos;un bien. Vérifiez toujours les informations directement
-                auprès de la source avant toute décision.
+                la disponibilité ou le prix affiché par la source d&apos;origine. Vérifiez toujours les informations
+                directement auprès de la source avant toute décision.
               </p>
             </section>
             <section>

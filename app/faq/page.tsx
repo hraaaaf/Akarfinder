@@ -15,7 +15,7 @@ const FAQS = [
   },
   {
     q: "Puis-je contacter directement depuis AkarFinder ?",
-    a: "Pour les annonces indexées depuis une source tierce, le contact et la visite se font directement avec cette source, via le lien affiché sur la fiche.",
+    a: "Pour les résultats web issus de sources externes, le contact et la visite se font directement avec cette source, via le lien affiché sur la fiche.",
   },
   {
     q: "Que signifie l'indice de complétude affiché sur une annonce ?",

@@ -25,9 +25,9 @@ export default function PolitiqueConfidentialitePage() {
               <h2 className="text-[1.1rem] font-extrabold text-foreground">1. Données que nous ne collectons pas depuis les annonces</h2>
               <p className="mt-2">
                 AkarFinder n&apos;extrait jamais de numéro de téléphone, d&apos;adresse WhatsApp ou d&apos;email depuis
-                les annonces indexées de sources tierces. Les images ne sont jamais téléchargées, mises en cache
-                ou rehébergées : seule une référence d&apos;URL distante peut être affichée, quand la source
-                l&apos;autorise publiquement.
+                les résultats web issus de sources publiques externes. Les images ne sont jamais téléchargées,
+                mises en cache ou rehébergées : seule une référence d&apos;URL distante peut être affichée, quand
+                la source l&apos;autorise publiquement.
               </p>
             </section>
             <section>
@@ -50,7 +50,7 @@ export default function PolitiqueConfidentialitePage() {
               <h2 className="text-[1.1rem] font-extrabold text-foreground">4. Vos droits</h2>
               <p className="mt-2">
                 Vous pouvez demander l&apos;accès, la rectification ou la suppression de vos données, ainsi que le
-                retrait d&apos;une annonce indexée qui vous concerne, via la page{" "}
+                retrait d&apos;un résultat web qui vous concerne, via la page{" "}
                 <a href="/demande-retrait" className="text-deepblue underline underline-offset-2">
                   Demande de retrait
                 </a>.
