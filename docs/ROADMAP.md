@@ -812,7 +812,7 @@ Autorisé
 * leads consentis
 * reporting indicatif
 * biens positionnés
-* annonces analysées
+* biens partenaires
 
 Interdit
 * leads garantis
@@ -1040,7 +1040,7 @@ Ce que cette phase apporte
 * Filtre par reliability_badge dans /search (Élevée / Moyenne / Faible)
 * Tri par score d'opportunité (opportunite_score DESC)
 * Bloc "Repères marché" sur la homepage : prix/m² médian par ville,
-  nombre d'annonces analysées, répartition types de biens
+  repères marché issus de sources publiques externes, répartition types de biens
   (données indicatives issues du scraping AkarFinder, disclaimées)
 * Mise en avant des annonces les plus fiables (bloc "Sélection AkarFinder"
   ou tri automatique par fiabilité en position haute)
@@ -2926,7 +2926,7 @@ Promesse
 * hero Acheter (image Casablanca de fond + overlay deepblue) ;
 * barre de recherche (ville/quartier + sélecteur Maroc + CTA bronze "Explorer") ;
 * chips Acheter / Type de bien / Prix max / Plus de filtres ;
-* compteur "annonces analysées" branché sur /api/stats (jamais hardcodé) ;
+* compteur de repères marché branché sur /api/stats (jamais hardcodé) ;
 * 3 cards biens réels via searchListings (limit 3, tri fiabilité) ;
 * badges ville sur chaque card ;
 * prix DH lisible ;
@@ -3321,7 +3321,7 @@ Chaque page intégrée doit avoir
 WORDING GLOBAL — INTENT-RELOOKING
 
 Wording autorisé
-* annonces analysées
+* repères marché indicatifs
 * repères indicatifs
 * prix observés
 * signaux de fiabilité visibles
@@ -3549,7 +3549,7 @@ Principes
 * Données internes AkarFinder uniquement
 * Pas de scraping Yakeey ni de copie concurrente
 * Jamais présenté comme officiel
-* Disclaimer obligatoire : "Repères indicatifs basés sur les annonces analysées. Ces données ne constituent pas une estimation officielle."
+* Disclaimer obligatoire : "Repères indicatifs basés sur des repères publics et des résultats web externes. Ces données ne constituent pas une estimation officielle."
 * Commencer par une V1 simple par ville avant d'aller vers les quartiers
 * Utiliser la médiane plutôt que la moyenne quand possible
 * Afficher le niveau de confiance selon le volume de données
@@ -3660,7 +3660,7 @@ Livre :
 * Desktop : marquee lent avec pause au hover
 * Mobile : scroll horizontal manuel, sans animation agressive
 * `prefers-reduced-motion` respecte : animation desactivee automatiquement
-* Wording safe : "Dernieres annonces analysees" / "Biens recemment integres a l'index AkarFinder." ; aucun "temps reel", aucune "donnee verifiee"
+* Wording safe : "Derniers repères marché" / "Biens récemment intégrés" ; aucun "temps reel", aucune "donnee verifiee"
 
 ====================================================
 TRACK DATA ENGINE — Moteur d'intelligence immobilière Maroc
