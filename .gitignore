@@ -41,6 +41,9 @@ public/screenshots/
 /STATE.md
 /AGENTS.md
 
+# Playwright MCP session artifacts (snapshots, console logs)
+.playwright-mcp/
+
 # Partner CSV imports (real data, not to be committed)
 data/imports/*.csv
 data/imports/*.xlsx

@@ -41,29 +41,26 @@ export function getCityCoord(city: string): CityCoord | null {
   return CITY_COORDS[normalizeCityKey(city)] ?? null;
 }
 
-// ── Tiering des clusters par volume ──────────────────────────────────────────
-export type ClusterTier = {
-  min: number;
-  label: string;
+// MAP-EXPERIENCE-REDESIGN-MCP-1 — la carte de recherche représente des repères
+// ville/zone, pas une densité d'annonces. Un seul style de repère uniforme,
+// pas de tiering par volume de biens.
+export type CityMarkerStyle = {
   color: string; // couleur du pin
   glow: string;  // couleur du halo
-  text: string;  // couleur du chiffre
+  text: string;  // couleur du chiffre/label
   size: number;  // diamètre px du pin
 };
 
-// SEARCH-MAP-RELOOKING-2 — palette élégante gold-dominante (moins bruyante) :
-// or vif → or → ardoise claire → ardoise. Halos doux.
-// Ordre décroissant : on prend le premier dont count >= min.
-export const CLUSTER_TIERS: ClusterTier[] = [
-  { min: 30, label: "30+ biens", color: "#E4CB82", glow: "rgba(228,203,130,0.45)", text: "#1a1205", size: 30 },
-  { min: 10, label: "10–30 biens", color: "#C2A368", glow: "rgba(194,163,104,0.4)", text: "#1a1205", size: 26 },
-  { min: 5, label: "5–10 biens", color: "#7d9bc4", glow: "rgba(125,155,196,0.38)", text: "#0a1422", size: 22 },
-  { min: 1, label: "1–5 biens", color: "#5c7aa0", glow: "rgba(92,122,160,0.32)", text: "#eaf1fb", size: 19 },
-];
+export const CITY_MARKER: CityMarkerStyle = {
+  color: "#2563EB",
+  glow: "rgba(37,99,235,0.35)",
+  text: "#ffffff",
+  size: 22,
+};
 
-export function getClusterTier(count: number): ClusterTier {
-  for (const t of CLUSTER_TIERS) {
-    if (count >= t.min) return t;
-  }
-  return CLUSTER_TIERS[CLUSTER_TIERS.length - 1];
-}
+export const CITY_MARKER_ACTIVE: CityMarkerStyle = {
+  color: "#9B7838",
+  glow: "rgba(155,120,56,0.45)",
+  text: "#ffffff",
+  size: 26,
+};

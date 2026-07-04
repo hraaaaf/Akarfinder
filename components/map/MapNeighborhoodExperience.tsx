@@ -20,7 +20,7 @@ import {
 import { CITIES } from "@/lib/cities";
 import { useTheme } from "@/components/theme/ThemeProvider";
 
-// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Constants ---------------------------------------------------------------------
 
 const CLUSTER_ZOOM_THRESHOLD = 8;
 const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
@@ -45,7 +45,7 @@ function hideInternalBoundaries(map: MapLibreMap) {
   }
 }
 
-// â”€â”€â”€ Confidence badge color â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Confidence badge color ---------------------------------------------
 
 function confidenceColor(c: NeighborhoodConfidence): string {
   switch (c) {
@@ -59,7 +59,7 @@ function confidenceColor(c: NeighborhoodConfidence): string {
   return "#94a3b8";
 }
 
-// â”€â”€â”€ Marker factories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Marker factories ----------------------------------------------------------------
 
 function createNeighborhoodMarkerEl(
   point: NeighborhoodPoint,
@@ -107,21 +107,21 @@ function createCityClusterEl(
 ): HTMLAnchorElement {
   const el = document.createElement("a");
   el.href = `/search?city=${encodeURIComponent(city)}`;
+  el.title = `${city} · ${count} quartier${count > 1 ? "s" : ""} répertorié${count > 1 ? "s" : ""}`;
   el.setAttribute(
     "aria-label",
-    `Explorer les repÃ¨res immobiliers Ã  ${city} (${count} quartier${count > 1 ? "s" : ""})`
+    `Explorer les repères immobiliers à ${city} (${count} quartier${count > 1 ? "s" : ""})`
   );
   el.className =
-    "maplibre-cluster-marker cursor-pointer rounded-2xl bg-white border border-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.22)] px-3 py-2 text-left min-w-[90px] transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-bronze-500";
+    "maplibre-cluster-marker cursor-pointer flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white border border-[#e4e9f2] shadow-[0_3px_10px_rgba(7,27,51,0.16)] pl-2 pr-3 py-1.5 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/40";
   el.innerHTML = `
-    <span class="block text-[12px] font-extrabold text-[#071B33]">${city}</span>
-    <span class="block text-[11px] font-bold text-[#9B7838]">${count} quartier${count > 1 ? "s" : ""} Â· repÃ¨res indicatifs</span>
-    <span class="block text-[10px] font-bold text-[#071B33]/50 mt-0.5">Explorer â†’</span>
+    <span class="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#eef4ff] text-[9.5px] font-extrabold text-[#2563eb]">${count}</span>
+    <span class="text-[12px] font-extrabold text-[#071B33]">${city}</span>
   `;
   return el;
 }
 
-// â”€â”€â”€ Neighborhood detail panel (side / bottom) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Neighborhood detail panel (side / bottom) ---------------------------
 
 type NeighborhoodPanelProps = {
   point: NeighborhoodPoint | null;
@@ -136,14 +136,14 @@ function NeighborhoodPanel({ point, onDismiss }: NeighborhoodPanelProps) {
   return (
     <div
       className="animate-in slide-in-from-bottom duration-300 border-t border-[#eadfca] bg-white"
-      aria-label={`Fiche repÃ¨re quartier ${point.neighborhood ?? point.city}`}
+      aria-label={`Fiche repère quartier ${point.neighborhood ?? point.city}`}
     >
       <div className="mx-auto max-w-xl px-4 py-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9B7838]">
-              RepÃ¨re indicatif Â· {point.city}
+              Repère indicatif · {point.city}
             </p>
             <h2 className="mt-1 text-[1.1rem] font-extrabold tracking-tight text-[#071B33]">
               {point.neighborhood ?? point.city}
@@ -155,7 +155,7 @@ function NeighborhoodPanel({ point, onDismiss }: NeighborhoodPanelProps) {
             className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:bg-gray-50"
             aria-label="Fermer"
           >
-            âœ•
+            ✕
           </button>
         </div>
 
@@ -168,13 +168,13 @@ function NeighborhoodPanel({ point, onDismiss }: NeighborhoodPanelProps) {
             className="text-[11px] font-extrabold uppercase tracking-[0.1em]"
             style={{ color }}
           >
-            RepÃ¨re prix indicatif â€” {point.benchmark.period}
+            Repère prix indicatif — {point.benchmark.period}
           </p>
           <p className="mt-1 text-[1.05rem] font-extrabold text-[#071B33]">
             {benchmarkLabel}
           </p>
           <p className="mt-0.5 text-[10px] text-gray-400">
-            Appartement Â· achat Â· non garanti Â· Ã  confirmer
+            Appartement · achat · non garanti · à confirmer
           </p>
         </div>
 
@@ -182,7 +182,7 @@ function NeighborhoodPanel({ point, onDismiss }: NeighborhoodPanelProps) {
         {point.highlights.length > 0 && (
           <div className="mt-3">
             <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-gray-400">
-              Vie autour du quartier Â· donnÃ©es indicatives OSM
+              Vie autour du quartier · données indicatives OSM
             </p>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {point.highlights.map((h, i) => (
@@ -203,10 +203,10 @@ function NeighborhoodPanel({ point, onDismiss }: NeighborhoodPanelProps) {
             href={point.searchHref}
             className="block w-full rounded-xl bg-[#071B33] px-4 py-2.5 text-center text-[13px] font-extrabold text-white hover:bg-[#0f2d52] transition-colors"
           >
-            Rechercher dans ce quartier â†’
+            Rechercher dans ce quartier →
           </Link>
           <p className="mt-2 text-[10px] text-center text-gray-400">
-            RepÃ¨res indicatifs Â· sources visibles Â· Ã  confirmer avant toute dÃ©cision
+            Repères indicatifs · sources visibles · à confirmer avant toute décision
           </p>
         </div>
       </div>
@@ -214,7 +214,7 @@ function NeighborhoodPanel({ point, onDismiss }: NeighborhoodPanelProps) {
   );
 }
 
-// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Component -------------------------------------------------------------
 
 type MapNeighborhoodExperienceProps = {
   initialCity?: string;
@@ -283,7 +283,7 @@ export function MapNeighborhoodExperience({
     }));
   }, [visiblePoints]);
 
-  // â”€â”€â”€ MapLibre init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --------- MapLibre init ----------------------------------------
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -304,9 +304,15 @@ export function MapNeighborhoodExperience({
         style: styleForTheme(initialTheme),
         center: [MOROCCO_OVERVIEW.lng, MOROCCO_OVERVIEW.lat],
         zoom: MOROCCO_OVERVIEW.zoom,
+        minZoom: 4.6,
+        maxZoom: 15,
+        maxBounds: [
+          [-14.5, 20.5], // SW — exclude Canary Islands / open Atlantic
+          [2.5, 37.5], // NE
+        ],
         attributionControl: {
           customAttribution:
-            "Â© <a href='https://www.openstreetmap.org/copyright' target='_blank'>OpenStreetMap contributors</a>",
+            "© <a href='https://www.openstreetmap.org/copyright' target='_blank'>OpenStreetMap contributors</a>",
         },
       });
 
@@ -327,7 +333,7 @@ export function MapNeighborhoodExperience({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // â”€â”€â”€ City flyTo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --------- City flyTo ----------------------------------------
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
@@ -343,7 +349,7 @@ export function MapNeighborhoodExperience({
     }
   }, [cityFilter, mapLoaded]);
 
-  // â”€â”€â”€ Theme swap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --------- Theme swap ----------------------------------------
 
   const styleInitRef = useRef(true);
   useEffect(() => {
@@ -355,7 +361,7 @@ export function MapNeighborhoodExperience({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [theme]);
 
-  // â”€â”€â”€ Markers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --------- Markers ----------------------------------------
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
@@ -389,37 +395,37 @@ export function MapNeighborhoodExperience({
     });
   }, [mapLoaded, showClusters, cityClusters, visiblePoints, selectedId]);
 
-  // â”€â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --------- Render ----------------------------------------
 
   return (
     <div className="relative flex flex-col" style={{ height: "calc(100vh - 64px)" }}>
 
-      {/* â”€â”€ Filter bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ------ Filter bar ---------------------------------------- */}
       <section className="flex-shrink-0 border-b border-[#eadfca] bg-deepblue text-white z-10">
-        <div className="mx-auto max-w-[1480px] px-4 py-4 sm:px-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto max-w-[1480px] px-4 py-2.5 sm:px-6 sm:py-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-bronze-400">
-                Intelligence quartier Â· RepÃ¨res indicatifs
+              <p className="hidden text-[11px] font-extrabold uppercase tracking-[0.18em] text-bronze-400 sm:block">
+                Intelligence quartier · Repères indicatifs
               </p>
-              <h1 className="mt-1 text-[1.4rem] font-extrabold tracking-[-0.04em] sm:text-[1.8rem]">
+              <h1 className="text-[1.05rem] font-extrabold tracking-[-0.03em] sm:mt-1 sm:text-[1.8rem]">
                 Explorez les quartiers immobiliers du Maroc
               </h1>
             </div>
             <div className="text-right hidden sm:block">
               <p className="text-[12px] font-bold text-white/60">
-                {visiblePoints.length} quartier{visiblePoints.length !== 1 ? "s" : ""} rÃ©pertoriÃ©{visiblePoints.length !== 1 ? "s" : ""}
+                {visiblePoints.length} quartier{visiblePoints.length !== 1 ? "s" : ""} répertorié{visiblePoints.length !== 1 ? "s" : ""}
               </p>
               <p className="text-[10px] text-white/40 mt-0.5">
-                DonnÃ©es indicatives Â· sources visibles
+                Données indicatives · sources visibles
               </p>
             </div>
           </div>
 
           {/* City filter */}
-          <div className="mt-3 flex flex-wrap gap-2 items-center">
-            <label className="block flex-1 min-w-[180px] max-w-[280px]">
-              <span className="mb-1 block text-[10px] font-extrabold uppercase tracking-[0.13em] text-white/64">
+          <div className="mt-2 flex items-end gap-2 sm:mt-3">
+            <label className="block min-w-0 flex-1 sm:max-w-[280px] sm:flex-initial">
+              <span className="mb-1 hidden text-[10px] font-extrabold uppercase tracking-[0.13em] text-white/64 sm:block">
                 Ville
               </span>
               <select
@@ -428,7 +434,7 @@ export function MapNeighborhoodExperience({
                   setCityFilter(e.target.value);
                   setSelectedId(null);
                 }}
-                className="h-10 w-full rounded-xl border border-white/10 bg-white px-3 text-[13px] font-bold text-deepblue outline-none"
+                className="h-10 w-full rounded-xl border border-white/10 bg-white px-3 text-[13px] font-bold text-deepblue outline-none sm:w-auto sm:min-w-[180px]"
               >
                 <option value="all">Tout le Maroc</option>
                 {cities.map((city) => (
@@ -442,22 +448,23 @@ export function MapNeighborhoodExperience({
             <button
               type="button"
               onClick={() => { setCityFilter("all"); setSelectedId(null); }}
-              className="mt-5 h-10 rounded-xl border border-white/15 px-4 text-[12px] font-extrabold text-white/82 hover:bg-white/10 transition-colors"
+              className="h-10 shrink-0 rounded-xl border border-white/15 px-3 text-[12px] font-extrabold text-white/82 hover:bg-white/10 transition-colors sm:px-4"
             >
-              RÃ©initialiser
+              Réinitialiser
             </button>
 
             <Link
               href={cityFilter !== "all" ? `/search?city=${encodeURIComponent(cityFilter)}` : "/search"}
-              className="mt-5 h-10 flex items-center rounded-xl bg-[#9B7838] px-4 text-[12px] font-extrabold text-white hover:bg-[#b08c44] transition-colors"
+              className="flex h-10 shrink-0 items-center rounded-xl bg-[#9B7838] px-3 text-[12px] font-extrabold text-white hover:bg-[#b08c44] transition-colors sm:px-4"
             >
-              Rechercher dans cette zone â†’
+              <span className="hidden sm:inline">Rechercher dans cette zone →</span>
+              <span className="sm:hidden">Rechercher →</span>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* â”€â”€ Map + panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ------ Map + panel ---------------------------------------- */}
       <div className="flex-1 relative flex flex-col overflow-hidden min-h-0">
         {/* Map */}
         <div className="relative flex-1 min-h-0">
@@ -469,45 +476,36 @@ export function MapNeighborhoodExperience({
               <div className="text-center text-white">
                 <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
                 <p className="text-[13px] font-bold text-white/72">
-                  Chargement de la carteâ€¦
+                  Chargement de la carte…
                 </p>
               </div>
             </div>
           )}
 
-          {/* Zoom hint */}
-          {mapLoaded && showClusters && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-              <div className="rounded-full border border-white/15 bg-[#071B33]/80 px-4 py-2 backdrop-blur">
-                <p className="text-[11px] font-bold text-white/80">
-                  Zoomez sur une ville pour voir les quartiers
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Count badge */}
+          {/* Status pill — count + contextual hint, single non-overlapping source of truth */}
           {mapLoaded && (
-            <div className="absolute top-4 left-4 z-10">
-              <div className="rounded-xl border border-white/15 bg-[#071B33]/80 px-3 py-2 backdrop-blur">
+            <div className="absolute top-4 left-4 z-10 max-w-[calc(100%-2rem)]">
+              <div className="rounded-xl border border-white/15 bg-[#071B33]/85 px-3 py-2 backdrop-blur">
                 <p className="text-[12px] font-extrabold text-white">
-                  {visiblePoints.length} quartier{visiblePoints.length !== 1 ? "s" : ""} rÃ©pertoriÃ©{visiblePoints.length !== 1 ? "s" : ""}
+                  {visiblePoints.length} quartier{visiblePoints.length !== 1 ? "s" : ""} répertorié{visiblePoints.length !== 1 ? "s" : ""}
                 </p>
+                {showClusters ? (
+                  <p className="mt-0.5 text-[10px] font-semibold text-white/60">
+                    Zoomez sur une ville pour explorer
+                  </p>
+                ) : null}
               </div>
             </div>
           )}
 
           {/* Disclaimer */}
-          <div className="absolute bottom-8 left-4 right-4 sm:right-auto sm:max-w-xs z-10 pointer-events-none">
+          <div className="absolute bottom-8 left-4 right-4 sm:right-auto sm:max-w-[280px] z-10 pointer-events-none">
             <div className="rounded-2xl border border-white/15 bg-[#071B33]/88 p-3 backdrop-blur">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#C2A368]">
-                Intelligence quartier â€” repÃ¨res indicatifs
+              <p className="text-[11px] leading-5 text-white/70">
+                Repères indicatifs pour préparer votre recherche — à confirmer sur la source originale avant toute décision.
               </p>
-              <p className="mt-1 text-[11px] leading-5 text-white/70">
-                DonnÃ©es indicatives OSM et observations de marchÃ© 2024â€“2025. Ã€ confirmer avant toute dÃ©cision d'achat ou location.
-              </p>
-              <p className="mt-1 text-[10px] text-white/45">
-                Tuiles Â©{" "}
+              <p className="mt-1.5 text-[10px] text-white/45">
+                Tuiles ©{" "}
                 <a
                   href="https://www.openstreetmap.org/copyright"
                   target="_blank"
@@ -529,7 +527,7 @@ export function MapNeighborhoodExperience({
         />
       </div>
 
-      {/* â”€â”€ City overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ------ City overlay ---------------------------------------- */}
       {showCityOverlay && initialCityConfig && (
         <div
           className="absolute inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
@@ -556,7 +554,7 @@ export function MapNeighborhoodExperience({
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-[#C2A368]">
-              Intelligence quartier Â· AkarFinder
+              Intelligence quartier · AkarFinder
             </p>
             <h1 className="mt-4 text-[3.2rem] font-extrabold leading-[1.02] tracking-[-0.04em] text-white sm:text-[4.5rem]">
               {initialCityConfig.label}
@@ -572,10 +570,10 @@ export function MapNeighborhoodExperience({
               onClick={dismissOverlay}
               className="mt-8 rounded-full bg-[#9B7838] px-8 py-3.5 text-[14px] font-extrabold text-white shadow-[0_8px_24px_rgba(155,120,56,0.45)] transition hover:bg-[#b08c44]"
             >
-              Explorer {initialCityConfig.label} sur la carte â†’
+              Explorer {initialCityConfig.label} sur la carte →
             </button>
             <p className="mt-4 text-[11px] text-white/35">
-              ou appuyez n&apos;importe oÃ¹ pour passer
+              ou appuyez n&apos;importe où pour passer
             </p>
           </div>
         </div>
