@@ -2,6 +2,7 @@
 // Ranking system for external indexed results
 
 import type { SearchGatewayNormalizedResult } from "./search-gateway-types";
+import { isSourceCategoryPage, isEnglishResult } from "./search-gateway-category-detector";
 
 export interface RankingScore {
   source_score: number;
@@ -9,13 +10,16 @@ export interface RankingScore {
   gateway_rank_score: number;
 }
 
-// Source priority scores
+// Source priority scores — keys must match the actual source_id values from
+// search-gateway-sources.ts (previously mismatched: "avito"/"sarouty"/"mubawab"
+// never matched "avito_serper"/"sarouty_serper"/"mubawab_serper" and silently
+// fell back to the default score, which skewed ranking toward Agenz/Yakeey).
 const SOURCE_SCORES: Record<string, number> = {
-  avito: 30,
-  sarouty: 25,
+  avito_serper: 30,
+  sarouty_serper: 25,
   yakeey: 20,
   agenz: 15,
-  mubawab: 15,
+  mubawab_serper: 15,
   "logic-immo": 10,
 };
 
@@ -79,6 +83,19 @@ function scoreQuality(result: SearchGatewayNormalizedResult, queryTerms: string[
       score -= 10;
     }
   });
+
+  // Demote source category/listing pages (e.g. "23 Apartments for rent in
+  // Agadir") — SERP-RESULT-QUALITY-DEGROUPING-1. These stay eligible but rank
+  // behind more specific results; never removed outright.
+  if (isSourceCategoryPage(result.title ?? "", result.original_url ?? "")) {
+    score -= 20;
+  }
+
+  // Demote English-language pages when a French/comparable alternative may
+  // exist — SERP-RESULT-QUALITY-DEGROUPING-1. Never removed, only deprioritized.
+  if (isEnglishResult(result.title ?? "", result.original_url ?? "")) {
+    score -= 12;
+  }
 
   // Demote overly generic titles
   if (titleLower.length < 15 || titleLower.includes("...")) {

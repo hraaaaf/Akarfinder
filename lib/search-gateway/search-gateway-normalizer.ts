@@ -8,6 +8,35 @@ import type {
 import { getSearchGatewaySourceById } from "./search-gateway-sources";
 import { isRealEstateGatewayResult } from "./search-gateway-real-estate-filter";
 
+// SERP-RESULT-QUALITY-DEGROUPING-1 — external snippets must never carry a
+// claim that could read as an AkarFinder-issued validation. If found, the
+// snippet is replaced with a neutral, non-committal sentence rather than
+// risk showing "verified"/"certified"/"confidence" style marketing copy.
+const RISKY_SNIPPET_CLAIMS: ReadonlyArray<string> = [
+  "verified",
+  "confidence",
+  "exclusive listing",
+  "certified",
+  "official",
+  "vérifié",
+  "vérifiée",
+  "certifié",
+  "certifiée",
+  "fiable",
+];
+
+const NEUTRAL_SNIPPET =
+  "Aperçu limité. Consultez la source originale pour vérifier les informations.";
+
+export function neutralizeRiskySnippet(
+  snippet: string | undefined
+): string | undefined {
+  if (!snippet) return snippet;
+  const lower = snippet.toLowerCase();
+  const hasRiskyClaim = RISKY_SNIPPET_CLAIMS.some((term) => lower.includes(term));
+  return hasRiskyClaim ? NEUTRAL_SNIPPET : snippet;
+}
+
 export function normalizeSearchGatewayResult(
   raw: SearchGatewayRawResult,
   sourceId: string
@@ -64,7 +93,7 @@ export function normalizeSearchGatewayResult(
   return {
     id,
     title,
-    snippet: snippet || undefined,
+    snippet: neutralizeRiskySnippet(snippet || undefined),
     original_url: originalUrl,
     display_url: displayUrl,
     source_id: sourceConfig.source_id,

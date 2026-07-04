@@ -9033,3 +9033,61 @@ Demo Showcase role:
 - NOT a marketplace
 - NOT a fake inventory
 - NOT a customer-facing product yet
+
+====================================================
+SERP-RESULT-QUALITY-DEGROUPING-1 - 2026-07-04
+
+Status: completed
+
+Mission
+* Fix "grouped by source" SERP effect (e.g. 3 consecutive Agenz category
+  pages in English) reported via mobile screenshot on /search?q=appartement agadir
+
+Root causes found
+* SOURCE_SCORES keys in ranking.ts never matched real source_id values
+  (avito/sarouty/mubawab vs avito_serper/sarouty_serper/mubawab_serper) —
+  those three sources silently fell back to the default score, skewing
+  ranking toward Agenz/Yakeey
+* No category-page detection/limiting existed beyond a narrow Yakeey-only
+  exact-title dedupe rule — Agenz "N Apartments for sale/rent in City" pages
+  were never deprioritized or limited
+* No English-vs-French deprioritization
+* Snippets from external sources were passed through unfiltered, including
+  risky claims like "verified by our team" / "Find your property with confidence"
+* Discovered scripts/scrapers/__tests__/search-gateway-multisource-serp.test.ts
+  used vitest (never a project dependency) and was never wired into
+  npm test — meaning Search Gateway dedupe/ranking logic had zero automated
+  coverage despite appearing tested. Converted to node:test convention;
+  left out of package.json test:scrapers per mission's explicit
+  "do not touch package.json" constraint — flagged for follow-up.
+
+Deliverables
+* lib/search-gateway/search-gateway-category-detector.ts (new) — category
+  page + English result detection, shared by ranking and limiting passes
+* lib/search-gateway/search-gateway-diversify.ts (new) —
+  limitCategoryPagesPerSource + diversifySearchGatewayResults
+* lib/search-gateway/search-gateway-ranking.ts — fixed SOURCE_SCORES keys,
+  added category-page and English-result scoring penalties
+* lib/search-gateway/search-gateway-normalizer.ts — neutralizeRiskySnippet,
+  applied to every normalized result's snippet
+* app/api/search/gateway/route.ts — pipeline now: normalize → dedupe → rank
+  → limitCategoryPagesPerSource → diversifySearchGatewayResults
+* scripts/scrapers/__tests__/search-gateway-multisource-serp.test.ts —
+  converted vitest → node:test, 47 tests, all passing (verified via direct
+  `npx tsx --test` execution since file is not in package.json test list)
+
+Verified in preview (dpl_8vS7dmRRqxKTQWiqHFyah5ATP7Vd deployment family)
+* /search?q=appartement agadir — max 1 consecutive same-source result
+  (was 3+ Agenz consecutive before fix)
+* Agenz/Sarouty category-page cards show neutralized snippet live:
+  "Aperçu limité. Consultez la source originale pour vérifier les informations."
+* All doctrine flags intact: can_show_thumbnail/contact/gallery=false,
+  result_attribution_label="Résultat web externe", no internal /listings URL
+* 0 console errors
+
+Next mission recommended
+* Decide whether to wire search-gateway-multisource-serp.test.ts into
+  package.json test:scrapers (requires explicit authorization to touch
+  package.json, out of scope for this mission)
+* PROMISE-MAP-PROD-ACTIVATION-1-style activation once this preview is
+  reviewed and approved for production

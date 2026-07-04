@@ -6,6 +6,10 @@ import { buildSearchGatewayQueries } from "@/lib/search-gateway/search-gateway-q
 import { normalizeSearchGatewayResult } from "@/lib/search-gateway/search-gateway-normalizer";
 import { dedupeSearchGatewayResults } from "@/lib/search-gateway/search-gateway-dedupe";
 import { rankSearchGatewayResults } from "@/lib/search-gateway/search-gateway-ranking";
+import {
+  limitCategoryPagesPerSource,
+  diversifySearchGatewayResults,
+} from "@/lib/search-gateway/search-gateway-diversify";
 import { getEnabledSearchGatewaySources } from "@/lib/search-gateway/search-gateway-sources";
 import type { SearchGatewayRouteResponse, SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
@@ -120,7 +124,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Apply ranking (SEARCH-GATEWAY-MULTISOURCE-SERP-RANKING-1)
     const queryTerms = [query, city, propertyType].filter(Boolean) as string[];
     const ranked = rankSearchGatewayResults(deduped, queryTerms);
-    const results: SearchGatewayNormalizedResult[] = ranked.map((result) => ({
+
+    // SERP-RESULT-QUALITY-DEGROUPING-1 — limit repeated source category pages,
+    // then interleave sources so the SERP never reads as "grouped by source".
+    const categoryLimited = limitCategoryPagesPerSource(ranked, 1);
+    const diversified = diversifySearchGatewayResults(categoryLimited, 1);
+
+    const results: SearchGatewayNormalizedResult[] = diversified.map((result) => ({
       id: result.id,
       title: result.title,
       snippet: result.snippet,
