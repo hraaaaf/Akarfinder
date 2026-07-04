@@ -9962,3 +9962,48 @@ Explicit non-changes
 
 Progression roadmap
 * 57% -> 60%.
+
+====================================================
+AKARFINDER-ROADMAP-TO-70-FABLE-1 / PHASE 4 - SEARCH-PROFILE-ONBOARDING-MVP-1 - 2026-07-05
+====================================================
+
+Status: completed
+
+Mission
+* Profil de recherche utilisateur etape par etape, MVP sans DB.
+* Route: /profil-recherche. Frontend seulement, state local + localStorage.
+
+Files
+* lib/search-profile/search-profile-types.ts (new)
+* lib/search-profile/search-profile-summary.ts (new, logique pure)
+* components/search-profile/SearchProfileWizard.tsx (new, "use client",
+  reutilise components/onboarding/OnboardingStepCard)
+* app/profil-recherche/page.tsx (new, prerendu statique)
+* components/search/LightZillowSearchShell.tsx (lien discret
+  "Creer mon profil de recherche" sous les filtres — presentation only)
+* scripts/scrapers/__tests__/search-profile.test.ts (new, 6 tests)
+* package.json (test:scrapers + search-profile.test.ts)
+* docs/DECISIONS.md, docs/ROADMAP.md, docs/SESSION.md (append)
+
+Etapes du wizard
+* 1 audience (12 options) / 2 projet (8) / 3 type de bien (10) /
+  4 budget+zone (branches achat-location-vente) / 5 criteres bien /
+  6 exigences quartier (15) / 7 priorites (8) / 8 resume.
+* Resume: profil, projet, type, zone, budget indicatif, horizon, criteres
+  essentiels, points a verifier par projet, CTA "Voir les resultats"
+  (lien /search derive), "Creer une alerte (demo)", "Demander un
+  accompagnement".
+
+Verification
+* E2E Playwright mobile 390px: navigation complete 8 etapes, resume genere,
+  localStorage persiste, href /search?q=appartement+Maarif+Casablanca&
+  transaction=buy, 0 pageerror, 0 overflow horizontal.
+* Tests purs: resume famille/achat, location, profil vide, params
+  transaction, aucun wording interdit dans options/resume.
+
+Explicit non-changes
+* Aucun backend, aucune API, aucun envoi, aucun contact reel.
+* Search Gateway modified: no. DB/Supabase modified: no. env modified: no.
+
+Progression roadmap
+* 60% -> 64%.

@@ -355,6 +355,14 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
           </div>
 
           <QuickFilters filters={filters} cities={cities} propertyTypes={propertyTypes} onChange={handleFilterChange} onReset={handleReset} />
+
+          {/* SEARCH-PROFILE-ONBOARDING-MVP-1 — discreet entry to the guided profile */}
+          <p className="mt-2.5 text-[12px] font-semibold text-muted-foreground">
+            Besoin d&apos;affiner votre recherche ?{" "}
+            <Link href="/profil-recherche" className="font-extrabold text-bronze-400 underline underline-offset-2 transition hover:text-bronze-300">
+              Créer mon profil de recherche
+            </Link>
+          </p>
         </div>
       </section>
 

@@ -2001,3 +2001,19 @@ Droits d'affichage:
 web_external reste sans image / sans contact / sans galerie avec lien source
 originale obligatoire, quel que soit le descripteur. Les partenaires
 n'affichent image et contact que sous autorisation explicite.
+
+## 2026-07-05 — SEARCH-PROFILE-ONBOARDING-MVP-1
+
+Decision:
+AkarFinder introduit un profil de recherche guide en 8 etapes sur
+/profil-recherche, en MVP frontend uniquement.
+
+Regles:
+- Aucun backend, aucune DB: etat local + localStorage
+  (akarfinder.search-profile.v1).
+- Aucun contact reel requis, rien n'est envoye.
+- L'onboarding n'est pas force sur la homepage: entree discrete depuis
+  /search ("Creer mon profil de recherche").
+- Resume indicatif et non contractuel, avec points a verifier par projet
+  (achat / location / vente) et CTA internes (/search construit depuis le
+  profil, alerte demo, accompagnement).

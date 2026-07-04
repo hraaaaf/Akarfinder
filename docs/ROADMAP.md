@@ -4318,3 +4318,20 @@ Fait:
 Prochaine mission:
 SEARCH-PROFILE-ONBOARDING-MVP-1 (60% -> 64%) — profil de recherche guide,
 frontend seulement.
+
+## 2026-07-05 — SEARCH-PROFILE-ONBOARDING-MVP-1 (60% -> 64%)
+
+Fait:
+- lib/search-profile/search-profile-types.ts + search-profile-summary.ts
+  (types, options, resume pur, lien /search derive).
+- components/search-profile/SearchProfileWizard.tsx (8 etapes, reutilise
+  OnboardingStepCard, localStorage, branches achat/location/vente).
+- app/profil-recherche/page.tsx (statique).
+- Entree discrete sur /search (LightZillowSearchShell).
+- scripts/scrapers/__tests__/search-profile.test.ts (6 tests, integres a
+  npm test).
+- E2E mobile Playwright: 8 etapes, resume, localStorage, 0 erreur JS,
+  0 overflow.
+
+Prochaine mission:
+DEMAND-CAPTURE-MVP-1 (64% -> 68%) — demande qualifiee depuis le profil.
