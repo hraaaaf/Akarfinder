@@ -9203,3 +9203,61 @@ Verified
 * No Search Gateway, DB, or Supabase files touched
 
 Next: DEMO-SHOWCASE-MODE-1 (Phase B, same session)
+
+====================================================
+DEMO-SHOWCASE-MODE-1 - 2026-07-04
+
+Status: completed (preview only, not production)
+
+Mission
+* Create a commercial showcase/demo mode at /demo for promoters, agencies and
+  partners, entirely separate from live production data
+
+Deliverables
+* lib/demo/demo-data.ts — fully fictional data (Promoteur Démo Casablanca,
+  Agence Démo Rabat, fictional projects/listings/metrics), no real names,
+  phones, or emails (demo@akarfinder.ma placeholder only)
+* components/demo/DemoBadge.tsx — "MODE DÉMO" badge
+* components/demo/DemoShell.tsx — sticky disclaimer + badge + "Retour au
+  site live" bar, shown on every /demo page; does not reuse SiteHeader/
+  SiteFooter so /demo never enters main nav
+* components/demo/DemoRequestButton.tsx — visual-only CTA, no backend call,
+  no lead storage, shows "Exemple non contractuel — aucune demande réelle
+  envoyée" on click
+* app/demo/page.tsx — hub with 5 cards
+* app/demo/promoteur/page.tsx — fictional promoter, 3 fictional projects,
+  value points, mini rapport démo (all values labeled "(démo)")
+* app/demo/agence/page.tsx — fictional agency, specialties, zones, 4 example
+  listings, performance démo
+* app/demo/acheter/page.tsx — buyer profiles, example results, buyer dossier
+  démo, original sources block, pre-contact checklist
+* app/demo/louer/page.tsx — rent alert form démo, popular zones, search
+  relaunch example, explicit "n'active aucune alerte réelle" disclaimer
+* app/demo/vendre/page.tsx — seller form démo, seller request example,
+  "aucune estimation réelle n'est fournie" disclaimer
+* app/pro/page.tsx — one discreet text link "Voir une démonstration" added
+  below the hero CTAs (not a button, low-contrast, not intrusive)
+* All 6 /demo pages: metadata robots = { index: false, follow: false }
+
+Verified in preview (dpl_FER4h2y3qUuRrYKDioTUGbb9cxyz deployment family)
+* 9/9 required routes 200 (except /listings/137 = 404 as expected)
+* noindex/nofollow confirmed in served HTML on /demo and /demo/promoteur
+* /demo absent from SiteHeader nav and SiteFooter (grep-verified)
+* 0 console errors across /demo, /demo/promoteur, /demo/agence, /demo/acheter
+  (mobile), /demo/louer (mobile), /demo/vendre (mobile), /, /search
+* Network requests: all 200/204, no errors
+* Playwright screenshots: desktop (hub, promoteur, agence) and mobile (hub,
+  acheter, louer, vendre) all show badge + disclaimer + no horizontal
+  overflow + premium blue/white design
+* Zero forbidden wording (partenaire vérifié, leads réels, prix certifié,
+  etc.) found in app/demo, components/demo, lib/demo
+* 1288/1288 existing tests still passing, build OK
+* Search Gateway, Supabase, DB untouched
+
+Minor cosmetic note
+* On /demo/agence desktop, the small "MODE DÉMO" badge wraps to two lines on
+  narrower listing cards — readable, not blocking, candidate for a follow-up
+  polish pass
+
+Next: production activation of Phase A + Phase B after human review (not
+done in this mission per explicit "preview only" instruction)

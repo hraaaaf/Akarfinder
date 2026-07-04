@@ -63,6 +63,15 @@ function ProHero() {
             </a>
           </div>
 
+          <div className="mt-4">
+            <a
+              href="/demo"
+              className="text-[12.5px] font-semibold text-white/45 underline underline-offset-2 transition hover:text-white/70"
+            >
+              Voir une démonstration
+            </a>
+          </div>
+
           {/* target audience chips */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-2 text-[12.5px] text-white/56">
             {["Agences premium", "Promoteurs", "Exposants Sakan Expo"].map((a) => (
