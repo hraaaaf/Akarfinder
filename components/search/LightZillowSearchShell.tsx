@@ -386,7 +386,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
             <select aria-label="Trier les résultats" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}
               className="shrink-0 rounded-full border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-3 py-2.5 text-[12px] font-bold text-foreground outline-none dark:[color-scheme:dark] sm:px-4 sm:text-[13px]">
               <option value="recommended">Tri recommandé</option>
-              <option value="reliability">Meilleures annonces</option>
+              <option value="reliability">Pertinence</option>
               <option value="price-asc">Prix croissant</option>
               <option value="price-desc">Prix décroissant</option>
             </select>
