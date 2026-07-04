@@ -1,51 +1,64 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Building2, Users, Home, KeyRound, Tag, ArrowRight, FileText } from "lucide-react";
+import { ArrowRight, Building2, FileText, Home, KeyRound, Layers3, Tag, Users } from "lucide-react";
 import { DemoShell } from "@/components/demo/DemoShell";
 import { DemoBadge } from "@/components/demo/DemoBadge";
+import { DemoPartnerResultStack } from "@/components/demo/DemoPartnerResultStack";
 
 export const metadata: Metadata = {
-  title: "Mode exposition AkarFinder — Démo",
-  description: "Aperçu illustratif de ce qu'AkarFinder peut offrir aux promoteurs, agences et acheteurs.",
+  title: "Mode exposition AkarFinder - Demo",
+  description: "Apercu illustratif de ce qu'AkarFinder peut offrir aux promoteurs, agences et acheteurs.",
   robots: { index: false, follow: false },
 };
 
 const CARDS = [
   {
-    href: "/demo/bien",
-    icon: FileText,
-    title: "Exemple fiche bien enrichie",
-    body: "Une fiche bien détaillée : caractéristiques, quartier, mobilité, repères indicatifs.",
-  },
-  {
     href: "/demo/promoteur",
     icon: Building2,
-    title: "Exemple page promoteur",
-    body: "Aperçu d'une page projet autorisée pour un promoteur, avec rapport de demande démo.",
+    title: "Page promoteur",
+    body: "Page promoteur demo avec projets, demande qualifiee et presence salon.",
+  },
+  {
+    href: "/demo/projet",
+    icon: Building2,
+    title: "Page projet promoteur",
+    body: "Projet detaille demo : tranches, typologies, plans 2D, appartement temoin.",
   },
   {
     href: "/demo/agence",
     icon: Users,
-    title: "Exemple page agence",
-    body: "Aperçu d'une page agence type, spécialités, zones et performance démo.",
+    title: "Agence virtuelle",
+    body: "Agence demo avec zones, specialites, biens structures et demandes qualifiees.",
+  },
+  {
+    href: "/demo/bien",
+    icon: FileText,
+    title: "Fiche bien enrichie",
+    body: "Fiche bien detaillee : caracteristiques, quartier, mobilite, reperes indicatifs.",
+  },
+  {
+    href: "#resultats-partenaires",
+    icon: Layers3,
+    title: "Partenaires vs web externe",
+    body: "Pile conceptuelle qui montre pourquoi les resultats partenaires peuvent etre plus riches.",
   },
   {
     href: "/demo/acheter",
     icon: Home,
-    title: "Exemple parcours Acheter",
-    body: "Une expérience Acheter bien remplie : profils, repères, sources originales.",
+    title: "Parcours Acheter",
+    body: "Experience Acheter demo avec profils, reperes et sources originales.",
   },
   {
     href: "/demo/louer",
     icon: KeyRound,
-    title: "Exemple parcours Louer",
-    body: "Une expérience Louer claire avec alerte démo et zones populaires fictives.",
+    title: "Parcours Louer",
+    body: "Experience Louer demo avec alerte illustrative et zones populaires fictives.",
   },
   {
     href: "/demo/vendre",
     icon: Tag,
-    title: "Exemple parcours Vendre",
-    body: "Une expérience propriétaire/vendeur avec exemple de demande vendeur.",
+    title: "Parcours Vendre",
+    body: "Experience proprietaire avec exemple de demande vendeur, sans backend.",
   },
 ];
 
@@ -59,14 +72,13 @@ export default function DemoHubPage() {
             Mode exposition AkarFinder
           </h1>
           <p className="mt-4 text-[15px] leading-7 text-slate-600 sm:text-[16px]">
-            Un aperçu illustratif de ce qu&apos;AkarFinder peut offrir aux promoteurs, agences et
-            acheteurs. Support de démonstration commerciale — exemple non contractuel.
+            Apercu premium et fictif des experiences partenaires : promoteur, projet, agence virtuelle, fiche bien enrichie et resultats partenaires. Support de demonstration, aucun partenaire reel represente.
           </p>
         </div>
       </section>
 
       <section className="px-4 pb-20">
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {CARDS.map((card) => (
             <Link
               key={card.href}
@@ -87,6 +99,12 @@ export default function DemoHubPage() {
               </span>
             </Link>
           ))}
+        </div>
+      </section>
+
+      <section id="resultats-partenaires" className="bg-[#f8fafc] px-4 py-16">
+        <div className="mx-auto max-w-5xl">
+          <DemoPartnerResultStack />
         </div>
       </section>
     </DemoShell>

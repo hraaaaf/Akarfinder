@@ -1930,3 +1930,26 @@ Impact:
 - Qualite mise a jour: promoteur/projet neuf sans plan 2D ne peut pas atteindre `premium_ready`; agence complete peut toujours atteindre `premium_ready` sans plan.
 - Tests partenaires integres a `npm test` via `package.json`.
 - Aucun upload, backend, stockage fichier, DB, Supabase, Search Gateway, page live ou ranking reel.
+
+## 2026-07-04 - PARTNER-PAGES-ZILLOW-LIKE-DEMO-EXPERIENCE-1 - Pages partenaires demo enrichies
+
+Status: Validated
+
+Decision:
+- AkarFinder cree une experience demo premium pour montrer la cible des pages partenaires promoteurs et agences.
+- Les pages partenaires enrichies sont autorisees uniquement si les donnees respectent le standard AkarFinder.
+- Pour les promoteurs: page promoteur, page projet, tranches, typologies, plans 2D, appartement temoin, galerie autorisee, localisation exploitable, proximite, mobilite, quartier, disponibilite et CTA autorises.
+- Pour les agences: agence virtuelle, biens structures, zones couvertes, specialites, contact autorise, demandes qualifiees et lecture quartier.
+- Les resultats partenaires peuvent etre enrichis; les resultats web externes restent limites avec source originale et apercu limite.
+- La demonstration ne cree aucun backend, aucune API, aucun vrai contact, aucun upload, aucun ranking reel et aucune donnee partenaire reelle.
+
+Reason:
+- Les partenaires doivent comprendre la valeur d'une fiche structuree au-dela d'une simple annonce.
+- Les promoteurs ont besoin de presenter projets, tranches, typologies et plans 2D dans un format lisible.
+- Les agences ont besoin de montrer zones, specialites et biens structures tout en recevant des demandes mieux qualifiees.
+
+Impact:
+- Creation de la route demo `/demo/projet`.
+- Enrichissement de `/demo/promoteur`, `/demo/agence`, `/demo` et `/demo/acheter`.
+- Documentation creee: `docs/PARTNER_PAGES_EXPERIENCE.md`.
+- Aucun changement Search Gateway, DB, Supabase, ingestion ou production.

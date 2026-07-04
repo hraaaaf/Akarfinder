@@ -6,6 +6,7 @@ import { DemoBadge } from "@/components/demo/DemoBadge";
 import { DemoRequestButton } from "@/components/demo/DemoRequestButton";
 import { PropertyVisual, type PropertyVisualType } from "@/components/demo/PropertyVisual";
 import { NeighborhoodExperience } from "@/components/demo/NeighborhoodExperience";
+import { DemoPartnerResultStack } from "@/components/demo/DemoPartnerResultStack";
 import { DEMO_BUYER_PROFILES, DEMO_NEIGHBORHOOD_PROFILE } from "@/lib/demo/demo-data";
 
 export const metadata: Metadata = {
@@ -123,6 +124,12 @@ export default function DemoAcheterPage() {
               Prix, disponibilité et charges sont à confirmer directement auprès de la source.
             </p>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-[#f8fafc] px-4 py-12">
+        <div className="mx-auto max-w-4xl">
+          <DemoPartnerResultStack />
         </div>
       </section>
 

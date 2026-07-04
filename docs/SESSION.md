@@ -9541,6 +9541,135 @@ Next mission recommended
 * PARTNER-RANKING-POLICY-1
 
 ====================================================
+PARTNER-PAGES-ZILLOW-LIKE-DEMO-EXPERIENCE-1 - 2026-07-04
+====================================================
+
+Status: completed (preview deployed, not production)
+
+Mission
+* Create premium demo experience for partner promoter and agency pages.
+* Scope: frontend demo + static fictional data + product docs only.
+* No backend, no API, no auth, no DB, no Supabase, no Search Gateway, no ingestion,
+  no real ranking, no real partner, no real contact, no production deployment.
+
+Pre-check
+* git status --short initial:
+  M components/demo/PropertyVisual.tsx
+  ?? public/demo/
+* HEAD initial: c71a402 feat(partners): add floor plan standard for partner listings
+* Parallel work detected: yes.
+* Ignored external files:
+  components/demo/PropertyVisual.tsx
+  public/demo/
+* These files were not modified, staged or committed by Codex.
+
+Files created
+* app/demo/projet/page.tsx
+* components/demo/DemoAgencyListingCard.tsx
+* components/demo/DemoFloorPlanCard.tsx
+* components/demo/DemoPartnerContactPanel.tsx
+* components/demo/DemoPartnerLeadPreview.tsx
+* components/demo/DemoPartnerResultStack.tsx
+* components/demo/DemoProjectPhaseTimeline.tsx
+* components/demo/DemoTypologyCard.tsx
+* docs/PARTNER_PAGES_EXPERIENCE.md
+* lib/demo/partner-pages-demo-data.ts
+
+Files modified
+* app/demo/page.tsx
+* app/demo/promoteur/page.tsx
+* app/demo/agence/page.tsx
+* app/demo/acheter/page.tsx
+* docs/DECISIONS.md
+* docs/ROADMAP.md
+* docs/SESSION.md
+
+Deliverables
+* /demo hub updated with cards for promoter page, project page, agency virtual office,
+  enriched property detail, partner-vs-web result stack, buyer/renter/seller paths.
+* /demo/promoteur rebuilt as a premium promoter page:
+  hero, projects, value blocks, principal project preview, phases, typologies,
+  floor plans, demo demand report, CTA to /demo/projet.
+* /demo/projet created:
+  project hero, fictional gallery, phases, typologies, 2D floor plans,
+  model apartment, location, nearby places, mobility, neighborhood read,
+  reservation checklist and demo CTAs.
+* /demo/agence rebuilt:
+  agency hero, authorized-contact notice, zones, specialties, structured listings,
+  virtual office, qualified demo requests, seller CTA and final CTAs.
+* /demo/acheter now includes conceptual partner-result stack.
+
+Doctrine and safety
+* All demo content is fictional and marked as demo/non-contractual.
+* No real WhatsApp link, phone, email, external URL or partner inventory added.
+* Result stack documents concept only; no Search Gateway or ranking code changed.
+* External web result boundary preserved: limited preview + source-original concept.
+
+Checks
+* npm test: 1296/1296 pass (1245 scrapers + 51 API).
+* npm run build: OK, 41 static/dynamic routes generated including /demo/projet.
+* Wording scan:
+  app/demo components/demo lib/demo = 0 forbidden hits.
+  Full scan hits only historical docs, forbidden lists or negative/disclaimer context.
+* URL external scan:
+  app/demo components/demo lib/demo = 0 matches.
+* Real contact scan:
+  app/demo components/demo lib/demo = 0 matches.
+
+Browser verification
+* Browser MCP iab unavailable in this session; available browser list exposed only a
+  Chrome extension without navigation control.
+* Playwright package was available but bundled Playwright browsers were not installed.
+* Used system Chrome via Playwright channel=chrome.
+* Desktop checked:
+  /demo, /demo/promoteur, /demo/projet, /demo/agence, /demo/bien,
+  /demo/acheter, /demo/louer, /demo/vendre, /, /search?q=appartement%20casablanca,
+  /listings/137.
+* Mobile checked:
+  /demo, /demo/projet, /demo/agence.
+* Results:
+  demo routes 200, / 200, /search 200, /listings/137 404.
+  Mode demo visible on demo pages.
+  Floor plans visible on /demo/projet.
+  No horizontal overflow.
+  No critical console errors.
+  No unexpected external network requests.
+* Screenshots captured:
+  /demo desktop, /demo/promoteur desktop, /demo/projet desktop, /demo/agence desktop,
+  /demo/bien desktop, /demo mobile, /demo/projet mobile, /demo/agence mobile.
+
+Preview
+* Preview deployed with `vercel deploy`.
+* Preview URL:
+  https://akarfinder-i69exid6n-achraf-benmoussa-s-projects.vercel.app
+* Preview route checks:
+  /demo 200
+  /demo/promoteur 200
+  /demo/projet 200
+  /demo/agence 200
+  /demo/bien 200
+  /demo/acheter 200
+  /demo/louer 200
+  /demo/vendre 200
+  / 200
+  /search?q=appartement%20casablanca 200
+  /listings/137 404
+* Production deployed: no.
+
+Explicit non-changes
+* Search Gateway modified: no
+* DB/Supabase modified: no
+* env modified: no
+* package.json/package-lock modified: no
+* app/search modified: no
+* app/listings modified: no
+* ingestion modified: no
+
+Next mission recommended
+* Human review of preview.
+* Then PARTNER-RANKING-POLICY-1 once demo direction is approved.
+
+====================================================
 PARTNER-LISTING-FLOORPLAN-STANDARD-1 - 2026-07-04
 ====================================================
 
