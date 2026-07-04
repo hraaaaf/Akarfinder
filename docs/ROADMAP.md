@@ -4155,3 +4155,55 @@ Current progress estimate: 28%
 
 Next immediate mission:
 SERP-PURITY-PROD-ACTIVATION-1 (production deployment of SERP fixes)
+
+====================================================
+PARTNER STRUCTURED LISTING STANDARD - APPROVED 2026-07-04
+====================================================
+
+Context:
+AkarFinder prepares authorized partner supply without becoming a marketplace and without weakening the Search Gateway boundary.
+
+Mission completed:
+PARTNER-LISTING-STANDARD-1
+
+Progress:
+- Initial roadmap progress estimate: 45%
+- Estimated progress after success: 47%
+
+Principle:
+Pertinence first. Partner status second. Listing quality third. External source last.
+
+Partner listing requirement:
+- A partner must provide structured, authorized and relevant data before receiving enriched or premium display.
+- Required foundations: identity, authorization note, transaction, property type, city, district, usable location, price mode, surface, status, media rules, contact rules, description and enrichment permissions.
+- District is mandatory.
+- Exact public address is allowed only when explicitly authorized.
+
+Quality levels:
+- `limited`
+- `standard`
+- `enriched`
+- `premium_ready`
+
+Public labels:
+- Informations limitees
+- Fiche structuree
+- Fiche enrichie
+- Presentation premium
+
+Partner vs external web results:
+- Authorized partners may display authorized photos, enriched details, neighborhood/proximity/mobility context and partner CTA.
+- External web results remain limited: no images, no direct contact, no gallery, original source visible, limited preview only.
+
+Future ranking policy, documented but not implemented:
+1. Highly relevant authorized partner results.
+2. Promoter partners for new-build / new purchase intent.
+3. Premium agencies for classic buy/rent intent.
+4. Standard agency partners.
+5. External web results without images.
+
+Hard rule:
+A partner never outranks a more relevant result only because it is a partner.
+
+Next mission:
+PARTNER-RANKING-POLICY-1

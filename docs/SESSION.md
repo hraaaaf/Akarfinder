@@ -9444,3 +9444,98 @@ Verified in preview (dpl_Hm2g23HsrFEJ6K6Q34YeZYCtsMBK deployment family)
 
 Next: production activation of the full demo-showcase sequence (visuals +
 neighborhood experience + property detail) after human review
+
+====================================================
+PARTNER-LISTING-STANDARD-1 - 2026-07-04
+====================================================
+
+Status: completed
+
+Mission
+* Formaliser le standard AkarFinder des fiches partenaires agences/promoteurs.
+* Poser une fondation code/documentation sans API partenaire, sans DB, sans Supabase,
+  sans Search Gateway, sans ranking et sans vraie donnee partenaire.
+
+Pre-check
+* git status --short initial: clean (no output)
+* HEAD initial: 77d8c51 feat(demo): add enriched property detail showcase
+* Commits recents demo/search/wording presents: yes
+
+Files created
+* docs/PARTNER_LISTING_STANDARD.md
+* lib/partners/partner-listing-types.ts
+* lib/partners/partner-listing-standard.ts
+* lib/partners/partner-listing-quality.ts
+* lib/partners/partner-listing-examples.ts
+* scripts/scrapers/__tests__/partner-listing-quality.test.ts
+
+Files modified
+* docs/DECISIONS.md
+* docs/ROADMAP.md
+* docs/SESSION.md
+
+Product decisions documented
+* AkarFinder adopts a structured partner listing standard.
+* A partner never receives premium display only because it pays or has partner status.
+* Product order documented: relevance first, partner status second, listing quality third,
+  external source last.
+* Partner authorized result rules documented: authorized photos, enriched details,
+  proximity, mobility, neighborhood context and CTA only when authorization is clear.
+* External web result boundary preserved: no images, no direct contact, no gallery,
+  original source visible, limited preview.
+
+Code foundation
+* Partner listing fields typed in PartnerListingStandard.
+* Location levels defined: district_only, approximate_zone, exact_address_authorized.
+* Quality levels defined: limited, standard, enriched, premium_ready.
+* Public labels defined: Informations limitees, Fiche structuree, Fiche enrichie,
+  Presentation premium.
+* Quality helper implemented:
+  getPartnerListingQualityLevel()
+  getPartnerListingPublicLabel()
+  hasMinimumStandardFields()
+* Fictional examples only:
+  Promoteur Demo Casablanca / Projet Demo Casablanca
+  Agence Demo Rabat / Appartement Demo Rabat
+
+Tests
+* Targeted test:
+  npx tsx --test scripts/scrapers/__tests__/partner-listing-quality.test.ts
+  Result: 5/5 pass
+* npm test:
+  Result: 1288/1288 pass (1237 scrapers + 51 API)
+  Note: new partner-listing-quality.test.ts was not added to package.json because
+  package.json was explicitly out of scope unless necessary; targeted test was run directly.
+* npm run build:
+  Result: OK
+
+Wording scan
+* Command:
+  rg -n "vérifié|certifié|officiel|fiable|meilleur|garanti|prix réel|annonce vérifiée|annonce fiable|agence de confiance|partenaire officiel|marketplace|toutes les annonces|exhaustif" docs lib/partners app components
+* New lib/partners occurrences:
+  acceptable blocklists / forbidden-wording constants only.
+* New docs/PARTNER_LISTING_STANDARD.md occurrences:
+  acceptable forbidden-label lists and negative/disclaimer wording.
+* Existing docs/app/components occurrences:
+  pre-existing historical docs, forbidden lists, negative disclaimers, technical id
+  marketplace-search, and legacy reliability labels. No new visible public violation
+  introduced by this mission.
+
+Explicit non-changes
+* Search Gateway modified: no
+* DB/Supabase modified: no
+* Ingestion modified: no
+* API partner created: no
+* Auth created: no
+* Ranking implemented: no
+* Production deployed: no
+
+Unresolved issues
+* New unit test is not wired into npm test to avoid touching package.json in this mission.
+  If owner validates, it can be added in a small follow-up.
+* Wording scan still reports many historical docs and existing UI occurrences outside this
+  mission scope; classify before changing because several are legitimate forbidden lists
+  or negative disclaimers.
+
+Next mission recommended
+* PARTNER-RANKING-POLICY-1

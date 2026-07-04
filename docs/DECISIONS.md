@@ -1879,3 +1879,30 @@ Impact:
 - New phase inserted before B2B monetization pilot
 - Sales enablement improved
 - Vision clarity for stakeholders
+
+## 2026-07-04 - PARTNER-LISTING-STANDARD-1 - Standard de fiche partenaire structuree
+
+Status: Validated
+
+Decision:
+- AkarFinder adopte un standard de fiche partenaire structuree pour les promoteurs, agences premium et agences partenaires.
+- Un partenaire ne peut pas beneficier d'un affichage premium simplement parce qu'il paie ou parce qu'il est partenaire.
+- Le principe produit est: pertinence d'abord, partenaire ensuite, qualite de fiche ensuite, source externe en dernier.
+- Les fiches partenaires doivent fournir une identite claire, une autorisation explicite, un quartier obligatoire, une localisation exploitable, un modele prix clair, une surface, des regles medias, des regles contact et des enrichissements autorises.
+- Les resultats web externes restent limites: sans images, sans contact direct, sans galerie, avec source originale et apercu limite.
+- Les resultats partenaires autorises peuvent afficher des images autorisees, details enrichis, proximite, mobilite, quartier, CTA partenaire, page projet ou fiche partenaire uniquement si l'autorisation est claire.
+- Les niveaux internes de qualite sont: `limited`, `standard`, `enriched`, `premium_ready`.
+- Les labels publics autorises sont: `Informations limitees`, `Fiche structuree`, `Fiche enrichie`, `Presentation premium`.
+- Les termes publics interdits restent: verifie, certifie, officiel, fiable, meilleur, garanti, prix reel, annonce verifiee, annonce fiable, agence de confiance, partenaire officiel.
+- La regle future de ranking est documentee mais non implementee: un partenaire ne passe jamais devant si son resultat n'est pas pertinent.
+
+Reason:
+- AkarFinder prepare l'arrivee de partenaires autorises sans redevenir une marketplace ni melanger partenaires autorises et resultats web externes.
+- La qualite des fiches partenaires doit devenir un avantage produit mesurable, pas un simple statut commercial.
+- La separation stricte protege la credibilite: le partenaire apporte des donnees propres et autorisees; AkarFinder apporte structure, recherche, contexte et qualification.
+
+Impact:
+- Documentation creee: `docs/PARTNER_LISTING_STANDARD.md`.
+- Fondation code isolee: `lib/partners/partner-listing-types.ts`, `partner-listing-standard.ts`, `partner-listing-quality.ts`, `partner-listing-examples.ts`.
+- Aucun changement DB, Supabase, Search Gateway, ingestion, API partenaire, auth ou ranking.
+- Mission suivante naturelle: `PARTNER-RANKING-POLICY-1`, uniquement comme politique avant implementation.
