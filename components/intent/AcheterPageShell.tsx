@@ -325,6 +325,7 @@ export function AcheterPageShell({
 
               {/* Search form */}
               <form action="/search" method="get" className="mt-6 sm:mt-8">
+                <input type="hidden" name="transaction_type" value="buy" />
                 <div className="flex overflow-hidden rounded-2xl bg-card dark:bg-white/[0.06] p-1 shadow-[0_18px_60px_rgba(0,0,0,0.4)] dark:shadow-[0_18px_60px_rgba(0,0,0,0.6)] ring-1 ring-border/20 dark:ring-white/12">
                   <div className="flex flex-1 items-center gap-2.5 px-4">
                     <Search

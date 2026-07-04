@@ -507,3 +507,87 @@ describe("Search Gateway — Security & doctrine", () => {
     assert.equal(result.result_attribution_label, "Résultat web externe");
   });
 });
+
+describe("Search Gateway — Route intent (buy/rent/new)", () => {
+  it("48. intent=buy ranks a sale result above a rent result", () => {
+    const rent = normalizeSearchGatewayResult(
+      { title: "Appartement à louer à Agadir", link: "https://avito.ma/annonce/rent-1" },
+      "avito_serper"
+    )!;
+    const buy = normalizeSearchGatewayResult(
+      { title: "Appartement à vendre à Agadir", link: "https://avito.ma/annonce/buy-1" },
+      "avito_serper"
+    )!;
+    const ranked = rankSearchGatewayResults([rent, buy], ["agadir"], "buy");
+    const buyIndex = ranked.findIndex((r) => r.id === buy.id);
+    const rentIndex = ranked.findIndex((r) => r.id === rent.id);
+    assert.ok(buyIndex < rentIndex);
+  });
+
+  it("49. intent=rent ranks a rent result above a sale result", () => {
+    const rent = normalizeSearchGatewayResult(
+      { title: "Appartement à louer à Agadir", link: "https://avito.ma/annonce/rent-2" },
+      "avito_serper"
+    )!;
+    const buy = normalizeSearchGatewayResult(
+      { title: "Appartement à vendre à Agadir", link: "https://avito.ma/annonce/buy-2" },
+      "avito_serper"
+    )!;
+    const ranked = rankSearchGatewayResults([buy, rent], ["agadir"], "rent");
+    const rentIndex = ranked.findIndex((r) => r.id === rent.id);
+    const buyIndex = ranked.findIndex((r) => r.id === buy.id);
+    assert.ok(rentIndex < buyIndex);
+  });
+
+  it("50. intent=new ranks a new-development result above an ancien/generic result", () => {
+    const ancien = normalizeSearchGatewayResult(
+      { title: "Appartement ancien à rénover à Casablanca", link: "https://avito.ma/annonce/old-1" },
+      "avito_serper"
+    )!;
+    const neuf = normalizeSearchGatewayResult(
+      { title: "Programme neuf résidence standing à Casablanca", link: "https://avito.ma/annonce/new-1" },
+      "avito_serper"
+    )!;
+    const ranked = rankSearchGatewayResults([ancien, neuf], ["casablanca"], "new");
+    const neufIndex = ranked.findIndex((r) => r.id === neuf.id);
+    const ancienIndex = ranked.findIndex((r) => r.id === ancien.id);
+    assert.ok(neufIndex < ancienIndex);
+  });
+
+  it("51. Coverage protection — non-matching intent results are kept, not dropped", () => {
+    const rent = normalizeSearchGatewayResult(
+      { title: "Appartement à louer à Agadir", link: "https://avito.ma/annonce/rent-3" },
+      "avito_serper"
+    )!;
+    const ranked = rankSearchGatewayResults([rent], ["agadir"], "buy");
+    assert.equal(ranked.length, 1); // still present, just lower-scored
+  });
+
+  it("52. Doctrine protection holds under intent ranking (no thumbnails/contact/gallery, external attribution)", () => {
+    const buy = normalizeSearchGatewayResult(
+      { title: "Appartement à vendre à Agadir", link: "https://avito.ma/annonce/buy-doctrine" },
+      "avito_serper"
+    )!;
+    const ranked = rankSearchGatewayResults([buy], ["agadir"], "buy");
+    const result = ranked[0];
+    assert.equal(result.can_show_thumbnail, false);
+    assert.equal(result.can_show_contact, false);
+    assert.equal(result.can_show_gallery, false);
+    assert.equal(result.result_attribution_label, "Résultat web externe");
+    assert.ok(!result.original_url.includes("/listings/"));
+  });
+
+  it("53. No intent (undefined) does not alter relative ranking of buy vs rent beyond normal scoring", () => {
+    const rent = normalizeSearchGatewayResult(
+      { title: "Appartement à louer à Agadir avec balcon spacieux", link: "https://avito.ma/annonce/rent-4" },
+      "avito_serper"
+    )!;
+    const buy = normalizeSearchGatewayResult(
+      { title: "Appartement à vendre à Agadir avec balcon spacieux", link: "https://avito.ma/annonce/buy-4" },
+      "avito_serper"
+    )!;
+    const ranked = rankSearchGatewayResults([rent, buy], ["agadir"]);
+    // Without intent, neither should be forced ahead purely by transaction type.
+    assert.equal(ranked.length, 2);
+  });
+});

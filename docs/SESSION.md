@@ -9091,3 +9091,66 @@ Next mission recommended
   package.json, out of scope for this mission)
 * PROMISE-MAP-PROD-ACTIVATION-1-style activation once this preview is
   reviewed and approved for production
+
+====================================================
+SEARCH-GATEWAY-INTENT-TEST-HARDENING-1 - 2026-07-04
+
+Status: completed
+
+Mission
+* Part A: integrate scripts/scrapers/__tests__/search-gateway-multisource-serp.test.ts
+  into npm test (was converted to node:test in SERP-RESULT-QUALITY-DEGROUPING-1 but
+  never wired in — discovered gap)
+* Part B: audit whether /acheter, /louer, /neuf transmit their transaction
+  intent (buy/rent/new) to the Search Gateway, fix if not
+
+Part A findings & fix
+* Added scripts/scrapers/__tests__/search-gateway-multisource-serp.test.ts to the
+  test:scrapers script in package.json (single-line addition, no new script,
+  no new dependency, no vitest reintroduced)
+* npm test now runs 1237 (test:scrapers, +6 new intent tests since last mission)
+  + 51 (test:api) = 1288 tests total, all passing
+
+Part B findings
+* AcheterPageShell.tsx hero form (action="/search") had NO hidden transaction_type
+  field — buy intent was lost entirely on submit
+* LouerPageShell.tsx hero form already correctly had
+  <input type="hidden" name="transaction_type" value="rent" /> — no fix needed there
+* NeufPageShell.tsx had NO path to /search at all (no hero form, no CTA)
+* Universal gap regardless of route: LightZillowSearchShell.tsx's Gateway fetch
+  (the useEffect building /api/search/gateway params) never forwarded
+  filters.transactionType — so even /louer's already-correct hidden field was
+  silently dropped before reaching the Gateway
+* app/api/search/gateway/route.ts already extracted an `intent` query param but
+  neither search-gateway-query-builder.ts nor search-gateway-ranking.ts ever
+  used it — intent had zero effect end-to-end
+
+Fixes applied
+* lib/search-gateway/search-gateway-intent.ts (new) — hasBuySignal/hasRentSignal/
+  hasNewSignal detectors + scoreIntentMatch (deprioritize opposite intent,
+  never remove) + parseRouteIntent
+* lib/search-gateway/search-gateway-ranking.ts — scoreQuality/rankSearchGatewayResults/
+  getResultRankingScore now accept an optional intent param and apply
+  scoreIntentMatch
+* app/api/search/gateway/route.ts — parses intent via parseRouteIntent and
+  passes it to rankSearchGatewayResults
+* components/search/LightZillowSearchShell.tsx — forwards
+  filters.transactionType as `intent` param to the Gateway fetch when not "all"
+* components/intent/AcheterPageShell.tsx — added
+  <input type="hidden" name="transaction_type" value="buy" /> to hero form
+* components/neuf/NeufPageShell.tsx — added "Explorer les programmes neufs"
+  CTA to /search?type=new (reused existing button style, no new visual pattern)
+
+Verified in preview (dpl_7JikmTULESQtuCwi3EsnbSRcccps deployment family)
+* intent=buy on "appartement agadir": top result is an Avito sale listing
+* intent=rent on the same query: top result becomes a Yakeey rental listing
+  (overcoming Yakeey's lower base source score — proves intent boost works)
+* intent=new on "appartement casablanca": top result explicitly mentions "neufs"
+* Coverage preserved in all cases — non-matching intent results stay present,
+  just lower-ranked
+* c18a7e1 diversification/category-limiting/snippet-neutralization all intact
+* Doctrine flags intact, 0 console errors on /acheter, /neuf
+
+Next mission recommended
+* Production activation of this preview once reviewed
+* Consider auditing /vendre similarly (not requested in this mission's scope)

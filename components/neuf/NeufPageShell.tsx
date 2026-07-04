@@ -123,6 +123,13 @@ export function NeufPageShell() {
                   Espace promoteurs
                   <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
                 </Link>
+                <Link
+                  href="/search?type=new"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border/20 dark:border-white/15 bg-surface dark:bg-white/10 px-5 py-3 text-[13.5px] font-extrabold text-foreground dark:text-white/90 transition hover:border-bronze-500/40"
+                >
+                  Explorer les programmes neufs
+                  <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
+                </Link>
               </div>
 
               {/* Counter / note */}

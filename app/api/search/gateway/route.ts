@@ -10,6 +10,7 @@ import {
   limitCategoryPagesPerSource,
   diversifySearchGatewayResults,
 } from "@/lib/search-gateway/search-gateway-diversify";
+import { parseRouteIntent } from "@/lib/search-gateway/search-gateway-intent";
 import { getEnabledSearchGatewaySources } from "@/lib/search-gateway/search-gateway-sources";
 import type { SearchGatewayRouteResponse, SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
@@ -122,8 +123,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const deduped = dedupeSearchGatewayResults(normalized);
 
     // Apply ranking (SEARCH-GATEWAY-MULTISOURCE-SERP-RANKING-1)
+    // Route intent (buy/rent/new) — SEARCH-GATEWAY-INTENT-TEST-HARDENING-1 —
+    // favors /acheter, /louer, /neuf signals without ever dropping results.
     const queryTerms = [query, city, propertyType].filter(Boolean) as string[];
-    const ranked = rankSearchGatewayResults(deduped, queryTerms);
+    const routeIntent = parseRouteIntent(intent);
+    const ranked = rankSearchGatewayResults(deduped, queryTerms, routeIntent);
 
     // SERP-RESULT-QUALITY-DEGROUPING-1 — limit repeated source category pages,
     // then interleave sources so the SERP never reads as "grouped by source".

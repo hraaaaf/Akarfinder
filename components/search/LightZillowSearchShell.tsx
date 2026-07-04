@@ -225,6 +225,9 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
         if (filters.search.trim()) params.set("q", filters.search.trim());
         if (filters.city !== "all") params.set("city", filters.city);
         if (filters.propertyType !== "all") params.set("property_type", filters.propertyType);
+        // SEARCH-GATEWAY-INTENT-TEST-HARDENING-1 — forward /acheter, /louer,
+        // /neuf intent (buy/rent/new) so the Gateway can favor matching results.
+        if (filters.transactionType !== "all") params.set("intent", filters.transactionType);
         const url = `/api/search/gateway?${params.toString()}`;
         const response = await fetch(url, { cache: "no-store" });
         if (!response.ok || cancelled) {

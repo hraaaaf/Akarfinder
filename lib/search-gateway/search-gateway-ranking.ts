@@ -3,6 +3,7 @@
 
 import type { SearchGatewayNormalizedResult } from "./search-gateway-types";
 import { isSourceCategoryPage, isEnglishResult } from "./search-gateway-category-detector";
+import { scoreIntentMatch, type SearchGatewayRouteIntent } from "./search-gateway-intent";
 
 export interface RankingScore {
   source_score: number;
@@ -28,7 +29,11 @@ function scoreSourcePriority(sourceId: string): number {
   return SOURCE_SCORES[sourceId] || 5;
 }
 
-function scoreQuality(result: SearchGatewayNormalizedResult, queryTerms: string[]): number {
+function scoreQuality(
+  result: SearchGatewayNormalizedResult,
+  queryTerms: string[],
+  intent?: SearchGatewayRouteIntent
+): number {
   let score = 0;
   const titleLower = result.title?.toLowerCase() ?? "";
   const snippetLower = result.snippet?.toLowerCase() ?? "";
@@ -102,17 +107,23 @@ function scoreQuality(result: SearchGatewayNormalizedResult, queryTerms: string[
     score -= 15;
   }
 
+  // Route-intent alignment (SEARCH-GATEWAY-INTENT-TEST-HARDENING-1) — favors
+  // /acheter (buy), /louer (rent) and /neuf (new) signals in title/URL.
+  // Deprioritizes conflicting signals; never removes a result.
+  score += scoreIntentMatch(result.title ?? "", result.original_url ?? "", intent);
+
   return Math.max(score, 0); // Never negative
 }
 
 export function rankSearchGatewayResults(
   results: SearchGatewayNormalizedResult[],
-  queryTerms: string[] = []
+  queryTerms: string[] = [],
+  intent?: SearchGatewayRouteIntent
 ): Array<SearchGatewayNormalizedResult & { _ranking: RankingScore }> {
   // Score each result
   const scoredResults = results.map(result => {
     const source_score = scoreSourcePriority(result.source_id);
-    const quality_score = scoreQuality(result, queryTerms);
+    const quality_score = scoreQuality(result, queryTerms, intent);
     const gateway_rank_score = source_score + quality_score;
 
     return {
@@ -147,10 +158,11 @@ export function rankSearchGatewayResults(
 // Helper to get ranking info for a single result
 export function getResultRankingScore(
   result: SearchGatewayNormalizedResult,
-  queryTerms: string[] = []
+  queryTerms: string[] = [],
+  intent?: SearchGatewayRouteIntent
 ): RankingScore {
   const source_score = scoreSourcePriority(result.source_id);
-  const quality_score = scoreQuality(result, queryTerms);
+  const quality_score = scoreQuality(result, queryTerms, intent);
   const gateway_rank_score = source_score + quality_score;
 
   return {
