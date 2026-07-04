@@ -107,6 +107,101 @@ export const DEMO_SELLER_FORM_DEFAULTS = {
 
 export const DEMO_CONTACT_EMAIL = "demo@akarfinder.ma";
 
+// ZILLOW-LIKE-PROPERTY-DETAIL-DEMO-1 — fictional, richly detailed property
+// page. UX pattern inspiration only (gallery, specs, proximity, mobility,
+// neighborhood read, timeline, pre-contact checklist) — no copied text, no
+// borrowed score names, no real data. Everything here is illustrative.
+
+export const DEMO_PROPERTY_DETAIL = {
+  title: "Appartement Démo — Racine, Casablanca",
+  city: "Casablanca",
+  district: "Racine",
+  priceLabel: "2 450 000 MAD (indicatif fictif)",
+  specs: [
+    { label: "Type", value: "Appartement (fictif)" },
+    { label: "Surface", value: "118 m² (fictif)" },
+    { label: "Chambres", value: "3 (fictif)" },
+    { label: "Salles de bain", value: "2 (fictif)" },
+    { label: "Étage", value: "4ème étage (fictif)" },
+    { label: "Orientation", value: "Sud-Est (fictif)" },
+    { label: "Ascenseur", value: "Oui (fictif)" },
+    { label: "Parking", value: "1 place (fictif)" },
+    { label: "Terrasse", value: "Balcon (fictif)" },
+    { label: "État général", value: "Bon état (fictif)" },
+  ],
+  visuals: ["apartment-modern", "appartement-familial", "studio-urbain"] as PropertyVisualType[],
+  proximityScores: [
+    {
+      key: "daily",
+      label: "Proximité quotidienne",
+      score: 86,
+      tag: "Très pratique au quotidien",
+      criteria: ["Commerces", "Cafés", "Pharmacie", "Banque", "Supermarché"],
+    },
+    {
+      key: "mobility",
+      label: "Mobilité",
+      score: 78,
+      tag: "Déplacements faciles",
+      criteria: ["Tram", "Taxi", "Grands axes", "Gare", "Parking"],
+    },
+    {
+      key: "family",
+      label: "Famille & services",
+      score: 74,
+      tag: "Services utiles dans le secteur",
+      criteria: ["Écoles", "Crèches", "Cliniques", "Espaces verts"],
+    },
+    {
+      key: "calm",
+      label: "Calme relatif",
+      score: 62,
+      tag: "À vérifier selon rue exacte",
+      criteria: ["Axe passant", "Bruit", "Stationnement", "Densité commerciale"],
+    },
+  ],
+  nearbyPlaces: [
+    { category: "Transports", items: ["Tramway — dans le secteur (fictif)", "Station de taxi — à proximité (fictif)"] },
+    { category: "Écoles & crèches", items: ["École privée — à confirmer (fictif)", "Crèche — dans le quartier (fictif)"] },
+    { category: "Santé", items: ["Clinique — secteur élargi (fictif)", "Pharmacie — proche (fictif)"] },
+    { category: "Commerces", items: ["Supermarché — dans le secteur (fictif)", "Épicerie — à proximité (fictif)"] },
+    { category: "Loisirs", items: ["Café / restaurant — dans le quartier (fictif)"] },
+    { category: "Lieux de vie", items: ["Espace vert — à quelques minutes (fictif)"] },
+  ],
+  mobility: [
+    { mode: "Voiture", note: "Accès rapide aux grands axes (fictif)" },
+    { mode: "Tram", note: "Station dans le secteur (fictif)" },
+    { mode: "Taxi", note: "Disponibilité fréquente (fictif)" },
+    { mode: "Marche", note: "Services courants accessibles (fictif)" },
+    { mode: "Stationnement", note: "Variable selon rue — à vérifier" },
+  ],
+  neighborhoodRead: [
+    "Quartier central",
+    "Commerces, bureaux et restaurants",
+    "Circulation variable selon les heures",
+    "Stationnement à vérifier selon la rue",
+    "Proximité indicative de Maârif, Anfa et Gauthier",
+  ],
+  timeline: [
+    { label: "Ajouté à la démonstration", value: "Juin 2026" },
+    { label: "Prix affiché démo", value: "2 450 000 MAD" },
+    { label: "Mise à jour fictive", value: "+ photos démo" },
+    { label: "Statut", value: "Exemple non contractuel" },
+  ],
+  verificationChecklist: [
+    "Titre foncier",
+    "Charges de copropriété",
+    "Syndic",
+    "Stationnement réel",
+    "État des parties communes",
+    "Voisinage",
+    "Orientation",
+    "Bruit",
+    "Conformité de la surface",
+    "Frais d'agence éventuels",
+  ],
+};
+
 // NEIGHBORHOOD-EXPERIENCE-SHOWCASE-1 — fictional, non-contractual
 // "neighborhood experience" data. Everything here is illustrative: no
 // precise travel times, no official estimate, no reliability score.

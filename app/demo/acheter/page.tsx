@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ExternalLink, ShieldCheck } from "lucide-react";
 import { DemoShell } from "@/components/demo/DemoShell";
 import { DemoBadge } from "@/components/demo/DemoBadge";
@@ -127,6 +128,11 @@ export default function DemoAcheterPage() {
 
       <section className="px-4 py-12 text-center">
         <DemoRequestButton label="Demander une démonstration" className="mx-auto" />
+        <div className="mt-4">
+          <Link href="/demo/bien" className="text-[12.5px] font-semibold text-[#0B63CE] underline underline-offset-2 hover:text-[#084BA8]">
+            Voir une fiche bien enrichie
+          </Link>
+        </div>
       </section>
     </DemoShell>
   );

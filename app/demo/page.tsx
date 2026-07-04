@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Building2, Users, Home, KeyRound, Tag, ArrowRight } from "lucide-react";
+import { Building2, Users, Home, KeyRound, Tag, ArrowRight, FileText } from "lucide-react";
 import { DemoShell } from "@/components/demo/DemoShell";
 import { DemoBadge } from "@/components/demo/DemoBadge";
 
@@ -11,6 +11,12 @@ export const metadata: Metadata = {
 };
 
 const CARDS = [
+  {
+    href: "/demo/bien",
+    icon: FileText,
+    title: "Exemple fiche bien enrichie",
+    body: "Une fiche bien détaillée : caractéristiques, quartier, mobilité, repères indicatifs.",
+  },
   {
     href: "/demo/promoteur",
     icon: Building2,

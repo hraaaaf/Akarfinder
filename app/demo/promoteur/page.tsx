@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { MapPin, FileText, QrCode, ClipboardList, BarChart2 } from "lucide-react";
 import { DemoShell } from "@/components/demo/DemoShell";
 import { DemoBadge } from "@/components/demo/DemoBadge";
@@ -134,6 +135,11 @@ export default function DemoPromoterPage() {
           <p className="mt-4 text-[11.5px] text-slate-400">
             Toutes les valeurs de ce rapport sont fictives et fournies à titre d&apos;illustration.
           </p>
+          <div className="mt-4">
+            <Link href="/demo/bien" className="text-[12.5px] font-semibold text-[#0B63CE] underline underline-offset-2 hover:text-[#084BA8]">
+              Voir une fiche bien enrichie
+            </Link>
+          </div>
         </div>
       </section>
     </DemoShell>

@@ -9390,3 +9390,57 @@ Verified in preview (dpl_J444PLZefrEWRtbdXFFyYS9FhD6X deployment family)
 Next: ZILLOW-LIKE-PROPERTY-DETAIL-DEMO-1 (same session, complementary
 mission received mid-way — a richer /demo/bien property detail page
 inspired by Zillow UX patterns only, no copied text/design/branding)
+
+====================================================
+ZILLOW-LIKE-PROPERTY-DETAIL-DEMO-1 - 2026-07-04
+
+Status: completed (preview validated, not yet promoted to production)
+
+Mission
+* Complement to the demo showcase: a rich property detail page (/demo/bien)
+  inspired by Zillow's detail-page UX patterns only (gallery, specs,
+  proximity, mobility, neighborhood read, history, pre-contact checklist) —
+  no copied text, no borrowed score names/branding, no real data
+
+Deliverables
+* app/demo/bien/page.tsx (new) — full property detail page, 12 sections
+  (A-L): header with price/specs/CTAs, 3-tile fictional visual gallery,
+  "Ce que cette fiche pourrait aider à comprendre" summary, 10-field specs
+  grid, 4 fictional proximity "Score fictif" cards (Proximité quotidienne
+  86, Mobilité 78, Famille & services 74, Calme relatif 62 — all explicitly
+  labeled "Score fictif" / "Indice indicatif — à confirmer sur place",
+  never "Walk Score"/"Transit Score"/official), categorized nearby-places
+  block (vague proximity wording only: "dans le secteur", "à proximité", no
+  precise minutes), mobility block (5 modes), "Comprendre le quartier"
+  framed as "dans cette démonstration, le quartier est présenté comme...",
+  fictional timeline, 10-item pre-contact verification checklist (very
+  Morocco-specific: titre foncier, charges copropriété, syndic...),
+  "partenaire autorisé" explanation block, final CTAs
+* components/demo/DemoScoreCard.tsx (new) — internal fictional score card,
+  color-coded by tier, "Score fictif" badge on every card
+* components/demo/DemoNearbyPlaces.tsx (new) — categorized nearby-places grid
+* lib/demo/demo-data.ts — added DEMO_PROPERTY_DETAIL with all fictional
+  content (title "Appartement Démo — Racine, Casablanca", price 2 450 000
+  MAD marked "indicatif fictif", specs, scores, nearby places, mobility,
+  neighborhood read, timeline, verification checklist)
+* Links to /demo/bien added from /demo (new hub card), /demo/acheter,
+  /demo/agence, /demo/promoteur (discreet text links)
+
+Verified in preview (dpl_Hm2g23HsrFEJ6K6Q34YeZYCtsMBK deployment family)
+* 10/10 required routes 200 (/demo/bien included), /listings/137 still 404
+* Desktop (1440px) screenshots: header/gallery/summary block and the 4-score
+  proximity section both render cleanly, premium blue/white, every score
+  card shows a "SCORE FICTIF" badge
+* Mobile (390px): 0 horizontal overflow, everything stacks properly
+* 0 console errors, network requests confirmed self-hosted only (no
+  unexpected external calls beyond standard Vercel preview toolbar)
+* noindex/nofollow confirmed on all 7 /demo routes (6 previous + new /demo/bien)
+* Wording scan: only hit is a pre-existing negation disclaimer ("Aucune
+  estimation réelle n'est fournie") on /demo/vendre — legitimate, not a
+  violation
+* Zero external URLs added (grep-verified)
+* 1288/1288 tests passing, build OK
+* Search Gateway, DB, Supabase untouched
+
+Next: production activation of the full demo-showcase sequence (visuals +
+neighborhood experience + property detail) after human review
