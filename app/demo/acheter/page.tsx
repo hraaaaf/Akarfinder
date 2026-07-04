@@ -3,6 +3,7 @@ import { ExternalLink, ShieldCheck } from "lucide-react";
 import { DemoShell } from "@/components/demo/DemoShell";
 import { DemoBadge } from "@/components/demo/DemoBadge";
 import { DemoRequestButton } from "@/components/demo/DemoRequestButton";
+import { PropertyVisual, type PropertyVisualType } from "@/components/demo/PropertyVisual";
 import { DEMO_BUYER_PROFILES } from "@/lib/demo/demo-data";
 
 export const metadata: Metadata = {
@@ -11,10 +12,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const EXAMPLE_RESULTS = [
-  { title: "Appartement 3 chambres — Exemple", city: "Casablanca", source: "Exemple de source externe" },
-  { title: "Villa avec jardin — Exemple", city: "Marrakech", source: "Exemple de source externe" },
-  { title: "Duplex standing — Exemple", city: "Rabat", source: "Exemple de source externe" },
+const EXAMPLE_RESULTS: Array<{ title: string; city: string; source: string; visual: PropertyVisualType }> = [
+  { title: "Appartement 3 chambres — Exemple", city: "Casablanca", source: "Exemple de source externe", visual: "apartment-modern" },
+  { title: "Villa avec jardin — Exemple", city: "Marrakech", source: "Exemple de source externe", visual: "villa-premium" },
+  { title: "Duplex standing — Exemple", city: "Rabat", source: "Exemple de source externe", visual: "residence-neuve" },
 ];
 
 export default function DemoAcheterPage() {
@@ -56,14 +57,19 @@ export default function DemoAcheterPage() {
           </h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
             {EXAMPLE_RESULTS.map((r) => (
-              <div key={r.title} className="flex flex-col rounded-2xl border border-[#e4e9f2] bg-white p-5">
-                <DemoBadge className="self-start" />
-                <h3 className="mt-3 text-[14px] font-extrabold text-[#0B1F3A]">{r.title}</h3>
-                <p className="mt-1 text-[12px] font-semibold text-slate-500">{r.city}</p>
-                <p className="mt-3 flex items-center gap-1.5 text-[12px] font-bold text-[#0B63CE]">
-                  <ExternalLink size={12} aria-hidden="true" />
-                  {r.source}
-                </p>
+              <div key={r.title} className="flex flex-col overflow-hidden rounded-2xl border border-[#e4e9f2] bg-white">
+                <div className="relative">
+                  <PropertyVisual type={r.visual} ratio="4:3" />
+                  <DemoBadge className="absolute left-2 top-2" />
+                </div>
+                <div className="p-5">
+                  <h3 className="text-[14px] font-extrabold text-[#0B1F3A]">{r.title}</h3>
+                  <p className="mt-1 text-[12px] font-semibold text-slate-500">{r.city}</p>
+                  <p className="mt-3 flex items-center gap-1.5 text-[12px] font-bold text-[#0B63CE]">
+                    <ExternalLink size={12} aria-hidden="true" />
+                    {r.source}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { MapPin, Home } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { DemoShell } from "@/components/demo/DemoShell";
 import { DemoBadge } from "@/components/demo/DemoBadge";
 import { DemoRequestButton } from "@/components/demo/DemoRequestButton";
+import { PropertyVisual } from "@/components/demo/PropertyVisual";
 import { DEMO_AGENCY } from "@/lib/demo/demo-data";
 
 export const metadata: Metadata = {
@@ -43,15 +44,13 @@ export default function DemoAgencyPage() {
           </h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {listings.map((listing) => (
-              <div key={listing.title} className="flex items-start gap-3 rounded-2xl border border-[#e4e9f2] bg-white p-5 shadow-[0_10px_30px_rgba(15,35,65,0.06)]">
-                <span className="inline-grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#0B63CE]/10 text-[#0B63CE]">
-                  <Home size={18} strokeWidth={2.2} aria-hidden="true" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="min-w-0 flex-1 truncate text-[14px] font-extrabold text-[#0B1F3A]">{listing.title}</h3>
-                    <DemoBadge />
-                  </div>
+              <div key={listing.title} className="flex flex-col overflow-hidden rounded-2xl border border-[#e4e9f2] bg-white shadow-[0_10px_30px_rgba(15,35,65,0.06)]">
+                <div className="relative">
+                  <PropertyVisual type={listing.visual} ratio="16:10" />
+                  <DemoBadge className="absolute left-2 top-2" />
+                </div>
+                <div className="min-w-0 flex-1 p-4">
+                  <h3 className="min-w-0 truncate text-[14px] font-extrabold text-[#0B1F3A]">{listing.title}</h3>
                   <p className="mt-1 text-[12px] font-semibold text-slate-500">
                     {listing.type} · {listing.neighborhood}, {listing.city}
                   </p>

@@ -4,12 +4,15 @@
 // is a hardcoded illustrative placeholder, clearly labeled "démo" wherever
 // displayed. No real promoter, agency, phone number, or email appears here.
 
+import type { PropertyVisualType } from "@/components/demo/PropertyVisual";
+
 export type DemoProject = {
   name: string;
   type: string;
   city: string;
   priceIndicative: string;
   deliveryIndicative: string;
+  visual: PropertyVisualType;
 };
 
 export const DEMO_PROMOTER = {
@@ -22,6 +25,7 @@ export const DEMO_PROMOTER = {
       city: "Casablanca",
       priceIndicative: "à partir de 850 000 DH (indicatif fictif)",
       deliveryIndicative: "Livraison indicative : 2027 (fictif)",
+      visual: "apartment-modern",
     },
     {
       name: "Les Jardins Anfa Démo",
@@ -29,6 +33,7 @@ export const DEMO_PROMOTER = {
       city: "Casablanca",
       priceIndicative: "à partir de 1 200 000 DH (indicatif fictif)",
       deliveryIndicative: "Livraison indicative : 2028 (fictif)",
+      visual: "residence-neuve",
     },
     {
       name: "Horizon Bouskoura Démo",
@@ -36,6 +41,7 @@ export const DEMO_PROMOTER = {
       city: "Bouskoura",
       priceIndicative: "à partir de 2 100 000 DH (indicatif fictif)",
       deliveryIndicative: "Livraison indicative : 2027 (fictif)",
+      visual: "villa-premium",
     },
   ] as DemoProject[],
   report: {
@@ -52,6 +58,7 @@ export type DemoListing = {
   city: string;
   neighborhood: string;
   priceIndicative: string;
+  visual: PropertyVisualType;
 };
 
 export const DEMO_AGENCY = {
@@ -59,10 +66,10 @@ export const DEMO_AGENCY = {
   specialties: ["Location longue durée", "Achat familial", "MRE", "Villa / Appartement"],
   zones: ["Rabat", "Agdal", "Hay Riad", "Souissi"],
   listings: [
-    { title: "Appartement 3 chambres — Exemple", type: "Appartement", city: "Rabat", neighborhood: "Agdal", priceIndicative: "9 500 DH/mois (exemple)" },
-    { title: "Villa avec jardin — Exemple", type: "Villa", city: "Rabat", neighborhood: "Souissi", priceIndicative: "3 200 000 DH (exemple)" },
-    { title: "Duplex standing — Exemple", type: "Duplex", city: "Rabat", neighborhood: "Hay Riad", priceIndicative: "2 400 000 DH (exemple)" },
-    { title: "Appartement meublé — Exemple", type: "Appartement", city: "Rabat", neighborhood: "Agdal", priceIndicative: "7 800 DH/mois (exemple)" },
+    { title: "Appartement 3 chambres — Exemple", type: "Appartement", city: "Rabat", neighborhood: "Agdal", priceIndicative: "9 500 DH/mois (exemple)", visual: "appartement-familial" },
+    { title: "Villa avec jardin — Exemple", type: "Villa", city: "Rabat", neighborhood: "Souissi", priceIndicative: "3 200 000 DH (exemple)", visual: "villa-premium" },
+    { title: "Duplex standing — Exemple", type: "Duplex", city: "Rabat", neighborhood: "Hay Riad", priceIndicative: "2 400 000 DH (exemple)", visual: "residence-neuve" },
+    { title: "Appartement meublé — Exemple", type: "Appartement", city: "Rabat", neighborhood: "Agdal", priceIndicative: "7 800 DH/mois (exemple)", visual: "apartment-modern" },
   ] as DemoListing[],
   performance: {
     requestsReceived: 64,

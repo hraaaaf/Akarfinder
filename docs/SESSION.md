@@ -9300,3 +9300,46 @@ Verified in preview (dpl_QJt5vtCyvET9AZHY8FRmonknjotW deployment family)
   "Exemple non contractuel — aucune demande réelle envoyée"
 * 0 console errors
 * 1288/1288 tests passing, build OK, zero forbidden wording
+
+====================================================
+DEMO-LISTING-VISUALS-1 - 2026-07-04
+
+Status: completed (preview validated, not yet promoted to production)
+
+Mission
+* Add premium fictional visuals to /demo/agence and /demo/promoteur listing
+  cards to make the commercial demo more credible
+
+Approach
+* components/demo/PropertyVisual.tsx (new) — 7 inline-SVG illustrations
+  (apartment-modern, villa-premium, residence-neuve, appartement-familial,
+  studio-urbain, terrain, local-commercial). Fully self-contained: zero
+  external image requests, zero new static assets, negligible build size
+  impact. Deliberately stylized/geometric (not photorealistic) so it can
+  never be mistaken for a real listing photo or a copied image. Each visual
+  carries a "Visuel fictif" micro-label overlay.
+* lib/demo/demo-data.ts — added `visual: PropertyVisualType` field to
+  DEMO_PROMOTER.projects and DEMO_AGENCY.listings
+* app/demo/promoteur/page.tsx — project cards restructured: image on top
+  (16:10), MODE DÉMO badge overlaid, content below
+* app/demo/agence/page.tsx — listing cards restructured similarly (16:10)
+* app/demo/acheter/page.tsx — EXAMPLE_RESULTS cards get visuals too (4:3)
+* /demo/louer and /demo/vendre left unchanged — they don't have
+  listing/property-style cards (forms + zone lists only), so there was
+  nothing to attach a property visual to without inventing new UI sections
+  beyond the mission's stated scope
+
+Verified in preview (dpl_9kMcygRe3wM31ogaaUtC3GarSjM4 deployment family)
+* Desktop (1440px) and mobile (390px) screenshots confirm premium,
+  commercial-looking cards with clear "Visuel fictif" + "Mode démo" labels
+* 0 horizontal overflow on /demo/agence and /demo/acheter mobile
+* 0 console errors on /demo/agence, /demo/promoteur, /demo/acheter
+* noindex/nofollow unchanged on all 6 /demo routes
+* /listings/137 still 404
+* Zero external image/network requests introduced (grep-verified: no http(s)
+  URLs added in app/demo or components/demo)
+* Zero forbidden wording introduced
+* 1288/1288 tests passing, build OK
+* Search Gateway, DB, Supabase untouched
+
+Next: NEIGHBORHOOD-EXPERIENCE-SHOWCASE-1 (same session)

@@ -3,6 +3,7 @@ import { MapPin, FileText, QrCode, ClipboardList, BarChart2 } from "lucide-react
 import { DemoShell } from "@/components/demo/DemoShell";
 import { DemoBadge } from "@/components/demo/DemoBadge";
 import { DemoRequestButton } from "@/components/demo/DemoRequestButton";
+import { PropertyVisual } from "@/components/demo/PropertyVisual";
 import { DEMO_PROMOTER } from "@/lib/demo/demo-data";
 
 export const metadata: Metadata = {
@@ -49,14 +50,19 @@ export default function DemoPromoterPage() {
             {projects.map((project) => (
               <div
                 key={project.name}
-                className="flex flex-col rounded-2xl border border-[#e4e9f2] bg-white p-5 shadow-[0_10px_30px_rgba(15,35,65,0.06)]"
+                className="flex flex-col overflow-hidden rounded-2xl border border-[#e4e9f2] bg-white shadow-[0_10px_30px_rgba(15,35,65,0.06)]"
               >
-                <DemoBadge className="self-start" />
-                <h3 className="mt-3 text-[15px] font-extrabold text-[#0B1F3A]">{project.name}</h3>
-                <p className="mt-1 text-[12.5px] font-semibold text-slate-500">{project.type} · {project.city}</p>
-                <p className="mt-3 text-[13px] text-slate-600">{project.priceIndicative}</p>
-                <p className="mt-1 text-[12px] text-slate-400">{project.deliveryIndicative}</p>
-                <DemoRequestButton label="Demander des informations" className="mt-4 w-full" />
+                <div className="relative">
+                  <PropertyVisual type={project.visual} ratio="16:10" />
+                  <DemoBadge className="absolute left-2 top-2" />
+                </div>
+                <div className="flex flex-1 flex-col p-5">
+                  <h3 className="text-[15px] font-extrabold text-[#0B1F3A]">{project.name}</h3>
+                  <p className="mt-1 text-[12.5px] font-semibold text-slate-500">{project.type} · {project.city}</p>
+                  <p className="mt-3 text-[13px] text-slate-600">{project.priceIndicative}</p>
+                  <p className="mt-1 text-[12px] text-slate-400">{project.deliveryIndicative}</p>
+                  <DemoRequestButton label="Demander des informations" className="mt-4 w-full" />
+                </div>
               </div>
             ))}
           </div>
