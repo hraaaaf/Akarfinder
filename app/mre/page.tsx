@@ -31,7 +31,7 @@ export default function MrePage() {
           icon: <Scale size={20} strokeWidth={2.2} />,
           iconBg: "bg-[#4c1d95]",
           title: "Comparer avant de se déplacer",
-          body: "Comparez jusqu'à 4 biens sur surface, prix/m² et signaux de fiabilité avant de prendre l'avion. Évitez les déplacements non qualifiés grâce au comparateur.",
+          body: "Comparez jusqu'à 4 biens sur surface, prix/m² et repères indicatifs avant de prendre l'avion. Évitez les déplacements non qualifiés grâce au comparateur.",
           cta: { label: "Ouvrir le comparateur", href: "/compare" },
         },
         {

@@ -4,12 +4,12 @@ const steps = [
   {
     n: "1",
     title: "Cherchez par ville ou quartier",
-    body: "Lancez une recherche map-first et filtrez par budget, surface, type, fiabilité et profil MRE."
+    body: "Lancez une recherche map-first et filtrez par budget, surface, type et profil MRE."
   },
   {
     n: "2",
     title: "Comparez les biens et les repères",
-    body: "Prix au m², repère marché indicatif du quartier et signaux de fiabilité côte à côte."
+    body: "Prix au m², repère marché indicatif du quartier et repères indicatifs côte à côte."
   },
   {
     n: "3",

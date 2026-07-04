@@ -11,11 +11,11 @@ export const metadata = {
 const STEPS = [
   {
     title: "1. Cherchez",
-    text: "Filtrez par ville, budget et type de bien pour parcourir les annonces disponibles.",
+    text: "Filtrez par ville, budget et type de bien pour parcourir les résultats disponibles depuis leurs sources originales.",
   },
   {
     title: "2. Comparez",
-    text: "Consultez la complétude des données, les repères de prix et la proximité des commodités pour chaque bien.",
+    text: "Consultez les repères de prix, la proximité des commodités et la source d'origine pour chaque résultat.",
   },
   {
     title: "3. Contactez la source",

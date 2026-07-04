@@ -1,7 +1,14 @@
 "use client";
 
+// PUBLIC-INTELLIGENCE-SECTIONS-REALIGNMENT-1 — replaces the former
+// "Annonces comparées / Complétude moyenne / Fiabilité moyenne (score /100)"
+// framing (implied AkarFinder scores external annonces) with neutral,
+// verifiable indicative markers: explored cities/neighborhoods (static,
+// first-party map data) and comparative signals (existing safe metric).
 import { useEffect, useRef, useState } from "react";
 import { Container } from "@/components/ui/Container";
+import { CITIES } from "@/lib/cities";
+import { NEIGHBORHOOD_POINTS } from "@/lib/map/neighborhood-data";
 
 type Stats = {
   total_listings: number;
@@ -17,42 +24,50 @@ const FALLBACK: Stats = {
   avg_reliability: 0,
 };
 
+const CITIES_EXPLORED_COUNT = CITIES.length;
+const NEIGHBORHOODS_DOCUMENTED_COUNT = NEIGHBORHOOD_POINTS.length;
+const PUBLIC_SOURCES_COUNT = 6; // Avito, Yakeey, Mubawab, Sarouty, Agenz, Logic-Immo
+
 const STAT_META = [
   {
-    key: "total_listings" as const,
-    label: "Annonces comparées",
-    sub: "biens, quartiers et repères de prix rassemblés",
-    fallbackLabel: "Multi-sources",
+    key: "cities_explored" as const,
+    label: "Villes explorées",
+    sub: "repères de marché disponibles par ville",
+    fallbackLabel: "Multi-villes",
     suffix: "",
     decimals: 0,
     format: (v: number) => Math.round(v).toLocaleString("fr-FR"),
+    staticValue: CITIES_EXPLORED_COUNT,
   },
   {
-    key: "avg_completeness" as const,
-    label: "Complétude moyenne",
-    sub: "niveau d'informations par annonce partenaire",
-    fallbackLabel: "Qualité visible",
-    suffix: "/100",
+    key: "neighborhoods_documented" as const,
+    label: "Quartiers documentés",
+    sub: "repères indicatifs par quartier",
+    fallbackLabel: "Repères disponibles",
+    suffix: "",
     decimals: 0,
-    format: (v: number) => String(Math.round(v)),
+    format: (v: number) => Math.round(v).toLocaleString("fr-FR"),
+    staticValue: NEIGHBORHOODS_DOCUMENTED_COUNT,
   },
   {
     key: "duplicates_detected" as const,
     label: "Repères comparatifs",
     sub: "rapprochements par similitude pour un meilleur repérage",
-    fallbackLabel: "Score indicatif",
+    fallbackLabel: "Repères disponibles",
     suffix: "",
     decimals: 0,
     format: (v: number) => Math.round(v).toLocaleString("fr-FR"),
+    staticValue: null,
   },
   {
-    key: "avg_reliability" as const,
-    label: "Fiabilité moyenne",
-    sub: "score basé sur la qualité des données",
-    fallbackLabel: "Phase pilote",
-    suffix: "/100",
+    key: "public_sources" as const,
+    label: "Sources publiques accessibles",
+    sub: "résultats web externes, source originale toujours indiquée",
+    fallbackLabel: "Multi-sources",
+    suffix: "",
     decimals: 0,
-    format: (v: number) => String(Math.round(v)),
+    format: (v: number) => Math.round(v).toLocaleString("fr-FR"),
+    staticValue: PUBLIC_SOURCES_COUNT,
   },
 ];
 
@@ -157,20 +172,17 @@ export function DataProofBlock() {
       <Container>
         <div className="mb-14 text-center">
           <span className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-accent">
-            Analyse intelligente du marché
+            Repères marché
           </span>
           <p className="mt-3 text-[14.5px] text-muted-foreground">
-            Comparez les biens, les quartiers et les repères de prix avant de contacter une source.
-            {!hasRealData && loaded && (
-              <span className="ml-1 text-muted-foreground/60">(données en cours de collecte)</span>
-            )}
+            Comparez les villes, les quartiers et les repères indicatifs avant de contacter une source.
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-4 lg:gap-12">
-          {STAT_META.map(({ key, label, sub, fallbackLabel, suffix, format }) => {
-            const raw = stats[key];
-            const hasValue = hasRealData && raw > 0;
+          {STAT_META.map(({ key, label, sub, fallbackLabel, suffix, format, staticValue }) => {
+            const raw = staticValue ?? stats.duplicates_detected;
+            const hasValue = staticValue != null ? true : hasRealData && raw > 0;
 
             return (
               <div key={key} className="flex flex-col items-center text-center">

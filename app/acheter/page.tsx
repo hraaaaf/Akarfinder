@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Acheter au Maroc — AkarFinder",
   description:
-    "Recherchez, comparez et shortlistez des biens immobiliers au Maroc avec des signaux de fiabilité lisibles avant de contacter.",
+    "Recherchez, comparez et shortlistez des biens immobiliers au Maroc avec des repères indicatifs lisibles avant de contacter.",
 };
 
 export default async function AcheterPage({

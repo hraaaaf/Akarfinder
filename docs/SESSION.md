@@ -9154,3 +9154,52 @@ Verified in preview (dpl_7JikmTULESQtuCwi3EsnbSRcccps deployment family)
 Next mission recommended
 * Production activation of this preview once reviewed
 * Consider auditing /vendre similarly (not requested in this mission's scope)
+
+====================================================
+PUBLIC-INTELLIGENCE-SECTIONS-REALIGNMENT-1 - 2026-07-04
+
+Status: completed
+
+Mission
+* Audit public sections implying AkarFinder analyzes/scores third-party
+  annonces, and realign wording toward "explore sources, compare zones,
+  indicative markers" framing
+
+Key finding
+* components/landing/DataProofBlock.tsx (homepage) was the clearest match to
+  the doctrine violation pattern: eyebrow "Analyse intelligente du marché",
+  stats "Annonces comparées" / "Complétude moyenne /100" / "Fiabilité moyenne
+  /100" with sub "score basé sur la qualité des données" — implied AkarFinder
+  scores/analyzes an inventory of annonces
+
+Fixes applied
+* components/landing/DataProofBlock.tsx — full stat set replaced:
+  - Removed: "Annonces comparées", "Complétude moyenne" (/100),
+    "Fiabilité moyenne" (/100), all score-out-of-100 displays
+  - New: "Villes explorées" (static count from lib/cities.ts CITIES),
+    "Quartiers documentés" (static count from
+    lib/map/neighborhood-data.ts NEIGHBORHOOD_POINTS), "Repères comparatifs"
+    (kept, already-safe wording), "Sources publiques accessibles" (static
+    count, no Search Gateway file imported/touched)
+  - Section eyebrow: "Analyse intelligente du marché" → "Repères marché"
+  - Subtext: "Comparez les villes, les quartiers et les repères indicatifs
+    avant de contacter une source."
+* app/comment-ca-marche/page.tsx — "annonces disponibles" → "résultats
+  disponibles depuis leurs sources originales"; "complétude des données" →
+  removed, replaced with "repères de prix, proximité des commodités et
+  source d'origine"
+* app/acheter/page.tsx metadata — "signaux de fiabilité" → "repères
+  indicatifs"
+* app/mre/page.tsx — "signaux de fiabilité" → "repères indicatifs"
+* components/landing/HowItWorks.tsx (homepage) — removed "fiabilité" as a
+  filter claim, "signaux de fiabilité" → "repères indicatifs"
+
+Verified
+* Zero remaining public violations across app/components/lib after fix
+  (only code comments, technical id="marketplace-search" attribute, and the
+  FORBIDDEN_WORDING blocklist in lib/market-pulse/ remain — all previously
+  classified as acceptable)
+* 1288/1288 tests passing, build OK
+* No Search Gateway, DB, or Supabase files touched
+
+Next: DEMO-SHOWCASE-MODE-1 (Phase B, same session)
