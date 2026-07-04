@@ -1807,3 +1807,75 @@ SERP-PURITY-ALIGNMENT-1 (remove marketplace traces from UI)
 → PROMISE-REALITY-ALIGNMENT-1 (align public texts)
 → ALERTS-DEMAND-CAPTURE-MVP-1 (capture qualified intent)
 → SAKAN-PROMOTER-PILOT-OFFER-1 (test B2B revenue model)
+
+
+## 2026-07-04 - DEMO-SHOWCASE-MODE-STRATEGY-1 - Demo layer for B2B sales and product vision
+
+Status: Approved
+
+Decision:
+AkarFinder adds a demonstration layer to the roadmap, clearly separated from live production.
+
+Purpose:
+- Show promoters/agencies what authorized partner presence could look like
+- Support B2B sales conversations and Sakan Expo interactions
+- Demonstrate target experience for Buyer / Seller / Renter with rich content
+- Provide sales support before having many real partners
+
+Scope:
+Demo Showcase is a sales and product vision tool, not an inventory system.
+
+Rules:
+- All demo content must be clearly labeled "Demo" or "Example"
+- No fake partners presented as real
+- No fake listings presented as live inventory
+- No fake leads presented as real leads
+- No simulated data confused with production data
+- Demo mode does NOT reactivate marketplace logic
+- Demo mode does NOT create /listings external entries
+- Demo mode does NOT store third-party results
+- Demo mode does NOT bypass Phase 1 doctrine
+
+Demo pages to showcase:
+1. Example promoter page
+2. Example agency page
+3. Example Buyer experience (rich)
+4. Example Seller experience (rich)
+5. Example Renter experience (rich)
+
+Allowed wording:
+- "Mode démo"
+- "Exemple de page promoteur"
+- "Exemple d'expérience Acheter"
+- "Données fictives à titre d'illustration"
+- "Aperçu de l'expérience partenaire"
+- "Maquette fonctionnelle"
+
+Forbidden wording:
+- "partenaire vérifié"
+- "annonce vérifiée"
+- "annonce fiable"
+- "inventaire réel"
+- "données réelles"
+- "leads réels"
+- "résultats garantis"
+- "toutes les annonces"
+- "marketplace"
+- "exhaustif"
+- "officiel"
+- "certifié"
+- "prix réel"
+
+Timing:
+Demo Showcase follows demand capture MVP (alerts + dossier acheteur).
+Demo Showcase precedes promoter pilot offer.
+Target launch: before Sakan Expo.
+
+Reason:
+External sales conversations with promoters/agencies benefit from seeing a complete picture of what partnership could unlock. Demo mode supports these conversations without creating marketplace confusion or false promise of exhaustive inventory.
+
+Impact:
+- Roadmap additions: 4 demo showcase missions
+- New phase inserted before B2B monetization pilot
+- Sales enablement improved
+- Vision clarity for stakeholders

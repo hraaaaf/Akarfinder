@@ -4029,3 +4029,129 @@ DO chase:
 - promoter/agency partnership proof
 - MRE market leadership
 - neighborhood intelligence
+
+====================================================
+PHASE 4 — DEMO SHOWCASE / Commercial Demonstration — APPROVED — 2026-07-04
+
+Context:
+Demo Showcase Mode is a sales and product vision layer, not a production system.
+Enables clearer B2B conversations with promoters/agencies.
+Demonstrates target experience richness without marketplace confusion.
+
+Missions:
+
+1. DEMO-SHOWCASE-MODE-1
+   Create demo framework and guards
+   Objectif:
+   - routes or entries clearly labeled Demo / Example
+   - strict separation from production
+   - visible badge "Mode démo" or "Exemple"
+   - no demo content confused with real content
+   - complete audit trail to prove demo content is not real
+   Blocked: BUYER-DOSSIER-LEAD-MVP-1 | Blocks: DEMO-PROMOTER-PAGE-1
+   Status: QUEUED
+   Owner: Product
+
+2. DEMO-PROMOTER-PAGE-1
+   Example promoter page
+   Objectif:
+   - example promoter identity (name, logo, zones)
+   - example projects
+   - example coverage map
+   - CTA "Demander une démo"
+   - example visibility/leads report clearly labeled demo
+   - sample partner benefits
+   - NO real partner data
+   Blocked: DEMO-SHOWCASE-MODE-1 | Blocks: DEMO-AGENCY-PAGE-1
+   Status: QUEUED
+   Owner: Product
+
+3. DEMO-AGENCY-PAGE-1
+   Example agency page
+   Objectif:
+   - example agency identity (name, specialties, zones)
+   - buy/rent/new/MRE specialties
+   - example client listings (demo-labeled)
+   - agency performance dashboard (demo data)
+   - lead capture form example
+   - example report template
+   - NO real agency data
+   Blocked: DEMO-PROMOTER-PAGE-1 | Blocks: DEMO-INTENT-PAGES-FULL-1
+   Status: QUEUED
+   Owner: Product
+
+4. DEMO-INTENT-PAGES-FULL-1
+   Full-featured demo intent pages: Buyer / Seller / Renter
+   Objectif:
+   - rich Buyer experience with neighborhood details, market context
+   - rich Seller experience with listing prep, market position, valuation guides
+   - rich Renter experience with search preparation, alerts setup
+   - all pages clearly labeled demo / example
+   - no exhaustiveness promise
+   - no marketplace language
+   - shows target feature completeness
+   Blocked: DEMO-AGENCY-PAGE-1 | Blocks: SAKAN-PROMOTER-PILOT-OFFER-1
+   Status: QUEUED
+   Owner: Product
+
+Constraints:
+- Demo ≠ marketplace
+- Demo ≠ fake inventory
+- Demo ≠ fake partners
+- Demo ≠ fake leads
+- Demo = sales support + vision clarity
+
+Launch trigger:
+Before Sakan Expo and first B2B conversations.
+
+════════════════════════════════════
+REVISED ROADMAP ORDER — Demand Capture to B2B Monetization
+════════════════════════════════════
+
+Phases summary:
+- Phase 0: Complete (gateway, dedupe, doctrine alignment)
+- Phase 1: In progress (SERP purity activation, promise alignment)
+- Phase 2: Queued (demand capture, buyer dossier, demo showcase)
+- Phase 3: Planned (B2B monetization pilot)
+- Phase 4: Planned (gateway optimizations)
+- Phase 5: Planned (search intelligence)
+
+Sequential mission order:
+
+Phase 1 — Public Promise & SERP Alignment
+P1.1 SERP-PURITY-PROD-ACTIVATION-1 (production deployment)
+P1.2 PROMISE-REALITY-ALIGNMENT-1 (public wording)
+
+Phase 2 — Demand Capture & Demo Showcase
+P2.1 ALERTS-DEMAND-CAPTURE-MVP-1 (capture intent)
+P2.2 BUYER-DOSSIER-LEAD-MVP-1 (qualify leads)
+P2.3 DEMO-SHOWCASE-MODE-1 (demo framework)
+P2.4 DEMO-PROMOTER-PAGE-1 (example promoter)
+P2.5 DEMO-AGENCY-PAGE-1 (example agency)
+P2.6 DEMO-INTENT-PAGES-FULL-1 (full intent demos)
+
+Phase 3 — B2B Monetization Pilot
+P3.1 SAKAN-PROMOTER-PILOT-OFFER-1 (sales offer)
+P3.2 PROMOTER-OUTREACH-10-LEADS-1 (prospecting)
+P3.3 FIRST-PAID-PILOT-1 (revenue validation)
+
+Phase 4 — Gateway Optimization (Post-Validation)
+P4.1 SEARCH-GATEWAY-INTENT-DETECTION-1 (buy/rent/new/terrain)
+P4.2 SEARCH-GATEWAY-QUERY-VARIANTS-1 (query optimization)
+P4.3 SEARCH-GATEWAY-RANKING-TUNE-1 (ranking refinement)
+
+Phase 5 — Search Intelligence & Moat
+P5.1 USER-PROFILE-SEARCH-MODES-1 (user learning)
+P5.2 NEIGHBORHOOD-ATTENTION-POINTS-1 (neighborhood data)
+P5.3 RESULT-FIT-SCORE-GATEWAY-1 (fit scoring)
+P5.4 SEARCH-UX-RICH-EXPERIENCE-1 (rich experience)
+P5.5 DATA-GOVERNANCE-SEARCH-INTELLIGENCE-1 (governance)
+
+Current progress estimate: 28%
+- Phase 0: 100% (done)
+- Phase 1: 0% (ready to deploy)
+- Phase 2: 0% (queued)
+- Phase 3-5: 0% (planned)
+
+Next immediate mission:
+SERP-PURITY-PROD-ACTIVATION-1 (production deployment of SERP fixes)

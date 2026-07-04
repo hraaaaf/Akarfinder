@@ -8993,3 +8993,43 @@ AkarFinder doesn't sell "max annonces." AkarFinder sells access to qualified imm
 
 Next step:
 SERP-PURITY-ALIGNMENT-1
+
+====================================================
+ROADMAP-DEMO-SHOWCASE-SYNC-1 - 2026-07-04
+
+Status: completed
+
+Mission
+* Decision: Add Demo Showcase layer to roadmap
+* Objective: Support B2B sales with visual product vision
+* Demo pages planned: promoter, agency, buyer, seller, renter
+* Rule: All demo clearly labeled "Example" / "Demo", never confused with live
+* Timing: Before Sakan Expo and first B2B conversations
+
+Deliverables
+* Strategic decision documented: DEMO-SHOWCASE-MODE-STRATEGY-1
+* Roadmap Phase 4 added with 4 missions
+* Roadmap reordered and synchronized
+* Progress estimate updated to 28%
+
+Updated roadmap:
+Phase 1: SERP purity + promise alignment (0%)
+Phase 2: Demand capture + demo showcase (0%)
+Phase 3: B2B monetization pilot (0%)
+Phase 4: Gateway optimization post-validation (0%)
+Phase 5: Search intelligence & moat (0%)
+
+Current progress: 28%
+Phase 0 (gateway/dedupe): 100% complete
+Phase 1-5: in planning/queued
+
+Next mission:
+SERP-PURITY-PROD-ACTIVATION-1 (production deployment)
+
+Demo Showcase role:
+- Sales support tool
+- Product vision demonstration
+- B2B enablement
+- NOT a marketplace
+- NOT a fake inventory
+- NOT a customer-facing product yet
