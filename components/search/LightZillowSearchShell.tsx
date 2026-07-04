@@ -53,7 +53,7 @@ type ApiSearchResponse = {
 // Phase 1: Reliability filters disabled for external search results
 // Reserved for first-party / partner-authorized listings only
 const RELIABILITY_BADGE: Record<string, string> = {
-  top: "Très fiable", high: "Fiable", medium: "À vérifier", low: "Faible confiance",
+  top: "Information complete", high: "Information structuree", medium: "A completer", low: "Information limitee",
 };
 
 function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy): string {
@@ -312,7 +312,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     // Reserved for first-party / partner-authorized listings only
     /*
     if (filters.reliability !== "all") {
-      const r: Record<string, string> = { top: "Très fiable", high: "Fiable", medium: "À vérifier", low: "Faible confiance" };
+      const r: Record<string, string> = { top: "Information complete", high: "Information structuree", medium: "A completer", low: "Information limitee" };
       chips.push({ key: "rel", label: r[filters.reliability] ?? filters.reliability, clear: { reliability: "all" } });
     }
     if (filters.minReliabilityScore > 0) chips.push({ key: "score", label: `Score ≥ ${filters.minReliabilityScore}`, clear: { minReliabilityScore: 0 } });
