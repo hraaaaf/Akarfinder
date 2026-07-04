@@ -4302,3 +4302,19 @@ Fait:
 Prochaine mission:
 PARTNER-RANKING-POLICY-MVP-1 (57% -> 60%) — moteur de classement isole,
 pertinence d'abord, partenaire ensuite, source externe en dernier.
+
+## 2026-07-05 — PARTNER-RANKING-POLICY-MVP-1 (57% -> 60%)
+
+Fait:
+- lib/partners/partner-ranking-policy.ts (eligibilite pertinence, tri stable,
+  droits d'affichage par source).
+- scripts/scrapers/__tests__/partner-ranking-policy.test.ts (9 tests, cas A-E
+  + invariants, integres a npm test).
+- components/demo/DemoPartnerResultStack.tsx: ordre calcule par le moteur sur
+  candidats fictifs (demonstration /demo et /demo/acheter).
+- docs/PARTNER_RANKING_POLICY.md.
+- Pas de branchement SERP live (Search Gateway gele, decision documentee).
+
+Prochaine mission:
+SEARCH-PROFILE-ONBOARDING-MVP-1 (60% -> 64%) — profil de recherche guide,
+frontend seulement.

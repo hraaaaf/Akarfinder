@@ -9919,3 +9919,46 @@ Explicit non-changes
 
 Progression roadmap
 * 54% -> 57%.
+
+====================================================
+AKARFINDER-ROADMAP-TO-70-FABLE-1 / PHASE 3 - PARTNER-RANKING-POLICY-MVP-1 - 2026-07-05
+====================================================
+
+Status: completed
+
+Mission
+* Implementer la logique de classement partenaire sans casser Search Gateway.
+* Decision de securite: moteur isole + tests + demonstration /demo/acheter,
+  pas de branchement SERP live (gateway gele par motor-purity, modification
+  interdite hors phase autorisee). STOP documente sur l'integration live.
+
+Files
+* lib/partners/partner-ranking-policy.ts (new)
+* scripts/scrapers/__tests__/partner-ranking-policy.test.ts (new, 9 tests)
+* components/demo/DemoPartnerResultStack.tsx (ordre calcule par le moteur,
+  plus de tableau hardcode; droits d'affichage pilotes par display policy)
+* docs/PARTNER_RANKING_POLICY.md (new)
+* docs/DECISIONS.md, docs/ROADMAP.md, docs/SESSION.md (append)
+* package.json (test:scrapers + partner-ranking-policy.test.ts)
+
+Ordre verifie sur candidats fictifs (intent achat Casablanca/Racine)
+* 1 partner_authorized (rel 100) > 2 promoter_partner (rel 90, auth 85,
+  qual 100) > 3 agency_premium (rel 90, auth 85, qual 90) > 4 agency_partner
+  (rel 90, auth 70) > 5 web_external (partenaires avant externe a pertinence
+  egale).
+
+Cas obligatoires couverts
+* A: agence location Casablanca avant promoteur neuf; externe pertinent avant
+  promoteur non pertinent.
+* B: promoteur neuf Bouskoura avant agence generaliste.
+* C: terrain pertinent avant appartement premium non pertinent.
+* D: web externe sans image/contact/galerie, source originale obligatoire.
+* E: partenaire enrichi uniquement sous autorisation explicite.
+* Invariant: aucun non-pertinent au-dessus d'un pertinent; tri deterministe.
+
+Explicit non-changes
+* Search Gateway modified: no. DB/Supabase modified: no. env modified: no.
+* SERP live inchangee.
+
+Progression roadmap
+* 57% -> 60%.

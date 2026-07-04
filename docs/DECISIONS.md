@@ -1979,3 +1979,25 @@ Regles:
 Scope:
 - Types et fonctions pures + tests uniquement. Pas de DB, pas de Search
   Gateway, pas d'API, pas de page live, pas de ranking live.
+
+## 2026-07-05 — PARTNER-RANKING-POLICY-MVP-1
+
+Decision:
+AkarFinder implemente son moteur de classement partenaire en module isole
+(lib/partners/partner-ranking-policy.ts), sans branchement a la SERP live.
+
+Regle absolue:
+Pertinence d'abord, partenaire ensuite, qualite de fiche ensuite, source
+externe en dernier. Un partenaire non pertinent ne passe jamais devant un
+resultat pertinent.
+
+Raison du non-branchement live:
+Le Search Gateway est gele (motor purity) et sa modification est interdite
+hors phase explicitement autorisee. Le moteur est donc demontre sur les pages
+demo uniquement (DemoPartnerResultStack calcule desormais l'ordre au lieu de
+le hardcoder). Le branchement live sera une mission dediee.
+
+Droits d'affichage:
+web_external reste sans image / sans contact / sans galerie avec lien source
+originale obligatoire, quel que soit le descripteur. Les partenaires
+n'affichent image et contact que sous autorisation explicite.
