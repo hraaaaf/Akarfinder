@@ -106,3 +106,80 @@ export const DEMO_SELLER_FORM_DEFAULTS = {
 };
 
 export const DEMO_CONTACT_EMAIL = "demo@akarfinder.ma";
+
+// NEIGHBORHOOD-EXPERIENCE-SHOWCASE-1 — fictional, non-contractual
+// "neighborhood experience" data. Everything here is illustrative: no
+// precise travel times, no official estimate, no reliability score.
+// Presented strictly as an example of what AkarFinder's neighborhood
+// reading could look like once populated with real, sourced information.
+
+export type DemoMarketPositionLabel =
+  | "Sous le marché"
+  | "Aligné marché"
+  | "Au-dessus du marché"
+  | "Fortement au-dessus"
+  | "Données insuffisantes";
+
+export type DemoInfoLevel = "Information complète" | "Information partielle" | "Information limitée" | "À compléter";
+
+export const DEMO_NEIGHBORHOOD_PROFILE = {
+  surroundings: [
+    { icon: "shop" as const, label: "Commerces dans le secteur" },
+    { icon: "school" as const, label: "Écoles à proximité" },
+    { icon: "road" as const, label: "Accès rapide aux axes principaux" },
+    { icon: "tree" as const, label: "Espaces verts dans le secteur" },
+    { icon: "bus" as const, label: "Transports en commun repérés à proximité" },
+  ],
+  sectorTags: ["Résidentiel", "Familial", "Calme", "Proche services"],
+  sectorNote:
+    "Cet aperçu illustre comment AkarFinder peut aider à mieux lire l'environnement d'un bien. Les données affichées ici sont fictives et non contractuelles.",
+  marketPosition: {
+    label: "Aligné marché" as DemoMarketPositionLabel,
+    note: "Positionnement indicatif — exemple de lecture marché, repère non contractuel.",
+  },
+  infoLevel: {
+    level: "Information complète" as DemoInfoLevel,
+    checks: [
+      { label: "Prix", present: true },
+      { label: "Surface", present: true },
+      { label: "Quartier renseigné", present: true },
+      { label: "Photos", present: true },
+      { label: "Description", present: true },
+      { label: "Source publique mentionnée", present: true },
+    ],
+  },
+};
+
+export const DEMO_RENTAL_NEIGHBORHOOD_PROFILE = {
+  ...DEMO_NEIGHBORHOOD_PROFILE,
+  sectorTags: ["Urbain", "Dynamique", "Proche services", "Bien desservi"],
+  marketPosition: {
+    label: "Sous le marché" as DemoMarketPositionLabel,
+    note: "Positionnement indicatif — exemple de lecture marché, repère non contractuel.",
+  },
+  infoLevel: {
+    level: "Information partielle" as DemoInfoLevel,
+    checks: [
+      { label: "Prix", present: true },
+      { label: "Surface", present: true },
+      { label: "Quartier renseigné", present: true },
+      { label: "Photos", present: false },
+      { label: "Description", present: true },
+      { label: "Source publique mentionnée", present: true },
+    ],
+  },
+};
+
+export const DEMO_PROMOTER_NEIGHBORHOOD = {
+  surroundings: [
+    { icon: "shop" as const, label: "Commerces et services prévus dans le secteur" },
+    { icon: "road" as const, label: "Accès rapide aux axes principaux" },
+    { icon: "bus" as const, label: "Mobilité : desserte repérée à proximité" },
+    { icon: "tree" as const, label: "Espaces verts dans l'environnement du projet" },
+  ],
+  sectorTags: ["Résidentiel", "En développement", "Familial"],
+  sectorNote:
+    "Cet aperçu illustre comment AkarFinder peut présenter l'environnement d'un projet neuf. Les données affichées ici sont fictives et non contractuelles.",
+  positioning: "Positionnement indicatif pour un projet neuf en secteur résidentiel — exemple de lecture, repère non contractuel.",
+  targetAudience: ["Famille", "MRE", "Investissement", "Primo-accédant"],
+};

@@ -9343,3 +9343,50 @@ Verified in preview (dpl_9kMcygRe3wM31ogaaUtC3GarSjM4 deployment family)
 * Search Gateway, DB, Supabase untouched
 
 Next: NEIGHBORHOOD-EXPERIENCE-SHOWCASE-1 (same session)
+
+====================================================
+NEIGHBORHOOD-EXPERIENCE-SHOWCASE-1 - 2026-07-04
+
+Status: completed (preview validated, not yet promoted to production)
+
+Mission
+* Add a "neighborhood experience" showcase to demo buyer/renter/promoter/
+  agency/seller pages: surroundings, sector read, market positioning,
+  information-completeness level — all indicative, no reliability score,
+  no official estimate
+
+Deliverables
+* components/demo/NeighborhoodExperience.tsx (new) — renders 4-5 blocks:
+  A. "Autour du bien" (qualitative surroundings, no precise times)
+  B. "Aperçu du secteur" (sector tags + safe disclaimer sentence)
+  C. "Repères de marché" (5 allowed positioning labels, framed as
+     "positionnement indicatif / repère non contractuel", never "prix
+     réel/officiel/certifié")
+  D. "Niveau d'information disponible" (replaces "score de fiabilité" with
+     Complète/Partielle/Limitée/À compléter + a checklist of what's present)
+  E. Promoter-specific "Lecture du positionnement" + "Public cible possible"
+     (Famille/MRE/Investissement/Primo-accédant)
+* lib/demo/demo-data.ts — added DEMO_NEIGHBORHOOD_PROFILE,
+  DEMO_RENTAL_NEIGHBORHOOD_PROFILE, DEMO_PROMOTER_NEIGHBORHOOD
+* Wired into: /demo/acheter (buyer profile), /demo/louer (rental profile),
+  /demo/promoteur (promoter variant with positioning + target audience),
+  /demo/agence (buyer profile reused), /demo/vendre (market positioning
+  before listing, reusing buyer profile)
+
+Verified in preview (dpl_J444PLZefrEWRtbdXFFyYS9FhD6X deployment family)
+* Desktop (1440px) screenshots on /demo/acheter and /demo/promoteur show
+  clean 4-block layout, all wording indicative/non-contractual
+  ("Positionnement indicatif — exemple de lecture marché, repère non
+  contractuel", "Repères indicatifs — exemple fictif, lecture indicative")
+* 0 horizontal overflow on /demo/acheter mobile (390px)
+* 0 console errors
+* Zero forbidden wording (score de fiabilité, fiabilité moyenne, signaux de
+  fiabilité, annonces comparées, annonces disponibles, quartier fiable,
+  estimation officielle, prix réel/certifié, opportunité/bonne affaire
+  garantie) found in app/demo, components/demo, lib/demo
+* 1288/1288 tests passing, build OK
+* Search Gateway, DB, Supabase untouched
+
+Next: ZILLOW-LIKE-PROPERTY-DETAIL-DEMO-1 (same session, complementary
+mission received mid-way — a richer /demo/bien property detail page
+inspired by Zillow UX patterns only, no copied text/design/branding)

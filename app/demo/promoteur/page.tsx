@@ -4,7 +4,8 @@ import { DemoShell } from "@/components/demo/DemoShell";
 import { DemoBadge } from "@/components/demo/DemoBadge";
 import { DemoRequestButton } from "@/components/demo/DemoRequestButton";
 import { PropertyVisual } from "@/components/demo/PropertyVisual";
-import { DEMO_PROMOTER } from "@/lib/demo/demo-data";
+import { NeighborhoodExperience } from "@/components/demo/NeighborhoodExperience";
+import { DEMO_PROMOTER, DEMO_PROMOTER_NEIGHBORHOOD } from "@/lib/demo/demo-data";
 
 export const metadata: Metadata = {
   title: "Exemple page promoteur — Démo AkarFinder",
@@ -70,6 +71,28 @@ export default function DemoPromoterPage() {
       </section>
 
       <section className="bg-[#f8fafc] px-4 py-14">
+        <div className="mx-auto max-w-4xl">
+          <div className="flex items-center gap-2">
+            <DemoBadge />
+            <h2 className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">
+              Expérience quartier autour du projet (exemple)
+            </h2>
+          </div>
+          <p className="mt-2 text-[12.5px] text-slate-500">
+            Exemple fictif — lecture indicative de l&apos;environnement d&apos;un projet neuf.
+          </p>
+          <NeighborhoodExperience
+            className="mt-4"
+            surroundings={DEMO_PROMOTER_NEIGHBORHOOD.surroundings}
+            sectorTags={DEMO_PROMOTER_NEIGHBORHOOD.sectorTags}
+            sectorNote={DEMO_PROMOTER_NEIGHBORHOOD.sectorNote}
+            positioning={DEMO_PROMOTER_NEIGHBORHOOD.positioning}
+            targetAudience={DEMO_PROMOTER_NEIGHBORHOOD.targetAudience}
+          />
+        </div>
+      </section>
+
+      <section className="px-4 py-14">
         <div className="mx-auto max-w-4xl">
           <h2 className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">
             Ce qu&apos;un partenariat pourrait inclure (exemple)

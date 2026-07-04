@@ -3,7 +3,8 @@ import { Tag } from "lucide-react";
 import { DemoShell } from "@/components/demo/DemoShell";
 import { DemoBadge } from "@/components/demo/DemoBadge";
 import { DemoRequestButton } from "@/components/demo/DemoRequestButton";
-import { DEMO_SELLER_FORM_DEFAULTS } from "@/lib/demo/demo-data";
+import { NeighborhoodExperience } from "@/components/demo/NeighborhoodExperience";
+import { DEMO_SELLER_FORM_DEFAULTS, DEMO_NEIGHBORHOOD_PROFILE } from "@/lib/demo/demo-data";
 
 export const metadata: Metadata = {
   title: "Exemple parcours Vendre — Démo AkarFinder",
@@ -67,6 +68,28 @@ export default function DemoVendrePage() {
               uniquement.
             </p>
           </div>
+        </div>
+      </section>
+
+      <section className="px-4 py-12">
+        <div className="mx-auto max-w-4xl">
+          <div className="flex items-center gap-2">
+            <DemoBadge />
+            <h2 className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">
+              Repères de marché avant mise en vente (exemple)
+            </h2>
+          </div>
+          <p className="mt-2 text-[12.5px] text-slate-500">
+            Exemple fictif — lecture indicative pour préparer une mise en vente.
+          </p>
+          <NeighborhoodExperience
+            className="mt-4"
+            surroundings={DEMO_NEIGHBORHOOD_PROFILE.surroundings}
+            sectorTags={DEMO_NEIGHBORHOOD_PROFILE.sectorTags}
+            sectorNote={DEMO_NEIGHBORHOOD_PROFILE.sectorNote}
+            marketPosition={DEMO_NEIGHBORHOOD_PROFILE.marketPosition}
+            infoLevel={DEMO_NEIGHBORHOOD_PROFILE.infoLevel}
+          />
         </div>
       </section>
 

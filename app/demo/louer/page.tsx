@@ -3,7 +3,8 @@ import { Bell, MapPin } from "lucide-react";
 import { DemoShell } from "@/components/demo/DemoShell";
 import { DemoBadge } from "@/components/demo/DemoBadge";
 import { DemoRequestButton } from "@/components/demo/DemoRequestButton";
-import { DEMO_RENTER_NEEDS, DEMO_POPULAR_RENT_ZONES } from "@/lib/demo/demo-data";
+import { NeighborhoodExperience } from "@/components/demo/NeighborhoodExperience";
+import { DEMO_RENTER_NEEDS, DEMO_POPULAR_RENT_ZONES, DEMO_RENTAL_NEIGHBORHOOD_PROFILE } from "@/lib/demo/demo-data";
 
 export const metadata: Metadata = {
   title: "Exemple parcours Louer — Démo AkarFinder",
@@ -62,6 +63,28 @@ export default function DemoLouerPage() {
       </section>
 
       <section className="bg-[#f8fafc] px-4 py-12">
+        <div className="mx-auto max-w-4xl">
+          <div className="flex items-center gap-2">
+            <DemoBadge />
+            <h2 className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">
+              Expérience quartier (exemple)
+            </h2>
+          </div>
+          <p className="mt-2 text-[12.5px] text-slate-500">
+            Exemple fictif — lecture indicative de l&apos;environnement d&apos;une location.
+          </p>
+          <NeighborhoodExperience
+            className="mt-4"
+            surroundings={DEMO_RENTAL_NEIGHBORHOOD_PROFILE.surroundings}
+            sectorTags={DEMO_RENTAL_NEIGHBORHOOD_PROFILE.sectorTags}
+            sectorNote={DEMO_RENTAL_NEIGHBORHOOD_PROFILE.sectorNote}
+            marketPosition={DEMO_RENTAL_NEIGHBORHOOD_PROFILE.marketPosition}
+            infoLevel={DEMO_RENTAL_NEIGHBORHOOD_PROFILE.infoLevel}
+          />
+        </div>
+      </section>
+
+      <section className="px-4 py-12">
         <div className="mx-auto max-w-2xl rounded-2xl border border-[#e4e9f2] bg-white p-6 text-center">
           <DemoBadge className="mx-auto" />
           <h2 className="mt-3 text-[14px] font-extrabold text-[#0B1F3A]">Exemple de relance de recherche</h2>

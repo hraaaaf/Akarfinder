@@ -4,7 +4,8 @@ import { DemoShell } from "@/components/demo/DemoShell";
 import { DemoBadge } from "@/components/demo/DemoBadge";
 import { DemoRequestButton } from "@/components/demo/DemoRequestButton";
 import { PropertyVisual } from "@/components/demo/PropertyVisual";
-import { DEMO_AGENCY } from "@/lib/demo/demo-data";
+import { NeighborhoodExperience } from "@/components/demo/NeighborhoodExperience";
+import { DEMO_AGENCY, DEMO_NEIGHBORHOOD_PROFILE } from "@/lib/demo/demo-data";
 
 export const metadata: Metadata = {
   title: "Exemple page agence — Démo AkarFinder",
@@ -63,6 +64,28 @@ export default function DemoAgencyPage() {
       </section>
 
       <section className="bg-[#f8fafc] px-4 py-14">
+        <div className="mx-auto max-w-4xl">
+          <div className="flex items-center gap-2">
+            <DemoBadge />
+            <h2 className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">
+              Expérience quartier (exemple)
+            </h2>
+          </div>
+          <p className="mt-2 text-[12.5px] text-slate-500">
+            Exemple fictif — lecture indicative de l&apos;environnement d&apos;un bien de la sélection.
+          </p>
+          <NeighborhoodExperience
+            className="mt-4"
+            surroundings={DEMO_NEIGHBORHOOD_PROFILE.surroundings}
+            sectorTags={DEMO_NEIGHBORHOOD_PROFILE.sectorTags}
+            sectorNote={DEMO_NEIGHBORHOOD_PROFILE.sectorNote}
+            marketPosition={DEMO_NEIGHBORHOOD_PROFILE.marketPosition}
+            infoLevel={DEMO_NEIGHBORHOOD_PROFILE.infoLevel}
+          />
+        </div>
+      </section>
+
+      <section className="bg-white px-4 py-14">
         <div className="mx-auto max-w-4xl">
           <div className="flex items-center gap-2">
             <DemoBadge />
