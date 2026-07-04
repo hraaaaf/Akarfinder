@@ -16,9 +16,9 @@ export const metadata: Metadata = {
 };
 
 const EXAMPLE_RESULTS: Array<{ title: string; city: string; source: string; visual: PropertyVisualType }> = [
-  { title: "Appartement 3 chambres — Exemple", city: "Casablanca", source: "Exemple de source externe", visual: "apartment-modern" },
+  { title: "Appartement 3 chambres — Exemple", city: "Casablanca", source: "Exemple de source externe", visual: "appartement-familial" },
   { title: "Villa avec jardin — Exemple", city: "Marrakech", source: "Exemple de source externe", visual: "villa-premium" },
-  { title: "Duplex standing — Exemple", city: "Rabat", source: "Exemple de source externe", visual: "residence-neuve" },
+  { title: "Duplex standing — Exemple", city: "Rabat", source: "Exemple de source externe", visual: "urban-building" },
 ];
 
 export default function DemoAcheterPage() {

@@ -1,6 +1,7 @@
 import { MapPin, Ruler } from "lucide-react";
 import { DemoBadge } from "./DemoBadge";
 import { DemoRequestButton } from "./DemoRequestButton";
+import { PropertyVisual, type PropertyVisualType } from "./PropertyVisual";
 
 type DemoAgencyListingCardProps = {
   title: string;
@@ -12,6 +13,7 @@ type DemoAgencyListingCardProps = {
   surface: string;
   locationLevel: string;
   contactMode: string;
+  visual?: PropertyVisualType;
   pointsToVerify: string[];
 };
 
@@ -25,10 +27,12 @@ export function DemoAgencyListingCard({
   surface,
   locationLevel,
   contactMode,
+  visual,
   pointsToVerify,
 }: DemoAgencyListingCardProps) {
   return (
     <article className="rounded-2xl border border-[#dbe7f6] bg-white p-5 shadow-[0_10px_28px_rgba(15,35,65,0.06)]">
+      {visual ? <PropertyVisual type={visual} ratio="16:10" className="mb-4 rounded-xl" /> : null}
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-[15px] font-extrabold text-[#0B1F3A]">{title}</h3>

@@ -25,7 +25,7 @@ export const DEMO_PROMOTER = {
       city: "Casablanca",
       priceIndicative: "à partir de 850 000 DH (indicatif fictif)",
       deliveryIndicative: "Livraison indicative : 2027 (fictif)",
-      visual: "apartment-modern",
+      visual: "project-garden",
     },
     {
       name: "Les Jardins Anfa Démo",
@@ -33,7 +33,7 @@ export const DEMO_PROMOTER = {
       city: "Casablanca",
       priceIndicative: "à partir de 1 200 000 DH (indicatif fictif)",
       deliveryIndicative: "Livraison indicative : 2028 (fictif)",
-      visual: "residence-neuve",
+      visual: "project-facade",
     },
     {
       name: "Horizon Bouskoura Démo",
@@ -68,8 +68,8 @@ export const DEMO_AGENCY = {
   listings: [
     { title: "Appartement 3 chambres — Exemple", type: "Appartement", city: "Rabat", neighborhood: "Agdal", priceIndicative: "9 500 DH/mois (exemple)", visual: "appartement-familial" },
     { title: "Villa avec jardin — Exemple", type: "Villa", city: "Rabat", neighborhood: "Souissi", priceIndicative: "3 200 000 DH (exemple)", visual: "villa-premium" },
-    { title: "Duplex standing — Exemple", type: "Duplex", city: "Rabat", neighborhood: "Hay Riad", priceIndicative: "2 400 000 DH (exemple)", visual: "residence-neuve" },
-    { title: "Appartement meublé — Exemple", type: "Appartement", city: "Rabat", neighborhood: "Agdal", priceIndicative: "7 800 DH/mois (exemple)", visual: "apartment-modern" },
+    { title: "Duplex standing — Exemple", type: "Duplex", city: "Rabat", neighborhood: "Hay Riad", priceIndicative: "2 400 000 DH (exemple)", visual: "urban-building" },
+    { title: "Appartement meublé — Exemple", type: "Appartement", city: "Rabat", neighborhood: "Agdal", priceIndicative: "7 800 DH/mois (exemple)", visual: "studio-urbain" },
   ] as DemoListing[],
   performance: {
     requestsReceived: 64,
@@ -129,7 +129,7 @@ export const DEMO_PROPERTY_DETAIL = {
     { label: "Terrasse", value: "Balcon (fictif)" },
     { label: "État général", value: "Bon état (fictif)" },
   ],
-  visuals: ["apartment-modern", "appartement-familial", "studio-urbain"] as PropertyVisualType[],
+  visuals: ["apartment-modern", "appartement-familial", "urban-balcony"] as PropertyVisualType[],
   proximityScores: [
     {
       key: "daily",

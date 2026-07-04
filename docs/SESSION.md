@@ -9541,6 +9541,55 @@ Next mission recommended
 * PARTNER-RANKING-POLICY-1
 
 ====================================================
+DEMO-VISUAL-ASSETS-RECONCILE-1 - 2026-07-04
+====================================================
+
+Status: completed
+
+Mission
+* Reprendre le blocage des images demo laisse par le travail parallele Claude.
+* Integrer les photos fournies par le proprietaire dans les pages demo AkarFinder.
+* Garder un perimetre front/demo uniquement: aucun backend, aucune DB, aucun Supabase,
+  aucun Search Gateway, aucune production.
+
+Files updated
+* components/demo/PropertyVisual.tsx
+* components/demo/DemoAgencyListingCard.tsx
+* lib/demo/demo-data.ts
+* lib/demo/partner-pages-demo-data.ts
+* app/demo/acheter/page.tsx
+* app/demo/promoteur/page.tsx
+* public/demo/properties/*
+* public/demo/properties/gallery/*
+
+Visual decision
+* Les images sont stockees localement sous public/demo/properties.
+* Aucun appel externe n'est ajoute.
+* Toutes les images restent affichees avec le badge "Visuel fictif".
+* Les meilleurs visuels ont ete affectes par usage:
+  projet promoteur, residence neuve, villa, appartement familial, studio urbain,
+  local commercial, terrain et vues galerie.
+* Les cartes agence affichent maintenant le visuel local correspondant au bien demo.
+
+Validation
+* npm test: OK, 1296/1296 tests pass.
+* npm run build: OK.
+* Scan URL externe sur app/demo components/demo lib/demo public/demo: 0 occurrence.
+* Scan contact reel sur app/demo components/demo lib/demo public/demo: 0 occurrence.
+* Scan wording interdit sur app/demo components/demo lib/demo: 0 occurrence.
+
+Explicit non-changes
+* Search Gateway modified: no
+* DB/Supabase modified: no
+* env modified: no
+* package.json/package-lock modified: no
+* production deployed: no
+
+Next step recommended
+* Preview/review visuelle des pages /demo, /demo/promoteur, /demo/projet,
+  /demo/agence, /demo/bien, /demo/acheter.
+
+====================================================
 PARTNER-PAGES-ZILLOW-LIKE-DEMO-EXPERIENCE-1 - 2026-07-04
 ====================================================
 

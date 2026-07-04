@@ -16,7 +16,7 @@ export const DEMO_PARTNER_PROMOTER_EXPERIENCE = {
       type: "Programme neuf demo",
       price: "Fourchette fictive : 920 000 - 2 450 000 MAD",
       status: "Commercialisation demo",
-      visual: "residence-neuve" as PropertyVisualType,
+      visual: "project-garden" as PropertyVisualType,
     },
     {
       name: "Horizon Bouskoura Demo",
@@ -34,7 +34,7 @@ export const DEMO_PARTNER_PROMOTER_EXPERIENCE = {
       type: "Appartements & duplex demo",
       price: "Fourchette fictive : 1 200 000 - 3 100 000 MAD",
       status: "Projet futur demo",
-      visual: "apartment-modern" as PropertyVisualType,
+      visual: "project-facade" as PropertyVisualType,
     },
   ],
   report: {
@@ -52,7 +52,7 @@ export const DEMO_PARTNER_PROJECT = {
   locationLevel: "Zone approximative fictive a titre d'illustration",
   type: "Programme neuf demo",
   priceRange: "Fourchette indicative fictive : 920 000 - 2 450 000 MAD",
-  visuals: ["residence-neuve", "apartment-modern", "appartement-familial"] as PropertyVisualType[],
+  visuals: ["project-garden", "residence-walkway", "apartment-modern"] as PropertyVisualType[],
   phases: [
     { name: "Tranche 1", status: "Commercialisation demo", delivery: "Livraison fictive : T4 2027", note: "Premier ensemble d'unites types presente en demonstration." },
     { name: "Tranche 2", status: "Bientot disponible demo", delivery: "Livraison fictive : T2 2028", note: "Ouverture indicative selon validation partenaire." },
@@ -120,11 +120,11 @@ export const DEMO_PARTNER_AGENCY_EXPERIENCE = {
     note: "Dans une version partenaire, le contact s'affiche uniquement si l'agence l'autorise.",
   },
   listings: [
-    { title: "Appartement familial demo", city: "Rabat", neighborhood: "Agdal", propertyType: "Appartement", transaction: "Achat", price: "1,85M MAD fictif", surface: "112 m2", locationLevel: "Quartier uniquement - demo", contactMode: "Contact autorise fictif", pointsToVerify: ["Charges", "Parking", "Etat copropriete"] },
-    { title: "Villa demo avec jardin", city: "Rabat", neighborhood: "Souissi", propertyType: "Villa", transaction: "Achat", price: "4,2M MAD fictif", surface: "310 m2", locationLevel: "Zone approximative - demo", contactMode: "Contact autorise fictif", pointsToVerify: ["Titre", "Travaux", "Jardin"] },
-    { title: "Studio location demo", city: "Rabat", neighborhood: "Haut Agdal", propertyType: "Studio", transaction: "Location", price: "5 800 MAD/mois fictif", surface: "42 m2", locationLevel: "Quartier uniquement - demo", contactMode: "Contact autorise fictif", pointsToVerify: ["Bail", "Meubles", "Charges"] },
-    { title: "Bureau demo", city: "Rabat", neighborhood: "Hassan", propertyType: "Bureau", transaction: "Location", price: "13 500 MAD/mois fictif", surface: "86 m2", locationLevel: "Zone approximative - demo", contactMode: "Contact autorise fictif", pointsToVerify: ["Acces", "Stationnement", "Contrat"] },
-    { title: "Appartement MRE demo", city: "Rabat", neighborhood: "Hay Riad", propertyType: "Appartement", transaction: "Achat", price: "2,35M MAD fictif", surface: "128 m2", locationLevel: "Quartier uniquement - demo", contactMode: "Contact autorise fictif", pointsToVerify: ["Dossier a distance", "Syndic", "Orientation"] },
+    { title: "Appartement familial demo", city: "Rabat", neighborhood: "Agdal", propertyType: "Appartement", transaction: "Achat", price: "1,85M MAD fictif", surface: "112 m2", locationLevel: "Quartier uniquement - demo", contactMode: "Contact autorise fictif", visual: "appartement-familial" as PropertyVisualType, pointsToVerify: ["Charges", "Parking", "Etat copropriete"] },
+    { title: "Villa demo avec jardin", city: "Rabat", neighborhood: "Souissi", propertyType: "Villa", transaction: "Achat", price: "4,2M MAD fictif", surface: "310 m2", locationLevel: "Zone approximative - demo", contactMode: "Contact autorise fictif", visual: "villa-premium" as PropertyVisualType, pointsToVerify: ["Titre", "Travaux", "Jardin"] },
+    { title: "Studio location demo", city: "Rabat", neighborhood: "Haut Agdal", propertyType: "Studio", transaction: "Location", price: "5 800 MAD/mois fictif", surface: "42 m2", locationLevel: "Quartier uniquement - demo", contactMode: "Contact autorise fictif", visual: "studio-urbain" as PropertyVisualType, pointsToVerify: ["Bail", "Meubles", "Charges"] },
+    { title: "Bureau demo", city: "Rabat", neighborhood: "Hassan", propertyType: "Bureau", transaction: "Location", price: "13 500 MAD/mois fictif", surface: "86 m2", locationLevel: "Zone approximative - demo", contactMode: "Contact autorise fictif", visual: "local-commercial" as PropertyVisualType, pointsToVerify: ["Acces", "Stationnement", "Contrat"] },
+    { title: "Appartement MRE demo", city: "Rabat", neighborhood: "Hay Riad", propertyType: "Appartement", transaction: "Achat", price: "2,35M MAD fictif", surface: "128 m2", locationLevel: "Quartier uniquement - demo", contactMode: "Contact autorise fictif", visual: "urban-building" as PropertyVisualType, pointsToVerify: ["Dossier a distance", "Syndic", "Orientation"] },
   ],
   qualifiedRequests: [
     { profile: "Famille avec enfants", budget: "Budget fictif : 1,8M - 2,2M MAD", zone: "Agdal ou Hay Riad", urgency: "Horizon demo : 3 mois", propertyType: "Appartement 3 chambres", importantPoint: "Ecoles et parking", source: "Source de la demande : parcours Acheter demo" },

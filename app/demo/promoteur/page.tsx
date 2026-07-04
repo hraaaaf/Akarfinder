@@ -58,7 +58,7 @@ export default function DemoPromoterPage() {
             </div>
           </div>
           <div className="relative overflow-hidden rounded-3xl border border-[#dbe7f6] bg-white p-3 shadow-[0_24px_70px_rgba(15,35,65,0.12)]">
-            <PropertyVisual type="residence-neuve" ratio="16:10" className="rounded-2xl" />
+            <PropertyVisual type="project-garden" ratio="16:10" className="rounded-2xl" />
             <div className="absolute bottom-5 left-5 right-5 rounded-2xl bg-white/95 p-4 shadow-[0_14px_34px_rgba(15,35,65,0.16)]">
               <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">Projet principal demo</p>
               <h2 className="mt-1 text-[18px] font-extrabold text-[#0B1F3A]">{promoter.mainProject}</h2>
