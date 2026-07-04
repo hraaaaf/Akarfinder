@@ -3924,3 +3924,108 @@ After public announcement and initial user feedback:
 3. Deduplication and result quality improvements
 
 Phase 1 can now be publicly announced. Search Gateway returns external web results while preserving source-original redirection and no third-party listing persistence.
+
+====================================================
+STRATEGIC REALIGNMENT — DEMAND-QUALIFIED ROADMAP — 2026-07-04
+
+Context:
+External strategic audit identified misalignment between "maximum annonces" promise and actual business model.
+New priority: capture qualified intentions → test B2B monetization (promoters/agencies) → build moat via data access, not inventory ownership.
+
+Revised priority order:
+
+P0 — IMMEDIATE PURITY & ALIGNMENT
+=================================
+
+1. SERP-PURITY-ALIGNMENT-1
+   Remove marketplace UI traces, wording fixes in /search component
+   Blocked: nothing | Blocks: PROMISE-REALITY-ALIGNMENT-1
+   Status: READY
+   Owner: Search
+
+2. PROMISE-REALITY-ALIGNMENT-1
+   Align public wording: remove "all Moroccan listings", "exhaustive", "marketplace"
+   Replace with: "Search more widely, compare faster, contact original source"
+   Blocked: SERP-PURITY-ALIGNMENT-1 | Blocks: ALERTS-DEMAND-CAPTURE-MVP-1
+   Status: READY
+   Owner: Product
+
+P1 — DEMAND CAPTURE (BUSINESS BRIDGE)
+======================================
+
+3. ALERTS-DEMAND-CAPTURE-MVP-1
+   MVP alerts / search relaunches
+   Capture: city, neighborhood, type, budget, search frequency
+   NO third-party result persistence
+   Blocked: PROMISE-REALITY-ALIGNMENT-1 | Blocks: BUYER-DOSSIER-LEAD-MVP-1
+   Status: PLANNED
+   Owner: Product + Backend
+
+4. BUYER-DOSSIER-LEAD-MVP-1
+   Qualify searches into leads
+   Dossier: intent, budget, timeline, profile, consent
+   Build first data asset for B2B
+   Blocked: ALERTS-DEMAND-CAPTURE-MVP-1 | Blocks: SAKAN-PROMOTER-PILOT-OFFER-1
+   Status: PLANNED
+   Owner: Product + Frontend
+
+5. SAKAN-PROMOTER-PILOT-OFFER-1
+   10 promoters contacted
+   3 meetings
+   1 paid pilot
+   Offer: project page + QR + lead form + 30-day report
+   KPI: searches, clicks, leads, neighborhoods requested
+   Blocked: BUYER-DOSSIER-LEAD-MVP-1 | Blocks: nothing until results
+   Status: PLANNED
+   Owner: Product + Sales
+
+P2 — GATEWAY OPTIMIZATION (POST-CAPTURE)
+=========================================
+
+6. SEARCH-GATEWAY-INTENT-DETECTION-1
+   Separate buy/rent/new/terrain AFTER demand capture
+   Locked ranking changes until business model validated
+   Blocked: SAKAN-PROMOTER-PILOT-OFFER-1 | Blocks: RANKING-TUNE-1
+   Status: PLANNED
+   Owner: Search
+
+7. SEARCH-GATEWAY-QUERY-VARIANTS-1
+8. SEARCH-GATEWAY-RANKING-TUNE-1
+9. SEARCH-GATEWAY-QUALITY-SMOKE-1
+   Non-critical optimizations FROZEN after dedupe validation
+   Only unblock if pilot reveals specific gaps
+   Blocked: INTENT-DETECTION-1 | Blocks: nothing until pilot data
+   Status: FROZEN
+   Owner: Search
+
+P3 — INTELLIGENCE & MOAT
+=========================
+
+10. USER-PROFILE-SEARCH-MODES-1
+11. NEIGHBORHOOD-ATTENTION-POINTS-1
+12. RESULT-FIT-SCORE-GATEWAY-1
+    Only deploy scores to first-party or partner-authorized results
+    Do NOT apply to thin external web results
+13. SEARCH-UX-RICH-EXPERIENCE-1
+14. DATA-GOVERNANCE-SEARCH-INTELLIGENCE-1
+
+Reposition after pilot validation.
+
+Key decision:
+Search Gateway = traffic layer.
+Demand data = business asset.
+Partner authorized inventory = revenue model.
+Neighborhood/market intelligence = long-term moat.
+
+Do NOT chase:
+- max annonces
+- exhaustive inventory
+- marketplace positioning
+- thin external result ranking heroics
+
+DO chase:
+- qualified intention signal
+- buyer intent data
+- promoter/agency partnership proof
+- MRE market leadership
+- neighborhood intelligence

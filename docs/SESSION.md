@@ -8947,3 +8947,49 @@ Verdict
 * No Supabase modifications
 * No environment variable changes
 * Pure documentation archive
+
+====================================================
+STRATEGIC-REALITY-ALIGNMENT-1 - 2026-07-04
+
+Status: completed
+
+Mission
+* External strategic audit received
+* Decision: Search Gateway = traffic layer, not final moat
+* Do not promise "all Moroccan listings" or marketplace status
+* Business priority shift: demand capture → qualified intent → B2B monetization
+* Roadmap reordered: SERP purity → Promise alignment → Demand capture → Promoter pilot
+
+Deliverables
+* Strategic decision documented: STRATEGIC-REALITY-ALIGNMENT-1
+* Roadmap repositioned
+* Business model clarified
+
+New roadmap order:
+P0 Immediate:
+1. SERP-PURITY-ALIGNMENT-1 (remove marketplace UI traces)
+2. PROMISE-REALITY-ALIGNMENT-1 (align public wording)
+
+P1 Business:
+3. ALERTS-DEMAND-CAPTURE-MVP-1 (capture intent, build data asset)
+4. BUYER-DOSSIER-LEAD-MVP-1 (qualify leads)
+5. SAKAN-PROMOTER-PILOT-OFFER-1 (test B2B revenue)
+
+P2 Optimization:
+6. SEARCH-GATEWAY-INTENT-DETECTION-1 (post-capture)
+7. SEARCH-GATEWAY-QUERY-VARIANTS-1
+8. SEARCH-GATEWAY-RANKING-TUNE-1
+9. SEARCH-GATEWAY-QUALITY-SMOKE-1
+
+P3 Intelligence:
+10. USER-PROFILE-SEARCH-MODES-1
+11. NEIGHBORHOOD-ATTENTION-POINTS-1
+12. RESULT-FIT-SCORE-GATEWAY-1
+13. SEARCH-UX-RICH-EXPERIENCE-1
+14. DATA-GOVERNANCE-SEARCH-INTELLIGENCE-1
+
+Key insight:
+AkarFinder doesn't sell "max annonces." AkarFinder sells access to qualified immobilier intentions.
+
+Next step:
+SERP-PURITY-ALIGNMENT-1

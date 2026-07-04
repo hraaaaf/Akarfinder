@@ -1749,3 +1749,61 @@ Reason:
 Impact:
 - Public announcement ready
 - Next phase focuses on coverage optimization and ranking refinement after initial user feedback
+
+
+## 2026-07-04 - STRATEGIC-REALITY-ALIGNMENT-1 - Search Gateway as traffic layer, demand capture as business bridge
+
+Status: Validated
+
+Decision:
+After external strategic review, AkarFinder must reposition from "maximum annonces" to "qualified search intentions."
+
+Search Gateway is validated as traffic acquisition layer, but shall NOT be presented as the final moat.
+
+Gateway role:
+- attracts qualified searches
+- measures intentions by city/neighborhood/type
+- shows source diversity
+- redirects to original source
+
+Gateway is NOT:
+- a marketplace
+- an exhaustive listings database
+- a proprietary property asset sufficient alone
+- a promise of "all Moroccan listings"
+
+Business bridge priorities:
+1. Demand capture (alerts, search relaunches, buyer dossiers)
+2. Lead qualification (intent, budget, timeline, profile)
+3. Promoter/agency pilot validation (paid partnership test)
+4. Market intelligence (neighborhood data, market indicators)
+
+New public promise:
+"AkarFinder helps you search more widely, compare more quickly, and always contact the original source."
+
+Never promise:
+- exhaustive inventory
+- "all listings in Morocco"
+- marketplace status
+
+Guarantee:
+- external results always link to original source
+- search intentions are captured to improve data
+- no third-party listing persistence
+- no third-party contact/WhatsApp/gallery copying
+
+Reason:
+External audit identified risk of gap between public promise and actual product architecture. Aligning expectations prevents credibility loss and enables clearer business model (demand access, not listings ownership).
+
+Impact:
+- Roadmap reordered: Demand capture before Gateway optimization
+- Business model clarified: sell access to qualified intentions, not annonces inventory
+- Product messaging aligned: traffic layer + intelligence + partner bridge
+- Short-term validation: promoter/agency pilot becomes top priority
+- MRE market becomes strategic niche (values clarity, preparation, original source)
+
+Next phase:
+SERP-PURITY-ALIGNMENT-1 (remove marketplace traces from UI)
+→ PROMISE-REALITY-ALIGNMENT-1 (align public texts)
+→ ALERTS-DEMAND-CAPTURE-MVP-1 (capture qualified intent)
+→ SAKAN-PROMOTER-PILOT-OFFER-1 (test B2B revenue model)
