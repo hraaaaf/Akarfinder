@@ -34,7 +34,7 @@ const RESULTS = [
     rank: "5",
     label: "Resultat web externe",
     title: "Apercu limite depuis une source originale",
-    body: "Sans image, sans contact direct, redirection vers la source originale.",
+    body: "Sans image, sans contact affiche, redirection vers la source originale.",
     tone: "neutral",
   },
 ];
