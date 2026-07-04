@@ -109,6 +109,9 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
 
         <input type="number" aria-label="Surface minimum" value={filters.minSurface} onChange={(e) => onChange({ ...filters, minSurface: e.target.value })} placeholder="Surface min" className={`${fieldClass} lg:w-36`} />
 
+        {/* Phase 1: Reliability filters hidden for external search results */}
+        {/* Reserved for first-party / partner-authorized listings only */}
+        {/*
         <select aria-label="Fiabilité" value={filters.reliability} onChange={(e) => onChange({ ...filters, reliability: e.target.value as ListingFiltersState["reliability"] })} className={selectClass}>
           <option value="all">Toutes fiabilités</option>
           <option value="top">Très fiable</option>
@@ -134,6 +137,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
           className={filters.packageScore === "bon" ? "min-h-11 rounded-xl bg-emerald-500/20 px-4 text-[13px] font-extrabold text-emerald-600 dark:text-emerald-300 ring-1 ring-emerald-500/40 lg:rounded-full" : "min-h-11 rounded-xl border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-4 text-[13px] font-bold text-foreground/75 transition hover:border-bronze-400/50 lg:rounded-full"}>
           Bon package
         </button>
+        */}
 
         <button type="button" onClick={onReset} className="hidden min-h-11 rounded-full px-3 text-[13px] font-bold text-muted-foreground transition hover:bg-surface hover:text-foreground lg:ml-auto lg:block">
           Réinitialiser

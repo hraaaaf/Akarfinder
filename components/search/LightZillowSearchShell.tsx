@@ -50,6 +50,8 @@ type ApiSearchResponse = {
   generated_at: string;
 };
 
+// Phase 1: Reliability filters disabled for external search results
+// Reserved for first-party / partner-authorized listings only
 const RELIABILITY_BADGE: Record<string, string> = {
   top: "Très fiable", high: "Fiable", medium: "À vérifier", low: "Faible confiance",
 };
@@ -303,6 +305,9 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
       chips.push({ key: "tx", label: t[filters.transactionType] ?? filters.transactionType, clear: { transactionType: "all" } });
     }
     if (filters.propertyType !== "all") chips.push({ key: "pt", label: filters.propertyType, clear: { propertyType: "all" } });
+    // Phase 1: Reliability/MRE/Package filters hidden for external search results
+    // Reserved for first-party / partner-authorized listings only
+    /*
     if (filters.reliability !== "all") {
       const r: Record<string, string> = { top: "Très fiable", high: "Fiable", medium: "À vérifier", low: "Faible confiance" };
       chips.push({ key: "rel", label: r[filters.reliability] ?? filters.reliability, clear: { reliability: "all" } });
@@ -310,6 +315,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     if (filters.minReliabilityScore > 0) chips.push({ key: "score", label: `Score ≥ ${filters.minReliabilityScore}`, clear: { minReliabilityScore: 0 } });
     if (filters.mreOnly) chips.push({ key: "mre", label: "MRE-friendly", clear: { mreOnly: false } });
     if (filters.packageScore === "bon") chips.push({ key: "pkg", label: "Bon package", clear: { packageScore: "all" } });
+    */
     if (filters.maxBudget) chips.push({ key: "budget", label: `Budget max : ${Number(filters.maxBudget).toLocaleString("fr-FR")} DH`, clear: { maxBudget: "" } });
     if (filters.minSurface) chips.push({ key: "surface", label: `Surface ≥ ${filters.minSurface} m²`, clear: { minSurface: "" } });
     return chips;
@@ -328,7 +334,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
             <div className="min-w-0">
               <div className="flex items-center gap-2.5">
                 <span className="h-px w-7 bg-bronze-500/70" aria-hidden="true" />
-                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400 sm:text-[11px]">Marketplace immobilier AkarFinder</p>
+                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400 sm:text-[11px]">Moteur de recherche immobilier</p>
               </div>
               <h1 className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.045em] text-foreground sm:text-[2.7rem]">Trouvez votre bien au Maroc</h1>
               <p className="mt-2 hidden max-w-2xl text-[14.5px] leading-7 text-muted-foreground sm:block">
@@ -455,22 +461,8 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
               stats={{ total: filteredListings.length, citiesCovered: cityCounts.length, avgIndex, updatedLabel: "Récent" }}
             />
 
-            {/* Sauvegarder ma recherche (→ alertes P18A) */}
-            <div className="overflow-hidden rounded-2xl border border-bronze-500/25 bg-gradient-to-br from-bronze-500/[0.14] to-bronze-500/[0.03] backdrop-blur-sm">
-              <div className="px-5 py-4">
-                <div className="flex items-center gap-3">
-                  <span className="inline-grid h-9 w-9 place-items-center rounded-xl bg-bronze-500/20 text-bronze-300 ring-1 ring-bronze-500/30"><BellPlus size={16} strokeWidth={2.2} aria-hidden="true" /></span>
-                  <p className="text-[13.5px] font-extrabold text-foreground dark:text-bronze-300">Sauvegarder ma recherche</p>
-                </div>
-                <p className="mt-2 text-[12.5px] leading-5 text-muted-foreground">Soyez informé selon disponibilité des annonces correspondant à vos critères.</p>
-              </div>
-              <div className="border-t border-bronze-500/20 bg-bronze-500/[0.06] px-5 py-3">
-                <Link href="/louer#alerte" onClick={() => track({ event_name: "search_save_click", source_page: "/search", intent: filters.transactionType, metadata: { city: filters.city } })}
-                  className="flex items-center justify-between text-[13px] font-extrabold text-bronze-300 transition hover:text-bronze-200">
-                  Créer une alerte<ArrowRight size={14} aria-hidden="true" />
-                </Link>
-              </div>
-            </div>
+            {/* Phase 1: Alerts disabled for external web results (no persistence guarantee) */}
+            {/* Reserved for future P18A when first-party listings available */}
 
             {/* Dossier acheteur/locataire */}
             <div className="overflow-hidden rounded-2xl border border-border/15 dark:border-white/10 bg-card dark:bg-white/[0.04] backdrop-blur-sm">
