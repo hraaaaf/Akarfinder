@@ -129,7 +129,11 @@ export const DEMO_PROPERTY_DETAIL = {
     { label: "Terrasse", value: "Balcon (fictif)" },
     { label: "État général", value: "Bon état (fictif)" },
   ],
-  visuals: ["apartment-modern", "appartement-familial", "urban-balcony"] as PropertyVisualType[],
+  galleryImages: [
+    "/demo/properties/gallery/apartment-modern-entree.jpg",
+    "/demo/properties/gallery/apartment-modern-salon.jpg",
+    "/demo/properties/gallery/apartment-modern-balcon.jpg",
+  ],
   proximityScores: [
     {
       key: "daily",

@@ -4,7 +4,7 @@ import { Bed, Bath, Ruler, Building2, ShieldCheck, MapPin, Car } from "lucide-re
 import { DemoShell } from "@/components/demo/DemoShell";
 import { DemoBadge } from "@/components/demo/DemoBadge";
 import { DemoRequestButton } from "@/components/demo/DemoRequestButton";
-import { PropertyVisual } from "@/components/demo/PropertyVisual";
+import { DemoGalleryPhoto } from "@/components/demo/DemoGalleryPhoto";
 import { DemoScoreCard } from "@/components/demo/DemoScoreCard";
 import { DemoNearbyPlaces } from "@/components/demo/DemoNearbyPlaces";
 import { DEMO_PROPERTY_DETAIL } from "@/lib/demo/demo-data";
@@ -67,8 +67,8 @@ export default function DemoPropertyDetailPage() {
       <section className="px-4 py-10">
         <div className="mx-auto max-w-5xl">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {p.visuals.map((v) => (
-              <PropertyVisual key={v} type={v} ratio="4:3" className="rounded-2xl" />
+            {p.galleryImages.map((src) => (
+              <DemoGalleryPhoto key={src} src={src} ratio="4:3" className="rounded-2xl" />
             ))}
           </div>
         </div>
