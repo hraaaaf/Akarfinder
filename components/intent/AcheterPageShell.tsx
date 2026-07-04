@@ -542,7 +542,7 @@ export function AcheterPageShell({
                       href={searchHref}
                       className="inline-flex items-center gap-2 rounded-xl border border-border/15 bg-surface dark:bg-white/[0.08] px-5 py-3 text-[13.5px] font-extrabold text-bronze-300 transition hover:border-bronze-500/35 hover:bg-surface-muted dark:hover:bg-white/[0.12]"
                     >
-                      {selectedPropertyType ? getSearchCTALabel(selectedPropertyType) : "Voir toutes les annonces dans la recherche"}
+                      {selectedPropertyType ? getSearchCTALabel(selectedPropertyType) : "Explorer plus de résultats dans la recherche"}
                       <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
                     </Link>
                   </div>
