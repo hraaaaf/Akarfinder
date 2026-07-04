@@ -23,7 +23,7 @@ export function MreDecisionBlock({ listing, enrichment }: MreDecisionBlockProps)
 
   const reasons = [
     "Contact WhatsApp disponible",
-    "Source analysée",
+    "Source consultable",
     "Quartier clairement identifié",
     "Prix/m² visible et comparable",
     "Lecture adaptée à une recherche à distance"

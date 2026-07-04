@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/Container";
 
 export const metadata = {
   title: "Demande de retrait — AkarFinder",
-  description: "Demander le retrait d'une annonce indexée ou de vos données sur AkarFinder.",
+  description: "Demander le retrait d'un résultat affiché ou de vos données sur AkarFinder.",
 };
 
 const MAILTO =

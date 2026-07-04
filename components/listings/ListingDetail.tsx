@@ -419,7 +419,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
               <p className="pt-1 text-[11px] leading-5 text-gray-500">
                 {internalDetailAllowed
                   ? "Les coordonnées de contact sont transmises par la source d'origine. Vérifiez toujours l'annonce avant de vous déplacer."
-                  : "Annonce indexée depuis une source publique tierce. AkarFinder ne gère ni le contact ni la visite — rendez-vous sur l'annonce d'origine."}
+                  : "Résultat web externe depuis une source publique tierce. AkarFinder ne gère ni le contact ni la visite — rendez-vous sur l'annonce d'origine."}
               </p>
             </div>
           </div>

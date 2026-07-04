@@ -19,7 +19,7 @@ export function SourceAttribution({
   variant = "light",
   className = "",
 }: SourceAttributionProps) {
-  const label = sourceAttributionLabel ?? (sourceName ? `Source indexée` : null);
+  const label = sourceAttributionLabel ?? (sourceName ? `Source externe` : null);
   if (!label && !displayPolicyReason) return null;
 
   const textCls =

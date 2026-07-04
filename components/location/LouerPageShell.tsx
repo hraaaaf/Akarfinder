@@ -88,7 +88,7 @@ function getSectionTitle(pt: string | undefined) {
   if (pt === "Appartement") return "Appartements à louer";
   if (pt === "Villa")       return "Villas à louer";
   if (pt === "Bureau")      return "Bureaux à louer";
-  return "Locations analysées";
+  return "Locations disponibles";
 }
 
 function getSearchCTALabel(pt: string | undefined) {
@@ -472,10 +472,10 @@ export function LouerPageShell({
                   </span>
                   {rentTotal !== null && rentTotal > 0 ? (
                     <span>
-                      <strong className="text-foreground">{rentTotal.toLocaleString("fr-FR")}</strong> locations analysées
+                      <strong className="text-foreground">{rentTotal.toLocaleString("fr-FR")}</strong> résultats de location
                     </span>
                   ) : (
-                    <span>Locations analysées depuis plusieurs sources</span>
+                    <span>Résultats de location issus de plusieurs sources</span>
                   )}
                 </p>
               </div>
@@ -576,7 +576,7 @@ export function LouerPageShell({
                     Aucune location disponible pour le moment.
                   </p>
                   <p className="mt-2 text-[13px] text-muted-foreground">
-                    Lancez une recherche pour explorer toutes les locations analysées.
+                    Lancez une recherche pour explorer tous les résultats de location.
                   </p>
                   <Link
                     href="/louer"
@@ -600,7 +600,7 @@ export function LouerPageShell({
 
               <p className="mt-4 flex items-start gap-1.5 text-[11.5px] leading-5 text-muted-foreground">
                 <AlertCircle size={12} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden="true" />
-                Loyers indicatifs issus d'annonces publiques analysées. Charges, caution et
+                Loyers indicatifs issus de résultats web publics. Charges, caution et
                 disponibilité (meublé/vide) à confirmer auprès de la source avant décision.
               </p>
             </div>
@@ -699,7 +699,7 @@ export function LouerPageShell({
         <Container>
           <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4">
             {[
-              { value: rentTotal !== null && rentTotal > 0 ? rentTotal.toLocaleString("fr-FR") : "—", label: "locations analysées", icon: BarChart2 },
+              { value: rentTotal !== null && rentTotal > 0 ? rentTotal.toLocaleString("fr-FR") : "—", label: "résultats de location", icon: BarChart2 },
               { value: "Mensuel", label: "repères de loyer observés", icon: Wallet },
               { value: "Quartier", label: "vie quotidienne & proximité", icon: MapPin },
               { value: "Récent",  label: "mises à jour régulières", icon: TrendingUp },

@@ -320,7 +320,7 @@ export function AcheterPageShell({
               </h1>
               <p className="mt-3.5 max-w-lg text-[14.5px] leading-6 text-muted-foreground sm:mt-5 sm:text-[15.5px] sm:leading-7">
                 Achetez en toute clarté grâce à nos repères de marché au Maroc —
-                prix observés, doublons détectés et fiabilité visible.
+                prix observés, signaux de doublons et fiabilité visible.
               </p>
 
               {/* Search form */}
@@ -586,7 +586,7 @@ export function AcheterPageShell({
                   </div>
                   <p className="mt-3 text-[12.5px] leading-5 text-muted-foreground">
                     {hasDuplicates
-                      ? `${duplicatesDetected.toLocaleString("fr-FR")} signaux de potentiels doublons détectés parmi les résultats.`
+                      ? `${duplicatesDetected.toLocaleString("fr-FR")} signaux de doublons potentiels repérés parmi les résultats.`
                       : "Quand un bien semble publié plusieurs fois, AkarFinder peut le signaler avant que vous contactiez."}
                   </p>
                 </div>
