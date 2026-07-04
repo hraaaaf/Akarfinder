@@ -34,7 +34,7 @@ export default function DemoVendrePage() {
             <Tag size={16} className="text-[#0B63CE]" aria-hidden="true" />
             <h2 className="text-[14px] font-extrabold text-[#0B1F3A]">Formulaire fictif</h2>
           </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 text-[12.5px] text-slate-600">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 text-[12.5px] text-slate-600">
             <p>Ville : {f.city}</p>
             <p>Quartier : {f.neighborhood}</p>
             <p>Type : {f.type}</p>
@@ -48,7 +48,7 @@ export default function DemoVendrePage() {
       </section>
 
       <section className="bg-[#f8fafc] px-4 py-12">
-        <div className="mx-auto grid max-w-4xl gap-4 sm:grid-cols-2">
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="rounded-2xl border border-[#e4e9f2] bg-white p-5">
             <DemoBadge />
             <h3 className="mt-3 text-[13.5px] font-extrabold text-[#0B1F3A]">Exemple de demande vendeur</h3>

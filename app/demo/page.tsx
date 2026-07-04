@@ -60,7 +60,7 @@ export default function DemoHubPage() {
       </section>
 
       <section className="px-4 pb-20">
-        <div className="mx-auto grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {CARDS.map((card) => (
             <Link
               key={card.href}

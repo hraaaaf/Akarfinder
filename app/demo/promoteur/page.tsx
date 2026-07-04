@@ -45,7 +45,7 @@ export default function DemoPromoterPage() {
           <h2 className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">
             Projets fictifs
           </h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
             {projects.map((project) => (
               <div
                 key={project.name}
@@ -68,7 +68,7 @@ export default function DemoPromoterPage() {
           <h2 className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">
             Ce qu&apos;un partenariat pourrait inclure (exemple)
           </h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
             {VALUE_POINTS.map((point) => (
               <div key={point.label} className="flex items-center gap-3 rounded-xl border border-[#e4e9f2] bg-white p-4">
                 <span className="inline-grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#0B63CE]/10 text-[#0B63CE]">

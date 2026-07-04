@@ -41,7 +41,7 @@ export default function DemoAgencyPage() {
           <h2 className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">
             Sélection fictive
           </h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {listings.map((listing) => (
               <div key={listing.title} className="flex items-start gap-3 rounded-2xl border border-[#e4e9f2] bg-white p-5 shadow-[0_10px_30px_rgba(15,35,65,0.06)]">
                 <span className="inline-grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#0B63CE]/10 text-[#0B63CE]">
@@ -49,7 +49,7 @@ export default function DemoAgencyPage() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-[14px] font-extrabold text-[#0B1F3A]">{listing.title}</h3>
+                    <h3 className="min-w-0 flex-1 truncate text-[14px] font-extrabold text-[#0B1F3A]">{listing.title}</h3>
                     <DemoBadge />
                   </div>
                   <p className="mt-1 text-[12px] font-semibold text-slate-500">

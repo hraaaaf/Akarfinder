@@ -27,7 +27,7 @@ export default function DemoLouerPage() {
       </section>
 
       <section className="px-4 py-12">
-        <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-2">
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2">
           <div className="rounded-2xl border border-[#e4e9f2] bg-white p-6">
             <div className="flex items-center gap-2">
               <Bell size={16} className="text-[#0B63CE]" aria-hidden="true" />

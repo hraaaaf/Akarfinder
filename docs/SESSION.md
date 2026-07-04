@@ -9261,3 +9261,42 @@ Minor cosmetic note
 
 Next: production activation of Phase A + Phase B after human review (not
 done in this mission per explicit "preview only" instruction)
+
+====================================================
+PROMISE-MAP-PROD-ACTIVATION-1 (demo review) - 2026-07-04
+
+Status: completed
+
+Mission
+* Human/technical review of PUBLIC-INTELLIGENCE-PLUS-DEMO-SHOWCASE-1 preview
+  before grouped production activation
+
+Fixes applied
+* components/demo/DemoBadge.tsx — added whitespace-nowrap + shrink-0,
+  reduced padding/font-size slightly to stop the badge wrapping to two lines
+* app/demo/agence/page.tsx — listing card title now truncates (min-w-0
+  flex-1 truncate) instead of squeezing the badge
+* Critical find: 8 grid containers across app/demo/page.tsx, .../promoteur,
+  .../agence, .../acheter, .../louer, .../vendre used
+  `grid gap-X sm:grid-cols-N` with NO base `grid-cols-1` — on mobile,
+  without an explicit column template, the browser let the single implicit
+  column grow to fit content (whitespace-nowrap badge + gap), causing real
+  horizontal overflow (up to 484px content in a 375px viewport) and a
+  visible horizontal scrollbar. Fixed by adding explicit grid-cols-1 (or
+  grid-cols-2 where already fixed at 2) as the mobile-first base on every
+  grid in app/demo/*. Verified via
+  document.documentElement.scrollWidth === clientWidth on all 6 pages after
+  the fix (was previously true only on /demo hub, which already had an
+  explicit base).
+* /pro "Voir une démonstration" link: reviewed, kept as-is (already
+  discreet, already correctly routed to /demo, coherent with commercial
+  strategy)
+
+Verified in preview (dpl_QJt5vtCyvET9AZHY8FRmonknjotW deployment family)
+* 0 horizontal overflow on all 6 /demo pages at 390px viewport
+* 10/10 required routes 200 (except /listings/137 = 404)
+* noindex/nofollow confirmed on all 6 /demo routes
+* Demo request button confirmed to trigger zero network requests, shows
+  "Exemple non contractuel — aucune demande réelle envoyée"
+* 0 console errors
+* 1288/1288 tests passing, build OK, zero forbidden wording

@@ -37,7 +37,7 @@ export default function DemoAcheterPage() {
           <h2 className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">
             Profils de recherche (exemple)
           </h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
             {DEMO_BUYER_PROFILES.map((p) => (
               <div key={p.label} className="rounded-2xl border border-[#e4e9f2] bg-white p-5">
                 <DemoBadge />
@@ -54,7 +54,7 @@ export default function DemoAcheterPage() {
           <h2 className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">
             Résultats d&apos;exemple
           </h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
             {EXAMPLE_RESULTS.map((r) => (
               <div key={r.title} className="flex flex-col rounded-2xl border border-[#e4e9f2] bg-white p-5">
                 <DemoBadge className="self-start" />
@@ -71,7 +71,7 @@ export default function DemoAcheterPage() {
       </section>
 
       <section className="px-4 py-12">
-        <div className="mx-auto grid max-w-4xl gap-4 sm:grid-cols-3">
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="rounded-2xl border border-[#e4e9f2] bg-white p-5">
             <h3 className="text-[13.5px] font-extrabold text-[#0B1F3A]">Dossier acheteur démo</h3>
             <p className="mt-2 text-[12.5px] leading-5 text-slate-500">
