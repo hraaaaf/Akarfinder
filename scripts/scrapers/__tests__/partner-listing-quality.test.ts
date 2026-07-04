@@ -2,13 +2,16 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  canDisplayPartnerFloorPlan,
   FORBIDDEN_PARTNER_PUBLIC_LABEL_TERMS,
   getPartnerListingPublicLabel,
   getPartnerListingQualityLevel,
 } from "../../../lib/partners/partner-listing-quality.js";
 import {
   FICTIONAL_AGENCY_DEMO_RABAT_APARTMENT,
+  FICTIONAL_AGENCY_DEMO_WITHOUT_FLOOR_PLAN,
   FICTIONAL_PROMOTER_DEMO_CASABLANCA_PROJECT,
+  FICTIONAL_PROMOTER_DEMO_WITHOUT_FLOOR_PLAN,
 } from "../../../lib/partners/partner-listing-examples.js";
 import type { PartnerListingStandard } from "../../../lib/partners/partner-listing-types.js";
 
@@ -29,6 +32,10 @@ function standardListing(
     proximity_allowed: false,
     neighborhood_context_allowed: false,
     mobility_context_allowed: false,
+    floor_plan_authorized: false,
+    floor_plan_available: false,
+    floor_plan_type: "none",
+    floor_plan_display_mode: "hidden",
     ...overrides,
   };
 }
@@ -55,10 +62,34 @@ describe("partner listing quality", () => {
     );
   });
 
-  it("returns premium_ready when complete listing and authorized context are present", () => {
+  it("returns premium_ready for new promoter with authorized floor plan and complete context", () => {
     assert.equal(
       getPartnerListingQualityLevel(FICTIONAL_PROMOTER_DEMO_CASABLANCA_PROJECT, NOW),
       "premium_ready",
+    );
+  });
+
+  it("does not return premium_ready for new promoter without floor plan", () => {
+    assert.equal(
+      getPartnerListingQualityLevel(FICTIONAL_PROMOTER_DEMO_WITHOUT_FLOOR_PLAN, NOW),
+      "enriched",
+    );
+  });
+
+  it("allows complete agency to reach premium_ready without floor plan", () => {
+    assert.equal(
+      getPartnerListingQualityLevel(FICTIONAL_AGENCY_DEMO_WITHOUT_FLOOR_PLAN, NOW),
+      "premium_ready",
+    );
+  });
+
+  it("does not treat unauthorized floor plan as displayable", () => {
+    assert.equal(
+      canDisplayPartnerFloorPlan({
+        ...FICTIONAL_AGENCY_DEMO_RABAT_APARTMENT,
+        floor_plan_authorized: false,
+      }),
+      false,
     );
   });
 

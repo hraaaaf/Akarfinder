@@ -39,6 +39,33 @@ export type PartnerMediaUsageScope =
 
 export type PartnerContactMode = "form" | "partner_page" | "phone" | "hidden";
 
+export type PartnerFloorPlanType =
+  | "unit_floor_plan"
+  | "floor_plate"
+  | "project_master_plan"
+  | "site_plan"
+  | "lot_plan"
+  | "none";
+
+export type PartnerFloorPlanDisplayMode =
+  | "hidden"
+  | "available_on_request"
+  | "visible_on_partner_page"
+  | "visible_in_demo";
+
+export type PartnerFloorPlanSource =
+  | "partner_provided"
+  | "architect_provided_by_partner"
+  | "sales_brochure"
+  | "demo_placeholder";
+
+export type PartnerFloorPlanScope =
+  | "unit"
+  | "building"
+  | "project"
+  | "parcel"
+  | "unknown";
+
 export type PartnerListingQualityLevel =
   | "limited"
   | "standard"
@@ -51,7 +78,21 @@ export type PartnerListingPublicLabel =
   | "Fiche enrichie"
   | "Presentation premium";
 
-export interface PartnerListingStandard {
+export interface PartnerFloorPlanStandard {
+  floor_plan_authorized: boolean;
+  floor_plan_available: boolean;
+  floor_plan_type: PartnerFloorPlanType;
+  floor_plan_display_mode: PartnerFloorPlanDisplayMode;
+  floor_plan_source: PartnerFloorPlanSource;
+  floor_plan_scope: PartnerFloorPlanScope;
+  floor_plan_has_dimensions: boolean;
+  floor_plan_has_room_labels: boolean;
+  floor_plan_has_orientation: boolean;
+  floor_plan_has_surface_breakdown: boolean;
+  floor_plan_usage_note?: string;
+}
+
+export interface PartnerListingStandard extends PartnerFloorPlanStandard {
   partner_id: string;
   partner_type: PartnerType;
   partner_tier: PartnerTier;

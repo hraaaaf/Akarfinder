@@ -4207,3 +4207,44 @@ A partner never outranks a more relevant result only because it is a partner.
 
 Next mission:
 PARTNER-RANKING-POLICY-1
+
+====================================================
+PARTNER FLOOR PLAN STANDARD - APPROVED 2026-07-04
+====================================================
+
+Mission completed:
+PARTNER-LISTING-FLOORPLAN-STANDARD-1
+
+Progress:
+- Initial roadmap progress estimate: 47%
+- Estimated progress after success: 48%
+
+Decision:
+AkarFinder adds 2D floor plans as a structured partner-listing standard element, especially for promoter partners, new-build programs, residences, off-plan projects and projects with unit types.
+
+Rules:
+- Floor plans must be authorized by the partner.
+- If `floor_plan_authorized=false`, AkarFinder must not display the plan.
+- Floor plans are presented as partner-provided or partner-authorized documents.
+- AkarFinder never presents a floor plan as certified, official, verified or guaranteed by AkarFinder.
+
+Promoter / new-build quality:
+- A promoter or new-build project needs an authorized floor-plan signal, including available-on-request mode, to reach `premium_ready`.
+- Without floor plan, the listing can remain `standard` or `enriched`.
+
+Agency quality:
+- Floor plan is optional.
+- It can improve the listing for villas, large apartments, offices and retail spaces.
+- It does not block `premium_ready` when the rest of the listing is complete.
+
+Implementation scope:
+- Types and pure quality helpers only.
+- No upload API.
+- No file storage.
+- No DB or Supabase change.
+- No Search Gateway change.
+- No live page change.
+- No real ranking change.
+
+Next mission:
+PARTNER-RANKING-POLICY-1

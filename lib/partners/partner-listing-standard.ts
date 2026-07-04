@@ -1,5 +1,9 @@
 import type {
   PartnerContactMode,
+  PartnerFloorPlanDisplayMode,
+  PartnerFloorPlanScope,
+  PartnerFloorPlanSource,
+  PartnerFloorPlanType,
   PartnerListingPublicLabel,
   PartnerLocationLevel,
   PartnerMediaUsageScope,
@@ -31,6 +35,37 @@ export const PARTNER_CONTACT_MODES: readonly PartnerContactMode[] = [
   "hidden",
 ] as const;
 
+export const PARTNER_FLOOR_PLAN_TYPES: readonly PartnerFloorPlanType[] = [
+  "unit_floor_plan",
+  "floor_plate",
+  "project_master_plan",
+  "site_plan",
+  "lot_plan",
+  "none",
+] as const;
+
+export const PARTNER_FLOOR_PLAN_DISPLAY_MODES: readonly PartnerFloorPlanDisplayMode[] = [
+  "hidden",
+  "available_on_request",
+  "visible_on_partner_page",
+  "visible_in_demo",
+] as const;
+
+export const PARTNER_FLOOR_PLAN_SOURCES: readonly PartnerFloorPlanSource[] = [
+  "partner_provided",
+  "architect_provided_by_partner",
+  "sales_brochure",
+  "demo_placeholder",
+] as const;
+
+export const PARTNER_FLOOR_PLAN_SCOPES: readonly PartnerFloorPlanScope[] = [
+  "unit",
+  "building",
+  "project",
+  "parcel",
+  "unknown",
+] as const;
+
 export const AUTHORIZED_PARTNER_PUBLIC_LABELS = [
   "Promoteur partenaire",
   "Agence premium",
@@ -41,6 +76,11 @@ export const AUTHORIZED_PARTNER_PUBLIC_LABELS = [
   "Fiche enrichie",
   "Informations limitees",
   "Page partenaire autorisee",
+  "Plan 2D fourni par le partenaire",
+  "Plan indicatif",
+  "Plan disponible sur demande",
+  "Plan de vente partenaire",
+  "A confirmer aupres du partenaire",
 ] as const;
 
 export const PARTNER_LISTING_QUALITY_PUBLIC_LABELS: readonly PartnerListingPublicLabel[] = [
@@ -58,6 +98,12 @@ export const FORBIDDEN_PARTNER_WORDING = [
   "meilleur",
   "garanti",
   "prix reel",
+  "plan certifie",
+  "plan officiel",
+  "plan verifie",
+  "plan garanti",
+  "surface garantie",
+  "conformite garantie",
   "annonce verifiee",
   "annonce fiable",
   "agence de confiance",
@@ -94,4 +140,14 @@ export const PARTNER_LISTING_REQUIRED_FIELDS = [
   "proximity_allowed",
   "neighborhood_context_allowed",
   "mobility_context_allowed",
+  "floor_plan_authorized",
+  "floor_plan_available",
+  "floor_plan_type",
+  "floor_plan_display_mode",
+  "floor_plan_source",
+  "floor_plan_scope",
+  "floor_plan_has_dimensions",
+  "floor_plan_has_room_labels",
+  "floor_plan_has_orientation",
+  "floor_plan_has_surface_breakdown",
 ] as const;

@@ -1906,3 +1906,27 @@ Impact:
 - Fondation code isolee: `lib/partners/partner-listing-types.ts`, `partner-listing-standard.ts`, `partner-listing-quality.ts`, `partner-listing-examples.ts`.
 - Aucun changement DB, Supabase, Search Gateway, ingestion, API partenaire, auth ou ranking.
 - Mission suivante naturelle: `PARTNER-RANKING-POLICY-1`, uniquement comme politique avant implementation.
+
+## 2026-07-04 - PARTNER-LISTING-FLOORPLAN-STANDARD-1 - Plans 2D dans le standard partenaire
+
+Status: Validated
+
+Decision:
+- AkarFinder introduit le plan 2D comme composant important du standard de fiche partenaire.
+- Pour les promoteurs partenaires, programmes neufs, residences, projets en vente sur plan et projets avec unites types, le plan 2D est fortement recommande.
+- Pour promoteur ou programme neuf, `premium_ready` requiert un signal de plan 2D autorise ou disponible sur demande.
+- Le plan doit etre autorise par le partenaire et presente comme document fourni par le partenaire.
+- AkarFinder ne presente jamais un plan comme certifie, officiel, verifie ou garanti par AkarFinder.
+- Pour les agences, le plan 2D est optionnel: il peut ameliorer la fiche pour villas, grands appartements, bureaux et locaux, mais ne bloque pas `premium_ready` si le reste est complet.
+- Si `floor_plan_authorized=false`, AkarFinder ne doit pas afficher le plan.
+
+Reason:
+- Les projets neufs et ventes sur plan necessitent plus de structure que de simples photos.
+- Le plan 2D aide a comprendre la distribution, l'orientation indicative et les surfaces avant contact, sans devenir une promesse contractuelle.
+- Le standard renforce la valeur promoteur tout en gardant un wording prudent et une autorisation claire.
+
+Impact:
+- Types ajoutes: `PartnerFloorPlanType`, `PartnerFloorPlanDisplayMode`, `PartnerFloorPlanSource`, `PartnerFloorPlanScope`, `PartnerFloorPlanStandard`.
+- Qualite mise a jour: promoteur/projet neuf sans plan 2D ne peut pas atteindre `premium_ready`; agence complete peut toujours atteindre `premium_ready` sans plan.
+- Tests partenaires integres a `npm test` via `package.json`.
+- Aucun upload, backend, stockage fichier, DB, Supabase, Search Gateway, page live ou ranking reel.

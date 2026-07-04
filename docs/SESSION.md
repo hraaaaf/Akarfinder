@@ -9539,3 +9539,115 @@ Unresolved issues
 
 Next mission recommended
 * PARTNER-RANKING-POLICY-1
+
+====================================================
+PARTNER-LISTING-FLOORPLAN-STANDARD-1 - 2026-07-04
+====================================================
+
+Status: completed
+
+Mission
+* Ajouter les plans 2D au standard de fiche partenaire AkarFinder.
+* Scope strict: documentation, types, exemples fictifs, logique qualite pure et tests.
+* Hors scope respecte: aucun upload, aucune API, aucun stockage fichier, aucune DB,
+  aucun Supabase, aucun Search Gateway, aucune page live, aucun ranking reel.
+
+Pre-check adapte concurrence Claude
+* git status --short initial:
+  M components/demo/PropertyVisual.tsx
+  ?? public/demo/
+* HEAD initial: 144ecf7 docs(partners): define structured partner listing standard
+* 144ecf7 present: yes
+* Dirty files ignored as Claude work:
+  components/demo/PropertyVisual.tsx
+  public/demo/
+* These files were not inspected deeply, not modified, not staged, not committed.
+
+Files modified by this mission
+* docs/DECISIONS.md
+* docs/ROADMAP.md
+* docs/SESSION.md
+* docs/PARTNER_LISTING_STANDARD.md
+* lib/partners/partner-listing-types.ts
+* lib/partners/partner-listing-standard.ts
+* lib/partners/partner-listing-quality.ts
+* lib/partners/partner-listing-examples.ts
+* scripts/scrapers/__tests__/partner-listing-quality.test.ts
+* package.json
+
+Product decision
+* AkarFinder introduces 2D floor plans as a structured partner-listing standard element.
+* For promoter partners, new-build programs, residences, off-plan projects and unit-type
+  projects, a 2D floor-plan signal is required for `premium_ready`.
+* Floor plans must be partner-authorized and presented as partner-provided or
+  partner-authorized documents.
+* AkarFinder never presents a floor plan as certified, official, verified or guaranteed.
+* For agencies, floor plan is optional and does not block `premium_ready` when the rest
+  of the listing is complete.
+* If `floor_plan_authorized=false`, AkarFinder must not display the plan.
+
+Code foundation
+* Added types:
+  PartnerFloorPlanType
+  PartnerFloorPlanDisplayMode
+  PartnerFloorPlanSource
+  PartnerFloorPlanScope
+  PartnerFloorPlanStandard
+* Added fields:
+  floor_plan_authorized
+  floor_plan_available
+  floor_plan_type
+  floor_plan_display_mode
+  floor_plan_source
+  floor_plan_scope
+  floor_plan_has_dimensions
+  floor_plan_has_room_labels
+  floor_plan_has_orientation
+  floor_plan_has_surface_breakdown
+  floor_plan_usage_note
+* Added helper:
+  canDisplayPartnerFloorPlan()
+* Updated quality:
+  promoter/new/project cannot reach premium_ready without an authorized floor-plan signal;
+  complete agencies can reach premium_ready without floor plan.
+
+Examples
+* FICTIONAL_PROMOTER_DEMO_CASABLANCA_PROJECT: with authorized floor plan.
+* FICTIONAL_PROMOTER_DEMO_WITHOUT_FLOOR_PLAN: without authorized floor plan.
+* FICTIONAL_AGENCY_DEMO_RABAT_APARTMENT: agency with optional floor plan.
+* FICTIONAL_AGENCY_DEMO_WITHOUT_FLOOR_PLAN: complete agency without floor plan.
+
+Tests
+* Direct test:
+  npx tsx --test scripts/scrapers/__tests__/partner-listing-quality.test.ts
+  Result: 8/8 pass.
+* npm test:
+  Result: 1296/1296 pass (1245 scrapers + 51 API).
+  partner-listing-quality.test.ts is now included in package.json test:scrapers.
+* npm run build:
+  Result: OK.
+
+Wording scan
+* Command:
+  rg -n "plan certifié|plan officiel|plan vérifié|plan garanti|surface garantie|vérifié|certifié|officiel|fiable|garanti|prix réel|annonce vérifiée|annonce fiable|agence de confiance|partenaire officiel|marketplace|toutes les annonces|exhaustif" docs lib/partners scripts/scrapers/__tests__/partner-listing-quality.test.ts
+* New lib/partners occurrences:
+  forbidden-wording constants only.
+* New docs/PARTNER_LISTING_STANDARD.md occurrences:
+  documentation of interdiction and negative wording only.
+* Existing docs occurrences:
+  historical docs, forbidden lists, negative disclaimers and known old wording outside
+  this mission scope.
+* No new visible public violation introduced by this mission.
+
+Explicit non-changes
+* Search Gateway modified: no
+* DB/Supabase modified: no
+* env modified: no
+* package-lock.json modified: no
+* app/search modified: no
+* app/listings modified: no
+* app/demo/components demo visual files modified by this mission: no
+* Production deployed: no
+
+Next mission recommended
+* PARTNER-RANKING-POLICY-1

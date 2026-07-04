@@ -19,6 +19,12 @@ export const FORBIDDEN_PARTNER_PUBLIC_LABEL_TERMS = [
   "meilleur",
   "garanti",
   "prix reel",
+  "plan certifie",
+  "plan officiel",
+  "plan verifie",
+  "plan garanti",
+  "surface garantie",
+  "conformite garantie",
   "annonce verifiee",
   "annonce fiable",
   "agence de confiance",
@@ -50,6 +56,9 @@ export function getPartnerListingQualityLevel(
     && listing.contact_mode !== "hidden";
 
   const hasRecentUpdate = isRecentPartnerUpdate(listing.last_partner_update_at, now);
+  const isPromoterNewProject = listing.partner_type === "promoter"
+    || listing.transaction_type === "new"
+    || listing.property_type === "project";
 
   if (
     hasRichSpecs
@@ -58,6 +67,7 @@ export function getPartnerListingQualityLevel(
     && listing.proximity_allowed === true
     && listing.neighborhood_context_allowed === true
     && listing.mobility_context_allowed === true
+    && (!isPromoterNewProject || hasPromoterFloorPlanSignal(listing))
   ) {
     return "premium_ready";
   }
@@ -87,6 +97,22 @@ export function hasMinimumStandardFields(listing: Partial<PartnerListingStandard
       && hasPriceSignal(listing)
       && hasPositiveNumber(listing.surface_m2),
   );
+}
+
+export function canDisplayPartnerFloorPlan(listing: Partial<PartnerListingStandard>): boolean {
+  return listing.floor_plan_authorized === true
+    && listing.floor_plan_available === true
+    && listing.floor_plan_type !== "none"
+    && listing.floor_plan_display_mode !== "hidden";
+}
+
+function hasPromoterFloorPlanSignal(listing: Partial<PartnerListingStandard>): boolean {
+  return canDisplayPartnerFloorPlan(listing)
+    || (
+      listing.floor_plan_authorized === true
+      && listing.floor_plan_available === true
+      && listing.floor_plan_display_mode === "available_on_request"
+    );
 }
 
 function hasPriceSignal(listing: Partial<PartnerListingStandard>): boolean {

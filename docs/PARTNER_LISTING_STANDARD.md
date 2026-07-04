@@ -91,6 +91,19 @@ Regles:
 - `neighborhood_context_allowed`
 - `mobility_context_allowed`
 
+### Plans 2D / plans de vente
+
+- `floor_plan_authorized`
+- `floor_plan_available`
+- `floor_plan_type`: `unit_floor_plan` | `floor_plate` | `project_master_plan` | `site_plan` | `lot_plan` | `none`
+- `floor_plan_display_mode`: `hidden` | `available_on_request` | `visible_on_partner_page` | `visible_in_demo`
+- `floor_plan_source`: `partner_provided` | `architect_provided_by_partner` | `sales_brochure` | `demo_placeholder`
+- `floor_plan_scope`: `unit` | `building` | `project` | `parcel` | `unknown`
+- `floor_plan_has_dimensions`
+- `floor_plan_has_room_labels`
+- `floor_plan_has_orientation`
+- `floor_plan_has_surface_breakdown`
+
 ## 4. Champs recommandes
 
 - `latitude`
@@ -105,6 +118,7 @@ Regles:
 - `furnished`
 - `condition`
 - `last_partner_update_at`
+- `floor_plan_usage_note`
 
 ## 5. Niveaux de localisation
 
@@ -120,7 +134,7 @@ Niveaux internes:
 - `limited`: champs minimum manquants.
 - `standard`: champs minimum presents.
 - `enriched`: fiche structuree avec specs, photos autorisees et contact autorise.
-- `premium_ready`: fiche complete avec mise a jour recente et enrichissements quartier/proximite/mobilite autorises.
+- `premium_ready`: fiche complete avec mise a jour recente, enrichissements quartier/proximite/mobilite autorises et, pour promoteur ou programme neuf, plan 2D autorise ou disponible sur demande.
 
 Labels publics autorises:
 - `Informations limitees`
@@ -157,7 +171,103 @@ AkarFinder peut afficher des informations de proximite, quartier ou mobilite uni
 
 Les donnees quartier ne doivent pas devenir une promesse de valeur, securite, temps de trajet ou disponibilite.
 
-## 10. Regles d'affichage public
+## 10. Plans 2D et documents visuels
+
+### Pourquoi le plan 2D est important
+
+Le plan 2D aide l'acheteur a comprendre l'organisation du bien avant contact: distribution des pieces, surface exploitable, orientation indicative, circulation interne, plan d'etage ou implantation projet.
+
+Pour AkarFinder, le plan 2D est un element structurant de qualite de fiche, surtout pour:
+- promoteurs partenaires;
+- programmes neufs;
+- residences;
+- projets en vente sur plan;
+- projets avec unites types.
+
+### Cas promoteur / programme neuf
+
+Pour les promoteurs et programmes neufs:
+- le plan 2D est fortement recommande;
+- il devient necessaire pour atteindre `premium_ready`;
+- il doit etre autorise par le partenaire;
+- il doit etre presente comme document fourni par le partenaire;
+- il ne doit jamais etre presente comme controle, certifie ou officiel par AkarFinder.
+
+Si un projet neuf n'a aucun plan 2D, il peut rester `standard` ou `enriched`, mais ne doit pas atteindre `premium_ready` sauf decision produit explicite documentee.
+
+### Cas agence
+
+Pour les agences:
+- le plan 2D est optionnel;
+- il ameliore la qualite percue si autorise;
+- il peut etre utile pour villas, grands appartements, bureaux et locaux;
+- il ne bloque pas `premium_ready` si le reste de la fiche est complet.
+
+### Autorisation d'affichage
+
+Regle stricte: si `floor_plan_authorized` vaut `false`, AkarFinder ne doit pas afficher le plan.
+
+Un plan peut etre considere affichable uniquement si:
+- `floor_plan_authorized` vaut `true`;
+- `floor_plan_available` vaut `true`;
+- `floor_plan_type` n'est pas `none`;
+- `floor_plan_display_mode` n'est pas `hidden`.
+
+### Niveaux d'affichage
+
+- `hidden`: aucun affichage public.
+- `available_on_request`: mention possible, sans affichage du document.
+- `visible_on_partner_page`: affichage possible sur page partenaire autorisee.
+- `visible_in_demo`: affichage limite a une demonstration clairement fictive.
+
+### Mentions obligatoires
+
+Wording autorise:
+- Plan 2D fourni par le partenaire
+- Plan indicatif
+- Plan disponible sur demande
+- Plan de vente partenaire
+- A confirmer aupres du partenaire
+
+Un plan 2D ne remplace jamais:
+- visite;
+- verification terrain;
+- documents contractuels;
+- confirmation par le partenaire.
+
+### Wording interdit
+
+Ne jamais utiliser:
+- plan certifie;
+- plan officiel;
+- plan verifie;
+- plan garanti;
+- surface garantie;
+- conformite garantie.
+
+### Impact sur qualite de fiche
+
+Pour promoteur / programme neuf:
+- un plan 2D autorise ou disponible sur demande est requis pour `premium_ready`;
+- sans plan 2D, la fiche peut rester `standard` ou `enriched`.
+
+Pour agence:
+- le plan 2D est un plus;
+- il ne doit pas bloquer `premium_ready` si localisation, prix, surface, photos, contact, mise a jour et enrichissements autorises sont complets.
+
+### Impact futur sur ranking
+
+Le plan 2D pourra devenir un signal de qualite pour les fiches partenaires autorisees, mais ne doit jamais remplacer la pertinence de recherche.
+
+Un promoteur avec plan 2D ne passe pas devant une agence plus pertinente pour une recherche location. Un programme neuf avec plan 2D peut etre favorise uniquement si l'intention utilisateur correspond au neuf ou au projet.
+
+### Plan affiche vs plan disponible sur demande
+
+Un plan affiche est visible sur une page partenaire autorisee ou dans une demo clairement fictive.
+
+Un plan disponible sur demande signifie que l'utilisateur doit confirmer aupres du partenaire; AkarFinder ne montre pas le document et ne promet pas son exactitude.
+
+## 11. Regles d'affichage public
 
 Labels autorises:
 - Promoteur partenaire
@@ -169,6 +279,11 @@ Labels autorises:
 - Fiche enrichie
 - Informations limitees
 - Page partenaire autorisee
+- Plan 2D fourni par le partenaire
+- Plan indicatif
+- Plan disponible sur demande
+- Plan de vente partenaire
+- A confirmer aupres du partenaire
 
 Labels interdits:
 - verifie
@@ -178,12 +293,18 @@ Labels interdits:
 - meilleur
 - garanti
 - prix reel
+- plan certifie
+- plan officiel
+- plan verifie
+- plan garanti
+- surface garantie
+- conformite garantie
 - annonce verifiee
 - annonce fiable
 - agence de confiance
 - partenaire officiel
 
-## 11. Partenaire autorise vs resultat web externe
+## 12. Partenaire autorise vs resultat web externe
 
 Resultats web externes:
 - sans images;
@@ -199,8 +320,9 @@ Resultats partenaires autorises:
 - proximite, mobilite et quartier possibles;
 - CTA partenaire possible;
 - page projet ou fiche partenaire possible si l'autorisation est claire.
+- plan 2D possible uniquement si fourni ou autorise par le partenaire.
 
-## 12. Wording autorise/interdit
+## 13. Wording autorise/interdit
 
 Wording autorise:
 - Sources immobilieres analysees
@@ -212,6 +334,11 @@ Wording autorise:
 - Fiche structuree
 - Fiche enrichie
 - Informations limitees
+- Plan 2D fourni par le partenaire
+- Plan indicatif
+- Plan disponible sur demande
+- Plan de vente partenaire
+- A confirmer aupres du partenaire
 
 Wording interdit pour les fiches partenaires:
 - verifie
@@ -221,12 +348,18 @@ Wording interdit pour les fiches partenaires:
 - meilleur
 - garanti
 - prix reel
+- plan certifie
+- plan officiel
+- plan verifie
+- plan garanti
+- surface garantie
+- conformite garantie
 - annonce verifiee
 - annonce fiable
 - agence de confiance
 - partenaire officiel
 
-## 13. Impact futur sur ranking
+## 14. Impact futur sur ranking
 
 Cette mission documente la regle future, sans l'implementer.
 
@@ -244,7 +377,7 @@ Exemples:
 - recherche `programme neuf Bouskoura`: promoteurs partenaires pertinents avant agences generalistes;
 - recherche `terrain Marrakech`: terrain pertinent avant appartement premium non pertinent.
 
-## 14. Preparation pour profil de recherche utilisateur
+## 15. Preparation pour profil de recherche utilisateur
 
 Le standard prepare les futurs profils de recherche:
 - type d'intention;
