@@ -9829,3 +9829,49 @@ Explicit non-changes
 
 Next mission recommended
 * PARTNER-RANKING-POLICY-1
+
+====================================================
+AKARFINDER-ROADMAP-TO-70-FABLE-1 / PHASE 1 - DEMO PACK PROD ACTIVATION - 2026-07-05
+====================================================
+
+Status: completed
+
+Mission
+* Activer proprement en production le pack demo partenaire.
+* Phase 0 prealable: repo reconcilie (galerie /demo/bien coherente, commit 8b4aab6).
+* Correctif wording residuel avant gate: commit af5a590 (SignatureMapSection,
+  DataProofBlock, app/pro/page.tsx — retrait "meilleur(es)" et "verifiees" visibles).
+
+Routes validees (local + production)
+* /demo, /demo/promoteur, /demo/projet, /demo/agence, /demo/bien,
+  /demo/acheter, /demo/louer, /demo/vendre, /, /search?q=appartement casablanca: 200.
+* /listings/137: 404 (conforme doctrine).
+
+Tests / build
+* npm test: 1296/1296 pass (1245 scrapers + 51 API).
+* npm run build: OK.
+
+Scans doctrine
+* 0 URL externe dans app/demo, components/demo, lib/demo.
+* 0 contact reel, 0 WhatsApp reel dans les zones demo.
+* Wording interdit visible: 3 occurrences corrigees (af5a590); le reste =
+  disclaimers negatifs, blocklists internes, code commente, faux positifs.
+* Search Gateway inchange. DB/Supabase/env inchanges.
+
+Audit visuel
+* Desktop + mobile sur /demo, /demo/projet, /demo/agence, /demo/bien: 8/8 verts.
+* 0 image cassee (verif JS images complete + naturalWidth apres scroll lazy-load).
+* 0 overflow horizontal mobile.
+
+Production
+* Preview: https://akarfinder-ovf1lkahz-achraf-benmoussa-s-projects.vercel.app
+* Production: https://akarfinder.vercel.app
+* Deployment ID: dpl_5PazDimHjwJbRskGaVH6xpxhrWxg
+* Deploy approuve explicitement par Achraf apres audit complet vert.
+* Routes production retestees: 11/11 conformes.
+
+Progression roadmap
+* 52% -> 54%.
+
+Next phase
+* PHASE 2 — PARTNER-QUALITY-SCORING-POLICY-1 (completer lib/partners existant).
