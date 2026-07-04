@@ -1953,3 +1953,29 @@ Impact:
 - Enrichissement de `/demo/promoteur`, `/demo/agence`, `/demo` et `/demo/acheter`.
 - Documentation creee: `docs/PARTNER_PAGES_EXPERIENCE.md`.
 - Aucun changement Search Gateway, DB, Supabase, ingestion ou production.
+
+## 2026-07-05 — PARTNER-QUALITY-SCORING-POLICY-1
+
+Decision:
+AkarFinder introduit un scoring interne de qualite partenaire en 5 axes
+(search_relevance, partner_listing_quality, authorization, location_completeness,
+freshness), tous en [0,100], implementes en logique pure dans lib/partners.
+
+Regle centrale:
+AkarFinder ne score pas "la verite" d'une annonce. Il score la qualite, la
+structure, l'autorisation et l'exploitabilite d'une fiche partenaire.
+
+Regles:
+- Ce scoring ne s'appelle jamais "score de fiabilite".
+- Seuls les labels publics existants sont exposables (Informations limitees /
+  Fiche structuree / Fiche enrichie / Presentation premium).
+- Un mismatch de transaction plafonne la pertinence a 20: un partenaire non
+  pertinent ne passe jamais devant un resultat pertinent.
+- web_external reste la source la plus basse: apercu limite, source originale,
+  sans image ni contact.
+- Les regles plan 2D (promoteur premium_ready exige un signal plan autorise,
+  agence non bloquee) restent la source de verite du niveau qualite.
+
+Scope:
+- Types et fonctions pures + tests uniquement. Pas de DB, pas de Search
+  Gateway, pas d'API, pas de page live, pas de ranking live.

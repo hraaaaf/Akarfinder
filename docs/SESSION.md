@@ -9875,3 +9875,47 @@ Progression roadmap
 
 Next phase
 * PHASE 2 — PARTNER-QUALITY-SCORING-POLICY-1 (completer lib/partners existant).
+
+====================================================
+AKARFINDER-ROADMAP-TO-70-FABLE-1 / PHASE 2 - PARTNER-QUALITY-SCORING-POLICY-1 - 2026-07-05
+====================================================
+
+Status: completed
+
+Mission
+* Creer la logique interne de scoring qualite partenaire (5 axes, [0,100]).
+* Jamais presente comme "score de fiabilite".
+* Complement de la base existante lib/partners (PARTNER-LISTING-FLOORPLAN-STANDARD-1),
+  sans duplication: le niveau qualite reste calcule par getPartnerListingQualityLevel.
+
+Files
+* lib/partners/partner-quality-score-types.ts (new)
+* lib/partners/partner-quality-score.ts (new)
+* scripts/scrapers/__tests__/partner-quality-score.test.ts (new, 19 tests)
+* docs/PARTNER_QUALITY_SCORING.md (new)
+* docs/DECISIONS.md, docs/ROADMAP.md, docs/SESSION.md (append)
+* package.json (test:scrapers + partner-quality-score.test.ts)
+
+Scores
+* search_relevance_score: transaction 30 / ville 25 / quartier 10 / type 15 /
+  budget 10 / surface 5 / profil 5; mismatch transaction plafonne a 20.
+* partner_listing_quality_score: 10 signaux structurels, somme 100.
+* authorization_score: web_external 10 < partner_authorized 60 < agency_partner 70
+  < agency_premium = promoter_partner 85 < first_party 100.
+* location_completeness_score: district_only 40 / approximate_zone 60 /
+  exact_address_authorized 90 + bonus contexte, plafond 100.
+* freshness_score: recent 100 / stale 40 / unknown 0 (fenetre 90 jours).
+
+Tests obligatoires couverts
+* minimale -> limited; standard -> standard; enrichie -> enriched.
+* promoteur plan 2D + localisation + photos/contact -> premium_ready.
+* promoteur sans plan 2D: jamais premium_ready.
+* agence complete: premium_ready sans plan 2D.
+* aucun label interdit retourne.
+
+Explicit non-changes
+* Search Gateway modified: no. DB/Supabase modified: no. env modified: no.
+* No live page, no API, no ranking live.
+
+Progression roadmap
+* 54% -> 57%.

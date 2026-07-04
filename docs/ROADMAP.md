@@ -4287,3 +4287,18 @@ Implementation scope:
 
 Next mission:
 PARTNER-RANKING-POLICY-1
+
+## 2026-07-05 — PARTNER-QUALITY-SCORING-POLICY-1 (54% -> 57%)
+
+Fait:
+- lib/partners/partner-quality-score-types.ts (sources d'autorisation, intent,
+  tiers freshness, composite PartnerQualityScores).
+- lib/partners/partner-quality-score.ts (5 scores internes + composite,
+  reutilise partner-listing-quality).
+- scripts/scrapers/__tests__/partner-quality-score.test.ts (19 tests, integres
+  a npm test).
+- docs/PARTNER_QUALITY_SCORING.md.
+
+Prochaine mission:
+PARTNER-RANKING-POLICY-MVP-1 (57% -> 60%) — moteur de classement isole,
+pertinence d'abord, partenaire ensuite, source externe en dernier.
