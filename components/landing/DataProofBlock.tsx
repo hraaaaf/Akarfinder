@@ -52,7 +52,7 @@ const STAT_META = [
   {
     key: "duplicates_detected" as const,
     label: "Repères comparatifs",
-    sub: "rapprochements par similitude pour un meilleur repérage",
+    sub: "rapprochements par similitude pour un repérage plus clair",
     fallbackLabel: "Repères disponibles",
     suffix: "",
     decimals: 0,

@@ -153,7 +153,7 @@ const STEPS = [
   {
     num: "02",
     title: "AkarFinder analyse et structure les annonces",
-    body: "Chaque bien est enrichi, déduplicé et scoré. Les photos sont vérifiées selon notre politique d'autorisation. Le score de fiabilité est calculé automatiquement.",
+    body: "Chaque bien est enrichi, déduplicé et scoré. Les photos suivent notre politique d'autorisation. Le score de fiabilité est calculé automatiquement.",
   },
   {
     num: "03",

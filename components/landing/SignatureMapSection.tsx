@@ -503,7 +503,7 @@ function DesktopBottomBar() {
             Signaux de fiabilite integres
           </p>
           <p className="mt-2 max-w-[620px] text-[1rem] leading-7 text-muted-foreground">
-            Prix indicatifs, tendances de marche, qualite des quartiers, notre scoring de fiabilite vous guide vers de meilleures decisions.
+            Prix indicatifs, tendances de marche, qualite des quartiers, notre scoring de fiabilite vous aide a decider en connaissance de cause.
           </p>
         </div>
       </div>
