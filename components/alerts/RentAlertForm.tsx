@@ -184,9 +184,9 @@ export function RentAlertForm() {
             onChange={(e) => setForm((f) => ({ ...f, consent: e.target.checked }))}
             className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-blue-600"
           />
-          <span className="text-[11px] leading-4 text-slate-600 dark:text-white/60">
+          <span className="text-[11px] leading-4 text-slate-700 dark:text-white/70">
             J&apos;accepte d&apos;être recontacté selon disponibilité.{" "}
-            <span className="text-slate-400 dark:text-white/35">Non contractuel · repères indicatifs.</span>
+            <span className="text-slate-500 dark:text-white/40">Non contractuel · repères indicatifs.</span>
           </span>
         </label>
 

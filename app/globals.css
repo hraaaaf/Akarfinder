@@ -333,3 +333,14 @@ input {
     transform: none !important;
   }
 }
+
+/* Hides the scroll track on horizontally-scrollable strips (e.g. mobile nav
+   pills) while keeping native scroll/swipe behavior intact. */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
