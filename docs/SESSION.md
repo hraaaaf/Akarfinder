@@ -10130,3 +10130,78 @@ Verdict
 * Roadmap search/volume/SEO alignee ; prochaine mission d'implementation :
   SEARCH-GATEWAY-COVERAGE-EXPANSION-1 apres validation preview + activation
   prod phases 2-6.
+
+====================================================
+ROADMAP-70-PROD-ACTIVATION-1 - 2026-07-05
+====================================================
+
+Status: completed — production alignee sur preview 70%
+
+Mission
+* Deployer en production les phases 2-6 validees en preview (Partner Quality
+  Scoring, Partner Ranking Policy MVP isole, Search Profile Onboarding MVP,
+  Demand Capture MVP, Partner Intake Demo Kit) + cleanup wording legacy.
+
+Pre-check
+* HEAD initial: 4f733e6 (fix(copy): replace legacy reliability wording).
+* git status initial: clean.
+* Commits phases 2-6 confirmes dans l'historique: 0d8b84a, 7d9fa11, b886104,
+  7b2ee56, 1929e0e, d3d8855, 4f733e6.
+
+Tests locaux
+* npm test: 1285/1285 (scrapers) + 51/51 (api) — 0 fail.
+* npm run build: compile avec succes, 0 erreur.
+
+Scans doctrine (avant preview)
+* Wording legacy public: 0 occurrence (uniquement blocklists internes,
+  parsing legacy backward-compat dans ReliabilityBadge.tsx, et bloc JSX
+  commente dans QuickFilters.tsx).
+* Contact reel / WhatsApp zones nouvelles (demo, profil-recherche,
+  search-profile, demand): 0 occurrence.
+* URL externe zones nouvelles: 0 occurrence.
+* noindex demo: confirme sur toutes les pages /demo/*.
+* Doctrine Gateway: can_show_contact/can_show_gallery toujours false pour
+  les resultats externes — verifie sur types et en runtime.
+
+Preview smoke test
+* Preview deployee: https://akarfinder-5m19rfvgy-achraf-benmoussa-s-projects.vercel.app
+  (dpl_EFyeWjML4oW7ejb8q9i33SwckRe8).
+* 18 routes testees (nouvelles + demo + live) — toutes 200 sauf
+  /listings/137 (404, attendu).
+* Playwright: 0 wording interdit visible sur /profil-recherche, /demo/demande,
+  /demo/partenaire, /search ; 0 erreur console ; 0 overflow desktop/mobile.
+* Captures desktop + mobile /profil-recherche et /demo/demande: rendu propre,
+  "MODE DEMO" et "aucun envoi automatique" bien visibles.
+* Network requests sur /search: uniquement same-origin + vercel.live
+  (toolbar preview standard), aucun appel externe inattendu.
+
+Decision
+* Tous les checks verts. Confirmation explicite d'Achraf recue (GO production).
+
+Deploiement production
+* Commande: vercel --prod (methode standard du projet).
+* Deployment ID: dpl_4fi4Hevb9SNmyMty5L1YqvC9gwM4
+* URL production: https://akarfinder.vercel.app
+* Commit promu: 4f733e6 (HEAD clean au moment du deploy).
+
+Post-production smoke test
+* 18 routes testees sur https://akarfinder.vercel.app — toutes 200 sauf
+  /listings/137 (404, attendu).
+* noindex/nofollow confirme sur /demo/demande et /demo/partenaire.
+* 0 wording legacy visible sur /search (Fiable/A verifier/Faible confiance).
+* Gateway /api/search/gateway?q=appartement+casablanca: 13 resultats,
+  0 violation contact/galerie, mode thin_indexed_result uniquement.
+
+Explicit non-changes
+* Search Gateway modified: no. Ranking partenaire branche a la SERP live: no.
+* DB/Supabase: no. env: no. Ingestion/scraping: no. Vraie API lead: no.
+* Vrai contact/WhatsApp: no. Regles resultats externes: inchangees.
+
+Verdict
+* Production alignee sur la roadmap 70%. Preview et production convergent.
+
+Prochaine mission recommandee
+* SEARCH-GATEWAY-COVERAGE-EXPANSION-1 (70% -> 73%): passer de ~15 resultats
+  moyens a 30-50 resultats publics utiles par requete, sans casser la
+  doctrine (apercu limite, source originale, pas image/contact/galerie).
+* Puis BUY-RENT-SERP-RELEVANCE-TUNING-1 (73% -> 76%).

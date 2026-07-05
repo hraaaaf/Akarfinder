@@ -4368,11 +4368,11 @@ ROADMAP-SEARCH-VOLUME-SEO-ALIGNMENT-1 — 2026-07-05
 Alignement volume / pertinence / SEO apres le palier 70% preview
 ====================================================
 
-ETAT ACTUEL (ne pas confondre les deux compteurs)
-* Preview : 70% (phases 2-6 livrees en preview uniquement)
-* Production : ~54% (contient uniquement la Phase 1 — pack demo partenaire)
-* Ne pas presenter 70% comme production tant que les phases 2-6 ne sont pas
-  deployees.
+ETAT ACTUEL (mis a jour 2026-07-05 — ROADMAP-70-PROD-ACTIVATION-1)
+* Preview : 70%
+* Production : 70% — phases 2-6 deployees et alignees sur la preview
+  (dpl_4fi4Hevb9SNmyMty5L1YqvC9gwM4, commit 4f733e6, https://akarfinder.vercel.app)
+* Prochaine cible : 73% via SEARCH-GATEWAY-COVERAGE-EXPANSION-1.
 
 CONSTAT AUDIT VOLUME (docs/SEARCH_VOLUME_RELEVANCE_AUDIT.md)
 * 15,1 resultats moyens par requete Gateway — insuffisant commercialement.
