@@ -10084,3 +10084,49 @@ Explicit non-changes
 
 Progression roadmap
 * 68% -> 70%. Objectif mission atteint.
+
+====================================================
+ROADMAP-SEARCH-VOLUME-SEO-ALIGNMENT-1 - 2026-07-05
+====================================================
+
+Status: completed
+
+Mission
+* Documentation strategique + audit leger des routes de recherche apres le
+  palier 70% preview. Aucun code modifie.
+
+Pre-check
+* git status initial: clean. HEAD initial: 1929e0e.
+
+Audit volume/pertinence (read-only, preview btejqef3r, /api/search/gateway)
+* 10 requetes, 151 resultats, grille A/B/C/D.
+* Moyenne 15,1 resultats/requete ; 10,8 pertinents (A+B) ; taux A+B 71,5%.
+* 9/10 requetes < 20 resultats ; 4/10 requetes < 10 pertinents.
+* Seulement 9 annonces individuelles exploitables (A = 6%).
+* Sources dominantes: Avito, Sarouty, Mubawab, Yakeey, Agenz, Logic-Immo
+  (Logic-Immo = homepage uniquement sur 10/10 requetes).
+* Problemes: homepages portail, pages referentiel prix, blogs, 1 URL staging
+  tierce (stage-v1.yakeey.com), incoherences ville, quasi-doublons Avito.
+* 0 hors Maroc, 0 hors immobilier, 0 doublon strict.
+* /acheter et /louer: landing pages first-party (200 preview), pas des SERP
+  Gateway — hors perimetre volume externe.
+
+Documents produits
+* docs/SEARCH_VOLUME_RELEVANCE_AUDIT.md (new — baseline + grille + objectifs)
+* docs/SEO_ROADMAP.md (new — principes, indexables, noindex, structured data)
+* docs/ROADMAP.md (append — etat preview 70% / prod ~54%, strategie volume,
+  ordre d'affichage futur, tableau missions A-K jusqu'a 100%)
+* docs/DECISIONS.md (append — 5 decisions volume/SEO/pertinence)
+
+Tests
+* npm test / npm run build lances apres modifications docs (voir bilan).
+
+Explicit non-changes
+* Search Gateway modified: no. Ranking live: no. DB/Supabase: no. env: no.
+* app/, components/, lib/, package.json: untouched.
+* Production deployed: no.
+
+Verdict
+* Roadmap search/volume/SEO alignee ; prochaine mission d'implementation :
+  SEARCH-GATEWAY-COVERAGE-EXPANSION-1 apres validation preview + activation
+  prod phases 2-6.

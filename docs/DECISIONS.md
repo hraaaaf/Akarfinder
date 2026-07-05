@@ -2050,3 +2050,29 @@ Contenu:
 - Exemple fictif de demande qualifiee recue (QualifiedDemandPreview).
 - Benefices sans promesse de volume ni garantie de resultats.
 - Aucun backend, CTA demonstration uniquement.
+
+## 2026-07-05 — ROADMAP-SEARCH-VOLUME-SEO-ALIGNMENT-1
+
+Decision 1 :
+AkarFinder priorise maintenant le volume commercialement visible, sans casser
+la doctrine. Baseline mesuree : 15,1 resultats/requete (insuffisant), cible
+court terme 30-50 resultats publics affichables sur les grandes requetes.
+
+Decision 2 :
+Les resultats Gateway servent de couverture publique externe, mais restent en
+apercu limite avec source originale — sans image, sans contact, sans galerie,
+sans page detail interne.
+
+Decision 3 :
+La pertinence prime toujours sur le badge partenaire. Ordre : pertinence
+d'abord, badge ensuite, qualite de fiche ensuite, Gateway en fallback volume.
+
+Decision 4 :
+Le SEO devient un axe produit prioritaire, mais uniquement via des pages
+utiles, editoriales, ville/intention/quartier, et pages partenaires
+autorisees (docs/SEO_ROADMAP.md).
+
+Decision 5 :
+Aucune page demo ou fausse annonce ne doit etre indexee. /demo/* reste
+noindex/nofollow ; aucun resultat externe ne produit de page interne
+indexable ; /listings/137 reste 404.

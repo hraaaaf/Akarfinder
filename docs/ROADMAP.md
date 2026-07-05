@@ -4362,3 +4362,77 @@ Fait:
 - Reutilisation de QualifiedDemandPreview et du builder de demande.
 
 Roadmap: 70% atteint (objectif mission AKARFINDER-ROADMAP-TO-70-FABLE-1).
+
+====================================================
+ROADMAP-SEARCH-VOLUME-SEO-ALIGNMENT-1 — 2026-07-05
+Alignement volume / pertinence / SEO apres le palier 70% preview
+====================================================
+
+ETAT ACTUEL (ne pas confondre les deux compteurs)
+* Preview : 70% (phases 2-6 livrees en preview uniquement)
+* Production : ~54% (contient uniquement la Phase 1 — pack demo partenaire)
+* Ne pas presenter 70% comme production tant que les phases 2-6 ne sont pas
+  deployees.
+
+CONSTAT AUDIT VOLUME (docs/SEARCH_VOLUME_RELEVANCE_AUDIT.md)
+* 15,1 resultats moyens par requete Gateway — insuffisant commercialement.
+* 10,8 resultats pertinents (A+B) moyens par requete ; taux A+B 71,5%.
+* Seulement 6% d'annonces individuelles exploitables ; SERP dominee par les
+  pages categories de portails.
+* 6 sources actives ; Logic-Immo n'apporte que sa homepage.
+
+STRATEGIE DE VOLUME D'ANNONCES
+
+Sources de volume, par ordre de structure decroissante :
+1. Promoteurs Premium — volume neuf structure : projets, tranches,
+   typologies, plans 2D, prix/fourchettes, livraison.
+2. Agences Gold — volume qualifie avec fiches enrichies.
+3. Agences AkarFinder — volume partenaire standard, moins prioritaire
+   que Gold.
+4. Vendeurs directs structures — annonces proprietaires saisies via
+   formulaire strict.
+5. Gateway public externe — filet de volume : apercu limite, source
+   originale, pas d'image, pas de contact, pas de galerie, pas de page
+   detail interne pour un resultat externe.
+
+Ordre futur d'affichage :
+* Promoteur Premium si correspond au profil/recherche
+* Agence Gold si correspond au profil/recherche
+* Agence AkarFinder si correspond au profil/recherche
+* Vendeur direct structure
+* Gateway public externe
+
+Regle centrale :
+pertinence d'abord. badge ensuite. qualite de fiche ensuite.
+Gateway en fallback volume. Un partenaire non pertinent ne passe jamais
+devant un resultat pertinent (moteur deja implemente et teste, non branche).
+
+PRIORITE IMMEDIATE (ordre)
+1. Validation humaine du preview 70%
+2. Audit volume/pertinence Acheter/Louer — FAIT (baseline 2026-07-05)
+3. Nettoyage wording legacy (SimilarListings/ReliabilityBadge hardcodes)
+4. Activation production phases 2-6 (ordre explicite requis)
+5. Expansion volume Gateway
+6. Tuning pertinence Acheter/Louer
+7. Ranking partenaire live
+8. SEO foundation
+9. Pages SEO ville/intention/quartier
+
+TABLEAU DES MISSIONS
+
+Phase | % | Mission | Objectif | Statut | Dependance | Risque | Prod/Preview
+A | 70% | SEARCH-VOLUME-RELEVANCE-AUDIT-1 | baseline volume+pertinence | FAIT 2026-07-05 | preview 70% | aucun | preview (read-only)
+B | 70->73% | SEARCH-GATEWAY-COVERAGE-EXPANSION-1 | 30-50 resultats/requete : query expansion, load more, diversite sources, filtrage homepages/staging, seuil commercial | a faire | audit baseline | toucher Gateway = mission dediee auditee | preview
+C | 73->76% | BUY-RENT-SERP-RELEVANCE-TUNING-1 | achat: vente+neuf compatibles ; location: jamais d'achat ; ville stricte | a faire | B | regression pertinence, tests SERP obligatoires | preview
+D | 76->80% | PARTNER-RANKING-LIVE-INTEGRATION-1 | brancher le moteur ranking partenaire a la SERP live sans casser le Gateway | a faire | B + C + Gateway stable + regles partenaires testees | casser la SERP live | preview puis prod controlee
+E | 80->83% | SEO-FOUNDATION-1 | titles/meta, canonical, sitemap, robots, OG, structured data safe, noindex demo verrouille | a faire | D souhaitable | sur-indexation pages minces | prod
+F | 83->87% | SEO-CITY-INTENT-PAGES-1 | pages editoriales ville x intention + moteur integre | a faire | E | contenu mince | prod
+G | 87->90% | SEO-NEIGHBORHOOD-GUIDES-1 | guides quartiers Maroc (prix indicatifs, mobilite, ecoles, services) | a faire | F | maintenance contenu | prod
+H | 90->93% | SMART-ALERTS-PROFILE-MATCHING-1 | alertes basees profil, pas seulement mots-cles | a faire | profil recherche (fait) | volume alertes | preview puis prod
+I | 93->96% | MOROCCO-FINANCING-SIMULATOR-1 | simulateur credit/frais Maroc indicatif | a faire | aucun | wording financier prudent obligatoire | prod
+J | 96->98% | COLLABORATIVE-FAMILY-SEARCH-1 | favoris, notes, shortlist familiale | a faire | favoris existants | scope creep | preview puis prod
+K | 98->100% | AI-SEARCH-ASSISTANT-1 | assistant IA encadre pour expliquer compromis et guider | a faire | H-J | hallucination/wording, cadrage strict | preview puis prod
+
+NOTE : cette mise a jour ne modifie ni Search Gateway, ni ranking live,
+ni DB. Elle documente l'ordre de marche. Chaque mission garde ses gates
+(tests, build, scans doctrine, commit separe).
