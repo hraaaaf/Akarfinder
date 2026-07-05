@@ -77,8 +77,8 @@ export const DEMO_PARTNER_PROJECT = {
     pointsToVerify: ["Surface contractuelle", "Orientation exacte", "Charges", "Parking", "Cahier des charges"],
     visual: "appartement-familial" as PropertyVisualType,
     gallery: [
-      "/demo/properties/gallery/palmier-warm-living.jpg",
-      "/demo/properties/gallery/palmier-balcony-view.jpg",
+      "/demo/interiors/appartement-temoin-salon.png",
+      "/demo/properties/villa-harhoura-exterior.png",
       "/demo/properties/gallery/apartment-modern-salon.jpg",
     ],
     specs: [
