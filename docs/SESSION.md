@@ -10262,3 +10262,12 @@ Explicit non-changes
 
 Progression roadmap
 * 70% -> 73% si production validee.
+
+--- SEARCH-GATEWAY-COVERAGE-EXPANSION-1 / PRODUCTION ---
+* GO explicite Achraf recu.
+* Deployment ID: dpl_2KRAr3AmthyheorRAb6pyX3EitYM
+* URL: https://akarfinder.vercel.app — commit promu: 85f3467.
+* Post-prod: /search x3 = 200, /listings/137 = 404.
+* Gateway prod: appartement casablanca 31, location studio casablanca 28,
+  programme neuf casablanca 45 — 0 violation contact/galerie, 0 staging.
+* Roadmap production: 73% confirme.

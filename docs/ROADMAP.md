@@ -4374,7 +4374,7 @@ ETAT ACTUEL (mis a jour 2026-07-05 — ROADMAP-70-PROD-ACTIVATION-1)
   (dpl_4fi4Hevb9SNmyMty5L1YqvC9gwM4, commit 4f733e6, https://akarfinder.vercel.app)
 * SEARCH-GATEWAY-COVERAGE-EXPANSION-1 : code + preview valides 2026-07-05
   (15,1 -> 33,8 resultats/requete, A+B ~75-90%, doctrine conservee).
-  73% acquis a l activation production de l expansion.
+  Production activee 2026-07-05 (dpl_2KRAr3AmthyheorRAb6pyX3EitYM) — 73% CONFIRME.
   Prochaine mission : BUY-RENT-SERP-RELEVANCE-TUNING-1 (73% -> 76%).
 
 CONSTAT AUDIT VOLUME (docs/SEARCH_VOLUME_RELEVANCE_AUDIT.md)
