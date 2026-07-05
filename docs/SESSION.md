@@ -10205,3 +10205,60 @@ Prochaine mission recommandee
   moyens a 30-50 resultats publics utiles par requete, sans casser la
   doctrine (apercu limite, source originale, pas image/contact/galerie).
 * Puis BUY-RENT-SERP-RELEVANCE-TUNING-1 (73% -> 76%).
+
+====================================================
+SEARCH-GATEWAY-COVERAGE-EXPANSION-1 - 2026-07-05
+====================================================
+
+Status: code + preview completed — production pending GO explicite
+
+Mission
+* Passer de ~15 a 30-50 resultats publics utiles par requete Gateway,
+  doctrine inchangee (apercu limite, source originale, pas image/contact/
+  galerie, pas de page interne).
+
+Pre-check
+* HEAD initial: 0f3b9c6. git status: clean.
+
+Diagnostic
+* num=5/appel provider (jamais surcharge), variantes secondaires mortes
+  (exigeaient city&&q jamais fourni), cap brut 30, fetch sequentiel,
+  homepages/staging non rejetes.
+
+Fichiers
+* lib/search-gateway/search-gateway-query-expansion.ts (new — intent
+  rent/new/land/buy, <=2 variantes coherentes, backfill <=6 requetes)
+* lib/search-gateway/search-gateway-page-quality.ts (new — rejet staging/
+  homepage/blog, pages prix depriorisees en fin, heuristique annonce
+  individuelle)
+* app/api/search/gateway/route.ts (num=10, appels paralleles fail-soft
+  timeout 8s, round 2 conditionnel <30, tri qualite, cap 50, categorie
+  1->3 par source)
+* scripts/scrapers/__tests__/search-gateway-coverage-expansion.test.ts
+  (new, 18 tests) + package.json (test wire)
+* docs/SEARCH_GATEWAY_COVERAGE_EXPANSION.md (new — mesure avant/apres)
+
+Resultats (preview dpl_4N6XqfcduM2FoAPsVqjV33LaLma8)
+* Moyenne: 15,1 -> 33,8 resultats/requete (+124%).
+* 7/10 requetes >=30 ; minimum 26 ; aucune <15.
+* A+B heuristique 89,9% ; estimation grille manuelle ~75-85% (baseline 71,5%).
+* 0 staging, 0 homepage portail, 0 blog, 0 hors Maroc, 0 hors immobilier.
+* Doctrine: 100% des resultats contact=false, gallery=false, view_original.
+* Cout: <=12 appels Serper num=10 par recherche (round 2 conditionnel).
+
+Verification preview
+* Routes: /search x4 = 200, /acheter 200, /louer 200, /profil-recherche 200,
+  /listings/137 = 404.
+* Playwright: SERP 28 resultats affiches, "Resultat web externe" sur chaque
+  carte, 0 WhatsApp dans le DOM, 0 wording interdit, 0 erreur console,
+  0 overflow mobile 390px.
+
+Tests / build
+* npm test: 1303/1303 + 51/51 — 0 fail. Build: 0 erreur.
+
+Explicit non-changes
+* Ranking partenaire live: non branche. DB/Supabase: no. env: no.
+* Scraping: no. Contacts: no. Images tierces: no.
+
+Progression roadmap
+* 70% -> 73% si production validee.
