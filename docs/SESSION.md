@@ -10434,7 +10434,7 @@ Statut
 * Le tuning Acheter/Louer est maintenant committe dans le HEAD de travail:
   `879eeba feat(search): tune buy rent gateway relevance`.
 * La preview revue correspond maintenant a ce HEAD committe:
-  https://akarfinder-d7sdncuj9-achraf-benmoussa-s-projects.vercel.app
+  https://akarfinder-72m37ai5i-achraf-benmoussa-s-projects.vercel.app
 * Production NON deployee. Roadmap production maintenue a 73%.
 * Preview/code : 76% candidat confirme sur le plan de la tracabilite.
 
@@ -10473,12 +10473,12 @@ Audit / mesures
 * Constat important : ce rerun est variable cote provider live et a produit
   des faux zeros sur certaines requetes pendant le sweep complet.
 * Verification cible immediate sur l'API preview committee:
-  - `appartement casablanca` : 28 resultats, top 10 = 10/10 pertinents
-  - `location studio casablanca` : 29 resultats, top 10 = 10/10 pertinents
+  - `appartement casablanca` : 26 resultats, top 10 = 10/10 pertinents
+  - `location studio casablanca` : 30 resultats, top 10 = 10/10 pertinents
   - `programme neuf casablanca` : 44 resultats, top 10 = 10/10 pertinents
-  - `location appartement rabat` : 30 resultats
-  - `villa rabat` : 25 resultats
-  - `location tanger` : 34 resultats
+  - `location appartement rabat` : 31 resultats
+  - `villa rabat` : 24 resultats
+  - `location tanger` : 33 resultats
 
 Doctrine
 * Resultats externes toujours en apercu limite + source originale.

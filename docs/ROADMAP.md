@@ -4377,7 +4377,7 @@ ETAT ACTUEL (mis a jour 2026-07-05 — ROADMAP-70-PROD-ACTIVATION-1)
   Production activee 2026-07-05 (dpl_2KRAr3AmthyheorRAb6pyX3EitYM) — 73% CONFIRME.
 * BUY-RENT-SERP-RELEVANCE-TUNING-1 : code committe + preview tracable
   revalidee 2026-07-05 (commit 879eeba, preview
-  https://akarfinder-d7sdncuj9-achraf-benmoussa-s-projects.vercel.app).
+  https://akarfinder-72m37ai5i-achraf-benmoussa-s-projects.vercel.app).
   Les checks cibles Acheter/Louer sont bons, /listings/137 reste 404,
   doctrine conservee. Le rerun audit 12 requetes reste variable cote provider
   live, donc il ne sert pas de GO prod automatique.

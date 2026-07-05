@@ -54,9 +54,9 @@ This reconciliation phase moved the real tuning code into a committed HEAD:
 Traceable preview redeployed from that committed HEAD:
 
 - preview URL:
-  `https://akarfinder-d7sdncuj9-achraf-benmoussa-s-projects.vercel.app`
+  `https://akarfinder-72m37ai5i-achraf-benmoussa-s-projects.vercel.app`
 - Vercel inspect URL:
-  `https://vercel.com/achraf-benmoussa-s-projects/akarfinder/DghVncuDZWeZtpiqCRCgvmMPnPfy`
+  `https://vercel.com/achraf-benmoussa-s-projects/akarfinder/5vRncNugYjy2Cp9T7Bz74Ydy6JYp`
 
 No production deployment happened during this phase.
 
@@ -125,7 +125,7 @@ The 12-query audit script was rerun in this reconciliation phase against:
 
 - current production: `https://akarfinder.vercel.app`
 - traceable preview:
-  `https://akarfinder-d7sdncuj9-achraf-benmoussa-s-projects.vercel.app`
+  `https://akarfinder-72m37ai5i-achraf-benmoussa-s-projects.vercel.app`
 
 Observed output:
 
@@ -149,12 +149,12 @@ audit rerun:
 
 | Query | Result count | Top 10 relevant | Notes |
 | --- | ---: | ---: | --- |
-| `appartement casablanca` | 28 | 10/10 | top 3 now sale/new-build aligned |
-| `location studio casablanca` | 29 | 10/10 | location intent preserved |
+| `appartement casablanca` | 26 | 10/10 | top 3 now sale/new-build aligned |
+| `location studio casablanca` | 30 | 10/10 | location intent preserved |
 | `programme neuf casablanca` | 44 | 10/10 | top 3 clearly new-build compatible |
-| `location appartement rabat` | 30 | n/a | healthy rent-compatible payload |
-| `villa rabat` | 25 | n/a | healthy villa/sale payload |
-| `location tanger` | 34 | n/a | healthy rent payload |
+| `location appartement rabat` | 31 | n/a | healthy rent-compatible payload |
+| `villa rabat` | 24 | n/a | healthy villa/sale payload |
+| `location tanger` | 33 | n/a | healthy rent payload |
 
 Direct payload spot checks also confirmed the Gateway display doctrine on
 external results:
