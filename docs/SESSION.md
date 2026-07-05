@@ -10349,3 +10349,79 @@ Integration
 * Commit sur la branche demo-partner-mockup du worktree. Merge dans master
   UNIQUEMENT apres la fin de la mission Codex (BUY-RENT-SERP-RELEVANCE-
   TUNING-1) pour eviter tout conflit.
+
+====================================================
+BUY-RENT-SERP-RELEVANCE-TUNING-1 - 2026-07-05
+Documentation et cloture propre (sans prod)
+====================================================
+
+Statut
+* Tuning Acheter / Louer valide en code + preview.
+* Candidat roadmap preview/code : 76%.
+* Roadmap production conservee a 73% jusqu'au GO prod explicite.
+* Aucun deploiement production realise dans cette phase de cloture.
+
+Contexte git
+* Base mission initiale : 8eb8a9d
+  (`docs(session): record gateway expansion production activation`).
+* Documentation finalisee apres merge demo sur master
+  (HEAD de cloture : ac31cc8), sans retoucher Search Gateway en plus.
+* Etat git avant cloture docs : seul
+  `docs/BUY_RENT_SERP_RELEVANCE_TUNING.md` etait non committe.
+
+Fichiers documentes
+* docs/BUY_RENT_SERP_RELEVANCE_TUNING.md (new)
+* docs/SESSION.md
+* docs/ROADMAP.md
+* docs/DECISIONS.md
+
+Mesures avant / apres
+* Baseline prod avant tuning : https://akarfinder.vercel.app
+  - moyenne resultats : 31,9
+  - A+B global : 79,9%
+* Preview apres tuning :
+  https://akarfinder-cmt32aer4-achraf-benmoussa-s-projects.vercel.app
+  (dpl_2F7CyKRd3wvEnNusn3ZvzczHanTN)
+  - moyenne resultats : 32,3
+  - A+B global : 82,7%
+* Nettoyage visible du top 10 sur les requetes Acheter / Louer clefs.
+* `programme neuf casablanca` reste bruite en profondeur, mais top 10 nettoye
+  et top 3 nettement plus propre qu'avant.
+
+Requetes testees
+* appartement casablanca
+* appartement a vendre casablanca
+* location studio casablanca
+* location appartement rabat
+* villa rabat
+* villa a vendre rabat
+* appartement marrakech
+* terrain marrakech
+* terrain a vendre marrakech
+* programme neuf casablanca
+* location tanger
+* maison fes
+
+Checks
+* npm test : scrapers 1317/1317 + api 51/51 - 0 fail.
+* npm run build : OK (Next.js 15.5.19).
+* Preview verifiee :
+  - `/search?q=appartement%20casablanca` = 200
+  - `/search?q=location%20studio%20casablanca` = 200
+  - `/search?q=programme%20neuf%20casablanca` = 200
+  - `/listings/137` = 404
+* Doctrine Gateway conservee :
+  - resultats externes = apercu limite + source originale
+  - aucun contact / WhatsApp / galerie
+  - aucune page detail interne creee pour un resultat externe
+  - aucune image tierce re-hebergee
+
+Warning non bloquant
+* Console preview : `A form field element should have an id or name attribute`
+  (warning non bloquant, hors scope de cette mission).
+
+Decision de cloture
+* Documentation completee et committe proprement.
+* Production NON activee.
+* Prochaine etape : revue humaine + GO prod explicite si le preview est valide.
+

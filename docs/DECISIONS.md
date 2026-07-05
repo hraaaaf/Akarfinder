@@ -2094,3 +2094,31 @@ Regles maintenues:
   Fiches structurees...) — jamais verifie/certifie/officiel/meilleur/garanti.
 - Scores quartier fictifs avec mention "Reperes indicatifs pour
   demonstration. A confirmer sur place." — jamais de score securite.
+
+## 2026-07-05 — BUY-RENT-SERP-RELEVANCE-TUNING-1
+
+Decision:
+Le Search Gateway conserve son volume acquis, mais ajoute un scoring interne
+de pertinence pour mieux ordonner Acheter / Louer sans changer la doctrine
+publique.
+
+Regles:
+- Score interne uniquement — jamais expose publiquement, jamais presente
+  comme score de fiabilite.
+- Signaux pris en compte : match d'intention, match ville, match type de bien,
+  qualite de page, penalites achat/location, penalites pages nationales,
+  penalites pages prix/referentiel, penalites pages generiques.
+- Les requetes location ne doivent pas injecter d'achat ; les requetes achat
+  ne doivent pas injecter de location.
+- Les requetes ville doivent pousser vers le bas les pages nationales ou faux
+  matchs de ville lorsqu'une meilleure page locale existe.
+- Les requetes neuf doivent pousser vers le bas les pages de location
+  mensuelle meme si elles mentionnent "neuf".
+- Le cout provider ne doit pas augmenter : `num=10`, round 2 conditionnel si
+  `<30`, budget total borne `<=12` appels.
+
+Doctrine inchangee:
+- Resultat web externe = apercu limite + source originale obligatoire.
+- Aucun contact, aucune galerie, aucune image tierce, aucune page detail
+  interne pour un resultat externe.
+- `/listings/137` doit rester `404`.
