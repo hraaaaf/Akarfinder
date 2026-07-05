@@ -2166,7 +2166,12 @@ Regles:
 - Structured data limite a `Organization` et `WebSite`/`SearchAction`.
   Interdiction absolue de `RealEstateListing`, `Offer`, `AggregateRating`,
   `Review` sur des resultats Gateway externes.
-- Ecart de nombre signale, non resolu unilateralement : l'ODM de mission
-  citait "Production : 76%" alors que le dernier etat reellement deploye et
-  documente est `73%` (voir BUY-RENT-TUNING-CODE-RECONCILIATION-1
-  ci-dessus). A reconcilier par Achraf.
+- Reconciliation roadmap (2026-07-06, confirmee par Achraf) :
+  BUY-RENT-SERP-RELEVANCE-TUNING-1 est deploye en production
+  (Deployment ID `dpl_AUwewYE4A3SAWmnCmtqLavNehX13`, HEAD production
+  `c97412b`, `https://akarfinder.vercel.app`). La production etait donc deja
+  a `76%` avant le debut de SEO-FOUNDATION-1 ; le `73%` documente dans
+  BUY-RENT-TUNING-CODE-RECONCILIATION-1 (ci-dessus) etait l'etat au
+  2026-07-05, perime des la promotion prod. SEO-FOUNDATION-1 part donc de
+  `76%`, candidat preview/code `80%`, production reste `76%` jusqu'au GO prod
+  explicite pour SEO-FOUNDATION-1 specifiquement.

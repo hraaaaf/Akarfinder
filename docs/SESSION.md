@@ -10575,19 +10575,30 @@ Doctrine
 * Aucun schema RealEstateListing/Offer/AggregateRating/Review ajoute.
 * /listings/137 confirme 404.
 
-Ecart signale (non resolu unilateralement)
-* L'ODM de mission citait "Production AkarFinder : 76%" comme baseline.
-  Le dernier etat documente (BUY-RENT-TUNING-CODE-RECONCILIATION-1,
-  2026-07-05) montre production confirmee a 73% et un candidat preview/code
-  a 76% jamais promu en production. Voir docs/ROADMAP.md et
-  docs/DECISIONS.md, entrees 2026-07-06, pour le detail. A reconcilier par
-  Achraf.
+Reconciliation roadmap (2026-07-06, confirmee par Achraf)
+* BUY-RENT-SERP-RELEVANCE-TUNING-1 est deploye en production
+  (Deployment ID dpl_AUwewYE4A3SAWmnCmtqLavNehX13, HEAD production c97412b,
+  https://akarfinder.vercel.app). Production confirmee a 76% avant le debut
+  de SEO-FOUNDATION-1. Le "73%" documente au 2026-07-05
+  (BUY-RENT-TUNING-CODE-RECONCILIATION-1) etait l'etat avant promotion prod,
+  desormais perime. Voir docs/ROADMAP.md et docs/DECISIONS.md, entrees
+  2026-07-06, pour le detail.
+* SEO-FOUNDATION-1 part donc de 76% (pas 73%). Candidat preview/code : 80%.
+  Production reste 76% jusqu'au GO prod explicite pour SEO-FOUNDATION-1
+  specifiquement.
+
+Preview deployee et testee
+* URL : https://akarfinder-nor0svvs2-achraf-benmoussa-s-projects.vercel.app
+* Deployment ID : dpl_98Q9WoAvR21pYZrVGij2BpBUWotL
+* Toutes les routes verifiees 200/404 attendu (voir section Checks
+  ci-dessus), noindex/canonical/sitemap/robots/JSON-LD confirmes sur cette
+  URL.
 
 Decision
 * Code + tests + build : OK.
-* Preview : a deployer (vercel deploy, non production).
-* Production : NON deployee, attend GO explicite.
-* Prochaine etape : deployer preview, tester les routes listees ci-dessus
-  sur l'URL preview, puis attendre GO prod explicite d'Achraf couvrant a la
-  fois BUY-RENT-SERP-RELEVANCE-TUNING-1 et SEO-FOUNDATION-1.
+* Preview : deployee et techniquement validee.
+* Production : NON deployee, attend GO explicite pour SEO-FOUNDATION-1
+  specifiquement (BUY-RENT-SERP-RELEVANCE-TUNING-1 est deja en production,
+  aucune action requise dessus).
+* Prochaine etape : GO prod explicite d'Achraf pour SEO-FOUNDATION-1.
 

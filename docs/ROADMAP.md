@@ -4375,14 +4375,12 @@ ETAT ACTUEL (mis a jour 2026-07-05 — ROADMAP-70-PROD-ACTIVATION-1)
 * SEARCH-GATEWAY-COVERAGE-EXPANSION-1 : code + preview valides 2026-07-05
   (15,1 -> 33,8 resultats/requete, A+B ~75-90%, doctrine conservee).
   Production activee 2026-07-05 (dpl_2KRAr3AmthyheorRAb6pyX3EitYM) — 73% CONFIRME.
-* BUY-RENT-SERP-RELEVANCE-TUNING-1 : code committe + preview tracable
-  revalidee 2026-07-05 (commit 879eeba, preview
-  https://akarfinder-72m37ai5i-achraf-benmoussa-s-projects.vercel.app).
+* BUY-RENT-SERP-RELEVANCE-TUNING-1 : DEPLOYE EN PRODUCTION (reconcilie
+  2026-07-06). Deployment ID dpl_AUwewYE4A3SAWmnCmtqLavNehX13, HEAD
+  production c97412b, https://akarfinder.vercel.app.
   Les checks cibles Acheter/Louer sont bons, /listings/137 reste 404,
-  doctrine conservee. Le rerun audit 12 requetes reste variable cote provider
-  live, donc il ne sert pas de GO prod automatique.
-  Preview/code candidat confirme : 76%.
-  Production reste a 73% jusqu'au GO prod explicite.
+  doctrine conservee.
+  Production CONFIRMEE : 76%.
 
 CONSTAT AUDIT VOLUME (docs/SEARCH_VOLUME_RELEVANCE_AUDIT.md)
 * 15,1 resultats moyens par requete Gateway — insuffisant commercialement.
@@ -4433,9 +4431,9 @@ TABLEAU DES MISSIONS
 Phase | % | Mission | Objectif | Statut | Dependance | Risque | Prod/Preview
 A | 70% | SEARCH-VOLUME-RELEVANCE-AUDIT-1 | baseline volume+pertinence | FAIT 2026-07-05 | preview 70% | aucun | preview (read-only)
 B | 70->73% | SEARCH-GATEWAY-COVERAGE-EXPANSION-1 | 30-50 resultats/requete : query expansion, load more, diversite sources, filtrage homepages/staging, seuil commercial | FAIT prod 2026-07-05 | audit baseline | cout provider a surveiller | production
-C | 73->76% | BUY-RENT-SERP-RELEVANCE-TUNING-1 | achat: vente+neuf compatibles ; location: jamais d'achat ; ville stricte | FAIT code committe + preview tracable 2026-07-05 - candidat prod | B prod + validation preview | variabilite provider sur audit long + bruit long-tail neuf/national | preview
+C | 73->76% | BUY-RENT-SERP-RELEVANCE-TUNING-1 | achat: vente+neuf compatibles ; location: jamais d'achat ; ville stricte | FAIT PROD 2026-07-06 (dpl_AUwewYE4A3SAWmnCmtqLavNehX13, HEAD c97412b) | B prod + validation preview | variabilite provider sur audit long + bruit long-tail neuf/national | production
 D | 76->80% | PARTNER-RANKING-LIVE-INTEGRATION-1 | brancher le moteur ranking partenaire a la SERP live sans casser le Gateway | a faire | B + C + Gateway stable + regles partenaires testees | casser la SERP live | preview puis prod controlee
-E | 80->83% | SEO-FOUNDATION-1 | titles/meta, canonical, sitemap, robots, OG, structured data safe, noindex demo verrouille | a faire | D souhaitable | sur-indexation pages minces | prod
+E | 76->80% | SEO-FOUNDATION-1 | titles/meta, canonical, sitemap, robots, OG, structured data safe, noindex demo verrouille | FAIT code+build+tests OK, preview validee 2026-07-06 (commit ea26b2e) - candidat prod | C prod | sur-indexation pages minces | preview, attend GO prod SEO
 F | 83->87% | SEO-CITY-INTENT-PAGES-1 | pages editoriales ville x intention + moteur integre | a faire | E | contenu mince | prod
 G | 87->90% | SEO-NEIGHBORHOOD-GUIDES-1 | guides quartiers Maroc (prix indicatifs, mobilite, ecoles, services) | a faire | F | maintenance contenu | prod
 H | 90->93% | SMART-ALERTS-PROFILE-MATCHING-1 | alertes basees profil, pas seulement mots-cles | a faire | profil recherche (fait) | volume alertes | preview puis prod
@@ -4460,23 +4458,26 @@ modification necessaire). Correction d'une incoherence preexistante :
 a ete corrige vers `https://akarfinder.vercel.app` (URL reellement servie).
 Aucune modification Search Gateway, ranking, DB ou Supabase.
 
-**Ecart constate avec l'ODM de mission** : l'ODM recu indiquait "Production
-AkarFinder : 76%" comme baseline. Les entrees precedentes de ce fichier
-(2026-07-05, BUY-RENT-SERP-RELEVANCE-TUNING-1) montrent une production
-confirmee a 73% et un candidat preview/code a 76% jamais promu en
-production. Cette mission documente donc :
-- Preview/code candidat avant cette mission : 76% (BUY-RENT tuning, non
-  deploye prod).
-- Preview/code candidat apres SEO-FOUNDATION-1 (si validee en preview) : 80%.
-- Production : reste a 73% (dernier etat reellement deploye et confirme)
-  jusqu'a GO prod explicite couvrant a la fois BUY-RENT-SERP-RELEVANCE-TUNING-1
-  et SEO-FOUNDATION-1.
-- Ce decalage de nombre (73% reel vs 76% cite dans l'ODM) est signale ici
-  pour reconciliation par Achraf, pas resolu unilateralement.
+**Reconciliation roadmap (2026-07-06, apres verification par Achraf)** :
+BUY-RENT-SERP-RELEVANCE-TUNING-1 est confirme deploye en production
+(Deployment ID dpl_AUwewYE4A3SAWmnCmtqLavNehX13, HEAD production c97412b,
+https://akarfinder.vercel.app). L'ecart signale precedemment dans cette
+section (73% reel vs 76% cite) est resolu : la production etait deja a 76%
+avant le debut de SEO-FOUNDATION-1, le "73%" documente au 2026-07-05 etait
+perime des la promotion prod de BUY-RENT-SERP-RELEVANCE-TUNING-1.
+
+Etat reconcilie :
+- Production avant SEO-FOUNDATION-1 : 76% (BUY-RENT tuning deploye et
+  confirme).
+- Preview/code candidat apres SEO-FOUNDATION-1 : 80% (code+build+tests OK,
+  preview validee, commit ea26b2e).
+- Production : reste a 76% jusqu'au GO prod explicite pour SEO-FOUNDATION-1.
+- Apres GO prod SEO-FOUNDATION-1 valide : production = 80%.
 
 Decision :
-- Preview : a deployer et valider (voir docs/SESSION.md).
-- Production : NON deployee, attend GO explicite.
+- Preview : deployee et techniquement validee (voir docs/SESSION.md).
+- Production : NON deployee, attend GO explicite pour SEO-FOUNDATION-1
+  specifiquement (BUY-RENT-SERP-RELEVANCE-TUNING-1 est deja en production).
 
 ## 2026-07-05 — DEMO-PROMOTER-AGENCY-REALISTIC-MOCKUP-1
 
