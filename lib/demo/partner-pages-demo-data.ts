@@ -78,8 +78,11 @@ export const DEMO_PARTNER_PROJECT = {
     visual: "appartement-familial" as PropertyVisualType,
     gallery: [
       "/demo/interiors/appartement-temoin-salon.webp",
-      "/demo/properties/villa-harhoura-exterior.webp",
+      "/demo/properties/rivage-dar-bouazza-main.webp",
       "/demo/properties/gallery/apartment-modern-salon.jpg",
+      "/demo/properties/listing-agdal-salon.webp",
+      "/demo/properties/atlas-residences-hero.webp",
+      "/demo/properties/casa-anfa-life.webp",
     ],
     specs: [
       "96 m²",
