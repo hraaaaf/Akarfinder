@@ -10492,3 +10492,102 @@ Decision
 * Prochaine etape : revue humaine de la preview traceable, puis GO prod
   explicite si validee.
 
+====================================================
+SEO-FOUNDATION-1 -- 2026-07-06
+====================================================
+
+STATUT : CODE + BUILD + TESTS OK. PREVIEW A DEPLOYER. PRODUCTION NON DEPLOYEE.
+
+Pre-check
+* HEAD initial : c97412b (attendu, confirme).
+* git status initial : clean.
+* git stash list : 2 stashes Codex preexistants, non touches, non appliques
+  (stash@{0} wip codex buy-rent relevance tuning ; stash@{1} WIP Search
+  Gateway relevance tuning).
+
+Fichiers crees
+* lib/seo/site.ts
+* lib/seo/structured-data.ts
+* components/seo/JsonLd.tsx
+* app/robots.ts
+* app/sitemap.ts
+* docs/SEO_FOUNDATION.md
+
+Fichiers modifies
+* app/layout.tsx : metadataBase corrige vers https://akarfinder.vercel.app
+  (pointait avant vers akarfinder.ma, domaine non branche) ; robots par
+  defaut index/follow ; canonical par defaut "/" ; injection JSON-LD
+  Organization + WebSite/SearchAction. Pas de title.template ajoute (toutes
+  les pages suffixent deja leur titre manuellement -- un template global
+  aurait double ce suffixe partout).
+* app/pro/page.tsx : canonical "/pro" ajoute.
+* app/profil-recherche/page.tsx : canonical "/profil-recherche" ajoute.
+* app/search/page.tsx : metadata ajoutee (absente avant), robots
+  noindex,follow, canonical "/search".
+* docs/ROADMAP.md, docs/DECISIONS.md : entree 2026-07-06 SEO-FOUNDATION-1.
+
+Fichiers non touches (verifies, deja conformes)
+* Les 10 pages app/demo/**/page.tsx : deja noindex,nofollow, aucune
+  modification necessaire.
+
+Checks
+* npm test : 51 tests / 51 pass, 16 suites, 0 fail, duration 1503.58ms.
+* npm run build : OK. /robots.txt et /sitemap.xml generes en statique
+  (route ○). Aucune erreur TypeScript (npx tsc --noEmit propre).
+* Routes locales (port 3000, serveur propre relance) :
+  - `/` = 200
+  - `/pro` = 200
+  - `/profil-recherche` = 200
+  - `/search?q=appartement%20casablanca` = 200
+  - `/demo/promoteur` = 200
+  - `/demo/agence` = 200
+  - `/listings/137` = 404 (digest NEXT_HTTP_ERROR_FALLBACK;404)
+  - `/robots.txt` = 200
+  - `/sitemap.xml` = 200
+* noindex verifie : /demo/promoteur et /demo/agence = "noindex, nofollow" ;
+  /search = "noindex, follow".
+* Canonical verifie : / , /pro, /profil-recherche, /search tous presents et
+  corrects (https://akarfinder.vercel.app/...).
+* JSON-LD verifie sur `/` : Organization + WebSite/SearchAction presents,
+  bien formes.
+* Sitemap verifie : contient exactement / , /pro, /profil-recherche. Pas de
+  /demo, pas de /listings, pas de resultat Gateway.
+* Robots verifie : Allow: / + Sitemap: https://akarfinder.vercel.app/sitemap.xml.
+  Pas de Disallow sur /demo (noindex meta suffit, Google doit pouvoir le lire).
+
+Scans
+* Scan wording interdit (app, components, lib, docs) : 0 violation reelle.
+  Occurrences trouvees = faux positifs uniquement (listes de garde-fous
+  FORBIDDEN_WORDING preexistantes dans lib/market-pulse,
+  lib/partners/partner-listing-standard.ts,
+  lib/partners/partner-listing-quality.ts, lib/compare/compare-summary.ts ;
+  id HTML "marketplace-search" dans QuickFilters.tsx ; occurrences dans
+  docs/SEO_FOUNDATION.md et lib/seo/structured-data.ts situees dans des
+  sections "interdit" explicites).
+
+Doctrine
+* Search Gateway : non modifie.
+* app/api/search/** : non modifie.
+* lib/search-gateway/** : non modifie.
+* Ranking : non modifie.
+* DB / Supabase : non modifies.
+* Aucune page interne creee pour un resultat Gateway.
+* Aucun schema RealEstateListing/Offer/AggregateRating/Review ajoute.
+* /listings/137 confirme 404.
+
+Ecart signale (non resolu unilateralement)
+* L'ODM de mission citait "Production AkarFinder : 76%" comme baseline.
+  Le dernier etat documente (BUY-RENT-TUNING-CODE-RECONCILIATION-1,
+  2026-07-05) montre production confirmee a 73% et un candidat preview/code
+  a 76% jamais promu en production. Voir docs/ROADMAP.md et
+  docs/DECISIONS.md, entrees 2026-07-06, pour le detail. A reconcilier par
+  Achraf.
+
+Decision
+* Code + tests + build : OK.
+* Preview : a deployer (vercel deploy, non production).
+* Production : NON deployee, attend GO explicite.
+* Prochaine etape : deployer preview, tester les routes listees ci-dessus
+  sur l'URL preview, puis attendre GO prod explicite d'Achraf couvrant a la
+  fois BUY-RENT-SERP-RELEVANCE-TUNING-1 et SEO-FOUNDATION-1.
+

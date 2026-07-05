@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   title: "AkarFinder Pro — Développez vos ventes immobilières au Maroc",
   description:
     "Présentez vos biens, recevez des leads qualifiés et gagnez en visibilité auprès des acheteurs au Maroc et des MRE. Offre pilote pour agences, promoteurs et exposants Sakan Expo.",
+  alternates: {
+    canonical: "/pro",
+  },
 };
 
 // ── Hero ─────────────────────────────────────────────────────────────────────

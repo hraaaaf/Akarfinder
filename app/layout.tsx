@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider, NO_FLASH_SCRIPT } from "@/components/theme/ThemeProvider";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { getOrganizationJsonLd, getWebsiteJsonLd } from "@/lib/seo/structured-data";
+import { siteConfig } from "@/lib/seo/site";
 
 export const viewport: Viewport = {
   themeColor: "#071B33",
@@ -15,12 +18,22 @@ const jakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://akarfinder.ma"),
-  title: "AkarFinder — Intelligence immobilière au Maroc",
-  description:
-    "AkarFinder est un moteur de recherche immobilier au Maroc. Cherchez sur les sources originales, comparez les repères du quartier, décidez en confiance.",
-  applicationName: "AkarFinder",
+  metadataBase: new URL(siteConfig.siteUrl),
+  // Pas de title.template ici : chaque page du site suffixe déjà son propre
+  // titre avec "— AkarFinder" manuellement. Un template global doublerait ce
+  // suffixe sur toutes les pages existantes. `default` ne sert que de filet
+  // pour les segments sans title propre (ex. la page d'accueil).
+  title: siteConfig.defaultTitle,
+  description: siteConfig.defaultDescription,
+  applicationName: siteConfig.siteName,
   manifest: "/manifest.webmanifest",
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: [
       { url: "/brand/favicon.ico", sizes: "any" },
@@ -32,26 +45,24 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "fr_MA",
-    siteName: "AkarFinder",
-    title: "AkarFinder — Intelligence immobilière au Maroc",
-    description:
-      "La plateforme immobilière premium du Maroc. Cherchez moins. Trouvez mieux.",
+    locale: siteConfig.locale,
+    siteName: siteConfig.siteName,
+    title: siteConfig.defaultTitle,
+    description: siteConfig.defaultDescription,
     images: [
       {
-        url: "/brand/og-image.png",
+        url: siteConfig.defaultOgImage,
         width: 1200,
         height: 630,
-        alt: "AkarFinder — Intelligence immobilière au Maroc",
+        alt: siteConfig.defaultTitle,
       },
     ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "AkarFinder — Intelligence immobilière au Maroc",
-    description:
-      "La plateforme immobilière premium du Maroc. Cherchez moins. Trouvez mieux.",
-    images: ["/brand/og-image.png"],
+    card: siteConfig.twitterCard,
+    title: siteConfig.defaultTitle,
+    description: siteConfig.defaultDescription,
+    images: [siteConfig.defaultOgImage],
   },
 };
 
@@ -61,6 +72,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* Applies the persisted/system theme before paint — avoids flash. */}
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH_SCRIPT }} />
+        <JsonLd data={getOrganizationJsonLd()} />
+        <JsonLd data={getWebsiteJsonLd()} />
       </head>
       <body>
         <ThemeProvider>{children}</ThemeProvider>

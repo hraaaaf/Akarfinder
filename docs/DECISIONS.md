@@ -2136,3 +2136,37 @@ Regles:
   GO production explicite en dernier.
 - La roadmap production reste a `73%` tant que cette chaine de tracabilite
   n'est pas complete et approuvee.
+
+## 2026-07-06 - SEO-FOUNDATION-1
+
+Decision:
+Poser la fondation SEO technique (sitemap, robots, canonical, metadata,
+structured data prudent) sans creer de contenu SEO massif et sans toucher au
+Search Gateway ni a sa doctrine.
+
+Regles:
+- `metadataBase` doit toujours pointer vers l'URL reellement servie
+  aujourd'hui (`https://akarfinder.vercel.app`), jamais vers un domaine futur
+  non branche. `akarfinder.ma` reste documente (`lib/seo/site.ts`,
+  `futureDomain`) mais inactif tant que le domaine n'est pas reellement
+  connecte.
+- Pas de `title.template` global : chaque page du site suffixe deja son
+  propre titre avec "— AkarFinder" manuellement ; un template global aurait
+  double ce suffixe sur toutes les pages existantes (constate lors de cette
+  mission via la documentation Next.js sur l'heritage des titres).
+- `/demo/**` reste `noindex, nofollow` via meta uniquement — jamais de
+  `Disallow: /demo` dans `robots.txt`, sinon Google ne peut plus lire le
+  noindex.
+- `/search` reste `noindex, follow` : resultats Gateway dynamiques/tiers,
+  contenu variable par querystring. Ne devient pas la base SEO principale ;
+  les pages SEO ville/quartier/prix proprietaires arriveront avec
+  SEO-CITY-INTENT-PAGES-1.
+- Sitemap limite a `/`, `/pro`, `/profil-recherche` — jamais `/demo`,
+  `/search`, ou `/listings/**`.
+- Structured data limite a `Organization` et `WebSite`/`SearchAction`.
+  Interdiction absolue de `RealEstateListing`, `Offer`, `AggregateRating`,
+  `Review` sur des resultats Gateway externes.
+- Ecart de nombre signale, non resolu unilateralement : l'ODM de mission
+  citait "Production : 76%" alors que le dernier etat reellement deploye et
+  documente est `73%` (voir BUY-RENT-TUNING-CODE-RECONCILIATION-1
+  ci-dessus). A reconcilier par Achraf.

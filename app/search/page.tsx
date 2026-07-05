@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LightZillowSearchShell } from "@/components/search/LightZillowSearchShell";
@@ -6,6 +7,25 @@ import { buildSearchPageQuery } from "@/lib/search/search-page-query";
 import type { ListingFiltersState } from "@/lib/listings/types";
 
 export const dynamic = "force-dynamic";
+
+// SEO-FOUNDATION-1 — /search reste noindex pour l'instant : les résultats
+// viennent du Search Gateway (dynamiques, tiers, non propriétaires) et la
+// page varie par querystring, ce qui en ferait du contenu dupliqué de faible
+// valeur pour Google. Les futures pages SEO contrôlées (ville/quartier/prix)
+// arriveront avec SEO-CITY-INTENT-PAGES-1 et seront indexables séparément.
+// follow: true pour laisser Google suivre les liens internes depuis /search.
+export const metadata: Metadata = {
+  title: "Rechercher un bien immobilier au Maroc — AkarFinder",
+  description:
+    "Comparez les résultats immobiliers au Maroc, consultez la source originale et trouvez des repères utiles pour mieux décider.",
+  robots: {
+    index: false,
+    follow: true,
+  },
+  alternates: {
+    canonical: "/search",
+  },
+};
 
 type SearchPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;

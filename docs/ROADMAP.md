@@ -4447,6 +4447,37 @@ NOTE : cette mise a jour ne modifie ni Search Gateway, ni ranking live,
 ni DB. Elle documente l'ordre de marche. Chaque mission garde ses gates
 (tests, build, scans doctrine, commit separe).
 
+## 2026-07-06 — SEO-FOUNDATION-1
+
+Fondation SEO technique mise en place : sitemap (`/`, `/pro`,
+`/profil-recherche` uniquement), robots.txt pointant vers le sitemap,
+metadata globale (title/description/OG/twitter), canonical sur les 3 routes
+publiques, structured data prudent (Organization + WebSite/SearchAction),
+`/search` confirme noindex,follow (decision documentee dans
+docs/SEO_FOUNDATION.md), `/demo/**` deja noindex,nofollow (aucune
+modification necessaire). Correction d'une incoherence preexistante :
+`metadataBase` pointait vers `https://akarfinder.ma` (domaine non branche) et
+a ete corrige vers `https://akarfinder.vercel.app` (URL reellement servie).
+Aucune modification Search Gateway, ranking, DB ou Supabase.
+
+**Ecart constate avec l'ODM de mission** : l'ODM recu indiquait "Production
+AkarFinder : 76%" comme baseline. Les entrees precedentes de ce fichier
+(2026-07-05, BUY-RENT-SERP-RELEVANCE-TUNING-1) montrent une production
+confirmee a 73% et un candidat preview/code a 76% jamais promu en
+production. Cette mission documente donc :
+- Preview/code candidat avant cette mission : 76% (BUY-RENT tuning, non
+  deploye prod).
+- Preview/code candidat apres SEO-FOUNDATION-1 (si validee en preview) : 80%.
+- Production : reste a 73% (dernier etat reellement deploye et confirme)
+  jusqu'a GO prod explicite couvrant a la fois BUY-RENT-SERP-RELEVANCE-TUNING-1
+  et SEO-FOUNDATION-1.
+- Ce decalage de nombre (73% reel vs 76% cite dans l'ODM) est signale ici
+  pour reconciliation par Achraf, pas resolu unilateralement.
+
+Decision :
+- Preview : a deployer et valider (voir docs/SESSION.md).
+- Production : NON deployee, attend GO explicite.
+
 ## 2026-07-05 — DEMO-PROMOTER-AGENCY-REALISTIC-MOCKUP-1
 
 Les pages /demo/promoteur et /demo/agence ont ete transformees en mock-ups
