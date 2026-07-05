@@ -4439,3 +4439,9 @@ K | 98->100% | AI-SEARCH-ASSISTANT-1 | assistant IA encadre pour expliquer compr
 NOTE : cette mise a jour ne modifie ni Search Gateway, ni ranking live,
 ni DB. Elle documente l'ordre de marche. Chaque mission garde ses gates
 (tests, build, scans doctrine, commit separe).
+
+## 2026-07-05 — DEMO-PROMOTER-AGENCY-REALISTIC-MOCKUP-1
+
+Les pages /demo/promoteur et /demo/agence ont ete transformees en mock-ups
+commerciaux realistes en preview. La progression production reste inchangee
+(73%) tant que non deploye.

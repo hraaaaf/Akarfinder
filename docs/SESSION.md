@@ -10271,3 +10271,81 @@ Progression roadmap
 * Gateway prod: appartement casablanca 31, location studio casablanca 28,
   programme neuf casablanca 45 — 0 violation contact/galerie, 0 staging.
 * Roadmap production: 73% confirme.
+
+====================================================
+DEMO-PROMOTER-AGENCY-REALISTIC-MOCKUP-1 - 2026-07-05
+====================================================
+
+Status: completed en preview — production interdite sans GO explicite
+
+Contexte d'execution
+* Codex travaillait en parallele sur BUY-RENT-SERP-RELEVANCE-TUNING-1
+  (repo principal dirty avec ses fichiers gateway).
+* Travail realise dans un worktree separe:
+  C:\Users\lenovo\Documents\akarfinder-demo-partner-mockup
+  branche demo-partner-mockup, base HEAD 8eb8a9d (clean).
+* Aucun fichier search-gateway/api/search/components-search touche.
+
+Mission
+* Transformer /demo/promoteur et /demo/agence en vraies pages mock-up
+  partenaires premium (projection commerciale), au lieu de pages
+  explicatives.
+
+Identites fictives
+* Promoteur: Atlas Residences — Casablanca / Dar Bouazza / Bouskoura,
+  familial + haut standing. Projets: Residence Les Jardins d'Anfa
+  (Anfa/CFC, tranches 1-2, 2ch/3ch/4P, fourchettes indicatives) et
+  Rivage Dar Bouazza (balneaire, terrasse/duplex/villas compactes).
+* Agence: Rabat Select Immobilier — Rabat / Harhoura, achat + location
+  longue duree, familles/MRE/cadres. 3 biens fictifs: appartement familial
+  3ch Agdal 112 m2 2 150 000 MAD indicatif; villa contemporaine Harhoura
+  280 m2 fourchette indicative; appartement location Hay Riad 86 m2 loyer
+  indicatif.
+
+Files (worktree)
+* lib/demo/partner-pages-demo-data.ts (reecrit — identites, projets, biens,
+  methode, leads; DEMO_PARTNER_PROJECT aligne sur Les Jardins d'Anfa,
+  appartement temoin 3 chambres 96 m2 + galerie palmier)
+* components/demo/DemoNeighborhoodExperience.tsx (new — scores fictifs
+  Mobilite 82 / Vie quotidienne 88 / Confort famille 80 / Calme urbain 68 /
+  Stationnement 45, points a verifier, mention "Reperes indicatifs pour
+  demonstration. A confirmer sur place.")
+* components/demo/DemoAgencyListingCard.tsx (etendu retro-compatible:
+  bedrooms, features, infoLevel, detailHref "Voir la fiche type")
+* app/demo/promoteur/page.tsx (reecrit — hero monogramme AR, badges
+  neutres, 2 cartes projets premium, tranches, typologies+plans 2D,
+  appartement temoin avec galerie, experience quartier, CTA)
+* app/demo/agence/page.tsx (reecrit — hero monogramme RS, 3 biens,
+  annonce type visuelle, experience quartier, demandes qualifiees,
+  methode 3 temps; WhatsApp statique retire du hero)
+* docs/DECISIONS.md, docs/ROADMAP.md, docs/SESSION.md (append)
+
+Verification
+* npm test (worktree): 1303/1303 + 51/51 — 0 fail. Build: 0 erreur.
+* Scans: 0 wording interdit, 0 contact reel (seul hit = label statique
+  preexistant DemoPartnerContactPanel utilise par /demo/projet, sans lien),
+  0 URL externe, images locales uniquement.
+* Preview (projet akarfinder, deploiement preview):
+  https://akarfinder-q9b5p8kw1-achraf-benmoussa-s-projects.vercel.app
+  (dpl_2MY3VPfxPrrGZaJLxzyQ34n3JHD4). Routes 9/9 OK, /listings/137 = 404,
+  noindex conserve sur les 2 pages.
+* Playwright: captures desktop + mobile des 2 pages, 0 pageerror,
+  0 overflow desktop/mobile, 0 wording interdit dans le DOM, mention demo
+  presente, galerie temoin verifiee chargee (artefact lazy-load sur
+  captures fullPage uniquement).
+
+Incident mineur
+* Premier deploy preview depuis le worktree a cree un projet Vercel
+  parasite "akarfinder-demo-partner-mockup" (protection SSO par defaut).
+  Worktree ensuite relie au projet akarfinder. Le projet parasite est vide
+  et a supprimer manuellement depuis le dashboard Vercel.
+
+Explicit non-changes
+* Search Gateway / app/api/search / lib/search-gateway / components/search:
+  NON touches. DB/Supabase/env: non. /search, /acheter, /louer: non.
+* Production: NON deployee.
+
+Integration
+* Commit sur la branche demo-partner-mockup du worktree. Merge dans master
+  UNIQUEMENT apres la fin de la mission Codex (BUY-RENT-SERP-RELEVANCE-
+  TUNING-1) pour eviter tout conflit.

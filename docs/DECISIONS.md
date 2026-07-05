@@ -2076,3 +2076,21 @@ Decision 5 :
 Aucune page demo ou fausse annonce ne doit etre indexee. /demo/* reste
 noindex/nofollow ; aucun resultat externe ne produit de page interne
 indexable ; /listings/137 reste 404.
+
+## 2026-07-05 — DEMO-PROMOTER-AGENCY-REALISTIC-MOCKUP-1
+
+Decision:
+Les pages /demo/promoteur et /demo/agence deviennent des mock-ups commerciaux
+realistes : le partenaire fictif est presente comme s'il etait deja client
+("Atlas Residences" promoteur, "Rabat Select Immobilier" agence), au lieu
+d'une page explicative "voici ce que vous auriez".
+
+Regles maintenues:
+- Mention demo discrete conservee (bandeau DemoShell + DemoBadge + note
+  "contenu fictif, non contractuel" en pied de page).
+- Jamais de partenaire reel, de contact reel, de WhatsApp, d'email, d'image
+  externe ou d'annonce copiee. Prix toujours indicatifs.
+- Badges neutres uniquement (Page partenaire demo, Plans 2D disponibles,
+  Fiches structurees...) — jamais verifie/certifie/officiel/meilleur/garanti.
+- Scores quartier fictifs avec mention "Reperes indicatifs pour
+  demonstration. A confirmer sur place." — jamais de score securite.
