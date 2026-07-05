@@ -10425,3 +10425,70 @@ Decision de cloture
 * Production NON activee.
 * Prochaine etape : revue humaine + GO prod explicite si le preview est valide.
 
+====================================================
+BUY-RENT-TUNING-CODE-RECONCILIATION-1 - 2026-07-05
+Reconciliation code + preview tracable (sans prod)
+====================================================
+
+Statut
+* Le tuning Acheter/Louer est maintenant committe dans le HEAD de travail:
+  `879eeba feat(search): tune buy rent gateway relevance`.
+* La preview revue correspond maintenant a ce HEAD committe:
+  https://akarfinder-d7sdncuj9-achraf-benmoussa-s-projects.vercel.app
+* Production NON deployee. Roadmap production maintenue a 73%.
+* Preview/code : 76% candidat confirme sur le plan de la tracabilite.
+
+Contexte git
+* Worktree propre cree depuis `46a6a34`.
+* Stashes restaures sans drop:
+  - `stash@{1}` WIP: Search Gateway relevance tuning (stashed for demo merge)
+  - `stash@{0}` wip codex buy-rent relevance tuning before demo preprod safety
+* Aucun conflit lors de l'application.
+
+Fichiers code reconcilies
+* app/api/search/gateway/route.ts
+* lib/search-gateway/search-gateway-query-builder.ts
+* lib/search-gateway/search-gateway-ranking.ts
+* lib/search-gateway/search-gateway-relevance-tuning.ts
+* scripts/audits/buy-rent-serp-relevance-audit.ts
+* scripts/scrapers/__tests__/search-gateway-relevance-tuning.test.ts
+* package.json
+
+Checks
+* npm test : scrapers 1317/1317 + api 51/51 - 0 fail.
+* npm run build : OK (Next.js 15.5.20).
+* Preview traceable verifiee :
+  - `/search?q=appartement%20casablanca` = 200
+  - `/search?q=location%20studio%20casablanca` = 200
+  - `/search?q=programme%20neuf%20casablanca` = 200
+  - `/search?q=villa%20rabat` = 200
+  - `/listings/137` = 404
+  - `/demo/promoteur` = 200
+  - `/demo/agence` = 200
+
+Audit / mesures
+* Rerun complet 12 requetes relance contre prod + preview.
+* Resultat prod rerun : moyenne 11,4 resultats ; A+B 73,0%.
+* Resultat preview rerun : moyenne 10,5 resultats ; A+B 88,9%.
+* Constat important : ce rerun est variable cote provider live et a produit
+  des faux zeros sur certaines requetes pendant le sweep complet.
+* Verification cible immediate sur l'API preview committee:
+  - `appartement casablanca` : 28 resultats, top 10 = 10/10 pertinents
+  - `location studio casablanca` : 29 resultats, top 10 = 10/10 pertinents
+  - `programme neuf casablanca` : 44 resultats, top 10 = 10/10 pertinents
+  - `location appartement rabat` : 30 resultats
+  - `villa rabat` : 25 resultats
+  - `location tanger` : 34 resultats
+
+Doctrine
+* Resultats externes toujours en apercu limite + source originale.
+* Aucun contact/WhatsApp/galerie expose.
+* Aucune page detail interne creee pour un resultat externe.
+* Payload spot-checke: `can_show_contact=false`, `can_show_gallery=false`.
+
+Decision
+* Reconciliation code + preview : OUI.
+* Production : NON.
+* Prochaine etape : revue humaine de la preview traceable, puis GO prod
+  explicite si validee.
+

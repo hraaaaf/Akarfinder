@@ -1,16 +1,17 @@
 # BUY-RENT-SERP-RELEVANCE-TUNING-1
 
 Date: 2026-07-05
-Status: code + preview validated
+Status: code reconciled + traceable preview validated
 Production status: pending explicit GO
 Roadmap status:
-- Preview / code candidate: 76%
+- Preview / code candidate: 76% confirmed on committed HEAD + traceable preview
 - Production remains: 73%
 
 ## Objective
 
-Keep the Search Gateway volume gains from `SEARCH-GATEWAY-COVERAGE-EXPANSION-1`,
-but improve buy / rent relevance for the visible top results:
+Keep the Search Gateway volume gains from
+`SEARCH-GATEWAY-COVERAGE-EXPANSION-1`, but improve buy / rent relevance for
+the visible top results:
 
 - fewer national pages on city queries
 - less buy/rent mixing
@@ -34,9 +35,30 @@ Untouched:
 
 - DB / Supabase
 - env
+- scraping
 - partner ranking live
 - structured partner inventory
 - internal `/listings` behavior for external results
+
+## Reconciliation status
+
+The earlier preview validation was not production-safe because the tuning code
+was still only present in local stashes.
+
+This reconciliation phase moved the real tuning code into a committed HEAD:
+
+- base docs HEAD restored in the clean worktree: `46a6a34`
+- code commit now carrying the tuning: `879eeba7a090b337c78393666a085843baf3b6bd`
+- branch used for reconciliation: `buy-rent-tuning-reconciliation`
+
+Traceable preview redeployed from that committed HEAD:
+
+- preview URL:
+  `https://akarfinder-d7sdncuj9-achraf-benmoussa-s-projects.vercel.app`
+- Vercel inspect URL:
+  `https://vercel.com/achraf-benmoussa-s-projects/akarfinder/DghVncuDZWeZtpiqCRCgvmMPnPfy`
+
+No production deployment happened during this phase.
 
 ## Relevance logic added
 
@@ -65,11 +87,11 @@ Important rules:
 - staging / localhost remain excluded
 - price-reference pages remain available for depth, but are deprioritized
 
-Special fix added after preview verification:
+Special fix kept after preview verification:
 
 - pages with monthly-rent signals such as `monthly`, `per month`, `DH / mois`
   are treated as rent pages even if they also mention `neuf`
-- this specifically fixed a rent page leaking too high on
+- this prevents rent pages from leaking too high on
   `programme neuf casablanca`
 
 ## Cost guard
@@ -79,64 +101,15 @@ Provider cost was not increased on the default path.
 Current guardrails:
 
 - `num=10` per provider request
-- round 2 only if deduped result set is still `<30`
+- round 2 only if the deduped result set is still `<30`
 - total request budget remains `<=12` calls per search
 - q-only queries do not trigger secondary structured variants
 - rent queries do not inject buy wording
 - buy queries do not inject rent wording
 
-## Baseline and after
+## Validation run in reconciliation phase
 
-Baseline source:
-- production before tuning
-- `https://akarfinder.vercel.app`
-
-Preview measured after tuning:
-- `https://akarfinder-cmt32aer4-achraf-benmoussa-s-projects.vercel.app`
-- Vercel preview deployment: `dpl_2F7CyKRd3wvEnNusn3ZvzczHanTN`
-
-Global metrics:
-
-- average results: `31.9 -> 32.3`
-- global A+B rate: `79.9% -> 82.7%`
-- `/listings/137`: `404 -> 404`
-- contact / gallery / internal listing page for external results: unchanged
-
-## Query table
-
-| Query | Total before | Total after | A+B before | A+B after | Mismatch before | Mismatch after | Notes |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| appartement casablanca | 29 | 33 | 65.5% | 69.7% | 7 | 4 | top 10 cleaned from mixed rent pages, now 10/10 |
-| appartement a vendre casablanca | 23 | 24 | 100.0% | 100.0% | 0 | 0 | stable, still clean |
-| location studio casablanca | 27 | 29 | 96.3% | 100.0% | 0 | 0 | rent intent preserved, top 10 still clean |
-| location appartement rabat | 31 | 30 | 83.9% | 86.7% | 2 | 0 | buy leakage removed from top |
-| villa rabat | 24 | 26 | 75.0% | 92.3% | 5 | 1 | much cleaner villa/sale ordering |
-| villa a vendre rabat | 26 | 27 | 100.0% | 96.3% | 0 | 0 | still strong, top 10 clean |
-| appartement marrakech | 38 | 35 | 60.5% | 68.6% | 12 | 7 | city/type ordering improved, top 10 now clean |
-| terrain marrakech | 37 | 39 | 89.2% | 87.2% | 1 | 3 | volume stable, top 10 still terrain-clean |
-| terrain a vendre marrakech | 32 | 30 | 93.8% | 93.3% | 0 | 1 | negligible change, top 10 still clean |
-| programme neuf casablanca | 45 | 43 | 48.9% | 46.5% | 17 | 16 | long tail still noisy, but top 10 cleaned and top 3 now clearly new-build |
-| location tanger | 31 | 32 | 100.0% | 100.0% | 0 | 0 | stable and clean |
-| maison fes | 40 | 40 | 72.5% | 77.5% | 9 | 5 | `Route de Fes` false match pushed down, top 10 now clean |
-
-## Tested queries
-
-- `appartement casablanca`
-- `appartement a vendre casablanca`
-- `location studio casablanca`
-- `location appartement rabat`
-- `villa rabat`
-- `villa a vendre rabat`
-- `appartement marrakech`
-- `terrain marrakech`
-- `terrain a vendre marrakech`
-- `programme neuf casablanca`
-- `location tanger`
-- `maison fes`
-
-## Tests and build
-
-Local validation already completed during the tuning phase:
+### Code validation
 
 - `npm test`
   - scrapers: `1317/1317`
@@ -144,34 +117,69 @@ Local validation already completed during the tuning phase:
   - failures: `0`
 - `npm run build`
   - status: `OK`
-  - framework output: `Next.js 15.5.19`
+  - framework output: `Next.js 15.5.20`
 
-## Browser verification
+### Full live audit rerun
 
-Preview routes checked:
+The 12-query audit script was rerun in this reconciliation phase against:
 
-- `/`
+- current production: `https://akarfinder.vercel.app`
+- traceable preview:
+  `https://akarfinder-d7sdncuj9-achraf-benmoussa-s-projects.vercel.app`
+
+Observed output:
+
+- production rerun: average results `11.4`, A+B `73.0%`
+- preview rerun: average results `10.5`, A+B `88.9%`
+
+Important note:
+
+- this rerun showed live-provider variability and several false-zero rows in
+  the full sweep, while direct query-by-query API checks immediately after were
+  healthy
+- because of that instability, the full live audit was not used as the sole
+  gate for a production promotion decision
+- it is still useful as a warning that provider behavior can drift during long
+  live sweeps
+
+### Targeted key-query spot checks on the traceable preview
+
+These checks were run directly against the committed preview API after the full
+audit rerun:
+
+| Query | Result count | Top 10 relevant | Notes |
+| --- | ---: | ---: | --- |
+| `appartement casablanca` | 28 | 10/10 | top 3 now sale/new-build aligned |
+| `location studio casablanca` | 29 | 10/10 | location intent preserved |
+| `programme neuf casablanca` | 44 | 10/10 | top 3 clearly new-build compatible |
+| `location appartement rabat` | 30 | n/a | healthy rent-compatible payload |
+| `villa rabat` | 25 | n/a | healthy villa/sale payload |
+| `location tanger` | 34 | n/a | healthy rent payload |
+
+Direct payload spot checks also confirmed the Gateway display doctrine on
+external results:
+
+- `can_show_contact = false`
+- `can_show_gallery = false`
+- no internal `/listings/...` target introduced for external results
+
+## Preview checks
+
+Traceable preview routes checked:
+
 - `/search?q=appartement%20casablanca`
 - `/search?q=location%20studio%20casablanca`
 - `/search?q=programme%20neuf%20casablanca`
+- `/search?q=villa%20rabat`
 - `/listings/137`
+- `/demo/promoteur`
+- `/demo/agence`
 
 Observed:
 
-- all tested search pages returned `200`
+- all checked search/demo pages returned `200`
 - `/listings/137` returned `404`
-- external results still show source + limited preview only
-- no contact CTA on external results
-- no gallery CTA on external results
-- no internal `/listings/...` page created for external results
-
-Console / network:
-
-- no blocking console error linked to Search Gateway tuning
-- one non-blocking browser issue remains:
-  `A form field element should have an id or name attribute`
-- this warning is outside the Search Gateway tuning scope
-- network remained same-origin plus normal Vercel preview tooling
+- the preview corresponds to the committed code HEAD, not to a stash-only state
 
 ## Doctrine confirmation
 
@@ -182,19 +190,20 @@ Gateway doctrine remains intact:
 - no contact
 - no WhatsApp
 - no gallery
-- no internal detail page for external results
+- no internal detail page for an external result
 - no third-party image rehosting introduced by this mission
 
 ## Verdict
 
-Mission status:
+Reconciliation status:
 
-- success on code + preview
-- candidate for roadmap `76%` in preview/code terms
-- production must remain `73%` until an explicit production GO is given
+- code tuning is now committed in a traceable HEAD
+- the preview under review now corresponds to that committed HEAD
+- preview / code can be treated as a real `76%` candidate for human review
+- production must remain at `73%` until explicit GO
 
 Residual risk:
 
-- some long-tail national and reference pages still appear in deeper ranks,
-  especially on very broad `programme neuf` searches
-- however the visible top 10 is materially cleaner, which was the main goal
+- the full live 12-query audit remains provider-variable during long sweeps
+- because of that, production should be promoted only after human review of the
+  traceable preview, not from stale earlier metrics

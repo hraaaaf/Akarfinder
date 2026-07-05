@@ -4375,10 +4375,13 @@ ETAT ACTUEL (mis a jour 2026-07-05 — ROADMAP-70-PROD-ACTIVATION-1)
 * SEARCH-GATEWAY-COVERAGE-EXPANSION-1 : code + preview valides 2026-07-05
   (15,1 -> 33,8 resultats/requete, A+B ~75-90%, doctrine conservee).
   Production activee 2026-07-05 (dpl_2KRAr3AmthyheorRAb6pyX3EitYM) — 73% CONFIRME.
-* BUY-RENT-SERP-RELEVANCE-TUNING-1 : code + preview valides 2026-07-05
-  (31,9 -> 32,3 resultats/requete, A+B 79,9% -> 82,7%, top 10 nettement
-  nettoye sur Acheter/Louer, doctrine conservee, /listings/137 = 404).
-  Preview/code candidat : 76%.
+* BUY-RENT-SERP-RELEVANCE-TUNING-1 : code committe + preview tracable
+  revalidee 2026-07-05 (commit 879eeba, preview
+  https://akarfinder-d7sdncuj9-achraf-benmoussa-s-projects.vercel.app).
+  Les checks cibles Acheter/Louer sont bons, /listings/137 reste 404,
+  doctrine conservee. Le rerun audit 12 requetes reste variable cote provider
+  live, donc il ne sert pas de GO prod automatique.
+  Preview/code candidat confirme : 76%.
   Production reste a 73% jusqu'au GO prod explicite.
 
 CONSTAT AUDIT VOLUME (docs/SEARCH_VOLUME_RELEVANCE_AUDIT.md)
@@ -4430,7 +4433,7 @@ TABLEAU DES MISSIONS
 Phase | % | Mission | Objectif | Statut | Dependance | Risque | Prod/Preview
 A | 70% | SEARCH-VOLUME-RELEVANCE-AUDIT-1 | baseline volume+pertinence | FAIT 2026-07-05 | preview 70% | aucun | preview (read-only)
 B | 70->73% | SEARCH-GATEWAY-COVERAGE-EXPANSION-1 | 30-50 resultats/requete : query expansion, load more, diversite sources, filtrage homepages/staging, seuil commercial | FAIT prod 2026-07-05 | audit baseline | cout provider a surveiller | production
-C | 73->76% | BUY-RENT-SERP-RELEVANCE-TUNING-1 | achat: vente+neuf compatibles ; location: jamais d'achat ; ville stricte | FAIT code+preview 2026-07-05 - candidat prod | B prod + validation preview | bruit long-tail neuf/national a surveiller | preview
+C | 73->76% | BUY-RENT-SERP-RELEVANCE-TUNING-1 | achat: vente+neuf compatibles ; location: jamais d'achat ; ville stricte | FAIT code committe + preview tracable 2026-07-05 - candidat prod | B prod + validation preview | variabilite provider sur audit long + bruit long-tail neuf/national | preview
 D | 76->80% | PARTNER-RANKING-LIVE-INTEGRATION-1 | brancher le moteur ranking partenaire a la SERP live sans casser le Gateway | a faire | B + C + Gateway stable + regles partenaires testees | casser la SERP live | preview puis prod controlee
 E | 80->83% | SEO-FOUNDATION-1 | titles/meta, canonical, sitemap, robots, OG, structured data safe, noindex demo verrouille | a faire | D souhaitable | sur-indexation pages minces | prod
 F | 83->87% | SEO-CITY-INTENT-PAGES-1 | pages editoriales ville x intention + moteur integre | a faire | E | contenu mince | prod

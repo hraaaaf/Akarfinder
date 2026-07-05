@@ -2122,3 +2122,17 @@ Doctrine inchangee:
 - Aucun contact, aucune galerie, aucune image tierce, aucune page detail
   interne pour un resultat externe.
 - `/listings/137` doit rester `404`.
+
+## 2026-07-05 - BUY-RENT-TUNING-CODE-RECONCILIATION-1
+
+Decision:
+Un tuning Search Gateway n'est deployable que s'il est present dans un HEAD
+committe et si la preview de revue correspond a ce HEAD.
+
+Regles:
+- Un etat stash-only n'est jamais un candidat production.
+- Une preview validee contre un etat stash-only n'est pas tracable.
+- La gate de release est : HEAD committe d'abord, preview tracable ensuite,
+  GO production explicite en dernier.
+- La roadmap production reste a `73%` tant que cette chaine de tracabilite
+  n'est pas complete et approuvee.
