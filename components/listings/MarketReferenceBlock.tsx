@@ -100,7 +100,7 @@ function RealDataBlock({ listing, market }: { listing: Listing; market: MarketRe
       {/* Footer disclaimer */}
       <p className="mt-3 text-[11.5px] leading-5 text-gray-400">
         {market.period} — Données indicatives issues de l'analyse AkarFinder.
-        Non officielles — à vérifier avant décision.
+        Non officielles — à confirmer avant décision.
       </p>
     </div>
   );

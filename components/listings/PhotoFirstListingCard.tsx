@@ -41,8 +41,8 @@ function getReliabilityLevel(score: number): "high" | "medium" | "low" {
 }
 
 function getReliabilityLabel(level: "high" | "medium" | "low") {
-  if (level === "high") return "Fiabilité élevée";
-  if (level === "medium") return "À vérifier";
+  if (level === "high") return "Informations complètes";
+  if (level === "medium") return "Infos limitées";
   return "Doublon possible";
 }
 

@@ -17,7 +17,7 @@ export const mockListings: Listing[] = [
     bathrooms: 2,
     freshness_label: "Ajoutée cette semaine",
     source_type: "Source analysée",
-    reliability_label: "Fiabilité élevée",
+    reliability_label: "Informations complètes",
     reliability_score: 88,
     is_mre_friendly: true,
     description:
@@ -45,7 +45,7 @@ export const mockListings: Listing[] = [
     bathrooms: 1,
     freshness_label: "Mis à jour hier",
     source_type: "Agence",
-    reliability_label: "À vérifier",
+    reliability_label: "Infos limitées",
     reliability_score: 67,
     is_mre_friendly: false,
     description:
@@ -73,7 +73,7 @@ export const mockListings: Listing[] = [
     bathrooms: 2,
     freshness_label: "Projet suivi",
     source_type: "Promoteur",
-    reliability_label: "Fiabilité élevée",
+    reliability_label: "Informations complètes",
     reliability_score: 91,
     is_mre_friendly: true,
     description:
@@ -104,7 +104,7 @@ export const mockListings: Listing[] = [
     bathrooms: 1,
     freshness_label: "Ajoutée il y a 3 jours",
     source_type: "Source analysée",
-    reliability_label: "À vérifier",
+    reliability_label: "Infos limitées",
     reliability_score: 61,
     is_mre_friendly: false,
     description:
@@ -131,7 +131,7 @@ export const mockListings: Listing[] = [
     bathrooms: 1,
     freshness_label: "Récent",
     source_type: "Source analysée",
-    reliability_label: "Fiabilité élevée",
+    reliability_label: "Informations complètes",
     reliability_score: 84,
     is_mre_friendly: true,
     description:
@@ -189,7 +189,7 @@ export const mockListings: Listing[] = [
     bathrooms: 2,
     freshness_label: "Ajoutée aujourd'hui",
     source_type: "Promoteur",
-    reliability_label: "Fiabilité élevée",
+    reliability_label: "Informations complètes",
     reliability_score: 86,
     is_mre_friendly: true,
     description:
@@ -220,7 +220,7 @@ export const mockListings: Listing[] = [
     bathrooms: 2,
     freshness_label: "Ajoutée il y a 5 jours",
     source_type: "Source analysée",
-    reliability_label: "À vérifier",
+    reliability_label: "Infos limitées",
     reliability_score: 58,
     is_mre_friendly: false,
     description:
@@ -248,7 +248,7 @@ export const mockListings: Listing[] = [
     bathrooms: 3,
     freshness_label: "Ajoutée cette semaine",
     source_type: "Agence",
-    reliability_label: "À vérifier",
+    reliability_label: "Infos limitées",
     reliability_score: 64,
     is_mre_friendly: true,
     description:
@@ -276,7 +276,7 @@ export const mockListings: Listing[] = [
     bathrooms: 2,
     freshness_label: "Mis à jour cette semaine",
     source_type: "Source analysée",
-    reliability_label: "Fiabilité élevée",
+    reliability_label: "Informations complètes",
     reliability_score: 82,
     is_mre_friendly: false,
     description:
@@ -304,7 +304,7 @@ export const mockListings: Listing[] = [
     bathrooms: 1,
     freshness_label: "Indexé il y a 2 jours",
     source_type: "Source analysée",
-    reliability_label: "À vérifier",
+    reliability_label: "Infos limitées",
     reliability_score: 62,
     is_mre_friendly: false,
     description: "Appartement indexé depuis une source publique — informations à confirmer directement sur le site original.",

@@ -16,7 +16,7 @@ function ReliabilityDot({ score }: { score: number }) {
   const dot =
     score >= 80 ? "bg-emerald-400" : score >= 50 ? "bg-sky-400" : "bg-rose-400";
   const txt =
-    score >= 80 ? "Fiable" : score >= 50 ? "À vérifier" : "Signal faible";
+    score >= 80 ? "Fiche complète" : score >= 50 ? "Infos limitées" : "Aperçu minimal";
   return (
     <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-white/45">
       <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${dot}`} aria-hidden="true" />

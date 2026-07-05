@@ -225,7 +225,7 @@ export function mapDbRowToListing(
     district: row.district ?? undefined,
     freshness_label: getFreshnessLabel(row.updated_at),
     source_type: "Source analysée",
-    reliability_label: "À vérifier",
+    reliability_label: "Infos limitées",
     reliability_score: reliabilityScore,
     reliability_available: true,
     is_mre_friendly: false,

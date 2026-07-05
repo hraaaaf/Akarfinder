@@ -96,18 +96,18 @@ describe("computeReliabilityScore - penalties", () => {
 });
 
 describe("computeReliabilityScore - badge", () => {
-  it("badge is 'Très fiable' for score >= 85", () => {
+  it("badge is 'Très complète' for score >= 85", () => {
     const result = computeReliabilityScore(baseInput({
       data_completeness_score: 100,
       duplicate_score: 0,
       images_count: 10,
     }));
     if (result.score >= 85) {
-      assert.equal(result.badge, "Très fiable");
+      assert.equal(result.badge, "Très complète");
     }
   });
 
-  it("badge is 'Fiable' for score 70–84", () => {
+  it("badge is 'Complète' for score 70–84", () => {
     // Force score into 70-84 range.
     const result = computeReliabilityScore(baseInput({
       data_completeness_score: 80,
@@ -115,11 +115,11 @@ describe("computeReliabilityScore - badge", () => {
       seller_name: null, // -5 penalty + removes 10pts
     }));
     if (result.score >= 70 && result.score < 85) {
-      assert.equal(result.badge, "Fiable");
+      assert.equal(result.badge, "Complète");
     }
   });
 
-  it("badge is 'Faible confiance' for score < 50", () => {
+  it("badge is 'Très limitée' for score < 50", () => {
     const result = computeReliabilityScore({
       data_completeness_score: 10,
       field_confidence_json: null,
@@ -131,7 +131,7 @@ describe("computeReliabilityScore - badge", () => {
       images_count: 0,
       duplicate_score: 0.95,
     });
-    assert.equal(result.badge, "Faible confiance");
+    assert.equal(result.badge, "Très limitée");
   });
 
   it("badge does not use forbidden labels", () => {

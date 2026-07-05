@@ -3,10 +3,10 @@
 // reliability_score = estimated trust in the listing's quality.
 
 export type ReliabilityBadgeLabel =
-  | "Très fiable"
-  | "Fiable"
-  | "À vérifier"
-  | "Faible confiance";
+  | "Très complète"
+  | "Complète"
+  | "Limitée"
+  | "Très limitée";
 
 export type ReliabilityResult = {
   score: number;
@@ -42,10 +42,10 @@ function countHighConfidence(conf: FieldConfidence): number {
 }
 
 export function badgeFromScore(score: number): ReliabilityBadgeLabel {
-  if (score >= 85) return "Très fiable";
-  if (score >= 70) return "Fiable";
-  if (score >= 50) return "À vérifier";
-  return "Faible confiance";
+  if (score >= 85) return "Très complète";
+  if (score >= 70) return "Complète";
+  if (score >= 50) return "Limitée";
+  return "Très limitée";
 }
 
 export function computeReliabilityScore(input: ReliabilityInput): ReliabilityResult {

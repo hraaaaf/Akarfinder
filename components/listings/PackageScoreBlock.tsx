@@ -19,7 +19,7 @@ function signalDot(level: PackageSignalLevel): React.ReactNode {
 function signalLevelLabel(level: PackageSignalLevel): string {
   if (level === "high") return "Fort";
   if (level === "medium") return "Correct";
-  if (level === "low") return "Faible";
+  if (level === "low") return "Limité";
   return "—";
 }
 

@@ -26,7 +26,7 @@ function documentToListing(document: TypesenseListingDocument): Listing {
     bathrooms_count: document.bathrooms_count,
     freshness_label: "Mise a jour recente",
     source_type: "Source analysée",
-    reliability_label: "À vérifier",
+    reliability_label: "Infos limitées",
     reliability_score: document.reliability_score,
     reliability_available: true,
     is_mre_friendly: false,

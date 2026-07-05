@@ -26,9 +26,9 @@ function getReliabilityLabel(listing: Listing): string {
   if (listing.duplicate_score != null && listing.duplicate_score >= 0.7) {
     return "Doublon possible";
   }
-  if (listing.reliability_score >= 80) return "Fiabilité élevée";
-  if (listing.reliability_score >= 50) return "À vérifier";
-  return "Fiabilité faible";
+  if (listing.reliability_score >= 80) return "Informations complètes";
+  if (listing.reliability_score >= 50) return "Infos limitées";
+  return "Aperçu limité";
 }
 
 export function getProximitySummary(listing: Listing): string {

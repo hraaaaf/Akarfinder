@@ -154,9 +154,9 @@ export function ListingDetail({ listing }: { listing: Listing }) {
   );
   const reliabilityLabel =
     reliabilityLevel === "high"
-      ? "Fiabilité élevée"
+      ? "Informations complètes"
       : reliabilityLevel === "medium"
-        ? "À vérifier"
+        ? "Infos limitées"
         : "Doublon possible";
 
   return (

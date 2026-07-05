@@ -44,8 +44,8 @@ function getReliabilityLevel(score: number): "high" | "medium" | "low" {
 }
 
 function reliabilityStyle(level: "high" | "medium" | "low") {
-  if (level === "high") return { label: "Fiabilité élevée", cls: "border-emerald-400/30 bg-emerald-400/12 text-emerald-300" };
-  if (level === "medium") return { label: "À vérifier", cls: "border-amber-300/30 bg-amber-300/12 text-amber-200" };
+  if (level === "high") return { label: "Informations complètes", cls: "border-emerald-400/30 bg-emerald-400/12 text-emerald-300" };
+  if (level === "medium") return { label: "Infos limitées", cls: "border-amber-300/30 bg-amber-300/12 text-amber-200" };
   return { label: "Doublon possible", cls: "border-rose-400/30 bg-rose-400/12 text-rose-300" };
 }
 

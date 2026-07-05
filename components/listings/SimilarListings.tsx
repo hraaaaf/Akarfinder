@@ -26,7 +26,7 @@ function getComparativeBadge(item: Listing, current: Listing | undefined): Compa
     return { label: "Prix plus bas", cls: "bg-[#f3ede0] text-bronze-700" };
   }
   if (reliabilityDiff > 8) {
-    return { label: "Meilleure fiabilité", cls: "bg-deepblue/8 text-deepblue" };
+    return { label: "Plus détaillé", cls: "bg-deepblue/8 text-deepblue" };
   }
   if (item.city === current.city) {
     return { label: "Même secteur", cls: "bg-[#f7f3ea] text-gray-600" };
@@ -92,7 +92,7 @@ export function SimilarListings({ listings, currentListing }: SimilarListingsPro
 
                 <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                   {showReliability ? (
-                    <ReliabilityBadge level={level} label={level === "high" ? "Fiable" : level === "medium" ? "À vérifier" : "Faible"} />
+                    <ReliabilityBadge level={level} label={level === "high" ? "Fiche complète" : level === "medium" ? "Infos limitées" : "Aperçu minimal"} />
                   ) : null}
                   {item.freshness_label ? (
                     <span className="rounded-full bg-[#f7f3ea] px-2 py-0.5 text-[10px] font-bold text-gray-500">

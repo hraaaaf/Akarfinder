@@ -99,7 +99,7 @@ const VALUE_CARDS = [
   {
     icon: LayoutGrid,
     title: "Annonces enrichies",
-    body: "Vos biens sont structurés, déduplicés et affichés avec complétude et score de fiabilité visibles.",
+    body: "Vos biens sont structurés, déduplicés et affichés avec complétude et niveau d'information visibles.",
     accent: "text-blue-400",
     bg: "bg-blue-900/20 border-blue-700/30",
   },
@@ -153,7 +153,7 @@ const STEPS = [
   {
     num: "02",
     title: "AkarFinder analyse et structure les annonces",
-    body: "Chaque bien est enrichi, déduplicé et scoré. Les photos suivent notre politique d'autorisation. Le score de fiabilité est calculé automatiquement.",
+    body: "Chaque bien est enrichi, déduplicé et scoré. Les photos suivent notre politique d'autorisation. Le niveau d'information est calculé automatiquement.",
   },
   {
     num: "03",
@@ -320,9 +320,9 @@ function Offers() {
 
 const TRUST_RULES = [
   "Les annonces sponsorisées restent clairement labellisées — aucune confusion possible avec les résultats organiques.",
-  "Le score de fiabilité AkarFinder n'est jamais masqué par un paiement. La transparence envers l'acheteur est non négociable.",
+  "Le niveau d'information AkarFinder n'est jamais masqué par un paiement. La transparence envers l'acheteur est non négociable.",
   "Les photos réelles sont affichées uniquement si l'autorisation de la source est confirmée. Sinon, un visuel illustratif est utilisé.",
-  "Aucun badge « vérifié » sans process réel de validation. Le label ne sera déployé qu'avec un processus documenté et auditable.",
+  "Aucun badge de statut spécial sans processus réel de validation. Tout indicateur sera déployé uniquement avec un processus documenté et auditable.",
 ];
 
 function TrustRules() {

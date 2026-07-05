@@ -98,8 +98,8 @@ function FavoriteCard({ listing, onRemove }: { listing: Listing; onRemove: (id: 
           <span className="text-gray-400">·</span>
           {listing.reliability_available !== false ? (
             <ReliabilityBadge level={reliabilityLevel} label={
-              reliabilityLevel === "high" ? "Fiabilité élevée" :
-              reliabilityLevel === "medium" ? "À vérifier" : "Doublon possible"
+              reliabilityLevel === "high" ? "Informations complètes" :
+              reliabilityLevel === "medium" ? "Infos limitées" : "Doublon possible"
             } />
           ) : null}
         </div>

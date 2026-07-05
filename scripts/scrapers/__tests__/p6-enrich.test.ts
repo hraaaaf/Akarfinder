@@ -202,7 +202,7 @@ describe("P6 enrichAll — persists enrichment data", () => {
       .get() as { reliability_badge: string | null };
     db.close();
 
-    const valid = ["Très fiable", "Fiable", "À vérifier", "Faible confiance"];
+    const valid = ["Très complète", "Complète", "Limitée", "Très limitée"];
     assert.ok(valid.includes(row.reliability_badge ?? ""),
       `invalid badge: ${row.reliability_badge}`);
   });

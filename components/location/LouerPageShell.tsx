@@ -118,7 +118,7 @@ const FIABILITE_LOCATION = [
 function getReliability(score: number) {
   if (score >= 80) return { label: "Élevée",    dots: 4, color: "#22c55e" };
   if (score >= 50) return { label: "Modérée",   dots: 2, color: "#f59e0b" };
-  return             { label: "À vérifier", dots: 1, color: "#ef4444" };
+  return             { label: "Informations limitées", dots: 1, color: "#ef4444" };
 }
 
 // ─── Card location — verticale (image top, contenu bas), prix DH/mois ─────────

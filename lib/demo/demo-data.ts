@@ -160,7 +160,7 @@ export const DEMO_PROPERTY_DETAIL = {
       key: "calm",
       label: "Calme relatif",
       score: 62,
-      tag: "À vérifier selon rue exacte",
+      tag: "À confirmer selon rue exacte",
       criteria: ["Axe passant", "Bruit", "Stationnement", "Densité commerciale"],
     },
   ],

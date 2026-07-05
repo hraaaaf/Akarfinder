@@ -31,7 +31,7 @@ export default function InvestirPage() {
           icon: <Scale size={20} strokeWidth={2.2} />,
           iconBg: "bg-[#166534]",
           title: "Comparaison multi-biens",
-          body: "Comparez jusqu'à 4 biens simultanément sur leur surface, prix/m², score de fiabilité et score de complétude. Un outil de tri, pas une recommandation.",
+          body: "Comparez jusqu'à 4 biens simultanément sur leur surface, prix/m², niveau d'information et score de complétude. Un outil de tri, pas une recommandation.",
           cta: { label: "Ouvrir le comparateur", href: "/compare" },
         },
         {

@@ -34,10 +34,10 @@ export function ReliabilityBadge({ level, label, score }: ReliabilityBadgeProps)
   );
 }
 
-// V9.5 helper — maps reliability_info.label to a ReliabilityLevel for rendering.
+// V9.5 helper — maps legacy reliability_info.label to a ReliabilityLevel for rendering.
+// Legacy labels replaced by neutral information-level wording.
 export function reliabilityInfoToLevel(label?: string): ReliabilityLevel {
-  if (label === "Très fiable") return "high";
-  if (label === "Fiable") return "high";
-  if (label === "À vérifier") return "medium";
+  if (label === "Très fiable" || label === "Fiable" || label === "Informations complètes" || label === "Fiche complète") return "high";
+  if (label === "À vérifier" || label === "Infos limitées" || label === "Informations limitées") return "medium";
   return "low";
 }

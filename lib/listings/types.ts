@@ -49,8 +49,8 @@ export type ListingPropertyType =
 export type ListingSourceType = "Source analysée" | "Agence" | "Promoteur";
 
 export type ListingReliabilityLabel =
-  | "Fiabilité élevée"
-  | "À vérifier"
+  | "Informations complètes"
+  | "Infos limitées"
   | "Doublon possible";
 
 export type Listing = {

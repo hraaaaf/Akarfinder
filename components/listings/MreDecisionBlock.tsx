@@ -15,7 +15,7 @@ export function MreDecisionBlock({ listing, enrichment }: MreDecisionBlockProps)
         <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-gray-400">
           Achat à distance
         </p>
-        <p className="mt-2 text-[14px] font-semibold text-gray-700">À vérifier avant achat à distance.</p>
+        <p className="mt-2 text-[14px] font-semibold text-gray-700">Vérifier les détails avant achat à distance.</p>
         <p className="mt-2 text-[13.5px] leading-6 text-gray-600">{enrichment.remoteBuyingNotes}</p>
       </div>
     );
