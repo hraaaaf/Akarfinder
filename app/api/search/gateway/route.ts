@@ -16,7 +16,7 @@ import {
   limitCategoryPagesPerSource,
   diversifySearchGatewayResults,
 } from "@/lib/search-gateway/search-gateway-diversify";
-import { parseRouteIntent } from "@/lib/search-gateway/search-gateway-intent";
+import { analyzeGatewayQueryContext } from "@/lib/search-gateway/search-gateway-relevance-tuning";
 import { getEnabledSearchGatewaySources } from "@/lib/search-gateway/search-gateway-sources";
 import type {
   SearchGatewayRouteResponse,
@@ -160,12 +160,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // Apply ranking (SEARCH-GATEWAY-MULTISOURCE-SERP-RANKING-1)
-    // Route intent (buy/rent/new) — SEARCH-GATEWAY-INTENT-TEST-HARDENING-1 —
-    // favors /acheter, /louer, /neuf signals without ever dropping results.
-    const queryTerms = [query, city, propertyType].filter(Boolean) as string[];
-    const routeIntent = parseRouteIntent(intent);
-    const ranked = rankSearchGatewayResults(deduped, queryTerms, routeIntent);
+    // Apply ranking (BUY-RENT-SERP-RELEVANCE-TUNING-1)
+    // Query-aware relevance uses q/city/property_type/intent together so
+    // buy/rent/new/land and city penalties work even when the user only typed q.
+    const queryAnalysis = analyzeGatewayQueryContext({
+      q: query,
+      city,
+      property_type: propertyType,
+      intent,
+    });
+    const ranked = rankSearchGatewayResults(deduped, {
+      q: query,
+      city,
+      property_type: propertyType,
+      intent: queryAnalysis.intent,
+    });
 
     // SEARCH-GATEWAY-COVERAGE-EXPANSION-1 — drop rejected pages (staging,
     // portal homepages, blogs) and move price-reference pages to the end.

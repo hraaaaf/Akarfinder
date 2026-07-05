@@ -5,6 +5,54 @@
 
 import type { SearchGatewayQueryInput, SearchGatewayQuery } from "./search-gateway-types";
 import { getEnabledSearchGatewaySources, getSearchGatewaySourceById } from "./search-gateway-sources";
+import { analyzeGatewayQueryContext, type SearchGatewayPropertyType } from "./search-gateway-relevance-tuning";
+
+function renderPropertyType(propertyType: SearchGatewayPropertyType | undefined): string | undefined {
+  switch (propertyType) {
+    case "appartement":
+      return "appartement";
+    case "studio":
+      return "studio";
+    case "villa":
+      return "villa";
+    case "terrain":
+      return "terrain";
+    case "maison":
+      return "maison";
+    case "programme":
+      return "programme neuf";
+    default:
+      return undefined;
+  }
+}
+
+function buildSecondaryQueryText(input: SearchGatewayQueryInput): string | undefined {
+  const hasStructuredContext = Boolean(input.city?.trim() || input.property_type?.trim() || input.intent?.trim());
+  if (!hasStructuredContext) return undefined;
+
+  const analysis = analyzeGatewayQueryContext(input);
+  const city = input.city?.trim() || analysis.city;
+  const propertyType = renderPropertyType(analysis.property_type) ?? input.property_type?.trim();
+
+  const baseTerms = [propertyType, city].filter(Boolean).join(" ").trim();
+  if (!baseTerms) return undefined;
+
+  switch (analysis.intent) {
+    case "rent":
+      return propertyType
+        ? `${propertyType} a louer ${city ?? ""}`.trim()
+        : `location ${city ?? ""}`.trim();
+    case "new":
+      return city ? `programme neuf ${city}` : "programme neuf";
+    case "land":
+      return city ? `terrain a vendre ${city}` : "terrain a vendre";
+    case "buy":
+    default:
+      return propertyType
+        ? `${propertyType} a vendre ${city ?? ""}`.trim()
+        : `achat ${city ?? ""}`.trim();
+  }
+}
 
 export function buildSearchGatewayQueries(
   input: SearchGatewayQueryInput
@@ -14,6 +62,7 @@ export function buildSearchGatewayQueries(
   const city = input.city?.trim() ?? "";
   const propertyType = input.property_type?.trim() ?? "";
   const sources = input.sources ?? [];
+  const secondaryQueryText = buildSecondaryQueryText(input);
 
   // If everything is empty, return no queries
   if (!q && !city && !propertyType) {
@@ -55,57 +104,18 @@ export function buildSearchGatewayQueries(
     // Secondary query: source-specific variant
     if (queries.length < maxTotalQueries) {
       let secondaryQuery = "";
-
-      // Generate source-specific variants
-      switch (source.source_id) {
-        case "avito_serper":
-          // "immobilier Casablanca appartement"
-          if (city && q) {
-            secondaryQuery = `site:${source.domain} immobilier ${city} ${q}`;
-          }
-          break;
-        case "sarouty_serper":
-          // "Casablanca appartements vendre"
-          if (city && q) {
-            secondaryQuery = `site:${source.domain} ${city} ${q}s vendre`;
-          }
-          break;
-        case "sarouty":
-          // Legacy case — should not be reached with new identifiers
-          if (city && q) {
-            secondaryQuery = `site:${source.domain} ${city} ${q}s vendre`;
-          }
-          break;
-        case "yakeey_serper":
-          // Use /fr path variant
-          if (city && q) {
-            secondaryQuery = `site:yakeey.com/fr ${city} ${q}`;
-          }
-          break;
-        case "yakeey":
-          // Use /fr path variant
-          if (city && q) {
-            secondaryQuery = `site:yakeey.com/fr ${city} ${q}`;
-          }
-          break;
-        case "agenz":
-          // Weak source — enhance with "immobilier" keyword
-          if (city && q) {
-            secondaryQuery = `site:${source.domain} immobilier ${city} ${q}`;
-          }
-          break;
-        case "logic-immo":
-          // Weak source — enhance with "Maroc" keyword
-          if (city && q) {
-            secondaryQuery = `site:${source.domain} Maroc ${q} ${city}`;
-          }
-          break;
-        case "mubawab_serper":
-          // Weak source — try /fr path variant
-          if (city && q) {
-            secondaryQuery = `site:${source.domain}/fr ${q} ${city}`;
-          }
-          break;
+      if (secondaryQueryText) {
+        switch (source.source_id) {
+          case "yakeey":
+            secondaryQuery = `site:yakeey.com/fr-ma ${secondaryQueryText}`;
+            break;
+          case "mubawab_serper":
+            secondaryQuery = `site:${source.domain}/fr ${secondaryQueryText}`;
+            break;
+          default:
+            secondaryQuery = `site:${source.domain} ${secondaryQueryText}`;
+            break;
+        }
       }
 
       // Only add if it's different and not used
