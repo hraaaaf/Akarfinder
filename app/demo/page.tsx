@@ -60,6 +60,18 @@ const CARDS = [
     title: "Parcours Vendre",
     body: "Experience proprietaire avec exemple de demande vendeur, sans backend.",
   },
+  {
+    href: "/demo/demande",
+    icon: FileText,
+    title: "Demande qualifiee",
+    body: "Du profil de recherche a la demande structuree recue par le partenaire.",
+  },
+  {
+    href: "/demo/partenaire",
+    icon: Layers3,
+    title: "Kit partenaire",
+    body: "Checklists promoteur et agence, standard de fiche, plan 2D et localisation.",
+  },
 ];
 
 export default function DemoHubPage() {

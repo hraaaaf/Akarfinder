@@ -10047,3 +10047,40 @@ Explicit non-changes
 
 Progression roadmap
 * 64% -> 68%.
+
+====================================================
+AKARFINDER-ROADMAP-TO-70-FABLE-1 / PHASE 6 - PARTNER-INTAKE-DEMO-KIT-1 - 2026-07-05
+====================================================
+
+Status: completed
+
+Mission
+* Kit partenaire demo pour agences/promoteurs sur /demo/partenaire.
+* Objectif commercial: montrer a un partenaire "voici le modele a respecter
+  pour apparaitre proprement sur AkarFinder".
+
+Files
+* app/demo/partenaire/page.tsx (new, noindex, aucun backend)
+* app/demo/page.tsx (2 cartes hub: Demande qualifiee, Kit partenaire)
+* docs/DECISIONS.md, docs/ROADMAP.md, docs/SESSION.md (append)
+
+Contenu
+* Standard fiche partenaire (fiche, localisation 3 niveaux, photos
+  autorisees, plan 2D, contact autorise).
+* Checklists promoteur et agence (8 items chacune).
+* Exemples de fiches completes (liens /demo/bien, /demo/projet, /demo/agence).
+* Exemple fictif de demande qualifiee recue (builder reel, contact anonyme).
+* Benefices, avec disclaimer sans promesse de volume ni garantie.
+
+Verification
+* Routes: /demo 200, /demo/partenaire 200, /demo/demande 200.
+* Audit visuel mobile: rendu propre, badges Mode demo, aucun contact reel.
+* Scan URL externe: 0 dans app/demo, components/demo, lib/demo,
+  components/demand, lib/demand, components/search-profile,
+  lib/search-profile, app/profil-recherche.
+
+Explicit non-changes
+* Aucun backend. Search Gateway modified: no. DB/Supabase modified: no.
+
+Progression roadmap
+* 68% -> 70%. Objectif mission atteint.

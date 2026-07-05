@@ -2034,3 +2034,19 @@ Regles:
   qu'avec consentement.
 - Demonstration fictive sur /demo/demande (noindex), construite via le vrai
   builder pour montrer le payload reel.
+
+## 2026-07-05 — PARTNER-INTAKE-DEMO-KIT-1
+
+Decision:
+AkarFinder publie un kit partenaire demo sur /demo/partenaire (noindex) pour
+montrer a un promoteur ou une agence le modele a respecter pour apparaitre
+proprement sur AkarFinder.
+
+Contenu:
+- Standard de fiche partenaire (5 piliers), localisation 3 niveaux, photos
+  autorisees, plan 2D, contact autorise.
+- Checklist promoteur (8 items) et checklist agence (8 items).
+- Renvois vers les exemples complets (/demo/bien, /demo/projet, /demo/agence).
+- Exemple fictif de demande qualifiee recue (QualifiedDemandPreview).
+- Benefices sans promesse de volume ni garantie de resultats.
+- Aucun backend, CTA demonstration uniquement.

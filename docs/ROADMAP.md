@@ -4353,3 +4353,12 @@ Fait:
 
 Prochaine mission:
 PARTNER-INTAKE-DEMO-KIT-1 (68% -> 70%) — kit partenaire demo.
+
+## 2026-07-05 — PARTNER-INTAKE-DEMO-KIT-1 (68% -> 70%)
+
+Fait:
+- app/demo/partenaire/page.tsx (kit partenaire demo, noindex).
+- Cartes "Demande qualifiee" et "Kit partenaire" ajoutees au hub /demo.
+- Reutilisation de QualifiedDemandPreview et du builder de demande.
+
+Roadmap: 70% atteint (objectif mission AKARFINDER-ROADMAP-TO-70-FABLE-1).
