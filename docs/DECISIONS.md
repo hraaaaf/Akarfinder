@@ -2017,3 +2017,20 @@ Regles:
 - Resume indicatif et non contractuel, avec points a verifier par projet
   (achat / location / vente) et CTA internes (/search construit depuis le
   profil, alerte demo, accompagnement).
+
+## 2026-07-05 — DEMAND-CAPTURE-MVP-1
+
+Decision:
+Le profil de recherche peut devenir une "demande qualifiee" structuree
+(SearchDemandProfile), en MVP prudent sans aucun envoi.
+
+Regles:
+- Aucun envoi automatique, aucune API, aucune DB: la demande reste locale
+  et doit etre confirmee avant tout partage futur.
+- Contact utilisateur optionnel; sans consentement explicite (case cochee),
+  le contact n'entre jamais dans le payload — la demande reste anonyme.
+- Cote partenaire, l'apercu (QualifiedDemandPreview) montre budget, zone,
+  intention, urgence, criteres et non-negociables; le contact n'apparait
+  qu'avec consentement.
+- Demonstration fictive sur /demo/demande (noindex), construite via le vrai
+  builder pour montrer le payload reel.

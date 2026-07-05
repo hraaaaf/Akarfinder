@@ -10007,3 +10007,43 @@ Explicit non-changes
 
 Progression roadmap
 * 60% -> 64%.
+
+====================================================
+AKARFINDER-ROADMAP-TO-70-FABLE-1 / PHASE 5 - DEMAND-CAPTURE-MVP-1 - 2026-07-05
+====================================================
+
+Status: completed
+
+Mission
+* Transformer le profil de recherche en demande qualifiee exploitable.
+* MVP prudent: aucun envoi, aucune API reelle, aucune DB, contact optionnel
+  avec consentement obligatoire.
+
+Files
+* lib/demand/search-demand-profile.ts (new — SearchDemandProfile + builder)
+* components/demand/DemandSummaryCard.tsx (new — "Votre demande qualifiee",
+  "A partager avec une agence partenaire", "A confirmer avant envoi")
+* components/demand/QualifiedDemandPreview.tsx (new — apercu partenaire:
+  budget, zone, intention, urgence, criteres, non-negociables)
+* components/demand/DemandCaptureSection.tsx (new — contact optionnel +
+  consentement, integre a l'etape 8 du wizard)
+* app/demo/demande/page.tsx (new — demo fictive noindex, deux cotes)
+* components/search-profile/SearchProfileWizard.tsx (section demande)
+* scripts/scrapers/__tests__/search-demand.test.ts (new, 6 tests)
+* package.json, docs/DECISIONS.md, docs/ROADMAP.md, docs/SESSION.md
+
+Verification
+* Tests purs: mapping profil->demande (achat + location), contact refuse sans
+  consentement, contact inclus avec consentement, consentement sans details =
+  anonyme, profil vide gracieux.
+* E2E Playwright: warning "cochez le consentement" visible quand contact
+  renseigne sans case; demande anonyme avant consentement; contact joint
+  apres; /demo/demande rend les deux cotes; 0 pageerror; 0 overflow.
+* Routes: /demo/demande 200 (statique), /profil-recherche 200.
+
+Explicit non-changes
+* Aucun envoi reel en prod, aucun stockage DB, aucune API creee.
+* Search Gateway modified: no. DB/Supabase modified: no. env modified: no.
+
+Progression roadmap
+* 64% -> 68%.

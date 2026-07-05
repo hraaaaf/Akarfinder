@@ -20,6 +20,7 @@ import {
   type SearchProfile,
 } from "@/lib/search-profile/search-profile-types";
 import { buildSearchProfileSummary } from "@/lib/search-profile/search-profile-summary";
+import { DemandCaptureSection } from "@/components/demand/DemandCaptureSection";
 
 const TOTAL_STEPS = 8;
 
@@ -280,6 +281,9 @@ export function SearchProfileWizard() {
             ))}
           </ul>
         </div>
+
+        {/* DEMAND-CAPTURE-MVP-1 — optional qualified demand, no send */}
+        <DemandCaptureSection profile={profile} />
 
         <div className="mt-2 grid gap-2.5">
           <Link href={summary.searchHref} className="w-full rounded-xl bg-deepblue px-6 py-3.5 text-center text-[15px] font-extrabold text-white shadow-[0_6px_18px_rgba(7,27,51,0.22)] transition hover:bg-[#0d2a4d]">

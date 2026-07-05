@@ -4335,3 +4335,21 @@ Fait:
 
 Prochaine mission:
 DEMAND-CAPTURE-MVP-1 (64% -> 68%) — demande qualifiee depuis le profil.
+
+## 2026-07-05 — DEMAND-CAPTURE-MVP-1 (64% -> 68%)
+
+Fait:
+- lib/demand/search-demand-profile.ts (type SearchDemandProfile + builder pur,
+  gate consentement).
+- components/demand/DemandSummaryCard.tsx, QualifiedDemandPreview.tsx,
+  DemandCaptureSection.tsx.
+- app/demo/demande/page.tsx (demo fictive cote utilisateur + cote partenaire).
+- Integration etape 8 du wizard /profil-recherche ("Preparer ma demande
+  qualifiee").
+- scripts/scrapers/__tests__/search-demand.test.ts (6 tests, integres a
+  npm test).
+- E2E Playwright: gate consentement (exclu avant / inclus apres), page demo,
+  0 erreur JS.
+
+Prochaine mission:
+PARTNER-INTAKE-DEMO-KIT-1 (68% -> 70%) — kit partenaire demo.
