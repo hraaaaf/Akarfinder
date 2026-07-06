@@ -10602,3 +10602,72 @@ Decision
   aucune action requise dessus).
 * Prochaine etape : GO prod explicite d'Achraf pour SEO-FOUNDATION-1.
 
+====================================================
+MOROCCO-PRICE-LIFESTYLE-REFERENCE-DATASET-1 -- 2026-07-06
+====================================================
+
+STATUT : DATASET INTERNE + GARDE-FOUS EN COURS. PRODUCTION NON DEPLOYEE.
+
+Pre-check
+* HEAD initial : 7d23eb4.
+* git status initial : clean.
+* git stash list : 2 stashes Codex preexistants detectes (`stash@{0}`,
+  `stash@{1}`), non appliques, non modifies, non supprimes.
+
+Objectif
+* Integrer le referentiel V3 comme seed interne securise.
+* Ne rien exposer publiquement cote UI ou API.
+* Ne pas toucher Search Gateway, ranking, DB ou Supabase.
+
+Fichiers crees
+* lib/market-reference/types.ts
+* lib/market-reference/morocco-reference-data.ts
+* lib/market-reference/validators.ts
+* lib/market-reference/public-safety.ts
+* lib/market-reference/reference-resolver.ts
+* lib/market-reference/__tests__/morocco-reference-data.test.ts
+* lib/market-reference/__tests__/public-safety.test.ts
+* docs/MOROCCO_PRICE_LIFESTYLE_REFERENCE_DATASET.md
+
+Fichiers modifies
+* docs/DECISIONS.md
+* docs/ROADMAP.md
+* docs/SESSION.md
+
+Architecture retenue
+* Nouveau module separe `lib/market-reference/*`, sans branchement a
+  `lib/market/*` existant.
+* Dataset `internal_only=true` par defaut.
+* Tous les `price points` gardent `public_safe=false` et
+  `internal_only=true`.
+* Helpers publics limites aux labels lifestyle qualitatifs ; aucune valeur
+  `value_low` / `value_median` / `value_high` ne doit sortir.
+
+Seed V3 integre
+* Villes : Casablanca, Rabat, Marrakech, Tanger, Agadir.
+* Quartiers : Maarif, Agdal, Gueliz.
+* IDs normalises : `ma-casablanca-maarif`, `ma-rabat-agdal`,
+  `ma-marrakech-gueliz`.
+* `evidence_ref` obligatoire pour toutes les donnees sans `source_url`.
+* Plafonds confidence appliques :
+  - `portal_listing_prices + source_url=null => low`
+  - `manual_review + source_url=null => medium max`
+
+Checks intermediaires
+* Tests cibles du module passes :
+  `npx tsx --test lib/market-reference/__tests__/morocco-reference-data.test.ts lib/market-reference/__tests__/public-safety.test.ts`
+  -> 11/11 pass.
+
+Roadmap
+* Production actuelle confirmee : 80% (SEO-FOUNDATION-1 deja en production).
+* Cette mission vise 82% en preview/code uniquement.
+* Production doit rester a 80% jusqu'au GO prod explicite.
+
+Reste a faire
+* Lancer `npm test`.
+* Lancer `npm run build`.
+* Lancer les scans wording/exposition.
+* Deployer une preview et verifier qu'aucun changement public visible
+  n'apparait.
+* Commit propre du dataset interne.
+

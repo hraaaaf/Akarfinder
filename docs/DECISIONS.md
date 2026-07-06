@@ -2175,3 +2175,31 @@ Regles:
   2026-07-05, perime des la promotion prod. SEO-FOUNDATION-1 part donc de
   `76%`, candidat preview/code `80%`, production reste `76%` jusqu'au GO prod
   explicite pour SEO-FOUNDATION-1 specifiquement.
+
+## 2026-07-06 - MOROCCO-PRICE-LIFESTYLE-REFERENCE-DATASET-1
+
+Decision:
+AkarFinder peut maintenir un referentiel interne Maroc prix/quartiers/lifestyle
+pour preparer les futurs modules AkarInfo, tant que ce referentiel reste
+strictement internal_only et qu'aucune donnee de prix n'est exposee
+publiquement.
+
+Regles:
+- Le dataset seed V3 est integre sous `lib/market-reference/*`, separe du
+  module public existant `lib/market/*`.
+- Tous les `price points` restent `public_safe=false` et `internal_only=true`
+  dans cette mission.
+- Toute donnee `portal_listing_prices` sans `source_url` est plafonnee a
+  `confidence=low`.
+- Toute donnee `manual_review` sans `source_url` est plafonnee a
+  `confidence=medium`.
+- Chaque donnee sans URL publique doit garder un `evidence_ref` interne.
+- Les labels lifestyle ne peuvent sortir qu'en version qualitative non
+  chiffree et seulement via des helpers publics dedies.
+
+Doctrine:
+- Aucun affichage public de `value_low`, `value_median`, `value_high`.
+- Aucune API publique de prix.
+- Aucun wording public du type `prix de marche`, `prix reel`,
+  `prix officiel`, `sous le marche`, `au-dessus du marche`.
+- Search Gateway, ranking, DB et Supabase restent inchanges.

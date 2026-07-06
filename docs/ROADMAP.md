@@ -4433,13 +4433,16 @@ A | 70% | SEARCH-VOLUME-RELEVANCE-AUDIT-1 | baseline volume+pertinence | FAIT 20
 B | 70->73% | SEARCH-GATEWAY-COVERAGE-EXPANSION-1 | 30-50 resultats/requete : query expansion, load more, diversite sources, filtrage homepages/staging, seuil commercial | FAIT prod 2026-07-05 | audit baseline | cout provider a surveiller | production
 C | 73->76% | BUY-RENT-SERP-RELEVANCE-TUNING-1 | achat: vente+neuf compatibles ; location: jamais d'achat ; ville stricte | FAIT PROD 2026-07-06 (dpl_AUwewYE4A3SAWmnCmtqLavNehX13, HEAD c97412b) | B prod + validation preview | variabilite provider sur audit long + bruit long-tail neuf/national | production
 D | 76->80% | PARTNER-RANKING-LIVE-INTEGRATION-1 | brancher le moteur ranking partenaire a la SERP live sans casser le Gateway | a faire | B + C + Gateway stable + regles partenaires testees | casser la SERP live | preview puis prod controlee
-E | 76->80% | SEO-FOUNDATION-1 | titles/meta, canonical, sitemap, robots, OG, structured data safe, noindex demo verrouille | FAIT code+build+tests OK, preview validee 2026-07-06 (commit ea26b2e) - candidat prod | C prod | sur-indexation pages minces | preview, attend GO prod SEO
-F | 83->87% | SEO-CITY-INTENT-PAGES-1 | pages editoriales ville x intention + moteur integre | a faire | E | contenu mince | prod
-G | 87->90% | SEO-NEIGHBORHOOD-GUIDES-1 | guides quartiers Maroc (prix indicatifs, mobilite, ecoles, services) | a faire | F | maintenance contenu | prod
-H | 90->93% | SMART-ALERTS-PROFILE-MATCHING-1 | alertes basees profil, pas seulement mots-cles | a faire | profil recherche (fait) | volume alertes | preview puis prod
-I | 93->96% | MOROCCO-FINANCING-SIMULATOR-1 | simulateur credit/frais Maroc indicatif | a faire | aucun | wording financier prudent obligatoire | prod
-J | 96->98% | COLLABORATIVE-FAMILY-SEARCH-1 | favoris, notes, shortlist familiale | a faire | favoris existants | scope creep | preview puis prod
-K | 98->100% | AI-SEARCH-ASSISTANT-1 | assistant IA encadre pour expliquer compromis et guider | a faire | H-J | hallucination/wording, cadrage strict | preview puis prod
+E | 76->80% | SEO-FOUNDATION-1 | titles/meta, canonical, sitemap, robots, OG, structured data safe, noindex demo verrouille | FAIT PROD 2026-07-06 (dpl_5RGBoAx1avzeGEnicChyYsbX1Wbv, HEAD 7d23eb4) | C prod | sur-indexation pages minces | production
+F | 80->82% | MOROCCO-PRICE-LIFESTYLE-REFERENCE-DATASET-1 | referentiel interne Maroc prix/quartiers/lifestyle, internal_only, garde-fous publics, seed V3 | en cours | E prod | exposition publique accidentelle de prix | preview/code candidat uniquement
+G | 82->85% | AKARINFO-PASSPORT-1 | passeport quartier prudent avec labels lifestyle et reperes explicatifs sans prix publics bruts | a faire | F | sur-promesse quartier/prix | preview puis prod
+H | 85->88% | PRICE-POSITION-REFERENCE-V2 | logique encadree de position prix, serveur only, sans promesse "prix de marche" | a faire | F | wording prix trop agressif | preview puis prod
+I | 88->91% | SEO-CITY-INTENT-PAGES-1 | pages editoriales ville x intention + moteur integre | a faire | E | contenu mince | prod
+J | 91->94% | SEO-NEIGHBORHOOD-GUIDES-1 | guides quartiers Maroc avec lifestyle prudent et reperes non contractuels | a faire | F + I | maintenance contenu | prod
+K | 94->96% | SMART-ALERTS-PROFILE-MATCHING-1 | alertes basees profil, pas seulement mots-cles | a faire | profil recherche (fait) | volume alertes | preview puis prod
+L | 96->98% | MOROCCO-FINANCING-SIMULATOR-1 | simulateur credit/frais Maroc indicatif | a faire | aucun | wording financier prudent obligatoire | prod
+M | 98->99% | COLLABORATIVE-FAMILY-SEARCH-1 | favoris, notes, shortlist familiale | a faire | favoris existants | scope creep | preview puis prod
+N | 99->100% | AI-SEARCH-ASSISTANT-1 | assistant IA encadre pour expliquer compromis et guider | a faire | K-M | hallucination/wording, cadrage strict | preview puis prod
 
 NOTE : cette mise a jour ne modifie ni Search Gateway, ni ranking live,
 ni DB. Elle documente l'ordre de marche. Chaque mission garde ses gates
@@ -4469,15 +4472,15 @@ perime des la promotion prod de BUY-RENT-SERP-RELEVANCE-TUNING-1.
 Etat reconcilie :
 - Production avant SEO-FOUNDATION-1 : 76% (BUY-RENT tuning deploye et
   confirme).
-- Preview/code candidat apres SEO-FOUNDATION-1 : 80% (code+build+tests OK,
-  preview validee, commit ea26b2e).
-- Production : reste a 76% jusqu'au GO prod explicite pour SEO-FOUNDATION-1.
-- Apres GO prod SEO-FOUNDATION-1 valide : production = 80%.
+- SEO-FOUNDATION-1 : deploye en production.
+- Production actuelle : 80% (Deployment ID dpl_5RGBoAx1avzeGEnicChyYsbX1Wbv,
+  HEAD 7d23eb4).
 
 Decision :
-- Preview : deployee et techniquement validee (voir docs/SESSION.md).
-- Production : NON deployee, attend GO explicite pour SEO-FOUNDATION-1
-  specifiquement (BUY-RENT-SERP-RELEVANCE-TUNING-1 est deja en production).
+- Production : OUI pour SEO-FOUNDATION-1.
+- Prochaine mission logique : MOROCCO-PRICE-LIFESTYLE-REFERENCE-DATASET-1.
+- Cette nouvelle mission peut atteindre 82% en preview/code, mais la
+  production reste a 80% jusqu'au GO prod explicite.
 
 ## 2026-07-05 — DEMO-PROMOTER-AGENCY-REALISTIC-MOCKUP-1
 
