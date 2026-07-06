@@ -17,7 +17,36 @@ Reason:
 Impact:
 - ...
 
-## 2026-07-06 - FRESHNESS-OBSERVATION-SCORE-1
+## 2026-07-06 - FRESHNESS-OBSERVATION-SCORE-1 — Production GO
+
+Status: Deployed to production
+
+Decision:
+- User gave explicit GO for production after reviewing the code+test+build
+  bilan and a separate visual smoke test (FRESHNESS-OBSERVATION-VISUAL-SMOKE-1)
+  that rendered the actual production components (ExternalIndexedResultCard +
+  AkarInfoPassportCard) with simulated Gateway data, confirming the observation
+  badges render correctly and no forbidden wording appears.
+- Pre-deploy gates re-verified: git status clean, HEAD 36f1743, npm test
+  1386/1386, npm run build success.
+- Deployed via `vercel deploy --prod`. Deployment ID dpl_3FFMNJ4tVZH5KM1FfqYM4TA8sKj1,
+  aliased to https://akarfinder.vercel.app.
+
+Reason:
+- All safety gates (allow-list label filtering, no-op persistence, unit
+  tests, rendered-component smoke test) were satisfied; the only open item
+  (no live Gateway results during verification windows) is a provider/env
+  condition unrelated to the code shipped, not a defect in this mission.
+
+Impact:
+- Roadmap: 85% -> 87%.
+- Post-deploy check found Gateway API returning 0 results for test queries
+  in production at verification time (ok:true, degraded:false,
+  results_count:0) — pre-existing route, not modified by this mission;
+  worth monitoring but not a blocker.
+- Next: SIMILAR-PUBLIC-RESULTS-1 (87% -> 88.5%).
+
+## 2026-07-06 - FRESHNESS-OBSERVATION-SCORE-1 (historique — code/preview)
 
 Status: Code + tests + build validated — preview to deploy — production pending explicit GO
 

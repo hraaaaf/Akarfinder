@@ -1,10 +1,35 @@
 SESSION.md - Current Project Session
 
 ====================================================
-FRESHNESS-OBSERVATION-SCORE-1 -- Preview/code candidat 2026-07-06
+FRESHNESS-OBSERVATION-SCORE-1 -- PRODUCTION 2026-07-06
 ====================================================
 
-STATUT : CODE + TESTS + BUILD VALIDES — PREVIEW A DEPLOYER — PROD EN ATTENTE DE GO
+STATUT : DEPLOYE EN PRODUCTION
+Deployment ID : dpl_3FFMNJ4tVZH5KM1FfqYM4TA8sKj1
+HEAD : 36f1743
+Alias : https://akarfinder.vercel.app
+
+GO explicite recu de l'utilisateur. Pre-checks avant deploiement : git status
+clean, HEAD 36f1743, npm test 1386/1386, npm run build OK. Deploiement via
+`vercel deploy --prod`. Post-deploiement verifie : routes principales 200,
+/listings/137 = 404, demo noindex,nofollow, robots/sitemap inchanges, aucun
+wording interdit ni fuite dataset sur la page d'accueil production.
+
+Limite constatee : Gateway prod a retourne 0 resultat sur les requetes
+testees au moment du GO (ok:true, degraded:false, results_count:0) — non lie
+a cette mission (app/api/search/gateway non touche), donc aucune carte
+Gateway reelle n'a pu etre observee en direct en production a cet instant.
+La garantie de rendu repose sur le smoke test precedent (FRESHNESS-
+OBSERVATION-VISUAL-SMOKE-1) qui a rendu les composants de production reels
+avec donnees simulees et confirme l'absence de tout wording interdit.
+
+Roadmap : 85% -> 87%. Next : SIMILAR-PUBLIC-RESULTS-1 (87% -> 88.5%).
+
+====================================================
+FRESHNESS-OBSERVATION-SCORE-1 -- Preview/code candidat 2026-07-06 (historique)
+====================================================
+
+STATUT (a ce stade) : CODE + TESTS + BUILD VALIDES — PREVIEW A DEPLOYER — PROD EN ATTENTE DE GO
 
 MISSION :
   Ajouter une premiere couche Freshness / Observation aux resultats publics
