@@ -17,6 +17,43 @@ Reason:
 Impact:
 - ...
 
+## 2026-07-06 - FRESHNESS-OBSERVATION-SCORE-1
+
+Status: Code + tests + build validated — preview to deploy — production pending explicit GO
+
+Decision:
+- Add a first prudent Freshness/Observation layer to public results, wired
+  only into the Gateway external passport (buildAkarInfoPassportForGatewayResult).
+- New engine under lib/observation/* : types, fingerprint (FNV-1a, no
+  node:crypto, no contact/gallery fields as input), observation-labels
+  (authorized vs forbidden wording), observation-policy (label computation
+  restricted to a strict allow-list for external_web), observation-store
+  (ObservationStore interface, NoopObservationStore as production default,
+  InMemoryObservationStore for tests only), public-safety (runtime asserts).
+- Persistence is abstraction-only: default store never fabricates history;
+  no Supabase table, no migration, no write path added anywhere.
+- Deliberately did NOT wire observation into buildAkarInfoPassportForListing
+  (structured/partner/demo passports) — kept blast radius to Gateway only,
+  where the "no availability promise" risk is highest and most explicit in
+  the mission brief.
+
+Reason:
+- Gateway results are AkarFinder's largest source of public results and the
+  ones most exposed to over-promising availability; a prudent label needed
+  a hard technical guarantee (allow-list filtering), not just a style
+  convention.
+- No real persistence exists yet; fabricating "first seen 3 months ago"
+  without a store would be a false claim, so the safe default (no record =
+  "Observé pendant cette recherche" only) was chosen over guessing.
+
+Impact:
+- lib/search-gateway/**, app/api/search/gateway/**, ranking, and Supabase
+  production were not touched.
+- 18 new tests added (scripts/scrapers/__tests__/observation.test.ts),
+  registered in package.json test:scrapers. Full suite: 1386 tests, 0 fail.
+  npm run build: success (46/46 pages).
+- Roadmap: 85% -> 87% only after preview validation AND explicit prod GO.
+
 ## 2026-07-02 - PRODUCT-COMPLIANCE-TEST-SUITE-1
 
 Status: Audit Complete (2 violations detected)

@@ -92,6 +92,24 @@ export function AkarInfoPassportCard({
         </div>
       ) : null}
 
+      {passport.observation && passport.observation.labels.length > 0 ? (
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          {passport.observation.labels.map((label) => (
+            <span
+              key={label}
+              className="rounded-full border border-border/15 bg-card/70 px-2.5 py-1 text-[10.5px] font-bold text-muted-foreground dark:border-white/8 dark:bg-white/[0.03] dark:text-white/60"
+            >
+              {label}
+            </span>
+          ))}
+          {!compact && passport.observation.help_line ? (
+            <p className="mt-1 basis-full text-[11px] leading-5 text-muted-foreground dark:text-white/50">
+              {passport.observation.help_line}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       {!compact ? (
         <p className="mt-3 text-[11px] leading-5 text-muted-foreground dark:text-white/50">
           Préparation future : {passport.future_signals.join(", ")}.

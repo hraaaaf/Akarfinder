@@ -5,6 +5,10 @@ import { getInternalDistrictReferenceByCityAndDistrict } from "@/lib/market-refe
 import { getSourceAccessType } from "@/lib/sources/source-access-registry";
 import { canHaveInternalDetail } from "@/lib/listings/listing-boundary";
 import type { Listing } from "@/lib/listings/types";
+import type { ObservationSummary } from "@/lib/observation/types";
+import { buildObservationFingerprint } from "@/lib/observation/fingerprint";
+import { computeObservationSummary } from "@/lib/observation/observation-policy";
+import { getObservationStore } from "@/lib/observation/observation-store";
 
 export type AkarInfoPassportKind =
   | "gateway_external"
@@ -24,6 +28,7 @@ export type AkarInfoPassport = {
   points_to_verify: string[];
   lifestyle_summary: PublicLifestyleSummary | null;
   future_signals: string[];
+  observation?: ObservationSummary;
 };
 
 function resolveLifestyleSummary(
@@ -135,6 +140,19 @@ export function buildAkarInfoPassportForListing(
   };
 }
 
+function resolveGatewayObservationSummary(
+  result: SearchGatewayNormalizedResult,
+): ObservationSummary {
+  const fingerprint = buildObservationFingerprint({
+    original_url: result.original_url,
+    source_host: result.domain,
+    title: result.title,
+  });
+
+  const existingRecord = getObservationStore().get(fingerprint);
+  return computeObservationSummary(existingRecord, "external_web");
+}
+
 export function buildAkarInfoPassportForGatewayResult(
   result: SearchGatewayNormalizedResult,
 ): AkarInfoPassport {
@@ -157,5 +175,6 @@ export function buildAkarInfoPassportForGatewayResult(
       "Historique d'annonce",
       "Repères quartier si la localisation est exploitable",
     ],
+    observation: resolveGatewayObservationSummary(result),
   };
 }

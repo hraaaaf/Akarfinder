@@ -1,6 +1,49 @@
 SESSION.md - Current Project Session
 
 ====================================================
+FRESHNESS-OBSERVATION-SCORE-1 -- Preview/code candidat 2026-07-06
+====================================================
+
+STATUT : CODE + TESTS + BUILD VALIDES — PREVIEW A DEPLOYER — PROD EN ATTENTE DE GO
+
+MISSION :
+  Ajouter une premiere couche Freshness / Observation aux resultats publics
+  AkarFinder (en particulier Gateway externe), sans modifier le ranking,
+  sans exposer de donnees sensibles, sans casser la doctrine Gateway.
+
+CREE :
+  lib/observation/types.ts
+  lib/observation/fingerprint.ts
+  lib/observation/observation-labels.ts
+  lib/observation/observation-policy.ts
+  lib/observation/observation-store.ts
+  lib/observation/public-safety.ts
+  scripts/scrapers/__tests__/observation.test.ts (18 tests)
+  docs/FRESHNESS_OBSERVATION_SCORE.md
+
+MODIFIE :
+  lib/akarinfo/akarinfo-passport.ts (champ `observation` sur le passeport
+    Gateway uniquement, lecture seule via ObservationStore.get)
+  components/akarinfo/AkarInfoPassportCard.tsx (badges + ligne d'aide)
+  package.json (enregistrement du nouveau test dans test:scrapers)
+
+NON TOUCHE (conforme au scope interdit) :
+  lib/search-gateway/**, app/api/search/gateway/**, database/**,
+  lib/supabase/**, scripts/scrapers ingestion, .env, sitemap/robots.
+
+RESULTATS :
+  npm test : 1335 + 51 = 1386 tests, 0 echec
+  npm run build : succes (46/46 pages)
+  Scan wording interdit : aucune occurrence en UI publique
+  Scan fuite dataset (value_low/median/high, evidence_ref) : aucune
+
+Persistance : abstraction uniquement (Noop par defaut, InMemory pour tests).
+Aucune ecriture declenchee depuis le rendu ; aucune table/migration creee.
+
+Prochaine etape : deploiement preview, verification routes, puis GO prod
+explicite avant bascule 85% -> 87%.
+
+====================================================
 PRODUCT-COMPLIANCE-TEST-SUITE-1 -- Audit Complete 2026-07-02
 ====================================================
 
