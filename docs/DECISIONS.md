@@ -2203,3 +2203,32 @@ Doctrine:
 - Aucun wording public du type `prix de marche`, `prix reel`,
   `prix officiel`, `sous le marche`, `au-dessus du marche`.
 - Search Gateway, ranking, DB et Supabase restent inchanges.
+
+## 2026-07-06 - AKARINFO-PASSPORT-1
+
+Decision:
+AkarFinder introduit un premier Passeport AkarInfo pour aider l'utilisateur a
+comprendre ce qu'il regarde sans exposer publiquement le referentiel prix
+interne et sans casser la doctrine Gateway.
+
+Regles:
+- Le passeport montre uniquement le niveau d'information disponible, le type
+  de source, le role de la source originale, des points a verifier, et des
+  labels quartier qualitatifs `public_safe=true` lorsqu'ils existent.
+- Les resultats web externes gardent `Apercu limite` + `Source originale
+  obligatoire` + aucun contact/galerie/page interne.
+- Les fiches structurees peuvent afficher `Fiche structuree` ou
+  `Fiche enrichie` selon le contexte, sans se presenter comme verification
+  officielle.
+- Aucun champ prix du dataset `lib/market-reference/*` ne peut remonter dans
+  le passeport public (`value_low`, `value_median`, `value_high`,
+  `evidence_ref`, `confidence` prix).
+- Les repères quartier ne sortent qu'en labels qualitatifs, jamais en score
+  chiffre ni en qualification dangereuse/sure.
+
+Impact:
+- Nouveau helper pur `lib/akarinfo/akarinfo-passport.ts`.
+- Nouveau composant reutilisable `components/akarinfo/AkarInfoPassportCard.tsx`.
+- Insertion dans les cartes SERP structurees, les cartes Gateway externes et
+  la fiche detail interne.
+- Search Gateway, ranking, DB, Supabase et APIs publiques restent inchanges.

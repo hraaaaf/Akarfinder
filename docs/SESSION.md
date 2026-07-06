@@ -10671,3 +10671,52 @@ Reste a faire
   n'apparait.
 * Commit propre du dataset interne.
 
+====================================================
+AKARINFO-PASSPORT-1 -- 2026-07-06
+====================================================
+
+STATUT : PASSEPORT AKARINFO EN COURS. PRODUCTION NON DEPLOYEE.
+
+Pre-check
+* HEAD initial : 3755794.
+* git status initial : clean.
+
+Objectif
+* Creer un passeport d'information prudent pour les resultats web externes et
+  les fiches structurees.
+* Reutiliser uniquement les labels lifestyle `public_safe=true`.
+* Ne jamais exposer publiquement les prix du dataset interne.
+* Ne pas toucher Search Gateway, ranking, DB ou Supabase.
+
+Architecture retenue
+* Helper pur : `lib/akarinfo/akarinfo-passport.ts`.
+* Composant reutilisable : `components/akarinfo/AkarInfoPassportCard.tsx`.
+* Insertion minimale :
+  - `components/search/ExternalIndexedResultCard.tsx`
+  - `components/search/SearchListingCardDark.tsx`
+  - `components/listings/ListingDetail.tsx`
+* Tests cibles ajoutes :
+  `scripts/scrapers/__tests__/akarinfo-passport.test.ts`
+
+Regles produit maintenues
+* Resultat web externe = `Apercu limite` + `Source originale obligatoire`.
+* Aucune page interne Gateway, aucun contact, aucune galerie pour ces
+  resultats.
+* Repères quartier uniquement qualitatifs.
+* Aucune donnee `value_low`, `value_median`, `value_high`, `evidence_ref` ou
+  `confidence` prix ne doit remonter dans le passeport public.
+
+Validation intermediaire
+* Tests cibles passes :
+  `npx tsx --test scripts/scrapers/__tests__/akarinfo-passport.test.ts lib/market-reference/__tests__/morocco-reference-data.test.ts lib/market-reference/__tests__/public-safety.test.ts`
+  -> 15/15 pass.
+* `npm test` : OK.
+* `npm run build` : OK.
+* Scan exposition : aucun composant public ni API publique ne reference
+  `lib/market-reference/*` ou `value_low/value_median/value_high`.
+
+Roadmap
+* Production actuelle reste a 82%.
+* Cette mission vise 85% en preview/code uniquement tant que la preview n'est
+  pas validee et que le GO prod n'est pas donne.
+

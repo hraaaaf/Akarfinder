@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { MapPin, ArrowRight, Calculator, BellPlus } from "lucide-react";
+import { AkarInfoPassportCard } from "@/components/akarinfo/AkarInfoPassportCard";
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { ListingVisual } from "@/components/listings/ListingVisual";
@@ -23,6 +24,7 @@ import { getMarketReference, getListingObservedPriceComparison } from "@/lib/mar
 import { getListingProximity } from "@/lib/proximity/get-listing-proximity";
 import { calculatePackageScore } from "@/lib/package-score/calculate-package-score";
 import { track } from "@/lib/tracking/track";
+import { buildAkarInfoPassportForListing } from "@/lib/akarinfo/akarinfo-passport";
 import type { PackageScoreLabel } from "@/lib/package-score/types";
 import type { Listing } from "@/lib/listings/types";
 
@@ -89,6 +91,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   const hasPackage = packageScore.overall_label !== "Données insuffisantes";
   const marketRef = hasPackage ? null : getMarketReference(listing.city, listing.neighborhood, listing.property_type, transactionType, listing.price_per_m2);
   const isRent = listing.transaction_type === "rent";
+  const passport = buildAkarInfoPassportForListing(listing);
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-border/15 dark:border-white/10 bg-card dark:bg-white/[0.045] shadow-[0_14px_40px_rgba(2,10,24,0.15)] dark:shadow-[0_14px_40px_rgba(2,10,24,0.4)] backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-bronze-500/40 hover:shadow-[0_26px_56px_rgba(2,10,24,0.3)] dark:hover:shadow-[0_26px_56px_rgba(2,10,24,0.55)]">
@@ -267,6 +270,8 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           )}
           <CompareToggleButton listingId={listing.id} className="flex-1 justify-center" />
         </div>
+
+        <AkarInfoPassportCard passport={passport} className="mt-3" />
       </div>
     </article>
   );

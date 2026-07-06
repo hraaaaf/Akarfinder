@@ -7,7 +7,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { AkarInfoPassportCard } from "@/components/akarinfo/AkarInfoPassportCard";
 import { SourceBadge } from "@/components/badges/SourceBadge";
+import { buildAkarInfoPassportForGatewayResult } from "@/lib/akarinfo/akarinfo-passport";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
 const THUMBNAILS_ENABLED =
@@ -35,6 +37,7 @@ export function ExternalIndexedResultCard({
 }: ExternalIndexedResultCardProps) {
   // Guard: suppressed results must never render
   if (!result.can_show_result) return null;
+  const passport = buildAkarInfoPassportForGatewayResult(result);
 
   const sanitizedTitle = sanitizeVisibleText(result.title);
   const sanitizedSnippet = sanitizeVisibleText(result.snippet);
@@ -119,6 +122,8 @@ export function ExternalIndexedResultCard({
         <p className="mt-2 text-[10px] text-muted-foreground/60 dark:text-white/30 truncate">
           {sanitizedDisplayUrl}
         </p>
+
+        <AkarInfoPassportCard passport={passport} className="mt-3" />
       </div>
     </Link>
   );

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AkarInfoPassportCard } from "@/components/akarinfo/AkarInfoPassportCard";
 import { CompareBar } from "@/components/compare/CompareBar";
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
@@ -32,6 +33,7 @@ import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-p
 import { canHaveInternalDetail, canShowContactActions } from "@/lib/listings/listing-boundary";
 import { calculatePackageScore } from "@/lib/package-score/calculate-package-score";
 import { getListingObservedPriceComparison } from "@/lib/market/get-market-reference";
+import { buildAkarInfoPassportForListing } from "@/lib/akarinfo/akarinfo-passport";
 
 function getReliabilityLevel(score: number): "high" | "medium" | "low" {
   if (score >= 80) return "high";
@@ -158,6 +160,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
       : reliabilityLevel === "medium"
         ? "Infos limitées"
         : "Doublon possible";
+  const passport = buildAkarInfoPassportForListing(listing);
 
   return (
     <section className="pb-52 pt-5 lg:pb-16 lg:pt-6">
@@ -324,6 +327,10 @@ export function ListingDetail({ listing }: { listing: Listing }) {
               ) : null}
             </div>
           ) : null}
+
+          <div className="rounded-[1.4rem] border border-[#eadfca] bg-white p-5 shadow-[0_6px_22px_rgba(7,27,51,0.04)]">
+            <AkarInfoPassportCard passport={passport} variant="full" />
+          </div>
 
           {/* Description */}
           <div className="rounded-[1.4rem] border border-[#eadfca] bg-white p-5 shadow-[0_6px_22px_rgba(7,27,51,0.04)]">
