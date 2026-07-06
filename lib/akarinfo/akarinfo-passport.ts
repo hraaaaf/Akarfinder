@@ -9,6 +9,7 @@ import type { ObservationSummary } from "@/lib/observation/types";
 import { buildObservationFingerprint } from "@/lib/observation/fingerprint";
 import { computeObservationSummary } from "@/lib/observation/observation-policy";
 import { getObservationStore } from "@/lib/observation/observation-store";
+import type { PublicResultSimilaritySummary } from "@/lib/public-result-similarity/types";
 
 export type AkarInfoPassportKind =
   | "gateway_external"
@@ -29,6 +30,7 @@ export type AkarInfoPassport = {
   lifestyle_summary: PublicLifestyleSummary | null;
   future_signals: string[];
   observation?: ObservationSummary;
+  similar_results?: PublicResultSimilaritySummary;
 };
 
 function resolveLifestyleSummary(
@@ -155,6 +157,7 @@ function resolveGatewayObservationSummary(
 
 export function buildAkarInfoPassportForGatewayResult(
   result: SearchGatewayNormalizedResult,
+  similarResults?: PublicResultSimilaritySummary,
 ): AkarInfoPassport {
   return {
     kind: "gateway_external",
@@ -176,5 +179,6 @@ export function buildAkarInfoPassportForGatewayResult(
       "Repères quartier si la localisation est exploitable",
     ],
     observation: resolveGatewayObservationSummary(result),
+    similar_results: similarResults,
   };
 }

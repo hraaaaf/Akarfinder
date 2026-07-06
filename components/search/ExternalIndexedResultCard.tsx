@@ -10,6 +10,7 @@ import { ArrowRight } from "lucide-react";
 import { AkarInfoPassportCard } from "@/components/akarinfo/AkarInfoPassportCard";
 import { SourceBadge } from "@/components/badges/SourceBadge";
 import { buildAkarInfoPassportForGatewayResult } from "@/lib/akarinfo/akarinfo-passport";
+import type { PublicResultSimilaritySummary } from "@/lib/public-result-similarity/types";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
 const THUMBNAILS_ENABLED =
@@ -17,6 +18,7 @@ const THUMBNAILS_ENABLED =
 
 type ExternalIndexedResultCardProps = {
   result: SearchGatewayNormalizedResult;
+  similarResults?: PublicResultSimilaritySummary;
 };
 
 const CONTACT_PATTERNS = [
@@ -34,10 +36,11 @@ function sanitizeVisibleText(value: string | null | undefined) {
 
 export function ExternalIndexedResultCard({
   result,
+  similarResults,
 }: ExternalIndexedResultCardProps) {
   // Guard: suppressed results must never render
   if (!result.can_show_result) return null;
-  const passport = buildAkarInfoPassportForGatewayResult(result);
+  const passport = buildAkarInfoPassportForGatewayResult(result, similarResults);
 
   const sanitizedTitle = sanitizeVisibleText(result.title);
   const sanitizedSnippet = sanitizeVisibleText(result.snippet);
@@ -106,6 +109,24 @@ export function ExternalIndexedResultCard({
             {sanitizedSnippet}
           </p>
         )}
+
+        {similarResults?.similar_possible ? (
+          <div className="mb-3 rounded-xl border border-amber-400/20 bg-amber-500/10 px-3 py-2.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-amber-400/25 px-2 py-0.5 text-[10px] font-extrabold text-amber-800 dark:text-amber-100">
+                {similarResults.similar_public_label}
+              </span>
+              {typeof similarResults.similar_count === "number" ? (
+                <span className="text-[10px] font-semibold text-amber-800/80 dark:text-amber-100/80">
+                  {similarResults.similar_count} résultat{similarResults.similar_count > 1 ? "s" : ""} proche{similarResults.similar_count > 1 ? "s" : ""}
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-1.5 text-[11px] leading-5 text-foreground/75 dark:text-white/70">
+              Comparez la source originale avec les résultats proches avant de contacter.
+            </p>
+          </div>
+        ) : null}
 
         {/* Footer: Attribution + CTA */}
         <div className="mt-auto flex items-center justify-between gap-2 pt-3 border-t border-border/10 dark:border-white/5">

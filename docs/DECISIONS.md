@@ -17,6 +17,30 @@ Reason:
 Impact:
 - ...
 
+## 2026-07-06 - SIMILAR-PUBLIC-RESULTS-1
+Status: Validated for code + preview candidate. Production pending explicit GO.
+Decision:
+- Add a prudent public layer for "possible similar results" limited to the
+  results already present in a single Gateway response.
+- Public wording stays strictly comparison-oriented:
+  `Résultat similaire possible`, `Comparer les sources avant de contacter`.
+- No public duplicate claim, no scam/suspicion wording, no numeric similarity
+  score, no internal group id, no dataset-price field exposure.
+- The feature is integrated lightly into Gateway result cards and the
+  AkarInfo passport only; no dedicated comparison page, no ranking change,
+  no DB/Supabase/cache changes.
+Reason:
+- Users can benefit from a gentle comparison cue when multiple external web
+  results look close, but AkarFinder must not overclaim certainty on third-
+  party data.
+- The safest V1 is deterministic, local to one response, and separated
+  between internal scoring and public-safe wording.
+Impact:
+- Preview/code candidate roadmap: `88% -> 89%`.
+- Production roadmap remains `88%` until explicit production GO.
+- Gateway doctrine remains unchanged: external result, limited preview,
+  original source to confirm.
+
 ## 2026-07-06 - FRESHNESS-OBSERVATION-SCORE-1 — Production GO
 
 ## 2026-07-06 - SEARCH-GATEWAY-CACHE-1

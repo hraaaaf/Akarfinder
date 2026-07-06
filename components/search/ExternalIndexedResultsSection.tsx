@@ -4,6 +4,8 @@
 // Section header + grid for external indexed results from Search Gateway
 
 import { ExternalIndexedResultCard } from "./ExternalIndexedResultCard";
+import { buildPublicResultSimilaritySummaries } from "@/lib/public-result-similarity/group-public-results";
+import { assertPublicResultSimilaritySafety } from "@/lib/public-result-similarity/public-safety";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
 type ExternalIndexedResultsSectionProps = {
@@ -18,6 +20,22 @@ export function ExternalIndexedResultsSection({
   // Don't show section if no results and not loading
   if (!isLoading && results.length === 0) {
     return null;
+  }
+
+  const similaritySummaries = buildPublicResultSimilaritySummaries(
+    results.map((result) => ({
+      id: result.id,
+      title: result.title,
+      snippet: result.snippet,
+      original_url: result.original_url,
+      display_url: result.display_url,
+      source_name: result.source_name,
+      source_host: result.domain,
+    })),
+  );
+
+  for (const summary of Object.values(similaritySummaries)) {
+    assertPublicResultSimilaritySafety(summary);
   }
 
   return (
@@ -45,7 +63,11 @@ export function ExternalIndexedResultsSection({
       ) : results.length > 0 ? (
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {results.map((result) => (
-            <ExternalIndexedResultCard key={result.id} result={result} />
+            <ExternalIndexedResultCard
+              key={result.id}
+              result={result}
+              similarResults={similaritySummaries[result.id]}
+            />
           ))}
         </div>
       ) : null}

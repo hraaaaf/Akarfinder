@@ -1,6 +1,94 @@
 SESSION.md - Current Project Session
 
 ====================================================
+SIMILAR-PUBLIC-RESULTS-1 -- PREVIEW 2026-07-06
+====================================================
+
+STATUT : CODE + TESTS + BUILD VALIDES. PREVIEW A DEPLOYER. PRODUCTION NON DEPLOYEE.
+
+Mission :
+  Ajouter une couche prudente "Résultat similaire possible" sur les résultats
+  publics Gateway, sans parler de doublon confirmé, sans score public, sans
+  toucher au ranking Gateway, au cache, ou à la base.
+
+Pre-check :
+  - HEAD initial : 7356c54
+  - git status initial : clean
+  - git stash list : `stash@{0}`, `stash@{1}` détectés, non appliqués, non
+    modifiés, non supprimés
+
+Cree :
+  - lib/public-result-similarity/types.ts
+  - lib/public-result-similarity/normalize.ts
+  - lib/public-result-similarity/similarity-score.ts
+  - lib/public-result-similarity/similarity-policy.ts
+  - lib/public-result-similarity/group-public-results.ts
+  - lib/public-result-similarity/public-safety.ts
+  - scripts/scrapers/__tests__/public-result-similarity.test.ts
+  - docs/SIMILAR_PUBLIC_RESULTS.md
+
+Modifie :
+  - lib/akarinfo/akarinfo-passport.ts
+  - components/akarinfo/AkarInfoPassportCard.tsx
+  - components/search/ExternalIndexedResultCard.tsx
+  - components/search/ExternalIndexedResultsSection.tsx
+  - package.json
+  - docs/SESSION.md
+  - docs/ROADMAP.md
+  - docs/DECISIONS.md
+
+Architecture retenue :
+  - Moteur deterministe local a une meme reponse de recherche.
+  - Exposition publique reduite a :
+    `similar_possible`, `similar_count`, `similar_public_label`,
+    `similar_reasons_public`.
+  - Champs internes (`similarity_score`, `similarity_group_id`,
+    `raw_similarity_signals`, `threshold_details`) gardes hors UI.
+  - Aucun branchement DB, Supabase, cache ou ranking.
+
+Signaux utilises :
+  - meme ville probable
+  - meme quartier probable
+  - meme transaction_type
+  - meme property_type
+  - prix proche si visible
+  - surface proche si visible
+  - titre proche
+  - source differente a comparer
+
+Checks :
+  - Test cible :
+    `npx tsx --test scripts/scrapers/__tests__/public-result-similarity.test.ts`
+    -> 13/13 pass
+  - `npm test` : 1359 + 51 = 1410 tests, 0 echec
+  - `npm run build` : succes
+  - Scan wording interdit : aucune nouvelle occurrence UI publique ; hits
+    restants uniquement dans docs, garde-fous et tests internes
+  - Scan fuite interne (`app`, `components`, `app/api`) :
+    aucun hit sur `value_low|value_median|value_high|evidence_ref|
+    internal/manual-review|internal/portal-review|similarity_score|
+    similarity_group_id|cache_key`
+
+Doctrine preservee :
+  - aucun "doublon confirmé"
+  - aucun score numérique public
+  - aucun contact / galerie / image utilisé comme preuve
+  - aucune page interne Gateway créée
+  - aucun changement ranking Gateway
+  - aucun changement cache Gateway
+  - aucun changement DB/Supabase
+
+Roadmap :
+  - Production reste à `88%`
+  - Preview/code recommandé : `89%`
+  - Production : `89%` seulement après GO prod explicite
+
+Prochaine etape :
+  - déployer une preview, vérifier les routes publiques et le non-crash du
+    Gateway même si le provider retourne 0 ;
+  - puis seulement préparer un GO prod éventuel.
+
+====================================================
 SEARCH-GATEWAY-CACHE-1 -- PREVIEW 2026-07-06
 ====================================================
 

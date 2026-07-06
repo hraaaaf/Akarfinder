@@ -110,6 +110,29 @@ export function AkarInfoPassportCard({
         </div>
       ) : null}
 
+      {passport.similar_results?.similar_possible ? (
+        <div className="mt-3 rounded-xl border border-amber-400/20 bg-amber-500/10 px-3 py-2.5">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-amber-700 dark:text-amber-200">
+            Comparer
+          </p>
+          <p className="mt-1 text-[12px] leading-5 text-foreground/78 dark:text-white/68">
+            Comparer avec les résultats similaires possibles avant de contacter.
+          </p>
+          {passport.similar_results.similar_reasons_public.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {passport.similar_results.similar_reasons_public.map((reason) => (
+                <span
+                  key={reason}
+                  className="rounded-full border border-amber-400/20 bg-white/40 px-2.5 py-1 text-[10.5px] font-bold text-amber-800 dark:bg-white/[0.04] dark:text-amber-100"
+                >
+                  {reason}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
       {!compact ? (
         <p className="mt-3 text-[11px] leading-5 text-muted-foreground dark:text-white/50">
           Préparation future : {passport.future_signals.join(", ")}.

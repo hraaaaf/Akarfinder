@@ -4536,3 +4536,43 @@ Prochaine etape :
 * attendre GO prod explicite si le cache doit passer `87% -> 88%` en
   production ;
 * ensuite seulement reprendre la mission suivante.
+
+## 2026-07-06 â€” SIMILAR-PUBLIC-RESULTS-1
+
+Etat reconcilie pour cette mission :
+
+* Production actuelle : `88%`
+* `SIMILAR-PUBLIC-RESULTS-1` vise `89%` en preview/code uniquement.
+* Production doit rester `88%` tant qu'aucun GO prod explicite n'est donne.
+
+Mission :
+
+* Ajouter une couche "Résultat similaire possible" sur les résultats publics
+  Gateway pour aider la comparaison, sans jamais parler de doublon confirmé.
+
+Guardrails :
+
+* aucun changement ranking Gateway ;
+* aucun changement cache Gateway ;
+* aucune migration ;
+* aucun contact, aucune galerie, aucun prix dataset ;
+* aucun score numérique public ;
+* aucune page interne Gateway.
+
+Livrables :
+
+* `lib/public-result-similarity/*`
+* intégration légère `components/search/*` et `components/akarinfo/*`
+* documentation dédiée `docs/SIMILAR_PUBLIC_RESULTS.md`
+* tests sécurité / logique dédiés
+
+Verification code :
+
+* `npm test` : OK
+* `npm run build` : OK
+* scan fuite interne public : OK
+
+Prochaine etape :
+
+* preview Vercel puis vérification des routes publiques ;
+* production seulement après GO explicite.
