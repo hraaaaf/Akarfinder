@@ -19,6 +19,43 @@ Impact:
 
 ## 2026-07-06 - FRESHNESS-OBSERVATION-SCORE-1 — Production GO
 
+## 2026-07-06 - SEARCH-GATEWAY-CACHE-1
+
+Status: Validated for code + preview. Production pending explicit GO.
+
+Decision:
+- Add a dedicated cache layer in front of `/api/search/gateway` to reduce
+  repeated Serper calls, protect quota, and allow a prudent stale fallback
+  when the provider returns `0` or degrades.
+- Keep Gateway ranking and doctrine unchanged. Cached payloads remain thin
+  external previews only: no contact, no gallery, no market-reference price
+  fields, no availability promise, no internal detail page creation.
+- Use a resilient store split:
+  `SupabaseSearchGatewayCacheStore` when Supabase server env exists, otherwise
+  `NoopSearchGatewayCacheStore`. If the table is missing, the route must
+  bypass cache without crashing.
+- Create a non-applied SQL migration for `search_gateway_cache`, but do not
+  apply it and do not change production DB state in this mission.
+- Expose only internal-safe cache metadata in the API response
+  (`hit` / `miss` / `stale` / `bypass` / `error` + cautious provider issue
+  classification). No public UI wording is added.
+
+Reason:
+- The production Gateway returned `0` results because the Serper monthly quota
+  was exhausted. Without a cache, repeated identical searches keep burning
+  provider calls and leave the SERP empty during quota/provider incidents.
+- A stale fallback is acceptable only if it never upgrades stale data into a
+  "fresh" claim and never promises availability.
+
+Impact:
+- Preview/code candidate roadmap: `87% -> 88%`.
+- Production roadmap remains `87%` until explicit production GO.
+- New documentation: `docs/SEARCH_GATEWAY_CACHE.md`.
+- New migration file exists for review only; production DB/Supabase remains
+  unchanged in this mission.
+
+## 2026-07-06 - FRESHNESS-OBSERVATION-SCORE-1 â€” Production GO
+
 Status: Deployed to production
 
 Decision:

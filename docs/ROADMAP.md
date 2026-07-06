@@ -4488,3 +4488,51 @@ Decision :
 Les pages /demo/promoteur et /demo/agence ont ete transformees en mock-ups
 commerciaux realistes en preview. La progression production reste inchangee
 (73%) tant que non deploye.
+
+## 2026-07-06 â€” SEARCH-GATEWAY-CACHE-1
+
+Etat reconcilie pour cette mission :
+
+* Production actuelle : `87%` (`FRESHNESS-OBSERVATION-SCORE-1` deja en production).
+* `SEARCH-GATEWAY-CACHE-1` est valide en code + tests + build + preview.
+* Candidat preview/code recommande : `88%`.
+* Production doit rester `87%` tant qu'aucun GO prod explicite n'est donne.
+
+Mission :
+
+* Ajouter une couche cache au Search Gateway pour reduire la consommation
+  Serper, eviter les appels repetes inutiles, et autoriser un fallback stale
+  prudent vers des resultats observes precedemment.
+
+Guardrails :
+
+* ranking Gateway inchange ;
+* doctrine Gateway inchangee ;
+* aucun contact, aucune galerie, aucun prix dataset dans le cache ;
+* aucune migration Supabase appliquee automatiquement ;
+* aucun deploiement production dans cette mission.
+
+Livrables :
+
+* `lib/search-gateway-cache/*`
+* branchement minimal dans `app/api/search/gateway/route.ts`
+* migration revue-only `supabase/migrations/20260706130000_create_search_gateway_cache.sql`
+* tests `search-gateway-cache.test.ts`
+* doc `docs/SEARCH_GATEWAY_CACHE.md`
+
+Verification :
+
+* `npm test` : OK
+* `npm run build` : OK
+* preview verifiee :
+  `https://akarfinder-h3fojo4vn-achraf-benmoussa-s-projects.vercel.app`
+* routes publiques demandees : OK
+* `/listings/137` : `404`
+* `robots.txt` / `sitemap.xml` : `200`
+* Gateway preview : pas de crash meme avec provider degrade
+
+Prochaine etape :
+
+* attendre GO prod explicite si le cache doit passer `87% -> 88%` en
+  production ;
+* ensuite seulement reprendre la mission suivante.

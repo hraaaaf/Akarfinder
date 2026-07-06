@@ -1,6 +1,106 @@
 SESSION.md - Current Project Session
 
 ====================================================
+SEARCH-GATEWAY-CACHE-1 -- PREVIEW 2026-07-06
+====================================================
+
+STATUT : CODE + TESTS + BUILD + PREVIEW VALIDES. PRODUCTION NON DEPLOYEE.
+
+Mission :
+  Ajouter une couche cache prudente au Search Gateway pour reduire le cout
+  Serper, eviter les appels repetes inutiles, et autoriser un fallback stale
+  limite quand le provider retourne 0 ou se degrade.
+
+Pre-check :
+  - HEAD initial : f2c7536
+  - git status initial : clean
+  - git stash list : `stash@{0}`, `stash@{1}` detectes, non appliques, non
+    modifies, non supprimes
+
+Cree :
+  - lib/search-gateway-cache/types.ts
+  - lib/search-gateway-cache/cache-key.ts
+  - lib/search-gateway-cache/cache-policy.ts
+  - lib/search-gateway-cache/cache-store.ts
+  - lib/search-gateway-cache/supabase-cache-store.ts
+  - lib/search-gateway-cache/noop-cache-store.ts
+  - lib/search-gateway-cache/public-safety.ts
+  - lib/search-gateway-cache/search-gateway-cache.ts
+  - lib/search-gateway/search-gateway-runner.ts
+  - scripts/scrapers/__tests__/search-gateway-cache.test.ts
+  - docs/SEARCH_GATEWAY_CACHE.md
+  - supabase/migrations/20260706130000_create_search_gateway_cache.sql
+
+Modifie :
+  - app/api/search/gateway/route.ts
+  - lib/search-gateway/search-gateway-types.ts
+  - package.json
+  - docs/SESSION.md
+  - docs/ROADMAP.md
+  - docs/DECISIONS.md
+
+Architecture retenue :
+  - Cache key stable basee sur provider + query normalisee + ville detectee +
+    intent + property_type + page + locale + version.
+  - Store abstrait : Supabase si configure, Noop sinon.
+  - Tolerance table absente : bypass sans crash.
+  - Payload stocke assaini : aucun contact, aucune galerie, aucune donnee
+    `value_low/value_median/value_high`, aucun `evidence_ref`.
+  - Fallback stale jusqu'a 7 jours, jamais presente comme fresh.
+
+Checks :
+  - Test cible :
+    `npx tsx --test scripts/scrapers/__tests__/search-gateway-cache.test.ts`
+    -> 11/11 pass
+  - `npm test` : 1346 + 51 = 1397 tests, 0 echec
+  - `npm run build` : succes
+  - Scan wording interdit : aucune nouvelle occurrence UI publique liee a la
+    mission ; hits restants = docs/garde-fous/tests preexistants
+  - Scan fuite dataset/secrets : aucune nouvelle fuite publique liee au cache ;
+    hits restants = docs, garde-fous internes, dataset interne existant
+
+Preview :
+  - URL :
+    https://akarfinder-h3fojo4vn-achraf-benmoussa-s-projects.vercel.app
+  - Deployment ID : dpl_HfFvKNqGWuqWxa8QGr1GmV8zZbuH
+  - Routes verifiees :
+    `/`, `/pro`, `/profil-recherche`,
+    `/search?q=appartement%20casablanca`,
+    `/search?q=location%20studio%20casablanca`,
+    `/search?q=programme%20neuf%20casablanca`,
+    `/demo/promoteur`, `/demo/agence`, `/robots.txt`, `/sitemap.xml` = 200
+  - `/listings/137` = 404
+  - `/demo/promoteur` et `/demo/agence` : `noindex, nofollow`
+  - `/api/search/gateway?q=appartement%20casablanca` :
+    `ok:true`, `degraded:true`, `results_count:0`,
+    `cache.status=bypass`, `provider_issue_classification=provider_error`
+    -> pas de crash malgre provider degrade / absence de cache peuple
+
+Doctrine preservee :
+  - ranking Search Gateway : non modifie
+  - doctrine Gateway : non modifiee
+  - aucun contact / galerie ajoute
+  - aucune page detail interne Gateway creee
+  - aucune migration appliquee
+  - aucun deploiement production
+
+Roadmap :
+  - Production reste a `87%`
+  - Preview/code recommande : `88%`
+  - Production : `88%` seulement apres GO prod explicite
+
+Dette / point hors scope observe :
+  - `npx tsc --noEmit` remonte encore un probleme preexistant dans
+    `lib/market-reference/__tests__/public-safety.test.ts` (cast
+    `PublicLifestyleSummary` -> `Record<string, unknown>`). Ce point ne bloque
+    ni `npm test` ni `npm run build` et n'a pas ete modifie par cette mission.
+
+Prochaine etape :
+  - GO prod explicite si la preview est validee ;
+  - peupler ensuite le cache avec le prochain quota/provider disponible ;
+  - ne basculer la roadmap production a `88%` qu'apres deploiement prod.
+
+====================================================
 FRESHNESS-OBSERVATION-SCORE-1 -- PRODUCTION 2026-07-06
 ====================================================
 

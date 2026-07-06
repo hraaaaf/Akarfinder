@@ -78,4 +78,15 @@ export type SearchGatewayRouteResponse = {
   sources_queried: string[];
   results_count: number;
   results: SearchGatewayNormalizedResult[];
+  cache?: {
+    status: "hit" | "miss" | "stale" | "bypass" | "error";
+    provider: string;
+    age_seconds?: number;
+    provider_issue_classification?:
+      | "zero_results"
+      | "provider_error"
+      | "quota_or_auth_possible"
+      | "parser_empty"
+      | "unknown";
+  };
 };
