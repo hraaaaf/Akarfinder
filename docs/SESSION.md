@@ -10714,6 +10714,23 @@ Validation intermediaire
 * `npm run build` : OK.
 * Scan exposition : aucun composant public ni API publique ne reference
   `lib/market-reference/*` ou `value_low/value_median/value_high`.
+* Preview deployee :
+  `https://akarfinder-qa2qk6bo4-achraf-benmoussa-s-projects.vercel.app`
+  (deployment `dpl_EaiqqvYwzindmFUKnWpzqJTxSfkF`).
+* Routes preview confirmees :
+  `/`, `/pro`, `/profil-recherche`, `/search?q=appartement%20casablanca`,
+  `/demo/promoteur`, `/demo/agence`, `/robots.txt`, `/sitemap.xml` = 200 ;
+  `/listings/137` = 404.
+* Scan HTML preview : aucun hit sur `13000`, `15000`, `17000`, `18000`,
+  `19000`, `internal/manual-review`, `internal/portal-review`, `value_low`,
+  `value_median`, `value_high`, `market-reference`.
+* Limite de verification preview :
+  la preview ne dispose pas de provider Gateway configure ni de listings
+  structures disponibles (`/api/search` renvoie 0 en preview). Le rendu
+  runtime visible du passeport sur des cartes `/search` n'est donc pas
+  observable sur cette preview ; la validation fonctionnelle repose ici sur
+  les tests du helper, le build, et l'integration code traçable dans les
+  composants cibles.
 
 Roadmap
 * Production actuelle reste a 82%.
