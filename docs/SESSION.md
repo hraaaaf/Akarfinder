@@ -1,10 +1,34 @@
 SESSION.md - Current Project Session
 
 ====================================================
-PUBLIC-RESULT-DECISION-CHECKLIST-1 -- Code candidat 2026-07-07
+PUBLIC-RESULT-DECISION-CHECKLIST-1 -- PRODUCTION 2026-07-07
 ====================================================
 
-STATUT : CODE + TESTS + BUILD VALIDES — PREVIEW A DEPLOYER — PROD EN ATTENTE DE GO
+STATUT : DEPLOYE EN PRODUCTION
+Deployment ID : dpl_FiWjyR21q3QWsjSudyot3LFoG9FF
+HEAD : 6c34713
+Alias : https://akarfinder.vercel.app
+
+GO explicite recu de l'utilisateur. Pre-checks avant deploiement : git status
+clean, HEAD 6c34713, npm test 1422/1422, npm run build OK, stashes non
+touches. Deploiement via `vercel deploy --prod`. Post-deploiement verifie :
+routes principales 200, /listings/137 = 404, demo noindex,nofollow,
+scan wording interdit / fuite interne sur la page d'accueil production : OK.
+
+Gateway prod a retourne 0 resultat au moment de la verification
+(provider_issue_classification: "provider_error", ok:true, sans crash) —
+condition provider preexistante, non liee a cette mission. La garantie de
+rendu du bloc "Points a verifier / Avant de contacter" repose sur le smoke
+test de rendu reel effectue en preview (composants de production reels avec
+donnee Gateway simulee).
+
+Roadmap : 89% -> 90%. Next : SEO-CITY-INTENT-PAGES-1 (90% -> 93%).
+
+====================================================
+PUBLIC-RESULT-DECISION-CHECKLIST-1 -- Code candidat 2026-07-07 (historique)
+====================================================
+
+STATUT (a ce stade) : CODE + TESTS + BUILD VALIDES — PREVIEW A DEPLOYER — PROD EN ATTENTE DE GO
 
 MISSION :
   Ajouter une checklist publique prudente "Points a verifier / Avant de

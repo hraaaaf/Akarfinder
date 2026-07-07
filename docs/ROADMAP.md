@@ -4437,7 +4437,7 @@ E | 76->80% | SEO-FOUNDATION-1 | titles/meta, canonical, sitemap, robots, OG, st
 F | 80->82% | MOROCCO-PRICE-LIFESTYLE-REFERENCE-DATASET-1 | referentiel interne Maroc prix/quartiers/lifestyle, internal_only, garde-fous publics, seed V3 | FAIT PROD 2026-07-06 (dpl_8Yy5un5ft3eydfrYnQErqQgHKrNz, HEAD 3755794) | E prod | exposition publique accidentelle de prix | production
 G | 82->85% | AKARINFO-PASSPORT-1 | passeport quartier prudent avec labels lifestyle et reperes explicatifs sans prix publics bruts | PREVIEW/CODE CANDIDAT 2026-07-06 | F prod | sur-promesse quartier/prix + preview sans data/provider | preview validee, prod en attente
 G2 | 85->87% | FRESHNESS-OBSERVATION-SCORE-1 | lecture prudente de fraicheur/observation sur les resultats Gateway externes, sans promesse de disponibilite, sans persistance reelle (abstraction only) | FAIT PROD 2026-07-06 (dpl_3FFMNJ4tVZH5KM1FfqYM4TA8sKj1, HEAD 36f1743) | G prod | sur-promesse de disponibilite/fiabilite si labels mal filtres ; aucun resultat Gateway reel observable en direct au moment du GO (limitation provider, pas le code) | production
-H0 | 89->90% | PUBLIC-RESULT-DECISION-CHECKLIST-1 | checklist publique prudente "Points a verifier / Avant de contacter" sur les resultats Gateway externes, sans certifier ni juger la fiabilite | CODE+TESTS+BUILD VALIDES 2026-07-07 | SIMILAR-PUBLIC-RESULTS-1 prod | wording accusatoire/certifiant si mal filtre | preview a deployer, prod en attente de GO explicite
+H0 | 89->90% | PUBLIC-RESULT-DECISION-CHECKLIST-1 | checklist publique prudente "Points a verifier / Avant de contacter" sur les resultats Gateway externes, sans certifier ni juger la fiabilite | FAIT PROD 2026-07-07 (dpl_FiWjyR21q3QWsjSudyot3LFoG9FF, HEAD 6c34713) | SIMILAR-PUBLIC-RESULTS-1 prod | wording accusatoire/certifiant si mal filtre ; aucun resultat Gateway reel observable en direct au moment du GO (limitation provider, pas le code) | production
 H | 85->88% | PRICE-POSITION-REFERENCE-V2 | logique encadree de position prix, serveur only, sans promesse "prix de marche" | a faire | F | wording prix trop agressif | preview puis prod
 I | 88->91% | SEO-CITY-INTENT-PAGES-1 | pages editoriales ville x intention + moteur integre | a faire | E | contenu mince | prod
 J | 91->94% | SEO-NEIGHBORHOOD-GUIDES-1 | guides quartiers Maroc avec lifestyle prudent et reperes non contractuels | a faire | F + I | maintenance contenu | prod
@@ -4624,7 +4624,18 @@ déjà "Annonce fiable" + score numérique `/100` sur les fiches premier-parti
 — pré-existant, gouverné par une doctrine séparée (Package Score P10E), à
 clarifier un jour.
 
+GO production (2026-07-07) :
+
+* Deployment ID `dpl_FiWjyR21q3QWsjSudyot3LFoG9FF`, HEAD `6c34713`, alias
+  `https://akarfinder.vercel.app`.
+* Routes publiques : 200 ; `/listings/137` : 404 ; demo `noindex,nofollow`
+  confirmé ; scan wording interdit / fuite interne sur la page d'accueil
+  production : OK.
+* Gateway prod a retourné 0 résultat au moment de la vérification
+  (`provider_issue_classification: "provider_error"`, sans crash) — condition
+  provider préexistante, non liée à cette mission.
+* Production : `90%`.
+
 Prochaine etape :
 
-* preview Vercel puis vérification des routes publiques ;
-* production seulement après GO explicite.
+* SEO-CITY-INTENT-PAGES-1 (`90% -> 93%`).

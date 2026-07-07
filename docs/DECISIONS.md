@@ -17,7 +17,29 @@ Reason:
 Impact:
 - ...
 
-## 2026-07-07 - PUBLIC-RESULT-DECISION-CHECKLIST-1
+## 2026-07-07 - PUBLIC-RESULT-DECISION-CHECKLIST-1 — Production GO
+Status: Deployed to production
+Decision:
+- User gave explicit GO for production after reviewing the code+test+build
+  bilan (including the reused pre-existing scaffolding files) and the
+  rendered-component smoke test proof.
+- Pre-deploy gates re-verified: git status clean, HEAD 6c34713, npm test
+  1422/1422, npm run build success, stashes untouched.
+- Deployed via `vercel deploy --prod`. Deployment ID
+  dpl_FiWjyR21q3QWsjSudyot3LFoG9FF, aliased to https://akarfinder.vercel.app.
+Reason:
+- All safety gates satisfied (allow-list wording, max-item cap, no forbidden
+  field exposure, unit tests, rendered-component smoke test); the only open
+  item (no live Gateway results during verification) is a provider/env
+  condition unrelated to the code shipped.
+Impact:
+- Roadmap: 89% -> 90%.
+- Post-deploy check found Gateway API returning 0 results in production at
+  verification time (provider_issue_classification: "provider_error",
+  ok:true, no crash) — pre-existing route, not modified by this mission.
+- Next: SEO-CITY-INTENT-PAGES-1 (90% -> 93%).
+
+## 2026-07-07 - PUBLIC-RESULT-DECISION-CHECKLIST-1 (historique — code/preview)
 Status: Validated for code + preview candidate. Production pending explicit GO.
 Decision:
 - Add a short, non-accusatory "Points à vérifier / Avant de contacter"
