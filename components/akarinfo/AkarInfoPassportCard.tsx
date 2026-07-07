@@ -133,6 +133,30 @@ export function AkarInfoPassportCard({
         </div>
       ) : null}
 
+      {passport.checklist && passport.checklist.items.length > 0 ? (
+        <div className="mt-3 rounded-xl border border-border/12 bg-card/60 px-3 py-2.5 dark:border-white/8 dark:bg-white/[0.03]">
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground dark:text-white/45">
+              {passport.checklist.title}
+            </p>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/70 dark:text-white/35">
+              {passport.checklist.help_label}
+            </span>
+          </div>
+          <ul className="mt-2 space-y-1.5 text-[12px] leading-5 text-foreground/78 dark:text-white/68">
+            {(compact
+              ? passport.checklist.items.slice(0, 3)
+              : passport.checklist.items
+            ).map((item) => (
+              <li key={item.label} className="flex gap-2">
+                <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-border dark:bg-white/25" />
+                <span>{item.label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {!compact ? (
         <p className="mt-3 text-[11px] leading-5 text-muted-foreground dark:text-white/50">
           Préparation future : {passport.future_signals.join(", ")}.

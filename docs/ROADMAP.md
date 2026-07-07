@@ -4437,6 +4437,7 @@ E | 76->80% | SEO-FOUNDATION-1 | titles/meta, canonical, sitemap, robots, OG, st
 F | 80->82% | MOROCCO-PRICE-LIFESTYLE-REFERENCE-DATASET-1 | referentiel interne Maroc prix/quartiers/lifestyle, internal_only, garde-fous publics, seed V3 | FAIT PROD 2026-07-06 (dpl_8Yy5un5ft3eydfrYnQErqQgHKrNz, HEAD 3755794) | E prod | exposition publique accidentelle de prix | production
 G | 82->85% | AKARINFO-PASSPORT-1 | passeport quartier prudent avec labels lifestyle et reperes explicatifs sans prix publics bruts | PREVIEW/CODE CANDIDAT 2026-07-06 | F prod | sur-promesse quartier/prix + preview sans data/provider | preview validee, prod en attente
 G2 | 85->87% | FRESHNESS-OBSERVATION-SCORE-1 | lecture prudente de fraicheur/observation sur les resultats Gateway externes, sans promesse de disponibilite, sans persistance reelle (abstraction only) | FAIT PROD 2026-07-06 (dpl_3FFMNJ4tVZH5KM1FfqYM4TA8sKj1, HEAD 36f1743) | G prod | sur-promesse de disponibilite/fiabilite si labels mal filtres ; aucun resultat Gateway reel observable en direct au moment du GO (limitation provider, pas le code) | production
+H0 | 89->90% | PUBLIC-RESULT-DECISION-CHECKLIST-1 | checklist publique prudente "Points a verifier / Avant de contacter" sur les resultats Gateway externes, sans certifier ni juger la fiabilite | CODE+TESTS+BUILD VALIDES 2026-07-07 | SIMILAR-PUBLIC-RESULTS-1 prod | wording accusatoire/certifiant si mal filtre | preview a deployer, prod en attente de GO explicite
 H | 85->88% | PRICE-POSITION-REFERENCE-V2 | logique encadree de position prix, serveur only, sans promesse "prix de marche" | a faire | F | wording prix trop agressif | preview puis prod
 I | 88->91% | SEO-CITY-INTENT-PAGES-1 | pages editoriales ville x intention + moteur integre | a faire | E | contenu mince | prod
 J | 91->94% | SEO-NEIGHBORHOOD-GUIDES-1 | guides quartiers Maroc avec lifestyle prudent et reperes non contractuels | a faire | F + I | maintenance contenu | prod
@@ -4571,6 +4572,57 @@ Verification code :
 * `npm test` : OK
 * `npm run build` : OK
 * scan fuite interne public : OK
+
+Prochaine etape :
+
+* preview Vercel puis vérification des routes publiques ;
+* production seulement après GO explicite.
+
+## 2026-07-07 — PUBLIC-RESULT-DECISION-CHECKLIST-1
+
+Etat reconcilie pour cette mission :
+
+* Production actuelle : `89%` (`SIMILAR-PUBLIC-RESULTS-1` deja en production,
+  commit prod `3132844`, Deployment ID `dpl_8B5z8vLJn3XzCExR3BHvaZAnqQaa`).
+* `PUBLIC-RESULT-DECISION-CHECKLIST-1` vise `90%` en preview/code uniquement.
+* Production doit rester `89%` tant qu'aucun GO prod explicite n'est donne.
+
+Mission :
+
+* Ajouter une couche "Points à vérifier avant de contacter" sur les
+  résultats publics AkarFinder, surtout Gateway externes, sans certifier
+  l'annonce ni juger sa fiabilité.
+
+Guardrails :
+
+* aucun changement ranking Gateway ;
+* aucun changement cache Gateway ;
+* aucune migration, aucun changement DB/Supabase ;
+* aucun contact, aucune galerie, aucun prix dataset ;
+* aucun score numérique public ;
+* aucune page interne Gateway.
+
+Livrables :
+
+* `lib/public-result-checklist/*` (types.ts et checklist-rules.ts
+  réutilisés depuis une ébauche déjà présente non trackée ; build-checklist.ts
+  et public-safety.ts créés)
+* intégration légère dans `lib/akarinfo/akarinfo-passport.ts` (champ
+  `checklist`, Gateway uniquement) et `components/akarinfo/AkarInfoPassportCard.tsx`
+* documentation dédiée `docs/PUBLIC_RESULT_DECISION_CHECKLIST.md`
+* tests `scripts/scrapers/__tests__/public-result-checklist.test.ts` (12 tests)
+
+Verification code :
+
+* `npm test` : 1371 + 51 = 1422/1422, 0 échec
+* `npm run build` : OK (46/46 pages)
+* scan wording interdit / fuite interne : OK (aucune occurrence en UI
+  publique introduite par cette mission)
+
+Dette constatée (hors scope, non modifiée) : `lib/package-score` affiche
+déjà "Annonce fiable" + score numérique `/100` sur les fiches premier-parti
+— pré-existant, gouverné par une doctrine séparée (Package Score P10E), à
+clarifier un jour.
 
 Prochaine etape :
 

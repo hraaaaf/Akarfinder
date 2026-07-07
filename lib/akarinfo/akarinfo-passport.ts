@@ -10,6 +10,9 @@ import { buildObservationFingerprint } from "@/lib/observation/fingerprint";
 import { computeObservationSummary } from "@/lib/observation/observation-policy";
 import { getObservationStore } from "@/lib/observation/observation-store";
 import type { PublicResultSimilaritySummary } from "@/lib/public-result-similarity/types";
+import type { PublicResultChecklistSummary } from "@/lib/public-result-checklist/types";
+import { buildPublicResultChecklist } from "@/lib/public-result-checklist/build-checklist";
+import { assertPublicResultChecklistSafety } from "@/lib/public-result-checklist/public-safety";
 
 export type AkarInfoPassportKind =
   | "gateway_external"
@@ -31,6 +34,7 @@ export type AkarInfoPassport = {
   future_signals: string[];
   observation?: ObservationSummary;
   similar_results?: PublicResultSimilaritySummary;
+  checklist?: PublicResultChecklistSummary;
 };
 
 function resolveLifestyleSummary(
@@ -155,10 +159,33 @@ function resolveGatewayObservationSummary(
   return computeObservationSummary(existingRecord, "external_web");
 }
 
+function resolveGatewayChecklist(
+  result: SearchGatewayNormalizedResult,
+  similarResults: PublicResultSimilaritySummary | undefined,
+  observation: ObservationSummary,
+): PublicResultChecklistSummary | undefined {
+  const checklist = buildPublicResultChecklist({
+    title: result.title,
+    snippet: result.snippet,
+    original_url: result.original_url,
+    similar_possible: similarResults?.similar_possible,
+    observation_labels: observation.labels,
+  });
+
+  if (!checklist) {
+    return undefined;
+  }
+
+  assertPublicResultChecklistSafety(checklist);
+  return checklist;
+}
+
 export function buildAkarInfoPassportForGatewayResult(
   result: SearchGatewayNormalizedResult,
   similarResults?: PublicResultSimilaritySummary,
 ): AkarInfoPassport {
+  const observation = resolveGatewayObservationSummary(result);
+
   return {
     kind: "gateway_external",
     information_level_label: "Aperçu limité",
@@ -178,7 +205,8 @@ export function buildAkarInfoPassportForGatewayResult(
       "Historique d'annonce",
       "Repères quartier si la localisation est exploitable",
     ],
-    observation: resolveGatewayObservationSummary(result),
+    observation,
     similar_results: similarResults,
+    checklist: resolveGatewayChecklist(result, similarResults, observation),
   };
 }

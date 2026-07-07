@@ -1,7 +1,59 @@
 SESSION.md - Current Project Session
 
 ====================================================
-SIMILAR-PUBLIC-RESULTS-1 -- PREVIEW 2026-07-06
+PUBLIC-RESULT-DECISION-CHECKLIST-1 -- Code candidat 2026-07-07
+====================================================
+
+STATUT : CODE + TESTS + BUILD VALIDES — PREVIEW A DEPLOYER — PROD EN ATTENTE DE GO
+
+MISSION :
+  Ajouter une checklist publique prudente "Points a verifier / Avant de
+  contacter" sur les resultats publics AkarFinder, surtout Gateway externes,
+  sans certifier l'annonce ni juger sa fiabilite.
+
+PRE-CHECK : repo trouve avec 2 fichiers non trackes deja presents
+  (lib/public-result-checklist/types.ts, checklist-rules.ts) correspondant
+  exactement a l'architecture attendue — probable reliquat d'une tentative
+  interrompue. Utilisateur consulte : reutiliser et completer (confirme).
+
+CREE :
+  lib/public-result-checklist/build-checklist.ts
+  lib/public-result-checklist/public-safety.ts
+  scripts/scrapers/__tests__/public-result-checklist.test.ts (12 tests)
+  docs/PUBLIC_RESULT_DECISION_CHECKLIST.md
+
+REUTILISE (deja present, non modifie) :
+  lib/public-result-checklist/types.ts
+  lib/public-result-checklist/checklist-rules.ts
+
+MODIFIE :
+  lib/akarinfo/akarinfo-passport.ts (champ `checklist` sur le passeport
+    Gateway uniquement)
+  components/akarinfo/AkarInfoPassportCard.tsx (bloc "Points a verifier /
+    Avant de contacter", 3 items en compact, 5 max en full)
+  package.json (enregistrement du nouveau test dans test:scrapers)
+
+NON TOUCHE (conforme au scope interdit) :
+  app/api/search/gateway/route.ts, lib/search-gateway-cache/**,
+  lib/public-result-similarity/**, lib/market-reference/**, database/**,
+  supabase/migrations/**, .env, app/listings/**, sitemap/robots.
+
+RESULTATS :
+  npm test : 1371 + 51 = 1422 tests, 0 echec
+  npm run build : succes (46/46 pages)
+  Scan wording interdit : aucune occurrence introduite en UI publique
+  Scan fuite interne (value_low/median/high, evidence_ref, cache_key,
+    similarity_score, similarity_group_id) : aucune
+
+Dette constatee (hors scope, non modifiee) : lib/package-score affiche deja
+"Annonce fiable" + score numerique /100 sur les fiches premier-parti —
+pre-existant, doctrine separee (P10E), a clarifier un jour.
+
+Prochaine etape : deploiement preview, verification routes, puis GO prod
+explicite avant bascule 89% -> 90%.
+
+====================================================
+SIMILAR-PUBLIC-RESULTS-1 -- PREVIEW 2026-07-06 (historique)
 ====================================================
 
 STATUT : CODE + TESTS + BUILD VALIDES. PREVIEW A DEPLOYER. PRODUCTION NON DEPLOYEE.

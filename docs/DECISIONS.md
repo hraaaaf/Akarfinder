@@ -17,6 +17,37 @@ Reason:
 Impact:
 - ...
 
+## 2026-07-07 - PUBLIC-RESULT-DECISION-CHECKLIST-1
+Status: Validated for code + preview candidate. Production pending explicit GO.
+Decision:
+- Add a short, non-accusatory "Points à vérifier / Avant de contacter"
+  checklist (3 to 5 items, hard-capped) to Gateway external results only,
+  computed from data already public-safe (result title/snippet/original_url,
+  the similarity summary from SIMILAR-PUBLIC-RESULTS-1, the observation
+  summary from FRESHNESS-OBSERVATION-SCORE-1).
+- Public wording stays strictly preparatory: `Points à vérifier`,
+  `Avant de contacter`, never certifying, scoring, or accusing the listing.
+- Pre-check found two untracked files (`lib/public-result-checklist/types.ts`,
+  `checklist-rules.ts`) already matching the expected architecture exactly —
+  likely leftover from an interrupted prior attempt. User was asked and
+  confirmed: reuse and complete rather than discard.
+- No numeric score, no forbidden field exposure (dataset price, evidence_ref,
+  cache_key, similarity internals, contact/gallery), enforced at runtime via
+  `assertPublicResultChecklistSafety`.
+Reason:
+- Helping users decide what to verify before contacting an advertiser is
+  more useful and safer than any certification/scoring claim AkarFinder
+  cannot back for third-party Gateway content.
+Impact:
+- Preview/code candidate roadmap: `89% -> 90%`.
+- Production roadmap remains `89%` until explicit production GO.
+- Gateway doctrine, ranking, and cache remain unchanged;
+  app/api/search/gateway/route.ts was not touched.
+- Pre-existing wording debt noted (not fixed, out of scope): `lib/package-score`
+  already shows "Annonce fiable" with a numeric `/100` score on first-party
+  listing cards — predates this mission and FRESHNESS-OBSERVATION-SCORE-1,
+  governed by a separate doctrine (Package Score, P10E).
+
 ## 2026-07-06 - SIMILAR-PUBLIC-RESULTS-1
 Status: Validated for code + preview candidate. Production pending explicit GO.
 Decision:
