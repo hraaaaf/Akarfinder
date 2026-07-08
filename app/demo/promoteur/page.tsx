@@ -72,7 +72,6 @@ export default function DemoPromoterPage() {
               >
                 Voir les projets
               </a>
-              <DemoRequestButton label="Recevoir une brochure exemple" />
               <DemoRequestButton label="Demander une présentation" className="bg-[#0B1F3A] hover:bg-[#123458]" />
             </div>
           </div>
@@ -145,6 +144,22 @@ export default function DemoPromoterPage() {
               </article>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Brochure exemple */}
+      <section className="border-y border-[#eef3fa] bg-white px-4 py-12">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-[1.8rem] font-extrabold text-[#0B1F3A]">Recevoir une brochure exemple</h2>
+          <p className="mt-3 text-[15px] leading-7 text-slate-600">
+            Un exemple de présentation enrichie avec projets, typologies, plans 2D et repères quartier, dans le style des pages partenaires AkarFinder.
+          </p>
+          <div className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <DemoRequestButton label="Recevoir une brochure exemple" />
+          </div>
+          <p className="mt-4 text-[11px] text-slate-400">
+            Contenu fictif, non contractuel.
+          </p>
         </div>
       </section>
 
