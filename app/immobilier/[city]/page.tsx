@@ -72,13 +72,12 @@ export default async function CityPage({ params }: CityPageProps) {
           <div className="mt-6 space-y-6">
             <div>
               <p className="font-semibold text-slate-900">
-                AkarFinder a-t-il toutes les annonces à {cityData.displayName} ?
+                Quelle est la couverture d'AkarFinder à {cityData.displayName} ?
               </p>
               <p className="mt-2 text-slate-600">
-                Non. AkarFinder explore les résultats immobiliers publics disponibles
-                en ligne. Toutes les annonces ne sont pas accessibles — consultez
-                directement les sources immobilières principales pour une couverture
-                complète.
+                AkarFinder explore les résultats immobiliers publics disponibles en
+                ligne. Pour une couverture complète, consultez directement les sources
+                immobilières principales.
               </p>
             </div>
 
