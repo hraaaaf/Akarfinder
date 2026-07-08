@@ -111,7 +111,6 @@ export default function DemoPromoterPage() {
                   <span className="absolute left-4 top-4 rounded-full bg-[#0B1F3A]/85 px-3 py-1.5 text-[11px] font-extrabold text-white backdrop-blur-sm">
                     {item.status}
                   </span>
-                  <DemoBadge className="absolute right-4 top-4" />
                 </div>
                 <div className="p-6">
                   <h3 className="text-[20px] font-extrabold tracking-[-0.02em] text-[#0B1F3A]">{item.name}</h3>

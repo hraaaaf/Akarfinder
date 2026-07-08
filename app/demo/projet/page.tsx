@@ -51,7 +51,6 @@ export default function DemoProjectPage() {
             {project.visuals.map((visual) => (
               <div key={visual} className="relative">
                 <PropertyVisual type={visual} ratio="4:3" className="rounded-2xl" />
-                <DemoBadge className="absolute left-3 top-3" />
               </div>
             ))}
           </div>
@@ -82,7 +81,6 @@ export default function DemoProjectPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div className="relative">
             <PropertyVisual type={project.modelApartment.visual} ratio="16:10" className="rounded-2xl" />
-            <DemoBadge className="absolute left-3 top-3" />
           </div>
           <div className="rounded-2xl border border-[#dbe7f6] bg-white p-6">
             <h3 className="text-[15px] font-extrabold text-[#0B1F3A]">Composition demo</h3>
