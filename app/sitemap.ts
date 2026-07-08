@@ -1,21 +1,27 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/seo/site";
+import { getAllCities } from "@/lib/seo-city-pages/city-seo-data";
 
-// SEO-FOUNDATION-1 — sitemap volontairement minimal.
+// SEO-FOUNDATION-1 — sitemap indexant les routes publiques.
 //
-// N'inclut QUE les routes publiques indexables aujourd'hui : /, /pro,
-// /profil-recherche. Exclus intentionnellement :
-// - /demo/** : noindex (pages partenaire mockup, non destinées à Google)
-// - /search : noindex (résultats Gateway dynamiques, contenu dupliqué par
-//   querystring — voir app/search/page.tsx)
-// - /listings/**: pages annonces individuelles (aucune fiche interne
-//   propriétaire pour l'instant ; /listings/137 = 404 par doctrine)
-// Les futures pages SEO ville/quartier/prix (SEO-CITY-INTENT-PAGES-1)
-// s'ajouteront ici une fois créées et validées, pas avant.
+// Routes incluses :
+// - / /pro /profil-recherche (core pages)
+// - /immobilier, /immobilier/[city] (SEO-CITY-INTENT-PAGES-1)
+//
+// Routes exclues intentionnellement :
+// - /demo/** : noindex (pages partenaire mockup)
+// - /search : noindex (résultats Gateway dynamiques)
+// - /listings/**: 404 par doctrine (no internal detail pages for Gateway)
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = ["/", "/pro", "/profil-recherche"];
+  const baseRoutes = ["/", "/pro", "/profil-recherche", "/immobilier"];
 
-  return routes.map((route) => ({
+  // Add city pages
+  const cities = getAllCities();
+  const cityRoutes = cities.map((city) => `/immobilier/${city.slug}`);
+
+  const allRoutes = [...baseRoutes, ...cityRoutes];
+
+  return allRoutes.map((route) => ({
     url: `${siteConfig.siteUrl}${route}`,
     lastModified: new Date(),
   }));
