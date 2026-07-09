@@ -11115,3 +11115,99 @@ Roadmap
 * Candidate preview/code : 95.5% une fois validation code/tests terminee.
 * Production : 95.5% seulement apres GO prod explicite.
 
+====================================================
+GO-PROD-PUBLIC-WORDING-CLEANUP-1 -- 2026-07-09
+====================================================
+
+STATUT : PROD DEPLOYEE ET VERIFIE.
+
+Pre-check
+* HEAD cible : 6f31ee91d6b3a23817f75fceb0f70a4d92f72b02.
+* `git status --short` initial : `?? CLAUDE.md`, `?? artifacts/`, `?? scripts/capture-demo-promoteur.js`.
+* Stashes non touches.
+* Gateway/cache/Supabase non modifies.
+
+Validation locale
+* `npm test` : OK. `1408/1408` passes dans `test:scrapers`, `51/51` passes dans `test:api`, total `1459/1459`.
+* `npm run build` : OK. `63/63` pages generees.
+
+Deploiement prod
+* `vercel deploy --prod`
+* Deployment ID exact : `BQ4cvuYN6QRuLCAVpkZEZvTQ7abP`
+* Production alias : `https://akarfinder.vercel.app`
+
+Verification prod
+* `/` = 200
+* `/pro` = 200
+* `/profil-recherche` = 200
+* `/search?q=appartement%20casablanca` = 200
+* `/search?q=location%20studio%20casablanca` = 200
+* `/search?q=programme%20neuf%20casablanca` = 200
+* `/demo/promoteur` = 200
+* `/demo/agence` = 200
+* `/listings/137` = 404
+* `/robots.txt` = 200
+* `/sitemap.xml` = 200
+
+Scan wording public
+* Aucun hit sur `Score de fiabilite`, `Annonce fiable`, `Annonce verifiee`, `Bon plan`, `Prix officiel`, `Prix reel`, `Prix de marche`, `Sous le marche`, `Au-dessus du marche`, `value_low`, `value_median`, `value_high`, `evidence_ref`, `source_registry`.
+* Wording public conforme sur l'UI et les reperes demo.
+
+Notes
+* Worktree conserve les 3 untracked preexistants.
+* Gateway/cache/Supabase restent inchanges.
+
+====================================================
+PUBLIC-INDEX-ASYNC-OPENSERP-POC-1 -- 2026-07-09
+====================================================
+
+STATUT : POC CODE + PREVIEW VALIDES, PAS DE PROD.
+
+Pre-check
+* HEAD cible : 6f31ee91d6b3a23817f75fceb0f70a4d92f72b02.
+* `git status --short` initial : `M docs/DECISIONS.md`, `M docs/ROADMAP.md`, `M docs/SESSION.md`, `M package.json`, `?? CLAUDE.md`, `?? app/api/internal/`, `?? artifacts/`, `?? docs/PUBLIC_INDEX_ASYNC_OPENSERP_POC.md`, `?? lib/openserp-async/`, `?? lib/public-property-index/`, `?? scripts/capture-demo-promoteur.js`, `?? scripts/public-index/`, `?? scripts/scrapers/__tests__/openserp-async.test.ts`, `?? scripts/scrapers/__tests__/public-property-index.test.ts`, `?? supabase/migrations/20260709193000_create_public_property_index_poc.sql`.
+* Stashes non touches.
+* Gateway/cache/Supabase non modifies.
+
+Livrables
+* Index public-safe POC sous `lib/public-property-index/`.
+* Couche OpenSERP async sous `lib/openserp-async/`.
+* Route interne read-only : `app/api/internal/public-index/search/route.ts`.
+* Scripts POC : `scripts/public-index/seed-public-index-fixtures.ts`, `scripts/public-index/search-public-index-poc.ts`, `scripts/public-index/openserp-async-feed-poc.ts`.
+* Tests : `scripts/scrapers/__tests__/public-property-index.test.ts`, `scripts/scrapers/__tests__/openserp-async.test.ts`.
+* Migration POC non appliquee : `supabase/migrations/20260709193000_create_public_property_index_poc.sql`.
+* Docs : `docs/PUBLIC_INDEX_ASYNC_OPENSERP_POC.md`.
+
+Validation locale
+* `npm test` : OK. `1421/1421` passes dans `test:scrapers`, `51/51` passes dans `test:api`, total `1472/1472`.
+* `npm run build` : OK. `63/63` pages generees.
+
+Preview
+* `vercel deploy`
+* Preview URL : `https://akarfinder-m6v570ofs-achraf-benmoussa-s-projects.vercel.app`
+* Inspect URL : `https://vercel.com/achraf-benmoussa-s-projects/akarfinder/D3VGxST3nCaoUs9C4wSELiUiVnCy`
+
+Verification preview
+* `/` = 200
+* `/pro` = 200
+* `/profil-recherche` = 200
+* `/search?q=appartement%20casablanca` = 200
+* `/search?q=location%20studio%20casablanca` = 200
+* `/search?q=programme%20neuf%20casablanca` = 200
+* `/demo/promoteur` = 200
+* `/demo/agence` = 200
+* `/listings/137` = 404
+* `/robots.txt` = 200
+* `/sitemap.xml` = 200
+* `/api/internal/public-index/search?q=appartement%20casablanca%20maarif&city=Casablanca&neighborhood=Maarif&limit=5` = 200
+
+Scan wording public
+* Aucun appel OpenSERP live dans `app/search`, `app/api/search`, `components/search`.
+* Google refuse dans la politique et les tests, sans usage live.
+* Aucune exposition publique de `contact`, `phone`, `whatsapp`, `email`, `gallery`, `image_url`, `raw_metadata`, `value_low`, `value_median`, `value_high`, `evidence_ref`, `source_registry` dans les surfaces publiques.
+
+Roadmap
+* Production reste a 95.5%.
+* Preview/code candidate : 96.5%.
+* Production : 96.5% seulement apres GO prod explicite.
+

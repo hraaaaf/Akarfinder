@@ -4653,3 +4653,41 @@ Etat:
 Point de controle:
 - Les formulations interdites ont ete retirees des surfaces `app`, `components` et `lib` ciblees.
 - Le rendu public doit preferer `Niveau d'information`, `Repere indicatif` et `A confirmer sur la source originale`.
+
+## 2026-07-09 - PUBLIC-INDEX-ASYNC-OPENSERP-POC-1
+
+Etat:
+- Production actuelle : `95.5%`.
+- Candidat preview/code : `96.5%` si le POC reste vert et la preview est
+  validee.
+- Production doit rester `95.5%` tant qu'il n'y a pas de GO production
+  explicite.
+
+Mission:
+- Ajouter une fondation d'index public observe alimentee asynchronement par
+  OpenSERP Bing/Ecosia, sans utiliser OpenSERP dans le chemin live
+  utilisateur.
+- Restituer rapidement depuis un index public safe via Supabase PostgreSQL
+  FTS + trigram.
+- Ne rien modifier a Gateway, au cache Gateway, ni a la production Supabase.
+
+Garde-fous:
+- OpenSERP en feeder async uniquement.
+- Google interdit en V1.
+- `PUBLIC_INDEX_POC_ENABLED=false` par defaut.
+- `PUBLIC_INDEX_POC_USE_FIXTURES=false` par defaut.
+- `OPENSERP_ASYNC_FEEDER_ENABLED=false` par defaut.
+- Aucun contact, galerie, image, raw metadata ou champ de prix interne.
+
+Livrables:
+- `lib/public-property-index/*`
+- `lib/openserp-async/*`
+- `app/api/internal/public-index/search/route.ts`
+- `scripts/public-index/*`
+- `supabase/migrations/20260709193000_create_public_property_index_poc.sql`
+- `docs/PUBLIC_INDEX_ASYNC_OPENSERP_POC.md`
+
+Validation:
+- `npm test` : OK
+- `npm run build` : OK
+- preview a verifier avant toute decision de prod

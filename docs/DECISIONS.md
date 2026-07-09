@@ -2452,3 +2452,44 @@ Regles:
 - Les repères prix de demo utilisent des labels indicatifs plutot que des
   formulations de marché trop affirmatives.
 - `app/pro` parle de niveau d'information et non de score de fiabilite.
+
+## 2026-07-09 - PUBLIC-WORDING-CLEANUP-1 PROD
+
+Decision:
+La version PUBLIC-WORDING-CLEANUP-1 est passee en production sur
+`https://akarfinder.vercel.app` apres validation locale et scan public sans
+exposition de `Score de fiabilite`, `Annonce fiable`, `Annonce verifiee`,
+`Bon plan`, `Prix officiel`, `Prix reel`, `Prix de marche`, `Sous le
+marche`, `Au-dessus du marche`, `value_low`, `value_median`, `value_high`,
+`evidence_ref` ou `source_registry`.
+
+Impact:
+- Deployment ID exact : `BQ4cvuYN6QRuLCAVpkZEZvTQ7abP`.
+- Search Gateway, cache, Supabase et le ranking restent inchanges.
+
+## 2026-07-09 - PUBLIC-INDEX-ASYNC-OPENSERP-POC-1
+
+Status:
+Validated for code + preview candidate. Production pending explicit GO.
+
+Decision:
+- AkarFinder introduit un index public observe POC, alimenteable asynchronement
+  par OpenSERP Bing/Ecosia, mais jamais dans le chemin live utilisateur.
+- Le chemin public peut restituer des resultats publics observes via un index
+  POC et des stores de fallback, avec un lien source originale obligatoire.
+- La migration revue-only cree `public_property_index` avec `pgcrypto`,
+  `pg_trgm`, `fts_vector`, RLS et les index FTS/trigram.
+- OpenSERP reste feeder async uniquement; Google est interdit en V1.
+- Aucun contact, galerie, image, raw metadata, `value_low`, `value_median`,
+  `value_high`, `evidence_ref` ou `source_registry` ne doit etre stocke ou
+  expose.
+
+Reason:
+- Le signal OpenSERP est exploitable comme couche de decouverte asynchrone,
+  mais il ne doit pas degrader l'experience live ni devenir un provider de
+  recherche directe.
+
+Impact:
+- Nouveau POC code + tests + build.
+- Production Supabase et Gateway restent inchanges.
+- Production doit attendre un GO explicite apres preview validee.
