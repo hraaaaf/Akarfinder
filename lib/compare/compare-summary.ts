@@ -188,8 +188,8 @@ export function buildCompareSummary(items: CompareListingInsights[]): CompareSum
     if (item.duplicatePossible) {
       pointsToVerify.add(`${item.listing.title} : doublon possible à confirmer avant contact.`);
     }
-    if (item.priceComparison.comparison_label === "Prix supérieur au repère observé") {
-      pointsToVerify.add(`${item.listing.title} : prix observé au-dessus du repère, à vérifier avant décision.`);
+    if (item.priceComparison.comparison_label === "Positionnement indicatif haut") {
+      pointsToVerify.add(`${item.listing.title} : positionnement indicatif haut, à vérifier avant décision.`);
     }
     if (item.packageScore.missing_signals > 0) {
       pointsToVerify.add(`${item.listing.title} : certains signaux indicatifs restent incomplets.`);

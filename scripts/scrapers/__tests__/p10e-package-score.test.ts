@@ -1,20 +1,30 @@
-// P10E tests — Package Score AkarFinder
+// P10E tests - Package Score AkarFinder
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { calculatePackageScore } from "../../../lib/package-score/calculate-package-score";
 import type { ListingPriceComparison } from "../../../lib/market/types";
 import type { ProximityPoint } from "../../../lib/proximity/types";
 
-// Helpers
 function makeProximityPoints(count: number, allUnder15 = true): ProximityPoint[] {
   const categories = [
-    "marche_souk", "supermarche", "hanout", "taxi", "transport",
-    "pharmacie", "ecole", "mosquee", "clinique", "banque",
-    "parking", "cafe", "espace_vert",
+    "marche_souk",
+    "supermarche",
+    "hanout",
+    "taxi",
+    "transport",
+    "pharmacie",
+    "ecole",
+    "mosquee",
+    "clinique",
+    "banque",
+    "parking",
+    "cafe",
+    "espace_vert",
   ] as const;
-  return categories.slice(0, count).map((cat) => ({
-    category: cat,
-    label: cat,
+
+  return categories.slice(0, count).map((category) => ({
+    category,
+    label: category,
     distance_minutes: allUnder15 ? 10 : 25,
     mode: "walking",
     confidence: "élevé" as const,
@@ -44,7 +54,7 @@ describe("P10E - calculatePackageScore", () => {
       true,
       undefined,
       makeProximityPoints(13, true),
-      makeComparison("Prix cohérent", "élevée")
+      makeComparison("Positionnement indicatif proche", "élevée")
     );
     assert.equal(result.overall_label, "Excellent package");
     assert.ok(result.overall_score > 80);
@@ -53,49 +63,42 @@ describe("P10E - calculatePackageScore", () => {
   });
 
   it("returns the neutral reliability wording when 2 high + 1 medium", () => {
-    // reliability high (90), proximity medium (5 accessible), market high
-    const proxPoints = makeProximityPoints(5, true);
     const result = calculatePackageScore(
       90,
       true,
       undefined,
-      proxPoints,
-      makeComparison("Prix cohérent", "élevée")
+      makeProximityPoints(5, true),
+      makeComparison("Positionnement indicatif proche", "élevée")
     );
     assert.equal(result.overall_label, "Bon package");
     assert.equal(result.signals.reliability.label, "Informations bien renseignées");
   });
 
   it("returns 'Package correct' for mixed moderate signals", () => {
-    // reliability medium (60), proximity low (3 accessible), market medium
-    const proxPoints = makeProximityPoints(3, true);
     const result = calculatePackageScore(
       60,
       true,
       undefined,
-      proxPoints,
-      makeComparison("Prix cohérent", "faible")
+      makeProximityPoints(3, true),
+      makeComparison("Positionnement indicatif proche", "faible")
     );
     assert.equal(result.overall_label, "Package correct");
     assert.equal(result.signals.reliability.label, "Informations à compléter");
   });
 
   it("returns 'À analyser' when signals are all low", () => {
-    // reliability low (30), proximity low, market low
-    const proxPoints = makeProximityPoints(3, true);
     const result = calculatePackageScore(
       30,
       true,
       undefined,
-      proxPoints,
-      makeComparison("Prix supérieur au repère observé", "élevée")
+      makeProximityPoints(3, true),
+      makeComparison("Positionnement indicatif haut", "élevée")
     );
     assert.equal(result.overall_label, "À analyser");
     assert.equal(result.signals.reliability.label, "Informations limitées");
   });
 
   it("returns 'Données insuffisantes' when fewer than 2 signals are calculable", () => {
-    // reliability unavailable, proximity 0 points, market insufficient
     const result = calculatePackageScore(
       0,
       false,
@@ -114,22 +117,20 @@ describe("P10E - calculatePackageScore", () => {
       true,
       undefined,
       makeProximityPoints(8, true),
-      makeComparison("Prix cohérent", "élevée")
+      makeComparison("Positionnement indicatif proche", "élevée")
     );
     assert.ok(result.disclaimer.length > 0);
     assert.ok(!result.disclaimer.toLowerCase().includes("garanti"));
   });
 
   it("summary only contains signals that have data", () => {
-    // proximity insufficient (0 points)
     const result = calculatePackageScore(
       80,
       true,
       undefined,
       [],
-      makeComparison("Prix cohérent", "élevée")
+      makeComparison("Positionnement indicatif proche", "élevée")
     );
-    // only 2 calculable — proximity is insufficient
     assert.ok(result.summary.length > 0);
     assert.ok(!result.summary.includes("Données proximité non disponibles"));
   });
@@ -140,7 +141,7 @@ describe("P10E - calculatePackageScore", () => {
       true,
       0.85,
       makeProximityPoints(13, true),
-      makeComparison("Prix cohérent", "élevée")
+      makeComparison("Positionnement indicatif proche", "élevée")
     );
     assert.equal(result.signals.reliability.level, "low");
     assert.equal(result.signals.reliability.label, "Doublon possible");
@@ -168,7 +169,7 @@ describe("P10E - calculatePackageScore", () => {
       true,
       undefined,
       makeProximityPoints(10, true),
-      makeComparison("Prix cohérent", "élevée")
+      makeComparison("Positionnement indicatif proche", "élevée")
     );
     const allText = [
       result.overall_label,
@@ -183,13 +184,13 @@ describe("P10E - calculatePackageScore", () => {
     }
   });
 
-  it("'Prix inférieur au repère' yields high market signal", () => {
+  it("'Positionnement indicatif bas' yields high market signal", () => {
     const result = calculatePackageScore(
       75,
       true,
       undefined,
       makeProximityPoints(8, true),
-      makeComparison("Prix inférieur au repère observé", "élevée")
+      makeComparison("Positionnement indicatif bas", "élevée")
     );
     assert.equal(result.signals.market_price.level, "high");
   });

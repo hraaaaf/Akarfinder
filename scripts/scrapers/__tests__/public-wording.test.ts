@@ -56,7 +56,7 @@ describe("public wording cleanup", () => {
       true,
       undefined,
       makeProximityPoints(13),
-      makeComparison("Prix cohérent")
+      makeComparison("Positionnement indicatif proche")
     );
 
     const text = [result.signals.reliability.label, result.signals.reliability.detail ?? "", result.summary].join(" ");

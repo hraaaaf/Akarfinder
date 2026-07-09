@@ -4691,3 +4691,20 @@ Validation:
 - `npm test` : OK
 - `npm run build` : OK
 - preview a verifier avant toute decision de prod
+
+## 2026-07-09 - PRICE-POSITION-REFERENCE-V2
+
+Etat:
+- Production actuelle : `95.5%`.
+- Candidat preview/code : `96.5%` si le wording prudent et la preview restent verts.
+- Production doit rester `95.5%` tant qu'il n'y a pas de GO production explicite.
+
+Mission:
+- Ajouter un repere prix prudent, limite aux appartements et villas, sans exposer de prix officiel, prix de marche ou repere chiffré interne.
+- Afficher seulement `Repère prix indicatif`, `Positionnement indicatif bas / proche / haut`, `Écart indicatif important`, `Données indicatives, non officielles`.
+- Ne rien modifier a Gateway, au cache Gateway, a OpenSERP POC ni a la production Supabase.
+
+Validation:
+- `npm test` : OK (`1429/1429` scrapers, `51/51` api)
+- `npm run build` : OK (`63/63` pages)
+- preview a verifier avant toute decision de prod

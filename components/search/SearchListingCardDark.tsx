@@ -16,11 +16,12 @@ import { AkarInfoPassportCard } from "@/components/akarinfo/AkarInfoPassportCard
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { ListingVisual } from "@/components/listings/ListingVisual";
+import { PricePositionBadge } from "@/components/price-position/PricePositionBadge";
 import { SourceBadge, deriveBadge } from "@/components/badges/SourceBadge";
 import { SourceAttribution } from "@/components/badges/SourceAttribution";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-policy";
-import { getMarketReference, getListingObservedPriceComparison } from "@/lib/market/get-market-reference";
+import { getListingObservedPriceComparison } from "@/lib/market/get-market-reference";
 import { getListingProximity } from "@/lib/proximity/get-listing-proximity";
 import { calculatePackageScore } from "@/lib/package-score/calculate-package-score";
 import { track } from "@/lib/tracking/track";
@@ -96,7 +97,6 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
     priceComparison
   );
   const hasPackage = packageScore.overall_label !== "Données insuffisantes";
-  const marketRef = hasPackage ? null : getMarketReference(listing.city, listing.neighborhood, listing.property_type, transactionType, listing.price_per_m2);
   const isRent = listing.transaction_type === "rent";
   const passport = buildAkarInfoPassportForListing(listing);
 
@@ -194,15 +194,9 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           )}
           {hasPackage ? (
             <PackageBadge label={packageScore.overall_label} />
-          ) : marketRef && marketRef.confidence !== "faible" ? (
-            <span className={`rounded-full border px-2.5 py-1 text-[10.5px] font-bold ${
-              marketRef.position === "coherent" ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
-                : marketRef.position === "high" ? "border-rose-400/30 bg-rose-400/10 text-rose-300"
-                : "border-blue-400/30 bg-blue-400/10 text-blue-300"
-            }`}>
-              {marketRef.position === "coherent" ? "Prix cohérent" : marketRef.position === "high" ? "Prix supérieur au repère" : "Prix inférieur au repère"}
-            </span>
-          ) : null}
+          ) : (
+            <PricePositionBadge listing={listing} variant={theme === "dark" ? "dark" : "light"} />
+          )}
           {showReliability ? (
             <span className={`rounded-full border px-2.5 py-1 text-[10.5px] font-bold ${rel.cls}`}>{rel.label}</span>
           ) : null}

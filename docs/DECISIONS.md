@@ -2493,3 +2493,19 @@ Impact:
 - Nouveau POC code + tests + build.
 - Production Supabase et Gateway restent inchanges.
 - Production doit attendre un GO explicite apres preview validee.
+
+## 2026-07-09 - PRICE-POSITION-REFERENCE-V2
+
+Decision:
+- AkarFinder utilise désormais un bloc de repère prix prudent, limité aux appartements et villas, avec le wording public `Repère prix indicatif` / `Positionnement indicatif bas / proche / haut`.
+- Le bloc n'affiche aucun prix officiel, prix de marche, prix réel, ni champ interne de dataset.
+- Les listings externes Gateway restent exclus par défaut; les listings internes ou explicitement sûrs peuvent afficher le bloc.
+- Les repères chiffrés internes servent au calcul mais ne sortent pas dans l'UI publique.
+
+Reason:
+- Le produit a besoin d'aider à comparer sans certifier ni laisser croire à un prix de marché valide.
+
+Impact:
+- Nouvelle couche `lib/price-position/*` et composants publics associés.
+- Tests ciblés et build valides.
+- Aucune modification de Gateway, cache, OpenSERP POC ou Supabase production.

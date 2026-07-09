@@ -80,22 +80,22 @@ describe("P10D - getMarketReference", () => {
 });
 
 describe("P10D - getListingObservedPriceComparison", () => {
-  it("returns 'Prix cohérent' when price is within 10% of median", () => {
+  it("returns 'Positionnement indicatif proche' when price is within 10% of median", () => {
     const result = getListingObservedPriceComparison("Casablanca", "Maârif", "Appartement", "buy", 14200);
-    assert.equal(result.comparison_label, "Prix cohérent");
+    assert.equal(result.comparison_label, "Positionnement indicatif proche");
     assert.ok(result.observed_price_per_m2 !== null);
     assert.equal(result.listing_price_per_m2, 14200);
   });
 
-  it("returns 'Prix supérieur au repère observé' when price is >10% above median", () => {
+  it("returns 'Positionnement indicatif haut' when price is >10% above median", () => {
     const result = getListingObservedPriceComparison("Casablanca", "Maârif", "Appartement", "buy", 17000);
-    assert.equal(result.comparison_label, "Prix supérieur au repère observé");
+    assert.equal(result.comparison_label, "Positionnement indicatif haut");
     assert.ok(result.difference_percent !== null && result.difference_percent > 10);
   });
 
-  it("returns 'Prix inférieur au repère observé' when price is >10% below median", () => {
+  it("returns 'Positionnement indicatif bas' when price is >10% below median", () => {
     const result = getListingObservedPriceComparison("Casablanca", "Maârif", "Appartement", "buy", 11000);
-    assert.equal(result.comparison_label, "Prix inférieur au repère observé");
+    assert.equal(result.comparison_label, "Positionnement indicatif bas");
     assert.ok(result.difference_percent !== null && result.difference_percent < -10);
   });
 

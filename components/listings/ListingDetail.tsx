@@ -34,6 +34,7 @@ import { canHaveInternalDetail, canShowContactActions } from "@/lib/listings/lis
 import { calculatePackageScore } from "@/lib/package-score/calculate-package-score";
 import { getListingObservedPriceComparison } from "@/lib/market/get-market-reference";
 import { buildAkarInfoPassportForListing } from "@/lib/akarinfo/akarinfo-passport";
+import { getIndicativePricePositionDisplay } from "@/lib/price-position/price-position-display";
 
 function getReliabilityLevel(score: number): "high" | "medium" | "low" {
   if (score >= 80) return "high";
@@ -154,6 +155,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
     proximityPoints,
     priceComparison
   );
+  const pricePositionDisplay = getIndicativePricePositionDisplay(listing);
   const reliabilityLabel =
     reliabilityLevel === "high"
       ? "Niveau d'information élevé"
@@ -345,9 +347,11 @@ export function ListingDetail({ listing }: { listing: Listing }) {
           <PremiumCharacteristics listing={listing} />
 
           {/* Secondary blocks — accordion on mobile */}
-          <MobileAccordion title="Repère marché indicatif">
-            <MarketReferenceBlock listing={listing} enrichment={enrichment} />
-          </MobileAccordion>
+          {pricePositionDisplay ? (
+            <MobileAccordion title="Repère prix indicatif">
+              <MarketReferenceBlock listing={listing} enrichment={enrichment} />
+            </MobileAccordion>
+          ) : null}
 
           <MobileAccordion title="Quartier & proximité">
             <NeighborhoodAmenities enrichment={enrichment} />

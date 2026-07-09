@@ -11211,3 +11211,59 @@ Roadmap
 * Preview/code candidate : 96.5%.
 * Production : 96.5% seulement apres GO prod explicite.
 
+====================================================
+PRICE-POSITION-REFERENCE-V2 -- 2026-07-09
+====================================================
+
+STATUT : CODE + TESTS + PREVIEW VALIDES, PAS DE PROD.
+
+Pre-check
+* HEAD cible avant travail : 162fff0098a0a9c692b3f1499ce918a5f83c2333.
+* `git status --short` initial : `?? CLAUDE.md`, `?? artifacts/`, `?? scripts/capture-demo-promoteur.js`.
+* Stashes non touches.
+* Gateway/cache/Supabase non modifies.
+
+Livrables
+* Nouvelle couche prudente sous `lib/price-position/*`.
+* Badge public prudent : `components/price-position/PricePositionBadge.tsx`.
+* Bloc public prudent : `components/price-position/PricePositionBlock.tsx`.
+* Mise a jour des surfaces publiques Listing/Search/Map.
+* Tests : `scripts/scrapers/__tests__/price-position.test.ts`.
+* Docs : `docs/PRICE_POSITION_REFERENCE_V2.md`.
+
+Validation locale
+* `npm test` : OK. `1429/1429` passes dans `test:scrapers`, `51/51` passes dans `test:api`, total `1480/1480`.
+* `npm run build` : OK. `63/63` pages generees.
+
+Preview
+* `vercel deploy`
+* Deployment ID exact : `dpl_cd4Qwty2rBVz2B77iL9GcXYfq1WQ`
+* Preview URL : `https://akarfinder-jcizrs3pv-achraf-benmoussa-s-projects.vercel.app`
+* Inspect URL : `https://vercel.com/achraf-benmoussa-s-projects/akarfinder/cd4Qwty2rBVz2B77iL9GcXYfq1WQ`
+
+Verification preview
+* `/` = 200
+* `/pro` = 200
+* `/profil-recherche` = 200
+* `/immobilier` = 200
+* `/immobilier/casablanca` = 200
+* `/immobilier/casablanca/maarif` = 200
+* `/search?q=appartement%20casablanca` = 200
+* `/search?q=location%20studio%20casablanca` = 200
+* `/search?q=programme%20neuf%20casablanca` = 200
+* `/demo/promoteur` = 200
+* `/demo/agence` = 200
+* `/listings/137` = 404
+* `/robots.txt` = 200
+* `/sitemap.xml` = 200
+* `/api/internal/public-index/search?q=appartement%20casablanca%20maarif&city=Casablanca&neighborhood=Maarif&limit=5` = 200
+
+Scan wording public
+* Aucun hit sur `Score de fiabilite`, `Annonce fiable`, `Annonce verifiee`, `Bon plan`, `Prix officiel`, `Prix reel`, `Prix de marche`, `Sous le marche`, `Au-dessus du marche`, `value_low`, `value_median`, `value_high`, `evidence_ref`, `source_registry` dans les pages publiques testees.
+* Le bloc public affiche `Repère prix indicatif` et `Positionnement indicatif` seulement.
+
+Roadmap
+* Production reste a 95.5%.
+* Preview/code candidate : 96.5%.
+* Production : 96.5% seulement apres GO prod explicite.
+

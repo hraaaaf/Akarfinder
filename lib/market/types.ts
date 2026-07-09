@@ -29,9 +29,9 @@ export type MarketReference = {
 };
 
 export type ObservedPriceComparisonLabel =
-  | "Prix inférieur au repère observé"
-  | "Prix cohérent"
-  | "Prix supérieur au repère observé"
+  | "Positionnement indicatif bas"
+  | "Positionnement indicatif proche"
+  | "Positionnement indicatif haut"
   | "Données insuffisantes";
 
 export type ListingPriceComparison = {

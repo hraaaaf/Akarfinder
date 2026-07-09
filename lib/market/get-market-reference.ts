@@ -97,10 +97,10 @@ export function getListingObservedPriceComparison(
 
   const label: ObservedPriceComparisonLabel =
     ref.position === "high"
-      ? "Prix supérieur au repère observé"
+      ? "Positionnement indicatif haut"
       : ref.position === "low"
-        ? "Prix inférieur au repère observé"
-        : "Prix cohérent";
+        ? "Positionnement indicatif bas"
+        : "Positionnement indicatif proche";
 
   return {
     listing_price_per_m2: listingPricePerM2,

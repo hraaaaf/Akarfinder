@@ -11,9 +11,10 @@ import { ReliabilityBadge } from "@/components/ui/ReliabilityBadge";
 import { SourceBadge, deriveBadge } from "@/components/badges/SourceBadge";
 import { MarketPriceScoreBadge } from "@/components/badges/MarketPriceScoreBadge";
 import { SourceAttribution } from "@/components/badges/SourceAttribution";
+import { PricePositionBadge } from "@/components/price-position/PricePositionBadge";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-policy";
-import { getMarketReference, getListingObservedPriceComparison } from "@/lib/market/get-market-reference";
+import { getListingObservedPriceComparison } from "@/lib/market/get-market-reference";
 import { getListingProximity } from "@/lib/proximity/get-listing-proximity";
 import { calculatePackageScore } from "@/lib/package-score/calculate-package-score";
 import type { PackageScoreLabel } from "@/lib/package-score/types";
@@ -90,7 +91,6 @@ export function PhotoFirstListingCard({ listing }: PhotoFirstListingCardProps) {
     priceComparison
   );
   const hasPackage = packageScore.overall_label !== "Données insuffisantes";
-  const marketRef = hasPackage ? null : getMarketReference(listing.city, listing.neighborhood, listing.property_type, transactionType, listing.price_per_m2);
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-[1.4rem] border border-[#eadfca] bg-white shadow-[0_8px_28px_rgba(7,27,51,0.07)] transition duration-300 hover:-translate-y-1 hover:border-[#dcc89a] hover:shadow-[0_22px_48px_rgba(7,27,51,0.16)]">
@@ -199,28 +199,8 @@ export function PhotoFirstListingCard({ listing }: PhotoFirstListingCardProps) {
           ) : null}
           {hasPackage ? (
             <PackageCardBadge label={packageScore.overall_label} />
-          ) : marketRef ? (
-            <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
-              marketRef.confidence === "faible"
-                ? "border border-[#e5e7eb] bg-[#f9fafb] text-gray-500"
-                : marketRef.position === "coherent"
-                  ? "border border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]"
-                  : marketRef.position === "high"
-                    ? "border border-[#fecaca] bg-[#fef2f2] text-[#dc2626]"
-                    : "border border-[#bfdbfe] bg-[#eff6ff] text-[#2563eb]"
-            }`}>
-              {marketRef.confidence === "faible"
-                ? "Repère faible"
-                : marketRef.position === "coherent"
-                  ? "Prix cohérent"
-                  : marketRef.position === "high"
-                    ? "Prix supérieur au repère"
-                    : "Prix inférieur au repère"}
-            </span>
           ) : (
-            <span className="rounded-full border border-[#e5e7eb] bg-[#f9fafb] px-2.5 py-1 text-[11px] font-bold text-gray-400">
-              Données limitées
-            </span>
+            <PricePositionBadge listing={listing} variant="light" />
           )}
         </div>
 

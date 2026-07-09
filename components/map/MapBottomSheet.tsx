@@ -5,7 +5,8 @@ import Link from "next/link";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import type { Listing } from "@/lib/listings/types";
 import { formatShortPrice } from "@/lib/map/listing-map";
-import { getMarketReference } from "@/lib/market/get-market-reference";
+import { PricePositionBlock } from "@/components/price-position/PricePositionBlock";
+import { getIndicativePricePositionDisplay } from "@/lib/price-position/price-position-display";
 
 // WhatsApp brand SVG — kept as-is (brand icon, not in Lucide)
 function WhatsAppIcon() {
@@ -98,48 +99,9 @@ export function MapBottomSheet({ listing, onDismiss }: MapBottomSheetProps) {
             </span>
           </div>
 
-          {/* Prix/m² + repère marché */}
-          {(() => {
-            const txType = listing.transaction_type === "rent" ? "rent" : "buy";
-            const unit = txType === "rent" ? "DH/m²/mois" : "DH/m²";
-            const ref = getMarketReference(listing.city, listing.neighborhood, listing.property_type, txType, listing.price_per_m2);
-            const positionBadge = ref
-              ? ref.position === "high"
-                ? <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold text-red-600">↑ Prix élevé</span>
-                : ref.position === "low"
-                ? <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600">↓ Prix attractif</span>
-                : <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-700">✓ Prix cohérent</span>
-              : null;
-            return (
-              <div className="mt-3 rounded-xl border border-[#fde68a] bg-[#fefce8] px-4 py-3">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#a16207]">
-                    Repère marché indicatif
-                  </p>
-                  {positionBadge}
-                </div>
-                <p className="mt-1.5 text-[13px] font-extrabold text-gray-900">
-                  {listing.price_per_m2.toLocaleString("fr-FR")}{" "}
-                  <span className="font-semibold text-gray-500">{unit}</span>
-                  {ref && (
-                    <span className={`ml-2 text-[11px] font-bold ${ref.position_pct > 0 ? "text-red-500" : ref.position_pct < 0 ? "text-blue-500" : "text-green-600"}`}>
-                      ({ref.position_pct > 0 ? "+" : ""}{ref.position_pct}% médiane)
-                    </span>
-                  )}
-                </p>
-                {ref && (
-                  <p className="mt-0.5 text-[11px] text-gray-400">
-                    Repère {listing.city} : {ref.range_low.toLocaleString("fr-FR")} – {ref.range_high.toLocaleString("fr-FR")} {unit}
-                  </p>
-                )}
-                {!ref && (
-                  <p className="mt-0.5 text-[11px] text-gray-400">
-                    Données de référence non disponibles pour cette zone.
-                  </p>
-                )}
-              </div>
-            );
-          })()}
+          {getIndicativePricePositionDisplay(listing) ? (
+            <PricePositionBlock listing={listing} className="mt-3" />
+          ) : null}
 
           <div className="mt-4 flex gap-2">
             <Link
