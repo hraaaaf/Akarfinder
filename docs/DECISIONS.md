@@ -17,6 +17,30 @@ Reason:
 Impact:
 - ...
 
+## 2026-07-09 - SEO-NEIGHBORHOOD-GUIDES-1 — Code + preview candidate
+Status: Validated for code + preview candidate. Production pending explicit GO.
+Decision:
+- Create 11 neighborhood SEO guide pages under /immobilier/[city]/[district]
+  (Casablanca: maarif, racine, ain-diab, bourgogne; Rabat: agdal, souissi,
+  hay-riad; Marrakech: gueliz, hivernage; Tanger: malabata; Agadir: founty).
+- Pages are SSG with static data, no Serper/Gateway calls at build or load.
+- Each page has: unique H1, intro, search CTAs, property types, guide sections,
+  inter-neighborhood links, city backlink, breadcrumb, FAQ, SeoSafetyNotice,
+  BreadcrumbList + WebPage JSON-LD, canonical, index/follow.
+- City pages updated with neighborhood link sections.
+- Sitemap updated with 11 new routes. /search and /demo remain excluded.
+- 22 tests added covering slugs, metadata, safety, CTAs, content uniqueness.
+- Forbidden wording scan: 0 new public occurrences.
+- Dataset leak scan: 0 leaks.
+- Provider call scan: 0 Serper/Gateway calls from SEO pages.
+Reason:
+- Reinforce local SEO without making exhaustive claims or calling external APIs.
+- 11 quality pages > 100 thin pages. Volume limited to V1.
+Impact:
+- Preview/code candidate roadmap: 93% -> 95%.
+- Production roadmap remains 93% until explicit production GO.
+- Gateway, cache, Supabase untouched.
+
 ## 2026-07-07 - PUBLIC-RESULT-DECISION-CHECKLIST-1 — Production GO
 Status: Deployed to production
 Decision:

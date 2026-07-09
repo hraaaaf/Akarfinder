@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { CitySeoHero } from "@/components/seo/CitySeoHero";
 import { CitySearchCtas } from "@/components/seo/CitySearchCtas";
 import { SeoSafetyNotice } from "@/components/seo/SeoSafetyNotice";
 import { getCityBySlug, getAllCities } from "@/lib/seo-city-pages/city-seo-data";
 import { generateCitySeoMetadata } from "@/lib/seo-city-pages/seo-metadata";
+import { getNeighborhoodsByCity } from "@/lib/seo-neighborhood-pages/neighborhood-seo-data";
 
 type CityPageProps = {
   params: Promise<{ city: string }>;
@@ -56,10 +58,39 @@ export default async function CityPage({ params }: CityPageProps) {
     notFound();
   }
 
+  const neighborhoods = getNeighborhoodsByCity(city);
+
   return (
     <div className="min-h-screen bg-white">
       <CitySeoHero city={cityData} />
       <CitySearchCtas city={cityData} />
+
+      {neighborhoods.length > 0 && (
+        <section className="border-t border-slate-200 px-4 py-12 sm:py-16">
+          <div className="mx-auto max-w-3xl">
+            <h2 className="text-2xl font-extrabold text-slate-900">
+              Quartiers à {cityData.displayName}
+            </h2>
+            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {neighborhoods.map((n) => (
+                <Link
+                  key={n.slug}
+                  href={`/immobilier/${n.citySlug}/${n.slug}`}
+                  className="rounded-lg border border-slate-200 bg-white p-4 transition hover:bg-slate-50"
+                >
+                  <p className="font-semibold text-slate-900">
+                    {n.displayName}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {n.propertyTypes.slice(0, 2).join(" • ")}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <SeoSafetyNotice />
 
       {/* FAQ */}
