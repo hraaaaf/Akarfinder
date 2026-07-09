@@ -91,7 +91,7 @@ export function MapBottomSheet({ listing, onDismiss }: MapBottomSheetProps) {
 
           <div className="mt-3 flex items-center gap-2">
             <span className="rounded-full bg-[#f0f9ff] px-2.5 py-1 text-[11px] font-bold text-[#0369a1]">
-              Fiabilité {listing.reliability_score}/100
+              Niveau d'information {listing.reliability_score}/100
             </span>
             <span className="rounded-full bg-[#f0fdf4] px-2.5 py-1 text-[11px] font-bold text-[#166534]">
               {listing.property_type}

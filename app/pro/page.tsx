@@ -109,7 +109,7 @@ const VALUE_CARDS = [
   {
     icon: Star,
     title: "Package Score visible",
-    body: "Vos projets bénéficient du score de package AkarFinder : fiabilité, proximité et repère de prix.",
+    body: "Vos projets bénéficient d'un niveau d'information AkarFinder : proximité et repère de prix.",
     accent: "text-bronze-400",
     bg: "bg-bronze-900/20 border-bronze-700/30",
   },
@@ -156,7 +156,7 @@ const STEPS = [
   {
     num: "02",
     title: "AkarFinder analyse et structure les annonces",
-    body: "Chaque bien est enrichi, déduplicé et scoré. Les photos suivent notre politique d'autorisation. Le niveau d'information est calculé automatiquement.",
+    body: "Chaque bien est enrichi, déduplicé et structuré. Les photos suivent notre politique d'autorisation. Le niveau d'information est calculé automatiquement.",
   },
   {
     num: "03",
@@ -207,7 +207,7 @@ const OFFERS = [
     description: "Pour les agences immobilières qui souhaitent afficher leurs biens avec fiabilité, recevoir des leads qualifiés et bénéficier d'une visibilité sponsorisée clairement labellisée.",
     features: [
       "Intégration de vos listings (processus manuel pilote)",
-      "Score de fiabilité et package score visibles",
+      "Niveau d'information et package score visibles",
       "Leads acheteurs qualifiés avec budget et ville",
       "Label « Annonce sponsorisée » toujours affiché",
       "Visibilité MRE incluse",
@@ -225,7 +225,7 @@ const OFFERS = [
       "Page projet dédiée (typologies, prix indicatifs, brochure)",
       "Leads acheteurs intéressés par le neuf",
       "Connexion Sakan Expo digital (tracking QR)",
-      "Score de fiabilité projet visible",
+      "Niveau d'information projet visible",
       "Process de validation avant publication",
     ],
     accent: "border-[#065f46] bg-[#f0fdf4]",

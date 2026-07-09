@@ -92,7 +92,7 @@ export function SimilarListings({ listings, currentListing }: SimilarListingsPro
 
                 <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                   {showReliability ? (
-                    <ReliabilityBadge level={level} label={level === "high" ? "Fiche complète" : level === "medium" ? "Infos limitées" : "Aperçu minimal"} />
+                    <ReliabilityBadge level={level} label={level === "high" ? "Niveau d'information élevé" : level === "medium" ? "Niveau d'information moyen" : "Aperçu minimal"} />
                   ) : null}
                   {item.freshness_label ? (
                     <span className="rounded-full bg-[#f7f3ea] px-2 py-0.5 text-[10px] font-bold text-gray-500">

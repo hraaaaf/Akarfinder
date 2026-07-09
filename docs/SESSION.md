@@ -11069,3 +11069,49 @@ Roadmap
 * Cette mission vise 85% en preview/code uniquement tant que la preview n'est
   pas validee et que le GO prod n'est pas donne.
 
+====================================================
+PUBLIC-WORDING-CLEANUP-1 -- 2026-07-09
+====================================================
+
+STATUT : NETTOYAGE WORDING PUBLIC EN COURS. PRODUCTION NON DEPLOYEE.
+
+Pre-check
+* HEAD initial : bbcce71.
+* git status initial : clean dans le worktree de mission.
+* Stashes existants laisses intacts.
+
+Objectif
+* Neutraliser les formulations publiques trop affirmatives ou contradictoires.
+* Conserver la logique produit, le ranking et les surfaces Gateway inchanges.
+* Reworder les signaux publics vers des formulations de niveau d'information.
+
+Livrables
+* `app/pro/page.tsx`
+* `lib/package-score/calculate-package-score.ts`
+* `lib/market/market-price-score-display.ts`
+* `lib/demo/demo-data.ts`
+* `components/demo/NeighborhoodExperience.tsx`
+* `components/demo/DemoScoreCard.tsx`
+* `components/listings/PackageScoreBlock.tsx`
+* `components/listings/ListingCard.tsx`
+* `components/listings/ListingDetail.tsx`
+* `components/listings/PhotoFirstListingCard.tsx`
+* `components/listings/SimilarListings.tsx`
+* `components/map/MapBottomSheet.tsx`
+* `components/map/MapSidePanel.tsx`
+* `components/search/SearchListingCardDark.tsx`
+* `scripts/scrapers/__tests__/p10e-package-score.test.ts`
+* `scripts/scrapers/__tests__/public-wording.test.ts`
+* `docs/PUBLIC_WORDING_CLEANUP.md`
+
+Validation visee
+* `npm test`
+* `npm run build`
+* scan exact wording interdit dans `app/components/lib`
+* preview uniquement si necessaire
+
+Roadmap
+* Production actuelle reste a 95%.
+* Candidate preview/code : 95.5% une fois validation code/tests terminee.
+* Production : 95.5% seulement apres GO prod explicite.
+

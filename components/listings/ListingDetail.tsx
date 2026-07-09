@@ -156,9 +156,9 @@ export function ListingDetail({ listing }: { listing: Listing }) {
   );
   const reliabilityLabel =
     reliabilityLevel === "high"
-      ? "Informations complètes"
+      ? "Niveau d'information élevé"
       : reliabilityLevel === "medium"
-        ? "Infos limitées"
+        ? "Niveau d'information moyen"
         : "Doublon possible";
   const passport = buildAkarInfoPassportForListing(listing);
 
@@ -431,10 +431,10 @@ export function ListingDetail({ listing }: { listing: Listing }) {
             </div>
           </div>
 
-          {/* Score de confiance AkarFinder */}
+          {/* Niveau d'information AkarFinder */}
           <div className="rounded-[1.4rem] border border-[#eadfca] bg-white p-5 shadow-[0_6px_22px_rgba(7,27,51,0.04)]">
             <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-gray-500">
-              Score de confiance AkarFinder
+              Niveau d'information AkarFinder
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               {showReliability ? (

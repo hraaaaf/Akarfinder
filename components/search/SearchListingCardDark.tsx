@@ -29,6 +29,13 @@ import type { PackageScoreLabel } from "@/lib/package-score/types";
 import type { Listing } from "@/lib/listings/types";
 
 function PackageBadge({ label }: { label: PackageScoreLabel }) {
+  const displayLabel: Record<PackageScoreLabel, string> = {
+    "Excellent package": "Niveau d'information élevé",
+    "Bon package": "Niveau d'information solide",
+    "Package correct": "Niveau d'information correct",
+    "À analyser": "À analyser",
+    "Données insuffisantes": "Données insuffisantes",
+  };
   const styles: Record<PackageScoreLabel, string> = {
     "Excellent package": "border-emerald-400/30 bg-emerald-400/15 text-emerald-300",
     "Bon package": "border-emerald-400/25 bg-emerald-400/10 text-emerald-300",
@@ -36,7 +43,7 @@ function PackageBadge({ label }: { label: PackageScoreLabel }) {
     "À analyser": "border-border/20 dark:border-white/15 bg-surface dark:bg-white/5 text-muted-foreground dark:text-white/55",
     "Données insuffisantes": "border-border/15 dark:border-white/12 bg-surface dark:bg-white/5 text-muted-foreground/80 dark:text-white/40",
   };
-  return <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${styles[label]}`}>{label}</span>;
+  return <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${styles[label]}`}>{displayLabel[label]}</span>;
 }
 
 function getReliabilityLevel(score: number): "high" | "medium" | "low" {
@@ -46,8 +53,8 @@ function getReliabilityLevel(score: number): "high" | "medium" | "low" {
 }
 
 function reliabilityStyle(level: "high" | "medium" | "low") {
-  if (level === "high") return { label: "Informations complètes", cls: "border-emerald-400/30 bg-emerald-400/12 text-emerald-300" };
-  if (level === "medium") return { label: "Infos limitées", cls: "border-amber-300/30 bg-amber-300/12 text-amber-200" };
+  if (level === "high") return { label: "Niveau d'information élevé", cls: "border-emerald-400/30 bg-emerald-400/12 text-emerald-300" };
+  if (level === "medium") return { label: "Niveau d'information moyen", cls: "border-amber-300/30 bg-amber-300/12 text-amber-200" };
   return { label: "Doublon possible", cls: "border-rose-400/30 bg-rose-400/12 text-rose-300" };
 }
 

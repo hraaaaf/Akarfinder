@@ -17,14 +17,26 @@ function signalForReliability(
   duplicateScore?: number
 ): PackageScoreSignal {
   if (!available) {
-    return { level: "insufficient", label: "Données fiabilité non disponibles" };
+    return { level: "insufficient", label: "Niveau d'information non disponible" };
   }
   if (duplicateScore != null && duplicateScore >= 0.7) {
-    return { level: "low", label: "Doublon possible", detail: `Fiabilité ${score}/100` };
+    return { level: "low", label: "Doublon possible", detail: `Niveau d'information ${score}/100` };
   }
-  if (score >= 80) return { level: "high", label: "Annonce fiable", detail: `${score}/100` };
-  if (score >= 50) return { level: "medium", label: "Annonce à vérifier", detail: `${score}/100` };
-  return { level: "low", label: "Fiabilité faible", detail: `${score}/100` };
+  if (score >= 80) {
+    return {
+      level: "high",
+      label: "Informations bien renseignées",
+      detail: `Niveau d'information ${score}/100`,
+    };
+  }
+  if (score >= 50) {
+    return {
+      level: "medium",
+      label: "Informations à compléter",
+      detail: `Niveau d'information ${score}/100`,
+    };
+  }
+  return { level: "low", label: "Informations limitées", detail: `Niveau d'information ${score}/100` };
 }
 
 function signalForProximity(points: ProximityPoint[]): PackageScoreSignal {
@@ -56,7 +68,6 @@ function signalForMarketPrice(comparison: ListingPriceComparison): PackageScoreS
     if (conf === "élevée" || conf === "moyenne") return { level: "high", label: "Prix cohérent", detail: `Confiance ${conf}` };
     return { level: "medium", label: "Prix cohérent (données limitées)", detail: `Confiance ${conf ?? "faible"}` };
   }
-  // "Prix supérieur au repère observé"
   if (conf === "élevée") return { level: "low", label: "Prix supérieur au repère observé", detail: pctStr };
   return { level: "medium", label: "Prix au-dessus du repère", detail: pctStr };
 }

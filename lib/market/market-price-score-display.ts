@@ -17,17 +17,17 @@ const POSITION_DISPLAY: Record<
   { label: string; description: string; tone: MarketPriceScoreTone }
 > = {
   below_market: {
-    label: "Sous le marché",
+    label: "Repère indicatif bas",
     description: "Le prix/m² affiché est inférieur au repère Yakeey.",
     tone: "success",
   },
   near_market: {
-    label: "Aligné marché",
+    label: "Repère aligné",
     description: "Le prix/m² est proche du repère Yakeey.",
     tone: "info",
   },
   above_market: {
-    label: "Au-dessus du marché",
+    label: "Repère indicatif haut",
     description: "Le prix/m² dépasse le repère Yakeey sans être extrême.",
     tone: "warning",
   },
@@ -55,7 +55,7 @@ export function getMarketPriceScoreDisplay(input: PriceGapInput): MarketPriceSco
 
   const config = POSITION_DISPLAY[result.price_position];
   const confidence = confidenceFromScope(result.benchmark_scope);
-  const title = `Référence marché Yakeey · ${config.description}`;
+  const title = `Repère indicatif AkarFinder · ${config.description}`;
 
   return {
     label: config.label,

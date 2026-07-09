@@ -213,9 +213,9 @@ export const DEMO_PROPERTY_DETAIL = {
 // reading could look like once populated with real, sourced information.
 
 export type DemoMarketPositionLabel =
-  | "Sous le marché"
+  | "Repère indicatif bas"
   | "Aligné marché"
-  | "Au-dessus du marché"
+  | "Repère indicatif haut"
   | "Fortement au-dessus"
   | "Données insuffisantes";
 
@@ -253,7 +253,7 @@ export const DEMO_RENTAL_NEIGHBORHOOD_PROFILE = {
   ...DEMO_NEIGHBORHOOD_PROFILE,
   sectorTags: ["Urbain", "Dynamique", "Proche services", "Bien desservi"],
   marketPosition: {
-    label: "Sous le marché" as DemoMarketPositionLabel,
+    label: "Repère indicatif bas" as DemoMarketPositionLabel,
     note: "Positionnement indicatif — exemple de lecture marché, repère non contractuel.",
   },
   infoLevel: {

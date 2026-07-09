@@ -38,7 +38,7 @@ function makeComparison(
 }
 
 describe("P10E - calculatePackageScore", () => {
-  it("returns 'Excellent package' when all 3 signals are high", () => {
+  it("returns an information-level label when all 3 signals are high", () => {
     const result = calculatePackageScore(
       90,
       true,
@@ -48,9 +48,11 @@ describe("P10E - calculatePackageScore", () => {
     );
     assert.equal(result.overall_label, "Excellent package");
     assert.ok(result.overall_score > 80);
+    assert.equal(result.signals.reliability.label, "Informations bien renseignées");
+    assert.ok(result.signals.reliability.detail?.startsWith("Niveau d'information"));
   });
 
-  it("returns 'Bon package' when 2 high + 1 medium", () => {
+  it("returns the neutral reliability wording when 2 high + 1 medium", () => {
     // reliability high (90), proximity medium (5 accessible), market high
     const proxPoints = makeProximityPoints(5, true);
     const result = calculatePackageScore(
@@ -61,6 +63,7 @@ describe("P10E - calculatePackageScore", () => {
       makeComparison("Prix cohérent", "élevée")
     );
     assert.equal(result.overall_label, "Bon package");
+    assert.equal(result.signals.reliability.label, "Informations bien renseignées");
   });
 
   it("returns 'Package correct' for mixed moderate signals", () => {
@@ -74,6 +77,7 @@ describe("P10E - calculatePackageScore", () => {
       makeComparison("Prix cohérent", "faible")
     );
     assert.equal(result.overall_label, "Package correct");
+    assert.equal(result.signals.reliability.label, "Informations à compléter");
   });
 
   it("returns 'À analyser' when signals are all low", () => {
@@ -87,6 +91,7 @@ describe("P10E - calculatePackageScore", () => {
       makeComparison("Prix supérieur au repère observé", "élevée")
     );
     assert.equal(result.overall_label, "À analyser");
+    assert.equal(result.signals.reliability.label, "Informations limitées");
   });
 
   it("returns 'Données insuffisantes' when fewer than 2 signals are calculable", () => {
@@ -139,6 +144,7 @@ describe("P10E - calculatePackageScore", () => {
     );
     assert.equal(result.signals.reliability.level, "low");
     assert.equal(result.signals.reliability.label, "Doublon possible");
+    assert.ok(result.signals.reliability.detail?.startsWith("Niveau d'information"));
   });
 
   it("labels do not contain forbidden wording", () => {

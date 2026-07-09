@@ -2436,3 +2436,19 @@ Impact:
 - Insertion dans les cartes SERP structurees, les cartes Gateway externes et
   la fiche detail interne.
 - Search Gateway, ranking, DB, Supabase et APIs publiques restent inchanges.
+
+## 2026-07-09 - PUBLIC-WORDING-CLEANUP-1
+
+Decision:
+AkarFinder utilise des formulations publiques neutres pour les signaux de
+package, les cartes de resultat et les repères demo. Les textes qui
+presentaient un score comme une forme de fiabilite ont ete rewordes vers des
+mentions de niveau d'information ou de repere indicatif.
+
+Regles:
+- La logique produit et le ranking restent inchanges.
+- Les signaux de package restent internes, mais leur presentation publique est
+  neutre.
+- Les repères prix de demo utilisent des labels indicatifs plutot que des
+  formulations de marché trop affirmatives.
+- `app/pro` parle de niveau d'information et non de score de fiabilite.

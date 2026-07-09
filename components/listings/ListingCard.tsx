@@ -78,7 +78,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
           </span>
           <MarketPriceScoreBadge listing={listing} variant="light" />
           <span className="rounded-full bg-[#f4f6fa] px-3 py-1.5 text-[12px] font-semibold text-navy/70">
-            Score {listing.reliability_score}/100
+            Niveau d'information {listing.reliability_score}/100
           </span>
           <span className="rounded-full bg-[#f4f6fa] px-3 py-1.5 text-[12px] font-semibold text-navy/70">
             {listing.property_type}

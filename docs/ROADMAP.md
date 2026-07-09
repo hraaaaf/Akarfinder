@@ -4639,3 +4639,17 @@ GO production (2026-07-07) :
 Prochaine etape :
 
 * SEO-CITY-INTENT-PAGES-1 (`90% -> 93%`).
+
+## 2026-07-09 - PUBLIC-WORDING-CLEANUP-1
+
+Mission:
+Nettoyer les formulations publiques trop affirmatives autour du package score, de la page `/pro`, des repères marché de demo et des cartes de résultats.
+
+Etat:
+- Production reste a 95% tant qu'il n'y a pas de GO prod explicite.
+- Preview/code candidat vise 95.5% si les tests et la build restent verts.
+- Aucun changement de doctrine, de ranking, de Gateway, de cache ou de Supabase.
+
+Point de controle:
+- Les formulations interdites ont ete retirees des surfaces `app`, `components` et `lib` ciblees.
+- Le rendu public doit preferer `Niveau d'information`, `Repere indicatif` et `A confirmer sur la source originale`.

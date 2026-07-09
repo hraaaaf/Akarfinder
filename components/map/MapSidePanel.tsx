@@ -116,7 +116,7 @@ export function MapSidePanel({
                   </div>
                   <div className="mt-0.5 flex items-center gap-1.5">
                     <span className="rounded-full bg-[#f0f9ff] px-2 py-0.5 text-[10px] font-bold text-[#0369a1]">
-                      {listing.reliability_score}/100
+                      Niveau d'information {listing.reliability_score}/100
                     </span>
                     <span className="text-[10px] text-gray-400">
                       {listing.reliability_label}

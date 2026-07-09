@@ -8,6 +8,13 @@ function overallBadgeStyle(label: PackageScoreLabel): string {
   return "border border-[#e5e7eb] bg-[#f9fafb] text-gray-400";
 }
 
+function overallLabelText(label: PackageScoreLabel): string {
+  if (label === "Excellent package") return "Niveau d'information élevé";
+  if (label === "Bon package") return "Niveau d'information solide";
+  if (label === "Package correct") return "Niveau d'information correct";
+  return label;
+}
+
 function signalDot(level: PackageSignalLevel): React.ReactNode {
   const base = "h-2.5 w-2.5 shrink-0 rounded-full";
   if (level === "high") return <span className={`${base} bg-emerald-500`} aria-hidden="true" />;
@@ -70,10 +77,10 @@ export function PackageScoreBlock({ result }: PackageScoreBlockProps) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-gray-500">
-            Package AkarFinder
+            Niveau d'information AkarFinder
           </p>
           <p className="mt-1.5 text-[1.2rem] font-extrabold tracking-[-0.03em] text-deepblue">
-            {result.overall_label}
+            {overallLabelText(result.overall_label)}
           </p>
         </div>
         <span className={`mt-0.5 rounded-full border px-3 py-1.5 text-[12px] font-extrabold ${overallBadgeStyle(result.overall_label)}`}>
@@ -90,9 +97,9 @@ export function PackageScoreBlock({ result }: PackageScoreBlockProps) {
       )}
 
       <div className="mt-4 space-y-2">
-        <SignalRow category="Fiabilité" signal={result.signals.reliability} />
+        <SignalRow category="Niveau d'information" signal={result.signals.reliability} />
         <SignalRow category="Vie quotidienne" signal={result.signals.proximity} />
-        <SignalRow category="Prix marché" signal={result.signals.market_price} />
+        <SignalRow category="Repère prix" signal={result.signals.market_price} />
       </div>
 
       <p className="mt-4 border-t border-[#f0e6d2] pt-3 text-[11.5px] leading-5 text-gray-400">

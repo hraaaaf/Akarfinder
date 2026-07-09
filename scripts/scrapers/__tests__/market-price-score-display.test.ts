@@ -12,7 +12,7 @@ describe("market price score display", () => {
     });
 
     assert.ok(display);
-    assert.equal(display?.label, "Sous le marché");
+    assert.equal(display?.label, "Repère indicatif bas");
     assert.equal(display?.tone, "success");
     assert.equal(display?.confidence, "medium");
   });
@@ -26,7 +26,7 @@ describe("market price score display", () => {
     });
 
     assert.ok(display);
-    assert.equal(display?.label, "Aligné marché");
+    assert.equal(display?.label, "Repère aligné");
     assert.equal(display?.tone, "info");
   });
 
@@ -39,7 +39,7 @@ describe("market price score display", () => {
     });
 
     assert.ok(display);
-    assert.equal(display?.label, "Au-dessus du marché");
+    assert.equal(display?.label, "Repère indicatif haut");
     assert.equal(display?.tone, "warning");
   });
 

@@ -23,7 +23,7 @@ export function DemoScoreCard({ label, score, tag, criteria }: DemoScoreCardProp
       <div className="flex items-center justify-between gap-2">
         <p className="text-[13px] font-extrabold text-[#0B1F3A]">{label}</p>
         <span className="rounded-full border px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide" style={{ color, borderColor: color, backgroundColor: `${color}14` }}>
-          Score fictif
+          Repère fictif
         </span>
       </div>
       <div className="mt-3 flex items-end gap-1.5">

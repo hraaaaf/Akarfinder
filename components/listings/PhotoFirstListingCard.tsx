@@ -20,6 +20,13 @@ import type { PackageScoreLabel } from "@/lib/package-score/types";
 import type { Listing } from "@/lib/listings/types";
 
 function PackageCardBadge({ label }: { label: PackageScoreLabel }) {
+  const displayLabel: Record<PackageScoreLabel, string> = {
+    "Excellent package": "Niveau d'information élevé",
+    "Bon package": "Niveau d'information solide",
+    "Package correct": "Niveau d'information correct",
+    "À analyser": "À analyser",
+    "Données insuffisantes": "Données insuffisantes",
+  };
   const styles: Record<PackageScoreLabel, string> = {
     "Excellent package": "border border-[#a7f3d0] bg-[#ecfdf5] text-[#065f46]",
     "Bon package": "border border-[#6ee7b7] bg-[#d1fae5] text-[#047857]",
@@ -29,7 +36,7 @@ function PackageCardBadge({ label }: { label: PackageScoreLabel }) {
   };
   return (
     <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${styles[label]}`}>
-      {label}
+      {displayLabel[label]}
     </span>
   );
 }
@@ -41,8 +48,8 @@ function getReliabilityLevel(score: number): "high" | "medium" | "low" {
 }
 
 function getReliabilityLabel(level: "high" | "medium" | "low") {
-  if (level === "high") return "Informations complètes";
-  if (level === "medium") return "Infos limitées";
+  if (level === "high") return "Niveau d'information élevé";
+  if (level === "medium") return "Niveau d'information moyen";
   return "Doublon possible";
 }
 
