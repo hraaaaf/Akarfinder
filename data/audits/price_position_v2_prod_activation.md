@@ -42,6 +42,13 @@
 - Forbidden wording scan: `0`
 - Eligible public candidates found during inspection: `0`
 
+## Responsive checks
+
+- Desktop `/search?q=appartement%20casablanca`: `200`, no console errors
+- Mobile `/search?q=appartement%20casablanca`: `200`, no console errors
+- Desktop `/immobilier/casablanca/maarif`: `200`, no console errors
+- Mobile `/immobilier/casablanca/maarif`: `200`, no console errors
+
 ## Route checks
 
 All inspected public routes stayed healthy across OFF and ON:

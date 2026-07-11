@@ -82,6 +82,32 @@
       "public_leak_count": 0,
       "forbidden_wording_hits": 0,
       "eligible_candidates_count": 0
+    },
+    "responsive": {
+      "desktop_search": {
+        "status": 200,
+        "errors": 0,
+        "scroll_width": 1440,
+        "scroll_height": 1985
+      },
+      "mobile_search": {
+        "status": 200,
+        "errors": 0,
+        "scroll_width": 390,
+        "scroll_height": 1274
+      },
+      "desktop_district": {
+        "status": 200,
+        "errors": 0,
+        "scroll_width": 1440,
+        "scroll_height": 2482
+      },
+      "mobile_district": {
+        "status": 200,
+        "errors": 0,
+        "scroll_width": 390,
+        "scroll_height": 3072
+      }
     }
   },
   "routes": {
@@ -161,6 +187,7 @@
   },
   "warnings": [
     "No public eligible candidate was observed during inspection, so no visible Price Position block could be confirmed on a real public listing.",
-    "The controlled activation is still valid because the feature flag was exercised in production with no public leak or routing regression."
+    "The controlled activation is still valid because the feature flag was exercised in production with no public leak or routing regression.",
+    "Responsive checks passed on desktop and mobile for /search and /immobilier/casablanca/maarif."
   ]
 }
