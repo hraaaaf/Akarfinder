@@ -1,3 +1,4 @@
+import React from "react";
 import type { Listing } from "@/lib/listings/types";
 import { getIndicativePricePositionDisplay } from "@/lib/price-position/price-position-display";
 
