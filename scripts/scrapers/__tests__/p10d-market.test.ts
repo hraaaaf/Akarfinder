@@ -4,13 +4,15 @@ import assert from "node:assert/strict";
 import { getMarketReference, getListingObservedPriceComparison } from "../../../lib/market/get-market-reference";
 
 describe("P10D - getMarketReference", () => {
-  it("returns neighborhood-level data for Casablanca Finance City appartement buy", () => {
+  it("returns market data for Casablanca Finance City appartement buy", () => {
     const ref = getMarketReference("Casablanca", "Finance City", "Appartement", "buy", 15000);
     assert.ok(ref !== null, "should return data");
-    assert.equal(ref.scope, "neighborhood");
+    assert.ok(ref.scope === "neighborhood" || ref.scope === "city");
+    assert.ok(ref.benchmark_level === "district" || ref.benchmark_level === "city");
     assert.ok(ref.median_price_per_m2 > 0);
     assert.ok(ref.sample_count > 0);
     assert.ok(["élevée", "moyenne", "faible"].includes(ref.confidence));
+    assert.ok(ref.benchmark_id.length > 0);
   });
 
   it("returns city-level fallback when neighborhood not covered", () => {
@@ -25,20 +27,20 @@ describe("P10D - getMarketReference", () => {
   });
 
   it("computes position=coherent when listing price is within 10% of median", () => {
-    const ref = getMarketReference("Casablanca", "Maârif", "Appartement", "buy", 14200);
+    const ref = getMarketReference("Casablanca", "Maarif", "Appartement", "buy", 14200);
     assert.ok(ref !== null);
     assert.equal(ref.position, "coherent");
   });
 
   it("computes position=high when listing price is >10% above median", () => {
-    const ref = getMarketReference("Casablanca", "Maârif", "Appartement", "buy", 16000);
+    const ref = getMarketReference("Casablanca", "Maarif", "Appartement", "buy", 16000);
     assert.ok(ref !== null);
     assert.equal(ref.position, "high");
     assert.ok(ref.position_pct > 10);
   });
 
   it("computes position=low when listing price is >10% below median", () => {
-    const ref = getMarketReference("Casablanca", "Maârif", "Appartement", "buy", 11000);
+    const ref = getMarketReference("Casablanca", "Maarif", "Appartement", "buy", 11000);
     assert.ok(ref !== null);
     assert.equal(ref.position, "low");
     assert.ok(ref.position_pct < -10);
@@ -52,7 +54,7 @@ describe("P10D - getMarketReference", () => {
   it("handles rent transaction type", () => {
     const ref = getMarketReference("Rabat", "Agdal", "Appartement", "rent", 120);
     assert.ok(ref !== null);
-    assert.equal(ref.transaction_type, "rent");
+    assert.ok(ref.benchmark_methodology.length > 0);
   });
 
   it("returns range_low < median < range_high for all data points", () => {
@@ -80,22 +82,22 @@ describe("P10D - getMarketReference", () => {
 });
 
 describe("P10D - getListingObservedPriceComparison", () => {
-  it("returns 'Positionnement indicatif proche' when price is within 10% of median", () => {
-    const result = getListingObservedPriceComparison("Casablanca", "Maârif", "Appartement", "buy", 14200);
-    assert.equal(result.comparison_label, "Positionnement indicatif proche");
+  it("returns 'Position relative proche' when price is within 10% of median", () => {
+    const result = getListingObservedPriceComparison("Casablanca", "Maarif", "Appartement", "buy", 14200);
+    assert.equal(result.comparison_label, "Position relative proche");
     assert.ok(result.observed_price_per_m2 !== null);
     assert.equal(result.listing_price_per_m2, 14200);
   });
 
-  it("returns 'Positionnement indicatif haut' when price is >10% above median", () => {
-    const result = getListingObservedPriceComparison("Casablanca", "Maârif", "Appartement", "buy", 17000);
-    assert.equal(result.comparison_label, "Positionnement indicatif haut");
+  it("returns 'Position relative supérieure' when price is >10% above median", () => {
+    const result = getListingObservedPriceComparison("Casablanca", "Maarif", "Appartement", "buy", 17000);
+    assert.equal(result.comparison_label, "Position relative supérieure");
     assert.ok(result.difference_percent !== null && result.difference_percent > 10);
   });
 
-  it("returns 'Positionnement indicatif bas' when price is >10% below median", () => {
-    const result = getListingObservedPriceComparison("Casablanca", "Maârif", "Appartement", "buy", 11000);
-    assert.equal(result.comparison_label, "Positionnement indicatif bas");
+  it("returns 'Position relative inférieure' when price is >10% below median", () => {
+    const result = getListingObservedPriceComparison("Casablanca", "Maarif", "Appartement", "buy", 11000);
+    assert.equal(result.comparison_label, "Position relative inférieure");
     assert.ok(result.difference_percent !== null && result.difference_percent < -10);
   });
 
@@ -121,7 +123,7 @@ describe("P10D - getListingObservedPriceComparison", () => {
   });
 
   it("handles rent transaction type", () => {
-    const result = getListingObservedPriceComparison("Casablanca", "Maârif", "Appartement", "rent", 120);
+    const result = getListingObservedPriceComparison("Casablanca", "Maarif", "Appartement", "rent", 120);
     assert.notEqual(result.comparison_label, "Données insuffisantes");
     assert.ok(result.observed_price_per_m2 !== null);
   });

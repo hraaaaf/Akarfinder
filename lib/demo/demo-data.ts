@@ -213,9 +213,9 @@ export const DEMO_PROPERTY_DETAIL = {
 // reading could look like once populated with real, sourced information.
 
 export type DemoMarketPositionLabel =
-  | "Repère indicatif bas"
-  | "Aligné marché"
-  | "Repère indicatif haut"
+  | "Position relative inférieure"
+  | "Position relative proche"
+  | "Position relative supérieure"
   | "Fortement au-dessus"
   | "Données insuffisantes";
 
@@ -233,8 +233,8 @@ export const DEMO_NEIGHBORHOOD_PROFILE = {
   sectorNote:
     "Cet aperçu illustre comment AkarFinder peut aider à mieux lire l'environnement d'un bien. Les données affichées ici sont fictives et non contractuelles.",
   marketPosition: {
-    label: "Aligné marché" as DemoMarketPositionLabel,
-    note: "Positionnement indicatif — exemple de lecture marché, repère non contractuel.",
+    label: "Position relative proche" as DemoMarketPositionLabel,
+    note: "Repère prix indicatif — exemple de lecture marché, repère non contractuel.",
   },
   infoLevel: {
     level: "Information complète" as DemoInfoLevel,
@@ -253,8 +253,8 @@ export const DEMO_RENTAL_NEIGHBORHOOD_PROFILE = {
   ...DEMO_NEIGHBORHOOD_PROFILE,
   sectorTags: ["Urbain", "Dynamique", "Proche services", "Bien desservi"],
   marketPosition: {
-    label: "Repère indicatif bas" as DemoMarketPositionLabel,
-    note: "Positionnement indicatif — exemple de lecture marché, repère non contractuel.",
+    label: "Position relative inférieure" as DemoMarketPositionLabel,
+    note: "Repère prix indicatif — exemple de lecture marché, repère non contractuel.",
   },
   infoLevel: {
     level: "Information partielle" as DemoInfoLevel,

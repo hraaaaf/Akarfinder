@@ -49,6 +49,17 @@ function readSource(relativePath: string): string {
   return readFileSync(join(process.cwd(), relativePath), "utf8");
 }
 
+function withPricePositionEnabled<T>(fn: () => T): T {
+  const previous = process.env.PRICE_POSITION_REFERENCE_ENABLED;
+  process.env.PRICE_POSITION_REFERENCE_ENABLED = "true";
+  try {
+    return fn();
+  } finally {
+    if (previous === undefined) delete process.env.PRICE_POSITION_REFERENCE_ENABLED;
+    else process.env.PRICE_POSITION_REFERENCE_ENABLED = previous;
+  }
+}
+
 describe("public wording cleanup", () => {
   it("keeps package score reliability wording neutral", () => {
     const result = calculatePackageScore(
@@ -56,7 +67,7 @@ describe("public wording cleanup", () => {
       true,
       undefined,
       makeProximityPoints(13),
-      makeComparison("Positionnement indicatif proche")
+      makeComparison("Position relative proche")
     );
 
     const text = [result.signals.reliability.label, result.signals.reliability.detail ?? "", result.summary].join(" ");
@@ -66,16 +77,18 @@ describe("public wording cleanup", () => {
   });
 
   it("uses neutral market-position labels", () => {
-    const low = getMarketPriceScoreDisplay({
-      city: "Casablanca",
-      neighborhood: "Maarif",
-      property_type: "Appartement",
-      surface_m2: 80,
-      total_price_mad: 1_000_000,
-    });
+    const low = withPricePositionEnabled(() =>
+      getMarketPriceScoreDisplay({
+        city: "Casablanca",
+        neighborhood: "Maarif",
+        property_type: "Appartement",
+        surface_m2: 80,
+        total_price_mad: 1_000_000,
+      })
+    );
 
     assert.ok(low);
-    assert.ok(low?.label.startsWith("Repère indicatif"));
+    assert.ok(low?.label.startsWith("Position relative"));
     assert.ok(low?.title.includes("Repère indicatif AkarFinder"));
     assert.ok(!low?.label.toLowerCase().includes("sous le marché"));
     assert.ok(!low?.label.toLowerCase().includes("au-dessus du marché"));
@@ -90,8 +103,8 @@ describe("public wording cleanup", () => {
 
   it("demo market labels stay neutral", () => {
     const source = readSource("lib/demo/demo-data.ts");
-    assert.ok(source.includes("Repère indicatif bas"));
-    assert.ok(source.includes("Repère indicatif haut"));
+    assert.ok(source.includes("Position relative inférieure"));
+    assert.ok(source.includes("Position relative supérieure"));
     assert.ok(!source.includes("Sous le marché"));
     assert.ok(!source.includes("Au-dessus du marché"));
   });

@@ -61,15 +61,15 @@ function signalForMarketPrice(comparison: ListingPriceComparison): PackageScoreS
   const pct = comparison.difference_percent;
   const pctStr = pct != null ? `${pct > 0 ? "+" : ""}${pct}% vs repère` : undefined;
 
-  if (comparison.comparison_label === "Positionnement indicatif bas") {
-    return { level: "high", label: "Positionnement indicatif bas", detail: pctStr };
+  if (comparison.comparison_label === "Position relative inférieure") {
+    return { level: "high", label: "Position relative inférieure", detail: pctStr };
   }
-  if (comparison.comparison_label === "Positionnement indicatif proche") {
-    if (conf === "élevée" || conf === "moyenne") return { level: "high", label: "Positionnement indicatif proche", detail: `Confiance ${conf}` };
-    return { level: "medium", label: "Positionnement indicatif proche (données limitées)", detail: `Confiance ${conf ?? "faible"}` };
+  if (comparison.comparison_label === "Position relative proche") {
+    if (conf === "élevée" || conf === "moyenne") return { level: "high", label: "Position relative proche", detail: `Confiance ${conf}` };
+    return { level: "medium", label: "Position relative proche (données limitées)", detail: `Confiance ${conf ?? "faible"}` };
   }
-  if (conf === "élevée") return { level: "low", label: "Positionnement indicatif haut", detail: pctStr };
-  return { level: "medium", label: "Positionnement indicatif haut", detail: pctStr };
+  if (conf === "élevée") return { level: "low", label: "Position relative supérieure", detail: pctStr };
+  return { level: "medium", label: "Position relative supérieure", detail: pctStr };
 }
 
 function levelToNumber(level: PackageSignalLevel): number {

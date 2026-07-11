@@ -4708,3 +4708,271 @@ Validation:
 - `npm test` : OK (`1429/1429` scrapers, `51/51` api)
 - `npm run build` : OK (`63/63` pages)
 - preview a verifier avant toute decision de prod
+
+## 2026-07-09 - PRICE-POSITION-REFERENCE-V2 PROD
+
+Etat:
+- Production actuelle : `96.5%`.
+- Production deployee : oui.
+- Preview/code candidat : `96.5%`.
+
+Validation production:
+- `vercel deploy --prod` : OK.
+- Alias production : `https://akarfinder.vercel.app`.
+- Routes publiques verifiees en prod : OK.
+
+Roadmap:
+- Production reste a `96.5%` apres GO prod explicite.
+
+## 2026-07-10 - LISTING-OBSERVATION-HISTORY-1
+
+Etat:
+- Production actuelle : `96.5%`.
+- Preview/code candidat : `97.5%`.
+- Production deployee : non.
+
+Mission:
+- Ajouter une couche prudente d'historique d'observation pour les resultats publics.
+- Dire `observe` et `a confirmer sur la source originale`, jamais `disponible`, `active` ou `verifiee`.
+- Garder OpenSERP, le public-index POC, Gateway, le cache et la Supabase production hors du chemin live.
+
+Validation:
+- `npm test` : OK (`1490/1490`).
+- `npm run build` : OK (`63/63` pages).
+- Preview deploye : OK.
+
+Roadmap:
+- Production reste a `96.5%` tant qu'il n'y a pas de GO prod explicite.
+- Preview/code candidat : `97.5%`.
+- Next recommande : `MOROCCO-TOTAL-COST-CALCULATOR-1`.
+
+## 2026-07-10 - LISTING-OBSERVATION-HISTORY-1 PROD PARTIAL
+
+Etat:
+- Production code deployee : oui.
+- Migration Supabase production appliquee : non.
+- Feature publique totalement active : non, faute de table `listing_observation_history` en production.
+
+Validation production:
+- `vercel deploy --prod` : OK.
+- Routes publiques verifiees : OK.
+- Demo `noindex,nofollow` confirme.
+- Scan wording public : OK.
+
+Blocage:
+- `SUPABASE_ACCESS_TOKEN` absent localement.
+- Appel Management API avec le service role key : `401 JWT failed verification`.
+
+Roadmap:
+- Production reste a `96.5%` tant que la migration n'est pas appliquee.
+- Preview/code candidat : `97.5%`.
+- Activation complète seulement apres migration Supabase prod.
+## 2026-07-10 - LISTING-OBSERVATION-HISTORY-1 ETAT PROD PARTIEL
+
+Etat :
+- Migration production appliquee : oui.
+- Table listing_observation_history accessible : oui.
+- Code production servi : oui.
+- Ecriture reelle observee : non.
+
+Smoke tests :
+- beforeCount = 0.
+- Toutes les requetes Gateway testees ont renvoye results_count = 0.
+- afterCount = 0.
+
+Conclusion :
+- Le blocage vient du provider/Gateway qui ne renvoie aucun resultat dans le contexte actuel.
+- La feature est techniquement prete, mais non validee fonctionnellement en production.
+
+Roadmap :
+- Production reste a `96.5%`.
+- Ne pas passer a `97.5%` tant qu'une requete Gateway non vide n'a pas ecrit au moins une ligne puis incrmente `observation_count`.
+
+## 2026-07-10 - MOROCCO-TOTAL-COST-CALCULATOR-1
+
+Etat :
+- Production actuelle : `96.5%`.
+- Preview/code candidat : `97.5%`.
+- Production deployee : non.
+
+Mission :
+- Ajouter un calculateur prudent du cout total indicatif d'un achat immobilier au Maroc.
+- Inclure prix du bien, droits d'enregistrement, conservation fonciere, notaire, frais d'agence eventuels et financement indicatif.
+- Garder le wording : `Estimation indicative`, `montants a confirmer aupres d'un professionnel`, `Aucun conseil juridique, fiscal ou bancaire`.
+
+Validation :
+- `npm test` : OK (`1494/1494`).
+- `npm run build` : OK (`63/63` pages).
+- Preview deploye : OK.
+- `/acheter` affiche le bloc prudent et les routes publiques restent OK.
+
+Roadmap :
+- Production reste a `96.5%` tant qu'il n'y a pas de GO prod explicite.
+- Preview/code candidat : `97.5%`.
+
+## 2026-07-10 - RABAT-AGDAL-WEB-INDEX-VERTICAL-PROOF-1
+
+Etat :
+- Proof local valide sur fixtures pour `Appartement Rabat Agdal`.
+- Production reste a `96.5%`.
+- Preview/code candidat : `97.5%` si le proof est accepte.
+- Production deployee : non.
+
+Resultats fixtures :
+- `query_count=24`
+- `raw_result_count=26`
+- `unique_url_count=21`
+- `recognized_source_listings=18`
+- `structured_listings=13`
+- `accessible_listings=15`
+- `exact_duplicates=5`
+- `probable_duplicate_groups=5`
+- `estimated_unique_properties=13`
+- `searchable_results=5`
+
+Roadmap :
+- Garder le proof local et reproductible.
+- Ne pas ouvrir d'extension nationale avant validation live explicite.
+
+## 2026-07-10 - RABAT-AGDAL-LIVE-WEB-DISCOVERY-1
+
+Etat :
+- Provider live `search_api` / `serper` tente.
+- Live proof bloque par quota.
+- `400 Not enough credits`.
+
+Resultats live :
+- `raw_serp_results=0`
+- `unique_urls=0`
+- `relevant_real_estate_pages=0`
+- `recognized_source_listings=0`
+- `accessible_listings=0`
+- `structured_listings=0`
+- `searchable_results=0`
+
+Roadmap :
+- Conserver le script et le rapport comme trace de blocage live.
+- Attendre retour provider/quota avant de relancer.
+- Production reste a `96.5%`.
+
+## 2026-07-10 - OPENSERP-LOCAL-RABAT-AGDAL-LIVE-PROOF-1
+Statut:
+- Preuve locale OpenSERP validee partiellement.
+- Production reste a `96.5%`.
+- Preview/code candidat : `97.5%` pour la brique de preuve locale, sans effet prod.
+
+Resultats:
+- `queries_generated=24`
+- `queries_executed=24`
+- `raw_engine_results=451`
+- `unique_urls=218`
+- `relevant_real_estate_pages=444`
+- `recognized_source_listings=97`
+- `structured_listings=89`
+- `exact_duplicates=237`
+- `probable_duplicate_groups=19`
+- `estimated_unique_properties=24`
+- `searchable_results=10`
+
+Roadmap:
+- Garder OpenSERP uniquement en mode local proof / experimentation controlee.
+- Ne pas brancher le flux sur la recherche utilisateur live.
+- Ne pas changer la production tant qu aucun GO explicite n est donne.
+
+## 2026-07-10 - RABAT-AGDAL-OPENSERP-QUALITY-FUNNEL-AUDIT-1
+Statut:
+- Audit funnel execute : `partial`.
+- Production reste a `96.5%`.
+- Aucune preview ni production.
+
+Constat:
+- Le funnel historique `451 -> 218 -> 97 -> 89 -> 24 -> 10` ne pouvait pas etre reconstruit exactement a partir du seul artefact committe.
+- Un rerun local controle a permis de produire un audit exhaustif sur un nouveau corpus reel.
+
+Rerun d audit :
+- `raw_engine_results=470`
+- `unique_urls=212`
+- `recognized_source_listings=18`
+- `structured_listings=18`
+- `minimum_unique_properties=24`
+- `probable_unique_properties=16`
+- `maximum_unique_properties=27`
+- `searchable_properties=14`
+
+Roadmap:
+- NO-GO extension nationale.
+- NO-GO activation publique.
+- Etape suivante orientee qualite : durcir ou corriger le classificateur avant toute extension geographique.
+
+## 2026-07-11 - PRICE-POSITION-REFERENCE-V2-PROD-REMEDIATION-1
+
+Statut :
+- Remediation preproduction en cours.
+- Production officielle : `95.5%`.
+- Preview candidate : `96.5%`.
+- Chantier Price Position : `60%` apres remediaton locale validee.
+
+Objectif :
+- Ajouter le feature flag serveur, la traçabilité benchmark, le wording
+  neutre et le rollback documente sans toucher a Gateway, OpenSERP ou
+  Supabase production.
+
+Roadmap :
+- Production reste a `95.5%` tant qu'aucune activation n'est validee.
+- Preview candidate reste a `96.5%`.
+- Prochaine etape : activation production controlee seulement apres GO.
+
+## 2026-07-10 - RABAT-AGDAL-CLASSIFIER-HARDENING-1
+
+Etat:
+- Mission executee en local uniquement.
+- Statut : `partial`.
+- Production reste a `96.5%`.
+
+Concret:
+- Le classificateur amont Rabat-Agdal est maintenant plus explicable,
+  avec des decisions par couche et un corpus de reference deterministe.
+- Les categories hors scope evidentes sont mieux rejetees.
+- Les pages catalogue sont mieux separees des annonces individuelles.
+
+Limite:
+- La calibration actuelle ne preserve pas encore le stock utile cible sur le
+  corpus live (`recognized_source_listings` et `searchable_properties`
+  trop bas sur le dernier rerun OpenSERP local).
+
+Decision roadmap:
+- Pas de GO pour extension Rabat + Casablanca.
+- Pas de GO pour activation publique.
+- Prochaine mission recommandee :
+  `CLASSIFIER-REFERENCE-CORPUS-EXPANSION-1`.
+
+## 2026-07-11 - CLASSIFIER-REFERENCE-CORPUS-EXPANSION-1
+
+Etat:
+- Corpus de reference fige localement : `244` cas uniques.
+- Splits : `195` calibration, `49` validation.
+- Baseline produit non remplacee.
+- Classificateur experimental non promu.
+- Production reste a `96.5%`.
+
+Decision roadmap:
+- GO pour mesurer les voies annonce individuelle / decouverte / rejet / quarantaine
+  sur le corpus fige.
+- NO-GO pour recalibrage dans cette mission.
+- NO-GO pour activation publique ou extension geographique.
+- Prochaine mission recommandee :
+  `CLASSIFIER-CALIBRATION-ON-FROZEN-CORPUS-1`.
+
+## 2026-07-11 - CLASSIFIER-REFERENCE-CORPUS-HUMAN-REVIEW-AND-BALANCE-1
+
+Etat:
+- Corpus humain reequilibre localement : `244` cas uniques.
+- Repartition finale : `40` `individual_listing`, `55` `discovery_page`,
+  `128` `reject_out_of_scope`, `21` `quarantine`.
+- Splits apres revue : `193` calibration, `51` validation.
+- Metrises historiques separees en retention individuelle et retention de voie utile.
+
+Decision roadmap:
+- GO pour un futur calibrage sur corpus fige.
+- NO-GO pour promotion du classificateur.
+- NO-GO pour extension geographique, activation publique ou production.

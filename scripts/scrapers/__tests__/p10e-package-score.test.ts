@@ -54,7 +54,7 @@ describe("P10E - calculatePackageScore", () => {
       true,
       undefined,
       makeProximityPoints(13, true),
-      makeComparison("Positionnement indicatif proche", "élevée")
+      makeComparison("Position relative proche", "élevée")
     );
     assert.equal(result.overall_label, "Excellent package");
     assert.ok(result.overall_score > 80);
@@ -68,7 +68,7 @@ describe("P10E - calculatePackageScore", () => {
       true,
       undefined,
       makeProximityPoints(5, true),
-      makeComparison("Positionnement indicatif proche", "élevée")
+      makeComparison("Position relative proche", "élevée")
     );
     assert.equal(result.overall_label, "Bon package");
     assert.equal(result.signals.reliability.label, "Informations bien renseignées");
@@ -80,7 +80,7 @@ describe("P10E - calculatePackageScore", () => {
       true,
       undefined,
       makeProximityPoints(3, true),
-      makeComparison("Positionnement indicatif proche", "faible")
+      makeComparison("Position relative proche", "faible")
     );
     assert.equal(result.overall_label, "Package correct");
     assert.equal(result.signals.reliability.label, "Informations à compléter");
@@ -92,7 +92,7 @@ describe("P10E - calculatePackageScore", () => {
       true,
       undefined,
       makeProximityPoints(3, true),
-      makeComparison("Positionnement indicatif haut", "élevée")
+      makeComparison("Position relative supérieure", "élevée")
     );
     assert.equal(result.overall_label, "À analyser");
     assert.equal(result.signals.reliability.label, "Informations limitées");
@@ -117,7 +117,7 @@ describe("P10E - calculatePackageScore", () => {
       true,
       undefined,
       makeProximityPoints(8, true),
-      makeComparison("Positionnement indicatif proche", "élevée")
+      makeComparison("Position relative proche", "élevée")
     );
     assert.ok(result.disclaimer.length > 0);
     assert.ok(!result.disclaimer.toLowerCase().includes("garanti"));
@@ -129,7 +129,7 @@ describe("P10E - calculatePackageScore", () => {
       true,
       undefined,
       [],
-      makeComparison("Positionnement indicatif proche", "élevée")
+      makeComparison("Position relative proche", "élevée")
     );
     assert.ok(result.summary.length > 0);
     assert.ok(!result.summary.includes("Données proximité non disponibles"));
@@ -141,7 +141,7 @@ describe("P10E - calculatePackageScore", () => {
       true,
       0.85,
       makeProximityPoints(13, true),
-      makeComparison("Positionnement indicatif proche", "élevée")
+      makeComparison("Position relative proche", "élevée")
     );
     assert.equal(result.signals.reliability.level, "low");
     assert.equal(result.signals.reliability.label, "Doublon possible");
@@ -169,7 +169,7 @@ describe("P10E - calculatePackageScore", () => {
       true,
       undefined,
       makeProximityPoints(10, true),
-      makeComparison("Positionnement indicatif proche", "élevée")
+      makeComparison("Position relative proche", "élevée")
     );
     const allText = [
       result.overall_label,
@@ -184,13 +184,13 @@ describe("P10E - calculatePackageScore", () => {
     }
   });
 
-  it("'Positionnement indicatif bas' yields high market signal", () => {
+  it("'Position relative inférieure' yields high market signal", () => {
     const result = calculatePackageScore(
       75,
       true,
       undefined,
       makeProximityPoints(8, true),
-      makeComparison("Positionnement indicatif bas", "élevée")
+      makeComparison("Position relative inférieure", "élevée")
     );
     assert.equal(result.signals.market_price.level, "high");
   });

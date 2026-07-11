@@ -24,7 +24,7 @@ export const mockListings: Listing[] = [
       "Appartement bien agencé avec terrasse, double exposition et accès rapide aux quartiers d'affaires de Casablanca.",
     image_url: "/images/listings/appartement-casablanca.jpg",
     reliability_explanation:
-      "Positionnement indicatif proche, données complètes et localisation précise sur une source analysée récente.",
+      "Position relative proche, données complètes et localisation précise sur une source analysée récente.",
     whatsapp: "+212600000001",
     source_access_level: "indexed_only",
     image_permission_status: "unknown",

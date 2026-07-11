@@ -11211,6 +11211,105 @@ Roadmap
 * Preview/code candidate : 96.5%.
 * Production : 96.5% seulement apres GO prod explicite.
 
+## 2026-07-10 - LISTING-OBSERVATION-HISTORY-1
+
+Statut:
+* Production reste a 96.5%.
+* Preview/code candidate : 97.5%.
+* Production : 97.5% seulement apres GO prod explicite.
+
+Resume:
+* Nouvelle couche `Historique d'observation` ajoutee pour les resultats publics, avec labels prudents basees sur `observe` et `a confirmer sur la source originale`.
+* La couche fonctionne avec `NoopListingObservationHistoryStore` si la table est absente et ne bloque jamais la recherche utilisateur.
+* `AkarInfoPassportCard` affiche le bloc d'historique via le passport, et `app/api/search/gateway/route.ts` annote les resultats sans changer le ranking.
+
+Livrables:
+* `lib/listing-observation-history/*`
+* `components/observation-history/*`
+* `supabase/migrations/20260710093000_create_listing_observation_history.sql`
+* `docs/LISTING_OBSERVATION_HISTORY.md`
+* `scripts/scrapers/__tests__/observation-history.test.ts`
+
+Validation:
+* `npm test` : OK (`1439/1439` scrapers, `51/51` api, total `1490/1490`).
+* `npm run build` : OK (`63/63` pages).
+* Preview deploye : `dpl_4u49NmSrJcBqpYT9Y5XjNmMemCQ5`.
+* Preview URL : `https://akarfinder-fpg25p25h-achraf-benmoussa-s-projects.vercel.app`.
+* Routes publiques verifiees : `/`, `/pro`, `/profil-recherche`, `/immobilier`, `/immobilier/casablanca`, `/immobilier/casablanca/maarif`, `/search?q=appartement%20casablanca`, `/search?q=location%20studio%20casablanca`, `/search?q=programme%20neuf%20casablanca`, `/demo/promoteur`, `/demo/agence`, `/listings/137`, `/robots.txt`, `/sitemap.xml`.
+* Demo `noindex,nofollow` confirme, scan wording public sans hit sur les formulations interdites testees.
+
+Invariants conserves:
+* OpenSERP POC reste dormant.
+* Public-index POC reste dormant.
+* Gateway, cache, Serper et Supabase production restent inchanges.
+
+## 2026-07-10 - LISTING-OBSERVATION-HISTORY-1 PROD PARTIAL
+
+Statut:
+* Production code deployee : oui.
+* Migration Supabase production appliquee : non.
+* Feature publique totalement active : non, car la table `listing_observation_history` manque encore en prod.
+
+Production:
+* `vercel deploy --prod` : OK.
+* Deployment ID exact : `dpl_GabHGXXjTevd2AEEoXNwsBf77x4K`.
+* Production URL : `https://akarfinder.vercel.app`.
+* Routes verifiees : `/`, `/pro`, `/profil-recherche`, `/immobilier`, `/immobilier/casablanca`, `/immobilier/casablanca/maarif`, `/search?q=appartement%20casablanca`, `/search?q=location%20studio%20casablanca`, `/search?q=programme%20neuf%20casablanca`, `/demo/promoteur`, `/demo/agence`, `/listings/137`, `/robots.txt`, `/sitemap.xml`.
+
+Constraints production:
+* `SUPABASE_ACCESS_TOKEN` absent dans l'environnement local.
+* Tentative Management API avec le service role key : refusee (`401 JWT failed verification`).
+* Donc la migration POC reste en attente d'un PAT Supabase ou d'une application manuelle dans le SQL editor.
+
+Comportement observe:
+* Le code prod garde le fallback `NoopListingObservationHistoryStore` si la table est absente.
+* Aucune fuite publique detectee sur les wording interdits testes.
+* Demo `noindex,nofollow` confirme.
+
+Roadmap:
+* Production reste a `96.5%` tant que la migration n'est pas appliquee.
+* Preview/code candidat reste a `97.5%`.
+* Next reste `MOROCCO-TOTAL-COST-CALCULATOR-1` une fois ce blocage leve.
+
+## 2026-07-09 - PRICE-POSITION-REFERENCE-V2 PROD
+
+Statut:
+* Production actuelle : 96.5%.
+* Production deployee : oui.
+
+Pre-check:
+* git rev-parse HEAD : d16f7547ee22681f8d62546dac4f024ed0bab166.
+* git status --short : ?? CLAUDE.md, ?? artifacts/, ?? scripts/capture-demo-promoteur.js.
+* Stashes non touches.
+
+Production:
+* vercel deploy --prod : OK.
+* Deployment ID exact : dpl_FELiw1HVXY2LwiM7tAnKeFLHZGgz.
+* Production URL : https://akarfinder.vercel.app.
+
+Verification production:
+* / = 200
+* /pro = 200
+* /profil-recherche = 200
+* /immobilier = 200
+* /immobilier/casablanca = 200
+* /immobilier/casablanca/maarif = 200
+* /search?q=appartement%20casablanca = 200
+* /search?q=location%20studio%20casablanca = 200
+* /search?q=programme%20neuf%20casablanca = 200
+* /demo/promoteur = 200
+* /demo/agence = 200
+* /listings/137 = 404
+* /robots.txt = 200
+* /sitemap.xml = 200
+
+Scan wording public:
+* Aucun hit sur prix officiel, prix reel, prix de marche, sous le marche, au-dessus du marche, bon plan, trop cher, bonne affaire, annonce fiable, annonce verifiee, value_low, value_median, value_high, evidence_ref, source_registry.
+
+Validation:
+* npm test : OK (1429/1429 scrapers, 51/51 api, total 1480/1480).
+* npm run build : OK (63/63 pages) pendant le deploy Vercel.
+
 ====================================================
 PRICE-POSITION-REFERENCE-V2 -- 2026-07-09
 ====================================================
@@ -11267,3 +11366,297 @@ Roadmap
 * Preview/code candidate : 96.5%.
 * Production : 96.5% seulement apres GO prod explicite.
 
+## 2026-07-10 - LISTING-OBSERVATION-HISTORY-1 ETAT PROD PARTIEL
+
+Statut :
+- Migration production appliquee : OUI
+- Table listing_observation_history accessible : OUI
+- Code production servi : OUI
+- Routes publiques : OK
+- Ecriture reelle observee : NON
+
+Smoke tests :
+- beforeCount = 0
+- Toutes les requetes Gateway testees ont renvoye results_count = 0
+- afterCount = 0
+- observation_count non testable
+
+Conclusion :
+- Le blocage ne vient pas de listing_observation_history.
+- Le blocage vient du provider/Gateway qui ne renvoie aucun resultat dans le contexte actuel.
+- La feature est techniquement prete, mais non validee fonctionnellement en production.
+
+Roadmap :
+- Production reste a `96.5%`
+- Ne pas passer a `97.5%` tant qu'une requete Gateway non vide n'a pas :
+  1. cree au moins une ligne dans listing_observation_history
+  2. incrmente observation_count sur une deuxieme requete identique
+
+## 2026-07-10 - MOROCCO-TOTAL-COST-CALCULATOR-1 PREVIEW/CODE VALIDATED
+
+Statut :
+- Production reste a `96.5%`.
+- Preview/code candidat : `97.5%`.
+- Production deployee : non.
+
+Livrables :
+- Nouveau helper pur sous `lib/morocco-total-cost/`.
+- Nouveau bloc UI prudent sur `/acheter`.
+- Reprise du signal `SIMULATE_CREDIT_EVENT` pour pre-remplir le prix depuis une carte de bien.
+
+Validation :
+- `npm test` : OK (`1494/1494`).
+- `npm run build` : OK (`63/63` pages).
+- Preview deploye : `https://akarfinder-kpr8a7chi-achraf-benmoussa-s-projects.vercel.app`.
+- Routes testees : `/`, `/acheter`, `/neuf`, `/search?q=appartement%20casablanca`, `/demo/promoteur`, `/demo/agence`, `/listings/137`, `/robots.txt`, `/sitemap.xml`.
+- `/acheter` contient `Coût total indicatif` et le disclaimer prudent.
+- Aucune migration Supabase production.
+
+Roadmap :
+- Production reste a `96.5%` tant qu'il n'y a pas de GO prod explicite.
+- Preview/code candidat : `97.5%`.
+
+Next :
+- Attendre retour provider/quota Gateway
+- Puis refaire OBSERVATION-HISTORY-WRITE-SMOKE-1
+
+## 2026-07-10 - RABAT-AGDAL-WEB-INDEX-VERTICAL-PROOF-1
+
+Etat :
+- Proof vertical local valide sur fixtures pour `Appartement Rabat Agdal`.
+- Production deployee : non.
+- Migration production : non appliquee.
+
+Livrables :
+- Nouveau module `lib/rabat-agdal-proof/*`.
+- Script d'audit `scripts/audits/rabat-agdal-web-index-vertical-proof.ts`.
+- Rapport machine-readable `data/audits/rabat_agdal_web_index_vertical_proof.json`.
+- Migration Supabase creee mais non appliquee.
+
+Validation :
+- `npm test` : OK (`1452/1452` + `51/51`).
+- `npm run build` : OK (`63/63` pages).
+- Audit fixtures : `query_count=24`, `raw_result_count=26`, `unique_url_count=21`, `recognized_source_listings=18`, `structured_listings=13`, `accessible_listings=15`, `exact_duplicates=5`, `probable_duplicate_groups=5`, `estimated_unique_properties=13`, `searchable_results=5`.
+
+Roadmap :
+- Production reste a `96.5%`.
+- Preview/code candidat : `97.5%` si le proof est accepte.
+
+## 2026-07-10 - RABAT-AGDAL-LIVE-WEB-DISCOVERY-1
+
+Etat :
+- Provider live choisi : `search_api` / `serper`.
+- Run live tente en mode controle.
+- Statut final : `blocked`.
+
+Constat :
+- `SEARCH_API_ENDPOINT` et `SEARCH_API_KEY` sont bien presentes dans `.env.local`.
+- Le provider repond `400 Not enough credits`.
+- Aucun resultat SERP brut, aucune page source accessible, aucun groupe dedupe, aucun resultat recherchable.
+
+Livrables :
+- Script live `scripts/audits/rabat-agdal-live-web-discovery.ts`.
+- Rapport JSON `data/audits/rabat_agdal_live_web_discovery.json`.
+- Rapport Markdown `data/audits/rabat_agdal_live_web_discovery.md`.
+
+Validation :
+- Dry-run budget valide.
+- `npm test` : OK (`1456/1456` + `51/51`).
+- `npm run build` : OK (`63/63` pages).
+
+Roadmap :
+- Le proof live reste bloque par quota provider.
+- Production reste a `96.5%`.
+
+## 2026-07-10 - OPENSERP-LOCAL-RABAT-AGDAL-LIVE-PROOF-1
+
+Etat :
+- Preuve locale OpenSERP terminee en mode local-only.
+- OpenSERP local `openserp.exe` v0.8.6 valide via serveur HTTP local.
+- Google bloque sur captcha comme attendu, Bing / DuckDuckGo / Ecosia renvoient des resultats reellement exploitables.
+- Production deployee : non.
+- Migration production : non appliquee.
+
+Livrables :
+- Script `scripts/audits/openserp-local-rabat-agdal-live-proof.ts`.
+- Adaptation du provider Rabat-Agdal pour utiliser l API locale OpenSERP officielle.
+- Rapport machine-readable `data/audits/rabat_agdal_openserp_live_proof.json`.
+- Rapport Markdown `data/audits/rabat_agdal_openserp_live_proof.md`.
+
+Validation :
+- `npm test` : OK (`1458/1458` + `51/51`).
+- `npm run build` : OK (`63/63` pages).
+- Run local OpenSERP proof : `partial`.
+- `queries_generated=24`, `queries_executed=24`, `raw_engine_results=451`, `unique_urls=218`, `relevant_real_estate_pages=444`, `recognized_source_listings=97`, `structured_listings=89`, `exact_duplicates=237`, `probable_duplicate_groups=19`, `estimated_unique_properties=24`, `searchable_results=10`.
+
+Roadmap :
+- Production reste a `96.5%`.
+- La preuve locale est exploitable comme base de validation, mais elle ne declenche aucun changement production.
+
+## 2026-07-10 - RABAT-AGDAL-OPENSERP-QUALITY-FUNNEL-AUDIT-1
+
+Etat :
+- Audit funnel execute localement uniquement, sans preview ni production.
+- Statut : `partial`.
+- Raison du `partial` : l artefact OpenSERP historique ne contenait pas le detail exhaustif URL -> decision -> groupe -> publication pour reconstruire exactement le funnel `451 -> 218 -> 97 -> 89 -> 24 -> 10`.
+- Un rerun local controle a donc ete necessaire pour produire un audit exhaustif exploitable.
+
+Livrables :
+- Nouveau module `lib/rabat-agdal-proof/funnel-audit.ts`.
+- Nouveau script `scripts/audits/rabat-agdal-openserp-quality-funnel-audit.ts`.
+- Nouveau rapport JSON `data/audits/rabat_agdal_openserp_quality_funnel_audit.json`.
+- Nouveau rapport Markdown `data/audits/rabat_agdal_openserp_quality_funnel_audit.md`.
+
+Audit note :
+- L ancienne metrique `relevant_real_estate_pages` etait une metrique d occurrences, pas de pages uniques.
+- L ancienne valeur `exact_duplicates` melangeait une cle de dedupe normalisee et un compteur d URLs uniques calcule différemment.
+- Le nouvel audit separe explicitement : occurrences, URLs uniques, publications source, groupes et candidats biens.
+
+Rerun local d audit :
+- `raw_engine_results=470`
+- `unique_urls=212`
+- `recognized_source_listings=18`
+- `structured_listings=18`
+- `minimum_unique_properties=24`
+- `probable_unique_properties=16`
+- `maximum_unique_properties=27`
+- `searchable_properties=14`
+
+Validation :
+- Test cible audit : OK.
+- `npm test` : OK (`1462/1462` + `51/51`).
+- `npm run build` : OK (`63/63` pages).
+- Aucun deploiement.
+- Aucune migration Supabase production.
+
+Roadmap :
+- Production reste a `96.5%`.
+- Pas de GO extension nationale.
+- Pas de GO activation publique.
+- Le prochain choix depend maintenant surtout de la qualite du classificateur/funnel, pas du provider local.
+
+## 2026-07-10 - RABAT-AGDAL-CLASSIFIER-HARDENING-1
+
+Etat :
+- Mission executee localement uniquement, sans preview ni production.
+- Statut : `partial`.
+- Le classificateur amont est maintenant plus explicable et mieux teste,
+  mais le KPI produit cible n est pas encore atteint sur le corpus live.
+
+Livrables :
+- Nouveau corpus deterministe :
+  `lib/rabat-agdal-proof/classifier-reference-corpus.ts`
+- Durcissement du classificateur :
+  `lib/rabat-agdal-proof/classifier.ts`
+- Enrichissement des records normalises avec une decision explicable :
+  `lib/rabat-agdal-proof/types.ts`
+  `lib/rabat-agdal-proof/normalize.ts`
+- Nouveau script d audit :
+  `scripts/audits/rabat-agdal-classifier-hardening.ts`
+- Nouveaux rapports :
+  `data/audits/rabat_agdal_classifier_hardening.json`
+  `data/audits/rabat_agdal_classifier_hardening.md`
+- Nouveau test cible :
+  `scripts/scrapers/__tests__/rabat-agdal-classifier-hardening.test.ts`
+
+Concretement :
+- Le classificateur produit maintenant :
+  `upstream_relevance_status`, `page_type`, `location_status`,
+  `property_type_status`, `transaction_status`, `listing_probability`,
+  `decision_reasons`, `blocking_reasons`.
+- Les categories clairement hors scope sont mieux rejetees :
+  touristique, finance, editorial, homepage, mauvais type de bien.
+- Les pages catalogue sont separees des annonces individuelles et restent
+  `discovery_eligible` plutot que directement publiables.
+
+Limite actuelle :
+- Le rerun OpenSERP live reste trop variable pour valider un vrai gain produit.
+- Le stock utile attendu n est pas preserve au niveau cible sur le rerun live
+  (`recognized_source_listings=3`, `searchable_properties=3` sur le dernier run).
+- Cette derive vient a la fois :
+  1. de la variabilite du corpus vivant OpenSERP ;
+  2. d une calibration encore trop stricte pour certains cas historiques.
+
+Validation :
+- Tests cibles classification + funnel : OK.
+- `npm test` : a relancer sur la suite complete apres mise a jour docs.
+- `npm run build` : a relancer apres mise a jour docs.
+- Aucun deploiement.
+- Aucune migration Supabase production.
+
+Roadmap :
+- Production reste a `96.5%`.
+- Pas de GO extension geographique.
+- Prochaine etape recommandee : `CLASSIFIER-REFERENCE-CORPUS-EXPANSION-1`.
+
+## 2026-07-11 - CLASSIFIER-REFERENCE-CORPUS-EXPANSION-1
+
+Etat :
+- Mission executee localement, sans commit, preview ou production.
+- Corpus humain fige genere a partir des artefacts OpenSERP locaux existants.
+- Classificateur experimental non promu comme baseline produit.
+
+Corpus :
+- `244` cas uniques apres canonicalisation.
+- `195` cas calibration et `49` cas validation, sans chevauchement d URL canonique.
+- Les quatre voies sont presentes : `individual_listing`, `discovery_page`,
+  `reject_out_of_scope`, `quarantine`.
+- Les cas historiques utiles disponibles sont inclus et les reclassifications
+  sont mesurees separement.
+
+Livrables :
+- `lib/rabat-agdal-proof/classifier-reference-corpus.ts`
+- `lib/rabat-agdal-proof/classifier-reference-evaluation.ts`
+- `lib/rabat-agdal-proof/classifier-reference-report.ts`
+- `scripts/audits/classifier-reference-corpus-expansion.ts`
+- `scripts/scrapers/__tests__/classifier-reference-corpus-expansion.test.ts`
+- `data/audits/classifier_reference_corpus_expansion.json`
+- `data/audits/classifier_reference_corpus_expansion.md`
+
+Decision :
+- Aucun recalibrage de regles pendant cette mission.
+- `classifier_calibration_status=experimental`.
+- `product_baseline_replaced=false`.
+- Production reste a `96.5%`.
+- Prochaine mission recommandee : `CLASSIFIER-CALIBRATION-ON-FROZEN-CORPUS-1`.
+
+## 2026-07-11 - CLASSIFIER-REFERENCE-CORPUS-HUMAN-REVIEW-AND-BALANCE-1
+
+Etat :
+- Corpus humain reequilibre localement : `244` cas uniques.
+- Repartition finale : `40` `individual_listing`, `55` `discovery_page`,
+  `128` `reject_out_of_scope`, `21` `quarantine`.
+- Splits apres revue : `193` calibration, `51` validation, sans chevauchement.
+- Tous les cas historiques utiles et les quarantaines ont ete revus.
+
+Concretement :
+- Ajout d une revue humaine explicite sur les cas historiques utiles et les
+  quarantaines.
+- Separation du KPI historique en :
+  `historical_individual_listing_retention_rate` et
+  `historical_useful_lane_retention_rate`.
+- Nouveau rapport de revue et de reequilibrage du corpus de reference.
+
+Limite actuelle :
+- Le classificateur experimental reste non promu.
+- Le corpus est plus representatif, mais il sert encore de base de calibration
+  et non de baseline produit finale.
+
+Roadmap :
+- GO pour la mission suivante de calibration sur corpus fige.
+- NO-GO pour promotion du classificateur.
+- NO-GO pour production ou extension geographique.
+
+## 2026-07-11 - PRICE-POSITION-REFERENCE-V2-PROD-REMEDIATION-1
+
+Etat :
+- Remediation locale en cours sur le POC price position.
+- Feature flag serveur, traçabilité interne, wording neutre et rollback
+  documente en consolidation.
+- Production reste inchangee.
+
+Point de controle :
+- Aucun deploiement production.
+- Aucune modification Gateway, OpenSERP ou Supabase production.
+- La suite de tests cibles doit confirmer la separation public/interne avant
+  toute decision de prod.

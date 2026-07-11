@@ -2,15 +2,15 @@
 // Returns indicative market reference for a listing.
 // Returns null if city is not covered.
 
-import { MARKET_DATA } from "./morocco-market-prices";
+import { findMarketBenchmark } from "./market-benchmark-registry";
 import type { MarketReference, ListingPriceComparison, ObservedPriceComparisonLabel } from "./types";
 
 function normalize(s: string): string {
   return s
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/['']/g, "'")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/['’]/g, "'")
     .trim();
 }
 
@@ -23,9 +23,14 @@ function computePosition(
   median: number
 ): { position: "coherent" | "high" | "low"; position_pct: number } {
   const pct = ((listingPricePerM2 - median) / median) * 100;
-  const position =
-    pct > 10 ? "high" : pct < -10 ? "low" : "coherent";
+  const position = pct > 10 ? "high" : pct < -10 ? "low" : "coherent";
   return { position, position_pct: Math.round(pct) };
+}
+
+function getConfidenceFromSampleCount(sampleCount: number): MarketReference["confidence"] {
+  if (sampleCount >= 30) return "élevée";
+  if (sampleCount >= 10) return "moyenne";
+  return "faible";
 }
 
 export function getMarketReference(
@@ -38,37 +43,36 @@ export function getMarketReference(
   const normCity = normalize(city);
   const normNeighborhood = neighborhood ? normalize(neighborhood) : undefined;
   const normType = normalizePropertyType(propertyType);
+  const match = findMarketBenchmark({
+    city: normCity,
+    neighborhood: normNeighborhood,
+    property_type: normType,
+  });
 
-  // Try neighborhood-level match first
-  if (normNeighborhood) {
-    const match = MARKET_DATA.find(
-      (d) =>
-        normalize(d.city) === normCity &&
-        d.neighborhood !== undefined &&
-        normalize(d.neighborhood) === normNeighborhood &&
-        normalize(d.property_type) === normType &&
-        d.transaction_type === transactionType
-    );
-    if (match) {
-      const { position, position_pct } = computePosition(listingPricePerM2, match.median_price_per_m2);
-      return { ...match, scope: "neighborhood", position, position_pct };
-    }
-  }
+  if (!match) return null;
 
-  // City-level fallback
-  const cityMatch = MARKET_DATA.find(
-    (d) =>
-      normalize(d.city) === normCity &&
-      d.neighborhood === undefined &&
-      normalize(d.property_type) === normType &&
-      d.transaction_type === transactionType
-  );
-  if (cityMatch) {
-    const { position, position_pct } = computePosition(listingPricePerM2, cityMatch.median_price_per_m2);
-    return { ...cityMatch, scope: "city", position, position_pct };
-  }
+  const { position, position_pct } = computePosition(listingPricePerM2, match.benchmark_price_per_m2);
+  const benchmarkLevel = match.scope === "neighborhood" ? "district" : "city";
+  const fallbackApplied = match.scope === "city" && normNeighborhood ? "district_to_city" : "none";
+  const confidence = getConfidenceFromSampleCount(match.sample_count);
 
-  return null;
+  return {
+    benchmark_id: match.match_key,
+    benchmark_source_type: match.benchmark_source,
+    benchmark_methodology: "Yakeey benchmark registry derived from audited public tables",
+    benchmark_date: "Données 2024-2025",
+    benchmark_level: benchmarkLevel,
+    fallback_applied: fallbackApplied,
+    median_price_per_m2: match.benchmark_price_per_m2,
+    range_low: match.benchmark_price_per_m2 * 0.85,
+    range_high: match.benchmark_price_per_m2 * 1.15,
+    sample_count: match.sample_count,
+    confidence,
+    period: "Données 2024-2025",
+    scope: match.scope,
+    position,
+    position_pct,
+  };
 }
 
 const COMPARISON_DISCLAIMER =
@@ -97,10 +101,10 @@ export function getListingObservedPriceComparison(
 
   const label: ObservedPriceComparisonLabel =
     ref.position === "high"
-      ? "Positionnement indicatif haut"
+      ? "Position relative supérieure"
       : ref.position === "low"
-        ? "Positionnement indicatif bas"
-        : "Positionnement indicatif proche";
+        ? "Position relative inférieure"
+        : "Position relative proche";
 
   return {
     listing_price_per_m2: listingPricePerM2,

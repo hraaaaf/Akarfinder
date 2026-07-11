@@ -1,3 +1,5 @@
+import type { MarketBenchmarkSourceId } from "./market-benchmark-registry";
+
 // P10D — Prix moyen observé
 // NEVER claim official prices. Always "observé" / "indicatif".
 
@@ -17,6 +19,12 @@ export type MarketDataPoint = {
 };
 
 export type MarketReference = {
+  benchmark_id: string;
+  benchmark_source_type: MarketBenchmarkSourceId;
+  benchmark_methodology: string;
+  benchmark_date: string;
+  benchmark_level: "district" | "city";
+  fallback_applied: "none" | "district_to_city";
   median_price_per_m2: number;
   range_low: number;
   range_high: number;
@@ -29,9 +37,9 @@ export type MarketReference = {
 };
 
 export type ObservedPriceComparisonLabel =
-  | "Positionnement indicatif bas"
-  | "Positionnement indicatif proche"
-  | "Positionnement indicatif haut"
+  | "Position relative inférieure"
+  | "Position relative proche"
+  | "Position relative supérieure"
   | "Données insuffisantes";
 
 export type ListingPriceComparison = {

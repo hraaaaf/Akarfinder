@@ -1,4 +1,5 @@
 import { calculatePriceGap, type PriceGapInput, type PricePosition } from "./price-gap-calculator";
+import { isPricePositionReferenceEnabled } from "@/lib/price-position/price-position-feature";
 
 export type MarketPriceScoreConfidence = "high" | "medium" | "low";
 export type MarketPriceScoreTone = "success" | "info" | "warning" | "danger";
@@ -17,22 +18,22 @@ const POSITION_DISPLAY: Record<
   { label: string; description: string; tone: MarketPriceScoreTone }
 > = {
   below_market: {
-    label: "Repère indicatif bas",
+    label: "Position relative inférieure",
     description: "Le prix/m² affiché est inférieur au repère Yakeey.",
     tone: "success",
   },
   near_market: {
-    label: "Repère aligné",
+    label: "Position relative proche",
     description: "Le prix/m² est proche du repère Yakeey.",
     tone: "info",
   },
   above_market: {
-    label: "Repère indicatif haut",
+    label: "Position relative supérieure",
     description: "Le prix/m² dépasse le repère Yakeey sans être extrême.",
     tone: "warning",
   },
   overpriced: {
-    label: "Fortement au-dessus",
+    label: "Écart indicatif important",
     description: "Le prix/m² est nettement supérieur au repère Yakeey.",
     tone: "danger",
   },
@@ -50,6 +51,8 @@ type PriceGapResultLike = {
 };
 
 export function getMarketPriceScoreDisplay(input: PriceGapInput): MarketPriceScoreDisplay | null {
+  if (!isPricePositionReferenceEnabled()) return null;
+
   const result = calculatePriceGap(input);
   if (result.price_position === "insufficient_data") return null;
 
@@ -66,4 +69,3 @@ export function getMarketPriceScoreDisplay(input: PriceGapInput): MarketPriceSco
     position: result.price_position,
   };
 }
-

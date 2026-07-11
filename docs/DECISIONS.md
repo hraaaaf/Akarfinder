@@ -2509,3 +2509,222 @@ Impact:
 - Nouvelle couche `lib/price-position/*` et composants publics associés.
 - Tests ciblés et build valides.
 - Aucune modification de Gateway, cache, OpenSERP POC ou Supabase production.
+
+## 2026-07-09 - PRICE-POSITION-REFERENCE-V2 PROD
+
+Decision:
+- `PRICE-POSITION-REFERENCE-V2` est maintenant deploye en production sur `https://akarfinder.vercel.app`.
+- Le wording public reste prudent: `Repere prix indicatif`, `Positionnement indicatif bas / proche / haut`, `A confirmer avec la source originale`.
+- Aucun prix officiel, prix reel, prix de marche, sous le marche, au-dessus du marche ou bon plan n'est expose.
+
+Reason:
+- La V2 a ete validee en preview puis promue en production apres GO explicite.
+
+Impact:
+- Deployment ID : `dpl_FELiw1HVXY2LwiM7tAnKeFLHZGgz`.
+- Les garde-fous Gateway, cache, OpenSERP POC et Supabase production restent inchanges.
+
+## 2026-07-10 - LISTING-OBSERVATION-HISTORY-1
+
+Decision:
+- AkarFinder introduit une couche d'historique d'observation publique qui dit `observe` et `a confirmer sur la source originale`, sans jamais presenter un resultat comme disponible, actif, verifie ou fiable.
+- La couche doit rester deployee en mode safe par defaut: Noop si la table est absente, aucune erreur d'ecriture ne bloque la recherche, aucun contact/WhatsApp/email/galerie/image/raw_metadata n'est stocke.
+- Le chemin live n'appelle pas OpenSERP, ne branche pas le public-index POC et ne modifie pas le ranking Gateway.
+
+Reason:
+- Le produit doit aider a comprendre qu'un resultat a ete vu plusieurs fois sans suggerer une disponibilite ou une certitude non prouvee.
+
+Impact:
+- Nouveau POC code + tests + docs, avec migration Supabase creusee mais non appliquee.
+- Preview validee sur Vercel.
+- Production reste a `96.5%` tant qu'aucun GO prod explicite n'est donne.
+
+## 2026-07-10 - LISTING-OBSERVATION-HISTORY-1 PROD PARTIAL
+
+Decision:
+- Le commit `ebff3ec3163f33807bf4e01a0de0bda376391c01` a ete deployee en production sur `https://akarfinder.vercel.app`.
+- La feature reste en mode dormant en production tant que la migration `listing_observation_history` n'est pas appliquee dans Supabase.
+- L'application de la migration est bloquee depuis cet environnement: `SUPABASE_ACCESS_TOKEN` absent, et l'appel Management API teste avec la cle service role a retourne `401 JWT failed verification`.
+
+Reason:
+- On garde le code de production en avance, mais on ne pretend pas que la couche d'historique est active tant que la table n'existe pas en prod.
+
+Impact:
+- Production code live.
+- Migration POC toujours non appliquee.
+- Le fallback `Noop` couvre l'absence de table sans casser la recherche.
+## 2026-07-10 - LISTING-OBSERVATION-HISTORY-1 ETAT PROD PARTIEL
+
+Decision:
+- La migration `listing_observation_history` est consideree appliquee en production et la table est accessible.
+- Le code production est servi, mais aucune ecriture reelle n'a encore ete observee via les smoke tests Gateway.
+- Tant que le provider/Gateway renvoie `results_count = 0`, la feature reste techniquement en place mais fonctionnellement non validee.
+
+Reason:
+- Il faut distinguer la disponibilite du schema et la preuve d'un flux d'observation reel.
+
+Impact:
+- Production code live.
+- Table accessible.
+- Validation ecriture encore en attente d'un resultat Gateway non vide.
+
+## 2026-07-10 - MOROCCO-TOTAL-COST-CALCULATOR-1
+Status: Validated for code + preview candidate. Production pending explicit GO.
+Decision:
+- Ajouter un calculateur prudent du cout total indicatif d'un achat immobilier sur la page acheteur.
+- Le calculateur couvre le prix du bien, les droits d'enregistrement, la conservation fonciere, le notaire, les frais d'agence eventuels et un financement indicatif.
+- Le wording public reste borne a `Estimation indicative`, `montants a confirmer aupres d'un professionnel` et `Aucun conseil juridique, fiscal ou bancaire`.
+- Aucun changement Gateway, Serper, OpenSERP, public-property-index ou Supabase production.
+Reason:
+- Les acheteurs ont besoin d'un repere budgetaire simple sans transformer AkarFinder en conseil officiel.
+Impact:
+- Nouveau helper pur + bloc UI sur `/acheter`.
+- Tests ajoutes et validation preview passee.
+- Production reste a `96.5%` tant qu'aucun GO prod explicite n'est donne.
+
+## 2026-07-10 - RABAT-AGDAL-WEB-INDEX-VERTICAL-PROOF-1
+Status: Validated for code + tests. Production pending explicit GO.
+Decision:
+- Ajouter un proof vertical local pour `Appartement Rabat Agdal` avec pipeline deterministe: query factory, canonicalisation URL, filtre bruit, normalisation, dedupe exacte, grouping probable, stockage/rapport et recherche locale.
+- Garder OpenSERP et SerpAPI en abstraction facultative, sans live search utilisateur et sans activer de branchement production.
+- Creer la migration Supabase du proof sans l'appliquer en production.
+- Garder le fallback fixture/noop si les credentials ou la table manquent.
+Reason:
+- Le projet a besoin d'un signal reel, mesurable et reversible avant toute extension geographique.
+Impact:
+- Nouveau module `lib/rabat-agdal-proof/*`.
+- Script d'audit local et rapport machine-readable.
+- Tests cibles et build valides.
+- Production reste a `96.5%` tant qu'aucun GO prod explicite n'est donne.
+
+## 2026-07-10 - RABAT-AGDAL-LIVE-WEB-DISCOVERY-1
+Status: Blocked by provider quota.
+Decision:
+- Reutiliser le provider deja configure `SEARCH_API_PROVIDER=serper` via `SEARCH_API_ENDPOINT` et `SEARCH_API_KEY`.
+- Garder les plafonds stricts et la separation fixtures/live.
+- Marquer le run comme bloque quand le provider repond `400 Not enough credits`.
+- Ne pas contourner le quota ni changer de provider en dehors de la doctrine existante.
+Reason:
+- Le run live doit rester honnete: aucun faux positif si le fournisseur n'a plus de credits.
+Impact:
+- Nouveau script live, JSON et Markdown de preuve.
+- Aucun resultat live exploitable tant que le provider est bloque.
+
+## 2026-07-10 - OPENSERP-LOCAL-RABAT-AGDAL-LIVE-PROOF-1
+Status: Validated locally, production pending explicit GO.
+Decision:
+- Utiliser OpenSERP en mode local-only via le contrat HTTP officiel `/{engine}/search?text=...` et non via un mock POST `/search`.
+- Garder le proof limite a Rabat Agdal, avec moteurs par defaut `bing` et `ecosia`, `duck` normalise vers `duckduckgo`, et Google laisse en echec attendu.
+- Conserver un mode degrade ou tous les moteurs fail ne cassent pas le run partiel tant qu au moins un moteur repond.
+- Ne pas brancher OpenSERP sur la recherche utilisateur en direct.
+Reason:
+- La preuve locale montre qu OpenSERP peut fournir un flux discoverable reel sans changer le produit public ni passer par Serper live.
+Impact:
+- Nouveau script d audit local, rapport JSON/Markdown, et ajustement du provider Rabat Agdal pour parler l API locale officielle.
+- Aucun changement production, aucun impact Supabase prod.
+
+## 2026-07-10 - RABAT-AGDAL-OPENSERP-QUALITY-FUNNEL-AUDIT-1
+Status: Partial, with exhaustive rerun-based audit.
+Decision:
+- Ajouter une couche d audit dediee pour separer rigoureusement occurrences, URLs uniques, publications source, groupes et candidats biens.
+- Conserver le run OpenSERP strictement local-only, sans branchement public, pour regenerer un corpus exhaustif quand l artefact historique ne suffit plus.
+- Traiter le funnel historique `451/218/97/89/24/10` comme reference de roadmap, mais ne pas pretendre le reconstruire exactement sans detail URL par URL capture au moment du run.
+Reason:
+- L ancien rapport etait suffisant pour prouver la faisabilite technique, mais pas pour expliquer chaque perte du funnel de facon exhaustive et mathematiquement stable.
+Impact:
+- Nouveau module d audit funnel.
+- Nouveau rapport JSON/Markdown exhaustif sur rerun local.
+- Correction de vocabulaire metrique et clarification des invariants.
+- Aucun changement production, aucun changement UI publique.
+
+## 2026-07-10 - RABAT-AGDAL-CLASSIFIER-HARDENING-1
+Status: Partial. Local classifier hardening validated in code/tests; product KPI validation pending.
+Decision:
+- Durcir le classificateur amont Rabat-Agdal avec une decision explicable par couches :
+  `upstream_relevance_status`, `page_type`, `location_status`,
+  `property_type_status`, `transaction_status`, `listing_probability`,
+  `decision_reasons`, `blocking_reasons`.
+- Separer explicitement :
+  annonce individuelle potentielle,
+  page catalogue de decouverte,
+  homepage source,
+  page editoriale,
+  location touristique,
+  mauvais type de bien,
+  mauvais scope geographique,
+  cas incertain.
+- Conserver OpenSERP strictement local-only et ne rien brancher sur le
+  chemin public `/search`.
+- Considerer cette mission `partial` tant que le stock utile attendu
+  (`23` listings reconnus, `18` biens publiables) n est pas preserve
+  sur un corpus live ou de reference suffisamment stable.
+Reason:
+- Le filtre precedent etait trop permissif et peu explicable.
+- Le nouveau classificateur est plus sain conceptuellement et mieux teste,
+  mais le KPI produit cible ne peut pas etre considere valide tant que la
+  calibration reste trop stricte sur certains cas historiques.
+Impact:
+- Nouveau corpus de reference + nouveau script d audit classifier hardening.
+- Aucune production modifiee.
+- Prochaine mission recommandee : `CLASSIFIER-REFERENCE-CORPUS-EXPANSION-1`.
+
+## 2026-07-11 - CLASSIFIER-REFERENCE-CORPUS-EXPANSION-1
+Status: Local corpus evaluation completed; classifier calibration remains experimental.
+Decision:
+- Construire un corpus humain fige de `244` cas uniques a partir des artefacts
+  OpenSERP Rabat-Agdal existants.
+- Separer les voies `individual_listing`, `discovery_page`,
+  `reject_out_of_scope` et `quarantine`.
+- Evaluer la baseline precedente et le classificateur experimental sur le meme
+  corpus, avec splits calibration/validation sans chevauchement.
+- Ne pas recalibrer les seuils et ne pas promouvoir le classificateur pendant
+  cette mission.
+Reason:
+- Les reruns OpenSERP vivants ne permettent pas de mesurer proprement une
+  regression entre deux versions. Un corpus fige est necessaire avant tout
+  nouveau reglage.
+Impact:
+- Rapports JSON/Markdown de corpus et matrices de confusion ajoutes.
+- Aucune production, migration, interface publique ou activation OpenSERP
+  modifiee.
+- `classifier_calibration_status=experimental`.
+- Prochaine mission : `CLASSIFIER-CALIBRATION-ON-FROZEN-CORPUS-1`.
+
+## 2026-07-11 - CLASSIFIER-REFERENCE-CORPUS-HUMAN-REVIEW-AND-BALANCE-1
+
+Decision:
+- Reequilibrer le corpus de reference humainement revu sans recalibrer le
+  classificateur.
+- Conserver les 244 cas uniques et renforcer la representation des annonces
+  individuelles sans perdre la separation calibration/validation.
+- Exprimer separement la retention historique en annonce individuelle et en
+  voie utile.
+
+Reason:
+- Le corpus etait techniquement solide mais encore desequilibre pour calibrer
+  de facon fiable le classificateur.
+- Une reclassification utile en discovery_page ne doit pas etre confondue
+  avec une perte complete de stock utile.
+
+Impact:
+- Corpus humain reequilibre a 40 individual_listing, 55 discovery_page,
+  128 reject_out_of_scope et 21 quarantine.
+- Splits encore etanches.
+- Aucun changement production, aucune migration et aucune activation publique.
+
+## 2026-07-11 - PRICE-POSITION-REFERENCE-V2-PROD-REMEDIATION-1
+
+Decision:
+- Renforcer le POC price position avant toute activation production par un
+  feature flag serveur, une traçabilité interne explicite, un wording public
+  plus neutre et une procedure de rollback testable.
+- Maintenir la production inchangee tant que la remediaton n'est pas validee
+  par les tests et la preview controlee.
+
+Reason:
+- Le POC etait utile mais la remediaton doit supprimer toute ambiguite sur
+  l'exposition publique et la deactivabilité.
+
+Impact:
+- Pas de changement Gateway, OpenSERP ou Supabase production.
+- Production reste a `95.5%` jusqu'a activation explicite.
