@@ -4998,3 +4998,28 @@ Roadmap :
 - `PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1` = NEXT
 - Price Position workstream = `60%`
 - La route preview-only devra etre retiree ou neutralisee avant activation prod.
+
+## 2026-07-12 - PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1
+
+Etat :
+- Mission 4/5 executee en production controlee.
+- Commit candidat : `091ce53ceb0034394f104da5260c11fce1282334`.
+- Preview finale de validation : `dpl_45mDn248esS4TyWvF2KrkcA14dqM`.
+- Production OFF : `dpl_GPX16uaFnmDkgp1oHYcS7vbysJFv`.
+- Production ON : `dpl_55mag9XN1U6qKmyr2HWA6P5hK1iw`.
+- Route preview-only retiree : oui.
+- Production officielle : `96.5%`.
+- Price Position en production : oui.
+
+Constat :
+- Les routes publiques, `robots.txt`, `sitemap.xml` et l API publique sont
+  restees stables.
+- La route temporaire `/preview/price-position` retourne `404`.
+- Aucun candidat public eligibile n a ete observe sur les surfaces inspectees
+  (`eligible_candidates_count=0`).
+
+Roadmap :
+- `PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1` = COMPLETED
+- `LISTING-OBSERVATION-HISTORY-1` = NEXT
+- Price Position workstream = `80%`
+- Production deployee : oui

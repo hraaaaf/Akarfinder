@@ -1,0 +1,166 @@
+{
+  "mission": "PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1",
+  "status": "completed",
+  "verdict": "COMPLETED_PRODUCTION_ACTIVE",
+  "notes": [
+    "Production was activated in two controlled steps: OFF then ON.",
+    "No public eligible candidate was observed during inspection, so no visible Price Position block could be confirmed on a real public listing.",
+    "Public routes, robots, sitemap and the internal public-index API remained healthy and leak-free."
+  ],
+  "commits": {
+    "preview_proof_docs_commit": "ca1c4480516cfe57a39f7bfdd8f4a43d3a3e0ee2",
+    "production_candidate_commit": "091ce53ceb0034394f104da5260c11fce1282334",
+    "current_production_commit": "091ce53ceb0034394f104da5260c11fce1282334",
+    "rollback_production_commit": "091ce53ceb0034394f104da5260c11fce1282334",
+    "final_documentation_commit": "pending"
+  },
+  "workstream": {
+    "before": {
+      "missions_completed": "3/5",
+      "price_position_workstream_progress": "60%",
+      "production_official_progress": "95.5%",
+      "production_active": false
+    },
+    "after": {
+      "missions_completed": "4/5",
+      "price_position_workstream_progress": "80%",
+      "production_official_progress": "96.5%",
+      "production_active": true
+    }
+  },
+  "proofs": {
+    "preview_final": {
+      "deployment_id": "dpl_45mDn248esS4TyWvF2KrkcA14dqM",
+      "url": "https://akarfinder-nblcxr9h0-achraf-benmoussa-s-projects.vercel.app",
+      "inspect_url": "https://vercel.com/achraf-benmoussa-s-projects/akarfinder/45mDn248esS4TyWvF2KrkcA14dqM",
+      "environment_scope": "preview",
+      "flag_value": "false"
+    },
+    "production_flag_off": {
+      "deployment_id": "dpl_GPX16uaFnmDkgp1oHYcS7vbysJFv",
+      "url": "https://akarfinder-n8tuwm3u6-achraf-benmoussa-s-projects.vercel.app",
+      "inspect_url": "https://vercel.com/achraf-benmoussa-s-projects/akarfinder/GPX16uaFnmDkgp1oHYcS7vbysJFv",
+      "environment_scope": "production",
+      "flag_value": "false"
+    },
+    "production_flag_on": {
+      "deployment_id": "dpl_55mag9XN1U6qKmyr2HWA6P5hK1iw",
+      "url": "https://akarfinder-q9eyezq5k-achraf-benmoussa-s-projects.vercel.app",
+      "inspect_url": "https://vercel.com/achraf-benmoussa-s-projects/akarfinder/55mag9XN1U6qKmyr2HWA6P5hK1iw",
+      "environment_scope": "production",
+      "flag_value": "true"
+    }
+  },
+  "rollback_reference": {
+    "deployment_id": "dpl_GabHGXXjTevd2AEEoXNwsBf77x4K",
+    "url": "https://akarfinder-ptyxxzaeu-achraf-benmoussa-s-projects.vercel.app",
+    "inspect_url": "https://vercel.com/achraf-benmoussa-s-projects/akarfinder/GabHGXXjTevd2AEEoXNwsBf77x4K"
+  },
+  "validation": {
+    "local_tests": {
+      "price_position": "PASS",
+      "rollback_smoke": "PASS",
+      "npm_test": "PASS",
+      "npm_run_build": "PASS",
+      "git_diff_check": "PASS"
+    },
+    "local_runtime": {
+      "/preview/price-position": 404,
+      "/": 200,
+      "/robots.txt": 200
+    },
+    "preview_scan": {
+      "public_leak_count": 0,
+      "forbidden_wording_hits": 0
+    },
+    "production_off_scan": {
+      "public_leak_count": 0,
+      "forbidden_wording_hits": 0,
+      "eligible_candidates_count": 0
+    },
+    "production_on_scan": {
+      "public_leak_count": 0,
+      "forbidden_wording_hits": 0,
+      "eligible_candidates_count": 0
+    }
+  },
+  "routes": {
+    "preview_final": [
+      { "route": "/", "status": 200 },
+      { "route": "/pro", "status": 200 },
+      { "route": "/profil-recherche", "status": 200 },
+      { "route": "/immobilier", "status": 200 },
+      { "route": "/immobilier/casablanca", "status": 200 },
+      { "route": "/immobilier/casablanca/maarif", "status": 200 },
+      { "route": "/search?q=appartement%20casablanca", "status": 200 },
+      { "route": "/search?q=location%20studio%20casablanca", "status": 200 },
+      { "route": "/search?q=programme%20neuf%20casablanca", "status": 200 },
+      { "route": "/demo/promoteur", "status": 200 },
+      { "route": "/demo/agence", "status": 200 },
+      { "route": "/robots.txt", "status": 200 },
+      { "route": "/sitemap.xml", "status": 200 },
+      { "route": "/preview/price-position", "status": 404 },
+      { "route": "/api/internal/public-index/search?q=appartement%20casablanca%20maarif&city=Casablanca&neighborhood=Maarif&limit=5", "status": 200 }
+    ],
+    "production_off": [
+      { "route": "/", "status": 200 },
+      { "route": "/pro", "status": 200 },
+      { "route": "/profil-recherche", "status": 200 },
+      { "route": "/immobilier", "status": 200 },
+      { "route": "/immobilier/casablanca", "status": 200 },
+      { "route": "/immobilier/casablanca/maarif", "status": 200 },
+      { "route": "/search?q=appartement%20casablanca", "status": 200 },
+      { "route": "/search?q=location%20studio%20casablanca", "status": 200 },
+      { "route": "/search?q=programme%20neuf%20casablanca", "status": 200 },
+      { "route": "/demo/promoteur", "status": 200 },
+      { "route": "/demo/agence", "status": 200 },
+      { "route": "/robots.txt", "status": 200 },
+      { "route": "/sitemap.xml", "status": 200 },
+      { "route": "/preview/price-position", "status": 404 },
+      { "route": "/api/internal/public-index/search?q=appartement%20casablanca%20maarif&city=Casablanca&neighborhood=Maarif&limit=5", "status": 200 }
+    ],
+    "production_on": [
+      { "route": "/", "status": 200 },
+      { "route": "/pro", "status": 200 },
+      { "route": "/profil-recherche", "status": 200 },
+      { "route": "/immobilier", "status": 200 },
+      { "route": "/immobilier/casablanca", "status": 200 },
+      { "route": "/immobilier/casablanca/maarif", "status": 200 },
+      { "route": "/search?q=appartement%20casablanca", "status": 200 },
+      { "route": "/search?q=location%20studio%20casablanca", "status": 200 },
+      { "route": "/search?q=programme%20neuf%20casablanca", "status": 200 },
+      { "route": "/demo/promoteur", "status": 200 },
+      { "route": "/demo/agence", "status": 200 },
+      { "route": "/robots.txt", "status": 200 },
+      { "route": "/sitemap.xml", "status": 200 },
+      { "route": "/preview/price-position", "status": 404 },
+      { "route": "/api/internal/public-index/search?q=appartement%20casablanca%20maarif&city=Casablanca&neighborhood=Maarif&limit=5", "status": 200 }
+    ]
+  },
+  "non_coupling": {
+    "search_gateway_modified": false,
+    "openserp_modified": false,
+    "supabase_modified": false,
+    "public_index_modified": false,
+    "ranking_modified": false
+  },
+  "feature_flag": {
+    "name": "PRICE_POSITION_REFERENCE_ENABLED",
+    "server_side": true,
+    "default_value": false,
+    "preview_off_behavior": "hidden",
+    "preview_on_behavior": "active",
+    "production_off_behavior": "hidden",
+    "production_on_behavior": "active"
+  },
+  "kill_switches": {
+    "source_level_control": true,
+    "city_level_control": true,
+    "district_level_control": true,
+    "property_type_control": true
+  },
+  "warnings": [
+    "No public eligible candidate was observed during inspection, so no visible Price Position block could be confirmed on a real public listing.",
+    "The controlled activation is still valid because the feature flag was exercised in production with no public leak or routing regression."
+  ]
+}

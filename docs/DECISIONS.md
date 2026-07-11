@@ -2748,3 +2748,25 @@ Impact:
 - Mission 3/5 passe a `COMPLETED`.
 - `PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1` devient la prochaine
   etape.
+
+## 2026-07-12 - PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1
+
+Decision:
+- Activer Price Position en production de maniere controlee a partir du
+  commit candidat `091ce53ceb0034394f104da5260c11fce1282334`.
+- Deployer d abord avec `PRICE_POSITION_REFERENCE_ENABLED=false`, valider les
+  routes publiques et l API, puis activer `PRICE_POSITION_REFERENCE_ENABLED=true`
+  sans changer le code applicatif.
+- Retirer la surface technique preview-only avant la mise en production.
+
+Reason:
+- Les tests locaux, la preview finale et les deux deploiements production ont
+  confirme l absence de fuite publique et l absence de regression visible.
+- Aucun candidat public eligibile n a ete observe pendant les inspections
+  publiques.
+
+Impact:
+- Production Price Position active.
+- Route preview-only supprimee.
+- `PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1` executee.
+- Prochaine mission : `LISTING-OBSERVATION-HISTORY-1`.

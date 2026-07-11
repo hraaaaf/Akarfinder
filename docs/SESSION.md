@@ -11682,3 +11682,38 @@ Concretement :
 
 Prochaine etape :
 - `PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1`
+
+## 2026-07-12 - PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1
+
+Statut:
+- Mission 4/5 terminee.
+- Production active pour Price Position.
+- Route de preuve temporaire supprimee.
+- Aucun leak public detecte sur les previews ou sur la production.
+
+Preuves principales:
+- Commit de preuve preview: `ca1c4480516cfe57a39f7bfdd8f4a43d3a3e0ee2`.
+- Commit candidat de production: `091ce53ceb0034394f104da5260c11fce1282334`.
+- Preview finale: `dpl_45mDn248esS4TyWvF2KrkcA14dqM`.
+- Production OFF: `dpl_GPX16uaFnmDkgp1oHYcS7vbysJFv`.
+- Production ON: `dpl_55mag9XN1U6qKmyr2HWA6P5hK1iw`.
+- Route preview-only `/preview/price-position`: `404`.
+
+Validation:
+- `npm run test:price-position` PASS.
+- `npx tsx --test scripts/scrapers/__tests__/price-position-rollback-smoke.test.ts` PASS.
+- `npm test` PASS.
+- `npm run build` PASS.
+- `git diff --check` PASS.
+
+Constat:
+- Les routes publiques et l API publique sont restees stables entre OFF et ON.
+- Aucun candidat public eligibile n a ete observe pendant les inspections
+  publiques.
+
+Roadmap:
+- `PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1` = COMPLETED
+- `LISTING-OBSERVATION-HISTORY-1` = NEXT
+- Price Position workstream = `80%`
+- Production officielle = `96.5%`
+- Production deployee = oui
