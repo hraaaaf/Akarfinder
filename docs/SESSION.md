@@ -11660,3 +11660,25 @@ Point de controle :
 - Aucune modification Gateway, OpenSERP ou Supabase production.
 - La suite de tests cibles doit confirmer la separation public/interne avant
   toute decision de prod.
+## 2026-07-11 - PRICE-POSITION-REFERENCE-V2-REMEDIATION-PREVIEW-CLOSURE-2
+
+Etat :
+- Mission 3/5 cloturee.
+- Preuve preview-only sur le commit `e141f21ae9d5c5d2f1f1f11b6d0f386972bb907c`.
+- Preview ON: `dpl_Hssah76MQTVTzPatzYz2uPukLVRG`.
+- Preview OFF: `dpl_FfbQMqcC1RiRG2kiHjtjDf7fsGEx`.
+- Route technique: `/preview/price-position`.
+- Production officielle reste a `95.5%`.
+- Preview candidate reste a `96.5%`.
+- Production deployee: non.
+
+Concretement :
+- La route est accessible uniquement sur Vercel preview avec la variable de
+  demo preview.
+- Le vrai bloc Price Position s affiche avec le flag ON sur la fixture fictive
+  deterministe.
+- Le bloc disparait totalement avec le flag OFF.
+- Aucun leak public detecte.
+
+Prochaine etape :
+- `PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1`

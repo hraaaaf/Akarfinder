@@ -2728,3 +2728,23 @@ Reason:
 Impact:
 - Pas de changement Gateway, OpenSERP ou Supabase production.
 - Production reste a `95.5%` jusqu'a activation explicite.
+## 2026-07-11 - PRICE-POSITION-REFERENCE-V2-REMEDIATION-PREVIEW-CLOSURE-2
+
+Decision:
+- Ajouter une surface technique preview-only pour prouver le feature flag sur
+  une fixture fictive deterministe.
+- Valider le vrai composant Price Position sur deux previews Vercel du meme
+  commit: ON visible, OFF totalement absent.
+- Confirmer l'absence de fuite publique, de couplage Gateway/OpenSERP/Supabase
+  et la protection `noindex`.
+
+Reason:
+- La preview precedente garantissait l isolation mais pas la visibilite d un
+  cas eligibile.
+- La nouvelle surface technique permet une preuve stable, deterministe et
+  reproductible sans dependance aux annonces de production.
+
+Impact:
+- Mission 3/5 passe a `COMPLETED`.
+- `PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1` devient la prochaine
+  etape.

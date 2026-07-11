@@ -1,0 +1,245 @@
+{
+  "mission": "PRICE-POSITION-REFERENCE-V2-REMEDIATION-PREVIEW-CLOSURE-2",
+  "status": "completed",
+  "decision": "GO_FOR_PROD_ACTIVATION",
+  "candidate_commit": "e141f21ae9d5c5d2f1f1f11b6d0f386972bb907c",
+  "proof_commit": "e141f21ae9d5c5d2f1f1f11b6d0f386972bb907c",
+  "production_official_progress": "95.5%",
+  "preview_candidate_progress": "96.5%",
+  "price_position_workstream_progress": "60%",
+  "production_deployed": false,
+  "preview_only_route": "/preview/price-position",
+  "preview_guard": {
+    "required_vercel_env": "preview",
+    "required_demo_flag": "true",
+    "production_accessible": false,
+    "development_accessible": false,
+    "absent_demo_flag_accessible": false
+  },
+  "fixture": {
+    "path": "lib/price-position/price-position-preview-fixture.ts",
+    "is_fictitious": true,
+    "property_type": "Appartement",
+    "city": "Casablanca",
+    "district": "Maarif",
+    "price_mad": 1255590,
+    "surface_m2": 90,
+    "benchmark_available": true,
+    "expected_public_label": "Position relative proche"
+  },
+  "preview_on": {
+    "deployment_id": "dpl_Hssah76MQTVTzPatzYz2uPukLVRG",
+    "preview_url": "https://akarfinder-bmvc7f1th-achraf-benmoussa-s-projects.vercel.app",
+    "inspect_url": "https://vercel.com/achraf-benmoussa-s-projects/akarfinder/Hssah76MQTVTzPatzYz2uPukLVRG",
+    "commit_sha": "e141f21ae9d5c5d2f1f1f11b6d0f386972bb907c",
+    "environment_scope": "preview-only",
+    "demo_flag": true,
+    "price_position_flag": true,
+    "route_status": 200,
+    "fixture_visible": true,
+    "public_block_visible": true,
+    "wording_visible": true,
+    "disclaimers_visible": true,
+    "html_observed": "REPÈRE PRIX INDICATIF; Position relative proche; Ce repère aide à comparer l'information affichée. Il ne remplace pas la vérification sur la source originale.; Données indicatives, non officielles; À confirmer avec la source originale."
+  },
+  "preview_off": {
+    "deployment_id": "dpl_FfbQMqcC1RiRG2kiHjtjDf7fsGEx",
+    "preview_url": "https://akarfinder-ma9k288fd-achraf-benmoussa-s-projects.vercel.app",
+    "inspect_url": "https://vercel.com/achraf-benmoussa-s-projects/akarfinder/FfbQMqcC1RiRG2kiHjtjDf7fsGEx",
+    "commit_sha": "e141f21ae9d5c5d2f1f1f11b6d0f386972bb907c",
+    "environment_scope": "preview-only",
+    "demo_flag": true,
+    "price_position_flag": false,
+    "route_status": 200,
+    "fixture_visible": true,
+    "public_block_visible": false,
+    "wording_visible": false,
+    "disclaimers_visible": false,
+    "html_observed": "Surface fictive visible; no price-position block; no residual wrapper; no disclaimer fragment."
+  },
+  "routes": [
+    {
+      "route": "/preview/price-position",
+      "on_status": 200,
+      "off_status": 200,
+      "on_block_visible": true,
+      "off_block_visible": false,
+      "noindex": true,
+      "in_sitemap": false
+    },
+    {
+      "route": "/",
+      "on_status": 200,
+      "off_status": 200,
+      "route_changed_by_flag": false,
+      "preview_block_visible": false,
+      "noindex": false
+    },
+    {
+      "route": "/search?q=appartement%20casablanca",
+      "on_status": 200,
+      "off_status": 200,
+      "search_result_link_count_on": 0,
+      "search_result_link_count_off": 0,
+      "route_changed_by_flag": false,
+      "noindex": true
+    },
+    {
+      "route": "/robots.txt",
+      "on_status": 200,
+      "off_status": 200,
+      "route_changed_by_flag": false
+    },
+    {
+      "route": "/sitemap.xml",
+      "on_status": 200,
+      "off_status": 200,
+      "preview_route_listed": false,
+      "route_changed_by_flag": false
+    }
+  ],
+  "flag_behavior": {
+    "on_visible": true,
+    "off_hidden": true,
+    "same_commit_exact": true,
+    "preview_only_scope": true,
+    "production_scope_used": false,
+    "supabase_production_used": false
+  },
+  "public_leak_scan": {
+    "total_public_leaks": 0,
+    "scan_terms": [
+      "benchmark_value",
+      "value_low",
+      "value_median",
+      "value_high",
+      "evidence_ref",
+      "source_registry",
+      "rights_status",
+      "methodology_notes",
+      "internal_confidence",
+      "PricePositionDecisionInternal",
+      "benchmark_id",
+      "benchmark_methodology",
+      "decision_reason"
+    ],
+    "preview_on_leaks": [],
+    "preview_off_leaks": [],
+    "home_leaks": [],
+    "search_leaks": [],
+    "robots_leaks": [],
+    "sitemap_leaks": []
+  },
+  "wording_scan": {
+    "forbidden_wording_hits": 0,
+    "forbidden_terms": [
+      "prix officiel",
+      "prix réel",
+      "prix exact",
+      "prix certifié",
+      "prix garanti",
+      "prix de marché",
+      "sous le marché",
+      "au-dessus du marché",
+      "bonne affaire",
+      "bon plan",
+      "trop cher",
+      "surévalué",
+      "arnaque",
+      "annonce fiable",
+      "annonce vérifiée",
+      "sans risque",
+      "Positionnement indicatif bas"
+    ],
+    "new_public_wording": [
+      "Repère prix indicatif",
+      "Position relative proche",
+      "Données indicatives, non officielles",
+      "À confirmer avec la source originale"
+    ]
+  },
+  "runtime_logs": {
+    "local_tests": [
+      "npm run test:price-position = PASS (10/10)",
+      "npx tsx --test scripts/scrapers/__tests__/price-position-preview-closure.test.ts = PASS (5/5)",
+      "npm test = PASS (1483/1483)",
+      "npm run build = PASS (63/63 pages)"
+    ],
+    "vercel_build_on": [
+      "Build Completed in /vercel/output [47s]",
+      "Created all serverless functions",
+      "Generating static pages (63/63)"
+    ],
+    "vercel_build_off": [
+      "Build Completed in /vercel/output [46s]",
+      "Created all serverless functions",
+      "Generating static pages (63/63)"
+    ],
+    "runtime_errors": 0,
+    "build_errors": 0
+  },
+  "responsive_checks": {
+    "on_desktop": {
+      "viewport": "1440x900",
+      "fixture_visible": true,
+      "public_block_visible": true,
+      "layout_height": 900
+    },
+    "on_mobile": {
+      "viewport": "390x844",
+      "fixture_visible": true,
+      "public_block_visible": true,
+      "layout_height": 1164.5
+    },
+    "off_desktop": {
+      "viewport": "1440x900",
+      "fixture_visible": true,
+      "public_block_visible": false,
+      "layout_height": 900
+    },
+    "off_mobile": {
+      "viewport": "390x844",
+      "fixture_visible": true,
+      "public_block_visible": false,
+      "layout_height": 844
+    },
+    "layout_regressions": false
+  },
+  "non_coupling_checks": {
+    "search_gateway_modified": false,
+    "openserp_modified": false,
+    "supabase_modified": false,
+    "ranking_changed": false,
+    "production_environment_modified": false,
+    "search_result_count_on": 0,
+    "search_result_count_off": 0,
+    "search_route_changed_by_flag": false,
+    "robots_changed_by_flag": false,
+    "sitemap_changed_by_flag": false,
+    "preview_route_in_sitemap": false
+  },
+  "tests": {
+    "price_position_tests": "PASS",
+    "preview_closure_tests": "PASS",
+    "npm_test": "PASS",
+    "npm_run_build": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "roadmap_progress": {
+    "missions_completed": "3/5",
+    "mission_3_status": "COMPLETED",
+    "price_position_workstream_progress": "60%",
+    "production_official_progress": "95.5%",
+    "preview_candidate_progress": "96.5%",
+    "production_deployed": false
+  },
+  "blocking_findings": [],
+  "conditions": [],
+  "decision_rationale": [
+    "route preview-only access is enforced by VERCEL_ENV and a preview demo flag",
+    "the real Price Position block renders on the deterministic fixture when enabled",
+    "the same fixture hides the block completely when the feature flag is disabled",
+    "no public leak was detected in HTML or public responses",
+    "search, robots and sitemap are not coupled to the feature flag"
+  ]
+}

@@ -4976,3 +4976,25 @@ Decision roadmap:
 - GO pour un futur calibrage sur corpus fige.
 - NO-GO pour promotion du classificateur.
 - NO-GO pour extension geographique, activation publique ou production.
+## 2026-07-11 - PRICE-POSITION-REFERENCE-V2-REMEDIATION-PREVIEW-CLOSURE-2
+
+Etat :
+- Mission 3/5 cloturee avec une preuve preview-only strictement isolee.
+- Commit de preuve : `e141f21ae9d5c5d2f1f1f11b6d0f386972bb907c`.
+- Production officielle : `95.5%`.
+- Preview candidate : `96.5%`.
+- Production deployee : non.
+
+Preuves :
+- Preview ON : `dpl_Hssah76MQTVTzPatzYz2uPukLVRG`
+- Preview OFF : `dpl_FfbQMqcC1RiRG2kiHjtjDf7fsGEx`
+- Route technique : `/preview/price-position`
+- Bloc Price Position visible avec le flag ON, absent avec le flag OFF.
+
+Roadmap :
+- `PRICE-POSITION-REFERENCE-V2-PROD-REMEDIATION-1` = COMPLETED
+- `PRICE-POSITION-REFERENCE-V2-REMEDIATION-PREVIEW-CLOSURE-1` = PARTIAL
+- `PRICE-POSITION-REFERENCE-V2-REMEDIATION-PREVIEW-CLOSURE-2` = COMPLETED
+- `PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1` = NEXT
+- Price Position workstream = `60%`
+- La route preview-only devra etre retiree ou neutralisee avant activation prod.
