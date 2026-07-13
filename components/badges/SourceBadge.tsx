@@ -27,6 +27,11 @@ const BADGE_CONFIG: Record<string, BadgeConfig> = {
     lightCls: "border-sky-200 bg-sky-50 text-sky-700",
     darkCls: "border-sky-400/30 bg-sky-400/10 text-sky-200",
   },
+  external_web_result: {
+    label: "RÃ©sultat web externe",
+    lightCls: "border-slate-300 bg-slate-50 text-slate-700",
+    darkCls: "border-white/20 bg-white/[0.08] text-white/80",
+  },
   social_signal: {
     label: "Signal social",
     lightCls: "border-blue-100 bg-blue-50 text-blue-700",

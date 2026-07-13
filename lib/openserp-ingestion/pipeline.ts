@@ -303,6 +303,11 @@ function toPropertyRow(candidate: OpenSerpListingCandidate, now: string) {
     data_completeness_score: completeness,
     field_confidence: {
       provider: "openserp",
+      acquisition_provider: "openserp",
+      publication_lane: "external_web_result",
+      classification_lane: candidate.classification_lane,
+      candidate_id: candidate.candidate_id,
+      source_domain: candidate.source_domain,
       title: "medium",
       price: candidate.extracted.price_mad ? "medium" : "missing",
       city: candidate.extracted.city ? "medium" : "missing",

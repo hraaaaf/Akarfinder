@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { isAvailable, queryListings, type DbListingsQuery } from "@/lib/db";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
 import { assignDuplicateGroups } from "@/lib/listings/duplicate";
-import { canPublishDbRowToPublicSurface } from "@/lib/listings/public-listing-access";
+import { canPublishDbRowToPublicSearchSurface } from "@/lib/listings/public-listing-access";
 import { getDbProvider } from "@/lib/db/provider";
 
 export const runtime = "nodejs";
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const result = await queryListings(query);
 
     // PUBLIC-READMODEL-AUTHORIZED-ONLY-1: pre-filter to authorized sources only.
-    const authorizedRows = result.listings.filter(canPublishDbRowToPublicSurface);
+    const authorizedRows = result.listings.filter(canPublishDbRowToPublicSearchSurface);
 
     // P6: if all rows have persisted P6 scores, skip batch computation.
     const allPersisted = authorizedRows.every(

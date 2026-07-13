@@ -85,6 +85,13 @@ type V95DisplayPolicy = {
   display_images?: { policy?: string; urls?: string[] };
 };
 
+type FieldConfidenceMetadata = {
+  provider?: string;
+  acquisition_provider?: string;
+  publication_lane?: string;
+  classification_lane?: string;
+};
+
 function buildPublicIndexedPolicy(reason: string): V95DisplayPolicy {
   return {
     source_display_type: "public_index_source",
@@ -95,6 +102,28 @@ function buildPublicIndexedPolicy(reason: string): V95DisplayPolicy {
     allowed_ctas: ["view_original", "view_source", "compare"],
     source_attribution_label: "Source publique indexee",
     display_policy_reason: reason,
+    display_images: { policy: "single_thumbnail_allowed", urls: [] },
+  };
+}
+
+function derivePersistedExternalDisplayPolicy(
+  metadata: FieldConfidenceMetadata | null,
+): V95DisplayPolicy | null {
+  if (!metadata) return null;
+  if (metadata.provider !== "openserp" && metadata.acquisition_provider !== "openserp") return null;
+  if (metadata.publication_lane !== "external_web_result") return null;
+  if (metadata.classification_lane !== "individual_listing") return null;
+
+  return {
+    source_display_type: "external_web_result",
+    source_badge: "external_web_result",
+    display_depth: "limited_preview",
+    thumbnail_policy: "single_thumbnail_allowed",
+    original_source_required: true,
+    allowed_ctas: ["view_original", "view_source", "compare"],
+    source_attribution_label: "Résultat web externe",
+    display_policy_reason:
+      "Résultat externe persisté via OpenSERP, visible uniquement en aperçu limité avec redirection vers la source originale.",
     display_images: { policy: "single_thumbnail_allowed", urls: [] },
   };
 }
@@ -154,6 +183,8 @@ export function mapDbRowToListing(
   row: DbListingRow,
   duplicate?: DuplicateOverride
 ): Listing {
+  const fieldConfidenceMetadata = parseJsonSafe<FieldConfidenceMetadata>(row.field_confidence);
+  const persistedExternalPolicy = derivePersistedExternalDisplayPolicy(fieldConfidenceMetadata);
   const priceMad = row.price_mad ?? 0;
   const surface = row.surface_m2 ?? 0;
   const pricePerM2 =
@@ -262,10 +293,10 @@ export function mapDbRowToListing(
     has_equipped_kitchen: !!(row.has_equipped_kitchen),
     premium_features: parseJsonSafe<string[]>(row.premium_features) ?? [],
     // V9.5 â€” source display policy (computed from source_name, additive opt-in).
-    ...deriveSourceDisplayPolicy(row.source_name),
+    ...(persistedExternalPolicy ?? deriveSourceDisplayPolicy(row.source_name)),
     // SEARCH-RESULT-DISPLAY-MODEL-1 â€” SERP display policy (additive).
     ...(() => {
-      const dp = deriveSourceDisplayPolicy(row.source_name);
+      const dp = persistedExternalPolicy ?? deriveSourceDisplayPolicy(row.source_name);
       const hasThumbnail = !!row.thumbnail_url;
       const serpPolicy = computeSearchResultDisplayPolicy({
         source_id: row.source_name?.toLowerCase().trim() ?? null,

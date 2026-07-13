@@ -33,6 +33,20 @@ export function computeSearchResultDisplayPolicy(
 ): SearchResultDisplayPolicy {
   const sourceId = input.source_id?.toLowerCase().trim() ?? null;
 
+  if (input.source_badge === "external_web_result") {
+    return {
+      search_result_display_mode: "limited",
+      result_origin: input.result_origin,
+      can_show_result: true,
+      can_show_thumbnail: input.has_thumbnail,
+      can_show_snippet: input.has_snippet,
+      can_show_contact: false,
+      can_show_gallery: false,
+      primary_cta: "view_original",
+      production_allowed: true,
+    };
+  }
+
   // Market signal sources (Avito) - limited display
   if (sourceId === "avito") {
     return {
