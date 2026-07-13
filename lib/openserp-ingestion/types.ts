@@ -9,6 +9,7 @@ export type OpenSerpIngestionQuery = {
   query_text: string;
   priority: "high" | "medium" | "low";
   target_domain?: string;
+  query_family?: "general" | "brand_hint";
 };
 
 export type OpenSerpProviderInfo = {
@@ -24,6 +25,53 @@ export type OpenSerpQueryExecution = {
   query: OpenSerpIngestionQuery;
   raw_results: OpenSerpRawResult[];
   fetched_at: string;
+};
+
+export type OpenSerpQueryAttemptStatus =
+  | "success"
+  | "timeout"
+  | "provider_process_error"
+  | "invalid_cli_arguments"
+  | "encoding_error"
+  | "output_parse_error"
+  | "rate_limit"
+  | "provider_unavailable"
+  | "query_syntax_rejected"
+  | "empty_results"
+  | "domain_no_results"
+  | "checkpoint_error"
+  | "unknown";
+
+export type OpenSerpQueryAttempt = {
+  engine: Exclude<OpenSerpEngine, "google">;
+  query_text: string;
+  target_domain: string | null;
+  started_at: string;
+  duration_ms: number;
+  exit_code: number | null;
+  stdout_status: "results" | "empty_results" | "invalid_json" | "none";
+  stderr_category: OpenSerpQueryAttemptStatus;
+  result_count: number;
+  retry_count: number;
+  final_status: "success" | "failed";
+  error_message: string | null;
+};
+
+export type OpenSerpQueryExecutionReport = {
+  query_id: string;
+  query_text: string;
+  city: OpenSerpIngestionQuery["city"];
+  district: string;
+  property_type: OpenSerpIngestionQuery["property_type"];
+  transaction_type: OpenSerpIngestionQuery["transaction_type"];
+  target_domain: string | null;
+  attempts: OpenSerpQueryAttempt[];
+  executed: boolean;
+  failed: boolean;
+  zero_result_query: boolean;
+  technical_failure: boolean;
+  final_status: OpenSerpQueryAttemptStatus | "success";
+  result_count: number;
 };
 
 export type OpenSerpClassificationLane =
@@ -74,6 +122,7 @@ export type OpenSerpDryRunMetrics = {
   queries_planned: number;
   queries_executed: number;
   queries_failed: number;
+  zero_result_queries: number;
   quota_errors: number;
   provider_errors: number;
   raw_results: number;

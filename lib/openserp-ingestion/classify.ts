@@ -1,9 +1,11 @@
-import { inferPublicPropertyIndexAttributes } from "@/lib/public-property-index/normalize-index-record";
 import type { OpenSerpRawResult } from "@/lib/openserp-async/types";
 import type { OpenSerpClassifiedResult, OpenSerpClassificationLane, OpenSerpIngestionQuery } from "./types";
 import {
   canonicalizeSourceUrl,
+  extractCity,
+  extractDistrict,
   extractDomain,
+  mentionsTourismOrHospitality,
   normalizeText,
   parseBedrooms,
   parsePriceMad,
@@ -12,6 +14,7 @@ import {
   sha256,
   toPropertyType,
   toTransactionType,
+  uniqueNormalizedText,
 } from "./utils";
 
 const REAL_ESTATE_TOKENS = [
@@ -30,9 +33,6 @@ const REAL_ESTATE_TOKENS = [
 const OUT_OF_SCOPE_TOKENS = [
   "voiture",
   "emploi",
-  "hotel",
-  "riad touristique",
-  "vacances",
   "mobilier",
   "service",
   "actualite",
@@ -47,13 +47,73 @@ const DISCOVERY_TOKENS = [
   "appartements a louer",
   "villas a vendre",
   "agence immobiliere",
-  "immobilier a",
-  "page 2",
-  "search",
-  "category",
-  "listing list",
-  "plateforme de vente et d achat",
+  "promoteur immobilier",
+  "liste des biens",
+  "resultats de recherche",
+  "guide immobilier",
+  "prix moyen",
+  "tendances du marche",
+  "plus de",
 ];
+
+type PathRules = {
+  forceReject?: RegExp[];
+  forceDiscovery?: RegExp[];
+  strongIndividual?: RegExp[];
+};
+
+const DOMAIN_RULES: Record<string, PathRules> = {
+  "mubawab.ma": {
+    forceDiscovery: [/\/(?:fr|en)?\/?(?:sd|cd|sc)\//, /\/immobilier-a-(?:vendre|louer)\b/, /\/appartements-a-(?:vendre|louer)\b/, /\/villas-et-maisons-de-luxe-a-vendre\b/],
+    strongIndividual: [/\/(?:fr|en)\/is\//, /\/(?:fr|en)\/a\/\d+\//, /\/acheter\/[^/]+-\d+(?:\.html)?$/],
+  },
+  "agenz.ma": {
+    forceDiscovery: [/\/(?:fr|en)\/(?:acheter|louer)\//],
+    strongIndividual: [/\/(?:fr|en)\/annonces\/.+\/\d+$/],
+  },
+  "sarouty.ma": {
+    forceDiscovery: [/\/acheter\/[^/]+\/[^/]+\/(?:appartements|villas|proprietes|immobilier-neuf).*/, /\/acheter\/[^/]+\/(?:villas-a-vendre|proprietes-a-vendre)$/, /\/louer\/[^/]+\/(?:appartements-a-louer|proprietes-a-louer).*$/],
+    strongIndividual: [/\/plp\/acheter\/.+-\d+(?:\.html)?$/, /\/acheter\/[a-z0-9-]+-\d+(?:\.html)?$/],
+  },
+  "avito.ma": {
+    forceDiscovery: [/\/sp\/immobilier\//, /\/fr\/.+\/(?:appartements|villas|terrains|bureaux).+_vendre$/, /\/fr\/.+\/(?:appartements|villas|terrains|bureaux).+_louer$/],
+    strongIndividual: [/\/fr\/.+\/.+_\d+\.htm$/],
+  },
+  "immobilier.trovit.ma": {
+    forceDiscovery: [/.*/],
+  },
+  "nuroa.ma": {
+    forceDiscovery: [/.*/],
+  },
+  "immo.mitula.ma": {
+    forceDiscovery: [/.*/],
+  },
+  "yakeey.com": {
+    forceReject: [/.*/],
+  },
+  "marocannonces.com": {
+    forceDiscovery: [/\/maroc\/.+-b\d+-t\d+\.html/i, /\/categorie\//],
+  },
+  "1immo.ma": {
+    strongIndividual: [/\/[a-z0-9-]+-\d+$/i],
+  },
+  "barnes-marrakech.com": {
+    strongIndividual: [/\/vente\/.+\/\d+$/],
+  },
+  "kawtarimmobilier.com": {
+    strongIndividual: [/\/vente\/.+ref-\d+\.html$/i],
+  },
+  "mouldar.com": {
+    forceDiscovery: [/\/(?:fr|en)\/(?:achat|location|rent|buy)\/[^/]+\/[^/]+\/[^/]+$/i],
+    strongIndividual: [/\/(?:fr|en)\/(?:rent|achat|buy|louer|location)\/.+\/[a-f0-9]{6,}$/i],
+  },
+  "limmobiliersansfrontieres.com": {
+    strongIndividual: [/\/property\//],
+  },
+  "marrakechrealty.com": {
+    strongIndividual: [/\/property\//],
+  },
+};
 
 function getResultUrl(result: OpenSerpRawResult): string {
   return (result.url ?? result.link ?? "").trim();
@@ -63,50 +123,156 @@ function getAbsoluteRank(result: OpenSerpRawResult, fallback: number): number {
   return result.position?.absolute ?? result.rank ?? fallback;
 }
 
-function classifyLane(text: string, canonicalUrl: string): {
+function detectUrlSignals(domain: string, canonicalUrl: string): {
+  forceReject: boolean;
+  forceDiscovery: boolean;
+  strongIndividual: boolean;
+  reasons: string[];
+} {
+  const reasons: string[] = [];
+  const pathname = (() => {
+    try {
+      return new URL(canonicalUrl).pathname;
+    } catch {
+      return canonicalUrl;
+    }
+  })();
+  const rules = DOMAIN_RULES[domain];
+  if (!rules) {
+    return { forceReject: false, forceDiscovery: false, strongIndividual: false, reasons };
+  }
+
+  const forceReject = rules.forceReject?.some((pattern) => pattern.test(pathname)) ?? false;
+  const forceDiscovery = rules.forceDiscovery?.some((pattern) => pattern.test(pathname)) ?? false;
+  const strongIndividual = rules.strongIndividual?.some((pattern) => pattern.test(pathname)) ?? false;
+
+  if (forceReject) reasons.push("force_reject_path");
+  if (forceDiscovery) reasons.push("discovery_path");
+  if (strongIndividual) reasons.push("strong_individual_path");
+
+  return { forceReject, forceDiscovery, strongIndividual, reasons };
+}
+
+function classifyLane(input: {
+  text: string;
+  title: string;
+  snippet: string;
+  canonicalUrl: string;
+  domain: string;
+  query: OpenSerpIngestionQuery;
+}): {
   lane: OpenSerpClassificationLane;
   reasons: string[];
 } {
   const reasons: string[] = [];
+  const urlSignals = detectUrlSignals(input.domain, input.canonicalUrl);
+  reasons.push(...urlSignals.reasons);
 
-  if (!REAL_ESTATE_TOKENS.some((token) => text.includes(token))) {
+  if (!REAL_ESTATE_TOKENS.some((token) => input.text.includes(token))) {
     return { lane: "reject_out_of_scope", reasons: ["missing_real_estate_signal"] };
   }
 
-  if (OUT_OF_SCOPE_TOKENS.some((token) => text.includes(token)) && !text.includes("immobilier")) {
+  if (OUT_OF_SCOPE_TOKENS.some((token) => input.text.includes(token))) {
     return { lane: "reject_out_of_scope", reasons: ["out_of_scope_token"] };
   }
 
-  const isDiscovery = DISCOVERY_TOKENS.some((token) => text.includes(token));
-  if (isDiscovery) reasons.push("discovery_token");
-  if (/\/sp\/immobilier\//.test(canonicalUrl)) reasons.push("search_hub_path");
-  if (/\/(?:vente|location)-(?:appartements|villas|bureaux)/.test(canonicalUrl)) reasons.push("category_path");
-  if (/\/immobilier-a-vendre\b/.test(canonicalUrl)) reasons.push("category_path");
-  if (/\/sp\//.test(canonicalUrl)) reasons.push("search_hub_path");
-
-  const hasPrice = /\b\d[\d\s.,]{2,}\s*(?:dh|mad)\b/i.test(text);
-  const hasSurface = /\b\d[\d\s.,]{1,}\s*(?:m2|m²|sqm)\b/i.test(text);
-  const hasSingularListingTitle = /\b(appartement|villa|studio|terrain|bureau|maison|local commercial)\b/.test(text);
-  const hasTransaction = /\b(a vendre|a louer|vente|location|sale|rent)\b/.test(text);
-  const hasDetailLanguage = /\b(decouvrez|je vous propose|situe|compose de|superficie|chambres|terrasse|residence)\b/.test(text);
-  const hasPluralCountPattern = /\b\d{2,5}\s+(?:annonces?|appartements?|villas?|biens?)\b/.test(text);
-  if (hasPluralCountPattern) reasons.push("plural_count_pattern");
-
-  if (!isDiscovery && !hasPluralCountPattern && hasSingularListingTitle && hasTransaction && (hasPrice || hasSurface || hasDetailLanguage)) {
-    return { lane: "individual_listing", reasons: ["strong_listing_signals"] };
+  if (mentionsTourismOrHospitality(input.text)) {
+    return { lane: "reject_out_of_scope", reasons: ["tourism_or_hospitality"] };
   }
 
-  if (!isDiscovery && !hasPluralCountPattern && hasSingularListingTitle && hasTransaction) {
-    return { lane: "quarantine", reasons: ["insufficient_detail_signals"] };
+  if (urlSignals.forceReject) {
+    return { lane: "reject_out_of_scope", reasons };
+  }
+
+  const hasPrice = parsePriceMad([input.title, input.snippet].filter(Boolean).join(" ")) != null;
+  const hasSurface = parseSurfaceM2([input.title, input.snippet].filter(Boolean).join(" ")) != null;
+  const hasBedrooms = parseBedrooms([input.title, input.snippet].filter(Boolean).join(" ")) != null;
+  const hasTransaction = toTransactionType([input.title, input.snippet].join(" ")) != null;
+  const hasPropertyType = toPropertyType([input.title, input.snippet].join(" ")) != null;
+  const explicitCity = extractCity([input.title, input.snippet, input.canonicalUrl].join(" "));
+  const explicitDistrict = extractDistrict([input.title, input.snippet, input.canonicalUrl].join(" "));
+  const hasPluralCountPattern = /\b\d{2,5}\s+(?:annonces?|appartements?|villas?|biens?|studios?)\b/.test(input.text);
+  const hasDiscoveryToken = DISCOVERY_TOKENS.some((token) => input.text.includes(token));
+  const detailLanguage = /\b(superficie|chambres?|terrasse|residence|situe|idealement|magnifique|visite|plain-pied)\b/.test(input.text);
+
+  if (hasPluralCountPattern) reasons.push("plural_count_pattern");
+  if (hasDiscoveryToken) reasons.push("discovery_token");
+  if (explicitCity) reasons.push("explicit_city");
+  if (explicitDistrict) reasons.push("explicit_district");
+  if (hasPrice) reasons.push("price_signal");
+  if (hasSurface) reasons.push("surface_signal");
+  if (hasBedrooms) reasons.push("bedroom_signal");
+
+  const detailSignalCount = [hasPrice, hasSurface, hasBedrooms, detailLanguage].filter(Boolean).length;
+  const explicitLocationMatchesQuery =
+    (!explicitCity || explicitCity === input.query.city) &&
+    (!explicitDistrict || explicitDistrict.city === input.query.city);
+
+  if (
+    urlSignals.strongIndividual &&
+    hasPropertyType &&
+    hasTransaction &&
+    explicitLocationMatchesQuery
+  ) {
+    return { lane: "individual_listing", reasons };
+  }
+
+  if (urlSignals.forceDiscovery || hasPluralCountPattern || hasDiscoveryToken) {
+    return { lane: "discovery_page", reasons };
+  }
+
+  if (hasPropertyType && hasTransaction && explicitLocationMatchesQuery && detailSignalCount >= 2) {
+    return { lane: "individual_listing", reasons: [...reasons, "textual_detail_signals"] };
+  }
+
+  if (hasPropertyType && hasTransaction) {
+    return { lane: "quarantine", reasons: [...reasons, "insufficient_detail_signals"] };
   }
 
   return { lane: "discovery_page", reasons: reasons.length > 0 ? reasons : ["weak_listing_signals"] };
 }
 
+function extractAttributes(input: {
+  title: string;
+  snippet: string | null;
+  canonicalUrl: string;
+  query: OpenSerpIngestionQuery;
+}) {
+  const combinedText = uniqueNormalizedText([
+    input.title,
+    input.snippet,
+    input.canonicalUrl,
+  ]);
+  const explicitDistrict = extractDistrict(combinedText);
+  const explicitCity = extractCity(combinedText);
+  const extractedCity = explicitDistrict?.city ?? explicitCity ?? input.query.city;
+  const extractedDistrict =
+    explicitDistrict?.district ??
+    (explicitCity === input.query.city ? input.query.district : null);
+
+  const transactionFromContent = toTransactionType([input.title, input.snippet, input.canonicalUrl].filter(Boolean).join(" "));
+  const propertyTypeFromContent = toPropertyType([input.title, input.snippet, input.canonicalUrl].filter(Boolean).join(" "));
+  const price = parsePriceMad([input.title, input.snippet].filter(Boolean).join(" "));
+  const surface = parseSurfaceM2([input.title, input.snippet].filter(Boolean).join(" "));
+
+  return {
+    title: input.title,
+    short_description: input.snippet,
+    city: extractedCity,
+    district: extractedDistrict,
+    transaction_type: transactionFromContent ?? input.query.transaction_type,
+    property_type: propertyTypeFromContent ?? input.query.property_type,
+    price_mad: price,
+    currency: price ? ("MAD" as const) : null,
+    surface_m2: surface,
+    bedrooms_count: parseBedrooms([input.title, input.snippet].filter(Boolean).join(" ")),
+  };
+}
+
 export function classifyOpenSerpResult(input: {
   result: OpenSerpRawResult;
   query: OpenSerpIngestionQuery;
-  engine: "bing" | "ecosia";
+  engine: "bing" | "ecosia" | "duckduckgo";
   discovered_at: string;
   fallbackRank: number;
 }): OpenSerpClassifiedResult | null {
@@ -119,23 +285,23 @@ export function classifyOpenSerpResult(input: {
 
   const safeTitle = redactSensitiveText(input.result.title ?? "");
   const safeSnippet = redactSensitiveText(input.result.snippet ?? "");
-  const normalizedText = normalizeText(
-    [safeTitle.value ?? "", safeSnippet.value ?? "", canonicalSourceUrl].join(" "),
-  );
+  const normalizedText = uniqueNormalizedText([safeTitle.value ?? "", safeSnippet.value ?? "", canonicalSourceUrl]);
 
-  const { lane, reasons } = classifyLane(normalizedText, canonicalSourceUrl);
-  const inferred = inferPublicPropertyIndexAttributes({
-    title: safeTitle.value ?? undefined,
-    short_snippet: safeSnippet.value ?? undefined,
-    source_url: canonicalSourceUrl,
+  const attributes = extractAttributes({
+    title: safeTitle.value ?? "Resultat OpenSERP",
+    snippet: safeSnippet.value,
+    canonicalUrl: canonicalSourceUrl,
+    query: input.query,
   });
-  const parsedPrice =
-    parsePriceMad([safeTitle.value, safeSnippet.value].filter(Boolean).join(" ")) ??
-    ((inferred.public_price ?? 0) >= 1000 ? inferred.public_price ?? null : null);
-  const parsedSurface =
-    parseSurfaceM2([safeTitle.value, safeSnippet.value].filter(Boolean).join(" ")) ??
-    inferred.public_surface ??
-    null;
+
+  const { lane, reasons } = classifyLane({
+    text: normalizedText,
+    title: attributes.title,
+    snippet: attributes.short_description ?? "",
+    canonicalUrl: canonicalSourceUrl,
+    domain: sourceDomain,
+    query: input.query,
+  });
 
   return {
     query_id: input.query.query_id,
@@ -146,26 +312,9 @@ export function classifyOpenSerpResult(input: {
     source_domain: sourceDomain,
     classification_lane: lane,
     classification_reasons: reasons,
-    extracted: {
-      title: safeTitle.value ?? "Resultat OpenSERP",
-      short_description: safeSnippet.value,
-      city: inferred.inferred_city ?? input.query.city,
-      district: inferred.inferred_neighborhood ?? input.query.district,
-      transaction_type:
-        toTransactionType(
-          [safeTitle.value, safeSnippet.value, input.query.query_text].filter(Boolean).join(" "),
-        ) ?? input.query.transaction_type,
-      property_type:
-        toPropertyType(
-          [safeTitle.value, safeSnippet.value, input.query.query_text].filter(Boolean).join(" "),
-        ) ?? input.query.property_type,
-      price_mad: parsedPrice,
-      currency: parsedPrice ? "MAD" : null,
-      surface_m2: parsedSurface,
-      bedrooms_count: parseBedrooms([safeTitle.value, safeSnippet.value].filter(Boolean).join(" ")),
-    },
-    title: safeTitle.value ?? "Resultat OpenSERP",
-    snippet: safeSnippet.value,
+    extracted: attributes,
+    title: attributes.title,
+    snippet: attributes.short_description,
     discovered_at: input.discovered_at,
     raw_result_hash: sha256(JSON.stringify(input.result)),
     provider_result_id: input.result.id ?? null,

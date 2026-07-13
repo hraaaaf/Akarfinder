@@ -9,6 +9,9 @@ import type {
   OpenSerpIngestionQuery,
   OpenSerpListingCandidate,
   OpenSerpProviderInfo,
+  OpenSerpQueryAttempt,
+  OpenSerpQueryAttemptStatus,
+  OpenSerpQueryExecutionReport,
   OpenSerpRollbackManifest,
   OpenSerpWriteManifest,
 } from "./types";
@@ -92,6 +95,168 @@ function buildCandidate(result: OpenSerpClassifiedResult, runId: string): OpenSe
   };
 }
 
+function domainToBrandHint(domain: string | undefined): string | null {
+  if (!domain) return null;
+  const normalized = domain.toLowerCase();
+  if (normalized.includes("agenz")) return "agenz";
+  if (normalized.includes("sarouty")) return "sarouty";
+  if (normalized.includes("mubawab")) return "mubawab";
+  if (normalized.includes("mouldar")) return "mouldar";
+  return normalized.replace(/\.[a-z.]+$/, "");
+}
+
+function getExecutionPlan(query: OpenSerpIngestionQuery): Array<{
+  engine: "bing" | "ecosia" | "duckduckgo";
+  queryText: string;
+  site?: string;
+}> {
+  if (!query.target_domain) {
+    return [
+      { engine: "bing", queryText: query.query_text },
+      { engine: "duckduckgo", queryText: query.query_text },
+      { engine: "ecosia", queryText: query.query_text },
+    ];
+  }
+
+  const brandHint = domainToBrandHint(query.target_domain);
+  const brandQuery = brandHint ? `${brandHint} ${query.query_text}` : query.query_text;
+  return [
+    { engine: "duckduckgo", queryText: query.query_text, site: query.target_domain },
+    { engine: "bing", queryText: brandQuery },
+    { engine: "duckduckgo", queryText: brandQuery },
+  ];
+}
+
+function categorizeAttemptError(error: unknown): OpenSerpQueryAttemptStatus {
+  const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+  if (message.includes("quota")) return "rate_limit";
+  if (message.includes("timeout")) return "timeout";
+  if (message.includes("captcha")) return "provider_process_error";
+  if (message.includes("blocked")) return "provider_unavailable";
+  if (message.includes("invalid") && message.includes("json")) return "output_parse_error";
+  if (message.includes("parse")) return "output_parse_error";
+  if (message.includes("encoding")) return "encoding_error";
+  if (message.includes("argument")) return "invalid_cli_arguments";
+  return "unknown";
+}
+
+async function executeQueryAttempts(input: {
+  query: OpenSerpIngestionQuery;
+  env?: NodeJS.ProcessEnv;
+}): Promise<{
+  provider: OpenSerpProviderInfo | null;
+  response: Awaited<ReturnType<typeof runOpenSerpLiveQuery>>["response"] | null;
+  report: OpenSerpQueryExecutionReport;
+}> {
+  const attempts: OpenSerpQueryAttempt[] = [];
+  let provider: OpenSerpProviderInfo | null = null;
+  let response: Awaited<ReturnType<typeof runOpenSerpLiveQuery>>["response"] | null = null;
+
+  const attemptsPlan = getExecutionPlan(input.query).slice(0, 3);
+
+  for (let index = 0; index < attemptsPlan.length; index += 1) {
+    const plan = attemptsPlan[index];
+    const started = new Date().toISOString();
+    const startedAtMs = Date.now();
+    try {
+      const execution = await runOpenSerpLiveQuery({
+        engine: plan.engine,
+        query: plan.queryText,
+        limit: 15,
+        site: plan.site,
+        env: input.env,
+      });
+      provider = execution.provider;
+      response = execution.response;
+      const resultCount = execution.response.results.length;
+      attempts.push({
+        engine: plan.engine,
+        query_text: plan.queryText,
+        target_domain: plan.site ?? null,
+        started_at: started,
+        duration_ms: Date.now() - startedAtMs,
+        exit_code: 0,
+        stdout_status: resultCount > 0 ? "results" : "empty_results",
+        stderr_category: resultCount > 0 ? "success" : "empty_results",
+        result_count: resultCount,
+        retry_count: index,
+        final_status: "success",
+        error_message: null,
+      });
+      if (resultCount > 0 || index === attemptsPlan.length - 1) {
+        break;
+      }
+    } catch (error) {
+      attempts.push({
+        engine: plan.engine,
+        query_text: plan.queryText,
+        target_domain: plan.site ?? null,
+        started_at: started,
+        duration_ms: Date.now() - startedAtMs,
+        exit_code: null,
+        stdout_status: "none",
+        stderr_category: categorizeAttemptError(error),
+        result_count: 0,
+        retry_count: index,
+        final_status: "failed",
+        error_message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  const lastAttempt = attempts[attempts.length - 1];
+  const resultCount = response?.results.length ?? 0;
+  const executed = attempts.some((attempt) => attempt.final_status === "success");
+  const zeroResultQuery = executed && resultCount === 0;
+  const technicalFailure = !executed;
+
+  return {
+    provider,
+    response,
+    report: {
+      query_id: input.query.query_id,
+      query_text: input.query.query_text,
+      city: input.query.city,
+      district: input.query.district,
+      property_type: input.query.property_type,
+      transaction_type: input.query.transaction_type,
+      target_domain: input.query.target_domain ?? null,
+      attempts,
+      executed,
+      failed: technicalFailure,
+      zero_result_query: zeroResultQuery,
+      technical_failure: technicalFailure,
+      final_status: executed
+        ? (zeroResultQuery ? "empty_results" : "success")
+        : (lastAttempt?.stderr_category ?? "unknown"),
+      result_count: resultCount,
+    },
+  };
+}
+
+function toSanitizedRawResultRow(input: {
+  queryId: string;
+  queryText: string;
+  engine: "bing" | "ecosia" | "duckduckgo";
+  fetchedAt: string;
+  raw: { title?: string; snippet?: string; [key: string]: unknown };
+}) {
+  const safeTitle = redactSensitiveText(typeof input.raw.title === "string" ? input.raw.title : null);
+  const safeSnippet = redactSensitiveText(typeof input.raw.snippet === "string" ? input.raw.snippet : null);
+
+  return {
+    query_id: input.queryId,
+    query_text: input.queryText,
+    engine: input.engine,
+    fetched_at: input.fetchedAt,
+    result: {
+      ...input.raw,
+      title: safeTitle.value,
+      snippet: safeSnippet.value,
+    },
+  };
+}
+
 function mergeCandidate(existing: OpenSerpListingCandidate, incoming: OpenSerpListingCandidate): OpenSerpListingCandidate {
   return {
     ...existing,
@@ -166,6 +331,7 @@ export async function executeOpenSerpDryRun(
   const acceptedMap = new Map<string, OpenSerpListingCandidate>();
   const rejectedResults: OpenSerpClassifiedResult[] = [];
   const rawResults: unknown[] = [];
+  const queryReports: OpenSerpQueryExecutionReport[] = [];
   const coveredCities = new Set<string>();
   let provider: OpenSerpProviderInfo | null = null;
 
@@ -173,6 +339,7 @@ export async function executeOpenSerpDryRun(
     queries_planned: queries.length,
     queries_executed: 0,
     queries_failed: 0,
+    zero_result_queries: 0,
     quota_errors: 0,
     provider_errors: 0,
     raw_results: 0,
@@ -192,45 +359,41 @@ export async function executeOpenSerpDryRun(
   };
 
   for (const query of queries) {
-    try {
-      let execution:
-        | Awaited<ReturnType<typeof runOpenSerpLiveQuery>>
-        | null = null;
-      let lastError: unknown = null;
-      for (const engine of ["bing", "ecosia"] as const) {
-        try {
-          execution = await runOpenSerpLiveQuery({
-            engine,
-            query: query.target_domain ? `${query.query_text} site:${query.target_domain}` : query.query_text,
-            limit: 10,
-            env: options.env,
-          });
-          break;
-        } catch (error) {
-          lastError = error;
-        }
-      }
-      if (!execution) throw lastError instanceof Error ? lastError : new Error(String(lastError));
-      provider = execution.provider;
-      metrics.queries_executed += 1;
-      metrics.raw_results += execution.response.results.length;
+    const execution = await executeQueryAttempts({
+      query,
+      env: options.env,
+    });
+    queryReports.push(execution.report);
 
-      for (let i = 0; i < execution.response.results.length; i += 1) {
+    if (!execution.report.executed || !execution.response) {
+      metrics.queries_failed += 1;
+      const categories = new Set(
+        execution.report.attempts.map((attempt) => attempt.stderr_category),
+      );
+      if (categories.has("rate_limit")) metrics.quota_errors += 1;
+      metrics.provider_errors += 1;
+      continue;
+    }
+
+    provider = execution.provider ?? provider;
+    metrics.queries_executed += 1;
+    if (execution.report.zero_result_query) {
+      metrics.zero_result_queries += 1;
+      continue;
+    }
+    metrics.raw_results += execution.response.results.length;
+
+    for (let i = 0; i < execution.response.results.length; i += 1) {
         const raw = execution.response.results[i];
-        rawResults.push({
-          query_id: query.query_id,
-          query_text: query.query_text,
-          engine: execution.response.engine,
-          fetched_at: execution.response.fetched_at,
-          result: raw,
-        });
-
-        const sensitiveTitle = redactSensitiveText(raw.title ?? "");
-        const sensitiveSnippet = redactSensitiveText(raw.snippet ?? "");
-        metrics.phone_hits += sensitiveTitle.phone_hits + sensitiveSnippet.phone_hits;
-        metrics.whatsapp_hits += sensitiveTitle.whatsapp_hits + sensitiveSnippet.whatsapp_hits;
-        metrics.personal_email_hits += sensitiveTitle.personal_email_hits + sensitiveSnippet.personal_email_hits;
-        metrics.secret_hits += sensitiveTitle.secret_hits + sensitiveSnippet.secret_hits;
+        rawResults.push(
+          toSanitizedRawResultRow({
+            queryId: query.query_id,
+            queryText: query.query_text,
+            engine: execution.response.engine,
+            fetchedAt: execution.response.fetched_at,
+            raw,
+          }),
+        );
 
         const classified = classifyOpenSerpResult({
           result: raw,
@@ -262,12 +425,6 @@ export async function executeOpenSerpDryRun(
           if (classified.classification_lane === "quarantine") metrics.quarantined += 1;
         }
       }
-    } catch (error) {
-      metrics.queries_failed += 1;
-      metrics.provider_errors += 1;
-      const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-      if (message.includes("quota")) metrics.quota_errors += 1;
-    }
   }
 
   const acceptedCandidates = [...acceptedMap.values()];
@@ -278,7 +435,8 @@ export async function executeOpenSerpDryRun(
   await writeJsonl(join(runDir, "raw-results.jsonl"), rawResults as unknown[]);
   await writeJsonl(join(runDir, "accepted-candidates.jsonl"), acceptedCandidates);
   await writeJsonl(join(runDir, "rejected-results.jsonl"), rejectedResults);
-  await writeJson(join(runDir, "summary.json"), { provider, metrics });
+  await writeJson(join(runDir, "query-execution-report.json"), queryReports);
+  await writeJson(join(runDir, "summary.json"), { provider, metrics, query_reports: queryReports });
 
   return {
     provider,

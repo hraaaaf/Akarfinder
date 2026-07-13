@@ -1,6 +1,6 @@
 import type { OpenSerpEngine } from "./types";
 
-export const DEFAULT_ALLOWED_OPEN_SERP_ENGINES = ["bing", "ecosia"] as const;
+export const DEFAULT_ALLOWED_OPEN_SERP_ENGINES = ["bing", "ecosia", "duckduckgo"] as const;
 
 export function normalizeAllowedOpenSerpEngines(value?: string | null): OpenSerpEngine[] {
   const allowed = (value ?? "")
@@ -10,14 +10,20 @@ export function normalizeAllowedOpenSerpEngines(value?: string | null): OpenSerp
 
   if (allowed.length === 0) return [...DEFAULT_ALLOWED_OPEN_SERP_ENGINES];
 
-  return allowed.filter((engine): engine is Exclude<OpenSerpEngine, "google"> => engine === "bing" || engine === "ecosia");
+  return allowed.filter(
+    (engine): engine is Exclude<OpenSerpEngine, "google"> =>
+      engine === "bing" || engine === "ecosia" || engine === "duckduckgo",
+  );
 }
 
 export function isOpenSerpEngineAllowed(
   engine: string,
   allowedEngines: readonly OpenSerpEngine[] = DEFAULT_ALLOWED_OPEN_SERP_ENGINES,
 ): engine is Exclude<OpenSerpEngine, "google"> {
-  return (engine === "bing" || engine === "ecosia") && allowedEngines.includes(engine as Exclude<OpenSerpEngine, "google">);
+  return (
+    (engine === "bing" || engine === "ecosia" || engine === "duckduckgo") &&
+    allowedEngines.includes(engine as Exclude<OpenSerpEngine, "google">)
+  );
 }
 
 export function isOpenSerpAsyncFeederEnabled(env: NodeJS.ProcessEnv = process.env): boolean {

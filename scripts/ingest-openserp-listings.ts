@@ -28,6 +28,7 @@ function parseArgs(argv: string[]) {
     resume: false,
     runId: `openserp-${new Date().toISOString().replace(/[:.]/g, "-")}`,
     reportPath: "data/ingestion-runs",
+    matrixPath: undefined as string | undefined,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -52,6 +53,8 @@ function parseArgs(argv: string[]) {
       args.runId = argv[++i];
     } else if (arg === "--report-path" && argv[i + 1]) {
       args.reportPath = argv[++i];
+    } else if (arg === "--matrix-path" && argv[i + 1]) {
+      args.matrixPath = argv[++i];
     }
   }
 
@@ -67,7 +70,13 @@ async function main() {
   }
 
   const args = parseArgs(process.argv.slice(2));
-  const matrixPath = resolve(process.cwd(), "data/openserp/ingestion-pilot-query-matrix.json");
+  const matrixPath = resolve(
+    process.cwd(),
+    args.matrixPath ??
+      (existsSync(resolve(process.cwd(), "data/openserp/ingestion-quality-query-matrix-v2.json"))
+        ? "data/openserp/ingestion-quality-query-matrix-v2.json"
+        : "data/openserp/ingestion-pilot-query-matrix.json"),
+  );
   const reportRoot = resolve(process.cwd(), args.reportPath);
 
   const dryRun = await executeOpenSerpDryRun(matrixPath, {
@@ -86,6 +95,7 @@ async function main() {
     metrics: dryRun.metrics,
     production_write_authorized:
       dryRun.metrics.queries_executed >= 60 &&
+      dryRun.metrics.zero_result_queries >= 0 &&
       dryRun.metrics.raw_results >= 500 &&
       dryRun.metrics.individual_candidates >= 200 &&
       dryRun.metrics.unique_source_urls >= 200 &&
@@ -119,6 +129,7 @@ async function main() {
       `- provider: ${dryRun.provider?.provider_mode ?? "unknown"}`,
       `- queries_executed: ${dryRun.metrics.queries_executed}`,
       `- raw_results: ${dryRun.metrics.raw_results}`,
+      `- zero_result_queries: ${dryRun.metrics.zero_result_queries}`,
       `- individual_candidates: ${dryRun.metrics.individual_candidates}`,
       `- unique_source_urls: ${dryRun.metrics.unique_source_urls}`,
       `- production_write_authorized: ${summary.production_write_authorized}`,

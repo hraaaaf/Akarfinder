@@ -11,6 +11,51 @@ const TRACKING_PARAMS = new Set([
   "yclid",
 ]);
 
+const CITY_ALIASES = [
+  { city: "Casablanca", aliases: ["casablanca", "casa", "casablanca maroc"] },
+  { city: "Rabat", aliases: ["rabat", "rabat maroc"] },
+  { city: "Marrakech", aliases: ["marrakech", "marrakesh", "marrakech maroc"] },
+] as const;
+
+const DISTRICT_ALIASES = [
+  { city: "Casablanca", district: "Maarif", aliases: ["maarif", "maarif extension", "maarif ext", "maarif extention"] },
+  { city: "Casablanca", district: "Racine", aliases: ["racine", "racine extension"] },
+  { city: "Casablanca", district: "Bourgogne", aliases: ["bourgogne", "bourgogne est", "bourgogne ouest"] },
+  { city: "Casablanca", district: "Gauthier", aliases: ["gauthier"] },
+  { city: "Casablanca", district: "Palmier", aliases: ["palmier"] },
+  { city: "Casablanca", district: "Californie", aliases: ["californie", "california"] },
+  { city: "Casablanca", district: "Ain Diab", aliases: ["ain diab", "ain-diab", "ain diab extension"] },
+  { city: "Casablanca", district: "Sidi Maarouf", aliases: ["sidi maarouf", "sidi maarouf extension"] },
+  { city: "Casablanca", district: "Hay Hassani", aliases: ["hay hassani"] },
+  { city: "Casablanca", district: "Oasis", aliases: ["oasis"] },
+  { city: "Rabat", district: "Agdal", aliases: ["agdal", "haut agdal", "al irfane"] },
+  { city: "Rabat", district: "Hay Riad", aliases: ["hay riad", "hay ryad"] },
+  { city: "Rabat", district: "Souissi", aliases: ["souissi"] },
+  { city: "Rabat", district: "Hassan", aliases: ["hassan"] },
+  { city: "Rabat", district: "Ocean", aliases: ["ocean"] },
+  { city: "Rabat", district: "Aviation", aliases: ["aviation"] },
+  { city: "Rabat", district: "Yacoub El Mansour", aliases: ["yacoub el mansour", "yaacoub el mansour"] },
+  { city: "Marrakech", district: "Gueliz", aliases: ["gueliz"] },
+  { city: "Marrakech", district: "Hivernage", aliases: ["hivernage"] },
+  { city: "Marrakech", district: "Targa", aliases: ["targa", "hay targa"] },
+  { city: "Marrakech", district: "Agdal", aliases: ["agdal"] },
+  { city: "Marrakech", district: "Palmeraie", aliases: ["palmeraie"] },
+  { city: "Marrakech", district: "Route de Casablanca", aliases: ["route de casablanca"] },
+  { city: "Marrakech", district: "Route de l'Ourika", aliases: ["route de l ourika", "route de l'ourika", "ourika"] },
+] as const;
+
+const TOURISM_TOKENS = [
+  "vacances",
+  "vacation",
+  "saisonnier",
+  "saisonniere",
+  "airbnb",
+  "riad touristique",
+  "appart hotel",
+  "appart-hotel",
+  "hotel",
+] as const;
+
 const PHONE_RE = /(\+212|0[5-7])[\s.-]?\d(?:[\s.-]?\d){7,}/g;
 const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
 const WHATSAPP_RE = /\b(?:whatsapp|wa\.me)\b/gi;
@@ -28,6 +73,10 @@ export function normalizeText(value: string): string {
     .replace(/[^a-z0-9\s/-]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+export function uniqueNormalizedText(parts: Array<string | null | undefined>): string {
+  return normalizeText(parts.filter(Boolean).join(" "));
 }
 
 export function normalizeHostname(value: string): string {
@@ -94,6 +143,9 @@ export function redactSensitiveText(value: string | null | undefined): {
     .replace(PHONE_RE, "")
     .replace(WHATSAPP_RE, "")
     .replace(EMAIL_RE, "")
+    .replace(/\(\s*\)/g, " ")
+    .replace(/\[\s*\]/g, " ")
+    .replace(/\s*[-:|,;]+\s*/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -139,6 +191,7 @@ export function parseBedrooms(text: string): number | null {
 }
 
 export function parsePriceMad(text: string): number | null {
+  const rawLower = text.toLowerCase();
   const normalized = normalizeText(text);
   const candidates = [
     ...normalized.matchAll(/(\d[\d\s.,]{3,})\s*(?:dh|mad)\b/g),
@@ -150,12 +203,31 @@ export function parsePriceMad(text: string): number | null {
     const parsed = raw ? Number(raw) : NaN;
     if (Number.isFinite(parsed) && parsed >= 1000) return Math.round(parsed);
   }
+
+  const mdh = rawLower.match(/(\d+(?:[.,]\d+)?)\s*(?:million|millions)\b/);
+  if (mdh?.[1]) {
+    const parsed = Number(mdh[1].replace(",", "."));
+    if (Number.isFinite(parsed) && parsed > 0) return Math.round(parsed * 1_000_000);
+  }
+
+  const compactMdh = rawLower.match(/(\d+(?:[.,]\d+)?)\s*mdh\b/);
+  if (compactMdh?.[1]) {
+    const parsed = Number(compactMdh[1].replace(",", "."));
+    if (Number.isFinite(parsed) && parsed > 0) return Math.round(parsed * 1_000_000);
+  }
+
   return null;
 }
 
 export function parseSurfaceM2(text: string): number | null {
+  const rawMatch = text.match(/(\d[\d\s.,]{1,})\s*m(?:2|²|Â²|\s*2)/i);
+  if (rawMatch?.[1]) {
+    const rawParsed = Number(rawMatch[1].replace(/\s+/g, "").replace(/,/g, "."));
+    if (Number.isFinite(rawParsed) && rawParsed > 0) return Math.round(rawParsed);
+  }
+
   const normalized = normalizeText(text);
-  const match = normalized.match(/(\d[\d\s.,]{1,})\s*(?:m2|sqm)\b/);
+  const match = normalized.match(/(\d[\d\s.,]{1,})\s*(?:m2|sqm|metres? carres?)\b/);
   if (!match?.[1]) return null;
   const parsed = Number(match[1].replace(/\s+/g, "").replace(/,/g, "."));
   return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : null;
@@ -164,11 +236,14 @@ export function parseSurfaceM2(text: string): number | null {
 export function toPropertyType(value: string | undefined): "apartment" | "villa" | "studio" | "house" | "land" | "office" | "commercial" | null {
   if (!value) return null;
   const normalized = normalizeText(value);
+  if (normalized.includes("appart hotel") || normalized.includes("appart-hotel") || normalized.includes("villa hotel")) {
+    return null;
+  }
   if (normalized.includes("studio")) return "studio";
   if (normalized.includes("villa")) return "villa";
   if (normalized.includes("terrain") || normalized.includes("land")) return "land";
+  if (normalized.includes("local commercial") || normalized.includes("commerce") || normalized.includes("commercial")) return "commercial";
   if (normalized.includes("bureau") || normalized.includes("office")) return "office";
-  if (normalized.includes("local commercial") || normalized.includes("commercial")) return "commercial";
   if (normalized.includes("maison") || normalized.includes("house")) return "house";
   if (normalized.includes("appartement") || normalized.includes("apartment") || normalized.includes("flat")) return "apartment";
   return null;
@@ -177,6 +252,9 @@ export function toPropertyType(value: string | undefined): "apartment" | "villa"
 export function toTransactionType(value: string | undefined): "sale" | "rent" | null {
   if (!value) return null;
   const normalized = normalizeText(value);
+  if (TOURISM_TOKENS.some((token) => normalized.includes(token))) {
+    return null;
+  }
   if (
     normalized.includes("a vendre") ||
     normalized.includes("vente") ||
@@ -190,6 +268,35 @@ export function toTransactionType(value: string | undefined): "sale" | "rent" | 
     normalized.includes("for rent")
   ) {
     return "rent";
+  }
+  return null;
+}
+
+export function mentionsTourismOrHospitality(value: string | undefined): boolean {
+  if (!value) return false;
+  const normalized = normalizeText(value);
+  return TOURISM_TOKENS.some((token) => normalized.includes(token));
+}
+
+export function extractCity(value: string): "Casablanca" | "Rabat" | "Marrakech" | null {
+  const normalized = normalizeText(value);
+  for (const entry of CITY_ALIASES) {
+    if (entry.aliases.some((alias) => normalized.includes(normalizeText(alias)))) {
+      return entry.city;
+    }
+  }
+  return null;
+}
+
+export function extractDistrict(value: string): {
+  city: "Casablanca" | "Rabat" | "Marrakech";
+  district: string;
+} | null {
+  const normalized = normalizeText(value);
+  for (const entry of DISTRICT_ALIASES) {
+    if (entry.aliases.some((alias) => normalized.includes(normalizeText(alias)))) {
+      return { city: entry.city, district: entry.district };
+    }
   }
   return null;
 }

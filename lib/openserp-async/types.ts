@@ -6,7 +6,7 @@ import type {
   PublicPropertyIndexTransactionType,
 } from "@/lib/public-property-index/types";
 
-export type OpenSerpEngine = "bing" | "ecosia" | "google";
+export type OpenSerpEngine = "bing" | "ecosia" | "duckduckgo" | "google";
 
 export type OpenSerpRawResult = {
   id?: string;

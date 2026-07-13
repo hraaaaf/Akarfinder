@@ -1,4 +1,4 @@
-export type PublicPropertyIndexEngine = "bing" | "ecosia" | "manual";
+export type PublicPropertyIndexEngine = "bing" | "ecosia" | "duckduckgo" | "manual";
 
 export type PublicPropertyIndexResultSource = "openserp_async_poc" | "manual_seed";
 

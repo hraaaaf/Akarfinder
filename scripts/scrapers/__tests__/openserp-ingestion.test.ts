@@ -1,6 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { canonicalizeSourceUrl, redactSensitiveText, scoreCompleteness } from "../../../lib/openserp-ingestion/utils.js";
+import {
+  canonicalizeSourceUrl,
+  extractCity,
+  extractDistrict,
+  parsePriceMad,
+  parseSurfaceM2,
+  redactSensitiveText,
+  scoreCompleteness,
+} from "../../../lib/openserp-ingestion/utils.js";
 import { classifyOpenSerpResult } from "../../../lib/openserp-ingestion/classify.js";
 import type { OpenSerpIngestionQuery } from "../../../lib/openserp-ingestion/types.js";
 
@@ -69,6 +77,66 @@ test("classifyOpenSerpResult rejects obvious category pages", () => {
 
   assert.ok(actual);
   assert.notEqual(actual.classification_lane, "individual_listing");
+});
+
+test("classifyOpenSerpResult accepts strong Sarouty detail URLs", () => {
+  const actual = classifyOpenSerpResult({
+    query: {
+      ...baseQuery,
+      property_type: "villa",
+      query_text: "villa a vendre Casablanca Sidi Maarouf",
+      district: "Sidi Maarouf",
+    },
+    engine: "duckduckgo",
+    discovered_at: "2026-07-13T11:00:00.000Z",
+    fallbackRank: 1,
+    result: {
+      id: "r3",
+      title: "Villa À Vendre Sidi Maarouf Casablanca | Sarouty",
+      snippet: "villa à vendre située à Sidi Marouf, bien ensoleillée sur trois niveaux",
+      url: "https://www.sarouty.ma/acheter/villa-casablanca-sidi-maarouf-865790",
+      domain: "sarouty.ma",
+    },
+  });
+
+  assert.ok(actual);
+  assert.equal(actual.classification_lane, "individual_listing");
+});
+
+test("classifyOpenSerpResult rejects Avito search hubs", () => {
+  const actual = classifyOpenSerpResult({
+    query: baseQuery,
+    engine: "bing",
+    discovered_at: "2026-07-13T11:00:00.000Z",
+    fallbackRank: 1,
+    result: {
+      id: "r4",
+      title: "appartement a vendre maarif casablanca - Avito.ma",
+      snippet: "Découvrez 8372 offres pour appartement a vendre maarif casablanca",
+      url: "https://www.avito.ma/sp/immobilier/appartement-a-vendre-maarif-casablanca",
+      domain: "avito.ma",
+    },
+  });
+
+  assert.ok(actual);
+  assert.notEqual(actual.classification_lane, "individual_listing");
+});
+
+test("parsePriceMad supports compact MDH notation", () => {
+  assert.equal(parsePriceMad("Appartement 1,2 MDH a Casablanca"), 1200000);
+});
+
+test("parseSurfaceM2 supports m2 and m² variants", () => {
+  assert.equal(parseSurfaceM2("Appartement de 80 m2 a vendre"), 80);
+  assert.equal(parseSurfaceM2("Studio de 54 m² bien situe"), 54);
+});
+
+test("extractCity and extractDistrict normalize accented districts", () => {
+  assert.equal(extractCity("Location studio Guéliz Marrakech"), "Marrakech");
+  assert.deepEqual(extractDistrict("Appartement à louer Aïn Diab Casablanca"), {
+    city: "Casablanca",
+    district: "Ain Diab",
+  });
 });
 
 test("scoreCompleteness rewards richer candidates", () => {

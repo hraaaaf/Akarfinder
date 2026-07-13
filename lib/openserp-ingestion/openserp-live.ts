@@ -11,9 +11,11 @@ function resolveOpenSerpBinary(env: NodeJS.ProcessEnv): string {
 }
 
 export async function runOpenSerpLiveQuery(input: {
-  engine: "bing" | "ecosia";
+  engine: "bing" | "ecosia" | "duckduckgo";
   query: string;
   limit: number;
+  site?: string;
+  start?: number;
   env?: NodeJS.ProcessEnv;
 }): Promise<{
   response: OpenSerpSearchResponse;
@@ -49,10 +51,12 @@ export async function runOpenSerpLiveQuery(input: {
       "search",
       input.engine,
       input.query,
+      ...(input.site ? ["--site", input.site] : []),
       "--format",
       "json",
       "--limit",
       String(Math.min(Math.max(Math.trunc(input.limit), 1), 20)),
+      ...(input.start ? ["--start", String(Math.max(Math.trunc(input.start), 0))] : []),
       "--search-timeout",
       "60",
       "--quiet",
