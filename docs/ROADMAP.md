@@ -5023,3 +5023,27 @@ Roadmap :
 - `LISTING-OBSERVATION-HISTORY-1` = NEXT
 - Price Position workstream = `80%`
 - Production deployee : oui
+
+## 2026-07-13 - OPENSERP-TO-SUPABASE-LISTING-INGESTION-PILOT-1
+
+Etat:
+- Pipeline OpenSERP -> candidats -> manifests implemente dans un worktree isole.
+- Dry-run live execute avec `openserp.exe` local (`provider_version=2.1`).
+- Verdict mission: `NO_GO`.
+- Production DB modifiee: non.
+- Production deployee: non.
+
+Mesures:
+- `queries_planned=96`
+- `queries_executed=64`
+- `raw_results=639`
+- `individual_candidates=138`
+- `unique_source_urls=130`
+- `discovery_pages=422`
+- `quarantined=73`
+- `sensitive_data_hits=0`
+
+Decision roadmap:
+- Aucune ecriture Supabase production tant que le dry-run reste sous les
+  seuils minimaux.
+- Prochaine mission unique: `OPENSERP-LISTING-QUALITY-REMEDIATION-1`.

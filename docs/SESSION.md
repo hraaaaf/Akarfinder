@@ -11717,3 +11717,36 @@ Roadmap:
 - Price Position workstream = `80%`
 - Production officielle = `96.5%`
 - Production deployee = oui
+
+## 2026-07-13 - OPENSERP-TO-SUPABASE-LISTING-INGESTION-PILOT-1
+
+Etat:
+- Worktree mission: `C:\\Users\\lenovo\\Documents\\AkarFinder-openserp-supabase-ingestion`
+- Base applicative: `739dcc9330ccfa15df720ee1650b63bf8fb3e9d3`
+- Provider live confirme localement: `openserp.exe` `v2.1`
+- Production DB modifiee: non
+- Production deployee: non
+- Verdict: `NO_GO`
+
+Concretement:
+- Ajout d une couche d ingestion OpenSERP batch en dry-run par defaut.
+- Ajout d une matrice versionnee `data/openserp/ingestion-pilot-query-matrix.json`.
+- Ajout d un runner live `npm run ingest:openserp:listings`.
+- Ajout d une commande de rollback ciblee `npm run ingest:openserp:listings:rollback`.
+- Ajout de tests cibles sur canonicalisation, redaction PII et classification.
+
+Validation:
+- `npm run test:openserp-ingestion`: PASS
+- `npm test`: PASS
+- `npm run build`: PASS (`63/63` pages)
+- Dry-run full `pilot-openserp-full-1`: `queries_executed=64`, `raw_results=639`,
+  `individual_candidates=138`, `unique_source_urls=130`, `sensitive_data_hits=0`
+
+Blocage reel:
+- Le dry-run n atteint pas les seuils minimaux pour autoriser la premiere
+  ecriture production (`individual_candidates < 200`, `unique_source_urls < 200`).
+- Le chemin public structure actuel filtre encore les sources externes,
+  donc une future ingestion exigera aussi une activation d affichage separee.
+
+Prochaine etape:
+- `OPENSERP-LISTING-QUALITY-REMEDIATION-1`

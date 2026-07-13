@@ -1,0 +1,83 @@
+{
+    "mission":  "OPENSERP-TO-SUPABASE-LISTING-INGESTION-PILOT-1",
+    "status":  "completed",
+    "verdict":  "NO_GO",
+    "reason":  "dry_run_below_thresholds",
+    "provider":  {
+                     "provider":  "openserp",
+                     "provider_mode":  "local_cli",
+                     "provider_endpoint":  "C:\\Users\\lenovo\\go\\bin\\openserp.exe",
+                     "provider_live_or_fixture":  "live",
+                     "provider_version":  "2.1"
+                 },
+    "openserp":  {
+                     "queries_planned":  96,
+                     "queries_executed":  64,
+                     "queries_failed":  32,
+                     "quota_errors":  0,
+                     "provider_errors":  32,
+                     "raw_results":  639
+                 },
+    "classification":  {
+                           "individual_candidates":  138,
+                           "discovery_pages":  422,
+                           "rejected_out_of_scope":  6,
+                           "quarantined":  73,
+                           "precision_sample_size":  0,
+                           "estimated_precision":  "not_verified"
+                       },
+    "database":  {
+                     "property_listings_before":  139,
+                     "listing_sources_before":  144,
+                     "production_write_executed":  false,
+                     "property_listings_after":  139,
+                     "listing_sources_after":  144,
+                     "new_property_listings":  0,
+                     "updated_property_listings":  0,
+                     "new_listing_sources":  0,
+                     "updated_listing_sources":  0,
+                     "failed_writes":  0
+                 },
+    "safety":  {
+                   "direct_source_page_fetches":  0,
+                   "downloaded_images":  0,
+                   "phone_hits":  0,
+                   "whatsapp_hits":  0,
+                   "personal_email_hits":  0,
+                   "secret_hits":  0
+               },
+    "display":  {
+                    "production_search_checked":  false,
+                    "openserp_results_visible":  false,
+                    "external_badge_present":  false,
+                    "external_links_valid":  "not_checked",
+                    "category_pages_visible":  "not_checked",
+                    "major_duplicates_visible":  "not_checked",
+                    "runtime_errors":  "not_checked",
+                    "display_guard_blocking":  "structured_public_search_currently_filters_out public_external_live and third_party_legacy sources"
+                },
+    "rollback":  {
+                     "pre_write_backup_created":  false,
+                     "write_manifest_created":  false,
+                     "rollback_manifest_created":  false,
+                     "rollback_command_available":  true,
+                     "rollback_tested_in_isolation":  false,
+                     "rollback_executed_in_production":  false
+                 },
+    "tests":  {
+                  "targeted_tests":  "PASS",
+                  "npm_test":  "PASS",
+                  "npm_run_build":  "PASS",
+                  "build_pages":  "63/63",
+                  "git_diff_check":  "PASS_with_crlf_warnings_only"
+              },
+    "production":  {
+                       "production_database_modified":  false,
+                       "production_app_deployed":  false,
+                       "production_alias_modified":  false,
+                       "production_environment_modified":  false,
+                       "search_gateway_modified":  false,
+                       "ranking_modified":  false
+                   },
+    "next_mission":  "OPENSERP-LISTING-QUALITY-REMEDIATION-1"
+}

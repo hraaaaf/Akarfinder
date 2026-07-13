@@ -2770,3 +2770,25 @@ Impact:
 - Route preview-only supprimee.
 - `PRICE-POSITION-REFERENCE-V2-PROD-ACTIVATION-1` executee.
 - Prochaine mission : `LISTING-OBSERVATION-HISTORY-1`.
+
+## 2026-07-13 - OPENSERP-TO-SUPABASE-LISTING-INGESTION-PILOT-1
+
+Decision:
+- Implement a first OpenSERP batch ingestion pipeline in an isolated worktree,
+  but keep production writes disabled until the dry-run clears minimum volume
+  and quality thresholds.
+- Use the local installed `openserp.exe` provider in live mode, without direct
+  source-page scraping, image download, or personal-contact collection.
+- Refuse the first production ingestion batch for now.
+
+Reason:
+- The full dry-run proved the acquisition chain works, but it only produced
+  `138` individual candidates and `130` unique source URLs, below the mission
+  thresholds for a first production write.
+- The current structured public search path still filters out external sources,
+  so even a future write will require a dedicated display activation path.
+
+Impact:
+- Production DB unchanged.
+- No production deploy.
+- Next mission: `OPENSERP-LISTING-QUALITY-REMEDIATION-1`.
