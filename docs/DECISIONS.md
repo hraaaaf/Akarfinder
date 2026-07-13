@@ -2862,3 +2862,32 @@ Impact:
 - La couverture Marrakech reste inegale sur `Agdal`, `Route de Casablanca` et
   `Autres Marrakech`, ce qui devient un point de suivi de qualite et non un
   blocage de mission.
+
+## 2026-07-13 - OPENSERP-TO-SUPABASE-FIRST-WRITE-1
+
+Decision:
+- Geler le premier lot OpenSERP a partir du run
+  `pilot-openserp-quality-remediation-2` avec un manifeste verrouille de
+  `180` candidats, mais ne pas executer l ecriture production tant qu un
+  rollback cible n a pas ete teste hors production.
+- Autoriser les durcissements de pipeline necessaires au first write
+  (normalisation env quotees, manifeste verrouille, chunking Supabase,
+  alignement payload/schema, rollback progressif cible par run) sans les
+  confondre avec une autorisation d ecriture effective.
+
+Reason:
+- Le lot verrouille est sain: `180` candidats selectionnes, `0` collisions
+  observees, `0` PII detectee, `property_listings_before=139`,
+  `listing_sources_before=144`.
+- L ODM impose de ne pas poursuivre si le rollback n est pas pret avant le
+  write. Dans cet environnement, il n existe ni CLI `supabase`, ni
+  PostgreSQL/Supabase local pour prouver le rollback cible sur le meme
+  manifeste hors production.
+- Le build local n a pas pu etre confirme jusqu au bout dans cette session,
+  ce qui empeche aussi de considerer la preuve preview comme prete.
+
+Impact:
+- Aucune ecriture Supabase production n a ete executee.
+- Aucune preview n a ete deployee.
+- Le lot, le manifeste et les checksums deviennent la base de reprise pour une
+  mission dediee a la preuve de rollback avant tout write.

@@ -11858,3 +11858,51 @@ Points de suivi:
 
 Prochaine etape:
 - `OPENSERP-TO-SUPABASE-FIRST-WRITE-1`
+
+## 2026-07-13 - OPENSERP-TO-SUPABASE-FIRST-WRITE-1
+
+Statut:
+- Worktree mission: `C:\\Users\\lenovo\\Documents\\AkarFinder-openserp-first-write`
+- Base applicative: `e5e48005cce3c071370dbadb167d7b1d15fe3f83`
+- Verdict mission: `BLOCKED`
+- Production DB modifiee: non
+- Production deployee: non
+
+Preuves principales:
+- Corpus fige depuis `pilot-openserp-quality-remediation-2` vers
+  `data/openserp/first-write-candidates-source.jsonl`.
+- Manifeste verrouille cree:
+  `data/openserp/first-write-locked-manifest.json`
+  avec `candidate_count=305`, `selected_count=180`,
+  `manifest_sha256=cf03e16422e91fcb29d1f518fdc5ffd2dec1bb45b4b97155758ef16471f602f8`.
+- Comptages live avant write confirmes:
+  `property_listings_before=139`, `listing_sources_before=144`,
+  `openserp_property_listings_before=0`.
+- Collision scan sur les `180` candidats selectionnes:
+  `new_listing=180`, `existing_source_only=0`,
+  `existing_same_listing=0`, `ambiguous_collision=0`.
+
+Validation:
+- `npm run test:openserp-ingestion` PASS
+- `npm test` PASS
+- `git diff --check` PASS hors avertissements CRLF
+- `npm run build` non verifiable dans cette session
+  (bloque sur `Creating an optimized production build ...`)
+
+Concretement:
+- Le lot est selectionne, propre et pret a etre rejoue de facon deterministe.
+- Le writer a ete durci pour charger un manifeste fige sans relancer OpenSERP,
+  normaliser les env quotees Vercel, chunker les verifications Supabase et
+  preparer un rollback progressif cible.
+- La mission s arrete avant toute ecriture car le rollback isole n est pas
+  testable ici: pas de CLI `supabase`, pas de PostgreSQL / Supabase local
+  exploitable, donc pas de preuve hors production sur le meme manifeste.
+
+Points de suivi:
+- Reprendre depuis un environnement permettant de tester le rollback cible
+  avant toute ecriture reelle.
+- Comprendre pourquoi `next build` ne termine pas dans cette session alors que
+  les tests applicatifs restent verts.
+
+Prochaine etape:
+- `OPENSERP-FIRST-WRITE-ROLLBACK-READINESS-1`

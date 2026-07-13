@@ -37,7 +37,7 @@
     "nightly:ingest": "tsx scripts/nightly-ingestion-runner.ts",
     "mubawab:expand": "tsx scripts/mubawab-depth-expansion-run.ts",
     "test:public-index": "npx tsx --test scripts/scrapers/__tests__/public-property-index.test.ts scripts/scrapers/__tests__/openserp-async.test.ts",
-    "test:openserp-ingestion": "npx tsx --test scripts/scrapers/__tests__/openserp-ingestion.test.ts scripts/scrapers/__tests__/persisted-openserp-publication.test.ts",
+    "test:openserp-ingestion": "npx tsx --test scripts/scrapers/__tests__/openserp-ingestion.test.ts scripts/scrapers/__tests__/persisted-openserp-publication.test.ts scripts/scrapers/__tests__/openserp-first-write.test.ts",
     "test": "npm run test:scrapers && npm run test:api"
   },
   "engines": {

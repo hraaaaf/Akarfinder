@@ -5118,3 +5118,30 @@ Decision roadmap:
 - Premier lot Supabase autorisable dans une mission separee et plafonnee.
 - Pas d ecriture production dans cette mission.
 - Prochaine mission unique: `OPENSERP-TO-SUPABASE-FIRST-WRITE-1`.
+
+## 2026-07-13 - OPENSERP-TO-SUPABASE-FIRST-WRITE-1
+
+Etat:
+- Lot OpenSERP fige et selectionne localement
+- Ecriture Supabase production non executee
+- Preview non deployee
+- Verdict: `BLOCKED`
+
+Mesures:
+- `candidate_count=305`
+- `selected_count=180`
+- `manifest_locked=true`
+- `property_listings_before=139`
+- `listing_sources_before=144`
+- `collision_ambiguity=0`
+- `pii_hits=0`
+
+Constat:
+- Le premier lot est pret sur le plan data, mais le rollback cible n est pas
+  prouve hors production.
+- Le build local reste non confirme dans cette session.
+
+Decision roadmap:
+- Ne pas ecrire en production tant qu un rollback isole n a pas ete valide sur
+  le meme manifeste.
+- Prochaine mission unique: `OPENSERP-FIRST-WRITE-ROLLBACK-READINESS-1`.

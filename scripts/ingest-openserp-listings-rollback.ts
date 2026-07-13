@@ -1,17 +1,7 @@
 #!/usr/bin/env tsx
-import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
 import { rollbackOpenSerpRun } from "@/lib/openserp-ingestion/pipeline";
-
-function loadEnvFile(path: string) {
-  if (!existsSync(path)) return;
-  for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
-    const match = line.match(/^([^#=\s]+)=(.*)$/);
-    if (!match || process.env[match[1]]) continue;
-    process.env[match[1]] = match[2].trim();
-  }
-}
+import { loadEnvFile } from "@/lib/openserp-ingestion/env";
 
 function parseArgs(argv: string[]) {
   let runId: string | null = null;
@@ -37,9 +27,7 @@ async function main() {
   console.log(JSON.stringify({ ok: true, rollback_manifest: manifestPath }, null, 2));
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  void main().catch((error) => {
-    console.error(error instanceof Error ? error.message : String(error));
-    process.exit(1);
-  });
-}
+void main().catch((error) => {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+});

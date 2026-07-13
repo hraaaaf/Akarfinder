@@ -143,11 +143,16 @@ export type OpenSerpDryRunMetrics = {
 
 export type OpenSerpWriteManifest = {
   run_id: string;
+  manifest_sha256?: string;
+  source_run_id?: string;
   candidate_count: number;
+  selected_candidates?: string[];
   new_listing_fingerprints: string[];
+  new_property_listing_ids?: number[];
   existing_listing_ids_to_update: number[];
   new_source_urls: string[];
   existing_source_urls_to_update: string[];
+  excluded_candidates?: Array<{ candidate_id: string; reason: string }>;
   maximum_writes: {
     max_new_property_listings: number;
     max_updated_property_listings: number;
@@ -163,10 +168,39 @@ export type OpenSerpWriteManifest = {
 
 export type OpenSerpRollbackManifest = {
   run_id: string;
+  manifest_sha256?: string;
+  source_run_id?: string;
   new_property_listing_ids: number[];
   new_listing_source_urls: string[];
   updated_property_listing_snapshots: unknown[];
   updated_listing_source_snapshots: unknown[];
   rollback_order: string[];
   verification_queries: string[];
+  checksums?: {
+    property_snapshot_sha256: string;
+    source_snapshot_sha256: string;
+  };
+};
+
+export type FirstWriteSelectionAlgorithmVersion = "openserp-first-write-v1";
+
+export type LockedFirstWriteManifest = {
+  source_run_id: string;
+  first_write_run_id: string;
+  generated_at: string;
+  manifest_sha256: string;
+  candidate_file_path: string;
+  candidate_file_sha256: string;
+  candidate_count: number;
+  selected_count: number;
+  selection_algorithm_version: FirstWriteSelectionAlgorithmVersion;
+  selected_candidate_ids: string[];
+  selected_source_urls: string[];
+  excluded_candidate_ids: string[];
+  exclusion_reasons: Record<string, string>;
+  city_targets: {
+    Casablanca: number;
+    Rabat: number;
+    Marrakech: number;
+  };
 };

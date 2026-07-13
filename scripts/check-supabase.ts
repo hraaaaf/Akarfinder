@@ -3,17 +3,11 @@
 // Usage: npm run check:supabase
 
 import { createClient } from "@supabase/supabase-js";
-import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { loadEnvFile } from "@/lib/openserp-ingestion/env";
 
-// Load .env.local - Next.js does this automatically but standalone scripts don't.
-const envFile = join(process.cwd(), ".env.local");
-if (existsSync(envFile)) {
-  for (const line of readFileSync(envFile, "utf8").split("\n")) {
-    const m = line.match(/^([^#\s][^=]*)=(.*)$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
-  }
-}
+loadEnvFile(join(process.cwd(), ".env.local"));
+loadEnvFile(join(process.cwd(), ".env.mission"));
 
 type Check = { label: string; ok: boolean; detail?: string };
 

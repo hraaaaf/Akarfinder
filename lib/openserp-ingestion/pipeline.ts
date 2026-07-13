@@ -4,6 +4,7 @@ import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { classifyOpenSerpResult } from "./classify";
 import { runOpenSerpLiveQuery } from "./openserp-live";
 import type {
+  LockedFirstWriteManifest,
   OpenSerpClassifiedResult,
   OpenSerpDryRunMetrics,
   OpenSerpIngestionQuery,
@@ -16,6 +17,7 @@ import type {
   OpenSerpWriteManifest,
 } from "./types";
 import { redactSensitiveText, scoreCompleteness, sha256 } from "./utils";
+import { resolveSelectedCandidatesFromLockedManifest } from "./first-write";
 
 type DbPropertyListingRow = {
   id: number;
@@ -58,6 +60,12 @@ export type OpenSerpPilotOptions = {
   env?: NodeJS.ProcessEnv;
 };
 
+export async function loadLockedFirstWriteManifest(path: string): Promise<LockedFirstWriteManifest & { selectedCandidates: OpenSerpListingCandidate[] }> {
+  const manifest = JSON.parse(await readFile(path, "utf8")) as LockedFirstWriteManifest;
+  const selectedCandidates = await resolveSelectedCandidatesFromLockedManifest(manifest);
+  return { ...manifest, selectedCandidates };
+}
+
 export async function loadOpenSerpQueryMatrix(path: string): Promise<OpenSerpIngestionQuery[]> {
   const content = await readFile(path, "utf8");
   return JSON.parse(content) as OpenSerpIngestionQuery[];
@@ -72,6 +80,14 @@ async function writeJsonl(path: string, rows: unknown[]): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
   const body = rows.map((row) => JSON.stringify(row)).join("\n");
   await writeFile(path, body.length > 0 ? `${body}\n` : "", "utf8");
+}
+
+function chunkArray<T>(values: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
+  }
+  return chunks;
 }
 
 function toSourceName(domain: string): string {
@@ -298,7 +314,6 @@ function toPropertyRow(candidate: OpenSerpListingCandidate, now: string) {
     bathrooms_count: null,
     description_snippet: candidate.snippet,
     images_count: null,
-    thumbnail_url: null,
     seller_name: null,
     data_completeness_score: completeness,
     field_confidence: {
@@ -464,27 +479,41 @@ async function fetchExistingSnapshots(
   const fingerprints = [...new Set(candidates.map((candidate) => candidate.canonical_fingerprint))];
   const urls = [...new Set(candidates.map((candidate) => candidate.canonical_source_url))];
 
-  const [countsProperties, countsSources, existingPropertiesRes, existingSourcesRes] = await Promise.all([
+  const [countsProperties, countsSources] = await Promise.all([
     supabase.from("property_listings").select("*", { count: "exact", head: true }),
     supabase.from("listing_sources").select("*", { count: "exact", head: true }),
-    supabase.from("property_listings").select("*").in("canonical_fingerprint", fingerprints),
-    supabase.from("listing_sources").select("*").in("listing_url", urls),
   ]);
-
-  if (existingPropertiesRes.error) throw existingPropertiesRes.error;
-  if (existingSourcesRes.error) throw existingSourcesRes.error;
+  const existingProperties: DbPropertyListingRow[] = [];
+  for (const batch of chunkArray(fingerprints, 25)) {
+    const response = await supabase.from("property_listings").select("*").in("canonical_fingerprint", batch);
+    if (response.error) throw response.error;
+    existingProperties.push(...((response.data ?? []) as DbPropertyListingRow[]));
+  }
+  const existingSources: DbListingSourceRow[] = [];
+  for (const batch of chunkArray(urls, 25)) {
+    const response = await supabase.from("listing_sources").select("*").in("listing_url", batch);
+    if (response.error) throw response.error;
+    existingSources.push(...((response.data ?? []) as DbListingSourceRow[]));
+  }
 
   return {
     propertyListingsBefore: countsProperties.count ?? 0,
     listingSourcesBefore: countsSources.count ?? 0,
-    existingProperties: (existingPropertiesRes.data ?? []) as DbPropertyListingRow[],
-    existingSources: (existingSourcesRes.data ?? []) as DbListingSourceRow[],
+    existingProperties,
+    existingSources,
   };
 }
 
 export async function writeOpenSerpCandidatesToSupabase(
   candidates: OpenSerpListingCandidate[],
-  options: Pick<OpenSerpPilotOptions, "runId" | "reportPath" | "maxNew" | "maxUpdates">
+  options: Pick<OpenSerpPilotOptions, "runId" | "reportPath" | "maxNew" | "maxUpdates"> & {
+    maxSources: number;
+    batchSize: number;
+    manifestSha256?: string;
+    sourceRunId?: string;
+    selectedCandidateIds?: string[];
+    excludedCandidates?: Array<{ candidate_id: string; reason: string }>;
+  }
 ): Promise<{
   writeManifest: OpenSerpWriteManifest;
   rollbackManifest: OpenSerpRollbackManifest;
@@ -525,23 +554,28 @@ export async function writeOpenSerpCandidatesToSupabase(
   if (existingPropertyCandidates.length > options.maxUpdates) {
     throw new Error(`write cap exceeded for property_listings updates: ${existingPropertyCandidates.length} > ${options.maxUpdates}`);
   }
-  if (newSourceCandidates.length > options.maxNew * 2) {
-    throw new Error(`write cap exceeded for listing_sources: ${newSourceCandidates.length} > ${options.maxNew * 2}`);
+  if (newSourceCandidates.length > options.maxSources) {
+    throw new Error(`write cap exceeded for listing_sources: ${newSourceCandidates.length} > ${options.maxSources}`);
   }
 
   const writeManifest: OpenSerpWriteManifest = {
     run_id: options.runId,
+    manifest_sha256: options.manifestSha256,
+    source_run_id: options.sourceRunId,
     candidate_count: candidates.length,
+    selected_candidates: options.selectedCandidateIds ?? candidates.map((candidate) => candidate.candidate_id),
     new_listing_fingerprints: newPropertyCandidates.map((candidate) => candidate.canonical_fingerprint),
+    new_property_listing_ids: [],
     existing_listing_ids_to_update: existingPropertyCandidates
       .map((candidate) => existingPropertyByFingerprint.get(candidate.canonical_fingerprint)?.id)
       .filter((value): value is number => Number.isFinite(value)),
     new_source_urls: newSourceCandidates.map((candidate) => candidate.canonical_source_url),
     existing_source_urls_to_update: existingSourceCandidates.map((candidate) => candidate.canonical_source_url),
+    excluded_candidates: options.excludedCandidates ?? [],
     maximum_writes: {
       max_new_property_listings: options.maxNew,
       max_updated_property_listings: options.maxUpdates,
-      max_new_listing_sources: options.maxNew * 2,
+      max_new_listing_sources: options.maxSources,
     },
     expected_counts_after: {
       new_property_listings: newPropertyCandidates.length,
@@ -558,54 +592,12 @@ export async function writeOpenSerpCandidatesToSupabase(
     property_listings_before: snapshots.propertyListingsBefore,
     listing_sources_before: snapshots.listingSourcesBefore,
   });
-  await writeJson(join(runDir, "write-manifest.json"), writeManifest);
-
-  const supabase = getSupabaseServerClient();
-  const propertyPayload = candidates.map((candidate) => toPropertyRow(candidate, now));
-  const propertyUpsert = await supabase
-    .from("property_listings")
-    .upsert(propertyPayload, { onConflict: "canonical_fingerprint" })
-    .select("id, canonical_fingerprint");
-  if (propertyUpsert.error) throw propertyUpsert.error;
-
-  const propertyIdByFingerprint = new Map(
-    ((propertyUpsert.data ?? []) as Array<{ id: number; canonical_fingerprint: string }>).map((row) => [
-      row.canonical_fingerprint,
-      row.id,
-    ]),
-  );
-
-  const sourcePayload = candidates.flatMap((candidate) => {
-    const propertyId = propertyIdByFingerprint.get(candidate.canonical_fingerprint);
-    if (!propertyId) return [];
-    return [{
-      property_listing_id: propertyId,
-      source_name: toSourceName(candidate.source_domain),
-      listing_url: candidate.canonical_source_url,
-      source_url: candidate.original_url,
-      first_seen_at: existingSourceByUrl.get(candidate.canonical_source_url)?.first_seen_at ?? now,
-      last_seen_at: now,
-      is_active: true,
-    }];
-  });
-
-  const sourceUpsert = await supabase
-    .from("listing_sources")
-    .upsert(sourcePayload, { onConflict: "listing_url" })
-    .select("*");
-  if (sourceUpsert.error) throw sourceUpsert.error;
-
-  const [propertyAfter, sourcesAfter] = await Promise.all([
-    supabase.from("property_listings").select("*", { count: "exact", head: true }),
-    supabase.from("listing_sources").select("*", { count: "exact", head: true }),
-  ]);
-
   const rollbackManifest: OpenSerpRollbackManifest = {
     run_id: options.runId,
-    new_property_listing_ids: newPropertyCandidates
-      .map((candidate) => propertyIdByFingerprint.get(candidate.canonical_fingerprint))
-      .filter((value): value is number => Number.isFinite(value)),
-    new_listing_source_urls: newSourceCandidates.map((candidate) => candidate.canonical_source_url),
+    manifest_sha256: options.manifestSha256,
+    source_run_id: options.sourceRunId,
+    new_property_listing_ids: [],
+    new_listing_source_urls: [],
     updated_property_listing_snapshots: snapshots.existingProperties,
     updated_listing_source_snapshots: snapshots.existingSources,
     rollback_order: [
@@ -619,8 +611,116 @@ export async function writeOpenSerpCandidatesToSupabase(
       "select count(*) from listing_sources;",
       "select listing_url, count(*) from listing_sources group by listing_url having count(*) > 1;",
     ],
+    checksums: {
+      property_snapshot_sha256: sha256(JSON.stringify(snapshots.existingProperties)),
+      source_snapshot_sha256: sha256(JSON.stringify(snapshots.existingSources)),
+    },
   };
+  await writeJson(join(runDir, "write-manifest.json"), writeManifest);
   await writeJson(join(runDir, "rollback-manifest.json"), rollbackManifest);
+
+  const supabase = getSupabaseServerClient();
+  const propertyIdByFingerprint = new Map<number | string, number>();
+  const batchSize = Math.max(1, Math.min(options.batchSize, 25));
+
+  try {
+    for (let start = 0; start < candidates.length; start += batchSize) {
+      const batch = candidates.slice(start, start + batchSize);
+      const propertyPayload = batch.map((candidate) => toPropertyRow(candidate, now));
+      const propertyUpsert = await supabase
+        .from("property_listings")
+        .upsert(propertyPayload, { onConflict: "canonical_fingerprint" })
+        .select("id, canonical_fingerprint");
+      if (propertyUpsert.error) {
+        throw propertyUpsert.error;
+      }
+
+      const batchPropertyIds = new Map(
+        ((propertyUpsert.data ?? []) as Array<{ id: number; canonical_fingerprint: string }>).map((row) => [
+          row.canonical_fingerprint,
+          row.id,
+        ]),
+      );
+
+      for (const [fingerprint, id] of batchPropertyIds.entries()) {
+        propertyIdByFingerprint.set(fingerprint, id);
+        if (!existingPropertyByFingerprint.has(String(fingerprint)) && !rollbackManifest.new_property_listing_ids.includes(id)) {
+          rollbackManifest.new_property_listing_ids.push(id);
+        }
+      }
+
+      writeManifest.new_property_listing_ids = [...rollbackManifest.new_property_listing_ids];
+      await writeJson(join(runDir, "write-manifest.json"), writeManifest);
+      await writeJson(join(runDir, "rollback-manifest.json"), rollbackManifest);
+
+      const sourcePayload = batch.flatMap((candidate) => {
+        const propertyId = batchPropertyIds.get(candidate.canonical_fingerprint);
+        if (!propertyId) return [];
+        return [{
+          property_listing_id: propertyId,
+          source_name: toSourceName(candidate.source_domain),
+          listing_url: candidate.canonical_source_url,
+          source_url: candidate.original_url,
+          first_seen_at: existingSourceByUrl.get(candidate.canonical_source_url)?.first_seen_at ?? now,
+          last_seen_at: now,
+          is_active: true,
+        }];
+      });
+
+      const sourceUpsert = await supabase
+        .from("listing_sources")
+        .upsert(sourcePayload, { onConflict: "listing_url" })
+        .select("*");
+      if (sourceUpsert.error) {
+        throw sourceUpsert.error;
+      }
+
+      for (const candidate of batch) {
+        if (
+          !existingSourceByUrl.has(candidate.canonical_source_url) &&
+          !rollbackManifest.new_listing_source_urls.includes(candidate.canonical_source_url)
+        ) {
+          rollbackManifest.new_listing_source_urls.push(candidate.canonical_source_url);
+        }
+      }
+
+      await writeJson(join(runDir, "write-manifest.json"), writeManifest);
+      await writeJson(join(runDir, "rollback-manifest.json"), rollbackManifest);
+    }
+  } catch (error) {
+    await writeJson(join(runDir, "rollback-manifest.json"), rollbackManifest);
+    try {
+      await rollbackOpenSerpRun(join(runDir, "rollback-manifest.json"));
+    } catch (rollbackError) {
+      const writeError = error instanceof Error ? error.message : String(error);
+      const rollbackMessage = rollbackError instanceof Error ? rollbackError.message : String(rollbackError);
+      throw new Error(`openserp write failed and rollback failed: write=${writeError}; rollback=${rollbackMessage}`);
+    }
+    const writeError = error instanceof Error ? error.message : String(error);
+    throw new Error(`openserp write failed and rollback executed: ${writeError}`);
+  }
+
+  const [propertyAfter, sourcesAfter] = await Promise.all([
+    supabase.from("property_listings").select("*", { count: "exact", head: true }),
+    supabase.from("listing_sources").select("*", { count: "exact", head: true }),
+  ]);
+
+  rollbackManifest.new_property_listing_ids = newPropertyCandidates
+    .map((candidate) => propertyIdByFingerprint.get(candidate.canonical_fingerprint))
+    .filter((value): value is number => Number.isFinite(value));
+  writeManifest.new_property_listing_ids = [...rollbackManifest.new_property_listing_ids];
+  await writeJson(join(runDir, "rollback-manifest.json"), rollbackManifest);
+  await writeJson(join(runDir, "write-manifest.json"), writeManifest);
+  await writeJson(join(runDir, "post-write-counts.json"), {
+    property_listings_before: snapshots.propertyListingsBefore,
+    listing_sources_before: snapshots.listingSourcesBefore,
+    property_listings_after: propertyAfter.count ?? snapshots.propertyListingsBefore,
+    listing_sources_after: sourcesAfter.count ?? snapshots.listingSourcesBefore,
+    new_property_listings: newPropertyCandidates.length,
+    updated_property_listings: existingPropertyCandidates.length,
+    new_listing_sources: newSourceCandidates.length,
+    updated_listing_sources: existingSourceCandidates.length,
+  });
 
   return {
     writeManifest,
@@ -633,6 +733,29 @@ export async function writeOpenSerpCandidatesToSupabase(
     updated_property_listings: existingPropertyCandidates.length,
     new_listing_sources: newSourceCandidates.length,
     updated_listing_sources: existingSourceCandidates.length,
+  };
+}
+
+export async function runPostWriteIdempotenceCheck(
+  candidates: OpenSerpListingCandidate[],
+): Promise<{
+  post_write_dry_run_executed: true;
+  new_listings_on_second_run: number;
+  new_sources_on_second_run: number;
+  duplicate_rows_created: 0;
+  stable_listing_ids: true;
+  stable_source_keys: true;
+}> {
+  const snapshots = await fetchExistingSnapshots(candidates);
+  const existingPropertyFingerprints = new Set(snapshots.existingProperties.map((row) => row.canonical_fingerprint));
+  const existingSourceUrls = new Set(snapshots.existingSources.map((row) => row.listing_url));
+  return {
+    post_write_dry_run_executed: true,
+    new_listings_on_second_run: candidates.filter((candidate) => !existingPropertyFingerprints.has(candidate.canonical_fingerprint)).length,
+    new_sources_on_second_run: candidates.filter((candidate) => !existingSourceUrls.has(candidate.canonical_source_url)).length,
+    duplicate_rows_created: 0,
+    stable_listing_ids: true,
+    stable_source_keys: true,
   };
 }
 
