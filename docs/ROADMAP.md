@@ -5047,3 +5047,38 @@ Decision roadmap:
 - Aucune ecriture Supabase production tant que le dry-run reste sous les
   seuils minimaux.
 - Prochaine mission unique: `OPENSERP-LISTING-QUALITY-REMEDIATION-1`.
+
+## 2026-07-13 - OPENSERP-LISTING-QUALITY-REMEDIATION-1
+
+Etat:
+- Remediation pipeline executee localement sur le worktree isole.
+- Provider live confirme: `openserp.exe` `v2.1`.
+- Dry-run complet rejoue avec `180` requetes et `178` executees.
+- Verdict mission: `PARTIAL`.
+- Production officielle reste a `96.5%`.
+- Production DB modifiee: non.
+- Production deployee: non.
+
+Mesures:
+- `raw_results=1684`
+- `individual_results_before_dedup=234`
+- `unique_individual_source_urls=228`
+- `technical_failures=2`
+- `zero_result_queries=9`
+- `individual_precision=95`
+- `category_page_false_acceptance=0`
+- `casablanca_unique_candidates=112`
+- `rabat_unique_candidates=79`
+- `marrakech_unique_candidates=37`
+
+Constat:
+- Le rendement global et la precision deviennent compatibles avec une
+  premiere ecriture controlee au niveau global.
+- La couverture Marrakech reste sous le minimum mission.
+- Le chemin public structure actuel bloque encore les sources OpenSERP
+  persistees (`display_patch_required=true`).
+
+Decision roadmap:
+- Pas de GO pour la premiere ecriture Supabase dans cette mission.
+- Pas de changement production, Search Gateway, Serper.dev ou SerpApi.
+- Prochaine mission unique: `OPENSERP-LISTING-QUALITY-REMEDIATION-2`.

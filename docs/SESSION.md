@@ -11750,3 +11750,59 @@ Blocage reel:
 
 Prochaine etape:
 - `OPENSERP-LISTING-QUALITY-REMEDIATION-1`
+
+## 2026-07-13 - OPENSERP-LISTING-QUALITY-REMEDIATION-1
+
+Statut:
+- Worktree mission: `C:\\Users\\lenovo\\Documents\\AkarFinder-openserp-quality-remediation`
+- Base applicative: `3a04b4e9a6f294a8a5205546ebb0ec70215e3e89`
+- Provider live confirme localement: `openserp.exe` `v2.1`
+- Dry-run complet rejoue: oui
+- Verdict mission: `PARTIAL`
+- Production DB modifiee: non
+- Production deployee: non
+
+Preuves principales:
+- Nouvelle matrice `data/openserp/ingestion-quality-query-matrix-v2.json` avec `180` requetes.
+- Full dry-run `pilot-openserp-quality-remediation-1`:
+  `queries_executed=178`, `queries_failed=2`, `zero_result_queries=9`,
+  `raw_results=1684`, `individual_results_before_dedup=234`,
+  `unique_individual_source_urls=228`.
+- Audit des `32` echecs historiques rejoue:
+  `failed_queries_replayed=32`, `failed_queries_recovered=26`,
+  `timeouts=6`, `empty_results=26`.
+- Qualite echantillonnee sur `250` lignes:
+  `individual_precision=95`, `category_page_false_acceptance=0`,
+  `city_accuracy=100`, `district_accuracy=98.25`,
+  `transaction_accuracy=99.12`, `property_type_accuracy=96.49`.
+
+Concretement:
+- Le pipeline multi-attempts a elimine l echec massif des requetes ciblees du
+  premier pilote sans degrader la precision.
+- Les extracteurs ville/quartier/prix/surface et les heuristiques d URLs
+  individuelles sont plus robustes.
+- Les artefacts persists restent rediges:
+  `phone_hits=0`, `whatsapp_hits=0`, `personal_email_hits=0`,
+  `secret_hits=0`, `direct_source_page_fetches=0`, `downloaded_images=0`.
+- Le test synthetique `openserp_read_model_synthetic_test_1` confirme qu une
+  ligne OpenSERP persistee resterait invisible dans `/search` avec le code
+  actuel car `canPublishDbRowToPublicSurface` exige encore
+  `first_party|partner_authorized`.
+
+Validation:
+- `npm run test:openserp-ingestion` PASS
+- `npm test` PASS
+- `npm run build` PASS (`63/63` pages)
+- `git diff --check` PASS hors avertissements CRLF
+
+Blocages reels:
+- Le rendement total passe au-dessus des seuils globaux du dry-run, mais
+  Marrakech reste sous le minimum mission (`37` candidats uniques contre `45`
+  attendus).
+- Le chemin public structure ne sait toujours pas rendre les lignes OpenSERP
+  persistees sans patch d affichage separe sous feature flag.
+- Le commit `21d3c36` doit etre retenu comme support applicatif historique du
+  premier pilote, meme si son message etait documentaire.
+
+Prochaine etape:
+- `OPENSERP-LISTING-QUALITY-REMEDIATION-2`

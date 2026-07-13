@@ -2792,3 +2792,40 @@ Impact:
 - Production DB unchanged.
 - No production deploy.
 - Next mission: `OPENSERP-LISTING-QUALITY-REMEDIATION-1`.
+
+## 2026-07-13 - OPENSERP-LISTING-QUALITY-REMEDIATION-1
+
+Decision:
+- Remplacer la logique mono-tentative implicite du pilote par un plan
+  d execution explicite par familles de requetes, avec priorite DuckDuckGo
+  `--site` puis requete brand-hint pour les domaines cibles.
+- Renforcer la qualification OpenSERP sans elargir le perimetre produit:
+  nouvelles heuristiques d URLs detaillees, extraction plus tolerante
+  `price/surface/city/district`, et persistence redigee des resultats bruts.
+- Ne pas autoriser la premiere ecriture Supabase tant que la couverture
+  Marrakech reste sous le minimum mission et tant que le read-model public ne
+  sait pas afficher les lignes OpenSERP persistees via un chemin separe.
+
+Reason:
+- Le premier pilote a surtout echoue sur les requetes ciblees et sur un plan
+  d execution trop fragile face aux timeouts Bing/Ecosia.
+- Le rerun complet montre une amelioration nette (`1684` resultats bruts,
+  `228` URLs individuelles uniques, `95%` de precision sur l echantillon), mais
+  pas encore un candidat assez complet pour une premiere ecriture.
+- Le test synthetique de lecture confirme que la simple presence de lignes
+  `property_listings` et `listing_sources` ne suffit pas avec le guard
+  `canPublishStructuredListing(row.source_name ?? "")`.
+
+Impact:
+- Le pipeline OpenSERP devient plus productif et plus explicable sans toucher
+  a la production, a Serper.dev, a SerpApi, au Search Gateway live ou a
+  Supabase production.
+- Les artefacts d audit suivants deviennent la reference de mission:
+  `openserp_failed_queries_analysis_1`,
+  `openserp_query_yield_scorecard_1`,
+  `openserp_listing_quality_remediation_1`,
+  `openserp_read_model_synthetic_test_1`,
+  `openserp-quality-corpus-v1.jsonl`.
+- Le commit `21d3c36` doit etre documente comme support applicatif historique
+  du premier pilote malgre son message documentaire.
+- Prochaine mission: `OPENSERP-LISTING-QUALITY-REMEDIATION-2`.

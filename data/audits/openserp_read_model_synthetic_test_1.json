@@ -1,0 +1,14 @@
+{
+  "synthetic_db_path": "C:\\Users\\lenovo\\AppData\\Local\\Temp\\akarfinder-openserp-read-model-1783949618127\\synthetic-akarfinder.db",
+  "query_returned_rows": 1,
+  "db_row_found": true,
+  "raw_source_name": "agenz",
+  "raw_publishable": false,
+  "mapped_publishable": false,
+  "blocking_file": "lib/listings/public-listing-access.ts",
+  "blocking_function": "canPublishDbRowToPublicSurface",
+  "blocking_condition": "canPublishStructuredListing(row.source_name ?? '')",
+  "required_source_kind": "first_party|partner_authorized",
+  "openserp_source_name_example": "agenz",
+  "expected_search_visibility_with_current_code": false
+}

@@ -1,0 +1,1287 @@
+{
+  "initial_failed_query_count": 32,
+  "recovered_queries": 26,
+  "categories": {
+    "timeout": 6,
+    "provider_process_error": 0,
+    "invalid_cli_arguments": 0,
+    "encoding_error": 0,
+    "output_parse_error": 0,
+    "rate_limit": 0,
+    "provider_unavailable": 0,
+    "query_syntax_rejected": 0,
+    "empty_results": 26,
+    "domain_no_results": 0,
+    "checkpoint_error": 0,
+    "unknown": 0
+  },
+  "queries": [
+    {
+      "query_id": "oq-003",
+      "query_text": "villa a vendre Casablanca Maarif",
+      "city": "Casablanca",
+      "district": "Maarif",
+      "property_type": "villa",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "villa a vendre Casablanca Maarif",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:33:56.751Z",
+          "duration_ms": 20755,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 0,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-006",
+      "query_text": "appartement a louer Casablanca Racine",
+      "city": "Casablanca",
+      "district": "Racine",
+      "property_type": "apartment",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a louer Casablanca Racine",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:34:17.507Z",
+          "duration_ms": 13065,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo appartement a louer Casablanca Racine",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:34:30.572Z",
+          "duration_ms": 8069,
+          "exit_code": 0,
+          "stdout_status": "empty_results",
+          "stderr_category": "empty_results",
+          "result_count": 0,
+          "retry_count": 1,
+          "final_status": "success"
+        },
+        {
+          "engine": "duckduckgo",
+          "query_text": "logic-immo appartement a louer Casablanca Racine",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:34:38.641Z",
+          "duration_ms": 10305,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 2,
+          "final_status": "failed"
+        }
+      ],
+      "final_status": "timeout",
+      "result_count": 0,
+      "recovered": false
+    },
+    {
+      "query_id": "oq-009",
+      "query_text": "appartement a vendre Casablanca Bourgogne",
+      "city": "Casablanca",
+      "district": "Bourgogne",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a vendre Casablanca Bourgogne",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:34:48.946Z",
+          "duration_ms": 19835,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "sarouty appartement a vendre Casablanca Bourgogne",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:35:08.781Z",
+          "duration_ms": 9792,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 1,
+          "final_status": "failed"
+        },
+        {
+          "engine": "duckduckgo",
+          "query_text": "sarouty appartement a vendre Casablanca Bourgogne",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:35:18.573Z",
+          "duration_ms": 18610,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 11,
+          "retry_count": 2,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 11,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-012",
+      "query_text": "studio location Casablanca Bourgogne",
+      "city": "Casablanca",
+      "district": "Bourgogne",
+      "property_type": "studio",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "studio location Casablanca Bourgogne",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:35:37.183Z",
+          "duration_ms": 9384,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo studio location Casablanca Bourgogne",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:35:46.567Z",
+          "duration_ms": 4592,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 1,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-015",
+      "query_text": "villa a vendre Casablanca Gauthier",
+      "city": "Casablanca",
+      "district": "Gauthier",
+      "property_type": "villa",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "villa a vendre Casablanca Gauthier",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:35:51.159Z",
+          "duration_ms": 8906,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "sarouty villa a vendre Casablanca Gauthier",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:36:00.065Z",
+          "duration_ms": 4423,
+          "exit_code": 0,
+          "stdout_status": "empty_results",
+          "stderr_category": "empty_results",
+          "result_count": 0,
+          "retry_count": 1,
+          "final_status": "success"
+        },
+        {
+          "engine": "duckduckgo",
+          "query_text": "sarouty villa a vendre Casablanca Gauthier",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:36:04.488Z",
+          "duration_ms": 9822,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 2,
+          "final_status": "failed"
+        }
+      ],
+      "final_status": "timeout",
+      "result_count": 0,
+      "recovered": false
+    },
+    {
+      "query_id": "oq-018",
+      "query_text": "appartement a louer Casablanca Palmier",
+      "city": "Casablanca",
+      "district": "Palmier",
+      "property_type": "apartment",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a louer Casablanca Palmier",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:36:14.310Z",
+          "duration_ms": 10147,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo appartement a louer Casablanca Palmier",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:36:24.457Z",
+          "duration_ms": 5282,
+          "exit_code": 0,
+          "stdout_status": "empty_results",
+          "stderr_category": "empty_results",
+          "result_count": 0,
+          "retry_count": 1,
+          "final_status": "success"
+        },
+        {
+          "engine": "duckduckgo",
+          "query_text": "logic-immo appartement a louer Casablanca Palmier",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:36:29.739Z",
+          "duration_ms": 18572,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 2,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-021",
+      "query_text": "appartement a vendre Casablanca Oasis",
+      "city": "Casablanca",
+      "district": "Oasis",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a vendre Casablanca Oasis",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:36:48.311Z",
+          "duration_ms": 16450,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 0,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-024",
+      "query_text": "studio location Casablanca Oasis",
+      "city": "Casablanca",
+      "district": "Oasis",
+      "property_type": "studio",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "studio location Casablanca Oasis",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:37:04.761Z",
+          "duration_ms": 9604,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo studio location Casablanca Oasis",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:37:14.365Z",
+          "duration_ms": 5778,
+          "exit_code": 0,
+          "stdout_status": "empty_results",
+          "stderr_category": "empty_results",
+          "result_count": 0,
+          "retry_count": 1,
+          "final_status": "success"
+        },
+        {
+          "engine": "duckduckgo",
+          "query_text": "logic-immo studio location Casablanca Oasis",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:37:20.143Z",
+          "duration_ms": 9238,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 2,
+          "final_status": "failed"
+        }
+      ],
+      "final_status": "timeout",
+      "result_count": 0,
+      "recovered": false
+    },
+    {
+      "query_id": "oq-027",
+      "query_text": "villa a vendre Casablanca Californie",
+      "city": "Casablanca",
+      "district": "Californie",
+      "property_type": "villa",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "villa a vendre Casablanca Californie",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:37:29.381Z",
+          "duration_ms": 20569,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 11,
+          "retry_count": 0,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 11,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-030",
+      "query_text": "appartement a louer Casablanca Ain Diab",
+      "city": "Casablanca",
+      "district": "Ain Diab",
+      "property_type": "apartment",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a louer Casablanca Ain Diab",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:37:49.950Z",
+          "duration_ms": 10211,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo appartement a louer Casablanca Ain Diab",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:38:00.161Z",
+          "duration_ms": 5585,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 1,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-033",
+      "query_text": "appartement a vendre Casablanca Sidi Maarouf",
+      "city": "Casablanca",
+      "district": "Sidi Maarouf",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a vendre Casablanca Sidi Maarouf",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:38:05.746Z",
+          "duration_ms": 17595,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 0,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-036",
+      "query_text": "studio location Casablanca Sidi Maarouf",
+      "city": "Casablanca",
+      "district": "Sidi Maarouf",
+      "property_type": "studio",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "studio location Casablanca Sidi Maarouf",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:38:23.341Z",
+          "duration_ms": 9695,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo studio location Casablanca Sidi Maarouf",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:38:33.036Z",
+          "duration_ms": 5374,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 1,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-039",
+      "query_text": "villa a vendre Casablanca Hay Hassani",
+      "city": "Casablanca",
+      "district": "Hay Hassani",
+      "property_type": "villa",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "villa a vendre Casablanca Hay Hassani",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:38:38.410Z",
+          "duration_ms": 9243,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "sarouty villa a vendre Casablanca Hay Hassani",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:38:47.653Z",
+          "duration_ms": 6161,
+          "exit_code": 0,
+          "stdout_status": "empty_results",
+          "stderr_category": "empty_results",
+          "result_count": 0,
+          "retry_count": 1,
+          "final_status": "success"
+        },
+        {
+          "engine": "duckduckgo",
+          "query_text": "sarouty villa a vendre Casablanca Hay Hassani",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:38:53.814Z",
+          "duration_ms": 9442,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 2,
+          "final_status": "failed"
+        }
+      ],
+      "final_status": "timeout",
+      "result_count": 0,
+      "recovered": false
+    },
+    {
+      "query_id": "oq-042",
+      "query_text": "appartement a louer Rabat Agdal",
+      "city": "Rabat",
+      "district": "Agdal",
+      "property_type": "apartment",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a louer Rabat Agdal",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:39:03.256Z",
+          "duration_ms": 10700,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo appartement a louer Rabat Agdal",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:39:13.956Z",
+          "duration_ms": 5495,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 3,
+          "retry_count": 1,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 3,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-045",
+      "query_text": "appartement a vendre Rabat Hay Riad",
+      "city": "Rabat",
+      "district": "Hay Riad",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a vendre Rabat Hay Riad",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:39:19.451Z",
+          "duration_ms": 17420,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 11,
+          "retry_count": 0,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 11,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-048",
+      "query_text": "studio location Rabat Hay Riad",
+      "city": "Rabat",
+      "district": "Hay Riad",
+      "property_type": "studio",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "studio location Rabat Hay Riad",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:39:36.871Z",
+          "duration_ms": 9781,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo studio location Rabat Hay Riad",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:39:46.652Z",
+          "duration_ms": 5098,
+          "exit_code": 0,
+          "stdout_status": "empty_results",
+          "stderr_category": "empty_results",
+          "result_count": 0,
+          "retry_count": 1,
+          "final_status": "success"
+        },
+        {
+          "engine": "duckduckgo",
+          "query_text": "logic-immo studio location Rabat Hay Riad",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:39:51.750Z",
+          "duration_ms": 15681,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 13,
+          "retry_count": 2,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 13,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-051",
+      "query_text": "villa a vendre Rabat Souissi",
+      "city": "Rabat",
+      "district": "Souissi",
+      "property_type": "villa",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "villa a vendre Rabat Souissi",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:40:07.431Z",
+          "duration_ms": 16142,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 0,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-054",
+      "query_text": "appartement a louer Rabat Hassan",
+      "city": "Rabat",
+      "district": "Hassan",
+      "property_type": "apartment",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a louer Rabat Hassan",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:40:23.573Z",
+          "duration_ms": 9960,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo appartement a louer Rabat Hassan",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:40:33.533Z",
+          "duration_ms": 6535,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 1,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-057",
+      "query_text": "appartement a vendre Rabat Ocean",
+      "city": "Rabat",
+      "district": "Ocean",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a vendre Rabat Ocean",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:40:40.068Z",
+          "duration_ms": 17314,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 11,
+          "retry_count": 0,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 11,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-060",
+      "query_text": "studio location Rabat Ocean",
+      "city": "Rabat",
+      "district": "Ocean",
+      "property_type": "studio",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "studio location Rabat Ocean",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:40:57.382Z",
+          "duration_ms": 9742,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo studio location Rabat Ocean",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:41:07.124Z",
+          "duration_ms": 6041,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 1,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-063",
+      "query_text": "villa a vendre Rabat Aviation",
+      "city": "Rabat",
+      "district": "Aviation",
+      "property_type": "villa",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "villa a vendre Rabat Aviation",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:41:13.165Z",
+          "duration_ms": 16913,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 0,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-066",
+      "query_text": "appartement a louer Rabat Yacoub El Mansour",
+      "city": "Rabat",
+      "district": "Yacoub El Mansour",
+      "property_type": "apartment",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a louer Rabat Yacoub El Mansour",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:41:30.079Z",
+          "duration_ms": 10016,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo appartement a louer Rabat Yacoub El Mansour",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:41:40.095Z",
+          "duration_ms": 4794,
+          "exit_code": 0,
+          "stdout_status": "empty_results",
+          "stderr_category": "empty_results",
+          "result_count": 0,
+          "retry_count": 1,
+          "final_status": "success"
+        },
+        {
+          "engine": "duckduckgo",
+          "query_text": "logic-immo appartement a louer Rabat Yacoub El Mansour",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:41:44.889Z",
+          "duration_ms": 16711,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 2,
+          "final_status": "failed"
+        }
+      ],
+      "final_status": "timeout",
+      "result_count": 0,
+      "recovered": false
+    },
+    {
+      "query_id": "oq-069",
+      "query_text": "appartement a vendre Marrakech Gueliz",
+      "city": "Marrakech",
+      "district": "Gueliz",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a vendre Marrakech Gueliz",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:42:01.600Z",
+          "duration_ms": 15764,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 0,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-072",
+      "query_text": "studio location Marrakech Gueliz",
+      "city": "Marrakech",
+      "district": "Gueliz",
+      "property_type": "studio",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "studio location Marrakech Gueliz",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:42:17.364Z",
+          "duration_ms": 9363,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo studio location Marrakech Gueliz",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:42:26.727Z",
+          "duration_ms": 5733,
+          "exit_code": 0,
+          "stdout_status": "empty_results",
+          "stderr_category": "empty_results",
+          "result_count": 0,
+          "retry_count": 1,
+          "final_status": "success"
+        },
+        {
+          "engine": "duckduckgo",
+          "query_text": "logic-immo studio location Marrakech Gueliz",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:42:32.460Z",
+          "duration_ms": 17653,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 2,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-075",
+      "query_text": "villa a vendre Marrakech Hivernage",
+      "city": "Marrakech",
+      "district": "Hivernage",
+      "property_type": "villa",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "villa a vendre Marrakech Hivernage",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:42:50.113Z",
+          "duration_ms": 17359,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 0,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-078",
+      "query_text": "appartement a louer Marrakech Targa",
+      "city": "Marrakech",
+      "district": "Targa",
+      "property_type": "apartment",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a louer Marrakech Targa",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:43:07.472Z",
+          "duration_ms": 10017,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo appartement a louer Marrakech Targa",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:43:17.489Z",
+          "duration_ms": 5311,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 1,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-081",
+      "query_text": "appartement a vendre Marrakech Agdal",
+      "city": "Marrakech",
+      "district": "Agdal",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a vendre Marrakech Agdal",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:43:22.801Z",
+          "duration_ms": 18301,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 0,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-084",
+      "query_text": "studio location Marrakech Agdal",
+      "city": "Marrakech",
+      "district": "Agdal",
+      "property_type": "studio",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "studio location Marrakech Agdal",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:43:41.102Z",
+          "duration_ms": 9733,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo studio location Marrakech Agdal",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:43:50.835Z",
+          "duration_ms": 5273,
+          "exit_code": 0,
+          "stdout_status": "empty_results",
+          "stderr_category": "empty_results",
+          "result_count": 0,
+          "retry_count": 1,
+          "final_status": "success"
+        },
+        {
+          "engine": "duckduckgo",
+          "query_text": "logic-immo studio location Marrakech Agdal",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:43:56.108Z",
+          "duration_ms": 9524,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 2,
+          "final_status": "failed"
+        }
+      ],
+      "final_status": "timeout",
+      "result_count": 0,
+      "recovered": false
+    },
+    {
+      "query_id": "oq-087",
+      "query_text": "villa a vendre Marrakech Palmeraie",
+      "city": "Marrakech",
+      "district": "Palmeraie",
+      "property_type": "villa",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "villa a vendre Marrakech Palmeraie",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:44:05.632Z",
+          "duration_ms": 18926,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 0,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-090",
+      "query_text": "appartement a louer Marrakech Route de Casablanca",
+      "city": "Marrakech",
+      "district": "Route de Casablanca",
+      "property_type": "apartment",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a louer Marrakech Route de Casablanca",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:44:24.558Z",
+          "duration_ms": 9549,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo appartement a louer Marrakech Route de Casablanca",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:44:34.107Z",
+          "duration_ms": 10228,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 1,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-093",
+      "query_text": "appartement a vendre Marrakech Route de l'Ourika",
+      "city": "Marrakech",
+      "district": "Route de l'Ourika",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "target_domain": "sarouty.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "appartement a vendre Marrakech Route de l'Ourika",
+          "target_domain": "sarouty.ma",
+          "started_at": "2026-07-13T13:44:44.335Z",
+          "duration_ms": 9073,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "sarouty appartement a vendre Marrakech Route de l'Ourika",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:44:53.408Z",
+          "duration_ms": 5119,
+          "exit_code": 0,
+          "stdout_status": "empty_results",
+          "stderr_category": "empty_results",
+          "result_count": 0,
+          "retry_count": 1,
+          "final_status": "success"
+        },
+        {
+          "engine": "duckduckgo",
+          "query_text": "sarouty appartement a vendre Marrakech Route de l'Ourika",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:44:58.527Z",
+          "duration_ms": 16963,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 13,
+          "retry_count": 2,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 13,
+      "recovered": true
+    },
+    {
+      "query_id": "oq-096",
+      "query_text": "studio location Marrakech Route de l'Ourika",
+      "city": "Marrakech",
+      "district": "Route de l'Ourika",
+      "property_type": "studio",
+      "transaction_type": "rent",
+      "target_domain": "logic-immo.ma",
+      "attempts": [
+        {
+          "engine": "duckduckgo",
+          "query_text": "studio location Marrakech Route de l'Ourika",
+          "target_domain": "logic-immo.ma",
+          "started_at": "2026-07-13T13:45:15.490Z",
+          "duration_ms": 10095,
+          "exit_code": null,
+          "stdout_status": "none",
+          "stderr_category": "timeout",
+          "result_count": 0,
+          "retry_count": 0,
+          "final_status": "failed"
+        },
+        {
+          "engine": "bing",
+          "query_text": "logic-immo studio location Marrakech Route de l'Ourika",
+          "target_domain": null,
+          "started_at": "2026-07-13T13:45:25.585Z",
+          "duration_ms": 6147,
+          "exit_code": 0,
+          "stdout_status": "results",
+          "stderr_category": "success",
+          "result_count": 10,
+          "retry_count": 1,
+          "final_status": "success"
+        }
+      ],
+      "final_status": "success",
+      "result_count": 10,
+      "recovered": true
+    }
+  ]
+}
