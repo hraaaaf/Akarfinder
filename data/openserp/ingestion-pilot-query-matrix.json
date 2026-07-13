@@ -1,0 +1,898 @@
+[
+    {
+        "query_id":  "oq-001",
+        "city":  "Casablanca",
+        "district":  "Maarif",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Casablanca Maarif",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-002",
+        "city":  "Casablanca",
+        "district":  "Maarif",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Casablanca Maarif",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-003",
+        "city":  "Casablanca",
+        "district":  "Maarif",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Casablanca Maarif",
+        "priority":  "medium",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-004",
+        "city":  "Casablanca",
+        "district":  "Maarif",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Casablanca Maarif",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-005",
+        "city":  "Casablanca",
+        "district":  "Racine",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Casablanca Racine",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-006",
+        "city":  "Casablanca",
+        "district":  "Racine",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Casablanca Racine",
+        "priority":  "high",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-007",
+        "city":  "Casablanca",
+        "district":  "Racine",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Casablanca Racine",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-008",
+        "city":  "Casablanca",
+        "district":  "Racine",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Casablanca Racine",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-009",
+        "city":  "Casablanca",
+        "district":  "Bourgogne",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Casablanca Bourgogne",
+        "priority":  "high",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-010",
+        "city":  "Casablanca",
+        "district":  "Bourgogne",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Casablanca Bourgogne",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-011",
+        "city":  "Casablanca",
+        "district":  "Bourgogne",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Casablanca Bourgogne",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-012",
+        "city":  "Casablanca",
+        "district":  "Bourgogne",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Casablanca Bourgogne",
+        "priority":  "medium",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-013",
+        "city":  "Casablanca",
+        "district":  "Gauthier",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Casablanca Gauthier",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-014",
+        "city":  "Casablanca",
+        "district":  "Gauthier",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Casablanca Gauthier",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-015",
+        "city":  "Casablanca",
+        "district":  "Gauthier",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Casablanca Gauthier",
+        "priority":  "medium",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-016",
+        "city":  "Casablanca",
+        "district":  "Gauthier",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Casablanca Gauthier",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-017",
+        "city":  "Casablanca",
+        "district":  "Palmier",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Casablanca Palmier",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-018",
+        "city":  "Casablanca",
+        "district":  "Palmier",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Casablanca Palmier",
+        "priority":  "high",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-019",
+        "city":  "Casablanca",
+        "district":  "Palmier",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Casablanca Palmier",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-020",
+        "city":  "Casablanca",
+        "district":  "Palmier",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Casablanca Palmier",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-021",
+        "city":  "Casablanca",
+        "district":  "Oasis",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Casablanca Oasis",
+        "priority":  "high",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-022",
+        "city":  "Casablanca",
+        "district":  "Oasis",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Casablanca Oasis",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-023",
+        "city":  "Casablanca",
+        "district":  "Oasis",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Casablanca Oasis",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-024",
+        "city":  "Casablanca",
+        "district":  "Oasis",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Casablanca Oasis",
+        "priority":  "medium",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-025",
+        "city":  "Casablanca",
+        "district":  "Californie",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Casablanca Californie",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-026",
+        "city":  "Casablanca",
+        "district":  "Californie",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Casablanca Californie",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-027",
+        "city":  "Casablanca",
+        "district":  "Californie",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Casablanca Californie",
+        "priority":  "medium",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-028",
+        "city":  "Casablanca",
+        "district":  "Californie",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Casablanca Californie",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-029",
+        "city":  "Casablanca",
+        "district":  "Ain Diab",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Casablanca Ain Diab",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-030",
+        "city":  "Casablanca",
+        "district":  "Ain Diab",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Casablanca Ain Diab",
+        "priority":  "high",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-031",
+        "city":  "Casablanca",
+        "district":  "Ain Diab",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Casablanca Ain Diab",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-032",
+        "city":  "Casablanca",
+        "district":  "Ain Diab",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Casablanca Ain Diab",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-033",
+        "city":  "Casablanca",
+        "district":  "Sidi Maarouf",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Casablanca Sidi Maarouf",
+        "priority":  "high",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-034",
+        "city":  "Casablanca",
+        "district":  "Sidi Maarouf",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Casablanca Sidi Maarouf",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-035",
+        "city":  "Casablanca",
+        "district":  "Sidi Maarouf",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Casablanca Sidi Maarouf",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-036",
+        "city":  "Casablanca",
+        "district":  "Sidi Maarouf",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Casablanca Sidi Maarouf",
+        "priority":  "medium",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-037",
+        "city":  "Casablanca",
+        "district":  "Hay Hassani",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Casablanca Hay Hassani",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-038",
+        "city":  "Casablanca",
+        "district":  "Hay Hassani",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Casablanca Hay Hassani",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-039",
+        "city":  "Casablanca",
+        "district":  "Hay Hassani",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Casablanca Hay Hassani",
+        "priority":  "medium",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-040",
+        "city":  "Casablanca",
+        "district":  "Hay Hassani",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Casablanca Hay Hassani",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-041",
+        "city":  "Rabat",
+        "district":  "Agdal",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Rabat Agdal",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-042",
+        "city":  "Rabat",
+        "district":  "Agdal",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Rabat Agdal",
+        "priority":  "high",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-043",
+        "city":  "Rabat",
+        "district":  "Agdal",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Rabat Agdal",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-044",
+        "city":  "Rabat",
+        "district":  "Agdal",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Rabat Agdal",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-045",
+        "city":  "Rabat",
+        "district":  "Hay Riad",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Rabat Hay Riad",
+        "priority":  "high",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-046",
+        "city":  "Rabat",
+        "district":  "Hay Riad",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Rabat Hay Riad",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-047",
+        "city":  "Rabat",
+        "district":  "Hay Riad",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Rabat Hay Riad",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-048",
+        "city":  "Rabat",
+        "district":  "Hay Riad",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Rabat Hay Riad",
+        "priority":  "medium",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-049",
+        "city":  "Rabat",
+        "district":  "Souissi",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Rabat Souissi",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-050",
+        "city":  "Rabat",
+        "district":  "Souissi",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Rabat Souissi",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-051",
+        "city":  "Rabat",
+        "district":  "Souissi",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Rabat Souissi",
+        "priority":  "medium",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-052",
+        "city":  "Rabat",
+        "district":  "Souissi",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Rabat Souissi",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-053",
+        "city":  "Rabat",
+        "district":  "Hassan",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Rabat Hassan",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-054",
+        "city":  "Rabat",
+        "district":  "Hassan",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Rabat Hassan",
+        "priority":  "high",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-055",
+        "city":  "Rabat",
+        "district":  "Hassan",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Rabat Hassan",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-056",
+        "city":  "Rabat",
+        "district":  "Hassan",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Rabat Hassan",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-057",
+        "city":  "Rabat",
+        "district":  "Ocean",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Rabat Ocean",
+        "priority":  "high",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-058",
+        "city":  "Rabat",
+        "district":  "Ocean",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Rabat Ocean",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-059",
+        "city":  "Rabat",
+        "district":  "Ocean",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Rabat Ocean",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-060",
+        "city":  "Rabat",
+        "district":  "Ocean",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Rabat Ocean",
+        "priority":  "medium",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-061",
+        "city":  "Rabat",
+        "district":  "Aviation",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Rabat Aviation",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-062",
+        "city":  "Rabat",
+        "district":  "Aviation",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Rabat Aviation",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-063",
+        "city":  "Rabat",
+        "district":  "Aviation",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Rabat Aviation",
+        "priority":  "medium",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-064",
+        "city":  "Rabat",
+        "district":  "Aviation",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Rabat Aviation",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-065",
+        "city":  "Rabat",
+        "district":  "Yacoub El Mansour",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Rabat Yacoub El Mansour",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-066",
+        "city":  "Rabat",
+        "district":  "Yacoub El Mansour",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Rabat Yacoub El Mansour",
+        "priority":  "high",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-067",
+        "city":  "Rabat",
+        "district":  "Yacoub El Mansour",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Rabat Yacoub El Mansour",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-068",
+        "city":  "Rabat",
+        "district":  "Yacoub El Mansour",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Rabat Yacoub El Mansour",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-069",
+        "city":  "Marrakech",
+        "district":  "Gueliz",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Marrakech Gueliz",
+        "priority":  "high",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-070",
+        "city":  "Marrakech",
+        "district":  "Gueliz",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Marrakech Gueliz",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-071",
+        "city":  "Marrakech",
+        "district":  "Gueliz",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Marrakech Gueliz",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-072",
+        "city":  "Marrakech",
+        "district":  "Gueliz",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Marrakech Gueliz",
+        "priority":  "medium",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-073",
+        "city":  "Marrakech",
+        "district":  "Hivernage",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Marrakech Hivernage",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-074",
+        "city":  "Marrakech",
+        "district":  "Hivernage",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Marrakech Hivernage",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-075",
+        "city":  "Marrakech",
+        "district":  "Hivernage",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Marrakech Hivernage",
+        "priority":  "medium",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-076",
+        "city":  "Marrakech",
+        "district":  "Hivernage",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Marrakech Hivernage",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-077",
+        "city":  "Marrakech",
+        "district":  "Targa",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Marrakech Targa",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-078",
+        "city":  "Marrakech",
+        "district":  "Targa",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Marrakech Targa",
+        "priority":  "high",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-079",
+        "city":  "Marrakech",
+        "district":  "Targa",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Marrakech Targa",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-080",
+        "city":  "Marrakech",
+        "district":  "Targa",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Marrakech Targa",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-081",
+        "city":  "Marrakech",
+        "district":  "Agdal",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Marrakech Agdal",
+        "priority":  "high",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-082",
+        "city":  "Marrakech",
+        "district":  "Agdal",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Marrakech Agdal",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-083",
+        "city":  "Marrakech",
+        "district":  "Agdal",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Marrakech Agdal",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-084",
+        "city":  "Marrakech",
+        "district":  "Agdal",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Marrakech Agdal",
+        "priority":  "medium",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-085",
+        "city":  "Marrakech",
+        "district":  "Palmeraie",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Marrakech Palmeraie",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-086",
+        "city":  "Marrakech",
+        "district":  "Palmeraie",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Marrakech Palmeraie",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-087",
+        "city":  "Marrakech",
+        "district":  "Palmeraie",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Marrakech Palmeraie",
+        "priority":  "medium",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-088",
+        "city":  "Marrakech",
+        "district":  "Palmeraie",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Marrakech Palmeraie",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-089",
+        "city":  "Marrakech",
+        "district":  "Route de Casablanca",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Marrakech Route de Casablanca",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-090",
+        "city":  "Marrakech",
+        "district":  "Route de Casablanca",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Marrakech Route de Casablanca",
+        "priority":  "high",
+        "target_domain":  "logic-immo.ma"
+    },
+    {
+        "query_id":  "oq-091",
+        "city":  "Marrakech",
+        "district":  "Route de Casablanca",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Marrakech Route de Casablanca",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-092",
+        "city":  "Marrakech",
+        "district":  "Route de Casablanca",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Marrakech Route de Casablanca",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-093",
+        "city":  "Marrakech",
+        "district":  "Route de l\u0027Ourika",
+        "transaction_type":  "sale",
+        "property_type":  "apartment",
+        "query_text":  "appartement a vendre Marrakech Route de l\u0027Ourika",
+        "priority":  "high",
+        "target_domain":  "sarouty.ma"
+    },
+    {
+        "query_id":  "oq-094",
+        "city":  "Marrakech",
+        "district":  "Route de l\u0027Ourika",
+        "transaction_type":  "rent",
+        "property_type":  "apartment",
+        "query_text":  "appartement a louer Marrakech Route de l\u0027Ourika",
+        "priority":  "high"
+    },
+    {
+        "query_id":  "oq-095",
+        "city":  "Marrakech",
+        "district":  "Route de l\u0027Ourika",
+        "transaction_type":  "sale",
+        "property_type":  "villa",
+        "query_text":  "villa a vendre Marrakech Route de l\u0027Ourika",
+        "priority":  "medium"
+    },
+    {
+        "query_id":  "oq-096",
+        "city":  "Marrakech",
+        "district":  "Route de l\u0027Ourika",
+        "transaction_type":  "rent",
+        "property_type":  "studio",
+        "query_text":  "studio location Marrakech Route de l\u0027Ourika",
+        "priority":  "medium",
+        "target_domain":  "logic-immo.ma"
+    }
+]

@@ -48,6 +48,7 @@ public/screenshots/
 data/imports/*.csv
 data/imports/*.xlsx
 data/imports/reports/*.json
+data/ingestion-runs/
 
 # OS
 .DS_Store
@@ -61,3 +62,4 @@ next-env.d.ts
 
 # Local AI tooling (UI UX Pro Max skills + local Claude settings) — not app code
 .claude/
+.env*

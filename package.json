@@ -24,6 +24,8 @@
     "audit:rabat-agdal-openserp-quality-funnel": "tsx scripts/audits/rabat-agdal-openserp-quality-funnel-audit.ts",
     "audit:classifier-reference-corpus": "tsx scripts/audits/classifier-reference-corpus-expansion.ts",
     "audit:classifier-reference-human-review": "tsx scripts/audits/classifier-reference-human-review-and-balance.ts",
+    "ingest:openserp:listings": "npx tsx scripts/ingest-openserp-listings.ts",
+    "ingest:openserp:listings:rollback": "npx tsx scripts/ingest-openserp-listings-rollback.ts",
     "test:api": "npx tsx --test scripts/scrapers/__tests__/api.test.ts scripts/scrapers/__tests__/p7-provider.test.ts scripts/scrapers/__tests__/p9-search.test.ts",
     "sync:supabase": "tsx scripts/sync-supabase.ts",
     "check:supabase": "tsx scripts/check-supabase.ts",
@@ -35,6 +37,7 @@
     "nightly:ingest": "tsx scripts/nightly-ingestion-runner.ts",
     "mubawab:expand": "tsx scripts/mubawab-depth-expansion-run.ts",
     "test:public-index": "npx tsx --test scripts/scrapers/__tests__/public-property-index.test.ts scripts/scrapers/__tests__/openserp-async.test.ts",
+    "test:openserp-ingestion": "npx tsx --test scripts/scrapers/__tests__/openserp-ingestion.test.ts",
     "test": "npm run test:scrapers && npm run test:api"
   },
   "engines": {
