@@ -1,0 +1,18 @@
+{
+  "run_1": "pilot-openserp-quality-remediation-2",
+  "run_2": "pilot-openserp-quality-remediation-2-rerun",
+  "unique_candidates_run_1": 305,
+  "unique_candidates_run_2": 300,
+  "overlapping_candidates": 242,
+  "new_candidates_run_2": 58,
+  "missing_candidates_run_2": 63,
+  "duplicate_rows_created": 0,
+  "stable_candidate_ids": true,
+  "stable_canonical_urls": true,
+  "first_seen_unchanged_on_overlap": true,
+  "last_seen_updated_on_overlap": true,
+  "seen_count_incremented_on_overlap": true,
+  "canonicalization_collisions": 0,
+  "unsafe_collisions": 0,
+  "note": "SERP coverage varied between runs, but overlapping canonical URLs kept stable candidate IDs and merged cleanly in the simulated persistent index."
+}

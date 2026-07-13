@@ -2829,3 +2829,36 @@ Impact:
 - Le commit `21d3c36` doit etre documente comme support applicatif historique
   du premier pilote malgre son message documentaire.
 - Prochaine mission: `OPENSERP-LISTING-QUALITY-REMEDIATION-2`.
+
+## 2026-07-13 - OPENSERP-LISTING-QUALITY-REMEDIATION-2
+
+Decision:
+- Conserver les regles de classification/extraction validees en remediation 1
+  et augmenter le rendement par extension maitrisee de la matrice OpenSERP v3
+  plutot que par relachement des garde-fous precision.
+- Autoriser un chemin de publication public separe pour les lignes OpenSERP
+  persistees, strictement borne par `PERSISTED_OPENSERP_LISTINGS_ENABLED=false`
+  par defaut et par des metadonnees explicites de type
+  `acquisition_provider=openserp`, `publication_lane=external_web_result`,
+  `classification_lane=individual_listing`.
+- Declarer la mission au statut `GO_FOR_FIRST_SUPABASE_WRITE` sans effectuer
+  d ecriture production dans cette mission.
+
+Reason:
+- Le dry-run final depasse les seuils de mission sans degrader la precision:
+  `315` candidats avant dedoublonnage, `305` URLs uniques, `90` candidats
+  Marrakech, `95%` de precision et `0%` de faux positifs categories.
+- Le patch de publication expose uniquement un resultat web externe borne,
+  sans usurper le statut `partner_authorized` ni ouvrir une fiche interne
+  complete.
+- L idempotence reste propre sur le recouvrement inter-run et les collisions
+  de canonicalisation restent a `0`.
+
+Impact:
+- Le prochain lot d ecriture Supabase peut etre prepare dans une mission
+  separee et plafonnee.
+- La production reste intacte: aucune ecriture DB, aucun deploiement, aucun
+  changement d alias ou de variables Production.
+- La couverture Marrakech reste inegale sur `Agdal`, `Route de Casablanca` et
+  `Autres Marrakech`, ce qui devient un point de suivi de qualite et non un
+  blocage de mission.

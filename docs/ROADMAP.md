@@ -5082,3 +5082,39 @@ Decision roadmap:
 - Pas de GO pour la premiere ecriture Supabase dans cette mission.
 - Pas de changement production, Search Gateway, Serper.dev ou SerpApi.
 - Prochaine mission unique: `OPENSERP-LISTING-QUALITY-REMEDIATION-2`.
+
+## 2026-07-13 - OPENSERP-LISTING-QUALITY-REMEDIATION-2
+
+Etat:
+- Qualification OpenSERP finalisee localement dans un worktree isole.
+- Provider live confirme: `openserp.exe` `v2.1`.
+- Dry-run complet v3 execute avec `200` requetes et `200` executees.
+- Verdict mission: `GO_FOR_FIRST_SUPABASE_WRITE`.
+- Production DB modifiee: non.
+- Production deployee: non.
+
+Mesures:
+- `raw_results=2004`
+- `individual_results_before_dedup=315`
+- `unique_individual_source_urls=305`
+- `technical_failures=0`
+- `zero_result_queries=2`
+- `individual_precision=95`
+- `category_page_false_acceptance=0`
+- `casablanca_unique_candidates=123`
+- `rabat_unique_candidates=92`
+- `marrakech_unique_candidates=90`
+
+Constat:
+- Tous les seuils GO de mission sont depasses, y compris le seuil absolu
+  Marrakech.
+- Le chemin d affichage controle des lignes OpenSERP persistees est en place
+  sous `PERSISTED_OPENSERP_LISTINGS_ENABLED=false` par defaut.
+- Aucun changement production, Search Gateway, Serper.dev ou SerpApi.
+- La couverture Marrakech reste inegale sur `Agdal`, `Route de Casablanca`
+  et `Autres Marrakech`, sans bloquer le GO de mission.
+
+Decision roadmap:
+- Premier lot Supabase autorisable dans une mission separee et plafonnee.
+- Pas d ecriture production dans cette mission.
+- Prochaine mission unique: `OPENSERP-TO-SUPABASE-FIRST-WRITE-1`.

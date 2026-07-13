@@ -11806,3 +11806,55 @@ Blocages reels:
 
 Prochaine etape:
 - `OPENSERP-LISTING-QUALITY-REMEDIATION-2`
+
+## 2026-07-13 - OPENSERP-LISTING-QUALITY-REMEDIATION-2
+
+Statut:
+- Worktree mission: `C:\\Users\\lenovo\\Documents\\AkarFinder-openserp-quality-remediation-2`
+- Base applicative: `b9989923be6e9dccd911936d3f7d6acc02d252d8`
+- Provider live confirme localement: `openserp.exe` `v2.1`
+- Dry-run complet v3 execute: oui
+- Verdict mission: `GO_FOR_FIRST_SUPABASE_WRITE`
+- Production DB modifiee: non
+- Production deployee: non
+
+Preuves principales:
+- Nouvelle matrice `data/openserp/ingestion-quality-query-matrix-v3.json` avec `200` requetes dont `69` Marrakech.
+- Full dry-run `pilot-openserp-quality-remediation-2`:
+  `queries_executed=200`, `queries_failed=0`, `zero_result_queries=2`,
+  `raw_results=2004`, `individual_results_before_dedup=315`,
+  `unique_individual_source_urls=305`.
+- Re-run idempotence `pilot-openserp-quality-remediation-2-rerun`:
+  `unique_candidates_run_1=305`, `unique_candidates_run_2=300`,
+  `overlap=242`, `duplicate_rows_created=0`, `stable_candidate_ids=true`,
+  `stable_canonical_urls=true`.
+- Couverture ville:
+  `Casablanca=123`, `Rabat=92`, `Marrakech=90`, `Unknown=0`.
+- Patch d affichage controle:
+  `PERSISTED_OPENSERP_LISTINGS_ENABLED=false` par defaut,
+  `flag_off_visible=false`, `flag_on_visible=true`,
+  `badge=external_web_result`, `partner_badge=false`.
+
+Validation:
+- `npm run test:openserp-ingestion` PASS
+- `npm test` PASS
+- `npm run build` PASS (`63/63` pages)
+- `git diff --check` PASS hors avertissements CRLF
+
+Concretement:
+- Le rendement depasse maintenant tous les seuils de GO de mission sans
+  relacher les garde-fous de precision ni les politiques anti-PII.
+- Les lignes OpenSERP persistees peuvent etre rendues sur `/search` via un
+  chemin public borne et distinct du chemin structure partenaire.
+- La preparation du premier lot Supabase dispose d un manifest local:
+  `data/openserp/first-write-candidate-manifest.json` avec `305` candidats
+  uniques et une repartition recommandee `100/50/50`.
+
+Points de suivi:
+- La couverture Marrakech reste inegale sur `Agdal=0`,
+  `Route de Casablanca=0` et `Autres Marrakech=3`, malgre `90` candidats
+  Marrakech au total. Ce point devient un suivi de qualite et non un blocage
+  pour la mission de premier write.
+
+Prochaine etape:
+- `OPENSERP-TO-SUPABASE-FIRST-WRITE-1`

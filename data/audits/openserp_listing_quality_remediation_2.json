@@ -1,0 +1,303 @@
+{
+  "mission": "OPENSERP-LISTING-QUALITY-REMEDIATION-2",
+  "provider": "openserp",
+  "provider_version": "2.1",
+  "provider_mode": "local_cli",
+  "verdict": "GO_FOR_FIRST_SUPABASE_WRITE",
+  "queries_planned": 200,
+  "queries_executed": 200,
+  "zero_result_queries": 2,
+  "technical_failures": 0,
+  "failure_rate": 0,
+  "raw_results": 2004,
+  "individual_results_before_dedup": 315,
+  "unique_individual_source_urls": 305,
+  "discovery_pages": 658,
+  "rejected_out_of_scope": 893,
+  "quarantined": 138,
+  "duplicate_individual_results": 10,
+  "canonicalization_collisions": 0,
+  "unsafe_collisions": 0,
+  "casablanca_unique_candidates": 123,
+  "rabat_unique_candidates": 92,
+  "marrakech_unique_candidates": 90,
+  "unknown_city_candidates": 0,
+  "top_marrakech_districts": [
+    [
+      "Gueliz",
+      23
+    ],
+    [
+      "Route de l'Ourika",
+      20
+    ],
+    [
+      "Hivernage",
+      18
+    ],
+    [
+      "Palmeraie",
+      17
+    ],
+    [
+      "Targa",
+      9
+    ],
+    [
+      "Autres Marrakech",
+      3
+    ]
+  ],
+  "top_marrakech_domains": [
+    [
+      "mouldar.com",
+      29
+    ],
+    [
+      "agenz.ma",
+      21
+    ],
+    [
+      "sarouty.ma",
+      15
+    ],
+    [
+      "marrakechrealty.com",
+      11
+    ],
+    [
+      "barnes-marrakech.com",
+      10
+    ],
+    [
+      "mubawab.ma",
+      2
+    ],
+    [
+      "avito.ma",
+      2
+    ]
+  ],
+  "marrakech_target_coverage": {
+    "Gueliz": 23,
+    "Hivernage": 18,
+    "Targa": 9,
+    "Agdal": 0,
+    "Palmeraie": 17,
+    "Route de Casablanca": 0,
+    "Route de l'Ourika": 20,
+    "Autres Marrakech": 3
+  },
+  "direct_source_page_fetches": 0,
+  "downloaded_images": 0,
+  "phone_hits": 0,
+  "whatsapp_hits": 0,
+  "personal_email_hits": 0,
+  "secret_hits": 0,
+  "display_patch_created": true,
+  "display_feature_flag": "PERSISTED_OPENSERP_LISTINGS_ENABLED",
+  "display_feature_flag_default": false,
+  "flag_off_visible": false,
+  "flag_on_visible": true,
+  "external_badge": "external_web_result",
+  "partner_badge_present": false,
+  "external_link_valid": true,
+  "null_image_supported": true,
+  "ranking_modified": false,
+  "first_write_manifest_created": true,
+  "recommended_batch_size": 200,
+  "estimated_new_listings": 305,
+  "estimated_updates": 0,
+  "estimated_new_sources": 305,
+  "city_distribution": {
+    "Casablanca": 123,
+    "Rabat": 92,
+    "Marrakech": 90
+  },
+  "delta_vs_remediation_1": {
+    "queries_planned": 20,
+    "queries_executed": 22,
+    "technical_failures": -2,
+    "raw_results": 320,
+    "individual_results_before_dedup": 81,
+    "unique_individual_source_urls": 77,
+    "casablanca_unique_candidates": 11,
+    "rabat_unique_candidates": 13,
+    "marrakech_unique_candidates": 53
+  },
+  "production_write_authorized": false,
+  "production_write_executed": false,
+  "production_database_modified": false,
+  "production_app_deployed": false,
+  "production_alias_modified": false,
+  "production_environment_modified": false,
+  "property_listings_after": 139,
+  "listing_sources_after": 144,
+  "quality": {
+    "precision_sample_size": 250,
+    "individual_precision": 95,
+    "category_false_acceptance": 0,
+    "city_accuracy": 100,
+    "district_accuracy": 98.25,
+    "transaction_accuracy": 99.12,
+    "property_type_accuracy": 96.49,
+    "price_extraction_accuracy": 100,
+    "surface_extraction_accuracy": 100,
+    "classifier_rules_changed": false,
+    "note": "Classifier and extraction rules were left unchanged in remediation 2; the validated corpus metrics from remediation 1 still apply."
+  },
+  "validation": {
+    "targeted_tests": "PASS",
+    "npm_test": "PASS",
+    "npm_run_build": "PASS",
+    "build_pages": "63/63",
+    "git_diff_check": "PASS"
+  },
+  "idempotence": {
+    "run_1": "pilot-openserp-quality-remediation-2",
+    "run_2": "pilot-openserp-quality-remediation-2-rerun",
+    "unique_candidates_run_1": 305,
+    "unique_candidates_run_2": 300,
+    "overlapping_candidates": 242,
+    "new_candidates_run_2": 58,
+    "missing_candidates_run_2": 63,
+    "duplicate_rows_created": 0,
+    "stable_candidate_ids": true,
+    "stable_canonical_urls": true,
+    "first_seen_unchanged_on_overlap": true,
+    "last_seen_updated_on_overlap": true,
+    "seen_count_incremented_on_overlap": true,
+    "canonicalization_collisions": 0,
+    "unsafe_collisions": 0,
+    "note": "SERP coverage varied between runs, but overlapping canonical URLs kept stable candidate IDs and merged cleanly in the simulated persistent index."
+  },
+  "smoke_run": {
+    "queries_planned": 20,
+    "queries_executed": 20,
+    "queries_failed": 0,
+    "zero_result_queries": 0,
+    "quota_errors": 0,
+    "provider_errors": 0,
+    "raw_results": 165,
+    "accepted_results": 25,
+    "rejected_results": 140,
+    "individual_candidates": 25,
+    "discovery_pages": 51,
+    "rejected_out_of_scope": 79,
+    "quarantined": 10,
+    "unique_source_urls": 25,
+    "exact_duplicates_removed": 0,
+    "cities_covered": 3,
+    "phone_hits": 0,
+    "whatsapp_hits": 0,
+    "personal_email_hits": 0,
+    "secret_hits": 0
+  },
+  "rerun_metrics": {
+    "queries_planned": 200,
+    "queries_executed": 200,
+    "queries_failed": 0,
+    "zero_result_queries": 1,
+    "quota_errors": 0,
+    "provider_errors": 0,
+    "raw_results": 2012,
+    "accepted_results": 305,
+    "rejected_results": 1707,
+    "individual_candidates": 305,
+    "discovery_pages": 666,
+    "rejected_out_of_scope": 872,
+    "quarantined": 169,
+    "unique_source_urls": 300,
+    "exact_duplicates_removed": 5,
+    "cities_covered": 3,
+    "phone_hits": 0,
+    "whatsapp_hits": 0,
+    "personal_email_hits": 0,
+    "secret_hits": 0
+  },
+  "previous_duplicates": [
+    {
+      "original_urls": [
+        "https://www.mouldar.com/en/rent/studio/casablanca/racine/eef81cd0"
+      ],
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/racine/eef81cd0",
+      "query_ids": [
+        "oqv2-011",
+        "oqv2-014"
+      ],
+      "source_domain": "mouldar.com",
+      "reason_for_duplication": "same canonical_source_url observed by multiple queries",
+      "merge_result": "merged_into_single_candidate"
+    },
+    {
+      "original_urls": [
+        "https://mouldar.com/en/rent/studio/casablanca/racine/326094e7"
+      ],
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/racine/326094e7",
+      "query_ids": [
+        "oqv2-011",
+        "oqv2-014"
+      ],
+      "source_domain": "mouldar.com",
+      "reason_for_duplication": "same canonical_source_url observed by multiple queries",
+      "merge_result": "merged_into_single_candidate"
+    },
+    {
+      "original_urls": [
+        "https://www.mouldar.com/en/rent/studio/casablanca/ain-diab/f25faa8d"
+      ],
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/ain-diab/f25faa8d",
+      "query_ids": [
+        "oqv2-046",
+        "oqv2-049"
+      ],
+      "source_domain": "mouldar.com",
+      "reason_for_duplication": "same canonical_source_url observed by multiple queries",
+      "merge_result": "merged_into_single_candidate"
+    },
+    {
+      "original_urls": [
+        "https://mouldar.com/en/rent/studio/casablanca/ain-diab/d89da29d"
+      ],
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/ain-diab/d89da29d",
+      "query_ids": [
+        "oqv2-046",
+        "oqv2-049"
+      ],
+      "source_domain": "mouldar.com",
+      "reason_for_duplication": "same canonical_source_url observed by multiple queries",
+      "merge_result": "merged_into_single_candidate"
+    },
+    {
+      "original_urls": [
+        "https://www.sarouty.ma/acheter/villa-casablanca-sidi-maarouf-865790"
+      ],
+      "canonical_url": "https://sarouty.ma/acheter/villa-casablanca-sidi-maarouf-865790",
+      "query_ids": [
+        "oqv2-052",
+        "oqv2-055"
+      ],
+      "source_domain": "sarouty.ma",
+      "reason_for_duplication": "same canonical_source_url observed by multiple queries",
+      "merge_result": "merged_into_single_candidate"
+    },
+    {
+      "original_urls": [
+        "https://mouldar.com/en/rent/studio/marrakech"
+      ],
+      "canonical_url": "https://mouldar.com/en/rent/studio/marrakech",
+      "query_ids": [
+        "oqv2-126",
+        "oqv2-154"
+      ],
+      "source_domain": "mouldar.com",
+      "reason_for_duplication": "same canonical_source_url observed by multiple queries",
+      "merge_result": "merged_into_single_candidate"
+    }
+  ],
+  "verdict_candidate": "GO_FOR_FIRST_SUPABASE_WRITE",
+  "remaining_notes": [
+    "Mission GO criteria are satisfied.",
+    "Marrakech absolute threshold is exceeded, but the exploratory district coverage targets remain uneven: Agdal=0, Route de Casablanca=0, Autres Marrakech=3."
+  ]
+}

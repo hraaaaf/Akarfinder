@@ -1,0 +1,19 @@
+{
+  "flag_off_visible": false,
+  "flag_on_visible": true,
+  "raw_guard_off": false,
+  "raw_guard_on": true,
+  "mapped_guard_on": true,
+  "badge": "external_web_result",
+  "partner_badge": false,
+  "external_link_valid": true,
+  "null_image_supported": true,
+  "source_name": "Agenz",
+  "source_display_type": "external_web_result",
+  "original_source_required": true,
+  "allowed_ctas": [
+    "view_original",
+    "view_source",
+    "compare"
+  ]
+}

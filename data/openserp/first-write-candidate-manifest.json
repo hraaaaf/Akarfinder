@@ -1,0 +1,36 @@
+{
+  "run_id": "pilot-openserp-quality-remediation-2",
+  "candidate_count": 305,
+  "unique_listing_ids": 305,
+  "unique_source_urls": 305,
+  "city_distribution": {
+    "Casablanca": 123,
+    "Rabat": 92,
+    "Marrakech": 90
+  },
+  "source_distribution": {
+    "mouldar.com": 83,
+    "1immo.ma": 3,
+    "avito.ma": 5,
+    "sarouty.ma": 52,
+    "mubawab.ma": 44,
+    "century21casa.immo": 1,
+    "agenz.ma": 93,
+    "dozbi3.com": 1,
+    "facebook.com": 1,
+    "immo101.ma": 1,
+    "marrakechrealty.com": 11,
+    "barnes-marrakech.com": 10
+  },
+  "new_listing_estimate": 305,
+  "existing_listing_update_estimate": 0,
+  "new_source_estimate": 305,
+  "quarantine_count": 138,
+  "rejected_count": 893,
+  "recommended_batch_size": 200,
+  "recommended_city_distribution": {
+    "Casablanca": 100,
+    "Rabat": 50,
+    "Marrakech": 50
+  }
+}

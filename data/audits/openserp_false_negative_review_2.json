@@ -1,0 +1,454 @@
+{
+  "mission": "OPENSERP-LISTING-QUALITY-REMEDIATION-2",
+  "sample_size": 30,
+  "review_rows": [
+    {
+      "url": "https://agenz.ma/fr/louer/location-appartements",
+      "title": "1378 Appartements à louer partout au Maroc agenz",
+      "snippet": "Appartements à louer à Maroc 1 378 annonces exclusives et vérifiées par nos équipes. Trouvez votre bien en confiance sur Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "plural_count_pattern"
+      ],
+      "negative_signals": [
+        "discovery_path",
+        "discovery_token"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://1immo.ma/s/boujdour/appartement/appartement-a-louer",
+      "title": "Appartement à louer Boujdour Appartement OneImmo",
+      "snippet": "Appartement à louer Boujdour Appartement trouvez votre logement au Maroc sur OneImmo",
+      "current_lane": "quarantine",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [],
+      "negative_signals": [
+        "insufficient_detail_signals"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/fr/louer/immo-casablanca/location-appartements/maarif",
+      "title": "37 Appartements à louer à Maârif Casablanca agenz",
+      "snippet": "Appartements à louer à Maârif Casablanca 37 annonces exclusives et vérifiées par nos équipes. Trouvez votre bien en confiance sur Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "plural_count_pattern",
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path",
+        "discovery_token"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://mouldar.com/fr/location/appartement/casablanca/maarif",
+      "title": "Appartements à louer à Casablanca Maarif mouldar.com",
+      "snippet": "Cet appartement à louer est situé dans le quartier calme et recherché de Maarif Biranzarane à Casablanca. D'une superficie de 118 m² il offre un cadre de vie agréable et confortable.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "explicit_city",
+        "explicit_district",
+        "surface_signal"
+      ],
+      "negative_signals": [
+        "discovery_path",
+        "discovery_token"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/en/acheter/vente-villas",
+      "title": "942 Villas for sale throughout Morocco agenz",
+      "snippet": "Villas for sale in Morocco 942 listings exclusive listings verified by our team. Find your property with confidence on Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "plural_count_pattern"
+      ],
+      "negative_signals": [
+        "discovery_path"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/fr/louer/immo-casablanca/location-studios/maarif",
+      "title": "16 Studios à louer à Maârif Casablanca agenz",
+      "snippet": "Studios à louer à Maârif Casablanca 16 annonces exclusives et vérifiées par nos équipes. Trouvez votre bien en confiance sur Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "plural_count_pattern",
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/en/louer/immo-casablanca/location-studios/maarif",
+      "title": "16 Studios for rent in Maârif Casablanca agenz",
+      "snippet": "Studios for rent in Maârif Casablanca 16 listings exclusive listings verified by our team. Find your property with confidence on Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "plural_count_pattern",
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://mouldar.com/fr/location/studio/casablanca/maarif",
+      "title": "Studios à louer à Casablanca Maarif mouldar.com",
+      "snippet": "Découvrez des studios à louer à Casablanca Maarif. Trouvez votre logement idéal sur Mouldar !",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://mouldar.com/en/rent/studio/casablanca/maarif",
+      "title": "Explore 42 studios for rent in Casablanca Maarif mouldar.com",
+      "snippet": "Modern studio for rent in Maarif Casablanca Cozy 45m² Located in Casablanca in the lively Maarif area this studio is ideal for those seeking comfort and convenience.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "plural_count_pattern",
+        "explicit_city",
+        "explicit_district",
+        "surface_signal"
+      ],
+      "negative_signals": [
+        "discovery_path"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/fr/acheter/immo-casablanca/vente-appartements/maarif",
+      "title": "134 Appartements à vendre à Maârif Casablanca agenz",
+      "snippet": "Appartements à vendre à Maârif Casablanca 134 annonces exclusives et vérifiées par nos équipes. Trouvez votre bien en confiance sur Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "plural_count_pattern",
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path",
+        "discovery_token"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/fr/acheter/immo-casablanca/vente-appartements/132-appartements-a-vendre-a-maarif---casablanca---agenz",
+      "title": "Appartements à vendre à 132 Appartements A Vendre A Maarif Casablanc",
+      "snippet": "Appartements à vendre à 132 Appartements A Vendre A Maarif Casablanca Agenz Casablanca exclusives et vérifiées par nos équipes. Trouvez votre bien en confiance sur Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "plural_count_pattern",
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path",
+        "discovery_token"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/fr/acheter/immo-casablanca/vente-appartements/maarif-extension",
+      "title": "48 Appartements à vendre à Maârif Extension Casablanca agenz",
+      "snippet": "Appartements à vendre à Maârif Extension Casablanca 48 annonces exclusives et vérifiées par nos équipes. Trouvez votre bien en confiance sur Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "plural_count_pattern",
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path",
+        "discovery_token"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/fr/acheter/immo-casablanca/vente-appartements/131-apartments-for-sale-in-maarif-casablanca-agenz",
+      "title": "Appartements à vendre à 131 Apartments For Sale In Maarif Casablanca A",
+      "snippet": "Appartements à vendre à 131 Apartments For Sale In Maarif Casablanca Agenz Fès exclusives et vérifiées par nos équipes. Trouvez votre bien en confiance sur Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path",
+        "discovery_token"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/en/acheter/immo-casablanca/vente-appartements/maarif",
+      "title": "134 Apartments for sale in Maârif Casablanca agenz",
+      "snippet": "Apartments for sale in Maârif Casablanca 134 listings exclusive listings verified by our team. Find your property with confidence on Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/es/acheter/immo-casablanca/vente-appartements/maarif",
+      "title": "132 Apartamentos en venta a Maârif Casablanca agenz",
+      "snippet": "Apartamentos en venta a Maârif Casablanca 132 anuncios exclusivos y verificados por nuestro equipo. Encuentra tu propiedad con confianza en Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/fr/acheter/immo-casablanca/vente-appartements",
+      "title": "1762 Appartements à vendre à Casablanca agenz",
+      "snippet": "Appartements à vendre à Casablanca 1 762 annonces exclusives et vérifiées par nos équipes. Trouvez votre bien en confiance sur Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "plural_count_pattern",
+        "explicit_city"
+      ],
+      "negative_signals": [
+        "discovery_path",
+        "discovery_token"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/en/acheter/immo-casablanca/vente-appartements/maarif-extension",
+      "title": "48 Apartments for sale in Maârif Extension Casablanca agenz",
+      "snippet": "Apartments for sale in Maârif Extension Casablanca 48 listings exclusive listings verified by our team. Find your property with confidence on Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/fr/acheter/immo-casablanca/vente-studios/maarif",
+      "title": "15 Studios à vendre à Maârif Casablanca agenz",
+      "snippet": "Studios à vendre à Maârif Casablanca 15 annonces exclusives et vérifiées par nos équipes. Trouvez votre bien en confiance sur Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "plural_count_pattern",
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://agenz.ma/fr/acheter/immo-casablanca/vente-appartements/el-maarif",
+      "title": "Appartements à vendre à El Maarif Casablanca agenz.ma",
+      "snippet": "Appartements à vendre à El Maarif Casablanca exclusives et vérifiées par nos équipes. Trouvez votre bien en confiance sur Agenz.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path",
+        "discovery_token"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://sarouty.ma/acheter/casablanca/villas-a-vendre",
+      "title": "Villas à vendre au Casablanca Sarouty.ma",
+      "snippet": "Trouvez des Villas à vendre à Casablanca appartements villas maisons et terrains. Consultez les annonces vérifiées avec photos HD prix et localisation précise.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "explicit_city"
+      ],
+      "negative_signals": [
+        "discovery_path",
+        "discovery_token"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://sarouty.ma/acheter/casablanca/proprietes-a-vendre",
+      "title": "Propriétés à vendre à Casablanca Sarouty",
+      "snippet": "Trouvez des Propriétés à vendre à Casablanca appartements villas maisons et terrains. Consultez les annonces vérifiées avec photos HD prix et localisation précise.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "explicit_city"
+      ],
+      "negative_signals": [
+        "discovery_path"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://sarouty.ma/acheter/casablanca/maarif-extension/proprietes-a-vendre",
+      "title": "Propriétés à vendre à Maarif Extension Casablanca Sarouty.ma",
+      "snippet": "Trouvez des Propriétés à vendre à Maarif Extension Casablanca appartements villas maisons et terrains. Consultez les annonces vérifiées avec photos HD prix et localisation précise.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://sarouty.ma/acheter/casablanca/maarif/immobilier-neuf-a-vendre",
+      "title": "Immobilier Neuf à vendre au Maarif Casablanca Sarouty.ma",
+      "snippet": "Trouvez des Immobilier Neuf à vendre à Maarif Casablanca appartements villas maisons et terrains. Consultez les annonces vérifiées avec photos HD prix et localisation précise.",
+      "current_lane": "reject_out_of_scope",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "out_of_scope_token"
+      ],
+      "negative_signals": [],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://sarouty.ma/acheter/casablanca/maarif-extension",
+      "title": "Propriétés à vendre à Maarif Extension Casablanca Appartements ...",
+      "snippet": "Découvrez des propriétés à vendre à Maarif Extension Casablanca appartements villas maisons et bureaux. Annonces vérifiées avec photos HD prix et localisation dans les meilleurs quartiers.",
+      "current_lane": "quarantine",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "insufficient_detail_signals"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://sarouty.ma/acheter/villas-a-vendre",
+      "title": "Villas à vendre Sarouty.ma",
+      "snippet": "Découvrez des Villas à vendre au Maroc appartements villas maisons et terrains. Annonces vérifiées photos HD et outils de recherche avancés pour trouver votre futur bien.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [],
+      "negative_signals": [
+        "discovery_token"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://sarouty.ma/",
+      "title": "Acheter Louer ou Vendre un Bien Immobilier au Maroc Sarouty.ma",
+      "snippet": "Découvrez Sarouty.ma le site immobilier n°1 au Maroc. Trouvez des appartements villas et bureaux à vendre ou à louer partout au Maroc avec des agents de confiance.",
+      "current_lane": "reject_out_of_scope",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "out_of_scope_token"
+      ],
+      "negative_signals": [],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://sarouty.ma/acheter/villa-casablanca-maarif-903634",
+      "title": "VENTE VILLA A DÉTRUIRE RIVIERA Sarouty",
+      "snippet": "À Vendre Élégante Villa de Plain Pied à Riviera Casablanca Cantarel Immobilier vous propose cette magnifique villa de plain pied idéalement située dans …",
+      "current_lane": "reject_out_of_scope",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "out_of_scope_token"
+      ],
+      "negative_signals": [],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://sarouty.ma/en",
+      "title": "Sarouty.ma Real Estate in Morocco Buy Sell and Rent Properties",
+      "snippet": "Feb 20 2026Discover the best real estate deals in Morocco. Find apartments villas and offices for sale or rent on Sarouty.ma the No. 1 real estate portal.",
+      "current_lane": "quarantine",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [],
+      "negative_signals": [
+        "insufficient_detail_signals"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://mouldar.com/fr/location/studio/casablanca/maarif",
+      "title": "Studios à louer à Casablanca Maarif mouldar.com",
+      "snippet": "Découvrez des studios à louer à Casablanca Maarif. Trouvez votre logement idéal sur Mouldar !",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "explicit_city",
+        "explicit_district"
+      ],
+      "negative_signals": [
+        "discovery_path"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    },
+    {
+      "url": "https://mouldar.com/en/rent/studio/casablanca/maarif",
+      "title": "Explore 42 studios for rent in Casablanca Maarif mouldar.com",
+      "snippet": "Modern studio for rent in Maarif Casablanca Cozy 45m² Located in Casablanca in the lively Maarif area this studio is ideal for those seeking comfort and convenience.",
+      "current_lane": "discovery_page",
+      "expected_lane": "manual_review_required",
+      "positive_signals": [
+        "plural_count_pattern",
+        "explicit_city",
+        "explicit_district",
+        "surface_signal"
+      ],
+      "negative_signals": [
+        "discovery_path"
+      ],
+      "reason_for_misclassification": "Review sample retained for audit; classifier rules intentionally unchanged in remediation 2 to preserve precision."
+    }
+  ]
+}
