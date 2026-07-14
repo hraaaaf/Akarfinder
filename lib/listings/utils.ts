@@ -27,7 +27,11 @@ export const defaultListingFilters: ListingFiltersState = {
   packageScore: "all"
 };
 
-export function formatPrice(price: number, currency = "DH") {
+export function formatPrice(price: number | null | undefined, currency = "DH") {
+  if (!Number.isFinite(price) || price == null || price <= 0) {
+    return "Prix non communique";
+  }
+
   return `${new Intl.NumberFormat("fr-FR").format(price)} ${currency}`;
 }
 

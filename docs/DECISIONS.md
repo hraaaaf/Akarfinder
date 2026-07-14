@@ -2950,3 +2950,14 @@ Reason:
 Impact:
 - Les resultats OpenSERP persistants sont maintenant visibles sur l alias public comme `Resultat web externe`.
 - Le rollback immediat conserve le flag OFF comme premier niveau et `dpl_55mag9XN1U6qKmyr2HWA6P5hK1iw` comme second niveau.
+
+## 2026-07-14 - OPENSERP-MISSING-PRICE-DISPLAY-FIX-1
+
+Decision:
+- Un prix absent du read model ne doit jamais etre rendu comme `0 DH`; le libelle public devient `Prix non communique`.
+
+Reason:
+- Le SERP ne fournit pas toujours le montant present sur la page source. Sans collecte autorisee de cette page, `0` est un sentinel technique et non un prix.
+
+Impact:
+- Les montants extraits restent inchanges. Les annonces sans montant affiche gardent une presentation prudente, sans ecriture Supabase ni changement du pipeline OpenSERP.

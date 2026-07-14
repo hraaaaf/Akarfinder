@@ -11998,3 +11998,20 @@ Rollback:
 
 Prochaine etape:
 - Mission de suivi produit et qualite du stock OpenSERP, sans modifier ce rollback.
+
+## 2026-07-14 - OPENSERP-MISSING-PRICE-DISPLAY-FIX-1
+
+Statut:
+- Correctif local valide; deploiement Production non execute.
+
+Constat:
+- Les resultats SERP OpenSERP dont le prix n est pas present dans le titre ou le snippet etaient normalises a `0` par le read model puis affiches comme `0 DH`.
+
+Decision:
+- Conserver les montants valides et afficher `Prix non communique` pour un prix absent, nul, negatif ou non fini.
+- Ne pas recuperer le montant depuis une page source: cette mission ne fait ni scraping direct ni ecriture Supabase.
+
+Validation:
+- `npm run test:api`: PASS, 53 tests.
+- `npm run test:openserp-ingestion`: PASS, 20 tests.
+- `npm run build`: PASS, 63/63 pages.

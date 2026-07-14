@@ -11,11 +11,24 @@ import {
   queryDbListings,
 } from "../../../lib/listings/db-listings.js";
 import { mapDbRowToListing } from "../../../lib/listings/map-db-listing.js";
+import { formatPrice } from "../../../lib/listings/utils.js";
 import type { ScrapedListingP0 } from "../types.js";
 
 const tmpFiles: string[] = [];
 const savedThirdPartyDbIngestion = process.env.THIRD_PARTY_DB_INGESTION_ENABLED;
 process.env.THIRD_PARTY_DB_INGESTION_ENABLED = "true";
+
+describe("public price formatting", () => {
+  it("never renders a missing or invalid price as 0 DH", () => {
+    assert.equal(formatPrice(null), "Prix non communique");
+    assert.equal(formatPrice(0), "Prix non communique");
+    assert.equal(formatPrice(-1), "Prix non communique");
+  });
+
+  it("preserves valid prices", () => {
+    assert.match(formatPrice(7_500), /7.*500 DH/);
+  });
+});
 
 after(async () => {
   for (const filePath of tmpFiles) {
