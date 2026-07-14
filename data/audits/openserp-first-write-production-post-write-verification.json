@@ -1,0 +1,50 @@
+{
+  "run_id": "openserp-first-write-2026-07-13-01",
+  "verified_at_utc": "2026-07-14T10:44:29.214Z",
+  "counts": {
+    "property_listings_after": 316,
+    "listing_sources_after": 321,
+    "openserp_property_listings_after": 177,
+    "openserp_listing_sources_after": 177
+  },
+  "changes": {
+    "new_property_listings": 177,
+    "updated_property_listings": 0,
+    "new_listing_sources": 177,
+    "updated_listing_sources": 0,
+    "skipped_candidates": 3,
+    "failed_writes": 0
+  },
+  "integrity": {
+    "orphan_sources": 0,
+    "orphan_openserp_listings": 0,
+    "duplicate_canonical_urls": 0,
+    "unsafe_collisions": 0,
+    "partner_rows_overwritten": 0,
+    "unknown_city_inserted": 0,
+    "invalid_metadata_rows": 0
+  },
+  "security": {
+    "phone_hits": 0,
+    "whatsapp_hits": 0,
+    "personal_email_hits": 0,
+    "secret_hits": 0,
+    "unsafe_url_hits": 0,
+    "downloaded_images": 0
+  },
+  "observations": {
+    "table_available": true,
+    "observations_created": 0,
+    "observations_updated": 0,
+    "observation_count": 0
+  },
+  "idempotence": {
+    "post_write_dry_run_executed": true,
+    "new_listings_on_second_run": 0,
+    "new_sources_on_second_run": 0,
+    "duplicate_rows_created": 0,
+    "stable_listing_ids": true,
+    "stable_source_keys": true
+  },
+  "row_id_checksum": "dc5a1c34acfb206b9912f04eaa253eb72e454ea806f20ed1f68d8db30b2fec3f"
+}
