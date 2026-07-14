@@ -2912,3 +2912,16 @@ Reason:
 Impact:
 - Le futur write doit utiliser le manifest de run et refaire les controles
   live de schema, collisions et comptages immediatement avant execution.
+
+## 2026-07-14 - OPENSERP-FIRST-WRITE-EXECUTE-1
+
+Decision:
+- Executer un premier lot unique de `177` annonces OpenSERP conformes depuis le manifeste verrouille, puis conserver leur affichage public Production desactive jusqu a une mission d activation distincte.
+
+Reason:
+- Le write a ajoute `177` listings et `177` sources sans echec, orphelin, doublon canonique, collision dangereuse ou ecrasement partenaire. Le dry-run post-write confirme l idempotence.
+- La Preview Supabase avec flag active rend les resultats web externes pour Casablanca, Rabat et Marrakech. Le flag Production reste absent et donc desactive.
+
+Impact:
+- La base Production contient le premier stock OpenSERP controle, mais ce stock reste invisible sur l alias public.
+- Les controles responsive et console navigateur restent a repeter pendant l activation, car le navigateur integre n etait pas attachable ici.

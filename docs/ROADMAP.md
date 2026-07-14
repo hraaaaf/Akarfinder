@@ -5159,3 +5159,14 @@ Decision roadmap:
 - Le lot source de `180` reste verrouille; trois lignes hors plage `INTEGER`
   sont des exclusions explicites et le lot executable est de `177`.
 - Prochaine mission unique: `OPENSERP-FIRST-WRITE-EXECUTE-1`.
+
+## 2026-07-14 - OPENSERP-FIRST-WRITE-EXECUTE-1
+
+Etat:
+- Premier lot OpenSERP ecrit dans Supabase Production: `177` listings et `177` sources.
+- Production publique: affichage OpenSERP toujours desactive.
+- Preview Supabase validee avec `PERSISTED_OPENSERP_LISTINGS_ENABLED=true`.
+- Verdict: `GO_FOR_DISPLAY_PROD_ACTIVATION`.
+
+Prochaine mission unique:
+- `OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1`.

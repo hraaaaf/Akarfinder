@@ -11934,3 +11934,28 @@ Decision:
 
 Prochaine etape:
 - `OPENSERP-FIRST-WRITE-EXECUTE-1`
+
+## 2026-07-14 - OPENSERP-FIRST-WRITE-EXECUTE-1
+
+Statut:
+- Premier write Supabase Production execute une seule fois et valide.
+- Verdict: `GO_FOR_DISPLAY_PROD_ACTIVATION`.
+- Application Production, alias et variables Production: inchanges.
+- Affichage OpenSERP Production: desactive (flag absent, donc false).
+
+Mesures:
+- Corpus verrouille: `180` candidats; `177` inserables; `3` exclusions prix hors plage PostgreSQL `INTEGER`.
+- `property_listings`: `139 -> 316`; `listing_sources`: `144 -> 321`.
+- Nouvelles lignes: `177` listings et `177` sources; echec `0`.
+- Orphelins, doublons canoniques, collisions dangereuses et ecrasements partenaire: `0`.
+- Dry-run post-write: `0` nouvelle ligne et identites stables.
+
+Preview:
+- Deployment valide: `dpl_B33hAB933bxPQieesncrSXDsSxyM`.
+- Commit chaine de preuve: `bb27b1a5362c04d550be1ab4d46ebe5b9fff2040`.
+- Flag Preview: `PERSISTED_OPENSERP_LISTINGS_ENABLED=true`.
+- Resultats API externes: Casablanca `45`, Rabat `35`, Marrakech `20`.
+- Le navigateur integre n a pas pu attacher sa webview; responsive et console navigateur restent a refaire, sans etre annonces comme valides.
+
+Prochaine etape:
+- `OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1`

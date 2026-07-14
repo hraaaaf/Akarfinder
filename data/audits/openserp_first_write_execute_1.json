@@ -1,0 +1,17 @@
+{
+  "mission": "OPENSERP-FIRST-WRITE-EXECUTE-1",
+  "verified_at": "2026-07-14T11:57:41+01:00",
+  "source_run_id": "pilot-openserp-quality-remediation-2",
+  "first_write_run_id": "openserp-first-write-2026-07-13-01",
+  "locked_manifest": {"manifest_sha256":"cf03e16422e91fcb29d1f518fdc5ffd2dec1bb45b4b97155758ef16471f602f8","candidate_file_sha256":"1ec8d0a0cb76cb6bfc518832e003aa5e2d301a296d064698ccf5df618d75a3a9","candidate_count":180,"selected_count":177,"explicit_skips":3,"selection_algorithm_version":"first-write-locked-v1"},
+  "pre_write": {"property_listings":139,"listing_sources":144,"openserp_property_listings":0,"openserp_listing_sources":0,"collisions":0,"pii_hits":0,"unsafe_url_hits":0},
+  "write": {"production_write_executed":true,"new_property_listings":177,"updated_property_listings":0,"new_listing_sources":177,"updated_listing_sources":0,"failed_writes":0,"write_cap_respected":true},
+  "post_write": {"property_listings":316,"listing_sources":321,"openserp_property_listings":177,"openserp_listing_sources":177,"orphan_sources":0,"orphan_openserp_listings":0,"duplicate_canonical_urls":0,"unsafe_collisions":0,"partner_rows_overwritten":0,"unknown_city_inserted":0,"invalid_metadata_rows":0,"listing_observations_created":0,"listing_observations_updated":0},
+  "idempotence": {"post_write_dry_run_executed":true,"new_listings_on_second_run":0,"new_sources_on_second_run":0,"duplicate_rows_created":0,"stable_listing_ids":true,"stable_source_keys":true},
+  "preview": {"deployment_id":"dpl_B33hAB933bxPQieesncrSXDsSxyM","url":"https://akarfinder-bu2a5ug76-achraf-benmoussa-s-projects.vercel.app","inspect_url":"https://vercel.com/achraf-benmoussa-s-projects/akarfinder/B33hAB933bxPQieesncrSXDsSxyM","commit_sha":"bb27b1a5362c04d550be1ab4d46ebe5b9fff2040","environment_scope":"preview","persisted_openserp_flag":true,"database_provider":"supabase","city_api_results":{"casablanca":45,"rabat":35,"marrakech":20},"external_badge_api_model":true,"partner_badge_on_external":false,"external_urls_safe":true,"browser_responsive_check":"not_verifiable_browser_attach_failed"},
+  "production": {"database_modified":true,"app_deployed":false,"alias_modified":false,"environment_modified":false,"persisted_openserp_flag":"absent_false","public_openserp_display":false},
+  "security": {"direct_source_page_fetches":0,"downloaded_images":0,"phone_hits":0,"whatsapp_hits":0,"personal_email_hits":0,"secret_hits":0,"unsafe_url_hits":0},
+  "rollback": {"pre_write_snapshot_created":true,"write_manifest_created":true,"rollback_manifest_created":true,"rollback_tested_in_isolation":true,"rollback_executed_in_production":false,"rollback_artifact_path":"data/ingestion-runs/openserp-first-write-2026-07-13-01/rollback-manifest.json"},
+  "verdict": "GO_FOR_DISPLAY_PROD_ACTIVATION",
+  "remaining_conditions": ["The in-app browser could not attach, so responsive and browser-console evidence is not available in this session.","Production display remains intentionally disabled until the dedicated activation mission."]
+}
