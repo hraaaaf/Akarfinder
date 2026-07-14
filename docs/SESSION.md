@@ -12015,3 +12015,21 @@ Validation:
 - `npm run test:api`: PASS, 53 tests.
 - `npm run test:openserp-ingestion`: PASS, 20 tests.
 - `npm run build`: PASS, 63/63 pages.
+
+## 2026-07-14 - OPENSERP-PRICE-ACQUISITION-REMEDIATION-1
+
+Statut:
+- Verdict: `NO_GO` pour toute collecte de prix ou ecriture d enrichissement.
+- Preview hotfix: `dpl_ufV8zBHFvvh8BeXuAxb8mSwKETZP`.
+
+Constat:
+- La Preview Rabat location appartement confirme `14` prix non acquis sur `18` resultats externes et zero rendu artificiel `0 DH`.
+- `13` candidats sans prix proviennent de Mubawab. Le registre le classe `third_party_legacy` et son `robots.txt` interdit la collecte robotisee.
+- Aucun des huit domaines selectionnes n est explicitement autorise pour un fetch cible.
+
+Impact:
+- Aucune page source, image, PII ou donnee Production n a ete ecrite ou modifiee.
+- Le prochain travail doit etablir une autorisation source ou un flux officiel avant toute extraction de prix.
+
+Prochaine etape:
+- `OPENSERP-SOURCE-PRICE-ACCESS-REVIEW-1`.

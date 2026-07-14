@@ -2961,3 +2961,15 @@ Reason:
 
 Impact:
 - Les montants extraits restent inchanges. Les annonces sans montant affiche gardent une presentation prudente, sans ecriture Supabase ni changement du pipeline OpenSERP.
+
+## 2026-07-14 - OPENSERP-PRICE-ACQUISITION-REMEDIATION-1
+
+Decision:
+- Interdire le fetch cible et toute ecriture de prix tant qu une source ne dispose pas d une autorisation explicite ou d un flux officiel.
+
+Reason:
+- Le prix manquant est une lacune d acquisition, mais les candidats Rabat concernes viennent majoritairement de Mubawab, source legacy dont les robots interdisent la collecte automatisee. Les autres domaines ne fournissent pas de preuve d autorisation suffisante.
+
+Impact:
+- `Prix non communique` reste le comportement public prudent.
+- Aucune valeur ne sera inferee ou copiee depuis une page source non autorisee.

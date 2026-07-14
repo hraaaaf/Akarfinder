@@ -5194,3 +5194,15 @@ Validation:
 - Routes publiques, SEO, API, badges externes et rendu desktop/mobile: PASS.
 - Le stock persiste reste distinct des annonces partenaires et ouvre uniquement les URLs source externes.
 - Rollback deploiement disponible: `dpl_55mag9XN1U6qKmyr2HWA6P5hK1iw`.
+
+## 2026-07-14 - OPENSERP-PRICE-ACQUISITION-REMEDIATION-1
+
+Etat:
+- Hotfix d affichage des prix absents valide en Preview.
+- Enrichissement par collecte source: `NO_GO`.
+
+Condition:
+- Une autorisation ecrite de source ou un flux officiel doit etre valide avant de planifier un pilote d acquisition de prix.
+
+Prochaine mission unique:
+- `OPENSERP-SOURCE-PRICE-ACCESS-REVIEW-1`.

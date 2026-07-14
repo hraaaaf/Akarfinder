@@ -1,0 +1,49 @@
+{
+  "mission": "OPENSERP-PRICE-ACQUISITION-REMEDIATION-1",
+  "verified_at_utc": "2026-07-14T13:00:00.000Z",
+  "status": "completed",
+  "verdict": "NO_GO",
+  "hotfix": {
+    "commit": "5c94919d54a8ca97d6dd7d6e24d788d1f580d487",
+    "preview_deployment_id": "dpl_ufV8zBHFvvh8BeXuAxb8mSwKETZP",
+    "preview_url": "https://akarfinder-l7zt57s3c-achraf-benmoussa-s-projects.vercel.app",
+    "missing_price_label_visible": true,
+    "artificial_zero_dh_hits": 0
+  },
+  "pilot_scope": {
+    "city": "Rabat",
+    "transaction_type": "rent",
+    "property_type": "apartment",
+    "external_results": 18,
+    "missing_prices": 14,
+    "mubawab_missing_price_candidates": 13,
+    "pages_requested": 0,
+    "pages_success": 0
+  },
+  "source_policy": {
+    "allowed_targeted_fetch": [],
+    "blocked": ["mubawab.ma", "mouldar.com", "sarouty.ma", "avito.ma", "agenz.ma", "barnes-marrakech.com"],
+    "needs_legal_review": ["1immo.ma", "marrakechrealty.com"],
+    "robots_checked": true,
+    "source_page_fetches": 0
+  },
+  "extraction": {
+    "json_ld_hits": 0,
+    "embedded_state_hits": 0,
+    "dom_hits": 0,
+    "prices_found": 0,
+    "prices_valid": 0,
+    "prices_ambiguous": 0,
+    "prices_rejected": 0,
+    "pii_hits": 0,
+    "downloaded_images": 0
+  },
+  "production": {
+    "database_modified": false,
+    "application_deployed": false,
+    "flag_modified": false,
+    "gateway_modified": false,
+    "ranking_modified": false
+  },
+  "next_mission": "OPENSERP-SOURCE-PRICE-ACCESS-REVIEW-1"
+}
