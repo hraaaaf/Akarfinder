@@ -393,7 +393,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                 const total = filteredListings.length + gatewayResults.length;
                 return gatewayEnabled
                   ? `${total} résultat${total !== 1 ? "s" : ""}`
-                  : `${filteredListings.length} annonce${filteredListings.length !== 1 ? "s" : ""} partenaire${filteredListings.length !== 1 ? "s" : ""}`;
+                  : `${partnerListings.length} annonce${partnerListings.length !== 1 ? "s" : ""} partenaire${partnerListings.length !== 1 ? "s" : ""}`;
               })()}
             </span>
           </div>
@@ -422,14 +422,15 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                     ? `Résultats pour "${filters.search.trim()}"${filters.city !== "all" ? ` à ${filters.city}` : ""}`
                     : gatewayEnabled
                       ? `Résultats immobiliers à ${displayCity}`
-                      : `${filteredListings.length} annonce${filteredListings.length !== 1 ? "s" : ""} partenaire${filteredListings.length !== 1 ? "s" : ""} à ${displayCity}`}
+                      : `${partnerListings.length} annonce${partnerListings.length !== 1 ? "s" : ""} partenaire${partnerListings.length !== 1 ? "s" : ""} à ${displayCity}`}
                 </span>
               </p>
               <p className="mt-0.5 line-clamp-1 text-[12.5px] font-medium text-muted-foreground sm:text-[13.5px]">
                 {filters.search.trim()
                   ? ([
                       gatewayResults.length > 0 && `${gatewayResults.length} résultat${gatewayResults.length !== 1 ? "s" : ""} web`,
-                      filteredListings.length > 0 && `${filteredListings.length} annonce${filteredListings.length !== 1 ? "s" : ""} partenaire`,
+                      persistedExternalListings.length > 0 && `${persistedExternalListings.length} résultat${persistedExternalListings.length !== 1 ? "s" : ""} web indexé${persistedExternalListings.length !== 1 ? "s" : ""}`,
+                      partnerListings.length > 0 && `${partnerListings.length} annonce${partnerListings.length !== 1 ? "s" : ""} partenaire`,
                     ].filter(Boolean).join(" · ") || (isGatewayLoading || isLoading ? "Recherche en cours…" : ""))
                   : `${getIntentLabel(filters.transactionType)} · tri ${sortBy === "recommended" ? "recommandé" : sortBy === "reliability" ? "fiabilité" : sortBy === "price-asc" ? "prix ↑" : "prix ↓"}`}
               </p>
