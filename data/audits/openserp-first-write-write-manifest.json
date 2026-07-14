@@ -1,0 +1,1643 @@
+{
+  "run_id": "openserp-first-write-2026-07-13-01",
+  "manifest_sha256": "cf03e16422e91fcb29d1f518fdc5ffd2dec1bb45b4b97155758ef16471f602f8",
+  "selection_algorithm_version": "openserp-first-write-v1",
+  "selected_count": 180,
+  "writeable_count": 177,
+  "skipped_candidates": [
+    {
+      "candidate_id": "openserp_f72b58cab3ea73ad",
+      "reason": "price_mad_out_of_postgresql_integer_range"
+    },
+    {
+      "candidate_id": "openserp_e4dfe7c139ff1781",
+      "reason": "price_mad_out_of_postgresql_integer_range"
+    },
+    {
+      "candidate_id": "openserp_a858390f0576afcb",
+      "reason": "price_mad_out_of_postgresql_integer_range"
+    }
+  ],
+  "operations": [
+    {
+      "candidate_id": "openserp_f72b58cab3ea73ad",
+      "future_listing_id": null,
+      "future_source_key": "https://1immo.ma/s/casablanca/racine/appartement-a-vendre",
+      "canonical_url": "https://1immo.ma/s/casablanca/racine/appartement-a-vendre",
+      "source_host": "1immo.ma",
+      "operation": "skip",
+      "reason": "price_mad_out_of_postgresql_integer_range"
+    },
+    {
+      "candidate_id": "openserp_ee22c0d7ef25dc43",
+      "future_listing_id": 140,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/californie/333785",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/californie/333785",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_b8c8ba9ab28602b2",
+      "future_listing_id": 141,
+      "future_source_key": "https://avito.ma/fr/palmier/appartements/Location_studio_meubl%C3%A9_Palmier_57754809.htm",
+      "canonical_url": "https://avito.ma/fr/palmier/appartements/Location_studio_meubl%C3%A9_Palmier_57754809.htm",
+      "source_host": "avito.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_68a64394b5f74302",
+      "future_listing_id": 142,
+      "future_source_key": "https://mouldar.com/en/rent/studio/casablanca/maarif/b2a030c6",
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/maarif/b2a030c6",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_88631d8c8785bf69",
+      "future_listing_id": 143,
+      "future_source_key": "https://mubawab.ma/fr/is/studio-location_casablanca_palmier_545",
+      "canonical_url": "https://mubawab.ma/fr/is/studio-location_casablanca_palmier_545",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_59446a5b3d01811b",
+      "future_listing_id": 144,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-hay-hassani-887660.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-hay-hassani-887660.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_a6867457ad07c9ed",
+      "future_listing_id": 145,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/569193",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/569193",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_fc6eb092a06f38fd",
+      "future_listing_id": 146,
+      "future_source_key": "https://avito.ma/fr/racine/appartements/Studio_meubl%C3%A9_en_location_%C3%A0_Racine_5500_dh_56938509.htm",
+      "canonical_url": "https://avito.ma/fr/racine/appartements/Studio_meubl%C3%A9_en_location_%C3%A0_Racine_5500_dh_56938509.htm",
+      "source_host": "avito.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_bf7591be538c967b",
+      "future_listing_id": 147,
+      "future_source_key": "https://mouldar.com/fr/pro/casablanca-loyer-8741/location/studio/casablanca/oasis",
+      "canonical_url": "https://mouldar.com/fr/pro/casablanca-loyer-8741/location/studio/casablanca/oasis",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_2b341ae403dfb5fb",
+      "future_listing_id": 148,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-vente_casablanca_gauthier_titre",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-vente_casablanca_gauthier_titre",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_486537ac8921eb42",
+      "future_listing_id": 149,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-californie-896799.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-californie-896799.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_98f7aa3594c65cbf",
+      "future_listing_id": 150,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/gauthier/104848",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/gauthier/104848",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_e7d03f786f426231",
+      "future_listing_id": 151,
+      "future_source_key": "https://avito.ma/fr/palmier/appartements/Studio_meubl%C3%A9_%C3%A0_Palmier_57996895.htm",
+      "canonical_url": "https://avito.ma/fr/palmier/appartements/Studio_meubl%C3%A9_%C3%A0_Palmier_57996895.htm",
+      "source_host": "avito.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_a59147132b4df3f5",
+      "future_listing_id": 152,
+      "future_source_key": "https://mouldar.com/fr/location/studio/casablanca/maarif/b90f2686",
+      "canonical_url": "https://mouldar.com/fr/location/studio/casablanca/maarif/b90f2686",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_cee1172b50808cdd",
+      "future_listing_id": 153,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-sidi-maarouf-885475.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-sidi-maarouf-885475.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_3f64f59aad2a0bc6",
+      "future_listing_id": 154,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/576134",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/576134",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_208e3bbfb8e7dc1c",
+      "future_listing_id": 155,
+      "future_source_key": "https://mouldar.com/en/rent/studio/casablanca/sidi-maarouf/cd306f18",
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/sidi-maarouf/cd306f18",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_f4656dc6f1a1216a",
+      "future_listing_id": 156,
+      "future_source_key": "https://sarouty.ma/acheter/villa-casablanca-ain-diab-903335",
+      "canonical_url": "https://sarouty.ma/acheter/villa-casablanca-ain-diab-903335",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_a719f4d062acb572",
+      "future_listing_id": 157,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/sidi-maarouf/346076",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/sidi-maarouf/346076",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_9b6381d7c87b3177",
+      "future_listing_id": 158,
+      "future_source_key": "https://mouldar.com/fr/location/studio/casablanca/californie/0e5e1757",
+      "canonical_url": "https://mouldar.com/fr/location/studio/casablanca/californie/0e5e1757",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_a3909881046da989",
+      "future_listing_id": 159,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-ain-diab-763435.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-ain-diab-763435.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_94ba745c0af1469a",
+      "future_listing_id": 160,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/hay-hassani/293506",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/hay-hassani/293506",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_74e285e26be1bc32",
+      "future_listing_id": 161,
+      "future_source_key": "https://mouldar.com/en/rent/studio/casablanca/palmier/51c5b32a",
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/palmier/51c5b32a",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_2bf8c2faeeaba945",
+      "future_listing_id": 162,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-hay-hassani-854145.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-hay-hassani-854145.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_c04ece26161ab43b",
+      "future_listing_id": 163,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/gauthier/930164",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/gauthier/930164",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_fc5a0a041125f241",
+      "future_listing_id": 164,
+      "future_source_key": "https://mouldar.com/en/rent/studio/casablanca/hay-hassani/857062da",
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/hay-hassani/857062da",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_33541b75a591579e",
+      "future_listing_id": 165,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-oasis-881291.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-oasis-881291.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_9e6d6e56fa10a729",
+      "future_listing_id": 166,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/hay-hassani/274187",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/hay-hassani/274187",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_01608816dff7edc6",
+      "future_listing_id": 167,
+      "future_source_key": "https://mouldar.com/en/rent/studio/casablanca/oasis/a6d2fdf3",
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/oasis/a6d2fdf3",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_7b4c45e60664c08c",
+      "future_listing_id": 168,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-ain-diab-895471.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-ain-diab-895471.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_309d3aa0ef17e6c0",
+      "future_listing_id": 169,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/371133",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/371133",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_88236df3916e0631",
+      "future_listing_id": 170,
+      "future_source_key": "https://mouldar.com/fr/location/appartement/casablanca/hay-hassani/d5d33490",
+      "canonical_url": "https://mouldar.com/fr/location/appartement/casablanca/hay-hassani/d5d33490",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_bae0d1c15fad6a12",
+      "future_listing_id": 171,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-californie-878941.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-californie-878941.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_d99c41c647f0b949",
+      "future_listing_id": 172,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/oasis/564505",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/oasis/564505",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_cb3f4b8b5c6ae1d6",
+      "future_listing_id": 173,
+      "future_source_key": "https://mouldar.com/en/rent/studio/casablanca/racine/eef81cd0",
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/racine/eef81cd0",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_b1de0fd84f22e990",
+      "future_listing_id": 174,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-oasis-850927.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-oasis-850927.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_2427f0909eb8996d",
+      "future_listing_id": 175,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/californie/308508",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/californie/308508",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_b15f06e0dc74feb5",
+      "future_listing_id": 176,
+      "future_source_key": "https://mouldar.com/en/rent/studio/casablanca/ain-diab/d89da29d",
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/ain-diab/d89da29d",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_6c7d0c3a7e7e9dd0",
+      "future_listing_id": 177,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-ain-diab-723205.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-ain-diab-723205.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_d91e77845210acde",
+      "future_listing_id": 178,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/gauthier/608334",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/gauthier/608334",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_4da5e4642c17c65d",
+      "future_listing_id": 179,
+      "future_source_key": "https://mouldar.com/en/rent/studio/casablanca/racine/a826339d",
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/racine/a826339d",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_922a113ff387c3ea",
+      "future_listing_id": 180,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-sidi-maarouf-890979.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-sidi-maarouf-890979.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_f6e1696bc10026d5",
+      "future_listing_id": 181,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/hay-hassani/769184",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/hay-hassani/769184",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_b2f7edc78a125f4a",
+      "future_listing_id": 182,
+      "future_source_key": "https://mouldar.com/fr/location/studio",
+      "canonical_url": "https://mouldar.com/fr/location/studio",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_2a7ad375200215a2",
+      "future_listing_id": 183,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-californie-895137.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-californie-895137.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_9ab3e44144643152",
+      "future_listing_id": 184,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/sidi-maarouf/801283",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/sidi-maarouf/801283",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_89ea1a73c719473f",
+      "future_listing_id": 185,
+      "future_source_key": "https://mouldar.com/fr/location/studio/casablanca/oasis/83b54d93",
+      "canonical_url": "https://mouldar.com/fr/location/studio/casablanca/oasis/83b54d93",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_8794375e5b20782c",
+      "future_listing_id": 186,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-dar-bouazza-871829.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-dar-bouazza-871829.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_035e53d291fea344",
+      "future_listing_id": 187,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/997006",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/997006",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_4d96667535c68684",
+      "future_listing_id": 188,
+      "future_source_key": "https://mouldar.com/en/rent/studio/casablanca/racine/7fec27ec",
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/racine/7fec27ec",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_ca16bc165f04008d",
+      "future_listing_id": 189,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-oasis-889313.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-oasis-889313.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_9be92b62c477d436",
+      "future_listing_id": 190,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/95367",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/95367",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_8c779c1ca20cae3a",
+      "future_listing_id": 191,
+      "future_source_key": "https://mouldar.com/fr/location/studio/casablanca/oasis/8490ebb3",
+      "canonical_url": "https://mouldar.com/fr/location/studio/casablanca/oasis/8490ebb3",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_763040056082cc99",
+      "future_listing_id": 192,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-californie-896705.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-californie-896705.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_0dbe20182d72ecde",
+      "future_listing_id": 193,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/477358",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/477358",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_9187e574ca719988",
+      "future_listing_id": 194,
+      "future_source_key": "https://mouldar.com/fr/location/studio/casablanca/ain-diab/8f398bfe",
+      "canonical_url": "https://mouldar.com/fr/location/studio/casablanca/ain-diab/8f398bfe",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_7261adccf873e3a1",
+      "future_listing_id": 195,
+      "future_source_key": "https://sarouty.ma/acheter/villa-casablanca-sidi-maarouf-865790",
+      "canonical_url": "https://sarouty.ma/acheter/villa-casablanca-sidi-maarouf-865790",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_e96c83d263681533",
+      "future_listing_id": 196,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/sidi-maxarouf/550083",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/sidi-maxarouf/550083",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_7e6cc6b6cfbf3d29",
+      "future_listing_id": 197,
+      "future_source_key": "https://mouldar.com/fr/location/studio/casablanca/gauthier/209636fa",
+      "canonical_url": "https://mouldar.com/fr/location/studio/casablanca/gauthier/209636fa",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_b49a47304cc1538d",
+      "future_listing_id": 198,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-gauthier-885383.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-gauthier-885383.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_37d8e71e23315588",
+      "future_listing_id": 199,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-villas/sidi-belyout/386921",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-villas/sidi-belyout/386921",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_8b02c37bb14fb012",
+      "future_listing_id": 200,
+      "future_source_key": "https://mouldar.com/fr/location/studio/casablanca/oasis/e03a995c",
+      "canonical_url": "https://mouldar.com/fr/location/studio/casablanca/oasis/e03a995c",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_cb23779c222e3ae0",
+      "future_listing_id": 201,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-sidi-maarouf-890311.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-sidi-maarouf-890311.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_aadc8226091f0c12",
+      "future_listing_id": 202,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/sidi-maarouf/356518",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/sidi-maarouf/356518",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_14df71a25124109c",
+      "future_listing_id": 203,
+      "future_source_key": "https://mouldar.com/fr/location/studio/casablanca/ain-diab/311940c7",
+      "canonical_url": "https://mouldar.com/fr/location/studio/casablanca/ain-diab/311940c7",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_af2b22568fd7be1d",
+      "future_listing_id": 204,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-sidi-maarouf-865790.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-sidi-maarouf-865790.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_0986556c96901d38",
+      "future_listing_id": 205,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/californie/486183",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/californie/486183",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_814ab99fbd83a47f",
+      "future_listing_id": 206,
+      "future_source_key": "https://mouldar.com/fr/location/appartement/casablanca/hay-hassani/ab1a4368",
+      "canonical_url": "https://mouldar.com/fr/location/appartement/casablanca/hay-hassani/ab1a4368",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_5fd65870658e1e48",
+      "future_listing_id": 207,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-tit-mellil-895143.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-tit-mellil-895143.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_5e3ba56bc6ecdc1b",
+      "future_listing_id": 208,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/825371",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/palmier/825371",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_1eeaa109682e2282",
+      "future_listing_id": 209,
+      "future_source_key": "https://mouldar.com/en/rent/studio/casablanca/sidi-maarouf/86c1ff92",
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/sidi-maarouf/86c1ff92",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_fa5ed74352d11589",
+      "future_listing_id": 210,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-dar-bouazza-873134.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-dar-bouazza-873134.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_3e3aad155f96e8af",
+      "future_listing_id": 211,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/hay-hassani/889088",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/hay-hassani/889088",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_a3c4cf1e41b4a3ce",
+      "future_listing_id": 212,
+      "future_source_key": "https://mouldar.com/fr/location/studio/casablanca/californie/a7a8825c",
+      "canonical_url": "https://mouldar.com/fr/location/studio/casablanca/californie/a7a8825c",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_56569071d59aaf37",
+      "future_listing_id": 213,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-ain-diab-896536.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-ain-diab-896536.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_876c75fb1d258317",
+      "future_listing_id": 214,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/oasis/72557",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/oasis/72557",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_2b96713e37b6ba08",
+      "future_listing_id": 215,
+      "future_source_key": "https://mouldar.com/fr/location/studio/casablanca/gauthier/719ea5cd",
+      "canonical_url": "https://mouldar.com/fr/location/studio/casablanca/gauthier/719ea5cd",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_6cac407218d4da23",
+      "future_listing_id": 216,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-californie-887755.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-californie-887755.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_f6bf0c764d0934cd",
+      "future_listing_id": 217,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/gauthier/690139",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/gauthier/690139",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_f5073a5dc62debbc",
+      "future_listing_id": 218,
+      "future_source_key": "https://mouldar.com/fr/location/studio/casablanca/gauthier/91daec86",
+      "canonical_url": "https://mouldar.com/fr/location/studio/casablanca/gauthier/91daec86",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_2e7d38c2cfcd2dd1",
+      "future_listing_id": 219,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-sidi-maarouf-878905.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-casablanca-sidi-maarouf-878905.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_57a471cc1b123192",
+      "future_listing_id": 220,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/californie/360861",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/californie/360861",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_19986f646d5a1939",
+      "future_listing_id": 221,
+      "future_source_key": "https://mouldar.com/en/rent/studio/casablanca/racine/326094e7",
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/racine/326094e7",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_f55245d5bd759500",
+      "future_listing_id": 222,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/ain-diab/636413",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/ain-diab/636413",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_ff69c4b0d158a8f1",
+      "future_listing_id": 223,
+      "future_source_key": "https://mouldar.com/en/rent/studio/casablanca/californie/ba85bb00",
+      "canonical_url": "https://mouldar.com/en/rent/studio/casablanca/californie/ba85bb00",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_e4dfe7c139ff1781",
+      "future_listing_id": null,
+      "future_source_key": "https://1immo.ma/s/rabat/hay-riad/villa-a-vendre",
+      "canonical_url": "https://1immo.ma/s/rabat/hay-riad/villa-a-vendre",
+      "source_host": "1immo.ma",
+      "operation": "skip",
+      "reason": "price_mad_out_of_postgresql_integer_range"
+    },
+    {
+      "candidate_id": "openserp_7a4f88adec708a0a",
+      "future_listing_id": 224,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/l-ocean/545802",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/l-ocean/545802",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_59465d331d68a38c",
+      "future_listing_id": 225,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_l'ocean_residence-securisee",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_l'ocean_residence-securisee",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_e6ffbd65e1fde7bc",
+      "future_listing_id": 226,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-souissi-893251.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-souissi-893251.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_2e349c137db080be",
+      "future_listing_id": 227,
+      "future_source_key": "https://1immo.ma/s/rabat/aviation/villa-a-vendre",
+      "canonical_url": "https://1immo.ma/s/rabat/aviation/villa-a-vendre",
+      "source_host": "1immo.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_f55d99efbbfee390",
+      "future_listing_id": 228,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/l-ocean/603725",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/l-ocean/603725",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_0404bbf88f674050",
+      "future_listing_id": 229,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_l'ocean_securisee",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_l'ocean_securisee",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_c2a7a7c05a80604a",
+      "future_listing_id": 230,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-souissi-884701.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-souissi-884701.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_64caa9d7c1149fe0",
+      "future_listing_id": 231,
+      "future_source_key": "https://agenz.ma/en/annonces/immo-rabat/vente-appartements/yacoub-el-mansour/965148",
+      "canonical_url": "https://agenz.ma/en/annonces/immo-rabat/vente-appartements/yacoub-el-mansour/965148",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_3e2117f99cab2b3f",
+      "future_listing_id": 232,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_hassan---centre-ville_particulier",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_hassan---centre-ville_particulier",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_9be618ea83692c12",
+      "future_listing_id": 233,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-hay-riad-883636.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-hay-riad-883636.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_6643142a587f9999",
+      "future_listing_id": 234,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/l-ocean/394132",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/l-ocean/394132",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_400cc64797cc1ff0",
+      "future_listing_id": 235,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-location_rabat_longue-dur%C3%A9e",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-location_rabat_longue-dur%C3%A9e",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_de23c8673c2bc854",
+      "future_listing_id": 236,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-hay-riad-895815.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-hay-riad-895815.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_096f1f7c414ef26d",
+      "future_listing_id": 237,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/souissi/7997",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/souissi/7997",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_7647bb2a1f3ce452",
+      "future_listing_id": 238,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_souissi_securisee",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_souissi_securisee",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_93432b2e6b010d4b",
+      "future_listing_id": 239,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-les-ambassadeurs-889016.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-les-ambassadeurs-889016.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_a858390f0576afcb",
+      "future_listing_id": null,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/yacoub-el-mansour/751839",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/yacoub-el-mansour/751839",
+      "source_host": "agenz.ma",
+      "operation": "skip",
+      "reason": "price_mad_out_of_postgresql_integer_range"
+    },
+    {
+      "candidate_id": "openserp_37488457e9f4497d",
+      "future_listing_id": 240,
+      "future_source_key": "https://mubawab.ma/fr/a/8269585/appartement-%C3%A0-louer-%C3%A0-quartier-souissi-rabat",
+      "canonical_url": "https://mubawab.ma/fr/a/8269585/appartement-%C3%A0-louer-%C3%A0-quartier-souissi-rabat",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_9a84b0d05deddd1d",
+      "future_listing_id": 241,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-hassan-886289.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-hassan-886289.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_1cb99249609db38e",
+      "future_listing_id": 242,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/souissi/991790",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/souissi/991790",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_513ae2148c1d349c",
+      "future_listing_id": 243,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_l'ocean_545",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_l'ocean_545",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_c4572fef219e41da",
+      "future_listing_id": 244,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-souissi-895565.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-souissi-895565.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_271c025e98617301",
+      "future_listing_id": 245,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/agdal/205247",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/agdal/205247",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_6f222661639fab3e",
+      "future_listing_id": 246,
+      "future_source_key": "https://mubawab.ma/fr/a/8366179/appartement-meubl%C3%A9-%C3%A0-louer-%E2%80%93-rabat-souissi",
+      "canonical_url": "https://mubawab.ma/fr/a/8366179/appartement-meubl%C3%A9-%C3%A0-louer-%E2%80%93-rabat-souissi",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_9456471f2e85d426",
+      "future_listing_id": 247,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-rabat-853338.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-rabat-853338.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_9c23eafa143018d8",
+      "future_listing_id": 248,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartement/aviation-mabella/637015",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartement/aviation-mabella/637015",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_7ed0255d05bdef3c",
+      "future_listing_id": 249,
+      "future_source_key": "https://mubawab.ma/fr/a/8353403/location-appartement-rabat-hay-riad",
+      "canonical_url": "https://mubawab.ma/fr/a/8353403/location-appartement-rabat-hay-riad",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_787bf5991439767d",
+      "future_listing_id": 250,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-hay-riad-890436.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-hay-riad-890436.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_5735af66385207de",
+      "future_listing_id": 251,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/hay-riad/100457",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/hay-riad/100457",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_6674398a428554e8",
+      "future_listing_id": 252,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_souissi_piscine",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_souissi_piscine",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_c0a9dc9feac2c358",
+      "future_listing_id": 253,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-agdal-871019.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-agdal-871019.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_7183217065e07db1",
+      "future_listing_id": 254,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/souissi/606294",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/souissi/606294",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_0aca1af10a5f4c2a",
+      "future_listing_id": 255,
+      "future_source_key": "https://mubawab.ma/fr/a/8357946/location-appartement-%C3%A0-rabat-hay-riad",
+      "canonical_url": "https://mubawab.ma/fr/a/8357946/location-appartement-%C3%A0-rabat-hay-riad",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_3bf1b4aa535044d0",
+      "future_listing_id": 256,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-hay-riad-888579.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-hay-riad-888579.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_080e8356acf230a4",
+      "future_listing_id": 257,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/hay-riad/398232",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/hay-riad/398232",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_922d8377181b1703",
+      "future_listing_id": 258,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-location_rabat_vue-sur-mer",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-location_rabat_vue-sur-mer",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_aabff6b03c393944",
+      "future_listing_id": 259,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-souissi-895081.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-rabat-souissi-895081.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_c8a277c105f1ba37",
+      "future_listing_id": 260,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/souissi/580483",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/souissi/580483",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_91a5fa8570ced851",
+      "future_listing_id": 261,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_agdal_681",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_agdal_681",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_37f8e1129b503a69",
+      "future_listing_id": 262,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/agdal/890363",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/agdal/890363",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_60e3135fa04320d0",
+      "future_listing_id": 263,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_meublee",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_meublee",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_22fe6bee7ceb7942",
+      "future_listing_id": 264,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/hay-riad/471836",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/hay-riad/471836",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_d8d8661d990f7433",
+      "future_listing_id": 265,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_agdal_meublee",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_agdal_meublee",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_4acf3e8d2d77e6a7",
+      "future_listing_id": 266,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/l-ocean/732459",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/l-ocean/732459",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_789ca44aeccc86c1",
+      "future_listing_id": 267,
+      "future_source_key": "https://mubawab.ma/fr/a/8333659/appartement-r%C3%A9nov%C3%A9-%C3%A0-louer-%C3%A0-aviation",
+      "canonical_url": "https://mubawab.ma/fr/a/8333659/appartement-r%C3%A9nov%C3%A9-%C3%A0-louer-%C3%A0-aviation",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_7b6eda00ebfa44b8",
+      "future_listing_id": 268,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/souissi/671099",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/souissi/671099",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_ec8ffc7d706e4d20",
+      "future_listing_id": 269,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_hassan---centre-ville_centre",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-for-rent_rabat_hassan---centre-ville_centre",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_15b601dcee0f4eec",
+      "future_listing_id": 270,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/agdal/143656",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/agdal/143656",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_166fdd156854d604",
+      "future_listing_id": 271,
+      "future_source_key": "https://mubawab.ma/fr/a/8278566/location-appartement-%C3%A0-rabat-hay-riad",
+      "canonical_url": "https://mubawab.ma/fr/a/8278566/location-appartement-%C3%A0-rabat-hay-riad",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_ad9afd522c74cd4c",
+      "future_listing_id": 272,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/targa/433522",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/targa/433522",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_1d5174257652a630",
+      "future_listing_id": 273,
+      "future_source_key": "https://avito.ma/fr/hivernage/bureaux/Bureau_Hivernage_58014449.htm",
+      "canonical_url": "https://avito.ma/fr/hivernage/bureaux/Bureau_Hivernage_58014449.htm",
+      "source_host": "avito.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_e101461f8a323740",
+      "future_listing_id": 274,
+      "future_source_key": "https://barnes-marrakech.com/fr/vente/marrakech/84700555",
+      "canonical_url": "https://barnes-marrakech.com/fr/vente/marrakech/84700555",
+      "source_host": "barnes-marrakech.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_469f886f8d109790",
+      "future_listing_id": 275,
+      "future_source_key": "https://marrakechrealty.com/vente/villa-5-chambres-a-vendre-a-la-palmeraie",
+      "canonical_url": "https://marrakechrealty.com/vente/villa-5-chambres-a-vendre-a-la-palmeraie",
+      "source_host": "marrakechrealty.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_d00085f80a371be6",
+      "future_listing_id": 276,
+      "future_source_key": "https://mouldar.com/en/rent/studio/marrakech",
+      "canonical_url": "https://mouldar.com/en/rent/studio/marrakech",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_337e6ad37a5d9bf7",
+      "future_listing_id": 277,
+      "future_source_key": "https://mubawab.ma/fr/is/appartement-vente_marrakech_hivernage_terrasse",
+      "canonical_url": "https://mubawab.ma/fr/is/appartement-vente_marrakech_hivernage_terrasse",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_5a4a1b621d6674d4",
+      "future_listing_id": 278,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-gueliz-887088.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-gueliz-887088.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_db9b42ea66ef8c30",
+      "future_listing_id": 279,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/targa/228013",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/targa/228013",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_173426b67f37ce9e",
+      "future_listing_id": 280,
+      "future_source_key": "https://avito.ma/fr/hivernage/bureaux/Bureau_%C3%A0_Louer___Longue_Dur%C3%A9e_57240760.htm",
+      "canonical_url": "https://avito.ma/fr/hivernage/bureaux/Bureau_%C3%A0_Louer___Longue_Dur%C3%A9e_57240760.htm",
+      "source_host": "avito.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_8046f81bbadb5c7e",
+      "future_listing_id": 281,
+      "future_source_key": "https://barnes-marrakech.com/fr/vente/marrakech/86760461",
+      "canonical_url": "https://barnes-marrakech.com/fr/vente/marrakech/86760461",
+      "source_host": "barnes-marrakech.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_d5b85692d9f570f1",
+      "future_listing_id": 282,
+      "future_source_key": "https://marrakechrealty.com/vente/villa-4-chambres-a-vendre-a-targa",
+      "canonical_url": "https://marrakechrealty.com/vente/villa-4-chambres-a-vendre-a-targa",
+      "source_host": "marrakechrealty.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_0e44ade4d57d747b",
+      "future_listing_id": 283,
+      "future_source_key": "https://mouldar.com/en/rent/studio/marrakech/palmeraie/8794880d",
+      "canonical_url": "https://mouldar.com/en/rent/studio/marrakech/palmeraie/8794880d",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_e173a27e1cdb6639",
+      "future_listing_id": 284,
+      "future_source_key": "https://mubawab.ma/fr/is/lot-de-terrain-for-sale_marrakech_route-de-l'ourika_pas-cher",
+      "canonical_url": "https://mubawab.ma/fr/is/lot-de-terrain-for-sale_marrakech_route-de-l'ourika_pas-cher",
+      "source_host": "mubawab.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_5e15c856a6a30c9f",
+      "future_listing_id": 285,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-route-d-ourika-895810.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-route-d-ourika-895810.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_775d20fbee606752",
+      "future_listing_id": 286,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/targa/956543",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/targa/956543",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_63a1af55fecf2268",
+      "future_listing_id": 287,
+      "future_source_key": "https://barnes-marrakech.com/fr/vente/marrakech/87145608",
+      "canonical_url": "https://barnes-marrakech.com/fr/vente/marrakech/87145608",
+      "source_host": "barnes-marrakech.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_fa9577a3ab78ced9",
+      "future_listing_id": 288,
+      "future_source_key": "https://marrakechrealty.com/vente/charmante-villa-de-4-chambres-en-centre-ville",
+      "canonical_url": "https://marrakechrealty.com/vente/charmante-villa-de-4-chambres-en-centre-ville",
+      "source_host": "marrakechrealty.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_d783280081ce9282",
+      "future_listing_id": 289,
+      "future_source_key": "https://mouldar.com/en/rent/studio/marrakech-with-concierge",
+      "canonical_url": "https://mouldar.com/en/rent/studio/marrakech-with-concierge",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_16610ae4e73b436d",
+      "future_listing_id": 290,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-route-d-ourika-894828.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-route-d-ourika-894828.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_b6ac2e1a673cb230",
+      "future_listing_id": 291,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/hivernage/667523",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/hivernage/667523",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_b30ea91b2394329a",
+      "future_listing_id": 292,
+      "future_source_key": "https://barnes-marrakech.com/en/sale/marrakech/86663093",
+      "canonical_url": "https://barnes-marrakech.com/en/sale/marrakech/86663093",
+      "source_host": "barnes-marrakech.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_8298e9433c702872",
+      "future_listing_id": 293,
+      "future_source_key": "https://marrakechrealty.com/vente/a-vendre-tres-belle-villa-a-moins-de-10-mn-de-centre-ville",
+      "canonical_url": "https://marrakechrealty.com/vente/a-vendre-tres-belle-villa-a-moins-de-10-mn-de-centre-ville",
+      "source_host": "marrakechrealty.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_d8de52b182a7b76f",
+      "future_listing_id": 294,
+      "future_source_key": "https://mouldar.com/fr/location/bureau/marrakech/gueliz/e53176b7",
+      "canonical_url": "https://mouldar.com/fr/location/bureau/marrakech/gueliz/e53176b7",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_240d507748d9a911",
+      "future_listing_id": 295,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-palmeraie-893031.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-palmeraie-893031.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_abb4057fd5d1d729",
+      "future_listing_id": 296,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/hivernage/175903",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/hivernage/175903",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_c1554496ab68931c",
+      "future_listing_id": 297,
+      "future_source_key": "https://barnes-marrakech.com/fr/vente/marrakech/2769836",
+      "canonical_url": "https://barnes-marrakech.com/fr/vente/marrakech/2769836",
+      "source_host": "barnes-marrakech.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_f63c582def6f6ad9",
+      "future_listing_id": 298,
+      "future_source_key": "https://marrakechrealty.com/vente/belle-villa-de-5-chambres-a-vendre-a-marrakech",
+      "canonical_url": "https://marrakechrealty.com/vente/belle-villa-de-5-chambres-a-vendre-a-marrakech",
+      "source_host": "marrakechrealty.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_59338e29322a2fe3",
+      "future_listing_id": 299,
+      "future_source_key": "https://mouldar.com/fr/achat/local-commercial/marrakech",
+      "canonical_url": "https://mouldar.com/fr/achat/local-commercial/marrakech",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_41d8737a2c887d36",
+      "future_listing_id": 300,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-route-d-ourika-895636.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-route-d-ourika-895636.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_e554f84f411ee166",
+      "future_listing_id": 301,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/targa/733272",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/targa/733272",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_f0fd2d2dddbb147b",
+      "future_listing_id": 302,
+      "future_source_key": "https://barnes-marrakech.com/fr/vente/marrakech/87032496",
+      "canonical_url": "https://barnes-marrakech.com/fr/vente/marrakech/87032496",
+      "source_host": "barnes-marrakech.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_f3a44382f3c613b8",
+      "future_listing_id": 303,
+      "future_source_key": "https://marrakechrealty.com/en/sale/highend-6-bedroom-villa-for-sale-in-the-palmeraie-of-marrakech",
+      "canonical_url": "https://marrakechrealty.com/en/sale/highend-6-bedroom-villa-for-sale-in-the-palmeraie-of-marrakech",
+      "source_host": "marrakechrealty.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_a3c9b1ce5606b84f",
+      "future_listing_id": 304,
+      "future_source_key": "https://mouldar.com/en/pro/your-real-estate-agent-2360/rent/studio/marrakech/hivernage",
+      "canonical_url": "https://mouldar.com/en/pro/your-real-estate-agent-2360/rent/studio/marrakech/hivernage",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_a7b5152ecf8909f8",
+      "future_listing_id": 305,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-route-d-ourika-895123.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-route-d-ourika-895123.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_b664bfd6e73cfa12",
+      "future_listing_id": 306,
+      "future_source_key": "https://agenz.ma/en/annonces/immo-marrakech/vente-appartements/route-de-lourika/953800",
+      "canonical_url": "https://agenz.ma/en/annonces/immo-marrakech/vente-appartements/route-de-lourika/953800",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_139db519fb907873",
+      "future_listing_id": 307,
+      "future_source_key": "https://barnes-marrakech.com/fr/vente/marrakech/86667428",
+      "canonical_url": "https://barnes-marrakech.com/fr/vente/marrakech/86667428",
+      "source_host": "barnes-marrakech.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_8be9a6ef6dc4a9a2",
+      "future_listing_id": 308,
+      "future_source_key": "https://marrakechrealty.com/vente/villa-traditionnelle-a-vendre-sur-targa",
+      "canonical_url": "https://marrakechrealty.com/vente/villa-traditionnelle-a-vendre-sur-targa",
+      "source_host": "marrakechrealty.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_7fcd606e7b6681fd",
+      "future_listing_id": 309,
+      "future_source_key": "https://mouldar.com/fr/location/appartement/marrakech/targa/5066e14d",
+      "canonical_url": "https://mouldar.com/fr/location/appartement/marrakech/targa/5066e14d",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_888c3216802c88fd",
+      "future_listing_id": 310,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-hivernage-891017.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-hivernage-891017.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_f78d91d897205669",
+      "future_listing_id": 311,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/gueliz/638379",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/gueliz/638379",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_77154da7ea9f5364",
+      "future_listing_id": 312,
+      "future_source_key": "https://barnes-marrakech.com/fr/vente/marrakech/86639507",
+      "canonical_url": "https://barnes-marrakech.com/fr/vente/marrakech/86639507",
+      "source_host": "barnes-marrakech.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_b304ce4fa187aaa3",
+      "future_listing_id": 313,
+      "future_source_key": "https://marrakechrealty.com/vente/appartement-a-vendre-dans-le-quartier-hivernage-a-marrakech",
+      "canonical_url": "https://marrakechrealty.com/vente/appartement-a-vendre-dans-le-quartier-hivernage-a-marrakech",
+      "source_host": "marrakechrealty.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_01804f1e471fbbce",
+      "future_listing_id": 314,
+      "future_source_key": "https://mouldar.com/fr/achat/appartement/marrakech/hivernage/549fcecf",
+      "canonical_url": "https://mouldar.com/fr/achat/appartement/marrakech/hivernage/549fcecf",
+      "source_host": "mouldar.com",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_2acafb98cb1c9a4f",
+      "future_listing_id": 315,
+      "future_source_key": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-gueliz-896417.html",
+      "canonical_url": "https://sarouty.ma/plp/acheter/villa-a-vendre-marrakech-gueliz-896417.html",
+      "source_host": "sarouty.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    },
+    {
+      "candidate_id": "openserp_5f784d34fc06e195",
+      "future_listing_id": 316,
+      "future_source_key": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/gueliz/68135",
+      "canonical_url": "https://agenz.ma/fr/annonces/immo-marrakech/vente-appartements/gueliz/68135",
+      "source_host": "agenz.ma",
+      "operation": "insert",
+      "reason": "new_listing_and_source_in_isolated_rehearsal"
+    }
+  ]
+}

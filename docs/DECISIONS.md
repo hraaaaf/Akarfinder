@@ -2891,3 +2891,24 @@ Impact:
 - Aucune preview n a ete deployee.
 - Le lot, le manifeste et les checksums deviennent la base de reprise pour une
   mission dediee a la preuve de rollback avant tout write.
+
+## 2026-07-14 - OPENSERP-FIRST-WRITE-ROLLBACK-READINESS-1
+
+Decision:
+- Ajouter un guard de persistance qui exclut explicitement les valeurs
+  numeriques incompatibles avec les colonnes PostgreSQL `INTEGER`, sans
+  modifier le corpus ni transformer silencieusement une valeur.
+- Autoriser la prochaine mission `OPENSERP-FIRST-WRITE-EXECUTE-1` apres une
+  repetition complete hors production: premier write, rollback cible,
+  second write idempotent et rollback final.
+
+Reason:
+- Trois prix du manifeste depassent la plage `INTEGER`; une insertion directe
+  echoue. Leur exclusion explicite conserve un lot executable de `177`, au
+  dessus du seuil minimum de `150`.
+- La repetition sur PostgreSQL 18.2 restaure exactement les comptes et le hash
+  de l etat initial, sans toucher la production.
+
+Impact:
+- Le futur write doit utiliser le manifest de run et refaire les controles
+  live de schema, collisions et comptages immediatement avant execution.

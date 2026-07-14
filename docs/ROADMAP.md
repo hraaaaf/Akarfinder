@@ -5145,3 +5145,17 @@ Decision roadmap:
 - Ne pas ecrire en production tant qu un rollback isole n a pas ete valide sur
   le meme manifeste.
 - Prochaine mission unique: `OPENSERP-FIRST-WRITE-ROLLBACK-READINESS-1`.
+
+## 2026-07-14 - OPENSERP-FIRST-WRITE-ROLLBACK-READINESS-1
+
+Etat:
+- Repetition PostgreSQL isolee: PASS.
+- Premier write isole: `177` listings et `177` sources.
+- Rollback cible et idempotence: PASS.
+- Build: PASS (`63/63`).
+- Production DB, application, alias et flags: inchanges.
+
+Decision roadmap:
+- Le lot source de `180` reste verrouille; trois lignes hors plage `INTEGER`
+  sont des exclusions explicites et le lot executable est de `177`.
+- Prochaine mission unique: `OPENSERP-FIRST-WRITE-EXECUTE-1`.

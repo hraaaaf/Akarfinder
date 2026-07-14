@@ -65,3 +65,23 @@ preuve locale de preview incomplete.
 4. Rejouer le build/preview
 5. Revenir ensuite sur la mission de first write
 
+## Rollback Readiness Update - 2026-07-14
+
+La repetition PostgreSQL isolee est terminee sans ecriture Supabase production,
+deploiement ou changement de flag Production.
+
+- Environnement: PostgreSQL `18.2`, `127.0.0.1:55432`, base locale
+  `akarfinder_openserp_rollback_rehearsal`.
+- Etat initial synthetique: `139 property_listings`, `144 listing_sources`.
+- Manifeste source conserve:
+  `cf03e16422e91fcb29d1f518fdc5ffd2dec1bb45b4b97155758ef16471f602f8`.
+- Trois candidats hors plage PostgreSQL `INTEGER` sont marques `skip`; le lot
+  executable est de `177` lignes, sans recomposer la selection verrouillee.
+- Premier write: `177` listings et `177` sources, `0` echec, `0` orphan.
+- Rollback cible et rollback final: comptes et checksum initial restaures.
+- Second write: `0` nouveau listing et `0` nouvelle source.
+- Build: PASS, `63/63` pages.
+
+Les preuves sont dans `data/audits/openserp-first-write-*.json`. Le futur
+write doit refaire les controles live de schema, collisions et comptages avant
+toute ecriture et conserver les trois exclusions explicites.

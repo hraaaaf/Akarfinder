@@ -11906,3 +11906,31 @@ Points de suivi:
 
 Prochaine etape:
 - `OPENSERP-FIRST-WRITE-ROLLBACK-READINESS-1`
+
+## 2026-07-14 - OPENSERP-FIRST-WRITE-ROLLBACK-READINESS-1
+
+Statut:
+- Worktree mission: `C:\\Users\\lenovo\\Documents\\AkarFinder-openserp-first-write`.
+- Base de reprise: `4c58fbf1c8348be8598a93d43075e4f5b0097597`.
+- Verdict: `GO_FOR_OPENSERP_FIRST_WRITE_EXECUTE_1`.
+- Production DB modifiee: non.
+- Production deployee: non.
+
+Preuves principales:
+- PostgreSQL local isole `18.2` sur `127.0.0.1:55432`.
+- Etat synthetique initial: `139 property_listings`, `144 listing_sources`.
+- Write isole: `177` listings et `177` sources, `0` echec, `0` orphan.
+- Rollback: comptes et checksum initial restaures exactement.
+- Second write: `0` nouveau listing, `0` nouvelle source, IDs et cles stables.
+- Build: PASS, `63/63` pages.
+
+Decision:
+- Le manifeste source reste verrouille a `180` candidats. Trois prix hors
+  plage PostgreSQL `INTEGER` sont exclus explicitement; le lot executable est
+  de `177` candidats et reste superieur au minimum requis de `150`.
+- Le prochain run doit controler le schema, les compteurs et les collisions
+  live avant toute ecriture, conserver le flag Production a `false` et ne pas
+  deployer l application en production.
+
+Prochaine etape:
+- `OPENSERP-FIRST-WRITE-EXECUTE-1`

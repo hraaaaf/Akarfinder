@@ -1,0 +1,1432 @@
+{
+  "run_id": "openserp-first-write-2026-07-13-01",
+  "manifest_sha256": "cf03e16422e91fcb29d1f518fdc5ffd2dec1bb45b4b97155758ef16471f602f8",
+  "captured_at": "2026-07-14T10:21:00.746Z",
+  "property_listings_count": 139,
+  "listing_sources_count": 144,
+  "property_rows": [
+    {
+      "id": 1,
+      "canonical_fingerprint": "baseline-1"
+    },
+    {
+      "id": 2,
+      "canonical_fingerprint": "baseline-2"
+    },
+    {
+      "id": 3,
+      "canonical_fingerprint": "baseline-3"
+    },
+    {
+      "id": 4,
+      "canonical_fingerprint": "baseline-4"
+    },
+    {
+      "id": 5,
+      "canonical_fingerprint": "baseline-5"
+    },
+    {
+      "id": 6,
+      "canonical_fingerprint": "baseline-6"
+    },
+    {
+      "id": 7,
+      "canonical_fingerprint": "baseline-7"
+    },
+    {
+      "id": 8,
+      "canonical_fingerprint": "baseline-8"
+    },
+    {
+      "id": 9,
+      "canonical_fingerprint": "baseline-9"
+    },
+    {
+      "id": 10,
+      "canonical_fingerprint": "baseline-10"
+    },
+    {
+      "id": 11,
+      "canonical_fingerprint": "baseline-11"
+    },
+    {
+      "id": 12,
+      "canonical_fingerprint": "baseline-12"
+    },
+    {
+      "id": 13,
+      "canonical_fingerprint": "baseline-13"
+    },
+    {
+      "id": 14,
+      "canonical_fingerprint": "baseline-14"
+    },
+    {
+      "id": 15,
+      "canonical_fingerprint": "baseline-15"
+    },
+    {
+      "id": 16,
+      "canonical_fingerprint": "baseline-16"
+    },
+    {
+      "id": 17,
+      "canonical_fingerprint": "baseline-17"
+    },
+    {
+      "id": 18,
+      "canonical_fingerprint": "baseline-18"
+    },
+    {
+      "id": 19,
+      "canonical_fingerprint": "baseline-19"
+    },
+    {
+      "id": 20,
+      "canonical_fingerprint": "baseline-20"
+    },
+    {
+      "id": 21,
+      "canonical_fingerprint": "baseline-21"
+    },
+    {
+      "id": 22,
+      "canonical_fingerprint": "baseline-22"
+    },
+    {
+      "id": 23,
+      "canonical_fingerprint": "baseline-23"
+    },
+    {
+      "id": 24,
+      "canonical_fingerprint": "baseline-24"
+    },
+    {
+      "id": 25,
+      "canonical_fingerprint": "baseline-25"
+    },
+    {
+      "id": 26,
+      "canonical_fingerprint": "baseline-26"
+    },
+    {
+      "id": 27,
+      "canonical_fingerprint": "baseline-27"
+    },
+    {
+      "id": 28,
+      "canonical_fingerprint": "baseline-28"
+    },
+    {
+      "id": 29,
+      "canonical_fingerprint": "baseline-29"
+    },
+    {
+      "id": 30,
+      "canonical_fingerprint": "baseline-30"
+    },
+    {
+      "id": 31,
+      "canonical_fingerprint": "baseline-31"
+    },
+    {
+      "id": 32,
+      "canonical_fingerprint": "baseline-32"
+    },
+    {
+      "id": 33,
+      "canonical_fingerprint": "baseline-33"
+    },
+    {
+      "id": 34,
+      "canonical_fingerprint": "baseline-34"
+    },
+    {
+      "id": 35,
+      "canonical_fingerprint": "baseline-35"
+    },
+    {
+      "id": 36,
+      "canonical_fingerprint": "baseline-36"
+    },
+    {
+      "id": 37,
+      "canonical_fingerprint": "baseline-37"
+    },
+    {
+      "id": 38,
+      "canonical_fingerprint": "baseline-38"
+    },
+    {
+      "id": 39,
+      "canonical_fingerprint": "baseline-39"
+    },
+    {
+      "id": 40,
+      "canonical_fingerprint": "baseline-40"
+    },
+    {
+      "id": 41,
+      "canonical_fingerprint": "baseline-41"
+    },
+    {
+      "id": 42,
+      "canonical_fingerprint": "baseline-42"
+    },
+    {
+      "id": 43,
+      "canonical_fingerprint": "baseline-43"
+    },
+    {
+      "id": 44,
+      "canonical_fingerprint": "baseline-44"
+    },
+    {
+      "id": 45,
+      "canonical_fingerprint": "baseline-45"
+    },
+    {
+      "id": 46,
+      "canonical_fingerprint": "baseline-46"
+    },
+    {
+      "id": 47,
+      "canonical_fingerprint": "baseline-47"
+    },
+    {
+      "id": 48,
+      "canonical_fingerprint": "baseline-48"
+    },
+    {
+      "id": 49,
+      "canonical_fingerprint": "baseline-49"
+    },
+    {
+      "id": 50,
+      "canonical_fingerprint": "baseline-50"
+    },
+    {
+      "id": 51,
+      "canonical_fingerprint": "baseline-51"
+    },
+    {
+      "id": 52,
+      "canonical_fingerprint": "baseline-52"
+    },
+    {
+      "id": 53,
+      "canonical_fingerprint": "baseline-53"
+    },
+    {
+      "id": 54,
+      "canonical_fingerprint": "baseline-54"
+    },
+    {
+      "id": 55,
+      "canonical_fingerprint": "baseline-55"
+    },
+    {
+      "id": 56,
+      "canonical_fingerprint": "baseline-56"
+    },
+    {
+      "id": 57,
+      "canonical_fingerprint": "baseline-57"
+    },
+    {
+      "id": 58,
+      "canonical_fingerprint": "baseline-58"
+    },
+    {
+      "id": 59,
+      "canonical_fingerprint": "baseline-59"
+    },
+    {
+      "id": 60,
+      "canonical_fingerprint": "baseline-60"
+    },
+    {
+      "id": 61,
+      "canonical_fingerprint": "baseline-61"
+    },
+    {
+      "id": 62,
+      "canonical_fingerprint": "baseline-62"
+    },
+    {
+      "id": 63,
+      "canonical_fingerprint": "baseline-63"
+    },
+    {
+      "id": 64,
+      "canonical_fingerprint": "baseline-64"
+    },
+    {
+      "id": 65,
+      "canonical_fingerprint": "baseline-65"
+    },
+    {
+      "id": 66,
+      "canonical_fingerprint": "baseline-66"
+    },
+    {
+      "id": 67,
+      "canonical_fingerprint": "baseline-67"
+    },
+    {
+      "id": 68,
+      "canonical_fingerprint": "baseline-68"
+    },
+    {
+      "id": 69,
+      "canonical_fingerprint": "baseline-69"
+    },
+    {
+      "id": 70,
+      "canonical_fingerprint": "baseline-70"
+    },
+    {
+      "id": 71,
+      "canonical_fingerprint": "baseline-71"
+    },
+    {
+      "id": 72,
+      "canonical_fingerprint": "baseline-72"
+    },
+    {
+      "id": 73,
+      "canonical_fingerprint": "baseline-73"
+    },
+    {
+      "id": 74,
+      "canonical_fingerprint": "baseline-74"
+    },
+    {
+      "id": 75,
+      "canonical_fingerprint": "baseline-75"
+    },
+    {
+      "id": 76,
+      "canonical_fingerprint": "baseline-76"
+    },
+    {
+      "id": 77,
+      "canonical_fingerprint": "baseline-77"
+    },
+    {
+      "id": 78,
+      "canonical_fingerprint": "baseline-78"
+    },
+    {
+      "id": 79,
+      "canonical_fingerprint": "baseline-79"
+    },
+    {
+      "id": 80,
+      "canonical_fingerprint": "baseline-80"
+    },
+    {
+      "id": 81,
+      "canonical_fingerprint": "baseline-81"
+    },
+    {
+      "id": 82,
+      "canonical_fingerprint": "baseline-82"
+    },
+    {
+      "id": 83,
+      "canonical_fingerprint": "baseline-83"
+    },
+    {
+      "id": 84,
+      "canonical_fingerprint": "baseline-84"
+    },
+    {
+      "id": 85,
+      "canonical_fingerprint": "baseline-85"
+    },
+    {
+      "id": 86,
+      "canonical_fingerprint": "baseline-86"
+    },
+    {
+      "id": 87,
+      "canonical_fingerprint": "baseline-87"
+    },
+    {
+      "id": 88,
+      "canonical_fingerprint": "baseline-88"
+    },
+    {
+      "id": 89,
+      "canonical_fingerprint": "baseline-89"
+    },
+    {
+      "id": 90,
+      "canonical_fingerprint": "baseline-90"
+    },
+    {
+      "id": 91,
+      "canonical_fingerprint": "baseline-91"
+    },
+    {
+      "id": 92,
+      "canonical_fingerprint": "baseline-92"
+    },
+    {
+      "id": 93,
+      "canonical_fingerprint": "baseline-93"
+    },
+    {
+      "id": 94,
+      "canonical_fingerprint": "baseline-94"
+    },
+    {
+      "id": 95,
+      "canonical_fingerprint": "baseline-95"
+    },
+    {
+      "id": 96,
+      "canonical_fingerprint": "baseline-96"
+    },
+    {
+      "id": 97,
+      "canonical_fingerprint": "baseline-97"
+    },
+    {
+      "id": 98,
+      "canonical_fingerprint": "baseline-98"
+    },
+    {
+      "id": 99,
+      "canonical_fingerprint": "baseline-99"
+    },
+    {
+      "id": 100,
+      "canonical_fingerprint": "baseline-100"
+    },
+    {
+      "id": 101,
+      "canonical_fingerprint": "baseline-101"
+    },
+    {
+      "id": 102,
+      "canonical_fingerprint": "baseline-102"
+    },
+    {
+      "id": 103,
+      "canonical_fingerprint": "baseline-103"
+    },
+    {
+      "id": 104,
+      "canonical_fingerprint": "baseline-104"
+    },
+    {
+      "id": 105,
+      "canonical_fingerprint": "baseline-105"
+    },
+    {
+      "id": 106,
+      "canonical_fingerprint": "baseline-106"
+    },
+    {
+      "id": 107,
+      "canonical_fingerprint": "baseline-107"
+    },
+    {
+      "id": 108,
+      "canonical_fingerprint": "baseline-108"
+    },
+    {
+      "id": 109,
+      "canonical_fingerprint": "baseline-109"
+    },
+    {
+      "id": 110,
+      "canonical_fingerprint": "baseline-110"
+    },
+    {
+      "id": 111,
+      "canonical_fingerprint": "baseline-111"
+    },
+    {
+      "id": 112,
+      "canonical_fingerprint": "baseline-112"
+    },
+    {
+      "id": 113,
+      "canonical_fingerprint": "baseline-113"
+    },
+    {
+      "id": 114,
+      "canonical_fingerprint": "baseline-114"
+    },
+    {
+      "id": 115,
+      "canonical_fingerprint": "baseline-115"
+    },
+    {
+      "id": 116,
+      "canonical_fingerprint": "baseline-116"
+    },
+    {
+      "id": 117,
+      "canonical_fingerprint": "baseline-117"
+    },
+    {
+      "id": 118,
+      "canonical_fingerprint": "baseline-118"
+    },
+    {
+      "id": 119,
+      "canonical_fingerprint": "baseline-119"
+    },
+    {
+      "id": 120,
+      "canonical_fingerprint": "baseline-120"
+    },
+    {
+      "id": 121,
+      "canonical_fingerprint": "baseline-121"
+    },
+    {
+      "id": 122,
+      "canonical_fingerprint": "baseline-122"
+    },
+    {
+      "id": 123,
+      "canonical_fingerprint": "baseline-123"
+    },
+    {
+      "id": 124,
+      "canonical_fingerprint": "baseline-124"
+    },
+    {
+      "id": 125,
+      "canonical_fingerprint": "baseline-125"
+    },
+    {
+      "id": 126,
+      "canonical_fingerprint": "baseline-126"
+    },
+    {
+      "id": 127,
+      "canonical_fingerprint": "baseline-127"
+    },
+    {
+      "id": 128,
+      "canonical_fingerprint": "baseline-128"
+    },
+    {
+      "id": 129,
+      "canonical_fingerprint": "baseline-129"
+    },
+    {
+      "id": 130,
+      "canonical_fingerprint": "baseline-130"
+    },
+    {
+      "id": 131,
+      "canonical_fingerprint": "baseline-131"
+    },
+    {
+      "id": 132,
+      "canonical_fingerprint": "baseline-132"
+    },
+    {
+      "id": 133,
+      "canonical_fingerprint": "baseline-133"
+    },
+    {
+      "id": 134,
+      "canonical_fingerprint": "baseline-134"
+    },
+    {
+      "id": 135,
+      "canonical_fingerprint": "baseline-135"
+    },
+    {
+      "id": 136,
+      "canonical_fingerprint": "baseline-136"
+    },
+    {
+      "id": 137,
+      "canonical_fingerprint": "baseline-137"
+    },
+    {
+      "id": 138,
+      "canonical_fingerprint": "baseline-138"
+    },
+    {
+      "id": 139,
+      "canonical_fingerprint": "baseline-139"
+    }
+  ],
+  "source_rows": [
+    {
+      "id": 1,
+      "property_listing_id": 1,
+      "listing_url": "https://seed.example/listing/1",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 2,
+      "property_listing_id": 2,
+      "listing_url": "https://seed.example/listing/2",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 3,
+      "property_listing_id": 3,
+      "listing_url": "https://seed.example/listing/3",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 4,
+      "property_listing_id": 4,
+      "listing_url": "https://seed.example/listing/4",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 5,
+      "property_listing_id": 5,
+      "listing_url": "https://seed.example/listing/5",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 6,
+      "property_listing_id": 6,
+      "listing_url": "https://seed.example/listing/6",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 7,
+      "property_listing_id": 7,
+      "listing_url": "https://seed.example/listing/7",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 8,
+      "property_listing_id": 8,
+      "listing_url": "https://seed.example/listing/8",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 9,
+      "property_listing_id": 9,
+      "listing_url": "https://seed.example/listing/9",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 10,
+      "property_listing_id": 10,
+      "listing_url": "https://seed.example/listing/10",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 11,
+      "property_listing_id": 11,
+      "listing_url": "https://seed.example/listing/11",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 12,
+      "property_listing_id": 12,
+      "listing_url": "https://seed.example/listing/12",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 13,
+      "property_listing_id": 13,
+      "listing_url": "https://seed.example/listing/13",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 14,
+      "property_listing_id": 14,
+      "listing_url": "https://seed.example/listing/14",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 15,
+      "property_listing_id": 15,
+      "listing_url": "https://seed.example/listing/15",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 16,
+      "property_listing_id": 16,
+      "listing_url": "https://seed.example/listing/16",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 17,
+      "property_listing_id": 17,
+      "listing_url": "https://seed.example/listing/17",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 18,
+      "property_listing_id": 18,
+      "listing_url": "https://seed.example/listing/18",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 19,
+      "property_listing_id": 19,
+      "listing_url": "https://seed.example/listing/19",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 20,
+      "property_listing_id": 20,
+      "listing_url": "https://seed.example/listing/20",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 21,
+      "property_listing_id": 21,
+      "listing_url": "https://seed.example/listing/21",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 22,
+      "property_listing_id": 22,
+      "listing_url": "https://seed.example/listing/22",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 23,
+      "property_listing_id": 23,
+      "listing_url": "https://seed.example/listing/23",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 24,
+      "property_listing_id": 24,
+      "listing_url": "https://seed.example/listing/24",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 25,
+      "property_listing_id": 25,
+      "listing_url": "https://seed.example/listing/25",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 26,
+      "property_listing_id": 26,
+      "listing_url": "https://seed.example/listing/26",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 27,
+      "property_listing_id": 27,
+      "listing_url": "https://seed.example/listing/27",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 28,
+      "property_listing_id": 28,
+      "listing_url": "https://seed.example/listing/28",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 29,
+      "property_listing_id": 29,
+      "listing_url": "https://seed.example/listing/29",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 30,
+      "property_listing_id": 30,
+      "listing_url": "https://seed.example/listing/30",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 31,
+      "property_listing_id": 31,
+      "listing_url": "https://seed.example/listing/31",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 32,
+      "property_listing_id": 32,
+      "listing_url": "https://seed.example/listing/32",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 33,
+      "property_listing_id": 33,
+      "listing_url": "https://seed.example/listing/33",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 34,
+      "property_listing_id": 34,
+      "listing_url": "https://seed.example/listing/34",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 35,
+      "property_listing_id": 35,
+      "listing_url": "https://seed.example/listing/35",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 36,
+      "property_listing_id": 36,
+      "listing_url": "https://seed.example/listing/36",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 37,
+      "property_listing_id": 37,
+      "listing_url": "https://seed.example/listing/37",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 38,
+      "property_listing_id": 38,
+      "listing_url": "https://seed.example/listing/38",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 39,
+      "property_listing_id": 39,
+      "listing_url": "https://seed.example/listing/39",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 40,
+      "property_listing_id": 40,
+      "listing_url": "https://seed.example/listing/40",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 41,
+      "property_listing_id": 41,
+      "listing_url": "https://seed.example/listing/41",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 42,
+      "property_listing_id": 42,
+      "listing_url": "https://seed.example/listing/42",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 43,
+      "property_listing_id": 43,
+      "listing_url": "https://seed.example/listing/43",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 44,
+      "property_listing_id": 44,
+      "listing_url": "https://seed.example/listing/44",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 45,
+      "property_listing_id": 45,
+      "listing_url": "https://seed.example/listing/45",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 46,
+      "property_listing_id": 46,
+      "listing_url": "https://seed.example/listing/46",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 47,
+      "property_listing_id": 47,
+      "listing_url": "https://seed.example/listing/47",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 48,
+      "property_listing_id": 48,
+      "listing_url": "https://seed.example/listing/48",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 49,
+      "property_listing_id": 49,
+      "listing_url": "https://seed.example/listing/49",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 50,
+      "property_listing_id": 50,
+      "listing_url": "https://seed.example/listing/50",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 51,
+      "property_listing_id": 51,
+      "listing_url": "https://seed.example/listing/51",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 52,
+      "property_listing_id": 52,
+      "listing_url": "https://seed.example/listing/52",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 53,
+      "property_listing_id": 53,
+      "listing_url": "https://seed.example/listing/53",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 54,
+      "property_listing_id": 54,
+      "listing_url": "https://seed.example/listing/54",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 55,
+      "property_listing_id": 55,
+      "listing_url": "https://seed.example/listing/55",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 56,
+      "property_listing_id": 56,
+      "listing_url": "https://seed.example/listing/56",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 57,
+      "property_listing_id": 57,
+      "listing_url": "https://seed.example/listing/57",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 58,
+      "property_listing_id": 58,
+      "listing_url": "https://seed.example/listing/58",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 59,
+      "property_listing_id": 59,
+      "listing_url": "https://seed.example/listing/59",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 60,
+      "property_listing_id": 60,
+      "listing_url": "https://seed.example/listing/60",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 61,
+      "property_listing_id": 61,
+      "listing_url": "https://seed.example/listing/61",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 62,
+      "property_listing_id": 62,
+      "listing_url": "https://seed.example/listing/62",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 63,
+      "property_listing_id": 63,
+      "listing_url": "https://seed.example/listing/63",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 64,
+      "property_listing_id": 64,
+      "listing_url": "https://seed.example/listing/64",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 65,
+      "property_listing_id": 65,
+      "listing_url": "https://seed.example/listing/65",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 66,
+      "property_listing_id": 66,
+      "listing_url": "https://seed.example/listing/66",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 67,
+      "property_listing_id": 67,
+      "listing_url": "https://seed.example/listing/67",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 68,
+      "property_listing_id": 68,
+      "listing_url": "https://seed.example/listing/68",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 69,
+      "property_listing_id": 69,
+      "listing_url": "https://seed.example/listing/69",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 70,
+      "property_listing_id": 70,
+      "listing_url": "https://seed.example/listing/70",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 71,
+      "property_listing_id": 71,
+      "listing_url": "https://seed.example/listing/71",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 72,
+      "property_listing_id": 72,
+      "listing_url": "https://seed.example/listing/72",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 73,
+      "property_listing_id": 73,
+      "listing_url": "https://seed.example/listing/73",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 74,
+      "property_listing_id": 74,
+      "listing_url": "https://seed.example/listing/74",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 75,
+      "property_listing_id": 75,
+      "listing_url": "https://seed.example/listing/75",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 76,
+      "property_listing_id": 76,
+      "listing_url": "https://seed.example/listing/76",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 77,
+      "property_listing_id": 77,
+      "listing_url": "https://seed.example/listing/77",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 78,
+      "property_listing_id": 78,
+      "listing_url": "https://seed.example/listing/78",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 79,
+      "property_listing_id": 79,
+      "listing_url": "https://seed.example/listing/79",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 80,
+      "property_listing_id": 80,
+      "listing_url": "https://seed.example/listing/80",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 81,
+      "property_listing_id": 81,
+      "listing_url": "https://seed.example/listing/81",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 82,
+      "property_listing_id": 82,
+      "listing_url": "https://seed.example/listing/82",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 83,
+      "property_listing_id": 83,
+      "listing_url": "https://seed.example/listing/83",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 84,
+      "property_listing_id": 84,
+      "listing_url": "https://seed.example/listing/84",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 85,
+      "property_listing_id": 85,
+      "listing_url": "https://seed.example/listing/85",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 86,
+      "property_listing_id": 86,
+      "listing_url": "https://seed.example/listing/86",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 87,
+      "property_listing_id": 87,
+      "listing_url": "https://seed.example/listing/87",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 88,
+      "property_listing_id": 88,
+      "listing_url": "https://seed.example/listing/88",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 89,
+      "property_listing_id": 89,
+      "listing_url": "https://seed.example/listing/89",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 90,
+      "property_listing_id": 90,
+      "listing_url": "https://seed.example/listing/90",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 91,
+      "property_listing_id": 91,
+      "listing_url": "https://seed.example/listing/91",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 92,
+      "property_listing_id": 92,
+      "listing_url": "https://seed.example/listing/92",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 93,
+      "property_listing_id": 93,
+      "listing_url": "https://seed.example/listing/93",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 94,
+      "property_listing_id": 94,
+      "listing_url": "https://seed.example/listing/94",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 95,
+      "property_listing_id": 95,
+      "listing_url": "https://seed.example/listing/95",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 96,
+      "property_listing_id": 96,
+      "listing_url": "https://seed.example/listing/96",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 97,
+      "property_listing_id": 97,
+      "listing_url": "https://seed.example/listing/97",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 98,
+      "property_listing_id": 98,
+      "listing_url": "https://seed.example/listing/98",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 99,
+      "property_listing_id": 99,
+      "listing_url": "https://seed.example/listing/99",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 100,
+      "property_listing_id": 100,
+      "listing_url": "https://seed.example/listing/100",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 101,
+      "property_listing_id": 101,
+      "listing_url": "https://seed.example/listing/101",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 102,
+      "property_listing_id": 102,
+      "listing_url": "https://seed.example/listing/102",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 103,
+      "property_listing_id": 103,
+      "listing_url": "https://seed.example/listing/103",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 104,
+      "property_listing_id": 104,
+      "listing_url": "https://seed.example/listing/104",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 105,
+      "property_listing_id": 105,
+      "listing_url": "https://seed.example/listing/105",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 106,
+      "property_listing_id": 106,
+      "listing_url": "https://seed.example/listing/106",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 107,
+      "property_listing_id": 107,
+      "listing_url": "https://seed.example/listing/107",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 108,
+      "property_listing_id": 108,
+      "listing_url": "https://seed.example/listing/108",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 109,
+      "property_listing_id": 109,
+      "listing_url": "https://seed.example/listing/109",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 110,
+      "property_listing_id": 110,
+      "listing_url": "https://seed.example/listing/110",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 111,
+      "property_listing_id": 111,
+      "listing_url": "https://seed.example/listing/111",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 112,
+      "property_listing_id": 112,
+      "listing_url": "https://seed.example/listing/112",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 113,
+      "property_listing_id": 113,
+      "listing_url": "https://seed.example/listing/113",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 114,
+      "property_listing_id": 114,
+      "listing_url": "https://seed.example/listing/114",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 115,
+      "property_listing_id": 115,
+      "listing_url": "https://seed.example/listing/115",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 116,
+      "property_listing_id": 116,
+      "listing_url": "https://seed.example/listing/116",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 117,
+      "property_listing_id": 117,
+      "listing_url": "https://seed.example/listing/117",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 118,
+      "property_listing_id": 118,
+      "listing_url": "https://seed.example/listing/118",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 119,
+      "property_listing_id": 119,
+      "listing_url": "https://seed.example/listing/119",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 120,
+      "property_listing_id": 120,
+      "listing_url": "https://seed.example/listing/120",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 121,
+      "property_listing_id": 121,
+      "listing_url": "https://seed.example/listing/121",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 122,
+      "property_listing_id": 122,
+      "listing_url": "https://seed.example/listing/122",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 123,
+      "property_listing_id": 123,
+      "listing_url": "https://seed.example/listing/123",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 124,
+      "property_listing_id": 124,
+      "listing_url": "https://seed.example/listing/124",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 125,
+      "property_listing_id": 125,
+      "listing_url": "https://seed.example/listing/125",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 126,
+      "property_listing_id": 126,
+      "listing_url": "https://seed.example/listing/126",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 127,
+      "property_listing_id": 127,
+      "listing_url": "https://seed.example/listing/127",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 128,
+      "property_listing_id": 128,
+      "listing_url": "https://seed.example/listing/128",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 129,
+      "property_listing_id": 129,
+      "listing_url": "https://seed.example/listing/129",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 130,
+      "property_listing_id": 130,
+      "listing_url": "https://seed.example/listing/130",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 131,
+      "property_listing_id": 131,
+      "listing_url": "https://seed.example/listing/131",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 132,
+      "property_listing_id": 132,
+      "listing_url": "https://seed.example/listing/132",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 133,
+      "property_listing_id": 133,
+      "listing_url": "https://seed.example/listing/133",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 134,
+      "property_listing_id": 134,
+      "listing_url": "https://seed.example/listing/134",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 135,
+      "property_listing_id": 135,
+      "listing_url": "https://seed.example/listing/135",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 136,
+      "property_listing_id": 136,
+      "listing_url": "https://seed.example/listing/136",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 137,
+      "property_listing_id": 137,
+      "listing_url": "https://seed.example/listing/137",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 138,
+      "property_listing_id": 138,
+      "listing_url": "https://seed.example/listing/138",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 139,
+      "property_listing_id": 139,
+      "listing_url": "https://seed.example/listing/139",
+      "source_name": "partner_seed"
+    },
+    {
+      "id": 140,
+      "property_listing_id": 1,
+      "listing_url": "https://seed.example/secondary/1",
+      "source_name": "partner_seed_secondary"
+    },
+    {
+      "id": 141,
+      "property_listing_id": 2,
+      "listing_url": "https://seed.example/secondary/2",
+      "source_name": "partner_seed_secondary"
+    },
+    {
+      "id": 142,
+      "property_listing_id": 3,
+      "listing_url": "https://seed.example/secondary/3",
+      "source_name": "partner_seed_secondary"
+    },
+    {
+      "id": 143,
+      "property_listing_id": 4,
+      "listing_url": "https://seed.example/secondary/4",
+      "source_name": "partner_seed_secondary"
+    },
+    {
+      "id": 144,
+      "property_listing_id": 5,
+      "listing_url": "https://seed.example/secondary/5",
+      "source_name": "partner_seed_secondary"
+    }
+  ],
+  "checksum": "77f7a01f10aa8fd8699ad5783226864cd6face90c1b0f18bcc0a43a1a42351a3"
+}
