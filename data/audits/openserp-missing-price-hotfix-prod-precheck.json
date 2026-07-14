@@ -1,0 +1,31 @@
+{
+  "precheck_id": "openserp-missing-price-hotfix-prod-precheck-2026-07-14",
+  "checked_at_utc": "2026-07-14T15:03:36.650Z",
+  "deployment_before_hotfix": {
+    "deployment_id": "dpl_DWw8kA4LDEv2R8tHSAXqzFGFPEPF",
+    "alias": "https://akarfinder.vercel.app",
+    "status": "Ready",
+    "commit_reference_source": "docs/SESSION.md provenance (project is CLI-deployed, not GitHub-linked; Vercel API exposes no git SHA for this deployment)",
+    "commit_reference_best_effort": "d9a08bf (fix(search): harden persisted OpenSERP listing display) — 3eaa7d4 is the docs-only follow-up commit that recorded this deployment id"
+  },
+  "flag_before": {
+    "PERSISTED_OPENSERP_LISTINGS_ENABLED": "present in Vercel Production env (value not read/printed; existence confirmed via `vercel env ls production`)"
+  },
+  "db_counts_read_only": {
+    "property_listings": 316,
+    "listing_sources": 321,
+    "openserp_property_listings": 177,
+    "openserp_listing_sources": 177
+  },
+  "db_integrity_read_only": {
+    "orphan_sources_global": 0,
+    "duplicate_canonical_urls_global": 0,
+    "unsafe_collisions_global": 0
+  },
+  "reference_counts_from_mission_brief": {
+    "property_listings": 316,
+    "listing_sources": 321,
+    "openserp_listings": 177,
+    "openserp_sources": 177
+  }
+}

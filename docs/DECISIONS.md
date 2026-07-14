@@ -2973,3 +2973,15 @@ Reason:
 Impact:
 - `Prix non communique` reste le comportement public prudent.
 - Aucune valeur ne sera inferee ou copiee depuis une page source non autorisee.
+
+## 2026-07-14 - OPENSERP-MISSING-PRICE-HOTFIX-PROD-ACTIVATION-1
+
+Decision:
+- Deployer le correctif `5c94919` (deja valide en Preview) en Production, sans modification de code additionnelle.
+
+Reason:
+- P0: des prix `0 DH` faux etaient visibles publiquement en Production sur les resultats OpenSERP sans prix acquis.
+
+Impact:
+- Production servie depuis `dpl_4D3md62NsENrgZxAPcTTDVXiTxKH`; flag `PERSISTED_OPENSERP_LISTINGS_ENABLED=true` inchange; aucune ecriture Supabase; aucun relancement du writer OpenSERP.
+- Constat annexe hors perimetre: le libelle de section "Annonces partenaires AkarFinder" appose a tort sur les resultats OpenSERP est anterieur a ce hotfix (confirme present sur `dpl_DWw8kA4LDEv2R8tHSAXqzFGFPEPF`) et necessite une mission dediee (`OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1`).

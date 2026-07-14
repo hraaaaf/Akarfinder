@@ -5206,3 +5206,22 @@ Condition:
 
 Prochaine mission unique:
 - `OPENSERP-SOURCE-PRICE-ACCESS-REVIEW-1`.
+
+## 2026-07-14 - OPENSERP-MISSING-PRICE-HOTFIX-PROD-ACTIVATION-1
+
+Etat:
+- Hotfix d affichage des prix absents active en Production.
+- Deployment: `dpl_4D3md62NsENrgZxAPcTTDVXiTxKH` sur `https://akarfinder.vercel.app`.
+- Flag Production: `PERSISTED_OPENSERP_LISTINGS_ENABLED=true` (inchange).
+
+Validation:
+- Rabat: 18 resultats externes, 14 sans prix, 0 occurrence `0 DH`, 14 `Prix non communique`.
+- Comparaison directe avec l ancien deployment: 14 `0 DH` avant, 0 apres.
+- Build 63/63, tests 1492/1492, smoke HTTP et console/reseau: PASS.
+- Rollback prepare (`dpl_DWw8kA4LDEv2R8tHSAXqzFGFPEPF`), non execute.
+
+Constat hors perimetre:
+- Les resultats OpenSERP sont affiches sous un intitule de section "Annonces partenaires AkarFinder", trompeur et anterieur a cette mission.
+
+Prochaine mission unique:
+- `OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1`.

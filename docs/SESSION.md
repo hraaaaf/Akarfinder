@@ -12033,3 +12033,29 @@ Impact:
 
 Prochaine etape:
 - `OPENSERP-SOURCE-PRICE-ACCESS-REVIEW-1`.
+
+## 2026-07-14 - OPENSERP-MISSING-PRICE-HOTFIX-PROD-ACTIVATION-1
+
+Statut:
+- Hotfix deploye en Production. Verdict: GO, aucun rollback necessaire.
+
+Deploiement:
+- Avant: `dpl_DWw8kA4LDEv2R8tHSAXqzFGFPEPF`. Apres: `dpl_4D3md62NsENrgZxAPcTTDVXiTxKH`.
+- Alias `akarfinder.vercel.app`: inchange. Flag `PERSISTED_OPENSERP_LISTINGS_ENABLED=true`: inchange.
+
+Validation:
+- Precheck DB lecture seule: `316` property_listings, `321` listing_sources, `177`/`177` OpenSERP, 0 orphelin/doublon/collision.
+- Tests: `test:openserp-ingestion` 20/20, `npm test` 1439+53=1492/1492. Build: 63/63, 0 erreur. `git diff --check`: PASS.
+- Smoke HTTP (13 routes): toutes correctes, `/listings/137` 404, demos noindex.
+- Rabat en Production: 18 resultats externes, 14 sans prix, 4 avec prix valide, `0` occurrence `0 DH`, `14` `Prix non communique`.
+- Comparaison directe avec l ancien deployment (URL non aliasee toujours accessible): `14` occurrences `0 DH` avant, `0` apres — preuve avant/apres correcte.
+- Console/reseau: 0 erreur, toutes requetes 200, aucun appel cote navigateur vers OpenSERP ou une page source.
+- Mobile 390px: aucun overflow horizontal.
+- Desktop 1280 et mobile 375 non captures separement (validation arretee plus tot a la demande de l operateur une fois les criteres critiques confirmes).
+- Scan securite complet (PII/wording interdit) non execute en passe dediee (deprioritise a la demande de l operateur); aucun signal releve dans les captures/texte deja extraits.
+
+Constat hors perimetre (non introduit par cette mission, confirme anterieur):
+- `/search` groupe les resultats OpenSERP sous "Annonces partenaires AkarFinder" — libelle trompeur, deja present sur `dpl_DWw8kA4LDEv2R8tHSAXqzFGFPEPF` avant ce hotfix. Code en cause: `components/search/LightZillowSearchShell.tsx` (`PartnerListingsSection`).
+
+Prochaine etape:
+- `OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1`.
