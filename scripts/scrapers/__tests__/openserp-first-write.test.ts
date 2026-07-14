@@ -5,6 +5,7 @@ import {
   FIRST_WRITE_SELECTION_ALGORITHM_VERSION,
   selectFirstWriteCandidates,
 } from "../../../lib/openserp-ingestion/first-write.js";
+import { splitOpenSerpCandidatesForDatabaseWrite } from "../../../lib/openserp-ingestion/pipeline.js";
 import type { OpenSerpListingCandidate } from "../../../lib/openserp-ingestion/types.js";
 
 function makeCandidate(input: Partial<OpenSerpListingCandidate> & { candidate_id: string; city: "Casablanca" | "Rabat" | "Marrakech"; domain?: string }): OpenSerpListingCandidate {
@@ -77,4 +78,12 @@ test("selectFirstWriteCandidates is deterministic and excludes unsupported domai
         candidate.reason === "source_domain_not_publicly_allowed",
     ),
   );
+});
+
+test("splitOpenSerpCandidatesForDatabaseWrite skips values outside PostgreSQL INTEGER", () => {
+  const valid = makeCandidate({ candidate_id: "valid", city: "Casablanca" });
+  const invalid = makeCandidate({ candidate_id: "invalid", city: "Casablanca", extracted: { ...valid.extracted, price_mad: 2_147_483_648 } });
+  const result = splitOpenSerpCandidatesForDatabaseWrite([valid, invalid]);
+  assert.deepEqual(result.writeableCandidates.map((candidate) => candidate.candidate_id), ["valid"]);
+  assert.deepEqual(result.skippedCandidates, [{ candidate_id: "invalid", reason: "price_mad_out_of_postgresql_integer_range" }]);
 });

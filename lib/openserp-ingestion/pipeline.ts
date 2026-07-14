@@ -298,7 +298,7 @@ function mergeCandidate(existing: OpenSerpListingCandidate, incoming: OpenSerpLi
   };
 }
 
-function toPropertyRow(candidate: OpenSerpListingCandidate, now: string) {
+export function buildOpenSerpPropertyRow(candidate: OpenSerpListingCandidate, now: string) {
   const completeness = scoreCompleteness(candidate.extracted);
   return {
     canonical_fingerprint: candidate.canonical_fingerprint,
@@ -504,6 +504,34 @@ async function fetchExistingSnapshots(
   };
 }
 
+/** Reject values that PostgreSQL INTEGER cannot store before any write begins. */
+export function splitOpenSerpCandidatesForDatabaseWrite(
+  candidates: OpenSerpListingCandidate[],
+): {
+  writeableCandidates: OpenSerpListingCandidate[];
+  skippedCandidates: Array<{ candidate_id: string; reason: string }>;
+} {
+  const postgresIntegerMax = 2_147_483_647;
+  const writeableCandidates: OpenSerpListingCandidate[] = [];
+  const skippedCandidates: Array<{ candidate_id: string; reason: string }> = [];
+
+  for (const candidate of candidates) {
+    const price = candidate.extracted.price_mad;
+    const surface = candidate.extracted.surface_m2;
+    const invalidPrice = price !== null && price !== undefined && (!Number.isInteger(price) || price < 0 || price > postgresIntegerMax);
+    const invalidSurface = surface !== null && surface !== undefined && (!Number.isInteger(surface) || surface < 0 || surface > postgresIntegerMax);
+    if (invalidPrice) {
+      skippedCandidates.push({ candidate_id: candidate.candidate_id, reason: "price_mad_out_of_postgresql_integer_range" });
+    } else if (invalidSurface) {
+      skippedCandidates.push({ candidate_id: candidate.candidate_id, reason: "surface_m2_out_of_postgresql_integer_range" });
+    } else {
+      writeableCandidates.push(candidate);
+    }
+  }
+
+  return { writeableCandidates, skippedCandidates };
+}
+
 export async function writeOpenSerpCandidatesToSupabase(
   candidates: OpenSerpListingCandidate[],
   options: Pick<OpenSerpPilotOptions, "runId" | "reportPath" | "maxNew" | "maxUpdates"> & {
@@ -626,7 +654,7 @@ export async function writeOpenSerpCandidatesToSupabase(
   try {
     for (let start = 0; start < candidates.length; start += batchSize) {
       const batch = candidates.slice(start, start + batchSize);
-      const propertyPayload = batch.map((candidate) => toPropertyRow(candidate, now));
+      const propertyPayload = batch.map((candidate) => buildOpenSerpPropertyRow(candidate, now));
       const propertyUpsert = await supabase
         .from("property_listings")
         .upsert(propertyPayload, { onConflict: "canonical_fingerprint" })

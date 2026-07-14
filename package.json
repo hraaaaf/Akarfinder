@@ -21,6 +21,7 @@
     "audit:rabat-agdal-web-index": "tsx scripts/audits/rabat-agdal-web-index-vertical-proof.ts",
     "audit:rabat-agdal-live-web-discovery": "tsx scripts/audits/rabat-agdal-live-web-discovery.ts",
     "audit:openserp-local-rabat-agdal-live-proof": "tsx scripts/audits/openserp-local-rabat-agdal-live-proof.ts",
+    "audit:openserp-first-write-rollback": "tsx scripts/audits/openserp-first-write-rollback-rehearsal.ts",
     "audit:rabat-agdal-openserp-quality-funnel": "tsx scripts/audits/rabat-agdal-openserp-quality-funnel-audit.ts",
     "audit:classifier-reference-corpus": "tsx scripts/audits/classifier-reference-corpus-expansion.ts",
     "audit:classifier-reference-human-review": "tsx scripts/audits/classifier-reference-human-review-and-balance.ts",

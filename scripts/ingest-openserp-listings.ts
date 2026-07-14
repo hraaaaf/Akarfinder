@@ -6,6 +6,7 @@ import {
   executeOpenSerpDryRun,
   loadLockedFirstWriteManifest,
   runPostWriteIdempotenceCheck,
+  splitOpenSerpCandidatesForDatabaseWrite,
   writeOpenSerpCandidatesToSupabase,
 } from "@/lib/openserp-ingestion/pipeline";
 import { loadEnvFile } from "@/lib/openserp-ingestion/env";
@@ -152,7 +153,8 @@ async function main() {
     if (!candidates) {
       throw new Error("no candidates available for write");
     }
-    writeResult = await writeOpenSerpCandidatesToSupabase(candidates, {
+    const { writeableCandidates, skippedCandidates } = splitOpenSerpCandidatesForDatabaseWrite(candidates);
+    writeResult = await writeOpenSerpCandidatesToSupabase(writeableCandidates, {
       runId: args.runId,
       reportPath: reportRoot,
       maxNew: args.maxNew,
@@ -162,14 +164,17 @@ async function main() {
       manifestSha256: lockedManifest?.manifest_sha256,
       sourceRunId: lockedManifest?.source_run_id,
       selectedCandidateIds: lockedManifest?.selected_candidate_ids,
-      excludedCandidates: lockedManifest
-        ? Object.entries(lockedManifest.exclusion_reasons).map(([candidate_id, reason]) => ({
+      excludedCandidates: [
+        ...(lockedManifest
+          ? Object.entries(lockedManifest.exclusion_reasons).map(([candidate_id, reason]) => ({
             candidate_id,
             reason,
           }))
-        : undefined,
+          : []),
+        ...skippedCandidates,
+      ],
     });
-    const postWriteIdempotence = await runPostWriteIdempotenceCheck(candidates);
+    const postWriteIdempotence = await runPostWriteIdempotenceCheck(writeableCandidates);
     await writeFile(
       join(runDir, "post-write-idempotence.json"),
       JSON.stringify(postWriteIdempotence, null, 2),
