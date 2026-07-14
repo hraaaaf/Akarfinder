@@ -5181,3 +5181,16 @@ Etat:
 
 Prochaine mission unique:
 - `OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1`.
+
+## 2026-07-14 - OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1
+
+Etat:
+- Affichage Production des listings OpenSERP persistants: actif.
+- Deployment: `dpl_DWw8kA4LDEv2R8tHSAXqzFGFPEPF`.
+- Flag Production: `PERSISTED_OPENSERP_LISTINGS_ENABLED=true`.
+- Production officielle: `96.5%`.
+
+Validation:
+- Routes publiques, SEO, API, badges externes et rendu desktop/mobile: PASS.
+- Le stock persiste reste distinct des annonces partenaires et ouvre uniquement les URLs source externes.
+- Rollback deploiement disponible: `dpl_55mag9XN1U6qKmyr2HWA6P5hK1iw`.

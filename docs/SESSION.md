@@ -11978,3 +11978,23 @@ Correction:
 
 Prochaine etape:
 - `OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1`
+
+## 2026-07-14 - OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1
+
+Statut:
+- Affichage OpenSERP persiste active en Production.
+- Verdict: `GO_FOR_DISPLAY_PROD_ACTIVATION`.
+- Deployment: `dpl_DWw8kA4LDEv2R8tHSAXqzFGFPEPF` sur `https://akarfinder.vercel.app`.
+- Flag Production: `PERSISTED_OPENSERP_LISTINGS_ENABLED=true`.
+
+Preuves:
+- Build Vercel: PASS, `63/63` pages; smoke HTTP: PASS; `/listings/137`: `404` attendu.
+- Playwright desktop/mobile: `45` cartes Casablanca, `35` Rabat et `20` Marrakech, badge externe visible, zero lien interne `/listings`, zero badge partenaire, zero overflow et zero erreur navigateur critique.
+- Post-verification Supabase en lecture seule: `316` listings, `321` sources, `177` lignes OpenSERP/sources, zero orphelin, doublon canonique, ecrasement partenaire ou ecriture Observation History.
+
+Rollback:
+- Niveau 1: remettre le flag a `false` et redeployer.
+- Niveau 2: restaurer `dpl_55mag9XN1U6qKmyr2HWA6P5hK1iw`.
+
+Prochaine etape:
+- Mission de suivi produit et qualite du stock OpenSERP, sans modifier ce rollback.

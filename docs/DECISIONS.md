@@ -2937,3 +2937,16 @@ Reason:
 Impact:
 - Le candidat est pret pour une activation d affichage Production separee.
 - La progression officielle reste `96.5%` pendant cette mission; aucun flag Production n a ete active.
+
+## 2026-07-14 - OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1
+
+Decision:
+- Activer uniquement `PERSISTED_OPENSERP_LISTINGS_ENABLED=true` dans le scope Vercel Production et deployer le candidat applicatif valide.
+
+Reason:
+- Les controles Production confirment les cartes OpenSERP dans les trois villes, sans lien de detail interne, badge partenaire, fuite, PII, erreur navigateur critique ou regression de route.
+- La verification Supabase en lecture seule confirme que le lot de 177 annonces et sources reste integre et idempotent, sans observation creee.
+
+Impact:
+- Les resultats OpenSERP persistants sont maintenant visibles sur l alias public comme `Resultat web externe`.
+- Le rollback immediat conserve le flag OFF comme premier niveau et `dpl_55mag9XN1U6qKmyr2HWA6P5hK1iw` comme second niveau.

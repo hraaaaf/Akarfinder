@@ -1,0 +1,25 @@
+{
+  "mission": "OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1",
+  "verified_at_utc": "2026-07-14T12:03:33.000Z",
+  "production_alias": "https://akarfinder.vercel.app",
+  "rollback_deployment_id": "dpl_55mag9XN1U6qKmyr2HWA6P5hK1iw",
+  "rollback_deployment_url": "https://akarfinder-q9eyezq5k-achraf-benmoussa-s-projects.vercel.app",
+  "rollback_deployment_status": "READY",
+  "production_flag_before": "absent_false",
+  "database": {
+    "property_listings": 316,
+    "listing_sources": 321,
+    "openserp_property_listings": 177,
+    "openserp_listing_sources": 177,
+    "orphan_sources": 0,
+    "orphan_openserp_listings": 0,
+    "duplicate_canonical_urls": 0,
+    "unsafe_collisions": 0,
+    "partner_rows_overwritten": 0,
+    "observation_count": 0
+  },
+  "rollback_strategy": {
+    "level_1": "Set the production display flag to false and redeploy if the runtime does not pick it up.",
+    "level_2": "Promote the preserved rollback deployment without changing Supabase data."
+  }
+}

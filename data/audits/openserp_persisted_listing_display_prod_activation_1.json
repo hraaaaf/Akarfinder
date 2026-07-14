@@ -1,0 +1,74 @@
+{
+  "mission": "OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1",
+  "verified_at_utc": "2026-07-14T12:10:23.862Z",
+  "status": "completed",
+  "verdict": "GO_FOR_DISPLAY_PROD_ACTIVATION",
+  "deployment": {
+    "production_deployment_id": "dpl_DWw8kA4LDEv2R8tHSAXqzFGFPEPF",
+    "production_url": "https://akarfinder-20fyhaipn-achraf-benmoussa-s-projects.vercel.app",
+    "production_alias": "https://akarfinder.vercel.app",
+    "target": "production",
+    "application_commit": "7e92d8383a0ef5454e48cfed79cfee483ca91604",
+    "application_tree_matches_validated_head": true,
+    "rollback_deployment_id": "dpl_55mag9XN1U6qKmyr2HWA6P5hK1iw",
+    "rollback_url": "https://akarfinder-q9eyezq5k-achraf-benmoussa-s-projects.vercel.app"
+  },
+  "flag": {
+    "name": "PERSISTED_OPENSERP_LISTINGS_ENABLED",
+    "production_scope_only": true,
+    "value_after_activation": true,
+    "other_production_variables_modified": false
+  },
+  "smoke_tests": {
+    "routes_passed": 14,
+    "routes_failed": 0,
+    "internal_listing_137_status": 404,
+    "build_pages": "63/63",
+    "build_errors": 0,
+    "runtime_errors": 0,
+    "serialization_errors": 0
+  },
+  "display": {
+    "casablanca_external_cards": 45,
+    "rabat_external_cards": 35,
+    "marrakech_external_cards": 20,
+    "external_badge_visible": true,
+    "partner_badge_on_external": false,
+    "internal_listing_links_on_external": 0,
+    "external_links_safe": true,
+    "horizontal_overflow": false,
+    "invalid_images": 0,
+    "console_errors": 0,
+    "page_errors": 0,
+    "critical_request_failures": 0
+  },
+  "database_read_only_verification": {
+    "property_listings": 316,
+    "listing_sources": 321,
+    "openserp_property_listings": 177,
+    "openserp_listing_sources": 177,
+    "orphan_sources": 0,
+    "orphan_openserp_listings": 0,
+    "duplicate_canonical_urls": 0,
+    "partner_rows_overwritten": 0,
+    "observations_created": 0,
+    "post_write_new_listings": 0,
+    "post_write_new_sources": 0
+  },
+  "safety": {
+    "pii_hits": 0,
+    "forbidden_wording_hits": 0,
+    "direct_source_page_fetches": 0,
+    "downloaded_images": 0,
+    "search_gateway_modified": false,
+    "ranking_modified": false,
+    "openserp_provider_modified": false,
+    "production_database_written": false
+  },
+  "rollback": {
+    "triggered": false,
+    "level_1": "set PERSISTED_OPENSERP_LISTINGS_ENABLED=false and redeploy",
+    "level_2": "rollback to dpl_55mag9XN1U6qKmyr2HWA6P5hK1iw",
+    "data_deletion_required": false
+  }
+}

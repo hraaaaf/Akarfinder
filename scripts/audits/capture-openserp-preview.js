@@ -7,7 +7,9 @@ if (!baseUrl || !/^https:\/\//.test(baseUrl)) {
   throw new Error("Set OPENSERP_PREVIEW_URL to the HTTPS Preview URL.");
 }
 
-const outputDir = path.resolve("data/audits/openserp-first-write-display-remediation-1");
+const outputDir = path.resolve(
+  process.env.OPENSERP_AUDIT_OUTPUT_DIR ?? "data/audits/openserp-first-write-display-remediation-1",
+);
 fs.mkdirSync(outputDir, { recursive: true });
 
 const cityRoutes = [
