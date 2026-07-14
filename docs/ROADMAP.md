@@ -5166,7 +5166,7 @@ Etat:
 - Premier lot OpenSERP ecrit dans Supabase Production: `177` listings et `177` sources.
 - Production publique: affichage OpenSERP toujours desactive.
 - Preview Supabase validee avec `PERSISTED_OPENSERP_LISTINGS_ENABLED=true`.
-- Verdict: `GO_FOR_DISPLAY_PROD_ACTIVATION`.
+- Verdict: `PARTIAL_DATA_WRITTEN`.
 
 Prochaine mission unique:
-- `OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1`.
+- `OPENSERP-PERSISTED-LISTING-DISPLAY-REMEDIATION-1`.

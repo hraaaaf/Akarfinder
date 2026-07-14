@@ -11939,7 +11939,7 @@ Prochaine etape:
 
 Statut:
 - Premier write Supabase Production execute une seule fois et valide.
-- Verdict: `GO_FOR_DISPLAY_PROD_ACTIVATION`.
+- Verdict: `PARTIAL_DATA_WRITTEN`.
 - Application Production, alias et variables Production: inchanges.
 - Affichage OpenSERP Production: desactive (flag absent, donc false).
 
@@ -11958,4 +11958,4 @@ Preview:
 - Le navigateur integre n a pas pu attacher sa webview; responsive et console navigateur restent a refaire, sans etre annonces comme valides.
 
 Prochaine etape:
-- `OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1`
+- `OPENSERP-PERSISTED-LISTING-DISPLAY-REMEDIATION-1`

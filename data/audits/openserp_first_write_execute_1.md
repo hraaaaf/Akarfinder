@@ -1,7 +1,7 @@
 # OPENSERP-FIRST-WRITE-EXECUTE-1
 
 ## Verdict
-`GO_FOR_DISPLAY_PROD_ACTIVATION`
+`PARTIAL_DATA_WRITTEN`
 
 The authorized first production database write completed once from the locked OpenSERP corpus. The public production application and its Vercel environment were not changed. Persisted OpenSERP display remains disabled in Production.
 
@@ -48,4 +48,4 @@ The Preview API returned external-web-result models for city searches: Casablanc
 The in-app browser could not attach its webview. Responsive and browser-console checks are recorded as not verifiable rather than passed. HTTP, Preview API, build, and Vercel build-log checks passed.
 
 ## Next Mission
-`OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1`
+`OPENSERP-PERSISTED-LISTING-DISPLAY-REMEDIATION-1`

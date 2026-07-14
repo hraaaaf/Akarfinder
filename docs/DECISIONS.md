@@ -2924,4 +2924,4 @@ Reason:
 
 Impact:
 - La base Production contient le premier stock OpenSERP controle, mais ce stock reste invisible sur l alias public.
-- Les controles responsive et console navigateur restent a repeter pendant l activation, car le navigateur integre n etait pas attachable ici.
+- Les controles responsive et console navigateur restent a repeter avant toute activation, car le navigateur integre n etait pas attachable ici.

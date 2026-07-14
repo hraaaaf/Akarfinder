@@ -12,6 +12,6 @@
   "production": {"database_modified":true,"app_deployed":false,"alias_modified":false,"environment_modified":false,"persisted_openserp_flag":"absent_false","public_openserp_display":false},
   "security": {"direct_source_page_fetches":0,"downloaded_images":0,"phone_hits":0,"whatsapp_hits":0,"personal_email_hits":0,"secret_hits":0,"unsafe_url_hits":0},
   "rollback": {"pre_write_snapshot_created":true,"write_manifest_created":true,"rollback_manifest_created":true,"rollback_tested_in_isolation":true,"rollback_executed_in_production":false,"rollback_artifact_path":"data/ingestion-runs/openserp-first-write-2026-07-13-01/rollback-manifest.json"},
-  "verdict": "GO_FOR_DISPLAY_PROD_ACTIVATION",
+  "verdict": "PARTIAL_DATA_WRITTEN",
   "remaining_conditions": ["The in-app browser could not attach, so responsive and browser-console evidence is not available in this session.","Production display remains intentionally disabled until the dedicated activation mission."]
 }

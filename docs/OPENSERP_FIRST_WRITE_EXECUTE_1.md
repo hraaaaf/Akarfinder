@@ -1,7 +1,7 @@
 # OpenSERP First Write Execute 1
 
 ## Status
-`GO_FOR_DISPLAY_PROD_ACTIVATION`
+`PARTIAL_DATA_WRITTEN`
 
 The first controlled OpenSERP batch wrote `177` new external-web-result listings and `177` linked sources to Supabase Production. The batch was validated by Preview while the Production display flag remained disabled.
 
