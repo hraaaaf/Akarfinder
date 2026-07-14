@@ -99,14 +99,22 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   const hasPackage = packageScore.overall_label !== "Données insuffisantes";
   const isRent = listing.transaction_type === "rent";
   const passport = buildAkarInfoPassportForListing(listing);
+  const isLimitedExternalResult =
+    listing.source_badge === "external_web_result" && listing.original_source_required === true;
+  // Public external rows are admitted only with a safe listing_url.
+  const resultHref = isLimitedExternalResult ? listing.listing_url! : `/listings/${listing.id}`;
+  const resultTarget = isLimitedExternalResult ? "_blank" : undefined;
+  const resultRel = isLimitedExternalResult ? "noopener noreferrer" : undefined;
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-border/15 dark:border-white/10 bg-card dark:bg-white/[0.045] shadow-[0_14px_40px_rgba(2,10,24,0.15)] dark:shadow-[0_14px_40px_rgba(2,10,24,0.4)] backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-bronze-500/40 hover:shadow-[0_26px_56px_rgba(2,10,24,0.3)] dark:hover:shadow-[0_26px_56px_rgba(2,10,24,0.55)]">
       <Link
-        href={`/listings/${listing.id}`}
+        href={resultHref}
+        target={resultTarget}
+        rel={resultRel}
         onClick={() => track({ event_name: "search_result_click", source_page: "/search", listing_id: listing.id, intent: transactionType, metadata: { city: listing.city } })}
         className="block"
-        aria-label={`Voir le bien ${listing.title}`}
+        aria-label={isLimitedExternalResult ? `Voir la source originale ${listing.title}` : `Voir le bien ${listing.title}`}
       >
         <div className="relative h-[220px] overflow-hidden">
           <div className="absolute inset-0 transition duration-500 group-hover:scale-[1.04]">
@@ -165,7 +173,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           <FavoriteToggleButton listingId={listing.id} variant="icon" />
         </div>
 
-        <Link href={`/listings/${listing.id}`} className="mt-3 block">
+        <Link href={resultHref} target={resultTarget} rel={resultRel} className="mt-3 block">
           <h2 className="line-clamp-1 text-[1.02rem] font-extrabold leading-snug text-foreground dark:text-white transition group-hover:text-bronze-300">
             {listing.title}
           </h2>
@@ -226,14 +234,16 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             : "Voir la source";
           return (
             <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-              <Link
-                href={`/listings/${listing.id}`}
-                onClick={() => track({ event_name: "search_result_click", source_page: "/search", listing_id: listing.id, intent: transactionType })}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.35)] transition hover:from-bronze-600 group-hover:gap-3"
-              >
-                Voir le bien
-                <ArrowRight size={15} strokeWidth={2.4} aria-hidden="true" />
-              </Link>
+              {!isLimitedExternalResult ? (
+                <Link
+                  href={`/listings/${listing.id}`}
+                  onClick={() => track({ event_name: "search_result_click", source_page: "/search", listing_id: listing.id, intent: transactionType })}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.35)] transition hover:from-bronze-600 group-hover:gap-3"
+                >
+                  Voir le bien
+                  <ArrowRight size={15} strokeWidth={2.4} aria-hidden="true" />
+                </Link>
+              ) : null}
               {showOriginal ? (
                 <a
                   href={listing.listing_url!}
