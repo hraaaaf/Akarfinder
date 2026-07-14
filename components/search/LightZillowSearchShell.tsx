@@ -141,6 +141,38 @@ function PartnerListingsSection({
   );
 }
 
+// OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1 — persisted OpenSERP rows served via
+// /api/search (source_display_type === "external_web_result"). These are not
+// AkarFinder partner listings; each card already carries its own
+// "Résultat web externe" badge, but this section heading must not imply
+// partnership on top of that.
+function PersistedExternalResultsSection({
+  listings,
+  isLoading,
+}: {
+  listings: Listing[];
+  isLoading: boolean;
+}) {
+  if (listings.length === 0) return null;
+  return (
+    <section className="mt-8 space-y-4" aria-label="Résultats web indexés">
+      <div className="border-t border-border/15 dark:border-white/10 pt-6">
+        <h2 className="text-[15px] sm:text-[16px] font-bold text-foreground dark:text-white/90">
+          Résultats web indexés
+        </h2>
+        <p className="mt-0.5 text-[12px] sm:text-[13px] text-muted-foreground dark:text-white/50">
+          Aperçus limités avec source visible — AkarFinder redirige vers le site original.
+        </p>
+      </div>
+      <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
+        {listings.map((listing) => (
+          <SearchListingCardDark key={listing.id} listing={listing} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 // SERP-PURE-GATEWAY-FIRST-1 — shown when no structured partner listings exist.
 // Does NOT replace gateway results — it appears below them as a contextual note.
 function PartnerEmptyNote({ city }: { city: string }) {
@@ -271,6 +303,18 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     });
     return sortListings(clientFiltered, sortBy);
   }, [listings, filters, sortBy]);
+
+  // OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1: persisted OpenSERP rows are not
+  // AkarFinder partner listings — split them out of the partner section using
+  // the public-safe source_display_type already computed server-side.
+  const partnerListings = useMemo(
+    () => filteredListings.filter((l) => l.source_display_type !== "external_web_result"),
+    [filteredListings]
+  );
+  const persistedExternalListings = useMemo(
+    () => filteredListings.filter((l) => l.source_display_type === "external_web_result"),
+    [filteredListings]
+  );
 
   const cities = useMemo(() => getSearchCities(listings), [listings]);
   const propertyTypes = useMemo(() => getPropertyTypes(listings), [listings]);
@@ -437,10 +481,15 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                   isLoading={isGatewayLoading}
                 />
 
-                {/* SECONDARY: Partner / first-party structured listings */}
-                {showSkeleton ? null : filteredListings.length > 0 ? (
-                  <PartnerListingsSection listings={filteredListings} isLoading={isLoading} />
-                ) : isLoading ? null : (
+                {/* SECONDARY: persisted OpenSERP rows — external, not partner */}
+                {showSkeleton ? null : (
+                  <PersistedExternalResultsSection listings={persistedExternalListings} isLoading={isLoading} />
+                )}
+
+                {/* TERTIARY: Partner / first-party structured listings */}
+                {showSkeleton ? null : partnerListings.length > 0 ? (
+                  <PartnerListingsSection listings={partnerListings} isLoading={isLoading} />
+                ) : isLoading || persistedExternalListings.length > 0 ? null : (
                   <PartnerEmptyNote city={filters.city} />
                 )}
               </>
