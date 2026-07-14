@@ -5170,3 +5170,14 @@ Etat:
 
 Prochaine mission unique:
 - `OPENSERP-PERSISTED-LISTING-DISPLAY-REMEDIATION-1`.
+
+## 2026-07-14 - OPENSERP-PERSISTED-LISTING-DISPLAY-REMEDIATION-1
+
+Etat:
+- Rendu Preview desktop, mobile, console et reseau valide pour les listings OpenSERP persistants.
+- Correction de navigation externe appliquee et Preview validee.
+- Verdict: `GO_FOR_DISPLAY_PROD_ACTIVATION`.
+- Production officielle: `96.5%`; affichage OpenSERP Production: desactive.
+
+Prochaine mission unique:
+- `OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1`.

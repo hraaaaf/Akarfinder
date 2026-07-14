@@ -11959,3 +11959,22 @@ Preview:
 
 Prochaine etape:
 - `OPENSERP-PERSISTED-LISTING-DISPLAY-REMEDIATION-1`
+
+## 2026-07-14 - OPENSERP-PERSISTED-LISTING-DISPLAY-REMEDIATION-1
+
+Statut:
+- Preview display validee avec Playwright local et Chromium.
+- Verdict: `GO_FOR_DISPLAY_PROD_ACTIVATION`.
+- Production DB, application, alias et variables: inchanges.
+
+Preuves:
+- Preview `dpl_GBZXuSeqRWeCQNhk27VBay6ZLTG2` depuis `d9a08bf`.
+- Viewports desktop `1440x1000`, `1280x800`, mobile `390x844`, `375x812`.
+- Casablanca, Rabat et Marrakech: badge externe visible, aucun overflow, aucun lien `/listings`, aucune image invalide, aucune erreur console/page.
+- Liens sources HTTP(S) securises; aucun badge partenaire sur les externes.
+
+Correction:
+- Les cartes OpenSERP persistantes ouvrent maintenant uniquement la source originale et masquent le CTA interne "Voir le bien".
+
+Prochaine etape:
+- `OPENSERP-PERSISTED-LISTING-DISPLAY-PROD-ACTIVATION-1`

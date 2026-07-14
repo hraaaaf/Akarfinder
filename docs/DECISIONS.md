@@ -2925,3 +2925,15 @@ Reason:
 Impact:
 - La base Production contient le premier stock OpenSERP controle, mais ce stock reste invisible sur l alias public.
 - Les controles responsive et console navigateur restent a repeter avant toute activation, car le navigateur integre n etait pas attachable ici.
+
+## 2026-07-14 - OPENSERP-PERSISTED-LISTING-DISPLAY-REMEDIATION-1
+
+Decision:
+- Les listings OpenSERP persistants doivent ouvrir uniquement leur URL source originale; aucun lien ou CTA interne `/listings/[id]` ne leur est autorise.
+
+Reason:
+- La preuve Preview a revele que la carte partagee gardait une navigation interne, incompatible avec la lane `external_web_result` et sa presentation limitee. Les captures desktop/mobile confirment le correctif sans regression sur les surfaces de recherche controlees.
+
+Impact:
+- Le candidat est pret pour une activation d affichage Production separee.
+- La progression officielle reste `96.5%` pendant cette mission; aucun flag Production n a ete active.

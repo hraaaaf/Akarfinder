@@ -1,0 +1,60 @@
+{
+  "mission": "OPENSERP-PERSISTED-LISTING-DISPLAY-REMEDIATION-1",
+  "verified_at": "2026-07-14T11:34:40+01:00",
+  "preview": {
+    "deployment_id": "dpl_GBZXuSeqRWeCQNhk27VBay6ZLTG2",
+    "url": "https://akarfinder-igd42w9r0-achraf-benmoussa-s-projects.vercel.app",
+    "inspect_url": "https://vercel.com/achraf-benmoussa-s-projects/akarfinder/GBZXuSeqRWeCQNhk27VBay6ZLTG2",
+    "commit_sha": "d9a08bf9cf551fba59745fc937e3130f487699d1",
+    "flag_enabled": true,
+    "supabase_connected": true
+  },
+  "render": {
+    "city_result_counts": {"casablanca": 45, "rabat": 35, "marrakech": 20},
+    "capture_count": 15,
+    "city_capture_count": 12,
+    "viewports": ["desktop-1440", "desktop-1280", "mobile-390", "mobile-375"],
+    "city_routes": ["/search?q=appartement%20casablanca", "/search?q=appartement%20rabat", "/search?q=appartement%20marrakech"],
+    "smoke_routes": ["/acheter", "/louer", "/neuf"],
+    "all_http_200": true,
+    "horizontal_overflow": false,
+    "external_badge_visible": true,
+    "partner_badge_on_external": false,
+    "internal_listing_links_on_external_search": 0,
+    "invalid_images": 0,
+    "external_links_safe": true,
+    "external_link_counts": {"casablanca": 135, "rabat": 105, "marrakech": 60},
+    "external_link_domains": ["agenz.ma", "marrakechrealty.com", "mouldar.com", "mubawab.ma", "sarouty.ma"]
+  },
+  "browser": {
+    "console_errors": 0,
+    "page_errors": 0,
+    "critical_request_failures": 0,
+    "bad_http_responses": 0,
+    "ignored_rsc_prefetch_aborts": 13,
+    "client_side_openserp_calls": false
+  },
+  "safety": {
+    "phone_hits": 0,
+    "whatsapp_hits": 0,
+    "personal_email_hits": 0,
+    "forbidden_wording_hits": 0,
+    "direct_source_page_fetches": 0,
+    "downloaded_images": 0
+  },
+  "observation_history": {
+    "audited": true,
+    "observations_created_by_first_write": 0,
+    "reason": "OpenSERP first-write persists listing and source rows only; observation capture remains disabled and public rendering does not write."
+  },
+  "production": {
+    "database_modified_by_this_mission": false,
+    "writer_relaunched": false,
+    "app_deployed": false,
+    "alias_modified": false,
+    "persisted_openserp_flag": "absent_false"
+  },
+  "correction": "External-web-result cards now route image, title, and primary navigation to the original source and suppress the internal listing CTA.",
+  "captures_local_path": "C:\\Users\\lenovo\\Documents\\AkarFinder-openserp-first-write-captures",
+  "verdict": "GO_FOR_DISPLAY_PROD_ACTIVATION"
+}

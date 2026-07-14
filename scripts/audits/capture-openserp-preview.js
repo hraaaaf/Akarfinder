@@ -38,18 +38,6 @@ const piiPatterns = [
   /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i,
 ];
 
-function safeExternalHref(href) {
-  try {
-    const url = new URL(href);
-    return (url.protocol === "https:" || url.protocol === "http:") &&
-      url.hostname.length > 0 &&
-      !url.hostname.endsWith("vercel.app") &&
-      !url.hostname.includes("localhost");
-  } catch {
-    return false;
-  }
-}
-
 async function inspectRoute(browser, route, viewport) {
   const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
   const consoleErrors = [];
@@ -67,7 +55,7 @@ async function inspectRoute(browser, route, viewport) {
 
   const response = await page.goto(`${baseUrl}${route.path}`, { waitUntil: "networkidle", timeout: 60000 });
   await page.waitForTimeout(500);
-  const pageAudit = await page.evaluate((forbidden, patterns) => {
+  const pageAudit = await page.evaluate(({ forbidden, patterns }) => {
     const bodyText = document.body.innerText.toLowerCase();
     const externalBadgeText = "résultat web externe";
     const links = Array.from(document.querySelectorAll("a[href]")).map((anchor) => ({
@@ -85,13 +73,24 @@ async function inspectRoute(browser, route, viewport) {
       externalBadgeCount: (bodyText.match(new RegExp(externalBadgeText, "g")) || []).length,
       partnerBadgeOnExternalText: bodyText.includes("partenaire premium"),
       internalListingLinks: links.filter((link) => new URL(link.href).pathname.startsWith("/listings/")).length,
-      externalLinks,
+      externalLinkAudit: {
+        count: externalLinks.length,
+        domains: [...new Set(externalLinks.map((link) => new URL(link.href).hostname))].sort(),
+        allSafe: externalLinks.every((link) => {
+          const url = new URL(link.href);
+          return (url.protocol === "https:" || url.protocol === "http:") &&
+            !url.hostname.endsWith("vercel.app") &&
+            !url.hostname.includes("localhost") &&
+            link.target === "_blank" &&
+            link.rel.includes("noopener");
+        }),
+      },
       invalidImageCount: images.filter((image) => !image.src || (image.complete && image.naturalWidth === 0)).length,
       imageCount: images.length,
       forbiddenWordingHits: forbidden.filter((word) => bodyText.includes(word)),
       piiHitCount: patterns.filter((pattern) => new RegExp(pattern, "i").test(bodyText)).length,
     };
-  }, forbiddenWording, piiPatterns.map((pattern) => pattern.source));
+  }, { forbidden: forbiddenWording, patterns: piiPatterns.map((pattern) => pattern.source) });
 
   const fileName = `${viewport.name}-${route.city || route.path.replaceAll("/", "_")}.png`;
   await page.screenshot({ path: path.join(outputDir, fileName), fullPage: true });
@@ -103,7 +102,7 @@ async function inspectRoute(browser, route, viewport) {
     status: response?.status() ?? null,
     screenshot: fileName,
     ...pageAudit,
-    externalLinksSafe: pageAudit.externalLinks.every((link) => safeExternalHref(link.href) && link.target === "_blank" && link.rel.includes("noopener")),
+    externalLinksSafe: pageAudit.externalLinkAudit.allSafe,
     consoleErrors,
     pageErrors,
     requestFailures,
@@ -121,6 +120,10 @@ async function inspectRoute(browser, route, viewport) {
     for (const route of smokeRoutes) captures.push(await inspectRoute(browser, { path: route }, viewports[0]));
 
     const cityCaptures = captures.filter((capture) => capture.city);
+    const requestFailures = captures.flatMap((capture) => capture.requestFailures);
+    const ignoredPrefetchAborts = requestFailures.filter((failure) =>
+      failure.includes("net::ERR_ABORTED") && failure.includes("?_rsc="),
+    );
     const report = {
       preview_url: baseUrl,
       generated_at: new Date().toISOString(),
@@ -134,7 +137,9 @@ async function inspectRoute(browser, route, viewport) {
         pii_hits: cityCaptures.reduce((total, capture) => total + capture.piiHitCount, 0),
         console_errors: captures.flatMap((capture) => capture.consoleErrors),
         page_errors: captures.flatMap((capture) => capture.pageErrors),
-        request_failures: captures.flatMap((capture) => capture.requestFailures),
+        request_failures: requestFailures,
+        ignored_prefetch_aborts: ignoredPrefetchAborts,
+        critical_request_failures: requestFailures.filter((failure) => !ignoredPrefetchAborts.includes(failure)),
         bad_responses: captures.flatMap((capture) => capture.badResponses),
       },
     };
