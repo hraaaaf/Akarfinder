@@ -15,7 +15,12 @@ create table if not exists source_offer_observations (
   id uuid primary key default gen_random_uuid(),
   source_offer_id bigint not null references listing_sources(id),
   observed_at timestamptz not null default now(),
-  observed_at_bucket timestamptz generated always as (date_trunc('hour', observed_at)) stored,
+  -- Explicit 'UTC' argument (3-arg date_trunc) is required: the 2-arg form
+  -- depends on the session's timezone setting and Postgres rejects it as
+  -- non-immutable inside a GENERATED column (caught by the isolated
+  -- PostgreSQL gate in AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-1,
+  -- before this migration ever reached Production).
+  observed_at_bucket timestamptz generated always as (date_trunc('hour', observed_at, 'UTC')) stored,
   displayed_price numeric,
   currency text,
   surface_m2 numeric,
