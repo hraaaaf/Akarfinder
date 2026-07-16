@@ -1,0 +1,99 @@
+{
+  "audit_id": "openserp-partner-label-fix-prod-validation-2026-07-16",
+  "mission": "OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1",
+  "checked_at_utc": "2026-07-16T18:31:00Z",
+  "context": "Deployment dpl_3F7aNUD4p591XkvF5g15XRUegdQ9 was created via `vercel --prod --yes` before an explicit GO for this specific mission was given (blocked mid-validation by the auto-mode safety classifier). The user reviewed and authorized completing full read-only validation without a preventive rollback. This audit documents that a posteriori validation.",
+  "deployment": {
+    "id": "dpl_3F7aNUD4p591XkvF5g15XRUegdQ9",
+    "state": "READY",
+    "target": "production",
+    "alias": ["akarfinder.vercel.app", "akarfinder-achraf-benmoussa-s-projects.vercel.app", "akarfinder-lafabriquedapollon-3895-achraf-benmoussa-s-projects.vercel.app"],
+    "gitCommitSha": "688f051f60810dece0e79f7b0483aba102a0f378",
+    "gitCommitMessage": "docs(prod): record missing OpenSERP price hotfix re-validation",
+    "commits_included_ancestors_verified": ["68eea2a3d0bf5a47fa19b864e175ddc8a6fb615f", "4232718b1c487f1642c68b76e27312fdd1ec3973"],
+    "rollback_target": "dpl_4D3md62NsENrgZxAPcTTDVXiTxKH (commit c6315b0)",
+    "rollback_executed": false
+  },
+  "flag_check": {
+    "PERSISTED_OPENSERP_LISTINGS_ENABLED": "present in Vercel Production env, created 2d ago (unchanged, not modified by this deployment)",
+    "other_production_env_vars_modified": false
+  },
+  "smoke_http": {
+    "routes_tested": 14,
+    "all_correct": true,
+    "listings_137_status": 404,
+    "robots_txt_status": 200,
+    "sitemap_xml_status": 200
+  },
+  "partner_label_validation": {
+    "rabat": {
+      "external_results": 18,
+      "external_badges": 54,
+      "misleading_partner_section_labels": 0,
+      "partner_badges_on_external_results": 0,
+      "internal_links_on_external_results": 0
+    },
+    "casablanca": {
+      "external_results": 45,
+      "external_badges": 135,
+      "misleading_partner_section_labels": 0,
+      "partner_badges_on_external_results": 0,
+      "internal_links_on_external_results": 0,
+      "note": "Cards previously assumed to be 'genuine partner listings' (Agenz badge, real prices e.g. 1035000/1260000 DH) were verified via the raw /api/search response to have source_display_type=external_web_result -- they are OpenSERP results from agenz.ma, not AkarFinder partner content. The pre-fix screenshot's 'Annonces partenaires AkarFinder' label on these cards was itself the mislabeling bug now fixed, not evidence of a genuine partner."
+    },
+    "marrakech": {
+      "external_results_price_check_only": true,
+      "misleading_partner_section_labels": 0,
+      "internal_links_on_external_results": 0
+    },
+    "genuine_partner_results_found": 0,
+    "genuine_partner_results_note": "Verified via raw /api/search?limit=100 (no query) and /api/search?limit=100&q=appartement: 100/100 sampled listings in both cases have source_display_type=external_web_result. No genuine (non-external) partner listing currently exists in the live searchable dataset to test misclassification against -- this is a pre-existing DB content characteristic, not introduced by this fix. The fix's filter (source_display_type !== 'external_web_result') is an unchanged-field pass-through, so it cannot itself misclassify a genuine partner even though none exist to demonstrate against today."
+  },
+  "price_hotfix_non_regression": {
+    "rabat": {"zero_dh": 0, "zero_mad": 0, "prix_non_communique": 14, "matches_baseline": true},
+    "casablanca": {"zero_dh": 0, "zero_mad": 0, "prix_non_communique": 19, "matches_baseline": true},
+    "marrakech": {"zero_dh": 0, "zero_mad": 0, "prix_non_communique": 5, "matches_baseline": true}
+  },
+  "visual": {
+    "viewports_tested": ["1440x1000", "1280x800", "390x844", "375x812"],
+    "horizontal_overflow_any_viewport": false,
+    "scrollWidth_eq_clientWidth": {"1280": "1265/1265", "390": "375/375", "375": "360/360"},
+    "broken_images": 0,
+    "screenshots_dir": "data/audits/openserp-partner-label-fix-validation-screenshots-2026-07-16/ (not committed, reproducible)"
+  },
+  "console_network": {
+    "console_critical_errors": 0,
+    "console_warnings": 0,
+    "hydration_errors": 0,
+    "page_errors": 0,
+    "critical_request_failures": 0,
+    "client_side_openserp_calls": 0,
+    "direct_source_page_fetches": 0,
+    "pages_checked": ["Rabat search (1440, 375)", "Casablanca search (1440)"]
+  },
+  "security_wording_scan": {
+    "pages_scanned": ["rabat", "casablanca", "marrakech"],
+    "phone_hits": 0,
+    "whatsapp_hits": 0,
+    "personal_email_hits": 0,
+    "secret_token_hits": 0,
+    "forbidden_wording_hits": 0,
+    "forbidden_wording_checked": ["annonce partenaire", "partenaire officiel", "source certifiée", "annonce vérifiée", "disponible confirmé", "meilleur prix", "même bien confirmé", "prix confirmé", "prix officiel", "annonce fiable"]
+  },
+  "db_read_only": {
+    "property_listings": 316,
+    "listing_sources": 321,
+    "openserp_property_listings": 177,
+    "openserp_listing_sources": 177,
+    "orphan_sources_global": 0,
+    "duplicate_canonical_urls_global": 0,
+    "unsafe_collisions_global": 0,
+    "matches_reference": true
+  },
+  "production_db_modified": false,
+  "search_gateway_modified": false,
+  "ranking_modified": false,
+  "supabase_written": false,
+  "rollback_required": false,
+  "verdict": "PROD_ACTIVE_AND_VALIDATED"
+}

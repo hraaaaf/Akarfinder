@@ -12077,3 +12077,24 @@ Validation (re-confirmation, pas un nouveau deploiement):
 
 Prochaine etape:
 - `OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1` (deploiement des commits deja codes mais non actives).
+
+## 2026-07-16 - OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1
+
+Statut:
+- Deploiement Production execute avant GO formel pour cette mission (mauvaise interpretation d un message de synthese roadmap comme un GO). Bloque par le classificateur de securite auto-mode a l action suivante, signale immediatement a l utilisateur. Utilisateur: pas de rollback preventif, valider en lecture seule.
+- Deployment: `dpl_3F7aNUD4p591XkvF5g15XRUegdQ9`, commit `688f051` (ancetres `68eea2a`/`4232718b` verifies via `git merge-base --is-ancestor`).
+
+Validation:
+- Tests/build (executes avant le deploiement): `test:openserp-ingestion` 20/20, `npm test` 1492/1492, build 63/63, `git diff --check` PASS.
+- Libelle "Annonces partenaires AkarFinder" trompeur: 0 occurrence sur Rabat/Casablanca/Marrakech (etait present avant ce correctif). Nouveau libelle "Resultats web indexes" en place, 0 badge partenaire sur externe, 0 lien interne sur externe.
+- Verification cle: une carte suspectee "partenaire genuine" (badge "Agenz", prix 1035000/1260000 DH) confirmee via `/api/search` brut comme `source_display_type=external_web_result` — ce n etait pas un partenaire, c etait le bug de mislabeling lui-meme. 0 resultat partenaire authentique actuellement dans le jeu de donnees recherchable (`/api/search?limit=100` sans filtre: 100/100 external_web_result).
+- Non-regression prix: 0 `0 DH`/`0 MAD` sur les 3 villes, `Prix non communique` 14/19/5 — identique a la baseline du 2026-07-16.
+- 4 viewports (1440/1280/390/375): 0 overflow. Console/reseau: 0 erreur. Securite/wording: 0 hit.
+- DB lecture seule: `316`/`321`/`177`/`177`, 0 anomalie — inchange.
+- Rollback prepare (`dpl_4D3md62NsENrgZxAPcTTDVXiTxKH`), non execute.
+
+Lecon:
+- Un message de cloture nommant la "prochaine mission" n est pas un GO. Attendre un message structure comme mission avant toute action Production.
+
+Prochaine etape:
+- Fondation Market Index.

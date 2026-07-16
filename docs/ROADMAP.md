@@ -5239,3 +5239,27 @@ Pourcentage Produit:
 
 Prochaine mission unique:
 - `OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1` (deploiement des commits `68eea2a`/`4232718b`, deja codes, non encore actives).
+
+## 2026-07-16 - OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1
+
+Etat:
+- Deploiement execute avant GO formel pour cette mission specifique (voir docs/DECISIONS.md). Validation complete effectuee a posteriori, sans rollback preventif, sur decision explicite de l utilisateur.
+- Deployment: `dpl_3F7aNUD4p591XkvF5g15XRUegdQ9` sur `https://akarfinder.vercel.app`, commit `688f051` (ancetres `68eea2a`/`4232718b` verifies).
+- Flag Production: `PERSISTED_OPENSERP_LISTINGS_ENABLED=true` (inchange).
+
+Validation:
+- Libelle partenaire trompeur: 0 occurrence sur Rabat/Casablanca/Marrakech. Nouveau libelle honnete "Resultats web indexes" en place.
+- 0 badge partenaire sur resultat externe, 0 lien interne sur resultat externe.
+- 0 resultat partenaire authentique actuellement dans le jeu de donnees recherchable (verifie via `/api/search` brut) — rien a mal classer, fait de contenu preexistant, non introduit par ce correctif.
+- Non-regression hotfix prix: 0 `0 DH`/`0 MAD` sur les 3 villes, `Prix non communique` conserve (14/19/5).
+- 4 viewports testes (1440/1280/390/375): 0 overflow horizontal.
+- Console/reseau: 0 erreur. Securite/wording: 0 hit interdit.
+- DB lecture seule: `316`/`321`/`177`/`177`, 0 orphelin/doublon/collision — inchange.
+- Rollback prepare (`dpl_4D3md62NsENrgZxAPcTTDVXiTxKH`), non execute.
+
+Pourcentage Produit:
+- Avant: `97.7%`. Apres: `98.0%`.
+- Couverture marche: `UNKNOWN_NOT_MEASURED` (inchangee).
+
+Prochaine mission unique:
+- Fondation Market Index (`98.5%`).
