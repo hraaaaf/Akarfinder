@@ -20,8 +20,14 @@ const APPROVED_MARKET_INDEX_MIGRATIONS = [
   "20260716140400_add_source_offer_columns_to_listing_sources.sql",
 ];
 
+// Hashed after normalizing CRLF -> LF: different worktrees of this repo check
+// these git-tracked files out with different line endings depending on
+// core.autocrlf and checkout history (confirmed harmless via `git diff HEAD`
+// returning zero changes across worktrees), so a raw-byte hash would produce
+// a false failure here that has nothing to do with actual content drift.
 function sha256(path: string): string {
-  return createHash("sha256").update(readFileSync(path)).digest("hex");
+  const normalized = readFileSync(path, "utf8").replace(/\r\n/g, "\n");
+  return createHash("sha256").update(normalized, "utf8").digest("hex");
 }
 
 test("no lab-only POC migration file sits in the active supabase/migrations chain", () => {
