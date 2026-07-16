@@ -1,0 +1,50 @@
+{
+  "audit_id": "public-index-poc-migration-quarantine",
+  "mission": "AKARFINDER-PUBLIC-INDEX-POC-MIGRATION-QUARANTINE-1",
+  "generated_at_utc": "2026-07-17T00:00:00Z",
+  "discovered_during": "AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-2 pending-migrations gate (section 14)",
+  "hash_method": "node:crypto sha256 over raw file bytes, computed in-worktree (feat/market-index-foundation) to avoid a cross-worktree line-ending (CRLF/LF) discrepancy noted below",
+  "cross_worktree_hash_note": "The release worktree (release/market-index-foundation-prod-activation) checks these same git-tracked files out with CRLF line endings, while this implementation worktree checks them out with LF, despite both being at the identical commit e9f4d7a. This is a Windows core.autocrlf checkout-time artifact, not a content difference -- confirmed via 'git diff HEAD' on all 5 files returning zero changes. All hashes in this manifest are computed consistently within a single worktree to avoid conflating that artifact with an actual content change.",
+  "original_path": "supabase/migrations/20260709193000_create_public_property_index_poc.sql",
+  "archive_path": "docs/archive/public-index-poc/20260709193000_create_public_property_index_poc.sql",
+  "introducing_commit": "162fff0 feat(search): add public async index OpenSERP POC",
+  "sha256_before": "cd6443e466d29340b879d569259438649f2dbad1583a1aed4e567e5d97a8b2e3",
+  "sha256_after": "cd6443e466d29340b879d569259438649f2dbad1583a1aed4e567e5d97a8b2e3",
+  "hash_identical": true,
+  "production_table_exists": {
+    "table": "public_property_index",
+    "exists": false,
+    "verified_via": "read-only PostgREST GET, HTTP 404 PGRST205 'Could not find the table'",
+    "verified_at_utc": "2026-07-16T23:07:00Z"
+  },
+  "poc_applied_to_production": false,
+  "active_product_dependencies_found": [],
+  "active_dependency_scan": {
+    "scope": ["app/api/search", "app/search", "components", "lib/market-index", "lib/db"],
+    "method": "grep for the literal string 'public_property_index'",
+    "result": "0 matches -- the only references are inside the POC's own lib/public-property-index/*.ts, which is itself gated behind PUBLIC_INDEX_POC_ENABLED (unset in Production, defaulting to the inert NoopPublicPropertyIndexStore)"
+  },
+  "active_migrations_before": [
+    { "filename": "20260706130000_create_search_gateway_cache.sql", "note": "pre-existing, unrelated, already applied to Production, unaffected by this quarantine" },
+    { "filename": "20260709193000_create_public_property_index_poc.sql", "note": "the file being quarantined -- present before, absent after" },
+    { "filename": "20260716140000_create_discovery_candidates.sql", "sha256": "1ec4e6e57db4bc9284bcff25f7d67b80a8f01821e2f53d51bb900642ca82ca76" },
+    { "filename": "20260716140100_create_property_clusters.sql", "sha256": "ce8565c30cbea2772bbef40c33bbf83a211005acac6ea5975c5f54926756c7c6" },
+    { "filename": "20260716140200_create_property_cluster_members.sql", "sha256": "a990bb9d390edf97988a13ff8316cbe5b4f0d8a1f02c6d9b07c8e52dc47ea964" },
+    { "filename": "20260716140300_create_source_offer_observations.sql", "sha256": "fcbe1fd9084715f14bab839de92f6721401b12f80b85e89a6158d0660bbfe107" },
+    { "filename": "20260716140400_add_source_offer_columns_to_listing_sources.sql", "sha256": "03d2771491bdd6d3298e68b33d2d355ffcbdd309e1dafc5eaae187e6792635d1" }
+  ],
+  "active_migrations_after": [
+    { "filename": "20260706130000_create_search_gateway_cache.sql", "note": "unchanged, unaffected" },
+    { "filename": "20260716140000_create_discovery_candidates.sql", "sha256": "1ec4e6e57db4bc9284bcff25f7d67b80a8f01821e2f53d51bb900642ca82ca76" },
+    { "filename": "20260716140100_create_property_clusters.sql", "sha256": "ce8565c30cbea2772bbef40c33bbf83a211005acac6ea5975c5f54926756c7c6" },
+    { "filename": "20260716140200_create_property_cluster_members.sql", "sha256": "a990bb9d390edf97988a13ff8316cbe5b4f0d8a1f02c6d9b07c8e52dc47ea964" },
+    { "filename": "20260716140300_create_source_offer_observations.sql", "sha256": "fcbe1fd9084715f14bab839de92f6721401b12f80b85e89a6158d0660bbfe107" },
+    { "filename": "20260716140400_add_source_offer_columns_to_listing_sources.sql", "sha256": "03d2771491bdd6d3298e68b33d2d355ffcbdd309e1dafc5eaae187e6792635d1" }
+  ],
+  "market_index_migrations_confirmed_unchanged": {
+    "method": "git diff HEAD -- <5 files> (authoritative, worktree-internal comparison)",
+    "result": "zero diff, exit code 0, on all 5 files"
+  },
+  "other_foreign_pending_migrations_found": "none -- only the one POC file was foreign to the approved 5",
+  "verdict": "PASS -- POC migration quarantined, byte-identical, Production untouched, 5 Market Index migrations unchanged, active migration chain now contains only already-applied and approved-pending migrations"
+}

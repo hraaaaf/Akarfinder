@@ -159,10 +159,10 @@ test("internal public index route returns the expected public-safe payload", asy
   assert.equal(payload.results[0].id, "casablanca-maarif-1");
 });
 
-test("migration POC contains pg_trgm, RLS and the FTS vector indexes", () => {
+test("archived migration POC contains pg_trgm, RLS and the FTS vector indexes", () => {
   const migrationPath = resolve(
     process.cwd(),
-    "supabase/migrations/20260709193000_create_public_property_index_poc.sql",
+    "docs/archive/public-index-poc/20260709193000_create_public_property_index_poc.sql",
   );
   const migration = readFileSync(migrationPath, "utf8").toLowerCase();
 

@@ -3032,3 +3032,33 @@ Impact:
   verifie deux fois (flag + enum d'origine a 4 valeurs). Statut:
   `FOUNDATION_IMPLEMENTED_NOT_ACTIVATED`. Pourcentage produit inchange (`98.0%` -> `98.0%`, fondation
   interne).
+
+## 2026-07-17 - AKARFINDER-PUBLIC-INDEX-POC-MIGRATION-QUARANTINE-1
+
+Decision:
+- Une migration presente dans `supabase/migrations/` est consideree destinee a la chaine Production
+  active. Un POC LAB-only ne doit jamais y rester une fois sa phase de validation terminee -- il doit
+  etre deplace hors de ce repertoire (archive, contenu preserve a l'identique) plutot que laisse en place
+  "au cas ou". Aucune migration etrangere ne peut etre ignoree selectivement pendant une activation --
+  elle doit etre traitee par une mission dediee avant de reprendre.
+
+Reason:
+- Le pending-migrations gate de `AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-2` (section 14) a
+  trouve `20260709193000_create_public_property_index_poc.sql` dans `supabase/migrations/`, un fichier
+  du POC OpenSERP async (`docs/PUBLIC_INDEX_ASYNC_OPENSERP_POC.md`, jamais promu au-dela du LAB, jamais
+  applique en Production) qui n'a jamais ete retire du repertoire actif apres la conclusion du POC. Ce
+  fichier s'est presente comme une migration Production etrangere et a bloque l'activation
+  (`ACTIVATION_BLOCKED_PENDING_MIGRATION_GATE`) -- exactement le comportement voulu du gate, qui refuse
+  de laisser un agent decider seul quoi ignorer avant tout contact Production.
+
+Impact:
+- `20260709193000_create_public_property_index_poc.sql` deplace, octet pour octet identique
+  (SHA-256 `cd6443e466d29340b879d569259438649f2dbad1583a1aed4e567e5d97a8b2e3` avant et apres), vers
+  `docs/archive/public-index-poc/`. Les 5 migrations Market Index Foundation confirmees inchangees
+  (`git diff HEAD` vide sur les 5 fichiers). `public_property_index` confirme absente de Production
+  (PostgREST 404). Test de garde-fou ajoute
+  (`scripts/scrapers/__tests__/migration-chain-quarantine-guard.test.ts`) empechant tout retour
+  accidentel d'un fichier `*poc*.sql` dans la chaine active. Aucune ecriture Production, aucun deploiement,
+  aucune Preview. Statut: `POC_MIGRATION_QUARANTINED_NOT_APPLIED`. L'activation Market Index Foundation
+  reste `ACTIVATION_BLOCKED_PENDING_MIGRATION_GATE` jusqu'a un nouvel ODM de reprise qui revalidera le
+  pending-migrations gate sur la chaine desormais assainie.

@@ -12133,3 +12133,43 @@ Validation:
 
 Prochaine etape:
 - `AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-1`.
+
+## 2026-07-17 - AKARFINDER-PUBLIC-INDEX-POC-MIGRATION-QUARANTINE-1
+
+Contexte:
+- Decouverte pendant le pending-migrations gate de `...-PROD-ACTIVATION-2` (section 14) :
+  `supabase/migrations/` contenait 6 fichiers au lieu des 5 approuves. Le 6e,
+  `20260709193000_create_public_property_index_poc.sql`, appartient au POC OpenSERP async
+  (`docs/PUBLIC_INDEX_ASYNC_OPENSERP_POC.md`, jamais promu au-dela du LAB) et n'a jamais ete retire
+  du repertoire actif. Activation bloquee (`ACTIVATION_BLOCKED_PENDING_MIGRATION_GATE`), mission dediee
+  demandee.
+
+Travail effectue:
+- Precheck : fichier identique dans les worktrees implementation/release (SHA-256
+  `cd6443e466d29340b879d569259438649f2dbad1583a1aed4e567e5d97a8b2e3`), jamais applique en Production
+  (PostgREST 404 sur `public_property_index`), aucune dependance active (le seul code qui reference le
+  nom de table est le store du POC lui-meme, gate derriere `PUBLIC_INDEX_POC_ENABLED`, absent en
+  Production).
+- Deplacement (`git mv`, octets inchanges) vers `docs/archive/public-index-poc/`, README de statut cree,
+  `docs/PUBLIC_INDEX_POC_MIGRATION_QUARANTINE.md` redige.
+- Test mis a jour (`public-property-index.test.ts` pointe vers le nouveau chemin) + nouveau test de
+  garde-fou (`migration-chain-quarantine-guard.test.ts`, 4 assertions : aucun `*poc*.sql` dans la chaine
+  active, les 5 migrations Market Index inchangees par hash, l'archive existe et correspond au manifeste,
+  aucune reference active a `public_property_index` hors du module du POC).
+- Manifeste `data/audits/public-index-poc-migration-quarantine.json` : hash avant/apres identiques,
+  chaine active avant/apres, 5 migrations Market Index confirmees inchangees via `git diff HEAD`.
+
+Validation:
+- Tests: 1527/1527 (test:scrapers, +4 vs les 1523 precedents) + 53/53 (test:api). `test:market-index`
+  84/84. `test:openserp-ingestion` 20/20. Build PASS. `git diff --check` PASS.
+
+Etat officiel:
+- Statut: `POC_MIGRATION_QUARANTINED_NOT_APPLIED`. Production inchangee, aucun deploiement, aucune Preview.
+  L'activation Market Index Foundation reste bloquee en attente d'un nouvel ODM qui revalidera le
+  pending-migrations gate sur la chaine desormais assainie (5 fichiers exactement dans
+  `supabase/migrations/2026 0716140xxx*`, plus l'unique migration deja appliquee
+  `20260706130000_create_search_gateway_cache.sql`).
+
+Prochaine etape:
+- Reprise de `AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-2` (ou une v3) a partir du
+  pending-migrations gate, sur la chaine de migrations desormais assainie.

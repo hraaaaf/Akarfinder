@@ -44,6 +44,20 @@ does **not** perform any of the steps below — it only prepares them.
   entirely independent of this foundation; nothing here touches `lib/listings/map-db-listing.ts` or
   `components/search/LightZillowSearchShell.tsx`.
 
+## Pending-migrations gate note (added 2026-07-17, AKARFINDER-PUBLIC-INDEX-POC-MIGRATION-QUARANTINE-1)
+
+- `supabase/migrations/` previously contained a 6th, foreign file
+  (`20260709193000_create_public_property_index_poc.sql`, an unrelated LAB-only POC never applied to
+  Production) alongside the 5 approved Market Index migrations. It has been quarantined, unmodified, to
+  `docs/archive/public-index-poc/` — see `docs/PUBLIC_INDEX_POC_MIGRATION_QUARANTINE.md` and
+  `data/audits/public-index-poc-migration-quarantine.json`.
+- A guard test (`scripts/scrapers/__tests__/migration-chain-quarantine-guard.test.ts`) now fails the
+  suite if any `*poc*.sql` file (or any other file not matching the approved list) reappears in
+  `supabase/migrations/` — re-run it as part of any future pending-migrations gate before assuming the
+  directory only contains what you expect.
+- Rule going forward: a migration living in `supabase/migrations/` is destined for the Production chain.
+  A LAB-only POC belongs in `docs/archive/` from the moment its evaluation concludes, not "for later."
+
 ## Known open items carried forward (not fixed by this mission, by design)
 
 - `property_listings.duplicate_group_id` still contains demonstrated false merges (see audit finding).
