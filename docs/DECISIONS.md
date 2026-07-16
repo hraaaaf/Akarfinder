@@ -2985,3 +2985,14 @@ Reason:
 Impact:
 - Production servie depuis `dpl_4D3md62NsENrgZxAPcTTDVXiTxKH`; flag `PERSISTED_OPENSERP_LISTINGS_ENABLED=true` inchange; aucune ecriture Supabase; aucun relancement du writer OpenSERP.
 - Constat annexe hors perimetre: le libelle de section "Annonces partenaires AkarFinder" appose a tort sur les resultats OpenSERP est anterieur a ce hotfix (confirme present sur `dpl_DWw8kA4LDEv2R8tHSAXqzFGFPEPF`) et necessite une mission dediee (`OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1`).
+
+## 2026-07-16 - OPENSERP-MISSING-PRICE-HOTFIX-PROD-ACTIVATION-1 (re-validation)
+
+Decision:
+- Ne pas redeployer: l activation du 2026-07-14 est confirmee toujours live via l API Vercel. Revalider l etat actuel plutot que de repeter le deploiement. Ne pas etendre le perimetre aux commits `68eea2a`/`4232718b` (mislabeling partenaire, hors perimetre "rendu public du prix").
+
+Reason:
+- La mission relancee le 2026-07-16 se basait sur un contexte perime (deployment `dpl_DWw8kA4LDEv2R8tHSAXqzFGFPEPF`, deja remplace). Redeployer aurait ete redondant; embarquer les 2 commits de labeling aurait depasse le perimetre valide sans nouveau GO explicite pour cette extension.
+
+Impact:
+- Aucun nouveau deploiement, aucune modification de code, aucune ecriture DB. Pourcentage produit cloture a `97.7%` (jamais formellement enregistre le 2026-07-14).

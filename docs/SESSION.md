@@ -12059,3 +12059,21 @@ Constat hors perimetre (non introduit par cette mission, confirme anterieur):
 
 Prochaine etape:
 - `OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1`.
+
+## 2026-07-16 - OPENSERP-MISSING-PRICE-HOTFIX-PROD-ACTIVATION-1 (re-validation)
+
+Statut:
+- Mission relancee sous le meme nom sans savoir que l activation ci-dessus avait deja eu lieu le 2026-07-14. Verifie en premier via l API Vercel (`get_deployment`) que `akarfinder.vercel.app` sert deja `dpl_4D3md62NsENrgZxAPcTTDVXiTxKH` (commit `c6315b0`) avant toute action.
+- HEAD du worktree avait avance de 3 commits (`fc36cf2`, `68eea2a`, `4232718b`) au-dela de `c6315b0` — les 2 derniers corrigent le mislabeling "Annonces partenaires" (mission `OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1`), non encore deployes.
+- Decision utilisateur: cloturer cette mission comme deja accomplie, revalider l etat live actuel, ne pas deployer les 2 commits hors perimetre.
+
+Validation (re-confirmation, pas un nouveau deploiement):
+- DB lecture seule: `316`/`321`/`177`/`177`, identique au 2026-07-14, 0 orphelin/doublon/collision.
+- Smoke HTTP 14 routes: toutes correctes.
+- Rabat: 18 externes, 14 sans prix, 4 valides, 0 `0 DH`, 0 `0 MAD`, 14 `Prix non communique` — identique au 2026-07-14.
+- Casablanca: 19 `Prix non communique`, 0 `0 DH`. Marrakech: 5 `Prix non communique`, 0 `0 DH`.
+- Console/reseau: 0 erreur. Scan securite complet cette fois (pas deprioritise): 0 PII, 0 secret, 0 wording interdit.
+- Visuel desktop 1440 + mobile 390 (Rabat, Casablanca): aucun overflow, rendu correct.
+
+Prochaine etape:
+- `OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1` (deploiement des commits deja codes mais non actives).

@@ -1,0 +1,53 @@
+{
+  "audit_id": "openserp-missing-price-hotfix-prod-revalidation-2026-07-16",
+  "mission": "OPENSERP-MISSING-PRICE-HOTFIX-PROD-ACTIVATION-1",
+  "checked_at_utc": "2026-07-16T17:41:23.411Z",
+  "finding": "The price hotfix was already deployed to Production on 2026-07-14 (see docs/OPENSERP_MISSING_PRICE_HOTFIX_PROD_ACTIVATION_1.md and commit fc36cf2). This mission's activation objective was already complete before this session started. This audit re-validates the currently live Production state rather than performing a new deployment.",
+  "currently_live_production_deployment": {
+    "deployment_id": "dpl_4D3md62NsENrgZxAPcTTDVXiTxKH",
+    "state": "READY",
+    "target": "production",
+    "alias": ["akarfinder.vercel.app", "akarfinder-achraf-benmoussa-s-projects.vercel.app", "akarfinder-lafabriquedapollon-3895-achraf-benmoussa-s-projects.vercel.app"],
+    "gitCommitSha": "c6315b044561dee0fb340ea3db2eaa5825614f87",
+    "gitCommitMessage": "docs(search): record OpenSERP price acquisition no-go",
+    "gitCommitRef": "codex/openserp-missing-price-display",
+    "createdAt_unix_ms": 1784041547282,
+    "readyAt_unix_ms": 1784041593681,
+    "source": "mcp__plugin_vercel_vercel__get_deployment(idOrUrl=\"akarfinder.vercel.app\")"
+  },
+  "mission_context_deployment_ids_reconciliation": {
+    "mission_brief_stated_previous_deployment": "dpl_DWw8kA4LDEv2R8tHSAXqzFGFPEPF",
+    "note": "This was the pre-hotfix deployment, stale in the mission brief. The actual currently-live deployment is dpl_4D3md62NsENrgZxAPcTTDVXiTxKH (the hotfix), confirmed live via direct Vercel API query, not assumed from git history alone."
+  },
+  "head_vs_live_commit_gap": {
+    "worktree_head": "4232718b1c487f1642c68b76e27312fdd1ec3973",
+    "live_production_commit": "c6315b044561dee0fb340ea3db2eaa5825614f87",
+    "commits_ahead_of_live": [
+      "fc36cf2 docs(prod): record missing OpenSERP price hotfix activation",
+      "68eea2a fix(search): stop labeling persisted OpenSERP results as partner listings",
+      "4232718 fix(search): stop counting persisted OpenSERP rows as partner listings in result counts"
+    ],
+    "in_scope_for_this_mission": false,
+    "note": "68eea2a and 4232718b are real, well-scoped fixes for a different, pre-existing issue (OpenSERP results mislabeled as partner listings), explicitly out of this mission's scope (\"uniquement le rendu public du prix\"). Not deployed by this mission per explicit user decision."
+  },
+  "db_counts_read_only": {
+    "property_listings": 316,
+    "listing_sources": 321,
+    "openserp_property_listings": 177,
+    "openserp_listing_sources": 177
+  },
+  "db_integrity_read_only": {
+    "orphan_sources_global": 0,
+    "duplicate_canonical_urls_global": 0,
+    "unsafe_collisions_global": 0
+  },
+  "reference_counts_from_mission_brief": {
+    "property_listings": 316,
+    "listing_sources": 321,
+    "openserp_listings": 177,
+    "openserp_sources": 177
+  },
+  "db_counts_match_reference": true,
+  "production_db_modified_during_this_mission": false,
+  "writer_or_ingestion_relaunched": false
+}

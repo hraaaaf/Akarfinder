@@ -5225,3 +5225,17 @@ Constat hors perimetre:
 
 Prochaine mission unique:
 - `OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1`.
+
+## 2026-07-16 - OPENSERP-MISSING-PRICE-HOTFIX-PROD-ACTIVATION-1 (re-validation, cloture du pourcentage)
+
+Etat:
+- Mission relancee le 2026-07-16 sans savoir que l activation ci-dessus etait deja live. Confirme via l API Vercel que `dpl_4D3md62NsENrgZxAPcTTDVXiTxKH` sert toujours `akarfinder.vercel.app` depuis le 2026-07-14, sans interruption.
+- Aucun nouveau deploiement: revalidation complete de l etat live (DB, smoke HTTP, Rabat/Casablanca/Marrakech, console/reseau, securite, visuel) — tous les criteres de la mission du 2026-07-14 restent verifies.
+- Le pourcentage produit n avait pas ete formellement enregistre lors de l activation du 2026-07-14; cloture ici.
+
+Pourcentage Produit:
+- Avant: `97.5%`. Apres: `97.7%`.
+- Couverture marche: `UNKNOWN_NOT_MEASURED` (inchangee, ce hotfix ne change pas la couverture).
+
+Prochaine mission unique:
+- `OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1` (deploiement des commits `68eea2a`/`4232718b`, deja codes, non encore actives).

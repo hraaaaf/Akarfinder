@@ -68,3 +68,59 @@ The `/search` page groups OpenSERP results under a section labeled "Annonces par
 - Writer/ingestion: not relaunched.
 - Search Gateway / ranking / Observation History: unchanged.
 - Code modified: no application logic beyond what was already validated in Preview (`5c94919`); this mission only deployed and verified it.
+
+## Re-validation — 2026-07-16
+
+A second activation mission was issued on 2026-07-16 under the same name, unaware that activation above
+had already happened on 2026-07-14. Rather than redeploy blindly, this session first confirmed via a
+direct Vercel API query (`get_deployment("akarfinder.vercel.app")`) that the live Production deployment
+was already `dpl_4D3md62NsENrgZxAPcTTDVXiTxKH` at commit `c6315b0` — i.e. the hotfix above was already
+live, not merely "validated in Preview" as the new mission brief assumed. The worktree's HEAD had since
+advanced 3 commits past `c6315b0` (`fc36cf2` docs, then `68eea2a` + `4232718b` — a real, well-scoped fix
+for the "Annonces partenaires AkarFinder" mislabeling issue flagged above as the next mission,
+`OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1` — but not yet deployed anywhere).
+
+Given this mission's explicit scope ("uniquement le rendu public du prix"), the user chose to close it
+as already accomplished rather than fold the mislabeling fix into a same-day deployment out of scope.
+This section documents a **re-validation of the still-live `dpl_4D3md62NsENrgZxAPcTTDVXiTxKH`**, not a
+new deployment.
+
+**DB read-only recheck** (`data/audits/openserp-missing-price-hotfix-prod-revalidation-2026-07-16.json`):
+`316`/`321`/`177`/`177` (property_listings/listing_sources/OpenSERP listings/OpenSERP sources) — identical
+to the 2026-07-14 reference values, `0` orphans/duplicates/unsafe collisions.
+
+**Smoke HTTP** (14 routes): all correct — main routes 200, `/listings/137` 404, `robots.txt`/`sitemap.xml`
+200, demo pages `noindex, nofollow`.
+
+**Rabat** (`/search?q=appartement%20a%20louer%20rabat`): 18 external results (18 distinct external
+source links to mubawab.ma), 14 missing-price, 4 valid-price, **0** occurrences of "0 DH" (properly
+word-boundary-checked — an initial loose grep falsely matched real prices like "3 600 DH" as containing
+"0 DH"; corrected), **0** "0 MAD", **14** "Prix non communiqué", 54 "Résultat web externe" badge
+occurrences, **0** internal `/listings/` links on external cards — byte-for-byte consistent with the
+2026-07-14 numbers above; Production is unchanged.
+
+**Casablanca** (`/search?q=appartement%20casablanca`): 0 "0 DH"/"0 MAD", 19 "Prix non communiqué", 0
+internal links on external cards, genuine partner listings (e.g. "Agenz", real prices `1035000 DH` /
+`1260000 DH`) render normally with their own partner badge, unaffected.
+
+**Marrakech** (`/search?q=appartement%20marrakech`): 0 "0 DH"/"0 MAD", 5 "Prix non communiqué", 0
+internal links on external cards.
+
+**Console/network** (Playwright, Rabat + Casablanca): 0 console errors/warnings, 0 hydration errors, all
+requests 200 and same-origin, 0 client-side calls to OpenSERP or source pages.
+
+**Security scan** (full pass this time, not deprioritized): 0 hits for phone/WhatsApp/personal-email
+patterns (816 raw regex hits were all false positives from SVG decorative coordinate attributes, e.g.
+`r="0.0767..."`, `opacity="0.806..."` — verified with a stricter boundary-anchored pattern), 0 secrets/
+tokens, 0 forbidden wording ("prix confirmé", "meilleur prix", "annonce vérifiée", etc.), all mandated
+wording present.
+
+**Visual** (desktop 1440×1000, mobile 390×844, Rabat + Casablanca): no horizontal overflow
+(`scrollWidth === clientWidth` = 375/375 at mobile), no broken images, "Prix non communiqué" renders
+cleanly, real prices preserved. Screenshots in
+`data/audits/openserp-hotfix-revalidation-screenshots-2026-07-16/` (not committed, reproducible).
+
+**Conclusion:** `PROD_ACTIVE_AND_VALIDATED`, confirmed stable 2 days after the original activation. No
+redeployment performed. No rollback needed. The partner-mislabeling follow-up
+(`OPENSERP-PARTNER-LABEL-MISLABELING-FIX-1`) remains coded but undeployed, pending its own dedicated
+activation mission.
