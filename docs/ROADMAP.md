@@ -5263,3 +5263,47 @@ Pourcentage Produit:
 
 Prochaine mission unique:
 - Fondation Market Index (`98.5%`).
+
+## 2026-07-16 - AKARFINDER-MARKET-INDEX-FOUNDATION-1
+
+Etat:
+- `FOUNDATION_IMPLEMENTED_NOT_ACTIVATED`. Worktree isole `AkarFinder-market-index-foundation`, branche
+  `feat/market-index-foundation`, base `b69b15c`.
+- 4 nouvelles tables additives (`discovery_candidates`, `property_clusters`, `property_cluster_members`,
+  `source_offer_observations`) + 9 colonnes nullable additives sur `listing_sources`. Aucune colonne
+  ajoutee/supprimee sur `property_listings`. Aucune migration Production appliquee
+  (`LOCAL_DB_APPLICATION_NOT_EXECUTED` -- aucun outil Postgres/Docker local disponible).
+
+Audit du modele existant (`docs/MARKET_INDEX_EXISTING_MODEL_AUDIT.md`):
+- Constat critique : `property_listings.duplicate_group_id` regroupe deja des biens reellement distincts
+  (14 groupes multi-membres, le plus grand melange 9 appartements Marrakech de prix/surfaces tres
+  differents) via une heuristique P5A sans hard blocks -- exactement le risque de faux merge que le
+  benchmark Web Index Stack venait de documenter (`NO_MATCHING_JUSTIFIED`). 4 `listing_sources` multi-
+  attaches relient egalement des annonces differentes sous le meme `property_listing_id`.
+- Consequence de conception : `PropertyCluster` (nouvelle table) ne fait jamais confiance a
+  `duplicate_group_id` ; l'adaptateur legacy ne resout jamais l'ambiguite multi-source, il la signale
+  (`multi_source_unverified`).
+
+Securite garde-fous:
+- `MARKET_INDEX_CLUSTERING_ENABLED` reste `false` par defaut et est verifie deux fois (flag + enum
+  `origin_type` a 4 valeurs autorisees) avant qu'un deuxieme `SourceOffer` puisse rejoindre un cluster.
+- 0 changement de code public (`app/`, `components/`) -- build 63/63 pages identique, aucune route
+  modifiee.
+
+Validation:
+- Tests: 84/84 nouveaux (Market Index) + 1492/1492 existants = 1576/1576. Build 63/63, 0 erreur.
+  `test:openserp-ingestion` 20/20. `git diff --check` PASS.
+- Dry-run backfill Production (lecture seule) : 316 property_listings / 321 listing_sources projetes en
+  316 clusters / 321 memberships / 0 observation inventee. 0 conflit d'idempotence, 0 URL invalide, 0 prix
+  invalide, 111 prix non communiques, 205 prix valides, 52 provenances manquantes, 4 clusters
+  multi-source non verifies.
+- Statut validation DB locale: `LOCAL_DB_APPLICATION_NOT_EXECUTED` (documente, n'autorise pas de
+  migration Production).
+- Preview Vercel: non creee -- 0 changement public, le build local suffit a prouver l'absence de
+  regression.
+
+Pourcentage Produit:
+- Avant: `98.0%`. Apres: `98.0%` (fondation interne, n'augmente pas le pourcentage produit).
+
+Prochaine mission unique:
+- `AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-1` (`98.5%` apres activation validee).

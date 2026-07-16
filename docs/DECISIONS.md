@@ -3008,3 +3008,27 @@ Reason:
 Impact:
 - Deployment `dpl_3F7aNUD4p591XkvF5g15XRUegdQ9` valide a posteriori sans regression detectee (voir docs/OPENSERP_PARTNER_LABEL_MISLABELING_FIX_1.md). Aucun rollback execute. Aucune ecriture Supabase. Pourcentage produit `97.7%` -> `98.0%`.
 - Lecon retenue: un message de cloture/synthese nommant la "prochaine mission" n est pas un GO — seul un message explicitement structure comme mission (avec precheck, interdictions, criteres, bilan) autorise une action Production.
+
+## 2026-07-16 - AKARFINDER-MARKET-INDEX-FOUNDATION-1
+
+Decision:
+- `PropertyCluster` (nouvelle table) ne reutilise jamais `property_listings.duplicate_group_id` comme
+  preuve de cluster valide, et l'adaptateur legacy ne resout jamais l'ambiguite d'un `listing_sources`
+  multi-attache -- il la signale (`multi_source_unverified`) pour revue humaine plutot que de la masquer
+  ou de la corriger silencieusement.
+
+Reason:
+- L'audit du modele existant (section 6 de la mission) a trouve que `duplicate_group_id` regroupe deja
+  des biens reellement distincts (14 groupes, le plus grand melangeant 9 appartements de prix/surfaces
+  tres differents) via une heuristique sans hard blocks -- exactement le type de faux merge que le
+  benchmark Web Index Stack venait de qualifier `NO_MATCHING_JUSTIFIED`. Faire confiance a ce champ pour
+  la nouvelle fondation aurait reintroduit silencieusement le meme risque que le benchmark venait
+  d'ecarter.
+
+Impact:
+- Aucune migration Production appliquee (`LOCAL_DB_APPLICATION_NOT_EXECUTED`, aucun outil Postgres/Docker
+  local disponible -- documente, n'autorise pas de migration Production). Aucune ecriture Supabase.
+  Aucun changement de code public. Flags `MARKET_INDEX_*` tous `false` par defaut, `CLUSTERING_ENABLED`
+  verifie deux fois (flag + enum d'origine a 4 valeurs). Statut:
+  `FOUNDATION_IMPLEMENTED_NOT_ACTIVATED`. Pourcentage produit inchange (`98.0%` -> `98.0%`, fondation
+  interne).

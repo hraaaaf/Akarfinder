@@ -1,0 +1,28 @@
+{
+  "script": "dry-run-market-index-backfill",
+  "mode": "dry_run_read_only",
+  "generated_at_utc": "2026-07-16T20:06:56.453Z",
+  "inserts_performed": 0,
+  "updates_performed": 0,
+  "deletes_performed": 0,
+  "input_counts": {
+    "property_listings": 316,
+    "listing_sources": 321
+  },
+  "projected_rows_if_backfilled": {
+    "property_clusters": 316,
+    "property_cluster_members": 321,
+    "source_offer_observations": 0
+  },
+  "idempotency_conflicts": {
+    "duplicate_canonical_url_hash_within_same_source": 0
+  },
+  "data_quality": {
+    "invalid_urls": 0,
+    "invalid_prices": 0,
+    "not_disclosed_prices": 111,
+    "valid_prices": 205,
+    "missing_provenance_field_confidence": 52,
+    "multi_source_unverified_clusters": 4
+  }
+}

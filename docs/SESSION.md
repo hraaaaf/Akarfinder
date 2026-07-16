@@ -12098,3 +12098,38 @@ Lecon:
 
 Prochaine etape:
 - Fondation Market Index.
+
+## 2026-07-16 - AKARFINDER-MARKET-INDEX-FOUNDATION-1
+
+Statut:
+- `FOUNDATION_IMPLEMENTED_NOT_ACTIVATED`. Worktree isole `AkarFinder-market-index-foundation` cree sur
+  `feat/market-index-foundation`, base `b69b15c` (precheck confirme).
+
+Travail:
+- Audit complet du modele existant (`docs/MARKET_INDEX_EXISTING_MODEL_AUDIT.md`) via inspection read-only
+  Supabase (pas de connexion Postgres directe disponible). Trouve : `property_listings.duplicate_group_id`
+  regroupe deja des biens distincts (14 groupes, faux merges demontres) ; 4 `listing_sources` multi-
+  attaches relient des annonces differentes. Ni l'un ni l'autre n'est reutilise comme preuve de cluster
+  valide dans la nouvelle fondation.
+- 4 nouvelles tables additives (`discovery_candidates`, `property_clusters`, `property_cluster_members`,
+  `source_offer_observations`) + 9 colonnes nullable sur `listing_sources`. Zero colonne touchee sur
+  `property_listings`.
+- Couche TypeScript complete (`lib/market-index/*`, 8 fichiers) : validation, identifiants/idempotence,
+  provenance, prix, repository (interfaces + doubles en memoire), service (refus structurel du clustering
+  automatique), feature flags.
+- Adaptateur legacy (`lib/market-index/market-index-legacy-adapter.ts`) : projette `property_listings` +
+  `listing_sources` sans ecriture, signale l'ambiguite multi-source au lieu de la resoudre.
+- Script dry-run (`scripts/market-index/dry-run-market-index-backfill.ts`) : refuse de s'executer sans
+  `--dry-run`, 0 INSERT/UPDATE/DELETE.
+
+Validation:
+- Tests: 84/84 nouveaux + 1492/1492 existants = 1576/1576. Build 63/63, 0 erreur, 0 route publique
+  modifiee. `test:openserp-ingestion` 20/20. `git diff --check` PASS.
+- Dry-run Production (lecture seule) : 316/321 comptes confirmes identiques a la reference ; 316 clusters
+  et 321 memberships projetes, 0 observation inventee, 0 conflit d'idempotence, 0 URL invalide, 0 prix
+  invalide.
+- `LOCAL_DB_APPLICATION_NOT_EXECUTED` (aucun outil Postgres/Docker local) — n'autorise pas de migration
+  Production. Preview Vercel non creee (0 changement public, build local suffisant).
+
+Prochaine etape:
+- `AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-1`.

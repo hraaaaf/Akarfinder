@@ -1,0 +1,39 @@
+{
+  "audit_id": "market-index-foundation-local-validation",
+  "mission": "AKARFINDER-MARKET-INDEX-FOUNDATION-1",
+  "generated_at_utc": "2026-07-16T20:10:00Z",
+  "local_db_application_status": "LOCAL_DB_APPLICATION_NOT_EXECUTED",
+  "reason": "No ephemeral PostgreSQL instance available in this environment (no psql/pg_ctl binary found via `which`) and Docker was not accepted as a mandatory dependency per mission section 5's prohibition on introducing Docker as a required tool. This status does NOT authorize a Production migration (mission section 20).",
+  "tooling_checked": {
+    "psql": "not found",
+    "pg_ctl": "not found",
+    "docker": "not found",
+    "sqlite3_cli": "not found (node:sqlite used elsewhere in this project via the built-in module, not the CLI)"
+  },
+  "static_validation_performed": {
+    "migration_files_reviewed": 5,
+    "idempotent_ddl_confirmed": "every CREATE TABLE/ADD COLUMN/CREATE INDEX uses IF [NOT] EXISTS -- enforced by automated test scripts/scrapers/__tests__/market-index-migration-safety.test.ts",
+    "no_destructive_statement_confirmed": "no DROP TABLE/DROP COLUMN/TRUNCATE/DELETE/UPDATE/destructive RENAME found in any active (non-rollback-comment) SQL -- same automated test",
+    "rls_enabled_on_every_new_table_confirmed": true,
+    "property_listings_never_altered_confirmed": true,
+    "no_secrets_in_migration_files_confirmed": true,
+    "rollback_sql_documented_in_every_file": true
+  },
+  "schema_assumption_cross_check": {
+    "method": "read-only Supabase JS client select(*).limit(1) against live Production, see docs/MARKET_INDEX_EXISTING_MODEL_AUDIT.md",
+    "property_listings_columns_matched_assumption": true,
+    "listing_sources_columns_matched_assumption": true,
+    "conclusion": "The 5 migrations' assumptions about existing table shape (property_listings.id as bigint-compatible PK, listing_sources.id as bigint-compatible PK, listing_sources.property_listing_id as FK) are confirmed against the actual live schema, reducing (not eliminating) the risk of a schema-mismatch failure on eventual Production application."
+  },
+  "unit_tests": {
+    "market_index_specific_tests": 84,
+    "market_index_tests_passing": 84,
+    "full_suite_tests": 1576,
+    "full_suite_passing": 1576,
+    "build_pages_generated": 63,
+    "build_errors": 0
+  },
+  "rollback_tested_locally": false,
+  "migration_applied_locally": false,
+  "production_migration_applied": false
+}
