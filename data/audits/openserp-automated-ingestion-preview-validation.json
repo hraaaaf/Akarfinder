@@ -1,0 +1,49 @@
+{
+  "audit_id": "openserp-automated-ingestion-preview-validation",
+  "mission": "AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1",
+  "generated_at_utc": "2026-07-18T00:00:00Z",
+  "deployment": {
+    "id": "dpl_6nJcybjwSgsBxWxyHuoMUz7zmjTp",
+    "url": "https://akarfinder-dmqd54q19-achraf-benmoussa-s-projects.vercel.app",
+    "commit": "064b286468fefbe2ed44592479c8983d2634a77d",
+    "matches_freeze_head": true,
+    "target": "preview"
+  },
+  "flags": {
+    "MARKET_INDEX_READ_ENABLED": "true (deployment-scoped -e)",
+    "MARKET_INDEX_WRITE_ENABLED": "absent (false)",
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": "absent (false)",
+    "MARKET_INDEX_CLUSTERING_ENABLED": "absent (false)",
+    "OPENSERP_AUTOMATED_INGESTION_ENABLED": "false (deployment-scoped -e)",
+    "OPENSERP_INGESTION_WRITE_ENABLED": "false (deployment-scoped -e)",
+    "OPENSERP_INGESTION_CRON_ENABLED": "false (deployment-scoped -e)",
+    "OPENSERP_CRON_SECRET": "absent (not set anywhere yet)"
+  },
+  "route_status": {
+    "/": 200, "/acheter": 200, "/louer": 200, "/neuf": 200, "/immobilier": 200,
+    "/search?q=appartement rabat": 200, "/search?q=appartement casablanca": 200,
+    "/search?q=appartement marrakech": 200, "/demo": 200, "/demo/promoteur": 200,
+    "/demo/agence": 200, "/listings/137": 404, "/robots.txt": 200, "/sitemap.xml": 200
+  },
+  "parity_check": {
+    "method": "direct /api/search comparison, Preview vs live Production, by city",
+    "Rabat": { "preview": 48, "production": 48, "match": true, "id_range_identical": true },
+    "Casablanca": { "preview": 50, "production": 50, "match": true },
+    "Marrakech": { "preview": 45, "production": 45, "match": true },
+    "Tanger": { "preview": 0, "production": 0, "match": true },
+    "total_mismatches": 0
+  },
+  "cron_endpoint_auth_tests": {
+    "no_authorization_header": { "status": 401, "body": "{\"ok\":false,\"error\":\"unauthorized\"}" },
+    "wrong_secret": { "status": 401, "body": "{\"ok\":false,\"error\":\"unauthorized\"}" },
+    "post_method": { "status": 405, "body": "{\"ok\":false,\"error\":\"method_not_allowed\"}" },
+    "note": "OPENSERP_CRON_SECRET is not set on this deployment at all, so isAuthorized() always returns false regardless of header -- matches the 'refuse execution if a flag/secret is missing' requirement structurally, not just by chance."
+  },
+  "bundle_leak_check": {
+    "public_html_scanned": "/search",
+    "cron_secret_or_internal_route_references_found": 0
+  },
+  "console_hydration_errors": "not measured via headless browser in this pass (curl-based validation only) -- no page returned non-200/500, no error text observed in raw HTML",
+  "database_writes_detected": 0,
+  "overall_verdict": "PASS"
+}
