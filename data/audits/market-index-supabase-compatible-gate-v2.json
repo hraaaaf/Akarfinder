@@ -1,0 +1,82 @@
+{
+  "gate_id": "market-index-supabase-compatible-gate-v2",
+  "mission": "AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-2",
+  "generated_at_utc": "2026-07-16T22:55:00Z",
+  "environment_option_used": "C",
+  "environment_option_rationale": "Option A (Supabase branch) and option B (temporary dedicated Supabase project) both require the Supabase CLI and/or a Supabase Management API personal access token; neither is installed or present in .env.local/.env.mission (only SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY for the existing Production project, i.e. PostgREST-level access, no ability to create a new project or branch). Option C was used instead: a genuine local PostgreSQL 18.2 server (not PGlite/WASM this time -- a real Windows-native Postgres binary already present at 'C:\\Program Files\\PostgreSQL\\18', the same engine and version previously used and accepted in AKARFINDER-OPENSERP-TO-SUPABASE-FIRST-WRITE-1's rollback rehearsal, see docs/OPENSERP_FIRST_WRITE_ROLLBACK_READINESS_1.md), on a fresh disposable data directory and a non-default port, with a role model explicitly reproducing Supabase's anon / authenticated / service_role roles and their RLS bypass semantics.",
+  "no_production_connection_made": true,
+  "no_production_data_copied": true,
+  "no_pii": true,
+  "no_shared_or_other_project_database_used": true,
+  "no_temp_schema_created_in_production": true,
+  "engine": "PostgreSQL 18.2 (native Windows binary, local, disposable data directory, ephemeral, dropped after the gate)",
+  "postgres_version_query_result": "PostgreSQL 18.2 on x86_64-windows, compiled by msvc-19.44.35222, 64-bit",
+  "instance": {
+    "host": "127.0.0.1",
+    "port": 55491,
+    "database": "akarfinder_market_index_gateb",
+    "auth": "trust (local-only disposable instance, no password used, no network exposure beyond localhost)",
+    "data_directory": "scratch project (outside all git worktrees), deleted after the gate"
+  },
+  "role_model": {
+    "anon": "NOLOGIN, NOBYPASSRLS -- matches Supabase's anon role (subject to RLS)",
+    "authenticated": "NOLOGIN, NOBYPASSRLS -- matches Supabase's authenticated role (subject to RLS)",
+    "service_role": "NOLOGIN, BYPASSRLS -- matches Supabase's service_role role (bypasses RLS entirely, exactly as this project's own docs/MARKET_INDEX_SECURITY_AND_RLS.md documents for the existing tables)",
+    "grants": "USAGE on schema public + SELECT/INSERT/UPDATE/DELETE on all tables granted to all three roles, matching Supabase's actual default grant pattern -- the real access boundary is enforced by RLS, not by table-level grants."
+  },
+  "migrations_applied": [
+    "20260716140000_create_discovery_candidates.sql",
+    "20260716140100_create_property_clusters.sql",
+    "20260716140200_create_property_cluster_members.sql",
+    "20260716140300_create_source_offer_observations.sql",
+    "20260716140400_add_source_offer_columns_to_listing_sources.sql"
+  ],
+  "migration_apply_status": "PASS -- all 5 applied cleanly against real PostgreSQL 18.2, 0 errors (2 expected NOTICEs from 'drop constraint if exists' on constraints that did not pre-exist, harmless)",
+  "tests": {
+    "test_1_anon_select_new_tables": {
+      "status": "PASS",
+      "expected": "0 rows from all 4 new tables, no error",
+      "actual": "discovery_candidates=0, property_clusters=0, property_cluster_members=0, source_offer_observations=0"
+    },
+    "test_2_authenticated_select_new_tables": {
+      "status": "PASS",
+      "expected": "0 rows from all 4 new tables, no error",
+      "actual": "discovery_candidates=0, property_clusters=0, property_cluster_members=0, source_offer_observations=0"
+    },
+    "test_3_anon_insert_rejected": {
+      "status": "PASS",
+      "expected": "INSERT rejected by RLS (no permissive policy exists)",
+      "actual": "ERROR: new row violates row-level security policy for table \"discovery_candidates\""
+    },
+    "test_4_authenticated_insert_rejected": {
+      "status": "PASS",
+      "expected": "INSERT rejected by RLS",
+      "actual": "ERROR: new row violates row-level security policy for table \"source_offer_observations\""
+    },
+    "test_5_service_role_bypasses_rls": {
+      "status": "PASS",
+      "expected": "service_role can INSERT and SELECT (BYPASSRLS)",
+      "actual": "INSERT 0 1 succeeded; subsequent SELECT as service_role saw 1 row in discovery_candidates"
+    },
+    "test_6_listing_sources_access_unchanged": {
+      "status": "PASS",
+      "expected": "migration 5 (additive columns only) does not alter listing_sources RLS/access model",
+      "actual": "anon count=0, service_role count=0 -- consistent with the stand-in's baseline RLS state; no new policy was introduced by the migration"
+    },
+    "test_7_rls_enabled_zero_policies": {
+      "status": "PASS",
+      "expected": "rowsecurity=true and 0 rows in pg_policies for all 4 new tables",
+      "actual": "all 4 tables: rowsecurity=true; pg_policies query returned 0 rows for all of them"
+    }
+  },
+  "append_only_db_level_followup_from_gate_a": {
+    "status": "PARTIALLY_ADDRESSED",
+    "detail": "This gate confirms RLS blocks anon/authenticated INSERT entirely (test 3/4) and that only service_role (BYPASSRLS) can write, matching Production's real access model where server code exclusively uses the service-role key. Whether service_role itself is additionally prevented from UPDATE/DELETE on source_offer_observations at the raw SQL level was intentionally left unenforced by design (per docs/MARKET_INDEX_SECURITY_AND_RLS.md: 'append-only is enforced by the application's own type surface' via the repository interface, not by a DB-level REVOKE) -- this is a documented, accepted design choice from the original foundation mission, not a new gap found here."
+  },
+  "cleanup": {
+    "server_stopped": true,
+    "data_directory_removed": true,
+    "no_lingering_process": true
+  },
+  "overall_verdict": "PASS"
+}

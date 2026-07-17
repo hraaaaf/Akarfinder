@@ -1,0 +1,70 @@
+{
+  "audit_id": "market-index-prod-activation-v2-migration-audit",
+  "mission": "AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-2",
+  "generated_at_utc": "2026-07-16T21:30:00Z",
+  "supersedes": "market-index-prod-activation-migration-audit.json (v1, computed before the e9f4d7a fix; removed from this worktree, superseded by this file)",
+  "migrations_identified": 5,
+  "migrations": [
+    {
+      "order": 1,
+      "filename": "20260716140000_create_discovery_candidates.sql",
+      "sha256_v1": "4814ba664ea9e8ac1b1c5f6c43eaec1a1b1007f9ab2a149f507fe267a3bf6e61",
+      "sha256_v2": "4814ba664ea9e8ac1b1c5f6c43eaec1a1b1007f9ab2a149f507fe267a3bf6e61",
+      "changed": false
+    },
+    {
+      "order": 2,
+      "filename": "20260716140100_create_property_clusters.sql",
+      "sha256_v1": "225e096ad5a213232924d6d0fc3185762bd8c9a50693f633c3fc841eaca2fccf",
+      "sha256_v2": "225e096ad5a213232924d6d0fc3185762bd8c9a50693f633c3fc841eaca2fccf",
+      "changed": false
+    },
+    {
+      "order": 3,
+      "filename": "20260716140200_create_property_cluster_members.sql",
+      "sha256_v1": "4680220caa32b0a13fe5b98433b25f2547a2c832782499aaaed328129b9da25c",
+      "sha256_v2": "4680220caa32b0a13fe5b98433b25f2547a2c832782499aaaed328129b9da25c",
+      "changed": false
+    },
+    {
+      "order": 4,
+      "filename": "20260716140300_create_source_offer_observations.sql",
+      "sha256_v1": "e5f51aa1665d37a5108c38960ddb6e5a1caf6d724e84ae1896d4497af3659afb",
+      "sha256_v2": "030d1c608fffce516e25b9161e1cc19bdf231958f2c420c0bef250a120e70a8b",
+      "changed": true,
+      "change_explanation": "Fixed in commit e9f4d7a: observed_at_bucket generated column changed from date_trunc('hour', observed_at) to date_trunc('hour', observed_at, 'UTC'). The 2-arg form depends on session timezone and Postgres rejects it as non-immutable inside GENERATED ALWAYS AS ... STORED. The 3-arg form with an explicit 'UTC' literal is immutable. Caught by the isolated PGlite gate in AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-1 before any Production contact.",
+      "tables_created": ["source_offer_observations"],
+      "indexes_created": [
+        "source_offer_observations_idempotency_idx (UNIQUE on source_offer_id, observed_at_bucket, content_fingerprint)",
+        "source_offer_observations_source_offer_idx"
+      ],
+      "rls_enabled": true,
+      "rollback": "drop table if exists source_offer_observations;"
+    },
+    {
+      "order": 5,
+      "filename": "20260716140400_add_source_offer_columns_to_listing_sources.sql",
+      "sha256_v1": "abd62f1c42e8c44831407b44761a2ebdb45466e02955b2deaa8d89d4553e436d",
+      "sha256_v2": "abd62f1c42e8c44831407b44761a2ebdb45466e02955b2deaa8d89d4553e436d",
+      "changed": false
+    }
+  ],
+  "sha_diff_summary": {
+    "changed_migrations": 1,
+    "changed_migration_order": 4,
+    "unexplained_differences": 0
+  },
+  "destructive_statement_scan": {
+    "patterns_checked": ["DROP TABLE (unqualified)", "TRUNCATE", "DELETE FROM", "UPDATE ... SET", "ALTER COLUMN TYPE", "RENAME", "CASCADE", "DISABLE ROW LEVEL SECURITY"],
+    "hits": 0,
+    "verdict": "0 destructive SQL in the activation path"
+  },
+  "generated_column_verification": {
+    "expression": "date_trunc('hour', observed_at, 'UTC')",
+    "accepted_by_postgres": "verified in Gate A (PGlite, see market-index-pglite-gate-v2.json)",
+    "stable_regardless_of_session_timezone": "yes -- explicit 'UTC' literal argument, not session-dependent",
+    "consistent_with_utc": true,
+    "consistent_between_application_and_idempotency_constraint": "yes -- lib/market-index/market-index-identifiers.ts computeObservedAtBucket() truncates via date.setUTCMinutes(0,0,0), equivalent to date_trunc('hour', ts, 'UTC') at the JS layer; both floor to the UTC hour boundary"
+  },
+  "verdict": "PASS"
+}

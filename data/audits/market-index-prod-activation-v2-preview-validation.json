@@ -1,0 +1,44 @@
+{
+  "audit_id": "market-index-prod-activation-v2-preview-validation",
+  "mission": "AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-2",
+  "generated_at_utc": "2026-07-16T23:05:00Z",
+  "deployment": {
+    "id": "dpl_6ziZuhiirhPik5hWNCm8ojp6h7ek",
+    "url": "https://akarfinder-fp7i32qfq-achraf-benmoussa-s-projects.vercel.app",
+    "target": "preview",
+    "not_production_confirmed": true,
+    "source_worktree": "release/market-index-foundation-prod-activation",
+    "source_head_commit": "e9f4d7ac0049a039ac60e4c57f9a84d2ec1695c5",
+    "deploy_command": "vercel deploy --yes (no --prod flag)"
+  },
+  "feature_flags_check": {
+    "market_index_flags_present_in_preview_env": false,
+    "detail": "vercel env ls preview shows no MARKET_INDEX_* variables -- all four flags (MARKET_INDEX_WRITE_ENABLED, MARKET_INDEX_READ_ENABLED, MARKET_INDEX_OBSERVATIONS_ENABLED, MARKET_INDEX_CLUSTERING_ENABLED) are absent, so market-index-feature-flags.ts resolves them to false by default.",
+    "status": "PASS"
+  },
+  "route_http_status": {
+    "/": 200, "/search": 200, "/immobilier/rabat": 200, "/immobilier/casablanca": 200,
+    "/immobilier/marrakech": 200, "/vendre": 200, "/louer": 200, "/pro": 200, "/faq": 200,
+    "/map": 200, "/onboarding": 200, "/investir": 200, "/mre": 200, "/quartiers": 200,
+    "status": "PASS -- all 14 required routes return HTTP 200"
+  },
+  "api_search_check": {
+    "endpoint": "/api/search",
+    "no_filter": "returns real listings from Production Supabase data unchanged (e.g. id 501, Marrakech, Targa)",
+    "city_Rabat_capitalized": "returns real listings (e.g. id 492, Rabat/Agdal, 2 200 000 DH)",
+    "city_rabat_lowercase": "returns 0 results -- pre-existing case-sensitivity behavior of the search API, unrelated to and unmodified by this mission's migrations; not a regression",
+    "no_market_index_data_exposed": true,
+    "status": "PASS"
+  },
+  "browser_validation": {
+    "tool": "Playwright (headless Chromium)",
+    "viewports_tested": ["1440x900 (desktop)", "390x844 (mobile)"],
+    "pages_tested": ["/", "/search", "/immobilier/rabat"],
+    "console_errors": 0,
+    "console_warnings": 0,
+    "hydration_errors": 0,
+    "status": "PASS"
+  },
+  "overall_verdict": "PASS",
+  "conclusion": "Preview deployment from the corrected e9f4d7a HEAD is healthy: all 14 required routes return 200, existing Production Supabase data renders unchanged, zero MARKET_INDEX_* flags are set (all resolve to false), and zero console/hydration errors were observed across 2 viewports and 3 key pages. No new schema exists yet on Production (migrations not yet applied) -- this Preview validates the application code path only, consistent with the current step in the mission."
+}

@@ -1,0 +1,160 @@
+{
+  "gate_id": "market-index-pglite-gate-v2",
+  "mission": "AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-2",
+  "generated_at_utc": "2026-07-16T22:42:58.019Z",
+  "engine": "@electric-sql/pglite",
+  "engine_version": "0.5.4",
+  "no_production_connection_made": true,
+  "no_production_data_copied": true,
+  "no_pii": true,
+  "legacy_tables_are_schema_only_stand_ins": true,
+  "migration_shas_tested": {
+    "20260716140000": "4814ba664ea9e8ac1b1c5f6c43eaec1a1b1007f9ab2a149f507fe267a3bf6e61",
+    "20260716140100": "225e096ad5a213232924d6d0fc3185762bd8c9a50693f633c3fc841eaca2fccf",
+    "20260716140200": "4680220caa32b0a13fe5b98433b25f2547a2c832782499aaaed328129b9da25c",
+    "20260716140300": "030d1c608fffce516e25b9161e1cc19bdf231958f2c420c0bef250a120e70a8b",
+    "20260716140400": "abd62f1c42e8c44831407b44761a2ebdb45466e02955b2deaa8d89d4553e436d"
+  },
+  "tests": {
+    "apply": {
+      "status": "PASS",
+      "migrations": [
+        {
+          "filename": "20260716140000_create_discovery_candidates.sql",
+          "duration_ms": 372
+        },
+        {
+          "filename": "20260716140100_create_property_clusters.sql",
+          "duration_ms": 18
+        },
+        {
+          "filename": "20260716140200_create_property_cluster_members.sql",
+          "duration_ms": 19
+        },
+        {
+          "filename": "20260716140300_create_source_offer_observations.sql",
+          "duration_ms": 18
+        },
+        {
+          "filename": "20260716140400_add_source_offer_columns_to_listing_sources.sql",
+          "duration_ms": 15
+        }
+      ]
+    },
+    "schema_tables": {
+      "status": "PASS",
+      "found": [
+        "discovery_candidates",
+        "property_cluster_members",
+        "property_clusters",
+        "source_offer_observations"
+      ]
+    },
+    "listing_sources_columns": {
+      "status": "PASS",
+      "count": 9
+    },
+    "rls_enabled": {
+      "status": "PASS",
+      "detail": [
+        {
+          "relname": "discovery_candidates",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "property_cluster_members",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "property_clusters",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "source_offer_observations",
+          "relrowsecurity": true
+        }
+      ]
+    },
+    "generated_column": {
+      "status": "PASS",
+      "observed_at": "2026-07-16T10:30:00.000Z",
+      "observed_at_bucket": "2026-07-16T10:00:00.000Z"
+    },
+    "timezone_stability": {
+      "status": "PASS",
+      "detail": "observed_at_bucket identical before/after SET TIME ZONE 'America/New_York'"
+    },
+    "idempotency_unique_index": {
+      "status": "PASS"
+    },
+    "append_only_db_level": {
+      "status": "LIMITED",
+      "detail": "PGlite runs as a single superuser role with no separate low-privilege app role -- REVOKE UPDATE/DELETE cannot be meaningfully tested here. Append-only is enforced at the TypeScript repository-interface level (no update()/delete() method exists, covered by 84 passing unit tests) and must be additionally verified against a real Supabase-compatible role model in Gate B."
+    },
+    "rerun": {
+      "status": "PASS",
+      "migrations": [
+        {
+          "filename": "20260716140000_create_discovery_candidates.sql",
+          "duration_ms": 4
+        },
+        {
+          "filename": "20260716140100_create_property_clusters.sql",
+          "duration_ms": 2
+        },
+        {
+          "filename": "20260716140200_create_property_cluster_members.sql",
+          "duration_ms": 2
+        },
+        {
+          "filename": "20260716140300_create_source_offer_observations.sql",
+          "duration_ms": 3
+        },
+        {
+          "filename": "20260716140400_add_source_offer_columns_to_listing_sources.sql",
+          "duration_ms": 10
+        }
+      ],
+      "no_pending": true,
+      "row_count_unchanged": true
+    },
+    "rollback": {
+      "status": "PASS",
+      "tables_removed": 4,
+      "columns_removed": 9,
+      "legacy_tables_untouched": true
+    },
+    "clean_reapply": {
+      "status": "PASS",
+      "migrations": [
+        {
+          "filename": "20260716140000_create_discovery_candidates.sql",
+          "duration_ms": 331
+        },
+        {
+          "filename": "20260716140100_create_property_clusters.sql",
+          "duration_ms": 8
+        },
+        {
+          "filename": "20260716140200_create_property_cluster_members.sql",
+          "duration_ms": 13
+        },
+        {
+          "filename": "20260716140300_create_source_offer_observations.sql",
+          "duration_ms": 11
+        },
+        {
+          "filename": "20260716140400_add_source_offer_columns_to_listing_sources.sql",
+          "duration_ms": 10
+        }
+      ]
+    }
+  },
+  "postgres_version": "PostgreSQL 18.3 (PGlite 0.5.4) on wasm32-unknown-linux-gnu, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.74 (1092ec30a3fb1d46b1782ff1b4db5094d3d06ae5), 32-bit",
+  "session_timezone": "Etc/GMT-1",
+  "legacy_stand_in_tables": [
+    "property_listings",
+    "listing_sources"
+  ],
+  "overall_verdict": "PASS"
+}

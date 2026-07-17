@@ -1,0 +1,75 @@
+{
+  "snapshot_id": "market-index-prod-activation-v2-precheck",
+  "generated_at_utc": "2026-07-16T23:07:27.576Z",
+  "method": "read-only PostgREST via SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (no direct Postgres connection string available in this environment)",
+  "no_business_data_recorded": true,
+  "no_pii_recorded": true,
+  "existing_tables_counts": [
+    {
+      "table": "property_listings",
+      "count": 316
+    },
+    {
+      "table": "listing_sources",
+      "count": 321
+    }
+  ],
+  "new_market_index_tables_existence_check": [
+    {
+      "table": "discovery_candidates",
+      "exists": false,
+      "http_status": 404,
+      "detail": "Could not find the table 'public.discovery_candidates' in the schema cache"
+    },
+    {
+      "table": "property_clusters",
+      "exists": false,
+      "http_status": 404,
+      "detail": "Could not find the table 'public.property_clusters' in the schema cache"
+    },
+    {
+      "table": "property_cluster_members",
+      "exists": false,
+      "http_status": 404,
+      "detail": "Could not find the table 'public.property_cluster_members' in the schema cache"
+    },
+    {
+      "table": "source_offer_observations",
+      "exists": false,
+      "http_status": 404,
+      "detail": "Could not find the table 'public.source_offer_observations' in the schema cache"
+    }
+  ],
+  "listing_sources_new_columns_not_yet_present": {
+    "checked_column": "source_offer_key",
+    "error_confirms_absence": true,
+    "error_message": "column listing_sources.source_offer_key does not exist"
+  },
+  "active_production_deployment": {
+    "id": "dpl_3F7aNUD4p591XkvF5g15XRUegdQ9",
+    "url": "akarfinder-kpc8gixxf-achraf-benmoussa-s-projects.vercel.app",
+    "target": "production",
+    "readyState": "READY",
+    "gitCommitSha": "688f051f60810dece0e79f7b0483aba102a0f378",
+    "gitCommitMessage": "docs(prod): record missing OpenSERP price hotfix re-validation",
+    "aliases": [
+      "akarfinder.vercel.app",
+      "akarfinder-achraf-benmoussa-s-projects.vercel.app",
+      "akarfinder-lafabriquedapollon-3895-achraf-benmoussa-s-projects.vercel.app"
+    ],
+    "matches_expected_pre_activation_state": true,
+    "note": "Confirms Production has not been touched by any Market Index change yet; this is the exact deployment from the prior OpenSERP partner-label fix mission, predating this mission entirely."
+  },
+  "production_env_flags_check": {
+    "method": "vercel env ls production",
+    "market_index_flags_present": false,
+    "detail": "No MARKET_INDEX_WRITE_ENABLED / MARKET_INDEX_READ_ENABLED / MARKET_INDEX_OBSERVATIONS_ENABLED / MARKET_INDEX_CLUSTERING_ENABLED variable exists in Production env. All four resolve to false by default (lib/market-index/market-index-feature-flags.ts).",
+    "confirmed_existing_vars": ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "DATABASE_PROVIDER"],
+    "status": "PASS"
+  },
+  "verifiability_limitation_disclosed": {
+    "migration_history_table": "not directly queryable -- no direct Postgres connection string is available in this environment (PostgREST only), so supabase_migrations.schema_migrations cannot be read via SQL. Absence of the 4 new tables and 9 new columns (confirmed above via PostgREST 404/column-not-found) is used as the equivalent proof that none of the 5 target migrations have been applied yet.",
+    "rls_policies_on_existing_tables": "same limitation as disclosed in docs/MARKET_INDEX_SECURITY_AND_RLS.md -- pg_policies cannot be read directly. This does not block the mission: the 5 new migrations' own RLS state (enabled, zero policies) was independently verified in Gate A and Gate B against the identical migration SQL, and existing tables (property_listings, listing_sources) are not modified in RLS terms by these migrations (migration 5 only adds nullable columns)."
+  },
+  "verdict": "PASS -- Production is in the exact expected pre-activation state: 0 of the 5 migrations applied, 0 MARKET_INDEX_* flags set, active deployment matches the known pre-mission commit."
+}

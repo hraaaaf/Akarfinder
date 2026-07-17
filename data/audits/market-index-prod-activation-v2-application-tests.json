@@ -1,0 +1,40 @@
+{
+  "audit_id": "market-index-prod-activation-v2-application-tests",
+  "mission": "AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-2",
+  "generated_at_utc": "2026-07-16T23:05:00Z",
+  "worktree": "release/market-index-foundation-prod-activation",
+  "head_commit": "e9f4d7ac0049a039ac60e4c57f9a84d2ec1695c5",
+  "results": {
+    "npm_test_full_suite": {
+      "command": "npm test (test:scrapers + test:api)",
+      "tests": 1523,
+      "pass": 1523,
+      "fail": 0,
+      "second_run_tests": 53,
+      "second_run_pass": 53,
+      "second_run_fail": 0,
+      "status": "PASS"
+    },
+    "npm_run_test_market_index": {
+      "tests": 84,
+      "pass": 84,
+      "fail": 0,
+      "status": "PASS"
+    },
+    "npm_run_test_openserp_ingestion": {
+      "tests": 20,
+      "pass": 20,
+      "fail": 0,
+      "status": "PASS"
+    },
+    "git_diff_check": {
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "npm_run_build": {
+      "status": "PASS",
+      "detail": "Next.js production build completed successfully, all routes compiled (static/SSG/dynamic), no build errors"
+    }
+  },
+  "overall_verdict": "PASS"
+}
