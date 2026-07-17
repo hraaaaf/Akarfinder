@@ -1,0 +1,36 @@
+{
+  "gate_id": "openserp-automated-ingestion-gate-a",
+  "mission": "AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1",
+  "generated_at_utc": "2026-07-17T22:42:22.662Z",
+  "engine": "@electric-sql/pglite (embedded WASM Postgres, ephemeral)",
+  "no_production_connection_made": true,
+  "no_production_data_used": true,
+  "adaptation_note": "national-writer.ts uses the real Supabase JS client (PostgREST over HTTP); PGlite has no PostgREST layer, so this gate runs the equivalent SQL each upsert() call compiles to (same table, same onConflict target) rather than invoking the TypeScript functions directly. See docs/OPENSERP_AUTOMATED_INGESTION_ARCHITECTURE.md.",
+  "first_apply": {
+    "status": "PASS",
+    "property_listings": 2,
+    "listing_sources": 2,
+    "clusters": 2,
+    "memberships": 2
+  },
+  "one_to_one_enforcement": {
+    "status": "PASS"
+  },
+  "second_apply_idempotent": {
+    "status": "PASS",
+    "note": "0 new rows anywhere; on-conflict UPDATE still refreshes last_seen_at/title as designed"
+  },
+  "new_candidate_on_second_run": {
+    "status": "PASS"
+  },
+  "rollback": {
+    "status": "PASS"
+  },
+  "origin_type_constraint": {
+    "status": "PASS"
+  },
+  "cluster_origin_constraint": {
+    "status": "PASS"
+  },
+  "overall_verdict": "PASS"
+}

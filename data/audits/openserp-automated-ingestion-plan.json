@@ -1,0 +1,61 @@
+{
+  "audit_id": "openserp-automated-ingestion-plan",
+  "mission": "AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1",
+  "generated_at_utc": "2026-07-17T22:46:00Z",
+  "section": "27 - dry-run Production",
+  "query_universe": {
+    "path": "data/openserp/query-universe-v1.json",
+    "total_queries": 2718,
+    "by_priority_tier": { "1": 720, "2": 48, "3": 1560, "4": 390 },
+    "by_language": { "fr": 2334, "ar": 384 },
+    "cities_covered": 16,
+    "districts_covered": 65
+  },
+  "production_snapshot_before_dry_run": {
+    "property_listings": 316,
+    "listing_sources": 321,
+    "discovery_candidates": 0
+  },
+  "dry_run_execution": {
+    "mode": "write=false (national-writer.ts never invoked)",
+    "run_id": "openserp-automated-ingestion-dryrun-official",
+    "query_count": 12,
+    "raw_results": 73,
+    "canonical_unique_urls": 72,
+    "accepted_candidates": 2,
+    "rejected_candidates": 36,
+    "unclassified_candidates": 35,
+    "category_pages_rejected": 24,
+    "duplicate_urls_within_run": 1,
+    "captcha_count": 8,
+    "engines_used": ["duckduckgo"],
+    "engine_yield_note": "Bing returned 0 usable results and triggered 8 captcha signals in this run -- automatically suspended for 6h by the budget policy (data/openserp/engine-budget-state.json), current_budget dropped from 12 to 4. DuckDuckGo and Ecosia remain active. No CAPTCHA was ever bypassed -- the run backed off as designed.",
+    "pii_detected_in_this_run": 0,
+    "unknown_domains_encountered": "35 of the 72 unique URLs (48.6%) resolved to domains not in the source domain registry -- correctly stayed unclassified, 0 became public"
+  },
+  "production_write_check": {
+    "property_listings_after": 316,
+    "listing_sources_after": 321,
+    "discovery_candidates_after": 0,
+    "delta": "0 -- confirmed zero writes during dry-run, matches write_mode=false"
+  },
+  "deterministic_id_collision_check": {
+    "method": "IDs for discovery_candidates/property_clusters/property_cluster_members are DB-generated (gen_random_uuid()), not client-computed -- collision is structurally impossible by construction. Idempotency instead relies on each table's own pre-existing unique constraint (see docs/OPENSERP_AUTOMATED_INGESTION_ARCHITECTURE.md's ID-scheme adaptation note).",
+    "property_listings_canonical_fingerprint_collisions": 0,
+    "listing_sources_listing_url_collisions": 0,
+    "note": "0 collisions expected and confirmed: the 2 accepted candidates' canonical URLs do not match any of the 321 existing listing_sources.listing_url values (would have shown as new_listing_sources=0/existing_source_offers>0 in write mode; this was a dry-run so no write was attempted either way)."
+  },
+  "gates": {
+    "gate_a_pglite": "data/audits/openserp-automated-ingestion-gate-a.json -- PASS",
+    "gate_b_postgresql_18_2": "data/audits/openserp-automated-ingestion-gate-b.json -- PASS (1 real bug found and fixed before Production contact: discovery_candidates partial unique index required a manual select-then-split write path instead of upsert(onConflict))"
+  },
+  "stop_conditions_checked": {
+    "ids_collide": false,
+    "existing_url_would_be_recreated": false,
+    "unknown_domain_would_be_published": false,
+    "pii_would_be_persisted": false,
+    "multi_source_cluster_would_be_created": false,
+    "observation_would_be_created": false
+  },
+  "verdict": "PASS -- safe to proceed to Gate A/B evidence review and freeze"
+}
