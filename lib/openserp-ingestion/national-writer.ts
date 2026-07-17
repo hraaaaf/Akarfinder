@@ -114,11 +114,56 @@ export async function writeNationalDiscoveryCandidates(input: NationalWriteInput
     else unclassified += 1;
   }
 
+  // discovery_candidates_idempotency_idx is a PARTIAL unique index
+  // (`where canonical_url is not null`) -- confirmed via Gate B (real
+  // PostgreSQL 18.2) that a plain upsert(onConflict:...) fails against it
+  // ("no unique or exclusion constraint matching the ON CONFLICT
+  // specification"): Postgres requires the INSERT's own ON CONFLICT clause
+  // to declare the same predicate to use a partial index for conflict
+  // inference, which the Supabase/PostgREST upsert API has no way to
+  // express. Every row here always has a non-null canonical_url in
+  // practice (classifyOpenSerpResult already drops any result whose URL
+  // fails to canonicalize before it becomes a candidate at all), so a
+  // manual select-then-split-insert/update achieves the identical
+  // idempotency guarantee without relying on that partial index as an
+  // ON CONFLICT target.
   for (const batch of chunk(rows, 25)) {
-    const result = await supabase
+    const keys = batch.map((row) => `${row.provider}::${row.query_hash}::${row.canonical_url}`);
+    const existingResult = await supabase
       .from("discovery_candidates")
-      .upsert(batch, { onConflict: "provider,query_hash,canonical_url" });
-    if (result.error) throw new Error(`discovery_candidates upsert failed: ${result.error.message}`);
+      .select("id, provider, query_hash, canonical_url")
+      .in("canonical_url", batch.map((row) => row.canonical_url));
+    if (existingResult.error) throw new Error(`discovery_candidates lookup failed: ${existingResult.error.message}`);
+    const existingByKey = new Map(
+      (existingResult.data as Array<{ id: string; provider: string; query_hash: string; canonical_url: string }>).map((row) => [
+        `${row.provider}::${row.query_hash}::${row.canonical_url}`,
+        row.id,
+      ]),
+    );
+
+    const toInsert = batch.filter((row, i) => !existingByKey.has(keys[i]));
+    const toUpdate = batch
+      .map((row, i) => ({ row, id: existingByKey.get(keys[i]) }))
+      .filter((entry): entry is { row: (typeof batch)[number]; id: string } => entry.id !== undefined);
+
+    if (toInsert.length > 0) {
+      const insertResult = await supabase.from("discovery_candidates").insert(toInsert);
+      if (insertResult.error) throw new Error(`discovery_candidates insert failed: ${insertResult.error.message}`);
+    }
+    for (const { row, id } of toUpdate) {
+      const updateResult = await supabase
+        .from("discovery_candidates")
+        .update({
+          last_seen_at: row.last_seen_at,
+          discovery_status: row.discovery_status,
+          result_rank: row.result_rank,
+          title: row.title,
+          snippet: row.snippet,
+          metadata: row.metadata,
+        })
+        .eq("id", id);
+      if (updateResult.error) throw new Error(`discovery_candidates update failed: ${updateResult.error.message}`);
+    }
   }
 
   return { written: rows.length, accepted, rejected, unclassified };
