@@ -86,3 +86,35 @@ export function computeObservationIdempotencyKey(input: {
   const bucket = computeObservedAtBucket(input.observedAtIso);
   return sha256(`${input.sourceOfferId}::${bucket}::${input.contentFingerprint}`);
 }
+
+// AKARFINDER-MARKET-INDEX-CONTROLLED-BACKFILL-1 — deterministic UUIDv5 (RFC
+// 4122) generation for legacy backfill IDs. Same run-id/property_listing_id
+// input always produces the same UUID -- no randomness, no invented value.
+// Namespace: the standard RFC 4122 "DNS" namespace UUID
+// (6ba7b810-9dad-11d1-80b4-00c04fd430c8), used generically since this project
+// does not maintain its own registered UUID namespace. The version string is
+// folded into the "name" component passed to the hash, per the mission's own
+// example notation (UUIDv5("market-index-legacy-cluster-v1:" + id)).
+const RFC4122_DNS_NAMESPACE = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
+
+function uuidv5(name: string, namespaceUuid: string = RFC4122_DNS_NAMESPACE): string {
+  const namespaceBytes = Buffer.from(namespaceUuid.replace(/-/g, ""), "hex");
+  const nameBytes = Buffer.from(name, "utf8");
+  const hash = createHash("sha1").update(Buffer.concat([namespaceBytes, nameBytes])).digest();
+  const bytes = Buffer.from(hash.subarray(0, 16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x50; // version 5
+  bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant RFC 4122
+  const hex = bytes.toString("hex");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
+}
+
+export const MARKET_INDEX_LEGACY_CLUSTER_NAMESPACE_VERSION = "market-index-legacy-cluster-v1";
+export const MARKET_INDEX_LEGACY_MEMBERSHIP_NAMESPACE_VERSION = "market-index-legacy-membership-v1";
+
+export function computeLegacyClusterId(propertyListingId: number): string {
+  return uuidv5(`${MARKET_INDEX_LEGACY_CLUSTER_NAMESPACE_VERSION}:${propertyListingId}`);
+}
+
+export function computeLegacyMembershipId(listingSourceId: number): string {
+  return uuidv5(`${MARKET_INDEX_LEGACY_MEMBERSHIP_NAMESPACE_VERSION}:${listingSourceId}`);
+}
