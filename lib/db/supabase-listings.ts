@@ -7,6 +7,17 @@ import type {
   DbStats,
 } from "@/lib/listings/db-listings";
 import { getSupabaseServerClient } from "./supabase-client";
+import { isMarketIndexReadEnabled } from "@/lib/market-index/market-index-feature-flags";
+import { SupabaseMarketIndexReadRepository } from "@/lib/market-index/market-index-read-repository";
+import {
+  resolveSourcesForListings,
+  logMarketIndexReadMetrics,
+} from "@/lib/market-index/market-index-read-service";
+import {
+  legacyActiveSourcePick,
+  type ReadCandidateSource,
+  type SourcePickOutcome,
+} from "@/lib/market-index/market-index-read-adapter";
 
 // PostgREST returns JSONB as parsed JS values; SQLite returns JSON strings.
 // Normalise back to strings so mapDbRowToListing's parseJsonSafe() still works.
@@ -17,6 +28,12 @@ function jsonToString(v: unknown): string | null {
 }
 
 type SupabaseSourceRow = {
+  // AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1: id/origin_type are additive
+  // selected fields, only used when MARKET_INDEX_READ_ENABLED=true. When the
+  // flag is false (default), they are fetched but never read -- the exact
+  // pre-existing display fields and selection logic are untouched.
+  id?: number;
+  origin_type?: string | null;
   source_name: string;
   listing_url: string;
   source_url: string | null;
@@ -72,10 +89,17 @@ type SupabaseListingRow = {
   listing_sources?: SupabaseSourceRow[];
 };
 
-function mapToDbRow(row: SupabaseListingRow): DbListingRow {
+// AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1: resolvedSource is provided only
+// when MARKET_INDEX_READ_ENABLED=true and a batch resolution already ran for
+// this listing (see querySupabaseListings/querySupabaseListingById below).
+// When absent -- the flag is off, or the listing wasn't a Market Index
+// candidate -- behavior is byte-identical to before this mission.
+function mapToDbRow(row: SupabaseListingRow, resolvedSource?: ReadCandidateSource | null): DbListingRow {
   const sources = row.listing_sources ?? [];
   const activeSource =
-    sources.find((s) => s.is_active) ?? sources[0] ?? null;
+    resolvedSource !== undefined
+      ? resolvedSource
+      : sources.find((s) => s.is_active) ?? sources[0] ?? null;
 
   return {
     id: row.id,
@@ -153,7 +177,7 @@ export async function querySupabaseListingById(
   const { data, error } = await supabase
     .from("property_listings")
     .select(
-      "*, listing_sources(source_name, listing_url, source_url, is_active, first_seen_at)"
+      "*, listing_sources(id, origin_type, source_name, listing_url, source_url, is_active, first_seen_at)"
     )
     .eq("id", id)
     .limit(1)
@@ -166,7 +190,47 @@ export async function querySupabaseListingById(
     }
     return null;
   }
-  return mapToDbRow(data as SupabaseListingRow);
+
+  const typedRow = data as SupabaseListingRow;
+  const resolvedSource = await resolveSingleListingSource(typedRow);
+  return mapToDbRow(typedRow, resolvedSource);
+}
+
+// AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1: resolves the Market-Index-aware
+// source pick for a single listing, when the flag is on. Returns undefined
+// (meaning "use the existing heuristic, unchanged") whenever the flag is
+// off, the query fails, or the listing isn't a Market Index candidate.
+async function resolveSingleListingSource(
+  row: SupabaseListingRow,
+): Promise<ReadCandidateSource | null | undefined> {
+  if (!isMarketIndexReadEnabled()) return undefined;
+  const sources = toReadCandidateSources(row.listing_sources);
+  try {
+    const repository = new SupabaseMarketIndexReadRepository(getSupabaseServerClient());
+    const { picks, metrics } = await resolveSourcesForListings(repository, [
+      { id: row.id, sources },
+    ]);
+    logMarketIndexReadMetrics(metrics);
+    const outcome = picks.get(row.id);
+    // Only return a resolved value when Market Index was actually used --
+    // otherwise leave it undefined so mapToDbRow() falls through to the
+    // exact, untouched legacy heuristic (never a possibly-stale outcome.source).
+    return outcome?.usedMarketIndex ? outcome.source : undefined;
+  } catch (err) {
+    console.error("[market-index-read] resolution failed, falling back to legacy:", err);
+    return undefined;
+  }
+}
+
+function toReadCandidateSources(sources: SupabaseSourceRow[] | undefined): ReadCandidateSource[] {
+  return (sources ?? []).map((s) => ({
+    id: s.id ?? -1,
+    source_name: s.source_name,
+    listing_url: s.listing_url,
+    source_url: s.source_url,
+    is_active: s.is_active,
+    origin_type: s.origin_type ?? null,
+  }));
 }
 
 export async function querySupabaseListings(
@@ -181,7 +245,7 @@ export async function querySupabaseListings(
   let q = supabase
     .from("property_listings")
     .select(
-      "*, listing_sources(source_name, listing_url, source_url, is_active, first_seen_at)",
+      "*, listing_sources(id, origin_type, source_name, listing_url, source_url, is_active, first_seen_at)",
       { count: "exact" }
     )
     .order("data_completeness_score", { ascending: false })
@@ -209,11 +273,51 @@ export async function querySupabaseListings(
   }
 
   const rows = (data ?? []) as SupabaseListingRow[];
+  const resolvedByListingId = await resolveBatchListingSources(rows);
   return {
-    listings: rows.map(mapToDbRow),
+    listings: rows.map((row) => mapToDbRow(row, resolvedByListingId.get(row.id))),
     total: count ?? 0,
   };
 }
+
+// AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1: batched equivalent of
+// resolveSingleListingSource, for the list endpoint. One extra query at most
+// (property_clusters + property_cluster_members, filtered to only the
+// candidate listings in this page) -- never one query per row.
+async function resolveBatchListingSources(
+  rows: SupabaseListingRow[],
+): Promise<Map<number, ReadCandidateSource | null>> {
+  const result = new Map<number, ReadCandidateSource | null>();
+  if (!isMarketIndexReadEnabled() || rows.length === 0) return result;
+
+  try {
+    const repository = new SupabaseMarketIndexReadRepository(getSupabaseServerClient());
+    const listings = rows.map((row) => ({
+      id: row.id,
+      sources: toReadCandidateSources(row.listing_sources),
+    }));
+    const { picks, metrics } = await resolveSourcesForListings(repository, listings);
+    logMarketIndexReadMetrics(metrics);
+    for (const [listingId, outcome] of picks) {
+      if (outcome.usedMarketIndex) {
+        result.set(listingId, outcome.source);
+      }
+      // When usedMarketIndex is false, deliberately leave the map entry
+      // absent -- mapToDbRow() then falls through to the untouched legacy
+      // heuristic (sources.find(is_active) ?? sources[0]), not to a
+      // possibly-stale outcome.source value.
+    }
+  } catch (err) {
+    console.error("[market-index-read] batch resolution failed, falling back to legacy:", err);
+  }
+
+  return result;
+}
+
+// Exported for unit tests -- lets a test assert the two picks agree without
+// duplicating the heuristic.
+export { legacyActiveSourcePick };
+export type { SourcePickOutcome };
 
 export async function querySupabaseStats(): Promise<DbStats> {
   const supabase = getSupabaseServerClient();
