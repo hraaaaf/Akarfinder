@@ -1,0 +1,64 @@
+{
+  "gate_id": "market-index-controlled-backfill-gate-a",
+  "mission": "AKARFINDER-MARKET-INDEX-CONTROLLED-BACKFILL-1",
+  "generated_at_utc": "2026-07-17T16:12:20.451Z",
+  "engine": "@electric-sql/pglite (embedded WASM Postgres, ephemeral)",
+  "no_production_connection_made": true,
+  "no_production_data_used": true,
+  "fixtures_summary": {
+    "total_listings": 12,
+    "total_sources": 13,
+    "cases_covered": [
+      "single valid source + openserp provenance -> eligible",
+      "ambiguous multi-source (2 sources) -> skipped",
+      "missing provenance (field_confidence null) -> skipped",
+      "invalid URL (null listing_url/source_url) -> skipped",
+      "non-openserp explicit-looking provenance marker -> still skipped (strict policy)",
+      "source_offer_key collision scenario (never written, never collides)",
+      "fake/misleading duplicate_group_id shared across 2 listings -> ignored",
+      "null price -> eligible, price_status=not_disclosed, displayed_price=null",
+      "rent transaction -> eligible, price_period stays null (mois/jour ambiguous)",
+      "near-identical text across 2 distinct listings -> independent clusters, never merged"
+    ]
+  },
+  "plan": {
+    "property_listings_total": 12,
+    "listing_sources_total": 13,
+    "source_offers_enrichable": 8,
+    "provenance_missing": 2,
+    "invalid_urls": 1,
+    "source_key_collisions": 0,
+    "single_source_listings": 11,
+    "multi_source_listings": 1,
+    "ambiguous_multi_source_groups": 1,
+    "eligible_clusters": 8,
+    "eligible_memberships": 8,
+    "skipped_missing_provenance": 2,
+    "skipped_multi_source": 2,
+    "skipped_invalid_url": 1,
+    "skipped_collision": 0,
+    "observations_to_create": 0,
+    "discovery_candidates_to_create": 0,
+    "legacy_rows_to_delete": 0
+  },
+  "plan_deterministic": true,
+  "apply": {
+    "status": "PASS",
+    "eligible_count": 8
+  },
+  "db_verification": {
+    "status": "PASS"
+  },
+  "second_apply": {
+    "status": "PASS",
+    "error_raised": null,
+    "note": "UPDATE guard clause + INSERT ON CONFLICT DO NOTHING made this a true no-op"
+  },
+  "rollback": {
+    "status": "PASS"
+  },
+  "clean_reapply": {
+    "status": "PASS"
+  },
+  "overall_verdict": "PASS"
+}

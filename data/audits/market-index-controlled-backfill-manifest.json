@@ -1,0 +1,4397 @@
+{
+  "audit_id": "market-index-controlled-backfill-manifest",
+  "mission": "AKARFINDER-MARKET-INDEX-CONTROLLED-BACKFILL-1",
+  "generated_at_utc": "2026-07-17T15:38:37.147Z",
+  "run_id": "market-index-controlled-backfill-1",
+  "plan_sha256": "96289d98fc852d49cdaf9131aa22ce7822c3e6e7fb64def6a290102e499ba1b9",
+  "plan": {
+    "property_listings_total": 316,
+    "listing_sources_total": 321,
+    "source_offers_enrichable": 177,
+    "provenance_missing": 135,
+    "invalid_urls": 0,
+    "source_key_collisions": 0,
+    "single_source_listings": 312,
+    "multi_source_listings": 4,
+    "ambiguous_multi_source_groups": 4,
+    "eligible_clusters": 177,
+    "eligible_memberships": 177,
+    "skipped_missing_provenance": 135,
+    "skipped_multi_source": 9,
+    "skipped_invalid_url": 0,
+    "skipped_collision": 0,
+    "observations_to_create": 0,
+    "discovery_candidates_to_create": 0,
+    "legacy_rows_to_delete": 0
+  },
+  "reference_comparison": {
+    "property_listings_reference": 316,
+    "property_listings_actual": 316,
+    "matches": true,
+    "listing_sources_reference": 321,
+    "listing_sources_actual": 321,
+    "matches_sources": true,
+    "ambiguous_multi_source_groups_reference": 4,
+    "ambiguous_multi_source_groups_actual": 4,
+    "matches_ambiguous_groups": true,
+    "openserp_eligible_reference": 177,
+    "openserp_eligible_actual": 177,
+    "matches_openserp": true,
+    "provenance_missing_reference": 52,
+    "provenance_missing_actual": 135,
+    "deviation_explained": true,
+    "deviation_explanation": "The ODM's reference figure of 52 corresponds exactly to property_listings rows with field_confidence IS NULL entirely (51 single-source + 1 of the 4 multi-source groups). A further 87 rows (84 single-source + 3 multi-source) have a non-null field_confidence using an older, unrelated data-completeness-rating schema (no provider/acquisition_provider key) which carries no explicit provenance marker; source_name alone was empirically shown not to correlate with provenance (mubawab appears across all 3 buckets), so these 87 are treated identically to the 52 -- no origin_type written, no cluster created. This is a MORE conservative outcome than the reference figure, not a reduction, so the per-row-justification rule for reducing 52 does not apply; full detail in docs/MARKET_INDEX_CONTROLLED_BACKFILL_COLUMN_MAPPING.md."
+  },
+  "apply_sql_sha256": "d7c88f773015df895bd7ba988a46003466e96845aac9f908bbbc935841b3df8c",
+  "verify_sql_sha256": "c6febe24670961d904c59ab01a7f5f693906209678312c2914bddfc434880c78",
+  "rollback_sql_sha256": "a2c8d3bad8e64d07b072ca5b969c76afac330cab8a54764e563a65e6c4c9e629",
+  "clusters_created": [
+    {
+      "cluster_id": "d330828d-fec0-5c51-bea9-e4e108ca8506",
+      "legacy_property_listing_id": 362
+    },
+    {
+      "cluster_id": "d22c0b13-f843-5f9c-b7d4-7638986d6b98",
+      "legacy_property_listing_id": 363
+    },
+    {
+      "cluster_id": "8b819243-5231-5edf-ab2c-feba32cea383",
+      "legacy_property_listing_id": 364
+    },
+    {
+      "cluster_id": "828463a0-3de4-5908-80fd-2d684ad3384e",
+      "legacy_property_listing_id": 365
+    },
+    {
+      "cluster_id": "b4c2fdc0-250e-51c5-9ad1-b781f3b7bef4",
+      "legacy_property_listing_id": 366
+    },
+    {
+      "cluster_id": "643fd522-ad5b-5433-8f21-b0af3f8b1b85",
+      "legacy_property_listing_id": 367
+    },
+    {
+      "cluster_id": "4419eb0f-824c-5d81-b1d1-079c63563528",
+      "legacy_property_listing_id": 368
+    },
+    {
+      "cluster_id": "5d0d2fcd-b77c-5a68-9d37-abe728a0cdb3",
+      "legacy_property_listing_id": 369
+    },
+    {
+      "cluster_id": "55a2468a-56ad-5044-bf1c-5194055a1445",
+      "legacy_property_listing_id": 370
+    },
+    {
+      "cluster_id": "453aae42-1ecb-540b-a9ac-4ef7e509a752",
+      "legacy_property_listing_id": 371
+    },
+    {
+      "cluster_id": "6b9f157f-e575-5986-a84e-2d12971f33a7",
+      "legacy_property_listing_id": 372
+    },
+    {
+      "cluster_id": "83ede2b6-7b0e-5a0d-a50f-74a927b35682",
+      "legacy_property_listing_id": 373
+    },
+    {
+      "cluster_id": "39cd6706-f5bb-5f5a-9bf4-d415b90a4e14",
+      "legacy_property_listing_id": 374
+    },
+    {
+      "cluster_id": "75ab4c44-51a9-5c26-8004-27dc0d4d59be",
+      "legacy_property_listing_id": 375
+    },
+    {
+      "cluster_id": "29e7f4cf-fdea-5435-bd56-d2b9086cdec1",
+      "legacy_property_listing_id": 376
+    },
+    {
+      "cluster_id": "9ed6c854-af3c-5496-874b-a04599cafb99",
+      "legacy_property_listing_id": 377
+    },
+    {
+      "cluster_id": "f9829efa-65ea-5a0b-b98a-4b155315f738",
+      "legacy_property_listing_id": 378
+    },
+    {
+      "cluster_id": "1199865c-bca4-5aa4-b83c-fa314090558c",
+      "legacy_property_listing_id": 379
+    },
+    {
+      "cluster_id": "021da906-be3a-5e65-a520-7536098eba6c",
+      "legacy_property_listing_id": 380
+    },
+    {
+      "cluster_id": "d4f14d1c-c68e-5fd1-9c64-cf4ac4ef27fc",
+      "legacy_property_listing_id": 381
+    },
+    {
+      "cluster_id": "d81ad9c7-a4a0-545d-935c-b38d19054f47",
+      "legacy_property_listing_id": 382
+    },
+    {
+      "cluster_id": "1f30b33e-6e1a-5e67-bebc-dd6a8af10127",
+      "legacy_property_listing_id": 383
+    },
+    {
+      "cluster_id": "da292e09-a35d-5277-9bfa-0a06372598f4",
+      "legacy_property_listing_id": 384
+    },
+    {
+      "cluster_id": "36988d5d-094c-505b-baaa-d83b1a65dda9",
+      "legacy_property_listing_id": 385
+    },
+    {
+      "cluster_id": "2578897c-6995-524d-944b-77d6067e83c8",
+      "legacy_property_listing_id": 386
+    },
+    {
+      "cluster_id": "80ab6c12-1eab-520e-a328-f058c3fad157",
+      "legacy_property_listing_id": 387
+    },
+    {
+      "cluster_id": "812d9bee-7e86-546a-8c66-5fc21484b9da",
+      "legacy_property_listing_id": 388
+    },
+    {
+      "cluster_id": "8fe580fb-735e-558e-b6b0-ecbae962a490",
+      "legacy_property_listing_id": 389
+    },
+    {
+      "cluster_id": "c0bc21fc-ad05-515a-ad5e-36f49c85440a",
+      "legacy_property_listing_id": 390
+    },
+    {
+      "cluster_id": "f551ca00-c6c9-5b8a-9a9c-058e4f5d3abd",
+      "legacy_property_listing_id": 391
+    },
+    {
+      "cluster_id": "6c15b860-597a-5847-bb3f-691a8f53d637",
+      "legacy_property_listing_id": 392
+    },
+    {
+      "cluster_id": "38d31d68-4eac-5805-99c1-3d0dd495bb59",
+      "legacy_property_listing_id": 393
+    },
+    {
+      "cluster_id": "4d3a2117-f519-53ae-b4bc-a751cedda1d9",
+      "legacy_property_listing_id": 394
+    },
+    {
+      "cluster_id": "60812a9b-5ae8-59d6-8b7c-b2e9656da81c",
+      "legacy_property_listing_id": 395
+    },
+    {
+      "cluster_id": "5546bdf0-4293-5119-aada-1d1b5bab3e7c",
+      "legacy_property_listing_id": 396
+    },
+    {
+      "cluster_id": "9f225842-be06-5343-8b7a-6f7178e6527d",
+      "legacy_property_listing_id": 397
+    },
+    {
+      "cluster_id": "d4ca9d22-41d4-5cac-b8c7-76bd67632ba6",
+      "legacy_property_listing_id": 398
+    },
+    {
+      "cluster_id": "a6f4d149-0309-5ec8-acee-ed903d769a68",
+      "legacy_property_listing_id": 399
+    },
+    {
+      "cluster_id": "18b08402-93ab-5c0c-bd3c-c6d96e28498a",
+      "legacy_property_listing_id": 400
+    },
+    {
+      "cluster_id": "f3cdf13d-ff83-530a-8c04-851a36f23867",
+      "legacy_property_listing_id": 401
+    },
+    {
+      "cluster_id": "2b8983f3-6d00-57c0-aae2-c34e718a0a6f",
+      "legacy_property_listing_id": 402
+    },
+    {
+      "cluster_id": "b3d4f1f9-32e0-53de-8469-da2d42e72b79",
+      "legacy_property_listing_id": 403
+    },
+    {
+      "cluster_id": "b59a0e50-89ee-55d8-82e9-1983da87012c",
+      "legacy_property_listing_id": 404
+    },
+    {
+      "cluster_id": "26a0ae0b-79f4-55ed-957e-0f2542a4f044",
+      "legacy_property_listing_id": 405
+    },
+    {
+      "cluster_id": "be44bd11-0b14-521f-9a05-8d62df582f64",
+      "legacy_property_listing_id": 406
+    },
+    {
+      "cluster_id": "c9c6d3d7-f31d-55cb-8cf9-ab5784c3c49e",
+      "legacy_property_listing_id": 407
+    },
+    {
+      "cluster_id": "3ee4da5d-83bf-5eba-a720-48f19ac2dc0f",
+      "legacy_property_listing_id": 408
+    },
+    {
+      "cluster_id": "7003d4f9-6eab-5748-97cf-1e2056dcba7c",
+      "legacy_property_listing_id": 409
+    },
+    {
+      "cluster_id": "e970ed4e-8963-5a28-a350-10751079b18d",
+      "legacy_property_listing_id": 410
+    },
+    {
+      "cluster_id": "6d756014-f9fe-5f68-9246-2ec01f2c4ea5",
+      "legacy_property_listing_id": 411
+    },
+    {
+      "cluster_id": "dbee866d-6d7c-5868-9e24-5ed96b5e61d4",
+      "legacy_property_listing_id": 412
+    },
+    {
+      "cluster_id": "cd433dde-b4ed-5e6d-b56a-9b299397508e",
+      "legacy_property_listing_id": 413
+    },
+    {
+      "cluster_id": "1ea94d22-01a1-51f6-9d55-4b9a8870fbf2",
+      "legacy_property_listing_id": 414
+    },
+    {
+      "cluster_id": "14c56cd8-f3d8-5543-ab38-648b719e3779",
+      "legacy_property_listing_id": 415
+    },
+    {
+      "cluster_id": "e42db73a-988c-5b18-aac8-329429dc7755",
+      "legacy_property_listing_id": 416
+    },
+    {
+      "cluster_id": "ca90f9ca-f346-5f93-8d72-7294b6f49beb",
+      "legacy_property_listing_id": 417
+    },
+    {
+      "cluster_id": "93ae7f25-567c-506a-a39c-2b393a6e3593",
+      "legacy_property_listing_id": 418
+    },
+    {
+      "cluster_id": "94124b13-5032-5eb3-82e8-0c6671034aa2",
+      "legacy_property_listing_id": 419
+    },
+    {
+      "cluster_id": "a854e977-0f32-5aef-ae74-4e7716686e48",
+      "legacy_property_listing_id": 420
+    },
+    {
+      "cluster_id": "48d7fa37-7776-51b0-b62f-448a02b1eb69",
+      "legacy_property_listing_id": 421
+    },
+    {
+      "cluster_id": "1c56190b-3e9c-5106-b027-adbde918cb8f",
+      "legacy_property_listing_id": 422
+    },
+    {
+      "cluster_id": "b5f8632d-83ab-537a-8730-9b694b27f576",
+      "legacy_property_listing_id": 423
+    },
+    {
+      "cluster_id": "39079b34-9842-54e3-9218-209cb202975f",
+      "legacy_property_listing_id": 424
+    },
+    {
+      "cluster_id": "960ad4bb-7f82-5d3e-8214-bb881b708643",
+      "legacy_property_listing_id": 425
+    },
+    {
+      "cluster_id": "d4a58114-3f53-5d4c-b67e-78a9d9729a89",
+      "legacy_property_listing_id": 426
+    },
+    {
+      "cluster_id": "108e6491-9e59-55c8-9bf9-4e83cf911ac0",
+      "legacy_property_listing_id": 427
+    },
+    {
+      "cluster_id": "a6c2feb1-fde7-5dee-a93d-2a8456bb7137",
+      "legacy_property_listing_id": 428
+    },
+    {
+      "cluster_id": "8702f3cd-e78e-52db-82b2-f7cae11845c2",
+      "legacy_property_listing_id": 429
+    },
+    {
+      "cluster_id": "2d539408-5785-524c-bc22-18c40cb1814b",
+      "legacy_property_listing_id": 430
+    },
+    {
+      "cluster_id": "eb8c1026-8347-50e3-9f95-bfc69ce76879",
+      "legacy_property_listing_id": 431
+    },
+    {
+      "cluster_id": "46741c34-a353-50f3-bfd4-699575315f28",
+      "legacy_property_listing_id": 432
+    },
+    {
+      "cluster_id": "b0d3ccc4-873d-5b66-a381-0e1d9877aec8",
+      "legacy_property_listing_id": 433
+    },
+    {
+      "cluster_id": "c5dd5532-678e-5b37-80cb-d9ddf7912ee5",
+      "legacy_property_listing_id": 434
+    },
+    {
+      "cluster_id": "cdf30aa0-dfbc-5d48-bc76-b06f61eafd88",
+      "legacy_property_listing_id": 435
+    },
+    {
+      "cluster_id": "c544fe7d-a759-50d8-abe3-e1f2e91f4eaa",
+      "legacy_property_listing_id": 436
+    },
+    {
+      "cluster_id": "ff8923a7-152c-59a0-874f-68008744ec4d",
+      "legacy_property_listing_id": 437
+    },
+    {
+      "cluster_id": "82618113-3289-5a60-8994-dede4a7ab1af",
+      "legacy_property_listing_id": 438
+    },
+    {
+      "cluster_id": "0b2774e4-b46b-5327-b7d9-54da7b259352",
+      "legacy_property_listing_id": 439
+    },
+    {
+      "cluster_id": "8a1a693e-c1c8-58a9-9a3f-966edc92b41d",
+      "legacy_property_listing_id": 440
+    },
+    {
+      "cluster_id": "e1406d11-0808-57e3-a438-712924fd9892",
+      "legacy_property_listing_id": 441
+    },
+    {
+      "cluster_id": "65c1e446-e782-5c51-b67e-28ab2cda843d",
+      "legacy_property_listing_id": 442
+    },
+    {
+      "cluster_id": "69aaa03a-e042-5281-8d54-86d6a4a6e459",
+      "legacy_property_listing_id": 443
+    },
+    {
+      "cluster_id": "1a0c5478-f247-5153-a4a7-f392102ed7cb",
+      "legacy_property_listing_id": 444
+    },
+    {
+      "cluster_id": "db19b672-e59d-594a-bfa5-119e8b631674",
+      "legacy_property_listing_id": 445
+    },
+    {
+      "cluster_id": "1255e86b-30e1-5326-8c46-56fa1c5e3f7a",
+      "legacy_property_listing_id": 446
+    },
+    {
+      "cluster_id": "b50cccc5-aea2-576c-ad9e-723eae0336c7",
+      "legacy_property_listing_id": 447
+    },
+    {
+      "cluster_id": "b8fb69e4-8421-5704-9455-39ba7b5f3f7b",
+      "legacy_property_listing_id": 448
+    },
+    {
+      "cluster_id": "96ef03fd-ab20-554f-96ac-15f340fa75cc",
+      "legacy_property_listing_id": 449
+    },
+    {
+      "cluster_id": "19bfa079-f86c-59ea-a352-aa22c0e697d1",
+      "legacy_property_listing_id": 450
+    },
+    {
+      "cluster_id": "54f34c1b-ba66-5ef4-917b-7f2b53933fdd",
+      "legacy_property_listing_id": 451
+    },
+    {
+      "cluster_id": "1bdc2395-8d5e-599d-859a-b93e9a3063ce",
+      "legacy_property_listing_id": 452
+    },
+    {
+      "cluster_id": "aff0c89a-92e8-533d-a05f-c484160b343c",
+      "legacy_property_listing_id": 453
+    },
+    {
+      "cluster_id": "1d615363-c64f-58e4-b919-d6c94ccaa920",
+      "legacy_property_listing_id": 454
+    },
+    {
+      "cluster_id": "50b5ffb6-7f93-529d-92ed-9cd273143c79",
+      "legacy_property_listing_id": 455
+    },
+    {
+      "cluster_id": "52069e75-1c3e-5f6d-85ba-6a539fcc4d3f",
+      "legacy_property_listing_id": 456
+    },
+    {
+      "cluster_id": "93e778c1-4ca0-5be2-a2f8-85ca5fc343ab",
+      "legacy_property_listing_id": 457
+    },
+    {
+      "cluster_id": "af206920-a132-5d43-9f1c-4526886b914e",
+      "legacy_property_listing_id": 458
+    },
+    {
+      "cluster_id": "debbd24b-52f7-56db-9c1f-bd4421dffbb6",
+      "legacy_property_listing_id": 459
+    },
+    {
+      "cluster_id": "8861923f-9c53-5a8c-92a8-b8e8fe47ccc6",
+      "legacy_property_listing_id": 460
+    },
+    {
+      "cluster_id": "716b4066-74f0-5463-aaba-bf6ff7f4f0f0",
+      "legacy_property_listing_id": 461
+    },
+    {
+      "cluster_id": "13f57103-4c3e-5709-80b9-2ec9ea24c541",
+      "legacy_property_listing_id": 462
+    },
+    {
+      "cluster_id": "16f0ae04-0ad6-521d-8986-0a129aadbfa1",
+      "legacy_property_listing_id": 463
+    },
+    {
+      "cluster_id": "e3406b99-9bd4-5ccc-b936-6986259cd738",
+      "legacy_property_listing_id": 464
+    },
+    {
+      "cluster_id": "b301ebba-1917-5e21-94b9-dbc12a81222c",
+      "legacy_property_listing_id": 465
+    },
+    {
+      "cluster_id": "e1341867-693c-5189-b4af-7d3c921ca9a2",
+      "legacy_property_listing_id": 466
+    },
+    {
+      "cluster_id": "52454098-dc27-5457-a691-604867bfdfb3",
+      "legacy_property_listing_id": 467
+    },
+    {
+      "cluster_id": "6a742ecf-fa2b-5f23-82b3-b58eee96aae1",
+      "legacy_property_listing_id": 468
+    },
+    {
+      "cluster_id": "5787d868-0c7c-5857-b22d-1d0f03da7e71",
+      "legacy_property_listing_id": 469
+    },
+    {
+      "cluster_id": "b115f96f-e84a-5410-ae88-b7c8b67af48f",
+      "legacy_property_listing_id": 470
+    },
+    {
+      "cluster_id": "aa934587-153d-557f-957a-f78bf8bce211",
+      "legacy_property_listing_id": 471
+    },
+    {
+      "cluster_id": "eb1eb514-bb55-5d60-be78-53dd1d766fd5",
+      "legacy_property_listing_id": 472
+    },
+    {
+      "cluster_id": "ab9ad291-0f93-5eed-8d87-86cef5541f2b",
+      "legacy_property_listing_id": 473
+    },
+    {
+      "cluster_id": "1b01bf1c-ae81-565c-947e-5a8718caea9c",
+      "legacy_property_listing_id": 474
+    },
+    {
+      "cluster_id": "bb940743-cdf2-5edf-8761-2816792be3ba",
+      "legacy_property_listing_id": 475
+    },
+    {
+      "cluster_id": "62b6ea71-41dd-5ba2-bc9d-b7f57bda7142",
+      "legacy_property_listing_id": 476
+    },
+    {
+      "cluster_id": "d8b981db-e136-510a-a9dd-8033cfdf77ee",
+      "legacy_property_listing_id": 477
+    },
+    {
+      "cluster_id": "a98153d9-63e7-5723-a992-4835e9f1910f",
+      "legacy_property_listing_id": 478
+    },
+    {
+      "cluster_id": "d5599ab8-ad62-5e6e-a4b6-e337d1eb3769",
+      "legacy_property_listing_id": 479
+    },
+    {
+      "cluster_id": "6b2081a6-cd7e-5067-b9b3-37d2948e2146",
+      "legacy_property_listing_id": 480
+    },
+    {
+      "cluster_id": "e8c04776-227d-5071-950d-0668033ed5d4",
+      "legacy_property_listing_id": 481
+    },
+    {
+      "cluster_id": "dc5b9660-9234-5f76-a040-12c630886155",
+      "legacy_property_listing_id": 482
+    },
+    {
+      "cluster_id": "2f4a0948-c967-5067-beba-d6e7cf5e0909",
+      "legacy_property_listing_id": 483
+    },
+    {
+      "cluster_id": "a292e764-1291-5856-9f25-c5e3014fa5dd",
+      "legacy_property_listing_id": 484
+    },
+    {
+      "cluster_id": "8c0a4e6d-e68e-547b-87e4-2edef52eb2ad",
+      "legacy_property_listing_id": 485
+    },
+    {
+      "cluster_id": "b242b28d-d544-5746-896c-f2691b8a291a",
+      "legacy_property_listing_id": 486
+    },
+    {
+      "cluster_id": "d2d9f047-ecc0-5aba-a777-09dffd1d64eb",
+      "legacy_property_listing_id": 487
+    },
+    {
+      "cluster_id": "a501583b-86d3-56b7-b28c-2b173ecb7293",
+      "legacy_property_listing_id": 488
+    },
+    {
+      "cluster_id": "48c38c8c-60a3-569c-8db3-aefd22b14768",
+      "legacy_property_listing_id": 489
+    },
+    {
+      "cluster_id": "f7d096cd-e26d-5d71-97f8-c35b93578bfa",
+      "legacy_property_listing_id": 490
+    },
+    {
+      "cluster_id": "cdb924ac-d7c2-5075-9724-0463ade1942b",
+      "legacy_property_listing_id": 491
+    },
+    {
+      "cluster_id": "631ecb1c-d411-5381-b9c2-77a6ab4d59a2",
+      "legacy_property_listing_id": 492
+    },
+    {
+      "cluster_id": "da224e45-af0b-5efb-b31e-bab951e9a04f",
+      "legacy_property_listing_id": 493
+    },
+    {
+      "cluster_id": "b4e8b625-3f6c-5506-ba87-c16bc4e2b64f",
+      "legacy_property_listing_id": 494
+    },
+    {
+      "cluster_id": "d441a721-a11c-5d00-ae59-3b3b878b80ee",
+      "legacy_property_listing_id": 495
+    },
+    {
+      "cluster_id": "7e42bfbc-2cff-5fa4-baef-fe28955548b4",
+      "legacy_property_listing_id": 496
+    },
+    {
+      "cluster_id": "8442bccc-38b2-58b7-af49-6c659f5c079d",
+      "legacy_property_listing_id": 497
+    },
+    {
+      "cluster_id": "00ad0a13-855e-5b2c-9ee0-91065037770f",
+      "legacy_property_listing_id": 498
+    },
+    {
+      "cluster_id": "5b715975-45dd-540f-9923-7451214def1e",
+      "legacy_property_listing_id": 499
+    },
+    {
+      "cluster_id": "a00d71e4-81a4-5a27-9907-e136f5e21775",
+      "legacy_property_listing_id": 500
+    },
+    {
+      "cluster_id": "033c1c4a-c4b0-586b-ba90-291f9518fa3f",
+      "legacy_property_listing_id": 501
+    },
+    {
+      "cluster_id": "bfcd9276-7c6d-55fa-9fbd-ba66d16c6884",
+      "legacy_property_listing_id": 502
+    },
+    {
+      "cluster_id": "07e28b60-92f5-59a7-8b84-3738e87c4261",
+      "legacy_property_listing_id": 503
+    },
+    {
+      "cluster_id": "6cb798c2-637b-5ba2-b2cb-e084266c4735",
+      "legacy_property_listing_id": 504
+    },
+    {
+      "cluster_id": "9caab033-6699-5e18-b25d-87f4850d44a4",
+      "legacy_property_listing_id": 505
+    },
+    {
+      "cluster_id": "670cf112-3dfc-5498-8469-1cd9e93103ef",
+      "legacy_property_listing_id": 506
+    },
+    {
+      "cluster_id": "0b9762ff-0606-5df0-bde5-fde7cedbe90b",
+      "legacy_property_listing_id": 507
+    },
+    {
+      "cluster_id": "9066df6a-8680-560e-b19f-36a98c961002",
+      "legacy_property_listing_id": 508
+    },
+    {
+      "cluster_id": "03dab843-fec7-5e06-8e3b-d716659cb238",
+      "legacy_property_listing_id": 509
+    },
+    {
+      "cluster_id": "87e6da2f-8197-55c7-9a64-5f1d4303cf45",
+      "legacy_property_listing_id": 510
+    },
+    {
+      "cluster_id": "f78f9e13-d02c-5981-ad62-88ab4241c54a",
+      "legacy_property_listing_id": 511
+    },
+    {
+      "cluster_id": "ed46e224-14c0-5dd0-b9c4-9dad2052a797",
+      "legacy_property_listing_id": 512
+    },
+    {
+      "cluster_id": "a0f14e5c-f3dd-5982-b794-4219565fb84d",
+      "legacy_property_listing_id": 513
+    },
+    {
+      "cluster_id": "13d62bbd-32c5-5b51-885f-21ac5bf60f98",
+      "legacy_property_listing_id": 514
+    },
+    {
+      "cluster_id": "ea6ef953-f292-5ebe-82f5-446880fc96a6",
+      "legacy_property_listing_id": 515
+    },
+    {
+      "cluster_id": "6d55cb4e-916f-5a46-a371-e6d1442e358f",
+      "legacy_property_listing_id": 516
+    },
+    {
+      "cluster_id": "57eb8326-6403-5ed5-bd52-363fd427fed9",
+      "legacy_property_listing_id": 517
+    },
+    {
+      "cluster_id": "26ac9941-ec85-5ef1-8559-2b2613fc94e1",
+      "legacy_property_listing_id": 518
+    },
+    {
+      "cluster_id": "1dd52ae8-92d5-564b-8d40-5c25ae2f0702",
+      "legacy_property_listing_id": 519
+    },
+    {
+      "cluster_id": "d6e34f57-2d75-5280-b5fd-e357dda9de6e",
+      "legacy_property_listing_id": 520
+    },
+    {
+      "cluster_id": "92697e95-9524-5047-aa60-21beaa46bc8f",
+      "legacy_property_listing_id": 521
+    },
+    {
+      "cluster_id": "7c1447dc-82f5-5faa-bb0b-3fbce1b3288e",
+      "legacy_property_listing_id": 522
+    },
+    {
+      "cluster_id": "63a0bdaf-3905-5b61-b1a7-25428e6da9f3",
+      "legacy_property_listing_id": 523
+    },
+    {
+      "cluster_id": "9abf8d4d-933b-5b72-a325-68db522140a3",
+      "legacy_property_listing_id": 524
+    },
+    {
+      "cluster_id": "dd24535e-fea4-5e57-8417-882123dbd1ea",
+      "legacy_property_listing_id": 525
+    },
+    {
+      "cluster_id": "9aba8322-a5ce-55e5-ac90-47f473333a0f",
+      "legacy_property_listing_id": 526
+    },
+    {
+      "cluster_id": "cb6a76c9-983c-5b47-9953-3aa53a7ed775",
+      "legacy_property_listing_id": 527
+    },
+    {
+      "cluster_id": "6b662af9-a202-502b-8f2b-0c5c91144205",
+      "legacy_property_listing_id": 528
+    },
+    {
+      "cluster_id": "1e98318e-a2c5-544f-8e91-675fea02db3c",
+      "legacy_property_listing_id": 529
+    },
+    {
+      "cluster_id": "4047e993-70ad-513a-ab5e-01cd568bb05c",
+      "legacy_property_listing_id": 530
+    },
+    {
+      "cluster_id": "c3686f40-b4b1-5247-bbeb-4aad2bf6f691",
+      "legacy_property_listing_id": 531
+    },
+    {
+      "cluster_id": "27b34213-da57-583a-a7ec-4f3d63a21300",
+      "legacy_property_listing_id": 532
+    },
+    {
+      "cluster_id": "652176db-ed62-5eb8-a68f-f5f1dba6bc7b",
+      "legacy_property_listing_id": 533
+    },
+    {
+      "cluster_id": "4e4016bd-07ad-5a98-8798-e9acd82b44d5",
+      "legacy_property_listing_id": 534
+    },
+    {
+      "cluster_id": "77db6395-dada-5a75-a329-162eb10eb82c",
+      "legacy_property_listing_id": 535
+    },
+    {
+      "cluster_id": "aee07fe8-acfd-56e0-9485-1d75401d914e",
+      "legacy_property_listing_id": 536
+    },
+    {
+      "cluster_id": "b143fcbb-0cdd-54c0-a057-37f8e020130d",
+      "legacy_property_listing_id": 537
+    },
+    {
+      "cluster_id": "be73d6eb-e190-50e1-b836-89a93405e6ff",
+      "legacy_property_listing_id": 538
+    }
+  ],
+  "memberships_created": [
+    {
+      "membership_id": "90ddbbe1-2236-5107-86a1-09cc4017ac91",
+      "cluster_id": "d330828d-fec0-5c51-bea9-e4e108ca8506",
+      "source_offer_id": 427
+    },
+    {
+      "membership_id": "3e077c99-3b25-5377-86c3-91618de64d86",
+      "cluster_id": "d22c0b13-f843-5f9c-b7d4-7638986d6b98",
+      "source_offer_id": 428
+    },
+    {
+      "membership_id": "5731e89f-7ce8-5bf9-8547-5d22748139a9",
+      "cluster_id": "8b819243-5231-5edf-ab2c-feba32cea383",
+      "source_offer_id": 429
+    },
+    {
+      "membership_id": "a8a00fe5-c10f-5a2e-96d5-1e8d872cd418",
+      "cluster_id": "828463a0-3de4-5908-80fd-2d684ad3384e",
+      "source_offer_id": 430
+    },
+    {
+      "membership_id": "2fc5f1d3-f580-58a7-a058-6d36fabf0aad",
+      "cluster_id": "b4c2fdc0-250e-51c5-9ad1-b781f3b7bef4",
+      "source_offer_id": 431
+    },
+    {
+      "membership_id": "35f79d55-a8ed-5627-a2df-f1831db29aec",
+      "cluster_id": "643fd522-ad5b-5433-8f21-b0af3f8b1b85",
+      "source_offer_id": 432
+    },
+    {
+      "membership_id": "766dd2e8-2272-5f28-96ce-9643c472ee58",
+      "cluster_id": "4419eb0f-824c-5d81-b1d1-079c63563528",
+      "source_offer_id": 433
+    },
+    {
+      "membership_id": "f3fc0872-4a8e-596a-8aa4-7f4b4eaf3d72",
+      "cluster_id": "5d0d2fcd-b77c-5a68-9d37-abe728a0cdb3",
+      "source_offer_id": 434
+    },
+    {
+      "membership_id": "faf04565-530b-5041-8879-a36559f201b9",
+      "cluster_id": "55a2468a-56ad-5044-bf1c-5194055a1445",
+      "source_offer_id": 435
+    },
+    {
+      "membership_id": "a08c28dc-5f13-585b-b742-882715ef04f0",
+      "cluster_id": "453aae42-1ecb-540b-a9ac-4ef7e509a752",
+      "source_offer_id": 436
+    },
+    {
+      "membership_id": "cb919b12-b2f0-57d2-8c14-a8bab96f875f",
+      "cluster_id": "6b9f157f-e575-5986-a84e-2d12971f33a7",
+      "source_offer_id": 437
+    },
+    {
+      "membership_id": "cc5e3a03-8d83-564d-a561-de09f652e33f",
+      "cluster_id": "83ede2b6-7b0e-5a0d-a50f-74a927b35682",
+      "source_offer_id": 438
+    },
+    {
+      "membership_id": "3cdc99df-9d72-518a-8ea1-ba5572496870",
+      "cluster_id": "39cd6706-f5bb-5f5a-9bf4-d415b90a4e14",
+      "source_offer_id": 439
+    },
+    {
+      "membership_id": "b3ccf22b-ed0a-5fc6-b76b-74541036f1b7",
+      "cluster_id": "75ab4c44-51a9-5c26-8004-27dc0d4d59be",
+      "source_offer_id": 440
+    },
+    {
+      "membership_id": "ea536553-f906-5a11-86b3-365b3a8b0c40",
+      "cluster_id": "29e7f4cf-fdea-5435-bd56-d2b9086cdec1",
+      "source_offer_id": 441
+    },
+    {
+      "membership_id": "aa1e9d14-cc34-5f48-8a13-c215f1187aa3",
+      "cluster_id": "9ed6c854-af3c-5496-874b-a04599cafb99",
+      "source_offer_id": 442
+    },
+    {
+      "membership_id": "1a7471d3-518c-5e60-8ea2-e2ec796285a7",
+      "cluster_id": "f9829efa-65ea-5a0b-b98a-4b155315f738",
+      "source_offer_id": 443
+    },
+    {
+      "membership_id": "a53345da-6383-5f19-8730-90bb368b1471",
+      "cluster_id": "1199865c-bca4-5aa4-b83c-fa314090558c",
+      "source_offer_id": 444
+    },
+    {
+      "membership_id": "f357537a-cff8-501a-9b6a-63a95af4462b",
+      "cluster_id": "021da906-be3a-5e65-a520-7536098eba6c",
+      "source_offer_id": 445
+    },
+    {
+      "membership_id": "c9d5ccd7-1d1d-544c-b1fe-027c5358b5e6",
+      "cluster_id": "d4f14d1c-c68e-5fd1-9c64-cf4ac4ef27fc",
+      "source_offer_id": 446
+    },
+    {
+      "membership_id": "26a3d5df-e768-58e6-b0fc-c1881e538e54",
+      "cluster_id": "d81ad9c7-a4a0-545d-935c-b38d19054f47",
+      "source_offer_id": 447
+    },
+    {
+      "membership_id": "724dbe1d-f47c-5a52-a0ef-355ba6d32c21",
+      "cluster_id": "1f30b33e-6e1a-5e67-bebc-dd6a8af10127",
+      "source_offer_id": 448
+    },
+    {
+      "membership_id": "e0308c48-8eed-59ed-9f6f-21e7b1df385c",
+      "cluster_id": "da292e09-a35d-5277-9bfa-0a06372598f4",
+      "source_offer_id": 449
+    },
+    {
+      "membership_id": "8e53239b-8331-59a6-a3b3-d980e2e6a872",
+      "cluster_id": "36988d5d-094c-505b-baaa-d83b1a65dda9",
+      "source_offer_id": 450
+    },
+    {
+      "membership_id": "8b174f6d-5336-5d77-99b9-ea5db7a8583c",
+      "cluster_id": "2578897c-6995-524d-944b-77d6067e83c8",
+      "source_offer_id": 451
+    },
+    {
+      "membership_id": "f6ba9395-21f1-5439-bad6-2df46b499593",
+      "cluster_id": "80ab6c12-1eab-520e-a328-f058c3fad157",
+      "source_offer_id": 452
+    },
+    {
+      "membership_id": "74c51dd6-d17c-572a-95d5-9583b2da0abd",
+      "cluster_id": "812d9bee-7e86-546a-8c66-5fc21484b9da",
+      "source_offer_id": 453
+    },
+    {
+      "membership_id": "e5427f41-71ac-5bb8-9a73-44cedb8fa79e",
+      "cluster_id": "8fe580fb-735e-558e-b6b0-ecbae962a490",
+      "source_offer_id": 454
+    },
+    {
+      "membership_id": "912e7949-8650-56f8-90d1-edbc56530c94",
+      "cluster_id": "c0bc21fc-ad05-515a-ad5e-36f49c85440a",
+      "source_offer_id": 455
+    },
+    {
+      "membership_id": "f8b42d60-125d-5c6b-881c-8a7b73347d99",
+      "cluster_id": "f551ca00-c6c9-5b8a-9a9c-058e4f5d3abd",
+      "source_offer_id": 456
+    },
+    {
+      "membership_id": "7e0af5ad-f690-5ed0-bc9b-c5e32316a269",
+      "cluster_id": "6c15b860-597a-5847-bb3f-691a8f53d637",
+      "source_offer_id": 457
+    },
+    {
+      "membership_id": "9a1d3ddd-1eb3-5c30-b04f-71dd01f6c6fa",
+      "cluster_id": "38d31d68-4eac-5805-99c1-3d0dd495bb59",
+      "source_offer_id": 458
+    },
+    {
+      "membership_id": "31ef094f-c72e-5f2d-93df-1681dcbf6b1c",
+      "cluster_id": "4d3a2117-f519-53ae-b4bc-a751cedda1d9",
+      "source_offer_id": 459
+    },
+    {
+      "membership_id": "ea8f178a-3b93-5d84-9931-f3854709252e",
+      "cluster_id": "60812a9b-5ae8-59d6-8b7c-b2e9656da81c",
+      "source_offer_id": 460
+    },
+    {
+      "membership_id": "7c6e8558-2a09-56f3-b589-cf5257338267",
+      "cluster_id": "5546bdf0-4293-5119-aada-1d1b5bab3e7c",
+      "source_offer_id": 461
+    },
+    {
+      "membership_id": "d1c5ced8-0afe-54b0-ba9e-bd36b2d74939",
+      "cluster_id": "9f225842-be06-5343-8b7a-6f7178e6527d",
+      "source_offer_id": 462
+    },
+    {
+      "membership_id": "b0890616-f513-5009-87e6-9dc788ecf082",
+      "cluster_id": "d4ca9d22-41d4-5cac-b8c7-76bd67632ba6",
+      "source_offer_id": 463
+    },
+    {
+      "membership_id": "f9d89554-83b0-5032-8ab7-849db0347889",
+      "cluster_id": "a6f4d149-0309-5ec8-acee-ed903d769a68",
+      "source_offer_id": 464
+    },
+    {
+      "membership_id": "76fd6da6-643f-5d13-b165-d16fc78053cb",
+      "cluster_id": "18b08402-93ab-5c0c-bd3c-c6d96e28498a",
+      "source_offer_id": 465
+    },
+    {
+      "membership_id": "d74f353d-6161-58a4-9b9f-8778f30503fc",
+      "cluster_id": "f3cdf13d-ff83-530a-8c04-851a36f23867",
+      "source_offer_id": 466
+    },
+    {
+      "membership_id": "d48a8d5b-b087-516d-8af4-e2948d2e9c8b",
+      "cluster_id": "2b8983f3-6d00-57c0-aae2-c34e718a0a6f",
+      "source_offer_id": 467
+    },
+    {
+      "membership_id": "20ec56bc-b1ec-5fec-9f70-53e7b27ca3b6",
+      "cluster_id": "b3d4f1f9-32e0-53de-8469-da2d42e72b79",
+      "source_offer_id": 468
+    },
+    {
+      "membership_id": "d9f45cc0-0aff-5067-96b8-cfec6684879b",
+      "cluster_id": "b59a0e50-89ee-55d8-82e9-1983da87012c",
+      "source_offer_id": 469
+    },
+    {
+      "membership_id": "efb887ab-1e21-52b0-ad84-37e7fe998f15",
+      "cluster_id": "26a0ae0b-79f4-55ed-957e-0f2542a4f044",
+      "source_offer_id": 470
+    },
+    {
+      "membership_id": "bbc8fee4-1bbb-5ecf-9db6-ae2c378be15a",
+      "cluster_id": "be44bd11-0b14-521f-9a05-8d62df582f64",
+      "source_offer_id": 471
+    },
+    {
+      "membership_id": "6c3da9ed-9e5f-5906-adb7-ff2299a441cb",
+      "cluster_id": "c9c6d3d7-f31d-55cb-8cf9-ab5784c3c49e",
+      "source_offer_id": 472
+    },
+    {
+      "membership_id": "df8b1af3-537b-5cc4-9045-44612c5f2f16",
+      "cluster_id": "3ee4da5d-83bf-5eba-a720-48f19ac2dc0f",
+      "source_offer_id": 473
+    },
+    {
+      "membership_id": "c87891d7-3458-57e2-90cc-b1abea9f6557",
+      "cluster_id": "7003d4f9-6eab-5748-97cf-1e2056dcba7c",
+      "source_offer_id": 474
+    },
+    {
+      "membership_id": "7b1d2763-0720-5fa9-99f4-8608ca67f9af",
+      "cluster_id": "e970ed4e-8963-5a28-a350-10751079b18d",
+      "source_offer_id": 475
+    },
+    {
+      "membership_id": "1c27f1ad-6173-551a-afae-6c78986e71e8",
+      "cluster_id": "6d756014-f9fe-5f68-9246-2ec01f2c4ea5",
+      "source_offer_id": 476
+    },
+    {
+      "membership_id": "bd70026e-57f7-54b0-b2f3-4c3560c1c552",
+      "cluster_id": "dbee866d-6d7c-5868-9e24-5ed96b5e61d4",
+      "source_offer_id": 477
+    },
+    {
+      "membership_id": "c89ed8a5-7002-516a-b733-5575c10ed570",
+      "cluster_id": "cd433dde-b4ed-5e6d-b56a-9b299397508e",
+      "source_offer_id": 478
+    },
+    {
+      "membership_id": "5e0daae1-447e-5e1b-abc6-88248f5c1b41",
+      "cluster_id": "1ea94d22-01a1-51f6-9d55-4b9a8870fbf2",
+      "source_offer_id": 479
+    },
+    {
+      "membership_id": "b190316f-09f4-57ed-99f0-5b3bbb953c54",
+      "cluster_id": "14c56cd8-f3d8-5543-ab38-648b719e3779",
+      "source_offer_id": 480
+    },
+    {
+      "membership_id": "330b07c8-5e92-5b4d-b50d-14ae803ff825",
+      "cluster_id": "e42db73a-988c-5b18-aac8-329429dc7755",
+      "source_offer_id": 481
+    },
+    {
+      "membership_id": "0c9ba723-d8b6-5a02-866e-0cf847f5f471",
+      "cluster_id": "ca90f9ca-f346-5f93-8d72-7294b6f49beb",
+      "source_offer_id": 482
+    },
+    {
+      "membership_id": "d03fac59-1d2f-5bec-8f6d-ecc479089287",
+      "cluster_id": "93ae7f25-567c-506a-a39c-2b393a6e3593",
+      "source_offer_id": 483
+    },
+    {
+      "membership_id": "31eb7e9d-abea-542e-9fa0-dba1cc83acb2",
+      "cluster_id": "94124b13-5032-5eb3-82e8-0c6671034aa2",
+      "source_offer_id": 484
+    },
+    {
+      "membership_id": "19e408f0-0417-5ca9-8fbb-32eb4828d645",
+      "cluster_id": "a854e977-0f32-5aef-ae74-4e7716686e48",
+      "source_offer_id": 485
+    },
+    {
+      "membership_id": "54185d0e-2727-5b61-8c9b-68b151f90cde",
+      "cluster_id": "48d7fa37-7776-51b0-b62f-448a02b1eb69",
+      "source_offer_id": 486
+    },
+    {
+      "membership_id": "917cc29b-0621-5e0d-a156-873aed0c3a4b",
+      "cluster_id": "1c56190b-3e9c-5106-b027-adbde918cb8f",
+      "source_offer_id": 487
+    },
+    {
+      "membership_id": "5c118e62-7b98-554f-a332-a5fe6346f409",
+      "cluster_id": "b5f8632d-83ab-537a-8730-9b694b27f576",
+      "source_offer_id": 488
+    },
+    {
+      "membership_id": "7ea9bde6-9e6d-5094-80c3-269439176488",
+      "cluster_id": "39079b34-9842-54e3-9218-209cb202975f",
+      "source_offer_id": 489
+    },
+    {
+      "membership_id": "2e4806b9-f872-5f2f-80cb-e079d782d79a",
+      "cluster_id": "960ad4bb-7f82-5d3e-8214-bb881b708643",
+      "source_offer_id": 490
+    },
+    {
+      "membership_id": "bdf216c4-08f5-5835-aea9-f4c06a724214",
+      "cluster_id": "d4a58114-3f53-5d4c-b67e-78a9d9729a89",
+      "source_offer_id": 491
+    },
+    {
+      "membership_id": "ff63c2b7-c19b-587d-aeec-d6122f0ccc0a",
+      "cluster_id": "108e6491-9e59-55c8-9bf9-4e83cf911ac0",
+      "source_offer_id": 492
+    },
+    {
+      "membership_id": "d67b1c04-b93d-566c-9234-78d3873469ad",
+      "cluster_id": "a6c2feb1-fde7-5dee-a93d-2a8456bb7137",
+      "source_offer_id": 493
+    },
+    {
+      "membership_id": "bda6153e-a791-576b-82fb-708605b6839f",
+      "cluster_id": "8702f3cd-e78e-52db-82b2-f7cae11845c2",
+      "source_offer_id": 494
+    },
+    {
+      "membership_id": "f65d6239-247d-5b4b-872c-51c2d3a815ad",
+      "cluster_id": "2d539408-5785-524c-bc22-18c40cb1814b",
+      "source_offer_id": 495
+    },
+    {
+      "membership_id": "17b5de9b-2d3e-5623-bbbb-784e6e83ade8",
+      "cluster_id": "eb8c1026-8347-50e3-9f95-bfc69ce76879",
+      "source_offer_id": 496
+    },
+    {
+      "membership_id": "a19ddefe-9584-59ec-ada7-2e0a2c5f55d0",
+      "cluster_id": "46741c34-a353-50f3-bfd4-699575315f28",
+      "source_offer_id": 497
+    },
+    {
+      "membership_id": "d44ab247-0a72-50c2-acbc-b7c8ddcf32a8",
+      "cluster_id": "b0d3ccc4-873d-5b66-a381-0e1d9877aec8",
+      "source_offer_id": 498
+    },
+    {
+      "membership_id": "b17c48ff-e86b-5e35-99cd-c1202c77f7eb",
+      "cluster_id": "c5dd5532-678e-5b37-80cb-d9ddf7912ee5",
+      "source_offer_id": 499
+    },
+    {
+      "membership_id": "6f0d31d5-e7dc-5b9f-8a9c-c6e06871ca9d",
+      "cluster_id": "cdf30aa0-dfbc-5d48-bc76-b06f61eafd88",
+      "source_offer_id": 500
+    },
+    {
+      "membership_id": "89fb48cb-561f-5f0f-bb89-67c775012411",
+      "cluster_id": "c544fe7d-a759-50d8-abe3-e1f2e91f4eaa",
+      "source_offer_id": 501
+    },
+    {
+      "membership_id": "ad873c95-f514-55d5-820d-b91d712f0eaf",
+      "cluster_id": "ff8923a7-152c-59a0-874f-68008744ec4d",
+      "source_offer_id": 502
+    },
+    {
+      "membership_id": "4ac403c5-c532-5f91-bbef-e73f0aa96930",
+      "cluster_id": "82618113-3289-5a60-8994-dede4a7ab1af",
+      "source_offer_id": 503
+    },
+    {
+      "membership_id": "6df9181b-d0cc-57de-ba45-0e80cdf687db",
+      "cluster_id": "0b2774e4-b46b-5327-b7d9-54da7b259352",
+      "source_offer_id": 504
+    },
+    {
+      "membership_id": "0e3c6f6c-9933-5df9-8ea5-9ae65ebe250c",
+      "cluster_id": "8a1a693e-c1c8-58a9-9a3f-966edc92b41d",
+      "source_offer_id": 505
+    },
+    {
+      "membership_id": "f33bc337-aa47-5ee0-9e14-2d52376eaa48",
+      "cluster_id": "e1406d11-0808-57e3-a438-712924fd9892",
+      "source_offer_id": 506
+    },
+    {
+      "membership_id": "64218e77-59c5-573b-a3c8-41e4ce955e2f",
+      "cluster_id": "65c1e446-e782-5c51-b67e-28ab2cda843d",
+      "source_offer_id": 507
+    },
+    {
+      "membership_id": "cf8ec4d1-a5be-52a6-a41a-e3911130819a",
+      "cluster_id": "69aaa03a-e042-5281-8d54-86d6a4a6e459",
+      "source_offer_id": 508
+    },
+    {
+      "membership_id": "93327cb6-023f-5060-bae3-97fb6a002b39",
+      "cluster_id": "1a0c5478-f247-5153-a4a7-f392102ed7cb",
+      "source_offer_id": 509
+    },
+    {
+      "membership_id": "8f8856ee-4476-5291-87a9-f035d87bf723",
+      "cluster_id": "db19b672-e59d-594a-bfa5-119e8b631674",
+      "source_offer_id": 510
+    },
+    {
+      "membership_id": "f1b58dd0-4259-5f74-8ca4-00723456be97",
+      "cluster_id": "1255e86b-30e1-5326-8c46-56fa1c5e3f7a",
+      "source_offer_id": 511
+    },
+    {
+      "membership_id": "21d84324-92db-5356-b99c-8913bd18ce61",
+      "cluster_id": "b50cccc5-aea2-576c-ad9e-723eae0336c7",
+      "source_offer_id": 512
+    },
+    {
+      "membership_id": "f1662b0f-e57d-53a9-82e8-e45650f4f511",
+      "cluster_id": "b8fb69e4-8421-5704-9455-39ba7b5f3f7b",
+      "source_offer_id": 513
+    },
+    {
+      "membership_id": "772c64ec-bc96-5e49-9559-ad7fe99e3831",
+      "cluster_id": "96ef03fd-ab20-554f-96ac-15f340fa75cc",
+      "source_offer_id": 514
+    },
+    {
+      "membership_id": "734d6ab7-aff2-5d8e-a4a0-0c65030e14fc",
+      "cluster_id": "19bfa079-f86c-59ea-a352-aa22c0e697d1",
+      "source_offer_id": 515
+    },
+    {
+      "membership_id": "ebc91d44-a305-53b6-9dd7-12aa58e16288",
+      "cluster_id": "54f34c1b-ba66-5ef4-917b-7f2b53933fdd",
+      "source_offer_id": 516
+    },
+    {
+      "membership_id": "9e9ea510-53ef-59dc-9dad-c5e2ea311064",
+      "cluster_id": "1bdc2395-8d5e-599d-859a-b93e9a3063ce",
+      "source_offer_id": 517
+    },
+    {
+      "membership_id": "f32c50a3-59c4-59d5-8ac0-ec534adae33c",
+      "cluster_id": "aff0c89a-92e8-533d-a05f-c484160b343c",
+      "source_offer_id": 518
+    },
+    {
+      "membership_id": "9c3b1ba8-fda7-5c62-9fa6-c22c22f80813",
+      "cluster_id": "1d615363-c64f-58e4-b919-d6c94ccaa920",
+      "source_offer_id": 519
+    },
+    {
+      "membership_id": "701a8793-0f56-5254-b3ae-12825ea6c30f",
+      "cluster_id": "50b5ffb6-7f93-529d-92ed-9cd273143c79",
+      "source_offer_id": 520
+    },
+    {
+      "membership_id": "0a23abe8-681b-5354-8ace-0ec94917c9ba",
+      "cluster_id": "52069e75-1c3e-5f6d-85ba-6a539fcc4d3f",
+      "source_offer_id": 521
+    },
+    {
+      "membership_id": "24f96f31-6c03-5a16-9aae-b4a0bf1228bb",
+      "cluster_id": "93e778c1-4ca0-5be2-a2f8-85ca5fc343ab",
+      "source_offer_id": 522
+    },
+    {
+      "membership_id": "193a4849-0dd0-582a-9494-8c7268f87f3c",
+      "cluster_id": "af206920-a132-5d43-9f1c-4526886b914e",
+      "source_offer_id": 523
+    },
+    {
+      "membership_id": "2aef2228-b0ea-57fb-9cc7-c266d3195729",
+      "cluster_id": "debbd24b-52f7-56db-9c1f-bd4421dffbb6",
+      "source_offer_id": 524
+    },
+    {
+      "membership_id": "79aa3bfd-65c2-5eb8-a197-5783cc50585b",
+      "cluster_id": "8861923f-9c53-5a8c-92a8-b8e8fe47ccc6",
+      "source_offer_id": 525
+    },
+    {
+      "membership_id": "9b9d6878-6fe1-56a5-a0e2-f8f587d2da62",
+      "cluster_id": "716b4066-74f0-5463-aaba-bf6ff7f4f0f0",
+      "source_offer_id": 526
+    },
+    {
+      "membership_id": "1ba3c1f3-ed79-5e5a-ad35-2fd7a3292060",
+      "cluster_id": "13f57103-4c3e-5709-80b9-2ec9ea24c541",
+      "source_offer_id": 527
+    },
+    {
+      "membership_id": "6c8d05e6-5872-5869-a988-4ac672f61ac3",
+      "cluster_id": "16f0ae04-0ad6-521d-8986-0a129aadbfa1",
+      "source_offer_id": 528
+    },
+    {
+      "membership_id": "3134cd4f-77e9-5b3a-a4c6-f49a1a6de3d1",
+      "cluster_id": "e3406b99-9bd4-5ccc-b936-6986259cd738",
+      "source_offer_id": 529
+    },
+    {
+      "membership_id": "0f05048c-8723-5660-9c9e-645e30bc0275",
+      "cluster_id": "b301ebba-1917-5e21-94b9-dbc12a81222c",
+      "source_offer_id": 530
+    },
+    {
+      "membership_id": "1372ce5c-f604-5b0d-99b5-77f3373145ab",
+      "cluster_id": "e1341867-693c-5189-b4af-7d3c921ca9a2",
+      "source_offer_id": 531
+    },
+    {
+      "membership_id": "c4ee6545-5c47-597e-adf7-1d192900f5d8",
+      "cluster_id": "52454098-dc27-5457-a691-604867bfdfb3",
+      "source_offer_id": 532
+    },
+    {
+      "membership_id": "2af1841d-6b55-545f-93fd-e19d6c21f8f9",
+      "cluster_id": "6a742ecf-fa2b-5f23-82b3-b58eee96aae1",
+      "source_offer_id": 533
+    },
+    {
+      "membership_id": "6dd9893a-e527-51e6-8202-051dccf7c7ea",
+      "cluster_id": "5787d868-0c7c-5857-b22d-1d0f03da7e71",
+      "source_offer_id": 534
+    },
+    {
+      "membership_id": "ad87da36-457f-5040-87f5-eeacff0757d6",
+      "cluster_id": "b115f96f-e84a-5410-ae88-b7c8b67af48f",
+      "source_offer_id": 535
+    },
+    {
+      "membership_id": "bf53f15f-6225-5d77-87fe-23a541728e02",
+      "cluster_id": "aa934587-153d-557f-957a-f78bf8bce211",
+      "source_offer_id": 536
+    },
+    {
+      "membership_id": "2a81c8a3-d293-5d1b-b4a7-4eb2c7a33a85",
+      "cluster_id": "eb1eb514-bb55-5d60-be78-53dd1d766fd5",
+      "source_offer_id": 537
+    },
+    {
+      "membership_id": "f979c66d-56bd-5e48-b178-192da1c43446",
+      "cluster_id": "ab9ad291-0f93-5eed-8d87-86cef5541f2b",
+      "source_offer_id": 538
+    },
+    {
+      "membership_id": "7bb1fddc-8d7d-5477-952d-fcda4670fdbb",
+      "cluster_id": "1b01bf1c-ae81-565c-947e-5a8718caea9c",
+      "source_offer_id": 539
+    },
+    {
+      "membership_id": "eb168c7c-f420-5316-a50e-d3a3a452a618",
+      "cluster_id": "bb940743-cdf2-5edf-8761-2816792be3ba",
+      "source_offer_id": 540
+    },
+    {
+      "membership_id": "7e5eee7c-c046-5845-864b-890b49b6b8f6",
+      "cluster_id": "62b6ea71-41dd-5ba2-bc9d-b7f57bda7142",
+      "source_offer_id": 541
+    },
+    {
+      "membership_id": "5f4673eb-1962-56ac-90aa-a90c518c4ced",
+      "cluster_id": "d8b981db-e136-510a-a9dd-8033cfdf77ee",
+      "source_offer_id": 542
+    },
+    {
+      "membership_id": "8deae804-ee59-5daf-9e69-1502dcd65b05",
+      "cluster_id": "a98153d9-63e7-5723-a992-4835e9f1910f",
+      "source_offer_id": 543
+    },
+    {
+      "membership_id": "b874eac2-c53d-5924-8591-22247e2f1336",
+      "cluster_id": "d5599ab8-ad62-5e6e-a4b6-e337d1eb3769",
+      "source_offer_id": 544
+    },
+    {
+      "membership_id": "dd33d5bb-9725-5a63-85b8-9169dc4dadde",
+      "cluster_id": "6b2081a6-cd7e-5067-b9b3-37d2948e2146",
+      "source_offer_id": 545
+    },
+    {
+      "membership_id": "2676b17e-f769-5d2f-bed3-93b46515f72c",
+      "cluster_id": "e8c04776-227d-5071-950d-0668033ed5d4",
+      "source_offer_id": 546
+    },
+    {
+      "membership_id": "62cccb7d-bd83-5587-bca8-13a47458507f",
+      "cluster_id": "dc5b9660-9234-5f76-a040-12c630886155",
+      "source_offer_id": 547
+    },
+    {
+      "membership_id": "747331ec-602c-5701-98a2-9aa2155abc61",
+      "cluster_id": "2f4a0948-c967-5067-beba-d6e7cf5e0909",
+      "source_offer_id": 548
+    },
+    {
+      "membership_id": "7feb13b6-f1a5-5025-abb4-f15fd17d0e90",
+      "cluster_id": "a292e764-1291-5856-9f25-c5e3014fa5dd",
+      "source_offer_id": 549
+    },
+    {
+      "membership_id": "afe95f0a-0619-59a2-a9f7-03196cb3a5c8",
+      "cluster_id": "8c0a4e6d-e68e-547b-87e4-2edef52eb2ad",
+      "source_offer_id": 550
+    },
+    {
+      "membership_id": "02e42485-0da8-547a-90a9-492879e73218",
+      "cluster_id": "b242b28d-d544-5746-896c-f2691b8a291a",
+      "source_offer_id": 551
+    },
+    {
+      "membership_id": "6035c3c9-63a2-58ab-aeb9-3ae296320b78",
+      "cluster_id": "d2d9f047-ecc0-5aba-a777-09dffd1d64eb",
+      "source_offer_id": 552
+    },
+    {
+      "membership_id": "d7820d04-4fb3-5838-b587-0f64663303fb",
+      "cluster_id": "a501583b-86d3-56b7-b28c-2b173ecb7293",
+      "source_offer_id": 553
+    },
+    {
+      "membership_id": "4c821d68-5bc7-5599-8ccf-8d9bf97e74e2",
+      "cluster_id": "48c38c8c-60a3-569c-8db3-aefd22b14768",
+      "source_offer_id": 554
+    },
+    {
+      "membership_id": "51e46004-dfbb-5824-a274-2c5234e41faf",
+      "cluster_id": "f7d096cd-e26d-5d71-97f8-c35b93578bfa",
+      "source_offer_id": 555
+    },
+    {
+      "membership_id": "cf4a422a-9f40-5604-86c3-5d7c161f0dd6",
+      "cluster_id": "cdb924ac-d7c2-5075-9724-0463ade1942b",
+      "source_offer_id": 556
+    },
+    {
+      "membership_id": "2ea2f11c-82ad-581e-bf26-54d2050dfcb4",
+      "cluster_id": "631ecb1c-d411-5381-b9c2-77a6ab4d59a2",
+      "source_offer_id": 557
+    },
+    {
+      "membership_id": "6f6df584-a75b-553e-9420-5b570af1a957",
+      "cluster_id": "da224e45-af0b-5efb-b31e-bab951e9a04f",
+      "source_offer_id": 558
+    },
+    {
+      "membership_id": "956035bd-3a78-538a-9287-de60cc771bbd",
+      "cluster_id": "b4e8b625-3f6c-5506-ba87-c16bc4e2b64f",
+      "source_offer_id": 559
+    },
+    {
+      "membership_id": "62410544-4ea9-5e30-997d-2d4505cbd24e",
+      "cluster_id": "d441a721-a11c-5d00-ae59-3b3b878b80ee",
+      "source_offer_id": 560
+    },
+    {
+      "membership_id": "130bf665-8d43-576e-af1b-eb965505739a",
+      "cluster_id": "7e42bfbc-2cff-5fa4-baef-fe28955548b4",
+      "source_offer_id": 561
+    },
+    {
+      "membership_id": "36448c0b-a2d5-5192-ac92-d28d670c1541",
+      "cluster_id": "8442bccc-38b2-58b7-af49-6c659f5c079d",
+      "source_offer_id": 562
+    },
+    {
+      "membership_id": "4141e4a7-e732-528c-b703-db3594d2723e",
+      "cluster_id": "00ad0a13-855e-5b2c-9ee0-91065037770f",
+      "source_offer_id": 563
+    },
+    {
+      "membership_id": "6fd3b717-35a3-5add-afed-905b5ec0a2ba",
+      "cluster_id": "5b715975-45dd-540f-9923-7451214def1e",
+      "source_offer_id": 564
+    },
+    {
+      "membership_id": "863986ed-234f-5dcc-bb32-fdb13602b27b",
+      "cluster_id": "a00d71e4-81a4-5a27-9907-e136f5e21775",
+      "source_offer_id": 565
+    },
+    {
+      "membership_id": "6c9bc76a-078b-5a3f-b025-2ba22ae20f73",
+      "cluster_id": "033c1c4a-c4b0-586b-ba90-291f9518fa3f",
+      "source_offer_id": 566
+    },
+    {
+      "membership_id": "5f11ef87-9890-5d37-8608-3240b796faaf",
+      "cluster_id": "bfcd9276-7c6d-55fa-9fbd-ba66d16c6884",
+      "source_offer_id": 567
+    },
+    {
+      "membership_id": "3ea4bb97-0626-52ea-8e03-830a518bb35f",
+      "cluster_id": "07e28b60-92f5-59a7-8b84-3738e87c4261",
+      "source_offer_id": 568
+    },
+    {
+      "membership_id": "ef6a46e4-3c00-51f0-b03f-ddc72863ba04",
+      "cluster_id": "6cb798c2-637b-5ba2-b2cb-e084266c4735",
+      "source_offer_id": 569
+    },
+    {
+      "membership_id": "13ed8d3b-cbd3-56fb-8870-87b05a2ac0b7",
+      "cluster_id": "9caab033-6699-5e18-b25d-87f4850d44a4",
+      "source_offer_id": 570
+    },
+    {
+      "membership_id": "462471dc-1ed0-527e-986b-75c7188acd82",
+      "cluster_id": "670cf112-3dfc-5498-8469-1cd9e93103ef",
+      "source_offer_id": 571
+    },
+    {
+      "membership_id": "4db7913c-5898-5f74-a5ad-f08ad68e51f5",
+      "cluster_id": "0b9762ff-0606-5df0-bde5-fde7cedbe90b",
+      "source_offer_id": 572
+    },
+    {
+      "membership_id": "eb6bb423-add8-50ce-8387-bc9a56759b31",
+      "cluster_id": "9066df6a-8680-560e-b19f-36a98c961002",
+      "source_offer_id": 573
+    },
+    {
+      "membership_id": "73a60b6d-f3d1-5df6-8a41-870e6bfa5c81",
+      "cluster_id": "03dab843-fec7-5e06-8e3b-d716659cb238",
+      "source_offer_id": 574
+    },
+    {
+      "membership_id": "efc84baa-375b-5d74-b19d-206ff9ba714c",
+      "cluster_id": "87e6da2f-8197-55c7-9a64-5f1d4303cf45",
+      "source_offer_id": 575
+    },
+    {
+      "membership_id": "edfc230d-94f2-5001-a7fe-6ff940d94053",
+      "cluster_id": "f78f9e13-d02c-5981-ad62-88ab4241c54a",
+      "source_offer_id": 576
+    },
+    {
+      "membership_id": "514ac56a-abee-595c-8f91-c723c4684f90",
+      "cluster_id": "ed46e224-14c0-5dd0-b9c4-9dad2052a797",
+      "source_offer_id": 577
+    },
+    {
+      "membership_id": "7e676221-2f14-50c6-a1e6-5f8fecd12421",
+      "cluster_id": "a0f14e5c-f3dd-5982-b794-4219565fb84d",
+      "source_offer_id": 578
+    },
+    {
+      "membership_id": "25ed7045-ec29-5c84-b38e-a6a59cb7e4c2",
+      "cluster_id": "13d62bbd-32c5-5b51-885f-21ac5bf60f98",
+      "source_offer_id": 579
+    },
+    {
+      "membership_id": "cb5c4ecb-fc26-52e1-a0be-26ed85aecd9f",
+      "cluster_id": "ea6ef953-f292-5ebe-82f5-446880fc96a6",
+      "source_offer_id": 580
+    },
+    {
+      "membership_id": "4fdf7000-e408-5c49-9612-c0c129512f6b",
+      "cluster_id": "6d55cb4e-916f-5a46-a371-e6d1442e358f",
+      "source_offer_id": 581
+    },
+    {
+      "membership_id": "68cf4147-72d3-5913-951f-0f95ad4c4ee6",
+      "cluster_id": "57eb8326-6403-5ed5-bd52-363fd427fed9",
+      "source_offer_id": 582
+    },
+    {
+      "membership_id": "3595b171-d205-5e34-b57a-c72daf2d4d78",
+      "cluster_id": "26ac9941-ec85-5ef1-8559-2b2613fc94e1",
+      "source_offer_id": 583
+    },
+    {
+      "membership_id": "4c1e1d66-53a3-572b-a4cb-69fc8263d848",
+      "cluster_id": "1dd52ae8-92d5-564b-8d40-5c25ae2f0702",
+      "source_offer_id": 584
+    },
+    {
+      "membership_id": "12b7b75e-e307-5c54-8313-f120491346df",
+      "cluster_id": "d6e34f57-2d75-5280-b5fd-e357dda9de6e",
+      "source_offer_id": 585
+    },
+    {
+      "membership_id": "f6f6d44d-e5a5-52a1-87d6-21e5e1e6cc4e",
+      "cluster_id": "92697e95-9524-5047-aa60-21beaa46bc8f",
+      "source_offer_id": 586
+    },
+    {
+      "membership_id": "0d51bf8c-b52c-5277-b9ce-3ef4d6a1a418",
+      "cluster_id": "7c1447dc-82f5-5faa-bb0b-3fbce1b3288e",
+      "source_offer_id": 587
+    },
+    {
+      "membership_id": "d6e3913d-c087-579b-8e41-fdff6ef2eff1",
+      "cluster_id": "63a0bdaf-3905-5b61-b1a7-25428e6da9f3",
+      "source_offer_id": 588
+    },
+    {
+      "membership_id": "9761d2c3-8093-5988-bcdc-a73c1458be6a",
+      "cluster_id": "9abf8d4d-933b-5b72-a325-68db522140a3",
+      "source_offer_id": 589
+    },
+    {
+      "membership_id": "c595785c-4a98-5d97-b6d3-10a74f225ad0",
+      "cluster_id": "dd24535e-fea4-5e57-8417-882123dbd1ea",
+      "source_offer_id": 590
+    },
+    {
+      "membership_id": "85747fd7-6884-57f9-8dcf-f0846d094463",
+      "cluster_id": "9aba8322-a5ce-55e5-ac90-47f473333a0f",
+      "source_offer_id": 591
+    },
+    {
+      "membership_id": "73179b6d-4b41-5d49-8ce1-020397a19748",
+      "cluster_id": "cb6a76c9-983c-5b47-9953-3aa53a7ed775",
+      "source_offer_id": 592
+    },
+    {
+      "membership_id": "6fb958f9-8f59-5f70-9a20-39dc33035fc6",
+      "cluster_id": "6b662af9-a202-502b-8f2b-0c5c91144205",
+      "source_offer_id": 593
+    },
+    {
+      "membership_id": "a7131619-adaa-526a-8356-ed5d244b326e",
+      "cluster_id": "1e98318e-a2c5-544f-8e91-675fea02db3c",
+      "source_offer_id": 594
+    },
+    {
+      "membership_id": "f58ae092-10b6-5bef-a8a8-7bd3c0d088f8",
+      "cluster_id": "4047e993-70ad-513a-ab5e-01cd568bb05c",
+      "source_offer_id": 595
+    },
+    {
+      "membership_id": "457972ef-20fe-5703-9deb-04a4498c36ba",
+      "cluster_id": "c3686f40-b4b1-5247-bbeb-4aad2bf6f691",
+      "source_offer_id": 596
+    },
+    {
+      "membership_id": "d146cfb3-318e-5c67-9c1f-42525a30cc27",
+      "cluster_id": "27b34213-da57-583a-a7ec-4f3d63a21300",
+      "source_offer_id": 597
+    },
+    {
+      "membership_id": "dcb444dc-f4a7-524d-9669-abf6d2f44f95",
+      "cluster_id": "652176db-ed62-5eb8-a68f-f5f1dba6bc7b",
+      "source_offer_id": 598
+    },
+    {
+      "membership_id": "d968830b-71fd-557f-a52a-0bfad0ac403b",
+      "cluster_id": "4e4016bd-07ad-5a98-8798-e9acd82b44d5",
+      "source_offer_id": 599
+    },
+    {
+      "membership_id": "bd7fbb86-a712-53a1-bf89-12ecb2b0e7a0",
+      "cluster_id": "77db6395-dada-5a75-a329-162eb10eb82c",
+      "source_offer_id": 600
+    },
+    {
+      "membership_id": "db0eb27b-7f40-5bfb-bc56-8a9b663584ea",
+      "cluster_id": "aee07fe8-acfd-56e0-9485-1d75401d914e",
+      "source_offer_id": 601
+    },
+    {
+      "membership_id": "b834ce6b-2a61-55a2-8ad5-9bf7bdff6173",
+      "cluster_id": "b143fcbb-0cdd-54c0-a057-37f8e020130d",
+      "source_offer_id": 602
+    },
+    {
+      "membership_id": "c1f731cd-c80b-5722-bc0a-7190f4d3fc69",
+      "cluster_id": "be73d6eb-e190-50e1-b836-89a93405e6ff",
+      "source_offer_id": 603
+    }
+  ],
+  "listing_sources_modified": [
+    {
+      "listing_source_id": 427,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "5f339f6a158b598127623537fa56c6cd8fa8120d34b0682582de6974ab12e99d",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 590000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 428,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "833eb5df70c989b7b40c730a949b181a393e06dacd052d152d26c5d2452359ee",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 429,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "ab62ef9aa6db7b38388ce6f8a63af9f2f1df45d9c058de15f8ab0ee740a477b1",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 7500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 430,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "18639a36b7b00e7f0be601d8dbbad3ad3cc3a82260e49895645842c7ac87d2a2",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 6000,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 431,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "93c6b4ff442d287fe1c3e4daaeda3216ae33a7cf46f51a697935d8f5f45855cc",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 432,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "e23fccabed7cfc8904a4c14a9e53481de6220070267873758dd425a26baa05bc",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1035000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 433,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "e41fc06fed349cdfffc6fe37196f81a694d905bea2f9837651d5c2cb1e0d60b2",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 5500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 434,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "7ac30ec95be5d9b9cfab2f4008f493fd93f228be6a064661bd374c66f769d72a",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 75500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 435,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "a29017bd26cda597c8ade6741943f11e8c1c009bf2bc3fe60e1108c43b25e132",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 436,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "3ab4e9ed9a14706ed037c85a5387781e9b3b3342fc01b4db0b448c61c05969dc",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 437,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "b59c00bb6caed48b4a2cb15ccf4e9b98f603dcee805a1453067de015af3c205c",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 4100000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 438,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "beaf0d0b1fc313f7ef806766d15f31f2372494fbd9d748b294d189f636a6eecc",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 439,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "1ba0635f7ee06b9d4f9527d208878e2163c8eaeaeb42287fd21a70a552a21323",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 8000,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 440,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "f75044c56b20752532c6cf7eed0cc84168d147a8c8d7f2f0ae8b303457ecbce8",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 441,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "b0db58d28771151752136a5580b8b0556a436fb281533f4c171fbc96ad1aa75c",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 800000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 442,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "cfcb2722d1df1ae7b61284ca4f9ce4b473ec41bc778b5c3307210eeea2850fa9",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 6500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 443,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "03ca23c97eae4331ae346271b5f051808df9b2777a971d4732804da2e20b43cb",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 444,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "21f229f488c885338ea1ca56919f10e2401f805bcbe5c9bf14dba3787b7fa601",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2100000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 445,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "bbdcc878e75bf25e439ada06c935e5a7a5096af21ad31861a982700384a584c1",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 7500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 446,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "a0d97c74b1194c0ba45d4f1cc9167d4ff58bff552bd47189801624c5979d088c",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 447,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "40dd5b726c7395988a99c68e4fb880de9d98bb35b0549b89b2ac82778586ce34",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 380000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 448,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "323d997e360199f64e55f1597274d37c43b725c3ab0be3b038e3be1c7f61c884",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 449,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "6b57bb66fa0512c2bac4c16a10b8ebe9e0682af1b4d23445bb29411b1ea3c4ed",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 450,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "234091e4bb99bc7e59f65cabba70561b3ba6f9ab3af499f2e7bd3b1318897f1d",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2900000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 451,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "b5c527786a553e24402d4f81ae1c0e6da5694e8d7f1341c9ca3cc7cde6be042e",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 7500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 452,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "2563b20ef62aabeebf9a7977507401f33edbe05e61b9039d691bec3eefa6a1b6",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 453,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "699d10e0d9531eb4898a1ce27e1719bb87857d16803ea3b6c3d0703110a6265a",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 500000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 454,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "cc3ac665adf05131de484a6ca4888b66d2009d9fe0fa3e21a22373df8747c5c7",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 9000,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 455,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "83366fc41bca9004435c3cac2f9cb93df380713381929e3cbe0e8cca9af3aadb",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 456,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "7a05f9df092e73be0219f276757a9ca1a19c90450d93de36b3b9fb45b4ba691a",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2000000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 457,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "7dbef6164fc0ec60ad59b497cd515122a2333d7ce88780ea95b99a2960963180",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 458,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "6443262f5cddca22ae5558b7576823880325d752649c413cec0eac3111208bc1",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 459,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "8a065a7bc2e713494ca662077b409ad44ba397d08e345e13acbafed56530eb79",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1320000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 460,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "a8fc0c7e01a437a9f7f736326ce13be30499c817ca001ce970e4f87736ece4b8",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 461,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "2ca13caa91ff2c7ecb7f924542eeecb2ee24fe8d671722a6b2a5e7c007778b7f",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 462,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "a55a8a3a573555c3062c141aa0ff30579338d18da0e9e81e526f2e684d64fdbf",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1400000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 463,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "da6bf85a6040d4284095f79fd00077fe5ef118c719e6609a5ae3f4ee59bd52f5",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 464,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "8bb391c8df320587a8c4f6bcae4f32ba8ff8da187922be5eabb0252341adad2b",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 465,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "e1357a06662bc75a5fdccfb68743ff1d7ebf4fd73d1132eff4e68f4f9f3e3ac6",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 4900000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 466,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "810c201c58fc75a0045d9b670f866fee8d580e313fc3bd929ba6697d69fe6c24",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 8000,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 467,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "c9f893c7e9518b5c1ff3285f897590e27f67f2950eedc98dc52268a83a94329e",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 468,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "850be21cb1e1a6af71a6667983ce5dd2775d76fc5a427b06be8bd5f0773d918c",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 850000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 469,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "c26da900b0942f265c6cfb16c5fc55075aef88c158f8b6db8dd0fbe0e81953e1",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 470,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "565d2d50835394994cf678037198b3bac56d28922993571d4d444beafb4ba9ba",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 471,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "c37b93d473a794d51e91a88f652cfdc59042496508a6e4db2c33698c7d709515",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1350000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 472,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "6a0a144df6baf4462e9bac40779fa6377aa798be58eebf86c32e06257710649c",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 473,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "6c40103a9dceb0fd0499f0e491e650d7c9700f9725d7d65f4bbe195eaf14ae8f",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 474,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "53d981f7a93347ae70ead8ae312699e938951dcd97f78a2cbd4be9bdffc56e06",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2790000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 475,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "1b1970b13a243575e156872597056dacaf6c0b47cd62737a9d4ddff42afee181",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 476,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "9bbecbb791f3f50e7ef2a1fb79b8dd9913286b309563bb392a75b78fc2eeb5c5",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 477,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "08ef5dfbb898356de00e41487bf1bf40dcf11e58c386a28053f77b41a00f362b",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1690000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 478,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "2f23cdc0f6322fc9ef70d30e1e20cecf623fdc9b1473d16b4505aecd76938de6",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 479,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "6e4e8a878aba7e39ea104a492cb867052090dddb3568f3e0dea8affdc1a15c3f",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 480,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "76968a8984fdd8b1b6e97feb0a87b8181340601958cd11d1eaeba61126e41ddd",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2200000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 481,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "ab555a91f9c03d494fa73daedee9c1f4ccb6568ee8882c5f9b57bba49861e86a",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 482,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "a55c621f28488f4030a679dab4421df46dca8fe0e1205345e63fc186d78ac8b0",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 483,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "038f927043958a0f6b4c0e022690031c5b3d0f1945cc1cd091338bff29ed8520",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 760000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 484,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "f56e095382b4e9b84854fcebeb370862af2ee5fca0c3d9ccc2efd965a1a56510",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 485,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "2d7b94859c0ccc846a1ec83b7b6215bbb6e5600d013f579d7e21fde0b178da1b",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 486,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "46dd4863871ccbafb0eaa5192cd4ddf33d794e3c21ef4b1a5febb6533d926cad",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 9485000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 487,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "3a442687635e83efdfcff786e21ff039c29b5dfa88e01bbaa0812a6d8386792f",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 488,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "3f70d3e32540a8eff44e1ef4e80b3860c6f2c562d2abdd582853824305cb2792",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 489,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "d73a1960212ffbee8e6531d7b5116175fca80aa3a37f201082ab9fd67bf4378f",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1260000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 490,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "781afcacc14b8f26511ce222fd8029d9e966effa31bcb402a96fb1b082aee831",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 491,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "2e47de8a5cbf9239a668bb58b6f1cf02e7668d6fcfc2f1560b5e0afb932d24b0",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 492,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "badb431f14f6c1072fdabd2e1abdde7b40a9f4a2b53a5588b71a072d4f50918e",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 493,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "8dd116692049de662388616c3a64c96254ee66659f2b744214d9c44d053366d0",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 494,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "fb7bac484b638ea5554e1f385283e30969b0d4f4302c9d76141234b2fb2dd8d3",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 495,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "5412c607a2871627a2c8954b057aeda4b9a182a351c112ce2cf083b059473cdb",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 496,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "5f840710cd5b5b24e185fc82ae2fdc24b5e8d8095c7b449d756e1ed5c2c92bbe",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 497,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "8eddd6ab63225c89fb1145dc1d523f576485b419ff11299ddbad44d283e272cd",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 498,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "caa8b0c1ba5bc2e30cbbb2d4c3aaeacd17faed7dd43f369115421be995ae1327",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 499,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "d348e8335cd74ea6845c872c8c62659d120cf9c3c1b5a82e5dd191d8a43f37db",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 500,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "a519fb891c796e62b3bab17d2eae246d82470653d3a0312b1be10b7945bcb872",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 501,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "d400d540bdff3e640d41ef5a8bae068d894ee3749785bc877704c4f9671dff64",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 502,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "21ac58b50f6a58b157f664e245f3fdfe04232ba54064daf8c24f248e2c872a40",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 503,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "8e0db4c7ed3b4428b637a91eeb65d127eab8be7165e8dde89da6b2bae98d5b2e",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 504,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "060454021bb3d815d3d94d97a5a838efc96178684f8aeea4374096d52a987500",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 505,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "05736d908d9550013382fb5107a5760aff72568bb856cd6c425f21eecf52d3c0",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 506,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "05a6df5ed1e74afd5097813c15508399818cb46bc48eba5d4b8984efd283d6c3",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 507,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "69ffdb6894b7a2cdeac2337f73b177fd2cdf623bcc1620b516c8e1af4ea75a4d",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 508,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "cdff4ff33009f4213bd7cdb8441b9febebb69f8451fb3e992e615f6bda1b2759",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 509,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "b2bd70d3188d7c8af4541e21e8db7d4f242539de7bb2d0a161f98a4b5ea229f6",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 510,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "7eb86a281326677ca77e10d8c2af09969292639b99b21bd3599c1e56f18dbe91",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 511,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "89f4bfc9ad6cc743b56c379f09d37e9131793ee1736e43d91ca63cc950a93a45",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1700000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 512,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "bcbb8e9c632ec517511cc3627ac12ce545a30ce949839f54a9be811ea92c2443",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 7000,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 513,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "bb2cd6a0e46d4f91d0a7b1cfe5a78d8169dcbc19936bd451aed166e73d0bbeec",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 514,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "0a78694add919ebc78bfd4bab2a938e6ee3fac881cf6c6f118d4fa72400feffa",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 13500000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 515,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "56297a72d5c4ce471b93bf8680c2ace111f6a0ad0f8478a281a5d1597ac2cb8e",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 4200000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 516,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "c31c3344e1b0d54e536c7216521c627e65feaef95251ddf0812a7cfca79b47bf",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 3600,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 517,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "fca3f2ce4a85ba441905ad98aeb8117b49e43412b9be0f9d7942a2140494d146",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 518,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "3e201118534426cc151718390e35492418ee85f1ac31983c9426d57bb9130294",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1800000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 519,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "c2c8949c97d32a4e6c781daef5a18e28e7d49710797f0ba121f8e41504cf3c3f",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 520,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "92553dacd8d1bd10556184924f1baf5d91b985e67200d66830323a766c07c3c4",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 521,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "1670533d74c07aa97850349291508247a2d0a2a92b519fc55c6b1d6f1f83f27f",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2880000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 522,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "724a9ca9adf25731df888a41efab95595f8d892f001b0c8905f439151c42383d",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 523,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "0e770339d1ff88dd3014ec738f4da03665e669f153cf11278b41e7847d0ad634",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 524,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "366692d626768e19b78ca72155e1215d3ddefa02cb07dc9858cd8cda106b2dba",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1400000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 525,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "6d953ee46b38d2f32aa70e70a6a6903c232d9e15a4f1ec7af1d986f7449befab",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 526,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "4d4128c254efeeefdac35fe81108252bbddf7f22f03e3f11475d131e4ff41fde",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 527,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "b2d9eb83c9c0df73235928ef266ec2657f1b31f9e92017f3c70dcc5ed399725a",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 528,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "4a7279367f0b65cba1936632e5d80d5789b7e367fbb612597cfd3ddc5ee755ba",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 529,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "db550feb84fc617101358f4c3b86cf3258c8f3892ff7996f12624ff65fed66f2",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 7800000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 530,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "7ffcb7cb44dd452be116e9bb052ef269daf31262426147f8066d15349f086175",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 6000,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 531,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "5c052c63a38b51b5aa4e19ad20e6b8d0a7aff9728e809bfa79d0940757e56a34",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 532,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "dc3d4973016e0c09cc34b0e348938e1dcde0c6a16d372ca60ef54fdb131fced3",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2600000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 533,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "e0b2b61014634f6b9b6f36a6907c731edad38c37371564097faa05e88989c2b8",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 534,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "4cac59556b82f451a2cb181eecedb79cea9112761c7b3829d8e9cc433aad478d",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 535,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "09be3bffe41773c393e5a4c4ba5faca85a665f164d3e03343172829a88602394",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2900000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 536,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "ee38191837c6d85e223f93d4b257986572c5d5c59438bf00c465245a16d07008",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 537,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "6ee74971ca2b0cdf2e3d84be7b8e48a8fbc3c4e2ddf4ae75fd33f3cdbe45296c",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 538,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "1360022bc10ed266e101d2b2f869109c6104ab0b5726d82290a01eb975dd27b0",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 3650000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 539,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "9b2c58ebc770c6a6fb3b04172b837c985da58fae7df5dc6252fbb84122bf5f7f",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 540,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "60cadd3a21ea7f2ee02f00bf0d7bb2a1b22d36802e436730ad656bb35015a198",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 541,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "4077e4008ca5be169f6cfdff65b497c25ddc8a566b154ceb58ade52f32cc15ef",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2000000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 542,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "abee97418d1602d05910f40938c1b4420bf7f04110209cd8d0fbaf44c80a6416",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 543,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "5f3bece926a28aad28374126e1453dff7178ad0d13ab77b47c08a0870c71e42a",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 544,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "0469ee0b8e4b5352888522769484e5c2d913f68a6fc1afd7ed9934e8df603baf",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 4500000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 545,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "e16c3778afffd47215b2da2fb6955bfa136eb22b6812563eee98e62b155b31e0",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 546,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "a3522bee4b377f989af03591ff5fae68519a7ff357d3f48d5cdf0875971dc819",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 547,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "43c814d0f70e5df345ee0f8f1a6ef579ef072e438207cf91e8e19d866cd99c6f",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2800000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 548,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "0e3b4d2035ab9192340b10e123abe1548f3bacbd16750a281d2cda029d737afb",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 7500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 549,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "fe39ee0f340b5f80f5812cc85607604c2dab31fc33240143bd0c1939ed4a9277",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2844608,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 550,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "69106174ee05dba3898da3877a59c19d2114b502e323a19eed9aba55a95b59d2",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 551,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "b69664f1e098cc033c477dbeb75f3e023f993b44af6d4cbcfc87acbe64c3505a",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 4500000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 552,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "9d029c03e32504ceff007fe879abeea2a2bf8e199da7fcf9df88ae7da0e30763",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 553,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "bd56a671199074f9e65ee94b28ba87f79c231817a9c4d3d4f58d1c4ade3b59ef",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1500000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 554,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "f9ffe893d26cb32861f41dd7da996355d7c637df82339fb2cfe32ccc9d0c7482",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 555,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "a852036cf750147485c46db498fffa6ffdd5fd1a02d8622bcc8bfed91aba9f3b",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1627000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 556,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "bdab1061d4b5cba69dd523727fcd4a666e3cd122d03b2deb7ee7a946ca8d0b16",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 557,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "74e4eff51fc235ee83e8f9b149c21fde76598e31f9fdc97abd8439c2d408b7ef",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2200000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 558,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "92ff6299120fdbff6bbb4f6544ba65140bd224466befaea45a272a2de599c425",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 559,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "2fe91dc0bf9d2907c0d519fc617f49380a945d40fb5e6e816f8cf757ee4a0e56",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 430000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 560,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "7897669cc9ca43a1fc12ba944af5f5eac0645c01d19dd383d97a190f8aae6602",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 561,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "ac4674167ad8e4b4932b3168aa93137520bdca63aa3c90ab7120c4ed13b272f6",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 562,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "22cf19d4a9847d93f5e9b0b52365e719e7c0d36d895534e76445369a96acf7d4",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 563,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "2ad8ad9c04c2af2c835e5686411f0e89e241b8b37707e0973594da30fe08de46",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 5500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 564,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "9022b2f6e595873e33c5f5dae1cbf94ba02eff09ad5687b52725c174f60e7125",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 565,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "b6e777c478c472d3a528a24d463c7aaf37d7f74ef2e9b46598cc30f35d285eba",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 566,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "7c482e45f9d08d6e50d91c6ab05a810ef6bbe2d0a4e4ea4169fb587e8380be71",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 780000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 567,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "e0cd9467a3fb731e4600169a553e62168609865dca3f927dfabfbbc605818687",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 568,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "106708a900ec474c1c4448adb75ebf36ad6ce2402b16798b93463117880650fb",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 569,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "d8816d3e3d5b6dd3e8305d18bae0933580716b11b2d11e75459abb835111678e",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 570,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "30d950005ce300889719c23c970ae68e4115f8f19c9481769be2817b617fae4a",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 5500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 571,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "aa32321f002aba3182a2aae56ec1797b95365d74d99dc4b4d66bdf836fa115f5",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 572,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "31acf484499a68888406ecd6a70a33071e114b50db63151ab710d5365efa0422",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 573,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "a3a68f7a8e4bd0ad81f2c7b71efd72aa051ed1e89863db354bceae9ad7d101a4",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 276984,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 574,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "33da6770d40e8a6599003bdbea0e7ff0204fb8365f25b0f7f672c93b22ae631f",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 575,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "bed3a6299389a3c929f3bfcca91a9645ef039bf92b44d9c1dce256b473937a52",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 576,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "2888aa1678ad82bd67829fe899d65d9a590282ca4860e572b56748e47de32372",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 8500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 577,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "9528cb9b587da5e812a2889818bf375448413e2db92a0b16c829476a51ee03fd",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 578,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "1f8e8824c07f4cd8b29076fa6a45d56caac56d21286dd96dbedac10ad088cafa",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1250000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 579,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "3e356ef482006229dabb9be4e4a3929074977655efe43dad288f4720b3cc4dde",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 580,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "266f7d229d825da07111c818b335960611fe185d275a23908f62e611d14ae0d6",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 581,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "eeb3c3ea14f0567cbb9bd95b231cdeed80908bb6c74f0cfb71a67df6b3d06431",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 9500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 582,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "8a6967bafca19e2b317ca47def31acd253073653efc1a293a87a9d0aa13eef36",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 583,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "40c5c185b57034ba24e255cce4dd3b50945504f5aa9da543f32080673a20ccb6",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 880000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 584,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "e492f6b83c536255bdfd86e76a6f8d57d75a49de71821042b5f4322e921fcb4e",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 585,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "6d9f39eb9322e9e0a2da17295c3f255fe9ad039dd29bef17e76cd5ce87826531",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 586,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "c390a0fcac69b89ea1c7b377ad67515d1d4e9928f1f4bf16482a7e3d91e0e84c",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2400000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 587,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "4c38509c4b954437dcade15e161aa5bb8fa9fc53dea6fa2b11f8294ab7bf0540",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 588,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "2f6641eda31f4df75170459ff906660418bf99babcbedd0de5e46e151797b95e",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1100000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 589,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "58eb6ffb6b77dd9bc7db90f59a78b5ea026a95aef42514fae4d344b8e0afe389",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 590,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "62eb697b300a72836ce77580d8dbd59a198f522fca7fbc55fe09db1e9588d6b3",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 591,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "06ff80a74de2e6c0dd530de7aa11dc2ba9f3358691cd318ab35ab700449c8bd7",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 5500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 592,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "028be8b630ddef8b9c161e1a7affbd44e39478c162d075cb691924b008ec45fc",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 593,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "513fcfd0b66b892d1bd70c3eb111347e4dc2a7188eb5b4a3062faa7022a7bb64",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2250000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 594,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "0e5e701cbed087e43d258dd412b5b12e40466eb599d3440ed3a43c1e006a8c6f",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 595,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "f6abac4632efc7d2169e18329aa4ff2bde7a1c5ea3ddd13c1b43516f872a5b15",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 596,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "257bb56bf72069c52c5c5e05144dbaa34f57eb4362f68e37a20efdf0d94a79e4",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 4500,
+      "price_currency": "MAD",
+      "price_period": null,
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 597,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "c756d44c82612d94701980294e6aeeb35b7fc021076665035468c43b92e4b30b",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": null,
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 598,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "852ba90bf5b9c9e88e1e4d61d409089dffc5be981663046d2c8a710e7da6d2d7",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 2400000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    },
+    {
+      "listing_source_id": 599,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "d52cf33a99c95cff43fb0c20bffdf1e2c751253ad7e21017abaa1f2652554e03",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 600,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "b11abf9ede505c4466334befea3dffdf58739ccce01681d21d16d3724861d54f",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 601,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "57b6851c498672e77c82972bca89c8f54177dfa326a5e5d9856dcb630c0e944e",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 602,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "8fa3ad9a0e93138bce528b64ed5473d6e58576414d8fb77dcd2764bedf42e7d5",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": null,
+      "price_currency": null,
+      "price_period": "vente",
+      "price_status": "not_disclosed"
+    },
+    {
+      "listing_source_id": 603,
+      "origin_type": "persisted_openserp",
+      "content_fingerprint": "2d8b3afe05be05779dd73395fc7ae9f532c15c56ddc621ad1475419efe5105e2",
+      "ingestion_run_id": "market-index-controlled-backfill-1",
+      "displayed_price": 1150000,
+      "price_currency": "MAD",
+      "price_period": "vente",
+      "price_status": "valid"
+    }
+  ],
+  "skipped_groups": [
+    {
+      "property_listing_id": 1,
+      "listing_source_ids": [
+        1
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 2,
+      "listing_source_ids": [
+        2
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 3,
+      "listing_source_ids": [
+        3
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 4,
+      "listing_source_ids": [
+        4
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 5,
+      "listing_source_ids": [
+        5
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 6,
+      "listing_source_ids": [
+        6
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 7,
+      "listing_source_ids": [
+        7
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 8,
+      "listing_source_ids": [
+        8
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 9,
+      "listing_source_ids": [
+        9
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 10,
+      "listing_source_ids": [
+        10
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 11,
+      "listing_source_ids": [
+        11
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 12,
+      "listing_source_ids": [
+        12
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 13,
+      "listing_source_ids": [
+        13
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 14,
+      "listing_source_ids": [
+        14
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 15,
+      "listing_source_ids": [
+        15
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 16,
+      "listing_source_ids": [
+        16
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 17,
+      "listing_source_ids": [
+        17
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 18,
+      "listing_source_ids": [
+        18
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 19,
+      "listing_source_ids": [
+        19
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 20,
+      "listing_source_ids": [
+        20
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 21,
+      "listing_source_ids": [
+        21
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 22,
+      "listing_source_ids": [
+        22
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 23,
+      "listing_source_ids": [
+        23
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 24,
+      "listing_source_ids": [
+        24
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 25,
+      "listing_source_ids": [
+        25
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 26,
+      "listing_source_ids": [
+        26
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 27,
+      "listing_source_ids": [
+        27
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 28,
+      "listing_source_ids": [
+        28
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 29,
+      "listing_source_ids": [
+        29
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 30,
+      "listing_source_ids": [
+        30
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 31,
+      "listing_source_ids": [
+        31
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 32,
+      "listing_source_ids": [
+        32
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 33,
+      "listing_source_ids": [
+        33
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 34,
+      "listing_source_ids": [
+        34
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 35,
+      "listing_source_ids": [
+        35
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 36,
+      "listing_source_ids": [
+        36
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 37,
+      "listing_source_ids": [
+        37
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 38,
+      "listing_source_ids": [
+        38
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 39,
+      "listing_source_ids": [
+        39
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 40,
+      "listing_source_ids": [
+        40
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 41,
+      "listing_source_ids": [
+        41
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 42,
+      "listing_source_ids": [
+        42
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 43,
+      "listing_source_ids": [
+        43
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 44,
+      "listing_source_ids": [
+        44,
+        387
+      ],
+      "reason": "multi_source"
+    },
+    {
+      "property_listing_id": 45,
+      "listing_source_ids": [
+        45
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 46,
+      "listing_source_ids": [
+        46
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 47,
+      "listing_source_ids": [
+        47
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 48,
+      "listing_source_ids": [
+        48
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 49,
+      "listing_source_ids": [
+        49
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 50,
+      "listing_source_ids": [
+        50
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 51,
+      "listing_source_ids": [
+        51
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 52,
+      "listing_source_ids": [
+        52
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 53,
+      "listing_source_ids": [
+        53
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 54,
+      "listing_source_ids": [
+        54
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 55,
+      "listing_source_ids": [
+        55
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 56,
+      "listing_source_ids": [
+        56
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 57,
+      "listing_source_ids": [
+        57
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 58,
+      "listing_source_ids": [
+        58
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 117,
+      "listing_source_ids": [
+        175
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 118,
+      "listing_source_ids": [
+        176
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 119,
+      "listing_source_ids": [
+        177
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 120,
+      "listing_source_ids": [
+        178
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 121,
+      "listing_source_ids": [
+        179
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 122,
+      "listing_source_ids": [
+        180
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 123,
+      "listing_source_ids": [
+        181
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 124,
+      "listing_source_ids": [
+        182
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 125,
+      "listing_source_ids": [
+        183
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 126,
+      "listing_source_ids": [
+        184
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 127,
+      "listing_source_ids": [
+        185
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 128,
+      "listing_source_ids": [
+        186
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 129,
+      "listing_source_ids": [
+        187,
+        188,
+        372
+      ],
+      "reason": "multi_source"
+    },
+    {
+      "property_listing_id": 130,
+      "listing_source_ids": [
+        189
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 131,
+      "listing_source_ids": [
+        190
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 132,
+      "listing_source_ids": [
+        191
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 133,
+      "listing_source_ids": [
+        192
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 134,
+      "listing_source_ids": [
+        193,
+        371
+      ],
+      "reason": "multi_source"
+    },
+    {
+      "property_listing_id": 135,
+      "listing_source_ids": [
+        194
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 136,
+      "listing_source_ids": [
+        195
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 137,
+      "listing_source_ids": [
+        196
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 138,
+      "listing_source_ids": [
+        197
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 139,
+      "listing_source_ids": [
+        198
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 140,
+      "listing_source_ids": [
+        199
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 305,
+      "listing_source_ids": [
+        366
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 306,
+      "listing_source_ids": [
+        367
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 307,
+      "listing_source_ids": [
+        368
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 308,
+      "listing_source_ids": [
+        369
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 309,
+      "listing_source_ids": [
+        370
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 310,
+      "listing_source_ids": [
+        373
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 311,
+      "listing_source_ids": [
+        374
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 312,
+      "listing_source_ids": [
+        375
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 313,
+      "listing_source_ids": [
+        376
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 314,
+      "listing_source_ids": [
+        377
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 315,
+      "listing_source_ids": [
+        378,
+        386
+      ],
+      "reason": "multi_source"
+    },
+    {
+      "property_listing_id": 316,
+      "listing_source_ids": [
+        379
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 317,
+      "listing_source_ids": [
+        380
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 318,
+      "listing_source_ids": [
+        381
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 319,
+      "listing_source_ids": [
+        382
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 320,
+      "listing_source_ids": [
+        383
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 321,
+      "listing_source_ids": [
+        384
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 322,
+      "listing_source_ids": [
+        385
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 323,
+      "listing_source_ids": [
+        388
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 324,
+      "listing_source_ids": [
+        389
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 325,
+      "listing_source_ids": [
+        390
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 326,
+      "listing_source_ids": [
+        391
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 327,
+      "listing_source_ids": [
+        392
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 328,
+      "listing_source_ids": [
+        393
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 329,
+      "listing_source_ids": [
+        394
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 330,
+      "listing_source_ids": [
+        395
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 331,
+      "listing_source_ids": [
+        396
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 332,
+      "listing_source_ids": [
+        397
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 333,
+      "listing_source_ids": [
+        398
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 334,
+      "listing_source_ids": [
+        399
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 335,
+      "listing_source_ids": [
+        400
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 336,
+      "listing_source_ids": [
+        401
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 337,
+      "listing_source_ids": [
+        402
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 338,
+      "listing_source_ids": [
+        403
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 339,
+      "listing_source_ids": [
+        404
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 340,
+      "listing_source_ids": [
+        405
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 341,
+      "listing_source_ids": [
+        406
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 342,
+      "listing_source_ids": [
+        407
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 343,
+      "listing_source_ids": [
+        408
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 344,
+      "listing_source_ids": [
+        409
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 345,
+      "listing_source_ids": [
+        410
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 346,
+      "listing_source_ids": [
+        411
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 347,
+      "listing_source_ids": [
+        412
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 348,
+      "listing_source_ids": [
+        413
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 349,
+      "listing_source_ids": [
+        414
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 350,
+      "listing_source_ids": [
+        415
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 351,
+      "listing_source_ids": [
+        416
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 352,
+      "listing_source_ids": [
+        417
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 353,
+      "listing_source_ids": [
+        418
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 354,
+      "listing_source_ids": [
+        419
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 355,
+      "listing_source_ids": [
+        420
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 356,
+      "listing_source_ids": [
+        421
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 357,
+      "listing_source_ids": [
+        422
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 358,
+      "listing_source_ids": [
+        423
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 359,
+      "listing_source_ids": [
+        424
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 360,
+      "listing_source_ids": [
+        425
+      ],
+      "reason": "missing_provenance"
+    },
+    {
+      "property_listing_id": 361,
+      "listing_source_ids": [
+        426
+      ],
+      "reason": "missing_provenance"
+    }
+  ]
+}
