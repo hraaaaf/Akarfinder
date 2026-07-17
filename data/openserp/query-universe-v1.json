@@ -1,6 +1,6 @@
 {
   "universe_version": "openserp-query-universe-v1",
-  "generated_at": "2026-07-17T22:45:10.508Z",
+  "generated_at": "2026-07-17T23:21:30.362Z",
   "total_queries": 2718,
   "by_priority_tier": {
     "1": 720,
@@ -44356,10 +44356,10 @@
       "query_text": "appartement a louer Salé site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:20:57.691Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-f88539dfbb56846e",
@@ -46294,7 +46294,7 @@
       "query_text": "appartement a louer Meknès site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:20:57.691Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48270,7 +48270,7 @@
       "query_text": "appartement a louer Casablanca site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:20:57.691Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50056,7 +50056,7 @@
       "query_text": "appartement a louer Salé site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:20:57.691Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
