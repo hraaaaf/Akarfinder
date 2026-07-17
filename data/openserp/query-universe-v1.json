@@ -1,6 +1,6 @@
 {
   "universe_version": "openserp-query-universe-v1",
-  "generated_at": "2026-07-17T21:59:18.703Z",
+  "generated_at": "2026-07-17T22:45:10.508Z",
   "total_queries": 2718,
   "by_priority_tier": {
     "1": 720,
@@ -45002,7 +45002,7 @@
       "query_text": "appartement a louer Marrakech site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T22:43:40.211Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45059,10 +45059,10 @@
       "query_text": "appartement a vendre Agadir site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T22:43:40.211Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-55b3497459aade4f",
@@ -45249,9 +45249,9 @@
       "query_text": "appartement a vendre Oujda site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T22:43:40.211Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -45648,9 +45648,9 @@
       "query_text": "appartement a louer Agadir site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T22:43:40.211Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -46237,7 +46237,7 @@
       "query_text": "appartement a vendre Fès site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T22:43:40.211Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46674,9 +46674,9 @@
       "query_text": "appartement a louer Témara site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T22:43:40.211Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -47833,7 +47833,7 @@
       "query_text": "appartement a vendre Marrakech site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T22:43:40.211Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48308,10 +48308,10 @@
       "query_text": "appartement a louer Rabat site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T22:43:40.211Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-297bb0f1d430eef5",
@@ -49847,7 +49847,7 @@
       "query_text": "appartement a vendre Tétouan site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T22:43:40.211Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50721,9 +50721,9 @@
       "query_text": "appartement a vendre Tanger site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T22:43:40.211Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51158,9 +51158,9 @@
       "query_text": "appartement a louer Rabat site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T22:43:40.211Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51557,9 +51557,9 @@
       "query_text": "appartement a vendre Tétouan site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T22:43:40.211Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {

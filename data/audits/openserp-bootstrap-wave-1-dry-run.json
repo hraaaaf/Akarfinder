@@ -1,0 +1,40 @@
+{
+  "wave": 1,
+  "mode": "dry_run",
+  "metrics": {
+    "run_id": "openserp-automated-ingestion-dryrun-official",
+    "scheduled_at": "2026-07-17T22:43:40.209Z",
+    "started_at": "2026-07-17T22:43:40.211Z",
+    "finished_at": "2026-07-17T22:45:10.547Z",
+    "duration_ms": 90336,
+    "query_count": 12,
+    "query_success_count": 6,
+    "query_failure_count": 14,
+    "engines_used": [
+      "duckduckgo"
+    ],
+    "raw_results": 73,
+    "canonical_unique_urls": 72,
+    "accepted_candidates": 2,
+    "rejected_candidates": 36,
+    "unclassified_candidates": 35,
+    "existing_source_offers": 0,
+    "new_property_listings": 0,
+    "new_listing_sources": 0,
+    "new_clusters": 0,
+    "new_memberships": 0,
+    "observations_created": 0,
+    "pii_removed": 0,
+    "invalid_urls": 0,
+    "category_pages_rejected": 24,
+    "duplicate_urls": 1,
+    "write_conflicts": 0,
+    "captcha_count": 8,
+    "status_403_429": 0,
+    "timeout_count": 6,
+    "cities_covered": 8,
+    "price_presence_rate": 0,
+    "surface_presence_rate": 0.5,
+    "write_mode": false
+  }
+}
