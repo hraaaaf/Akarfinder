@@ -1,0 +1,34 @@
+{
+  "audit_id": "openserp-automated-ingestion-prod-precheck",
+  "mission": "AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1",
+  "generated_at_utc": "2026-07-17T23:02:14Z",
+  "active_deployment_before": {
+    "id": "dpl_74owY6RLa3x7NBFWFSDpSgPuyxdF",
+    "commit": "b265c4315af9c838b6ce7c82f193c42d3efafc70",
+    "alias": ["akarfinder.vercel.app"]
+  },
+  "flags_before": {
+    "MARKET_INDEX_READ_ENABLED": "true",
+    "MARKET_INDEX_WRITE_ENABLED": "absent",
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": "absent",
+    "MARKET_INDEX_CLUSTERING_ENABLED": "absent",
+    "PERSISTED_OPENSERP_LISTINGS_ENABLED": "present (unrelated, pre-existing, prior mission)",
+    "OPENSERP_AUTOMATED_INGESTION_ENABLED": "absent (does not exist yet)",
+    "OPENSERP_INGESTION_WRITE_ENABLED": "absent (does not exist yet)",
+    "OPENSERP_INGESTION_CRON_ENABLED": "absent (does not exist yet)",
+    "OPENSERP_CRON_SECRET": "absent (does not exist yet)"
+  },
+  "db_counts_before": {
+    "property_listings": 316,
+    "listing_sources": 321,
+    "property_clusters": 177,
+    "property_cluster_members": 177,
+    "discovery_candidates": 0,
+    "source_offer_observations": 0
+  },
+  "existing_cron_jobs": "none (no vercel.json crons block exists in the repo)",
+  "existing_run_lock_rows": 0,
+  "no_writer_currently_active": true,
+  "no_pending_unknown_migration": true,
+  "verdict": "PASS -- safe to deploy freeze HEAD with new flags absent/false"
+}

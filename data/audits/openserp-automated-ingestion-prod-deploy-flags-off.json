@@ -1,0 +1,52 @@
+{
+  "audit_id": "openserp-automated-ingestion-prod-deploy-flags-off",
+  "mission": "AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1",
+  "generated_at_utc": "2026-07-17T23:05:00Z",
+  "deployment": {
+    "id": "dpl_5J4ZByysHvuA5TAK8MCTqkgy9S28",
+    "commit": "644d140f20055e809c56794fdd471fdc762be91e",
+    "freeze_head": "064b286468fefbe2ed44592479c8983d2634a77d",
+    "commit_note": "One docs-only commit past the code-freeze HEAD (Preview validation JSON only) -- zero code difference between the freeze HEAD and this deployment's commit. All application code was frozen at 064b286.",
+    "alias": ["akarfinder.vercel.app"],
+    "target": "production",
+    "previous_deployment": "dpl_74owY6RLa3x7NBFWFSDpSgPuyxdF (commit b265c431) -- rollback target"
+  },
+  "flags_after_this_deploy": {
+    "MARKET_INDEX_READ_ENABLED": "true (unchanged, persistent Production env var from prior mission)",
+    "MARKET_INDEX_WRITE_ENABLED": "absent",
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": "absent",
+    "MARKET_INDEX_CLUSTERING_ENABLED": "absent",
+    "OPENSERP_AUTOMATED_INGESTION_ENABLED": "absent (still does not exist as a Production env var)",
+    "OPENSERP_INGESTION_WRITE_ENABLED": "absent",
+    "OPENSERP_INGESTION_CRON_ENABLED": "absent",
+    "OPENSERP_CRON_SECRET": "absent"
+  },
+  "route_validation": {
+    "routes_pass": "14/14",
+    "detail": {
+      "/": 200, "/acheter": 200, "/louer": 200, "/neuf": 200, "/immobilier": 200,
+      "/search?q=appartement rabat": 200, "/search?q=appartement casablanca": 200,
+      "/search?q=appartement marrakech": 200, "/demo": 200, "/demo/promoteur": 200,
+      "/demo/agence": 200, "/listings/137": 404, "/robots.txt": 200, "/sitemap.xml": 200
+    }
+  },
+  "cron_endpoint_tests": {
+    "no_auth_header": { "status": 401 },
+    "wrong_secret": { "status": 401 }
+  },
+  "db_counts_after": {
+    "property_listings": 316,
+    "listing_sources": 321,
+    "property_clusters": 177,
+    "property_cluster_members": 177,
+    "discovery_candidates": 0,
+    "source_offer_observations": 0
+  },
+  "delta_vs_precheck": "0 across all 6 tables",
+  "rollback_prepared": true,
+  "rollback_targets": [
+    "level 1: redeploy dpl_5J4ZByysHvuA5TAK8MCTqkgy9S28 or set new flags false and redeploy same commit",
+    "level 2: restore dpl_74owY6RLa3x7NBFWFSDpSgPuyxdF (pre-mission Production deployment)"
+  ],
+  "overall_verdict": "PASS -- ready for the mandatory user confirmation gate before any write activation"
+}
