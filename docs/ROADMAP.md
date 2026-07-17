@@ -5342,3 +5342,25 @@ Pourcentage Produit:
 Prochaine mission (non demarree) :
 - `AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1`, puis `OPENSERP-AUTOMATED-INGESTION-30MIN-1` (celle qui
   augmentera reellement le volume d'annonces decouvertes).
+
+## 2026-07-17 - AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1 (lecture activee, sortie publique inchangee)
+
+`MARKET_INDEX_READ_ENABLED=true` active en Production avec repli legacy obligatoire par ligne. 177
+memberships verifies (validation individuelle 177/177 PASS) desormais servis via
+`lib/market-index/market-index-read-*.ts` ; les 144 autres lignes (135 sans provenance demontree + 9
+dans 4 groupes multi-source ambigus) continuent de passer par l'heuristique legacy inchangee. Suite de
+parite (34 requetes) : 0 mismatch en local, sur les 2 Preview (meme commit, READ=false puis READ=true),
+et en lecture seule contre Production avant deploiement. Deploiement Production en 2 temps : commit
+`b265c431` avec READ=false d'abord (14/14 routes), question fermee posee a l'utilisateur (reponse OUI),
+puis meme commit redeploye avec READ=true seul modifie (`dpl_AwV6cBnvYWPZ4oEfb3Yb21KDCNk8` ->
+`dpl_74owY6RLa3x7NBFWFSDpSgPuyxdF`). Logs runtime Production reels confirment le flag actif sur trafic
+reel (`market_index_rows_used` 0-135 selon requete, 0 anomalie). 0 ecriture DB. Flags
+WRITE/OBSERVATIONS/CLUSTERING tous restes absents/false. Voir
+`docs/AKARFINDER_MARKET_INDEX_READ_ACTIVATION_1.md`.
+
+Pourcentage Produit:
+- Avant: `98.5%`. Apres: `98.7%`.
+
+Prochaine mission (non demarree) :
+- `OPENSERP-AUTOMATED-INGESTION-30MIN-1` (celle qui augmentera reellement le volume d'annonces
+  decouvertes, via `recordObservationIfChanged()` sous `OBSERVATIONS_ENABLED`).

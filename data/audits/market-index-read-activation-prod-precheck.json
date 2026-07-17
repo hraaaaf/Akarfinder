@@ -1,0 +1,30 @@
+{
+  "audit_id": "market-index-read-activation-prod-precheck",
+  "mission": "AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1",
+  "generated_at_utc": "2026-07-17T19:41:52.420Z",
+  "active_production_deployment": {
+    "id": "dpl_GLoQM3wLm4oD6MKkqJZg5zTtKgZR",
+    "target": "production",
+    "status": "Ready",
+    "matches_reference": true,
+    "note": "Unchanged since the controlled-backfill mission -- confirms Production has not been touched by anything since"
+  },
+  "legacy_counts": {
+    "property_listings": "316",
+    "listing_sources": "321"
+  },
+  "market_index_counts": {
+    "property_clusters": "177",
+    "property_cluster_members": "177",
+    "discovery_candidates": "0",
+    "source_offer_observations": "0"
+  },
+  "clusters_with_membership_count_not_1": 0,
+  "flags": {
+    "MARKET_INDEX_READ_ENABLED": "absent (false)",
+    "MARKET_INDEX_WRITE_ENABLED": "absent (false)",
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": "absent (false)",
+    "MARKET_INDEX_CLUSTERING_ENABLED": "absent (false)"
+  },
+  "verdict": "PASS -- Production exactly matches the expected pre-deployment state"
+}

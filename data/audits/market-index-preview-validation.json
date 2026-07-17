@@ -1,0 +1,52 @@
+{
+  "audit_id": "market-index-preview-validation",
+  "mission": "AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1",
+  "generated_at_utc": "2026-07-17T19:40:00Z",
+  "preview_read_false": {
+    "deployment_id": "dpl_DqY4DBbZPtrgxYeJLyrk7NdLcmio",
+    "url": "https://akarfinder-3catsfcgf-achraf-benmoussa-s-projects.vercel.app",
+    "flags": "all absent/false (default)",
+    "route_status": {
+      "/": 200, "/acheter": 200, "/louer": 200, "/neuf": 200, "/immobilier": 200,
+      "/search?q=appartement rabat": 200, "/search?q=appartement casablanca": 200,
+      "/search?q=appartement marrakech": 200, "/demo": 200, "/demo/promoteur": 200,
+      "/demo/agence": 200, "/listings/137": 404, "/robots.txt": 200, "/sitemap.xml": 200
+    },
+    "verdict": "PASS -- baseline unchanged"
+  },
+  "preview_read_true": {
+    "deployment_id": "dpl_2jFpJ6ejsbWAipv91sQzPen2mjFJ",
+    "url": "https://akarfinder-ot800c37r-achraf-benmoussa-s-projects.vercel.app",
+    "flags": "MARKET_INDEX_READ_ENABLED=true (deployment-scoped via -e flag), others absent/false",
+    "same_commit_as_read_false": true,
+    "route_status": {
+      "/": 200, "/acheter": 200, "/louer": 200, "/neuf": 200, "/immobilier": 200,
+      "/search?q=appartement rabat": 200, "/search?q=appartement casablanca": 200,
+      "/search?q=appartement marrakech": 200, "/demo": 200, "/demo/promoteur": 200,
+      "/demo/agence": 200, "/listings/137": 404, "/robots.txt": 200, "/sitemap.xml": 200
+    },
+    "live_http_parity_check": {
+      "method": "fetched /api/search from both Preview URLs for the same queries (Rabat, Casablanca, Marrakech, no filter), stripped the generated_at timestamp (expected to differ between separate requests), compared the rest byte-for-byte",
+      "queries_tested": 4,
+      "identical_after_timestamp_removed": 4,
+      "mismatches": 0
+    },
+    "viewport_overflow": {
+      "1440x1000": { "scrollWidth": 1425, "overflow": false },
+      "1280x800": { "scrollWidth": 1265, "overflow": false },
+      "390x844": { "scrollWidth": 375, "overflow": false },
+      "375x812": { "scrollWidth": 360, "overflow": false }
+    },
+    "console_hydration_errors": 0,
+    "console_warnings": 0,
+    "fake_zero_price_tokens_rendered": 0,
+    "client_bundle_scan": {
+      "scripts_scanned": 16,
+      "forbidden_strings_checked": ["property_cluster_id", "ingestion_run_id", "content_fingerprint", "origin_type", "legacy_one_to_one_projection"],
+      "found_in_html": 0,
+      "found_in_any_script": 0
+    },
+    "verdict": "PASS -- 0 lost/extra listings, 0 ranking change, 0 leaked internal identifier, 0 console/hydration error, 0 overflow"
+  },
+  "overall_verdict": "PASS"
+}

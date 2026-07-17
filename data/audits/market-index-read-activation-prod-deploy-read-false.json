@@ -1,0 +1,27 @@
+{
+  "audit_id": "market-index-read-activation-prod-deploy-read-false",
+  "mission": "AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1",
+  "generated_at_utc": "2026-07-17T19:45:00Z",
+  "deployment": {
+    "id": "dpl_AwV6cBnvYWPZ4oEfb3Yb21KDCNk8",
+    "url": "akarfinder-mlqg4hxo1-achraf-benmoussa-s-projects.vercel.app",
+    "target": "production",
+    "gitCommitSha": "b265c4315af9c838b6ce7c82f193c42d3efafc70",
+    "matches_freeze_head": true,
+    "alias": ["akarfinder.vercel.app", "akarfinder-achraf-benmoussa-s-projects.vercel.app", "akarfinder-lafabriquedapollon-3895-achraf-benmoussa-s-projects.vercel.app"]
+  },
+  "flags": {
+    "MARKET_INDEX_READ_ENABLED": "absent (false)",
+    "MARKET_INDEX_WRITE_ENABLED": "absent (false)",
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": "absent (false)",
+    "MARKET_INDEX_CLUSTERING_ENABLED": "absent (false)"
+  },
+  "route_status": {
+    "/": 200, "/acheter": 200, "/louer": 200, "/neuf": 200, "/immobilier": 200,
+    "/search?q=appartement rabat": 200, "/search?q=appartement casablanca": 200,
+    "/search?q=appartement marrakech": 200, "/demo": 200, "/demo/promoteur": 200,
+    "/demo/agence": 200, "/listings/137": 404, "/robots.txt": 200, "/sitemap.xml": 200
+  },
+  "previous_deployment_becomes_rollback_target": "dpl_GLoQM3wLm4oD6MKkqJZg5zTtKgZR",
+  "verdict": "PASS -- 14/14 routes correct, public behavior unchanged, ready for the user confirmation gate before READ=true"
+}

@@ -12268,3 +12268,69 @@ Etat officiel:
 
 Prochaine etape (non demarree):
 - `AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1`, puis `OPENSERP-AUTOMATED-INGESTION-30MIN-1`.
+
+## 2026-07-17 - AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1
+
+Contexte:
+- Suite directe de CONTROLLED-BACKFILL-1 : activer une lecture Market Index-aware pour les 177
+  memberships crees, avec repli legacy obligatoire pour les 144 autres lignes, sous contrat de parite
+  stricte (0 annonce perdue/gagnee, 0 changement de classement, 0 identifiant interne expose). Nouveau
+  worktree isole (`AkarFinder-market-index-read-activation`, branche `feat/market-index-read-activation`,
+  base `6126fc2`). Nouveau bundle Git cree (l'ancien bundle du backfill ne couvrait pas `6126fc2`,
+  verifie via `git cat-file -t` en echec sur un clone de test).
+
+Travail effectue:
+- Audit complet des chemins de lecture (`docs/MARKET_INDEX_READ_PATH_AUDIT.md`) : 6 fichiers
+  consommateurs de `lib/db`, un seul point d'integration reel (`mapToDbRow()` dans
+  `lib/db/supabase-listings.ts`). Pour 312/316 listings structurellement source unique, l'heuristique
+  legacy (`sources.find(is_active) ?? sources[0]`) et une verification via cluster Market Index
+  pointent mathematiquement vers la meme ligne.
+- Contrat de parite formel (`docs/MARKET_INDEX_READ_PARITY_CONTRACT.md`).
+- Nouveau repository/service/adaptateur (`lib/market-index/market-index-read-{repository,adapter,
+  service}.ts`) : verification stricte (source unique + `origin_type='persisted_openserp'` explicite +
+  exactement 1 membership + membership pointant vers la meme source), repli legacy inconditionnel sur
+  toute incoherence ou erreur, aucune reference a `duplicate_group_id`, metriques internes jamais
+  exposees publiquement. Bug esbuild rencontre et corrige (type union multi-lignes a barres
+  verticales + commentaires en fin de ligne provoquant un "Unexpected {" -- reecrit en alias de type
+  nomme separe).
+- `lib/db/supabase-listings.ts` modifie (pas remplace) : ajout d'un override optionnel a `mapToDbRow()`,
+  par defaut le comportement legacy inchange ; nouvelle resolution batch/single enveloppee dans
+  try/catch avec repli silencieux sur toute erreur.
+- Script de lecture fantome (`scripts/market-index/run-market-index-shadow-read.ts`, 34 requetes de
+  parite codees en dur) + script de validation ligne-par-ligne des 177 memberships et des 144 lignes de
+  repli (`scripts/market-index/validate-market-index-read-coverage.ts`).
+- 15 tests dedies (defauts des flags, chaque raison de repli, aucune fuite de metrique interne,
+  propagation d'erreur du repository) + suite globale (1561+53), 118 tests market-index, 20
+  openserp-ingestion, build, `git diff --check` : tous PASS. Freeze HEAD `b265c431`.
+
+Validation:
+- Parite locale (flag on/off) : sortie `/api/search` identique octet-pres (hors `generated_at`) sur
+  toutes les grandes villes et `queryListingById`.
+- Suite de parite fantome (34 requetes) contre Production (lecture seule) : 0 mismatch total, 0 ID
+  manquant/en trop, 0 doublon, 0 mismatch de champ/classement.
+- Validation individuelle des 177 memberships : 177/177 PASS. Repli 144 lignes confirme exact (135 sans
+  provenance + 4 groupes ambigus/9 sources, tous toujours non clusterises).
+- 2 deploiements Preview sur le meme commit (`dpl_DqY4DBbZPtrgxYeJLyrk7NdLcmio` READ=false,
+  `dpl_2jFpJ6ejsbWAipv91sQzPen2mjFJ` READ=true via `-e`) : 14/14 routes, 0 annonce perdue/gagnee via
+  comparaison HTTP directe, 0 erreur console/hydratation, 0 overflow sur 4 viewports, 0 identifiant
+  interne dans le bundle client (16 scripts scannes).
+- Question fermee posee au proprietaire avec le libelle exact de l'ODM ("Tous les gates sont PASS.
+  Autorisez-vous le redeploiement du meme commit avec MARKET_INDEX_READ_ENABLED=true ?") : reponse OUI.
+- Deploiement Production en 2 temps : `dpl_AwV6cBnvYWPZ4oEfb3Yb21KDCNk8` (commit `b265c431`, READ=false,
+  14/14 routes) puis `MARKET_INDEX_READ_ENABLED=true` ajoute de maniere persistante (scope Production
+  uniquement) puis redeploiement du meme commit exact : `dpl_74owY6RLa3x7NBFWFSDpSgPuyxdF`. Logs
+  runtime Production reels (trafic reel genere par la validation) confirment le flag actif :
+  `market_index_rows_used` entre 0 et 135 selon la requete, 0 `invalid_cluster_rows`, 0
+  `missing_membership_rows`, 0 `multi_membership_clusters`, 0 `parity_mismatch_count`. 0 ecriture DB
+  detectee (comptes DB identiques avant/apres : 316/321/177/177/0/0).
+
+Etat officiel:
+- Statut: `MARKET_INDEX_READ_ACTIVE_WITH_LEGACY_FALLBACK`. `READ_ENABLED=true` ;
+  WRITE/OBSERVATIONS/CLUSTERING tous restes absents/false. Pourcentage produit `98.5%` -> `98.7%`.
+  Volume public annonce inchange. Rollback prepare (2 niveaux : flag false + redeploiement, ou retour a
+  `dpl_GLoQM3wLm4oD6MKkqJZg5zTtKgZR`), non execute (aucune condition ne l'a requis).
+
+Prochaine etape (non demarree, par instruction explicite de l'ODM) :
+- `OPENSERP-AUTOMATED-INGESTION-30MIN-1` (writer d'ingestion 30 minutes, celle qui augmentera
+  reellement le volume d'annonces decouvertes via `recordObservationIfChanged()` sous
+  `OBSERVATIONS_ENABLED`).

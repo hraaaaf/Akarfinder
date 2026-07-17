@@ -1,0 +1,147 @@
+{
+  "audit_id": "market-index-read-activation-result",
+  "mission": "AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1",
+  "generated_at_utc": "2026-07-17T20:00:00Z",
+  "status": "MARKET_INDEX_READ_ACTIVE_WITH_LEGACY_FALLBACK",
+  "worktree": {
+    "path": "AkarFinder-market-index-read-activation",
+    "branch": "feat/market-index-read-activation",
+    "base": "6126fc26da6c6180bdcf218da8618f45f7b20081",
+    "freeze_head": "b265c4315af9c838b6ce7c82f193c42d3efafc70"
+  },
+  "bundle_backup": {
+    "path": "AkarFinder-cleanup-backup-2026-07-17/market-index-read-activation-prewrite/akarfinder-prewrite-read-activation.bundle",
+    "sha256": "6d43cbcfe4a2a5b7915b0bcd248c20376569048fc0184155b42a3ed00ec83a35",
+    "verified": true,
+    "reason_new_bundle_required": "existing backfill bundle predated 6126fc2 (this mission's starting HEAD)"
+  },
+  "read_paths_audited": 6,
+  "rls_gate": "PASS -- server already uses service-role client (bypasses RLS), 0 client-side Supabase usage, no new policy/RPC/view/migration required",
+  "repository_created": true,
+  "legacy_fallback": "mandatory, per-row, unconditional on any Market Index inconsistency or error",
+  "coverage": {
+    "market_index_verified_memberships": 177,
+    "membership_validation_all_pass": true,
+    "legacy_fallback_unenriched_single_source": 135,
+    "legacy_fallback_ambiguous_groups": 4,
+    "legacy_fallback_ambiguous_sources": 9,
+    "duplicate_group_id_used": false
+  },
+  "parity_contract": "docs/MARKET_INDEX_READ_PARITY_CONTRACT.md",
+  "parity_query_suite": {
+    "query_count": 34,
+    "total_mismatch": 0,
+    "missing_listing_ids": 0,
+    "extra_listing_ids": 0,
+    "duplicate_listing_ids": 0,
+    "price_mismatches": 0,
+    "url_mismatches": 0,
+    "external_status_mismatches": 0,
+    "partner_status_mismatches": 0,
+    "ranking_order_mismatches": 0
+  },
+  "tests": {
+    "read_activation_specific": "15/15",
+    "market_index_total": "118/118",
+    "backfill": "19/19 (within the 118 total)",
+    "global": "1561 + 53 = 1614/1614",
+    "openserp_ingestion": "20/20",
+    "build": "PASS",
+    "pages_generated": "unchanged, same route set as before this mission",
+    "diff_check": "PASS"
+  },
+  "preview": {
+    "read_false": { "id": "dpl_DqY4DBbZPtrgxYeJLyrk7NdLcmio", "verdict": "PASS" },
+    "read_true": { "id": "dpl_2jFpJ6ejsbWAipv91sQzPen2mjFJ", "verdict": "PASS", "routes": 14 },
+    "errors": 0
+  },
+  "production_shadow_readonly": { "verdict": "PASS", "query_count": 34, "mismatches": 0 },
+  "production_deployment_previous": "dpl_GLoQM3wLm4oD6MKkqJZg5zTtKgZR",
+  "production_deployment_read_false": {
+    "id": "dpl_AwV6cBnvYWPZ4oEfb3Yb21KDCNk8",
+    "commit": "b265c4315af9c838b6ce7c82f193c42d3efafc70",
+    "verdict": "PASS"
+  },
+  "user_confirmation": "OUI",
+  "flags_before": {
+    "MARKET_INDEX_READ_ENABLED": "absent",
+    "MARKET_INDEX_WRITE_ENABLED": "absent",
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": "absent",
+    "MARKET_INDEX_CLUSTERING_ENABLED": "absent"
+  },
+  "flags_after": {
+    "MARKET_INDEX_READ_ENABLED": "true",
+    "MARKET_INDEX_WRITE_ENABLED": "absent",
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": "absent",
+    "MARKET_INDEX_CLUSTERING_ENABLED": "absent"
+  },
+  "production_deployment_read_true": {
+    "id": "dpl_74owY6RLa3x7NBFWFSDpSgPuyxdF",
+    "commit": "b265c4315af9c838b6ce7c82f193c42d3efafc70",
+    "matches_read_false_commit": true,
+    "alias": "akarfinder.vercel.app"
+  },
+  "production_validation": {
+    "routes_pass": "14/14",
+    "rabat_pass": true,
+    "casablanca_pass": true,
+    "marrakech_pass": true,
+    "listings_137_status": 404,
+    "fake_zero_price": 0,
+    "positive_prices_preserved": true,
+    "misleading_partner_labels": 0,
+    "internal_links_on_external": 0,
+    "viewport_1440_overflow": false,
+    "viewport_1280_overflow": false,
+    "viewport_390_overflow": false,
+    "viewport_375_overflow": false,
+    "console_errors": 0,
+    "hydration_errors": 0,
+    "page_errors": 0,
+    "request_failures": 0,
+    "client_market_index_queries": 0,
+    "database_writes": 0
+  },
+  "db_counts_before_after": {
+    "property_listings": { "before": 316, "after": 316 },
+    "listing_sources": { "before": 321, "after": 321 },
+    "property_clusters": { "before": 177, "after": 177 },
+    "property_cluster_members": { "before": 177, "after": 177 },
+    "discovery_candidates": { "before": 0, "after": 0 },
+    "source_offer_observations": { "before": 0, "after": 0 }
+  },
+  "rollback_prepared": true,
+  "rollback_executed": false,
+  "production_modified": true,
+  "production_modification_summary": "Application deployment only (code + 1 env var). 0 database writes.",
+  "supabase_data_modified": false,
+  "search_gateway_modified": false,
+  "ranking_modified": false,
+  "percentage_before": "98.5%",
+  "percentage_after": "98.7%",
+  "public_listing_volume_before": "unchanged",
+  "public_listing_volume_after": "unchanged",
+  "estimated_market_coverage": "UNKNOWN_NOT_MEASURED",
+  "automatic_matching_readiness": "NOT_READY",
+  "automatic_clustering": false,
+  "remaining_risks": [
+    "135 legacy listing_sources rows still without Market Index enrichment (unchanged from the backfill mission)",
+    "4 ambiguous multi-source groups still unclustered (by design)",
+    "property_listings.duplicate_group_id remains a live, uncorrected false-merge risk in the legacy display layer, untouched by any Market Index mission so far",
+    "estimated_market_coverage remains unmeasured -- no mission yet quantifies how much of the real Rabat/Casablanca/Marrakech market this index represents"
+  ],
+  "reports": [
+    "docs/AKARFINDER_MARKET_INDEX_READ_ACTIVATION_1.md",
+    "docs/MARKET_INDEX_READ_PATH_AUDIT.md",
+    "docs/MARKET_INDEX_READ_PARITY_CONTRACT.md",
+    "data/audits/market-index-shadow-read-results.json",
+    "data/audits/market-index-legacy-fallback-validation.json",
+    "data/audits/market-index-preview-validation.json",
+    "data/audits/market-index-read-activation-prod-precheck.json",
+    "data/audits/market-index-read-activation-prod-deploy-read-false.json",
+    "data/audits/market-index-read-activation-prod-validation.json",
+    "data/audits/market-index-read-activation-result.json"
+  ],
+  "next_mission": "OPENSERP-AUTOMATED-INGESTION-30MIN-1. Not started under this mission.",
+  "overall_verdict": "PASS"
+}

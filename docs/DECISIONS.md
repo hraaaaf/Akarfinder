@@ -3133,3 +3133,41 @@ Impact:
   validee sans deploiement (14/14 routes, 0 regression). Flags `MARKET_INDEX_*` tous restes
   absents/false. Statut : `MARKET_INDEX_BACKFILL_COMPLETED_READ_OFF`. Pourcentage produit
   inchange (`98.5%` -> `98.5%`, la lecture Market Index reste desactivee).
+
+## 2026-07-17 - AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1
+
+Decision:
+- Pour les 312/316 listings structurellement single-source, la selection legacy
+  (`sources.find(is_active) ?? sources[0]`) et une verification via cluster Market Index
+  pointent mathematiquement vers la meme ligne -- il n'existe qu'une seule source possible.
+  L'activation de la lecture ne change donc jamais QUOI est affiche pour ces cas ; elle change
+  uniquement PAR QUEL CHEMIN cette selection est confirmee (heuristique ad hoc vs structure
+  property_clusters/property_cluster_members verifiee), avec repli legacy inconditionnel sur
+  toute incoherence (cluster absent, membership manquant ou multiple, mismatch source/membership,
+  erreur de requete).
+- `MARKET_INDEX_READ_ENABLED=true` est ajoute de maniere persistante a l'environnement Production
+  de Vercel (pas seulement au deploiement), pour que le flag survive aux deploiements futurs --
+  contrairement a un override `-e` scope au seul deploiement de Preview utilise pour la
+  validation initiale.
+
+Reason:
+- Le contrat de parite de cette mission exige un output public strictement identique avant/apres
+  (aucune annonce perdue ou gagnee, aucun changement de classement). Prouver que la selection est
+  mathematiquement forcee a etre identique pour le cas single-source (312/316 listings) est ce qui
+  permet d'activer la lecture Market Index en toute confiance sans jamais avoir a "faire confiance"
+  a une nouvelle logique de resolution -- elle ne resout jamais rien de nouveau, elle verifie
+  seulement ce qui existe deja.
+
+Impact:
+- 177 memberships Market Index utilises en lecture (verifies individuellement, 177/177 PASS),
+  144 lignes toujours servies par le chemin legacy inchange (135 sans provenance demontree + 9 dans
+  4 groupes multi-source ambigus, tous confirmes toujours non clusterises). Suite de parite (34
+  requetes) : 0 mismatch total, 0 ID manquant/en trop, 0 doublon, 0 mismatch de champ, 0 mismatch de
+  classement -- confirmee en local (avec/sans flag), sur les deux Preview (meme commit), et en
+  lecture seule contre Production avant deploiement. Deploiement Production en 2 temps : commit
+  `b265c431` avec READ=false d'abord (14/14 routes, baseline inchangee), puis question fermee
+  posee a l'utilisateur (reponse OUI), puis meme commit exact redeploye avec READ=true seul modifie.
+  Logs runtime Production reels confirment le flag actif sur du trafic reel (0 anomalie sur 11
+  requetes echantillonnees). 0 ecriture DB detectee. Flags WRITE/OBSERVATIONS/CLUSTERING tous
+  restes absents/false. Statut : `MARKET_INDEX_READ_ACTIVE_WITH_LEGACY_FALLBACK`. Pourcentage
+  produit `98.5%` -> `98.7%`.

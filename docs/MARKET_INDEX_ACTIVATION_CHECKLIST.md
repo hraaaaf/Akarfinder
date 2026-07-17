@@ -33,9 +33,12 @@ does **not** perform any of the steps below — it only prepares them.
    `MARKET_INDEX_BACKFILL_COMPLETED_READ_OFF`. 144 rows (135 single-source without
    demonstrated provenance + 9 across 4 ambiguous multi-source groups) deliberately left
    untouched. See `docs/AKARFINDER_MARKET_INDEX_CONTROLLED_BACKFILL_1.md`.
-3. Set `MARKET_INDEX_READ_ENABLED=true` only — verify no public behavior changes (no code path reads
-   these tables for public rendering yet; this flag exists for the *next* mission's own activation, not
-   this one).
+3. ~~Set `MARKET_INDEX_READ_ENABLED=true` only — verify no public behavior changes.~~ **Done
+   2026-07-17, AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1** — status
+   `MARKET_INDEX_READ_ACTIVE_WITH_LEGACY_FALLBACK`. 177 verified memberships now served through
+   `lib/market-index/market-index-read-*.ts`; the other 144 rows via unchanged legacy fallback.
+   34-query parity suite: 0 mismatches, byte-identical public output before/after. See
+   `docs/AKARFINDER_MARKET_INDEX_READ_ACTIVATION_1.md`.
 4. Run the (updated, re-verified) dry-run backfill script one more time against Production, still with
    `--dry-run`, to get a final go/no-go snapshot.
 5. `MARKET_INDEX_WRITE_ENABLED` governs the **public application's own** write path (not this backfill,
