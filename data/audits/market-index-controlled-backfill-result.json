@@ -1,0 +1,114 @@
+{
+  "audit_id": "market-index-controlled-backfill-result",
+  "mission": "AKARFINDER-MARKET-INDEX-CONTROLLED-BACKFILL-1",
+  "generated_at_utc": "2026-07-17T18:20:00Z",
+  "status": "MARKET_INDEX_BACKFILL_COMPLETED_READ_OFF",
+  "worktree": {
+    "path": "AkarFinder-market-index-backfill",
+    "branch": "feat/market-index-controlled-backfill",
+    "base": "85bbec104c5b4e2601c38a007ed0ffc809db4d4b",
+    "head_final": "3632f1aa5a37726dcdb0e1b2852826655edf42d3 (pre-doc-commit freeze); final HEAD recorded after the closing documentary commit"
+  },
+  "bundle_backup": {
+    "path": "AkarFinder-cleanup-backup-2026-07-17/market-index-backfill-prewrite/akarfinder-prewrite-backfill.bundle",
+    "sha256": "343c13d099f3d93047f9e30fdd0c1e752696d8464f87d53a7dcd0550efc43316",
+    "verified": true,
+    "all_3_stash_commits_present": true
+  },
+  "eligibility": {
+    "property_listings_total": 316,
+    "listing_sources_total": 321,
+    "single_source_listings": 312,
+    "multi_source_ambiguous_groups": 4,
+    "eligible_clusters_and_memberships": 177,
+    "skipped_multi_source_sources": 9,
+    "skipped_missing_provenance": 135,
+    "provenance_missing_reference_figure": 52,
+    "provenance_missing_actual_figure": 144,
+    "deviation_explained": true
+  },
+  "plan_sha256": "96289d98fc852d49cdaf9131aa22ce7822c3e6e7fb64def6a290102e499ba1b9",
+  "apply_sql_sha256": "d7c88f773015df895bd7ba988a46003466e96845aac9f908bbbc935841b3df8c",
+  "rollback_sql_sha256": "a2c8d3bad8e64d07b072ca5b969c76afac330cab8a54764e563a65e6c4c9e629",
+  "gates": {
+    "gate_a_pglite": "PASS (apply, second-apply-idempotent, rollback, clean-reapply)",
+    "gate_b_supabase_compatible": "PASS (same sequence + real RLS role-model enforcement confirmed)"
+  },
+  "tests": {
+    "backfill_specific": "19/19",
+    "market_index_total": "103/103",
+    "global": "1546 + 53 = 1599/1599",
+    "openserp_ingestion": "20/20",
+    "build": "PASS",
+    "diff_check": "PASS"
+  },
+  "application_mechanism": "Supabase SQL Editor, executed manually by the project owner after explicit confirmation; agent never handled a database credential",
+  "production_write_result": {
+    "clusters_created": 177,
+    "memberships_created": 177,
+    "listing_sources_enriched": 177,
+    "observations_created": 0,
+    "discovery_candidates_created": 0,
+    "legacy_rows_deleted": 0,
+    "ambiguous_groups_clustered": 0,
+    "provenance_invented": 0,
+    "property_listings_count_after": 316,
+    "listing_sources_count_after": 321,
+    "matches_plan_exactly": true
+  },
+  "app_validation": {
+    "routes_tested": 14,
+    "routes_passing": 14,
+    "fake_zero_prices": 0,
+    "console_hydration_errors": 0,
+    "market_index_exposure": 0,
+    "deployment_performed": false
+  },
+  "flags_before": {
+    "MARKET_INDEX_WRITE_ENABLED": "absent",
+    "MARKET_INDEX_READ_ENABLED": "absent",
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": "absent",
+    "MARKET_INDEX_CLUSTERING_ENABLED": "absent"
+  },
+  "flags_after": {
+    "MARKET_INDEX_WRITE_ENABLED": "absent",
+    "MARKET_INDEX_READ_ENABLED": "absent",
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": "absent",
+    "MARKET_INDEX_CLUSTERING_ENABLED": "absent"
+  },
+  "rollback_prepared": true,
+  "rollback_executed": false,
+  "rollback_reason": "not needed -- every invariant held",
+  "production_modified": true,
+  "production_modification_summary": "Additive only: 177 property_clusters rows, 177 property_cluster_members rows, 7 of 9 listing_sources columns populated on 177 rows (source_offer_key and compliance_status never written by design). 0 rows deleted, 0 legacy columns touched.",
+  "supabase_production_modified": true,
+  "search_gateway_modified": false,
+  "ranking_modified": false,
+  "percentage_before": "98.5%",
+  "percentage_after": "98.5%",
+  "market_index_backfill_status": "COMPLETED_READ_OFF",
+  "public_listing_volume_before": "unchanged",
+  "public_listing_volume_after": "unchanged",
+  "remaining_risks": [
+    "135 legacy listing_sources rows remain without any Market Index enrichment (by design -- no demonstrable provenance)",
+    "4 ambiguous multi-source property_listings remain unclustered (by design -- pending a future human-review-based mission)",
+    "property_listings.duplicate_group_id remains a live, uncorrected false-merge risk in the legacy display layer, untouched by this or any Market Index mission so far"
+  ],
+  "reports": [
+    "docs/AKARFINDER_MARKET_INDEX_CONTROLLED_BACKFILL_1.md",
+    "docs/MARKET_INDEX_CONTROLLED_BACKFILL_COLUMN_MAPPING.md",
+    "data/audits/market-index-controlled-backfill-plan.json",
+    "data/audits/market-index-controlled-backfill-manifest.json",
+    "data/audits/market-index-controlled-backfill-apply.sql",
+    "data/audits/market-index-controlled-backfill-verify.sql",
+    "data/audits/market-index-controlled-backfill-rollback.sql",
+    "data/audits/market-index-controlled-backfill-prewrite-snapshot.json",
+    "data/audits/market-index-controlled-backfill-gate-a.json",
+    "data/audits/market-index-controlled-backfill-gate-b.json",
+    "data/audits/market-index-controlled-backfill-db-validation.json",
+    "data/audits/market-index-controlled-backfill-app-validation.json",
+    "data/audits/market-index-controlled-backfill-result.json"
+  ],
+  "next_mission": "AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1, then OPENSERP-AUTOMATED-INGESTION-30MIN-1. Neither started under this mission.",
+  "overall_verdict": "PASS"
+}

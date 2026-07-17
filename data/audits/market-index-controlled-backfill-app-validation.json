@@ -1,0 +1,33 @@
+{
+  "audit_id": "market-index-controlled-backfill-app-validation",
+  "mission": "AKARFINDER-MARKET-INDEX-CONTROLLED-BACKFILL-1",
+  "generated_at_utc": "2026-07-17T18:12:00Z",
+  "note": "No application deployment was performed or needed -- the backfill is purely a data operation; the already-live Production deployment (dpl_GLoQM3wLm4oD6MKkqJZg5zTtKgZR, commit 442b9c0) is tested as-is post-backfill.",
+  "route_http_status": {
+    "/": 200, "/acheter": 200, "/louer": 200, "/neuf": 200, "/immobilier": 200,
+    "/search?q=appartement rabat": 200, "/search?q=appartement casablanca": 200,
+    "/search?q=appartement marrakech": 200, "/demo": 200, "/demo/promoteur": 200,
+    "/demo/agence": 200, "/listings/137": 404, "/robots.txt": 200, "/sitemap.xml": 200,
+    "status": "PASS -- 14/14 routes match expected status"
+  },
+  "price_integrity": {
+    "rendered_zero_price_tokens": 0,
+    "checked_page": "/search?q=appartement rabat",
+    "status": "PASS"
+  },
+  "market_index_exposure_check": {
+    "total_links_on_search_page": 178,
+    "market_index_related_links": 0,
+    "status": "PASS -- zero client-side references to Market Index concepts anywhere in the rendered page"
+  },
+  "console_hydration_errors": {
+    "pages_tested": ["/", "/search?q=appartement rabat"],
+    "errors": 0,
+    "warnings": 0,
+    "status": "PASS"
+  },
+  "search_gateway_ranking_unchanged": {
+    "basis": "no application code was deployed or modified by this mission; the live deployment is byte-identical to before the backfill"
+  },
+  "overall_verdict": "PASS"
+}

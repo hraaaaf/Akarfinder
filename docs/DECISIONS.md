@@ -3094,3 +3094,42 @@ Impact:
   property_listings/listing_sources inchanges (316/321), RLS confirmee structurellement (0
   `create policy` dans le SQL applique). Flags `MARKET_INDEX_*` tous absents/false. Statut :
   `FOUNDATION_PROD_ACTIVE_FLAGS_OFF`. Pourcentage produit `98.0%` -> `98.5%`.
+
+## 2026-07-17 - AKARFINDER-MARKET-INDEX-CONTROLLED-BACKFILL-1
+
+Decision:
+- Seul un signal de provenance explicite et individuellement verifiable
+  (`field_confidence.provider`/`acquisition_provider` === `"openserp"`) autorise ce backfill a
+  ecrire `origin_type`/creer un cluster. `source_name`/le domaine ne sont jamais utilises comme
+  substitut -- preuve empirique retenue : `mubawab` apparait a l'identique dans les 3 buckets de
+  provenance reelle (openserp explicite, `field_confidence` totalement absent, ancien schema de
+  notation de completude sans marqueur de provenance), ce qui demontre que le nom de source seul
+  ne correle a rien.
+- Une precondition SQL "la table doit etre totalement vide" est incompatible avec un test
+  d'idempotence reel (un deuxieme run legitime du meme script trouve forcement des lignes du
+  premier run et echouerait toujours) -- retiree du SQL applique, remplacee par une garantie
+  ligne-par-ligne (`ON CONFLICT DO NOTHING` + `UPDATE ... WHERE` toutes les 9 colonnes NULL),
+  suffisante et correcte seule. Trouve et corrige pendant le Gate A (PGlite), avant tout contact
+  Production.
+
+Reason:
+- Le chiffre de reference de l'ODM ("52 offres sans provenance") ne couvrait que les lignes
+  `field_confidence IS NULL` -- l'audit a trouve 87 lignes supplementaires portant un
+  `field_confidence` non nul mais utilisant un schema anterieur, sans rapport avec la provenance
+  (notation de completude par champ, ex. `{city:"high",price:"missing"}`). Traiter ces 87 comme
+  "provenance demontree" aurait ete une deduction non documentee, explicitement interdite par
+  l'ODM. Elles rejoignent donc les 52 dans le total "provenance manquante" (144), un ecart
+  volontairement plus conservateur que la reference, pas une reduction.
+
+Impact:
+- 177/321 `listing_sources` enrichies (9 colonnes whitelistees, 2 jamais ecrites par conception :
+  `source_offer_key`, `compliance_status`), 177 `property_clusters` +
+  177 `property_cluster_members` crees (`legacy_one_to_one_projection`, un membership exact par
+  cluster). 144 lignes et les 4 groupes multi-source ambigus laisses intacts. 0 Observation,
+  0 DiscoveryCandidate, 0 ligne legacy supprimee, 0 `duplicate_group_id` reference. Gates A
+  (PGlite) et B (PostgreSQL 18.2 reel + modele de roles Supabase, RLS confirmee) tous deux PASS
+  avec la meme sequence apply/second-apply-idempotent/rollback/clean-reapply. SQL execute par le
+  proprietaire via Supabase SQL Editor (aucun identifiant manipule par l'agent). Application live
+  validee sans deploiement (14/14 routes, 0 regression). Flags `MARKET_INDEX_*` tous restes
+  absents/false. Statut : `MARKET_INDEX_BACKFILL_COMPLETED_READ_OFF`. Pourcentage produit
+  inchange (`98.5%` -> `98.5%`, la lecture Market Index reste desactivee).

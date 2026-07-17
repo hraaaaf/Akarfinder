@@ -5324,3 +5324,21 @@ Prochaine mission (non demarree) :
 - Activation de `MARKET_INDEX_READ_ENABLED` avec preuve de non-regression publique, puis une mission
   dediee de backfill reel, puis le writer d'ingestion 30 minutes avant `OBSERVATIONS_ENABLED`, puis un
   workflow humain avant `CLUSTERING_ENABLED`.
+
+## 2026-07-17 - AKARFINDER-MARKET-INDEX-CONTROLLED-BACKFILL-1 (backfill valide, lecture toujours off)
+
+Backfill prudent des 177/321 `listing_sources` a source unique avec provenance OpenSERP demontree
+explicitement : 177 `property_clusters` + 177 `property_cluster_members`
+(`legacy_one_to_one_projection`, un membership exact par cluster) crees, colonnes enrichies. Les 144
+lignes sans provenance demontree et les 4 groupes multi-source ambigus restent intacts, par conception.
+Gates A (PGlite) et B (PostgreSQL 18.2 reel + RLS Supabase) tous deux PASS. SQL execute par le
+proprietaire via Supabase SQL Editor. 0 Observation, 0 DiscoveryCandidate, 0 regression applicative. Voir
+`docs/AKARFINDER_MARKET_INDEX_CONTROLLED_BACKFILL_1.md`.
+
+Pourcentage Produit:
+- Avant: `98.5%`. Apres: `98.5%` (la lecture Market Index reste desactivee, le volume public annonce
+  ne change pas).
+
+Prochaine mission (non demarree) :
+- `AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1`, puis `OPENSERP-AUTOMATED-INGESTION-30MIN-1` (celle qui
+  augmentera reellement le volume d'annonces decouvertes).

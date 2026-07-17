@@ -26,14 +26,21 @@ does **not** perform any of the steps below — it only prepares them.
    AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-3.**
 2. ~~Apply migration 5 (`listing_sources` additive columns) to Production.~~ **Done
    2026-07-17, same mission.**
+2.5. ~~Controlled backfill of the legacy-derivable subset (177/321 single-source,
+   explicit-OpenSERP-provenance listing_sources): enrich columns + create
+   legacy_one_to_one_projection clusters/memberships.~~ **Done 2026-07-17,
+   AKARFINDER-MARKET-INDEX-CONTROLLED-BACKFILL-1** — status
+   `MARKET_INDEX_BACKFILL_COMPLETED_READ_OFF`. 144 rows (135 single-source without
+   demonstrated provenance + 9 across 4 ambiguous multi-source groups) deliberately left
+   untouched. See `docs/AKARFINDER_MARKET_INDEX_CONTROLLED_BACKFILL_1.md`.
 3. Set `MARKET_INDEX_READ_ENABLED=true` only — verify no public behavior changes (no code path reads
    these tables for public rendering yet; this flag exists for the *next* mission's own activation, not
    this one).
 4. Run the (updated, re-verified) dry-run backfill script one more time against Production, still with
    `--dry-run`, to get a final go/no-go snapshot.
-5. Only then, in a **separate**, explicitly-authorized mission, flip `MARKET_INDEX_WRITE_ENABLED=true` and
-   perform an actual backfill (not a dry run) — this is `AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-
-   ACTIVATION-1`'s job, not this one's.
+5. `MARKET_INDEX_WRITE_ENABLED` governs the **public application's own** write path (not this backfill,
+   which writes directly via the Supabase SQL Editor under its own explicit ODM) — still flips only in a
+   separate, explicitly-authorized mission, if/when the app itself needs to write new Market Index rows.
 6. `MARKET_INDEX_OBSERVATIONS_ENABLED` flips only once the 30-minute ingestion writer
    (`OPENSERP-AUTOMATED-INGESTION-30MIN-1`) is ready to call `recordObservationIfChanged()` for real.
 7. `MARKET_INDEX_CLUSTERING_ENABLED` stays `false` indefinitely until a **separate**, explicitly-scoped

@@ -1,0 +1,53 @@
+{
+  "audit_id": "market-index-controlled-backfill-db-validation",
+  "mission": "AKARFINDER-MARKET-INDEX-CONTROLLED-BACKFILL-1",
+  "generated_at_utc": "2026-07-17T18:10:00Z",
+  "method": "read-only PostgREST (SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY), no direct Postgres connection used",
+  "run_id": "market-index-controlled-backfill-1",
+  "verify_sql_result": {
+    "property_clusters": 177,
+    "property_cluster_members": 177,
+    "discovery_candidates": 0,
+    "source_offer_observations": 0,
+    "matches_plan_exactly": true
+  },
+  "legacy_counts_unchanged": {
+    "property_listings": { "before": 316, "after": 316, "matches": true },
+    "listing_sources": { "before": 321, "after": 321, "matches": true }
+  },
+  "enrichment_correctness": {
+    "listing_sources_with_origin_type_set": 177,
+    "listing_sources_with_origin_type_other_than_persisted_openserp": 0,
+    "matches_plan": true
+  },
+  "membership_integrity": {
+    "total_legacy_one_to_one_projection_clusters": 177,
+    "clusters_with_membership_count_not_equal_1": 0,
+    "status": "PASS -- every cluster has exactly one membership"
+  },
+  "ambiguous_groups_never_clustered": {
+    "known_ambiguous_property_listing_ids": [134, 129, 315, 44],
+    "of_these_that_received_a_cluster": 0,
+    "status": "PASS"
+  },
+  "duplicate_group_id_not_used": {
+    "basis": "computeBackfillPlan()'s BackfillPropertyListingRow type carries no duplicate_group_id field at all -- structurally impossible for this backfill to have read or written it. Verified again by re-inspection of the applied SQL: zero reference to duplicate_group_id."
+  },
+  "no_invented_provenance": {
+    "eligible_count": 177,
+    "matches_openserp_explicit_signal_count": 177,
+    "provenance_missing_preserved": 144,
+    "basis": "identical to the frozen plan (plan_sha256 96289d98fc852d49cdaf9131aa22ce7822c3e6e7fb64def6a290102e499ba1b9), confirmed stable pre- and post-freeze"
+  },
+  "no_observation_no_discovery_candidate": {
+    "source_offer_observations": 0,
+    "discovery_candidates": 0,
+    "status": "PASS"
+  },
+  "anonymous_access_denied": {
+    "basis": "structural -- the applied SQL contains zero CREATE POLICY statements (verified by re-inspecting apply.sql); RLS on all 4 tables was already enabled by the original Foundation migrations and is unchanged by this backfill. Live-tested with a real Supabase-equivalent anon/authenticated/service_role model in Gate B on byte-identical SQL logic.",
+    "status": "PASS (via structural + Gate B equivalence, no live anon-key probe against Production -- no SUPABASE_ANON_KEY available in this environment)"
+  },
+  "idempotence_note": "Not re-exercised against Production (would require a second real apply, out of scope/unnecessary risk). Idempotence (UPDATE guard clause + INSERT ON CONFLICT DO NOTHING, 0-diff second apply) was rigorously proven in both Gate A (PGlite) and Gate B (real PostgreSQL 18.2) using byte-identical SQL-generation logic.",
+  "overall_verdict": "PASS"
+}

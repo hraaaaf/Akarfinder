@@ -12218,3 +12218,53 @@ Prochaine etape (non demarree):
 - Activation de `MARKET_INDEX_READ_ENABLED` avec preuve de non-regression publique, puis mission dediee
   de backfill reel, puis writer d'ingestion 30 minutes avant `OBSERVATIONS_ENABLED`, puis workflow humain
   avant `CLUSTERING_ENABLED`.
+
+## 2026-07-17 - AKARFINDER-MARKET-INDEX-CONTROLLED-BACKFILL-1
+
+Contexte:
+- Suite directe de ACTIVATION-3 : initialiser prudemment le Market Index interne a partir des
+  316 property_listings / 321 listing_sources legacy, lecture toujours desactivee. Nouveau worktree
+  isole (`AkarFinder-market-index-backfill`, branche `feat/market-index-controlled-backfill`, base
+  `85bbec1`). Bundle Git complet cree et verifie avant toute ecriture (3 stash commits + toutes les
+  branches + HEAD des worktrees actifs).
+
+Travail effectue:
+- Audit colonnes (`docs/MARKET_INDEX_CONTROLLED_BACKFILL_COLUMN_MAPPING.md`) : seul le signal
+  `field_confidence.provider === "openserp"` explicite autorise une ecriture ; `source_offer_key` et
+  `compliance_status` ne sont jamais ecrits (aucune source demontrable). Preuve empirique que
+  `source_name` seul ne peut jamais servir de signal de provenance.
+- Script controle (`scripts/market-index/run-controlled-market-index-backfill.ts`, 4 modes obligatoires,
+  refus sans mode explicite, refus `--apply` sans triple confirmation) + IDs deterministes UUIDv5
+  (verifies contre le vecteur de test RFC 4122 standard).
+- Plan read-only Production : 177/321 eligibles (source unique + provenance OpenSERP demontree),
+  135 sans provenance + 9 dans 4 groupes multi-source ambigus laisses intacts -- correspond exactement
+  aux references OpenSERP (177) et groupes ambigus (4) de l'ODM ; le chiffre "52 provenances
+  manquantes" s'avere etre exactement les `field_confidence` NULL, 87 lignes supplementaires (schema
+  de completude ancien, sans marqueur de provenance) rejoignant le total a 144, ecart conservateur
+  documente et non une reduction.
+- Gate A (PGlite) : 12 fixtures synthetiques couvrant tous les cas requis. Bug trouve et corrige :
+  la precondition SQL "table totalement vide" rendait le deuxieme apply (idempotence) toujours
+  impossible -- retiree, remplacee par la garantie ligne-par-ligne deja suffisante. Sequence complete
+  apply -> second-apply-idempotent -> rollback -> clean-reapply : PASS.
+- Gate B (PostgreSQL 18.2 reel + roles Supabase anon/authenticated/service_role) : memes fixtures,
+  RLS confirmee (anon/authenticated bloques, service_role passe), meme sequence : PASS.
+- 19 tests dedies + suite globale (1546+53), build, `git diff --check` : tous PASS. Freeze HEAD
+  `3632f1a`, plan SHA reconfirme identique.
+- Mecanisme d'application : aucune connexion Postgres directe disponible ; question fermee posee au
+  proprietaire (avec hash exact), qui a execute le SQL lui-meme via Supabase SQL Editor. L'agent n'a
+  jamais manipule d'identifiant de connexion.
+
+Validation:
+- Production (lecture seule) : 177 property_clusters, 177 property_cluster_members (un membership
+  exact par cluster), 0 discovery_candidates, 0 source_offer_observations, property_listings/
+  listing_sources inchanges (316/321), les 4 groupes ambigus connus jamais clusterises. Application
+  live : 14/14 routes, 0 faux prix, 0 exposition Market Index, 0 erreur console -- aucun deploiement
+  necessaire. Flags `MARKET_INDEX_*` tous restes absents/false.
+
+Etat officiel:
+- Statut: `MARKET_INDEX_BACKFILL_COMPLETED_READ_OFF`. Pourcentage produit inchange (`98.5%` -> `98.5%`,
+  la lecture Market Index reste desactivee, le volume public annonce ne change pas). Rollback prepare
+  et valide dans les deux gates, non execute (aucune condition ne l'a requis).
+
+Prochaine etape (non demarree):
+- `AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1`, puis `OPENSERP-AUTOMATED-INGESTION-30MIN-1`.
