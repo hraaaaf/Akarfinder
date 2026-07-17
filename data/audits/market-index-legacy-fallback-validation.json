@@ -1,0 +1,35 @@
+{
+  "audit_id": "market-index-legacy-fallback-validation",
+  "mission": "AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1",
+  "generated_at_utc": "2026-07-17T19:19:50.143Z",
+  "membership_validation": {
+    "total_clusters_checked": 177,
+    "all_pass": true,
+    "failing": []
+  },
+  "fallback_validation": {
+    "unenriched_single_source": 135,
+    "ambiguous_multi_source_groups_preserved": 4,
+    "ambiguous_multi_source_sources_preserved": 9,
+    "total_fallback_sources": 144,
+    "issues": [],
+    "known_ambiguous_ids": [
+      134,
+      129,
+      315,
+      44
+    ],
+    "known_ambiguous_still_unclustered": true
+  },
+  "expected_vs_actual": {
+    "expected_memberships": 177,
+    "actual_memberships": 177,
+    "expected_unenriched_single_source": 135,
+    "actual_unenriched_single_source": 135,
+    "expected_ambiguous_groups": 4,
+    "actual_ambiguous_groups": 4,
+    "expected_ambiguous_sources": 9,
+    "actual_ambiguous_sources": 9
+  },
+  "overall_verdict": "PASS"
+}
