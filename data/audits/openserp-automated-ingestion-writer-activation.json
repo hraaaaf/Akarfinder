@@ -1,0 +1,33 @@
+{
+  "audit_id": "openserp-automated-ingestion-writer-activation",
+  "mission": "AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1",
+  "generated_at_utc": "2026-07-17T23:15:00Z",
+  "user_confirmation": {
+    "question_asked_verbatim": "Le writer OpenSERP et le bootstrap sont deployes mais desactives. Tous les gates sont PASS. Autorisez-vous l'activation du writer et l'execution de la Vague 1 de 25 requetes ? Repondez uniquement OUI ou NON.",
+    "answer": "OUI"
+  },
+  "flags_changed": {
+    "OPENSERP_AUTOMATED_INGESTION_ENABLED": "absent -> true",
+    "OPENSERP_INGESTION_WRITE_ENABLED": "absent -> true",
+    "OPENSERP_INGESTION_CRON_ENABLED": "stays false (explicit)",
+    "OPENSERP_CRON_SECRET": "absent -> set (sensitive, not logged)"
+  },
+  "flags_unchanged": {
+    "MARKET_INDEX_READ_ENABLED": "true",
+    "MARKET_INDEX_WRITE_ENABLED": "absent",
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": "absent",
+    "MARKET_INDEX_CLUSTERING_ENABLED": "absent"
+  },
+  "deployment": {
+    "id": "dpl_GUwVJxG92piCdyHLMzrSc7pyQdQU",
+    "commit": "13ce0888d232526a940429e0139041051ac694fa",
+    "previous_deployment_commit": "644d140f20055e809c56794fdd471fdc762be91e",
+    "commit_delta_note": "git diff 644d140 13ce088 --stat shows exactly 2 new JSON audit files, 0 application code changed -- verified before redeploying. The mission's own docs-commit-as-you-go pattern (used throughout this mission thread) means the literal commit SHA advanced by evidence-recording commits between the flags-off and write-enabled deployments; the CODE state deployed is identical to the frozen HEAD (064b286) in both deployments.",
+    "alias": ["akarfinder.vercel.app"]
+  },
+  "route_validation_after_activation": "14/14 PASS",
+  "cron_endpoint_still_blocked": "401 without a valid Authorization header (CRON_ENABLED still false regardless)",
+  "db_writes_detected_immediately_after_deploy": 0,
+  "db_counts_unchanged": true,
+  "next_step": "Execute Bootstrap Wave 1 (25 queries) via scripts/openserp/run-openserp-national-bootstrap.ts --apply --wave 1"
+}
