@@ -3062,3 +3062,35 @@ Impact:
   aucune Preview. Statut: `POC_MIGRATION_QUARANTINED_NOT_APPLIED`. L'activation Market Index Foundation
   reste `ACTIVATION_BLOCKED_PENDING_MIGRATION_GATE` jusqu'a un nouvel ODM de reprise qui revalidera le
   pending-migrations gate sur la chaine desormais assainie.
+
+## 2026-07-17 - AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-3
+
+Decision:
+- Quand aucune connexion Postgres directe n'est disponible dans l'environnement (seulement
+  SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY via PostgREST, aucun CLI Supabase, aucun token de
+  management), le DDL Production est applique par le proprietaire du projet lui-meme via le SQL
+  Editor du Dashboard Supabase, sur la base d'un fichier SQL prepare et valide par l'agent (jamais
+  modifie a la volee). L'agent ne manipule jamais un identifiant de connexion base de donnees, meme
+  temporairement, et verifie le resultat uniquement en lecture seule apres coup.
+- Un gate deja execute (Gate A, Gate B) peut etre reutilise sans etre rejoue si et seulement si :
+  ses hashes de fichiers correspondent exactement aux fichiers actuels, et toute preuve manquante
+  dans son propre JSON (ex. hash non persiste inline) est comblee par une preuve verifiable
+  independante (ici : la chaine de provenance Git montrant qu'aucun commit n'a touche les fichiers
+  concernes entre la generation du gate et maintenant) plutot que par une simple supposition.
+
+Reason:
+- La classification de securite auto-mode a bloque une premiere tentative de l'agent de choisir
+  seul un mecanisme d'application des migrations sur la base d'une reponse utilisateur vague
+  ("Do what's better for the website") -- decision Production correctement jugee insuffisamment
+  specifique. L'agent a repose une question fermee, explicite, avec les options concretes ; l'ODM
+  section 4 exigeait par ailleurs explicitement de ne jamais extrapoler une preuve de gate
+  manquante.
+
+Impact:
+- Les 5 migrations Market Index appliquees a Production (4 nouvelles tables vides, 9 colonnes
+  nullable ajoutees a listing_sources, 0 ligne touchee). Deploiement `dpl_GLoQM3wLm4oD6MKkqJZg5zTtKgZR`
+  au commit exact `442b9c0`, alias `akarfinder.vercel.app`. Validation HTTP/UI/DB complete : 14/14
+  routes, 0 faux prix a 0, 0 erreur console/hydratation, 0 overflow sur 4 viewports, comptes
+  property_listings/listing_sources inchanges (316/321), RLS confirmee structurellement (0
+  `create policy` dans le SQL applique). Flags `MARKET_INDEX_*` tous absents/false. Statut :
+  `FOUNDATION_PROD_ACTIVE_FLAGS_OFF`. Pourcentage produit `98.0%` -> `98.5%`.

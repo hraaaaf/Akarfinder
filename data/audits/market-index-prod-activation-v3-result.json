@@ -1,0 +1,70 @@
+{
+  "audit_id": "market-index-prod-activation-v3-result",
+  "mission": "AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-3",
+  "generated_at_utc": "2026-07-17T14:00:00Z",
+  "status": "FOUNDATION_PROD_ACTIVE_FLAGS_OFF",
+  "prior_missions": [
+    "AKARFINDER-MARKET-INDEX-FOUNDATION-1",
+    "AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-1 (self-halted, non-immutable GENERATED column)",
+    "AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-2 (blocked, foreign POC migration found)",
+    "AKARFINDER-PUBLIC-INDEX-POC-MIGRATION-QUARANTINE-1 (POC quarantined)"
+  ],
+  "worktrees": {
+    "implementation": { "path": "AkarFinder-market-index-foundation", "branch": "feat/market-index-foundation", "head_final": "442b9c0f3344dfa65b8b19e213f6943fe45b0aac" },
+    "release": { "path": "AkarFinder-market-index-prod-activation", "branch": "release/market-index-foundation-prod-activation", "head_final": "442b9c0f3344dfa65b8b19e213f6943fe45b0aac" }
+  },
+  "evidence_reconciliation": "data/audits reconciled, 6 files preserved via commit 442b9c0",
+  "migration_inventory": "6 local files: 1 already applied (search_gateway_cache), 5 Market Index (applied by this mission), 0 foreign",
+  "gate_reuse": "data/audits/market-index-activation-v3-gate-reconciliation.json -- both gates reused, no replay",
+  "application_tests": "1527+53 global, 84 market-index, 20 openserp-ingestion, build PASS, diff-check PASS",
+  "preview": {
+    "deployment_id": "dpl_7kR129TEuWfdSKyiWWKjnbpBxgUo",
+    "verdict": "PASS",
+    "artifact": "data/audits/market-index-prod-activation-v3-preview-validation.json"
+  },
+  "snapshot_before": {
+    "artifact": "data/audits/market-index-prod-activation-v3-precheck.json",
+    "property_listings": 316,
+    "listing_sources": 321,
+    "new_tables_present": false,
+    "flags_present": false
+  },
+  "migration_application": {
+    "method": "SQL applied by project owner via Supabase Dashboard SQL Editor, verified read-only by the agent afterward",
+    "artifact": "data/audits/market-index-prod-activation-v3-migration-result.json",
+    "poc_applied": false
+  },
+  "deployment": {
+    "id": "dpl_GLoQM3wLm4oD6MKkqJZg5zTtKgZR",
+    "url": "akarfinder-jqrc3ngwk-achraf-benmoussa-s-projects.vercel.app",
+    "target": "production",
+    "gitCommitSha": "442b9c0f3344dfa65b8b19e213f6943fe45b0aac",
+    "alias": "akarfinder.vercel.app"
+  },
+  "production_validation": {
+    "artifact": "data/audits/market-index-prod-activation-v3-production-validation.json",
+    "http_ui": "PASS",
+    "db": "PASS"
+  },
+  "new_tables_final_state": {
+    "discovery_candidates": 0,
+    "property_clusters": 0,
+    "property_cluster_members": 0,
+    "source_offer_observations": 0
+  },
+  "flags_final_state": {
+    "MARKET_INDEX_WRITE_ENABLED": "absent (false)",
+    "MARKET_INDEX_READ_ENABLED": "absent (false)",
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": "absent (false)",
+    "MARKET_INDEX_CLUSTERING_ENABLED": "absent (false)"
+  },
+  "rollback_performed": false,
+  "rollback_needed": false,
+  "production_modified": true,
+  "production_modification_summary": "Additive schema only: 4 new empty tables, 9 new nullable columns on listing_sources. 0 rows changed. 0 backfill.",
+  "supabase_production_modified": true,
+  "percentage_before": "98.0%",
+  "percentage_after": "98.5%",
+  "next_mission": "None started under this mission. Future scope: MARKET_INDEX_READ_ENABLED activation, dedicated backfill mission, 30-min OpenSERP ingestion writer before OBSERVATIONS_ENABLED, human-in-the-loop workflow before CLUSTERING_ENABLED.",
+  "overall_verdict": "PASS"
+}

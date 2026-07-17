@@ -1,5 +1,11 @@
 # Market Index — Activation Checklist
 
+**Status as of 2026-07-17 (AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-3):
+`FOUNDATION_PROD_ACTIVE_FLAGS_OFF`.** The 5 migrations are applied to Production; all 4
+new tables exist and are empty; all 4 `MARKET_INDEX_*` flags remain absent/false. The
+checklist below, originally written for the *pre*-activation state, is kept for the
+"Activation order" steps 3 onward, which are still pending.
+
 For the future `AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-1` mission. This foundation mission
 does **not** perform any of the steps below — it only prepares them.
 
@@ -16,8 +22,10 @@ does **not** perform any of the steps below — it only prepares them.
 
 ## Activation order (once the above gates pass)
 
-1. Apply migrations 1-4 (new tables) to Production.
-2. Apply migration 5 (`listing_sources` additive columns) to Production.
+1. ~~Apply migrations 1-4 (new tables) to Production.~~ **Done 2026-07-17,
+   AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-3.**
+2. ~~Apply migration 5 (`listing_sources` additive columns) to Production.~~ **Done
+   2026-07-17, same mission.**
 3. Set `MARKET_INDEX_READ_ENABLED=true` only — verify no public behavior changes (no code path reads
    these tables for public rendering yet; this flag exists for the *next* mission's own activation, not
    this one).

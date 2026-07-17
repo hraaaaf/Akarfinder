@@ -5307,3 +5307,20 @@ Pourcentage Produit:
 
 Prochaine mission unique:
 - `AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-1` (`98.5%` apres activation validee).
+
+## 2026-07-17 - AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-3 (activation validee)
+
+Apres 3 tentatives d'activation (ACTIVATION-1 stoppee sur bug SQL, ACTIVATION-2 bloquee sur migration
+POC etrangere, quarantaine dediee, puis ACTIVATION-3), les 5 migrations Market Index sont appliquees a
+Production : 4 nouvelles tables vides, 9 colonnes nullable sur `listing_sources`, 0 ligne touchee, 0
+backfill. Deploiement `dpl_GLoQM3wLm4oD6MKkqJZg5zTtKgZR` valide (14/14 routes, 0 regression, RLS
+confirmee). Tous les flags `MARKET_INDEX_*` restent `false`. Voir
+`docs/AKARFINDER_MARKET_INDEX_FOUNDATION_PROD_ACTIVATION_3.md`.
+
+Pourcentage Produit:
+- Avant: `98.0%`. Apres: `98.5%`.
+
+Prochaine mission (non demarree) :
+- Activation de `MARKET_INDEX_READ_ENABLED` avec preuve de non-regression publique, puis une mission
+  dediee de backfill reel, puis le writer d'ingestion 30 minutes avant `OBSERVATIONS_ENABLED`, puis un
+  workflow humain avant `CLUSTERING_ENABLED`.

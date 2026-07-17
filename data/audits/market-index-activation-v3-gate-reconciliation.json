@@ -1,0 +1,52 @@
+{
+  "audit_id": "market-index-activation-v3-gate-reconciliation",
+  "mission": "AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-3",
+  "generated_at_utc": "2026-07-17T01:00:00Z",
+  "purpose": "Determine whether Gate A (PGlite) and Gate B (Supabase-compatible role model) from the paused ACTIVATION-2 attempt can be reused as-is, per section 4's explicit reuse conditions, rather than replayed.",
+  "current_migration_hashes": {
+    "20260716140000_create_discovery_candidates.sql": "4814ba664ea9e8ac1b1c5f6c43eaec1a1b1007f9ab2a149f507fe267a3bf6e61",
+    "20260716140100_create_property_clusters.sql": "225e096ad5a213232924d6d0fc3185762bd8c9a50693f633c3fc841eaca2fccf",
+    "20260716140200_create_property_cluster_members.sql": "4680220caa32b0a13fe5b98433b25f2547a2c832782499aaaed328129b9da25c",
+    "20260716140300_create_source_offer_observations.sql": "030d1c608fffce516e25b9161e1cc19bdf231958f2c420c0bef250a120e70a8b",
+    "20260716140400_add_source_offer_columns_to_listing_sources.sql": "abd62f1c42e8c44831407b44761a2ebdb45466e02955b2deaa8d89d4553e436d",
+    "computed_via": "certutil -hashfile, release worktree, HEAD 442b9c0"
+  },
+  "gate_a_pglite": {
+    "artifact": "data/audits/market-index-pglite-gate-v2.json",
+    "recorded_hashes_match_current": true,
+    "postgres_version_indicated": "PostgreSQL 18.3 (PGlite 0.5.4)",
+    "apply_documented": true,
+    "rerun_documented": true,
+    "rollback_documented": true,
+    "clean_reapply_documented": true,
+    "utc_bucket_test_present": true,
+    "utc_bucket_test_detail": "generated_column test confirms bucket = 2026-07-16T10:00:00.000Z; timezone_stability test confirms the value is unchanged after SET TIME ZONE 'America/New_York'",
+    "append_only_db_level": "LIMITED -- PGlite has a single superuser role, cannot test anon/authenticated/service_role separation; explicitly deferred to Gate B by Gate A's own report",
+    "rls_role_based_enforcement": "not tested (PGlite has no Supabase role model) -- explicitly deferred to Gate B",
+    "reusable": true,
+    "reuse_basis": "covers apply/rerun/rollback/clean-reapply/UTC-bucket-immutability in full; hashes verified identical to current files"
+  },
+  "gate_b_supabase_compatible": {
+    "artifact": "data/audits/market-index-supabase-compatible-gate-v2.json",
+    "postgres_version_indicated": "PostgreSQL 18.2 (native Windows binary)",
+    "rls_anon_authenticated_service_validated": true,
+    "rls_test_detail": "anon/authenticated SELECT return 0 rows with no error; anon/authenticated INSERT explicitly rejected with a row-security violation error; service_role (BYPASSRLS) succeeds on both",
+    "apply_rerun_rollback_clean_reapply_documented": "apply only (single pass) -- rerun/rollback/clean-reapply not repeated here by design, already fully covered by Gate A",
+    "utc_bucket_test_present": false,
+    "utc_bucket_test_note": "not this gate's purpose -- already covered by Gate A",
+    "append_only_db_level": "PARTIALLY_ADDRESSED -- confirms anon/authenticated cannot write at all (RLS-level), but does not additionally REVOKE UPDATE/DELETE from service_role, per the documented, pre-existing design choice in docs/MARKET_INDEX_SECURITY_AND_RLS.md (append-only enforced at the TypeScript repository-interface level, not by a DB-level REVOKE on service_role)",
+    "hash_verification_gap_found": "Gate B's own JSON records the 5 migration filenames it applied but does not persist their SHA-256 inline.",
+    "hash_verification_gap_resolution": "Not extrapolated. Resolved via git chain-of-custody instead of assumption: `git log --follow` on all 5 files shows the last commit touching any of them is e9f4d7a (the UTC fix), and Gate B's own generated_at_utc (2026-07-16T22:55:00Z) is after e9f4d7a and before every subsequent commit (7b068b8, 6b340ef, 442b9c0), none of which touch supabase/migrations/2026071614*.sql (confirmed via git diff HEAD returning zero changes on all 5 files at every step of the quarantine mission). Gate A, run moments before Gate B in the same session from the same unmodified directory, explicitly recorded these same 5 hashes, and they are confirmed identical to the current file hashes above. Therefore Gate B necessarily applied byte-identical content to what exists now, proven by git history rather than assumed.",
+    "reusable": true,
+    "reuse_basis": "the one required proof that was not inline (hash) is supplied by git provenance across the full commit chain, not by extrapolation; RLS role-based enforcement -- Gate B's actual purpose -- is fully documented"
+  },
+  "joint_coverage_assessment": {
+    "conclusion": "Gate A and Gate B are complementary by design, not independent duplicates. Together they cover every item in section 4's checklist: apply/rerun/rollback/clean-reapply (Gate A), UTC bucket immutability (Gate A), PostgreSQL version disclosed (both), and anon/authenticated/service_role RLS enforcement (Gate B, the gap Gate A's own report explicitly flagged as LIMITED and handed off). No item in the checklist is unaddressed by the pair.",
+    "decision": "REUSE both gates. No replay required."
+  },
+  "no_market_index_migration_file_changed_since_gates": {
+    "method": "git log --oneline --follow on each of the 5 files, from Gate A/B's generation time to now",
+    "result": "0 commits touch any of the 5 files after e9f4d7a (which predates both gates)"
+  },
+  "verdict": "GATES_REUSABLE_NO_REPLAY_REQUIRED"
+}

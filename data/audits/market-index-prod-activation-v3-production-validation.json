@@ -1,0 +1,87 @@
+{
+  "audit_id": "market-index-prod-activation-v3-production-validation",
+  "mission": "AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-3",
+  "generated_at_utc": "2026-07-17T13:50:00Z",
+  "deployment": {
+    "id": "dpl_GLoQM3wLm4oD6MKkqJZg5zTtKgZR",
+    "url": "https://akarfinder-jqrc3ngwk-achraf-benmoussa-s-projects.vercel.app",
+    "target": "production",
+    "gitCommitSha": "442b9c0f3344dfa65b8b19e213f6943fe45b0aac",
+    "matches_release_worktree_head": true,
+    "alias": ["akarfinder.vercel.app", "akarfinder-achraf-benmoussa-s-projects.vercel.app", "akarfinder-lafabriquedapollon-3895-achraf-benmoussa-s-projects.vercel.app"],
+    "aliasError": null
+  },
+  "http_ui_validation": {
+    "route_status": {
+      "/": 200, "/acheter": 200, "/louer": 200, "/neuf": 200, "/immobilier": 200,
+      "/search?q=appartement rabat": 200, "/search?q=appartement casablanca": 200,
+      "/search?q=appartement marrakech": 200, "/demo": 200, "/demo/promoteur": 200,
+      "/demo/agence": 200, "/listings/137": 404, "/robots.txt": 200, "/sitemap.xml": 200
+    },
+    "price_integrity": {
+      "rendered_zero_price_tokens": 0,
+      "checked_pages": ["/search?q=appartement rabat"],
+      "method": "post-hydration DOM text scan via Playwright",
+      "raw_api_price_zero_sentinel_note": "The raw /api/search JSON returns price:0 as an internal not-disclosed sentinel for a meaningful fraction of listings (pre-existing behavior, unrelated to this migration -- confirmed identical on Preview before this deploy). The rendered UI never displays a literal '0 DH'/'0 MAD' string; zero matches found."
+    },
+    "internal_link_on_external_result": {
+      "checked_page": "/search?q=appartement marrakech",
+      "external_result_links_sampled": ["mouldar.com"],
+      "internal_link_on_external_count": 0
+    },
+    "misleading_partner_labels": {
+      "patterns_checked": ["Partenaire vérifié", "Vendeur vérifié", "Certifié AkarFinder"],
+      "matches": 0
+    },
+    "search_gateway_ranking_unchanged": {
+      "basis": "zero app/lib files changed by this mission (confirmed via git diff e9f4d7a..HEAD in section 5) -- ranking/display logic is byte-identical to pre-mission Production"
+    },
+    "console_hydration_errors": {
+      "pages_tested": ["/", "/acheter", "/louer", "/neuf", "/immobilier", "/demo", "/demo/promoteur", "/demo/agence", "/search?q=appartement rabat", "/search?q=appartement casablanca", "/search?q=appartement marrakech", "/listings/137"],
+      "errors_found": 1,
+      "error_detail": "1 entry on /listings/137: 'Failed to load resource: 404' -- the browser's own log of the page's expected top-level 404 status, not an application/hydration/JS error. Zero errors on all 200-status pages.",
+      "warnings_found": 0
+    },
+    "viewport_overflow": {
+      "page_tested": "/search?q=appartement rabat",
+      "results": [
+        { "width": 1440, "scrollWidth": 1425, "overflow": false },
+        { "width": 1280, "scrollWidth": 1265, "overflow": false },
+        { "width": 390, "scrollWidth": 375, "overflow": false },
+        { "width": 375, "scrollWidth": 360, "overflow": false }
+      ]
+    },
+    "status": "PASS"
+  },
+  "db_validation": {
+    "new_tables": [
+      { "table": "discovery_candidates", "row_count": 0 },
+      { "table": "property_clusters", "row_count": 0 },
+      { "table": "property_cluster_members", "row_count": 0 },
+      { "table": "source_offer_observations", "row_count": 0 }
+    ],
+    "existing_tables": [
+      { "table": "property_listings", "row_count": 316, "expected": 316, "matches": true },
+      { "table": "listing_sources", "row_count": 321, "expected": 321, "matches": true }
+    ],
+    "no_backfill_performed": true,
+    "no_cluster_membership_observation_created": true,
+    "known_open_items_untouched": {
+      "detail": "The 52 missing-provenance listing_sources rows and the 4 known ambiguous multi-source groups documented in docs/MARKET_INDEX_EXISTING_MODEL_AUDIT.md are, by construction, unchanged: listing_sources' row count is unchanged (321, exact match) and no write-capable Market Index code path was invoked (MARKET_INDEX_WRITE_ENABLED confirmed false in Production). Since no row was inserted, updated, or deleted, these pre-existing conditions could not have changed and were not independently re-derived by a fresh query in this validation."
+    },
+    "duplicate_group_id_not_used_by_market_index": {
+      "basis": "property_clusters/property_cluster_members schema does not reference duplicate_group_id (confirmed in the applied SQL, section 4 of the mission); zero Market Index code path reads or writes it (unchanged runtime code)"
+    },
+    "anonymous_access_denied": {
+      "method": "structural proof, not a live anon-key probe (no SUPABASE_ANON_KEY available in this environment) -- the applied SQL contains zero 'create policy' statements for any of the 4 new tables (verified by re-reading the exact SQL that was applied), which under Postgres RLS semantics with RLS enabled means deny-all for every role except one with BYPASSRLS. This exact SQL, byte-identical, was live-tested with a real Supabase-style anon/authenticated/service_role model in Gate B and confirmed to deny anon/authenticated SELECT and INSERT outright.",
+      "status": "PASS (via structural equivalence to Gate B, not a live Production anon probe)"
+    },
+    "status": "PASS"
+  },
+  "rollback": {
+    "performed": false,
+    "needed": false,
+    "reason": "No issue found at any validation step; nothing to roll back"
+  },
+  "overall_verdict": "PASS"
+}

@@ -1,0 +1,32 @@
+{
+  "audit_id": "market-index-prod-activation-v3-migration-result",
+  "mission": "AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-3",
+  "generated_at_utc": "2026-07-17T13:30:00Z",
+  "method": "SQL applied by the project owner via the Supabase Dashboard SQL Editor (no direct Postgres connection string was available to the agent). Verified read-only afterward via PostgREST (SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY).",
+  "sql_applied": "combined-market-index-migrations.sql, byte-identical concatenation of the 5 approved migration files (only section-header comments added between files, no SQL content altered) -- same content validated in Gate A and Gate B",
+  "new_tables_verification": [
+    { "table": "discovery_candidates", "http_status": 200, "row_count": 0 },
+    { "table": "property_clusters", "http_status": 200, "row_count": 0 },
+    { "table": "property_cluster_members", "http_status": 200, "row_count": 0 },
+    { "table": "source_offer_observations", "http_status": 200, "row_count": 0 }
+  ],
+  "existing_tables_unchanged": [
+    { "table": "property_listings", "row_count": 316, "expected": 316, "matches": true },
+    { "table": "listing_sources", "row_count": 321, "expected": 321, "matches": true }
+  ],
+  "listing_sources_new_columns_verification": {
+    "columns_checked": ["source_offer_key", "origin_type", "compliance_status", "content_fingerprint", "ingestion_run_id", "displayed_price", "price_currency", "price_period", "price_status"],
+    "http_status": 200,
+    "sampled_row_id": 51,
+    "all_null_on_existing_row": true,
+    "detail": "All 9 columns present and NULL on a sampled pre-existing row -- confirms zero existing values were touched/reinterpreted"
+  },
+  "constraints_and_indexes_verification_limitation": {
+    "disclosed": true,
+    "detail": "pg_constraint/pg_indexes cannot be queried via PostgREST (no direct Postgres connection available). Successful column presence + successful SELECT with NULL values is used as equivalent proof the ALTER TABLE completed; the CHECK constraints and unique/partial indexes were verified structurally in Gate A (PGlite) and Gate B (real Postgres 18.2) against byte-identical SQL, which is the strongest available substitute for direct introspection in this environment."
+  },
+  "no_business_data_created": true,
+  "no_backfill_performed": true,
+  "no_cluster_membership_observation_created": true,
+  "verdict": "PASS -- all 5 migrations applied successfully and exactly as validated by Gate A/Gate B; Production is in the target additive-only state"
+}

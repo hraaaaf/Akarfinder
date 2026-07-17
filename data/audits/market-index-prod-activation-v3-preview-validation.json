@@ -1,0 +1,59 @@
+{
+  "audit_id": "market-index-prod-activation-v3-preview-validation",
+  "mission": "AKARFINDER-MARKET-INDEX-FOUNDATION-PROD-ACTIVATION-3",
+  "generated_at_utc": "2026-07-17T13:05:00Z",
+  "deployment": {
+    "id": "dpl_7kR129TEuWfdSKyiWWKjnbpBxgUo",
+    "url": "https://akarfinder-brdu36ae9-achraf-benmoussa-s-projects.vercel.app",
+    "target": "preview",
+    "source_worktree": "release/market-index-foundation-prod-activation",
+    "source_head_commit": "442b9c0f3344dfa65b8b19e213f6943fe45b0aac",
+    "deploy_command": "vercel deploy --yes (no --prod)"
+  },
+  "feature_flags_check": {
+    "market_index_flags_present_in_preview_env": false,
+    "detail": "vercel env ls preview shows no MARKET_INDEX_* variable; all 4 resolve to false by default",
+    "status": "PASS"
+  },
+  "route_http_status": {
+    "/": 200, "/acheter": 200, "/louer": 200, "/neuf": 200, "/immobilier": 200,
+    "/search?q=appartement rabat": 200, "/search?q=appartement casablanca": 200,
+    "/search?q=appartement marrakech": 200, "/demo": 200, "/demo/promoteur": 200,
+    "/demo/agence": 200, "/listings/137": 404, "/robots.txt": 200, "/sitemap.xml": 200,
+    "status": "PASS -- all 14 routes match expected status, including the expected 404 on /listings/137"
+  },
+  "price_integrity_check": {
+    "fake_zero_price_via_structured_api": {
+      "sample": "GET /api/search?city=Rabat&limit=20",
+      "fake_zero_price_listings_found": 0
+    },
+    "rendered_page_zero_price_scan": {
+      "pages_checked": ["/search?q=appartement rabat", "/search?q=marrakech"],
+      "method": "browser DOM text scan for literal zero-price tokens after hydration",
+      "matches": 0
+    },
+    "first_grep_false_positive_note": "An initial raw curl+grep pass on rendered HTML flagged '000 DH' substrings -- these were the trailing zeros of real thousands-separated prices (e.g. '2 200 000 DH'), the same known false-positive class already documented in project memory. Re-verified via word-boundary regex and the structured API price field: 0 real fake-zero-price listings.",
+    "status": "PASS"
+  },
+  "browser_validation": {
+    "tool": "Playwright (headless Chromium)",
+    "viewports_tested": ["1440x900 (desktop, default)", "390x844 (mobile)"],
+    "pages_tested": ["/", "/acheter", "/louer", "/neuf", "/immobilier", "/demo", "/demo/promoteur", "/demo/agence", "/listings/137", "/search?q=appartement casablanca"],
+    "console_errors": 1,
+    "console_errors_detail": "1 entry on /listings/137: 'Failed to load resource: the server responded with a status of 404' -- this is the browser's own log of the page's top-level 404 HTTP status, not an application/hydration/JS error. No error appears on any 200-status page.",
+    "console_warnings": 0,
+    "hydration_errors": 0,
+    "status": "PASS"
+  },
+  "static_files": {
+    "robots.txt": "present, Allow: /, references sitemap",
+    "sitemap.xml": "present, valid XML, includes homepage and static routes"
+  },
+  "market_index_public_exposure_check": {
+    "routes_tested": ["/api/internal/market-index", "/market-index", "/api/market-index"],
+    "result": "all 404 -- no public Market Index route exists",
+    "status": "PASS"
+  },
+  "overall_verdict": "PASS",
+  "conclusion": "Preview from the reconciled release worktree (HEAD 442b9c0) behaves identically to pre-mission baseline, as expected since this mission's diff touches zero app/lib files (migrations, docs, tests, and audit evidence only, confirmed in section 5). No regression, no exposed Market Index surface, all 4 flags absent/false."
+}
