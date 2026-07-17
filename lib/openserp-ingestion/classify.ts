@@ -153,6 +153,15 @@ function detectUrlSignals(domain: string, canonicalUrl: string): {
   return { forceReject, forceDiscovery, strongIndividual, reasons };
 }
 
+// AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1 — injectable city/district
+// extractors, defaulting to the original 3-city functions so every existing
+// caller (the pilot path) keeps its exact prior behavior unchanged. The
+// national admission module passes a nationally-aware pair covering all 16
+// recognized cities + 65 districts (see national-utils.ts) without this file
+// needing to know anything about the wider taxonomy itself.
+export type CityExtractor = (value: string) => string | null;
+export type DistrictExtractor = (value: string) => { city: string; district: string } | null;
+
 function classifyLane(input: {
   text: string;
   title: string;
@@ -160,10 +169,14 @@ function classifyLane(input: {
   canonicalUrl: string;
   domain: string;
   query: OpenSerpIngestionQuery;
+  extractCityFn?: CityExtractor;
+  extractDistrictFn?: DistrictExtractor;
 }): {
   lane: OpenSerpClassificationLane;
   reasons: string[];
 } {
+  const extractCityFn = input.extractCityFn ?? extractCity;
+  const extractDistrictFn = input.extractDistrictFn ?? extractDistrict;
   const reasons: string[] = [];
   const urlSignals = detectUrlSignals(input.domain, input.canonicalUrl);
   reasons.push(...urlSignals.reasons);
@@ -189,8 +202,8 @@ function classifyLane(input: {
   const hasBedrooms = parseBedrooms([input.title, input.snippet].filter(Boolean).join(" ")) != null;
   const hasTransaction = toTransactionType([input.title, input.snippet].join(" ")) != null;
   const hasPropertyType = toPropertyType([input.title, input.snippet].join(" ")) != null;
-  const explicitCity = extractCity([input.title, input.snippet, input.canonicalUrl].join(" "));
-  const explicitDistrict = extractDistrict([input.title, input.snippet, input.canonicalUrl].join(" "));
+  const explicitCity = extractCityFn([input.title, input.snippet, input.canonicalUrl].join(" "));
+  const explicitDistrict = extractDistrictFn([input.title, input.snippet, input.canonicalUrl].join(" "));
   const hasPluralCountPattern = /\b\d{2,5}\s+(?:annonces?|appartements?|villas?|biens?|studios?)\b/.test(input.text);
   const hasDiscoveryToken = DISCOVERY_TOKENS.some((token) => input.text.includes(token));
   const detailLanguage = /\b(superficie|chambres?|terrasse|residence|situe|idealement|magnifique|visite|plain-pied)\b/.test(input.text);
@@ -237,14 +250,18 @@ function extractAttributes(input: {
   snippet: string | null;
   canonicalUrl: string;
   query: OpenSerpIngestionQuery;
+  extractCityFn?: CityExtractor;
+  extractDistrictFn?: DistrictExtractor;
 }) {
+  const extractCityFn = input.extractCityFn ?? extractCity;
+  const extractDistrictFn = input.extractDistrictFn ?? extractDistrict;
   const combinedText = uniqueNormalizedText([
     input.title,
     input.snippet,
     input.canonicalUrl,
   ]);
-  const explicitDistrict = extractDistrict(combinedText);
-  const explicitCity = extractCity(combinedText);
+  const explicitDistrict = extractDistrictFn(combinedText);
+  const explicitCity = extractCityFn(combinedText);
   const extractedCity = explicitDistrict?.city ?? explicitCity ?? input.query.city;
   const extractedDistrict =
     explicitDistrict?.district ??
@@ -261,7 +278,13 @@ function extractAttributes(input: {
     city: extractedCity,
     district: extractedDistrict,
     transaction_type: transactionFromContent ?? input.query.transaction_type,
-    property_type: propertyTypeFromContent ?? input.query.property_type,
+    // input.query.property_type is a free-form query label (widened for the
+    // national planner, e.g. "riad"/"duplex"/"terrain") — only fall back to
+    // it here if it happens to already be one of the known extracted-attribute
+    // categories; toPropertyType() re-derives from the raw label otherwise so
+    // we never emit a property_type value outside OpenSerpExtractedAttributes'
+    // strict union (never invent a new DB-facing category).
+    property_type: propertyTypeFromContent ?? toPropertyType(input.query.property_type),
     price_mad: price,
     currency: price ? ("MAD" as const) : null,
     surface_m2: surface,
@@ -275,6 +298,11 @@ export function classifyOpenSerpResult(input: {
   engine: "bing" | "ecosia" | "duckduckgo";
   discovered_at: string;
   fallbackRank: number;
+  // Optional national-geography override — see CityExtractor/DistrictExtractor
+  // above. Omitted entirely by every existing (3-city pilot) caller, so this
+  // parameter changes nothing for code that does not pass it.
+  extractCityFn?: CityExtractor;
+  extractDistrictFn?: DistrictExtractor;
 }): OpenSerpClassifiedResult | null {
   const originalUrl = getResultUrl(input.result);
   const canonicalSourceUrl = canonicalizeSourceUrl(originalUrl);
@@ -292,6 +320,8 @@ export function classifyOpenSerpResult(input: {
     snippet: safeSnippet.value,
     canonicalUrl: canonicalSourceUrl,
     query: input.query,
+    extractCityFn: input.extractCityFn,
+    extractDistrictFn: input.extractDistrictFn,
   });
 
   const { lane, reasons } = classifyLane({
@@ -301,6 +331,8 @@ export function classifyOpenSerpResult(input: {
     canonicalUrl: canonicalSourceUrl,
     domain: sourceDomain,
     query: input.query,
+    extractCityFn: input.extractCityFn,
+    extractDistrictFn: input.extractDistrictFn,
   });
 
   return {

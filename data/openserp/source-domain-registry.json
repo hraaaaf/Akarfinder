@@ -1,0 +1,177 @@
+{
+  "registry_version": "openserp-source-domain-registry-v1",
+  "generated_at": "2026-07-17T00:00:00Z",
+  "note": "approved_discovery seed set = the 13 domains already used to publish real, live-validated OpenSERP listings in Production during OPENSERP-TO-SUPABASE-FIRST-WRITE-1 / OPENSERP-FIRST-WRITE-EXECUTE-1 (lib/openserp-ingestion/first-write.ts ALLOWED_PUBLIC_SOURCE_DOMAINS), cross-checked against classify.ts DOMAIN_RULES. blocked = domains with explicit reject-all or discovery-only-forever rules in classify.ts. Every other domain defaults to unclassified and cannot produce a public listing until reviewed and added here.",
+  "domains": [
+    {
+      "domain": "mubawab.ma",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["/(?:fr|en)/is/", "/(?:fr|en)/a/\\d+/", "/acheter/[^/]+-\\d+(?:\\.html)?$"],
+      "blocked_url_patterns": ["/(?:fr|en)?/?(?:sd|cd|sc)/", "/immobilier-a-(?:vendre|louer)\\b", "/appartements-a-(?:vendre|louer)\\b"],
+      "source_type": "portal_aggregator",
+      "external_web_result": true,
+      "compliance_note": "Public search-result pages only, discovery-only. Already live in Production via first-write pilot.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "agenz.ma",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["/(?:fr|en)/annonces/.+/\\d+$"],
+      "blocked_url_patterns": ["/(?:fr|en)/(?:acheter|louer)/"],
+      "source_type": "agency_portal",
+      "external_web_result": true,
+      "compliance_note": "Already live in Production via first-write pilot.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "sarouty.ma",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["/plp/acheter/.+-\\d+(?:\\.html)?$", "/acheter/[a-z0-9-]+-\\d+(?:\\.html)?$"],
+      "blocked_url_patterns": ["/acheter/[^/]+/[^/]+/(?:appartements|villas|proprietes|immobilier-neuf).*", "/louer/[^/]+/(?:appartements-a-louer|proprietes-a-louer).*$"],
+      "source_type": "portal_aggregator",
+      "external_web_result": true,
+      "compliance_note": "Already live in Production via first-write pilot.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "avito.ma",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["/fr/.+/.+_\\d+\\.htm$"],
+      "blocked_url_patterns": ["/sp/immobilier/", "/fr/.+/(?:appartements|villas|terrains|bureaux).+_vendre$", "/fr/.+/(?:appartements|villas|terrains|bureaux).+_louer$"],
+      "source_type": "classifieds_marketplace",
+      "external_web_result": true,
+      "compliance_note": "Already live in Production via first-write pilot.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "1immo.ma",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["/[a-z0-9-]+-\\d+$"],
+      "blocked_url_patterns": [],
+      "source_type": "agency_portal",
+      "external_web_result": true,
+      "compliance_note": "Already live in Production via first-write pilot.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "barnes-marrakech.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["/vente/.+/\\d+$"],
+      "blocked_url_patterns": [],
+      "source_type": "agency_site",
+      "external_web_result": true,
+      "compliance_note": "Already live in Production via first-write pilot.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "kawtarimmobilier.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["/vente/.+ref-\\d+\\.html$"],
+      "blocked_url_patterns": [],
+      "source_type": "agency_site",
+      "external_web_result": true,
+      "compliance_note": "Already live in Production via first-write pilot.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "mouldar.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["/(?:fr|en)/(?:rent|achat|buy|louer|location)/.+/[a-f0-9]{6,}$"],
+      "blocked_url_patterns": ["/(?:fr|en)/(?:achat|location|rent|buy)/[^/]+/[^/]+/[^/]+$"],
+      "source_type": "agency_portal",
+      "external_web_result": true,
+      "compliance_note": "Already live in Production via first-write pilot.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "limmobiliersansfrontieres.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["/property/"],
+      "blocked_url_patterns": [],
+      "source_type": "agency_site",
+      "external_web_result": true,
+      "compliance_note": "Already live in Production via first-write pilot.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "marrakechrealty.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["/property/"],
+      "blocked_url_patterns": [],
+      "source_type": "agency_site",
+      "external_web_result": true,
+      "compliance_note": "Already live in Production via first-write pilot.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "marocannonces.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [],
+      "blocked_url_patterns": ["/maroc/.+-b\\d+-t\\d+\\.html", "/categorie/"],
+      "source_type": "classifieds_marketplace",
+      "external_web_result": true,
+      "compliance_note": "No strong individual-listing URL pattern in classify.ts; reaches individual_listing lane only via textual detail signals. Already live in Production via first-write pilot.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "logic-immo.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [],
+      "blocked_url_patterns": [],
+      "source_type": "portal_aggregator",
+      "external_web_result": true,
+      "compliance_note": "No dedicated classify.ts DOMAIN_RULES entry; relies on generic text classification. Already live in Production via first-write pilot (ALLOWED_PUBLIC_SOURCE_DOMAINS).",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "logicimmo.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [],
+      "blocked_url_patterns": [],
+      "source_type": "portal_aggregator",
+      "external_web_result": true,
+      "compliance_note": "No dedicated classify.ts DOMAIN_RULES entry; relies on generic text classification. Already live in Production via first-write pilot (ALLOWED_PUBLIC_SOURCE_DOMAINS).",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "yakeey.com",
+      "status": "blocked",
+      "listing_url_patterns": [],
+      "blocked_url_patterns": [".*"],
+      "source_type": "agency_portal",
+      "external_web_result": false,
+      "compliance_note": "classify.ts DOMAIN_RULES forceReject on every path (all results rejected regardless of content). Not in ALLOWED_PUBLIC_SOURCE_DOMAINS.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "immobilier.trovit.ma",
+      "status": "blocked",
+      "listing_url_patterns": [],
+      "blocked_url_patterns": [".*"],
+      "source_type": "meta_search_aggregator",
+      "external_web_result": false,
+      "compliance_note": "classify.ts DOMAIN_RULES forceDiscovery on every path -- meta-search results, never an individual listing page. Blocked explicitly rather than left implicit.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "nuroa.ma",
+      "status": "blocked",
+      "listing_url_patterns": [],
+      "blocked_url_patterns": [".*"],
+      "source_type": "meta_search_aggregator",
+      "external_web_result": false,
+      "compliance_note": "classify.ts DOMAIN_RULES forceDiscovery on every path -- meta-search results, never an individual listing page. Blocked explicitly rather than left implicit.",
+      "reviewed_at": "2026-07-17"
+    },
+    {
+      "domain": "immo.mitula.ma",
+      "status": "blocked",
+      "listing_url_patterns": [],
+      "blocked_url_patterns": [".*"],
+      "source_type": "meta_search_aggregator",
+      "external_web_result": false,
+      "compliance_note": "classify.ts DOMAIN_RULES forceDiscovery on every path -- meta-search results, never an individual listing page. Blocked explicitly rather than left implicit.",
+      "reviewed_at": "2026-07-17"
+    }
+  ]
+}

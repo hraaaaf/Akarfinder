@@ -1,11 +1,22 @@
 import type { OpenSerpEngine, OpenSerpRawResult } from "@/lib/openserp-async/types";
 
+// `city`/`property_type` widened from fixed literal unions to `string` by
+// AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1 so the national query
+// planner (15+ cities, 12 property-type query labels) can reuse
+// classify.ts/pipeline.ts unchanged. Purely a type-level relaxation: nothing
+// in this module branches exhaustively on the old unions (verified — only
+// `===` string comparisons against `input.query.city`/`.property_type`), so
+// the existing 3-city pilot path (scripts/ingest-openserp-listings.ts,
+// first-write.ts) keeps behaving identically for its own literal values.
+// `transaction_type` on the QUERY stays a strict union (query intent is
+// always exactly sale-or-rent); only the extracted, DB-facing attribute type
+// below keeps its own separate, unwidened unions.
 export type OpenSerpIngestionQuery = {
   query_id: string;
-  city: "Casablanca" | "Rabat" | "Marrakech";
+  city: string;
   district: string;
   transaction_type: "sale" | "rent";
-  property_type: "apartment" | "villa" | "studio" | "house" | "land" | "office" | "commercial";
+  property_type: string;
   query_text: string;
   priority: "high" | "medium" | "low";
   target_domain?: string;
