@@ -90,6 +90,8 @@ async function main() {
       runId: args.runId,
       scheduledAtIso: new Date().toISOString(),
       write: false,
+      batchSizeOverride: WAVE_SIZES[args.wave],
+      rawResultsDir: join(outDir, "raw-results"),
     });
     const output = { wave: args.wave, mode: "dry_run", metrics };
     writeFileSync(join(outDir, `openserp-bootstrap-wave-${args.wave}-dry-run.json`), JSON.stringify(output, null, 2), "utf8");
@@ -119,6 +121,8 @@ async function main() {
     runId: args.runId,
     scheduledAtIso: new Date().toISOString(),
     write: true,
+    batchSizeOverride: WAVE_SIZES[args.wave],
+    rawResultsDir: join(outDir, "raw-results"),
   });
 
   const output = { wave: args.wave, mode: "apply", plan: planBody, plan_sha256: planSha256, metrics };

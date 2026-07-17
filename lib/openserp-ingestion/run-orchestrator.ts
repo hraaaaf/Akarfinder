@@ -6,7 +6,7 @@
 // metrics shape section 25 requires. No direct fetch of any listing page —
 // only OpenSERP SERP results are ever read.
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { runOpenSerpLiveQuery } from "./openserp-live";
 import { selectNextBatch, markQueryExecuted, type RotationQuery } from "./query-rotation-planner";
@@ -109,6 +109,15 @@ export async function runIngestionCycle(input: {
   budgetStatePath?: string;
   write: boolean;
   env?: NodeJS.ProcessEnv;
+  // Bootstrap waves (section 22: 25/100/300) need an explicit batch size
+  // independent of the cron's adaptive engine-budget-state.json --
+  // WITHOUT this override, a wave silently ran at whatever the 30-minute
+  // cron's current_budget happened to be (e.g. 4, after a captcha-driven
+  // backoff), not the planned wave size. Found and fixed during this
+  // mission's own live Wave 1 apply (4/25 queries executed) -- see
+  // docs/OPENSERP_AUTOMATED_INGESTION_ARCHITECTURE.md.
+  batchSizeOverride?: number;
+  rawResultsDir?: string;
 }): Promise<{ metrics: RunMetrics; decisions: AdmissionDecision[]; budgetState: BudgetState }> {
   const universePath = input.universePath ?? join(process.cwd(), "data/openserp/query-universe-v1.json");
   const budgetStatePath = input.budgetStatePath ?? join(process.cwd(), "data/openserp/engine-budget-state.json");
@@ -120,8 +129,9 @@ export async function runIngestionCycle(input: {
     : defaultBudgetState();
 
   const engines = activeEngines(budgetState, startedAt);
-  const budget = budgetState.current_budget;
+  const budget = input.batchSizeOverride ?? budgetState.current_budget;
   const batch = selectNextBatch(universe.queries, budget, startedAt);
+  const rawResultsLog: unknown[] = [];
 
   const decisions: AdmissionDecision[] = [];
   const enginesUsed = new Set<string>();
@@ -184,6 +194,21 @@ export async function runIngestionCycle(input: {
             canonicalUrlsSeen.add(decision.classified.canonical_source_url);
           }
           if (decision.admitted) acceptedForThisQuery += 1;
+          // Persisted for debuggability (never used for admission itself) --
+          // this mission found a discrepancy between a title's clear
+          // content-derived transaction intent and the value ultimately
+          // written, and had no raw log to root-cause it from. Never
+          // written to any DB table, only to a local run-report file.
+          rawResultsLog.push({
+            query_id: universeQuery.query_id,
+            query_text: universeQuery.query_text,
+            query_transaction: universeQuery.transaction,
+            engine,
+            raw_title: raw.title ?? null,
+            raw_url: raw.url ?? raw.link ?? null,
+            admitted: decision.admitted,
+            extracted_transaction_type: decision.classified?.extracted.transaction_type ?? null,
+          });
         }
 
         if (execution.response.results.length > 0) break; // got usable results, stop attempting more engines
@@ -211,6 +236,11 @@ export async function runIngestionCycle(input: {
   // Write back rotation state for every query (executed ones updated, others untouched).
   universe.queries = universe.queries.map((q) => updatedByQueryId.get(q.query_id) ?? q);
   saveUniverse(universePath, universe);
+
+  if (input.rawResultsDir) {
+    mkdirSync(input.rawResultsDir, { recursive: true });
+    writeFileSync(join(input.rawResultsDir, `${input.runId}-raw-results.json`), JSON.stringify(rawResultsLog, null, 2), "utf8");
+  }
 
   let writeResult: Awaited<ReturnType<typeof writeNationalIngestionRun>> | null = null;
   if (input.write) {

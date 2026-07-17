@@ -320,6 +320,31 @@ test("decideAdmission rejects a category/hub page even on an approved domain", (
   assert.equal(decision.admitted, false);
 });
 
+test("decideAdmission rejects a candidate whose content-derived transaction type contradicts its stored value", () => {
+  // Reproduces the shape of a real anomaly found during this mission's own
+  // Wave 1 Production apply: an admitted candidate's stored transaction_type
+  // contradicted its own title's plain-language content. classify.ts derives
+  // its stored value from title+snippet+URL combined -- a "vente"/"a vendre"
+  // signal anywhere in that combined text wins (checked before "a louer" in
+  // toTransactionType's if-chain), even if it comes from the snippet while
+  // the title plainly says "a Louer" (rent). Re-deriving from the title
+  // alone -- what a reader actually sees first -- gives "rent" instead.
+  // This independent check must catch that disagreement and refuse to
+  // admit rather than silently persist self-contradictory data.
+  const decision = decideAdmission({
+    result: rawResult({
+      title: "Appartement a Louer Casablanca Particulier Mubawab",
+      snippet: "Ce bien etait auparavant propose a la vente sur ce site",
+    }),
+    query: query({ transaction_type: "sale" }),
+    engine: "duckduckgo",
+    discovered_at: "2026-01-01T00:00:00Z",
+    fallbackRank: 1,
+  });
+  assert.equal(decision.admitted, false);
+  assert.ok(decision.reasons.includes("transaction_type_inconsistent"));
+});
+
 test("decideAdmission redacts a phone number from the snippet before persistence (PII sanitized, not silently kept)", () => {
   const decision = decideAdmission({
     result: rawResult({ snippet: "Appartement a vendre Maarif 85m2 2 chambres, contactez le 0612345678" }),

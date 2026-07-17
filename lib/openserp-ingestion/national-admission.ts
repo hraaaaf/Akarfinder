@@ -15,7 +15,7 @@ import type { OpenSerpRawResult } from "@/lib/openserp-async/types";
 import type { OpenSerpClassifiedResult, OpenSerpIngestionQuery } from "./types";
 import { classifyOpenSerpResult } from "./classify";
 import { extractCityNational, extractDistrictNational } from "./national-utils";
-import { redactSensitiveText } from "./utils";
+import { redactSensitiveText, toTransactionType } from "./utils";
 import { getDomainStatus, isDomainAdmissible, isDomainExternalWebResult } from "./domain-registry";
 
 export type AdmissionConfidence = "high" | "medium" | "low";
@@ -100,6 +100,35 @@ export function decideAdmission(input: {
   const domainStatus = getDomainStatus(classified.source_domain);
   const domainAdmissible = isDomainAdmissible(classified.source_domain);
   const reasons: string[] = [...classified.classification_reasons];
+
+  // Defense-in-depth consistency check, added after this mission's own
+  // Wave 1 apply found an admitted candidate whose stored transaction_type
+  // ("sale") contradicted its own title's plain-language content ("a
+  // Louer"/rent) -- the exact mechanism was not conclusively reproduced
+  // via static analysis of classify.ts's fallback formula, so rather than
+  // changing shared, pilot-critical logic on a guess, this independently
+  // re-derives the transaction type from the TITLE ALONE (the single most
+  // reliable, human-facing signal -- unlike classify.ts's own combined
+  // title+snippet+URL derivation, a snippet or URL slug disagreeing with
+  // the title cannot silently override it here) and refuses to admit if it
+  // contradicts the stored value. Never silently "fixes" the value -- an
+  // inconsistent candidate is excluded, not corrected.
+  const independentTransactionCheck = toTransactionType(classified.title);
+  if (
+    independentTransactionCheck !== null &&
+    classified.extracted.transaction_type !== null &&
+    independentTransactionCheck !== classified.extracted.transaction_type
+  ) {
+    reasons.push("transaction_type_inconsistent");
+    return {
+      admitted: false,
+      confidence: "low",
+      reasons,
+      classified,
+      domain_status: domainStatus,
+      external_web_result: isDomainExternalWebResult(classified.source_domain),
+    };
+  }
 
   if (!domainAdmissible) {
     reasons.push(`domain_status_${domainStatus}`);
