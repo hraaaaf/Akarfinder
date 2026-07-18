@@ -1,6 +1,6 @@
 {
   "universe_version": "openserp-query-universe-v1",
-  "generated_at": "2026-07-17T23:21:30.362Z",
+  "generated_at": "2026-07-17T23:51:49.435Z",
   "total_queries": 2718,
   "by_priority_tier": {
     "1": 720,
@@ -44603,10 +44603,10 @@
       "query_text": "appartement a vendre Kénitra site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-85ff6d1b2267e817",
@@ -45230,10 +45230,10 @@
       "query_text": "appartement a louer El Jadida site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-03fbc0995fefecc4",
@@ -45344,7 +45344,7 @@
       "query_text": "appartement a louer Nador site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45363,7 +45363,7 @@
       "query_text": "appartement a vendre Mohammedia site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45914,7 +45914,7 @@
       "query_text": "appartement a louer Nador site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46313,7 +46313,7 @@
       "query_text": "appartement a vendre Kénitra site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46465,7 +46465,7 @@
       "query_text": "appartement a vendre Nador site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46503,7 +46503,7 @@
       "query_text": "appartement a vendre Mohammedia site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46883,10 +46883,10 @@
       "query_text": "appartement a vendre Kénitra site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-9e1a5d0d79b16481",
@@ -46940,7 +46940,7 @@
       "query_text": "appartement a louer El Jadida site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47035,7 +47035,7 @@
       "query_text": "appartement a vendre Nador site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47624,7 +47624,7 @@
       "query_text": "appartement a louer Nador site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48023,7 +48023,7 @@
       "query_text": "appartement a vendre Kénitra site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48042,7 +48042,7 @@
       "query_text": "appartement a louer Kénitra site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48080,7 +48080,7 @@
       "query_text": "appartement a louer El Jadida site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48650,10 +48650,10 @@
       "query_text": "appartement a louer El Jadida site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-4150827217826be9",
@@ -48764,7 +48764,7 @@
       "query_text": "appartement a louer Nador site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48802,10 +48802,10 @@
       "query_text": "appartement a louer Mohammedia site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-bef24621198503de",
@@ -49923,7 +49923,7 @@
       "query_text": "appartement a vendre Mohammedia site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49942,7 +49942,7 @@
       "query_text": "appartement a louer Mohammedia site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50455,7 +50455,7 @@
       "query_text": "appartement a vendre Nador site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50873,7 +50873,7 @@
       "query_text": "appartement a vendre Kénitra site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50892,7 +50892,7 @@
       "query_text": "appartement a louer Kénitra site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -51044,7 +51044,7 @@
       "query_text": "appartement a louer Nador site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -51443,9 +51443,9 @@
       "query_text": "appartement a vendre Kénitra site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-17T23:48:35.659Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
