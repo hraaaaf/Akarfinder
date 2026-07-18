@@ -197,15 +197,24 @@ export async function runIngestionCycle(input: {
           // Persisted for debuggability (never used for admission itself) --
           // this mission found a discrepancy between a title's clear
           // content-derived transaction intent and the value ultimately
-          // written, and had no raw log to root-cause it from. Never
-          // written to any DB table, only to a local run-report file.
+          // written, and had no log to root-cause it from. Only the
+          // already-PII-redacted classified.title is logged, and only when
+          // the candidate carries no PII-related rejection reason -- an
+          // auto-mode safety review correctly flagged an earlier version of
+          // this code for logging the raw, pre-redaction SERP title/URL
+          // directly, which could have persisted a phone number from a
+          // listing title into a committed file. The URL is never logged
+          // here at all (URLs are never passed through redaction anywhere
+          // in this codebase, so a URL carrying PII in a query string could
+          // otherwise leak through even after this fix). Never written to
+          // any DB table, only to a local run-report file.
+          const candidateHasPiiFlag = decision.reasons.includes("pii_or_secret_detected");
           rawResultsLog.push({
             query_id: universeQuery.query_id,
             query_text: universeQuery.query_text,
             query_transaction: universeQuery.transaction,
             engine,
-            raw_title: raw.title ?? null,
-            raw_url: raw.url ?? raw.link ?? null,
+            redacted_title: candidateHasPiiFlag ? null : (decision.classified?.title ?? null),
             admitted: decision.admitted,
             extracted_transaction_type: decision.classified?.extracted.transaction_type ?? null,
           });
