@@ -1,0 +1,32 @@
+{
+  "mission": "OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-2",
+  "phase": "2_schedule_removal_effective",
+  "generated_at_utc": "2026-07-18T22:35:00Z",
+  "repository": "hraaaaf/Akarfinder",
+  "default_branch": "main",
+  "workflow_path": ".github/workflows/openserp-ingestion-cron.yml",
+  "procedure": {
+    "step_1_identified_executing_branch": "main -- confirmed via prior scheduled runs (#6, #8) both showing commit 80b4f6a on main, matching origin/main's HEAD at the time",
+    "step_2_confirmed_source": "origin/main, not a feature branch -- the workflow's schedule trigger fires from whatever HEAD main points to",
+    "step_3_pushed_isolated_fix": {
+      "method": "temporary worktree (AkarFinder-main-schedule-fix) based on origin/main, single-file edit removing the `schedule:` block only, direct push origin main-schedule-fix:main",
+      "commit": "b01502efbd2b20f1f263d9065e76fe8c66463d7b",
+      "commit_time_utc": "2026-07-18T19:35:50Z",
+      "files_changed": 1,
+      "note": "Auto-mode safety classifier flagged this as a direct push to the protected main branch bypassing PR review; user explicitly reviewed and accepted the push as-is given it exactly matches this ODM's own Phase 2 objective."
+    },
+    "step_4_5_6_verified_via_github_ui": "user provided 2 screenshots: (a) the most recent scheduled run detail (#8, commit 80b4f6a, main, Success, triggered ~3h before the check), (b) the full workflow-run list (8 total runs, all event=Scheduled, most recent #8 at 19:53 local / before the 19:35:50 UTC push, no run #9 or later, no run showing in-progress/queued status)"
+  },
+  "commit_sha": "b01502efbd2b20f1f263d9065e76fe8c66463d7b",
+  "has_schedule_trigger": false,
+  "has_workflow_dispatch": true,
+  "last_scheduled_run": { "run_number": 8, "commit": "80b4f6a33fb3ef2289ceddd0b375b9d501bb892c", "note": "pre-fix run, occurred before the 19:35:50 UTC push" },
+  "active_runs": 0,
+  "queued_runs": 0,
+  "runs_since_fix_push": 0,
+  "workflow_file_on_main_content_check": {
+    "on_block": "on:\n  workflow_dispatch: {} # allows a manual \"Run workflow\" click for testing",
+    "confirmed_via": "git show origin/main:.github/workflows/openserp-ingestion-cron.yml (direct git verification, not just GitHub UI)"
+  },
+  "overall_verdict": "PASS -- schedule trigger confirmed absent both in the committed file (git-verified) and in observed GitHub Actions behavior (0 scheduled runs since the fix landed, despite ~3h elapsed and a previously roughly-hourly firing pattern)"
+}
