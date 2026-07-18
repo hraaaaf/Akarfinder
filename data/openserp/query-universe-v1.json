@@ -1,6 +1,6 @@
 {
   "universe_version": "openserp-query-universe-v1",
-  "generated_at": "2026-07-18T00:13:39.010Z",
+  "generated_at": "2026-07-18T00:41:09.877Z",
   "total_queries": 2718,
   "by_priority_tier": {
     "1": 720,
@@ -44261,10 +44261,10 @@
       "query_text": "appartement a vendre Casablanca site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-67035d2fad51111c",
@@ -44280,10 +44280,10 @@
       "query_text": "appartement a louer Casablanca site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-18e5fdf0adf52156",
@@ -44394,10 +44394,10 @@
       "query_text": "appartement a louer Témara site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-c6d83212d402f655",
@@ -44470,10 +44470,10 @@
       "query_text": "appartement a louer Tanger site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-2131e02f100fd612",
@@ -44527,10 +44527,10 @@
       "query_text": "appartement a vendre Fès site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-bb1f9f0d7ddf64f4",
@@ -44584,10 +44584,10 @@
       "query_text": "appartement a louer Meknès site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-19110983984422ca",
@@ -44679,10 +44679,10 @@
       "query_text": "appartement a vendre Oujda site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-f2801f06c46130cf",
@@ -44831,7 +44831,7 @@
       "query_text": "appartement a vendre Casablanca site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -44850,7 +44850,7 @@
       "query_text": "appartement a louer Casablanca site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -44964,10 +44964,10 @@
       "query_text": "appartement a louer Témara site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-50b32b3ee9a12512",
@@ -45040,7 +45040,7 @@
       "query_text": "appartement a louer Tanger site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45097,10 +45097,10 @@
       "query_text": "appartement a vendre Fès site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-6d7a923715bd2705",
@@ -45116,10 +45116,10 @@
       "query_text": "appartement a louer Fès site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-7bef5dd90332ec69",
@@ -45135,10 +45135,10 @@
       "query_text": "appartement a vendre Meknès site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-d7b61b5d0a565fee",
@@ -45268,10 +45268,10 @@
       "query_text": "appartement a louer Oujda site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-cb4b0c39fb752f93",
@@ -45401,10 +45401,10 @@
       "query_text": "appartement a vendre Casablanca site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-72c5aac9345eaa49",
@@ -45420,7 +45420,7 @@
       "query_text": "appartement a louer Casablanca site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45534,7 +45534,7 @@
       "query_text": "appartement a louer Témara site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45591,7 +45591,7 @@
       "query_text": "appartement a vendre Tanger site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45686,7 +45686,7 @@
       "query_text": "appartement a louer Fès site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45819,7 +45819,7 @@
       "query_text": "appartement a vendre Oujda site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45838,7 +45838,7 @@
       "query_text": "appartement a louer Oujda site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46085,7 +46085,7 @@
       "query_text": "appartement a vendre Témara site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46180,7 +46180,7 @@
       "query_text": "appartement a louer Tanger site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46389,7 +46389,7 @@
       "query_text": "appartement a vendre Oujda site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46408,7 +46408,7 @@
       "query_text": "appartement a louer Oujda site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46560,7 +46560,7 @@
       "query_text": "appartement a louer Casablanca site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46655,10 +46655,10 @@
       "query_text": "appartement a vendre Témara site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-00676289aca8ab27",
@@ -46731,10 +46731,10 @@
       "query_text": "appartement a vendre Tanger site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-2a234557af9c96ce",
@@ -46750,7 +46750,7 @@
       "query_text": "appartement a louer Tanger site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46807,10 +46807,10 @@
       "query_text": "appartement a vendre Fès site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-4b3c1e18ed2716ad",
@@ -46826,10 +46826,10 @@
       "query_text": "appartement a louer Fès site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-942f5801f29e1528",
@@ -46845,10 +46845,10 @@
       "query_text": "appartement a vendre Meknès site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-cc7eff3e9a693582",
@@ -46959,7 +46959,7 @@
       "query_text": "appartement a vendre Oujda site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47111,7 +47111,7 @@
       "query_text": "appartement a vendre Casablanca site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47130,7 +47130,7 @@
       "query_text": "appartement a louer Casablanca site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47225,7 +47225,7 @@
       "query_text": "appartement a vendre Témara site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47244,7 +47244,7 @@
       "query_text": "appartement a louer Témara site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47301,7 +47301,7 @@
       "query_text": "appartement a vendre Tanger site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47320,7 +47320,7 @@
       "query_text": "appartement a louer Tanger site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47377,7 +47377,7 @@
       "query_text": "appartement a vendre Fès site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47396,7 +47396,7 @@
       "query_text": "appartement a louer Fès site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47415,7 +47415,7 @@
       "query_text": "appartement a vendre Meknès site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47529,7 +47529,7 @@
       "query_text": "appartement a vendre Oujda site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47700,7 +47700,7 @@
       "query_text": "appartement a louer Casablanca site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47871,7 +47871,7 @@
       "query_text": "appartement a vendre Tanger site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47890,7 +47890,7 @@
       "query_text": "appartement a louer Tanger site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47947,7 +47947,7 @@
       "query_text": "appartement a vendre Fès site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47966,7 +47966,7 @@
       "query_text": "appartement a louer Fès site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47985,7 +47985,7 @@
       "query_text": "appartement a vendre Meknès site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48099,7 +48099,7 @@
       "query_text": "appartement a vendre Oujda site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48118,7 +48118,7 @@
       "query_text": "appartement a louer Oujda site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48251,7 +48251,7 @@
       "query_text": "appartement a vendre Casablanca site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48365,10 +48365,10 @@
       "query_text": "appartement a vendre Témara site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-353a6130a5717ff3",
@@ -48384,7 +48384,7 @@
       "query_text": "appartement a louer Témara site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48441,10 +48441,10 @@
       "query_text": "appartement a vendre Tanger site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-bca6f1ba24fb353f",
@@ -48517,7 +48517,7 @@
       "query_text": "appartement a vendre Fès site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48536,10 +48536,10 @@
       "query_text": "appartement a louer Fès site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-7bd82f86b7595fec",
@@ -48555,10 +48555,10 @@
       "query_text": "appartement a vendre Meknès site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-e8aef7e69f5b720b",
@@ -48669,10 +48669,10 @@
       "query_text": "appartement a vendre Oujda site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-add4ec97465a4705",
@@ -48688,10 +48688,10 @@
       "query_text": "appartement a louer Oujda site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.5
     },
     {
       "query_id": "nqu1-a0e667937372e34b",
@@ -48935,7 +48935,7 @@
       "query_text": "appartement a vendre Témara site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48954,7 +48954,7 @@
       "query_text": "appartement a louer Témara site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49011,7 +49011,7 @@
       "query_text": "appartement a vendre Tanger site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49030,7 +49030,7 @@
       "query_text": "appartement a louer Tanger site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49087,7 +49087,7 @@
       "query_text": "appartement a vendre Fès site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49106,7 +49106,7 @@
       "query_text": "appartement a louer Fès site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49125,7 +49125,7 @@
       "query_text": "appartement a vendre Meknès site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49144,7 +49144,7 @@
       "query_text": "appartement a louer Meknès site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49239,7 +49239,7 @@
       "query_text": "appartement a vendre Oujda site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49258,7 +49258,7 @@
       "query_text": "appartement a louer Oujda site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49410,10 +49410,10 @@
       "query_text": "appartement a louer Casablanca site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-ad0f0180bea57d67",
@@ -49505,7 +49505,7 @@
       "query_text": "appartement a vendre Témara site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49524,7 +49524,7 @@
       "query_text": "appartement a louer Témara site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49581,7 +49581,7 @@
       "query_text": "appartement a vendre Tanger site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49600,7 +49600,7 @@
       "query_text": "appartement a louer Tanger site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49657,7 +49657,7 @@
       "query_text": "appartement a vendre Fès site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49695,7 +49695,7 @@
       "query_text": "appartement a vendre Meknès site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49714,7 +49714,7 @@
       "query_text": "appartement a louer Meknès site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49809,7 +49809,7 @@
       "query_text": "appartement a vendre Oujda site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49828,7 +49828,7 @@
       "query_text": "appartement a louer Oujda site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49961,7 +49961,7 @@
       "query_text": "appartement a vendre Casablanca site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50075,7 +50075,7 @@
       "query_text": "appartement a vendre Témara site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50094,7 +50094,7 @@
       "query_text": "appartement a louer Témara site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50227,7 +50227,7 @@
       "query_text": "appartement a vendre Fès site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50246,7 +50246,7 @@
       "query_text": "appartement a louer Fès site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50284,7 +50284,7 @@
       "query_text": "appartement a louer Meknès site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50379,7 +50379,7 @@
       "query_text": "appartement a vendre Oujda site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50531,7 +50531,7 @@
       "query_text": "appartement a vendre Casablanca site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50645,7 +50645,7 @@
       "query_text": "appartement a vendre Témara site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50664,7 +50664,7 @@
       "query_text": "appartement a louer Témara site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50816,7 +50816,7 @@
       "query_text": "appartement a louer Fès site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -51120,9 +51120,9 @@
       "query_text": "appartement a louer Casablanca site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51234,9 +51234,9 @@
       "query_text": "appartement a louer Témara site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51291,9 +51291,9 @@
       "query_text": "appartement a vendre Tanger site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51310,9 +51310,9 @@
       "query_text": "appartement a louer Tanger site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51386,9 +51386,9 @@
       "query_text": "appartement a louer Fès site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51424,9 +51424,9 @@
       "query_text": "appartement a louer Meknès site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51519,9 +51519,9 @@
       "query_text": "appartement a vendre Oujda site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51538,9 +51538,9 @@
       "query_text": "appartement a louer Oujda site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:28:26.280Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {

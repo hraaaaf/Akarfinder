@@ -10,12 +10,12 @@
     {
       "engine": "duckduckgo",
       "suspended_until": null,
-      "consecutive_clean_runs": 3
+      "consecutive_clean_runs": 4
     },
     {
       "engine": "ecosia",
       "suspended_until": null,
-      "consecutive_clean_runs": 3
+      "consecutive_clean_runs": 4
     }
   ]
 }
