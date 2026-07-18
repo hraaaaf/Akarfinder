@@ -1,0 +1,34 @@
+{
+  "audit_id": "openserp-bootstrap-wave-1-quality-gate",
+  "mission": "AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1",
+  "generated_at_utc": "2026-07-18T00:15:00Z",
+  "section": "24 - quality gate after Wave 1",
+  "wave_1_summary": {
+    "runs": [
+      { "run_id": "openserp-bootstrap-wave1-real", "queries": 4, "note": "pre-fix, batch-size bug (used cron budget=4 instead of wave size 25)", "accepted": 4 },
+      { "run_id": "openserp-bootstrap-wave1-corrected", "queries": "25 planned, failed on discovery_candidates within-batch duplicate before any listing write", "accepted": 0, "note": "0 property_listings/listing_sources/clusters/memberships affected -- failure occurred before that write stage" },
+      { "run_id": "openserp-bootstrap-wave1-v3", "queries": 25, "note": "both fixes applied, full run completed cleanly", "accepted": 0 }
+    ],
+    "total_admitted_candidates_wave_1": 4,
+    "total_new_property_listings": 4,
+    "total_new_listing_sources": 4,
+    "total_new_clusters": 4,
+    "total_new_memberships": 4,
+    "total_discovery_candidates_staged": 448
+  },
+  "sample_reviewed": "all 4 admitted candidates (fewer than 100)",
+  "checks": {
+    "listing_like_precision": { "value": 1.0, "detail": "4/4 -- all are mubawab.ma /fr/is/ individual-listing-pattern URLs, matching the domain's own strongIndividual regex, not category/search pages", "threshold": 0.95, "pass": true },
+    "pii_persisted": { "value": 0, "pass": true },
+    "category_pages_public": { "value": 0, "pass": true },
+    "partner_mislabeling": { "value": 0, "detail": "origin_type=persisted_openserp on all 4, never a partner-facing value (enforced by assertOpenSerpOriginIsNeverPartnerFacing)", "pass": true },
+    "internal_links_on_external": { "value": 0, "detail": "this mission creates no routing, no /listings/[id] pages for external results", "pass": true },
+    "false_zero_prices": { "value": 0, "detail": "3/4 price_status=not_disclosed (no price found), 1/4 price_status=valid (5000 MAD) -- never 0", "pass": true }
+  },
+  "known_open_item": {
+    "description": "1 of the 4 admitted listings (property_listings.id=539) has transaction_type='sale' despite a title reading 'a Louer' (rent) -- written before the transaction_type_inconsistent defense-in-depth check existed. Left as-is (not deleted, not silently corrected) per the mission's own 'never invent/never silently fix' doctrine. Flagged here for a future manual review/correction mission.",
+    "affects_new_writes": false,
+    "note": "The new consistency check would reject this exact pattern going forward (verified by test); it cannot retroactively fix data written before it existed."
+  },
+  "verdict": "PASS -- Wave 2 authorized"
+}

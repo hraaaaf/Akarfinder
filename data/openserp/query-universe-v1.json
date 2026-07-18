@@ -1,6 +1,6 @@
 {
   "universe_version": "openserp-query-universe-v1",
-  "generated_at": "2026-07-17T23:51:49.435Z",
+  "generated_at": "2026-07-18T00:13:39.010Z",
   "total_queries": 2718,
   "by_priority_tier": {
     "1": 720,
@@ -13709,7 +13709,7 @@
       "query_text": "appartement a vendre Essaouira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13728,7 +13728,7 @@
       "query_text": "شقة للبيع الصويرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13785,7 +13785,7 @@
       "query_text": "studio a vendre Essaouira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13804,7 +13804,7 @@
       "query_text": "استوديو للبيع الصويرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13823,7 +13823,7 @@
       "query_text": "studio a louer Essaouira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13842,7 +13842,7 @@
       "query_text": "استوديو كراء الصويرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13918,7 +13918,7 @@
       "query_text": "فيلا كراء الصويرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13937,7 +13937,7 @@
       "query_text": "maison a vendre Essaouira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13975,7 +13975,7 @@
       "query_text": "maison a louer Essaouira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14013,7 +14013,7 @@
       "query_text": "terrain a vendre Essaouira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14070,7 +14070,7 @@
       "query_text": "أرض كراء الصويرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14108,7 +14108,7 @@
       "query_text": "رياض للبيع الصويرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14146,7 +14146,7 @@
       "query_text": "رياض كراء الصويرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14279,7 +14279,7 @@
       "query_text": "local commercial a louer Essaouira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14298,7 +14298,7 @@
       "query_text": "محل تجاري كراء الصويرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14317,7 +14317,7 @@
       "query_text": "magasin a vendre Essaouira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14336,7 +14336,7 @@
       "query_text": "متجر للبيع الصويرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14355,7 +14355,7 @@
       "query_text": "magasin a louer Essaouira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14412,7 +14412,7 @@
       "query_text": "مزرعة للبيع الصويرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14469,7 +14469,7 @@
       "query_text": "immeuble a vendre Essaouira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14507,7 +14507,7 @@
       "query_text": "immeuble a louer Essaouira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14526,7 +14526,7 @@
       "query_text": "عمارة كراء الصويرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14545,7 +14545,7 @@
       "query_text": "duplex a vendre Essaouira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14564,7 +14564,7 @@
       "query_text": "دوبلكس للبيع الصويرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14583,7 +14583,7 @@
       "query_text": "duplex a louer Essaouira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T00:09:55.256Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
