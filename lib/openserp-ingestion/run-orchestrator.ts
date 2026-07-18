@@ -1,32 +1,54 @@
 // AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1 — sections 20-25.
+// OPENSERP-SERVERLESS-STATE-PERSISTENCE-1 — sections 6-10.
 // Orchestrates one ingestion cycle: pick a batch from the query universe via
 // the rotation planner, execute each query against up to 2 active (non-
 // suspended) engines, run every raw result through national-admission, then
 // (if write=true) persist via national-writer. Produces the full per-run
 // metrics shape section 25 requires. No direct fetch of any listing page —
 // only OpenSERP SERP results are ever read.
+//
+// query-universe-v1.json is read-only here (immutable_bundle_read) -- it is
+// NEVER written back to. The mutable rotation state (which queries have run,
+// when, with what yield) and the engine budget/backoff state both live in
+// PostgreSQL (lib/openserp-ingestion/state/*), not on the local filesystem.
+// A prior version of this file rewrote both back into local JSON files via
+// writeFileSync, which works when run through a local CLI script (writable
+// cwd) but crashes with EROFS the moment it runs inside a Vercel serverless
+// function (read-only /var/task bundle) -- see
+// docs/OPENSERP_SERVERLESS_FILESYSTEM_AUDIT.md for the full trace of how
+// this was found and confirmed to have written zero DB rows before crashing.
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { runOpenSerpLiveQuery } from "./openserp-live";
 import { selectNextBatch, markQueryExecuted, type RotationQuery } from "./query-rotation-planner";
 import { decideAdmission, type AdmissionDecision } from "./national-admission";
 import { writeNationalIngestionRun } from "./national-writer";
-import { activeEngines, defaultBudgetState, applyRunOutcome, type BudgetState } from "./budget-policy";
+import { activeEngines, applyRunOutcome, type BudgetState } from "./budget-policy";
+import {
+  hydrateRotationQueries,
+  persistRotationUpdates,
+  loadBudgetState,
+  persistBudgetState,
+  type StaticQueryDefinition,
+} from "./state/serverless-state-service";
+import type { OpenSerpEngineName } from "./state/query-rotation-state-repository";
 import type { OpenSerpIngestionQuery } from "./types";
 
-type UniverseQueryRecord = RotationQuery & {
+type UniverseQueryRecord = StaticQueryDefinition & {
   normalized_query: string;
-  transaction: "sale" | "rent";
-  property_type: string;
-  language: "fr" | "ar";
-  preferred_engine: "bing" | "duckduckgo" | "ecosia";
-  query_text: string;
-  target_domain: string | null;
-  query_family: "general" | "brand_hint";
+  // The JSON file may still carry these four fields from before this
+  // migration (or from the build-time generator) -- they are read here only
+  // as historical/documentary values on the static record and are NEVER
+  // used for rotation decisions. hydrateRotationQueries() always overwrites
+  // them with the current PostgreSQL-backed values.
+  last_executed_at?: string | null;
+  next_eligible_at?: string | null;
+  failure_count?: number;
+  discovery_yield?: number;
 };
 
-type UniverseFile = { queries: UniverseQueryRecord[] };
+type UniverseFile = { universe_version: string; queries: UniverseQueryRecord[] };
 
 export type RunMetrics = {
   run_id: string;
@@ -67,33 +89,6 @@ function loadUniverse(path: string): UniverseFile {
   return JSON.parse(readFileSync(path, "utf8")) as UniverseFile;
 }
 
-function saveUniverse(path: string, universe: UniverseFile): void {
-  const byTier: Record<number, number> = {};
-  const byLanguage: Record<string, number> = {};
-  for (const q of universe.queries) {
-    byTier[q.priority_tier] = (byTier[q.priority_tier] ?? 0) + 1;
-    byLanguage[q.language] = (byLanguage[q.language] ?? 0) + 1;
-  }
-  writeFileSync(
-    path,
-    JSON.stringify(
-      {
-        universe_version: "openserp-query-universe-v1",
-        generated_at: new Date().toISOString(),
-        total_queries: universe.queries.length,
-        by_priority_tier: byTier,
-        by_language: byLanguage,
-        cities_covered: [...new Set(universe.queries.map((q) => q.city))].length,
-        districts_covered: [...new Set(universe.queries.filter((q) => q.district).map((q) => `${q.city}::${q.district}`))].length,
-        queries: universe.queries,
-      },
-      null,
-      2,
-    ),
-    "utf8",
-  );
-}
-
 function categorizeError(error: unknown): "captcha" | "rate_limit" | "timeout" | "other" {
   const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
   if (message.includes("captcha")) return "captcha";
@@ -106,31 +101,33 @@ export async function runIngestionCycle(input: {
   runId: string;
   scheduledAtIso: string;
   universePath?: string;
-  budgetStatePath?: string;
   write: boolean;
   env?: NodeJS.ProcessEnv;
   // Bootstrap waves (section 22: 25/100/300) need an explicit batch size
-  // independent of the cron's adaptive engine-budget-state.json --
-  // WITHOUT this override, a wave silently ran at whatever the 30-minute
-  // cron's current_budget happened to be (e.g. 4, after a captcha-driven
-  // backoff), not the planned wave size. Found and fixed during this
-  // mission's own live Wave 1 apply (4/25 queries executed) -- see
+  // independent of the cron's adaptive engine budget state -- WITHOUT this
+  // override, a wave silently ran at whatever the 30-minute cron's
+  // current_budget happened to be (e.g. 4, after a captcha-driven backoff),
+  // not the planned wave size. Found and fixed during this mission's own
+  // live Wave 1 apply (4/25 queries executed) -- see
   // docs/OPENSERP_AUTOMATED_INGESTION_ARCHITECTURE.md.
   batchSizeOverride?: number;
   rawResultsDir?: string;
 }): Promise<{ metrics: RunMetrics; decisions: AdmissionDecision[]; budgetState: BudgetState }> {
+  // universePath stays a read-only override (used by tests/fixtures only,
+  // per OPENSERP-SERVERLESS-STATE-PERSISTENCE-1 section 12) -- it is never
+  // written back to. There is no local budget-state file path anymore: engine budget
+  // state is always PostgreSQL-backed, for both the serverless route and
+  // any local CLI script running with write=true, so the two never diverge.
   const universePath = input.universePath ?? join(process.cwd(), "data/openserp/query-universe-v1.json");
-  const budgetStatePath = input.budgetStatePath ?? join(process.cwd(), "data/openserp/engine-budget-state.json");
 
   const startedAt = new Date().toISOString();
   const universe = loadUniverse(universePath);
-  const budgetState: BudgetState = existsSync(budgetStatePath)
-    ? (JSON.parse(readFileSync(budgetStatePath, "utf8")) as BudgetState)
-    : defaultBudgetState();
+  const hydratedQueries = await hydrateRotationQueries(universe.queries, universe.universe_version);
+  const budgetState: BudgetState = await loadBudgetState();
 
   const engines = activeEngines(budgetState, startedAt);
   const budget = input.batchSizeOverride ?? budgetState.current_budget;
-  const batch = selectNextBatch(universe.queries, budget, startedAt);
+  const batch = selectNextBatch(hydratedQueries, budget, startedAt);
   const rawResultsLog: unknown[] = [];
 
   const decisions: AdmissionDecision[] = [];
@@ -144,7 +141,10 @@ export async function runIngestionCycle(input: {
   const enginesWithIncident = new Set<"bing" | "duckduckgo" | "ecosia">();
   const canonicalUrlsSeen = new Set<string>();
 
-  const updatedByQueryId = new Map<string, UniverseQueryRecord>();
+  const updatedByQueryId = new Map<
+    string,
+    UniverseQueryRecord & RotationQuery & { succeeded: boolean; engine: OpenSerpEngineName | undefined }
+  >();
 
   for (const universeQuery of batch) {
     const attemptEngines = [universeQuery.preferred_engine, ...engines.filter((e) => e !== universeQuery.preferred_engine)].filter(
@@ -153,6 +153,7 @@ export async function runIngestionCycle(input: {
 
     let succeeded = false;
     let acceptedForThisQuery = 0;
+    let usedEngine: OpenSerpEngineName | undefined;
 
     for (const engine of attemptEngines) {
       try {
@@ -166,6 +167,7 @@ export async function runIngestionCycle(input: {
         enginesUsed.add(engine);
         querySuccessCount += 1;
         succeeded = true;
+        usedEngine = engine;
         rawResultsCount += execution.response.results.length;
 
         const query: OpenSerpIngestionQuery = {
@@ -236,16 +238,26 @@ export async function runIngestionCycle(input: {
       }
     }
 
-    updatedByQueryId.set(
-      universeQuery.query_id,
-      markQueryExecuted(universeQuery, { executedAtIso: startedAt, succeeded, acceptedCount: acceptedForThisQuery }),
-    );
+    updatedByQueryId.set(universeQuery.query_id, {
+      ...markQueryExecuted(universeQuery, { executedAtIso: startedAt, succeeded, acceptedCount: acceptedForThisQuery }),
+      succeeded,
+      engine: usedEngine,
+    });
   }
 
-  // Write back rotation state for every query (executed ones updated, others untouched).
-  universe.queries = universe.queries.map((q) => updatedByQueryId.get(q.query_id) ?? q);
-  saveUniverse(universePath, universe);
+  // Persist rotation state for every query actually attempted this run --
+  // PostgreSQL-backed (lib/openserp-ingestion/state/*), never a local file
+  // write. Untouched queries need no re-write; their DB rows are already
+  // correct from a prior run or the initial seed.
+  if (updatedByQueryId.size > 0) {
+    await persistRotationUpdates([...updatedByQueryId.values()], input.runId, universe.universe_version);
+  }
 
+  // rawResultsDir is local_cli_only (OPENSERP_SERVERLESS_FILESYSTEM_AUDIT.md
+  // section 5): the serverless route never sets it, only the bootstrap CLI
+  // script does, on a genuinely writable local filesystem. Guarded by the
+  // same "if (input.rawResultsDir)" check the filesystem-guard test
+  // (openserp-serverless-filesystem-guard.test.ts) statically verifies.
   if (input.rawResultsDir) {
     mkdirSync(input.rawResultsDir, { recursive: true });
     writeFileSync(join(input.rawResultsDir, `${input.runId}-raw-results.json`), JSON.stringify(rawResultsLog, null, 2), "utf8");
@@ -283,7 +295,7 @@ export async function runIngestionCycle(input: {
     },
     finishedAt,
   );
-  writeFileSync(budgetStatePath, JSON.stringify(nextBudgetState, null, 2), "utf8");
+  await persistBudgetState(nextBudgetState, input.runId);
 
   const metrics: RunMetrics = {
     run_id: input.runId,
