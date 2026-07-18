@@ -12,10 +12,12 @@ BEGIN;
 -- ============================================================
 -- BEFORE snapshot -- run this first and read the output
 -- ============================================================
-SELECT id, title, transaction_type, price_mad, source_name, listing_url, updated_at
-FROM property_listings
-WHERE id IN (539, 555, 593, 631, 827)
-ORDER BY id;
+SELECT pl.id, pl.title, pl.transaction_type, pl.price_mad, pl.updated_at,
+       ls.source_name, ls.listing_url
+FROM property_listings pl
+LEFT JOIN listing_sources ls ON ls.property_listing_id = pl.id
+WHERE pl.id IN (539, 555, 593, 631, 827)
+ORDER BY pl.id;
 
 -- ============================================================
 -- 1) id=539 -- transaction_type sale -> rent
@@ -80,10 +82,12 @@ WHERE id = 827;
 --   555, 593, 631 -> 3 rows, price_mad IS NULL
 --   827  -> 0 rows (and its listing_sources/cluster/membership rows gone)
 -- ============================================================
-SELECT id, title, transaction_type, price_mad, source_name, listing_url, updated_at
-FROM property_listings
-WHERE id IN (539, 555, 593, 631, 827)
-ORDER BY id;
+SELECT pl.id, pl.title, pl.transaction_type, pl.price_mad, pl.updated_at,
+       ls.source_name, ls.listing_url
+FROM property_listings pl
+LEFT JOIN listing_sources ls ON ls.property_listing_id = pl.id
+WHERE pl.id IN (539, 555, 593, 631, 827)
+ORDER BY pl.id;
 
 SELECT (SELECT count(*) FROM property_listings)        AS property_listings_count,
        (SELECT count(*) FROM listing_sources)           AS listing_sources_count,
