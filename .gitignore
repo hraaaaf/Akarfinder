@@ -49,6 +49,9 @@ data/imports/*.csv
 data/imports/*.xlsx
 data/imports/reports/*.json
 data/ingestion-runs/
+# Local debug-only SERP result log (redacted-title-only, but kept out of
+# git as defense in depth per AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1)
+data/audits/raw-results/
 
 # OS
 .DS_Store
