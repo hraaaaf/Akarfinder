@@ -1,0 +1,51 @@
+{
+  "audit_id": "openserp-bootstrap-wave-3-quality-gate",
+  "mission": "AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1",
+  "generated_at_utc": "2026-07-18T07:35:00Z",
+  "section": "24 - quality gate after Wave 3",
+  "wave_3_attempts": [
+    {
+      "run_id": "openserp-bootstrap-wave3-v1",
+      "note": "killed externally mid-run (not a code error) after making substantial real progress",
+      "new_property_listings_verified_via_db": 138,
+      "new_listing_sources_verified_via_db": 132
+    },
+    {
+      "run_id": "openserp-bootstrap-wave3-v2",
+      "note": "killed externally very early, before any write occurred -- 0 rows added, 0 lock rows leftover, state fully clean and consistent"
+    }
+  ],
+  "decision": "Per explicit user confirmation after being presented the cumulative status (background-process kills are an environment/session constraint, not a code defect -- confirmed by clean, idempotent, non-corrupted state after both kills), Wave 3 is treated as sufficiently executed at its partial completion. The mission's own section 23 explicitly frames wave sizes as capacity targets, not promises.",
+  "sample_reviewed": "all 132 new listing_sources from the successful wave3-v1 partial run",
+  "checks": {
+    "listing_like_precision": { "detail": "0 suspicious category/hub-page patterns found on manual re-scan of the 132 URLs (same heuristic as Waves 1-2)", "pass": true },
+    "pii_persisted": { "value": 0, "pass": true },
+    "partner_mislabeling": { "value": 0, "detail": "origin_type=persisted_openserp on all 132", "pass": true },
+    "false_zero_prices": { "value": 0, "pass": true },
+    "implausible_prices": { "value": 0, "detail": "sanitizePriceMad ceiling active and effective -- 0 new implausible prices this wave, vs. 3 found in Wave 2 before the fix existed", "pass": true }
+  },
+  "one_to_one_invariant_verified_directly": {
+    "property_clusters_total": 378,
+    "property_cluster_members_total": 378,
+    "multi_membership_clusters_found": 0,
+    "pass": true
+  },
+  "domains_covered_wave_3": ["mouldar", "mubawab", "1immo", "marrakechrealty", "agenz", "sarouty", "barnes-marrakech", "logic-immo", "avito"],
+  "cumulative_waves_1_to_3": {
+    "property_listings_before_mission": 316,
+    "property_listings_after": 517,
+    "net_new_source_offers": 201,
+    "percentage_growth": "63.6%",
+    "listing_sources_before": 321,
+    "listing_sources_after": 522,
+    "property_clusters_before": 177,
+    "property_clusters_after": 378,
+    "discovery_candidates_before": 0,
+    "discovery_candidates_after": 4783,
+    "source_offer_observations": 0,
+    "one_to_one_invariant_maintained_throughout": true,
+    "domains_represented": ["mubawab", "mouldar", "1immo", "agenz", "marrakechrealty", "sarouty", "barnes-marrakech", "logic-immo", "avito"],
+    "cities_with_new_listings": ["Salé", "Oujda", "Tanger", "Fès", "Témara", "Meknès", "Tétouan", "Agadir", "and others -- see per-city breakdown in the final mission report"]
+  },
+  "verdict": "PASS -- proceeding to cron activation per explicit user confirmation"
+}

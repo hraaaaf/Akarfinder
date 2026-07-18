@@ -1,6 +1,6 @@
 {
   "universe_version": "openserp-query-universe-v1",
-  "generated_at": "2026-07-18T00:41:09.877Z",
+  "generated_at": "2026-07-18T01:38:01.605Z",
   "total_queries": 2718,
   "by_priority_tier": {
     "1": 720,
@@ -14621,7 +14621,7 @@
       "query_text": "appartement a vendre Rabat Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14678,10 +14678,10 @@
       "query_text": "studio a louer Rabat Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-e08725e3f3f99359",
@@ -14735,7 +14735,7 @@
       "query_text": "maison a vendre Rabat Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14773,7 +14773,7 @@
       "query_text": "terrain a vendre Rabat Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -14963,7 +14963,7 @@
       "query_text": "ferme a vendre Rabat Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -15001,7 +15001,7 @@
       "query_text": "immeuble a vendre Rabat Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -15020,10 +15020,10 @@
       "query_text": "immeuble a louer Rabat Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-40bfa3eae6a9f8d2",
@@ -15039,10 +15039,10 @@
       "query_text": "duplex a vendre Rabat Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-35fe5bf4c2465a71",
@@ -15058,7 +15058,7 @@
       "query_text": "duplex a louer Rabat Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -15096,7 +15096,7 @@
       "query_text": "appartement a louer Rabat Hay Riad",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -15115,7 +15115,7 @@
       "query_text": "studio a vendre Rabat Hay Riad",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -15153,7 +15153,7 @@
       "query_text": "villa a vendre Rabat Hay Riad",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -15229,7 +15229,7 @@
       "query_text": "terrain a vendre Rabat Hay Riad",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -15248,7 +15248,7 @@
       "query_text": "terrain a louer Rabat Hay Riad",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -15267,7 +15267,7 @@
       "query_text": "riad a vendre Rabat Hay Riad",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -15305,10 +15305,10 @@
       "query_text": "bureau a vendre Rabat Hay Riad",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-fdce75a14faf255f",
@@ -15419,7 +15419,7 @@
       "query_text": "ferme a vendre Rabat Hay Riad",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -15457,7 +15457,7 @@
       "query_text": "immeuble a vendre Rabat Hay Riad",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -15552,10 +15552,10 @@
       "query_text": "appartement a louer Rabat Souissi",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-8c3852e8bacdfd09",
@@ -15685,10 +15685,10 @@
       "query_text": "terrain a vendre Rabat Souissi",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-b8c746056e92537d",
@@ -15761,10 +15761,10 @@
       "query_text": "bureau a vendre Rabat Souissi",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-caf3aa4bfa0254e6",
@@ -16008,7 +16008,7 @@
       "query_text": "appartement a louer Rabat Hassan",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -16027,7 +16027,7 @@
       "query_text": "studio a vendre Rabat Hassan",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -16103,7 +16103,7 @@
       "query_text": "maison a vendre Rabat Hassan",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -16369,10 +16369,10 @@
       "query_text": "immeuble a vendre Rabat Hassan",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-651df40e5dd2aace",
@@ -16426,7 +16426,7 @@
       "query_text": "duplex a louer Rabat Hassan",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -16521,7 +16521,7 @@
       "query_text": "villa a vendre Rabat Océan",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -16578,7 +16578,7 @@
       "query_text": "maison a louer Rabat Océan",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -16597,7 +16597,7 @@
       "query_text": "terrain a vendre Rabat Océan",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -16654,7 +16654,7 @@
       "query_text": "riad a louer Rabat Océan",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -16692,10 +16692,10 @@
       "query_text": "bureau a louer Rabat Océan",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-73850fc515543230",
@@ -16749,10 +16749,10 @@
       "query_text": "magasin a vendre Rabat Océan",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-feccd0bd38ae02e2",
@@ -16844,7 +16844,7 @@
       "query_text": "immeuble a louer Rabat Océan",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -16901,7 +16901,7 @@
       "query_text": "appartement a vendre Rabat Les Orangers",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -16920,7 +16920,7 @@
       "query_text": "appartement a louer Rabat Les Orangers",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -16996,10 +16996,10 @@
       "query_text": "villa a louer Rabat Les Orangers",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-07742d79bd038058",
@@ -17015,10 +17015,10 @@
       "query_text": "maison a vendre Rabat Les Orangers",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-cc3e0202b42dee9f",
@@ -17072,7 +17072,7 @@
       "query_text": "terrain a louer Rabat Les Orangers",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17186,7 +17186,7 @@
       "query_text": "local commercial a louer Rabat Les Orangers",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17262,7 +17262,7 @@
       "query_text": "ferme a louer Rabat Les Orangers",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17281,7 +17281,7 @@
       "query_text": "immeuble a vendre Rabat Les Orangers",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17319,7 +17319,7 @@
       "query_text": "duplex a vendre Rabat Les Orangers",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17338,7 +17338,7 @@
       "query_text": "duplex a louer Rabat Les Orangers",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17395,7 +17395,7 @@
       "query_text": "studio a vendre Rabat Aviation",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17433,7 +17433,7 @@
       "query_text": "villa a vendre Rabat Aviation",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17509,10 +17509,10 @@
       "query_text": "terrain a vendre Rabat Aviation",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-36f0264aa9e21c05",
@@ -17528,7 +17528,7 @@
       "query_text": "terrain a louer Rabat Aviation",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17604,7 +17604,7 @@
       "query_text": "bureau a louer Rabat Aviation",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17642,7 +17642,7 @@
       "query_text": "local commercial a louer Rabat Aviation",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17699,7 +17699,7 @@
       "query_text": "ferme a vendre Rabat Aviation",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17775,7 +17775,7 @@
       "query_text": "duplex a vendre Rabat Aviation",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17851,7 +17851,7 @@
       "query_text": "studio a vendre Rabat Akkari",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -17984,7 +17984,7 @@
       "query_text": "terrain a louer Rabat Akkari",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -18041,7 +18041,7 @@
       "query_text": "bureau a vendre Rabat Akkari",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -18060,7 +18060,7 @@
       "query_text": "bureau a louer Rabat Akkari",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -18117,7 +18117,7 @@
       "query_text": "magasin a vendre Rabat Akkari",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -18345,10 +18345,10 @@
       "query_text": "villa a vendre Rabat Yacoub El Mansour",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-8791722e9451d9e6",
@@ -18383,10 +18383,10 @@
       "query_text": "maison a vendre Rabat Yacoub El Mansour",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-202cf344bf40298b",
@@ -18402,7 +18402,7 @@
       "query_text": "maison a louer Rabat Yacoub El Mansour",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -18478,7 +18478,7 @@
       "query_text": "riad a louer Rabat Yacoub El Mansour",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -18516,7 +18516,7 @@
       "query_text": "bureau a louer Rabat Yacoub El Mansour",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -18592,7 +18592,7 @@
       "query_text": "magasin a louer Rabat Yacoub El Mansour",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -18611,7 +18611,7 @@
       "query_text": "ferme a vendre Rabat Yacoub El Mansour",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -18801,10 +18801,10 @@
       "query_text": "villa a vendre Rabat Medina",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-9be90660f1bcc491",
@@ -18839,10 +18839,10 @@
       "query_text": "maison a vendre Rabat Medina",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-551a778a159b46f3",
@@ -18953,7 +18953,7 @@
       "query_text": "bureau a vendre Rabat Medina",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -18991,10 +18991,10 @@
       "query_text": "local commercial a vendre Rabat Medina",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-f2c119db99e62d57",
@@ -19067,7 +19067,7 @@
       "query_text": "ferme a vendre Rabat Medina",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -27085,7 +27085,7 @@
       "query_text": "terrain a vendre Marrakech Guéliz",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -27104,7 +27104,7 @@
       "query_text": "terrain a louer Marrakech Guéliz",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -27123,7 +27123,7 @@
       "query_text": "riad a vendre Marrakech Guéliz",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -27142,7 +27142,7 @@
       "query_text": "riad a louer Marrakech Guéliz",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -27161,10 +27161,10 @@
       "query_text": "bureau a vendre Marrakech Guéliz",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-cd0181333619d81b",
@@ -27313,7 +27313,7 @@
       "query_text": "immeuble a vendre Marrakech Guéliz",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -27389,10 +27389,10 @@
       "query_text": "appartement a vendre Marrakech Hivernage",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-7f2e1697d19396e8",
@@ -27427,7 +27427,7 @@
       "query_text": "studio a vendre Marrakech Hivernage",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -27503,7 +27503,7 @@
       "query_text": "maison a vendre Marrakech Hivernage",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -27560,7 +27560,7 @@
       "query_text": "terrain a louer Marrakech Hivernage",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -27598,7 +27598,7 @@
       "query_text": "riad a louer Marrakech Hivernage",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -27712,7 +27712,7 @@
       "query_text": "magasin a louer Marrakech Hivernage",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -27845,7 +27845,7 @@
       "query_text": "appartement a vendre Marrakech Palmeraie",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -27902,10 +27902,10 @@
       "query_text": "studio a louer Marrakech Palmeraie",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-a7bfdbd3af4c7785",
@@ -27978,7 +27978,7 @@
       "query_text": "maison a louer Marrakech Palmeraie",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -28149,7 +28149,7 @@
       "query_text": "magasin a vendre Marrakech Palmeraie",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -28168,7 +28168,7 @@
       "query_text": "magasin a louer Marrakech Palmeraie",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -28206,7 +28206,7 @@
       "query_text": "ferme a louer Marrakech Palmeraie",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -28282,10 +28282,10 @@
       "query_text": "duplex a louer Marrakech Palmeraie",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-7cb6caeab97fae37",
@@ -28339,10 +28339,10 @@
       "query_text": "studio a vendre Marrakech Targa",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-7daada9f9b89d743",
@@ -28491,10 +28491,10 @@
       "query_text": "riad a vendre Marrakech Targa",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-a67a7d9bbe3d2131",
@@ -28529,7 +28529,7 @@
       "query_text": "bureau a vendre Marrakech Targa",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -28700,7 +28700,7 @@
       "query_text": "immeuble a louer Marrakech Targa",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -28833,7 +28833,7 @@
       "query_text": "villa a vendre Marrakech Route de l'Ourika",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -28852,10 +28852,10 @@
       "query_text": "villa a louer Marrakech Route de l'Ourika",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-3589f23c5008cb20",
@@ -28871,7 +28871,7 @@
       "query_text": "maison a vendre Marrakech Route de l'Ourika",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -28985,7 +28985,7 @@
       "query_text": "bureau a vendre Marrakech Route de l'Ourika",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -29118,10 +29118,10 @@
       "query_text": "ferme a louer Marrakech Route de l'Ourika",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-1795a4ad2c7c50da",
@@ -29137,10 +29137,10 @@
       "query_text": "immeuble a vendre Marrakech Route de l'Ourika",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-6e9c54e3fdddd2a9",
@@ -29270,7 +29270,7 @@
       "query_text": "studio a louer Marrakech Route de Fès",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -29289,7 +29289,7 @@
       "query_text": "villa a vendre Marrakech Route de Fès",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -29308,10 +29308,10 @@
       "query_text": "villa a louer Marrakech Route de Fès",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-7980b610eb8512df",
@@ -29422,10 +29422,10 @@
       "query_text": "riad a louer Marrakech Route de Fès",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-c3a2c8c4f7f964da",
@@ -29593,7 +29593,7 @@
       "query_text": "immeuble a vendre Marrakech Route de Fès",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -29612,7 +29612,7 @@
       "query_text": "immeuble a louer Marrakech Route de Fès",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -29688,10 +29688,10 @@
       "query_text": "appartement a louer Marrakech Majorelle",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-e2ec083873a921db",
@@ -29821,7 +29821,7 @@
       "query_text": "terrain a vendre Marrakech Majorelle",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -29897,10 +29897,10 @@
       "query_text": "bureau a vendre Marrakech Majorelle",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-de29035133e24b54",
@@ -29935,7 +29935,7 @@
       "query_text": "local commercial a vendre Marrakech Majorelle",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -29954,10 +29954,10 @@
       "query_text": "local commercial a louer Marrakech Majorelle",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-437b384d715f2fef",
@@ -29973,7 +29973,7 @@
       "query_text": "magasin a vendre Marrakech Majorelle",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -29992,7 +29992,7 @@
       "query_text": "magasin a louer Marrakech Majorelle",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -30030,7 +30030,7 @@
       "query_text": "ferme a louer Marrakech Majorelle",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -30106,7 +30106,7 @@
       "query_text": "duplex a louer Marrakech Majorelle",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -30258,7 +30258,7 @@
       "query_text": "maison a louer Marrakech Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -30296,7 +30296,7 @@
       "query_text": "terrain a louer Marrakech Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -30334,7 +30334,7 @@
       "query_text": "riad a louer Marrakech Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -30353,7 +30353,7 @@
       "query_text": "bureau a vendre Marrakech Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -30543,7 +30543,7 @@
       "query_text": "duplex a vendre Marrakech Agdal",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -30828,10 +30828,10 @@
       "query_text": "bureau a louer Marrakech Mhamid",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-4e6e6e21cd9de5da",
@@ -30866,7 +30866,7 @@
       "query_text": "local commercial a louer Marrakech Mhamid",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -30999,7 +30999,7 @@
       "query_text": "duplex a vendre Marrakech Mhamid",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -31113,7 +31113,7 @@
       "query_text": "villa a vendre Marrakech Massira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -31265,10 +31265,10 @@
       "query_text": "bureau a vendre Marrakech Massira",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-fb657aeb75d2fddd",
@@ -31493,7 +31493,7 @@
       "query_text": "appartement a vendre Marrakech Medina",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -31531,7 +31531,7 @@
       "query_text": "studio a vendre Marrakech Medina",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -31550,7 +31550,7 @@
       "query_text": "studio a louer Marrakech Medina",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -31683,7 +31683,7 @@
       "query_text": "riad a vendre Marrakech Medina",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -31835,7 +31835,7 @@
       "query_text": "ferme a vendre Marrakech Medina",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -31930,10 +31930,10 @@
       "query_text": "duplex a louer Marrakech Medina",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-82846b040a15208c",
@@ -32006,7 +32006,7 @@
       "query_text": "studio a louer Agadir Founty",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -32215,7 +32215,7 @@
       "query_text": "local commercial a vendre Agadir Founty",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -32272,7 +32272,7 @@
       "query_text": "magasin a louer Agadir Founty",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -32481,7 +32481,7 @@
       "query_text": "villa a vendre Agadir Talborjt",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -32519,10 +32519,10 @@
       "query_text": "maison a vendre Agadir Talborjt",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-f41286f3cd972bbc",
@@ -32614,7 +32614,7 @@
       "query_text": "riad a louer Agadir Talborjt",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -32633,7 +32633,7 @@
       "query_text": "bureau a vendre Agadir Talborjt",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -32823,7 +32823,7 @@
       "query_text": "duplex a vendre Agadir Talborjt",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -32842,7 +32842,7 @@
       "query_text": "duplex a louer Agadir Talborjt",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -32861,10 +32861,10 @@
       "query_text": "appartement a vendre Agadir Haut Founty",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-21bd5183ab0c8eac",
@@ -32880,10 +32880,10 @@
       "query_text": "appartement a louer Agadir Haut Founty",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-2b57f29d1da279c4",
@@ -32899,7 +32899,7 @@
       "query_text": "studio a vendre Agadir Haut Founty",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -33013,7 +33013,7 @@
       "query_text": "terrain a vendre Agadir Haut Founty",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -33051,7 +33051,7 @@
       "query_text": "riad a vendre Agadir Haut Founty",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -33070,7 +33070,7 @@
       "query_text": "riad a louer Agadir Haut Founty",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -33108,10 +33108,10 @@
       "query_text": "bureau a louer Agadir Haut Founty",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-ee70b9e4444198c7",
@@ -33165,10 +33165,10 @@
       "query_text": "magasin a vendre Agadir Haut Founty",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-ea6fb7c678eb5eb2",
@@ -33298,10 +33298,10 @@
       "query_text": "duplex a louer Agadir Haut Founty",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-8b75c83f69eba7cf",
@@ -33336,7 +33336,7 @@
       "query_text": "appartement a louer Agadir Hay Mohammadi",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -33355,7 +33355,7 @@
       "query_text": "studio a vendre Agadir Hay Mohammadi",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -33488,7 +33488,7 @@
       "query_text": "terrain a louer Agadir Hay Mohammadi",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -33507,7 +33507,7 @@
       "query_text": "riad a vendre Agadir Hay Mohammadi",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -33545,10 +33545,10 @@
       "query_text": "bureau a vendre Agadir Hay Mohammadi",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-30b63860e1e9e5be",
@@ -33564,10 +33564,10 @@
       "query_text": "bureau a louer Agadir Hay Mohammadi",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-ff8f1ae7e00cb79d",
@@ -33735,7 +33735,7 @@
       "query_text": "duplex a vendre Agadir Hay Mohammadi",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -33906,7 +33906,7 @@
       "query_text": "maison a louer Agadir Dakhla",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -34039,7 +34039,7 @@
       "query_text": "local commercial a vendre Agadir Dakhla",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -34229,7 +34229,7 @@
       "query_text": "appartement a vendre Agadir Sonaba",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -34343,10 +34343,10 @@
       "query_text": "maison a vendre Agadir Sonaba",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-290b4feeb209aeeb",
@@ -34362,7 +34362,7 @@
       "query_text": "maison a louer Agadir Sonaba",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -34400,7 +34400,7 @@
       "query_text": "terrain a louer Agadir Sonaba",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -34457,7 +34457,7 @@
       "query_text": "bureau a vendre Agadir Sonaba",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -34476,7 +34476,7 @@
       "query_text": "bureau a louer Agadir Sonaba",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -34571,7 +34571,7 @@
       "query_text": "ferme a vendre Agadir Sonaba",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -34685,7 +34685,7 @@
       "query_text": "appartement a vendre Agadir Charaf",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -34704,7 +34704,7 @@
       "query_text": "appartement a louer Agadir Charaf",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -34723,7 +34723,7 @@
       "query_text": "studio a vendre Agadir Charaf",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -34742,7 +34742,7 @@
       "query_text": "studio a louer Agadir Charaf",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -34970,7 +34970,7 @@
       "query_text": "local commercial a louer Agadir Charaf",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -34989,10 +34989,10 @@
       "query_text": "magasin a vendre Agadir Charaf",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-bcfb9c13f1e55a1b",
@@ -35065,7 +35065,7 @@
       "query_text": "immeuble a vendre Agadir Charaf",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -35141,7 +35141,7 @@
       "query_text": "appartement a vendre Agadir Cité Suisse",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -35217,10 +35217,10 @@
       "query_text": "villa a vendre Agadir Cité Suisse",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-8fbf2ca2aa6b6bfc",
@@ -35255,10 +35255,10 @@
       "query_text": "maison a vendre Agadir Cité Suisse",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-310fa2067dfb67fd",
@@ -35274,7 +35274,7 @@
       "query_text": "maison a louer Agadir Cité Suisse",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -35426,7 +35426,7 @@
       "query_text": "local commercial a louer Agadir Cité Suisse",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -35540,7 +35540,7 @@
       "query_text": "immeuble a louer Agadir Cité Suisse",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -35654,7 +35654,7 @@
       "query_text": "studio a louer Agadir Bensergao",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -35768,7 +35768,7 @@
       "query_text": "terrain a louer Agadir Bensergao",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -35806,7 +35806,7 @@
       "query_text": "riad a louer Agadir Bensergao",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -35825,10 +35825,10 @@
       "query_text": "bureau a vendre Agadir Bensergao",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-4601a991572b4c99",
@@ -35844,10 +35844,10 @@
       "query_text": "bureau a louer Agadir Bensergao",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-7ae8ab25158cfacf",
@@ -44299,10 +44299,10 @@
       "query_text": "appartement a vendre Rabat site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.5
     },
     {
       "query_id": "nqu1-200884d86d77e08b",
@@ -44318,10 +44318,10 @@
       "query_text": "appartement a louer Rabat site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-2be5d59ec073b038",
@@ -44337,10 +44337,10 @@
       "query_text": "appartement a vendre Salé site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-08d50d38bed8ca4f",
@@ -44413,10 +44413,10 @@
       "query_text": "appartement a vendre Marrakech site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-7965d90ca0795b56",
@@ -44432,10 +44432,10 @@
       "query_text": "appartement a louer Marrakech site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-b603454402043791",
@@ -44489,10 +44489,10 @@
       "query_text": "appartement a vendre Agadir site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-a14416b0ad8637c1",
@@ -44508,10 +44508,10 @@
       "query_text": "appartement a louer Agadir site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.8
     },
     {
       "query_id": "nqu1-573434bba342b001",
@@ -44717,10 +44717,10 @@
       "query_text": "appartement a vendre Tétouan site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-76ba7885f939338e",
@@ -44736,10 +44736,10 @@
       "query_text": "appartement a louer Tétouan site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-3f375d279e611707",
@@ -44869,7 +44869,7 @@
       "query_text": "appartement a vendre Rabat site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -44888,7 +44888,7 @@
       "query_text": "appartement a louer Rabat site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -44907,10 +44907,10 @@
       "query_text": "appartement a vendre Salé site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-9cd237636c8e0b7f",
@@ -44926,10 +44926,10 @@
       "query_text": "appartement a louer Salé site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.5
     },
     {
       "query_id": "nqu1-e1ca50598be5134c",
@@ -44983,7 +44983,7 @@
       "query_text": "appartement a vendre Marrakech site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45078,10 +45078,10 @@
       "query_text": "appartement a louer Agadir site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-982a8996ac442425",
@@ -45287,10 +45287,10 @@
       "query_text": "appartement a vendre Tétouan site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-98d0540b7d2bfe7b",
@@ -45306,10 +45306,10 @@
       "query_text": "appartement a louer Tétouan site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-7868293dffc38f25",
@@ -45439,7 +45439,7 @@
       "query_text": "appartement a vendre Rabat site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45458,7 +45458,7 @@
       "query_text": "appartement a louer Rabat site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45477,10 +45477,10 @@
       "query_text": "appartement a vendre Salé site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-fb50065e2efb1972",
@@ -45496,7 +45496,7 @@
       "query_text": "appartement a louer Salé site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45553,7 +45553,7 @@
       "query_text": "appartement a vendre Marrakech site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45572,7 +45572,7 @@
       "query_text": "appartement a louer Marrakech site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45629,7 +45629,7 @@
       "query_text": "appartement a vendre Agadir site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45857,7 +45857,7 @@
       "query_text": "appartement a vendre Tétouan site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45876,7 +45876,7 @@
       "query_text": "appartement a louer Tétouan site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46009,7 +46009,7 @@
       "query_text": "appartement a vendre Rabat site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46028,7 +46028,7 @@
       "query_text": "appartement a louer Rabat site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46047,7 +46047,7 @@
       "query_text": "appartement a vendre Salé site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46066,10 +46066,10 @@
       "query_text": "appartement a louer Salé site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-12b77515d6c433f0",
@@ -46123,7 +46123,7 @@
       "query_text": "appartement a vendre Marrakech site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46142,7 +46142,7 @@
       "query_text": "appartement a louer Marrakech site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46199,7 +46199,7 @@
       "query_text": "appartement a vendre Agadir site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46218,7 +46218,7 @@
       "query_text": "appartement a louer Agadir site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46427,7 +46427,7 @@
       "query_text": "appartement a vendre Tétouan site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46446,7 +46446,7 @@
       "query_text": "appartement a louer Tétouan site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46579,10 +46579,10 @@
       "query_text": "appartement a vendre Rabat site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-4aa0ae0c3baea483",
@@ -46598,10 +46598,10 @@
       "query_text": "appartement a louer Rabat site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.5
     },
     {
       "query_id": "nqu1-f1f42ffaa4a60d9b",
@@ -46617,10 +46617,10 @@
       "query_text": "appartement a vendre Salé site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-752d83ddae071b37",
@@ -46636,10 +46636,10 @@
       "query_text": "appartement a louer Salé site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-27669844f501e9e6",
@@ -46693,10 +46693,10 @@
       "query_text": "appartement a vendre Marrakech site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-bb741a320da165bc",
@@ -46712,7 +46712,7 @@
       "query_text": "appartement a louer Marrakech site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46769,7 +46769,7 @@
       "query_text": "appartement a vendre Agadir site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46788,7 +46788,7 @@
       "query_text": "appartement a louer Agadir site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46997,10 +46997,10 @@
       "query_text": "appartement a vendre Tétouan site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-11340dcd2605d9d3",
@@ -47016,10 +47016,10 @@
       "query_text": "appartement a louer Tétouan site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-30615069ac052f0a",
@@ -47149,7 +47149,7 @@
       "query_text": "appartement a vendre Rabat site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47168,7 +47168,7 @@
       "query_text": "appartement a louer Rabat site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47187,7 +47187,7 @@
       "query_text": "appartement a vendre Salé site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47206,7 +47206,7 @@
       "query_text": "appartement a louer Salé site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47263,10 +47263,10 @@
       "query_text": "appartement a vendre Marrakech site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-d9c57bc2a14d359d",
@@ -47282,10 +47282,10 @@
       "query_text": "appartement a louer Marrakech site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-34a6642a2f901f32",
@@ -47339,7 +47339,7 @@
       "query_text": "appartement a vendre Agadir site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47358,7 +47358,7 @@
       "query_text": "appartement a louer Agadir site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47567,7 +47567,7 @@
       "query_text": "appartement a vendre Tétouan site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47586,7 +47586,7 @@
       "query_text": "appartement a louer Tétouan site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47719,7 +47719,7 @@
       "query_text": "appartement a vendre Rabat site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47738,7 +47738,7 @@
       "query_text": "appartement a louer Rabat site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47757,7 +47757,7 @@
       "query_text": "appartement a vendre Salé site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47776,7 +47776,7 @@
       "query_text": "appartement a louer Salé site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47852,7 +47852,7 @@
       "query_text": "appartement a louer Marrakech site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47909,7 +47909,7 @@
       "query_text": "appartement a vendre Agadir site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47928,7 +47928,7 @@
       "query_text": "appartement a louer Agadir site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48137,7 +48137,7 @@
       "query_text": "appartement a vendre Tétouan site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48156,7 +48156,7 @@
       "query_text": "appartement a louer Tétouan site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48289,7 +48289,7 @@
       "query_text": "appartement a vendre Rabat site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48327,10 +48327,10 @@
       "query_text": "appartement a vendre Salé site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-bd4433f4ce87d35b",
@@ -48346,7 +48346,7 @@
       "query_text": "appartement a louer Salé site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48403,10 +48403,10 @@
       "query_text": "appartement a vendre Marrakech site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-379b8b5ee2068a67",
@@ -48422,10 +48422,10 @@
       "query_text": "appartement a louer Marrakech site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-597685e3f6feb596",
@@ -48479,10 +48479,10 @@
       "query_text": "appartement a vendre Agadir site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-e065ea93687818e5",
@@ -48498,7 +48498,7 @@
       "query_text": "appartement a louer Agadir site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48707,10 +48707,10 @@
       "query_text": "appartement a vendre Tétouan site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-86ecd575037240d9",
@@ -48726,10 +48726,10 @@
       "query_text": "appartement a louer Tétouan site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-e08d8ec760eb8696",
@@ -48859,7 +48859,7 @@
       "query_text": "appartement a vendre Rabat site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48878,7 +48878,7 @@
       "query_text": "appartement a louer Rabat site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48897,7 +48897,7 @@
       "query_text": "appartement a vendre Salé site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48916,7 +48916,7 @@
       "query_text": "appartement a louer Salé site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48973,7 +48973,7 @@
       "query_text": "appartement a vendre Marrakech site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48992,7 +48992,7 @@
       "query_text": "appartement a louer Marrakech site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49049,7 +49049,7 @@
       "query_text": "appartement a vendre Agadir site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49068,7 +49068,7 @@
       "query_text": "appartement a louer Agadir site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49277,7 +49277,7 @@
       "query_text": "appartement a vendre Tétouan site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49296,7 +49296,7 @@
       "query_text": "appartement a louer Tétouan site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49429,7 +49429,7 @@
       "query_text": "appartement a vendre Rabat site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49448,7 +49448,7 @@
       "query_text": "appartement a louer Rabat site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49467,10 +49467,10 @@
       "query_text": "appartement a vendre Salé site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-a89880c05dc19136",
@@ -49486,7 +49486,7 @@
       "query_text": "appartement a louer Salé site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49543,10 +49543,10 @@
       "query_text": "appartement a vendre Marrakech site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.5
     },
     {
       "query_id": "nqu1-aea43b185a0ec085",
@@ -49562,10 +49562,10 @@
       "query_text": "appartement a louer Marrakech site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 2.1
     },
     {
       "query_id": "nqu1-22a76a907bc965ad",
@@ -49619,7 +49619,7 @@
       "query_text": "appartement a vendre Agadir site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49638,7 +49638,7 @@
       "query_text": "appartement a louer Agadir site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49866,7 +49866,7 @@
       "query_text": "appartement a louer Tétouan site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49999,7 +49999,7 @@
       "query_text": "appartement a vendre Rabat site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50018,7 +50018,7 @@
       "query_text": "appartement a louer Rabat site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50037,7 +50037,7 @@
       "query_text": "appartement a vendre Salé site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50113,7 +50113,7 @@
       "query_text": "appartement a vendre Marrakech site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50132,7 +50132,7 @@
       "query_text": "appartement a louer Marrakech site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50189,7 +50189,7 @@
       "query_text": "appartement a vendre Agadir site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50208,7 +50208,7 @@
       "query_text": "appartement a louer Agadir site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50417,7 +50417,7 @@
       "query_text": "appartement a vendre Tétouan site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50436,7 +50436,7 @@
       "query_text": "appartement a louer Tétouan site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50569,7 +50569,7 @@
       "query_text": "appartement a vendre Rabat site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50588,7 +50588,7 @@
       "query_text": "appartement a louer Rabat site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50607,7 +50607,7 @@
       "query_text": "appartement a vendre Salé site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50626,10 +50626,10 @@
       "query_text": "appartement a louer Salé site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-5fef37fe596f6440",
@@ -50683,7 +50683,7 @@
       "query_text": "appartement a vendre Marrakech site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50702,7 +50702,7 @@
       "query_text": "appartement a louer Marrakech site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50759,7 +50759,7 @@
       "query_text": "appartement a vendre Agadir site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50778,7 +50778,7 @@
       "query_text": "appartement a louer Agadir site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50987,7 +50987,7 @@
       "query_text": "appartement a vendre Tétouan site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -51006,10 +51006,10 @@
       "query_text": "appartement a louer Tétouan site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-a0c8bb34148e9faa",
@@ -51139,9 +51139,9 @@
       "query_text": "appartement a vendre Rabat site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51177,9 +51177,9 @@
       "query_text": "appartement a vendre Salé site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51196,9 +51196,9 @@
       "query_text": "appartement a louer Salé site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51253,9 +51253,9 @@
       "query_text": "appartement a vendre Marrakech site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51272,9 +51272,9 @@
       "query_text": "appartement a louer Marrakech site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51329,9 +51329,9 @@
       "query_text": "appartement a vendre Agadir site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51348,9 +51348,9 @@
       "query_text": "appartement a louer Agadir site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51576,9 +51576,9 @@
       "query_text": "appartement a louer Tétouan site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T01:00:39.252Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
