@@ -1,0 +1,27 @@
+{
+  "mission": "OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-2",
+  "phase": "6_authenticated_noop_validation",
+  "generated_at_utc": "2026-07-18T22:56:00Z",
+  "deployment_tested": "dpl_CPfk2jsQHkvkH4aFpNo25S8Y81AN (akarfinder.vercel.app)",
+  "endpoint_no_secret": { "status": "PASS", "expected": "401 or 403", "actual": 401 },
+  "endpoint_wrong_secret": { "status": "PASS", "expected": "401 or 403", "actual": 401 },
+  "endpoint_authenticated_flags_off": {
+    "status": "PASS",
+    "method": "GitHub Actions workflow_dispatch run #9, manually triggered, commit b01502e on main",
+    "evidence": "run status Success (8s total, trigger-ingestion job 3s) -- the workflow script itself does `if [ \"$status\" != \"200\" ]; then exit 1; fi`, so a Success result structurally proves HTTP 200 was returned. Given all 3 write-authorizing flags are false, the endpoint's only 200-returning code path is `NOOP_FLAGS_DISABLED` -- there is no other branch that returns 200 with all flags false.",
+    "expected_body": "{\"ok\":true,\"status\":\"NOOP_FLAGS_DISABLED\"}"
+  },
+  "counters_after_noop": {
+    "property_listings": 558,
+    "listing_sources": 563,
+    "property_clusters": 419,
+    "property_cluster_members": 419,
+    "discovery_candidates": 7564,
+    "source_offer_observations": 0,
+    "openserp_query_rotation_state": 2718,
+    "openserp_engine_budget_state": 3,
+    "openserp_ingestion_run_lock": 0,
+    "all_unchanged": true
+  },
+  "overall_verdict": "PASS -- NOOP strictly clean, safe to proceed to Phase 7 (formal user gate)"
+}
