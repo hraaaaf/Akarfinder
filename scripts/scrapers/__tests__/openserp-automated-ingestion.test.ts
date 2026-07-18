@@ -344,6 +344,32 @@ test("decideAdmission rejects a category/hub page even on an approved domain", (
   assert.equal(decision.admitted, false);
 });
 
+test("decideAdmission rejects a category URL even when its indexed snippet previews one specific listing's details", () => {
+  // Reproduces a real anomaly found during this mission's own Wave 3
+  // Production apply: mubawab.ma/fr/st/el-jadida/maisons-a-vendre (a
+  // category/search hub URL, no numeric listing ID) was admitted because
+  // its SERP snippet happened to contain one specific listing's detailed
+  // description (price, rooms, bathroom) -- enough textual detail signal
+  // to pass classify.ts's fallback admission path even though the URL
+  // itself is unambiguously a category page for the whole city, not one
+  // unit. The prior test covers a generic/summary snippet on a similar
+  // URL shape; this one specifically covers the harder case where the
+  // snippet looks individually detailed.
+  const decision = decideAdmission({
+    result: rawResult({
+      url: "https://mubawab.ma/fr/st/el-jadida/maisons-a-vendre",
+      title: "Maison a Vendre El Jadida vente maison Mubawab",
+      snippet: "Maison de luxe a vendre a El Jadida, sous sol avec garage 30 m2, prix 880000 DH, 3 chambres, salle de bain",
+    }),
+    query: query({ city: "El Jadida", district: "", transaction_type: "sale", property_type: "maison" }),
+    engine: "duckduckgo",
+    discovered_at: "2026-01-01T00:00:00Z",
+    fallbackRank: 1,
+  });
+  assert.equal(decision.admitted, false);
+  assert.ok(decision.reasons.includes("looks_like_non_listing_page"));
+});
+
 test("decideAdmission rejects a candidate whose content-derived transaction type contradicts its stored value", () => {
   // Reproduces the shape of a real anomaly found during this mission's own
   // Wave 1 Production apply: an admitted candidate's stored transaction_type
@@ -469,4 +495,23 @@ test("cron route rejects requests without a matching Authorization header", asyn
   assert.ok(routeSource.includes("OPENSERP_CRON_SECRET"));
   assert.ok(routeSource.includes("401"));
   assert.ok(routeSource.includes("isOpenSerpIngestionCronAuthorized"));
+});
+
+test("cron route checks Vercel's reserved CRON_SECRET (auto-injected on scheduled invocations), not only the project-specific secret", () => {
+  // Vercel's Cron Jobs feature only auto-sends `Authorization: Bearer
+  // $CRON_SECRET` for an env var literally named CRON_SECRET -- a custom
+  // name alone would never receive that header on a real scheduled run,
+  // making the schedule permanently 401. Found and fixed before cron
+  // activation, per docs.vercel.com/cron-jobs/manage-cron-jobs.
+  const routeSource = readFileSync(join(process.cwd(), "app/api/internal/cron/openserp-ingestion/route.ts"), "utf8");
+  assert.ok(routeSource.includes("process.env.CRON_SECRET"));
+});
+
+test("vercel.json registers the 30-minute cron schedule for the ingestion endpoint", () => {
+  const config = JSON.parse(readFileSync(join(process.cwd(), "vercel.json"), "utf8")) as {
+    crons: Array<{ path: string; schedule: string }>;
+  };
+  const entry = config.crons.find((c) => c.path === "/api/internal/cron/openserp-ingestion");
+  assert.ok(entry, "expected a cron entry for the OpenSERP ingestion endpoint");
+  assert.equal(entry!.schedule, "*/30 * * * *");
 });

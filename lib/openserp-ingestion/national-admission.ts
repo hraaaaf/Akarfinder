@@ -66,6 +66,22 @@ function looksLikeNonListingPage(canonicalUrl: string, sourceDomain: string): bo
   if (segments.length === 1 && !/\d/.test(segments[0]) && sourceDomain !== segments[0]) {
     return true;
   }
+  // A final segment that is a bare plural category noun + transaction verb
+  // ("maisons-a-vendre", "villas-a-louer", "appartements-a-vendre", ...)
+  // with no numeric ID anywhere in the path is a search/category hub for
+  // that category, not one specific unit -- regardless of how many path
+  // segments precede it. Found necessary during this mission's own Wave 3
+  // apply: mubawab.ma/fr/st/el-jadida/maisons-a-vendre was admitted because
+  // its indexed snippet happened to preview one listing's details (strong
+  // textual signals), even though the URL itself is a category page; this
+  // domain's own DOMAIN_RULES.forceDiscovery patterns (classify.ts) do not
+  // cover the "/st/" segment or "maisons-a-vendre" specifically, so a
+  // second, URL-shape-only check here catches it independent of content.
+  const lastSegment = segments[segments.length - 1];
+  const hasNumericId = segments.some((segment) => /\d/.test(segment));
+  if (!hasNumericId && /^(appartements?|villas?|terrains?|bureaux|maisons?|studios?)-a-(vendre|louer)$/.test(lastSegment)) {
+    return true;
+  }
   return false;
 }
 

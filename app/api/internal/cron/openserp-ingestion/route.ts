@@ -13,11 +13,22 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
+// Vercel's own Cron Jobs feature auto-injects `Authorization: Bearer
+// $CRON_SECRET` on every scheduled invocation IFF an env var literally named
+// CRON_SECRET is configured (https://vercel.com/docs/cron-jobs/manage-cron-jobs)
+// -- a project-specific name like OPENSERP_CRON_SECRET would never receive
+// that automatic header, so a scheduled run would always 401. Checking
+// CRON_SECRET first uses that automatic mechanism; OPENSERP_CRON_SECRET
+// stays supported too, for a manually-authenticated run (section 40) using a
+// dedicated secret rather than the project-wide one.
 function isAuthorized(request: NextRequest): boolean {
-  const secret = process.env.OPENSERP_CRON_SECRET;
-  if (!secret) return false;
   const header = request.headers.get("authorization");
-  return header === `Bearer ${secret}`;
+  if (!header) return false;
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret && header === `Bearer ${cronSecret}`) return true;
+  const openSerpSecret = process.env.OPENSERP_CRON_SECRET;
+  if (openSerpSecret && header === `Bearer ${openSerpSecret}`) return true;
+  return false;
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
