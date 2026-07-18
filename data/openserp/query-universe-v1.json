@@ -1,6 +1,6 @@
 {
   "universe_version": "openserp-query-universe-v1",
-  "generated_at": "2026-07-18T01:38:01.605Z",
+  "generated_at": "2026-07-18T08:01:17.910Z",
   "total_queries": 2718,
   "by_priority_tier": {
     "1": 720,
@@ -7325,7 +7325,7 @@
       "query_text": "appartement a vendre Meknès",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -7344,7 +7344,7 @@
       "query_text": "شقة للبيع مكناس",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -7458,7 +7458,7 @@
       "query_text": "استوديو كراء مكناس",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -7534,7 +7534,7 @@
       "query_text": "فيلا كراء مكناس",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -7572,7 +7572,7 @@
       "query_text": "منزل للبيع مكناس",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -7838,7 +7838,7 @@
       "query_text": "مكتب كراء مكناس",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -7876,7 +7876,7 @@
       "query_text": "محل تجاري للبيع مكناس",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -7895,7 +7895,7 @@
       "query_text": "local commercial a louer Meknès",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -7971,7 +7971,7 @@
       "query_text": "magasin a louer Meknès",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -7990,7 +7990,7 @@
       "query_text": "متجر كراء مكناس",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8009,7 +8009,7 @@
       "query_text": "ferme a vendre Meknès",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8047,7 +8047,7 @@
       "query_text": "ferme a louer Meknès",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8066,7 +8066,7 @@
       "query_text": "مزرعة كراء مكناس",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8085,7 +8085,7 @@
       "query_text": "immeuble a vendre Meknès",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8104,7 +8104,7 @@
       "query_text": "عمارة للبيع مكناس",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8161,7 +8161,7 @@
       "query_text": "duplex a vendre Meknès",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8237,7 +8237,7 @@
       "query_text": "appartement a vendre Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8256,7 +8256,7 @@
       "query_text": "شقة للبيع القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8275,7 +8275,7 @@
       "query_text": "appartement a louer Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8294,7 +8294,7 @@
       "query_text": "شقة كراء القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8313,7 +8313,7 @@
       "query_text": "studio a vendre Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8332,7 +8332,7 @@
       "query_text": "استوديو للبيع القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8351,7 +8351,7 @@
       "query_text": "studio a louer Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8370,7 +8370,7 @@
       "query_text": "استوديو كراء القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8389,7 +8389,7 @@
       "query_text": "villa a vendre Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8408,7 +8408,7 @@
       "query_text": "فيلا للبيع القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8427,7 +8427,7 @@
       "query_text": "villa a louer Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8446,7 +8446,7 @@
       "query_text": "فيلا كراء القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8465,10 +8465,10 @@
       "query_text": "maison a vendre Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-9fe74bfa101ba850",
@@ -8484,7 +8484,7 @@
       "query_text": "منزل للبيع القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8503,7 +8503,7 @@
       "query_text": "maison a louer Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8522,7 +8522,7 @@
       "query_text": "منزل كراء القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8541,7 +8541,7 @@
       "query_text": "terrain a vendre Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8560,7 +8560,7 @@
       "query_text": "أرض للبيع القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8579,7 +8579,7 @@
       "query_text": "terrain a louer Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8598,7 +8598,7 @@
       "query_text": "أرض كراء القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8617,7 +8617,7 @@
       "query_text": "riad a vendre Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8636,7 +8636,7 @@
       "query_text": "رياض للبيع القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8655,7 +8655,7 @@
       "query_text": "riad a louer Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8674,7 +8674,7 @@
       "query_text": "رياض كراء القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8693,7 +8693,7 @@
       "query_text": "bureau a vendre Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8712,7 +8712,7 @@
       "query_text": "مكتب للبيع القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8731,7 +8731,7 @@
       "query_text": "bureau a louer Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8750,7 +8750,7 @@
       "query_text": "مكتب كراء القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8769,7 +8769,7 @@
       "query_text": "local commercial a vendre Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8788,7 +8788,7 @@
       "query_text": "محل تجاري للبيع القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8807,7 +8807,7 @@
       "query_text": "local commercial a louer Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8826,7 +8826,7 @@
       "query_text": "محل تجاري كراء القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8845,7 +8845,7 @@
       "query_text": "magasin a vendre Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8864,7 +8864,7 @@
       "query_text": "متجر للبيع القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8883,7 +8883,7 @@
       "query_text": "magasin a louer Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8902,7 +8902,7 @@
       "query_text": "متجر كراء القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8921,7 +8921,7 @@
       "query_text": "ferme a vendre Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8940,7 +8940,7 @@
       "query_text": "مزرعة للبيع القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8959,7 +8959,7 @@
       "query_text": "ferme a louer Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8978,7 +8978,7 @@
       "query_text": "مزرعة كراء القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -8997,10 +8997,10 @@
       "query_text": "immeuble a vendre Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-4fcfbd058327157e",
@@ -9016,7 +9016,7 @@
       "query_text": "عمارة للبيع القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9035,7 +9035,7 @@
       "query_text": "immeuble a louer Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9054,7 +9054,7 @@
       "query_text": "عمارة كراء القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9073,7 +9073,7 @@
       "query_text": "duplex a vendre Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9092,7 +9092,7 @@
       "query_text": "دوبلكس للبيع القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9111,7 +9111,7 @@
       "query_text": "duplex a louer Kénitra",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9130,7 +9130,7 @@
       "query_text": "دوبلكس كراء القنيطرة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9149,7 +9149,7 @@
       "query_text": "appartement a vendre El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9168,7 +9168,7 @@
       "query_text": "شقة للبيع الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9187,7 +9187,7 @@
       "query_text": "appartement a louer El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9206,7 +9206,7 @@
       "query_text": "شقة كراء الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9225,7 +9225,7 @@
       "query_text": "studio a vendre El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9244,7 +9244,7 @@
       "query_text": "استوديو للبيع الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9263,7 +9263,7 @@
       "query_text": "studio a louer El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9282,7 +9282,7 @@
       "query_text": "استوديو كراء الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9301,7 +9301,7 @@
       "query_text": "villa a vendre El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9320,7 +9320,7 @@
       "query_text": "فيلا للبيع الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9339,7 +9339,7 @@
       "query_text": "villa a louer El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9358,7 +9358,7 @@
       "query_text": "فيلا كراء الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9377,10 +9377,10 @@
       "query_text": "maison a vendre El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-b5eb82856ed7150d",
@@ -9396,7 +9396,7 @@
       "query_text": "منزل للبيع الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9415,7 +9415,7 @@
       "query_text": "maison a louer El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9434,7 +9434,7 @@
       "query_text": "منزل كراء الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9453,7 +9453,7 @@
       "query_text": "terrain a vendre El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9472,7 +9472,7 @@
       "query_text": "أرض للبيع الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9491,7 +9491,7 @@
       "query_text": "terrain a louer El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9510,7 +9510,7 @@
       "query_text": "أرض كراء الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9529,7 +9529,7 @@
       "query_text": "riad a vendre El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9548,7 +9548,7 @@
       "query_text": "رياض للبيع الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9567,7 +9567,7 @@
       "query_text": "riad a louer El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9586,7 +9586,7 @@
       "query_text": "رياض كراء الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9605,7 +9605,7 @@
       "query_text": "bureau a vendre El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9624,7 +9624,7 @@
       "query_text": "مكتب للبيع الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9643,7 +9643,7 @@
       "query_text": "bureau a louer El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9662,7 +9662,7 @@
       "query_text": "مكتب كراء الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9681,7 +9681,7 @@
       "query_text": "local commercial a vendre El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9700,7 +9700,7 @@
       "query_text": "محل تجاري للبيع الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9719,7 +9719,7 @@
       "query_text": "local commercial a louer El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9738,7 +9738,7 @@
       "query_text": "محل تجاري كراء الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9757,7 +9757,7 @@
       "query_text": "magasin a vendre El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9776,7 +9776,7 @@
       "query_text": "متجر للبيع الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9795,7 +9795,7 @@
       "query_text": "magasin a louer El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9814,7 +9814,7 @@
       "query_text": "متجر كراء الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9833,10 +9833,10 @@
       "query_text": "ferme a vendre El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-6886d8674d459d75",
@@ -9852,7 +9852,7 @@
       "query_text": "مزرعة للبيع الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9871,7 +9871,7 @@
       "query_text": "ferme a louer El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9890,7 +9890,7 @@
       "query_text": "مزرعة كراء الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9909,7 +9909,7 @@
       "query_text": "immeuble a vendre El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9928,7 +9928,7 @@
       "query_text": "عمارة للبيع الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9947,7 +9947,7 @@
       "query_text": "immeuble a louer El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9966,7 +9966,7 @@
       "query_text": "عمارة كراء الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -9985,7 +9985,7 @@
       "query_text": "duplex a vendre El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -10004,7 +10004,7 @@
       "query_text": "دوبلكس للبيع الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -10023,7 +10023,7 @@
       "query_text": "duplex a louer El Jadida",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -10042,7 +10042,7 @@
       "query_text": "دوبلكس كراء الجديدة",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -11885,7 +11885,7 @@
       "query_text": "appartement a vendre Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -11904,7 +11904,7 @@
       "query_text": "شقة للبيع الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -11923,7 +11923,7 @@
       "query_text": "appartement a louer Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -11942,7 +11942,7 @@
       "query_text": "شقة كراء الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -11961,7 +11961,7 @@
       "query_text": "studio a vendre Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -11980,7 +11980,7 @@
       "query_text": "استوديو للبيع الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -11999,10 +11999,10 @@
       "query_text": "studio a louer Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-b0250e07288d2b21",
@@ -12018,7 +12018,7 @@
       "query_text": "استوديو كراء الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12037,7 +12037,7 @@
       "query_text": "villa a vendre Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12056,7 +12056,7 @@
       "query_text": "فيلا للبيع الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12075,7 +12075,7 @@
       "query_text": "villa a louer Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12094,7 +12094,7 @@
       "query_text": "فيلا كراء الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12113,7 +12113,7 @@
       "query_text": "maison a vendre Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12132,7 +12132,7 @@
       "query_text": "منزل للبيع الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12151,7 +12151,7 @@
       "query_text": "maison a louer Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12170,7 +12170,7 @@
       "query_text": "منزل كراء الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12189,7 +12189,7 @@
       "query_text": "terrain a vendre Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12208,7 +12208,7 @@
       "query_text": "أرض للبيع الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12227,7 +12227,7 @@
       "query_text": "terrain a louer Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12246,7 +12246,7 @@
       "query_text": "أرض كراء الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12265,7 +12265,7 @@
       "query_text": "riad a vendre Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12284,7 +12284,7 @@
       "query_text": "رياض للبيع الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12303,7 +12303,7 @@
       "query_text": "riad a louer Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12322,7 +12322,7 @@
       "query_text": "رياض كراء الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12341,7 +12341,7 @@
       "query_text": "bureau a vendre Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12360,7 +12360,7 @@
       "query_text": "مكتب للبيع الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12379,7 +12379,7 @@
       "query_text": "bureau a louer Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12398,7 +12398,7 @@
       "query_text": "مكتب كراء الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12417,7 +12417,7 @@
       "query_text": "local commercial a vendre Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12436,7 +12436,7 @@
       "query_text": "محل تجاري للبيع الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12455,7 +12455,7 @@
       "query_text": "local commercial a louer Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12474,7 +12474,7 @@
       "query_text": "محل تجاري كراء الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12493,7 +12493,7 @@
       "query_text": "magasin a vendre Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12512,7 +12512,7 @@
       "query_text": "متجر للبيع الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12531,7 +12531,7 @@
       "query_text": "magasin a louer Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12550,7 +12550,7 @@
       "query_text": "متجر كراء الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12569,7 +12569,7 @@
       "query_text": "ferme a vendre Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12588,7 +12588,7 @@
       "query_text": "مزرعة للبيع الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12607,7 +12607,7 @@
       "query_text": "ferme a louer Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12626,7 +12626,7 @@
       "query_text": "مزرعة كراء الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12645,7 +12645,7 @@
       "query_text": "immeuble a vendre Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12664,7 +12664,7 @@
       "query_text": "عمارة للبيع الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12683,7 +12683,7 @@
       "query_text": "immeuble a louer Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12702,7 +12702,7 @@
       "query_text": "عمارة كراء الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12721,7 +12721,7 @@
       "query_text": "duplex a vendre Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12740,7 +12740,7 @@
       "query_text": "دوبلكس للبيع الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12759,7 +12759,7 @@
       "query_text": "duplex a louer Nador",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12778,7 +12778,7 @@
       "query_text": "دوبلكس كراء الناظور",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12797,7 +12797,7 @@
       "query_text": "appartement a vendre Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12816,7 +12816,7 @@
       "query_text": "شقة للبيع المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12835,7 +12835,7 @@
       "query_text": "appartement a louer Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12854,7 +12854,7 @@
       "query_text": "شقة كراء المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12873,7 +12873,7 @@
       "query_text": "studio a vendre Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12892,7 +12892,7 @@
       "query_text": "استوديو للبيع المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12911,10 +12911,10 @@
       "query_text": "studio a louer Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-371c3a6da2b4a264",
@@ -12930,7 +12930,7 @@
       "query_text": "استوديو كراء المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12949,7 +12949,7 @@
       "query_text": "villa a vendre Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12968,7 +12968,7 @@
       "query_text": "فيلا للبيع المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -12987,7 +12987,7 @@
       "query_text": "villa a louer Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13006,7 +13006,7 @@
       "query_text": "فيلا كراء المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13025,7 +13025,7 @@
       "query_text": "maison a vendre Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13044,7 +13044,7 @@
       "query_text": "منزل للبيع المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13063,7 +13063,7 @@
       "query_text": "maison a louer Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13082,7 +13082,7 @@
       "query_text": "منزل كراء المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13101,7 +13101,7 @@
       "query_text": "terrain a vendre Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13120,7 +13120,7 @@
       "query_text": "أرض للبيع المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13139,7 +13139,7 @@
       "query_text": "terrain a louer Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13158,7 +13158,7 @@
       "query_text": "أرض كراء المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13177,7 +13177,7 @@
       "query_text": "riad a vendre Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13196,7 +13196,7 @@
       "query_text": "رياض للبيع المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13215,7 +13215,7 @@
       "query_text": "riad a louer Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13234,7 +13234,7 @@
       "query_text": "رياض كراء المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13253,10 +13253,10 @@
       "query_text": "bureau a vendre Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-acef4dde0e8ad806",
@@ -13272,7 +13272,7 @@
       "query_text": "مكتب للبيع المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13291,7 +13291,7 @@
       "query_text": "bureau a louer Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13310,7 +13310,7 @@
       "query_text": "مكتب كراء المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13329,7 +13329,7 @@
       "query_text": "local commercial a vendre Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13348,7 +13348,7 @@
       "query_text": "محل تجاري للبيع المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13367,7 +13367,7 @@
       "query_text": "local commercial a louer Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13386,7 +13386,7 @@
       "query_text": "محل تجاري كراء المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13405,7 +13405,7 @@
       "query_text": "magasin a vendre Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13424,7 +13424,7 @@
       "query_text": "متجر للبيع المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13443,7 +13443,7 @@
       "query_text": "magasin a louer Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13462,7 +13462,7 @@
       "query_text": "متجر كراء المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13481,10 +13481,10 @@
       "query_text": "ferme a vendre Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-869b7cca67d49a94",
@@ -13500,7 +13500,7 @@
       "query_text": "مزرعة للبيع المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13519,7 +13519,7 @@
       "query_text": "ferme a louer Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13538,7 +13538,7 @@
       "query_text": "مزرعة كراء المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13557,7 +13557,7 @@
       "query_text": "immeuble a vendre Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13576,7 +13576,7 @@
       "query_text": "عمارة للبيع المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13595,7 +13595,7 @@
       "query_text": "immeuble a louer Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13614,7 +13614,7 @@
       "query_text": "عمارة كراء المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13633,7 +13633,7 @@
       "query_text": "duplex a vendre Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13652,7 +13652,7 @@
       "query_text": "دوبلكس للبيع المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13671,7 +13671,7 @@
       "query_text": "duplex a louer Mohammedia",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -13690,7 +13690,7 @@
       "query_text": "دوبلكس كراء المحمدية",
       "target_domain": null,
       "query_family": "general",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -44565,9 +44565,9 @@
       "query_text": "appartement a vendre Meknès site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -44622,9 +44622,9 @@
       "query_text": "appartement a louer Kénitra site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -44641,7 +44641,7 @@
       "query_text": "appartement a vendre El Jadida site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -44660,10 +44660,10 @@
       "query_text": "appartement a louer El Jadida site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-710ee64adc42c475",
@@ -44755,10 +44755,10 @@
       "query_text": "appartement a vendre Nador site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-97b6189a300b01f4",
@@ -44774,10 +44774,10 @@
       "query_text": "appartement a louer Nador site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-7bae8dbaa84c26e8",
@@ -44793,9 +44793,9 @@
       "query_text": "appartement a vendre Mohammedia site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -44812,10 +44812,10 @@
       "query_text": "appartement a louer Mohammedia site:mubawab.ma",
       "target_domain": "mubawab.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-2c9600226c1e9105",
@@ -45154,10 +45154,10 @@
       "query_text": "appartement a louer Meknès site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 1.2
     },
     {
       "query_id": "nqu1-f557353d783013ad",
@@ -45173,10 +45173,10 @@
       "query_text": "appartement a vendre Kénitra site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-ca7763a348da7cd9",
@@ -45192,9 +45192,9 @@
       "query_text": "appartement a louer Kénitra site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -45211,10 +45211,10 @@
       "query_text": "appartement a vendre El Jadida site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-0b6d7a405611af72",
@@ -45325,7 +45325,7 @@
       "query_text": "appartement a vendre Nador site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45382,10 +45382,10 @@
       "query_text": "appartement a louer Mohammedia site:agenz.ma",
       "target_domain": "agenz.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-43835aa71bad487d",
@@ -45705,9 +45705,9 @@
       "query_text": "appartement a vendre Meknès site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -45724,7 +45724,7 @@
       "query_text": "appartement a louer Meknès site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45743,10 +45743,10 @@
       "query_text": "appartement a vendre Kénitra site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-af0b1df7a0bbd528",
@@ -45762,9 +45762,9 @@
       "query_text": "appartement a louer Kénitra site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -45781,7 +45781,7 @@
       "query_text": "appartement a vendre El Jadida site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45800,7 +45800,7 @@
       "query_text": "appartement a louer El Jadida site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45895,7 +45895,7 @@
       "query_text": "appartement a vendre Nador site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -45933,9 +45933,9 @@
       "query_text": "appartement a vendre Mohammedia site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -45952,7 +45952,7 @@
       "query_text": "appartement a louer Mohammedia site:sarouty.ma",
       "target_domain": "sarouty.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46275,9 +46275,9 @@
       "query_text": "appartement a vendre Meknès site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -46332,9 +46332,9 @@
       "query_text": "appartement a louer Kénitra site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -46351,7 +46351,7 @@
       "query_text": "appartement a vendre El Jadida site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46370,10 +46370,10 @@
       "query_text": "appartement a louer El Jadida site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.3
     },
     {
       "query_id": "nqu1-509caf3ab1f60cba",
@@ -46484,7 +46484,7 @@
       "query_text": "appartement a louer Nador site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46522,7 +46522,7 @@
       "query_text": "appartement a louer Mohammedia site:avito.ma",
       "target_domain": "avito.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46864,7 +46864,7 @@
       "query_text": "appartement a louer Meknès site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -46902,9 +46902,9 @@
       "query_text": "appartement a louer Kénitra site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -46921,7 +46921,7 @@
       "query_text": "appartement a vendre El Jadida site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47054,7 +47054,7 @@
       "query_text": "appartement a louer Nador site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47073,9 +47073,9 @@
       "query_text": "appartement a vendre Mohammedia site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -47092,10 +47092,10 @@
       "query_text": "appartement a louer Mohammedia site:1immo.ma",
       "target_domain": "1immo.ma",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-3e643b26fd6f850a",
@@ -47434,7 +47434,7 @@
       "query_text": "appartement a louer Meknès site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47453,7 +47453,7 @@
       "query_text": "appartement a vendre Kénitra site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47472,9 +47472,9 @@
       "query_text": "appartement a louer Kénitra site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -47491,7 +47491,7 @@
       "query_text": "appartement a vendre El Jadida site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47510,7 +47510,7 @@
       "query_text": "appartement a louer El Jadida site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47605,7 +47605,7 @@
       "query_text": "appartement a vendre Nador site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -47643,9 +47643,9 @@
       "query_text": "appartement a vendre Mohammedia site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -47662,7 +47662,7 @@
       "query_text": "appartement a louer Mohammedia site:barnes-marrakech.com",
       "target_domain": "barnes-marrakech.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48004,7 +48004,7 @@
       "query_text": "appartement a louer Meknès site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48061,7 +48061,7 @@
       "query_text": "appartement a vendre El Jadida site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48175,7 +48175,7 @@
       "query_text": "appartement a vendre Nador site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48194,7 +48194,7 @@
       "query_text": "appartement a louer Nador site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48213,9 +48213,9 @@
       "query_text": "appartement a vendre Mohammedia site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -48232,7 +48232,7 @@
       "query_text": "appartement a louer Mohammedia site:kawtarimmobilier.com",
       "target_domain": "kawtarimmobilier.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48574,7 +48574,7 @@
       "query_text": "appartement a louer Meknès site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48593,10 +48593,10 @@
       "query_text": "appartement a vendre Kénitra site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.6
     },
     {
       "query_id": "nqu1-5ae24ced92184427",
@@ -48612,9 +48612,9 @@
       "query_text": "appartement a louer Kénitra site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -48631,10 +48631,10 @@
       "query_text": "appartement a vendre El Jadida site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
-      "discovery_yield": 0
+      "discovery_yield": 0.9
     },
     {
       "query_id": "nqu1-291293cda9b17595",
@@ -48745,7 +48745,7 @@
       "query_text": "appartement a vendre Nador site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -48783,9 +48783,9 @@
       "query_text": "appartement a vendre Mohammedia site:mouldar.com",
       "target_domain": "mouldar.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -49163,7 +49163,7 @@
       "query_text": "appartement a vendre Kénitra site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49182,9 +49182,9 @@
       "query_text": "appartement a louer Kénitra site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -49201,7 +49201,7 @@
       "query_text": "appartement a vendre El Jadida site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49220,7 +49220,7 @@
       "query_text": "appartement a louer El Jadida site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49315,7 +49315,7 @@
       "query_text": "appartement a vendre Nador site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49334,7 +49334,7 @@
       "query_text": "appartement a louer Nador site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49353,9 +49353,9 @@
       "query_text": "appartement a vendre Mohammedia site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -49372,7 +49372,7 @@
       "query_text": "appartement a louer Mohammedia site:limmobiliersansfrontieres.com",
       "target_domain": "limmobiliersansfrontieres.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49733,7 +49733,7 @@
       "query_text": "appartement a vendre Kénitra site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49752,9 +49752,9 @@
       "query_text": "appartement a louer Kénitra site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -49771,7 +49771,7 @@
       "query_text": "appartement a vendre El Jadida site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49790,7 +49790,7 @@
       "query_text": "appartement a louer El Jadida site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49885,7 +49885,7 @@
       "query_text": "appartement a vendre Nador site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -49904,7 +49904,7 @@
       "query_text": "appartement a louer Nador site:marrakechrealty.com",
       "target_domain": "marrakechrealty.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50265,9 +50265,9 @@
       "query_text": "appartement a vendre Meknès site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -50303,7 +50303,7 @@
       "query_text": "appartement a vendre Kénitra site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50322,9 +50322,9 @@
       "query_text": "appartement a louer Kénitra site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -50341,7 +50341,7 @@
       "query_text": "appartement a vendre El Jadida site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50360,7 +50360,7 @@
       "query_text": "appartement a louer El Jadida site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50474,7 +50474,7 @@
       "query_text": "appartement a louer Nador site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50493,9 +50493,9 @@
       "query_text": "appartement a vendre Mohammedia site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -50512,7 +50512,7 @@
       "query_text": "appartement a louer Mohammedia site:marocannonces.com",
       "target_domain": "marocannonces.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50835,9 +50835,9 @@
       "query_text": "appartement a vendre Meknès site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -50854,7 +50854,7 @@
       "query_text": "appartement a louer Meknès site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50911,7 +50911,7 @@
       "query_text": "appartement a vendre El Jadida site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -50930,7 +50930,7 @@
       "query_text": "appartement a louer El Jadida site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -51025,7 +51025,7 @@
       "query_text": "appartement a vendre Nador site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -51063,9 +51063,9 @@
       "query_text": "appartement a vendre Mohammedia site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51082,7 +51082,7 @@
       "query_text": "appartement a louer Mohammedia site:logic-immo.com",
       "target_domain": "logic-immo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
       "failure_count": 0,
       "discovery_yield": 0
@@ -51405,9 +51405,9 @@
       "query_text": "appartement a vendre Meknès site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51462,9 +51462,9 @@
       "query_text": "appartement a louer Kénitra site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51481,9 +51481,9 @@
       "query_text": "appartement a vendre El Jadida site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51500,9 +51500,9 @@
       "query_text": "appartement a louer El Jadida site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51595,9 +51595,9 @@
       "query_text": "appartement a vendre Nador site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51614,9 +51614,9 @@
       "query_text": "appartement a louer Nador site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51633,9 +51633,9 @@
       "query_text": "appartement a vendre Mohammedia site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     },
     {
@@ -51652,9 +51652,9 @@
       "query_text": "appartement a louer Mohammedia site:logicimmo.com",
       "target_domain": "logicimmo.com",
       "query_family": "brand_hint",
-      "last_executed_at": null,
+      "last_executed_at": "2026-07-18T07:29:23.449Z",
       "next_eligible_at": null,
-      "failure_count": 0,
+      "failure_count": 1,
       "discovery_yield": 0
     }
   ]
