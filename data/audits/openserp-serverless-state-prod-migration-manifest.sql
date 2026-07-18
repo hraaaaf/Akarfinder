@@ -1,9 +1,12 @@
+begin;
+
 -- OPENSERP-SERVERLESS-STATE-PROD-MIGRATION-1
 -- Single-paste Production application: both frozen migrations + the frozen
 -- seed, one transaction. Additive only -- no DROP/TRUNCATE/DELETE, no
 -- listing table touched. Auto-rolls-back on any verification mismatch.
-
-begin;
+-- (begin; is deliberately the very first line/token of this file -- some
+-- copy paths have been observed to truncate the first few characters of
+-- the first line, which would otherwise corrupt a leading comment.)
 
 -- OPENSERP-SERVERLESS-STATE-PERSISTENCE-1
 -- Objective: replace the local-filesystem rewrite of data/openserp/query-universe-v1.json
