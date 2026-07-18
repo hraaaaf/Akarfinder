@@ -227,6 +227,37 @@ async function main() {
   assert(clusterOriginErrorRaised, "the DB's own CHECK constraint must reject an unrecognized cluster_origin");
   report.cluster_origin_constraint = { status: "PASS" };
 
+  // --- Case 8: discovery_candidates within-batch duplicate must not crash ---
+  // Reproduces the exact failure found during this mission's own corrected
+  // Wave 1 apply: two rows sharing the same (provider, query_hash,
+  // canonical_url) key submitted in ONE insert (e.g. a sponsored + organic
+  // SERP slot for the same URL) violated the unique index outright, since
+  // the select-then-split logic only checked against rows already IN the
+  // table, not duplicates within its own incoming batch. The application
+  // fix (national-writer.ts) dedupes the batch before insert; this case
+  // proves the DB-level behavior an un-deduped batch would hit, so the
+  // application-level dedupe is not accidentally redundant.
+  let duplicateKeyErrorRaised = false;
+  try {
+    await db.query(
+      `insert into discovery_candidates (provider, query_hash, source_domain, source_url, canonical_url)
+       values ('openserp', 'dup-hash', 'mubawab.ma', 'https://mubawab.ma/dup', 'https://mubawab.ma/dup'),
+              ('openserp', 'dup-hash', 'mubawab.ma', 'https://mubawab.ma/dup', 'https://mubawab.ma/dup')`,
+    );
+  } catch {
+    duplicateKeyErrorRaised = true;
+  }
+  assert(duplicateKeyErrorRaised, "an un-deduped batch with a repeated (provider, query_hash, canonical_url) key must fail at the DB level -- proves the application-level pre-insert dedupe is load-bearing, not redundant");
+  const dupCountAfterFailedBatch = await db.query<{ count: string }>("select count(*)::text from discovery_candidates where canonical_url = 'https://mubawab.ma/dup';");
+  assert(Number(dupCountAfterFailedBatch.rows[0].count) === 0, "the failed batch must not have partially inserted either row");
+
+  const dedupedInsert = await db.query(
+    `insert into discovery_candidates (provider, query_hash, source_domain, source_url, canonical_url) values ('openserp', 'dup-hash', 'mubawab.ma', 'https://mubawab.ma/dup', 'https://mubawab.ma/dup')`,
+  );
+  const dupCountAfterDedupedInsert = await db.query<{ count: string }>("select count(*)::text from discovery_candidates where canonical_url = 'https://mubawab.ma/dup';");
+  assert(Number(dupCountAfterDedupedInsert.rows[0].count) === 1, "a single, pre-deduped row for the same key must insert cleanly");
+  report.discovery_candidates_within_batch_dedupe = { status: "PASS" };
+
   await db.close();
 
   report.overall_verdict = "PASS";

@@ -76,7 +76,7 @@ export async function writeNationalDiscoveryCandidates(input: NationalWriteInput
   unclassified: number;
 }> {
   const supabase = getSupabaseServerClient();
-  const rows = input.decisions
+  const allRows = input.decisions
     .filter((decision) => decision.classified !== null)
     .map((decision) => {
       const classified = decision.classified!;
@@ -104,6 +104,16 @@ export async function writeNationalDiscoveryCandidates(input: NationalWriteInput
         },
       };
     });
+
+  // Dedupe WITHIN this run's own batch on the same (provider, query_hash,
+  // canonical_url) idempotency key the DB enforces. Found necessary during
+  // this mission's own Wave 1 apply: a single SERP result page can list the
+  // same canonical URL twice (e.g. a sponsored + organic slot), which
+  // passed every earlier de-dup step (those only checked against rows
+  // already IN the database) but still produced two identical-key rows in
+  // one INSERT, violating the unique index outright. Keeps the last
+  // occurrence (freshest rank/metadata for that key).
+  const rows = [...new Map(allRows.map((row) => [`${row.provider}::${row.query_hash}::${row.canonical_url}`, row])).values()];
 
   let accepted = 0;
   let rejected = 0;
