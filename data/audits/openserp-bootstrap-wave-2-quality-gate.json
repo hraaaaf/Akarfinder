@@ -1,0 +1,40 @@
+{
+  "audit_id": "openserp-bootstrap-wave-2-quality-gate",
+  "mission": "AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1",
+  "generated_at_utc": "2026-07-18T01:05:00Z",
+  "section": "24 - quality gate after Wave 2",
+  "wave_2_summary": {
+    "attempts": [
+      { "note": "first attempt killed externally, 0 rows written, 0 lock rows left behind -- safe failure, confirmed via direct DB check before retry" },
+      { "run_id": "openserp-bootstrap-wave2-v2", "query_count": 100, "query_success_count": 92, "note": "completed successfully" }
+    ],
+    "accepted_candidates_verified_via_db": 59,
+    "new_property_listings": 59,
+    "new_listing_sources": 59,
+    "new_clusters": 59,
+    "new_memberships": 59,
+    "discovery_candidates_staged_this_run": 1137,
+    "metrics_accuracy_note": "the run's own self-reported summary undercounted (new_property_listings: 7 vs the verified real 59); a metrics-only bug (data itself is correct, confirmed via direct queries and the 1:1 invariant check below), noted for a future fix -- all counts in this report and the final bilan come from direct DB verification, not the script's own summary."
+  },
+  "sample_reviewed": "all 59 admitted candidates",
+  "checks": {
+    "listing_like_precision": { "value": 1.0, "detail": "59/59 -- 0 suspicious category/hub-page URL patterns found on manual re-scan", "threshold": 0.95, "pass": true },
+    "pii_persisted": { "value": 0, "pass": true },
+    "category_pages_public": { "value": 0, "pass": true },
+    "partner_mislabeling": { "value": 0, "detail": "origin_type=persisted_openserp on all 59", "pass": true },
+    "internal_links_on_external": { "value": 0, "pass": true },
+    "false_zero_prices": { "value": 0, "pass": true }
+  },
+  "one_to_one_invariant_verified_directly": {
+    "property_clusters_total": 249,
+    "property_cluster_members_total": 249,
+    "multi_membership_clusters_found": 0,
+    "pass": true
+  },
+  "known_open_item_wave_2": {
+    "description": "3 of the 59 Wave 2 listings (property_listing_id 555, 593, 631) were written before the price sanitization fix was deployed and carry an implausible price (50M/312.49M/32.224M MAD). Confirmed via re-scan that 0 NEW implausible prices exist beyond these 3 -- the fix is effective going forward. Left as-is (not retroactively edited), documented for a future manual review mission alongside the Wave 1 transaction_type item.",
+    "affects_new_writes": false
+  },
+  "domains_covered_wave_2": ["1immo", "mubawab", "mouldar", "agenz", "sarouty", "marrakechrealty"],
+  "verdict": "PASS -- Wave 3 authorized"
+}
