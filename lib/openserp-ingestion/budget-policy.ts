@@ -22,6 +22,24 @@ export const MAX_BUDGET = 24;
 export const CLEAN_RUNS_TO_ESCALATE = 6;
 export const ENGINE_SUSPENSION_MS = 6 * 60 * 60 * 1000; // 6 hours
 
+// OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1 — Phase 5.
+// A distinct concept from current_budget above: current_budget is *how
+// many queries the adaptive backoff policy currently trusts the engines
+// with*, escalating over time. MAX_SERVERLESS_BATCH_SIZE is a hard,
+// independent ceiling on how many of those queries a single serverless
+// invocation may actually attempt, regardless of how high current_budget
+// has climbed -- the two failure modes are different (current_budget
+// protects against captcha/rate-limit incidents; this protects against
+// the invocation itself running out of wall-clock time). Deliberately
+// conservative: prefer several small, resumable invocations over one
+// large invocation that risks FUNCTION_INVOCATION_TIMEOUT (the incident
+// this constant was introduced to prevent -- see
+// data/audits/openserp-serverless-state-real-run-attempt-result.json).
+// Only applies to the serverless path (run-orchestrator.ts's own
+// batchSizeOverride, used by the local CLI bootstrap script for its
+// intentionally larger 25/100/300-query waves, is unaffected).
+export const MAX_SERVERLESS_BATCH_SIZE = 5;
+
 export function defaultBudgetState(): BudgetState {
   return {
     current_budget: START_BUDGET,

@@ -18,15 +18,30 @@ name: OpenSERP automated ingestion (30 min)
 #                              gh secret set OPENSERP_CRON_SECRET
 #                            or the GitHub repo Settings -> Secrets UI.
 #
-# Prepared but not yet enabled end-to-end: this file is safe to commit and
-# push on its own (a workflow with a schedule trigger only starts firing
-# once the *default branch* has it — pushing it on a feature branch does
-# not activate anything). Nothing calls Production until this file exists
-# on the repository's default branch AND the secret above is configured.
+# OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1 — the `schedule`
+# trigger below was found to be live on the default branch (proven by a
+# real scheduled run, "#6", firing every 30 minutes) despite this file's
+# own prior comment claiming it was "prepared but not yet enabled
+# end-to-end" -- that comment was wrong; a schedule trigger goes live the
+# moment this file lands on the default branch, with no separate
+# activation step. That scheduled run collided with a manual real-run
+# validation attempt and contributed to the conditions behind a
+# FUNCTION_INVOCATION_TIMEOUT incident (see
+# data/audits/openserp-serverless-state-real-run-attempt-result.json).
+#
+# The `schedule` trigger is therefore removed here, deliberately, until a
+# future mission explicitly re-authorizes the unattended 30-minute
+# cadence. workflow_dispatch (manual trigger) is kept so the endpoint can
+# still be exercised under explicit human control. To restore the
+# schedule later, re-add:
+#   schedule:
+#     - cron: "*/30 * * * *"
+# scripts/scrapers/__tests__/openserp-schedule-trigger-guard.test.ts
+# statically asserts this file has no `schedule` key and does have
+# `workflow_dispatch` -- it will fail loudly if this file is edited to
+# re-add the schedule without that test being updated deliberately.
 
 on:
-  schedule:
-    - cron: "*/30 * * * *"
   workflow_dispatch: {} # allows a manual "Run workflow" click for testing
 
 jobs:

@@ -13,6 +13,14 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
+// OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1 — the lease must
+// comfortably outlive maxDuration so it never expires while this
+// invocation is still legitimately running (which would let a second,
+// overlapping invocation take over mid-flight) -- but expires soon enough
+// after a kill (FUNCTION_INVOCATION_TIMEOUT or otherwise) that the next
+// attempt can self-heal without any manual cleanup.
+const LOCK_LEASE_SECONDS = Math.round(maxDuration + 30);
+
 // Vercel's own Cron Jobs feature auto-injects `Authorization: Bearer
 // $CRON_SECRET` on every scheduled invocation IFF an env var literally named
 // CRON_SECRET is configured (https://vercel.com/docs/cron-jobs/manage-cron-jobs)
@@ -43,7 +51,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const runId = `openserp-cron-${new Date().toISOString().replace(/[:.]/g, "-")}`;
   const scheduledAtIso = new Date().toISOString();
 
-  const lock = await acquireIngestionRunLock(runId);
+  const lock = await acquireIngestionRunLock(runId, LOCK_LEASE_SECONDS);
   if (!lock.acquired) {
     return NextResponse.json({ ok: true, status: lock.reason, run_id: runId }, { status: 200 });
   }
@@ -53,6 +61,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       runId,
       scheduledAtIso,
       write: true,
+      routeMaxDurationMs: maxDuration * 1000,
     });
     return NextResponse.json({ ok: true, status: "COMPLETED", metrics }, { status: 200 });
   } catch (error) {
@@ -61,7 +70,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       { status: 500 },
     );
   } finally {
-    await releaseIngestionRunLock();
+    // If the function is killed by the platform before this line ever
+    // runs, the lease itself expires after LOCK_LEASE_SECONDS -- no
+    // manual cleanup is required (see
+    // lib/openserp-ingestion/state/ingestion-run-lock-repository.ts).
+    await releaseIngestionRunLock(runId);
   }
 }
 

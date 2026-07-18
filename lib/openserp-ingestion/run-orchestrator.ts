@@ -1,5 +1,6 @@
 // AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1 — sections 20-25.
 // OPENSERP-SERVERLESS-STATE-PERSISTENCE-1 — sections 6-10.
+// OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1 — Phases 3-6.
 // Orchestrates one ingestion cycle: pick a batch from the query universe via
 // the rotation planner, execute each query against up to 2 active (non-
 // suspended) engines, run every raw result through national-admission, then
@@ -17,14 +18,28 @@
 // function (read-only /var/task bundle) -- see
 // docs/OPENSERP_SERVERLESS_FILESYSTEM_AUDIT.md for the full trace of how
 // this was found and confirmed to have written zero DB rows before crashing.
+//
+// A second incident (OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1; see
+// data/audits/openserp-serverless-state-real-run-attempt-result.json) found
+// that even after the EROFS fix, a real batch of real engine calls could
+// still run past Vercel's own platform-level FUNCTION_INVOCATION_TIMEOUT,
+// which kills the function with no chance to run any persistence code at
+// all. This file now: (a) tracks an internal time budget well inside the
+// route's maxDuration and stops issuing new work once it's exhausted, (b)
+// gives every engine call its own bounded, budget-aware timeout, (c) caps
+// how many queries a single serverless invocation may even attempt, and
+// (d) persists each query's rotation-state update immediately after that
+// query finishes (a "checkpoint"), rather than batching all persistence
+// until after the entire loop -- so a run that stops early (voluntarily on
+// budget, or is killed outright) never loses already-completed work.
 
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { runOpenSerpLiveQuery } from "./openserp-live";
+import { runOpenSerpLiveQuery, EngineCallError, DEFAULT_ENGINE_CALL_TIMEOUT_MS } from "./openserp-live";
 import { selectNextBatch, markQueryExecuted, type RotationQuery } from "./query-rotation-planner";
 import { decideAdmission, type AdmissionDecision } from "./national-admission";
 import { writeNationalIngestionRun } from "./national-writer";
-import { activeEngines, applyRunOutcome, type BudgetState } from "./budget-policy";
+import { activeEngines, applyRunOutcome, MAX_SERVERLESS_BATCH_SIZE, type BudgetState } from "./budget-policy";
 import {
   hydrateRotationQueries,
   persistRotationUpdates,
@@ -34,6 +49,7 @@ import {
 } from "./state/serverless-state-service";
 import type { OpenSerpEngineName } from "./state/query-rotation-state-repository";
 import type { OpenSerpIngestionQuery } from "./types";
+import { createTimeBudget, remainingBudgetMs, elapsedMs, snapshotTimeBudget, DEFAULT_SAFETY_MARGIN_MS } from "./time-budget";
 
 type UniverseQueryRecord = StaticQueryDefinition & {
   normalized_query: string;
@@ -49,6 +65,22 @@ type UniverseQueryRecord = StaticQueryDefinition & {
 };
 
 type UniverseFile = { universe_version: string; queries: UniverseQueryRecord[] };
+
+// Matches route.ts's `export const maxDuration = 120;`. Kept as an
+// explicit, named, overridable default (routeMaxDurationMs input) rather
+// than importing from the route module (route.ts is a Next.js route file,
+// not meant to be imported by library code) -- the two are proven in sync
+// by scripts/scrapers/__tests__/openserp-time-budget-route-sync.test.ts.
+export const DEFAULT_ROUTE_MAX_DURATION_MS = 120_000;
+
+// Below this much remaining budget, don't even attempt one more engine
+// call -- a call that starts with almost no time left has no realistic
+// chance to finish inside the deadline anyway, and would just push the
+// invocation closer to the platform's own hard kill instead of stopping
+// cleanly on our own terms.
+const MIN_VIABLE_CALL_BUDGET_MS = 3_000;
+
+export type RunOutcomeStatus = "completed" | "partial" | "time_budget_exhausted";
 
 export type RunMetrics = {
   run_id: string;
@@ -83,6 +115,12 @@ export type RunMetrics = {
   price_presence_rate: number;
   surface_presence_rate: number;
   write_mode: boolean;
+  // OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1 additions:
+  outcome_status: RunOutcomeStatus;
+  planned_unit_count: number;
+  executed_unit_count: number;
+  state_persisted: boolean;
+  time_budget: ReturnType<typeof snapshotTimeBudget>;
 };
 
 function loadUniverse(path: string): UniverseFile {
@@ -90,6 +128,7 @@ function loadUniverse(path: string): UniverseFile {
 }
 
 function categorizeError(error: unknown): "captcha" | "rate_limit" | "timeout" | "other" {
+  if (error instanceof EngineCallError && error.outcome === "engine_timeout") return "timeout";
   const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
   if (message.includes("captcha")) return "captcha";
   if (message.includes("429") || message.includes("rate limit") || message.includes("quota")) return "rate_limit";
@@ -109,9 +148,16 @@ export async function runIngestionCycle(input: {
   // current_budget happened to be (e.g. 4, after a captcha-driven backoff),
   // not the planned wave size. Found and fixed during this mission's own
   // live Wave 1 apply (4/25 queries executed) -- see
-  // docs/OPENSERP_AUTOMATED_INGESTION_ARCHITECTURE.md.
+  // docs/OPENSERP_AUTOMATED_INGESTION_ARCHITECTURE.md. When set, this ALSO
+  // bypasses MAX_SERVERLESS_BATCH_SIZE (the cap only applies to the
+  // serverless/cron path, which never sets this override).
   batchSizeOverride?: number;
   rawResultsDir?: string;
+  // OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1 additions:
+  routeMaxDurationMs?: number;
+  safetyMarginMs?: number;
+  now?: () => number;
+  engineCallTimeoutMs?: number;
 }): Promise<{ metrics: RunMetrics; decisions: AdmissionDecision[]; budgetState: BudgetState }> {
   // universePath stays a read-only override (used by tests/fixtures only,
   // per OPENSERP-SERVERLESS-STATE-PERSISTENCE-1 section 12) -- it is never
@@ -119,15 +165,22 @@ export async function runIngestionCycle(input: {
   // state is always PostgreSQL-backed, for both the serverless route and
   // any local CLI script running with write=true, so the two never diverge.
   const universePath = input.universePath ?? join(process.cwd(), "data/openserp/query-universe-v1.json");
+  const now = input.now ?? Date.now;
+  const timeBudget = createTimeBudget({
+    routeMaxDurationMs: input.routeMaxDurationMs ?? DEFAULT_ROUTE_MAX_DURATION_MS,
+    safetyMarginMs: input.safetyMarginMs ?? DEFAULT_SAFETY_MARGIN_MS,
+    now,
+  });
+  const engineCallTimeoutMs = input.engineCallTimeoutMs ?? DEFAULT_ENGINE_CALL_TIMEOUT_MS;
 
-  const startedAt = new Date().toISOString();
+  const startedAt = new Date(now()).toISOString();
   const universe = loadUniverse(universePath);
   const hydratedQueries = await hydrateRotationQueries(universe.queries, universe.universe_version);
   const budgetState: BudgetState = await loadBudgetState();
 
   const engines = activeEngines(budgetState, startedAt);
-  const budget = input.batchSizeOverride ?? budgetState.current_budget;
-  const batch = selectNextBatch(hydratedQueries, budget, startedAt);
+  const requestedBudget = input.batchSizeOverride ?? Math.min(budgetState.current_budget, MAX_SERVERLESS_BATCH_SIZE);
+  const plannedBatch = selectNextBatch(hydratedQueries, requestedBudget, startedAt);
   const rawResultsLog: unknown[] = [];
 
   const decisions: AdmissionDecision[] = [];
@@ -141,12 +194,26 @@ export async function runIngestionCycle(input: {
   const enginesWithIncident = new Set<"bing" | "duckduckgo" | "ecosia">();
   const canonicalUrlsSeen = new Set<string>();
 
-  const updatedByQueryId = new Map<
-    string,
-    UniverseQueryRecord & RotationQuery & { succeeded: boolean; engine: OpenSerpEngineName | undefined }
-  >();
+  let outcomeStatus: RunOutcomeStatus = "completed";
+  let executedCount = 0;
 
-  for (const universeQuery of batch) {
+  for (const universeQuery of plannedBatch) {
+    // Single unified threshold for "can we responsibly even start the next
+    // unit of work": MIN_VIABLE_CALL_BUDGET_MS, not just isTimeBudgetExhausted
+    // (which only trips at exactly zero remaining). Checking only the
+    // looser isTimeBudgetExhausted here would let the loop "burn through"
+    // every remaining planned query doing zero real engine calls each
+    // (since the per-engine-attempt check below would refuse all of them
+    // too, without time ever advancing) and still report "completed" --
+    // this check makes the run stop and honestly report
+    // time_budget_exhausted the moment it can no longer afford one more
+    // real unit of work, rather than silently no-op through the rest of
+    // the batch.
+    if (remainingBudgetMs(timeBudget, now) < MIN_VIABLE_CALL_BUDGET_MS) {
+      outcomeStatus = "time_budget_exhausted";
+      break;
+    }
+
     const attemptEngines = [universeQuery.preferred_engine, ...engines.filter((e) => e !== universeQuery.preferred_engine)].filter(
       (engine) => engines.includes(engine),
     ).slice(0, 2);
@@ -156,6 +223,19 @@ export async function runIngestionCycle(input: {
     let usedEngine: OpenSerpEngineName | undefined;
 
     for (const engine of attemptEngines) {
+      const remaining = remainingBudgetMs(timeBudget, now);
+      if (remaining < MIN_VIABLE_CALL_BUDGET_MS) {
+        // Not enough budget left to responsibly start another network
+        // call -- stop attempting further engines for this query (and,
+        // via the outer loop's own check, further queries too).
+        break;
+      }
+      // Never request a per-call timeout longer than what's actually left
+      // in the invocation's own budget -- a slow engine can shrink its own
+      // allotted time as the run progresses, but can never be handed more
+      // time than the invocation could possibly honor.
+      const perCallTimeoutMs = Math.max(1_000, Math.min(engineCallTimeoutMs, remaining - 500));
+
       try {
         const execution = await runOpenSerpLiveQuery({
           engine,
@@ -163,6 +243,7 @@ export async function runIngestionCycle(input: {
           limit: 15,
           site: universeQuery.target_domain ?? undefined,
           env: input.env,
+          timeoutMs: perCallTimeoutMs,
         });
         enginesUsed.add(engine);
         querySuccessCount += 1;
@@ -238,19 +319,28 @@ export async function runIngestionCycle(input: {
       }
     }
 
-    updatedByQueryId.set(universeQuery.query_id, {
-      ...markQueryExecuted(universeQuery, { executedAtIso: startedAt, succeeded, acceptedCount: acceptedForThisQuery }),
+    const updatedQuery = {
+      ...markQueryExecuted(universeQuery, { executedAtIso: new Date(now()).toISOString(), succeeded, acceptedCount: acceptedForThisQuery }),
       succeeded,
       engine: usedEngine,
-    });
+    };
+
+    // Checkpoint: persist THIS query's rotation-state update immediately,
+    // rather than accumulating every query's update and persisting once
+    // after the whole loop finishes. Idempotent (upsertQueryStates is a
+    // plain upsert keyed by query_id) -- if this exact call were retried,
+    // re-persisting the same already-correct row is a no-op in effect, not
+    // a double-count. If the invocation is killed the instant after this
+    // call returns, every query completed so far is already durable; only
+    // the query in flight (if any) is lost, and it was never marked
+    // executed in the first place, so the next invocation will simply
+    // select it again.
+    await persistRotationUpdates([updatedQuery], input.runId, universe.universe_version);
+    executedCount += 1;
   }
 
-  // Persist rotation state for every query actually attempted this run --
-  // PostgreSQL-backed (lib/openserp-ingestion/state/*), never a local file
-  // write. Untouched queries need no re-write; their DB rows are already
-  // correct from a prior run or the initial seed.
-  if (updatedByQueryId.size > 0) {
-    await persistRotationUpdates([...updatedByQueryId.values()], input.runId, universe.universe_version);
+  if (executedCount < plannedBatch.length && outcomeStatus === "completed") {
+    outcomeStatus = "partial";
   }
 
   // rawResultsDir is local_cli_only (OPENSERP_SERVERLESS_FILESYSTEM_AUDIT.md
@@ -280,7 +370,7 @@ export async function runIngestionCycle(input: {
   const admittedWithPrice = decisions.filter((d) => d.admitted && d.classified?.extracted.price_mad != null).length;
   const admittedWithSurface = decisions.filter((d) => d.admitted && d.classified?.extracted.surface_m2 != null).length;
 
-  const finishedAt = new Date().toISOString();
+  const finishedAt = new Date(now()).toISOString();
   const errorRate = querySuccessCount + queryFailureCount > 0 ? queryFailureCount / (querySuccessCount + queryFailureCount) : 0;
 
   const nextBudgetState = applyRunOutcome(
@@ -295,6 +385,9 @@ export async function runIngestionCycle(input: {
     },
     finishedAt,
   );
+  // Persisted unconditionally, including on a "partial"/"time_budget_exhausted"
+  // early exit -- an arrêt volontaire must still preserve whatever budget/
+  // suspension signal was actually observed on the units that did run.
   await persistBudgetState(nextBudgetState, input.runId);
 
   const metrics: RunMetrics = {
@@ -302,8 +395,8 @@ export async function runIngestionCycle(input: {
     scheduled_at: input.scheduledAtIso,
     started_at: startedAt,
     finished_at: finishedAt,
-    duration_ms: new Date(finishedAt).getTime() - new Date(startedAt).getTime(),
-    query_count: batch.length,
+    duration_ms: elapsedMs(timeBudget, now),
+    query_count: executedCount,
     query_success_count: querySuccessCount,
     query_failure_count: queryFailureCount,
     engines_used: [...enginesUsed],
@@ -326,10 +419,15 @@ export async function runIngestionCycle(input: {
     captcha_count: captchaCount,
     status_403_429: status403429,
     timeout_count: timeoutCount,
-    cities_covered: [...new Set(batch.map((q) => q.city))].length,
+    cities_covered: [...new Set(plannedBatch.slice(0, executedCount).map((q) => q.city))].length,
     price_presence_rate: acceptedCandidates > 0 ? Math.round((admittedWithPrice / acceptedCandidates) * 1000) / 1000 : 0,
     surface_presence_rate: acceptedCandidates > 0 ? Math.round((admittedWithSurface / acceptedCandidates) * 1000) / 1000 : 0,
     write_mode: input.write,
+    outcome_status: outcomeStatus,
+    planned_unit_count: plannedBatch.length,
+    executed_unit_count: executedCount,
+    state_persisted: true,
+    time_budget: snapshotTimeBudget(timeBudget, now),
   };
 
   return { metrics, decisions, budgetState: nextBudgetState };

@@ -3206,3 +3206,29 @@ Impact:
   retroactivement (id=539, id=555/593/631, id=827). 1605/1605 tests passants, 0 regression. Cron 30
   minutes prepare mais non actif -- ecriture manuelle uniquement jusqu'a authentification GitHub par
   l'utilisateur.
+
+## 2026-07-18 - OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1 — code + tests, aucun run reel
+Status: Validated. Code + tests + PGlite validation seulement -- aucune migration ni deploiement Production.
+Decision:
+- Suite au timeout Vercel (FUNCTION_INVOCATION_TIMEOUT) du premier essai de run reel (voir
+  `data/audits/openserp-serverless-state-real-run-attempt-result.json`), nettoyage cible du verrou
+  orphelin (`discovery_candidates` 7565 -> 7564, une seule ligne supprimee par id+provider), puis
+  refonte complete de la resilience serverless : budget de temps interne injectable
+  (`lib/openserp-ingestion/time-budget.ts`, marge 20s), timeout par appel moteur (15s, retreci selon
+  le budget restant), plafond de lot serverless (`MAX_SERVERLESS_BATCH_SIZE=5`), checkpoint par
+  requete (persistance immediate, plus de perte de progres sur arret partiel), et remplacement du
+  verrou compare-and-set (lecture-puis-ecriture, source du blocage initial) par un verrou a bail
+  atomique au niveau PostgreSQL (`openserp_ingestion_run_lock`, 2 fonctions SQL, plus jamais de
+  nettoyage manuel necessaire). Trigger `schedule` GitHub Actions retire (etait actif sur main a
+  l'insu de l'equipe, contribuant a l'incident) ; `workflow_dispatch` conserve.
+Reason:
+- Regle etablie de cette mission (et de tout cet engagement) : ne jamais corriger-puis-continuer sous
+  la meme autorisation apres decouverte d'un bug reel en validation -- une mission dediee et bornee a
+  ete demandee a la place, sans aucune activation de flag ni run reel autorise.
+Impact:
+- 25 nouveaux tests (1622/1622 test:scrapers, 53/53 test:api, 16/16 suite dediee
+  `test:openserp-time-budget-and-lock-safety`), 0 regression, build PASS (63/63 pages), tsc inchange
+  (1 erreur preexistante hors perimetre). `@electric-sql/pglite` promu en vraie devDependency (etait
+  installe ad hoc `--no-save` depuis plusieurs missions). Migration du nouveau verrou ecrite et
+  validee localement (PGlite) mais **pas encore appliquee en Production** -- precondition explicite
+  de la prochaine mission `OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-2`.
