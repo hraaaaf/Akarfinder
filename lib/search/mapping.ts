@@ -15,7 +15,11 @@ export function mapListingToTypesenseDocument(
     district: listing.district ?? listing.neighborhood ?? "",
     property_type: listing.property_type,
     transaction_type: listing.transaction_type,
-    price_mad: listing.price_mad ?? listing.price,
+    // Typesense's numeric field needs a value to sort/filter by; 0 here is
+    // an internal search-index sentinel only, never surfaced as a real
+    // price — display always goes through formatPrice()/the null-aware
+    // Listing.price field, not this index document.
+    price_mad: listing.price_mad ?? listing.price ?? 0,
     surface_m2: listing.surface_m2,
     bedrooms_count: listing.bedrooms_count ?? listing.bedrooms,
     bathrooms_count: listing.bathrooms_count ?? listing.bathrooms,

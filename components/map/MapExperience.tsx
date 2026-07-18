@@ -63,7 +63,7 @@ type CityCluster = {
   count: number;
   lat: number;
   lng: number;
-  averagePrice: number;
+  averagePrice: number | null;
 };
 
 const transactionOptions: Array<{
@@ -99,9 +99,11 @@ function getCityClusters(listings: Listing[]): CityCluster[] {
     const centroid = CITY_CENTROIDS[key];
     if (!centroid) continue;
 
-    const averagePrice = Math.round(
-      cityListings.reduce((sum, l) => sum + l.price, 0) / cityListings.length
-    );
+    // Undisclosed prices are excluded from the average, never treated as 0.
+    const pricedCityListings = cityListings.filter((l): l is typeof l & { price: number } => l.price != null);
+    const averagePrice = pricedCityListings.length === 0
+      ? null
+      : Math.round(pricedCityListings.reduce((sum, l) => sum + l.price, 0) / pricedCityListings.length);
     clusters.push({
       city,
       count: cityListings.length,
@@ -119,7 +121,7 @@ function getCityClusters(listings: Listing[]): CityCluster[] {
 
 function createPriceMarkerEl(
   priceLabel: string,
-  pricePerM2: number,
+  pricePerM2: number | null,
   position: "coherent" | "high" | "low" | null,
   isSelected: boolean,
   isApprox: boolean
@@ -151,7 +153,7 @@ function createPriceMarkerEl(
 
   el.innerHTML = `
     <span style="display:block;font-size:12px;font-weight:800;line-height:1;color:${priceColor}">${priceLabel}</span>
-    <span style="display:block;font-size:10px;font-weight:600;line-height:1;margin-top:3px;color:${subColor}">${pricePerM2.toLocaleString("fr-FR")} DH/m²</span>
+    ${pricePerM2 != null ? `<span style="display:block;font-size:10px;font-weight:600;line-height:1;margin-top:3px;color:${subColor}">${pricePerM2.toLocaleString("fr-FR")} DH/m²</span>` : ""}
   `;
 
   if (isApprox) {
@@ -163,7 +165,7 @@ function createPriceMarkerEl(
 function createClusterMarkerEl(
   city: string,
   count: number,
-  avgPrice: number
+  avgPrice: number | null
 ): HTMLAnchorElement {
   const el = document.createElement("a");
   el.href = `/search?city=${encodeURIComponent(city)}`;

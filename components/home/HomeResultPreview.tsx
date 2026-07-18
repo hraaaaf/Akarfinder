@@ -73,7 +73,7 @@ function ResultCard({ listing, isApprox }: { listing: Listing; isApprox: boolean
         <p className="text-[1.25rem] font-black tracking-[-0.038em] text-white/90">
           {formatPrice(listing.price, listing.currency)}
         </p>
-        {listing.price_per_m2 > 0 && (
+        {listing.price_per_m2 != null && listing.price_per_m2 > 0 && (
           <p className="mt-0.5 text-[11px] font-semibold text-white/30">
             {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
             {listing.surface_m2 > 0 ? ` · ${formatSurface(listing.surface_m2)}` : ""}

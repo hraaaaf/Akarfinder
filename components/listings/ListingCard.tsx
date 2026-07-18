@@ -56,9 +56,11 @@ export function ListingCard({ listing }: { listing: Listing }) {
             <p className="text-2xl font-bold tracking-[-0.03em] text-navy">
               {formatPrice(listing.price, listing.currency)}
             </p>
-            <p className="mt-1 text-[13px] text-stone">
-              {listing.price_per_m2.toLocaleString("fr-FR")} DH/m2
-            </p>
+            {listing.price_per_m2 != null && (
+              <p className="mt-1 text-[13px] text-stone">
+                {listing.price_per_m2.toLocaleString("fr-FR")} DH/m2
+              </p>
+            )}
           </div>
           <div className="text-right text-[13px] text-navy/72">
             <p>{formatSurface(listing.surface_m2)}</p>

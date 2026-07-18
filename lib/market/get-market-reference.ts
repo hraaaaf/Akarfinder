@@ -38,8 +38,9 @@ export function getMarketReference(
   neighborhood: string | undefined,
   propertyType: string,
   transactionType: "buy" | "rent",
-  listingPricePerM2: number
+  listingPricePerM2: number | null
 ): MarketReference | null {
+  if (listingPricePerM2 == null) return null;
   const normCity = normalize(city);
   const normNeighborhood = neighborhood ? normalize(neighborhood) : undefined;
   const normType = normalizePropertyType(propertyType);
@@ -83,9 +84,11 @@ export function getListingObservedPriceComparison(
   neighborhood: string | undefined,
   propertyType: string,
   transactionType: "buy" | "rent",
-  listingPricePerM2: number
+  listingPricePerM2: number | null
 ): ListingPriceComparison {
-  const ref = getMarketReference(city, neighborhood, propertyType, transactionType, listingPricePerM2);
+  const ref = listingPricePerM2 == null
+    ? null
+    : getMarketReference(city, neighborhood, propertyType, transactionType, listingPricePerM2);
 
   if (!ref) {
     return {

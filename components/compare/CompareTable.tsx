@@ -126,7 +126,7 @@ export function CompareTable({ items, onRemove, onClear }: CompareTableProps) {
             <tbody>
               <TableRow label="Prix" values={compareValue(items, (item) => getPriceLabel(item))} />
               <TableRow label="Surface" values={compareValue(items, (item) => formatSurface(item.listing.surface_m2))} />
-              <TableRow label="Prix / m²" values={compareValue(items, (item) => `${item.listing.price_per_m2.toLocaleString("fr-FR")} DH/m²`)} />
+              <TableRow label="Prix / m²" values={compareValue(items, (item) => item.listing.price_per_m2 != null ? `${item.listing.price_per_m2.toLocaleString("fr-FR")} DH/m²` : "Prix non communique")} />
               <TableRow label="Type de bien" values={compareValue(items, (item) => item.listing.property_type)} />
               <TableRow label="Chambres" values={compareValue(items, (item) => item.listing.bedrooms || "—")} />
               <TableRow label="Salles de bain" values={compareValue(items, (item) => item.listing.bathrooms || "—")} />
@@ -227,7 +227,7 @@ export function CompareTable({ items, onRemove, onClear }: CompareTableProps) {
                 </div>
                 <div className="rounded-xl bg-[#f8f5ed] p-3">
                   <dt className="font-extrabold uppercase tracking-[0.08em] text-gray-500">Prix / m²</dt>
-                  <dd className="mt-1 font-bold text-deepblue">{item.listing.price_per_m2.toLocaleString("fr-FR")} DH/m²</dd>
+                  <dd className="mt-1 font-bold text-deepblue">{item.listing.price_per_m2 != null ? `${item.listing.price_per_m2.toLocaleString("fr-FR")} DH/m²` : "Prix non communique"}</dd>
                 </div>
                 <div className="rounded-xl bg-[#f8f5ed] p-3">
                   <dt className="font-extrabold uppercase tracking-[0.08em] text-gray-500">Source</dt>

@@ -79,9 +79,11 @@ function FavoriteCard({ listing, onRemove }: { listing: Listing; onRemove: (id: 
           <FavoriteToggleButton listingId={listing.id} variant="icon" />
         </div>
 
-        <p className="mt-1 text-[12px] font-bold text-bronze-700">
-          {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
-        </p>
+        {listing.price_per_m2 != null && (
+          <p className="mt-1 text-[12px] font-bold text-bronze-700">
+            {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
+          </p>
+        )}
 
         <Link href={`/listings/${listing.id}`} className="mt-2 block">
           <h2 className="line-clamp-2 text-[0.97rem] font-extrabold leading-snug text-gray-950">

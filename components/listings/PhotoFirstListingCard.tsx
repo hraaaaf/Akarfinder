@@ -146,9 +146,11 @@ export function PhotoFirstListingCard({ listing }: PhotoFirstListingCardProps) {
             <p className="text-[1.75rem] font-extrabold leading-none tracking-[-0.045em] text-deepblue">
               {formatPrice(listing.price, listing.currency)}
             </p>
-            <p className="mt-1.5 text-[12.5px] font-bold text-bronze-700">
-              {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
-            </p>
+            {listing.price_per_m2 != null && (
+              <p className="mt-1.5 text-[12.5px] font-bold text-bronze-700">
+                {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
+              </p>
+            )}
           </div>
           <FavoriteToggleButton listingId={listing.id} variant="icon" />
         </div>

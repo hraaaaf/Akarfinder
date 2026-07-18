@@ -93,8 +93,15 @@ function matchesFilters(listing: Listing, query: SearchQuery) {
 
 function sortListings(listings: Listing[], sort?: string, query?: SearchQuery) {
   const copy = [...listings];
-  if (sort === "price_asc") return copy.sort((a, b) => a.price - b.price);
-  if (sort === "price_desc") return copy.sort((a, b) => b.price - a.price);
+  if (sort === "price_asc" || sort === "price_desc") {
+    return copy.sort((a, b) => {
+      // A listing with no disclosed price always sorts last.
+      if (a.price == null && b.price == null) return 0;
+      if (a.price == null) return 1;
+      if (b.price == null) return -1;
+      return sort === "price_asc" ? a.price - b.price : b.price - a.price;
+    });
+  }
   if (sort === "surface_desc") return copy.sort((a, b) => b.surface_m2 - a.surface_m2);
 
   // Default: intelligent ranking based on search intent

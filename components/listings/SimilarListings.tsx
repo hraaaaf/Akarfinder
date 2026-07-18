@@ -80,9 +80,11 @@ export function SimilarListings({ listings, currentListing }: SimilarListingsPro
                 <p className="text-[15px] font-extrabold tracking-[-0.02em] text-deepblue">
                   {formatPrice(item.price, item.currency)}
                 </p>
-                <p className="mt-0.5 text-[11.5px] font-bold text-bronze-700">
-                  {item.price_per_m2.toLocaleString("fr-FR")} DH/m²
-                </p>
+                {item.price_per_m2 != null && (
+                  <p className="mt-0.5 text-[11.5px] font-bold text-bronze-700">
+                    {item.price_per_m2.toLocaleString("fr-FR")} DH/m²
+                  </p>
+                )}
                 <p className="mt-1 line-clamp-1 text-[12.5px] font-semibold text-gray-700">
                   {item.title}
                 </p>

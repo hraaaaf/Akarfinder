@@ -43,7 +43,7 @@ export type ObservedPriceComparisonLabel =
   | "Données insuffisantes";
 
 export type ListingPriceComparison = {
-  listing_price_per_m2: number;
+  listing_price_per_m2: number | null;
   observed_price_per_m2: number | null;
   difference_percent: number | null;
   comparison_label: ObservedPriceComparisonLabel;

@@ -185,10 +185,13 @@ export function mapDbRowToListing(
 ): Listing {
   const fieldConfidenceMetadata = parseJsonSafe<FieldConfidenceMetadata>(row.field_confidence);
   const persistedExternalPolicy = derivePersistedExternalDisplayPolicy(fieldConfidenceMetadata);
-  const priceMad = row.price_mad ?? 0;
+  // A missing price must never become 0 (which every consumer must now
+  // null-guard) — see lib/listings/utils.ts formatPrice() for the display
+  // convention this preserves through to the API/UI layer.
+  const priceMad = row.price_mad ?? null;
   const surface = row.surface_m2 ?? 0;
   const pricePerM2 =
-    priceMad > 0 && surface > 0 ? Math.round(priceMad / surface) : 0;
+    priceMad != null && priceMad > 0 && surface > 0 ? Math.round(priceMad / surface) : null;
   const dataCompletenessScore = row.data_completeness_score ?? 0;
 
   const sellerName = containsPii(row.seller_name) ? undefined : row.seller_name ?? undefined;

@@ -119,7 +119,7 @@ function getBestReliabilityListing(items: CompareListingInsights[]) {
 
 function getBestPricePerM2Listing(items: CompareListingInsights[]) {
   return getBest(items, (item) => {
-    if (item.listing.price_per_m2 <= 0) return null;
+    if (item.listing.price_per_m2 == null || item.listing.price_per_m2 <= 0) return null;
     const delta = item.priceComparison.difference_percent;
     return delta == null ? null : -delta;
   });

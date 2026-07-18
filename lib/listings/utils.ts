@@ -72,8 +72,14 @@ export function sortListings(listings: Listing[], sortBy: SortBy): Listing[] {
   if (sortBy === "recommended") return listings;
   return [...listings].sort((a, b) => {
     if (sortBy === "reliability") return (b.reliability_score ?? 0) - (a.reliability_score ?? 0);
-    if (sortBy === "price-asc") return a.price - b.price;
-    if (sortBy === "price-desc") return b.price - a.price;
+    if (sortBy === "price-asc" || sortBy === "price-desc") {
+      // A listing with no disclosed price always sorts last, regardless of
+      // direction — never treated as if it were priced at 0.
+      if (a.price == null && b.price == null) return 0;
+      if (a.price == null) return 1;
+      if (b.price == null) return -1;
+      return sortBy === "price-asc" ? a.price - b.price : b.price - a.price;
+    }
     return 0;
   });
 }
@@ -102,8 +108,12 @@ export function filterListings(listings: Listing[], filters: ListingFiltersState
       (filters.city === "all" || listing.city === filters.city) &&
       (filters.neighborhood === "all" ||
         listing.neighborhood === filters.neighborhood) &&
-      listing.price >= minBudget &&
-      listing.price <= maxBudget &&
+      // A budget filter can only ever match a listing with a disclosed
+      // price — an undisclosed price is never assumed to be in range.
+      // Untouched budget filters (0..Infinity) still let it through.
+      (listing.price != null || (minBudget === 0 && maxBudget === Number.POSITIVE_INFINITY)) &&
+      (listing.price == null || listing.price >= minBudget) &&
+      (listing.price == null || listing.price <= maxBudget) &&
       listing.surface_m2 >= minSurface &&
       (filters.propertyType === "all" ||
         listing.property_type === filters.propertyType) &&

@@ -47,7 +47,7 @@ export function computeSimilarityScore(a: Listing, b: Listing): number {
 
   const pa = a.price_mad ?? a.price;
   const pb = b.price_mad ?? b.price;
-  if (pa > 0 && pb > 0) {
+  if (pa != null && pb != null && pa > 0 && pb > 0) {
     const ratio = Math.min(pa, pb) / Math.max(pa, pb);
     if (ratio >= 0.9) score += 0.15;
   }

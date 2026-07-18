@@ -100,9 +100,11 @@ export function MapSidePanel({
                     )}
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] font-bold text-[#9B7838]">
-                      {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
-                    </span>
+                    {listing.price_per_m2 != null && (
+                      <span className="text-[11px] font-bold text-[#9B7838]">
+                        {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
+                      </span>
+                    )}
                     {(() => {
                       const txType = listing.transaction_type === "rent" ? "rent" : "buy";
                       const ref = getMarketReference(listing.city, listing.neighborhood, listing.property_type, txType, listing.price_per_m2);

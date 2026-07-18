@@ -226,8 +226,12 @@ export function ListingDetail({ listing }: { listing: Listing }) {
               </p>
               <p className="mt-2 flex flex-wrap items-center gap-x-2 text-[13px] font-bold text-white/90 sm:text-[17px]">
                 <span>{locationLabel}</span>
-                <span className="text-bronze-400">·</span>
-                <span>{listing.price_per_m2.toLocaleString("fr-FR")} DH/m²</span>
+                {listing.price_per_m2 != null && (
+                  <>
+                    <span className="text-bronze-400">·</span>
+                    <span>{listing.price_per_m2.toLocaleString("fr-FR")} DH/m²</span>
+                  </>
+                )}
               </p>
             </div>
 

@@ -6,14 +6,15 @@ import type { Listing, NearbyPlace } from "@/lib/listings/types";
 // listing renders a complete decision dossier.
 
 export type ListingEnrichment = {
-  // Market reference
-  marketMinPerM2: number;
-  marketMaxPerM2: number;
-  marketPosition: "coherent" | "high" | "low";
+  // Market reference — null when the listing's own price is undisclosed
+  // (never derived from an invented 0 price).
+  marketMinPerM2: number | null;
+  marketMaxPerM2: number | null;
+  marketPosition: "coherent" | "high" | "low" | "unknown";
   // History
-  initialPrice: number;
-  currentPrice: number;
-  priceChangePercent: number;
+  initialPrice: number | null;
+  currentPrice: number | null;
+  priceChangePercent: number | null;
   listedAtLabel: string;
   updatedAtLabel: string;
   // Neighborhood
@@ -53,13 +54,18 @@ function deriveMarket(listing: Listing) {
     const marketMinPerM2 = round(ref * 0.88);
     const marketMaxPerM2 = round(ref * 1.12);
     let marketPosition: ListingEnrichment["marketPosition"] = "coherent";
-    if (listing.price_per_m2 > ref * 1.1) marketPosition = "high";
+    if (listing.price_per_m2 == null) marketPosition = "unknown";
+    else if (listing.price_per_m2 > ref * 1.1) marketPosition = "high";
     else if (listing.price_per_m2 < ref * 0.9) marketPosition = "low";
     return { marketMinPerM2, marketMaxPerM2, marketPosition };
   }
 
   // For rent / offices / land, comparison across the city is misleading.
   // Fall back to a band around the listing's own price/m², position coherent.
+  // An undisclosed price/m² has no band to derive at all.
+  if (listing.price_per_m2 == null) {
+    return { marketMinPerM2: null, marketMaxPerM2: null, marketPosition: "unknown" as const };
+  }
   return {
     marketMinPerM2: round(listing.price_per_m2 * 0.88),
     marketMaxPerM2: round(listing.price_per_m2 * 1.12),
@@ -77,6 +83,18 @@ function deriveHistory(listing: Listing) {
       currentPrice: listing.price,
       priceChangePercent: 0,
       listedAtLabel: listing.listed_at_label ?? "Programme suivi",
+      updatedAtLabel
+    };
+  }
+
+  // An undisclosed price has no history to simulate — never derive a fake
+  // initial/current price or trend from a price we don't have.
+  if (listing.price == null) {
+    return {
+      initialPrice: null,
+      currentPrice: null,
+      priceChangePercent: null,
+      listedAtLabel: listing.listed_at_label ?? "Publiée il y a quelques semaines",
       updatedAtLabel
     };
   }
@@ -182,9 +200,12 @@ export function getSimilarListings(listing: Listing, all: Listing[], limit = 3):
       if (l.neighborhood === listing.neighborhood) score += 60;
       if (l.property_type === listing.property_type) score += 40;
       if (l.transaction_type === listing.transaction_type) score += 20;
-      // closer budget => higher score (up to 30)
-      const budgetGap = Math.abs(l.price - listing.price) / Math.max(listing.price, 1);
-      score += Math.max(0, 30 - budgetGap * 30);
+      // closer budget => higher score (up to 30) — skipped entirely when
+      // either price is undisclosed, never treated as a 0 gap.
+      if (l.price != null && listing.price != null) {
+        const budgetGap = Math.abs(l.price - listing.price) / Math.max(listing.price, 1);
+        score += Math.max(0, 30 - budgetGap * 30);
+      }
       return { l, score };
     })
     .sort((a, b) => b.score - a.score);

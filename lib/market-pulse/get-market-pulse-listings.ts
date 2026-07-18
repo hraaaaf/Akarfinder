@@ -117,7 +117,7 @@ export function getMarketPulseShortDetail(
     return "Programme neuf";
   }
 
-  if (listing.price_per_m2 > 0 && listing.transaction_type !== "rent") {
+  if (listing.price_per_m2 != null && listing.price_per_m2 > 0 && listing.transaction_type !== "rent") {
     return "Prix observé disponible";
   }
 

@@ -433,7 +433,7 @@ export async function VendrePageShell() {
                     <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border/15 pt-2.5 text-[11.5px] font-bold text-muted-foreground">
                       {listing.surface_m2 > 0 && <span>{formatSurface(listing.surface_m2)}</span>}
                       {listing.bedrooms > 0 && <span>{listing.bedrooms} ch.</span>}
-                      {listing.price_per_m2 > 0 && <span className="text-muted-foreground">{listing.price_per_m2.toLocaleString("fr-FR")} DH/m²</span>}
+                      {listing.price_per_m2 != null && listing.price_per_m2 > 0 && <span className="text-muted-foreground">{listing.price_per_m2.toLocaleString("fr-FR")} DH/m²</span>}
                     </div>
                   </div>
                 </article>

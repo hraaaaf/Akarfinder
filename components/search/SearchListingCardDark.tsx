@@ -164,7 +164,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             <p className="text-[1.6rem] font-extrabold leading-none tracking-[-0.04em] text-bronze-400">
               {formatPrice(listing.price, listing.currency)}
             </p>
-            {listing.price_per_m2 > 0 ? (
+            {listing.price_per_m2 != null && listing.price_per_m2 > 0 ? (
               <p className="mt-1 text-[12px] font-bold text-muted-foreground">
                 {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
               </p>

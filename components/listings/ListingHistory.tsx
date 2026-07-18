@@ -12,8 +12,8 @@ type Step = { label: string; value: string; strike?: boolean; strong?: boolean }
 
 export function ListingHistory({ listing, enrichment }: ListingHistoryProps) {
   const { initialPrice, currentPrice, priceChangePercent } = enrichment;
-  const hasChange = priceChangePercent !== 0 && initialPrice !== currentPrice;
-  const dropped = priceChangePercent < 0;
+  const hasChange = priceChangePercent != null && priceChangePercent !== 0 && initialPrice !== currentPrice;
+  const dropped = priceChangePercent != null && priceChangePercent < 0;
 
   const changeCls = !hasChange
     ? "bg-gray-100 text-gray-500"

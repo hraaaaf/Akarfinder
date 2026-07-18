@@ -58,10 +58,12 @@ export type Listing = {
   title: string;
   city: string;
   neighborhood: string;
-  price: number;
+  // null = price not disclosed by the source (never invented as 0 — see
+  // lib/listings/utils.ts formatPrice()). Every consumer must null-guard.
+  price: number | null;
   currency: "DH";
   surface_m2: number;
-  price_per_m2: number;
+  price_per_m2: number | null;
   property_type: ListingPropertyType;
   transaction_type: ListingTransactionType;
   bedrooms: number;
@@ -76,7 +78,7 @@ export type Listing = {
   image_url: string;
   reliability_explanation: string;
   whatsapp?: string;
-  price_mad?: number;
+  price_mad?: number | null;
   district?: string;
   rooms_count?: number;
   bedrooms_count?: number;

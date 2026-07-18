@@ -284,7 +284,12 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     const maxBudget = Number(filters.maxBudget) || Number.POSITIVE_INFINITY;
     const minSurface = Number(filters.minSurface) || 0;
     const clientFiltered = listings.filter((l) => {
-      if (l.price < minBudget || l.price > maxBudget) return false;
+      // An undisclosed price only matches when no real budget filter is set.
+      if (l.price == null) {
+        if (minBudget > 0 || maxBudget !== Number.POSITIVE_INFINITY) return false;
+      } else if (l.price < minBudget || l.price > maxBudget) {
+        return false;
+      }
       if (l.surface_m2 < minSurface) return false;
       // SEARCH-FILTERS-RELEVANCE-FIX-1: MRE filter disabled — is_mre_friendly field does not exist in DB/types
       // TODO: Re-enable once is_mre_friendly is properly defined and populated

@@ -14,9 +14,9 @@ export function canShowIndicativePricePosition(listing: Listing): boolean {
     canShowPricePositionForListing(listing) &&
     isSupportedPricePositionPropertyType(listing.property_type) &&
     listing.city.trim().length > 0 &&
-    listing.price > 0 &&
+    listing.price != null && listing.price > 0 &&
     listing.surface_m2 > 0 &&
-    listing.price_per_m2 > 0 &&
+    listing.price_per_m2 != null && listing.price_per_m2 > 0 &&
     (sourceName.length === 0 || canPublishListingToPublicSurface(listing))
   );
 }

@@ -163,7 +163,7 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
         <p className="mt-1 text-[1.4rem] font-extrabold leading-none tracking-[-0.04em] text-bronze-700">
           {formatPrice(listing.price, listing.currency)}
         </p>
-        {listing.price_per_m2 > 0 && (
+        {listing.price_per_m2 != null && listing.price_per_m2 > 0 && (
           <p className="mt-1 text-[11px] font-bold text-muted-foreground">
             {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
           </p>
@@ -259,7 +259,8 @@ function AcheterListingCard({ listing }: { listing: Listing }) {
         </Link>
 
         {/* CREDIT-MVP / CREDIT-UX-1 — Simuler le crédit pour ce bien (prix + listing_id prérempli) */}
-        <SimulateCreditButton price={listing.price} listingId={listing.id} />
+        {/* A credit simulation needs a real, disclosed price — never simulated from an unknown one. */}
+        {listing.price != null && <SimulateCreditButton price={listing.price} listingId={listing.id} />}
       </div>
     </article>
   );

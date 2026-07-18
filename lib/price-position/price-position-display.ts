@@ -52,6 +52,10 @@ function buildPublicView(reference: NonNullable<ReturnType<typeof getMarketRefer
 
 export function getIndicativePricePositionDecision(listing: Listing): PricePositionDecisionInternal | null {
   if (!canShowIndicativePricePosition(listing)) return null;
+  // canShowIndicativePricePosition already required price/price_per_m2 > 0
+  // (never null at this point) — re-checked here only to satisfy TypeScript,
+  // not because the guard above is untrusted.
+  if (listing.price == null || listing.price_per_m2 == null) return null;
 
   const reference = getMarketReference(
     listing.city,

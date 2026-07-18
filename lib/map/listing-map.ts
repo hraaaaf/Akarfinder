@@ -70,7 +70,8 @@ export const defaultMapFilters: MapFilters = {
   hideDuplicates: true,
 };
 
-export function formatShortPrice(price: number): string {
+export function formatShortPrice(price: number | null): string {
+  if (price == null) return "Prix non communique";
   if (price >= 1_000_000) {
     const value = price / 1_000_000;
     return `${value.toLocaleString("fr-FR", {
@@ -117,8 +118,10 @@ export function filterMapListings(
         listing.transaction_type === filters.transactionType) &&
       (filters.propertyType === "all" ||
         listing.property_type === filters.propertyType) &&
-      listing.price >= minBudget &&
-      listing.price <= maxBudget &&
+      // An undisclosed price only matches when no real budget filter is set.
+      (listing.price != null || (minBudget <= 0 && maxBudget === Number.POSITIVE_INFINITY)) &&
+      (listing.price == null || listing.price >= minBudget) &&
+      (listing.price == null || listing.price <= maxBudget) &&
       (!filters.hideDuplicates || duplicateScore < 0.7)
     );
   });
@@ -160,10 +163,12 @@ export function getMapClusters(listings: Listing[]): MapCluster[] {
       const position = CITY_VISUAL_POSITIONS[city];
       if (!position) return null;
 
-      const averagePrice = Math.round(
-        cityListings.reduce((total, listing) => total + listing.price, 0) /
-          cityListings.length
-      );
+      // Undisclosed prices are excluded from the average, never treated as 0
+      // (which would silently drag the city average down).
+      const pricedListings = cityListings.filter((listing): listing is typeof listing & { price: number } => listing.price != null);
+      const averagePrice = pricedListings.length === 0
+        ? null
+        : Math.round(pricedListings.reduce((total, listing) => total + listing.price, 0) / pricedListings.length);
 
       return {
         city,

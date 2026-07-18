@@ -196,7 +196,7 @@ function RentCard({ listing }: { listing: Listing }) {
           {formatPrice(listing.price, listing.currency)}
           <span className="text-[12px] font-bold text-muted-foreground">/mois</span>
         </p>
-        {listing.price_per_m2 > 0 && (
+        {listing.price_per_m2 != null && listing.price_per_m2 > 0 && (
           <p className="mt-1 text-[11px] font-bold text-muted-foreground">
             {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²/mois
           </p>
