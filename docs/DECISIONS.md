@@ -3232,3 +3232,31 @@ Impact:
   installe ad hoc `--no-save` depuis plusieurs missions). Migration du nouveau verrou ecrite et
   validee localement (PGlite) mais **pas encore appliquee en Production** -- precondition explicite
   de la prochaine mission `OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-2`.
+
+## 2026-07-18 - OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-2 — STOP, timeout plateforme persiste
+Status: STOP -- REAL_RUN_V2_BLOCKED_REQUIRES_CODE_CHANGE. Aucune correction tentee sous cette autorisation.
+Decision:
+- Retrait du schedule GitHub rendu effectif sur `main` (commit `b01502e`, verifie a la fois cote git
+  et cote historique des runs GitHub). Migration `openserp_ingestion_run_lock` appliquee en
+  Production (table + 2 fonctions atomiques, RLS active, 0 policy, smoke test acquire/refuse/release
+  reussi en direct). Code time-budget/lease deploye flags OFF, NOOP authentifie prouve propre.
+  Autorisation utilisateur explicite (OUI verbatim + reconfirmation sur le sens reel du flag
+  OPENSERP_INGESTION_CRON_ENABLED) obtenue avant toute activation. Premier `workflow_dispatch` reel
+  declenche -- **echec HTTP 504**, logs Vercel confirmant `Task timed out after 120 seconds` (le
+  meme signal que l'incident d'origine). Flags immediatement remis a `false`, redeploiement de
+  confirmation, endpoint et routes publiques revalides sains. Deuxieme run non autorise (regle ODM :
+  run 1 doit etre strictement PASS).
+Reason:
+- Regle etablie de cet engagement : aucune correction de code sous une autorisation de run reel --
+  un diagnostic honnete d'abord, une mission dediee ensuite.
+Impact:
+- 0 donnee metier touchee (558/563/419/419/7564/0 inchanges). Le nouveau verrou a bail a prouve sa
+  valeur meme dans l'echec : jamais libere par le code (kill plateforme), mais auto-expire sans
+  aucune intervention manuelle -- contrairement a l'incident precedent qui avait laisse un verrou
+  bloque necessitant un DELETE cible. Cause racine identifiee avec un haut degre de confiance :
+  aucun appel Supabase (notamment `hydrateRotationQueries`, un SELECT unique avec les 2718 query_id
+  dans une clause IN) n'a de timeout explicite -- seuls les appels moteurs externes en ont un depuis
+  la mission precedente. Le budget de temps interne ne protege que la boucle de requetes, jamais la
+  phase de preparation, jamais testee en conditions reelles (latence Supabase reelle, 2718 lignes)
+  par la mission precedente (fixtures reduites + client mocke instantane). Mission suivante
+  recommandee : `OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1`.

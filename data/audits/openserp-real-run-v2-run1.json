@@ -1,0 +1,84 @@
+{
+  "mission": "OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-2",
+  "phase": "9_10_11_12_first_real_run",
+  "generated_at_utc": "2026-07-18T23:25:00Z",
+  "workflow_run": {
+    "run_number": 10,
+    "workflow_run_id": "not captured (GitHub UI only, no gh CLI access this session)",
+    "commit": "b01502efbd2b20f1f263d9065e76fe8c66463d7b",
+    "branch": "main",
+    "trigger": "workflow_dispatch (manual)",
+    "started_at_local_evidence": "manually triggered ~00:13 local (screenshot)",
+    "total_duration": "2m7s",
+    "trigger_ingestion_step_duration": "2m4s",
+    "status": "Failure"
+  },
+  "github_actions_error": {
+    "message_1": "Error: Ingestion endpoint returned HTTP 504",
+    "message_2": "Error: Process completed with exit code 1."
+  },
+  "http_status": 504,
+  "outcome_status": "PLATFORM_TIMEOUT (not a clean application-level outcome -- no JSON body was returned, matching a Vercel FUNCTION_INVOCATION_TIMEOUT signature, the same signature as the original incident)",
+  "run_id_observed_in_lock_table": "openserp-cron-2026-07-18T23-11-26-525Z",
+  "queries_attempted": "unknown -- not observable from outside; DB evidence shows 0",
+  "queries_completed": 0,
+  "queries_skipped_budget": "unknown",
+  "engine_timeouts": "unknown -- no application logs accessible (Vercel function logs not fetched this session)",
+  "network_errors": "unknown",
+  "captcha": "unknown",
+  "403_429": "unknown",
+  "new_listings": 0,
+  "new_sources": 0,
+  "new_clusters": 0,
+  "new_memberships": 0,
+  "discovery_candidates_delta": 0,
+  "critical_checks": {
+    "http_200": { "expected": true, "actual": false, "status": "FAIL -- 504" },
+    "erofs_count": { "status": "N/A_NOT_OBSERVED -- no application logs fetched; DB evidence shows no writes at all, consistent with either 0 EROFS or a crash before any write attempt" },
+    "filesystem_writes": 0,
+    "run_lock_acquired": { "status": "PASS", "evidence": "row present with owner_id=openserp-cron-2026-07-18T23-11-26-525Z, acquired_at=23:11:27Z" },
+    "run_lock_released": { "status": "FAIL (expected, given the kill) -- release never ran (finally block skipped by platform kill), but SELF-HEALED via lease expiry (expires_at=23:13:57Z, confirmed expired and gone by 23:17:38Z with zero manual intervention)", "self_heal_confirmed": true },
+    "time_budget_respected": { "status": "FAIL", "detail": "the internal time budget only guards the per-query loop (checked before each query and before/after each engine call) -- it does NOT bound the setup phase (loadUniverse + hydrateRotationQueries, the latter issuing a single SELECT with all 2718 query_ids in one IN clause). 0 rotation-state checkpoints were persisted, meaning the function died before completing even the first query's processing -- most likely during this unbounded setup phase. This is a real, previously-unidentified gap in the time-budget design from OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1: all of that mission's tests exercised the query loop with an already-hydrated, tiny fixture universe (4-8 queries) and never exercised the setup phase against the full 2718-query production universe under real network/DB latency." },
+    "serverless_batch_size_le_5": "unknown -- never reached (0 checkpoints means the batch-selection/loop stage's actual size cannot be confirmed from DB evidence alone)",
+    "checkpoint_persisted_per_completed_query": { "status": "N/A", "detail": "0 queries completed, so this property was never exercised" }
+  },
+  "db_state_after": {
+    "property_listings": { "before": 558, "after": 558, "unchanged": true },
+    "listing_sources": { "before": 563, "after": 563, "unchanged": true },
+    "property_clusters": { "before": 419, "after": 419, "unchanged": true },
+    "property_cluster_members": { "before": 419, "after": 419, "unchanged": true },
+    "discovery_candidates": { "before": 7564, "after": 7564, "unchanged": true },
+    "source_offer_observations": { "before": 0, "after": 0, "unchanged": true },
+    "openserp_query_rotation_state_rows_with_last_run_id": 0,
+    "openserp_engine_budget_state": "unchanged (all 3 rows still show the original migration-seed updated_at timestamp)",
+    "openserp_ingestion_run_lock": "1 row present at check time, expired and self-cleared by the time of a later check -- 0 manual cleanup performed"
+  },
+  "root_cause_hypothesis": {
+    "confirmed_via_vercel_logs": {
+      "log_id": "zxtx2-1784416286115-849808250ba9",
+      "message": "Vercel Runtime Timeout Error: Task timed out after 120 seconds",
+      "response_status_code": 504,
+      "total_log_lines_for_this_invocation": 1,
+      "interpretation": "Exactly the platform's own hard 120s limit was hit -- not the internal ~100s (120-20margin) budget deadline. Only one log line exists for the whole invocation, meaning the function never reached any point that would have logged progress or returned a response; it was still inside some blocking call all the way to the platform kill. This is a hang, not merely 'slow but progressing'."
+    },
+    "most_likely": "None of the Supabase/DB calls in the setup or checkpoint path (hydrateRotationQueries's single SELECT with all 2718 query_ids in one IN clause, seedMissingQueryStates, loadBudgetState, persistRotationUpdates, persistBudgetState) have any explicit request timeout. This mission (OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1) only added bounded timeouts to the EXTERNAL ENGINE calls (openserp-live.ts) -- the internal time-budget checks are pure JS-side elapsed-time checks *between* awaited calls, which do nothing to bound how long any single awaited call (e.g. a Supabase request) is allowed to hang. If that large IN-clause query (or any other Supabase call) hangs or is simply very slow under real Production conditions (cold start, real network latency, a 2718-value filter) -- conditions never exercised by this mission's own tests, which always used small, already-seeded fixture universes with a mocked DB client -- the function has no mechanism to self-interrupt and just rides out to the platform's hard kill.",
+    "not_yet_ruled_out": [
+      "A genuinely slow or hanging first engine call, if the code somehow reached that point without any DB call ever completing",
+      "A cold-start/bundle-size issue specific to the newly deployed code, independent of the DB-timeout gap"
+    ],
+    "confirmed_not_the_cause": [
+      "The lock mechanism itself -- worked exactly as designed, self-healed via lease expiry",
+      "GitHub schedule collision -- confirmed absent, not a factor",
+      "Data corruption or partial writes -- all business counters exactly unchanged"
+    ]
+  },
+  "immediate_response": {
+    "flags_reverted_to_false": true,
+    "revert_deployment": "dpl_FN24LjSMyTaZGfFMCjSBhyc7cbHS",
+    "revert_confirmed_via": "vercel env pull literal values + 401 sanity check on the endpoint",
+    "no_code_fix_attempted": true,
+    "run_2_authorized": false,
+    "run_2_performed": false
+  },
+  "overall_verdict": "STOP -- REAL_RUN_V2_BLOCKED_REQUIRES_CODE_CHANGE"
+}
