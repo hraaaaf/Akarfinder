@@ -1,0 +1,26 @@
+{
+  "mission": "OPENSERP-SERVERLESS-STATE-PERSISTENCE-1",
+  "query_universe_version": "openserp-query-universe-v1",
+  "query_definition_count": 2718,
+  "query_state_rows": 2718,
+  "engine_state_rows": 3,
+  "engines": [
+    "bing",
+    "duckduckgo",
+    "ecosia"
+  ],
+  "budget_bounds": {
+    "min": 4,
+    "start": 12,
+    "max": 24
+  },
+  "additive": true,
+  "idempotent": true,
+  "transactional": true,
+  "deletes_rows": false,
+  "modifies_listings": false,
+  "contains_url_snippet_or_pii": false,
+  "seed_sql_sha256": "12facb44cb375ceac67f7652c40779f4f3c0ced9f2d3b8ff78b2377ee9c01130",
+  "seed_manifest_sha256": "e2beacaca483dbb201fd011633dc225e0cb02c1d51a877a4f92418fdc3659123",
+  "generated_at_utc": "2026-07-18T15:15:35.041Z"
+}

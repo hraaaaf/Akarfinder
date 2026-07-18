@@ -1,0 +1,89 @@
+{
+  "gate_id": "openserp-serverless-state-gate-b",
+  "mission": "OPENSERP-SERVERLESS-STATE-PERSISTENCE-1",
+  "generated_at_utc": "2026-07-18T14:20:00Z",
+  "environment_option_used": "real local PostgreSQL 18.2 (native Windows binary), matching the precedent from AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1 Gate B",
+  "no_production_connection_made": true,
+  "no_production_data_copied": true,
+  "no_pii": true,
+  "no_shared_or_other_project_database_used": true,
+  "engine": "PostgreSQL 18.2 (native Windows binary, local, disposable data directory, ephemeral, dropped after the gate)",
+  "postgres_version_query_result": "PostgreSQL 18.2 on x86_64-windows, compiled by msvc-19.44.35222, 64-bit",
+  "instance": {
+    "host": "127.0.0.1",
+    "port": 55493,
+    "database": "akarfinder_openserp_gateb",
+    "auth": "trust (local-only disposable instance, no password used, no network exposure beyond localhost)",
+    "data_directory": "scratchpad, deleted after the gate"
+  },
+  "role_model": {
+    "anon": "NOLOGIN, NOBYPASSRLS",
+    "authenticated": "NOLOGIN, NOBYPASSRLS",
+    "service_role": "NOLOGIN, BYPASSRLS",
+    "grants": "USAGE on schema public + SELECT/INSERT/UPDATE/DELETE on openserp_query_rotation_state, openserp_engine_budget_state, and discovery_candidates (for the run-lock check) granted to all three roles, matching Supabase's actual default grant pattern -- RLS is the real access boundary."
+  },
+  "migrations_applied": [
+    "20260716140000_create_discovery_candidates.sql (pre-existing, applied only to exercise run-lock's sentinel-row mechanism, unmodified by this mission)",
+    "20260718140000_create_openserp_query_rotation_state.sql",
+    "20260718140100_create_openserp_engine_budget_state.sql"
+  ],
+  "migration_apply_status": "PASS -- all 3 applied cleanly, 0 errors",
+  "tests": {
+    "test_1_anon_select_new_tables": {
+      "status": "PASS",
+      "expected": "0 rows, no error",
+      "actual": "openserp_query_rotation_state=0, openserp_engine_budget_state=0"
+    },
+    "test_2_authenticated_select_new_tables": {
+      "status": "PASS",
+      "expected": "0 rows, no error",
+      "actual": "openserp_query_rotation_state=0, openserp_engine_budget_state=0"
+    },
+    "test_3_anon_insert_rejected": {
+      "status": "PASS",
+      "expected": "INSERT rejected by RLS",
+      "actual": "ERROR: new row violates row-level security policy for table \"openserp_query_rotation_state\""
+    },
+    "test_4_authenticated_insert_rejected": {
+      "status": "PASS",
+      "expected": "INSERT rejected by RLS",
+      "actual": "ERROR: new row violates row-level security policy for table \"openserp_engine_budget_state\""
+    },
+    "test_5_service_role_seed": {
+      "status": "PASS",
+      "expected": "service_role (BYPASSRLS) can insert seed rows",
+      "actual": "2 rotation rows, 3 budget rows inserted successfully"
+    },
+    "test_6_rotation_state_persists_across_invocations": {
+      "status": "PASS",
+      "expected": "an update from a simulated 'run 1' is durably readable",
+      "actual": "gb-q1 updated: last_executed_at set, successful_run_count=1, discovery_yield=2, last_run_id=gb-run-1"
+    },
+    "test_7_run_lock_concurrency": {
+      "status": "PASS",
+      "expected": "first acquire succeeds; a concurrent second acquire attempt on the same sentinel is rejected by the unique index (mutual exclusion); release (delete) leaves 0 lock rows",
+      "actual": "first INSERT succeeded (1 row); second concurrent INSERT rejected: 'duplicate key value violates unique constraint discovery_candidates_idempotency_idx'; after delete, 0 lock rows remain"
+    },
+    "test_8_captcha_suspension_persists": {
+      "status": "PASS",
+      "expected": "suspended_until and the dropped budget are readable from a fresh query, not dependent on in-process state",
+      "actual": "bing: suspended=true, current_budget=4; duckduckgo/ecosia: suspended=false, current_budget=12 (unaffected, matching applyRunOutcome's per-engine suspension design)"
+    },
+    "test_9_failed_transaction_rollback": {
+      "status": "PASS",
+      "expected": "a transaction containing an invalid engine name (violating the CHECK constraint) rolls back entirely, including its own earlier valid statement -- no partial rows, no orphans",
+      "actual": "transaction aborted on the engine_check constraint violation; gb-q2's discovery_yield update (set to 999 inside the same transaction) was rolled back and reads 0; budget row count stayed at 3 (the invalid 'unknown_engine' row never persisted)"
+    },
+    "test_10_no_observations_no_multi_source_clusters": {
+      "status": "PASS",
+      "expected": "this mission creates and touches only 2 new tables -- source_offer_observations and property_clusters must not even exist in this gate's schema, proving structurally that neither an Observation nor a multi-source cluster could have been created here",
+      "actual": "to_regclass('source_offer_observations') IS NULL = true; to_regclass('property_clusters') IS NULL = true"
+    }
+  },
+  "cleanup": {
+    "server_stopped": true,
+    "data_directory_deleted": true,
+    "database_dropped": true
+  },
+  "overall_verdict": "PASS"
+}
