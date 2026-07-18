@@ -1,0 +1,45 @@
+{
+  "mission": "OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-2",
+  "phase": "1_global_precheck",
+  "generated_at_utc": "2026-07-18T22:40:00Z",
+  "docs_read": {
+    "AGENTS.md": "not present in this worktree (only in the main AkarFinder worktree, untracked by git) -- read there instead, no conflict with this mission",
+    "docs/OPENSERP_AUTOMATED_INGESTION_30MIN_1.md": "present, prior context already established this session",
+    "docs/OPENSERP_SERVERLESS_STATE_PERSISTENCE_1.md": "MISSING -- was planned as a deliverable of an earlier mission but never actually written; noted as a documentation gap, not a blocker for this mission (the equivalent content exists across data/audits/openserp-serverless-state-*.json and docs/DECISIONS.md entries)",
+    "docs/DECISIONS.md": "read, includes the OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1 entry from the immediately prior mission",
+    "docs/ROADMAP.md": "read, still shows 98.7% (not yet updated to 98.9% mentioned verbally) -- to be corrected in Phase 20 documentation",
+    "docs/SESSION.md": "read"
+  },
+  "files_audited": {
+    ".github/workflows/openserp-ingestion-cron.yml": "confirmed no schedule trigger, workflow_dispatch present (post-Phase-2 fix)",
+    "lib/openserp-ingestion/time-budget.ts": "confirmed present, matches the prior mission's committed version",
+    "lib/openserp-ingestion/run-lock.ts": "confirmed present, thin wrapper over the lease repository",
+    "lib/openserp-ingestion/run-orchestrator.ts": "confirmed present, time-budget/checkpoint/batch-cap integration intact",
+    "lib/openserp-ingestion/state/*": "confirmed present (ingestion-run-lock-repository.ts, query-rotation-state-repository.ts, engine-budget-state-repository.ts, serverless-state-service.ts)",
+    "supabase/migrations/*": "confirmed the lease-lock migration (20260718180000_create_openserp_ingestion_run_lock.sql) is present and unmodified since the prior mission's commit"
+  },
+  "git_checks": {
+    "git_status_short": "(empty -- clean)",
+    "head": "3a926fbcb192de0b6a95a3ec373662efedb1b6fb",
+    "head_matches_expected": true,
+    "branch": "fix/openserp-serverless-state-persistence",
+    "diff_check": "clean (exit 0)",
+    "stash_list": [
+      "stash@{0}: On feat/rabat-agdal-quality-funnel-audit: wip: rabat-agdal-quality-funnel-audit before switching to research/web-index-stack-benchmark for Phase 4",
+      "stash@{1}: On master: wip codex buy-rent relevance tuning before demo preprod safety",
+      "stash@{2}: On master: WIP: Search Gateway relevance tuning (stashed for demo merge)"
+    ],
+    "stash_count_matches_expected": true,
+    "worktree_list": [
+      "AkarFinder (feat/rabat-agdal-quality-funnel-audit)",
+      "AkarFinder-classifier-calibration (feat/classifier-calibration-frozen-corpus)",
+      "AkarFinder-classifier-v2-recovery (feat/classifier-v2-blind-holdout-recovery)",
+      "AkarFinder-openserp-automated-ingestion (feat/openserp-automated-ingestion-30min)",
+      "AkarFinder-openserp-serverless-state (fix/openserp-serverless-state-persistence, this worktree)"
+    ],
+    "no_other_worktree_modified": true
+  },
+  "flags_state": "unchanged since prior mission -- OPENSERP_AUTOMATED_INGESTION_ENABLED=false, OPENSERP_INGESTION_WRITE_ENABLED=false, OPENSERP_INGESTION_CRON_ENABLED=false (not re-verified via CLI in this phase, will be re-verified in Phase 3 snapshot)",
+  "no_stop_condition_triggered": true,
+  "overall_verdict": "PASS -- proceeding to Phase 2 (schedule removal), already completed and separately recorded in data/audits/openserp-real-run-v2-github-schedule-precheck.json"
+}
