@@ -1,0 +1,88 @@
+{
+  "mission": "OPENSERP-SERVERLESS-STATE-PERSISTENCE-1",
+  "status": "OPENSERP_SERVERLESS_STATE_FIX_FROZEN",
+  "phase": "PREVIEW_FLAGS_OFF",
+  "generated_at_utc": "2026-07-18T17:05:00Z",
+  "frozen_head_sha": "5afbe1bb4706af93bfd9f36460f943550c7acdac",
+  "deployment": {
+    "id": "dpl_EftG9NXFgLXVFEuNo9h5MQCdmYqC",
+    "url": "https://akarfinder-l6gyexey0-achraf-benmoussa-s-projects.vercel.app",
+    "target": "preview",
+    "build_status": "PASS",
+    "note": "First deploy (dpl_7BDPJCCkQrPANf49ARK185sSiC7p) was made before the Preview-scoped cron secret existed; redeployed once (this id) so the secret is active. Same frozen HEAD both times, only the env var set changed."
+  },
+  "flags_set_preview_scope": {
+    "MARKET_INDEX_READ_ENABLED": "true",
+    "OPENSERP_AUTOMATED_INGESTION_ENABLED": "false",
+    "OPENSERP_INGESTION_WRITE_ENABLED": "false",
+    "OPENSERP_INGESTION_CRON_ENABLED": "false",
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": "false",
+    "MARKET_INDEX_CLUSTERING_ENABLED": "false",
+    "OPENSERP_CRON_SECRET": "generated fresh for Preview only, distinct from the Production secret, never printed to chat, held only in a scratchpad temp file for this session"
+  },
+  "checks": {
+    "build_serverless": { "status": "PASS", "detail": "Build Completed in /vercel/output, all serverless functions created, deployment READY" },
+    "endpoint_no_secret": { "status": "PASS", "expected": 401, "actual": 401 },
+    "endpoint_wrong_secret": { "status": "PASS", "expected": 401, "actual": 401 },
+    "endpoint_authenticated_flags_off": { "status": "PASS", "expected": "200 NOOP_FLAGS_DISABLED", "actual": "200 {\"ok\":true,\"status\":\"NOOP_FLAGS_DISABLED\"}" },
+    "zero_writes_new_state_tables": {
+      "status": "PASS",
+      "detail": "openserp_query_rotation_state / openserp_engine_budget_state do not exist yet in Production Supabase (PGRST205: 'Could not find the table public.openserp_query_rotation_state in the schema cache') -- the Production migration is explicitly out of scope for this authorization. No write to these tables is structurally possible, and none occurred (endpoint short-circuited at NOOP before reaching any DB call)."
+    },
+    "zero_writes_listing_tables": {
+      "status": "PASS",
+      "detail": "property_listings count read via service-role, read-only: 558 rows -- matches the known pre-existing baseline, unchanged."
+    },
+    "no_var_task_write_attempt": {
+      "status": "PASS",
+      "detail": "Proven structurally: the realistic serverless gate (data/audits/openserp-serverless-state-realistic-gate.json) already demonstrated 0 filesystem write calls through the real orchestration path; the deployed code is identical (frozen HEAD)."
+    },
+    "no_new_policy_rpc_view": {
+      "status": "PASS",
+      "detail": "Both new-table migrations enable RLS with zero CREATE POLICY statements (service_role reaches rows only via BYPASSRLS, not a policy). No RPC or view created anywhere in this mission's commits."
+    },
+    "no_market_index_table_browser_accessible": {
+      "status": "PASS",
+      "detail": "Confirmed in Gate B: anon-role SELECT on both new tables returns 0 rows with no error (RLS silently empty), anon INSERT rejected outright. The browser only ever holds an anon-equivalent key."
+    },
+    "14_public_routes": {
+      "status": "PASS",
+      "routes_checked": 14,
+      "all_200": true,
+      "routes": ["/", "/search", "/acheter", "/louer", "/vendre", "/compare", "/favorites", "/map", "/pro", "/a-propos", "/faq", "/immobilier", "/immobilier/casablanca", "/immobilier/casablanca/maarif"]
+    },
+    "34_parity_requests": {
+      "status": "PASS",
+      "tool": "scripts/market-index/run-market-index-shadow-read.ts --production-readonly (pre-existing script from AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1, read-only, run with the user's explicit authorization)",
+      "query_count": 34,
+      "total_mismatch": 0,
+      "missing_listing_ids": 0,
+      "extra_listing_ids": 0,
+      "duplicate_listing_ids": 0,
+      "field_mismatches": 0,
+      "ranking_order_mismatches": 0,
+      "report_file": "data/audits/market-index-shadow-read-results.json"
+    },
+    "listings_137_still_404": { "status": "PASS", "expected": 404, "actual": 404 },
+    "no_false_zero_price": {
+      "status": "PASS",
+      "detail": "Sampled 50 listings from /api/search?city=Casablanca&limit=50 -- 0 rows with price_mad/price === 0"
+    },
+    "no_console_hydration_page_network_error": {
+      "status": "PASS",
+      "detail": "Checked / and /search in a real browser (Chrome, fresh load each time): 0 console errors/exceptions on either page. Network requests for both pages: all first-party asset/document requests 200. Observed 3 non-application 503 responses (.well-known/vercel/jwe, an OPTIONS / preflight, a HEAD /search) that are Vercel platform/deployment-protection-layer requests, not requests issued by the app's own code -- both pages rendered fully and functioned normally regardless."
+    },
+    "client_bundle_no_secret": {
+      "status": "PASS",
+      "detail": "Grepped .next/static for the literal Preview cron secret value, the string SUPABASE_SERVICE_ROLE_KEY, and OPENSERP_CRON_SECRET -- 0 matches for all three."
+    }
+  },
+  "production_state": {
+    "production_touched": false,
+    "supabase_production_touched": "read-only only (property_listings count, table-existence probe on the 2 new tables, the 34-query parity script) -- 0 writes",
+    "writer": "OFF (Preview and Production both)",
+    "cron": "OFF (Preview and Production both)"
+  },
+  "overall_verdict": "PASS",
+  "next_decision_pending": "Additive Production Supabase migration (2 new tables + seed), flags still all OFF -- not covered by this authorization."
+}
