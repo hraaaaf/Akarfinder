@@ -12385,12 +12385,38 @@ Actions:
   (`canShowInternalListingDetail()`, politique pre-existante du 2026-07-02) -- confirmes non lies au
   correctif prix (meme 404 observe sur l'ancien deploiement Production).
 
-Etat officiel:
-- Statut: ecriture nationale ACTIVE en Production, cron 30 minutes PREPARE mais NON ACTIF (bloque sur
-  l'authentification GitHub de l'utilisateur). `property_listings` 316 -> 559 (+76.9%). Voir
-  `docs/OPENSERP_AUTOMATED_INGESTION_30MIN_1.md` pour le bilan complet.
+Etat officiel (mis a jour apres le verdict utilisateur du 2026-07-18, post-bilan):
+- Tests corriges : 1605 (`test:scrapers`) etait incomplet, total reel `test:scrapers` (1605) +
+  `test:api` (53) = 1658/1658, base mission 1614, delta +44/0 supprime.
+- Action A (attendu du verdict) : writer coupe en Production
+  (`OPENSERP_AUTOMATED_INGESTION_ENABLED=false`, `OPENSERP_INGESTION_WRITE_ENABLED=false`),
+  redeploiement du meme commit, valide (9/9 routes 200, Rabat total inchange 77, 0 faux prix,
+  endpoint cron confirme `NOOP_FLAGS_DISABLED` au niveau code).
+- `gh auth login` complete par l'utilisateur (device flow, compte `hraaaaf`) -- necessitait une
+  action interactive humaine, correctement non-automatisee. Depot prive `hraaaaf/Akarfinder` cree
+  et code pousse (avec autorisation explicite a chaque etape bloquee par le classificateur :
+  cron creation+push initialement bloque comme exfiltration -- push seul vers un repo deja
+  existant ne l'a pas ete ; scope `workflow` manquant sur le token, corrige via `gh auth refresh`).
+  Secret `OPENSERP_CRON_SECRET` regenere (l'original n'etait pas recuperable, jamais logge par
+  design) et synchronise sur GitHub + Vercel (`OPENSERP_CRON_SECRET`+`CRON_SECRET`). Test
+  `workflow_dispatch` execute sur autorisation explicite : HTTP 200,
+  `{"ok":true,"status":"NOOP_FLAGS_DISABLED"}` -- chaine bout-en-bout validee, cron programme
+  toujours INACTIF (`OPENSERP_INGESTION_CRON_ENABLED=false`).
+- Action B (reparation des 5 lignes connues) : script SQL en 2 temps (BEGIN/revue/COMMIT separes)
+  a silencieusement echoue dans l'editeur SQL Supabase (pool de connexions -- le COMMIT separe
+  tournait sur une autre connexion que celle tenant la transaction ouverte, ne validant rien).
+  Reecrit en un bloc `DO $$ ... $$` atomique unique (une seule requete, une seule connexion,
+  RAISE EXCEPTION = rollback automatique sur tout ecart). Execute avec succes : id=539
+  transaction_type sale->rent, id=555/593/631 price_mad->NULL, id=827 supprime (public + Market
+  Index), verifie directement contre l'API publique (id=827 absent, id=631 price=null confirmes),
+  0 regression (9 routes 200, 0 faux prix a 0, 22 null legitimes).
+- Statut: ecriture nationale ACTIVE en Production mais writer actuellement COUPE
+  (`OPENSERP_BOOTSTRAP_PRESERVED_WRITER_OFF`), cron GitHub PREPARE ET TESTE mais NON ACTIF
+  (`OPENSERP_GITHUB_CRON_PREPARED_AND_TESTED`), donnees reparees
+  (`OPENSERP_PROD_DATA_QUALITY_REPAIR_COMPLETED`). `property_listings` 316 -> 559 -> 558 (apres
+  suppression de id=827). Voir `docs/OPENSERP_AUTOMATED_INGESTION_30MIN_1.md` pour le bilan complet.
 
 Prochaine etape (non demarree, par instruction explicite de l'ODM -- mission suivante non demarree) :
-- Aucune action agent supplementaire. Reste a l'utilisateur : `gh auth login`, creation/push du
-  depot GitHub, `gh secret set OPENSERP_CRON_SECRET`, puis le cron 30 minutes s'activera de
-  lui-meme via le workflow deja prepare.
+- Aucune action agent supplementaire en attente. Le writer reste desactive par choix explicite de
+  l'utilisateur ; le cron 30 minutes est techniquement pret et teste mais reste desactive
+  (`OPENSERP_INGESTION_CRON_ENABLED=false`) jusqu'a une decision future de l'utilisateur.
