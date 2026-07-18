@@ -36,6 +36,28 @@ function sha256(value: string): string {
   return createHash("sha256").update(value, "utf8").digest("hex");
 }
 
+// Found necessary during this mission's own Wave 2 Production apply: at
+// least 3 of 59 admitted candidates carried a wildly implausible extracted
+// price (50,000,000 MAD; 312,490,000 MAD; 32,224,000 MAD for ordinary
+// apartments) -- two distinct, unresolved root causes traced to
+// utils.ts's parsePriceMad (shared with the pilot, not edited on a guess):
+// a "X millions" snippet phrase that may mean millions of MAD OR millions
+// of centimes (a real, unresolvable-from-text Moroccan pricing ambiguity),
+// and a greedy regex span mashing unrelated leading digits (room/bathroom/
+// bedroom icon counts) into the price capture. Rather than guess at a fix
+// to shared extraction logic, this caps at a generous but real ceiling --
+// even Casablanca's most expensive listed residential properties rarely
+// exceed this -- and treats anything above it as unknown (null), never as
+// a trusted, displayed number. The listing itself still gets admitted;
+// only the untrustworthy price is discarded.
+export const IMPLAUSIBLE_PRICE_CEILING_MAD = 30_000_000;
+
+export function sanitizePriceMad(priceMad: number | null): number | null {
+  if (priceMad === null) return null;
+  if (priceMad > IMPLAUSIBLE_PRICE_CEILING_MAD) return null;
+  return priceMad;
+}
+
 export type NationalWriteInput = {
   runId: string;
   decisions: AdmissionDecision[];
@@ -210,6 +232,7 @@ export async function writeNationalAdmittedListings(input: NationalWriteInput): 
       canonical_fingerprint: fingerprint,
       seen_query_ids: [classified.query_id],
       seen_run_ids: [input.runId],
+      extracted: { ...classified.extracted, price_mad: sanitizePriceMad(classified.extracted.price_mad) },
     };
   });
 

@@ -16,6 +16,7 @@ import {
   isDomainAdmissible,
   isDomainExternalWebResult,
 } from "../../../lib/openserp-ingestion/domain-registry.js";
+import { sanitizePriceMad, IMPLAUSIBLE_PRICE_CEILING_MAD } from "../../../lib/openserp-ingestion/national-writer.js";
 import {
   TIER_1_CITIES,
   TIER_3_DISTRICTS,
@@ -114,6 +115,29 @@ test("domain registry: every entry has a compliance_note and reviewed_at", () =>
     assert.ok(entry.compliance_note.length > 0, `${entry.domain} missing compliance_note`);
     assert.ok(entry.reviewed_at.length > 0, `${entry.domain} missing reviewed_at`);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Price plausibility sanitization
+// ---------------------------------------------------------------------------
+
+test("sanitizePriceMad discards a price above the plausibility ceiling", () => {
+  // Reproduces the shape of real anomalies found during this mission's own
+  // Wave 2 Production apply: 50,000,000 MAD ("50 millions" -- ambiguous
+  // MAD-vs-centimes phrasing) and 312,490,000 MAD (a greedy regex mashing
+  // unrelated room/bathroom-count digits into the price capture).
+  assert.equal(sanitizePriceMad(50_000_000), null);
+  assert.equal(sanitizePriceMad(312_490_000), null);
+});
+
+test("sanitizePriceMad keeps a plausible price unchanged", () => {
+  assert.equal(sanitizePriceMad(2_490_000), 2_490_000);
+  assert.equal(sanitizePriceMad(500_000), 500_000);
+  assert.equal(sanitizePriceMad(IMPLAUSIBLE_PRICE_CEILING_MAD), IMPLAUSIBLE_PRICE_CEILING_MAD);
+});
+
+test("sanitizePriceMad passes through null unchanged", () => {
+  assert.equal(sanitizePriceMad(null), null);
 });
 
 // ---------------------------------------------------------------------------
