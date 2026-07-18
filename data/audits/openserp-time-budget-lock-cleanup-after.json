@@ -1,0 +1,16 @@
+{
+  "verified_at_utc": "2026-07-18T18:31:26.660Z",
+  "discovery_candidates_count_after": 7564,
+  "expected": 7564,
+  "match": true,
+  "lock_rows_remaining": 0,
+  "other_counters_after": {
+    "property_listings": 558,
+    "listing_sources": 563,
+    "property_clusters": 419,
+    "property_cluster_members": 419,
+    "source_offer_observations": 0,
+    "openserp_query_rotation_state": 2718,
+    "openserp_engine_budget_state": 3
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "mission": "OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1",
+  "phase": "0_precheck",
+  "generated_at_utc": "2026-07-18T19:15:00Z",
+  "branch": "fix/openserp-serverless-state-persistence",
+  "worktree": "C:/Users/lenovo/Documents/AkarFinder-openserp-serverless-state",
+  "head_sha": "7c7a38c43469766f32a5f827660e465f940c0c75",
+  "git_status_short": "(empty -- worktree clean)",
+  "max_duration_config": {
+    "file": "app/api/internal/cron/openserp-ingestion/route.ts",
+    "line": 14,
+    "value": "export const maxDuration = 120;"
+  },
+  "github_actions_trigger_exact_content": {
+    "file": ".github/workflows/openserp-ingestion-cron.yml",
+    "on_block": "on:\n  schedule:\n    - cron: \"*/30 * * * *\"\n  workflow_dispatch: {} # allows a manual \"Run workflow\" click for testing",
+    "confirmed_live_on_default_branch": true,
+    "evidence": "user-provided screenshot of run #6, 'Triggered via schedule', on main, Success -- contradicts the file's own header comment claiming it was 'prepared but not yet enabled end-to-end'"
+  },
+  "live_flags_production": {
+    "OPENSERP_AUTOMATED_INGESTION_ENABLED": "false",
+    "OPENSERP_INGESTION_WRITE_ENABLED": "false",
+    "OPENSERP_INGESTION_CRON_ENABLED": "false",
+    "verification_method": "vercel env pull --environment=production, literal values read (no secrets displayed -- these are plain feature-flag booleans, not credentials)"
+  },
+  "stuck_lock_sentinel_identification": {
+    "table": "discovery_candidates",
+    "row_id": "3f9bb7b7-cf56-4322-ac35-8ee5cc9dd6bf",
+    "provider": "openserp-ingestion-lock",
+    "source_url": "internal://openserp-ingestion-run-lock",
+    "metadata": { "run_id": "openserp-cron-2026-07-18T17-46-28-731Z", "locked_at": "2026-07-18T17:46:28.736Z" },
+    "created_at": "2026-07-18T17:46:29.21779+00:00",
+    "current_discovery_candidates_total_count": 7565,
+    "expected_after_cleanup": 7564
+  },
+  "proof_no_active_invocation": {
+    "reasoning": "The only mechanism that would represent an 'active' invocation is this exact lock sentinel row (run-lock.ts's compare-and-set design has no separate heartbeat/liveness table). It was created 2026-07-18T17:46:28 by the run that failed with FUNCTION_INVOCATION_TIMEOUT; all three write-authorizing flags have been false since shortly after that failure (confirmed above), so no new invocation could have started since, and none has (no second lock row exists, no rotation/budget row shows a last_run_id newer than the seed).",
+    "confirmed": true
+  }
+}
