@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 import {
@@ -507,11 +507,18 @@ test("cron route checks Vercel's reserved CRON_SECRET (auto-injected on schedule
   assert.ok(routeSource.includes("process.env.CRON_SECRET"));
 });
 
-test("vercel.json registers the 30-minute cron schedule for the ingestion endpoint", () => {
-  const config = JSON.parse(readFileSync(join(process.cwd(), "vercel.json"), "utf8")) as {
-    crons: Array<{ path: string; schedule: string }>;
-  };
-  const entry = config.crons.find((c) => c.path === "/api/internal/cron/openserp-ingestion");
-  assert.ok(entry, "expected a cron entry for the OpenSERP ingestion endpoint");
-  assert.equal(entry!.schedule, "*/30 * * * *");
+test("GitHub Actions workflow registers the 30-minute cron schedule for the ingestion endpoint", () => {
+  // Vercel's native Cron Jobs feature only supports a daily schedule on the
+  // Hobby plan (this project's current plan) -- a vercel.json crons block
+  // with */30 * * * * is refused outright by Vercel at deploy time (blocks
+  // ALL deployments, not just cron activation, found the hard way). The
+  // external GitHub Actions trigger is the chosen mechanism instead; no
+  // vercel.json crons block exists on this project by design.
+  const workflowSource = readFileSync(
+    join(process.cwd(), ".github/workflows/openserp-ingestion-cron.yml"),
+    "utf8",
+  );
+  assert.ok(workflowSource.includes("*/30 * * * *"));
+  assert.ok(workflowSource.includes("/api/internal/cron/openserp-ingestion"));
+  assert.ok(!existsSync(join(process.cwd(), "vercel.json")), "vercel.json must not exist (its crons block would block every deployment on this Hobby-plan project)");
 });
