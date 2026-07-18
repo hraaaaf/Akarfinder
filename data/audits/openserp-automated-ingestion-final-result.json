@@ -1,0 +1,68 @@
+{
+  "audit_id": "openserp-automated-ingestion-final-result",
+  "mission": "AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1",
+  "generated_at_utc": "2026-07-18T11:00:00Z",
+  "overall_status": "PARTIALLY_ACTIVATED",
+  "national_write_status": "ACTIVE_IN_PRODUCTION",
+  "cron_30min_status": "PREPARED_NOT_ACTIVE_BLOCKED_ON_USER_GITHUB_AUTH",
+  "tests": {
+    "gate_a_pglite": "PASS",
+    "gate_b_real_postgres": "PASS",
+    "unit_test_suite": { "total": 1605, "pass": 1605, "fail": 0, "skipped": 0 }
+  },
+  "bootstrap_result_verified_via_db": {
+    "property_listings_before": 316,
+    "property_listings_after": 559,
+    "net_new": 243,
+    "percentage_growth": "76.9%",
+    "listing_sources_before": 321,
+    "listing_sources_after": 564,
+    "property_clusters_before": 177,
+    "property_clusters_after": 420,
+    "property_cluster_members_after": 420,
+    "one_to_one_invariant_maintained_throughout": true,
+    "multi_membership_clusters_found": 0,
+    "discovery_candidates_after": 7564
+  },
+  "bugs_found_and_fixed_during_execution": [
+    "wave_size_decoupled_from_cron_budget",
+    "discovery_candidates_partial_unique_index_on_conflict",
+    "discovery_candidates_within_batch_duplicate",
+    "transaction_type_inconsistent_defense_added",
+    "category_page_admitted_via_detailed_snippet_admission_gap_closed",
+    "implausible_price_sanity_ceiling_added",
+    "pii_leak_in_debug_logging_blocked_before_commit",
+    "pre_existing_out_of_scope_price_null_coerced_to_zero_site_wide_fix"
+  ],
+  "known_open_items_not_retroactively_fixed": [
+    "property_listing_id=539: transaction_type possibly incorrect",
+    "property_listing_id=555,593,631: implausible price written before sanity ceiling existed",
+    "property_listing_id=827: category page admitted as individual listing"
+  ],
+  "production_validation_post_price_fix": {
+    "deployment_id": "dpl_EYDSTZERsoSsnUrmm45MzAjpr4wM",
+    "routes_checked": 14,
+    "routes_200": 14,
+    "price_zero_leaks_in_api": 0,
+    "price_null_legitimate_in_api": 22,
+    "zero_dh_occurrences_in_rendered_html": 0,
+    "prix_non_communique_occurrences_in_rendered_html": 47,
+    "pii_detections": 0,
+    "internal_routing_to_external_results_found": 0,
+    "console_errors": 0,
+    "console_warnings": 0,
+    "listings_detail_404s_explained": "canShowInternalListingDetail() blocks non-first_party/partner_authorized sources by pre-existing 2026-07-02 policy; confirmed identical on prior Production deployment without the price fix, not a regression"
+  },
+  "cron_blocker": {
+    "vercel_native_cron_rejected_reason": "Hobby plan restricts crons to daily frequency; a */30 cron block causes Vercel to refuse the entire deployment, not just the cron activation",
+    "chosen_alternative": "GitHub Actions workflow (.github/workflows/openserp-ingestion-cron.yml), prepared not active",
+    "blocker": "no GitHub repository exists for this project; gh auth login requires interactive user action that cannot be automated",
+    "remaining_user_actions": [
+      "gh auth login",
+      "create and push GitHub repository",
+      "gh secret set OPENSERP_CRON_SECRET"
+    ]
+  },
+  "mission_closing_instruction_followed": "next mission not started, per explicit ODM instruction",
+  "full_report": "docs/OPENSERP_AUTOMATED_INGESTION_30MIN_1.md"
+}

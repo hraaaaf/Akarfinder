@@ -5361,6 +5361,23 @@ WRITE/OBSERVATIONS/CLUSTERING tous restes absents/false. Voir
 Pourcentage Produit:
 - Avant: `98.5%`. Apres: `98.7%`.
 
-Prochaine mission (non demarree) :
-- `OPENSERP-AUTOMATED-INGESTION-30MIN-1` (celle qui augmentera reellement le volume d'annonces
-  decouvertes, via `recordObservationIfChanged()` sous `OBSERVATIONS_ENABLED`).
+## 2026-07-18 - AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1 (ecriture nationale activee, cron bloque)
+
+Pipeline national d'ingestion OpenSERP (planificateur toutes villes/quartiers marocains FR+AR,
+registre de domaines, ecritures idempotentes 1:1) construit, teste (Gate A PGlite + Gate B Postgres
+reel, tous PASS), deploye en Production avec ecriture activee sur confirmation explicite de
+l'utilisateur. Bootstrap 3 vagues (25/100/300 requetes) : `property_listings` 316 -> 559 (+243,
++76.9%), invariant 1:1 maintenu tout du long (0 cluster multi-membership). 6 bugs trouves et
+corriges en execution reelle, dont un bug pre-existant hors perimetre (prix non-divulgue code en 0
+dans l'API publique, corrige site-wide sur 31 fichiers apres confirmation utilisateur repetee).
+Cron 30 minutes NON active : Vercel Cron natif incompatible avec le plan Hobby (bloque le
+deploiement entier, pas seulement le cron), alternative GitHub Actions preparee mais bloquee sur
+l'authentification GitHub de l'utilisateur (action interactive, hors de portee de l'agent). Voir
+`docs/OPENSERP_AUTOMATED_INGESTION_30MIN_1.md` pour le bilan complet.
+
+Pourcentage Produit:
+- Inchange (`98.7%`) -- volume de donnees en hausse, pas de nouvelle surface produit publique.
+
+Prochaine mission (non demarree, par instruction explicite de l'ODM) :
+- Aucune -- activation du cron 30 minutes (GitHub Actions) en attente de l'authentification GitHub
+  de l'utilisateur avant toute suite.
