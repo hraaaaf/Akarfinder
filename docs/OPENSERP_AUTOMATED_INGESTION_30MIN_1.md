@@ -4,7 +4,7 @@
 **Branche :** `feat/openserp-automated-ingestion-30min` (worktree `AkarFinder-openserp-automated-ingestion`)
 **Base :** `b42c895` (frozen HEAD au lancement de la mission)
 **Commits de la mission :** 28 (`5179cb7` → `0cda423`)
-**Tests :** 1605/1605 passants, 0 échec, 0 skip (`npm run test:scrapers`, vérifié 2026-07-18)
+**Tests :** `test:scrapers` 1605/1605 + `test:api` 53/53 = **1658/1658 passants, 0 échec, 0 skip** (vérifié 2026-07-18). Base de mission (`b42c895`) : 1561 (`test:scrapers`) + 53 (`test:api`) = 1614. Delta mission : **+44, 0 test supprimé** — les 2 fichiers ajoutés (`openserp-automated-ingestion.test.ts` 41 tests, `map-db-listing-null-price.test.ts` 3 tests) expliquent l'intégralité de l'écart ; aucun fichier de test existant n'a été modifié ou supprimé (`git diff b42c895 HEAD --stat -- 'scripts/scrapers/__tests__/*.test.ts'`).
 **Verdict global : MISSION PARTIELLEMENT ACTIVÉE — écriture nationale en production, cron 30 min préparé mais NON activé (bloqué sur une action utilisateur hors de portée de l'agent).**
 
 ---

@@ -8,7 +8,14 @@
   "tests": {
     "gate_a_pglite": "PASS",
     "gate_b_real_postgres": "PASS",
-    "unit_test_suite": { "total": 1605, "pass": 1605, "fail": 0, "skipped": 0 }
+    "unit_test_suite": {
+      "test_scrapers": { "total": 1605, "pass": 1605, "fail": 0, "skipped": 0 },
+      "test_api": { "total": 53, "pass": 53, "fail": 0, "skipped": 0 },
+      "combined_total": 1658,
+      "combined_pass": 1658,
+      "mission_base_combined_total": 1614,
+      "delta": "+44, 0 removed"
+    }
   },
   "bootstrap_result_verified_via_db": {
     "property_listings_before": 316,
