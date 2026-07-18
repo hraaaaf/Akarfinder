@@ -106,8 +106,8 @@
     "test": "items 2-3, Phase 10 in the integration suite",
     "result": "PASS -- a deliberately tight time budget (usable window 3100ms vs 200ms/call) causes the run to voluntarily stop after exactly 1 of 4 planned units, checkpointing only that 1 unit, reporting outcome_status=time_budget_exhausted, and leaving the untouched units' rotation state completely unmarked"
   },
-  "17_final_commit": "to be recorded after this report is committed (see git log)",
-  "18_git_status_final": "clean after commit (verify via git status --short)",
+  "17_final_commit": "cb16b946f5eca16ece6791527365bdc371d72725",
+  "18_git_status_final": "clean",
   "19_residual_risks": [
     "The new lock migration is not yet applied to Production Supabase -- next mission's precondition.",
     "The updated code is not yet deployed to Production -- next mission's precondition.",
