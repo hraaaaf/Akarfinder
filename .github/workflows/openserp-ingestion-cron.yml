@@ -1,0 +1,48 @@
+name: OpenSERP automated ingestion (30 min)
+
+# AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1 — external trigger,
+# since Vercel's native Cron Jobs feature only supports a daily schedule on
+# the Hobby plan (this project's current plan), not the mission's required
+# */30 * * * * cadence. This workflow calls the already-secured internal
+# endpoint (/api/internal/cron/openserp-ingestion) on the correct schedule
+# instead — same endpoint, same auth, same safety gates (flags, run lock,
+# budget/backoff) as the endpoint itself already enforces. This workflow
+# does nothing (the GitHub side has no write access, no Supabase
+# credentials, and no OpenSERP logic) beyond an authenticated HTTP call.
+#
+# Requires one repository secret before this can run successfully:
+#   OPENSERP_CRON_SECRET  — the same value already set as the
+#                            CRON_SECRET / OPENSERP_CRON_SECRET Production
+#                            env vars on Vercel (Project Settings ->
+#                            Environment Variables). Set via:
+#                              gh secret set OPENSERP_CRON_SECRET
+#                            or the GitHub repo Settings -> Secrets UI.
+#
+# Prepared but not yet enabled end-to-end: this file is safe to commit and
+# push on its own (a workflow with a schedule trigger only starts firing
+# once the *default branch* has it — pushing it on a feature branch does
+# not activate anything). Nothing calls Production until this file exists
+# on the repository's default branch AND the secret above is configured.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {} # allows a manual "Run workflow" click for testing
+
+jobs:
+  trigger-ingestion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Call the secured OpenSERP ingestion endpoint
+        run: |
+          set -e
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.OPENSERP_CRON_SECRET }}" \
+            "https://akarfinder.vercel.app/api/internal/cron/openserp-ingestion")
+          echo "HTTP status: $status"
+          cat /tmp/response.json
+          if [ "$status" != "200" ]; then
+            echo "::error::Ingestion endpoint returned HTTP $status"
+            exit 1
+          fi
