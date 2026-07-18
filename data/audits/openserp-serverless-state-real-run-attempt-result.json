@@ -1,0 +1,63 @@
+{
+  "mission": "OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-1",
+  "status": "SERVERLESS_STATE_PROD_MIGRATION_BLOCKED_REQUIRES_CORRECTION",
+  "generated_at_utc": "2026-07-18T19:00:00Z",
+  "summary": "Real-run validation was attempted once. It failed with a genuine, previously-unknown bug (Vercel function timeout under real external network conditions), discovered before any state-persistence claim could be tested. Per this engagement's own standing rule, no fix-and-continue was attempted under this authorization -- flags were reverted immediately and this is reported as a STOP.",
+  "sequence_of_events": [
+    { "step": "precheck", "result": "PASS -- baseline counters recorded (property_listings=558, listing_sources=563, property_clusters=419, property_cluster_members=419, discovery_candidates=7564, source_offer_observations=0, openserp_query_rotation_state=2718, openserp_engine_budget_state=3)" },
+    { "step": "unexpected_discovery", "result": "User-provided screenshot revealed the GitHub Actions workflow's schedule trigger (*/30 * * * *) IS live on the default branch (run #6, 'Triggered via schedule', Success) -- contradicting the earlier verbal confirmation that it was never active. User explicitly chose to accept the residual collision risk and proceed with a short flags-on window rather than disable the workflow first." },
+    { "step": "flag_activation", "result": "OPENSERP_AUTOMATED_INGESTION_ENABLED / OPENSERP_INGESTION_WRITE_ENABLED / OPENSERP_INGESTION_CRON_ENABLED set to true on Vercel Production, after explicit user confirmation that this specific flag (named CRON_ENABLED but functioning as the code's third write-authorization AND-gate, with no separate manual-only flag existing in the code) was understood and accepted." },
+    { "step": "activation_redeploy", "result": "dpl_DhpUhS5A7RVYgRSN7tMUUeb1fKDf, READY -- flags confirmed live (pulled and verified literal 'true' on all three)." },
+    { "step": "trigger_attempt_1", "result": "User clicked 'Re-run jobs' on existing run #6 (not a fresh 'Run workflow' click) -- functionally equivalent (same HTTP call to the live endpoint), but not a strictly new workflow_dispatch event." },
+    { "step": "trigger_attempt_1_outcome", "result": "FAILED after 2m4s -- job 'Call the secured OpenSERP ingestion endpoint' returned HTTP 504 / FUNCTION_INVOCATION_TIMEOUT from Vercel's platform (not the app code itself). The batch (budget=12, first-ever real run) made real network calls to bing/duckduckgo/ecosia via the OpenSERP binary/HTTP path and collectively exceeded the route's maxDuration=120s." },
+    { "step": "immediate_response", "result": "Flags reverted to false on Vercel Production immediately upon discovering the failure; redeploy dpl_6wuUmsu9d7HcQgUMi32iMi5JnSx3 (READY) to make the revert live; verified all 3 flags literal 'false' via env pull; verified endpoint returns 401 with no secret (sanity)." }
+  ],
+  "database_impact": {
+    "business_counters": {
+      "property_listings": { "before": 558, "after": 558, "unchanged": true },
+      "listing_sources": { "before": 563, "after": 563, "unchanged": true },
+      "property_clusters": { "before": 419, "after": 419, "unchanged": true },
+      "property_cluster_members": { "before": 419, "after": 419, "unchanged": true },
+      "source_offer_observations": { "before": 0, "after": 0, "unchanged": true }
+    },
+    "state_counters": {
+      "openserp_query_rotation_state": { "before": 2718, "after": 2718, "unchanged": true, "note": "0 rows have last_run_id set -- the loop was killed before persistRotationUpdates() was ever reached" },
+      "openserp_engine_budget_state": { "before": 3, "after": 3, "unchanged": true, "note": "all 3 rows still show the original migration-seed updated_at timestamp -- persistBudgetState() was never reached either" }
+    },
+    "discovery_candidates": {
+      "before": 7564,
+      "after": 7565,
+      "delta": 1,
+      "cause": "run-lock sentinel row (provider='openserp-ingestion-lock', run_id='openserp-cron-2026-07-18T17-46-28-731Z', locked_at='2026-07-18T17:46:28.736Z') inserted by acquireIngestionRunLock() at the very start of the request -- and never deleted, because Vercel's platform-level FUNCTION_INVOCATION_TIMEOUT kill does not run the route handler's `finally` block (which calls releaseIngestionRunLock()). This is a STUCK LOCK, still present as of this report.",
+      "impact_if_untouched": "Any future ingestion attempt (real or NOOP-path) will fail to acquire the run lock via the same compare-and-set mechanism until this sentinel row is cleared -- this must be addressed before any future real-run attempt succeeds, but was NOT touched in this session (deleting/modifying discovery_candidates rows requires its own explicit authorization, not covered by this ODM).",
+      "pii_or_listing_data": false
+    },
+    "no_new_property_listing": true,
+    "no_new_cluster": true,
+    "no_new_observation": true,
+    "no_pii_created": true
+  },
+  "root_cause_assessment": {
+    "what_failed": "Vercel's own platform-level function timeout (FUNCTION_INVOCATION_TIMEOUT), not application logic",
+    "why": "route.ts declares `export const maxDuration = 120;`. runIngestionCycle's batch loop calls runOpenSerpLiveQuery sequentially (up to 2 engines per query) for the full batch (12 queries at the default START_BUDGET=12) -- real network round-trips to real search engines apparently exceed 120s in aggregate under real conditions, something never observed in any prior test (all previous gates/tests used mocked or fixture SERP responses, never real network latency at this batch size).",
+    "is_this_a_pre_existing_bug_or_introduced_by_this_mission": "Pre-existing in run-orchestrator.ts's batch-processing design (sequential per-query engine calls, no per-query or per-batch timeout budget, no early-return before the platform timeout) -- NOT introduced by OPENSERP-SERVERLESS-STATE-PERSISTENCE-1's changes (which only touched state persistence, not query execution timing/concurrency). This is the first time this code path has ever been exercised with write=true and a full real batch against Production."
+  },
+  "not_yet_tested": {
+    "cross_invocation_state_persistence": "NOT VALIDATED against real Production/real network conditions -- the core purpose of this ODM was not reached because the run never got past the query-execution loop to the persistence step",
+    "real_listing_creation": "NOT VALIDATED",
+    "second_workflow_dispatch_run": "NOT PERFORMED -- stopped after the first attempt's failure, per this engagement's standing 'no fix-and-continue' rule"
+  },
+  "flags_final_state": {
+    "OPENSERP_AUTOMATED_INGESTION_ENABLED": "false",
+    "OPENSERP_INGESTION_WRITE_ENABLED": "false",
+    "OPENSERP_INGESTION_CRON_ENABLED": "false",
+    "MARKET_INDEX_READ_ENABLED": "true",
+    "verified_via": "vercel env pull, literal values read back"
+  },
+  "outstanding_cleanup_required": [
+    "Stuck run-lock sentinel row in discovery_candidates (id=3f9bb7b7-cf56-4322-ac35-8ee5cc9dd6bf) -- needs explicit authorization to delete before any future real run",
+    "GitHub Actions schedule trigger is live on the default branch (contrary to earlier assumption) -- needs an explicit decision (disable vs. accept) before any future flags-on window"
+  ],
+  "recommended_next_step": "A new, narrowly-scoped mission to fix the timeout risk (e.g., reduce the real-run batch size well below what fits in 120s, add a time budget check inside the batch loop to stop early and still persist partial progress, and/or raise maxDuration if the Vercel plan allows) before attempting OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-1 again.",
+  "overall_verdict": "STOP -- SERVERLESS_STATE_PROD_MIGRATION_BLOCKED_REQUIRES_CORRECTION"
+}
