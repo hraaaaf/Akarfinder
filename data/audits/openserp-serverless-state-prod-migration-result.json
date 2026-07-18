@@ -1,0 +1,92 @@
+{
+  "mission": "OPENSERP-SERVERLESS-STATE-PROD-MIGRATION-1",
+  "status": "OPENSERP_SERVERLESS_STATE_SCHEMA_SEEDED_PROD_FLAGS_OFF",
+  "generated_at_utc": "2026-07-18T17:55:00Z",
+  "1_status": "OPENSERP_SERVERLESS_STATE_SCHEMA_SEEDED_PROD_FLAGS_OFF",
+  "2_application_mechanism": "Supabase SQL Editor, executed manually by the project owner (one single paste, one Run) -- exact mechanism required by the mission. Claude never held or used a Production database connection to write.",
+  "3_hashes_verified": {
+    "migration_1_sha256": "6aca50a21d2aa42095ef7e3434496881faf6c0152179b018aa421687e52b5236",
+    "migration_2_sha256": "3db3c6e321c502c6045afb4e091071e3b1ff6f34e100ffc63e2fdc64cd3f276f",
+    "seed_sql_sha256": "12facb44cb375ceac67f7652c40779f4f3c0ced9f2d3b8ff78b2377ee9c01130",
+    "seed_manifest_sha256": "e2beacaca483dbb201fd011633dc225e0cb02c1d51a877a4f92418fdc3659123",
+    "all_match_freeze_and_user_stated_values": true
+  },
+  "4_snapshot_before": "data/audits/openserp-serverless-state-prod-snapshot-before.json (counters, hash verification, flag/workflow precheck -- 0 PII, 0 secrets)",
+  "5_migrations_applied": [
+    "20260718140000_create_openserp_query_rotation_state.sql",
+    "20260718140100_create_openserp_engine_budget_state.sql"
+  ],
+  "6_tables_created": {
+    "openserp_query_rotation_state": { "exists": true, "row_count": 2718 },
+    "openserp_engine_budget_state": { "exists": true, "row_count": 3 }
+  },
+  "7_rls": {
+    "status": "ENABLED on both tables",
+    "proof": "The applied SQL's own internal verification block (inside the same transaction) asserted pg_class.relrowsecurity=true for both tables via RAISE EXCEPTION-on-failure -- the transaction only reached COMMIT because this passed. Independently, the byte-identical migration SQL (hash-verified) was already live-tested with genuine anon/authenticated/service_role PostgreSQL roles in Gate B (data/audits/openserp-serverless-state-gate-b-seed-reconfirmation.json)."
+  },
+  "8_policies": {
+    "anon_policy_count": 0,
+    "authenticated_policy_count": 0,
+    "service_role_access": "via BYPASSRLS, not a policy",
+    "proof": "Same in-transaction verification block asserted count(*) from pg_policies where tablename in (...) = 0, or the transaction would have rolled back. No anon key is even distributed anywhere in this app's Production config (server-only architecture, confirmed via `vercel env ls production` -- no ANON-named variable exists) -- there is no live browser-facing path to these tables at all, a stronger guarantee than RLS alone."
+  },
+  "9_query_states": {
+    "row_count": 2718,
+    "distinct_query_id_count": 2718,
+    "definition_hash_present_on_all_rows": true,
+    "no_url_snippet_pii_or_listing_history": true,
+    "verification_method": "read-only service-role count + distinct-count query post-migration; content shape (query_id/hash-only columns) makes URL/snippet/PII storage structurally impossible -- the table has no such columns"
+  },
+  "10_engine_states": {
+    "row_count": 3,
+    "engines_present": ["bing", "duckduckgo", "ecosia"],
+    "matches_expected_engine_set": true
+  },
+  "11_second_seed_idempotence": {
+    "method": "controlled environment (per the mission's own 'ou' clause) -- re-applied the exact same, hash-verified manifest a second time against a disposable local PostgreSQL instance immediately before handing it to the user",
+    "result": { "new_query_rows": 0, "new_engine_rows": 0, "existing_rows_overwritten": 0 },
+    "production_re_run": "not performed (not required given the controlled-environment proof; re-running against Production itself was left available but not exercised to avoid an unnecessary second live write action)"
+  },
+  "12_business_counters_before_after": {
+    "property_listings": { "before": 558, "after": 558, "unchanged": true },
+    "listing_sources": { "before": 563, "after": 563, "unchanged": true },
+    "property_clusters": { "before": 419, "after": 419, "unchanged": true },
+    "property_cluster_members": { "before": 419, "after": 419, "unchanged": true },
+    "discovery_candidates": { "before": 7564, "after": 7564, "unchanged": true },
+    "source_offer_observations": { "before": 0, "after": 0, "unchanged": true },
+    "new_listings": 0,
+    "new_clusters": 0,
+    "new_observations": 0,
+    "pii_created": 0
+  },
+  "13_flags_before_after": {
+    "OPENSERP_AUTOMATED_INGESTION_ENABLED": { "before": "false", "after": "false" },
+    "OPENSERP_INGESTION_WRITE_ENABLED": { "before": "false", "after": "false" },
+    "OPENSERP_INGESTION_CRON_ENABLED": { "before": "false", "after": "false" },
+    "MARKET_INDEX_READ_ENABLED": { "before": "true", "after": "true" },
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": { "before": "false (unset)", "after": "false (unset)" },
+    "MARKET_INDEX_CLUSTERING_ENABLED": { "before": "false (unset)", "after": "false (unset)" },
+    "no_flag_changed_by_this_mission": true,
+    "verification_limitation": "Vercel Sensitive-type vars remain write-only/non-readable via CLI; values confirmed by the user directly, consistent with this migration not touching any Vercel env var at all (SQL-only change)"
+  },
+  "14_errors_warnings": {
+    "one_transient_error": "First paste attempt failed with a Postgres syntax error on line 1 ('-- OPEN' truncated to nothing by an intermediate copy/view step) -- purely a comment line, zero functional/schema impact, transaction never started executing DDL. Fixed by regenerating the manifest with begin; as the literal first line/token, re-validated end-to-end against a disposable local Postgres, and the corrected file was re-applied successfully by the user.",
+    "no_other_errors_or_warnings": true
+  },
+  "15_rollback_necessary": false,
+  "16_production_application_deployed": false,
+  "17_worktree_head": {
+    "worktree": "AkarFinder-openserp-serverless-state",
+    "branch": "fix/openserp-serverless-state-persistence",
+    "head_sha": "954e23234f97581ac34ac88ed40fe441627798e5",
+    "note": "Exact HEAD recorded at bilan-write time; see git log for the precise hash. Frozen application code (5afbe1b) unchanged -- only new audit/report/manifest commits added since freeze.",
+    "worktree_clean": true
+  },
+  "18_reports_created": [
+    "data/audits/openserp-serverless-state-prod-snapshot-before.json",
+    "data/audits/openserp-serverless-state-prod-migration-manifest.sql",
+    "data/audits/openserp-serverless-state-prod-migration-result.json"
+  ],
+  "overall_verdict": "PASS",
+  "next_decision_pending": "Production application deployment of the frozen HEAD (5afbe1b onward), flags still all off. No real cron/write run authorized yet."
+}
