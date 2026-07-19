@@ -187,13 +187,28 @@ export async function loadBudgetState(ctx: DbCallContext = {}): Promise<BudgetSt
   };
 }
 
-export async function persistBudgetState(state: BudgetState, runId: string, ctx: DbCallContext = {}): Promise<void> {
+// OPENSERP-ENGINE-BUDGET-LAST-SUCCESS-SEMANTICS-1: enginesWithSuccessThisRun
+// is the exact set of engines that got >=1 real, successful engine call
+// during this run (run-orchestrator.ts's own enginesUsed set, which is only
+// ever populated inside the success branch of its engine-call loop -- a
+// 403/429/timeout/captcha/network/other failure never adds to it, and a
+// suspended engine is never even attempted, so it can never be in this set
+// either). Defaults to empty so any caller that omits it gets the safe
+// behavior (last_success_at never advances) rather than the previous bug's
+// behavior (advanced whenever merely not suspended).
+export async function persistBudgetState(
+  state: BudgetState,
+  runId: string,
+  ctx: DbCallContext = {},
+  enginesWithSuccessThisRun: ReadonlySet<OpenSerpEngineName> = new Set(),
+): Promise<void> {
   const existing = await loadEngineBudgetStates(KNOWN_ENGINES, ctx);
   const now = new Date().toISOString();
 
   const rows: EngineBudgetDbState[] = state.engines.map((engineState) => {
     const previous = existing.get(engineState.engine);
     const wasJustSuspended = engineState.suspended_until !== (previous?.suspended_until ?? null) && engineState.suspended_until !== null;
+    const hadRealSuccessThisRun = enginesWithSuccessThisRun.has(engineState.engine);
     return {
       engine: engineState.engine,
       state_version: OPENSERP_ENGINE_BUDGET_STATE_VERSION,
@@ -203,7 +218,7 @@ export async function persistBudgetState(state: BudgetState, runId: string, ctx:
       rate_limit_count: previous?.rate_limit_count ?? 0,
       timeout_count: previous?.timeout_count ?? 0,
       suspended_until: engineState.suspended_until,
-      last_success_at: engineState.suspended_until ? previous?.last_success_at ?? null : now,
+      last_success_at: hadRealSuccessThisRun ? now : previous?.last_success_at ?? null,
       last_failure_at: wasJustSuspended ? now : previous?.last_failure_at ?? null,
       last_run_id: runId,
     };

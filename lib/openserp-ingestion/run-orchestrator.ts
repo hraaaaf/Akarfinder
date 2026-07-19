@@ -208,7 +208,13 @@ export async function runIngestionCycle(input: {
   const rawResultsLog: unknown[] = [];
 
   const decisions: AdmissionDecision[] = [];
-  const enginesUsed = new Set<string>();
+  // OPENSERP-ENGINE-BUDGET-LAST-SUCCESS-SEMANTICS-1: this set is also the
+  // source of truth persistBudgetState uses to decide which engines'
+  // last_success_at may advance -- an engine only ever lands here inside
+  // the success branch below (engine-error-diagnostics failures never add
+  // to it), so "in enginesUsed" already means exactly "got >=1 real
+  // success this run", with no separate tracking needed.
+  const enginesUsed = new Set<OpenSerpEngineName>();
   let querySuccessCount = 0;
   let queryFailureCount = 0;
   let rawResultsCount = 0;
@@ -497,7 +503,7 @@ export async function runIngestionCycle(input: {
   let statePersisted = true;
   if (persistState) {
     try {
-      await persistBudgetState(nextBudgetState, input.runId, dbCtx);
+      await persistBudgetState(nextBudgetState, input.runId, dbCtx, enginesUsed);
     } catch (error) {
       if (error instanceof DbCallTimeoutError || error instanceof TimeBudgetExhaustedBeforeDbCallError) {
         statePersisted = false;
