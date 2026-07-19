@@ -1,7 +1,7 @@
 {
   "audit_id": "market-index-shadow-read-results",
   "mission": "AKARFINDER-MARKET-INDEX-READ-ACTIVATION-1",
-  "generated_at_utc": "2026-07-18T15:56:02.485Z",
+  "generated_at_utc": "2026-07-19T09:08:47.919Z",
   "mode": "--production-readonly",
   "read_only": true,
   "write_operations_performed": 0,
