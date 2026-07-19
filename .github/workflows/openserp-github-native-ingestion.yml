@@ -1,0 +1,122 @@
+name: OpenSERP Native Ingestion (GitHub-hosted)
+
+# OPENSERP-GITHUB-NATIVE-INGESTION-INTEGRATION-1
+# Runs the EXISTING orchestrator (lib/openserp-ingestion/run-orchestrator.ts,
+# via scripts/openserp/run-ingestion-github-actions.ts) inside a GitHub
+# Actions job, talking to a local OpenSERP Docker container in full
+# browser mode (validated by OPENSERP-GITHUB-EPHEMERAL-RUNTIME-POC-1) --
+# no Vercel involved. workflow_dispatch only, no schedule.
+#
+# Checks out fix/openserp-serverless-state-persistence explicitly (not
+# this workflow's own ref) because that branch, not yet merged to main,
+# holds the DB-call-timeout-safety and engine-error-diagnostics work this
+# mission is required to preserve unmodified.
+#
+# Guardrails against an accidental write:
+#   - mode defaults to dry-run (never writes, bypasses the flag gate)
+#   - cron mode still requires OPENSERP_AUTOMATED_INGESTION_ENABLED,
+#     OPENSERP_INGESTION_WRITE_ENABLED, and OPENSERP_INGESTION_CRON_ENABLED
+#     to all be "true" secrets -- unset here, so even a mistaken cron
+#     dispatch safely NOOPs.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "dry-run (never writes) or cron (mirrors Production gate exactly)"
+        required: true
+        default: "dry-run"
+        type: choice
+        options:
+          - dry-run
+          - cron
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fix/openserp-serverless-state-persistence
+        uses: actions/checkout@v4
+        with:
+          ref: fix/openserp-serverless-state-persistence
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start OpenSERP (full browser mode, no --raw)
+        run: |
+          set -e
+          T0=$(date +%s%3N)
+          docker pull karust/openserp:latest
+          docker run -d --name openserp -p 7070:7070 \
+            karust/openserp:latest serve -a 0.0.0.0 -p 7070
+          T1=$(date +%s%3N)
+          echo "openserp_start_ms=$((T1-T0))" >> "$GITHUB_ENV"
+
+      - name: Wait for OpenSERP /health
+        run: |
+          set -e
+          T0=$(date +%s%3N)
+          STATUS="unknown"
+          for i in $(seq 1 60); do
+            BODY=$(curl -s -m 3 http://127.0.0.1:7070/health || true)
+            STATUS=$(echo "$BODY" | grep -o '"status":"[a-z]*"' | head -1 | cut -d'"' -f4)
+            if [ "$STATUS" = "healthy" ]; then break; fi
+            sleep 1
+          done
+          T1=$(date +%s%3N)
+          echo "openserp_health_wait_ms=$((T1-T0))" >> "$GITHUB_ENV"
+          echo "--- /health ---"
+          echo "$BODY"
+          if [ "$STATUS" != "healthy" ]; then
+            echo "::error::OpenSERP did not report healthy within 60s"
+            docker logs openserp --tail 200 || true
+            exit 1
+          fi
+
+      - name: Confirm Bing/DuckDuckGo/Ecosia reachable (no ingestion writes)
+        run: |
+          set -e
+          BODY=$(curl -s -m 5 http://127.0.0.1:7070/mega/engines)
+          echo "$BODY"
+          for e in bing duckduckgo ecosia; do
+            if ! echo "$BODY" | grep -q "\"name\":\"$e\""; then
+              echo "::warning::engine '$e' not listed in /mega/engines"
+            fi
+          done
+
+      - name: Run ingestion entrypoint
+        id: ingest
+        env:
+          OPENSERP_LOCAL_URL: http://127.0.0.1:7070
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
+          OPENSERP_INGESTION_WRITE_ENABLED: ${{ secrets.OPENSERP_INGESTION_WRITE_ENABLED }}
+          OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
+        run: |
+          set -e
+          T0=$(date +%s%3N)
+          npx tsx scripts/openserp/run-ingestion-github-actions.ts --${{ inputs.mode }}
+          T1=$(date +%s%3N)
+          echo "ingest_ms=$((T1-T0))" >> "$GITHUB_ENV"
+
+      - name: Timing summary
+        if: always()
+        run: |
+          echo "openserp_start_ms=${{ env.openserp_start_ms }}"
+          echo "openserp_health_wait_ms=${{ env.openserp_health_wait_ms }}"
+          echo "ingest_ms=${{ env.ingest_ms }}"
+
+      - name: Dump OpenSERP container logs (always, for diagnosis)
+        if: always()
+        run: docker logs openserp --tail 300 || true
+
+      - name: Stop OpenSERP
+        if: always()
+        run: docker rm -f openserp || true
