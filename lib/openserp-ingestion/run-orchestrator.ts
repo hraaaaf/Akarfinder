@@ -36,6 +36,12 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { runOpenSerpLiveQuery, EngineCallError, DEFAULT_ENGINE_CALL_TIMEOUT_MS } from "./openserp-live";
+import {
+  classifyEngineErrorDetail,
+  sanitizeEngineErrorMessage,
+  logEngineCallAttempt,
+  type EngineErrorCategory,
+} from "./engine-error-diagnostics";
 import { selectNextBatch, markQueryExecuted, type RotationQuery } from "./query-rotation-planner";
 import { decideAdmission, type AdmissionDecision } from "./national-admission";
 import { writeNationalIngestionRun } from "./national-writer";
@@ -122,6 +128,14 @@ export type RunMetrics = {
   executed_unit_count: number;
   state_persisted: boolean;
   time_budget: ReturnType<typeof snapshotTimeBudget>;
+  // OPENSERP-ENGINE-FAILURE-OBSERVABILITY-1: purely additive diagnostic
+  // breakdown of every failed engine-call attempt this run made, at a
+  // finer grain than captcha_count/status_403_429/timeout_count above
+  // (which are unchanged and still drive the adaptive budget/suspension
+  // strategy in budget-policy.ts). This field feeds no strategy decision --
+  // it exists only so a run's "other"-bucket failures are explainable
+  // without re-running with extra instrumentation after the fact.
+  engine_error_category_breakdown: Partial<Record<EngineErrorCategory, number>>;
 };
 
 function loadUniverse(path: string): UniverseFile {
@@ -195,6 +209,7 @@ export async function runIngestionCycle(input: {
   let timeoutCount = 0;
   const enginesWithIncident = new Set<"bing" | "duckduckgo" | "ecosia">();
   const canonicalUrlsSeen = new Set<string>();
+  const engineErrorCategoryBreakdown: Partial<Record<EngineErrorCategory, number>> = {};
 
   let outcomeStatus: RunOutcomeStatus = "completed";
   let executedCount = 0;
@@ -237,6 +252,8 @@ export async function runIngestionCycle(input: {
       // allotted time as the run progresses, but can never be handed more
       // time than the invocation could possibly honor.
       const perCallTimeoutMs = Math.max(1_000, Math.min(engineCallTimeoutMs, remaining - 500));
+      const attemptStartedAtIso = new Date(now()).toISOString();
+      const attemptStartTime = now();
 
       try {
         const execution = await runOpenSerpLiveQuery({
@@ -246,6 +263,19 @@ export async function runIngestionCycle(input: {
           site: universeQuery.target_domain ?? undefined,
           env: input.env,
           timeoutMs: perCallTimeoutMs,
+        });
+        logEngineCallAttempt({
+          engine,
+          query_id: universeQuery.query_id,
+          attempt_outcome: "success",
+          category: "success",
+          error_name: null,
+          error_code: null,
+          http_status: null,
+          message: null,
+          duration_ms: now() - attemptStartTime,
+          started_at: attemptStartedAtIso,
+          finished_at: new Date(now()).toISOString(),
         });
         enginesUsed.add(engine);
         querySuccessCount += 1;
@@ -318,6 +348,37 @@ export async function runIngestionCycle(input: {
         } else if (category === "timeout") {
           timeoutCount += 1;
         }
+
+        // OPENSERP-ENGINE-FAILURE-OBSERVABILITY-1: additive diagnostics only
+        // -- never overrides the categorization/counters above, which still
+        // drive the budget/suspension strategy exactly as before.
+        const isEngineCallError = error instanceof EngineCallError;
+        const diagOutcome = isEngineCallError ? error.outcome : null;
+        const diagErrorName = isEngineCallError ? error.name : error instanceof Error ? error.name : "UnknownError";
+        const diagErrorCode = isEngineCallError ? error.errorCode : null;
+        const diagHttpStatus = isEngineCallError ? error.httpStatus : null;
+        const diagMessage = error instanceof Error ? error.message : String(error);
+        const detailCategory = classifyEngineErrorDetail({
+          outcome: diagOutcome,
+          errorName: diagErrorName,
+          errorCode: diagErrorCode,
+          httpStatus: diagHttpStatus,
+          message: diagMessage,
+        });
+        engineErrorCategoryBreakdown[detailCategory] = (engineErrorCategoryBreakdown[detailCategory] ?? 0) + 1;
+        logEngineCallAttempt({
+          engine,
+          query_id: universeQuery.query_id,
+          attempt_outcome: "failure",
+          category: detailCategory,
+          error_name: diagErrorName,
+          error_code: diagErrorCode,
+          http_status: diagHttpStatus,
+          message: sanitizeEngineErrorMessage(diagMessage),
+          duration_ms: now() - attemptStartTime,
+          started_at: attemptStartedAtIso,
+          finished_at: new Date(now()).toISOString(),
+        });
       }
     }
 
@@ -460,6 +521,7 @@ export async function runIngestionCycle(input: {
     executed_unit_count: executedCount,
     state_persisted: statePersisted,
     time_budget: snapshotTimeBudget(timeBudget, now),
+    engine_error_category_breakdown: engineErrorCategoryBreakdown,
   };
 
   return { metrics, decisions, budgetState: nextBudgetState };

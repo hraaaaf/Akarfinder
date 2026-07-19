@@ -8,6 +8,20 @@ type OpenSerpClientOptions = {
   env?: NodeJS.ProcessEnv;
 };
 
+// OPENSERP-ENGINE-FAILURE-OBSERVABILITY-1: a typed error carrying the exact
+// HTTP status the endpoint returned, so callers can distinguish 403 from
+// 429 from any other non-2xx without parsing it back out of a message
+// string. Purely diagnostic -- does not change control flow (still thrown
+// the same way a plain Error was before).
+export class OpenSerpHttpError extends Error {
+  readonly status: number;
+  constructor(status: number) {
+    super(`OpenSERP local endpoint returned ${status}`);
+    this.name = "OpenSerpHttpError";
+    this.status = status;
+  }
+}
+
 function toBaseUrl(value?: string): string | undefined {
   if (!value?.trim()) return undefined;
   return value.trim().replace(/\/+$/, "");
@@ -51,7 +65,7 @@ export function createOpenSerpClient(options: OpenSerpClientOptions = {}) {
         });
 
         if (!response.ok) {
-          throw new Error(`OpenSERP local endpoint returned ${response.status}`);
+          throw new OpenSerpHttpError(response.status);
         }
 
         const json = (await response.json()) as {

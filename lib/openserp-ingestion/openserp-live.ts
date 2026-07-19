@@ -11,7 +11,7 @@
 
 import { promisify } from "node:util";
 import { execFile } from "node:child_process";
-import { createOpenSerpClient } from "@/lib/openserp-async/openserp-client";
+import { createOpenSerpClient, OpenSerpHttpError } from "@/lib/openserp-async/openserp-client";
 import type { OpenSerpSearchResponse } from "@/lib/openserp-async/types";
 import type { OpenSerpProviderInfo } from "./types";
 
@@ -24,12 +24,26 @@ export const DEFAULT_ENGINE_CALL_TIMEOUT_MS = 15_000;
 
 export type EngineCallOutcome = "success" | "engine_timeout" | "network_error" | "invalid_response";
 
+// OPENSERP-ENGINE-FAILURE-OBSERVABILITY-1: errorCode/httpStatus/causeName
+// are purely diagnostic additions (used only by engine-error-diagnostics.ts
+// to produce a finer-grained log category) -- `outcome` keeps its exact
+// prior meaning and every existing call site/consumer is unaffected.
 export class EngineCallError extends Error {
   readonly outcome: Exclude<EngineCallOutcome, "success">;
-  constructor(message: string, outcome: Exclude<EngineCallOutcome, "success">) {
+  readonly errorCode: string | null;
+  readonly httpStatus: number | null;
+  readonly causeName: string | null;
+  constructor(
+    message: string,
+    outcome: Exclude<EngineCallOutcome, "success">,
+    diagnostics: { errorCode?: string | null; httpStatus?: number | null; causeName?: string | null } = {},
+  ) {
     super(message);
     this.name = "EngineCallError";
     this.outcome = outcome;
+    this.errorCode = diagnostics.errorCode ?? null;
+    this.httpStatus = diagnostics.httpStatus ?? null;
+    this.causeName = diagnostics.causeName ?? null;
   }
 }
 
@@ -65,12 +79,22 @@ export async function runOpenSerpLiveQuery(input: {
       });
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
-        throw new EngineCallError(`engine ${input.engine} timed out after ${timeoutMs}ms`, "engine_timeout");
+        throw new EngineCallError(`engine ${input.engine} timed out after ${timeoutMs}ms`, "engine_timeout", { causeName: "AbortError" });
       }
       if (error instanceof SyntaxError) {
-        throw new EngineCallError(`engine ${input.engine} returned an invalid response: ${error.message}`, "invalid_response");
+        throw new EngineCallError(`engine ${input.engine} returned an invalid response: ${error.message}`, "invalid_response", { causeName: "SyntaxError" });
       }
-      throw new EngineCallError(`engine ${input.engine} network error: ${error instanceof Error ? error.message : String(error)}`, "network_error");
+      if (error instanceof OpenSerpHttpError) {
+        throw new EngineCallError(`engine ${input.engine} network error: ${error.message}`, "network_error", {
+          httpStatus: error.status,
+          causeName: "OpenSerpHttpError",
+        });
+      }
+      const code = (error as NodeJS.ErrnoException)?.code ?? null;
+      throw new EngineCallError(`engine ${input.engine} network error: ${error instanceof Error ? error.message : String(error)}`, "network_error", {
+        errorCode: code,
+        causeName: error instanceof Error ? error.name : null,
+      });
     }
     return {
       response,
@@ -116,16 +140,24 @@ export async function runOpenSerpLiveQuery(input: {
   } catch (error) {
     const err = error as NodeJS.ErrnoException & { killed?: boolean; signal?: string | null };
     if (err.killed || err.signal === "SIGTERM" || err.code === "ETIMEDOUT") {
-      throw new EngineCallError(`engine ${input.engine} timed out after ${timeoutMs}ms`, "engine_timeout");
+      throw new EngineCallError(`engine ${input.engine} timed out after ${timeoutMs}ms`, "engine_timeout", {
+        errorCode: err.code ?? null,
+        causeName: err.name ?? null,
+      });
     }
-    throw new EngineCallError(`engine ${input.engine} process error: ${err.message}`, "network_error");
+    throw new EngineCallError(`engine ${input.engine} process error: ${err.message}`, "network_error", {
+      errorCode: err.code ?? null,
+      causeName: err.name ?? null,
+    });
   }
 
   let parsed: { query?: { text?: string }; meta?: { requested_at?: string; version?: string }; results?: OpenSerpSearchResponse["results"] };
   try {
     parsed = JSON.parse(stdout);
   } catch (error) {
-    throw new EngineCallError(`engine ${input.engine} returned invalid JSON: ${error instanceof Error ? error.message : String(error)}`, "invalid_response");
+    throw new EngineCallError(`engine ${input.engine} returned invalid JSON: ${error instanceof Error ? error.message : String(error)}`, "invalid_response", {
+      causeName: "SyntaxError",
+    });
   }
 
   return {
