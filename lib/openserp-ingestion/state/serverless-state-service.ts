@@ -1,20 +1,43 @@
 // OPENSERP-SERVERLESS-STATE-PERSISTENCE-1 — section 9.
+// OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1 — Phases 6-7.
 // Bridges the static query-universe-v1.json catalog + the PostgreSQL-backed
 // mutable state to the exact shapes query-rotation-planner.ts and
 // budget-policy.ts already expect (RotationQuery, BudgetState) -- neither
-// of those pure, tested modules changes at all for this mission. This file
-// is the only place that knows both "what a query looks like in the JSON"
-// and "what a query looks like in the DB".
+// of those pure, tested modules changes at all. This file is the only
+// place that knows both "what a query looks like in the JSON" and "what a
+// query looks like in the DB".
+//
+// Phase 6-7 redesign of hydration: the old hydrateRotationQueries loaded
+// ALL 2718 rotation-state rows on every invocation via a single SELECT
+// whose IN clause carried all 2718 query_ids in the request URL (>60KB) --
+// the prime suspect in REAL-RUN-VALIDATION-2's platform timeout, and
+// pointless work besides: a serverless run executes at most 5 queries.
+// Key insight enabling an EXACT-parity fix (not an approximation): the
+// Production seed created every row with defaults identical to the
+// in-memory defaults hydrate already used for missing rows
+// (last_executed_at=null, next_eligible_at=null, failure_count=0,
+// discovery_yield=0). A default DB row and an absent DB row produce
+// byte-identical RotationQuery hydration. Therefore only rows that have
+// actually been MUTATED matter -- and every mutation path
+// (markQueryExecuted via persistRotationUpdates) always sets
+// last_executed_at. So loading only `WHERE last_executed_at IS NOT NULL`
+// (currently 0 rows, grows by <= batch-size per run, paged and bounded)
+// and defaulting everything else yields exactly the same hydrated
+// universe as loading all 2718 rows -- proven by the parity test in
+// scripts/scrapers/__tests__/openserp-db-call-timeout-safety.test.ts.
+// The planner (selectNextBatch) then runs on the same full hydrated
+// universe as before: identical inputs, identical selection.
 
 import { sha256 } from "../utils";
 import type { RotationQuery } from "../query-rotation-planner";
 import { defaultBudgetState, type BudgetState, type EngineHealthState } from "../budget-policy";
 import {
+  loadExecutedQueryStates,
   loadQueryStates,
-  seedMissingQueryStates,
   upsertQueryStates,
   type OpenSerpEngineName,
   type QueryRotationDbState,
+  type DbCallContext,
 } from "./query-rotation-state-repository";
 import {
   loadEngineBudgetStates,
@@ -64,18 +87,15 @@ export function hashQueryDefinition(def: StaticQueryDefinition): string {
 export async function hydrateRotationQueries<T extends StaticQueryDefinition>(
   definitions: readonly T[],
   universeVersion: string,
+  ctx: DbCallContext = {},
 ): Promise<Array<T & RotationQuery>> {
-  const seedDefs = definitions.map((d) => ({
-    query_id: d.query_id,
-    query_universe_version: universeVersion,
-    query_definition_hash: hashQueryDefinition(d),
-  }));
-  await seedMissingQueryStates(seedDefs);
-
-  const states = await loadQueryStates(definitions.map((d) => d.query_id));
+  void universeVersion; // retained in the signature for call-site stability; seeding no longer happens here
+  // Only mutated rows are fetched (see header comment) -- a fresh
+  // Production universe loads 0 rows here instead of 2718.
+  const executedStates = await loadExecutedQueryStates(ctx);
 
   return definitions.map((def) => {
-    const state = states.get(def.query_id);
+    const state = executedStates.get(def.query_id);
     return {
       ...def,
       last_executed_at: state?.last_executed_at ?? null,
@@ -89,15 +109,24 @@ export async function hydrateRotationQueries<T extends StaticQueryDefinition>(
 // Converts already-updated (via markQueryExecuted) RotationQuery entries
 // back into DB rows and upserts them. Only entries that were actually part
 // of this run's batch need to be passed -- untouched queries are left as-is
-// in the DB (no need to re-upsert every query on every run).
+// in the DB (no need to re-upsert every query on every run). The upsert
+// creates the row if it doesn't exist yet (covers any environment where
+// the seed was never applied), so dropping the hot-path seeding step in
+// hydrateRotationQueries loses nothing.
 export async function persistRotationUpdates(
   updated: ReadonlyArray<StaticQueryDefinition & RotationQuery & { succeeded?: boolean; engine?: OpenSerpEngineName }>,
   runId: string,
   universeVersion: string,
+  ctx: DbCallContext = {},
 ): Promise<void> {
   if (updated.length === 0) return;
 
-  const existing = await loadQueryStates(updated.map((q) => q.query_id));
+  // A plain PostgREST upsert replaces columns wholesale (no additive
+  // merge), so the cumulative successful_run_count still needs the
+  // previous value read first. This read is tiny and bounded: at most the
+  // batch's own query_ids (1 per checkpoint call, <=5 per run), each call
+  // wrapped in withDbTimeout -- nothing like the old full-universe load.
+  const existing = await loadQueryStates(updated.map((q) => q.query_id), ctx);
 
   const rows: QueryRotationDbState[] = updated.map((q) => {
     const previous = existing.get(q.query_id);
@@ -115,11 +144,11 @@ export async function persistRotationUpdates(
     };
   });
 
-  await upsertQueryStates(rows, runId);
+  await upsertQueryStates(rows, runId, ctx);
 }
 
-export async function loadBudgetState(): Promise<BudgetState> {
-  const dbStates = await loadEngineBudgetStates(KNOWN_ENGINES);
+export async function loadBudgetState(ctx: DbCallContext = {}): Promise<BudgetState> {
+  const dbStates = await loadEngineBudgetStates(KNOWN_ENGINES, ctx);
   if (dbStates.size === 0) {
     return defaultBudgetState();
   }
@@ -158,8 +187,8 @@ export async function loadBudgetState(): Promise<BudgetState> {
   };
 }
 
-export async function persistBudgetState(state: BudgetState, runId: string): Promise<void> {
-  const existing = await loadEngineBudgetStates(KNOWN_ENGINES);
+export async function persistBudgetState(state: BudgetState, runId: string, ctx: DbCallContext = {}): Promise<void> {
+  const existing = await loadEngineBudgetStates(KNOWN_ENGINES, ctx);
   const now = new Date().toISOString();
 
   const rows: EngineBudgetDbState[] = state.engines.map((engineState) => {
@@ -180,7 +209,7 @@ export async function persistBudgetState(state: BudgetState, runId: string): Pro
     };
   });
 
-  await upsertEngineBudgetStates(rows, runId);
+  await upsertEngineBudgetStates(rows, runId, ctx);
 }
 
 export type StateCompatibilityResult = {
@@ -194,17 +223,20 @@ export type StateCompatibilityResult = {
 // its rotation state was last written, so its historical
 // discovery_yield/failure_count may no longer be meaningful for the new
 // definition. Does not auto-reset anything -- purely a reporting check for
-// the caller (e.g. the seed script or a future audit) to act on.
+// the caller (e.g. the seed script or a future audit) to act on. Only
+// mutated rows can carry a stale hash (default seeded rows were hashed at
+// seed time from the same catalog), so checking executed rows suffices.
 export async function verifyStateCompatibility(
   definitions: readonly StaticQueryDefinition[],
   universeVersion: string,
+  ctx: DbCallContext = {},
 ): Promise<StateCompatibilityResult> {
-  const states = await loadQueryStates(definitions.map((d) => d.query_id));
+  const states = await loadExecutedQueryStates(ctx);
   const mismatched: string[] = [];
 
   for (const def of definitions) {
     const state = states.get(def.query_id);
-    if (!state) continue; // not yet seeded -- not a mismatch, just missing
+    if (!state) continue; // never mutated -- nothing to be stale
     const freshHash = hashQueryDefinition(def);
     if (state.query_definition_hash !== freshHash || state.query_universe_version !== universeVersion) {
       mismatched.push(def.query_id);

@@ -31,6 +31,12 @@ import { classifyPrice } from "@/lib/market-index/market-index-price";
 import { computeContentFingerprint, computeQueryHash } from "@/lib/market-index/market-index-identifiers";
 import { assertOpenSerpOriginIsNeverPartnerFacing } from "@/lib/market-index/market-index-provenance";
 import type { AdmissionDecision } from "./national-admission";
+// OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1 — Phase 8: every writer DB
+// call is bounded through withDbTimeout (real .abortSignal() cancellation,
+// budget-aware refusal when the caller supplies its TimeBudget via
+// input.dbCtx, structured instrumentation).
+import { withDbTimeout } from "./state/db-call-guard";
+import type { DbCallContext } from "./state/query-rotation-state-repository";
 
 function sha256(value: string): string {
   return createHash("sha256").update(value, "utf8").digest("hex");
@@ -61,6 +67,7 @@ export function sanitizePriceMad(priceMad: number | null): number | null {
 export type NationalWriteInput = {
   runId: string;
   decisions: AdmissionDecision[];
+  dbCtx?: DbCallContext;
 };
 
 export type NationalWriteResult = {
@@ -159,19 +166,25 @@ export async function writeNationalDiscoveryCandidates(input: NationalWriteInput
   // manual select-then-split-insert/update achieves the identical
   // idempotency guarantee without relying on that partial index as an
   // ON CONFLICT target.
+  const dbCtx = input.dbCtx ?? {};
   for (const batch of chunk(rows, 25)) {
     const keys = batch.map((row) => `${row.provider}::${row.query_hash}::${row.canonical_url}`);
-    const existingResult = await supabase
-      .from("discovery_candidates")
-      .select("id, provider, query_hash, canonical_url")
-      .in("canonical_url", batch.map((row) => row.canonical_url));
-    if (existingResult.error) throw new Error(`discovery_candidates lookup failed: ${existingResult.error.message}`);
-    const existingByKey = new Map(
-      (existingResult.data as Array<{ id: string; provider: string; query_hash: string; canonical_url: string }>).map((row) => [
-        `${row.provider}::${row.query_hash}::${row.canonical_url}`,
-        row.id,
-      ]),
-    );
+    const existingRows = await withDbTimeout({
+      callName: "writer_discovery_candidates_lookup",
+      timeBudget: dbCtx.timeBudget,
+      now: dbCtx.now,
+      countRows: (r: Array<{ id: string }>) => r.length,
+      run: async (signal) => {
+        const existingResult = await supabase
+          .from("discovery_candidates")
+          .select("id, provider, query_hash, canonical_url")
+          .in("canonical_url", batch.map((row) => row.canonical_url))
+          .abortSignal(signal);
+        if (existingResult.error) throw new Error(`discovery_candidates lookup failed: ${existingResult.error.message}`);
+        return existingResult.data as Array<{ id: string; provider: string; query_hash: string; canonical_url: string }>;
+      },
+    });
+    const existingByKey = new Map(existingRows.map((row) => [`${row.provider}::${row.query_hash}::${row.canonical_url}`, row.id]));
 
     const toInsert = batch.filter((row, i) => !existingByKey.has(keys[i]));
     const toUpdate = batch
@@ -179,22 +192,41 @@ export async function writeNationalDiscoveryCandidates(input: NationalWriteInput
       .filter((entry): entry is { row: (typeof batch)[number]; id: string } => entry.id !== undefined);
 
     if (toInsert.length > 0) {
-      const insertResult = await supabase.from("discovery_candidates").insert(toInsert);
-      if (insertResult.error) throw new Error(`discovery_candidates insert failed: ${insertResult.error.message}`);
+      await withDbTimeout({
+        callName: "writer_discovery_candidates_insert",
+        timeBudget: dbCtx.timeBudget,
+        now: dbCtx.now,
+        countRows: () => toInsert.length,
+        run: async (signal) => {
+          const insertResult = await supabase.from("discovery_candidates").insert(toInsert).abortSignal(signal);
+          if (insertResult.error) throw new Error(`discovery_candidates insert failed: ${insertResult.error.message}`);
+          return toInsert;
+        },
+      });
     }
     for (const { row, id } of toUpdate) {
-      const updateResult = await supabase
-        .from("discovery_candidates")
-        .update({
-          last_seen_at: row.last_seen_at,
-          discovery_status: row.discovery_status,
-          result_rank: row.result_rank,
-          title: row.title,
-          snippet: row.snippet,
-          metadata: row.metadata,
-        })
-        .eq("id", id);
-      if (updateResult.error) throw new Error(`discovery_candidates update failed: ${updateResult.error.message}`);
+      await withDbTimeout({
+        callName: "writer_discovery_candidates_update",
+        timeBudget: dbCtx.timeBudget,
+        now: dbCtx.now,
+        countRows: () => 1,
+        run: async (signal) => {
+          const updateResult = await supabase
+            .from("discovery_candidates")
+            .update({
+              last_seen_at: row.last_seen_at,
+              discovery_status: row.discovery_status,
+              result_rank: row.result_rank,
+              title: row.title,
+              snippet: row.snippet,
+              metadata: row.metadata,
+            })
+            .eq("id", id)
+            .abortSignal(signal);
+          if (updateResult.error) throw new Error(`discovery_candidates update failed: ${updateResult.error.message}`);
+          return row;
+        },
+      });
     }
   }
 
@@ -239,24 +271,47 @@ export async function writeNationalAdmittedListings(input: NationalWriteInput): 
   const fingerprints = [...new Set(candidates.map((c) => c.canonical_fingerprint))];
   const urls = [...new Set(candidates.map((c) => c.canonical_source_url))];
 
+  const dbCtx = input.dbCtx ?? {};
+
   const existingProperties: Array<{ id: number; canonical_fingerprint: string }> = [];
   for (const batch of chunk(fingerprints, 25)) {
-    const response = await supabase.from("property_listings").select("id, canonical_fingerprint").in("canonical_fingerprint", batch);
-    if (response.error) throw new Error(response.error.message);
-    existingProperties.push(...(response.data as Array<{ id: number; canonical_fingerprint: string }>));
+    const rows = await withDbTimeout({
+      callName: "writer_property_fingerprint_lookup",
+      timeBudget: dbCtx.timeBudget,
+      now: dbCtx.now,
+      countRows: (r: Array<{ id: number }>) => r.length,
+      run: async (signal) => {
+        const response = await supabase
+          .from("property_listings")
+          .select("id, canonical_fingerprint")
+          .in("canonical_fingerprint", batch)
+          .abortSignal(signal);
+        if (response.error) throw new Error(response.error.message);
+        return response.data as Array<{ id: number; canonical_fingerprint: string }>;
+      },
+    });
+    existingProperties.push(...rows);
   }
   const existingPropertyByFingerprint = new Map(existingProperties.map((row) => [row.canonical_fingerprint, row.id]));
 
   const existingSources: Array<{ id: number; listing_url: string; property_listing_id: number; first_seen_at: string }> = [];
   for (const batch of chunk(urls, 25)) {
-    const response = await supabase
-      .from("listing_sources")
-      .select("id, listing_url, property_listing_id, first_seen_at")
-      .in("listing_url", batch);
-    if (response.error) throw new Error(response.error.message);
-    existingSources.push(
-      ...(response.data as Array<{ id: number; listing_url: string; property_listing_id: number; first_seen_at: string }>),
-    );
+    const rows = await withDbTimeout({
+      callName: "writer_listing_sources_lookup",
+      timeBudget: dbCtx.timeBudget,
+      now: dbCtx.now,
+      countRows: (r: Array<{ id: number }>) => r.length,
+      run: async (signal) => {
+        const response = await supabase
+          .from("listing_sources")
+          .select("id, listing_url, property_listing_id, first_seen_at")
+          .in("listing_url", batch)
+          .abortSignal(signal);
+        if (response.error) throw new Error(response.error.message);
+        return response.data as Array<{ id: number; listing_url: string; property_listing_id: number; first_seen_at: string }>;
+      },
+    });
+    existingSources.push(...rows);
   }
   const existingSourceByUrl = new Map(existingSources.map((row) => [row.listing_url, row]));
 
@@ -270,15 +325,23 @@ export async function writeNationalAdmittedListings(input: NationalWriteInput): 
   for (const batch of chunk(candidates, 25)) {
     try {
       const propertyPayload = batch.map((candidate) => buildOpenSerpPropertyRow(candidate, now));
-      const propertyUpsert = await supabase
-        .from("property_listings")
-        .upsert(propertyPayload, { onConflict: "canonical_fingerprint" })
-        .select("id, canonical_fingerprint");
-      if (propertyUpsert.error) throw new Error(propertyUpsert.error.message);
+      const propertyRows = await withDbTimeout({
+        callName: "writer_property_listings_upsert",
+        timeBudget: dbCtx.timeBudget,
+        now: dbCtx.now,
+        countRows: (r: Array<{ id: number }>) => r.length,
+        run: async (signal) => {
+          const propertyUpsert = await supabase
+            .from("property_listings")
+            .upsert(propertyPayload, { onConflict: "canonical_fingerprint" })
+            .select("id, canonical_fingerprint")
+            .abortSignal(signal);
+          if (propertyUpsert.error) throw new Error(propertyUpsert.error.message);
+          return propertyUpsert.data as Array<{ id: number; canonical_fingerprint: string }>;
+        },
+      });
 
-      const propertyIdByFingerprint = new Map(
-        (propertyUpsert.data as Array<{ id: number; canonical_fingerprint: string }>).map((row) => [row.canonical_fingerprint, row.id]),
-      );
+      const propertyIdByFingerprint = new Map(propertyRows.map((row) => [row.canonical_fingerprint, row.id]));
 
       for (const fingerprint of propertyIdByFingerprint.keys()) {
         if (existingPropertyByFingerprint.has(fingerprint)) updatedPropertyListings += 1;
@@ -312,18 +375,23 @@ export async function writeNationalAdmittedListings(input: NationalWriteInput): 
         ];
       });
 
-      const sourceUpsert = await supabase
-        .from("listing_sources")
-        .upsert(sourceRows, { onConflict: "listing_url" })
-        .select("id, listing_url, property_listing_id");
-      if (sourceUpsert.error) throw new Error(sourceUpsert.error.message);
+      const sourceUpsertRows = await withDbTimeout({
+        callName: "writer_listing_sources_upsert",
+        timeBudget: dbCtx.timeBudget,
+        now: dbCtx.now,
+        countRows: (r: Array<{ id: number }>) => r.length,
+        run: async (signal) => {
+          const sourceUpsert = await supabase
+            .from("listing_sources")
+            .upsert(sourceRows, { onConflict: "listing_url" })
+            .select("id, listing_url, property_listing_id")
+            .abortSignal(signal);
+          if (sourceUpsert.error) throw new Error(sourceUpsert.error.message);
+          return sourceUpsert.data as Array<{ id: number; listing_url: string; property_listing_id: number }>;
+        },
+      });
 
-      const sourceIdByUrl = new Map(
-        (sourceUpsert.data as Array<{ id: number; listing_url: string; property_listing_id: number }>).map((row) => [
-          row.listing_url,
-          row,
-        ]),
-      );
+      const sourceIdByUrl = new Map(sourceUpsertRows.map((row) => [row.listing_url, row]));
 
       for (const url of sourceIdByUrl.keys()) {
         if (existingSourceByUrl.has(url)) updatedListingSources += 1;
@@ -340,18 +408,23 @@ export async function writeNationalAdmittedListings(input: NationalWriteInput): 
       }));
 
       if (clusterPayload.length > 0) {
-        const clusterUpsert = await supabase
-          .from("property_clusters")
-          .upsert(clusterPayload, { onConflict: "legacy_property_listing_id" })
-          .select("id, legacy_property_listing_id");
-        if (clusterUpsert.error) throw new Error(clusterUpsert.error.message);
+        const clusterRows = await withDbTimeout({
+          callName: "writer_property_clusters_upsert",
+          timeBudget: dbCtx.timeBudget,
+          now: dbCtx.now,
+          countRows: (r: Array<{ id: string }>) => r.length,
+          run: async (signal) => {
+            const clusterUpsert = await supabase
+              .from("property_clusters")
+              .upsert(clusterPayload, { onConflict: "legacy_property_listing_id" })
+              .select("id, legacy_property_listing_id")
+              .abortSignal(signal);
+            if (clusterUpsert.error) throw new Error(clusterUpsert.error.message);
+            return clusterUpsert.data as Array<{ id: string; legacy_property_listing_id: number }>;
+          },
+        });
 
-        const clusterIdByListingId = new Map(
-          (clusterUpsert.data as Array<{ id: string; legacy_property_listing_id: number }>).map((row) => [
-            row.legacy_property_listing_id,
-            row.id,
-          ]),
-        );
+        const clusterIdByListingId = new Map(clusterRows.map((row) => [row.legacy_property_listing_id, row.id]));
 
         newClusters += clusterPayload.filter(
           (c) => !existingSources.some((s) => s.property_listing_id === c.legacy_property_listing_id),
@@ -371,10 +444,20 @@ export async function writeNationalAdmittedListings(input: NationalWriteInput): 
           .filter((row): row is NonNullable<typeof row> => row !== null);
 
         if (memberPayload.length > 0) {
-          const memberUpsert = await supabase
-            .from("property_cluster_members")
-            .upsert(memberPayload, { onConflict: "property_cluster_id,source_offer_id", ignoreDuplicates: true });
-          if (memberUpsert.error) throw new Error(memberUpsert.error.message);
+          await withDbTimeout({
+            callName: "writer_cluster_members_upsert",
+            timeBudget: dbCtx.timeBudget,
+            now: dbCtx.now,
+            countRows: () => memberPayload.length,
+            run: async (signal) => {
+              const memberUpsert = await supabase
+                .from("property_cluster_members")
+                .upsert(memberPayload, { onConflict: "property_cluster_id,source_offer_id", ignoreDuplicates: true })
+                .abortSignal(signal);
+              if (memberUpsert.error) throw new Error(memberUpsert.error.message);
+              return memberPayload;
+            },
+          });
           newMemberships += memberPayload.length;
         }
       }

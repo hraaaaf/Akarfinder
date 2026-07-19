@@ -27,65 +27,16 @@ import { PGlite } from "@electric-sql/pglite";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+// OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1: the repositories now chain
+// .abortSignal()/.not()/.order()/.range() on every builder, so this file's
+// old minimal inline client no longer matches the real call surface --
+// replaced by the shared, fuller PGlite-backed helper.
+import { makeFakeSupabaseClient } from "./helpers/fake-supabase-postgrest";
 
 const ROTATION_MIGRATION = "20260718140000_create_openserp_query_rotation_state.sql";
 const BUDGET_MIGRATION = "20260718140100_create_openserp_engine_budget_state.sql";
 const LOCK_MIGRATION = "20260718180000_create_openserp_ingestion_run_lock.sql";
 const MIGRATIONS_DIR = join(process.cwd(), "supabase", "migrations");
-
-function toSqlLiteral(value: unknown): string {
-  if (value === null || value === undefined) return "null";
-  if (typeof value === "number") return String(value);
-  if (typeof value === "boolean") return value ? "true" : "false";
-  return `'${String(value).replace(/'/g, "''")}'`;
-}
-
-function makeFakeSupabaseClient(db: InstanceType<typeof PGlite>) {
-  return {
-    from(table: string) {
-      return {
-        select(_cols: string) {
-          return {
-            in: async (col: string, values: string[]) => {
-              if (values.length === 0) return { data: [], error: null };
-              const list = values.map(toSqlLiteral).join(",");
-              const result = await db.query(`select * from ${table} where ${col} in (${list});`);
-              return { data: result.rows, error: null };
-            },
-          };
-        },
-        upsert: async (rows: Array<Record<string, unknown>>, opts: { onConflict: string; ignoreDuplicates?: boolean }) => {
-          for (const row of rows) {
-            const cols = Object.keys(row);
-            const values = cols.map((c) => toSqlLiteral(row[c]));
-            const conflictAction = opts.ignoreDuplicates
-              ? "do nothing"
-              : `do update set ${cols.filter((c) => c !== opts.onConflict).map((c) => `${c} = excluded.${c}`).join(", ")}`;
-            await db.query(
-              `insert into ${table} (${cols.join(",")}) values (${values.join(",")}) on conflict (${opts.onConflict}) ${conflictAction};`,
-            );
-          }
-          return { error: null };
-        },
-      };
-    },
-    rpc: async (fnName: string, params: Record<string, unknown>) => {
-      if (fnName === "acquire_openserp_ingestion_lock") {
-        const r = await db.query(
-          `select * from acquire_openserp_ingestion_lock(${toSqlLiteral(params.p_lock_name)}, ${toSqlLiteral(params.p_owner_id)}, ${toSqlLiteral(params.p_lease_seconds)});`,
-        );
-        return { data: r.rows, error: null };
-      }
-      if (fnName === "release_openserp_ingestion_lock") {
-        const r = await db.query(
-          `select release_openserp_ingestion_lock(${toSqlLiteral(params.p_lock_name)}, ${toSqlLiteral(params.p_owner_id)}) as result;`,
-        );
-        return { data: (r.rows[0] as { result: boolean }).result, error: null };
-      }
-      return { data: null, error: { message: `unknown rpc: ${fnName}` } };
-    },
-  };
-}
 
 type FakeEngineBehavior = { kind: "success" } | { kind: "timeout" } | { kind: "error" };
 
@@ -316,8 +267,15 @@ test("items 2-3, Phase 10: a run stops voluntarily on time-budget exhaustion, ch
   const persisted = await db.query<{ query_id: string }>("select query_id from openserp_query_rotation_state where last_run_id = 'itg-run-3-partial';");
   assert.equal(persisted.rows.length, run.metrics.executed_unit_count, "exactly the executed units must be checkpointed");
 
+  // Since OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1 (executed-only
+  // hydration, no hot-path seeding), a never-run query may have NO row at
+  // all -- absent is equivalent to default state and equally proves the
+  // unit was never marked as run.
   const lastQuery = await db.query<{ last_run_id: string | null }>("select last_run_id from openserp_query_rotation_state where query_id = 'itg2-q4';");
-  assert.notEqual(lastQuery.rows[0].last_run_id, "itg-run-3-partial", "a unit that was never started must not be marked as run");
+  assert.ok(
+    lastQuery.rows.length === 0 || lastQuery.rows[0].last_run_id !== "itg-run-3-partial",
+    "a unit that was never started must not be marked as run (absent row or a different run id both prove this)",
+  );
 });
 
 test("items 4-5: engine timeout and engine error are both classified and don't block persistence of the rest of the batch", async () => {

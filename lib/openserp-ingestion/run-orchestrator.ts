@@ -48,6 +48,7 @@ import {
   type StaticQueryDefinition,
 } from "./state/serverless-state-service";
 import type { OpenSerpEngineName } from "./state/query-rotation-state-repository";
+import { DbCallTimeoutError, TimeBudgetExhaustedBeforeDbCallError } from "./state/db-call-guard";
 import type { OpenSerpIngestionQuery } from "./types";
 import { createTimeBudget, remainingBudgetMs, elapsedMs, snapshotTimeBudget, DEFAULT_SAFETY_MARGIN_MS } from "./time-budget";
 
@@ -175,8 +176,9 @@ export async function runIngestionCycle(input: {
 
   const startedAt = new Date(now()).toISOString();
   const universe = loadUniverse(universePath);
-  const hydratedQueries = await hydrateRotationQueries(universe.queries, universe.universe_version);
-  const budgetState: BudgetState = await loadBudgetState();
+  const dbCtx = { timeBudget, now };
+  const hydratedQueries = await hydrateRotationQueries(universe.queries, universe.universe_version, dbCtx);
+  const budgetState: BudgetState = await loadBudgetState(dbCtx);
 
   const engines = activeEngines(budgetState, startedAt);
   const requestedBudget = input.batchSizeOverride ?? Math.min(budgetState.current_budget, MAX_SERVERLESS_BATCH_SIZE);
@@ -335,8 +337,24 @@ export async function runIngestionCycle(input: {
     // the query in flight (if any) is lost, and it was never marked
     // executed in the first place, so the next invocation will simply
     // select it again.
-    await persistRotationUpdates([updatedQuery], input.runId, universe.universe_version);
-    executedCount += 1;
+    //
+    // OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1 Phase 9: a checkpoint
+    // that can't complete within the remaining budget (refused up front,
+    // or aborted mid-flight) must end the run CLEANLY as
+    // time_budget_exhausted, not crash it -- the affected query's rotation
+    // state is simply unchanged, so the next invocation reselects it, and
+    // every previously checkpointed unit stays durable. Any other DB error
+    // still propagates loudly.
+    try {
+      await persistRotationUpdates([updatedQuery], input.runId, universe.universe_version, dbCtx);
+      executedCount += 1;
+    } catch (error) {
+      if (error instanceof DbCallTimeoutError || error instanceof TimeBudgetExhaustedBeforeDbCallError) {
+        outcomeStatus = "time_budget_exhausted";
+        break;
+      }
+      throw error;
+    }
   }
 
   if (executedCount < plannedBatch.length && outcomeStatus === "completed") {
@@ -355,7 +373,7 @@ export async function runIngestionCycle(input: {
 
   let writeResult: Awaited<ReturnType<typeof writeNationalIngestionRun>> | null = null;
   if (input.write) {
-    writeResult = await writeNationalIngestionRun({ runId: input.runId, decisions });
+    writeResult = await writeNationalIngestionRun({ runId: input.runId, decisions, dbCtx });
   }
 
   const acceptedCandidates = decisions.filter((d) => d.admitted).length;
@@ -388,7 +406,21 @@ export async function runIngestionCycle(input: {
   // Persisted unconditionally, including on a "partial"/"time_budget_exhausted"
   // early exit -- an arrêt volontaire must still preserve whatever budget/
   // suspension signal was actually observed on the units that did run.
-  await persistBudgetState(nextBudgetState, input.runId);
+  // If even this last write can't fit in the remaining budget, ending the
+  // run cleanly matters more than this non-critical write (engine budget
+  // simply stays at its previous value; suspension signals from this run
+  // are re-derivable on the next) -- report it via state_persisted=false
+  // rather than crashing at the very end.
+  let statePersisted = true;
+  try {
+    await persistBudgetState(nextBudgetState, input.runId, dbCtx);
+  } catch (error) {
+    if (error instanceof DbCallTimeoutError || error instanceof TimeBudgetExhaustedBeforeDbCallError) {
+      statePersisted = false;
+    } else {
+      throw error;
+    }
+  }
 
   const metrics: RunMetrics = {
     run_id: input.runId,
@@ -426,7 +458,7 @@ export async function runIngestionCycle(input: {
     outcome_status: outcomeStatus,
     planned_unit_count: plannedBatch.length,
     executed_unit_count: executedCount,
-    state_persisted: true,
+    state_persisted: statePersisted,
     time_budget: snapshotTimeBudget(timeBudget, now),
   };
 

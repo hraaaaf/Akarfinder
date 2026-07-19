@@ -1,4 +1,5 @@
 // OPENSERP-SERVERLESS-STATE-PERSISTENCE-1 — section 9.
+// OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1 — Phase 4.
 // Persists budget-policy.ts's BudgetState (previously written to the local
 // engine-budget-state.json file, which crashes with EROFS on Vercel).
 //
@@ -12,9 +13,12 @@
 // of sync). See docs/OPENSERP_SERVERLESS_STATE_PERSISTENCE_1.md.
 //
 // No fallback to a filesystem write anywhere in this file, by design.
+// Every call goes through withDbTimeout (real .abortSignal() cancellation,
+// budget-aware refusal, structured instrumentation).
 
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
-import type { OpenSerpEngineName } from "./query-rotation-state-repository";
+import { withDbTimeout } from "./db-call-guard";
+import type { OpenSerpEngineName, DbCallContext } from "./query-rotation-state-repository";
 
 export const OPENSERP_ENGINE_BUDGET_STATE_VERSION = "openserp-engine-budget-state-v1";
 
@@ -36,29 +40,35 @@ const KNOWN_ENGINES: OpenSerpEngineName[] = ["bing", "duckduckgo", "ecosia"];
 
 export async function loadEngineBudgetStates(
   engines: OpenSerpEngineName[] = KNOWN_ENGINES,
+  ctx: DbCallContext = {},
 ): Promise<Map<OpenSerpEngineName, EngineBudgetDbState>> {
   const map = new Map<OpenSerpEngineName, EngineBudgetDbState>();
   if (engines.length === 0) return map;
 
   const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("openserp_engine_budget_state")
-    .select(
-      "engine, state_version, current_budget, consecutive_failures, captcha_count, rate_limit_count, timeout_count, suspended_until, last_success_at, last_failure_at, last_run_id",
-    )
-    .in("engine", engines);
+  const rows = await withDbTimeout({
+    callName: "load_engine_budget_states",
+    timeBudget: ctx.timeBudget,
+    now: ctx.now,
+    countRows: (r: EngineBudgetDbState[]) => r.length,
+    run: async (signal) => {
+      const { data, error } = await supabase
+        .from("openserp_engine_budget_state")
+        .select(
+          "engine, state_version, current_budget, consecutive_failures, captcha_count, rate_limit_count, timeout_count, suspended_until, last_success_at, last_failure_at, last_run_id",
+        )
+        .in("engine", engines)
+        .abortSignal(signal);
+      if (error) throw new Error(`loadEngineBudgetStates failed: ${error.message}`);
+      return (data ?? []) as EngineBudgetDbState[];
+    },
+  });
 
-  if (error) {
-    throw new Error(`loadEngineBudgetStates failed: ${error.message}`);
-  }
-
-  for (const row of data ?? []) {
-    map.set(row.engine as OpenSerpEngineName, row as EngineBudgetDbState);
-  }
+  for (const row of rows) map.set(row.engine, row);
   return map;
 }
 
-export async function upsertEngineBudgetStates(states: EngineBudgetDbState[], runId: string): Promise<void> {
+export async function upsertEngineBudgetStates(states: EngineBudgetDbState[], runId: string, ctx: DbCallContext = {}): Promise<void> {
   if (states.length === 0) return;
 
   const supabase = getSupabaseServerClient();
@@ -69,8 +79,18 @@ export async function upsertEngineBudgetStates(states: EngineBudgetDbState[], ru
     updated_at: now,
   }));
 
-  const { error } = await supabase.from("openserp_engine_budget_state").upsert(rows, { onConflict: "engine" });
-  if (error) {
-    throw new Error(`upsertEngineBudgetStates failed: ${error.message}`);
-  }
+  await withDbTimeout({
+    callName: "upsert_engine_budget_states",
+    timeBudget: ctx.timeBudget,
+    now: ctx.now,
+    countRows: () => rows.length,
+    run: async (signal) => {
+      const { error } = await supabase
+        .from("openserp_engine_budget_state")
+        .upsert(rows, { onConflict: "engine" })
+        .abortSignal(signal);
+      if (error) throw new Error(`upsertEngineBudgetStates failed: ${error.message}`);
+      return rows;
+    },
+  });
 }

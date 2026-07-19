@@ -1,0 +1,30 @@
+{
+  "gate_id": "openserp-db-timeout-gate-b-2718-benchmark",
+  "mission": "OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1",
+  "generated_at_utc": "2026-07-19T08:57:56.448Z",
+  "engine": "@electric-sql/pglite (embedded WASM Postgres) -- same SQL shapes as production PostgREST-compiled queries; absolute timings are engine-local, the old/new RATIO and rows/calls counts are the meaningful figures",
+  "no_production_connection_made": true,
+  "seeded_rows": 2718,
+  "seed_ms": 110,
+  "executed_rows_marked": 10,
+  "old_hydration": {
+    "total_ms": 171,
+    "rows_loaded": 2718,
+    "db_calls": 14,
+    "max_single_call_ms": 17
+  },
+  "new_hydration": {
+    "total_ms": 4,
+    "rows_loaded": 10,
+    "db_calls": 1,
+    "max_single_call_ms": 4
+  },
+  "improvement": {
+    "rows_loaded_ratio": "2718 -> 10 (100% fewer rows)",
+    "db_calls_ratio": "14 -> 1",
+    "time_ratio": "171ms -> 4ms"
+  },
+  "max_db_call_timeout_ms_configured": 8000,
+  "no_single_call_exceeded_configured_timeout": true,
+  "peak_memory_note": "process.memoryUsage().heapUsed after benchmark: 49MB"
+}

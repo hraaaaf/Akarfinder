@@ -15,6 +15,7 @@ import {
   acquireIngestionRunLock as acquireLease,
   releaseIngestionRunLock as releaseLease,
 } from "./state/ingestion-run-lock-repository";
+import { DbCallTimeoutError, TimeBudgetExhaustedBeforeDbCallError } from "./state/db-call-guard";
 
 export type RunLockResult = { acquired: true } | { acquired: false; reason: "SKIPPED_OVERLAPPING_RUN" };
 
@@ -25,5 +26,18 @@ export async function acquireIngestionRunLock(runId: string, leaseSeconds: numbe
 }
 
 export async function releaseIngestionRunLock(runId: string): Promise<void> {
-  await releaseLease(runId);
+  // Best-effort by design (OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1
+  // Phase 9): if the bounded release call times out or is refused for
+  // lack of budget, swallow it -- the lease's own expiry is the final,
+  // already-proven-in-production safety net (REAL-RUN-VALIDATION-2's
+  // killed invocation self-healed exactly this way). Any other error
+  // still propagates: a genuine DB failure should be visible, not hidden.
+  try {
+    await releaseLease(runId);
+  } catch (error) {
+    if (error instanceof DbCallTimeoutError || error instanceof TimeBudgetExhaustedBeforeDbCallError) {
+      return;
+    }
+    throw error;
+  }
 }
