@@ -156,6 +156,13 @@ export async function runIngestionCycle(input: {
   scheduledAtIso: string;
   universePath?: string;
   write: boolean;
+  // OPENSERP-GITHUB-NATIVE-TRANSPORT-1: separate from `write`, which only
+  // gates the business write (writeNationalIngestionRun below). Defaults to
+  // true so every pre-existing caller (the Vercel cron route, the bootstrap
+  // CLI, and every existing test) keeps writing rotation/budget state
+  // exactly as before -- only a caller that explicitly passes
+  // persistState:false (the GitHub dry-run entrypoint) skips it.
+  persistState?: boolean;
   env?: NodeJS.ProcessEnv;
   // Bootstrap waves (section 22: 25/100/300) need an explicit batch size
   // independent of the cron's adaptive engine budget state -- WITHOUT this
@@ -187,6 +194,7 @@ export async function runIngestionCycle(input: {
     now,
   });
   const engineCallTimeoutMs = input.engineCallTimeoutMs ?? DEFAULT_ENGINE_CALL_TIMEOUT_MS;
+  const persistState = input.persistState ?? true;
 
   const startedAt = new Date(now()).toISOString();
   const universe = loadUniverse(universePath);
@@ -406,15 +414,24 @@ export async function runIngestionCycle(input: {
     // state is simply unchanged, so the next invocation reselects it, and
     // every previously checkpointed unit stays durable. Any other DB error
     // still propagates loudly.
-    try {
-      await persistRotationUpdates([updatedQuery], input.runId, universe.universe_version, dbCtx);
-      executedCount += 1;
-    } catch (error) {
-      if (error instanceof DbCallTimeoutError || error instanceof TimeBudgetExhaustedBeforeDbCallError) {
-        outcomeStatus = "time_budget_exhausted";
-        break;
+    // OPENSERP-GITHUB-NATIVE-TRANSPORT-1: persistState=false skips this
+    // checkpoint entirely -- no DB call is made, so there is no DB-timeout
+    // failure mode to handle here; the query is simply counted as executed
+    // in-memory. persistState=true (the default) keeps this branch
+    // byte-for-byte identical to the pre-existing behavior.
+    if (persistState) {
+      try {
+        await persistRotationUpdates([updatedQuery], input.runId, universe.universe_version, dbCtx);
+        executedCount += 1;
+      } catch (error) {
+        if (error instanceof DbCallTimeoutError || error instanceof TimeBudgetExhaustedBeforeDbCallError) {
+          outcomeStatus = "time_budget_exhausted";
+          break;
+        }
+        throw error;
       }
-      throw error;
+    } else {
+      executedCount += 1;
     }
   }
 
@@ -472,15 +489,24 @@ export async function runIngestionCycle(input: {
   // simply stays at its previous value; suspension signals from this run
   // are re-derivable on the next) -- report it via state_persisted=false
   // rather than crashing at the very end.
+  // OPENSERP-GITHUB-NATIVE-TRANSPORT-1: same persistState gate as the
+  // per-query checkpoint above. persistState=true keeps this branch
+  // byte-for-byte identical to the pre-existing behavior; persistState=false
+  // never calls persistBudgetState at all and honestly reports
+  // state_persisted=false (no persistence was attempted).
   let statePersisted = true;
-  try {
-    await persistBudgetState(nextBudgetState, input.runId, dbCtx);
-  } catch (error) {
-    if (error instanceof DbCallTimeoutError || error instanceof TimeBudgetExhaustedBeforeDbCallError) {
-      statePersisted = false;
-    } else {
-      throw error;
+  if (persistState) {
+    try {
+      await persistBudgetState(nextBudgetState, input.runId, dbCtx);
+    } catch (error) {
+      if (error instanceof DbCallTimeoutError || error instanceof TimeBudgetExhaustedBeforeDbCallError) {
+        statePersisted = false;
+      } else {
+        throw error;
+      }
     }
+  } else {
+    statePersisted = false;
   }
 
   const metrics: RunMetrics = {

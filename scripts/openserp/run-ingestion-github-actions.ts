@@ -52,6 +52,10 @@ async function main() {
       runId,
       scheduledAtIso,
       write: false,
+      // OPENSERP-GITHUB-NATIVE-TRANSPORT-1: dry-run must make zero DB
+      // writes of any kind, not just skip the business write -- see
+      // run-orchestrator.ts's persistState gate.
+      persistState: false,
       routeMaxDurationMs: ROUTE_MAX_DURATION_MS,
     });
     console.log(JSON.stringify({ ok: true, status: "DRY_RUN_COMPLETED", run_id: runId, metrics }, null, 2));

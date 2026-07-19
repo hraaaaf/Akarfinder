@@ -12,6 +12,7 @@
 import { promisify } from "node:util";
 import { execFile } from "node:child_process";
 import { createOpenSerpClient, OpenSerpHttpError } from "@/lib/openserp-async/openserp-client";
+import { createOpenSerpNativeClient } from "@/lib/openserp-async/openserp-native-client";
 import type { OpenSerpSearchResponse } from "@/lib/openserp-async/types";
 import type { OpenSerpProviderInfo } from "./types";
 
@@ -68,7 +69,16 @@ export async function runOpenSerpLiveQuery(input: {
   const timeoutMs = Math.max(1000, Math.trunc(input.timeoutMs ?? DEFAULT_ENGINE_CALL_TIMEOUT_MS));
 
   if (baseUrl) {
-    const client = createOpenSerpClient({ env, baseUrl, timeoutMs });
+    // OPENSERP-GITHUB-NATIVE-TRANSPORT-1: OPENSERP_TRANSPORT="native" talks
+    // directly to the real karust/openserp HTTP contract (used by the
+    // GitHub-hosted runtime, which runs the unmodified upstream image with
+    // no adapter in front of it). Any other value -- including unset --
+    // keeps the existing adapter-contract client as the default, exactly as
+    // before this addition.
+    const client =
+      env.OPENSERP_TRANSPORT === "native"
+        ? createOpenSerpNativeClient({ env, baseUrl, timeoutMs })
+        : createOpenSerpClient({ env, baseUrl, timeoutMs });
     let response: OpenSerpSearchResponse;
     try {
       response = await client.search({
