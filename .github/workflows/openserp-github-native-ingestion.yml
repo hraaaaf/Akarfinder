@@ -93,6 +93,77 @@ jobs:
             fi
           done
 
+      # TEMPORARY diagnostic (not ingestion code) -- investigating "Invalid
+      # path specified in request URL" from the first Node-24 dry-run.
+      # Never prints the secret value itself, only structural facts about
+      # it. Remove once the SUPABASE_URL issue is confirmed/resolved.
+      - name: Diagnostic -- SUPABASE_URL structure (no secret values printed)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          node -e '
+            const raw = process.env.SUPABASE_URL || "";
+            const trimmed = raw.trim();
+            const hasLeadingWs = /^\s/.test(raw);
+            const hasTrailingWs = /\s$/.test(raw);
+            const hasQuotes = raw.includes("\"") || raw.includes("\x27");
+            let parseable = false;
+            let protocol = null, hostname = null, pathname = null, hasQueryOrHash = false;
+            try {
+              const u = new URL(trimmed);
+              parseable = true;
+              protocol = u.protocol;
+              hostname = u.hostname;
+              pathname = u.pathname;
+              hasQueryOrHash = Boolean(u.search || u.hash);
+            } catch (e) {}
+            console.log(JSON.stringify({
+              url_parseable: parseable,
+              protocol_seen: protocol,
+              protocol_is_https: protocol === "https:",
+              hostname: hostname,
+              hostname_matches_supabase_co: hostname ? hostname.endsWith(".supabase.co") : false,
+              pathname: pathname,
+              has_leading_whitespace: hasLeadingWs,
+              has_trailing_whitespace: hasTrailingWs,
+              has_quote_characters: hasQuotes,
+              has_query_or_hash: hasQueryOrHash,
+              total_length: raw.length,
+            }, null, 2));
+          '
+
+      - name: Diagnostic -- minimal read-only REST probe (status only)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set +e
+          TARGET_URL=$(node -e '
+            try {
+              console.log(new URL("/rest/v1/", process.env.SUPABASE_URL.trim()).toString());
+            } catch (e) {
+              console.log("");
+            }
+          ')
+          if [ -z "$TARGET_URL" ]; then
+            echo '{"http_status": null, "network_error": "SUPABASE_URL not parseable, target URL not constructed", "sanitized_host": null, "sanitized_path": null}'
+          else
+            export TARGET_URL
+            SANITIZED_HOST=$(node -e 'console.log(new URL(process.env.TARGET_URL).hostname)')
+            SANITIZED_PATH=$(node -e 'console.log(new URL(process.env.TARGET_URL).pathname)')
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 10 \
+              -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+              -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+              "$TARGET_URL" 2>/tmp/curl_err.txt)
+            CURL_EXIT=$?
+            NETWORK_ERR=""
+            if [ $CURL_EXIT -ne 0 ]; then
+              NETWORK_ERR=$(head -c 300 /tmp/curl_err.txt)
+            fi
+            printf '{"http_status": "%s", "curl_exit_code": %s, "network_error": "%s", "sanitized_host": "%s", "sanitized_path": "%s"}\n' \
+              "$HTTP_STATUS" "$CURL_EXIT" "$NETWORK_ERR" "$SANITIZED_HOST" "$SANITIZED_PATH"
+          fi
+
       - name: Run ingestion entrypoint
         id: ingest
         env:
