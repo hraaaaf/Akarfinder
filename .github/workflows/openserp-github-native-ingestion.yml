@@ -168,6 +168,16 @@ jobs:
         id: ingest
         env:
           OPENSERP_LOCAL_URL: http://127.0.0.1:7070
+          # OPENSERP-GITHUB-NATIVE-TRANSPORT-1: non-sensitive configuration,
+          # not credentials -- plain env values, not GitHub Secrets. Selects
+          # the native karust/openserp HTTP contract (GET /{engine}/search)
+          # instead of the Railway-adapter contract, and satisfies the
+          # existing 3-flag async-feeder gate (openserp-policy.ts) so the
+          # engine calls this container actually runs are no longer
+          # rejected before ever reaching it.
+          OPENSERP_TRANSPORT: native
+          PUBLIC_INDEX_POC_ENABLED: "true"
+          OPENSERP_ASYNC_FEEDER_ENABLED: "true"
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
