@@ -1,29 +1,40 @@
 name: OpenSERP Native Ingestion (GitHub-hosted)
 
 # OPENSERP-GITHUB-NATIVE-INGESTION-INTEGRATION-1
+# OPENSERP-CRON-PROD-ACTIVATION-1
 # Runs the EXISTING orchestrator (lib/openserp-ingestion/run-orchestrator.ts,
 # via scripts/openserp/run-ingestion-github-actions.ts) inside a GitHub
 # Actions job, talking to a local OpenSERP Docker container in full
 # browser mode (validated by OPENSERP-GITHUB-EPHEMERAL-RUNTIME-POC-1) --
-# no Vercel involved. workflow_dispatch only, no schedule.
+# no Vercel involved.
 #
 # Checks out fix/openserp-serverless-state-persistence explicitly (not
 # this workflow's own ref) because that branch, not yet merged to main,
 # holds the DB-call-timeout-safety and engine-error-diagnostics work this
 # mission is required to preserve unmodified.
 #
+# Scheduled every 30 minutes, activated after two real workflow_dispatch
+# cron runs both validated PASS STRICT (2026-07-19). A schedule-triggered
+# event carries no `inputs` context (GitHub only populates `inputs` for
+# workflow_dispatch) -- the "Run ingestion entrypoint" step below resolves
+# mode from github.event_name for a schedule trigger, and continues to
+# honor the manual dropdown for a workflow_dispatch trigger.
+#
 # Guardrails against an accidental write:
-#   - mode defaults to dry-run (never writes, bypasses the flag gate)
-#   - cron mode still requires OPENSERP_AUTOMATED_INGESTION_ENABLED,
-#     OPENSERP_INGESTION_WRITE_ENABLED, and OPENSERP_INGESTION_CRON_ENABLED
-#     to all be "true" secrets -- unset here, so even a mistaken cron
-#     dispatch safely NOOPs.
+#   - workflow_dispatch's mode still defaults to dry-run (never writes,
+#     bypasses the flag gate)
+#   - cron mode (both scheduled and manual) still requires
+#     OPENSERP_AUTOMATED_INGESTION_ENABLED, OPENSERP_INGESTION_WRITE_ENABLED,
+#     and OPENSERP_INGESTION_CRON_ENABLED to all be "true" secrets -- if
+#     any is unset, the run safely NOOPs.
 
 on:
+  schedule:
+    - cron: "*/30 * * * *"
   workflow_dispatch:
     inputs:
       mode:
-        description: "dry-run (never writes) or cron (mirrors Production gate exactly)"
+        description: "dry-run (never writes) or cron (mirrors Production gate exactly) -- ignored on a scheduled run, which always uses cron"
         required: true
         default: "dry-run"
         type: choice
@@ -186,7 +197,15 @@ jobs:
         run: |
           set -e
           T0=$(date +%s%3N)
-          npx tsx scripts/openserp/run-ingestion-github-actions.ts --${{ inputs.mode }}
+          # A schedule-triggered event has no `inputs` context at all (only
+          # workflow_dispatch populates it) -- resolve mode from the event
+          # type instead of assuming inputs.mode is ever set.
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            MODE="cron"
+          else
+            MODE="${{ inputs.mode }}"
+          fi
+          npx tsx scripts/openserp/run-ingestion-github-actions.ts --"$MODE"
           T1=$(date +%s%3N)
           echo "ingest_ms=$((T1-T0))" >> "$GITHUB_ENV"
 
