@@ -17,6 +17,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { makeFakeSupabaseClient, type FakeDbLatencyFn } from "./helpers/fake-supabase-postgrest";
+import { MAX_SERVERLESS_BATCH_SIZE } from "../../../lib/openserp-ingestion/budget-policy";
 
 const MIGRATIONS_DIR = join(process.cwd(), "supabase", "migrations");
 const MIGRATIONS = [
@@ -166,7 +167,9 @@ test("parity: executed-only hydration produces byte-identical RotationQuery stat
 
 test("gate A: instant DB -- run completes normally, checkpoints persisted", async () => {
   const { runIngestionCycle } = await import("../../../lib/openserp-ingestion/run-orchestrator");
-  const fixturePath = writeFixture(6, "ga-instant");
+  // Universe deliberately larger than MAX_SERVERLESS_BATCH_SIZE so the cap
+  // is still the limiting factor, not "however many queries exist".
+  const fixturePath = writeFixture(MAX_SERVERLESS_BATCH_SIZE + 2, "ga-instant");
 
   const run = await runIngestionCycle({
     runId: "ga-instant-run",
@@ -178,9 +181,9 @@ test("gate A: instant DB -- run completes normally, checkpoints persisted", asyn
     safetyMarginMs: 20_000,
   });
   assert.equal(run.metrics.outcome_status, "completed");
-  assert.equal(run.metrics.executed_unit_count, 5); // MAX_SERVERLESS_BATCH_SIZE cap
+  assert.equal(run.metrics.executed_unit_count, MAX_SERVERLESS_BATCH_SIZE); // MAX_SERVERLESS_BATCH_SIZE cap
   const persisted = await db.query<{ c: number }>("select count(*)::int as c from openserp_query_rotation_state where last_run_id = 'ga-instant-run';");
-  assert.equal(persisted.rows[0].c, 5);
+  assert.equal(persisted.rows[0].c, MAX_SERVERLESS_BATCH_SIZE);
 });
 
 test("gate A: DB slower than its own timeout -- call really aborted, run fails loudly with a DbCallTimeoutError, no partial rotation state", async () => {

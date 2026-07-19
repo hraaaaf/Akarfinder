@@ -32,6 +32,7 @@ import { tmpdir } from "node:os";
 // old minimal inline client no longer matches the real call surface --
 // replaced by the shared, fuller PGlite-backed helper.
 import { makeFakeSupabaseClient } from "./helpers/fake-supabase-postgrest";
+import { MAX_SERVERLESS_BATCH_SIZE } from "../../../lib/openserp-ingestion/budget-policy";
 
 const ROTATION_MIGRATION = "20260718140000_create_openserp_query_rotation_state.sql";
 const BUDGET_MIGRATION = "20260718140100_create_openserp_engine_budget_state.sql";
@@ -168,9 +169,21 @@ test("the pre-expiry owner cannot release the new owner's lease, but the new own
   assert.equal(count.rows[0].c, 0);
 });
 
+// Shared across items 14, 8, and 7 below -- all three deliberately reuse
+// the SAME query_id universe (cross-invocation persistence is the point),
+// sized with enough headroom above MAX_SERVERLESS_BATCH_SIZE that item 8's
+// batchSizeOverride:3 can always find 3 genuinely never-executed queries
+// left over after item 14 fills exactly one cap's worth.
+const ITEM_14_8_7_UNIVERSE_SIZE = MAX_SERVERLESS_BATCH_SIZE + 3;
+function item1487Fixture() {
+  return Array.from({ length: ITEM_14_8_7_UNIVERSE_SIZE }, (_, i) => ({ id: `itg-q${i + 1}`, queryText: `appartement a vendre fixture ${i + 1}`, city: i % 2 === 0 ? "Casablanca" : "Rabat" }));
+}
+
 test("item 14: a serverless invocation's batch is capped at MAX_SERVERLESS_BATCH_SIZE even when more queries and budget are available; item 6: completes normally under ample time budget", async () => {
   const { runIngestionCycle } = await import("../../../lib/openserp-ingestion/run-orchestrator");
-  const fixturePath = writeFixture(Array.from({ length: 8 }, (_, i) => ({ id: `itg-q${i + 1}`, queryText: `appartement a vendre fixture ${i + 1}`, city: i % 2 === 0 ? "Casablanca" : "Rabat" })));
+  // Universe deliberately larger than MAX_SERVERLESS_BATCH_SIZE so the cap
+  // (not "however many queries exist") is what's actually being asserted.
+  const fixturePath = writeFixture(item1487Fixture());
 
   const run1 = await runIngestionCycle({
     runId: "itg-run-1",
@@ -181,9 +194,9 @@ test("item 14: a serverless invocation's batch is capped at MAX_SERVERLESS_BATCH
     routeMaxDurationMs: 120_000,
     safetyMarginMs: 20_000,
   });
-  assert.equal(run1.metrics.planned_unit_count, 5, "batch must be capped at MAX_SERVERLESS_BATCH_SIZE (5)");
+  assert.equal(run1.metrics.planned_unit_count, MAX_SERVERLESS_BATCH_SIZE, `batch must be capped at MAX_SERVERLESS_BATCH_SIZE (${MAX_SERVERLESS_BATCH_SIZE})`);
   assert.equal(run1.metrics.outcome_status, "completed");
-  assert.equal(run1.metrics.executed_unit_count, 5);
+  assert.equal(run1.metrics.executed_unit_count, MAX_SERVERLESS_BATCH_SIZE);
 });
 
 test("item 8: a second invocation resumes with the remaining never-executed queries (cross-invocation persistence)", async () => {
@@ -193,10 +206,11 @@ test("item 8: a second invocation resumes with the remaining never-executed quer
   // never-executed queries across invocations" from "does the batch cap
   // backfill with already-executed queries when fewer than the cap remain
   // never-executed" (the latter is normal, expected planner behavior, not
-  // a bug -- run 1's 8-query universe has 5 already executed, so a
-  // budget of 5 in run 2 would legitimately reselect 2 of them too).
+  // a bug -- run 1's larger universe already has MAX_SERVERLESS_BATCH_SIZE
+  // queries executed, so a budget that large in run 2 would legitimately
+  // reselect some of them too).
   const { runIngestionCycle } = await import("../../../lib/openserp-ingestion/run-orchestrator");
-  const fixturePath = writeFixture(Array.from({ length: 8 }, (_, i) => ({ id: `itg-q${i + 1}`, queryText: `appartement a vendre fixture ${i + 1}`, city: i % 2 === 0 ? "Casablanca" : "Rabat" })));
+  const fixturePath = writeFixture(item1487Fixture());
 
   await runIngestionCycle({
     runId: "itg-run-2",
@@ -211,14 +225,14 @@ test("item 8: a second invocation resumes with the remaining never-executed quer
 
   const run1Ids = (await db.query<{ query_id: string }>("select query_id from openserp_query_rotation_state where last_run_id = 'itg-run-1' order by query_id;")).rows.map((r) => r.query_id);
   const run2Ids = (await db.query<{ query_id: string }>("select query_id from openserp_query_rotation_state where last_run_id = 'itg-run-2' order by query_id;")).rows.map((r) => r.query_id);
-  assert.equal(run1Ids.length, 5);
+  assert.equal(run1Ids.length, MAX_SERVERLESS_BATCH_SIZE);
   assert.equal(run2Ids.length, 3);
   assert.ok(run1Ids.every((id) => !run2Ids.includes(id)), "run 2 must select different (never-executed) queries than run 1");
 });
 
 test("item 7: retrying the same runId is idempotent -- no duplicate rows created", async () => {
   const { runIngestionCycle } = await import("../../../lib/openserp-ingestion/run-orchestrator");
-  const fixturePath = writeFixture(Array.from({ length: 8 }, (_, i) => ({ id: `itg-q${i + 1}`, queryText: `appartement a vendre fixture ${i + 1}`, city: i % 2 === 0 ? "Casablanca" : "Rabat" })));
+  const fixturePath = writeFixture(item1487Fixture());
 
   await runIngestionCycle({
     runId: "itg-run-2", // deliberately the same runId as the previous test
@@ -232,7 +246,7 @@ test("item 7: retrying the same runId is idempotent -- no duplicate rows created
   });
 
   const totalRows = await db.query<{ c: number }>("select count(*)::int as c from openserp_query_rotation_state;");
-  assert.equal(totalRows.rows[0].c, 8, "idempotent upserts must never create duplicate rows for the same 8 query_ids");
+  assert.equal(totalRows.rows[0].c, ITEM_14_8_7_UNIVERSE_SIZE, `idempotent upserts must never create duplicate rows for the same ${ITEM_14_8_7_UNIVERSE_SIZE} query_ids`);
 });
 
 test("items 2-3, Phase 10: a run stops voluntarily on time-budget exhaustion, checkpointing only the units that actually completed", async () => {

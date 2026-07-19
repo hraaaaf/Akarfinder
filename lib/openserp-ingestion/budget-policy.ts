@@ -38,7 +38,17 @@ export const ENGINE_SUSPENSION_MS = 6 * 60 * 60 * 1000; // 6 hours
 // Only applies to the serverless path (run-orchestrator.ts's own
 // batchSizeOverride, used by the local CLI bootstrap script for its
 // intentionally larger 25/100/300-query waves, is unaffected).
-export const MAX_SERVERLESS_BATCH_SIZE = 5;
+// OPENSERP-CRON-PROD-ACTIVATION-1: raised from 5 to 8 as the batch ceiling
+// for the scheduled production cron run, per explicit mission decision --
+// this constant is documented above as a hard, INDEPENDENT wall-clock
+// safety ceiling, distinct from (and never modifying) the adaptive
+// current_budget backoff/escalation/suspension algorithm itself, which is
+// unchanged. 8 is still well within the two real production runs' actual
+// per-query timing (each query took 3.1-4.6s; 8 queries x ~4.5s worst case
+// plus writer overhead stays comfortably inside the 120s route budget with
+// its 20s safety margin, matching the ~15-30s total duration observed on
+// both real 4-query runs).
+export const MAX_SERVERLESS_BATCH_SIZE = 8;
 
 export function defaultBudgetState(): BudgetState {
   return {
