@@ -1,0 +1,48 @@
+# SEARXNG-VS-OPENSERP-DISCOVERY-POC-1
+# Ephemeral SearXNG configuration for the isolated GitHub Actions POC only.
+# Not deployed anywhere else, not referenced by any production code path.
+#
+# use_default_settings merges this file's `engines:` overrides into
+# SearXNG's own shipped defaults by matching on `name:` -- engines not
+# listed here keep their default enabled/disabled state (duckduckgo,
+# brave, and startpage are already enabled by default; google is
+# "inactive" by default -- opt-in, not disabled -- and needs enabling
+# explicitly; mojeek/yandex/qwant ship `disabled: true` and need
+# `disabled: false` to become queryable at all).
+#
+# server.secret_key is replaced at container-start time by the workflow
+# (a fresh random value per run, never reused, never a real secret).
+use_default_settings: true
+
+general:
+  debug: false
+  instance_name: "AkarFinder discovery POC (ephemeral, not for reuse)"
+
+search:
+  safe_search: 0
+  default_lang: "fr"
+  formats:
+    - html
+    - json
+
+server:
+  secret_key: "REPLACED_AT_CONTAINER_START"
+  limiter: false
+  image_proxy: false
+
+outgoing:
+  request_timeout: 8.0
+
+engines:
+  - name: google
+    engine: google
+    disabled: false
+  - name: mojeek
+    engine: mojeek
+    disabled: false
+  - name: yandex
+    engine: yandex
+    disabled: false
+  - name: qwant
+    engine: qwant
+    disabled: false
