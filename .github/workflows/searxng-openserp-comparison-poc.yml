@@ -41,7 +41,12 @@ jobs:
       - name: Start SearXNG
         run: |
           set -e
-          docker run -d --name searxng -p 8888:8888 \
+          # The image's granian app server listens on container port 8080
+          # internally regardless of settings.yml's server.port value --
+          # confirmed from a real run's log ("Listening at: http://:::8080").
+          # Host port 8888 stays the external contract every other step
+          # (and run-comparison.ts's SEARXNG_URL) already uses.
+          docker run -d --name searxng -p 8888:8080 \
             -v /tmp/searxng-settings.yml:/etc/searxng/settings.yml:ro \
             searxng/searxng:latest
 
