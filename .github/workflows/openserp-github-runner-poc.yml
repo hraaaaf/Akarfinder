@@ -1,0 +1,139 @@
+name: OpenSERP GitHub Runner POC (diagnostic only)
+
+# OPENSERP-GITHUB-EPHEMERAL-RUNTIME-POC-1
+# Purely diagnostic, isolated workflow. Proves (or disproves) whether the
+# official karust/openserp Docker image can start in full browser mode
+# (headless Chromium, no --raw) on a standard ubuntu-latest GitHub Actions
+# runner -- this was found to fail with a Chrome sandbox permission error
+# on Railway's container runtime. No business logic, no Supabase, no
+# Vercel, no secrets, no DB writes. workflow_dispatch only.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  poc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull and start openserp (full browser mode, no --raw)
+        id: start
+        run: |
+          set -e
+          T0=$(date +%s%3N)
+          docker pull karust/openserp:latest
+          T1=$(date +%s%3N)
+          echo "pull_ms=$((T1-T0))" >> "$GITHUB_OUTPUT"
+
+          docker run -d --name openserp-poc -p 7070:7070 \
+            karust/openserp:latest serve -a 0.0.0.0 -p 7070
+          T2=$(date +%s%3N)
+          echo "start_ms=$((T2-T1))" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for /health to report healthy
+        id: health
+        run: |
+          set -e
+          T0=$(date +%s%3N)
+          STATUS="unknown"
+          for i in $(seq 1 60); do
+            BODY=$(curl -s -m 3 http://127.0.0.1:7070/health || true)
+            STATUS=$(echo "$BODY" | grep -o '"status":"[a-z]*"' | head -1 | cut -d'"' -f4)
+            if [ "$STATUS" = "healthy" ]; then
+              break
+            fi
+            sleep 1
+          done
+          T1=$(date +%s%3N)
+          echo "health_wait_ms=$((T1-T0))" >> "$GITHUB_OUTPUT"
+          echo "final_status=$STATUS" >> "$GITHUB_OUTPUT"
+          echo "--- /health body ---"
+          echo "$BODY"
+          if [ "$STATUS" != "healthy" ]; then
+            echo "::error::openserp did not report healthy within 60s (last status: $STATUS)"
+            echo "--- container logs (last 200 lines) ---"
+            docker logs openserp-poc --tail 200 || true
+            exit 1
+          fi
+
+      - name: Check /mega/engines for bing, duckduckgo, ecosia
+        id: engines
+        run: |
+          set -e
+          BODY=$(curl -s -m 5 http://127.0.0.1:7070/mega/engines)
+          echo "--- /mega/engines body ---"
+          echo "$BODY"
+          for e in bing duck ecosia; do
+            if ! echo "$BODY" | grep -q "\"name\":\"$e\""; then
+              echo "::warning::engine '$e' not found in /mega/engines"
+            fi
+          done
+
+      - name: Diagnostic query -- Bing
+        if: always() && steps.health.outputs.final_status == 'healthy'
+        run: |
+          set +e
+          T0=$(date +%s%3N)
+          RESP=$(curl -s -m 30 -w "\nHTTP_STATUS:%{http_code}" "http://127.0.0.1:7070/bing/search?text=test+diagnostic+openserp+poc&limit=3")
+          T1=$(date +%s%3N)
+          STATUS=$(echo "$RESP" | grep -o 'HTTP_STATUS:[0-9]*' | cut -d: -f2)
+          BODY=$(echo "$RESP" | sed 's/HTTP_STATUS:[0-9]*$//')
+          COUNT=$(echo "$BODY" | grep -o '"id":"s_' | wc -l)
+          echo "engine=bing status=$STATUS duration_ms=$((T1-T0)) result_count=$COUNT"
+          echo "--- response (first 2000 chars) ---"
+          echo "$BODY" | head -c 2000
+          echo ""
+          if echo "$BODY" | grep -qi "captcha"; then echo "::warning::bing: captcha detected"; fi
+          if [ "$STATUS" = "403" ]; then echo "::warning::bing: HTTP 403"; fi
+          if [ "$STATUS" = "429" ]; then echo "::warning::bing: HTTP 429"; fi
+
+      - name: Diagnostic query -- DuckDuckGo
+        if: always() && steps.health.outputs.final_status == 'healthy'
+        run: |
+          set +e
+          T0=$(date +%s%3N)
+          RESP=$(curl -s -m 30 -w "\nHTTP_STATUS:%{http_code}" "http://127.0.0.1:7070/duck/search?text=test+diagnostic+openserp+poc&limit=3")
+          T1=$(date +%s%3N)
+          STATUS=$(echo "$RESP" | grep -o 'HTTP_STATUS:[0-9]*' | cut -d: -f2)
+          BODY=$(echo "$RESP" | sed 's/HTTP_STATUS:[0-9]*$//')
+          COUNT=$(echo "$BODY" | grep -o '"id":"s_' | wc -l)
+          echo "engine=duckduckgo status=$STATUS duration_ms=$((T1-T0)) result_count=$COUNT"
+          echo "--- response (first 2000 chars) ---"
+          echo "$BODY" | head -c 2000
+          echo ""
+          if echo "$BODY" | grep -qi "captcha"; then echo "::warning::duckduckgo: captcha detected"; fi
+          if [ "$STATUS" = "403" ]; then echo "::warning::duckduckgo: HTTP 403"; fi
+          if [ "$STATUS" = "429" ]; then echo "::warning::duckduckgo: HTTP 429"; fi
+
+      - name: Diagnostic query -- Ecosia
+        if: always() && steps.health.outputs.final_status == 'healthy'
+        run: |
+          set +e
+          T0=$(date +%s%3N)
+          RESP=$(curl -s -m 30 -w "\nHTTP_STATUS:%{http_code}" "http://127.0.0.1:7070/ecosia/search?text=test+diagnostic+openserp+poc&limit=3")
+          T1=$(date +%s%3N)
+          STATUS=$(echo "$RESP" | grep -o 'HTTP_STATUS:[0-9]*' | cut -d: -f2)
+          BODY=$(echo "$RESP" | sed 's/HTTP_STATUS:[0-9]*$//')
+          COUNT=$(echo "$BODY" | grep -o '"id":"s_' | wc -l)
+          echo "engine=ecosia status=$STATUS duration_ms=$((T1-T0)) result_count=$COUNT"
+          echo "--- response (first 2000 chars) ---"
+          echo "$BODY" | head -c 2000
+          echo ""
+          if echo "$BODY" | grep -qi "captcha"; then echo "::warning::ecosia: captcha detected"; fi
+          if [ "$STATUS" = "403" ]; then echo "::warning::ecosia: HTTP 403"; fi
+          if [ "$STATUS" = "429" ]; then echo "::warning::ecosia: HTTP 429"; fi
+
+      - name: Timing summary
+        if: always()
+        run: |
+          echo "pull_ms=${{ steps.start.outputs.pull_ms }}"
+          echo "start_ms=${{ steps.start.outputs.start_ms }}"
+          echo "health_wait_ms=${{ steps.health.outputs.health_wait_ms }}"
+          echo "final_health_status=${{ steps.health.outputs.final_status }}"
+
+      - name: Dump container logs (always, for diagnosis)
+        if: always()
+        run: docker logs openserp-poc --tail 300 || true
+
+      - name: Stop container
+        if: always()
+        run: docker rm -f openserp-poc || true
