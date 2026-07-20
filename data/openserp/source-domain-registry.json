@@ -50,7 +50,7 @@
     {
       "domain": "1immo.ma",
       "status": "approved_discovery",
-      "listing_url_patterns": ["/[a-z0-9-]+-\\d+$"],
+      "listing_url_patterns": [{ "pattern": "/[a-z0-9-]+-\\d+$", "case_insensitive": true }],
       "blocked_url_patterns": [],
       "source_type": "agency_portal",
       "external_web_result": true,
@@ -72,18 +72,18 @@
     {
       "domain": "kawtarimmobilier.com",
       "status": "approved_discovery",
-      "listing_url_patterns": ["/vente/.+ref-\\d+\\.html$"],
+      "listing_url_patterns": [{ "pattern": "/(?:vente|location)/.+ref-\\d+\\.html$", "case_insensitive": true }],
       "blocked_url_patterns": [],
       "source_type": "agency_site",
       "external_web_result": true,
-      "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17",
+      "compliance_note": "Already live in Production via first-write pilot. Pattern widened from vente-only to vente+location at commit caf4404 (rental listings use the identical -ref-NNN.html suffix convention); this registry entry was stale (vente-only) until OPENSERP-REGISTRY-PATTERN-SOURCE-OF-TRUTH-1 synced it to match the already-corrected runtime behavior.",
+      "reviewed_at": "2026-07-20",
       "coverage_cities": ["Essaouira"]
     },
     {
       "domain": "mouldar.com",
       "status": "approved_discovery",
-      "listing_url_patterns": ["/(?:fr|en)/(?:rent|achat|buy|louer|location)/.+/[a-f0-9]{6,}$"],
+      "listing_url_patterns": [{ "pattern": "/(?:fr|en)/(?:rent|achat|buy|louer|location)/.+/[a-f0-9]{6,}$", "case_insensitive": true }],
       "blocked_url_patterns": ["/(?:fr|en)/(?:achat|location|rent|buy)/[^/]+/[^/]+/[^/]+$"],
       "source_type": "agency_portal",
       "external_web_result": true,

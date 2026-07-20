@@ -16,6 +16,7 @@ import {
   toTransactionType,
   uniqueNormalizedText,
 } from "./utils";
+import { getListingUrlPatterns } from "./domain-registry";
 
 const REAL_ESTATE_TOKENS = [
   "appartement",
@@ -76,25 +77,35 @@ const DISCOVERY_TOKENS = [
 type PathRules = {
   forceReject?: RegExp[];
   forceDiscovery?: RegExp[];
-  strongIndividual?: RegExp[];
 };
 
+// OPENSERP-REGISTRY-PATTERN-SOURCE-OF-TRUTH-1: strongIndividual entries
+// (the per-domain "does this URL path look like one specific listing"
+// regexes) have moved out of this hardcoded map into
+// data/openserp/source-domain-registry.json's listing_url_patterns,
+// which is now the single functionally-enforced source of truth --
+// see getListingUrlPatterns() in domain-registry.ts and its use in
+// detectUrlSignals() below. forceReject/forceDiscovery stay here: they
+// are not listing_url_patterns (they identify category/discovery/
+// rejected pages, not individual listings) and the registry has no
+// field for them.
+//
+// Domains that had ONLY a strongIndividual entry (1immo.ma,
+// barnes-marrakech.com, kawtarimmobilier.com, limmobiliersansfrontieres.com,
+// marrakechrealty.com) no longer appear in this map at all -- their
+// patterns now live exclusively in the registry.
 const DOMAIN_RULES: Record<string, PathRules> = {
   "mubawab.ma": {
     forceDiscovery: [/\/(?:fr|en)?\/?(?:sd|cd|sc)\//, /\/immobilier-a-(?:vendre|louer)\b/, /\/appartements-a-(?:vendre|louer)\b/, /\/villas-et-maisons-de-luxe-a-vendre\b/],
-    strongIndividual: [/\/(?:fr|en)\/is\//, /\/(?:fr|en)\/a\/\d+\//, /\/acheter\/[^/]+-\d+(?:\.html)?$/],
   },
   "agenz.ma": {
     forceDiscovery: [/\/(?:fr|en)\/(?:acheter|louer)\//],
-    strongIndividual: [/\/(?:fr|en)\/annonces\/.+\/\d+$/],
   },
   "sarouty.ma": {
     forceDiscovery: [/\/acheter\/[^/]+\/[^/]+\/(?:appartements|villas|proprietes|immobilier-neuf).*/, /\/acheter\/[^/]+\/(?:villas-a-vendre|proprietes-a-vendre)$/, /\/louer\/[^/]+\/(?:appartements-a-louer|proprietes-a-louer).*$/],
-    strongIndividual: [/\/plp\/acheter\/.+-\d+(?:\.html)?$/, /\/acheter\/[a-z0-9-]+-\d+(?:\.html)?$/],
   },
   "avito.ma": {
     forceDiscovery: [/\/sp\/immobilier\//, /\/fr\/.+\/(?:appartements|villas|terrains|bureaux).+_vendre$/, /\/fr\/.+\/(?:appartements|villas|terrains|bureaux).+_louer$/],
-    strongIndividual: [/\/fr\/.+\/.+_\d+\.htm$/],
   },
   "immobilier.trovit.ma": {
     forceDiscovery: [/.*/],
@@ -111,36 +122,8 @@ const DOMAIN_RULES: Record<string, PathRules> = {
   "marocannonces.com": {
     forceDiscovery: [/\/maroc\/.+-b\d+-t\d+\.html/i, /\/categorie\//],
   },
-  "1immo.ma": {
-    strongIndividual: [/\/[a-z0-9-]+-\d+$/i],
-  },
-  "barnes-marrakech.com": {
-    strongIndividual: [/\/vente\/.+\/\d+$/],
-  },
-  "kawtarimmobilier.com": {
-    // OPENSERP-CLASSIFY-KAWTARIMMOBILIER-LOCATION-PATTERN-1: widened from
-    // /vente/ only to also match /location/ -- the site publishes rental
-    // listings under the identical -ref-\d+.html suffix convention as its
-    // sale listings (e.g. /essaouira/location/appartement/bel-appartement-
-    // a-louer-ref-2285.html), previously invisible to strongIndividual.
-    // Audited against a real Production run (openserp-github-cron-
-    // 2026-07-20T08-23-27-764Z): matches exactly the 3 confirmed individual
-    // rental listings among that run's 12 kawtarimmobilier.com results,
-    // zero false positives against its 6 category/archive pages, 2
-    // homepage/language variants, and 1 ambiguous non-listing URL -- the
-    // ref-\d+.html$ suffix requirement is preserved unchanged, so no bare
-    // "/location/" path can match on its own.
-    strongIndividual: [/\/(?:vente|location)\/.+ref-\d+\.html$/i],
-  },
   "mouldar.com": {
     forceDiscovery: [/\/(?:fr|en)\/(?:achat|location|rent|buy)\/[^/]+\/[^/]+\/[^/]+$/i],
-    strongIndividual: [/\/(?:fr|en)\/(?:rent|achat|buy|louer|location)\/.+\/[a-f0-9]{6,}$/i],
-  },
-  "limmobiliersansfrontieres.com": {
-    strongIndividual: [/\/property\//],
-  },
-  "marrakechrealty.com": {
-    strongIndividual: [/\/property\//],
   },
 };
 
@@ -167,13 +150,15 @@ function detectUrlSignals(domain: string, canonicalUrl: string): {
     }
   })();
   const rules = DOMAIN_RULES[domain];
-  if (!rules) {
-    return { forceReject: false, forceDiscovery: false, strongIndividual: false, reasons };
-  }
-
-  const forceReject = rules.forceReject?.some((pattern) => pattern.test(pathname)) ?? false;
-  const forceDiscovery = rules.forceDiscovery?.some((pattern) => pattern.test(pathname)) ?? false;
-  const strongIndividual = rules.strongIndividual?.some((pattern) => pattern.test(pathname)) ?? false;
+  const forceReject = rules?.forceReject?.some((pattern) => pattern.test(pathname)) ?? false;
+  const forceDiscovery = rules?.forceDiscovery?.some((pattern) => pattern.test(pathname)) ?? false;
+  // OPENSERP-REGISTRY-PATTERN-SOURCE-OF-TRUTH-1: strongIndividual now comes
+  // exclusively from source-domain-registry.json's listing_url_patterns
+  // (via getListingUrlPatterns), not from this file's own DOMAIN_RULES --
+  // called unconditionally, independent of whether `rules` exists above,
+  // since a domain can have listing_url_patterns with no forceReject/
+  // forceDiscovery entry at all (e.g. 1immo.ma, kawtarimmobilier.com).
+  const strongIndividual = getListingUrlPatterns(domain).some((pattern) => pattern.test(pathname));
 
   if (forceReject) reasons.push("force_reject_path");
   if (forceDiscovery) reasons.push("discovery_path");
