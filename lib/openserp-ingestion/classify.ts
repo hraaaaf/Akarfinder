@@ -33,12 +33,29 @@ const REAL_ESTATE_TOKENS = [
 const OUT_OF_SCOPE_TOKENS = [
   "voiture",
   "emploi",
-  "mobilier",
   "service",
   "actualite",
   "blog",
   "guide",
 ];
+
+// OPENSERP-CLASSIFY-OUT-OF-SCOPE-TOKEN-BOUNDARY-FIX-1: "mobilier" moved out
+// of the plain-substring OUT_OF_SCOPE_TOKENS list above -- a bare
+// `.includes("mobilier")` also matches "immobilier"/"immobiliere" (French
+// for "real estate"/"real estate agency", itself one of REAL_ESTATE_TOKENS
+// above), which is core, expected vocabulary for this domain, not a
+// disqualifying one. Audited against a real Production run
+// (openserp-github-cron-2026-07-20T08-23-27-764Z): 30/34 rejections that
+// run carried exactly this token, including two domains whose name alone
+// (kawtarimmobilier.com, limmobiliersansfrontieres.com) triggered it on
+// every single result regardless of content. Matched with a strict word
+// boundary instead, against the same already-normalized (lowercase,
+// accent-stripped) text every other token checks -- normalizeText() only
+// strips characters outside [a-z0-9\s/-], so \b correctly finds no
+// boundary inside "immobilier" (no non-word character separates "im" from
+// "mobilier") while still matching "mobilier" as its own word or compound
+// ("mobilier de bureau", "meubles et mobilier").
+const OUT_OF_SCOPE_WORD_BOUNDARY_TOKENS: RegExp[] = [/\bmobilier\b/];
 
 const DISCOVERY_TOKENS = [
   "annonces immobilieres",
@@ -185,7 +202,10 @@ function classifyLane(input: {
     return { lane: "reject_out_of_scope", reasons: ["missing_real_estate_signal"] };
   }
 
-  if (OUT_OF_SCOPE_TOKENS.some((token) => input.text.includes(token))) {
+  if (
+    OUT_OF_SCOPE_TOKENS.some((token) => input.text.includes(token)) ||
+    OUT_OF_SCOPE_WORD_BOUNDARY_TOKENS.some((pattern) => pattern.test(input.text))
+  ) {
     return { lane: "reject_out_of_scope", reasons: ["out_of_scope_token"] };
   }
 

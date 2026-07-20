@@ -122,6 +122,84 @@ test("classifyOpenSerpResult rejects Avito search hubs", () => {
   assert.notEqual(actual.classification_lane, "individual_listing");
 });
 
+// OPENSERP-CLASSIFY-OUT-OF-SCOPE-TOKEN-BOUNDARY-FIX-1
+test("classifyOpenSerpResult rejects genuine furniture content via out_of_scope_token (mobilier as its own word)", () => {
+  const actual = classifyOpenSerpResult({
+    query: baseQuery,
+    engine: "bing",
+    discovered_at: "2026-07-20T11:00:00.000Z",
+    fallbackRank: 1,
+    result: {
+      id: "r5",
+      title: "Mobilier de bureau a Casablanca",
+      snippet: "Grand choix de meubles et mobilier de bureau pour professionnels",
+      url: "https://example.com/mobilier-bureau-casablanca",
+      domain: "example.com",
+    },
+  });
+
+  assert.ok(actual);
+  assert.equal(actual.classification_lane, "reject_out_of_scope");
+  assert.ok(actual.classification_reasons.includes("out_of_scope_token"));
+});
+
+test("classifyOpenSerpResult never rejects 'immobilier' (real estate) via the mobilier token", () => {
+  const actual = classifyOpenSerpResult({
+    query: baseQuery,
+    engine: "bing",
+    discovered_at: "2026-07-20T11:00:00.000Z",
+    fallbackRank: 1,
+    result: {
+      id: "r6",
+      title: "Agence immobilier Casablanca Maarif",
+      snippet: "Appartement a vendre 1 200 000 DH, 85 m2, 3 chambres",
+      url: "https://example.com/immobilier/appartement-a-vendre-456",
+      domain: "example.com",
+    },
+  });
+
+  assert.ok(actual);
+  assert.ok(!actual.classification_reasons.includes("out_of_scope_token"));
+});
+
+test("classifyOpenSerpResult never rejects 'immobiliere' (accented) via the mobilier token", () => {
+  const actual = classifyOpenSerpResult({
+    query: baseQuery,
+    engine: "bing",
+    discovered_at: "2026-07-20T11:00:00.000Z",
+    fallbackRank: 1,
+    result: {
+      id: "r7",
+      title: "Agence immobiliere Casablanca",
+      snippet: "Appartement a vendre 1 200 000 DH, 85 m2, 3 chambres a Maarif",
+      url: "https://example.com/immobiliere/appartement-a-vendre-789",
+      domain: "example.com",
+    },
+  });
+
+  assert.ok(actual);
+  assert.ok(!actual.classification_reasons.includes("out_of_scope_token"));
+});
+
+test("classifyOpenSerpResult never rejects a domain name containing 'immobilier' via the mobilier token", () => {
+  const actual = classifyOpenSerpResult({
+    query: baseQuery,
+    engine: "bing",
+    discovered_at: "2026-07-20T11:00:00.000Z",
+    fallbackRank: 1,
+    result: {
+      id: "r8",
+      title: "Appartement a vendre Maarif Casablanca",
+      snippet: "Appartement de 96 m2 avec 2 chambres a Casablanca Maarif, 1 450 000 DH",
+      url: "https://kawtarimmobilier.com/vente/appartement-a-vendre-maarif-ref-123.html",
+      domain: "kawtarimmobilier.com",
+    },
+  });
+
+  assert.ok(actual);
+  assert.ok(!actual.classification_reasons.includes("out_of_scope_token"));
+});
+
 test("parsePriceMad supports compact MDH notation", () => {
   assert.equal(parsePriceMad("Appartement 1,2 MDH a Casablanca"), 1200000);
 });
