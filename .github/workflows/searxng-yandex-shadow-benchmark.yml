@@ -23,6 +23,9 @@ name: SearXNG Yandex Shadow Benchmark (diagnostic, no DB access)
 on:
   workflow_dispatch: {}
 
+permissions:
+  contents: read
+
 jobs:
   yandex-shadow-benchmark:
     runs-on: ubuntu-latest
