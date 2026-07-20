@@ -65,10 +65,12 @@ import { canonicalizeSourceUrl } from "./utils";
 import {
   fetchYandexViaSearxng,
   newYandexChannelMetrics,
+  computeCrossChannelOverlapMetrics,
   SOURCE_CHANNEL_SEARXNG_YANDEX,
   DEFAULT_SEARXNG_URL,
   type YandexRawResult,
   type YandexChannelMetrics,
+  type CrossChannelOverlapMetrics,
 } from "./searxng-yandex-channel";
 
 type UniverseQueryRecord = StaticQueryDefinition & {
@@ -155,6 +157,11 @@ export type RunMetrics = {
   // breakdown never include anything from this channel). All-zero when
   // yandexChannelEnabled is false (the default).
   yandex_channel: YandexChannelMetrics;
+  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: pre-merge per-channel overlap,
+  // observability only -- computed from the same canonical URLs the merge
+  // step itself uses, never affects merge/dedupe/admission/checkpoint/
+  // writer behavior. All-zero when yandexChannelEnabled is false.
+  cross_channel_overlap: CrossChannelOverlapMetrics;
 };
 
 function loadUniverse(path: string): UniverseFile {
@@ -256,6 +263,14 @@ export async function runIngestionCycle(input: {
   const yandexChannelEnabled = runtimeEnv.OPENSERP_YANDEX_CHANNEL_ENABLED === "true";
   const searxngUrl = runtimeEnv.OPENSERP_SEARXNG_LOCAL_URL ?? DEFAULT_SEARXNG_URL;
   const yandexMetrics = newYandexChannelMetrics();
+  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1 -- observability only, no
+  // behavior change. Each channel's own canonical URLs this run, tracked
+  // BEFORE the per-query merge step below folds them together -- lets
+  // computeCrossChannelOverlapMetrics report the true incremental gain
+  // Yandex contributes, independent of the merged candidate count. Only
+  // ever sized/intersected at the end, never logged URL-by-URL.
+  const openserpCanonicalUrlsThisRun = new Set<string>();
+  const yandexCanonicalUrlsThisRun = new Set<string>();
 
   let outcomeStatus: RunOutcomeStatus = "completed";
   let executedCount = 0;
@@ -425,6 +440,7 @@ export async function runIngestionCycle(input: {
     for (const { raw, engine, fetchedAt } of openserpRawResults) {
       const url = raw.url ?? raw.link;
       const canonical = url ? canonicalizeSourceUrl(url) : null;
+      if (canonical) openserpCanonicalUrlsThisRun.add(canonical); // observability only, computed BEFORE merge/dedupe
       const key = canonical ?? `__uncanonicalizable__${uncanonicalizableCount++}`;
       const existing = merged.get(key);
       if (existing) existing.channels.add(engine);
@@ -432,6 +448,7 @@ export async function runIngestionCycle(input: {
     }
     for (const yr of yandexRawResults) {
       const canonical = canonicalizeSourceUrl(yr.url);
+      if (canonical) yandexCanonicalUrlsThisRun.add(canonical); // observability only, computed BEFORE merge/dedupe
       const key = canonical ?? `__uncanonicalizable__${uncanonicalizableCount++}`;
       const existing = merged.get(key);
       if (existing) existing.channels.add(SOURCE_CHANNEL_SEARXNG_YANDEX);
@@ -661,6 +678,7 @@ export async function runIngestionCycle(input: {
     time_budget: snapshotTimeBudget(timeBudget, now),
     engine_error_category_breakdown: engineErrorCategoryBreakdown,
     yandex_channel: yandexMetrics,
+    cross_channel_overlap: computeCrossChannelOverlapMetrics(openserpCanonicalUrlsThisRun, yandexCanonicalUrlsThisRun),
   };
 
   return { metrics, decisions, budgetState: nextBudgetState };

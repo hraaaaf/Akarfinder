@@ -64,6 +64,41 @@ export function newYandexChannelMetrics(): YandexChannelMetrics {
   };
 }
 
+export type CrossChannelOverlapMetrics = {
+  openserp_unique_before_merge: number;
+  yandex_unique_before_merge: number;
+  cross_channel_overlap_exact: number;
+  yandex_incremental_unique: number;
+};
+
+// OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1 -- observability addition only, no
+// behavior change. Pure set arithmetic over the two channels' own
+// canonical-URL sets, computed BEFORE the run-orchestrator's merge step
+// (which is unaffected by this function -- it never reads this output).
+// Deliberately takes already-built Sets rather than raw URL arrays, so a
+// caller never has any reason to log every individual URL just to get
+// these counts -- only .size and one intersection pass are ever needed.
+// yandex_incremental_unique is a SET DIFFERENCE (|Yandex \ OpenSERP|, i.e.
+// Yandex URLs never seen by OpenSERP this run), not an arithmetic
+// subtraction of the two totals -- e.g. openserp={a,b,c}, yandex={b,c,d,e}
+// gives openserp_unique=3, yandex_unique=4, overlap=2,
+// yandex_incremental_unique=2 (={d,e}), not 4-3=1.
+export function computeCrossChannelOverlapMetrics(
+  openserpCanonicalUrls: Set<string>,
+  yandexCanonicalUrls: Set<string>,
+): CrossChannelOverlapMetrics {
+  let overlap = 0;
+  for (const url of yandexCanonicalUrls) {
+    if (openserpCanonicalUrls.has(url)) overlap += 1;
+  }
+  return {
+    openserp_unique_before_merge: openserpCanonicalUrls.size,
+    yandex_unique_before_merge: yandexCanonicalUrls.size,
+    cross_channel_overlap_exact: overlap,
+    yandex_incremental_unique: yandexCanonicalUrls.size - overlap,
+  };
+}
+
 function recordFailure(metrics: YandexChannelMetrics, category: EngineErrorCategory) {
   metrics.failures += 1;
   metrics.error_category_breakdown[category] = (metrics.error_category_breakdown[category] ?? 0) + 1;

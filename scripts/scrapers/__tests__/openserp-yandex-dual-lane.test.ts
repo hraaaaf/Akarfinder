@@ -95,6 +95,20 @@ before(async () => {
         status_403_429: 0, timeout_count: 0, other_error_count: 0, total_duration_ms: 0,
         error_category_breakdown: {},
       }),
+      // Real implementation (not a fake) -- pure set arithmetic, already
+      // covered on its own in openserp-yandex-cross-channel-overlap.test.ts;
+      // duplicated here only because mock.module() replaces every export
+      // of the real module, including this one.
+      computeCrossChannelOverlapMetrics: (openserpUrls: Set<string>, yandexUrls: Set<string>) => {
+        let overlap = 0;
+        for (const url of yandexUrls) if (openserpUrls.has(url)) overlap += 1;
+        return {
+          openserp_unique_before_merge: openserpUrls.size,
+          yandex_unique_before_merge: yandexUrls.size,
+          cross_channel_overlap_exact: overlap,
+          yandex_incremental_unique: yandexUrls.size - overlap,
+        };
+      },
       fetchYandexViaSearxng: async (input: { metrics: { attempts: number; successes: number; failures: number; raw_results: number } }) => {
         input.metrics.attempts += 1;
         if (yandexBehavior === "same-url-as-openserp") {
@@ -190,7 +204,7 @@ test("same canonical URL from OpenSERP and Yandex merges into exactly ONE result
   openserpBehavior = "one-result";
   yandexBehavior = "same-url-as-openserp";
 
-  const { decisions } = await runIngestionCycle({
+  const { decisions, metrics } = await runIngestionCycle({
     runId: "ydl-samecanon-run",
     scheduledAtIso: new Date(now()).toISOString(),
     universePath: writeFixture("samecanon"),
@@ -204,6 +218,12 @@ test("same canonical URL from OpenSERP and Yandex merges into exactly ONE result
   assert.equal(decisions[0].classified?.canonical_source_url.includes("appartement_casablanca_test_111111"), true);
   // OpenSERP's own title wins when both channels found the same URL.
   assert.equal(decisions[0].classified?.title, LISTING_TITLE);
+  // Pre-merge overlap observability: both channels found the SAME one
+  // canonical URL, so unique=1/1, overlap=1, 0 incremental gain.
+  assert.equal(metrics.cross_channel_overlap.openserp_unique_before_merge, 1);
+  assert.equal(metrics.cross_channel_overlap.yandex_unique_before_merge, 1);
+  assert.equal(metrics.cross_channel_overlap.cross_channel_overlap_exact, 1);
+  assert.equal(metrics.cross_channel_overlap.yandex_incremental_unique, 0);
 });
 
 test("a Yandex-unique URL (never seen by OpenSERP) is still classified and conserved, not dropped", async () => {
@@ -211,7 +231,7 @@ test("a Yandex-unique URL (never seen by OpenSERP) is still classified and conse
   openserpBehavior = "one-result"; // OpenSERP finds a different URL this time
   yandexBehavior = "unique-url";
 
-  const { decisions } = await runIngestionCycle({
+  const { decisions, metrics } = await runIngestionCycle({
     runId: "ydl-yandexunique-run",
     scheduledAtIso: new Date(now()).toISOString(),
     universePath: writeFixture("yandexunique"),
@@ -226,6 +246,12 @@ test("a Yandex-unique URL (never seen by OpenSERP) is still classified and conse
   assert.ok(urls.some((u) => u?.includes("rabat_test_222222")), "the Yandex-only URL must be present");
   const yandexDecision = decisions.find((d) => d.classified?.canonical_source_url.includes("rabat_test_222222"));
   assert.equal(yandexDecision?.classified?.engine, "searxng_yandex");
+  // Pre-merge overlap observability: two disjoint URLs, one per channel --
+  // unique=1/1, 0 overlap, 100% Yandex incremental.
+  assert.equal(metrics.cross_channel_overlap.openserp_unique_before_merge, 1);
+  assert.equal(metrics.cross_channel_overlap.yandex_unique_before_merge, 1);
+  assert.equal(metrics.cross_channel_overlap.cross_channel_overlap_exact, 0);
+  assert.equal(metrics.cross_channel_overlap.yandex_incremental_unique, 1);
 });
 
 test("multi-channel provenance is conserved on the merged candidate (source_channels), not lost", async () => {
