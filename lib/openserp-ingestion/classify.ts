@@ -327,7 +327,12 @@ function extractAttributes(input: {
 export function classifyOpenSerpResult(input: {
   result: OpenSerpRawResult;
   query: OpenSerpIngestionQuery;
-  engine: "bing" | "ecosia" | "duckduckgo";
+  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: "searxng_yandex" added so a
+  // Yandex-only-sourced result (never seen by OpenSERP for this query) can
+  // still be classified through this exact same, unmodified function --
+  // purely a provenance label carried into OpenSerpClassifiedResult.engine,
+  // never used to gate or branch classification logic below.
+  engine: "bing" | "ecosia" | "duckduckgo" | "searxng_yandex";
   discovered_at: string;
   fallbackRank: number;
   // Optional national-geography override — see CityExtractor/DistrictExtractor

@@ -57,6 +57,19 @@ import type { OpenSerpEngineName } from "./state/query-rotation-state-repository
 import { DbCallTimeoutError, TimeBudgetExhaustedBeforeDbCallError } from "./state/db-call-guard";
 import type { OpenSerpIngestionQuery } from "./types";
 import { createTimeBudget, remainingBudgetMs, elapsedMs, snapshotTimeBudget, DEFAULT_SAFETY_MARGIN_MS } from "./time-budget";
+import type { OpenSerpRawResult } from "@/lib/openserp-async/types";
+import { canonicalizeSourceUrl } from "./utils";
+// OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: additive second discovery channel,
+// completely isolated from openserp-live.ts/budget-policy.ts -- see
+// searxng-yandex-channel.ts's own header comment for the full rationale.
+import {
+  fetchYandexViaSearxng,
+  newYandexChannelMetrics,
+  SOURCE_CHANNEL_SEARXNG_YANDEX,
+  DEFAULT_SEARXNG_URL,
+  type YandexRawResult,
+  type YandexChannelMetrics,
+} from "./searxng-yandex-channel";
 
 type UniverseQueryRecord = StaticQueryDefinition & {
   normalized_query: string;
@@ -136,6 +149,12 @@ export type RunMetrics = {
   // it exists only so a run's "other"-bucket failures are explainable
   // without re-running with extra instrumentation after the fact.
   engine_error_category_breakdown: Partial<Record<EngineErrorCategory, number>>;
+  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: purely additive, entirely
+  // separate from every OpenSERP engine-budget metric above (engines_used,
+  // captcha_count, status_403_429, timeout_count, engine_error_category_
+  // breakdown never include anything from this channel). All-zero when
+  // yandexChannelEnabled is false (the default).
+  yandex_channel: YandexChannelMetrics;
 };
 
 function loadUniverse(path: string): UniverseFile {
@@ -225,6 +244,19 @@ export async function runIngestionCycle(input: {
   const canonicalUrlsSeen = new Set<string>();
   const engineErrorCategoryBreakdown: Partial<Record<EngineErrorCategory, number>> = {};
 
+  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: off by default (undefined/any
+  // value other than the literal "true" leaves every query's merge step a
+  // pure pass-through of OpenSERP's own raw results, byte-identical to
+  // pre-dual-lane behavior). Deliberately a plain env var, not a GitHub
+  // secret -- Yandex/SearXNG needs no credential, only a reachable local
+  // container. Never read from openserp_engine_budget_state or any
+  // DB-backed flag -- this is a pure runtime toggle for this discovery
+  // channel, orthogonal to the OPENSERP_INGESTION_* business-write gates.
+  const runtimeEnv = input.env ?? process.env;
+  const yandexChannelEnabled = runtimeEnv.OPENSERP_YANDEX_CHANNEL_ENABLED === "true";
+  const searxngUrl = runtimeEnv.OPENSERP_SEARXNG_LOCAL_URL ?? DEFAULT_SEARXNG_URL;
+  const yandexMetrics = newYandexChannelMetrics();
+
   let outcomeStatus: RunOutcomeStatus = "completed";
   let executedCount = 0;
 
@@ -253,147 +285,221 @@ export async function runIngestionCycle(input: {
     let acceptedForThisQuery = 0;
     let usedEngine: OpenSerpEngineName | undefined;
 
-    for (const engine of attemptEngines) {
-      const remaining = remainingBudgetMs(timeBudget, now);
-      if (remaining < MIN_VIABLE_CALL_BUDGET_MS) {
-        // Not enough budget left to responsibly start another network
-        // call -- stop attempting further engines for this query (and,
-        // via the outer loop's own check, further queries too).
-        break;
-      }
-      // Never request a per-call timeout longer than what's actually left
-      // in the invocation's own budget -- a slow engine can shrink its own
-      // allotted time as the run progresses, but can never be handed more
-      // time than the invocation could possibly honor.
-      const perCallTimeoutMs = Math.max(1_000, Math.min(engineCallTimeoutMs, remaining - 500));
-      const attemptStartedAtIso = new Date(now()).toISOString();
-      const attemptStartTime = now();
+    // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: raw results are collected here
+    // instead of being classified immediately per engine attempt --
+    // classification now happens exactly once, after merging with the
+    // Yandex channel below, so a canonical URL found by more than one
+    // channel is never classified or written twice. All OpenSERP-side
+    // bookkeeping (enginesUsed, querySuccessCount/queryFailureCount,
+    // captcha/rate-limit/timeout counters, enginesWithIncident,
+    // engineErrorCategoryBreakdown, engine-budget-relevant `succeeded`/
+    // `usedEngine`) is untouched, still derived exclusively from the
+    // OpenSERP attempts below -- Yandex never influences any of it.
+    const openserpRawResults: Array<{ raw: OpenSerpRawResult; engine: OpenSerpEngineName; fetchedAt: string }> = [];
 
-      try {
-        const execution = await runOpenSerpLiveQuery({
-          engine,
-          query: universeQuery.query_text,
-          limit: 15,
-          site: universeQuery.target_domain ?? undefined,
-          env: input.env,
-          timeoutMs: perCallTimeoutMs,
-        });
-        logEngineCallAttempt({
-          engine,
-          query_id: universeQuery.query_id,
-          attempt_outcome: "success",
-          category: "success",
-          error_name: null,
-          error_code: null,
-          http_status: null,
-          message: null,
-          duration_ms: now() - attemptStartTime,
-          started_at: attemptStartedAtIso,
-          finished_at: new Date(now()).toISOString(),
-        });
-        enginesUsed.add(engine);
-        querySuccessCount += 1;
-        succeeded = true;
-        usedEngine = engine;
-        rawResultsCount += execution.response.results.length;
+    const runOpenserpAttempts = async (): Promise<void> => {
+      for (const engine of attemptEngines) {
+        const remaining = remainingBudgetMs(timeBudget, now);
+        if (remaining < MIN_VIABLE_CALL_BUDGET_MS) {
+          // Not enough budget left to responsibly start another network
+          // call -- stop attempting further engines for this query (and,
+          // via the outer loop's own check, further queries too).
+          break;
+        }
+        // Never request a per-call timeout longer than what's actually left
+        // in the invocation's own budget -- a slow engine can shrink its own
+        // allotted time as the run progresses, but can never be handed more
+        // time than the invocation could possibly honor.
+        const perCallTimeoutMs = Math.max(1_000, Math.min(engineCallTimeoutMs, remaining - 500));
+        const attemptStartedAtIso = new Date(now()).toISOString();
+        const attemptStartTime = now();
 
-        const query: OpenSerpIngestionQuery = {
-          query_id: universeQuery.query_id,
-          city: universeQuery.city,
-          district: universeQuery.district ?? "",
-          transaction_type: universeQuery.transaction,
-          property_type: universeQuery.property_type,
-          query_text: universeQuery.query_text,
-          priority: universeQuery.priority_tier <= 1 ? "high" : universeQuery.priority_tier === 2 ? "medium" : "low",
-          target_domain: universeQuery.target_domain ?? undefined,
-          query_family: universeQuery.query_family,
-        };
-
-        for (let i = 0; i < execution.response.results.length; i += 1) {
-          const raw = execution.response.results[i];
-          const decision = decideAdmission({
-            result: raw,
-            query,
+        try {
+          const execution = await runOpenSerpLiveQuery({
             engine,
-            discovered_at: execution.response.fetched_at,
-            fallbackRank: i + 1,
+            query: universeQuery.query_text,
+            limit: 15,
+            site: universeQuery.target_domain ?? undefined,
+            env: input.env,
+            timeoutMs: perCallTimeoutMs,
           });
-          decisions.push(decision);
-          if (decision.classified) {
-            canonicalUrlsSeen.add(decision.classified.canonical_source_url);
-          }
-          if (decision.admitted) acceptedForThisQuery += 1;
-          // Persisted for debuggability (never used for admission itself) --
-          // this mission found a discrepancy between a title's clear
-          // content-derived transaction intent and the value ultimately
-          // written, and had no log to root-cause it from. Only the
-          // already-PII-redacted classified.title is logged, and only when
-          // the candidate carries no PII-related rejection reason -- an
-          // auto-mode safety review correctly flagged an earlier version of
-          // this code for logging the raw, pre-redaction SERP title/URL
-          // directly, which could have persisted a phone number from a
-          // listing title into a committed file. The URL is never logged
-          // here at all (URLs are never passed through redaction anywhere
-          // in this codebase, so a URL carrying PII in a query string could
-          // otherwise leak through even after this fix). Never written to
-          // any DB table, only to a local run-report file.
-          const candidateHasPiiFlag = decision.reasons.includes("pii_or_secret_detected");
-          rawResultsLog.push({
+          logEngineCallAttempt({
+            engine,
             query_id: universeQuery.query_id,
-            query_text: universeQuery.query_text,
-            query_transaction: universeQuery.transaction,
+            attempt_outcome: "success",
+            category: "success",
+            error_name: null,
+            error_code: null,
+            http_status: null,
+            message: null,
+            duration_ms: now() - attemptStartTime,
+            started_at: attemptStartedAtIso,
+            finished_at: new Date(now()).toISOString(),
+          });
+          enginesUsed.add(engine);
+          querySuccessCount += 1;
+          succeeded = true;
+          usedEngine = engine;
+          rawResultsCount += execution.response.results.length;
+          for (const raw of execution.response.results) {
+            openserpRawResults.push({ raw, engine, fetchedAt: execution.response.fetched_at });
+          }
+
+          if (execution.response.results.length > 0) break; // got usable results, stop attempting more engines
+        } catch (error) {
+          queryFailureCount += 1;
+          const category = categorizeError(error);
+          if (category === "captcha") {
+            captchaCount += 1;
+            enginesWithIncident.add(engine);
+          } else if (category === "rate_limit") {
+            status403429 += 1;
+            enginesWithIncident.add(engine);
+          } else if (category === "timeout") {
+            timeoutCount += 1;
+          }
+
+          // OPENSERP-ENGINE-FAILURE-OBSERVABILITY-1: additive diagnostics only
+          // -- never overrides the categorization/counters above, which still
+          // drive the budget/suspension strategy exactly as before.
+          const isEngineCallError = error instanceof EngineCallError;
+          const diagOutcome = isEngineCallError ? error.outcome : null;
+          const diagErrorName = isEngineCallError ? error.name : error instanceof Error ? error.name : "UnknownError";
+          const diagErrorCode = isEngineCallError ? error.errorCode : null;
+          const diagHttpStatus = isEngineCallError ? error.httpStatus : null;
+          const diagMessage = error instanceof Error ? error.message : String(error);
+          const detailCategory = classifyEngineErrorDetail({
+            outcome: diagOutcome,
+            errorName: diagErrorName,
+            errorCode: diagErrorCode,
+            httpStatus: diagHttpStatus,
+            message: diagMessage,
+          });
+          engineErrorCategoryBreakdown[detailCategory] = (engineErrorCategoryBreakdown[detailCategory] ?? 0) + 1;
+          logEngineCallAttempt({
             engine,
-            redacted_title: candidateHasPiiFlag ? null : (decision.classified?.title ?? null),
-            admitted: decision.admitted,
-            extracted_transaction_type: decision.classified?.extracted.transaction_type ?? null,
+            query_id: universeQuery.query_id,
+            attempt_outcome: "failure",
+            category: detailCategory,
+            error_name: diagErrorName,
+            error_code: diagErrorCode,
+            http_status: diagHttpStatus,
+            message: sanitizeEngineErrorMessage(diagMessage),
+            duration_ms: now() - attemptStartTime,
+            started_at: attemptStartedAtIso,
+            finished_at: new Date(now()).toISOString(),
           });
         }
+      }
+    };
 
-        if (execution.response.results.length > 0) break; // got usable results, stop attempting more engines
-      } catch (error) {
-        queryFailureCount += 1;
-        const category = categorizeError(error);
-        if (category === "captcha") {
-          captchaCount += 1;
-          enginesWithIncident.add(engine);
-        } else if (category === "rate_limit") {
-          status403429 += 1;
-          enginesWithIncident.add(engine);
-        } else if (category === "timeout") {
-          timeoutCount += 1;
-        }
+    // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: additive, fail-safe second
+    // discovery channel. fetchYandexViaSearxng never throws (catches every
+    // failure internally and records it into yandexMetrics), so a Yandex
+    // outage always degrades to an empty array here -- the OpenSERP
+    // attempts above are never gated on this promise's outcome, and when
+    // yandexChannelEnabled is false (the default) this resolves to []
+    // without any network call at all, making the merge below a pure
+    // pass-through of openserpRawResults.
+    const runYandexAttempt = async (): Promise<YandexRawResult[]> => {
+      if (!yandexChannelEnabled) return [];
+      return fetchYandexViaSearxng({ queryText: universeQuery.query_text, searxngUrl, metrics: yandexMetrics });
+    };
 
-        // OPENSERP-ENGINE-FAILURE-OBSERVABILITY-1: additive diagnostics only
-        // -- never overrides the categorization/counters above, which still
-        // drive the budget/suspension strategy exactly as before.
-        const isEngineCallError = error instanceof EngineCallError;
-        const diagOutcome = isEngineCallError ? error.outcome : null;
-        const diagErrorName = isEngineCallError ? error.name : error instanceof Error ? error.name : "UnknownError";
-        const diagErrorCode = isEngineCallError ? error.errorCode : null;
-        const diagHttpStatus = isEngineCallError ? error.httpStatus : null;
-        const diagMessage = error instanceof Error ? error.message : String(error);
-        const detailCategory = classifyEngineErrorDetail({
-          outcome: diagOutcome,
-          errorName: diagErrorName,
-          errorCode: diagErrorCode,
-          httpStatus: diagHttpStatus,
-          message: diagMessage,
-        });
-        engineErrorCategoryBreakdown[detailCategory] = (engineErrorCategoryBreakdown[detailCategory] ?? 0) + 1;
-        logEngineCallAttempt({
-          engine,
-          query_id: universeQuery.query_id,
-          attempt_outcome: "failure",
-          category: detailCategory,
-          error_name: diagErrorName,
-          error_code: diagErrorCode,
-          http_status: diagHttpStatus,
-          message: sanitizeEngineErrorMessage(diagMessage),
-          duration_ms: now() - attemptStartTime,
-          started_at: attemptStartedAtIso,
-          finished_at: new Date(now()).toISOString(),
+    const [, yandexRawResults] = await Promise.all([runOpenserpAttempts(), runYandexAttempt()]);
+    const yandexFetchedAtIso = new Date(now()).toISOString();
+
+    // Merge: canonicalize both channels' URLs (the exact same
+    // canonicalizeSourceUrl classify.ts itself will use later, so this
+    // dedupe key and classify.ts's own canonical_source_url never
+    // disagree) and dedupe by canonical URL -- the same canonical_url
+    // found by both OpenSERP and Yandex becomes ONE merged entry
+    // (OpenSERP's raw title/snippet/rank wins when both found it), each
+    // entry remembering every channel that saw it. classified exactly
+    // once, below. When yandexRawResults is [] (channel disabled or
+    // failed), this is a byte-identical pass-through of openserpRawResults
+    // in their original order.
+    type MergedEntry = { raw: OpenSerpRawResult; engine: OpenSerpEngineName | "searxng_yandex"; fetchedAt: string; channels: Set<string> };
+    const merged = new Map<string, MergedEntry>();
+    let uncanonicalizableCount = 0;
+    for (const { raw, engine, fetchedAt } of openserpRawResults) {
+      const url = raw.url ?? raw.link;
+      const canonical = url ? canonicalizeSourceUrl(url) : null;
+      const key = canonical ?? `__uncanonicalizable__${uncanonicalizableCount++}`;
+      const existing = merged.get(key);
+      if (existing) existing.channels.add(engine);
+      else merged.set(key, { raw, engine, fetchedAt, channels: new Set([engine]) });
+    }
+    for (const yr of yandexRawResults) {
+      const canonical = canonicalizeSourceUrl(yr.url);
+      const key = canonical ?? `__uncanonicalizable__${uncanonicalizableCount++}`;
+      const existing = merged.get(key);
+      if (existing) existing.channels.add(SOURCE_CHANNEL_SEARXNG_YANDEX);
+      else {
+        merged.set(key, {
+          raw: { url: yr.url, title: yr.title, snippet: yr.snippet ?? undefined, rank: yr.rank },
+          engine: SOURCE_CHANNEL_SEARXNG_YANDEX,
+          fetchedAt: yandexFetchedAtIso,
+          channels: new Set([SOURCE_CHANNEL_SEARXNG_YANDEX]),
         });
       }
+    }
+
+    const query: OpenSerpIngestionQuery = {
+      query_id: universeQuery.query_id,
+      city: universeQuery.city,
+      district: universeQuery.district ?? "",
+      transaction_type: universeQuery.transaction,
+      property_type: universeQuery.property_type,
+      query_text: universeQuery.query_text,
+      priority: universeQuery.priority_tier <= 1 ? "high" : universeQuery.priority_tier === 2 ? "medium" : "low",
+      target_domain: universeQuery.target_domain ?? undefined,
+      query_family: universeQuery.query_family,
+    };
+
+    let fallbackRank = 0;
+    for (const entry of merged.values()) {
+      fallbackRank += 1;
+      const decision = decideAdmission({
+        result: entry.raw,
+        query,
+        engine: entry.engine,
+        discovered_at: entry.fetchedAt,
+        fallbackRank,
+      });
+      decisions.push(decision);
+      if (decision.classified) {
+        // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: additive provenance --
+        // every channel that saw this canonical URL this cycle, not just
+        // the one whose raw title/snippet/rank was used above.
+        decision.classified.source_channels = [...entry.channels];
+        canonicalUrlsSeen.add(decision.classified.canonical_source_url);
+      }
+      if (decision.admitted) acceptedForThisQuery += 1;
+      // Persisted for debuggability (never used for admission itself) --
+      // this mission found a discrepancy between a title's clear
+      // content-derived transaction intent and the value ultimately
+      // written, and had no log to root-cause it from. Only the
+      // already-PII-redacted classified.title is logged, and only when
+      // the candidate carries no PII-related rejection reason -- an
+      // auto-mode safety review correctly flagged an earlier version of
+      // this code for logging the raw, pre-redaction SERP title/URL
+      // directly, which could have persisted a phone number from a
+      // listing title into a committed file. The URL is never logged
+      // here at all (URLs are never passed through redaction anywhere
+      // in this codebase, so a URL carrying PII in a query string could
+      // otherwise leak through even after this fix). Never written to
+      // any DB table, only to a local run-report file.
+      const candidateHasPiiFlag = decision.reasons.includes("pii_or_secret_detected");
+      rawResultsLog.push({
+        query_id: universeQuery.query_id,
+        query_text: universeQuery.query_text,
+        query_transaction: universeQuery.transaction,
+        engine: entry.engine,
+        redacted_title: candidateHasPiiFlag ? null : (decision.classified?.title ?? null),
+        admitted: decision.admitted,
+        extracted_transaction_type: decision.classified?.extracted.transaction_type ?? null,
+      });
     }
 
     const updatedQuery = {
@@ -554,6 +660,7 @@ export async function runIngestionCycle(input: {
     state_persisted: statePersisted,
     time_budget: snapshotTimeBudget(timeBudget, now),
     engine_error_category_breakdown: engineErrorCategoryBreakdown,
+    yandex_channel: yandexMetrics,
   };
 
   return { metrics, decisions, budgetState: nextBudgetState };

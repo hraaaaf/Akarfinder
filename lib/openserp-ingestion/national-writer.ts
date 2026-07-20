@@ -130,6 +130,16 @@ export async function writeNationalDiscoveryCandidates(input: NationalWriteInput
           domain_status: decision.domain_status,
           admission_confidence: decision.confidence,
           admission_reasons: decision.reasons,
+          // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: additive only. `provider`
+          // stays the literal "openserp" above regardless of channel (see
+          // that field's own comment history) so the existing
+          // (provider, query_hash, canonical_url) idempotency key never
+          // splits one real-world URL into two rows across channels --
+          // per-channel provenance lives here instead, in this
+          // unconstrained jsonb column. Falls back to a single-element
+          // array derived from `engine` for every pre-existing caller that
+          // never sets source_channels.
+          source_channels: classified.source_channels ?? [classified.engine],
         },
       };
     });
