@@ -11,7 +11,8 @@
       "source_type": "portal_aggregator",
       "external_web_result": true,
       "compliance_note": "Public search-result pages only, discovery-only. Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
     },
     {
       "domain": "agenz.ma",
@@ -21,7 +22,8 @@
       "source_type": "agency_portal",
       "external_web_result": true,
       "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
     },
     {
       "domain": "sarouty.ma",
@@ -31,7 +33,8 @@
       "source_type": "portal_aggregator",
       "external_web_result": true,
       "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
     },
     {
       "domain": "avito.ma",
@@ -41,7 +44,8 @@
       "source_type": "classifieds_marketplace",
       "external_web_result": true,
       "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
     },
     {
       "domain": "1immo.ma",
@@ -51,7 +55,8 @@
       "source_type": "agency_portal",
       "external_web_result": true,
       "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
     },
     {
       "domain": "barnes-marrakech.com",
@@ -61,7 +66,8 @@
       "source_type": "agency_site",
       "external_web_result": true,
       "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": ["Marrakech"]
     },
     {
       "domain": "kawtarimmobilier.com",
@@ -71,7 +77,8 @@
       "source_type": "agency_site",
       "external_web_result": true,
       "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": ["Essaouira"]
     },
     {
       "domain": "mouldar.com",
@@ -81,7 +88,8 @@
       "source_type": "agency_portal",
       "external_web_result": true,
       "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
     },
     {
       "domain": "limmobiliersansfrontieres.com",
@@ -91,7 +99,8 @@
       "source_type": "agency_site",
       "external_web_result": true,
       "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": ["Marrakech", "Meknès"]
     },
     {
       "domain": "marrakechrealty.com",
@@ -101,7 +110,8 @@
       "source_type": "agency_site",
       "external_web_result": true,
       "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": ["Marrakech", "Casablanca"]
     },
     {
       "domain": "marocannonces.com",
@@ -111,7 +121,8 @@
       "source_type": "classifieds_marketplace",
       "external_web_result": true,
       "compliance_note": "No strong individual-listing URL pattern in classify.ts; reaches individual_listing lane only via textual detail signals. Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
     },
     {
       "domain": "logic-immo.com",
@@ -121,7 +132,8 @@
       "source_type": "portal_aggregator",
       "external_web_result": true,
       "compliance_note": "No dedicated classify.ts DOMAIN_RULES entry; relies on generic text classification. Already live in Production via first-write pilot (ALLOWED_PUBLIC_SOURCE_DOMAINS).",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
     },
     {
       "domain": "logicimmo.com",
@@ -131,7 +143,8 @@
       "source_type": "portal_aggregator",
       "external_web_result": true,
       "compliance_note": "No dedicated classify.ts DOMAIN_RULES entry; relies on generic text classification. Already live in Production via first-write pilot (ALLOWED_PUBLIC_SOURCE_DOMAINS).",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
     },
     {
       "domain": "yakeey.com",
@@ -141,7 +154,8 @@
       "source_type": "agency_portal",
       "external_web_result": false,
       "compliance_note": "classify.ts DOMAIN_RULES forceReject on every path (all results rejected regardless of content). Not in ALLOWED_PUBLIC_SOURCE_DOMAINS.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
     },
     {
       "domain": "immobilier.trovit.ma",
@@ -151,7 +165,8 @@
       "source_type": "meta_search_aggregator",
       "external_web_result": false,
       "compliance_note": "classify.ts DOMAIN_RULES forceDiscovery on every path -- meta-search results, never an individual listing page. Blocked explicitly rather than left implicit.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
     },
     {
       "domain": "nuroa.ma",
@@ -161,7 +176,8 @@
       "source_type": "meta_search_aggregator",
       "external_web_result": false,
       "compliance_note": "classify.ts DOMAIN_RULES forceDiscovery on every path -- meta-search results, never an individual listing page. Blocked explicitly rather than left implicit.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
     },
     {
       "domain": "immo.mitula.ma",
@@ -171,7 +187,8 @@
       "source_type": "meta_search_aggregator",
       "external_web_result": false,
       "compliance_note": "classify.ts DOMAIN_RULES forceDiscovery on every path -- meta-search results, never an individual listing page. Blocked explicitly rather than left implicit.",
-      "reviewed_at": "2026-07-17"
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
     }
   ]
 }

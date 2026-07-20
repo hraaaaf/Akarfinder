@@ -24,6 +24,15 @@ export type SourceDomainEntry = {
   external_web_result: boolean;
   compliance_note: string;
   reviewed_at: string;
+  // OPENSERP-QUERY-UNIVERSE-REGIONAL-DOMAIN-CITY-SCOPING-1: null/absent =
+  // national (site:<domain> queries generated for every TIER_1_CITIES
+  // city, the existing behavior). A non-empty list restricts site:<domain>
+  // query generation to exactly these cities instead -- may contain a city
+  // outside TIER_1_CITIES (e.g. "Essaouira"), consumed as-is by
+  // build-query-universe.ts with no membership check against TIER_1_CITIES.
+  // Read only by the query-universe builder; does not affect admission,
+  // classify.ts, or any other domain-registry consumer.
+  coverage_cities?: string[] | null;
 };
 
 export type SourceDomainRegistry = {
