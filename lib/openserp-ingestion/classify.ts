@@ -118,7 +118,19 @@ const DOMAIN_RULES: Record<string, PathRules> = {
     strongIndividual: [/\/vente\/.+\/\d+$/],
   },
   "kawtarimmobilier.com": {
-    strongIndividual: [/\/vente\/.+ref-\d+\.html$/i],
+    // OPENSERP-CLASSIFY-KAWTARIMMOBILIER-LOCATION-PATTERN-1: widened from
+    // /vente/ only to also match /location/ -- the site publishes rental
+    // listings under the identical -ref-\d+.html suffix convention as its
+    // sale listings (e.g. /essaouira/location/appartement/bel-appartement-
+    // a-louer-ref-2285.html), previously invisible to strongIndividual.
+    // Audited against a real Production run (openserp-github-cron-
+    // 2026-07-20T08-23-27-764Z): matches exactly the 3 confirmed individual
+    // rental listings among that run's 12 kawtarimmobilier.com results,
+    // zero false positives against its 6 category/archive pages, 2
+    // homepage/language variants, and 1 ambiguous non-listing URL -- the
+    // ref-\d+.html$ suffix requirement is preserved unchanged, so no bare
+    // "/location/" path can match on its own.
+    strongIndividual: [/\/(?:vente|location)\/.+ref-\d+\.html$/i],
   },
   "mouldar.com": {
     forceDiscovery: [/\/(?:fr|en)\/(?:achat|location|rent|buy)\/[^/]+\/[^/]+\/[^/]+$/i],
