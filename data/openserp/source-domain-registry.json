@@ -147,6 +147,50 @@
       "coverage_cities": null
     },
     {
+      "domain": "soukimmobilier.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["/(?:fr|ar)/[a-z-]+/[a-z]+/\\d{4,}$"],
+      "blocked_url_patterns": [],
+      "source_type": "portal_aggregator",
+      "external_web_result": true,
+      "compliance_note": "Added following COMMONCRAWL-SOURCE-INTELLIGENCE-TOP11-AUDIT-1 (classe A, score 91/100). Pattern derived from and validated against Common Crawl CDX evidence (714-715 distinct matching URLs) plus a historical discovery_candidates replay. Not yet bulk-seeded -- discovery relies on the existing query universe only until a separate, explicitly authorized activation mission (site:soukimmobilier.com queries are NOT added to query-universe-v1.json by this entry).",
+      "reviewed_at": "2026-07-20",
+      "coverage_cities": null
+    },
+    {
+      "domain": "daragadir.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["^/annonces/annonces-immobilieres/(?:vente|location|location-de-vacances)/[^/]+/[^/]+\\.html$"],
+      "blocked_url_patterns": [],
+      "source_type": "classifieds_marketplace",
+      "external_web_result": true,
+      "compliance_note": "Added following COMMONCRAWL-SOURCE-INTELLIGENCE-TOP11-AUDIT-1 (classe A, score 84/100). No strong individual-listing identifier (no numeric ID/ref/UUID) -- the pattern is structural only (path depth + .html suffix), same caution level as marocannonces.com. Not yet bulk-seeded, no query-universe change.",
+      "reviewed_at": "2026-07-20",
+      "coverage_cities": ["Agadir"]
+    },
+    {
+      "domain": "masaken.ma",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["^/(?:fr|en)/immobilier-maroc/[a-z-]+/\\d+$"],
+      "blocked_url_patterns": [],
+      "source_type": "portal_aggregator",
+      "external_web_result": true,
+      "compliance_note": "Added following COMMONCRAWL-SOURCE-INTELLIGENCE-TOP11-AUDIT-1 (classe A, score 82/100). Pattern deliberately scoped to /immobilier-maroc/ only to exclude Arabic price-filter URLs (segment equivalent to /السعر/<number>) that would otherwise superficially resemble a numeric-ID listing path. Not yet bulk-seeded, no query-universe change.",
+      "reviewed_at": "2026-07-20",
+      "coverage_cities": null
+    },
+    {
+      "domain": "atlasimmobilier.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["^/(?:en/)?p/[^/]+/?$"],
+      "blocked_url_patterns": [],
+      "source_type": "agency_site",
+      "external_web_result": true,
+      "compliance_note": "Added following COMMONCRAWL-SOURCE-INTELLIGENCE-TOP11-AUDIT-1 (classe A, score 80/100). Pattern deliberately scoped to the /p/ namespace only -- /li/ (category/tag), /q/ (quarter/area index), and /feature/ (blog-style listing highlight) paths are structurally excluded, not merely absent from the sample. Not yet bulk-seeded, no query-universe change.",
+      "reviewed_at": "2026-07-20",
+      "coverage_cities": ["Marrakech", "Essaouira"]
+    },
+    {
       "domain": "yakeey.com",
       "status": "blocked",
       "listing_url_patterns": [],
