@@ -1,0 +1,126 @@
+name: SearXNG Yandex Shadow Benchmark (diagnostic, no DB access)
+
+# SEARXNG-YANDEX-SHADOW-LANE-1
+# Sibling workflow to searxng-openserp-comparison-poc.yml, NOT a modification
+# of it -- that workflow's "no Supabase secrets used, no DB access of any
+# kind" guarantee stays intact and untouched. This workflow reuses the exact
+# same ephemeral SearXNG + OpenSERP Docker infrastructure already validated
+# by that workflow, but runs scripts/searxng-poc/yandex-shadow-benchmark.ts
+# instead of run-comparison.ts: only the yandex engine is ever requested
+# from SearXNG (no google/duckduckgo/brave/startpage/mojeek/qwant traffic).
+# The OpenSERP container is started only to produce this run's own baseline
+# comparison inside the script -- same purpose it already serves in the
+# comparison POC, not a new capability.
+#
+# Deliberately has ZERO Supabase credentials and ZERO DB access. No secrets
+# block anywhere in this file. No artifact upload beyond stdout/job logs
+# (same pattern as the comparison POC) -- results are read back via
+# `gh run view --log` after the run, never written anywhere by the job
+# itself. workflow_dispatch only, no schedule. Checks out the dedicated
+# poc/searxng-vs-openserp-discovery branch, same as the comparison POC --
+# never checks out or touches the production ingestion branch/pipeline.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  yandex-shadow-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout poc/searxng-vs-openserp-discovery
+        uses: actions/checkout@v4
+        with:
+          ref: poc/searxng-vs-openserp-discovery
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare SearXNG settings (fresh ephemeral secret key)
+        run: |
+          set -e
+          SEARXNG_SECRET=$(openssl rand -hex 32)
+          sed "s/REPLACED_AT_CONTAINER_START/$SEARXNG_SECRET/" scripts/searxng-poc/searxng-settings.yml > /tmp/searxng-settings.yml
+
+      - name: Start SearXNG
+        run: |
+          set -e
+          docker run -d --name searxng -p 8888:8080 \
+            -v /tmp/searxng-settings.yml:/etc/searxng/settings.yml:ro \
+            searxng/searxng:latest
+
+      - name: Wait for SearXNG JSON API
+        run: |
+          set -e
+          STATUS="000"
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:8888/search?q=test&format=json" || echo "000")
+            if [ "$STATUS" = "200" ]; then echo "SearXNG ready"; break; fi
+            sleep 2
+          done
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::SearXNG did not become ready (last status: $STATUS)"
+            docker logs searxng --tail 300 || true
+            exit 1
+          fi
+
+      - name: Confirm yandex is actually enabled (only engine this workflow ever requests)
+        run: |
+          curl -s "http://127.0.0.1:8888/config" > /tmp/searxng-config.json
+          node -e '
+            const fs = require("fs");
+            const config = JSON.parse(fs.readFileSync("/tmp/searxng-config.json", "utf8"));
+            const engines = config.engines || [];
+            const e = engines.find((x) => x.name === "yandex");
+            console.log("yandex ->", e ? JSON.stringify({ enabled: e.enabled }) : "NOT FOUND IN CONFIG");
+          '
+
+      - name: Start OpenSERP (ephemeral, for this run's own baseline comparison only)
+        run: |
+          set -e
+          docker pull karust/openserp:latest
+          docker run -d --name openserp -p 7070:7070 \
+            karust/openserp:latest serve -a 0.0.0.0 -p 7070
+
+      - name: Wait for OpenSERP /health
+        run: |
+          set -e
+          STATUS="unknown"
+          for i in $(seq 1 60); do
+            BODY=$(curl -s -m 3 http://127.0.0.1:7070/health || true)
+            STATUS=$(echo "$BODY" | grep -o '"status":"[a-z]*"' | head -1 | cut -d'"' -f4)
+            if [ "$STATUS" = "healthy" ]; then break; fi
+            sleep 1
+          done
+          if [ "$STATUS" != "healthy" ]; then
+            echo "::error::OpenSERP did not report healthy within 60s"
+            docker logs openserp --tail 200 || true
+            exit 1
+          fi
+
+      - name: Run Yandex-only shadow benchmark (100 queries -- expect roughly 5-15 minutes)
+        env:
+          OPENSERP_LOCAL_URL: http://127.0.0.1:7070
+          SEARXNG_URL: http://127.0.0.1:8888
+          PUBLIC_INDEX_POC_ENABLED: "true"
+          OPENSERP_ASYNC_FEEDER_ENABLED: "true"
+        run: npx tsx scripts/searxng-poc/yandex-shadow-benchmark.ts
+
+      - name: Dump container logs (always, for diagnosis)
+        if: always()
+        run: |
+          echo "--- searxng ---"
+          docker logs searxng --tail 200 || true
+          echo "--- openserp ---"
+          docker logs openserp --tail 200 || true
+
+      - name: Stop containers
+        if: always()
+        run: |
+          docker rm -f searxng || true
+          docker rm -f openserp || true
