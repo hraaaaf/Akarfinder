@@ -1,0 +1,54 @@
+name: Common Crawl Bulk Seed Harvest (diagnostic, offline, no DB writes)
+
+# AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 (#4/10)
+# Runs the offline Common Crawl CDX harvester (scripts/openserp/commoncrawl-bulk-seed-harvest.ts)
+# for the 4 registered class-A domains. Metadata-only (URL/timestamp/status/
+# digest/index) from the CDX index API -- no WARC download, no source page
+# fetch of any kind. No Supabase secrets used, no DB access, no writes to any
+# business table. Produces a local JSONL artifact of qualified seeds only,
+# uploaded as a workflow artifact for download and offline validation. This
+# workflow exists solely because index.commoncrawl.org is unreachable from
+# the primary local dev environment; GitHub-hosted runners have working
+# egress to it. workflow_dispatch only, no schedule, no interaction with the
+# production ingestion cron (openserp-github-native-ingestion.yml) or its
+# state/lease/checkpoint.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout feat/commoncrawl-bulk-seed-harvest-top-sources-1
+        uses: actions/checkout@v4
+        with:
+          ref: feat/commoncrawl-bulk-seed-harvest-top-sources-1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Confirm index.commoncrawl.org is reachable from this runner
+        run: |
+          curl -s -m 20 -w "HTTP_CODE=%{http_code}\n" -o /dev/null "https://index.commoncrawl.org/collinfo.json"
+
+      - name: Run harvester (offline metadata only, no DB access)
+        run: npx tsx scripts/openserp/commoncrawl-bulk-seed-harvest.ts
+
+      - name: Upload seeds artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: commoncrawl-top-sources-seeds
+          path: data/audits/raw-results/commoncrawl-top-sources-seeds.jsonl
+          retention-days: 14
+          if-no-files-found: warn
