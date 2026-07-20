@@ -5381,3 +5381,24 @@ Pourcentage Produit:
 Prochaine mission (non demarree, par instruction explicite de l'ODM) :
 - Aucune -- activation du cron 30 minutes (GitHub Actions) en attente de l'authentification GitHub
   de l'utilisateur avant toute suite.
+
+## 2026-07-20 - OPENSERP-NATIVE-CRON-COMPLIANCE-AUDIT-1 (audit lecture seule, cron natif deja actif)
+
+Le cron 30 minutes GitHub-native (evoque ci-dessus comme bloque) est en realite deja actif depuis
+une mission anterieure hors de cette session : `openserp-github-native-ingestion.yml` planifie
+(`*/30 * * * *` depuis le commit `5975e76`), producteur planifie unique confirme (l'ancien workflow
+curl-vers-Vercel n'a plus de `schedule` depuis `b01502e`). Audit de conformite execute : 6/6 runs
+planifies reels `COMPLETED` sans erreur ni NOOP, 0 difference metier entre la route Vercel et le
+script natif, verrou partage sain (libre, jamais bloque), ecritures recentes tracees a 100% au
+runner natif. Verdict `COMPLIANT_WITH_CONDITIONS` -- deux ecarts trouves : aucun bloc
+`permissions:` explicite sur le workflow, cout/quota GitHub non verifie via API (appel refuse par
+l'utilisateur en cours d'audit). Cadence reelle observee ~5.3x plus lente que le cron nominal
+(throttling GitHub documente sur repo a faible activite, accepte comme normal). Voir
+`docs/OPENSERP_NATIVE_CRON_COMPLIANCE_AUDIT_1.md` pour le detail complet.
+
+Pourcentage Produit:
+- Inchange (`98.7%`) -- audit de conformite operationnelle, aucune nouvelle surface produit.
+
+Prochaine mission (non demarree, proposee par cet audit) :
+- `OPENSERP-NATIVE-CRON-REMEDIATION-1` : ajouter `permissions:` explicite minimal, retirer 2 etapes
+  diagnostiques `TEMPORARY` residuelles, ajouter `timeout-minutes` au job.

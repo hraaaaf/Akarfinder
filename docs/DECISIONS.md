@@ -3260,3 +3260,24 @@ Impact:
   phase de preparation, jamais testee en conditions reelles (latence Supabase reelle, 2718 lignes)
   par la mission precedente (fixtures reduites + client mocke instantane). Mission suivante
   recommandee : `OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1`.
+
+Decision (2026-07-20) : OPENSERP-NATIVE-CRON-COMPLIANCE-AUDIT-1 -- audit lecture seule execute a la
+place d'une mission de migration demandee, car la migration s'est reveler deja effectuee (mission
+anterieure hors session). Verdict `COMPLIANT_WITH_CONDITIONS`, pas `COMPLIANT` strict.
+Reason:
+- Deux criteres de succes explicitement requis ne sont pas atteints : (1) aucun bloc `permissions:`
+  explicite dans `openserp-github-native-ingestion.yml` (herite du defaut du repository, non
+  verifiable depuis le fichier seul) ; (2) cout/quota GitHub Actions non verifie via API (appel
+  refuse par l'utilisateur en cours d'audit, non retente par respect de cette instruction) --
+  seule la duree observee des runs est documentee, aucun quota invente.
+Impact:
+- Aucune modification de Production. Producteur planifie unique confirme (0 run `schedule` sur
+  l'ancien workflow depuis son retrait au commit `b01502e`) ; 0 difference metier reelle entre la
+  route Vercel et le script natif (meme `runIngestionCycle()`, meme verrou 150s) ; 6/6 runs
+  planifies reels `COMPLETED` sans erreur ; verrou partage actuellement libre ; ecritures recentes
+  tracees a 100% au runner natif (prefixe `openserp-github-cron-`, 0 trace Vercel). Cadence reelle
+  ~5.3x plus lente que le cron nominal `*/30 * * * *` -- comportement de throttling documente cote
+  GitHub, accepte comme normal pour ce contexte metier, pas une regression.
+  Mission suivante recommandee : `OPENSERP-NATIVE-CRON-REMEDIATION-1` (ajouter `permissions:`
+  explicite, retirer 2 etapes diagnostiques `TEMPORARY` residuelles, ajouter `timeout-minutes`) --
+  non demarree, hors perimetre de cet audit.

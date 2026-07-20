@@ -12420,3 +12420,30 @@ Prochaine etape (non demarree, par instruction explicite de l'ODM -- mission sui
 - Aucune action agent supplementaire en attente. Le writer reste desactive par choix explicite de
   l'utilisateur ; le cron 30 minutes est techniquement pret et teste mais reste desactive
   (`OPENSERP_INGESTION_CRON_ENABLED=false`) jusqu'a une decision future de l'utilisateur.
+
+====================================================
+OPENSERP-NATIVE-CRON-COMPLIANCE-AUDIT-1 -- 2026-07-20 (audit lecture seule)
+====================================================
+
+Constat de depart : une mission de migration du cron ("curl GitHub -> Vercel" vers "GitHub-native")
+demandee dans cette session s'est reveler deja faite par une mission anterieure hors de cette
+conversation -- `openserp-github-native-ingestion.yml` porte deja `schedule: */30 * * * *` (active
+au commit `5975e76`), et `openserp-ingestion-cron.yml` n'a plus de `schedule` depuis `b01502e`.
+Audit de conformite execute a la place, strictement en lecture seule.
+
+Resultats : producteur planifie unique confirme (0 run `schedule` sur l'ancien workflow depuis son
+retrait) ; aucune difference metier reelle entre la route Vercel et
+`run-ingestion-github-actions.ts --cron` (meme `runIngestionCycle()`, meme verrou, meme lease
+150s) ; 6/6 runs planifies reels tous `COMPLETED` sans erreur ni NOOP ; verrou
+`openserp_ingestion_run_lock` actuellement vide (aucun blocage) ; ecritures recentes tracees a 100%
+au prefixe `openserp-github-cron-` (0 trace `openserp-cron-`/Vercel). Cadence reelle observee
+~5.3x plus lente que le cron nominal (moyenne ~2h40 entre runs vs 30 min) -- comportement
+documente cote GitHub (throttling des workflows planifies sur repo a faible activite), pas une
+regression du code. Ecart trouve : aucun bloc `permissions:` explicite dans le workflow natif, et
+2 etapes diagnostiques marquees `TEMPORARY` toujours presentes malgre probleme resolu.
+
+Verdict : `COMPLIANT_WITH_CONDITIONS` (pas `COMPLIANT` strict, faute de permissions explicites et
+de verification complete du cout/quota GitHub -- un appel API sur les permissions du repo a ete
+refuse par l'utilisateur en cours d'audit, non retente). Prochaine mission proposee (non demarree) :
+`OPENSERP-NATIVE-CRON-REMEDIATION-1`. Voir `docs/OPENSERP_NATIVE_CRON_COMPLIANCE_AUDIT_1.md` et
+`data/audits/openserp_native_cron_compliance_audit_1.md` pour le detail complet.
