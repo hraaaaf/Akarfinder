@@ -75,6 +75,74 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1 -- activation. Same ephemeral
+      # SearXNG setup already validated by
+      # openserp-yandex-dual-lane-shadow-validation.yml (Gate B, PASS
+      # STRICT): yandex is the ONLY engine enabled at the container config
+      # level -- duckduckgo/brave/startpage/mojeek/qwant/google are never
+      # requested and never explicitly enabled. No persistent server, no
+      # new secret (SEARXNG_SECRET is generated fresh per run, never
+      # stored).
+      - name: Prepare SearXNG settings (yandex only, fresh ephemeral secret key)
+        run: |
+          set -e
+          SEARXNG_SECRET=$(openssl rand -hex 32)
+          cat > /tmp/searxng-settings.yml <<YAML
+          use_default_settings: true
+          general:
+            debug: false
+            instance_name: "AkarFinder OpenSERP native ingestion (ephemeral)"
+          search:
+            safe_search: 0
+            default_lang: "fr"
+            formats:
+              - html
+              - json
+          server:
+            secret_key: "$SEARXNG_SECRET"
+            limiter: false
+            image_proxy: false
+          outgoing:
+            request_timeout: 8.0
+          engines:
+            - name: yandex
+              engine: yandex
+              disabled: false
+          YAML
+
+      - name: Start SearXNG
+        run: |
+          set -e
+          docker run -d --name searxng -p 8888:8080 \
+            -v /tmp/searxng-settings.yml:/etc/searxng/settings.yml:ro \
+            searxng/searxng:latest
+
+      - name: Wait for SearXNG JSON API
+        run: |
+          set -e
+          STATUS="000"
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:8888/search?q=test&format=json" || echo "000")
+            if [ "$STATUS" = "200" ]; then echo "SearXNG ready"; break; fi
+            sleep 2
+          done
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::SearXNG did not become ready (last status: $STATUS)"
+            docker logs searxng --tail 300 || true
+            exit 1
+          fi
+
+      - name: Confirm yandex is actually enabled (only engine this workflow ever requests)
+        run: |
+          curl -s "http://127.0.0.1:8888/config" > /tmp/searxng-config.json
+          node -e '
+            const fs = require("fs");
+            const config = JSON.parse(fs.readFileSync("/tmp/searxng-config.json", "utf8"));
+            const engines = config.engines || [];
+            const e = engines.find((x) => x.name === "yandex");
+            console.log("yandex ->", e ? JSON.stringify({ enabled: e.enabled }) : "NOT FOUND IN CONFIG");
+          '
+
       - name: Start OpenSERP (full browser mode, no --raw)
         run: |
           set -e
@@ -131,6 +199,13 @@ jobs:
           OPENSERP_TRANSPORT: native
           PUBLIC_INDEX_POC_ENABLED: "true"
           OPENSERP_ASYNC_FEEDER_ENABLED: "true"
+          # OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1 -- activation. Same two
+          # variables already exercised by the shadow-validation workflow
+          # (Gate B, PASS STRICT): plain, non-sensitive runtime config, not
+          # a secret -- Yandex/SearXNG needs no credential, only a
+          # reachable local container. No other new variable added.
+          OPENSERP_YANDEX_CHANNEL_ENABLED: "true"
+          OPENSERP_SEARXNG_LOCAL_URL: http://127.0.0.1:8888
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
@@ -162,6 +237,14 @@ jobs:
         if: always()
         run: docker logs openserp --tail 300 || true
 
+      - name: Dump SearXNG container logs (always, for diagnosis)
+        if: always()
+        run: docker logs searxng --tail 300 || true
+
       - name: Stop OpenSERP
         if: always()
         run: docker rm -f openserp || true
+
+      - name: Stop SearXNG
+        if: always()
+        run: docker rm -f searxng || true
