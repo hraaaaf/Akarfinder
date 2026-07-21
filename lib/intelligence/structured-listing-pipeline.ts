@@ -39,6 +39,10 @@ import {
   calculatePriceGap,
   type PriceGapResult,
 } from "../market/price-gap-calculator";
+import {
+  evaluateFreshnessProvenanceV2,
+  type FreshnessProvenanceV2,
+} from "./freshness-provenance-v2";
 
 export const STRUCTURED_LISTING_PIPELINE_VERSION = "1.0" as const;
 
@@ -66,7 +70,7 @@ export interface StructuredListingPipelineStagesV1 {
   information_completeness: "completed";
   publication_validation: "passed" | "failed" | "unavailable";
   market_analysis: "completed" | "unavailable";
-  freshness: "not_evaluated";
+  freshness: "completed" | "unavailable";
   duplicate_intelligence: "not_evaluated";
   anomaly_intelligence: "not_evaluated";
   akar_score: "not_evaluated";
@@ -94,6 +98,7 @@ export interface StructuredListingPipelineResultV1 {
   validation: StructuredListingPipelineValidationV1;
   completeness: CompletenessResultV1;
   market: StructuredListingMarketAnalysisV1;
+  freshness: FreshnessProvenanceV2;
   stages: StructuredListingPipelineStagesV1;
   generated_at: string;
 }
@@ -256,6 +261,7 @@ export function runStructuredListingIntelligencePipeline(
     : unavailableValidation("missing_offer", "A structured public listing requires an offer.");
 
   const market = computeMarketAnalysis(enriched, selectedOffer, generatedAt);
+  const freshness = evaluateFreshnessProvenanceV2(enriched, selectedOffer, input.origin, generatedAt);
   const intelligence = {
     ...(enriched.intelligence ?? {
       property_id: enriched.property_id,
@@ -276,6 +282,7 @@ export function runStructuredListingIntelligencePipeline(
     }),
     computed_at: generatedAt,
     data_completeness_score: completeness.score,
+    freshness_score: freshness.freshness_score,
     market_position: market.gap.price_position === "insufficient_data" ? null : market.gap.price_position,
     market_reference_id: buildMarketReferenceId(market.gap),
   };
@@ -294,6 +301,7 @@ export function runStructuredListingIntelligencePipeline(
     },
     completeness,
     market,
+    freshness,
     stages: {
       adaptation: "completed",
       property_ingestion_validation: propertyIngestion.valid ? "passed" : "failed",
@@ -302,7 +310,7 @@ export function runStructuredListingIntelligencePipeline(
       information_completeness: "completed",
       publication_validation: publication ? (publication.valid ? "passed" : "failed") : "unavailable",
       market_analysis: market.claim.strength === "unavailable" ? "unavailable" : "completed",
-      freshness: "not_evaluated",
+      freshness: freshness.claim.strength === "unavailable" ? "unavailable" : "completed",
       duplicate_intelligence: "not_evaluated",
       anomaly_intelligence: "not_evaluated",
       akar_score: "not_evaluated",
