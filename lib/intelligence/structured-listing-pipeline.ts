@@ -13,19 +13,14 @@ import {
   computeInformationCompleteness,
   type CompletenessResultV1,
 } from "../property-schema/completeness";
-import {
-  enrichWithoutInventing,
-} from "../property-schema/enrichment";
+import { enrichWithoutInventing } from "../property-schema/enrichment";
 import {
   validateOfferIngestion,
   validatePropertyIngestion,
   validatePropertyPublication,
   type ValidationResultV1,
 } from "../property-schema/validation";
-import type {
-  CanonicalOfferV1,
-  CanonicalPropertyV1,
-} from "../property-schema/core";
+import type { CanonicalOfferV1, CanonicalPropertyV1 } from "../property-schema/core";
 import {
   createUnavailableClaim,
   evidenceFromFact,
@@ -47,6 +42,11 @@ import {
   type AnomalyEngineContextV1,
   type AnomalyEngineV1,
 } from "./anomaly-engine-v1";
+import {
+  evaluateMultiSourcePropertyIntelligenceV1,
+  type MultiSourcePropertyContextV1,
+  type MultiSourcePropertyIntelligenceV1,
+} from "./multisource-property-intelligence-v1";
 
 export const STRUCTURED_LISTING_PIPELINE_VERSION = "1.0" as const;
 
@@ -64,7 +64,7 @@ export type StructuredListingPipelineInput =
   | { origin: "legacy_db"; row: Listing; context: AdapterContextV1 }
   | { origin: "first_party"; property: CanonicalPropertyV1 };
 
-export type StructuredListingPipelineAnalysisContextV1 = AnomalyEngineContextV1;
+export type StructuredListingPipelineAnalysisContextV1 = AnomalyEngineContextV1 & MultiSourcePropertyContextV1;
 
 export type PipelineStageStatus = "completed" | "passed" | "failed" | "unavailable" | "not_evaluated";
 
@@ -77,7 +77,7 @@ export interface StructuredListingPipelineStagesV1 {
   publication_validation: "passed" | "failed" | "unavailable";
   market_analysis: "completed" | "unavailable";
   freshness: "completed" | "unavailable";
-  duplicate_intelligence: "not_evaluated";
+  duplicate_intelligence: "completed" | "unavailable";
   anomaly_intelligence: "completed" | "unavailable";
   akar_score: "not_evaluated";
   final_conclusion: "not_evaluated";
@@ -108,22 +108,18 @@ export interface StructuredListingPipelineResultV1 {
   market: StructuredListingMarketAnalysisV1;
   freshness: FreshnessProvenanceV2;
   anomaly: AnomalyEngineV1;
+  multisource: MultiSourcePropertyIntelligenceV1;
   stages: StructuredListingPipelineStagesV1;
   generated_at: string;
 }
 
 function adaptInput(input: StructuredListingPipelineInput): CanonicalPropertyV1 {
   switch (input.origin) {
-    case "direct_feed":
-      return adaptValidatedFeedRow(input.row, input.context);
-    case "authorized_scraper":
-      return adaptScrapedListing(input.row, input.context);
-    case "partner":
-      return adaptPartnerListing(input.row, input.context);
-    case "legacy_db":
-      return adaptLegacyListing(input.row, input.context);
-    case "first_party":
-      return input.property;
+    case "direct_feed": return adaptValidatedFeedRow(input.row, input.context);
+    case "authorized_scraper": return adaptScrapedListing(input.row, input.context);
+    case "partner": return adaptPartnerListing(input.row, input.context);
+    case "legacy_db": return adaptLegacyListing(input.row, input.context);
+    case "first_party": return input.property;
   }
 }
 
@@ -137,20 +133,12 @@ function selectOffer(property: CanonicalPropertyV1): CanonicalOfferV1 | null {
 }
 
 function unavailableValidation(code: string, message: string): ValidationResultV1 {
-  return {
-    valid: false,
-    issues: [{ path: "offer", code, message, severity: "error" }],
-  };
+  return { valid: false, issues: [{ path: "offer", code, message, severity: "error" }] };
 }
 
 function pickSurfaceFact(property: CanonicalPropertyV1) {
   const surfaces = property.facts.surfaces;
-  return (
-    surfaces.surface_habitable_m2 ??
-    surfaces.surface_total_m2 ??
-    surfaces.surface_built_m2 ??
-    surfaces.surface_land_m2
-  );
+  return surfaces.surface_habitable_m2 ?? surfaces.surface_total_m2 ?? surfaces.surface_built_m2 ?? surfaces.surface_land_m2;
 }
 
 function marketLabel(position: MarketIntelligenceV2["comparison"]["position"]): string {
@@ -166,13 +154,7 @@ function marketLabel(position: MarketIntelligenceV2["comparison"]["position"]): 
 function buildMarketReferenceId(market: MarketIntelligenceV2): string | null {
   const benchmark = market.benchmark;
   if (!benchmark.source || !benchmark.scope || !benchmark.city || !benchmark.property_type) return null;
-  return [
-    benchmark.source,
-    benchmark.scope,
-    benchmark.city,
-    benchmark.neighborhood ?? "_",
-    benchmark.property_type,
-  ].join(":");
+  return [benchmark.source, benchmark.scope, benchmark.city, benchmark.neighborhood ?? "_", benchmark.property_type].join(":");
 }
 
 function computeMarketAnalysis(
@@ -207,12 +189,7 @@ function computeMarketAnalysis(
       explanation: intelligenceV2.explanation,
       generated_at: generatedAt,
     });
-    return {
-      gap: intelligenceV2.gap,
-      intelligence_v2: intelligenceV2,
-      claim,
-      contract_validation: validateAnalysisClaim(claim),
-    };
+    return { gap: intelligenceV2.gap, intelligence_v2: intelligenceV2, claim, contract_validation: validateAnalysisClaim(claim) };
   }
 
   const claim: AnalysisClaimV1 = {
@@ -251,12 +228,7 @@ function computeMarketAnalysis(
     };
   }
 
-  return {
-    gap: intelligenceV2.gap,
-    intelligence_v2: intelligenceV2,
-    claim,
-    contract_validation: contractValidation,
-  };
+  return { gap: intelligenceV2.gap, intelligence_v2: intelligenceV2, claim, contract_validation: contractValidation };
 }
 
 export function runStructuredListingIntelligencePipeline(
@@ -266,7 +238,6 @@ export function runStructuredListingIntelligencePipeline(
 ): StructuredListingPipelineResultV1 {
   const adapted = adaptInput(input);
   const selectedOffer = selectOffer(adapted);
-
   const propertyIngestion = validatePropertyIngestion(adapted);
   const offerIngestion = selectedOffer ? validateOfferIngestion(selectedOffer) : null;
 
@@ -279,7 +250,9 @@ export function runStructuredListingIntelligencePipeline(
   const market = computeMarketAnalysis(enriched, selectedOffer, generatedAt);
   const freshness = evaluateFreshnessProvenanceV2(enriched, selectedOffer, input.origin, generatedAt);
   const anomaly = evaluateAnomalyEngineV1(enriched, selectedOffer, market.intelligence_v2, generatedAt, analysisContext);
+  const multisource = evaluateMultiSourcePropertyIntelligenceV1(enriched, generatedAt, analysisContext);
   const marketEvaluated = market.intelligence_v2.status === "evaluated" && market.intelligence_v2.comparison.position !== "insufficient_data";
+
   const intelligence = {
     ...(enriched.intelligence ?? {
       property_id: enriched.property_id,
@@ -305,6 +278,8 @@ export function runStructuredListingIntelligencePipeline(
     freshness_score: freshness.freshness_score,
     market_position: marketEvaluated ? market.intelligence_v2.comparison.position : null,
     market_reference_id: marketEvaluated ? buildMarketReferenceId(market.intelligence_v2) : null,
+    // Legacy field name retained as a compatibility projection. Semantics: linkage-confidence index, never duplicate probability.
+    duplicate_score: multisource.linkage.confidence_score,
     anomaly_score: anomaly.anomaly_score,
   };
 
@@ -315,15 +290,12 @@ export function runStructuredListingIntelligencePipeline(
     origin: input.origin,
     property,
     selected_offer: selectedOffer,
-    validation: {
-      property_ingestion: propertyIngestion,
-      offer_ingestion: offerIngestion,
-      publication,
-    },
+    validation: { property_ingestion: propertyIngestion, offer_ingestion: offerIngestion, publication },
     completeness,
     market,
     freshness,
     anomaly,
+    multisource,
     stages: {
       adaptation: "completed",
       property_ingestion_validation: propertyIngestion.valid ? "passed" : "failed",
@@ -333,7 +305,7 @@ export function runStructuredListingIntelligencePipeline(
       publication_validation: publication ? (publication.valid ? "passed" : "failed") : "unavailable",
       market_analysis: market.claim.strength === "unavailable" ? "unavailable" : "completed",
       freshness: freshness.claim.strength === "unavailable" ? "unavailable" : "completed",
-      duplicate_intelligence: "not_evaluated",
+      duplicate_intelligence: multisource.status === "evaluated" ? "completed" : "unavailable",
       anomaly_intelligence: anomaly.status === "evaluated" ? "completed" : "unavailable",
       akar_score: "not_evaluated",
       final_conclusion: "not_evaluated",
