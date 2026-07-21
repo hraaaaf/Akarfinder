@@ -45,6 +45,9 @@ jobs:
       - name: Freshness and provenance V2 suite
         run: npx tsx --test scripts/scrapers/__tests__/freshness-provenance-v2.test.ts
 
+      - name: Market Intelligence V2 suite
+        run: npx tsx --test scripts/scrapers/__tests__/market-intelligence-v2.test.ts
+
       - name: API regression suite
         run: npm run test:api
 
