@@ -129,7 +129,9 @@ function assertCommonPipelineShape(result: ReturnType<typeof runStructuredListin
   assert.equal(result.stages.adaptation, "completed");
   assert.equal(result.stages.safe_enrichment, "completed");
   assert.equal(result.stages.information_completeness, "completed");
-  assert.equal(result.stages.freshness, "not_evaluated");
+  assert.ok(["completed", "unavailable"].includes(result.stages.freshness));
+  assert.equal(result.freshness.version, "2.0");
+  assert.equal(result.freshness.contract_validation.valid, true);
   assert.equal(result.stages.duplicate_intelligence, "not_evaluated");
   assert.equal(result.stages.anomaly_intelligence, "not_evaluated");
   assert.equal(result.stages.akar_score, "not_evaluated");
@@ -155,6 +157,7 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assert.equal(result.validation.offer_ingestion?.valid, true);
     assert.equal(result.validation.publication?.valid, true);
     assert.notEqual(result.selected_offer?.price_amount.value, 0);
+    assert.equal(result.stages.freshness, "completed");
   });
 
   it("routes authorized scraper output through the same stages without inventing booleans", () => {
@@ -168,6 +171,7 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assert.equal(result.origin, "authorized_scraper");
     assert.equal(result.property.facts.features.has_pool?.value, null);
     assert.equal(result.validation.property_ingestion.valid, true);
+    assert.equal(result.stages.freshness, "completed");
   });
 
   it("routes partner listings through the same pipeline while preserving publication restrictions", () => {
@@ -180,9 +184,10 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assertCommonPipelineShape(result);
     assert.equal(result.origin, "partner");
     assert.equal(result.selected_offer?.seller_type?.value, "agency");
+    assert.equal(result.stages.freshness, "completed");
   });
 
-  it("routes legacy DB rows through canonical compatibility adapters before intelligence", () => {
+  it("routes legacy DB rows through canonical compatibility adapters before intelligence without fabricating freshness", () => {
     const result = runStructuredListingIntelligencePipeline({
       origin: "legacy_db",
       row: LEGACY_ROW,
@@ -193,6 +198,8 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assert.equal(result.origin, "legacy_db");
     assert.equal(result.property.facts.location.city.provenance, "INFERRED");
     assert.equal(result.selected_offer?.price_amount.provenance, "INFERRED");
+    assert.equal(result.stages.freshness, "unavailable");
+    assert.equal(result.freshness.freshness_state, "unknown");
   });
 
   it("accepts first-party canonical data without creating a parallel intelligence path", () => {
@@ -205,6 +212,7 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assertCommonPipelineShape(result);
     assert.equal(result.origin, "first_party");
     assert.equal(result.selected_offer?.acquisition_channel, "first_party_user");
+    assert.equal(result.freshness.verification_channel, "first_party");
   });
 
   it("keeps missing market inputs as unavailable instead of inventing a position", () => {
@@ -221,14 +229,15 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assert.equal(result.market.contract_validation.valid, true);
   });
 
-  it("never evaluates future intelligence engines implicitly", () => {
+  it("evaluates freshness while leaving future #14-#17 intelligence engines untouched", () => {
     const result = runStructuredListingIntelligencePipeline({
       origin: "direct_feed",
       row: FEED_ROW,
       context: context("future"),
     }, NOW);
 
-    assert.equal(result.property.intelligence?.freshness_score, null);
+    assert.equal(result.property.intelligence?.freshness_score, 100);
+    assert.equal(result.stages.freshness, "completed");
     assert.equal(result.property.intelligence?.duplicate_score, null);
     assert.equal(result.property.intelligence?.anomaly_score, null);
     assert.equal(result.property.intelligence?.akar_score, null);
