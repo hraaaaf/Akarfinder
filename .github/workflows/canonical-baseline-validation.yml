@@ -20,84 +20,60 @@ jobs:
     steps:
       - name: Checkout candidate ref
         uses: actions/checkout@v4
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
-
       - name: Install dependencies
         run: npm ci
-
       - name: Canonical workflow governance guard
         run: npx tsx --test scripts/scrapers/__tests__/canonical-workflow-ref-guard.test.ts scripts/scrapers/__tests__/openserp-schedule-trigger-guard.test.ts
-
       - name: Scraper regression suite
         run: npm run test:scrapers
-
       - name: Analysis Contract V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/analysis-contract.test.ts
-
       - name: Unified structured intelligence pipeline suite
         run: npx tsx --test scripts/scrapers/__tests__/structured-listing-intelligence-pipeline.test.ts
-
       - name: Freshness and provenance V2 suite
         run: npx tsx --test scripts/scrapers/__tests__/freshness-provenance-v2.test.ts
-
       - name: Market Intelligence V2 suite
         run: npx tsx --test scripts/scrapers/__tests__/market-intelligence-v2.test.ts
-
       - name: Anomaly Engine V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/anomaly-engine-v1.test.ts
-
       - name: Multi-source Property Intelligence V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/multisource-property-intelligence-v1.test.ts
-
       - name: AkarScore V2 suite
         run: npx tsx --test scripts/scrapers/__tests__/akar-score-v2.test.ts
-
       - name: Public SERP Intelligence V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/public-serp-intelligence-v1.test.ts
-
       - name: Property Detail V2 suite
         run: npx tsx --test scripts/scrapers/__tests__/property-detail-v2.test.ts
-
       - name: Professional Auth Ownership Profiles V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/professional-auth-ownership-profiles-v1.test.ts
-
       - name: Partner Commercial Activation V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/partner-commercial-activation-v1.test.ts
-
       - name: Neighborhood Intelligence Reference V2 suite
         run: npx tsx --test scripts/scrapers/__tests__/neighborhood-intelligence-reference-v2.test.ts
-
+      - name: Dynamic Search Profile V2 suite
+        run: npx tsx --test scripts/scrapers/__tests__/dynamic-search-profile-v2.test.ts
       - name: API regression suite
         run: npm run test:api
-
       - name: OpenSERP ingestion suite
         run: npm run test:openserp-ingestion
-
       - name: OpenSERP time-budget and lock safety suite
         run: npm run test:openserp-time-budget-and-lock-safety
-
       - name: Market Index suite
         run: npm run test:market-index
-
       - name: Seed freshness suite
         run: npm run test:seed-freshness
-
       - name: Dedup clustering V2 suite
         run: npm run test:dedup-clustering-v2
-
       - name: Index lifecycle suite
         run: npm run test:index-lifecycle
-
       - name: Direct feeds suite
         run: npm run test:direct-feeds
-
       - name: TypeScript check
         run: npx tsc --noEmit
-
       - name: Production build
         run: npm run build
