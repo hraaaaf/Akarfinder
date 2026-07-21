@@ -1,6 +1,6 @@
 # AkarFinder Canonical Baseline
 
-Status: P0.3 reconciliation candidate — NOT YET MERGED TO `main`.
+Status: P0.4 alignment candidate — NOT YET MERGED TO `main`.
 
 ## Canonical target
 
@@ -22,18 +22,15 @@ The reconciliation history preserves all three lineages through merge commits. N
 
 ## Migration history carried by the canonical candidate
 
-Known Production-applied migrations from the reconciled lineage:
+Known Production-applied schema changes from the reconciled lineage:
 
 - `20260718140000_create_openserp_query_rotation_state.sql`
 - `20260718140100_create_openserp_engine_budget_state.sql`
 - `20260718180000_create_openserp_ingestion_run_lock.sql`
 - `20260719220000_alter_openserp_query_rotation_state_discovery_yield_numeric.sql`
+- `20260721000000_create_source_offer_seeds.sql` — applied during P0.4 through Supabase migration tracking as `20260721163349_create_source_offer_seeds`; table verified empty with RLS enabled.
 
-Present in Git but intentionally NOT applied by P0 reconciliation:
-
-- `20260721000000_create_source_offer_seeds.sql`
-
-P0 reconciliation performs zero Production DB writes and does not reapply, rename, squash, or rewrite migrations.
+The first four schema changes predate tracked Supabase migration history in the currently connected Production project and were verified by live schema inspection rather than replayed. They must not be blindly reapplied.
 
 ## Query universe rule during P0
 
@@ -41,7 +38,7 @@ P0 reconciliation performs zero Production DB writes and does not reapply, renam
 
 ## Production separation
 
-Git canonicalization and Production deployment are separate gates. Merging the reconciliation PR to `main`, changing Vercel deployment behavior, activating flags, applying migrations, or changing Production data requires an explicit subsequent gate.
+Git canonicalization and Production deployment are separate gates. Merging the reconciliation PR to `main`, changing Vercel deployment behavior, activating flags, or changing Production data requires an explicit subsequent gate.
 
 ## Required certification before final promotion
 
@@ -49,6 +46,7 @@ Git canonicalization and Production deployment are separate gates. Merging the r
 - Exactly one scheduled OpenSERP ingestion producer.
 - Legacy Vercel cron remains manual-only.
 - Critical test suites pass.
-- TypeScript introduces no new error.
+- TypeScript passes.
 - Production build passes.
-- No Production DB write or deployment is performed by the reconciliation itself.
+- Supabase Production schema alignment is verified.
+- Vercel Git integration/deployment behavior is verified before final merge/promotion.
