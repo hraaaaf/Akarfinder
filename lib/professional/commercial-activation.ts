@@ -16,6 +16,7 @@ export type ProfessionalCommercialCapability =
   | "portfolio.manage"
   | "submissions.manage"
   | "media.manage"
+  | "publication.request"
   | "leads.receive"
   | "stats.basic"
   | "stats.advanced"
@@ -29,31 +30,30 @@ export type CommercialActivationOrganization = Pick<
   source_authorization_status?: SourceAuthorizationStatus | null;
 };
 
-/**
- * Commercial capabilities are deliberately independent from search relevance.
- * A tier may unlock business tooling, never ranking/Fit/AkarScore weight.
- */
+/** Commercial tooling is deliberately independent from search relevance/Fit/AkarScore. */
 export function commercialCapabilitiesForOrganization(
   organization: CommercialActivationOrganization,
 ): ProfessionalCommercialCapability[] {
-  if (organization.validation_status !== "validated") return [];
-  if ((organization.activation_status ?? "pending") !== "active") return [];
-  if ((organization.source_authorization_status ?? "none") !== "confirmed") return [];
+  const activation = organization.activation_status ?? "pending";
+  if (activation === "rejected" || activation === "paused") return [];
 
-  const capabilities: ProfessionalCommercialCapability[] = [
-    "portfolio.manage",
-    "submissions.manage",
-    "media.manage",
-    "leads.receive",
-    "stats.basic",
-  ];
+  const capabilities: ProfessionalCommercialCapability[] = [];
+  if (activation === "onboarding" || activation === "review" || activation === "active") {
+    capabilities.push("portfolio.manage", "submissions.manage", "media.manage");
+  }
 
+  const liveAuthorized =
+    organization.validation_status === "validated" &&
+    activation === "active" &&
+    (organization.source_authorization_status ?? "none") === "confirmed";
+
+  if (!liveAuthorized) return capabilities;
+
+  capabilities.push("publication.request", "leads.receive", "stats.basic");
   if (organization.commercial_tier === "gold" || organization.commercial_tier === "premium") {
     capabilities.push("stats.advanced");
   }
-  if (organization.commercial_tier === "premium") {
-    capabilities.push("branding.enhanced");
-  }
+  if (organization.commercial_tier === "premium") capabilities.push("branding.enhanced");
   return capabilities;
 }
 
@@ -64,8 +64,12 @@ export function hasCommercialCapability(
   return commercialCapabilitiesForOrganization(organization).includes(capability);
 }
 
-export function canSubmitPartnerProperty(organization: CommercialActivationOrganization): boolean {
+export function canManagePartnerDrafts(organization: CommercialActivationOrganization): boolean {
   return hasCommercialCapability(organization, "submissions.manage");
+}
+
+export function canRequestPartnerPublication(organization: CommercialActivationOrganization): boolean {
+  return hasCommercialCapability(organization, "publication.request");
 }
 
 export function canReceiveAssignedLeads(organization: CommercialActivationOrganization): boolean {
