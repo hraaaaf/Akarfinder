@@ -1,0 +1,44 @@
+{
+  "audit_id": "national-100k-backfill-hard-blocker",
+  "mission": "AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 (#10/10)",
+  "generated_at_utc": "2026-07-21T13:05:00.000Z",
+  "verdict": "HARD_BLOCKER_EVIDENCED",
+  "goal": 100000,
+  "goal_metric": "unique canonical source-offer URLs observed in the appropriate DB layer (seed/observation/index), proven by an exact DB query",
+  "reached_goal": false,
+  "current_true_production_state": {
+    "discovery_candidates_total_rows": 8039,
+    "discovery_candidates_distinct_canonical_urls": 6285,
+    "listing_sources_rows": 632,
+    "property_listings_rows": 627,
+    "offline_commoncrawl_seeds_harvested_not_yet_persisted": 3027,
+    "estimated_total_distinct_canonical_observed": "~9000 (6285 discovery + ~2860 net-new offline seeds)"
+  },
+  "evidenced_reservoir_measurements": {
+    "note": "Real, completed measurements only. The generalized 16-domain reservoir harvest (run 29829819356) was still executing under deliberately gentle CDX pacing at finalization time; an earlier faster run (29828223264) rate-limited 15/16 domains to 0 after the first domain, which is itself evidence of the harvest-reliability constraint below.",
+    "mubawab.ma": { "value": 2471, "source": "run 29828223264 (completed, real) -- the single largest national portal in the registry, over 6 recent CDX indexes" },
+    "soukimmobilier.com": { "value": 715, "source": "mission #4 (completed, real, artifact sha256 2d2bcb9c...)" },
+    "daragadir.com": { "value": 1563, "source": "mission #4 (completed, real)" },
+    "masaken.ma": { "value": 318, "source": "mission #4 (completed, real)" },
+    "atlasimmobilier.com": { "value": 431, "source": "mission #4 (completed, real)" },
+    "sum_of_confirmed_measured_domains": 5498,
+    "interpretation": "The biggest national portal (mubawab) yields ~2471 strict-listing-pattern canonical URLs across 6 recent indexes. The confirmed-measured reservoir across the 5 domains with reliable data is 5498. Even assuming the remaining 11 registered listing-pattern domains match mubawab (they are almost all smaller agency sites), the entire authorized Common Crawl reservoir on recent indexes is on the order of low-five-figures -- an order of magnitude below the 100k goal."
+  },
+  "blockers": [
+    {
+      "id": "WRITE_PATH_BLOCKER",
+      "severity": "HARD",
+      "summary": "source_offer_seeds migration cannot be applied to Production from this environment.",
+      "detail": "The dedicated seed-storage table (migration 20260721000000_create_source_offer_seeds.sql, tested PASS STRICT via the PGlite gate in #4/10) has no safe apply path here: no SUPABASE_ACCESS_TOKEN (Management API), no direct Postgres connection string, and the browser extension for the Supabase dashboard SQL editor is not connected. The user explicitly chose (this session) to defer application to 'when we have Supabase dashboard access' rather than provision a token. The mandate's required #10 proof -- an exact DB query returning >=100,000 distinct canonical_url in the appropriate layer -- is therefore structurally impossible right now, because there is no table to write the seeds into and no way to run the count against persisted seeds.",
+      "unblock": "Apply supabase/migrations/20260721000000_create_source_offer_seeds.sql once via the Supabase dashboard SQL editor (single idempotent paste), OR provide a SUPABASE_ACCESS_TOKEN so it can be applied via the Management API."
+    },
+    {
+      "id": "RESERVOIR_SIZE_BLOCKER",
+      "severity": "HARD",
+      "summary": "The authorized Common Crawl reservoir across the 16 registered listing-pattern domains on recent indexes is far below 100k.",
+      "detail": "Confirmed-measured reservoir ~5500 across 5 domains; the largest single national portal (mubawab) contributes only 2471 over 6 recent indexes. Reaching 100k unique canonical listing URLs would require: (a) avito.ma-scale coverage -- avito is CDX-limited and robots-restricted; (b) very deep historical Common Crawl indexes (36-60 months, 12+ indexes) rather than 6 recent ones; and (c) qualifying and registering many of the ~700 additional candidate domains documented in Source Discovery Atlas #1 (#7/10). That is a multi-hour, many-request harvest that Common Crawl's CDX API rate-limits aggressively from this infrastructure (demonstrated: run 29828223264 was rate-limited to 0 on 15/16 domains; run 29829819356 required 2.5s inter-request pacing and still ran 40+ minutes).",
+      "unblock": "A paced, resumable multi-run historical Common Crawl harvest (12-36 indexes, checkpointed per domain/index to survive CDX rate-limits), plus qualification of additional Atlas A-class domains from #7/10, executed over multiple GitHub Actions runs -- once the WRITE_PATH_BLOCKER is cleared so the harvested seeds can actually be persisted and counted."
+    }
+  ],
+  "honesty_note": "No count was fabricated. The 100k goal is NOT met and is NOT claimed to be met. The reservoir floor above uses only real, completed measurements. This is a HARD_BLOCKER_EVIDENCED per mandate section 10.8 (produce evidenced hard blocker with precise numbers rather than inventing missing data), and per the mandate STOP condition 'secret/credential manquant impossible a remplacer' (the deferred Supabase write credential)."
+}
