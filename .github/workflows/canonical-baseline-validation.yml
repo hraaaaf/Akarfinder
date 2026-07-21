@@ -36,6 +36,9 @@ jobs:
       - name: Scraper regression suite
         run: npm run test:scrapers
 
+      - name: Analysis Contract V1 suite
+        run: npx tsx --test scripts/scrapers/__tests__/analysis-contract.test.ts
+
       - name: API regression suite
         run: npm run test:api
 
