@@ -13,6 +13,8 @@ import type { PublicResultSimilaritySummary } from "@/lib/public-result-similari
 import type { PublicResultChecklistSummary } from "@/lib/public-result-checklist/types";
 import { buildPublicResultChecklist } from "@/lib/public-result-checklist/build-checklist";
 import { assertPublicResultChecklistSafety } from "@/lib/public-result-checklist/public-safety";
+import type { PublicSerpIntelligenceSummaryV1 } from "@/lib/intelligence/public-serp-intelligence-types";
+import { getPublicSerpIntelligenceFromListing } from "@/lib/intelligence/public-serp-intelligence-carrier";
 
 export type AkarInfoPassportKind =
   | "gateway_external"
@@ -35,6 +37,7 @@ export type AkarInfoPassport = {
   observation?: ObservationSummary;
   similar_results?: PublicResultSimilaritySummary;
   checklist?: PublicResultChecklistSummary;
+  intelligence?: PublicSerpIntelligenceSummaryV1;
 };
 
 function resolveLifestyleSummary(
@@ -118,6 +121,8 @@ export function buildAkarInfoPassportForListing(
     };
   }
 
+  const intelligence = getPublicSerpIntelligenceFromListing(listing);
+
   return {
     kind: partnerAuthorized ? "partner_authorized" : "structured_internal",
     information_level_label: partnerAuthorized
@@ -143,6 +148,7 @@ export function buildAkarInfoPassportForListing(
       "Historique d'annonce",
       "Repères internes sécurisés",
     ],
+    ...(intelligence ? { intelligence } : {}),
   };
 }
 
