@@ -48,6 +48,9 @@ jobs:
       - name: Market Intelligence V2 suite
         run: npx tsx --test scripts/scrapers/__tests__/market-intelligence-v2.test.ts
 
+      - name: Anomaly Engine V1 suite
+        run: npx tsx --test scripts/scrapers/__tests__/anomaly-engine-v1.test.ts
+
       - name: API regression suite
         run: npm run test:api
 
