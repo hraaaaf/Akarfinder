@@ -14,7 +14,7 @@ import type { PublicResultChecklistSummary } from "@/lib/public-result-checklist
 import { buildPublicResultChecklist } from "@/lib/public-result-checklist/build-checklist";
 import { assertPublicResultChecklistSafety } from "@/lib/public-result-checklist/public-safety";
 import type { PublicSerpIntelligenceSummaryV1 } from "@/lib/intelligence/public-serp-intelligence-types";
-import { getPublicSerpIntelligenceFromListing } from "@/lib/intelligence/public-serp-intelligence-v1";
+import { getPublicSerpIntelligenceFromListing } from "@/lib/intelligence/public-serp-intelligence-carrier";
 
 export type AkarInfoPassportKind =
   | "gateway_external"
