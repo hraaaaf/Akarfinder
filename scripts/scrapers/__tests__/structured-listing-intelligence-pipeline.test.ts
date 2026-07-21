@@ -138,13 +138,16 @@ function assertCommonPipelineShape(result: ReturnType<typeof runStructuredListin
   assert.equal(result.multisource.version, "1.0");
   assert.equal(result.multisource.contract_validation.valid, true);
   assert.ok(["completed", "unavailable"].includes(result.stages.duplicate_intelligence));
-  assert.equal(result.stages.akar_score, "not_evaluated");
+  assert.equal(result.akar_score.version, "2.0");
+  assert.equal(result.akar_score.contract_validation.valid, true);
+  assert.ok(["completed", "unavailable"].includes(result.stages.akar_score));
   assert.equal(result.stages.final_conclusion, "not_evaluated");
   assert.equal(result.stages.property_fit, "not_evaluated");
   assert.ok(result.property.intelligence);
   assert.equal(result.property.intelligence?.data_completeness_score, result.completeness.score);
   assert.equal(result.property.intelligence?.anomaly_score, result.anomaly.anomaly_score);
   assert.equal(result.property.intelligence?.duplicate_score, result.multisource.linkage.confidence_score);
+  assert.equal(result.property.intelligence?.akar_score, result.akar_score.score);
   assert.equal(result.market.contract_validation.valid, true);
 }
 
@@ -161,6 +164,7 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assert.equal(result.stages.freshness, "completed");
     assert.equal(result.stages.anomaly_intelligence, "completed");
     assert.equal(result.stages.duplicate_intelligence, "unavailable");
+    assert.equal(result.stages.akar_score, "completed");
   });
 
   it("routes authorized scraper output through the same stages without inventing booleans", () => {
@@ -209,9 +213,10 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assert.equal(result.property.intelligence?.market_position, null);
     assert.equal(result.market.contract_validation.valid, true);
     assert.equal(result.anomaly.signals.some((signal) => signal.code === "market_price_outlier"), false);
+    assert.equal(result.akar_score.components.find((item) => item.key === "market_context_quality")?.score, null);
   });
 
-  it("evaluates freshness and anomaly while leaving only #17+ engines untouched", () => {
+  it("evaluates #13 through #17 while leaving final conclusion and property fit untouched", () => {
     const result = runStructuredListingIntelligencePipeline({ origin: "direct_feed", row: FEED_ROW, context: context("future") }, NOW);
     assert.equal(result.property.intelligence?.freshness_score, 100);
     assert.equal(result.stages.freshness, "completed");
@@ -219,7 +224,9 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assert.equal(result.property.intelligence?.anomaly_score, 0);
     assert.equal(result.stages.duplicate_intelligence, "unavailable");
     assert.equal(result.property.intelligence?.duplicate_score, null);
-    assert.equal(result.property.intelligence?.akar_score, null);
+    assert.equal(result.stages.akar_score, "completed");
+    assert.equal(result.property.intelligence?.akar_score, result.akar_score.score);
+    assert.ok(result.property.intelligence?.akar_score != null);
     assert.equal(result.property.intelligence?.listing_conclusion, null);
     assert.equal(result.property.intelligence?.property_fit_score, null);
   });
@@ -255,6 +262,7 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assert.equal(result.multisource.source_count, 2);
     assert.equal(result.multisource.linkage.level, "strong_candidate");
     assert.ok((result.property.intelligence?.duplicate_score ?? 0) >= 70);
+    assert.equal(result.akar_score.bonus.multi_source_corroboration, 2);
     assert.equal(result.property.offers.length, 2, "pipeline must not collapse source offers");
   });
 
@@ -270,5 +278,6 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     });
     assert.equal(withHistory.anomaly.signals.some((signal) => signal.code === "abrupt_price_change"), true);
     assert.ok((withHistory.property.intelligence?.anomaly_score ?? 0) > 0);
+    assert.ok(Number(withHistory.akar_score.score) < Number(withoutHistory.akar_score.score));
   });
 });

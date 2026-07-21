@@ -47,6 +47,10 @@ import {
   type MultiSourcePropertyContextV1,
   type MultiSourcePropertyIntelligenceV1,
 } from "./multisource-property-intelligence-v1";
+import {
+  evaluateAkarScoreV2,
+  type AkarScoreV2,
+} from "./akar-score-v2";
 
 export const STRUCTURED_LISTING_PIPELINE_VERSION = "1.0" as const;
 
@@ -79,7 +83,7 @@ export interface StructuredListingPipelineStagesV1 {
   freshness: "completed" | "unavailable";
   duplicate_intelligence: "completed" | "unavailable";
   anomaly_intelligence: "completed" | "unavailable";
-  akar_score: "not_evaluated";
+  akar_score: "completed" | "unavailable";
   final_conclusion: "not_evaluated";
   property_fit: "not_evaluated";
 }
@@ -109,6 +113,7 @@ export interface StructuredListingPipelineResultV1 {
   freshness: FreshnessProvenanceV2;
   anomaly: AnomalyEngineV1;
   multisource: MultiSourcePropertyIntelligenceV1;
+  akar_score: AkarScoreV2;
   stages: StructuredListingPipelineStagesV1;
   generated_at: string;
 }
@@ -251,6 +256,16 @@ export function runStructuredListingIntelligencePipeline(
   const freshness = evaluateFreshnessProvenanceV2(enriched, selectedOffer, input.origin, generatedAt);
   const anomaly = evaluateAnomalyEngineV1(enriched, selectedOffer, market.intelligence_v2, generatedAt, analysisContext);
   const multisource = evaluateMultiSourcePropertyIntelligenceV1(enriched, generatedAt, analysisContext);
+  const akarScore = evaluateAkarScoreV2({
+    property: enriched,
+    selected_offer: selectedOffer,
+    completeness,
+    freshness,
+    market: market.intelligence_v2,
+    anomaly,
+    multisource,
+    generated_at: generatedAt,
+  });
   const marketEvaluated = market.intelligence_v2.status === "evaluated" && market.intelligence_v2.comparison.position !== "insufficient_data";
 
   const intelligence = {
@@ -281,6 +296,7 @@ export function runStructuredListingIntelligencePipeline(
     // Legacy field name retained as a compatibility projection. Semantics: linkage-confidence index, never duplicate probability.
     duplicate_score: multisource.linkage.confidence_score,
     anomaly_score: anomaly.anomaly_score,
+    akar_score: akarScore.score,
   };
 
   const property: CanonicalPropertyV1 = { ...enriched, intelligence };
@@ -296,6 +312,7 @@ export function runStructuredListingIntelligencePipeline(
     freshness,
     anomaly,
     multisource,
+    akar_score: akarScore,
     stages: {
       adaptation: "completed",
       property_ingestion_validation: propertyIngestion.valid ? "passed" : "failed",
@@ -307,7 +324,7 @@ export function runStructuredListingIntelligencePipeline(
       freshness: freshness.claim.strength === "unavailable" ? "unavailable" : "completed",
       duplicate_intelligence: multisource.status === "evaluated" ? "completed" : "unavailable",
       anomaly_intelligence: anomaly.status === "evaluated" ? "completed" : "unavailable",
-      akar_score: "not_evaluated",
+      akar_score: akarScore.status === "evaluated" ? "completed" : "unavailable",
       final_conclusion: "not_evaluated",
       property_fit: "not_evaluated",
     },
