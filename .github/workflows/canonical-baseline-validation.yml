@@ -60,6 +60,9 @@ jobs:
       - name: Public SERP Intelligence V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/public-serp-intelligence-v1.test.ts
 
+      - name: Property Detail V2 suite
+        run: npx tsx --test scripts/scrapers/__tests__/property-detail-v2.test.ts
+
       - name: API regression suite
         run: npm run test:api
 
