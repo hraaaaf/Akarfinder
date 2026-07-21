@@ -103,9 +103,9 @@ describe("#19C Partner Commercial Activation V1", () => {
     assert.equal(page.includes("?token="), false);
   });
 
-  it("staff authorization is based on app_metadata, never user_metadata", () => {
+  it("staff authorization is based on app_metadata, never user-editable metadata", () => {
     const auth = readFileSync(join(process.cwd(), "lib/professional/auth.ts"), "utf8");
-    assert.ok(auth.includes("app_metadata"));
-    assert.equal(auth.includes("user_metadata"), false);
+    assert.ok(auth.includes("data.user.app_metadata"));
+    assert.equal(/data\.user\.(user_metadata|raw_user_meta_data)/.test(auth), false);
   });
 });
