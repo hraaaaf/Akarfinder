@@ -48,7 +48,7 @@ describe("#19F Compagnon AkarFinder State Machine V1", () => {
   });
 
   it("implements elimination → refinement → new search loop", () => {
-    let s = { ...createCompanionSession(), state: "RECHERCHE" as const };
+    let s: ReturnType<typeof createCompanionSession> = { ...createCompanionSession(), state: "RECHERCHE" };
     s = transitionCompanionSession(s, { type: "search_completed", property_ids: ["a","b"] });
     assert.equal(s.state, "TRI_PAR_ELIMINATION");
     s = transitionCompanionSession(s, { type: "elimination_completed", eliminated_property_ids: ["b"] });
@@ -61,7 +61,7 @@ describe("#19F Compagnon AkarFinder State Machine V1", () => {
   });
 
   it("does not eliminate neighborhoods merely because V2 lifestyle evidence is unknown", () => {
-    let s = createCompanionSession();
+    const s = createCompanionSession();
     s.profile.location.preferred_cities = ["Casablanca"];
     s.profile.neighborhood_preferences = [{ key: "family_fit", direction: "prefer_high", importance: "high", target: null, signal: { value: true, source: "explicit", confidence: "high", updated_at: s.last_transition_at } }];
     const ranked = rankNeighborhoodsForProfile(s.profile, buildNeighborhoodIntelligenceV2FromV1().filter((n) => n.city === "Casablanca"));
