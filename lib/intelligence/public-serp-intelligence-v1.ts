@@ -11,6 +11,10 @@ import {
 const DISCLAIMER =
   "Lecture documentaire indicative fondée sur les informations disponibles. Les éléments sensibles restent à confirmer auprès des sources et documents applicables.";
 
+type ListingWithPublicIntelligence = Listing & {
+  public_intelligence?: PublicSerpIntelligenceSummaryV1;
+};
+
 export interface PublicSerpIntelligenceContextV1 {
   observed_at: string;
   source_name: string;
@@ -119,4 +123,19 @@ export function buildPublicSerpIntelligenceForListing(
   );
 
   return project(result);
+}
+
+export function attachPublicSerpIntelligenceToListing(
+  listing: Listing,
+  context: PublicSerpIntelligenceContextV1,
+): Listing {
+  const publicIntelligence = buildPublicSerpIntelligenceForListing(listing, context);
+  if (!publicIntelligence) return listing;
+  return { ...listing, public_intelligence: publicIntelligence } as ListingWithPublicIntelligence;
+}
+
+export function getPublicSerpIntelligenceFromListing(
+  listing: Listing,
+): PublicSerpIntelligenceSummaryV1 | undefined {
+  return (listing as ListingWithPublicIntelligence).public_intelligence;
 }
