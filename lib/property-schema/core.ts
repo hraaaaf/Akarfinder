@@ -1,24 +1,10 @@
 export const PROPERTY_SCHEMA_VERSION = "1.0" as const;
 
-export type ProvenanceKind =
-  | "DECLARED"
-  | "VERIFIED_DOCUMENT"
-  | "DERIVED_GEO"
-  | "DERIVED_MARKET"
-  | "INFERRED";
-
+export type ProvenanceKind = "DECLARED" | "VERIFIED_DOCUMENT" | "DERIVED_GEO" | "DERIVED_MARKET" | "INFERRED";
 export type FactConfidence = "high" | "medium" | "low" | "unknown";
 export type FactVerificationStatus = "unverified" | "consistent" | "verified" | "disputed";
 export type FactVisibility = "PUBLIC" | "PARTNER_ONLY" | "INTERNAL" | "SUPPRESSED";
-export type AcquisitionChannel =
-  | "partner_api"
-  | "partner_feed"
-  | "manual_partner"
-  | "first_party_user"
-  | "source_page"
-  | "search_result"
-  | "document"
-  | "system";
+export type AcquisitionChannel = "partner_api" | "partner_feed" | "manual_partner" | "first_party_user" | "source_page" | "search_result" | "document" | "system";
 
 export type CanonicalFact<T> = {
   value: T | null;
@@ -30,10 +16,7 @@ export type CanonicalFact<T> = {
   visibility: FactVisibility;
 };
 
-export function fact<T>(
-  value: T | null,
-  options: Partial<Omit<CanonicalFact<T>, "value">> = {},
-): CanonicalFact<T> {
+export function fact<T>(value: T | null, options: Partial<Omit<CanonicalFact<T>, "value">> = {}): CanonicalFact<T> {
   return {
     value,
     provenance: options.provenance ?? "DECLARED",
@@ -45,28 +28,50 @@ export function fact<T>(
   };
 }
 
-export type CanonicalPropertyType =
-  | "apartment"
-  | "villa"
-  | "house"
-  | "studio"
-  | "duplex"
-  | "riad"
-  | "land"
-  | "office"
-  | "commercial"
-  | "warehouse"
-  | "industrial"
-  | "farm"
-  | "building"
-  | "other"
-  | "unknown";
-
+export type CanonicalPropertyType = "apartment" | "villa" | "house" | "studio" | "duplex" | "riad" | "land" | "office" | "commercial" | "warehouse" | "industrial" | "farm" | "building" | "other" | "unknown";
 export type CanonicalTransactionType = "sale" | "rent";
 export type MarketSegment = "resale" | "new_build" | "off_plan" | "unknown";
 export type PropertyCanonicalStatus = "active" | "inactive" | "merged" | "disputed" | "unknown";
 export type GeoPrecision = "exact" | "neighborhood_centroid" | "city_centroid" | "unknown";
 export type GeoSource = "declared" | "scraped_coordinates" | "neighborhood_centroid" | "city_centroid" | "manual" | "unknown";
+
+type FactGroup<T> = { [K in keyof T]?: CanonicalFact<T[K]> };
+
+type SurfaceFields = {
+  surface_total_m2: number; surface_habitable_m2: number; surface_built_m2: number; surface_land_m2: number;
+  terrace_m2: number; balcony_m2: number; garden_m2: number; roof_terrace_m2: number; frontage_m: number; land_depth_m: number;
+  ceiling_height_m: number; usable_area_m2: number; common_area_m2: number; surface_notes: string;
+};
+type LayoutFields = {
+  rooms_count: number; bedrooms_count: number; bathrooms_count: number; shower_rooms_count: number; toilets_count: number;
+  living_rooms_count: number; moroccan_living_rooms_count: number; european_living_rooms_count: number; kitchens_count: number;
+  kitchen_type: string; balconies_count: number; terraces_count: number; storage_rooms_count: number; maid_rooms_count: number;
+};
+type BuildingFields = {
+  construction_year: number; property_age_range: string; floor_number: number; floors_count: number; units_in_building: number;
+  orientation: string; exposure: string; view_type: string; architecture_style: string; floor_type: string; ceiling_type: string;
+  facade_condition: string; common_areas_condition: string; elevator_count: number;
+};
+type FeatureFields = {
+  has_elevator: boolean; has_parking: boolean; parking_spaces: number; parking_type: string; has_garage: boolean; garage_spaces: number;
+  has_pool: boolean; pool_type: string; has_garden: boolean; has_terrace: boolean; has_balcony: boolean; has_concierge: boolean;
+  has_security: boolean; has_gated_access: boolean; has_equipped_kitchen: boolean; has_air_conditioning: boolean; has_heating: boolean;
+  has_fireplace: boolean; has_solar_panels: boolean; has_water_tank: boolean; has_well: boolean; has_storage: boolean; has_cellar: boolean;
+  is_furnished: boolean; furnishing_level: string; premium_features: string[];
+};
+type ConditionFields = {
+  condition: string; renovation_status: string; renovation_year: number; finish_level: string; quality_tier: string;
+  structural_condition: string; interior_condition: string; exterior_condition: string; availability_condition: string; condition_notes: string;
+};
+type LandFields = {
+  zoning_type: string; constructible_status: string; allowed_land_use: string; facade_count: number; road_access_width_m: number;
+  land_shape: string; land_slope: string; utilities_water: boolean; utilities_electricity: boolean; utilities_sewer: boolean; subdivision_status: string;
+};
+type LegalFields = {
+  title_status: string; title_deed_available: boolean; ownership_type: string; cadastral_reference_available: boolean; building_permit_status: string;
+  occupancy_permit_status: string; coownership_status: string; coownership_rules_available: boolean; mortgage_status_declared: string;
+  encumbrance_status_declared: string; legal_documents_available: boolean; documents_verified_count: number; legal_verification_status: string; legal_notes: string;
+};
 
 export interface CanonicalPropertyFactsV1 {
   classification: {
@@ -97,123 +102,13 @@ export interface CanonicalPropertyFactsV1 {
     location_landmark?: CanonicalFact<string>;
     location_notes?: CanonicalFact<string>;
   };
-  surfaces: {
-    surface_total_m2?: CanonicalFact<number>;
-    surface_habitable_m2?: CanonicalFact<number>;
-    surface_built_m2?: CanonicalFact<number>;
-    surface_land_m2?: CanonicalFact<number>;
-    terrace_m2?: CanonicalFact<number>;
-    balcony_m2?: CanonicalFact<number>;
-    garden_m2?: CanonicalFact<number>;
-    roof_terrace_m2?: CanonicalFact<number>;
-    frontage_m?: CanonicalFact<number>;
-    land_depth_m?: CanonicalFact<number>;
-    ceiling_height_m?: CanonicalFact<number>;
-    usable_area_m2?: CanonicalFact<number>;
-    common_area_m2?: CanonicalFact<number>;
-    surface_notes?: CanonicalFact<string>;
-  };
-  layout: {
-    rooms_count?: CanonicalFact<number>;
-    bedrooms_count?: CanonicalFact<number>;
-    bathrooms_count?: CanonicalFact<number>;
-    shower_rooms_count?: CanonicalFact<number>;
-    toilets_count?: CanonicalFact<number>;
-    living_rooms_count?: CanonicalFact<number>;
-    moroccan_living_rooms_count?: CanonicalFact<number>;
-    european_living_rooms_count?: CanonicalFact<number>;
-    kitchens_count?: CanonicalFact<number>;
-    kitchen_type?: CanonicalFact<string>;
-    balconies_count?: CanonicalFact<number>;
-    terraces_count?: CanonicalFact<number>;
-    storage_rooms_count?: CanonicalFact<number>;
-    maid_rooms_count?: CanonicalFact<number>;
-  };
-  building: {
-    construction_year?: CanonicalFact<number>;
-    property_age_range?: CanonicalFact<string>;
-    floor_number?: CanonicalFact<number>;
-    floors_count?: CanonicalFact<number>;
-    units_in_building?: CanonicalFact<number>;
-    orientation?: CanonicalFact<string>;
-    exposure?: CanonicalFact<string>;
-    view_type?: CanonicalFact<string>;
-    architecture_style?: CanonicalFact<string>;
-    floor_type?: CanonicalFact<string>;
-    ceiling_type?: CanonicalFact<string>;
-    facade_condition?: CanonicalFact<string>;
-    common_areas_condition?: CanonicalFact<string>;
-    elevator_count?: CanonicalFact<number>;
-  };
-  features: {
-    has_elevator?: CanonicalFact<boolean>;
-    has_parking?: CanonicalFact<boolean>;
-    parking_spaces?: CanonicalFact<number>;
-    parking_type?: CanonicalFact<string>;
-    has_garage?: CanonicalFact<boolean>;
-    garage_spaces?: CanonicalFact<number>;
-    has_pool?: CanonicalFact<boolean>;
-    pool_type?: CanonicalFact<string>;
-    has_garden?: CanonicalFact<boolean>;
-    has_terrace?: CanonicalFact<boolean>;
-    has_balcony?: CanonicalFact<boolean>;
-    has_concierge?: CanonicalFact<boolean>;
-    has_security?: CanonicalFact<boolean>;
-    has_gated_access?: CanonicalFact<boolean>;
-    has_equipped_kitchen?: CanonicalFact<boolean>;
-    has_air_conditioning?: CanonicalFact<boolean>;
-    has_heating?: CanonicalFact<boolean>;
-    has_fireplace?: CanonicalFact<boolean>;
-    has_solar_panels?: CanonicalFact<boolean>;
-    has_water_tank?: CanonicalFact<boolean>;
-    has_well?: CanonicalFact<boolean>;
-    has_storage?: CanonicalFact<boolean>;
-    has_cellar?: CanonicalFact<boolean>;
-    is_furnished?: CanonicalFact<boolean>;
-    furnishing_level?: CanonicalFact<string>;
-    premium_features?: CanonicalFact<string[]>;
-  };
-  condition: {
-    condition?: CanonicalFact<string>;
-    renovation_status?: CanonicalFact<string>;
-    renovation_year?: CanonicalFact<number>;
-    finish_level?: CanonicalFact<string>;
-    quality_tier?: CanonicalFact<string>;
-    structural_condition?: CanonicalFact<string>;
-    interior_condition?: CanonicalFact<string>;
-    exterior_condition?: CanonicalFact<string>;
-    availability_condition?: CanonicalFact<string>;
-    condition_notes?: CanonicalFact<string>;
-  };
-  land: {
-    zoning_type?: CanonicalFact<string>;
-    constructible_status?: CanonicalFact<string>;
-    allowed_land_use?: CanonicalFact<string>;
-    facade_count?: CanonicalFact<number>;
-    road_access_width_m?: CanonicalFact<number>;
-    land_shape?: CanonicalFact<string>;
-    land_slope?: CanonicalFact<string>;
-    utilities_water?: CanonicalFact<boolean>;
-    utilities_electricity?: CanonicalFact<boolean>;
-    utilities_sewer?: CanonicalFact<boolean>;
-    subdivision_status?: CanonicalFact<string>;
-  };
-  legal: {
-    title_status?: CanonicalFact<string>;
-    title_deed_available?: CanonicalFact<boolean>;
-    ownership_type?: CanonicalFact<string>;
-    cadastral_reference_available?: CanonicalFact<boolean>;
-    building_permit_status?: CanonicalFact<string>;
-    occupancy_permit_status?: CanonicalFact<string>;
-    coownership_status?: CanonicalFact<string>;
-    coownership_rules_available?: CanonicalFact<boolean>;
-    mortgage_status_declared?: CanonicalFact<string>;
-    encumbrance_status_declared?: CanonicalFact<string>;
-    legal_documents_available?: CanonicalFact<boolean>;
-    documents_verified_count?: CanonicalFact<number>;
-    legal_verification_status?: CanonicalFact<string>;
-    legal_notes?: CanonicalFact<string>;
-  };
+  surfaces: FactGroup<SurfaceFields>;
+  layout: FactGroup<LayoutFields>;
+  building: FactGroup<BuildingFields>;
+  features: FactGroup<FeatureFields>;
+  condition: FactGroup<ConditionFields>;
+  land: FactGroup<LandFields>;
+  legal: FactGroup<LegalFields>;
 }
 
 export type PriceStatus = "valid" | "not_disclosed" | "ambiguous" | "unavailable" | "invalid";
@@ -235,6 +130,8 @@ export interface CanonicalOfferV1 {
   title: CanonicalFact<string>;
   description: CanonicalFact<string>;
   price_amount: CanonicalFact<number>;
+  price_range_min?: CanonicalFact<number>;
+  price_range_max?: CanonicalFact<number>;
   price_currency: "MAD";
   price_period: "total" | "month" | "day" | "unknown";
   price_status: PriceStatus;
@@ -258,52 +155,24 @@ export interface CanonicalOfferV1 {
 }
 
 export interface MediaAssetV1 {
-  media_id: string;
-  property_id: string;
-  offer_id: string | null;
-  type: "image" | "video" | "floor_plan" | "document";
-  url: string;
-  source_url: string | null;
-  rights_status: "allowed" | "source_link_only" | "unknown" | "forbidden";
-  publication_permission: "allowed" | "partner_only" | "forbidden" | "unknown";
-  cache_permission: boolean;
-  download_permission: boolean;
-  attribution: string | null;
-  observed_at: string | null;
-  last_checked_at: string | null;
+  media_id: string; property_id: string; offer_id: string | null; type: "image" | "video" | "floor_plan" | "document";
+  url: string; source_url: string | null; rights_status: "allowed" | "source_link_only" | "unknown" | "forbidden";
+  publication_permission: "allowed" | "partner_only" | "forbidden" | "unknown"; cache_permission: boolean; download_permission: boolean;
+  attribution: string | null; observed_at: string | null; last_checked_at: string | null;
 }
 
 export interface PropertyIntelligenceV1 {
-  property_id: string;
-  computed_at: string;
-  price_per_m2: number | null;
-  price_per_m2_method: "price_divided_by_surface" | "unavailable";
+  property_id: string; computed_at: string; price_per_m2: number | null; price_per_m2_method: "price_divided_by_surface" | "unavailable";
   market_position: "below_market" | "near_market" | "above_market" | "overpriced" | "insufficient_data" | null;
-  market_reference_id: string | null;
-  data_completeness_score: number | null;
-  freshness_score: number | null;
-  duplicate_score: number | null;
-  anomaly_score: number | null;
-  akar_score: number | null;
-  listing_conclusion: string | null;
-  property_fit_score: number | null;
-  investment_score: number | null;
-  mre_score: number | null;
+  market_reference_id: string | null; data_completeness_score: number | null; freshness_score: number | null; duplicate_score: number | null;
+  anomaly_score: number | null; akar_score: number | null; listing_conclusion: string | null; property_fit_score: number | null;
+  investment_score: number | null; mre_score: number | null;
 }
 
 export interface OfferDisplayPolicyV1 {
-  offer_id: string;
-  can_show_result: boolean;
-  can_show_thumbnail: boolean;
-  can_show_gallery: boolean;
-  can_show_contact: boolean;
-  can_show_snippet: boolean;
-  primary_cta: "view_original" | "view_source" | "view_full_listing" | "none";
-  allowed_ctas: string[];
-  source_badge: string | null;
-  display_depth: "full" | "rich" | "limited_preview" | "market_signal_only" | "hidden";
-  production_allowed: boolean;
-  block_reason: string | null;
+  offer_id: string; can_show_result: boolean; can_show_thumbnail: boolean; can_show_gallery: boolean; can_show_contact: boolean; can_show_snippet: boolean;
+  primary_cta: "view_original" | "view_source" | "view_full_listing" | "none"; allowed_ctas: string[]; source_badge: string | null;
+  display_depth: "full" | "rich" | "limited_preview" | "market_signal_only" | "hidden"; production_allowed: boolean; block_reason: string | null;
 }
 
 export interface CanonicalPropertyV1 {
@@ -323,22 +192,13 @@ export interface CanonicalPropertyV1 {
 
 export function emptyPropertyFacts(): CanonicalPropertyFactsV1 {
   return {
-    classification: {
-      property_type: fact("unknown"),
-      market_segment: fact("unknown"),
-    },
+    classification: { property_type: fact("unknown"), market_segment: fact("unknown") },
     location: {
       country: fact("Morocco"),
-      city: fact(null),
+      city: fact<string>(null),
       geo_precision: fact("unknown"),
       geo_source: fact("unknown"),
     },
-    surfaces: {},
-    layout: {},
-    building: {},
-    features: {},
-    condition: {},
-    land: {},
-    legal: {},
+    surfaces: {}, layout: {}, building: {}, features: {}, condition: {}, land: {}, legal: {},
   };
 }
