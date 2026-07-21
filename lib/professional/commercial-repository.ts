@@ -134,7 +134,7 @@ export async function savePartnerPropertySubmission(
     .maybeSingle();
   if (existingError) throw new Error(`[professional] submission lookup: ${existingError.message}`);
   if (!existing) return null;
-  if (!['draft','rejected'].includes(existing.status as string)) throw new Error("SUBMISSION_NOT_EDITABLE");
+  if (!["draft", "rejected"].includes(existing.status as string)) throw new Error("SUBMISSION_NOT_EDITABLE");
 
   const propertyType = existing.property_type as CanonicalPropertyType;
   const immutableFacts = {
@@ -173,13 +173,13 @@ export async function submitPartnerPropertyForReview(userId: string, organizatio
     .maybeSingle();
   if (lookupError) throw new Error(`[professional] submission lookup: ${lookupError.message}`);
   if (!existing) return null;
-  if (!['draft','rejected'].includes(existing.status as string)) throw new Error("SUBMISSION_NOT_SUBMITTABLE");
+  if (!["draft", "rejected"].includes(existing.status as string)) throw new Error("SUBMISSION_NOT_SUBMITTABLE");
 
   const eligibility = canSubmitPartnerOnboardingForReview(
     existing.property_type as CanonicalPropertyType,
     (existing.declared_facts ?? {}) as PartnerDeclaredFacts,
   );
-  if (!eligibility.ok) return { ok: false as const, ...eligibility };
+  if (!eligibility.ok) return eligibility;
 
   const now = new Date().toISOString();
   const { data, error } = await supabase
@@ -196,7 +196,9 @@ export async function submitPartnerPropertyForReview(userId: string, organizatio
 export async function requestApprovedPartnerPublication(userId: string, organizationId: string, submissionId: string) {
   const context = await requireProfessionalPermission(userId, organizationId, "listings.manage");
   if (!context) return null;
-  if (!canRequestPartnerPublication(asCommercialOrganization(context.organization))) return { ok: false as const, reason: "ORGANIZATION_NOT_LIVE_AUTHORIZED" };
+  if (!canRequestPartnerPublication(asCommercialOrganization(context.organization))) {
+    return { ok: false as const, reason: "ORGANIZATION_NOT_LIVE_AUTHORIZED" };
+  }
   const { data, error } = await getSupabaseServerClient()
     .from("professional_property_submissions")
     .select("id,status,property_listing_id")
@@ -266,7 +268,11 @@ export async function setProfessionalActivationByStaff(
 export async function listPartnerMedia(userId: string, organizationId: string) {
   const context = await requireProfessionalPermission(userId, organizationId, "listings.read");
   if (!context) return null;
-  const { data, error } = await getSupabaseServerClient().from("professional_media_assets").select("*").eq("organization_id", organizationId).order("created_at", { ascending: false });
+  const { data, error } = await getSupabaseServerClient()
+    .from("professional_media_assets")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false });
   if (error) throw new Error(`[professional] media: ${error.message}`);
   return data ?? [];
 }
@@ -274,23 +280,36 @@ export async function listPartnerMedia(userId: string, organizationId: string) {
 export async function createPartnerMedia(
   userId: string,
   organizationId: string,
-  input: { submission_id?: string; project_id?: string; media_type: "image" | "video" | "floor_plan" | "document"; url: string; source_url?: string | null; rights_status: "allowed" | "partner_only" | "unknown" | "forbidden"; publication_permission: "allowed" | "partner_only" | "forbidden" | "unknown"; attribution?: string | null },
+  input: {
+    submission_id?: string;
+    project_id?: string;
+    media_type: "image" | "video" | "floor_plan" | "document";
+    url: string;
+    source_url?: string | null;
+    rights_status: "allowed" | "partner_only" | "unknown" | "forbidden";
+    publication_permission: "allowed" | "partner_only" | "forbidden" | "unknown";
+    attribution?: string | null;
+  },
 ) {
   const context = await requireDraftAccess(userId, organizationId);
   if (!context) return null;
   if (!!input.submission_id === !!input.project_id) throw new Error("MEDIA_OWNER_REQUIRED");
-  const { data, error } = await getSupabaseServerClient().from("professional_media_assets").insert({
-    organization_id: organizationId,
-    submission_id: input.submission_id ?? null,
-    project_id: input.project_id ?? null,
-    media_type: input.media_type,
-    url: input.url,
-    source_url: input.source_url ?? null,
-    rights_status: input.rights_status,
-    publication_permission: input.publication_permission,
-    attribution: input.attribution?.trim().slice(0, 300) || null,
-    uploaded_by: userId,
-  }).select("*").single();
+  const { data, error } = await getSupabaseServerClient()
+    .from("professional_media_assets")
+    .insert({
+      organization_id: organizationId,
+      submission_id: input.submission_id ?? null,
+      project_id: input.project_id ?? null,
+      media_type: input.media_type,
+      url: input.url,
+      source_url: input.source_url ?? null,
+      rights_status: input.rights_status,
+      publication_permission: input.publication_permission,
+      attribution: input.attribution?.trim().slice(0, 300) || null,
+      uploaded_by: userId,
+    })
+    .select("*")
+    .single();
   if (error || !data) throw new Error(`[professional] create media: ${error?.message ?? "unknown error"}`);
   return data;
 }
