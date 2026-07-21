@@ -55,7 +55,8 @@ function nowFrom(context: AdapterContextV1) {
 }
 
 function confidenceFromScraper(level: FieldConfidenceLevel | undefined): FactConfidence {
-  return level ?? "unknown";
+  if (!level || level === "missing") return "unknown";
+  return level;
 }
 
 function declared<T>(value: T | null, context: AdapterContextV1, confidence: FactConfidence = "high"): CanonicalFact<T> {
@@ -98,7 +99,7 @@ function makeOffer(
   context: AdapterContextV1,
   input: Partial<CanonicalOfferV1> & Pick<CanonicalOfferV1, "transaction_type" | "title" | "description" | "price_amount" | "price_status" | "availability_status">,
 ): CanonicalOfferV1 {
-  return {
+  const defaults: Omit<CanonicalOfferV1, "transaction_type" | "title" | "description" | "price_amount" | "price_status" | "availability_status"> = {
     offer_id: context.offer_id,
     property_id: context.property_id,
     source_id: context.source_id,
@@ -108,14 +109,8 @@ function makeOffer(
     canonical_source_url: null,
     acquisition_channel: context.acquisition_channel ?? "system",
     origin_type: context.origin_type ?? "unknown",
-    transaction_type: input.transaction_type,
-    title: input.title,
-    description: input.description,
-    price_amount: input.price_amount,
     price_currency: "MAD",
     price_period: input.price_period ?? (input.transaction_type === "rent" ? "month" : "total"),
-    price_status: input.price_status,
-    availability_status: input.availability_status,
     published_at_source: null,
     first_observed_at: null,
     last_observed_at: null,
@@ -124,8 +119,8 @@ function makeOffer(
     compliance_status: context.compliance_status ?? "review_required",
     media_set_id: null,
     ingestion_run_id: context.ingestion_run_id ?? null,
-    ...input,
   };
+  return { ...defaults, ...input } as CanonicalOfferV1;
 }
 
 export function adaptValidatedFeedRow(row: ValidatedFeedRow, context: AdapterContextV1): CanonicalPropertyV1 {
@@ -286,8 +281,10 @@ export function adaptLegacyListing(row: Listing, context: AdapterContextV1): Can
   property.facts.surfaces.surface_built_m2 = legacy(row.built_surface_m2 && row.built_surface_m2 > 0 ? row.built_surface_m2 : null, context);
   property.facts.surfaces.surface_land_m2 = legacy(row.plot_surface_m2 && row.plot_surface_m2 > 0 ? row.plot_surface_m2 : null, context);
   property.facts.layout.rooms_count = legacy(row.rooms_count ?? null, context);
-  property.facts.layout.bedrooms_count = legacy((row.bedrooms_count ?? row.bedrooms) > 0 ? (row.bedrooms_count ?? row.bedrooms) : null, context);
-  property.facts.layout.bathrooms_count = legacy((row.bathrooms_count ?? row.bathrooms) > 0 ? (row.bathrooms_count ?? row.bathrooms) : null, context);
+  const bedrooms = row.bedrooms_count ?? row.bedrooms;
+  const bathrooms = row.bathrooms_count ?? row.bathrooms;
+  property.facts.layout.bedrooms_count = legacy(typeof bedrooms === "number" && bedrooms > 0 ? bedrooms : null, context);
+  property.facts.layout.bathrooms_count = legacy(typeof bathrooms === "number" && bathrooms > 0 ? bathrooms : null, context);
   property.facts.condition.condition = legacy(row.condition ?? null, context);
   property.facts.building.orientation = legacy(row.orientation ?? null, context);
   property.facts.features.has_pool = legacy(row.has_pool === true ? true : null, context);
