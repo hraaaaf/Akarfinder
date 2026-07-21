@@ -42,6 +42,11 @@ import {
   evaluateFreshnessProvenanceV2,
   type FreshnessProvenanceV2,
 } from "./freshness-provenance-v2";
+import {
+  evaluateAnomalyEngineV1,
+  type AnomalyEngineContextV1,
+  type AnomalyEngineV1,
+} from "./anomaly-engine-v1";
 
 export const STRUCTURED_LISTING_PIPELINE_VERSION = "1.0" as const;
 
@@ -59,6 +64,8 @@ export type StructuredListingPipelineInput =
   | { origin: "legacy_db"; row: Listing; context: AdapterContextV1 }
   | { origin: "first_party"; property: CanonicalPropertyV1 };
 
+export type StructuredListingPipelineAnalysisContextV1 = AnomalyEngineContextV1;
+
 export type PipelineStageStatus = "completed" | "passed" | "failed" | "unavailable" | "not_evaluated";
 
 export interface StructuredListingPipelineStagesV1 {
@@ -71,7 +78,7 @@ export interface StructuredListingPipelineStagesV1 {
   market_analysis: "completed" | "unavailable";
   freshness: "completed" | "unavailable";
   duplicate_intelligence: "not_evaluated";
-  anomaly_intelligence: "not_evaluated";
+  anomaly_intelligence: "completed" | "unavailable";
   akar_score: "not_evaluated";
   final_conclusion: "not_evaluated";
   property_fit: "not_evaluated";
@@ -100,6 +107,7 @@ export interface StructuredListingPipelineResultV1 {
   completeness: CompletenessResultV1;
   market: StructuredListingMarketAnalysisV1;
   freshness: FreshnessProvenanceV2;
+  anomaly: AnomalyEngineV1;
   stages: StructuredListingPipelineStagesV1;
   generated_at: string;
 }
@@ -254,6 +262,7 @@ function computeMarketAnalysis(
 export function runStructuredListingIntelligencePipeline(
   input: StructuredListingPipelineInput,
   generatedAt = new Date().toISOString(),
+  analysisContext: StructuredListingPipelineAnalysisContextV1 = {},
 ): StructuredListingPipelineResultV1 {
   const adapted = adaptInput(input);
   const selectedOffer = selectOffer(adapted);
@@ -269,6 +278,7 @@ export function runStructuredListingIntelligencePipeline(
 
   const market = computeMarketAnalysis(enriched, selectedOffer, generatedAt);
   const freshness = evaluateFreshnessProvenanceV2(enriched, selectedOffer, input.origin, generatedAt);
+  const anomaly = evaluateAnomalyEngineV1(enriched, selectedOffer, market.intelligence_v2, generatedAt, analysisContext);
   const marketEvaluated = market.intelligence_v2.status === "evaluated" && market.intelligence_v2.comparison.position !== "insufficient_data";
   const intelligence = {
     ...(enriched.intelligence ?? {
@@ -295,6 +305,7 @@ export function runStructuredListingIntelligencePipeline(
     freshness_score: freshness.freshness_score,
     market_position: marketEvaluated ? market.intelligence_v2.comparison.position : null,
     market_reference_id: marketEvaluated ? buildMarketReferenceId(market.intelligence_v2) : null,
+    anomaly_score: anomaly.anomaly_score,
   };
 
   const property: CanonicalPropertyV1 = { ...enriched, intelligence };
@@ -312,6 +323,7 @@ export function runStructuredListingIntelligencePipeline(
     completeness,
     market,
     freshness,
+    anomaly,
     stages: {
       adaptation: "completed",
       property_ingestion_validation: propertyIngestion.valid ? "passed" : "failed",
@@ -322,7 +334,7 @@ export function runStructuredListingIntelligencePipeline(
       market_analysis: market.claim.strength === "unavailable" ? "unavailable" : "completed",
       freshness: freshness.claim.strength === "unavailable" ? "unavailable" : "completed",
       duplicate_intelligence: "not_evaluated",
-      anomaly_intelligence: "not_evaluated",
+      anomaly_intelligence: anomaly.status === "evaluated" ? "completed" : "unavailable",
       akar_score: "not_evaluated",
       final_conclusion: "not_evaluated",
       property_fit: "not_evaluated",
