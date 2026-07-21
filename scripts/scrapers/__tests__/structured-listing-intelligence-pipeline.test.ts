@@ -132,13 +132,16 @@ function assertCommonPipelineShape(result: ReturnType<typeof runStructuredListin
   assert.ok(["completed", "unavailable"].includes(result.stages.freshness));
   assert.equal(result.freshness.version, "2.0");
   assert.equal(result.freshness.contract_validation.valid, true);
+  assert.equal(result.anomaly.version, "1.0");
+  assert.equal(result.anomaly.contract_validation.valid, true);
+  assert.ok(["completed", "unavailable"].includes(result.stages.anomaly_intelligence));
   assert.equal(result.stages.duplicate_intelligence, "not_evaluated");
-  assert.equal(result.stages.anomaly_intelligence, "not_evaluated");
   assert.equal(result.stages.akar_score, "not_evaluated");
   assert.equal(result.stages.final_conclusion, "not_evaluated");
   assert.equal(result.stages.property_fit, "not_evaluated");
   assert.ok(result.property.intelligence);
   assert.equal(result.property.intelligence?.data_completeness_score, result.completeness.score);
+  assert.equal(result.property.intelligence?.anomaly_score, result.anomaly.anomaly_score);
   assert.equal(result.market.contract_validation.valid, true);
 }
 
@@ -158,6 +161,7 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assert.equal(result.validation.publication?.valid, true);
     assert.notEqual(result.selected_offer?.price_amount.value, 0);
     assert.equal(result.stages.freshness, "completed");
+    assert.equal(result.stages.anomaly_intelligence, "completed");
   });
 
   it("routes authorized scraper output through the same stages without inventing booleans", () => {
@@ -227,9 +231,10 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assert.equal(result.stages.market_analysis, "unavailable");
     assert.equal(result.property.intelligence?.market_position, null);
     assert.equal(result.market.contract_validation.valid, true);
+    assert.equal(result.anomaly.signals.some((signal) => signal.code === "market_price_outlier"), false);
   });
 
-  it("evaluates freshness while leaving future #14-#17 intelligence engines untouched", () => {
+  it("evaluates freshness and anomaly while leaving #16-#17 engines untouched", () => {
     const result = runStructuredListingIntelligencePipeline({
       origin: "direct_feed",
       row: FEED_ROW,
@@ -238,10 +243,33 @@ describe("#12 unified structured listing intelligence pipeline", () => {
 
     assert.equal(result.property.intelligence?.freshness_score, 100);
     assert.equal(result.stages.freshness, "completed");
+    assert.equal(result.stages.anomaly_intelligence, "completed");
+    assert.equal(result.property.intelligence?.anomaly_score, 0);
     assert.equal(result.property.intelligence?.duplicate_score, null);
-    assert.equal(result.property.intelligence?.anomaly_score, null);
     assert.equal(result.property.intelligence?.akar_score, null);
     assert.equal(result.property.intelligence?.listing_conclusion, null);
     assert.equal(result.property.intelligence?.property_fit_score, null);
+  });
+
+  it("accepts real optional price history without synthesizing it inside the pipeline", () => {
+    const withoutHistory = runStructuredListingIntelligencePipeline({
+      origin: "direct_feed",
+      row: FEED_ROW,
+      context: context("history-none"),
+    }, NOW);
+    assert.equal(withoutHistory.anomaly.signals.some((signal) => signal.code === "abrupt_price_change"), false);
+
+    const withHistory = runStructuredListingIntelligencePipeline({
+      origin: "direct_feed",
+      row: FEED_ROW,
+      context: context("history-real"),
+    }, NOW, {
+      price_history: [
+        { observed_at: "2026-07-01T10:00:00.000Z", price_mad: 800000, source_ref: "source-real" },
+        { observed_at: "2026-07-10T10:00:00.000Z", price_mad: 1200000, source_ref: "source-real" },
+      ],
+    });
+    assert.equal(withHistory.anomaly.signals.some((signal) => signal.code === "abrupt_price_change"), true);
+    assert.ok((withHistory.property.intelligence?.anomaly_score ?? 0) > 0);
   });
 });
