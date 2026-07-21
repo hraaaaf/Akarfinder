@@ -51,6 +51,9 @@ jobs:
       - name: Anomaly Engine V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/anomaly-engine-v1.test.ts
 
+      - name: Multi-source Property Intelligence V1 suite
+        run: npx tsx --test scripts/scrapers/__tests__/multisource-property-intelligence-v1.test.ts
+
       - name: API regression suite
         run: npm run test:api
 
