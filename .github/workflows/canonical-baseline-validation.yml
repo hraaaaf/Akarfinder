@@ -39,6 +39,9 @@ jobs:
       - name: Analysis Contract V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/analysis-contract.test.ts
 
+      - name: Unified structured intelligence pipeline suite
+        run: npx tsx --test scripts/scrapers/__tests__/structured-listing-intelligence-pipeline.test.ts
+
       - name: API regression suite
         run: npm run test:api
 
