@@ -1,18 +1,10 @@
 name: Canonical Baseline Validation
-
-# AKARFINDER-REPOSITORY-BASELINE-RECONCILIATION-1 — P0.3
-# Read-only CI gate for the reconciliation PR. No Production secrets, no DB
-# migrations, no deployment, no write-capable ingestion mode.
-
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch: {}
-
 permissions:
   contents: read
-
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -57,6 +49,8 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/neighborhood-intelligence-reference-v2.test.ts
       - name: Dynamic Search Profile V2 suite
         run: npx tsx --test scripts/scrapers/__tests__/dynamic-search-profile-v2.test.ts
+      - name: Personalized Property Fit V1 suite
+        run: npx tsx --test scripts/scrapers/__tests__/personalized-property-fit-v1.test.ts
       - name: API regression suite
         run: npm run test:api
       - name: OpenSERP ingestion suite
