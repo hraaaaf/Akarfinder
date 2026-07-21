@@ -54,6 +54,9 @@ jobs:
       - name: Multi-source Property Intelligence V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/multisource-property-intelligence-v1.test.ts
 
+      - name: AkarScore V2 suite
+        run: npx tsx --test scripts/scrapers/__tests__/akar-score-v2.test.ts
+
       - name: API regression suite
         run: npm run test:api
 
