@@ -18,24 +18,20 @@ name: OpenSERP automated ingestion (30 min)
 #                              gh secret set OPENSERP_CRON_SECRET
 #                            or the GitHub repo Settings -> Secrets UI.
 #
-# OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1 — the `schedule`
-# trigger below was found to be live on the default branch (proven by a
-# real scheduled run, "#6", firing every 30 minutes) despite this file's
-# own prior comment claiming it was "prepared but not yet enabled
-# end-to-end" -- that comment was wrong; a schedule trigger goes live the
-# moment this file lands on the default branch, with no separate
-# activation step. That scheduled run collided with a manual real-run
-# validation attempt and contributed to the conditions behind a
-# FUNCTION_INVOCATION_TIMEOUT incident (see
-# data/audits/openserp-serverless-state-real-run-attempt-result.json).
+# OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-2 — Phase 2.
+# The `schedule` trigger below was live on this exact branch (main) and
+# fired automatically every 30 minutes (see run #6, "Triggered via
+# schedule", commit 80b4f6a) -- contributing to the FUNCTION_INVOCATION_TIMEOUT
+# incident recorded in
+# data/audits/openserp-serverless-state-real-run-attempt-result.json. The
+# prior comment above (claiming this needed a separate activation step)
+# was wrong: a schedule trigger goes live the moment this file lands on
+# the default branch, no extra step required. Removed here, deliberately,
+# until OPENSERP-GITHUB-CRON-ACTIVATION-30MIN-2 explicitly re-authorizes
+# the unattended cadence with the time-budget/lease safety code already in
+# place. workflow_dispatch (manual trigger) is kept so the endpoint can
+# still be exercised under explicit human control.
 #
-# The `schedule` trigger is therefore removed here, deliberately, until a
-# future mission explicitly re-authorizes the unattended 30-minute
-# cadence. workflow_dispatch (manual trigger) is kept so the endpoint can
-# still be exercised under explicit human control. To restore the
-# schedule later, re-add:
-#   schedule:
-#     - cron: "*/30 * * * *"
 # scripts/scrapers/__tests__/openserp-schedule-trigger-guard.test.ts
 # statically asserts this file has no `schedule` key and does have
 # `workflow_dispatch` -- it will fail loudly if this file is edited to
