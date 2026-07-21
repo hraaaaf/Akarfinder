@@ -69,6 +69,9 @@ jobs:
       - name: Partner Commercial Activation V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/partner-commercial-activation-v1.test.ts
 
+      - name: Neighborhood Intelligence Reference V2 suite
+        run: npx tsx --test scripts/scrapers/__tests__/neighborhood-intelligence-reference-v2.test.ts
+
       - name: API regression suite
         run: npm run test:api
 
