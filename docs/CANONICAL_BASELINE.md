@@ -49,4 +49,4 @@ Git canonicalization and Production deployment are separate gates. Merging the r
 - TypeScript passes.
 - Production build passes.
 - Supabase Production schema alignment is verified.
-- Vercel Git integration/deployment behavior is verified before final merge/promotion.
+- Vercel Git repository connection to `hraaaaf/Akarfinder` is confirmed; deployment behavior must still be observed on a post-connection commit before final merge/promotion.
