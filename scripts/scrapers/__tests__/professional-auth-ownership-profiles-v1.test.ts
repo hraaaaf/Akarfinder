@@ -13,6 +13,7 @@ import {
   normalizeProfessionalSlug,
   parseAddProfessionalMemberInput,
   parseCreateProfessionalOrganizationInput,
+  parseUpdateProfessionalProfileInput,
 } from "../../../lib/professional/validation.js";
 
 function requestHeaders(authorization: string | null) {
@@ -77,6 +78,31 @@ describe("#19B professional auth, ownership & profiles V1", () => {
     );
   });
 
+  it("allows branding edits but forbids self-validation and self-upgrading commercial tier", () => {
+    const profile = parseUpdateProfessionalProfileInput({
+      display_name: "Agence Atlas",
+      description: "Agence immobilière à Rabat",
+      logo_url: "https://example.com/logo.png",
+      website_url: "https://example.com",
+      city: "Rabat",
+    });
+    assert.ok(profile);
+    assert.equal(profile?.display_name, "Agence Atlas");
+
+    assert.equal(
+      parseUpdateProfessionalProfileInput({ display_name: "Agence Atlas", validation_status: "validated" }),
+      null,
+    );
+    assert.equal(
+      parseUpdateProfessionalProfileInput({ display_name: "Agence Atlas", commercial_tier: "premium" }),
+      null,
+    );
+    assert.equal(
+      parseUpdateProfessionalProfileInput({ display_name: "Agence Atlas", public_visibility: "public" }),
+      null,
+    );
+  });
+
   it("migration enables RLS and explicit tenant-scoped lead routing", () => {
     const sql = readFileSync(
       join(process.cwd(), "supabase/migrations/20260721231500_professional_auth_ownership_profiles_v1.sql"),
@@ -103,6 +129,7 @@ describe("#19B professional auth, ownership & profiles V1", () => {
     const files = [
       "app/api/pro/me/route.ts",
       "app/api/pro/organizations/route.ts",
+      "app/api/pro/organizations/[organizationId]/route.ts",
       "app/api/pro/organizations/[organizationId]/members/route.ts",
       "app/api/pro/organizations/[organizationId]/ownership/listings/route.ts",
       "app/api/pro/organizations/[organizationId]/stats/route.ts",
