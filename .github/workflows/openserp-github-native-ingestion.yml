@@ -1,0 +1,250 @@
+name: OpenSERP Native Ingestion (GitHub-hosted)
+
+# OPENSERP-GITHUB-NATIVE-INGESTION-INTEGRATION-1
+# OPENSERP-CRON-PROD-ACTIVATION-1
+# Runs the EXISTING orchestrator (lib/openserp-ingestion/run-orchestrator.ts,
+# via scripts/openserp/run-ingestion-github-actions.ts) inside a GitHub
+# Actions job, talking to a local OpenSERP Docker container in full
+# browser mode (validated by OPENSERP-GITHUB-EPHEMERAL-RUNTIME-POC-1) --
+# no Vercel involved.
+#
+# Checks out fix/openserp-serverless-state-persistence explicitly (not
+# this workflow's own ref) because that branch, not yet merged to main,
+# holds the DB-call-timeout-safety and engine-error-diagnostics work this
+# mission is required to preserve unmodified.
+#
+# Scheduled every 30 minutes, activated after two real workflow_dispatch
+# cron runs both validated PASS STRICT (2026-07-19). A schedule-triggered
+# event carries no `inputs` context (GitHub only populates `inputs` for
+# workflow_dispatch) -- the "Run ingestion entrypoint" step below resolves
+# mode from github.event_name for a schedule trigger, and continues to
+# honor the manual dropdown for a workflow_dispatch trigger.
+#
+# Guardrails against an accidental write:
+#   - workflow_dispatch's mode still defaults to dry-run (never writes,
+#     bypasses the flag gate)
+#   - cron mode (both scheduled and manual) still requires
+#     OPENSERP_AUTOMATED_INGESTION_ENABLED, OPENSERP_INGESTION_WRITE_ENABLED,
+#     and OPENSERP_INGESTION_CRON_ENABLED to all be "true" secrets -- if
+#     any is unset, the run safely NOOPs.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "dry-run (never writes) or cron (mirrors Production gate exactly) -- ignored on a scheduled run, which always uses cron"
+        required: true
+        default: "dry-run"
+        type: choice
+        options:
+          - dry-run
+          - cron
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    # OPENSERP-NATIVE-CRON-REMEDIATION-1: bounds wasted runner time on a
+    # genuine hang. Worst real observed job wall time to date is 708s
+    # (~11.8 min, a pre-go-live debugging run); the business-logic lease
+    # (LOCK_LEASE_SECONDS=150s in run-ingestion-github-actions.ts) is the
+    # designed self-healing ceiling for the ingestion step itself. 15
+    # minutes covers checkout/setup/npm ci, a cold docker pull, the health
+    # check's own 60s hard cap, the 150s lease ceiling, and log dump/
+    # teardown, with comfortable margin over both figures -- while still
+    # being a large improvement over GitHub's 360-minute default.
+    timeout-minutes: 15
+    steps:
+      - name: Checkout fix/openserp-serverless-state-persistence
+        uses: actions/checkout@v4
+        with:
+          ref: fix/openserp-serverless-state-persistence
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Confirm Node version
+        run: node -v
+
+      - name: Install dependencies
+        run: npm ci
+
+      # OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1 -- activation. Same ephemeral
+      # SearXNG setup already validated by
+      # openserp-yandex-dual-lane-shadow-validation.yml (Gate B, PASS
+      # STRICT): yandex is the ONLY engine enabled at the container config
+      # level -- duckduckgo/brave/startpage/mojeek/qwant/google are never
+      # requested and never explicitly enabled. No persistent server, no
+      # new secret (SEARXNG_SECRET is generated fresh per run, never
+      # stored).
+      - name: Prepare SearXNG settings (yandex only, fresh ephemeral secret key)
+        run: |
+          set -e
+          SEARXNG_SECRET=$(openssl rand -hex 32)
+          cat > /tmp/searxng-settings.yml <<YAML
+          use_default_settings: true
+          general:
+            debug: false
+            instance_name: "AkarFinder OpenSERP native ingestion (ephemeral)"
+          search:
+            safe_search: 0
+            default_lang: "fr"
+            formats:
+              - html
+              - json
+          server:
+            secret_key: "$SEARXNG_SECRET"
+            limiter: false
+            image_proxy: false
+          outgoing:
+            request_timeout: 8.0
+          engines:
+            - name: yandex
+              engine: yandex
+              disabled: false
+          YAML
+
+      - name: Start SearXNG
+        run: |
+          set -e
+          docker run -d --name searxng -p 8888:8080 \
+            -v /tmp/searxng-settings.yml:/etc/searxng/settings.yml:ro \
+            searxng/searxng:latest
+
+      - name: Wait for SearXNG JSON API
+        run: |
+          set -e
+          STATUS="000"
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:8888/search?q=test&format=json" || echo "000")
+            if [ "$STATUS" = "200" ]; then echo "SearXNG ready"; break; fi
+            sleep 2
+          done
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::SearXNG did not become ready (last status: $STATUS)"
+            docker logs searxng --tail 300 || true
+            exit 1
+          fi
+
+      - name: Confirm yandex is actually enabled (only engine this workflow ever requests)
+        run: |
+          curl -s "http://127.0.0.1:8888/config" > /tmp/searxng-config.json
+          node -e '
+            const fs = require("fs");
+            const config = JSON.parse(fs.readFileSync("/tmp/searxng-config.json", "utf8"));
+            const engines = config.engines || [];
+            const e = engines.find((x) => x.name === "yandex");
+            console.log("yandex ->", e ? JSON.stringify({ enabled: e.enabled }) : "NOT FOUND IN CONFIG");
+          '
+
+      - name: Start OpenSERP (full browser mode, no --raw)
+        run: |
+          set -e
+          T0=$(date +%s%3N)
+          docker pull karust/openserp:latest
+          docker run -d --name openserp -p 7070:7070 \
+            karust/openserp:latest serve -a 0.0.0.0 -p 7070
+          T1=$(date +%s%3N)
+          echo "openserp_start_ms=$((T1-T0))" >> "$GITHUB_ENV"
+
+      - name: Wait for OpenSERP /health
+        run: |
+          set -e
+          T0=$(date +%s%3N)
+          STATUS="unknown"
+          for i in $(seq 1 60); do
+            BODY=$(curl -s -m 3 http://127.0.0.1:7070/health || true)
+            STATUS=$(echo "$BODY" | grep -o '"status":"[a-z]*"' | head -1 | cut -d'"' -f4)
+            if [ "$STATUS" = "healthy" ]; then break; fi
+            sleep 1
+          done
+          T1=$(date +%s%3N)
+          echo "openserp_health_wait_ms=$((T1-T0))" >> "$GITHUB_ENV"
+          echo "--- /health ---"
+          echo "$BODY"
+          if [ "$STATUS" != "healthy" ]; then
+            echo "::error::OpenSERP did not report healthy within 60s"
+            docker logs openserp --tail 200 || true
+            exit 1
+          fi
+
+      - name: Confirm Bing/DuckDuckGo/Ecosia reachable (no ingestion writes)
+        run: |
+          set -e
+          BODY=$(curl -s -m 5 http://127.0.0.1:7070/mega/engines)
+          echo "$BODY"
+          for e in bing duckduckgo ecosia; do
+            if ! echo "$BODY" | grep -q "\"name\":\"$e\""; then
+              echo "::warning::engine '$e' not listed in /mega/engines"
+            fi
+          done
+
+      - name: Run ingestion entrypoint
+        id: ingest
+        env:
+          OPENSERP_LOCAL_URL: http://127.0.0.1:7070
+          # OPENSERP-GITHUB-NATIVE-TRANSPORT-1: non-sensitive configuration,
+          # not credentials -- plain env values, not GitHub Secrets. Selects
+          # the native karust/openserp HTTP contract (GET /{engine}/search)
+          # instead of the Railway-adapter contract, and satisfies the
+          # existing 3-flag async-feeder gate (openserp-policy.ts) so the
+          # engine calls this container actually runs are no longer
+          # rejected before ever reaching it.
+          OPENSERP_TRANSPORT: native
+          PUBLIC_INDEX_POC_ENABLED: "true"
+          OPENSERP_ASYNC_FEEDER_ENABLED: "true"
+          # OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1 -- activation. Same two
+          # variables already exercised by the shadow-validation workflow
+          # (Gate B, PASS STRICT): plain, non-sensitive runtime config, not
+          # a secret -- Yandex/SearXNG needs no credential, only a
+          # reachable local container. No other new variable added.
+          OPENSERP_YANDEX_CHANNEL_ENABLED: "true"
+          OPENSERP_SEARXNG_LOCAL_URL: http://127.0.0.1:8888
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
+          OPENSERP_INGESTION_WRITE_ENABLED: ${{ secrets.OPENSERP_INGESTION_WRITE_ENABLED }}
+          OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
+        run: |
+          set -e
+          T0=$(date +%s%3N)
+          # A schedule-triggered event has no `inputs` context at all (only
+          # workflow_dispatch populates it) -- resolve mode from the event
+          # type instead of assuming inputs.mode is ever set.
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            MODE="cron"
+          else
+            MODE="${{ inputs.mode }}"
+          fi
+          npx tsx scripts/openserp/run-ingestion-github-actions.ts --"$MODE"
+          T1=$(date +%s%3N)
+          echo "ingest_ms=$((T1-T0))" >> "$GITHUB_ENV"
+
+      - name: Timing summary
+        if: always()
+        run: |
+          echo "openserp_start_ms=${{ env.openserp_start_ms }}"
+          echo "openserp_health_wait_ms=${{ env.openserp_health_wait_ms }}"
+          echo "ingest_ms=${{ env.ingest_ms }}"
+
+      - name: Dump OpenSERP container logs (always, for diagnosis)
+        if: always()
+        run: docker logs openserp --tail 300 || true
+
+      - name: Dump SearXNG container logs (always, for diagnosis)
+        if: always()
+        run: docker logs searxng --tail 300 || true
+
+      - name: Stop OpenSERP
+        if: always()
+        run: docker rm -f openserp || true
+
+      - name: Stop SearXNG
+        if: always()
+        run: docker rm -f searxng || true

@@ -1,0 +1,154 @@
+name: OpenSERP Yandex Dual-Lane Shadow Validation (dry-run, no writes)
+
+# OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1 -- section 10 gate.
+# One-off diagnostic workflow_dispatch, NOT the Scheduled production
+# workflow (openserp-github-native-ingestion.yml, untouched by this file).
+# Runs the REAL runIngestionCycle() (via scripts/openserp/
+# run-ingestion-github-actions.ts --dry-run) against the REAL query
+# universe, REAL selectNextBatch() planner, and REAL Supabase rotation/
+# budget state -- write:false AND persistState:false, so this makes
+# ZERO business writes and ZERO state writes of any kind. Only the
+# pre-existing read-only calls (hydrateRotationQueries, loadBudgetState)
+# touch Supabase, exactly as a real dry-run always has.
+#
+# Starts SearXNG (yandex enabled at the container config level -- the
+# only engine explicitly enabled here, matching "activate Yandex only")
+# alongside OpenSERP in the same job, and sets
+# OPENSERP_YANDEX_CHANNEL_ENABLED=true so the dual-lane merge path added
+# by this mission is actually exercised end-to-end, once, before any
+# Production activation decision. No new secret: reuses the same
+# SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY already configured for
+# openserp-github-native-ingestion.yml.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  shadow-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout fix/openserp-serverless-state-persistence
+        uses: actions/checkout@v4
+        with:
+          ref: fix/openserp-serverless-state-persistence
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare SearXNG settings (yandex only, fresh ephemeral secret key)
+        run: |
+          set -e
+          SEARXNG_SECRET=$(openssl rand -hex 32)
+          cat > /tmp/searxng-settings.yml <<YAML
+          use_default_settings: true
+          general:
+            debug: false
+            instance_name: "AkarFinder dual-lane shadow validation (ephemeral)"
+          search:
+            safe_search: 0
+            default_lang: "fr"
+            formats:
+              - html
+              - json
+          server:
+            secret_key: "$SEARXNG_SECRET"
+            limiter: false
+            image_proxy: false
+          outgoing:
+            request_timeout: 8.0
+          engines:
+            - name: yandex
+              engine: yandex
+              disabled: false
+          YAML
+
+      - name: Start SearXNG
+        run: |
+          set -e
+          docker run -d --name searxng -p 8888:8080 \
+            -v /tmp/searxng-settings.yml:/etc/searxng/settings.yml:ro \
+            searxng/searxng:latest
+
+      - name: Wait for SearXNG JSON API
+        run: |
+          set -e
+          STATUS="000"
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:8888/search?q=test&format=json" || echo "000")
+            if [ "$STATUS" = "200" ]; then echo "SearXNG ready"; break; fi
+            sleep 2
+          done
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::SearXNG did not become ready (last status: $STATUS)"
+            docker logs searxng --tail 300 || true
+            exit 1
+          fi
+
+      - name: Confirm yandex is actually enabled
+        run: |
+          curl -s "http://127.0.0.1:8888/config" > /tmp/searxng-config.json
+          node -e '
+            const fs = require("fs");
+            const config = JSON.parse(fs.readFileSync("/tmp/searxng-config.json", "utf8"));
+            const engines = config.engines || [];
+            const e = engines.find((x) => x.name === "yandex");
+            console.log("yandex ->", e ? JSON.stringify({ enabled: e.enabled }) : "NOT FOUND IN CONFIG");
+          '
+
+      - name: Start OpenSERP (full browser mode, no --raw)
+        run: |
+          set -e
+          docker pull karust/openserp:latest
+          docker run -d --name openserp -p 7070:7070 \
+            karust/openserp:latest serve -a 0.0.0.0 -p 7070
+
+      - name: Wait for OpenSERP /health
+        run: |
+          set -e
+          STATUS="unknown"
+          for i in $(seq 1 60); do
+            BODY=$(curl -s -m 3 http://127.0.0.1:7070/health || true)
+            STATUS=$(echo "$BODY" | grep -o '"status":"[a-z]*"' | head -1 | cut -d'"' -f4)
+            if [ "$STATUS" = "healthy" ]; then break; fi
+            sleep 1
+          done
+          if [ "$STATUS" != "healthy" ]; then
+            echo "::error::OpenSERP did not report healthy within 60s"
+            docker logs openserp --tail 200 || true
+            exit 1
+          fi
+
+      - name: Run dual-lane dry-run (real planner, real Supabase reads, ZERO writes)
+        env:
+          OPENSERP_LOCAL_URL: http://127.0.0.1:7070
+          OPENSERP_TRANSPORT: native
+          PUBLIC_INDEX_POC_ENABLED: "true"
+          OPENSERP_ASYNC_FEEDER_ENABLED: "true"
+          OPENSERP_YANDEX_CHANNEL_ENABLED: "true"
+          OPENSERP_SEARXNG_LOCAL_URL: http://127.0.0.1:8888
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/openserp/run-ingestion-github-actions.ts --dry-run
+
+      - name: Dump container logs (always, for diagnosis)
+        if: always()
+        run: |
+          echo "--- searxng ---"
+          docker logs searxng --tail 200 || true
+          echo "--- openserp ---"
+          docker logs openserp --tail 200 || true
+
+      - name: Stop containers
+        if: always()
+        run: |
+          docker rm -f searxng || true
+          docker rm -f openserp || true
