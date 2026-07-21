@@ -135,24 +135,22 @@ function assertCommonPipelineShape(result: ReturnType<typeof runStructuredListin
   assert.equal(result.anomaly.version, "1.0");
   assert.equal(result.anomaly.contract_validation.valid, true);
   assert.ok(["completed", "unavailable"].includes(result.stages.anomaly_intelligence));
-  assert.equal(result.stages.duplicate_intelligence, "not_evaluated");
+  assert.equal(result.multisource.version, "1.0");
+  assert.equal(result.multisource.contract_validation.valid, true);
+  assert.ok(["completed", "unavailable"].includes(result.stages.duplicate_intelligence));
   assert.equal(result.stages.akar_score, "not_evaluated");
   assert.equal(result.stages.final_conclusion, "not_evaluated");
   assert.equal(result.stages.property_fit, "not_evaluated");
   assert.ok(result.property.intelligence);
   assert.equal(result.property.intelligence?.data_completeness_score, result.completeness.score);
   assert.equal(result.property.intelligence?.anomaly_score, result.anomaly.anomaly_score);
+  assert.equal(result.property.intelligence?.duplicate_score, result.multisource.linkage.confidence_score);
   assert.equal(result.market.contract_validation.valid, true);
 }
 
 describe("#12 unified structured listing intelligence pipeline", () => {
   it("routes direct feeds through the canonical pipeline", () => {
-    const result = runStructuredListingIntelligencePipeline({
-      origin: "direct_feed",
-      row: FEED_ROW,
-      context: context("feed"),
-    }, NOW);
-
+    const result = runStructuredListingIntelligencePipeline({ origin: "direct_feed", row: FEED_ROW, context: context("feed") }, NOW);
     assertCommonPipelineShape(result);
     assert.equal(result.origin, "direct_feed");
     assert.equal(result.selected_offer?.external_offer_id, "feed-1");
@@ -162,15 +160,11 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assert.notEqual(result.selected_offer?.price_amount.value, 0);
     assert.equal(result.stages.freshness, "completed");
     assert.equal(result.stages.anomaly_intelligence, "completed");
+    assert.equal(result.stages.duplicate_intelligence, "unavailable");
   });
 
   it("routes authorized scraper output through the same stages without inventing booleans", () => {
-    const result = runStructuredListingIntelligencePipeline({
-      origin: "authorized_scraper",
-      row: SCRAPED_ROW,
-      context: context("scraper"),
-    }, NOW);
-
+    const result = runStructuredListingIntelligencePipeline({ origin: "authorized_scraper", row: SCRAPED_ROW, context: context("scraper") }, NOW);
     assertCommonPipelineShape(result);
     assert.equal(result.origin, "authorized_scraper");
     assert.equal(result.property.facts.features.has_pool?.value, null);
@@ -179,12 +173,7 @@ describe("#12 unified structured listing intelligence pipeline", () => {
   });
 
   it("routes partner listings through the same pipeline while preserving publication restrictions", () => {
-    const result = runStructuredListingIntelligencePipeline({
-      origin: "partner",
-      row: FICTIONAL_AGENCY_DEMO_RABAT_APARTMENT,
-      context: context("partner"),
-    }, NOW);
-
+    const result = runStructuredListingIntelligencePipeline({ origin: "partner", row: FICTIONAL_AGENCY_DEMO_RABAT_APARTMENT, context: context("partner") }, NOW);
     assertCommonPipelineShape(result);
     assert.equal(result.origin, "partner");
     assert.equal(result.selected_offer?.seller_type?.value, "agency");
@@ -192,12 +181,7 @@ describe("#12 unified structured listing intelligence pipeline", () => {
   });
 
   it("routes legacy DB rows through canonical compatibility adapters before intelligence without fabricating freshness", () => {
-    const result = runStructuredListingIntelligencePipeline({
-      origin: "legacy_db",
-      row: LEGACY_ROW,
-      context: context("legacy"),
-    }, NOW);
-
+    const result = runStructuredListingIntelligencePipeline({ origin: "legacy_db", row: LEGACY_ROW, context: context("legacy") }, NOW);
     assertCommonPipelineShape(result);
     assert.equal(result.origin, "legacy_db");
     assert.equal(result.property.facts.location.city.provenance, "INFERRED");
@@ -210,9 +194,7 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     const canonical = adaptValidatedFeedRow(FEED_ROW, context("first-party"));
     canonical.offers[0].acquisition_channel = "first_party_user";
     canonical.offers[0].origin_type = "first_party_user";
-
     const result = runStructuredListingIntelligencePipeline({ origin: "first_party", property: canonical }, NOW);
-
     assertCommonPipelineShape(result);
     assert.equal(result.origin, "first_party");
     assert.equal(result.selected_offer?.acquisition_channel, "first_party_user");
@@ -221,12 +203,7 @@ describe("#12 unified structured listing intelligence pipeline", () => {
 
   it("keeps missing market inputs as unavailable instead of inventing a position", () => {
     const row = { ...FEED_ROW, price_mad: null, surface_m2: null };
-    const result = runStructuredListingIntelligencePipeline({
-      origin: "direct_feed",
-      row,
-      context: context("missing-market"),
-    }, NOW);
-
+    const result = runStructuredListingIntelligencePipeline({ origin: "direct_feed", row, context: context("missing-market") }, NOW);
     assert.equal(result.market.claim.strength, "unavailable");
     assert.equal(result.stages.market_analysis, "unavailable");
     assert.equal(result.property.intelligence?.market_position, null);
@@ -234,36 +211,58 @@ describe("#12 unified structured listing intelligence pipeline", () => {
     assert.equal(result.anomaly.signals.some((signal) => signal.code === "market_price_outlier"), false);
   });
 
-  it("evaluates freshness and anomaly while leaving #16-#17 engines untouched", () => {
-    const result = runStructuredListingIntelligencePipeline({
-      origin: "direct_feed",
-      row: FEED_ROW,
-      context: context("future"),
-    }, NOW);
-
+  it("evaluates freshness and anomaly while leaving only #17+ engines untouched", () => {
+    const result = runStructuredListingIntelligencePipeline({ origin: "direct_feed", row: FEED_ROW, context: context("future") }, NOW);
     assert.equal(result.property.intelligence?.freshness_score, 100);
     assert.equal(result.stages.freshness, "completed");
     assert.equal(result.stages.anomaly_intelligence, "completed");
     assert.equal(result.property.intelligence?.anomaly_score, 0);
+    assert.equal(result.stages.duplicate_intelligence, "unavailable");
     assert.equal(result.property.intelligence?.duplicate_score, null);
     assert.equal(result.property.intelligence?.akar_score, null);
     assert.equal(result.property.intelligence?.listing_conclusion, null);
     assert.equal(result.property.intelligence?.property_fit_score, null);
   });
 
+  it("runs #16 on multiple canonical offers and keeps every offer separate", () => {
+    const canonical = adaptValidatedFeedRow(FEED_ROW, context("multi-a"));
+    const first = canonical.offers[0];
+    const second = {
+      ...first,
+      offer_id: "offer-multi-b",
+      source_id: "source-multi-b",
+      source_name: "Agency B",
+      external_offer_id: "multi-b",
+      source_url: "https://agency-b.example.ma/multi-b",
+      canonical_source_url: "https://agency-b.example.ma/multi-b",
+      title: { ...first.title, value: "Appartement Maârif - autre source" },
+      price_amount: { ...first.price_amount, value: 1000000 },
+    };
+    canonical.offers = [first, second];
+
+    const result = runStructuredListingIntelligencePipeline({ origin: "first_party", property: canonical }, NOW, {
+      associations: [{
+        offer_a_id: first.offer_id,
+        offer_b_id: second.offer_id,
+        basis: "cross_source_high_confidence",
+        matched_signals: ["city", "transaction_type", "property_type", "district", "surface_m2", "bedrooms_count"],
+        contradicting_signals: [],
+      }],
+    });
+
+    assert.equal(result.stages.duplicate_intelligence, "completed");
+    assert.equal(result.multisource.offer_count, 2);
+    assert.equal(result.multisource.source_count, 2);
+    assert.equal(result.multisource.linkage.level, "strong_candidate");
+    assert.ok((result.property.intelligence?.duplicate_score ?? 0) >= 70);
+    assert.equal(result.property.offers.length, 2, "pipeline must not collapse source offers");
+  });
+
   it("accepts real optional price history without synthesizing it inside the pipeline", () => {
-    const withoutHistory = runStructuredListingIntelligencePipeline({
-      origin: "direct_feed",
-      row: FEED_ROW,
-      context: context("history-none"),
-    }, NOW);
+    const withoutHistory = runStructuredListingIntelligencePipeline({ origin: "direct_feed", row: FEED_ROW, context: context("history-none") }, NOW);
     assert.equal(withoutHistory.anomaly.signals.some((signal) => signal.code === "abrupt_price_change"), false);
 
-    const withHistory = runStructuredListingIntelligencePipeline({
-      origin: "direct_feed",
-      row: FEED_ROW,
-      context: context("history-real"),
-    }, NOW, {
+    const withHistory = runStructuredListingIntelligencePipeline({ origin: "direct_feed", row: FEED_ROW, context: context("history-real") }, NOW, {
       price_history: [
         { observed_at: "2026-07-01T10:00:00.000Z", price_mad: 800000, source_ref: "source-real" },
         { observed_at: "2026-07-10T10:00:00.000Z", price_mad: 1200000, source_ref: "source-real" },
