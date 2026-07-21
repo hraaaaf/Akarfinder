@@ -35,7 +35,10 @@ export function formatPrice(price: number | null | undefined, currency = "DH") {
   return `${new Intl.NumberFormat("fr-FR").format(price)} ${currency}`;
 }
 
-export function formatSurface(surface: number) {
+export function formatSurface(surface: number | null | undefined) {
+  if (!Number.isFinite(surface) || surface == null || surface <= 0) {
+    return "Surface non renseignee";
+  }
   return `${surface} m2`;
 }
 
