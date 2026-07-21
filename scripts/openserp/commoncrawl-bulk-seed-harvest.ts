@@ -67,12 +67,28 @@ export type DomainHarvestCounters = {
   potentially_new_seed_urls: number | null;
 };
 
+const CDX_RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
+const CDX_MAX_ATTEMPTS = 5;
+const CDX_RETRY_BASE_DELAY_MS = 1000;
+
 async function fetchCdxRecords(domain: string, index: string, fetchImpl: typeof fetch = fetch): Promise<CdxRawRecord[]> {
   const url = `https://index.commoncrawl.org/${index}-index?url=${encodeURIComponent(domain)}&matchType=domain&output=json&fl=url,timestamp,status,mimetype,digest&limit=${CDX_FETCH_LIMIT}`;
-  const response = await fetchImpl(url);
-  if (response.status === 404) return []; // domain genuinely absent from this index -- not an error
-  if (!response.ok) throw new Error(`CDX fetch failed for ${domain} on ${index}: HTTP ${response.status}`);
-  const text = await response.text();
+
+  let response: Response | undefined;
+  for (let attempt = 1; attempt <= CDX_MAX_ATTEMPTS; attempt++) {
+    response = await fetchImpl(url);
+    if (response.status === 404) return []; // domain genuinely absent from this index -- not an error
+    if (response.ok) break;
+    if (!CDX_RETRYABLE_STATUSES.has(response.status) || attempt === CDX_MAX_ATTEMPTS) {
+      throw new Error(`CDX fetch failed for ${domain} on ${index}: HTTP ${response.status}`);
+    }
+    // Common Crawl's CDX API is documented to return transient 429/5xx under
+    // load -- exponential backoff, never a silent skip of the domain/index.
+    const delayMs = CDX_RETRY_BASE_DELAY_MS * 2 ** (attempt - 1);
+    console.log(`[harvest] CDX ${domain}/${index} returned HTTP ${response.status} (attempt ${attempt}/${CDX_MAX_ATTEMPTS}), retrying in ${delayMs}ms...`);
+    await new Promise((r) => setTimeout(r, delayMs));
+  }
+  const text = await response!.text();
   if (!text.trim()) return [];
   const records: CdxRawRecord[] = [];
   for (const line of text.split("\n")) {
