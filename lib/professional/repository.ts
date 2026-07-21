@@ -1,11 +1,16 @@
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import {
+  normalizeInternalNotes,
+  validateLeadStatusUpdate,
+} from "@/lib/leads/lead-admin";
 import { commercialTierBadgeLabel, permissionsForRole, roleHasPermission } from "./permissions";
 import type {
+  ProfessionalListingOwnership,
   ProfessionalMembership,
   ProfessionalMembershipContext,
+  ProfessionalMembershipRole,
   ProfessionalOrganization,
   ProfessionalPermission,
-  ProfessionalListingOwnership,
   PublicProfessionalProfile,
 } from "./types";
 import type { CreateProfessionalOrganizationInput } from "./validation";
@@ -121,6 +126,53 @@ export async function createProfessionalOrganizationWithOwner(
   };
 }
 
+export async function listProfessionalMembers(
+  userId: string,
+  organizationId: string,
+): Promise<ProfessionalMembership[] | null> {
+  const context = await requireProfessionalPermission(userId, organizationId, "members.manage");
+  if (!context) return null;
+
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("professional_memberships")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(`[professional] list members: ${error.message}`);
+  return (data ?? []).map(asMembership);
+}
+
+export async function addProfessionalMember(
+  actorUserId: string,
+  organizationId: string,
+  targetUserId: string,
+  role: ProfessionalMembershipRole,
+): Promise<ProfessionalMembership | null> {
+  const context = await requireProfessionalPermission(actorUserId, organizationId, "members.manage");
+  if (!context) return null;
+  if (role === "owner" && context.membership.role !== "owner") {
+    throw new Error("OWNER_ROLE_REQUIRES_OWNER");
+  }
+
+  const supabase = getSupabaseServerClient();
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("professional_memberships")
+    .upsert({
+      organization_id: organizationId,
+      user_id: targetUserId,
+      role,
+      status: "active",
+      updated_at: now,
+    }, { onConflict: "organization_id,user_id" })
+    .select("*")
+    .single();
+
+  if (error || !data) throw new Error(`[professional] add member: ${error?.message ?? "unknown error"}`);
+  return asMembership(data);
+}
+
 export async function claimProfessionalListingOwnership(
   userId: string,
   organizationId: string,
@@ -155,6 +207,107 @@ export async function claimProfessionalListingOwnership(
 
   if (error || !data) throw new Error(`[professional] claim ownership: ${error?.message ?? "unknown error"}`);
   return data as ProfessionalListingOwnership;
+}
+
+export async function getProfessionalPrivateStats(
+  userId: string,
+  organizationId: string,
+): Promise<{
+  listings_claimed: number;
+  listings_verified: number;
+  projects_total: number;
+  leads_assigned: number;
+} | null> {
+  const context = await requireProfessionalPermission(userId, organizationId, "stats.read");
+  if (!context) return null;
+
+  const supabase = getSupabaseServerClient();
+  const [claimed, verified, projects, leads] = await Promise.all([
+    supabase.from("professional_listing_ownership").select("id", { count: "exact", head: true }).eq("organization_id", organizationId).eq("status", "claimed"),
+    supabase.from("professional_listing_ownership").select("id", { count: "exact", head: true }).eq("organization_id", organizationId).eq("status", "verified"),
+    supabase.from("professional_projects").select("id", { count: "exact", head: true }).eq("organization_id", organizationId),
+    supabase.from("professional_lead_assignments").select("id", { count: "exact", head: true }).eq("organization_id", organizationId),
+  ]);
+
+  for (const result of [claimed, verified, projects, leads]) {
+    if (result.error) throw new Error(`[professional] stats: ${result.error.message}`);
+  }
+
+  return {
+    listings_claimed: claimed.count ?? 0,
+    listings_verified: verified.count ?? 0,
+    projects_total: projects.count ?? 0,
+    leads_assigned: leads.count ?? 0,
+  };
+}
+
+export async function listAssignedProfessionalLeads(
+  userId: string,
+  organizationId: string,
+  limit = 50,
+): Promise<Record<string, unknown>[] | null> {
+  const context = await requireProfessionalPermission(userId, organizationId, "leads.read");
+  if (!context) return null;
+
+  const supabase = getSupabaseServerClient();
+  const { data: assignments, error: assignmentError } = await supabase
+    .from("professional_lead_assignments")
+    .select("lead_id, assigned_at")
+    .eq("organization_id", organizationId)
+    .order("assigned_at", { ascending: false })
+    .limit(Math.min(Math.max(limit, 1), 100));
+  if (assignmentError) throw new Error(`[professional] lead assignments: ${assignmentError.message}`);
+
+  const leadIds = (assignments ?? []).map((row) => row.lead_id as string);
+  if (leadIds.length === 0) return [];
+
+  const { data: leads, error: leadError } = await supabase
+    .from("buyer_leads")
+    .select("id, created_at, updated_at, lead_type, source_channel, listing_id, project_id, city, neighborhood, budget_total, property_type, desired_surface_m2, bedrooms, timing, is_mre, residence_country, full_name, phone_whatsapp, message, lead_temperature, lead_score, status, visit_status, internal_notes")
+    .in("id", leadIds)
+    .order("created_at", { ascending: false });
+  if (leadError) throw new Error(`[professional] assigned leads: ${leadError.message}`);
+  return (leads ?? []) as Record<string, unknown>[];
+}
+
+export async function updateAssignedProfessionalLead(
+  userId: string,
+  organizationId: string,
+  leadId: string,
+  patch: { status?: unknown; internal_notes?: unknown },
+): Promise<Record<string, unknown> | null> {
+  const context = await requireProfessionalPermission(userId, organizationId, "leads.manage");
+  if (!context) return null;
+
+  const supabase = getSupabaseServerClient();
+  const { data: assignment, error: assignmentError } = await supabase
+    .from("professional_lead_assignments")
+    .select("lead_id")
+    .eq("organization_id", organizationId)
+    .eq("lead_id", leadId)
+    .maybeSingle();
+  if (assignmentError) throw new Error(`[professional] lead assignment check: ${assignmentError.message}`);
+  if (!assignment) throw new Error("LEAD_NOT_ASSIGNED");
+
+  const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (patch.status !== undefined) {
+    const status = validateLeadStatusUpdate(patch.status);
+    if (!status) throw new Error("INVALID_LEAD_STATUS");
+    update.status = status;
+  }
+  if (patch.internal_notes !== undefined) {
+    update.internal_notes = normalizeInternalNotes(patch.internal_notes);
+  }
+  if (Object.keys(update).length === 1) throw new Error("EMPTY_LEAD_UPDATE");
+
+  const { data, error } = await supabase
+    .from("buyer_leads")
+    .update(update)
+    .eq("id", leadId)
+    .select("id, updated_at, status, internal_notes")
+    .single();
+  if (error || !data) throw new Error(`[professional] update lead: ${error?.message ?? "unknown error"}`);
+  return data as Record<string, unknown>;
 }
 
 export async function getPublicProfessionalProfileBySlug(
