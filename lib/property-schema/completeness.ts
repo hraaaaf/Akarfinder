@@ -15,9 +15,14 @@ export interface CompletenessResultV1 {
 
 type Check = { key: string; weight: number; fact?: CanonicalFact<unknown>; value?: unknown };
 
+function meaningful(value: unknown): boolean {
+  if (value === null || value === undefined || value === "") return false;
+  if (typeof value === "string" && ["unknown", "unavailable"].includes(value.toLowerCase())) return false;
+  return true;
+}
+
 function isPresent(check: Check): boolean {
-  if (check.fact) return check.fact.value !== null && check.fact.value !== undefined && check.fact.value !== "";
-  return check.value !== null && check.value !== undefined && check.value !== "";
+  return meaningful(check.fact ? check.fact.value : check.value);
 }
 
 function conditionalChecks(property: CanonicalPropertyV1, offer?: CanonicalOfferV1): Check[] {
@@ -38,7 +43,7 @@ function conditionalChecks(property: CanonicalPropertyV1, offer?: CanonicalOffer
     { key: "price", weight: 10, fact: offer?.price_amount },
     { key: "title", weight: 5, fact: offer?.title },
     { key: "description", weight: 5, fact: offer?.description },
-    { key: "availability", weight: 4, value: offer?.availability_status === "unknown" ? null : offer?.availability_status },
+    { key: "availability", weight: 4, value: offer?.availability_status },
     { key: "fresh_observation", weight: 3, value: offer?.last_observed_at },
   ];
 
