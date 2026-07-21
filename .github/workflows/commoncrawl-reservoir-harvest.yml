@@ -1,0 +1,56 @@
+name: Common Crawl Reservoir Harvest (diagnostic, offline, no DB writes)
+
+# AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 (#10/10)
+# Runs the generalized offline Common Crawl reservoir harvester
+# (scripts/openserp/commoncrawl-reservoir-harvest.ts) across EVERY registered
+# approved_discovery domain with listing_url_patterns, over 6 recent CDX
+# indexes, and measures the deduplicated unique-canonical-listing-URL
+# reservoir. Metadata-only (CDX index API) -- no WARC, no page fetch, no DB
+# access, no Supabase secrets. Uploads the canonical-URL list + summary as an
+# artifact. Exists because index.commoncrawl.org is unreachable from the
+# local dev environment; GitHub-hosted runners have working egress.
+# workflow_dispatch only, no schedule, no interaction with the production cron.
+
+on:
+  workflow_dispatch:
+    inputs:
+      indexes:
+        description: "Comma-separated CDX index list (default: 6 recent)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  reservoir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout feat/national-100k-backfill-gate
+        uses: actions/checkout@v4
+        with:
+          ref: feat/national-100k-backfill-gate
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Confirm index.commoncrawl.org is reachable
+        run: curl -s -m 20 -w "HTTP_CODE=%{http_code}\n" -o /dev/null "https://index.commoncrawl.org/collinfo.json"
+
+      - name: Run reservoir harvester (offline metadata only, no DB access)
+        run: npx tsx scripts/openserp/commoncrawl-reservoir-harvest.ts "${{ github.event.inputs.indexes }}"
+
+      - name: Upload reservoir artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: commoncrawl-reservoir
+          path: data/audits/raw-results/commoncrawl-reservoir-canonical-urls.txt
+          retention-days: 14
+          if-no-files-found: warn
