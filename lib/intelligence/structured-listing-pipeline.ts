@@ -15,7 +15,6 @@ import {
 } from "../property-schema/completeness";
 import {
   enrichWithoutInventing,
-  getPreferredSurfaceM2,
 } from "../property-schema/enrichment";
 import {
   validateOfferIngestion,
@@ -28,17 +27,17 @@ import type {
   CanonicalPropertyV1,
 } from "../property-schema/core";
 import {
-  assessMarketComparisonEligibility,
   createUnavailableClaim,
   evidenceFromFact,
   validateAnalysisClaim,
   type AnalysisClaimV1,
   type AnalysisContractValidation,
 } from "../analysis/analysis-contract";
+import type { PriceGapResult } from "../market/price-gap-calculator";
 import {
-  calculatePriceGap,
-  type PriceGapResult,
-} from "../market/price-gap-calculator";
+  evaluateMarketIntelligenceV2,
+  type MarketIntelligenceV2,
+} from "../market/market-intelligence-v2";
 import {
   evaluateFreshnessProvenanceV2,
   type FreshnessProvenanceV2,
@@ -85,7 +84,9 @@ export interface StructuredListingPipelineValidationV1 {
 }
 
 export interface StructuredListingMarketAnalysisV1 {
+  /** Legacy-compatible safe projection. V2 gates can force insufficient_data. */
   gap: PriceGapResult;
+  intelligence_v2: MarketIntelligenceV2;
   claim: AnalysisClaimV1;
   contract_validation: AnalysisContractValidation;
 }
@@ -144,7 +145,7 @@ function pickSurfaceFact(property: CanonicalPropertyV1) {
   );
 }
 
-function marketLabel(position: PriceGapResult["price_position"]): string {
+function marketLabel(position: MarketIntelligenceV2["comparison"]["position"]): string {
   switch (position) {
     case "below_market": return "Position relative inférieure";
     case "near_market": return "Position relative proche";
@@ -154,14 +155,15 @@ function marketLabel(position: PriceGapResult["price_position"]): string {
   }
 }
 
-function buildMarketReferenceId(gap: PriceGapResult): string | null {
-  if (!gap.benchmark_scope || !gap.benchmark_city || !gap.benchmark_property_type) return null;
+function buildMarketReferenceId(market: MarketIntelligenceV2): string | null {
+  const benchmark = market.benchmark;
+  if (!benchmark.source || !benchmark.scope || !benchmark.city || !benchmark.property_type) return null;
   return [
-    gap.benchmark_source,
-    gap.benchmark_scope,
-    gap.benchmark_city,
-    gap.benchmark_neighborhood ?? "_",
-    gap.benchmark_property_type,
+    benchmark.source,
+    benchmark.scope,
+    benchmark.city,
+    benchmark.neighborhood ?? "_",
+    benchmark.property_type,
   ].join(":");
 }
 
@@ -171,62 +173,57 @@ function computeMarketAnalysis(
   generatedAt: string,
 ): StructuredListingMarketAnalysisV1 {
   const propertyType = property.facts.classification.property_type.value;
+  const marketSegment = property.facts.classification.market_segment.value;
   const city = property.facts.location.city.value;
   const neighborhood = property.facts.location.neighborhood?.value ?? property.facts.location.district?.value ?? null;
-  const surfaceM2 = getPreferredSurfaceM2(property);
+  const surfaceFact = pickSurfaceFact(property);
+  const surfaceM2 = surfaceFact?.value ?? null;
   const priceAmount = offer?.price_status === "valid" ? offer.price_amount.value : null;
 
-  const gap = calculatePriceGap({
+  const intelligenceV2 = evaluateMarketIntelligenceV2({
     city,
     neighborhood,
     property_type: propertyType,
+    transaction_type: offer?.transaction_type ?? null,
+    market_segment: marketSegment,
     surface_m2: surfaceM2,
-    total_price_mad: priceAmount,
+    asking_price_mad: priceAmount,
+    generated_at: generatedAt,
   });
 
-  const eligibility = assessMarketComparisonEligibility({
-    property_type: propertyType,
-    price_amount: priceAmount,
-    surface_m2: surfaceM2,
-    benchmark_scope: gap.benchmark_scope,
-  });
-
-  if (!eligibility.eligible || gap.price_position === "insufficient_data" || !offer) {
+  if (intelligenceV2.status !== "evaluated" || !offer || !surfaceFact || surfaceFact.value == null || offer.price_amount.value == null) {
     const claim = createUnavailableClaim({
       claim_id: `market-position:${property.property_id}`,
       domain: "market_position",
       label: "Données marché insuffisantes",
-      explanation: eligibility.reason,
+      explanation: intelligenceV2.explanation,
       generated_at: generatedAt,
     });
-    return { gap, claim, contract_validation: validateAnalysisClaim(claim) };
-  }
-
-  const surfaceFact = pickSurfaceFact(property);
-  if (!surfaceFact || surfaceFact.value == null || offer.price_amount.value == null) {
-    const claim = createUnavailableClaim({
-      claim_id: `market-position:${property.property_id}`,
-      domain: "market_position",
-      explanation: "Le prix ou la surface de référence manque pour produire une comparaison publique.",
-      generated_at: generatedAt,
-    });
-    return { gap, claim, contract_validation: validateAnalysisClaim(claim) };
+    return {
+      gap: intelligenceV2.gap,
+      intelligence_v2: intelligenceV2,
+      claim,
+      contract_validation: validateAnalysisClaim(claim),
+    };
   }
 
   const claim: AnalysisClaimV1 = {
     contract_version: "1.0",
     claim_id: `market-position:${property.property_id}`,
     domain: "market_position",
-    label: marketLabel(gap.price_position),
-    explanation: `Le prix/m² observé est comparé à un repère Yakeey ${gap.benchmark_scope === "neighborhood" ? "de quartier" : "de ville"}.`,
+    label: marketLabel(intelligenceV2.comparison.position),
+    explanation: intelligenceV2.explanation,
     strength: "indicative",
-    confidence: eligibility.confidence,
+    confidence: intelligenceV2.confidence,
     evidence: [
-      evidenceFromFact(`${offer.offer_id}:price`, offer.price_amount),
+      evidenceFromFact(`${offer.offer_id}:asking-price`, offer.price_amount),
       evidenceFromFact(`${property.property_id}:surface`, surfaceFact),
     ],
-    assumptions: ["Le prix et la surface utilisés correspondent à l'offre structurée sélectionnée et au bien canonique."],
-    limitations: ["Cette comparaison est indicative et ne constitue ni une expertise, ni une estimation officielle, ni une recommandation d'achat."],
+    assumptions: [
+      "Le prix utilisé est le prix demandé de l'offre structurée sélectionnée, pas un prix de transaction constaté.",
+      "La surface utilisée correspond au fait canonique de surface préféré disponible pour ce bien.",
+    ],
+    limitations: intelligenceV2.limitations,
     generated_at: generatedAt,
   };
 
@@ -238,10 +235,20 @@ function computeMarketAnalysis(
       explanation: "La comparaison n'a pas satisfait le contrat d'analyse public.",
       generated_at: generatedAt,
     });
-    return { gap, claim: safeClaim, contract_validation: validateAnalysisClaim(safeClaim) };
+    return {
+      gap: intelligenceV2.gap,
+      intelligence_v2: { ...intelligenceV2, status: "insufficient_data", confidence: "insufficient" },
+      claim: safeClaim,
+      contract_validation: validateAnalysisClaim(safeClaim),
+    };
   }
 
-  return { gap, claim, contract_validation: contractValidation };
+  return {
+    gap: intelligenceV2.gap,
+    intelligence_v2: intelligenceV2,
+    claim,
+    contract_validation: contractValidation,
+  };
 }
 
 export function runStructuredListingIntelligencePipeline(
@@ -262,6 +269,7 @@ export function runStructuredListingIntelligencePipeline(
 
   const market = computeMarketAnalysis(enriched, selectedOffer, generatedAt);
   const freshness = evaluateFreshnessProvenanceV2(enriched, selectedOffer, input.origin, generatedAt);
+  const marketEvaluated = market.intelligence_v2.status === "evaluated" && market.intelligence_v2.comparison.position !== "insufficient_data";
   const intelligence = {
     ...(enriched.intelligence ?? {
       property_id: enriched.property_id,
@@ -281,10 +289,12 @@ export function runStructuredListingIntelligencePipeline(
       mre_score: null,
     }),
     computed_at: generatedAt,
+    price_per_m2: market.intelligence_v2.asking_price.price_per_m2,
+    price_per_m2_method: market.intelligence_v2.asking_price.price_per_m2 == null ? "unavailable" as const : "price_divided_by_surface" as const,
     data_completeness_score: completeness.score,
     freshness_score: freshness.freshness_score,
-    market_position: market.gap.price_position === "insufficient_data" ? null : market.gap.price_position,
-    market_reference_id: buildMarketReferenceId(market.gap),
+    market_position: marketEvaluated ? market.intelligence_v2.comparison.position : null,
+    market_reference_id: marketEvaluated ? buildMarketReferenceId(market.intelligence_v2) : null,
   };
 
   const property: CanonicalPropertyV1 = { ...enriched, intelligence };

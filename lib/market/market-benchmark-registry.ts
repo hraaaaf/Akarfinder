@@ -11,9 +11,26 @@ export type MarketBenchmarkEntry = {
   neighborhood: string | null;
   property_type: MarketBenchmarkPropertyType;
   benchmark_price_per_m2: number;
+  /**
+   * Legacy registry-row count. This is NOT the underlying number of market
+   * transactions/listings used by the upstream benchmark and must never be
+   * presented as a statistical sample size.
+   */
   sample_count: number;
+  /** Underlying statistical sample size, when explicitly published by source. */
+  underlying_sample_size: number | null;
+  /** Dispersion/variance measure, when explicitly published by source. */
+  dispersion_pct: number | null;
   scope: MarketBenchmarkScope;
   source_url: string | null;
+  /** When AkarFinder observed/audited this published reference. */
+  benchmark_observed_at: string | null;
+  /** Upstream source update timestamp, only when explicitly exposed by source. */
+  source_updated_at: string | null;
+  benchmark_method: "published_aggregated_reference";
+  benchmark_transaction_type: "sale";
+  market_segment_scope: "unsegmented";
+  surface_band_scope: "unsegmented";
 };
 
 export type MarketBenchmarkLookupInput = {
@@ -34,6 +51,7 @@ export type MarketBenchmarkRegistry = {
   can_compute_market_benchmark: true;
   can_compute_price_gap: true;
   attribution_required: true;
+  audit_observed_at: string | null;
   entries: MarketBenchmarkEntry[];
 };
 
@@ -52,6 +70,7 @@ type AuditEntry = {
 };
 
 type AuditJson = {
+  run_at?: string;
   cities: AuditEntry[];
   districts: (AuditEntry & { city: string; city_url: string; district: string })[];
 };
@@ -79,6 +98,31 @@ function normalizePropertyType(value: string | null | undefined): MarketBenchmar
   return null;
 }
 
+function commonBenchmarkMetadata(): Pick<
+  MarketBenchmarkEntry,
+  | "underlying_sample_size"
+  | "dispersion_pct"
+  | "benchmark_observed_at"
+  | "source_updated_at"
+  | "benchmark_method"
+  | "benchmark_transaction_type"
+  | "market_segment_scope"
+  | "surface_band_scope"
+> {
+  return {
+    // The audited public reference does not expose these statistical details.
+    // Unknown stays null: never turn one registry row into a fake sample size.
+    underlying_sample_size: null,
+    dispersion_pct: null,
+    benchmark_observed_at: YAKEEY_AUDIT.run_at ?? null,
+    source_updated_at: null,
+    benchmark_method: "published_aggregated_reference",
+    benchmark_transaction_type: "sale",
+    market_segment_scope: "unsegmented",
+    surface_band_scope: "unsegmented",
+  };
+}
+
 function buildEntries(): MarketBenchmarkEntry[] {
   const entries: MarketBenchmarkEntry[] = [];
 
@@ -93,6 +137,7 @@ function buildEntries(): MarketBenchmarkEntry[] {
         sample_count: cityRow.price_m2_appartement_status === "available" ? 1 : 0,
         scope: "city",
         source_url: cityRow.url,
+        ...commonBenchmarkMetadata(),
       });
     }
     if (cityRow.price_m2_villa !== null) {
@@ -105,6 +150,7 @@ function buildEntries(): MarketBenchmarkEntry[] {
         sample_count: cityRow.price_m2_villa_status === "available" ? 1 : 0,
         scope: "city",
         source_url: cityRow.url,
+        ...commonBenchmarkMetadata(),
       });
     }
   }
@@ -122,6 +168,7 @@ function buildEntries(): MarketBenchmarkEntry[] {
         sample_count: 1,
         scope: "neighborhood",
         source_url: districtRow.url,
+        ...commonBenchmarkMetadata(),
       });
     }
     if (districtRow.price_m2_villa !== null) {
@@ -134,6 +181,7 @@ function buildEntries(): MarketBenchmarkEntry[] {
         sample_count: 1,
         scope: "neighborhood",
         source_url: districtRow.url,
+        ...commonBenchmarkMetadata(),
       });
     }
   }
@@ -149,6 +197,7 @@ const MARKET_BENCHMARK_REGISTRY: MarketBenchmarkRegistry = {
   can_compute_market_benchmark: true,
   can_compute_price_gap: true,
   attribution_required: true,
+  audit_observed_at: YAKEEY_AUDIT.run_at ?? null,
   entries: buildEntries(),
 };
 
