@@ -23,6 +23,8 @@ export interface AdapterContextV1 {
   offer_id: string;
   source_id: string;
   source_name?: string;
+  external_offer_id?: string | null;
+  source_url?: string | null;
   now?: string;
   acquisition_channel?: AcquisitionChannel;
   origin_type?: OfferOriginType;
@@ -104,9 +106,9 @@ function makeOffer(
     property_id: context.property_id,
     source_id: context.source_id,
     source_name: context.source_name ?? context.source_id,
-    external_offer_id: null,
-    source_url: null,
-    canonical_source_url: null,
+    external_offer_id: context.external_offer_id ?? null,
+    source_url: context.source_url ?? null,
+    canonical_source_url: context.source_url ?? null,
     acquisition_channel: context.acquisition_channel ?? "system",
     origin_type: context.origin_type ?? "unknown",
     price_currency: "MAD",
@@ -227,8 +229,10 @@ export function adaptScrapedListing(row: ScrapedListingP0, context: AdapterConte
 
 export function adaptPartnerListing(row: PartnerListingStandard, context: AdapterContextV1): CanonicalPropertyV1 {
   const property = baseProperty(context);
+  const isSellRequest = row.transaction_type === "sell_request";
+  const isProjectRecord = row.property_type === "project";
   property.facts.classification.property_type = declared(normalizePropertyType(row.property_type), context);
-  property.facts.classification.market_segment = declared(row.transaction_type === "new" || row.property_type === "project" ? "new_build" : "resale", context);
+  property.facts.classification.market_segment = declared(row.transaction_type === "new" || isProjectRecord ? "new_build" : "resale", context);
   property.facts.location.country = declared("Morocco", context);
   property.facts.location.city = declared(row.city || null, context);
   property.facts.location.district = declared(row.district || null, context);
@@ -250,6 +254,7 @@ export function adaptPartnerListing(row: PartnerListingStandard, context: Adapte
   }
 
   const exactPrice = row.price_display_mode === "exact" ? row.price_amount ?? null : null;
+  const isRange = row.price_display_mode === "range";
   const offer = makeOffer(context, {
     source_name: context.source_name ?? row.partner_id,
     acquisition_channel: "manual_partner",
@@ -258,13 +263,21 @@ export function adaptPartnerListing(row: PartnerListingStandard, context: Adapte
     title: declared(row.title || null, context),
     description: declared(row.normalized_description || row.short_description || null, context),
     price_amount: declared(exactPrice, context),
-    price_status: row.price_display_mode === "exact" ? (exactPrice == null ? "not_disclosed" : "valid") : row.price_display_mode === "on_request" ? "not_disclosed" : "ambiguous",
+    ...(isRange ? {
+      price_range_min: declared(row.price_range_min ?? null, context),
+      price_range_max: declared(row.price_range_max ?? null, context),
+    } : {}),
+    price_status: row.price_display_mode === "exact"
+      ? (exactPrice == null ? "not_disclosed" : "valid")
+      : row.price_display_mode === "on_request"
+        ? "not_disclosed"
+        : "ambiguous",
     availability_status: row.availability_status,
     updated_at_source: row.last_partner_update_at ?? null,
     seller_type: declared(row.partner_type === "promoter" ? "promoter" : "agency", context),
     seller_organization_id: row.partner_id,
-    compliance_status: "allowed",
-    offer_status: ["sold", "rented"].includes(row.availability_status) ? "inactive" : "active",
+    compliance_status: isSellRequest || isProjectRecord ? "restricted" : "allowed",
+    offer_status: isSellRequest || isProjectRecord || ["sold", "rented"].includes(row.availability_status) ? "inactive" : "active",
   });
   property.offers = [offer];
   return property;
