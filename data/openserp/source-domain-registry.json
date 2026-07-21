@@ -233,6 +233,28 @@
       "compliance_note": "classify.ts DOMAIN_RULES forceDiscovery on every path -- meta-search results, never an individual listing page. Blocked explicitly rather than left implicit.",
       "reviewed_at": "2026-07-17",
       "coverage_cities": null
+    },
+    {
+      "domain": "aykana.ma",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["^/property/[^/]+$"],
+      "blocked_url_patterns": ["^/property-type/"],
+      "source_type": "agency_site",
+      "external_web_result": true,
+      "compliance_note": "Added following AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 #7/10 Source Discovery Atlas. Found via discovery_candidates organic surfacing (not yet in query universe). Pattern proven against real positive examples (/property/vente-bureau-en-exclusivite-rabat-hay-riad-ref-3966, /property/location-local-commercial-dexception-rabat-aviation-ref-4058, /property/location-bureau-rabat-locean-ref -- the last has no trailing numeric ref, so the pattern deliberately does not require one) and real negative examples (/property-type/local-commercial-2 is the category-listing equivalent, structurally excluded by requiring the literal /property/ segment, not /property-type/ -- same word-boundary discipline as the earlier mobilier/immobilier fix this session). Not bulk-seeded, no query-universe change.",
+      "reviewed_at": "2026-07-21",
+      "coverage_cities": ["Rabat"]
+    },
+    {
+      "domain": "promoimmomarrakech.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": ["^/produit/[^/]+/[^/]+\\.html$"],
+      "blocked_url_patterns": [],
+      "source_type": "agency_site",
+      "external_web_result": true,
+      "compliance_note": "Added following AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 #7/10 Source Discovery Atlas. Found via discovery_candidates organic surfacing. Pattern proven against real positive examples (/produit/vlc-296/villa-location-sjour-marrakech-route-fes.html, /produit/avm-64/appartement-vente-marrakech-hivernage.html, /produit/bv-65-2/bureau-vente-marrakech-gueliz.html) and real negative examples (/vente-terrain-gueliz-marrakech.html and /location/ferme/marrakech are both top-level category pages with no /produit/ prefix at all, structurally excluded). Not bulk-seeded, no query-universe change.",
+      "reviewed_at": "2026-07-21",
+      "coverage_cities": ["Marrakech"]
     }
   ]
 }
