@@ -1,0 +1,54 @@
+{
+  "mission": "OPENSERP-SERVERLESS-STATE-PROD-MIGRATION-1",
+  "snapshot_type": "before_write",
+  "generated_at_utc": "2026-07-18T17:25:00Z",
+  "contains_pii": false,
+  "contains_serp_snippets": false,
+  "contains_listing_urls": false,
+  "contains_secrets_or_keys": false,
+  "frozen_head_precheck": {
+    "expected_sha": "5afbe1bb4706af93bfd9f36460f943550c7acdac",
+    "actual_head_sha": "8a92de0dacc5cb3683ac5e3b3c5016898c6f8967",
+    "is_descendant_of_expected": true,
+    "diff_since_expected": "2 files changed (data/audits/market-index-shadow-read-results.json, data/audits/openserp-serverless-state-preview-result.json), 0 code/SQL/seed/test files -- the Preview-validation report commit (8a92de0), audits-only",
+    "worktree_clean": true,
+    "user_confirmed_acceptable": true
+  },
+  "flags_precheck": {
+    "OPENSERP_AUTOMATED_INGESTION_ENABLED": "false (user-confirmed; value is Vercel type=Sensitive/write-only, cannot be re-read via CLI)",
+    "OPENSERP_INGESTION_WRITE_ENABLED": "false (user-confirmed; same Sensitive/write-only limitation)",
+    "OPENSERP_INGESTION_CRON_ENABLED": "false (user-confirmed; same Sensitive/write-only limitation)",
+    "MARKET_INDEX_READ_ENABLED": "true (var present in Production per vercel env ls, set 20h ago)",
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": "unset in Production (absent -> defaults false per readFlag())",
+    "MARKET_INDEX_CLUSTERING_ENABLED": "unset in Production (absent -> defaults false per readFlag())",
+    "verification_method_limitation": "Vercel CLI's `vercel env pull`/`env ls` cannot return the plaintext value of a Sensitive-type env var (write-only by Vercel's own design) -- confirmed present (var exists) but not independently re-readable in this session. User explicitly confirmed the effective values are false, consistent with this same engagement's own prior action (writer disabled, cron tested but never scheduled)."
+  },
+  "github_workflow_precheck": {
+    "verification_method_limitation": "gh CLI is not installed in this session's shell, and the repository (hraaaaf/Akarfinder) is private, so an unauthenticated GitHub API check returned 404. Could not independently re-verify the schedule-trigger activation state in this session.",
+    "known_state_per_session_memory": "cron workflow prepared and test-dispatched once (workflow_dispatch, HTTP 200) but the */30 schedule trigger was never left active/relied upon -- explicit user choice, unchanged since",
+    "user_confirmed_acceptable": true
+  },
+  "counters_before": {
+    "property_listings": 558,
+    "listing_sources": 563,
+    "property_clusters": 419,
+    "property_cluster_members": 419,
+    "discovery_candidates": 7564,
+    "source_offer_observations": 0
+  },
+  "new_tables_state_before": {
+    "openserp_query_rotation_state": "does not exist (PGRST205: table not found in schema cache)",
+    "openserp_engine_budget_state": "does not exist (PGRST205: table not found in schema cache)",
+    "conclusion": "no unknown/foreign migration already applied; a clean base for the two new migrations"
+  },
+  "artifact_hash_verification": {
+    "migration_1_sha256": { "expected_per_freeze": "6aca50a21d2aa42095ef7e3434496881faf6c0152179b018aa421687e52b5236", "actual": "6aca50a21d2aa42095ef7e3434496881faf6c0152179b018aa421687e52b5236", "match": true },
+    "migration_2_sha256": { "expected_per_freeze": "3db3c6e321c502c6045afb4e091071e3b1ff6f34e100ffc63e2fdc64cd3f276f", "actual": "3db3c6e321c502c6045afb4e091071e3b1ff6f34e100ffc63e2fdc64cd3f276f", "match": true },
+    "seed_sql_sha256": { "expected_per_user": "12facb44cb375ceac67f7652c40779f4f3c0ced9f2d3b8ff78b2377ee9c01130", "actual": "12facb44cb375ceac67f7652c40779f4f3c0ced9f2d3b8ff78b2377ee9c01130", "match": true },
+    "seed_manifest_sha256": { "expected_per_user": "e2beacaca483dbb201fd011633dc225e0cb02c1d51a877a4f92418fdc3659123", "actual": "e2beacaca483dbb201fd011633dc225e0cb02c1d51a877a4f92418fdc3659123", "match": true },
+    "no_local_sql_modification": true,
+    "no_third_migration_included": true,
+    "no_listing_related_command_in_seed": true,
+    "all_hashes_match": true
+  }
+}

@@ -12,6 +12,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   TIER_1_CITIES,
   TIER_2_CITIES,
@@ -59,7 +60,7 @@ function normalizeQueryText(value: string): string {
     .trim();
 }
 
-type UniverseQuery = {
+export type UniverseQuery = {
   query_id: string;
   normalized_query: string;
   query_hash: string;
@@ -131,7 +132,7 @@ function buildQuery(input: {
   };
 }
 
-function buildUniverse(): UniverseQuery[] {
+export function buildUniverse(): UniverseQuery[] {
   const queries: UniverseQuery[] = [];
   let rotationIndex = 0;
 
@@ -183,14 +184,23 @@ function buildUniverse(): UniverseQuery[] {
   }
 
   // --- Source-specific queries, approved domains only (section 10.E) -----
+  // OPENSERP-QUERY-UNIVERSE-REGIONAL-DOMAIN-CITY-SCOPING-1: a domain with a
+  // non-empty coverage_cities generates site:<domain> queries for exactly
+  // those cities instead of the full TIER_1_CITIES cross-product -- may
+  // include a city outside TIER_1_CITIES (e.g. "Essaouira"), used as-is
+  // with no membership check. null/absent coverage_cities keeps the prior
+  // national behavior unchanged. Affects only this loop -- the generic
+  // city-level and district-level query blocks above never read
+  // coverage_cities at all.
   const registryPath = join(process.cwd(), "data/openserp/source-domain-registry.json");
   const registry = JSON.parse(readFileSync(registryPath, "utf8")) as SourceDomainRegistry;
-  const approvedDomains = registry.domains
-    .filter((entry) => entry.status === "approved_discovery" || entry.status === "partner" || entry.status === "authorized_static")
-    .map((entry) => entry.domain);
+  const approvedEntries = registry.domains.filter(
+    (entry) => entry.status === "approved_discovery" || entry.status === "partner" || entry.status === "authorized_static",
+  );
 
-  for (const domain of approvedDomains) {
-    for (const city of TIER_1_CITIES) {
+  for (const entry of approvedEntries) {
+    const cities = entry.coverage_cities && entry.coverage_cities.length > 0 ? entry.coverage_cities : TIER_1_CITIES;
+    for (const city of cities) {
       for (const transaction of ["sale", "rent"] as Transaction[]) {
         queries.push(
           buildQuery({
@@ -200,7 +210,7 @@ function buildUniverse(): UniverseQuery[] {
             propertyType: "appartement",
             language: "fr",
             priorityTier: 4,
-            targetDomain: domain,
+            targetDomain: entry.domain,
             queryFamily: "brand_hint",
             rotationIndex: rotationIndex++,
           }),
@@ -277,4 +287,12 @@ function main() {
   );
 }
 
-main();
+// OPENSERP-QUERY-UNIVERSE-REGIONAL-DOMAIN-CITY-SCOPING-1: guard added so
+// buildUniverse() can be imported (e.g. by tests, or by an offline
+// comparison script) without ever writing to
+// data/openserp/query-universe-v1.json as a side effect of module load --
+// only running this file directly (tsx scripts/openserp/build-query-
+// universe.ts) still triggers main(), exactly as before.
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main();
+}

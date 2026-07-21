@@ -1,0 +1,72 @@
+{
+  "listings": [
+    {
+      "external_id": "PROMO-77-A12",
+      "source_name": "demo-promoteur-casablanca",
+      "source_domain": "demo-promoteur-casablanca.example.ma",
+      "source_url": "https://demo-promoteur-casablanca.example.ma/programme/residence-anfa/lot-a12",
+      "transaction_type": "vente",
+      "property_type": "appartement",
+      "title": "Résidence Anfa - Appartement A12 2 chambres",
+      "description": "Appartement neuf dans programme immobilier haut standing",
+      "city": "Casablanca",
+      "district": "Anfa",
+      "price_mad": 1980000,
+      "surface_m2": 78,
+      "bedrooms_count": 2,
+      "coordinates": { "lat": 33.5928, "lng": -7.6326 },
+      "image_urls": ["https://cdn.example.ma/anfa-a12-1.jpg"],
+      "images_rights_confirmed": true,
+      "updated_at_source": "2026-07-19T10:00:00Z"
+    },
+    {
+      "external_id": "PROMO-77-A12",
+      "source_name": "demo-promoteur-casablanca",
+      "source_domain": "demo-promoteur-casablanca.example.ma",
+      "source_url": "https://demo-promoteur-casablanca.example.ma/programme/residence-anfa/lot-a12",
+      "transaction_type": "vente",
+      "property_type": "appartement",
+      "title": "Résidence Anfa - Appartement A12 2 chambres (doublon meme flux)",
+      "city": "Casablanca",
+      "district": "Anfa",
+      "price_mad": 1980000,
+      "surface_m2": 78,
+      "bedrooms_count": 2,
+      "images_rights_confirmed": false,
+      "updated_at_source": "2026-07-19T10:00:00Z"
+    },
+    {
+      "external_id": "PROMO-77-A13",
+      "source_name": "demo-promoteur-casablanca",
+      "source_domain": "demo-promoteur-casablanca.example.ma",
+      "source_url": "https://demo-promoteur-casablanca.example.ma/programme/residence-anfa/lot-a13",
+      "transaction_type": "vente",
+      "property_type": "appartement",
+      "title": "Ré",
+      "city": "Casablanca",
+      "district": "Anfa",
+      "price_mad": 2100000,
+      "surface_m2": 82,
+      "bedrooms_count": 3,
+      "images_rights_confirmed": false,
+      "updated_at_source": "2026-07-19T10:05:00Z"
+    },
+    {
+      "external_id": "PROMO-77-A14",
+      "source_name": "demo-promoteur-casablanca",
+      "source_domain": "demo-promoteur-casablanca.example.ma",
+      "source_url": "https://demo-promoteur-casablanca.example.ma/programme/residence-anfa/lot-a14",
+      "transaction_type": "vente",
+      "property_type": "appartement",
+      "title": "Résidence Anfa - Appartement A14 vendu, retirer de la publication",
+      "city": "Casablanca",
+      "district": "Anfa",
+      "price_mad": 1750000,
+      "surface_m2": 70,
+      "bedrooms_count": 2,
+      "images_rights_confirmed": false,
+      "updated_at_source": "2026-07-19T11:00:00Z",
+      "update_signal": "delete"
+    }
+  ]
+}

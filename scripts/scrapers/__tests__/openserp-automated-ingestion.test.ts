@@ -227,6 +227,24 @@ test("markQueryExecuted resets failure_count on success, increments on failure",
   assert.equal(failed.failure_count, 3);
 });
 
+// OPENSERP-QUERY-ROTATION-DISCOVERY-YIELD-INTEGER-MISMATCH-1: reproduces the
+// exact shape of run openserp-github-cron-2026-07-19T21-07-04-086Z's first
+// successful engine call (fresh query, discovery_yield=0, 3 admitted
+// candidates) -- discovery_yield is documented as an exponential moving
+// average (docs/OPENSERP_QUERY_COVERAGE_STRATEGY.md), by design fractional,
+// while openserp_query_rotation_state.discovery_yield is declared `integer`
+// in supabase/migrations/20260718140000_create_openserp_query_rotation_state.sql
+// -- a schema/code mismatch, not a code bug. This locks in the exact value
+// the mismatch was found from; it intentionally does not assert anything
+// about the DB column (no fix has been applied pending an architectural
+// decision on the schema).
+test("markQueryExecuted's discovery_yield EMA produces a fractional value for a real successful query (0.9, matching the value that exposed the integer-column mismatch)", () => {
+  const fresh = rotationQuery({ discovery_yield: 0 });
+  const succeeded = markQueryExecuted(fresh, { executedAtIso: "2026-07-19T21:07:04.000Z", succeeded: true, acceptedCount: 3 });
+  assert.equal(succeeded.discovery_yield, 0.9);
+  assert.notEqual(succeeded.discovery_yield, Math.trunc(succeeded.discovery_yield));
+});
+
 // ---------------------------------------------------------------------------
 // Budget / backoff policy
 // ---------------------------------------------------------------------------

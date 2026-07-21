@@ -1,0 +1,108 @@
+{
+  "mission": "OPENSERP-SERVERLESS-STATE-PROD-DEPLOY-FLAGS-OFF-1",
+  "status": "OPENSERP_SERVERLESS_STATE_CODE_PROD_ACTIVE_FLAGS_OFF",
+  "generated_at_utc": "2026-07-18T18:10:00Z",
+  "1_status": "OPENSERP_SERVERLESS_STATE_CODE_PROD_ACTIVE_FLAGS_OFF",
+  "2_head_deployed": "02f83e0e7cdaa7ae00c5e630f76eaee8e0dd24d2",
+  "3_post_freeze_diff_proof": {
+    "frozen_sha": "5afbe1bb4706af93bfd9f36460f943550c7acdac",
+    "worktree_clean": true,
+    "git_diff_check": "clean",
+    "runtime_paths_diff": {
+      "checked_paths": ["app", "lib", "scripts", "supabase", "package.json", "package-lock.json", "vercel.json"],
+      "only_change": "scripts/openserp/build-prod-migration-manifest.ts (new file, added post-freeze)",
+      "impact_verification": {
+        "imported_by_app_or_lib": false,
+        "excluded_from_tsconfig": true,
+        "excluded_from_test_suite": true,
+        "supabase_migrations_unchanged": true,
+        "conclusion": "zero build/runtime impact -- a local one-off tooling script that generates a SQL file, never bundled or executed by the deployed app"
+      }
+    },
+    "conclusion": "runtime-identical to 5afbe1b; all other post-freeze commits are audits/reports/documentation only"
+  },
+  "4_tests": {
+    "test_openserp_ingestion": { "total": 20, "pass": 20, "fail": 0 },
+    "test_scrapers": { "total": 1613, "pass": 1613, "fail": 0 },
+    "test_api": { "total": 53, "pass": 53, "fail": 0 },
+    "combined_total": { "total": 1666, "pass": 1666, "fail": 0 },
+    "tsc_noEmit": { "status": "FAIL_PRE_EXISTING_OUT_OF_SCOPE", "error_count": 1, "identical_to_documented_error": true, "no_new_errors": true },
+    "git_diff_check": "clean"
+  },
+  "5_build": { "status": "PASS", "pages_generated": "63/63", "compiled_in": "46s" },
+  "6_previous_deployment": {
+    "id": "dpl_9Y3DSnRmnbgLXaSF4RyfXqTAE9Xp",
+    "url": "akarfinder-hiwgsq2g5-achraf-benmoussa-s-projects.vercel.app",
+    "created": "2026-07-18T13:18:52Z (4h before this deploy)",
+    "note": "No git commit metadata recorded by Vercel (deployed via direct CLI push, not GitHub-integration) -- retained by deployment ID as the rollback target",
+    "this_is_the_rollback_target": true
+  },
+  "7_new_deployment": {
+    "id": "dpl_DY5hLhKo3FfdhnVagehyBwZ4qeDu",
+    "url": "https://akarfinder-41yr3p56g-achraf-benmoussa-s-projects.vercel.app",
+    "target": "production",
+    "readyState": "READY"
+  },
+  "8_alias": "https://akarfinder.vercel.app (confirmed aliased to the new deployment)",
+  "9_flags_before_after": {
+    "OPENSERP_AUTOMATED_INGESTION_ENABLED": { "before": "false", "after": "false" },
+    "OPENSERP_INGESTION_WRITE_ENABLED": { "before": "false", "after": "false" },
+    "OPENSERP_INGESTION_CRON_ENABLED": { "before": "false", "after": "false" },
+    "MARKET_INDEX_READ_ENABLED": { "before": "true", "after": "true" },
+    "MARKET_INDEX_OBSERVATIONS_ENABLED": { "before": "false (unset)", "after": "false (unset)" },
+    "MARKET_INDEX_CLUSTERING_ENABLED": { "before": "false (unset)", "after": "false (unset)" },
+    "no_env_var_modified_by_this_deploy": true
+  },
+  "10_endpoint_no_secret": { "status": "PASS", "expected": "401 or 403", "actual": 401 },
+  "11_endpoint_wrong_secret": { "status": "PASS", "expected": "401 or 403", "actual": 401 },
+  "12_endpoint_authenticated_flags_off": {
+    "status": "SKIPPED_BY_USER_CHOICE",
+    "reason": "Production OPENSERP_CRON_SECRET/CRON_SECRET value not held in this session (deliberately never logged). User chose to skip this specific sub-check given (a) 401/401 already confirmed above, and (b) the identical NOOP_FLAGS_DISABLED code path was already live-tested end-to-end on Preview with a dedicated Preview secret (data/audits/openserp-serverless-state-preview-result.json), same frozen code."
+  },
+  "13_erofs": { "status": "N/A_NO_AUTHENTICATED_RUN_PERFORMED", "detail": "No run was triggered (endpoint never got past the auth/flag gate in any test performed here); EROFS-freedom already proven for this exact frozen code via the realistic serverless gate test (0 filesystem writes, 0 EROFS, real orchestration path)" },
+  "14_filesystem_writes": { "status": "N/A_NO_AUTHENTICATED_RUN_PERFORMED", "note": "same as above" },
+  "15_business_counters_before_after": {
+    "property_listings": { "before": 558, "after": 558 },
+    "listing_sources": { "before": 563, "after": 563 },
+    "property_clusters": { "before": 419, "after": 419 },
+    "property_cluster_members": { "before": 419, "after": 419 },
+    "discovery_candidates": { "before": 7564, "after": 7564 },
+    "source_offer_observations": { "before": 0, "after": 0 },
+    "all_unchanged": true
+  },
+  "16_state_counters_before_after": {
+    "openserp_query_rotation_state": { "before": 2718, "after": 2718 },
+    "openserp_engine_budget_state": { "before": 3, "after": 3 },
+    "any_last_run_id_set": false,
+    "any_last_executed_at_changed": false,
+    "all_unchanged": true
+  },
+  "17_routes": {
+    "status": "PASS",
+    "routes_checked": 15,
+    "results": {
+      "/": 200, "/search": 200, "/acheter": 200, "/louer": 200, "/neuf": 200,
+      "/immobilier": 200, "/map": 200, "/favorites": 200, "/compare": 200,
+      "/search?q=appartement%20rabat": 200, "/search?q=appartement%20casablanca": 200,
+      "/search?q=appartement%20marrakech": 200, "/listings/137": 404,
+      "/robots.txt": 200, "/sitemap.xml": 200
+    },
+    "false_zero_price_check": { "sample_size": 50, "false_zero_count": 0, "legitimate_null_count": 23 },
+    "pii_check": "not applicable to a route-availability smoke pass; no new PII-generating code shipped by this mission",
+    "partner_badge_check": "not applicable; no source-labeling code touched by this mission",
+    "internal_link_on_external_result_check": "not applicable; no ranking/source-display code touched by this mission"
+  },
+  "18_ui_runtime_errors": {
+    "console_errors_checked_pages": ["/", "/search?q=appartement%20rabat"],
+    "console_errors_found": 0,
+    "hydration_errors_found": 0,
+    "mobile_overflow_check": "NOT INDEPENDENTLY VERIFIED -- the browser resize tool available in this session did not change the actual rendered viewport width (stayed at 1920px despite requesting 390x844); desktop viewport showed 0 horizontal overflow. This mission touched 0 UI/CSS files, so there is no plausible mechanism for a new mobile-overflow regression, but this specific sub-check could not be empirically re-run at mobile width this session."
+  },
+  "19_rollback": { "prepared": true, "executed": false, "target_if_needed": "dpl_9Y3DSnRmnbgLXaSF4RyfXqTAE9Xp (previous Production deployment, 4h before this one)" },
+  "20_production_db_modified": false,
+  "21_reports_created": [
+    "data/audits/openserp-serverless-state-prod-deploy-result.json"
+  ],
+  "22_next_mission": "OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-1 -- will temporarily authorize the writer (cron still disabled) for exactly two controlled workflow_dispatch runs. Not started.",
+  "overall_verdict": "PASS"
+}

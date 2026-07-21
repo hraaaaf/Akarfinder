@@ -12385,12 +12385,89 @@ Actions:
   (`canShowInternalListingDetail()`, politique pre-existante du 2026-07-02) -- confirmes non lies au
   correctif prix (meme 404 observe sur l'ancien deploiement Production).
 
-Etat officiel:
-- Statut: ecriture nationale ACTIVE en Production, cron 30 minutes PREPARE mais NON ACTIF (bloque sur
-  l'authentification GitHub de l'utilisateur). `property_listings` 316 -> 559 (+76.9%). Voir
-  `docs/OPENSERP_AUTOMATED_INGESTION_30MIN_1.md` pour le bilan complet.
+Etat officiel (mis a jour apres le verdict utilisateur du 2026-07-18, post-bilan):
+- Tests corriges : 1605 (`test:scrapers`) etait incomplet, total reel `test:scrapers` (1605) +
+  `test:api` (53) = 1658/1658, base mission 1614, delta +44/0 supprime.
+- Action A (attendu du verdict) : writer coupe en Production
+  (`OPENSERP_AUTOMATED_INGESTION_ENABLED=false`, `OPENSERP_INGESTION_WRITE_ENABLED=false`),
+  redeploiement du meme commit, valide (9/9 routes 200, Rabat total inchange 77, 0 faux prix,
+  endpoint cron confirme `NOOP_FLAGS_DISABLED` au niveau code).
+- `gh auth login` complete par l'utilisateur (device flow, compte `hraaaaf`) -- necessitait une
+  action interactive humaine, correctement non-automatisee. Depot prive `hraaaaf/Akarfinder` cree
+  et code pousse (avec autorisation explicite a chaque etape bloquee par le classificateur :
+  cron creation+push initialement bloque comme exfiltration -- push seul vers un repo deja
+  existant ne l'a pas ete ; scope `workflow` manquant sur le token, corrige via `gh auth refresh`).
+  Secret `OPENSERP_CRON_SECRET` regenere (l'original n'etait pas recuperable, jamais logge par
+  design) et synchronise sur GitHub + Vercel (`OPENSERP_CRON_SECRET`+`CRON_SECRET`). Test
+  `workflow_dispatch` execute sur autorisation explicite : HTTP 200,
+  `{"ok":true,"status":"NOOP_FLAGS_DISABLED"}` -- chaine bout-en-bout validee, cron programme
+  toujours INACTIF (`OPENSERP_INGESTION_CRON_ENABLED=false`).
+- Action B (reparation des 5 lignes connues) : script SQL en 2 temps (BEGIN/revue/COMMIT separes)
+  a silencieusement echoue dans l'editeur SQL Supabase (pool de connexions -- le COMMIT separe
+  tournait sur une autre connexion que celle tenant la transaction ouverte, ne validant rien).
+  Reecrit en un bloc `DO $$ ... $$` atomique unique (une seule requete, une seule connexion,
+  RAISE EXCEPTION = rollback automatique sur tout ecart). Execute avec succes : id=539
+  transaction_type sale->rent, id=555/593/631 price_mad->NULL, id=827 supprime (public + Market
+  Index), verifie directement contre l'API publique (id=827 absent, id=631 price=null confirmes),
+  0 regression (9 routes 200, 0 faux prix a 0, 22 null legitimes).
+- Statut: ecriture nationale ACTIVE en Production mais writer actuellement COUPE
+  (`OPENSERP_BOOTSTRAP_PRESERVED_WRITER_OFF`), cron GitHub PREPARE ET TESTE mais NON ACTIF
+  (`OPENSERP_GITHUB_CRON_PREPARED_AND_TESTED`), donnees reparees
+  (`OPENSERP_PROD_DATA_QUALITY_REPAIR_COMPLETED`). `property_listings` 316 -> 559 -> 558 (apres
+  suppression de id=827). Voir `docs/OPENSERP_AUTOMATED_INGESTION_30MIN_1.md` pour le bilan complet.
 
 Prochaine etape (non demarree, par instruction explicite de l'ODM -- mission suivante non demarree) :
-- Aucune action agent supplementaire. Reste a l'utilisateur : `gh auth login`, creation/push du
-  depot GitHub, `gh secret set OPENSERP_CRON_SECRET`, puis le cron 30 minutes s'activera de
-  lui-meme via le workflow deja prepare.
+- Aucune action agent supplementaire en attente. Le writer reste desactive par choix explicite de
+  l'utilisateur ; le cron 30 minutes est techniquement pret et teste mais reste desactive
+  (`OPENSERP_INGESTION_CRON_ENABLED=false`) jusqu'a une decision future de l'utilisateur.
+
+====================================================
+OPENSERP-NATIVE-CRON-COMPLIANCE-AUDIT-1 -- 2026-07-20 (audit lecture seule)
+====================================================
+
+Constat de depart : une mission de migration du cron ("curl GitHub -> Vercel" vers "GitHub-native")
+demandee dans cette session s'est reveler deja faite par une mission anterieure hors de cette
+conversation -- `openserp-github-native-ingestion.yml` porte deja `schedule: */30 * * * *` (active
+au commit `5975e76`), et `openserp-ingestion-cron.yml` n'a plus de `schedule` depuis `b01502e`.
+Audit de conformite execute a la place, strictement en lecture seule.
+
+Resultats : producteur planifie unique confirme (0 run `schedule` sur l'ancien workflow depuis son
+retrait) ; aucune difference metier reelle entre la route Vercel et
+`run-ingestion-github-actions.ts --cron` (meme `runIngestionCycle()`, meme verrou, meme lease
+150s) ; 6/6 runs planifies reels tous `COMPLETED` sans erreur ni NOOP ; verrou
+`openserp_ingestion_run_lock` actuellement vide (aucun blocage) ; ecritures recentes tracees a 100%
+au prefixe `openserp-github-cron-` (0 trace `openserp-cron-`/Vercel). Cadence reelle observee
+~5.3x plus lente que le cron nominal (moyenne ~2h40 entre runs vs 30 min) -- comportement
+documente cote GitHub (throttling des workflows planifies sur repo a faible activite), pas une
+regression du code. Ecart trouve : aucun bloc `permissions:` explicite dans le workflow natif, et
+2 etapes diagnostiques marquees `TEMPORARY` toujours presentes malgre probleme resolu.
+
+Verdict : `COMPLIANT_WITH_CONDITIONS` (pas `COMPLIANT` strict, faute de permissions explicites et
+de verification complete du cout/quota GitHub -- un appel API sur les permissions du repo a ete
+refuse par l'utilisateur en cours d'audit, non retente). Prochaine mission proposee (non demarree) :
+`OPENSERP-NATIVE-CRON-REMEDIATION-1`. Voir `docs/OPENSERP_NATIVE_CRON_COMPLIANCE_AUDIT_1.md` et
+`data/audits/openserp_native_cron_compliance_audit_1.md` pour le detail complet.
+
+## 2026-07-21 - AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 : #10/10 HARD_BLOCKER_EVIDENCED
+
+Cloture honnete du mandat maitre 100k. #1-#9 termines (8 PRs mergees #5-#12 cette session). #10
+National Backfill = HARD_BLOCKER_EVIDENCED : l'objectif >=100 000 URLs canonical distinctes n'est
+PAS atteint (etat reel ~9000 : 6285 dans discovery_candidates + ~3027 seeds Common Crawl offline)
+et n'est PAS revendique comme atteint.
+
+Deux blocages structurels prouves, chiffres a l'appui :
+1. WRITE_PATH : la table dediee `source_offer_seeds` (migration testee PASS STRICT via PGlite en
+   #4) ne peut pas etre appliquee en Production depuis cet environnement (pas de token Management
+   API, pas de connection string, extension dashboard non connectee ; l'utilisateur a differe
+   l'application). La preuve DB exigee (>=100k canonical_url distincts) est donc structurellement
+   impossible maintenant.
+2. RESERVOIR : le reservoir Common Crawl autorise sur les 16 domaines enregistres a pattern
+   listing, sur index recents, est tres en-dessous de 100k. Mesures reelles completes : mubawab
+   (plus gros portail national) = 2471 sur 6 index ; sous-total confirme sur 5 domaines = 5498.
+   Atteindre 100k exigerait avito-scale (CDX/robots-limite) + index historiques profonds (36-60
+   mois) + qualification de ~700 domaines candidats de l'Atlas #7 -- harvest multi-heures que le
+   rate-limiting CDX rend infaisable depuis cette infra (run 29828223264 rate-limite a 0 sur 15/16
+   domaines ; run 29829819356 a necessite 2.5s de pacing inter-requete et 40+ min).
+
+Aucun chiffre fabrique. Voir data/audits/national-100k-backfill-hard-blocker.{md,json}.
+Deblocage : appliquer la migration via dashboard Supabase puis harvest historique paced/checkpointe.

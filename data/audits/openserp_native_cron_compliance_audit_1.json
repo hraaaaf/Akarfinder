@@ -1,0 +1,153 @@
+{
+  "mission": "OPENSERP-NATIVE-CRON-COMPLIANCE-AUDIT-1",
+  "status": "completed",
+  "verdict": "COMPLIANT_WITH_CONDITIONS",
+  "audited_at": "2026-07-20T15:45:00Z",
+  "scope": "read_only",
+  "modifications_made": [],
+  "single_producer": {
+    "confirmed": true,
+    "scheduled_workflow": "openserp-github-native-ingestion.yml",
+    "scheduled_workflow_display_name": "OpenSERP Native Ingestion (GitHub-hosted)",
+    "schedule_cron": "*/30 * * * *",
+    "schedule_activated_commit": "5975e76",
+    "legacy_workflow": "openserp-ingestion-cron.yml",
+    "legacy_workflow_trigger": "workflow_dispatch only",
+    "legacy_schedule_removed_commit": "b01502e",
+    "legacy_last_schedule_triggered_run_before_removal": "2026-07-18T18:53:46Z",
+    "legacy_schedule_triggered_runs_since_removal": 0,
+    "legacy_recent_runs_are_all": "workflow_dispatch (manual)"
+  },
+  "functional_equivalence_vercel_vs_native": {
+    "shared_function": "runIngestionCycle() in lib/openserp-ingestion/run-orchestrator.ts",
+    "shared_lock_functions": "acquireIngestionRunLock / releaseIngestionRunLock in lib/openserp-ingestion/run-lock.ts",
+    "shared_flag_gate": "isOpenSerpIngestionCronAuthorized() in lib/openserp-ingestion/openserp-ingestion-feature-flags.ts",
+    "shared_lock_lease_seconds": 150,
+    "shared_route_max_duration_ms": 120000,
+    "vercel_route_file": "app/api/internal/cron/openserp-ingestion/route.ts",
+    "native_script_file": "scripts/openserp/run-ingestion-github-actions.ts",
+    "real_business_logic_differences_found": [],
+    "structural_non_business_differences": [
+      "Vercel route additionally validates an HTTP Authorization bearer header (isAuthorized()) -- not applicable to a CLI invocation, not a business-logic difference",
+      "run_id prefix differs: 'openserp-cron-' (Vercel) vs 'openserp-github-cron-' (native) -- cosmetic/traceability only"
+    ]
+  },
+  "permissions": {
+    "explicit_permissions_block_present": false,
+    "finding": "openserp-github-native-ingestion.yml declares no top-level 'permissions:' key -- it implicitly inherits the repository's default Actions token permissions, which is not verifiable from the workflow file alone.",
+    "meets_minimal_explicit_criterion": false,
+    "secrets_referenced": [
+      "SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY",
+      "OPENSERP_AUTOMATED_INGESTION_ENABLED",
+      "OPENSERP_INGESTION_WRITE_ENABLED",
+      "OPENSERP_INGESTION_CRON_ENABLED"
+    ],
+    "secret_values_displayed": false,
+    "no_new_secret_required": true,
+    "note": "All 5 secrets already exist and are already used successfully by 6/6 real scheduled runs -- no gap in credential availability.",
+    "extra_flagged_item": "Two steps explicitly commented 'TEMPORARY diagnostic... Remove once the SUPABASE_URL issue is confirmed/resolved' still read SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY beyond the single ingestion step, despite the underlying issue being demonstrably resolved (6/6 successful runs). Not a new secret, not a value leak, but unnecessary residual access surface.",
+    "job_level_timeout_minutes_set": false
+  },
+  "run_history_sample": {
+    "workflow": "openserp-github-native-ingestion.yml",
+    "total_runs_available": 18,
+    "scheduled_runs": 6,
+    "workflow_dispatch_runs": 12,
+    "scheduled_runs_conclusion": "6/6 success",
+    "workflow_dispatch_runs_conclusion": "8/12 success, 4/12 failure (all 4 predate schedule activation, pre-go-live validation/debug phase on 2026-07-19)",
+    "runs": [
+      {"id": 29755243935, "event": "schedule", "conclusion": "success", "created_at": "2026-07-20T15:27:24Z", "job_wall_s": 83, "openserp_start_ms": 14458, "health_wait_ms": 1196, "ingest_ms": 36803, "planned_unit_count": 4, "executed_unit_count": 4, "status": "COMPLETED"},
+      {"id": 29746141631, "event": "schedule", "conclusion": "success", "created_at": "2026-07-20T13:24:47Z", "job_wall_s": 61, "openserp_start_ms": 8890, "health_wait_ms": 1037, "ingest_ms": 24581, "planned_unit_count": 4, "executed_unit_count": 4, "status": "COMPLETED"},
+      {"id": 29738228683, "event": "schedule", "conclusion": "success", "created_at": "2026-07-20T11:20:51Z", "job_wall_s": 59, "openserp_start_ms": 7824, "health_wait_ms": 1036, "ingest_ms": 22199, "planned_unit_count": 4, "executed_unit_count": 4, "status": "COMPLETED"},
+      {"id": 29727691304, "event": "schedule", "conclusion": "success", "created_at": "2026-07-20T08:22:55Z", "job_wall_s": 62, "openserp_start_ms": 7239, "health_wait_ms": 1052, "ingest_ms": 26556, "planned_unit_count": 4, "executed_unit_count": 4, "status": "COMPLETED"},
+      {"id": 29718229979, "event": "schedule", "conclusion": "success", "created_at": "2026-07-20T05:02:55Z", "job_wall_s": 67, "openserp_start_ms": 8266, "health_wait_ms": 1032, "ingest_ms": 27307, "planned_unit_count": 4, "executed_unit_count": 4, "status": "COMPLETED"},
+      {"id": 29710423171, "event": "schedule", "conclusion": "success", "created_at": "2026-07-20T01:06:10Z", "job_wall_s": 66, "openserp_start_ms": 8649, "health_wait_ms": 1038, "ingest_ms": 29961, "planned_unit_count": 4, "executed_unit_count": 4, "status": "COMPLETED"},
+      {"id": 29707968036, "event": "schedule", "conclusion": "success", "created_at": "2026-07-19T23:28:21Z", "job_wall_s": 70, "note": "first scheduled run after activation"},
+      {"id": 29707957664, "event": "workflow_dispatch", "conclusion": "success", "created_at": "2026-07-19T23:27:59Z", "job_wall_s": 65},
+      {"id": 29705162845, "event": "workflow_dispatch", "conclusion": "success", "created_at": "2026-07-19T21:53:30Z", "job_wall_s": 69},
+      {"id": 29704755241, "event": "workflow_dispatch", "conclusion": "success", "created_at": "2026-07-19T21:39:34Z", "job_wall_s": 63},
+      {"id": 29703760113, "event": "workflow_dispatch", "conclusion": "failure", "created_at": "2026-07-19T21:06:22Z", "job_wall_s": 52, "note": "pre-go-live validation failure"},
+      {"id": 29703136101, "event": "workflow_dispatch", "conclusion": "success", "created_at": "2026-07-19T20:46:23Z", "job_wall_s": 56},
+      {"id": 29702246997, "event": "workflow_dispatch", "conclusion": "success", "created_at": "2026-07-19T20:18:02Z", "job_wall_s": 54},
+      {"id": 29702159309, "event": "workflow_dispatch", "conclusion": "success", "created_at": "2026-07-19T20:15:14Z", "job_wall_s": 55},
+      {"id": 29700621525, "event": "workflow_dispatch", "conclusion": "success", "created_at": "2026-07-19T19:27:09Z", "job_wall_s": 708, "note": "outlier duration, pre-go-live debugging run"},
+      {"id": 29700283863, "event": "workflow_dispatch", "conclusion": "failure", "created_at": "2026-07-19T19:16:38Z", "job_wall_s": 37, "note": "pre-go-live validation failure"},
+      {"id": 29700157050, "event": "workflow_dispatch", "conclusion": "failure", "created_at": "2026-07-19T19:12:28Z", "job_wall_s": 40, "note": "pre-go-live validation failure"},
+      {"id": 29699821110, "event": "workflow_dispatch", "conclusion": "failure", "created_at": "2026-07-19T19:02:01Z", "job_wall_s": 45, "note": "pre-go-live validation failure"}
+    ],
+    "noop_observed_in_schedule_runs": 0,
+    "errors_observed_in_schedule_runs": 0
+  },
+  "cadence": {
+    "nominal_cron": "*/30 * * * *",
+    "nominal_interval_s": 1800,
+    "observed_gaps_between_schedule_runs_s": [5869, 14205, 12000, 10676, 7436, 7357],
+    "observed_avg_gap_s": 9590,
+    "observed_avg_gap_vs_nominal_ratio": 5.33,
+    "observation_window_start": "2026-07-19T23:28:21Z",
+    "observation_window_end": "2026-07-20T15:27:24Z",
+    "observation_window_hours": 16.0,
+    "expected_runs_at_nominal_cadence": 32,
+    "actual_scheduled_runs": 6,
+    "explanation": "GitHub documents that scheduled workflow runs are best-effort and may be delayed or dropped under platform load, with reduced frequency on lower-activity repositories -- this is expected platform behavior for the 'schedule' trigger, not a defect in this workflow's own configuration.",
+    "assessed_as": "acceptable_for_this_business_context_but_should_be_documented_as_a_known_condition"
+  },
+  "consumption": {
+    "github_actions": {
+      "runs_in_window": 6,
+      "total_wall_time_s": 398,
+      "avg_wall_time_s": 66.3,
+      "runner": "ubuntu-latest",
+      "billing_api_checked": false,
+      "billing_api_note": "A read-only call to the repo Actions-permissions API was declined by the user during this audit; plan/quota comparison against actual GitHub billing was not attempted afterward to respect that instruction. Only observed run-minutes are reported here, no invented quota figures."
+    },
+    "openserp_docker": {
+      "avg_container_start_ms": 9221,
+      "avg_health_wait_ms": 1065,
+      "note": "ephemeral per-run container, no persistent hosting cost"
+    },
+    "supabase": {
+      "discovery_candidates_total_rows": 7756,
+      "property_listings_total_rows": 577,
+      "recent_writes_run_id_prefixes_observed": ["openserp-github-cron-2026-07-20T15-28-07-891Z", "openserp-github-cron-2026-07-20T13-25-20-918Z", "openserp-github-cron-2026-07-20T11-21-25-535Z"],
+      "vercel_prefixed_run_ids_observed_in_recent_writes": 0
+    },
+    "vercel": {
+      "note": "no longer receiving scheduled ingestion traffic; route remains callable manually for fallback/debug only, 0 scheduled invocations observed since cutover"
+    },
+    "monthly_projection": {
+      "basis": "observed cadence, not nominal cron",
+      "observed_runs_per_day_approx": 9,
+      "observed_minutes_per_month_approx": 9,
+      "caveat": "extrapolated from a 16h sample only; not a verified billing figure"
+    }
+  },
+  "shared_lock_and_writes": {
+    "lock_table": "openserp_ingestion_run_lock",
+    "lock_table_current_state": "empty (no held lock)",
+    "release_confirmed_in_every_sampled_run_log": true,
+    "stuck_lock_observed": false,
+    "writes_traced_to_runIngestionCycle_only": true,
+    "evidence": "3 distinct ingestion_run_id values found across the 60 most recent discovery_candidates rows, all with the 'openserp-github-cron-' prefix used only by the native script; 0 rows with the Vercel route's 'openserp-cron-' prefix in this sample."
+  },
+  "risks": [
+    {"risk": "No explicit permissions: block", "severity": "medium", "recommendation": "Add permissions: contents: read (or narrower) at workflow level"},
+    {"risk": "Two residual TEMPORARY diagnostic steps still read Supabase secrets beyond what current operation requires", "severity": "low", "recommendation": "Remove now that the original SUPABASE_URL issue is confirmed resolved (6/6 successful runs)"},
+    {"risk": "No job-level timeout-minutes set (GitHub default is 360 minutes)", "severity": "low", "recommendation": "Add an explicit timeout-minutes cap (e.g. 10) -- the DB lease already self-heals at the business-logic level, this would bound wasted Actions runner time on a genuine hang"},
+    {"risk": "Schedule cadence runs ~5.3x slower than nominal (GitHub platform throttling on a low-activity repo)", "severity": "informational", "recommendation": "Document as an accepted, expected characteristic; do not treat as a regression"},
+    {"risk": "GitHub Actions billing/quota not independently verified via API in this audit", "severity": "informational", "recommendation": "Check via repository Settings UI in a future pass if precise quota comparison is needed"}
+  ],
+  "success_criteria_check": {
+    "single_scheduled_producer_confirmed": true,
+    "explicit_minimal_permissions": false,
+    "no_unnecessary_secret_or_git_content_access": "partially -- two residual diagnostic steps flagged",
+    "cadence_observed_and_explained": true,
+    "cadence_acceptable": "yes, for this business context",
+    "no_recurring_critical_failure": true,
+    "shared_lock_operational": true,
+    "costs_observed_and_documented": "partially -- billing API not queried, run-minute observation only",
+    "no_production_modification_in_this_audit": true
+  },
+  "next_mission": "OPENSERP-NATIVE-CRON-REMEDIATION-1"
+}

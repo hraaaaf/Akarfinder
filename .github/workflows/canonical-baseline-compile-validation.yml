@@ -1,0 +1,56 @@
+name: Canonical Baseline Compile Validation
+
+# P0.3 independent compile gates. Kept separate so a known/pre-existing
+# TypeScript failure cannot prevent the Production build from being tested.
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: TypeScript check
+        id: tsc
+        shell: bash
+        run: |
+          set +e
+          npx tsc --noEmit > tsc-output.txt 2>&1
+          code=$?
+          cat tsc-output.txt
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit "$code"
+      - name: Upload TypeScript diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: canonical-baseline-tsc-output
+          path: tsc-output.txt
+          retention-days: 7
+          if-no-files-found: error
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Production build
+        run: npm run build

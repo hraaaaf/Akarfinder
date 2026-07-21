@@ -1,10 +1,33 @@
 {
   "audit_id": "openserp-automated-ingestion-final-result",
   "mission": "AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1",
-  "generated_at_utc": "2026-07-18T11:00:00Z",
-  "overall_status": "PARTIALLY_ACTIVATED",
-  "national_write_status": "ACTIVE_IN_PRODUCTION",
-  "cron_30min_status": "PREPARED_NOT_ACTIVE_BLOCKED_ON_USER_GITHUB_AUTH",
+  "generated_at_utc": "2026-07-18T13:10:00Z",
+  "overall_status": "OPENSERP_BOOTSTRAP_COMPLETED_CRON_PREPARED_WRITER_OFF",
+  "national_write_status": "WRITER_DISABLED_BY_EXPLICIT_USER_DECISION",
+  "cron_30min_status": "OPENSERP_GITHUB_CRON_PREPARED_AND_TESTED_NOT_ACTIVE",
+  "data_quality_repair_status": "OPENSERP_PROD_DATA_QUALITY_REPAIR_COMPLETED",
+  "post_verdict_actions": {
+    "action_a_writer_disabled_and_redeployed": {
+      "flags_set_false": ["OPENSERP_AUTOMATED_INGESTION_ENABLED", "OPENSERP_INGESTION_WRITE_ENABLED"],
+      "redeployed": true,
+      "validated": "9/9 routes 200, Rabat total unchanged (77), 0 price===0, cron endpoint code-confirmed NOOP_FLAGS_DISABLED"
+    },
+    "github_cron_activation": {
+      "gh_auth_login": "completed by user (device flow, account hraaaaf)",
+      "repo": "hraaaaf/Akarfinder (private)",
+      "workflow_scope_missing_then_fixed": "gh auth refresh -s workflow",
+      "cron_secret": "regenerated (original was never logged by design, unrecoverable), synced to GitHub secret + Vercel OPENSERP_CRON_SECRET/CRON_SECRET",
+      "workflow_dispatch_test": { "http_status": 200, "response": "{\"ok\":true,\"status\":\"NOOP_FLAGS_DISABLED\"}" },
+      "scheduled_cron_still_disabled": true
+    },
+    "action_b_data_quality_repair": {
+      "first_attempt_2step_sql_silently_failed": "Supabase pooled SQL editor ran the standalone COMMIT on a different connection than the one holding the open transaction; nothing was actually committed despite apparent success",
+      "fix": "rewritten as single atomic DO $$ ... $$ block, self-verifying, RAISE EXCEPTION = automatic rollback on any mismatch",
+      "result": "id=539 transaction_type sale->rent, id=555/593/631 price_mad->NULL, id=827 removed (property_listings+listing_sources cascade+property_clusters+property_cluster_members), discovery_candidates left untouched (audit trail, never public)",
+      "verified_against_live_public_api": "id=827 absent, id=631 price=null confirmed directly",
+      "property_listings_559_to_558": true
+    }
+  },
   "tests": {
     "gate_a_pglite": "PASS",
     "gate_b_real_postgres": "PASS",

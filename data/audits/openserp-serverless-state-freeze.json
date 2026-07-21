@@ -1,0 +1,65 @@
+{
+  "status": "OPENSERP_SERVERLESS_STATE_FIX_FROZEN",
+  "mission": "OPENSERP-SERVERLESS-STATE-PERSISTENCE-1",
+  "frozen_at_utc": "2026-07-18T16:40:00Z",
+  "head": {
+    "sha": "ea2dae39208ab09cbba8123af4b58ed4756fc912",
+    "branch": "fix/openserp-serverless-state-persistence",
+    "descends_from_expected_commit": "ea2dae3",
+    "is_ancestor_check": "PASS (HEAD is ea2dae3 itself)",
+    "worktree_clean": true
+  },
+  "pre_freeze_reconciliation": {
+    "test_scrapers": { "total": 1613, "pass": 1613, "fail": 0 },
+    "test_api": { "total": 53, "pass": 53, "fail": 0 },
+    "combined_total": { "total": 1666, "pass": 1666, "fail": 0, "matches_expected": true },
+    "build": { "status": "PASS", "pages_generated": "63/63", "compiled_in": "43s" },
+    "tsc_noEmit": {
+      "status": "FAIL_PRE_EXISTING_OUT_OF_SCOPE",
+      "error_count": 1,
+      "file": "lib/market-reference/__tests__/public-safety.test.ts",
+      "line": 31,
+      "code": "TS2352",
+      "identical_to_previously_documented_error": true,
+      "no_new_errors": true
+    },
+    "git_diff_check": "PASS (no whitespace errors)"
+  },
+  "file_hashes": {
+    "migrations": {
+      "20260718140000_create_openserp_query_rotation_state.sql": "6aca50a21d2aa42095ef7e3434496881faf6c0152179b018aa421687e52b5236",
+      "20260718140100_create_openserp_engine_budget_state.sql": "3db3c6e321c502c6045afb4e091071e3b1ff6f34e100ffc63e2fdc64cd3f276f"
+    },
+    "seed": {
+      "openserp-serverless-state-seed.sql": "12facb44cb375ceac67f7652c40779f4f3c0ced9f2d3b8ff78b2377ee9c01130",
+      "openserp-serverless-state-seed.json": "eda1f964fe9543699f8b2a86ef6ec0f641dde18f1c41fee95bcddaf424b41a4b"
+    }
+  },
+  "migration_identity_check": {
+    "description": "Diff of both migration files between the commit that introduced them (f1d1e62 / 227cfd4) and HEAD",
+    "result": "ZERO DIFF -- byte-identical to the schema validated by the full Gate B run (data/audits/openserp-serverless-state-gate-b.json)"
+  },
+  "post_gate_b_commit_scope_check": {
+    "commits": ["d1c5a04", "ea2dae3"],
+    "diffstat_vs_b8f7bcd": "7 files changed, 3335 insertions(+), 0 deletions(-)",
+    "files_touched": [
+      "data/audits/openserp-serverless-state-gate-b.json",
+      "data/audits/openserp-serverless-state-gate-b-seed-reconfirmation.json",
+      "data/audits/openserp-serverless-state-realistic-gate.json",
+      "data/audits/openserp-serverless-state-seed.json",
+      "data/audits/openserp-serverless-state-seed.sql",
+      "scripts/openserp/generate-serverless-state-seed.ts",
+      "scripts/openserp/__gate__/realistic-serverless-write-guard.ts"
+    ],
+    "schema_files_touched": false,
+    "application_code_touched": false,
+    "conclusion": "Both commits are purely additive audit/tooling artifacts (reports + gate/seed scripts under scripts/, excluded from tsc and from the committed test suite). No modification to the schema already validated by Gate B, no modification to run-orchestrator.ts or any state/*.ts file."
+  },
+  "production_state": {
+    "production_touched": false,
+    "supabase_production_touched": false,
+    "writer": "OFF",
+    "cron": "OFF"
+  },
+  "rule_after_freeze": "Any further correction requires SERVERLESS_STATE_FIX_BLOCKED_REQUIRES_CODE_CHANGE -- no patch-and-continue. Code, SQL, seed and tests are frozen as of ea2dae3."
+}

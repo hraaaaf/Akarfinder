@@ -122,6 +122,211 @@ test("classifyOpenSerpResult rejects Avito search hubs", () => {
   assert.notEqual(actual.classification_lane, "individual_listing");
 });
 
+// OPENSERP-CLASSIFY-OUT-OF-SCOPE-TOKEN-BOUNDARY-FIX-1
+test("classifyOpenSerpResult rejects genuine furniture content via out_of_scope_token (mobilier as its own word)", () => {
+  const actual = classifyOpenSerpResult({
+    query: baseQuery,
+    engine: "bing",
+    discovered_at: "2026-07-20T11:00:00.000Z",
+    fallbackRank: 1,
+    result: {
+      id: "r5",
+      title: "Mobilier de bureau a Casablanca",
+      snippet: "Grand choix de meubles et mobilier de bureau pour professionnels",
+      url: "https://example.com/mobilier-bureau-casablanca",
+      domain: "example.com",
+    },
+  });
+
+  assert.ok(actual);
+  assert.equal(actual.classification_lane, "reject_out_of_scope");
+  assert.ok(actual.classification_reasons.includes("out_of_scope_token"));
+});
+
+test("classifyOpenSerpResult never rejects 'immobilier' (real estate) via the mobilier token", () => {
+  const actual = classifyOpenSerpResult({
+    query: baseQuery,
+    engine: "bing",
+    discovered_at: "2026-07-20T11:00:00.000Z",
+    fallbackRank: 1,
+    result: {
+      id: "r6",
+      title: "Agence immobilier Casablanca Maarif",
+      snippet: "Appartement a vendre 1 200 000 DH, 85 m2, 3 chambres",
+      url: "https://example.com/immobilier/appartement-a-vendre-456",
+      domain: "example.com",
+    },
+  });
+
+  assert.ok(actual);
+  assert.ok(!actual.classification_reasons.includes("out_of_scope_token"));
+});
+
+test("classifyOpenSerpResult never rejects 'immobiliere' (accented) via the mobilier token", () => {
+  const actual = classifyOpenSerpResult({
+    query: baseQuery,
+    engine: "bing",
+    discovered_at: "2026-07-20T11:00:00.000Z",
+    fallbackRank: 1,
+    result: {
+      id: "r7",
+      title: "Agence immobiliere Casablanca",
+      snippet: "Appartement a vendre 1 200 000 DH, 85 m2, 3 chambres a Maarif",
+      url: "https://example.com/immobiliere/appartement-a-vendre-789",
+      domain: "example.com",
+    },
+  });
+
+  assert.ok(actual);
+  assert.ok(!actual.classification_reasons.includes("out_of_scope_token"));
+});
+
+test("classifyOpenSerpResult never rejects a domain name containing 'immobilier' via the mobilier token", () => {
+  const actual = classifyOpenSerpResult({
+    query: baseQuery,
+    engine: "bing",
+    discovered_at: "2026-07-20T11:00:00.000Z",
+    fallbackRank: 1,
+    result: {
+      id: "r8",
+      title: "Appartement a vendre Maarif Casablanca",
+      snippet: "Appartement de 96 m2 avec 2 chambres a Casablanca Maarif, 1 450 000 DH",
+      url: "https://kawtarimmobilier.com/vente/appartement-a-vendre-maarif-ref-123.html",
+      domain: "kawtarimmobilier.com",
+    },
+  });
+
+  assert.ok(actual);
+  assert.ok(!actual.classification_reasons.includes("out_of_scope_token"));
+});
+
+// OPENSERP-CLASSIFY-KAWTARIMMOBILIER-LOCATION-PATTERN-1
+const kawtarQuery: OpenSerpIngestionQuery = {
+  ...baseQuery,
+  transaction_type: "rent",
+  property_type: "apartment",
+  query_text: "appartement a louer Essaouira",
+};
+
+function kawtarResult(overrides: { title: string; snippet: string; url: string }) {
+  return {
+    query: kawtarQuery,
+    engine: "bing" as const,
+    discovered_at: "2026-07-20T11:00:00.000Z",
+    fallbackRank: 1,
+    result: {
+      id: "kw",
+      domain: "kawtarimmobilier.com",
+      ...overrides,
+    },
+  };
+}
+
+test("kawtarimmobilier.com: /vente/...ref-NNN.html still matches strongIndividual", () => {
+  const actual = classifyOpenSerpResult(
+    kawtarResult({
+      title: "Appartement a vendre Essaouira Ref. 123",
+      snippet: "Appartement de 96 m2 avec 2 chambres a Essaouira, 1 450 000 DH",
+      url: "https://kawtarimmobilier.com/vente/appartement-a-vendre-essaouira-ref-123.html",
+    }),
+  );
+  assert.ok(actual);
+  assert.ok(actual.classification_reasons.includes("strong_individual_path"));
+});
+
+test("kawtarimmobilier.com: /location/...ref-NNN.html now matches strongIndividual", () => {
+  const actual = classifyOpenSerpResult(
+    kawtarResult({
+      title: "Bel Appartement à louer Location Appartement à Essaouira Réf. AL100",
+      snippet: "Bel Appartement en location dans un quartier calme d'une superficie de 100 m2",
+      url: "https://kawtarimmobilier.com/essaouira/location/appartement/bel-appartement-a-louer-ref-2285.html",
+    }),
+  );
+  assert.ok(actual);
+  assert.ok(actual.classification_reasons.includes("strong_individual_path"));
+});
+
+test("kawtarimmobilier.com: bare /location does not match strongIndividual", () => {
+  const actual = classifyOpenSerpResult(
+    kawtarResult({
+      title: "Kawtar Immobilier Essaouira",
+      snippet: "Découvrez ce charmant appartement à la location située sur la route de Casablanca offrant une superficie généreuse de 60 m",
+      url: "https://kawtarimmobilier.com/location",
+    }),
+  );
+  assert.ok(actual);
+  assert.ok(!actual.classification_reasons.includes("strong_individual_path"));
+});
+
+test("kawtarimmobilier.com: /essaouira/location category page does not match strongIndividual", () => {
+  const actual = classifyOpenSerpResult(
+    kawtarResult({
+      title: "Location Appartement Essaouira KAWTAR IMMOBILIER",
+      snippet: "Bel Appartement en location dans un quartier calme d'une superficie de 100 m2 composé de deux chambres",
+      url: "https://kawtarimmobilier.com/essaouira/location",
+    }),
+  );
+  assert.ok(actual);
+  assert.ok(!actual.classification_reasons.includes("strong_individual_path"));
+});
+
+test("kawtarimmobilier.com: /location/appartement/essaouira category page does not match strongIndividual", () => {
+  const actual = classifyOpenSerpResult(
+    kawtarResult({
+      title: "essaouira kawtarimmobilier.com",
+      snippet: "Appartement a louer, cette categorie est vide, retournez a la page d'accueil",
+      url: "https://kawtarimmobilier.com/location/appartement/essaouira",
+    }),
+  );
+  assert.ok(actual);
+  assert.ok(!actual.classification_reasons.includes("strong_individual_path"));
+});
+
+test("kawtarimmobilier.com: Joomla category query-string URL does not match strongIndividual", () => {
+  const actual = classifyOpenSerpResult(
+    kawtarResult({
+      title: "Agence immobiliere kawtarimmobilier.com",
+      snippet: "Appartement a louer, riche d'une experience de plus de 10 ans, connaissance du marche immobilier",
+      url: "https://kawtarimmobilier.com/?id=1&option=com_content&sectionid=1&task=category",
+    }),
+  );
+  assert.ok(actual);
+  assert.ok(!actual.classification_reasons.includes("strong_individual_path"));
+});
+
+test("kawtarimmobilier.com: homepage and language-variant homepage do not match strongIndividual", () => {
+  const home = classifyOpenSerpResult(
+    kawtarResult({
+      title: "KAWTAR IMMOBILIER Agence Immobiliere a Marrakech",
+      snippet: "Appartement a louer, achat location ou vente de riads villas terrains partout a Marrakech",
+      url: "https://kawtarimmobilier.com/",
+    }),
+  );
+  const homeEn = classifyOpenSerpResult(
+    kawtarResult({
+      title: "Kawtar Immobilier",
+      snippet: "Appartement a louer, splendide appartement disponible a la vente",
+      url: "https://kawtarimmobilier.com/en",
+    }),
+  );
+  assert.ok(home);
+  assert.ok(homeEn);
+  assert.ok(!home.classification_reasons.includes("strong_individual_path"));
+  assert.ok(!homeEn.classification_reasons.includes("strong_individual_path"));
+});
+
+test("kawtarimmobilier.com: ambiguous /b query-string URL does not match strongIndividual", () => {
+  const actual = classifyOpenSerpResult(
+    kawtarResult({
+      title: "Kawtar Immobilier",
+      snippet: "Appartement a louer, vous etes proprietaire d'un bien et souhaitez le vendre ou le louer",
+      url: "https://kawtarimmobilier.com/b?ie=UTF8&node=15614746031",
+    }),
+  );
+  assert.ok(actual);
+  assert.ok(!actual.classification_reasons.includes("strong_individual_path"));
+});
+
 test("parsePriceMad supports compact MDH notation", () => {
   assert.equal(parsePriceMad("Appartement 1,2 MDH a Casablanca"), 1200000);
 });

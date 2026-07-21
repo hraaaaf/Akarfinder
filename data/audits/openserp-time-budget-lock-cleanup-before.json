@@ -1,0 +1,36 @@
+{
+  "exported_at_utc": "2026-07-18T18:30:24.571Z",
+  "discovery_candidates_count_before": 7565,
+  "sentinel_row": {
+    "id": "3f9bb7b7-cf56-4322-ac35-8ee5cc9dd6bf",
+    "provider": "openserp-ingestion-lock",
+    "discovery_query": null,
+    "query_hash": "2999a97f0d8dbdecd81e01c2650e2d0bbec8ef5786fa638b236fc8dd12b557d1",
+    "result_rank": null,
+    "source_domain": "internal.akarfinder",
+    "source_url": "internal://openserp-ingestion-run-lock",
+    "canonical_url": "internal://openserp-ingestion-run-lock",
+    "title": null,
+    "snippet": null,
+    "discovered_at": "2026-07-18T17:46:28.736+00:00",
+    "last_seen_at": "2026-07-18T17:46:28.736+00:00",
+    "discovery_status": "discovered",
+    "compliance_status": null,
+    "content_fingerprint": null,
+    "metadata": {
+      "run_id": "openserp-cron-2026-07-18T17-46-28-731Z",
+      "locked_at": "2026-07-18T17:46:28.736Z"
+    },
+    "created_at": "2026-07-18T17:46:29.21779+00:00",
+    "updated_at": "2026-07-18T17:46:29.21779+00:00"
+  },
+  "other_counters_before": {
+    "property_listings": 558,
+    "listing_sources": 563,
+    "property_clusters": 419,
+    "property_cluster_members": 419,
+    "source_offer_observations": 0,
+    "openserp_query_rotation_state": 2718,
+    "openserp_engine_budget_state": 3
+  }
+}

@@ -1,0 +1,67 @@
+name: Canonical Baseline Validation
+
+# AKARFINDER-REPOSITORY-BASELINE-RECONCILIATION-1 — P0.3
+# Read-only CI gate for the reconciliation PR. No Production secrets, no DB
+# migrations, no deployment, no write-capable ingestion mode.
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout candidate ref
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Canonical workflow governance guard
+        run: npx tsx --test scripts/scrapers/__tests__/canonical-workflow-ref-guard.test.ts scripts/scrapers/__tests__/openserp-schedule-trigger-guard.test.ts
+
+      - name: Scraper regression suite
+        run: npm run test:scrapers
+
+      - name: API regression suite
+        run: npm run test:api
+
+      - name: OpenSERP ingestion suite
+        run: npm run test:openserp-ingestion
+
+      - name: OpenSERP time-budget and lock safety suite
+        run: npm run test:openserp-time-budget-and-lock-safety
+
+      - name: Market Index suite
+        run: npm run test:market-index
+
+      - name: Seed freshness suite
+        run: npm run test:seed-freshness
+
+      - name: Dedup clustering V2 suite
+        run: npm run test:dedup-clustering-v2
+
+      - name: Index lifecycle suite
+        run: npm run test:index-lifecycle
+
+      - name: Direct feeds suite
+        run: npm run test:direct-feeds
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build

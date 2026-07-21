@@ -14,11 +14,9 @@ name: SearXNG Yandex Shadow Benchmark (diagnostic, no DB access)
 #
 # Deliberately has ZERO Supabase credentials and ZERO DB access. No secrets
 # block anywhere in this file. No artifact upload beyond stdout/job logs
-# (same pattern as the comparison POC) -- results are read back via
-# `gh run view --log` after the run, never written anywhere by the job
-# itself. workflow_dispatch only, no schedule. Checks out the dedicated
-# poc/searxng-vs-openserp-discovery branch, same as the comparison POC --
-# never checks out or touches the production ingestion branch/pipeline.
+# (same pattern as the comparison POC). workflow_dispatch only, no schedule.
+# P0 canonical-baseline rule: checkout follows the workflow's own ref; the
+# diagnostic scripts are now part of canonical repository history.
 
 on:
   workflow_dispatch: {}
@@ -31,10 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - name: Checkout poc/searxng-vs-openserp-discovery
+      - name: Checkout canonical workflow ref
         uses: actions/checkout@v4
-        with:
-          ref: poc/searxng-vs-openserp-discovery
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

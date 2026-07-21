@@ -106,7 +106,10 @@ export type OpenSerpExtractedAttributes = {
 
 export type OpenSerpClassifiedResult = {
   query_id: string;
-  engine: Exclude<OpenSerpEngine, "google">;
+  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: "searxng_yandex" added for a
+  // result sourced only from the Yandex/SearXNG discovery channel (never
+  // seen by OpenSERP for this query). Purely a provenance label.
+  engine: Exclude<OpenSerpEngine, "google"> | "searxng_yandex";
   rank: number;
   original_url: string;
   canonical_source_url: string;
@@ -120,6 +123,14 @@ export type OpenSerpClassifiedResult = {
   raw_result_hash: string;
   provider_result_id: string | null;
   external_id: string | null;
+  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: optional, additive. When a
+  // canonical URL was found by more than one discovery channel in the same
+  // cycle (e.g. both OpenSERP and Yandex), the orchestrator records every
+  // channel that saw it here (e.g. ["duckduckgo", "searxng_yandex"])
+  // instead of creating a second candidate row. Undefined for every
+  // pre-existing caller that never sets it -- national-writer.ts falls
+  // back to a single-element array derived from `engine` in that case.
+  source_channels?: string[];
 };
 
 export type OpenSerpListingCandidate = OpenSerpClassifiedResult & {

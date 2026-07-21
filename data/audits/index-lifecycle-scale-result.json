@@ -1,0 +1,60 @@
+{
+  "gate_id": "index-lifecycle-scale-gate",
+  "mission": "AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 (#9/10)",
+  "generated_at_utc": "2026-07-21T08:35:07.716Z",
+  "engine": "@electric-sql/pglite (embedded WASM Postgres, ephemeral)",
+  "no_production_connection_made": true,
+  "no_production_data_used": true,
+  "synthetic_data": true,
+  "scales": {
+    "10000": {
+      "rows": 10000,
+      "batch_upsert_ms": 1017,
+      "idempotent_reupsert_added_rows": 0,
+      "public_search_ms": 3.19,
+      "public_indexed_rows": 1000,
+      "public_leakage": 0,
+      "lifecycle_tick_ms": 65.43,
+      "lifecycle_tick_rows_affected": 1000,
+      "status_index_used": true,
+      "explain_plan": "Aggregate  (cost=186.69..186.70 rows=1 width=8)   ->  Bitmap Heap Scan on index_lifecycle  (cost=4.91..186.48 rows=81 width=0)         Recheck Cond: (state = 'INDEXED'::text)         ->  Bitmap Index Scan on idx_lifecycle_state  (cost=0.00..4.89 rows=81 width=0)               Index Cond: (state = 'INDEXED'::text)"
+    },
+    "25000": {
+      "rows": 25000,
+      "batch_upsert_ms": 1392,
+      "idempotent_reupsert_added_rows": 0,
+      "public_search_ms": 4.72,
+      "public_indexed_rows": 1500,
+      "public_leakage": 0,
+      "lifecycle_tick_ms": 94.55,
+      "lifecycle_tick_rows_affected": 1500,
+      "status_index_used": true,
+      "explain_plan": "Aggregate  (cost=425.44..425.45 rows=1 width=8)   ->  Bitmap Heap Scan on index_lifecycle  (cost=5.75..424.97 rows=189 width=0)         Recheck Cond: (state = 'INDEXED'::text)         ->  Bitmap Index Scan on idx_lifecycle_state  (cost=0.00..5.71 rows=189 width=0)               Index Cond: (state = 'INDEXED'::text)"
+    },
+    "50000": {
+      "rows": 50000,
+      "batch_upsert_ms": 2487,
+      "idempotent_reupsert_added_rows": 0,
+      "public_search_ms": 7.76,
+      "public_indexed_rows": 2500,
+      "public_leakage": 0,
+      "lifecycle_tick_ms": 134.49,
+      "lifecycle_tick_rows_affected": 2500,
+      "status_index_used": true,
+      "explain_plan": "Aggregate  (cost=788.51..788.52 rows=1 width=8)   ->  Bitmap Heap Scan on index_lifecycle  (cost=7.02..787.63 rows=352 width=0)         Recheck Cond: (state = 'INDEXED'::text)         ->  Bitmap Index Scan on idx_lifecycle_state  (cost=0.00..6.93 rows=352 width=0)               Index Cond: (state = 'INDEXED'::text)"
+    },
+    "100000": {
+      "rows": 100000,
+      "batch_upsert_ms": 3402,
+      "idempotent_reupsert_added_rows": 0,
+      "public_search_ms": 5.46,
+      "public_indexed_rows": 5000,
+      "public_leakage": 0,
+      "lifecycle_tick_ms": 150.87,
+      "lifecycle_tick_rows_affected": 5000,
+      "status_index_used": true,
+      "explain_plan": "Aggregate  (cost=1463.91..1463.92 rows=1 width=8)   ->  Bitmap Heap Scan on index_lifecycle  (cost=9.37..1462.28 rows=655 width=0)         Recheck Cond: (state = 'INDEXED'::text)         ->  Bitmap Index Scan on idx_lifecycle_state  (cost=0.00..9.21 rows=655 width=0)               Index Cond: (state = 'INDEXED'::text)"
+    }
+  },
+  "overall_verdict": "PASS_STRICT"
+}

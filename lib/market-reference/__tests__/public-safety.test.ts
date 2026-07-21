@@ -28,7 +28,7 @@ test("public lifestyle summary returns qualitative labels only", () => {
 
   assert.equal(summary.city, "Casablanca");
   assert.equal(typeof summary.lifestyle_indicators.urban_calm, "string");
-  assert.equal("value_low" in (summary as Record<string, unknown>), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(summary, "value_low"), false);
   assert.equal(summary.lifestyle_indicators.urban_calm.includes("prix"), false);
 });
 

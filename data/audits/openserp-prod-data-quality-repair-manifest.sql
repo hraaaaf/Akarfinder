@@ -1,100 +1,114 @@
 -- OPENSERP-PROD-DATA-QUALITY-REPAIR-1
 -- Manifest for the 5 known open items from AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1.
--- Run in the Supabase SQL editor, Production project, as one transaction.
--- Review the SELECT ("BEFORE") outputs before letting the transaction COMMIT.
+--
+-- Single-paste, single-statement version. A prior 2-step version (separate
+-- BEGIN...review...COMMIT pastes) silently did nothing in Supabase's pooled
+-- SQL editor: the standalone "COMMIT;" ran on a different pooled connection
+-- than the one holding the open transaction, so it committed nothing, and
+-- the real transaction was later dropped when its connection recycled.
+--
+-- This version is one single DO block = one statement = one round trip on
+-- one connection. Postgres auto-commits it as a whole if it completes, and
+-- auto-rolls-back the whole thing if any RAISE EXCEPTION fires inside it --
+-- no separate COMMIT/ROLLBACK step, no room for a pooling mismatch.
+--
+-- Run this ENTIRE block in one paste. Read the NOTICE lines in the
+-- Supabase SQL editor's results/logs panel afterward to see what happened.
+--
 -- Scope: exactly these 5 property_listings rows. Nothing else is touched.
--- Nothing here invents a value: 555/593/631 go to NULL (not a guessed price),
--- 539 only flips to 'rent' because the stored title itself says so, 827 is
--- removed because it is a confirmed category/hub page, not a unit.
+-- Nothing here invents a value: 555/593/631 go to NULL (not a guessed
+-- price), 539 only flips to 'rent' because the stored title itself says
+-- so, 827 is removed because it is a confirmed category/hub page, not a
+-- unit. If any check fails, the whole thing aborts automatically -- no
+-- partial writes are possible.
 
-BEGIN;
+DO $$
+DECLARE
+  v_listings_before   int;
+  v_sources_before    int;
+  v_clusters_before   int;
+  v_members_before    int;
+  v_listings_after    int;
+  v_sources_after     int;
+  v_clusters_after    int;
+  v_members_after     int;
+  v_539_tx            text;
+  v_555_price         bigint;
+  v_593_price         bigint;
+  v_631_price         bigint;
+  v_827_count         int;
+BEGIN
+  SELECT count(*) INTO v_listings_before FROM property_listings;
+  SELECT count(*) INTO v_sources_before  FROM listing_sources;
+  SELECT count(*) INTO v_clusters_before FROM property_clusters;
+  SELECT count(*) INTO v_members_before  FROM property_cluster_members;
+  RAISE NOTICE 'BEFORE: property_listings=%, listing_sources=%, property_clusters=%, property_cluster_members=%',
+    v_listings_before, v_sources_before, v_clusters_before, v_members_before;
 
--- ============================================================
--- BEFORE snapshot -- run this first and read the output
--- ============================================================
-SELECT id, title, transaction_type, price_mad, source_name, listing_url, updated_at
-FROM property_listings
-WHERE id IN (539, 555, 593, 631, 827)
-ORDER BY id;
+  -- 1) id=539: transaction_type sale -> rent (title itself reads "a Louer")
+  UPDATE property_listings
+  SET transaction_type = 'rent', updated_at = now()
+  WHERE id = 539 AND transaction_type = 'sale';
 
--- ============================================================
--- 1) id=539 -- transaction_type sale -> rent
---    Basis: the stored title itself reads "a Louer" (rent); this was
---    reproduced directly against toTransactionType() on the exact stored
---    text during this mission and independently confirmed "rent". The
---    guard "AND transaction_type = 'sale'" makes this a no-op if the row
---    was already corrected or no longer matches the known bad state.
--- ============================================================
-UPDATE property_listings
-SET transaction_type = 'rent',
-    updated_at = now()
-WHERE id = 539
-  AND transaction_type = 'sale';
+  -- 2) id=555, 593, 631: implausible price -> NULL (never a guessed value)
+  UPDATE property_listings SET price_mad = NULL, updated_at = now()
+  WHERE id = 555 AND price_mad = 50000000;
 
--- ============================================================
--- 2) id=555, 593, 631 -- implausible price -> NULL (never a guessed value)
---    Known bad values being cleared: 50,000,000 / 312,490,000 / 32,224,000 MAD.
---    The guard on price_mad makes this a no-op if a value has already
---    changed since the snapshot above.
--- ============================================================
-UPDATE property_listings
-SET price_mad = NULL,
-    updated_at = now()
-WHERE id = 555 AND price_mad = 50000000;
+  UPDATE property_listings SET price_mad = NULL, updated_at = now()
+  WHERE id = 593 AND price_mad = 312490000;
 
-UPDATE property_listings
-SET price_mad = NULL,
-    updated_at = now()
-WHERE id = 593 AND price_mad = 312490000;
+  UPDATE property_listings SET price_mad = NULL, updated_at = now()
+  WHERE id = 631 AND price_mad = 32224000;
 
-UPDATE property_listings
-SET price_mad = NULL,
-    updated_at = now()
-WHERE id = 631 AND price_mad = 32224000;
+  -- 3) id=827: confirmed category/hub page, not one unit. Market Index
+  --    objects first (no ON DELETE CASCADE on these two), then the public
+  --    offer itself (cascades to listing_sources automatically).
+  DELETE FROM property_cluster_members
+  WHERE property_cluster_id = (
+    SELECT id FROM property_clusters WHERE legacy_property_listing_id = 827
+  );
 
--- ============================================================
--- 3) id=827 -- confirmed category/hub page (mubawab.ma/fr/st/el-jadida/
---    maisons-a-vendre, no numeric listing id in the URL), not one unit.
---    Remove its Market Index objects first (FK order matters: no ON DELETE
---    CASCADE on property_clusters/property_cluster_members), then the
---    public offer itself. Deleting property_listings cascades to
---    listing_sources automatically (ON DELETE CASCADE is set there).
---    discovery_candidates is left untouched -- it is an internal audit
---    trail, never public, and out of scope ("l'offre publique et ses
---    objets Market Index associes" only).
--- ============================================================
-DELETE FROM property_cluster_members
-WHERE property_cluster_id = (
-  SELECT id FROM property_clusters WHERE legacy_property_listing_id = 827
-);
+  DELETE FROM property_clusters
+  WHERE legacy_property_listing_id = 827;
 
-DELETE FROM property_clusters
-WHERE legacy_property_listing_id = 827;
+  DELETE FROM property_listings
+  WHERE id = 827;
 
-DELETE FROM property_listings
-WHERE id = 827;
+  -- ============================================================
+  -- Verification -- if ANY of this doesn't hold, abort everything.
+  -- ============================================================
+  SELECT transaction_type INTO v_539_tx FROM property_listings WHERE id = 539;
+  SELECT price_mad INTO v_555_price FROM property_listings WHERE id = 555;
+  SELECT price_mad INTO v_593_price FROM property_listings WHERE id = 593;
+  SELECT price_mad INTO v_631_price FROM property_listings WHERE id = 631;
+  SELECT count(*) INTO v_827_count FROM property_listings WHERE id = 827;
 
--- ============================================================
--- AFTER snapshot -- confirm the expected end state before COMMIT:
---   539  -> 1 row, transaction_type = 'rent'
---   555, 593, 631 -> 3 rows, price_mad IS NULL
---   827  -> 0 rows (and its listing_sources/cluster/membership rows gone)
--- ============================================================
-SELECT id, title, transaction_type, price_mad, source_name, listing_url, updated_at
-FROM property_listings
-WHERE id IN (539, 555, 593, 631, 827)
-ORDER BY id;
+  SELECT count(*) INTO v_listings_after FROM property_listings;
+  SELECT count(*) INTO v_sources_after  FROM listing_sources;
+  SELECT count(*) INTO v_clusters_after FROM property_clusters;
+  SELECT count(*) INTO v_members_after  FROM property_cluster_members;
 
-SELECT (SELECT count(*) FROM property_listings)        AS property_listings_count,
-       (SELECT count(*) FROM listing_sources)           AS listing_sources_count,
-       (SELECT count(*) FROM property_clusters)          AS property_clusters_count,
-       (SELECT count(*) FROM property_cluster_members)   AS property_cluster_members_count;
--- Expected: property_listings 559 -> 558, listing_sources 564 -> 563,
--- property_clusters 420 -> 419, property_cluster_members 420 -> 419.
--- Everything else must be byte-for-byte unchanged from before this script.
+  RAISE NOTICE 'AFTER: id539.transaction_type=%, id555.price_mad=%, id593.price_mad=%, id631.price_mad=%, id827_count=%',
+    v_539_tx, v_555_price, v_593_price, v_631_price, v_827_count;
+  RAISE NOTICE 'AFTER: property_listings=%, listing_sources=%, property_clusters=%, property_cluster_members=%',
+    v_listings_after, v_sources_after, v_clusters_after, v_members_after;
 
--- If the AFTER snapshot and counts match the expected end state above:
-COMMIT;
+  IF v_539_tx IS DISTINCT FROM 'rent' THEN
+    RAISE EXCEPTION 'ABORT: id=539 transaction_type is % not rent', v_539_tx;
+  END IF;
+  IF v_555_price IS NOT NULL OR v_593_price IS NOT NULL OR v_631_price IS NOT NULL THEN
+    RAISE EXCEPTION 'ABORT: one of 555/593/631 still has a non-null price_mad (%, %, %)', v_555_price, v_593_price, v_631_price;
+  END IF;
+  IF v_827_count <> 0 THEN
+    RAISE EXCEPTION 'ABORT: id=827 still exists (% rows)', v_827_count;
+  END IF;
+  IF v_listings_after <> v_listings_before - 1 THEN
+    RAISE EXCEPTION 'ABORT: property_listings count changed by more than 1 (before=%, after=%)', v_listings_before, v_listings_after;
+  END IF;
+  IF v_clusters_after <> v_clusters_before - 1 OR v_members_after <> v_members_before - 1 THEN
+    RAISE EXCEPTION 'ABORT: property_clusters/members count changed unexpectedly (clusters %->%, members %->%)',
+      v_clusters_before, v_clusters_after, v_members_before, v_members_after;
+  END IF;
 
--- If anything looks wrong, run ROLLBACK; instead of COMMIT; and report back
--- before retrying.
+  RAISE NOTICE 'ALL CHECKS PASSED -- committing.';
+END $$;

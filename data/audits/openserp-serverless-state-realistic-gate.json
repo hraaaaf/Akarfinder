@@ -1,0 +1,44 @@
+{
+  "gate_id": "openserp-serverless-state-realistic-gate",
+  "mission": "OPENSERP-SERVERLESS-STATE-PERSISTENCE-1",
+  "generated_at_utc": "2026-07-18T15:21:51.452Z",
+  "engine": "@electric-sql/pglite (embedded WASM Postgres, ephemeral, in-process)",
+  "no_production_connection_made": true,
+  "no_production_data_used": true,
+  "no_real_network_call_made": true,
+  "migrations_applied": [
+    "20260718140000_create_openserp_query_rotation_state.sql",
+    "20260718140100_create_openserp_engine_budget_state.sql"
+  ],
+  "run_1": {
+    "status": "PASS",
+    "batch_selected": [
+      "rlt-q1",
+      "rlt-q2"
+    ],
+    "write_mode": false
+  },
+  "run_2": {
+    "status": "PASS",
+    "batch_selected": [
+      "rlt-q3",
+      "rlt-q4"
+    ],
+    "write_mode": true,
+    "writer_calls": 1
+  },
+  "second_invocation_uses_previous_state": true,
+  "query_state_persisted": true,
+  "engine_state_persisted": true,
+  "writer_layer_reached": true,
+  "filesystem_write_call_counts": {
+    "writeFileSync": 0,
+    "mkdirSync": 0,
+    "appendFileSync": 0,
+    "renameSync": 0,
+    "copyFileSync": 0
+  },
+  "filesystem_runtime_writes": 0,
+  "erofs_errors_thrown": 0,
+  "overall_verdict": "PASS"
+}

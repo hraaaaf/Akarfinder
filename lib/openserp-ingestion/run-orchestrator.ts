@@ -1,32 +1,108 @@
 // AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1 — sections 20-25.
+// OPENSERP-SERVERLESS-STATE-PERSISTENCE-1 — sections 6-10.
+// OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1 — Phases 3-6.
 // Orchestrates one ingestion cycle: pick a batch from the query universe via
 // the rotation planner, execute each query against up to 2 active (non-
 // suspended) engines, run every raw result through national-admission, then
 // (if write=true) persist via national-writer. Produces the full per-run
 // metrics shape section 25 requires. No direct fetch of any listing page —
 // only OpenSERP SERP results are ever read.
+//
+// query-universe-v1.json is read-only here (immutable_bundle_read) -- it is
+// NEVER written back to. The mutable rotation state (which queries have run,
+// when, with what yield) and the engine budget/backoff state both live in
+// PostgreSQL (lib/openserp-ingestion/state/*), not on the local filesystem.
+// A prior version of this file rewrote both back into local JSON files via
+// writeFileSync, which works when run through a local CLI script (writable
+// cwd) but crashes with EROFS the moment it runs inside a Vercel serverless
+// function (read-only /var/task bundle) -- see
+// docs/OPENSERP_SERVERLESS_FILESYSTEM_AUDIT.md for the full trace of how
+// this was found and confirmed to have written zero DB rows before crashing.
+//
+// A second incident (OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1; see
+// data/audits/openserp-serverless-state-real-run-attempt-result.json) found
+// that even after the EROFS fix, a real batch of real engine calls could
+// still run past Vercel's own platform-level FUNCTION_INVOCATION_TIMEOUT,
+// which kills the function with no chance to run any persistence code at
+// all. This file now: (a) tracks an internal time budget well inside the
+// route's maxDuration and stops issuing new work once it's exhausted, (b)
+// gives every engine call its own bounded, budget-aware timeout, (c) caps
+// how many queries a single serverless invocation may even attempt, and
+// (d) persists each query's rotation-state update immediately after that
+// query finishes (a "checkpoint"), rather than batching all persistence
+// until after the entire loop -- so a run that stops early (voluntarily on
+// budget, or is killed outright) never loses already-completed work.
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { runOpenSerpLiveQuery } from "./openserp-live";
+import { runOpenSerpLiveQuery, EngineCallError, DEFAULT_ENGINE_CALL_TIMEOUT_MS } from "./openserp-live";
+import {
+  classifyEngineErrorDetail,
+  sanitizeEngineErrorMessage,
+  logEngineCallAttempt,
+  type EngineErrorCategory,
+} from "./engine-error-diagnostics";
 import { selectNextBatch, markQueryExecuted, type RotationQuery } from "./query-rotation-planner";
 import { decideAdmission, type AdmissionDecision } from "./national-admission";
 import { writeNationalIngestionRun } from "./national-writer";
-import { activeEngines, defaultBudgetState, applyRunOutcome, type BudgetState } from "./budget-policy";
+import { activeEngines, applyRunOutcome, MAX_SERVERLESS_BATCH_SIZE, type BudgetState } from "./budget-policy";
+import {
+  hydrateRotationQueries,
+  persistRotationUpdates,
+  loadBudgetState,
+  persistBudgetState,
+  type StaticQueryDefinition,
+} from "./state/serverless-state-service";
+import type { OpenSerpEngineName } from "./state/query-rotation-state-repository";
+import { DbCallTimeoutError, TimeBudgetExhaustedBeforeDbCallError } from "./state/db-call-guard";
 import type { OpenSerpIngestionQuery } from "./types";
+import { createTimeBudget, remainingBudgetMs, elapsedMs, snapshotTimeBudget, DEFAULT_SAFETY_MARGIN_MS } from "./time-budget";
+import type { OpenSerpRawResult } from "@/lib/openserp-async/types";
+import { canonicalizeSourceUrl } from "./utils";
+// OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: additive second discovery channel,
+// completely isolated from openserp-live.ts/budget-policy.ts -- see
+// searxng-yandex-channel.ts's own header comment for the full rationale.
+import {
+  fetchYandexViaSearxng,
+  newYandexChannelMetrics,
+  computeCrossChannelOverlapMetrics,
+  SOURCE_CHANNEL_SEARXNG_YANDEX,
+  DEFAULT_SEARXNG_URL,
+  type YandexRawResult,
+  type YandexChannelMetrics,
+  type CrossChannelOverlapMetrics,
+} from "./searxng-yandex-channel";
 
-type UniverseQueryRecord = RotationQuery & {
+type UniverseQueryRecord = StaticQueryDefinition & {
   normalized_query: string;
-  transaction: "sale" | "rent";
-  property_type: string;
-  language: "fr" | "ar";
-  preferred_engine: "bing" | "duckduckgo" | "ecosia";
-  query_text: string;
-  target_domain: string | null;
-  query_family: "general" | "brand_hint";
+  // The JSON file may still carry these four fields from before this
+  // migration (or from the build-time generator) -- they are read here only
+  // as historical/documentary values on the static record and are NEVER
+  // used for rotation decisions. hydrateRotationQueries() always overwrites
+  // them with the current PostgreSQL-backed values.
+  last_executed_at?: string | null;
+  next_eligible_at?: string | null;
+  failure_count?: number;
+  discovery_yield?: number;
 };
 
-type UniverseFile = { queries: UniverseQueryRecord[] };
+type UniverseFile = { universe_version: string; queries: UniverseQueryRecord[] };
+
+// Matches route.ts's `export const maxDuration = 120;`. Kept as an
+// explicit, named, overridable default (routeMaxDurationMs input) rather
+// than importing from the route module (route.ts is a Next.js route file,
+// not meant to be imported by library code) -- the two are proven in sync
+// by scripts/scrapers/__tests__/openserp-time-budget-route-sync.test.ts.
+export const DEFAULT_ROUTE_MAX_DURATION_MS = 120_000;
+
+// Below this much remaining budget, don't even attempt one more engine
+// call -- a call that starts with almost no time left has no realistic
+// chance to finish inside the deadline anyway, and would just push the
+// invocation closer to the platform's own hard kill instead of stopping
+// cleanly on our own terms.
+const MIN_VIABLE_CALL_BUDGET_MS = 3_000;
+
+export type RunOutcomeStatus = "completed" | "partial" | "time_budget_exhausted";
 
 export type RunMetrics = {
   run_id: string;
@@ -61,40 +137,39 @@ export type RunMetrics = {
   price_presence_rate: number;
   surface_presence_rate: number;
   write_mode: boolean;
+  // OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1 additions:
+  outcome_status: RunOutcomeStatus;
+  planned_unit_count: number;
+  executed_unit_count: number;
+  state_persisted: boolean;
+  time_budget: ReturnType<typeof snapshotTimeBudget>;
+  // OPENSERP-ENGINE-FAILURE-OBSERVABILITY-1: purely additive diagnostic
+  // breakdown of every failed engine-call attempt this run made, at a
+  // finer grain than captcha_count/status_403_429/timeout_count above
+  // (which are unchanged and still drive the adaptive budget/suspension
+  // strategy in budget-policy.ts). This field feeds no strategy decision --
+  // it exists only so a run's "other"-bucket failures are explainable
+  // without re-running with extra instrumentation after the fact.
+  engine_error_category_breakdown: Partial<Record<EngineErrorCategory, number>>;
+  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: purely additive, entirely
+  // separate from every OpenSERP engine-budget metric above (engines_used,
+  // captcha_count, status_403_429, timeout_count, engine_error_category_
+  // breakdown never include anything from this channel). All-zero when
+  // yandexChannelEnabled is false (the default).
+  yandex_channel: YandexChannelMetrics;
+  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: pre-merge per-channel overlap,
+  // observability only -- computed from the same canonical URLs the merge
+  // step itself uses, never affects merge/dedupe/admission/checkpoint/
+  // writer behavior. All-zero when yandexChannelEnabled is false.
+  cross_channel_overlap: CrossChannelOverlapMetrics;
 };
 
 function loadUniverse(path: string): UniverseFile {
   return JSON.parse(readFileSync(path, "utf8")) as UniverseFile;
 }
 
-function saveUniverse(path: string, universe: UniverseFile): void {
-  const byTier: Record<number, number> = {};
-  const byLanguage: Record<string, number> = {};
-  for (const q of universe.queries) {
-    byTier[q.priority_tier] = (byTier[q.priority_tier] ?? 0) + 1;
-    byLanguage[q.language] = (byLanguage[q.language] ?? 0) + 1;
-  }
-  writeFileSync(
-    path,
-    JSON.stringify(
-      {
-        universe_version: "openserp-query-universe-v1",
-        generated_at: new Date().toISOString(),
-        total_queries: universe.queries.length,
-        by_priority_tier: byTier,
-        by_language: byLanguage,
-        cities_covered: [...new Set(universe.queries.map((q) => q.city))].length,
-        districts_covered: [...new Set(universe.queries.filter((q) => q.district).map((q) => `${q.city}::${q.district}`))].length,
-        queries: universe.queries,
-      },
-      null,
-      2,
-    ),
-    "utf8",
-  );
-}
-
 function categorizeError(error: unknown): "captcha" | "rate_limit" | "timeout" | "other" {
+  if (error instanceof EngineCallError && error.outcome === "engine_timeout") return "timeout";
   const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
   if (message.includes("captcha")) return "captcha";
   if (message.includes("429") || message.includes("rate limit") || message.includes("quota")) return "rate_limit";
@@ -106,35 +181,66 @@ export async function runIngestionCycle(input: {
   runId: string;
   scheduledAtIso: string;
   universePath?: string;
-  budgetStatePath?: string;
   write: boolean;
+  // OPENSERP-GITHUB-NATIVE-TRANSPORT-1: separate from `write`, which only
+  // gates the business write (writeNationalIngestionRun below). Defaults to
+  // true so every pre-existing caller (the Vercel cron route, the bootstrap
+  // CLI, and every existing test) keeps writing rotation/budget state
+  // exactly as before -- only a caller that explicitly passes
+  // persistState:false (the GitHub dry-run entrypoint) skips it.
+  persistState?: boolean;
   env?: NodeJS.ProcessEnv;
   // Bootstrap waves (section 22: 25/100/300) need an explicit batch size
-  // independent of the cron's adaptive engine-budget-state.json --
-  // WITHOUT this override, a wave silently ran at whatever the 30-minute
-  // cron's current_budget happened to be (e.g. 4, after a captcha-driven
-  // backoff), not the planned wave size. Found and fixed during this
-  // mission's own live Wave 1 apply (4/25 queries executed) -- see
-  // docs/OPENSERP_AUTOMATED_INGESTION_ARCHITECTURE.md.
+  // independent of the cron's adaptive engine budget state -- WITHOUT this
+  // override, a wave silently ran at whatever the 30-minute cron's
+  // current_budget happened to be (e.g. 4, after a captcha-driven backoff),
+  // not the planned wave size. Found and fixed during this mission's own
+  // live Wave 1 apply (4/25 queries executed) -- see
+  // docs/OPENSERP_AUTOMATED_INGESTION_ARCHITECTURE.md. When set, this ALSO
+  // bypasses MAX_SERVERLESS_BATCH_SIZE (the cap only applies to the
+  // serverless/cron path, which never sets this override).
   batchSizeOverride?: number;
   rawResultsDir?: string;
+  // OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1 additions:
+  routeMaxDurationMs?: number;
+  safetyMarginMs?: number;
+  now?: () => number;
+  engineCallTimeoutMs?: number;
 }): Promise<{ metrics: RunMetrics; decisions: AdmissionDecision[]; budgetState: BudgetState }> {
+  // universePath stays a read-only override (used by tests/fixtures only,
+  // per OPENSERP-SERVERLESS-STATE-PERSISTENCE-1 section 12) -- it is never
+  // written back to. There is no local budget-state file path anymore: engine budget
+  // state is always PostgreSQL-backed, for both the serverless route and
+  // any local CLI script running with write=true, so the two never diverge.
   const universePath = input.universePath ?? join(process.cwd(), "data/openserp/query-universe-v1.json");
-  const budgetStatePath = input.budgetStatePath ?? join(process.cwd(), "data/openserp/engine-budget-state.json");
+  const now = input.now ?? Date.now;
+  const timeBudget = createTimeBudget({
+    routeMaxDurationMs: input.routeMaxDurationMs ?? DEFAULT_ROUTE_MAX_DURATION_MS,
+    safetyMarginMs: input.safetyMarginMs ?? DEFAULT_SAFETY_MARGIN_MS,
+    now,
+  });
+  const engineCallTimeoutMs = input.engineCallTimeoutMs ?? DEFAULT_ENGINE_CALL_TIMEOUT_MS;
+  const persistState = input.persistState ?? true;
 
-  const startedAt = new Date().toISOString();
+  const startedAt = new Date(now()).toISOString();
   const universe = loadUniverse(universePath);
-  const budgetState: BudgetState = existsSync(budgetStatePath)
-    ? (JSON.parse(readFileSync(budgetStatePath, "utf8")) as BudgetState)
-    : defaultBudgetState();
+  const dbCtx = { timeBudget, now };
+  const hydratedQueries = await hydrateRotationQueries(universe.queries, universe.universe_version, dbCtx);
+  const budgetState: BudgetState = await loadBudgetState(dbCtx);
 
   const engines = activeEngines(budgetState, startedAt);
-  const budget = input.batchSizeOverride ?? budgetState.current_budget;
-  const batch = selectNextBatch(universe.queries, budget, startedAt);
+  const requestedBudget = input.batchSizeOverride ?? Math.min(budgetState.current_budget, MAX_SERVERLESS_BATCH_SIZE);
+  const plannedBatch = selectNextBatch(hydratedQueries, requestedBudget, startedAt);
   const rawResultsLog: unknown[] = [];
 
   const decisions: AdmissionDecision[] = [];
-  const enginesUsed = new Set<string>();
+  // OPENSERP-ENGINE-BUDGET-LAST-SUCCESS-SEMANTICS-1: this set is also the
+  // source of truth persistBudgetState uses to decide which engines'
+  // last_success_at may advance -- an engine only ever lands here inside
+  // the success branch below (engine-error-diagnostics failures never add
+  // to it), so "in enginesUsed" already means exactly "got >=1 real
+  // success this run", with no separate tracking needed.
+  const enginesUsed = new Set<OpenSerpEngineName>();
   let querySuccessCount = 0;
   let queryFailureCount = 0;
   let rawResultsCount = 0;
@@ -143,109 +249,330 @@ export async function runIngestionCycle(input: {
   let timeoutCount = 0;
   const enginesWithIncident = new Set<"bing" | "duckduckgo" | "ecosia">();
   const canonicalUrlsSeen = new Set<string>();
+  const engineErrorCategoryBreakdown: Partial<Record<EngineErrorCategory, number>> = {};
 
-  const updatedByQueryId = new Map<string, UniverseQueryRecord>();
+  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: off by default (undefined/any
+  // value other than the literal "true" leaves every query's merge step a
+  // pure pass-through of OpenSERP's own raw results, byte-identical to
+  // pre-dual-lane behavior). Deliberately a plain env var, not a GitHub
+  // secret -- Yandex/SearXNG needs no credential, only a reachable local
+  // container. Never read from openserp_engine_budget_state or any
+  // DB-backed flag -- this is a pure runtime toggle for this discovery
+  // channel, orthogonal to the OPENSERP_INGESTION_* business-write gates.
+  const runtimeEnv = input.env ?? process.env;
+  const yandexChannelEnabled = runtimeEnv.OPENSERP_YANDEX_CHANNEL_ENABLED === "true";
+  const searxngUrl = runtimeEnv.OPENSERP_SEARXNG_LOCAL_URL ?? DEFAULT_SEARXNG_URL;
+  const yandexMetrics = newYandexChannelMetrics();
+  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1 -- observability only, no
+  // behavior change. Each channel's own canonical URLs this run, tracked
+  // BEFORE the per-query merge step below folds them together -- lets
+  // computeCrossChannelOverlapMetrics report the true incremental gain
+  // Yandex contributes, independent of the merged candidate count. Only
+  // ever sized/intersected at the end, never logged URL-by-URL.
+  const openserpCanonicalUrlsThisRun = new Set<string>();
+  const yandexCanonicalUrlsThisRun = new Set<string>();
 
-  for (const universeQuery of batch) {
+  let outcomeStatus: RunOutcomeStatus = "completed";
+  let executedCount = 0;
+
+  for (const universeQuery of plannedBatch) {
+    // Single unified threshold for "can we responsibly even start the next
+    // unit of work": MIN_VIABLE_CALL_BUDGET_MS, not just isTimeBudgetExhausted
+    // (which only trips at exactly zero remaining). Checking only the
+    // looser isTimeBudgetExhausted here would let the loop "burn through"
+    // every remaining planned query doing zero real engine calls each
+    // (since the per-engine-attempt check below would refuse all of them
+    // too, without time ever advancing) and still report "completed" --
+    // this check makes the run stop and honestly report
+    // time_budget_exhausted the moment it can no longer afford one more
+    // real unit of work, rather than silently no-op through the rest of
+    // the batch.
+    if (remainingBudgetMs(timeBudget, now) < MIN_VIABLE_CALL_BUDGET_MS) {
+      outcomeStatus = "time_budget_exhausted";
+      break;
+    }
+
     const attemptEngines = [universeQuery.preferred_engine, ...engines.filter((e) => e !== universeQuery.preferred_engine)].filter(
       (engine) => engines.includes(engine),
     ).slice(0, 2);
 
     let succeeded = false;
     let acceptedForThisQuery = 0;
+    let usedEngine: OpenSerpEngineName | undefined;
 
-    for (const engine of attemptEngines) {
-      try {
-        const execution = await runOpenSerpLiveQuery({
-          engine,
-          query: universeQuery.query_text,
-          limit: 15,
-          site: universeQuery.target_domain ?? undefined,
-          env: input.env,
-        });
-        enginesUsed.add(engine);
-        querySuccessCount += 1;
-        succeeded = true;
-        rawResultsCount += execution.response.results.length;
+    // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: raw results are collected here
+    // instead of being classified immediately per engine attempt --
+    // classification now happens exactly once, after merging with the
+    // Yandex channel below, so a canonical URL found by more than one
+    // channel is never classified or written twice. All OpenSERP-side
+    // bookkeeping (enginesUsed, querySuccessCount/queryFailureCount,
+    // captcha/rate-limit/timeout counters, enginesWithIncident,
+    // engineErrorCategoryBreakdown, engine-budget-relevant `succeeded`/
+    // `usedEngine`) is untouched, still derived exclusively from the
+    // OpenSERP attempts below -- Yandex never influences any of it.
+    const openserpRawResults: Array<{ raw: OpenSerpRawResult; engine: OpenSerpEngineName; fetchedAt: string }> = [];
 
-        const query: OpenSerpIngestionQuery = {
-          query_id: universeQuery.query_id,
-          city: universeQuery.city,
-          district: universeQuery.district ?? "",
-          transaction_type: universeQuery.transaction,
-          property_type: universeQuery.property_type,
-          query_text: universeQuery.query_text,
-          priority: universeQuery.priority_tier <= 1 ? "high" : universeQuery.priority_tier === 2 ? "medium" : "low",
-          target_domain: universeQuery.target_domain ?? undefined,
-          query_family: universeQuery.query_family,
-        };
+    const runOpenserpAttempts = async (): Promise<void> => {
+      for (const engine of attemptEngines) {
+        const remaining = remainingBudgetMs(timeBudget, now);
+        if (remaining < MIN_VIABLE_CALL_BUDGET_MS) {
+          // Not enough budget left to responsibly start another network
+          // call -- stop attempting further engines for this query (and,
+          // via the outer loop's own check, further queries too).
+          break;
+        }
+        // Never request a per-call timeout longer than what's actually left
+        // in the invocation's own budget -- a slow engine can shrink its own
+        // allotted time as the run progresses, but can never be handed more
+        // time than the invocation could possibly honor.
+        const perCallTimeoutMs = Math.max(1_000, Math.min(engineCallTimeoutMs, remaining - 500));
+        const attemptStartedAtIso = new Date(now()).toISOString();
+        const attemptStartTime = now();
 
-        for (let i = 0; i < execution.response.results.length; i += 1) {
-          const raw = execution.response.results[i];
-          const decision = decideAdmission({
-            result: raw,
-            query,
+        try {
+          const execution = await runOpenSerpLiveQuery({
             engine,
-            discovered_at: execution.response.fetched_at,
-            fallbackRank: i + 1,
+            query: universeQuery.query_text,
+            limit: 15,
+            site: universeQuery.target_domain ?? undefined,
+            env: input.env,
+            timeoutMs: perCallTimeoutMs,
           });
-          decisions.push(decision);
-          if (decision.classified) {
-            canonicalUrlsSeen.add(decision.classified.canonical_source_url);
-          }
-          if (decision.admitted) acceptedForThisQuery += 1;
-          // Persisted for debuggability (never used for admission itself) --
-          // this mission found a discrepancy between a title's clear
-          // content-derived transaction intent and the value ultimately
-          // written, and had no log to root-cause it from. Only the
-          // already-PII-redacted classified.title is logged, and only when
-          // the candidate carries no PII-related rejection reason -- an
-          // auto-mode safety review correctly flagged an earlier version of
-          // this code for logging the raw, pre-redaction SERP title/URL
-          // directly, which could have persisted a phone number from a
-          // listing title into a committed file. The URL is never logged
-          // here at all (URLs are never passed through redaction anywhere
-          // in this codebase, so a URL carrying PII in a query string could
-          // otherwise leak through even after this fix). Never written to
-          // any DB table, only to a local run-report file.
-          const candidateHasPiiFlag = decision.reasons.includes("pii_or_secret_detected");
-          rawResultsLog.push({
+          logEngineCallAttempt({
+            engine,
             query_id: universeQuery.query_id,
-            query_text: universeQuery.query_text,
-            query_transaction: universeQuery.transaction,
+            attempt_outcome: "success",
+            category: "success",
+            error_name: null,
+            error_code: null,
+            http_status: null,
+            message: null,
+            duration_ms: now() - attemptStartTime,
+            started_at: attemptStartedAtIso,
+            finished_at: new Date(now()).toISOString(),
+          });
+          enginesUsed.add(engine);
+          querySuccessCount += 1;
+          succeeded = true;
+          usedEngine = engine;
+          rawResultsCount += execution.response.results.length;
+          for (const raw of execution.response.results) {
+            openserpRawResults.push({ raw, engine, fetchedAt: execution.response.fetched_at });
+          }
+
+          if (execution.response.results.length > 0) break; // got usable results, stop attempting more engines
+        } catch (error) {
+          queryFailureCount += 1;
+          const category = categorizeError(error);
+          if (category === "captcha") {
+            captchaCount += 1;
+            enginesWithIncident.add(engine);
+          } else if (category === "rate_limit") {
+            status403429 += 1;
+            enginesWithIncident.add(engine);
+          } else if (category === "timeout") {
+            timeoutCount += 1;
+          }
+
+          // OPENSERP-ENGINE-FAILURE-OBSERVABILITY-1: additive diagnostics only
+          // -- never overrides the categorization/counters above, which still
+          // drive the budget/suspension strategy exactly as before.
+          const isEngineCallError = error instanceof EngineCallError;
+          const diagOutcome = isEngineCallError ? error.outcome : null;
+          const diagErrorName = isEngineCallError ? error.name : error instanceof Error ? error.name : "UnknownError";
+          const diagErrorCode = isEngineCallError ? error.errorCode : null;
+          const diagHttpStatus = isEngineCallError ? error.httpStatus : null;
+          const diagMessage = error instanceof Error ? error.message : String(error);
+          const detailCategory = classifyEngineErrorDetail({
+            outcome: diagOutcome,
+            errorName: diagErrorName,
+            errorCode: diagErrorCode,
+            httpStatus: diagHttpStatus,
+            message: diagMessage,
+          });
+          engineErrorCategoryBreakdown[detailCategory] = (engineErrorCategoryBreakdown[detailCategory] ?? 0) + 1;
+          logEngineCallAttempt({
             engine,
-            redacted_title: candidateHasPiiFlag ? null : (decision.classified?.title ?? null),
-            admitted: decision.admitted,
-            extracted_transaction_type: decision.classified?.extracted.transaction_type ?? null,
+            query_id: universeQuery.query_id,
+            attempt_outcome: "failure",
+            category: detailCategory,
+            error_name: diagErrorName,
+            error_code: diagErrorCode,
+            http_status: diagHttpStatus,
+            message: sanitizeEngineErrorMessage(diagMessage),
+            duration_ms: now() - attemptStartTime,
+            started_at: attemptStartedAtIso,
+            finished_at: new Date(now()).toISOString(),
           });
         }
+      }
+    };
 
-        if (execution.response.results.length > 0) break; // got usable results, stop attempting more engines
-      } catch (error) {
-        queryFailureCount += 1;
-        const category = categorizeError(error);
-        if (category === "captcha") {
-          captchaCount += 1;
-          enginesWithIncident.add(engine);
-        } else if (category === "rate_limit") {
-          status403429 += 1;
-          enginesWithIncident.add(engine);
-        } else if (category === "timeout") {
-          timeoutCount += 1;
-        }
+    // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: additive, fail-safe second
+    // discovery channel. fetchYandexViaSearxng never throws (catches every
+    // failure internally and records it into yandexMetrics), so a Yandex
+    // outage always degrades to an empty array here -- the OpenSERP
+    // attempts above are never gated on this promise's outcome, and when
+    // yandexChannelEnabled is false (the default) this resolves to []
+    // without any network call at all, making the merge below a pure
+    // pass-through of openserpRawResults.
+    const runYandexAttempt = async (): Promise<YandexRawResult[]> => {
+      if (!yandexChannelEnabled) return [];
+      return fetchYandexViaSearxng({ queryText: universeQuery.query_text, searxngUrl, metrics: yandexMetrics });
+    };
+
+    const [, yandexRawResults] = await Promise.all([runOpenserpAttempts(), runYandexAttempt()]);
+    const yandexFetchedAtIso = new Date(now()).toISOString();
+
+    // Merge: canonicalize both channels' URLs (the exact same
+    // canonicalizeSourceUrl classify.ts itself will use later, so this
+    // dedupe key and classify.ts's own canonical_source_url never
+    // disagree) and dedupe by canonical URL -- the same canonical_url
+    // found by both OpenSERP and Yandex becomes ONE merged entry
+    // (OpenSERP's raw title/snippet/rank wins when both found it), each
+    // entry remembering every channel that saw it. classified exactly
+    // once, below. When yandexRawResults is [] (channel disabled or
+    // failed), this is a byte-identical pass-through of openserpRawResults
+    // in their original order.
+    type MergedEntry = { raw: OpenSerpRawResult; engine: OpenSerpEngineName | "searxng_yandex"; fetchedAt: string; channels: Set<string> };
+    const merged = new Map<string, MergedEntry>();
+    let uncanonicalizableCount = 0;
+    for (const { raw, engine, fetchedAt } of openserpRawResults) {
+      const url = raw.url ?? raw.link;
+      const canonical = url ? canonicalizeSourceUrl(url) : null;
+      if (canonical) openserpCanonicalUrlsThisRun.add(canonical); // observability only, computed BEFORE merge/dedupe
+      const key = canonical ?? `__uncanonicalizable__${uncanonicalizableCount++}`;
+      const existing = merged.get(key);
+      if (existing) existing.channels.add(engine);
+      else merged.set(key, { raw, engine, fetchedAt, channels: new Set([engine]) });
+    }
+    for (const yr of yandexRawResults) {
+      const canonical = canonicalizeSourceUrl(yr.url);
+      if (canonical) yandexCanonicalUrlsThisRun.add(canonical); // observability only, computed BEFORE merge/dedupe
+      const key = canonical ?? `__uncanonicalizable__${uncanonicalizableCount++}`;
+      const existing = merged.get(key);
+      if (existing) existing.channels.add(SOURCE_CHANNEL_SEARXNG_YANDEX);
+      else {
+        merged.set(key, {
+          raw: { url: yr.url, title: yr.title, snippet: yr.snippet ?? undefined, rank: yr.rank },
+          engine: SOURCE_CHANNEL_SEARXNG_YANDEX,
+          fetchedAt: yandexFetchedAtIso,
+          channels: new Set([SOURCE_CHANNEL_SEARXNG_YANDEX]),
+        });
       }
     }
 
-    updatedByQueryId.set(
-      universeQuery.query_id,
-      markQueryExecuted(universeQuery, { executedAtIso: startedAt, succeeded, acceptedCount: acceptedForThisQuery }),
-    );
+    const query: OpenSerpIngestionQuery = {
+      query_id: universeQuery.query_id,
+      city: universeQuery.city,
+      district: universeQuery.district ?? "",
+      transaction_type: universeQuery.transaction,
+      property_type: universeQuery.property_type,
+      query_text: universeQuery.query_text,
+      priority: universeQuery.priority_tier <= 1 ? "high" : universeQuery.priority_tier === 2 ? "medium" : "low",
+      target_domain: universeQuery.target_domain ?? undefined,
+      query_family: universeQuery.query_family,
+    };
+
+    let fallbackRank = 0;
+    for (const entry of merged.values()) {
+      fallbackRank += 1;
+      const decision = decideAdmission({
+        result: entry.raw,
+        query,
+        engine: entry.engine,
+        discovered_at: entry.fetchedAt,
+        fallbackRank,
+      });
+      decisions.push(decision);
+      if (decision.classified) {
+        // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: additive provenance --
+        // every channel that saw this canonical URL this cycle, not just
+        // the one whose raw title/snippet/rank was used above.
+        decision.classified.source_channels = [...entry.channels];
+        canonicalUrlsSeen.add(decision.classified.canonical_source_url);
+      }
+      if (decision.admitted) acceptedForThisQuery += 1;
+      // Persisted for debuggability (never used for admission itself) --
+      // this mission found a discrepancy between a title's clear
+      // content-derived transaction intent and the value ultimately
+      // written, and had no log to root-cause it from. Only the
+      // already-PII-redacted classified.title is logged, and only when
+      // the candidate carries no PII-related rejection reason -- an
+      // auto-mode safety review correctly flagged an earlier version of
+      // this code for logging the raw, pre-redaction SERP title/URL
+      // directly, which could have persisted a phone number from a
+      // listing title into a committed file. The URL is never logged
+      // here at all (URLs are never passed through redaction anywhere
+      // in this codebase, so a URL carrying PII in a query string could
+      // otherwise leak through even after this fix). Never written to
+      // any DB table, only to a local run-report file.
+      const candidateHasPiiFlag = decision.reasons.includes("pii_or_secret_detected");
+      rawResultsLog.push({
+        query_id: universeQuery.query_id,
+        query_text: universeQuery.query_text,
+        query_transaction: universeQuery.transaction,
+        engine: entry.engine,
+        redacted_title: candidateHasPiiFlag ? null : (decision.classified?.title ?? null),
+        admitted: decision.admitted,
+        extracted_transaction_type: decision.classified?.extracted.transaction_type ?? null,
+      });
+    }
+
+    const updatedQuery = {
+      ...markQueryExecuted(universeQuery, { executedAtIso: new Date(now()).toISOString(), succeeded, acceptedCount: acceptedForThisQuery }),
+      succeeded,
+      engine: usedEngine,
+    };
+
+    // Checkpoint: persist THIS query's rotation-state update immediately,
+    // rather than accumulating every query's update and persisting once
+    // after the whole loop finishes. Idempotent (upsertQueryStates is a
+    // plain upsert keyed by query_id) -- if this exact call were retried,
+    // re-persisting the same already-correct row is a no-op in effect, not
+    // a double-count. If the invocation is killed the instant after this
+    // call returns, every query completed so far is already durable; only
+    // the query in flight (if any) is lost, and it was never marked
+    // executed in the first place, so the next invocation will simply
+    // select it again.
+    //
+    // OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1 Phase 9: a checkpoint
+    // that can't complete within the remaining budget (refused up front,
+    // or aborted mid-flight) must end the run CLEANLY as
+    // time_budget_exhausted, not crash it -- the affected query's rotation
+    // state is simply unchanged, so the next invocation reselects it, and
+    // every previously checkpointed unit stays durable. Any other DB error
+    // still propagates loudly.
+    // OPENSERP-GITHUB-NATIVE-TRANSPORT-1: persistState=false skips this
+    // checkpoint entirely -- no DB call is made, so there is no DB-timeout
+    // failure mode to handle here; the query is simply counted as executed
+    // in-memory. persistState=true (the default) keeps this branch
+    // byte-for-byte identical to the pre-existing behavior.
+    if (persistState) {
+      try {
+        await persistRotationUpdates([updatedQuery], input.runId, universe.universe_version, dbCtx);
+        executedCount += 1;
+      } catch (error) {
+        if (error instanceof DbCallTimeoutError || error instanceof TimeBudgetExhaustedBeforeDbCallError) {
+          outcomeStatus = "time_budget_exhausted";
+          break;
+        }
+        throw error;
+      }
+    } else {
+      executedCount += 1;
+    }
   }
 
-  // Write back rotation state for every query (executed ones updated, others untouched).
-  universe.queries = universe.queries.map((q) => updatedByQueryId.get(q.query_id) ?? q);
-  saveUniverse(universePath, universe);
+  if (executedCount < plannedBatch.length && outcomeStatus === "completed") {
+    outcomeStatus = "partial";
+  }
 
+  // rawResultsDir is local_cli_only (OPENSERP_SERVERLESS_FILESYSTEM_AUDIT.md
+  // section 5): the serverless route never sets it, only the bootstrap CLI
+  // script does, on a genuinely writable local filesystem. Guarded by the
+  // same "if (input.rawResultsDir)" check the filesystem-guard test
+  // (openserp-serverless-filesystem-guard.test.ts) statically verifies.
   if (input.rawResultsDir) {
     mkdirSync(input.rawResultsDir, { recursive: true });
     writeFileSync(join(input.rawResultsDir, `${input.runId}-raw-results.json`), JSON.stringify(rawResultsLog, null, 2), "utf8");
@@ -253,7 +580,7 @@ export async function runIngestionCycle(input: {
 
   let writeResult: Awaited<ReturnType<typeof writeNationalIngestionRun>> | null = null;
   if (input.write) {
-    writeResult = await writeNationalIngestionRun({ runId: input.runId, decisions });
+    writeResult = await writeNationalIngestionRun({ runId: input.runId, decisions, dbCtx });
   }
 
   const acceptedCandidates = decisions.filter((d) => d.admitted).length;
@@ -268,7 +595,7 @@ export async function runIngestionCycle(input: {
   const admittedWithPrice = decisions.filter((d) => d.admitted && d.classified?.extracted.price_mad != null).length;
   const admittedWithSurface = decisions.filter((d) => d.admitted && d.classified?.extracted.surface_m2 != null).length;
 
-  const finishedAt = new Date().toISOString();
+  const finishedAt = new Date(now()).toISOString();
   const errorRate = querySuccessCount + queryFailureCount > 0 ? queryFailureCount / (querySuccessCount + queryFailureCount) : 0;
 
   const nextBudgetState = applyRunOutcome(
@@ -283,15 +610,41 @@ export async function runIngestionCycle(input: {
     },
     finishedAt,
   );
-  writeFileSync(budgetStatePath, JSON.stringify(nextBudgetState, null, 2), "utf8");
+  // Persisted unconditionally, including on a "partial"/"time_budget_exhausted"
+  // early exit -- an arrêt volontaire must still preserve whatever budget/
+  // suspension signal was actually observed on the units that did run.
+  // If even this last write can't fit in the remaining budget, ending the
+  // run cleanly matters more than this non-critical write (engine budget
+  // simply stays at its previous value; suspension signals from this run
+  // are re-derivable on the next) -- report it via state_persisted=false
+  // rather than crashing at the very end.
+  // OPENSERP-GITHUB-NATIVE-TRANSPORT-1: same persistState gate as the
+  // per-query checkpoint above. persistState=true keeps this branch
+  // byte-for-byte identical to the pre-existing behavior; persistState=false
+  // never calls persistBudgetState at all and honestly reports
+  // state_persisted=false (no persistence was attempted).
+  let statePersisted = true;
+  if (persistState) {
+    try {
+      await persistBudgetState(nextBudgetState, input.runId, dbCtx, enginesUsed);
+    } catch (error) {
+      if (error instanceof DbCallTimeoutError || error instanceof TimeBudgetExhaustedBeforeDbCallError) {
+        statePersisted = false;
+      } else {
+        throw error;
+      }
+    }
+  } else {
+    statePersisted = false;
+  }
 
   const metrics: RunMetrics = {
     run_id: input.runId,
     scheduled_at: input.scheduledAtIso,
     started_at: startedAt,
     finished_at: finishedAt,
-    duration_ms: new Date(finishedAt).getTime() - new Date(startedAt).getTime(),
-    query_count: batch.length,
+    duration_ms: elapsedMs(timeBudget, now),
+    query_count: executedCount,
     query_success_count: querySuccessCount,
     query_failure_count: queryFailureCount,
     engines_used: [...enginesUsed],
@@ -314,10 +667,18 @@ export async function runIngestionCycle(input: {
     captcha_count: captchaCount,
     status_403_429: status403429,
     timeout_count: timeoutCount,
-    cities_covered: [...new Set(batch.map((q) => q.city))].length,
+    cities_covered: [...new Set(plannedBatch.slice(0, executedCount).map((q) => q.city))].length,
     price_presence_rate: acceptedCandidates > 0 ? Math.round((admittedWithPrice / acceptedCandidates) * 1000) / 1000 : 0,
     surface_presence_rate: acceptedCandidates > 0 ? Math.round((admittedWithSurface / acceptedCandidates) * 1000) / 1000 : 0,
     write_mode: input.write,
+    outcome_status: outcomeStatus,
+    planned_unit_count: plannedBatch.length,
+    executed_unit_count: executedCount,
+    state_persisted: statePersisted,
+    time_budget: snapshotTimeBudget(timeBudget, now),
+    engine_error_category_breakdown: engineErrorCategoryBreakdown,
+    yandex_channel: yandexMetrics,
+    cross_channel_overlap: computeCrossChannelOverlapMetrics(openserpCanonicalUrlsThisRun, yandexCanonicalUrlsThisRun),
   };
 
   return { metrics, decisions, budgetState: nextBudgetState };

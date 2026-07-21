@@ -1,0 +1,29 @@
+{
+  "mission": "OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-2",
+  "phase": "3_pre_migration_snapshot",
+  "generated_at_utc": "2026-07-18T22:45:00Z",
+  "property_listings": 558,
+  "listing_sources": 563,
+  "property_clusters": 419,
+  "property_cluster_members": 419,
+  "discovery_candidates": 7564,
+  "source_offer_observations": 0,
+  "openserp_query_rotation_state": 2718,
+  "openserp_engine_budget_state": 3,
+  "run_lock_table_exists": false,
+  "run_lock_rows": 0,
+  "run_lock_check_evidence": "PGRST205: Could not find the table 'public.openserp_ingestion_run_lock' in the schema cache",
+  "flags": {
+    "OPENSERP_AUTOMATED_INGESTION_ENABLED": "false",
+    "OPENSERP_INGESTION_WRITE_ENABLED": "false",
+    "OPENSERP_INGESTION_CRON_ENABLED": "false",
+    "MARKET_INDEX_READ_ENABLED": "true (Sensitive-type, not re-readable via CLI, unchanged since last confirmed)"
+  },
+  "deployment_id": "dpl_6wuUmsu9d7HcQgUMi32iMi5JnSx3",
+  "deployment_url": "akarfinder-82u6d5hiy-achraf-benmoussa-s-projects.vercel.app",
+  "deployment_ready_state": "READY",
+  "commit_served": "no git metadata recorded by Vercel (CLI-deployed, not GitHub-integration-deployed) -- this is the flag-revert deployment from OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-1, same underlying code as commit 02f83e0",
+  "timestamp_utc": "2026-07-18T22:45:00Z",
+  "all_counters_match_expected": true,
+  "overall_verdict": "PASS -- clean baseline confirmed, safe to proceed to Phase 4 (migration)"
+}

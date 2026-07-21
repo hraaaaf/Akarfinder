@@ -1,0 +1,47 @@
+{
+  "gate_id": "openserp-serverless-state-gate-b-seed-reconfirmation",
+  "mission": "OPENSERP-SERVERLESS-STATE-PERSISTENCE-1",
+  "generated_at_utc": "2026-07-18T15:35:00Z",
+  "scope_note": "This rerun focuses specifically on validating the newly generated deterministic seed (data/audits/openserp-serverless-state-seed.sql) against real PostgreSQL with real Supabase-compatible roles. Properties already fully validated in the first Gate B run (data/audits/openserp-serverless-state-gate-b.json) -- rotation/budget persistence across invocations, run-lock concurrency, CAPTCHA suspension persistence, failed-transaction rollback, absence of source_offer_observations/property_clusters -- are unaffected by the seed addition (same schema) and are not re-run here to avoid redundant work.",
+  "no_production_connection_made": true,
+  "no_production_data_copied": true,
+  "engine": "PostgreSQL 18.2 (native Windows binary, local, disposable data directory, ephemeral, dropped after the gate)",
+  "instance": { "host": "127.0.0.1", "port": 55494, "database": "akarfinder_openserp_gateb2" },
+  "role_model": {
+    "anon": "NOLOGIN, NOBYPASSRLS",
+    "authenticated": "NOLOGIN, NOBYPASSRLS",
+    "service_role": "NOLOGIN, BYPASSRLS"
+  },
+  "migrations_applied": [
+    "20260718140000_create_openserp_query_rotation_state.sql",
+    "20260718140100_create_openserp_engine_budget_state.sql"
+  ],
+  "migration_apply_status": "PASS -- both applied cleanly, 0 errors",
+  "tests": {
+    "test_1_seed_apply_first_time": {
+      "status": "PASS",
+      "expected": "2718 rotation rows, 3 budget rows inserted, matching data/audits/openserp-serverless-state-seed.json manifest exactly",
+      "actual": "INSERT 0 2718; INSERT 0 3; rotation_rows=2718; budget_rows=3"
+    },
+    "test_2_seed_idempotent_reapply": {
+      "status": "PASS",
+      "expected": "re-applying the same seed SQL a second time inserts 0 new rows, no errors",
+      "actual": "INSERT 0 0; INSERT 0 0; row counts unchanged (2718/3)"
+    },
+    "test_3_seed_never_overwrites_existing_history": {
+      "status": "PASS",
+      "expected": "a manually-modified row (successful_run_count=5) survives a further seed re-apply untouched",
+      "actual": "successful_run_count still 5 after re-applying the seed a third time"
+    },
+    "test_4_rls_anon_select": { "status": "PASS", "expected": "0 rows, no error", "actual": "count=0" },
+    "test_5_rls_anon_insert_rejected": {
+      "status": "PASS",
+      "expected": "INSERT rejected by RLS",
+      "actual": "ERROR: new row violates row-level security policy for table \"openserp_engine_budget_state\""
+    },
+    "test_6_rls_authenticated_select": { "status": "PASS", "expected": "0 rows, no error", "actual": "count=0" },
+    "test_7_rls_service_role_select": { "status": "PASS", "expected": "2718 rows (bypasses RLS)", "actual": "count=2718" }
+  },
+  "cleanup": { "server_stopped": true, "data_directory_deleted": true },
+  "overall_verdict": "PASS"
+}

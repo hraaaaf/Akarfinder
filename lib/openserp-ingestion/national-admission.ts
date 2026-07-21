@@ -88,7 +88,10 @@ function looksLikeNonListingPage(canonicalUrl: string, sourceDomain: string): bo
 export function decideAdmission(input: {
   result: OpenSerpRawResult;
   query: OpenSerpIngestionQuery;
-  engine: "bing" | "ecosia" | "duckduckgo";
+  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: "searxng_yandex" added for the
+  // same reason as classify.ts's identical widening -- a pure provenance
+  // label, no admission-gating logic anywhere in this file branches on it.
+  engine: "bing" | "ecosia" | "duckduckgo" | "searxng_yandex";
   discovered_at: string;
   fallbackRank: number;
 }): AdmissionDecision {

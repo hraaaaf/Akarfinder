@@ -1,0 +1,127 @@
+{
+  "mission": "OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1",
+  "status": "COMPLETE_GATES_A_TO_F_PASSED",
+  "generated_at_utc": "2026-07-18T20:20:00Z",
+  "1_branch_worktree_head_initial": {
+    "branch": "fix/openserp-serverless-state-persistence",
+    "worktree": "C:/Users/lenovo/Documents/AkarFinder-openserp-serverless-state",
+    "head_initial": "8a92de0dacc5cb3683ac5e3b3c5016898c6f8967"
+  },
+  "2_lock_row_identified": {
+    "table": "discovery_candidates",
+    "row_id": "3f9bb7b7-cf56-4322-ac35-8ee5cc9dd6bf",
+    "provider": "openserp-ingestion-lock",
+    "run_id": "openserp-cron-2026-07-18T17-46-28-731Z",
+    "locked_at": "2026-07-18T17:46:28.736Z"
+  },
+  "3_cleanup_before_after": {
+    "before_report": "data/audits/openserp-time-budget-lock-cleanup-before.json",
+    "after_report": "data/audits/openserp-time-budget-lock-cleanup-after.json",
+    "discovery_candidates_before": 7565,
+    "discovery_candidates_after": 7564,
+    "lock_rows_remaining": 0
+  },
+  "4_db_counters_before_after": {
+    "property_listings": { "before": 558, "after": 558 },
+    "listing_sources": { "before": 563, "after": 563 },
+    "property_clusters": { "before": 419, "after": 419 },
+    "property_cluster_members": { "before": 419, "after": 419 },
+    "source_offer_observations": { "before": 0, "after": 0 },
+    "openserp_query_rotation_state": { "before": 2718, "after": 2718 },
+    "openserp_engine_budget_state": { "before": 3, "after": 3 },
+    "all_unchanged_except_targeted_lock_delete": true
+  },
+  "5_schedule_change": {
+    "file": ".github/workflows/openserp-ingestion-cron.yml",
+    "change": "removed the `schedule: cron: \"*/30 * * * *\"` trigger entirely; workflow_dispatch retained",
+    "guard_test": "scripts/scrapers/__tests__/openserp-schedule-trigger-guard.test.ts (3 tests, part of test:scrapers)"
+  },
+  "6_internal_time_budget_architecture": {
+    "module": "lib/openserp-ingestion/time-budget.ts",
+    "model": "createTimeBudget(routeMaxDurationMs, safetyMarginMs, now) -> absolute deadlineMs; remainingBudgetMs/isTimeBudgetExhausted read against it via an injectable clock",
+    "checked": "once per batch-loop iteration (before starting a new query) using a single unified threshold shared with the per-call floor -- an inconsistency between two separate checks was found and fixed by this mission's own tests before being merged"
+  },
+  "7_safety_margin": { "value_ms": 20000, "constant": "DEFAULT_SAFETY_MARGIN_MS", "configurable_via": "runIngestionCycle's safetyMarginMs input" },
+  "8_per_request_timeout": {
+    "value_ms": 15000,
+    "constant": "DEFAULT_ENGINE_CALL_TIMEOUT_MS",
+    "shrinks_with_remaining_budget": true,
+    "min_viable_call_budget_ms": 3000,
+    "classification_outcomes": ["success", "engine_timeout", "network_error", "invalid_response"]
+  },
+  "9_serverless_batch_cap": {
+    "value": 5,
+    "constant": "MAX_SERVERLESS_BATCH_SIZE",
+    "applies_only_when": "no batchSizeOverride supplied (the real cron/dispatch path; CLI bootstrap waves are unaffected)"
+  },
+  "10_checkpoint_strategy": {
+    "atomicity_unit": "one query",
+    "mechanism": "persistRotationUpdates([updatedQuery], ...) called immediately after each query finishes, not batched at the end of the loop",
+    "idempotent": true,
+    "budget_state_persisted": "once per invocation, unconditionally including on early/partial exit"
+  },
+  "11_lease_and_atomic_recovery": {
+    "migration": "supabase/migrations/20260718180000_create_openserp_ingestion_run_lock.sql",
+    "table": "openserp_ingestion_run_lock (lock_name PK, owner_id, acquired_at, expires_at)",
+    "acquire_function": "acquire_openserp_ingestion_lock -- single INSERT...ON CONFLICT...DO UPDATE...WHERE expires_at < now(), row-count-based success detection (no re-read race)",
+    "release_function": "release_openserp_ingestion_lock -- DELETE...WHERE lock_name=... AND owner_id=..., owner-checked",
+    "lease_seconds": "route's maxDuration + 30s buffer",
+    "no_manual_cleanup_ever_needed_again": true
+  },
+  "12_files_modified": [
+    { "file": ".github/workflows/openserp-ingestion-cron.yml", "change": "removed schedule trigger, kept workflow_dispatch" },
+    { "file": "app/api/internal/cron/openserp-ingestion/route.ts", "change": "lease-based lock calls (ownerId + leaseSeconds), passes routeMaxDurationMs through" },
+    { "file": "lib/openserp-ingestion/budget-policy.ts", "change": "added MAX_SERVERLESS_BATCH_SIZE constant" },
+    { "file": "lib/openserp-ingestion/openserp-live.ts", "change": "configurable per-call timeout, EngineCallError classification (HTTP + CLI paths)" },
+    { "file": "lib/openserp-ingestion/run-lock.ts", "change": "rewritten as a thin wrapper over the new lease-based repository" },
+    { "file": "lib/openserp-ingestion/run-orchestrator.ts", "change": "time budget integration, per-unit checkpointing, batch cap, structured outcome_status" },
+    { "file": "lib/openserp-ingestion/state/ingestion-run-lock-repository.ts", "change": "new -- RPC wrapper for the 2 atomic lock functions" },
+    { "file": "lib/openserp-ingestion/time-budget.ts", "change": "new -- pure, injectable-clock time budget primitive" },
+    { "file": "supabase/migrations/20260718180000_create_openserp_ingestion_run_lock.sql", "change": "new -- lease-lock table + 2 functions" },
+    { "file": "package.json", "change": "added @electric-sql/pglite as a real devDependency (was ad hoc --no-save before); added openserp-time-budget.test.ts + openserp-schedule-trigger-guard.test.ts to test:scrapers; added test:openserp-time-budget-and-lock-safety script" },
+    { "file": "package-lock.json", "change": "reflects the above" },
+    { "file": "scripts/scrapers/__tests__/openserp-time-budget.test.ts", "change": "new -- pure time-budget unit tests" },
+    { "file": "scripts/scrapers/__tests__/openserp-schedule-trigger-guard.test.ts", "change": "new -- static schedule-removal guard" },
+    { "file": "scripts/scrapers/__tests__/openserp-engine-call-classification.test.ts", "change": "new -- HTTP + CLI path outcome classification" },
+    { "file": "scripts/scrapers/__tests__/openserp-time-budget-and-lock-safety-integration.test.ts", "change": "new -- PGlite + mocked-boundary integration/simulation covering checkpoint, resume, idempotence, lock lease/takeover/ownership, batch cap" }
+  ],
+  "13_tests_added": {
+    "test_scrapers_additions": ["openserp-time-budget.test.ts (6 tests)", "openserp-schedule-trigger-guard.test.ts (3 tests)"],
+    "dedicated_script_additions": ["openserp-engine-call-classification.test.ts (5 tests)", "openserp-time-budget-and-lock-safety-integration.test.ts (11 tests)"],
+    "total_new_tests": 25
+  },
+  "14_test_results": {
+    "test_scrapers": { "total": 1622, "pass": 1622, "fail": 0, "delta_vs_base": "+9 (the two test:scrapers additions)" },
+    "test_api": { "total": 53, "pass": 53, "fail": 0 },
+    "test_openserp_time_budget_and_lock_safety": { "total": 16, "pass": 16, "fail": 0 },
+    "combined_total_all_suites": { "total": 1691, "pass": 1691, "fail": 0 }
+  },
+  "15_build_and_typecheck": {
+    "build": { "status": "PASS", "pages_generated": "63/63" },
+    "tsc_noEmit": { "status": "FAIL_PRE_EXISTING_OUT_OF_SCOPE", "error_count": 1, "identical_to_previously_documented_error": true, "no_new_errors": true },
+    "lint": "N/A -- no ESLint config or npm lint script exists anywhere in this project; next build's own type-check step is the closest equivalent and passes",
+    "secrets_in_build_log": "none found (grepped for known secret-value patterns)"
+  },
+  "16_simulation_results": {
+    "test": "items 2-3, Phase 10 in the integration suite",
+    "result": "PASS -- a deliberately tight time budget (usable window 3100ms vs 200ms/call) causes the run to voluntarily stop after exactly 1 of 4 planned units, checkpointing only that 1 unit, reporting outcome_status=time_budget_exhausted, and leaving the untouched units' rotation state completely unmarked"
+  },
+  "17_final_commit": "cb16b946f5eca16ece6791527365bdc371d72725",
+  "18_git_status_final": "clean",
+  "19_residual_risks": [
+    "The new lock migration is not yet applied to Production Supabase -- next mission's precondition.",
+    "The updated code is not yet deployed to Production -- next mission's precondition.",
+    "MAX_SERVERLESS_BATCH_SIZE=5 and per-engine timeout=15s are conservative starting values chosen from first principles (no real-network timing data was available, since no real call succeeded in the incident) -- may need tuning after the first successful real run.",
+    "Vercel's own platform-level FUNCTION_INVOCATION_TIMEOUT could theoretically still fire if the safety margin (20s) proves too small under real network conditions worse than assumed -- the margin is configurable and should be revisited after real-run telemetry exists.",
+    "GitHub Actions schedule removal is a workflow-file change on this feature branch only; it must reach the default branch (main) before it has any real protective effect there -- a deploy/merge step, not yet performed by this mission (which explicitly excludes any deployment)."
+  ],
+  "20_no_real_run_confirmation": {
+    "flags_touched": false,
+    "flags_current_state": "OPENSERP_AUTOMATED_INGESTION_ENABLED=false, OPENSERP_INGESTION_WRITE_ENABLED=false, OPENSERP_INGESTION_CRON_ENABLED=false (unchanged by this mission)",
+    "workflow_dispatch_triggered": false,
+    "real_engine_calls_made": false,
+    "production_deployment_performed": false,
+    "production_database_modified": "read-only + the one explicitly-authorized targeted DELETE (Phase 1), no other write",
+    "confirmed": true
+  }
+}

@@ -24,10 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout feat/commoncrawl-bulk-seed-harvest-top-sources-1
+      - name: Checkout canonical workflow ref
         uses: actions/checkout@v4
-        with:
-          ref: feat/commoncrawl-bulk-seed-harvest-top-sources-1
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

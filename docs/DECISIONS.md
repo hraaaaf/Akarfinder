@@ -3206,3 +3206,78 @@ Impact:
   retroactivement (id=539, id=555/593/631, id=827). 1605/1605 tests passants, 0 regression. Cron 30
   minutes prepare mais non actif -- ecriture manuelle uniquement jusqu'a authentification GitHub par
   l'utilisateur.
+
+## 2026-07-18 - OPENSERP-SERVERLESS-TIME-BUDGET-AND-LOCK-SAFETY-1 — code + tests, aucun run reel
+Status: Validated. Code + tests + PGlite validation seulement -- aucune migration ni deploiement Production.
+Decision:
+- Suite au timeout Vercel (FUNCTION_INVOCATION_TIMEOUT) du premier essai de run reel (voir
+  `data/audits/openserp-serverless-state-real-run-attempt-result.json`), nettoyage cible du verrou
+  orphelin (`discovery_candidates` 7565 -> 7564, une seule ligne supprimee par id+provider), puis
+  refonte complete de la resilience serverless : budget de temps interne injectable
+  (`lib/openserp-ingestion/time-budget.ts`, marge 20s), timeout par appel moteur (15s, retreci selon
+  le budget restant), plafond de lot serverless (`MAX_SERVERLESS_BATCH_SIZE=5`), checkpoint par
+  requete (persistance immediate, plus de perte de progres sur arret partiel), et remplacement du
+  verrou compare-and-set (lecture-puis-ecriture, source du blocage initial) par un verrou a bail
+  atomique au niveau PostgreSQL (`openserp_ingestion_run_lock`, 2 fonctions SQL, plus jamais de
+  nettoyage manuel necessaire). Trigger `schedule` GitHub Actions retire (etait actif sur main a
+  l'insu de l'equipe, contribuant a l'incident) ; `workflow_dispatch` conserve.
+Reason:
+- Regle etablie de cette mission (et de tout cet engagement) : ne jamais corriger-puis-continuer sous
+  la meme autorisation apres decouverte d'un bug reel en validation -- une mission dediee et bornee a
+  ete demandee a la place, sans aucune activation de flag ni run reel autorise.
+Impact:
+- 25 nouveaux tests (1622/1622 test:scrapers, 53/53 test:api, 16/16 suite dediee
+  `test:openserp-time-budget-and-lock-safety`), 0 regression, build PASS (63/63 pages), tsc inchange
+  (1 erreur preexistante hors perimetre). `@electric-sql/pglite` promu en vraie devDependency (etait
+  installe ad hoc `--no-save` depuis plusieurs missions). Migration du nouveau verrou ecrite et
+  validee localement (PGlite) mais **pas encore appliquee en Production** -- precondition explicite
+  de la prochaine mission `OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-2`.
+
+## 2026-07-18 - OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-2 — STOP, timeout plateforme persiste
+Status: STOP -- REAL_RUN_V2_BLOCKED_REQUIRES_CODE_CHANGE. Aucune correction tentee sous cette autorisation.
+Decision:
+- Retrait du schedule GitHub rendu effectif sur `main` (commit `b01502e`, verifie a la fois cote git
+  et cote historique des runs GitHub). Migration `openserp_ingestion_run_lock` appliquee en
+  Production (table + 2 fonctions atomiques, RLS active, 0 policy, smoke test acquire/refuse/release
+  reussi en direct). Code time-budget/lease deploye flags OFF, NOOP authentifie prouve propre.
+  Autorisation utilisateur explicite (OUI verbatim + reconfirmation sur le sens reel du flag
+  OPENSERP_INGESTION_CRON_ENABLED) obtenue avant toute activation. Premier `workflow_dispatch` reel
+  declenche -- **echec HTTP 504**, logs Vercel confirmant `Task timed out after 120 seconds` (le
+  meme signal que l'incident d'origine). Flags immediatement remis a `false`, redeploiement de
+  confirmation, endpoint et routes publiques revalides sains. Deuxieme run non autorise (regle ODM :
+  run 1 doit etre strictement PASS).
+Reason:
+- Regle etablie de cet engagement : aucune correction de code sous une autorisation de run reel --
+  un diagnostic honnete d'abord, une mission dediee ensuite.
+Impact:
+- 0 donnee metier touchee (558/563/419/419/7564/0 inchanges). Le nouveau verrou a bail a prouve sa
+  valeur meme dans l'echec : jamais libere par le code (kill plateforme), mais auto-expire sans
+  aucune intervention manuelle -- contrairement a l'incident precedent qui avait laisse un verrou
+  bloque necessitant un DELETE cible. Cause racine identifiee avec un haut degre de confiance :
+  aucun appel Supabase (notamment `hydrateRotationQueries`, un SELECT unique avec les 2718 query_id
+  dans une clause IN) n'a de timeout explicite -- seuls les appels moteurs externes en ont un depuis
+  la mission precedente. Le budget de temps interne ne protege que la boucle de requetes, jamais la
+  phase de preparation, jamais testee en conditions reelles (latence Supabase reelle, 2718 lignes)
+  par la mission precedente (fixtures reduites + client mocke instantane). Mission suivante
+  recommandee : `OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1`.
+
+Decision (2026-07-20) : OPENSERP-NATIVE-CRON-COMPLIANCE-AUDIT-1 -- audit lecture seule execute a la
+place d'une mission de migration demandee, car la migration s'est reveler deja effectuee (mission
+anterieure hors session). Verdict `COMPLIANT_WITH_CONDITIONS`, pas `COMPLIANT` strict.
+Reason:
+- Deux criteres de succes explicitement requis ne sont pas atteints : (1) aucun bloc `permissions:`
+  explicite dans `openserp-github-native-ingestion.yml` (herite du defaut du repository, non
+  verifiable depuis le fichier seul) ; (2) cout/quota GitHub Actions non verifie via API (appel
+  refuse par l'utilisateur en cours d'audit, non retente par respect de cette instruction) --
+  seule la duree observee des runs est documentee, aucun quota invente.
+Impact:
+- Aucune modification de Production. Producteur planifie unique confirme (0 run `schedule` sur
+  l'ancien workflow depuis son retrait au commit `b01502e`) ; 0 difference metier reelle entre la
+  route Vercel et le script natif (meme `runIngestionCycle()`, meme verrou 150s) ; 6/6 runs
+  planifies reels `COMPLETED` sans erreur ; verrou partage actuellement libre ; ecritures recentes
+  tracees a 100% au runner natif (prefixe `openserp-github-cron-`, 0 trace Vercel). Cadence reelle
+  ~5.3x plus lente que le cron nominal `*/30 * * * *` -- comportement de throttling documente cote
+  GitHub, accepte comme normal pour ce contexte metier, pas une regression.
+  Mission suivante recommandee : `OPENSERP-NATIVE-CRON-REMEDIATION-1` (ajouter `permissions:`
+  explicite, retirer 2 etapes diagnostiques `TEMPORARY` residuelles, ajouter `timeout-minutes`) --
+  non demarree, hors perimetre de cet audit.

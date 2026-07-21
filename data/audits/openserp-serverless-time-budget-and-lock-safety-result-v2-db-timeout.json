@@ -1,0 +1,45 @@
+{
+  "mission": "OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1",
+  "status": "OPENSERP_SERVERLESS_DB_CALL_TIMEOUT_SAFETY_VALIDATED_LOCAL_AND_PREVIEW",
+  "generated_at_utc": "2026-07-19T09:15:00Z",
+  "bilan": {
+    "1_statut": "OPENSERP_SERVERLESS_DB_CALL_TIMEOUT_SAFETY_VALIDATED_LOCAL_AND_PREVIEW",
+    "2_appel_bloquant_prouve": "NOT definitively proven (the platform kill left exactly 1 log line and 0 application logs -- nothing to name the last call). The instrumentation added by this mission (Phase 3) guarantees any FUTURE timeout will name the exact last call started. The prime suspect (2718-id single-IN-clause SELECT, >60KB request URL) is eliminated regardless: it no longer exists in any form.",
+    "3_instrumentation": "state/db-call-guard.ts -- one structured line per DB call: db_call_name, started_at, finished_at, duration_ms, row_count, chunk_index, remaining_budget_ms_before/after, status, timeout, aborted. Shape-checked by test to contain NO other field (no secret/URL/snippet/payload possible).",
+    "4_appels_audites": "15 call sites inventoried in docs/OPENSERP_SERVERLESS_DB_CALL_AUDIT.md (lease acquire/release, query-state load/upsert/seed, engine-state load/upsert, 9 writer calls) -- all previously unbounded",
+    "5_appels_timeoutes": "15/15 now routed through withDbTimeout; structural test (openserp-db-call-guard.test.ts) counts supabase .from()/.rpc() call sites vs .abortSignal(signal) chains per file and fails on any mismatch",
+    "6_mecanisme_abort": "postgrest-js's native .abortSignal(AbortSignal) on every builder and RPC -- real network cancellation, explicitly NOT Promise.race (unit test proves the signal genuinely fires inside the call)",
+    "7_timeout_db_max": "MAX_DB_CALL_TIMEOUT_MS = 8000ms, shrunk per-call to min(8000, remaining_budget - 500ms reserve), floor 1000ms",
+    "8_minimum_budget_db": "MIN_VIABLE_DB_BUDGET_MS = 2000ms -- below this the call is refused up front (time_budget_exhausted_before_db_call), never started",
+    "9_hydrate_avant": "1 SELECT with ALL 2718 query_ids in a single IN clause (URL >60KB), plus a full-universe seedMissingQueryStates on the hot path; no timeout, no chunking, no budget awareness",
+    "10_hydrate_apres": "loads ONLY mutated rows (WHERE last_executed_at IS NOT NULL, paged x1000, each page bounded+budget-checked); absent row == default seeded row by construction, so parity is EXACT (proven by test, byte-identical hydration output); hot-path seeding removed entirely (checkpoint upsert creates missing rows anyway)",
+    "11_chunk_size": "DB_IN_CLAUSE_CHUNK_SIZE = 200 ids for remaining IN-clause loads (checkpoint reads, seed script); EXECUTED_STATES_PAGE_SIZE = 1000 rows for the executed-rows pager",
+    "12_rows_chargees": "2718 -> 10 at the benchmark's realistic post-few-runs state (0 on a fresh universe)",
+    "13_temps_avant_apres": "171ms -> 4ms total hydration (PGlite-local timings; ratio is the meaningful figure), max single call 17ms -> 4ms",
+    "14_gate_a": "PASS -- 7/7: instant DB, 1s-slow DB (completes), hanging DB (really aborted, DbCallTimeoutError, 0 partial state), budget refused before first SELECT, slow release (bounded + best-effort swallow), parity, 120s simulation",
+    "15_gate_b": "PASS -- 2718 real rows seeded, old vs new hydration measured, no single call anywhere near the 8s cap (data/audits/openserp-db-timeout-gate-b-benchmark.json)",
+    "16_benchmark_2718": { "old": { "total_ms": 171, "rows": 2718, "calls": 14, "max_call_ms": 17 }, "new": { "total_ms": 4, "rows": 10, "calls": 1, "max_call_ms": 4 }, "peak_heap_mb": 49 },
+    "17_test_db_lente": "PASS -- 1s-per-call DB completes normally; 60s-hanging DB is aborted at the budget-derived timeout with zero partial rotation state",
+    "18_simulation_120s": "PASS -- 6s per DB call + 20s per engine call on the budget clock: pipeline stops voluntarily (time_budget_exhausted), partial checkpoints persisted exactly, control returned well inside the 120s window",
+    "19_platform_timeout": "0 in every simulated scenario (no code path can now await an unbounded call: engines bounded since the prior mission, DB bounded by this one)",
+    "20_tests_globaux": { "test_scrapers": "1630/1630 (+8)", "test_api": "53/53", "test_openserp_ingestion": "20/20", "dedicated_mocked_suite": "23/23 (+7)", "combined": "1706/1706, 0 fail, 0 removed" },
+    "21_build": "PASS (route manifest complete; the type-check step passed -- note: two background build attempts were externally killed mid-typecheck [Windows worker exit 0xC0000142], a local-environment flake unrelated to the code; the foreground run completed cleanly)",
+    "22_preview": {
+      "deployment": "dpl_7SMsx5ZmHncZmpEQMnAE1ZzuHyTz (akarfinder-dl3kxjvic-achraf-benmoussa-s-projects.vercel.app), READY, flags all OFF",
+      "endpoint_no_secret": 401,
+      "endpoint_wrong_secret": 401,
+      "endpoint_authenticated_flags_off": "not re-executed with the Preview secret (its value was deliberately destroyed after the earlier mission's test); the flag gate code is byte-identical to what returned NOOP_FLAGS_DISABLED on this same Preview env earlier this session",
+      "routes": "14/14 correct (13x200 + /listings/137=404)",
+      "parity_34_queries": "34/34, 0 mismatch (read-only, previously-authorized script)"
+    },
+    "23_production_modifiee": "NO -- no deployment, no migration, no flag change, no write. The only Production contact was the read-only 34-query parity check.",
+    "24_head_final": "99bc877 (see git log; this report committed on top)",
+    "25_rapports": [
+      "docs/OPENSERP_SERVERLESS_DB_CALL_AUDIT.md",
+      "data/audits/openserp-db-timeout-gate-b-benchmark.json",
+      "data/audits/openserp-serverless-time-budget-and-lock-safety-result-v2-db-timeout.json (this file)",
+      "data/audits/market-index-shadow-read-results.json (refreshed)"
+    ],
+    "26_prochaine_mission": "OPENSERP-SERVERLESS-STATE-REAL-RUN-VALIDATION-3 -- requires its own explicit authorization; its headline criterion: no network call, engine or Supabase, can single-handedly exceed the internal budget. Not started."
+  }
+}

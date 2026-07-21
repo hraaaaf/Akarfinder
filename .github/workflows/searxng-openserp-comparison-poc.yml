@@ -7,9 +7,9 @@ name: SearXNG vs OpenSERP Discovery POC (diagnostic only)
 # to every raw result. No Supabase secrets used, no DB access of any kind,
 # no business tables touched, no interaction with the production cron
 # (openserp-github-native-ingestion.yml) or its schedule/lease/state.
-# workflow_dispatch only, no schedule. Checks out the dedicated
-# poc/searxng-vs-openserp-discovery branch (not the production cron
-# branch) so this throwaway comparison tooling never mixes with it.
+# workflow_dispatch only, no schedule. P0 canonical-baseline rule: checkout
+# follows the workflow's own ref; the diagnostic scripts now live in the
+# canonical repository history and no dedicated POC branch is required.
 
 on:
   workflow_dispatch: {}
@@ -19,10 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - name: Checkout poc/searxng-vs-openserp-discovery
+      - name: Checkout canonical workflow ref
         uses: actions/checkout@v4
-        with:
-          ref: poc/searxng-vs-openserp-discovery
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

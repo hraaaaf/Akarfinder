@@ -1,0 +1,6527 @@
+[
+ [
+  "domio.ma",
+  {
+   "total": 134,
+   "accepted": 0,
+   "rejected": 81,
+   "unclassified": 53
+  }
+ ],
+ [
+  "facebook.com",
+  {
+   "total": 100,
+   "accepted": 0,
+   "rejected": 90,
+   "unclassified": 10
+  }
+ ],
+ [
+  "en.limmobiliersansfrontieres.com",
+  {
+   "total": 76,
+   "accepted": 0,
+   "rejected": 72,
+   "unclassified": 4
+  }
+ ],
+ [
+  "duckduckgo.com",
+  {
+   "total": 70,
+   "accepted": 0,
+   "rejected": 51,
+   "unclassified": 19
+  }
+ ],
+ [
+  "2p.ma",
+  {
+   "total": 60,
+   "accepted": 0,
+   "rejected": 60,
+   "unclassified": 0
+  }
+ ],
+ [
+  "zhihu.com",
+  {
+   "total": 44,
+   "accepted": 0,
+   "rejected": 44,
+   "unclassified": 0
+  }
+ ],
+ [
+  "support.microsoft.com",
+  {
+   "total": 38,
+   "accepted": 0,
+   "rejected": 38,
+   "unclassified": 0
+  }
+ ],
+ [
+  "en.wikipedia.org",
+  {
+   "total": 36,
+   "accepted": 0,
+   "rejected": 36,
+   "unclassified": 0
+  }
+ ],
+ [
+  "immobilier.cari.ma",
+  {
+   "total": 26,
+   "accepted": 0,
+   "rejected": 26,
+   "unclassified": 0
+  }
+ ],
+ [
+  "youtube.com",
+  {
+   "total": 23,
+   "accepted": 0,
+   "rejected": 23,
+   "unclassified": 0
+  }
+ ],
+ [
+  "es.limmobiliersansfrontieres.com",
+  {
+   "total": 21,
+   "accepted": 0,
+   "rejected": 21,
+   "unclassified": 0
+  }
+ ],
+ [
+  "zhidao.baidu.com",
+  {
+   "total": 20,
+   "accepted": 0,
+   "rejected": 20,
+   "unclassified": 0
+  }
+ ],
+ [
+  "flyertalk.com",
+  {
+   "total": 20,
+   "accepted": 0,
+   "rejected": 20,
+   "unclassified": 0
+  }
+ ],
+ [
+  "haraj.com.sa",
+  {
+   "total": 18,
+   "accepted": 0,
+   "rejected": 18,
+   "unclassified": 0
+  }
+ ],
+ [
+  "forums.commentcamarche.net",
+  {
+   "total": 18,
+   "accepted": 0,
+   "rejected": 18,
+   "unclassified": 0
+  }
+ ],
+ [
+  "reddit.com",
+  {
+   "total": 17,
+   "accepted": 0,
+   "rejected": 17,
+   "unclassified": 0
+  }
+ ],
+ [
+  "kaynly.com",
+  {
+   "total": 17,
+   "accepted": 0,
+   "rejected": 15,
+   "unclassified": 2
+  }
+ ],
+ [
+  "sa.aqar.fm",
+  {
+   "total": 17,
+   "accepted": 0,
+   "rejected": 17,
+   "unclassified": 0
+  }
+ ],
+ [
+  "es.ccm.net",
+  {
+   "total": 17,
+   "accepted": 0,
+   "rejected": 17,
+   "unclassified": 0
+  }
+ ],
+ [
+  "play.google.com",
+  {
+   "total": 17,
+   "accepted": 0,
+   "rejected": 17,
+   "unclassified": 0
+  }
+ ],
+ [
+  "sekna.ma",
+  {
+   "total": 15,
+   "accepted": 0,
+   "rejected": 8,
+   "unclassified": 7
+  }
+ ],
+ [
+  "booking.com",
+  {
+   "total": 14,
+   "accepted": 0,
+   "rejected": 13,
+   "unclassified": 1
+  }
+ ],
+ [
+  "scratch.mit.edu",
+  {
+   "total": 14,
+   "accepted": 0,
+   "rejected": 14,
+   "unclassified": 0
+  }
+ ],
+ [
+  "immoessaouira.com",
+  {
+   "total": 11,
+   "accepted": 0,
+   "rejected": 8,
+   "unclassified": 3
+  }
+ ],
+ [
+  "ar.limmobiliersansfrontieres.com",
+  {
+   "total": 11,
+   "accepted": 0,
+   "rejected": 11,
+   "unclassified": 0
+  }
+ ],
+ [
+  "neuf.logic-immo.com",
+  {
+   "total": 11,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 10
+  }
+ ],
+ [
+  "office.com",
+  {
+   "total": 11,
+   "accepted": 0,
+   "rejected": 11,
+   "unclassified": 0
+  }
+ ],
+ [
+  "brainyquote.com",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "crazygames.com",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bayut.sa",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "hainzamsee.de",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "apkpure.com",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bestmoney.com",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "superuser.com",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "store.epicgames.com",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "telekom.de",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "wielkiezarcie.com",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "magix.info",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 8,
+   "unclassified": 2
+  }
+ ],
+ [
+  "destination2.co.uk",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "community.whattoexpect.com",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 9,
+   "unclassified": 1
+  }
+ ],
+ [
+  "lematin.ch",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "invercarsehotel.co.uk",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "programme-tv.net",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "support.google.com",
+  {
+   "total": 10,
+   "accepted": 0,
+   "rejected": 10,
+   "unclassified": 0
+  }
+ ],
+ [
+  "yr.no",
+  {
+   "total": 9,
+   "accepted": 0,
+   "rejected": 9,
+   "unclassified": 0
+  }
+ ],
+ [
+  "xbox.com",
+  {
+   "total": 9,
+   "accepted": 0,
+   "rejected": 9,
+   "unclassified": 0
+  }
+ ],
+ [
+  "spiegel.de",
+  {
+   "total": 9,
+   "accepted": 0,
+   "rejected": 9,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ncl.com",
+  {
+   "total": 9,
+   "accepted": 0,
+   "rejected": 9,
+   "unclassified": 0
+  }
+ ],
+ [
+  "heliosventilatoren.de",
+  {
+   "total": 9,
+   "accepted": 0,
+   "rejected": 9,
+   "unclassified": 0
+  }
+ ],
+ [
+  "essaouira.immo",
+  {
+   "total": 8,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 3
+  }
+ ],
+ [
+  "immoneuf.avito.ma",
+  {
+   "total": 8,
+   "accepted": 0,
+   "rejected": 7,
+   "unclassified": 1
+  }
+ ],
+ [
+  "airbnb.fr",
+  {
+   "total": 8,
+   "accepted": 0,
+   "rejected": 8,
+   "unclassified": 0
+  }
+ ],
+ [
+  "zdnet.fr",
+  {
+   "total": 8,
+   "accepted": 0,
+   "rejected": 8,
+   "unclassified": 0
+  }
+ ],
+ [
+  "riad.m2t.ma",
+  {
+   "total": 8,
+   "accepted": 0,
+   "rejected": 8,
+   "unclassified": 0
+  }
+ ],
+ [
+  "marocmarrakech.com",
+  {
+   "total": 8,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 8
+  }
+ ],
+ [
+  "riads-maroc.com",
+  {
+   "total": 8,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 8
+  }
+ ],
+ [
+  "riadaumaroc.com",
+  {
+   "total": 8,
+   "accepted": 0,
+   "rejected": 8,
+   "unclassified": 0
+  }
+ ],
+ [
+  "theworldpursuit.com",
+  {
+   "total": 8,
+   "accepted": 0,
+   "rejected": 8,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nador.immo",
+  {
+   "total": 8,
+   "accepted": 0,
+   "rejected": 6,
+   "unclassified": 2
+  }
+ ],
+ [
+  "dardar.ma",
+  {
+   "total": 8,
+   "accepted": 0,
+   "rejected": 7,
+   "unclassified": 1
+  }
+ ],
+ [
+  "liberation.fr",
+  {
+   "total": 8,
+   "accepted": 0,
+   "rejected": 8,
+   "unclassified": 0
+  }
+ ],
+ [
+  "science.org",
+  {
+   "total": 8,
+   "accepted": 0,
+   "rejected": 8,
+   "unclassified": 0
+  }
+ ],
+ [
+  "flink.ma",
+  {
+   "total": 7,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 2
+  }
+ ],
+ [
+  "riadhotel.fr",
+  {
+   "total": 7,
+   "accepted": 0,
+   "rejected": 7,
+   "unclassified": 0
+  }
+ ],
+ [
+  "marrakechlikelocals.com",
+  {
+   "total": 7,
+   "accepted": 0,
+   "rejected": 7,
+   "unclassified": 0
+  }
+ ],
+ [
+  "riad.com",
+  {
+   "total": 7,
+   "accepted": 0,
+   "rejected": 7,
+   "unclassified": 0
+  }
+ ],
+ [
+  "microsoft.com",
+  {
+   "total": 7,
+   "accepted": 0,
+   "rejected": 7,
+   "unclassified": 0
+  }
+ ],
+ [
+  "rahalatmorocco.com",
+  {
+   "total": 7,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 5
+  }
+ ],
+ [
+  "signup.live.com",
+  {
+   "total": 6,
+   "accepted": 0,
+   "rejected": 6,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ksc.de",
+  {
+   "total": 6,
+   "accepted": 0,
+   "rejected": 6,
+   "unclassified": 0
+  }
+ ],
+ [
+  "outlook.com",
+  {
+   "total": 6,
+   "accepted": 0,
+   "rejected": 6,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fazwaz.fr",
+  {
+   "total": 6,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 3
+  }
+ ],
+ [
+  "promoimmomarrakech.com",
+  {
+   "total": 6,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 3
+  }
+ ],
+ [
+  "capalmrabat.com",
+  {
+   "total": 6,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 2
+  }
+ ],
+ [
+  "apps.microsoft.com",
+  {
+   "total": 6,
+   "accepted": 0,
+   "rejected": 6,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fadlimmo.com",
+  {
+   "total": 6,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 1
+  }
+ ],
+ [
+  "bakimmo.com",
+  {
+   "total": 6,
+   "accepted": 0,
+   "rejected": 6,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ma.opensooq.com",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mubawab.tn",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "linkedin.com",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "aykana.ma",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 2
+  }
+ ],
+ [
+  "portail-immobilier.ma",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dictionary.cambridge.org",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tenforums.com",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "answers.com",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "archimmomaroc.com",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 4
+  }
+ ],
+ [
+  "wasalt.sa",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "consumer.huawei.com",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ar.androidayuda.com",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "google-play.ar.uptodown.com",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "maaloumet.com",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ar.todoandroid.es",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "forum.vodafone.de",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "helpmij.nl",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "rpg.stackexchange.com",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "forum.pcastuces.com",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dunelm.com",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "iteslj.org",
+  {
+   "total": 5,
+   "accepted": 0,
+   "rejected": 5,
+   "unclassified": 0
+  }
+ ],
+ [
+  "proimmobilier.ma",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 0
+  }
+ ],
+ [
+  "maisonessaouira.com",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 3
+  }
+ ],
+ [
+  "real-dreamhouse.com",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 0
+  }
+ ],
+ [
+  "chridari.ma",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 3
+  }
+ ],
+ [
+  "properstar.fr",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 3
+  }
+ ],
+ [
+  "agencekna.com",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 1
+  }
+ ],
+ [
+  "word.cloud.microsoft",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 0
+  }
+ ],
+ [
+  "propertyfinder.sa",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 4
+  }
+ ],
+ [
+  "techcommunity.microsoft.com",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 0
+  }
+ ],
+ [
+  "msn.com",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 0
+  }
+ ],
+ [
+  "c21mohammedia.com",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 2
+  }
+ ],
+ [
+  "best-calculators.com",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 0
+  }
+ ],
+ [
+  "account.microsoft.com",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fashionforum.dk",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 0
+  }
+ ],
+ [
+  "vogue.in",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 0
+  }
+ ],
+ [
+  "immohammedia.com",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fr.wikipedia.org",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 0
+  }
+ ],
+ [
+  "github.com",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tadartino.ma",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 1
+  }
+ ],
+ [
+  "it.ccm.net",
+  {
+   "total": 4,
+   "accepted": 0,
+   "rejected": 4,
+   "unclassified": 0
+  }
+ ],
+ [
+  "www2.avito.ma",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 2
+  }
+ ],
+ [
+  "lordessaouira.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "yenitrip.net",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "agence-immobiliere-essaouira.ma",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dafont.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nhs.uk",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "cotemedina.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "realestatecapitale.ma",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lyz-marrakech-immobilier.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "agence-immobiliere-agadir.ma",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "villasmarrakech.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 3
+  }
+ ],
+ [
+  "agadirimmobilier.org",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "immo-maroc.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 2
+  }
+ ],
+ [
+  "saroutdari.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 1
+  }
+ ],
+ [
+  "dabaannonce.ma",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 2
+  }
+ ],
+ [
+  "sefiani-khadamat.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 2
+  }
+ ],
+ [
+  "karaa.sa",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "maroker.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "collinsdictionary.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "blog.youtube",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "minhaconexao.com.br",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "quizz.biz",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 1
+  }
+ ],
+ [
+  "dailymotion.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tiktok.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "aqarmap.com.eg",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "typologycentral.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "de.wikipedia.org",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "unitconverters.net",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "rapidtables.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "thecalculatorsite.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "calculations.tools",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mega-calculator.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fussballschule.ksc.de",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "faq.usps.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "straight-sight.com",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "52pojie.cn",
+  {
+   "total": 3,
+   "accepted": 0,
+   "rejected": 3,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ma.green-acres.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lidl.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "alfaris-service.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "immobilier-pro-maroc.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "elearning.reb.rw",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "riadmarrakechbyhivernage.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 2
+  }
+ ],
+ [
+  "airbnb.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "immobilieragadir.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ofm.co.za",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nomatinvest.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "marrakesh-opportunity.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 1
+  }
+ ],
+ [
+  "fr.airbnb.ca",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "agadirimmobilier.ma",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "milkiya.ma",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 2
+  }
+ ],
+ [
+  "capitalfoncier.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 2
+  }
+ ],
+ [
+  "fr-fr.roomlala.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 2
+  }
+ ],
+ [
+  "properstar.ca",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 2
+  }
+ ],
+ [
+  "muretprestige.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 1
+  }
+ ],
+ [
+  "prestigeimmo.ma",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "r2c-immo.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "le-25.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 2
+  }
+ ],
+ [
+  "ajmhealthcare.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "m.me",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "geeksforgeeks.org",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "developer.mozilla.org",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "w3schools.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "stackoverflow.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "html.spec.whatwg.org",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "golfmagic.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mirror.co.uk",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "merriam-webster.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dictionary.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "zhuanlan.zhihu.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bbc.co.uk",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "purstream.wiki",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "propertyfinder.eg",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 2
+  }
+ ],
+ [
+  "immoeljadida.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 1
+  }
+ ],
+ [
+  "youtube.co.uk",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lidl.fr",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "rentalcars.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "britannica.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mybroadband.co.za",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "gate.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "customerservice.starbucks.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "timeanddate.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "timedatecalc.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nfl.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "cbssports.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mayoclinic.org",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "aargauhotels.ch",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "myswitzerland.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fgforum.fashionguide.com.tw",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "360annonces.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ouedkniss.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "almashria.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dealapp.sa",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "yogabynicola.co.uk",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ubereats.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "cylex.nl",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "thefork.nl",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "thuisbezorgd.nl",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tiendeo.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "cnipa.gov.cn",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "enipc.court.gov.cn",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "brokenbow.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "cabinsinbrokenbow.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "instagram.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "surahquran.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ratioform.it",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "columbia.edu",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "startup.jobs",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "remoteotter.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "taxact.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "m.imdb.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "pluto.tv",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "justwatch.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "markt.de",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "alaqariyya.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 2
+  }
+ ],
+ [
+  "tripadvisor.fr",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "safelite.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "glassdoctor.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "marhabanador.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tmazight.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "medicross-zentrum.de",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "doctolib.de",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "messenger.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tecnobits.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "jodipicoult.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "booknode.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "usps.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ordertracker.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "calculatorsuite.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "onlineminitools.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "convertfeet.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "coolconversion.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ludvigsenmortuary.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "legacy.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "spj.science.org",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bhrhospitals.nhs.uk",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "qub.ac.uk",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lastminute.de",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "casinca.fr",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "express.co.uk",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dailystar.co.uk",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 1
+  }
+ ],
+ [
+  "thesun.co.uk",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mwcomponents.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "cardinalcomponents.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ung.forskning.no",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "gofukuoka.jp",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "diainternacionalde.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "music.youtube.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "actualites.logic-immo.com",
+  {
+   "total": 2,
+   "accepted": 0,
+   "rejected": 2,
+   "unclassified": 0
+  }
+ ],
+ [
+  "hsr.mewa.gov.sa",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "magicfun-moulay.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "awzora.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "loco.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "essaouiraimmobiliers.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "jackapartments.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "ma.afribaba.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "sogarab.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "molhaka.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bessapromotion.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "london.cylex-uk.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ashvillesurgery.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "secure.facebook.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "immobilier-mohammedia-parc.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "niams.nih.gov",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "cajasmil.com.ar",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dermnetnz.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "marrakechprivate.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "bays-immobilier.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "skoun.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "radio.org.za",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "eng.artplace-marrakech.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fazwaz.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "streetimmo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "atlantide-immobilier.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dunelm.ie",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "cdimmobilier-marrakech.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "radarsuper.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "clarenluxury.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "immobiliermaroc.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "sakane.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lab.scratch.mit.edu",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "getimmo-luxury.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "loueragadir.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "etoileimmokech.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "rabat.repimmo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "sokna.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "marrakech.repimmo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "riadmazal.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "agence-immobiliere-agadir.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "greatimmob.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "jibril.immo",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "actiimmomarrakech.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "alerteimmo.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "myprivatevillamarrakech.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "kna.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ryadplus.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "marrakech-collection.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "dozbi3.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "agadir.repimmo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "reb.gov.rw",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "barnes-international.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "happybayimmo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "toitetvous-immo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "riadshotelsmaroc.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "emconsult-marrakech.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "agadirimmobilierplus.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "capital-properties.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "housing.place",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "maisons-maroc.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "greenhomeimmo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "immo101.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "rabatconnexion.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "locmarrakech.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "proptekme.co",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "wim-agency.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "logerimmoagadir.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "sarout.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mgp-marrakech.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "parkroyal.estate",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lnwh.nhs.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "brentyouthzone.org.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "192.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "open.endole.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lbhf.gov.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "meta.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "salla.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mtajerhub.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "salla.store",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mtajerflip.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "help.salla.sa",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "sell.noon.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "zid.sa",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "m5bilisim.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "essentiallysports.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "yahoo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "todays-golfer.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "heavy.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "hindustantimes.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bunkered.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nationalclubgolfer.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "englishwordchamps.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "oxfordlearnersdictionaries.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "en.thefreedictionary.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "glosbe.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dictionary.vocabclass.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "iciba.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "global.bing.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "conduct.ai",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "baike.baidu.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dict.eudic.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "language.chinadaily.com.cn",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "julsa.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "funinformatique.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ipaddress.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "purstream.club",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "t.me",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "top15.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "paroleauxjeunes.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "agence404.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "imtilak.sa",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "en-gb.facebook.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mazagaoimmobiliereljadida.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "zybang.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "beta.yr.no",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "accounts.google.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "kera.sa",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "oneclickdrive.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "about.youtube",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fr.mappy.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "telephone.city",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "alternativi.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "villepratique.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "promoalert.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "annuaire.petitesaffiches.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "pagesjaunes.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "m.rentcars.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "rentcars.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "enterprise.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "skyscanner.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "kayak.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "rentycars.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "kayak.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "feelingvegas.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "everywherewithclaire.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "grandcanyonrvglamping.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "thetourguy.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "vegas.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "sweetours.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "grandcanyon.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "riders-share.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "turo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "comedybustours.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "weather.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "livescience.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "education.nationalgeographic.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "spaceplace.nasa.gov",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nasa.gov",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "geographypin.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "speedtest.mybroadband.co.za",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "research.mybroadband.co.za",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ventureharbour.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "insight7.io",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "forbes.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "voguecollege.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "designerpeople.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "rents.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "vimeo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "purina.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "youtubekids.tv",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "coindesk.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "cointelegraph.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "flexe.io",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "beincrypto.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "b2binpay.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "coinbound.io",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "banklesstimes.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dubizzle.com.eg",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "sa.sakan.co",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ksa.motory.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ksa.hatla2ee.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "addictivetips.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "helpdeskgeek.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "geekzag.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "guidingtech.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "digitalcitizen.life",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "scratchfoundation.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "scratchjr.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "shopify.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "salehoo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "websitebuilderexpert.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "wholesalecentral.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nichesources.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "vmgroupe.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "amraandelma.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mediaboom.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "press.farm",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "blockandtam.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "calculator.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "daysfromdate.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "datetimecalculator.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "calculat.io",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "calculator.today",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "freeconvert.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "convert.app",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "convertlive.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "heighttools.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "sportingnews.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "pro-football-reference.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fbschedules.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "espn.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "usatoday.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bossbihoffice.com.sa",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "chorakae.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "sa.opensooq.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "viaje-barcelona.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "acnestudios.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "my.clevelandclinic.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "healthline.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dermatology.ca",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "aargautourismus.ch",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tripadvisor.ch",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tripadvisor.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ao.aargautourismus.ch",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "marocgest.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "23.allhen.online",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "pressearchiv.spiegel.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "netmums.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "uk.nextdoor.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "betterbirthcompany.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nestandnurture.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "wycombepulse.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "phenixyoga.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "iyengar-yoga-shala.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dominos.nl",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nl.restaurantguru.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lidl.es",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tiendas.lidl.es",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tiendas-espana.es",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lidl.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "horariohoy.es",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "abc.es",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "myaccount.microsoft.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "forms.office.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "finance.yahoo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mail.ru",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ru.wikipedia.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "rustore.ru",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "360.yandex.ru",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "gmail.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "vk.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "workspace.google.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mail.nic.ru",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "account.mail.ru",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "guantao.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ailegal.baidu.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lindapatent.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "sohu.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dwelleo.sa",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "brokenbowvacationcabins.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "brokenbowcabinlodging.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "brokenbowlakecabinrentals.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "beaversbendlodging.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "brokenbowcabins.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "beaversbendcreativeescape.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "speedtest.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fast.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "speed.cloudflare.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "openspeedtest.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "speed.is",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "speed.measurementlab.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "highspeedinternet.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bing.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nperf.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "speedtest.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "oxfordlearnersdictionaries.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "thefreedictionary.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "vocabulary.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ratioform.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "allbranddistributors.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "smartpackaging.com.ar",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bolsasmultipack.ar",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "capkelitos.com.ar",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "packagingdistributors.co.za",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "carton.co.ke",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "and6.ch",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "huntremotely.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "talentygo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "jooble.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "wikipedia.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nl.wikipedia.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "hu.wikipedia.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "institut-promethee.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "etudionsaletranger.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "usnews.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "collegedunia.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "topuniversities.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "en.m.wikipedia.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "clicker.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "watch.plex.tv",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "stadtlist-kleinanzeigen.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "de.m.wikipedia.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "marktcom.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mediamarkt.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "it-times.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "karimtour.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "desktop.github.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "centrecommercial.cc",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fr.tripadvisor.ch",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bonjourporto.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bonial.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "vivreaporto.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "france-hotel-guide.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "maps.google.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "patosshopping.com.br",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "autoglass.co",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "aaa-autoglass.us",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "autoglassservice.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "abraauto.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "morrisglass.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "yelp.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ar.airbnb.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "jameda.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "gelbeseiten.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "orthinform.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "expressinfo.sk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "babelio.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fnac.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "actes-sud.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "misscoquines.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fanshop.ksc.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "asiyaha.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "consumerreports.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "radio-south-africa.co.za",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lexisnexis.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "knowyourparkingrights.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "gov.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "just-drive.co.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "laist.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "la.lawsoup.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "snagparking.app",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "abc.net.au",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "southafricaradio.co.za",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "onlineradiobox.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "streema.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tools.usps.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "parcelsapp.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "synctrack.io",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "informeddelivery.usps.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "connexion.liberation.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "boutique.liberation.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tesla.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "yfm.co.za",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "kidvideo.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "youtubekids.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "materialhandling.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "thomasnet.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "impactfirst.co",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "globalindustrial.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mhe-lift.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bigrentz.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "liftingequipmentstore.us",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "johnstonequipment.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "toyotaforklift.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "northerntool.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "partnerdirectory.atlassian.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "support.atlassian.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "thectoclub.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bitbucket.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "amazon.in",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "snipeitapp.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "xdocs.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nadorcity.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "immoweb.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "imortuary.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "echovita.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "whopassedon.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "funeralhomepages.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "findglocal.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "es.ncl.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "uhb.nhs.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dunelm-uk.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dunelm-official-uk.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "thedunelmhomes.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "openingtimesin.uk",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tripadvisor.com.ar",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lapampaturismo.com.ar",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tripadvisor.es",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "trivago.com.ar",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "argentinaturismo.com.ar",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "airbnb.com.ar",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "patagoniaturismo.com.ar",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "cozycozy.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "es.momondo.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "jingyan.baidu.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "reisen.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "aldi-reisen.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "globista.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "explorer.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "penny-reisen.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "manafiaa.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "vvanat.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "bricotage.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "conseil-maison-jardin.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "cmadeco.eu",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "e-comptoirelectrique.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "irripiscine.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "amenagementdujardin.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "piscine.be",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "global.heliosventilatoren.de",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dailymail.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "kontable.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "sage.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "cegid.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mediadreams.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "rca.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "hubmode.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "cabinet-desbois.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "experts-comptables.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "blog-ia.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "agiris.fr",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "meaden.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "fictiv.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "emachineshop.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "canyoncomponents.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "3erp.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tfgusa.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "snl.no",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lille.snl.no",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "no.wikipedia.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nn.wikipedia.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "mn.uio.no",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "illvit.no",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nysgjerrigper.no",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "titan.uio.no",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "forum.the-west.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "cayn.ma",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "alaazerbaijan.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "wakaabuja.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "thepoortraveler.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "crossroadfukuoka.jp",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "japan-guide.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "japanwiselife.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tripadvisor.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "tourcounsel.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "rome2rio.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "idrissimmobilier.site",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "hoyenlahistoria.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "lecturas.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "caras.cl",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "es.pinterest.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "es.m.wikipedia.org",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "elcomercio.pe",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "m.youtube.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "studio.youtube.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 0,
+   "unclassified": 1
+  }
+ ],
+ [
+  "links.giveawayoftheday.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "elearning.rtb.gov.rw",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "elearning.ur.ac.rw",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "e-learning.rp.ac.rw",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "nesa.gov.rw",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "ups.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "17track.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "m.usps.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "t.17track.net",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "dhl.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "track.global",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "theupsstore.com",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "17track.me",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ],
+ [
+  "parcelplus.app",
+  {
+   "total": 1,
+   "accepted": 0,
+   "rejected": 1,
+   "unclassified": 0
+  }
+ ]
+]

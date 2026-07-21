@@ -16,6 +16,7 @@ import {
   toTransactionType,
   uniqueNormalizedText,
 } from "./utils";
+import { getListingUrlPatterns } from "./domain-registry";
 
 const REAL_ESTATE_TOKENS = [
   "appartement",
@@ -33,12 +34,29 @@ const REAL_ESTATE_TOKENS = [
 const OUT_OF_SCOPE_TOKENS = [
   "voiture",
   "emploi",
-  "mobilier",
   "service",
   "actualite",
   "blog",
   "guide",
 ];
+
+// OPENSERP-CLASSIFY-OUT-OF-SCOPE-TOKEN-BOUNDARY-FIX-1: "mobilier" moved out
+// of the plain-substring OUT_OF_SCOPE_TOKENS list above -- a bare
+// `.includes("mobilier")` also matches "immobilier"/"immobiliere" (French
+// for "real estate"/"real estate agency", itself one of REAL_ESTATE_TOKENS
+// above), which is core, expected vocabulary for this domain, not a
+// disqualifying one. Audited against a real Production run
+// (openserp-github-cron-2026-07-20T08-23-27-764Z): 30/34 rejections that
+// run carried exactly this token, including two domains whose name alone
+// (kawtarimmobilier.com, limmobiliersansfrontieres.com) triggered it on
+// every single result regardless of content. Matched with a strict word
+// boundary instead, against the same already-normalized (lowercase,
+// accent-stripped) text every other token checks -- normalizeText() only
+// strips characters outside [a-z0-9\s/-], so \b correctly finds no
+// boundary inside "immobilier" (no non-word character separates "im" from
+// "mobilier") while still matching "mobilier" as its own word or compound
+// ("mobilier de bureau", "meubles et mobilier").
+const OUT_OF_SCOPE_WORD_BOUNDARY_TOKENS: RegExp[] = [/\bmobilier\b/];
 
 const DISCOVERY_TOKENS = [
   "annonces immobilieres",
@@ -59,25 +77,35 @@ const DISCOVERY_TOKENS = [
 type PathRules = {
   forceReject?: RegExp[];
   forceDiscovery?: RegExp[];
-  strongIndividual?: RegExp[];
 };
 
+// OPENSERP-REGISTRY-PATTERN-SOURCE-OF-TRUTH-1: strongIndividual entries
+// (the per-domain "does this URL path look like one specific listing"
+// regexes) have moved out of this hardcoded map into
+// data/openserp/source-domain-registry.json's listing_url_patterns,
+// which is now the single functionally-enforced source of truth --
+// see getListingUrlPatterns() in domain-registry.ts and its use in
+// detectUrlSignals() below. forceReject/forceDiscovery stay here: they
+// are not listing_url_patterns (they identify category/discovery/
+// rejected pages, not individual listings) and the registry has no
+// field for them.
+//
+// Domains that had ONLY a strongIndividual entry (1immo.ma,
+// barnes-marrakech.com, kawtarimmobilier.com, limmobiliersansfrontieres.com,
+// marrakechrealty.com) no longer appear in this map at all -- their
+// patterns now live exclusively in the registry.
 const DOMAIN_RULES: Record<string, PathRules> = {
   "mubawab.ma": {
     forceDiscovery: [/\/(?:fr|en)?\/?(?:sd|cd|sc)\//, /\/immobilier-a-(?:vendre|louer)\b/, /\/appartements-a-(?:vendre|louer)\b/, /\/villas-et-maisons-de-luxe-a-vendre\b/],
-    strongIndividual: [/\/(?:fr|en)\/is\//, /\/(?:fr|en)\/a\/\d+\//, /\/acheter\/[^/]+-\d+(?:\.html)?$/],
   },
   "agenz.ma": {
     forceDiscovery: [/\/(?:fr|en)\/(?:acheter|louer)\//],
-    strongIndividual: [/\/(?:fr|en)\/annonces\/.+\/\d+$/],
   },
   "sarouty.ma": {
     forceDiscovery: [/\/acheter\/[^/]+\/[^/]+\/(?:appartements|villas|proprietes|immobilier-neuf).*/, /\/acheter\/[^/]+\/(?:villas-a-vendre|proprietes-a-vendre)$/, /\/louer\/[^/]+\/(?:appartements-a-louer|proprietes-a-louer).*$/],
-    strongIndividual: [/\/plp\/acheter\/.+-\d+(?:\.html)?$/, /\/acheter\/[a-z0-9-]+-\d+(?:\.html)?$/],
   },
   "avito.ma": {
     forceDiscovery: [/\/sp\/immobilier\//, /\/fr\/.+\/(?:appartements|villas|terrains|bureaux).+_vendre$/, /\/fr\/.+\/(?:appartements|villas|terrains|bureaux).+_louer$/],
-    strongIndividual: [/\/fr\/.+\/.+_\d+\.htm$/],
   },
   "immobilier.trovit.ma": {
     forceDiscovery: [/.*/],
@@ -94,24 +122,8 @@ const DOMAIN_RULES: Record<string, PathRules> = {
   "marocannonces.com": {
     forceDiscovery: [/\/maroc\/.+-b\d+-t\d+\.html/i, /\/categorie\//],
   },
-  "1immo.ma": {
-    strongIndividual: [/\/[a-z0-9-]+-\d+$/i],
-  },
-  "barnes-marrakech.com": {
-    strongIndividual: [/\/vente\/.+\/\d+$/],
-  },
-  "kawtarimmobilier.com": {
-    strongIndividual: [/\/vente\/.+ref-\d+\.html$/i],
-  },
   "mouldar.com": {
     forceDiscovery: [/\/(?:fr|en)\/(?:achat|location|rent|buy)\/[^/]+\/[^/]+\/[^/]+$/i],
-    strongIndividual: [/\/(?:fr|en)\/(?:rent|achat|buy|louer|location)\/.+\/[a-f0-9]{6,}$/i],
-  },
-  "limmobiliersansfrontieres.com": {
-    strongIndividual: [/\/property\//],
-  },
-  "marrakechrealty.com": {
-    strongIndividual: [/\/property\//],
   },
 };
 
@@ -138,13 +150,15 @@ function detectUrlSignals(domain: string, canonicalUrl: string): {
     }
   })();
   const rules = DOMAIN_RULES[domain];
-  if (!rules) {
-    return { forceReject: false, forceDiscovery: false, strongIndividual: false, reasons };
-  }
-
-  const forceReject = rules.forceReject?.some((pattern) => pattern.test(pathname)) ?? false;
-  const forceDiscovery = rules.forceDiscovery?.some((pattern) => pattern.test(pathname)) ?? false;
-  const strongIndividual = rules.strongIndividual?.some((pattern) => pattern.test(pathname)) ?? false;
+  const forceReject = rules?.forceReject?.some((pattern) => pattern.test(pathname)) ?? false;
+  const forceDiscovery = rules?.forceDiscovery?.some((pattern) => pattern.test(pathname)) ?? false;
+  // OPENSERP-REGISTRY-PATTERN-SOURCE-OF-TRUTH-1: strongIndividual now comes
+  // exclusively from source-domain-registry.json's listing_url_patterns
+  // (via getListingUrlPatterns), not from this file's own DOMAIN_RULES --
+  // called unconditionally, independent of whether `rules` exists above,
+  // since a domain can have listing_url_patterns with no forceReject/
+  // forceDiscovery entry at all (e.g. 1immo.ma, kawtarimmobilier.com).
+  const strongIndividual = getListingUrlPatterns(domain).some((pattern) => pattern.test(pathname));
 
   if (forceReject) reasons.push("force_reject_path");
   if (forceDiscovery) reasons.push("discovery_path");
@@ -185,7 +199,10 @@ function classifyLane(input: {
     return { lane: "reject_out_of_scope", reasons: ["missing_real_estate_signal"] };
   }
 
-  if (OUT_OF_SCOPE_TOKENS.some((token) => input.text.includes(token))) {
+  if (
+    OUT_OF_SCOPE_TOKENS.some((token) => input.text.includes(token)) ||
+    OUT_OF_SCOPE_WORD_BOUNDARY_TOKENS.some((pattern) => pattern.test(input.text))
+  ) {
     return { lane: "reject_out_of_scope", reasons: ["out_of_scope_token"] };
   }
 
@@ -295,7 +312,12 @@ function extractAttributes(input: {
 export function classifyOpenSerpResult(input: {
   result: OpenSerpRawResult;
   query: OpenSerpIngestionQuery;
-  engine: "bing" | "ecosia" | "duckduckgo";
+  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: "searxng_yandex" added so a
+  // Yandex-only-sourced result (never seen by OpenSERP for this query) can
+  // still be classified through this exact same, unmodified function --
+  // purely a provenance label carried into OpenSerpClassifiedResult.engine,
+  // never used to gate or branch classification logic below.
+  engine: "bing" | "ecosia" | "duckduckgo" | "searxng_yandex";
   discovered_at: string;
   fallbackRank: number;
   // Optional national-geography override — see CityExtractor/DistrictExtractor
