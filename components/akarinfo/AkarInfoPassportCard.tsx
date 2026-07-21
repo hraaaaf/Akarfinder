@@ -29,6 +29,7 @@ export function AkarInfoPassportCard({
   const lifestyleEntries = passport.lifestyle_summary
     ? Object.entries(passport.lifestyle_summary.lifestyle_indicators)
     : [];
+  const intelligence = passport.intelligence;
 
   return (
     <div
@@ -54,6 +55,53 @@ export function AkarInfoPassportCard({
       <p className="mt-2.5 text-[12px] leading-5 text-foreground/80 dark:text-white/72">
         {passport.summary}
       </p>
+
+      {intelligence ? (
+        <div className="mt-3 rounded-xl border border-bronze-500/20 bg-bronze-500/[0.06] px-3 py-3">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-bronze-700 dark:text-bronze-300">
+                Lecture AkarFinder
+              </p>
+              <p className="mt-1 text-[12px] font-bold text-foreground/85 dark:text-white/80">
+                {intelligence.score_label}
+              </p>
+            </div>
+            <span className="rounded-full border border-bronze-500/25 bg-card/70 px-2.5 py-1 text-[11px] font-extrabold text-bronze-700 dark:bg-white/[0.04] dark:text-bronze-200">
+              {intelligence.score != null ? `${intelligence.score}/100` : "Analyse partielle"}
+            </span>
+          </div>
+
+          <p className="mt-1.5 text-[10.5px] font-semibold text-muted-foreground dark:text-white/50">
+            {intelligence.coverage_label}
+          </p>
+
+          {intelligence.signals.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {intelligence.signals.map((signal) => (
+                <span
+                  key={`${signal.code}:${signal.label}`}
+                  className="rounded-full border border-border/15 bg-card/65 px-2.5 py-1 text-[10.5px] font-bold text-foreground/70 dark:border-white/10 dark:bg-white/[0.035] dark:text-white/65"
+                >
+                  {signal.label}
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          {intelligence.attention_label ? (
+            <p className="mt-2 text-[11px] font-semibold leading-5 text-amber-700 dark:text-amber-200">
+              {intelligence.attention_label}
+            </p>
+          ) : null}
+
+          {!compact ? (
+            <p className="mt-2 text-[10.5px] leading-5 text-muted-foreground dark:text-white/45">
+              {intelligence.disclaimer}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-3">
         <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground dark:text-white/45">
