@@ -5,8 +5,8 @@ import { buildAkarInfoPassportForListing } from "../../../lib/akarinfo/akarinfo-
 import {
   attachPublicSerpIntelligenceToListing,
   buildPublicSerpIntelligenceForListing,
-  getPublicSerpIntelligenceFromListing,
 } from "../../../lib/intelligence/public-serp-intelligence-v1.js";
+import { getPublicSerpIntelligenceFromListing } from "../../../lib/intelligence/public-serp-intelligence-carrier.js";
 import type { Listing } from "../../../lib/listings/types.js";
 
 const NOW = "2026-07-21T22:30:00.000Z";
