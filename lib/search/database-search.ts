@@ -3,6 +3,8 @@ import { assignDuplicateGroups } from "@/lib/listings/duplicate";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
 import { canPublishDbRowToPublicSearchSurface } from "@/lib/listings/public-listing-access";
 import type { Listing } from "@/lib/listings/types";
+import { attachPublicSerpIntelligenceToListing } from "@/lib/intelligence/public-serp-intelligence-v1";
+import type { DbListingRow } from "@/lib/listings/db-listings";
 import type { SearchQuery, SearchResult } from "./types";
 import { computeRankingScore } from "./ranking";
 
@@ -113,6 +115,17 @@ function sortListings(listings: Listing[], sort?: string, query?: SearchQuery) {
   });
 }
 
+function mapSearchRow(
+  row: DbListingRow,
+  duplicate?: Parameters<typeof mapDbRowToListing>[1],
+): Listing {
+  const listing = mapDbRowToListing(row, duplicate);
+  return attachPublicSerpIntelligenceToListing(listing, {
+    source_name: row.source_name ?? "",
+    observed_at: row.updated_at,
+  });
+}
+
 export async function searchDatabase(query: SearchQuery = {}): Promise<SearchResult> {
   const limit = Math.min(Math.max(query.limit ?? 50, 1), 100);
   const offset = Math.max(query.offset ?? 0, 0);
@@ -140,20 +153,22 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
     );
   }
 
-  // PUBLIC-READMODEL-AUTHORIZED-ONLY-1: discard rows whose source is not
-  // first_party or partner_authorized before mapping (cheap pre-filter).
+  // PUBLIC-READMODEL-AUTHORIZED-ONLY-1: structured first-party/partner rows are
+  // eligible for the public intelligence projection. Persisted external rows can
+  // still enter the limited search lane, but attachPublicSerpIntelligenceToListing
+  // deliberately returns them unchanged.
   const authorizedRows = base.listings.filter(canPublishDbRowToPublicSearchSurface);
 
   const allPersisted = authorizedRows.every(
     (row) => row.reliability_score != null && row.duplicate_score != null
   );
   const listings = allPersisted
-    ? authorizedRows.map((row) => mapDbRowToListing(row))
+    ? authorizedRows.map((row) => mapSearchRow(row))
     : (() => {
         const partial = authorizedRows.map((row) => mapDbRowToListing(row));
         const duplicateMap = assignDuplicateGroups(partial);
         return authorizedRows.map((row) =>
-          mapDbRowToListing(row, duplicateMap.get(String(row.id)))
+          mapSearchRow(row, duplicateMap.get(String(row.id)))
         );
       })();
 
