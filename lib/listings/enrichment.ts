@@ -1,30 +1,23 @@
 import type { Listing, NearbyPlace } from "@/lib/listings/types";
 
-// Level 2E — derives Zillow-style enrichment for a listing.
-// All values are MOCK and INDICATIVE. If a listing already carries an explicit
-// field, it wins; otherwise we derive a graceful, deterministic value so every
-// listing renders a complete decision dossier.
+// Listing enrichment must never fabricate historical observations or comparable
+// properties. Missing data remains missing until a real source/canonical service
+// provides it.
 
 export type ListingEnrichment = {
-  // Market reference — null when the listing's own price is undisclosed
-  // (never derived from an invented 0 price).
   marketMinPerM2: number | null;
   marketMaxPerM2: number | null;
   marketPosition: "coherent" | "high" | "low" | "unknown";
-  // History
   initialPrice: number | null;
   currentPrice: number | null;
   priceChangePercent: number | null;
   listedAtLabel: string;
   updatedAtLabel: string;
-  // Neighborhood
   neighborhoodSummary: string;
   nearbyPlaces: NearbyPlace[];
-  // Remote buying
   remoteBuyingNotes: string;
 };
 
-// Indicative per-city sale reference (MAD/m²) for residential buy listings only.
 const citySaleReferencePerM2: Record<string, number> = {
   Casablanca: 14000,
   Rabat: 15000,
@@ -33,7 +26,7 @@ const citySaleReferencePerM2: Record<string, number> = {
   Agadir: 9000,
   Fes: 8000,
   Kenitra: 8000,
-  Mohammedia: 11000
+  Mohammedia: 11000,
 };
 
 const coastalCities = new Set(["Casablanca", "Tanger", "Agadir", "Mohammedia"]);
@@ -49,7 +42,6 @@ function deriveMarket(listing: Listing) {
 
   const ref = citySaleReferencePerM2[listing.city];
 
-  // For residential buy listings in a known city, compare against the city reference.
   if (isResidentialBuy && ref) {
     const marketMinPerM2 = round(ref * 0.88);
     const marketMaxPerM2 = round(ref * 1.12);
@@ -60,58 +52,31 @@ function deriveMarket(listing: Listing) {
     return { marketMinPerM2, marketMaxPerM2, marketPosition };
   }
 
-  // For rent / offices / land, comparison across the city is misleading.
-  // Fall back to a band around the listing's own price/m², position coherent.
-  // An undisclosed price/m² has no band to derive at all.
   if (listing.price_per_m2 == null) {
-    return { marketMinPerM2: null, marketMaxPerM2: null, marketPosition: "unknown" as const };
+    return {
+      marketMinPerM2: null,
+      marketMaxPerM2: null,
+      marketPosition: "unknown" as const,
+    };
   }
+
   return {
     marketMinPerM2: round(listing.price_per_m2 * 0.88),
     marketMaxPerM2: round(listing.price_per_m2 * 1.12),
-    marketPosition: "coherent" as const
+    marketPosition: "coherent" as const,
   };
 }
 
 function deriveHistory(listing: Listing) {
-  const updatedAtLabel = listing.updated_at_label ?? listing.freshness_label;
-
-  // New / promoter programs are presented as price-stable.
-  if (listing.transaction_type === "new" || listing.source_type === "Promoteur") {
-    return {
-      initialPrice: listing.price,
-      currentPrice: listing.price,
-      priceChangePercent: 0,
-      listedAtLabel: listing.listed_at_label ?? "Programme suivi",
-      updatedAtLabel
-    };
-  }
-
-  // An undisclosed price has no history to simulate — never derive a fake
-  // initial/current price or trend from a price we don't have.
-  if (listing.price == null) {
-    return {
-      initialPrice: null,
-      currentPrice: null,
-      priceChangePercent: null,
-      listedAtLabel: listing.listed_at_label ?? "Publiée il y a quelques semaines",
-      updatedAtLabel
-    };
-  }
-
-  // Lower-reliability listings are presented as having dropped more (often stale/overpriced).
-  const dropFactor = listing.reliability_score < 55 ? 1.06 : 1.038;
-  const initialPrice = round(listing.price * dropFactor, 1000);
-  const currentPrice = listing.price;
-  const priceChangePercent =
-    Math.round(((currentPrice - initialPrice) / initialPrice) * 1000) / 10;
-
   return {
-    initialPrice,
-    currentPrice,
-    priceChangePercent,
-    listedAtLabel: listing.listed_at_label ?? "Publiée il y a quelques semaines",
-    updatedAtLabel
+    // Historical price fields are authoritative only when explicitly carried by
+    // the listing/source. We never infer a fake former price from the current one.
+    initialPrice: listing.initial_price ?? null,
+    currentPrice: listing.current_price ?? listing.price ?? null,
+    priceChangePercent: listing.price_change_percent ?? null,
+    listedAtLabel: listing.listed_at_label ?? "Date de publication indisponible",
+    updatedAtLabel:
+      listing.updated_at_label ?? listing.freshness_label ?? "Dernière mise à jour indisponible",
   };
 }
 
@@ -129,13 +94,11 @@ const proximityProfiles: Record<string, number[]> = {
   "Ville Nouvelle": [4, 5, 3, 3, 8, 11],
   "Maâmora": [9, 8, 7, 6, 13, 12],
   Parc: [5, 6, 4, 5, 9, 13],
-  Bouskoura: [10, 12, 9, 7, 15, 17]
+  Bouskoura: [10, 12, 9, 7, 15, 17],
 };
 
 const defaultProfile = [6, 7, 5, 5, 10, 13];
 
-// Converts heuristic minutes to a qualitative label — never show raw minutes
-// to the user since this data has no verified geographic source.
 function toQualitativeLabel(minutes: number): string {
   if (minutes <= 5) return "à proximité";
   if (minutes <= 10) return "dans le secteur";
@@ -151,7 +114,7 @@ function deriveNearbyPlaces(listing: Listing): NearbyPlace[] {
     { label: "École / établissement", time: toQualitativeLabel(t[1]), icon: "school" },
     { label: "Supermarché", time: toQualitativeLabel(t[2]), icon: "shop" },
     { label: "Mosquée", time: toQualitativeLabel(t[3]), icon: "mosque" },
-    { label: "Clinique / pharmacie", time: toQualitativeLabel(t[4]), icon: "health" }
+    { label: "Clinique / pharmacie", time: toQualitativeLabel(t[4]), icon: "health" },
   ];
 
   if (coastalCities.has(listing.city)) {
@@ -181,36 +144,11 @@ function deriveRemoteBuyingNotes(listing: Listing) {
   return "Quelques éléments restent à confirmer avant un achat à distance (contact, disponibilité, documents).";
 }
 
-// Picks up to 3 similar listings: same city first, then same property type,
-// then closest budget. Never includes the current listing.
-export function getSimilarListings(listing: Listing, all: Listing[], limit = 3): Listing[] {
-  if (listing.similar_listing_ids?.length) {
-    const byId = listing.similar_listing_ids
-      .map((id) => all.find((l) => l.id === id))
-      .filter((l): l is Listing => Boolean(l) && l!.id !== listing.id);
-    if (byId.length >= limit) return byId.slice(0, limit);
-  }
-
-  const others = all.filter((l) => l.id !== listing.id);
-
-  const scored = others
-    .map((l) => {
-      let score = 0;
-      if (l.city === listing.city) score += 100;
-      if (l.neighborhood === listing.neighborhood) score += 60;
-      if (l.property_type === listing.property_type) score += 40;
-      if (l.transaction_type === listing.transaction_type) score += 20;
-      // closer budget => higher score (up to 30) — skipped entirely when
-      // either price is undisclosed, never treated as a 0 gap.
-      if (l.price != null && listing.price != null) {
-        const budgetGap = Math.abs(l.price - listing.price) / Math.max(listing.price, 1);
-        score += Math.max(0, 30 - budgetGap * 30);
-      }
-      return { l, score };
-    })
-    .sort((a, b) => b.score - a.score);
-
-  return scored.slice(0, limit).map((entry) => entry.l);
+// REAL-DATA-INTEGRITY-CLEANUP-1: Similar listings are intentionally hidden until
+// a canonical DB-backed similarity service provides real candidates. The former
+// heuristic accepted mockListings and could surface synthetic cards on public pages.
+export function getSimilarListings(_listing: Listing, _all: Listing[], _limit = 3): Listing[] {
+  return [];
 }
 
 export function getListingEnrichment(listing: Listing): ListingEnrichment {
@@ -222,15 +160,15 @@ export function getListingEnrichment(listing: Listing): ListingEnrichment {
     marketMaxPerM2: listing.market_max_price_per_m2 ?? market.marketMaxPerM2,
     marketPosition: listing.market_position ?? market.marketPosition,
 
-    initialPrice: listing.initial_price ?? history.initialPrice,
-    currentPrice: listing.current_price ?? history.currentPrice,
-    priceChangePercent: listing.price_change_percent ?? history.priceChangePercent,
+    initialPrice: history.initialPrice,
+    currentPrice: history.currentPrice,
+    priceChangePercent: history.priceChangePercent,
     listedAtLabel: history.listedAtLabel,
     updatedAtLabel: history.updatedAtLabel,
 
     neighborhoodSummary: listing.neighborhood_summary ?? deriveNeighborhoodSummary(listing),
     nearbyPlaces: listing.nearby_places ?? deriveNearbyPlaces(listing),
 
-    remoteBuyingNotes: listing.remote_buying_notes ?? deriveRemoteBuyingNotes(listing)
+    remoteBuyingNotes: listing.remote_buying_notes ?? deriveRemoteBuyingNotes(listing),
   };
 }
