@@ -27,11 +27,40 @@ export type AddProfessionalMemberInput = {
   role: ProfessionalMembershipRole;
 };
 
+export type UpdateProfessionalProfileInput = {
+  display_name?: string;
+  description?: string | null;
+  logo_url?: string | null;
+  website_url?: string | null;
+  city?: string | null;
+  public_email?: string | null;
+  public_phone?: string | null;
+};
+
 function cleanText(value: unknown, max: number): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim().replace(/\s+/g, " ");
   if (!trimmed || trimmed.length > max) return null;
   return trimmed;
+}
+
+function cleanOptionalText(value: unknown, max: number): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+  return cleanText(value, max) ?? undefined;
+}
+
+function cleanOptionalHttpUrl(value: unknown): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+  if (typeof value !== "string" || value.length > 500) return undefined;
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol !== "https:" && url.protocol !== "http:") return undefined;
+    return url.toString();
+  } catch {
+    return undefined;
+  }
 }
 
 export function normalizeProfessionalSlug(value: unknown): string | null {
@@ -71,6 +100,37 @@ export function parseCreateProfessionalOrganizationInput(
       city,
     },
   };
+}
+
+export function parseUpdateProfessionalProfileInput(value: unknown): UpdateProfessionalProfileInput | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as Record<string, unknown>;
+  const result: UpdateProfessionalProfileInput = {};
+
+  if (raw.display_name !== undefined) {
+    const displayName = cleanText(raw.display_name, 120);
+    if (!displayName) return null;
+    result.display_name = displayName;
+  }
+
+  for (const [key, max] of [["description", 2000], ["city", 100], ["public_email", 200], ["public_phone", 80]] as const) {
+    const cleaned = cleanOptionalText(raw[key], max);
+    if (raw[key] !== undefined && cleaned === undefined) return null;
+    if (cleaned !== undefined) result[key] = cleaned;
+  }
+
+  for (const key of ["logo_url", "website_url"] as const) {
+    const cleaned = cleanOptionalHttpUrl(raw[key]);
+    if (raw[key] !== undefined && cleaned === undefined) return null;
+    if (cleaned !== undefined) result[key] = cleaned;
+  }
+
+  // Intentionally ignored/forbidden from self-service: validation_status,
+  // commercial_tier, organization_type, created_by, public_visibility.
+  const forbidden = ["validation_status", "commercial_tier", "organization_type", "created_by", "public_visibility"];
+  if (forbidden.some((key) => raw[key] !== undefined)) return null;
+
+  return Object.keys(result).length > 0 ? result : null;
 }
 
 export function parseListingOwnershipClaim(value: unknown): number | null {
