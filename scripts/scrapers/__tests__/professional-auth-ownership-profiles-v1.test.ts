@@ -103,7 +103,7 @@ describe("#19B professional auth, ownership & profiles V1", () => {
     );
   });
 
-  it("migration enables RLS and explicit tenant-scoped lead routing", () => {
+  it("migration enables RLS, explicit tenant-scoped lead routing, and removes permissive legacy lead policy", () => {
     const sql = readFileSync(
       join(process.cwd(), "supabase/migrations/20260721231500_professional_auth_ownership_profiles_v1.sql"),
       "utf8",
@@ -122,6 +122,8 @@ describe("#19B professional auth, ownership & profiles V1", () => {
     assert.ok(sql.includes("professional_lead_assignments"));
     assert.ok(sql.includes("organization_id"));
     assert.ok(sql.includes("user_id = (select auth.uid())"));
+    assert.ok(sql.includes('drop policy if exists "service_role_all" on public.buyer_leads'));
+    assert.ok(sql.includes("alter function public.update_buyer_leads_updated_at() set search_path = public"));
     assert.equal(sql.includes("commercial_tier = 'premium' then"), false);
   });
 
