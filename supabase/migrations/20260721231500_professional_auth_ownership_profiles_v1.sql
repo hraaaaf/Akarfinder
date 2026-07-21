@@ -83,6 +83,18 @@ begin
   end if;
 end $$;
 
+-- Legacy lead hardening: service_role bypasses RLS already, so an ALL/USING(true)
+-- policy is unnecessary and over-permissive. Existing service-role APIs keep working.
+do $$
+begin
+  if to_regclass('public.buyer_leads') is not null then
+    drop policy if exists "service_role_all" on public.buyer_leads;
+    if to_regprocedure('public.update_buyer_leads_updated_at()') is not null then
+      alter function public.update_buyer_leads_updated_at() set search_path = public;
+    end if;
+  end if;
+end $$;
+
 create index if not exists professional_memberships_user_idx on public.professional_memberships(user_id, status);
 create index if not exists professional_memberships_org_idx on public.professional_memberships(organization_id, status);
 create index if not exists professional_listing_ownership_org_idx on public.professional_listing_ownership(organization_id, status);
