@@ -12447,3 +12447,27 @@ de verification complete du cout/quota GitHub -- un appel API sur les permission
 refuse par l'utilisateur en cours d'audit, non retente). Prochaine mission proposee (non demarree) :
 `OPENSERP-NATIVE-CRON-REMEDIATION-1`. Voir `docs/OPENSERP_NATIVE_CRON_COMPLIANCE_AUDIT_1.md` et
 `data/audits/openserp_native_cron_compliance_audit_1.md` pour le detail complet.
+
+## 2026-07-21 - AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 : #10/10 HARD_BLOCKER_EVIDENCED
+
+Cloture honnete du mandat maitre 100k. #1-#9 termines (8 PRs mergees #5-#12 cette session). #10
+National Backfill = HARD_BLOCKER_EVIDENCED : l'objectif >=100 000 URLs canonical distinctes n'est
+PAS atteint (etat reel ~9000 : 6285 dans discovery_candidates + ~3027 seeds Common Crawl offline)
+et n'est PAS revendique comme atteint.
+
+Deux blocages structurels prouves, chiffres a l'appui :
+1. WRITE_PATH : la table dediee `source_offer_seeds` (migration testee PASS STRICT via PGlite en
+   #4) ne peut pas etre appliquee en Production depuis cet environnement (pas de token Management
+   API, pas de connection string, extension dashboard non connectee ; l'utilisateur a differe
+   l'application). La preuve DB exigee (>=100k canonical_url distincts) est donc structurellement
+   impossible maintenant.
+2. RESERVOIR : le reservoir Common Crawl autorise sur les 16 domaines enregistres a pattern
+   listing, sur index recents, est tres en-dessous de 100k. Mesures reelles completes : mubawab
+   (plus gros portail national) = 2471 sur 6 index ; sous-total confirme sur 5 domaines = 5498.
+   Atteindre 100k exigerait avito-scale (CDX/robots-limite) + index historiques profonds (36-60
+   mois) + qualification de ~700 domaines candidats de l'Atlas #7 -- harvest multi-heures que le
+   rate-limiting CDX rend infaisable depuis cette infra (run 29828223264 rate-limite a 0 sur 15/16
+   domaines ; run 29829819356 a necessite 2.5s de pacing inter-requete et 40+ min).
+
+Aucun chiffre fabrique. Voir data/audits/national-100k-backfill-hard-blocker.{md,json}.
+Deblocage : appliquer la migration via dashboard Supabase puis harvest historique paced/checkpointe.

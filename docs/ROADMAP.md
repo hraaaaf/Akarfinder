@@ -5402,3 +5402,36 @@ Pourcentage Produit:
 Prochaine mission (non demarree, proposee par cet audit) :
 - `OPENSERP-NATIVE-CRON-REMEDIATION-1` : ajouter `permissions:` explicite minimal, retirer 2 etapes
   diagnostiques `TEMPORARY` residuelles, ajouter `timeout-minutes` au job.
+
+## 2026-07-21 - AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 (execution autonome #3 -> #10)
+
+Mandat maitre : atteindre >=100 000 URLs d'offres sources uniques observees. Execution autonome
+continue, 8 PRs mergees cette session (#5 a #12).
+
+- #3/10 Registry single source of truth : PASS STRICT. Gate post-`aa49880` valide sur donnees
+  reelles (run 29785559816), PR #5 mergee (`4bbd920`).
+- #4/10 Common Crawl bulk seed harvest : harvest reel de 3027 seeds (4 domaines A, tous <10% des
+  estimations BASE ; daragadir stabilite LOW donc quarantine ecriture). Migration dediee
+  `source_offer_seeds` testee PASS STRICT (PGlite). PRs #6 (workflow) + #7 mergees. Migration NON
+  appliquee en Production (acces dashboard/token requis, differe par l'utilisateur).
+- #5/10 Seed freshness engine : matcher exact + job idempotent, valide sur donnees reelles. PR #8.
+- #6/10 Dedup/clustering V2 (shadow) : audit reel a debusque et corrige 2 vrais bugs + garde-fou de
+  contradiction avant tout rapport de succes. 14 candidats haute confiance (contre 143 avant fix),
+  0 auto-merge. PR #9.
+- #7/10 Source Discovery Atlas : 745 domaines observes, 725 candidats documentes, 2 enregistres
+  avec preuve complete (aykana.ma, promoimmomarrakech.com), 6 exclus. PR #10.
+- #8/10 Direct feeds ingestion capability (CSV/JSON/XML) : schema canonique, idempotence par
+  external_id (jamais le titre seul), 1 vrai bug trouve/corrige via fixtures. PR #11.
+- #9/10 Index lifecycle at scale : machine a etats + gate PGlite 100k PASS STRICT (recherche
+  publique 5.64ms a 100k, 0 fuite seed, 0 doublon, index confirme via EXPLAIN). PR #12.
+- #10/10 National backfill & 100k gate : **HARD_BLOCKER_EVIDENCED**. Objectif NON atteint et NON
+  revendique. Etat reel actuel ~9000 canonical distincts (6285 discovery_candidates + ~3027 seeds
+  offline). Deux blocages structurels : (1) migration `source_offer_seeds` non applicable en
+  Production (credential differe) -> preuve DB >=100k impossible ; (2) reservoir Common Crawl
+  autorise sur 16 domaines/index recents tres en-dessous de 100k (mubawab, le plus gros = 2471).
+  Voir `data/audits/national-100k-backfill-hard-blocker.md`. Aucun chiffre fabrique.
+
+Statut roadmap 100k : #1-#9 = TERMINE, #10 = HARD_BLOCKER_EVIDENCED. NON 10/10 PASS STRICT.
+Prochaine etape de deblocage : appliquer la migration via dashboard Supabase, puis un harvest
+Common Crawl historique multi-run paced/checkpointe (12-36 index) + qualification de domaines A
+supplementaires de l'Atlas #7.
