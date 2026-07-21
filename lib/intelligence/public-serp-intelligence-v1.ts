@@ -1,6 +1,7 @@
 import type { Listing } from "../listings/types";
 import { adaptLegacyListing } from "../property-schema/adapters";
 import { canPublishStructuredListing, getSourceAccessType } from "../sources/source-access-registry";
+import { attachPublicSerpIntelligenceSummary } from "./public-serp-intelligence-carrier";
 import { runStructuredListingIntelligencePipeline } from "./structured-listing-pipeline";
 import {
   PUBLIC_SERP_INTELLIGENCE_VERSION,
@@ -10,10 +11,6 @@ import {
 
 const DISCLAIMER =
   "Lecture documentaire indicative fondée sur les informations disponibles. Les éléments sensibles restent à confirmer auprès des sources et documents applicables.";
-
-type ListingWithPublicIntelligence = Listing & {
-  public_intelligence?: PublicSerpIntelligenceSummaryV1;
-};
 
 export interface PublicSerpIntelligenceContextV1 {
   observed_at: string;
@@ -131,11 +128,5 @@ export function attachPublicSerpIntelligenceToListing(
 ): Listing {
   const publicIntelligence = buildPublicSerpIntelligenceForListing(listing, context);
   if (!publicIntelligence) return listing;
-  return { ...listing, public_intelligence: publicIntelligence } as ListingWithPublicIntelligence;
-}
-
-export function getPublicSerpIntelligenceFromListing(
-  listing: Listing,
-): PublicSerpIntelligenceSummaryV1 | undefined {
-  return (listing as ListingWithPublicIntelligence).public_intelligence;
+  return attachPublicSerpIntelligenceSummary(listing, publicIntelligence);
 }
