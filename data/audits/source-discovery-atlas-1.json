@@ -1,0 +1,130 @@
+{
+  "audit_id": "source-discovery-atlas-1",
+  "mission": "AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 (#7/10)",
+  "generated_at_utc": "2026-07-21T07:35:00.000Z",
+  "method": "Read-only survey of discovery_candidates (live Supabase, 8013 rows queried) -- the organic surfacing of domains by the existing OpenSERP + Yandex/SearXNG discovery channels across the real-estate-scoped query universe. No direct scraping, no new fetches beyond what the existing pipeline already performed.",
+  "raw_domain_count": 745,
+  "already_registered_domain_count": 21,
+  "unregistered_domain_count": 725,
+  "raw_data_file": "data/audits/source-discovery-atlas-1-raw-domains.json",
+  "note_on_signal_choice": "discovery_status='accepted' only ever occurs for domains ALREADY in the registry (deterministic pattern match) -- it is not a useful ranking signal for NEW candidates. 'unclassified' count (real-estate-scoped query surfaced the domain, but no registry pattern exists yet to admit/reject it on URL shape) is the correct signal for Atlas discovery. Ranking purely by 'total' volume surfaces mostly off-topic noise (facebook.com, youtube.com, generic forums, unrelated topic sites) since it also counts explicit rejections.",
+  "manually_reviewed_domains": [
+    {
+      "domain": "aykana.ma",
+      "classification": "A",
+      "action": "REGISTERED",
+      "source_type": "agency_site",
+      "coverage_cities": ["Rabat"],
+      "listing_url_pattern": "^/property/[^/]+$",
+      "proof": "3 real positive examples (incl. one with no trailing numeric ref) + 2 real negative examples (/property-type/ category page, blog/guide page) pulled from live discovery_candidates rows. 13 tests in openserp-source-discovery-atlas-registry.test.ts."
+    },
+    {
+      "domain": "promoimmomarrakech.com",
+      "classification": "A",
+      "action": "REGISTERED",
+      "source_type": "agency_site",
+      "coverage_cities": ["Marrakech"],
+      "listing_url_pattern": "^/produit/[^/]+/[^/]+\\.html$",
+      "proof": "3 real positive examples + 2 real negative examples (top-level category pages, no /produit/ prefix) pulled from live discovery_candidates rows."
+    },
+    {
+      "domain": "domio.ma",
+      "classification": "B",
+      "action": "documented, not activated",
+      "reasoning": "134 total / 53 unclassified -- highest-volume unregistered candidate. Genuine Essaouira-focused real estate portal (Arabic + French). All 8 sampled rows are city/category aggregation pages (e.g. /ar/مدينة/الصويرة, /fr/duplex/louer/essaouira), not individual listing detail pages -- no confirmed individual-listing URL pattern in the sample. Needs a targeted follow-up sample before registry addition."
+    },
+    {
+      "domain": "immobilier.cari.ma", "classification": "B", "action": "documented, not activated",
+      "reasoning": "Real estate portal, Marrakech/Agadir/Rabat coverage. Sampled URLs (/immo/<slug>) show category-aggregation titles ('19 duplex marrakech medina...'), not confirmed individual listings."
+    },
+    {
+      "domain": "sekna.ma", "classification": "B", "action": "documented, not activated",
+      "reasoning": "Real estate portal, multi-city. Sampled URLs are all city+type category pages (/local-commercial-a-louer-essaouira). No individual-listing URL pattern confirmed yet."
+    },
+    {
+      "domain": "immoessaouira.com", "classification": "B", "action": "documented, not activated",
+      "reasoning": "Essaouira-focused agency, bilingual (fr/ar). Sampled URLs are category pages (/fr/achat/studio/essaouira); individual listing detail pages not confirmed in this sample."
+    },
+    {
+      "domain": "dardar.ma", "classification": "B", "action": "documented, not activated",
+      "reasoning": "Nador/Kenitra-focused portal with video listings. Sampled URLs are all /city/<city> aggregation pages; no individual-listing pattern confirmed."
+    },
+    {
+      "domain": "flink.ma", "classification": "B", "action": "documented, not activated",
+      "reasoning": "National portal. Sampled URLs are all /<type>-a-louer/maroc/<city> category pages; no individual-listing pattern confirmed."
+    },
+    {
+      "domain": "fadlimmo.com", "classification": "B", "action": "documented, not activated",
+      "reasoning": "Kenitra-focused agency. One promising URL (/fr/location/local-commercial/kenitra/el-haddada-1030) looks like it could be individual, but most samples are category pages (/fr/location/tp/kenitra) with multiple listing descriptions concatenated in one snippet -- needs more samples to confirm the discriminating pattern."
+    },
+    {
+      "domain": "bakimmo.com", "classification": "B", "action": "documented, not activated",
+      "reasoning": "Kenitra-focused agency, same platform family as fadlimmo.com (same snippet structure). One URL (.../وسط-المدينة/34a7eb61) has a hex-like suffix suggesting a real per-listing ID scheme, but not enough confirmed samples yet."
+    },
+    {
+      "domain": "portail-immobilier.ma", "classification": "B", "action": "documented, not activated",
+      "reasoning": "Multi-city portal. All sampled URLs are /<city>/<type>/a-vendre category pages describing multiple properties in one snippet. Already flagged B in the prior 11-domain Common Crawl audit -- consistent finding."
+    },
+    {
+      "domain": "archimmomaroc.com", "classification": "B", "action": "documented, not activated",
+      "reasoning": "El Jadida-focused agency. All sampled URLs are /vente/<type> or /location/<type> category pages, no individual listing confirmed."
+    },
+    {
+      "domain": "proimmobilier.ma", "classification": "B", "action": "documented, not activated",
+      "reasoning": "Essaouira-focused. Sampled URLs are /property-type/<type> category pages (structurally the same 'category' namespace pattern later confirmed on aykana.ma) -- individual listing path not observed in this sample. Already flagged B in the prior 11-domain audit."
+    },
+    {
+      "domain": "maisonessaouira.com", "classification": "B", "action": "documented, not activated",
+      "reasoning": "Essaouira agency targeting foreign buyers. Sampled URLs are /vente or /vente/<type> category pages; individual listing pattern not confirmed."
+    },
+    {
+      "domain": "essaouira.immo", "classification": "B", "action": "documented, not activated",
+      "reasoning": "Essaouira agency (Abdo Immobilier). One URL (/immobilier-essaouira/1674-local-commercial-en-vente-a-essaouira) has a leading numeric ID and looks like a genuine individual listing -- promising, but needs 2-3 more confirming samples before registry addition."
+    },
+    {
+      "domain": "capalmrabat.com", "classification": "B", "action": "documented, not activated",
+      "reasoning": "Rabat agency. Every sampled URL (/biens/<type>/rabat/<slug>) is a genuine individual listing (single specific property, exact price/surface), but the slug has no numeric ID -- relies purely on descriptive-slug uniqueness (same risk profile as daragadir.com, already flagged LOW stability in #4/10). Held back pending either a stability check or a second confirming identifier."
+    },
+    {
+      "domain": "nador.immo", "classification": "B", "action": "documented, not activated",
+      "reasoning": "Nador agency. One URL (/propriete-commercial-a-louer/227) has a clean numeric ID suffix -- promising individual-listing pattern -- but the sample also mixes in /category/... pages on the SAME path depth, so a single confident regex could not yet be written from 8 rows. Needs a larger, targeted sample."
+    },
+    {
+      "domain": "fazwaz.fr", "classification": "B", "action": "documented, not activated",
+      "reasoning": "International portal (Thailand-based, expanded to Morocco). All sampled URLs are /<type>-a-vendre/maroc/<region>/<city>/<district> category/search-result pages -- the property description in the snippet belongs to a FEATURED listing within the category page, not the page's own individual listing. No individual-listing URL observed."
+    },
+    {
+      "domain": "kaynly.com", "classification": "C", "action": "excluded",
+      "reasoning": "Explicitly a meta-aggregator: every sampled title/snippet states it indexes listings 'depuis 5 portails marocains' (from 5 Moroccan portals). Registering it would risk double-counting listings already sourced from the primary portals it aggregates -- exactly the inter-provider duplicate-counting the mandate prohibits (Section 10.7). All sampled URLs are city+type search pages, never an individual listing on kaynly.com's own domain."
+    },
+    {
+      "domain": "rahalatmorocco.com", "classification": "C", "action": "excluded",
+      "reasoning": "Mixed-purpose travel portal ('rahalat' = trips) -- offers both apartment rentals AND car rentals (كراء السيارات) under the same city-page URL shape. Not primarily a real estate classifieds site; no individual-listing URL pattern observed."
+    },
+    {
+      "domain": "marocmarrakech.com", "classification": "C", "action": "excluded",
+      "reasoning": "Informational/blog content about what a riad is -- not a listing portal. The single sampled URL (/riad) is an editorial definition page, not a classifieds category or listing."
+    },
+    {
+      "domain": "riads-maroc.com", "classification": "C", "action": "excluded",
+      "reasoning": "Editorial/informational site about riads as a concept ('Un riad est une maison urbaine traditionnelle...'), not a listing portal. No transactional/classifieds content observed."
+    },
+    {
+      "domain": "riadaumaroc.com", "classification": "C", "action": "excluded",
+      "reasoning": "Same pattern as riads-maroc.com -- an editorial/brand page about riad culture, not a classifieds portal. No individual listings observed."
+    }
+  ],
+  "summary": {
+    "total_domains_documented": 725,
+    "manually_reviewed_in_depth": 23,
+    "classified_A_registered": 2,
+    "classified_B_documented_not_activated": 15,
+    "classified_C_excluded": 6,
+    "not_yet_individually_reviewed": 702
+  },
+  "next_steps_not_in_this_mission_scope": [
+    "Targeted re-sampling (10-20 rows each) of the strongest B candidates -- domio.ma, essaouira.immo, nador.immo, capalmrabat.com -- to attempt a confident individual-listing pattern before any registry addition.",
+    "Query-universe regeneration for aykana.ma (Rabat) and promoimmomarrakech.com (Marrakech) coverage_cities is a SEPARATE, not-yet-taken step (Section 7.4) -- these 2 domains are registered for pattern admission only, no site: query added yet.",
+    "The remaining ~700 undocumented-in-depth domains are preserved in the raw data file for a future, larger Atlas pass -- quality was prioritized over reviewing all 725 at the same depth in one mission, per the mandate's own 'qualite > quantite' instruction."
+  ]
+}
