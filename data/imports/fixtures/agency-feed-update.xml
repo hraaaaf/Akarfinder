@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed>
+  <listing>
+    <external_id>AG-1001</external_id>
+    <source_name>demo-agence-rabat</source_name>
+    <source_domain>demo-agence-rabat.example.ma</source_domain>
+    <source_url>https://demo-agence-rabat.example.ma/biens/appartement-1001</source_url>
+    <transaction_type>vente</transaction_type>
+    <property_type>appartement</property_type>
+    <title>Appartement 3 chambres Agdal Rabat - prix revu</title>
+    <description>Bel appartement lumineux proche commerces, baisse de prix</description>
+    <city>Rabat</city>
+    <district>Agdal</district>
+    <price_mad>1390000</price_mad>
+    <surface_m2>95</surface_m2>
+    <bedrooms_count>3</bedrooms_count>
+    <images_rights_confirmed>false</images_rights_confirmed>
+    <updated_at_source>2026-07-20T08:00:00Z</updated_at_source>
+  </listing>
+  <listing>
+    <external_id>AG-1004</external_id>
+    <source_name>demo-agence-rabat</source_name>
+    <source_domain>demo-agence-rabat.example.ma</source_domain>
+    <source_url>https://demo-agence-rabat.example.ma/biens/local-1004</source_url>
+    <transaction_type>location</transaction_type>
+    <property_type>commercial</property_type>
+    <title>Local commercial centre ville Rabat</title>
+    <city>Rabat</city>
+    <images_rights_confirmed>false</images_rights_confirmed>
+    <updated_at_source>2026-07-20T08:10:00Z</updated_at_source>
+  </listing>
+  <listing>
+    <external_id>AG-1002</external_id>
+    <source_name>demo-agence-rabat</source_name>
+    <source_domain>demo-agence-rabat.example.ma</source_domain>
+    <source_url>https://demo-agence-rabat.example.ma/biens/villa-1002</source_url>
+    <transaction_type>location</transaction_type>
+    <property_type>villa</property_type>
+    <title>Villa avec jardin Hay Riad - louee, retirer annonce</title>
+    <city>Rabat</city>
+    <district>Hay Riad</district>
+    <images_rights_confirmed>false</images_rights_confirmed>
+    <updated_at_source>2026-07-20T08:20:00Z</updated_at_source>
+    <update_signal>unpublish</update_signal>
+  </listing>
+  <listing>
+    <external_id>AG-1005</external_id>
+    <source_name>demo-agence-rabat</source_name>
+    <source_domain>demo-agence-rabat.example.ma</source_domain>
+    <source_url>https://demo-agence-rabat.example.ma/biens/malforme-1005</source_url>
+    <transaction_type>vente</transaction_type>
+    <property_type>chateau</property_type>
+    <title>Type de bien invalide pour tester le rejet</title>
+    <city>Rabat</city>
+    <price_mad>500000</price_mad>
+    <images_rights_confirmed>false</images_rights_confirmed>
+    <updated_at_source>2026-07-20T08:30:00Z</updated_at_source>
+  </listing>
+</feed>
