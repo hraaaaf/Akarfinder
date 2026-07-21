@@ -66,6 +66,9 @@ jobs:
       - name: Professional Auth Ownership Profiles V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/professional-auth-ownership-profiles-v1.test.ts
 
+      - name: Partner Commercial Activation V1 suite
+        run: npx tsx --test scripts/scrapers/__tests__/partner-commercial-activation-v1.test.ts
+
       - name: API regression suite
         run: npm run test:api
 

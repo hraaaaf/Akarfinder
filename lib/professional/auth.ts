@@ -4,6 +4,7 @@ import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 export type ProfessionalAuthIdentity = {
   user_id: string;
   email: string | null;
+  is_akarfinder_staff: boolean;
 };
 
 export function readBearerToken(request: Pick<NextRequest, "headers">): string | null {
@@ -24,8 +25,16 @@ export async function authenticateProfessionalRequest(
   const { data, error } = await supabase.auth.getUser(token);
   if (error || !data.user) return null;
 
+  // Authorization is read only from server-controlled app_metadata.
+  // raw_user_meta_data/user_metadata is intentionally never trusted for staff access.
+  const appMetadata = data.user.app_metadata as Record<string, unknown> | undefined;
   return {
     user_id: data.user.id,
     email: data.user.email ?? null,
+    is_akarfinder_staff: appMetadata?.akarfinder_staff === true,
   };
+}
+
+export function requireAkarFinderStaff(identity: ProfessionalAuthIdentity | null): boolean {
+  return identity?.is_akarfinder_staff === true;
 }
