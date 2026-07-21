@@ -26,10 +26,11 @@ const DEFAULT_INDEXES = [
   "CC-MAIN-2026-13", "CC-MAIN-2026-09", "CC-MAIN-2026-05",
 ];
 
-const CDX_FETCH_LIMIT = 150_000; // large portals (avito/mubawab) can have many URLs
-const CDX_REQUEST_PACING_MS = 400;
+const CDX_FETCH_LIMIT = 50_000; // per-request cap; generous for these domains, small enough to avoid CDX overload
+const CDX_REQUEST_PACING_MS = 2_500; // CDX rate-limits aggressively -- pace every request generously
 const CDX_RETRYABLE = new Set([429, 500, 502, 503, 504]);
-const CDX_MAX_ATTEMPTS = 5;
+const CDX_MAX_ATTEMPTS = 6;
+const CDX_RETRY_BASE_MS = 3_000;
 
 type PerDomain = {
   domain: string;
@@ -43,13 +44,21 @@ async function fetchCdx(domain: string, index: string): Promise<string[]> {
   const url = `https://index.commoncrawl.org/${index}-index?url=${encodeURIComponent(domain)}&matchType=domain&output=json&fl=url&limit=${CDX_FETCH_LIMIT}`;
   let resp: Response | undefined;
   for (let attempt = 1; attempt <= CDX_MAX_ATTEMPTS; attempt++) {
-    resp = await fetch(url);
+    try {
+      resp = await fetch(url);
+    } catch (netErr) {
+      // A transport-level "fetch failed" (CDX dropped the connection under
+      // load) is itself retryable, not a hard failure.
+      if (attempt === CDX_MAX_ATTEMPTS) throw netErr;
+      await new Promise((r) => setTimeout(r, CDX_RETRY_BASE_MS * 2 ** (attempt - 1)));
+      continue;
+    }
     if (resp.status === 404) return [];
     if (resp.ok) break;
     if (!CDX_RETRYABLE.has(resp.status) || attempt === CDX_MAX_ATTEMPTS) {
       throw new Error(`CDX ${domain}/${index}: HTTP ${resp.status}`);
     }
-    await new Promise((r) => setTimeout(r, 1000 * 2 ** (attempt - 1)));
+    await new Promise((r) => setTimeout(r, CDX_RETRY_BASE_MS * 2 ** (attempt - 1)));
   }
   const text = await resp!.text();
   if (!text.trim()) return [];
