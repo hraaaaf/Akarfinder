@@ -8,10 +8,8 @@ name: OpenSERP Native Ingestion (GitHub-hosted)
 # browser mode (validated by OPENSERP-GITHUB-EPHEMERAL-RUNTIME-POC-1) --
 # no Vercel involved.
 #
-# Checks out fix/openserp-serverless-state-persistence explicitly (not
-# this workflow's own ref) because that branch, not yet merged to main,
-# holds the DB-call-timeout-safety and engine-error-diagnostics work this
-# mission is required to preserve unmodified.
+# P0 canonical-baseline rule: checkout follows the workflow's own ref. No
+# Production or diagnostic workflow may hardcode a moving fix/feat/poc branch.
 #
 # Scheduled every 30 minutes, activated after two real workflow_dispatch
 # cron runs both validated PASS STRICT (2026-07-19). A schedule-triggered
@@ -59,10 +57,8 @@ jobs:
     # being a large improvement over GitHub's 360-minute default.
     timeout-minutes: 15
     steps:
-      - name: Checkout fix/openserp-serverless-state-persistence
+      - name: Checkout canonical workflow ref
         uses: actions/checkout@v4
-        with:
-          ref: fix/openserp-serverless-state-persistence
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
