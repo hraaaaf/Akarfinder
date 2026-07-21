@@ -1,6 +1,18 @@
-import type { ProfessionalOrganizationType } from "./types";
+import type {
+  ProfessionalMembershipRole,
+  ProfessionalOrganizationType,
+} from "./types";
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const MEMBERSHIP_ROLES = new Set<ProfessionalMembershipRole>([
+  "owner",
+  "admin",
+  "editor",
+  "analyst",
+  "lead_manager",
+  "viewer",
+]);
 
 export type CreateProfessionalOrganizationInput = {
   organization_type: ProfessionalOrganizationType;
@@ -8,6 +20,11 @@ export type CreateProfessionalOrganizationInput = {
   legal_name: string;
   display_name: string;
   city?: string | null;
+};
+
+export type AddProfessionalMemberInput = {
+  user_id: string;
+  role: ProfessionalMembershipRole;
 };
 
 function cleanText(value: unknown, max: number): string | null {
@@ -61,4 +78,13 @@ export function parseListingOwnershipClaim(value: unknown): number | null {
   const candidate = Number((value as Record<string, unknown>).property_listing_id);
   if (!Number.isSafeInteger(candidate) || candidate <= 0) return null;
   return candidate;
+}
+
+export function parseAddProfessionalMemberInput(value: unknown): AddProfessionalMemberInput | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as Record<string, unknown>;
+  const userId = typeof raw.user_id === "string" ? raw.user_id.trim() : "";
+  const role = raw.role as ProfessionalMembershipRole;
+  if (!UUID_RE.test(userId) || !MEMBERSHIP_ROLES.has(role)) return null;
+  return { user_id: userId, role };
 }
