@@ -121,22 +121,50 @@ function checkpointsFor(project?: SearchProject): string[] {
   ];
 }
 
-// Build an internal /search link from the profile — presentation only,
-// nothing is sent anywhere.
-export function buildSearchHref(profile: SearchProfile): string {
-  const terms: string[] = [];
-  const propertyType = PROPERTY_TYPE_OPTIONS.find((o) => o.value === profile.propertyType)?.label;
-  if (propertyType) terms.push(propertyType.toLowerCase());
-  if (nonEmpty(profile.neighborhood)) terms.push(profile.neighborhood.trim());
-  if (nonEmpty(profile.city)) terms.push(profile.city.trim());
+function parsePositiveNumber(value: string | undefined): number | null {
+  if (!nonEmpty(value)) return null;
+  const parsed = Number(String(value).replace(/[^0-9.]/g, ""));
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
 
+// Build a deterministic internal /search link from the legacy profile.
+// All fields currently supported by /search are transmitted structurally;
+// neighborhood remains in q because Search has no dedicated neighborhood param yet.
+export function buildSearchHref(profile: SearchProfile): string {
   const params = new URLSearchParams();
-  if (terms.length > 0) params.set("q", terms.join(" "));
-  if (profile.project === "louer") params.set("transaction", "rent");
-  else if (profile.project === "neuf") params.set("transaction", "new");
+  const propertyType = PROPERTY_TYPE_OPTIONS.find((o) => o.value === profile.propertyType)?.label;
+
+  if (nonEmpty(profile.city)) params.set("city", profile.city.trim());
+  if (nonEmpty(profile.neighborhood)) params.set("q", profile.neighborhood.trim());
+  if (propertyType) params.set("property_type", propertyType);
+
+  if (profile.project === "louer") params.set("transaction_type", "rent");
+  else if (profile.project === "neuf") params.set("transaction_type", "new");
   else if (profile.project && BUY_PROJECTS.includes(profile.project)) {
-    params.set("transaction", "buy");
+    params.set("transaction_type", "buy");
   }
+
+  const budget = profile.project === "louer"
+    ? parsePositiveNumber(profile.monthlyBudget)
+    : parsePositiveNumber(profile.budgetTotal);
+  if (budget != null) params.set("max_price", String(budget));
+
+  const minSurface = parsePositiveNumber(profile.minSurface);
+  if (minSurface != null) params.set("min_surface", String(minSurface));
+
+  // Preserve the richer legacy criteria for the guided journey hand-off.
+  // Search can progressively consume these without silently losing user intent.
+  if (nonEmpty(profile.bedrooms)) params.set("profile_bedrooms", profile.bedrooms.trim());
+  if (nonEmpty(profile.bathrooms)) params.set("profile_bathrooms", profile.bathrooms.trim());
+  if (profile.parking) params.set("profile_parking", "1");
+  if (profile.elevator) params.set("profile_elevator", "1");
+  if (profile.terrace) params.set("profile_terrace", "1");
+  if (profile.securedResidence) params.set("profile_secured_residence", "1");
+  if (profile.worksAccepted) params.set("profile_works_accepted", "1");
+  if (nonEmpty(profile.orientation)) params.set("profile_orientation", profile.orientation.trim());
+  if (profile.neighborhoodNeeds.length > 0) params.set("profile_neighborhood_needs", profile.neighborhoodNeeds.join(","));
+  if (profile.priorities.length > 0) params.set("profile_priorities", profile.priorities.join(","));
+  params.set("guided", "1");
 
   const query = params.toString();
   return query ? `/search?${query}` : "/search";
