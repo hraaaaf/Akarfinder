@@ -1,4 +1,4 @@
-import type { CityMetadata, CitySlug, SearchIntent } from "./types";
+import type { CityMetadata, CitySlug } from "./types";
 import {
   getValidatedSeoCities,
   getValidatedSeoNeighborhoods,
@@ -41,23 +41,32 @@ function buildCityDescription(city: string): string {
   return `AkarFinder aide à explorer des résultats immobiliers publics liés à ${city} et à accéder à la source originale pour vérifier les détails de chaque annonce.`;
 }
 
+function isSeoCitySlug(value: string): value is CitySlug {
+  return value === "casablanca" || value === "rabat" || value === "marrakech" || value === "tanger" || value === "agadir";
+}
+
 /**
- * SEO city data is now derived from the canonical Geo Entity Registry.
- * A city/neighborhood cannot silently enter controlled SEO navigation unless
- * it passed the explicit validation + SEO eligibility gate in that registry.
+ * SEO city data is derived from the canonical Geo Entity Registry.
+ * Map-only canonical cities stay in the same graph but cannot enter controlled
+ * SEO navigation unless their explicit seo_eligible gate is opened.
  */
 export const CITY_METADATA: Record<CitySlug, CityMetadata> = Object.fromEntries(
-  getValidatedSeoCities().map((city) => [
-    city.slug,
-    {
-      slug: city.slug,
-      displayName: city.canonical_name,
-      frenchName: city.canonical_name,
-      description: buildCityDescription(city.canonical_name),
-      neighborhoods: getValidatedSeoNeighborhoods(city.slug).map((district) => district.canonical_name),
-      popularSearches: POPULAR_SEARCHES[city.slug],
-    } satisfies CityMetadata,
-  ]),
+  getValidatedSeoCities()
+    .filter((city) => isSeoCitySlug(city.slug))
+    .map((city) => {
+      const slug = city.slug as CitySlug;
+      return [
+        slug,
+        {
+          slug,
+          displayName: city.canonical_name,
+          frenchName: city.canonical_name,
+          description: buildCityDescription(city.canonical_name),
+          neighborhoods: getValidatedSeoNeighborhoods(slug).map((district) => district.canonical_name),
+          popularSearches: POPULAR_SEARCHES[slug],
+        } satisfies CityMetadata,
+      ];
+    }),
 ) as Record<CitySlug, CityMetadata>;
 
 export function getCityBySlug(slug: string): CityMetadata | null {
