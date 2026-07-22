@@ -4,7 +4,7 @@ name: Public Sitemap Seed Harvest
 # Free acquisition lane: robots.txt -> explicitly declared sitemap files ->
 # strict listing URL patterns -> source_offer_seeds only. No listing page fetch,
 # no paid API, no public listing write. Scheduled runs still require the same
-# three production ingestion flags; manual dispatch defaults to dry-run.
+# three production write gates; manual dispatch defaults to dry-run.
 
 on:
   schedule:
