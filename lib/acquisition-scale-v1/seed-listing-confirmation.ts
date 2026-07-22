@@ -1,4 +1,5 @@
 // SEED-LISTING-MASS-CONVERSION-V1
+// SEED-CONFIRMATION-QUERY-V2
 // Pure helpers for turning sitemap/Common-Crawl URL seeds into targeted search
 // confirmation queries. A seed is never trusted by itself: only an exact
 // canonical-URL search-engine hit with explicit city + transaction + property
@@ -41,14 +42,51 @@ function safeDecodedPath(url: string): string {
   }
 }
 
+export function extractStableSeedIdentifier(url: string): string | null {
+  const path = safeDecodedPath(url).toLowerCase();
+
+  // Explicit reference numbers are the strongest signal on agency URLs such as
+  // /property/...-ref-4341. Query the stable identifier rather than diluting it
+  // with a long generic slug.
+  const explicitRef = path.match(/(?:^|[^a-z0-9])(?:ref|reference)[-_ ]?(\d{3,})(?:[^a-z0-9]|$)/i);
+  if (explicitRef?.[1]) return explicitRef[1];
+
+  // Product/reference codes such as ALLM-1004 or ALC-223 are often unique and
+  // indexed verbatim by search engines.
+  const alphaNumericCode = path.match(/(?:^|\/)([a-z]{2,10}-\d{3,})(?:\/|$)/i);
+  if (alphaNumericCode?.[1]) return alphaNumericCode[1];
+
+  // Numeric terminal IDs are common on portals such as /vente/marrakech/2769575.
+  const segments = path.split("/").filter(Boolean);
+  for (let i = segments.length - 1; i >= 0; i -= 1) {
+    const clean = segments[i].replace(/\.(?:html?|php)$/i, "");
+    if (/^\d{5,}$/.test(clean)) return clean;
+  }
+
+  return null;
+}
+
+export function isClearlyOutOfScopeSeedUrl(url: string): boolean {
+  const normalized = normalizeText(safeDecodedPath(url));
+  return (
+    /\b(?:location|locations)\b.{0,28}\b(?:vacances|vacation|holiday|saisonniere|saisonnier)\b/.test(normalized)
+    || /\b(?:vacances|vacation|holiday)\b.{0,28}\b(?:location|locations|rental)\b/.test(normalized)
+  );
+}
+
 export function buildSeedConfirmationQuery(seed: Pick<SeedConfirmationSeed, "canonical_url" | "source_domain">): string {
+  const stableIdentifier = extractStableSeedIdentifier(seed.canonical_url);
+  if (stableIdentifier) {
+    return `site:${seed.source_domain} "${stableIdentifier}"`;
+  }
+
   const tokens = safeDecodedPath(seed.canonical_url)
     .toLowerCase()
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .split(/\s+/)
     .map((token) => token.trim())
     .filter((token) => token.length >= 3 && !URL_STOP_WORDS.has(token))
-    .slice(-10);
+    .slice(-6);
 
   // Keep the domain explicit inside q because the native OpenSERP HTTP client
   // does not expose a separate site= parameter. Search engines may ignore the
@@ -114,22 +152,33 @@ function geoPriority(url: string): number {
   return 4;
 }
 
+function identifierPriority(url: string): number {
+  return extractStableSeedIdentifier(url) ? 0 : 1;
+}
+
 export function selectBalancedSeedBatch(seeds: SeedConfirmationSeed[], batchSize: number): SeedConfirmationSeed[] {
   const size = Math.max(1, Math.min(Math.trunc(batchSize), 100));
   const byDomain = new Map<string, SeedConfirmationSeed[]>();
   for (const seed of seeds) {
+    if (isClearlyOutOfScopeSeedUrl(seed.canonical_url)) continue;
     const bucket = byDomain.get(seed.source_domain) ?? [];
     bucket.push(seed);
     byDomain.set(seed.source_domain, bucket);
   }
   for (const bucket of byDomain.values()) {
-    bucket.sort((a, b) => geoPriority(a.canonical_url) - geoPriority(b.canonical_url) || a.updated_at.localeCompare(b.updated_at));
+    bucket.sort((a, b) =>
+      geoPriority(a.canonical_url) - geoPriority(b.canonical_url)
+      || identifierPriority(a.canonical_url) - identifierPriority(b.canonical_url)
+      || a.updated_at.localeCompare(b.updated_at),
+    );
   }
 
   const domains = [...byDomain.keys()].sort((a, b) => {
     const aFirst = byDomain.get(a)?.[0];
     const bFirst = byDomain.get(b)?.[0];
-    return geoPriority(aFirst?.canonical_url ?? "") - geoPriority(bFirst?.canonical_url ?? "") || a.localeCompare(b);
+    return geoPriority(aFirst?.canonical_url ?? "") - geoPriority(bFirst?.canonical_url ?? "")
+      || identifierPriority(aFirst?.canonical_url ?? "") - identifierPriority(bFirst?.canonical_url ?? "")
+      || a.localeCompare(b);
   });
 
   const out: SeedConfirmationSeed[] = [];
