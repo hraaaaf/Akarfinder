@@ -52,7 +52,11 @@ export type SearchGatewayNormalizedResult = {
   source_id: string;
   source_name: string;
   domain: string;
-  result_origin: "search_api";
+  // THIN-INDEX-SEED-SEARCH-V1: external results can now come either from the
+  // live search provider or from an already-harvested, registry-approved public
+  // sitemap/Common-Crawl URL seed. Seed-backed results remain thin external
+  // links only; this origin never grants an internal detail page.
+  result_origin: "search_api" | "public_sitemap" | "commoncrawl_cdx";
   search_result_display_mode: string;
   source_badge: string;
   production_allowed: boolean;
