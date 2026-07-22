@@ -2,6 +2,7 @@ name: OpenSERP Native Ingestion (GitHub-hosted)
 
 # OPENSERP-GITHUB-NATIVE-INGESTION-INTEGRATION-1
 # MASS-ACQUISITION-CAMPAIGN-V2
+# SEED-LISTING-MASS-CONVERSION-V1
 #
 # The canonical */10 schedule remains the wake-up trigger. GitHub documents
 # that schedules can be delayed/dropped, so scheduled runs compute a bounded
@@ -9,6 +10,9 @@ name: OpenSERP Native Ingestion (GitHub-hosted)
 # wave, up to 4 only after a real scheduling/engine gap. Containers are reused
 # across waves. Existing DB lock, engine budget/backoff and 3 write flags remain
 # authoritative. Manual dispatch is always one wave and defaults to dry-run.
+# After the normal acquisition campaign, the same ephemeral SearXNG/Yandex
+# container confirms a bounded balanced batch of seed_only URLs by exact
+# canonical match; no source listing page is fetched.
 
 on:
   schedule:
@@ -185,12 +189,38 @@ jobs:
           T1=$(date +%s%3N)
           echo "ingest_ms=$((T1-T0))" >> "$GITHUB_ENV"
 
+      - name: Confirm seed-only URLs into high-confidence listings
+        id: seed_confirm
+        env:
+          OPENSERP_SEARXNG_LOCAL_URL: http://127.0.0.1:8888
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
+          OPENSERP_INGESTION_WRITE_ENABLED: ${{ secrets.OPENSERP_INGESTION_WRITE_ENABLED }}
+          OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
+        run: |
+          set -e
+          T0=$(date +%s%3N)
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ inputs.mode }}" = "cron" ]; then
+            SEED_MODE="apply"
+          else
+            SEED_MODE="dry-run"
+          fi
+          echo "seed_confirmation_mode=$SEED_MODE batch=40"
+          npx tsx scripts/openserp/confirm-seed-listing-candidates.ts --"$SEED_MODE" --batch=40
+          if [ "$SEED_MODE" = "apply" ]; then
+            npx tsx scripts/openserp/reconcile-commoncrawl-seed-freshness.ts --apply
+          fi
+          T1=$(date +%s%3N)
+          echo "seed_confirm_ms=$((T1-T0))" >> "$GITHUB_ENV"
+
       - name: Timing summary
         if: always()
         run: |
           echo "openserp_start_ms=${{ env.openserp_start_ms }}"
           echo "openserp_health_wait_ms=${{ env.openserp_health_wait_ms }}"
           echo "campaign_ingest_ms=${{ env.ingest_ms }}"
+          echo "seed_confirmation_ms=${{ env.seed_confirm_ms }}"
 
       - name: Dump OpenSERP container logs
         if: always()
