@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import { createOpenSerpNativeClient, resolveNativeMaxPages } from "../../../lib/openserp-async/openserp-native-client.js";
+import { resolveCampaignWaveCount } from "../../../lib/openserp-ingestion/github-campaign-policy.js";
 
 const BASE_ENV: NodeJS.ProcessEnv = {
   PUBLIC_INDEX_POC_ENABLED: "true",
@@ -65,11 +66,19 @@ test("native pagination remains one page by default and max-pages is hard capped
   assert.equal(resolveNativeMaxPages({} as NodeJS.ProcessEnv), 1);
 });
 
-test("campaign workflow uses an off-hour wake-up and four bounded scheduled waves", () => {
+test("catch-up policy stays cheap when healthy and scales only after real gaps", () => {
+  const now = Date.parse("2026-07-22T15:00:00.000Z");
+  assert.equal(resolveCampaignWaveCount("2026-07-22T14:50:00.000Z", now), 1);
+  assert.equal(resolveCampaignWaveCount("2026-07-22T14:30:00.000Z", now), 2);
+  assert.equal(resolveCampaignWaveCount("2026-07-22T14:00:00.000Z", now), 3);
+  assert.equal(resolveCampaignWaveCount("2026-07-22T12:00:00.000Z", now), 4);
+  assert.equal(resolveCampaignWaveCount(null, now), 4);
+});
+
+test("campaign workflow preserves canonical 10-minute trigger and resolves adaptive waves", () => {
   const workflow = readFileSync(".github/workflows/openserp-github-native-ingestion.yml", "utf8");
-  assert.match(workflow, /cron: "17 \* \* \* \*"/);
-  assert.doesNotMatch(workflow, /cron: "\*\/10 \* \* \* \*"/);
-  assert.match(workflow, /WAVES=4/);
+  assert.match(workflow, /cron: "\*\/10 \* \* \* \*"/);
+  assert.match(workflow, /resolve-campaign-wave-count\.ts/);
   assert.match(workflow, /timeout-minutes: 30/);
   assert.match(workflow, /group: openserp-native-ingestion-production/);
 });
