@@ -10,9 +10,10 @@ For any product, architecture, data, UX or roadmap work, read in this order:
 
 1. `MASTER_CONTEXT.md` — durable product vision, invariants and operating doctrine.
 2. `CURRENT_STATE.md` — what is actually implemented on canonical `main` at the latest consolidation.
-3. `ROADMAP.md` — active priorities and completion logic.
-4. The domain-specific contract relevant to the task.
-5. The actual code, migrations, tests and live environment before making a technical claim.
+3. `DATA_LAUNCH_EXECUTION_PLAN.md` — active execution program: DATA → search depth → quality → final production gate.
+4. `ROADMAP.md` — active priorities and completion logic.
+5. The domain-specific contract relevant to the task.
+6. The actual code, migrations, tests and live environment before making a technical claim.
 
 `START.md` is the short boot sequence for agents.
 
@@ -35,8 +36,9 @@ When documents disagree:
 2. `MASTER_CONTEXT.md`
 3. `DECISIONS.md`
 4. `PRODUCT.md`
-5. `ROADMAP.md`
-6. Historical mission documents
+5. `DATA_LAUNCH_EXECUTION_PLAN.md`
+6. `ROADMAP.md`
+7. Historical mission documents
 
 No old mission report may override a newer canonical decision.
 
@@ -44,6 +46,7 @@ No old mission report may override a newer canonical decision.
 
 - `MASTER_CONTEXT.md` — project constitution and durable vision.
 - `CURRENT_STATE.md` — current implementation snapshot without pretending code equals production.
+- `DATA_LAUNCH_EXECUTION_PLAN.md` — current data-first launch program and exact execution order through the final production gate.
 - `PRODUCT.md` — product definition and experience model.
 - `ARCHITECTURE.md` — high-level technical architecture and canonical data flow.
 - `ROADMAP.md` — active roadmap and next priorities.
@@ -123,6 +126,7 @@ After a major product or architecture change:
 
 - update `MASTER_CONTEXT.md` only if durable understanding changed;
 - update `CURRENT_STATE.md` when implementation reality changed materially;
+- update `DATA_LAUNCH_EXECUTION_PLAN.md` while the data-first launch program is active and its gates/baselines materially change;
 - update `ROADMAP.md` when priorities or completion gates changed;
 - update the relevant domain contract;
 - do not append thousands of chronological lines to `SESSION.md` or `DECISIONS.md`.
