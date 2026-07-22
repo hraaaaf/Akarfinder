@@ -1,19 +1,12 @@
 // OPENSERP-GITHUB-NATIVE-TRANSPORT-1
-// CASABLANCA-MASS-ACQUISITION-V1 — the GitHub-native scale lane may request
-// a deeper organic result set than the historical 15-result orchestrator
-// default via OPENSERP_NATIVE_RESULT_LIMIT. This override is transport-local:
-// Vercel/adapter behavior is unchanged. karust/openserp's native API supports
-// limit values up to 100; we clamp there and keep the old request.limit when
-// the override is absent/invalid.
+// MASS-ACQUISITION-CAMPAIGN-V2 — the GitHub-native scale lane may request
+// multiple native OpenSERP pages in one bounded client call. The upstream API
+// exposes `limit` (max 100), `start`, and pagination.next_start. This remains
+// transport-local and opt-in through OPENSERP_NATIVE_MAX_PAGES; every existing
+// caller keeps exactly one page when the override is absent.
 // Alternate transport for the OpenSERP async feeder: talks directly to the
 // real karust/openserp HTTP contract (GET /{engine}/search?text=...) instead
-// of the Railway-adapter contract openserp-client.ts speaks (POST /search
-// with a translated JSON body). Selected explicitly via OPENSERP_TRANSPORT=
-// "native" in lib/openserp-ingestion/openserp-live.ts -- the existing
-// adapter client and its default selection are untouched.
-//
-// Same safety gate as the adapter client (assertOpenSerpEngineAllowed):
-// this is a new transport, not a new bypass.
+// of the Railway-adapter contract openserp-client.ts speaks.
 
 import { assertOpenSerpEngineAllowed, normalizeAllowedOpenSerpEngines } from "./openserp-policy";
 import { OpenSerpHttpError } from "./openserp-client";
@@ -26,9 +19,6 @@ type OpenSerpNativeClientOptions = {
   env?: NodeJS.ProcessEnv;
 };
 
-// karust/openserp's real path segments differ from our engine names in
-// exactly one case: duckduckgo -> "duck". google is never dispatched here
-// (assertOpenSerpEngineAllowed rejects it before this map is consulted).
 const NATIVE_ENGINE_PATH: Record<Exclude<OpenSerpEngine, "google">, string> = {
   bing: "bing",
   ecosia: "ecosia",
@@ -53,6 +43,13 @@ export function resolveNativeResultLimit(requestLimit: number | undefined, env: 
   return Math.min(Math.max(Math.trunc(requested), 1), 100);
 }
 
+export function resolveNativeMaxPages(env: NodeJS.ProcessEnv): number {
+  const raw = env.OPENSERP_NATIVE_MAX_PAGES?.trim();
+  const parsed = raw ? Number(raw) : Number.NaN;
+  if (!Number.isFinite(parsed) || parsed <= 0) return 1;
+  return Math.min(Math.max(Math.trunc(parsed), 1), 4);
+}
+
 type OpenSerpNativeResult = {
   id?: string;
   rank?: number;
@@ -71,6 +68,11 @@ type OpenSerpNativeSearchResponse = {
   query?: { text?: string };
   meta?: { requested_at?: string; version?: string };
   results?: OpenSerpNativeResult[];
+  pagination?: {
+    page?: number;
+    has_more?: boolean;
+    next_start?: number;
+  };
 };
 
 function mapNativeResult(result: OpenSerpNativeResult): OpenSerpRawResult {
@@ -100,46 +102,62 @@ export function createOpenSerpNativeClient(options: OpenSerpNativeClientOptions 
     async search(request: OpenSerpSearchRequest): Promise<OpenSerpSearchResponse> {
       assertOpenSerpEngineAllowed(request.engine, env);
 
-      if (!baseUrl) {
-        throw new Error("OPENSERP_LOCAL_URL is required for the native transport");
-      }
-      if (!fetchImpl) {
-        throw new Error("fetch is unavailable");
-      }
+      if (!baseUrl) throw new Error("OPENSERP_LOCAL_URL is required for the native transport");
+      if (!fetchImpl) throw new Error("fetch is unavailable");
       if (!allowedEngines.includes(request.engine as Exclude<OpenSerpEngine, "google">)) {
         throw new Error(`OpenSERP engine not allowed: ${request.engine}`);
       }
 
       const enginePath = NATIVE_ENGINE_PATH[request.engine as Exclude<OpenSerpEngine, "google">];
       const { lang, region } = splitLocale(request.locale);
-      const params = new URLSearchParams();
-      params.set("text", request.query);
-      params.set("limit", String(resolveNativeResultLimit(request.limit, env)));
-      if (lang) params.set("lang", lang);
-      if (region) params.set("region", region);
-
+      const limit = resolveNativeResultLimit(request.limit, env);
+      const maxPages = resolveNativeMaxPages(env);
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
       try {
-        const response = await fetchImpl(`${baseUrl}/${enginePath}/search?${params.toString()}`, {
-          method: "GET",
-          signal: controller.signal,
-        });
+        const collected: OpenSerpRawResult[] = [];
+        let queryText = request.query;
+        let fetchedAt = new Date().toISOString();
+        let version: string | undefined;
+        let pagination: OpenSerpSearchResponse["pagination"];
+        let start = Math.max(0, Math.trunc(request.start ?? 0));
 
-        if (!response.ok) {
-          throw new OpenSerpHttpError(response.status);
+        for (let pageIndex = 0; pageIndex < maxPages; pageIndex += 1) {
+          const params = new URLSearchParams();
+          params.set("text", request.query);
+          params.set("limit", String(limit));
+          if (start > 0) params.set("start", String(start));
+          if (lang) params.set("lang", lang);
+          if (region) params.set("region", region);
+
+          const response = await fetchImpl(`${baseUrl}/${enginePath}/search?${params.toString()}`, {
+            method: "GET",
+            signal: controller.signal,
+          });
+          if (!response.ok) throw new OpenSerpHttpError(response.status);
+
+          const json = (await response.json()) as OpenSerpNativeSearchResponse;
+          queryText = json.query?.text ?? queryText;
+          fetchedAt = json.meta?.requested_at ?? fetchedAt;
+          version = json.meta?.version ?? version;
+          pagination = json.pagination;
+          if (Array.isArray(json.results)) collected.push(...json.results.map(mapNativeResult));
+
+          const nextStart = json.pagination?.next_start;
+          if (!json.pagination?.has_more || !Number.isFinite(nextStart) || (nextStart as number) <= start) break;
+          start = Math.max(0, Math.trunc(nextStart as number));
         }
 
-        const json = (await response.json()) as OpenSerpNativeSearchResponse;
-
+        const deduped = [...new Map(collected.map((result, index) => [result.url ?? result.link ?? result.id ?? `row-${index}`, result])).values()];
         return {
           engine: request.engine as Exclude<OpenSerpEngine, "google">,
-          query: json.query?.text ?? request.query,
-          results: Array.isArray(json.results) ? json.results.map(mapNativeResult) : [],
-          fetched_at: json.meta?.requested_at ?? new Date().toISOString(),
+          query: queryText,
+          results: deduped,
+          fetched_at: fetchedAt,
           provider: "openserp_async_poc",
-          version: json.meta?.version,
+          version,
+          pagination,
         };
       } finally {
         clearTimeout(timeout);
