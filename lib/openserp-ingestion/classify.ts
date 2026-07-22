@@ -51,9 +51,6 @@ const OUT_OF_SCOPE_TOKENS = [
   "guide",
 ];
 
-// OPENSERP-CLASSIFY-OUT-OF-SCOPE-TOKEN-BOUNDARY-FIX-1: "mobilier" moved out
-// of the plain-substring OUT_OF_SCOPE_TOKENS list above -- a bare
-// `.includes("mobilier")` also matches "immobilier"/"immobiliere".
 const OUT_OF_SCOPE_WORD_BOUNDARY_TOKENS: RegExp[] = [/\bmobilier\b/];
 
 const DISCOVERY_TOKENS = [
@@ -71,6 +68,8 @@ const DISCOVERY_TOKENS = [
   "tendances du marche",
   "plus de",
 ];
+
+const ARABIC_DISCOVERY_TOKENS = ["إعلانات", "اعلانات", "قائمة العقارات", "نتائج البحث"];
 
 type PathRules = {
   forceReject?: RegExp[];
@@ -90,18 +89,10 @@ const DOMAIN_RULES: Record<string, PathRules> = {
   "avito.ma": {
     forceDiscovery: [/\/sp\/immobilier\//, /\/fr\/.+\/(?:appartements|villas|terrains|bureaux).+_vendre$/, /\/fr\/.+\/(?:appartements|villas|terrains|bureaux).+_louer$/],
   },
-  "immobilier.trovit.ma": {
-    forceDiscovery: [/.*/],
-  },
-  "nuroa.ma": {
-    forceDiscovery: [/.*/],
-  },
-  "immo.mitula.ma": {
-    forceDiscovery: [/.*/],
-  },
-  "yakeey.com": {
-    forceReject: [/.*/],
-  },
+  "immobilier.trovit.ma": { forceDiscovery: [/.*/] },
+  "nuroa.ma": { forceDiscovery: [/.*/] },
+  "immo.mitula.ma": { forceDiscovery: [/.*/] },
+  "yakeey.com": { forceReject: [/.*/] },
   "marocannonces.com": {
     forceDiscovery: [/\/maroc\/.+-b\d+-t\d+\.html/i, /\/categorie\//],
   },
@@ -193,29 +184,6 @@ function classifyLane(input: {
   const urlSignals = detectUrlSignals(input.domain, input.canonicalUrl);
   reasons.push(...urlSignals.reasons);
 
-  const hasRealEstateSignal = REAL_ESTATE_TOKENS.some((token) => input.text.includes(token)) || hasArabicRealEstateSignal(input.text);
-  if (!hasRealEstateSignal && !urlSignals.strongIndividual) {
-    return { lane: "reject_out_of_scope", reasons: ["missing_real_estate_signal"] };
-  }
-
-  const hasGenericOutOfScopeToken =
-    OUT_OF_SCOPE_TOKENS.some((token) => input.text.includes(token)) ||
-    OUT_OF_SCOPE_WORD_BOUNDARY_TOKENS.some((pattern) => pattern.test(input.text));
-  if (hasGenericOutOfScopeToken && !urlSignals.strongIndividual) {
-    return { lane: "reject_out_of_scope", reasons: ["out_of_scope_token"] };
-  }
-  if (hasGenericOutOfScopeToken && urlSignals.strongIndividual) {
-    reasons.push("generic_out_of_scope_ignored_for_strong_individual_path");
-  }
-
-  if (mentionsTourismOrHospitality(input.text) && (!urlSignals.strongIndividual || hasExplicitVacationIntent(input.text))) {
-    return { lane: "reject_out_of_scope", reasons: ["tourism_or_hospitality"] };
-  }
-
-  if (urlSignals.forceReject) {
-    return { lane: "reject_out_of_scope", reasons };
-  }
-
   const detailText = [input.title, input.snippet, input.canonicalUrl].filter(Boolean).join(" ");
   const multilingualDetailText = normalizeClassificationText(detailText);
   const hasPrice = parsePriceMad([input.title, input.snippet].filter(Boolean).join(" ")) != null;
@@ -226,8 +194,45 @@ function classifyLane(input: {
   const explicitCity = extractCityFn(detailText);
   const explicitDistrict = extractDistrictFn(detailText);
   const hasPluralCountPattern = /\b\d{2,5}\s+(?:annonces?|appartements?|villas?|biens?|studios?)\b/.test(input.text);
-  const hasDiscoveryToken = DISCOVERY_TOKENS.some((token) => input.text.includes(token));
+  const hasDiscoveryToken = DISCOVERY_TOKENS.some((token) => input.text.includes(token)) || ARABIC_DISCOVERY_TOKENS.some((token) => input.text.includes(token));
   const detailLanguage = /\b(superficie|chambres?|terrasse|residence|situe|idealement|magnifique|visite|plain-pied)\b/.test(input.text);
+  const detailSignalCount = [hasPrice, hasSurface, hasBedrooms, detailLanguage].filter(Boolean).length;
+  const explicitLocationMatchesQuery =
+    (!explicitCity || explicitCity === input.query.city) &&
+    (!explicitDistrict || explicitDistrict.city === input.query.city);
+
+  const hasRealEstateSignal = REAL_ESTATE_TOKENS.some((token) => input.text.includes(token)) || hasArabicRealEstateSignal(input.text);
+  if (!hasRealEstateSignal && !urlSignals.strongIndividual) {
+    return { lane: "reject_out_of_scope", reasons: ["missing_real_estate_signal"] };
+  }
+
+  if (urlSignals.forceReject) {
+    return { lane: "reject_out_of_scope", reasons };
+  }
+
+  const strongRecoveryEvidence =
+    urlSignals.strongIndividual &&
+    !urlSignals.forceDiscovery &&
+    !hasPluralCountPattern &&
+    !hasDiscoveryToken &&
+    hasPropertyType &&
+    hasTransaction &&
+    explicitLocationMatchesQuery &&
+    detailSignalCount >= 1;
+
+  const hasGenericOutOfScopeToken =
+    OUT_OF_SCOPE_TOKENS.some((token) => input.text.includes(token)) ||
+    OUT_OF_SCOPE_WORD_BOUNDARY_TOKENS.some((pattern) => pattern.test(input.text));
+  if (hasGenericOutOfScopeToken && !strongRecoveryEvidence) {
+    return { lane: "reject_out_of_scope", reasons: ["out_of_scope_token"] };
+  }
+  if (hasGenericOutOfScopeToken && strongRecoveryEvidence) {
+    reasons.push("generic_out_of_scope_ignored_for_corroborated_individual_path");
+  }
+
+  if (mentionsTourismOrHospitality(input.text) && (hasExplicitVacationIntent(input.text) || !strongRecoveryEvidence)) {
+    return { lane: "reject_out_of_scope", reasons: ["tourism_or_hospitality"] };
+  }
 
   if (hasPluralCountPattern) reasons.push("plural_count_pattern");
   if (hasDiscoveryToken) reasons.push("discovery_token");
@@ -237,11 +242,6 @@ function classifyLane(input: {
   if (hasSurface) reasons.push("surface_signal");
   if (hasBedrooms) reasons.push("bedroom_signal");
   if (hasArabicRealEstateSignal(multilingualDetailText)) reasons.push("arabic_real_estate_signal");
-
-  const detailSignalCount = [hasPrice, hasSurface, hasBedrooms, detailLanguage].filter(Boolean).length;
-  const explicitLocationMatchesQuery =
-    (!explicitCity || explicitCity === input.query.city) &&
-    (!explicitDistrict || explicitDistrict.city === input.query.city);
 
   if (
     urlSignals.strongIndividual &&
