@@ -16,8 +16,7 @@ const PROPERTY_TYPES = [
   "appartement", "studio", "villa", "maison", "terrain", "riad",
   "bureau", "local commercial", "magasin", "ferme", "immeuble", "duplex",
 ] as const;
-
-const SOURCE_PROPERTY_TYPES = ["appartement", "villa", "terrain", "bureau"] as const;
+const SOURCE_EXTRA_PROPERTY_TYPES = ["villa", "terrain", "bureau"] as const;
 const ENGINES = ["duckduckgo", "ecosia", "bing"] as const;
 
 type Tx = "sale" | "rent";
@@ -46,36 +45,65 @@ function normalize(v: string) {
   return v.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ").trim();
 }
 
-function txText(tx: Tx, lang: Lang, variant: Variant) {
-  if (lang === "ar") {
-    if (tx === "sale") return variant === "intent_first" ? "بيع" : "للبيع";
-    return variant === "intent_first" ? "كراء" : "للإيجار";
-  }
-  if (tx === "sale") return variant === "core" ? "a vendre" : variant === "intent_first" ? "vente" : "immobilier vente";
-  return variant === "core" ? "a louer" : variant === "intent_first" ? "location" : "immobilier location";
+function coreTxText(tx: Tx, lang: Lang) {
+  if (lang === "ar") return tx === "sale" ? "للبيع" : "كراء";
+  return tx === "sale" ? "a vendre" : "a louer";
 }
 
-function renderQuery(input: {
-  city: string; district: string | null; tx: Tx; propertyType: string; lang: Lang;
-  variant: Variant; targetDomain: string | null;
-}) {
-  const city = input.lang === "ar" ? (CITY_ARABIC_NAMES[input.city] ?? input.city) : input.city;
-  const property = input.lang === "ar" ? (PROPERTY_TYPE_ARABIC_NAMES[input.propertyType] ?? input.propertyType) : input.propertyType;
-  const intent = txText(input.tx, input.lang, input.variant);
-  const place = `${city}${input.district ? ` ${input.district}` : ""}`;
-  let base: string;
-  if (input.variant === "intent_first") base = `${intent} ${property} ${place}`;
-  else if (input.variant === "immobilier_longtail" && input.lang === "fr") base = `${property} ${place} ${intent}`;
-  else base = `${property} ${intent} ${place}`;
-  return input.targetDomain ? `${base} site:${input.targetDomain}` : base;
+function variantTxText(tx: Tx, lang: Lang, variant: Exclude<Variant, "core">) {
+  if (lang === "ar") return tx === "sale" ? "بيع" : "للإيجار";
+  if (tx === "sale") return variant === "intent_first" ? "vente" : "immobilier vente";
+  return variant === "intent_first" ? "location" : "immobilier location";
 }
 
-function make(input: {
+function labels(cityName: string, propertyType: string, lang: Lang) {
+  return {
+    city: lang === "ar" ? (CITY_ARABIC_NAMES[cityName] ?? cityName) : cityName,
+    property: lang === "ar" ? (PROPERTY_TYPE_ARABIC_NAMES[propertyType] ?? propertyType) : propertyType,
+  };
+}
+
+function makeCore(input: {
   city: string; district: string | null; tx: Tx; propertyType: string; lang: Lang;
-  variant: Variant; priority: 1|2|3|4; targetDomain: string | null;
+  priority: 1|2|3|4; targetDomain: string | null; family: "general" | "brand_hint";
+  rotationIndex: number;
+}): QueryUniverseV2Item {
+  const l = labels(input.city, input.propertyType, input.lang);
+  const district = input.district ? ` ${input.district}` : "";
+  const query_text = input.targetDomain
+    ? `${input.propertyType} ${coreTxText(input.tx, input.lang)} ${l.city} site:${input.targetDomain}`
+    : `${l.property} ${coreTxText(input.tx, input.lang)} ${l.city}${district}`;
+  const idSeed = `${input.city}::${input.district ?? ""}::${input.tx}::${input.propertyType}::${input.lang}::${input.targetDomain ?? ""}`;
+  return {
+    query_id: `nqu1-${sha256(idSeed).slice(0, 16)}`,
+    city: input.city,
+    district: input.district,
+    priority_tier: input.priority,
+    transaction: input.tx,
+    property_type: input.propertyType,
+    language: input.lang,
+    preferred_engine: ENGINES[input.rotationIndex % ENGINES.length],
+    query_text,
+    target_domain: input.targetDomain,
+    query_family: input.family,
+    normalized_query: normalize(query_text),
+    query_hash: sha256(`openserp::${normalize(query_text)}`),
+    variant: "core",
+  };
+}
+
+function makeAddedVariant(input: {
+  city: string; district: string | null; tx: Tx; propertyType: string; lang: Lang;
+  variant: Exclude<Variant, "core">; priority: 1|2|3|4; targetDomain: string | null;
   family: "general" | "brand_hint"; rotationIndex: number;
 }): QueryUniverseV2Item {
-  const query_text = renderQuery(input);
+  const l = labels(input.city, input.propertyType, input.lang);
+  const place = `${l.city}${input.district ? ` ${input.district}` : ""}`;
+  const intent = variantTxText(input.tx, input.lang, input.variant);
+  const base = input.variant === "intent_first"
+    ? `${intent} ${l.property} ${place}`
+    : `${l.property} ${place} ${intent}`;
+  const query_text = input.targetDomain ? `${base} site:${input.targetDomain}` : base;
   const idSeed = [input.city, input.district ?? "", input.tx, input.propertyType, input.lang, input.variant, input.targetDomain ?? ""].join("::");
   return {
     query_id: `nqu2-${sha256(idSeed).slice(0, 16)}`,
@@ -98,30 +126,56 @@ function make(input: {
 export function buildQueryUniverseV2(): QueryUniverseV2 {
   const out: QueryUniverseV2Item[] = [];
   let rotationIndex = 0;
-  const variants: Variant[] = ["core", "intent_first", "immobilier_longtail"];
+  const registry = loadSourceDomainRegistry();
+  const approved = registry.domains.filter((d) => ["approved_discovery", "partner", "authorized_static"].includes(d.status));
 
+  // Legacy core first, in exactly V1 generation order. These rows deliberately
+  // keep nqu1 IDs, query text, hashes and preferred-engine rotation so existing
+  // PostgreSQL rotation/yield history carries forward instead of resetting.
   for (const city of [...TIER_1_CITIES, ...TIER_2_CITIES]) {
     const cityTier = getCityTier(city) ?? 2;
     for (const propertyType of PROPERTY_TYPES) for (const tx of ["sale", "rent"] as Tx[]) for (const lang of ["fr", "ar"] as Lang[]) {
-      for (const variant of variants) {
-        if (lang === "ar" && variant === "immobilier_longtail") continue;
-        out.push(make({ city, district:null, tx, propertyType, lang, variant, priority: cityTier === 1 ? 1 : 2, targetDomain:null, family:"general", rotationIndex: rotationIndex++ }));
-      }
+      out.push(makeCore({ city, district:null, tx, propertyType, lang, priority:cityTier === 1 ? 1 : 2, targetDomain:null, family:"general", rotationIndex:rotationIndex++ }));
     }
   }
-
   for (const [city, districts] of Object.entries(TIER_3_DISTRICTS)) for (const district of districts) {
-    for (const propertyType of PROPERTY_TYPES) for (const tx of ["sale", "rent"] as Tx[]) for (const variant of variants) {
-      out.push(make({ city, district, tx, propertyType, lang:"fr", variant, priority:3, targetDomain:null, family:"general", rotationIndex: rotationIndex++ }));
+    for (const propertyType of PROPERTY_TYPES) for (const tx of ["sale", "rent"] as Tx[]) {
+      out.push(makeCore({ city, district, tx, propertyType, lang:"fr", priority:3, targetDomain:null, family:"general", rotationIndex:rotationIndex++ }));
     }
   }
-
-  const registry = loadSourceDomainRegistry();
-  const approved = registry.domains.filter((d) => ["approved_discovery", "partner", "authorized_static"].includes(d.status));
   for (const entry of approved) {
     const cities = entry.coverage_cities?.length ? entry.coverage_cities : TIER_1_CITIES;
-    for (const city of cities) for (const propertyType of SOURCE_PROPERTY_TYPES) for (const tx of ["sale", "rent"] as Tx[]) {
-      out.push(make({ city, district:null, tx, propertyType, lang:"fr", variant:"core", priority:4, targetDomain:entry.domain, family:"brand_hint", rotationIndex: rotationIndex++ }));
+    for (const city of cities) for (const tx of ["sale", "rent"] as Tx[]) {
+      out.push(makeCore({ city, district:null, tx, propertyType:"appartement", lang:"fr", priority:4, targetDomain:entry.domain, family:"brand_hint", rotationIndex:rotationIndex++ }));
+    }
+  }
+
+  // Additive long-tail variants. New semantics receive nqu2 IDs only.
+  for (const city of [...TIER_1_CITIES, ...TIER_2_CITIES]) {
+    const cityTier = getCityTier(city) ?? 2;
+    for (const propertyType of PROPERTY_TYPES) for (const tx of ["sale", "rent"] as Tx[]) {
+      out.push(makeAddedVariant({ city, district:null, tx, propertyType, lang:"fr", variant:"intent_first", priority:cityTier === 1 ? 1 : 2, targetDomain:null, family:"general", rotationIndex:rotationIndex++ }));
+      out.push(makeAddedVariant({ city, district:null, tx, propertyType, lang:"fr", variant:"immobilier_longtail", priority:cityTier === 1 ? 1 : 2, targetDomain:null, family:"general", rotationIndex:rotationIndex++ }));
+      out.push(makeAddedVariant({ city, district:null, tx, propertyType, lang:"ar", variant:"intent_first", priority:cityTier === 1 ? 1 : 2, targetDomain:null, family:"general", rotationIndex:rotationIndex++ }));
+    }
+  }
+  for (const [city, districts] of Object.entries(TIER_3_DISTRICTS)) for (const district of districts) {
+    for (const propertyType of PROPERTY_TYPES) for (const tx of ["sale", "rent"] as Tx[]) {
+      out.push(makeAddedVariant({ city, district, tx, propertyType, lang:"fr", variant:"intent_first", priority:3, targetDomain:null, family:"general", rotationIndex:rotationIndex++ }));
+      out.push(makeAddedVariant({ city, district, tx, propertyType, lang:"fr", variant:"immobilier_longtail", priority:3, targetDomain:null, family:"general", rotationIndex:rotationIndex++ }));
+    }
+  }
+  for (const entry of approved) {
+    const cities = entry.coverage_cities?.length ? entry.coverage_cities : TIER_1_CITIES;
+    for (const city of cities) for (const propertyType of SOURCE_EXTRA_PROPERTY_TYPES) for (const tx of ["sale", "rent"] as Tx[]) {
+      // Additional source/property combinations are new V2 identities. Reuse
+      // intent_first as the ID variant marker, while rendering the concise
+      // source-specific query form to avoid unnecessary wording noise.
+      const added = makeAddedVariant({ city, district:null, tx, propertyType, lang:"fr", variant:"intent_first", priority:4, targetDomain:entry.domain, family:"brand_hint", rotationIndex:rotationIndex++ });
+      added.query_text = `${propertyType} ${coreTxText(tx, "fr")} ${city} site:${entry.domain}`;
+      added.normalized_query = normalize(added.query_text);
+      added.query_hash = sha256(`openserp-v2::${added.normalized_query}`);
+      out.push(added);
     }
   }
 
