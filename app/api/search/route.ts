@@ -22,6 +22,11 @@ export async function GET(request: NextRequest) {
     sort: searchParams.get("sort") ?? undefined,
     limit: parseNumberParam(searchParams.get("limit")) ?? 50,
     offset: parseNumberParam(searchParams.get("offset")) ?? 0,
+    cursor: parseNumberParam(searchParams.get("cursor")),
+    min_price: parseNumberParam(searchParams.get("min_price")) ?? parseNumberParam(searchParams.get("budget_min")),
+    max_price: parseNumberParam(searchParams.get("max_price")) ?? parseNumberParam(searchParams.get("budget_max")),
+    min_surface: parseNumberParam(searchParams.get("min_surface")),
+    max_surface: parseNumberParam(searchParams.get("max_surface")),
   };
 
   try {
@@ -34,6 +39,8 @@ export async function GET(request: NextRequest) {
         total: 0,
         limit: query.limit,
         offset: query.offset,
+        next_cursor: null,
+        has_more: false,
         source: "database_fallback",
         generated_at: new Date().toISOString(),
       },
