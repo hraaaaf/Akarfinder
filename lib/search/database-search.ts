@@ -15,8 +15,6 @@ function normalize(value: string) {
     .replace(/[̀-ͯ]/g, "");
 }
 
-// Noise words we skip during tokenized text matching.
-// Pure digits and short tokens (< 3 chars) are also skipped.
 const TEXT_STOP_WORDS = new Set([
   "a", "au", "aux", "de", "du", "des", "le", "la", "les",
   "en", "et", "ou", "un", "une", "par", "sur", "pour",
@@ -38,8 +36,6 @@ function matchesText(listing: Listing, q?: string) {
       .filter(Boolean)
       .join(" ")
   );
-  // Tokenized matching: every meaningful token must appear somewhere in haystack.
-  // Tolerates word order, multi-field hits, and budget/stop words in the query.
   const tokens = normalize(q.trim())
     .split(/\s+/)
     .filter((t) => t.length >= 3 && !TEXT_STOP_WORDS.has(t) && !/^\d+$/.test(t));
@@ -47,8 +43,6 @@ function matchesText(listing: Listing, q?: string) {
   return tokens.every((token) => haystack.includes(token));
 }
 
-// Normalise property_type to the mapped UI label so that both raw DB values
-// ("apartment") and UI values ("Appartement") work in matchesFilters.
 function toMappedPropertyType(raw?: string): string | undefined {
   if (!raw) return undefined;
   const n = raw.trim().toLowerCase();
@@ -58,10 +52,9 @@ function toMappedPropertyType(raw?: string): string | undefined {
   if (n === "office" || n === "bureau") return "Bureau";
   if (n === "studio") return "Studio";
   if (n === "maison") return "Maison";
-  return raw; // pass-through unknown values
+  return raw;
 }
 
-// Normalise transaction_type to the Listing model values ("buy"/"rent"/"new").
 function toMappedTransactionType(raw?: string): string | undefined {
   if (!raw) return undefined;
   const n = raw.trim().toLowerCase();
@@ -97,7 +90,6 @@ function sortListings(listings: Listing[], sort?: string, query?: SearchQuery) {
   const copy = [...listings];
   if (sort === "price_asc" || sort === "price_desc") {
     return copy.sort((a, b) => {
-      // A listing with no disclosed price always sorts last.
       if (a.price == null && b.price == null) return 0;
       if (a.price == null) return 1;
       if (b.price == null) return -1;
@@ -105,9 +97,6 @@ function sortListings(listings: Listing[], sort?: string, query?: SearchQuery) {
     });
   }
   if (sort === "surface_desc") return copy.sort((a, b) => b.surface_m2 - a.surface_m2);
-
-  // Default: intelligent ranking based on search intent
-  // Priorise city, district, property type, transaction, text relevance, completeness
   return copy.sort((a, b) => {
     const scoreA = computeRankingScore(a, query ?? {});
     const scoreB = computeRankingScore(b, query ?? {});
@@ -126,67 +115,105 @@ function mapSearchRow(
   });
 }
 
+function mapSearchRows(rows: DbListingRow[]): Listing[] {
+  if (rows.length === 0) return [];
+  const allPersisted = rows.every(
+    (row) => row.reliability_score != null && row.duplicate_score != null
+  );
+  if (allPersisted) return rows.map((row) => mapSearchRow(row));
+
+  const partial = rows.map((row) => mapDbRowToListing(row));
+  const duplicateMap = assignDuplicateGroups(partial);
+  return rows.map((row) => mapSearchRow(row, duplicateMap.get(String(row.id))));
+}
+
+// SEARCH-INDEX-DEPTH-V1
+// The old fallback fetched exactly 200 DB rows, then filtered/ranked locally.
+// That made every query blind to row 201+ even when the index contained tens of
+// thousands of offers. We now walk the structured DB result set in bounded
+// chunks until a full public page is assembled (or a per-request scan budget is
+// exhausted), and return a raw-index cursor so the client can continue from the
+// exact row where scanning stopped. This removes the hard 200-row ceiling
+// without loading the whole national corpus into one serverless invocation.
+const DB_SCAN_BATCH_SIZE = 500;
+const MAX_DB_ROWS_SCANNED_PER_REQUEST = 10_000;
+
 export async function searchDatabase(query: SearchQuery = {}): Promise<SearchResult> {
   const limit = Math.min(Math.max(query.limit ?? 50, 1), 100);
-  const offset = Math.max(query.offset ?? 0, 0);
+  const legacyOffset = Math.max(query.offset ?? 0, 0);
+  const usingCursor = query.cursor != null;
+  let scanCursor = Math.max(query.cursor ?? 0, 0);
+  const targetMatches = usingCursor ? limit : legacyOffset + limit;
+  const matchedListings: Listing[] = [];
+  let rawTotal = 0;
+  let scannedRows = 0;
 
-  // Push available filters to the DB layer for efficiency — avoids fetching
-  // unneeded rows when the DB grows beyond 100 listings. The query always
-  // over-fetches (limit=200) so client-side text-search can still apply
-  // without being truncated. Price and surface filters are now handled server-side.
-  const base = await queryListings({
-    city: query.city,
-    property_type: query.property_type,
-    transaction_type: query.transaction_type,
-    min_price: query.min_price,
-    max_price: query.max_price,
-    min_surface: query.min_surface,
-    max_surface: query.max_surface,
-    limit: 200,
-    offset: 0,
-  });
+  while (matchedListings.length < targetMatches && scannedRows < MAX_DB_ROWS_SCANNED_PER_REQUEST) {
+    const batchStart = scanCursor;
+    const base = await queryListings({
+      city: query.city,
+      property_type: query.property_type,
+      transaction_type: query.transaction_type,
+      min_price: query.min_price,
+      max_price: query.max_price,
+      min_surface: query.min_surface,
+      max_surface: query.max_surface,
+      limit: DB_SCAN_BATCH_SIZE,
+      offset: batchStart,
+    });
+
+    rawTotal = base.total;
+    if (base.listings.length === 0) break;
+
+    const publishableRows = base.listings.filter(canPublishDbRowToPublicSearchSurface);
+    const mappedById = new Map(
+      mapSearchRows(publishableRows).map((listing) => [String(listing.id), listing])
+    );
+
+    let stoppedInsideBatch = false;
+    for (let index = 0; index < base.listings.length; index += 1) {
+      const row = base.listings[index];
+      scanCursor = batchStart + index + 1;
+      scannedRows += 1;
+
+      if (!canPublishDbRowToPublicSearchSurface(row)) continue;
+      const listing = mappedById.get(String(row.id));
+      if (!listing || !matchesFilters(listing, query)) continue;
+      matchedListings.push(listing);
+
+      if (matchedListings.length >= targetMatches || scannedRows >= MAX_DB_ROWS_SCANNED_PER_REQUEST) {
+        stoppedInsideBatch = true;
+        break;
+      }
+    }
+
+    if (stoppedInsideBatch) break;
+    if (scanCursor >= rawTotal) break;
+  }
+
+  const sorted = sortListings(matchedListings, query.sort, query);
+  const listings = usingCursor
+    ? sorted.slice(0, limit)
+    : sorted.slice(legacyOffset, legacyOffset + limit);
+  const hasMore = scanCursor < rawTotal;
 
   if (process.env.NODE_ENV !== "production") {
     console.log(
-      `[search:db] provider=database rows=${base.listings.length} total=${base.total}`,
+      `[search:db] scanned=${scannedRows}/${rawTotal} matched=${matchedListings.length} returned=${listings.length} next_cursor=${hasMore ? scanCursor : "end"}`,
       { city: query.city, property_type: query.property_type, transaction_type: query.transaction_type }
     );
   }
 
-  // PUBLIC-READMODEL-AUTHORIZED-ONLY-1: structured first-party/partner rows are
-  // eligible for the public intelligence projection. Persisted external rows can
-  // still enter the limited search lane, but attachPublicSerpIntelligenceToListing
-  // deliberately returns them unchanged.
-  const authorizedRows = base.listings.filter(canPublishDbRowToPublicSearchSurface);
-
-  const allPersisted = authorizedRows.every(
-    (row) => row.reliability_score != null && row.duplicate_score != null
-  );
-  const listings = allPersisted
-    ? authorizedRows.map((row) => mapSearchRow(row))
-    : (() => {
-        const partial = authorizedRows.map((row) => mapDbRowToListing(row));
-        const duplicateMap = assignDuplicateGroups(partial);
-        return authorizedRows.map((row) =>
-          mapSearchRow(row, duplicateMap.get(String(row.id)))
-        );
-      })();
-
-  const filtered = sortListings(
-    listings.filter((listing) => matchesFilters(listing, query)),
-    query.sort,
-    query
-  );
-
-  if (process.env.NODE_ENV !== "production") {
-    console.log(`[search:db] after client-side filter: ${filtered.length} listings`);
-  }
-
   return {
-    listings: filtered.slice(offset, offset + limit),
-    total: filtered.length,
+    listings,
+    // Exact structured DB total. Public/text filtering can reduce this number;
+    // clients should use has_more/next_cursor for deep navigation rather than
+    // assuming `total` equals the number of publishable text matches.
+    total: rawTotal,
     limit,
-    offset,
+    offset: usingCursor ? 0 : legacyOffset,
+    next_cursor: hasMore ? scanCursor : null,
+    has_more: hasMore,
     source: "database",
     generated_at: new Date().toISOString(),
   };
