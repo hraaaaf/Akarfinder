@@ -7,7 +7,7 @@
 import { createHash } from "node:crypto";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { getListingUrlPatterns } from "@/lib/openserp-ingestion/domain-registry";
-import type { SearchGatewayNormalizedResult } from "./search-gateway-types";
+import type { SearchGatewayNormalizedResult, SearchGatewayRouteResponse } from "./search-gateway-types";
 
 export type SeedThinIndexInput = {
   q?: string;
@@ -101,7 +101,7 @@ export function seedMatchesThinIndexSearch(row: SeedRow, input: SeedThinIndexInp
   const qTokens = tokens(input.q).filter((token) => !cityTokens.includes(token));
   if (qTokens.length > 0) {
     const matched = qTokens.filter((token) => text.includes(token)).length;
-    const required = Math.max(1, Math.ceil(qTokens.length * 0.5));
+    const required = qTokens.length <= 3 ? qTokens.length : Math.max(1, Math.ceil(qTokens.length * 0.5));
     if (matched < required) return false;
   }
 
@@ -146,10 +146,10 @@ export function mapSeedToThinIndexResult(row: SeedRow): SearchGatewayNormalizedR
 }
 
 function probeToken(input: SeedThinIndexInput): string | null {
-  const candidates = [...tokens(input.city), ...tokens(input.q)]
-    .filter((token) => token.length >= 4)
-    .sort((a, b) => b.length - a.length);
-  return candidates[0] ?? null;
+  const cityCandidates = tokens(input.city).filter((token) => token.length >= 4).sort((a, b) => b.length - a.length);
+  if (cityCandidates[0]) return cityCandidates[0];
+  const queryCandidates = tokens(input.q).filter((token) => token.length >= 4).sort((a, b) => b.length - a.length);
+  return queryCandidates[0] ?? null;
 }
 
 function selectBalanced(rows: SeedRow[], maxResults: number): SeedRow[] {
@@ -209,9 +209,9 @@ export async function searchSeedThinIndex(input: SeedThinIndexInput): Promise<Se
 }
 
 export async function appendSeedThinIndexResults(
-  response: { results: SearchGatewayNormalizedResult[]; results_count: number; ok: boolean; degraded: boolean; [key: string]: unknown },
+  response: SearchGatewayRouteResponse,
   input: SeedThinIndexInput,
-): Promise<typeof response> {
+): Promise<SearchGatewayRouteResponse> {
   try {
     const seeds = await searchSeedThinIndex(input);
     if (seeds.length === 0) return response;
