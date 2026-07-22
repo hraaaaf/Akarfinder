@@ -3,18 +3,16 @@ name: OpenSERP Native Ingestion (GitHub-hosted)
 # OPENSERP-GITHUB-NATIVE-INGESTION-INTEGRATION-1
 # MASS-ACQUISITION-CAMPAIGN-V2
 #
-# GitHub documents that scheduled Actions may be delayed or dropped under load.
-# Therefore the cron is only a WAKE-UP trigger, not the acquisition clock.
-# Every scheduled wake-up keeps the already-started OpenSERP/SearXNG containers
-# alive and executes four bounded ingestion waves sequentially. Each wave keeps
-# the existing DB lock, engine budget/backoff and 3 production write flags.
-#
-# The schedule is deliberately away from the top of the hour. A manual dispatch
-# remains one wave only and defaults to dry-run.
+# The canonical */10 schedule remains the wake-up trigger. GitHub documents
+# that schedules can be delayed/dropped, so scheduled runs compute a bounded
+# catch-up wave count from the age of the last real engine success: normally 1
+# wave, up to 4 only after a real scheduling/engine gap. Containers are reused
+# across waves. Existing DB lock, engine budget/backoff and 3 write flags remain
+# authoritative. Manual dispatch is always one wave and defaults to dry-run.
 
 on:
   schedule:
-    - cron: "17 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -153,7 +151,7 @@ jobs:
             fi
           done
 
-      - name: Run bounded acquisition campaign
+      - name: Run adaptive bounded acquisition campaign
         id: ingest
         env:
           OPENSERP_LOCAL_URL: http://127.0.0.1:7070
@@ -172,7 +170,7 @@ jobs:
           T0=$(date +%s%3N)
           if [ "${{ github.event_name }}" = "schedule" ]; then
             MODE="cron"
-            WAVES=4
+            WAVES=$(npx tsx scripts/openserp/resolve-campaign-wave-count.ts)
           else
             MODE="${{ inputs.mode }}"
             WAVES=1
