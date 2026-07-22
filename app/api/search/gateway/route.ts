@@ -4,6 +4,8 @@
 // query, conditional intent-consistent backfill round, weak-page ordering,
 // hard cap raised to 50 displayable results. Doctrine unchanged: external
 // results stay thin previews (no contact, no gallery, original source CTA).
+// THIN-INDEX-SEED-SEARCH-V1 — append registry-approved public sitemap/Common
+// Crawl seed URLs as thin external links after live/cached gateway results.
 
 import { type NextRequest, NextResponse } from "next/server";
 import { executeSearchGatewayWithCache } from "@/lib/search-gateway-cache/search-gateway-cache";
@@ -14,9 +16,8 @@ import {
 import { createSearchGatewayCacheStore } from "@/lib/search-gateway-cache/supabase-cache-store";
 import { runSearchGatewayProviderSearch } from "@/lib/search-gateway/search-gateway-runner";
 import { getEnabledSearchGatewaySources } from "@/lib/search-gateway/search-gateway-sources";
-import type {
-  SearchGatewayRouteResponse,
-} from "@/lib/search-gateway/search-gateway-types";
+import { appendSeedThinIndexResults } from "@/lib/search-gateway/seed-thin-index";
+import type { SearchGatewayRouteResponse } from "@/lib/search-gateway/search-gateway-types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,14 +45,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const enabledSources = getEnabledSearchGatewaySources();
   const sourcesQueried = enabledSources.map((s) => s.source_id);
+  const seedInput = { q: query, city, propertyType, intent, maxResults: 100 };
 
-  // Check if provider is configured
+  // Check if provider is configured. The public seed thin index is deliberately
+  // independent: even if the live provider is unavailable, already-harvested
+  // registry-approved source URLs can still be returned as source-only links.
   const searchApiKey = process.env.SEARCH_API_KEY;
   const searchApiEndpoint = process.env.SEARCH_API_ENDPOINT || "https://api.search.com/query";
   const cacheStore = createSearchGatewayCacheStore();
 
   if (!searchApiKey) {
-    const response = await executeSearchGatewayWithCache({
+    const cached = await executeSearchGatewayWithCache({
       cacheContext: {
         provider: SEARCH_GATEWAY_CACHE_PROVIDER,
         query,
@@ -74,11 +78,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         provider_issue_classification: "provider_error",
       }),
     });
+    const response = await appendSeedThinIndexResults(cached as SearchGatewayRouteResponse, seedInput);
     return NextResponse.json(response);
   }
 
   try {
-    const response = await executeSearchGatewayWithCache({
+    const cached = await executeSearchGatewayWithCache({
       cacheContext: {
         provider: SEARCH_GATEWAY_CACHE_PROVIDER,
         query,
@@ -101,10 +106,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         }),
     });
 
+    const response = await appendSeedThinIndexResults(cached as SearchGatewayRouteResponse, seedInput);
     return NextResponse.json(response);
   } catch (error) {
     console.error("[api/search/gateway] Error:", error);
-    const response: SearchGatewayRouteResponse = {
+    const fallback: SearchGatewayRouteResponse = {
       ok: false,
       degraded: true,
       reason: "provider_error",
@@ -117,6 +123,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         provider_issue_classification: "provider_error" satisfies SearchGatewayProviderIssueClassification,
       },
     };
+    const response = await appendSeedThinIndexResults(fallback, seedInput);
     return NextResponse.json(response);
   }
 }
