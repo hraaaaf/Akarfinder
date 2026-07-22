@@ -5,9 +5,10 @@ import { describe, it } from "node:test";
 import { parseContinuityAction } from "../../../lib/user-continuity/service.js";
 
 describe("#19H User Continuity V1", () => {
+  const tables = ["user_search_projects","user_favorites","user_saved_searches","user_search_history","user_comparisons","user_eliminated_properties","user_learned_preferences"];
+
   it("defines the seven canonical user-owned continuity tables with RLS", () => {
     const sql = readFileSync(join(process.cwd(), "supabase/migrations/20260722033000_user_continuity_v1.sql"), "utf8").toLowerCase();
-    const tables = ["user_search_projects","user_favorites","user_saved_searches","user_search_history","user_comparisons","user_eliminated_properties","user_learned_preferences"];
     for (const table of tables) {
       assert.ok(sql.includes(`create table if not exists public.${table}`));
       assert.ok(sql.includes(`alter table public.${table} enable row level security`));
@@ -20,6 +21,13 @@ describe("#19H User Continuity V1", () => {
     assert.equal(sql.includes(" to anon"), false);
     assert.ok(sql.includes("(select auth.uid()) = user_id"));
     assert.ok(sql.includes("with check ((select auth.uid()) = user_id)"));
+  });
+
+  it("explicitly revokes inherited public-schema grants from anon", () => {
+    const hardening = readFileSync(join(process.cwd(), "supabase/migrations/20260722034000_user_continuity_anon_grant_hardening.sql"), "utf8").toLowerCase();
+    for (const table of tables) {
+      assert.ok(hardening.includes(`revoke all privileges on table public.${table} from anon`), `${table} must revoke anon grants`);
+    }
   });
 
   it("prevents cross-user project references with composite ownership foreign keys", () => {
