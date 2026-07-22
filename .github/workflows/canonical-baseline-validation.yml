@@ -53,6 +53,8 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/personalized-property-fit-v1.test.ts
       - name: Compagnon AkarFinder State Machine V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/companion-state-machine-v1.test.ts scripts/scrapers/__tests__/companion-question-planner-v1.test.ts
+      - name: Homepage & Search Entry Orchestration V1 suite
+        run: npx tsx --test scripts/scrapers/__tests__/home-search-entry-orchestration-v1.test.ts
       - name: API regression suite
         run: npm run test:api
       - name: OpenSERP ingestion suite
