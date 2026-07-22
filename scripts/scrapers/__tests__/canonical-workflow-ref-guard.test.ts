@@ -40,7 +40,7 @@ test("native OpenSERP ingestion is the scheduled ingestion producer", () => {
   const content = readWorkflow(NATIVE_INGESTION);
   const onBlock = loadOnBlock(content);
   assert.match(onBlock, /^\s*schedule\s*:/m, `${NATIVE_INGESTION} must keep its schedule trigger`);
-  assert.match(onBlock, /^\s*-\s*cron:\s*["']?\*\/30 \* \* \* \*["']?\s*$/m, `${NATIVE_INGESTION} must keep the 30-minute cron expression`);
+  assert.match(onBlock, /^\s*-\s*cron:\s*["']?\*\/10 \* \* \* \*["']?\s*$/m, `${NATIVE_INGESTION} must keep the 10-minute cron expression`);
 });
 
 test("legacy Vercel OpenSERP cron remains manual-only", () => {
