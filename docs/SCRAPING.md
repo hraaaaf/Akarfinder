@@ -1,325 +1,302 @@
-SCRAPING.md - AkarFinder Data Acquisition Strategy
+# AkarFinder — Data Acquisition & Source Governance
 
-Purpose
+Updated: 2026-07-23
 
-This file defines how AkarFinder approaches data acquisition.
+The filename `SCRAPING.md` is retained for compatibility. The scope is broader than scraping: it governs every external acquisition and discovery lane.
 
-Scraping is important, but it must be controlled, modular, and legally cautious.
+---
 
-Strategic principle
+## 1. Principle
 
-AkarFinder should not depend on one single data source.
+AkarFinder should maximize useful Moroccan real-estate coverage without sacrificing:
 
-The data strategy should combine:
+- legality and source policy;
+- provenance;
+- freshness;
+- data quality;
+- deduplication;
+- user trust.
 
-1. public listing analysis;
-2. agency imports;
-3. promoter imports;
-4. Sakan Expo inventory;
-5. manually seeded demo data;
-6. future partner feeds.
+No single source or acquisition provider should become a structural dependency for the entire product.
 
-Data acquisition channels
+---
 
-1. Public portals
+## 2. Absolute no-bypass doctrine
 
-Possible use:
+Forbidden:
 
-* discovery;
-* market mapping;
-* test ingestion;
-* deduplication training;
-* price comparison.
+- stealth scraping / anti-bot evasion;
+- proxy rotation for restriction circumvention;
+- fake Googlebot or identity spoofing;
+- CAPTCHA-solving to defeat access controls;
+- login/paywall circumvention;
+- technical bypass of a source restriction.
 
-Rules:
+Respect applicable:
 
-* avoid aggressive scraping;
-* track source;
-* respect rate limits;
-* avoid copying branding;
-* avoid presenting unofficial sources as partners;
-* avoid storing unnecessary data.
+- robots policy;
+- indexing directives;
+- contractual/authorization status;
+- source-specific display rights;
+- opt-out/removal obligations.
 
-2. Agency CSV/XML import
+When a direct path is blocked or not allowed, use another reviewed acquisition lane rather than bypassing the restriction.
 
-Priority: high.
+---
 
-Why:
+## 3. Acquisition lanes
 
-* cleaner data;
-* less risk;
-* more scalable;
-* easier partnership path.
+### A. Direct partner / authorized feeds
 
-Expected fields:
+Preferred structured lane when available.
 
-* title;
-* description;
-* price;
-* city;
-* neighborhood;
-* surface;
-* property type;
-* transaction type;
-* images;
-* contact;
-* source reference.
+Supported architecture includes CSV/JSON/XML normalization capability and structured partner submissions.
 
-3. Promoter import
+Benefits:
 
-Priority: very high.
+- explicit rights;
+- cleaner identity/provenance;
+- richer fields;
+- better freshness contracts;
+- stronger professional workflows.
 
-Why:
+A feed still passes canonical validation, normalization, dedupe and publication gates.
 
-* primary monetization target;
-* cleaner inventory;
-* Sakan Expo synergy;
-* direct lead value.
+### B. First-party / partner submissions
 
-Expected fields:
+Professional onboarding captures structured declared data with explicit provenance and media/publication rights.
 
-* project name;
-* promoter name;
-* city;
-* neighborhood;
-* unit types;
-* starting price;
-* delivery date;
-* brochure;
-* sales contact;
-* payment plan if available.
+Declared facts cannot masquerade as AkarFinder-calculated, inferred or verified facts.
 
-4. Facebook Marketplace
+### C. Public search discovery
 
-Priority: experimental.
+OpenSERP/Yandex-style search discovery can identify individual public results/snippets under registry and admission policies.
 
-Why:
+Search-provider output is evidence from the provider response only.
 
-* high volume;
-* noisy but valuable;
-* reflects real market behavior.
+Do not invent missing listing-page fields.
 
-Risks:
+### D. Search Gateway
 
-* noise;
-* duplicates;
-* scams;
-* incomplete data;
-* technical restrictions.
+Search Gateway provides limited external web results for user discovery.
 
-Approach:
+These remain source-linked external results unless separately admitted under an authorized structured path.
 
-* not first production dependency;
-* use carefully;
-* filter aggressively;
-* prioritize insights over direct republication.
+### E. Public sitemap discovery
 
-5. Facebook groups
+Only use reviewed domains and source policies.
 
-Priority: experimental.
+A sitemap URL is a **seed**, not proof that a current listing should become a structured public AkarFinder property.
 
-Approach:
+### F. Common Crawl URL-index metadata
 
-* detect patterns;
-* extract structured signals only when safe;
-* avoid building the core MVP on this channel.
+Common Crawl CDX can be used as an offline/public historical URL discovery reservoir.
 
-6. Google-indexed public listings
+Durable boundaries:
 
-Priority: useful for discovery.
+- URL-index metadata only in the mass seed lane;
+- no WARC/page fetch in that lane;
+- no direct source-site request;
+- registry-approved domains;
+- validated listing URL patterns;
+- seed-only persistence before separate confirmation/admission;
+- canary-first/fail-soft current architecture.
 
-Use:
+---
 
-* discover source pages;
-* identify agency/project pages;
-* expand coverage.
+## 4. Source registry is the admission authority
 
-Avoid:
+Machine-readable source governance lives primarily in the source registry and associated code/tests.
 
-* presenting Google as a data source;
-* copying snippets blindly;
-* scraping without source review.
+A source must not be automatically admitted simply because:
 
-7. Sakan Expo inventory
+- it appears in Google/search results;
+- it contains real-estate keywords;
+- another aggregator references it;
+- it was historically scraped;
+- its homepage is accessible.
 
-Priority: strategic.
+Automated admission requires an explicit reviewed status and the appropriate source-specific evidence.
 
-Why:
+Unknown/unclassified sources fail closed for structured automated admission.
 
-* direct access to promoters;
-* trusted inventory;
-* offline-to-online loop;
-* strong monetization.
+---
 
-Use:
+## 5. URL patterns
 
-* project pages;
-* booth QR codes;
-* brochure requests;
-* visit booking;
-* expo lead tracking.
+Listing URL patterns must be validated using positive and negative real examples.
 
-Listing normalization
+Avoid patterns broad enough to admit:
 
-Every listing should be normalized into a common schema.
+- homepages;
+- category/search pages;
+- profile/login pages;
+- general content pages;
+- vacation inventory when outside scope;
+- meta-aggregator duplicates.
 
-Required normalized fields:
+Pattern changes require regression evidence.
 
-* title;
-* price;
-* currency;
-* city;
-* neighborhood;
-* property type;
-* transaction type;
-* surface;
-* source;
-* source URL;
-* first seen date;
-* last seen date.
+---
 
-Optional fields:
+## 6. Discovery is not publication
 
-* bedrooms;
-* bathrooms;
-* floor;
-* images;
-* latitude;
-* longitude;
-* phone;
-* agency/promoter;
-* delivery date;
-* payment plan.
+Keep these states conceptually separate:
 
-Source tracking
+1. discovered URL/result;
+2. qualified seed/candidate;
+3. confirmed/admitted source offer;
+4. normalized structured property representation;
+5. publication/display eligibility;
+6. ranked public result.
 
-Every listing must keep:
+A result can be useful for coverage intelligence without becoming a public structured listing.
 
-* source ID;
-* source type;
-* source URL;
-* first seen timestamp;
-* last seen timestamp;
-* import method;
-* raw reference if needed.
+---
 
-Data quality checks
+## 7. Seed doctrine
 
-For every listing, check:
+`source_offer_seeds` is a reservoir of potential offer URLs, not a listing table.
 
-* missing price;
-* missing surface;
-* missing city;
-* invalid price;
-* unrealistic price/m²;
-* missing source;
-* old listing;
-* duplicate suspicion.
+A seed must never gain invented:
 
-Deduplication strategy
+- price;
+- surface;
+- property type;
+- contact;
+- image;
+- availability;
+- professional identity.
 
-V1 should not delete duplicates automatically.
+Seed confirmation paths should remain bounded and conservative.
 
-V1 should:
+Current architecture favors exact canonical-URL confirmation and strong explicit listing signals before structured promotion.
 
-* detect likely duplicates;
-* assign duplicate group ID;
-* choose a canonical listing;
-* display duplicate warning if needed;
-* allow future admin review.
+Thin indexed search representation is allowed only under its own limited public-result contract and source policy.
 
-Signals:
+---
 
-* city;
-* neighborhood;
-* price;
-* surface;
-* title;
-* images;
-* phone;
-* source;
-* publication dates.
+## 8. Data normalization
 
-Reliability score input
+All structured lanes should converge toward canonical AkarFinder property/source concepts.
 
-Data acquisition must support reliability scoring.
+Normalize carefully:
 
-Useful signals:
+- canonical source URL;
+- city/district aliases;
+- transaction type;
+- property type;
+- price/currency/period;
+- surface;
+- rooms/bedrooms where explicit;
+- source/provenance;
+- first/last observation clocks.
 
-* source type;
-* freshness;
-* completeness;
-* duplicate conflict;
-* price consistency;
-* partner status;
-* verification status;
-* contact availability.
+Missing data stays null/unknown.
 
-Scraping implementation rules
+Never coerce missing price to zero.
 
-Scrapers should live in:
+---
 
-scripts/scrapers/
+## 9. PII and unsafe content
 
-Imports should live in:
+External discovery/admission paths must minimize unnecessary PII.
 
-scripts/imports/
+Do not persist or expose personal contact information from external/public sources unless a lawful, explicit product contract authorizes it.
 
-Shared source utilities should live in:
+Reject/clean unsafe URLs and secret-like/PII payloads under the canonical ingestion policies.
 
-lib/sources/
+External indexed results should redirect users to the original source for source-controlled contact flows.
 
-Normalization should live in:
+---
 
-lib/listings/
+## 10. Freshness and availability
 
-Scoring should live in:
+Observation recency is not guaranteed availability.
 
-lib/scoring/
+Track evidence such as:
 
-Deduplication should live in:
+- first seen;
+- last seen;
+- source update when available;
+- observation channel;
+- lifecycle status.
 
-lib/dedupe/
+Do not say `available now` because a URL was recently indexed.
 
-First scraping milestone
+Stale volume must not inflate useful-coverage claims.
 
-Goal:
+---
 
-* ingest or seed at least 100 listings;
-* normalize them;
-* display them;
-* test deduplication;
-* test reliability score.
+## 11. Deduplication
 
-Acceptable first data sources:
+Preserve all source offers and provenance while building a conservative Property Graph.
 
-* manual seed data;
-* test HTML;
-* CSV sample;
-* one carefully selected public source;
-* Sakan Expo/promoter sample data.
+Technical URL/idempotency dedupe is different from physical-property identity.
 
-Do not do yet
+Never auto-merge physical properties solely from loose textual similarity.
 
-Do not implement at project start:
+Use explicit identifiers or sufficiently corroborated structured evidence, with human review when needed.
 
-* aggressive multi-site scraping;
-* automated Facebook scraping;
-* full crawler scheduler;
-* paid data partnerships;
-* AI extraction pipeline;
-* automated source logo display;
-* claim of real-time updates.
+---
 
-Legal and credibility caution
+## 12. Display rights
 
-This file does not replace legal advice.
+Source status, display eligibility and intelligence scoring are separate.
 
-Before production-scale scraping:
+For an external source, independently determine whether AkarFinder may show:
 
-* review source terms;
-* avoid unauthorized brand use;
-* avoid misleading source representation;
-* minimize stored data;
-* keep opt-out/removal path;
-* prefer direct partnerships where possible.
+- title/snippet;
+- price/surface facts;
+- thumbnail;
+- gallery;
+- contact/WhatsApp;
+- internal detail;
+- only a source link;
+- nothing publicly.
+
+A high score never grants additional rights.
+
+---
+
+## 13. Scale strategy
+
+AkarFinder can pursue 100k+ useful observations through multiple lanes, but every scale lane must remain:
+
+- bounded;
+- observable;
+- idempotent;
+- source-governed;
+- measurable by yield;
+- fail-safe on writes;
+- honest about what its count represents.
+
+Measure the funnel per acquisition lane instead of celebrating raw URLs.
+
+---
+
+## 14. Current workflow caution
+
+Cadences, engines and batch limits evolve.
+
+Do not copy an old number such as `30 minutes`, `2,718 queries` or `13 domains` from a historical mission document and treat it as permanent architecture.
+
+For current operational truth inspect:
+
+- `.github/workflows/`;
+- `data/openserp/source-domain-registry.json`;
+- current query-universe code/data;
+- acquisition modules/tests;
+- Production flags and metrics.
+
+---
+
+## 15. Audit evidence
+
+One-off source audits, harvest reports, incident analyses and benchmarks belong in:
+
+- `data/audits/`;
+- pull requests;
+- Git history.
+
+Only durable policies belong in this document.
