@@ -79,7 +79,6 @@ const DOMAIN_RULES: Record<string, PathRules> = {
   "mubawab.ma": {
     forceDiscovery: [
       /\/(?:fr|en)?\/?(?:sd|cd|sc)\//,
-      /\/(?:fr|en)\/is\//,
       /\/immobilier-a-(?:vendre|louer)\b/,
       /\/appartements-a-(?:vendre|louer)\b/,
       /\/villas-et-maisons-de-luxe-a-vendre\b/,
@@ -174,12 +173,8 @@ function isAmbiguousStrongPath(domain: string, canonicalUrl: string): boolean {
   } catch {
     // Fail conservative below.
   }
-  // 1immo's legacy /slug-N pattern is shared by both individual offers and
-  // category/index-like slugs. It therefore still requires textual/category
-  // corroboration. Other registry strong patterns carry explicit listing
-  // namespaces/IDs and should not be overridden merely because a SERP snippet
-  // mentions a count of related listings.
-  return domain === "1immo.ma" && /-\d+\/?$/i.test(pathname);
+  return (domain === "1immo.ma" && /-\d+\/?$/i.test(pathname)) ||
+    (domain === "mubawab.ma" && /\/(?:fr|en)\/is\//i.test(pathname));
 }
 
 export type CityExtractor = (value: string) => string | null;
