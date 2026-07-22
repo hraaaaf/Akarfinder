@@ -2,20 +2,20 @@
 // OPENSERP-GITHUB-NATIVE-INGESTION-INTEGRATION-1
 // DATA-MASS-ACQUISITION-QUERY-UNIVERSE-V2-1
 // NATIONAL-MASS-ACQUISITION-ALL-MOROCCO-V1
+// MASS-ACQUISITION-CAMPAIGN-V2
 //
-// GitHub-hosted ingestion is the national scale lane. Every scheduled cycle
-// materializes the FULL V2 Morocco query universe; no single city may replace
-// or monopolize the national universe. Query rotation then prioritizes never-
-// executed queries, historical discovery yield, under-covered cities,
-// under-covered districts and staleness.
+// GitHub-hosted ingestion is the national scale lane. Every cycle materializes
+// the FULL V2 Morocco query universe; no single city may replace or monopolize
+// it. Query rotation prioritizes never-executed queries, historical discovery
+// yield, under-covered cities/districts and staleness.
 //
-// Throughput is increased in two bounded ways on GitHub only:
-//   1) native OpenSERP may request up to 50 organic results/query;
-//   2) the batch override is derived from the persisted adaptive budget and
-//      currently-active engines, with a small GitHub floor of 8 only when at
-//      least two engines remain active. One active engine stays capped at 4.
-// Incidents still persist through the existing budget/backoff state and can
-// suspend engines exactly as before. Vercel/serverless remains untouched.
+// GitHub-only throughput controls:
+//   1) native OpenSERP requests up to 50 organic results/page;
+//   2) native transport follows at most 3 upstream pagination pages when the
+//      provider explicitly reports `has_more` + `next_start`;
+//   3) batch override follows persisted engine safety state, capped at 24.
+// Existing incidents/backoff/suspension, DB lock and 3 write flags remain
+// authoritative. Vercel/serverless behavior is untouched.
 
 import { writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -30,6 +30,7 @@ import { activeEngines } from "@/lib/openserp-ingestion/budget-policy";
 const GITHUB_MAX_DURATION_MS = 240_000;
 const LOCK_LEASE_SECONDS = Math.round(GITHUB_MAX_DURATION_MS / 1000 + 45);
 const GITHUB_NATIVE_RESULT_LIMIT = "50";
+const GITHUB_NATIVE_MAX_PAGES = "3";
 const GITHUB_MAX_BATCH = 24;
 
 function parseMode(argv: string[]): "dry-run" | "cron" {
@@ -52,10 +53,6 @@ async function resolveGithubMassBatch(nowIso: string): Promise<{ batchSize: numb
   const state = await loadBudgetState();
   const active = activeEngines(state, nowIso);
   if (active.length === 0) return { batchSize: 0, active, persistedBudget: state.current_budget };
-
-  // Do not bulldoze the safety state. One surviving engine stays at the
-  // conservative 4-query ceiling. With >=2 active engines, GitHub may use a
-  // modest floor of 8, then follows the persisted adaptive budget up to 24.
   const batchSize = active.length === 1
     ? Math.min(4, state.current_budget)
     : Math.min(GITHUB_MAX_BATCH, Math.max(8, state.current_budget));
@@ -70,6 +67,7 @@ async function main() {
   const runtimeEnv: NodeJS.ProcessEnv = {
     ...process.env,
     OPENSERP_NATIVE_RESULT_LIMIT: GITHUB_NATIVE_RESULT_LIMIT,
+    OPENSERP_NATIVE_MAX_PAGES: GITHUB_NATIVE_MAX_PAGES,
   };
 
   console.log(JSON.stringify({
@@ -81,6 +79,8 @@ async function main() {
     national_hot_lane: true,
     single_city_exclusive_filter: false,
     native_result_limit: Number(GITHUB_NATIVE_RESULT_LIMIT),
+    native_max_pages: Number(GITHUB_NATIVE_MAX_PAGES),
+    theoretical_native_results_per_query_ceiling: Number(GITHUB_NATIVE_RESULT_LIMIT) * Number(GITHUB_NATIVE_MAX_PAGES),
   }));
 
   if (mode === "dry-run") {
