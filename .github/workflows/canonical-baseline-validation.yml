@@ -59,6 +59,8 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/user-continuity-v1.test.ts
       - name: Final Production Gate V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/final-production-gate-v1.test.ts
+      - name: Data Mass Acquisition + Query Universe V2 suite
+        run: npx tsx --test scripts/scrapers/__tests__/data-mass-acquisition-query-universe-v2.test.ts
       - name: API regression suite
         run: npm run test:api
       - name: OpenSERP ingestion suite
