@@ -1,5 +1,5 @@
 import { Container } from "@/components/ui/Container";
-import { HomeSearchBar } from "@/components/home/HomeSearchBar";
+import { SearchEntryOrchestrator } from "@/components/home/SearchEntryOrchestrator";
 
 const HERO_DESKTOP = "/images/hero/akar-residence-sunset-desktop.webp";
 const HERO_MOBILE = "/images/hero/akar-residence-sunset-mobile.webp";
@@ -68,17 +68,17 @@ export function GoogleLikeHero() {
             au Maroc
           </h1>
 
-          <p className="mt-4 max-w-[560px] text-[0.95rem] leading-relaxed text-[#334155] drop-shadow-[0_1px_6px_rgba(0,0,0,0.2)] sm:mt-6 sm:text-[1.1rem] sm:text-white sm:drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+          <p className="mt-4 max-w-[620px] text-[0.95rem] leading-relaxed text-[#334155] drop-shadow-[0_1px_6px_rgba(0,0,0,0.2)] sm:mt-6 sm:text-[1.1rem] sm:text-white sm:drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
             <span className="sm:hidden">
-              Cherchez dans l&apos;immobilier marocain. Comprenez le quartier avant de contacter.
+              Cherchez directement ou construisez votre projet. Comprenez le quartier et retrouvez les sources originales.
             </span>
             <span className="hidden sm:inline">
-              AkarFinder vous aide à trouver des résultats sur les sources originales et à comparer les repères du quartier : prix/m² indicatif, proximité et contexte local.
+              Vous savez ce que vous cherchez ? Lancez une recherche directe sur les sources originales. Vous hésitez encore ? Le Compagnon AkarFinder structure votre projet pour mieux comparer et Comprenez le quartier avant de décider.
             </span>
           </p>
 
           <div className="mt-6 w-full sm:mt-11">
-            <HomeSearchBar />
+            <SearchEntryOrchestrator />
           </div>
         </div>
       </Container>
