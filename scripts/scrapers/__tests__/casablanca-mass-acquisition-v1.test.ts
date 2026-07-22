@@ -115,7 +115,7 @@ test("GitHub scale runner has Casablanca bootstrap gate and Vercel orchestrator 
 });
 
 test("Common Crawl mass workflow never grants seeds direct public-listing write paths", () => {
-  const workflow = readFileSync(join(process.cwd(), ".github/workflows/commoncrawl-mass-seed-ingestion.yml"), "utf8");
+  const workflow = readFileSync(join(process.cwd(), ".github/workflows/commoncrawl-mass-seed-harvest.yml"), "utf8");
   const importer = readFileSync(join(process.cwd(), "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"), "utf8");
   const harvester = readFileSync(join(process.cwd(), "scripts/openserp/commoncrawl-registry-mass-harvest.ts"), "utf8");
   assert.ok(workflow.includes("source_offer_seeds") || workflow.includes("ingest-commoncrawl-mass-seeds"));
