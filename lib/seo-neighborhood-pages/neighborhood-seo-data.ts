@@ -1,122 +1,75 @@
 import type { NeighborhoodMetadata, DistrictSlug } from "./types";
+import {
+  getValidatedSeoNeighborhoods,
+  isSeoEligibleGeoPair,
+  normalizeGeoText,
+} from "@/lib/geo/geo-entity-registry";
+import { NEIGHBORHOOD_POINTS } from "@/lib/map/neighborhood-data";
 
-export const NEIGHBORHOOD_METADATA: Record<DistrictSlug, NeighborhoodMetadata> = {
-  maarif: {
-    slug: "maarif",
-    displayName: "Maârif",
-    citySlug: "casablanca",
-    cityDisplayName: "Casablanca",
-    description:
-      "AkarFinder aide à explorer des résultats immobiliers publics liés à Maârif, Casablanca, puis à vérifier les détails sur la source originale.",
-    propertyTypes: ["appartement", "studio", "local commercial", "bureau"],
-    nearbyDistricts: ["racine", "bourgogne"],
-  },
-  racine: {
-    slug: "racine",
-    displayName: "Racine",
-    citySlug: "casablanca",
-    cityDisplayName: "Casablanca",
-    description:
-      "AkarFinder aide à explorer des résultats immobiliers publics liés à Racine, Casablanca, puis à vérifier les détails sur la source originale.",
-    propertyTypes: ["appartement", "bureau", "local commercial"],
-    nearbyDistricts: ["maarif", "bourgogne"],
-  },
-  "ain-diab": {
-    slug: "ain-diab",
-    displayName: "Aïn Diab",
-    citySlug: "casablanca",
-    cityDisplayName: "Casablanca",
-    description:
-      "AkarFinder aide à explorer des résultats immobiliers publics liés à Aïn Diab, Casablanca, puis à vérifier les détails sur la source originale.",
-    propertyTypes: ["villa", "appartement", "duplex"],
-    nearbyDistricts: ["maarif", "bourgogne"],
-  },
-  bourgogne: {
-    slug: "bourgogne",
-    displayName: "Bourgogne",
-    citySlug: "casablanca",
-    cityDisplayName: "Casablanca",
-    description:
-      "AkarFinder aide à explorer des résultats immobiliers publics liés à Bourgogne, Casablanca, puis à vérifier les détails sur la source originale.",
-    propertyTypes: ["appartement", "studio", "bureau"],
-    nearbyDistricts: ["maarif", "racine"],
-  },
-  agdal: {
-    slug: "agdal",
-    displayName: "Agdal",
-    citySlug: "rabat",
-    cityDisplayName: "Rabat",
-    description:
-      "AkarFinder aide à explorer des résultats immobiliers publics liés à Agdal, Rabat, puis à vérifier les détails sur la source originale.",
-    propertyTypes: ["appartement", "villa", "studio", "bureau"],
-    nearbyDistricts: ["souissi", "hay-riad"],
-  },
-  souissi: {
-    slug: "souissi",
-    displayName: "Souissi",
-    citySlug: "rabat",
-    cityDisplayName: "Rabat",
-    description:
-      "AkarFinder aide à explorer des résultats immobiliers publics liés à Souissi, Rabat, puis à vérifier les détails sur la source originale.",
-    propertyTypes: ["villa", "appartement", "terrain"],
-    nearbyDistricts: ["agdal", "hay-riad"],
-  },
-  "hay-riad": {
-    slug: "hay-riad",
-    displayName: "Hay Riad",
-    citySlug: "rabat",
-    cityDisplayName: "Rabat",
-    description:
-      "AkarFinder aide à explorer des résultats immobiliers publics liés à Hay Riad, Rabat, puis à vérifier les détails sur la source originale.",
-    propertyTypes: ["appartement", "villa", "bureau"],
-    nearbyDistricts: ["agdal", "souissi"],
-  },
-  gueliz: {
-    slug: "gueliz",
-    displayName: "Guéliz",
-    citySlug: "marrakech",
-    cityDisplayName: "Marrakech",
-    description:
-      "AkarFinder aide à explorer des résultats immobiliers publics liés à Guéliz, Marrakech, puis à vérifier les détails sur la source originale.",
-    propertyTypes: ["appartement", "studio", "local commercial", "riad"],
-    nearbyDistricts: ["hivernage"],
-  },
-  hivernage: {
-    slug: "hivernage",
-    displayName: "Hivernage",
-    citySlug: "marrakech",
-    cityDisplayName: "Marrakech",
-    description:
-      "AkarFinder aide à explorer des résultats immobiliers publics liés à Hivernage, Marrakech, puis à vérifier les détails sur la source originale.",
-    propertyTypes: ["appartement", "villa", "riad"],
-    nearbyDistricts: ["gueliz"],
-  },
-  malabata: {
-    slug: "malabata",
-    displayName: "Malabata",
-    citySlug: "tanger",
-    cityDisplayName: "Tanger",
-    description:
-      "AkarFinder aide à explorer des résultats immobiliers publics liés à Malabata, Tanger, puis à vérifier les détails sur la source originale.",
-    propertyTypes: ["appartement", "villa", "duplex"],
-    nearbyDistricts: [],
-  },
-  founty: {
-    slug: "founty",
-    displayName: "Founty",
-    citySlug: "agadir",
-    cityDisplayName: "Agadir",
-    description:
-      "AkarFinder aide à explorer des résultats immobiliers publics liés à Founty, Agadir, puis à vérifier les détails sur la source originale.",
-    propertyTypes: ["appartement", "villa", "studio"],
-    nearbyDistricts: [],
-  },
+const CONFIG: Record<DistrictSlug, { propertyTypes: string[]; nearbyDistricts: DistrictSlug[] }> = {
+  maarif: { propertyTypes: ["appartement", "studio", "local commercial", "bureau"], nearbyDistricts: ["racine", "bourgogne"] },
+  racine: { propertyTypes: ["appartement", "bureau", "local commercial"], nearbyDistricts: ["maarif", "bourgogne"] },
+  "ain-diab": { propertyTypes: ["villa", "appartement", "duplex"], nearbyDistricts: ["maarif", "bourgogne"] },
+  bourgogne: { propertyTypes: ["appartement", "studio", "bureau"], nearbyDistricts: ["maarif", "racine"] },
+  agdal: { propertyTypes: ["appartement", "villa", "studio", "bureau"], nearbyDistricts: ["souissi", "hay-riad"] },
+  souissi: { propertyTypes: ["villa", "appartement", "terrain"], nearbyDistricts: ["agdal", "hay-riad"] },
+  "hay-riad": { propertyTypes: ["appartement", "villa", "bureau"], nearbyDistricts: ["agdal", "souissi"] },
+  gueliz: { propertyTypes: ["appartement", "studio", "local commercial", "riad"], nearbyDistricts: ["hivernage"] },
+  hivernage: { propertyTypes: ["appartement", "villa", "riad"], nearbyDistricts: ["gueliz"] },
+  malabata: { propertyTypes: ["appartement", "villa", "duplex"], nearbyDistricts: [] },
+  founty: { propertyTypes: ["appartement", "villa", "studio"], nearbyDistricts: [] },
 };
+
+function findMapIntelligence(city: string, neighborhood: string) {
+  const cityNorm = normalizeGeoText(city);
+  const districtNorm = normalizeGeoText(neighborhood);
+  const point = NEIGHBORHOOD_POINTS.find(
+    (candidate) =>
+      normalizeGeoText(candidate.city) === cityNorm &&
+      normalizeGeoText(candidate.neighborhood) === districtNorm,
+  );
+  if (!point) return undefined;
+  return {
+    priceLabel: point.priceSignal.label,
+    pricePeriod: point.benchmark.period,
+    confidence: point.confidence,
+    lifestyleTags: [...point.lifestyleTags],
+    proximityHighlights: [...point.proximityHighlights],
+  };
+}
+
+function buildMetadata(entity: ReturnType<typeof getValidatedSeoNeighborhoods>[number]): NeighborhoodMetadata | null {
+  const config = CONFIG[entity.slug as DistrictSlug];
+  if (!config || !isSeoEligibleGeoPair(entity.city_slug, entity.slug)) return null;
+  const cityDisplayName = entity.city_slug === "casablanca" ? "Casablanca"
+    : entity.city_slug === "rabat" ? "Rabat"
+    : entity.city_slug === "marrakech" ? "Marrakech"
+    : entity.city_slug === "tanger" ? "Tanger"
+    : "Agadir";
+  return {
+    slug: entity.slug as DistrictSlug,
+    displayName: entity.canonical_name,
+    citySlug: entity.city_slug,
+    cityDisplayName,
+    description: `AkarFinder aide à explorer des résultats immobiliers publics liés à ${entity.canonical_name}, ${cityDisplayName}, puis à vérifier les détails sur la source originale.`,
+    propertyTypes: [...config.propertyTypes],
+    nearbyDistricts: [...config.nearbyDistricts],
+    intelligence: findMapIntelligence(cityDisplayName, entity.canonical_name),
+  };
+}
+
+export const NEIGHBORHOOD_METADATA: Record<DistrictSlug, NeighborhoodMetadata> = Object.fromEntries(
+  getValidatedSeoNeighborhoods()
+    .map(buildMetadata)
+    .filter((value): value is NeighborhoodMetadata => value !== null)
+    .map((value) => [value.slug, value]),
+) as Record<DistrictSlug, NeighborhoodMetadata>;
 
 export function getNeighborhoodBySlug(
   citySlug: string,
   districtSlug: string,
 ): NeighborhoodMetadata | null {
+  if (!isSeoEligibleGeoPair(citySlug, districtSlug)) return null;
   const n = NEIGHBORHOOD_METADATA[districtSlug as DistrictSlug];
   if (!n || n.citySlug !== citySlug) return null;
   return n;
