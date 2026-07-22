@@ -6,6 +6,7 @@ const databaseSearch = readFileSync("lib/search/database-search.ts", "utf8");
 const apiSearch = readFileSync("app/api/search/route.ts", "utf8");
 const searchTypes = readFileSync("lib/search/types.ts", "utf8");
 const pageQuery = readFileSync("lib/search/search-page-query.ts", "utf8");
+const shell = readFileSync("components/search/LightZillowSearchShell.tsx", "utf8");
 
 test("database fallback no longer has the historical 200-row candidate ceiling", () => {
   assert.doesNotMatch(databaseSearch, /limit:\s*200\b/);
@@ -17,6 +18,16 @@ test("database fallback no longer has the historical 200-row candidate ceiling",
 test("first search tranche still targets up to 100 local results", () => {
   assert.match(pageQuery, /limit:\s*100/);
   assert.match(databaseSearch, /Math\.min\(Math\.max\(query\.limit \?\? 50, 1\), 100\)/);
+  assert.match(shell, /new URLSearchParams\(\{ limit: "100" \}\)/);
+});
+
+test("budget and surface filters are sent to the server instead of filtering a generic 100-row sample", () => {
+  assert.match(shell, /params\.set\("min_price", filters\.minBudget\)/);
+  assert.match(shell, /params\.set\("max_price", filters\.maxBudget\)/);
+  assert.match(shell, /params\.set\("min_surface", filters\.minSurface\)/);
+  assert.match(apiSearch, /min_price: parseNumberParam/);
+  assert.match(apiSearch, /max_price: parseNumberParam/);
+  assert.match(apiSearch, /min_surface: parseNumberParam/);
 });
 
 test("deep pagination cursor is part of the search contract and API routing", () => {
@@ -26,6 +37,7 @@ test("deep pagination cursor is part of the search contract and API routing", ()
   assert.match(apiSearch, /cursor: parseNumberParam\(searchParams\.get\("cursor"\)\)/);
   assert.match(databaseSearch, /next_cursor: hasMore \? scanCursor : null/);
   assert.match(databaseSearch, /has_more: hasMore/);
+  assert.match(shell, /Afficher plus de résultats indexés/);
 });
 
 test("cursor advances at raw-row precision instead of skipping the remainder of a DB batch", () => {
