@@ -46,6 +46,8 @@ type ApiSearchResponse = {
   total: number;
   limit: number;
   offset: number;
+  next_cursor?: number | null;
+  has_more?: boolean;
   source: string;
   generated_at: string;
 };
@@ -56,12 +58,19 @@ const RELIABILITY_BADGE: Record<string, string> = {
   top: "Information complete", high: "Information structuree", medium: "A completer", low: "Information limitee",
 };
 
-function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy): string {
+function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy, cursor?: number | null): string {
   const params = new URLSearchParams({ limit: "100" });
   if (filters.search.trim()) params.set("q", filters.search.trim());
   if (filters.city !== "all") params.set("city", filters.city);
   if (filters.transactionType !== "all") params.set("transaction_type", filters.transactionType);
   if (filters.propertyType !== "all") params.set("property_type", filters.propertyType);
+  // SEARCH-INDEX-DEPTH-V1 — budget/surface must be pushed to the server. The
+  // previous client refetch omitted them, fetched 100 generic rows, then threw
+  // most away locally; a valid query could therefore collapse to ~30 visible
+  // results even when many more matching rows existed deeper in the index.
+  if (filters.minBudget) params.set("min_price", filters.minBudget);
+  if (filters.maxBudget) params.set("max_price", filters.maxBudget);
+  if (filters.minSurface) params.set("min_surface", filters.minSurface);
   if (filters.minReliabilityScore > 0) params.set("minReliabilityScore", String(filters.minReliabilityScore));
   if (filters.reliability !== "all") {
     const badge = RELIABILITY_BADGE[filters.reliability];
@@ -69,6 +78,7 @@ function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy): string {
   }
   if (sortBy === "price-asc") params.set("sort", "price_asc");
   else if (sortBy === "price-desc") params.set("sort", "price_desc");
+  if (cursor != null) params.set("cursor", String(cursor));
   return `/api/search?${params.toString()}`;
 }
 
@@ -203,6 +213,9 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   const [sortBy, setSortBy] = useState<SortBy>("recommended");
   const [listings, setListings] = useState(initialListings);
   const [isLoading, setIsLoading] = useState(true);
+  const [nextCursor, setNextCursor] = useState<number | null>(null);
+  const [hasMoreIndexed, setHasMoreIndexed] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Search Gateway — external indexed results
   const [gatewayResults, setGatewayResults] = useState<SearchGatewayNormalizedResult[]>([]);
@@ -234,12 +247,34 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
         const response = await fetch(buildSearchUrl(filters, sortBy), { cache: "no-store" });
         if (!response.ok || cancelled) return;
         const payload = (await response.json()) as ApiSearchResponse;
-        if (!cancelled) setListings(payload.listings);
+        if (!cancelled) {
+          setListings(payload.listings);
+          setNextCursor(payload.next_cursor ?? null);
+          setHasMoreIndexed(payload.has_more === true && payload.next_cursor != null);
+        }
       } catch { /* keep current silently */ }
       finally { if (!cancelled) setIsLoading(false); }
     }, delay);
     return () => { cancelled = true; clearTimeout(timer); };
   }, [filters, sortBy]);
+
+  async function handleLoadMoreIndexed() {
+    if (nextCursor == null || isLoadingMore) return;
+    setIsLoadingMore(true);
+    try {
+      const response = await fetch(buildSearchUrl(filters, sortBy, nextCursor), { cache: "no-store" });
+      if (!response.ok) return;
+      const payload = (await response.json()) as ApiSearchResponse;
+      setListings((current) => {
+        const merged = new Map(current.map((listing) => [listing.id, listing]));
+        for (const listing of payload.listings) merged.set(listing.id, listing);
+        return [...merged.values()];
+      });
+      setNextCursor(payload.next_cursor ?? null);
+      setHasMoreIndexed(payload.has_more === true && payload.next_cursor != null);
+    } catch { /* keep current silently */ }
+    finally { setIsLoadingMore(false); }
+  }
 
   // Search Gateway — fetch external indexed results in parallel
   useEffect(() => {
@@ -407,7 +442,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
 
           {/* SEARCH-PROFILE-ONBOARDING-MVP-1 — discreet entry to the guided profile */}
           <p className="mt-2.5 text-[12px] font-semibold text-muted-foreground">
-            Besoin d&apos;affiner votre recherche ?{" "}
+            Besoin d&apos;affiner votre recherche?{" "}
             <Link href="/profil-recherche" className="font-extrabold text-bronze-400 underline underline-offset-2 transition hover:text-bronze-300">
               Créer mon profil de recherche
             </Link>
@@ -515,6 +550,20 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                 )}
               </>
             )}
+
+            {hasMoreIndexed ? (
+              <div className="mt-6 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleLoadMoreIndexed}
+                  disabled={isLoadingMore}
+                  className="inline-flex items-center gap-2 rounded-full border border-bronze-500/35 bg-bronze-500/10 px-5 py-2.5 text-[13px] font-extrabold text-bronze-300 transition hover:bg-bronze-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isLoadingMore ? <Loader2 size={15} className="animate-spin" aria-hidden="true" /> : null}
+                  Afficher plus de résultats indexés
+                </button>
+              </div>
+            ) : null}
           </div>
 
           {/* Carte + CTAs */}
