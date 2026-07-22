@@ -2,6 +2,7 @@ name: OpenSERP Native Ingestion (GitHub-hosted)
 
 # OPENSERP-GITHUB-NATIVE-INGESTION-INTEGRATION-1
 # OPENSERP-CRON-PROD-ACTIVATION-1
+# MASS-ACQUISITION-FREE-ACCELERATION-1
 # Runs the EXISTING orchestrator (lib/openserp-ingestion/run-orchestrator.ts,
 # via scripts/openserp/run-ingestion-github-actions.ts) inside a GitHub
 # Actions job, talking to a local OpenSERP Docker container in full
@@ -11,12 +12,9 @@ name: OpenSERP Native Ingestion (GitHub-hosted)
 # P0 canonical-baseline rule: checkout follows the workflow's own ref. No
 # Production or diagnostic workflow may hardcode a moving fix/feat/poc branch.
 #
-# Scheduled every 30 minutes, activated after two real workflow_dispatch
-# cron runs both validated PASS STRICT (2026-07-19). A schedule-triggered
-# event carries no `inputs` context (GitHub only populates `inputs` for
-# workflow_dispatch) -- the "Run ingestion entrypoint" step below resolves
-# mode from github.event_name for a schedule trigger, and continues to
-# honor the manual dropdown for a workflow_dispatch trigger.
+# Scheduled every 10 minutes. The adaptive runtime budget, engine suspension,
+# global run lock and three production write flags remain authoritative, so a
+# faster trigger never means overlapping or ungated writes.
 #
 # Guardrails against an accidental write:
 #   - workflow_dispatch's mode still defaults to dry-run (never writes,
@@ -28,7 +26,7 @@ name: OpenSERP Native Ingestion (GitHub-hosted)
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -46,15 +44,6 @@ permissions:
 jobs:
   ingest:
     runs-on: ubuntu-latest
-    # OPENSERP-NATIVE-CRON-REMEDIATION-1: bounds wasted runner time on a
-    # genuine hang. Worst real observed job wall time to date is 708s
-    # (~11.8 min, a pre-go-live debugging run); the business-logic lease
-    # (LOCK_LEASE_SECONDS=150s in run-ingestion-github-actions.ts) is the
-    # designed self-healing ceiling for the ingestion step itself. 15
-    # minutes covers checkout/setup/npm ci, a cold docker pull, the health
-    # check's own 60s hard cap, the 150s lease ceiling, and log dump/
-    # teardown, with comfortable margin over both figures -- while still
-    # being a large improvement over GitHub's 360-minute default.
     timeout-minutes: 15
     steps:
       - name: Checkout canonical workflow ref
@@ -71,14 +60,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1 -- activation. Same ephemeral
-      # SearXNG setup already validated by
-      # openserp-yandex-dual-lane-shadow-validation.yml (Gate B, PASS
-      # STRICT): yandex is the ONLY engine enabled at the container config
-      # level -- duckduckgo/brave/startpage/mojeek/qwant/google are never
-      # requested and never explicitly enabled. No persistent server, no
-      # new secret (SEARXNG_SECRET is generated fresh per run, never
-      # stored).
       - name: Prepare SearXNG settings (yandex only, fresh ephemeral secret key)
         run: |
           set -e
@@ -185,21 +166,9 @@ jobs:
         id: ingest
         env:
           OPENSERP_LOCAL_URL: http://127.0.0.1:7070
-          # OPENSERP-GITHUB-NATIVE-TRANSPORT-1: non-sensitive configuration,
-          # not credentials -- plain env values, not GitHub Secrets. Selects
-          # the native karust/openserp HTTP contract (GET /{engine}/search)
-          # instead of the Railway-adapter contract, and satisfies the
-          # existing 3-flag async-feeder gate (openserp-policy.ts) so the
-          # engine calls this container actually runs are no longer
-          # rejected before ever reaching it.
           OPENSERP_TRANSPORT: native
           PUBLIC_INDEX_POC_ENABLED: "true"
           OPENSERP_ASYNC_FEEDER_ENABLED: "true"
-          # OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1 -- activation. Same two
-          # variables already exercised by the shadow-validation workflow
-          # (Gate B, PASS STRICT): plain, non-sensitive runtime config, not
-          # a secret -- Yandex/SearXNG needs no credential, only a
-          # reachable local container. No other new variable added.
           OPENSERP_YANDEX_CHANNEL_ENABLED: "true"
           OPENSERP_SEARXNG_LOCAL_URL: http://127.0.0.1:8888
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -210,9 +179,6 @@ jobs:
         run: |
           set -e
           T0=$(date +%s%3N)
-          # A schedule-triggered event has no `inputs` context at all (only
-          # workflow_dispatch populates it) -- resolve mode from the event
-          # type instead of assuming inputs.mode is ever set.
           if [ "${{ github.event_name }}" = "schedule" ]; then
             MODE="cron"
           else
