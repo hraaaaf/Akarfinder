@@ -67,6 +67,8 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/free-mass-acquisition-acceleration-v1.test.ts
       - name: National Mass Acquisition All Morocco V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/national-mass-acquisition-all-morocco-v1.test.ts
+      - name: Data Funnel Recovery V1 suite
+        run: npx tsx --test scripts/scrapers/__tests__/data-funnel-recovery-v1.test.ts
       - name: API regression suite
         run: npm run test:api
       - name: OpenSERP ingestion suite
