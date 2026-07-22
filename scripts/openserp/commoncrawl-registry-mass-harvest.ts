@@ -181,13 +181,13 @@ export function processMassDomainRecords(
 }
 
 export function selectMassHarvestDomains(allDomains: string[], mode = process.env.COMMONCRAWL_MASS_MODE ?? "all"): string[] {
-  const canary = new Set<string>(MASS_CANARY_DOMAINS);
-  if (mode === "canary") return allDomains.filter((domain) => canary.has(domain));
-  if (mode === "remainder") return allDomains.filter((domain) => !canary.has(domain));
-  return [
-    ...allDomains.filter((domain) => canary.has(domain)),
-    ...allDomains.filter((domain) => !canary.has(domain)),
-  ];
+  const available = new Set(allDomains);
+  const canaryOrdered = MASS_CANARY_DOMAINS.filter((domain) => available.has(domain));
+  const canary = new Set<string>(canaryOrdered);
+  const remainder = allDomains.filter((domain) => !canary.has(domain));
+  if (mode === "canary") return [...canaryOrdered];
+  if (mode === "remainder") return remainder;
+  return [...canaryOrdered, ...remainder];
 }
 
 async function main() {
