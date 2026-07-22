@@ -71,6 +71,8 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/data-funnel-recovery-v1.test.ts
       - name: Mass Acquisition Campaign V2 suite
         run: npx tsx --test scripts/scrapers/__tests__/mass-acquisition-campaign-v2.test.ts
+      - name: Search Index Depth V1 suite
+        run: npx tsx --test scripts/scrapers/__tests__/search-index-depth-v1.test.ts
       - name: API regression suite
         run: npm run test:api
       - name: OpenSERP ingestion suite
