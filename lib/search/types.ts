@@ -10,6 +10,9 @@ export type SearchQuery = {
   sort?: string;
   limit?: number;
   offset?: number;
+  // SEARCH-INDEX-DEPTH-V1 — opaque raw-index cursor used by the database
+  // fallback for deep pagination. `offset` remains supported for legacy callers.
+  cursor?: number;
   min_price?: number;
   max_price?: number;
   min_surface?: number;
@@ -23,6 +26,9 @@ export type SearchResult = {
   offset: number;
   source: "database" | "typesense" | "database_fallback";
   generated_at: string;
+  // Additive pagination metadata. Typesense/legacy callers may omit it.
+  next_cursor?: number | null;
+  has_more?: boolean;
 };
 
 export type TypesenseListingDocument = {
