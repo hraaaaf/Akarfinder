@@ -1,5 +1,4 @@
 import { searchListings } from "@/lib/search";
-import { queryStats } from "@/lib/db";
 import { AcheterPageShell } from "@/components/intent/AcheterPageShell";
 
 export const dynamic = "force-dynamic";
@@ -18,25 +17,17 @@ export default async function AcheterPage({
   const params = await searchParams;
   const propertyType = params.property_type;
 
-  const [searchResult, stats] = await Promise.all([
-    searchListings({
-      transaction_type: "buy",
-      limit: 6,
-      ...(propertyType ? { property_type: propertyType } : {}),
-    }).catch(() => ({ listings: [], total: 0 })),
-    queryStats().catch(() => ({
-      total_listings: 0,
-      avg_completeness: 0,
-      duplicates_detected: 0,
-      avg_reliability: 0,
-    })),
-  ]);
+  const searchResult = await searchListings({
+    transaction_type: "buy",
+    limit: 6,
+    ...(propertyType ? { property_type: propertyType } : {}),
+  }).catch(() => ({ listings: [], total: 0 }));
 
   return (
     <AcheterPageShell
       listings={searchResult.listings}
-      totalListings={stats.total_listings > 0 ? stats.total_listings : null}
-      duplicatesDetected={stats.duplicates_detected ?? 0}
+      totalListings={searchResult.total > 0 ? searchResult.total : null}
+      duplicatesDetected={0}
       selectedPropertyType={propertyType}
     />
   );
