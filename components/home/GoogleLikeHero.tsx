@@ -68,12 +68,12 @@ export function GoogleLikeHero() {
             au Maroc
           </h1>
 
-          <p className="mt-4 max-w-[560px] text-[0.95rem] leading-relaxed text-[#334155] drop-shadow-[0_1px_6px_rgba(0,0,0,0.2)] sm:mt-6 sm:text-[1.1rem] sm:text-white sm:drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+          <p className="mt-4 max-w-[620px] text-[0.95rem] leading-relaxed text-[#334155] drop-shadow-[0_1px_6px_rgba(0,0,0,0.2)] sm:mt-6 sm:text-[1.1rem] sm:text-white sm:drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
             <span className="sm:hidden">
-              Cherchez directement, ou laissez AkarFinder structurer votre projet avec vous.
+              Cherchez directement ou construisez votre projet. Comprenez le quartier et retrouvez les sources originales.
             </span>
             <span className="hidden sm:inline">
-              Vous savez ce que vous cherchez ? Lancez une recherche directe. Vous hésitez encore ? Le Compagnon AkarFinder structure votre projet avant de comparer les résultats.
+              Vous savez ce que vous cherchez ? Lancez une recherche directe sur les sources originales. Vous hésitez encore ? Le Compagnon AkarFinder structure votre projet pour mieux comparer et Comprenez le quartier avant de décider.
             </span>
           </p>
 
