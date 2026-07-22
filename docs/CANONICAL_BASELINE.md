@@ -1,52 +1,108 @@
-# AkarFinder Canonical Baseline
+# AkarFinder — Canonical Baseline
 
-Status: P0.4 alignment candidate — NOT YET MERGED TO `main`.
+Updated: 2026-07-23
 
-## Canonical target
+This document defines baseline governance. It deliberately avoids freezing a transient commit SHA as eternal truth.
 
-- Future canonical branch: `main`
-- Reconciliation branch: `reconcile/p0-canonical-baseline-20260721`
-- Functional source baseline: `fix/openserp-serverless-state-persistence` at `8c2ab8b02aac1e7b906b22c4357e45d600d7e8ce`
-- Absorbed historical `main`: `2c83cb3fc8b35340c3893911e37d645b32365240`
-- Absorbed SearXNG POC lineage: `8c26d740e7e742099197eab2d129849e8b05aca2`
+## 1. Canonical Git branch
 
-The reconciliation history preserves all three lineages through merge commits. No squash/rebase/force-push is permitted for the final promotion to `main`.
+`main` is the canonical integration branch.
 
-## Workflow invariant
+Historical reconciliation branches and old `fix/*`, `feat/*` or `poc/*` lineages are not independent sources of truth once their intended changes have been merged into `main`.
 
-- Single scheduled OpenSERP ingestion producer: `.github/workflows/openserp-github-native-ingestion.yml`
-- Expected cadence: `*/30 * * * *`
-- Legacy Vercel endpoint workflow: `.github/workflows/openserp-ingestion-cron.yml` is manual-only (`workflow_dispatch`), with no schedule.
-- Workflows must checkout the triggering/canonical ref; hardcoded `ref: fix/*`, `ref: feat/*`, and `ref: poc/*` are forbidden.
-- Diagnostic workflows remain manual-only unless a future explicit decision changes that contract.
+Workflows and agents must not hardcode an obsolete historical branch as the canonical runtime reference.
 
-## Migration history carried by the canonical candidate
+## 2. Code, database and Production are separate states
 
-Known Production-applied schema changes from the reconciled lineage:
+Never collapse these into one claim:
 
-- `20260718140000_create_openserp_query_rotation_state.sql`
-- `20260718140100_create_openserp_engine_budget_state.sql`
-- `20260718180000_create_openserp_ingestion_run_lock.sql`
-- `20260719220000_alter_openserp_query_rotation_state_discovery_yield_numeric.sql`
-- `20260721000000_create_source_offer_seeds.sql` — applied during P0.4 through Supabase migration tracking as `20260721163349_create_source_offer_seeds`; table verified empty with RLS enabled.
+- code merged to `main`;
+- migration present in the repository;
+- migration applied to Supabase;
+- Production data reconciled;
+- feature flags enabled;
+- Production deployment performed;
+- live UX verified.
 
-The first four schema changes predate tracked Supabase migration history in the currently connected Production project and were verified by live schema inspection rather than replayed. They must not be blindly reapplied.
+Each requires its own evidence.
 
-## Query universe rule during P0
+## 3. Release doctrine
 
-`data/openserp/query-universe-v1.json` is retained from the functional `fix` lineage without regeneration during reconciliation. Any future regeneration/state reconciliation is a separate mission.
+Current repository policy treats Vercel Production deployment as a deliberate phase-completion gate, not automatic per-commit CI.
 
-## Production separation
+Development and PR validation use GitHub CI.
 
-Git canonicalization and Production deployment are separate gates. Merging the reconciliation PR to `main`, changing Vercel deployment behavior, activating flags, or changing Production data requires an explicit subsequent gate.
+A Production release requires:
 
-## Required certification before final promotion
+1. final intended `main` commit identified;
+2. canonical CI green;
+3. migrations/data plan verified where applicable;
+4. explicit release approval;
+5. deliberate Production deployment;
+6. post-deploy smoke/visual verification.
 
-- No cross-branch workflow refs.
-- Exactly one scheduled OpenSERP ingestion producer.
-- Legacy Vercel cron remains manual-only.
-- Critical test suites pass.
-- TypeScript passes.
-- Production build passes.
-- Supabase Production schema alignment is verified.
-- Vercel Git repository connection to `hraaaaf/Akarfinder` is confirmed; deployment behavior must still be observed on a post-connection commit before final merge/promotion.
+Do not infer current Production commit from the latest Git commit.
+
+## 4. Workflow governance
+
+The actual `.github/workflows/` files and their regression tests are the source of truth for current schedules and triggers.
+
+Documentation must not hardcode an old cadence as a permanent invariant when acquisition architecture evolves.
+
+Permanent workflow principles:
+
+- bounded execution;
+- least privilege;
+- explicit write gates;
+- no secret leakage;
+- no source-governance bypass;
+- no hidden second producer for the same canonical write path without an explicit architecture decision;
+- diagnostic workflows must not silently become Production writers.
+
+## 5. Database baseline
+
+`supabase/migrations/` plus verified live schema/migration state define the database baseline.
+
+Never blindly replay an old migration because an historical document says it was pending or applied.
+
+Check the connected Production project first.
+
+## 6. Data baseline
+
+Historical counts in audits are evidence from a moment in time, not current inventory.
+
+For current claims, measure the live database and acquisition state.
+
+Distinguish at minimum:
+
+- discovery candidates;
+- seeds;
+- structured property listings;
+- source offers;
+- property clusters;
+- public/search-eligible results.
+
+These counts are not interchangeable.
+
+## 7. Required baseline checks before major work
+
+- Confirm target repository and branch.
+- Confirm clean/intended working state.
+- Inspect relevant recent commits/PRs.
+- Read canonical docs and domain contract.
+- Identify affected migrations and feature flags.
+- Run relevant tests/typecheck/build.
+- Verify Production separately when the task depends on live behavior.
+
+## 8. Documentation baseline
+
+Canonical reading order:
+
+1. `README.md`
+2. `MASTER_CONTEXT.md`
+3. `CURRENT_STATE.md`
+4. `ROADMAP.md`
+5. relevant domain contract
+6. code/live evidence
+
+Historical mission reports cannot override this baseline merely because they contain an older status label such as `PENDING`, `NOT ACTIVATED` or `NOT YET MERGED`.
