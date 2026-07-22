@@ -33,6 +33,7 @@ export type OpenSerpSearchRequest = {
   engine: OpenSerpEngine;
   query: string;
   limit?: number;
+  start?: number;
   locale?: string;
 };
 
@@ -43,6 +44,11 @@ export type OpenSerpSearchResponse = {
   fetched_at: string;
   provider: "openserp_async_poc";
   version?: string;
+  pagination?: {
+    page?: number;
+    has_more?: boolean;
+    next_start?: number;
+  };
 };
 
 export type OpenSerpMappedRecord = PublicPropertyIndexRecord;
