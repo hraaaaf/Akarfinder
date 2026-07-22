@@ -1,19 +1,15 @@
 // AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1 — section 10.
-// National city/district taxonomy for the query planner. There is no single
-// canonical taxonomy module in this codebase (confirmed by direct audit of
-// lib/cities.ts, lib/seo-city-pages, lib/geo/district-dictionary.ts,
-// lib/search/city-coords.ts, scripts/scrapers/normalizers/normalize-city.ts):
-// each covers a different, partially-overlapping subset. Tier 1 below is the
-// mission's own explicit 15-city list (verbatim). Tier 2 is the union of
-// every other city name AkarFinder's codebase already recognizes anywhere
-// (city-coords.ts), minus Tier 1 — deliberately NOT expanded beyond what the
-// project already recognizes, per the "never invent data" rule. Tier 3
-// (districts) reuses lib/geo/district-dictionary.ts's MOROCCO_DISTRICTS
-// as-is — the only 6 cities with real, already-vetted district data. The
-// mission's Tier-3 target list also names Salé, Témara, Meknès, Kénitra, but
-// no district-level data exists for them anywhere in the codebase; rather
-// than invent neighborhood names, Tier 3 for those 4 cities is intentionally
-// absent (documented here, not silently dropped).
+// NATIONAL-MASS-ACQUISITION-ALL-MOROCCO-V1
+//
+// National city/district taxonomy for the query planner.
+// Tier 1 keeps the historical high-priority 15-city set byte-for-byte.
+// TIER_2_CITIES also remains unchanged for backward compatibility with legacy
+// V1 query identities. ACQUISITION_EXPANSION_CITIES is additive and is used by
+// Query Universe V2 only, so existing query ids/history are never rewritten.
+//
+// District-level expansion stays conservative: only already-vetted district
+// dictionaries are used. New acquisition cities receive city-level queries
+// only until a separate evidence-backed district taxonomy exists.
 
 export const TIER_1_CITIES: readonly string[] = [
   "Casablanca",
@@ -33,16 +29,61 @@ export const TIER_1_CITIES: readonly string[] = [
   "Mohammedia",
 ];
 
-// city-coords.ts's full recognized set, minus Tier 1 (case/accent-insensitive
-// comparison). Only "Essaouira" survives the subtraction.
+// Legacy V1/V2-compatible secondary set. Keep order stable.
 export const TIER_2_CITIES: readonly string[] = ["Essaouira"];
 
+// Additive national acquisition coverage. These are objective Moroccan urban
+// and regional centres used only to generate discovery queries. No district,
+// price or market attribute is inferred from membership in this list.
+export const ACQUISITION_EXPANSION_CITIES: readonly string[] = [
+  "Safi",
+  "Béni Mellal",
+  "Khouribga",
+  "Settat",
+  "Berrechid",
+  "El Kelaa des Sraghna",
+  "Youssoufia",
+  "Ben Guerir",
+  "Larache",
+  "Ksar El Kebir",
+  "Chefchaouen",
+  "Al Hoceima",
+  "Taza",
+  "Taounate",
+  "Sefrou",
+  "Ifrane",
+  "Azrou",
+  "Berkane",
+  "Taourirt",
+  "Errachidia",
+  "Midelt",
+  "Ouarzazate",
+  "Tinghir",
+  "Taroudant",
+  "Tiznit",
+  "Guelmim",
+  "Laâyoune",
+  "Dakhla",
+  "Sidi Kacem",
+  "Sidi Slimane",
+  "Khemisset",
+  "Bouznika",
+  "Skhirat",
+  "Benslimane",
+  "Ouezzane",
+  "Fnideq",
+  "Martil",
+];
+
 export const ALL_CITIES: readonly string[] = [...TIER_1_CITIES, ...TIER_2_CITIES];
+export const ALL_ACQUISITION_CITIES: readonly string[] = [
+  ...TIER_1_CITIES,
+  ...TIER_2_CITIES,
+  ...ACQUISITION_EXPANSION_CITIES,
+];
 
 // Reused verbatim from lib/geo/district-dictionary.ts (LISTING-DISTRICT-RECOVERY-1)
-// — the only district-level data this project has ever vetted. Not
-// duplicated by import to keep this module dependency-free and independently
-// testable; kept in sync manually (both files are small and stable).
+// — the only district-level data this project has ever vetted.
 export const TIER_3_DISTRICTS: Readonly<Record<string, readonly string[]>> = {
   Rabat: [
     "Agdal", "Hay Riad", "Souissi", "Hassan", "Océan",
@@ -78,11 +119,7 @@ export const TIER_3_CITIES_WITHOUT_DISTRICT_DATA: readonly string[] = [
   "Kénitra",
 ];
 
-// Standard, factual Arabic names for the Tier 1/2 cities (objective
-// geographic knowledge, not invented business data — the same status as
-// knowing "Morocco" is "المغرب"). Used only to generate Arabic-language
-// query text (section 10.D); never displayed publicly, never stored as a
-// listing attribute.
+// Standard Arabic city names used only to generate Arabic discovery queries.
 export const CITY_ARABIC_NAMES: Readonly<Record<string, string>> = {
   Casablanca: "الدار البيضاء",
   Rabat: "الرباط",
@@ -100,14 +137,45 @@ export const CITY_ARABIC_NAMES: Readonly<Record<string, string>> = {
   Nador: "الناظور",
   Mohammedia: "المحمدية",
   Essaouira: "الصويرة",
+  Safi: "آسفي",
+  "Béni Mellal": "بني ملال",
+  Khouribga: "خريبكة",
+  Settat: "سطات",
+  Berrechid: "برشيد",
+  "El Kelaa des Sraghna": "قلعة السراغنة",
+  Youssoufia: "اليوسفية",
+  "Ben Guerir": "بن جرير",
+  Larache: "العرائش",
+  "Ksar El Kebir": "القصر الكبير",
+  Chefchaouen: "شفشاون",
+  "Al Hoceima": "الحسيمة",
+  Taza: "تازة",
+  Taounate: "تاونات",
+  Sefrou: "صفرو",
+  Ifrane: "إفران",
+  Azrou: "أزرو",
+  Berkane: "بركان",
+  Taourirt: "تاوريرت",
+  Errachidia: "الرشيدية",
+  Midelt: "ميدلت",
+  Ouarzazate: "ورزازات",
+  Tinghir: "تنغير",
+  Taroudant: "تارودانت",
+  Tiznit: "تزنيت",
+  Guelmim: "كلميم",
+  "Laâyoune": "العيون",
+  Dakhla: "الداخلة",
+  "Sidi Kacem": "سيدي قاسم",
+  "Sidi Slimane": "سيدي سليمان",
+  Khemisset: "الخميسات",
+  Bouznika: "بوزنيقة",
+  Skhirat: "الصخيرات",
+  Benslimane: "بنسليمان",
+  Ouezzane: "وزان",
+  Fnideq: "الفنيدق",
+  Martil: "مرتيل",
 };
 
-// Standard, factual Arabic translations of the 12 query property-type labels
-// (objective vocabulary knowledge, same status as the city names above — not
-// invented business data). Used so an "ar" query is fully, grammatically
-// Arabic rather than a French/Arabic hybrid (a hybrid like "terrain كراء
-// مراكش" was found, during this mission's own live smoke test, to return
-// zero relevant engine results — see docs/OPENSERP_AUTOMATED_INGESTION_ARCHITECTURE.md).
 export const PROPERTY_TYPE_ARABIC_NAMES: Readonly<Record<string, string>> = {
   "appartement": "شقة",
   "studio": "استوديو",
@@ -130,9 +198,14 @@ export function getDistrictsForCity(city: string): readonly string[] {
 export function getCityTier(city: string): 1 | 2 | 3 | null {
   if (TIER_1_CITIES.includes(city)) return 1;
   if (TIER_2_CITIES.includes(city)) return 2;
+  if (ACQUISITION_EXPANSION_CITIES.includes(city)) return 2;
   return null;
 }
 
 export function isRecognizedCity(city: string): boolean {
   return ALL_CITIES.includes(city);
+}
+
+export function isAcquisitionCity(city: string): boolean {
+  return ALL_ACQUISITION_CITIES.includes(city);
 }

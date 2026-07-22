@@ -10,6 +10,7 @@ import {
   type CommonCrawlMassSeed,
 } from "../../../lib/acquisition-scale-v1/commoncrawl-mass-seeds.js";
 import { loadSourceDomainRegistry } from "../../../lib/openserp-ingestion/domain-registry.js";
+import { buildQueryUniverseV2 } from "../../../lib/openserp-ingestion/query-universe-v2.js";
 import { resolveNativeResultLimit } from "../../../lib/openserp-async/openserp-native-client.js";
 import { processMassDomainRecords, type MassCdxRecord } from "../../openserp/commoncrawl-registry-mass-harvest.js";
 
@@ -103,14 +104,19 @@ test("GitHub-native result depth override supports 50 and clamps at upstream max
   assert.equal(resolveNativeResultLimit(15, { OPENSERP_NATIVE_RESULT_LIMIT: "bad" }), 15);
 });
 
-test("GitHub scale runner has Casablanca bootstrap gate and Vercel orchestrator stays free of campaign code", () => {
+test("GitHub scale runner always materializes the full national V2 universe", () => {
   const runner = readFileSync(join(process.cwd(), "scripts/openserp/run-ingestion-github-actions.ts"), "utf8");
   const orchestrator = readFileSync(join(process.cwd(), "lib/openserp-ingestion/run-orchestrator.ts"), "utf8");
-  assert.ok(runner.includes('MASS_CAMPAIGN_CITY = "Casablanca"'));
-  assert.ok(runner.includes("MASS_CAMPAIGN_BOOTSTRAP_TARGET = 5_000"));
+  const universe = buildQueryUniverseV2();
+  assert.ok(universe.cities_covered >= 16);
+  assert.ok(runner.includes("const universe = buildQueryUniverseV2()"));
+  assert.ok(runner.includes("national_hot_lane: true"));
+  assert.ok(runner.includes("single_city_exclusive_filter: false"));
+  assert.equal(runner.includes("MASS_CAMPAIGN_CITY"), false);
+  assert.equal(runner.includes("MASS_CAMPAIGN_BOOTSTRAP_TARGET"), false);
+  assert.equal(runner.includes("filter((query) => query.city ==="), false);
   assert.ok(runner.includes('GITHUB_NATIVE_RESULT_LIMIT = "50"'));
   assert.ok(runner.includes("batchSizeOverride: budget.batchSize"));
-  assert.equal(orchestrator.includes("MASS_CAMPAIGN_CITY"), false);
   assert.equal(orchestrator.includes("OPENSERP_NATIVE_RESULT_LIMIT"), false);
 });
 

@@ -3,6 +3,7 @@ import { loadSourceDomainRegistry } from "./domain-registry";
 import {
   TIER_1_CITIES,
   TIER_2_CITIES,
+  ACQUISITION_EXPANSION_CITIES,
   TIER_3_DISTRICTS,
   CITY_ARABIC_NAMES,
   PROPERTY_TYPE_ARABIC_NAMES,
@@ -18,6 +19,8 @@ const PROPERTY_TYPES = [
 ] as const;
 const SOURCE_EXTRA_PROPERTY_TYPES = ["villa", "terrain", "bureau"] as const;
 const ENGINES = ["duckduckgo", "ecosia", "bing"] as const;
+const LEGACY_CITY_LEVEL_CITIES = [...TIER_1_CITIES, ...TIER_2_CITIES] as const;
+const NATIONAL_ACQUISITION_CITIES = [...LEGACY_CITY_LEVEL_CITIES, ...ACQUISITION_EXPANSION_CITIES] as const;
 
 type Tx = "sale" | "rent";
 type Lang = "fr" | "ar";
@@ -132,7 +135,7 @@ export function buildQueryUniverseV2(): QueryUniverseV2 {
   // Legacy core first, in exactly V1 generation order. These rows deliberately
   // keep nqu1 IDs, query text, hashes and preferred-engine rotation so existing
   // PostgreSQL rotation/yield history carries forward instead of resetting.
-  for (const city of [...TIER_1_CITIES, ...TIER_2_CITIES]) {
+  for (const city of LEGACY_CITY_LEVEL_CITIES) {
     const cityTier = getCityTier(city) ?? 2;
     for (const propertyType of PROPERTY_TYPES) for (const tx of ["sale", "rent"] as Tx[]) for (const lang of ["fr", "ar"] as Lang[]) {
       out.push(makeCore({ city, district:null, tx, propertyType, lang, priority:cityTier === 1 ? 1 : 2, targetDomain:null, family:"general", rotationIndex:rotationIndex++ }));
@@ -150,8 +153,10 @@ export function buildQueryUniverseV2(): QueryUniverseV2 {
     }
   }
 
-  // Additive long-tail variants. New semantics receive nqu2 IDs only.
-  for (const city of [...TIER_1_CITIES, ...TIER_2_CITIES]) {
+  // Additive long-tail variants. This now covers the broader national
+  // acquisition city set. Existing cities keep their existing nqu2 identities;
+  // expansion cities receive only new nqu2 identities, never fake legacy nqu1s.
+  for (const city of NATIONAL_ACQUISITION_CITIES) {
     const cityTier = getCityTier(city) ?? 2;
     for (const propertyType of PROPERTY_TYPES) for (const tx of ["sale", "rent"] as Tx[]) {
       out.push(makeAddedVariant({ city, district:null, tx, propertyType, lang:"fr", variant:"intent_first", priority:cityTier === 1 ? 1 : 2, targetDomain:null, family:"general", rotationIndex:rotationIndex++ }));
@@ -168,9 +173,6 @@ export function buildQueryUniverseV2(): QueryUniverseV2 {
   for (const entry of approved) {
     const cities = entry.coverage_cities?.length ? entry.coverage_cities : TIER_1_CITIES;
     for (const city of cities) for (const propertyType of SOURCE_EXTRA_PROPERTY_TYPES) for (const tx of ["sale", "rent"] as Tx[]) {
-      // Additional source/property combinations are new V2 identities. Reuse
-      // intent_first as the ID variant marker, while rendering the concise
-      // source-specific query form to avoid unnecessary wording noise.
       const added = makeAddedVariant({ city, district:null, tx, propertyType, lang:"fr", variant:"intent_first", priority:4, targetDomain:entry.domain, family:"brand_hint", rotationIndex:rotationIndex++ });
       added.query_text = `${propertyType} ${coreTxText(tx, "fr")} ${city} site:${entry.domain}`;
       added.normalized_query = normalize(added.query_text);
