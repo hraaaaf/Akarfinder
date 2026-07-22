@@ -5,7 +5,9 @@ import { readFileSync } from "node:fs";
 import {
   buildExplicitSeedAdmissionQuery,
   buildSeedConfirmationQuery,
+  extractStableSeedIdentifier,
   findExactSeedResult,
+  isClearlyOutOfScopeSeedUrl,
   selectBalancedSeedBatch,
   type SeedConfirmationSeed,
 } from "../../../lib/acquisition-scale-v1/seed-listing-confirmation.js";
@@ -27,6 +29,48 @@ test("confirmation query is domain-scoped and derived from URL slug without fetc
   assert.match(query, /appartement/);
   assert.match(query, /casablanca/);
   assert.doesNotMatch(query, /utm_/);
+});
+
+test("stable identifiers drive precise confirmation queries", () => {
+  assert.equal(
+    extractStableSeedIdentifier("https://aykana.ma/property/bureau-neuf-a-louer-casablanca-maarif-ref-4341"),
+    "4341",
+  );
+  assert.equal(
+    extractStableSeedIdentifier("https://promoimmomarrakech.com/produit/allm-1004/location-appartement-marrakech.html"),
+    "allm-1004",
+  );
+  assert.equal(
+    extractStableSeedIdentifier("https://barnes-marrakech.com/en/vente/marrakech/2769575"),
+    "2769575",
+  );
+
+  assert.equal(
+    buildSeedConfirmationQuery(seed({
+      source_domain: "aykana.ma",
+      canonical_url: "https://aykana.ma/property/bureau-neuf-a-louer-casablanca-maarif-ref-4341",
+    })),
+    'site:aykana.ma "4341"',
+  );
+  assert.equal(
+    buildSeedConfirmationQuery(seed({
+      source_domain: "barnes-marrakech.com",
+      canonical_url: "https://barnes-marrakech.com/en/vente/marrakech/2769575",
+    })),
+    'site:barnes-marrakech.com "2769575"',
+  );
+});
+
+test("obvious holiday-rental seed URLs are excluded from confirmation attempts", () => {
+  const holiday = "https://daragadir.com/annonces/location-de-vacances/villas/location-vacances-agadir.html";
+  assert.equal(isClearlyOutOfScopeSeedUrl(holiday), true);
+  assert.equal(isClearlyOutOfScopeSeedUrl("https://example.ma/property/appartement-a-louer-agadir"), false);
+
+  const selected = selectBalancedSeedBatch([
+    seed({ id: "holiday", canonical_url: holiday, source_domain: "daragadir.com" }),
+    seed({ id: "normal", canonical_url: "https://example.ma/property/appartement-a-louer-agadir", source_domain: "example.ma" }),
+  ], 10);
+  assert.deepEqual(selected.map((row) => row.id), ["normal"]);
 });
 
 test("only an exact canonical URL hit confirms a seed", () => {
