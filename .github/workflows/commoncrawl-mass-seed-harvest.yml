@@ -2,6 +2,7 @@ name: Common Crawl Mass Seed Harvest
 
 # CASABLANCA-MASS-ACQUISITION-V1
 # COMMONCRAWL-FIRST-ACTIVATION-V1
+# COMMONCRAWL-CDX-MIME-FIX-1
 # Historical URL-index metadata -> source_offer_seeds only -> exact freshness
 # reconciliation. No WARC/page fetch, no direct source-site request, no public
 # listing write. Scheduled/push activation runs apply only when the existing

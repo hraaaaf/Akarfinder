@@ -12,7 +12,12 @@ import {
 import { loadSourceDomainRegistry } from "../../../lib/openserp-ingestion/domain-registry.js";
 import { buildQueryUniverseV2 } from "../../../lib/openserp-ingestion/query-universe-v2.js";
 import { resolveNativeResultLimit } from "../../../lib/openserp-async/openserp-native-client.js";
-import { processMassDomainRecords, type MassCdxRecord } from "../../openserp/commoncrawl-registry-mass-harvest.js";
+import {
+  buildCdxIndexUrl,
+  parseMassCdxJsonLine,
+  processMassDomainRecords,
+  type MassCdxRecord,
+} from "../../openserp/commoncrawl-registry-mass-harvest.js";
 
 function seed(overrides: Partial<CommonCrawlMassSeed> = {}): CommonCrawlMassSeed {
   return {
@@ -48,6 +53,30 @@ test("CDX timestamps convert deterministically and invalid dates fail closed", (
   assert.equal(cdxTimestampToIso("20260601010101"), "2026-06-01T01:01:01.000Z");
   assert.equal(cdxTimestampToIso("20260231010101"), null);
   assert.equal(cdxTimestampToIso("bad"), null);
+});
+
+test("Common Crawl request and parser use the current CDX mime field", () => {
+  const url = buildCdxIndexUrl("soukimmobilier.com", "CC-MAIN-2026-25");
+  assert.match(url, /fl=url,timestamp,status,mime,digest/);
+  assert.doesNotMatch(url, /mimetype/);
+
+  const parsed = parseMassCdxJsonLine(JSON.stringify({
+    url: "https://soukimmobilier.com/fr/casablanca/appartement/12345678",
+    timestamp: "20260601010101",
+    status: "200",
+    mime: "text/html",
+    digest: "ABC",
+  }), "CC-MAIN-2026-25");
+  assert.equal(parsed?.mime, "text/html");
+  assert.equal(parsed?.status, "200");
+
+  const legacy = parseMassCdxJsonLine(JSON.stringify({
+    url: "https://soukimmobilier.com/fr/casablanca/appartement/12345678",
+    timestamp: "20260601010101",
+    status: "200",
+    mimetype: "text/html",
+  }), "CC-MAIN-2026-25");
+  assert.equal(legacy?.mime, "text/html");
 });
 
 test("a valid approved listing-pattern seed maps only to seed_only storage", () => {

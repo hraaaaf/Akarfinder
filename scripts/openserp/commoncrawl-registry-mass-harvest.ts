@@ -1,5 +1,6 @@
 #!/usr/bin/env tsx
 // CASABLANCA-MASS-ACQUISITION-V1 — registry-wide Common Crawl seed harvest.
+// COMMONCRAWL-CDX-MIME-FIX-1
 //
 // This is URL-index metadata only. It never downloads WARC/page content and
 // never requests a source website. Domains are selected exclusively from the
@@ -18,9 +19,10 @@ import {
 
 export const MASS_CDX_INDEXES = ["CC-MAIN-2026-25", "CC-MAIN-2026-21", "CC-MAIN-2026-17"] as const;
 const CDX_FETCH_LIMIT = 20_000;
-const REQUEST_PACING_MS = 350;
+const REQUEST_PACING_MS = 1_000;
 const MAX_ATTEMPTS = 5;
 const RETRYABLE = new Set([429, 500, 502, 503, 504]);
+const COMMON_CRAWL_USER_AGENT = "AkarFinder-CommonCrawl-Harvester/1.0 (+https://github.com/hraaaaf/Akarfinder)";
 
 export type MassCdxRecord = {
   url: string;
@@ -46,7 +48,37 @@ function sleep(ms: number) {
 }
 
 export function buildCdxIndexUrl(domain: string, index: string): string {
-  return `https://index.commoncrawl.org/${index}-index?url=${encodeURIComponent(domain)}&matchType=domain&output=json&fl=url,timestamp,status,mimetype,digest&limit=${CDX_FETCH_LIMIT}`;
+  // Current Common Crawl CDXJ uses `mime`, not `mimetype`. Requesting the wrong
+  // field left record.mime empty and caused every otherwise healthy HTML capture
+  // to fail the strict 200+HTML qualification gate.
+  return `https://index.commoncrawl.org/${index}-index?url=${encodeURIComponent(domain)}&matchType=domain&output=json&fl=url,timestamp,status,mime,digest&limit=${CDX_FETCH_LIMIT}`;
+}
+
+export function parseMassCdxJsonLine(line: string, index: string): MassCdxRecord | null {
+  if (!line.trim()) return null;
+  try {
+    const parsed = JSON.parse(line) as {
+      url?: string;
+      timestamp?: string;
+      status?: string;
+      mime?: string;
+      // Kept only as a defensive compatibility fallback for old fixtures or
+      // historical responses. New requests explicitly ask Common Crawl for mime.
+      mimetype?: string;
+      digest?: string;
+    };
+    if (!parsed.url || !parsed.timestamp) return null;
+    return {
+      url: parsed.url,
+      timestamp: parsed.timestamp,
+      status: parsed.status,
+      mime: parsed.mime ?? parsed.mimetype,
+      digest: parsed.digest,
+      index,
+    };
+  } catch {
+    return null;
+  }
 }
 
 async function fetchCdxRecords(domain: string, index: string, fetchImpl: typeof fetch = fetch): Promise<MassCdxRecord[]> {
@@ -54,7 +86,12 @@ async function fetchCdxRecords(domain: string, index: string, fetchImpl: typeof 
   let response: Response | null = null;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    response = await fetchImpl(url);
+    response = await fetchImpl(url, {
+      headers: {
+        "User-Agent": COMMON_CRAWL_USER_AGENT,
+        Accept: "application/json,text/plain;q=0.9,*/*;q=0.1",
+      },
+    });
     if (response.status === 404) return [];
     if (response.ok) break;
     if (!RETRYABLE.has(response.status) || attempt === MAX_ATTEMPTS) {
@@ -66,21 +103,8 @@ async function fetchCdxRecords(domain: string, index: string, fetchImpl: typeof 
   const text = await response!.text();
   const records: MassCdxRecord[] = [];
   for (const line of text.split("\n")) {
-    if (!line.trim()) continue;
-    try {
-      const parsed = JSON.parse(line) as { url?: string; timestamp?: string; status?: string; mimetype?: string; digest?: string };
-      if (!parsed.url || !parsed.timestamp) continue;
-      records.push({
-        url: parsed.url,
-        timestamp: parsed.timestamp,
-        status: parsed.status,
-        mime: parsed.mimetype,
-        digest: parsed.digest,
-        index,
-      });
-    } catch {
-      // One malformed CDX line never aborts a domain harvest.
-    }
+    const record = parseMassCdxJsonLine(line, index);
+    if (record) records.push(record);
   }
   return records;
 }
