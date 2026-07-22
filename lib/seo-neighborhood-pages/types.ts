@@ -11,6 +11,14 @@ export type DistrictSlug =
   | "malabata"
   | "founty";
 
+export interface NeighborhoodIntelligenceSummary {
+  priceLabel?: string;
+  pricePeriod?: string;
+  confidence?: "high" | "medium" | "low";
+  lifestyleTags?: string[];
+  proximityHighlights?: string[];
+}
+
 export interface NeighborhoodMetadata {
   slug: DistrictSlug;
   displayName: string;
@@ -19,6 +27,7 @@ export interface NeighborhoodMetadata {
   description: string;
   propertyTypes: string[];
   nearbyDistricts: DistrictSlug[];
+  intelligence?: NeighborhoodIntelligenceSummary;
 }
 
 export interface NeighborhoodSeoMeta {
