@@ -3,6 +3,7 @@ name: OpenSERP Native Ingestion (GitHub-hosted)
 # OPENSERP-GITHUB-NATIVE-INGESTION-INTEGRATION-1
 # MASS-ACQUISITION-CAMPAIGN-V2
 # SEED-LISTING-MASS-CONVERSION-V1
+# BULK-SEED-CONFIRMATION-V1
 #
 # The canonical */10 schedule remains the wake-up trigger. GitHub documents
 # that schedules can be delayed/dropped, so scheduled runs compute a bounded
@@ -11,8 +12,9 @@ name: OpenSERP Native Ingestion (GitHub-hosted)
 # across waves. Existing DB lock, engine budget/backoff and 3 write flags remain
 # authoritative. Manual dispatch is always one wave and defaults to dry-run.
 # After the normal acquisition campaign, the same ephemeral SearXNG/Yandex
-# container confirms a bounded balanced batch of seed_only URLs by exact
-# canonical match; no source listing page is fetched.
+# container confirms a bounded balanced seed_only batch. Compatible seeds are
+# grouped by source x city x transaction x type so one query may confirm several
+# exact canonical URLs; no source listing page is fetched.
 
 on:
   schedule:
@@ -189,7 +191,7 @@ jobs:
           T1=$(date +%s%3N)
           echo "ingest_ms=$((T1-T0))" >> "$GITHUB_ENV"
 
-      - name: Confirm seed-only URLs into high-confidence listings
+      - name: Bulk confirm seed-only URLs into high-confidence listings
         id: seed_confirm
         env:
           OPENSERP_SEARXNG_LOCAL_URL: http://127.0.0.1:8888
@@ -206,8 +208,8 @@ jobs:
           else
             SEED_MODE="dry-run"
           fi
-          echo "seed_confirmation_mode=$SEED_MODE batch=40"
-          npx tsx scripts/openserp/confirm-seed-listing-candidates.ts --"$SEED_MODE" --batch=40
+          echo "seed_confirmation_mode=$SEED_MODE candidate_batch=400 query_budget=40"
+          npx tsx scripts/openserp/confirm-seed-listing-candidates.ts --"$SEED_MODE" --batch=400 --queries=40
           if [ "$SEED_MODE" = "apply" ]; then
             npx tsx scripts/openserp/reconcile-commoncrawl-seed-freshness.ts --apply
           fi
