@@ -1,4 +1,10 @@
 // OPENSERP-GITHUB-NATIVE-TRANSPORT-1
+// CASABLANCA-MASS-ACQUISITION-V1 — the GitHub-native scale lane may request
+// a deeper organic result set than the historical 15-result orchestrator
+// default via OPENSERP_NATIVE_RESULT_LIMIT. This override is transport-local:
+// Vercel/adapter behavior is unchanged. karust/openserp's native API supports
+// limit values up to 100; we clamp there and keep the old request.limit when
+// the override is absent/invalid.
 // Alternate transport for the OpenSERP async feeder: talks directly to the
 // real karust/openserp HTTP contract (GET /{engine}/search?text=...) instead
 // of the Railway-adapter contract openserp-client.ts speaks (POST /search
@@ -38,6 +44,13 @@ function splitLocale(locale?: string): { lang?: string; region?: string } {
   if (typeof locale !== "string" || !locale.trim()) return {};
   const [lang, region] = locale.split("-");
   return { lang: lang || undefined, region: region || undefined };
+}
+
+export function resolveNativeResultLimit(requestLimit: number | undefined, env: NodeJS.ProcessEnv): number {
+  const rawOverride = env.OPENSERP_NATIVE_RESULT_LIMIT?.trim();
+  const parsedOverride = rawOverride ? Number(rawOverride) : Number.NaN;
+  const requested = Number.isFinite(parsedOverride) && parsedOverride > 0 ? parsedOverride : (requestLimit ?? 10);
+  return Math.min(Math.max(Math.trunc(requested), 1), 100);
 }
 
 type OpenSerpNativeResult = {
@@ -101,7 +114,7 @@ export function createOpenSerpNativeClient(options: OpenSerpNativeClientOptions 
       const { lang, region } = splitLocale(request.locale);
       const params = new URLSearchParams();
       params.set("text", request.query);
-      params.set("limit", String(Math.min(Math.max(Math.trunc(request.limit ?? 10), 1), 20)));
+      params.set("limit", String(resolveNativeResultLimit(request.limit, env)));
       if (lang) params.set("lang", lang);
       if (region) params.set("region", region);
 
