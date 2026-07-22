@@ -88,17 +88,22 @@ async function main() {
   const uniqueRecovered = new Set<string>();
   const uniqueRegressed = new Set<string>();
   const recoveredByDomain = new Map<string, Set<string>>();
+  const regressedByDomain = new Map<string, Set<string>>();
+  const regressionReasons = new Map<string, Set<string>>();
+  const missingQueryIds = new Map<string, number>();
   let replayed = 0;
   let missingQuery = 0;
   let missingEngine = 0;
   let unparseable = 0;
 
   const samples: Array<{ canonical_url: string; old_status: OldStatus; new_status: OldStatus; domain: string | null; reasons: string[] }> = [];
+  const regressionSamples: Array<{ canonical_url: string; domain: string; reasons: string[] }> = [];
 
   for (const row of rows) {
     const queryDef = queryById.get(row.discovery_query);
     if (!queryDef) {
       missingQuery += 1;
+      missingQueryIds.set(row.discovery_query, (missingQueryIds.get(row.discovery_query) ?? 0) + 1);
       continue;
     }
     const engine = safeEngine(row.metadata);
@@ -134,19 +139,31 @@ async function main() {
     const key = `${row.discovery_status}->${next}`;
     transitions.set(key, (transitions.get(key) ?? 0) + 1);
     const canonical = decision.classified.canonical_source_url;
+    const domain = decision.classified.source_domain;
     if (row.discovery_status !== "accepted" && next === "accepted") {
       uniqueRecovered.add(canonical);
-      const domainSet = recoveredByDomain.get(decision.classified.source_domain) ?? new Set<string>();
+      const domainSet = recoveredByDomain.get(domain) ?? new Set<string>();
       domainSet.add(canonical);
-      recoveredByDomain.set(decision.classified.source_domain, domainSet);
+      recoveredByDomain.set(domain, domainSet);
     }
-    if (row.discovery_status === "accepted" && next !== "accepted") uniqueRegressed.add(canonical);
+    if (row.discovery_status === "accepted" && next !== "accepted") {
+      uniqueRegressed.add(canonical);
+      const domainSet = regressedByDomain.get(domain) ?? new Set<string>();
+      domainSet.add(canonical);
+      regressedByDomain.set(domain, domainSet);
+      for (const reason of decision.reasons) {
+        const reasonSet = regressionReasons.get(reason) ?? new Set<string>();
+        reasonSet.add(canonical);
+        regressionReasons.set(reason, reasonSet);
+      }
+      if (regressionSamples.length < 200) regressionSamples.push({ canonical_url: canonical, domain, reasons: decision.reasons });
+    }
     if (row.discovery_status !== next && samples.length < 100) {
       samples.push({
         canonical_url: canonical,
         old_status: row.discovery_status,
         new_status: next,
-        domain: decision.classified.source_domain,
+        domain,
         reasons: decision.reasons,
       });
     }
@@ -160,12 +177,20 @@ async function main() {
     rows_missing_query_definition: missingQuery,
     rows_missing_engine_provenance: missingEngine,
     rows_unparseable: unparseable,
+    missing_query_ids_top_100: Object.fromEntries([...missingQueryIds.entries()].sort((a, b) => b[1] - a[1]).slice(0, 100)),
     transitions: Object.fromEntries([...transitions.entries()].sort(([a], [b]) => a.localeCompare(b))),
     unique_urls_recovered_to_accepted: uniqueRecovered.size,
     unique_urls_regressed_from_accepted: uniqueRegressed.size,
     recovered_unique_urls_by_domain: Object.fromEntries(
       [...recoveredByDomain.entries()].sort((a, b) => b[1].size - a[1].size).map(([domain, urls]) => [domain, urls.size]),
     ),
+    regressed_unique_urls_by_domain: Object.fromEntries(
+      [...regressedByDomain.entries()].sort((a, b) => b[1].size - a[1].size).map(([domain, urls]) => [domain, urls.size]),
+    ),
+    regression_unique_urls_by_reason: Object.fromEntries(
+      [...regressionReasons.entries()].sort((a, b) => b[1].size - a[1].size).map(([reason, urls]) => [reason, urls.size]),
+    ),
+    regression_samples_capped_200: regressionSamples,
     changed_samples_capped_100: samples,
   };
 
