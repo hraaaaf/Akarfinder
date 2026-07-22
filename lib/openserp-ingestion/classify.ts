@@ -77,7 +77,13 @@ type PathRules = {
 
 const DOMAIN_RULES: Record<string, PathRules> = {
   "mubawab.ma": {
-    forceDiscovery: [/\/(?:fr|en)?\/?(?:sd|cd|sc)\//, /\/immobilier-a-(?:vendre|louer)\b/, /\/appartements-a-(?:vendre|louer)\b/, /\/villas-et-maisons-de-luxe-a-vendre\b/],
+    forceDiscovery: [
+      /\/(?:fr|en)?\/?(?:sd|cd|sc)\//,
+      /\/(?:fr|en)\/is\//,
+      /\/immobilier-a-(?:vendre|louer)\b/,
+      /\/appartements-a-(?:vendre|louer)\b/,
+      /\/villas-et-maisons-de-luxe-a-vendre\b/,
+    ],
   },
   "agenz.ma": {
     forceDiscovery: [/\/(?:fr|en)\/(?:acheter|louer)\//],
@@ -161,6 +167,21 @@ function detectUrlSignals(domain: string, canonicalUrl: string): {
   return { forceReject, forceDiscovery, strongIndividual, reasons };
 }
 
+function isAmbiguousStrongPath(domain: string, canonicalUrl: string): boolean {
+  let pathname = canonicalUrl;
+  try {
+    pathname = new URL(canonicalUrl).pathname;
+  } catch {
+    // Fail conservative below.
+  }
+  // 1immo's legacy /slug-N pattern is shared by both individual offers and
+  // category/index-like slugs. It therefore still requires textual/category
+  // corroboration. Other registry strong patterns carry explicit listing
+  // namespaces/IDs and should not be overridden merely because a SERP snippet
+  // mentions a count of related listings.
+  return domain === "1immo.ma" && /-\d+\/?$/i.test(pathname);
+}
+
 export type CityExtractor = (value: string) => string | null;
 export type DistrictExtractor = (value: string) => { city: string; district: string } | null;
 
@@ -199,6 +220,7 @@ function classifyLane(input: {
   const explicitLocationMatchesQuery =
     (!explicitCity || explicitCity === input.query.city) &&
     (!explicitDistrict || explicitDistrict.city === input.query.city);
+  const ambiguousStrongPath = urlSignals.strongIndividual && isAmbiguousStrongPath(input.domain, input.canonicalUrl);
 
   const hasRealEstateSignal = REAL_ESTATE_TOKENS.some((token) => input.text.includes(token)) || hasArabicRealEstateSignal(input.text);
   if (!hasRealEstateSignal && !urlSignals.strongIndividual) {
@@ -212,8 +234,7 @@ function classifyLane(input: {
   const strongRecoveryEvidence =
     urlSignals.strongIndividual &&
     !urlSignals.forceDiscovery &&
-    !hasPluralCountPattern &&
-    !hasDiscoveryToken &&
+    (!ambiguousStrongPath || (!hasPluralCountPattern && !hasDiscoveryToken)) &&
     hasPropertyType &&
     hasTransaction &&
     explicitLocationMatchesQuery &&
@@ -242,11 +263,21 @@ function classifyLane(input: {
   if (hasBedrooms) reasons.push("bedroom_signal");
   if (hasArabicRealEstateSignal(multilingualDetailText)) reasons.push("arabic_real_estate_signal");
 
-  // Explicit discovery/category evidence must outrank a broad numeric-path
-  // regex. This is especially important for legacy 1immo slugs such as
-  // "appartements-a-louer-551", which structurally match /-\d+$/ but are
-  // category pages, not individual offers.
-  if (urlSignals.forceDiscovery || hasPluralCountPattern || hasDiscoveryToken) {
+  if (urlSignals.forceDiscovery) {
+    return { lane: "discovery_page", reasons };
+  }
+
+  if (
+    urlSignals.strongIndividual &&
+    !ambiguousStrongPath &&
+    hasPropertyType &&
+    hasTransaction &&
+    explicitLocationMatchesQuery
+  ) {
+    return { lane: "individual_listing", reasons };
+  }
+
+  if (hasPluralCountPattern || hasDiscoveryToken) {
     return { lane: "discovery_page", reasons };
   }
 
