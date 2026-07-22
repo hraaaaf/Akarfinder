@@ -1,36 +1,24 @@
 name: OpenSERP Native Ingestion (GitHub-hosted)
 
 # OPENSERP-GITHUB-NATIVE-INGESTION-INTEGRATION-1
-# OPENSERP-CRON-PROD-ACTIVATION-1
-# MASS-ACQUISITION-FREE-ACCELERATION-1
-# Runs the EXISTING orchestrator (lib/openserp-ingestion/run-orchestrator.ts,
-# via scripts/openserp/run-ingestion-github-actions.ts) inside a GitHub
-# Actions job, talking to a local OpenSERP Docker container in full
-# browser mode (validated by OPENSERP-GITHUB-EPHEMERAL-RUNTIME-POC-1) --
-# no Vercel involved.
+# MASS-ACQUISITION-CAMPAIGN-V2
 #
-# P0 canonical-baseline rule: checkout follows the workflow's own ref. No
-# Production or diagnostic workflow may hardcode a moving fix/feat/poc branch.
+# GitHub documents that scheduled Actions may be delayed or dropped under load.
+# Therefore the cron is only a WAKE-UP trigger, not the acquisition clock.
+# Every scheduled wake-up keeps the already-started OpenSERP/SearXNG containers
+# alive and executes four bounded ingestion waves sequentially. Each wave keeps
+# the existing DB lock, engine budget/backoff and 3 production write flags.
 #
-# Scheduled every 10 minutes. The adaptive runtime budget, engine suspension,
-# global run lock and three production write flags remain authoritative, so a
-# faster trigger never means overlapping or ungated writes.
-#
-# Guardrails against an accidental write:
-#   - workflow_dispatch's mode still defaults to dry-run (never writes,
-#     bypasses the flag gate)
-#   - cron mode (both scheduled and manual) still requires
-#     OPENSERP_AUTOMATED_INGESTION_ENABLED, OPENSERP_INGESTION_WRITE_ENABLED,
-#     and OPENSERP_INGESTION_CRON_ENABLED to all be "true" secrets -- if
-#     any is unset, the run safely NOOPs.
+# The schedule is deliberately away from the top of the hour. A manual dispatch
+# remains one wave only and defaults to dry-run.
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "17 * * * *"
   workflow_dispatch:
     inputs:
       mode:
-        description: "dry-run (never writes) or cron (mirrors Production gate exactly) -- ignored on a scheduled run, which always uses cron"
+        description: "dry-run (never writes) or cron (mirrors Production gate exactly)"
         required: true
         default: "dry-run"
         type: choice
@@ -41,10 +29,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: openserp-native-ingestion-production
+  cancel-in-progress: false
+
 jobs:
   ingest:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout canonical workflow ref
         uses: actions/checkout@v4
@@ -109,7 +101,7 @@ jobs:
             exit 1
           fi
 
-      - name: Confirm yandex is actually enabled (only engine this workflow ever requests)
+      - name: Confirm yandex is actually enabled
         run: |
           curl -s "http://127.0.0.1:8888/config" > /tmp/searxng-config.json
           node -e '
@@ -143,7 +135,6 @@ jobs:
           done
           T1=$(date +%s%3N)
           echo "openserp_health_wait_ms=$((T1-T0))" >> "$GITHUB_ENV"
-          echo "--- /health ---"
           echo "$BODY"
           if [ "$STATUS" != "healthy" ]; then
             echo "::error::OpenSERP did not report healthy within 60s"
@@ -162,7 +153,7 @@ jobs:
             fi
           done
 
-      - name: Run ingestion entrypoint
+      - name: Run bounded acquisition campaign
         id: ingest
         env:
           OPENSERP_LOCAL_URL: http://127.0.0.1:7070
@@ -181,10 +172,18 @@ jobs:
           T0=$(date +%s%3N)
           if [ "${{ github.event_name }}" = "schedule" ]; then
             MODE="cron"
+            WAVES=4
           else
             MODE="${{ inputs.mode }}"
+            WAVES=1
           fi
-          npx tsx scripts/openserp/run-ingestion-github-actions.ts --"$MODE"
+
+          echo "campaign_mode=$MODE waves=$WAVES"
+          for WAVE in $(seq 1 "$WAVES"); do
+            echo "=== acquisition wave $WAVE/$WAVES ==="
+            npx tsx scripts/openserp/run-ingestion-github-actions.ts --"$MODE"
+            if [ "$WAVE" -lt "$WAVES" ]; then sleep 20; fi
+          done
           T1=$(date +%s%3N)
           echo "ingest_ms=$((T1-T0))" >> "$GITHUB_ENV"
 
@@ -193,13 +192,13 @@ jobs:
         run: |
           echo "openserp_start_ms=${{ env.openserp_start_ms }}"
           echo "openserp_health_wait_ms=${{ env.openserp_health_wait_ms }}"
-          echo "ingest_ms=${{ env.ingest_ms }}"
+          echo "campaign_ingest_ms=${{ env.ingest_ms }}"
 
-      - name: Dump OpenSERP container logs (always, for diagnosis)
+      - name: Dump OpenSERP container logs
         if: always()
         run: docker logs openserp --tail 300 || true
 
-      - name: Dump SearXNG container logs (always, for diagnosis)
+      - name: Dump SearXNG container logs
         if: always()
         run: docker logs searxng --tail 300 || true
 
