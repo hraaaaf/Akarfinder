@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
@@ -22,11 +23,26 @@ function normalizeIntent(intent?: string): string | null {
 
 /**
  * Legacy buyer/tenant lead-onboarding flow retired into the single Companion →
- * Mon Projet journey. Preserve useful context in the URL for the Companion and
- * downstream Search hand-off rather than maintaining a fourth buyer profile.
+ * Mon Projet journey. Human-advisor CTAs coming from /neuf are routed to the
+ * dedicated accompaniment form instead of masquerading as buyer onboarding.
  */
 export default async function OnboardingPage({ searchParams }: Props) {
   const { listing, intent } = await searchParams;
+  const requestHeaders = await headers();
+  const referer = requestHeaders.get("referer");
+  let fromNeuf = intent === "neuf";
+  if (!fromNeuf && referer) {
+    try {
+      fromNeuf = new URL(referer).pathname.startsWith("/neuf");
+    } catch {
+      fromNeuf = false;
+    }
+  }
+
+  if (fromNeuf && !listing) {
+    redirect("/accompagnement?intent=neuf");
+  }
+
   const params = new URLSearchParams();
   const normalizedIntent = normalizeIntent(intent);
   if (normalizedIntent) params.set("type", normalizedIntent);
