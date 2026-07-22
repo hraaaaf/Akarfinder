@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 // CASABLANCA-MASS-ACQUISITION-V1 — registry-wide Common Crawl seed harvest.
 // COMMONCRAWL-CDX-MIME-FIX-1
+// COMMONCRAWL-FAILSOFT-CANARY-V1
 //
 // This is URL-index metadata only. It never downloads WARC/page content and
 // never requests a source website. Domains are selected exclusively from the
@@ -18,6 +19,7 @@ import {
 } from "@/lib/acquisition-scale-v1/commoncrawl-mass-seeds";
 
 export const MASS_CDX_INDEXES = ["CC-MAIN-2026-25", "CC-MAIN-2026-21", "CC-MAIN-2026-17"] as const;
+export const MASS_CANARY_DOMAINS = ["soukimmobilier.com", "masaken.ma", "atlasimmobilier.com", "daragadir.com"] as const;
 const CDX_FETCH_LIMIT = 20_000;
 const REQUEST_PACING_MS = 1_000;
 const MAX_ATTEMPTS = 5;
@@ -43,14 +45,17 @@ export type MassDomainCounters = {
   no_200_html_rejected: number;
 };
 
+export type HarvestIndexFailure = {
+  domain: string;
+  index: string;
+  error: string;
+};
+
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export function buildCdxIndexUrl(domain: string, index: string): string {
-  // Current Common Crawl CDXJ uses `mime`, not `mimetype`. Requesting the wrong
-  // field left record.mime empty and caused every otherwise healthy HTML capture
-  // to fail the strict 200+HTML qualification gate.
   return `https://index.commoncrawl.org/${index}-index?url=${encodeURIComponent(domain)}&matchType=domain&output=json&fl=url,timestamp,status,mime,digest&limit=${CDX_FETCH_LIMIT}`;
 }
 
@@ -62,8 +67,6 @@ export function parseMassCdxJsonLine(line: string, index: string): MassCdxRecord
       timestamp?: string;
       status?: string;
       mime?: string;
-      // Kept only as a defensive compatibility fallback for old fixtures or
-      // historical responses. New requests explicitly ask Common Crawl for mime.
       mimetype?: string;
       digest?: string;
     };
@@ -177,21 +180,42 @@ export function processMassDomainRecords(
   };
 }
 
+export function selectMassHarvestDomains(allDomains: string[], mode = process.env.COMMONCRAWL_MASS_MODE ?? "all"): string[] {
+  const canary = new Set<string>(MASS_CANARY_DOMAINS);
+  if (mode === "canary") return allDomains.filter((domain) => canary.has(domain));
+  if (mode === "remainder") return allDomains.filter((domain) => !canary.has(domain));
+  return [
+    ...allDomains.filter((domain) => canary.has(domain)),
+    ...allDomains.filter((domain) => !canary.has(domain)),
+  ];
+}
+
 async function main() {
   const registry = loadSourceDomainRegistry();
-  const domains = selectRegistryMassHarvestDomains(registry);
+  const allDomains = selectRegistryMassHarvestDomains(registry);
+  const mode = process.env.COMMONCRAWL_MASS_MODE ?? "all";
+  const domains = selectMassHarvestDomains(allDomains, mode);
   const outputDirectory = join(process.cwd(), "data/audits/raw-results");
   const outputPath = join(outputDirectory, "commoncrawl-registry-mass-seeds.jsonl");
   mkdirSync(outputDirectory, { recursive: true });
 
   const allSeeds: CommonCrawlMassSeed[] = [];
   const counters: MassDomainCounters[] = [];
+  const failures: HarvestIndexFailure[] = [];
+  let successfulIndexRequests = 0;
 
   for (const domain of domains) {
     const records: MassCdxRecord[] = [];
     for (const index of MASS_CDX_INDEXES) {
       console.log(`[commoncrawl-mass] ${domain} <- ${index}`);
-      records.push(...await fetchCdxRecords(domain, index));
+      try {
+        records.push(...await fetchCdxRecords(domain, index));
+        successfulIndexRequests += 1;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        failures.push({ domain, index, error: message });
+        console.error(`[commoncrawl-mass] fail-soft ${domain}/${index}: ${message}`);
+      }
       await sleep(REQUEST_PACING_MS);
     }
     const processed = processMassDomainRecords(domain, records);
@@ -207,9 +231,13 @@ async function main() {
 
   const summary = {
     generated_at: new Date().toISOString(),
+    mode,
     domains,
     domain_count: domains.length,
     cdx_indexes: MASS_CDX_INDEXES,
+    successful_index_requests: successfulIndexRequests,
+    failed_index_requests: failures.length,
+    failures,
     total_qualified_seeds: deduped.length,
     counters,
     artifact_path: outputPath,
@@ -217,6 +245,12 @@ async function main() {
   };
   console.log("=== COMMON CRAWL MASS HARVEST SUMMARY ===");
   console.log(JSON.stringify(summary, null, 2));
+
+  // Fail only if Common Crawl was completely unreachable for this phase. A
+  // partial outage must never discard healthy domains or block their import.
+  if (domains.length > 0 && successfulIndexRequests === 0) {
+    throw new Error(`Common Crawl harvest mode=${mode} had zero successful index requests`);
+  }
 }
 
 import { fileURLToPath } from "node:url";
