@@ -6,7 +6,6 @@ import {
   extractDistrict,
   extractDomain,
   mentionsTourismOrHospitality,
-  normalizeText,
   parseBedrooms,
   parsePriceMad,
   parseSurfaceM2,
@@ -14,9 +13,9 @@ import {
   sha256,
   toPropertyType,
   toTransactionType,
-  uniqueNormalizedText,
 } from "./utils";
 import { getListingUrlPatterns } from "./domain-registry";
+import { PROPERTY_TYPE_ARABIC_NAMES } from "./national-geography";
 
 const REAL_ESTATE_TOKENS = [
   "appartement",
@@ -31,6 +30,18 @@ const REAL_ESTATE_TOKENS = [
   "property",
 ];
 
+const ARABIC_REAL_ESTATE_TOKENS = [
+  ...Object.values(PROPERTY_TYPE_ARABIC_NAMES),
+  "عقار",
+  "عقارات",
+  "للبيع",
+  "للإيجار",
+  "للكراء",
+  "الكراء",
+  "بيع",
+  "إيجار",
+];
+
 const OUT_OF_SCOPE_TOKENS = [
   "voiture",
   "emploi",
@@ -40,22 +51,6 @@ const OUT_OF_SCOPE_TOKENS = [
   "guide",
 ];
 
-// OPENSERP-CLASSIFY-OUT-OF-SCOPE-TOKEN-BOUNDARY-FIX-1: "mobilier" moved out
-// of the plain-substring OUT_OF_SCOPE_TOKENS list above -- a bare
-// `.includes("mobilier")` also matches "immobilier"/"immobiliere" (French
-// for "real estate"/"real estate agency", itself one of REAL_ESTATE_TOKENS
-// above), which is core, expected vocabulary for this domain, not a
-// disqualifying one. Audited against a real Production run
-// (openserp-github-cron-2026-07-20T08-23-27-764Z): 30/34 rejections that
-// run carried exactly this token, including two domains whose name alone
-// (kawtarimmobilier.com, limmobiliersansfrontieres.com) triggered it on
-// every single result regardless of content. Matched with a strict word
-// boundary instead, against the same already-normalized (lowercase,
-// accent-stripped) text every other token checks -- normalizeText() only
-// strips characters outside [a-z0-9\s/-], so \b correctly finds no
-// boundary inside "immobilier" (no non-word character separates "im" from
-// "mobilier") while still matching "mobilier" as its own word or compound
-// ("mobilier de bureau", "meubles et mobilier").
 const OUT_OF_SCOPE_WORD_BOUNDARY_TOKENS: RegExp[] = [/\bmobilier\b/];
 
 const DISCOVERY_TOKENS = [
@@ -71,32 +66,23 @@ const DISCOVERY_TOKENS = [
   "guide immobilier",
   "prix moyen",
   "tendances du marche",
-  "plus de",
 ];
+
+const ARABIC_DISCOVERY_TOKENS = ["إعلانات", "اعلانات", "قائمة العقارات", "نتائج البحث"];
 
 type PathRules = {
   forceReject?: RegExp[];
   forceDiscovery?: RegExp[];
 };
 
-// OPENSERP-REGISTRY-PATTERN-SOURCE-OF-TRUTH-1: strongIndividual entries
-// (the per-domain "does this URL path look like one specific listing"
-// regexes) have moved out of this hardcoded map into
-// data/openserp/source-domain-registry.json's listing_url_patterns,
-// which is now the single functionally-enforced source of truth --
-// see getListingUrlPatterns() in domain-registry.ts and its use in
-// detectUrlSignals() below. forceReject/forceDiscovery stay here: they
-// are not listing_url_patterns (they identify category/discovery/
-// rejected pages, not individual listings) and the registry has no
-// field for them.
-//
-// Domains that had ONLY a strongIndividual entry (1immo.ma,
-// barnes-marrakech.com, kawtarimmobilier.com, limmobiliersansfrontieres.com,
-// marrakechrealty.com) no longer appear in this map at all -- their
-// patterns now live exclusively in the registry.
 const DOMAIN_RULES: Record<string, PathRules> = {
   "mubawab.ma": {
-    forceDiscovery: [/\/(?:fr|en)?\/?(?:sd|cd|sc)\//, /\/immobilier-a-(?:vendre|louer)\b/, /\/appartements-a-(?:vendre|louer)\b/, /\/villas-et-maisons-de-luxe-a-vendre\b/],
+    forceDiscovery: [
+      /\/(?:fr|en)?\/?(?:sd|cd|sc)\//,
+      /\/immobilier-a-(?:vendre|louer)\b/,
+      /\/appartements-a-(?:vendre|louer)\b/,
+      /\/villas-et-maisons-de-luxe-a-vendre\b/,
+    ],
   },
   "agenz.ma": {
     forceDiscovery: [/\/(?:fr|en)\/(?:acheter|louer)\//],
@@ -107,18 +93,10 @@ const DOMAIN_RULES: Record<string, PathRules> = {
   "avito.ma": {
     forceDiscovery: [/\/sp\/immobilier\//, /\/fr\/.+\/(?:appartements|villas|terrains|bureaux).+_vendre$/, /\/fr\/.+\/(?:appartements|villas|terrains|bureaux).+_louer$/],
   },
-  "immobilier.trovit.ma": {
-    forceDiscovery: [/.*/],
-  },
-  "nuroa.ma": {
-    forceDiscovery: [/.*/],
-  },
-  "immo.mitula.ma": {
-    forceDiscovery: [/.*/],
-  },
-  "yakeey.com": {
-    forceReject: [/.*/],
-  },
+  "immobilier.trovit.ma": { forceDiscovery: [/.*/] },
+  "nuroa.ma": { forceDiscovery: [/.*/] },
+  "immo.mitula.ma": { forceDiscovery: [/.*/] },
+  "yakeey.com": { forceReject: [/.*/] },
   "marocannonces.com": {
     forceDiscovery: [/\/maroc\/.+-b\d+-t\d+\.html/i, /\/categorie\//],
   },
@@ -126,6 +104,33 @@ const DOMAIN_RULES: Record<string, PathRules> = {
     forceDiscovery: [/\/(?:fr|en)\/(?:achat|location|rent|buy)\/[^/]+\/[^/]+\/[^/]+$/i],
   },
 };
+
+function normalizeClassificationText(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}\s/-]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function hasArabicRealEstateSignal(value: string): boolean {
+  return ARABIC_REAL_ESTATE_TOKENS.some((token) => value.includes(token));
+}
+
+function hasArabicPropertyType(value: string): boolean {
+  return Object.values(PROPERTY_TYPE_ARABIC_NAMES).some((token) => value.includes(token));
+}
+
+function hasArabicTransaction(value: string): boolean {
+  return ["للبيع", "بيع", "للإيجار", "للايجار", "إيجار", "ايجار", "للكراء", "الكراء", "كراء"].some((token) => value.includes(token));
+}
+
+function hasExplicitVacationIntent(value: string): boolean {
+  return /\b(vacances?|vacation|saisonnier|saisonniere|airbnb|appart[- ]hotel|riad touristique)\b/.test(value) ||
+    ["عطلة", "العطل", "يومي", "سياحي"].some((token) => value.includes(token));
+}
 
 function getResultUrl(result: OpenSerpRawResult): string {
   return (result.url ?? result.link ?? "").trim();
@@ -152,12 +157,6 @@ function detectUrlSignals(domain: string, canonicalUrl: string): {
   const rules = DOMAIN_RULES[domain];
   const forceReject = rules?.forceReject?.some((pattern) => pattern.test(pathname)) ?? false;
   const forceDiscovery = rules?.forceDiscovery?.some((pattern) => pattern.test(pathname)) ?? false;
-  // OPENSERP-REGISTRY-PATTERN-SOURCE-OF-TRUTH-1: strongIndividual now comes
-  // exclusively from source-domain-registry.json's listing_url_patterns
-  // (via getListingUrlPatterns), not from this file's own DOMAIN_RULES --
-  // called unconditionally, independent of whether `rules` exists above,
-  // since a domain can have listing_url_patterns with no forceReject/
-  // forceDiscovery entry at all (e.g. 1immo.ma, kawtarimmobilier.com).
   const strongIndividual = getListingUrlPatterns(domain).some((pattern) => pattern.test(pathname));
 
   if (forceReject) reasons.push("force_reject_path");
@@ -167,12 +166,17 @@ function detectUrlSignals(domain: string, canonicalUrl: string): {
   return { forceReject, forceDiscovery, strongIndividual, reasons };
 }
 
-// AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1 — injectable city/district
-// extractors, defaulting to the original 3-city functions so every existing
-// caller (the pilot path) keeps its exact prior behavior unchanged. The
-// national admission module passes a nationally-aware pair covering all 16
-// recognized cities + 65 districts (see national-utils.ts) without this file
-// needing to know anything about the wider taxonomy itself.
+function isAmbiguousStrongPath(domain: string, canonicalUrl: string): boolean {
+  let pathname = canonicalUrl;
+  try {
+    pathname = new URL(canonicalUrl).pathname;
+  } catch {
+    // Fail conservative below.
+  }
+  return (domain === "1immo.ma" && /-\d+\/?$/i.test(pathname)) ||
+    (domain === "mubawab.ma" && /\/(?:fr|en)\/is\//i.test(pathname));
+}
+
 export type CityExtractor = (value: string) => string | null;
 export type DistrictExtractor = (value: string) => { city: string; district: string } | null;
 
@@ -195,35 +199,55 @@ function classifyLane(input: {
   const urlSignals = detectUrlSignals(input.domain, input.canonicalUrl);
   reasons.push(...urlSignals.reasons);
 
-  if (!REAL_ESTATE_TOKENS.some((token) => input.text.includes(token))) {
+  const detailText = [input.title, input.snippet, input.canonicalUrl].filter(Boolean).join(" ");
+  const multilingualDetailText = normalizeClassificationText(detailText);
+  const hasPrice = parsePriceMad([input.title, input.snippet].filter(Boolean).join(" ")) != null;
+  const hasSurface = parseSurfaceM2([input.title, input.snippet].filter(Boolean).join(" ")) != null;
+  const hasBedrooms = parseBedrooms([input.title, input.snippet].filter(Boolean).join(" ")) != null;
+  const hasTransaction = toTransactionType(detailText) != null || hasArabicTransaction(multilingualDetailText);
+  const hasPropertyType = toPropertyType(detailText) != null || hasArabicPropertyType(multilingualDetailText);
+  const explicitCity = extractCityFn(detailText);
+  const explicitDistrict = extractDistrictFn(detailText);
+  const hasPluralCountPattern = /\b\d{2,5}\s+(?:annonces?|appartements?|villas?|biens?|studios?)\b/.test(input.text);
+  const hasDiscoveryToken = DISCOVERY_TOKENS.some((token) => input.text.includes(token)) || ARABIC_DISCOVERY_TOKENS.some((token) => input.text.includes(token));
+  const detailLanguage = /\b(superficie|chambres?|terrasse|residence|situe|idealement|magnifique|visite|plain-pied)\b/.test(input.text);
+  const detailSignalCount = [hasPrice, hasSurface, hasBedrooms, detailLanguage].filter(Boolean).length;
+  const explicitLocationMatchesQuery =
+    (!explicitCity || explicitCity === input.query.city) &&
+    (!explicitDistrict || explicitDistrict.city === input.query.city);
+  const ambiguousStrongPath = urlSignals.strongIndividual && isAmbiguousStrongPath(input.domain, input.canonicalUrl);
+
+  const hasRealEstateSignal = REAL_ESTATE_TOKENS.some((token) => input.text.includes(token)) || hasArabicRealEstateSignal(input.text);
+  if (!hasRealEstateSignal && !urlSignals.strongIndividual) {
     return { lane: "reject_out_of_scope", reasons: ["missing_real_estate_signal"] };
-  }
-
-  if (
-    OUT_OF_SCOPE_TOKENS.some((token) => input.text.includes(token)) ||
-    OUT_OF_SCOPE_WORD_BOUNDARY_TOKENS.some((pattern) => pattern.test(input.text))
-  ) {
-    return { lane: "reject_out_of_scope", reasons: ["out_of_scope_token"] };
-  }
-
-  if (mentionsTourismOrHospitality(input.text)) {
-    return { lane: "reject_out_of_scope", reasons: ["tourism_or_hospitality"] };
   }
 
   if (urlSignals.forceReject) {
     return { lane: "reject_out_of_scope", reasons };
   }
 
-  const hasPrice = parsePriceMad([input.title, input.snippet].filter(Boolean).join(" ")) != null;
-  const hasSurface = parseSurfaceM2([input.title, input.snippet].filter(Boolean).join(" ")) != null;
-  const hasBedrooms = parseBedrooms([input.title, input.snippet].filter(Boolean).join(" ")) != null;
-  const hasTransaction = toTransactionType([input.title, input.snippet].join(" ")) != null;
-  const hasPropertyType = toPropertyType([input.title, input.snippet].join(" ")) != null;
-  const explicitCity = extractCityFn([input.title, input.snippet, input.canonicalUrl].join(" "));
-  const explicitDistrict = extractDistrictFn([input.title, input.snippet, input.canonicalUrl].join(" "));
-  const hasPluralCountPattern = /\b\d{2,5}\s+(?:annonces?|appartements?|villas?|biens?|studios?)\b/.test(input.text);
-  const hasDiscoveryToken = DISCOVERY_TOKENS.some((token) => input.text.includes(token));
-  const detailLanguage = /\b(superficie|chambres?|terrasse|residence|situe|idealement|magnifique|visite|plain-pied)\b/.test(input.text);
+  const strongRecoveryEvidence =
+    urlSignals.strongIndividual &&
+    !urlSignals.forceDiscovery &&
+    (!ambiguousStrongPath || (!hasPluralCountPattern && !hasDiscoveryToken)) &&
+    hasPropertyType &&
+    hasTransaction &&
+    explicitLocationMatchesQuery &&
+    detailSignalCount >= 1;
+
+  const hasGenericOutOfScopeToken =
+    OUT_OF_SCOPE_TOKENS.some((token) => input.text.includes(token)) ||
+    OUT_OF_SCOPE_WORD_BOUNDARY_TOKENS.some((pattern) => pattern.test(input.text));
+  if (hasGenericOutOfScopeToken && !strongRecoveryEvidence) {
+    return { lane: "reject_out_of_scope", reasons: ["out_of_scope_token"] };
+  }
+  if (hasGenericOutOfScopeToken && strongRecoveryEvidence) {
+    reasons.push("generic_out_of_scope_ignored_for_corroborated_individual_path");
+  }
+
+  if (mentionsTourismOrHospitality(input.text) && (hasExplicitVacationIntent(input.text) || !strongRecoveryEvidence)) {
+    return { lane: "reject_out_of_scope", reasons: ["tourism_or_hospitality"] };
+  }
 
   if (hasPluralCountPattern) reasons.push("plural_count_pattern");
   if (hasDiscoveryToken) reasons.push("discovery_token");
@@ -232,11 +256,25 @@ function classifyLane(input: {
   if (hasPrice) reasons.push("price_signal");
   if (hasSurface) reasons.push("surface_signal");
   if (hasBedrooms) reasons.push("bedroom_signal");
+  if (hasArabicRealEstateSignal(multilingualDetailText)) reasons.push("arabic_real_estate_signal");
 
-  const detailSignalCount = [hasPrice, hasSurface, hasBedrooms, detailLanguage].filter(Boolean).length;
-  const explicitLocationMatchesQuery =
-    (!explicitCity || explicitCity === input.query.city) &&
-    (!explicitDistrict || explicitDistrict.city === input.query.city);
+  if (urlSignals.forceDiscovery) {
+    return { lane: "discovery_page", reasons };
+  }
+
+  if (
+    urlSignals.strongIndividual &&
+    !ambiguousStrongPath &&
+    hasPropertyType &&
+    hasTransaction &&
+    explicitLocationMatchesQuery
+  ) {
+    return { lane: "individual_listing", reasons };
+  }
+
+  if (hasPluralCountPattern || hasDiscoveryToken) {
+    return { lane: "discovery_page", reasons };
+  }
 
   if (
     urlSignals.strongIndividual &&
@@ -245,10 +283,6 @@ function classifyLane(input: {
     explicitLocationMatchesQuery
   ) {
     return { lane: "individual_listing", reasons };
-  }
-
-  if (urlSignals.forceDiscovery || hasPluralCountPattern || hasDiscoveryToken) {
-    return { lane: "discovery_page", reasons };
   }
 
   if (hasPropertyType && hasTransaction && explicitLocationMatchesQuery && detailSignalCount >= 2) {
@@ -272,11 +306,11 @@ function extractAttributes(input: {
 }) {
   const extractCityFn = input.extractCityFn ?? extractCity;
   const extractDistrictFn = input.extractDistrictFn ?? extractDistrict;
-  const combinedText = uniqueNormalizedText([
+  const combinedText = normalizeClassificationText([
     input.title,
     input.snippet,
     input.canonicalUrl,
-  ]);
+  ].filter(Boolean).join(" "));
   const explicitDistrict = extractDistrictFn(combinedText);
   const explicitCity = extractCityFn(combinedText);
   const extractedCity = explicitDistrict?.city ?? explicitCity ?? input.query.city;
@@ -295,12 +329,6 @@ function extractAttributes(input: {
     city: extractedCity,
     district: extractedDistrict,
     transaction_type: transactionFromContent ?? input.query.transaction_type,
-    // input.query.property_type is a free-form query label (widened for the
-    // national planner, e.g. "riad"/"duplex"/"terrain") — only fall back to
-    // it here if it happens to already be one of the known extracted-attribute
-    // categories; toPropertyType() re-derives from the raw label otherwise so
-    // we never emit a property_type value outside OpenSerpExtractedAttributes'
-    // strict union (never invent a new DB-facing category).
     property_type: propertyTypeFromContent ?? toPropertyType(input.query.property_type),
     price_mad: price,
     currency: price ? ("MAD" as const) : null,
@@ -312,17 +340,9 @@ function extractAttributes(input: {
 export function classifyOpenSerpResult(input: {
   result: OpenSerpRawResult;
   query: OpenSerpIngestionQuery;
-  // OPENSERP-YANDEX-DUAL-DISCOVERY-LANE-1: "searxng_yandex" added so a
-  // Yandex-only-sourced result (never seen by OpenSERP for this query) can
-  // still be classified through this exact same, unmodified function --
-  // purely a provenance label carried into OpenSerpClassifiedResult.engine,
-  // never used to gate or branch classification logic below.
   engine: "bing" | "ecosia" | "duckduckgo" | "searxng_yandex";
   discovered_at: string;
   fallbackRank: number;
-  // Optional national-geography override — see CityExtractor/DistrictExtractor
-  // above. Omitted entirely by every existing (3-city pilot) caller, so this
-  // parameter changes nothing for code that does not pass it.
   extractCityFn?: CityExtractor;
   extractDistrictFn?: DistrictExtractor;
 }): OpenSerpClassifiedResult | null {
@@ -335,7 +355,7 @@ export function classifyOpenSerpResult(input: {
 
   const safeTitle = redactSensitiveText(input.result.title ?? "");
   const safeSnippet = redactSensitiveText(input.result.snippet ?? "");
-  const normalizedText = uniqueNormalizedText([safeTitle.value ?? "", safeSnippet.value ?? "", canonicalSourceUrl]);
+  const normalizedText = normalizeClassificationText([safeTitle.value ?? "", safeSnippet.value ?? "", canonicalSourceUrl].join(" "));
 
   const attributes = extractAttributes({
     title: safeTitle.value ?? "Resultat OpenSERP",
