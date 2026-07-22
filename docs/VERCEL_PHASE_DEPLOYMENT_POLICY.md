@@ -21,7 +21,9 @@ At phase completion:
 
 ## Enforcement
 
-`vercel.json` sets `git.deploymentEnabled` to `false`.
+`vercel.mjs` sets `git.deploymentEnabled` to `false` through Vercel's programmatic project configuration.
+
+`vercel.json` intentionally remains absent so the historical invariant forbidding Vercel Cron configuration on this Hobby-plan project stays intact.
 
 Do not re-enable automatic Git deployments for branches or `main` without an explicit architecture/governance decision.
 
