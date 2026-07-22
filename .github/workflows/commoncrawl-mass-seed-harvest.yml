@@ -3,6 +3,7 @@ name: Common Crawl Mass Seed Harvest
 # CASABLANCA-MASS-ACQUISITION-V1
 # COMMONCRAWL-FIRST-ACTIVATION-V1
 # COMMONCRAWL-CDX-MIME-FIX-1
+# COMMONCRAWL-FAILSOFT-CANARY-V1
 # Historical URL-index metadata -> source_offer_seeds only -> exact freshness
 # reconciliation. No WARC/page fetch, no direct source-site request, no public
 # listing write. Scheduled/push activation runs apply only when the existing
@@ -11,10 +12,6 @@ name: Common Crawl Mass Seed Harvest
 on:
   schedule:
     - cron: "17 2 * * *"
-  # One-shot self-activation path: merging a change to this workflow starts the
-  # harvest immediately instead of waiting until the next 02:17 UTC slot. A
-  # normal application push does NOT trigger it because the path filter is only
-  # this workflow file. Future scheduled operation remains daily.
   push:
     branches: [main]
     paths:
@@ -54,28 +51,56 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Harvest approved registry domains from Common Crawl URL indexes
+      - name: Resolve write mode
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "push" ]; then
+            echo "CC_APPLY=1" >> "$GITHUB_ENV"
+          elif [ "${{ inputs.mode }}" = "apply" ]; then
+            echo "CC_APPLY=1" >> "$GITHUB_ENV"
+          else
+            echo "CC_APPLY=0" >> "$GITHUB_ENV"
+          fi
+
+      - name: Harvest Common Crawl canary domains first
+        env:
+          COMMONCRAWL_MASS_MODE: canary
         run: npx tsx scripts/openserp/commoncrawl-registry-mass-harvest.ts
 
-      - name: Count qualified seed artifact rows
-        run: wc -l data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl || true
-
-      - name: Import seeds and reconcile exact freshness
+      - name: Import canary seeds immediately
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
           OPENSERP_INGESTION_WRITE_ENABLED: ${{ secrets.OPENSERP_INGESTION_WRITE_ENABLED }}
           OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
+        shell: bash
         run: |
           set -e
-          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "push" ]; then
-            MODE="apply"
+          wc -l data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl || true
+          if [ "$CC_APPLY" = "1" ]; then
+            npx tsx scripts/openserp/ingest-commoncrawl-mass-seeds.ts --apply
           else
-            MODE="${{ inputs.mode }}"
+            npx tsx scripts/openserp/ingest-commoncrawl-mass-seeds.ts
           fi
 
-          if [ "$MODE" = "apply" ]; then
+      - name: Harvest remaining approved registry domains
+        env:
+          COMMONCRAWL_MASS_MODE: remainder
+        run: npx tsx scripts/openserp/commoncrawl-registry-mass-harvest.ts
+
+      - name: Import remainder seeds and reconcile exact freshness
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
+          OPENSERP_INGESTION_WRITE_ENABLED: ${{ secrets.OPENSERP_INGESTION_WRITE_ENABLED }}
+          OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
+        shell: bash
+        run: |
+          set -e
+          wc -l data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl || true
+          if [ "$CC_APPLY" = "1" ]; then
             npx tsx scripts/openserp/ingest-commoncrawl-mass-seeds.ts --apply
             npx tsx scripts/openserp/reconcile-commoncrawl-seed-freshness.ts --apply
           else
@@ -83,7 +108,7 @@ jobs:
             npx tsx scripts/openserp/reconcile-commoncrawl-seed-freshness.ts
           fi
 
-      - name: Upload harvest artifact
+      - name: Upload final harvest artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
