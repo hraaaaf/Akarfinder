@@ -99,7 +99,7 @@ test("#21 scheduled GitHub ingestion materializes and passes V2 to the existing 
   assert.ok(entry.includes("buildQueryUniverseV2"));
   assert.ok(entry.includes("universePath: scale.path"));
   assert.ok(entry.includes("tmpdir()"));
-  assert.ok(workflow.includes('cron: "*/30 * * * *"'));
+  assert.ok(workflow.includes('cron: "*/10 * * * *"'));
   assert.ok(workflow.includes("run-ingestion-github-actions.ts"));
 });
 
