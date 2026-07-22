@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { buildQueryUniverseV2 } from "../../../lib/openserp-ingestion/query-universe-v2.js";
 import {
   ACQUISITION_CHANNELS,
@@ -75,4 +77,20 @@ test("#21 wave planner covers every V2 query exactly once", () => {
   assert.equal(new Set(ids).size, universe.total_queries);
   assert.ok(waves.every((w) => w.query_count <= 250));
   assert.ok(waves[0].cities.length >= 10, "first wave should be geographically diversified");
+});
+
+test("#21 scheduled GitHub ingestion materializes and passes V2 to the existing orchestrator", () => {
+  const entry = readFileSync(join(process.cwd(), "scripts/openserp/run-ingestion-github-actions.ts"), "utf8");
+  const workflow = readFileSync(join(process.cwd(), ".github/workflows/openserp-github-native-ingestion.yml"), "utf8");
+  assert.ok(entry.includes("buildQueryUniverseV2"));
+  assert.ok(entry.includes("universePath: scale.path"));
+  assert.ok(entry.includes("tmpdir()"));
+  assert.ok(workflow.includes('cron: "*/30 * * * *"'));
+  assert.ok(workflow.includes("run-ingestion-github-actions.ts"));
+});
+
+test("#21 V2 activation does not add filesystem writes to the Vercel serverless orchestrator", () => {
+  const orchestrator = readFileSync(join(process.cwd(), "lib/openserp-ingestion/run-orchestrator.ts"), "utf8");
+  assert.equal(orchestrator.includes("buildQueryUniverseV2"), false);
+  assert.equal(orchestrator.includes("tmpdir()"), false);
 });
