@@ -1,30 +1,24 @@
 import type { Metadata } from "next";
-import { SiteHeader } from "@/components/layout/SiteHeader";
-import { SiteFooter } from "@/components/landing/SiteFooter";
-import { Container } from "@/components/ui/Container";
-import { SearchProfileWizard } from "@/components/search-profile/SearchProfileWizard";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Créer mon profil de recherche — AkarFinder",
+  title: "Créer mon projet de recherche — AkarFinder",
   description:
-    "Construisez votre profil de recherche immobilière au Maroc étape par étape : projet, budget indicatif, critères, quartier et priorités. Profil indicatif — non contractuel, rien n'est envoyé sans votre accord.",
+    "Construisez votre projet immobilier avec le Compagnon AkarFinder : objectif, budget, zones, critères et priorités.",
   alternates: {
-    canonical: "/profil-recherche",
+    canonical: "/compagnon",
+  },
+  robots: {
+    index: false,
+    follow: true,
   },
 };
 
+/**
+ * Legacy 8-step search-profile surface retired in favor of the Companion.
+ * Keep the route as a compatibility redirect so old links/bookmarks do not
+ * create a second, diverging buyer-profile journey.
+ */
 export default function SearchProfilePage() {
-  return (
-    <main className="min-h-screen bg-background">
-      <SiteHeader variant="light" />
-
-      <section className="pt-12 pb-16 lg:pt-16 lg:pb-20">
-        <Container>
-          <SearchProfileWizard />
-        </Container>
-      </section>
-
-      <SiteFooter />
-    </main>
-  );
+  redirect("/compagnon");
 }
