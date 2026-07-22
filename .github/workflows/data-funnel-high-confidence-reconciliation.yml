@@ -1,0 +1,58 @@
+name: Data Funnel High Confidence Reconciliation
+
+on:
+  workflow_run:
+    workflows: ["OpenSERP Native Ingestion (GitHub-hosted)"]
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - "scripts/openserp/reconcile-accepted-listing-gaps.ts"
+      - ".github/workflows/data-funnel-high-confidence-reconciliation.yml"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "dry-run or apply; workflow_run/push always use apply but remain gated by the three Production ingestion flags"
+        required: true
+        default: "dry-run"
+        type: choice
+        options:
+          - dry-run
+          - apply
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout canonical default branch for automated reconciliation
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || github.event.repository.default_branch }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Reconcile high-confidence accepted/listing gaps
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
+          OPENSERP_INGESTION_WRITE_ENABLED: ${{ secrets.OPENSERP_INGESTION_WRITE_ENABLED }}
+          OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
+        run: |
+          set -e
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MODE="${{ inputs.mode }}"
+          else
+            MODE="apply"
+          fi
+          npx tsx scripts/openserp/reconcile-accepted-listing-gaps.ts --"$MODE"
