@@ -99,7 +99,9 @@ export function buildExplicitSeedAdmissionQuery(input: {
     query_text: buildSeedConfirmationQuery(input.seed),
     priority: "high",
     target_domain: input.seed.source_domain,
-    query_family: "seed_confirmation",
+    // Existing query-family contract remains unchanged. Seed confirmation is
+    // identified by the query_id prefix and run_id, not by widening the union.
+    query_family: "general",
   };
 }
 
