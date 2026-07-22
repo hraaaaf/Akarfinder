@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { buildQueryUniverseV2 } from "../../../lib/openserp-ingestion/query-universe-v2.js";
+import { buildUniverse as buildQueryUniverseV1 } from "../../openserp/build-query-universe.js";
 import {
   ACQUISITION_CHANNELS,
   TARGET_RAW_OBSERVATIONS,
@@ -38,6 +39,19 @@ test("#22 universe is national-scale but bounded", () => {
   assert.ok(universe.total_queries <= 20_000, `expected <=20000, got ${universe.total_queries}`);
   assert.ok(universe.cities_covered >= 16);
   assert.ok(universe.districts_covered >= 65);
+});
+
+test("#22 preserves every V1 core query identity and engine rotation", () => {
+  const v1 = buildQueryUniverseV1();
+  const v2ById = new Map(buildQueryUniverseV2().queries.map((q) => [q.query_id, q]));
+  for (const legacy of v1) {
+    const next = v2ById.get(legacy.query_id);
+    assert.ok(next, `missing legacy query ${legacy.query_id}`);
+    assert.equal(next!.query_text, legacy.query_text);
+    assert.equal(next!.preferred_engine, legacy.preferred_engine);
+    assert.equal(next!.query_hash, legacy.query_hash);
+    assert.equal(next!.variant, "core");
+  }
 });
 
 test("#22 universe is deterministic and query ids are unique", () => {
