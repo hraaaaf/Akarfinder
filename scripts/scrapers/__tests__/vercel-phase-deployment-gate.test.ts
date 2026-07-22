@@ -1,17 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
-const config = JSON.parse(readFileSync("vercel.json", "utf8")) as {
-  git?: { deploymentEnabled?: boolean | Record<string, boolean> };
-};
+const configSource = readFileSync("vercel.mjs", "utf8");
 
 test("Vercel automatic Git deployments stay disabled during active phases", () => {
-  assert.equal(
-    config.git?.deploymentEnabled,
-    false,
-    "vercel.json must keep git.deploymentEnabled=false; Production deploys are phase-completion actions only",
-  );
+  assert.equal(existsSync("vercel.json"), false, "vercel.json must remain absent to preserve the historical no-Vercel-crons invariant");
+  assert.match(configSource, /deploymentEnabled\s*:\s*false/);
+  assert.doesNotMatch(configSource, /\bcrons\b\s*:/);
 });
 
 test("phase deployment policy remains documented", () => {
