@@ -1,5 +1,6 @@
 // SEED-LISTING-MASS-CONVERSION-V1
 // SEED-CONFIRMATION-QUERY-V2
+// BULK-SEED-CONFIRMATION-V1
 // Pure helpers for turning sitemap/Common-Crawl URL seeds into targeted search
 // confirmation queries. A seed is never trusted by itself: only an exact
 // canonical-URL search-engine hit with explicit city + transaction + property
@@ -24,10 +25,35 @@ export type SeedConfirmationSeed = {
   updated_at: string;
 };
 
+export type SeedConfirmationDimensions = {
+  city: string;
+  transaction_type: "sale" | "rent";
+  property_type: string;
+};
+
+export type SeedConfirmationGroup = {
+  group_key: string;
+  mode: "bulk" | "individual";
+  source_domain: string;
+  query_text: string;
+  dimensions: SeedConfirmationDimensions | null;
+  seeds: SeedConfirmationSeed[];
+};
+
 const URL_STOP_WORDS = new Set([
   "www", "http", "https", "html", "htm", "php", "index", "property", "properties",
   "annonce", "annonces", "immobilier", "real", "estate", "detail", "details", "fr", "en", "ar",
 ]);
+
+const PROPERTY_QUERY_LABELS: Record<string, string> = {
+  apartment: "appartement",
+  villa: "villa",
+  studio: "studio",
+  house: "maison",
+  land: "terrain",
+  office: "bureau",
+  commercial: "commerce",
+};
 
 function safeDecodedPath(url: string): string {
   try {
@@ -44,25 +70,17 @@ function safeDecodedPath(url: string): string {
 
 export function extractStableSeedIdentifier(url: string): string | null {
   const path = safeDecodedPath(url).toLowerCase();
-
-  // Explicit reference numbers are the strongest signal on agency URLs such as
-  // /property/...-ref-4341. Query the stable identifier rather than diluting it
-  // with a long generic slug.
   const explicitRef = path.match(/(?:^|[^a-z0-9])(?:ref|reference)[-_ ]?(\d{3,})(?:[^a-z0-9]|$)/i);
   if (explicitRef?.[1]) return explicitRef[1];
 
-  // Product/reference codes such as ALLM-1004 or ALC-223 are often unique and
-  // indexed verbatim by search engines.
   const alphaNumericCode = path.match(/(?:^|\/)([a-z]{2,10}-\d{3,})(?:\/|$)/i);
   if (alphaNumericCode?.[1]) return alphaNumericCode[1];
 
-  // Numeric terminal IDs are common on portals such as /vente/marrakech/2769575.
   const segments = path.split("/").filter(Boolean);
   for (let i = segments.length - 1; i >= 0; i -= 1) {
     const clean = segments[i].replace(/\.(?:html?|php)$/i, "");
     if (/^\d{5,}$/.test(clean)) return clean;
   }
-
   return null;
 }
 
@@ -76,9 +94,7 @@ export function isClearlyOutOfScopeSeedUrl(url: string): boolean {
 
 export function buildSeedConfirmationQuery(seed: Pick<SeedConfirmationSeed, "canonical_url" | "source_domain">): string {
   const stableIdentifier = extractStableSeedIdentifier(seed.canonical_url);
-  if (stableIdentifier) {
-    return `site:${seed.source_domain} "${stableIdentifier}"`;
-  }
+  if (stableIdentifier) return `site:${seed.source_domain} "${stableIdentifier}"`;
 
   const tokens = safeDecodedPath(seed.canonical_url)
     .toLowerCase()
@@ -88,11 +104,87 @@ export function buildSeedConfirmationQuery(seed: Pick<SeedConfirmationSeed, "can
     .filter((token) => token.length >= 3 && !URL_STOP_WORDS.has(token))
     .slice(-6);
 
-  // Keep the domain explicit inside q because the native OpenSERP HTTP client
-  // does not expose a separate site= parameter. Search engines may ignore the
-  // operator, but exact canonical matching below remains authoritative.
   const terms = tokens.length >= 2 ? tokens.join(" ") : `"${seed.canonical_url}"`;
   return `site:${seed.source_domain} ${terms}`;
+}
+
+export function extractSeedConfirmationDimensions(
+  seed: Pick<SeedConfirmationSeed, "canonical_url">,
+): SeedConfirmationDimensions | null {
+  const path = safeDecodedPath(seed.canonical_url);
+  const city = extractCityNational(path);
+  const transaction = toTransactionType(path);
+  const propertyType = toPropertyType(path);
+  if (!city || !transaction || !propertyType) return null;
+  return { city, transaction_type: transaction, property_type: propertyType };
+}
+
+export function buildBulkSeedConfirmationQuery(
+  sourceDomain: string,
+  dimensions: SeedConfirmationDimensions,
+): string {
+  const transactionLabel = dimensions.transaction_type === "sale" ? "vente" : "location";
+  const propertyLabel = PROPERTY_QUERY_LABELS[dimensions.property_type] ?? dimensions.property_type;
+  return `site:${sourceDomain} "${dimensions.city}" ${transactionLabel} ${propertyLabel}`;
+}
+
+export function buildSeedConfirmationGroups(
+  seeds: SeedConfirmationSeed[],
+  maxSeedsPerGroup = 25,
+): SeedConfirmationGroup[] {
+  const groupSize = Math.max(2, Math.min(Math.trunc(maxSeedsPerGroup), 50));
+  const bulkBuckets = new Map<string, { source_domain: string; dimensions: SeedConfirmationDimensions; seeds: SeedConfirmationSeed[] }>();
+  const individual: SeedConfirmationGroup[] = [];
+
+  for (const seed of seeds) {
+    const dimensions = extractSeedConfirmationDimensions(seed);
+    if (!dimensions) {
+      individual.push({
+        group_key: `individual:${seed.id}`,
+        mode: "individual",
+        source_domain: seed.source_domain,
+        query_text: buildSeedConfirmationQuery(seed),
+        dimensions: null,
+        seeds: [seed],
+      });
+      continue;
+    }
+    const key = [seed.source_domain, dimensions.city, dimensions.transaction_type, dimensions.property_type].join("|");
+    const bucket = bulkBuckets.get(key) ?? { source_domain: seed.source_domain, dimensions, seeds: [] };
+    bucket.seeds.push(seed);
+    bulkBuckets.set(key, bucket);
+  }
+
+  const bulk: SeedConfirmationGroup[] = [];
+  for (const [key, bucket] of bulkBuckets) {
+    for (let offset = 0; offset < bucket.seeds.length; offset += groupSize) {
+      const chunk = bucket.seeds.slice(offset, offset + groupSize);
+      if (chunk.length === 1) {
+        const seed = chunk[0];
+        individual.push({
+          group_key: `individual:${seed.id}`,
+          mode: "individual",
+          source_domain: seed.source_domain,
+          query_text: buildSeedConfirmationQuery(seed),
+          dimensions: null,
+          seeds: [seed],
+        });
+        continue;
+      }
+      bulk.push({
+        group_key: `${key}|${Math.floor(offset / groupSize)}`,
+        mode: "bulk",
+        source_domain: bucket.source_domain,
+        query_text: buildBulkSeedConfirmationQuery(bucket.source_domain, bucket.dimensions),
+        dimensions: bucket.dimensions,
+        seeds: chunk,
+      });
+    }
+  }
+
+  // Bulk groups deliberately run first: they maximize seeds examined per engine
+  // request. Individual high-precision fallbacks consume only remaining query budget.
+  return [...bulk, ...individual];
 }
 
 export function findExactSeedResult(
@@ -120,9 +212,6 @@ export function buildExplicitSeedAdmissionQuery(input: {
   const transaction = toTransactionType(combined);
   const propertyType = toPropertyType(combined);
 
-  // No query-context fallback is allowed in this lane. These three values must
-  // be explicit in the engine result/URL itself, otherwise the seed remains
-  // seed_only and is retried later rather than promoted on inference.
   if (!city || !transaction || !propertyType) return null;
   if (district && district.city !== city) return null;
 
@@ -137,8 +226,6 @@ export function buildExplicitSeedAdmissionQuery(input: {
     query_text: buildSeedConfirmationQuery(input.seed),
     priority: "high",
     target_domain: input.seed.source_domain,
-    // Existing query-family contract remains unchanged. Seed confirmation is
-    // identified by the query_id prefix and run_id, not by widening the union.
     query_family: "general",
   };
 }
@@ -157,7 +244,7 @@ function identifierPriority(url: string): number {
 }
 
 export function selectBalancedSeedBatch(seeds: SeedConfirmationSeed[], batchSize: number): SeedConfirmationSeed[] {
-  const size = Math.max(1, Math.min(Math.trunc(batchSize), 100));
+  const size = Math.max(1, Math.min(Math.trunc(batchSize), 500));
   const byDomain = new Map<string, SeedConfirmationSeed[]>();
   for (const seed of seeds) {
     if (isClearlyOutOfScopeSeedUrl(seed.canonical_url)) continue;
