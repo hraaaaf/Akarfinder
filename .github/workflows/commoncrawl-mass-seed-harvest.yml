@@ -1,14 +1,23 @@
 name: Common Crawl Mass Seed Harvest
 
 # CASABLANCA-MASS-ACQUISITION-V1
+# COMMONCRAWL-FIRST-ACTIVATION-V1
 # Historical URL-index metadata -> source_offer_seeds only -> exact freshness
 # reconciliation. No WARC/page fetch, no direct source-site request, no public
-# listing write. Scheduled runs apply only when the existing three production
-# write gates are enabled; manual runs default to dry-run.
+# listing write. Scheduled/push activation runs apply only when the existing
+# three production write gates are enabled; manual runs default to dry-run.
 
 on:
   schedule:
     - cron: "17 2 * * *"
+  # One-shot self-activation path: merging a change to this workflow starts the
+  # harvest immediately instead of waiting until the next 02:17 UTC slot. A
+  # normal application push does NOT trigger it because the path filter is only
+  # this workflow file. Future scheduled operation remains daily.
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/commoncrawl-mass-seed-harvest.yml"
   workflow_dispatch:
     inputs:
       mode:
@@ -59,7 +68,7 @@ jobs:
           OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
         run: |
           set -e
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "push" ]; then
             MODE="apply"
           else
             MODE="${{ inputs.mode }}"
