@@ -1,44 +1,44 @@
 // AKARFINDER-OPENSERP-AUTOMATED-INGESTION-30MIN-1 — sections 10, 13-15.
-// Nationally-scoped city/district text extraction, following the exact same
-// normalize-then-alias-match algorithm as utils.ts's extractCity/
-// extractDistrict (3 cities only) — just fed from national-geography.ts's
-// full 16-city / 65-district set instead. Kept as a separate module so
-// classify.ts's original functions (and the locked pilot behavior that
-// depends on them) are never edited.
+// DATA-FUNNEL-RECOVERY-1
+//
+// Nationally-scoped city/district extraction for acquisition. Query Universe V2
+// now covers the full acquisition geography, so extraction must use the same
+// city set or otherwise newly-added national queries silently fall back to the
+// query city without being independently recognized in result text.
+// Arabic aliases are additive and come from the same canonical geography file
+// used to generate Arabic queries; no city/district is invented here.
 
-import { ALL_CITIES, TIER_3_DISTRICTS } from "./national-geography";
+import {
+  ALL_ACQUISITION_CITIES,
+  CITY_ARABIC_NAMES,
+  TIER_3_DISTRICTS,
+} from "./national-geography";
 
 function normalizeText(value: string): string {
   return value
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9\s/-]/g, " ")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}\s/-]/gu, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-// City aliases: the canonical name itself, normalized, plus a small set of
-// well-known alternate spellings already used elsewhere in this codebase
-// (scripts/scrapers/normalizers/normalize-city.ts) — never invented.
-const NATIONAL_CITY_ALIASES: ReadonlyArray<{ city: string; aliases: string[] }> = [
-  { city: "Casablanca", aliases: ["casablanca", "casa", "dar el beida"] },
-  { city: "Rabat", aliases: ["rabat"] },
-  { city: "Salé", aliases: ["sale", "sla"] },
-  { city: "Témara", aliases: ["temara"] },
-  { city: "Marrakech", aliases: ["marrakech", "marrakesh"] },
-  { city: "Tanger", aliases: ["tanger", "tangier"] },
-  { city: "Agadir", aliases: ["agadir"] },
-  { city: "Fès", aliases: ["fes", "fez"] },
-  { city: "Meknès", aliases: ["meknes"] },
-  { city: "Kénitra", aliases: ["kenitra"] },
-  { city: "El Jadida", aliases: ["el jadida", "eljadida"] },
-  { city: "Oujda", aliases: ["oujda"] },
-  { city: "Tétouan", aliases: ["tetouan"] },
-  { city: "Nador", aliases: ["nador"] },
-  { city: "Mohammedia", aliases: ["mohammedia"] },
-  { city: "Essaouira", aliases: ["essaouira"] },
-];
+const EXTRA_CITY_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  Casablanca: ["casa", "dar el beida"],
+  Marrakech: ["marrakesh"],
+  Tanger: ["tangier"],
+  "Fès": ["fez"],
+  "Salé": ["sla"],
+};
+
+const NATIONAL_CITY_ALIASES: ReadonlyArray<{ city: string; aliases: string[] }> = ALL_ACQUISITION_CITIES.map((city) => {
+  const aliases = new Set<string>([normalizeText(city)]);
+  for (const alias of EXTRA_CITY_ALIASES[city] ?? []) aliases.add(normalizeText(alias));
+  const arabic = CITY_ARABIC_NAMES[city];
+  if (arabic) aliases.add(normalizeText(arabic));
+  return { city, aliases: [...aliases].filter(Boolean) };
+});
 
 const NATIONAL_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string; aliases: string[] }> = Object.entries(
   TIER_3_DISTRICTS,
@@ -53,7 +53,7 @@ const NATIONAL_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string;
 export function extractCityNational(value: string): string | null {
   const normalized = normalizeText(value);
   for (const entry of NATIONAL_CITY_ALIASES) {
-    if (entry.aliases.some((alias) => normalized.includes(normalizeText(alias)))) {
+    if (entry.aliases.some((alias) => alias.length > 0 && normalized.includes(alias))) {
       return entry.city;
     }
   }
@@ -71,5 +71,5 @@ export function extractDistrictNational(value: string): { city: string; district
 }
 
 export function isKnownNationalCity(city: string | null): boolean {
-  return city != null && ALL_CITIES.includes(city);
+  return city != null && ALL_ACQUISITION_CITIES.includes(city);
 }
