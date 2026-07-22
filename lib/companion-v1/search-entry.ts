@@ -18,11 +18,7 @@ export function companionProfileToSearchParams(profile: DynamicSearchProfileV2):
   if (budgetMax != null) params.set("budget_max", String(budgetMax));
 
   if (profile.property.min_surface_m2 != null) {
-    params.set("surface_min", String(profile.property.min_surface_m2));
-  }
-
-  if (profile.property.min_bedrooms != null) {
-    params.set("bedrooms_min", String(profile.property.min_bedrooms));
+    params.set("min_surface", String(profile.property.min_surface_m2));
   }
 
   params.set("guided", "1");
