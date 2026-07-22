@@ -77,6 +77,8 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/seed-listing-mass-conversion-v1.test.ts
       - name: Thin Index Seed Search V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/thin-index-seed-search-v1.test.ts
+      - name: Vercel Phase Deployment Gate suite
+        run: npx tsx --test scripts/scrapers/__tests__/vercel-phase-deployment-gate.test.ts
       - name: API regression suite
         run: npm run test:api
       - name: OpenSERP ingestion suite
