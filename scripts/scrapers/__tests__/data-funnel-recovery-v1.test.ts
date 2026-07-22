@@ -84,6 +84,28 @@ test("category-like numeric slug is not promoted solely because a registry regex
   assert.notEqual(result.classification_lane, "individual_listing");
 });
 
+test("non-ambiguous Agenz listing ID survives related-listing counts in snippet", () => {
+  const result = classify({
+    url: "https://agenz.ma/fr/annonces/immo-fes/vente-appartements/oued-fes/844980",
+    title: "Appartement à vendre 92 m2 3 chambres Oued Fès",
+    snippet: "Appartement de 92 m2. Découvrez aussi 24 annonces appartements similaires dans le secteur.",
+    query: query({ city: "Fès", transaction_type: "sale", query_text: "appartement à vendre Fès" }),
+  });
+  assert.ok(result);
+  assert.equal(result.classification_lane, "individual_listing");
+});
+
+test("Mubawab /is/ search paths remain discovery even if registry legacy pattern looks strong", () => {
+  const result = classify({
+    url: "https://mubawab.ma/fr/is/appartement-for-rent_casablanca_pas-cher",
+    title: "Appartement à louer Casablanca pas cher",
+    snippet: "Découvrez 320 annonces appartements à louer à Casablanca.",
+    query: query({ city: "Casablanca", query_text: "appartement Casablanca location" }),
+  });
+  assert.ok(result);
+  assert.equal(result.classification_lane, "discovery_page");
+});
+
 test("explicit vacation intent remains rejected even on a strong numeric listing path", () => {
   const result = classify({
     url: "https://1immo.ma/appartement-location-vacances-marrakech-12345",
