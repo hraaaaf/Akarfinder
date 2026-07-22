@@ -1,6 +1,4 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { describe, it } from "node:test";
 import { findNeighborhoodV2 } from "../../../lib/neighborhood-intelligence/build-v2-from-v1.js";
 import { computePropertyFit, type FitPropertyInput } from "../../../lib/property-fit-v1/property-fit-engine.js";
@@ -63,13 +61,22 @@ describe("#19E Personalized Property Fit & Ranking V1", () => {
     assert.deepEqual(ranked.map((item) => item.item), ["first", "second"]);
   });
 
-  it("does not use AkarScore, completeness or commercial tier as Fit inputs", () => {
-    const fitSource = readFileSync(join(process.cwd(), "lib/property-fit-v1/property-fit-engine.ts"), "utf8");
-    const rankSource = readFileSync(join(process.cwd(), "lib/property-fit-v1/personalized-ranking.ts"), "utf8");
-    for (const forbidden of ["akar_score", "akarScore", "completeness_score", "commercial_tier", "partner_badge"]) {
-      assert.equal(fitSource.includes(forbidden), false, `Fit engine must not depend on ${forbidden}`);
-      assert.equal(rankSource.includes(forbidden), false, `Ranking adapter must not depend on ${forbidden}`);
-    }
+  it("ignores AkarScore, completeness and commercial tier metadata when computing Fit", () => {
+    let profile = createEmptyDynamicSearchProfileV2();
+    profile = applySearchProfileEvent(profile, { type: "preference", key: "family_fit", direction: "prefer_high", importance: "high" });
+    const neighborhood = neighborhoodWithScores();
+    const baseline = computePropertyFit(profile, PROPERTY, neighborhood);
+    const decoratedProperty = {
+      ...PROPERTY,
+      akar_score: 100,
+      completeness_score: 100,
+      commercial_tier: "premium",
+      partner_badge: "premium",
+    } as FitPropertyInput;
+    const decorated = computePropertyFit(profile, decoratedProperty, neighborhood);
+    assert.equal(decorated.score, baseline.score);
+    assert.equal(decorated.eligible, baseline.eligible);
+    assert.deepEqual(decorated.components, baseline.components);
   });
 
   it("can eliminate must-level neighborhood mismatch when evidence exists", () => {
