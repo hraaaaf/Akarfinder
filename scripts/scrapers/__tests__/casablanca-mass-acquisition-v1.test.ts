@@ -13,9 +13,11 @@ import { loadSourceDomainRegistry } from "../../../lib/openserp-ingestion/domain
 import { buildQueryUniverseV2 } from "../../../lib/openserp-ingestion/query-universe-v2.js";
 import { resolveNativeResultLimit } from "../../../lib/openserp-async/openserp-native-client.js";
 import {
+  MASS_CANARY_DOMAINS,
   buildCdxIndexUrl,
   parseMassCdxJsonLine,
   processMassDomainRecords,
+  selectMassHarvestDomains,
   type MassCdxRecord,
 } from "../../openserp/commoncrawl-registry-mass-harvest.js";
 
@@ -47,6 +49,17 @@ test("mass harvest domain set is registry-driven, approved-only, external-only, 
     assert.equal(entry.external_web_result, true);
     assert.ok(entry.listing_url_patterns.length > 0);
   }
+});
+
+test("Common Crawl canary and remainder partition the approved registry without overlap", () => {
+  const all = selectRegistryMassHarvestDomains(loadSourceDomainRegistry());
+  const canary = selectMassHarvestDomains(all, "canary");
+  const remainder = selectMassHarvestDomains(all, "remainder");
+
+  assert.deepEqual(new Set(canary), new Set(MASS_CANARY_DOMAINS));
+  assert.equal(canary.some((domain) => remainder.includes(domain)), false);
+  assert.deepEqual(new Set([...canary, ...remainder]), new Set(all));
+  assert.equal(selectMassHarvestDomains(all, "all")[0], MASS_CANARY_DOMAINS[0]);
 });
 
 test("CDX timestamps convert deterministically and invalid dates fail closed", () => {
@@ -149,10 +162,15 @@ test("GitHub scale runner always materializes the full national V2 universe", ()
   assert.equal(orchestrator.includes("OPENSERP_NATIVE_RESULT_LIMIT"), false);
 });
 
-test("Common Crawl mass workflow never grants seeds direct public-listing write paths", () => {
+test("Common Crawl workflow imports canary before remainder and never grants direct listing writes", () => {
   const workflow = readFileSync(join(process.cwd(), ".github/workflows/commoncrawl-mass-seed-harvest.yml"), "utf8");
   const importer = readFileSync(join(process.cwd(), "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"), "utf8");
   const harvester = readFileSync(join(process.cwd(), "scripts/openserp/commoncrawl-registry-mass-harvest.ts"), "utf8");
+
+  assert.ok(workflow.includes("COMMONCRAWL_MASS_MODE: canary"));
+  assert.ok(workflow.includes("Import canary seeds immediately"));
+  assert.ok(workflow.includes("COMMONCRAWL_MASS_MODE: remainder"));
+  assert.ok(workflow.indexOf("Import canary seeds immediately") < workflow.indexOf("COMMONCRAWL_MASS_MODE: remainder"));
   assert.ok(workflow.includes("source_offer_seeds") || workflow.includes("ingest-commoncrawl-mass-seeds"));
   assert.ok(importer.includes('.from("source_offer_seeds")'));
   assert.equal(importer.includes('.from("property_listings")'), false);
