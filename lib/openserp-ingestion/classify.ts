@@ -66,7 +66,6 @@ const DISCOVERY_TOKENS = [
   "guide immobilier",
   "prix moyen",
   "tendances du marche",
-  "plus de",
 ];
 
 const ARABIC_DISCOVERY_TOKENS = ["إعلانات", "اعلانات", "قائمة العقارات", "نتائج البحث"];
@@ -243,6 +242,14 @@ function classifyLane(input: {
   if (hasBedrooms) reasons.push("bedroom_signal");
   if (hasArabicRealEstateSignal(multilingualDetailText)) reasons.push("arabic_real_estate_signal");
 
+  // Explicit discovery/category evidence must outrank a broad numeric-path
+  // regex. This is especially important for legacy 1immo slugs such as
+  // "appartements-a-louer-551", which structurally match /-\d+$/ but are
+  // category pages, not individual offers.
+  if (urlSignals.forceDiscovery || hasPluralCountPattern || hasDiscoveryToken) {
+    return { lane: "discovery_page", reasons };
+  }
+
   if (
     urlSignals.strongIndividual &&
     hasPropertyType &&
@@ -250,10 +257,6 @@ function classifyLane(input: {
     explicitLocationMatchesQuery
   ) {
     return { lane: "individual_listing", reasons };
-  }
-
-  if (urlSignals.forceDiscovery || hasPluralCountPattern || hasDiscoveryToken) {
-    return { lane: "discovery_page", reasons };
   }
 
   if (hasPropertyType && hasTransaction && explicitLocationMatchesQuery && detailSignalCount >= 2) {
