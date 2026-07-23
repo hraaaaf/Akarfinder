@@ -1,11 +1,6 @@
 name: Serper Mass Harvest Stratified Canary
 
 on:
-  push:
-    branches:
-      - feat/serper-mass-harvest-implement-1
-    paths:
-      - ".github/workflows/serper-mass-harvest-canary.yml"
   workflow_dispatch:
 
 permissions:
