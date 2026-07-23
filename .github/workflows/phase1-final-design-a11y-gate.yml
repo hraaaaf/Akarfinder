@@ -6,6 +6,7 @@ on:
 permissions:
   contents: read
   issues: write
+  pull-requests: write
 jobs:
   final-ui-a11y:
     runs-on: ubuntu-latest
@@ -43,22 +44,38 @@ jobs:
           cat /tmp/akarfinder-next.log
           exit 1
       - name: Responsive UI and accessibility smoke
+        id: smoke
+        continue-on-error: true
         env:
           BASE_URL: http://127.0.0.1:3000
         run: npx tsx scripts/audits/final-ui-a11y-smoke.ts
-      - name: Publish failed smoke report to PR
-        if: failure() && github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if [ -f artifacts/ui-audit/report.md ]; then
-            gh pr comment "${{ github.event.pull_request.number }}" --body-file artifacts/ui-audit/report.md
-          fi
       - name: Upload UI audit screenshots and report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: phase1-final-ui-audit
           path: artifacts/ui-audit
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14
+      - name: Publish smoke report to PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'artifacts/ui-audit/report.md';
+            if (!fs.existsSync(path)) return;
+            const body = fs.readFileSync(path, 'utf8');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+      - name: Enforce smoke result
+        if: always()
+        run: |
+          if [ "${{ steps.smoke.outcome }}" != "success" ]; then
+            echo "Responsive UI/accessibility smoke reported findings. See PR comment and artifact."
+            exit 1
+          fi
