@@ -51,11 +51,27 @@ test("discovery planner emits exactly 250 long-tail queries excluding major port
   }
 });
 
-test("canonicalizer strips tracking and normalizes host without changing identity-bearing params", () => {
+test("canonicalizer strips tracking while preserving identity-bearing query params", () => {
   assert.equal(
     canonicalizeHarvestUrl("HTTPS://WWW.Example.ma/property/123/?utm_source=x&ref=foo&page=2#gallery"),
-    "https://example.ma/property/123?page=2",
+    "https://example.ma/property/123?page=2&ref=foo",
   );
+});
+
+test("real-estate query text alone cannot make an unrelated result eligible", () => {
+  const query: HarvestQuery = {
+    id: "q-noise",
+    phase: "fixed",
+    source_id: "mubawab",
+    query: "site:mubawab.ma appartement Casablanca a vendre",
+  };
+  const result = classifyHarvestResult({
+    query,
+    canonicalUrl: "https://example.ma/article/12345",
+    title: "Actualités automobiles",
+    snippet: "Guide des voitures d'occasion",
+  });
+  assert.equal(result.status, "rejected");
 });
 
 test("Mubawab registered detail path is accepted only with real-estate signal", () => {
