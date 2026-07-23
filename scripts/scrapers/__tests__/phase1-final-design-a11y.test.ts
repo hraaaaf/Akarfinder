@@ -51,6 +51,13 @@ describe("Phase 1 final UI — structural accessibility contracts", () => {
     assert.equal(filters.includes("dark:placeholder:text-white/35"), false);
   });
 
+  it("makes accent-blue canonical while keeping bronze as an explicit legacy compatibility namespace", () => {
+    const tailwind = source("tailwind.config.ts");
+    assert.ok(tailwind.includes('"accent-blue":'));
+    assert.ok(tailwind.includes("Do not use `bronze-*` in new UI"));
+    assert.ok(tailwind.includes('accent: "0 6px 18px rgba(11,99,206,0.24)"'));
+  });
+
   it("ships a responsive Playwright smoke audit for 390, 768 and 1280 widths", () => {
     const audit = source("scripts/audits/final-ui-a11y-smoke.ts");
     for (const width of [390, 768, 1280]) {
