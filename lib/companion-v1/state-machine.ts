@@ -36,6 +36,7 @@ export type CompanionEvent =
   | { type: "answer_preferences"; preferences: CompanionPreferenceAnswer[] }
   | { type: "answer_priorities"; priorities: string[] }
   | { type: "answer_compromise"; tourism_intensity_max?: number | null }
+  | { type: "revise_profile" }
   | { type: "confirm_profile" }
   | { type: "search_completed"; property_ids: string[] }
   | { type: "elimination_completed"; eliminated_property_ids: string[] }
@@ -53,7 +54,7 @@ const EXPECTED_EVENT: Record<CompanionState, CompanionEvent["type"][]> = {
   PREFERENCES: ["answer_preferences"],
   PRIORISATION: ["answer_priorities"],
   COMPROMIS: ["answer_compromise"],
-  PROFIL_RECAP: ["confirm_profile"],
+  PROFIL_RECAP: ["revise_profile", "confirm_profile"],
   RECHERCHE: ["search_completed"],
   TRI_PAR_ELIMINATION: ["elimination_completed"],
   AFFINAGE: ["refine"],
@@ -91,6 +92,7 @@ export function transitionCompanionSession(session: CompanionSession, event: Com
       if ("tourism_intensity_max" in event) next.profile = applySearchProfileEvent(next.profile, { type: "tourism_tolerance", max: event.tourism_intensity_max ?? null }, now);
       next.state = "PROFIL_RECAP";
       break;
+    case "revise_profile": next.state = "OBJECTIF"; break;
     case "confirm_profile": {
       const readiness = profileIsSearchReady(next.profile);
       if (!readiness.ready) throw new Error(`COMPANION_PROFILE_NOT_READY:${readiness.missing.join(",")}`);
