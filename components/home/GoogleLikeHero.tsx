@@ -51,30 +51,21 @@ export function GoogleLikeHero() {
       <Container className="relative z-10 w-full px-5 pb-12 pt-[calc(env(safe-area-inset-top)+5.5rem)] sm:pb-24 sm:pt-36 lg:pb-28 lg:pt-44">
         <div className="mx-auto flex max-w-[860px] flex-col items-center text-center">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#60A5FA]/28 bg-[rgba(255,255,255,0.68)] px-3.5 py-1.5 backdrop-blur-md sm:mb-7 sm:bg-[#0B63CE]/14 sm:px-4">
-            <span
-              className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#60A5FA]"
-              aria-hidden="true"
-            />
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#60A5FA]" aria-hidden="true" />
             <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE] sm:tracking-[0.22em] sm:text-white">
               Moteur de recherche immobilier au Maroc
             </span>
           </div>
 
           <h1 className="text-[1.78rem] font-extrabold leading-[1.04] tracking-[-0.038em] text-[#071B33] sm:text-[3.4rem] sm:leading-[1.04] sm:text-white lg:text-[4.1rem]">
-            Le{" "}
+            Cherchez l&apos;immobilier marocain avec{" "}
             <span className="bg-gradient-to-r from-[#0B63CE] via-[#60A5FA] to-[#0B63CE] bg-clip-text text-transparent">
-              1er moteur de recherche immobilier
-            </span>{" "}
-            au Maroc
+              plus de clarté
+            </span>
           </h1>
 
-          <p className="mt-4 max-w-[620px] text-[0.95rem] leading-relaxed text-[#334155] drop-shadow-[0_1px_6px_rgba(0,0,0,0.2)] sm:mt-6 sm:text-[1.1rem] sm:text-white sm:drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
-            <span className="sm:hidden">
-              Cherchez directement ou construisez votre projet. Comprenez le quartier et retrouvez les sources originales.
-            </span>
-            <span className="hidden sm:inline">
-              Vous savez ce que vous cherchez ? Lancez une recherche directe sur les sources originales. Vous hésitez encore ? Le Compagnon AkarFinder structure votre projet pour mieux comparer et Comprenez le quartier avant de décider.
-            </span>
+          <p className="mt-4 max-w-[650px] text-[0.95rem] leading-relaxed text-[#334155] drop-shadow-[0_1px_6px_rgba(0,0,0,0.2)] sm:mt-6 sm:text-[1.1rem] sm:text-white sm:drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+            Recherchez directement, distinguez les fiches analysées des simples offres observées et retrouvez toujours la source originale. Le Compagnon vous aide à structurer Mon Projet lorsque vos critères ne sont pas encore clairs.
           </p>
 
           <div className="mt-6 w-full sm:mt-11">
@@ -87,9 +78,7 @@ export function GoogleLikeHero() {
         className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 sm:flex"
         aria-hidden="true"
       >
-        <span className="text-[9.5px] font-bold uppercase tracking-[0.15em] text-white/35">
-          Explorer
-        </span>
+        <span className="text-[9.5px] font-bold uppercase tracking-[0.15em] text-white/35">Explorer</span>
         <div className="h-8 w-px bg-gradient-to-b from-white/30 to-transparent" />
       </div>
     </section>
