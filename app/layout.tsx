@@ -76,7 +76,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <JsonLd data={getWebsiteJsonLd()} />
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <a href="#main-content" className="skip-link">
+          Aller au contenu principal
+        </a>
+        <ThemeProvider>
+          <div id="main-content" tabIndex={-1}>
+            {children}
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );
