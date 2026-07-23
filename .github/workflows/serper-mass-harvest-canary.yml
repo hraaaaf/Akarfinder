@@ -1,4 +1,4 @@
-name: Serper Mass Harvest Canary
+name: Serper Mass Harvest Stratified Canary
 
 on:
   push:
@@ -18,7 +18,6 @@ jobs:
     env:
       SERPER_MASS_HARVEST_ENABLED: "true"
       SERPER_MASS_HARVEST_API_KEY: ${{ secrets.SEARCH_API_KEY }}
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
@@ -32,13 +31,13 @@ jobs:
         shell: bash
         run: |
           test -n "$SERPER_MASS_HARVEST_API_KEY" || { echo "SEARCH_API_KEY secret missing"; exit 2; }
-          test -n "${NEXT_PUBLIC_SUPABASE_URL:-${SUPABASE_URL:-}}" || { echo "Supabase URL secret missing"; exit 2; }
+          test -n "$SUPABASE_URL" || { echo "SUPABASE_URL secret missing"; exit 2; }
           test -n "$SUPABASE_SERVICE_ROLE_KEY" || { echo "SUPABASE_SERVICE_ROLE_KEY secret missing"; exit 2; }
-      - name: Run 50-credit read-only canary
-        run: npx tsx scripts/serper-mass-harvest.ts --run --max-calls=50 | tee serper-canary-output.json
+      - name: Run 50-credit stratified read-only canary
+        run: npx tsx scripts/serper-mass-harvest-stratified-canary.ts | tee serper-stratified-canary-output.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: serper-mass-harvest-canary
-          path: serper-canary-output.json
+          name: serper-mass-harvest-stratified-canary
+          path: serper-stratified-canary-output.json
           if-no-files-found: ignore
