@@ -10,6 +10,12 @@ export type SearchTruthPresentation = {
   explanation: string;
 };
 
+export type CollapsedSearchListings = {
+  listings: Listing[];
+  groupedRepresentations: number;
+  groupedCountsByRepresentativeId: Record<string, number>;
+};
+
 export function isObservedExternalListing(listing: Listing): boolean {
   return (
     listing.source_display_type === "external_web_result" ||
@@ -48,6 +54,44 @@ export function getSearchTruthPresentation(listing: Listing): SearchTruthPresent
     explanation:
       "AkarFinder dispose de suffisamment d'éléments pour structurer le résultat, mais pas pour produire une analyse documentaire complète.",
   };
+}
+
+/**
+ * Reduce visible noise for structured listings when the dedup engine has already
+ * assigned the same duplicate_group_id to multiple representations. We keep the
+ * first item in the already-ranked list, so relevance order remains authoritative.
+ *
+ * External/index-only offers are never silently collapsed here: their original
+ * sources remain individually visible unless a dedicated public similarity UI
+ * explicitly groups them.
+ */
+export function collapseStructuredDuplicateGroups(listings: Listing[]): CollapsedSearchListings {
+  const result: Listing[] = [];
+  const representativeByGroup = new Map<string, Listing>();
+  const groupedCountsByRepresentativeId: Record<string, number> = {};
+  let groupedRepresentations = 0;
+
+  for (const listing of listings) {
+    if (isObservedExternalListing(listing) || !listing.duplicate_group_id?.trim()) {
+      result.push(listing);
+      continue;
+    }
+
+    const groupId = listing.duplicate_group_id.trim();
+    const representative = representativeByGroup.get(groupId);
+    if (!representative) {
+      representativeByGroup.set(groupId, listing);
+      result.push(listing);
+      groupedCountsByRepresentativeId[listing.id] = 1;
+      continue;
+    }
+
+    groupedRepresentations += 1;
+    groupedCountsByRepresentativeId[representative.id] =
+      (groupedCountsByRepresentativeId[representative.id] ?? 1) + 1;
+  }
+
+  return { listings: result, groupedRepresentations, groupedCountsByRepresentativeId };
 }
 
 export function partitionStructuredListings(listings: Listing[]): {
