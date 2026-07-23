@@ -1,151 +1,97 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { CitySeoHero } from "@/components/seo/CitySeoHero";
-import { CitySearchCtas } from "@/components/seo/CitySearchCtas";
-import { SeoSafetyNotice } from "@/components/seo/SeoSafetyNotice";
+import { ArrowRight, MapPin, Search } from "lucide-react";
+import { GeoResultPreview } from "@/components/geo/GeoResultPreview";
+import { SiteFooter } from "@/components/landing/SiteFooter";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { Container } from "@/components/ui/Container";
 import { getCityBySlug, getAllCities } from "@/lib/seo-city-pages/city-seo-data";
 import { generateCitySeoMetadata } from "@/lib/seo-city-pages/seo-metadata";
 import { getNeighborhoodsByCity } from "@/lib/seo-neighborhood-pages/neighborhood-seo-data";
+import { searchListings } from "@/lib/search";
 
-type CityPageProps = {
-  params: Promise<{ city: string }>;
-};
+type CityPageProps = { params: Promise<{ city: string }> };
 
 export async function generateStaticParams() {
-  const cities = getAllCities();
-  return cities.map((city) => ({
-    city: city.slug,
-  }));
+  return getAllCities().map((city) => ({ city: city.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: CityPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: CityPageProps): Promise<Metadata> {
   const { city } = await params;
   const cityData = getCityBySlug(city);
-
-  if (!cityData) {
-    return {
-      title: "Not Found",
-      robots: { index: false, follow: false },
-    };
-  }
-
+  if (!cityData) return { title: "Not Found", robots: { index: false, follow: false } };
   const seo = generateCitySeoMetadata(cityData);
-
   return {
     title: seo.title,
     description: seo.description,
-    alternates: {
-      canonical: seo.canonical,
-    },
+    alternates: { canonical: seo.canonical },
     robots: { index: true, follow: true },
-    openGraph: {
-      title: seo.ogTitle,
-      description: seo.ogDescription,
-      type: "website",
-      url: seo.canonical,
-    },
+    openGraph: { title: seo.ogTitle, description: seo.ogDescription, type: "website", url: seo.canonical },
   };
 }
 
 export default async function CityPage({ params }: CityPageProps) {
   const { city } = await params;
   const cityData = getCityBySlug(city);
-
-  if (!cityData) {
-    notFound();
-  }
+  if (!cityData) notFound();
 
   const neighborhoods = getNeighborhoodsByCity(city);
+  const result = await searchListings({ city: cityData.displayName, limit: 6 }).catch(() => ({ listings: [] }));
+  const cityParam = encodeURIComponent(cityData.displayName);
 
   return (
-    <div className="min-h-screen bg-white">
-      <CitySeoHero city={cityData} />
-      <CitySearchCtas city={cityData} />
+    <main className="min-h-screen bg-background text-foreground">
+      <SiteHeader compact />
+      <section className="border-b border-border/12 bg-surface py-12 dark:border-white/8 dark:bg-deepblue sm:py-16">
+        <Container>
+          <Link href="/immobilier" className="text-[12px] font-bold text-muted-foreground">Immobilier au Maroc →</Link>
+          <div className="mt-5 max-w-3xl">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-bronze-500">Hub local · {cityData.displayName}</p>
+            <h1 className="mt-3 text-[2.4rem] font-extrabold leading-[1.04] tracking-[-0.05em] sm:text-[3.6rem]">Immobilier à {cityData.displayName}</h1>
+            <p className="mt-4 max-w-2xl text-[14px] leading-7 text-muted-foreground">{cityData.description} Cette page relie les quartiers canoniques, les repères locaux et le moteur Search sans prétendre représenter tout le marché.</p>
+          </div>
 
-      {neighborhoods.length > 0 && (
-        <section className="border-t border-slate-200 px-4 py-12 sm:py-16">
-          <div className="mx-auto max-w-3xl">
-            <h2 className="text-2xl font-extrabold text-slate-900">
-              Quartiers à {cityData.displayName}
-            </h2>
-            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="mt-7 flex flex-wrap gap-2">
+            <Link href={`/search?city=${cityParam}&transaction_type=buy`} className="rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[13px] font-extrabold text-white">Acheter à {cityData.displayName}</Link>
+            <Link href={`/search?city=${cityParam}&transaction_type=rent`} className="rounded-xl border border-border/20 px-5 py-3 text-[13px] font-extrabold">Louer</Link>
+            <Link href={`/search?city=${cityParam}&transaction_type=new`} className="rounded-xl border border-border/20 px-5 py-3 text-[13px] font-extrabold">Neuf</Link>
+            <Link href={`/map?city=${cityParam}`} className="inline-flex items-center gap-2 rounded-xl border border-border/20 px-5 py-3 text-[13px] font-extrabold"><MapPin size={14} />Carte</Link>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {["Appartement", "Villa", "Studio"].map((type) => (
+              <Link key={type} href={`/search?city=${cityParam}&property_type=${encodeURIComponent(type)}`} className="rounded-full border border-border/15 bg-card px-4 py-2 text-[12px] font-bold dark:border-white/10 dark:bg-white/[0.04]">{type}</Link>
+            ))}
+            <Link href={`/search?city=${cityParam}`} className="inline-flex items-center gap-1 rounded-full border border-bronze-500/35 bg-bronze-500/10 px-4 py-2 text-[12px] font-extrabold text-bronze-500">Tous les résultats <ArrowRight size={12} /></Link>
+          </div>
+        </Container>
+      </section>
+
+      {neighborhoods.length > 0 ? (
+        <section className="py-12 lg:py-16">
+          <Container>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div><p className="text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-bronze-500">Quartiers éligibles</p><h2 className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.04em]">Explorer {cityData.displayName} par quartier</h2></div>
+              <Link href={`/map?city=${cityParam}`} className="text-[13px] font-extrabold text-bronze-500">Voir sur la carte →</Link>
+            </div>
+            <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {neighborhoods.map((n) => (
-                <Link
-                  key={n.slug}
-                  href={`/immobilier/${n.citySlug}/${n.slug}`}
-                  className="rounded-lg border border-slate-200 bg-white p-4 transition hover:bg-slate-50"
-                >
-                  <p className="font-semibold text-slate-900">
-                    {n.displayName}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-600">
-                    {n.propertyTypes.slice(0, 2).join(" • ")}
-                  </p>
+                <Link key={n.slug} href={`/immobilier/${n.citySlug}/${n.slug}`} className="rounded-2xl border border-border/15 bg-card p-5 transition hover:border-bronze-500/40 dark:border-white/10 dark:bg-white/[0.04]">
+                  <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-500">Quartier</p>
+                  <h3 className="mt-2 text-lg font-extrabold">{n.displayName}</h3>
+                  <p className="mt-2 text-[12px] leading-5 text-muted-foreground">{n.description}</p>
                 </Link>
               ))}
             </div>
-          </div>
+          </Container>
         </section>
-      )}
+      ) : null}
 
-      <SeoSafetyNotice />
+      <GeoResultPreview listings={result.listings} searchHref={`/search?city=${cityParam}`} contextLabel={cityData.displayName} />
 
-      {/* FAQ */}
-      <section className="border-t border-slate-200 px-4 py-12 sm:py-16">
-        <div className="mx-auto max-w-3xl">
-          <h2 className="text-2xl font-extrabold text-slate-900">
-            Questions fréquentes
-          </h2>
-
-          <div className="mt-6 space-y-6">
-            <div>
-              <p className="font-semibold text-slate-900">
-                Quelle est la couverture d'AkarFinder à {cityData.displayName} ?
-              </p>
-              <p className="mt-2 text-slate-600">
-                AkarFinder explore les résultats immobiliers publics disponibles en
-                ligne. Pour une couverture complète, consultez directement les sources
-                immobilières principales.
-              </p>
-            </div>
-
-            <div>
-              <p className="font-semibold text-slate-900">
-                Les annonces sur AkarFinder sont-elles vérifiées ?
-              </p>
-              <p className="mt-2 text-slate-600">
-                AkarFinder affiche des résultats publics sans effectuer de vérification
-                indépendante. Confirmez toujours directement auprès de l&apos;annonceur
-                avant de prendre une décision.
-              </p>
-            </div>
-
-            <div>
-              <p className="font-semibold text-slate-900">
-                Comment contacter l&apos;annonceur ?
-              </p>
-              <p className="mt-2 text-slate-600">
-                AkarFinder vous renvoie vers la source originale de l&apos;annonce.
-                Consultez-la pour obtenir les coordonnées de l&apos;annonceur ou du
-                promoteur.
-              </p>
-            </div>
-
-            <div>
-              <p className="font-semibold text-slate-900">
-                Puis-je réserver ou acheter directement sur AkarFinder ?
-              </p>
-              <p className="mt-2 text-slate-600">
-                Non. AkarFinder est un moteur de recherche — vous devez consulter la
-                source originale et traiter directement avec l&apos;annonceur.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+      <section className="border-t border-border/12 bg-surface py-10 dark:border-white/8"><Container><div className="flex items-start gap-3"><Search size={18} className="mt-1 text-bronze-500" /><p className="max-w-3xl text-[12.5px] leading-6 text-muted-foreground"><strong className="text-foreground">À lire comme un index, pas comme une garantie de couverture.</strong> AkarFinder affiche les résultats accessibles selon ses règles de publication et renvoie à la source originale lorsque nécessaire.</p></div></Container></section>
+      <SiteFooter />
+    </main>
   );
 }
