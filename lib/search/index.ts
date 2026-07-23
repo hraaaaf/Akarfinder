@@ -2,6 +2,7 @@ import { searchDatabase } from "./database-search";
 import { getSearchProvider, useTypesenseSearch } from "./provider";
 import { searchTypesense } from "./typesense-search";
 import { canonicalizeGeoPair } from "@/lib/geo/geo-entity-registry";
+import { collapseStructuredDuplicateGroups } from "@/lib/search/search-truth-tier";
 import type { SearchQuery, SearchResult } from "./types";
 
 export type { SearchQuery, SearchResult };
@@ -27,11 +28,20 @@ function canonicalizeResultGeo(result: SearchResult): SearchResult {
   };
 }
 
+function projectVisibleDedup(result: SearchResult): SearchResult {
+  const canonical = canonicalizeResultGeo(result);
+  const collapsed = collapseStructuredDuplicateGroups(canonical.listings);
+  return {
+    ...canonical,
+    listings: collapsed.listings,
+  };
+}
+
 export async function searchListings(query: SearchQuery = {}): Promise<SearchResult> {
   if (getSearchProvider() === "typesense") {
     if (useTypesenseSearch()) {
       try {
-        return canonicalizeResultGeo(await searchTypesense(query));
+        return projectVisibleDedup(await searchTypesense(query));
       } catch (error) {
         console.error("[search] Typesense failed, falling back to database:", error);
       }
@@ -40,7 +50,7 @@ export async function searchListings(query: SearchQuery = {}): Promise<SearchRes
     }
   }
 
-  const fallback = canonicalizeResultGeo(await searchDatabase(query));
+  const fallback = projectVisibleDedup(await searchDatabase(query));
   return getSearchProvider() === "typesense"
     ? { ...fallback, source: "database_fallback" }
     : fallback;
