@@ -183,14 +183,17 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
       >
         <div className={`flex px-4 ${compact ? "gap-1.5 py-1.5" : "gap-2 py-2"}`}>
           {[
-            { href: "/acheter", label: "Acheter", aria: "Explorer les biens a acheter" },
+            { href: "/acheter", label: "Acheter", aria: "Explorer les biens à acheter" },
             { href: "/louer", label: "Louer", aria: "Explorer les locations" },
-            { href: "/neuf", label: "Neuf", aria: "Decouvrir les projets neufs" },
-            { href: "/vendre", label: "Vendre", aria: "Preparer la vente de votre bien" },
-            { href: "/promoteurs", label: "Promoteurs", aria: "Decouvrir l'espace promoteurs" },
+            { href: "/neuf", label: "Neuf", aria: "Découvrir les projets neufs" },
+            { href: "/vendre", label: "Vendre", aria: "Préparer la vente de votre bien" },
+            { href: "/pro", label: "Pro", aria: "Découvrir AkarFinder Pro pour agences et promoteurs" },
             { href: "/search", label: "Recherche", aria: "Rechercher des biens" },
           ].map((chip) => {
-            const isActive = pathname.startsWith(chip.href);
+            const isActive =
+              chip.href === "/pro"
+                ? pathname.startsWith("/pro") || pathname.startsWith("/promoteurs")
+                : pathname.startsWith(chip.href);
             return (
               <Link
                 key={chip.href}
