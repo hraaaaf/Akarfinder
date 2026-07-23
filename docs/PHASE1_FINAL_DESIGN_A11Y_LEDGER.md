@@ -4,6 +4,8 @@ This ledger tracks the transversal findings from the final UX/UI audit. It delib
 
 The current validation candidate is consolidated against `main` and includes the residual P2 closure plus this final UI/accessibility workstream, so one CI run can certify their interaction before any merge.
 
+Validation note: the repository was temporarily switched to public visibility by the owner to restore GitHub-hosted Actions capacity after the private-account minute quota was exhausted. This changes no product or release rule; the candidate still requires the same complete CI, screenshot review, and explicit end-of-Phase release gate before any Vercel deployment.
+
 | Finding | Status | Current closure state |
 |---|---|---|
 | AF-AUDIT-FINAL-079 — Legacy palette / brand-token collision | MIGRATION_GUARD_ADDED | Canonical `accent` / `accent-blue` is explicit for new UI. Historical `bronze-*` remains a compatibility namespace and is documented as legacy. Full removal requires visual migration of existing classes and fresh screenshots. |
