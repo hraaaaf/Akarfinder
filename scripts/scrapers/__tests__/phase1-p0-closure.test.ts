@@ -51,11 +51,13 @@ describe("Phase 1 P0 — canonical geo identity", () => {
     }
   });
 
-  it("SEO and quartier directory consume the canonical map adapter", () => {
+  it("SEO consumes the canonical adapter and Quartiers is either canonical or redirect-only", () => {
     const seoData = source("lib/seo-neighborhood-pages/neighborhood-seo-data.ts");
     const quartiers = source("app/quartiers/page.tsx");
     assert.ok(seoData.includes("@/lib/map/canonical-neighborhood-data"));
-    assert.ok(quartiers.includes("@/lib/map/canonical-neighborhood-data"));
+    const canonicalDirectory = quartiers.includes("@/lib/map/canonical-neighborhood-data");
+    const canonicalRedirect = quartiers.includes('permanentRedirect("/immobilier")');
+    assert.ok(canonicalDirectory || canonicalRedirect);
   });
 
   it("SEO eligibility remains an explicit subset of the canonical graph", () => {
