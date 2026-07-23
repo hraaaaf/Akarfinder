@@ -1,0 +1,66 @@
+name: Serper 1900 Bulk Harvest Report
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/serper-mass-harvest-bulk-report.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Locate latest bulk push run
+        id: locate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_json="$(gh api "repos/$GH_REPO/actions/workflows/serper-mass-harvest-bulk-once.yml/runs?branch=feat%2Fserper-mass-harvest-implement-1&event=push&per_page=5")"
+          run_id="$(printf '%s' "$run_json" | jq -r '.workflow_runs[0].id // empty')"
+          test -n "$run_id" || { echo "No bulk push run found"; exit 2; }
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          gh api "repos/$GH_REPO/actions/runs/$run_id" --jq '"bulk run id=\(.id) status=\(.status) conclusion=\(.conclusion) head=\(.head_sha)"'
+
+      - name: Wait for bulk completion
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ steps.locate.outputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 220); do
+            status="$(gh api "repos/$GH_REPO/actions/runs/$RUN_ID" --jq '.status')"
+            conclusion="$(gh api "repos/$GH_REPO/actions/runs/$RUN_ID" --jq '.conclusion // ""')"
+            echo "poll $i: status=$status conclusion=$conclusion"
+            if [ "$status" = "completed" ]; then
+              if [ "$conclusion" != "success" ]; then
+                gh run view "$RUN_ID" --repo "$GH_REPO" --log-failed || true
+                exit 4
+              fi
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "Bulk run did not complete in monitor window"
+          exit 3
+
+      - name: Print bulk artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ steps.locate.outputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p bulk-artifact
+          gh run download "$RUN_ID" --repo "$GH_REPO" -n serper-bulk-1900-cycle1 -D bulk-artifact
+          echo "===== SERPER BULK 1900 OUTPUT ====="
+          cat bulk-artifact/serper-bulk-1900-output.json
