@@ -12,7 +12,7 @@ import {
   resolveCityEntity,
   resolveNeighborhoodEntity,
 } from "../../../lib/geo/geo-entity-registry.js";
-import { NEIGHBORHOOD_POINTS } from "../../../lib/map/neighborhood-data.js";
+import { NEIGHBORHOOD_POINTS } from "../../../lib/map/canonical-neighborhood-data.js";
 import { evaluatePhase1SearchReleaseGate } from "../../../lib/release/phase1-search-release-gate.js";
 import { canPublishStructuredListing } from "../../../lib/sources/source-access-registry.js";
 import { deriveSourceDisplayPolicy } from "../../../lib/listings/map-db-listing.js";
@@ -38,14 +38,24 @@ describe("Phase 1 P0 — canonical geo identity", () => {
     assert.equal(canonicalizeNeighborhoodName("Rabat", "Hay Ryad"), "Hay Riad");
   });
 
-  it("every current map point resolves to a canonical city and neighborhood entity", () => {
+  it("every canonical map point resolves to the shared city and neighborhood registry", () => {
     for (const point of NEIGHBORHOOD_POINTS) {
-      assert.ok(resolveCityEntity(point.city), `Missing canonical city for map point ${point.city}`);
-      assert.ok(
-        resolveNeighborhoodEntity(point.city, point.neighborhood),
-        `Missing canonical neighborhood for ${point.city}/${point.neighborhood}`,
-      );
+      const city = resolveCityEntity(point.city);
+      const district = resolveNeighborhoodEntity(point.city, point.neighborhood);
+      assert.ok(city, `Missing canonical city for map point ${point.city}`);
+      assert.ok(district, `Missing canonical neighborhood for ${point.city}/${point.neighborhood}`);
+      assert.equal(point.city, city.canonical_name);
+      assert.equal(point.citySlug, city.slug);
+      assert.equal(point.neighborhood, district.canonical_name);
+      assert.equal(point.neighborhoodSlug, district.slug);
     }
+  });
+
+  it("SEO and quartier directory consume the canonical map adapter", () => {
+    const seoData = source("lib/seo-neighborhood-pages/neighborhood-seo-data.ts");
+    const quartiers = source("app/quartiers/page.tsx");
+    assert.ok(seoData.includes("@/lib/map/canonical-neighborhood-data"));
+    assert.ok(quartiers.includes("@/lib/map/canonical-neighborhood-data"));
   });
 
   it("SEO eligibility remains an explicit subset of the canonical graph", () => {
