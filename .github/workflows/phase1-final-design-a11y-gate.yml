@@ -45,37 +45,51 @@ jobs:
           exit 1
       - name: Responsive UI and accessibility smoke
         id: smoke
-        continue-on-error: true
         env:
           BASE_URL: http://127.0.0.1:3000
-        run: npx tsx scripts/audits/final-ui-a11y-smoke.ts
+        run: |
+          mkdir -p artifacts/ui-audit
+          set +e
+          npx tsx scripts/audits/final-ui-a11y-smoke.ts 2>&1 | tee artifacts/ui-audit/smoke.log
+          status=${PIPESTATUS[0]}
+          echo "$status" > artifacts/ui-audit/smoke.exit
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          exit 0
       - name: Upload UI audit screenshots and report
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: phase1-final-ui-audit
           path: artifacts/ui-audit
           if-no-files-found: error
           retention-days: 14
-      - name: Publish smoke report to PR
+      - name: Publish smoke diagnostics to PR
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const path = 'artifacts/ui-audit/report.md';
-            if (!fs.existsSync(path)) return;
-            const body = fs.readFileSync(path, 'utf8');
+            const report = 'artifacts/ui-audit/report.md';
+            const rawLog = 'artifacts/ui-audit/smoke.log';
+            let body = '# AkarFinder Final UI / Accessibility Smoke\n\nNo diagnostic file was generated.';
+            if (fs.existsSync(report)) {
+              body = fs.readFileSync(report, 'utf8');
+            } else if (fs.existsSync(rawLog)) {
+              const raw = fs.readFileSync(rawLog, 'utf8');
+              body = '# AkarFinder Final UI / Accessibility Smoke — raw log\n\n```text\n' + raw.slice(-50000) + '\n```';
+            }
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body,
+              body: body.slice(0, 65000),
             });
       - name: Enforce smoke result
         if: always()
         run: |
-          if [ "${{ steps.smoke.outcome }}" != "success" ]; then
-            echo "Responsive UI/accessibility smoke reported findings. See PR comment and artifact."
+          status="${{ steps.smoke.outputs.exit_code }}"
+          if [ -z "$status" ] || [ "$status" != "0" ]; then
+            echo "Responsive UI/accessibility smoke reported findings. See PR comment and smoke.log."
             exit 1
           fi
