@@ -14,6 +14,11 @@ const footerLinks: Record<string, FooterLink[]> = {
     { label: "Neuf", href: "/neuf" },
     { label: "Carte des biens", href: "/map" },
   ],
+  Professionnels: [
+    { label: "AkarFinder Pro", href: "/pro" },
+    { label: "Agences", href: "/pro/agences" },
+    { label: "Promoteurs", href: "/promoteurs" },
+  ],
   Outils: [
     { label: "Repère marché", href: "/acheter" },
     { label: "Comparateur", href: "/compare" },
@@ -52,6 +57,7 @@ export function SiteFooter() {
           <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-muted-foreground">
             <Link href="/acheter" className="hover:text-foreground">Acheter</Link>
             <Link href="/louer" className="hover:text-foreground">Louer</Link>
+            <Link href="/pro" className="font-semibold hover:text-foreground">Professionnels</Link>
             <Link href="/comment-ca-marche" className="hover:text-foreground">Comment ça marche</Link>
             <Link href="/faq" className="hover:text-foreground">FAQ</Link>
             <Link href="/demande-retrait" className="hover:text-foreground">Demande de retrait</Link>
@@ -61,7 +67,7 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="hidden gap-10 lg:grid lg:grid-cols-[1.15fr_2fr_1fr]">
+        <div className="hidden gap-10 lg:grid lg:grid-cols-[1.15fr_2.4fr_1fr]">
           <div>
             <img
               src="/brand/logo-v2/logo-horizontal-bilingual.png"
@@ -82,7 +88,7 @@ export function SiteFooter() {
             </p>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-5">
             {Object.entries(footerLinks).map(([title, links]) => (
               <div key={title}>
                 <h3 className="text-[14px] font-bold text-foreground">{title}</h3>
