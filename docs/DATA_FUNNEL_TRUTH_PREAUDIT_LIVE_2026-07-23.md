@@ -1,10 +1,10 @@
 # AkarFinder — DATA Funnel Truth Pre-Audit Live
 
-**Date : 2026-07-23**
-**Mode : Supabase Production READ-ONLY**
+**Date : 2026-07-23**  
+**Mode : Supabase Production READ-ONLY**  
 **Aucun write, aucune migration, aucun changement runtime, aucun Vercel.**
 
-## 1. Snapshot DB réel observé
+## 1. Snapshot DB réel
 
 | Population | Count |
 |---|---:|
@@ -16,65 +16,69 @@
 | `property_cluster_members` | 730 |
 | `source_offer_observations` | 0 |
 
-### Seeds par provider
+Seeds :
 
 - `public_sitemap` : 11,420
 - `commoncrawl_cdx` : 10,526
-
-### Freshness seeds
-
 - `seed_only` : 21,889
 - `fresh_confirmed` : 57
-- `aging` : 0 observé
-- `stale` : 0 observé
 
-Le chiffre `fresh_confirmed` est donc déjà passé de la baseline communiquée de 44 à **57** pendant la phase DATA.
+Discovery candidates :
 
----
-
-## 2. Découverte OpenSERP
-
-`discovery_candidates` : 14,720 lignes, toutes avec provider `openserp` dans le snapshot observé.
-
-Statuts :
-
-- rejected : 8,122
-- unclassified : 6,013
 - accepted : 585
-
-Cela montre un réservoir important encore non classifié.
-
-Important : `unclassified` n'est pas automatiquement une opportunité publiable. Il s'agit d'un réservoir à expliquer / classifier, pas à promouvoir en masse.
+- unclassified : 6,013
+- rejected : 8,122
 
 ---
 
-## 3. Relation accepted discoveries ↔ persisted sources
+## 2. Correction méthodologique importante — accepted ↔ persisted
 
-Après déduplication exacte des URLs :
+Une première comparaison exploratoire avait comparé :
 
-- accepted discovery URLs uniques : 559
-- listing source URLs uniques : 792
-- exact overlap : 252
+- `discovery_candidates.canonical_url`
+- avec `coalesce(listing_sources.source_url, listing_sources.listing_url)`.
 
-Donc **307 accepted discovery URLs uniques n'ont pas d'overlap URL exact avec `listing_sources`** dans cette comparaison.
+Cette comparaison était incorrecte car le writer stocke :
 
-Ce chiffre est un **pool d'audit**, pas un pool à promouvoir automatiquement.
+- `listing_sources.listing_url` = URL canonique ;
+- `listing_sources.source_url` = URL originale.
 
-Questions à résoudre :
+La comparaison canonique correcte donne :
 
-- sont-elles encore fraîches ?
-- sont-elles admissibles structurées ?
-- sont-elles déjà représentées sous une URL différente ?
-- sont-elles seulement adaptées à la lane thin ?
-- contiennent-elles les champs explicites nécessaires ?
+- accepted URLs uniques : **559**
+- overlap exact `listing_sources.listing_url` : **546**
+- accepted réellement non persistées : **13**
+
+Donc il n'existe **pas** de pool caché de 307 accepted non persistées.
+
+Le chiffre exploratoire `307` est invalidé et ne doit plus être utilisé.
+
+### 13 accepted réellement non persistées
+
+Répartition :
+
+- Mubawab : 5
+- Souk Immobilier : 4
+- 1immo : 2
+- Avito : 1
+- Sarouty : 1
+
+Confidence :
+
+- 3 Mubawab en high confidence
+- le reste principalement medium confidence
+
+Aucune des 13 n'a un `property_listing` correspondant au fingerprint attendu `sha256(openserp:<canonical_url>)`.
+
+Elles proviennent de plusieurs runs historiques. Elles constituent un **petit audit de write-gap**, pas un gisement de centaines de listings.
 
 ---
 
-## 4. Seed confirmation réelle
+## 3. Seed confirmation réelle
 
 229 seeds possèdent des métadonnées de tentative de confirmation.
 
-Total cumulé de tentatives : **320**.
+Total cumulé : **320 tentatives**.
 
 Dernier outcome par seed :
 
@@ -82,223 +86,236 @@ Dernier outcome par seed :
 - `exact_high_confidence` : 17 seeds / 17 tentatives
 - `insufficient_explicit_signals` : 7 seeds / 12 tentatives
 
-### Yields actuels
+Yields :
 
 - exact high-confidence / attempted unique seeds : **17 / 229 = 7.4 %**
 - exact high-confidence / total attempts : **17 / 320 = 5.3 %**
 
-La conversion est donc encore faible globalement, mais très hétérogène par source.
+Le problème principal reste donc le yield de confirmation, mais il est extrêmement hétérogène selon la source.
 
 ---
 
-## 5. Yield par source — signal stratégique
+## 4. Masaken — analyse du 11/16
 
-### Très fort signal
+### Résultat observé
 
-**masaken.ma**
+- total seeds Masaken : **294**
+- seeds tentés : **16**
+- exact high-confidence : **11**
+- no exact match : **5**
+- yield sur le petit batch tenté : **68.8 %**
 
-- 16 seeds tentés
-- 11 exact high-confidence
-- yield unique ≈ **68.8 %**
+### Structure URL
 
-C'est de très loin le meilleur signal observé.
+Les 16 seeds tentés ont tous :
 
-### Signal positif mais faible volume / yield
+- provider `commoncrawl_cdx` ;
+- une URL individuelle à 4 segments environ ;
+- un identifiant numérique stable final ;
+- le pattern registry strict : `/(fr|en)/immobilier-maroc/<slug>/<id>`.
 
-**aykana.ma**
+Le registre est volontairement restrictif pour exclure des URLs numériques qui ne sont pas des fiches individuelles.
 
-- 15 seeds tentés
-- 2 exact high-confidence
+### Différence succès / échec
 
-**limmobiliersansfrontieres.com**
+Les **11 succès** :
 
-- 40 seeds tentés
-- 2 exact high-confidence
+- ont tous un exact overlap `discovery_candidates` ;
+- cet overlap est `accepted` ;
+- ont tous été `fresh_confirmed` ;
+- portent typiquement `strong_individual_path + explicit_city + surface_signal`, souvent enrichi de prix/district/chambres.
 
-**promoimmomarrakech.com**
+Les **5 échecs** :
 
-- 36 tentés
-- 1 exact high-confidence
+- ont le même bon format URL ;
+- ont eux aussi un ID numérique stable ;
+- mais n'ont **aucun exact overlap** dans `discovery_candidates`.
 
-**soukimmobilier.com**
+Sur l'ensemble des 294 seeds Masaken :
 
-- 12 tentés
-- 1 exact high-confidence
+- exact discovery overlap : **11**
+- accepted overlap : **11**
+- unclassified overlap : 0
+- rejected overlap : 0
+- fresh_confirmed : **11**
 
-### Zéro exact high-confidence dans le snapshot tenté
+### Conclusion Masaken
 
-- barnes-marrakech.com
-- mubawab.ma
-- agenz.ma
-- kawtarimmobilier.com
-- avito.ma
-- daragadir.com
-- atlasimmobilier.com
+Le rendement n'est pas dû à un assouplissement.
 
-**Conclusion : le prochain Bulk Confirmation V2 ne doit pas répartir naïvement la capacité de façon uniforme.**
+Le modèle favorable combine :
 
-Il faut une stratégie `yield-aware`, tout en gardant une part d'exploration contrôlée pour ne pas sur-optimiser sur un seul domaine.
+1. pattern individuel très discriminant ;
+2. ID stable ;
+3. indexabilité moteur réelle ;
+4. exact canonical match ;
+5. signaux métier explicites ;
+6. admission existante inchangée.
+
+Le 68.8 % ne doit pas être extrapolé aux 278 seeds non testés : le sample est petit et sélectionné.
+
+Masaken est cependant le meilleur laboratoire pour définir une lane `yield-aware` sûre.
 
 ---
 
-## 6. Pourquoi `57 fresh_confirmed` ≠ `57 structured listings`
+## 5. `fresh_confirmed` ≠ structured listing
 
-Réconciliation observée :
+Réconciliation :
 
 - fresh_confirmed total : 57
-- fresh_confirmed avec `exact_high_confidence` via seed confirmation : 17
+- fresh_confirmed issus d'un `exact_high_confidence` seed confirmation : 17
 - fresh_confirmed sans métadonnée de tentative seed : 40
 
-Donc les **40 autres fresh_confirmed proviennent d'un autre recroisement exact / lane freshness**, et ne doivent pas être comptés comme conversions structurées.
-
-Cette distinction explique une partie de l'anomalie apparente initiale entre `fresh_confirmed` et `property_listings`.
+Donc freshness, confirmation et structured conversion sont trois notions différentes.
 
 ---
 
-## 7. Structured listings réels
-
-Snapshot :
+## 6. Structured listings / Property Graph
 
 - `property_listings` : 869
 - `listing_sources` : 874
-- listings avec au moins une source : 869
 - listings sans source : 0
 - listings multi-source : 4
-- max sources sur un listing : 3
+- `persisted_openserp` source rows : 730
+- legacy / origin NULL source rows : 144
 
-Origines `listing_sources` :
-
-- `persisted_openserp` : 730
-- `origin_type = NULL` legacy/autres : 144
-
-Le nombre de runs dont `ingestion_run_id` contient `seed` est **17**, cohérent avec les 17 confirmations exact high-confidence observées.
-
-Lecture la plus probable à valider formellement :
-
-- environ 730 structured listings issus de la lignée persisted OpenSERP ;
-- environ 139 listings issus de la lignée legacy/autres, représentés par 144 source rows à cause de quelques multi-sources ;
-- 17 conversions seed structurées sont incluses dans la lignée persistée / ingestion actuelle.
-
----
-
-## 8. Property Graph réel
+Property Graph :
 
 - clusters : 730
-- members : 730
+- memberships : 730
 - clusters multi-member : **0**
-- max member count : 1
-- clusters avec `legacy_property_listing_id` : 730
 
-Conclusion : le Property Graph actuel est encore effectivement **1 member = 1 cluster** sur les clusters matérialisés.
-
-Le vrai dédoublonnage multi-source V3 n'est donc pas encore réalisé.
+Le graphe reste essentiellement 1 SourceOffer → 1 cluster.
 
 ---
 
-## 9. Freshness / Observation Ledger — finding critique
+## 7. Observation Ledger — finding critique
 
-La table `source_offer_observations` existe mais contient :
+`source_offer_observations` : **0 ligne**.
 
-**0 observation**.
+La structure existe mais n'est pas alimentée.
 
-C'est un finding important.
+Les seeds et listing sources conservent certains timestamps, mais il n'existe pas encore d'historique événementiel complet pour reconstruire proprement :
 
-La structure nécessaire à l'historique temporel existe, mais l'Observation Ledger n'est pas encore alimenté dans le snapshot live.
+- fresh ;
+- stale ;
+- gone ;
+- reappeared.
 
-Conséquence :
-
-- les seeds possèdent des timestamps / freshness metadata ;
-- les listing sources possèdent `first_seen_at` / `last_seen_at` ;
-- mais l'historique événementiel `source_offer_observations` n'est pas encore constitué.
-
-La future Freshness Machine gagnera beaucoup à commencer à préserver ces observations dès la phase de confirmation / ingestion, sans attendre #24.
-
-Aucun changement ne doit être codé avant le GO et avant définition exacte du writer / idempotence / volume.
+Le design d'alimentation idempotente doit être préparé avant tout code.
 
 ---
 
-## 10. Gros réservoir `unclassified`
+## 8. Taxonomie réelle des 6,013 `unclassified`
 
-Top domaines par volume `unclassified` observé :
+Tous les `unclassified` ont actuellement `admission_confidence = low`.
 
-- sarouty.ma : 602
-- mubawab.ma : 559
-- avito.ma : 437
-- agenz.ma : 422
-- mouldar.com : 291
-- barnes-marrakech.com : 257
-- marrakechrealty.com : 249
-- 1immo.ma : 240
-- immobilier.trovit.ma : 231
-- immo.mitula.ma : 207
+Répartition opérationnelle :
 
-Ce réservoir peut contenir du bruit, des pages non-listing ou des opportunités perdues.
+| Bucket | Volume | Lecture |
+|---|---:|---|
+| discovery/category pages | **2,225** | pas des fiches individuelles structurées |
+| domain unclassified | **1,837** | source non qualifiée au moment de l'observation |
+| quarantine / insufficient detail | **1,252** | principal pool à auditer pour recovery |
+| blocked domains | **569** | ne pas promouvoir |
+| other low confidence | **116** | audit secondaire |
+| insufficient detail other | **14** | faible volume |
 
-La bonne approche n'est pas `promote all`, mais :
+### Domain-status historique devenu stale
 
-1. échantillonnage ;
-2. taxonomy des causes `unclassified` ;
-3. mesure du recoverable rate ;
-4. correction ciblée uniquement si le gain justifie le risque.
+Parmi les 1,837 `domain_unclassified`, seulement **52** correspondent à des domaines aujourd'hui explicitement approuvés dans le registry analysé :
+
+- Masaken : 51
+- DarAgadir : 1
+
+Cela montre qu'une petite partie du stock porte un statut historique devenu obsolète, mais pas des milliers de candidats immédiatement récupérables.
 
 ---
 
-# 11. Priorités recommandées après ce pré-audit
+## 9. Quarantine recovery — cible réelle
 
-## P0-A — finir Funnel Truth Audit
+Sur 1,252 quarantined :
 
-Réconcilier exactement :
+- `strong_individual_path` : 144
+- `explicit_city` : 1,169
+- `surface_signal` : 260
+- `price_signal` : 42
+- `bedroom_signal` : 175
+- `strong_individual_path + explicit_city` : 139
+- **near-miss structurés** avec strong path + city + au moins un détail : **99**
 
-- seeds ;
-- discovery candidates ;
-- thin searchable ;
-- confirmation attempts ;
-- fresh_confirmed ;
-- structured listings ;
-- listing sources ;
-- clusters.
+Répartition des 99 near-miss :
 
-## P0-B — Bulk Confirmation V2 yield-aware
+- Mubawab : 40
+- Barnes Marrakech : 29
+- Agenz : 12
+- Mouldar : 8
+- Avito : 3
+- 1immo : 2
+- Promo Immo Marrakech : 2
+- Souk Immobilier : 1
+- DarAgadir : 1
+- L'Immobilier Sans Frontières : 1
 
-Ne pas reconstruire le moteur.
+### Conclusion recovery
 
-Optimiser l'existant autour de :
+Le bon premier échantillon n'est pas 6,013 ni 1,252.
 
-- source yield ;
-- stable identifiers ;
-- batch evidence ;
-- buckets ville/type/transaction ;
-- exploitation prioritaire des sources à fort yield ;
-- exploration contrôlée des sources encore incertaines.
+C'est **99 near-miss fortement structurés**, à auditer sans changer les seuils.
 
-`masaken.ma` est le premier candidat évident à analyser pour comprendre **pourquoi** son yield est ~68.8 % et répliquer le mécanisme quand c'est légitime.
+Le but est de découvrir :
 
-## P0-C — accepted-but-unpersisted audit
+- faux négatifs du classifier ;
+- patterns source incomplets ;
+- données réellement insuffisantes ;
+- cas qu'il faut continuer à laisser en quarantaine.
 
-Auditer les ~307 accepted unique URLs sans overlap exact `listing_sources`.
+---
 
-Objectif : comprendre si une partie peut alimenter le structured funnel sans nouvelles acquisitions.
+## 10. Priorités read-only après ce pré-audit
 
-## P0-D — unclassified recovery audit
+### P0-A — 13 accepted/write-gap
 
-Échantillonner les 6,013 `unclassified` avant de dépenser davantage en découverte brute.
+Auditer les 13 vraies accepted non persistées.
 
-## P0-E — observation design
+Objectif : déterminer si elles proviennent de write errors historiques, logique ancienne, ou cas intentionnels.
 
-Préparer, sans code avant GO, la stratégie d'alimentation idempotente de `source_offer_observations`.
+### P0-B — 99 quarantine near-miss
+
+Échantillon prioritaire pour mesurer un `recoverable rate` réel sans assouplir les règles.
+
+### P0-C — Masaken pattern study
+
+Comparer la mécanique Masaken à d'autres domaines possédant :
+
+- ID stable ;
+- strong individual URL pattern ;
+- forte indexabilité.
+
+Chercher les propriétés réplicables de la lane, pas copier un seuil spécifique à Masaken.
+
+### P0-D — domain qualification
+
+Les 1,837 domain-unclassified doivent être traités source par source ; réseaux sociaux, moteurs, sites étrangers et agrégateurs parasites ne doivent pas gonfler artificiellement la roadmap DATA.
+
+### P0-E — Observation Ledger design
+
+Préparer la stratégie d'observation idempotente avant Freshness Machine.
 
 ---
 
 # Verdict
 
-Le système possède déjà beaucoup plus de matière exploitable que ne le suggère le simple ratio `21,946 → 57`.
+Les trois pistes ont réduit considérablement l'incertitude :
 
-Le vrai levier immédiat semble être :
+1. **Accepted non persistées : 13 réelles, pas 307.**
+2. **Unclassified : seulement 99 near-miss structurés prioritaires sur 6,013.**
+3. **Masaken : modèle prometteur fondé sur URL stable + exact re-observation, mais sample trop petit pour extrapoler 68.8 %.**
 
-**mieux convertir et mieux réconcilier le stock existant avant de courir uniquement après davantage d'URLs.**
+Le prochain levier DATA n'est donc pas un nouveau moteur ni une baisse des seuils.
 
-Le prochain code ne doit toujours pas partir sans GO.
+Il faut d'abord :
 
-Mission recommandée après validation :
+`13 write-gap audit → 99 near-miss audit → Masaken-like lane analysis → Bulk Confirmation V2 yield-aware`
 
-**`DATA-FUNNEL-TRUTH-AUDIT-1`**, d'abord read-only, suivie seulement ensuite de **`BULK-SEED-CONFIRMATION-V2`** ciblée sur les bottlenecks prouvés.
+Toujours sans code avant GO.
