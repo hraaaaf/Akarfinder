@@ -49,11 +49,23 @@ jobs:
           BASE_URL: http://127.0.0.1:3000
         run: |
           mkdir -p artifacts/ui-audit
-          cp scripts/audits/final-ui-a11y-smoke.ts scripts/audits/.final-ui-a11y-smoke.mts
           set +e
-          npx tsx scripts/audits/.final-ui-a11y-smoke.mts 2>&1 | tee artifacts/ui-audit/smoke.log
-          status=${PIPESTATUS[0]}
-          rm -f scripts/audits/.final-ui-a11y-smoke.mts
+          npx esbuild scripts/audits/final-ui-a11y-smoke.ts \
+            --bundle \
+            --platform=node \
+            --format=esm \
+            --packages=external \
+            --outfile=scripts/audits/.final-ui-a11y-smoke.mjs \
+            > artifacts/ui-audit/esbuild.log 2>&1
+          compile_status=$?
+          if [ "$compile_status" != "0" ]; then
+            cat artifacts/ui-audit/esbuild.log | tee artifacts/ui-audit/smoke.log
+            status=$compile_status
+          else
+            node scripts/audits/.final-ui-a11y-smoke.mjs 2>&1 | tee artifacts/ui-audit/smoke.log
+            status=${PIPESTATUS[0]}
+          fi
+          rm -f scripts/audits/.final-ui-a11y-smoke.mjs
           echo "$status" > artifacts/ui-audit/smoke.exit
           echo "exit_code=$status" >> "$GITHUB_OUTPUT"
           exit 0
