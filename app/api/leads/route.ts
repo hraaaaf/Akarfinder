@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { validateLeadPayload, extractLeadPayload, normalizePhone } from "@/lib/leads/validate";
 import { computeLeadTemperature } from "@/lib/onboarding/lead-temperature";
+import { prepareSellerPropertyDraft } from "@/lib/seller/seller-property-draft";
 import { logConversionEvent } from "@/lib/tracking/log-event";
 import type { BuyerProfile } from "@/lib/onboarding/types";
 
@@ -28,6 +29,30 @@ export async function POST(request: NextRequest) {
   }
 
   const { profile, source_channel, source_page, listing_id } = payload;
+
+  // A seller submission must produce a minimally useful Property Schema V1 draft,
+  // not only a contact lead. These values remain DECLARED and unverified.
+  const sellerDraft = source_channel === "seller"
+    ? prepareSellerPropertyDraft({
+        city: profile.city,
+        neighborhood: profile.neighborhood,
+        propertyType: profile.propertyType,
+        surface: profile.surface,
+        price: profile.budgetTotal,
+        bedrooms: profile.bedrooms,
+        condition: profile.condition,
+      })
+    : null;
+
+  if (sellerDraft && !sellerDraft.structurally_useful) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "Ville, type de bien et surface sont requis pour créer le brouillon structuré du bien.",
+      },
+      { status: 400 },
+    );
+  }
 
   // Re-compute temperature server-side (do not trust client-supplied value)
   const buyerProfile: BuyerProfile = {
@@ -135,6 +160,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let sellerPropertyDraftId: string | null = null;
+    if (sellerDraft) {
+      const { data: draftData, error: draftError } = await supabase
+        .from("seller_property_drafts")
+        .insert({
+          lead_id: data.id,
+          schema_version: sellerDraft.schema_version,
+          source_kind: "seller_declared",
+          status: "submitted",
+          declared_facts: sellerDraft.declared_facts,
+          weighted_completeness: sellerDraft.weighted_completeness,
+          required_missing: sellerDraft.required_missing,
+          publication_eligible: false,
+        })
+        .select("id")
+        .single();
+
+      if (draftError || !draftData?.id) {
+        console.error("[api/leads] seller property draft insert error:", draftError?.message ?? "missing id");
+        // Application-level rollback: a seller request must never be accepted as
+        // contact-only if its structured property draft could not be persisted.
+        await supabase.from("buyer_leads").delete().eq("id", data.id);
+        return NextResponse.json(
+          { ok: false, error: "Le brouillon structuré du bien n'a pas pu être enregistré. Veuillez réessayer." },
+          { status: 500 },
+        );
+      }
+      sellerPropertyDraftId = draftData.id;
+    }
+
     // OVERNIGHT P2 — tracking conversion (best-effort, ne bloque pas la réponse)
     await logConversionEvent(
       {
@@ -164,6 +219,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       lead_id: data.id,
+      seller_property_draft_id: sellerPropertyDraftId,
       next: "/search",
     });
   } catch (err) {
