@@ -1,0 +1,46 @@
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 1000;
+  transform: translateY(-180%);
+  border-radius: 0.75rem;
+  background: rgb(var(--brand-primary));
+  color: rgb(var(--brand-white));
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  box-shadow: 0 10px 30px rgba(2, 10, 24, 0.24);
+  transition: transform 160ms ease;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/*
+ * Legacy premium-dark screens used very low white opacities for normal-size
+ * supporting copy. Keep visual hierarchy, but never let textual microcopy fall
+ * below a readable baseline simply because an old utility class survived.
+ */
+.text-white\/35,
+.text-white\/40,
+.text-white\/45,
+.text-white\/50,
+[data-theme="dark"] .dark\:text-white\/35,
+[data-theme="dark"] .dark\:text-white\/40,
+[data-theme="dark"] .dark\:text-white\/45,
+[data-theme="dark"] .dark\:text-white\/50 {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -31,6 +31,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
   const transparentActive = isTransparent && !scrolled;
   const { ids: favoriteIds } = useFavoriteSelection();
   const favoriteCount = favoriteIds.length;
+  const isProActive = pathname.startsWith("/pro") || pathname.startsWith("/promoteurs");
 
   return (
     <header
@@ -98,6 +99,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
                 <li key={item.label}>
                   <Link
                     href={item.href}
+                    aria-current={isActive ? "page" : undefined}
                     className={`relative rounded-full px-1.5 py-1 pb-1.5 transition-colors ${
                       isActive
                         ? `${
@@ -152,17 +154,19 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
 
           <Link
             href="/pro"
+            aria-current={isProActive ? "page" : undefined}
             className={`hidden rounded-xl px-4 py-2 text-[13px] font-bold transition lg:block ${
               isDark || isTransparent
                 ? "border border-bronze-500/40 bg-white/5 text-bronze-400 hover:bg-bronze-700/20 hover:text-bronze-300"
                 : "border border-bronze-700/30 bg-card text-bronze-700 hover:border-bronze-700/60 hover:bg-[#fef8ed] dark:border-bronze-500/40 dark:bg-white/5 dark:text-bronze-400 dark:hover:bg-bronze-700/20 dark:hover:text-bronze-300"
-            } ${pathname.startsWith("/pro") ? "border-bronze-700/60" : ""}`}
+            } ${isProActive ? "border-bronze-700/60" : ""}`}
           >
             Espace Pro
           </Link>
 
           <Link
             href="/mon-projet"
+            aria-current={pathname.startsWith("/mon-projet") ? "page" : undefined}
             className={`rounded-xl px-3 py-1.5 text-[11.5px] font-bold transition sm:px-5 sm:py-2.5 sm:text-[13px] ${
               isDark || isTransparent
                 ? "border border-[#60A5FA]/45 bg-white/8 text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] hover:bg-[#0B63CE] hover:text-white"
@@ -174,30 +178,34 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
         </div>
       </Container>
 
-      <div
+      <nav
+        aria-label="Navigation mobile principale"
         className={`overflow-x-auto border-t scrollbar-none lg:hidden ${
           isDark || isTransparent
             ? "border-white/8 bg-transparent"
             : "border-border/10 bg-white/96 dark:border-white/8 dark:bg-transparent"
         }`}
       >
-        <div className={`flex px-4 ${compact ? "gap-1.5 py-1.5" : "gap-2 py-2"}`}>
+        <div className={`flex px-4 ${compact ? "gap-2 py-1.5" : "gap-2.5 py-2"}`}>
           {[
-            { href: "/acheter", label: "Acheter", aria: "Explorer les biens a acheter" },
-            { href: "/louer", label: "Louer", aria: "Explorer les locations" },
-            { href: "/neuf", label: "Neuf", aria: "Decouvrir les projets neufs" },
-            { href: "/vendre", label: "Vendre", aria: "Preparer la vente de votre bien" },
-            { href: "/promoteurs", label: "Promoteurs", aria: "Decouvrir l'espace promoteurs" },
             { href: "/search", label: "Recherche", aria: "Rechercher des biens" },
+            { href: "/acheter", label: "Acheter", aria: "Explorer les biens à acheter" },
+            { href: "/louer", label: "Louer", aria: "Explorer les locations" },
+            { href: "/vendre", label: "Vendre", aria: "Préparer la vente de votre bien" },
+            { href: "/pro", label: "Pro", aria: "Découvrir AkarFinder Pro pour agences et promoteurs" },
           ].map((chip) => {
-            const isActive = pathname.startsWith(chip.href);
+            const isActive =
+              chip.href === "/pro"
+                ? isProActive
+                : pathname.startsWith(chip.href);
             return (
               <Link
                 key={chip.href}
                 href={chip.href}
                 aria-label={chip.aria}
-                className={`flex-shrink-0 whitespace-nowrap rounded-full border font-bold transition focus:outline-none focus:ring-2 focus:ring-[#60A5FA] ${
-                  compact ? "px-2.5 py-1 text-[10.5px]" : "px-3 py-1 text-[11px]"
+                aria-current={isActive ? "page" : undefined}
+                className={`flex min-h-10 flex-shrink-0 items-center whitespace-nowrap rounded-full border font-bold transition focus:outline-none focus:ring-2 focus:ring-[#60A5FA] ${
+                  compact ? "px-3 py-2 text-[11.5px]" : "px-3.5 py-2.5 text-[12px]"
                 } ${
                   isActive
                     ? isDark || isTransparent
@@ -213,7 +221,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
             );
           })}
         </div>
-      </div>
+      </nav>
     </header>
   );
 }

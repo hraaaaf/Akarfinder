@@ -23,7 +23,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
   const [showFilters, setShowFilters] = useState(false);
 
   const fieldClass =
-    "min-h-11 w-full rounded-xl border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-3.5 text-[13.5px] font-semibold text-foreground dark:text-white outline-none transition placeholder:text-muted-foreground/50 dark:placeholder:text-white/35 hover:border-bronze-400/50 focus:border-bronze-400/70 focus:ring-2 focus:ring-bronze-400/20 lg:w-auto lg:rounded-full";
+    "min-h-11 w-full rounded-xl border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-3.5 text-[13.5px] font-semibold text-foreground dark:text-white outline-none transition placeholder:text-muted-foreground/80 hover:border-bronze-400/50 focus:border-bronze-400/70 focus:ring-2 focus:ring-bronze-400/20 lg:w-auto lg:rounded-full";
   const selectClass = `${fieldClass} dark:[color-scheme:dark]`;
 
   const activeCount =
@@ -39,26 +39,31 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
   return (
     <section className="rounded-2xl border border-border/15 dark:border-white/10 bg-card dark:bg-white/[0.05] p-2.5 shadow-[0_18px_50px_rgba(2,10,24,0.18)] dark:shadow-[0_18px_50px_rgba(2,10,24,0.35)] backdrop-blur-md sm:p-3.5">
       <div className="grid gap-2.5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-        <label className="relative block" htmlFor="marketplace-search">
+        <label className="relative block" htmlFor="property-search">
           <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true">
             <Search size={19} strokeWidth={2.2} />
           </span>
           <input
-            id="marketplace-search"
+            id="property-search"
             type="text"
             value={filters.search}
             onChange={(event) => onChange({ ...filters, search: event.target.value })}
             placeholder="Ville, quartier, projet, promoteur..."
-            className="h-12 w-full rounded-2xl border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] pl-11 pr-4 text-[15px] font-semibold text-foreground dark:text-white outline-none transition placeholder:text-muted-foreground/50 dark:placeholder:text-white/35 focus:border-bronze-400/70 focus:ring-4 focus:ring-bronze-400/15 sm:h-14"
+            className="h-12 w-full rounded-2xl border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] pl-11 pr-4 text-[15px] font-semibold text-foreground dark:text-white outline-none transition placeholder:text-muted-foreground/80 focus:border-bronze-400/70 focus:ring-4 focus:ring-bronze-400/15 sm:h-14"
           />
         </label>
 
-        <div className="grid grid-cols-3 rounded-2xl border border-border/15 dark:border-white/10 bg-surface dark:bg-[#071B33]/70 p-1 lg:min-w-[320px]">
+        <div
+          role="group"
+          aria-label="Type de transaction"
+          className="grid grid-cols-3 rounded-2xl border border-border/15 dark:border-white/10 bg-surface dark:bg-[#071B33]/70 p-1 lg:min-w-[320px]"
+        >
           {transactionTabs.map((tab) => (
             <button
               key={tab.value}
               type="button"
               onClick={() => onChange({ ...filters, transactionType: tab.value })}
+              aria-pressed={filters.transactionType === tab.value}
               className={
                 filters.transactionType === tab.value
                   ? "rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-3 py-2.5 text-[13px] font-extrabold text-white shadow-sm"

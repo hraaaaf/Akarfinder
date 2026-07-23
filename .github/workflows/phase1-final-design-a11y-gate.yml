@@ -1,0 +1,120 @@
+name: Phase 1 Final Design Accessibility Gate
+on:
+  pull_request:
+    branches: [main, phase1-p2-residual-closure]
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+jobs:
+  final-ui-a11y:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Structural design and accessibility contracts
+        run: npx tsx --test scripts/scrapers/__tests__/phase1-final-design-a11y.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build rehearsal
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        run: |
+          npx next start -H 127.0.0.1 -p 3000 > /tmp/akarfinder-next.log 2>&1 &
+          echo $! > /tmp/akarfinder-next.pid
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/akarfinder-next.log
+          exit 1
+      - name: Responsive UI and accessibility smoke
+        id: smoke
+        env:
+          BASE_URL: http://127.0.0.1:3000
+        run: |
+          mkdir -p artifacts/ui-audit
+          cp scripts/audits/final-ui-a11y-smoke.ts scripts/audits/.final-ui-a11y-smoke.ts
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/audits/.final-ui-a11y-smoke.ts')
+          source = path.read_text()
+          needle = '      const page = await context.newPage();'
+          replacement = needle + '\n      await page.addInitScript("globalThis.__name = (target) => target;");'
+          if needle not in source:
+              raise SystemExit('Could not locate Playwright page initialization')
+          path.write_text(source.replace(needle, replacement, 1))
+          PY
+          set +e
+          npx esbuild scripts/audits/.final-ui-a11y-smoke.ts \
+            --bundle \
+            --platform=node \
+            --format=esm \
+            --packages=external \
+            --outfile=scripts/audits/.final-ui-a11y-smoke.mjs \
+            > artifacts/ui-audit/esbuild.log 2>&1
+          compile_status=$?
+          if [ "$compile_status" != "0" ]; then
+            cat artifacts/ui-audit/esbuild.log | tee artifacts/ui-audit/smoke.log
+            status=$compile_status
+          else
+            node scripts/audits/.final-ui-a11y-smoke.mjs 2>&1 | tee artifacts/ui-audit/smoke.log
+            status=${PIPESTATUS[0]}
+          fi
+          rm -f scripts/audits/.final-ui-a11y-smoke.ts scripts/audits/.final-ui-a11y-smoke.mjs
+          echo "$status" > artifacts/ui-audit/smoke.exit
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Upload UI audit screenshots and report
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase1-final-ui-audit
+          path: artifacts/ui-audit
+          if-no-files-found: error
+          retention-days: 14
+      - name: Publish smoke diagnostics to PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = 'artifacts/ui-audit/report.md';
+            const rawLog = 'artifacts/ui-audit/smoke.log';
+            let body = '# AkarFinder Final UI / Accessibility Smoke\n\nNo diagnostic file was generated.';
+            if (fs.existsSync(report)) {
+              body = fs.readFileSync(report, 'utf8');
+            } else if (fs.existsSync(rawLog)) {
+              const raw = fs.readFileSync(rawLog, 'utf8');
+              body = '# AkarFinder Final UI / Accessibility Smoke — raw log\n\n```text\n' + raw.slice(-50000) + '\n```';
+            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body.slice(0, 65000),
+            });
+      - name: Enforce smoke result
+        if: always()
+        run: |
+          status="${{ steps.smoke.outputs.exit_code }}"
+          if [ -z "$status" ] || [ "$status" != "0" ]; then
+            echo "Responsive UI/accessibility smoke reported findings. See PR comment and smoke.log."
+            exit 1
+          fi
