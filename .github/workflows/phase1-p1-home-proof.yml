@@ -1,0 +1,35 @@
+name: Phase 1 P1 Home Proof Gate
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  home-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Home proof contracts
+        run: npx tsx --test scripts/scrapers/__tests__/home-proof-ux.test.ts scripts/scrapers/__tests__/home-motor-purity.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build rehearsal
+        run: npm run build

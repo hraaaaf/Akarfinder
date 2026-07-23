@@ -15,24 +15,18 @@ export function SearchEntryOrchestrator() {
           className="flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-center text-[12px] font-extrabold text-white transition hover:bg-white/12 focus:outline-none focus:ring-2 focus:ring-[#93C5FD] sm:text-[13px]"
         >
           <Compass size={15} strokeWidth={2.4} aria-hidden="true" />
-          <span>Aidez-moi à trouver</span>
+          <span>Aidez-moi à définir mon projet</span>
         </Link>
       </div>
 
       <HomeSearchBar />
 
-      <div className="mt-3 flex flex-wrap justify-center gap-2 sm:mt-4">
-        <Link
-          href="/compagnon"
-          className="rounded-full border border-white/25 bg-black/10 px-4 py-2 text-[11px] font-semibold text-white/90 backdrop-blur transition hover:border-white/50 hover:bg-black/20 hover:text-white sm:text-[12px]"
-        >
-          Pas encore sûr ? Construire mon projet avec le Compagnon AkarFinder
-        </Link>
+      <div className="mt-3 flex justify-center sm:mt-4">
         <Link
           href="/mon-projet"
           className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-black/10 px-4 py-2 text-[11px] font-semibold text-white/90 backdrop-blur transition hover:border-white/50 hover:bg-black/20 hover:text-white sm:text-[12px]"
         >
-          <UserRound size={13} aria-hidden="true" /> Mon espace
+          <UserRound size={13} aria-hidden="true" /> Reprendre Mon Projet
         </Link>
       </div>
     </div>

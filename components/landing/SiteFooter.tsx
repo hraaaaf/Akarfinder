@@ -3,9 +3,6 @@ import { Container } from "@/components/ui/Container";
 
 type FooterLink = { label: string; href: string };
 
-// FOOTER-LINKS-CLEANUP-1 — every visible link points to a real route.
-// Links without a ready destination (Nos partenaires, Presse, Alertes,
-// Conseils immo) are removed from the footer rather than left as dead "#".
 const footerLinks: Record<string, FooterLink[]> = {
   AkarFinder: [
     { label: "À propos", href: "/a-propos" },
@@ -34,7 +31,6 @@ export function SiteFooter() {
   return (
     <footer id="footer" className="bg-surface-muted py-10 text-foreground lg:py-12">
       <Container>
-        {/* Mobile : compact single column */}
         <div className="lg:hidden">
           <img
             src="/brand/logo-v2/logo-horizontal-bilingual.png"
@@ -51,8 +47,7 @@ export function SiteFooter() {
             className="hidden h-[42px] w-auto dark:block"
           />
           <p className="mt-3 text-[13.5px] leading-6 text-muted-foreground">
-            AkarFinder — moteur de recherche immobilier du Maroc.
-            Comparez avant de contacter.
+            AkarFinder — moteur de recherche immobilier du Maroc. Comparez avant de contacter.
           </p>
           <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-muted-foreground">
             <Link href="/acheter" className="hover:text-foreground">Acheter</Link>
@@ -66,7 +61,6 @@ export function SiteFooter() {
           </div>
         </div>
 
-        {/* Desktop : full footer */}
         <div className="hidden gap-10 lg:grid lg:grid-cols-[1.15fr_2fr_1fr]">
           <div>
             <img
@@ -84,7 +78,7 @@ export function SiteFooter() {
               className="hidden h-[42px] w-auto dark:block"
             />
             <p className="mt-4 max-w-sm text-[14.5px] leading-7 text-muted-foreground">
-              AkarFinder vous aide à chercher dans l'immobilier marocain. Comparez les repères du quartier et contactez les sources originales.
+              AkarFinder vous aide à chercher dans l'immobilier marocain, à comprendre le niveau d'information disponible et à retrouver la source originale.
             </p>
           </div>
 
@@ -104,26 +98,22 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <h3 className="text-[14px] font-bold text-foreground">Restez informé</h3>
+            <h3 className="text-[14px] font-bold text-foreground">Votre recherche</h3>
             <p className="mt-3 text-[13.5px] leading-6 text-muted-foreground">
-              Recevez les prochaines nouveautés lorsque les alertes seront activées.
+              Les alertes évolueront avec Mon Projet. En attendant, structurez vos critères dans un seul espace plutôt que de laisser un email dans un formulaire sans suite.
             </p>
-            <div className="mt-5 flex overflow-hidden rounded-xl bg-card ring-1 ring-border/15 transition focus-within:ring-bronze-500">
-              <input
-                aria-label="Email pour les alertes"
-                placeholder="Votre email"
-                className="min-w-0 flex-1 bg-transparent px-4 py-3 text-[13.5px] text-foreground outline-none placeholder:text-muted-foreground"
-              />
-              <button className="bg-bronze-700 px-5 text-[13px] font-bold text-white transition hover:bg-bronze-800">
-                OK
-              </button>
-            </div>
+            <Link
+              href="/mon-projet"
+              className="mt-5 inline-flex rounded-xl border border-border/20 bg-card px-4 py-3 text-[13px] font-extrabold text-foreground transition hover:border-accent/40 hover:text-accent"
+            >
+              Ouvrir Mon Projet
+            </Link>
           </div>
         </div>
 
         <div className="mt-8 hidden flex-col gap-2 border-t border-border/15 pt-6 text-[12px] leading-6 text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:flex">
           <span>© 2026 AkarFinder.ma — Version bêta</span>
-          <span>Les repères affichés sont indicatifs. Chaque annonce affiche sa source d'origine et un lien direct vers elle.</span>
+          <span>Chaque résultat indique son niveau d'information et, lorsque nécessaire, renvoie vers la source originale.</span>
         </div>
       </Container>
     </footer>
