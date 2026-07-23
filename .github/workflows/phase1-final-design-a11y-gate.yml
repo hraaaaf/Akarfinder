@@ -49,8 +49,19 @@ jobs:
           BASE_URL: http://127.0.0.1:3000
         run: |
           mkdir -p artifacts/ui-audit
+          cp scripts/audits/final-ui-a11y-smoke.ts scripts/audits/.final-ui-a11y-smoke.ts
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/audits/.final-ui-a11y-smoke.ts')
+          source = path.read_text()
+          needle = '      const page = await context.newPage();'
+          replacement = needle + '\n      await page.addInitScript("globalThis.__name = (target) => target;");'
+          if needle not in source:
+              raise SystemExit('Could not locate Playwright page initialization')
+          path.write_text(source.replace(needle, replacement, 1))
+          PY
           set +e
-          npx esbuild scripts/audits/final-ui-a11y-smoke.ts \
+          npx esbuild scripts/audits/.final-ui-a11y-smoke.ts \
             --bundle \
             --platform=node \
             --format=esm \
@@ -65,7 +76,7 @@ jobs:
             node scripts/audits/.final-ui-a11y-smoke.mjs 2>&1 | tee artifacts/ui-audit/smoke.log
             status=${PIPESTATUS[0]}
           fi
-          rm -f scripts/audits/.final-ui-a11y-smoke.mjs
+          rm -f scripts/audits/.final-ui-a11y-smoke.ts scripts/audits/.final-ui-a11y-smoke.mjs
           echo "$status" > artifacts/ui-audit/smoke.exit
           echo "exit_code=$status" >> "$GITHUB_OUTPUT"
           exit 0
