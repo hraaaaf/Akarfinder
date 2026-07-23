@@ -8,7 +8,7 @@ The repository was temporarily switched to public visibility by the owner to res
 
 ## Fresh visual validation
 
-The final Playwright run completed successfully on the consolidated candidate at commit `60d64c481c5c26899eb71d167176969691248e6f`.
+The final Playwright run completed successfully on the consolidated candidate at commit `190897b2788820d449fb88196634273d5f06bd9f`.
 
 Coverage:
 - 10 core routes: Home, Search, Acheter, Louer, Vendre, Immobilier, Map, Pro, Agences, Promoteurs.
@@ -16,7 +16,7 @@ Coverage:
 - 30 fresh screenshots.
 - 0 automated smoke findings.
 - HTTP, horizontal overflow, H1/main landmarks, skip-link, duplicate IDs, accessible names, image alt presence and first keyboard focus all passed.
-- CI run: `Phase 1 Final Design Accessibility Gate` run #9, alongside green P0/P1/P2 gates, TypeScript/build and canonical baseline on the same HEAD.
+- Final CI set on the same HEAD: P0 closure, all P1 gates, P2 residual closure, TypeScript/build, canonical baseline and Final Design Accessibility Gate — all green.
 
 Visual review conclusion:
 - Home, Search/intent and Pro use different compositions appropriate to their contexts, but retain one coherent AkarFinder language: shared header/footer, typography, spacing rhythm, card language and blue accent system.
@@ -40,7 +40,7 @@ Visual review conclusion:
 The final design/mobile/accessibility workstream is closed for Phase 1.
 
 Remaining before public release certification:
-1. Merge the consolidated candidate only after its final post-ledger CI remains green.
+1. Merge the consolidated candidate.
 2. Perform the single explicit end-of-Phase-1 Vercel deployment.
 3. Certify the four release-gated P0 findings (`001`, `011`, `012`, `013`) against the deployed Production site.
 
