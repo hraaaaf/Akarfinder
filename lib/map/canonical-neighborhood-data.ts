@@ -42,7 +42,10 @@ function canonicalizePoint(point: NeighborhoodPoint): NeighborhoodPoint {
     neighborhood: neighborhoodEntity.canonical_name,
     neighborhoodSlug: neighborhoodEntity.slug,
     slug: `${cityEntity.slug}-${neighborhoodEntity.slug}`,
-    searchHref: buildNeighborhoodSearchHref(cityEntity.canonical_name, neighborhoodEntity.canonical_name),
+    // Preserve the established search handoff vocabulary. Canonical identity is
+    // carried by city/neighborhood + slugs; changing a useful query alias (e.g.
+    // Ourika) is not required for entity normalization.
+    searchHref: point.searchHref,
   };
 }
 
