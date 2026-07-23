@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { validateLeadPayload, extractLeadPayload, normalizePhone } from "@/lib/leads/validate";
 import { computeLeadTemperature } from "@/lib/onboarding/lead-temperature";
+import { prepareProfessionalActivationRequest } from "@/lib/professional/professional-activation-request";
 import { prepareSellerPropertyDraft } from "@/lib/seller/seller-property-draft";
 import { logConversionEvent } from "@/lib/tracking/log-event";
 import type { BuyerProfile } from "@/lib/onboarding/types";
@@ -29,6 +30,9 @@ export async function POST(request: NextRequest) {
   }
 
   const { profile, source_channel, source_page, listing_id } = payload;
+  const rawBody = body && typeof body === "object" && !Array.isArray(body)
+    ? body as Record<string, unknown>
+    : {};
 
   // A seller submission must produce a minimally useful Property Schema V1 draft,
   // not only a contact lead. These values remain DECLARED and unverified.
@@ -46,10 +50,25 @@ export async function POST(request: NextRequest) {
 
   if (sellerDraft && !sellerDraft.structurally_useful) {
     return NextResponse.json(
-      {
-        ok: false,
-        error: "Ville, type de bien et surface sont requis pour créer le brouillon structuré du bien.",
-      },
+      { ok: false, error: "Ville, type de bien et surface sont requis pour créer le brouillon structuré du bien." },
+      { status: 400 },
+    );
+  }
+
+  // Public professional interest is an activation request, never an anonymous
+  // professional_organization creation. Organizations require authenticated ownership,
+  // validation and source-authorization gates.
+  const professionalRequest = source_channel === "promoter"
+    ? prepareProfessionalActivationRequest(
+        rawBody.professional_request && typeof rawBody.professional_request === "object"
+          ? rawBody.professional_request as Record<string, unknown>
+          : {},
+      )
+    : null;
+
+  if (source_channel === "promoter" && !professionalRequest) {
+    return NextResponse.json(
+      { ok: false, error: "Le type de professionnel et le nom de la société sont requis." },
       { status: 400 },
     );
   }
@@ -78,36 +97,26 @@ export async function POST(request: NextRequest) {
     consentIndicatif: profile.consentIndicatif,
   };
 
-  // Visit requests are always "chaud" — explicit intent to physically visit.
-  // Seller leads use a fixed "tiède" — buyer-oriented scoring doesn't apply.
   const tempResult =
     source_channel === "visit_request"
       ? {
           temperature: "chaud" as const,
-          label: "Demande de visite",
           reason: "Demande de visite directe sur la fiche annonce.",
-          color: "emerald",
         }
       : source_channel === "seller"
       ? {
           temperature: "tiède" as const,
-          label: "Demande vendeur",
           reason: "Demande d'accompagnement vendeur via /vendre/dossier.",
-          color: "amber",
         }
       : source_channel === "promoter"
       ? {
           temperature: "tiède" as const,
-          label: "Demande promoteur",
-          reason: "Demande d'accès Pro promoteur via /pro.",
-          color: "amber",
+          reason: "Demande d'activation AkarFinder Pro.",
         }
       : source_channel === "credit"
       ? {
           temperature: "tiède" as const,
-          label: "Demande financement",
           reason: "Demande de rappel financement via simulateur crédit.",
-          color: "amber",
         }
       : computeLeadTemperature(buyerProfile);
 
@@ -156,7 +165,7 @@ export async function POST(request: NextRequest) {
       console.error("[api/leads] insert error:", error.message);
       return NextResponse.json(
         { ok: false, error: "Enregistrement impossible. Veuillez réessayer." },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -179,8 +188,6 @@ export async function POST(request: NextRequest) {
 
       if (draftError || !draftData?.id) {
         console.error("[api/leads] seller property draft insert error:", draftError?.message ?? "missing id");
-        // Application-level rollback: a seller request must never be accepted as
-        // contact-only if its structured property draft could not be persisted.
         await supabase.from("buyer_leads").delete().eq("id", data.id);
         return NextResponse.json(
           { ok: false, error: "Le brouillon structuré du bien n'a pas pu être enregistré. Veuillez réessayer." },
@@ -190,7 +197,32 @@ export async function POST(request: NextRequest) {
       sellerPropertyDraftId = draftData.id;
     }
 
-    // OVERNIGHT P2 — tracking conversion (best-effort, ne bloque pas la réponse)
+    let professionalActivationRequestId: string | null = null;
+    if (professionalRequest) {
+      const { data: activationData, error: activationError } = await supabase
+        .from("professional_activation_requests")
+        .insert({
+          lead_id: data.id,
+          requested_type: professionalRequest.requested_type,
+          company_name: professionalRequest.company_name,
+          city: professionalRequest.city,
+          requested_addons: professionalRequest.requested_addons,
+          status: "received",
+        })
+        .select("id")
+        .single();
+
+      if (activationError || !activationData?.id) {
+        console.error("[api/leads] professional activation request insert error:", activationError?.message ?? "missing id");
+        await supabase.from("buyer_leads").delete().eq("id", data.id);
+        return NextResponse.json(
+          { ok: false, error: "La demande d'activation Pro n'a pas pu être enregistrée. Veuillez réessayer." },
+          { status: 500 },
+        );
+      }
+      professionalActivationRequestId = activationData.id;
+    }
+
     await logConversionEvent(
       {
         event_name: "lead_submit_success",
@@ -200,7 +232,7 @@ export async function POST(request: NextRequest) {
         listing_id: listing_id ?? null,
         lead_id: data.id,
       },
-      userAgent
+      userAgent,
     );
     if (row.source_channel === "credit") {
       await logConversionEvent(
@@ -212,7 +244,7 @@ export async function POST(request: NextRequest) {
           listing_id: listing_id ?? null,
           lead_id: data.id,
         },
-        userAgent
+        userAgent,
       );
     }
 
@@ -220,13 +252,14 @@ export async function POST(request: NextRequest) {
       ok: true,
       lead_id: data.id,
       seller_property_draft_id: sellerPropertyDraftId,
-      next: "/search",
+      professional_activation_request_id: professionalActivationRequestId,
+      next: source_channel === "promoter" ? "/pro" : "/search",
     });
   } catch (err) {
     console.error("[api/leads] unexpected error:", err);
     return NextResponse.json(
       { ok: false, error: "Erreur inattendue. Veuillez réessayer." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

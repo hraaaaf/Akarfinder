@@ -1,13 +1,13 @@
-import { PromoteursPageShell } from "@/components/promoteurs/PromoteursPageShell";
+import type { Metadata } from "next";
+import { ProfessionalAudiencePage } from "@/components/pro/ProfessionalAudiencePage";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Promoteurs — Présentez vos projets sur AkarFinder",
-  description:
-    "Pages de projets premium, leads qualifiés, reporting indicatif et présence salon. Données fournies par le promoteur — sans promesse de volume ni garantie de résultats.",
+export const metadata: Metadata = {
+  title: "AkarFinder Pro pour promoteurs immobiliers",
+  description: "Structurez projets, typologies, prix, plans, médias et droits avant publication dans les expériences AkarFinder.",
 };
 
 export default function PromoteursPage() {
-  return <PromoteursPageShell />;
+  return <ProfessionalAudiencePage audience="promoter" />;
 }
