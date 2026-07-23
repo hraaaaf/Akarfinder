@@ -111,7 +111,10 @@ export function buildSeedConfirmationQuery(seed: Pick<SeedConfirmationSeed, "can
 export function extractSeedConfirmationDimensions(
   seed: Pick<SeedConfirmationSeed, "canonical_url">,
 ): SeedConfirmationDimensions | null {
-  const path = safeDecodedPath(seed.canonical_url);
+  // URL slugs commonly encode intent with separators (e.g. appartement-a-vendre).
+  // Normalize separators ONLY for grouping inference; final admission still uses
+  // exact SERP evidence and the canonical high-confidence gate.
+  const path = safeDecodedPath(seed.canonical_url).replace(/[-_]+/g, " ");
   const city = extractCityNational(path);
   const transaction = toTransactionType(path);
   const propertyType = toPropertyType(path);
