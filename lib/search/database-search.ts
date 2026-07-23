@@ -12,6 +12,7 @@ import {
 } from "@/lib/geo/geo-entity-registry";
 import type { SearchQuery, SearchResult } from "./types";
 import { compareRecommendedListings } from "./ranking";
+import { enrichSearchQueryWithTextIntent } from "./query-intent";
 
 function normalize(value: string) {
   return value
@@ -159,6 +160,8 @@ const DB_SCAN_BATCH_SIZE = 500;
 const MAX_DB_ROWS_SCANNED_PER_REQUEST = 10_000;
 
 export async function searchDatabase(query: SearchQuery = {}): Promise<SearchResult> {
+  query = enrichSearchQueryWithTextIntent(query);
+
   const limit = Math.min(Math.max(query.limit ?? 50, 1), 100);
   const legacyOffset = Math.max(query.offset ?? 0, 0);
   const usingCursor = query.cursor != null;

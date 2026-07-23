@@ -26,7 +26,7 @@ jobs:
         run: npm ci
 
       - name: Search truth contracts
-        run: npx tsx --test scripts/scrapers/__tests__/search-truth-tier.test.ts scripts/scrapers/__tests__/serp-gateway-first.test.ts scripts/scrapers/__tests__/search-ranking.test.ts scripts/scrapers/__tests__/public-result-similarity.test.ts scripts/scrapers/__tests__/akarinfo-passport.test.ts
+        run: npx tsx --test scripts/scrapers/__tests__/search-truth-tier.test.ts scripts/scrapers/__tests__/search-query-intent.test.ts scripts/scrapers/__tests__/serp-gateway-first.test.ts scripts/scrapers/__tests__/search-ranking.test.ts scripts/scrapers/__tests__/public-result-similarity.test.ts scripts/scrapers/__tests__/akarinfo-passport.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit

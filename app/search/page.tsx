@@ -55,19 +55,20 @@ function normalizeTransactionType(raw?: string): ListingFiltersState["transactio
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = searchParams ? await searchParams : {};
-  const initialSearchResult = await searchListings(buildSearchPageQuery(params));
-  const transactionType = normalizeTransactionType(
-    pickFirst(params.type) ?? pickFirst(params.transaction_type)
-  );
-  const city = pickFirst(params.city) ?? "all";
+  const resolvedQuery = buildSearchPageQuery(params);
+  const initialSearchResult = await searchListings(resolvedQuery);
+  const transactionType = normalizeTransactionType(resolvedQuery.transaction_type);
+  const city = resolvedQuery.city ?? "all";
   const mreOnly = (pickFirst(params.mre) ?? "").toLowerCase() === "true";
 
   // SEARCH-RELOOKING-1 — deep-links : property_type + prix min/max depuis l'URL.
   // GOOGLE-LIKE-SEARCH-QA-1 — q param from homepage hero search + budget_max.
-  const propertyType = pickFirst(params.property_type) ?? "all";
+  // SEARCH-TEXT-INTENT-1 — inferred city/type/transaction are also carried into
+  // the client filters so hydration cannot overwrite the structured SSR result.
+  const propertyType = resolvedQuery.property_type ?? "all";
   const minBudget = pickFirst(params.min_price) ?? pickFirst(params.budget_min) ?? "";
   const maxBudget = pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "";
-  const search = pickFirst(params.q) ?? "";
+  const search = resolvedQuery.q ?? "";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
