@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { searchListings } from "@/lib/search";
 import { IntentHubV2 } from "@/components/intent/IntentHubV2";
+import { LegacyIntentHashRedirect } from "@/components/intent/LegacyIntentHashRedirect";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +18,6 @@ export default async function AcheterPage({
 }) {
   const params = await searchParams;
 
-  // /acheter is an intent hub, never a parallel search engine.
-  // Preserve legacy deep links by forwarding them to the canonical Search contract.
   if (params.property_type) {
     const target = new URLSearchParams({ transaction_type: "buy" });
     if (params.property_type !== "__search_all__") target.set("property_type", params.property_type);
@@ -31,10 +30,13 @@ export default async function AcheterPage({
   }));
 
   return (
-    <IntentHubV2
-      intent="buy"
-      listings={searchResult.listings}
-      totalListings={searchResult.total > 0 ? searchResult.total : null}
-    />
+    <>
+      <LegacyIntentHashRedirect intent="buy" />
+      <IntentHubV2
+        intent="buy"
+        listings={searchResult.listings}
+        totalListings={searchResult.total > 0 ? searchResult.total : null}
+      />
+    </>
   );
 }

@@ -1,0 +1,27 @@
+name: Phase 1 P1 Final Sweep Gate
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  final-sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Exhaustive P1 closure contracts
+        run: npx tsx --test scripts/scrapers/__tests__/phase1-p1-final-sweep.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build rehearsal
+        run: npm run build

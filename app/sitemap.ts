@@ -1,33 +1,31 @@
 import type { MetadataRoute } from "next";
+import { isSeoEligibleGeoPair } from "@/lib/geo/geo-entity-registry";
 import { siteConfig } from "@/lib/seo/site";
 import { getAllCities } from "@/lib/seo-city-pages/city-seo-data";
 import { getAllNeighborhoods } from "@/lib/seo-neighborhood-pages/neighborhood-seo-data";
 
-// SEO-FOUNDATION-1 — sitemap indexant les routes publiques.
-//
-// Routes incluses :
-// - / /pro /profil-recherche (core pages)
-// - /immobilier, /immobilier/[city] (SEO-CITY-INTENT-PAGES-1)
-// - /immobilier/[city]/[district] (SEO-NEIGHBORHOOD-GUIDES-1)
-//
-// Routes exclues intentionnellement :
-// - /demo/** : noindex (pages partenaire mockup)
-// - /search : noindex (résultats Gateway dynamiques)
-// - /listings/**: 404 par doctrine (no internal detail pages for Gateway)
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseRoutes = ["/", "/pro", "/profil-recherche", "/immobilier"];
+  // Stable public product/index routes only. Search stays dynamic/noindex;
+  // demos and user workspaces are intentionally excluded.
+  const baseRoutes = [
+    "/",
+    "/acheter",
+    "/louer",
+    "/neuf",
+    "/vendre",
+    "/pro",
+    "/pro/agences",
+    "/promoteurs",
+    "/immobilier",
+    "/map",
+  ];
 
-  const cities = getAllCities();
-  const cityRoutes = cities.map((city) => `/immobilier/${city.slug}`);
+  const cityRoutes = getAllCities().map((city) => `/immobilier/${city.slug}`);
+  const neighborhoodRoutes = getAllNeighborhoods()
+    .filter((n) => isSeoEligibleGeoPair(n.citySlug, n.slug))
+    .map((n) => `/immobilier/${n.citySlug}/${n.slug}`);
 
-  const neighborhoods = getAllNeighborhoods();
-  const neighborhoodRoutes = neighborhoods.map(
-    (n) => `/immobilier/${n.citySlug}/${n.slug}`,
-  );
-
-  const allRoutes = [...baseRoutes, ...cityRoutes, ...neighborhoodRoutes];
-
-  return allRoutes.map((route) => ({
+  return [...baseRoutes, ...cityRoutes, ...neighborhoodRoutes].map((route) => ({
     url: `${siteConfig.siteUrl}${route}`,
     lastModified: new Date(),
   }));

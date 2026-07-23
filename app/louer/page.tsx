@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { IntentHubV2 } from "@/components/intent/IntentHubV2";
+import { LegacyIntentHashRedirect } from "@/components/intent/LegacyIntentHashRedirect";
 import { searchListings } from "@/lib/search";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,6 @@ export default async function LouerPage({
 }) {
   const params = await searchParams;
 
-  // Legacy /louer filter URLs now hand off to the one canonical Search surface.
   if (params.property_type || params.budget_max || params.budget_min) {
     const target = new URLSearchParams({ transaction_type: "rent" });
     if (params.property_type) target.set("property_type", params.property_type);
@@ -42,10 +42,13 @@ export default async function LouerPage({
   }));
 
   return (
-    <IntentHubV2
-      intent="rent"
-      listings={searchResult.listings}
-      totalListings={searchResult.total > 0 ? searchResult.total : null}
-    />
+    <>
+      <LegacyIntentHashRedirect intent="rent" />
+      <IntentHubV2
+        intent="rent"
+        listings={searchResult.listings}
+        totalListings={searchResult.total > 0 ? searchResult.total : null}
+      />
+    </>
   );
 }
