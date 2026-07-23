@@ -72,24 +72,23 @@ export function CityIntentGrid() {
   const bottomCity = featuredCities[4] ?? null;
 
   return (
-    <section id="villes" className="bg-surface-muted py-20 sm:py-28">
+    <section id="villes" className="bg-surface-muted py-16 sm:py-24 lg:py-28">
       <Container>
         <div className="mx-auto max-w-[1240px]">
           <div className="max-w-[760px]">
-            <p className="text-[0.78rem] font-semibold uppercase tracking-[0.3em] text-[#0B63CE] sm:text-[0.84rem]">
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.26em] text-[#0B63CE] sm:text-[0.84rem] sm:tracking-[0.3em]">
               Villes principales
             </p>
-            <h2 className="mt-4 text-[2.35rem] font-extrabold leading-[0.96] tracking-[-0.04em] text-[#0B1F3A] sm:text-[3.2rem] lg:text-[4rem]">
+            <h2 className="mt-3 text-[2rem] font-extrabold leading-[1] tracking-[-0.04em] text-[#0B1F3A] sm:mt-4 sm:text-[3.2rem] lg:text-[4rem]">
               L&apos;immobilier dans les grandes villes du Maroc.
             </h2>
-            <p className="mt-4 max-w-[680px] text-[1rem] leading-7 text-slate-600 sm:text-[1.05rem]">
-              Explorez Casablanca, Marrakech, Rabat, Tanger et Agadir avec des reperes
-              plus clairs, des ambiances locales assumees et un acces direct vers la recherche.
+            <p className="mt-3 max-w-[680px] text-[0.92rem] leading-6 text-slate-600 sm:mt-4 sm:text-[1.05rem] sm:leading-7">
+              Explorez les principaux pôles avec des repères plus clairs et un accès direct vers la recherche.
             </p>
           </div>
 
-          <div className="mt-8 grid gap-4 md:hidden">
-            {featuredCities.map((city) => (
+          <div className="mt-7 grid gap-3 md:hidden">
+            {featuredCities.slice(0, 3).map((city) => (
               <CityCard key={city.slug} city={city} tall={false} />
             ))}
           </div>
@@ -105,12 +104,12 @@ export function CityIntentGrid() {
             ) : null}
           </div>
 
-          <div className="mt-8 flex justify-start">
+          <div className="mt-6 flex justify-start sm:mt-8">
             <Link
-              href="/search"
-              className="inline-flex items-center gap-2 rounded-full border border-[#60A5FA]/30 bg-white px-5 py-3 text-[0.95rem] font-semibold text-[#0B63CE] shadow-[0_18px_40px_rgba(11,99,206,0.08)] transition hover:border-[#60A5FA]/50 hover:bg-[#EEF6FF]"
+              href="/immobilier"
+              className="inline-flex items-center gap-2 rounded-full border border-[#60A5FA]/30 bg-white px-5 py-3 text-[0.9rem] font-semibold text-[#0B63CE] shadow-[0_18px_40px_rgba(11,99,206,0.08)] transition hover:border-[#60A5FA]/50 hover:bg-[#EEF6FF] sm:text-[0.95rem]"
             >
-              Rechercher sur ces villes
+              Voir toutes les villes et quartiers
               <span aria-hidden="true">→</span>
             </Link>
           </div>
@@ -122,7 +121,7 @@ export function CityIntentGrid() {
               </li>
             ))}
             <li>
-              <Link href="/search">Rechercher sur ces villes</Link>
+              <Link href="/immobilier">Voir toutes les villes et quartiers</Link>
             </li>
           </ul>
         </div>
