@@ -1,241 +1,227 @@
-MONETIZATION.md — AkarFinder Stratégie de Monétisation
-Version : 2026-06-23 — Mise à jour post-roadmap refonte
+# AkarFinder — Monetization Doctrine
 
-====================================================
-PRINCIPE
+Updated: 2026-07-23
 
-AkarFinder monétise la valeur, pas le trafic seul.
+This document defines business principles, not a binding price list.
 
-La donnée, la fiabilité, les leads qualifiés et la connexion avec
-l'écosystème immobilier marocain sont les vraies sources de revenus.
+---
 
-Les acheteurs sont gratuits au départ.
-Le B2B (promoteurs, agences, banques) est la cible de monétisation.
+## 1. Principle
 
-====================================================
-CLIENTS PAYANTS — HIÉRARCHIE
+AkarFinder monetizes **useful structured supply, qualified demand, professional tools and market intelligence** without compromising organic search relevance or user trust.
 
-Priorité 1 — Promoteurs immobiliers
-Ont des projets, des budgets, et un besoin mesurable de leads qualifiés.
-Canal d'acquisition : Sakan Expo + approche directe.
+Consumer search should remain broadly accessible during growth.
 
-Priorité 2 — Agences immobilières premium
-Ont du volume de listings.
-Besoin : visibilité, imports, leads.
+Primary monetization is B2B:
 
-Priorité 3 — Banques et organismes de crédit
-Intérêt pour le segment acheteur pré-qualifié (crédit immobilier).
-Offre : simulateur co-brandé + lead financement.
+- promoters;
+- agencies;
+- later, selected financial/institutional partners where the product and compliance model justify it.
 
-Priorité 4 — OPCIM / acteurs investissement immobilier
-Niche premium, forte valeur perçue.
-Offre : data marché + mise en avant investissement.
+---
 
-Hors scope initial — acheteurs particuliers
-* Gratuit au départ.
-* Peuvent être monétisés plus tard (services premium, alertes avancées).
-* Vendeurs particuliers : hors scope V1 (fraude, modération).
+## 2. Commercial neutrality of intelligence
 
-====================================================
-FLUX DE REVENUS
+Permanent rule:
 
-1. LEADS QUALIFIÉS (revenu principal, court terme)
+**payment must not manufacture objective quality.**
 
-Un lead qualifié AkarFinder contient :
-* Budget min / max
-* Ville cible (et quartier si précisé)
-* Type de bien recherché
-* Timeline d'achat
-* Statut MRE / résident Maroc
-* Pays de résidence si MRE
-* Mode de financement (cash / crédit)
-* WhatsApp (obligatoire pour lead chaud)
-* Score de température : chaud / tiède / froid
+Gold, Premium, sponsored or partner status must not secretly increase:
 
-Modèles de prix (à valider manuellement)
-* Lead chaud : 150 – 300 DH pièce
-* Lead tiède : 50 – 100 DH pièce
-* Package mensuel : 20 leads/mois à tarif dégressif
-* Package expo : leads générés pendant Sakan Expo
+- AkarScore;
+- Property Fit;
+- objective reliability/provenance;
+- market-intelligence conclusions;
+- organic relevance ranking.
 
-Règle de crédibilité
-* Lead vendu uniquement avec consentement explicite de l'acheteur.
-* Pas de lead partagé à plusieurs promoteurs sans information.
-* Pas de base de données leads revendue en masse.
+Paid visibility, when introduced, must be clearly labeled as sponsored/featured and handled separately from organic ranking.
 
-2. ESPACES B2B (revenu récurrent, V2)
+---
 
-Espace Promoteur
-* Profil promoteur (logo, description, projets, contacts)
-* Projets immobiliers publiés (neuf + vefa)
-* Badge vérifié AkarFinder (après vérification manuelle)
-* Dashboard leads reçus (filtres par chaud/tiède/froid)
-* Stats de visibilité (vues projets, clics WhatsApp, leads)
-* Import brochures / plans / visuels
+## 3. Professional platform as the commercial foundation
 
-Espace Agence
-* Profil agence (logo, quartiers couverts, agents)
-* Import listings CSV/XML
-* Badge vérifié AkarFinder
-* Leads reçus liés aux listings
-* Stats visibilité
+The repository now contains foundations for:
 
-Espace Vendeur particulier (phase ultérieure)
-* Hors scope V1. Complexité modération / fraude.
+- authenticated professional organizations;
+- agency/promoter memberships and roles;
+- ownership/authorization claims;
+- professional profiles;
+- projects;
+- structured property submissions;
+- seven-step partner onboarding;
+- media/publication rights;
+- activation/review workflows;
+- organization-scoped leads and dashboard data.
 
-Modèles de prix (indicatifs, à valider)
-* Espace promoteur de base : 1 500 DH/mois
-* Espace promoteur premium : 3 000 – 5 000 DH/mois (+ leads inclus)
-* Espace agence : 800 – 2 000 DH/mois selon volume
+Commercial activation should build on these real controls rather than bypass them with ad hoc accounts or query-token admin pages.
 
-3. ANNONCES SPONSORISÉES (revenu boost, V2)
+---
 
-Boost d'annonces sur /search
-* Listing mis en avant dans les résultats (label "Sponsorisé" visible)
-* Paramètres : ville, type de bien, budget cible, durée campagne
+## 4. Revenue families
 
-Boost de projets neuf en homepage
-* Bloc "Projets mis en avant" sur la homepage
-* Réservé aux promoteurs vérifiés AkarFinder
+### A. Professional subscription / package
 
-Publicité native homepage
-* Événements immobiliers (Sakan Expo, salons, lancements)
-* Lancement de nouvelles résidences / programmes
-* Co-branding banques (simulateur crédit, offres financement)
+Potential value:
 
-Règle de crédibilité boost
-* Le badge fiabilité est toujours visible sur un listing sponsorisé.
-* Un bien avec fiabilité faible reste affiché comme tel même s'il est boosté.
-* Le label "Sponsorisé" ou "Mis en avant" est toujours visible.
-* Pas de tromperie : le boost augmente la visibilité, pas la fiabilité perçue.
+- structured inventory management;
+- professional profile/project pages;
+- richer authorized property presentation;
+- leads and demand insights;
+- team/organization workflows;
+- analytics and service levels.
 
-Modèles de prix (indicatifs)
-* Boost listing 7 jours : 300 – 500 DH
-* Boost projet 30 jours : 1 500 – 3 000 DH
-* Publicité native homepage (bloc mensuel) : 2 000 – 8 000 DH
+Exact pricing must be validated commercially and must not be treated as canonical merely because an old document contained a price range.
 
-4. SAKAN EXPO DIGITAL PACKAGE (revenu stratégique, V2)
+### B. Qualified leads
 
-Le package Sakan Expo est l'offre commerciale la plus différenciante.
+AkarFinder can monetize buyer intent only with clear user consent and appropriate recipient governance.
 
-Contenu du package
-* Page projet premium sur AkarFinder (pendant et après l'expo)
-* QR code sur stand expo (scans → lead capture AkarFinder)
-* Formulaire brochure / visite / contact WhatsApp
-* Capture leads expo avec source_channel = "sakan_expo"
-* Rapport post-expo : leads générés, profils acheteurs, villes, budgets
-* Label "Exposant Sakan Expo XXXX" visible sur la fiche projet
+A qualified lead should contain useful intent such as:
 
-Modèle de prix (indicatif)
-* Package standard : 3 000 – 5 000 DH par édition expo
-* Package premium : 8 000 – 15 000 DH (visibilité homepage + rapport avancé)
-* Bundle annuel : promoteur partenaire AkarFinder + Sakan Expo (à négocier)
+- target location;
+- budget/context;
+- property need;
+- timing;
+- contact permission;
+- relevant project/property context.
 
-5. PARTENARIATS FINANCIERS (revenu V3, Phase 7)
+Rules:
 
-Simulateur de crédit co-brandé
-* Calculateur mensualité intégré dans /listings/[id]
-* Co-branding banque partenaire (logo + "Simulation avec [Banque]")
-* Label "Simulation indicative — à confirmer avec votre banque"
-* Revenu : publicité native ou commission si clic renvoyé vers banque
+- no silent resale of contact databases;
+- no multi-recipient distribution without appropriate disclosure/consent;
+- no claim that a visit/contact is confirmed before the professional actually confirms it;
+- no fake lead-temperature certainty.
 
-Lead financement
-* Formulaire dossier crédit simplifié
-* Routing vers banque partenaire
-* Commission par lead financement transmis (à négocier selon banque)
+### C. Sponsored/featured visibility
 
-OPCIM / investissement immobilier
-* Bloc "Investissement" sur pages stratégiques
-* Mise en avant produits d'investissement OPCIM
-* Revenu : publicité native ou commission sur intérêt
+Possible for professional inventory or projects.
 
-6. RAPPORTS DATA MARCHÉ (revenu premium, V3)
+Rules:
 
-AkarFinder accumulera une donnée unique : la demande réelle par ville,
-quartier, budget, type de bien, et profil acheteur.
+- explicit `Sponsorisé` / equivalent label;
+- separate from organic ranking logic;
+- no artificial reliability/AkarScore/Fit increase;
+- source and professional status remain visible.
 
-Rapports vendables
-* Rapport demande par ville (Casablanca, Marrakech, Tanger…)
-* Rapport MRE : origines géographiques, budgets, types de biens recherchés
-* Rapport Sakan Expo : performance digitale post-salon
-* Rapport investissement : quartiers les plus recherchés, prix/m² médians
+### D. Sakan Expo / event-linked packages
 
-Clients cibles
-* Promoteurs (pilotage offre commerciale)
-* Banques (appétit crédit immobilier par zone)
-* OPCIM (marché investissement)
-* Acteurs institutionnels (CRI, ministères, fonds)
+Potential differentiation:
 
-Modèle de prix
-* Rapport standard : 3 000 – 8 000 DH
-* Rapport sur mesure : à devis
-* Abonnement data annuel : à négocier pour institutionnels
+- structured project pages;
+- QR/digital continuation from physical events;
+- brochure/visit/demand capture;
+- post-event analytics;
+- measurable digital continuity.
 
-====================================================
-MODÈLE ÉCONOMIQUE PAR HORIZON
+Specific commercial bundles require current business validation.
 
-COURT TERME — V1 (0–6 mois)
+### E. Market/data intelligence
 
-Objectif : valider l'offre, signer les premiers contrats, pas encore scalé.
+Longer-term opportunities may include:
 
-Actions
-* Créer le one-pager promoteur (offre, prix test, leads, Sakan Expo).
-* Approche manuelle de 3–5 promoteurs.
-* Facturation manuelle — pas de paiement en ligne.
-* Pas de dashboard B2B self-serve.
-* Objectif : 1–3 accords commerciaux de test.
+- demand reports;
+- market trend reports;
+- developer/location insights;
+- institutional data products.
 
-Ne pas faire maintenant
-* Online payment
-* Factures automatiques
-* CRM complexe
-* Subscription management
-* Marketplace bidding
+Only aggregate, lawful, sufficiently evidenced data should be productized. Privacy and source rights remain mandatory.
 
-MOYEN TERME — V2 (6–18 mois)
+### F. Financial partnerships
 
-Objectif : revenus récurrents, B2B scalé.
+Potential future areas:
 
-Actions
-* Espace promoteur self-serve (dashboard leads + stats).
-* Facturation automatique (Stripe ou équivalent).
-* Page /promoteurs et /agences (landing commerciale).
-* 10–20 promoteurs actifs.
-* 50–100 leads qualifiés/mois.
+- mortgage simulation/lead referral;
+- co-branded financing journeys;
+- institutional investment information.
 
-Revenus cibles
-* Packages promoteurs : 15 000 – 50 000 DH/mois (10–20 clients)
-* Leads ponctuels : 5 000 – 20 000 DH/mois
-* Publicité native : 5 000 – 15 000 DH/mois
+These require separate compliance, consent and commercial validation.
 
-LONG TERME — V3 (18 mois+)
+---
 
-Objectif : produit scalable, revenus diversifiés.
+## 5. What is not monetizable by default
 
-Revenus cibles
-* SaaS B2B promoteurs/agences (abonnements)
-* Commissions financement (banques partenaires)
-* Rapports data marché (institutionnels + promoteurs)
-* Internationalisation MRE puis marchés voisins
+Do not assume a right to monetize:
 
-====================================================
-MVP COMMERCIAL — CRITÈRES DE SUCCÈS
+- external-source seller contact data;
+- unauthorized galleries/media;
+- private source content;
+- personal data collected without appropriate consent;
+- scraped content beyond its permitted display/use scope.
 
-AkarFinder devient commercialement testable quand :
+Source acquisition rights and commercial rights are separate questions.
 
-* Un promoteur comprend l'offre en moins de 2 minutes.
-* Le formulaire lead capture des données de qualité.
-* L'équipe peut voir les leads en interne.
-* Un promoteur peut recevoir ses leads.
-* Le package Sakan Expo peut être expliqué et chiffré.
-* Un rapport de marché indicatif peut être montré en demo.
+---
 
-====================================================
-RÈGLES PERMANENTES DE MONÉTISATION
+## 6. Partner activation gate
 
-* Jamais de "certifié" ou "vérifié" sans process de vérification documenté.
-* Jamais de boost qui masque une mauvaise fiabilité.
-* Jamais de leads vendus sans consentement explicite.
-* Toujours labelliser les contenus sponsorisés.
-* Prix à valider manuellement avant toute automatisation.
-* Ne pas lancer la monétisation avant que le produit soit crédible.
+A professional relationship should distinguish:
+
+1. organization identity;
+2. membership/role;
+3. ownership/authorization;
+4. validation state;
+5. commercial activation;
+6. property/submission approval;
+7. media/publication rights.
+
+No single `partner=true` flag should bypass all governance.
+
+Live contact, lead, rich-media or publication rights should depend on the appropriate validated state.
+
+---
+
+## 7. Pricing doctrine
+
+Old draft price ranges are not canonical pricing.
+
+Pricing should be decided from real pilots using evidence such as:
+
+- inventory volume/quality;
+- lead quality;
+- demand generated;
+- professional workflow value;
+- analytics value;
+- support/service cost;
+- market willingness to pay.
+
+Before publishing a commercial tariff, record an explicit validated decision with scope, inclusions and exclusions.
+
+---
+
+## 8. Commercial sequencing
+
+### Phase 1 — proof
+
+- onboard a small number of real authorized agencies/promoters;
+- validate structured onboarding/import;
+- prove useful demand and lead quality;
+- learn operational cost and partner expectations.
+
+### Phase 2 — repeatability
+
+- standardized packages;
+- clearer activation/service levels;
+- scalable dashboards and reporting;
+- repeatable acquisition/onboarding process.
+
+### Phase 3 — expansion
+
+- sponsored inventory/projects;
+- deeper analytics/data products;
+- selected finance/institutional partnerships;
+- broader ecosystem integrations.
+
+Do not overbuild billing/subscription complexity before commercial proof.
+
+---
+
+## 9. Permanent rules
+
+- Never sell trust as a hidden ranking boost.
+- Never label `verified/certified` without a documented verification basis.
+- Never sell/share leads without appropriate consent.
+- Always label paid visibility.
+- Keep source rights and commercial rights explicit.
+- Use real metrics, never invented views/leads/conversion numbers.
+- Validate pricing with real commercial evidence.
+- Preserve user search quality even when monetization grows.

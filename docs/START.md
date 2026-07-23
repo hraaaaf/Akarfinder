@@ -1,90 +1,74 @@
-START.md - Current Mission
+# AkarFinder — Agent Start Guide
 
-Current status
+Updated: 2026-07-23
 
-AkarFinder is at project initialization stage.
+This is the shortest safe entrypoint for any new coding, audit or product mission.
 
-UI exploration is currently happening on Stitch.
+## Read before write
 
-The real production app is not built yet.
+Read in this order:
 
-Scraping, data ingestion, promoter space, lead engine, admin dashboard, and Sakan Expo integration are not yet implemented.
+1. `docs/README.md`
+2. `docs/MASTER_CONTEXT.md`
+3. `docs/CURRENT_STATE.md`
+4. `docs/ROADMAP.md`
+5. the domain-specific contract relevant to the task
+6. the actual code, migrations, tests and workflows involved
 
-Current mission
+For live/Production work, also verify the real Vercel deployment, Supabase state and environment/feature flags.
 
-Initialize the AkarFinder project boussole so Codex can work efficiently.
+## Never assume
 
-Immediate deliverables
+Do not assume that:
 
-Create and maintain:
+- an old mission document represents current architecture;
+- code on `main` is already deployed to Production;
+- a migration file has been applied;
+- a discovered URL is a current listing;
+- a source is authorized because it appeared in search;
+- missing data can be inferred safely;
+- commercial Gold/Premium status improves objective ranking, AkarScore or Property Fit.
 
-* AGENTS.md
-* docs/PRODUCT.md
-* docs/ROADMAP.md
-* docs/ARCHITECTURE.md
-* docs/SCRAPING.md
-* docs/MONETIZATION.md
-* docs/DECISIONS.md
-* docs/SESSION.md
+## Permanent invariants
 
-Current product direction
+- Search-first / intelligence-first product.
+- `/search` is the core product surface.
+- No bypass, proxy evasion, stealth, fake Googlebot, CAPTCHA solving or login circumvention.
+- Source registry and display eligibility remain authoritative.
+- Preserve provenance and original-source links for external results.
+- Never fabricate missing real-estate data.
+- Unknown evidence stays unknown.
+- Commercial status and objective intelligence remain separate.
+- Strategy/architecture decisions are made before execution; agents implement bounded missions.
 
-AkarFinder is not a luxury real-estate agency website.
+## Before changing code
 
-AkarFinder is a Moroccan real-estate search engine.
+1. Confirm the repository and target branch.
+2. Inspect existing implementation before designing a replacement.
+3. Identify source-of-truth modules and tests.
+4. Check relevant migrations and feature flags.
+5. State the exact scope and non-goals.
+6. Preserve safety/publication boundaries unless an explicit newer decision changes them.
 
-Core promise:
+## Completion evidence
 
-Toutes les annonces immobilières du Maroc. Une seule recherche.
+Every implementation mission should report:
 
-Secondary tagline:
+- commit/branch actually changed;
+- files changed;
+- tests and build results;
+- DB/migration impact;
+- environment/flag impact;
+- source-governance/security impact;
+- Production impact;
+- unresolved or unverified items.
 
-Cherchez moins. Trouvez mieux.
+## Documentation rule
 
-Current priorities
+Do not append chronological mission logs here.
 
-1. Finalize project boussole.
-2. Clean the Stitch landing direction.
-3. Define MVP scope.
-4. Prepare Codex implementation.
-5. Avoid overbuilding before validation.
-6. Keep scraping and monetization central from day one.
-
-Do not start yet
-
-Do not implement yet:
-
-* production scraping;
-* Facebook scraping;
-* Google indexed listing aggregation;
-* payment system;
-* full promoter dashboard;
-* AI estimation engine;
-* full admin dashboard;
-* automated data reports.
-
-These require explicit validation.
-
-First product target
-
-Build a credible MVP/demo that proves:
-
-1. users can search Moroccan real-estate listings;
-2. listings can be centralized;
-3. duplicates can be detected;
-4. reliability can be scored;
-5. MRE filters can exist;
-6. leads can be qualified;
-7. promoters can get measurable value;
-8. Sakan Expo can feed and benefit from the platform.
-
-Expected Codex behavior
-
-When working on this project, Codex must:
-
-1. read all required docs;
-2. summarize the mission;
-3. avoid unnecessary questions;
-4. implement only current scope;
-5. update docs/SESSION.md;
-6. stop if a strategic decision is missing.
+- Durable vision → `MASTER_CONTEXT.md`
+- Current implementation → `CURRENT_STATE.md`
+- Active priorities → `ROADMAP.md`
+- Durable decisions → `DECISIONS.md`
+- Mission evidence → PR/Git history or `data/audits/`
