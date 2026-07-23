@@ -70,7 +70,9 @@ Confidence :
 
 Aucune des 13 n'a un `property_listing` correspondant au fingerprint attendu `sha256(openserp:<canonical_url>)`.
 
-Elles proviennent de plusieurs runs historiques. Elles constituent un **petit audit de write-gap**, pas un gisement de centaines de listings.
+Elles proviennent de plusieurs runs historiques. La DB seule ne permet pas de prouver la cause exacte : write error historique, interruption/budget ou logique ancienne doivent être distingués si ce petit gap devient prioritaire.
+
+Elles constituent un **petit audit de write-gap**, pas un gisement de centaines de listings.
 
 ---
 
@@ -91,7 +93,18 @@ Yields :
 - exact high-confidence / attempted unique seeds : **17 / 229 = 7.4 %**
 - exact high-confidence / total attempts : **17 / 320 = 5.3 %**
 
-Le problème principal reste donc le yield de confirmation, mais il est extrêmement hétérogène selon la source.
+### Les 17 succès sont de vraies conversions
+
+Vérification temporelle :
+
+- successful seed confirmations : 17
+- ont aujourd'hui un `listing_sources` : 17
+- `listing_sources.first_seen_at` antérieur à la tentative seed : **0**
+- `first_seen_at` au moment ou après la tentative : **17**
+
+Conclusion : le moteur Seed Listing Mass Conversion crée réellement des structured listings ; les succès ne sont pas de simples refreshs d'annonces déjà persistées.
+
+Le problème principal reste donc le **yield**, pas la réalité de la conversion.
 
 ---
 
@@ -120,23 +133,22 @@ Le registre est volontairement restrictif pour exclure des URLs numériques qui 
 
 Les **11 succès** :
 
-- ont tous un exact overlap `discovery_candidates` ;
+- ont tous un exact overlap `discovery_candidates` créé par la confirmation ;
 - cet overlap est `accepted` ;
 - ont tous été `fresh_confirmed` ;
-- portent typiquement `strong_individual_path + explicit_city + surface_signal`, souvent enrichi de prix/district/chambres.
+- portent typiquement `strong_individual_path + explicit_city + surface_signal`, souvent enrichi de prix/district/chambres ;
+- ont produit des listings structurés réels.
 
 Les **5 échecs** :
 
 - ont le même bon format URL ;
 - ont eux aussi un ID numérique stable ;
-- mais n'ont **aucun exact overlap** dans `discovery_candidates`.
+- mais la recherche de confirmation n'a retourné aucun exact canonical match.
 
 Sur l'ensemble des 294 seeds Masaken :
 
 - exact discovery overlap : **11**
 - accepted overlap : **11**
-- unclassified overlap : 0
-- rejected overlap : 0
 - fresh_confirmed : **11**
 
 ### Conclusion Masaken
@@ -158,7 +170,30 @@ Masaken est cependant le meilleur laboratoire pour définir une lane `yield-awar
 
 ---
 
-## 5. `fresh_confirmed` ≠ structured listing
+## 5. Vue multi-source du yield seed
+
+| Source | Seeds | Tentés | Confirmés | Yield tentés | Exact overlap accepted / seeds |
+|---|---:|---:|---:|---:|---:|
+| Masaken | 294 | 16 | 11 | 68.8 % | 3.74 % |
+| Aykana | 625 | 15 | 2 | 13.3 % | 0.96 % |
+| Souk Immobilier | 637 | 12 | 1 | 8.3 % | 0.47 % |
+| L'Immobilier Sans Frontières | 1,373 | 40 | 2 | 5.0 % | 1.02 % |
+| Promo Immo Marrakech | 3,003 | 36 | 1 | 2.8 % | 0.03 % |
+| DarAgadir | 6,378 | 10 | 0 | 0 % | 0.31 % |
+| Agenz | 1,221 | 16 | 0 | 0 % | 0.16 % |
+| Avito | 4,363 | 12 | 0 | 0 % | 0 % |
+| Mubawab | 2,922 | 16 | 0 | 0 % | 0 % |
+| Atlas Immobilier | 771 | 8 | 0 | 0 % | 0 % |
+| Barnes Marrakech | 282 | 36 | 0 | 0 % | 0 % |
+| Kawtar Immobilier | 77 | 12 | 0 | 0 % | 0 % |
+
+Lecture : un identifiant stable ne suffit pas. Barnes possède également des IDs stables mais son canal de confirmation actuel n'obtient aucun exact match dans le batch testé.
+
+Le facteur différenciant est donc aussi la **discoverability/indexability par le moteur de confirmation**.
+
+---
+
+## 6. `fresh_confirmed` ≠ structured listing
 
 Réconciliation :
 
@@ -166,11 +201,11 @@ Réconciliation :
 - fresh_confirmed issus d'un `exact_high_confidence` seed confirmation : 17
 - fresh_confirmed sans métadonnée de tentative seed : 40
 
-Donc freshness, confirmation et structured conversion sont trois notions différentes.
+Freshness, confirmation et structured conversion sont trois notions différentes.
 
 ---
 
-## 6. Structured listings / Property Graph
+## 7. Structured listings / Property Graph
 
 - `property_listings` : 869
 - `listing_sources` : 874
@@ -189,7 +224,7 @@ Le graphe reste essentiellement 1 SourceOffer → 1 cluster.
 
 ---
 
-## 7. Observation Ledger — finding critique
+## 8. Observation Ledger — finding critique
 
 `source_offer_observations` : **0 ligne**.
 
@@ -206,7 +241,7 @@ Le design d'alimentation idempotente doit être préparé avant tout code.
 
 ---
 
-## 8. Taxonomie réelle des 6,013 `unclassified`
+## 9. Taxonomie réelle des 6,013 `unclassified`
 
 Tous les `unclassified` ont actuellement `admission_confidence = low`.
 
@@ -216,7 +251,7 @@ Répartition opérationnelle :
 |---|---:|---|
 | discovery/category pages | **2,225** | pas des fiches individuelles structurées |
 | domain unclassified | **1,837** | source non qualifiée au moment de l'observation |
-| quarantine / insufficient detail | **1,252** | principal pool à auditer pour recovery |
+| quarantine | **1,252** | résultats ayant type+transaction mais bloqués par la classification |
 | blocked domains | **569** | ne pas promouvoir |
 | other low confidence | **116** | audit secondaire |
 | insufficient detail other | **14** | faible volume |
@@ -228,23 +263,20 @@ Parmi les 1,837 `domain_unclassified`, seulement **52** correspondent à des dom
 - Masaken : 51
 - DarAgadir : 1
 
-Cela montre qu'une petite partie du stock porte un statut historique devenu obsolète, mais pas des milliers de candidats immédiatement récupérables.
+Il s'agit d'un petit stock historique à reclassifier/auditer, pas de milliers de candidats prêts à publier.
 
 ---
 
-## 9. Quarantine recovery — cible réelle
+## 10. Quarantine — finding structurel : cross-city mismatch
 
-Sur 1,252 quarantined :
+Sur les 1,252 quarantined :
 
-- `strong_individual_path` : 144
-- `explicit_city` : 1,169
-- `surface_signal` : 260
-- `price_signal` : 42
-- `bedroom_signal` : 175
-- `strong_individual_path + explicit_city` : 139
-- **near-miss structurés** avec strong path + city + au moins un détail : **99**
+- strong individual path : 144
+- explicit city : 1,169
+- strong path + explicit city : 139
+- strong path + city + au moins un signal prix/surface/chambres : **99**
 
-Répartition des 99 near-miss :
+Répartition des 99 high-signal :
 
 - Mubawab : 40
 - Barnes Marrakech : 29
@@ -257,46 +289,58 @@ Répartition des 99 near-miss :
 - DarAgadir : 1
 - L'Immobilier Sans Frontières : 1
 
-### Conclusion recovery
+### Pourquoi ces strong paths restent en quarantine
 
-Le bon premier échantillon n'est pas 6,013 ni 1,252.
+La logique `classify.ts` montre qu'un résultat en quarantine possède déjà type + transaction.
 
-C'est **99 near-miss fortement structurés**, à auditer sans changer les seuils.
+Si `strong_individual_path` est vrai et que la localisation explicite est cohérente avec la requête, le résultat passe `individual_listing`.
 
-Le but est de découvrir :
+Donc un strong-path qui arrive malgré tout en `quarantine` est bloqué par :
 
-- faux négatifs du classifier ;
-- patterns source incomplets ;
-- données réellement insuffisantes ;
-- cas qu'il faut continuer à laisser en quarantaine.
+**`explicitLocationMatchesQuery = false`**.
+
+Le problème n'est donc pas simplement "insufficient detail" malgré le libellé générique ajouté au reason array.
+
+Il s'agit principalement de résultats immobiliers forts retournés par un moteur sur une requête d'une autre ville/quartier.
+
+### Piste future — sans code maintenant
+
+Au lieu d'abaisser les seuils, étudier un mécanisme conservateur de :
+
+**cross-city salvage / re-bucketing**
+
+Principe possible : une fiche avec strong individual URL + type + transaction + ville explicite fiable pourrait être réaffectée à sa ville observée plutôt que perdue parce que le moteur l'a renvoyée sur une requête différente.
+
+Cela nécessite avant toute implémentation :
+
+- audit d'échantillon ;
+- preuve de fiabilité de l'extracteur ville ;
+- hard blocks district/ville ;
+- dédup ;
+- aucune utilisation du query context pour inventer une localisation.
 
 ---
 
-## 10. Priorités read-only après ce pré-audit
+## 11. Priorités read-only après ce pré-audit
 
 ### P0-A — 13 accepted/write-gap
 
 Auditer les 13 vraies accepted non persistées.
 
-Objectif : déterminer si elles proviennent de write errors historiques, logique ancienne, ou cas intentionnels.
+### P0-B — 99 high-signal cross-city quarantine
 
-### P0-B — 99 quarantine near-miss
+Échantillon prioritaire pour mesurer si un re-bucketing conservateur est justifié.
 
-Échantillon prioritaire pour mesurer un `recoverable rate` réel sans assouplir les règles.
+### P0-C — Masaken-like pattern study
 
-### P0-C — Masaken pattern study
+Comparer Masaken aux autres domaines selon deux axes distincts :
 
-Comparer la mécanique Masaken à d'autres domaines possédant :
+- qualité du pattern individuel / identifiant stable ;
+- capacité du moteur de confirmation à retrouver l'exact canonical URL.
 
-- ID stable ;
-- strong individual URL pattern ;
-- forte indexabilité.
+### P0-D — source/domain qualification
 
-Chercher les propriétés réplicables de la lane, pas copier un seuil spécifique à Masaken.
-
-### P0-D — domain qualification
-
-Les 1,837 domain-unclassified doivent être traités source par source ; réseaux sociaux, moteurs, sites étrangers et agrégateurs parasites ne doivent pas gonfler artificiellement la roadmap DATA.
+Traiter les 1,837 domain-unclassified source par source, sans gonfler artificiellement le stock avec réseaux sociaux, moteurs, sites étrangers ou agrégateurs parasites.
 
 ### P0-E — Observation Ledger design
 
@@ -306,16 +350,16 @@ Préparer la stratégie d'observation idempotente avant Freshness Machine.
 
 # Verdict
 
-Les trois pistes ont réduit considérablement l'incertitude :
+Les trois pistes ont réduit fortement l'incertitude :
 
 1. **Accepted non persistées : 13 réelles, pas 307.**
-2. **Unclassified : seulement 99 near-miss structurés prioritaires sur 6,013.**
-3. **Masaken : modèle prometteur fondé sur URL stable + exact re-observation, mais sample trop petit pour extrapoler 68.8 %.**
+2. **Unclassified : la majorité est correctement écartée ; 99 cas high-signal révèlent surtout un problème potentiel de cross-city re-bucketing, pas un besoin d'abaisser les seuils.**
+3. **Masaken : 11/16 de vraies conversions, grâce au combo pattern stable + exact search-engine visibility ; sample trop petit pour extrapoler.**
 
-Le prochain levier DATA n'est donc pas un nouveau moteur ni une baisse des seuils.
+Le prochain levier DATA n'est pas un nouveau moteur.
 
-Il faut d'abord :
+Séquence recommandée :
 
-`13 write-gap audit → 99 near-miss audit → Masaken-like lane analysis → Bulk Confirmation V2 yield-aware`
+`13 write-gap audit → 99 cross-city audit → Masaken-like lane analysis → Bulk Confirmation V2 yield-aware → Observation Ledger foundation`
 
 Toujours sans code avant GO.
