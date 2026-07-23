@@ -13,7 +13,18 @@ export type CanonicalCitySlug =
   | "agadir"
   | "fes"
   | "kenitra"
-  | "mohammedia";
+  | "mohammedia"
+  | "sale"
+  | "temara"
+  | "meknes"
+  | "tetouan"
+  | "oujda"
+  | "el-jadida"
+  | "nador"
+  | "essaouira"
+  | "bouskoura"
+  | "bouznika"
+  | "azrou";
 
 export type CanonicalCityEntity = {
   id: string;
@@ -44,6 +55,17 @@ export const GEO_CITIES: CanonicalCityEntity[] = [
   { id: "city_fes", slug: "fes", canonical_name: "Fès", aliases: ["Fes"], validation_status: "validated", seo_eligible: false },
   { id: "city_kenitra", slug: "kenitra", canonical_name: "Kénitra", aliases: ["Kenitra"], validation_status: "validated", seo_eligible: false },
   { id: "city_mohammedia", slug: "mohammedia", canonical_name: "Mohammedia", aliases: [], validation_status: "validated", seo_eligible: false },
+  { id: "city_sale", slug: "sale", canonical_name: "Salé", aliases: ["Sale"], validation_status: "validated", seo_eligible: false },
+  { id: "city_temara", slug: "temara", canonical_name: "Témara", aliases: ["Temara"], validation_status: "validated", seo_eligible: false },
+  { id: "city_meknes", slug: "meknes", canonical_name: "Meknès", aliases: ["Meknes"], validation_status: "validated", seo_eligible: false },
+  { id: "city_tetouan", slug: "tetouan", canonical_name: "Tétouan", aliases: ["Tetouan"], validation_status: "validated", seo_eligible: false },
+  { id: "city_oujda", slug: "oujda", canonical_name: "Oujda", aliases: [], validation_status: "validated", seo_eligible: false },
+  { id: "city_el_jadida", slug: "el-jadida", canonical_name: "El Jadida", aliases: ["El-Jadida"], validation_status: "validated", seo_eligible: false },
+  { id: "city_nador", slug: "nador", canonical_name: "Nador", aliases: [], validation_status: "validated", seo_eligible: false },
+  { id: "city_essaouira", slug: "essaouira", canonical_name: "Essaouira", aliases: [], validation_status: "validated", seo_eligible: false },
+  { id: "city_bouskoura", slug: "bouskoura", canonical_name: "Bouskoura", aliases: [], validation_status: "validated", seo_eligible: false },
+  { id: "city_bouznika", slug: "bouznika", canonical_name: "Bouznika", aliases: [], validation_status: "validated", seo_eligible: false },
+  { id: "city_azrou", slug: "azrou", canonical_name: "Azrou", aliases: [], validation_status: "validated", seo_eligible: false },
 ];
 
 export const GEO_NEIGHBORHOODS: CanonicalNeighborhoodEntity[] = [
@@ -116,6 +138,25 @@ export function canonicalizeCityName(value: string): string {
 
 export function canonicalizeNeighborhoodName(city: string, neighborhood: string): string {
   return resolveNeighborhoodEntity(city, neighborhood)?.canonical_name ?? neighborhood.trim();
+}
+
+export function canonicalizeGeoPair(city: string, neighborhood?: string | null): { city: string; neighborhood?: string } {
+  const canonicalCity = canonicalizeCityName(city);
+  if (!neighborhood?.trim()) return { city: canonicalCity };
+  return {
+    city: canonicalCity,
+    neighborhood: canonicalizeNeighborhoodName(canonicalCity, neighborhood),
+  };
+}
+
+/**
+ * Returns the canonical name plus accepted raw aliases for read-model matching.
+ * This is intentionally identity-only: it does not make an entity SEO eligible.
+ */
+export function getCitySearchVariants(value: string): string[] {
+  const entity = resolveCityEntity(value);
+  if (!entity) return [value.trim()].filter(Boolean);
+  return Array.from(new Set([entity.canonical_name, ...entity.aliases]));
 }
 
 export function getValidatedSeoCities(): CanonicalCityEntity[] {
