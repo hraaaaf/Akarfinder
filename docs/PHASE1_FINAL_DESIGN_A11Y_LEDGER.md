@@ -2,6 +2,8 @@
 
 This ledger tracks the transversal findings from the final UX/UI audit. It deliberately distinguishes structural closure from screenshot-dependent visual closure.
 
+The current validation candidate is consolidated against `main` and includes the residual P2 closure plus this final UI/accessibility workstream, so one CI run can certify their interaction before any merge.
+
 | Finding | Status | Current closure state |
 |---|---|---|
 | AF-AUDIT-FINAL-079 — Legacy palette / brand-token collision | MIGRATION_GUARD_ADDED | Canonical `accent` / `accent-blue` is explicit for new UI. Historical `bronze-*` remains a compatibility namespace and is documented as legacy. Full removal requires visual migration of existing classes and fresh screenshots. |
@@ -20,6 +22,6 @@ The final design/accessibility workstream is **not closed** while:
 1. AF-AUDIT-FINAL-080 remains visually unconsolidated.
 2. Screenshot-dependent review for 079/084 has not been completed against fresh 390/768/1280 captures.
 3. The Playwright gate has not actually executed successfully.
-4. The stacked P2 residual PR has not passed CI and merged.
+4. The consolidated candidate has not passed P2 + final UI + canonical baseline CI and merged.
 
 No Vercel deployment is allowed before those gates are resolved and the complete Phase 1 release certification is explicitly approved.
