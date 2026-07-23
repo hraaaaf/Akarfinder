@@ -5,6 +5,11 @@ import { canPublishDbRowToPublicSearchSurface } from "@/lib/listings/public-list
 import type { Listing } from "@/lib/listings/types";
 import { attachPublicSerpIntelligenceToListing } from "@/lib/intelligence/public-serp-intelligence-v1";
 import type { DbListingRow } from "@/lib/listings/db-listings";
+import {
+  canonicalizeCityName,
+  canonicalizeGeoPair,
+  getCitySearchVariants,
+} from "@/lib/geo/geo-entity-registry";
 import type { SearchQuery, SearchResult } from "./types";
 import { computeRankingScore } from "./ranking";
 
@@ -65,7 +70,12 @@ function toMappedTransactionType(raw?: string): string | undefined {
 }
 
 function matchesFilters(listing: Listing, query: SearchQuery) {
-  if (query.city && listing.city !== query.city) return false;
+  if (
+    query.city &&
+    normalize(canonicalizeCityName(listing.city)) !== normalize(canonicalizeCityName(query.city))
+  ) {
+    return false;
+  }
   if (query.property_type) {
     const mapped = toMappedPropertyType(query.property_type);
     if (mapped && listing.property_type !== mapped) return false;
@@ -104,11 +114,25 @@ function sortListings(listings: Listing[], sort?: string, query?: SearchQuery) {
   });
 }
 
+function canonicalizeListingGeo(listing: Listing): Listing {
+  const geo = canonicalizeGeoPair(
+    listing.city,
+    listing.neighborhood || listing.district || undefined,
+  );
+  const canonicalNeighborhood = geo.neighborhood ?? "";
+  return {
+    ...listing,
+    city: geo.city,
+    neighborhood: canonicalNeighborhood,
+    ...(listing.district ? { district: canonicalNeighborhood || listing.district } : {}),
+  };
+}
+
 function mapSearchRow(
   row: DbListingRow,
   duplicate?: Parameters<typeof mapDbRowToListing>[1],
 ): Listing {
-  const listing = mapDbRowToListing(row, duplicate);
+  const listing = canonicalizeListingGeo(mapDbRowToListing(row, duplicate));
   return attachPublicSerpIntelligenceToListing(listing, {
     source_name: row.source_name ?? "",
     observed_at: row.updated_at,
@@ -122,7 +146,7 @@ function mapSearchRows(rows: DbListingRow[]): Listing[] {
   );
   if (allPersisted) return rows.map((row) => mapSearchRow(row));
 
-  const partial = rows.map((row) => mapDbRowToListing(row));
+  const partial = rows.map((row) => canonicalizeListingGeo(mapDbRowToListing(row)));
   const duplicateMap = assignDuplicateGroups(partial);
   return rows.map((row) => mapSearchRow(row, duplicateMap.get(String(row.id))));
 }
@@ -148,10 +172,17 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
   let rawTotal = 0;
   let scannedRows = 0;
 
+  // Historical rows can contain accent/transliteration aliases (Temara/Témara,
+  // Meknes/Meknès, etc.). When a canonical city has aliases, an exact DB filter
+  // would hide valid rows. Until canonical backfill is complete, scan the bounded
+  // public read-model and apply canonical identity matching after mapping.
+  const cityVariants = query.city ? getCitySearchVariants(query.city) : [];
+  const dbCityFilter = cityVariants.length <= 1 ? query.city : undefined;
+
   while (matchedListings.length < targetMatches && scannedRows < MAX_DB_ROWS_SCANNED_PER_REQUEST) {
     const batchStart = scanCursor;
     const base = await queryListings({
-      city: query.city,
+      city: dbCityFilter,
       property_type: query.property_type,
       transaction_type: query.transaction_type,
       min_price: query.min_price,
