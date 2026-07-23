@@ -84,6 +84,9 @@ export function transitionCompanionSession(session: CompanionSession, event: Com
     case "answer_type": next.profile = applySearchProfileEvent(next.profile, { type: "property", property_types: event.property_types }, now); next.state = "CONTRAINTES_ABSOLUES"; break;
     case "answer_constraints": next.profile = applySearchProfileEvent(next.profile, { type: "property", min_surface_m2: event.min_surface_m2, min_bedrooms: event.min_bedrooms, required_features: event.required_features, works_accepted: event.works_accepted }, now); next.state = "PREFERENCES"; break;
     case "answer_preferences":
+      // Revision is authoritative: remove preferences that the user unchecked,
+      // then rebuild only the currently selected set.
+      next.profile.neighborhood_preferences = [];
       for (const preference of event.preferences.slice(0, 20)) next.profile = applySearchProfileEvent(next.profile, { type: "preference", ...preference }, now);
       next.state = "PRIORISATION";
       break;
