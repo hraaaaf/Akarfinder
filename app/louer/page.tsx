@@ -9,6 +9,12 @@ export const metadata = {
     "Trouvez une location au Maroc selon votre budget mensuel et votre vie quotidienne. Résultats de location issus de sources publiques, repères indicatifs à confirmer auprès de la source.",
 };
 
+function parsePositiveNumber(value?: string): number | undefined {
+  if (!value) return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
+}
+
 export default async function LouerPage({
   searchParams,
 }: {
@@ -20,6 +26,8 @@ export default async function LouerPage({
 }) {
   const params = await searchParams;
   const propertyType = params.property_type;
+  const minPrice = parsePositiveNumber(params.budget_min);
+  const maxPrice = parsePositiveNumber(params.budget_max);
 
   let rentListings: Awaited<ReturnType<typeof searchListings>>["listings"] = [];
   let rentTotal: number | null = null;
@@ -28,6 +36,8 @@ export default async function LouerPage({
       transaction_type: "rent",
       limit: 6,
       ...(propertyType ? { property_type: propertyType } : {}),
+      ...(minPrice != null ? { min_price: minPrice } : {}),
+      ...(maxPrice != null ? { max_price: maxPrice } : {}),
     });
     rentListings = result.listings ?? [];
     rentTotal = result.total ?? null;

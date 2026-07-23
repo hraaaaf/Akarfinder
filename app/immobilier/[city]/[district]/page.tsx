@@ -6,11 +6,13 @@ import {
   getAllNeighborhoods,
   getNeighborhoodBySlug,
 } from "@/lib/seo-neighborhood-pages/neighborhood-seo-data";
+import { isSeoEligibleGeoPair } from "@/lib/geo/geo-entity-registry";
 import { generateNeighborhoodSeoMetadata } from "@/lib/seo-neighborhood-pages/seo-metadata";
 import { NeighborhoodBreadcrumb } from "@/components/seo/NeighborhoodBreadcrumb";
 import { NeighborhoodSeoHero } from "@/components/seo/NeighborhoodSeoHero";
 import { NeighborhoodSearchCtas } from "@/components/seo/NeighborhoodSearchCtas";
 import { NeighborhoodGuideSections } from "@/components/seo/NeighborhoodGuideSections";
+import { NeighborhoodIntelligencePanel } from "@/components/seo/NeighborhoodIntelligencePanel";
 import { NeighborhoodFaq } from "@/components/seo/NeighborhoodFaq";
 import { SeoSafetyNotice } from "@/components/seo/SeoSafetyNotice";
 
@@ -30,7 +32,7 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { city, district } = await params;
 
-  if (!isValidCitySlug(city) || !isValidDistrictSlug(district)) {
+  if (!isValidCitySlug(city) || !isValidDistrictSlug(district) || !isSeoEligibleGeoPair(city, district)) {
     return {
       title: "Not Found",
       robots: { index: false, follow: false },
@@ -66,7 +68,7 @@ export async function generateMetadata({
 export default async function DistrictPage({ params }: PageProps) {
   const { city, district } = await params;
 
-  if (!isValidCitySlug(city) || !isValidDistrictSlug(district)) {
+  if (!isValidCitySlug(city) || !isValidDistrictSlug(district) || !isSeoEligibleGeoPair(city, district)) {
     notFound();
   }
 
@@ -132,6 +134,7 @@ export default async function DistrictPage({ params }: PageProps) {
       <NeighborhoodBreadcrumb neighborhood={n} />
       <NeighborhoodSeoHero neighborhood={n} />
       <NeighborhoodSearchCtas neighborhood={n} />
+      <NeighborhoodIntelligencePanel neighborhood={n} />
       <NeighborhoodGuideSections neighborhood={n} />
       <SeoSafetyNotice />
       <NeighborhoodFaq neighborhood={n} />

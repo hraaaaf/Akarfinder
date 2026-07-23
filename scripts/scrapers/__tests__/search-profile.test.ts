@@ -72,24 +72,31 @@ describe("search profile summary", () => {
     assert.equal(summary.lines.length, 0);
     assert.equal(summary.essentials.length, 0);
     assert.ok(summary.checkpoints.length > 0);
-    assert.equal(summary.searchHref, "/search");
+    assert.ok(summary.searchHref.startsWith("/search"));
   });
 
-  it("builds an internal search link from the profile", () => {
+  it("builds a canonical structured search link and preserves richer intent", () => {
     const href = buildSearchHref(familyBuyProfile());
-    assert.ok(href.startsWith("/search?"));
-    assert.ok(href.includes("transaction=buy"));
-    assert.ok(decodeURIComponent(href).includes("appartement"));
-    assert.ok(decodeURIComponent(href).toLowerCase().includes("casablanca"));
+    const url = new URL(href, "https://akarfinder.test");
+    assert.equal(url.pathname, "/search");
+    assert.equal(url.searchParams.get("transaction_type"), "buy");
+    assert.equal(url.searchParams.get("city"), "Casablanca");
+    assert.equal(url.searchParams.get("property_type"), "Appartement");
+    assert.equal(url.searchParams.get("q"), "Maârif");
+    assert.equal(url.searchParams.get("max_price"), "1500000");
+    assert.equal(url.searchParams.get("min_surface"), "90");
+    assert.equal(url.searchParams.get("profile_bedrooms"), "3");
+    assert.equal(url.searchParams.get("profile_elevator"), "1");
+    assert.equal(url.searchParams.get("guided"), "1");
   });
 
-  it("maps rent and new projects to their transaction params", () => {
-    assert.ok(
-      buildSearchHref({ ...EMPTY_SEARCH_PROFILE, project: "louer" }).includes("transaction=rent"),
-    );
-    assert.ok(
-      buildSearchHref({ ...EMPTY_SEARCH_PROFILE, project: "neuf" }).includes("transaction=new"),
-    );
+  it("maps rent and new projects to canonical transaction_type params", () => {
+    const rent = new URL(buildSearchHref({ ...EMPTY_SEARCH_PROFILE, project: "louer" }), "https://akarfinder.test");
+    const fresh = new URL(buildSearchHref({ ...EMPTY_SEARCH_PROFILE, project: "neuf" }), "https://akarfinder.test");
+    assert.equal(rent.searchParams.get("transaction_type"), "rent");
+    assert.equal(fresh.searchParams.get("transaction_type"), "new");
+    assert.equal(rent.searchParams.has("transaction"), false);
+    assert.equal(fresh.searchParams.has("transaction"), false);
   });
 
   it("never emits forbidden public wording in options or summaries", () => {

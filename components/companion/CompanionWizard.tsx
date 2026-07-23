@@ -64,11 +64,26 @@ function toggleValue<T extends string>(values: T[], value: T): T[] {
   return values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
 }
 
+function projectName(session: CompanionSession): string {
+  const objective = session.profile.objective?.value;
+  const city = session.profile.location.preferred_cities[0];
+  const objectiveLabel: Record<string, string> = {
+    buy: "Achat",
+    rent: "Location",
+    invest: "Investissement",
+    new_build: "Neuf",
+    explore: "Exploration",
+    compare: "Comparaison",
+  };
+  return [objective ? objectiveLabel[objective] ?? "Projet" : "Projet", city].filter(Boolean).join(" · ");
+}
+
 function ChoiceButton({ active, children, onClick }: { active?: boolean; children: React.ReactNode; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active === true}
       className={`rounded-xl border px-4 py-3 text-left text-sm font-bold transition ${
         active
           ? "border-[#0B63CE] bg-[#EAF3FF] text-[#084FA8] shadow-sm"
@@ -119,8 +134,44 @@ export function CompanionWizard() {
     }
   }
 
-  function startSearch() {
+  async function startSearch() {
+    setPending(true);
+    setError(null);
     const params = companionProfileToSearchParams(session.profile);
+
+    // Never silently discard a completed guided project. Guests keep a local
+    // recovery snapshot; authenticated users also persist it in Mon Projet.
+    try {
+      window.sessionStorage.setItem(
+        "akarfinder-pending-project-v2",
+        JSON.stringify({ profile: session.profile, companion_session: session }),
+      );
+    } catch {
+      // Storage can be unavailable in hardened/private browser contexts.
+    }
+
+    try {
+      const response = await fetch("/api/me/continuity", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "create_project",
+          name: projectName(session),
+          profile: session.profile,
+          companion_session: session,
+        }),
+      });
+
+      if (response.ok) {
+        const payload = (await response.json()) as { result?: { id?: string } };
+        if (payload.result?.id) params.set("project_id", payload.result.id);
+      } else if (response.status !== 401) {
+        console.warn("[companion] project persistence unavailable", response.status);
+      }
+    } catch (cause) {
+      console.warn("[companion] project persistence failed; continuing to search", cause);
+    }
+
     router.push(`/search?${params.toString()}`);
   }
 
@@ -286,7 +337,10 @@ export function CompanionWizard() {
     return shell(
       <>
         <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-800">Votre projet est structuré. AkarFinder peut maintenant lancer la recherche directe avec vos contraintes explicites ; le Fit personnalisé s'applique lorsqu'une donnée comparable est réellement disponible.</p>
-        <button type="button" onClick={startSearch} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white"><Search size={16} />Voir les résultats</button>
+        <button type="button" disabled={pending} onClick={startSearch} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white disabled:opacity-60">
+          {pending ? <Loader2 className="animate-spin" size={16} /> : <Search size={16} />}
+          {pending ? "Enregistrement du projet…" : "Voir les résultats"}
+        </button>
       </>
     );
   }
