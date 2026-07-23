@@ -5,6 +5,7 @@ on:
   workflow_dispatch: {}
 permissions:
   contents: read
+  issues: write
 jobs:
   final-ui-a11y:
     runs-on: ubuntu-latest
@@ -45,6 +46,14 @@ jobs:
         env:
           BASE_URL: http://127.0.0.1:3000
         run: npx tsx scripts/audits/final-ui-a11y-smoke.ts
+      - name: Publish failed smoke report to PR
+        if: failure() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -f artifacts/ui-audit/report.md ]; then
+            gh pr comment "${{ github.event.pull_request.number }}" --body-file artifacts/ui-audit/report.md
+          fi
       - name: Upload UI audit screenshots and report
         if: always()
         uses: actions/upload-artifact@v4
