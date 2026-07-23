@@ -6,6 +6,8 @@ The current validation candidate is consolidated against `main` and includes the
 
 Validation note: the repository was temporarily switched to public visibility by the owner to restore GitHub-hosted Actions capacity after the private-account minute quota was exhausted. This changes no product or release rule; the candidate still requires the same complete CI, screenshot review, and explicit end-of-Phase release gate before any Vercel deployment.
 
+CI retrigger note: a fresh candidate commit was created after public visibility was confirmed so GitHub Actions can execute the final structural, build and Playwright gates on the exact consolidated branch.
+
 | Finding | Status | Current closure state |
 |---|---|---|
 | AF-AUDIT-FINAL-079 — Legacy palette / brand-token collision | MIGRATION_GUARD_ADDED | Canonical `accent` / `accent-blue` is explicit for new UI. Historical `bronze-*` remains a compatibility namespace and is documented as legacy. Full removal requires visual migration of existing classes and fresh screenshots. |
@@ -15,7 +17,7 @@ Validation note: the repository was temporarily switched to public visibility by
 | AF-AUDIT-FINAL-083 — Reduced motion partial | CLOSED | Existing component-specific rules are reinforced by a global `prefers-reduced-motion` safety rule for animation, transitions and smooth scrolling. |
 | AF-AUDIT-FINAL-084 — Low-contrast microcopy system | STRUCTURAL_GUARD_ADDED | Legacy white 35–50% text utilities receive a readable minimum override and Search placeholders use stronger semantic contrast. Final visual/contrast acceptance remains screenshot-dependent. |
 | AF-AUDIT-FINAL-085 — Mobile header information density | CLOSED | Secondary mobile navigation is reduced to five canonical entries, Search is first, Pro is unified, tap targets are larger, and active state is semantic. |
-| AF-AUDIT-FINAL-086 — No automated accessibility gate | IMPLEMENTED_PENDING_RUN | A Playwright gate now audits 10 core routes at 390/768/1280, captures 30 screenshots, and checks HTTP status, horizontal overflow, landmarks/H1, skip link, duplicate IDs, accessible names, image alt presence and keyboard focus. GitHub Actions must successfully start a runner before this can be certified. |
+| AF-AUDIT-FINAL-086 — No automated accessibility gate | IMPLEMENTED_PENDING_RUN | A Playwright gate now audits 10 core routes at 390/768/1280, captures 30 screenshots, and checks HTTP status, horizontal overflow, landmarks/H1, skip link, duplicate IDs, accessible names, image alt presence and keyboard focus. GitHub Actions must successfully execute the fresh public-repo candidate before this can be certified. |
 
 ## Release boundary
 
