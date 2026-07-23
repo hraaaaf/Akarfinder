@@ -29,7 +29,7 @@ function structuredBase(id: string) {
 describe("Search truth tiers", () => {
   it("classifies a structured listing with public intelligence as analyzed", () => {
     const listing = attachPublicSerpIntelligenceSummary(structuredBase("analyzed"), {
-      version: "public_serp_intelligence_v1",
+      version: "1.0",
       status: "available",
       score: 82,
       score_label: "Lecture documentaire solide",
@@ -69,7 +69,7 @@ describe("Search truth tiers", () => {
 
   it("partitions structured/analyzed results before observed results without changing relevance inside each tier", () => {
     const analyzed = attachPublicSerpIntelligenceSummary(structuredBase("a"), {
-      version: "public_serp_intelligence_v1",
+      version: "1.0",
       status: "available",
       score: 75,
       score_label: "Lecture documentaire",
