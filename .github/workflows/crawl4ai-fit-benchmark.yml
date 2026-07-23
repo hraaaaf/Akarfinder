@@ -1,0 +1,43 @@
+name: Crawl4AI Fit Benchmark
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/benchmarks/crawl4ai-fit-benchmark.py'
+      - '.github/workflows/crawl4ai-fit-benchmark.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install benchmark dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install 'crawl4ai==0.9.2' httpx beautifulsoup4
+          python -m playwright install --with-deps chromium
+
+      - name: Run strict no-bypass benchmark
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: python scripts/benchmarks/crawl4ai-fit-benchmark.py
+
+      - name: Upload benchmark artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawl4ai-fit-benchmark
+          path: data/audits/crawl4ai-fit/
+          if-no-files-found: warn
