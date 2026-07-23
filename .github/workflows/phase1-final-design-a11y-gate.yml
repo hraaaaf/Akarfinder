@@ -1,0 +1,55 @@
+name: Phase 1 Final Design Accessibility Gate
+on:
+  pull_request:
+    branches: [main, phase1-p2-residual-closure]
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  final-ui-a11y:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Structural design and accessibility contracts
+        run: npx tsx --test scripts/scrapers/__tests__/phase1-final-design-a11y.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build rehearsal
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        run: |
+          npx next start -H 127.0.0.1 -p 3000 > /tmp/akarfinder-next.log 2>&1 &
+          echo $! > /tmp/akarfinder-next.pid
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/akarfinder-next.log
+          exit 1
+      - name: Responsive UI and accessibility smoke
+        env:
+          BASE_URL: http://127.0.0.1:3000
+        run: npx tsx scripts/audits/final-ui-a11y-smoke.ts
+      - name: Upload UI audit screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase1-final-ui-audit
+          path: artifacts/ui-audit
+          if-no-files-found: warn
+          retention-days: 14
