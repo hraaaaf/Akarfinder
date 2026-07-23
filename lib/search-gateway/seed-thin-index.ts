@@ -1,8 +1,8 @@
 // THIN-INDEX-SEED-SEARCH-V1
 // Searchable thin-index projection over registry-approved public sitemap/Common
-// Crawl URL seeds. A seed is NEVER promoted to a structured listing here: this
-// module only returns a source-visible external link with no invented price,
-// photo, contact, availability, or internal detail page.
+// Crawl/Serper-search URL seeds. A seed is NEVER promoted to a structured listing
+// here: this module only returns a source-visible external link with no invented
+// price, photo, contact, availability, or internal detail page.
 
 import { createHash } from "node:crypto";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
@@ -17,13 +17,23 @@ export type SeedThinIndexInput = {
   maxResults?: number;
 };
 
+type SerperSeedMetadata = {
+  title?: string | null;
+  snippet?: string | null;
+  query?: string | null;
+  city?: string | null;
+  property_type?: string | null;
+  intent?: string | null;
+};
+
 type SeedRow = {
   id: string;
   canonical_url: string;
   source_domain: string;
-  seed_provider: "public_sitemap" | "commoncrawl_cdx" | string;
+  seed_provider: "public_sitemap" | "commoncrawl_cdx" | "serper_search" | string;
   freshness_status: string;
   updated_at: string;
+  metadata?: { serper_search?: SerperSeedMetadata } | null;
 };
 
 const PROPERTY_TOKENS: Record<string, string[]> = {
@@ -85,8 +95,26 @@ function stableId(url: string): string {
   return `seed_${createHash("sha256").update(url).digest("hex").slice(0, 20)}`;
 }
 
+function serperMetadata(row: SeedRow): SerperSeedMetadata {
+  const value = row.metadata?.serper_search;
+  return value && typeof value === "object" ? value : {};
+}
+
+function searchableText(row: SeedRow): string {
+  const meta = serperMetadata(row);
+  return normalize([
+    row.canonical_url,
+    meta.title ?? "",
+    meta.snippet ?? "",
+    meta.query ?? "",
+    meta.city ?? "",
+    meta.property_type ?? "",
+    meta.intent ?? "",
+  ].join(" "));
+}
+
 export function seedMatchesThinIndexSearch(row: SeedRow, input: SeedThinIndexInput): boolean {
-  if (row.seed_provider !== "public_sitemap" && row.seed_provider !== "commoncrawl_cdx") return false;
+  if (!["public_sitemap", "commoncrawl_cdx", "serper_search"].includes(row.seed_provider)) return false;
   if (row.freshness_status !== "seed_only" && row.freshness_status !== "fresh_confirmed") return false;
 
   let pathname = "";
@@ -94,7 +122,7 @@ export function seedMatchesThinIndexSearch(row: SeedRow, input: SeedThinIndexInp
   const listingPatterns = getListingUrlPatterns(row.source_domain);
   if (listingPatterns.length === 0 || !listingPatterns.some((pattern) => pattern.test(pathname))) return false;
 
-  const text = normalize(row.canonical_url);
+  const text = searchableText(row);
   const cityTokens = tokens(input.city);
   if (cityTokens.length > 0 && !cityTokens.every((token) => text.includes(token))) return false;
 
@@ -115,20 +143,35 @@ export function seedMatchesThinIndexSearch(row: SeedRow, input: SeedThinIndexInp
 }
 
 export function mapSeedToThinIndexResult(row: SeedRow): SearchGatewayNormalizedResult {
-  const providerLabel = row.seed_provider === "public_sitemap" ? "Index sitemap public" : "Index Common Crawl";
+  const meta = serperMetadata(row);
+  const providerLabel = row.seed_provider === "public_sitemap"
+    ? "Index sitemap public"
+    : row.seed_provider === "serper_search"
+      ? "Résultat web indexé"
+      : "Index Common Crawl";
   const confirmed = row.freshness_status === "fresh_confirmed";
+  const title = row.seed_provider === "serper_search" && meta.title?.trim()
+    ? meta.title.trim().slice(0, 220)
+    : `Résultat immobilier indexé — ${sourceName(row.source_domain)}`;
+  const snippet = row.seed_provider === "serper_search" && meta.snippet?.trim()
+    ? meta.snippet.trim().slice(0, 420)
+    : confirmed
+      ? "Lien de fiche externe recroisé dans l’index AkarFinder. Prix, disponibilité, photos et contact restent à vérifier sur la source originale."
+      : "Lien de fiche détecté dans un index public de la source. Prix, disponibilité, photos et contact restent à vérifier sur le site original.";
   return {
     id: stableId(row.canonical_url),
-    title: `Résultat immobilier indexé — ${sourceName(row.source_domain)}`,
-    snippet: confirmed
-      ? "Lien de fiche externe recroisé dans l’index AkarFinder. Prix, disponibilité, photos et contact restent à vérifier sur la source originale."
-      : "Lien de fiche détecté dans un index public de la source. Prix, disponibilité, photos et contact restent à vérifier sur le site original.",
+    title,
+    snippet,
     original_url: row.canonical_url,
     display_url: displayUrl(row.canonical_url),
     source_id: `seed:${row.source_domain}`,
     source_name: sourceName(row.source_domain),
     domain: row.source_domain,
-    result_origin: row.seed_provider === "public_sitemap" ? "public_sitemap" : "commoncrawl_cdx",
+    result_origin: row.seed_provider === "public_sitemap"
+      ? "public_sitemap"
+      : row.seed_provider === "serper_search"
+        ? "search_api"
+        : "commoncrawl_cdx",
     search_result_display_mode: "thin_indexed_seed",
     source_badge: "external_indexed",
     production_allowed: true,
@@ -180,9 +223,9 @@ export async function searchSeedThinIndex(input: SeedThinIndexInput): Promise<Se
   const supabase = getSupabaseServerClient();
   let query = supabase
     .from("source_offer_seeds")
-    .select("id,canonical_url,source_domain,seed_provider,freshness_status,updated_at")
+    .select("id,canonical_url,source_domain,seed_provider,freshness_status,updated_at,metadata")
     .in("freshness_status", ["seed_only", "fresh_confirmed"])
-    .in("seed_provider", ["public_sitemap", "commoncrawl_cdx"])
+    .in("seed_provider", ["public_sitemap", "commoncrawl_cdx", "serper_search"])
     .order("freshness_status", { ascending: true })
     .order("updated_at", { ascending: false })
     .limit(1500);
