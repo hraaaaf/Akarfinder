@@ -65,7 +65,7 @@ export function GoogleLikeHero() {
           </h1>
 
           <p className="mt-4 max-w-[650px] text-[0.95rem] leading-relaxed text-[#334155] drop-shadow-[0_1px_6px_rgba(0,0,0,0.2)] sm:mt-6 sm:text-[1.1rem] sm:text-white sm:drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
-            Recherchez directement, distinguez les fiches analysées des simples offres observées et retrouvez toujours la source originale. Le Compagnon vous aide à structurer Mon Projet lorsque vos critères ne sont pas encore clairs.
+            Recherchez directement et distinguez les fiches analysées des simples offres observées. Comprenez le quartier quand des repères existent et retrouvez toujours les sources originales. Le Compagnon structure Mon Projet lorsque vos critères ne sont pas encore clairs.
           </p>
 
           <div className="mt-6 w-full sm:mt-11">
