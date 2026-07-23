@@ -1,3 +1,4 @@
+import { enrichSearchQueryWithTextIntent } from "./query-intent";
 import type { SearchQuery } from "./types";
 
 type SearchPageParams = Record<string, string | string[] | undefined>;
@@ -56,5 +57,5 @@ export function buildSearchPageQuery(searchParams: SearchPageParams): SearchQuer
   const maxSurface = Number(pickFirst(searchParams.max_surface));
   if (Number.isFinite(maxSurface) && maxSurface > 0) query.max_surface = maxSurface;
 
-  return query;
+  return enrichSearchQueryWithTextIntent(query);
 }
