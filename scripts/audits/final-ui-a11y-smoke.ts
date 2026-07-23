@@ -62,154 +62,190 @@ try {
 
     for (const route of routes) {
       const page = await context.newPage();
-      const response = await page.goto(`${baseUrl}${route.path}`, {
-        waitUntil: "domcontentloaded",
-        timeout: 45_000,
-      });
+      let responseStatus: number | null = null;
 
-      await page.waitForTimeout(500);
-
-      const status = response?.status() ?? null;
-      if (status == null || status >= 500) {
-        findings.push({
-          route: route.path,
-          viewport: viewport.label,
-          check: "http-status",
-          detail: `Unexpected status ${status ?? "none"}`,
+      try {
+        const response = await page.goto(`${baseUrl}${route.path}`, {
+          waitUntil: "domcontentloaded",
+          timeout: 45_000,
         });
-      }
+        responseStatus = response?.status() ?? null;
 
-      const dom = await page.evaluate(() => {
-        const isVisible = (element: Element) => {
-          const html = element as HTMLElement;
-          const style = window.getComputedStyle(html);
-          const rect = html.getBoundingClientRect();
-          return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
-        };
+        await page.waitForTimeout(500);
 
-        const labelledByText = (element: Element) => {
-          const ids = element.getAttribute("aria-labelledby")?.split(/\s+/).filter(Boolean) ?? [];
-          return ids.map((id) => document.getElementById(id)?.textContent?.trim() ?? "").filter(Boolean).join(" ");
-        };
-
-        const accessibleName = (element: Element) => {
-          const ariaLabel = element.getAttribute("aria-label")?.trim();
-          if (ariaLabel) return ariaLabel;
-
-          const labelledBy = labelledByText(element);
-          if (labelledBy) return labelledBy;
-
-          const html = element as HTMLElement;
-          if (html.id) {
-            const explicitLabel = document.querySelector(`label[for="${CSS.escape(html.id)}"]`)?.textContent?.trim();
-            if (explicitLabel) return explicitLabel;
-          }
-
-          const wrappingLabel = element.closest("label")?.textContent?.trim();
-          if (wrappingLabel) return wrappingLabel;
-
-          if (element instanceof HTMLInputElement) {
-            if (element.type === "hidden") return "hidden";
-            if (element.placeholder?.trim()) return element.placeholder.trim();
-            if (element.value?.trim()) return element.value.trim();
-          }
-
-          if (element instanceof HTMLImageElement && element.alt.trim()) return element.alt.trim();
-
-          const text = element.textContent?.replace(/\s+/g, " ").trim();
-          if (text) return text;
-
-          return element.getAttribute("title")?.trim() ?? "";
-        };
-
-        const interactive = Array.from(
-          document.querySelectorAll("a[href], button, input:not([type='hidden']), select, textarea, [role='button']"),
-        ).filter(isVisible);
-
-        const unnamedInteractive = interactive
-          .filter((element) => !accessibleName(element))
-          .slice(0, 20)
-          .map((element) => {
-            const html = element as HTMLElement;
-            return `${element.tagName.toLowerCase()}${html.id ? `#${html.id}` : ""}.${html.className?.toString().split(/\s+/).slice(0, 3).join(".") ?? ""}`;
+        if (responseStatus == null || responseStatus >= 500) {
+          findings.push({
+            route: route.path,
+            viewport: viewport.label,
+            check: "http-status",
+            detail: `Unexpected status ${responseStatus ?? "none"}`,
           });
-
-        const imagesWithoutAlt = Array.from(document.querySelectorAll("img:not([alt])"))
-          .filter(isVisible)
-          .slice(0, 20)
-          .map((image) => (image as HTMLImageElement).src);
-
-        const seen = new Set<string>();
-        const duplicates = new Set<string>();
-        for (const element of Array.from(document.querySelectorAll("[id]"))) {
-          const id = (element as HTMLElement).id;
-          if (!id) continue;
-          if (seen.has(id)) duplicates.add(id);
-          seen.add(id);
         }
 
-        return {
-          scrollWidth: document.documentElement.scrollWidth,
-          innerWidth: window.innerWidth,
-          h1Count: document.querySelectorAll("h1").length,
-          mainCount: document.querySelectorAll("main").length,
-          duplicateIds: [...duplicates],
-          unnamedInteractive,
-          imagesWithoutAlt,
-          skipLinkPresent: Boolean(document.querySelector('a[href="#main-content"]')),
-        };
-      });
+        const dom = await page.evaluate(() => {
+          const isVisible = (element: Element) => {
+            const html = element as HTMLElement;
+            const style = window.getComputedStyle(html);
+            const rect = html.getBoundingClientRect();
+            return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+          };
 
-      if (dom.scrollWidth > dom.innerWidth + 2) {
+          const labelledByText = (element: Element) => {
+            const ids = element.getAttribute("aria-labelledby")?.split(/\s+/).filter(Boolean) ?? [];
+            return ids.map((id) => document.getElementById(id)?.textContent?.trim() ?? "").filter(Boolean).join(" ");
+          };
+
+          const accessibleName = (element: Element) => {
+            const ariaLabel = element.getAttribute("aria-label")?.trim();
+            if (ariaLabel) return ariaLabel;
+
+            const labelledBy = labelledByText(element);
+            if (labelledBy) return labelledBy;
+
+            const html = element as HTMLElement;
+            if (html.id) {
+              const explicitLabel = document.querySelector(`label[for="${CSS.escape(html.id)}"]`)?.textContent?.trim();
+              if (explicitLabel) return explicitLabel;
+            }
+
+            const wrappingLabel = element.closest("label")?.textContent?.trim();
+            if (wrappingLabel) return wrappingLabel;
+
+            if (element instanceof HTMLInputElement) {
+              if (element.type === "hidden") return "hidden";
+              if (element.placeholder?.trim()) return element.placeholder.trim();
+              if (element.value?.trim()) return element.value.trim();
+            }
+
+            if (element instanceof HTMLImageElement && element.alt.trim()) return element.alt.trim();
+
+            const text = element.textContent?.replace(/\s+/g, " ").trim();
+            if (text) return text;
+
+            return element.getAttribute("title")?.trim() ?? "";
+          };
+
+          const interactive = Array.from(
+            document.querySelectorAll("a[href], button, input:not([type='hidden']), select, textarea, [role='button']"),
+          ).filter(isVisible);
+
+          const unnamedInteractive = interactive
+            .filter((element) => !accessibleName(element))
+            .slice(0, 20)
+            .map((element) => {
+              const html = element as HTMLElement;
+              return `${element.tagName.toLowerCase()}${html.id ? `#${html.id}` : ""}.${html.className?.toString().split(/\s+/).slice(0, 3).join(".") ?? ""}`;
+            });
+
+          const imagesWithoutAlt = Array.from(document.querySelectorAll("img:not([alt])"))
+            .filter(isVisible)
+            .slice(0, 20)
+            .map((image) => (image as HTMLImageElement).src);
+
+          const seen = new Set<string>();
+          const duplicates = new Set<string>();
+          for (const element of Array.from(document.querySelectorAll("[id]"))) {
+            const id = (element as HTMLElement).id;
+            if (!id) continue;
+            if (seen.has(id)) duplicates.add(id);
+            seen.add(id);
+          }
+
+          return {
+            scrollWidth: document.documentElement.scrollWidth,
+            innerWidth: window.innerWidth,
+            h1Count: document.querySelectorAll("h1").length,
+            mainCount: document.querySelectorAll("main").length,
+            duplicateIds: [...duplicates],
+            unnamedInteractive,
+            imagesWithoutAlt,
+            skipLinkPresent: Boolean(document.querySelector('a[href="#main-content"]')),
+          };
+        });
+
+        if (dom.scrollWidth > dom.innerWidth + 2) {
+          findings.push({
+            route: route.path,
+            viewport: viewport.label,
+            check: "horizontal-overflow",
+            detail: `${dom.scrollWidth}px document width for ${dom.innerWidth}px viewport`,
+          });
+        }
+        if (dom.mainCount < 1) {
+          findings.push({ route: route.path, viewport: viewport.label, check: "main-landmark", detail: "No <main> landmark" });
+        }
+        if (dom.h1Count < 1) {
+          findings.push({ route: route.path, viewport: viewport.label, check: "h1", detail: "No H1 found" });
+        }
+        if (!dom.skipLinkPresent) {
+          findings.push({ route: route.path, viewport: viewport.label, check: "skip-link", detail: "Global skip link missing" });
+        }
+        if (dom.duplicateIds.length > 0) {
+          findings.push({ route: route.path, viewport: viewport.label, check: "duplicate-id", detail: dom.duplicateIds.join(", ") });
+        }
+        if (dom.unnamedInteractive.length > 0) {
+          findings.push({ route: route.path, viewport: viewport.label, check: "accessible-name", detail: dom.unnamedInteractive.join(" | ") });
+        }
+        if (dom.imagesWithoutAlt.length > 0) {
+          findings.push({ route: route.path, viewport: viewport.label, check: "image-alt", detail: dom.imagesWithoutAlt.join(" | ") });
+        }
+
+        await page.keyboard.press("Tab");
+        const focusTarget = await page.evaluate(() => {
+          const active = document.activeElement as HTMLElement | null;
+          if (!active) return "none";
+          const label = active.getAttribute("aria-label") || active.textContent?.replace(/\s+/g, " ").trim() || active.id || active.tagName;
+          return `${active.tagName.toLowerCase()}:${label}`;
+        });
+        if (focusTarget === "body:BODY" || focusTarget === "html:HTML" || focusTarget === "none") {
+          findings.push({ route: route.path, viewport: viewport.label, check: "keyboard-focus", detail: `First Tab focus target: ${focusTarget}` });
+        }
+
+        rows.push({
+          route: route.path,
+          viewport: viewport.label,
+          status: responseStatus,
+          ...dom,
+          focusTarget,
+        });
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
         findings.push({
           route: route.path,
           viewport: viewport.label,
-          check: "horizontal-overflow",
-          detail: `${dom.scrollWidth}px document width for ${dom.innerWidth}px viewport`,
+          check: "navigation-error",
+          detail: detail.slice(0, 500),
+        });
+        rows.push({
+          route: route.path,
+          viewport: viewport.label,
+          status: responseStatus,
+          scrollWidth: 0,
+          innerWidth: viewport.width,
+          h1Count: 0,
+          mainCount: 0,
+          duplicateIds: [],
+          unnamedInteractive: [],
+          imagesWithoutAlt: [],
+          skipLinkPresent: false,
+          focusTarget: "audit-error",
         });
       }
-      if (dom.mainCount < 1) {
-        findings.push({ route: route.path, viewport: viewport.label, check: "main-landmark", detail: "No <main> landmark" });
-      }
-      if (dom.h1Count < 1) {
-        findings.push({ route: route.path, viewport: viewport.label, check: "h1", detail: "No H1 found" });
-      }
-      if (!dom.skipLinkPresent) {
-        findings.push({ route: route.path, viewport: viewport.label, check: "skip-link", detail: "Global skip link missing" });
-      }
-      if (dom.duplicateIds.length > 0) {
-        findings.push({ route: route.path, viewport: viewport.label, check: "duplicate-id", detail: dom.duplicateIds.join(", ") });
-      }
-      if (dom.unnamedInteractive.length > 0) {
-        findings.push({ route: route.path, viewport: viewport.label, check: "accessible-name", detail: dom.unnamedInteractive.join(" | ") });
-      }
-      if (dom.imagesWithoutAlt.length > 0) {
-        findings.push({ route: route.path, viewport: viewport.label, check: "image-alt", detail: dom.imagesWithoutAlt.join(" | ") });
-      }
 
-      await page.keyboard.press("Tab");
-      const focusTarget = await page.evaluate(() => {
-        const active = document.activeElement as HTMLElement | null;
-        if (!active) return "none";
-        const label = active.getAttribute("aria-label") || active.textContent?.replace(/\s+/g, " ").trim() || active.id || active.tagName;
-        return `${active.tagName.toLowerCase()}:${label}`;
-      });
-      if (focusTarget === "body:BODY" || focusTarget === "html:HTML" || focusTarget === "none") {
-        findings.push({ route: route.path, viewport: viewport.label, check: "keyboard-focus", detail: `First Tab focus target: ${focusTarget}` });
+      try {
+        await page.screenshot({
+          path: join(outputDir, `${route.slug}-${viewport.label}.png`),
+          fullPage: true,
+        });
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        findings.push({
+          route: route.path,
+          viewport: viewport.label,
+          check: "screenshot-error",
+          detail: detail.slice(0, 500),
+        });
       }
-
-      rows.push({
-        route: route.path,
-        viewport: viewport.label,
-        status,
-        ...dom,
-        focusTarget,
-      });
-
-      await page.screenshot({
-        path: join(outputDir, `${route.slug}-${viewport.label}.png`),
-        fullPage: true,
-      });
 
       await page.close();
     }
