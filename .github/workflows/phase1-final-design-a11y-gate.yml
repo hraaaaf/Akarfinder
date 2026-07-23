@@ -49,9 +49,11 @@ jobs:
           BASE_URL: http://127.0.0.1:3000
         run: |
           mkdir -p artifacts/ui-audit
+          cp scripts/audits/final-ui-a11y-smoke.ts scripts/audits/.final-ui-a11y-smoke.mts
           set +e
-          npx tsx scripts/audits/final-ui-a11y-smoke.ts 2>&1 | tee artifacts/ui-audit/smoke.log
+          npx tsx scripts/audits/.final-ui-a11y-smoke.mts 2>&1 | tee artifacts/ui-audit/smoke.log
           status=${PIPESTATUS[0]}
+          rm -f scripts/audits/.final-ui-a11y-smoke.mts
           echo "$status" > artifacts/ui-audit/smoke.exit
           echo "exit_code=$status" >> "$GITHUB_OUTPUT"
           exit 0
