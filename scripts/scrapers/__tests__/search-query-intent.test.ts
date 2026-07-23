@@ -3,7 +3,9 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, it } from "node:test";
 
+import { mockListings } from "../../../lib/listings/mock-listings.js";
 import { enrichSearchQueryWithTextIntent } from "../../../lib/search/query-intent.js";
+import { compareRecommendedListings, computeRankingBreakdown } from "../../../lib/search/ranking.js";
 import { buildSearchPageQuery } from "../../../lib/search/search-page-query.js";
 
 const ROOT = process.cwd();
@@ -48,6 +50,68 @@ describe("Structured intent inferred from free-text Search", () => {
     assert.equal(query.city, "Casablanca");
     assert.equal(query.property_type, "Appartement");
     assert.equal(query.q, "appartement Casablanca");
+  });
+
+  it("does not double-count a structured city repeated in a title", () => {
+    const query = enrichSearchQueryWithTextIntent({ q: "appartement Casablanca" });
+    const priced = {
+      ...mockListings[0],
+      id: "priced",
+      city: "Casablanca",
+      property_type: "Appartement" as const,
+      title: "Appartement lumineux",
+      description_snippet: "",
+      district: "Maarif",
+      price: 1_450_000,
+    };
+    const unpricedRepeatingCity = {
+      ...mockListings[0],
+      id: "unpriced-city-title",
+      city: "Casablanca",
+      property_type: "Appartement" as const,
+      title: "Appartement Casablanca à découvrir",
+      description_snippet: "",
+      district: "Casablanca Finance City",
+      price: null,
+    };
+
+    const pricedRank = computeRankingBreakdown(priced, query);
+    const unpricedRank = computeRankingBreakdown(unpricedRepeatingCity, query);
+    assert.equal(pricedRank.relevance, 60);
+    assert.equal(unpricedRank.relevance, 60);
+    assert.ok(
+      compareRecommendedListings(priced, unpricedRepeatingCity, query) < 0,
+      "repeated structured city must not outrank a disclosed price",
+    );
+  });
+
+  it("keeps genuinely residual criteria ahead of price disclosure", () => {
+    const query = enrichSearchQueryWithTextIntent({ q: "appartement Casablanca piscine" });
+    const relevantWithoutPrice = {
+      ...mockListings[0],
+      id: "pool-unpriced",
+      city: "Casablanca",
+      property_type: "Appartement" as const,
+      title: "Appartement avec piscine",
+      description_snippet: "",
+      district: "Maarif",
+      price: null,
+    };
+    const pricedWithoutCriterion = {
+      ...mockListings[0],
+      id: "priced-no-pool",
+      city: "Casablanca",
+      property_type: "Appartement" as const,
+      title: "Appartement lumineux",
+      description_snippet: "",
+      district: "Maarif",
+      price: 1_200_000,
+    };
+
+    assert.ok(
+      compareRecommendedListings(relevantWithoutPrice, pricedWithoutCriterion, query) < 0,
+      "a real residual criterion must remain more important than price disclosure",
+    );
   });
 
   it("keeps the same inferred intent in database Search and client hydration", () => {
