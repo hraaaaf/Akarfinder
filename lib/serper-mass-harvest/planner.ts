@@ -93,7 +93,7 @@ function renderSourceQuery(input: {
         : `site:mubawab.ma/en/a/ ${input.property_type} ${input.city} ${input.intent === "sale" ? "for sale" : "for rent"}`;
     case "avito": {
       const category = AVITO_CATEGORY_BY_TYPE[input.property_type] ?? "immobilier";
-      return `site:avito.ma/fr/ inurl:${category} ${input.city} ${intent}`;
+      return `site:avito.ma/fr/ inurl:${category} ${input.property_type} ${input.city} ${intent}`;
     }
     case "sarouty":
       return input.intent === "sale"
