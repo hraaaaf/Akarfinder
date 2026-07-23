@@ -53,7 +53,7 @@ const config: Config = {
         "brand-ivory": "rgb(var(--brand-ivory) / <alpha-value>)",
 
         // === AkarFinder official brand board ===
-        // Deep Blue — institutionnel, fond sombre premium, wordmark
+        // Deep Blue — institutional / premium dark surfaces.
         deepblue: {
           DEFAULT: "#06162D",
           900: "#04101F",
@@ -62,7 +62,19 @@ const config: Config = {
           600: "#0A2547",
           500: "#0E2A4D",
         },
-        // Bronze premium — symbole, accents, baseline
+        // Canonical visual accent. New components should prefer semantic `accent`
+        // or this explicit accent-blue family rather than the historical `bronze` name.
+        "accent-blue": {
+          DEFAULT: "#0B63CE",
+          900: "#073061",
+          800: "#08428C",
+          700: "#0B63CE",
+          600: "#0A66D8",
+          500: "#3B82F6",
+          400: "#60A5FA",
+        },
+        // Legacy namespace retained only for compatibility with existing classes.
+        // Despite the name, these values are blue. Do not use `bronze-*` in new UI.
         bronze: {
           DEFAULT: "#0B63CE",
           900: "#073061",
@@ -72,7 +84,7 @@ const config: Config = {
           500: "#3B82F6",
           400: "#60A5FA",
         },
-        // Premium Blanc — fond clair cassé
+        // Premium White — light surfaces.
         premium: {
           DEFAULT: "#F8FAFC",
           white: "#FFFFFF",
@@ -80,10 +92,10 @@ const config: Config = {
           100: "#F8FAFC",
           200: "#EEF3F8",
         },
-        // Noir monochrome (exports / documents sobres)
+        // Monochrome black (exports / sober documents).
         mono: "#0B0B0C",
 
-        // Legacy aliases remappés sur la nouvelle marque (transition douce)
+        // Legacy aliases remapped onto the current brand (transition only).
         sand: "#EEF3F8",
         cream: "#FBFCFE",
         ink: "#0B1F3A",
@@ -109,6 +121,7 @@ const config: Config = {
         card: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
         "card-hover": "0 4px 16px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06)",
         badge: "0 2px 8px rgba(7,27,51,0.22)",
+        accent: "0 6px 18px rgba(11,99,206,0.24)",
         bronze: "0 6px 18px rgba(11,99,206,0.24)",
       }
     }
