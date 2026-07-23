@@ -176,11 +176,37 @@ export function buildDiscoveryHarvestQueries(): HarvestQuery[] {
           intent,
         });
         index += 1;
-        if (output.length >= DISCOVERY_QUERY_BUDGET) return output;
       }
     }
   }
 
+  const supplemental = [
+    "Casablanca",
+    "Rabat",
+    "Marrakech",
+    "Tanger",
+    "Agadir",
+    "Fes",
+    "Meknes",
+    "Kenitra",
+    "Tetouan",
+    "Oujda",
+  ];
+  for (const city of supplemental) {
+    if (output.length >= DISCOVERY_QUERY_BUDGET) break;
+    const query = `"annonce immobiliere" ${city} agence promoteur ${exclusions}`;
+    output.push({
+      id: idFor(["discovery-supplemental", city]),
+      phase: "discovery",
+      source_id: "long_tail",
+      query,
+      city,
+    });
+  }
+
+  if (output.length !== DISCOVERY_QUERY_BUDGET) {
+    throw new Error(`discovery harvest plan invariant failed: expected ${DISCOVERY_QUERY_BUDGET}, got ${output.length}`);
+  }
   return output;
 }
 
