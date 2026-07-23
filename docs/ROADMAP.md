@@ -2,7 +2,7 @@
 
 **Version : 2026-07-23 — DATA / SEARCH DEPTH / QUALITY / FINAL PRODUCTION**
 
-> Source de vérité opérationnelle actuelle. L'ancien `ROADMAP.md` était devenu un journal historique de plus de 5 000 lignes ; son historique reste disponible dans Git.
+> Source de vérité opérationnelle actuelle. L'ancien `ROADMAP.md` historique reste disponible dans Git.
 
 ---
 
@@ -24,7 +24,7 @@ Invariants :
 - aucune donnée manquante inventée ;
 - contenu partenaire/autorisé ≠ résultat public indexé ≠ signal marché interne ;
 - un faux merge est plus grave que deux doublons ;
-- aucun nouveau feature chantier avant maturité DATA/Search ;
+- aucune nouvelle feature produit avant maturité DATA/Search ;
 - aucun déploiement Vercel intermédiaire sans décision explicite.
 
 ---
@@ -47,7 +47,7 @@ Le gap est principalement :
 
 **FREEZE nouvelles features produit.**
 
-Le travail UX/UI détaillé continue séparément. Les findings retenus seront intégrés au Final Production Gate, pas avant.
+Le travail UX/UI détaillé continue séparément. Les findings retenus seront intégrés au Final Production Gate.
 
 ---
 
@@ -84,7 +84,7 @@ Le travail UX/UI détaillé continue séparément. Les findings retenus seront i
 - clusters : **730**
 - clusters multi-member : **0**
 
-Le Property Graph matérialisé reste donc essentiellement :
+Le Property Graph matérialisé reste essentiellement :
 
 `1 SourceOffer → 1 cluster`
 
@@ -92,7 +92,7 @@ Le Property Graph matérialisé reste donc essentiellement :
 
 `source_offer_observations = 0`.
 
-La table existe mais l'historique événementiel n'est pas encore alimenté. La future Freshness Machine doit être préparée dès la phase de conversion/observation, sans inventer ni réécrire l'historique.
+La table existe mais l'historique événementiel n'est pas encore alimenté.
 
 ---
 
@@ -114,7 +114,7 @@ Déjà opérationnel :
 - Seed Confirmation Query V2 ;
 - acquisition Common Crawl canary-first/fail-soft.
 
-Objectif long terme : **100k+ observations/seeds exploitables**, mais 100k n'est pas une vanity metric.
+Objectif long terme : **100k+ observations/seeds exploitables**, sans transformer 100k en vanity metric.
 
 Pilotage obligatoire :
 
@@ -126,9 +126,9 @@ Pilotage obligatoire :
 
 ## 4.1 `DATA-FUNNEL-TRUTH-AUDIT-1`
 
-**Statut : préparation read-only commencée ; aucun code.**
+**Statut : pré-audit read-only avancé ; aucun code.**
 
-Il faut réconcilier exactement deux lanes distinctes :
+Deux lanes doivent rester séparées :
 
 ### Lane A — Thin external index
 
@@ -140,26 +140,38 @@ Un seed peut être un lien externe thin sans devenir un `property_listing`.
 
 `DISCOVERED → NORMALIZED → UNIQUE_SEED → CONFIRMABLE → ATTEMPTED → CONFIRMED → ADMISSIBLE → STRUCTURED → DISPLAY_ELIGIBLE → SEARCHABLE_STRUCTURED`
 
-Ne jamais additionner naïvement `SEARCHABLE_THIN` et `STRUCTURED` comme une seule population.
+Ne jamais additionner naïvement `SEARCHABLE_THIN` et `STRUCTURED`.
 
-### Findings pré-audit déjà établis
+### Findings confirmation déjà établis
 
-- 229 seeds ont été tentés en confirmation ;
+- 229 seeds tentés ;
 - 320 tentatives cumulées ;
 - 17 `exact_high_confidence` ;
 - 205 `no_exact_match` ;
 - 7 `insufficient_explicit_signals` ;
-- yield unique global actuel : **~7,4 %** ;
-- 57 `fresh_confirmed` = 17 issus de seed confirmation exacte + 40 issus d'un autre recroisement freshness ;
-- donc `fresh_confirmed` ≠ `structured listing`.
+- yield unique global : **~7,4 %** ;
+- 57 `fresh_confirmed` = 17 liés à seed confirmation exacte + 40 issus d'autres recroisements freshness ;
+- `fresh_confirmed` ≠ `structured listing`.
 
-### Pool à auditer
+### Accepted ↔ persisted — vérité corrigée
 
-559 URLs `accepted` uniques ont été observées ; seulement 252 ont un overlap URL exact avec les sources persistées.
+Accepted URLs uniques : **559**.
 
-**~307 accepted unique URLs sans overlap exact `listing_sources`** doivent être auditées avant toute nouvelle acquisition massive.
+Overlap canonique correct contre `listing_sources.listing_url` : **546**.
 
-Ce n'est pas un droit de promotion automatique.
+Accepted réellement non persistées : **13 seulement**.
+
+La précédente estimation exploratoire de 307 était due à une mauvaise comparaison entre URL canonique et URL originale et est invalidée.
+
+Les 13 vraies non persistées se répartissent :
+
+- Mubawab : 5 ;
+- Souk Immobilier : 4 ;
+- 1immo : 2 ;
+- Avito : 1 ;
+- Sarouty : 1.
+
+Elles forment un petit `write-gap audit`, pas un réservoir massif.
 
 ---
 
@@ -167,7 +179,7 @@ Ce n'est pas un droit de promotion automatique.
 
 Le moteur V1/V2 existe déjà.
 
-La prochaine évolution doit être **yield-aware + bucket-aware** :
+Évolution cible : **yield-aware + bucket-aware**.
 
 `SEED RESERVOIR → NORMALIZATION → SEED DEDUP → BUCKETS → PRIORITY QUEUE → BULK EVIDENCE → MATCH → CONFIDENCE → STRUCTURED CONVERSION`
 
@@ -175,70 +187,105 @@ Buckets :
 
 `source × ville × transaction × type`
 
-### Signal live majeur
+### Cas Masaken — meilleur signal actuel
 
-`masaken.ma` :
+- total seeds : **294** ;
+- tentés : **16** ;
+- exact high-confidence : **11** ;
+- no exact match : **5** ;
+- yield du petit batch : **68,8 %**.
 
-- 16 seeds tentés ;
-- 11 exact high-confidence ;
-- yield ≈ **68,8 %**.
+Pourquoi cela fonctionne :
 
-C'est le meilleur signal observé et il faut comprendre pourquoi avant de scaler.
+1. pattern individuel strict `/(fr|en)/immobilier-maroc/<slug>/<id>` ;
+2. ID numérique stable ;
+3. forte indexabilité moteur sur les 11 succès ;
+4. exact canonical match ;
+5. signaux métier explicites ;
+6. admission existante inchangée.
 
-Autres exact high-confidence observés :
+Les 11 succès sont exactement les 11 seeds ayant un overlap `discovery_candidates` accepted.
 
-- limmobiliersansfrontieres.com : 2 ;
-- aykana.ma : 2 ;
-- promoimmomarrakech.com : 1 ;
-- soukimmobilier.com : 1.
+Les 5 échecs ont le même bon format URL mais aucun exact overlap moteur.
 
-Plusieurs sources testées restent à 0 exact high-confidence.
+**Ne pas extrapoler 68,8 % aux 278 seeds non testés.** Le sample est petit et sélectionné.
 
 ### Conséquence
 
-Ne pas répartir uniformément la capacité de confirmation.
-
-Utiliser :
-
-- exploitation des sources à yield prouvé ;
-- exploration contrôlée des autres sources ;
-- aucune baisse des garde-fous ;
+- privilégier les lanes à yield prouvé ;
+- conserver une exploration contrôlée ;
+- ne jamais baisser les seuils ;
 - aucune promotion sitemap-only ;
 - aucune donnée métier inventée.
 
 ---
 
-## 4.3 Unclassified Recovery Audit
+## 4.3 Unclassified Recovery Audit — taxonomie réelle
 
-Réservoir actuel : **6 013 `discovery_candidates` unclassified**.
+Réservoir : **6 013**.
 
-Top volumes observés : Sarouty, Mubawab, Avito, Agenz, Mouldar, Barnes Marrakech, Marrakech Realty, 1immo, etc.
+Tous sont actuellement `low confidence`.
 
-Approche :
+| Bucket | Volume | Action |
+|---|---:|---|
+| discovery/category pages | **2 225** | ne pas traiter comme fiches structurées |
+| domain unclassified | **1 837** | qualification source séparée |
+| quarantine / insufficient detail | **1 252** | principal pool recovery |
+| blocked domains | **569** | ne pas promouvoir |
+| other low confidence | **116** | audit secondaire |
+| insufficient detail other | **14** | faible priorité |
 
-1. échantillonnage ;
-2. taxonomy des causes ;
-3. recoverable rate ;
-4. correction ciblée seulement si gain prouvé.
+### Near-miss prioritaires
 
-Pas de `promote all`.
+Sur 1 252 quarantined :
+
+- strong individual path : 144 ;
+- explicit city : 1 169 ;
+- strong path + city : 139 ;
+- **strong path + city + au moins un signal prix/surface/chambres : 99**.
+
+Répartition des **99 near-miss** :
+
+- Mubawab : 40 ;
+- Barnes Marrakech : 29 ;
+- Agenz : 12 ;
+- Mouldar : 8 ;
+- Avito : 3 ;
+- 1immo : 2 ;
+- Promo Immo Marrakech : 2 ;
+- Souk Immobilier : 1 ;
+- DarAgadir : 1 ;
+- L'Immobilier Sans Frontières : 1.
+
+Le premier recovery audit doit viser ces **99**, pas les 6 013.
+
+Objectif : identifier les faux négatifs sans modifier les seuils avant preuve.
+
+### Domain status historique obsolète
+
+Parmi les 1 837 `domain_unclassified`, seuls **52** correspondent à des domaines aujourd'hui approuvés dans le registry analysé :
+
+- Masaken : 51 ;
+- DarAgadir : 1.
+
+Cela peut être reclassé/audité plus tard, mais ce n'est pas un gisement de milliers de listings prêts à publier.
 
 ---
 
 ## 4.4 Observation Ledger Foundation
 
-La table `source_offer_observations` existe mais contient **0 ligne**.
+`source_offer_observations` existe mais contient **0 ligne**.
 
-Avant Freshness Machine #24, chaque nouvelle observation future devra conceptuellement conserver :
+Avant Freshness Machine #24, toute nouvelle observation future devra conceptuellement conserver :
 
-- `observed_at` ;
+- observed_at ;
 - source_offer ;
 - evidence/origin ;
 - prix/surface observés si réellement disponibles ;
 - source_status ;
 - run/provenance.
 
-Le design writer/idempotence doit être préparé avant code.
+Le design writer/idempotence doit être défini avant code.
 
 ---
 
@@ -288,7 +335,7 @@ Objectif d'échelle indicatif :
 
 `~100k observations → ~30–45k biens/offres uniques`
 
-À mesurer empiriquement, jamais à promettre.
+À mesurer empiriquement.
 
 ---
 
@@ -311,8 +358,6 @@ Sources de preuve :
 - Common Crawl ;
 - partenaires/flux autorisés ;
 - Observation Ledger.
-
-But : ne jamais transformer la profondeur en cimetière d'annonces mortes.
 
 ---
 
@@ -348,16 +393,7 @@ Ne doit pas retarder DATA/Search P0.
 
 ## 9. Search Depth Certification
 
-Déjà construit en grande partie :
-
-- profondeur backend élargie ;
-- pagination / afficher plus ;
-- thin index ;
-- Gateway combiné.
-
-### Golden Query Set
-
-60 requêtes V1 déjà préparées dans `docs/GOLDEN_QUERY_SET.md`.
+Golden Query Set V1 : **60 requêtes**.
 
 Scoring :
 
@@ -381,8 +417,6 @@ Checkpoints :
 
 **≥80 % des recherches communes satisfaisantes.**
 
-La croissance DATA n'est validée que si `/search` s'améliore réellement.
-
 ---
 
 # PHASE NATIONAL COVERAGE GAPS
@@ -393,7 +427,7 @@ Piloter avec :
 
 `VILLE × TRANSACTION × TYPE × SOURCE`
 
-Combler les trous au lieu de maximiser le volume brut.
+Combler les trous plutôt que maximiser le volume brut.
 
 ---
 
@@ -418,45 +452,48 @@ Puis :
 
 ---
 
-# 12. Ordre exact canonique
+# 12. Ordre canonique actuel
 
 ```text
 ✅ MASS DISCOVERY / ACQUISITION FOUNDATION
         ↓
 🔴 0. DATA FUNNEL TRUTH AUDIT — READ ONLY FIRST
         ↓
-1. ACCEPTED-BUT-UNPERSISTED AUDIT
-   + UNCLASSIFIED RECOVERY AUDIT
+1. 13 ACCEPTED WRITE-GAP AUDIT
         ↓
-2. SEED HYGIENE / URL DEDUP / COVERAGE MATRIX
+2. 99 QUARANTINE NEAR-MISS AUDIT
         ↓
-3. BULK SEED CONFIRMATION V2 — YIELD-AWARE
+3. MASAKEN-LIKE PATTERN / YIELD ANALYSIS
         ↓
-4. OBSERVATION LEDGER FOUNDATION
+4. SEED HYGIENE / COVERAGE MATRIX
         ↓
-5. STRUCTURED CONVERSION
+5. BULK SEED CONFIRMATION V2 — YIELD-AWARE
+        ↓
+6. OBSERVATION LEDGER FOUNDATION
+        ↓
+7. STRUCTURED CONVERSION
    869 → 2k → 5k → 10k+
         ↓
-6. PROPERTY GRAPH V3 / DEDUP
+8. PROPERTY GRAPH V3 / DEDUP
         ↓
-7. FRESHNESS MACHINE
+9. FRESHNESS MACHINE
         ↓
-8. INTELLIGENCE AT SCALE
+10. INTELLIGENCE AT SCALE
         ↓
-9. SEARCH DEPTH + GOLDEN QUERY CERTIFICATION
+11. SEARCH DEPTH + GOLDEN QUERY CERTIFICATION
         ↓
-10. NATIONAL COVERAGE GAP CLOSURE
+12. NATIONAL COVERAGE GAP CLOSURE
         ↓
-11. UX/UI FINDINGS RETAINED
+13. UX/UI FINDINGS RETAINED
         ↓
-12. ARABIC / RTL / RESPONSIVE / SEO / PERFORMANCE / SMOKE
+14. ARABIC / RTL / RESPONSIVE / SEO / PERFORMANCE / SMOKE
         ↓
-13. FINAL CERTIFICATION
+15. FINAL CERTIFICATION
         ↓
 🚀 ONE VERCEL PRODUCTION DEPLOY
 ```
 
-Golden Query Set et Coverage Matrix commencent maintenant et restent transversaux.
+Golden Query Set et Coverage Matrix restent transversaux.
 
 ---
 
@@ -464,8 +501,9 @@ Golden Query Set et Coverage Matrix commencent maintenant et restent transversau
 
 ## DATA-1 — Funnel Truth
 
-- compteurs réconciliés ;
 - thin vs structured séparés ;
+- compteurs réconciliés ;
+- accepted canonical overlap correctement mesuré ;
 - états persistés vs conceptuels identifiés ;
 - top bottlenecks prouvés ;
 - yield segmenté connu.
@@ -511,7 +549,7 @@ Golden Query Set et Coverage Matrix commencent maintenant et restent transversau
 
 > **AkarFinder atteint au minimum 5 000 annonces structurées + un thin index national profond + une recherche réellement satisfaisante sur les principales villes.**
 
-Ensuite seulement : Property Graph V3 → Freshness → Intelligence Scale → coverage finale → Production Gate.
+Ensuite : Property Graph V3 → Freshness → Intelligence Scale → coverage finale → Production Gate.
 
 ---
 
@@ -519,20 +557,18 @@ Ensuite seulement : Property Graph V3 → Freshness → Intelligence Scale → c
 
 Documentation / lecture seule uniquement :
 
-- `DATA_FUNNEL_SPEC.md` ;
-- `DATA_COUNTER_MAP_PREAUDIT.md` ;
-- `DATA_FUNNEL_TRUTH_PREAUDIT_LIVE_2026-07-23.md` ;
-- `GOLDEN_QUERY_SET.md` ;
-- `DATA_SCORECARD_SPEC.md` ;
-- analyses DB read-only ;
+- Data Funnel Spec ;
+- Counter Map ;
+- Funnel Truth live audit ;
+- Golden Query Set ;
+- Data Scorecard ;
+- audits DB read-only ;
 - préparation ODM précis.
 
 ### Code
 
 **Aucune nouvelle mission code lancée.**
 
-Prochaine mission recommandée après GO :
+Prochaine séquence recommandée après GO :
 
-`DATA-FUNNEL-TRUTH-AUDIT-1`
-
-D'abord read-only/instrumentation minimale si nécessaire, puis seulement `BULK-SEED-CONFIRMATION-V2` sur bottlenecks prouvés.
+`13 WRITE-GAP AUDIT → 99 NEAR-MISS AUDIT → MASAKEN-LIKE LANE ANALYSIS → BULK-SEED-CONFIRMATION-V2`
