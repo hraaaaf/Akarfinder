@@ -1,13 +1,13 @@
-import { NeufPageShell } from "@/components/neuf/NeufPageShell";
+import { NeufPageShellV2 } from "@/components/neuf/NeufPageShellV2";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Programmes neufs au Maroc — AkarFinder",
+  title: "Immobilier neuf au Maroc — AkarFinder",
   description:
-    "Projets partenaires, typologies, prix à partir de et contact promoteur. Informations fournies par les promoteurs, à confirmer directement auprès d'eux avant engagement.",
+    "Recherchez les offres immobilières neuves disponibles dans le moteur AkarFinder. Les démonstrations promoteur restent séparées de l'inventaire réel et clairement identifiées comme exemples.",
 };
 
 export default function NeufPage() {
-  return <NeufPageShell />;
+  return <NeufPageShellV2 />;
 }
