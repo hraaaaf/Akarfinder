@@ -1,7 +1,8 @@
-// SEARCH-RANKING-INTENT-3 — Ranking lexicographique basé sur l'intention utilisateur
-// Doctrine: pertinence stricte d'abord, puis exploitabilité de la fiche, puis qualité.
+// SEARCH-RANKING-INTENT-4 — Ranking lexicographique basé sur l'intention utilisateur
+// Doctrine: pertinence structurée d'abord, critères libres ensuite, puis exploitabilité et qualité.
 // N'utilise PAS duplicate_score ni duplicate_group_id.
 
+import { getCitySearchVariants } from "@/lib/geo/geo-entity-registry";
 import type { Listing } from "@/lib/listings/types";
 import type { SearchQuery } from "./types";
 
@@ -13,6 +14,21 @@ const TEXT_STOP_WORDS = new Set([
   "chambre", "salon", "surface", "m2", "m²", "maroc",
   "appartement", "vendre", "location", "louer",
 ]);
+
+const PROPERTY_TYPE_QUERY_TERMS: Record<string, string[]> = {
+  Appartement: ["appartement", "appart", "apartment"],
+  Villa: ["villa"],
+  Terrain: ["terrain", "land"],
+  Bureau: ["bureau", "office"],
+  Studio: ["studio"],
+  Maison: ["maison", "house"],
+};
+
+const TRANSACTION_QUERY_TERMS: Record<string, string[]> = {
+  buy: ["buy", "sale", "achat", "acheter", "vente", "vendre"],
+  rent: ["rent", "location", "louer"],
+  new: ["new", "neuf", "nouveau", "programme"],
+};
 
 function normalize(value: string) {
   return value
@@ -30,14 +46,42 @@ function tokenize(text?: string): Set<string> {
   );
 }
 
-function countMatchingTokens(text1: string | undefined, text2: string | undefined): number {
-  if (!text1 || !text2) return 0;
-  const tokens1 = tokenize(text1);
-  const tokens2 = tokenize(text2);
-  let count = 0;
-  for (const token of tokens1) {
-    if (tokens2.has(token)) count++;
+function addTokens(target: Set<string>, values: string[]) {
+  for (const value of values) {
+    for (const token of tokenize(value)) target.add(token);
   }
+}
+
+function getStructuredIntentTokens(query: SearchQuery): Set<string> {
+  const tokens = new Set<string>();
+
+  if (query.city) addTokens(tokens, getCitySearchVariants(query.city));
+
+  const mappedPropertyType = mapPropertyType(query.property_type);
+  if (mappedPropertyType) {
+    addTokens(tokens, [mappedPropertyType, ...(PROPERTY_TYPE_QUERY_TERMS[mappedPropertyType] ?? [])]);
+  }
+
+  const mappedTransactionType = mapTransactionType(query.transaction_type);
+  if (mappedTransactionType) {
+    addTokens(tokens, [mappedTransactionType, ...(TRANSACTION_QUERY_TERMS[mappedTransactionType] ?? [])]);
+  }
+
+  return tokens;
+}
+
+function countResidualQueryMatches(text: string | undefined, query: SearchQuery): number {
+  if (!text || !query.q) return 0;
+  const textTokens = tokenize(text);
+  const queryTokens = tokenize(query.q);
+  const structuredTokens = getStructuredIntentTokens(query);
+  let count = 0;
+
+  for (const token of queryTokens) {
+    if (structuredTokens.has(token)) continue;
+    if (textTokens.has(token)) count++;
+  }
+
   return count;
 }
 
@@ -50,10 +94,8 @@ export type RankingBreakdown = {
 
 /**
  * Split ranking into explicit layers instead of letting completeness compensate
- * for weak relevance. This keeps the product doctrine enforceable:
- * 1) user intent relevance,
- * 2) actionable price disclosure,
- * 3) remaining information quality.
+ * for weak relevance. Structured intent is counted once through canonical fields;
+ * only genuinely residual free-text criteria may add text/district relevance.
  */
 export function computeRankingBreakdown(listing: Listing, query: SearchQuery): RankingBreakdown {
   let relevance = 0;
@@ -63,9 +105,11 @@ export function computeRankingBreakdown(listing: Listing, query: SearchQuery): R
     relevance += 40;
   }
 
-  // 2. DISTRICT MATCH (35 points) — Second priority
+  // 2. DISTRICT / RESIDUAL LOCATION MATCH (35 points)
+  // A city already inferred into query.city is excluded here, so a district such
+  // as "Casablanca Finance City" cannot receive a second bonus for Casablanca.
   if (query.q && listing.district) {
-    const matches = countMatchingTokens(listing.district, query.q);
+    const matches = countResidualQueryMatches(listing.district, query);
     if (matches > 0) relevance += 35;
   }
 
@@ -85,12 +129,14 @@ export function computeRankingBreakdown(listing: Listing, query: SearchQuery): R
     }
   }
 
-  // 5. TEXT RELEVANCE (up to 15 points)
+  // 5. RESIDUAL TEXT RELEVANCE (up to 15 points)
+  // Terms already represented by city/type/transaction are removed to prevent
+  // title repetition from outranking a more actionable result.
   if (query.q) {
     const haystack = [listing.title, listing.description_snippet]
       .filter(Boolean)
       .join(" ");
-    const matches = countMatchingTokens(haystack, query.q);
+    const matches = countResidualQueryMatches(haystack, query);
     relevance += Math.min(15, matches * 2);
   }
 
