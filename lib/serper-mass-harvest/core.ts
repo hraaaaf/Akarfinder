@@ -89,6 +89,14 @@ function normalizeText(value: string): string {
     .toLowerCase();
 }
 
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 function compilePattern(input: RegistryPattern): RegExp | null {
   try {
     if (typeof input === "string") return new RegExp(input);
@@ -112,10 +120,7 @@ export function canonicalizeHarvestUrl(rawUrl: string): string | null {
     url.hash = "";
     for (const key of [...url.searchParams.keys()]) {
       const lower = key.toLowerCase();
-      if (
-        lower.startsWith("utm_") ||
-        ["gclid", "fbclid", "msclkid", "srsltid", "ref", "referrer"].includes(lower)
-      ) {
+      if (lower.startsWith("utm_") || ["gclid", "fbclid", "msclkid", "srsltid"].includes(lower)) {
         url.searchParams.delete(key);
       }
     }
@@ -150,8 +155,9 @@ export function classifyHarvestResult(input: {
 }): { status: HarvestObservation["discovery_status"]; reasons: string[]; categoryOrNoise: boolean } {
   const url = new URL(input.canonicalUrl);
   const domain = url.hostname.replace(/^www\./, "");
-  const pathname = decodeURIComponent(url.pathname);
-  const text = normalizeText([input.query.query, input.title ?? "", input.snippet ?? "", pathname].join(" "));
+  const pathname = safeDecode(url.pathname);
+  // Query text is intentionally excluded: a real-estate query must not make an unrelated result look relevant.
+  const resultText = normalizeText([input.title ?? "", input.snippet ?? "", pathname].join(" "));
   const reasons: string[] = [];
   const entry = getRegistryEntry(domain);
 
@@ -159,8 +165,8 @@ export function classifyHarvestResult(input: {
     return { status: "rejected", reasons: ["registry_blocked"], categoryOrNoise: true };
   }
 
-  const hasRealEstate = REAL_ESTATE_TERMS.some((term) => text.includes(normalizeText(term)));
-  const obviousNoise = OBVIOUS_NON_REAL_ESTATE.some((term) => text.includes(term));
+  const hasRealEstate = REAL_ESTATE_TERMS.some((term) => resultText.includes(normalizeText(term)));
+  const obviousNoise = OBVIOUS_NON_REAL_ESTATE.some((term) => resultText.includes(term));
   if (!hasRealEstate || obviousNoise) {
     return {
       status: "rejected",
