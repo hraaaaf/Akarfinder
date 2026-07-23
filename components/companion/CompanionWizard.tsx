@@ -78,6 +78,10 @@ function projectName(session: CompanionSession): string {
   return [objective ? objectiveLabel[objective] ?? "Projet" : "Projet", city].filter(Boolean).join(" · ");
 }
 
+function objectiveLabel(value: SearchObjective | undefined) {
+  return OBJECTIVES.find((item) => item.value === value)?.label ?? "—";
+}
+
 function ChoiceButton({ active, children, onClick }: { active?: boolean; children: React.ReactNode; onClick: () => void }) {
   return (
     <button
@@ -134,13 +138,28 @@ export function CompanionWizard() {
     }
   }
 
+  function prepareRevision() {
+    const profile = session.profile;
+    setUses(profile.intended_uses?.value ?? []);
+    setCity(profile.location.preferred_cities[0] ?? "");
+    const currentBudget = profile.objective?.value === "rent"
+      ? profile.budget.rent_monthly_max_mad
+      : profile.budget.purchase_max_mad;
+    setBudget(currentBudget ? String(currentBudget) : "");
+    setPropertyTypes(profile.property.property_types);
+    setMinSurface(profile.property.min_surface_m2 ? String(profile.property.min_surface_m2) : "");
+    setMinBedrooms(profile.property.min_bedrooms ? String(profile.property.min_bedrooms) : "");
+    setRequiredFeatures(profile.property.required_features);
+    setPreferences(profile.neighborhood_preferences.map((item) => item.key));
+    setTourismTolerance(profile.tolerances.tourism_intensity_max ?? 4);
+    void transition({ type: "revise_profile" });
+  }
+
   async function startSearch() {
     setPending(true);
     setError(null);
     const params = companionProfileToSearchParams(session.profile);
 
-    // Never silently discard a completed guided project. Guests keep a local
-    // recovery snapshot; authenticated users also persist it in Mon Projet.
     try {
       window.sessionStorage.setItem(
         "akarfinder-pending-project-v2",
@@ -180,7 +199,7 @@ export function CompanionWizard() {
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <div className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#0B63CE]">
-            Étape {Math.min(session.revision + 1, 11)} · Compagnon AkarFinder
+            Mon Projet · Compagnon AkarFinder
           </div>
           <h2 className="text-xl font-extrabold tracking-[-0.02em] text-[#071B33] sm:text-2xl">{question.prompt}</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-500">{question.rationale}</p>
@@ -200,8 +219,8 @@ export function CompanionWizard() {
         className="inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#084FA8] disabled:opacity-60"
       >
         {pending ? <Loader2 className="animate-spin" size={16} /> : <ArrowRight size={16} />}
-        Commencer
-      </button>
+        Commencer Mon Projet
+      </button>,
     );
   }
 
@@ -209,9 +228,15 @@ export function CompanionWizard() {
     return shell(
       <div className="grid gap-3 sm:grid-cols-2">
         {OBJECTIVES.map((item) => (
-          <ChoiceButton key={item.value} onClick={() => transition({ type: "answer_objective", objective: item.value })}>{item.label}</ChoiceButton>
+          <ChoiceButton
+            key={item.value}
+            active={session.profile.objective?.value === item.value}
+            onClick={() => transition({ type: "answer_objective", objective: item.value })}
+          >
+            {item.label}
+          </ChoiceButton>
         ))}
-      </div>
+      </div>,
     );
   }
 
@@ -226,7 +251,7 @@ export function CompanionWizard() {
         <button type="button" disabled={!uses.length || pending} onClick={() => transition({ type: "answer_usage", intended_uses: uses })} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white disabled:opacity-40">
           Continuer <ArrowRight size={16} />
         </button>
-      </>
+      </>,
     );
   }
 
@@ -236,7 +261,7 @@ export function CompanionWizard() {
         <label className="text-sm font-bold text-slate-700" htmlFor="companion-city">Ville ou zone principale</label>
         <input id="companion-city" value={city} onChange={(event) => setCity(event.target.value)} placeholder="Ex. Casablanca, Rabat, Marrakech..." className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#60A5FA]" />
         <button type="button" disabled={!city.trim() || pending} onClick={() => transition({ type: "answer_location", cities: [city.trim()] })} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white disabled:opacity-40">Continuer <ArrowRight size={16} /></button>
-      </div>
+      </div>,
     );
   }
 
@@ -247,7 +272,7 @@ export function CompanionWizard() {
         <label className="text-sm font-bold text-slate-700" htmlFor="companion-budget">{renting ? "Budget mensuel maximum (DH)" : "Budget d'achat maximum (DH)"}</label>
         <input id="companion-budget" inputMode="numeric" value={budget} onChange={(event) => setBudget(event.target.value.replace(/[^0-9]/g, ""))} placeholder={renting ? "Ex. 12000" : "Ex. 1800000"} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#60A5FA]" />
         <button type="button" disabled={!Number(budget) || pending} onClick={() => transition(renting ? { type: "answer_budget", rent_monthly_max_mad: Number(budget) } : { type: "answer_budget", purchase_max_mad: Number(budget) })} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white disabled:opacity-40">Continuer <ArrowRight size={16} /></button>
-      </div>
+      </div>,
     );
   }
 
@@ -258,7 +283,7 @@ export function CompanionWizard() {
           {PROPERTY_TYPES.map((item) => <ChoiceButton key={item.value} active={propertyTypes.includes(item.value)} onClick={() => setPropertyTypes((current) => toggleValue(current, item.value))}>{item.label}</ChoiceButton>)}
         </div>
         <button type="button" disabled={!propertyTypes.length || pending} onClick={() => transition({ type: "answer_type", property_types: propertyTypes })} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white disabled:opacity-40">Continuer <ArrowRight size={16} /></button>
-      </>
+      </>,
     );
   }
 
@@ -275,7 +300,7 @@ export function CompanionWizard() {
           ))}
         </div>
         <button type="button" disabled={pending} onClick={() => transition({ type: "answer_constraints", min_surface_m2: minSurface ? Number(minSurface) : null, min_bedrooms: minBedrooms ? Number(minBedrooms) : null, required_features: requiredFeatures })} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white">Continuer <ArrowRight size={16} /></button>
-      </>
+      </>,
     );
   }
 
@@ -290,9 +315,9 @@ export function CompanionWizard() {
             const definition = PREFERENCES.find((item) => item.key === key)!;
             return { key, direction: definition.direction, importance: "high" };
           });
-          transition({ type: "answer_preferences", preferences: answers });
+          void transition({ type: "answer_preferences", preferences: answers });
         }} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white">Continuer <ArrowRight size={16} /></button>
-      </>
+      </>,
     );
   }
 
@@ -301,7 +326,7 @@ export function CompanionWizard() {
       <>
         <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">Vos préférences sélectionnées seront prioritaires dans l'ordre où vous les avez choisies. Elles restent des préférences, pas des éliminations automatiques.</p>
         <button type="button" disabled={pending} onClick={() => transition({ type: "answer_priorities", priorities: preferences })} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white">Valider les priorités <ArrowRight size={16} /></button>
-      </>
+      </>,
     );
   }
 
@@ -312,40 +337,49 @@ export function CompanionWizard() {
           {[{ value: 2, label: "Très faible" }, { value: 4, label: "Faible à modérée" }, { value: 6, label: "Modérée" }].map((item) => <ChoiceButton key={item.value} active={tourismTolerance === item.value} onClick={() => setTourismTolerance(item.value)}>{item.label}</ChoiceButton>)}
         </div>
         <button type="button" disabled={pending} onClick={() => transition({ type: "answer_compromise", tourism_intensity_max: tourismTolerance })} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white">Continuer <ArrowRight size={16} /></button>
-      </>
+      </>,
     );
   }
 
   if (session.state === "PROFIL_RECAP") {
     const profile = session.profile;
+    const selectedBudget = profile.objective?.value === "rent" ? profile.budget.rent_monthly_max_mad : profile.budget.purchase_max_mad;
     return shell(
       <>
         <div className="grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-700 sm:grid-cols-2">
-          <div><strong>Objectif :</strong> {profile.objective?.value ?? "—"}</div>
+          <div><strong>Objectif :</strong> {objectiveLabel(profile.objective?.value)}</div>
           <div><strong>Ville :</strong> {profile.location.preferred_cities.join(", ") || "—"}</div>
+          <div><strong>Budget max. :</strong> {selectedBudget ? `${selectedBudget.toLocaleString("fr-FR")} DH` : "—"}</div>
           <div><strong>Types :</strong> {profile.property.property_types.join(", ") || "—"}</div>
-          <div><strong>Préférences :</strong> {profile.neighborhood_preferences.length}</div>
-          <div><strong>Surface min. :</strong> {profile.property.min_surface_m2 ?? "—"}</div>
+          <div><strong>Surface min. :</strong> {profile.property.min_surface_m2 ? `${profile.property.min_surface_m2} m²` : "—"}</div>
           <div><strong>Chambres min. :</strong> {profile.property.min_bedrooms ?? "—"}</div>
+          <div><strong>Préférences :</strong> {profile.neighborhood_preferences.length}</div>
+          <div><strong>Priorités :</strong> {profile.priorities.length}</div>
         </div>
-        <button type="button" disabled={pending} onClick={() => transition({ type: "confirm_profile" })} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white">Confirmer mon projet <Check size={16} /></button>
-      </>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button type="button" disabled={pending} onClick={prepareRevision} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-slate-700 transition hover:border-[#93C5FD] hover:bg-blue-50/60 disabled:opacity-60">
+            <ArrowLeft size={16} /> Modifier mes critères
+          </button>
+          <button type="button" disabled={pending} onClick={() => transition({ type: "confirm_profile" })} className="inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white disabled:opacity-60">Confirmer Mon Projet <Check size={16} /></button>
+        </div>
+        <p className="mt-3 text-xs leading-5 text-slate-500">Vous gardez la main : modifier vos critères ne supprime pas silencieusement le projet en cours.</p>
+      </>,
     );
   }
 
   if (session.state === "RECHERCHE") {
     return shell(
       <>
-        <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-800">Votre projet est structuré. AkarFinder peut maintenant lancer la recherche directe avec vos contraintes explicites ; le Fit personnalisé s'applique lorsqu'une donnée comparable est réellement disponible.</p>
+        <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-800">Mon Projet est structuré. AkarFinder peut lancer la recherche directe avec vos contraintes explicites ; le Fit personnalisé s'applique lorsqu'une donnée comparable est réellement disponible.</p>
         <button type="button" disabled={pending} onClick={startSearch} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-5 py-3 text-sm font-extrabold text-white disabled:opacity-60">
           {pending ? <Loader2 className="animate-spin" size={16} /> : <Search size={16} />}
-          {pending ? "Enregistrement du projet…" : "Voir les résultats"}
+          {pending ? "Enregistrement de Mon Projet…" : "Voir les résultats"}
         </button>
-      </>
+      </>,
     );
   }
 
   return shell(
-    <button type="button" onClick={() => router.push("/")} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700"><ArrowLeft size={16} />Retour à l'accueil</button>
+    <button type="button" onClick={() => router.push("/")} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700"><ArrowLeft size={16} />Retour à l'accueil</button>,
   );
 }

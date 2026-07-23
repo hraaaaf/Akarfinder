@@ -3,8 +3,8 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Container } from "@/components/ui/Container";
 
 export const metadata = {
-  title: "Compagnon AkarFinder | Construire votre projet immobilier",
-  description: "Structurez votre projet immobilier étape par étape avant de lancer la recherche AkarFinder.",
+  title: "Compagnon AkarFinder | Construire Mon Projet immobilier",
+  description: "Structurez Mon Projet immobilier étape par étape avant de lancer la recherche AkarFinder.",
 };
 
 export default function CompanionPage() {
@@ -14,10 +14,10 @@ export default function CompanionPage() {
       <Container className="py-10 sm:py-16 lg:py-20">
         <div className="mx-auto max-w-3xl">
           <div className="mb-8 text-center sm:mb-10">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Aidez-moi à trouver</p>
-            <h1 className="mt-3 text-3xl font-extrabold tracking-[-0.035em] text-[#071B33] sm:text-5xl">Construisons votre recherche avant de chercher.</h1>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Compagnon · Mon Projet AkarFinder</p>
+            <h1 className="mt-3 text-3xl font-extrabold tracking-[-0.035em] text-[#071B33] sm:text-5xl">Construisons Mon Projet avant de chercher.</h1>
             <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
-              Le Compagnon ne choisit pas à votre place. Il transforme vos objectifs, contraintes, préférences et compromis en un profil de recherche explicite et modifiable.
+              Le Compagnon ne choisit pas à votre place. Il transforme vos objectifs, contraintes, préférences et compromis en un projet de recherche explicite, modifiable et réutilisable.
             </p>
           </div>
           <CompanionWizard />
