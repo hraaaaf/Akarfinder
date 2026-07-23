@@ -6,6 +6,7 @@ import { describe, it } from "node:test";
 import { attachPublicSerpIntelligenceSummary } from "../../../lib/intelligence/public-serp-intelligence-carrier.js";
 import { mockListings } from "../../../lib/listings/mock-listings.js";
 import {
+  collapseStructuredDuplicateGroups,
   getSearchTruthPresentation,
   partitionStructuredListings,
 } from "../../../lib/search/search-truth-tier.js";
@@ -91,6 +92,23 @@ describe("Search truth tiers", () => {
     assert.deepEqual(groups.partial.map((item) => item.id), ["b"]);
     assert.deepEqual(groups.observed.map((item) => item.id), ["c"]);
   });
+
+  it("can collapse already-clustered structured representations without hiding external offers", () => {
+    const first = { ...structuredBase("a"), duplicate_group_id: "cluster-1" };
+    const duplicate = { ...structuredBase("b"), duplicate_group_id: "cluster-1" };
+    const observed = {
+      ...structuredBase("c"),
+      duplicate_group_id: "cluster-1",
+      source_badge: "external_web_result",
+      source_display_type: "external_web_result",
+      original_source_required: true,
+      can_show_contact: false,
+    };
+    const collapsed = collapseStructuredDuplicateGroups([first, duplicate, observed]);
+    assert.deepEqual(collapsed.listings.map((item) => item.id), ["a", "c"]);
+    assert.equal(collapsed.groupedRepresentations, 1);
+    assert.equal(collapsed.groupedCountsByRepresentativeId.a, 2);
+  });
 });
 
 describe("Search Truth UX source contracts", () => {
@@ -135,5 +153,13 @@ describe("Search Truth UX source contracts", () => {
     assert.ok(!card.includes("function reliabilityStyle"));
     assert.ok(!card.includes("PackageBadge"));
     assert.equal((card.match(/Doublon possible/g) ?? []).length, 1);
+  });
+
+  it("Search map describes the displayed result set instead of implying total market density", () => {
+    const map = source("components/search/SearchMapPanel.tsx");
+    assert.ok(map.includes("Zones des résultats affichés"));
+    assert.match(map, /fiches indexées actuellement affichées/i);
+    assert.match(map, /n'est pas une estimation du volume total du marché/i);
+    assert.ok(map.includes("aria-pressed={isActive}"));
   });
 });
