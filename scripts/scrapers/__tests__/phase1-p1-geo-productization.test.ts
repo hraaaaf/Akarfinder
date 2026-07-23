@@ -33,7 +33,8 @@ describe("Phase 1 P1 — Geo productization", () => {
     assert.ok(page.includes("isSeoEligibleGeoPair"));
     assert.ok(page.includes("GeoResultPreview"));
     assert.ok(page.includes("Repères quartier"));
-    assert.ok(page.includes("ne constitue ni une mesure live du marché"));
+    assert.ok(page.includes("mesure live du marché"));
+    assert.ok(page.includes("ne constitue ni une recommandation d’achat"));
     assert.equal(page.includes("Intelligence quartier"), false);
   });
 
