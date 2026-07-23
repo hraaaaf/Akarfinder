@@ -2,27 +2,25 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { Container } from "@/components/ui/Container";
-import { SellerLeadForm } from "@/components/vendre/SellerLeadForm";
+import { SellerPropertyDraftForm } from "@/components/vendre/SellerPropertyDraftForm";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Préparer ma vente — Dossier vendeur indicatif | AkarFinder",
+  title: "Décrire mon bien — Brouillon vendeur | AkarFinder",
   description:
-    "Décrivez votre bien pour recevoir des repères de marché et une demande d'accompagnement à la vente au Maroc. Demande indicative — non contractuelle.",
+    "Créez un brouillon structuré de votre bien à partir de vos déclarations, distinct de votre demande de contact et jamais publié automatiquement.",
 };
 
 export default function VendreDossierPage() {
   return (
     <main className="min-h-screen bg-[#fffdf8]">
       <SiteHeader variant="light" />
-
-      <section className="pt-12 pb-16 lg:pt-16 lg:pb-20">
+      <section className="pb-16 pt-12 lg:pb-20 lg:pt-16">
         <Container>
-          <SellerLeadForm />
+          <SellerPropertyDraftForm />
         </Container>
       </section>
-
       <SiteFooter />
     </main>
   );
