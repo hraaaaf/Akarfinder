@@ -150,6 +150,7 @@ Ne jamais additionner naïvement `SEARCHABLE_THIN` et `STRUCTURED`.
 - 205 `no_exact_match` ;
 - 7 `insufficient_explicit_signals` ;
 - yield unique global : **~7,4 %** ;
+- les 17 succès sont de vraies conversions : aucun `listing_source` n'existait avant leur tentative ;
 - 57 `fresh_confirmed` = 17 liés à seed confirmation exacte + 40 issus d'autres recroisements freshness ;
 - `fresh_confirmed` ≠ `structured listing`.
 
@@ -161,9 +162,9 @@ Overlap canonique correct contre `listing_sources.listing_url` : **546**.
 
 Accepted réellement non persistées : **13 seulement**.
 
-La précédente estimation exploratoire de 307 était due à une mauvaise comparaison entre URL canonique et URL originale et est invalidée.
+La précédente estimation exploratoire de 307 était due à une mauvaise comparaison URL canonique ↔ URL originale et est invalidée.
 
-Les 13 vraies non persistées se répartissent :
+Les 13 vraies non persistées :
 
 - Mubawab : 5 ;
 - Souk Immobilier : 4 ;
@@ -171,7 +172,7 @@ Les 13 vraies non persistées se répartissent :
 - Avito : 1 ;
 - Sarouty : 1.
 
-Elles forment un petit `write-gap audit`, pas un réservoir massif.
+Petit `write-gap audit`, pas un réservoir massif.
 
 ---
 
@@ -204,11 +205,20 @@ Pourquoi cela fonctionne :
 5. signaux métier explicites ;
 6. admission existante inchangée.
 
-Les 11 succès sont exactement les 11 seeds ayant un overlap `discovery_candidates` accepted.
-
-Les 5 échecs ont le même bon format URL mais aucun exact overlap moteur.
+Les 11 succès ont réellement produit des listings structurés.
 
 **Ne pas extrapoler 68,8 % aux 278 seeds non testés.** Le sample est petit et sélectionné.
+
+### Signal multi-source
+
+- Masaken : 68,8 % sur 16 tentés ;
+- Aykana : 13,3 % sur 15 ;
+- Souk Immobilier : 8,3 % sur 12 ;
+- L'Immobilier Sans Frontières : 5,0 % sur 40 ;
+- Promo Immo Marrakech : 2,8 % sur 36 ;
+- plusieurs sources : 0 % sur les petits batches testés.
+
+Un ID stable ne suffit pas : la **discoverability exacte par le moteur de confirmation** est déterminante.
 
 ### Conséquence
 
@@ -230,21 +240,21 @@ Tous sont actuellement `low confidence`.
 |---|---:|---|
 | discovery/category pages | **2 225** | ne pas traiter comme fiches structurées |
 | domain unclassified | **1 837** | qualification source séparée |
-| quarantine / insufficient detail | **1 252** | principal pool recovery |
+| quarantine | **1 252** | analyser les raisons de mismatch |
 | blocked domains | **569** | ne pas promouvoir |
 | other low confidence | **116** | audit secondaire |
 | insufficient detail other | **14** | faible priorité |
 
-### Near-miss prioritaires
+### High-signal quarantine
 
 Sur 1 252 quarantined :
 
 - strong individual path : 144 ;
 - explicit city : 1 169 ;
 - strong path + city : 139 ;
-- **strong path + city + au moins un signal prix/surface/chambres : 99**.
+- strong path + city + au moins un signal prix/surface/chambres : **99**.
 
-Répartition des **99 near-miss** :
+Répartition des **99 high-signal** :
 
 - Mubawab : 40 ;
 - Barnes Marrakech : 29 ;
@@ -257,18 +267,38 @@ Répartition des **99 near-miss** :
 - DarAgadir : 1 ;
 - L'Immobilier Sans Frontières : 1.
 
-Le premier recovery audit doit viser ces **99**, pas les 6 013.
+### Finding structurel : cross-city mismatch
 
-Objectif : identifier les faux négatifs sans modifier les seuils avant preuve.
+La logique actuelle implique qu'un résultat `strong_individual_path` avec type + transaction serait classé `individual_listing` si sa localisation explicite était cohérente avec la requête.
+
+S'il reste en quarantine, le blocage est donc principalement :
+
+`explicitLocationMatchesQuery = false`
+
+Ces 99 ne justifient pas une baisse des seuils.
+
+La bonne piste future à auditer est un éventuel :
+
+**cross-city salvage / re-bucketing conservateur**
+
+Une fiche fortement identifiée pourrait éventuellement être réaffectée à sa ville explicitement observée au lieu d'être perdue parce qu'un moteur l'a retournée sur une requête d'une autre ville.
+
+Avant tout code :
+
+- audit d'échantillon ;
+- fiabilité extracteur ville/district ;
+- hard blocks ;
+- dédup ;
+- aucune localisation inventée depuis la requête.
 
 ### Domain status historique obsolète
 
-Parmi les 1 837 `domain_unclassified`, seuls **52** correspondent à des domaines aujourd'hui approuvés dans le registry analysé :
+Parmi 1 837 `domain_unclassified`, seuls **52** correspondent à des domaines aujourd'hui approuvés dans le registry analysé :
 
 - Masaken : 51 ;
 - DarAgadir : 1.
 
-Cela peut être reclassé/audité plus tard, mais ce n'est pas un gisement de milliers de listings prêts à publier.
+Petit stock historique à reclassifier/auditer, pas un gisement massif.
 
 ---
 
@@ -351,13 +381,7 @@ Objectif d'échelle indicatif :
 - gone ;
 - reappeared.
 
-Sources de preuve :
-
-- OpenSERP ;
-- sitemap ;
-- Common Crawl ;
-- partenaires/flux autorisés ;
-- Observation Ledger.
+Sources de preuve : OpenSERP, sitemap, Common Crawl, partenaires/flux autorisés, Observation Ledger.
 
 ---
 
@@ -395,15 +419,7 @@ Ne doit pas retarder DATA/Search P0.
 
 Golden Query Set V1 : **60 requêtes**.
 
-Scoring :
-
-- relevance ;
-- depth ;
-- diversity ;
-- freshness ;
-- noise ;
-- duplicates ;
-- geographic coverage.
+Scoring : relevance, depth, diversity, freshness, noise, duplicates, geographic coverage.
 
 Checkpoints :
 
@@ -422,8 +438,6 @@ Checkpoints :
 # PHASE NATIONAL COVERAGE GAPS
 
 ## 10. Coverage Matrix
-
-Piloter avec :
 
 `VILLE × TRANSACTION × TYPE × SOURCE`
 
@@ -446,9 +460,7 @@ Seulement après maturité DATA/Search :
 7. performance ;
 8. final certification.
 
-Puis :
-
-**ONE CONSOLIDATED VERCEL PRODUCTION DEPLOY**
+Puis : **ONE CONSOLIDATED VERCEL PRODUCTION DEPLOY**.
 
 ---
 
@@ -461,9 +473,9 @@ Puis :
         ↓
 1. 13 ACCEPTED WRITE-GAP AUDIT
         ↓
-2. 99 QUARANTINE NEAR-MISS AUDIT
+2. 99 HIGH-SIGNAL CROSS-CITY AUDIT
         ↓
-3. MASAKEN-LIKE PATTERN / YIELD ANALYSIS
+3. MASAKEN-LIKE PATTERN / INDEXABILITY ANALYSIS
         ↓
 4. SEED HYGIENE / COVERAGE MATRIX
         ↓
@@ -492,8 +504,6 @@ Puis :
         ↓
 🚀 ONE VERCEL PRODUCTION DEPLOY
 ```
-
-Golden Query Set et Coverage Matrix restent transversaux.
 
 ---
 
@@ -571,4 +581,4 @@ Documentation / lecture seule uniquement :
 
 Prochaine séquence recommandée après GO :
 
-`13 WRITE-GAP AUDIT → 99 NEAR-MISS AUDIT → MASAKEN-LIKE LANE ANALYSIS → BULK-SEED-CONFIRMATION-V2`
+`13 WRITE-GAP AUDIT → 99 CROSS-CITY AUDIT → MASAKEN-LIKE LANE ANALYSIS → BULK-SEED-CONFIRMATION-V2`
