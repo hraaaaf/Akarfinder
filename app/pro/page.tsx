@@ -364,37 +364,6 @@ function TrustRules() {
   );
 }
 
-// ── Internal inbox CTA ───────────────────────────────────────────────────────
-
-function InboxCTA() {
-  return (
-    <section className="border-t border-[#eadfca] bg-white py-10">
-      <Container>
-        <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 rounded-[1.4rem] border border-[#d8c8a3] bg-[#fffdf8] px-6 py-5">
-          <div>
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-bronze-700">
-              Équipe interne
-            </p>
-            <p className="mt-1 text-[15px] font-extrabold text-deepblue">
-              Boîte de réception leads acheteurs
-            </p>
-            <p className="mt-0.5 text-[13px] text-gray-500">
-              Dossiers indicatifs soumis via l&apos;onboarding acheteur.
-            </p>
-          </div>
-          <a
-            href="/pro/leads"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-bronze-700/40 bg-white px-4 py-2.5 text-[13px] font-extrabold text-bronze-700 transition hover:border-bronze-700/70 hover:bg-[#fef8ed]"
-          >
-            Voir la boîte réception
-            <ChevronRight size={14} strokeWidth={2.6} aria-hidden="true" />
-          </a>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
 // ── Metrics strip ─────────────────────────────────────────────────────────────
 
 function MetricsStrip() {
@@ -433,7 +402,6 @@ export default function ProPage() {
       <HowItWorks />
       <Offers />
       <TrustRules />
-      <InboxCTA />
       <ProLeadForm />
       <SiteFooter />
     </main>

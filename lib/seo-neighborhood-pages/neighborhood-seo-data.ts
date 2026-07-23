@@ -4,7 +4,7 @@ import {
   isSeoEligibleGeoPair,
   normalizeGeoText,
 } from "@/lib/geo/geo-entity-registry";
-import { NEIGHBORHOOD_POINTS } from "@/lib/map/neighborhood-data";
+import { NEIGHBORHOOD_POINTS } from "@/lib/map/canonical-neighborhood-data";
 
 const CONFIG: Record<DistrictSlug, { propertyTypes: string[]; nearbyDistricts: DistrictSlug[] }> = {
   maarif: { propertyTypes: ["appartement", "studio", "local commercial", "bureau"], nearbyDistricts: ["racine", "bourgogne"] },

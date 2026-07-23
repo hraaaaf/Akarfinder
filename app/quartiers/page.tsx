@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/landing/SiteFooter";
 import {
   getNeighborhoodCitiesForPages,
   getNeighborhoods,
-} from "@/lib/map/neighborhood-data";
+} from "@/lib/map/canonical-neighborhood-data";
 
 export const dynamic = "force-dynamic";
 

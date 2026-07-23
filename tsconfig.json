@@ -19,6 +19,7 @@
       }
     ],
     "paths": {
+      "@/lib/map/neighborhood-data": ["./lib/map/canonical-neighborhood-data"],
       "@/*": ["./*"]
     }
   },
