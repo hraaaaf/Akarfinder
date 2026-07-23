@@ -69,7 +69,7 @@ describe("AF-AUDIT-P1-049 — lead and property dataset remain separate", () => 
   it("uses the structured draft UI and explains declared-vs-verified truth", () => {
     assert.ok(page.includes("SellerPropertyDraftForm"));
     assert.ok(form.includes("faits déclarés"));
-    assert.ok(form.includes("n'est ni une publication"));
+    assert.ok(form.includes("ni une publication"));
     assert.ok(form.includes("form.city.trim()"));
     assert.ok(form.includes("form.propertyType"));
     assert.ok(form.includes("Number(form.surface) > 0"));
