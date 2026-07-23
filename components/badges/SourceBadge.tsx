@@ -28,7 +28,7 @@ const BADGE_CONFIG: Record<string, BadgeConfig> = {
     darkCls: "border-sky-400/30 bg-sky-400/10 text-sky-200",
   },
   external_web_result: {
-    label: "RÃ©sultat web externe",
+    label: "Résultat web externe",
     lightCls: "border-slate-300 bg-slate-50 text-slate-700",
     darkCls: "border-white/20 bg-white/[0.08] text-white/80",
   },
@@ -45,7 +45,7 @@ const BADGE_CONFIG: Record<string, BadgeConfig> = {
   institutional_source: {
     label: "Source institutionnelle",
     lightCls: "border-teal-200 bg-teal-50 text-teal-700",
-    darkCls: "border-teal-400/30 bg-teal-400/12 text-teal-300",
+    darkCls: "border-teal-400/30 bg-teal-400/10 text-teal-200",
   },
   sensitive_source: {
     label: "Source sensible",
@@ -56,7 +56,7 @@ const BADGE_CONFIG: Record<string, BadgeConfig> = {
 
 export function deriveBadge(
   badge?: string,
-  sourceAccessLevel?: string
+  sourceAccessLevel?: string,
 ): string | undefined {
   if (badge) return badge;
   if (sourceAccessLevel === "partner_full") return "premium_partner";

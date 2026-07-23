@@ -83,12 +83,16 @@ describe("Phase 1 P0 — result regime separation", () => {
     assert.notEqual(external.source_badge, "premium_partner");
   });
 
-  it("Search source keeps external and partner sections explicitly separate", () => {
+  it("Search keeps structured and external regimes explicitly separated", () => {
     const searchShell = source("components/search/LightZillowSearchShell.tsx");
-    assert.ok(searchShell.includes("Résultats web indexés"));
-    assert.ok(searchShell.includes("Annonces partenaires AkarFinder"));
-    assert.ok(searchShell.includes('source_display_type === "external_web_result"'));
-    assert.ok(searchShell.includes('source_display_type !== "external_web_result"'));
+    const truthTier = source("lib/search/search-truth-tier.ts");
+    assert.ok(searchShell.includes("Analysé par AkarFinder"));
+    assert.ok(searchShell.includes("Analyse partielle"));
+    assert.ok(searchShell.includes("Offres observées sur le web"));
+    assert.ok(searchShell.includes("partitionStructuredListings"));
+    assert.ok(truthTier.includes('source_display_type === "external_web_result"'));
+    assert.ok(truthTier.includes('source_badge === "external_web_result"'));
+    assert.ok(truthTier.includes('tier: "observed"'));
   });
 });
 
