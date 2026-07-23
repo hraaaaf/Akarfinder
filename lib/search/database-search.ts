@@ -11,7 +11,7 @@ import {
   getCitySearchVariants,
 } from "@/lib/geo/geo-entity-registry";
 import type { SearchQuery, SearchResult } from "./types";
-import { computeRankingScore } from "./ranking";
+import { compareRecommendedListings } from "./ranking";
 
 function normalize(value: string) {
   return value
@@ -107,11 +107,7 @@ function sortListings(listings: Listing[], sort?: string, query?: SearchQuery) {
     });
   }
   if (sort === "surface_desc") return copy.sort((a, b) => b.surface_m2 - a.surface_m2);
-  return copy.sort((a, b) => {
-    const scoreA = computeRankingScore(a, query ?? {});
-    const scoreB = computeRankingScore(b, query ?? {});
-    return scoreB - scoreA;
-  });
+  return copy.sort((a, b) => compareRecommendedListings(a, b, query ?? {}));
 }
 
 function canonicalizeListingGeo(listing: Listing): Listing {

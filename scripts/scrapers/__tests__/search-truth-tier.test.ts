@@ -5,6 +5,7 @@ import { describe, it } from "node:test";
 
 import { attachPublicSerpIntelligenceSummary } from "../../../lib/intelligence/public-serp-intelligence-carrier.js";
 import { mockListings } from "../../../lib/listings/mock-listings.js";
+import { compareRecommendedListings } from "../../../lib/search/ranking.js";
 import {
   collapseStructuredDuplicateGroups,
   getSearchTruthPresentation,
@@ -108,6 +109,60 @@ describe("Search truth tiers", () => {
     assert.deepEqual(collapsed.listings.map((item) => item.id), ["a", "c"]);
     assert.equal(collapsed.groupedRepresentations, 1);
     assert.equal(collapsed.groupedCountsByRepresentativeId.a, 2);
+  });
+});
+
+describe("Recommended Search ranking", () => {
+  it("prefers a disclosed price when two results have equal relevance", () => {
+    const priced = {
+      ...structuredBase("priced"),
+      city: "Casablanca",
+      district: "Maarif",
+      price: 1_450_000,
+      reliability_score: 55,
+      description_snippet: "",
+    };
+    const unpricedButRicher = {
+      ...structuredBase("unpriced"),
+      city: "Casablanca",
+      district: "Maarif",
+      price: null,
+      reliability_score: 100,
+      description_snippet: "Appartement lumineux avec plusieurs informations complémentaires",
+    };
+
+    assert.ok(
+      compareRecommendedListings(priced, unpricedButRicher, { city: "Casablanca" }) < 0,
+      "equal-relevance result with a disclosed price should rank first",
+    );
+  });
+
+  it("never lets price disclosure overtake genuinely stronger relevance", () => {
+    const relevantWithoutPrice = {
+      ...structuredBase("relevant-unpriced"),
+      district: "Maarif",
+      price: null,
+      title: "Bien à découvrir",
+      description_snippet: "",
+    };
+    const lessRelevantWithPrice = {
+      ...structuredBase("less-relevant-priced"),
+      district: "Agdal",
+      price: 900_000,
+      title: "Bien à découvrir",
+      description_snippet: "",
+    };
+
+    assert.ok(
+      compareRecommendedListings(relevantWithoutPrice, lessRelevantWithPrice, { q: "Maarif" }) < 0,
+      "a materially more relevant result must remain ahead even without a disclosed price",
+    );
+  });
+
+  it("database Search uses the lexicographic recommended comparator", () => {
+    const databaseSearch = source("lib/search/database-search.ts");
+    assert.ok(databaseSearch.includes("compareRecommendedListings"));
+    assert.ok(!databaseSearch.includes("scoreB - scoreA"));
   });
 });
 
