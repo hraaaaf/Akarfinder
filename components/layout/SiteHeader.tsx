@@ -162,14 +162,14 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
           </Link>
 
           <Link
-            href="/search"
+            href="/mon-projet"
             className={`rounded-xl px-3 py-1.5 text-[11.5px] font-bold transition sm:px-5 sm:py-2.5 sm:text-[13px] ${
               isDark || isTransparent
                 ? "border border-[#60A5FA]/45 bg-white/8 text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] hover:bg-[#0B63CE] hover:text-white"
                 : "border border-[#60A5FA]/55 bg-[#0B63CE] text-white shadow-[0_4px_14px_rgba(11,99,206,0.26)] hover:bg-[#084BA8] dark:border-[#60A5FA]/45 dark:bg-white/5 dark:hover:bg-[#0B63CE] dark:hover:text-white"
             }`}
           >
-            Se connecter
+            Mon projet
           </Link>
         </div>
       </Container>
