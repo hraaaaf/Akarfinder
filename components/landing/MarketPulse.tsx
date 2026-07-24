@@ -24,7 +24,7 @@ function OperationBadge({ label }: { label: MarketPulseItem["operationLabel"] })
 
 function MarketPulseCard({ item }: { item: MarketPulseItem }) {
   const content = (
-    <div className="group/item inline-flex min-w-[290px] max-w-[360px] items-center gap-3 rounded-full border border-border/15 bg-card px-3.5 py-2.5 text-sm text-card-foreground backdrop-blur-md transition duration-300 hover:border-accent/40 hover:shadow-[0_0_0_1px_rgba(194,163,104,0.1),0_14px_28px_rgba(0,0,0,0.18)] md:min-w-[360px]">
+    <div className="group/item inline-flex min-w-[290px] max-w-[360px] items-center gap-3 rounded-full border border-border/15 bg-card px-3.5 py-2.5 text-sm text-card-foreground backdrop-blur-md transition-colors duration-200 hover:border-accent/40 md:min-w-[360px]">
       <OperationBadge label={item.operationLabel} />
       <span className="min-w-0 truncate text-[13px] font-medium leading-6">
         {item.lineLabel}
@@ -39,7 +39,7 @@ function MarketPulseCard({ item }: { item: MarketPulseItem }) {
   return (
     <Link
       href={item.href}
-      className="inline-flex shrink-0 cursor-pointer rounded-full transition hover:[text-decoration-color:#C2A368] hover:underline hover:underline-offset-4"
+      className="inline-flex shrink-0 cursor-pointer rounded-full transition-colors duration-200 hover:[text-decoration-color:#C2A368] hover:underline hover:underline-offset-4"
     >
       {content}
     </Link>
@@ -52,8 +52,6 @@ export async function MarketPulse() {
   if (items.length === 0) {
     return null;
   }
-
-  const loopItems = [...items, ...items];
 
   return (
     <section
@@ -73,29 +71,11 @@ export async function MarketPulse() {
           </div>
         </div>
 
-        <div className="mt-4 md:hidden">
-          <div
-            className="flex gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none]"
-            style={{ WebkitOverflowScrolling: "touch" }}
-          >
+        <div className="mt-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex w-max items-center gap-3 md:gap-4">
             {items.map((item) => (
               <MarketPulseCard key={item.id} item={item} />
             ))}
-          </div>
-        </div>
-
-        <div className="relative mt-4 hidden md:block">
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-surface-muted to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-surface-muted to-transparent" />
-          <div className="market-pulse-marquee overflow-hidden">
-            <div className="market-pulse-track flex w-max items-center gap-4">
-              {loopItems.map((item, index) => (
-                <MarketPulseCard
-                  key={`${item.id}-${index}`}
-                  item={item}
-                />
-              ))}
-            </div>
           </div>
         </div>
       </Container>

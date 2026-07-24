@@ -14,10 +14,10 @@ function CityCard({ city, tall }: { city: CityConfig; tall: boolean }) {
       href={city.href}
       aria-label={getCityAriaLabel(city)}
       title={getCityAriaLabel(city)}
-      className={`group relative block w-full overflow-hidden rounded-[1.65rem] border border-[#DDE7F2] bg-white shadow-[0_22px_60px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-0.5 hover:border-[#93C5FD] hover:shadow-[0_26px_70px_rgba(11,99,206,0.12)] ${tall ? "aspect-[0.78/1]" : "aspect-[16/7]"}`}
+      className={`group relative block w-full overflow-hidden rounded-[1.65rem] border border-[#DDE7F2] bg-white shadow-[0_22px_60px_rgba(15,23,42,0.08)] transition-[border-color,box-shadow] duration-200 hover:border-[#93C5FD] hover:shadow-[0_24px_64px_rgba(11,99,206,0.10)] ${tall ? "aspect-[0.78/1]" : "aspect-[16/7]"}`}
     >
       <div
-        className="absolute inset-0 transition-transform duration-500 group-hover:scale-[1.03]"
+        className="absolute inset-0 transition-transform duration-300 ease-out group-hover:scale-[1.015] motion-reduce:transform-none motion-reduce:transition-none"
         style={
           city.image
             ? {
@@ -54,7 +54,7 @@ function CityCard({ city, tall }: { city: CityConfig; tall: boolean }) {
         )}
       </div>
 
-      <div className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-[#0B63CE]/88 text-white shadow-[0_18px_30px_rgba(11,99,206,0.28)] backdrop-blur-sm transition duration-300 group-hover:scale-105">
+      <div className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-[#0B63CE]/88 text-white shadow-[0_18px_30px_rgba(11,99,206,0.28)] backdrop-blur-sm transition-colors duration-200 group-hover:bg-[#084BA8]">
         <span className="text-[13px]" aria-hidden="true">
           →
         </span>
@@ -107,7 +107,7 @@ export function CityIntentGrid() {
           <div className="mt-6 flex justify-start sm:mt-8">
             <Link
               href="/immobilier"
-              className="inline-flex items-center gap-2 rounded-full border border-[#60A5FA]/30 bg-white px-5 py-3 text-[0.9rem] font-semibold text-[#0B63CE] shadow-[0_18px_40px_rgba(11,99,206,0.08)] transition hover:border-[#60A5FA]/50 hover:bg-[#EEF6FF] sm:text-[0.95rem]"
+              className="inline-flex items-center gap-2 rounded-full border border-[#60A5FA]/30 bg-white px-5 py-3 text-[0.9rem] font-semibold text-[#0B63CE] shadow-[0_18px_40px_rgba(11,99,206,0.08)] transition-colors duration-200 hover:border-[#60A5FA]/50 hover:bg-[#EEF6FF] sm:text-[0.95rem]"
             >
               Voir toutes les villes et quartiers
               <span aria-hidden="true">→</span>
