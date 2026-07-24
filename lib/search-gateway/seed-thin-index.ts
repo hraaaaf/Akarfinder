@@ -1,13 +1,18 @@
-// THIN-INDEX-SEED-SEARCH-V1
+// THIN-INDEX-SEARCH-V2
 // Searchable thin-index projection over registry-approved public sitemap/Common
-// Crawl/Serper-search URL seeds. A seed is NEVER promoted to a structured listing
-// here: this module only returns a source-visible external link with no invented
-// price, photo, contact, availability, or internal detail page.
+// Crawl/Serper-search URL seeds. PostgreSQL retrieves a bounded relevance-ranked
+// candidate set; Node re-applies publication safety, source balancing and dedupe.
 
 import { createHash } from "node:crypto";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { getListingUrlPatterns } from "@/lib/openserp-ingestion/domain-registry";
 import type { SearchGatewayNormalizedResult, SearchGatewayRouteResponse } from "./search-gateway-types";
+
+export type SeedThinIndexCursor = {
+  rank: number;
+  updatedAt: string;
+  seedId: string;
+};
 
 export type SeedThinIndexInput = {
   q?: string;
@@ -15,6 +20,7 @@ export type SeedThinIndexInput = {
   propertyType?: string;
   intent?: string;
   maxResults?: number;
+  cursor?: SeedThinIndexCursor | null;
 };
 
 type SerperSeedMetadata = {
@@ -34,6 +40,27 @@ type SeedRow = {
   freshness_status: string;
   updated_at: string;
   metadata?: { serper_search?: SerperSeedMetadata } | null;
+};
+
+type ThinIndexRpcRow = {
+  seed_id: string;
+  canonical_url: string;
+  source_domain: string;
+  seed_provider: string;
+  freshness_status: string;
+  title: string | null;
+  snippet: string | null;
+  query_text: string | null;
+  city: string | null;
+  property_type: string | null;
+  intent: string | null;
+  updated_at: string;
+  relevance_rank: number;
+};
+
+export type SeedThinIndexPage = {
+  results: SearchGatewayNormalizedResult[];
+  nextCursor: SeedThinIndexCursor | null;
 };
 
 const PROPERTY_TOKENS: Record<string, string[]> = {
@@ -188,13 +215,6 @@ export function mapSeedToThinIndexResult(row: SeedRow): SearchGatewayNormalizedR
   };
 }
 
-function probeToken(input: SeedThinIndexInput): string | null {
-  const cityCandidates = tokens(input.city).filter((token) => token.length >= 4).sort((a, b) => b.length - a.length);
-  if (cityCandidates[0]) return cityCandidates[0];
-  const queryCandidates = tokens(input.q).filter((token) => token.length >= 4).sort((a, b) => b.length - a.length);
-  return queryCandidates[0] ?? null;
-}
-
 function selectBalanced(rows: SeedRow[], maxResults: number): SeedRow[] {
   const byDomain = new Map<string, SeedRow[]>();
   for (const row of rows) {
@@ -218,37 +238,87 @@ function selectBalanced(rows: SeedRow[], maxResults: number): SeedRow[] {
   return selected;
 }
 
-export async function searchSeedThinIndex(input: SeedThinIndexInput): Promise<SearchGatewayNormalizedResult[]> {
+function rpcRowToSeedRow(row: ThinIndexRpcRow): SeedRow {
+  return {
+    id: row.seed_id,
+    canonical_url: row.canonical_url,
+    source_domain: row.source_domain,
+    seed_provider: row.seed_provider,
+    freshness_status: row.freshness_status,
+    updated_at: row.updated_at,
+    metadata: row.seed_provider === "serper_search"
+      ? {
+          serper_search: {
+            title: row.title,
+            snippet: row.snippet,
+            query: row.query_text,
+            city: row.city,
+            property_type: row.property_type,
+            intent: row.intent,
+          },
+        }
+      : null,
+  };
+}
+
+function candidateLimit(maxResults: number): number {
+  return Math.min(500, Math.max(120, maxResults * 4));
+}
+
+export async function searchSeedThinIndexPage(input: SeedThinIndexInput): Promise<SeedThinIndexPage> {
   const maxResults = Math.max(1, Math.min(Math.trunc(input.maxResults ?? 100), 100));
   const supabase = getSupabaseServerClient();
-  let query = supabase
-    .from("source_offer_seeds")
-    .select("id,canonical_url,source_domain,seed_provider,freshness_status,updated_at,metadata")
-    .in("freshness_status", ["seed_only", "fresh_confirmed"])
-    .in("seed_provider", ["public_sitemap", "commoncrawl_cdx", "serper_search"])
-    .order("freshness_status", { ascending: true })
-    .order("updated_at", { ascending: false })
-    .limit(1500);
+  const { data, error } = await supabase.rpc("search_thin_index_v2", {
+    p_query: input.q?.trim() || null,
+    p_city: input.city?.trim() || null,
+    p_property_type: input.propertyType?.trim() || null,
+    p_intent: input.intent?.trim() || null,
+    p_limit: candidateLimit(maxResults),
+    p_after_rank: input.cursor?.rank ?? null,
+    p_after_updated_at: input.cursor?.updatedAt ?? null,
+    p_after_seed_id: input.cursor?.seedId ?? null,
+  });
+  if (error) throw new Error(`thin-index v2 RPC failed: ${error.message}`);
 
-  const probe = probeToken(input);
-  if (probe) query = query.ilike("canonical_url", `%${probe.replace(/[%_,]/g, "")}%`);
+  const rpcRows = (data ?? []) as ThinIndexRpcRow[];
+  const safeRows = rpcRows
+    .map(rpcRowToSeedRow)
+    .filter((row) => seedMatchesThinIndexSearch(row, input));
+  const preselected = selectBalanced(safeRows, Math.min(maxResults * 2, 200));
 
-  const response = await query;
-  if (response.error) throw new Error(`seed thin index read failed: ${response.error.message}`);
-  const rows = (response.data ?? []) as SeedRow[];
-  const matching = rows.filter((row) => seedMatchesThinIndexSearch(row, input));
-  const preselected = selectBalanced(matching, Math.min(maxResults * 2, 200));
-  if (preselected.length === 0) return [];
+  if (preselected.length === 0) {
+    const tail = rpcRows.at(-1);
+    return {
+      results: [],
+      nextCursor: tail
+        ? { rank: tail.relevance_rank, updatedAt: tail.updated_at, seedId: tail.seed_id }
+        : null,
+    };
+  }
 
   const urls = preselected.map((row) => row.canonical_url);
   const existing = await supabase.from("listing_sources").select("listing_url").in("listing_url", urls);
   if (existing.error) throw new Error(`seed thin index existing-source lookup failed: ${existing.error.message}`);
-  const existingUrls = new Set((existing.data ?? []).map((row: { listing_url: string | null }) => row.listing_url).filter(Boolean));
+  const existingUrls = new Set(
+    (existing.data ?? [])
+      .map((row: { listing_url: string | null }) => row.listing_url)
+      .filter((value): value is string => Boolean(value)),
+  );
 
-  return preselected
-    .filter((row) => !existingUrls.has(row.canonical_url))
-    .slice(0, maxResults)
-    .map(mapSeedToThinIndexResult);
+  const tail = rpcRows.at(-1);
+  return {
+    results: preselected
+      .filter((row) => !existingUrls.has(row.canonical_url))
+      .slice(0, maxResults)
+      .map(mapSeedToThinIndexResult),
+    nextCursor: tail
+      ? { rank: tail.relevance_rank, updatedAt: tail.updated_at, seedId: tail.seed_id }
+      : null,
+  };
+}
+
+export async function searchSeedThinIndex(input: SeedThinIndexInput): Promise<SearchGatewayNormalizedResult[]> {
+  return (await searchSeedThinIndexPage(input)).results;
 }
 
 export async function appendSeedThinIndexResults(
@@ -264,7 +334,7 @@ export async function appendSeedThinIndexResults(
     const results = [...merged.values()].slice(0, 150);
     return { ...response, ok: response.ok || results.length > 0, results, results_count: results.length };
   } catch (error) {
-    console.error("[seed-thin-index] degraded:", error);
+    console.error("[thin-index-search-v2] degraded:", error);
     return response;
   }
 }
