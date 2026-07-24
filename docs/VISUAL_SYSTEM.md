@@ -12,7 +12,7 @@ The goal is a simple, premium, recognizable visual language that never feels lik
 ## 2. Brand palette
 V1 is derived from the current AkarFinder visual identity and site colors.
 
-- Deep navy: `#061B33`
+- Deep navy: `#0B1F3A`
 - Akar blue: `#0B63CE`
 - Light blue: `#60A5FA`
 - Pale blue: `#BFDBFE`
