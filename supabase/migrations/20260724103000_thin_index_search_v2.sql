@@ -13,6 +13,7 @@ create table if not exists public.thin_index_search_documents (
   freshness_status text not null,
   title text,
   snippet text,
+  query_text text,
   city text,
   property_type text,
   intent text,
@@ -21,6 +22,7 @@ create table if not exists public.thin_index_search_documents (
     coalesce(canonical_url, '') || ' ' ||
     coalesce(title, '') || ' ' ||
     coalesce(snippet, '') || ' ' ||
+    coalesce(query_text, '') || ' ' ||
     coalesce(city, '') || ' ' ||
     coalesce(property_type, '') || ' ' ||
     coalesce(intent, '') || ' ' ||
@@ -30,7 +32,8 @@ create table if not exists public.thin_index_search_documents (
     setweight(to_tsvector('simple', coalesce(title, '')), 'A') ||
     setweight(to_tsvector('simple', coalesce(city, '') || ' ' || coalesce(property_type, '') || ' ' || coalesce(intent, '')), 'A') ||
     setweight(to_tsvector('simple', coalesce(snippet, '')), 'B') ||
-    setweight(to_tsvector('simple', coalesce(canonical_url, '') || ' ' || coalesce(source_domain, '')), 'C')
+    setweight(to_tsvector('simple', coalesce(canonical_url, '') || ' ' || coalesce(source_domain, '')), 'C') ||
+    setweight(to_tsvector('simple', coalesce(query_text, '')), 'D')
   ) stored
 );
 
@@ -91,6 +94,7 @@ begin
     freshness_status,
     title,
     snippet,
+    query_text,
     city,
     property_type,
     intent,
@@ -103,6 +107,7 @@ begin
     new.freshness_status,
     nullif(new.metadata #>> '{serper_search,title}', ''),
     nullif(new.metadata #>> '{serper_search,snippet}', ''),
+    nullif(new.metadata #>> '{serper_search,query}', ''),
     nullif(new.metadata #>> '{serper_search,city}', ''),
     nullif(new.metadata #>> '{serper_search,property_type}', ''),
     nullif(new.metadata #>> '{serper_search,intent}', ''),
@@ -115,6 +120,7 @@ begin
     freshness_status = excluded.freshness_status,
     title = excluded.title,
     snippet = excluded.snippet,
+    query_text = excluded.query_text,
     city = excluded.city,
     property_type = excluded.property_type,
     intent = excluded.intent,
@@ -145,6 +151,7 @@ insert into public.thin_index_search_documents (
   freshness_status,
   title,
   snippet,
+  query_text,
   city,
   property_type,
   intent,
@@ -158,6 +165,7 @@ select
   s.freshness_status,
   nullif(s.metadata #>> '{serper_search,title}', ''),
   nullif(s.metadata #>> '{serper_search,snippet}', ''),
+  nullif(s.metadata #>> '{serper_search,query}', ''),
   nullif(s.metadata #>> '{serper_search,city}', ''),
   nullif(s.metadata #>> '{serper_search,property_type}', ''),
   nullif(s.metadata #>> '{serper_search,intent}', ''),
@@ -172,6 +180,7 @@ on conflict (seed_id) do update set
   freshness_status = excluded.freshness_status,
   title = excluded.title,
   snippet = excluded.snippet,
+  query_text = excluded.query_text,
   city = excluded.city,
   property_type = excluded.property_type,
   intent = excluded.intent,
@@ -195,6 +204,7 @@ returns table (
   freshness_status text,
   title text,
   snippet text,
+  query_text text,
   city text,
   property_type text,
   intent text,
@@ -251,6 +261,7 @@ ranked as (
     d.freshness_status,
     d.title,
     d.snippet,
+    d.query_text,
     d.city,
     d.property_type,
     d.intent,
