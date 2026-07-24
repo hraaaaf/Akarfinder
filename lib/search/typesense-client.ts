@@ -1,4 +1,5 @@
-import type { TypesenseListingDocument } from "./types";
+import { getResidualSearchText } from "./query-intent";
+import type { SearchQuery, TypesenseListingDocument } from "./types";
 
 type TypesenseConfig = {
   host: string;
@@ -15,6 +16,11 @@ type TypesenseSearchHit = {
 type TypesenseSearchResponse = {
   found?: number;
   hits?: TypesenseSearchHit[];
+};
+
+type TypesenseSearchParams = SearchQuery & {
+  limit: number;
+  offset: number;
 };
 
 function getTypesenseConfig(): TypesenseConfig | null {
@@ -162,20 +168,19 @@ export async function importTypesenseDocuments(
   };
 }
 
-export async function searchTypesenseDocuments(params: {
-  q?: string;
-  city?: string;
-  property_type?: string;
-  transaction_type?: string;
-  minReliabilityScore?: number;
-  reliability_badge?: string;
-  sort?: string;
-  limit: number;
-  offset: number;
-}): Promise<{ documents: TypesenseListingDocument[]; total: number }> {
-  const collection = getTypesenseCollectionName();
+/**
+ * Build provider-native parameters while preserving the canonical Search doctrine:
+ * 1) residual relevance first,
+ * 2) disclosed price before the internal 0 sentinel,
+ * 3) information completeness.
+ *
+ * Structured city/type/transaction terms are removed from q because they are
+ * already represented as exact filters and must not receive a second relevance boost.
+ */
+export function buildTypesenseSearchParams(params: TypesenseSearchParams): URLSearchParams {
+  const residualText = getResidualSearchText(params);
   const searchParams = new URLSearchParams({
-    q: params.q?.trim() || "*",
+    q: residualText || "*",
     query_by: "title,city,district,property_type,source_site,premium_features",
     per_page: String(params.limit),
     page: String(Math.floor(params.offset / params.limit) + 1),
@@ -191,10 +196,27 @@ export async function searchTypesenseDocuments(params: {
   }
   if (filters.length > 0) searchParams.set("filter_by", filters.join(" && "));
 
-  if (params.sort === "price_asc") searchParams.set("sort_by", "price_mad:asc");
-  else if (params.sort === "price_desc") searchParams.set("sort_by", "price_mad:desc");
-  else if (params.sort === "surface_desc") searchParams.set("sort_by", "surface_m2:desc");
-  else searchParams.set("sort_by", "reliability_score:desc,data_completeness_score:desc");
+  if (params.sort === "price_asc") {
+    searchParams.set("sort_by", "_eval(price_mad:>0):desc,price_mad:asc");
+  } else if (params.sort === "price_desc") {
+    searchParams.set("sort_by", "_eval(price_mad:>0):desc,price_mad:desc");
+  } else if (params.sort === "surface_desc") {
+    searchParams.set("sort_by", "surface_m2:desc");
+  } else {
+    searchParams.set(
+      "sort_by",
+      "_text_match:desc,_eval(price_mad:>0):desc,data_completeness_score:desc",
+    );
+  }
+
+  return searchParams;
+}
+
+export async function searchTypesenseDocuments(
+  params: TypesenseSearchParams
+): Promise<{ documents: TypesenseListingDocument[]; total: number }> {
+  const collection = getTypesenseCollectionName();
+  const searchParams = buildTypesenseSearchParams(params);
 
   const response = await requestTypesense<TypesenseSearchResponse>(
     `/collections/${encodeURIComponent(collection)}/documents/search?${searchParams.toString()}`

@@ -1,4 +1,5 @@
 import { searchDatabase } from "./database-search";
+import { enrichSearchQueryWithTextIntent } from "./query-intent";
 import { getSearchProvider, useTypesenseSearch } from "./provider";
 import { searchTypesense } from "./typesense-search";
 import { canonicalizeGeoPair } from "@/lib/geo/geo-entity-registry";
@@ -38,10 +39,14 @@ function projectVisibleDedup(result: SearchResult): SearchResult {
 }
 
 export async function searchListings(query: SearchQuery = {}): Promise<SearchResult> {
+  // SEARCH-PROVIDER-PARITY-1 — every provider receives the same deterministic
+  // structured intent. Provider selection must never change the meaning of q.
+  const resolvedQuery = enrichSearchQueryWithTextIntent(query);
+
   if (getSearchProvider() === "typesense") {
     if (useTypesenseSearch()) {
       try {
-        return projectVisibleDedup(await searchTypesense(query));
+        return projectVisibleDedup(await searchTypesense(resolvedQuery));
       } catch (error) {
         console.error("[search] Typesense failed, falling back to database:", error);
       }
@@ -50,7 +55,7 @@ export async function searchListings(query: SearchQuery = {}): Promise<SearchRes
     }
   }
 
-  const fallback = projectVisibleDedup(await searchDatabase(query));
+  const fallback = projectVisibleDedup(await searchDatabase(resolvedQuery));
   return getSearchProvider() === "typesense"
     ? { ...fallback, source: "database_fallback" }
     : fallback;
