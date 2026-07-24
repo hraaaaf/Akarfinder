@@ -1,8 +1,7 @@
 name: One-shot roadmap Thin Index V2 update
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  push:
     branches:
       - main
 
@@ -11,13 +10,13 @@ permissions:
 
 jobs:
   update-roadmap:
-    if: github.event.pull_request.head.ref == 'docs/roadmap-thin-index-v2'
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout roadmap branch
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
-          ref: docs/roadmap-thin-index-v2
+          ref: main
           fetch-depth: 0
 
       - name: Update ROADMAP once
@@ -72,4 +71,4 @@ Decision roadmap:
             exit 0
           fi
           git commit -m "docs(roadmap): close Thin Index search depth PR #74"
-          git push origin HEAD:docs/roadmap-thin-index-v2
+          git push origin HEAD:main
