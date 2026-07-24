@@ -9,7 +9,6 @@ import { MreTrustSection } from "@/components/landing/MreTrustSection";
 import { HomeFinalCTA } from "@/components/landing/HomeFinalCTA";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { Reveal } from "@/components/ui/Reveal";
 
 export default async function HomePage() {
   return (
@@ -22,13 +21,13 @@ export default async function HomePage() {
       {/* ── Repères récents (moteur pur — sources autorisées uniquement) ── */}
       <MarketPulse />
 
-      <Reveal><WhySection /></Reveal>
+      <WhySection />
       <DataProofBlock />
-      <Reveal><CityIntentGrid /></Reveal>
+      <CityIntentGrid />
       <SignatureMapSection />
 
-      <Reveal><HowItWorks /></Reveal>
-      <Reveal><MreTrustSection /></Reveal>
+      <HowItWorks />
+      <MreTrustSection />
       <HomeFinalCTA />
       <SiteFooter />
     </main>
