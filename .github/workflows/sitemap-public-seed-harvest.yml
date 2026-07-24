@@ -1,14 +1,19 @@
 name: Public Sitemap Seed Harvest
 
 # MASS-ACQUISITION-FREE-ACCELERATION-1
+# DATA-40K-GATE-IMMEDIATE-SITEMAP-RUN-2026-07-24
 # Free acquisition lane: robots.txt -> explicitly declared sitemap files ->
 # strict listing URL patterns -> source_offer_seeds only. No listing page fetch,
-# no paid API, no public listing write. Scheduled runs still require the same
+# no paid API, no public listing write. Scheduled/push runs require the same
 # three production write gates; manual dispatch defaults to dry-run.
 
 on:
   schedule:
     - cron: "23 */6 * * *"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/sitemap-public-seed-harvest.yml"
   workflow_dispatch:
     inputs:
       mode:
@@ -53,7 +58,7 @@ jobs:
           OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
         run: |
           set -e
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "push" ]; then
             MODE="apply"
           else
             MODE="${{ inputs.mode }}"
