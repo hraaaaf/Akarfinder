@@ -1,0 +1,82 @@
+name: DATA 40K Sarouty Common Crawl Once
+
+# DATA-40K-SAROUTY-COMMONCRAWL-ONCE-1
+# One-shot, free, metadata-only harvest after the audited Sarouty route update.
+# No WARC/page fetch, no source-site request, no proxy/bypass, no public listing
+# write. Uses the canonical registry and existing seed publication/freshness gates.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/data-40k-sarouty-commoncrawl-once.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-40k-sarouty-commoncrawl-once
+  cancel-in-progress: false
+
+jobs:
+  harvest-sarouty:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Scope local runner registry to audited Sarouty only
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'data/openserp/source-domain-registry.json';
+          const registry = JSON.parse(fs.readFileSync(path, 'utf8'));
+          const sarouty = registry.domains.filter((entry) => entry.domain === 'sarouty.ma');
+          if (sarouty.length !== 1 || sarouty[0].status !== 'approved_discovery' || !sarouty[0].external_web_result) {
+            throw new Error('Sarouty is not exactly one approved public discovery source in canonical registry');
+          }
+          if (!Array.isArray(sarouty[0].listing_url_patterns) || sarouty[0].listing_url_patterns.length === 0) {
+            throw new Error('Sarouty has no audited listing URL pattern');
+          }
+          registry.domains = sarouty;
+          fs.writeFileSync(path, JSON.stringify(registry, null, 2) + '\n');
+          NODE
+
+      - name: Harvest Sarouty from recent Common Crawl URL indexes
+        env:
+          COMMONCRAWL_MASS_MODE: all
+        run: npx tsx scripts/openserp/commoncrawl-registry-mass-harvest.ts
+
+      - name: Persist only qualified canonical seeds and reconcile freshness
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
+          OPENSERP_INGESTION_WRITE_ENABLED: ${{ secrets.OPENSERP_INGESTION_WRITE_ENABLED }}
+          OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
+        run: |
+          set -euo pipefail
+          wc -l data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl
+          npx tsx scripts/openserp/ingest-commoncrawl-mass-seeds.ts --apply
+          npx tsx scripts/openserp/reconcile-commoncrawl-seed-freshness.ts --apply
+
+      - name: Upload evidence artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-40k-sarouty-commoncrawl-once
+          path: data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl
+          if-no-files-found: warn
+          retention-days: 14
