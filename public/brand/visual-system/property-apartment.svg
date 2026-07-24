@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">Appartement AkarFinder</title>
+  <desc id="desc">Immeuble résidentiel géométrique bleu AkarFinder.</desc>
+  <rect width="160" height="160" rx="32" fill="#FFFFFF"/>
+  <path d="M32 132V54l34-18 30 12v84H32Z" fill="#061B33"/>
+  <path d="M96 132V42l32 13v77H96Z" fill="#0B63CE"/>
+  <path d="M66 36v96" stroke="#60A5FA" stroke-width="5"/>
+  <g fill="#BFDBFE">
+    <rect x="44" y="62" width="12" height="14" rx="2"/>
+    <rect x="44" y="84" width="12" height="14" rx="2"/>
+    <rect x="44" y="106" width="12" height="14" rx="2"/>
+    <rect x="75" y="59" width="11" height="14" rx="2"/>
+    <rect x="75" y="81" width="11" height="14" rx="2"/>
+    <rect x="75" y="103" width="11" height="14" rx="2"/>
+  </g>
+  <g fill="#FFFFFF">
+    <rect x="105" y="62" width="12" height="15" rx="2"/>
+    <rect x="105" y="86" width="12" height="15" rx="2"/>
+  </g>
+  <path d="M27 132h106" stroke="#061B33" stroke-width="6" stroke-linecap="round"/>
+</svg>
