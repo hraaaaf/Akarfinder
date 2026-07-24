@@ -1,178 +1,139 @@
-# AkarFinder Visual System V1
+# AkarFinder Visual System — Golden Master
 
-## 1. Purpose
-AkarFinder uses a three-layer visual architecture:
+## 1. Golden reference
 
-1. **Photography** for real properties, real places, and editorial context.
-2. **AkarFinder Geometric Illustrations** for proprietary identity concepts such as property types, intents, services, professional ecosystem, and selected empty/editorial states.
-3. **Lucide functional icons** for universal UI actions and controls.
+**Proposition 3 is the canonical visual reference.**
 
-The goal is a simple, premium, recognizable visual language that never feels like stock iconography.
+Every proprietary AkarFinder illustration must be judged against that reference before integration. Matching colors alone is not sufficient: composition, softness, geometry, visual weight and premium perception must belong to the same family.
 
-## 2. Brand palette
-V1 is derived from the current AkarFinder visual identity and site colors.
+The visual architecture has three layers:
+
+1. **Photography** for real properties, real cities, real neighborhoods and factual/editorial context.
+2. **AkarFinder Golden Illustrations** for proprietary identity concepts: property types, intents, services, professional ecosystem and selected editorial/empty states.
+3. **Lucide functional icons** for universal controls and actions.
+
+## 2. Proposition 3 grammar
+
+Required characteristics:
+
+- flat geometric compositions rather than isolated pictograms;
+- soft rounded geometry and generous negative space;
+- layered background shapes that create depth without fake 3D;
+- one dominant subject with one or two secondary shapes maximum;
+- readable silhouette at card size;
+- premium editorial feel rather than an icon-pack feel;
+- consistent optical weight across the entire library;
+- no text embedded inside artwork.
+
+Forbidden:
+
+- stock-icon / clip-art appearance;
+- random outline thicknesses;
+- isolated tiny pictograms floating in empty squares;
+- fake isometric perspective;
+- tourist-cartoon landmarks;
+- decorative bronze/gold/champagne accents;
+- approximate monuments presented as factual representations.
+
+## 3. Brand palette
+
+The system is derived from the real AkarFinder identity:
 
 - Deep navy: `#0B1F3A`
 - Akar blue: `#0B63CE`
-- Light blue: `#60A5FA`
-- Pale blue: `#BFDBFE`
+- Mid blue: `#5AA7F8`
+- Pale blue: `#DCEEFF`
+- Surface blue: `#EEF6FF`
 - White: `#FFFFFF`
 
-**No bronze, gold, champagne, or unrelated accent palette is permitted in V1.**
+No bronze, gold or champagne.
 
-## 3. Illustration doctrine
-AkarFinder proprietary illustrations must be:
-
-- geometric and architectural;
-- low-detail and instantly readable;
-- visually balanced at 64–160 px;
-- coherent in optical weight and perspective;
-- free of embedded text;
-- usable on both light and dark surfaces;
-- recognizable without relying on labels where practical.
-
-Avoid:
-
-- cartoon treatment;
-- tourist clip-art;
-- fake realism;
-- decorative gradients without a functional reason;
-- multiple unrelated illustration styles;
-- random use of 3D/isometric perspective.
-
-## 4. Canonical V1 families
+## 4. Canonical illustration families
 
 ### Property types
-- Appartement
-- Villa
-- Terrain
-- Maison
-- Riad
-- Studio
-- Duplex
-- Penthouse
-- Bureau
-- Commerce
-- Ferme / propriété rurale
-- Programme neuf
+Appartement, Villa, Terrain, Maison, Riad, Studio, Duplex, Penthouse, Bureau, Commerce, Ferme / propriété rurale, Programme neuf.
 
-### Intent
-- Acheter
-- Louer
-- Vendre
+### Intentions
+Acheter, Louer, Vendre.
 
 ### Services / intelligence
-- Crédit / financement
-- Estimation
-- Quartier / carte
-- Comparaison
-- Mon Projet
-- Compagnon
-- Alertes
+Crédit / financement, Estimation, Quartier / carte, Comparaison, Mon Projet, Compagnon, Alertes.
 
 ### Professional ecosystem
-- Agence partenaire
-- Promoteur
+Agence partenaire, Promoteur.
 
 Do not create Gold/Premium/verified semantics unless the corresponding entitlement exists in product truth and commercial rules.
 
-### Identity states
-- no results
-- no image
-- project empty
-- favorites empty
-- data limited
+### Editorial / empty states
+No results, no image, project empty, favorites empty, data limited.
 
-Loading, generic error/success and basic form feedback remain functional UI patterns unless a later UX audit justifies a larger identity illustration.
+## 5. Canonical renderer
 
-## 5. Naming convention
-Canonical location:
+The golden-master renderer is:
 
-`/public/brand/visual-system/`
+`components/brand/GoldenIllustration.tsx`
 
-Prefixes:
+This is the source of truth for the Proposition 3 grammar and is used by the QA gallery and integrated identity surfaces.
 
-- `property-` — property types
-- `intent-` — buy/rent/sell
-- `service-` — financing, valuation, comparison, companion, project, alerts
-- `pro-` — agency/developer ecosystem
-- `state-` — selected empty/unavailable editorial states
-- `city-` — city marks, produced under the separate architectural-fidelity gate
+The legacy V1 static SVG set under `/public/brand/visual-system/` is **not a quality reference**. It is considered deprecated for new integration unless an individual asset is explicitly revalidated against the golden master.
 
-Use lowercase kebab-case.
+## 6. Photography vs illustration vs functional icon
 
-## 6. Asset registry
+Use **photography** when truth matters: a real home, city, neighborhood, listing or landmark.
 
-| Concept / family | Decision |
-|---|---|
-| Hero photography | KEEP |
-| City photography | KEEP until each city mark passes fidelity QA |
-| Listing/source imagery | KEEP / EXCLUDE from brand redesign |
-| Header logos light/dark | KEEP |
-| Lucide functional UI icons | KEEP |
-| Property-type identity illustrations | CREATE — V1 library present |
-| Intent illustrations | CREATE — V1 library present |
-| Services / intelligence illustrations | CREATE — V1 library present |
-| Agency / developer ecosystem | CREATE — V1 library present |
-| Selected empty/fallback states | CREATE — V1 library present |
-| Generic loading/error/success controls | KEEP as functional UI patterns |
+Use **GoldenIllustration** for categorical or abstract identity: property type, intent, service, ecosystem, onboarding and editorial empty states.
 
-The machine-readable registry is `lib/brand/visual-assets.ts`.
+Use **Lucide** for functional UI: search, favorites, filters, close, menu, map-pin controls, share, sort, external link, theme and basic form/status actions.
 
-## 7. Photography vs illustration vs icon
-Use **photography** when truth matters: a real home, real city, real neighborhood, or sourced listing.
+Do not redraw functional controls simply to force branding.
 
-Use **AkarFinder illustration** when the concept is abstract or categorical: property type, intent, service, ecosystem, onboarding, empty editorial state.
+## 7. Cities — corrected doctrine
 
-Use **Lucide** for controls: search, favorite action, filters, close, menu, map-pin controls, share, sort, external link, theme, form/status actions.
+The first City Marks implementation failed the premium/fidelity bar and is rejected as a live visual direction.
 
-Do not redraw functional icons merely to force branding.
+For production city cards:
 
-## 8. City marks — strict fidelity gate
-City marks are governed separately because architectural fidelity is mandatory.
+- use **real city photography** when available;
+- frame it with the AkarFinder Proposition 3 card grammar;
+- never use an approximate monument silhouette as if it were an accurate city identity;
+- a future vector city emblem may replace photography only after side-by-side architectural fidelity review and founder validation.
 
-Founder-locked first pack:
+Current founder reference anchors remain useful only for future fidelity studies:
 
-- Casablanca — CFC skyline + Mosquée Hassan II
-- Rabat — Prince Moulay Abdellah stadium complex + Mohammed VI Tower
-- Marrakech — Koutoubia
-- Fès — Bab Boujloud / medina gateway identity
-- Tanger — Kasbah/medina + bay relationship, no generic lighthouse
-- Agadir — Kasbah Oufella + crescent bay, no invented skyline
+- Casablanca — Mosquée Hassan II + CFC;
+- Rabat — Tour Mohammed VI + new Prince Moulay Abdellah stadium complex;
+- Marrakech — Koutoubia;
+- Fès — Bab Boujloud;
+- Tanger — Kasbah / medina + bay relationship;
+- Agadir — Kasbah Oufella + bay / relief relationship.
 
-Pipeline:
+## 8. QA gallery
 
-1. verified real reference photos;
-2. identify invariant silhouette and proportions;
-3. simplify into AkarFinder Style 3;
-4. compare side-by-side with the real landmark;
-5. only then integrate.
-
-No city photography is replaced until the corresponding mark passes this gate.
-
-## 9. QA gallery
-A branch-only review route is available at:
+Route:
 
 `/demo/visual-system`
 
-It displays the full V1 library by family before mass integration.
+The gallery must render the full conceptual library from the golden-master system, not from deprecated static assets.
 
-Validation checklist:
+Validation criteria:
 
-- same palette;
-- similar optical weight;
-- recognizable at small card size;
-- no embedded text;
-- no unexplained gradients;
-- light-surface readability;
-- dark usage evaluated before dark-background integration;
-- mobile card readability checked.
+- visually belongs to Proposition 3;
+- premium at first glance;
+- no stock-icon feel;
+- consistent palette and optical weight;
+- clear at 64–160 px;
+- coherent at 390 / 768 / 1280 px;
+- no false factual representation;
+- dark-mode usage validated before dark-background integration.
 
-## 10. Registry statuses
-Canonical statuses:
+## 9. Release rule
 
-- `KEEP`
-- `REDESIGN`
-- `REPLACE`
-- `CREATE`
-- `REMOVE`
+A CI-green result is necessary but **not sufficient** for visual approval.
+
+A visual asset can ship only when:
+
+1. it passes technical checks;
+2. it belongs clearly to Proposition 3;
+3. it does not look cheaper than the surface it replaces;
+4. factual subjects remain truthful;
+5. the complete family remains coherent when viewed together.

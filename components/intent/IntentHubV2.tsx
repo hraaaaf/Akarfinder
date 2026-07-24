@@ -1,11 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Compass, MapPin, Search, ShieldCheck } from "lucide-react";
 
+import { GoldenIllustration } from "@/components/brand/GoldenIllustration";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Container } from "@/components/ui/Container";
-import { PROPERTY_VISUALS } from "@/lib/brand/visual-assets";
 import type { Listing } from "@/lib/listings/types";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import { getSearchTruthPresentation, isObservedExternalListing } from "@/lib/search/search-truth-tier";
@@ -61,18 +60,11 @@ function IntentPreviewCard({ listing }: { listing: Listing }) {
   return (
     <article className="rounded-2xl border border-border/15 bg-card p-5 shadow-[0_14px_40px_rgba(2,10,24,0.10)] dark:border-white/10 dark:bg-white/[0.04]">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="rounded-full border border-border/20 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">
-          {truth.label}
-        </span>
-        {listing.city ? (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
-            <MapPin size={11} aria-hidden="true" /> {listing.city}
-          </span>
-        ) : null}
+        <span className="rounded-full border border-border/20 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">{truth.label}</span>
+        {listing.city ? <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground"><MapPin size={11} aria-hidden="true" /> {listing.city}</span> : null}
       </div>
-
       <h3 className="mt-4 line-clamp-2 text-[15px] font-extrabold leading-5 text-foreground">{listing.title}</h3>
-      <p className="mt-2 text-[1.25rem] font-extrabold tracking-[-0.03em] text-bronze-500">
+      <p className="mt-2 text-[1.25rem] font-extrabold tracking-[-0.03em] text-[#0B63CE]">
         {formatPrice(listing.price, listing.currency)}
         {listing.transaction_type === "rent" ? <span className="ml-1 text-[11px] font-bold text-muted-foreground">/mois</span> : null}
       </p>
@@ -81,15 +73,8 @@ function IntentPreviewCard({ listing }: { listing: Listing }) {
         {listing.surface_m2 > 0 ? <span>{formatSurface(listing.surface_m2)}</span> : null}
         {listing.property_type ? <span>{listing.property_type}</span> : null}
       </div>
-
-      <Link
-        href={href}
-        target={external ? "_blank" : undefined}
-        rel={external ? "noopener noreferrer" : undefined}
-        className="mt-5 inline-flex items-center gap-2 text-[12.5px] font-extrabold text-bronze-500 transition hover:text-bronze-400"
-      >
-        {external ? "Voir la source originale" : "Voir la fiche"}
-        <ArrowRight size={13} aria-hidden="true" />
+      <Link href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className="mt-5 inline-flex items-center gap-2 text-[12.5px] font-extrabold text-[#0B63CE] transition hover:text-[#084FA8]">
+        {external ? "Voir la source originale" : "Voir la fiche"}<ArrowRight size={13} aria-hidden="true" />
       </Link>
     </article>
   );
@@ -102,12 +87,11 @@ export function IntentHubV2({ intent, listings, totalListings }: IntentHubV2Prop
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader compact />
-
       <section className="relative overflow-hidden border-b border-border/12 bg-surface py-12 dark:border-white/8 dark:bg-deepblue sm:py-16 lg:py-20">
         <Container>
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
             <div className="max-w-3xl">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-bronze-500">{copy.eyebrow}</p>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[#0B63CE]">{copy.eyebrow}</p>
               <h1 className="mt-3 text-[2.35rem] font-extrabold leading-[1.04] tracking-[-0.05em] sm:text-[3.5rem]">{copy.title}</h1>
               <p className="mt-4 max-w-2xl text-[14px] leading-7 text-muted-foreground sm:text-[15.5px]">{copy.description}</p>
 
@@ -117,43 +101,29 @@ export function IntentHubV2({ intent, listings, totalListings }: IntentHubV2Prop
                   <Search size={16} className="shrink-0 text-muted-foreground" aria-hidden="true" />
                   <input name="q" placeholder={copy.searchPlaceholder} className="min-w-0 flex-1 bg-transparent py-3.5 text-[14px] outline-none placeholder:text-muted-foreground" />
                 </div>
-                <button type="submit" className="shrink-0 rounded-xl bg-[#0B63CE] px-5 py-3 text-[13px] font-extrabold text-white transition-colors hover:bg-[#084FA8]">
-                  Rechercher
-                </button>
+                <button type="submit" className="shrink-0 rounded-xl bg-[#0B63CE] px-5 py-3 text-[13px] font-extrabold text-white transition-colors hover:bg-[#084FA8]">Rechercher</button>
               </form>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                {copy.quick.map(([label, propertyType]) => {
-                  const visual = PROPERTY_VISUALS[propertyType as keyof typeof PROPERTY_VISUALS];
-                  return (
-                    <Link
-                      key={propertyType}
-                      href={`/search?transaction_type=${transactionType}&property_type=${encodeURIComponent(propertyType)}`}
-                      className="group overflow-hidden rounded-2xl border border-[#DDE7F2] bg-white p-3 shadow-[0_12px_30px_rgba(15,23,42,0.06)] transition-[border-color,box-shadow] hover:border-[#93C5FD] hover:shadow-[0_16px_36px_rgba(11,99,206,0.10)] dark:border-white/10 dark:bg-white/[0.04]"
-                    >
-                      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#F4F8FC]">
-                        <Image src={visual} alt="" fill className="object-contain p-1" sizes="(max-width: 640px) 100vw, 220px" />
-                      </div>
-                      <div className="mt-3 flex items-center justify-between gap-2">
-                        <span className="text-[12.5px] font-extrabold text-[#0B1F3A] dark:text-white">{label}</span>
-                        <span className="text-[#0B63CE] transition-transform group-hover:translate-x-0.5" aria-hidden="true">→</span>
-                      </div>
-                    </Link>
-                  );
-                })}
+                {copy.quick.map(([label, propertyType]) => (
+                  <Link key={propertyType} href={`/search?transaction_type=${transactionType}&property_type=${encodeURIComponent(propertyType)}`} className="group overflow-hidden rounded-[1.65rem] border border-[#DCE8F5] bg-white p-3 shadow-[0_14px_36px_rgba(11,31,58,0.07)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-[#93C5FD] hover:shadow-[0_18px_42px_rgba(11,99,206,0.12)] motion-reduce:transform-none dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-[#EEF6FF]">
+                      <GoldenIllustration kind={propertyType} className="h-full w-full" />
+                    </div>
+                    <div className="mt-3 flex items-center justify-between gap-2 px-1 pb-1">
+                      <span className="text-[12.5px] font-extrabold text-[#0B1F3A] dark:text-white">{label}</span>
+                      <span className="grid h-8 w-8 place-items-center rounded-[11px] bg-[#EEF6FF] text-[#0B63CE] transition-colors group-hover:bg-[#0B63CE] group-hover:text-white" aria-hidden="true">→</span>
+                    </div>
+                  </Link>
+                ))}
               </div>
-              <Link href={`/search?transaction_type=${transactionType}`} className="mt-3 inline-flex items-center gap-2 text-[12px] font-extrabold text-[#0B63CE]">
-                Tous les filtres <ArrowRight size={13} aria-hidden="true" />
-              </Link>
+              <Link href={`/search?transaction_type=${transactionType}`} className="mt-3 inline-flex items-center gap-2 text-[12px] font-extrabold text-[#0B63CE]">Tous les filtres <ArrowRight size={13} aria-hidden="true" /></Link>
             </div>
 
             <aside className="rounded-3xl border border-border/15 bg-card p-6 dark:border-white/10 dark:bg-white/[0.04]">
               <div className="flex items-center gap-3">
                 <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#0B63CE]/10 text-[#0B63CE]"><ShieldCheck size={18} aria-hidden="true" /></span>
-                <div>
-                  <p className="text-[13px] font-extrabold">Niveau d’information explicite</p>
-                  <p className="text-[11.5px] text-muted-foreground">Pas un score de confiance inventé</p>
-                </div>
+                <div><p className="text-[13px] font-extrabold">Niveau d’information explicite</p><p className="text-[11.5px] text-muted-foreground">Pas un score de confiance inventé</p></div>
               </div>
               <div className="mt-5 space-y-3 text-[12px] leading-5 text-muted-foreground">
                 <p><strong className="text-foreground">Analysé par AkarFinder</strong> — fiche structurée avec analyse disponible.</p>
@@ -169,48 +139,22 @@ export function IntentHubV2({ intent, listings, totalListings }: IntentHubV2Prop
         <Container>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-bronze-500">Aperçu du moteur</p>
+              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-[#0B63CE]">Aperçu du moteur</p>
               <h2 className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.04em]">Quelques résultats actuellement disponibles</h2>
-              <p className="mt-2 text-[12.5px] text-muted-foreground">
-                {totalListings && totalListings > 0 ? `${totalListings.toLocaleString("fr-FR")} résultats indexés correspondent à cet intent. ` : ""}
-                L’aperçu ci-dessous n’est pas un volume de marché garanti.
-              </p>
+              <p className="mt-2 text-[12.5px] text-muted-foreground">{totalListings && totalListings > 0 ? `${totalListings.toLocaleString("fr-FR")} résultats indexés correspondent à cet intent. ` : ""}L’aperçu ci-dessous n’est pas un volume de marché garanti.</p>
             </div>
-            <Link href={`/search?transaction_type=${transactionType}`} className="inline-flex items-center gap-2 text-[12.5px] font-extrabold text-bronze-500">
-              {copy.cta} <ArrowRight size={13} aria-hidden="true" />
-            </Link>
+            <Link href={`/search?transaction_type=${transactionType}`} className="inline-flex items-center gap-2 text-[12.5px] font-extrabold text-[#0B63CE]">{copy.cta} <ArrowRight size={13} aria-hidden="true" /></Link>
           </div>
-
-          {listings.length ? (
-            <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {listings.slice(0, 6).map((listing) => <IntentPreviewCard key={listing.id} listing={listing} />)}
-            </div>
-          ) : (
-            <div className="mt-7 rounded-2xl border border-dashed border-border/20 bg-surface/50 p-7 text-[13px] text-muted-foreground">
-              Aucun aperçu structuré disponible ici pour le moment. Le moteur peut néanmoins rechercher des offres observées sur leurs sources originales.
-            </div>
-          )}
+          {listings.length ? <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{listings.slice(0, 6).map((listing) => <IntentPreviewCard key={listing.id} listing={listing} />)}</div> : <div className="mt-7 rounded-2xl border border-dashed border-border/20 bg-surface/50 p-7 text-[13px] text-muted-foreground">Aucun aperçu structuré disponible ici pour le moment. Le moteur peut néanmoins rechercher des offres observées sur leurs sources originales.</div>}
         </Container>
       </section>
 
       <section className="border-y border-border/12 bg-surface py-12 dark:border-white/8">
         <Container>
           <div className="grid gap-4 md:grid-cols-3">
-            <Link href={`/search?transaction_type=${transactionType}`} className="rounded-2xl border border-border/15 bg-card p-5 dark:border-white/10 dark:bg-white/[0.04]">
-              <Search size={18} className="text-[#0B63CE]" aria-hidden="true" />
-              <p className="mt-4 font-extrabold">Recherche complète</p>
-              <p className="mt-1 text-[12px] leading-5 text-muted-foreground">Filtres réels, tri explicite et sources visibles.</p>
-            </Link>
-            <Link href="/compagnon" className="rounded-2xl border border-border/15 bg-card p-5 dark:border-white/10 dark:bg-white/[0.04]">
-              <Compass size={18} className="text-[#0B63CE]" aria-hidden="true" />
-              <p className="mt-4 font-extrabold">Construire Mon Projet</p>
-              <p className="mt-1 text-[12px] leading-5 text-muted-foreground">Clarifiez budget, zones, contraintes et préférences.</p>
-            </Link>
-            <Link href="/map" className="rounded-2xl border border-border/15 bg-card p-5 dark:border-white/10 dark:bg-white/[0.04]">
-              <MapPin size={18} className="text-[#0B63CE]" aria-hidden="true" />
-              <p className="mt-4 font-extrabold">Explorer les quartiers</p>
-              <p className="mt-1 text-[12px] leading-5 text-muted-foreground">Repères géographiques séparés des résultats du moteur.</p>
-            </Link>
+            <Link href={`/search?transaction_type=${transactionType}`} className="rounded-2xl border border-border/15 bg-card p-5 dark:border-white/10 dark:bg-white/[0.04]"><Search size={18} className="text-[#0B63CE]" aria-hidden="true" /><p className="mt-4 font-extrabold">Recherche complète</p><p className="mt-1 text-[12px] leading-5 text-muted-foreground">Filtres réels, tri explicite et sources visibles.</p></Link>
+            <Link href="/compagnon" className="rounded-2xl border border-border/15 bg-card p-5 dark:border-white/10 dark:bg-white/[0.04]"><Compass size={18} className="text-[#0B63CE]" aria-hidden="true" /><p className="mt-4 font-extrabold">Construire Mon Projet</p><p className="mt-1 text-[12px] leading-5 text-muted-foreground">Clarifiez budget, zones, contraintes et préférences.</p></Link>
+            <Link href="/map" className="rounded-2xl border border-border/15 bg-card p-5 dark:border-white/10 dark:bg-white/[0.04]"><MapPin size={18} className="text-[#0B63CE]" aria-hidden="true" /><p className="mt-4 font-extrabold">Explorer les quartiers</p><p className="mt-1 text-[12px] leading-5 text-muted-foreground">Repères géographiques séparés des résultats du moteur.</p></Link>
           </div>
         </Container>
       </section>
