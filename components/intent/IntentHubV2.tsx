@@ -1,9 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Compass, MapPin, Search, ShieldCheck } from "lucide-react";
 
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Container } from "@/components/ui/Container";
+import { PROPERTY_VISUALS } from "@/lib/brand/visual-assets";
 import type { Listing } from "@/lib/listings/types";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import { getSearchTruthPresentation, isObservedExternalListing } from "@/lib/search/search-truth-tier";
@@ -115,30 +117,39 @@ export function IntentHubV2({ intent, listings, totalListings }: IntentHubV2Prop
                   <Search size={16} className="shrink-0 text-muted-foreground" aria-hidden="true" />
                   <input name="q" placeholder={copy.searchPlaceholder} className="min-w-0 flex-1 bg-transparent py-3.5 text-[14px] outline-none placeholder:text-muted-foreground" />
                 </div>
-                <button type="submit" className="shrink-0 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[13px] font-extrabold text-white">
+                <button type="submit" className="shrink-0 rounded-xl bg-[#0B63CE] px-5 py-3 text-[13px] font-extrabold text-white transition-colors hover:bg-[#084FA8]">
                   Rechercher
                 </button>
               </form>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                {copy.quick.map(([label, propertyType]) => (
-                  <Link
-                    key={propertyType}
-                    href={`/search?transaction_type=${transactionType}&property_type=${encodeURIComponent(propertyType)}`}
-                    className="rounded-full border border-border/20 bg-card px-4 py-2 text-[12px] font-bold text-foreground/75 transition hover:border-bronze-500/40 hover:text-foreground dark:border-white/12 dark:bg-white/[0.04]"
-                  >
-                    {label}
-                  </Link>
-                ))}
-                <Link href={`/search?transaction_type=${transactionType}`} className="rounded-full border border-bronze-500/35 bg-bronze-500/10 px-4 py-2 text-[12px] font-extrabold text-bronze-500">
-                  Tous les filtres →
-                </Link>
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                {copy.quick.map(([label, propertyType]) => {
+                  const visual = PROPERTY_VISUALS[propertyType as keyof typeof PROPERTY_VISUALS];
+                  return (
+                    <Link
+                      key={propertyType}
+                      href={`/search?transaction_type=${transactionType}&property_type=${encodeURIComponent(propertyType)}`}
+                      className="group overflow-hidden rounded-2xl border border-[#DDE7F2] bg-white p-3 shadow-[0_12px_30px_rgba(15,23,42,0.06)] transition-[border-color,box-shadow] hover:border-[#93C5FD] hover:shadow-[0_16px_36px_rgba(11,99,206,0.10)] dark:border-white/10 dark:bg-white/[0.04]"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#F4F8FC]">
+                        <Image src={visual} alt="" fill className="object-contain p-1" sizes="(max-width: 640px) 100vw, 220px" />
+                      </div>
+                      <div className="mt-3 flex items-center justify-between gap-2">
+                        <span className="text-[12.5px] font-extrabold text-[#0B1F3A] dark:text-white">{label}</span>
+                        <span className="text-[#0B63CE] transition-transform group-hover:translate-x-0.5" aria-hidden="true">→</span>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
+              <Link href={`/search?transaction_type=${transactionType}`} className="mt-3 inline-flex items-center gap-2 text-[12px] font-extrabold text-[#0B63CE]">
+                Tous les filtres <ArrowRight size={13} aria-hidden="true" />
+              </Link>
             </div>
 
             <aside className="rounded-3xl border border-border/15 bg-card p-6 dark:border-white/10 dark:bg-white/[0.04]">
               <div className="flex items-center gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-bronze-500/12 text-bronze-500"><ShieldCheck size={18} aria-hidden="true" /></span>
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#0B63CE]/10 text-[#0B63CE]"><ShieldCheck size={18} aria-hidden="true" /></span>
                 <div>
                   <p className="text-[13px] font-extrabold">Niveau d’information explicite</p>
                   <p className="text-[11.5px] text-muted-foreground">Pas un score de confiance inventé</p>
@@ -186,17 +197,17 @@ export function IntentHubV2({ intent, listings, totalListings }: IntentHubV2Prop
         <Container>
           <div className="grid gap-4 md:grid-cols-3">
             <Link href={`/search?transaction_type=${transactionType}`} className="rounded-2xl border border-border/15 bg-card p-5 dark:border-white/10 dark:bg-white/[0.04]">
-              <Search size={18} className="text-bronze-500" aria-hidden="true" />
+              <Search size={18} className="text-[#0B63CE]" aria-hidden="true" />
               <p className="mt-4 font-extrabold">Recherche complète</p>
               <p className="mt-1 text-[12px] leading-5 text-muted-foreground">Filtres réels, tri explicite et sources visibles.</p>
             </Link>
             <Link href="/compagnon" className="rounded-2xl border border-border/15 bg-card p-5 dark:border-white/10 dark:bg-white/[0.04]">
-              <Compass size={18} className="text-bronze-500" aria-hidden="true" />
+              <Compass size={18} className="text-[#0B63CE]" aria-hidden="true" />
               <p className="mt-4 font-extrabold">Construire Mon Projet</p>
               <p className="mt-1 text-[12px] leading-5 text-muted-foreground">Clarifiez budget, zones, contraintes et préférences.</p>
             </Link>
             <Link href="/map" className="rounded-2xl border border-border/15 bg-card p-5 dark:border-white/10 dark:bg-white/[0.04]">
-              <MapPin size={18} className="text-bronze-500" aria-hidden="true" />
+              <MapPin size={18} className="text-[#0B63CE]" aria-hidden="true" />
               <p className="mt-4 font-extrabold">Explorer les quartiers</p>
               <p className="mt-1 text-[12px] leading-5 text-muted-foreground">Repères géographiques séparés des résultats du moteur.</p>
             </Link>

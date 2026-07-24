@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">Terrain AkarFinder</title>
+  <desc id="desc">Parcelle géométrique stylisée bleu AkarFinder.</desc>
+  <rect width="160" height="160" rx="32" fill="#FFFFFF"/>
+  <path d="M27 112 63 53l70 31-35 50-71-22Z" fill="#061B33"/>
+  <path d="M43 106 68 65l49 22-24 34-50-15Z" fill="#0B63CE"/>
+  <path d="M68 65 93 121M43 106l74-19" stroke="#60A5FA" stroke-width="4" stroke-linecap="round"/>
+  <path d="M26 116c27 10 49 15 72 18" stroke="#BFDBFE" stroke-width="5" stroke-linecap="round"/>
+</svg>
