@@ -28,12 +28,16 @@
     {
       "domain": "sarouty.ma",
       "status": "approved_discovery",
-      "listing_url_patterns": ["/plp/acheter/.+-\\d+(?:\\.html)?$", "/acheter/[a-z0-9-]+-\\d+(?:\\.html)?$"],
+      "listing_url_patterns": [
+        "^/(?:fr|en|ar)/plp/[^/]+/[^/]+-\\d+\\.html$",
+        "/plp/acheter/.+-\\d+(?:\\.html)?$",
+        "/acheter/[a-z0-9-]+-\\d+(?:\\.html)?$"
+      ],
       "blocked_url_patterns": ["/acheter/[^/]+/[^/]+/(?:appartements|villas|proprietes|immobilier-neuf).*", "/louer/[^/]+/(?:appartements-a-louer|proprietes-a-louer).*$"],
       "source_type": "portal_aggregator",
       "external_web_result": true,
-      "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17",
+      "compliance_note": "Already live in Production via first-write pilot. 2026-07-24 route refresh adds the current locale-prefixed individual property shape /{fr|en|ar}/plp/{transaction}/{slug}-{numericId}.html, observed on live public Sarouty property detail pages; category/search pages remain structurally excluded by requiring exactly two segments after /plp/ and a terminal numeric listing id.",
+      "reviewed_at": "2026-07-24",
       "coverage_cities": null
     },
     {
