@@ -1,7 +1,7 @@
 name: Public Sitemap Seed Harvest
 
 # MASS-ACQUISITION-FREE-ACCELERATION-1
-# DATA-40K-GATE-IMMEDIATE-SITEMAP-RUN-2026-07-24
+# DATA-40K-GATE-IMMEDIATE-SITEMAP-RUN-2026-07-24-R2
 # Free acquisition lane: robots.txt -> explicitly declared sitemap files ->
 # strict listing URL patterns -> source_offer_seeds only. No listing page fetch,
 # no paid API, no public listing write. Scheduled/push runs require the same
