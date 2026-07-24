@@ -1,0 +1,102 @@
+name: DATA 40K Deep Common Crawl Historical 2025
+
+# DATA-40K-DEEP-COMMONCRAWL-HISTORICAL-2025-1
+# One-shot free metadata-only expansion across selected official 2025 Common Crawl URL indexes.
+# Scope is restricted on the runner to already-approved, pattern-bearing high-yield sources.
+# No WARC/page fetch, no source-site request, no bypass, no direct listing write, no Vercel deploy.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/data-40k-deep-commoncrawl-historical-2025.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-40k-deep-commoncrawl-historical-2025
+  cancel-in-progress: false
+
+jobs:
+  historical-harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Restrict runner to approved high-yield sources and official 2025 indexes
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const registryPath = 'data/openserp/source-domain-registry.json';
+          const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+          const wanted = new Set([
+            'avito.ma',
+            'mubawab.ma',
+            'agenz.ma',
+            'sarouty.ma',
+            '1immo.ma',
+            'mouldar.com',
+            'soukimmobilier.com',
+            'masaken.ma',
+            'atlasimmobilier.com',
+            'daragadir.com'
+          ]);
+          registry.domains = registry.domains.filter((entry) => wanted.has(entry.domain));
+          for (const entry of registry.domains) {
+            if (entry.status !== 'approved_discovery' || !entry.external_web_result || !Array.isArray(entry.listing_url_patterns) || entry.listing_url_patterns.length === 0) {
+              throw new Error(`Unsafe historical-harvest source configuration: ${entry.domain}`);
+            }
+          }
+          if (registry.domains.length !== wanted.size) throw new Error('One or more requested domains are missing from canonical approved registry');
+          fs.writeFileSync(registryPath, JSON.stringify(registry, null, 2) + '\n');
+
+          const scriptPath = 'scripts/openserp/commoncrawl-registry-mass-harvest.ts';
+          let script = fs.readFileSync(scriptPath, 'utf8');
+          const before = 'export const MASS_CDX_INDEXES = ["CC-MAIN-2026-25", "CC-MAIN-2026-21", "CC-MAIN-2026-17"] as const;';
+          const after = 'export const MASS_CDX_INDEXES = ["CC-MAIN-2025-51", "CC-MAIN-2025-43", "CC-MAIN-2025-30", "CC-MAIN-2025-26", "CC-MAIN-2025-18", "CC-MAIN-2025-13", "CC-MAIN-2025-08", "CC-MAIN-2025-05"] as const;';
+          if (!script.includes(before)) throw new Error('Canonical Common Crawl index constant changed; refuse blind patch');
+          script = script.replace(before, after);
+          fs.writeFileSync(scriptPath, script);
+          NODE
+
+      - name: Harvest qualified canonical URLs from historical Common Crawl indexes
+        env:
+          COMMONCRAWL_MASS_MODE: all
+        run: npx tsx scripts/openserp/commoncrawl-registry-mass-harvest.ts
+
+      - name: Persist through canonical seed ingestion and freshness gates
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
+          OPENSERP_INGESTION_WRITE_ENABLED: ${{ secrets.OPENSERP_INGESTION_WRITE_ENABLED }}
+          OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          wc -l data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl
+          npx tsx scripts/openserp/ingest-commoncrawl-mass-seeds.ts --apply
+          npx tsx scripts/openserp/reconcile-commoncrawl-seed-freshness.ts --apply
+
+      - name: Upload evidence artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-40k-deep-commoncrawl-historical-2025
+          path: data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl
+          if-no-files-found: warn
+          retention-days: 14
