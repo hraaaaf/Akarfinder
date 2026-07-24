@@ -1,1 +1,2 @@
 trigger guarded ROADMAP.md finalization for THIN-INDEX-SEARCH-DEPTH-PAGINATION-1 / PR #74
+synchronize event after workflow registration
