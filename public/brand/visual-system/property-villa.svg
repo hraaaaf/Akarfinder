@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">Villa AkarFinder</title>
+  <desc id="desc">Villa contemporaine géométrique bleu AkarFinder.</desc>
+  <rect width="160" height="160" rx="32" fill="#FFFFFF"/>
+  <path d="M24 132V78l30-22h45l20 16v60H24Z" fill="#061B33"/>
+  <path d="M54 56h45l20 16H75L54 56Z" fill="#0B63CE"/>
+  <path d="M75 72h44v60H75V72Z" fill="#0B63CE"/>
+  <rect x="35" y="86" width="27" height="22" rx="3" fill="#BFDBFE"/>
+  <rect x="84" y="84" width="25" height="24" rx="3" fill="#FFFFFF"/>
+  <rect x="46" y="112" width="17" height="20" rx="2" fill="#60A5FA"/>
+  <path d="M26 132h106" stroke="#061B33" stroke-width="6" stroke-linecap="round"/>
+  <path d="M120 69v63" stroke="#60A5FA" stroke-width="5"/>
+</svg>
