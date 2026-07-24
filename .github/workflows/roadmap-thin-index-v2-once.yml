@@ -1,19 +1,20 @@
 name: One-shot roadmap Thin Index V2 update
 
 on:
-  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
     branches:
-      - docs/roadmap-thin-index-v2
+      - main
 
 permissions:
   contents: write
 
 jobs:
   update-roadmap:
-    if: github.actor != 'github-actions[bot]'
+    if: github.event.pull_request.head.ref == 'docs/roadmap-thin-index-v2'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout branch
+      - name: Checkout roadmap branch
         uses: actions/checkout@v4
         with:
           ref: docs/roadmap-thin-index-v2
