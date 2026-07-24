@@ -1,0 +1,38 @@
+name: Serper Mass Harvest Stratified Canary
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SERPER_MASS_HARVEST_ENABLED: "true"
+      SERPER_MASS_HARVEST_API_KEY: ${{ secrets.SEARCH_API_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate required secrets without printing them
+        shell: bash
+        run: |
+          test -n "$SERPER_MASS_HARVEST_API_KEY" || { echo "SEARCH_API_KEY secret missing"; exit 2; }
+          test -n "$SUPABASE_URL" || { echo "SUPABASE_URL secret missing"; exit 2; }
+          test -n "$SUPABASE_SERVICE_ROLE_KEY" || { echo "SUPABASE_SERVICE_ROLE_KEY secret missing"; exit 2; }
+      - name: Run 50-credit stratified read-only canary
+        run: npx tsx scripts/serper-mass-harvest-stratified-canary.ts | tee serper-stratified-canary-output.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: serper-mass-harvest-stratified-canary
+          path: serper-stratified-canary-output.json
+          if-no-files-found: ignore

@@ -1,0 +1,30 @@
+name: Serper Mass Harvest CI
+
+on:
+  pull_request:
+    paths:
+      - "lib/serper-mass-harvest/**"
+      - "scripts/serper-mass-harvest.ts"
+      - "scripts/serper-mass-harvest-stratified-canary.ts"
+      - "scripts/scrapers/__tests__/serper-mass-harvest*.test.ts"
+      - ".github/workflows/serper-mass-harvest-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Targeted tests
+        run: npx tsx --test scripts/scrapers/__tests__/serper-mass-harvest.test.ts scripts/scrapers/__tests__/serper-mass-harvest-stratified.test.ts
+      - name: Production build
+        run: npm run build
