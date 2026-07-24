@@ -1,64 +1,50 @@
+import Image from "next/image";
 import Link from "next/link";
+
 import { Container } from "@/components/ui/Container";
 import { CITIES, type CityConfig } from "@/lib/cities";
 
-const FEATURED_CITY_SLUGS = ["casablanca", "marrakech", "rabat", "tanger", "agadir"] as const;
+const FEATURED_CITY_SLUGS = ["casablanca", "rabat", "marrakech", "fes", "tanger", "agadir"] as const;
 
 function getCityAriaLabel(city: CityConfig) {
-  return `Explorer les biens a ${city.label}`;
+  return `Explorer les biens à ${city.label}`;
 }
 
-function CityCard({ city, tall }: { city: CityConfig; tall: boolean }) {
+function CityCard({ city }: { city: CityConfig }) {
   return (
     <Link
       href={city.href}
       aria-label={getCityAriaLabel(city)}
       title={getCityAriaLabel(city)}
-      className={`group relative block w-full overflow-hidden rounded-[1.65rem] border border-[#DDE7F2] bg-white shadow-[0_22px_60px_rgba(15,23,42,0.08)] transition-[border-color,box-shadow] duration-200 hover:border-[#93C5FD] hover:shadow-[0_24px_64px_rgba(11,99,206,0.10)] ${tall ? "aspect-[0.78/1]" : "aspect-[16/7]"}`}
+      className="group relative block overflow-hidden rounded-[1.65rem] border border-[#DDE7F2] bg-white p-5 shadow-[0_22px_60px_rgba(15,23,42,0.07)] transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[#93C5FD] hover:shadow-[0_26px_68px_rgba(11,99,206,0.12)] motion-reduce:transform-none sm:p-6"
     >
-      <div
-        className="absolute inset-0 transition-transform duration-300 ease-out group-hover:scale-[1.015] motion-reduce:transform-none motion-reduce:transition-none"
-        style={
-          city.image
-            ? {
-                backgroundImage: `url(${city.image})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center center",
-              }
-            : undefined
-        }
-      >
-        {!city.image && (
-          <div className={`absolute inset-0 bg-gradient-to-br ${city.gradient}`} />
-        )}
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-[#F4F8FC]">
+        <Image
+          src={city.mark}
+          alt={city.alt}
+          fill
+          className="object-contain p-4 transition-transform duration-200 group-hover:scale-[1.02] motion-reduce:transform-none"
+          sizes="(max-width: 768px) 100vw, 33vw"
+        />
       </div>
 
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(to top, rgba(3,10,24,0.84) 0%, ${city.overlayFrom} 46%, rgba(3,10,24,0.12) 100%)`,
-        }}
-      />
-
-      <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
-        <h3 className="text-[1.2rem] font-extrabold leading-snug tracking-[-0.02em] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.45)] sm:text-[1.3rem]">
-          {city.label}
-        </h3>
-        <span className="mt-1 block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#BFDBFE]">
-          {city.tag}
-        </span>
-        {city.description && (
-          <p className="mt-1.5 line-clamp-2 text-[11.5px] leading-[1.45] text-white/72">
-            {city.description}
-          </p>
-        )}
-      </div>
-
-      <div className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-[#0B63CE]/88 text-white shadow-[0_18px_30px_rgba(11,99,206,0.28)] backdrop-blur-sm transition-colors duration-200 group-hover:bg-[#084BA8]">
-        <span className="text-[13px]" aria-hidden="true">
+      <div className="mt-5 flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-[1.18rem] font-extrabold tracking-[-0.025em] text-[#0B1F3A] sm:text-[1.28rem]">
+            {city.label}
+          </h3>
+          <span className="mt-1 block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#0B63CE]">
+            {city.tag}
+          </span>
+        </div>
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#BFDBFE] bg-[#EEF6FF] text-[13px] font-bold text-[#0B63CE] transition-colors group-hover:border-[#60A5FA] group-hover:bg-[#0B63CE] group-hover:text-white" aria-hidden="true">
           →
         </span>
       </div>
+
+      <p className="mt-3 line-clamp-2 text-[12px] leading-5 text-slate-600">
+        {city.description}
+      </p>
     </Link>
   );
 }
@@ -67,9 +53,6 @@ export function CityIntentGrid() {
   const featuredCities = FEATURED_CITY_SLUGS
     .map((slug) => CITIES.find((city) => city.slug === slug))
     .filter((city): city is CityConfig => Boolean(city));
-
-  const topRowCities = featuredCities.slice(0, 4);
-  const bottomCity = featuredCities[4] ?? null;
 
   return (
     <section id="villes" className="bg-surface-muted py-16 sm:py-24 lg:py-28">
@@ -83,25 +66,14 @@ export function CityIntentGrid() {
               L&apos;immobilier dans les grandes villes du Maroc.
             </h2>
             <p className="mt-3 max-w-[680px] text-[0.92rem] leading-6 text-slate-600 sm:mt-4 sm:text-[1.05rem] sm:leading-7">
-              Explorez les principaux pôles avec des repères plus clairs et un accès direct vers la recherche.
+              Six repères visuels AkarFinder, un langage unique, puis un accès direct au moteur de recherche.
             </p>
           </div>
 
-          <div className="mt-7 grid gap-3 md:hidden">
-            {featuredCities.slice(0, 3).map((city) => (
-              <CityCard key={city.slug} city={city} tall={false} />
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3">
+            {featuredCities.map((city) => (
+              <CityCard key={city.slug} city={city} />
             ))}
-          </div>
-
-          <div className="mt-10 hidden gap-4 md:grid md:grid-cols-4">
-            {topRowCities.map((city) => (
-              <CityCard key={city.slug} city={city} tall />
-            ))}
-            {bottomCity ? (
-              <div className="md:col-span-4">
-                <CityCard city={bottomCity} tall={false} />
-              </div>
-            ) : null}
           </div>
 
           <div className="mt-6 flex justify-start sm:mt-8">
