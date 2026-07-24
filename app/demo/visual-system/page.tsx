@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { INTENT_VISUALS, PROPERTY_VISUALS, SERVICE_VISUALS } from "@/lib/brand/visual-assets";
+import { INTENT_VISUALS, PROPERTY_VISUALS, SERVICE_VISUALS, STATE_VISUALS } from "@/lib/brand/visual-assets";
 
 function GallerySection({ title, entries }: { title: string; entries: [string, string][] }) {
   return (
@@ -38,6 +38,7 @@ export default function VisualSystemDemoPage() {
         <GallerySection title="Typologies immobilières" entries={Object.entries(PROPERTY_VISUALS)} />
         <GallerySection title="Intentions" entries={Object.entries(INTENT_VISUALS)} />
         <GallerySection title="Services & écosystème" entries={Object.entries(SERVICE_VISUALS)} />
+        <GallerySection title="États & fallbacks" entries={Object.entries(STATE_VISUALS)} />
       </div>
     </main>
   );
