@@ -5435,3 +5435,28 @@ Statut roadmap 100k : #1-#9 = TERMINE, #10 = HARD_BLOCKER_EVIDENCED. NON 10/10 P
 Prochaine etape de deblocage : appliquer la migration via dashboard Supabase, puis un harvest
 Common Crawl historique multi-run paced/checkpointe (12-36 index) + qualification de domaines A
 supplementaires de l'Atlas #7.
+
+## 2026-07-24 - THIN-INDEX-SEARCH-DEPTH-PAGINATION-1 (COMPLETED - PR #74)
+
+Etat:
+- Mission terminee et validee en Production via PR #74, squash-merge commit `9139acf59acb8068b4a9587309d4daa1eaa67b44`.
+- L ancienne fenetre applicative `.limit(1500)` n est plus le mecanisme de profondeur du Thin Index.
+- `thin_index_search_documents` sert de projection searchable derivee de `source_offer_seeds` avec synchronisation par triggers.
+- Recherche relevance-first via RPC `search_thin_index_v2`, Full-Text Search PostgreSQL + GIN, tokenisation des slugs URL, index structures et pagination keyset.
+- Publication safety conservee : `accepted` uniquement vers le Thin Index/Gateway ; `rejected` et `unclassified` restent discovery-only.
+- Deduplication des URLs deja structurees et equilibrage des sources conserves dans le Gateway.
+
+Validation:
+- CI finale PR #74 : 14/14 workflows PASS.
+- Production : `29 071 / 29 071` seeds eligibles indexes dans la projection Thin Index.
+- Seed historiquement situe au-dela de l ancienne fenetre (environ position 20 004) retrouve correctement.
+- Keyset : page 1 = 20, page 2 = 20, overlap = 0, union = 40.
+- Serper : `1 959 / 1 959` seeds publies avec preuve `accepted`; `4 710 rejected` et `5 899 unclassified` non publies.
+- Benchmark RPC Production : environ `27.7 ms` pour 120 candidats `appartement + Casablanca + vente`.
+- Qualite mesuree : Casablanca appartement vente `97 / 6 sources`; Rabat appartement location `146 / 6`; Marrakech villa vente `624 / 7`; long-tail `riad medina marrakech` `150 / 8`.
+
+Decision roadmap:
+- `THIN-INDEX-SEARCH-DEPTH-PAGINATION-1` = COMPLETED.
+- PR de reference : `#74`.
+- Le prochain travail DATA doit porter sur l augmentation du reservoir qualifie et la couverture 100K+, pas sur un nouvel accroissement arbitraire de `.limit()`.
+
