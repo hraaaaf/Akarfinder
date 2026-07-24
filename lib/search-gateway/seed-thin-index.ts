@@ -50,6 +50,7 @@ type ThinIndexRpcRow = {
   freshness_status: string;
   title: string | null;
   snippet: string | null;
+  query_text: string | null;
   city: string | null;
   property_type: string | null;
   intent: string | null;
@@ -250,6 +251,7 @@ function rpcRowToSeedRow(row: ThinIndexRpcRow): SeedRow {
           serper_search: {
             title: row.title,
             snippet: row.snippet,
+            query: row.query_text,
             city: row.city,
             property_type: row.property_type,
             intent: row.intent,
