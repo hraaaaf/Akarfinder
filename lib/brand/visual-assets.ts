@@ -70,8 +70,14 @@ export const VISUAL_ASSETS: VisualAssetRecord[] = [
   identity("service-compare", "Comparaison", "/brand/visual-system/service-compare.svg"),
   identity("service-my-project", "Mon Projet", "/brand/visual-system/service-my-project.svg"),
   identity("service-companion", "Compagnon", "/brand/visual-system/service-companion.svg"),
+  identity("service-alerts", "Alertes", "/brand/visual-system/service-alerts.svg"),
   identity("pro-agency-partner", "Agence partenaire", "/brand/visual-system/pro-agency-partner.svg"),
   identity("pro-developer", "Promoteur", "/brand/visual-system/pro-developer.svg"),
+  identity("state-no-results", "Aucun résultat", "/brand/visual-system/state-no-results.svg"),
+  identity("state-no-image", "Aucune image", "/brand/visual-system/state-no-image.svg"),
+  identity("state-project-empty", "Projet vide", "/brand/visual-system/state-project-empty.svg"),
+  identity("state-favorites-empty", "Favoris vides", "/brand/visual-system/state-favorites-empty.svg"),
+  identity("state-data-limited", "Données limitées", "/brand/visual-system/state-data-limited.svg"),
 ];
 
 export const PROPERTY_VISUALS = {
@@ -102,6 +108,15 @@ export const SERVICE_VISUALS = {
   Comparaison: "/brand/visual-system/service-compare.svg",
   MonProjet: "/brand/visual-system/service-my-project.svg",
   Compagnon: "/brand/visual-system/service-companion.svg",
+  Alertes: "/brand/visual-system/service-alerts.svg",
   AgencePartenaire: "/brand/visual-system/pro-agency-partner.svg",
   Promoteur: "/brand/visual-system/pro-developer.svg",
+} as const;
+
+export const STATE_VISUALS = {
+  NoResults: "/brand/visual-system/state-no-results.svg",
+  NoImage: "/brand/visual-system/state-no-image.svg",
+  ProjectEmpty: "/brand/visual-system/state-project-empty.svg",
+  FavoritesEmpty: "/brand/visual-system/state-favorites-empty.svg",
+  DataLimited: "/brand/visual-system/state-data-limited.svg",
 } as const;
