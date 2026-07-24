@@ -82,8 +82,6 @@ test("daragadir.com: category page (no final slug, no .html) does NOT match", ()
 });
 
 test("daragadir.com: pattern has no numeric-ID requirement (structural only, deliberately)", () => {
-  // Two DIFFERENT slugs with no ID at all both match -- proves this is a
-  // structural pattern, not accidentally requiring an ID that isn't there.
   assert.ok(pathMatches("daragadir.com", "https://daragadir.com/annonces/annonces-immobilieres/location/villas-et-riads-a-louer-a-agadir/villa-avec-piscine-hay-mohammadi.html"));
 });
 
@@ -196,4 +194,19 @@ test("the 17 pre-existing domains' patterns are unchanged by this mission (spot 
   assert.ok(pathMatches("mubawab.ma", "https://mubawab.ma/fr/is/appartement-123"));
   assert.ok(pathMatches("kawtarimmobilier.com", "https://kawtarimmobilier.com/essaouira/location/appartement/bel-appartement-a-louer-ref-2285.html"));
   assert.equal(pathMatches("mubawab.ma", "https://mubawab.ma/fr/vente/rabat"), false);
+});
+
+// DATA-40K-SAROUTY-ROUTE-EXPANSION-1
+// Current public Sarouty detail routes are locale-prefixed /plp/{transaction}/...-{numericId}.html.
+// The pattern must admit individual details in FR/EN/AR while structurally excluding search/category pages.
+test("sarouty.ma: current locale-prefixed individual detail routes match", () => {
+  assert.ok(pathMatches("sarouty.ma", "https://www.sarouty.ma/ar/plp/%D9%84%D9%84%D8%A8%D9%8A%D8%B9/%D8%A3%D8%B1%D8%B6-%D9%84%D9%84%D8%A8%D9%8A%D8%B9-%D8%A7%D8%BA%D8%A7%D8%AF%D9%8A%D8%B1-%D8%A3%D9%88%D8%B1%D9%8A%D8%B1-883780.html"));
+  assert.ok(pathMatches("sarouty.ma", "https://www.sarouty.ma/fr/plp/a-louer/appartement-a-louer-casablanca-racine-895791.html"));
+  assert.ok(pathMatches("sarouty.ma", "https://www.sarouty.ma/en/plp/for-sale/villa-for-sale-rabat-souissi-884295.html"));
+});
+
+test("sarouty.ma: category/search pages remain excluded by the individual route shape", () => {
+  assert.equal(pathMatches("sarouty.ma", "https://www.sarouty.ma/fr/acheter/casablanca/appartements"), false);
+  assert.equal(pathMatches("sarouty.ma", "https://www.sarouty.ma/en/research/"), false);
+  assert.equal(pathMatches("sarouty.ma", "https://www.sarouty.ma/ar/plp/%D9%84%D9%84%D8%A8%D9%8A%D8%B9/"), false);
 });
