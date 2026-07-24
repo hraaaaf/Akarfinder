@@ -24,63 +24,39 @@ export function GoogleLikeHero() {
       </picture>
 
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(3,16,31,0.55)] via-[rgba(3,16,31,0.35)] to-[rgba(6,27,51,0.15)] sm:hidden" />
-        <div className="absolute inset-x-0 top-0 h-[34%] bg-gradient-to-b from-[rgba(3,16,31,0.55)] via-[rgba(3,16,31,0.25)] to-transparent sm:hidden" />
-        <div className="absolute inset-x-0 bottom-0 h-[26%] bg-gradient-to-t from-[rgba(6,27,51,0.35)] to-transparent sm:hidden" />
-        <div className="absolute inset-x-0 top-0 hidden h-[40%] bg-gradient-to-b from-[rgba(3,16,31,0.60)] via-[rgba(3,16,31,0.40)] to-transparent sm:block" />
-        <div className="absolute inset-x-0 bottom-0 hidden h-[40%] bg-gradient-to-t from-[rgba(3,16,31,0.50)] to-transparent sm:block" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(3,16,31,0.58)] via-[rgba(3,16,31,0.38)] to-[rgba(6,27,51,0.18)] sm:hidden" />
+        <div className="absolute inset-x-0 top-0 h-[38%] bg-gradient-to-b from-[rgba(3,16,31,0.62)] via-[rgba(3,16,31,0.30)] to-transparent sm:hidden" />
+        <div className="absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-[rgba(6,27,51,0.42)] to-transparent sm:hidden" />
+        <div className="absolute inset-x-0 top-0 hidden h-[46%] bg-gradient-to-b from-[rgba(3,16,31,0.66)] via-[rgba(3,16,31,0.42)] to-transparent sm:block" />
+        <div className="absolute inset-x-0 bottom-0 hidden h-[42%] bg-gradient-to-t from-[rgba(3,16,31,0.52)] to-transparent sm:block" />
         <div
           className="absolute inset-0 hidden sm:block"
           style={{
             background:
-              "radial-gradient(ellipse 65% 52% at 50% 43%, rgba(3,16,31,0.50) 0%, transparent 70%)",
+              "radial-gradient(ellipse 68% 56% at 50% 44%, rgba(3,16,31,0.52) 0%, transparent 72%)",
           }}
         />
         <div
           className="absolute inset-0 sm:hidden"
           style={{
             background:
-              "radial-gradient(ellipse 88% 54% at 50% 37%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 58%, transparent 74%)",
+              "radial-gradient(ellipse 92% 58% at 50% 40%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.03) 58%, transparent 76%)",
           }}
         />
-        <div className="absolute left-1/2 top-[-8%] hidden h-[55%] w-[80%] -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.16)_0%,transparent_60%)] sm:block" />
-        <div className="absolute left-1/2 top-[-4%] h-[42%] w-[95%] -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,rgba(96,165,250,0.16)_0%,transparent_66%)] sm:hidden" />
-        <div className="absolute inset-0 bg-[#061027]/8 sm:bg-[#061027]/12" />
+        <div className="absolute inset-0 bg-[#061027]/10 sm:bg-[#061027]/14" />
       </div>
 
-      <Container className="relative z-10 w-full px-5 pb-12 pt-[calc(env(safe-area-inset-top)+5.5rem)] sm:pb-24 sm:pt-36 lg:pb-28 lg:pt-44">
-        <div className="mx-auto flex max-w-[860px] flex-col items-center text-center">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#60A5FA]/28 bg-[rgba(255,255,255,0.68)] px-3.5 py-1.5 backdrop-blur-md sm:mb-7 sm:bg-[#0B63CE]/14 sm:px-4">
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#60A5FA]" aria-hidden="true" />
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE] sm:tracking-[0.22em] sm:text-white">
-              Moteur de recherche immobilier au Maroc
-            </span>
-          </div>
-
-          <h1 className="text-[1.78rem] font-extrabold leading-[1.04] tracking-[-0.038em] text-[#071B33] sm:text-[3.4rem] sm:leading-[1.04] sm:text-white lg:text-[4.1rem]">
-            Cherchez l&apos;immobilier marocain avec{" "}
-            <span className="bg-gradient-to-r from-[#0B63CE] via-[#60A5FA] to-[#0B63CE] bg-clip-text text-transparent">
-              plus de clarté
-            </span>
+      <Container className="relative z-10 w-full px-5 pb-14 pt-[calc(env(safe-area-inset-top)+6rem)] sm:pb-24 sm:pt-36 lg:pb-28 lg:pt-44">
+        <div className="mx-auto flex max-w-[920px] flex-col items-center text-center">
+          <h1 className="max-w-[880px] text-[2.15rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.30)] sm:text-[4rem] lg:text-[5rem]">
+            1er moteur de recherche immobilier au Maroc
           </h1>
 
-          <p className="mt-4 max-w-[650px] text-[0.95rem] leading-relaxed text-[#334155] drop-shadow-[0_1px_6px_rgba(0,0,0,0.2)] sm:mt-6 sm:text-[1.1rem] sm:text-white sm:drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
-            Recherchez directement et distinguez les fiches analysées des simples offres observées. Comprenez le quartier quand des repères existent et retrouvez toujours les sources originales. Le Compagnon structure Mon Projet lorsque vos critères ne sont pas encore clairs.
-          </p>
-
-          <div className="mt-6 w-full sm:mt-11">
+          <div className="mt-8 w-full sm:mt-10">
             <SearchEntryOrchestrator />
           </div>
         </div>
       </Container>
-
-      <div
-        className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 sm:flex"
-        aria-hidden="true"
-      >
-        <span className="text-[9.5px] font-bold uppercase tracking-[0.15em] text-white/35">Explorer</span>
-        <div className="h-8 w-px bg-gradient-to-b from-white/30 to-transparent" />
-      </div>
     </section>
   );
 }
