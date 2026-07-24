@@ -40,14 +40,50 @@ Avoid:
 - multiple unrelated illustration styles;
 - random use of 3D/isometric perspective.
 
-## 4. Canonical master family
-The first approved family is:
+## 4. Canonical V1 families
 
-- `property-apartment.svg`
-- `property-villa.svg`
-- `property-land.svg`
+### Property types
+- Appartement
+- Villa
+- Terrain
+- Maison
+- Riad
+- Studio
+- Duplex
+- Penthouse
+- Bureau
+- Commerce
+- Ferme / propriété rurale
+- Programme neuf
 
-These three files define the grammar for later assets.
+### Intent
+- Acheter
+- Louer
+- Vendre
+
+### Services / intelligence
+- Crédit / financement
+- Estimation
+- Quartier / carte
+- Comparaison
+- Mon Projet
+- Compagnon
+- Alertes
+
+### Professional ecosystem
+- Agence partenaire
+- Promoteur
+
+Do not create Gold/Premium/verified semantics unless the corresponding entitlement exists in product truth and commercial rules.
+
+### Identity states
+- no results
+- no image
+- project empty
+- favorites empty
+- data limited
+
+Loading, generic error/success and basic form feedback remain functional UI patterns unless a later UX audit justifies a larger identity illustration.
 
 ## 5. Naming convention
 Canonical location:
@@ -58,7 +94,7 @@ Prefixes:
 
 - `property-` — property types
 - `intent-` — buy/rent/sell
-- `service-` — financing, valuation, comparison, companion, project
+- `service-` — financing, valuation, comparison, companion, project, alerts
 - `pro-` — agency/developer ecosystem
 - `state-` — selected empty/unavailable editorial states
 - `city-` — city marks, produced under the separate architectural-fidelity gate
@@ -67,42 +103,76 @@ Use lowercase kebab-case.
 
 ## 6. Asset registry
 
-| Concept / family | Current state | Decision |
-|---|---|---|
-| Hero photography | Real editorial photography | KEEP |
-| City photography | Real location photography | KEEP until city marks pass fidelity QA |
-| Listing/source imagery | Data content | KEEP / EXCLUDE from brand redesign |
-| Header logos light/dark | Brand identity | KEEP |
-| Lucide UI icons | Functional UI system | KEEP |
-| Appartement | No proprietary family | CREATE |
-| Villa | No proprietary family | CREATE |
-| Terrain | No proprietary family | CREATE |
-| Maison/Riad/Studio/Duplex/Penthouse/Bureau/Commerce/Ferme/Neuf | Incomplete or text-only | CREATE after master QA |
-| Acheter/Louer/Vendre | No proprietary illustration family | CREATE after master QA |
-| Crédit/Estimation/Comparaison/Mon Projet/Compagnon | Mixed text/Lucide | CREATE where identity illustration adds value |
-| Agence partenaire/Promoteur | Mixed text/Lucide | CREATE without inventing entitlement semantics |
-| No-results / favorites-empty / project-empty / unavailable | Mixed states | CREATE selectively |
-| Loading/error/success controls | Functional states | KEEP as UI patterns / Lucide |
+| Concept / family | Decision |
+|---|---|
+| Hero photography | KEEP |
+| City photography | KEEP until each city mark passes fidelity QA |
+| Listing/source imagery | KEEP / EXCLUDE from brand redesign |
+| Header logos light/dark | KEEP |
+| Lucide functional UI icons | KEEP |
+| Property-type identity illustrations | CREATE — V1 library present |
+| Intent illustrations | CREATE — V1 library present |
+| Services / intelligence illustrations | CREATE — V1 library present |
+| Agency / developer ecosystem | CREATE — V1 library present |
+| Selected empty/fallback states | CREATE — V1 library present |
+| Generic loading/error/success controls | KEEP as functional UI patterns |
+
+The machine-readable registry is `lib/brand/visual-assets.ts`.
 
 ## 7. Photography vs illustration vs icon
 Use **photography** when truth matters: a real home, real city, real neighborhood, or sourced listing.
 
 Use **AkarFinder illustration** when the concept is abstract or categorical: property type, intent, service, ecosystem, onboarding, empty editorial state.
 
-Use **Lucide** for controls: search, favorite, filters, close, menu, map-pin controls, share, sort, external link, theme, form/status actions.
+Use **Lucide** for controls: search, favorite action, filters, close, menu, map-pin controls, share, sort, external link, theme, form/status actions.
 
-## 8. City marks
-City marks are governed separately because fidelity is mandatory.
+Do not redraw functional icons merely to force branding.
 
-Current first pack:
+## 8. City marks — strict fidelity gate
+City marks are governed separately because architectural fidelity is mandatory.
+
+Founder-locked first pack:
 
 - Casablanca — CFC skyline + Mosquée Hassan II
-- Rabat — nouveau Grand Stade + Tour Mohammed VI
+- Rabat — Prince Moulay Abdellah stadium complex + Mohammed VI Tower
 - Marrakech — Koutoubia
-- Fès — Bab Boujloud / medina heritage anchor after verified reference selection
-- Tanger — verified identifiable city/heritage anchor
-- Agadir — verified real bay/relief/architectural anchor
+- Fès — Bab Boujloud / medina gateway identity
+- Tanger — Kasbah/medina + bay relationship, no generic lighthouse
+- Agadir — Kasbah Oufella + crescent bay, no invented skyline
 
-Pipeline: verified reference photos → silhouette invariants → vector simplification → side-by-side QA → integration.
+Pipeline:
+
+1. verified real reference photos;
+2. identify invariant silhouette and proportions;
+3. simplify into AkarFinder Style 3;
+4. compare side-by-side with the real landmark;
+5. only then integrate.
 
 No city photography is replaced until the corresponding mark passes this gate.
+
+## 9. QA gallery
+A branch-only review route is available at:
+
+`/demo/visual-system`
+
+It displays the full V1 library by family before mass integration.
+
+Validation checklist:
+
+- same palette;
+- similar optical weight;
+- recognizable at small card size;
+- no embedded text;
+- no unexplained gradients;
+- light-surface readability;
+- dark usage evaluated before dark-background integration;
+- mobile card readability checked.
+
+## 10. Registry statuses
+Canonical statuses:
+
+- `KEEP`
+- `REDESIGN`
+- `REPLACE`
+- `CREATE`
+- `REMOVE`
