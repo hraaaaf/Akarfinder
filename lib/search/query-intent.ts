@@ -13,7 +13,10 @@ const PROPERTY_TYPE_PATTERNS: Array<{ type: NonNullable<SearchQuery["property_ty
 const TRANSACTION_PATTERNS: Array<{ type: NonNullable<SearchQuery["transaction_type"]>; terms: string[] }> = [
   { type: "new", terms: ["programme neuf", "immobilier neuf", "neuf", "nouveau projet"] },
   { type: "rent", terms: ["a louer", "location", "louer", "rent"] },
-  { type: "buy", terms: ["a vendre", "vente", "vendre", "acheter", "achat", "buy", "sale"] },
+  // Do not infer the English bare word "sale": accent normalization turns the
+  // Moroccan city "Salé" into "sale". Explicit transaction_type=sale remains
+  // supported by the normal transaction filter contract.
+  { type: "buy", terms: ["a vendre", "vente", "vendre", "acheter", "achat", "buy"] },
 ];
 
 const RESIDUAL_STOP_WORDS = new Set([
