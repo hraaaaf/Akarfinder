@@ -4,7 +4,7 @@ name: Common Crawl Mass Seed Harvest
 # COMMONCRAWL-FIRST-ACTIVATION-V1
 # COMMONCRAWL-CDX-MIME-FIX-1
 # COMMONCRAWL-FAILSOFT-CANARY-V1
-# DATA-40K-GATE-REHARVEST-2026-07-24
+# DATA-40K-GATE-REHARVEST-2026-07-24-R2
 # Historical URL-index metadata -> source_offer_seeds only -> exact freshness
 # reconciliation. No WARC/page fetch, no direct source-site request, no public
 # listing write. Scheduled/push activation runs apply only when the existing
