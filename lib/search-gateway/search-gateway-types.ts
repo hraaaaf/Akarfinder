@@ -38,8 +38,6 @@ export type SearchGatewayRawResult = {
   url?: string;
   displayLink?: string;
   display_url?: string;
-  // Serper organic results include a provider-served thumbnail (Google-cached).
-  // Use only when thumbnail_risk_accepted=true and the feature flag is enabled.
   imageUrl?: string;
 };
 
@@ -52,10 +50,6 @@ export type SearchGatewayNormalizedResult = {
   source_id: string;
   source_name: string;
   domain: string;
-  // THIN-INDEX-SEED-SEARCH-V1: external results can now come either from the
-  // live search provider or from an already-harvested, registry-approved public
-  // sitemap/Common-Crawl URL seed. Seed-backed results remain thin external
-  // links only; this origin never grants an internal detail page.
   result_origin: "search_api" | "public_sitemap" | "commoncrawl_cdx";
   search_result_display_mode: string;
   source_badge: string;
@@ -72,6 +66,16 @@ export type SearchGatewayNormalizedResult = {
   thumbnail_url?: string;
   thumbnail_provider_name?: string;
   thumbnail_risk_accepted: boolean;
+  normalized_city?: string;
+  normalized_property_type?: string;
+  normalized_intent?: string;
+  normalized_price_mad?: number;
+  normalized_surface_m2?: number;
+  price_per_m2_mad?: number;
+  quality_tier?: "Q0_link_only" | "Q1_contextual" | "Q2_comparable" | "Q3_intelligence_ready" | string;
+  quality_score?: number;
+  display_eligibility?: "eligible_primary" | "eligible_secondary" | string;
+  display_eligibility_reason?: string;
 };
 
 export type SearchGatewayRouteResponse = {

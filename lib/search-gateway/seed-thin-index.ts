@@ -1,11 +1,17 @@
-// THIN-INDEX-SEARCH-V2
+// THIN-INDEX-SEARCH-V3
 // Searchable thin-index projection over registry-approved public sitemap/Common
-// Crawl/Serper-search URL seeds. PostgreSQL retrieves a bounded relevance-ranked
-// candidate set; Node re-applies publication safety, source balancing and dedupe.
+// Crawl/Serper-search URL seeds. PostgreSQL applies canonical filters, explicit
+// display eligibility and bounded quality-aware ranking. Node re-applies URL
+// publication safety, source balancing and dedupe.
 
 import { createHash } from "node:crypto";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { getListingUrlPatterns } from "@/lib/openserp-ingestion/domain-registry";
+import {
+  compareThinIndexEligibility,
+  isThinIndexRowDisplayEligible,
+  type ThinIndexServingPolicyRow,
+} from "./odm-07-serving-policy";
 import type { SearchGatewayNormalizedResult, SearchGatewayRouteResponse } from "./search-gateway-types";
 
 export type SeedThinIndexCursor = {
@@ -32,14 +38,18 @@ type SerperSeedMetadata = {
   intent?: string | null;
 };
 
-type SeedRow = {
+type SeedRow = ThinIndexServingPolicyRow & {
   id: string;
-  canonical_url: string;
   source_domain: string;
-  seed_provider: "public_sitemap" | "commoncrawl_cdx" | "serper_search" | string;
-  freshness_status: string;
-  updated_at: string;
   metadata?: { serper_search?: SerperSeedMetadata } | null;
+  normalized_city?: string | null;
+  normalized_property_type?: string | null;
+  normalized_intent?: string | null;
+  normalized_price_mad?: number | null;
+  normalized_surface_m2?: number | null;
+  price_per_m2_mad?: number | null;
+  quality_score?: number | null;
+  display_eligibility_reason?: string | null;
 };
 
 type ThinIndexRpcRow = {
@@ -54,6 +64,17 @@ type ThinIndexRpcRow = {
   city: string | null;
   property_type: string | null;
   intent: string | null;
+  normalized_city: string | null;
+  normalized_property_type: string | null;
+  normalized_intent: string | null;
+  normalized_price_mad: number | null;
+  normalized_surface_m2: number | null;
+  price_per_m2_mad: number | null;
+  quality_tier: string | null;
+  quality_score: number | null;
+  display_eligibility: string | null;
+  display_eligibility_reason: string | null;
+  ranking_quality_boost: number | null;
   updated_at: string;
   relevance_rank: number;
 };
@@ -134,15 +155,14 @@ function searchableText(row: SeedRow): string {
     meta.title ?? "",
     meta.snippet ?? "",
     meta.query ?? "",
-    meta.city ?? "",
-    meta.property_type ?? "",
-    meta.intent ?? "",
+    row.normalized_city ?? meta.city ?? "",
+    row.normalized_property_type ?? meta.property_type ?? "",
+    row.normalized_intent ?? meta.intent ?? "",
   ].join(" "));
 }
 
 export function seedMatchesThinIndexSearch(row: SeedRow, input: SeedThinIndexInput): boolean {
-  if (!["public_sitemap", "commoncrawl_cdx", "serper_search"].includes(row.seed_provider)) return false;
-  if (row.freshness_status !== "seed_only" && row.freshness_status !== "fresh_confirmed") return false;
+  if (!isThinIndexRowDisplayEligible(row)) return false;
 
   let pathname = "";
   try { pathname = new URL(row.canonical_url).pathname; } catch { return false; }
@@ -212,27 +232,41 @@ export function mapSeedToThinIndexResult(row: SeedRow): SearchGatewayNormalizedR
     primary_cta_label: "Voir la source originale",
     result_attribution_label: providerLabel,
     thumbnail_risk_accepted: false,
+    normalized_city: row.normalized_city ?? undefined,
+    normalized_property_type: row.normalized_property_type ?? undefined,
+    normalized_intent: row.normalized_intent ?? undefined,
+    normalized_price_mad: row.normalized_price_mad ?? undefined,
+    normalized_surface_m2: row.normalized_surface_m2 ?? undefined,
+    price_per_m2_mad: row.price_per_m2_mad ?? undefined,
+    quality_tier: row.quality_tier ?? undefined,
+    quality_score: row.quality_score ?? undefined,
+    display_eligibility: row.display_eligibility ?? undefined,
+    display_eligibility_reason: row.display_eligibility_reason ?? undefined,
   };
 }
 
 function selectBalanced(rows: SeedRow[], maxResults: number): SeedRow[] {
+  const ordered = [...rows].sort(compareThinIndexEligibility);
   const byDomain = new Map<string, SeedRow[]>();
-  for (const row of rows) {
+  for (const row of ordered) {
     const bucket = byDomain.get(row.source_domain) ?? [];
     bucket.push(row);
     byDomain.set(row.source_domain, bucket);
   }
   const domains = [...byDomain.keys()].sort();
   const selected: SeedRow[] = [];
-  let progressed = true;
-  while (selected.length < maxResults && progressed) {
-    progressed = false;
-    for (const domain of domains) {
-      const next = byDomain.get(domain)?.shift();
-      if (!next) continue;
-      selected.push(next);
-      progressed = true;
-      if (selected.length >= maxResults) break;
+  for (const eligibility of ["eligible_primary", "eligible_secondary"]) {
+    let progressed = true;
+    while (selected.length < maxResults && progressed) {
+      progressed = false;
+      for (const domain of domains) {
+        const bucket = byDomain.get(domain);
+        const index = bucket?.findIndex((row) => row.display_eligibility === eligibility) ?? -1;
+        if (!bucket || index < 0) continue;
+        selected.push(bucket.splice(index, 1)[0]);
+        progressed = true;
+        if (selected.length >= maxResults) break;
+      }
     }
   }
   return selected;
@@ -241,11 +275,24 @@ function selectBalanced(rows: SeedRow[], maxResults: number): SeedRow[] {
 function rpcRowToSeedRow(row: ThinIndexRpcRow): SeedRow {
   return {
     id: row.seed_id,
+    seed_id: row.seed_id,
     canonical_url: row.canonical_url,
     source_domain: row.source_domain,
     seed_provider: row.seed_provider,
     freshness_status: row.freshness_status,
     updated_at: row.updated_at,
+    relevance_rank: row.relevance_rank,
+    normalized_city: row.normalized_city,
+    normalized_property_type: row.normalized_property_type,
+    normalized_intent: row.normalized_intent,
+    normalized_price_mad: row.normalized_price_mad,
+    normalized_surface_m2: row.normalized_surface_m2,
+    price_per_m2_mad: row.price_per_m2_mad,
+    quality_tier: row.quality_tier,
+    quality_score: row.quality_score,
+    display_eligibility: row.display_eligibility,
+    display_eligibility_reason: row.display_eligibility_reason,
+    ranking_quality_boost: row.ranking_quality_boost,
     metadata: row.seed_provider === "serper_search"
       ? {
           serper_search: {
@@ -268,7 +315,7 @@ function candidateLimit(maxResults: number): number {
 export async function searchSeedThinIndexPage(input: SeedThinIndexInput): Promise<SeedThinIndexPage> {
   const maxResults = Math.max(1, Math.min(Math.trunc(input.maxResults ?? 100), 100));
   const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase.rpc("search_thin_index_v2", {
+  const { data, error } = await supabase.rpc("search_thin_index_v3", {
     p_query: input.q?.trim() || null,
     p_city: input.city?.trim() || null,
     p_property_type: input.propertyType?.trim() || null,
@@ -278,7 +325,7 @@ export async function searchSeedThinIndexPage(input: SeedThinIndexInput): Promis
     p_after_updated_at: input.cursor?.updatedAt ?? null,
     p_after_seed_id: input.cursor?.seedId ?? null,
   });
-  if (error) throw new Error(`thin-index v2 RPC failed: ${error.message}`);
+  if (error) throw new Error(`thin-index v3 RPC failed: ${error.message}`);
 
   const rpcRows = (data ?? []) as ThinIndexRpcRow[];
   const safeRows = rpcRows
@@ -334,7 +381,7 @@ export async function appendSeedThinIndexResults(
     const results = [...merged.values()].slice(0, 150);
     return { ...response, ok: response.ok || results.length > 0, results, results_count: results.length };
   } catch (error) {
-    console.error("[thin-index-search-v2] degraded:", error);
+    console.error("[thin-index-search-v3] degraded:", error);
     return response;
   }
 }
