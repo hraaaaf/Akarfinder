@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { Container } from "@/components/ui/Container";
@@ -20,12 +19,11 @@ function CityCard({ city }: { city: CityConfig }) {
     >
       <div className="relative aspect-[4/3] overflow-hidden rounded-[1.55rem] bg-[#EEF6FF]">
         {city.image ? (
-          <Image
-            src={city.image}
-            alt={city.alt}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.025] motion-reduce:transform-none"
-            sizes="(max-width: 768px) 100vw, 33vw"
+          <div
+            role="img"
+            aria-label={city.alt}
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.025] motion-reduce:transform-none"
+            style={{ backgroundImage: `url(${city.image})` }}
           />
         ) : (
           <div className={`absolute inset-0 bg-gradient-to-br ${city.gradient}`} />
