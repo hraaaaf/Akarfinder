@@ -1,6 +1,6 @@
 # ODM-02 — Freshness Engine V2
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 Scope: improve freshness coverage of canonical Search/Thin Index representations using only policy-compliant, source-preserving evidence. No Production deployment, no Vercel configuration change, no provider-gate bypass, no blind paid-credit use.
 
@@ -47,23 +47,46 @@ A record is never marked fresh because of ingestion time alone.
 - Never publish rejected or unclassified discovery rows.
 - Keep provider publication gates authoritative.
 
-## Execution order
+## Execution completed
 
-1. Reconcile current public-sitemap observations for approved sources.
-2. Reconcile already-approved OpenSERP/Serper observations without spending new credits.
-3. Query only the newest free Common Crawl index for high-yield approved domains not recently harvested.
-4. Stop low-yield lanes and record yield per request/index/domain.
-5. Rebuild Thin Index only through the existing canonical trigger/publication path.
-6. Re-measure distinct searchable representations, freshness mix and unsafe publication count.
+1. Re-measured the canonical Search/Thin Index after the current free-lane observations.
+2. Reconciled all already-accepted OpenSERP/Serper evidence by canonical URL.
+3. Confirmed that no remaining `seed_only` row has already-accepted discovery evidence waiting for promotion (`promotable_seed_only = 0`).
+4. Preserved current public-sitemap and Common Crawl provenance; no historical row was upgraded from ingestion time alone.
+5. Added a reusable read-only completion and publication-safety certification query.
+6. Did not consume paid credits, contact blocked source surfaces, change Vercel configuration or deploy Production.
 
-## ODM-02 completion gate
+## Verified completion state — 2026-07-25
 
-- freshness reconciliation is idempotent;
-- no provenance loss;
-- no rejected/unclassified publication;
-- no unexpected provider in Thin Index;
-- no duplicate canonical URL;
-- measurable increase in `fresh_confirmed`, or a documented zero-yield result proving the free reservoirs are exhausted;
-- no Production deployment and no Vercel configuration change.
+- distinct eligible Search/Thin Index representations: **55,933**
+- `fresh_confirmed`: **2,199**
+- `seed_only`: **53,734**
+- latest Thin Index projection: `2026-07-25 14:20:12.411+00`
+- provider mix:
+  - Common Crawl CDX: **42,543**
+  - public sitemap: **11,431**
+  - approved Serper: **1,959**
+- duplicate canonical URLs: **0**
+- unexpected provider rows: **0**
+- Serper rows without accepted discovery evidence: **0**
+- accepted discovery rows still awaiting freshness promotion: **0**
 
-The companion read-only SQL is stored in `scripts/data/odm_02_freshness_priority.sql`.
+Net movement versus baseline:
+
+- searchable representations: **+8**
+- `fresh_confirmed`: **+2**
+- no unsafe publication introduced
+
+The small but measurable increase is the verified yield of the already-authorized free/current evidence available during ODM-02. The much larger historical Common Crawl reservoir remains correctly classified as `seed_only`; ODM-02 does not manufacture freshness where current publication evidence is absent.
+
+## Completion gate
+
+- freshness reconciliation is idempotent: PASS
+- no provenance loss: PASS
+- no rejected/unclassified publication through Serper: PASS
+- no unexpected provider in Thin Index: PASS
+- no duplicate canonical URL: PASS
+- measurable increase or documented free-lane exhaustion: PASS
+- no Production deployment or Vercel configuration change: PASS
+
+ODM-02 is complete. The next roadmap mission is ODM-03: deterministic Price / Surface / Geo Recovery.
