@@ -22,6 +22,14 @@ type GeoRow = {
   metadata: Record<string, unknown>;
 };
 
+type GeoAliasRow = {
+  geo_entity_id: string;
+  alias: string;
+  normalized_alias: string;
+  source: string;
+  confidence: number;
+};
+
 async function main() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -66,7 +74,7 @@ async function main() {
   const { error: entityError } = await supabase.from("geo_entities").upsert(entities, { onConflict: "id" });
   if (entityError) throw entityError;
 
-  const aliases = [
+  const aliasCandidates: GeoAliasRow[] = [
     ...GEO_CITIES.flatMap((city) => [city.canonical_name, city.slug, ...city.aliases].map((alias) => ({
       geo_entity_id: city.id,
       alias,
@@ -83,12 +91,22 @@ async function main() {
     }))),
   ];
 
+  const aliases = Array.from(
+    new Map(aliasCandidates.map((row) => [`${row.geo_entity_id}:${row.normalized_alias}`, row])).values(),
+  );
+
   const { error: aliasError } = await supabase
     .from("geo_aliases")
     .upsert(aliases, { onConflict: "geo_entity_id,normalized_alias", ignoreDuplicates: false });
   if (aliasError) throw aliasError;
 
-  console.log(JSON.stringify({ status: "ok", cities: GEO_CITIES.length, neighborhoods: GEO_NEIGHBORHOODS.length, aliases: aliases.length }));
+  console.log(JSON.stringify({
+    status: "ok",
+    cities: GEO_CITIES.length,
+    neighborhoods: GEO_NEIGHBORHOODS.length,
+    aliases: aliases.length,
+    discarded_duplicate_aliases: aliasCandidates.length - aliases.length,
+  }));
 }
 
 main().catch((error) => {
