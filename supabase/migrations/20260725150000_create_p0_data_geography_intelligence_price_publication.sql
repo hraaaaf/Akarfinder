@@ -138,7 +138,8 @@ alter table public.price_m2_references enable row level security;
 alter table public.data_publication_batches enable row level security;
 alter table public.data_publication_items enable row level security;
 
-create or replace view public.published_neighborhood_intelligence as
+create or replace view public.published_neighborhood_intelligence
+with (security_invoker = true) as
 select distinct on (p.neighborhood_id)
   p.*, g.slug as neighborhood_slug, g.canonical_name as neighborhood_name, g.parent_id as city_id
 from public.neighborhood_intelligence_profiles p
@@ -146,7 +147,8 @@ join public.geo_entities g on g.id = p.neighborhood_id
 where p.status = 'published' and p.valid_from <= now() and (p.valid_to is null or p.valid_to > now())
 order by p.neighborhood_id, p.profile_version desc;
 
-create or replace view public.latest_price_m2_references as
+create or replace view public.latest_price_m2_references
+with (security_invoker = true) as
 select distinct on (r.geo_entity_id, r.transaction_type, r.property_type, r.furnished_state)
   r.*
 from public.price_m2_references r
