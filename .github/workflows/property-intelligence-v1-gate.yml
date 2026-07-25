@@ -1,0 +1,32 @@
+name: Property Intelligence V1 Gate
+
+on:
+  pull_request:
+    paths:
+      - 'lib/property-intelligence/**'
+      - 'scripts/scrapers/__tests__/property-intelligence-v1.test.ts'
+      - 'supabase/migrations/20260726003000_create_akar_intelligence_layer_v1.sql'
+      - 'docs/data/AKARFINDER_PROPERTY_INTELLIGENCE_SPEC_V1.md'
+      - '.github/workflows/property-intelligence-v1-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Property intelligence tests
+        run: npx tsx --test scripts/scrapers/__tests__/property-intelligence-v1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
