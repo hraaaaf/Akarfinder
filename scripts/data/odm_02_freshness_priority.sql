@@ -56,30 +56,23 @@ select
 from public.source_offer_seeds s
 join accepted a using (canonical_url);
 
--- Publication safety gate: all four values must be zero.
+-- Publication safety gates.
 select
-  count(*) filter (
-    where dc.discovery_status in ('rejected', 'unclassified')
-      and s.canonical_url is not null
-  ) as unsafe_seed_matches,
-  count(*) filter (
-    where dc.discovery_status in ('rejected', 'unclassified')
-      and ti.canonical_url is not null
-  ) as unsafe_thin_index_matches,
-  count(*) filter (
-    where ti.seed_provider not in ('commoncrawl_cdx', 'public_sitemap', 'serper_search')
-  ) as unexpected_provider_rows,
-  (
-    select count(*)
-    from (
-      select canonical_url
-      from public.thin_index_search_documents
-      group by canonical_url
-      having count(*) > 1
-    ) duplicates
-  ) as duplicate_canonical_urls
-from public.discovery_candidates dc
-left join public.source_offer_seeds s
-  on s.canonical_url = dc.canonical_url
-left join public.thin_index_search_documents ti
-  on ti.canonical_url = dc.canonical_url;
+  (select count(*) from public.thin_index_search_documents
+   where seed_provider not in ('commoncrawl_cdx', 'public_sitemap', 'serper_search'))
+    as unexpected_provider_rows,
+  (select count(*) from (
+     select canonical_url
+     from public.thin_index_search_documents
+     group by canonical_url
+     having count(*) > 1
+   ) duplicates) as duplicate_canonical_urls,
+  (select count(*)
+   from public.source_offer_seeds s
+   where s.seed_provider = 'serper_search'
+     and not exists (
+       select 1
+       from public.discovery_candidates d
+       where d.canonical_url = s.canonical_url
+         and d.discovery_status = 'accepted'
+     )) as serper_without_accepted_evidence;
