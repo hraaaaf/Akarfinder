@@ -80,9 +80,9 @@ with params as (
     d.ranking_quality_boost,
     d.updated_at,
     (
-      case when q.q_ts is null then 0::real else ts_rank_cd(d.search_vector, q.q_ts, 32) end
+      case when d.display_eligibility = 'eligible_primary' then 1::real else 0::real end
+      + case when q.q_ts is null then 0::real else ts_rank_cd(d.search_vector, q.q_ts, 32) end
       + coalesce(d.ranking_quality_boost, 0::real)
-      + case when d.display_eligibility = 'eligible_primary' then 0.08::real else 0::real end
     )::real as relevance_rank
   from public.thin_index_search_documents d
   cross join queries q
@@ -110,11 +110,7 @@ with params as (
        and p_after_seed_id is not null
        and r.seed_id < p_after_seed_id
      )
-  order by
-    case r.display_eligibility when 'eligible_primary' then 0 else 1 end,
-    r.relevance_rank desc,
-    r.updated_at desc,
-    r.seed_id desc
+  order by r.relevance_rank desc, r.updated_at desc, r.seed_id desc
   limit (select result_limit from queries)
 )
 select * from page;
