@@ -5,7 +5,7 @@
 -- Impact: additive tables, indexes, RLS and read-only published views only.
 -- Re-run behavior: idempotent CREATE IF NOT EXISTS and conflict-safe seed inserts.
 -- Lock estimate: metadata locks only on newly-created objects; no lock on property_listings.
--- Rollback: manual, ordered SQL documented at the end; never auto-applied.
+-- Manual rollback is documented at the end and is never auto-applied.
 
 create extension if not exists pgcrypto;
 
