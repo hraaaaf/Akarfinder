@@ -1,0 +1,76 @@
+name: ODM-09E Production Certification
+
+on:
+  push:
+    branches:
+      - odm-09e-production-certification
+    paths:
+      - "scripts/audits/odm-09e-production-certification.mjs"
+      - ".github/workflows/odm-09e-production-certification.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/audits/odm-09e-production-certification.mjs"
+      - ".github/workflows/odm-09e-production-certification.yml"
+  workflow_dispatch:
+    inputs:
+      production_url:
+        description: Production URL to certify
+        required: false
+        default: https://akarfinder.vercel.app
+      minimum_expected_total:
+        description: Minimum indexed representations required
+        required: false
+        default: "40000"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: odm-09e-production-certification-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  certify-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      AKARFINDER_PRODUCTION_URL: ${{ inputs.production_url || 'https://akarfinder.vercel.app' }}
+      ODM09E_MIN_EXPECTED_TOTAL: ${{ inputs.minimum_expected_total || '40000' }}
+      ODM09E_PAGE_LIMIT: "100"
+      ODM09E_MAX_PAGES: "1000"
+      ODM09E_REQUEST_TIMEOUT_MS: "30000"
+      ODM09E_REPORT_PATH: odm-09e-production-report.json
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Certify /search and traverse the complete public Thin Index
+        run: node scripts/audits/odm-09e-production-certification.mjs
+
+      - name: Publish certification summary
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f odm-09e-production-report.json ]]; then
+            echo '## ODM-09E Production Certification' >> "$GITHUB_STEP_SUMMARY"
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat odm-09e-production-report.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload certification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odm-09e-production-certification
+          path: odm-09e-production-report.json
+          if-no-files-found: error
+          retention-days: 30
