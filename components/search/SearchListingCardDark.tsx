@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, BellPlus, Calculator, Layers3, MapPin } from "lucide-react";
 import { AkarInfoPassportCard } from "@/components/akarinfo/AkarInfoPassportCard";
 import { SourceAttribution } from "@/components/badges/SourceAttribution";
@@ -16,7 +16,7 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 import { buildAkarInfoPassportForListing } from "@/lib/akarinfo/akarinfo-passport";
 import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-policy";
 import type { Listing } from "@/lib/listings/types";
-import { formatPrice, formatSurface } from "@/lib/listings/utils";
+import { formatPrice } from "@/lib/listings/utils";
 import {
   getSearchTruthPresentation,
   isObservedExternalListing,
@@ -46,8 +46,11 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   if (process.env.NODE_ENV === "production" && listing.production_allowed === false) return null;
 
   const { theme } = useTheme();
-  const { selection, hoverListing, clearHover, selectListing, isActive } = usePropertySelection();
+  const { selection, hoverListing, clearHover, selectListing, isActive, registerListing } = usePropertySelection();
   const [thumbnailError, setThumbnailError] = useState(false);
+
+  useEffect(() => registerListing(listing), [listing, registerListing]);
+
   const rawImageMode = getListingImageMode(listing);
   const policyBlocked = listing.display_images?.policy === "no_listing_image";
   const imageMode =
