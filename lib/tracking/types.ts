@@ -17,6 +17,8 @@ export const CONVERSION_EVENTS = [
   "search_alert_click",
   "search_map_pin_click",
   "search_save_click",
+  // ODM-09D — public Thin Index continuation from /search.
+  "search_index_load_more",
 ] as const;
 
 export type ConversionEventName = (typeof CONVERSION_EVENTS)[number];
