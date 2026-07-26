@@ -1,5 +1,9 @@
 begin;
 
+create unique index if not exists property_intelligence_features_one_active_idx
+  on public.property_intelligence_features (canonical_property_id, feature_key)
+  where superseded_at is null;
+
 create or replace function public.persist_property_intelligence_feature(
   p_canonical_property_id text,
   p_feature_key text,
@@ -21,6 +25,7 @@ set search_path = public
 as $$
 declare
   v_id uuid;
+  v_publication_eligible boolean;
 begin
   if coalesce(trim(p_canonical_property_id), '') = '' then
     raise exception 'canonical_property_id_required';
@@ -28,9 +33,23 @@ begin
   if coalesce(trim(p_feature_key), '') = '' then
     raise exception 'feature_key_required';
   end if;
+  if coalesce(trim(p_methodology_version), '') = '' then
+    raise exception 'methodology_version_required';
+  end if;
+  if coalesce(trim(p_input_snapshot), '') = '' then
+    raise exception 'input_snapshot_required';
+  end if;
   if p_confidence < 0 or p_confidence > 1 then
     raise exception 'invalid_feature_confidence';
   end if;
+  if p_feature_status not in ('observed', 'inferred', 'unknown', 'conflicted') then
+    raise exception 'invalid_feature_status';
+  end if;
+
+  v_publication_eligible := p_publication_eligible
+    and p_feature_status in ('observed', 'inferred')
+    and p_feature_value is not null
+    and (p_valid_until is null or p_valid_until > now());
 
   perform pg_advisory_xact_lock(hashtextextended(p_canonical_property_id || ':' || p_feature_key, 0));
 
@@ -76,7 +95,7 @@ begin
     p_input_snapshot,
     coalesce(p_source_observation_ids, '[]'::jsonb),
     p_valid_until,
-    p_publication_eligible
+    v_publication_eligible
   )
   returning id into v_id;
 
