@@ -10,11 +10,20 @@ const route = readFileSync(
   "utf8",
 );
 
+function cursorContinuationBlock(): string {
+  const start = route.indexOf("if (cursor)");
+  const end = route.indexOf("const enabledSources", start);
+  assert.ok(start >= 0, "cursor continuation branch must exist");
+  assert.ok(end > start, "live-provider first-page branch must follow cursor continuation branch");
+  return route.slice(start, end);
+}
+
 test("gateway delegates deterministic continuation pages to the signed public cursor", () => {
-  assert.match(route, /if \(cursor\)/);
-  assert.match(route, /searchPublicRepresentations\(publicSearchInput\)/);
-  assert.match(route, /sources_queried: \["thin_index"\]/);
-  assert.doesNotMatch(route, /if \(cursor\)[\s\S]*runSearchGatewayProviderSearch/);
+  const cursorBlock = cursorContinuationBlock();
+  assert.match(cursorBlock, /searchPublicRepresentations\(publicSearchInput\)/);
+  assert.match(cursorBlock, /sources_queried: \["thin_index"\]/);
+  assert.doesNotMatch(cursorBlock, /runSearchGatewayProviderSearch/);
+  assert.doesNotMatch(cursorBlock, /executeSearchGatewayWithCache/);
 });
 
 test("gateway exposes the public index pagination contract", () => {
