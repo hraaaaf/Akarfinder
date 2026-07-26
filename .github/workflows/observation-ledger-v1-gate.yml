@@ -1,0 +1,39 @@
+name: Observation Ledger V1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/observation-ledger/**"
+      - "lib/market-index/market-index-types.ts"
+      - "scripts/p0-data-observation-ledger-backfill.ts"
+      - "scripts/scrapers/__tests__/observation-ledger*.test.ts"
+      - "supabase/migrations/*observation_ledger*.sql"
+      - ".github/workflows/observation-ledger-v1-gate.yml"
+      - "docs/data/AKARFINDER_OBSERVATION_LEDGER_V1.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Observation Ledger tests
+        run: npx tsx --test scripts/scrapers/__tests__/observation-ledger.test.ts scripts/scrapers/__tests__/observation-ledger-supabase.test.ts
+      - name: Migration security contract
+        run: |
+          grep -q "enable row level security" supabase/migrations/*observation_ledger*.sql
+          grep -q "security invoker" supabase/migrations/*observation_ledger*.sql
+          grep -q "revoke all.*anon, authenticated" supabase/migrations/*observation_ledger*.sql
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
