@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "supabase/migrations/20260727003000_create_transactional_recrawl_activation_v1.sql"
+      - "supabase/migrations/20260727004500_enforce_active_recrawl_lease.sql"
       - "scripts/scrapers/__tests__/transactional-recrawl-activation-v1.test.ts"
       - ".github/workflows/transactional-recrawl-activation-v1-gate.yml"
       - "docs/data/AKARFINDER_TRANSACTIONAL_RECRAWL_ACTIVATION_V1.md"
@@ -32,6 +33,8 @@ jobs:
           grep -q "persist_source_offer_lifecycle_signal" supabase/migrations/20260727003000_create_transactional_recrawl_activation_v1.sql
           grep -q "record_recrawl_attempt" supabase/migrations/20260727003000_create_transactional_recrawl_activation_v1.sql
           grep -q "publication_eligible', false" supabase/migrations/20260727003000_create_transactional_recrawl_activation_v1.sql
+          grep -q "lease_until <= new.completed_at" supabase/migrations/20260727004500_enforce_active_recrawl_lease.sql
+          grep -q "source_offer_recrawl_attempts_active_lease_guard" supabase/migrations/20260727004500_enforce_active_recrawl_lease.sql
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build
