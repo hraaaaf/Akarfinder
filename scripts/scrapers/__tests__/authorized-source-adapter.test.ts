@@ -6,12 +6,27 @@ import {
   MUBAWAB_CONTROLLED_POLICY,
   parseAuthorizedHtml,
 } from "../../../lib/recrawl/authorized-source-adapter.js";
+import { robotsAllows } from "../../../lib/recrawl/robots-policy.js";
 
 test("Mubawab policy accepts only individual French detail pages", () => {
   assert.doesNotThrow(() => assertUrlAllowed("https://www.mubawab.ma/fr/a/8281326/example", MUBAWAB_CONTROLLED_POLICY));
   assert.throws(() => assertUrlAllowed("https://www.mubawab.ma/fr/is/appartement-casablanca", MUBAWAB_CONTROLLED_POLICY));
   assert.throws(() => assertUrlAllowed("https://evil.example/fr/a/8281326/example", MUBAWAB_CONTROLLED_POLICY));
   assert.throws(() => assertUrlAllowed("http://www.mubawab.ma/fr/a/8281326/example", MUBAWAB_CONTROLLED_POLICY));
+});
+
+test("robots wildcard rules do not become false prefix-wide blocks", () => {
+  const robots = `User-agent: *\nDisallow: /fr/ads/b/\nDisallow: /*:\nDisallow: /*?n=1`;
+  assert.equal(robotsAllows(robots, "/fr/a/8281326/beau-terrain"), true);
+  assert.equal(robotsAllows(robots, "/fr/ads/b/example"), false);
+  assert.equal(robotsAllows(robots, "/fr/a/example:blocked"), false);
+  assert.equal(robotsAllows(robots, "/fr/a/8281326/example?n=1"), false);
+});
+
+test("more specific allow wins over equally applicable disallow", () => {
+  const robots = `User-agent: *\nDisallow: /private/\nAllow: /private/public/`;
+  assert.equal(robotsAllows(robots, "/private/secret"), false);
+  assert.equal(robotsAllows(robots, "/private/public/page"), true);
 });
 
 test("parser emits factual fingerprints without inventing missing values", () => {
