@@ -7,6 +7,7 @@ on:
       - 'scripts/scrapers/__tests__/property-intelligence-v1.test.ts'
       - 'scripts/scrapers/__tests__/property-intelligence-store.test.ts'
       - 'scripts/scrapers/__tests__/property-intelligence-display.test.ts'
+      - 'scripts/scrapers/__tests__/property-intelligence-backfill.test.ts'
       - 'supabase/migrations/20260726003000_create_akar_intelligence_layer_v1.sql'
       - 'supabase/migrations/20260726004000_add_property_intelligence_store_rpc.sql'
       - 'docs/data/AKARFINDER_PROPERTY_INTELLIGENCE_SPEC_V1.md'
@@ -28,7 +29,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Property intelligence tests
-        run: npx tsx --test scripts/scrapers/__tests__/property-intelligence-v1.test.ts scripts/scrapers/__tests__/property-intelligence-store.test.ts scripts/scrapers/__tests__/property-intelligence-display.test.ts
+        run: npx tsx --test scripts/scrapers/__tests__/property-intelligence-v1.test.ts scripts/scrapers/__tests__/property-intelligence-store.test.ts scripts/scrapers/__tests__/property-intelligence-display.test.ts scripts/scrapers/__tests__/property-intelligence-backfill.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build
