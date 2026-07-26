@@ -7,6 +7,12 @@ on:
     paths:
       - "scripts/audits/odm-09e-production-certification.mjs"
       - ".github/workflows/odm-09e-production-certification.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/audits/odm-09e-production-certification.mjs"
+      - ".github/workflows/odm-09e-production-certification.yml"
   workflow_dispatch:
     inputs:
       production_url:
@@ -22,7 +28,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: odm-09e-production-certification
+  group: odm-09e-production-certification-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
