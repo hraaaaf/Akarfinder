@@ -5,6 +5,7 @@ on:
     paths:
       - "supabase/migrations/20260727003000_create_transactional_recrawl_activation_v1.sql"
       - "supabase/migrations/20260727004500_enforce_active_recrawl_lease.sql"
+      - "supabase/migrations/20260727005500_fix_transactional_recrawl_pgcrypto_search_path.sql"
       - "scripts/scrapers/__tests__/transactional-recrawl-activation-v1.test.ts"
       - ".github/workflows/transactional-recrawl-activation-v1-gate.yml"
       - "docs/data/AKARFINDER_TRANSACTIONAL_RECRAWL_ACTIVATION_V1.md"
@@ -35,6 +36,7 @@ jobs:
           grep -q "publication_eligible', false" supabase/migrations/20260727003000_create_transactional_recrawl_activation_v1.sql
           grep -q "lease_until <= new.completed_at" supabase/migrations/20260727004500_enforce_active_recrawl_lease.sql
           grep -q "source_offer_recrawl_attempts_active_lease_guard" supabase/migrations/20260727004500_enforce_active_recrawl_lease.sql
+          grep -q "public, extensions, pg_temp" supabase/migrations/20260727005500_fix_transactional_recrawl_pgcrypto_search_path.sql
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build
