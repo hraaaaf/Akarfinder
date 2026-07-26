@@ -10,8 +10,7 @@ on:
       - 'scripts/scrapers/__tests__/property-intelligence-backfill.test.ts'
       - 'scripts/scrapers/__tests__/property-intelligence-condition.test.ts'
       - 'scripts/scrapers/__tests__/property-intelligence-supabase-adapter.test.ts'
-      - 'supabase/migrations/20260726003000_create_akar_intelligence_layer_v1.sql'
-      - 'supabase/migrations/20260726004000_add_property_intelligence_store_rpc.sql'
+      - 'supabase/migrations/*property_intelligence*.sql'
       - 'docs/data/AKARFINDER_PROPERTY_INTELLIGENCE_SPEC_V1.md'
       - '.github/workflows/property-intelligence-v1-gate.yml'
   workflow_dispatch:
