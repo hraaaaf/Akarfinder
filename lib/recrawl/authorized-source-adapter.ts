@@ -97,8 +97,8 @@ export function parseAuthorizedHtml(input: {
   const status = input.httpStatus === 404 || input.httpStatus === 410 ? "removed" : input.httpStatus >= 400 ? "unavailable" : "active";
   const price = parseNumber(meta(input.html, "product:price:amount") ?? meta(input.html, "og:price:amount"));
   const currency = meta(input.html, "product:price:currency") ?? meta(input.html, "og:price:currency");
-  const surfaceMatch = visible.match(/(?:surface|superficie)[^0-9]{0,20}([0-9][0-9 .,'’]*)\s*m(?:²|2)\b/i)
-    ?? visible.match(/([0-9][0-9 .,'’]*)\s*m(?:²|2)\b/i);
+  const surfaceMatch = visible.match(/(?:surface|superficie)[^0-9]{0,20}([0-9][0-9 .,'’]*)\s*m(?:²|2)(?!\w)/i)
+    ?? visible.match(/([0-9][0-9 .,'’]*)\s*m(?:²|2)(?!\w)/i);
   const surfaceM2 = parseNumber(surfaceMatch?.[1] ?? null);
   const canonicalPayload = JSON.stringify({ title, price, currency, surfaceM2, status, visible: visible.slice(0, 50_000) });
 
