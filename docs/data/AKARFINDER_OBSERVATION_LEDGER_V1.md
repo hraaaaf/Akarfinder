@@ -2,7 +2,9 @@
 
 ## Status
 
-Implementation candidate. Internal only. No SERP activation and no production database write in this lot.
+Foundation and internal persistence certified. No SERP activation.
+
+Production persistence was applied to Supabase project `kusfiyimwvxblvsrhaes` on 2026-07-26. The canonical observation stream currently contains zero rows, so no historical event backfill was executed and no history was fabricated.
 
 ## Purpose
 
@@ -10,7 +12,7 @@ The ledger derives factual temporal events from the existing append-only `source
 
 Canonical flow:
 
-`SOURCE OFFER → APPEND-ONLY OBSERVATIONS → EVENT DERIVATION → TIMELINE → FRESHNESS → FUTURE DISPLAY ELIGIBILITY`
+`SOURCE OFFER → APPEND-ONLY OBSERVATIONS → EVENT DERIVATION → INTERNAL EVENT STORE → TIMELINE → FRESHNESS → FUTURE DISPLAY ELIGIBILITY`
 
 ## Invariants
 
@@ -66,26 +68,58 @@ Bands:
 
 The score is an internal temporal signal, not proof that the property remains available.
 
-## Security and publication
+## Persistence and security
 
-This lot adds pure domain logic and tests only. It does not:
+`observation_ledger_events` is an additive internal projection table.
 
-- create a public API;
-- alter RLS;
-- grant access to `anon` or `authenticated`;
-- persist derived events in production;
-- display price history or lifecycle claims in the SERP.
+Controls applied:
 
-A later persistence lot must use an additive internal table, deterministic event-key uniqueness, service-role-only writes, revocation from public roles and a controlled backfill.
+- RLS enabled;
+- no table access for `anon` or `authenticated`;
+- `service_role` receives only `SELECT` and `INSERT`;
+- deterministic unique `event_key`;
+- source and observation foreign keys retained;
+- RPC `persist_observation_ledger_event(...)` uses `SECURITY INVOKER`;
+- RPC execution revoked from `public`, `anon` and `authenticated`;
+- RPC executable only by `service_role`;
+- no public view and no SERP integration.
+
+The Supabase advisor reports the expected informational `RLS enabled, no policy` notice because the table is deliberately inaccessible to public roles. Existing project-wide warnings are unchanged.
+
+## Controlled backfill contract
+
+- connected runner is dry-run by default;
+- write mode requires two explicit environment flags;
+- reads are paginated and capped;
+- invalid source identifiers are rejected;
+- empty history produces zero events and zero writes;
+- every write goes through the RPC;
+- reruns are idempotent through `event_key` uniqueness.
+
+## Production state — 2026-07-26
+
+- `source_offer_observations`: 0 rows;
+- distinct observed source offers: 0;
+- `observation_ledger_events`: 0 rows;
+- no synthetic micro-write;
+- no historical backfill possible until ingestion starts recording real observations.
 
 ## Certification gates
 
-- event taxonomy tests;
-- deterministic idempotency-key test;
-- price delta test;
-- withdrawal/reactivation tests;
-- cross-offer comparison refusal;
-- unknown-history test;
-- freshness degradation test;
-- TypeScript;
-- production build.
+- event taxonomy tests: green;
+- deterministic idempotency-key test: green;
+- price delta test: green;
+- withdrawal/reactivation tests: green;
+- cross-offer comparison refusal: green;
+- unknown-history test: green;
+- freshness degradation test: green;
+- Supabase adapter tests: green;
+- migration security contract: green;
+- TypeScript: green;
+- production build: green;
+- production RLS/grant verification: green;
+- production RPC privilege verification: green.
+
+## Next dependency
+
+The real blocker is upstream ingestion wiring. `source_offer_observations` must receive a factual snapshot whenever a source offer is ingested or rechecked. Once at least two observations exist for an offer, the ledger can derive and persist real lifecycle and price-change events without inventing history.
