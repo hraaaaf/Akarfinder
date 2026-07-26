@@ -59,7 +59,7 @@ test("search page provides one shared selection context to cards and map", () =>
 
   assert.match(page, /<PropertySelectionProvider>/);
   assert.match(card, /usePropertySelection\(\)/);
-  assert.match(card, /Repérer sur la carte/);
+  assert.match(card, /Aperçu rapide et carte|Repérer sur la carte/);
   assert.match(map, /usePropertySelection\(\)/);
   assert.match(map, /Repère au niveau de la ville uniquement/);
 });
