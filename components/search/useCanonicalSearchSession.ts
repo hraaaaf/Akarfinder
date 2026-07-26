@@ -10,6 +10,8 @@ import {
   shouldReplaceSearchHistory,
 } from "@/lib/ux/search-history";
 
+export const CANONICAL_SEARCH_SESSION_EVENT = "akarfinder:canonical-search-session";
+
 type UseCanonicalSearchSessionArgs = {
   filters: ListingFiltersState;
   sortBy: SortBy;
@@ -34,6 +36,7 @@ export function useCanonicalSearchSession({
     const restoreFromLocation = () => {
       restoringRef.current = true;
       onRestoreRef.current(restoreSearchHistorySnapshot(window.location.search));
+      window.dispatchEvent(new Event(CANONICAL_SEARCH_SESSION_EVENT));
       queueMicrotask(() => {
         restoringRef.current = false;
       });
@@ -59,6 +62,7 @@ export function useCanonicalSearchSession({
 
     if (shouldReplaceSearchHistory(currentHref, nextHref)) {
       window.history.replaceState(window.history.state, "", nextHref);
+      window.dispatchEvent(new Event(CANONICAL_SEARCH_SESSION_EVENT));
     }
   }, [filters, sortBy, view]);
 }
