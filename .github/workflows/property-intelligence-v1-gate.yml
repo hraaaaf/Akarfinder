@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'lib/property-intelligence/**'
+      - 'scripts/p0-data-property-intelligence-backfill.ts'
       - 'scripts/scrapers/__tests__/property-intelligence-v1.test.ts'
       - 'scripts/scrapers/__tests__/property-intelligence-store.test.ts'
       - 'scripts/scrapers/__tests__/property-intelligence-display.test.ts'
