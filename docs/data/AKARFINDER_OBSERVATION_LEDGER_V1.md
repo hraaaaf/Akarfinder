@@ -2,9 +2,9 @@
 
 ## Status
 
-Foundation and internal persistence certified. No SERP activation.
+Foundation, internal persistence and upstream observation capture certified. No SERP activation.
 
-Production persistence was applied to Supabase project `kusfiyimwvxblvsrhaes` on 2026-07-26. The canonical observation stream currently contains zero rows, so no historical event backfill was executed and no history was fabricated.
+Production migrations were applied to Supabase project `kusfiyimwvxblvsrhaes` on 2026-07-26. The canonical observation stream contained zero rows at activation time, so no historical event backfill was executed and no history was fabricated.
 
 ## Purpose
 
@@ -12,7 +12,7 @@ The ledger derives factual temporal events from the existing append-only `source
 
 Canonical flow:
 
-`SOURCE OFFER → APPEND-ONLY OBSERVATIONS → EVENT DERIVATION → INTERNAL EVENT STORE → TIMELINE → FRESHNESS → FUTURE DISPLAY ELIGIBILITY`
+`SOURCE OFFER WRITE/CHANGE → APPEND-ONLY OBSERVATION → EVENT DERIVATION → INTERNAL EVENT STORE → TIMELINE → FRESHNESS → FUTURE DISPLAY ELIGIBILITY`
 
 ## Invariants
 
@@ -23,7 +23,8 @@ Canonical flow:
 - no availability claim is promoted to a verified real-world fact;
 - no event is publicly exposed by this lot;
 - repeated derivation produces the same `event_key` values;
-- no update or delete is required on the append-only observation stream.
+- no update or delete is required on the append-only observation stream;
+- pre-existing listings are not assigned reconstructed historical snapshots.
 
 ## V1 event taxonomy
 
@@ -86,6 +87,26 @@ Controls applied:
 
 The Supabase advisor reports the expected informational `RLS enabled, no policy` notice because the table is deliberately inaccessible to public roles. Existing project-wide warnings are unchanged.
 
+## Observation capture wiring
+
+A database trigger on `listing_sources` now records a factual observation when:
+
+- a source offer is inserted;
+- its content fingerprint changes;
+- its displayed price or currency changes;
+- its active/inactive state changes.
+
+The trigger:
+
+- uses `SECURITY INVOKER` and a fixed search path;
+- stores source-offer provenance and ingestion run id;
+- reads the linked surface and title fingerprint without altering the listing;
+- writes append-only rows only;
+- ignores unrelated updates;
+- uses `ON CONFLICT DO NOTHING` for safe retries.
+
+The observation idempotency index was corrected to include price, surface, status and availability. A real same-hour price change can therefore create a second observation, while an identical retry remains deduplicated.
+
 ## Controlled backfill contract
 
 - connected runner is dry-run by default;
@@ -93,16 +114,27 @@ The Supabase advisor reports the expected informational `RLS enabled, no policy`
 - reads are paginated and capped;
 - invalid source identifiers are rejected;
 - empty history produces zero events and zero writes;
-- every write goes through the RPC;
+- every ledger-event write goes through the RPC;
 - reruns are idempotent through `event_key` uniqueness.
 
 ## Production state — 2026-07-26
+
+At migration activation:
 
 - `source_offer_observations`: 0 rows;
 - distinct observed source offers: 0;
 - `observation_ledger_events`: 0 rows;
 - no synthetic micro-write;
-- no historical backfill possible until ingestion starts recording real observations.
+- no reconstructed baseline was inserted.
+
+Trigger validation used a deliberate exception inside one transaction:
+
+- before probe: 0 observations for the selected source offer;
+- inside transaction after tracked-field update: 1 observation;
+- exception forced full rollback;
+- after rollback: source offer restored and observation count returned to 0.
+
+Future qualifying ingestion writes now create real observations automatically. Ledger events become derivable once those observations exist.
 
 ## Certification gates
 
@@ -118,8 +150,10 @@ The Supabase advisor reports the expected informational `RLS enabled, no policy`
 - TypeScript: green;
 - production build: green;
 - production RLS/grant verification: green;
-- production RPC privilege verification: green.
+- production RPC privilege verification: green;
+- production trigger rollback proof: green;
+- production rollback cleanliness verification: green.
 
 ## Next dependency
 
-The real blocker is upstream ingestion wiring. `source_offer_observations` must receive a factual snapshot whenever a source offer is ingested or rechecked. Once at least two observations exist for an offer, the ledger can derive and persist real lifecycle and price-change events without inventing history.
+The ledger is now waiting for the next genuine source-offer ingestion or tracked change. No manual or synthetic data should be inserted merely to manufacture history. The next meaningful DATA lot is the freshness/lifecycle worker that periodically rechecks eligible source offers and converts accumulated observations into internal ledger events.
