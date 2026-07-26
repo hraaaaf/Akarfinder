@@ -1,6 +1,6 @@
 # AKARFINDER PROPERTY INTELLIGENCE SPECIFICATION v1
 
-**Statut :** CANONICAL_DESIGN_BASELINE  
+**Statut :** FOUNDATION_V1_CERTIFIED  
 **Portée :** Akar Intelligence Layer — propriété canonique  
 **Doctrine :** une annonce est une observation ; une propriété est une entité ; l’intelligence est calculée, traçable et révocable.
 
@@ -75,14 +75,14 @@ Deux preuves explicites incompatibles produisent `conflicted`, jamais une moyenn
 
 ## 7. Scores v1
 
-- ACI — confiance et qualité des données ; certifiable en premier.
-- AQI — qualité intrinsèque observable ; ne mesure pas la valeur financière.
+- ACI — confiance et qualité des données ; seul score public-candidate de la fondation v1.
+- AQI — qualité intrinsèque observable ; strictement interne en v1.
 - AVI — positionnement prix/qualité relatif ; bloqué sans référence locale fiable.
 - AFI — adéquation famille ; contextualisé et non universel.
 - AII — potentiel d’usage investissement ; non présenté comme conseil financier.
 - ALI — liquidité estimée ; expérimental tant qu’aucun historique transactionnel fiable n’existe.
 
-Chaque score retourne : valeur, intervalle de confiance, couverture des facteurs, version, explications et blockers.
+Chaque score retourne : valeur, confiance, couverture des facteurs, version, contributions normalisées et blockers explicites.
 
 ## 8. Gates publics
 
@@ -95,6 +95,8 @@ Une feature ou un score n’est publiable que si :
 - preuve non sensible et affichable ;
 - couverture minimale des facteurs du score ;
 - validation M4 du batch.
+
+La fondation fournit un gate déterministe, mais n’active aucune publication automatiquement.
 
 ## 9. Hors certification v1
 
@@ -111,13 +113,23 @@ Ces éléments peuvent être expérimentés en interne, jamais activés implicit
 
 ## 10. Definition of Done
 
-La fondation v1 est certifiée si :
+La fondation v1 est certifiée avec :
 
 - registre canonique versionné ;
 - moteur de règles pur et déterministe ;
 - moteur de confiance unifié ;
-- store additif avec historique ;
+- store additif, versionné et idempotent ;
 - moteurs ACI/AQI avec blockers explicites ;
-- tests de négation, contradiction et `unknown` ;
-- migration additive et RLS ;
+- gate d’éligibilité d’affichage pur et testable ;
+- tests de négation, contradiction, `unknown`, fraîcheur, score et publication ;
+- migrations additives, RLS et vues `security_invoker` ;
 - aucune activation publique automatique.
+
+## 11. Preuves de certification
+
+- workflow : `Property Intelligence V1 Gate` ;
+- tests Node/TypeScript dédiés ;
+- vérification TypeScript sans émission ;
+- build production Next.js ;
+- audit de sécurité des fonctions et vues ;
+- PR conservée sans activation publique implicite.
