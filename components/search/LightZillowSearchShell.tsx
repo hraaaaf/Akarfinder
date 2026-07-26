@@ -8,6 +8,8 @@ import { ExternalIndexedResultsSection } from "@/components/search/ExternalIndex
 import { QuickFilters } from "@/components/search/QuickFilters";
 import { SearchListingCardDark } from "@/components/search/SearchListingCardDark";
 import { SearchMapPanel, type CityCount } from "@/components/search/SearchMapPanel";
+import { SearchViewSwitcher } from "@/components/search/SearchViewSwitcher";
+import { useCanonicalSearchSession } from "@/components/search/useCanonicalSearchSession";
 import type { Listing, ListingFiltersState } from "@/lib/listings/types";
 import {
   defaultListingFilters,
@@ -23,6 +25,8 @@ import { getCityCoord } from "@/lib/search/city-coords";
 import { partitionStructuredListings } from "@/lib/search/search-truth-tier";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 import { track } from "@/lib/tracking/track";
+import type { SearchViewMode } from "@/lib/ux/contracts";
+import { getSearchViewLayout } from "@/lib/ux/search-view";
 
 type LightZillowSearchShellProps = {
   initialListings: Listing[];
@@ -36,8 +40,6 @@ type LightZillowSearchShellProps = {
     search: string;
   }>;
 };
-
-type ActiveTab = "Liste" | "Carte";
 
 type ApiSearchResponse = {
   listings: Listing[];
@@ -223,7 +225,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     mreOnly: initialFilters?.mreOnly ?? defaultListingFilters.mreOnly,
     search: initialFilters?.search ?? defaultListingFilters.search,
   });
-  const [activeTab, setActiveTab] = useState<ActiveTab>("Liste");
+  const [view, setView] = useState<SearchViewMode>("split");
   const [sortBy, setSortBy] = useState<SortBy>("recommended");
   const [listings, setListings] = useState(initialListings);
   const [isLoading, setIsLoading] = useState(true);
@@ -234,6 +236,18 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   const [gatewayResults, setGatewayResults] = useState<SearchGatewayNormalizedResult[]>([]);
   const gatewayEnabled = process.env.NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED === "true";
   const [isGatewayLoading, setIsGatewayLoading] = useState(gatewayEnabled);
+  const viewLayout = getSearchViewLayout(view);
+
+  useCanonicalSearchSession({
+    filters,
+    sortBy,
+    view,
+    onRestore: (snapshot) => {
+      setFilters((current) => ({ ...current, ...snapshot.filters }));
+      setSortBy(snapshot.sortBy);
+      setView(snapshot.view);
+    },
+  });
 
   function handleFilterChange(next: ListingFiltersState) {
     if (
@@ -459,7 +473,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
           <QuickFilters filters={filters} cities={cities} propertyTypes={propertyTypes} onChange={handleFilterChange} onReset={handleReset} />
 
           <p className="mt-2.5 text-[12px] font-semibold text-muted-foreground">
-            Besoin de clarifier vos priorités ?{" "}
+            Besoin de clarifier vos priorités?{" "}
             <Link href="/compagnon" className="font-extrabold text-bronze-400 underline underline-offset-2 transition hover:text-bronze-300">
               Construire Mon Projet avec le Compagnon
             </Link>
@@ -501,19 +515,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
             </select>
           </div>
 
-          <div className="mt-2.5 flex rounded-full border border-border/20 bg-surface p-1 dark:border-white/12 dark:bg-white/[0.06] lg:hidden">
-            {(["Liste", "Carte"] as ActiveTab[]).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                aria-pressed={activeTab === tab}
-                className={`flex-1 rounded-full py-2 text-[13px] font-extrabold transition ${activeTab === tab ? "bg-gradient-to-br from-bronze-500 to-bronze-700 text-white" : "text-foreground/55"}`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+          <SearchViewSwitcher value={view} onChange={setView} className="mt-2.5" />
 
           {activeChips.length > 0 ? (
             <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -534,70 +536,74 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
           ) : null}
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-5 lg:mt-5 lg:grid-cols-[minmax(0,1fr)_minmax(390px,0.62fr)] lg:items-start">
-          <div ref={listRef} className={`min-w-0 ${activeTab === "Carte" ? "hidden lg:block" : "block"}`}>
-            {showSkeleton ? (
-              <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-                {[1, 2, 3, 4].map((number) => <SkeletonCard key={number} />)}
-              </div>
-            ) : (
-              <div className="space-y-8">
-                <StructuredTruthSection kind="analyzed" listings={analyzedListings} isLoading={isLoading} />
-                <StructuredTruthSection kind="partial" listings={partialListings} isLoading={isLoading} />
-                <ObservedResultsSection
-                  persistedListings={observedIndexedListings}
-                  gatewayResults={gatewayResults}
-                  isLoading={isLoading}
-                  isGatewayLoading={isGatewayLoading}
-                />
-                {!hasAnyResults && !isSearching ? <EmptyState onReset={handleReset} city={filters.city} /> : null}
-              </div>
-            )}
+        <div className={`mt-4 grid grid-cols-1 gap-5 lg:mt-5 ${view === "split" ? "lg:grid-cols-[minmax(0,1fr)_minmax(390px,0.62fr)]" : "lg:grid-cols-1"} lg:items-start`}>
+          {viewLayout.showList ? (
+            <div ref={listRef} className="min-w-0">
+              {showSkeleton ? (
+                <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+                  {[1, 2, 3, 4].map((number) => <SkeletonCard key={number} />)}
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  <StructuredTruthSection kind="analyzed" listings={analyzedListings} isLoading={isLoading} />
+                  <StructuredTruthSection kind="partial" listings={partialListings} isLoading={isLoading} />
+                  <ObservedResultsSection
+                    persistedListings={observedIndexedListings}
+                    gatewayResults={gatewayResults}
+                    isLoading={isLoading}
+                    isGatewayLoading={isGatewayLoading}
+                  />
+                  {!hasAnyResults && !isSearching ? <EmptyState onReset={handleReset} city={filters.city} /> : null}
+                </div>
+              )}
 
-            {hasMoreIndexed ? (
-              <div className="mt-6 flex justify-center">
-                <button
-                  type="button"
-                  onClick={handleLoadMoreIndexed}
-                  disabled={isLoadingMore}
-                  className="inline-flex items-center gap-2 rounded-full border border-bronze-500/35 bg-bronze-500/10 px-5 py-2.5 text-[13px] font-extrabold text-bronze-300 transition hover:bg-bronze-500/20 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isLoadingMore ? <Loader2 size={15} className="animate-spin" aria-hidden="true" /> : null}
-                  Afficher plus de résultats indexés
-                </button>
-              </div>
-            ) : null}
-          </div>
-
-          <div className={`min-w-0 space-y-4 ${activeTab === "Liste" ? "hidden lg:block" : "block"} lg:sticky lg:top-5 lg:self-start`}>
-            <SearchMapPanel
-              cityCounts={cityCounts}
-              otherCount={otherCount}
-              activeCity={filters.city}
-              onSelectCity={handleSelectCity}
-              stats={{ total: filteredListings.length, citiesCovered: cityCounts.length, avgIndex, updatedLabel: "Récent" }}
-            />
-
-            <div className="overflow-hidden rounded-2xl border border-border/15 bg-card backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04]">
-              <div className="px-5 py-4">
-                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-500 dark:text-bronze-400">Mon Projet AkarFinder</p>
-                <p className="mt-1.5 text-[1rem] font-extrabold text-foreground">Clarifier mes priorités</p>
-                <p className="mt-1.5 text-[12.5px] leading-5 text-muted-foreground">Budget, zones, types, contraintes et préférences dans un seul projet réutilisable.</p>
-              </div>
-              <div className="border-t border-border/12 px-5 py-3 dark:border-white/8">
-                <Link href="/compagnon" className="flex items-center justify-between text-[13px] font-extrabold text-foreground/80 transition hover:text-foreground dark:text-white/85">
-                  Construire Mon Projet<ArrowRight size={14} aria-hidden="true" />
-                </Link>
-              </div>
+              {hasMoreIndexed ? (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleLoadMoreIndexed}
+                    disabled={isLoadingMore}
+                    className="inline-flex items-center gap-2 rounded-full border border-bronze-500/35 bg-bronze-500/10 px-5 py-2.5 text-[13px] font-extrabold text-bronze-300 transition hover:bg-bronze-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isLoadingMore ? <Loader2 size={15} className="animate-spin" aria-hidden="true" /> : null}
+                    Afficher plus de résultats indexés
+                  </button>
+                </div>
+              ) : null}
             </div>
+          ) : null}
 
-            <Link
-              href={`/map${filters.city !== "all" ? `?city=${encodeURIComponent(filters.city)}` : ""}`}
-              className="flex items-center justify-center gap-2 rounded-2xl border border-border/20 bg-card px-4 py-3 text-[13px] font-extrabold text-foreground/75 transition hover:border-bronze-500/40 hover:text-foreground dark:border-white/12 dark:bg-white/[0.04] dark:text-white/80 dark:hover:text-white"
-            >
-              <MapIcon size={15} aria-hidden="true" /> Ouvrir la carte complète
-            </Link>
-          </div>
+          {viewLayout.showMap ? (
+            <div className="min-w-0 space-y-4 lg:sticky lg:top-5 lg:self-start">
+              <SearchMapPanel
+                cityCounts={cityCounts}
+                otherCount={otherCount}
+                activeCity={filters.city}
+                onSelectCity={handleSelectCity}
+                stats={{ total: filteredListings.length, citiesCovered: cityCounts.length, avgIndex, updatedLabel: "Récent" }}
+              />
+
+              <div className="overflow-hidden rounded-2xl border border-border/15 bg-card backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04]">
+                <div className="px-5 py-4">
+                  <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-500 dark:text-bronze-400">Mon Projet AkarFinder</p>
+                  <p className="mt-1.5 text-[1rem] font-extrabold text-foreground">Clarifier mes priorités</p>
+                  <p className="mt-1.5 text-[12.5px] leading-5 text-muted-foreground">Budget, zones, types, contraintes et préférences dans un seul projet réutilisable.</p>
+                </div>
+                <div className="border-t border-border/12 px-5 py-3 dark:border-white/8">
+                  <Link href="/compagnon" className="flex items-center justify-between text-[13px] font-extrabold text-foreground/80 transition hover:text-foreground dark:text-white/85">
+                    Construire Mon Projet<ArrowRight size={14} aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+
+              <Link
+                href={`/map${filters.city !== "all" ? `?city=${encodeURIComponent(filters.city)}` : ""}`}
+                className="flex items-center justify-center gap-2 rounded-2xl border border-border/20 bg-card px-4 py-3 text-[13px] font-extrabold text-foreground/75 transition hover:border-bronze-500/40 hover:text-foreground dark:border-white/12 dark:bg-white/[0.04] dark:text-white/80 dark:hover:text-white"
+              >
+                <MapIcon size={15} aria-hidden="true" /> Ouvrir la carte complète
+              </Link>
+            </div>
+          ) : null}
         </div>
       </section>
       <CompareBar />
