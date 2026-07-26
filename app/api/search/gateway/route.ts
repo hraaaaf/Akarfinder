@@ -45,7 +45,7 @@ function mergeGatewayResults(
 ): SearchGatewayNormalizedResult[] {
   const merged = new Map<string, SearchGatewayNormalizedResult>();
   for (const result of [...liveResults, ...indexedResults]) {
-    const key = result.canonical_url || result.url || result.id;
+    const key = result.original_url || result.display_url || result.id;
     if (!merged.has(key)) merged.set(key, result);
   }
   return [...merged.values()];
