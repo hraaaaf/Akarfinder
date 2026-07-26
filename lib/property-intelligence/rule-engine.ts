@@ -31,8 +31,13 @@ const normalize = (value: string) => value
   .replace(/\s+/g, " ").trim();
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const ARABIC_SCRIPT = /[\u0600-\u06FF]/u;
+const phraseAlternative = (value: string) => {
+  const escaped = escapeRegExp(value);
+  return ARABIC_SCRIPT.test(value) ? `(?:[وفبكل]?${escaped})` : escaped;
+};
 const phrase = (...values: string[]) => new RegExp(
-  `(?<![\\p{L}\\p{N}])(?:${values.map(escapeRegExp).join("|")})(?![\\p{L}\\p{N}])`,
+  `(?<![\\p{L}\\p{N}])(?:${values.map(phraseAlternative).join("|")})(?![\\p{L}\\p{N}])`,
   "u",
 );
 const contains = (text: string, patterns: readonly RegExp[]) => patterns.some((pattern) => pattern.test(text));
