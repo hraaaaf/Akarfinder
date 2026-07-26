@@ -125,17 +125,18 @@ function extractStanding(text: string, structured: Record<string, unknown>, reli
 }
 
 function extractOrientation(text: string, reliability: number): ExtractedFeature {
+  const hasOrientationContext = contains(text, [phrase("orientation", "double orientation", "expose", "exposition", "واجهة")]);
   const candidates = [
-    ["north_east", phrase("nord est", "north east", "شمال شرقي")],
-    ["south_east", phrase("sud est", "south east", "جنوب شرقي")],
-    ["south_west", phrase("sud ouest", "south west", "جنوب غربي")],
-    ["north_west", phrase("nord ouest", "north west", "شمال غربي")],
-    ["north", phrase("expose nord", "orientation nord", "شمالي")],
-    ["south", phrase("expose sud", "orientation sud", "قبلي", "جنوبي")],
-    ["east", phrase("expose est", "orientation est", "شرقي")],
-    ["west", phrase("expose ouest", "orientation ouest", "غربي")],
+    ["north_east", [phrase("nord est", "north east", "شمال شرقي")]],
+    ["south_east", [phrase("sud est", "south east", "جنوب شرقي")]],
+    ["south_west", [phrase("sud ouest", "south west", "جنوب غربي")]],
+    ["north_west", [phrase("nord ouest", "north west", "شمال غربي")]],
+    ["north", [phrase("expose nord", "orientation nord", "شمالي"), ...(hasOrientationContext ? [phrase("nord")] : [])]],
+    ["south", [phrase("expose sud", "orientation sud", "قبلي", "جنوبي"), ...(hasOrientationContext ? [phrase("sud")] : [])]],
+    ["east", [phrase("expose est", "orientation est", "شرقي"), ...(hasOrientationContext ? [phrase("est")] : [])]],
+    ["west", [phrase("expose ouest", "orientation ouest", "غربي"), ...(hasOrientationContext ? [phrase("ouest")] : [])]],
   ] as const;
-  const unique = [...new Set(candidates.filter(([, pattern]) => pattern.test(text)).map(([value]) => value))];
+  const unique = [...new Set(candidates.filter(([, patterns]) => contains(text, patterns)).map(([value]) => value))];
   if (unique.length === 0) return { key: "environment.orientation", value: null, confidence: 0.1, status: "unknown", method: "rule_engine_v2", evidence: [] };
   const result = calculateConfidence({ supporting: ["explicit_text"], contradicting: unique.length > 1 ? ["explicit_text"] : [], sourceReliability: reliability });
   return { key: "environment.orientation", value: unique.length === 1 ? unique[0] : null, confidence: result.confidence, status: result.conflicted ? "conflicted" : "inferred", method: "rule_engine_v2", evidence: unique.map((value) => `orientation:${value}`) };
