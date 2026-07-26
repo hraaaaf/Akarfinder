@@ -1,0 +1,27 @@
+name: UX Gate 0 Contracts
+
+on:
+  pull_request:
+    branches: [main, ux-ui-master-program]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  ux-gate0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Canonical UX contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-gate0-contracts.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
