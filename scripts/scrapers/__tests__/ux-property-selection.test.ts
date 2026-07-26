@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 import {
   EMPTY_PROPERTY_SELECTION,
@@ -45,4 +47,27 @@ test("clearing hover never clears an explicit selection", () => {
 
 test("property selection is presentation-only and cannot alter ranking", () => {
   assert.equal(propertySelectionChangesRanking(), false);
+  const shell = readFileSync(resolve(process.cwd(), "components/search/LightZillowSearchShell.tsx"), "utf8");
+  assert.equal((shell.match(/sortListings\(clientFiltered, sortBy\)/g) ?? []).length, 1);
+  assert.ok(!shell.includes("canonicalPropertyId"));
+});
+
+test("search page provides one shared selection context to cards and map", () => {
+  const page = readFileSync(resolve(process.cwd(), "app/search/page.tsx"), "utf8");
+  const card = readFileSync(resolve(process.cwd(), "components/search/SearchListingCardDark.tsx"), "utf8");
+  const map = readFileSync(resolve(process.cwd(), "components/search/SearchMapPanel.tsx"), "utf8");
+
+  assert.match(page, /<PropertySelectionProvider>/);
+  assert.match(card, /usePropertySelection\(\)/);
+  assert.match(card, /Repérer sur la carte/);
+  assert.match(map, /usePropertySelection\(\)/);
+  assert.match(map, /Repère au niveau de la ville uniquement/);
+});
+
+test("map bridge never claims exact coordinates without certified data", () => {
+  const map = readFileSync(resolve(process.cwd(), "components/search/SearchMapPanel.tsx"), "utf8");
+  assert.match(map, /n’affiche pas de position exacte sans coordonnées certifiées/);
+  assert.ok(!map.includes("Math.random"));
+  assert.ok(!map.includes("latitude ??"));
+  assert.ok(!map.includes("longitude ??"));
 });
