@@ -10,6 +10,10 @@ import {
   mapAtlasLayerChangesRanking,
   resolveMapAtlasLayer,
 } from "../../../lib/ux/map-atlas";
+import {
+  MIN_ATLAS_CANONICAL_SAMPLE,
+  mapAtlasAvailabilityFromPublication,
+} from "../../../lib/ux/map-atlas-publication";
 
 test("Atlas exposes listings, density and price as explicit layers", () => {
   assert.deepEqual(MAP_ATLAS_LAYERS.map((layer) => layer.id), ["listings", "density", "price"]);
@@ -26,6 +30,59 @@ test("uncertified density and price layers remain unavailable", () => {
 test("an unavailable Atlas request falls back to honest listing distribution", () => {
   assert.equal(resolveMapAtlasLayer("density", DEFAULT_MAP_ATLAS_AVAILABILITY), "listings");
   assert.equal(resolveMapAtlasLayer("price", DEFAULT_MAP_ATLAS_AVAILABILITY), "listings");
+});
+
+test("publication gates require geometry, canonical sample and methodology", () => {
+  const blocked = mapAtlasAvailabilityFromPublication({
+    canonicalPropertyCount: MIN_ATLAS_CANONICAL_SAMPLE - 1,
+    densityPublished: true,
+    priceReferencePublished: true,
+    priceSampleSizeCanonical: MIN_ATLAS_CANONICAL_SAMPLE,
+    askingPriceOnly: true,
+    methodologyVersion: "atlas-v1",
+    geometryCertified: true,
+  });
+  assert.equal(blocked.density.available, false);
+
+  const certified = mapAtlasAvailabilityFromPublication({
+    canonicalPropertyCount: MIN_ATLAS_CANONICAL_SAMPLE,
+    densityPublished: true,
+    priceReferencePublished: true,
+    priceSampleSizeCanonical: MIN_ATLAS_CANONICAL_SAMPLE,
+    askingPriceOnly: true,
+    methodologyVersion: "atlas-v1",
+    geometryCertified: true,
+  });
+  assert.equal(certified.density.available, true);
+  assert.equal(certified.price.available, true);
+});
+
+test("price layer remains blocked without asking-price disclosure or methodology", () => {
+  const availability = mapAtlasAvailabilityFromPublication({
+    canonicalPropertyCount: 20,
+    densityPublished: true,
+    priceReferencePublished: true,
+    priceSampleSizeCanonical: 20,
+    askingPriceOnly: false,
+    methodologyVersion: "",
+    geometryCertified: true,
+  });
+  assert.equal(availability.price.available, false);
+});
+
+test("uncertified geometry blocks density and price layers", () => {
+  const availability = mapAtlasAvailabilityFromPublication({
+    canonicalPropertyCount: 20,
+    densityPublished: true,
+    priceReferencePublished: true,
+    priceSampleSizeCanonical: 20,
+    askingPriceOnly: true,
+    methodologyVersion: "atlas-v1",
+    geometryCertified: false,
+  });
+  assert.equal(availability.density.available, false);
+  assert.equal(availability.price.available, false);
+  assert.match(availability.density.reason ?? "", /géométrie/i);
 });
 
 test("Atlas layer selection is presentation-only and never changes ranking", () => {
