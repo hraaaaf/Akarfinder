@@ -1,0 +1,41 @@
+name: Recrawl Scheduler Worker V1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/recrawl/**"
+      - "scripts/scrapers/__tests__/recrawl-scheduler-worker.test.ts"
+      - "supabase/migrations/20260726194500_create_recrawl_scheduler_worker.sql"
+      - ".github/workflows/recrawl-scheduler-worker-v1-gate.yml"
+      - "docs/data/AKARFINDER_RECRAWL_SCHEDULER_WORKER_V1.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Recrawl scheduler and worker tests
+        run: npx tsx --test scripts/scrapers/__tests__/recrawl-scheduler-worker.test.ts
+      - name: Migration security and concurrency contract
+        run: |
+          grep -q "enable row level security" supabase/migrations/20260726194500_create_recrawl_scheduler_worker.sql
+          grep -q "security invoker" supabase/migrations/20260726194500_create_recrawl_scheduler_worker.sql
+          grep -q "for update skip locked" supabase/migrations/20260726194500_create_recrawl_scheduler_worker.sql
+          grep -q "publication_eligible = false" supabase/migrations/20260726194500_create_recrawl_scheduler_worker.sql
+          grep -q "to service_role" supabase/migrations/20260726194500_create_recrawl_scheduler_worker.sql
+          grep -q "status === 401 || status === 403" lib/recrawl/recrawl-scheduler.ts
+          grep -q "no_bypass" lib/recrawl/recrawl-scheduler.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
