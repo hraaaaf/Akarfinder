@@ -20,7 +20,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Canonical UX contracts
-        run: npx tsx --test scripts/scrapers/__tests__/ux-gate0-contracts.test.ts scripts/scrapers/__tests__/ux-search-session.test.ts scripts/scrapers/__tests__/ux-search-history.test.ts scripts/scrapers/__tests__/ux-search-view.test.ts scripts/scrapers/__tests__/ux-map-atlas.test.ts scripts/scrapers/__tests__/ux-price-explorer.test.ts scripts/scrapers/__tests__/ux-property-selection.test.ts scripts/scrapers/__tests__/ux-smart-property-card.test.ts scripts/scrapers/__tests__/ux-certified-property-map.test.ts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-gate0-contracts.test.ts scripts/scrapers/__tests__/ux-search-session.test.ts scripts/scrapers/__tests__/ux-search-history.test.ts scripts/scrapers/__tests__/ux-search-view.test.ts scripts/scrapers/__tests__/ux-map-atlas.test.ts scripts/scrapers/__tests__/ux-price-explorer.test.ts scripts/scrapers/__tests__/ux-property-selection.test.ts scripts/scrapers/__tests__/ux-smart-property-card.test.ts scripts/scrapers/__tests__/ux-certified-property-map.test.ts scripts/scrapers/__tests__/ux-property-passport.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build
