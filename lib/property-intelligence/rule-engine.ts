@@ -80,7 +80,7 @@ const BOOLEAN_RULES: readonly BooleanRule[] = [
   { key: "equipment.gym", positive: [phrase("salle de sport", "fitness", "gym", "صالة رياضية")], negative: [phrase("sans salle de sport", "pas de salle de sport", "بدون صالة رياضية")] },
   { key: "equipment.spa", positive: [phrase("spa", "hammam", "sauna", "حمام", "سبا")], negative: [phrase("sans spa", "sans hammam", "pas de spa", "بدون سبا")] },
   { key: "equipment.smart_home", positive: [phrase("domotique", "maison connectee", "smart home", "منزل ذكي")], negative: [phrase("sans domotique", "pas de domotique")] },
-  { key: "equipment.furnished", positive: [phrase("meuble", "meublee", "furnished", "مفروش")], negative: [phrase("non meuble", "non meublee", "sans meubles", "غير مفروش")] },
+  { key: "equipment.furnished", positive: [phrase("meuble", "meublee", "furnished", "مفروش", "مفروشة")], negative: [phrase("non meuble", "non meublee", "sans meubles", "غير مفروش", "غير مفروشة")] },
   { key: "environment.calm", positive: [phrase("calme", "tranquille", "quartier paisible", "هادئ")], negative: [phrase("bruyant", "tres bruyant", "nuisances sonores", "صاخب")] },
   { key: "environment.bright", positive: [phrase("lumineux", "lumineuse", "tres eclaire", "ensoleille", "مشمس", "مضيء")], negative: [phrase("sombre", "peu lumineux", "manque de lumiere", "مظلم")] },
   { key: "environment.no_overlook", positive: [phrase("sans vis a vis", "aucun vis a vis", "vue degagee", "دون مقابل")], negative: [phrase("avec vis a vis", "fort vis a vis")] },
@@ -164,7 +164,7 @@ export function extractPropertyFeatures(input: RuleInput): ExtractedFeature[] {
     ["sea", phrase("vue mer", "sea view", "اطلالة بحرية")], ["golf", phrase("vue golf", "sur golf")],
     ["mountain", phrase("vue montagne", "اطلالة جبلية")], ["garden", phrase("vue jardin", "اطلالة على الحديقة")],
     ["pool", phrase("vue piscine", "اطلالة على المسبح")], ["city", phrase("vue ville", "vue urbaine", "اطلالة على المدينة")],
-    ["open", phrase("vue degagee", "panoramique", "اطلالة مفتوحة")], ["courtyard", phrase("vue cour", "cour interieure")],
+    ["open", phrase("vue degagee", "degagee", "degage", "panoramique", "اطلالة مفتوحة")], ["courtyard", phrase("vue cour", "cour interieure")],
   ] as const;
   const matchedViews = [...new Set(views.filter(([, pattern]) => pattern.test(text)).map(([value]) => value))];
   const titleHasView = views.some(([value, pattern]) => matchedViews.includes(value) && pattern.test(title));
