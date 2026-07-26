@@ -1,13 +1,16 @@
 "use client";
 
 import { useId, useState } from "react";
+import { MapPin, X } from "lucide-react";
 import { MapAtlasLayerSwitcher } from "@/components/search/MapAtlasLayerSwitcher";
+import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
 import {
   CITY_MARKER,
   CITY_MARKER_ACTIVE,
   getCityCoord,
   normalizeCityKey,
 } from "@/lib/search/city-coords";
+import { formatPrice } from "@/lib/listings/utils";
 import { MOROCCO_PATH, MOROCCO_VIEWBOX } from "@/lib/search/morocco-path";
 import {
   DEFAULT_MAP_ATLAS_AVAILABILITY,
@@ -40,8 +43,11 @@ export function SearchMapPanel({
 }: SearchMapPanelProps) {
   const uid = useId().replace(/:/g, "");
   const [requestedLayer, setRequestedLayer] = useState<MapAtlasLayer>("listings");
+  const { activeListing, selection, clearSelection } = usePropertySelection();
   const activeLayer = resolveMapAtlasLayer(requestedLayer, atlasAvailability);
   const activeLayerDefinition = MAP_ATLAS_LAYERS.find((layer) => layer.id === activeLayer);
+  const selectedCity = activeListing?.city?.trim() || null;
+  const visualActiveCity = selectedCity ?? activeCity;
   const displayCity = activeCity === "all" ? "Maroc" : activeCity;
   const pins = cityCounts
     .map((city) => ({ ...city, coord: getCityCoord(city.city) }))
@@ -49,7 +55,7 @@ export function SearchMapPanel({
 
   const primaryLabels = new Set(["casablanca", "marrakech", "tanger", "agadir", "fes"]);
   const mobileLabels = new Set(["casablanca", "marrakech", "agadir"]);
-  const activeCoord = activeCity !== "all" ? getCityCoord(activeCity) : null;
+  const activeCoord = visualActiveCity !== "all" ? getCityCoord(visualActiveCity) : null;
 
   return (
     <aside className={`overflow-hidden rounded-2xl border border-[#e4e9f2] bg-white shadow-[0_18px_50px_rgba(15,35,65,0.08)] ${className}`}>
@@ -110,7 +116,7 @@ export function SearchMapPanel({
         ) : null}
 
         {pins.map((pin) => {
-          const isActive = activeCity !== "all" && pin.city.toLowerCase() === activeCity.toLowerCase();
+          const isActive = visualActiveCity !== "all" && pin.city.toLowerCase() === visualActiveCity.toLowerCase();
           const style = isActive ? CITY_MARKER_ACTIVE : CITY_MARKER;
           const cityKey = normalizeCityKey(pin.city);
           const showLabelMobile = isActive || mobileLabels.has(cityKey);
@@ -121,7 +127,7 @@ export function SearchMapPanel({
               type="button"
               onClick={() => onSelectCity(pin.city)}
               aria-label={`Filtrer les ${pin.count} résultats affichés à ${pin.city}`}
-              aria-pressed={isActive}
+              aria-pressed={activeCity !== "all" && pin.city.toLowerCase() === activeCity.toLowerCase()}
               className="group absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer focus:outline-none"
               style={{ left: `${pin.coord.x}%`, top: `${pin.coord.y}%` }}
             >
@@ -152,6 +158,36 @@ export function SearchMapPanel({
             <p className="mt-1.5 text-[10px] font-semibold text-slate-500">{otherCount} fiche{otherCount > 1 ? "s" : ""} sans repère ville cartographiable.</p>
           ) : null}
         </div>
+
+        {activeListing ? (
+          <div className="absolute bottom-16 left-3 right-3 z-20 rounded-2xl border border-blue-200 bg-white/95 p-4 shadow-[0_18px_40px_rgba(15,35,65,0.18)] backdrop-blur sm:left-4 sm:right-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-blue-600">
+                  <MapPin size={12} aria-hidden="true" />
+                  {selection.interaction === "selected" ? "Propriété sélectionnée" : "Propriété survolée"}
+                </p>
+                <p className="mt-1 line-clamp-1 text-[13px] font-extrabold text-[#071B33]">{activeListing.title}</p>
+                <p className="mt-1 text-[11px] font-semibold text-slate-500">
+                  {activeListing.neighborhood ? `${activeListing.city}, ${activeListing.neighborhood}` : activeListing.city} · {formatPrice(activeListing.price, activeListing.currency)}
+                </p>
+              </div>
+              {selection.interaction === "selected" ? (
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  aria-label="Retirer la propriété sélectionnée"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
+                >
+                  <X size={14} aria-hidden="true" />
+                </button>
+              ) : null}
+            </div>
+            <p className="mt-2 text-[10px] leading-4 text-slate-500">
+              Repère au niveau de la ville uniquement. AkarFinder n’affiche pas de position exacte sans coordonnées certifiées.
+            </p>
+          </div>
+        ) : null}
 
         <div className="absolute bottom-3 left-3 right-3 z-10 rounded-xl border border-[#e4e9f2] bg-white/95 px-4 py-2.5 backdrop-blur sm:bottom-4 sm:left-4 sm:right-4 sm:rounded-2xl sm:px-5 sm:py-3">
           <p className="text-[11px] leading-4 text-slate-500">
