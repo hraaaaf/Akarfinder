@@ -22,6 +22,10 @@ type ListingRow = {
 
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
 
+function explicitTrueOnly(value: boolean | null): true | undefined {
+  return value === true ? true : undefined;
+}
+
 export function mapClusterListingToBackfillListing(cluster: ClusterRow, listing: ListingRow): BackfillListing {
   if (cluster.legacy_property_listing_id !== listing.id) throw new Error("cluster_listing_mismatch");
   return {
@@ -34,9 +38,9 @@ export function mapClusterListingToBackfillListing(cluster: ClusterRow, listing:
       condition: listing.condition,
       property_age_range: listing.property_age_range,
       orientation: listing.orientation,
-      has_pool: listing.has_pool,
-      has_concierge: listing.has_concierge,
-      has_parking: listing.garage_spaces == null ? undefined : listing.garage_spaces > 0,
+      has_pool: explicitTrueOnly(listing.has_pool),
+      has_concierge: explicitTrueOnly(listing.has_concierge),
+      has_parking: listing.garage_spaces == null ? undefined : listing.garage_spaces > 0 ? true : undefined,
     },
     sourceObservationIds: [],
   };
