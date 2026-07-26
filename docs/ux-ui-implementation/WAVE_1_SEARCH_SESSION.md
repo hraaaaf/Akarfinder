@@ -1,6 +1,6 @@
 # WAVE 1 — SEARCH SESSION FOUNDATION
 
-**Status:** IMPLEMENTED_PENDING_FINAL_CI  
+**Status:** CERTIFIED_COMPLETE  
 **Scope:** S1 — canonical session state, URL restoration and shared List / Split / Map presentation.
 
 ## Implemented
@@ -34,8 +34,9 @@
 
 - shell integration commit: `670b61d08029af8ecdae5281ea348a020c575bdc`;
 - integration-contract test commit: `5922ce3ffe90c97da542ff709d13ab2f7be3db80`;
-- final certification is the latest green `UX Gate 0 Contracts` workflow on PR #112.
+- documentation certification commit: this file update;
+- certification workflow: `UX Gate 0 Contracts` run #20 — contracts, TypeScript and production build all successful.
 
-## Next implementation slice
+## Exit decision
 
-After final CI certification, Wave 1 can close and the program can proceed to the next UX wave without reopening search-state or ranking architecture.
+Wave 1 is closed. Later UX waves may consume the canonical search session and view contracts, but must not introduce a second search state, a second ranking path or view-specific result ordering.
