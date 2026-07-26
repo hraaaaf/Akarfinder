@@ -1,0 +1,38 @@
+name: ODM-09 Search Activation Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/search/**'
+      - 'app/api/search/**'
+      - 'components/search/**'
+      - 'lib/search/**'
+      - 'lib/search-gateway/**'
+      - 'next.config.mjs'
+      - 'scripts/scrapers/__tests__/odm-09-search-activation.test.ts'
+      - '.github/workflows/odm-09-search-certification.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  certify-search-activation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: ODM-09 activation contract
+        run: npx tsx --test scripts/scrapers/__tests__/odm-09-search-activation.test.ts
+      - name: ODM-07 serving policy regression
+        run: npx tsx --test scripts/scrapers/__tests__/odm-07-search-gateway-policy.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
