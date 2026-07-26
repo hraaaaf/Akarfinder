@@ -1,24 +1,10 @@
 import { writeFile } from "node:fs/promises";
 import { fetchAuthorizedSource, MUBAWAB_CONTROLLED_POLICY } from "../../lib/recrawl/authorized-source-adapter.js";
+import { robotsAllows } from "../../lib/recrawl/robots-policy.js";
 
 const TARGET_URL = process.env.AUTHORIZED_SOURCE_CANARY_URL
   ?? "https://www.mubawab.ma/fr/a/8281326/beau-terrain-en-location-%C3%A0-ben-guerir-surface-de-3200-m%C2%B2";
 const REPORT_PATH = process.env.AUTHORIZED_SOURCE_REPORT_PATH ?? "authorized-source-canary-report.json";
-
-function robotsAllowsDetail(robots: string, path: string): boolean {
-  const normalized = robots.replace(/\r/g, "");
-  const groups = normalized.split(/(?=User-agent\s*:)/i);
-  const wildcard = groups.filter((group) => /User-agent\s*:\s*\*/i.test(group)).join("\n");
-  const disallows = [...wildcard.matchAll(/^\s*Disallow\s*:\s*(.*?)\s*$/gim)]
-    .map((match) => match[1]?.trim())
-    .filter((value): value is string => Boolean(value));
-  return !disallows.some((rule) => {
-    if (rule === "/") return true;
-    if (!rule) return false;
-    const prefix = rule.replace(/\*.*$/, "");
-    return prefix.length > 0 && path.startsWith(prefix);
-  });
-}
 
 async function main(): Promise<void> {
   const target = new URL(TARGET_URL);
@@ -29,7 +15,7 @@ async function main(): Promise<void> {
   });
   const robotsText = await robotsResponse.text();
   if (!robotsResponse.ok) throw new Error(`robots_fetch_failed_${robotsResponse.status}`);
-  if (!robotsAllowsDetail(robotsText, target.pathname)) throw new Error("robots_detail_path_disallowed");
+  if (!robotsAllows(robotsText, `${target.pathname}${target.search}`)) throw new Error("robots_detail_path_disallowed");
 
   const observation = await fetchAuthorizedSource({
     policy: MUBAWAB_CONTROLLED_POLICY,
