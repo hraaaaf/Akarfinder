@@ -110,12 +110,12 @@ function extractStanding(text: string, structured: Record<string, unknown>, reli
   }
 
   const candidates = [
-    ["prestige", [phrase("prestige", "ultra premium", "exceptionnel", "استثنائي")]],
-    ["luxury", [phrase("luxe", "luxueux", "luxueuse", "luxury", "فاخر")]],
-    ["high", [phrase("haut standing", "high standing", "راقي")]],
-    ["mid", [phrase("moyen standing", "mid standing", "متوسط راقي")]],
-    ["economy", [phrase("economique", "social", "اقتصادي")]],
-    ["standard", [phrase("standard", "standing normal", "عادي")]],
+    ["prestige", [phrase("prestige", "ultra premium", "exceptionnel", "استثنائي", "استثنائية")]],
+    ["luxury", [phrase("luxe", "luxueux", "luxueuse", "luxury", "فاخر", "فاخرة")]],
+    ["high", [phrase("haut standing", "high standing", "راقي", "راقية")]],
+    ["mid", [phrase("moyen standing", "mid standing", "متوسط راقي", "متوسطة راقية")]],
+    ["economy", [phrase("economique", "social", "اقتصادي", "اقتصادية")]],
+    ["standard", [phrase("standard", "standing normal", "عادي", "عادية")]],
   ] as const;
   const matches = candidates.filter(([, patterns]) => contains(text, patterns)).map(([value]) => value);
   const unique = [...new Set(matches)];
