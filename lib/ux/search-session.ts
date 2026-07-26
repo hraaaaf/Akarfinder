@@ -1,4 +1,4 @@
-import type { ListingFiltersState } from "@/lib/listings/types";
+import type { ListingFiltersState, ListingPropertyType } from "@/lib/listings/types";
 import type { SortBy } from "@/lib/listings/utils";
 import {
   normalizeSearchQueryState,
@@ -103,7 +103,7 @@ export function searchSessionToListingState(state: SearchQueryState): {
     filters: {
       search: normalized.q ?? "",
       transactionType: normalized.transactionType ?? "all",
-      propertyType: normalized.propertyType ?? "all",
+      propertyType: (normalized.propertyType as ListingPropertyType | undefined) ?? "all",
       city: normalized.city ?? "all",
       neighborhood: normalized.district ?? "all",
       minBudget: normalized.minPrice != null ? String(normalized.minPrice) : "",
