@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "components/search/LightZillowSearchShell.tsx"
+      - "lib/tracking/types.ts"
       - "scripts/scrapers/__tests__/odm-09d-search-ui-cursor.test.ts"
       - ".github/workflows/odm-09d-search-ui-cursor.yml"
 
@@ -25,6 +26,15 @@ jobs:
       - name: ODM-09C gateway cursor regression
         run: node --import tsx --test scripts/scrapers/__tests__/odm-09c-gateway-cursor-bridge.test.ts
       - name: TypeScript
-        run: npm run typecheck
+        run: |
+          set -o pipefail
+          npm run typecheck 2>&1 | tee typecheck.log
+      - name: Upload TypeScript diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odm-09d-typecheck-log
+          path: typecheck.log
+          if-no-files-found: error
       - name: Production build
         run: npm run build
