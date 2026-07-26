@@ -11,6 +11,7 @@ import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { ListingVisual } from "@/components/listings/ListingVisual";
 import { PricePositionBadge } from "@/components/price-position/PricePositionBadge";
+import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { buildAkarInfoPassportForListing } from "@/lib/akarinfo/akarinfo-passport";
 import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-policy";
@@ -44,6 +45,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   if (process.env.NODE_ENV === "production" && listing.production_allowed === false) return null;
 
   const { theme } = useTheme();
+  const { selection, hoverListing, clearHover, selectListing, isActive } = usePropertySelection();
   const [thumbnailError, setThumbnailError] = useState(false);
   const rawImageMode = getListingImageMode(listing);
   const policyBlocked = listing.display_images?.policy === "no_listing_image";
@@ -60,6 +62,8 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   const resultHref = observedExternal && listing.listing_url ? listing.listing_url : `/listings/${listing.id}`;
   const resultTarget = observedExternal ? "_blank" : undefined;
   const resultRel = observedExternal ? "noopener noreferrer" : undefined;
+  const active = isActive(listing);
+  const selected = active && selection.interaction === "selected";
   const showOriginal = Boolean(
     listing.listing_url &&
       (!listing.allowed_ctas ||
@@ -68,7 +72,20 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   );
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border/15 bg-card shadow-[0_14px_40px_rgba(2,10,24,0.15)] backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-bronze-500/40 hover:shadow-[0_26px_56px_rgba(2,10,24,0.3)] dark:border-white/10 dark:bg-white/[0.045] dark:shadow-[0_14px_40px_rgba(2,10,24,0.4)] dark:hover:shadow-[0_26px_56px_rgba(2,10,24,0.55)]">
+    <article
+      onMouseEnter={() => hoverListing(listing, "list")}
+      onMouseLeave={clearHover}
+      onFocus={() => hoverListing(listing, "list")}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) clearHover();
+      }}
+      data-property-active={active ? "true" : "false"}
+      className={`group flex flex-col overflow-hidden rounded-2xl border bg-card backdrop-blur-sm transition duration-300 hover:-translate-y-1 dark:bg-white/[0.045] ${
+        active
+          ? "border-bronze-500/70 shadow-[0_26px_60px_rgba(155,120,56,0.28)] ring-2 ring-bronze-500/20 dark:shadow-[0_26px_60px_rgba(155,120,56,0.24)]"
+          : "border-border/15 shadow-[0_14px_40px_rgba(2,10,24,0.15)] hover:border-bronze-500/40 hover:shadow-[0_26px_56px_rgba(2,10,24,0.3)] dark:border-white/10 dark:shadow-[0_14px_40px_rgba(2,10,24,0.4)] dark:hover:shadow-[0_26px_56px_rgba(2,10,24,0.55)]"
+      }`}
+    >
       <Link
         href={resultHref}
         target={resultTarget}
@@ -145,7 +162,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             </p>
             {listing.price_per_m2 != null && listing.price_per_m2 > 0 ? (
               <p className="mt-1 text-[12px] font-bold text-muted-foreground">
-                {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
+                {listing.price_per_m2.toLocaleString("fr-MA")} DH/m²
               </p>
             ) : null}
           </div>
@@ -163,6 +180,20 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             </span>
           </p>
         </Link>
+
+        <button
+          type="button"
+          onClick={() => selectListing(listing, "list")}
+          aria-pressed={selected}
+          className={`mt-3 flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-[11.5px] font-extrabold transition ${
+            selected
+              ? "border-bronze-500/60 bg-bronze-500/20 text-bronze-200"
+              : "border-border/15 bg-surface/70 text-muted-foreground hover:border-bronze-500/40 hover:text-foreground dark:border-white/10 dark:bg-white/[0.04]"
+          }`}
+        >
+          <MapPin size={13} aria-hidden="true" />
+          {selected ? "Bien repéré sur la carte" : "Repérer sur la carte"}
+        </button>
 
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-border/12 pt-3 text-[13px] font-bold text-foreground/75 dark:border-white/8">
           <span>{formatSurface(listing.surface_m2)}</span>
