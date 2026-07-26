@@ -1,0 +1,36 @@
+name: ODM-09E Lookahead Pagination Fix
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/search-gateway/public-search-cursor.ts"
+      - "supabase/migrations/20260726194500_fix_public_search_lookahead_limit.sql"
+      - "scripts/scrapers/__tests__/odm-09e-lookahead-pagination.test.ts"
+      - ".github/workflows/odm-09e-lookahead-pagination.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  certify-lookahead:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Lookahead pagination regression
+        run: npx tsx --test scripts/scrapers/__tests__/odm-09e-lookahead-pagination.test.ts
+      - name: ODM-09B cursor regression
+        run: npx tsx --test scripts/scrapers/__tests__/odm-09b-public-search-contract.test.ts
+      - name: ODM-09C gateway regression
+        run: npx tsx --test scripts/scrapers/__tests__/odm-09c-gateway-cursor-bridge.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
