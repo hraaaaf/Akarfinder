@@ -33,7 +33,8 @@ jobs:
           grep -q "for update skip locked" supabase/migrations/20260726194500_create_recrawl_scheduler_worker.sql
           grep -q "publication_eligible = false" supabase/migrations/20260726194500_create_recrawl_scheduler_worker.sql
           grep -q "to service_role" supabase/migrations/20260726194500_create_recrawl_scheduler_worker.sql
-          grep -q "http_403_no_bypass" lib/recrawl/recrawl-scheduler.ts
+          grep -q "status === 401 || status === 403" lib/recrawl/recrawl-scheduler.ts
+          grep -q "no_bypass" lib/recrawl/recrawl-scheduler.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build
