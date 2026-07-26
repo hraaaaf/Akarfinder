@@ -94,9 +94,9 @@ All failed canary attempts rolled back atomically and left no partial observatio
 
 ## CI
 
-Certified head before this documentation commit: `a2f3dbdf7bfb59f3af784ed3f575ca2045e924f5`.
+Final certified head: `f1418b67657f9ca1b5cbe2d6d633da5f78bfb656`.
 
-Workflow `Transactional Recrawl Activation V1 Gate`, run #7:
+Workflow `Transactional Recrawl Activation V1 Gate`, run #8:
 
 - transactional SQL contract tests: success;
 - migration contract assertions: success;
