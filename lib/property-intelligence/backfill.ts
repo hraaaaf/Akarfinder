@@ -1,3 +1,4 @@
+import { extractConditionFeature } from "./condition-engine";
 import { extractPropertyFeatures, type ExtractedFeature } from "./rule-engine";
 
 export type BackfillListing = {
@@ -78,26 +79,27 @@ export async function runPropertyIntelligenceBackfill(
     const remaining = maxRows - scannedRows;
     const page = await dependencies.fetchPage(cursor, Math.min(batchSize, remaining));
     if (page.rows.length === 0) {
-      return {
-        status: "completed",
-        dryRun,
-        scannedRows,
-        extractedFeatures,
-        persistedFeatures,
-        skippedUnknown,
-        conflictedFeatures,
-        nextCursor: null,
-      };
+      return { status: "completed", dryRun, scannedRows, extractedFeatures, persistedFeatures, skippedUnknown, conflictedFeatures, nextCursor: null };
     }
 
     for (const row of page.rows) {
       if (!row.canonicalPropertyId.trim()) throw new Error("canonical_property_id_required");
-      const features = extractPropertyFeatures({
-        title: row.title,
-        description: row.description,
-        structured: row.structured,
-        sourceReliability: row.sourceReliability,
-      });
+      const structured = row.structured ?? {};
+      const features = [
+        ...extractPropertyFeatures({
+          title: row.title,
+          description: row.description,
+          structured,
+          sourceReliability: row.sourceReliability,
+        }),
+        extractConditionFeature({
+          title: row.title,
+          description: row.description,
+          condition: typeof structured.condition === "string" ? structured.condition : null,
+          propertyAgeRange: typeof structured.property_age_range === "string" ? structured.property_age_range : null,
+          sourceReliability: row.sourceReliability,
+        }),
+      ];
 
       scannedRows += 1;
       extractedFeatures += features.length;
@@ -123,27 +125,9 @@ export async function runPropertyIntelligenceBackfill(
 
     cursor = page.nextCursor;
     if (!cursor) {
-      return {
-        status: "completed",
-        dryRun,
-        scannedRows,
-        extractedFeatures,
-        persistedFeatures,
-        skippedUnknown,
-        conflictedFeatures,
-        nextCursor: null,
-      };
+      return { status: "completed", dryRun, scannedRows, extractedFeatures, persistedFeatures, skippedUnknown, conflictedFeatures, nextCursor: null };
     }
   }
 
-  return {
-    status: "max_rows_reached",
-    dryRun,
-    scannedRows,
-    extractedFeatures,
-    persistedFeatures,
-    skippedUnknown,
-    conflictedFeatures,
-    nextCursor: cursor,
-  };
+  return { status: "max_rows_reached", dryRun, scannedRows, extractedFeatures, persistedFeatures, skippedUnknown, conflictedFeatures, nextCursor: cursor };
 }
