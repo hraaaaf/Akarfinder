@@ -93,6 +93,41 @@ test("ACI blocks insufficient coverage", () => {
   const result = calculateACI([{ key: "freshness", value: 90, weight: 1, confidence: 0.8, eligible: false }]);
   assert.equal(result.status, "blocked");
   assert.equal(result.score, null);
+  assert.deepEqual(result.blockers, ["insufficient_factor_coverage", "no_eligible_factor"]);
+});
+
+test("score engine rejects malformed and duplicate factors", () => {
+  const malformed = calculateACI([{ key: "freshness", value: Number.NaN, weight: 1, confidence: 0.9, eligible: true }]);
+  assert.equal(malformed.status, "blocked");
+  assert.deepEqual(malformed.blockers, ["invalid_factor"]);
+
+  const duplicate = calculateACI([
+    { key: "freshness", value: 90, weight: 0.5, confidence: 0.9, eligible: true },
+    { key: "freshness", value: 80, weight: 0.5, confidence: 0.9, eligible: true },
+  ]);
+  assert.equal(duplicate.status, "blocked");
+  assert.deepEqual(duplicate.blockers, ["duplicate_factor_key"]);
+});
+
+test("ACI returns traceable normalized contributions", () => {
+  const result = calculateACI([
+    { key: "freshness", value: 100, weight: 0.6, confidence: 0.95, eligible: true },
+    { key: "completeness", value: 50, weight: 0.4, confidence: 0.9, eligible: true },
+  ]);
+  assert.equal(result.status, "public_candidate");
+  assert.equal(result.score, 80);
+  assert.equal(result.coverage, 1);
+  assert.equal(result.contributions.reduce((sum, item) => sum + item.normalizedWeight, 0), 1);
+  assert.deepEqual(result.blockers, []);
+});
+
+test("ACI remains internal when aggregate confidence is below publication threshold", () => {
+  const result = calculateACI([
+    { key: "freshness", value: 90, weight: 0.6, confidence: 0.8, eligible: true },
+    { key: "completeness", value: 80, weight: 0.4, confidence: 0.8, eligible: true },
+  ]);
+  assert.equal(result.status, "internal");
+  assert.deepEqual(result.blockers, ["insufficient_score_confidence"]);
 });
 
 test("AQI remains internal even with strong factors", () => {
@@ -103,4 +138,5 @@ test("AQI remains internal even with strong factors", () => {
   ]);
   assert.equal(result.status, "internal");
   assert.ok((result.score ?? 0) > 0);
+  assert.deepEqual(result.blockers, []);
 });
