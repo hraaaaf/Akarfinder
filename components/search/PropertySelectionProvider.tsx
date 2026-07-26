@@ -5,6 +5,7 @@ import type { Listing } from "@/lib/listings/types";
 import {
   EMPTY_PROPERTY_SELECTION,
   clearPropertyHover,
+  getCanonicalPropertyId,
   hoverProperty,
   isListingInSelectedProperty,
   selectProperty,
@@ -14,6 +15,8 @@ import {
 type PropertySelectionContextValue = {
   selection: PropertySelectionState;
   activeListing: Listing | null;
+  visibleListings: Listing[];
+  registerListing: (listing: Listing) => () => void;
   hoverListing: (listing: Listing, origin?: "list" | "map") => void;
   clearHover: () => void;
   selectListing: (listing: Listing, origin?: "list" | "map" | "preview") => void;
@@ -26,11 +29,29 @@ const PropertySelectionContext = createContext<PropertySelectionContextValue | n
 export function PropertySelectionProvider({ children }: { children: ReactNode }) {
   const [selection, setSelection] = useState<PropertySelectionState>(EMPTY_PROPERTY_SELECTION);
   const [activeListing, setActiveListing] = useState<Listing | null>(null);
+  const [registeredListings, setRegisteredListings] = useState<Map<string, Listing>>(() => new Map());
 
   const value = useMemo<PropertySelectionContextValue>(
     () => ({
       selection,
       activeListing,
+      visibleListings: [...registeredListings.values()],
+      registerListing: (listing) => {
+        const key = `${getCanonicalPropertyId(listing)}:${listing.id}`;
+        setRegisteredListings((current) => {
+          const next = new Map(current);
+          next.set(key, listing);
+          return next;
+        });
+        return () => {
+          setRegisteredListings((current) => {
+            if (!current.has(key)) return current;
+            const next = new Map(current);
+            next.delete(key);
+            return next;
+          });
+        };
+      },
       hoverListing: (listing, origin = "list") => {
         setSelection((current) => {
           if (current.interaction === "selected") return current;
@@ -55,7 +76,7 @@ export function PropertySelectionProvider({ children }: { children: ReactNode })
       },
       isActive: (listing) => isListingInSelectedProperty(listing, selection),
     }),
-    [activeListing, selection],
+    [activeListing, registeredListings, selection],
   );
 
   return <PropertySelectionContext.Provider value={value}>{children}</PropertySelectionContext.Provider>;
