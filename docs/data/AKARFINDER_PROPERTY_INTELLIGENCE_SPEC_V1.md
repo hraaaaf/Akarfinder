@@ -1,146 +1,79 @@
-# AKARFINDER PROPERTY INTELLIGENCE SPECIFICATION v1
+# AkarFinder Property Intelligence V1
 
-**Statut :** FOUNDATION_V1_CERTIFIED  
-**Portée :** Akar Intelligence Layer — propriété canonique  
-**Doctrine :** une annonce est une observation ; une propriété est une entité ; l’intelligence est calculée, traçable et révocable.
+## Status
 
-## 1. Invariants
+Foundation, Supabase readiness and first controlled production backfill completed.
 
-1. Ne jamais écraser une valeur source.
-2. Chaque feature calculée conserve valeur, confiance, méthode, preuves, version et date.
-3. `unknown` est une sortie valide et préférable à une inférence faible.
-4. Une contradiction réduit la confiance et peut bloquer la publication.
-5. Les scores ne consomment que des features admissibles selon leur propre politique.
-6. Aucun score ne doit être présenté comme une vérité, une expertise réglementée ou une garantie de rendement.
-7. Tout calcul doit être reproductible à partir d’un snapshot d’entrée et d’une version méthodologique.
+## Production state — 2026-07-26
 
-## 2. Pipeline canonique
+Canonical Supabase project: `kusfiyimwvxblvsrhaes`.
 
-OBSERVATION → NORMALIZATION → CANONICALIZATION → FEATURE EXTRACTION → CONFIDENCE → PROPERTY INTELLIGENCE STORE → SCORE ENGINE → DISPLAY ELIGIBILITY → PUBLICATION.
+### Applied database controls
 
-## 3. Familles de features
+- atomic `persist_property_intelligence_feature(...)` RPC;
+- `SECURITY INVOKER`;
+- execution restricted to `service_role`;
+- active-version uniqueness index per canonical property and feature;
+- internal table/view grants revoked from `anon` and `authenticated`;
+- no public activation.
 
-- identity
-- geometry
-- distribution
-- condition
-- standing
-- equipment
-- environment
-- neighborhood
-- history
-- reliability
-- market_value
-- intelligence
+### Canonical corpus audit
 
-## 4. Contrat d’une feature
+At execution time:
 
-```ts
-type PropertyFeatureObservation<T> = {
-  propertyId: string;
-  featureKey: string;
-  value: T | null;
-  confidence: number;
-  status: "observed" | "inferred" | "unknown" | "conflicted";
-  method: string;
-  methodologyVersion: string;
-  evidence: Array<{ source: string; excerpt?: string; observationId?: string }>;
-  inputSnapshot: string;
-  generatedAt: string;
-};
-```
+- 1,995 canonical clusters linked to listings;
+- schema-default `false` values detected for `has_pool` and `has_concierge` on the full corpus;
+- those defaults are not treated as observed negative evidence;
+- adapter hardened to preserve `unknown` unless an explicit positive structured value exists.
 
-## 5. Niveaux de confiance
+### Controlled condition backfill
 
-- `0.00–0.39` : unusable
-- `0.40–0.59` : internal_hint
-- `0.60–0.79` : internal_usable
-- `0.80–0.94` : public_candidate
-- `0.95–1.00` : strongly_supported
+Snapshot: `property_intelligence_backfill_2026_07_26_v1`.
 
-Le registre peut imposer un seuil supérieur par feature.
+- 77 canonical properties received `condition.segment`;
+- 77 active versions;
+- 0 publication-eligible rows;
+- 10 preliminary micro-snapshot versions were correctly superseded;
+- 0 duplicate active version.
 
-## 6. Résolution des conflits
+Active segment distribution:
 
-Priorité indicative :
+- `good_condition`: 27;
+- `recent`: 15;
+- `renovated_old`: 13;
+- `old_unspecified`: 10;
+- `new_delivered`: 7;
+- `needs_renovation`: 3;
+- `needs_refresh`: 2.
 
-1. champ partenaire certifié ;
-2. attribut structuré de la source ;
-3. plusieurs observations concordantes ;
-4. description explicite ;
-5. titre ;
-6. inférence indirecte.
+All active rows are currently `rule_engine_v2` inferred outputs. They remain internal and must not be exposed until publication eligibility is separately certified.
 
-Deux preuves explicites incompatibles produisent `conflicted`, jamais une moyenne silencieuse.
+## Invariants
 
-## 7. Scores v1
+- a listing remains an observation;
+- source values are never overwritten;
+- `unknown` and `conflicted` remain valid outputs;
+- provenance, confidence, method, methodology version and input snapshot are retained;
+- no automatic public activation;
+- AQI remains internal;
+- publication requires freshness, confidence, an approved method, displayable evidence and an explicit publication gate.
 
-- ACI — confiance et qualité des données ; certifiable en premier.
-- AQI — qualité intrinsèque observable ; ne mesure pas la valeur financière.
-- AVI — positionnement prix/qualité relatif ; bloqué sans référence locale fiable.
-- AFI — adéquation famille ; contextualisé et non universel.
-- AII — potentiel d’usage investissement ; non présenté comme conseil financier.
-- ALI — liquidité estimée ; expérimental tant qu’aucun historique transactionnel fiable n’existe.
+## Backfill execution contract
 
-Chaque score retourne : valeur, intervalle de confiance, couverture des facteurs, version, explications et blockers.
+- paginated and cursor-resumable;
+- dry-run by default;
+- strict `maxRows` and validated batch size;
+- unknown outputs skipped by default;
+- persistence through the atomic RPC only;
+- schema-default negative booleans are not accepted as evidence;
+- public eligibility is always false during controlled backfill.
 
-## 8. Gates publics
+## Validation
 
-Une feature ou un score n’est publiable que si :
-
-- méthodologie autorisée ;
-- confiance ≥ seuil du registre ;
-- absence de conflit non résolu ;
-- fraîcheur acceptable ;
-- preuve non sensible et affichable ;
-- couverture minimale des facteurs du score ;
-- validation M4 du batch.
-
-## 9. Hors certification v1
-
-- analyse d’images ;
-- luminosité déduite visuellement ;
-- qualité de construction sans preuve ;
-- rendement locatif garanti ;
-- probabilité de vente ;
-- coûts de rénovation ;
-- sécurité réelle d’un quartier ;
-- temps de trajet sans dataset certifié.
-
-Ces éléments peuvent être expérimentés en interne, jamais activés implicitement.
-
-## 10. Definition of Done
-
-La fondation v1 est certifiée si :
-
-- registre canonique versionné ;
-- moteur de règles pur et déterministe ;
-- moteur de confiance unifié ;
-- store additif avec historique ;
-- moteurs ACI/AQI avec blockers explicites ;
-- tests de négation, contradiction et `unknown` ;
-- migration additive et RLS ;
-- aucune activation publique automatique.
-
-## 11. Backfill contrôlé
-
-Le backfill Property Intelligence doit respecter les règles suivantes :
-
-- pagination par curseur canonique ;
-- reprise explicite par `startCursor` ;
-- `dryRun=true` par défaut ;
-- plafonnement strict par `maxRows` ;
-- inconnus non persistés sauf option explicite ;
-- persistance via la RPC atomique `persist_property_intelligence_feature` ;
-- aucun accès `anon` ou `authenticated` aux tables internes ;
-- micro-écriture et backfill massif interdits sans validation connectée préalable ;
-- aucune activation publique automatique après backfill.
-
-État juillet 2026 :
-
-- RPC appliquée au projet Supabase canonique ;
-- grants internes durcis ;
-- smoke test idempotence/supersession validé puis nettoyé ;
-- corpus candidat connecté : 1 905 clusters canoniques ;
-- runner connecté présent mais verrouillé en dry-run uniquement ;
-- exécution connectée automatisée en attente d’un canal autorisé pour les secrets.
+- Property Intelligence tests: green;
+- Supabase adapter regression tests: green;
+- TypeScript: green;
+- production build: green;
+- connected RPC smoke test: green;
+- idempotence and supersession: verified;
+- security advisor: no new blocking issue attributable to this layer.
