@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LightZillowSearchShell } from "@/components/search/LightZillowSearchShell";
+import { PropertySelectionProvider } from "@/components/search/PropertySelectionProvider";
 import { SearchPriceExplorerDock } from "@/components/search/SearchPriceExplorerDock";
 import { searchListings } from "@/lib/search";
 import { buildSearchPageQuery } from "@/lib/search/search-page-query";
@@ -74,19 +75,21 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" />
-      <SearchPriceExplorerDock />
-      <LightZillowSearchShell
-        initialListings={initialSearchResult.listings}
-        initialFilters={{
-          transactionType,
-          city,
-          propertyType,
-          minBudget,
-          maxBudget,
-          mreOnly,
-          search,
-        }}
-      />
+      <PropertySelectionProvider>
+        <SearchPriceExplorerDock />
+        <LightZillowSearchShell
+          initialListings={initialSearchResult.listings}
+          initialFilters={{
+            transactionType,
+            city,
+            propertyType,
+            minBudget,
+            maxBudget,
+            mreOnly,
+            search,
+          }}
+        />
+      </PropertySelectionProvider>
       <SiteFooter />
     </main>
   );
