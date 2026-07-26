@@ -1,0 +1,31 @@
+name: ODM-09D Search UI Cursor
+
+on:
+  pull_request:
+    paths:
+      - "components/search/LightZillowSearchShell.tsx"
+      - "lib/tracking/types.ts"
+      - "scripts/scrapers/__tests__/odm-09d-search-ui-cursor.test.ts"
+      - ".github/workflows/odm-09d-search-ui-cursor.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-search-ui-cursor:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: ODM-09D UI cursor contract
+        run: node --import tsx --test scripts/scrapers/__tests__/odm-09d-search-ui-cursor.test.ts
+      - name: ODM-09C gateway cursor regression
+        run: node --import tsx --test scripts/scrapers/__tests__/odm-09c-gateway-cursor-bridge.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
