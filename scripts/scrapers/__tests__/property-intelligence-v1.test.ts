@@ -54,12 +54,26 @@ test("rule engine extracts extended equipment and environment signals", () => {
   assert.deepEqual(features.find((item) => item.key === "environment.view")?.value, ["sea", "open"]);
 });
 
-test("rule engine recognizes Arabic equipment signals", () => {
+test("rule engine recognizes Arabic equipment signals with unicode boundaries", () => {
   const features = extractPropertyFeatures({ description: "شقة مفروشة مع مصعد وحراسة ومسبح", sourceReliability: 1 });
   assert.equal(features.find((item) => item.key === "equipment.furnished")?.value, true);
   assert.equal(features.find((item) => item.key === "equipment.elevator")?.value, true);
   assert.equal(features.find((item) => item.key === "equipment.security")?.value, true);
   assert.equal(features.find((item) => item.key === "equipment.pool")?.value, true);
+});
+
+test("standing engine classifies explicit multilingual standing", () => {
+  const french = extractPropertyFeatures({ description: "Appartement haut standing", sourceReliability: 1 });
+  const arabic = extractPropertyFeatures({ description: "شقة فاخرة", sourceReliability: 1 });
+  assert.equal(french.find((item) => item.key === "standing.level")?.value, "high");
+  assert.equal(arabic.find((item) => item.key === "standing.level")?.value, "luxury");
+});
+
+test("standing contradictions remain conflicted", () => {
+  const features = extractPropertyFeatures({ description: "Logement économique présenté comme haut standing", sourceReliability: 1 });
+  const standing = features.find((item) => item.key === "standing.level");
+  assert.equal(standing?.value, null);
+  assert.equal(standing?.status, "conflicted");
 });
 
 test("orientation conflicts are not published as a value", () => {
@@ -72,6 +86,7 @@ test("orientation conflicts are not published as a value", () => {
 test("unknown remains unknown when no evidence exists", () => {
   const features = extractPropertyFeatures({ description: "Bel appartement central" });
   assert.equal(features.find((item) => item.key === "equipment.pool")?.status, "unknown");
+  assert.equal(features.find((item) => item.key === "standing.level")?.status, "unknown");
 });
 
 test("ACI blocks insufficient coverage", () => {
