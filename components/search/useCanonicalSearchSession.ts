@@ -31,7 +31,7 @@ export function useCanonicalSearchSession({
   }, [onRestore]);
 
   useEffect(() => {
-    const handlePopState = () => {
+    const restoreFromLocation = () => {
       restoringRef.current = true;
       onRestoreRef.current(restoreSearchHistorySnapshot(window.location.search));
       queueMicrotask(() => {
@@ -39,6 +39,9 @@ export function useCanonicalSearchSession({
       });
     };
 
+    const handlePopState = () => restoreFromLocation();
+
+    restoreFromLocation();
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
