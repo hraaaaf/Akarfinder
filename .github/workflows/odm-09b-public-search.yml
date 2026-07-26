@@ -1,0 +1,35 @@
+name: ODM-09B Public Search Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/api/search/public-index/**'
+      - 'lib/search-gateway/public-search-cursor.ts'
+      - 'supabase/migrations/20260726233000_odm_09b_public_search_cursor.sql'
+      - 'scripts/scrapers/__tests__/odm-09b-public-search-contract.test.ts'
+      - '.github/workflows/odm-09b-public-search.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  certify-public-search:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: ODM-09B cursor and RPC contract
+        run: npx tsx --test scripts/scrapers/__tests__/odm-09b-public-search-contract.test.ts
+      - name: ODM-07 serving policy regression
+        run: npx tsx --test scripts/scrapers/__tests__/odm-07-search-gateway-policy.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
