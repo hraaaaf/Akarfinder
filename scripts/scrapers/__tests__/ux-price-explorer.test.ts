@@ -59,10 +59,12 @@ test("price explorer remains presentation-only and does not add a ranking path",
   assert.equal(priceExplorerChangesRanking(), false);
   const shell = readFileSync(resolve(process.cwd(), "components/search/LightZillowSearchShell.tsx"), "utf8");
   const panel = readFileSync(resolve(process.cwd(), "components/search/PriceExplorerPanel.tsx"), "utf8");
+  const dock = readFileSync(resolve(process.cwd(), "components/search/SearchPriceExplorerDock.tsx"), "utf8");
   const rankingCalls = shell.match(/sortListings\(clientFiltered, sortBy\)/g) ?? [];
 
   assert.equal(rankingCalls.length, 1);
   assert.ok(!panel.includes("sortListings("));
+  assert.ok(!dock.includes("sortListings("));
 });
 
 test("public disclosure distinguishes asking references from transaction prices", () => {
@@ -70,4 +72,28 @@ test("public disclosure distinguishes asking references from transaction prices"
   assert.match(source, /prix demandé/i);
   assert.match(source, /prix de transaction/i);
   assert.ok(!source.includes("sample_count"));
+});
+
+test("search page mounts the price explorer and canonical session notifies it", () => {
+  const page = readFileSync(resolve(process.cwd(), "app/search/page.tsx"), "utf8");
+  const dock = readFileSync(resolve(process.cwd(), "components/search/SearchPriceExplorerDock.tsx"), "utf8");
+  const session = readFileSync(resolve(process.cwd(), "components/search/useCanonicalSearchSession.ts"), "utf8");
+
+  assert.match(page, /<SearchPriceExplorerDock\s*\/>/);
+  assert.match(dock, /CANONICAL_SEARCH_SESSION_EVENT/);
+  assert.match(dock, /params\.get\("city"\)/);
+  assert.match(dock, /params\.get\("district"\)/);
+  assert.match(dock, /params\.get\("property_type"\)/);
+  assert.match(dock, /params\.get\("transaction_type"\)/);
+  assert.match(session, /history\.replaceState/);
+  assert.match(session, /dispatchEvent\(new Event\(CANONICAL_SEARCH_SESSION_EVENT\)\)/);
+});
+
+test("price explorer synchronization does not create a second fetch or eligibility pipeline", () => {
+  const dock = readFileSync(resolve(process.cwd(), "components/search/SearchPriceExplorerDock.tsx"), "utf8");
+  const page = readFileSync(resolve(process.cwd(), "app/search/page.tsx"), "utf8");
+
+  assert.ok(!dock.includes("fetch("));
+  assert.ok(!dock.includes("searchListings("));
+  assert.ok(!page.includes("getPriceExplorerResult("));
 });
