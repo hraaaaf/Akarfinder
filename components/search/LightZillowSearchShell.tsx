@@ -8,6 +8,7 @@ import { ExternalIndexedResultsSection } from "@/components/search/ExternalIndex
 import { QuickFilters } from "@/components/search/QuickFilters";
 import { SearchListingCardDark } from "@/components/search/SearchListingCardDark";
 import { SearchMapPanel, type CityCount } from "@/components/search/SearchMapPanel";
+import { useCanonicalSearchSession } from "@/components/search/useCanonicalSearchSession";
 import type { Listing, ListingFiltersState } from "@/lib/listings/types";
 import {
   defaultListingFilters,
@@ -234,6 +235,18 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   const [gatewayResults, setGatewayResults] = useState<SearchGatewayNormalizedResult[]>([]);
   const gatewayEnabled = process.env.NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED === "true";
   const [isGatewayLoading, setIsGatewayLoading] = useState(gatewayEnabled);
+  const canonicalView = activeTab === "Carte" ? "map" : "list";
+
+  useCanonicalSearchSession({
+    filters,
+    sortBy,
+    view: canonicalView,
+    onRestore: (snapshot) => {
+      setFilters((current) => ({ ...current, ...snapshot.filters }));
+      setSortBy(snapshot.sortBy);
+      setActiveTab(snapshot.view === "map" ? "Carte" : "Liste");
+    },
+  });
 
   function handleFilterChange(next: ListingFiltersState) {
     if (
@@ -459,7 +472,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
           <QuickFilters filters={filters} cities={cities} propertyTypes={propertyTypes} onChange={handleFilterChange} onReset={handleReset} />
 
           <p className="mt-2.5 text-[12px] font-semibold text-muted-foreground">
-            Besoin de clarifier vos priorités ?{" "}
+            Besoin de clarifier vos priorités?{" "}
             <Link href="/compagnon" className="font-extrabold text-bronze-400 underline underline-offset-2 transition hover:text-bronze-300">
               Construire Mon Projet avec le Compagnon
             </Link>
