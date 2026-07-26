@@ -1,6 +1,7 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useState } from "react";
+import { MapAtlasLayerSwitcher } from "@/components/search/MapAtlasLayerSwitcher";
 import {
   CITY_MARKER,
   CITY_MARKER_ACTIVE,
@@ -8,6 +9,13 @@ import {
   normalizeCityKey,
 } from "@/lib/search/city-coords";
 import { MOROCCO_PATH, MOROCCO_VIEWBOX } from "@/lib/search/morocco-path";
+import {
+  DEFAULT_MAP_ATLAS_AVAILABILITY,
+  MAP_ATLAS_LAYERS,
+  resolveMapAtlasLayer,
+  type MapAtlasAvailability,
+  type MapAtlasLayer,
+} from "@/lib/ux/map-atlas";
 
 export type CityCount = { city: string; count: number };
 
@@ -17,6 +25,7 @@ type SearchMapPanelProps = {
   activeCity: string;
   onSelectCity: (city: string) => void;
   stats: { total: number; citiesCovered: number; avgIndex: number | null; updatedLabel: string };
+  atlasAvailability?: MapAtlasAvailability;
   className?: string;
 };
 
@@ -26,9 +35,13 @@ export function SearchMapPanel({
   activeCity,
   onSelectCity,
   stats,
+  atlasAvailability = DEFAULT_MAP_ATLAS_AVAILABILITY,
   className = "",
 }: SearchMapPanelProps) {
   const uid = useId().replace(/:/g, "");
+  const [requestedLayer, setRequestedLayer] = useState<MapAtlasLayer>("listings");
+  const activeLayer = resolveMapAtlasLayer(requestedLayer, atlasAvailability);
+  const activeLayerDefinition = MAP_ATLAS_LAYERS.find((layer) => layer.id === activeLayer);
   const displayCity = activeCity === "all" ? "Maroc" : activeCity;
   const pins = cityCounts
     .map((city) => ({ ...city, coord: getCityCoord(city.city) }))
@@ -40,19 +53,31 @@ export function SearchMapPanel({
 
   return (
     <aside className={`overflow-hidden rounded-2xl border border-[#e4e9f2] bg-white shadow-[0_18px_50px_rgba(15,35,65,0.08)] ${className}`}>
-      <div className="flex items-start justify-between gap-3 border-b border-[#eef2f8] bg-[#f8fafc] px-5 py-4">
-        <div>
-          <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-[#2563EB]">
-            Zones des résultats affichés
-          </p>
-          <h2 className="mt-1 text-[1.3rem] font-extrabold tracking-[-0.03em] text-[#071B33]">{displayCity}</h2>
-          <p className="mt-0.5 text-[12.5px] font-semibold text-slate-500">
-            {stats.total} fiche{stats.total !== 1 ? "s" : ""} indexée{stats.total !== 1 ? "s" : ""} · {stats.citiesCovered} ville{stats.citiesCovered !== 1 ? "s" : ""}
+      <div className="border-b border-[#eef2f8] bg-[#f8fafc] px-5 py-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-[#2563EB]">
+              Atlas immobilier AkarFinder
+            </p>
+            <h2 className="mt-1 text-[1.3rem] font-extrabold tracking-[-0.03em] text-[#071B33]">{displayCity}</h2>
+            <p className="mt-0.5 text-[12.5px] font-semibold text-slate-500">
+              {stats.total} fiche{stats.total !== 1 ? "s" : ""} indexée{stats.total !== 1 ? "s" : ""} · {stats.citiesCovered} ville{stats.citiesCovered !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <span className="rounded-full border border-[#e4e9f2] bg-white px-3 py-1.5 text-[10.5px] font-bold text-slate-500">
+            Carte indicative
+          </span>
+        </div>
+        <div className="mt-3">
+          <MapAtlasLayerSwitcher
+            value={activeLayer}
+            availability={atlasAvailability}
+            onChange={setRequestedLayer}
+          />
+          <p className="mt-2 text-[10.5px] leading-4 text-slate-500">
+            {activeLayerDefinition?.description}
           </p>
         </div>
-        <span className="rounded-full border border-[#e4e9f2] bg-white px-3 py-1.5 text-[10.5px] font-bold text-slate-500">
-          Carte indicative
-        </span>
       </div>
 
       <div className="relative min-h-[480px] overflow-hidden lg:min-h-[640px]">
@@ -130,7 +155,7 @@ export function SearchMapPanel({
 
         <div className="absolute bottom-3 left-3 right-3 z-10 rounded-xl border border-[#e4e9f2] bg-white/95 px-4 py-2.5 backdrop-blur sm:bottom-4 sm:left-4 sm:right-4 sm:rounded-2xl sm:px-5 sm:py-3">
           <p className="text-[11px] leading-4 text-slate-500">
-            Cliquez une ville pour filtrer les résultats affichés · la carte n'est pas une estimation du volume total du marché.
+            Cliquez une ville pour filtrer les résultats affichés · la couche Atlas ne modifie ni le classement ni l’éligibilité des résultats.
           </p>
         </div>
       </div>
