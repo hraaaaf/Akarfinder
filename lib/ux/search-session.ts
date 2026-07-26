@@ -8,6 +8,7 @@ import {
 
 const SORT_TO_CANONICAL: Record<SortBy, NonNullable<SearchQueryState["sort"]>> = {
   recommended: "relevance",
+  reliability: "relevance",
   "price-asc": "price_asc",
   "price-desc": "price_desc",
 };
