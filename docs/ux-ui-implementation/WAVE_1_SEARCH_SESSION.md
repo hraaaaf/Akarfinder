@@ -1,7 +1,7 @@
 # WAVE 1 — SEARCH SESSION FOUNDATION
 
-**Status:** IMPLEMENTED_PENDING_CI
-**Scope:** S1 only — canonical session state and URL restoration foundation.
+**Status:** IMPLEMENTED_PENDING_FINAL_CI  
+**Scope:** S1 — canonical session state, URL restoration and shared List / Split / Map presentation.
 
 ## Implemented
 
@@ -11,17 +11,31 @@
 - bidirectional adapter between `ListingFiltersState` and canonical session state;
 - explicit mapping for List / Split / Map;
 - explicit mapping for recommended and price sorting;
-- round-trip and restoration tests;
-- CI coverage through the UX contract workflow.
+- browser history restoration through `useCanonicalSearchSession`;
+- reusable `SearchViewSwitcher` consumed by `LightZillowSearchShell`;
+- List mode renders results only;
+- Split mode renders the same ranked results beside the map;
+- Map mode renders the map only;
+- one unchanged `sortListings(clientFiltered, sortBy)` call shared by all three views;
+- round-trip, restoration, layout and shell-integration tests;
+- CI coverage through the UX contract workflow, TypeScript and production build.
 
 ## Invariants
 
 1. A view change never changes the ranked result contract.
-2. Default values are omitted from URLs to keep links stable and readable.
-3. Invalid URL state cannot inject unsupported transaction, sort or view values.
-4. Price and surface bounds retain Gate 0 normalization.
-5. The browser URL is shareable state; transient loading and selection state remain local.
+2. List, Split and Map consume the same filtered and sorted result set.
+3. Default values are omitted from URLs to keep links stable and readable.
+4. Invalid URL state cannot inject unsupported transaction, sort or view values.
+5. Price and surface bounds retain Gate 0 normalization.
+6. The browser URL is shareable state; transient loading and selection state remain local.
+7. No second search pipeline or view-specific ranking is allowed.
+
+## Exit evidence
+
+- shell integration commit: `670b61d08029af8ecdae5281ea348a020c575bdc`;
+- integration-contract test commit: `5922ce3ffe90c97da542ff709d13ab2f7be3db80`;
+- final certification is the latest green `UX Gate 0 Contracts` workflow on PR #112.
 
 ## Next implementation slice
 
-Wire the adapter into `LightZillowSearchShell` with browser history restoration and add the Split view without duplicating ranking logic.
+After final CI certification, Wave 1 can close and the program can proceed to the next UX wave without reopening search-state or ranking architecture.
