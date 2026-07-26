@@ -1,0 +1,36 @@
+name: ODM-09C Gateway Cursor Bridge
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/api/search/gateway/route.ts'
+      - 'lib/search-gateway/public-search-cursor.ts'
+      - 'scripts/scrapers/__tests__/odm-09c-gateway-cursor-bridge.test.ts'
+      - '.github/workflows/odm-09c-gateway-cursor.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  certify-gateway-cursor:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: ODM-09C gateway cursor bridge contract
+        run: npx tsx --test scripts/scrapers/__tests__/odm-09c-gateway-cursor-bridge.test.ts
+      - name: ODM-09B cursor contract regression
+        run: npx tsx --test scripts/scrapers/__tests__/odm-09b-public-search-contract.test.ts
+      - name: Search Gateway policy regression
+        run: npx tsx --test scripts/scrapers/__tests__/odm-07-search-gateway-policy.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
