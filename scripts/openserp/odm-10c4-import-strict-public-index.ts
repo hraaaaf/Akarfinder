@@ -125,7 +125,9 @@ async function main() {
   persistReport({ lot: "ODM-10C4", status: "DRY_RUN", run_key: runKey, qualified_urls: allowedRows.length, net_new_urls: rows.length, rejected_rows: batch.rejections.length, domains: ALLOWED_DOMAINS, indexes: CDX_INDEXES, admitted_public_urls: 0 });
 }
 
-void main().catch((error) => {
+try {
+  await main();
+} catch (error) {
   console.error(error instanceof Error ? error.stack : String(error));
   process.exit(1);
-});
+}
