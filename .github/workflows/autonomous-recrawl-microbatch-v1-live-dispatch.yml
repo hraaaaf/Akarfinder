@@ -1,0 +1,83 @@
+name: Autonomous Recrawl Micro-Batch V1 Live Proof
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: Branch or commit containing the connected runner
+        required: true
+        default: agent/p0-data-autonomous-recrawl-microbatch-v1
+        type: string
+      limit:
+        description: Number of Mubawab offers to process (1-3)
+        required: true
+        default: "3"
+        type: choice
+        options:
+          - "1"
+          - "2"
+          - "3"
+      confirm_write:
+        description: Type WRITE_THREE_MUBAWAB_OFFERS to authorize the live write
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: autonomous-recrawl-microbatch-v1-live
+  cancel-in-progress: false
+
+jobs:
+  live-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      AUTONOMOUS_RECRAWL_WRITE: "true"
+      AUTONOMOUS_RECRAWL_LIMIT: ${{ inputs.limit }}
+      AUTONOMOUS_RECRAWL_REPORT_PATH: autonomous-recrawl-live-report.json
+    steps:
+      - name: Validate explicit authorization
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ inputs.confirm_write }}" = "WRITE_THREE_MUBAWAB_OFFERS"
+          test "${{ inputs.target_ref }}" = "agent/p0-data-autonomous-recrawl-microbatch-v1"
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+
+      - name: Checkout certified connected runner
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Execute bounded live micro-batch
+        run: npx tsx scripts/recrawl/run-connected-autonomous-microbatch.ts
+
+      - name: Verify non-publication invariant
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f autonomous-recrawl-live-report.json
+          grep -q '"publication_eligible": false' autonomous-recrawl-live-report.json
+
+      - name: Upload proof report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: autonomous-recrawl-microbatch-v1-live-proof
+          path: autonomous-recrawl-live-report.json
+          if-no-files-found: warn
+          retention-days: 14
