@@ -1,0 +1,62 @@
+name: ODM-10C3 Connected Sitemap Delta
+
+on:
+  push:
+    branches: [agent/odm-10c3-connected-sitemap-delta]
+    paths:
+      - "scripts/openserp/odm-10c3-connected-sitemap-delta.ts"
+      - "supabase/migrations/20260727130000_odm_10c3_connected_sitemap_delta.sql"
+      - ".github/workflows/odm-10c3-connected-sitemap-delta.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: odm-10c3-connected-sitemap-delta
+  cancel-in-progress: false
+
+jobs:
+  connected-sitemap-delta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Contract assertions
+        run: |
+          grep -q "ODM-10C3" scripts/openserp/odm-10c3-connected-sitemap-delta.ts
+          grep -q "discovery_allowed" supabase/migrations/20260727130000_odm_10c3_connected_sitemap_delta.sql
+          grep -q "source outside ODM-10C3 allowlist" supabase/migrations/20260727130000_odm_10c3_connected_sitemap_delta.sql
+          ! grep -Eqi "captcha|proxy|stealth|fake.?googlebot" scripts/openserp/odm-10c3-connected-sitemap-delta.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Connected dry run
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/openserp/odm-10c3-connected-sitemap-delta.ts | tee odm-10c3-dry-run.json
+      - name: Apply guarded delta
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
+          OPENSERP_INGESTION_WRITE_ENABLED: ${{ secrets.OPENSERP_INGESTION_WRITE_ENABLED }}
+          OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
+        run: npx tsx scripts/openserp/odm-10c3-connected-sitemap-delta.ts --apply | tee odm-10c3-apply.json
+      - name: Production build
+        run: npm run build
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odm-10c3-connected-sitemap-delta
+          path: |
+            odm-10c3-dry-run.json
+            odm-10c3-apply.json
+          if-no-files-found: warn
+          retention-days: 14
