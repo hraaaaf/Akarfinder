@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Check, Scale, X } from "lucide-react";
-import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
+import { useOptionalPropertySelection } from "@/components/search/PropertySelectionProvider";
 import {
   addCompareId,
   dispatchCompareUpdated,
@@ -15,22 +15,26 @@ import { MAX_COMPARE_LISTINGS } from "@/lib/compare/types";
 import { getCanonicalPropertyId } from "@/lib/ux/property-selection";
 
 type CompareToggleButtonProps = {
-  listing: Listing;
+  listing?: Listing;
+  listingId?: string;
   variant?: "inline" | "block";
   className?: string;
 };
 
 export function CompareToggleButton({
   listing,
+  listingId,
   variant = "inline",
   className = "",
 }: CompareToggleButtonProps) {
-  const { visibleListings } = usePropertySelection();
+  const propertySelection = useOptionalPropertySelection();
+  const visibleListings = propertySelection?.visibleListings ?? [];
+  const resolvedListingId = listing?.id ?? listingId ?? "";
   const [isCompared, setIsCompared] = useState(false);
   const [isFull, setIsFull] = useState(false);
   const [canonicalDuplicate, setCanonicalDuplicate] = useState(false);
   const [feedback, setFeedback] = useState<string>("");
-  const canonicalId = getCanonicalPropertyId(listing);
+  const canonicalId = listing ? getCanonicalPropertyId(listing) : `listing:${resolvedListingId}`;
 
   const visibleById = useMemo(
     () => new Map(visibleListings.map((candidate) => [candidate.id, candidate])),
@@ -38,17 +42,19 @@ export function CompareToggleButton({
   );
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !resolvedListingId) return;
 
     function sync() {
       const storage = window.localStorage;
       const ids = readCompareIds(storage);
-      const compared = ids.includes(listing.id);
-      const duplicate = ids.some((id) => {
-        if (id === listing.id) return false;
-        const candidate = visibleById.get(id);
-        return candidate ? getCanonicalPropertyId(candidate) === canonicalId : false;
-      });
+      const compared = ids.includes(resolvedListingId);
+      const duplicate = listing
+        ? ids.some((id) => {
+            if (id === resolvedListingId) return false;
+            const candidate = visibleById.get(id);
+            return candidate ? getCanonicalPropertyId(candidate) === canonicalId : false;
+          })
+        : false;
       setIsCompared(compared);
       setCanonicalDuplicate(duplicate);
       setIsFull(ids.length >= MAX_COMPARE_LISTINGS && !compared);
@@ -62,10 +68,10 @@ export function CompareToggleButton({
       window.removeEventListener("storage", sync);
       window.removeEventListener("akarfinder:compare-updated", sync);
     };
-  }, [canonicalId, listing.id, visibleById]);
+  }, [canonicalId, listing, resolvedListingId, visibleById]);
 
   function handleToggle() {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !resolvedListingId) return;
 
     if (!isCompared && canonicalDuplicate) {
       setFeedback("Cette propriété est déjà représentée dans le comparateur");
@@ -73,9 +79,9 @@ export function CompareToggleButton({
     }
 
     const storage = window.localStorage;
-    const result = isListingCompared(listing.id, storage)
-      ? removeCompareId(listing.id, storage)
-      : addCompareId(listing.id, storage);
+    const result = isListingCompared(resolvedListingId, storage)
+      ? removeCompareId(resolvedListingId, storage)
+      : addCompareId(resolvedListingId, storage);
 
     if (!result.ok) {
       setFeedback(`Comparateur plein (${MAX_COMPARE_LISTINGS} biens max)`);
@@ -84,12 +90,12 @@ export function CompareToggleButton({
     }
 
     dispatchCompareUpdated(result.ids);
-    setIsCompared(result.ids.includes(listing.id));
-    setIsFull(result.ids.length >= MAX_COMPARE_LISTINGS && !result.ids.includes(listing.id));
+    setIsCompared(result.ids.includes(resolvedListingId));
+    setIsFull(result.ids.length >= MAX_COMPARE_LISTINGS && !result.ids.includes(resolvedListingId));
     setFeedback(result.status === "removed" ? "Retiré du comparateur" : "Ajouté au comparateur");
   }
 
-  const blocked = (isFull || canonicalDuplicate) && !isCompared;
+  const blocked = !resolvedListingId || ((isFull || canonicalDuplicate) && !isCompared);
   const buttonClasses =
     variant === "block"
       ? "flex w-full items-center justify-center gap-2 rounded-xl border border-[#d8c8a3] px-4 py-3 text-[13.5px] font-extrabold transition"
