@@ -93,26 +93,18 @@ export function PropertySelectionProvider({ children }: { children: ReactNode })
       clearSelection,
       isActive,
     }),
-    [
-      activeListing,
-      clearHover,
-      clearSelection,
-      hoverListing,
-      isActive,
-      registerListing,
-      registeredListings,
-      selectListing,
-      selection,
-    ],
+    [activeListing, clearHover, clearSelection, hoverListing, isActive, registerListing, registeredListings, selectListing, selection],
   );
 
   return <PropertySelectionContext.Provider value={value}>{children}</PropertySelectionContext.Provider>;
 }
 
+export function useOptionalPropertySelection(): PropertySelectionContextValue | null {
+  return useContext(PropertySelectionContext);
+}
+
 export function usePropertySelection(): PropertySelectionContextValue {
-  const value = useContext(PropertySelectionContext);
-  if (!value) {
-    throw new Error("usePropertySelection must be used inside PropertySelectionProvider");
-  }
+  const value = useOptionalPropertySelection();
+  if (!value) throw new Error("usePropertySelection must be used inside PropertySelectionProvider");
   return value;
 }
