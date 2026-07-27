@@ -4,8 +4,8 @@
 // representation remains internal_signal_only and is finalized as ineligible.
 
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { isOpenSerpIngestionCronAuthorized } from "@/lib/openserp-ingestion/openserp-ingestion-feature-flags";
 import {
@@ -16,6 +16,7 @@ import {
 
 const APPLY = process.argv.includes("--apply");
 const INPUT = join(process.cwd(), "data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl");
+const REPORT = join(process.cwd(), "data/audits/raw-results/odm-10c4-report.json");
 const ALLOWED_DOMAINS = [
   "agenz.ma",
   "sarouty.ma",
@@ -42,6 +43,13 @@ function parseJsonl(content: string): CommonCrawlMassSeed[] {
       throw new Error(`invalid ODM-10C4 JSONL line ${index + 1}: ${error instanceof Error ? error.message : String(error)}`);
     }
   });
+}
+
+function persistReport(report: Record<string, unknown>): void {
+  mkdirSync(dirname(REPORT), { recursive: true });
+  const json = `${JSON.stringify(report, null, 2)}\n`;
+  writeFileSync(REPORT, json, "utf8");
+  process.stdout.write(json);
 }
 
 async function existingCanonicalUrls(urls: string[]): Promise<Set<string>> {
@@ -110,11 +118,11 @@ async function main() {
       p_artifact_sha256: artifactSha256,
     });
     if (error) throw new Error(`ODM-10C4 finalization failed: ${error.message}`);
-    console.log(JSON.stringify({ lot: "ODM-10C4", status: "APPLIED", run_key: runKey, qualified_urls: allowedRows.length, net_new_urls: rows.length, rejected_rows: batch.rejections.length, finalization: data }, null, 2));
+    persistReport({ lot: "ODM-10C4", status: "APPLIED", run_key: runKey, qualified_urls: allowedRows.length, net_new_urls: rows.length, rejected_rows: batch.rejections.length, domains: ALLOWED_DOMAINS, indexes: CDX_INDEXES, admitted_public_urls: 0, finalization: data });
     return;
   }
 
-  console.log(JSON.stringify({ lot: "ODM-10C4", status: "DRY_RUN", run_key: runKey, qualified_urls: allowedRows.length, net_new_urls: rows.length, rejected_rows: batch.rejections.length, domains: ALLOWED_DOMAINS, indexes: CDX_INDEXES, admitted_public_urls: 0 }, null, 2));
+  persistReport({ lot: "ODM-10C4", status: "DRY_RUN", run_key: runKey, qualified_urls: allowedRows.length, net_new_urls: rows.length, rejected_rows: batch.rejections.length, domains: ALLOWED_DOMAINS, indexes: CDX_INDEXES, admitted_public_urls: 0 });
 }
 
 void main().catch((error) => {
