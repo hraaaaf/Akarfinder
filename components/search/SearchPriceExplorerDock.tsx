@@ -3,12 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { CertifiedLocalHeatmapPanel } from "@/components/search/CertifiedLocalHeatmapPanel";
 import { CertifiedNeighborhoodComparisonPanel } from "@/components/search/CertifiedNeighborhoodComparisonPanel";
+import { CertifiedSimilarNeighborhoodsPanel } from "@/components/search/CertifiedSimilarNeighborhoodsPanel";
 import { CityNeighborhoodExplorerPanel } from "@/components/search/CityNeighborhoodExplorerPanel";
 import { NeighborhoodIntelligencePanel } from "@/components/search/NeighborhoodIntelligencePanel";
 import { PriceExplorerPanel } from "@/components/search/PriceExplorerPanel";
 import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
 import { CANONICAL_SEARCH_SESSION_EVENT } from "@/components/search/useCanonicalSearchSession";
 import { buildCertifiedLocalHeatmapModel } from "@/lib/ux/certified-local-heatmap";
+import { buildCertifiedSimilarNeighborhoodsModel } from "@/lib/ux/certified-similar-neighborhoods";
 import { buildCityNeighborhoodExplorerModel } from "@/lib/ux/city-neighborhood-explorer";
 import { buildNeighborhoodIntelligenceModel } from "@/lib/ux/neighborhood-intelligence";
 import { getPriceExplorerResult } from "@/lib/ux/price-explorer";
@@ -56,6 +58,11 @@ export function SearchPriceExplorerDock() {
         selectedCity: city,
         selectedNeighborhood: neighborhood,
       }),
+      similarNeighborhoods: buildCertifiedSimilarNeighborhoodsModel({
+        heatmap,
+        selectedNeighborhood: neighborhood,
+        visibleListings,
+      }),
     };
   }, [search, visibleListings]);
 
@@ -71,6 +78,9 @@ export function SearchPriceExplorerDock() {
       </div>
       <div className="mt-4">
         <CertifiedNeighborhoodComparisonPanel heatmap={context.heatmap} visibleListings={visibleListings} />
+      </div>
+      <div className="mt-4">
+        <CertifiedSimilarNeighborhoodsPanel model={context.similarNeighborhoods} />
       </div>
     </section>
   );
