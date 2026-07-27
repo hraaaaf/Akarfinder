@@ -68,6 +68,7 @@ test("explanation does not claim to reproduce the internal score", () => {
 test("property passport renders the explain ranking contract", () => {
   const panel = readFileSync(resolve(process.cwd(), "components/search/PropertyPassportPanel.tsx"), "utf8");
   assert.match(panel, /buildExplainRankingModel/);
-  assert.match(panel, /Pourquoi ce résultat peut apparaître ici/);
+  assert.match(panel, /ranking\.title/);
+  assert.match(buildExplainRankingModel(listing).title, /Pourquoi ce résultat peut apparaître ici/);
   assert.ok(!panel.includes("score caché"));
 });
