@@ -67,7 +67,7 @@ set
   end,
   vertical_classification_version = 'odm_10c_v1',
   display_eligibility = case
-    when c.vertical_classification = 'non_real_estate' then 'excluded_non_real_estate'
+    when c.vertical_classification = 'non_real_estate' then 'ineligible'
     else d.display_eligibility
   end,
   display_eligibility_reason = case
