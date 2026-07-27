@@ -1,0 +1,23 @@
+name: ODM-10F Structured Signal Recovery
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260727180000_odm_10f_structured_signal_recovery.sql'
+      - 'supabase/migrations/20260727180500_odm_10f_comparable_scope_fix.sql'
+      - 'scripts/odm-10f-contract.mjs'
+      - '.github/workflows/odm-10f-structured-signal-recovery.yml'
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: ODM-10F contract assertions
+        run: node scripts/odm-10f-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck --if-present
+      - name: Production build
+        run: npm run build
