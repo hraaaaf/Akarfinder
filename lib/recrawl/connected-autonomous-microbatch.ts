@@ -30,6 +30,18 @@ function requireData<T>(data: T | null, error: { message: string } | null, conte
   return data;
 }
 
+export function canonicalizeMubawabDetailUrl(listingUrl: string): string {
+  const target = new URL(listingUrl);
+  const normalizedHost = target.hostname.toLowerCase().replace(/^www\./, "");
+  if (normalizedHost !== "mubawab.ma") throw new Error("connected_executor_host_not_allowed");
+  target.protocol = "https:";
+  target.hostname = "www.mubawab.ma";
+  target.port = "";
+  target.username = "";
+  target.password = "";
+  return target.toString();
+}
+
 export function createConnectedMicrobatchRepository(
   dependencies: ConnectedMicrobatchDependencies,
 ): AutonomousMicrobatchRepository {
@@ -99,10 +111,11 @@ export function createConnectedMicrobatchExecutor(
       if (job.source_key !== "mubawab") throw new Error("connected_executor_source_not_allowed");
       const startedAt = (dependencies.now ?? (() => new Date()))();
       const source = await resolveSourceOffer(dependencies, job);
-      await assertRobotsAllowed(dependencies, source.listing_url);
+      const canonicalUrl = canonicalizeMubawabDetailUrl(source.listing_url);
+      await assertRobotsAllowed(dependencies, canonicalUrl);
       const observation = await fetchAuthorizedSource({
         policy: MUBAWAB_CONTROLLED_POLICY,
-        url: source.listing_url,
+        url: canonicalUrl,
         fetchImpl: dependencies.fetchImpl,
         now: dependencies.now,
       });
@@ -132,7 +145,8 @@ export function createConnectedMicrobatchExecutor(
         p_ingestion_run_id: null,
         p_city: job.city,
         p_metadata: {
-          source_url: source.listing_url,
+          source_url: canonicalUrl,
+          original_source_url: source.listing_url,
           bytes_read: observation.bytesRead,
           content_type: observation.contentType,
           publication_eligible: false,
