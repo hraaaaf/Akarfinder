@@ -1,0 +1,38 @@
+name: ODM-10D Quality Engine
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260727143000_odm_10d_quality_engine.sql"
+      - "supabase/migrations/20260727143100_odm_10d_quality_scale_transition.sql"
+      - "supabase/migrations/20260727143200_odm_10d_quality_backfill_and_final.sql"
+      - ".github/workflows/odm-10d-quality-engine.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: ODM-10D contract assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "odm_10d_v1" supabase/migrations/20260727143000_odm_10d_quality_engine.sql
+          grep -q "public_ranking_activated.*false" supabase/migrations/20260727143000_odm_10d_quality_engine.sql
+          grep -q "quality_score between 0 and 100" supabase/migrations/20260727143100_odm_10d_quality_scale_transition.sql
+          grep -q "REJECTED" supabase/migrations/20260727143200_odm_10d_quality_backfill_and_final.sql
+          ! grep -Eqi "ranking_quality_boost[[:space:]]*=" supabase/migrations/20260727143000_odm_10d_quality_engine.sql
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
