@@ -1,0 +1,23 @@
+name: ODM-10E Tier-D Enrichment
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260727170000_odm_10e_tier_d_enrichment.sql'
+      - 'supabase/migrations/20260727170500_odm_10e_delta_quality_recompute.sql'
+      - 'scripts/odm-10e-contract.mjs'
+      - '.github/workflows/odm-10e-tier-d-enrichment.yml'
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: ODM-10E contract assertions
+        run: node scripts/odm-10e-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck --if-present
+      - name: Production build
+        run: npm run build
