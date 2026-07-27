@@ -7,13 +7,19 @@ on:
       - "scripts/openserp/odm-10c3-connected-sitemap-delta.ts"
       - "supabase/migrations/20260727130000_odm_10c3_connected_sitemap_delta.sql"
       - ".github/workflows/odm-10c3-connected-sitemap-delta.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/openserp/odm-10c3-connected-sitemap-delta.ts"
+      - "supabase/migrations/20260727130000_odm_10c3_connected_sitemap_delta.sql"
+      - ".github/workflows/odm-10c3-connected-sitemap-delta.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: odm-10c3-connected-sitemap-delta
+  group: odm-10c3-connected-sitemap-delta-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -41,6 +47,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npx tsx scripts/openserp/odm-10c3-connected-sitemap-delta.ts | tee odm-10c3-dry-run.json
       - name: Apply guarded delta
+        if: github.event_name != 'pull_request'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -60,5 +67,3 @@ jobs:
             odm-10c3-apply.json
           if-no-files-found: warn
           retention-days: 14
-
-# Connected proof trigger: 2026-07-27
