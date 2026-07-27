@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LightZillowSearchShell } from "@/components/search/LightZillowSearchShell";
+import { PropertyQuickPreview } from "@/components/search/PropertyQuickPreview";
+import { PropertySelectionProvider } from "@/components/search/PropertySelectionProvider";
+import { SearchCompareDock } from "@/components/search/SearchCompareDock";
 import { SearchPriceExplorerDock } from "@/components/search/SearchPriceExplorerDock";
 import { searchListings } from "@/lib/search";
 import { buildSearchPageQuery } from "@/lib/search/search-page-query";
@@ -9,23 +12,12 @@ import type { ListingFiltersState } from "@/lib/listings/types";
 
 export const dynamic = "force-dynamic";
 
-// SEO-FOUNDATION-1 — /search reste noindex pour l'instant : les résultats
-// viennent du Search Gateway (dynamiques, tiers, non propriétaires) et la
-// page varie par querystring, ce qui en ferait du contenu dupliqué de faible
-// valeur pour Google. Les futures pages SEO contrôlées (ville/quartier/prix)
-// arriveront avec SEO-CITY-INTENT-PAGES-1 et seront indexables séparément.
-// follow: true pour laisser Google suivre les liens internes depuis /search.
 export const metadata: Metadata = {
   title: "Rechercher un bien immobilier au Maroc — AkarFinder",
   description:
     "Comparez les résultats immobiliers au Maroc, consultez la source originale et trouvez des repères utiles pour mieux décider.",
-  robots: {
-    index: false,
-    follow: true,
-  },
-  alternates: {
-    canonical: "/search",
-  },
+  robots: { index: false, follow: true },
+  alternates: { canonical: "/search" },
 };
 
 type SearchPageProps = {
@@ -61,11 +53,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const transactionType = normalizeTransactionType(resolvedQuery.transaction_type);
   const city = resolvedQuery.city ?? "all";
   const mreOnly = (pickFirst(params.mre) ?? "").toLowerCase() === "true";
-
-  // SEARCH-RELOOKING-1 — deep-links : property_type + prix min/max depuis l'URL.
-  // GOOGLE-LIKE-SEARCH-QA-1 — q param from homepage hero search + budget_max.
-  // SEARCH-TEXT-INTENT-1 — inferred city/type/transaction are also carried into
-  // the client filters so hydration cannot overwrite the structured SSR result.
   const propertyType = resolvedQuery.property_type ?? "all";
   const minBudget = pickFirst(params.min_price) ?? pickFirst(params.budget_min) ?? "";
   const maxBudget = pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "";
@@ -74,19 +61,23 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" />
-      <SearchPriceExplorerDock />
-      <LightZillowSearchShell
-        initialListings={initialSearchResult.listings}
-        initialFilters={{
-          transactionType,
-          city,
-          propertyType,
-          minBudget,
-          maxBudget,
-          mreOnly,
-          search,
-        }}
-      />
+      <PropertySelectionProvider>
+        <SearchPriceExplorerDock />
+        <SearchCompareDock />
+        <PropertyQuickPreview />
+        <LightZillowSearchShell
+          initialListings={initialSearchResult.listings}
+          initialFilters={{
+            transactionType,
+            city,
+            propertyType,
+            minBudget,
+            maxBudget,
+            mreOnly,
+            search,
+          }}
+        />
+      </PropertySelectionProvider>
       <SiteFooter />
     </main>
   );

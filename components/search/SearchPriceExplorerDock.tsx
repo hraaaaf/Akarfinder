@@ -1,8 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { CertifiedLocalHeatmapPanel } from "@/components/search/CertifiedLocalHeatmapPanel";
+import { CertifiedNeighborhoodComparisonPanel } from "@/components/search/CertifiedNeighborhoodComparisonPanel";
+import { CertifiedSimilarNeighborhoodsPanel } from "@/components/search/CertifiedSimilarNeighborhoodsPanel";
+import { CityNeighborhoodExplorerPanel } from "@/components/search/CityNeighborhoodExplorerPanel";
+import { NeighborhoodIntelligencePanel } from "@/components/search/NeighborhoodIntelligencePanel";
 import { PriceExplorerPanel } from "@/components/search/PriceExplorerPanel";
+import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
 import { CANONICAL_SEARCH_SESSION_EVENT } from "@/components/search/useCanonicalSearchSession";
+import { buildCertifiedLocalHeatmapModel } from "@/lib/ux/certified-local-heatmap";
+import { buildCertifiedSimilarNeighborhoodsModel } from "@/lib/ux/certified-similar-neighborhoods";
+import { buildCityNeighborhoodExplorerModel } from "@/lib/ux/city-neighborhood-explorer";
+import { buildNeighborhoodIntelligenceModel } from "@/lib/ux/neighborhood-intelligence";
 import { getPriceExplorerResult } from "@/lib/ux/price-explorer";
 
 function readCanonicalSearch(): string {
@@ -11,6 +21,7 @@ function readCanonicalSearch(): string {
 
 export function SearchPriceExplorerDock() {
   const [search, setSearch] = useState(readCanonicalSearch);
+  const { visibleListings } = usePropertySelection();
 
   useEffect(() => {
     const sync = () => setSearch(readCanonicalSearch());
@@ -23,22 +34,54 @@ export function SearchPriceExplorerDock() {
     };
   }, []);
 
-  const result = useMemo(() => {
+  const context = useMemo(() => {
     const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
     const transaction = params.get("transaction_type");
     const transactionType = transaction === "buy" || transaction === "rent" ? transaction : "all";
+    const city = params.get("city") ?? "all";
+    const neighborhood = params.get("district");
+    const propertyType = params.get("property_type") ?? "all";
+    const priceReference = getPriceExplorerResult({ city, neighborhood, propertyType, transactionType });
+    const heatmap = buildCertifiedLocalHeatmapModel({ city, propertyType });
 
-    return getPriceExplorerResult({
-      city: params.get("city") ?? "all",
-      neighborhood: params.get("district"),
-      propertyType: params.get("property_type") ?? "all",
-      transactionType,
-    });
-  }, [search]);
+    return {
+      priceReference,
+      neighborhoodIntelligence: buildNeighborhoodIntelligenceModel({
+        visibleListings,
+        city,
+        neighborhood,
+        priceReference,
+      }),
+      heatmap,
+      explorer: buildCityNeighborhoodExplorerModel({
+        propertyType,
+        selectedCity: city,
+        selectedNeighborhood: neighborhood,
+      }),
+      similarNeighborhoods: buildCertifiedSimilarNeighborhoodsModel({
+        heatmap,
+        selectedNeighborhood: neighborhood,
+        visibleListings,
+      }),
+    };
+  }, [search, visibleListings]);
 
   return (
-    <section className="mx-auto max-w-[1480px] px-4 pt-5 sm:px-6" aria-label="Explorateur de prix synchronisé">
-      <PriceExplorerPanel result={result} />
+    <section className="mx-auto max-w-[1480px] px-4 pt-5 sm:px-6" aria-label="Explorateur local synchronisé">
+      <CityNeighborhoodExplorerPanel model={context.explorer} />
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <PriceExplorerPanel result={context.priceReference} />
+        <NeighborhoodIntelligencePanel model={context.neighborhoodIntelligence} />
+      </div>
+      <div className="mt-4">
+        <CertifiedLocalHeatmapPanel model={context.heatmap} />
+      </div>
+      <div className="mt-4">
+        <CertifiedNeighborhoodComparisonPanel heatmap={context.heatmap} visibleListings={visibleListings} />
+      </div>
+      <div className="mt-4">
+        <CertifiedSimilarNeighborhoodsPanel model={context.similarNeighborhoods} />
+      </div>
     </section>
   );
 }
