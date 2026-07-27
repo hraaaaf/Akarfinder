@@ -1,3 +1,5 @@
+import { writeFile } from "node:fs/promises";
+
 import { createClient } from "@supabase/supabase-js";
 
 import { runConnectedAutonomousMicrobatch } from "../../lib/recrawl/connected-autonomous-microbatch.js";
@@ -6,6 +8,12 @@ function requireEnv(name: string): string {
   const value = process.env[name]?.trim();
   if (!value) throw new Error(`${name} is required`);
   return value;
+}
+
+async function writeReport(payload: unknown): Promise<void> {
+  const reportPath = process.env.AUTONOMOUS_RECRAWL_REPORT_PATH?.trim();
+  if (!reportPath) return;
+  await writeFile(reportPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
 }
 
 async function main(): Promise<void> {
@@ -31,17 +39,26 @@ async function main(): Promise<void> {
     dry_run: !writeEnabled,
   });
 
-  console.log(JSON.stringify({
+  const payload = {
     verdict: writeEnabled ? "CONNECTED_MICROBATCH_EXECUTED" : "CONNECTED_MICROBATCH_DRY_RUN",
+    publication_eligible: false as const,
     report,
-  }, null, 2));
+  };
+  await writeReport(payload);
+  console.log(JSON.stringify(payload, null, 2));
 }
 
-main().catch((error) => {
-  console.error(JSON.stringify({
+main().catch(async (error) => {
+  const payload = {
     verdict: "CONNECTED_MICROBATCH_FAILED",
     error: error instanceof Error ? error.message : String(error),
-    publication_eligible: false,
-  }));
+    publication_eligible: false as const,
+  };
+  try {
+    await writeReport(payload);
+  } catch (reportError) {
+    console.error(`failed_to_write_report:${reportError instanceof Error ? reportError.message : String(reportError)}`);
+  }
+  console.error(JSON.stringify(payload));
   process.exitCode = 1;
 });
