@@ -1,0 +1,23 @@
+name: ODM-10G Comparable Coverage Acquisition
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260727190000_odm_10g_comparable_coverage_acquisition.sql'
+      - 'supabase/migrations/20260727190500_odm_10g_future_signal_preservation.sql'
+      - 'scripts/odm-10g-contract.mjs'
+      - '.github/workflows/odm-10g-comparable-coverage-acquisition.yml'
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: ODM-10G contract assertions
+        run: node scripts/odm-10g-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck --if-present
+      - name: Production build
+        run: npm run build
