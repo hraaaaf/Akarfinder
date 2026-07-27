@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { NeighborhoodIntelligencePanel } from "@/components/search/NeighborhoodIntelligencePanel";
 import { PriceExplorerPanel } from "@/components/search/PriceExplorerPanel";
+import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
 import { CANONICAL_SEARCH_SESSION_EVENT } from "@/components/search/useCanonicalSearchSession";
+import { buildNeighborhoodIntelligenceModel } from "@/lib/ux/neighborhood-intelligence";
 import { getPriceExplorerResult } from "@/lib/ux/price-explorer";
 
 function readCanonicalSearch(): string {
@@ -11,6 +14,7 @@ function readCanonicalSearch(): string {
 
 export function SearchPriceExplorerDock() {
   const [search, setSearch] = useState(readCanonicalSearch);
+  const { visibleListings } = usePropertySelection();
 
   useEffect(() => {
     const sync = () => setSearch(readCanonicalSearch());
@@ -23,22 +27,32 @@ export function SearchPriceExplorerDock() {
     };
   }, []);
 
-  const result = useMemo(() => {
+  const context = useMemo(() => {
     const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
     const transaction = params.get("transaction_type");
     const transactionType = transaction === "buy" || transaction === "rent" ? transaction : "all";
+    const city = params.get("city") ?? "all";
+    const neighborhood = params.get("district");
+    const propertyType = params.get("property_type") ?? "all";
+    const priceReference = getPriceExplorerResult({ city, neighborhood, propertyType, transactionType });
 
-    return getPriceExplorerResult({
-      city: params.get("city") ?? "all",
-      neighborhood: params.get("district"),
-      propertyType: params.get("property_type") ?? "all",
-      transactionType,
-    });
-  }, [search]);
+    return {
+      priceReference,
+      neighborhoodIntelligence: buildNeighborhoodIntelligenceModel({
+        visibleListings,
+        city,
+        neighborhood,
+        priceReference,
+      }),
+    };
+  }, [search, visibleListings]);
 
   return (
-    <section className="mx-auto max-w-[1480px] px-4 pt-5 sm:px-6" aria-label="Explorateur de prix synchronisé">
-      <PriceExplorerPanel result={result} />
+    <section className="mx-auto max-w-[1480px] px-4 pt-5 sm:px-6" aria-label="Explorateur local synchronisé">
+      <div className="grid gap-4 xl:grid-cols-2">
+        <PriceExplorerPanel result={context.priceReference} />
+        <NeighborhoodIntelligencePanel model={context.neighborhoodIntelligence} />
+      </div>
     </section>
   );
 }
