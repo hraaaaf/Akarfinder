@@ -89,7 +89,11 @@ async function assertRobotsAllowed(
   }
 }
 
-export function createConnectedMicrobatchExecutor(dependencies: ConnectedMicrobatchDependencies) {
+export function createConnectedMicrobatchExecutor(
+  dependencies: ConnectedMicrobatchDependencies,
+  workerId: string,
+) {
+  if (!workerId.trim()) throw new Error("worker_id is required");
   return {
     async execute(job: ClaimedRecrawl): Promise<MicrobatchJobResult> {
       if (job.source_key !== "mubawab") throw new Error("connected_executor_source_not_allowed");
@@ -111,7 +115,7 @@ export function createConnectedMicrobatchExecutor(dependencies: ConnectedMicroba
         p_attempt_key: attemptKey,
         p_source_offer_id: job.source_offer_id,
         p_source_key: job.source_key,
-        p_worker_id: job.leased_by,
+        p_worker_id: workerId.trim(),
         p_lease_token: job.lease_token,
         p_started_at: startedAt.toISOString(),
         p_completed_at: completedAt.toISOString(),
@@ -164,7 +168,7 @@ export async function runConnectedAutonomousMicrobatch(input: {
 }): Promise<AutonomousMicrobatchReport> {
   return runAutonomousMicrobatch({
     repository: createConnectedMicrobatchRepository(input.dependencies),
-    executor: createConnectedMicrobatchExecutor(input.dependencies),
+    executor: createConnectedMicrobatchExecutor(input.dependencies, input.worker_id),
     worker_id: input.worker_id,
     source_key: "mubawab",
     limit: input.limit,
