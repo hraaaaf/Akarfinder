@@ -66,12 +66,32 @@ jobs:
       - name: Execute bounded live micro-batch
         run: npx tsx scripts/recrawl/run-connected-autonomous-microbatch.ts
 
-      - name: Verify non-publication invariant
+      - name: Verify complete non-publication proof
         shell: bash
         run: |
           set -euo pipefail
           test -f autonomous-recrawl-live-report.json
-          grep -q '"publication_eligible": false' autonomous-recrawl-live-report.json
+          node <<'NODE'
+          const fs = require('node:fs');
+          const payload = JSON.parse(fs.readFileSync('autonomous-recrawl-live-report.json', 'utf8'));
+          const expected = Number(process.env.AUTONOMOUS_RECRAWL_LIMIT);
+          if (payload.verdict !== 'CONNECTED_MICROBATCH_EXECUTED') throw new Error(`unexpected verdict: ${payload.verdict}`);
+          if (payload.publication_eligible !== false) throw new Error('top-level publication invariant violated');
+          if (!payload.report || payload.report.publication_eligible !== false) throw new Error('report publication invariant violated');
+          if (payload.report.claimed !== expected) throw new Error(`expected ${expected} claims, got ${payload.report.claimed}`);
+          if (payload.report.executed !== expected) throw new Error(`expected ${expected} executions, got ${payload.report.executed}`);
+          if (payload.report.failed !== 0) throw new Error(`failed=${payload.report.failed}`);
+          if (payload.report.blocked !== 0) throw new Error(`blocked=${payload.report.blocked}`);
+          if (payload.report.circuit_open !== false) throw new Error('circuit unexpectedly open');
+          if (!Array.isArray(payload.report.results) || payload.report.results.length !== expected) {
+            throw new Error(`expected ${expected} results`);
+          }
+          for (const result of payload.report.results) {
+            if (result.publication_eligible !== false) throw new Error('result publication invariant violated');
+            if (!['committed', 'unchanged'].includes(result.outcome)) throw new Error(`unexpected outcome: ${result.outcome}`);
+          }
+          console.log(JSON.stringify({ verdict: 'LIVE_PROOF_VERIFIED', expected, committed: payload.report.committed, unchanged: payload.report.unchanged }));
+          NODE
 
       - name: Upload proof report
         if: always()
