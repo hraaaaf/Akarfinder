@@ -1,5 +1,6 @@
+import type { Listing } from "@/lib/listings/types";
 import type { CertifiedLocalHeatmapModel, CertifiedHeatmapZone } from "@/lib/ux/certified-local-heatmap";
-import { getCanonicalPropertyId, type PropertySelectionListing } from "@/lib/ux/property-selection";
+import { getCanonicalPropertyId } from "@/lib/ux/property-selection";
 
 export type SimilarNeighborhoodCandidate = {
   key: string;
@@ -30,14 +31,14 @@ function normalize(value: string | null | undefined): string {
 }
 
 function countVisibleCanonicalProperties(
-  listings: PropertySelectionListing[],
+  listings: Listing[],
   city: string,
   neighborhood: string,
 ): number {
   const ids = new Set<string>();
   for (const listing of listings) {
-    const listingCity = normalize((listing as any).city);
-    const listingNeighborhood = normalize((listing as any).neighborhood ?? (listing as any).district);
+    const listingCity = normalize(listing.city);
+    const listingNeighborhood = normalize(listing.neighborhood ?? listing.district);
     if (listingCity === normalize(city) && listingNeighborhood === normalize(neighborhood)) {
       ids.add(getCanonicalPropertyId(listing));
     }
@@ -54,7 +55,7 @@ function neighborhoodZones(heatmap: CertifiedLocalHeatmapModel): CertifiedHeatma
 export function buildCertifiedSimilarNeighborhoodsModel(input: {
   heatmap: CertifiedLocalHeatmapModel;
   selectedNeighborhood: string | null;
-  visibleListings: PropertySelectionListing[];
+  visibleListings: Listing[];
   limit?: number;
 }): CertifiedSimilarNeighborhoodsModel {
   const zones = neighborhoodZones(input.heatmap);
