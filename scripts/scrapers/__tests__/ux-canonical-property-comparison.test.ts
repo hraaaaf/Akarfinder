@@ -32,7 +32,10 @@ test("comparison keeps one representation per certified canonical property", () 
     { ...listing, id: "listing-b", duplicate_group_id: "canonical-b", title: "Appartement Gauthier" },
   ]);
   assert.equal(model.properties.length, 2);
-  assert.deepEqual(model.properties.map((property) => property.canonicalPropertyId), ["group:canonical-a", "group:canonical-b"]);
+  assert.deepEqual(model.properties.map((property) => property.canonicalPropertyId), [
+    "property-group:canonical-a",
+    "property-group:canonical-b",
+  ]);
 });
 
 test("comparison omits wholly unavailable rows and marks individual gaps", () => {
