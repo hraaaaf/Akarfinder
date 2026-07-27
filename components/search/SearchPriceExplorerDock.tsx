@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { CertifiedLocalHeatmapPanel } from "@/components/search/CertifiedLocalHeatmapPanel";
 import { NeighborhoodIntelligencePanel } from "@/components/search/NeighborhoodIntelligencePanel";
 import { PriceExplorerPanel } from "@/components/search/PriceExplorerPanel";
 import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
 import { CANONICAL_SEARCH_SESSION_EVENT } from "@/components/search/useCanonicalSearchSession";
+import { buildCertifiedLocalHeatmapModel } from "@/lib/ux/certified-local-heatmap";
 import { buildNeighborhoodIntelligenceModel } from "@/lib/ux/neighborhood-intelligence";
 import { getPriceExplorerResult } from "@/lib/ux/price-explorer";
 
@@ -44,6 +46,7 @@ export function SearchPriceExplorerDock() {
         neighborhood,
         priceReference,
       }),
+      heatmap: buildCertifiedLocalHeatmapModel({ city, propertyType }),
     };
   }, [search, visibleListings]);
 
@@ -52,6 +55,9 @@ export function SearchPriceExplorerDock() {
       <div className="grid gap-4 xl:grid-cols-2">
         <PriceExplorerPanel result={context.priceReference} />
         <NeighborhoodIntelligencePanel model={context.neighborhoodIntelligence} />
+      </div>
+      <div className="mt-4">
+        <CertifiedLocalHeatmapPanel model={context.heatmap} />
       </div>
     </section>
   );
