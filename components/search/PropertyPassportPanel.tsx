@@ -1,11 +1,13 @@
 "use client";
 
-import { CheckCircle2, Database, MapPin, ShieldCheck, X } from "lucide-react";
+import { BarChart3, CheckCircle2, Database, MapPin, ShieldCheck, X } from "lucide-react";
 import type { Listing } from "@/lib/listings/types";
+import { buildExplainRankingModel } from "@/lib/ux/explain-ranking";
 import { buildPropertyPassportModel } from "@/lib/ux/property-passport";
 
 export function PropertyPassportPanel({ listing, onClose }: { listing: Listing; onClose: () => void }) {
   const passport = buildPropertyPassportModel(listing);
+  const ranking = buildExplainRankingModel(listing);
 
   return (
     <section
@@ -80,6 +82,24 @@ export function PropertyPassportPanel({ listing, onClose }: { listing: Listing; 
             ))}
           </ul>
         </div>
+      </div>
+
+      <div className="mt-3 rounded-xl border border-blue-400/20 bg-blue-500/[0.06] p-3 dark:border-blue-300/15">
+        <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-blue-700 dark:text-blue-200">
+          <BarChart3 size={12} aria-hidden="true" /> {ranking.title}
+        </p>
+        <p className="mt-2 text-[11.5px] leading-5 text-foreground/80">{ranking.summary}</p>
+        {ranking.signals.length > 0 ? (
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {ranking.signals.map((signal) => (
+              <li key={signal.code} className="rounded-lg border border-border/12 bg-card/60 px-3 py-2 dark:border-white/8 dark:bg-white/[0.025]">
+                <p className="text-[11px] font-extrabold text-foreground">{signal.label}</p>
+                <p className="mt-0.5 text-[10.5px] leading-4 text-muted-foreground">{signal.evidence}</p>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <p className="mt-3 text-[10.5px] leading-4 text-muted-foreground">{ranking.limitation}</p>
       </div>
 
       <div className="mt-3 rounded-xl border border-dashed border-border/20 px-3 py-3 dark:border-white/12">
