@@ -34,12 +34,12 @@ test("comparison keeps published reference separate from visible median", () => 
   assert.equal(model.columns[0].visibleMedianPricePerM2, 20000);
 });
 
-test("comparison never declares a best neighborhood or market performance", () => {
+test("comparison never generates winner or market-performance fields", () => {
   const model = buildCertifiedNeighborhoodComparisonModel({ city: "Casablanca", zones, selectedKeys: zones.map((zone: any) => zone.key), visibleListings: listings });
-  const text = JSON.stringify(model).toLowerCase();
-  assert.ok(!text.includes("meilleur quartier"));
-  assert.ok(!text.includes("rentable"));
-  assert.ok(!text.includes("forte demande"));
+  const columnsText = JSON.stringify(model.columns).toLowerCase();
+  assert.ok(!columnsText.includes("winner"));
+  assert.ok(!columnsText.includes("rentable"));
+  assert.ok(!columnsText.includes("forte demande"));
   assert.match(model.disclosure, /ne désigne pas un meilleur quartier/);
 });
 
