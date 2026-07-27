@@ -2,11 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CertifiedLocalHeatmapPanel } from "@/components/search/CertifiedLocalHeatmapPanel";
+import { CityNeighborhoodExplorerPanel } from "@/components/search/CityNeighborhoodExplorerPanel";
 import { NeighborhoodIntelligencePanel } from "@/components/search/NeighborhoodIntelligencePanel";
 import { PriceExplorerPanel } from "@/components/search/PriceExplorerPanel";
 import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
 import { CANONICAL_SEARCH_SESSION_EVENT } from "@/components/search/useCanonicalSearchSession";
 import { buildCertifiedLocalHeatmapModel } from "@/lib/ux/certified-local-heatmap";
+import { buildCityNeighborhoodExplorerModel } from "@/lib/ux/city-neighborhood-explorer";
 import { buildNeighborhoodIntelligenceModel } from "@/lib/ux/neighborhood-intelligence";
 import { getPriceExplorerResult } from "@/lib/ux/price-explorer";
 
@@ -47,12 +49,18 @@ export function SearchPriceExplorerDock() {
         priceReference,
       }),
       heatmap: buildCertifiedLocalHeatmapModel({ city, propertyType }),
+      explorer: buildCityNeighborhoodExplorerModel({
+        propertyType,
+        selectedCity: city,
+        selectedNeighborhood: neighborhood,
+      }),
     };
   }, [search, visibleListings]);
 
   return (
     <section className="mx-auto max-w-[1480px] px-4 pt-5 sm:px-6" aria-label="Explorateur local synchronisé">
-      <div className="grid gap-4 xl:grid-cols-2">
+      <CityNeighborhoodExplorerPanel model={context.explorer} />
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
         <PriceExplorerPanel result={context.priceReference} />
         <NeighborhoodIntelligencePanel model={context.neighborhoodIntelligence} />
       </div>
