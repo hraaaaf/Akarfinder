@@ -1,0 +1,33 @@
+name: ODM-10C Noise Quarantine
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260727110000_odm_10c_noise_quarantine.sql"
+      - "scripts/scrapers/__tests__/odm-10c-noise-quarantine.test.ts"
+      - "docs/data/ODM-10C-NOISE-QUARANTINE.md"
+      - "docs/data/ODM-10C-PARTNER-FEED-KIT.md"
+      - ".github/workflows/odm-10c-noise-quarantine.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  certify-noise-quarantine:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: ODM-10C quarantine contract
+        run: npx tsx --test scripts/scrapers/__tests__/odm-10c-noise-quarantine.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
