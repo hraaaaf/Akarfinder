@@ -1,0 +1,32 @@
+name: ODM-10B Source Registry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260727103000_odm_10b_source_policy_registry.sql"
+      - "scripts/scrapers/__tests__/odm-10b-source-registry.test.ts"
+      - "docs/data/ODM-10B-SOURCE-REGISTRY.md"
+      - ".github/workflows/odm-10b-source-registry.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  certify-source-registry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: ODM-10B governance contract
+        run: npx tsx --test scripts/scrapers/__tests__/odm-10b-source-registry.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
