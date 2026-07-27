@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CertifiedLocalHeatmapPanel } from "@/components/search/CertifiedLocalHeatmapPanel";
+import { CertifiedNeighborhoodComparisonPanel } from "@/components/search/CertifiedNeighborhoodComparisonPanel";
 import { CityNeighborhoodExplorerPanel } from "@/components/search/CityNeighborhoodExplorerPanel";
 import { NeighborhoodIntelligencePanel } from "@/components/search/NeighborhoodIntelligencePanel";
 import { PriceExplorerPanel } from "@/components/search/PriceExplorerPanel";
@@ -39,6 +40,7 @@ export function SearchPriceExplorerDock() {
     const neighborhood = params.get("district");
     const propertyType = params.get("property_type") ?? "all";
     const priceReference = getPriceExplorerResult({ city, neighborhood, propertyType, transactionType });
+    const heatmap = buildCertifiedLocalHeatmapModel({ city, propertyType });
 
     return {
       priceReference,
@@ -48,7 +50,7 @@ export function SearchPriceExplorerDock() {
         neighborhood,
         priceReference,
       }),
-      heatmap: buildCertifiedLocalHeatmapModel({ city, propertyType }),
+      heatmap,
       explorer: buildCityNeighborhoodExplorerModel({
         propertyType,
         selectedCity: city,
@@ -66,6 +68,9 @@ export function SearchPriceExplorerDock() {
       </div>
       <div className="mt-4">
         <CertifiedLocalHeatmapPanel model={context.heatmap} />
+      </div>
+      <div className="mt-4">
+        <CertifiedNeighborhoodComparisonPanel heatmap={context.heatmap} visibleListings={visibleListings} />
       </div>
     </section>
   );
