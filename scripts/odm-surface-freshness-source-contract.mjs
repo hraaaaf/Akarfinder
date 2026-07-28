@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 const migrationPaths = [
   'supabase/migrations/20260728130000_odm_typed_surfaces_freshness_source_policy_v1.sql',
   'supabase/migrations/20260728133000_odm_surface_reconciliation_v2.sql',
+  'supabase/migrations/20260728134500_odm_surface_grouped_numbers_v3.sql',
 ];
 const migration = migrationPaths.map((path) => readFileSync(path,'utf8')).join('\n');
 
@@ -13,7 +14,7 @@ const required = [
   'odm_audit_typed_surface_freshness_v1','odm_audit_surface_freshness_source_report_v1',
   'living_surface_m2','built_surface_m2','plot_surface_m2','terrace_surface_m2',
   'garden_surface_m2','mezzanine_surface_m2','commercial_surface_m2','usable_surface_m2',
-  'total_surface_m2','advertised_surface_m2','unknown_surface_m2','odm_surface_parser_v2',
+  'total_surface_m2','advertised_surface_m2','unknown_surface_m2','odm_surface_parser_v3',
   'title_specific','snippet_specific','title_advertised','snippet_advertised',
   'missing_policy','ambiguous_policy_alias','resolved_policy','freshness_status_v2',
   'freshness_confidence','no_unknown_surface_publication','no_rejected_surface_publication',
@@ -38,11 +39,15 @@ assert.equal(canonicalDomain('https://www.Example.ma'),'example.ma');
 assert.equal(canonicalDomain('WWW.EXAMPLE.MA'),'example.ma');
 assert.notEqual(canonicalDomain('annonces.example.ma'),'example.ma','subdomains must not silently collapse to parent domains');
 
-const surfacePattern = /((?:surface|superficie|terrain|parcelle|lot|terrasse|jardin|mezzanine|local\s+commercial|commerce|magasin|appartement|villa|maison|riad|bureau|studio)?[^0-9]{0,32}([0-9]{1,6}(?:[.,][0-9]+)?)\s*(?:m2|m²))/giu;
+const surfacePattern = /((?:surface|superficie|terrain|parcelle|lot|terrasse|jardin|mezzanine|local\s+commercial|commerce|magasin|appartement|villa|maison|riad|bureau|studio)?[^0-9]{0,32}([0-9]{1,3}(?:[ .,'’][0-9]{3})+|[0-9]{1,6}(?:[.,][0-9]+)?)\s*(?:m2|m²))/giu;
+function normalizeSurfaceNumber(raw) {
+  if (/[ .,'’][0-9]{3}/u.test(raw)) return Number(raw.replace(/[^0-9]/g,''));
+  return Number(raw.replace(',','.'));
+}
 function parseSurfaces(text) {
   const out=[];
   for (const match of text.matchAll(surfacePattern)) {
-    const raw=match[1]; const value=Number(match[2].replace(',','.')); const fragment=raw.toLowerCase();
+    const raw=match[1]; const value=normalizeSurfaceNumber(match[2]); const fragment=raw.toLowerCase();
     if (value<9||value>100000) continue;
     let type='unknown_surface_m2';
     if (/(surface|superficie)\s+(habitable|de\s+vie)/u.test(fragment)) type='living_surface_m2';
@@ -64,6 +69,8 @@ const fixtures=[
   ['Surface construite 145 m2',145,'built_surface_m2',false],
   ['Superficie couverte 1000m2',1000,'built_surface_m2',false],
   ['Terrain 2 000 m²',2000,'plot_surface_m2',false],
+  ['Terrain 2.000 m²',2000,'plot_surface_m2',false],
+  ['Terrain 2,000 m²',2000,'plot_surface_m2',false],
   ['Terrasse 35 m²',35,'terrace_surface_m2',false],
   ['Jardin 80 m²',80,'garden_surface_m2',false],
   ['Mezzanine 30 m²',30,'mezzanine_surface_m2',false],
@@ -92,4 +99,4 @@ assert.equal(freshness(50,21)[0],'stale');
 assert.equal(freshness(1,45,{archive:true,confirmed:false})[0],'archive_unconfirmed');
 assert.equal(freshness(0,21,{timestamp:false})[0],'unconfirmed_timestamp');
 
-console.log('ODM-SURFACE-FRESHNESS-SOURCE-02 contract OK');
+console.log('ODM-SURFACE-FRESHNESS-SOURCE-03 contract OK');
