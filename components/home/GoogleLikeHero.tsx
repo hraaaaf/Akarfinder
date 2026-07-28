@@ -48,9 +48,15 @@ export function GoogleLikeHero() {
 
       <Container className="relative z-10 w-full px-5 pb-14 pt-[calc(env(safe-area-inset-top)+6rem)] sm:pb-24 sm:pt-36 lg:pb-28 lg:pt-44">
         <div className="mx-auto flex max-w-[920px] flex-col items-center text-center">
-          <h1 className="max-w-[880px] text-[2.15rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.30)] sm:text-[4rem] lg:text-[5rem]">
-            1er moteur de recherche immobilier au Maroc
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/80 sm:text-[12px]">
+            Moteur de recherche immobilier
+          </p>
+          <h1 className="mt-3 max-w-[880px] text-[2.15rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.30)] sm:text-[4rem] lg:text-[5rem]">
+            Cherchez l&apos;immobilier marocain
           </h1>
+          <p className="mt-4 max-w-[720px] text-[14px] font-semibold leading-6 text-white/88 sm:text-[17px] sm:leading-7">
+            Comprenez le quartier, distinguez les fiches analysées des simples offres observées et consultez les sources originales.
+          </p>
 
           <div className="mt-8 w-full sm:mt-10">
             <SearchEntryOrchestrator />
