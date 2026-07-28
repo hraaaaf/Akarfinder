@@ -17,16 +17,19 @@ test("thin-index projection remains source-safe and external-only", () => {
   assert.match(thinIndexSource, /thumbnail_risk_accepted:\s*false/);
 });
 
-test("thin-index admission remains registry-pattern and freshness gated", () => {
+test("thin-index admission delegates to the canonical serving policy and registry patterns", () => {
+  assert.match(thinIndexSource, /isThinIndexRowDisplayEligible/);
+  assert.match(thinIndexSource, /if \(!isThinIndexRowDisplayEligible\(row\)\) return false/);
   assert.match(thinIndexSource, /getListingUrlPatterns/);
-  assert.match(thinIndexSource, /freshness_status !== "seed_only"/);
-  assert.match(thinIndexSource, /freshness_status !== "fresh_confirmed"/);
   assert.match(thinIndexSource, /listingPatterns\.length === 0/);
 });
 
-test("gateway appends the bounded thin index in configured and degraded paths", () => {
+test("gateway uses bounded cursor traversal with a capped legacy fallback", () => {
+  assert.match(gatewayRoute, /searchPublicRepresentations/);
+  assert.match(gatewayRoute, /parsePositiveIntParam\(searchParams\.get\("limit"\), 100\)/);
+  assert.match(gatewayRoute, /maxResults:\s*limit/);
   assert.match(gatewayRoute, /appendSeedThinIndexResults/);
   assert.match(gatewayRoute, /provider_not_configured/);
-  assert.match(gatewayRoute, /maxResults:\s*100/);
-  assert.ok((gatewayRoute.match(/appendSeedThinIndexResults/g) ?? []).length >= 3);
+  assert.match(gatewayRoute, /next_cursor/);
+  assert.match(gatewayRoute, /public_index_degraded:\s*true/);
 });
