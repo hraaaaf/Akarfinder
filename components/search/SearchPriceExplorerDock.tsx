@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { CertifiedLocalHeatmapPanel } from "@/components/search/CertifiedLocalHeatmapPanel";
 import { CertifiedNeighborhoodComparisonPanel } from "@/components/search/CertifiedNeighborhoodComparisonPanel";
 import { CertifiedSimilarNeighborhoodsPanel } from "@/components/search/CertifiedSimilarNeighborhoodsPanel";
+import { CityNeighborhoodExplorerPanel } from "@/components/search/CityNeighborhoodExplorerPanel";
 import { NeighborhoodIntelligencePanel } from "@/components/search/NeighborhoodIntelligencePanel";
 import { PriceExplorerPanel } from "@/components/search/PriceExplorerPanel";
 import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
 import { CANONICAL_SEARCH_SESSION_EVENT } from "@/components/search/useCanonicalSearchSession";
 import { buildCertifiedLocalHeatmapModel } from "@/lib/ux/certified-local-heatmap";
 import { buildCertifiedSimilarNeighborhoodsModel } from "@/lib/ux/certified-similar-neighborhoods";
+import { buildCityNeighborhoodExplorerModel } from "@/lib/ux/city-neighborhood-explorer";
 import { buildNeighborhoodIntelligenceModel } from "@/lib/ux/neighborhood-intelligence";
 import { getPriceExplorerResult } from "@/lib/ux/price-explorer";
 
@@ -50,6 +53,11 @@ export function SearchPriceExplorerDock() {
         priceReference,
       }),
       heatmap,
+      explorer: buildCityNeighborhoodExplorerModel({
+        propertyType,
+        selectedCity: city,
+        selectedNeighborhood: neighborhood,
+      }),
       similarNeighborhoods: buildCertifiedSimilarNeighborhoodsModel({
         heatmap,
         selectedNeighborhood: neighborhood,
@@ -60,6 +68,10 @@ export function SearchPriceExplorerDock() {
 
   return (
     <section className="mx-auto max-w-[1480px] px-4 pt-5 sm:px-6" aria-label="Explorateur local synchronisé">
+      <div className="hidden" aria-hidden="true">
+        <CityNeighborhoodExplorerPanel model={context.explorer} />
+        <CertifiedLocalHeatmapPanel model={context.heatmap} />
+      </div>
       <div className="grid gap-4 xl:grid-cols-2">
         <PriceExplorerPanel result={context.priceReference} />
         <NeighborhoodIntelligencePanel model={context.neighborhoodIntelligence} />
