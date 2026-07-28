@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "lib/odm/**"
+      - "scripts/odm-canary-readmodel-contract.mjs"
       - "scripts/scrapers/__tests__/odm-canary-readmodel.test.ts"
       - "docs/ODM-CANARY-READMODEL-01.md"
       - ".github/workflows/odm-canary-readmodel-prep.yml"
@@ -23,6 +24,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Standalone deterministic rehearsal
+        run: node scripts/odm-canary-readmodel-contract.mjs
       - name: Fail-closed canary contract
         run: npx tsx --test scripts/scrapers/__tests__/odm-canary-readmodel.test.ts
       - name: Production route isolation guard
