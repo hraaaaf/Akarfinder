@@ -1,0 +1,27 @@
+name: UX Gate 0 Contracts
+
+on:
+  pull_request:
+    branches: [main, ux-ui-master-program]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  ux-gate0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Canonical UX contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-gate0-contracts.test.ts scripts/scrapers/__tests__/ux-search-session.test.ts scripts/scrapers/__tests__/ux-search-history.test.ts scripts/scrapers/__tests__/ux-search-view.test.ts scripts/scrapers/__tests__/ux-map-atlas.test.ts scripts/scrapers/__tests__/ux-price-explorer.test.ts scripts/scrapers/__tests__/ux-property-selection.test.ts scripts/scrapers/__tests__/ux-smart-property-card.test.ts scripts/scrapers/__tests__/ux-certified-property-map.test.ts scripts/scrapers/__tests__/ux-property-passport.test.ts scripts/scrapers/__tests__/ux-explain-ranking.test.ts scripts/scrapers/__tests__/ux-canonical-property-comparison.test.ts scripts/scrapers/__tests__/ux-neighborhood-intelligence.test.ts scripts/scrapers/__tests__/ux-certified-local-heatmap.test.ts scripts/scrapers/__tests__/ux-city-neighborhood-explorer.test.ts scripts/scrapers/__tests__/ux-certified-neighborhood-comparison.test.ts scripts/scrapers/__tests__/ux-certified-similar-neighborhoods.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
