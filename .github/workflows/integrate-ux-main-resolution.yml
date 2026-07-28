@@ -87,7 +87,6 @@ jobs:
           if count != 1:
               raise SystemExit('Could not replace gateway cursor effect')
 
-          # Keep the total available for truthful UI/debugging without fabricating counts.
           if 'void indexedTotalCount;' not in text:
               text = text.replace(
                   '  const viewLayout = getSearchViewLayout(view);',
@@ -143,3 +142,5 @@ jobs:
           git add components/search/LightZillowSearchShell.tsx
           git commit -m "Integrate ODM cursor with certified UX shell"
           git push origin HEAD:agent/integrate-ux-neutralize-conflict
+
+# retrigger after workflow registration
