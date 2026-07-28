@@ -19,7 +19,7 @@ with matches as (
     lower(coalesce(m[1], '')) as normalized_fragment
   from regexp_matches(
     coalesce(p_text, ''),
-    '((?:ancien[[:space:]]+prix|prix[[:space:]]+barr[ée]|au[[:space:]]+lieu[[:space:]]+de|à[[:space:]]+partir[[:space:]]+de|a[[:space:]]+partir[[:space:]]+de|dès|des)?[[:space:]]*([0-9]{1,3}(?:[ .,''’,-][0-9]{3})+|[0-9]{4,10})[[:space:]]*(mad|dhs?|dh)(?:[[:space:]]*(?:/|par)[[:space:]]*(m2|m²|mois|month|jour|day|semaine|week))?)',
+    '((?:ancien[[:space:]]+prix|prix[[:space:]]+barr[ée]|au[[:space:]]+lieu[[:space:]]+de|à[[:space:]]+partir[[:space:]]+de|a[[:space:]]+partir[[:space:]]+de|dès)?[[:space:]]*([0-9]{1,3}(?:[ .,''’,-][0-9]{3})+|[0-9]{4,10})[[:space:]]*(mad|dhs?|dh)(?:[[:space:]]*(?:/|par)[[:space:]]*(m2|m²|mois|month|jour|day|semaine|week))?)',
     'gi'
   ) as m
 ), classified as (
@@ -31,7 +31,7 @@ with matches as (
       when cadence_token in ('jour','day') then 'rent_daily'
       when cadence_token in ('semaine','week') then 'rent_weekly'
       when normalized_fragment ~ '(ancien[[:space:]]+prix|prix[[:space:]]+barr[ée]|au[[:space:]]+lieu[[:space:]]+de)' then 'old_price'
-      when normalized_fragment ~ '(à[[:space:]]+partir[[:space:]]+de|a[[:space:]]+partir[[:space:]]+de|dès|des)' then 'starting_price'
+      when normalized_fragment ~ '(à[[:space:]]+partir[[:space:]]+de|a[[:space:]]+partir[[:space:]]+de|dès)' then 'starting_price'
       when lower(coalesce(p_text,'')) ~ '(loyer|location|à[[:space:]]+louer|a[[:space:]]+louer)' then 'rent_monthly'
       when lower(coalesce(p_text,'')) ~ '(vente|à[[:space:]]+vendre|a[[:space:]]+vendre)' then 'sale_total'
       else 'unknown_price'
@@ -100,10 +100,16 @@ with selected as (
     r.no_bypass_required,
     case
       when jsonb_typeof(s.metadata -> 'public_index_result') = 'object'
-        and coalesce(s.metadata #>> '{public_index_result,title}', s.metadata #>> '{public_index_result,snippet}') is not null
+        and coalesce(
+          nullif(btrim(s.metadata #>> '{public_index_result,title}'), ''),
+          nullif(btrim(s.metadata #>> '{public_index_result,snippet}'), '')
+        ) is not null
         then 'public_index_result'
       when jsonb_typeof(s.metadata -> 'serper_search') = 'object'
-        and coalesce(s.metadata #>> '{serper_search,title}', s.metadata #>> '{serper_search,snippet}') is not null
+        and coalesce(
+          nullif(btrim(s.metadata #>> '{serper_search,title}'), ''),
+          nullif(btrim(s.metadata #>> '{serper_search,snippet}'), '')
+        ) is not null
         then 'serper_search'
       else 'thin_index'
     end as observation_source,
