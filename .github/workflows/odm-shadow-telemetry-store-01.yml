@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "app/api/search/route.ts"
+      - "lib/odm/odm-dual-read-runner.ts"
       - "lib/odm/odm-shadow-telemetry-store.ts"
       - "scripts/audits/odm-shadow-telemetry-report.ts"
       - "scripts/scrapers/__tests__/odm-shadow-telemetry-store-01.test.ts"
