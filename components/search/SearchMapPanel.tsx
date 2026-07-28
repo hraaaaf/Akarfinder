@@ -83,7 +83,7 @@ export function SearchMapPanel({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-[#2563EB]">
-              Atlas immobilier AkarFinder
+              Zones des résultats affichés
             </p>
             <h2 className="mt-1 text-[1.3rem] font-extrabold tracking-[-0.03em] text-[#071B33]">{displayCity}</h2>
             <p className="mt-0.5 text-[12.5px] font-semibold text-slate-500">
@@ -143,10 +143,10 @@ export function SearchMapPanel({
         ) : null}
 
         {pins.map((pin) => {
-          const isCityActive = visualActiveCity !== "all" && pin.city.toLowerCase() === visualActiveCity.toLowerCase();
-          const style = isCityActive ? CITY_MARKER_ACTIVE : CITY_MARKER;
+          const isActive = visualActiveCity !== "all" && pin.city.toLowerCase() === visualActiveCity.toLowerCase();
+          const style = isActive ? CITY_MARKER_ACTIVE : CITY_MARKER;
           const cityKey = normalizeCityKey(pin.city);
-          const showLabelMobile = isCityActive || mobileLabels.has(cityKey);
+          const showLabelMobile = isActive || mobileLabels.has(cityKey);
           const showLabelDesktopOnly = !showLabelMobile && primaryLabels.has(cityKey);
           return (
             <button
@@ -154,13 +154,13 @@ export function SearchMapPanel({
               type="button"
               onClick={() => onSelectCity(pin.city)}
               aria-label={`Filtrer les ${pin.count} résultats affichés à ${pin.city}`}
-              aria-pressed={activeCity !== "all" && pin.city.toLowerCase() === activeCity.toLowerCase()}
+              aria-pressed={isActive}
               className="group absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer focus:outline-none"
               style={{ left: `${pin.coord.x}%`, top: `${pin.coord.y}%` }}
             >
               <span
                 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-md transition-opacity duration-200"
-                style={{ width: style.size * 1.8, height: style.size * 1.8, backgroundColor: style.glow, opacity: isCityActive ? 0.9 : 0.5 }}
+                style={{ width: style.size * 1.8, height: style.size * 1.8, backgroundColor: style.glow, opacity: isActive ? 0.9 : 0.5 }}
               />
               <span
                 className="relative grid place-items-center rounded-full ring-2 ring-white transition-transform duration-200 group-hover:scale-110"
@@ -206,7 +206,7 @@ export function SearchMapPanel({
 
         <div className="absolute left-3 top-3 z-10 rounded-xl border border-[#e4e9f2] bg-white/90 p-2 backdrop-blur sm:left-4 sm:top-4 sm:p-2.5">
           <p className="max-w-[230px] text-[10.5px] leading-4 text-slate-600">
-            Les cercles numérotés regroupent les fiches par ville. Les petits marqueurs verts correspondent uniquement aux coordonnées exactes certifiées des cartes visibles.
+            Les nombres correspondent aux fiches indexées actuellement affichées dans cette recherche. Les petits marqueurs verts correspondent uniquement aux coordonnées exactes certifiées des cartes visibles. Cette carte n'est pas une estimation du volume total du marché.
           </p>
           {otherCount > 0 ? (
             <p className="mt-1.5 text-[10px] font-semibold text-slate-500">{otherCount} fiche{otherCount > 1 ? "s" : ""} sans repère ville cartographiable.</p>
