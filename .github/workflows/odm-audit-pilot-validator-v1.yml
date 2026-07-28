@@ -1,0 +1,30 @@
+name: ODM Audit Pilot Validator V1
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260728103000_odm_audit_pilot_validator_v1.sql'
+      - 'scripts/odm-audit-pilot-contract.mjs'
+      - '.github/workflows/odm-audit-pilot-validator-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Pilot validator contract
+        run: node scripts/odm-audit-pilot-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck --if-present
+      - name: Production build
+        run: npm run build
