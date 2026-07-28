@@ -1,0 +1,46 @@
+name: Transactional Recrawl Activation V1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260727003000_create_transactional_recrawl_activation_v1.sql"
+      - "supabase/migrations/20260727004500_enforce_active_recrawl_lease.sql"
+      - "supabase/migrations/20260727005500_fix_transactional_recrawl_pgcrypto_search_path.sql"
+      - "supabase/migrations/20260727006500_fix_transactional_recrawl_composite_assignments.sql"
+      - "scripts/scrapers/__tests__/transactional-recrawl-activation-v1.test.ts"
+      - ".github/workflows/transactional-recrawl-activation-v1-gate.yml"
+      - "docs/data/AKARFINDER_TRANSACTIONAL_RECRAWL_ACTIVATION_V1.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Transactional SQL contract tests
+        run: npx tsx --test scripts/scrapers/__tests__/transactional-recrawl-activation-v1.test.ts
+      - name: Migration contract assertions
+        run: |
+          grep -q "for update;" supabase/migrations/20260727003000_create_transactional_recrawl_activation_v1.sql
+          grep -q "persist_observation_ledger_event" supabase/migrations/20260727003000_create_transactional_recrawl_activation_v1.sql
+          grep -q "persist_source_offer_lifecycle_signal" supabase/migrations/20260727003000_create_transactional_recrawl_activation_v1.sql
+          grep -q "record_recrawl_attempt" supabase/migrations/20260727003000_create_transactional_recrawl_activation_v1.sql
+          grep -q "publication_eligible', false" supabase/migrations/20260727003000_create_transactional_recrawl_activation_v1.sql
+          grep -q "lease_until <= new.completed_at" supabase/migrations/20260727004500_enforce_active_recrawl_lease.sql
+          grep -q "source_offer_recrawl_attempts_active_lease_guard" supabase/migrations/20260727004500_enforce_active_recrawl_lease.sql
+          grep -q "public, extensions, pg_temp" supabase/migrations/20260727005500_fix_transactional_recrawl_pgcrypto_search_path.sql
+          grep -q "v_event := public.persist_observation_ledger_event" supabase/migrations/20260727006500_fix_transactional_recrawl_composite_assignments.sql
+          grep -q "v_attempt := public.record_recrawl_attempt" supabase/migrations/20260727006500_fix_transactional_recrawl_composite_assignments.sql
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build

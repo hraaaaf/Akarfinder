@@ -51,6 +51,9 @@ export function GoogleLikeHero() {
           <h1 className="max-w-[880px] text-[2.15rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.30)] sm:text-[4rem] lg:text-[5rem]">
             1er moteur de recherche immobilier au Maroc
           </h1>
+          <p className="sr-only">
+            Moteur de recherche immobilier. Comprenez le quartier et consultez les sources originales.
+          </p>
 
           <div className="mt-8 w-full sm:mt-10">
             <SearchEntryOrchestrator />

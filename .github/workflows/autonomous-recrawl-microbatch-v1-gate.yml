@@ -1,0 +1,43 @@
+name: Autonomous Recrawl Micro-Batch V1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/recrawl/autonomous-microbatch.ts"
+      - "lib/recrawl/connected-autonomous-microbatch.ts"
+      - "scripts/recrawl/run-connected-autonomous-microbatch.ts"
+      - "scripts/scrapers/__tests__/autonomous-recrawl-microbatch.test.ts"
+      - ".github/workflows/autonomous-recrawl-microbatch-v1-gate.yml"
+      - "docs/data/AKARFINDER_AUTONOMOUS_RECRAWL_MICROBATCH_V1.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Bounded autonomous micro-batch tests
+        run: npx tsx --test scripts/scrapers/__tests__/autonomous-recrawl-microbatch.test.ts
+      - name: Safety contract assertions
+        run: |
+          grep -q "AUTONOMOUS_MICROBATCH_HARD_LIMIT = 3" lib/recrawl/autonomous-microbatch.ts
+          grep -q 'source_key !== "mubawab"' lib/recrawl/autonomous-microbatch.ts
+          grep -q "autonomous_microbatch_circuit_open" lib/recrawl/autonomous-microbatch.ts
+          grep -q "publication_eligible: false" lib/recrawl/autonomous-microbatch.ts
+          grep -q "claim_due_recrawl_jobs_for_source_v1" lib/recrawl/connected-autonomous-microbatch.ts
+          grep -q "commit_transactional_recrawl_observation_v1" lib/recrawl/connected-autonomous-microbatch.ts
+          grep -q "robotsAllows" lib/recrawl/connected-autonomous-microbatch.ts
+          grep -q 'AUTONOMOUS_RECRAWL_WRITE === "true"' scripts/recrawl/run-connected-autonomous-microbatch.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build

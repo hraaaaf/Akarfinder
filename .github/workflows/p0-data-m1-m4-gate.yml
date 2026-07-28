@@ -1,0 +1,40 @@
+name: P0 DATA M1-M4 Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260725150000_create_p0_data_geography_intelligence_price_publication.sql'
+      - 'scripts/p0-data-sync-geography.ts'
+      - 'scripts/scrapers/__tests__/p0-data-m1-m4-foundation.test.ts'
+      - 'lib/geo/**'
+      - '.github/workflows/p0-data-m1-m4-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  p0-data-foundation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: M1-M4 static certification tests
+        run: npx tsx --test scripts/scrapers/__tests__/p0-data-m1-m4-foundation.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build rehearsal
+        run: npm run build

@@ -1,0 +1,38 @@
+name: Freshness Lifecycle V1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/freshness-lifecycle/**"
+      - "scripts/scrapers/__tests__/freshness-lifecycle.test.ts"
+      - "supabase/migrations/20260726183500_create_freshness_lifecycle_signals.sql"
+      - ".github/workflows/freshness-lifecycle-v1-gate.yml"
+      - "docs/data/AKARFINDER_FRESHNESS_LIFECYCLE_V1.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Freshness lifecycle tests
+        run: npx tsx --test scripts/scrapers/__tests__/freshness-lifecycle.test.ts
+      - name: Migration security contract
+        run: |
+          grep -q "enable row level security" supabase/migrations/20260726183500_create_freshness_lifecycle_signals.sql
+          grep -q "security invoker" supabase/migrations/20260726183500_create_freshness_lifecycle_signals.sql
+          grep -q "publication_eligible = false" supabase/migrations/20260726183500_create_freshness_lifecycle_signals.sql
+          grep -q "to service_role" supabase/migrations/20260726183500_create_freshness_lifecycle_signals.sql
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build

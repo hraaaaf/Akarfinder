@@ -1,0 +1,42 @@
+name: Authorized Source Adapter Proof V1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/recrawl/authorized-source-adapter.ts"
+      - "scripts/recrawl/run-authorized-source-canary.ts"
+      - "scripts/scrapers/__tests__/authorized-source-adapter.test.ts"
+      - ".github/workflows/authorized-source-adapter-proof-v1-gate.yml"
+      - "docs/data/AKARFINDER_AUTHORIZED_SOURCE_ADAPTER_PROOF_V1.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Adapter policy and parsing tests
+        run: npx tsx --test scripts/scrapers/__tests__/authorized-source-adapter.test.ts
+      - name: Controlled live source canary
+        run: npx tsx scripts/recrawl/run-authorized-source-canary.ts
+      - name: Upload controlled proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authorized-source-canary-proof
+          path: authorized-source-canary-report.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build

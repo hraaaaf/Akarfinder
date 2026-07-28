@@ -1,0 +1,60 @@
+name: Autonomous Recrawl Micro-Batch V1 Live Proof
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Maximum Mubawab offers to process (1-3)"
+        required: true
+        default: "3"
+      confirm_write:
+        description: "Type WRITE_THREE_MUBAWAB_OFFERS to enable Production writes"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  live-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      AUTONOMOUS_RECRAWL_WRITE: "true"
+      AUTONOMOUS_RECRAWL_LIMIT: ${{ inputs.limit }}
+      AUTONOMOUS_RECRAWL_WORKER_ID: github-actions-autonomous-microbatch-v1
+    steps:
+      - name: Validate explicit confirmation
+        shell: bash
+        run: |
+          test "${{ inputs.confirm_write }}" = "WRITE_THREE_MUBAWAB_OFFERS"
+          test "${{ inputs.limit }}" -ge 1
+          test "${{ inputs.limit }}" -le 3
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Execute bounded live micro-batch
+        run: npx tsx scripts/recrawl/run-autonomous-microbatch.ts
+
+      - name: Upload internal execution report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: autonomous-recrawl-microbatch-v1-live-proof
+          path: autonomous-recrawl-microbatch-v1-report.json
+          if-no-files-found: error
+          retention-days: 14
