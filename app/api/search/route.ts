@@ -6,6 +6,10 @@ import {
   emitOdmDualReadMetric,
   shouldRunOdmDualRead,
 } from "@/lib/odm/odm-dual-read-shadow";
+import {
+  mapOdmPageToSearchResult,
+  shouldServeOdmPublicCanary,
+} from "@/lib/odm/odm-public-canary";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +20,7 @@ function parseNumberParam(value: string | null) {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
-function dualReadStableKey(query: SearchQuery): string {
+function stableSearchKey(query: SearchQuery): string {
   return JSON.stringify({
     q: query.q ?? null,
     city: query.city ?? null,
@@ -31,30 +35,30 @@ function dualReadStableKey(query: SearchQuery): string {
   });
 }
 
-function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResult): void {
-  const stableKey = dualReadStableKey(query);
-  if (!shouldRunOdmDualRead(stableKey)) return;
+function odmInput(query: SearchQuery) {
+  return {
+    q: query.q,
+    city: query.city,
+    propertyType: query.property_type,
+    intent: query.transaction_type,
+    minPrice: query.min_price,
+    maxPrice: query.max_price,
+    minSurface: query.min_surface,
+    maxSurface: query.max_surface,
+    limit: Math.min(query.limit ?? 50, 100),
+  };
+}
 
+function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResult): void {
+  const stableKey = stableSearchKey(query);
+  if (!shouldRunOdmDualRead(stableKey)) return;
   after(async () => {
     try {
-      const odmPage = await searchPublicRepresentations({
-        q: query.q,
-        city: query.city,
-        propertyType: query.property_type,
-        intent: query.transaction_type,
-        minPrice: query.min_price,
-        maxPrice: query.max_price,
-        minSurface: query.min_surface,
-        maxSurface: query.max_surface,
-        limit: Math.min(query.limit ?? 50, 100),
-      });
+      const odmPage = await searchPublicRepresentations(odmInput(query));
       emitOdmDualReadMetric(compareLegacyAndOdm(stableKey, legacyResult, odmPage));
     } catch (error) {
       const message = error instanceof Error ? error.message : "odm_dual_read_unknown_error";
-      console.warn("[odm-dual-read-shadow:error]", JSON.stringify({
-        version: "odm_dual_read_v1",
-        error: message,
-      }));
+      console.warn("[odm-dual-read-shadow:error]", JSON.stringify({ version: "odm_dual_read_v1", error: message }));
     }
   });
 }
@@ -80,22 +84,26 @@ export async function GET(request: NextRequest) {
 
   try {
     const legacyResult = await searchListings(query);
+    const stableKey = stableSearchKey(query);
+
+    if (shouldServeOdmPublicCanary(stableKey)) {
+      try {
+        const odmPage = await searchPublicRepresentations(odmInput(query));
+        return NextResponse.json(mapOdmPageToSearchResult(odmPage, query));
+      } catch (error) {
+        console.warn("[odm-public-canary:fallback]", error);
+        return NextResponse.json(legacyResult);
+      }
+    }
+
     scheduleOdmDualReadShadow(query, legacyResult);
     return NextResponse.json(legacyResult);
   } catch (error) {
     console.error("[api/search] Search failed:", error);
-    return NextResponse.json(
-      {
-        listings: [],
-        total: 0,
-        limit: query.limit,
-        offset: query.offset,
-        next_cursor: null,
-        has_more: false,
-        source: "database_fallback",
-        generated_at: new Date().toISOString(),
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      listings: [], total: 0, limit: query.limit, offset: query.offset,
+      next_cursor: null, has_more: false, source: "database_fallback",
+      generated_at: new Date().toISOString(),
+    }, { status: 500 });
   }
 }
