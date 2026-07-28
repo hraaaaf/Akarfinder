@@ -7,38 +7,38 @@ import {
   seedMatchesThinIndexSearch,
 } from "../../../lib/search-gateway/seed-thin-index.js";
 
-const atlasSeed = {
+const canonicalSeed = {
   id: "s1",
-  canonical_url: "https://atlasimmobilier.com/en/p/1-bedroom-apartment-for-rent-facing-the-sea-in-essaouira",
-  source_domain: "atlasimmobilier.com",
+  canonical_url: "https://mubawab.ma/fr/a/123/appartement-a-louer-casablanca",
+  source_domain: "mubawab.ma",
   seed_provider: "public_sitemap" as const,
   freshness_status: "seed_only",
   updated_at: "2026-07-22T00:00:00.000Z",
 };
 
 test("registry-approved listing seed can match explicit search filters without becoming a structured listing", () => {
-  assert.equal(seedMatchesThinIndexSearch(atlasSeed, {
-    city: "Essaouira",
+  assert.equal(seedMatchesThinIndexSearch(canonicalSeed, {
+    city: "Casablanca",
     propertyType: "apartment",
     intent: "rent",
   }), true);
 
-  assert.equal(seedMatchesThinIndexSearch(atlasSeed, {
-    city: "Casablanca",
+  assert.equal(seedMatchesThinIndexSearch(canonicalSeed, {
+    city: "Rabat",
     propertyType: "apartment",
     intent: "rent",
   }), false);
 });
 
 test("thin seed result exposes only source-safe external fields", () => {
-  const result = mapSeedToThinIndexResult(atlasSeed);
+  const result = mapSeedToThinIndexResult(canonicalSeed);
   assert.equal(result.result_origin, "public_sitemap");
   assert.equal(result.search_result_display_mode, "thin_indexed_seed");
   assert.equal(result.can_show_contact, false);
   assert.equal(result.can_show_gallery, false);
   assert.equal(result.can_show_thumbnail, false);
   assert.equal(result.primary_cta, "view_original");
-  assert.equal(result.original_url, atlasSeed.canonical_url);
+  assert.equal(result.original_url, canonicalSeed.canonical_url);
   assert.match(result.result_attribution_label, /sitemap public/i);
   assert.doesNotMatch(result.title, /prix|dh|mad/i);
 });
