@@ -18,14 +18,16 @@ describe("Phase 1 final UI — structural accessibility contracts", () => {
   it("exposes semantic selected states in Search and navigation", () => {
     const filters = source("components/search/QuickFilters.tsx");
     const header = source("components/layout/SiteHeader.tsx");
-    const shell = source("components/search/LightZillowSearchShell.tsx");
+    const viewSwitcher = source("components/search/SearchViewSwitcher.tsx");
 
     assert.ok(filters.includes('role="group"'));
     assert.ok(filters.includes('aria-label="Type de transaction"'));
     assert.ok(filters.includes("aria-pressed={filters.transactionType === tab.value}"));
     assert.ok(header.includes('aria-current={isActive ? "page" : undefined}'));
     assert.ok(header.includes('aria-label="Navigation mobile principale"'));
-    assert.ok(shell.includes("aria-pressed={activeTab === tab}"));
+    assert.ok(viewSwitcher.includes('role="group"'));
+    assert.ok(viewSwitcher.includes('aria-label="Mode d’affichage des résultats"'));
+    assert.ok(viewSwitcher.includes("aria-pressed={active}"));
   });
 
   it("reduces mobile header density while preserving the canonical product entries", () => {
