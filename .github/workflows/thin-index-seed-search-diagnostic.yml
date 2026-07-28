@@ -1,0 +1,27 @@
+name: Thin Index Seed Search Diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/scrapers/__tests__/thin-index-seed-search-v1.test.ts"
+      - "lib/search-gateway/seed-thin-index.ts"
+      - "app/api/search/gateway/route.ts"
+      - ".github/workflows/thin-index-seed-search-diagnostic.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Thin Index isolated test
+        run: npx tsx --test scripts/scrapers/__tests__/thin-index-seed-search-v1.test.ts
