@@ -1,9 +1,11 @@
 import { readFileSync } from 'node:fs';
 
-const migration = readFileSync(
+const files = [
   'supabase/migrations/20260728103000_odm_audit_pilot_validator_v1.sql',
-  'utf8',
-);
+  'supabase/migrations/20260728104500_odm_audit_shadow_field_suppression_v1.sql',
+  'supabase/migrations/20260728105000_odm_audit_shadow_view_rebuild_v1.sql',
+];
+const migration = files.map((file) => readFileSync(file, 'utf8')).join('\n');
 
 const required = [
   'odm_audit_signal_validation_v1',
@@ -15,10 +17,14 @@ const required = [
   'unconfirmed_timestamp',
   'persisted_price_conflict',
   'persisted_surface_conflict',
+  'shadow_public_price_mad',
+  'shadow_public_surface_m2',
   'no_public_policy_bypass',
   'no_quality_d_admission',
-  'no_ambiguous_structured_publication',
-  'no_stale_structured_publication',
+  'ambiguous_price_suppressed',
+  'ambiguous_surface_suppressed',
+  'untrusted_price_suppressed',
+  'untrusted_surface_suppressed',
 ];
 
 for (const token of required) {
