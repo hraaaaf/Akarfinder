@@ -5,7 +5,7 @@ on:
     paths:
       - "lib/freshness-lifecycle/**"
       - "scripts/scrapers/__tests__/freshness-lifecycle.test.ts"
-      - "supabase/migrations/20260726183000_create_freshness_lifecycle_signals.sql"
+      - "supabase/migrations/20260726183500_create_freshness_lifecycle_signals.sql"
       - ".github/workflows/freshness-lifecycle-v1-gate.yml"
       - "docs/data/AKARFINDER_FRESHNESS_LIFECYCLE_V1.md"
   workflow_dispatch:
@@ -28,10 +28,10 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/freshness-lifecycle.test.ts
       - name: Migration security contract
         run: |
-          grep -q "enable row level security" supabase/migrations/20260726183000_create_freshness_lifecycle_signals.sql
-          grep -q "security invoker" supabase/migrations/20260726183000_create_freshness_lifecycle_signals.sql
-          grep -q "publication_eligible = false" supabase/migrations/20260726183000_create_freshness_lifecycle_signals.sql
-          grep -q "to service_role" supabase/migrations/20260726183000_create_freshness_lifecycle_signals.sql
+          grep -q "enable row level security" supabase/migrations/20260726183500_create_freshness_lifecycle_signals.sql
+          grep -q "security invoker" supabase/migrations/20260726183500_create_freshness_lifecycle_signals.sql
+          grep -q "publication_eligible = false" supabase/migrations/20260726183500_create_freshness_lifecycle_signals.sql
+          grep -q "to service_role" supabase/migrations/20260726183500_create_freshness_lifecycle_signals.sql
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build
