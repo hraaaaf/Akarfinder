@@ -1,0 +1,32 @@
+name: Neighborhood Geometry Registry Shadow Gate
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  geometry-registry-shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Geometry registry contracts
+        run: npx tsx --test scripts/scrapers/__tests__/neighborhood-geometry-registry.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit

@@ -1,0 +1,52 @@
+name: Materialize Casablanca OSM Geometries
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Materialize official OSM relations
+        run: node scripts/geo/materialize-casablanca-geometries.mjs
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install topology validator
+        run: python -m pip install --disable-pip-version-check "shapely==2.1.1"
+
+      - name: Validate topology and provenance
+        run: >-
+          python scripts/geo/validate-casablanca-geometries.py
+          data/geo/casablanca-arrondissements-osm.json
+          data/geo/casablanca-arrondissements-osm.audit.json
+
+      - name: Commit audited Shadow artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/geo/casablanca-arrondissements-osm.json data/geo/casablanca-arrondissements-osm.audit.json
+          if git diff --cached --quiet; then
+            echo "No geometry changes to commit."
+            exit 0
+          fi
+          git commit -m "data(geo): refresh audited Casablanca boundaries"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

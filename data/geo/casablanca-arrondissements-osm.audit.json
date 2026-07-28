@@ -1,0 +1,221 @@
+{
+  "version": "v1",
+  "status": "passed",
+  "auditedAt": "2026-07-28T21:19:00.735014+00:00",
+  "featureCount": 16,
+  "uniqueRelationCount": 16,
+  "uniqueCanonicalCount": 16,
+  "allTopologiesValid": true,
+  "publicationStatus": "shadow",
+  "totalCoordinateArea": 0.020992692267860113,
+  "features": [
+    {
+      "relationId": 2801442,
+      "canonicalId": "ain-chock",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.672941,
+        33.493342,
+        -7.5660997,
+        33.559475
+      ],
+      "coordinateArea": 0.003826458751669963
+    },
+    {
+      "relationId": 2801460,
+      "canonicalId": "ain-sebaa",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.5806844,
+        33.5854825,
+        -7.5077822,
+        33.6249228
+      ],
+      "coordinateArea": 0.0015110767231099984
+    },
+    {
+      "relationId": 2801452,
+      "canonicalId": "al-fida",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.6122539,
+        33.5560188,
+        -7.5743811,
+        33.5730065
+      ],
+      "coordinateArea": 0.00036853996333499606
+    },
+    {
+      "relationId": 2801287,
+      "canonicalId": "anfa",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.751238,
+        33.5458518,
+        -7.6360212,
+        33.6159371
+      ],
+      "coordinateArea": 0.0016420303279949908
+    },
+    {
+      "relationId": 2801410,
+      "canonicalId": "ben-msick",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.5943424,
+        33.5432588,
+        -7.5683294,
+        33.5658728
+      ],
+      "coordinateArea": 0.00030180329804998504
+    },
+    {
+      "relationId": 2801343,
+      "canonicalId": "hay-hassani",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.7315537,
+        33.5064658,
+        -7.6427062,
+        33.5822811
+      ],
+      "coordinateArea": 0.00395065478534002
+    },
+    {
+      "relationId": 2801458,
+      "canonicalId": "hay-mohammadi",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.5857325,
+        33.578618,
+        -7.5425221,
+        33.6003939
+      ],
+      "coordinateArea": 0.00040392577099999054
+    },
+    {
+      "relationId": 2801474,
+      "canonicalId": "maarif",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.6614974,
+        33.5490155,
+        -7.6106596,
+        33.5910276
+      ],
+      "coordinateArea": 0.001203721862149979
+    },
+    {
+      "relationId": 2801453,
+      "canonicalId": "mers-sultan",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.6154774,
+        33.56326,
+        -7.5798569,
+        33.5900036
+      ],
+      "coordinateArea": 0.0003586991348000163
+    },
+    {
+      "relationId": 2801402,
+      "canonicalId": "moulay-rachid",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.5639071,
+        33.5513676,
+        -7.5146228,
+        33.578618
+      ],
+      "coordinateArea": 0.0006879921838699838
+    },
+    {
+      "relationId": 2801457,
+      "canonicalId": "roches-noires",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.6036508,
+        33.5680004,
+        -7.5556167,
+        33.6046173
+      ],
+      "coordinateArea": 0.0007141412873949963
+    },
+    {
+      "relationId": 2801415,
+      "canonicalId": "sbata",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.5813495,
+        33.5202986,
+        -7.5331532,
+        33.5509942
+      ],
+      "coordinateArea": 0.0006953089198400381
+    },
+    {
+      "relationId": 4743250,
+      "canonicalId": "sidi-belyout",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.6399137,
+        33.5826813,
+        -7.5797633,
+        33.6205339
+      ],
+      "coordinateArea": 0.0009933302005750528
+    },
+    {
+      "relationId": 2801461,
+      "canonicalId": "sidi-bernoussi",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.5290518,
+        33.6008899,
+        -7.4730661,
+        33.6409103
+      ],
+      "coordinateArea": 0.00122632864002
+    },
+    {
+      "relationId": 2801372,
+      "canonicalId": "sidi-moumen",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.5556167,
+        33.562084,
+        -7.4574165,
+        33.6246229
+      ],
+      "coordinateArea": 0.0025015379251751165
+    },
+    {
+      "relationId": 2801406,
+      "canonicalId": "sidi-othmane",
+      "geometryType": "Polygon",
+      "valid": true,
+      "bounds": [
+        -7.5782328,
+        33.5392146,
+        -7.5428169,
+        33.5739384
+      ],
+      "coordinateArea": 0.0006071424935349852
+    }
+  ]
+}
