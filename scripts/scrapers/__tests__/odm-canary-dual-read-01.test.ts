@@ -1,0 +1,77 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import {
+  compareLegacyAndOdm,
+  readDualReadSamplePercent,
+  shouldRunOdmDualRead,
+} from "../../../lib/odm/odm-dual-read-shadow";
+
+const baseLegacy = {
+  listings: [
+    { id: "legacy-1", canonical_url: "https://example.ma/a?utm_source=test", price: 1_000_000, surface: 100 },
+    { id: "legacy-2", canonical_url: "https://example.ma/b", price: 2_000_000, surface: 200 },
+  ],
+  total: 2,
+  limit: 50,
+  offset: 0,
+  next_cursor: null,
+  has_more: false,
+  source: "database",
+  generated_at: "2026-07-28T00:00:00.000Z",
+} as never;
+
+const baseOdm = {
+  results: [
+    { id: "odm-1", original_url: "https://example.ma/a", price: 1_000_000, surface: 100 },
+    { id: "odm-2", original_url: "https://example.ma/c", price: 3_000_000, surface: 300 },
+  ],
+  results_count: 2,
+  total_count: 2,
+  has_more: false,
+  next_cursor: null,
+} as never;
+
+test("dual read is disabled unless both explicit flag and bounded sample are present", () => {
+  assert.equal(shouldRunOdmDualRead("key", {}), false);
+  assert.equal(shouldRunOdmDualRead("key", { ODM_DUAL_READ_ENABLED: "true" }), false);
+  assert.equal(readDualReadSamplePercent({ ODM_DUAL_READ_SAMPLE_PERCENT: "6" }), 0);
+  assert.equal(readDualReadSamplePercent({ ODM_DUAL_READ_SAMPLE_PERCENT: "5" }), 5);
+});
+
+test("dual read sampling is deterministic", () => {
+  const env = { ODM_DUAL_READ_ENABLED: "true", ODM_DUAL_READ_SAMPLE_PERCENT: "5" };
+  assert.equal(shouldRunOdmDualRead("same-key", env), shouldRunOdmDualRead("same-key", env));
+});
+
+test("comparison normalizes canonical URLs and measures trusted field divergence", () => {
+  const metric = compareLegacyAndOdm(
+    "stable-key",
+    baseLegacy,
+    baseOdm,
+    new Date("2026-07-28T00:00:00.000Z"),
+  );
+  assert.equal(metric.version, "odm_dual_read_v1");
+  assert.equal(metric.legacy_count, 2);
+  assert.equal(metric.odm_count, 2);
+  assert.equal(metric.canonical_overlap_count, 1);
+  assert.equal(metric.canonical_overlap_rate, 0.5);
+  assert.equal(metric.rank_overlap_at_10, 1);
+  assert.equal(metric.trusted_price_comparisons, 1);
+  assert.equal(metric.trusted_price_divergences, 0);
+  assert.equal(metric.trusted_surface_comparisons, 1);
+  assert.equal(metric.trusted_surface_divergences, 0);
+  assert.equal(metric.generated_at, "2026-07-28T00:00:00.000Z");
+});
+
+test("comparison flags material price and surface differences above two percent", () => {
+  const divergentOdm = {
+    ...baseOdm,
+    results: [{ id: "odm-1", original_url: "https://example.ma/a", price: 900_000, surface: 90 }],
+    results_count: 1,
+    total_count: 1,
+  } as never;
+  const metric = compareLegacyAndOdm("stable-key", baseLegacy, divergentOdm);
+  assert.equal(metric.trusted_price_divergences, 1);
+  assert.equal(metric.trusted_surface_divergences, 1);
+});
