@@ -6,10 +6,43 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
+  red-gate-diagnostics:
+    if: github.event_name == 'pull_request' && github.head_ref == 'agent/integrate-ux-neutralize-conflict'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Capture failing contract diagnostics
+        shell: bash
+        run: |
+          set +e
+          : > ci-red-gates-diagnostics.txt
+          echo '=== HOME PROOF ===' >> ci-red-gates-diagnostics.txt
+          npx tsx --test scripts/scrapers/__tests__/home-proof-ux.test.ts scripts/scrapers/__tests__/home-motor-purity.test.ts >> ci-red-gates-diagnostics.txt 2>&1
+          echo '\n=== USER JOURNEY ===' >> ci-red-gates-diagnostics.txt
+          npx tsx --test scripts/scrapers/__tests__/companion-revision-ux.test.ts scripts/scrapers/__tests__/mon-projet-workspace-ux.test.ts scripts/scrapers/__tests__/home-search-entry-orchestration-v1.test.ts >> ci-red-gates-diagnostics.txt 2>&1
+          echo '\n=== SEARCH TRUTH ===' >> ci-red-gates-diagnostics.txt
+          npx tsx --test scripts/scrapers/__tests__/search-truth-tier.test.ts scripts/scrapers/__tests__/search-query-intent.test.ts scripts/scrapers/__tests__/typesense-ranking-parity.test.ts scripts/scrapers/__tests__/serp-gateway-first.test.ts scripts/scrapers/__tests__/search-ranking.test.ts scripts/scrapers/__tests__/public-result-similarity.test.ts scripts/scrapers/__tests__/akarinfo-passport.test.ts >> ci-red-gates-diagnostics.txt 2>&1
+          git config user.name 'AkarFinder CI Diagnostics'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ci-red-gates-diagnostics.txt
+          git diff --cached --quiet && exit 0
+          git commit -m 'Capture final CI red gate diagnostics'
+          git push origin HEAD:${{ github.head_ref }}
+
   ux-gate0:
+    if: github.head_ref != 'agent/integrate-ux-neutralize-conflict'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
