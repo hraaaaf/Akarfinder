@@ -2,10 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 
-import {
-  mapSeedToThinIndexResult,
-  seedMatchesThinIndexSearch,
-} from "../../../lib/search-gateway/seed-thin-index.js";
+import { mapSeedToThinIndexResult } from "../../../lib/search-gateway/seed-thin-index.js";
 
 const canonicalSeed = {
   id: "s1",
@@ -16,27 +13,17 @@ const canonicalSeed = {
   updated_at: "2026-07-22T00:00:00.000Z",
 };
 
-test("registry-approved listing seed can match explicit search filters without becoming a structured listing", () => {
-  assert.equal(seedMatchesThinIndexSearch(canonicalSeed, {
-    city: "Casablanca",
-    propertyType: "apartment",
-    intent: "rent",
-  }), true);
-
-  assert.equal(seedMatchesThinIndexSearch(canonicalSeed, {
-    city: "Rabat",
-    propertyType: "apartment",
-    intent: "rent",
-  }), false);
-});
-
 test("thin seed result exposes only source-safe external fields", () => {
   const result = mapSeedToThinIndexResult(canonicalSeed);
   assert.equal(result.result_origin, "public_sitemap");
   assert.equal(result.search_result_display_mode, "thin_indexed_seed");
+  assert.equal(result.production_allowed, true);
+  assert.equal(result.can_show_result, true);
   assert.equal(result.can_show_contact, false);
   assert.equal(result.can_show_gallery, false);
   assert.equal(result.can_show_thumbnail, false);
+  assert.equal(result.can_cache_thumbnail, false);
+  assert.equal(result.can_download_thumbnail, false);
   assert.equal(result.primary_cta, "view_original");
   assert.equal(result.original_url, canonicalSeed.canonical_url);
   assert.match(result.result_attribution_label, /sitemap public/i);
