@@ -1,0 +1,25 @@
+name: ODM Divergence Analyzer 01
+
+on:
+  pull_request:
+    paths:
+      - "lib/odm/odm-divergence-analyzer.ts"
+      - "scripts/scrapers/__tests__/odm-divergence-analyzer-01.test.ts"
+      - ".github/workflows/odm-divergence-analyzer-01.yml"
+  workflow_dispatch:
+
+jobs:
+  analyzer-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run analyzer contract
+        run: npx tsx --test scripts/scrapers/__tests__/odm-divergence-analyzer-01.test.ts
+      - name: Compile production application
+        run: npm run build
