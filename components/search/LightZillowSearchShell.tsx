@@ -8,6 +8,8 @@ import { ExternalIndexedResultsSection } from "@/components/search/ExternalIndex
 import { QuickFilters } from "@/components/search/QuickFilters";
 import { SearchListingCardDark } from "@/components/search/SearchListingCardDark";
 import { SearchMapPanel, type CityCount } from "@/components/search/SearchMapPanel";
+import { SearchViewSwitcher } from "@/components/search/SearchViewSwitcher";
+import { useCanonicalSearchSession } from "@/components/search/useCanonicalSearchSession";
 import type { Listing, ListingFiltersState } from "@/lib/listings/types";
 import {
   defaultListingFilters,
@@ -23,6 +25,8 @@ import { getCityCoord } from "@/lib/search/city-coords";
 import { partitionStructuredListings } from "@/lib/search/search-truth-tier";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 import { track } from "@/lib/tracking/track";
+import type { SearchViewMode } from "@/lib/ux/contracts";
+import { getSearchViewLayout } from "@/lib/ux/search-view";
 
 type LightZillowSearchShellProps = {
   initialListings: Listing[];
@@ -37,22 +41,15 @@ type LightZillowSearchShellProps = {
   }>;
 };
 
-type ActiveTab = "Liste" | "Carte";
-
 type ApiSearchResponse = {
   listings: Listing[];
   total: number;
   limit: number;
   offset: number;
+  next_cursor?: number | null;
+  has_more?: boolean;
   source: string;
   generated_at: string;
-};
-
-type GatewaySearchResponse = {
-  results: SearchGatewayNormalizedResult[];
-  total_count?: number;
-  next_cursor?: string | null;
-  has_more?: boolean;
 };
 
 const RELIABILITY_BADGE: Record<string, string> = {
@@ -62,7 +59,7 @@ const RELIABILITY_BADGE: Record<string, string> = {
   low: "Information limitee",
 };
 
-function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy): string {
+function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy, cursor?: number | null): string {
   const params = new URLSearchParams({ limit: "100" });
   if (filters.search.trim()) params.set("q", filters.search.trim());
   if (filters.city !== "all") params.set("city", filters.city);
@@ -78,20 +75,8 @@ function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy): string {
   }
   if (sortBy === "price-asc") params.set("sort", "price_asc");
   else if (sortBy === "price-desc") params.set("sort", "price_desc");
+  if (cursor != null) params.set("cursor", String(cursor));
   return `/api/search?${params.toString()}`;
-}
-
-function buildGatewayUrl(filters: ListingFiltersState, cursor?: string | null): string {
-  const params = new URLSearchParams({ limit: "100" });
-  if (filters.search.trim()) params.set("q", filters.search.trim());
-  if (filters.city !== "all") params.set("city", filters.city);
-  if (filters.propertyType !== "all") params.set("property_type", filters.propertyType);
-  if (filters.transactionType !== "all") params.set("intent", filters.transactionType);
-  if (filters.minBudget) params.set("min_price", filters.minBudget);
-  if (filters.maxBudget) params.set("max_price", filters.maxBudget);
-  if (filters.minSurface) params.set("min_surface", filters.minSurface);
-  if (cursor) params.set("cursor", cursor);
-  return `/api/search/gateway?${params.toString()}`;
 }
 
 function getIntentLabel(t: string) {
@@ -240,18 +225,29 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     mreOnly: initialFilters?.mreOnly ?? defaultListingFilters.mreOnly,
     search: initialFilters?.search ?? defaultListingFilters.search,
   });
-  const [activeTab, setActiveTab] = useState<ActiveTab>("Liste");
+  const [view, setView] = useState<SearchViewMode>("split");
   const [sortBy, setSortBy] = useState<SortBy>("recommended");
   const [listings, setListings] = useState(initialListings);
   const [isLoading, setIsLoading] = useState(true);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [hasMoreIndexed, setHasMoreIndexed] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [indexedTotalCount, setIndexedTotalCount] = useState<number | null>(null);
 
   const [gatewayResults, setGatewayResults] = useState<SearchGatewayNormalizedResult[]>([]);
-  const gatewayEnabled = process.env.NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED !== "false";
+  const gatewayEnabled = process.env.NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED === "true";
   const [isGatewayLoading, setIsGatewayLoading] = useState(gatewayEnabled);
+  const viewLayout = getSearchViewLayout(view);
+
+  useCanonicalSearchSession({
+    filters,
+    sortBy,
+    view,
+    onRestore: (snapshot) => {
+      setFilters((current) => ({ ...current, ...snapshot.filters }));
+      setSortBy(snapshot.sortBy);
+      setView(snapshot.view);
+    },
+  });
 
   function handleFilterChange(next: ListingFiltersState) {
     if (
@@ -282,6 +278,8 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
         const payload = (await response.json()) as ApiSearchResponse;
         if (!cancelled) {
           setListings(payload.listings);
+          setNextCursor(payload.next_cursor ?? null);
+          setHasMoreIndexed(payload.has_more === true && payload.next_cursor != null);
         }
       } catch {
         // Preserve the previous stable result set on transient failures.
@@ -296,28 +294,21 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   }, [filters, sortBy]);
 
   async function handleLoadMoreIndexed() {
-    if (!nextCursor || isLoadingMore) return;
+    if (nextCursor == null || isLoadingMore) return;
     setIsLoadingMore(true);
     try {
-      const response = await fetch(buildGatewayUrl(filters, nextCursor), { cache: "no-store" });
+      const response = await fetch(buildSearchUrl(filters, sortBy, nextCursor), { cache: "no-store" });
       if (!response.ok) return;
-      const payload = (await response.json()) as GatewaySearchResponse;
-      if (!Array.isArray(payload.results)) return;
-      setGatewayResults((current) => {
-        const merged = new Map(
-          current.map((result) => [result.original_url || result.display_url || result.id, result]),
-        );
-        for (const result of payload.results) {
-          const key = result.original_url || result.display_url || result.id;
-          if (!merged.has(key)) merged.set(key, result);
-        }
+      const payload = (await response.json()) as ApiSearchResponse;
+      setListings((current) => {
+        const merged = new Map(current.map((listing) => [listing.id, listing]));
+        for (const listing of payload.listings) merged.set(listing.id, listing);
         return [...merged.values()];
       });
       setNextCursor(payload.next_cursor ?? null);
       setHasMoreIndexed(payload.has_more === true && payload.next_cursor != null);
-      if (typeof payload.total_count === "number") setIndexedTotalCount(payload.total_count);
     } catch {
-      // Preserve the current indexed page on transient failures.
+      // Preserve the current page on transient failures.
     } finally {
       setIsLoadingMore(false);
     }
@@ -326,10 +317,6 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   useEffect(() => {
     if (!gatewayEnabled) {
       setGatewayResults([]);
-      setNextCursor(null);
-      setHasMoreIndexed(false);
-      setIndexedTotalCount(null);
-      setIsGatewayLoading(false);
       return;
     }
     let cancelled = false;
@@ -338,28 +325,20 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
       if (cancelled) return;
       setIsGatewayLoading(true);
       try {
-        const response = await fetch(buildGatewayUrl(filters), { cache: "no-store" });
+        const params = new URLSearchParams();
+        if (filters.search.trim()) params.set("q", filters.search.trim());
+        if (filters.city !== "all") params.set("city", filters.city);
+        if (filters.propertyType !== "all") params.set("property_type", filters.propertyType);
+        if (filters.transactionType !== "all") params.set("intent", filters.transactionType);
+        const response = await fetch(`/api/search/gateway?${params.toString()}`, { cache: "no-store" });
         if (!response.ok || cancelled) {
           setGatewayResults([]);
-          setNextCursor(null);
-          setHasMoreIndexed(false);
-          setIndexedTotalCount(null);
           return;
         }
-        const payload = (await response.json()) as GatewaySearchResponse;
-        if (!cancelled && Array.isArray(payload.results)) {
-          setGatewayResults(payload.results);
-          setNextCursor(payload.next_cursor ?? null);
-          setHasMoreIndexed(payload.has_more === true && payload.next_cursor != null);
-          setIndexedTotalCount(typeof payload.total_count === "number" ? payload.total_count : null);
-        }
+        const payload = await response.json();
+        if (!cancelled && Array.isArray(payload.results)) setGatewayResults(payload.results);
       } catch {
-        if (!cancelled) {
-          setGatewayResults([]);
-          setNextCursor(null);
-          setHasMoreIndexed(false);
-          setIndexedTotalCount(null);
-        }
+        if (!cancelled) setGatewayResults([]);
       } finally {
         if (!cancelled) setIsGatewayLoading(false);
       }
@@ -487,16 +466,14 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
             <span className="shrink-0 rounded-full border border-border/20 bg-surface px-3 py-1.5 text-[11px] font-bold text-foreground/75 dark:border-white/12 dark:bg-white/[0.06] sm:px-4 sm:py-2 sm:text-[12.5px]">
               {isSearching && displayedCount === 0
                 ? "Recherche…"
-                : indexedTotalCount != null
-                  ? `${displayedCount} affiché${displayedCount !== 1 ? "s" : ""} sur ${indexedTotalCount.toLocaleString("fr-MA")} résultats indexés`
-                  : `${displayedCount} résultat${displayedCount !== 1 ? "s" : ""} affiché${displayedCount !== 1 ? "s" : ""}`}
+                : `${displayedCount} résultat${displayedCount !== 1 ? "s" : ""} affiché${displayedCount !== 1 ? "s" : ""}`}
             </span>
           </div>
 
           <QuickFilters filters={filters} cities={cities} propertyTypes={propertyTypes} onChange={handleFilterChange} onReset={handleReset} />
 
           <p className="mt-2.5 text-[12px] font-semibold text-muted-foreground">
-            Besoin de clarifier vos priorités ?{" "}
+            Besoin de clarifier vos priorités?{" "}
             <Link href="/compagnon" className="font-extrabold text-bronze-400 underline underline-offset-2 transition hover:text-bronze-300">
               Construire Mon Projet avec le Compagnon
             </Link>
@@ -538,19 +515,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
             </select>
           </div>
 
-          <div className="mt-2.5 flex rounded-full border border-border/20 bg-surface p-1 dark:border-white/12 dark:bg-white/[0.06] lg:hidden">
-            {(["Liste", "Carte"] as ActiveTab[]).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                aria-pressed={activeTab === tab}
-                className={`flex-1 rounded-full py-2 text-[13px] font-extrabold transition ${activeTab === tab ? "bg-gradient-to-br from-bronze-500 to-bronze-700 text-white" : "text-foreground/55"}`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+          <SearchViewSwitcher value={view} onChange={setView} className="mt-2.5" />
 
           {activeChips.length > 0 ? (
             <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -571,82 +536,74 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
           ) : null}
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-5 lg:mt-5 lg:grid-cols-[minmax(0,1fr)_minmax(390px,0.62fr)] lg:items-start">
-          <div ref={listRef} className={`min-w-0 ${activeTab === "Carte" ? "hidden lg:block" : "block"}`}>
-            {showSkeleton ? (
-              <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-                {[1, 2, 3, 4].map((number) => <SkeletonCard key={number} />)}
-              </div>
-            ) : (
-              <div className="space-y-8">
-                <StructuredTruthSection kind="analyzed" listings={analyzedListings} isLoading={isLoading} />
-                <StructuredTruthSection kind="partial" listings={partialListings} isLoading={isLoading} />
-                <ObservedResultsSection
-                  persistedListings={observedIndexedListings}
-                  gatewayResults={gatewayResults}
-                  isLoading={isLoading}
-                  isGatewayLoading={isGatewayLoading}
-                />
-                {!hasAnyResults && !isSearching ? <EmptyState onReset={handleReset} city={filters.city} /> : null}
-              </div>
-            )}
+        <div className={`mt-4 grid grid-cols-1 gap-5 lg:mt-5 ${view === "split" ? "lg:grid-cols-[minmax(0,1fr)_minmax(390px,0.62fr)]" : "lg:grid-cols-1"} lg:items-start`}>
+          {viewLayout.showList ? (
+            <div ref={listRef} className="min-w-0">
+              {showSkeleton ? (
+                <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+                  {[1, 2, 3, 4].map((number) => <SkeletonCard key={number} />)}
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  <StructuredTruthSection kind="analyzed" listings={analyzedListings} isLoading={isLoading} />
+                  <StructuredTruthSection kind="partial" listings={partialListings} isLoading={isLoading} />
+                  <ObservedResultsSection
+                    persistedListings={observedIndexedListings}
+                    gatewayResults={gatewayResults}
+                    isLoading={isLoading}
+                    isGatewayLoading={isGatewayLoading}
+                  />
+                  {!hasAnyResults && !isSearching ? <EmptyState onReset={handleReset} city={filters.city} /> : null}
+                </div>
+              )}
 
-            {hasMoreIndexed ? (
-              <div className="mt-6 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    track({
-                      event_name: "search_index_load_more",
-                      source_page: "/search",
-                      intent: filters.transactionType,
-                      metadata: {
-                        city: filters.city,
-                        displayed_indexed_results: gatewayResults.length,
-                        indexed_total_count: indexedTotalCount,
-                      },
-                    });
-                    void handleLoadMoreIndexed();
-                  }}
-                  disabled={isLoadingMore}
-                  className="inline-flex items-center gap-2 rounded-full border border-bronze-500/35 bg-bronze-500/10 px-5 py-2.5 text-[13px] font-extrabold text-bronze-300 transition hover:bg-bronze-500/20 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isLoadingMore ? <Loader2 size={15} className="animate-spin" aria-hidden="true" /> : null}
-                  Afficher plus de résultats indexés
-                </button>
-              </div>
-            ) : null}
-          </div>
-
-          <div className={`min-w-0 space-y-4 ${activeTab === "Liste" ? "hidden lg:block" : "block"} lg:sticky lg:top-5 lg:self-start`}>
-            <SearchMapPanel
-              cityCounts={cityCounts}
-              otherCount={otherCount}
-              activeCity={filters.city}
-              onSelectCity={handleSelectCity}
-              stats={{ total: filteredListings.length, citiesCovered: cityCounts.length, avgIndex, updatedLabel: "Récent" }}
-            />
-
-            <div className="overflow-hidden rounded-2xl border border-border/15 bg-card backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04]">
-              <div className="px-5 py-4">
-                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-500 dark:text-bronze-400">Mon Projet AkarFinder</p>
-                <p className="mt-1.5 text-[1rem] font-extrabold text-foreground">Clarifier mes priorités</p>
-                <p className="mt-1.5 text-[12.5px] leading-5 text-muted-foreground">Budget, zones, types, contraintes et préférences dans un seul projet réutilisable.</p>
-              </div>
-              <div className="border-t border-border/12 px-5 py-3 dark:border-white/8">
-                <Link href="/compagnon" className="flex items-center justify-between text-[13px] font-extrabold text-foreground/80 transition hover:text-foreground dark:text-white/85">
-                  Construire Mon Projet<ArrowRight size={14} aria-hidden="true" />
-                </Link>
-              </div>
+              {hasMoreIndexed ? (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleLoadMoreIndexed}
+                    disabled={isLoadingMore}
+                    className="inline-flex items-center gap-2 rounded-full border border-bronze-500/35 bg-bronze-500/10 px-5 py-2.5 text-[13px] font-extrabold text-bronze-300 transition hover:bg-bronze-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isLoadingMore ? <Loader2 size={15} className="animate-spin" aria-hidden="true" /> : null}
+                    Afficher plus de résultats indexés
+                  </button>
+                </div>
+              ) : null}
             </div>
+          ) : null}
 
-            <Link
-              href={`/map${filters.city !== "all" ? `?city=${encodeURIComponent(filters.city)}` : ""}`}
-              className="flex items-center justify-center gap-2 rounded-2xl border border-border/20 bg-card px-4 py-3 text-[13px] font-extrabold text-foreground/75 transition hover:border-bronze-500/40 hover:text-foreground dark:border-white/12 dark:bg-white/[0.04] dark:text-white/80 dark:hover:text-white"
-            >
-              <MapIcon size={15} aria-hidden="true" /> Ouvrir la carte complète
-            </Link>
-          </div>
+          {viewLayout.showMap ? (
+            <div className="min-w-0 space-y-4 lg:sticky lg:top-5 lg:self-start">
+              <SearchMapPanel
+                cityCounts={cityCounts}
+                otherCount={otherCount}
+                activeCity={filters.city}
+                onSelectCity={handleSelectCity}
+                stats={{ total: filteredListings.length, citiesCovered: cityCounts.length, avgIndex, updatedLabel: "Récent" }}
+              />
+
+              <div className="overflow-hidden rounded-2xl border border-border/15 bg-card backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04]">
+                <div className="px-5 py-4">
+                  <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-500 dark:text-bronze-400">Mon Projet AkarFinder</p>
+                  <p className="mt-1.5 text-[1rem] font-extrabold text-foreground">Clarifier mes priorités</p>
+                  <p className="mt-1.5 text-[12.5px] leading-5 text-muted-foreground">Budget, zones, types, contraintes et préférences dans un seul projet réutilisable.</p>
+                </div>
+                <div className="border-t border-border/12 px-5 py-3 dark:border-white/8">
+                  <Link href="/compagnon" className="flex items-center justify-between text-[13px] font-extrabold text-foreground/80 transition hover:text-foreground dark:text-white/85">
+                    Construire Mon Projet<ArrowRight size={14} aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+
+              <Link
+                href={`/map${filters.city !== "all" ? `?city=${encodeURIComponent(filters.city)}` : ""}`}
+                className="flex items-center justify-center gap-2 rounded-2xl border border-border/20 bg-card px-4 py-3 text-[13px] font-extrabold text-foreground/75 transition hover:border-bronze-500/40 hover:text-foreground dark:border-white/12 dark:bg-white/[0.04] dark:text-white/80 dark:hover:text-white"
+              >
+                <MapIcon size={15} aria-hidden="true" /> Ouvrir la carte complète
+              </Link>
+            </div>
+          ) : null}
         </div>
       </section>
       <CompareBar />
