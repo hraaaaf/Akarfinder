@@ -6,10 +6,63 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
+  resolve-integration:
+    if: github.event_name == 'pull_request' && github.head_ref == 'agent/integrate-ux-neutralize-conflict'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Resolve ODM cursor and canonical UX shell
+        run: python scripts/integration/resolve_ux_main.py
+      - run: npm ci
+      - name: Integrated UX and ODM cursor contracts
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/ux-gate0-contracts.test.ts
+          scripts/scrapers/__tests__/ux-search-session.test.ts
+          scripts/scrapers/__tests__/ux-search-history.test.ts
+          scripts/scrapers/__tests__/ux-search-view.test.ts
+          scripts/scrapers/__tests__/ux-map-atlas.test.ts
+          scripts/scrapers/__tests__/ux-price-explorer.test.ts
+          scripts/scrapers/__tests__/ux-property-selection.test.ts
+          scripts/scrapers/__tests__/ux-smart-property-card.test.ts
+          scripts/scrapers/__tests__/ux-certified-property-map.test.ts
+          scripts/scrapers/__tests__/ux-property-passport.test.ts
+          scripts/scrapers/__tests__/ux-explain-ranking.test.ts
+          scripts/scrapers/__tests__/ux-canonical-property-comparison.test.ts
+          scripts/scrapers/__tests__/ux-neighborhood-intelligence.test.ts
+          scripts/scrapers/__tests__/ux-certified-local-heatmap.test.ts
+          scripts/scrapers/__tests__/ux-city-neighborhood-explorer.test.ts
+          scripts/scrapers/__tests__/ux-certified-neighborhood-comparison.test.ts
+          scripts/scrapers/__tests__/ux-certified-similar-neighborhoods.test.ts
+          scripts/scrapers/__tests__/odm-09c-gateway-cursor-bridge.test.ts
+          scripts/scrapers/__tests__/odm-09d-search-ui-cursor.test.ts
+          scripts/scrapers/__tests__/odm-09e-lookahead-pagination.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Commit resolved integration
+        run: |
+          git config user.name "AkarFinder Integration Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add components/search/LightZillowSearchShell.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m "Integrate ODM cursor with certified UX shell"
+          git push origin HEAD:${{ github.head_ref }}
+
   ux-gate0:
+    if: github.head_ref != 'agent/integrate-ux-neutralize-conflict'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
