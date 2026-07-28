@@ -1,4 +1,6 @@
+import casablancaGeometryCollection from "@/data/geo/casablanca-arrondissements-osm.json";
 import type {
+  NeighborhoodGeometry,
   NeighborhoodGeometryCandidateRecord,
   NeighborhoodGeometryRecord,
 } from "@/lib/geo/neighborhood-geometry-registry";
@@ -11,9 +13,9 @@ export const CASABLANCA_GEOMETRY_SOURCE_POLICY = {
   attribution: "© OpenStreetMap contributors",
   usageMode: "shadow-only",
   notes: [
-    "No geometry is published until source identity, licence, canonical district mapping and topology review pass.",
-    "A missing geometry remains missing; the registry must never synthesize or approximate neighborhood borders.",
-    "Any public produced work must surface the required attribution.",
+    "All 16 arrondissement geometries are materialized from explicit OSM relations and topology-audited before use.",
+    "Public rendering remains disabled unless the dedicated server-side geometry canary is explicitly enabled.",
+    "Any produced work must surface the required OpenStreetMap attribution.",
   ],
 } as const;
 
@@ -49,10 +51,6 @@ function candidate(
   };
 }
 
-/**
- * Audited source references for Casablanca's 16 arrondissements.
- * These records are deliberately reference-only: they are not renderable geometry.
- */
 export const CASABLANCA_NEIGHBORHOOD_GEOMETRY_CANDIDATES: readonly NeighborhoodGeometryCandidateRecord[] = [
   candidate(2801287, "anfa", "Anfa", ["آنفا"]),
   candidate(2801474, "maarif", "Maârif", ["Maarif", "المعاريف"]),
@@ -72,11 +70,45 @@ export const CASABLANCA_NEIGHBORHOOD_GEOMETRY_CANDIDATES: readonly NeighborhoodG
   candidate(2801415, "sbata", "Sbata", ["سباتة"]),
 ];
 
-/**
- * Renderable registry stays empty until relation geometry is materialized,
- * topology-validated and manually reviewed. No synthetic fallback is allowed.
- */
-export const CASABLANCA_NEIGHBORHOOD_GEOMETRY_SHADOW: readonly NeighborhoodGeometryRecord[] = [];
+type MaterializedFeature = {
+  properties: {
+    cityCanonicalId: string;
+    neighborhoodCanonicalId: string;
+    displayName: string;
+    aliases: string[];
+    sourceEntityId: number;
+    sourceUrl: string;
+    licenseId: string;
+    licenseUrl: string;
+    attribution: string;
+    retrievedAt: string;
+  };
+  geometry: NeighborhoodGeometry;
+};
+
+const MATERIALIZED_FEATURES = (casablancaGeometryCollection as unknown as { features: MaterializedFeature[] }).features;
+
+export const CASABLANCA_NEIGHBORHOOD_GEOMETRY_SHADOW: readonly NeighborhoodGeometryRecord[] = MATERIALIZED_FEATURES.map(
+  (feature) => ({
+    version: "v1",
+    cityCanonicalId: feature.properties.cityCanonicalId,
+    neighborhoodCanonicalId: feature.properties.neighborhoodCanonicalId,
+    displayName: feature.properties.displayName,
+    aliases: feature.properties.aliases,
+    geometry: feature.geometry,
+    source: {
+      provider: CASABLANCA_GEOMETRY_SOURCE_POLICY.provider,
+      dataset: CASABLANCA_GEOMETRY_SOURCE_POLICY.dataset,
+      sourceUrl: feature.properties.sourceUrl,
+      licenseId: feature.properties.licenseId,
+      licenseUrl: feature.properties.licenseUrl,
+      attribution: feature.properties.attribution,
+      retrievedAt: feature.properties.retrievedAt,
+    },
+    publicationStatus: "shadow",
+    reviewed: false,
+  }),
+);
 
 export function listCasablancaShadowGeometryCandidates(): readonly NeighborhoodGeometryCandidateRecord[] {
   return CASABLANCA_NEIGHBORHOOD_GEOMETRY_CANDIDATES;
@@ -84,4 +116,8 @@ export function listCasablancaShadowGeometryCandidates(): readonly NeighborhoodG
 
 export function listCasablancaShadowGeometries(): readonly NeighborhoodGeometryRecord[] {
   return CASABLANCA_NEIGHBORHOOD_GEOMETRY_SHADOW;
+}
+
+export function casablancaShadowGeometryIsComplete(): boolean {
+  return CASABLANCA_NEIGHBORHOOD_GEOMETRY_SHADOW.length === 16;
 }
