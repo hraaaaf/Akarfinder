@@ -46,10 +46,15 @@ type ApiSearchResponse = {
   total: number;
   limit: number;
   offset: number;
-  next_cursor?: number | null;
-  has_more?: boolean;
   source: string;
   generated_at: string;
+};
+
+type GatewaySearchResponse = {
+  results: SearchGatewayNormalizedResult[];
+  total_count?: number;
+  next_cursor?: string | null;
+  has_more?: boolean;
 };
 
 const RELIABILITY_BADGE: Record<string, string> = {
@@ -59,7 +64,7 @@ const RELIABILITY_BADGE: Record<string, string> = {
   low: "Information limitee",
 };
 
-function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy, cursor?: number | null): string {
+function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy): string {
   const params = new URLSearchParams({ limit: "100" });
   if (filters.search.trim()) params.set("q", filters.search.trim());
   if (filters.city !== "all") params.set("city", filters.city);
@@ -75,8 +80,20 @@ function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy, cursor?: n
   }
   if (sortBy === "price-asc") params.set("sort", "price_asc");
   else if (sortBy === "price-desc") params.set("sort", "price_desc");
-  if (cursor != null) params.set("cursor", String(cursor));
   return `/api/search?${params.toString()}`;
+}
+
+function buildGatewayUrl(filters: ListingFiltersState, cursor?: string | null): string {
+  const params = new URLSearchParams({ limit: "100" });
+  if (filters.search.trim()) params.set("q", filters.search.trim());
+  if (filters.city !== "all") params.set("city", filters.city);
+  if (filters.propertyType !== "all") params.set("property_type", filters.propertyType);
+  if (filters.transactionType !== "all") params.set("intent", filters.transactionType);
+  if (filters.minBudget) params.set("min_price", filters.minBudget);
+  if (filters.maxBudget) params.set("max_price", filters.maxBudget);
+  if (filters.minSurface) params.set("min_surface", filters.minSurface);
+  if (cursor) params.set("cursor", cursor);
+  return `/api/search/gateway?${params.toString()}`;
 }
 
 function getIntentLabel(t: string) {
@@ -229,14 +246,16 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   const [sortBy, setSortBy] = useState<SortBy>("recommended");
   const [listings, setListings] = useState(initialListings);
   const [isLoading, setIsLoading] = useState(true);
-  const [nextCursor, setNextCursor] = useState<number | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMoreIndexed, setHasMoreIndexed] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [indexedTotalCount, setIndexedTotalCount] = useState<number | null>(null);
 
   const [gatewayResults, setGatewayResults] = useState<SearchGatewayNormalizedResult[]>([]);
-  const gatewayEnabled = process.env.NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED === "true";
+  const gatewayEnabled = process.env.NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED !== "false";
   const [isGatewayLoading, setIsGatewayLoading] = useState(gatewayEnabled);
   const viewLayout = getSearchViewLayout(view);
+  void indexedTotalCount;
 
   useCanonicalSearchSession({
     filters,
@@ -278,8 +297,6 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
         const payload = (await response.json()) as ApiSearchResponse;
         if (!cancelled) {
           setListings(payload.listings);
-          setNextCursor(payload.next_cursor ?? null);
-          setHasMoreIndexed(payload.has_more === true && payload.next_cursor != null);
         }
       } catch {
         // Preserve the previous stable result set on transient failures.
@@ -294,21 +311,28 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   }, [filters, sortBy]);
 
   async function handleLoadMoreIndexed() {
-    if (nextCursor == null || isLoadingMore) return;
+    if (!nextCursor || isLoadingMore) return;
     setIsLoadingMore(true);
     try {
-      const response = await fetch(buildSearchUrl(filters, sortBy, nextCursor), { cache: "no-store" });
+      const response = await fetch(buildGatewayUrl(filters, nextCursor), { cache: "no-store" });
       if (!response.ok) return;
-      const payload = (await response.json()) as ApiSearchResponse;
-      setListings((current) => {
-        const merged = new Map(current.map((listing) => [listing.id, listing]));
-        for (const listing of payload.listings) merged.set(listing.id, listing);
+      const payload = (await response.json()) as GatewaySearchResponse;
+      if (!Array.isArray(payload.results)) return;
+      setGatewayResults((current) => {
+        const merged = new Map(
+          current.map((result) => [result.original_url || result.display_url || result.id, result]),
+        );
+        for (const result of payload.results) {
+          const key = result.original_url || result.display_url || result.id;
+          if (!merged.has(key)) merged.set(key, result);
+        }
         return [...merged.values()];
       });
       setNextCursor(payload.next_cursor ?? null);
       setHasMoreIndexed(payload.has_more === true && payload.next_cursor != null);
+      if (typeof payload.total_count === "number") setIndexedTotalCount(payload.total_count);
     } catch {
-      // Preserve the current page on transient failures.
+      // Preserve the current indexed page on transient failures.
     } finally {
       setIsLoadingMore(false);
     }
@@ -317,6 +341,10 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   useEffect(() => {
     if (!gatewayEnabled) {
       setGatewayResults([]);
+      setNextCursor(null);
+      setHasMoreIndexed(false);
+      setIndexedTotalCount(null);
+      setIsGatewayLoading(false);
       return;
     }
     let cancelled = false;
@@ -325,20 +353,28 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
       if (cancelled) return;
       setIsGatewayLoading(true);
       try {
-        const params = new URLSearchParams();
-        if (filters.search.trim()) params.set("q", filters.search.trim());
-        if (filters.city !== "all") params.set("city", filters.city);
-        if (filters.propertyType !== "all") params.set("property_type", filters.propertyType);
-        if (filters.transactionType !== "all") params.set("intent", filters.transactionType);
-        const response = await fetch(`/api/search/gateway?${params.toString()}`, { cache: "no-store" });
+        const response = await fetch(buildGatewayUrl(filters), { cache: "no-store" });
         if (!response.ok || cancelled) {
           setGatewayResults([]);
+          setNextCursor(null);
+          setHasMoreIndexed(false);
+          setIndexedTotalCount(null);
           return;
         }
-        const payload = await response.json();
-        if (!cancelled && Array.isArray(payload.results)) setGatewayResults(payload.results);
+        const payload = (await response.json()) as GatewaySearchResponse;
+        if (!cancelled && Array.isArray(payload.results)) {
+          setGatewayResults(payload.results);
+          setNextCursor(payload.next_cursor ?? null);
+          setHasMoreIndexed(payload.has_more === true && payload.next_cursor != null);
+          setIndexedTotalCount(typeof payload.total_count === "number" ? payload.total_count : null);
+        }
       } catch {
-        if (!cancelled) setGatewayResults([]);
+        if (!cancelled) {
+          setGatewayResults([]);
+          setNextCursor(null);
+          setHasMoreIndexed(false);
+          setIndexedTotalCount(null);
+        }
       } finally {
         if (!cancelled) setIsGatewayLoading(false);
       }
