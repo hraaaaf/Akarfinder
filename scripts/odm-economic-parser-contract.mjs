@@ -50,7 +50,7 @@ for (const pattern of forbidden) {
   assert.equal(pattern.test(migration), false, `forbidden behavior: ${pattern}`);
 }
 
-const amountPattern = /((?:ancien\s+prix|prix\s+barr[ée]|au\s+lieu\s+de|[àa]\s+partir\s+de|dès|des)?\s*([0-9]{1,3}(?:[ .,'’\-][0-9]{3})+|[0-9]{4,10})\s*(mad|dhs?|dh)(?:\s*(?:\/|par)\s*(m2|m²|mois|month|jour|day|semaine|week))?)/giu;
+const amountPattern = /((?:ancien\s+prix|prix\s+barr[ée]|au\s+lieu\s+de|[àa]\s+partir\s+de|dès)?\s*([0-9]{1,3}(?:[ .,'’\-][0-9]{3})+|[0-9]{4,10})\s*(mad|dhs?|dh)(?:\s*(?:\/|par)\s*(m2|m²|mois|month|jour|day|semaine|week))?)/giu;
 
 function parseEconomic(text, evidenceSource = 'title', observationId = 'fixture:1') {
   const values = [];
@@ -68,7 +68,7 @@ function parseEconomic(text, evidenceSource = 'title', observationId = 'fixture:
     else if (['jour', 'day'].includes(cadence)) economicType = 'rent_daily';
     else if (['semaine', 'week'].includes(cadence)) economicType = 'rent_weekly';
     else if (/(ancien\s+prix|prix\s+barr[ée]|au\s+lieu\s+de)/u.test(fragment)) economicType = 'old_price';
-    else if (/([àa]\s+partir\s+de|dès|des)/u.test(fragment)) economicType = 'starting_price';
+    else if (/([àa]\s+partir\s+de|dès)/u.test(fragment)) economicType = 'starting_price';
     else if (/(loyer|location|[àa]\s+louer)/u.test(whole)) economicType = 'rent_monthly';
     else if (/(vente|[àa]\s+vendre)/u.test(whole)) economicType = 'sale_total';
 
@@ -110,10 +110,15 @@ const negatives = [
   'Téléphone 06 12 34 56 78',
   'Référence annonce 1650000',
   'Surface 1.650.000 m²',
+  'Des appartements à 650 000 DH',
 ];
-for (const text of negatives) {
+for (const text of negatives.slice(0, 4)) {
   assert.deepEqual(parseEconomic(text), [], `false positive: ${text}`);
 }
+const ordinaryDes = parseEconomic(negatives[4]);
+assert.equal(ordinaryDes.length, 1);
+assert.equal(ordinaryDes[0].economicType, 'unknown_price', "ordinary 'des' must not mean starting price");
+assert.equal(ordinaryDes[0].rejectionReason, 'economic_context_unconfirmed');
 
 const ambiguous = parseEconomic('À vendre : ancien prix 1 900 000 DH, nouveau prix 1 650 000 DH');
 assert.equal(ambiguous.length, 2, 'two economic values must remain ambiguous until reconciliation');
