@@ -124,14 +124,14 @@ export function SearchMapPanel({
         ) : null}
 
         {pins.map((pin) => {
-          const active = visualActiveCity !== "all" && pin.city.toLowerCase() === visualActiveCity.toLowerCase();
-          const style = active ? CITY_MARKER_ACTIVE : CITY_MARKER;
+          const isActive = visualActiveCity !== "all" && pin.city.toLowerCase() === visualActiveCity.toLowerCase();
+          const style = isActive ? CITY_MARKER_ACTIVE : CITY_MARKER;
           const cityKey = normalizeCityKey(pin.city);
-          const showLabelMobile = active || mobileLabels.has(cityKey);
+          const showLabelMobile = isActive || mobileLabels.has(cityKey);
           const showLabelDesktopOnly = !showLabelMobile && primaryLabels.has(cityKey);
           return (
-            <button key={pin.city} type="button" onClick={() => onSelectCity(pin.city)} aria-label={`Filtrer les ${pin.count} résultats affichés à ${pin.city}`} aria-pressed={active} className="group absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer focus:outline-none" style={{ left: `${pin.coord.x}%`, top: `${pin.coord.y}%` }}>
-              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-md transition-opacity duration-200" style={{ width: style.size * 1.8, height: style.size * 1.8, backgroundColor: style.glow, opacity: active ? 0.9 : 0.5 }} />
+            <button key={pin.city} type="button" onClick={() => onSelectCity(pin.city)} aria-label={`Filtrer les ${pin.count} résultats affichés à ${pin.city}`} aria-pressed={isActive} className="group absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer focus:outline-none" style={{ left: `${pin.coord.x}%`, top: `${pin.coord.y}%` }}>
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-md transition-opacity duration-200" style={{ width: style.size * 1.8, height: style.size * 1.8, backgroundColor: style.glow, opacity: isActive ? 0.9 : 0.5 }} />
               <span className="relative grid place-items-center rounded-full ring-2 ring-white transition-transform duration-200 group-hover:scale-110" style={{ width: style.size, height: style.size, backgroundColor: style.color, boxShadow: "0 2px 8px rgba(15,35,65,0.25)" }}>
                 <span className="text-[9px] font-extrabold text-white">{pin.count}</span>
               </span>
