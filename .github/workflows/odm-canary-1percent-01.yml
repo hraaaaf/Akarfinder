@@ -1,0 +1,28 @@
+name: ODM Canary 1 Percent 01
+
+on:
+  pull_request:
+    paths:
+      - "app/api/search/route.ts"
+      - "lib/odm/odm-public-canary.ts"
+      - "scripts/scrapers/__tests__/odm-canary-1percent-01.test.ts"
+      - ".github/workflows/odm-canary-1percent-01.yml"
+  workflow_dispatch:
+
+jobs:
+  canary-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/odm-canary-1percent-01.test.ts
+      - run: npm run build
+      - name: Reject committed activation
+        run: |
+          ! grep -R "ODM_PUBLIC_CANARY_ENABLED=true" -- . ':!docs' ':!.github'
+          ! grep -R "ODM_PUBLIC_CANARY_APPROVED=true" -- . ':!docs' ':!.github'
