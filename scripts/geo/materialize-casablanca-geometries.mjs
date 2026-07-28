@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 
 const ROOT = process.cwd();
 const REGISTRY_PATH = resolve(ROOT, "lib/geo/casablanca-neighborhood-geometry-shadow.ts");
-const OUTPUT_PATH = resolve(ROOT, "data/geo/casablanca-arrondissements-osm.geojson");
+const OUTPUT_PATH = resolve(ROOT, "data/geo/casablanca-arrondissements-osm.json");
 
 const source = await readFile(REGISTRY_PATH, "utf8");
 const pattern = /candidate\(\s*(\d+)\s*,\s*"([^"]+)"\s*,\s*"([^"]+)"\s*,\s*\[([^\]]*)\]\s*\)/g;
@@ -70,7 +70,7 @@ const features = candidates.map((candidate) => {
       aliases: candidate.aliases,
       sourceEntityType: "osm_relation",
       sourceEntityId: candidate.osmRelationId,
-      sourceAdminLevel: String(sourceFeature?.properties?.extratags?.admin_level ?? "9"),
+      sourceAdminLevel: String(sourceFeature?.properties?.extratags?.admin_level ?? "10"),
       sourceUrl: `https://www.openstreetmap.org/relation/${candidate.osmRelationId}`,
       licenseId: "ODbL-1.0",
       licenseUrl: "https://www.openstreetmap.org/copyright",
