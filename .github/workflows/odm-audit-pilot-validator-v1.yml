@@ -1,0 +1,44 @@
+name: ODM Audit Pilot Validator V1
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260728103000_odm_audit_pilot_validator_v1.sql'
+      - 'supabase/migrations/20260728104500_odm_audit_shadow_field_suppression_v1.sql'
+      - 'supabase/migrations/20260728105000_odm_audit_shadow_view_rebuild_v1.sql'
+      - 'supabase/migrations/20260728110000_odm_audit_title_first_precedence_v1.sql'
+      - 'supabase/migrations/20260728123000_odm_economic_parser_v1.sql'
+      - 'supabase/migrations/20260728124500_odm_economic_parser_three_digit_fix_v1.sql'
+      - 'supabase/migrations/20260728130000_odm_typed_surfaces_freshness_source_policy_v1.sql'
+      - 'supabase/migrations/20260728133000_odm_surface_reconciliation_v2.sql'
+      - 'supabase/migrations/20260728134500_odm_surface_grouped_numbers_v3.sql'
+      - 'scripts/odm-audit-pilot-contract.mjs'
+      - 'scripts/odm-economic-parser-contract.mjs'
+      - 'scripts/odm-surface-freshness-source-contract.mjs'
+      - '.github/workflows/odm-audit-pilot-validator-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Pilot validator contract
+        run: node scripts/odm-audit-pilot-contract.mjs
+      - name: Typed economic parser contract
+        run: node scripts/odm-economic-parser-contract.mjs
+      - name: Typed surface freshness source contract
+        run: node scripts/odm-surface-freshness-source-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck --if-present
+      - name: Production build
+        run: npm run build
