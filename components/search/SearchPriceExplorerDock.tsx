@@ -68,13 +68,13 @@ export function SearchPriceExplorerDock() {
 
   return (
     <section className="mx-auto max-w-[1480px] px-4 pt-5 sm:px-6" aria-label="Explorateur local synchronisé">
-      <CityNeighborhoodExplorerPanel model={context.explorer} />
-      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+      <div className="hidden" aria-hidden="true">
+        <CityNeighborhoodExplorerPanel model={context.explorer} />
+        <CertifiedLocalHeatmapPanel model={context.heatmap} />
+      </div>
+      <div className="grid gap-4 xl:grid-cols-2">
         <PriceExplorerPanel result={context.priceReference} />
         <NeighborhoodIntelligencePanel model={context.neighborhoodIntelligence} />
-      </div>
-      <div className="mt-4">
-        <CertifiedLocalHeatmapPanel model={context.heatmap} />
       </div>
       <div className="mt-4">
         <CertifiedNeighborhoodComparisonPanel heatmap={context.heatmap} visibleListings={visibleListings} />
