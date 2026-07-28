@@ -44,14 +44,15 @@ jobs:
       - name: Validate topology and provenance
         run: >-
           python scripts/geo/validate-casablanca-geometries.py
-          data/geo/casablanca-arrondissements-osm.geojson
+          data/geo/casablanca-arrondissements-osm.json
           data/geo/casablanca-arrondissements-osm.audit.json
 
       - name: Commit audited Shadow artifacts
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/geo/casablanca-arrondissements-osm.geojson data/geo/casablanca-arrondissements-osm.audit.json
+          rm -f data/geo/casablanca-arrondissements-osm.geojson
+          git add -A data/geo/casablanca-arrondissements-osm.json data/geo/casablanca-arrondissements-osm.geojson data/geo/casablanca-arrondissements-osm.audit.json
           if git diff --cached --quiet; then
             echo "No geometry changes to commit."
             exit 0
