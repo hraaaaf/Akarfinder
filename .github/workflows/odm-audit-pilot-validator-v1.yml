@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'supabase/migrations/20260728103000_odm_audit_pilot_validator_v1.sql'
+      - 'supabase/migrations/20260728104500_odm_audit_shadow_field_suppression_v1.sql'
+      - 'supabase/migrations/20260728105000_odm_audit_shadow_view_rebuild_v1.sql'
       - 'scripts/odm-audit-pilot-contract.mjs'
       - '.github/workflows/odm-audit-pilot-validator-v1.yml'
   workflow_dispatch:
