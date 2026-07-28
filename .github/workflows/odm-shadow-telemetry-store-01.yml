@@ -1,0 +1,27 @@
+name: ODM Shadow Telemetry Store 01
+
+on:
+  pull_request:
+    paths:
+      - "app/api/search/route.ts"
+      - "lib/odm/odm-shadow-telemetry-store.ts"
+      - "scripts/audits/odm-shadow-telemetry-report.ts"
+      - "scripts/scrapers/__tests__/odm-shadow-telemetry-store-01.test.ts"
+      - "supabase/migrations/20260728183000_odm_shadow_telemetry_store_v1.sql"
+      - ".github/workflows/odm-shadow-telemetry-store-01.yml"
+
+jobs:
+  telemetry-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/odm-shadow-telemetry-store-01.test.ts
+      - run: npm run build
+      - name: Reject raw query or user identifiers in telemetry schema
+        run: |
+          ! grep -Ei "\b(raw_query|query_text|user_id|ip_address|email)\b" supabase/migrations/20260728183000_odm_shadow_telemetry_store_v1.sql
