@@ -40,10 +40,15 @@ test("explorer never fabricates attractiveness or future performance", () => {
   assert.equal(cityNeighborhoodExplorerChangesRanking(), false);
 });
 
-test("search dock mounts interactive explorer and navigation remains canonical", () => {
-  const dock = readFileSync(resolve(process.cwd(), "components/search/SearchPriceExplorerDock.tsx"), "utf8");
+test("map panel mounts synchronized city neighborhood exploration and certified colors", () => {
+  const map = readFileSync(resolve(process.cwd(), "components/search/SearchMapPanel.tsx"), "utf8");
+  const dock = readFileSync(resolve(process.cwd(), "components/search/SearchMapNeighborhoodDock.tsx"), "utf8");
   const panel = readFileSync(resolve(process.cwd(), "components/search/CityNeighborhoodExplorerPanel.tsx"), "utf8");
+
+  assert.match(map, /SearchMapNeighborhoodDock/);
   assert.match(dock, /CityNeighborhoodExplorerPanel/);
+  assert.match(dock, /CertifiedLocalHeatmapPanel/);
+  assert.match(dock, /Aucune limite de quartier n’est dessinée sans géométrie officielle ou certifiée/);
   assert.match(panel, /window\.history\.pushState/);
   assert.match(panel, /new PopStateEvent\("popstate"\)/);
   assert.match(panel, /Voir toutes les villes/);
