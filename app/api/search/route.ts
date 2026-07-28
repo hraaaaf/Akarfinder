@@ -1,19 +1,19 @@
 import { after, type NextRequest, NextResponse } from "next/server";
 import { searchListings, type SearchQuery, type SearchResult } from "@/lib/search";
-import { searchPublicRepresentations } from "@/lib/search-gateway/public-search-cursor";
-import {
-  compareLegacyAndOdm,
-  emitOdmDualReadMetric,
-  shouldRunOdmDualRead,
-} from "@/lib/odm/odm-dual-read-shadow";
-import { persistOdmDualReadMetric } from "@/lib/odm/odm-shadow-telemetry-store";
+import { runOdmDualReadShadow } from "@/lib/odm/odm-dual-read-runner";
+import { shouldRunOdmDualRead } from "@/lib/odm/odm-dual-read-shadow";
 import {
   mapOdmPageToSearchResult,
   shouldServeOdmPublicCanary,
 } from "@/lib/odm/odm-public-canary";
+import { searchPublicRepresentations } from "@/lib/search-gateway/public-search-cursor";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// The legacy search can consume most of the default serverless window before
+// the non-blocking ODM shadow callback begins. Reserve enough execution time
+// for the RPC, comparison and private telemetry write to complete.
+export const maxDuration = 60;
 
 function parseNumberParam(value: string | null) {
   if (!value) return undefined;
@@ -53,16 +53,13 @@ function odmInput(query: SearchQuery) {
 function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResult): void {
   const stableKey = stableSearchKey(query);
   if (!shouldRunOdmDualRead(stableKey)) return;
+
   after(async () => {
-    try {
-      const odmPage = await searchPublicRepresentations(odmInput(query));
-      const metric = compareLegacyAndOdm(stableKey, legacyResult, odmPage);
-      emitOdmDualReadMetric(metric);
-      await persistOdmDualReadMetric(metric);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "odm_dual_read_unknown_error";
-      console.warn("[odm-dual-read-shadow:error]", JSON.stringify({ version: "odm_dual_read_v1", error: message }));
-    }
+    await runOdmDualReadShadow({
+      stableKey,
+      legacyResult,
+      odmInput: odmInput(query),
+    });
   });
 }
 
