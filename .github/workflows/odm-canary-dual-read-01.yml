@@ -1,0 +1,54 @@
+name: ODM Canary Dual Read 01
+
+on:
+  pull_request:
+    paths:
+      - "app/api/search/route.ts"
+      - "lib/odm/odm-dual-read-shadow.ts"
+      - "scripts/scrapers/__tests__/odm-canary-dual-read-01.test.ts"
+      - ".github/workflows/odm-canary-dual-read-01.yml"
+      - "docs/odm/ODM-CANARY-DUAL-READ-01.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dual-read-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run dual-read contract
+        run: npx tsx --test scripts/scrapers/__tests__/odm-canary-dual-read-01.test.ts
+      - name: Compile production application
+        run: npm run build
+        env:
+          ODM_DUAL_READ_ENABLED: "false"
+          ODM_DUAL_READ_SAMPLE_PERCENT: "0"
+      - name: Enforce shadow-only response boundary
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const route = fs.readFileSync('app/api/search/route.ts', 'utf8');
+          if (!route.includes('return NextResponse.json(legacyResult)')) {
+            throw new Error('legacy response boundary missing');
+          }
+          if (!route.includes('after(async () =>')) {
+            throw new Error('ODM comparison must execute after the public response');
+          }
+          if (route.includes('return NextResponse.json(odm')) {
+            throw new Error('ODM response serving is forbidden in dual-read shadow');
+          }
+          NODE
+      - name: Reject committed activation
+        run: |
+          if git grep -nE '^ODM_DUAL_READ_ENABLED=true|^ODM_DUAL_READ_SAMPLE_PERCENT=[1-9]' -- ':!docs/**'; then
+            echo 'ODM dual read activation must not be committed'
+            exit 1
+          fi
