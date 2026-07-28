@@ -251,6 +251,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [indexedTotalCount, setIndexedTotalCount] = useState<number | null>(null);
   const [indexedTotalCount, setIndexedTotalCount] = useState<number | null>(null);
+  const [indexedTotalCount, setIndexedTotalCount] = useState<number | null>(null);
 
   const [gatewayResults, setGatewayResults] = useState<SearchGatewayNormalizedResult[]>([]);
   const gatewayEnabled = process.env.NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED !== "false";
