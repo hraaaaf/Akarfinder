@@ -6,6 +6,7 @@ import {
   emitOdmDualReadMetric,
   shouldRunOdmDualRead,
 } from "@/lib/odm/odm-dual-read-shadow";
+import { persistOdmDualReadMetric } from "@/lib/odm/odm-shadow-telemetry-store";
 import {
   mapOdmPageToSearchResult,
   shouldServeOdmPublicCanary,
@@ -55,7 +56,9 @@ function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResul
   after(async () => {
     try {
       const odmPage = await searchPublicRepresentations(odmInput(query));
-      emitOdmDualReadMetric(compareLegacyAndOdm(stableKey, legacyResult, odmPage));
+      const metric = compareLegacyAndOdm(stableKey, legacyResult, odmPage);
+      emitOdmDualReadMetric(metric);
+      await persistOdmDualReadMetric(metric);
     } catch (error) {
       const message = error instanceof Error ? error.message : "odm_dual_read_unknown_error";
       console.warn("[odm-dual-read-shadow:error]", JSON.stringify({ version: "odm_dual_read_v1", error: message }));
