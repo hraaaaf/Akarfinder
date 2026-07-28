@@ -1,0 +1,46 @@
+name: ODM Canary Readmodel Preparation
+
+on:
+  pull_request:
+    paths:
+      - "lib/odm/**"
+      - "scripts/scrapers/__tests__/odm-canary-readmodel.test.ts"
+      - "docs/ODM-CANARY-READMODEL-01.md"
+      - ".github/workflows/odm-canary-readmodel-prep.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  canary-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Fail-closed canary contract
+        run: npx tsx --test scripts/scrapers/__tests__/odm-canary-readmodel.test.ts
+      - name: Production route isolation guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R --line-number --exclude='odm-canary-readmodel.test.ts' --exclude='odm-canary-readmodel.ts' \
+            -E 'canServeOdmReadModel|shouldEnterOdmCanary|ODM_CANARY_READMODEL_ENABLED' \
+            app components lib scripts | grep -v '^lib/odm/odm-canary-readmodel.ts:'; then
+            echo 'ODM canary controller is wired outside its isolated preparation module.' >&2
+            exit 1
+          fi
+      - name: Activation default guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R --line-number -E 'ODM_CANARY_READMODEL_(ENABLED|PERCENT)=' . \
+            --exclude-dir=.git --exclude='ODM-CANARY-READMODEL-01.md'; then
+            echo 'Canary environment value committed to repository.' >&2
+            exit 1
+          fi
