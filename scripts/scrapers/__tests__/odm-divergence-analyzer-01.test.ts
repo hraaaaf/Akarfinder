@@ -55,7 +55,10 @@ test("summary clears stop gate for 200 healthy events", () => {
 });
 
 test("summary stops when trusted surface divergence exceeds 3 percent", () => {
-  const events = Array.from({ length: 200 }, (_, index) => metric({ trusted_surface_divergences: index < 7 ? 1 : 0 }));
+  const events = Array.from({ length: 200 }, (_, index) => metric({
+    trusted_surface_comparisons: 1,
+    trusted_surface_divergences: index < 7 ? 1 : 0,
+  }));
   const result = summarizeOdmDivergences(events);
   assert.equal(result.stop_public_canary, true);
   assert.ok(result.stop_reasons.includes("trusted_surface_divergence_exceeded"));
