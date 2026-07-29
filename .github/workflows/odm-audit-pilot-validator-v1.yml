@@ -12,9 +12,11 @@ on:
       - 'supabase/migrations/20260728130000_odm_typed_surfaces_freshness_source_policy_v1.sql'
       - 'supabase/migrations/20260728133000_odm_surface_reconciliation_v2.sql'
       - 'supabase/migrations/20260728134500_odm_surface_grouped_numbers_v3.sql'
+      - 'supabase/migrations/20260729163000_odm_freshness_score_v1.sql'
       - 'scripts/odm-audit-pilot-contract.mjs'
       - 'scripts/odm-economic-parser-contract.mjs'
       - 'scripts/odm-surface-freshness-source-contract.mjs'
+      - 'scripts/odm-freshness-score-contract.mjs'
       - '.github/workflows/odm-audit-pilot-validator-v1.yml'
   workflow_dispatch:
 
@@ -38,6 +40,8 @@ jobs:
         run: node scripts/odm-economic-parser-contract.mjs
       - name: Typed surface freshness source contract
         run: node scripts/odm-surface-freshness-source-contract.mjs
+      - name: Freshness score V1 contract
+        run: node scripts/odm-freshness-score-contract.mjs
       - name: TypeScript
         run: npm run typecheck --if-present
       - name: Production build
