@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import test from "node:test";
 
 import {
+  CASABLANCA_GEOMETRY_CANARY_APPROVAL_ID,
   MAX_GEOMETRY_CANARY_PERCENT,
   decideCasablancaGeometryCanary,
   geometryCanaryBucket,
@@ -38,14 +39,29 @@ test("production, emergency stop, missing approval and invalid percentages fail 
   assert.equal(decideCasablancaGeometryCanary({ ...enabledPreview, percent: 0 }, "x").reason, "invalid_percent");
 });
 
-test("environment configuration requires explicit enabled and approved flags", () => {
-  assert.deepEqual(readCasablancaGeometryCanaryConfig({
-    NEIGHBORHOOD_GEOMETRY_CANARY_ENABLED: "true",
-    NEIGHBORHOOD_GEOMETRY_CANARY_APPROVED: "true",
-    NEIGHBORHOOD_GEOMETRY_CANARY_PERCENT: "1",
-    NEIGHBORHOOD_GEOMETRY_CANARY_STOP: "false",
+test("Preview auto-activates at one percent without external flags", () => {
+  assert.match(CASABLANCA_GEOMETRY_CANARY_APPROVAL_ID, /^casablanca_geometry_preview_canary_v1_approved_/);
+  assert.deepEqual(readCasablancaGeometryCanaryConfig({ VERCEL_ENV: "preview" }), enabledPreview);
+});
+
+test("explicit Preview rollback and emergency stop remain available", () => {
+  assert.equal(readCasablancaGeometryCanaryConfig({
     VERCEL_ENV: "preview",
-  }), enabledPreview);
+    NEIGHBORHOOD_GEOMETRY_CANARY_ENABLED: "false",
+  }).enabled, false);
+  assert.equal(readCasablancaGeometryCanaryConfig({
+    VERCEL_ENV: "preview",
+    NEIGHBORHOOD_GEOMETRY_CANARY_STOP: "true",
+  }).emergencyStop, true);
+});
+
+test("production and non-Preview environments never auto-activate", () => {
+  for (const deploymentEnvironment of ["production", "development", "test", "unknown"]) {
+    const config = readCasablancaGeometryCanaryConfig({ VERCEL_ENV: deploymentEnvironment });
+    assert.equal(config.enabled, false);
+    assert.equal(config.approved, false);
+    assert.equal(config.percent, 0);
+  }
 });
 
 test("controller, route and dock preserve privacy, rollback and production barriers", () => {
@@ -53,8 +69,9 @@ test("controller, route and dock preserve privacy, rollback and production barri
   const route = source("app/api/geo/casablanca-arrondissements/route.ts");
   const dock = source("components/search/SearchMapNeighborhoodDock.tsx");
 
-  assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_ENABLED"));
-  assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_APPROVED"));
+  assert.ok(controller.includes("CASABLANCA_GEOMETRY_CANARY_APPROVAL_ID"));
+  assert.ok(controller.includes('deploymentEnvironment === "preview"'));
+  assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_ENABLED !== \"false\""));
   assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_STOP"));
   assert.ok(controller.includes('deploymentEnvironment === "production"'));
   assert.ok(controller.includes("MAX_GEOMETRY_CANARY_PERCENT = 1"));
