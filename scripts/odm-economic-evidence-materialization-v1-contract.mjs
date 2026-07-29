@@ -2,8 +2,9 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
 const base=fs.readFileSync('supabase/migrations/20260730003000_odm_economic_evidence_materialization_v1.sql','utf8');
-const fix=fs.readFileSync('supabase/migrations/20260730004500_odm_economic_materialization_single_pass_fix.sql','utf8');
-const sql=`${base}\n${fix}`;
+const singlePass=fs.readFileSync('supabase/migrations/20260730004500_odm_economic_materialization_single_pass_fix.sql','utf8');
+const suppression=fs.readFileSync('supabase/migrations/20260730010000_odm_economic_materialization_stale_suppression_fix.sql','utf8');
+const sql=`${base}\n${singlePass}\n${suppression}`;
 for (const token of [
   'odm_economic_candidate_evidence_shadow_v1',
   'odm_economic_observation_state_shadow_v1',
@@ -20,9 +21,12 @@ for (const token of [
   'to service_role',
   'candidate_rollup',
   'odm_audit_atomic_observation_v1',
-  'v1_1_single_pass'
+  'v1_1_single_pass',
+  'odm_economic_state_suppress_untrusted_principal_v1',
+  "economic_status <> 'trusted'",
+  'odm_economic_state_principal_requires_trusted'
 ]) assert.ok(sql.includes(token),`missing ${token}`);
-assert.equal((fix.match(/odm_audit_economic_validation_v2/g)||[]).length,1,'V2 parser view must be scanned only once in refresh');
+assert.equal((singlePass.match(/odm_audit_economic_validation_v2/g)||[]).length,1,'V2 parser view must be scanned only once in refresh');
 for (const forbidden of [
   'update public.property_listings',
   'update public.thin_index_search_documents',
@@ -30,4 +34,4 @@ for (const forbidden of [
   'publication_eligible=true',
   'ranking_eligible=true'
 ]) assert.ok(!sql.toLowerCase().includes(forbidden),`forbidden ${forbidden}`);
-console.log('ODM economic evidence materialization V1 single-pass contract passed');
+console.log('ODM economic evidence materialization V1 fail-closed contract passed');
