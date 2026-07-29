@@ -94,14 +94,15 @@ test("candidate and geometry alias matching are accent tolerant and refuse ambig
   assert.equal(resolveNeighborhoodGeometryCandidate([...candidates, { ...candidates[0] }], { cityCanonicalId: "casablanca", neighborhood: "Anfa" }), null);
 });
 
-test("preview choropleth is server-gated and synchronizes district without production exposure", () => {
+test("preview choropleth is auto-gated and synchronizes district without production exposure", () => {
   const controller = source("lib/geo/casablanca-geometry-canary.ts");
   const route = source("app/api/geo/casablanca-arrondissements/route.ts");
   const choropleth = source("components/search/CasablancaNeighborhoodChoropleth.tsx");
   const dock = source("components/search/SearchMapNeighborhoodDock.tsx");
 
-  assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_ENABLED"));
-  assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_APPROVED"));
+  assert.ok(controller.includes("CASABLANCA_GEOMETRY_CANARY_APPROVAL_ID"));
+  assert.ok(controller.includes('deploymentEnvironment === "preview"'));
+  assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_ENABLED !== \"false\""));
   assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_STOP"));
   assert.ok(controller.includes('deploymentEnvironment === "production"'));
   assert.ok(controller.includes("MAX_GEOMETRY_CANARY_PERCENT = 1"));
