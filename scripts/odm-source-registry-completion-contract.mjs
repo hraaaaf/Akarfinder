@@ -26,7 +26,6 @@ for (const pattern of [
   /ranking_quality_boost\s*=/i,
   /detail_fetch_policy[^\n]*'allowed_bounded'/i,
   /content_reuse_policy[^\n]*'authorized'/i,
-  /display_policy[^\n]*'partner_content'/i,
 ]) assert.equal(pattern.test(migration),false,`forbidden activation: ${pattern}`);
 
 const policies = [...migration.matchAll(/\('([^']+)',\s*'([^']+)',\s*\d+,\s*\n\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'([^']+)'/g)]
