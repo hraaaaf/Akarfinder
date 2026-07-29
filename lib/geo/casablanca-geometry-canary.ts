@@ -21,6 +21,7 @@ export type GeometryCanaryDecision = {
 };
 
 export const MAX_GEOMETRY_CANARY_PERCENT = 1;
+export const CASABLANCA_GEOMETRY_CANARY_APPROVAL_ID = "casablanca_geometry_preview_canary_v1_approved_2026_07_29";
 
 function hashStableKey(value: string): number {
   let hash = 2166136261;
@@ -60,11 +61,14 @@ export function decideCasablancaGeometryCanary(
 export function readCasablancaGeometryCanaryConfig(
   environment: NodeJS.ProcessEnv = process.env,
 ): GeometryCanaryConfig {
+  const deploymentEnvironment = environment.VERCEL_ENV ?? environment.NODE_ENV ?? "unknown";
+  const isPreview = deploymentEnvironment === "preview";
+
   return {
-    enabled: environment.NEIGHBORHOOD_GEOMETRY_CANARY_ENABLED === "true",
-    approved: environment.NEIGHBORHOOD_GEOMETRY_CANARY_APPROVED === "true",
+    enabled: isPreview && environment.NEIGHBORHOOD_GEOMETRY_CANARY_ENABLED !== "false",
+    approved: isPreview && CASABLANCA_GEOMETRY_CANARY_APPROVAL_ID.length > 0,
     emergencyStop: environment.NEIGHBORHOOD_GEOMETRY_CANARY_STOP === "true",
-    percent: Number(environment.NEIGHBORHOOD_GEOMETRY_CANARY_PERCENT ?? "0"),
-    deploymentEnvironment: environment.VERCEL_ENV ?? environment.NODE_ENV ?? "unknown",
+    percent: isPreview ? Number(environment.NEIGHBORHOOD_GEOMETRY_CANARY_PERCENT ?? "1") : 0,
+    deploymentEnvironment,
   };
 }
