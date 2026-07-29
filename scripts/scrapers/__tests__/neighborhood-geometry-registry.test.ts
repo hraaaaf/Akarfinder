@@ -95,17 +95,22 @@ test("candidate and geometry alias matching are accent tolerant and refuse ambig
 });
 
 test("preview choropleth is server-gated and synchronizes district without production exposure", () => {
+  const controller = source("lib/geo/casablanca-geometry-canary.ts");
   const route = source("app/api/geo/casablanca-arrondissements/route.ts");
   const choropleth = source("components/search/CasablancaNeighborhoodChoropleth.tsx");
   const dock = source("components/search/SearchMapNeighborhoodDock.tsx");
-  assert.ok(route.includes('process.env.NEIGHBORHOOD_GEOMETRY_CANARY_ENABLED === "true"'));
-  assert.ok(route.includes('process.env.VERCEL_ENV === "production"'));
-  assert.ok(route.includes("!isProduction"));
-  assert.ok(route.includes('url.searchParams.get("canary") === "1"'));
-  assert.ok(choropleth.includes('/api/geo/casablanca-arrondissements?canary=1'));
+
+  assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_ENABLED"));
+  assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_APPROVED"));
+  assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_STOP"));
+  assert.ok(controller.includes('deploymentEnvironment === "production"'));
+  assert.ok(controller.includes("MAX_GEOMETRY_CANARY_PERCENT = 1"));
+  assert.ok(route.includes("readCasablancaGeometryCanaryConfig"));
+  assert.ok(route.includes("decideCasablancaGeometryCanary"));
+  assert.ok(choropleth.includes("/api/geo/casablanca-arrondissements"));
   assert.ok(choropleth.includes('params.set("district", district)'));
   assert.ok(choropleth.includes("© OpenStreetMap contributors"));
-  assert.ok(dock.includes('params.get("geometry_canary") === "1"'));
+  assert.ok(dock.includes('city.trim().toLowerCase() === "casablanca"'));
 });
 
 test("valid Polygon with provenance passes shadow validation", () => {
