@@ -40,7 +40,7 @@ export function SearchMapNeighborhoodDock() {
       }),
       heatmap: buildCertifiedLocalHeatmapModel({ city, propertyType }),
       selectedNeighborhood: neighborhood,
-      geometryCanaryRequested: params.get("geometry_canary") === "1",
+      geometryCanaryRequested: city.trim().toLowerCase() === "casablanca",
     };
   }, [search]);
 
@@ -54,7 +54,7 @@ export function SearchMapNeighborhoodDock() {
       />
       <CertifiedLocalHeatmapPanel model={context.heatmap} />
       <p className="rounded-xl border border-dashed border-[#dfe7f3] bg-white px-3 py-2.5 text-[10.5px] leading-4 text-slate-500">
-        Les couleurs comparent uniquement les références publiques de prix demandé disponibles pour la ville et le type de bien sélectionnés. Aucune limite de quartier n’est dessinée sans géométrie officielle ou certifiée. Les limites réelles de Casablanca restent invisibles en production et ne sont rendues que dans le canary géométrique Preview explicitement activé.
+        Les couleurs comparent uniquement les références publiques de prix demandé disponibles pour la ville et le type de bien sélectionnés. Aucune limite de quartier n’est dessinée sans géométrie officielle ou certifiée. Le serveur décide de manière stable et anonyme si une session Preview Casablanca appartient au Canary, plafonné à 1 % et bloqué en production.
       </p>
     </div>
   );
