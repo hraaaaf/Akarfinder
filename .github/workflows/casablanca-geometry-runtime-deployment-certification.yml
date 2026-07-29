@@ -1,0 +1,62 @@
+name: Casablanca Geometry Runtime Deployment Certification
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: Preview or production deployment URL
+        required: true
+        type: string
+      expected_environment:
+        description: Runtime contract to certify
+        required: true
+        type: choice
+        options:
+          - preview
+          - production
+
+permissions:
+  contents: read
+  deployments: read
+
+jobs:
+  certify:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success' && github.event.deployment_status.environment_url != '')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TARGET_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.target_url || github.event.deployment_status.environment_url }}
+      EXPECTED_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_environment || (contains(github.event.deployment.environment, 'Production') && 'production' || 'preview') }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - name: Checkout deployed commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'deployment_status' && github.event.deployment.sha || github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Certify deployed runtime
+        run: npx tsx scripts/deployment/certify-casablanca-geometry-runtime.ts
+
+      - name: Publish certification summary
+        if: always()
+        run: |
+          {
+            echo '## Casablanca Geometry Runtime Certification'
+            echo
+            echo "- Target: $TARGET_URL"
+            echo "- Expected environment: $EXPECTED_ENVIRONMENT"
+            echo "- Result: ${{ job.status }}"
+            echo "- Commit: ${{ github.event_name == 'deployment_status' && github.event.deployment.sha || github.sha }}"
+          } >> "$GITHUB_STEP_SUMMARY"
