@@ -15,12 +15,14 @@ on:
       - 'supabase/migrations/20260729163000_odm_freshness_score_v1.sql'
       - 'supabase/migrations/20260729170000_odm_source_registry_completion_v1.sql'
       - 'supabase/migrations/20260729173000_odm_typed_economic_candidates_v2.sql'
+      - 'supabase/migrations/20260730003000_odm_economic_evidence_materialization_v1.sql'
       - 'scripts/odm-audit-pilot-contract.mjs'
       - 'scripts/odm-economic-parser-contract.mjs'
       - 'scripts/odm-surface-freshness-source-contract.mjs'
       - 'scripts/odm-freshness-score-contract.mjs'
       - 'scripts/odm-source-registry-completion-contract.mjs'
       - 'scripts/odm-typed-economic-candidates-v2-contract.mjs'
+      - 'scripts/odm-economic-evidence-materialization-v1-contract.mjs'
       - '.github/workflows/odm-audit-pilot-validator-v1.yml'
   workflow_dispatch:
 
@@ -50,6 +52,8 @@ jobs:
         run: node scripts/odm-source-registry-completion-contract.mjs
       - name: Typed economic candidates V2 contract
         run: node scripts/odm-typed-economic-candidates-v2-contract.mjs
+      - name: Economic evidence materialization V1 contract
+        run: node scripts/odm-economic-evidence-materialization-v1-contract.mjs
       - name: TypeScript
         run: npm run typecheck --if-present
       - name: Production build
