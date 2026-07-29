@@ -18,6 +18,8 @@ const enabledPreview = {
   deploymentEnvironment: "preview",
 };
 
+const source = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
+
 test("canary is capped at one percent and deterministic per session", () => {
   assert.equal(MAX_GEOMETRY_CANARY_PERCENT, 1);
   assert.equal(geometryCanaryBucket("session-a"), geometryCanaryBucket("session-a"));
@@ -46,13 +48,20 @@ test("environment configuration requires explicit enabled and approved flags", (
   }), enabledPreview);
 });
 
-test("route and dock preserve privacy, rollback and production barriers", () => {
-  const route = readFileSync(resolve(process.cwd(), "app/api/geo/casablanca-arrondissements/route.ts"), "utf8");
-  const dock = readFileSync(resolve(process.cwd(), "components/search/SearchMapNeighborhoodDock.tsx"), "utf8");
-  assert.ok(route.includes("NEIGHBORHOOD_GEOMETRY_CANARY_APPROVED"));
-  assert.ok(route.includes("NEIGHBORHOOD_GEOMETRY_CANARY_STOP"));
-  assert.ok(route.includes('HttpOnly'));
-  assert.ok(route.includes('X-AkarFinder-Geometry-Canary'));
+test("controller, route and dock preserve privacy, rollback and production barriers", () => {
+  const controller = source("lib/geo/casablanca-geometry-canary.ts");
+  const route = source("app/api/geo/casablanca-arrondissements/route.ts");
+  const dock = source("components/search/SearchMapNeighborhoodDock.tsx");
+
+  assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_ENABLED"));
+  assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_APPROVED"));
+  assert.ok(controller.includes("NEIGHBORHOOD_GEOMETRY_CANARY_STOP"));
+  assert.ok(controller.includes('deploymentEnvironment === "production"'));
+  assert.ok(controller.includes("MAX_GEOMETRY_CANARY_PERCENT = 1"));
+  assert.ok(route.includes("readCasablancaGeometryCanaryConfig"));
+  assert.ok(route.includes("decideCasablancaGeometryCanary"));
+  assert.ok(route.includes("HttpOnly"));
+  assert.ok(route.includes("X-AkarFinder-Geometry-Canary"));
   assert.ok(!route.includes("email"));
   assert.ok(!route.includes("userId"));
   assert.ok(dock.includes('city.trim().toLowerCase() === "casablanca"'));
