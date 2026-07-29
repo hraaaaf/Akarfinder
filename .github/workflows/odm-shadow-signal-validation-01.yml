@@ -1,0 +1,30 @@
+name: ODM Shadow Signal Validation 01
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260729124000_odm_shadow_quality_tier_compatibility_v1.sql'
+      - 'scripts/odm-shadow-signal-validation-contract.mjs'
+      - '.github/workflows/odm-shadow-signal-validation-01.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: ODM Shadow signal contract
+        run: node scripts/odm-shadow-signal-validation-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck --if-present
+      - name: Production build
+        run: npm run build
