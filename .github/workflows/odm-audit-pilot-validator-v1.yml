@@ -22,6 +22,7 @@ on:
       - 'supabase/migrations/20260730110000_odm_display_policy_v2.sql'
       - 'supabase/migrations/20260730113000_odm_display_policy_v2_performance_fix.sql'
       - 'supabase/migrations/20260730140000_odm_ranking_v2.sql'
+      - 'supabase/migrations/20260730143000_odm_ranking_v2_structured_query_fix.sql'
       - 'scripts/odm-audit-pilot-contract.mjs'
       - 'scripts/odm-economic-parser-contract.mjs'
       - 'scripts/odm-surface-freshness-source-contract.mjs'
