@@ -2,8 +2,9 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
 const base=fs.readFileSync('supabase/migrations/20260730194500_odm_search_assembly_v1.sql','utf8').toLowerCase();
-const fix=fs.readFileSync('supabase/migrations/20260730203000_odm_search_assembly_single_pass_fix.sql','utf8').toLowerCase();
-const sql=`${base}\n${fix}`;
+const singlePass=fs.readFileSync('supabase/migrations/20260730203000_odm_search_assembly_single_pass_fix.sql','utf8').toLowerCase();
+const syntaxFix=fs.readFileSync('supabase/migrations/20260730211500_odm_search_assembly_syntax_fix.sql','utf8').toLowerCase();
+const sql=`${base}\n${singlePass}\n${syntaxFix}`;
 
 for (const token of [
   'search_odm_assembled_shadow_v1',
@@ -36,10 +37,21 @@ for (const forbidden of [
   'security definer'
 ]) assert.ok(!sql.includes(forbidden),`forbidden ${forbidden}`);
 
-assert.ok(fix.includes("'shadow_only',true"),'assembly must stay shadow only');
-assert.ok(fix.includes("'public_activation',false"),'public activation must stay false');
-assert.equal((fix.match(/search_odm_ranking_shadow_v2/g)||[]).length,1,'Ranking V2 must execute once in fixed assembly');
-assert.ok(!fix.includes('search_odm_noise_controls_shadow_v1'),'fixed assembly must not rescan ranking through noise controls');
-assert.ok(!fix.includes('search_odm_explained_shadow_v1'),'fixed assembly must not rescan ranking through explanations');
-assert.ok(fix.includes('order by lane_weight asc,ranking_score_v2 desc'),'ranking order must be preserved');
-console.log('ODM Search Assembly V1 single-pass contract passed');
+assert.ok(syntaxFix.includes("'shadow_only',true"),'assembly must stay shadow only');
+assert.ok(syntaxFix.includes("'public_activation',false"),'public activation must stay false');
+assert.equal((syntaxFix.match(/search_odm_ranking_shadow_v2/g)||[]).length,1,'Ranking V2 must execute once');
+assert.ok(!syntaxFix.includes('search_odm_noise_controls_shadow_v1'),'assembly must not rescan through noise controls');
+assert.ok(!syntaxFix.includes('search_odm_explained_shadow_v1'),'assembly must not rescan through explanations');
+assert.ok(syntaxFix.includes('order by lane_weight asc,ranking_score_v2 desc'),'ranking order must be preserved');
+
+const withoutStrings=syntaxFix.replace(/'(?:''|[^'])*'/g,"''");
+let balance=0;
+for (const char of withoutStrings) {
+  if (char==='(') balance++;
+  if (char===')') balance--;
+  assert.ok(balance>=0,'closing parenthesis appears before its opener');
+}
+assert.equal(balance,0,'SQL parentheses must be balanced');
+assert.ok(syntaxFix.includes("or (p.mode='low_noise' and ("),'low-noise mode must be present');
+assert.ok(syntaxFix.includes("and not ('economic_policy_blocked'=any(f.decision_reasons_v2))))\n      )\n    )"),'low-noise predicate must close all nested groups');
+console.log('ODM Search Assembly V1 single-pass syntax contract passed');
