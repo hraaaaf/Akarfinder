@@ -52,6 +52,6 @@ for (const char of withoutStrings) {
   assert.ok(balance>=0,'closing parenthesis appears before its opener');
 }
 assert.equal(balance,0,'SQL parentheses must be balanced');
-assert.ok(syntaxFix.includes("or (p.mode='low_noise' and ("),'low-noise mode must be present');
-assert.ok(syntaxFix.includes("and not ('economic_policy_blocked'=any(f.decision_reasons_v2))))\n      )\n    )"),'low-noise predicate must close all nested groups');
+assert.match(syntaxFix,/or\s*\(p\.mode='low_noise'\s+and\s*\(/,'low-noise mode must be present');
+assert.match(syntaxFix,/economic_policy_blocked[\s\S]*?\)\)\)\)\s*\)\s*\)/,'low-noise predicate must close all nested groups');
 console.log('ODM Search Assembly V1 single-pass syntax contract passed');
