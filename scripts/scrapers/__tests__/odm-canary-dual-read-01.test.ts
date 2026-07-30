@@ -9,8 +9,8 @@ import {
 
 const baseLegacy = {
   listings: [
-    { id: "legacy-1", canonical_url: "https://example.ma/a?utm_source=test", price: 1_000_000, surface: 100 },
-    { id: "legacy-2", canonical_url: "https://example.ma/b", price: 2_000_000, surface: 200 },
+    { id: "legacy-1", listing_url: "https://example.ma/a?utm_source=test#details", price: 1_000_000, surface_m2: 100 },
+    { id: "legacy-2", canonical_url: "https://example.ma/b/", price: 2_000_000, surface: 200 },
   ],
   total: 2,
   limit: 50,
@@ -23,7 +23,7 @@ const baseLegacy = {
 
 const baseOdm = {
   results: [
-    { id: "odm-1", original_url: "https://example.ma/a", price: 1_000_000, surface: 100 },
+    { id: "odm-1", original_url: "https://example.ma/a", normalized_price_mad: 1_000_000, normalized_surface_m2: 100 },
     { id: "odm-2", original_url: "https://example.ma/c", price: 3_000_000, surface: 300 },
   ],
   results_count: 2,
@@ -44,24 +44,33 @@ test("dual read sampling is deterministic", () => {
   assert.equal(shouldRunOdmDualRead("same-key", env), shouldRunOdmDualRead("same-key", env));
 });
 
-test("comparison normalizes canonical URLs and measures trusted field divergence", () => {
-  const metric = compareLegacyAndOdm(
-    "stable-key",
-    baseLegacy,
-    baseOdm,
-    new Date("2026-07-28T00:00:00.000Z"),
-  );
-  assert.equal(metric.version, "odm_dual_read_v1");
-  assert.equal(metric.legacy_count, 2);
-  assert.equal(metric.odm_count, 2);
+test("comparison recognizes listing_url and records raw/comparable counts", () => {
+  const metric = compareLegacyAndOdm("stable-key", baseLegacy, baseOdm, new Date("2026-07-28T00:00:00.000Z"));
+  assert.equal(metric.legacy_result_count, 2);
+  assert.equal(metric.legacy_comparable_count, 2);
+  assert.equal(metric.legacy_missing_identity_count, 0);
+  assert.equal(metric.odm_result_count, 2);
+  assert.equal(metric.odm_comparable_count, 2);
+  assert.equal(metric.odm_missing_identity_count, 0);
+  assert.equal(metric.legacy_count, metric.legacy_comparable_count);
+  assert.equal(metric.odm_count, metric.odm_comparable_count);
   assert.equal(metric.canonical_overlap_count, 1);
   assert.equal(metric.canonical_overlap_rate, 0.5);
   assert.equal(metric.rank_overlap_at_10, 1);
   assert.equal(metric.trusted_price_comparisons, 1);
-  assert.equal(metric.trusted_price_divergences, 0);
   assert.equal(metric.trusted_surface_comparisons, 1);
-  assert.equal(metric.trusted_surface_divergences, 0);
-  assert.equal(metric.generated_at, "2026-07-28T00:00:00.000Z");
+});
+
+test("comparison distinguishes empty engines from missing identities", () => {
+  const legacy = { ...baseLegacy, listings: [{ id: "legacy-no-url", price: 500_000 }] } as never;
+  const odm = { ...baseOdm, results: [{ id: "odm-no-url" }], results_count: 1, total_count: 1 } as never;
+  const metric = compareLegacyAndOdm("missing-identities", legacy, odm);
+  assert.equal(metric.legacy_result_count, 1);
+  assert.equal(metric.legacy_comparable_count, 0);
+  assert.equal(metric.legacy_missing_identity_count, 1);
+  assert.equal(metric.odm_result_count, 1);
+  assert.equal(metric.odm_comparable_count, 0);
+  assert.equal(metric.odm_missing_identity_count, 1);
 });
 
 test("comparison flags material price and surface differences above two percent", () => {
