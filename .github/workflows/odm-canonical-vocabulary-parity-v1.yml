@@ -1,0 +1,21 @@
+name: ODM Canonical Vocabulary Parity V1
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260730183000_odm_canonical_vocabulary_parity_v1.sql"
+      - "scripts/scrapers/__tests__/odm-canonical-vocabulary-parity-v1.test.ts"
+      - ".github/workflows/odm-canonical-vocabulary-parity-v1.yml"
+
+jobs:
+  vocabulary-parity-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/odm-canonical-vocabulary-parity-v1.test.ts
+      - run: npm run build
