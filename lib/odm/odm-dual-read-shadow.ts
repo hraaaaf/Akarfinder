@@ -16,6 +16,12 @@ export const ODM_DUAL_READ_MAX_SAMPLE_PERCENT = 5;
 export type OdmDualReadDivergence = {
   version: "odm_dual_read_v1";
   stable_key_hash: string;
+  legacy_result_count: number;
+  legacy_comparable_count: number;
+  legacy_missing_identity_count: number;
+  odm_result_count: number;
+  odm_comparable_count: number;
+  odm_missing_identity_count: number;
   legacy_count: number;
   odm_count: number;
   canonical_overlap_count: number;
@@ -83,7 +89,7 @@ function legacyComparable(result: SearchResult): Comparable[] {
   return result.listings.flatMap((listing) => {
     const value = listing as unknown as Record<string, unknown>;
     const canonicalUrl = normalizeUrl(
-      value.canonical_url ?? value.original_url ?? value.url ?? value.source_url,
+      value.canonical_url ?? value.original_url ?? value.listing_url ?? value.url ?? value.source_url,
     );
     if (!canonicalUrl) return [];
     return [{
@@ -119,6 +125,8 @@ export function compareLegacyAndOdm(
   odm: PublicSearchPage,
   now = new Date(),
 ): OdmDualReadDivergence {
+  const legacyResultCount = legacy.listings.length;
+  const odmResultCount = odm.results.length;
   const legacyRows = legacyComparable(legacy);
   const odmRows = odmComparable(odm);
   const odmByUrl = new Map(odmRows.map((row) => [row.canonicalUrl, row]));
@@ -148,6 +156,12 @@ export function compareLegacyAndOdm(
   return {
     version: "odm_dual_read_v1",
     stable_key_hash: createHash("sha256").update(stableKey).digest("hex").slice(0, 16),
+    legacy_result_count: legacyResultCount,
+    legacy_comparable_count: legacyRows.length,
+    legacy_missing_identity_count: legacyResultCount - legacyRows.length,
+    odm_result_count: odmResultCount,
+    odm_comparable_count: odmRows.length,
+    odm_missing_identity_count: odmResultCount - odmRows.length,
     legacy_count: legacyRows.length,
     odm_count: odmRows.length,
     canonical_overlap_count: overlap.length,
