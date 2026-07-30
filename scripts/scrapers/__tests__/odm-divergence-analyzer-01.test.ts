@@ -8,6 +8,12 @@ function metric(overrides: Partial<OdmDualReadDivergence> = {}): OdmDualReadDive
   return {
     version: "odm_dual_read_v1",
     stable_key_hash: "abc123",
+    legacy_result_count: 10,
+    legacy_comparable_count: 10,
+    legacy_missing_identity_count: 0,
+    odm_result_count: 10,
+    odm_comparable_count: 10,
+    odm_missing_identity_count: 0,
     legacy_count: 10,
     odm_count: 10,
     canonical_overlap_count: 9,
