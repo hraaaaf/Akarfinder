@@ -19,6 +19,7 @@ on:
       - 'supabase/migrations/20260730004500_odm_economic_materialization_single_pass_fix.sql'
       - 'supabase/migrations/20260730010000_odm_economic_materialization_stale_suppression_fix.sql'
       - 'supabase/migrations/20260730090000_odm_economic_coverage_recovery_v1.sql'
+      - 'supabase/migrations/20260730110000_odm_display_policy_v2.sql'
       - 'scripts/odm-audit-pilot-contract.mjs'
       - 'scripts/odm-economic-parser-contract.mjs'
       - 'scripts/odm-surface-freshness-source-contract.mjs'
@@ -27,6 +28,7 @@ on:
       - 'scripts/odm-typed-economic-candidates-v2-contract.mjs'
       - 'scripts/odm-economic-evidence-materialization-v1-contract.mjs'
       - 'scripts/odm-economic-coverage-recovery-v1-contract.mjs'
+      - 'scripts/odm-display-policy-v2-contract.mjs'
       - '.github/workflows/odm-audit-pilot-validator-v1.yml'
   workflow_dispatch:
 
@@ -60,6 +62,8 @@ jobs:
         run: node scripts/odm-economic-evidence-materialization-v1-contract.mjs
       - name: Economic coverage recovery V1 contract
         run: node scripts/odm-economic-coverage-recovery-v1-contract.mjs
+      - name: Display Policy V2 contract
+        run: node scripts/odm-display-policy-v2-contract.mjs
       - name: TypeScript
         run: npm run typecheck --if-present
       - name: Production build
