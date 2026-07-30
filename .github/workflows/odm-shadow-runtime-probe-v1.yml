@@ -1,0 +1,91 @@
+name: ODM Shadow Runtime Probe V1
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/odm-shadow-runtime-probe-v1.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: odm-shadow-runtime-probe-v1
+  cancel-in-progress: false
+
+jobs:
+  probe-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Wait for production to become reachable
+        shell: bash
+        run: |
+          set -euo pipefail
+          base_url="https://akarfinder.vercel.app"
+          for attempt in $(seq 1 24); do
+            status="$(curl --silent --show-error --location --output /tmp/home.html --write-out '%{http_code}' --max-time 20 "$base_url/" || true)"
+            echo "attempt=$attempt status=$status"
+            if [[ "$status" == "200" ]]; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Production did not become reachable" >&2
+          exit 1
+
+      - name: Generate authentic Shadow search traffic
+        shell: bash
+        run: |
+          set -euo pipefail
+          base_url="https://akarfinder.vercel.app"
+          queries=(
+            "q=appartement%20casablanca"
+            "q=villa%20rabat"
+            "q=terrain%20marrakech"
+            "q=maison%20tanger"
+            "q=bureau%20casablanca"
+            "q=local%20commercial%20casablanca"
+            "q=ferme%20agadir"
+            "city=casablanca"
+            "city=rabat&property_type=villa"
+            "city=casablanca&property_type=appartement"
+            "city=casablanca&transaction_type=buy"
+            "city=marrakech&transaction_type=sale"
+            "city=tanger&transaction_type=rent"
+          )
+
+          failures=0
+          total=0
+          for round in $(seq 1 8); do
+            for query in "${queries[@]}"; do
+              total=$((total + 1))
+              status="$(curl --silent --show-error --location --output /tmp/search-response.json --write-out '%{http_code}' --max-time 30 "$base_url/api/search?$query" || true)"
+              echo "round=$round status=$status query=$query"
+              if [[ "$status" != "200" ]]; then
+                failures=$((failures + 1))
+              fi
+              sleep 1
+            done
+          done
+
+          echo "total=$total failures=$failures"
+          if (( failures > 10 )); then
+            echo "Too many failed production probes" >&2
+            exit 1
+          fi
+
+      - name: Probe public search pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          for path in \
+            '/search?q=appartement%20casablanca' \
+            '/search?q=villa%20rabat' \
+            '/search?q=terrain%20marrakech'; do
+            status="$(curl --silent --show-error --location --output /dev/null --write-out '%{http_code}' --max-time 30 "https://akarfinder.vercel.app$path")"
+            echo "status=$status path=$path"
+            [[ "$status" == "200" ]]
+          done
