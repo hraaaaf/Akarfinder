@@ -4,8 +4,13 @@ on:
   pull_request:
     paths:
       - "app/api/search/route.ts"
+      - "lib/odm/odm-dual-read-runner.ts"
       - "lib/odm/odm-dual-read-shadow.ts"
+      - "lib/odm/odm-shadow-telemetry-store.ts"
+      - "supabase/migrations/20260730150000_odm_shadow_comparison_truthfulness_v1.sql"
       - "scripts/scrapers/__tests__/odm-canary-dual-read-01.test.ts"
+      - "scripts/scrapers/__tests__/odm-shadow-telemetry-store-01.test.ts"
+      - "scripts/scrapers/__tests__/odm-divergence-analyzer-01.test.ts"
       - ".github/workflows/odm-canary-dual-read-01.yml"
       - "docs/odm/ODM-CANARY-DUAL-READ-01.md"
   workflow_dispatch:
@@ -24,8 +29,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Run dual-read contract
-        run: npx tsx --test scripts/scrapers/__tests__/odm-canary-dual-read-01.test.ts
+      - name: Run dual-read contracts
+        run: |
+          npx tsx --test scripts/scrapers/__tests__/odm-canary-dual-read-01.test.ts
+          npx tsx --test scripts/scrapers/__tests__/odm-shadow-telemetry-store-01.test.ts
+          npx tsx --test scripts/scrapers/__tests__/odm-divergence-analyzer-01.test.ts
       - name: Compile production application
         run: npm run build
         env:
@@ -36,15 +44,9 @@ jobs:
           node <<'NODE'
           const fs = require('node:fs');
           const route = fs.readFileSync('app/api/search/route.ts', 'utf8');
-          if (!route.includes('return NextResponse.json(legacyResult)')) {
-            throw new Error('legacy response boundary missing');
-          }
-          if (!route.includes('after(async () =>')) {
-            throw new Error('ODM comparison must execute after the public response');
-          }
-          if (route.includes('return NextResponse.json(odm')) {
-            throw new Error('ODM response serving is forbidden in dual-read shadow');
-          }
+          if (!route.includes('return NextResponse.json(legacyResult)')) throw new Error('legacy response boundary missing');
+          if (!route.includes('after(async () =>')) throw new Error('ODM comparison must execute after the public response');
+          if (route.includes('return NextResponse.json(odm')) throw new Error('ODM response serving is forbidden in dual-read shadow');
           NODE
       - name: Reject committed activation
         run: |
