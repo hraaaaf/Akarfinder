@@ -27,6 +27,7 @@ on:
       - 'supabase/migrations/20260730152000_odm_search_noise_controls_v1.sql'
       - 'supabase/migrations/20260730154500_odm_search_noise_controls_report_fix.sql'
       - 'supabase/migrations/20260730190000_odm_search_explanation_v1.sql'
+      - 'supabase/migrations/20260730194500_odm_search_assembly_v1.sql'
       - 'scripts/odm-audit-pilot-contract.mjs'
       - 'scripts/odm-economic-parser-contract.mjs'
       - 'scripts/odm-surface-freshness-source-contract.mjs'
@@ -39,6 +40,7 @@ on:
       - 'scripts/odm-ranking-v2-contract.mjs'
       - 'scripts/odm-search-noise-controls-v1-contract.mjs'
       - 'scripts/odm-search-explanation-v1-contract.mjs'
+      - 'scripts/odm-search-assembly-v1-contract.mjs'
       - '.github/workflows/odm-audit-pilot-validator-v1.yml'
   workflow_dispatch:
 
@@ -80,6 +82,8 @@ jobs:
         run: node scripts/odm-search-noise-controls-v1-contract.mjs
       - name: Search Explanation V1 contract
         run: node scripts/odm-search-explanation-v1-contract.mjs
+      - name: Search Assembly V1 contract
+        run: node scripts/odm-search-assembly-v1-contract.mjs
       - name: TypeScript
         run: npm run typecheck --if-present
       - name: Production build
