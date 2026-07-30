@@ -13,6 +13,12 @@ export function metricToTelemetryRow(metric: OdmDualReadDivergence) {
   return {
     version: metric.version,
     stable_key_hash: metric.stable_key_hash,
+    legacy_result_count: metric.legacy_result_count,
+    legacy_comparable_count: metric.legacy_comparable_count,
+    legacy_missing_identity_count: metric.legacy_missing_identity_count,
+    odm_result_count: metric.odm_result_count,
+    odm_comparable_count: metric.odm_comparable_count,
+    odm_missing_identity_count: metric.odm_missing_identity_count,
     legacy_count: metric.legacy_count,
     odm_count: metric.odm_count,
     canonical_overlap_count: metric.canonical_overlap_count,
