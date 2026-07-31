@@ -23,6 +23,6 @@ jobs:
       - name: Mouldar detail precision contract
         run: node scripts/odm-mouldar-detail-precision-v1-contract.mjs
       - name: TypeScript
-        run: npm run typecheck
+        run: npx tsc --noEmit
       - name: Production build
         run: npm run build
