@@ -1,7 +1,10 @@
 import { after, type NextRequest, NextResponse } from "next/server";
 import { searchListings, type SearchQuery, type SearchResult } from "@/lib/search";
 import { runOdmDualReadShadow } from "@/lib/odm/odm-dual-read-runner";
-import { shouldRunOdmDualRead } from "@/lib/odm/odm-dual-read-shadow";
+import {
+  shouldRunOdmDualRead,
+  type OdmShadowSearchContext,
+} from "@/lib/odm/odm-dual-read-shadow";
 import {
   mapOdmPageToSearchResult,
   shouldServeOdmPublicCanary,
@@ -50,6 +53,21 @@ function odmInput(query: SearchQuery) {
   };
 }
 
+function shadowContext(query: SearchQuery): OdmShadowSearchContext {
+  const offset = query.offset ?? 0;
+  return {
+    city: query.city?.trim() || null,
+    property_type: query.property_type?.trim() || null,
+    transaction_type: query.transaction_type?.trim() || null,
+    has_text_query: Boolean(query.q?.trim()),
+    has_price_filter: query.min_price !== undefined || query.max_price !== undefined,
+    has_surface_filter: query.min_surface !== undefined || query.max_surface !== undefined,
+    limit: query.limit ?? null,
+    offset,
+    is_paginated: offset > 0 || query.cursor !== undefined,
+  };
+}
+
 function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResult): void {
   const stableKey = stableSearchKey(query);
   if (!shouldRunOdmDualRead(stableKey)) return;
@@ -59,6 +77,7 @@ function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResul
       stableKey,
       legacyResult,
       odmInput: odmInput(query),
+      context: shadowContext(query),
     });
   });
 }

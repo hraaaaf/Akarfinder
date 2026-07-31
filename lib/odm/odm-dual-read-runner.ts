@@ -3,6 +3,7 @@ import {
   compareLegacyAndOdm,
   emitOdmDualReadMetric,
   type OdmDualReadDivergence,
+  type OdmShadowSearchContext,
 } from "@/lib/odm/odm-dual-read-shadow";
 import {
   persistOdmDualReadMetric,
@@ -55,6 +56,18 @@ const defaultDependencies: OdmDualReadRunnerDependencies = {
   },
 };
 
+const EMPTY_CONTEXT: OdmShadowSearchContext = {
+  city: null,
+  property_type: null,
+  transaction_type: null,
+  has_text_query: false,
+  has_price_filter: false,
+  has_surface_filter: false,
+  limit: null,
+  offset: null,
+  is_paginated: false,
+};
+
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "odm_dual_read_unknown_error";
 }
@@ -64,11 +77,13 @@ export async function runOdmDualReadShadow(
     stableKey: string;
     legacyResult: SearchResult;
     odmInput: PublicSearchInput;
+    context?: OdmShadowSearchContext;
   },
   dependencies: OdmDualReadRunnerDependencies = defaultDependencies,
 ): Promise<OdmDualReadRunnerResult> {
   const startedAt = Date.now();
   let stage: OdmDualReadFailureStage = "odm_rpc";
+  const context = input.context ?? EMPTY_CONTEXT;
 
   try {
     dependencies.logStage("odm_rpc_started", { elapsed_ms: 0 });
@@ -80,12 +95,27 @@ export async function runOdmDualReadShadow(
     });
 
     stage = "comparison";
-    const metric = dependencies.compare(input.stableKey, input.legacyResult, odmPage);
+    const compared = dependencies.compare(input.stableKey, input.legacyResult, odmPage);
+    const metric: OdmDualReadDivergence = {
+      ...compared,
+      context_city: context.city,
+      context_property_type: context.property_type,
+      context_transaction_type: context.transaction_type,
+      context_has_text_query: context.has_text_query,
+      context_has_price_filter: context.has_price_filter,
+      context_has_surface_filter: context.has_surface_filter,
+      context_limit: context.limit,
+      context_offset: context.offset,
+      context_is_paginated: context.is_paginated,
+    };
     dependencies.logStage("comparison_completed", {
       elapsed_ms: Date.now() - startedAt,
       stable_key_hash: metric.stable_key_hash,
       legacy_count: metric.legacy_count,
       odm_count: metric.odm_count,
+      context_city: metric.context_city,
+      context_property_type: metric.context_property_type,
+      context_transaction_type: metric.context_transaction_type,
     });
     dependencies.emit(metric);
 
