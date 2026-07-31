@@ -33,6 +33,8 @@ on:
       - 'supabase/migrations/20260730224500_odm_search_canary_1pct_v1.sql'
       - 'supabase/migrations/20260730233000_odm_search_progressive_canary_v1.sql'
       - 'supabase/migrations/20260731064500_odm_progressive_canary_timeout_fix.sql'
+      - 'supabase/migrations/20260731094500_odm_search_transparency_v1.sql'
+      - 'supabase/migrations/20260731100000_odm_search_transparency_alias_fix.sql'
       - 'scripts/odm-audit-pilot-contract.mjs'
       - 'scripts/odm-economic-parser-contract.mjs'
       - 'scripts/odm-surface-freshness-source-contract.mjs'
@@ -48,6 +50,7 @@ on:
       - 'scripts/odm-search-assembly-v1-contract.mjs'
       - 'scripts/odm-search-canary-1pct-v1-contract.mjs'
       - 'scripts/odm-search-progressive-canary-v1-contract.mjs'
+      - 'scripts/odm-search-transparency-v1-contract.mjs'
       - '.github/workflows/odm-audit-pilot-validator-v1.yml'
   workflow_dispatch:
 
@@ -95,6 +98,8 @@ jobs:
         run: node scripts/odm-search-canary-1pct-v1-contract.mjs
       - name: Search Progressive Canary V1 contract
         run: node scripts/odm-search-progressive-canary-v1-contract.mjs
+      - name: Search Transparency V1 contract
+        run: node scripts/odm-search-transparency-v1-contract.mjs
       - name: TypeScript
         run: npm run typecheck --if-present
       - name: Production build
