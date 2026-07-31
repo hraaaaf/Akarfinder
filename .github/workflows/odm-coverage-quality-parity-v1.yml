@@ -1,0 +1,30 @@
+name: ODM Coverage Quality Parity V1
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260731141500_odm_coverage_quality_parity_v1.sql'
+      - 'scripts/odm-coverage-quality-parity-v1-contract.mjs'
+      - '.github/workflows/odm-coverage-quality-parity-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Coverage quality parity contract
+        run: node scripts/odm-coverage-quality-parity-v1-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck --if-present
+      - name: Production build
+        run: npm run build
