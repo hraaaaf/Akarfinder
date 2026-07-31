@@ -34,6 +34,7 @@ on:
       - 'supabase/migrations/20260730233000_odm_search_progressive_canary_v1.sql'
       - 'supabase/migrations/20260731064500_odm_progressive_canary_timeout_fix.sql'
       - 'supabase/migrations/20260731094500_odm_search_transparency_v1.sql'
+      - 'supabase/migrations/20260731100000_odm_search_transparency_alias_fix.sql'
       - 'scripts/odm-audit-pilot-contract.mjs'
       - 'scripts/odm-economic-parser-contract.mjs'
       - 'scripts/odm-surface-freshness-source-contract.mjs'
