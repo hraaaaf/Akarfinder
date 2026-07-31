@@ -37,6 +37,7 @@ on:
       - 'supabase/migrations/20260731100000_odm_search_transparency_alias_fix.sql'
       - 'supabase/migrations/20260731103000_odm_search_depth_certification_v1.sql'
       - 'supabase/migrations/20260731104500_odm_search_depth_certification_dimension_fix.sql'
+      - 'supabase/migrations/20260731111500_odm_search_depth_certification_timeout_fix.sql'
       - 'scripts/odm-audit-pilot-contract.mjs'
       - 'scripts/odm-economic-parser-contract.mjs'
       - 'scripts/odm-surface-freshness-source-contract.mjs'
