@@ -45,25 +45,29 @@ jobs:
         run: |
           set -euo pipefail
           base_url="https://akarfinder.vercel.app"
+          # These offsets are intentionally selected so their stable search keys
+          # fall inside the 0-5% deterministic ODM dual-read sample bucket.
           queries=(
-            "q=appartement%20casablanca"
-            "q=villa%20rabat"
-            "q=terrain%20marrakech"
-            "q=maison%20tanger"
-            "q=bureau%20casablanca"
-            "q=local%20commercial%20casablanca"
-            "q=ferme%20agadir"
-            "city=casablanca"
-            "city=rabat&property_type=villa"
-            "city=casablanca&property_type=appartement"
-            "city=casablanca&transaction_type=buy"
-            "city=marrakech&transaction_type=sale"
-            "city=tanger&transaction_type=rent"
+            "q=appartement%20casablanca&offset=33"
+            "q=appartement%20casablanca&offset=65"
+            "q=appartement%20casablanca&offset=70"
+            "q=villa%20rabat&offset=33"
+            "q=villa%20rabat&offset=34"
+            "q=villa%20rabat&offset=47"
+            "q=terrain%20marrakech&offset=1"
+            "q=terrain%20marrakech&offset=14"
+            "q=terrain%20marrakech&offset=17"
+            "q=maison%20tanger&offset=9"
+            "q=maison%20tanger&offset=29"
+            "q=maison%20tanger&offset=35"
+            "q=bureau%20casablanca&offset=7"
+            "q=bureau%20casablanca&offset=25"
+            "q=bureau%20casablanca&offset=28"
           )
 
           failures=0
           total=0
-          for round in $(seq 1 8); do
+          for round in $(seq 1 4); do
             for query in "${queries[@]}"; do
               total=$((total + 1))
               status="$(curl --silent --show-error --location --output /tmp/search-response.json --write-out '%{http_code}' --max-time 30 "$base_url/api/search?$query" || true)"
@@ -76,7 +80,7 @@ jobs:
           done
 
           echo "total=$total failures=$failures"
-          if (( failures > 10 )); then
+          if (( failures > 6 )); then
             echo "Too many failed production probes" >&2
             exit 1
           fi
