@@ -3,6 +3,7 @@ import {
   compareLegacyAndOdm,
   emitOdmDualReadMetric,
   type OdmDualReadDivergence,
+  type OdmShadowSearchContext,
 } from "@/lib/odm/odm-dual-read-shadow";
 import {
   persistOdmDualReadMetric,
@@ -64,6 +65,7 @@ export async function runOdmDualReadShadow(
     stableKey: string;
     legacyResult: SearchResult;
     odmInput: PublicSearchInput;
+    context: OdmShadowSearchContext;
   },
   dependencies: OdmDualReadRunnerDependencies = defaultDependencies,
 ): Promise<OdmDualReadRunnerResult> {
@@ -80,12 +82,27 @@ export async function runOdmDualReadShadow(
     });
 
     stage = "comparison";
-    const metric = dependencies.compare(input.stableKey, input.legacyResult, odmPage);
+    const compared = dependencies.compare(input.stableKey, input.legacyResult, odmPage);
+    const metric: OdmDualReadDivergence = {
+      ...compared,
+      context_city: input.context.city,
+      context_property_type: input.context.property_type,
+      context_transaction_type: input.context.transaction_type,
+      context_has_text_query: input.context.has_text_query,
+      context_has_price_filter: input.context.has_price_filter,
+      context_has_surface_filter: input.context.has_surface_filter,
+      context_limit: input.context.limit,
+      context_offset: input.context.offset,
+      context_is_paginated: input.context.is_paginated,
+    };
     dependencies.logStage("comparison_completed", {
       elapsed_ms: Date.now() - startedAt,
       stable_key_hash: metric.stable_key_hash,
       legacy_count: metric.legacy_count,
       odm_count: metric.odm_count,
+      context_city: metric.context_city,
+      context_property_type: metric.context_property_type,
+      context_transaction_type: metric.context_transaction_type,
     });
     dependencies.emit(metric);
 
