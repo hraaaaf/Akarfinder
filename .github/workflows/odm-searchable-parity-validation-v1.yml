@@ -1,0 +1,26 @@
+name: ODM Searchable Parity Validation V1
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260731154500_odm_searchable_parity_validation_v1.sql'
+      - 'scripts/odm-searchable-parity-validation-v1-contract.mjs'
+      - '.github/workflows/odm-searchable-parity-validation-v1.yml'
+  workflow_dispatch:
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Searchable parity contract
+        run: node scripts/odm-searchable-parity-validation-v1-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
