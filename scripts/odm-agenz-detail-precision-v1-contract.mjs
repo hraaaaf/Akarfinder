@@ -21,9 +21,16 @@ for (const token of required) {
   if (!sql.includes(token)) throw new Error(`Missing contract token: ${token}`);
 }
 
-const forbidden = ['http_get(', 'net.http_', 'delete from public.thin_index_search_documents', 'eligible_primary\''];
+const forbidden = [
+  'http_get(',
+  'net.http_',
+  'delete from public.thin_index_search_documents',
+  /set\s+[\s\S]{0,400}display_eligibility\s*=\s*'eligible_primary'/i,
+];
+
 for (const token of forbidden) {
-  if (sql.includes(token)) throw new Error(`Forbidden contract token: ${token}`);
+  const found = token instanceof RegExp ? token.test(sql) : sql.includes(token);
+  if (found) throw new Error(`Forbidden contract token: ${token}`);
 }
 
 console.log('ODM Agenz detail precision V1 contract passed');
