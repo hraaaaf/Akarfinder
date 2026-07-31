@@ -13,9 +13,30 @@ export const ODM_DUAL_READ_FLAG_NAMES = [
 
 export const ODM_DUAL_READ_MAX_SAMPLE_PERCENT = 5;
 
+export type OdmShadowSearchContext = {
+  city: string | null;
+  property_type: string | null;
+  transaction_type: string | null;
+  has_text_query: boolean;
+  has_price_filter: boolean;
+  has_surface_filter: boolean;
+  limit: number | null;
+  offset: number | null;
+  is_paginated: boolean;
+};
+
 export type OdmDualReadDivergence = {
   version: "odm_dual_read_v1";
   stable_key_hash: string;
+  context_city: string | null;
+  context_property_type: string | null;
+  context_transaction_type: string | null;
+  context_has_text_query: boolean;
+  context_has_price_filter: boolean;
+  context_has_surface_filter: boolean;
+  context_limit: number | null;
+  context_offset: number | null;
+  context_is_paginated: boolean;
   legacy_result_count: number;
   legacy_comparable_count: number;
   legacy_missing_identity_count: number;
@@ -156,6 +177,15 @@ export function compareLegacyAndOdm(
   return {
     version: "odm_dual_read_v1",
     stable_key_hash: createHash("sha256").update(stableKey).digest("hex").slice(0, 16),
+    context_city: null,
+    context_property_type: null,
+    context_transaction_type: null,
+    context_has_text_query: false,
+    context_has_price_filter: false,
+    context_has_surface_filter: false,
+    context_limit: null,
+    context_offset: null,
+    context_is_paginated: false,
     legacy_result_count: legacyResultCount,
     legacy_comparable_count: legacyRows.length,
     legacy_missing_identity_count: legacyResultCount - legacyRows.length,
