@@ -1,0 +1,30 @@
+name: ODM Final Release Gate V1
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260731114500_odm_final_release_gate_v1.sql'
+      - 'scripts/odm-final-release-gate-v1-contract.mjs'
+      - '.github/workflows/odm-final-release-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Final release gate contract
+        run: node scripts/odm-final-release-gate-v1-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck --if-present
+      - name: Production build
+        run: npm run build
