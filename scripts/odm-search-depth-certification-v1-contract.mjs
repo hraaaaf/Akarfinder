@@ -1,11 +1,17 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
-const sql=fs.readFileSync('supabase/migrations/20260731103000_odm_search_depth_certification_v1.sql','utf8').toLowerCase();
+const base=fs.readFileSync('supabase/migrations/20260731103000_odm_search_depth_certification_v1.sql','utf8').toLowerCase();
+const fix=fs.readFileSync('supabase/migrations/20260731104500_odm_search_depth_certification_dimension_fix.sql','utf8').toLowerCase();
+const sql=`${base}\n${fix}`;
 for (const token of [
   'odm_search_depth_certification_report_v1',
-  'zero_result_scenarios',
-  'scenarios_with_ranked_results',
+  'geographic_scenarios_with_results',
+  'structured_scenarios_with_results',
+  'geographic_zero_result_scenarios',
+  'structured_zero_result_scenarios',
+  'field_completeness',
+  'fully_structured',
   'ranked_share_percent',
   'price_coverage_percent',
   'surface_coverage_percent',
@@ -26,8 +32,8 @@ for (const forbidden of [
   'publication_eligible=true',
   'ranking_eligible=true'
 ]) assert.ok(!sql.includes(forbidden),`forbidden ${forbidden}`);
-assert.equal((sql.match(/\('(?:casablanca|rabat|marrakech|tanger|agadir|fes|kenitra)'/g)||[]).length,10,'ten priority scenarios required');
-assert.ok(sql.includes("false,false,false,250"),'audit window must stay bounded to 250');
-assert.ok(sql.includes("'shadow_only',true"),'must remain shadow only');
-assert.ok(sql.includes("'public_activation',false"),'public activation must remain false');
-console.log('ODM Search Depth Certification V1 contract passed');
+assert.equal((fix.match(/\('(?:geo_|structured_)/g)||[]).length,10,'ten priority scenarios required');
+assert.ok(fix.includes("false,false,false,250"),'audit window must stay bounded to 250');
+assert.ok(fix.includes("'shadow_only',true"),'must remain shadow only');
+assert.ok(fix.includes("'public_activation',false"),'public activation must remain false');
+console.log('ODM Search Depth Certification V1 dimension-aware contract passed');
