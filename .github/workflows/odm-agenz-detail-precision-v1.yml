@@ -1,0 +1,30 @@
+name: ODM Agenz Detail Precision V1
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260731234000_odm_agenz_detail_precision_v1.sql'
+      - 'scripts/odm-agenz-detail-precision-v1-contract.mjs'
+      - '.github/workflows/odm-agenz-detail-precision-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Agenz detail precision contract
+        run: node scripts/odm-agenz-detail-precision-v1-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck --if-present
+      - name: Production build
+        run: npm run build
