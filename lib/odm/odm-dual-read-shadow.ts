@@ -56,7 +56,7 @@ export type OdmDualReadDivergence = {
 };
 
 type Comparable = {
-  canonicalUrl: string;
+  identityKey: string;
   price: number | null;
   surface: number | null;
 };
@@ -88,18 +88,83 @@ export function shouldRunOdmDualRead(
   return stableBucket(stableKey) < Math.floor(percent * 100);
 }
 
-function normalizeUrl(value: unknown): string | null {
+const TRACKING_QUERY_KEYS = new Set([
+  "fbclid",
+  "gclid",
+  "gbraid",
+  "wbraid",
+  "mc_cid",
+  "mc_eid",
+  "ref",
+  "referrer",
+  "source",
+]);
+
+function normalizedUrl(value: unknown): URL | null {
   if (typeof value !== "string" || value.trim() === "") return null;
   try {
-    const parsed = new URL(value);
+    const parsed = new URL(value.trim());
+    parsed.protocol = parsed.protocol.toLowerCase();
+    parsed.hostname = parsed.hostname.toLowerCase().replace(/^www\./, "");
     parsed.hash = "";
-    for (const key of [...parsed.searchParams.keys()]) {
-      if (key.toLowerCase().startsWith("utm_")) parsed.searchParams.delete(key);
+    if ((parsed.protocol === "https:" && parsed.port === "443") || (parsed.protocol === "http:" && parsed.port === "80")) {
+      parsed.port = "";
     }
-    return parsed.toString().replace(/\/$/, "");
+    for (const key of [...parsed.searchParams.keys()]) {
+      const normalized = key.toLowerCase();
+      if (normalized.startsWith("utm_") || TRACKING_QUERY_KEYS.has(normalized)) {
+        parsed.searchParams.delete(key);
+      }
+    }
+    parsed.searchParams.sort();
+    parsed.pathname = parsed.pathname.replace(/\/{2,}/g, "/").replace(/\/$/, "") || "/";
+    return parsed;
   } catch {
-    return value.trim().replace(/\/$/, "");
+    return null;
   }
+}
+
+function sourceOfferIdentity(url: URL): string | null {
+  const host = url.hostname;
+  const path = decodeURIComponent(url.pathname).replace(/\/$/, "");
+  const patterns: Array<[RegExp, string]> = [
+    [/agenz\.ma$/, "agenz"],
+    [/mubawab\.ma$/, "mubawab"],
+    [/avito\.ma$/, "avito"],
+    [/mouldar\.com$/, "mouldar"],
+    [/masaken\.ma$/, "masaken"],
+    [/1immo\.ma$/, "1immo"],
+  ];
+  const source = patterns.find(([domain]) => domain.test(host))?.[1];
+  if (!source) return null;
+
+  const offerId = source === "mubawab"
+    ? path.match(/\/(?:[a-z]{2}\/)?a\/(\d+)(?:\/|$)/i)?.[1]
+    : source === "avito"
+      ? path.match(/_(\d+)\.html?$/i)?.[1]
+      : source === "mouldar"
+        ? path.match(/\/([0-9a-f]{8})$/i)?.[1]
+        : source === "1immo"
+          ? path.match(/-(\d+)$/)?.[1]
+          : path.match(/\/(\d+)$/)?.[1];
+
+  return offerId ? `${source}:offer:${offerId.toLowerCase()}` : null;
+}
+
+export function canonicalIdentityKey(value: unknown): string | null {
+  const parsed = normalizedUrl(value);
+  if (!parsed) {
+    if (typeof value !== "string" || value.trim() === "") return null;
+    return `raw:${value.trim().replace(/\/$/, "")}`;
+  }
+
+  const sourceIdentity = sourceOfferIdentity(parsed);
+  if (sourceIdentity) return sourceIdentity;
+
+  // Protocol is deliberately excluded: http/https variants represent the same
+  // public source resource. Host, normalized path and meaningful query remain.
+  const query = parsed.searchParams.toString();
+  return `url:${parsed.host}${parsed.pathname}${query ? `?${query}` : ""}`;
 }
 
 function finiteNumber(value: unknown): number | null {
@@ -109,12 +174,12 @@ function finiteNumber(value: unknown): number | null {
 function legacyComparable(result: SearchResult): Comparable[] {
   return result.listings.flatMap((listing) => {
     const value = listing as unknown as Record<string, unknown>;
-    const canonicalUrl = normalizeUrl(
+    const identityKey = canonicalIdentityKey(
       value.canonical_url ?? value.original_url ?? value.listing_url ?? value.url ?? value.source_url,
     );
-    if (!canonicalUrl) return [];
+    if (!identityKey) return [];
     return [{
-      canonicalUrl,
+      identityKey,
       price: finiteNumber(value.price ?? value.price_mad ?? value.normalized_price_mad),
       surface: finiteNumber(value.surface ?? value.surface_m2 ?? value.normalized_surface_m2),
     }];
@@ -124,10 +189,12 @@ function legacyComparable(result: SearchResult): Comparable[] {
 function odmComparable(page: PublicSearchPage): Comparable[] {
   return page.results.flatMap((result) => {
     const value = result as unknown as Record<string, unknown>;
-    const canonicalUrl = normalizeUrl(value.original_url ?? value.display_url);
-    if (!canonicalUrl) return [];
+    const identityKey = canonicalIdentityKey(
+      value.canonical_url ?? value.original_url ?? value.display_url,
+    );
+    if (!identityKey) return [];
     return [{
-      canonicalUrl,
+      identityKey,
       price: finiteNumber(value.price ?? value.normalized_price_mad),
       surface: finiteNumber(value.surface ?? value.normalized_surface_m2),
     }];
@@ -150,8 +217,8 @@ export function compareLegacyAndOdm(
   const odmResultCount = odm.results.length;
   const legacyRows = legacyComparable(legacy);
   const odmRows = odmComparable(odm);
-  const odmByUrl = new Map(odmRows.map((row) => [row.canonicalUrl, row]));
-  const overlap = legacyRows.filter((row) => odmByUrl.has(row.canonicalUrl));
+  const odmByIdentity = new Map(odmRows.map((row) => [row.identityKey, row]));
+  const overlap = legacyRows.filter((row) => odmByIdentity.has(row.identityKey));
 
   let priceComparisons = 0;
   let priceDivergences = 0;
@@ -159,7 +226,7 @@ export function compareLegacyAndOdm(
   let surfaceDivergences = 0;
 
   for (const legacyRow of overlap) {
-    const odmRow = odmByUrl.get(legacyRow.canonicalUrl);
+    const odmRow = odmByIdentity.get(legacyRow.identityKey);
     if (!odmRow) continue;
     if (legacyRow.price !== null && odmRow.price !== null) {
       priceComparisons += 1;
@@ -171,8 +238,8 @@ export function compareLegacyAndOdm(
     }
   }
 
-  const topLegacy = new Set(legacyRows.slice(0, 10).map((row) => row.canonicalUrl));
-  const rankOverlapAt10 = odmRows.slice(0, 10).filter((row) => topLegacy.has(row.canonicalUrl)).length;
+  const topLegacy = new Set(legacyRows.slice(0, 10).map((row) => row.identityKey));
+  const rankOverlapAt10 = odmRows.slice(0, 10).filter((row) => topLegacy.has(row.identityKey)).length;
 
   return {
     version: "odm_dual_read_v1",
