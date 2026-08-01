@@ -1,15 +1,16 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
-const path = 'supabase/migrations/20260801160000_odm_structured_field_materialization_v1.sql';
-const sql = fs.readFileSync(path, 'utf8');
+const base = fs.readFileSync('supabase/migrations/20260801160000_odm_structured_field_materialization_v1.sql', 'utf8');
+const fix = fs.readFileSync('supabase/migrations/20260801161500_odm_structured_field_materialization_status_fix.sql', 'utf8');
+const sql = `${base}\n${fix}`;
 
 for (const token of [
   'odm_structured_field_materialization_audit_v1',
   'odm_materialize_structured_fields_v1',
   'odm_structured_field_materialization_report_v1',
-  "property_type_status = 'recovered'",
-  "intent_status = 'recovered'",
+  "property_type_status = 'recovered_single'",
+  "intent_status = 'recovered_single'",
   'normalized_property_type is null',
   'normalized_intent is null',
   'publication_eligible boolean not null default false',
