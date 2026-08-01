@@ -1,0 +1,28 @@
+name: Typesense ODM Shadow Rebuild V1
+
+on:
+  pull_request:
+    paths:
+      - "lib/typesense-shadow/**"
+      - "scripts/typesense-odm-shadow-rebuild.ts"
+      - "scripts/scrapers/__tests__/typesense-odm-shadow-rebuild-v1.test.ts"
+      - ".github/workflows/typesense-odm-shadow-rebuild-v1.yml"
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/typesense-odm-shadow-projection-v1.test.ts scripts/scrapers/__tests__/typesense-odm-shadow-rebuild-v1.test.ts
+      - run: npx tsc --noEmit
+      - run: npm run build
+      - name: Enforce read-only isolated Shadow boundary
+        run: |
+          ! grep -R "typesense-shadow" app/search app/api/search lib/search/index.ts 2>/dev/null
+          ! grep -R "SEARCH_PROVIDER.*typesense-shadow\|TYPESENSE_PUBLIC_CANARY" lib/typesense-shadow scripts/typesense-odm-shadow-rebuild.ts 2>/dev/null
+          ! grep -R "\.insert(\|\.update(\|\.delete(" scripts/typesense-odm-shadow-rebuild.ts 2>/dev/null
