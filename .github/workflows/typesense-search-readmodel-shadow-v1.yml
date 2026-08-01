@@ -1,0 +1,27 @@
+name: Typesense Search Readmodel Shadow V1
+
+on:
+  pull_request:
+    paths:
+      - "lib/typesense/**"
+      - "docker-compose.typesense-shadow.yml"
+      - "scripts/scrapers/__tests__/typesense-search-readmodel-shadow-v1.test.ts"
+      - ".github/workflows/typesense-search-readmodel-shadow-v1.yml"
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/typesense-search-readmodel-shadow-v1.test.ts
+      - run: npx tsc --noEmit
+      - run: npm run build
+      - name: Enforce shadow-only boundary
+        run: |
+          ! grep -R "searchTypesense" app/api/search app/search lib/search 2>/dev/null
+          ! grep -R "TYPESENSE_PUBLIC_CANARY" . --exclude-dir=node_modules --exclude-dir=.git
