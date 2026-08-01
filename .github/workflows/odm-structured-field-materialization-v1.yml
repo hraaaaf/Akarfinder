@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'supabase/migrations/20260801160000_odm_structured_field_materialization_v1.sql'
+      - 'supabase/migrations/20260801161500_odm_structured_field_materialization_status_fix.sql'
       - 'scripts/odm-structured-field-materialization-v1-contract.mjs'
       - '.github/workflows/odm-structured-field-materialization-v1.yml'
   workflow_dispatch:
