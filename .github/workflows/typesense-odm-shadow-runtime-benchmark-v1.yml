@@ -1,0 +1,75 @@
+name: Typesense ODM Shadow Runtime Benchmark V1
+
+on:
+  pull_request:
+    paths:
+      - "scripts/typesense-odm-shadow-benchmark.ts"
+      - "scripts/typesense-odm-shadow-rebuild.ts"
+      - "lib/typesense-shadow/**"
+      - ".github/workflows/typesense-odm-shadow-runtime-benchmark-v1.yml"
+
+jobs:
+  runtime-benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      TYPESENSE_SHADOW_HOST: 127.0.0.1
+      TYPESENSE_SHADOW_PORT: "8108"
+      TYPESENSE_SHADOW_PROTOCOL: http
+      TYPESENSE_SHADOW_ADMIN_KEY: shadow-ci-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Require Supabase read credentials
+        run: |
+          test -n "$NEXT_PUBLIC_SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Start ephemeral Typesense 30.2
+        run: |
+          mkdir -p /tmp/typesense-data
+          docker run -d --name typesense-shadow \
+            -p 8108:8108 \
+            -v /tmp/typesense-data:/data \
+            typesense/typesense:30.2 \
+            --data-dir=/data \
+            --api-key="$TYPESENSE_SHADOW_ADMIN_KEY" \
+            --enable-cors
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8108/health | grep -q '"ok":true'; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs typesense-shadow
+          exit 1
+      - name: Rebuild real ODM Shadow index
+        run: |
+          mkdir -p artifacts
+          npx tsx scripts/typesense-odm-shadow-rebuild.ts | tee artifacts/typesense-shadow-rebuild.json
+      - name: Run PostgreSQL versus Typesense benchmark
+        run: npx tsx scripts/typesense-odm-shadow-benchmark.ts
+      - name: Enforce runtime acceptance floor
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync('artifacts/typesense-shadow-benchmark.json', 'utf8'));
+          if (report.summary.query_count < 10) throw new Error('benchmark_matrix_too_small');
+          if (report.summary.filter_leaks !== 0) throw new Error('typesense_filter_leak');
+          if (report.summary.typesense_p95_ms <= 0) throw new Error('typesense_latency_missing');
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: typesense-odm-shadow-runtime-benchmark-v1
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Enforce no public wiring
+        run: |
+          ! grep -R "typesense-odm-shadow-benchmark\|typesense-shadow" app/search app/api/search lib/search/index.ts 2>/dev/null
