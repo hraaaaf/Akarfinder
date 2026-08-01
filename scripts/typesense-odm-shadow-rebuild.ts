@@ -19,7 +19,7 @@ const typesenseHost = required("TYPESENSE_SHADOW_HOST");
 const typesenseProtocol = process.env.TYPESENSE_SHADOW_PROTOCOL || "http";
 const typesensePort = process.env.TYPESENSE_SHADOW_PORT || "8108";
 const typesenseKey = required("TYPESENSE_SHADOW_ADMIN_KEY");
-const sourceTable = process.env.TYPESENSE_SHADOW_SOURCE_TABLE || "public_search_representations_v1";
+const sourceTable = process.env.TYPESENSE_SHADOW_SOURCE_TABLE || "thin_index_search_documents";
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: { persistSession: false, autoRefreshToken: false },
@@ -28,14 +28,13 @@ const baseUrl = `${typesenseProtocol}://${typesenseHost}:${typesensePort}`;
 const collection = getOdmTypesenseShadowCollectionName();
 
 async function typesense(path: string, init: RequestInit = {}) {
-  const response = await fetch(`${baseUrl}${path}`, {
+  return fetch(`${baseUrl}${path}`, {
     ...init,
     headers: {
       "X-TYPESENSE-API-KEY": typesenseKey,
       ...(init.headers || {}),
     },
   });
-  return response;
 }
 
 async function ensureCollection() {
@@ -50,14 +49,59 @@ async function ensureCollection() {
   if (!created.ok) throw new Error(`typesense_collection_create_failed:${created.status}:${await created.text()}`);
 }
 
+type SourceRow = {
+  seed_id: string;
+  canonical_url: string;
+  source_domain: string;
+  freshness_status: string;
+  title: string | null;
+  snippet: string | null;
+  normalized_city: string | null;
+  normalized_property_type: string | null;
+  normalized_intent: string | null;
+  normalized_price_mad: number | null;
+  normalized_surface_m2: number | null;
+  quality_tier: string | null;
+  quality_score: number | null;
+  display_eligibility: string;
+  document_kind: string | null;
+  updated_at: string;
+};
+
 async function loadPage(offset: number, limit: number): Promise<OdmSearchProjectionRow[]> {
   const { data, error } = await supabase
     .from(sourceTable)
-    .select("representation_id,canonical_url,canonical_property_id,source_domain,title,snippet,normalized_city,normalized_district,normalized_property_type,normalized_intent,normalized_price_mad,normalized_surface_m2,quality_tier,quality_score,reliability_score,freshness_score,display_eligibility,document_kind,production_allowed,updated_at")
-    .order("representation_id", { ascending: true })
+    .select("seed_id,canonical_url,source_domain,freshness_status,title,snippet,normalized_city,normalized_property_type,normalized_intent,normalized_price_mad,normalized_surface_m2,quality_tier,quality_score,display_eligibility,document_kind,updated_at")
+    .in("display_eligibility", ["eligible_primary", "eligible_secondary"])
+    .in("seed_provider", ["public_sitemap", "commoncrawl_cdx", "serper_search"])
+    .in("freshness_status", ["seed_only", "fresh_confirmed"])
+    .eq("document_kind", "LISTING")
+    .not("canonical_url", "is", null)
+    .order("seed_id", { ascending: true })
     .range(offset, offset + limit - 1);
   if (error) throw new Error(`typesense_shadow_source_read_failed:${error.message}`);
-  return (data || []) as OdmSearchProjectionRow[];
+  return ((data || []) as SourceRow[]).map((row) => ({
+    representation_id: row.seed_id,
+    canonical_property_id: row.seed_id,
+    canonical_url: row.canonical_url,
+    source_domain: row.source_domain,
+    title: row.title,
+    snippet: row.snippet,
+    normalized_city: row.normalized_city,
+    normalized_district: null,
+    normalized_property_type: row.normalized_property_type,
+    normalized_intent: row.normalized_intent,
+    normalized_price_mad: row.normalized_price_mad,
+    normalized_surface_m2: row.normalized_surface_m2,
+    quality_tier: row.quality_tier,
+    quality_score: row.quality_score,
+    reliability_score: row.quality_score,
+    freshness_score: row.freshness_status === "fresh_confirmed" ? 100 : 50,
+    display_eligibility: row.display_eligibility,
+    document_kind: row.document_kind,
+    production_allowed: true,
+    updated_at: row.updated_at,
+  }));
 }
 
 async function importBatch(documents: TypesenseOdmShadowDocument[]) {
