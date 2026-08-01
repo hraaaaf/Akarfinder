@@ -1,0 +1,28 @@
+name: ODM Avito Detail Precision V1
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260801011500_odm_avito_detail_precision_v1.sql'
+      - 'scripts/odm-avito-detail-precision-v1-contract.mjs'
+      - '.github/workflows/odm-avito-detail-precision-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Avito detail precision contract
+        run: node scripts/odm-avito-detail-precision-v1-contract.mjs
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
