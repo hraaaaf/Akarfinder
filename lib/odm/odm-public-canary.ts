@@ -4,10 +4,17 @@ import type { SearchQuery, SearchResult } from "@/lib/search";
 import type { PublicSearchPage } from "@/lib/search-gateway/public-search-cursor";
 
 export const ODM_PUBLIC_CANARY_MAX_PERCENT = 1;
+export const ODM_PUBLIC_CANARY_DEFAULT_PERCENT = 1;
 
 function explicitTrue(value: string | undefined): boolean { return value === "true"; }
+function explicitFalse(value: string | undefined): boolean { return value === "false"; }
+
+function enabledByDefaultUnlessExplicitlyDisabled(value: string | undefined): boolean {
+  return !explicitFalse(value);
+}
 
 export function readPublicCanaryPercent(env: NodeJS.ProcessEnv = process.env): number {
+  if (env.ODM_PUBLIC_CANARY_PERCENT === undefined) return ODM_PUBLIC_CANARY_DEFAULT_PERCENT;
   const parsed = Number(env.ODM_PUBLIC_CANARY_PERCENT);
   return Number.isFinite(parsed) && parsed > 0 && parsed <= ODM_PUBLIC_CANARY_MAX_PERCENT ? parsed : 0;
 }
@@ -18,8 +25,8 @@ function bucket(key: string): number {
 
 export function shouldServeOdmPublicCanary(stableKey: string, env: NodeJS.ProcessEnv = process.env): boolean {
   if (!stableKey) return false;
-  if (!explicitTrue(env.ODM_PUBLIC_CANARY_ENABLED)) return false;
-  if (!explicitTrue(env.ODM_PUBLIC_CANARY_APPROVED)) return false;
+  if (!enabledByDefaultUnlessExplicitlyDisabled(env.ODM_PUBLIC_CANARY_ENABLED)) return false;
+  if (!enabledByDefaultUnlessExplicitlyDisabled(env.ODM_PUBLIC_CANARY_APPROVED)) return false;
   if (explicitTrue(env.ODM_PUBLIC_CANARY_STOP)) return false;
   const percent = readPublicCanaryPercent(env);
   return percent > 0 && bucket(stableKey) < Math.floor(percent * 100);
