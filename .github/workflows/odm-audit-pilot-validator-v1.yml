@@ -38,6 +38,7 @@ on:
       - 'supabase/migrations/20260731103000_odm_search_depth_certification_v1.sql'
       - 'supabase/migrations/20260731104500_odm_search_depth_certification_dimension_fix.sql'
       - 'supabase/migrations/20260731111500_odm_search_depth_certification_timeout_fix.sql'
+      - 'supabase/migrations/20260801153500_odm_structured_field_recovery_v1.sql'
       - 'scripts/odm-audit-pilot-contract.mjs'
       - 'scripts/odm-economic-parser-contract.mjs'
       - 'scripts/odm-surface-freshness-source-contract.mjs'
@@ -55,6 +56,7 @@ on:
       - 'scripts/odm-search-progressive-canary-v1-contract.mjs'
       - 'scripts/odm-search-transparency-v1-contract.mjs'
       - 'scripts/odm-search-depth-certification-v1-contract.mjs'
+      - 'scripts/odm-structured-field-recovery-v1-contract.mjs'
       - '.github/workflows/odm-audit-pilot-validator-v1.yml'
   workflow_dispatch:
 
@@ -106,6 +108,8 @@ jobs:
         run: node scripts/odm-search-transparency-v1-contract.mjs
       - name: Search Depth Certification V1 contract
         run: node scripts/odm-search-depth-certification-v1-contract.mjs
+      - name: Structured Field Recovery V1 contract
+        run: node scripts/odm-structured-field-recovery-v1-contract.mjs
       - name: TypeScript
         run: npm run typecheck --if-present
       - name: Production build
