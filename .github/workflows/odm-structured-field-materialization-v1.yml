@@ -1,0 +1,30 @@
+name: ODM Structured Field Materialization V1
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260801160000_odm_structured_field_materialization_v1.sql'
+      - 'scripts/odm-structured-field-materialization-v1-contract.mjs'
+      - '.github/workflows/odm-structured-field-materialization-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Structured field materialization contract
+        run: node scripts/odm-structured-field-materialization-v1-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck --if-present
+      - name: Production build
+        run: npm run build
