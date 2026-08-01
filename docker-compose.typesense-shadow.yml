@@ -1,0 +1,15 @@
+services:
+  typesense-shadow:
+    image: typesense/typesense:29.0
+    command: >-
+      --data-dir /data
+      --api-key=${TYPESENSE_ADMIN_API_KEY:-typesense-shadow-local-key}
+      --enable-cors=false
+    ports:
+      - "127.0.0.1:8108:8108"
+    volumes:
+      - typesense-shadow-data:/data
+    restart: unless-stopped
+
+volumes:
+  typesense-shadow-data:
