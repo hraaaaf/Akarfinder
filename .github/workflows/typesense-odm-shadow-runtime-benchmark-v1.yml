@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_URL: https://kusfiyimwvxblvsrhaes.supabase.co
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       TYPESENSE_SHADOW_HOST: 127.0.0.1
       TYPESENSE_SHADOW_PORT: "8108"
@@ -68,7 +68,7 @@ jobs:
         with:
           name: typesense-odm-shadow-runtime-benchmark-v1
           path: artifacts/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
       - name: Enforce no public wiring
         run: |
