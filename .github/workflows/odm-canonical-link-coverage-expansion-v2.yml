@@ -1,0 +1,25 @@
+name: ODM Canonical Link Coverage Expansion V2
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260802142000_canonical_link_coverage_expansion_v2.sql'
+      - 'scripts/validate-odm-canonical-link-coverage-expansion-v2.mjs'
+      - '.github/workflows/odm-canonical-link-coverage-expansion-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/validate-odm-canonical-link-coverage-expansion-v2.mjs
+      - run: npm ci
+      - run: npm run typecheck --if-present
+      - run: npm run build
