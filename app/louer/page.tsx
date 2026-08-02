@@ -1,54 +1,27 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { IntentHubV2 } from "@/components/intent/IntentHubV2";
-import { LegacyIntentHashRedirect } from "@/components/intent/LegacyIntentHashRedirect";
-import { searchListings } from "@/lib/search";
 
-export const dynamic = "force-dynamic";
-
-export const metadata = {
-  title: "Louer au Maroc — AkarFinder",
-  description:
-    "Commencez votre recherche de location au Maroc puis affinez budget, type et localisation dans le moteur AkarFinder.",
+export const metadata: Metadata = {
+  title: "Biens à louer au Maroc — AkarFinder",
+  description: "Parcourez directement les biens à louer au Maroc et affinez votre recherche par ville, type, budget et surface.",
+  alternates: { canonical: "/louer" },
 };
-
-function setPositive(target: URLSearchParams, key: string, value?: string) {
-  if (!value) return;
-  const parsed = Number(value);
-  if (Number.isFinite(parsed) && parsed >= 0) target.set(key, String(parsed));
-}
 
 export default async function LouerPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    property_type?: string;
-    budget_max?: string;
-    budget_min?: string;
-  }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
+  const target = new URLSearchParams({ transaction_type: "rent" });
 
-  if (params.property_type || params.budget_max || params.budget_min) {
-    const target = new URLSearchParams({ transaction_type: "rent" });
-    if (params.property_type) target.set("property_type", params.property_type);
-    setPositive(target, "max_price", params.budget_max);
-    setPositive(target, "min_price", params.budget_min);
-    redirect(`/search?${target.toString()}`);
+  for (const [key, rawValue] of Object.entries(params)) {
+    const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+    if (!value || key === "transaction_type") continue;
+    if (key === "budget_min") target.set("min_price", value);
+    else if (key === "budget_max") target.set("max_price", value);
+    else target.set(key, value);
   }
 
-  const searchResult = await searchListings({ transaction_type: "rent", limit: 6 }).catch(() => ({
-    listings: [],
-    total: 0,
-  }));
-
-  return (
-    <>
-      <LegacyIntentHashRedirect intent="rent" />
-      <IntentHubV2
-        intent="rent"
-        listings={searchResult.listings}
-        totalListings={searchResult.total > 0 ? searchResult.total : null}
-      />
-    </>
-  );
+  redirect(`/search?${target.toString()}`);
 }
