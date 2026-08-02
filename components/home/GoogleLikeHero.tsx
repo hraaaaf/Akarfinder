@@ -26,13 +26,13 @@ export function GoogleLikeHero() {
       <Container className="relative z-10 w-full px-5 pb-12 pt-[calc(env(safe-area-inset-top)+7rem)] sm:pb-16 sm:pt-36">
         <div className="max-w-[860px]">
           <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-blue-200 sm:text-[12px]">
-            Moteur immobilier multi-sources
+            Moteur de recherche immobilier multi-sources
           </p>
           <h1 className="mt-4 max-w-[820px] text-[2.45rem] font-extrabold leading-[1.01] tracking-[-0.05em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.30)] sm:text-[4.25rem] lg:text-[5rem]">
-            Toutes les annonces du Maroc. Une seule recherche.
+            1er moteur de recherche immobilier au Maroc
           </h1>
           <p className="mt-4 max-w-2xl text-[14px] font-medium leading-6 text-white/82 sm:text-[17px] sm:leading-7">
-            Cherchez un bien, filtrez les résultats et ouvrez la source originale sans perdre du temps entre plusieurs sites.
+            Toutes les annonces dans une seule recherche. Comprenez le quartier, filtrez les résultats et consultez les sources originales.
           </p>
 
           <div className="mt-7 w-full max-w-[860px] sm:mt-9">
