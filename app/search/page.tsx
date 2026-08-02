@@ -1,6 +1,5 @@
 import { after } from "next/server";
 import type { Metadata } from "next";
-import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LightZillowSearchShell } from "@/components/search/LightZillowSearchShell";
 import { PropertyQuickPreview } from "@/components/search/PropertyQuickPreview";
@@ -17,9 +16,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export const metadata: Metadata = {
-  title: "Rechercher un bien immobilier au Maroc — AkarFinder",
-  description:
-    "Comparez les résultats immobiliers au Maroc, consultez la source originale et trouvez des repères utiles pour mieux décider.",
+  title: "Annonces immobilières au Maroc — AkarFinder",
+  description: "Consultez immédiatement les annonces immobilières disponibles au Maroc et affinez les résultats par ville, type, prix et surface.",
   robots: { index: false, follow: true },
   alternates: { canonical: "/search" },
 };
@@ -29,25 +27,14 @@ type SearchPageProps = {
 };
 
 function pickFirst(value: string | string[] | undefined) {
-  if (Array.isArray(value)) return value[0];
-  return value;
+  return Array.isArray(value) ? value[0] : value;
 }
 
 function normalizeTransactionType(raw?: string): ListingFiltersState["transactionType"] {
-  switch (raw) {
-    case "rent":
-    case "location":
-      return "rent";
-    case "new":
-    case "neuf":
-      return "new";
-    case "buy":
-    case "sale":
-    case "achat":
-      return "buy";
-    default:
-      return "all";
-  }
+  if (raw === "rent" || raw === "location") return "rent";
+  if (raw === "new" || raw === "neuf") return "new";
+  if (raw === "buy" || raw === "sale" || raw === "achat") return "buy";
+  return "all";
 }
 
 function stableSearchKey(query: SearchQuery): string {
@@ -93,17 +80,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const resolvedQuery = buildSearchPageQuery(params);
   const initialSearchResult = await searchListings(resolvedQuery);
   scheduleOdmDualReadShadow(resolvedQuery, initialSearchResult);
-  const transactionType = normalizeTransactionType(resolvedQuery.transaction_type);
-  const city = resolvedQuery.city ?? "all";
-  const mreOnly = (pickFirst(params.mre) ?? "").toLowerCase() === "true";
-  const propertyType = resolvedQuery.property_type ?? "all";
-  const minBudget = pickFirst(params.min_price) ?? pickFirst(params.budget_min) ?? "";
-  const maxBudget = pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "";
-  const search = resolvedQuery.q ?? "";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader variant="dark" />
+      <SiteHeader compact />
       <PropertySelectionProvider>
         <SearchPriceExplorerDock />
         <SearchCompareDock />
@@ -111,17 +91,16 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <LightZillowSearchShell
           initialListings={initialSearchResult.listings}
           initialFilters={{
-            transactionType,
-            city,
-            propertyType,
-            minBudget,
-            maxBudget,
-            mreOnly,
-            search,
+            transactionType: normalizeTransactionType(resolvedQuery.transaction_type),
+            city: resolvedQuery.city ?? "all",
+            propertyType: resolvedQuery.property_type ?? "all",
+            minBudget: pickFirst(params.min_price) ?? pickFirst(params.budget_min) ?? "",
+            maxBudget: pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "",
+            mreOnly: (pickFirst(params.mre) ?? "").toLowerCase() === "true",
+            search: resolvedQuery.q ?? "",
           }}
         />
       </PropertySelectionProvider>
-      <SiteFooter />
     </main>
   );
 }
