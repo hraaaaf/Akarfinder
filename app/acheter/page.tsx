@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+// IntentHubV2 remains the documented predecessor; this route now hands off immediately to canonical Search.
 export const metadata: Metadata = {
   title: "Biens à vendre au Maroc — AkarFinder",
   description: "Parcourez directement les biens à vendre au Maroc et affinez votre recherche par ville, type, prix et surface.",
