@@ -1,13 +1,24 @@
-import { NeufPageShellV2 } from "@/components/neuf/NeufPageShellV2";
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export const metadata = {
+export const metadata: Metadata = {
   title: "Immobilier neuf au Maroc — AkarFinder",
-  description:
-    "Recherchez les offres immobilières neuves disponibles dans le moteur AkarFinder. Les démonstrations promoteur restent séparées de l'inventaire réel et clairement identifiées comme exemples.",
+  description: "Parcourez directement les programmes et biens neufs disponibles au Maroc.",
+  alternates: { canonical: "/neuf" },
 };
 
-export default function NeufPage() {
-  return <NeufPageShellV2 />;
+export default async function NeufPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const target = new URLSearchParams({ transaction_type: "new" });
+
+  for (const [key, rawValue] of Object.entries(params)) {
+    const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+    if (value && key !== "transaction_type") target.set(key, value);
+  }
+
+  redirect(`/search?${target.toString()}`);
 }
