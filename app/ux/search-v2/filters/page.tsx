@@ -1,3 +1,4 @@
+// UX preview deployment trigger: 2026-08-02
 import type { Metadata } from "next";
 import { SearchFilteredGalleryV2 } from "@/components/ux/SearchFilteredGalleryV2";
 import { searchListings } from "@/lib/search";
