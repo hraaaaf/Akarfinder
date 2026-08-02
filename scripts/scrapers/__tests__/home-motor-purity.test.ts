@@ -50,7 +50,6 @@ describe("home-motor-purity — MarketPulse fallback ne contient pas de wording 
   }
 
   it("shortDetail fallback: 'Repère disponible' is not 'Annonce analysée'", () => {
-    // listing with no surface/bedrooms/price_per_m2 — triggers the shortDetail fallback
     const l = baseListing({
       surface_m2: 0,
       bedrooms: 0,
@@ -59,15 +58,9 @@ describe("home-motor-purity — MarketPulse fallback ne contient pas de wording 
       reliability_score: 75,
     });
     const item = buildMarketPulseItem(l);
-    if (!item) return; // may not build if operationLabel is missing
-    assert.ok(
-      !item.shortDetail.includes("analysée"),
-      `shortDetail must not contain "analysée": got "${item.shortDetail}"`
-    );
-    assert.ok(
-      !item.lineLabel.includes("analysée"),
-      `lineLabel must not contain "analysée": got "${item.lineLabel}"`
-    );
+    if (!item) return;
+    assert.ok(!item.shortDetail.includes("analysée"));
+    assert.ok(!item.lineLabel.includes("analysée"));
   });
 
   it("containsForbiddenMarketPulseWording detects 'données vérifiées'", () => {
@@ -86,31 +79,24 @@ describe("home-motor-purity — MarketPulse fallback ne contient pas de wording 
 
   it("getMarketPulseHref returns /listings/ path for valid id", () => {
     const href = getMarketPulseHref("partner-listing-123");
-    assert.ok(href?.startsWith("/listings/"), `Expected /listings/ path, got ${href}`);
+    assert.ok(href?.startsWith("/listings/"));
   });
 });
 
-// ─── Source authorization alignment ──────────────────────────────────────────
-
 describe("home-motor-purity — sources autorisées pour MarketPulse", () => {
-  it("partner_csv: canPublishStructuredListing=true (may appear in ticker)", () => {
+  it("partner_csv: canPublishStructuredListing=true", () => {
     assert.equal(canPublishStructuredListing("partner_csv"), true);
   });
-
-  it("mubawab: canPublishStructuredListing=false (filtered from ticker)", () => {
+  it("mubawab: canPublishStructuredListing=false", () => {
     assert.equal(canPublishStructuredListing("mubawab"), false);
   });
-
-  it("avito: canPublishStructuredListing=false (filtered from ticker)", () => {
+  it("avito: canPublishStructuredListing=false", () => {
     assert.equal(canPublishStructuredListing("avito"), false);
   });
-
-  it("sarouty: canPublishStructuredListing=false (filtered from ticker)", () => {
+  it("sarouty: canPublishStructuredListing=false", () => {
     assert.equal(canPublishStructuredListing("sarouty"), false);
   });
 });
-
-// ─── buildMarketPulseItems filters out low-quality data ───────────────────────
 
 describe("home-motor-purity — buildMarketPulseItems de-duplication et qualité", () => {
   function authorizedListing(id: string, city: string): Listing {
@@ -141,33 +127,25 @@ describe("home-motor-purity — buildMarketPulseItems de-duplication et qualité
   }
 
   it("builds items from authorized listings", () => {
-    const listings = [
+    const items = buildMarketPulseItems([
       authorizedListing("p1", "Casablanca"),
       authorizedListing("p2", "Rabat"),
-    ];
-    const items = buildMarketPulseItems(listings, 10);
-    assert.ok(items.length >= 1, "Should produce at least 1 item from authorized listings");
+    ], 10);
+    assert.ok(items.length >= 1);
   });
 
   it("empty listings produces empty items", () => {
-    const items = buildMarketPulseItems([], 10);
-    assert.equal(items.length, 0);
+    assert.equal(buildMarketPulseItems([], 10).length, 0);
   });
 
   it("maxItems cap respected", () => {
     const listings = Array.from({ length: 10 }, (_, i) =>
       authorizedListing(`p${i}`, i < 5 ? "Casablanca" : "Rabat")
     );
-    // Give each a different id so dedup doesn't collapse them
     listings.forEach((l, i) => { (l as Listing).price = 900_000 + i * 1000; });
-    const items = buildMarketPulseItems(listings, 3);
-    assert.ok(items.length <= 3, "maxItems cap must be respected");
+    assert.ok(buildMarketPulseItems(listings, 3).length <= 3);
   });
 });
-
-// ─── HomeResultPreview absent du module page ───────────────────────────────────
-// Vérifie que HomeResultPreview n'est plus dans app/page.tsx
-// (test de contenu de fichier source)
 
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -176,24 +154,16 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 describe("home-motor-purity — HomeResultPreview supprimé de la page d'accueil", () => {
-  const pageSource = readFileSync(
-    resolve(__dirname, "../../../app/page.tsx"),
-    "utf-8"
-  );
+  const pageSource = readFileSync(resolve(__dirname, "../../../app/page.tsx"), "utf-8");
 
   it("app/page.tsx ne contient plus HomeResultPreview", () => {
-    assert.ok(
-      !pageSource.includes("HomeResultPreview"),
-      "HomeResultPreview must not be present in app/page.tsx"
-    );
+    assert.ok(!pageSource.includes("HomeResultPreview"));
   });
 
   it("app/page.tsx contient MarketPulse", () => {
-    assert.ok(pageSource.includes("MarketPulse"), "MarketPulse must still be present");
+    assert.ok(pageSource.includes("MarketPulse"));
   });
 });
-
-// ─── Hero wording alignment ───────────────────────────────────────────────────
 
 describe("home-motor-purity — hero wording aligné avec la doctrine", () => {
   const heroSource = readFileSync(
@@ -202,42 +172,32 @@ describe("home-motor-purity — hero wording aligné avec la doctrine", () => {
   );
 
   it("hero ne contient plus 'analysez les biens'", () => {
+    assert.ok(!heroSource.includes("analysez les biens"));
+  });
+
+  it("hero affirme le positionnement moteur de recherche immobilier", () => {
     assert.ok(
-      !heroSource.includes("analysez les biens"),
-      "Hero must not contain 'analysez les biens'"
+      heroSource.includes("1er moteur de recherche immobilier au Maroc"),
+      "Hero headline must preserve the canonical search-first positioning"
     );
   });
 
-  it("hero contient 'Moteur de recherche immobilier'", () => {
+  it("hero conserve l'orchestrateur de recherche comme action centrale", () => {
     assert.ok(
-      heroSource.includes("Moteur de recherche immobilier"),
-      "Hero chip must mention 'Moteur de recherche immobilier'"
+      heroSource.includes("SearchEntryOrchestrator"),
+      "Hero must keep SearchEntryOrchestrator as the central action"
     );
   });
 
-  it("hero contient 'Comprenez le quartier'", () => {
-    assert.ok(
-      heroSource.includes("Comprenez le quartier"),
-      "Hero subtitle must mention 'Comprenez le quartier'"
-    );
-  });
-
-  it("hero contient 'sources originales'", () => {
-    assert.ok(
-      heroSource.includes("sources originales"),
-      "Hero subtitle must mention 'sources originales'"
-    );
+  it("hero n'ajoute pas de promesse de vérification ou certification", () => {
+    assert.ok(!heroSource.includes("vérifié"));
+    assert.ok(!heroSource.includes("certifié"));
   });
 
   it("hero conserve la photo (HERO_DESKTOP path présent)", () => {
-    assert.ok(
-      heroSource.includes("akar-residence-sunset-desktop.webp"),
-      "Hero photo must be preserved"
-    );
+    assert.ok(heroSource.includes("akar-residence-sunset-desktop.webp"));
   });
 });
-
-// ─── Wording interdit absent des composants home ──────────────────────────────
 
 describe("home-motor-purity — wording interdit absent des composants clés", () => {
   const FILES = [
@@ -268,17 +228,10 @@ describe("home-motor-purity — wording interdit absent des composants clés", (
   ];
 
   for (const [name, relPath] of FILES) {
-    const source = readFileSync(
-      resolve(__dirname, relPath),
-      "utf-8"
-    );
-
+    const source = readFileSync(resolve(__dirname, relPath), "utf-8");
     for (const token of FORBIDDEN_TOKENS) {
       it(`${name}: does not contain "${token}"`, () => {
-        assert.ok(
-          !source.includes(token),
-          `${name} must not contain forbidden token: "${token}"`
-        );
+        assert.ok(!source.includes(token), `${name} must not contain forbidden token: "${token}"`);
       });
     }
   }
