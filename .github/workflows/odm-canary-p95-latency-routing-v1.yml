@@ -1,0 +1,21 @@
+name: ODM Canary P95 Latency Routing V1
+
+on:
+  pull_request:
+    paths:
+      - "app/api/search/route.ts"
+      - "scripts/scrapers/__tests__/odm-canary-latency-routing-v1.test.ts"
+      - ".github/workflows/odm-canary-p95-latency-routing-v1.yml"
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/odm-canary-latency-routing-v1.test.ts
+      - run: npx tsc --noEmit
