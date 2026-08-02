@@ -80,51 +80,54 @@ export function HomeSearchBar() {
 
   return (
     <div className="w-full">
-      <div className="flex items-stretch overflow-hidden rounded-2xl border border-[#BFDBFE]/20 bg-white/85 shadow-[0_12px_32px_rgba(15,23,42,0.18)] backdrop-blur-md transition-all focus-within:border-[#60A5FA]/55 focus-within:shadow-[0_12px_42px_rgba(37,99,235,0.18),0_0_0_1px_rgba(96,165,250,0.22)] sm:bg-white/30 sm:shadow-[0_12px_48px_rgba(0,0,0,0.45)] sm:focus-within:shadow-[0_12px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(96,165,250,0.22)]">
-        <div className="flex flex-1 items-center gap-3 px-4 py-0.5 sm:px-5 sm:py-1">
+      <div className="flex min-h-[58px] items-stretch overflow-hidden rounded-2xl border border-white/35 bg-white shadow-[0_14px_40px_rgba(15,23,42,0.22)] transition-[border-color,box-shadow] focus-within:border-[#60A5FA] focus-within:shadow-[0_16px_48px_rgba(15,23,42,0.28),0_0_0_3px_rgba(96,165,250,0.16)] sm:min-h-[66px]">
+        <div className="flex min-w-0 flex-1 items-center gap-3 px-4 sm:px-6">
           <Search
-            size={18}
-            strokeWidth={2.2}
-            className="shrink-0 text-[#0B63CE]/55 sm:text-[#BFDBFE]/70"
+            size={20}
+            strokeWidth={2.1}
+            className="shrink-0 text-[#0B63CE]"
             aria-hidden="true"
           />
           <input
             ref={inputRef}
-            type="text"
+            type="search"
+            enterKeyHint="search"
+            autoComplete="off"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="Rechercher un bien..."
-            aria-label="Recherche de bien immobilier au Maroc"
-            className="min-w-0 flex-1 bg-transparent py-3.5 text-[15px] font-medium text-[#0B1F3A] outline-none placeholder:text-slate-400 sm:py-4 sm:text-[16px] sm:text-[#061B33] sm:placeholder:text-slate-500"
+            placeholder="Ville, quartier, type de bien, budget..."
+            aria-label="Rechercher un bien immobilier au Maroc"
+            className="min-w-0 flex-1 bg-transparent py-4 text-[15px] font-medium text-[#0B1F3A] outline-none placeholder:text-slate-500 sm:text-[17px]"
           />
         </div>
 
         <button
           type="button"
           onClick={() => handleSearch()}
-          aria-label="Lancer la recherche"
-          className="m-1.5 flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-br from-[#0B63CE] to-[#084FA8] px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_4px_20px_rgba(11,99,206,0.32)] transition hover:brightness-110 active:scale-[0.97] sm:px-7 sm:text-[15px]"
+          aria-label="Lancer la recherche immobilière"
+          className="m-1.5 flex min-w-[52px] shrink-0 items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-4 text-[13px] font-extrabold text-white shadow-sm transition-[background-color,transform] hover:bg-[#084FA8] active:scale-[0.98] sm:min-w-0 sm:px-7 sm:text-[15px]"
         >
-          <Search size={15} strokeWidth={2.4} aria-hidden="true" />
+          <Search size={17} strokeWidth={2.4} aria-hidden="true" />
           <span className="hidden sm:inline">Rechercher</span>
         </button>
       </div>
 
       <div
-        className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none]"
+        className="mt-3 flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] sm:justify-center"
         role="group"
-        aria-label="Type de recherche"
+        aria-label="Affiner rapidement la recherche"
       >
         {INTENT_CHIPS.map((chip) => (
           <button
             key={chip.label}
             type="button"
+            aria-pressed={activeChip === chip.label}
             onClick={() => applyChip(chip)}
-            className={`shrink-0 rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition sm:px-4 sm:text-[12.5px] ${
+            className={`shrink-0 rounded-full border px-3 py-1.5 text-[11.5px] font-semibold transition-colors sm:px-3.5 sm:text-[12px] ${
               activeChip === chip.label
-                ? "border-[#0B63CE] bg-[#0B63CE] text-white shadow-[0_2px_8px_rgba(11,99,206,0.3)] hover:bg-[#084BA8]"
-                : "border-[#BFDBFE]/40 bg-white/88 text-[#061B33] hover:border-[#60A5FA] hover:bg-blue-50"
+                ? "border-white/70 bg-white text-[#0B3F80]"
+                : "border-white/28 bg-black/10 text-white/88 hover:border-white/50 hover:bg-black/18 hover:text-white"
             }`}
           >
             {chip.label}
@@ -132,14 +135,14 @@ export function HomeSearchBar() {
         ))}
       </div>
 
-      <div className="mt-3 hidden flex-wrap items-center gap-x-1.5 gap-y-2 sm:flex">
-        <span className="text-[11px] font-semibold text-white/70">Exemples :</span>
-        {EXAMPLES.map((example) => (
+      <div className="mt-2.5 hidden flex-wrap items-center justify-center gap-x-2 gap-y-1.5 lg:flex">
+        <span className="text-[11px] font-medium text-white/60">Essayez :</span>
+        {EXAMPLES.slice(0, 3).map((example) => (
           <button
             key={example}
             type="button"
             onClick={() => applyExample(example)}
-            className="rounded-full border border-white/30 px-3 py-1 text-[11px] text-white/85 transition hover:border-white/60 hover:text-white"
+            className="text-[11px] text-white/72 underline-offset-4 transition-colors hover:text-white hover:underline"
           >
             {example}
           </button>
