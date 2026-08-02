@@ -94,10 +94,15 @@ with e as (
 ), r as (
   select count(*) as total_rows,
          count(*) filter(where display_tier_v2='blocked') as blocked_rows,
-         count(*) filter(where title is not null or snippet is not null) as copied_content_rows,
          count(*) filter(where shadow_only<>true) as non_shadow_rows,
          count(*) filter(where public_activation<>false) as public_rows
   from public.odm_search_read_model_shadow_v3
+), x as (
+  select count(*) filter(where title is not null or snippet is not null) as copied_content_rows,
+         count(*) filter(where normalized_price_mad is not null or normalized_surface_m2 is not null) as copied_detail_fields,
+         count(*) filter(where ranking_policy_version<>'canonical_link_coverage_expansion_v2') as wrong_ranking_policy
+  from public.odm_search_read_model_shadow_v3
+  where ranking_policy_version='canonical_link_coverage_expansion_v2'
 )
 select jsonb_build_object(
   'audit_version','odm_canonical_link_coverage_expansion_v2',
@@ -109,14 +114,16 @@ select jsonb_build_object(
     'fresh_or_aging_only',e.wrong_freshness=0,
     'all_rows_structured',e.unstructured=0,
     'blocked_rows_absent',r.blocked_rows=0,
-    'no_content_copied',r.copied_content_rows=0,
+    'no_content_copied',x.copied_content_rows=0,
+    'no_detail_fields_copied',x.copied_detail_fields=0,
+    'expansion_rank_policy_fixed',x.wrong_ranking_policy=0,
     'all_rows_shadow_only',r.non_shadow_rows=0,
     'public_activation_disabled',r.public_rows=0,
     'publication_remains_disabled',true,
     'ranking_formula_unchanged',true
   ),
   'shadow_only',true,'public_activation',false
-) from e cross join r;
+) from e cross join r cross join x;
 $$;
 revoke all on function public.odm_canonical_link_coverage_expansion_report_v2() from public,anon,authenticated;
 grant execute on function public.odm_canonical_link_coverage_expansion_report_v2() to service_role;
