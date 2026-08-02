@@ -1,0 +1,30 @@
+name: ODM Shadow Read Model V1
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260802130000_odm_shadow_read_model_v1.sql'
+      - 'scripts/odm-shadow-read-model-v1-contract.mjs'
+      - '.github/workflows/odm-shadow-read-model-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Shadow read model contract
+        run: node scripts/odm-shadow-read-model-v1-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck --if-present
+      - name: Production build
+        run: npm run build
