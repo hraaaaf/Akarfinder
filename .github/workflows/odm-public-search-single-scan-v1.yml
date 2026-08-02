@@ -1,0 +1,22 @@
+name: ODM Public Search Single Scan V1
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260802211500_odm_public_search_single_scan_v1.sql"
+      - "scripts/scrapers/__tests__/odm-public-search-single-scan-v1.test.ts"
+      - ".github/workflows/odm-public-search-single-scan-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/odm-public-search-single-scan-v1.test.ts
