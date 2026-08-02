@@ -5,7 +5,11 @@ declare
 begin
   select pg_get_functiondef('public.odm_10g_apply_discovery_coverage_v2(text)'::regprocedure)
   into v_definition;
-  v_definition := replace(v_definition, "display_decision='blocked'", "display_tier_v2='blocked'");
+  v_definition := replace(
+    v_definition,
+    $old$display_decision='blocked'$old$,
+    $new$display_tier_v2='blocked'$new$
+  );
   execute v_definition;
 end;
 $$;
