@@ -81,6 +81,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const initialSearchResult = await searchListings(resolvedQuery);
   scheduleOdmDualReadShadow(resolvedQuery, initialSearchResult);
 
+  const transactionType = normalizeTransactionType(resolvedQuery.transaction_type);
+  const city = resolvedQuery.city ?? "all";
+  const propertyType = resolvedQuery.property_type ?? "all";
+  const minBudget = pickFirst(params.min_price) ?? pickFirst(params.budget_min) ?? "";
+  const maxBudget = pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "";
+  const mreOnly = (pickFirst(params.mre) ?? "").toLowerCase() === "true";
+  const search = resolvedQuery.q ?? "";
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader compact />
@@ -91,13 +99,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <LightZillowSearchShell
           initialListings={initialSearchResult.listings}
           initialFilters={{
-            transactionType: normalizeTransactionType(resolvedQuery.transaction_type),
-            city: resolvedQuery.city ?? "all",
-            propertyType: resolvedQuery.property_type ?? "all",
-            minBudget: pickFirst(params.min_price) ?? pickFirst(params.budget_min) ?? "",
-            maxBudget: pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "",
-            mreOnly: (pickFirst(params.mre) ?? "").toLowerCase() === "true",
-            search: resolvedQuery.q ?? "",
+            transactionType,
+            city,
+            propertyType,
+            minBudget,
+            maxBudget,
+            mreOnly,
+            search,
           }}
         />
       </PropertySelectionProvider>
