@@ -1,0 +1,25 @@
+name: ODM Run Tables RLS Hardening V1
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260802164000_odm_run_tables_rls_hardening_v1.sql'
+      - 'scripts/validate-odm-run-tables-rls-hardening-v1.mjs'
+      - '.github/workflows/odm-run-tables-rls-hardening-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node scripts/validate-odm-run-tables-rls-hardening-v1.mjs
+      - run: npm ci
+      - run: npm run typecheck --if-present
+      - run: npm run build
