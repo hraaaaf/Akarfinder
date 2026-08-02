@@ -101,20 +101,21 @@ export async function GET(request: NextRequest) {
     max_surface: parseNumberParam(searchParams.get("max_surface")),
   };
 
-  try {
-    const legacyResult = await searchListings(query);
-    const stableKey = stableSearchKey(query);
+  const stableKey = stableSearchKey(query);
 
+  try {
     if (shouldServeOdmPublicCanary(stableKey)) {
       try {
         const odmPage = await searchPublicRepresentations(odmInput(query));
         return NextResponse.json(mapOdmPageToSearchResult(odmPage, query));
       } catch (error) {
         console.warn("[odm-public-canary:fallback]", error);
-        return NextResponse.json(legacyResult);
+        const legacyFallback = await searchListings(query);
+        return NextResponse.json(legacyFallback);
       }
     }
 
+    const legacyResult = await searchListings(query);
     scheduleOdmDualReadShadow(query, legacyResult);
     return NextResponse.json(legacyResult);
   } catch (error) {
