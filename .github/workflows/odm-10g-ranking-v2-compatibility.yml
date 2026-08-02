@@ -1,0 +1,30 @@
+name: ODM-10G Ranking V2 Compatibility
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260802113000_odm_10g_ranking_v2_compatibility.sql'
+      - 'scripts/odm-10g-ranking-v2-compatibility-contract.mjs'
+      - '.github/workflows/odm-10g-ranking-v2-compatibility.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: ODM-10G Ranking V2 compatibility contract
+        run: node scripts/odm-10g-ranking-v2-compatibility-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck --if-present
+      - name: Production build
+        run: npm run build
