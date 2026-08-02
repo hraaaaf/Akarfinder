@@ -1,42 +1,24 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { searchListings } from "@/lib/search";
-import { IntentHubV2 } from "@/components/intent/IntentHubV2";
-import { LegacyIntentHashRedirect } from "@/components/intent/LegacyIntentHashRedirect";
 
-export const dynamic = "force-dynamic";
-
-export const metadata = {
-  title: "Acheter au Maroc — AkarFinder",
-  description:
-    "Commencez votre recherche d'achat au Maroc puis affinez-la dans le moteur AkarFinder avec des niveaux d'information et des sources explicites.",
+export const metadata: Metadata = {
+  title: "Biens à vendre au Maroc — AkarFinder",
+  description: "Parcourez directement les biens à vendre au Maroc et affinez votre recherche par ville, type, prix et surface.",
+  alternates: { canonical: "/acheter" },
 };
 
 export default async function AcheterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ property_type?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
+  const target = new URLSearchParams({ transaction_type: "buy" });
 
-  if (params.property_type) {
-    const target = new URLSearchParams({ transaction_type: "buy" });
-    if (params.property_type !== "__search_all__") target.set("property_type", params.property_type);
-    redirect(`/search?${target.toString()}`);
+  for (const [key, rawValue] of Object.entries(params)) {
+    const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+    if (value && key !== "transaction_type") target.set(key, value);
   }
 
-  const searchResult = await searchListings({ transaction_type: "buy", limit: 6 }).catch(() => ({
-    listings: [],
-    total: 0,
-  }));
-
-  return (
-    <>
-      <LegacyIntentHashRedirect intent="buy" />
-      <IntentHubV2
-        intent="buy"
-        listings={searchResult.listings}
-        totalListings={searchResult.total > 0 ? searchResult.total : null}
-      />
-    </>
-  );
+  redirect(`/search?${target.toString()}`);
 }
