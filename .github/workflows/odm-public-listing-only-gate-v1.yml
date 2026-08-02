@@ -1,0 +1,24 @@
+name: ODM Public Listing Only Gate V1
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260802102000_odm_public_listing_only_gate_v1.sql"
+      - "scripts/scrapers/__tests__/odm-public-listing-only-gate-v1.test.ts"
+      - ".github/workflows/odm-public-listing-only-gate-v1.yml"
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/odm-public-listing-only-gate-v1.test.ts
+      - run: npx tsc --noEmit
+      - name: Enforce isolated scope
+        run: |
+          ! git diff origin/main...HEAD -- app/search app/api/search lib/search 2>/dev/null | grep -q .
