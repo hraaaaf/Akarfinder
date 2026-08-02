@@ -30,7 +30,7 @@ with candidates as (
       when v.normalized_city is null or v.normalized_property_type is null or v.normalized_intent is null then 'blocked'
       when v.canonical_url !~* '/property/' then 'blocked'
       else 'recoverable'
-    end as recovery_status,
+    end as coverage_recovery_status,
     case
       when v.resolved_display_policy <> 'canonical_link_only' then 'source_policy_not_canonical_link_only'
       when v.seed_provider <> 'public_sitemap' then 'not_public_sitemap_evidence'
@@ -41,21 +41,23 @@ with candidates as (
       when v.normalized_intent is null then 'intent_missing'
       when v.canonical_url !~* '/property/' then 'url_not_property_route'
       else 'canonical_link_public_sitemap_proof'
-    end as recovery_reason
+    end as coverage_recovery_reason
   from public.odm_display_policy_shadow_v2 v
   where v.normalized_city in ('Tanger','Kénitra')
 )
-select observation_id, seed_id, canonical_url, source_domain, seed_provider,
-       normalized_city, normalized_property_type, normalized_intent,
-       freshness_status_v2, resolved_display_policy, recovery_status, recovery_reason,
-       case when recovery_status='recoverable' then 'displayable_degraded' else 'blocked' end as recovered_display_tier,
-       case when recovery_status='recoverable'
+select c.observation_id, c.seed_id, c.canonical_url, c.source_domain, c.seed_provider,
+       c.normalized_city, c.normalized_property_type, c.normalized_intent,
+       c.freshness_status_v2, c.resolved_display_policy,
+       c.coverage_recovery_status as recovery_status,
+       c.coverage_recovery_reason as recovery_reason,
+       case when c.coverage_recovery_status='recoverable' then 'displayable_degraded' else 'blocked' end as recovered_display_tier,
+       case when c.coverage_recovery_status='recoverable'
          then array['canonical_link_only','public_sitemap_proof','limited_information']::text[]
-         else decision_reasons_v2 end as recovered_decision_reasons,
+         else c.decision_reasons_v2 end as recovered_decision_reasons,
        false as publication_eligible,
        false as ranking_eligible,
        'odm_displayable_coverage_recovery_v1'::text as recovery_version
-from candidates;
+from candidates c;
 
 revoke all on public.odm_displayable_coverage_recovery_shadow_v1 from anon, authenticated;
 grant select on public.odm_displayable_coverage_recovery_shadow_v1 to service_role;
