@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 // IntentHubV2 remains the documented predecessor; this route now hands off immediately to canonical Search.
+// LegacyIntentHashRedirect intent="rent" is preserved as a migration contract for historical card hashes.
 export const metadata: Metadata = {
   title: "Biens à louer au Maroc — AkarFinder",
   description: "Parcourez directement les biens à louer au Maroc et affinez votre recherche par ville, type, budget et surface.",
