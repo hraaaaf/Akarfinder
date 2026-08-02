@@ -1,0 +1,58 @@
+name: ODM Canary 5 Synthetic Traffic Certification V1
+
+on:
+  pull_request:
+    paths:
+      - "lib/odm/odm-public-canary.ts"
+      - "scripts/certify-odm-canary-5-synthetic-traffic-v1-1.mjs"
+      - "scripts/scrapers/__tests__/odm-public-canary-property-type-mapping-v1.test.ts"
+      - ".github/workflows/odm-canary-5-synthetic-traffic-certification-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "lib/odm/odm-public-canary.ts"
+      - "scripts/certify-odm-canary-5-synthetic-traffic-v1-1.mjs"
+      - "scripts/scrapers/__tests__/odm-public-canary-property-type-mapping-v1.test.ts"
+      - ".github/workflows/odm-canary-5-synthetic-traffic-certification-v1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/odm-public-canary-property-type-mapping-v1.test.ts
+      - run: npx tsc --noEmit
+
+  certify-production:
+    if: github.event_name != 'pull_request'
+    needs: contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Allow Vercel production deployment to become READY
+        run: sleep 120
+      - name: Run stratified controlled production campaign
+        env:
+          AKARFINDER_PRODUCTION_URL: https://akarfinder.vercel.app
+        run: node scripts/certify-odm-canary-5-synthetic-traffic-v1-1.mjs
+      - name: Upload certification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odm-canary-5-synthetic-traffic-v1-1
+          path: artifacts/odm-canary-5-synthetic-traffic-v1-1.json
+          if-no-files-found: error
+          retention-days: 30
