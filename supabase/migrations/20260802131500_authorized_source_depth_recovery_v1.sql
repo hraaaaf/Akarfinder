@@ -25,14 +25,17 @@ with authorized as (
 ), provider_stats as (
   select provider,count(*)::bigint as candidate_count
   from public.discovery_candidates group by provider
+), provider_json as (
+  select coalesce(jsonb_object_agg(provider,candidate_count),'{}'::jsonb) as counts,
+         not exists(select 1 from provider_stats where provider='public_sitemap') as public_sitemap_missing
+  from provider_stats
 )
-select a.*,
-       coalesce((select jsonb_object_agg(provider,candidate_count) from provider_stats),'{}'::jsonb) as discovery_provider_counts,
-       not exists(select 1 from provider_stats where provider='public_sitemap') as public_sitemap_provider_missing,
+select a.*,p.counts as discovery_provider_counts,
+       p.public_sitemap_missing as public_sitemap_provider_missing,
        false as publication_eligible,
        false as ranking_eligible,
        'odm_authorized_source_depth_recovery_v1'::text as recovery_version
-from authorized a;
+from authorized a cross join provider_json p;
 
 revoke all on public.odm_authorized_source_depth_recovery_shadow_v1 from anon,authenticated;
 grant select on public.odm_authorized_source_depth_recovery_shadow_v1 to service_role;
@@ -43,7 +46,9 @@ language sql
 stable
 set search_path=''
 as $$
-with s as (
+with base as (
+  select * from public.odm_authorized_source_depth_recovery_shadow_v1
+), s as (
   select count(*) as authorized_rows,
          count(*) filter(where price_recovery_status='recoverable_price') as safe_price_promotions,
          count(*) filter(where price_recovery_status='blocked_not_trusted') as blocked_not_trusted,
@@ -52,26 +57,27 @@ with s as (
          count(*) filter(where price_recovery_status='blocked_value_bounds') as blocked_value_bounds,
          count(*) filter(where normalized_price_mad is not null) as existing_price_rows,
          count(*) filter(where normalized_surface_m2 is not null) as existing_surface_rows,
-         bool_and(public_sitemap_provider_missing) as public_sitemap_provider_missing,
-         max(discovery_provider_counts) as discovery_provider_counts
-  from public.odm_authorized_source_depth_recovery_shadow_v1
+         bool_and(public_sitemap_provider_missing) as public_sitemap_provider_missing
+  from base
+), p as (
+  select discovery_provider_counts from base limit 1
 )
 select jsonb_build_object(
   'audit_version','odm_authorized_source_depth_recovery_v1',
   'metrics',jsonb_build_object(
-    'authorized_rows',authorized_rows,
-    'safe_price_promotions',safe_price_promotions,
-    'blocked_not_trusted',blocked_not_trusted,
-    'blocked_intent_missing',blocked_intent_missing,
-    'blocked_intent_mismatch',blocked_intent_mismatch,
-    'blocked_value_bounds',blocked_value_bounds,
-    'existing_price_rows',existing_price_rows,
-    'existing_surface_rows',existing_surface_rows,
-    'discovery_provider_counts',discovery_provider_counts
+    'authorized_rows',s.authorized_rows,
+    'safe_price_promotions',s.safe_price_promotions,
+    'blocked_not_trusted',s.blocked_not_trusted,
+    'blocked_intent_missing',s.blocked_intent_missing,
+    'blocked_intent_mismatch',s.blocked_intent_mismatch,
+    'blocked_value_bounds',s.blocked_value_bounds,
+    'existing_price_rows',s.existing_price_rows,
+    'existing_surface_rows',s.existing_surface_rows,
+    'discovery_provider_counts',p.discovery_provider_counts
   ),
   'gates',jsonb_build_object(
-    'no_untrusted_price_promoted',safe_price_promotions=0,
-    'public_sitemap_acquisition_missing',public_sitemap_provider_missing,
+    'no_untrusted_price_promoted',s.safe_price_promotions=0,
+    'public_sitemap_acquisition_missing',s.public_sitemap_provider_missing,
     'publication_remains_disabled',true,
     'ranking_remains_disabled',true,
     'public_activation_disabled',true
@@ -79,7 +85,7 @@ select jsonb_build_object(
   'next_action','persist authorized public_sitemap acquisition before further price/surface promotion',
   'shadow_only',true,
   'public_activation',false
-) from s;
+) from s cross join p;
 $$;
 
 revoke all on function public.odm_authorized_source_depth_recovery_report_v1() from public,anon,authenticated;
