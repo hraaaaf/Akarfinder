@@ -1,0 +1,18 @@
+name: ODM Public Search PLpgSQL Custom Plan V2
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260802214500_odm_public_search_plpgsql_custom_plan_v2.sql"
+      - "scripts/scrapers/__tests__/odm-public-search-plpgsql-custom-plan-v2.test.ts"
+      - ".github/workflows/odm-public-search-plpgsql-custom-plan-v2.yml"
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node --test --experimental-strip-types scripts/scrapers/__tests__/odm-public-search-plpgsql-custom-plan-v2.test.ts
