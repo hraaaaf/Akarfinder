@@ -26,12 +26,13 @@ export function shouldServeOdmPublicCanary(stableKey: string, env: NodeJS.Proces
 }
 
 function propertyType(value?: string): ListingPropertyType {
-  const normalized = value?.toLowerCase();
+  const normalized = value?.trim().toLowerCase();
   if (normalized?.includes("villa")) return "Villa";
-  if (normalized?.includes("terrain")) return "Terrain";
+  if (normalized?.includes("terrain") || normalized === "land") return "Terrain";
   if (normalized?.includes("studio")) return "Studio";
-  if (normalized?.includes("bureau")) return "Bureau";
-  if (normalized?.includes("maison")) return "Maison";
+  if (normalized?.includes("bureau") || normalized === "office") return "Bureau";
+  if (normalized?.includes("maison") || normalized === "house") return "Maison";
+  if (normalized?.includes("appartement") || normalized === "apartment" || normalized === "flat") return "Appartement";
   return "Appartement";
 }
 
