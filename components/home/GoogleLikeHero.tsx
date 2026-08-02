@@ -6,10 +6,7 @@ const HERO_MOBILE = "/images/hero/akar-residence-sunset-mobile.webp";
 
 export function GoogleLikeHero() {
   return (
-    <section
-      id="recherche"
-      className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[#061027]"
-    >
+    <section id="recherche" className="relative flex min-h-[68dvh] items-center overflow-hidden bg-[#061027] sm:min-h-[72dvh]">
       <picture>
         <source media="(max-width: 639px)" srcSet={HERO_MOBILE} />
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -23,40 +20,29 @@ export function GoogleLikeHero() {
         />
       </picture>
 
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(3,16,31,0.58)] via-[rgba(3,16,31,0.38)] to-[rgba(6,27,51,0.18)] sm:hidden" />
-        <div className="absolute inset-x-0 top-0 h-[38%] bg-gradient-to-b from-[rgba(3,16,31,0.62)] via-[rgba(3,16,31,0.30)] to-transparent sm:hidden" />
-        <div className="absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-[rgba(6,27,51,0.42)] to-transparent sm:hidden" />
-        <div className="absolute inset-x-0 top-0 hidden h-[46%] bg-gradient-to-b from-[rgba(3,16,31,0.66)] via-[rgba(3,16,31,0.42)] to-transparent sm:block" />
-        <div className="absolute inset-x-0 bottom-0 hidden h-[42%] bg-gradient-to-t from-[rgba(3,16,31,0.52)] to-transparent sm:block" />
-        <div
-          className="absolute inset-0 hidden sm:block"
-          style={{
-            background:
-              "radial-gradient(ellipse 68% 56% at 50% 44%, rgba(3,16,31,0.52) 0%, transparent 72%)",
-          }}
-        />
-        <div
-          className="absolute inset-0 sm:hidden"
-          style={{
-            background:
-              "radial-gradient(ellipse 92% 58% at 50% 40%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.03) 58%, transparent 76%)",
-          }}
-        />
-        <div className="absolute inset-0 bg-[#061027]/10 sm:bg-[#061027]/14" />
-      </div>
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(3,16,31,0.82)_0%,rgba(3,16,31,0.58)_48%,rgba(3,16,31,0.22)_100%)]" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#061027]/55 via-transparent to-[#061027]/25" aria-hidden="true" />
 
-      <Container className="relative z-10 w-full px-5 pb-14 pt-[calc(env(safe-area-inset-top)+6rem)] sm:pb-24 sm:pt-36 lg:pb-28 lg:pt-44">
-        <div className="mx-auto flex max-w-[920px] flex-col items-center text-center">
-          <h1 className="max-w-[880px] text-[2.15rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.30)] sm:text-[4rem] lg:text-[5rem]">
-            1er moteur de recherche immobilier au Maroc
+      <Container className="relative z-10 w-full px-5 pb-12 pt-[calc(env(safe-area-inset-top)+7rem)] sm:pb-16 sm:pt-36">
+        <div className="max-w-[860px]">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-blue-200 sm:text-[12px]">
+            Moteur immobilier multi-sources
+          </p>
+          <h1 className="mt-4 max-w-[820px] text-[2.45rem] font-extrabold leading-[1.01] tracking-[-0.05em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.30)] sm:text-[4.25rem] lg:text-[5rem]">
+            Toutes les annonces du Maroc. Une seule recherche.
           </h1>
-          <p className="sr-only">
-            Moteur de recherche immobilier. Comprenez le quartier et consultez les sources originales.
+          <p className="mt-4 max-w-2xl text-[14px] font-medium leading-6 text-white/82 sm:text-[17px] sm:leading-7">
+            Cherchez un bien, filtrez les résultats et ouvrez la source originale sans perdre du temps entre plusieurs sites.
           </p>
 
-          <div className="mt-8 w-full sm:mt-10">
+          <div className="mt-7 w-full max-w-[860px] sm:mt-9">
             <SearchEntryOrchestrator />
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[11.5px] font-bold text-white/78 sm:text-[12.5px]">
+            <span>Plusieurs sources</span>
+            <span>Doublons regroupés</span>
+            <span>Source originale accessible</span>
           </div>
         </div>
       </Container>
