@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+// NeufPageShellV2 remains the documented predecessor; buyers now reach available results immediately.
 export const metadata: Metadata = {
   title: "Immobilier neuf au Maroc — AkarFinder",
   description: "Parcourez directement les programmes et biens neufs disponibles au Maroc.",
