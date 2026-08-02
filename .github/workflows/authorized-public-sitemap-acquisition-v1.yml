@@ -1,0 +1,18 @@
+name: ODM Authorized Public Sitemap Acquisition V1
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260802134500_authorized_public_sitemap_acquisition_v1.sql'
+      - 'scripts/ci/authorized-public-sitemap-acquisition-v1-contract.mjs'
+      - '.github/workflows/authorized-public-sitemap-acquisition-v1.yml'
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/ci/authorized-public-sitemap-acquisition-v1-contract.mjs
