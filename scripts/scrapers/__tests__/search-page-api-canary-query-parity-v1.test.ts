@@ -6,7 +6,7 @@ import {
   buildSearchStableKey,
 } from "../../../lib/search/search-request-query.ts";
 
-const representativeParams = {
+const representativeParams: Record<string, string> = {
   city: "Casablanca",
   property_type: "apartment",
   transaction_type: "sale",
@@ -19,7 +19,7 @@ const representativeParams = {
 };
 
 function readRecord(name: string): string | undefined {
-  return representativeParams[name as keyof typeof representativeParams];
+  return representativeParams[name];
 }
 
 test("record and URLSearchParams readers produce an identical public search query", () => {
@@ -49,11 +49,12 @@ test("shared parser keeps safe defaults and bounds", () => {
   assert.equal(empty.limit, 50);
   assert.equal(empty.offset, 0);
 
-  const bounded = buildSearchRequestQuery((name) => ({
+  const boundedParams: Record<string, string> = {
     limit: "999",
     offset: "-7",
     cursor: "12.9",
-  })[name]);
+  };
+  const bounded = buildSearchRequestQuery((name) => boundedParams[name]);
   assert.equal(bounded.limit, 100);
   assert.equal(bounded.offset, 0);
   assert.equal(bounded.cursor, 12);
