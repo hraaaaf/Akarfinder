@@ -16,7 +16,7 @@ const OPTION_A_TYPES = ["Appartement", "Villa", "Terrain", "Studio", "Riad", "Bu
 
 test("Option A taxonomy exposes the six approved property categories", () => {
   for (const propertyType of OPTION_A_TYPES) {
-    assert.match(presentation, new RegExp(`value: \\"${propertyType}\\"`));
+    assert.match(presentation, new RegExp(`value: "${propertyType}"`));
   }
   assert.match(presentation, /export const OPTION_A_PROPERTY_TYPES/);
 });
