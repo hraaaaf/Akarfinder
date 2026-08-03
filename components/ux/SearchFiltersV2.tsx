@@ -47,40 +47,16 @@ function FilterFields({
       <div className="grid gap-2">
         <span className="text-sm font-extrabold">Prix (DH)</span>
         <div className="grid grid-cols-2 gap-2">
-          <input
-            name="min_price"
-            inputMode="numeric"
-            defaultValue={minPrice ?? ""}
-            placeholder="Min"
-            className={field}
-          />
-          <input
-            name="max_price"
-            inputMode="numeric"
-            defaultValue={maxPrice ?? ""}
-            placeholder="Max"
-            className={field}
-          />
+          <input name="min_price" inputMode="numeric" defaultValue={minPrice ?? ""} placeholder="Min" className={field} />
+          <input name="max_price" inputMode="numeric" defaultValue={maxPrice ?? ""} placeholder="Max" className={field} />
         </div>
       </div>
 
       <div className="grid gap-2">
         <span className="text-sm font-extrabold">Surface (m²)</span>
         <div className="grid grid-cols-2 gap-2">
-          <input
-            name="min_surface"
-            inputMode="numeric"
-            defaultValue={minSurface ?? ""}
-            placeholder="Min"
-            className={field}
-          />
-          <input
-            name="max_surface"
-            inputMode="numeric"
-            defaultValue={maxSurface ?? ""}
-            placeholder="Max"
-            className={field}
-          />
+          <input name="min_surface" inputMode="numeric" defaultValue={minSurface ?? ""} placeholder="Min" className={field} />
+          <input name="max_surface" inputMode="numeric" defaultValue={maxSurface ?? ""} placeholder="Max" className={field} />
         </div>
       </div>
 
@@ -111,10 +87,7 @@ function FilterFields({
   );
 }
 
-export function SearchFiltersV2({
-  total,
-  ...values
-}: SearchFilterValues & { total: number }) {
+export function SearchFiltersV2({ total, ...values }: SearchFilterValues & { total: number }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -124,14 +97,10 @@ export function SearchFiltersV2({
           <form action="/search" className="space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[.14em] text-blue-700">
-                  Affiner
-                </p>
+                <p className="text-[10px] font-black uppercase tracking-[.14em] text-blue-700">Affiner</p>
                 <h2 className="mt-1 text-lg font-black">Filtres</h2>
               </div>
-              <a href="/search?per_page=10" className="text-xs font-extrabold text-blue-700">
-                Réinitialiser
-              </a>
+              <a href="/search?per_page=10" className="text-xs font-extrabold text-blue-700">Réinitialiser</a>
             </div>
             <FilterFields {...values} />
             <button className="h-11 w-full rounded-xl bg-blue-700 text-sm font-extrabold text-white shadow-sm transition hover:bg-blue-800">
@@ -144,7 +113,7 @@ export function SearchFiltersV2({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-5 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full bg-blue-700 px-5 py-3 text-sm font-extrabold text-white shadow-xl lg:hidden"
+        className="fixed bottom-5 right-4 z-30 flex items-center gap-2 rounded-full bg-blue-700 px-4 py-3 text-sm font-extrabold text-white shadow-xl lg:hidden"
       >
         <SlidersHorizontal size={17} />
         Filtres
@@ -159,17 +128,10 @@ export function SearchFiltersV2({
             <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200" />
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[.14em] text-blue-700">
-                  Affiner les résultats
-                </p>
+                <p className="text-[10px] font-black uppercase tracking-[.14em] text-blue-700">Affiner les résultats</p>
                 <h2 className="mt-1 text-xl font-black">Filtres</h2>
               </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-label="Fermer les filtres"
-                className="grid h-9 w-9 place-items-center rounded-full bg-slate-100"
-              >
+              <button type="button" onClick={() => setOpen(false)} aria-label="Fermer les filtres" className="grid h-9 w-9 place-items-center rounded-full bg-slate-100">
                 <X size={18} />
               </button>
             </div>
