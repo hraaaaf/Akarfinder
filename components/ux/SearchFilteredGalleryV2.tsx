@@ -261,9 +261,6 @@ export function SearchFilteredGalleryV2({
   perPage,
   insight,
 }: SearchGalleryProps) {
-  // The server search layer is the publication boundary. It already returns
-  // the canonical result set for the selected lane, so the UI must not apply a
-  // second, divergent eligibility filter that can hide legitimate results.
   const visible = listings;
   const leadListings = visible.slice(0, 4);
   const remainingListings = visible.slice(4);
@@ -340,7 +337,7 @@ export function SearchFilteredGalleryV2({
                   </h1>
                   <p className="mt-2 text-sm font-semibold text-slate-500">
                     {total > 0
-                      ? `Annonces ${formatNumber(rangeStart)} à ${formatNumber(rangeEnd)} · triées par pertinence`
+                      ? `Annonces ${formatNumber(rangeStart)} à ${formatNumber(rangeEnd)} · meilleur score AkarFinder en premier`
                       : "Aucune annonce correspondant exactement à ces critères"}
                   </p>
                 </div>
