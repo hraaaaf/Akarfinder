@@ -5,7 +5,9 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { AkarInfoPassportCard } from "@/components/akarinfo/AkarInfoPassportCard";
 import { SourceBadge } from "@/components/badges/SourceBadge";
+import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
 import { buildAkarInfoPassportForGatewayResult } from "@/lib/akarinfo/akarinfo-passport";
+import { isListingPropertyType } from "@/lib/property-types/presentation";
 import type { PublicResultSimilaritySummary } from "@/lib/public-result-similarity/types";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
@@ -32,7 +34,11 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
   const sanitizedSnippet = sanitizeVisibleText(result.snippet);
   const sanitizedDisplayUrl = sanitizeVisibleText(result.display_url);
   const showThumbnail = THUMBNAILS_ENABLED && result.can_show_thumbnail && !!result.thumbnail_url;
+  const safeFallbackPropertyType = isListingPropertyType(result.normalized_property_type)
+    ? result.normalized_property_type
+    : null;
   const [thumbError, setThumbError] = useState(false);
+  const showFallback = (!showThumbnail || thumbError) && safeFallbackPropertyType !== null;
 
   return (
     <Link
@@ -56,6 +62,13 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
             Offre observée
           </span>
         </div>
+      ) : showFallback ? (
+        <div className="relative h-[120px] w-full flex-shrink-0 overflow-hidden bg-white sm:h-[130px]">
+          <PropertyTypeArtwork kind={safeFallbackPropertyType} className="h-full w-full transition-transform duration-300 group-hover:scale-[1.03]" />
+          <span className="absolute bottom-2 left-2 inline-flex items-center rounded-full bg-black/65 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white/95 backdrop-blur-sm">
+            Visuel illustratif
+          </span>
+        </div>
       ) : null}
 
       <div className="flex flex-1 flex-col p-4 sm:p-5">
@@ -64,7 +77,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
             <span className="truncate text-[10px] font-bold uppercase tracking-wider text-muted-foreground dark:text-white/50">
               {result.source_name}
             </span>
-            {!showThumbnail || thumbError ? (
+            {!showThumbnail && !showFallback || thumbError && !showFallback ? (
               <span className="inline-flex flex-shrink-0 items-center rounded-full border border-border/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground dark:border-white/10 dark:text-white/50">
                 Offre observée
               </span>

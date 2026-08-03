@@ -9,8 +9,8 @@ import { SourceAttribution } from "@/components/badges/SourceAttribution";
 import { SourceBadge, deriveBadge } from "@/components/badges/SourceBadge";
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
-import { ListingVisual } from "@/components/listings/ListingVisual";
 import { PricePositionBadge } from "@/components/price-position/PricePositionBadge";
+import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
 import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { buildAkarInfoPassportForListing } from "@/lib/akarinfo/akarinfo-passport";
@@ -79,7 +79,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
       className={`group flex flex-col overflow-hidden rounded-2xl border bg-card backdrop-blur-sm transition duration-300 hover:-translate-y-1 dark:bg-white/[0.045] ${active ? "border-bronze-500/70 shadow-[0_26px_60px_rgba(155,120,56,0.28)] ring-2 ring-bronze-500/20" : "border-border/15 shadow-[0_14px_40px_rgba(2,10,24,0.15)] hover:border-bronze-500/40"}`}
     >
       <Link href={resultHref} target={resultTarget} rel={resultRel} className="block" aria-label={observedExternal ? `Voir la source originale ${listing.title}` : `Voir le bien ${listing.title}`}>
-        <div className="relative h-[220px] overflow-hidden">
+        <div className="relative h-[220px] overflow-hidden bg-white">
           <div className="absolute inset-0 transition duration-500 group-hover:scale-[1.04]">
             {imageMode === "db_provider_thumbnail" ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -87,7 +87,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             ) : imageMode !== "fallback_visual" ? (
               <Image src={listing.main_image_url!} alt={listing.title} fill className="object-cover" sizes="(max-width: 640px) 100vw, 420px" />
             ) : (
-              <ListingVisual listing={listing} className="h-full w-full" />
+              <PropertyTypeArtwork kind={listing.property_type} className="h-full w-full" />
             )}
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-[#03101f]/80 via-transparent to-transparent" />

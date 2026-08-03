@@ -18,6 +18,7 @@ export type ImageFallbackType =
   | "studio"
   | "terrain"
   | "bureau"
+  | "riad"
   | "new_project"
   | "generic";
 
@@ -43,6 +44,7 @@ export type ListingPropertyType =
   | "Villa"
   | "Terrain"
   | "Studio"
+  | "Riad"
   | "Bureau"
   | "Maison";
 
