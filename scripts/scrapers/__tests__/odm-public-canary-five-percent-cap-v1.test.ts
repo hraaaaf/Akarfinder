@@ -4,8 +4,8 @@ import test from "node:test";
 
 const source = readFileSync("lib/odm/odm-public-canary.ts", "utf8");
 
-test("public ODM Canary safety cap permits the approved 5 percent ramp", () => {
-  assert.match(source, /ODM_PUBLIC_CANARY_MAX_PERCENT\s*=\s*5\s*;/);
+test("public ODM Canary safety cap permits the approved 10 percent ramp", () => {
+  assert.match(source, /ODM_PUBLIC_CANARY_MAX_PERCENT\s*=\s*10\s*;/);
 });
 
 test("public ODM Canary remains fail-closed behind enabled, approved and stop switches", () => {

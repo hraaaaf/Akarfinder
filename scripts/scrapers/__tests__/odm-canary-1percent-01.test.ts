@@ -9,12 +9,12 @@ import {
 
 test("fails closed unless all approval flags are present", () => {
   assert.equal(shouldServeOdmPublicCanary("x", {}), false);
-  assert.equal(shouldServeOdmPublicCanary("x", { ODM_PUBLIC_CANARY_ENABLED: "true", ODM_PUBLIC_CANARY_PERCENT: "5" }), false);
+  assert.equal(shouldServeOdmPublicCanary("x", { ODM_PUBLIC_CANARY_ENABLED: "true", ODM_PUBLIC_CANARY_PERCENT: "10" }), false);
 });
 
-test("accepts the approved five percent ramp and rejects values above it", () => {
-  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "5" }), 5);
-  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "5.01" }), 0);
+test("accepts the approved ten percent ramp and rejects values above it", () => {
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "10" }), 10);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "10.01" }), 0);
 });
 
 test("stop flag overrides approval", () => {
@@ -22,7 +22,7 @@ test("stop flag overrides approval", () => {
     ODM_PUBLIC_CANARY_ENABLED: "true",
     ODM_PUBLIC_CANARY_APPROVED: "true",
     ODM_PUBLIC_CANARY_STOP: "true",
-    ODM_PUBLIC_CANARY_PERCENT: "5",
+    ODM_PUBLIC_CANARY_PERCENT: "10",
   }), false);
 });
 

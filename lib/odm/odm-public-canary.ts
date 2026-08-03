@@ -3,7 +3,7 @@ import type { Listing, ListingPropertyType, ListingTransactionType } from "@/lib
 import type { SearchQuery, SearchResult } from "@/lib/search";
 import type { PublicSearchPage } from "@/lib/search-gateway/public-search-cursor";
 
-export const ODM_PUBLIC_CANARY_MAX_PERCENT = 5;
+export const ODM_PUBLIC_CANARY_MAX_PERCENT = 10;
 
 function explicitTrue(value: string | undefined): boolean { return value === "true"; }
 
