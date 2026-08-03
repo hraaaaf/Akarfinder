@@ -14,7 +14,10 @@ import {
 } from "@/lib/odm/odm-public-canary";
 import { searchListings, type SearchQuery, type SearchResult } from "@/lib/search";
 import { buildSearchPageQuery } from "@/lib/search/search-page-query";
-import { searchPublicRepresentations } from "@/lib/search-gateway/public-search-cursor";
+import {
+  searchPublicRepresentations,
+  type PublicSearchPage,
+} from "@/lib/search-gateway/public-search-cursor";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -61,6 +64,10 @@ function odmInput(query: SearchQuery) {
 }
 
 function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResult): void {
+  // The v1 shadow reader compares one cursor page. Avoid emitting misleading
+  // divergence telemetry for a numeric page that starts after the first result.
+  if ((query.offset ?? 0) > 0) return;
+
   const stableKey = stableSearchKey(query);
   if (!shouldRunOdmDualRead(stableKey)) return;
 
@@ -73,13 +80,54 @@ function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResul
   });
 }
 
+async function searchOdmNumericPage(query: SearchQuery): Promise<SearchResult> {
+  const limit = Math.max(1, Math.min(Math.trunc(query.limit ?? 10), 100));
+  const offset = Math.max(0, Math.trunc(query.offset ?? 0));
+  let cursor: string | undefined;
+  let remainingOffset = offset;
+  let totalCount = 0;
+  const results: PublicSearchPage["results"] = [];
+
+  while (results.length < limit) {
+    const needed = limit - results.length;
+    const batchLimit = Math.min(100, Math.max(needed, remainingOffset + needed));
+    const page = await searchPublicRepresentations({
+      ...odmInput(query),
+      limit: batchLimit,
+      cursor,
+    });
+
+    totalCount = page.total_count;
+    if (!page.results.length) break;
+
+    const start = Math.min(remainingOffset, page.results.length);
+    remainingOffset = Math.max(0, remainingOffset - page.results.length);
+
+    if (remainingOffset === 0 && start < page.results.length) {
+      results.push(...page.results.slice(start, start + needed));
+    }
+
+    if (!page.has_more || !page.next_cursor) break;
+    cursor = page.next_cursor;
+  }
+
+  const page: PublicSearchPage = {
+    results,
+    results_count: results.length,
+    total_count: totalCount,
+    has_more: offset + results.length < totalCount,
+    next_cursor: null,
+  };
+
+  return mapOdmPageToSearchResult(page, { ...query, limit, offset });
+}
+
 async function searchVisibleInitialResult(query: SearchQuery): Promise<SearchResult> {
   const stableKey = stableSearchKey(query);
 
   if (shouldServeOdmPublicCanary(stableKey)) {
     try {
-      const odmPage = await searchPublicRepresentations(odmInput(query));
-      return mapOdmPageToSearchResult(odmPage, query);
+      return await searchOdmNumericPage(query);
     } catch (error) {
       console.warn("[search-page:odm-public-canary:fallback]", error);
       return searchListings(query);
@@ -97,6 +145,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const initialSearchResult = await searchVisibleInitialResult(resolvedQuery);
   const city = resolvedQuery.city;
   const propertyType = resolvedQuery.property_type;
+  const perPage = resolvedQuery.limit ?? 10;
+  const page = Math.floor((resolvedQuery.offset ?? 0) / perPage) + 1;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -113,6 +163,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           maxPrice={resolvedQuery.max_price}
           minSurface={resolvedQuery.min_surface}
           maxSurface={resolvedQuery.max_surface}
+          page={page}
+          perPage={perPage}
           insight={<SearchPriceExplorerDock />}
         />
         <SearchCompareDock />
