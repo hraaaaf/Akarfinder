@@ -41,11 +41,20 @@ function publicValue(value?: string): string | undefined {
 }
 
 export function buildSearchRequestQuery(read: SearchParamReader): SearchQuery {
+  const explicitOffset = read("offset");
+  const page = parseBoundedInteger(read("page"), 1, 1, Number.MAX_SAFE_INTEGER);
+  const perPage = parseBoundedInteger(read("per_page"), 0, 1, 100);
+  const derivedOffset = perPage > 0 ? (page - 1) * perPage : 0;
   const query: SearchQuery = {
     // Keep the established first public tranche: the page shell, SSR and API
     // must all hash and serve the same 100-result request when no limit is sent.
     limit: parseBoundedInteger(read("limit"), 100, 1, 100),
-    offset: parseBoundedInteger(read("offset"), 0, 0, Number.MAX_SAFE_INTEGER),
+    // Explicit offsets remain authoritative. Public page/per_page links are an
+    // equivalent readable representation and resolve to the same stable key.
+    offset:
+      explicitOffset !== undefined
+        ? parseBoundedInteger(explicitOffset, 0, 0, Number.MAX_SAFE_INTEGER)
+        : derivedOffset,
   };
 
   const q = nonEmpty(read("q"));
