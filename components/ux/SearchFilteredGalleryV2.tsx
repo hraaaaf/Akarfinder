@@ -271,7 +271,18 @@ export function SearchFilteredGalleryV2({
       </form>
 
       <div className="mx-auto grid max-w-[1280px] min-h-[calc(100vh-132px)] lg:grid-cols-[300px_minmax(0,1fr)]">
-        <SearchFiltersV2 total={total} perPage={perPage} {...values} />
+        <SearchFiltersV2
+          total={total}
+          query={query}
+          city={city}
+          propertyType={propertyType}
+          transactionType={transactionType}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          minSurface={minSurface}
+          maxSurface={maxSurface}
+          perPage={perPage}
+        />
 
         <section className="min-w-0 p-4 sm:p-6 lg:p-7">
           <div className="mx-auto max-w-[940px]">
