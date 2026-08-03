@@ -6,6 +6,11 @@ type SearchPageParams = Record<string, string | string[] | undefined>;
 export const SEARCH_PAGE_SIZES = [10, 20, 50] as const;
 export const DEFAULT_SEARCH_PAGE_SIZE = 10;
 
+export type SearchPagination = {
+  page: number;
+  perPage: number;
+};
+
 function pickFirst(value: string | string[] | undefined) {
   if (Array.isArray(value)) return value[0];
   return value;
@@ -41,14 +46,22 @@ function searchPageSize(raw: string | undefined): number {
     : DEFAULT_SEARCH_PAGE_SIZE;
 }
 
+export function resolveSearchPagination(searchParams: SearchPageParams): SearchPagination {
+  return {
+    page: positiveInteger(pickFirst(searchParams.page), 1),
+    perPage: searchPageSize(
+      pickFirst(searchParams.per_page) ?? pickFirst(searchParams.limit),
+    ),
+  };
+}
+
 export function buildSearchPageQuery(searchParams: SearchPageParams): SearchQuery {
-  const limit = searchPageSize(
-    pickFirst(searchParams.per_page) ?? pickFirst(searchParams.limit),
-  );
-  const page = positiveInteger(pickFirst(searchParams.page), 1);
+  const { page, perPage } = resolveSearchPagination(searchParams);
   const query: SearchQuery = {
-    limit,
-    offset: (page - 1) * limit,
+    // Keep the canonical first search tranche deep enough for ranking and
+    // coverage. The UI slices this result to the selected 10/20/50 page size.
+    limit: 100,
+    offset: (page - 1) * perPage,
   };
 
   const search = pickFirst(searchParams.q);
