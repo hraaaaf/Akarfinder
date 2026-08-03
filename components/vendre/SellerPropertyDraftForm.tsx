@@ -3,9 +3,15 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Home } from "lucide-react";
+import { PropertyTypeVisualSelector } from "@/components/property-types/PropertyTypeVisualSelector";
 import type { LeadApiResponse } from "@/lib/leads/types";
+import type { ListingPropertyType } from "@/lib/listings/types";
+import { OPTION_A_PROPERTY_TYPES } from "@/lib/property-types/presentation";
 
-const PROPERTY_TYPES = ["Appartement", "Villa", "Maison", "Studio", "Terrain", "Bureau"] as const;
+const PROPERTY_TYPES: readonly ListingPropertyType[] = [
+  ...OPTION_A_PROPERTY_TYPES.map((item) => item.value),
+  "Maison",
+];
 const CONDITIONS = ["Bon état", "À rafraîchir", "À rénover", "Neuf / récent"] as const;
 
 type FormState = {
@@ -13,7 +19,7 @@ type FormState = {
   name: string;
   city: string;
   neighborhood: string;
-  propertyType: string;
+  propertyType: "" | ListingPropertyType;
   surface: string;
   bedrooms: string;
   condition: string;
@@ -39,8 +45,15 @@ const INITIAL: FormState = {
 const inputClass = "mt-2 w-full rounded-xl border border-[#d8c8a3] bg-white px-4 py-3 text-sm text-deepblue outline-none transition focus:border-deepblue focus:ring-2 focus:ring-deepblue/10";
 const labelClass = "block text-[11px] font-extrabold uppercase tracking-[0.1em] text-gray-500";
 
-export function SellerPropertyDraftForm() {
-  const [form, setForm] = useState<FormState>(INITIAL);
+export function SellerPropertyDraftForm({
+  initialPropertyType,
+}: {
+  initialPropertyType?: ListingPropertyType;
+}) {
+  const [form, setForm] = useState<FormState>(() => ({
+    ...INITIAL,
+    propertyType: initialPropertyType ?? "",
+  }));
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; error?: string } | null>(null);
 
@@ -117,7 +130,7 @@ export function SellerPropertyDraftForm() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-4xl">
       <div className="flex items-center gap-3">
         <span className="grid h-11 w-11 place-items-center rounded-2xl bg-deepblue text-bronze-400"><Home size={20} aria-hidden="true" /></span>
         <div>
@@ -126,7 +139,7 @@ export function SellerPropertyDraftForm() {
         </div>
       </div>
 
-      <p className="mt-4 text-sm leading-6 text-gray-600">
+      <p className="mt-4 max-w-2xl text-sm leading-6 text-gray-600">
         Les informations saisies restent des faits déclarés par vous. Elles sont stockées séparément des futurs calculs AkarFinder et ne deviennent jamais vérifiées automatiquement.
       </p>
 
@@ -136,22 +149,29 @@ export function SellerPropertyDraftForm() {
         </p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <PropertyTypeVisualSelector
+              value={form.propertyType}
+              onChange={(propertyType) => set("propertyType", propertyType === "all" ? "" : propertyType)}
+              ariaLabel="Quel type de bien souhaitez-vous vendre ?"
+            />
+            <label className={`${labelClass} mt-2 max-w-xs`}>Liste complète
+              <select className={inputClass} value={form.propertyType} onChange={(e) => set("propertyType", e.target.value as FormState["propertyType"])}>
+                <option value="">Sélectionner…</option>
+                {PROPERTY_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+              </select>
+            </label>
+          </div>
+
           <label className={labelClass}>Téléphone<input className={inputClass} value={form.phone} onChange={(e) => set("phone", e.target.value)} /></label>
           <label className={labelClass}>Nom <span className="normal-case font-normal">(optionnel)</span><input className={inputClass} value={form.name} onChange={(e) => set("name", e.target.value)} /></label>
           <label className={labelClass}>Ville<input className={inputClass} value={form.city} onChange={(e) => set("city", e.target.value)} /></label>
           <label className={labelClass}>Quartier <span className="normal-case font-normal">(optionnel)</span><input className={inputClass} value={form.neighborhood} onChange={(e) => set("neighborhood", e.target.value)} /></label>
-
-          <label className={labelClass}>Type de bien
-            <select className={inputClass} value={form.propertyType} onChange={(e) => set("propertyType", e.target.value)}>
-              <option value="">Sélectionner…</option>
-              {PROPERTY_TYPES.map((type) => <option key={type}>{type}</option>)}
-            </select>
-          </label>
           <label className={labelClass}>Surface (m²)<input type="number" min="1" className={inputClass} value={form.surface} onChange={(e) => set("surface", e.target.value)} /></label>
           <label className={labelClass}>Chambres <span className="normal-case font-normal">(optionnel)</span><input type="number" min="0" className={inputClass} value={form.bedrooms} onChange={(e) => set("bedrooms", e.target.value)} /></label>
           <label className={labelClass}>Prix souhaité (DH) <span className="normal-case font-normal">(optionnel)</span><input type="number" min="0" className={inputClass} value={form.price} onChange={(e) => set("price", e.target.value)} /></label>
 
-          <label className={`${labelClass} sm:col-span-2`}>État déclaré <span className="normal-case font-normal">(optionnel)</span>
+          <label className={labelClass}>État déclaré <span className="normal-case font-normal">(optionnel)</span>
             <select className={inputClass} value={form.condition} onChange={(e) => set("condition", e.target.value)}>
               <option value="">Non renseigné</option>
               {CONDITIONS.map((condition) => <option key={condition}>{condition}</option>)}
