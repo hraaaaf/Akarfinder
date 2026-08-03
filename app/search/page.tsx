@@ -13,7 +13,10 @@ import {
   shouldServeOdmPublicCanary,
 } from "@/lib/odm/odm-public-canary";
 import { searchListings, type SearchQuery, type SearchResult } from "@/lib/search";
-import { buildSearchPageQuery } from "@/lib/search/search-page-query";
+import {
+  buildSearchPageQuery,
+  resolveSearchPagination,
+} from "@/lib/search/search-page-query";
 import {
   searchPublicRepresentations,
   type PublicSearchPage,
@@ -141,19 +144,19 @@ async function searchVisibleInitialResult(query: SearchQuery): Promise<SearchRes
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = searchParams ? await searchParams : {};
+  const { page, perPage } = resolveSearchPagination(params);
   const resolvedQuery = buildSearchPageQuery(params);
   const initialSearchResult = await searchVisibleInitialResult(resolvedQuery);
+  const paginatedListings = initialSearchResult.listings.slice(0, perPage);
   const city = resolvedQuery.city;
   const propertyType = resolvedQuery.property_type;
-  const perPage = resolvedQuery.limit ?? 10;
-  const page = Math.floor((resolvedQuery.offset ?? 0) / perPage) + 1;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" />
       <PropertySelectionProvider>
         <SearchFilteredGalleryV2
-          listings={initialSearchResult.listings}
+          listings={paginatedListings}
           total={initialSearchResult.total}
           query={resolvedQuery.q ?? ""}
           city={city}
