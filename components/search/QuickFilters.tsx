@@ -3,7 +3,9 @@
 // SEARCH-RELOOKING-1 — filtres glass dark premium. Logique INCHANGÉE.
 import { useState } from "react";
 import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { PropertyTypeVisualSelector } from "@/components/property-types/PropertyTypeVisualSelector";
 import type { Listing, ListingFiltersState } from "@/lib/listings/types";
+import { OPTION_A_PROPERTY_TYPES } from "@/lib/property-types/presentation";
 
 type QuickFiltersProps = {
   filters: ListingFiltersState;
@@ -25,6 +27,12 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
   const fieldClass =
     "min-h-11 w-full rounded-xl border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-3.5 text-[13.5px] font-semibold text-foreground dark:text-white outline-none transition placeholder:text-muted-foreground/80 hover:border-bronze-400/50 focus:border-bronze-400/70 focus:ring-2 focus:ring-bronze-400/20 lg:w-auto lg:rounded-full";
   const selectClass = `${fieldClass} dark:[color-scheme:dark]`;
+  const allPropertyTypes = Array.from(
+    new Set<Listing["property_type"]>([
+      ...OPTION_A_PROPERTY_TYPES.map((item) => item.value),
+      ...propertyTypes,
+    ]),
+  );
 
   const activeCount =
     (filters.city !== "all" ? 1 : 0) +
@@ -76,7 +84,15 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
         </div>
       </div>
 
-      <div className="mt-2.5 flex items-center gap-2 lg:hidden">
+      <PropertyTypeVisualSelector
+        value={filters.propertyType}
+        onChange={(propertyType) => onChange({ ...filters, propertyType })}
+        showAll
+        className="mt-3 border-t border-border/12 pt-3 dark:border-white/8"
+        ariaLabel="Choisir visuellement le type de bien"
+      />
+
+      <div className="mt-1 flex items-center gap-2 lg:hidden">
         <button
           type="button"
           onClick={() => setShowFilters((prev) => !prev)}
@@ -84,7 +100,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
           className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-4 py-2.5 text-[13.5px] font-extrabold text-foreground"
         >
           <SlidersHorizontal size={16} strokeWidth={2.2} aria-hidden="true" />
-          Filtres
+          Plus de filtres
           {activeCount > 0 ? (
             <span className="grid h-5 min-w-5 place-items-center rounded-full bg-bronze-500 px-1 text-[11px] font-extrabold text-white">
               {activeCount}
@@ -109,7 +125,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
 
         <select aria-label="Type de bien" value={filters.propertyType} onChange={(e) => onChange({ ...filters, propertyType: e.target.value as ListingFiltersState["propertyType"] })} className={selectClass}>
           <option value="all">Type de bien</option>
-          {propertyTypes.map((type) => <option key={type} value={type}>{type}</option>)}
+          {allPropertyTypes.map((type) => <option key={type} value={type}>{type}</option>)}
         </select>
 
         <input type="number" aria-label="Surface minimum" value={filters.minSurface} onChange={(e) => onChange({ ...filters, minSurface: e.target.value })} placeholder="Surface min" className={`${fieldClass} lg:w-36`} />
