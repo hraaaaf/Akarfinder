@@ -312,7 +312,7 @@ export function SearchFilteredGalleryV2({
 
       <PropertyTypeRail values={values} />
 
-      <div className="mx-auto grid max-w-[1280px] min-h-[calc(100vh-132px)] lg:grid-cols-[300px_minmax(0,1fr)]">
+      <div className="mx-auto grid content-start max-w-[1280px] min-h-[calc(100vh-132px)] lg:grid-cols-[300px_minmax(0,1fr)] lg:content-stretch">
         <SearchFiltersV2
           total={total}
           query={query}
