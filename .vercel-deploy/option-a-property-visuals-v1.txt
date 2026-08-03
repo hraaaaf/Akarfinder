@@ -1,0 +1,3 @@
+Trigger production deployment for Option A Property Visuals V1.
+Merge commit: 37a0e97944e305f41aa1f6829818ed88ecb0a35f
+Deployment trigger commit: follows the validated and merged PR #246.
