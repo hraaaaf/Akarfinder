@@ -59,7 +59,7 @@ function odmInput(query: SearchQuery) {
     maxPrice: query.max_price,
     minSurface: query.min_surface,
     maxSurface: query.max_surface,
-    limit: Math.min(query.limit ?? 50, 100),
+    limit: Math.min((query.offset ?? 0) + (query.limit ?? 10), 100),
   };
 }
 
@@ -83,32 +83,32 @@ function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResul
 async function searchOdmNumericPage(query: SearchQuery): Promise<SearchResult> {
   const limit = Math.max(1, Math.min(Math.trunc(query.limit ?? 10), 100));
   const offset = Math.max(0, Math.trunc(query.offset ?? 0));
-  let cursor: string | undefined;
   let remainingOffset = offset;
   let totalCount = 0;
   const results: PublicSearchPage["results"] = [];
+  let currentPage = await searchPublicRepresentations(odmInput(query));
 
   while (results.length < limit) {
+    totalCount = currentPage.total_count;
+    if (!currentPage.results.length) break;
+
     const needed = limit - results.length;
-    const batchLimit = Math.min(100, Math.max(needed, remainingOffset + needed));
-    const page = await searchPublicRepresentations({
-      ...odmInput(query),
-      limit: batchLimit,
-      cursor,
-    });
+    const start = Math.min(remainingOffset, currentPage.results.length);
+    remainingOffset = Math.max(0, remainingOffset - currentPage.results.length);
 
-    totalCount = page.total_count;
-    if (!page.results.length) break;
-
-    const start = Math.min(remainingOffset, page.results.length);
-    remainingOffset = Math.max(0, remainingOffset - page.results.length);
-
-    if (remainingOffset === 0 && start < page.results.length) {
-      results.push(...page.results.slice(start, start + needed));
+    if (remainingOffset === 0 && start < currentPage.results.length) {
+      results.push(...currentPage.results.slice(start, start + needed));
     }
 
-    if (!page.has_more || !page.next_cursor) break;
-    cursor = page.next_cursor;
+    if (results.length >= limit || !currentPage.has_more || !currentPage.next_cursor) break;
+
+    const nextNeeded = limit - results.length;
+    const batchLimit = Math.min(100, Math.max(nextNeeded, remainingOffset + nextNeeded));
+    currentPage = await searchPublicRepresentations({
+      ...odmInput(query),
+      limit: batchLimit,
+      cursor: currentPage.next_cursor,
+    });
   }
 
   const page: PublicSearchPage = {
