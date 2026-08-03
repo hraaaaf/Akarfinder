@@ -1,31 +1,33 @@
-# ODM-CANARY-1PERCENT-01
+# ODM-CANARY-1PERCENT-01 — Baseline historique
 
-## Verdict
+> **Superseded operationally.** Ce document conserve le contrat initial à 1 %. Le code courant autorise un cap maximum de 10 % derrière les mêmes principes fail-closed, approbation explicite, stop switch et fallback legacy. Ne pas renommer ce fichier : son nom identifie le LOT historique. État actuel : `docs/START.md` et `docs/ROADMAP.md`.
+
+## Verdict du LOT d’origine
 
 `CODE_READY_NOT_ACTIVATED`
 
-## Boundary
+## Boundary initiale
 
-The public canary is capped at 1% and requires all of:
+Le Canary public était plafonné à 1 % et exigeait :
 
-- `ODM_PUBLIC_CANARY_ENABLED=true`
-- `ODM_PUBLIC_CANARY_APPROVED=true`
-- `ODM_PUBLIC_CANARY_PERCENT=1`
-- `ODM_PUBLIC_CANARY_STOP` absent or false
+- `ODM_PUBLIC_CANARY_ENABLED=true` ;
+- `ODM_PUBLIC_CANARY_APPROVED=true` ;
+- `ODM_PUBLIC_CANARY_PERCENT=1` ;
+- `ODM_PUBLIC_CANARY_STOP` absent ou false.
 
-Invalid or excessive values fail closed. ODM errors return the already-computed legacy result.
+Les valeurs invalides échouaient vers 0 %. Les erreurs ODM revenaient au résultat legacy.
 
-## Preconditions before production activation
+## Préconditions initiales
 
-- at least 200 healthy dual-read events;
-- divergence analyzer stop gate cleared;
-- explicit deployment approval;
-- production route and telemetry observation available.
+- au moins 200 événements dual-read sains ;
+- divergence analyzer sans stop gate ;
+- approbation explicite ;
+- observation Production disponible.
 
-## Rollback
+## Rollback invariant
 
-Set `ODM_PUBLIC_CANARY_STOP=true` or disable either approval flag, then redeploy. No database migration or code revert is required.
+Définir `ODM_PUBLIC_CANARY_STOP=true` ou désactiver un flag d’approbation, puis redéployer. Aucune migration ni réversion de code n’est nécessaire.
 
-## Publication policy
+## Publication policy invariant
 
-ODM rows are adapted to the legacy `SearchResult` contract with source-only access, no contact, no gallery and no unauthorized image reuse.
+Les lignes ODM sont adaptées au contrat `SearchResult` avec accès source uniquement, sans contact, sans galerie et sans réutilisation d’image non autorisée.
