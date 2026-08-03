@@ -226,6 +226,7 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
     ? sorted.slice(0, limit)
     : sorted.slice(legacyOffset, legacyOffset + limit);
   const hasMore = scanCursor < rawTotal;
+  const total = !usingCursor && !hasMore ? matchedListings.length : rawTotal;
 
   if (process.env.NODE_ENV !== "production") {
     console.log(
@@ -236,10 +237,10 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
 
   return {
     listings,
-    // Exact structured DB total. Public/text filtering can reduce this number;
-    // clients should use has_more/next_cursor for deep navigation rather than
-    // assuming `total` equals the number of publishable text matches.
-    total: rawTotal,
+    // A complete offset-based scan knows the exact public/matching total. When
+    // the bounded scan stops early, preserve the raw index total as an upper
+    // bound and let has_more/next_cursor govern continuation.
+    total,
     limit,
     offset: usingCursor ? 0 : legacyOffset,
     next_cursor: hasMore ? scanCursor : null,
