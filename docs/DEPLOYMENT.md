@@ -1,128 +1,174 @@
-# Déploiement AkarFinder — Vercel + Supabase
+# AkarFinder — Déploiement Vercel + Supabase
 
-## Prérequis
+**Version : 2026-08-03**  
+**Production : `https://akarfinder.vercel.app`**  
+**Déploiement vérifié : `dpl_8XqdkUnMvVRgKVTCU2bNVnXbYg5f` — `READY`**  
+**Commit applicatif : `fa983a3`**
 
-- Projet Supabase créé (supabase.com)
-- Migration appliquée : `scripts/scrapers/db/supabase-migration.sql`
-- Données synchronisées : `npm run sync:supabase`
-- Vérification OK : `npm run check:supabase`
+## 1. Sources de vérité
 
----
+- code : branche GitHub `main` ;
+- schéma : migrations versionnées sous `supabase/migrations/` ;
+- données : projet Supabase canonique ;
+- Production : alias Vercel `akarfinder.vercel.app` ;
+- statut produit : `docs/START.md` et `docs/ROADMAP.md`.
 
-## Variables d'environnement Vercel
+Un merge GitHub n’est pas une preuve de déploiement. Un déploiement `READY` n’est pas une preuve de comportement métier. Les deux doivent être vérifiés séparément.
 
-À ajouter dans Vercel > Project > Settings > Environment Variables.
+## 2. Prérequis
 
-| Variable | Valeur | Visibilité |
-|---|---|---|
-| `DATABASE_PROVIDER` | `supabase` | All environments |
-| `SUPABASE_URL` | `https://xxxx.supabase.co` | Server only |
-| `SUPABASE_SERVICE_ROLE_KEY` | `eyJ...` | Server only |
+- working tree propre ;
+- branche à jour avec `main` ;
+- migrations connues et vérifiées ;
+- variables d’environnement présentes ;
+- tests ciblés verts ;
+- TypeScript vert ;
+- build Production vert ;
+- rollback identifié ;
+- autorisation explicite pour toute activation sensible.
 
-### Règles de sécurité
+## 3. Variables serveur essentielles
 
-- `SUPABASE_SERVICE_ROLE_KEY` — **jamais de préfixe `NEXT_PUBLIC_`**. Cette clé bypass RLS : si elle est exposée côté client, n'importe qui peut lire/écrire toute la base.
-- `SUPABASE_URL` — pas de préfixe `NEXT_PUBLIC_` non plus. L'URL n'est utilisée que dans les API routes (`runtime = "nodejs"`), pas dans le bundle client.
-- Aucune clé anon (`SUPABASE_ANON_KEY`) n'est utilisée. Toutes les lectures passent par la service role key côté serveur.
+Ne jamais committer une valeur secrète.
 
----
+- `DATABASE_PROVIDER=supabase` ;
+- `SUPABASE_URL` ;
+- `SUPABASE_SERVICE_ROLE_KEY` — serveur uniquement ;
+- `SEARCH_CURSOR_SECRET` lorsque requis ;
+- secrets des endpoints planifiés ;
+- flags de Source Registry/ingestion selon le LOT ;
+- flags Canary/dual-read selon la séquence approuvée.
 
-## Architecture DB
+### Canary ODM
 
-```
-DATABASE_PROVIDER=supabase  →  lib/db/supabase-listings.ts  →  Supabase (cloud)
-DATABASE_PROVIDER=sqlite    →  lib/db → dynamic import db-listings.ts → SQLite local
-```
+- `ODM_PUBLIC_CANARY_ENABLED` ;
+- `ODM_PUBLIC_CANARY_APPROVED` ;
+- `ODM_PUBLIC_CANARY_PERCENT` ;
+- `ODM_PUBLIC_CANARY_STOP` ;
+- `ODM_DUAL_READ_ENABLED` ;
+- `ODM_DUAL_READ_SAMPLE_PERCENT`.
 
-Le module `node:sqlite` est chargé **uniquement** si le chemin SQLite est emprunté à l'exécution (import dynamique). En mode Supabase, `node:sqlite` n'est jamais résolu — Vercel peut donc tourner sur Node.js 20+ sans erreur.
+Toutes les valeurs absentes ou invalides doivent échouer vers OFF/legacy.
 
-Pour le développement local avec SQLite : **Node.js ≥ 22.5.0** requis (node:sqlite est expérimental avant ça).
+### Sécurité
 
----
+- aucune `SUPABASE_SERVICE_ROLE_KEY` en `NEXT_PUBLIC_*` ;
+- aucune clé serveur dans le bundle client ;
+- RLS/revocations sur tables internes ;
+- contacts et PII externes non réexposés ;
+- logs sans secrets ni payloads bruts inutiles.
 
-## Node.js
+## 4. Validation avant merge
 
-- Production Vercel (Supabase) : Node.js 20+ suffit
-- Développement local (SQLite) : Node.js 22.5+ requis
-- Réglage Vercel recommandé : **Node.js 22.x** (Settings > General > Node.js Version)
+Le nombre exact de tests évolue. Ne jamais inscrire un compteur historique comme gate permanent.
 
----
-
-## Commandes build
+Minimum :
 
 ```bash
-# Build standard (lit DATABASE_PROVIDER depuis .env.local ou env Vercel)
+npm ci
+npx tsc --noEmit
+npm test
 npm run build
-
-# Vérifier en mode Supabase localement
-DATABASE_PROVIDER=supabase npm run build
-DATABASE_PROVIDER=supabase npm run start
 ```
 
----
-
-## Déploiement Vercel
+Ajouter les suites ciblées du LOT, puis vérifier :
 
 ```bash
-# Via CLI Vercel
-vercel --prod
-
-# Via Git
-git push origin main  # Vercel déploie automatiquement
+git diff --check
+git status --short
 ```
 
----
+## 5. Flux recommandé
 
-## Vérification post-déploiement
+1. créer une branche dédiée ;
+2. implémenter un LOT ;
+3. exécuter les tests locaux disponibles ;
+4. ouvrir une PR ;
+5. attendre les gates GitHub Actions ;
+6. merger seulement si les preuves sont vertes ;
+7. vérifier qu’un déploiement Vercel complet du commit `main` a été créé ;
+8. attendre `READY` ;
+9. vérifier l’alias Production ;
+10. effectuer les smoke tests et contrôles métier ;
+11. documenter deployment ID, SHA, limites et rollback.
 
-Tester ces routes après chaque déploiement :
+## 6. Limitation opérationnelle observée
+
+Au 3 août 2026 :
+
+- l’intégration GitHub → Vercel n’a pas toujours déclenché automatiquement un déploiement ;
+- le secret GitHub Actions `VERCEL_TOKEN` n’était pas configuré lors d’un essai de workflow ;
+- les déploiements partiels contenant seulement quelques fichiers ont échoué et ne doivent pas être utilisés ;
+- le déploiement Production réussi a été construit depuis une source complète et authentifiée.
+
+Action durable recommandée : rétablir une intégration Git fiable ou configurer un workflow Vercel sécurisé. Ne jamais contourner ce problème avec un package incomplet.
+
+## 7. Smoke tests publics
+
+Après chaque déploiement :
 
 | Route | Attendu |
 |---|---|
-| `GET /api/listings` | `{ source: "supabase", listings: [...], total: N }` |
-| `GET /api/stats` | `{ total_listings: N, avg_completeness: N, ... }` |
-| `GET /` | Homepage avec DataProofBlock visible |
-| `GET /search` | Annonces chargées depuis Supabase |
-| `GET /listings/[id]` | Fiche listing fonctionnelle |
+| `/` | 200, homepage complète |
+| `/acheter` | 200 |
+| `/louer` | 200 |
+| `/vendre` | 200 |
+| `/search?q=appartement%20casablanca` | 200, résultats ou état vide contrôlé |
+| `/api/search?...` | JSON valide, fallback maîtrisé |
+| `/api/search/gateway?...` | JSON valide, attribution et curseur |
+| `/robots.txt` | politique attendue |
+| `/sitemap.xml` | réponse valide |
+| routes demo | `noindex, nofollow` lorsque prévu |
 
-### Commande de vérification locale avant deploy
+Vérifier aussi :
 
-```bash
-npm run check:supabase   # connexion + données
-npm run test:scrapers    # 110/110
-npm run test:api         # 34/34
-npm run build            # 0 erreur TypeScript
-```
+- desktop 1280/1440 ;
+- tablette 768 ;
+- mobile 390/375 ;
+- absence d’overflow ;
+- console et réseau ;
+- liens source HTTP(S) ;
+- aucune galerie/contact externe ;
+- vraie photo prioritaire sur illustration ;
+- fallback legacy si ODM échoue.
 
-### Vérification API en ligne
+## 8. DATA et migrations
 
-```bash
-curl https://votre-domaine.vercel.app/api/listings?limit=3 | jq '.source'
-# Attendu : "supabase"
+- utiliser `apply_migration` ou le flux Supabase prévu pour toute DDL ;
+- migrations additives, idempotentes lorsque possible et réversibles ;
+- exécuter les audits lecture seule avant et après ;
+- ne jamais modifier la Production avec une requête ad hoc non versionnée ;
+- différencier migration appliquée, code déployé, flag actif et trafic observé.
 
-curl https://votre-domaine.vercel.app/api/stats | jq '.'
-# Attendu : { total_listings, avg_completeness, duplicates_detected, avg_reliability }
-```
+## 9. Rollback
 
----
+### Application
 
-## Sécurité — checklist
+- désactiver le flag concerné ;
+- activer le stop switch ;
+- redéployer la dernière version saine si nécessaire ;
+- vérifier l’alias.
 
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` absent du bundle client (vérifier Network tab)
-- [ ] `SUPABASE_URL` absent du bundle client
-- [ ] Aucun numéro de téléphone dans les réponses `/api/listings` (PII guard actif)
-- [ ] Aucun email dans les réponses `/api/listings`
-- [ ] RLS activée sur toutes les tables Supabase
+### Canary
 
----
+- `ODM_PUBLIC_CANARY_STOP=true`, ou désactivation des flags ;
+- redéploiement ;
+- validation que `/search` et `/api/search` reviennent au legacy.
 
-## Mise à jour des données
+### DATA
 
-Quand la base SQLite locale est enrichie (après `npm run enrich:p6`) :
+- préférer quarantaine et état inéligible à la suppression ;
+- appliquer une migration de rollback versionnée ;
+- conserver provenance et audit.
 
-```bash
-npm run sync:supabase    # re-sync SQLite → Supabase (idempotent)
-npm run check:supabase   # vérification
-```
+## 10. Définition d’un déploiement terminé
 
-Pas besoin de redéployer — les données sont lues à la demande depuis Supabase.
+- commit exact connu ;
+- deployment ID connu ;
+- statut `READY` ;
+- alias Production confirmé ;
+- routes et contrats vérifiés ;
+- métriques critiques contrôlées ;
+- aucune erreur bloquante ;
+- rollback prêt ;
+- documentation mise à jour.

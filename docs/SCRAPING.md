@@ -1,325 +1,171 @@
-SCRAPING.md - AkarFinder Data Acquisition Strategy
+# AkarFinder — Acquisition de données et gouvernance des sources
 
-Purpose
+**Version : 2026-08-03**  
+**Statut : doctrine canonique**
 
-This file defines how AkarFinder approaches data acquisition.
+Le nom historique du fichier est `SCRAPING.md`, mais la stratégie actuelle est plus large : **discovery, feeds, imports, observation, index public limité et partenariats**.
 
-Scraping is important, but it must be controlled, modular, and legally cautious.
+## 1. Principe
 
-Strategic principle
+AkarFinder ne dépend d’aucune source unique et ne collecte pas « tout ce qui est techniquement accessible ».
 
-AkarFinder should not depend on one single data source.
+Pour chaque source, huit questions sont séparées :
 
-The data strategy should combine:
+1. peut-on découvrir l’URL ?
+2. peut-on ouvrir automatiquement la page ?
+3. peut-on extraire et stocker des faits ?
+4. peut-on conserver le texte ?
+5. peut-on afficher un extrait ?
+6. peut-on utiliser une image ou un contact ?
+7. doit-on seulement rediriger vers la source ?
+8. quand la politique doit-elle être revue ?
 
-1. public listing analysis;
-2. agency imports;
-3. promoter imports;
-4. Sakan Expo inventory;
-5. manually seeded demo data;
-6. future partner feeds.
+Un `robots.txt` permissif, un sitemap ou une indexation Google ne constitue pas une licence contractuelle ou de propriété intellectuelle.
 
-Data acquisition channels
+## 2. Doctrine No-Bypass
 
-1. Public portals
+Interdits :
 
-Possible use:
+- proxy ou réseau de contournement ;
+- stealth ;
+- faux user-agent de moteur ;
+- CAPTCHA solving ;
+- bypass login/paywall ;
+- contournement de rate limit ;
+- utilisation d’un compte humain pour automatiser un accès interdit ;
+- réhébergement de galeries, contacts ou contenus sans droit ;
+- activation silencieuse d’une source bloquée.
 
-* discovery;
-* market mapping;
-* test ingestion;
-* deduplication training;
-* price comparison.
+En cas de 403, 429, CAPTCHA, restriction contractuelle ou preuve absente : arrêt fail-closed, classement de la source et revue.
 
-Rules:
+## 3. Canaux autorisables
 
-* avoid aggressive scraping;
-* track source;
-* respect rate limits;
-* avoid copying branding;
-* avoid presenting unofficial sources as partners;
-* avoid storing unnecessary data.
+### Partenaires et feeds
 
-2. Agency CSV/XML import
+Priorité la plus élevée :
 
-Priority: high.
+- feeds promoteurs ;
+- feeds agences ;
+- CSV/XML/JSON ;
+- APIs ;
+- exports Sakan Expo ;
+- permission écrite et contrat d’attribution/fraîcheur.
 
-Why:
+### Première partie
 
-* cleaner data;
-* less risk;
-* more scalable;
-* easier partnership path.
+Contenu soumis directement par un professionnel ou un utilisateur, avec validation, modération et règles de propriété des médias.
 
-Expected fields:
+### Sitemaps publics
 
-* title;
-* description;
-* price;
-* city;
-* neighborhood;
-* surface;
-* property type;
-* transaction type;
-* images;
-* contact;
-* source reference.
+Utilisables pour discovery lorsque la politique le permet. Le détail, l’extraction et la republication restent des décisions séparées.
 
-3. Promoter import
+### Common Crawl
 
-Priority: very high.
+Signal de discovery et d’historique public. Les données doivent encore passer par classification, provenance, Source Registry et display policy.
 
-Why:
+### Résultats publics indexés
 
-* primary monetization target;
-* cleaner inventory;
-* Sakan Expo synergy;
-* direct lead value.
+Utilisables comme représentation limitée : URL, attribution, titre/snippet borné, aucune galerie/contact, redirection vers la source.
 
-Expected fields:
+Le moteur ou fournisseur de recherche n’est pas présenté comme la source du bien.
 
-* project name;
-* promoter name;
-* city;
-* neighborhood;
-* unit types;
-* starting price;
-* delivery date;
-* brochure;
-* sales contact;
-* payment plan if available.
+### Adaptateurs autorisés
 
-4. Facebook Marketplace
+Un adaptateur réseau n’est actif que pour une source dont le registre établit clairement le droit et les limites. Délais, budgets, circuit breakers et journalisation sont obligatoires.
 
-Priority: experimental.
+## 4. Statuts de source
 
-Why:
+- `partner` ;
+- `authorized` ;
+- `public_index_only` ;
+- `internal_signal_only` ;
+- `legal_review` ;
+- `blocked`.
 
-* high volume;
-* noisy but valuable;
-* reflects real market behavior.
+Le statut doit être daté, documenté, révisable et distinct par capacité.
 
-Risks:
+Exemple : une source peut autoriser la discovery mais interdire le fetch détail, les images et la republication.
 
-* noise;
-* duplicates;
-* scams;
-* incomplete data;
-* technical restrictions.
+## 5. Position actuelle de sources majeures
 
-Approach:
+Les états précis restent dans le Source Registry. Les règles générales actuelles sont :
 
-* not first production dependency;
-* use carefully;
-* filter aggressively;
-* prioritize insights over direct republication.
+- **Mubawab** : aucune extraction/republication étendue sans partenariat ou licence ; contribution possible comme index public limité ou signal interne selon la politique active ;
+- **Avito** : marketplace mixte, forte quarantaine verticale, aucun fetch/reuse direct sans revue et autorisation ;
+- **Agenz, MoulDar, Masaken** : usage limité selon provenance et display policy, sans les présenter comme partenaires ;
+- **petites agences à sitemap** : candidates prioritaires aux accords et feeds, jamais automatiquement autorisées.
 
-5. Facebook groups
+## 6. Pipeline d’admission
 
-Priority: experimental.
-
-Approach:
-
-* detect patterns;
-* extract structured signals only when safe;
-* avoid building the core MVP on this channel.
-
-6. Google-indexed public listings
-
-Priority: useful for discovery.
-
-Use:
-
-* discover source pages;
-* identify agency/project pages;
-* expand coverage.
-
-Avoid:
-
-* presenting Google as a data source;
-* copying snippets blindly;
-* scraping without source review.
-
-7. Sakan Expo inventory
-
-Priority: strategic.
-
-Why:
-
-* direct access to promoters;
-* trusted inventory;
-* offline-to-online loop;
-* strong monetization.
-
-Use:
-
-* project pages;
-* booth QR codes;
-* brochure requests;
-* visit booking;
-* expo lead tracking.
-
-Listing normalization
-
-Every listing should be normalized into a common schema.
-
-Required normalized fields:
-
-* title;
-* price;
-* currency;
-* city;
-* neighborhood;
-* property type;
-* transaction type;
-* surface;
-* source;
-* source URL;
-* first seen date;
-* last seen date.
-
-Optional fields:
-
-* bedrooms;
-* bathrooms;
-* floor;
-* images;
-* latitude;
-* longitude;
-* phone;
-* agency/promoter;
-* delivery date;
-* payment plan.
-
-Source tracking
-
-Every listing must keep:
-
-* source ID;
-* source type;
-* source URL;
-* first seen timestamp;
-* last seen timestamp;
-* import method;
-* raw reference if needed.
-
-Data quality checks
-
-For every listing, check:
-
-* missing price;
-* missing surface;
-* missing city;
-* invalid price;
-* unrealistic price/m²;
-* missing source;
-* old listing;
-* duplicate suspicion.
-
-Deduplication strategy
-
-V1 should not delete duplicates automatically.
-
-V1 should:
-
-* detect likely duplicates;
-* assign duplicate group ID;
-* choose a canonical listing;
-* display duplicate warning if needed;
-* allow future admin review.
-
-Signals:
-
-* city;
-* neighborhood;
-* price;
-* surface;
-* title;
-* images;
-* phone;
-* source;
-* publication dates.
-
-Reliability score input
-
-Data acquisition must support reliability scoring.
-
-Useful signals:
-
-* source type;
-* freshness;
-* completeness;
-* duplicate conflict;
-* price consistency;
-* partner status;
-* verification status;
-* contact availability.
-
-Scraping implementation rules
-
-Scrapers should live in:
-
-scripts/scrapers/
-
-Imports should live in:
-
-scripts/imports/
-
-Shared source utilities should live in:
-
-lib/sources/
-
-Normalization should live in:
-
-lib/listings/
-
-Scoring should live in:
-
-lib/scoring/
-
-Deduplication should live in:
-
-lib/dedupe/
-
-First scraping milestone
-
-Goal:
-
-* ingest or seed at least 100 listings;
-* normalize them;
-* display them;
-* test deduplication;
-* test reliability score.
-
-Acceptable first data sources:
-
-* manual seed data;
-* test HTML;
-* CSV sample;
-* one carefully selected public source;
-* Sakan Expo/promoter sample data.
-
-Do not do yet
-
-Do not implement at project start:
-
-* aggressive multi-site scraping;
-* automated Facebook scraping;
-* full crawler scheduler;
-* paid data partnerships;
-* AI extraction pipeline;
-* automated source logo display;
-* claim of real-time updates.
-
-Legal and credibility caution
-
-This file does not replace legal advice.
-
-Before production-scale scraping:
-
-* review source terms;
-* avoid unauthorized brand use;
-* avoid misleading source representation;
-* minimize stored data;
-* keep opt-out/removal path;
-* prefer direct partnerships where possible.
+```text
+URL découverte
+→ source identifiée
+→ politique évaluée
+→ vertical immobilier
+→ document_kind LISTING/CATEGORY/AMBIGUOUS
+→ URL canonique et déduplication
+→ normalisation
+→ qualité/fraîcheur
+→ display eligibility
+→ index public ou quarantaine
+```
+
+Une page `CATEGORY`, une SERP interne ou une URL ambiguë n’est pas une annonce.
+
+## 7. Données minimales
+
+Pour une représentation indexée :
+
+- URL canonique ;
+- domaine/source ;
+- méthode de discovery ;
+- timestamp ;
+- classification verticale ;
+- type documentaire ;
+- politique d’affichage ;
+- provenance du titre/snippet ;
+- état de fraîcheur.
+
+Pour une annonce structurée :
+
+- ville/type/intention lorsque prouvés ;
+- prix et surface avec valeur brute, type, confiance et provenance ;
+- source et URL ;
+- first/last seen ;
+- observations versionnées ;
+- droits médias/contact.
+
+## 8. Prix et surface
+
+- ne jamais choisir arbitrairement un nombre ;
+- distinguer prix total, loyer, mensualité, avance, prix au m² et « à partir de » ;
+- distinguer surface habitable, terrain, construite, utile et inconnue ;
+- rejeter les contradictions ;
+- publier chaque champ indépendamment ;
+- conserver la valeur brute et la preuve.
+
+## 9. Freshness
+
+- cadence définie par source ;
+- budget réseau ;
+- timeout explicite ;
+- circuit breaker ;
+- 404 ≠ retrait certain sans politique ;
+- 403/429 ≠ autorisation de contourner ;
+- réactivation et changement matériel conservés ;
+- aucun job planifié non documenté.
+
+## 10. Objectif de volume
+
+Les compteurs sont séparés :
+
+- documents découverts ;
+- immobilier probable ;
+- display eligible ;
+- vraies pages annonce `LISTING` ;
+- annonces structurées ;
+- observations ;
+- propriétés/clusters ;
+- lignes comparables prix/surface.
+
+La cible 100 000+ concerne des représentations immobilières exploitables. Elle ne peut pas inclure du bruit, des catégories, des pages de recherche ou des doublons non maîtrisés.

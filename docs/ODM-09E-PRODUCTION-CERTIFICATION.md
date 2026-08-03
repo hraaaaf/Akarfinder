@@ -1,22 +1,61 @@
-# ODM-09E — Production Certification
+# ODM-09E — Certification Production
 
-## Purpose
+**Mise à jour : 2026-08-03**
 
-Certify that the production AkarFinder Search Gateway serves the ODM-09 public cursor contract and that the complete eligible Thin Index is traversable from the public search surface.
+## Verdict actuel
 
-## Required evidence
+`CURSOR_CONTRACT_LIVE_VOLUME_RECERTIFICATION_REQUIRED`
 
-- `/search` returns the production application successfully.
-- `/api/search/gateway` exposes `total_count`, `has_more`, and opaque `next_cursor` values.
-- Cursor traversal terminates without loops.
-- At least 40,000 eligible representations are traversable.
-- No legacy capped-index fallback is used.
-- No duplicate canonical result keys are emitted across pages.
-- Every traversed result has a canonical key and a usable HTTP URL.
-- Latency and page-count evidence are retained as a CI artifact.
+Le contrat public de curseur est aujourd’hui servi : `/api/search/gateway` expose `total_count`, `has_more` et `next_cursor` selon le résultat.
 
-## Current status
+En revanche, l’ancienne certification de volume ne doit plus être présentée comme actuelle.
 
-Certification is pending a fresh production deployment containing merge commit `f44c8a91d4b1974baf33ecc6bdfed7b02431fb5c` (ODM-09D).
+## Pourquoi l’ancien 40K est superseded
 
-The first external production probe on 2026-07-26 found that the served Gateway response did not expose `has_more`, proving that the production deployment was still behind the canonical `main` branch at that moment.
+Après le LOT ODM-09E initial :
+
+1. la quarantaine verticale a identifié 22 586 documents non immobiliers ;
+2. le gate documentaire a séparé `LISTING`, `CATEGORY` et `AMBIGUOUS` ;
+3. le read model public a été durci pour ne servir que de vraies pages annonce `LISTING` éligibles.
+
+L’ancien minimum de 40 000 « documents traversables » ne correspond donc plus à la définition actuelle d’une annonce exploitable.
+
+## Vérité connectée au 3 août 2026
+
+| Indicateur | Valeur |
+|---|---:|
+| Thin Index total | 56 777 |
+| Immobilier probable | 34 172 |
+| Non immobiliers | 22 586 |
+| Non classés | 19 |
+| Immobilier display eligible | 22 481 |
+| **LISTING + display eligible** | **7 483** |
+
+Le corpus actuel à certifier est le corpus `LISTING + immobilier probable + display eligible`, pas le volume brut.
+
+## Contrat à conserver
+
+- `/search` répond ;
+- `/api/search/gateway` répond ;
+- curseurs opaques et bornés ;
+- terminaison sans boucle ;
+- aucune clé canonique dupliquée entre pages ;
+- URL source HTTP(S) exploitable ;
+- aucune galerie/contact/image non autorisée ;
+- latence et nombre de pages conservés comme preuves ;
+- fallback legacy et rollback disponibles.
+
+## Nouvelle sortie attendue
+
+Une recertification est réussie lorsque :
+
+1. l’ensemble des lignes `LISTING` éligibles est traversable ;
+2. les compteurs Supabase et API concordent ;
+3. aucune `CATEGORY`, `AMBIGUOUS` ou verticale non immobilière ne fuit ;
+4. le corpus atteint la cible de profondeur explicitement approuvée ;
+5. la diversité de sources et villes est mesurée ;
+6. prix, surface et fraîcheur sont rapportés séparément ;
+7. le taux Canary réellement servi est observé ;
+8. le rollback est testé.
+
+Jusqu’à cette recertification, il est correct de dire que le **contrat de curseur est live**, mais pas que le jalon « 40K honnêtes » est acquis.
