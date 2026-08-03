@@ -1,5 +1,6 @@
 import type { ListingPropertyType } from "@/lib/listings/types";
 
+// OPTION-A-PROPERTY-VISUALS-1 — canonical visual taxonomy shared by every public journey.
 export type OptionAPropertyType =
   | "Appartement"
   | "Villa"
