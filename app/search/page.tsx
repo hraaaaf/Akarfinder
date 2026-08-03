@@ -14,7 +14,6 @@ import { buildSearchPageQuery } from "@/lib/search/search-page-query";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-// LOT 6 preview trigger: keep this route on the real search pipeline.
 export const metadata: Metadata = {
   title: "Rechercher un bien immobilier au Maroc — AkarFinder",
   description:
@@ -70,22 +69,20 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const resolvedQuery = buildSearchPageQuery(params);
   const initialSearchResult = await searchListings(resolvedQuery);
   scheduleOdmDualReadShadow(resolvedQuery, initialSearchResult);
-  const city = resolvedQuery.city;
-  const propertyType = resolvedQuery.property_type;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" />
       <PropertySelectionProvider>
-        <SearchPriceExplorerDock />
-        <SearchCompareDock />
         <SearchFilteredGalleryV2
           listings={initialSearchResult.listings}
           total={initialSearchResult.total}
           query={resolvedQuery.q ?? ""}
-          city={city}
-          propertyType={propertyType}
+          city={resolvedQuery.city}
+          propertyType={resolvedQuery.property_type}
         />
+        <SearchPriceExplorerDock />
+        <SearchCompareDock />
       </PropertySelectionProvider>
       <SiteFooter />
     </main>
