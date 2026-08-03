@@ -15,6 +15,7 @@ type SearchFilterValues = {
   maxPrice?: number;
   minSurface?: number;
   maxSurface?: number;
+  perPage?: number;
 };
 
 function FilterFields({
@@ -26,10 +27,12 @@ function FilterFields({
   maxPrice,
   minSurface,
   maxSurface,
+  perPage,
 }: SearchFilterValues) {
   return (
     <>
       {query ? <input type="hidden" name="q" value={query} /> : null}
+      <input type="hidden" name="per_page" value={perPage ?? 10} />
 
       <label className="grid gap-2 text-sm font-extrabold">
         Localisation
@@ -115,19 +118,26 @@ export function SearchFiltersV2({
 
   return (
     <>
-      <aside className="hidden border-r border-slate-200 bg-white p-5 lg:block">
-        <form action="/search" className="space-y-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-black">Filtres</h2>
-            <a href="/search" className="text-xs font-extrabold text-blue-700">
-              Réinitialiser
-            </a>
-          </div>
-          <FilterFields {...values} />
-          <button className="h-11 w-full rounded-xl bg-blue-700 text-sm font-extrabold text-white">
-            Voir {total} résultat{total > 1 ? "s" : ""}
-          </button>
-        </form>
+      <aside className="hidden border-r border-slate-200 bg-white lg:block">
+        <div className="sticky top-0 max-h-screen overflow-y-auto p-5">
+          <form action="/search" className="space-y-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[.14em] text-blue-700">
+                  Affiner
+                </p>
+                <h2 className="mt-1 text-lg font-black">Filtres</h2>
+              </div>
+              <a href="/search?per_page=10" className="text-xs font-extrabold text-blue-700">
+                Réinitialiser
+              </a>
+            </div>
+            <FilterFields {...values} />
+            <button className="h-11 w-full rounded-xl bg-blue-700 text-sm font-extrabold text-white shadow-sm transition hover:bg-blue-800">
+              Afficher {new Intl.NumberFormat("fr-FR").format(total)} résultat{total > 1 ? "s" : ""}
+            </button>
+          </form>
+        </div>
       </aside>
 
       <button
@@ -147,7 +157,12 @@ export function SearchFiltersV2({
           >
             <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200" />
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-xl font-black">Filtres</h2>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[.14em] text-blue-700">
+                  Affiner les résultats
+                </p>
+                <h2 className="mt-1 text-xl font-black">Filtres</h2>
+              </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -160,8 +175,8 @@ export function SearchFiltersV2({
             <form action="/search" className="space-y-5">
               <FilterFields {...values} />
               <div className="sticky bottom-0 -mx-5 border-t border-slate-100 bg-white p-5">
-                <button className="h-12 w-full rounded-xl bg-blue-700 text-sm font-extrabold text-white">
-                  Voir {total} résultat{total > 1 ? "s" : ""}
+                <button className="h-12 w-full rounded-xl bg-blue-700 text-sm font-extrabold text-white shadow-sm">
+                  Afficher {new Intl.NumberFormat("fr-FR").format(total)} résultat{total > 1 ? "s" : ""}
                 </button>
               </div>
             </form>
