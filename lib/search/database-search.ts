@@ -97,6 +97,10 @@ function matchesFilters(listing: Listing, query: SearchQuery) {
   return matchesText(listing, query.q);
 }
 
+function internalScore(listing: Listing): number {
+  return Number.isFinite(listing.reliability_score) ? listing.reliability_score : 0;
+}
+
 function sortListings(listings: Listing[], sort?: string, query?: SearchQuery) {
   const copy = [...listings];
   if (sort === "price_asc" || sort === "price_desc") {
@@ -108,7 +112,17 @@ function sortListings(listings: Listing[], sort?: string, query?: SearchQuery) {
     });
   }
   if (sort === "surface_desc") return copy.sort((a, b) => b.surface_m2 - a.surface_m2);
-  return copy.sort((a, b) => compareRecommendedListings(a, b, query ?? {}));
+
+  return copy.sort((a, b) => {
+    const scoreDifference = internalScore(b) - internalScore(a);
+    if (scoreDifference !== 0) return scoreDifference;
+
+    const completenessDifference =
+      (b.data_completeness_score ?? 0) - (a.data_completeness_score ?? 0);
+    if (completenessDifference !== 0) return completenessDifference;
+
+    return compareRecommendedListings(a, b, query ?? {});
+  });
 }
 
 function canonicalizeListingGeo(listing: Listing): Listing {
@@ -149,13 +163,11 @@ function mapSearchRows(rows: DbListingRow[]): Listing[] {
 }
 
 // SEARCH-INDEX-DEPTH-V1
-// The old fallback fetched exactly 200 DB rows, then filtered/ranked locally.
-// That made every query blind to row 201+ even when the index contained tens of
-// thousands of offers. We now walk the structured DB result set in bounded
-// chunks until a full public page is assembled (or a per-request scan budget is
-// exhausted), and return a raw-index cursor so the client can continue from the
-// exact row where scanning stopped. This removes the hard 200-row ceiling
-// without loading the whole national corpus into one serverless invocation.
+// Search walks the public read-model in bounded chunks. When the filtered corpus
+// fits inside the scan budget, every publishable match is collected, ranked by
+// the internal reliability score, and only then paginated. For larger corpora,
+// reliability-first DB ordering keeps the highest-scored pages deterministic
+// while next_cursor continues the bounded traversal.
 const DB_SCAN_BATCH_SIZE = 500;
 const MAX_DB_ROWS_SCANNED_PER_REQUEST = 10_000;
 
@@ -170,6 +182,7 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
   const matchedListings: Listing[] = [];
   let rawTotal = 0;
   let scannedRows = 0;
+  let scanCompleted = false;
 
   // Historical rows can contain accent/transliteration aliases (Temara/Témara,
   // Meknes/Meknès, etc.). When a canonical city has aliases, an exact DB filter
@@ -178,7 +191,7 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
   const cityVariants = query.city ? getCitySearchVariants(query.city) : [];
   const dbCityFilter = cityVariants.length <= 1 ? query.city : undefined;
 
-  while (matchedListings.length < targetMatches && scannedRows < MAX_DB_ROWS_SCANNED_PER_REQUEST) {
+  while (scannedRows < MAX_DB_ROWS_SCANNED_PER_REQUEST) {
     const batchStart = scanCursor;
     const base = await queryListings({
       city: dbCityFilter,
@@ -190,17 +203,20 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
       max_surface: query.max_surface,
       limit: DB_SCAN_BATCH_SIZE,
       offset: batchStart,
+      order_by: query.sort ? "default" : "reliability_desc",
     });
 
     rawTotal = base.total;
-    if (base.listings.length === 0) break;
+    if (base.listings.length === 0) {
+      scanCompleted = scanCursor >= rawTotal;
+      break;
+    }
 
     const publishableRows = base.listings.filter(canPublishDbRowToPublicSearchSurface);
     const mappedById = new Map(
       mapSearchRows(publishableRows).map((listing) => [String(listing.id), listing])
     );
 
-    let stoppedInsideBatch = false;
     for (let index = 0; index < base.listings.length; index += 1) {
       const row = base.listings[index];
       scanCursor = batchStart + index + 1;
@@ -211,22 +227,24 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
       if (!listing || !matchesFilters(listing, query)) continue;
       matchedListings.push(listing);
 
-      if (matchedListings.length >= targetMatches || scannedRows >= MAX_DB_ROWS_SCANNED_PER_REQUEST) {
-        stoppedInsideBatch = true;
-        break;
-      }
+      if (scannedRows >= MAX_DB_ROWS_SCANNED_PER_REQUEST) break;
     }
 
-    if (stoppedInsideBatch) break;
-    if (scanCursor >= rawTotal) break;
+    if (scanCursor >= rawTotal) {
+      scanCompleted = true;
+      break;
+    }
+
+    const corpusFitsScanBudget = rawTotal <= MAX_DB_ROWS_SCANNED_PER_REQUEST;
+    if (!corpusFitsScanBudget && matchedListings.length >= targetMatches) break;
   }
 
   const sorted = sortListings(matchedListings, query.sort, query);
   const listings = usingCursor
     ? sorted.slice(0, limit)
     : sorted.slice(legacyOffset, legacyOffset + limit);
-  const hasMore = scanCursor < rawTotal;
-  const total = !usingCursor && !hasMore ? matchedListings.length : rawTotal;
+  const hasMore = !scanCompleted && scanCursor < rawTotal;
+  const total = !usingCursor && scanCompleted ? matchedListings.length : rawTotal;
 
   if (process.env.NODE_ENV !== "production") {
     console.log(
