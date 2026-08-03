@@ -14,6 +14,7 @@ import { buildSearchPageQuery } from "@/lib/search/search-page-query";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+// LOT 6 preview trigger: keep this route on the real search pipeline.
 export const metadata: Metadata = {
   title: "Rechercher un bien immobilier au Maroc — AkarFinder",
   description:
