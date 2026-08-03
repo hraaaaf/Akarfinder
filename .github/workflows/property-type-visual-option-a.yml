@@ -1,0 +1,30 @@
+name: Property Type Visual Option A
+
+on:
+  pull_request:
+    paths:
+      - "app/vendre/dossier/page.tsx"
+      - "components/intent/IntentHubV2.tsx"
+      - "components/property-types/**"
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "components/search/QuickFilters.tsx"
+      - "components/search/SearchListingCardDark.tsx"
+      - "components/vendre/SellerPropertyDraftForm.tsx"
+      - "components/vendre/VendrePageShell.tsx"
+      - "lib/listings/types.ts"
+      - "lib/property-types/**"
+      - "scripts/scrapers/__tests__/property-type-visual-option-a.test.ts"
+      - ".github/workflows/property-type-visual-option-a.yml"
+
+jobs:
+  contract-and-types:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: node --test --experimental-strip-types scripts/scrapers/__tests__/property-type-visual-option-a.test.ts
+      - run: npm ci
+      - run: npx tsc --noEmit
