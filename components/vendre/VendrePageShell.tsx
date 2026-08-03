@@ -14,12 +14,13 @@ import {
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
+import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
 import { Container } from "@/components/ui/Container";
 import { TrackedLink } from "@/components/tracking/TrackedLink";
-import { ListingVisual } from "@/components/listings/ListingVisual";
 import { searchListings } from "@/lib/search";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import type { Listing } from "@/lib/listings/types";
+import { OPTION_A_PROPERTY_TYPES } from "@/lib/property-types/presentation";
 
 const SELLER_STEPS = [
   {
@@ -138,6 +139,42 @@ export async function VendrePageShell() {
         </Container>
       </section>
 
+      <section className="border-y border-border/12 bg-white py-10 dark:border-white/8 dark:bg-[#F8FBFF] sm:py-12">
+        <Container>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-[#0B63CE]">
+                Votre bien
+              </p>
+              <h2 className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.04em] text-[#0B1F3A]">
+                Quel type de bien souhaitez-vous vendre ?
+              </h2>
+              <p className="mt-2 text-[12.5px] text-[#49617D]">
+                Choisissez une catégorie pour ouvrir le dossier vendeur avec le bon type déjà sélectionné.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+            {OPTION_A_PROPERTY_TYPES.map((item) => (
+              <Link
+                key={item.value}
+                href={`/vendre/dossier?property_type=${encodeURIComponent(item.value)}`}
+                className="group overflow-hidden rounded-[1.45rem] border border-[#DCE8F5] bg-white p-2.5 shadow-[0_14px_36px_rgba(11,31,58,0.07)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-[#93C5FD] hover:shadow-[0_18px_42px_rgba(11,99,206,0.12)] motion-reduce:transform-none"
+              >
+                <div className="aspect-[16/10] overflow-hidden rounded-[1.05rem] bg-[#F7FAFF]">
+                  <PropertyTypeArtwork kind={item.value} className="h-full w-full" decorative />
+                </div>
+                <div className="mt-2.5 flex items-center justify-between gap-2 px-1 pb-1">
+                  <span className="text-[11.5px] font-extrabold text-[#0B1F3A]">{item.label}</span>
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-[10px] bg-[#EEF6FF] text-[#0B63CE] transition-colors group-hover:bg-[#0B63CE] group-hover:text-white" aria-hidden="true">→</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </Container>
+      </section>
+
       <section className="bg-background py-12 lg:py-16">
         <Container>
           <div className="max-w-2xl">
@@ -217,8 +254,11 @@ export async function VendrePageShell() {
             <div className="mt-7 grid gap-4 md:grid-cols-3">
               {observedListings.map((listing) => (
                 <article key={listing.id} className="overflow-hidden rounded-2xl border border-border/15 bg-card">
-                  <div className="relative h-40 overflow-hidden">
-                    <ListingVisual listing={listing} className="h-full w-full" />
+                  <div className="relative h-40 overflow-hidden bg-white">
+                    <PropertyTypeArtwork kind={listing.property_type} className="h-full w-full" />
+                    <span className="absolute bottom-2 right-2 rounded-full bg-black/45 px-2 py-1 text-[9px] font-medium text-white/80 backdrop-blur-sm">
+                      Visuel illustratif
+                    </span>
                   </div>
                   <div className="p-4">
                     <p className="text-[1.05rem] font-extrabold text-bronze-400">
