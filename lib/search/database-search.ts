@@ -191,7 +191,9 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
   const cityVariants = query.city ? getCitySearchVariants(query.city) : [];
   const dbCityFilter = cityVariants.length <= 1 ? query.city : undefined;
 
-  while (scannedRows < MAX_DB_ROWS_SCANNED_PER_REQUEST) {
+  while (matchedListings.length < targetMatches || !scanCompleted) {
+    if (scannedRows >= MAX_DB_ROWS_SCANNED_PER_REQUEST) break;
+
     const batchStart = scanCursor;
     const base = await queryListings({
       city: dbCityFilter,
@@ -207,6 +209,8 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
     });
 
     rawTotal = base.total;
+    const corpusFitsScanBudget = rawTotal <= MAX_DB_ROWS_SCANNED_PER_REQUEST;
+
     if (base.listings.length === 0) {
       scanCompleted = scanCursor >= rawTotal;
       break;
@@ -227,6 +231,12 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
       if (!listing || !matchesFilters(listing, query)) continue;
       matchedListings.push(listing);
 
+      // Large corpora stop exactly on the raw row that completes the requested
+      // tranche, so next_cursor never skips unprocessed rows from the DB batch.
+      if (matchedListings.length >= targetMatches) {
+        if (!corpusFitsScanBudget) break;
+      }
+
       if (scannedRows >= MAX_DB_ROWS_SCANNED_PER_REQUEST) break;
     }
 
@@ -235,7 +245,6 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
       break;
     }
 
-    const corpusFitsScanBudget = rawTotal <= MAX_DB_ROWS_SCANNED_PER_REQUEST;
     if (!corpusFitsScanBudget && matchedListings.length >= targetMatches) break;
   }
 
