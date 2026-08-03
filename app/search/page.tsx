@@ -2,11 +2,10 @@ import { after } from "next/server";
 import type { Metadata } from "next";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { LightZillowSearchShell } from "@/components/search/LightZillowSearchShell";
-import { PropertyQuickPreview } from "@/components/search/PropertyQuickPreview";
 import { PropertySelectionProvider } from "@/components/search/PropertySelectionProvider";
 import { SearchCompareDock } from "@/components/search/SearchCompareDock";
 import { SearchPriceExplorerDock } from "@/components/search/SearchPriceExplorerDock";
+import { SearchFilteredGalleryV2 } from "@/components/ux/SearchFilteredGalleryV2";
 import { runOdmDualReadShadow } from "@/lib/odm/odm-dual-read-runner";
 import { shouldRunOdmDualRead } from "@/lib/odm/odm-dual-read-shadow";
 import {
@@ -17,10 +16,13 @@ import { searchListings, type SearchQuery, type SearchResult } from "@/lib/searc
 import {
   buildRawSearchPageQuery,
   buildSearchPageQuery,
+  resolveSearchPagination,
 } from "@/lib/search/search-page-query";
 import { buildSearchStableKey } from "@/lib/search/search-request-query";
-import { searchPublicRepresentations } from "@/lib/search-gateway/public-search-cursor";
-import type { ListingFiltersState } from "@/lib/listings/types";
+import {
+  searchPublicRepresentations,
+  type PublicSearchPage,
+} from "@/lib/search-gateway/public-search-cursor";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -37,12 +39,7 @@ type SearchPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-function pickFirst(value: string | string[] | undefined) {
-  if (Array.isArray(value)) return value[0];
-  return value;
-}
-
-function normalizeTransactionType(raw?: string): ListingFiltersState["transactionType"] {
+function normalizeTransactionType(raw?: string): string | undefined {
   switch (raw) {
     case "rent":
     case "location":
@@ -55,7 +52,7 @@ function normalizeTransactionType(raw?: string): ListingFiltersState["transactio
     case "achat":
       return "buy";
     default:
-      return "all";
+      return undefined;
   }
 }
 
@@ -74,6 +71,10 @@ function odmInput(query: SearchQuery) {
 }
 
 function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResult): void {
+  // The shadow reader compares one cursor tranche. A numeric page starting
+  // after the first result must not emit misleading divergence telemetry.
+  if ((query.offset ?? 0) > 0) return;
+
   const stableKey = buildSearchStableKey(query);
   if (!shouldRunOdmDualRead(stableKey)) return;
 
@@ -86,16 +87,58 @@ function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResul
   });
 }
 
+async function searchOdmNumericPage(
+  publicRequestQuery: SearchQuery,
+  perPage: number,
+): Promise<SearchResult> {
+  const offset = Math.max(0, Math.trunc(publicRequestQuery.offset ?? 0));
+  let remainingOffset = offset;
+  let totalCount = 0;
+  const results: PublicSearchPage["results"] = [];
+  let currentPage = await searchPublicRepresentations(odmInput(publicRequestQuery));
+
+  while (results.length < perPage) {
+    totalCount = currentPage.total_count;
+    if (!currentPage.results.length) break;
+
+    if (remainingOffset >= currentPage.results.length) {
+      remainingOffset -= currentPage.results.length;
+    } else {
+      const start = remainingOffset;
+      remainingOffset = 0;
+      const needed = perPage - results.length;
+      results.push(...currentPage.results.slice(start, start + needed));
+    }
+
+    if (results.length >= perPage || !currentPage.has_more || !currentPage.next_cursor) break;
+
+    currentPage = await searchPublicRepresentations({
+      ...odmInput(publicRequestQuery),
+      cursor: currentPage.next_cursor,
+    });
+  }
+
+  const odmPage: PublicSearchPage = {
+    results,
+    results_count: results.length,
+    total_count: totalCount,
+    has_more: offset + results.length < totalCount,
+    next_cursor: null,
+  };
+
+  return mapOdmPageToSearchResult(odmPage, publicRequestQuery);
+}
+
 async function searchVisibleInitialResult(
   resolvedQuery: SearchQuery,
   publicRequestQuery: SearchQuery,
+  perPage: number,
 ): Promise<SearchResult> {
   const stableKey = buildSearchStableKey(publicRequestQuery);
 
   if (shouldServeOdmPublicCanary(stableKey)) {
     try {
-      const odmPage = await searchPublicRepresentations(odmInput(publicRequestQuery));
-      return mapOdmPageToSearchResult(odmPage, publicRequestQuery);
+      return await searchOdmNumericPage(publicRequestQuery, perPage);
     } catch (error) {
       console.warn("[search-page:odm-public-canary:fallback]", error);
       return searchListings(resolvedQuery);
@@ -109,39 +152,38 @@ async function searchVisibleInitialResult(
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = searchParams ? await searchParams : {};
+  const { page, perPage } = resolveSearchPagination(params);
   const publicRequestQuery = buildRawSearchPageQuery(params);
   const resolvedQuery = buildSearchPageQuery(params);
   const initialSearchResult = await searchVisibleInitialResult(
     resolvedQuery,
     publicRequestQuery,
+    perPage,
   );
-  const transactionType = normalizeTransactionType(resolvedQuery.transaction_type);
-  const city = resolvedQuery.city ?? "all";
-  const mreOnly = (pickFirst(params.mre) ?? "").toLowerCase() === "true";
-  const propertyType = resolvedQuery.property_type ?? "all";
-  const minBudget = pickFirst(params.min_price) ?? pickFirst(params.budget_min) ?? "";
-  const maxBudget = pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "";
-  const search = resolvedQuery.q ?? "";
+  const paginatedListings = initialSearchResult.listings.slice(0, perPage);
+  const city = resolvedQuery.city;
+  const propertyType = resolvedQuery.property_type;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" />
       <PropertySelectionProvider>
-        <SearchPriceExplorerDock />
-        <SearchCompareDock />
-        <PropertyQuickPreview />
-        <LightZillowSearchShell
-          initialListings={initialSearchResult.listings}
-          initialFilters={{
-            transactionType,
-            city,
-            propertyType,
-            minBudget,
-            maxBudget,
-            mreOnly,
-            search,
-          }}
+        <SearchFilteredGalleryV2
+          listings={paginatedListings}
+          total={initialSearchResult.total}
+          query={resolvedQuery.q ?? ""}
+          city={city}
+          propertyType={propertyType}
+          transactionType={normalizeTransactionType(resolvedQuery.transaction_type)}
+          minPrice={resolvedQuery.min_price}
+          maxPrice={resolvedQuery.max_price}
+          minSurface={resolvedQuery.min_surface}
+          maxSurface={resolvedQuery.max_surface}
+          page={page}
+          perPage={perPage}
+          insight={<SearchPriceExplorerDock />}
         />
+        <SearchCompareDock />
       </PropertySelectionProvider>
       <SiteFooter />
     </main>
