@@ -267,26 +267,87 @@ export type DbStats = {
 };
 
 export function queryDbStats(dbPath = DEFAULT_DB_PATH): DbStats {
-  if (!isDbAvailable(dbPath)) {
-    return { total_listings: 0, avg_completeness: 0, duplicates_detected: 0, avg_reliability: 0 };
-  }
+  const empty: DbStats = { total_listings: 0, avg_completeness: 0, duplicates_detected: 0, avg_reliability: 0 };
+  if (!isDbAvailable(dbPath)) return empty;
 
   let db: DatabaseSync | null = null;
   try {
     db = openReadOnlyDb(dbPath);
-    const total = db.prepare("SELECT COUNT(*) as n FROM property_listings").get() as { n: number };
-    const avg = db.prepare("SELECT AVG(data_completeness_score) as n FROM property_listings").get() as { n: number | null };
-    const dup = db.prepare("SELECT COUNT(*) as n FROM property_listings WHERE duplicate_group_id IS NOT NULL").get() as { n: number };
-    const rel = db.prepare("SELECT AVG(reliability_score) as n FROM property_listings WHERE reliability_score IS NOT NULL").get() as { n: number | null };
-    return {
-      total_listings: total.n,
-      avg_completeness: Math.round(avg.n ?? 0),
-      duplicates_detected: dup.n,
-      avg_reliability: Math.round(rel.n ?? 0),
-    };
+    const row = db.prepare(`
+      SELECT
+        COUNT(*) AS total_listings,
+        ROUND(AVG(data_completeness_score), 1) AS avg_completeness,
+        COUNT(DISTINCT duplicate_group_id) AS duplicates_detected,
+        ROUND(AVG(CASE WHEN reliability_score IS NOT NULL THEN reliability_score END), 1) AS avg_reliability
+      FROM property_listings
+    `).get() as { total_listings: number; avg_completeness: number; duplicates_detected: number; avg_reliability: number } | undefined;
+    return row ?? empty;
   } catch {
-    return { total_listings: 0, avg_completeness: 0, duplicates_detected: 0, avg_reliability: 0 };
+    return empty;
   } finally {
-    try { db?.close(); } catch { /* noop */ }
+    try { db?.close(); } catch { /* ignore */ }
+  }
+}
+
+export function getDbListingById(
+  id: string,
+  dbPath = DEFAULT_DB_PATH
+): DbListingRow | null {
+  if (!isDbAvailable(dbPath)) {
+    return null;
+  }
+
+  const numericId = Number(id);
+  if (!Number.isInteger(numericId) || numericId <= 0) {
+    return null;
+  }
+
+  let db: DatabaseSync | null = null;
+
+  try {
+    db = openReadOnlyDb(dbPath);
+    const sql = `
+      SELECT
+        pl.*,
+        (
+          SELECT ls.source_name
+          FROM listing_sources ls
+          WHERE ls.property_listing_id = pl.id AND ls.is_active = 1
+          ORDER BY ls.first_seen_at
+          LIMIT 1
+        ) AS source_name,
+        (
+          SELECT ls.listing_url
+          FROM listing_sources ls
+          WHERE ls.property_listing_id = pl.id AND ls.is_active = 1
+          ORDER BY ls.first_seen_at
+          LIMIT 1
+        ) AS listing_url,
+        (
+          SELECT ls.source_url
+          FROM listing_sources ls
+          WHERE ls.property_listing_id = pl.id AND ls.is_active = 1
+          ORDER BY ls.first_seen_at
+          LIMIT 1
+        ) AS source_url
+      FROM property_listings pl
+      WHERE pl.id = ?
+      LIMIT 1
+    `;
+
+    const row = db.prepare(sql).get(numericId) as DbListingRow | undefined;
+    return row ?? null;
+  } catch (error) {
+    console.error(
+      "[db-listings:getById]",
+      error instanceof Error ? error.message : String(error)
+    );
+    return null;
+  } finally {
+    try {
+      db?.close();
+    } catch {
+      // Ignore close errors on defensive cleanup.
+    }
   }
 }
