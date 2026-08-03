@@ -2,16 +2,14 @@ import { after } from "next/server";
 import type { Metadata } from "next";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { LightZillowSearchShell } from "@/components/search/LightZillowSearchShell";
-import { PropertyQuickPreview } from "@/components/search/PropertyQuickPreview";
 import { PropertySelectionProvider } from "@/components/search/PropertySelectionProvider";
 import { SearchCompareDock } from "@/components/search/SearchCompareDock";
 import { SearchPriceExplorerDock } from "@/components/search/SearchPriceExplorerDock";
+import { SearchFilteredGalleryV2 } from "@/components/ux/SearchFilteredGalleryV2";
 import { runOdmDualReadShadow } from "@/lib/odm/odm-dual-read-runner";
 import { shouldRunOdmDualRead } from "@/lib/odm/odm-dual-read-shadow";
 import { searchListings, type SearchQuery, type SearchResult } from "@/lib/search";
 import { buildSearchPageQuery } from "@/lib/search/search-page-query";
-import type { ListingFiltersState } from "@/lib/listings/types";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -27,28 +25,6 @@ export const metadata: Metadata = {
 type SearchPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
-
-function pickFirst(value: string | string[] | undefined) {
-  if (Array.isArray(value)) return value[0];
-  return value;
-}
-
-function normalizeTransactionType(raw?: string): ListingFiltersState["transactionType"] {
-  switch (raw) {
-    case "rent":
-    case "location":
-      return "rent";
-    case "new":
-    case "neuf":
-      return "new";
-    case "buy":
-    case "sale":
-    case "achat":
-      return "buy";
-    default:
-      return "all";
-  }
-}
 
 function stableSearchKey(query: SearchQuery): string {
   return JSON.stringify({
@@ -93,33 +69,27 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const resolvedQuery = buildSearchPageQuery(params);
   const initialSearchResult = await searchListings(resolvedQuery);
   scheduleOdmDualReadShadow(resolvedQuery, initialSearchResult);
-  const transactionType = normalizeTransactionType(resolvedQuery.transaction_type);
-  const city = resolvedQuery.city ?? "all";
-  const mreOnly = (pickFirst(params.mre) ?? "").toLowerCase() === "true";
-  const propertyType = resolvedQuery.property_type ?? "all";
-  const minBudget = pickFirst(params.min_price) ?? pickFirst(params.budget_min) ?? "";
-  const maxBudget = pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "";
-  const search = resolvedQuery.q ?? "";
+  const city = resolvedQuery.city;
+  const propertyType = resolvedQuery.property_type;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" />
       <PropertySelectionProvider>
+        <SearchFilteredGalleryV2
+          listings={initialSearchResult.listings}
+          total={initialSearchResult.total}
+          query={resolvedQuery.q ?? ""}
+          city={city}
+          propertyType={propertyType}
+          transactionType={resolvedQuery.transaction_type}
+          minPrice={resolvedQuery.min_price}
+          maxPrice={resolvedQuery.max_price}
+          minSurface={resolvedQuery.min_surface}
+          maxSurface={resolvedQuery.max_surface}
+        />
         <SearchPriceExplorerDock />
         <SearchCompareDock />
-        <PropertyQuickPreview />
-        <LightZillowSearchShell
-          initialListings={initialSearchResult.listings}
-          initialFilters={{
-            transactionType,
-            city,
-            propertyType,
-            minBudget,
-            maxBudget,
-            mreOnly,
-            search,
-          }}
-        />
       </PropertySelectionProvider>
       <SiteFooter />
     </main>
