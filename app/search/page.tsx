@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PropertySelectionProvider } from "@/components/search/PropertySelectionProvider";
+import { SearchCompareDock } from "@/components/search/SearchCompareDock";
+import { SearchPriceExplorerDock } from "@/components/search/SearchPriceExplorerDock";
 import { SearchFilteredGalleryV2 } from "@/components/ux/SearchFilteredGalleryV2";
 import { runOdmDualReadShadow } from "@/lib/odm/odm-dual-read-runner";
 import { shouldRunOdmDualRead } from "@/lib/odm/odm-dual-read-shadow";
@@ -74,6 +76,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" />
       <PropertySelectionProvider>
+        <SearchPriceExplorerDock />
+        <SearchCompareDock />
         <SearchFilteredGalleryV2
           listings={initialSearchResult.listings}
           total={initialSearchResult.total}
