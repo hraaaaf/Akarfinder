@@ -1,0 +1,34 @@
+name: ODM Canary 10 Synthetic Traffic Certification V1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/certify-odm-canary-10-synthetic-traffic-v1.mjs"
+      - ".github/workflows/odm-canary-10-synthetic-traffic-certification-v1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-production:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Run controlled 10 percent production campaign
+        env:
+          AKARFINDER_PRODUCTION_URL: https://akarfinder.vercel.app
+        run: node scripts/certify-odm-canary-10-synthetic-traffic-v1.mjs
+      - name: Upload certification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odm-canary-10-synthetic-traffic-v1
+          path: artifacts/odm-canary-10-synthetic-traffic-v1.json
+          if-no-files-found: error
+          retention-days: 30
