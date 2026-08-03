@@ -13,6 +13,14 @@ const sellerPage = readFileSync("components/vendre/VendrePageShell.tsx", "utf8")
 const sellerForm = readFileSync("components/vendre/SellerPropertyDraftForm.tsx", "utf8");
 
 const OPTION_A_TYPES = ["Appartement", "Villa", "Terrain", "Studio", "Riad", "Bureau"];
+const EXACT_PREMIUM_ASSETS = [
+  "/images/property-types-premium/appartement.svg",
+  "/images/property-types-premium/villa.svg",
+  "/images/property-types-premium/terrain.webp",
+  "/images/property-types-premium/studio.webp",
+  "/images/property-types-premium/riad.webp",
+  "/images/property-types-premium/bureau.webp",
+];
 
 test("Option A taxonomy exposes the six approved property categories", () => {
   for (const propertyType of OPTION_A_TYPES) {
@@ -21,14 +29,14 @@ test("Option A taxonomy exposes the six approved property categories", () => {
   assert.match(presentation, /export const OPTION_A_PROPERTY_TYPES/);
 });
 
-test("premium artwork contains a dedicated motif for every approved category", () => {
-  assert.match(artwork, /ApartmentArtwork/);
-  assert.match(artwork, /VillaArtwork/);
-  assert.match(artwork, /TerrainArtwork/);
-  assert.match(artwork, /StudioArtwork/);
-  assert.match(artwork, /RiadArtwork/);
-  assert.match(artwork, /OfficeArtwork/);
-  assert.match(artwork, /Visuel|Illustration premium/);
+test("premium artwork uses the six exact approved local image assets", () => {
+  for (const asset of EXACT_PREMIUM_ASSETS) {
+    assert.ok(artwork.includes(asset), `missing exact approved asset: ${asset}`);
+  }
+  assert.match(artwork, /PREMIUM_PROPERTY_TYPE_IMAGES/);
+  assert.match(artwork, /Illustration premium/);
+  assert.doesNotMatch(artwork, /https?:\/\//);
+  assert.doesNotMatch(artwork, /ApartmentArtwork|VillaArtwork|TerrainArtwork|StudioArtwork|RiadArtwork|OfficeArtwork/);
 });
 
 test("visual selection remains continuous from intent pages into search", () => {
