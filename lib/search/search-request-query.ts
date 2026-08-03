@@ -42,7 +42,9 @@ function publicValue(value?: string): string | undefined {
 
 export function buildSearchRequestQuery(read: SearchParamReader): SearchQuery {
   const query: SearchQuery = {
-    limit: parseBoundedInteger(read("limit"), 50, 1, 100),
+    // Keep the established first public tranche: the page shell, SSR and API
+    // must all hash and serve the same 100-result request when no limit is sent.
+    limit: parseBoundedInteger(read("limit"), 100, 1, 100),
     offset: parseBoundedInteger(read("offset"), 0, 0, Number.MAX_SAFE_INTEGER),
   };
 
