@@ -44,9 +44,9 @@ test("record and URLSearchParams readers produce an identical public search quer
   assert.equal(buildSearchStableKey(pageQuery), buildSearchStableKey(apiQuery));
 });
 
-test("shared parser keeps safe defaults and bounds", () => {
+test("shared parser keeps the established first tranche and safe bounds", () => {
   const empty = buildSearchRequestQuery(() => undefined);
-  assert.equal(empty.limit, 50);
+  assert.equal(empty.limit, 100);
   assert.equal(empty.offset, 0);
 
   const boundedParams: Record<string, string> = {
