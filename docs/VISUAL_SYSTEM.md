@@ -1,139 +1,150 @@
-# AkarFinder Visual System — Golden Master
+# AkarFinder — Système visuel canonique
 
-## 1. Golden reference
+**Version : 2026-08-03**  
+**Statut : Option A Property Types en Production**
 
-**Proposition 3 is the canonical visual reference.**
+## 1. Architecture visuelle
 
-Every proprietary AkarFinder illustration must be judged against that reference before integration. Matching colors alone is not sufficient: composition, softness, geometry, visual weight and premium perception must belong to the same family.
+Le système comporte trois couches :
 
-The visual architecture has three layers:
+1. **photographie réelle et autorisée** pour un bien, une ville, un quartier ou un contexte factuel ;
+2. **illustrations propriétaires AkarFinder** pour catégories, intentions, services, onboarding et empty states ;
+3. **icônes Lucide** pour les actions et contrôles fonctionnels.
 
-1. **Photography** for real properties, real cities, real neighborhoods and factual/editorial context.
-2. **AkarFinder Golden Illustrations** for proprietary identity concepts: property types, intents, services, professional ecosystem and selected editorial/empty states.
-3. **Lucide functional icons** for universal controls and actions.
+Une illustration ne doit jamais remplacer une vraie photo autorisée déjà disponible pour une annonce.
 
-## 2. Proposition 3 grammar
+## 2. Famille Property Types — Option A
 
-Required characteristics:
+La famille approuvée par le fondateur et actuellement canonique pour les types de biens est **Option A**.
 
-- flat geometric compositions rather than isolated pictograms;
-- soft rounded geometry and generous negative space;
-- layered background shapes that create depth without fake 3D;
-- one dominant subject with one or two secondary shapes maximum;
-- readable silhouette at card size;
-- premium editorial feel rather than an icon-pack feel;
-- consistent optical weight across the entire library;
-- no text embedded inside artwork.
+Types couverts :
 
-Forbidden:
+- Appartement ;
+- Villa ;
+- Terrain ;
+- Studio ;
+- Riad ;
+- Bureau.
 
-- stock-icon / clip-art appearance;
-- random outline thicknesses;
-- isolated tiny pictograms floating in empty squares;
-- fake isometric perspective;
-- tourist-cartoon landmarks;
-- decorative bronze/gold/champagne accents;
-- approximate monuments presented as factual representations.
+Intégrations :
 
-## 3. Brand palette
+- Acheter ;
+- Louer ;
+- filtres et sélection Recherche ;
+- fallback des cartes sans photo ;
+- résultats externes uniquement lorsque le type normalisé est fiable ;
+- parcours Vendre.
 
-The system is derived from the real AkarFinder identity:
+Composants et assets :
 
-- Deep navy: `#0B1F3A`
-- Akar blue: `#0B63CE`
-- Mid blue: `#5AA7F8`
-- Pale blue: `#DCEEFF`
-- Surface blue: `#EEF6FF`
-- White: `#FFFFFF`
+- `components/property-types/PropertyTypeArtwork.tsx` ;
+- `components/property-types/PropertyTypeVisualSelector.tsx` ;
+- `lib/property-types/presentation.ts` ;
+- `public/images/property-types-premium/appartement.svg` ;
+- `public/images/property-types-premium/villa.svg` ;
+- `public/images/property-types-premium/terrain.webp` ;
+- `public/images/property-types-premium/studio.webp` ;
+- `public/images/property-types-premium/riad.webp` ;
+- `public/images/property-types-premium/bureau.webp`.
 
-No bronze, gold or champagne.
+Référence livraison : PR #249, commit `fa983a3`, Production `dpl_8XqdkUnMvVRgKVTCU2bNVnXbYg5f`.
 
-## 4. Canonical illustration families
+## 3. Grammaire Option A
 
-### Property types
-Appartement, Villa, Terrain, Maison, Riad, Studio, Duplex, Penthouse, Bureau, Commerce, Ferme / propriété rurale, Programme neuf.
+- composition premium et lisible à petite taille ;
+- sujet architectural immédiatement reconnaissable ;
+- fond clair ;
+- bleu marine, bleu AkarFinder, blanc et accents dorés contrôlés ;
+- profondeur visuelle sans effet 3D bon marché ;
+- cohérence de cadrage entre les six assets ;
+- aucun texte intégré dans l’image ;
+- aucun badge commercial implicite.
 
-### Intentions
-Acheter, Louer, Vendre.
+L’accent doré est autorisé dans cette famille visuelle parce qu’il fait partie du visuel explicitement approuvé. Il reste **décoratif** et ne signifie ni Gold, ni Premium, ni vérifié, ni partenaire.
 
-### Services / intelligence
-Crédit / financement, Estimation, Quartier / carte, Comparaison, Mon Projet, Compagnon, Alertes.
+## 4. Proposition 3
 
-### Professional ecosystem
-Agence partenaire, Promoteur.
+La grammaire historique « Proposition 3 » reste une référence pour les autres familles d’illustrations propriétaires : services, intentions, écosystème professionnel et empty states.
 
-Do not create Gold/Premium/verified semantics unless the corresponding entitlement exists in product truth and commercial rules.
+Elle ne doit plus être utilisée pour remplacer ou redessiner les six assets Option A sans une nouvelle validation explicite.
 
-### Editorial / empty states
-No results, no image, project empty, favorites empty, data limited.
+## 5. Règles photographie
 
-## 5. Canonical renderer
+Utiliser une photographie lorsque la vérité du sujet compte :
 
-The golden-master renderer is:
+- bien réel ;
+- ville ;
+- quartier ;
+- monument ;
+- projet promoteur ;
+- contenu éditorial factuel.
 
-`components/brand/GoldenIllustration.tsx`
+Conditions :
 
-This is the source of truth for the Proposition 3 grammar and is used by the QA gallery and integrated identity surfaces.
+- droit d’utilisation établi ;
+- source et crédit si nécessaire ;
+- pas de téléchargement/rehosting depuis un résultat externe sans autorisation ;
+- pas d’image approximative présentée comme le bien réel ;
+- pas d’image d’un autre bien comme placeholder trompeur.
 
-The legacy V1 static SVG set under `/public/brand/visual-system/` is **not a quality reference**. It is considered deprecated for new integration unless an individual asset is explicitly revalidated against the golden master.
+## 6. Fallbacks
 
-## 6. Photography vs illustration vs functional icon
+Ordre :
 
-Use **photography** when truth matters: a real home, city, neighborhood, listing or landmark.
+1. vraie photo autorisée ;
+2. asset Option A correspondant à un type reconnu ;
+3. fallback générique neutre si type inconnu ;
+4. aucun visuel plutôt qu’une fausse représentation.
 
-Use **GoldenIllustration** for categorical or abstract identity: property type, intent, service, ecosystem, onboarding and editorial empty states.
+Pour un résultat externe, l’illustration typée n’est autorisée que si la normalisation du type est suffisamment fiable.
 
-Use **Lucide** for functional UI: search, favorites, filters, close, menu, map-pin controls, share, sort, external link, theme and basic form/status actions.
+## 7. Icônes fonctionnelles
 
-Do not redraw functional controls simply to force branding.
+Lucide reste la référence pour :
 
-## 7. Cities — corrected doctrine
+- recherche ;
+- filtres ;
+- favoris ;
+- comparaison ;
+- carte ;
+- fermer/menu ;
+- partage ;
+- tri ;
+- lien externe ;
+- états de formulaire.
 
-The first City Marks implementation failed the premium/fidelity bar and is rejected as a live visual direction.
+Ne pas transformer un contrôle universel en illustration décorative.
 
-For production city cards:
+## 8. Villes
 
-- use **real city photography** when available;
-- frame it with the AkarFinder Proposition 3 card grammar;
-- never use an approximate monument silhouette as if it were an accurate city identity;
-- a future vector city emblem may replace photography only after side-by-side architectural fidelity review and founder validation.
+Pour les cartes de ville :
 
-Current founder reference anchors remain useful only for future fidelity studies:
+- photographie réelle privilégiée ;
+- cadre et overlay AkarFinder ;
+- aucun monument approximatif ;
+- futur emblème vectoriel uniquement après revue de fidélité architecturale.
 
-- Casablanca — Mosquée Hassan II + CFC;
-- Rabat — Tour Mohammed VI + new Prince Moulay Abdellah stadium complex;
-- Marrakech — Koutoubia;
-- Fès — Bab Boujloud;
-- Tanger — Kasbah / medina + bay relationship;
-- Agadir — Kasbah Oufella + bay / relief relationship.
+## 9. Accessibilité et responsive
 
-## 8. QA gallery
+Chaque famille doit être vérifiée :
 
-Route:
+- 390 px ;
+- 768 px ;
+- 1280/1440 px ;
+- contraste ;
+- texte alternatif adapté au contexte ;
+- absence de texte essentiel dans l’image ;
+- reduced motion ;
+- thème sombre avant utilisation sur fond sombre.
 
-`/demo/visual-system`
+## 10. Release rule
 
-The gallery must render the full conceptual library from the golden-master system, not from deprecated static assets.
+Un asset peut être livré seulement si :
 
-Validation criteria:
-
-- visually belongs to Proposition 3;
-- premium at first glance;
-- no stock-icon feel;
-- consistent palette and optical weight;
-- clear at 64–160 px;
-- coherent at 390 / 768 / 1280 px;
-- no false factual representation;
-- dark-mode usage validated before dark-background integration.
-
-## 9. Release rule
-
-A CI-green result is necessary but **not sufficient** for visual approval.
-
-A visual asset can ship only when:
-
-1. it passes technical checks;
-2. it belongs clearly to Proposition 3;
-3. it does not look cheaper than the surface it replaces;
-4. factual subjects remain truthful;
-5. the complete family remains coherent when viewed together.
+1. la famille complète est cohérente ;
+2. les tests techniques sont verts ;
+3. il ne remplace aucune donnée factuelle ;
+4. ses droits sont clairs ;
+5. la priorité photo/fallback est respectée ;
+6. le rendu est validé sur les viewports principaux ;
+7. le fondateur a approuvé toute nouvelle direction majeure.
