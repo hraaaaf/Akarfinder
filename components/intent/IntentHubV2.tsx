@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, Compass, MapPin, Search, ShieldCheck } from "lucide-react";
 
-import { GoldenIllustration } from "@/components/brand/GoldenIllustration";
+import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Container } from "@/components/ui/Container";
 import type { Listing } from "@/lib/listings/types";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
+import { OPTION_A_PROPERTY_TYPES } from "@/lib/property-types/presentation";
 import { getSearchTruthPresentation, isObservedExternalListing } from "@/lib/search/search-truth-tier";
 
 type Intent = "buy" | "rent";
@@ -25,11 +26,6 @@ const COPY = {
       "AkarFinder vous donne un aperçu de l’offre disponible puis vous envoie vers la recherche complète, où la pertinence, le niveau d’information et la source sont explicités.",
     searchPlaceholder: "Ville, quartier, résidence…",
     cta: "Explorer les biens à acheter",
-    quick: [
-      ["Appartements", "Appartement"],
-      ["Villas", "Villa"],
-      ["Terrains", "Terrain"],
-    ] as const,
   },
   rent: {
     eyebrow: "Louer",
@@ -38,13 +34,14 @@ const COPY = {
       "Budget, type et localisation se filtrent dans une seule surface de recherche. AkarFinder n’affiche pas ici de pseudo-filtres ou de signaux qu’il ne peut pas réellement appliquer.",
     searchPlaceholder: "Ville, quartier, résidence…",
     cta: "Explorer les locations",
-    quick: [
-      ["Studios", "Studio"],
-      ["Appartements", "Appartement"],
-      ["Villas", "Villa"],
-    ] as const,
   },
-} satisfies Record<Intent, unknown>;
+} satisfies Record<Intent, {
+  eyebrow: string;
+  title: string;
+  description: string;
+  searchPlaceholder: string;
+  cta: string;
+}>;
 
 function resultHref(listing: Listing) {
   return isObservedExternalListing(listing) && listing.listing_url
@@ -90,12 +87,12 @@ export function IntentHubV2({ intent, listings, totalListings }: IntentHubV2Prop
       <section className="relative overflow-hidden border-b border-border/12 bg-surface py-12 dark:border-white/8 dark:bg-deepblue sm:py-16 lg:py-20">
         <Container>
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
-            <div className="max-w-3xl">
+            <div className="max-w-5xl">
               <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[#0B63CE]">{copy.eyebrow}</p>
-              <h1 className="mt-3 text-[2.35rem] font-extrabold leading-[1.04] tracking-[-0.05em] sm:text-[3.5rem]">{copy.title}</h1>
+              <h1 className="mt-3 max-w-3xl text-[2.35rem] font-extrabold leading-[1.04] tracking-[-0.05em] sm:text-[3.5rem]">{copy.title}</h1>
               <p className="mt-4 max-w-2xl text-[14px] leading-7 text-muted-foreground sm:text-[15.5px]">{copy.description}</p>
 
-              <form action="/search" method="get" className="mt-7 flex overflow-hidden rounded-2xl border border-border/15 bg-card p-1 shadow-[0_16px_50px_rgba(2,10,24,0.12)] dark:border-white/10 dark:bg-white/[0.06]">
+              <form action="/search" method="get" className="mt-7 flex max-w-3xl overflow-hidden rounded-2xl border border-border/15 bg-card p-1 shadow-[0_16px_50px_rgba(2,10,24,0.12)] dark:border-white/10 dark:bg-white/[0.06]">
                 <input type="hidden" name="transaction_type" value={transactionType} />
                 <div className="flex min-w-0 flex-1 items-center gap-2 px-4">
                   <Search size={16} className="shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -104,20 +101,24 @@ export function IntentHubV2({ intent, listings, totalListings }: IntentHubV2Prop
                 <button type="submit" className="shrink-0 rounded-xl bg-[#0B63CE] px-5 py-3 text-[13px] font-extrabold text-white transition-colors hover:bg-[#084FA8]">Rechercher</button>
               </form>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                {copy.quick.map(([label, propertyType]) => (
-                  <Link key={propertyType} href={`/search?transaction_type=${transactionType}&property_type=${encodeURIComponent(propertyType)}`} className="group overflow-hidden rounded-[1.65rem] border border-[#DCE8F5] bg-white p-3 shadow-[0_14px_36px_rgba(11,31,58,0.07)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-[#93C5FD] hover:shadow-[0_18px_42px_rgba(11,99,206,0.12)] motion-reduce:transform-none dark:border-white/10 dark:bg-white/[0.04]">
-                    <div className="aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-[#EEF6FF]">
-                      <GoldenIllustration kind={propertyType} className="h-full w-full" />
+              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+                {OPTION_A_PROPERTY_TYPES.map((item) => (
+                  <Link
+                    key={item.value}
+                    href={`/search?transaction_type=${transactionType}&property_type=${encodeURIComponent(item.value)}`}
+                    className="group overflow-hidden rounded-[1.45rem] border border-[#DCE8F5] bg-white p-2.5 shadow-[0_14px_36px_rgba(11,31,58,0.07)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-[#93C5FD] hover:shadow-[0_18px_42px_rgba(11,99,206,0.12)] motion-reduce:transform-none dark:border-white/10 dark:bg-white/[0.04]"
+                  >
+                    <div className="aspect-[16/10] overflow-hidden rounded-[1.05rem] bg-[#F7FAFF]">
+                      <PropertyTypeArtwork kind={item.value} className="h-full w-full" decorative />
                     </div>
-                    <div className="mt-3 flex items-center justify-between gap-2 px-1 pb-1">
-                      <span className="text-[12.5px] font-extrabold text-[#0B1F3A] dark:text-white">{label}</span>
-                      <span className="grid h-8 w-8 place-items-center rounded-[11px] bg-[#EEF6FF] text-[#0B63CE] transition-colors group-hover:bg-[#0B63CE] group-hover:text-white" aria-hidden="true">→</span>
+                    <div className="mt-2.5 flex items-center justify-between gap-2 px-1 pb-1">
+                      <span className="text-[11.5px] font-extrabold text-[#0B1F3A] dark:text-white">{item.pluralLabel}</span>
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-[10px] bg-[#EEF6FF] text-[#0B63CE] transition-colors group-hover:bg-[#0B63CE] group-hover:text-white" aria-hidden="true">→</span>
                     </div>
                   </Link>
                 ))}
               </div>
-              <Link href={`/search?transaction_type=${transactionType}`} className="mt-3 inline-flex items-center gap-2 text-[12px] font-extrabold text-[#0B63CE]">Tous les filtres <ArrowRight size={13} aria-hidden="true" /></Link>
+              <Link href={`/search?transaction_type=${transactionType}`} className="mt-4 inline-flex items-center gap-2 text-[12px] font-extrabold text-[#0B63CE]">Tous les filtres <ArrowRight size={13} aria-hidden="true" /></Link>
             </div>
 
             <aside className="rounded-3xl border border-border/15 bg-card p-6 dark:border-white/10 dark:bg-white/[0.04]">
