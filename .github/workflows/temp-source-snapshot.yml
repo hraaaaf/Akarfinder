@@ -1,0 +1,25 @@
+name: Temporary Source Snapshot
+
+on:
+  push:
+    branches:
+      - feat/search-commercial-priority-v1
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: akar-source-snapshot
+          path: |
+            .
+            !.git/**
+          include-hidden-files: true
+          retention-days: 1
