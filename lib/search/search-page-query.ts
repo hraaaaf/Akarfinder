@@ -3,6 +3,9 @@ import type { SearchQuery } from "./types";
 
 type SearchPageParams = Record<string, string | string[] | undefined>;
 
+export const SEARCH_PAGE_SIZES = [10, 20, 50] as const;
+export const DEFAULT_SEARCH_PAGE_SIZE = 10;
+
 function pickFirst(value: string | string[] | undefined) {
   if (Array.isArray(value)) return value[0];
   return value;
@@ -25,10 +28,27 @@ function normalizeTransactionType(raw?: string): SearchQuery["transaction_type"]
   }
 }
 
+function positiveInteger(raw: string | undefined, fallback: number): number {
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+  return Math.trunc(parsed);
+}
+
+function searchPageSize(raw: string | undefined): number {
+  const parsed = positiveInteger(raw, DEFAULT_SEARCH_PAGE_SIZE);
+  return SEARCH_PAGE_SIZES.includes(parsed as (typeof SEARCH_PAGE_SIZES)[number])
+    ? parsed
+    : DEFAULT_SEARCH_PAGE_SIZE;
+}
+
 export function buildSearchPageQuery(searchParams: SearchPageParams): SearchQuery {
+  const limit = searchPageSize(
+    pickFirst(searchParams.per_page) ?? pickFirst(searchParams.limit),
+  );
+  const page = positiveInteger(pickFirst(searchParams.page), 1);
   const query: SearchQuery = {
-    limit: 100,
-    offset: 0,
+    limit,
+    offset: (page - 1) * limit,
   };
 
   const search = pickFirst(searchParams.q);
@@ -41,7 +61,7 @@ export function buildSearchPageQuery(searchParams: SearchPageParams): SearchQuer
   if (propertyType && propertyType !== "all") query.property_type = propertyType;
 
   const transactionType = normalizeTransactionType(
-    pickFirst(searchParams.type) ?? pickFirst(searchParams.transaction_type)
+    pickFirst(searchParams.type) ?? pickFirst(searchParams.transaction_type),
   );
   if (transactionType) query.transaction_type = transactionType;
 
