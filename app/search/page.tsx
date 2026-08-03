@@ -69,6 +69,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const resolvedQuery = buildSearchPageQuery(params);
   const initialSearchResult = await searchListings(resolvedQuery);
   scheduleOdmDualReadShadow(resolvedQuery, initialSearchResult);
+  const city = resolvedQuery.city;
+  const propertyType = resolvedQuery.property_type;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -78,8 +80,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           listings={initialSearchResult.listings}
           total={initialSearchResult.total}
           query={resolvedQuery.q ?? ""}
-          city={resolvedQuery.city}
-          propertyType={resolvedQuery.property_type}
+          city={city}
+          propertyType={propertyType}
         />
         <SearchPriceExplorerDock />
         <SearchCompareDock />
