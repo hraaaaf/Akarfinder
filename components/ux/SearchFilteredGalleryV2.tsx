@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Search } from "lucide-react";
 import type { Listing } from "@/lib/listings/types";
 import { ListingCardV2 } from "@/components/ux/ListingCardV2";
@@ -14,6 +15,7 @@ type SearchGalleryProps = {
   maxPrice?: number;
   minSurface?: number;
   maxSurface?: number;
+  insight?: ReactNode;
 };
 
 function PreservedFilters({
@@ -24,7 +26,7 @@ function PreservedFilters({
   maxPrice,
   minSurface,
   maxSurface,
-}: Omit<SearchGalleryProps, "listings" | "total" | "query">) {
+}: Omit<SearchGalleryProps, "listings" | "total" | "query" | "insight">) {
   return (
     <>
       {city ? <input type="hidden" name="city" value={city} /> : null}
@@ -51,10 +53,13 @@ export function SearchFilteredGalleryV2({
   maxPrice,
   minSurface,
   maxSurface,
+  insight,
 }: SearchGalleryProps) {
   const visible = listings.filter(
     (listing) => listing.can_show_result !== false && listing.production_allowed !== false,
   );
+  const leadListings = visible.slice(0, 4);
+  const remainingListings = visible.slice(4);
 
   const filterValues = {
     query,
@@ -109,7 +114,11 @@ export function SearchFilteredGalleryV2({
 
             {visible.length ? (
               <div className="grid gap-4">
-                {visible.map((listing) => (
+                {leadListings.map((listing) => (
+                  <ListingCardV2 key={listing.id} listing={listing} />
+                ))}
+                {insight ? <div className="my-1">{insight}</div> : null}
+                {remainingListings.map((listing) => (
                   <ListingCardV2 key={listing.id} listing={listing} />
                 ))}
               </div>
