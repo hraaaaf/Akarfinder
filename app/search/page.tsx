@@ -113,8 +113,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           maxPrice={resolvedQuery.max_price}
           minSurface={resolvedQuery.min_surface}
           maxSurface={resolvedQuery.max_surface}
+          insight={<SearchPriceExplorerDock />}
         />
-        <SearchPriceExplorerDock />
         <SearchCompareDock />
       </PropertySelectionProvider>
       <SiteFooter />
