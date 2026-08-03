@@ -14,7 +14,11 @@ import {
   shouldServeOdmPublicCanary,
 } from "@/lib/odm/odm-public-canary";
 import { searchListings, type SearchQuery, type SearchResult } from "@/lib/search";
-import { buildSearchPageQuery } from "@/lib/search/search-page-query";
+import {
+  buildRawSearchPageQuery,
+  buildSearchPageQuery,
+} from "@/lib/search/search-page-query";
+import { buildSearchStableKey } from "@/lib/search/search-request-query";
 import { searchPublicRepresentations } from "@/lib/search-gateway/public-search-cursor";
 import type { ListingFiltersState } from "@/lib/listings/types";
 
@@ -55,21 +59,6 @@ function normalizeTransactionType(raw?: string): ListingFiltersState["transactio
   }
 }
 
-function stableSearchKey(query: SearchQuery): string {
-  return JSON.stringify({
-    q: query.q ?? null,
-    city: query.city ?? null,
-    property_type: query.property_type ?? null,
-    transaction_type: query.transaction_type ?? null,
-    min_price: query.min_price ?? null,
-    max_price: query.max_price ?? null,
-    min_surface: query.min_surface ?? null,
-    max_surface: query.max_surface ?? null,
-    limit: query.limit ?? null,
-    offset: query.offset ?? null,
-  });
-}
-
 function odmInput(query: SearchQuery) {
   return {
     q: query.q,
@@ -85,7 +74,7 @@ function odmInput(query: SearchQuery) {
 }
 
 function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResult): void {
-  const stableKey = stableSearchKey(query);
+  const stableKey = buildSearchStableKey(query);
   if (!shouldRunOdmDualRead(stableKey)) return;
 
   after(async () => {
@@ -97,28 +86,35 @@ function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResul
   });
 }
 
-async function searchVisibleInitialResult(query: SearchQuery): Promise<SearchResult> {
-  const stableKey = stableSearchKey(query);
+async function searchVisibleInitialResult(
+  resolvedQuery: SearchQuery,
+  publicRequestQuery: SearchQuery,
+): Promise<SearchResult> {
+  const stableKey = buildSearchStableKey(publicRequestQuery);
 
   if (shouldServeOdmPublicCanary(stableKey)) {
     try {
-      const odmPage = await searchPublicRepresentations(odmInput(query));
-      return mapOdmPageToSearchResult(odmPage, query);
+      const odmPage = await searchPublicRepresentations(odmInput(publicRequestQuery));
+      return mapOdmPageToSearchResult(odmPage, publicRequestQuery);
     } catch (error) {
       console.warn("[search-page:odm-public-canary:fallback]", error);
-      return searchListings(query);
+      return searchListings(resolvedQuery);
     }
   }
 
-  const legacyResult = await searchListings(query);
-  scheduleOdmDualReadShadow(query, legacyResult);
+  const legacyResult = await searchListings(resolvedQuery);
+  scheduleOdmDualReadShadow(resolvedQuery, legacyResult);
   return legacyResult;
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = searchParams ? await searchParams : {};
+  const publicRequestQuery = buildRawSearchPageQuery(params);
   const resolvedQuery = buildSearchPageQuery(params);
-  const initialSearchResult = await searchVisibleInitialResult(resolvedQuery);
+  const initialSearchResult = await searchVisibleInitialResult(
+    resolvedQuery,
+    publicRequestQuery,
+  );
   const transactionType = normalizeTransactionType(resolvedQuery.transaction_type);
   const city = resolvedQuery.city ?? "all";
   const mreOnly = (pickFirst(params.mre) ?? "").toLowerCase() === "true";

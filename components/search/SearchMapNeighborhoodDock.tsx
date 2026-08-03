@@ -54,7 +54,7 @@ export function SearchMapNeighborhoodDock() {
       />
       <CertifiedLocalHeatmapPanel model={context.heatmap} />
       <p className="rounded-xl border border-dashed border-[#dfe7f3] bg-white px-3 py-2.5 text-[10.5px] leading-4 text-slate-500">
-        Les couleurs comparent uniquement les références publiques de prix demandé disponibles pour la ville et le type de bien sélectionnés. Aucune limite de quartier n’est dessinée sans géométrie officielle ou certifiée. Le serveur décide de manière stable et anonyme si une session Preview Casablanca appartient au Canary, plafonné à 1 % et bloqué en production.
+        Les couleurs comparent uniquement les références publiques de prix demandé disponibles pour la ville et le type de bien sélectionnés. Aucune limite de quartier n’est dessinée sans géométrie officielle ou certifiée. Cette visualisation reste indicative et ne modifie ni les résultats ni leur classement.
       </p>
     </div>
   );

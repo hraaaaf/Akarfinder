@@ -3,8 +3,12 @@ name: Search Page Visible ODM Canary V1
 on:
   pull_request:
     paths:
+      - "app/api/search/route.ts"
       - "app/search/page.tsx"
+      - "lib/search/search-page-query.ts"
+      - "lib/search/search-request-query.ts"
       - "scripts/scrapers/__tests__/search-page-visible-odm-canary-v1.test.ts"
+      - "scripts/scrapers/__tests__/search-page-api-canary-query-parity-v1.test.ts"
       - ".github/workflows/search-page-visible-odm-canary-v1.yml"
 
 jobs:
@@ -15,6 +19,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: node --test --experimental-strip-types scripts/scrapers/__tests__/search-page-visible-odm-canary-v1.test.ts
+      - run: node --test --experimental-strip-types scripts/scrapers/__tests__/search-page-visible-odm-canary-v1.test.ts scripts/scrapers/__tests__/search-page-api-canary-query-parity-v1.test.ts
       - run: npm ci
       - run: npx tsc --noEmit
