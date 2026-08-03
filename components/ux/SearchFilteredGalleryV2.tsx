@@ -261,9 +261,10 @@ export function SearchFilteredGalleryV2({
   perPage,
   insight,
 }: SearchGalleryProps) {
-  const visible = listings.filter(
-    (listing) => listing.can_show_result !== false && listing.production_allowed !== false,
-  );
+  // The server search layer is the publication boundary. It already returns
+  // the canonical result set for the selected lane, so the UI must not apply a
+  // second, divergent eligibility filter that can hide legitimate results.
+  const visible = listings;
   const leadListings = visible.slice(0, 4);
   const remainingListings = visible.slice(4);
   const totalPages = Math.max(1, Math.ceil(total / perPage));
