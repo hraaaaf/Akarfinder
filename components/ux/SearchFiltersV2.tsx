@@ -110,14 +110,16 @@ export function SearchFiltersV2({ total, ...values }: SearchFilterValues & { tot
         </div>
       </aside>
 
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="fixed bottom-5 right-4 z-30 flex items-center gap-2 rounded-full bg-blue-700 px-4 py-3 text-sm font-extrabold text-white shadow-xl lg:hidden"
-      >
-        <SlidersHorizontal size={17} />
-        Filtres
-      </button>
+      <div className="flex justify-end border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-extrabold text-white shadow-sm"
+        >
+          <SlidersHorizontal size={17} />
+          Filtres
+        </button>
+      </div>
 
       {open ? (
         <div className="fixed inset-0 z-50 bg-slate-950/35 lg:hidden" onClick={() => setOpen(false)}>
