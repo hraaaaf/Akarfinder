@@ -1,4 +1,8 @@
+"use client";
+
+import { useEffect } from "react";
 import { Bath, BedDouble, Building2, ExternalLink, MapPin, Maximize2 } from "lucide-react";
+import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
 import type { Listing } from "@/lib/listings/types";
 
 function formatPrice(value: number | null) {
@@ -21,6 +25,10 @@ function informationLabel(listing: Listing) {
 }
 
 export function ListingCardV2({ listing }: { listing: Listing }) {
+  const { registerListing, hoverListing, clearHover, isActive } = usePropertySelection();
+
+  useEffect(() => registerListing(listing), [listing, registerListing]);
+
   const image = permittedImage(listing);
   const info = informationLabel(listing);
   const bedrooms = listing.bedrooms_count ?? listing.bedrooms;
@@ -31,9 +39,16 @@ export function ListingCardV2({ listing }: { listing: Listing }) {
     listing.original_source_required ||
     listing.primary_cta === "view_original" ||
     listing.primary_cta === "view_source";
+  const active = isActive(listing);
 
   return (
-    <article className="group grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_28px_rgba(15,23,42,.055)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(15,23,42,.1)] md:grid-cols-[238px_1fr]">
+    <article
+      onMouseEnter={() => hoverListing(listing, "list")}
+      onMouseLeave={clearHover}
+      className={`group grid overflow-hidden rounded-2xl border bg-white shadow-[0_8px_28px_rgba(15,23,42,.055)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(15,23,42,.1)] md:grid-cols-[238px_1fr] ${
+        active ? "border-blue-500 ring-2 ring-blue-100" : "border-slate-200"
+      }`}
+    >
       <div className="relative min-h-[210px] overflow-hidden bg-slate-100">
         {image ? (
           <div
