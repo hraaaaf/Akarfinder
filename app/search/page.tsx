@@ -111,7 +111,7 @@ async function searchOdmNumericPage(query: SearchQuery): Promise<SearchResult> {
     });
   }
 
-  const page: PublicSearchPage = {
+  const odmPage: PublicSearchPage = {
     results,
     results_count: results.length,
     total_count: totalCount,
@@ -119,7 +119,7 @@ async function searchOdmNumericPage(query: SearchQuery): Promise<SearchResult> {
     next_cursor: null,
   };
 
-  return mapOdmPageToSearchResult(page, { ...query, limit, offset });
+  return mapOdmPageToSearchResult(odmPage, query);
 }
 
 async function searchVisibleInitialResult(query: SearchQuery): Promise<SearchResult> {
