@@ -1,15 +1,14 @@
 import { after, type NextRequest, NextResponse } from "next/server";
-import { searchListings, type SearchQuery, type SearchResult } from "@/lib/search";
+import type { SearchQuery, SearchResult } from "@/lib/search";
 import { runOdmDualReadShadow } from "@/lib/odm/odm-dual-read-runner";
 import {
   shouldRunOdmDualRead,
   type OdmShadowSearchContext,
 } from "@/lib/odm/odm-dual-read-shadow";
 import {
-  mapOdmPageToSearchResult,
-  shouldServeOdmPublicCanary,
-} from "@/lib/odm/odm-public-canary";
-import { searchPublicRepresentations } from "@/lib/search-gateway/public-search-cursor";
+  buildOdmPublicSearchInput,
+  routePublicSearch,
+} from "@/lib/odm/odm-public-routing";
 import {
   buildSearchRequestQuery,
   buildSearchStableKey,
@@ -17,24 +16,9 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-// The legacy search can consume most of the default serverless window before
-// the non-blocking ODM shadow callback begins. Reserve enough execution time
-// for the RPC, comparison and private telemetry write to complete.
+// Legacy remains available as an emergency fallback. Reserve enough execution
+// time for fallback and optional shadow telemetry when ODM is explicitly stopped.
 export const maxDuration = 60;
-
-function odmInput(query: SearchQuery) {
-  return {
-    q: query.q,
-    city: query.city,
-    propertyType: query.property_type,
-    intent: query.transaction_type,
-    minPrice: query.min_price,
-    maxPrice: query.max_price,
-    minSurface: query.min_surface,
-    maxSurface: query.max_surface,
-    limit: Math.min(query.limit ?? 50, 100),
-  };
-}
 
 function shadowContext(query: SearchQuery): OdmShadowSearchContext {
   const offset = query.offset ?? 0;
@@ -59,7 +43,7 @@ function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResul
     await runOdmDualReadShadow({
       stableKey,
       legacyResult,
-      odmInput: odmInput(query),
+      odmInput: buildOdmPublicSearchInput(query),
       context: shadowContext(query),
     });
   });
@@ -73,20 +57,17 @@ export async function GET(request: NextRequest) {
   const stableKey = buildSearchStableKey(query);
 
   try {
-    if (shouldServeOdmPublicCanary(stableKey)) {
-      try {
-        const odmPage = await searchPublicRepresentations(odmInput(query));
-        return NextResponse.json(mapOdmPageToSearchResult(odmPage, query));
-      } catch (error) {
-        console.warn("[odm-public-canary:fallback]", error);
-        const legacyFallback = await searchListings(query);
-        return NextResponse.json(legacyFallback);
-      }
+    const routed = await routePublicSearch({
+      stableKey,
+      publicQuery: query,
+      surface: "api_search",
+    });
+
+    if (routed.lane === "legacy_primary") {
+      scheduleOdmDualReadShadow(query, routed.result);
     }
 
-    const legacyResult = await searchListings(query);
-    scheduleOdmDualReadShadow(query, legacyResult);
-    return NextResponse.json(legacyResult);
+    return NextResponse.json(routed.result);
   } catch (error) {
     console.error("[api/search] Search failed:", error);
     return NextResponse.json({
