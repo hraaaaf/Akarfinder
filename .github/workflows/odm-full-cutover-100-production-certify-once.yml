@@ -1,0 +1,109 @@
+name: ODM Full Cutover 100 Percent Production Certification Once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/odm-full-cutover-100-production-certify-once.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  certify-production:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Confirm low and high deterministic buckets route to ODM
+        run: |
+          node <<'NODE'
+          const base = "https://akarfinder.vercel.app/api/search";
+          const common = {
+            city: "Casablanca",
+            property_type: "apartment",
+            transaction_type: "sale",
+            min_price: "10000",
+            max_price: "50000000",
+            min_surface: "1",
+            max_surface: "500",
+            offset: "0",
+          };
+          for (const [label, limit] of [["low_bucket", "50"], ["high_bucket", "5"]]) {
+            const params = new URLSearchParams({ ...common, limit });
+            const response = await fetch(`${base}?${params}`);
+            const body = await response.json();
+            if (response.status !== 200 || body.source !== "database_fallback") {
+              throw new Error(`${label} did not route to ODM: status=${response.status} source=${body.source}`);
+            }
+            console.log(`${label}: ODM confirmed`);
+          }
+          NODE
+      - name: Run controlled 240-request full-cutover campaign
+        env:
+          AKARFINDER_PRODUCTION_URL: https://akarfinder.vercel.app
+        run: node scripts/certify-odm-full-cutover-100-production-v1.mjs
+      - name: Upload certification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odm-full-cutover-100-production-certification-v1
+          path: artifacts/odm-full-cutover-100-production-certification-v1.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Persist latest evidence on audit branch
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("node:fs");
+            const reportPath = "artifacts/odm-full-cutover-100-production-certification-v1.json";
+            const targetPath = "reports/odm-full-cutover-100-production-latest.json";
+            const auditBranch = "certification-results";
+            let report;
+
+            if (fs.existsSync(reportPath)) {
+              report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+            } else {
+              report = {
+                certification: "ODM_FULL_CUTOVER_100_PRODUCTION_CERTIFICATION_V1",
+                generated_at: new Date().toISOString(),
+                gates: {},
+                evidence_error: "campaign_report_missing",
+              };
+            }
+
+            report.evidence = {
+              workflow_run_id: context.runId,
+              workflow_run_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              source_commit: context.sha,
+              source_ref: context.ref,
+              persisted_at: new Date().toISOString(),
+              trigger: "one_time_read_only_push",
+            };
+
+            let existingSha;
+            try {
+              const existing = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: targetPath,
+                ref: auditBranch,
+              });
+              if (!Array.isArray(existing.data)) existingSha = existing.data.sha;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: targetPath,
+              branch: auditBranch,
+              message: `audit(search): persist ODM 100 percent evidence from run ${context.runId}`,
+              content: Buffer.from(`${JSON.stringify(report, null, 2)}\n`).toString("base64"),
+              ...(existingSha ? { sha: existingSha } : {}),
+            });
