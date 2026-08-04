@@ -73,6 +73,7 @@ export type DbListingsQuery = {
   bedrooms?: number;
   limit?: number;
   offset?: number;
+  order_by?: "default" | "reliability_desc";
 };
 
 export type DbListingsResult = {
@@ -196,6 +197,14 @@ export function queryDbListings(
       conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
     const limit = Math.min(Math.max(query.limit ?? 50, 1), 100);
     const offset = Math.max(query.offset ?? 0, 0);
+    const orderClause =
+      query.order_by === "reliability_desc"
+        ? `ORDER BY
+            COALESCE(pl.reliability_score, pl.data_completeness_score, 0) DESC,
+            pl.data_completeness_score DESC,
+            pl.updated_at DESC,
+            pl.id DESC`
+        : "ORDER BY pl.data_completeness_score DESC, pl.updated_at DESC, pl.id DESC";
 
     const countSql = `SELECT COUNT(*) as total FROM property_listings pl ${whereClause}`;
     const countStatement = db.prepare(countSql);
@@ -227,7 +236,7 @@ export function queryDbListings(
         ) AS source_url
       FROM property_listings pl
       ${whereClause}
-      ORDER BY pl.data_completeness_score DESC, pl.updated_at DESC, pl.id DESC
+      ${orderClause}
       LIMIT ? OFFSET ?
     `;
 
