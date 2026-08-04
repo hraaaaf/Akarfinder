@@ -13,19 +13,20 @@ test("fails closed unless all approval flags are present", () => {
   assert.equal(shouldServeOdmPublicCanary("x", { ODM_PUBLIC_CANARY_ENABLED: "true", ODM_PUBLIC_CANARY_PERCENT: "25" }), false);
 });
 
-test("accepts the approved twenty-five percent ceiling and rejects values above it", () => {
-  assert.equal(ODM_PUBLIC_CANARY_MAX_PERCENT, 25);
+test("accepts the approved fifty percent ceiling and rejects values above it", () => {
+  assert.equal(ODM_PUBLIC_CANARY_MAX_PERCENT, 50);
   assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "10" }), 10);
   assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "25" }), 25);
-  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "25.01" }), 0);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "50" }), 50);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "50.01" }), 0);
 });
 
-test("stop flag overrides approval at the twenty-five percent ceiling", () => {
+test("stop flag overrides approval at the fifty percent ceiling", () => {
   assert.equal(shouldServeOdmPublicCanary("x", {
     ODM_PUBLIC_CANARY_ENABLED: "true",
     ODM_PUBLIC_CANARY_APPROVED: "true",
     ODM_PUBLIC_CANARY_STOP: "true",
-    ODM_PUBLIC_CANARY_PERCENT: "25",
+    ODM_PUBLIC_CANARY_PERCENT: "50",
   }), false);
 });
 
