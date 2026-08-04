@@ -1,7 +1,7 @@
 {
   "certification": "ODM_CANARY_10_PRODUCTION_CERTIFICATION_V1",
   "campaign_revision": 2,
-  "generated_at": "2026-08-04T17:06:28.360Z",
+  "generated_at": "2026-08-04T18:25:08.873Z",
   "base_url": "https://akarfinder.vercel.app",
   "target_percent": 10,
   "requested": 240,
@@ -58,14 +58,14 @@
     ]
   },
   "latency_ms": {
-    "canary_p50": 276.3,
-    "canary_p95": 1454.81,
-    "canary_p99": 1849.22,
-    "legacy_p50": 494.99,
-    "legacy_p95": 1289.06,
-    "legacy_p99": 1712.94,
-    "visible_p50": 340.4,
-    "visible_p95": 576.98
+    "canary_p50": 184.49,
+    "canary_p95": 2007.58,
+    "canary_p99": 2158.23,
+    "legacy_p50": 418.72,
+    "legacy_p95": 1152.12,
+    "legacy_p99": 1248.64,
+    "visible_p50": 214.67,
+    "visible_p95": 458.77
   },
   "gates": {
     "exact_240_request_campaign": true,
@@ -84,7 +84,7 @@
   "visible_probes": [
     {
       "status": 200,
-      "latency_ms": 1480.74,
+      "latency_ms": 1516.86,
       "city": "Casablanca",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -92,7 +92,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 310.11,
+      "latency_ms": 259.53,
       "city": "Rabat",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -100,7 +100,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 307.99,
+      "latency_ms": 211.73,
       "city": "Marrakech",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -108,7 +108,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 349.67,
+      "latency_ms": 234.98,
       "city": "Tanger",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -116,7 +116,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 356.7,
+      "latency_ms": 213.16,
       "city": "Agadir",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -124,7 +124,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 567.25,
+      "latency_ms": 458.77,
       "city": "Fès",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -132,7 +132,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 576.98,
+      "latency_ms": 193.63,
       "city": "Oujda",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -140,7 +140,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 352.73,
+      "latency_ms": 214.67,
       "city": "Kénitra",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -148,7 +148,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 298.46,
+      "latency_ms": 435.68,
       "city": "Témara",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -156,7 +156,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 291.72,
+      "latency_ms": 201.79,
       "city": "Salé",
       "property_type": "apartment",
       "transaction_type": "rent",
@@ -164,7 +164,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 303.87,
+      "latency_ms": 216.94,
       "city": "Casablanca",
       "property_type": "apartment",
       "transaction_type": "rent",
@@ -172,7 +172,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 340.4,
+      "latency_ms": 205.52,
       "city": "Casablanca",
       "property_type": "villa",
       "transaction_type": "sale",
@@ -196,7 +196,7 @@
       "bucket": 1843,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 488.25,
+      "latency_ms": 476.01,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -219,7 +219,7 @@
       "bucket": 1350,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 267.25,
+      "latency_ms": 201.57,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -242,7 +242,7 @@
       "bucket": 1294,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 494.99,
+      "latency_ms": 161.82,
       "source": "database_fallback",
       "returned": 5,
       "errors": [
@@ -265,7 +265,7 @@
       "bucket": 1489,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 547.17,
+      "latency_ms": 165.74,
       "source": "database_fallback",
       "returned": 5,
       "errors": [
@@ -288,7 +288,7 @@
       "bucket": 1982,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 496.58,
+      "latency_ms": 399.93,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -311,7 +311,7 @@
       "bucket": 1121,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 283.05,
+      "latency_ms": 168.64,
       "source": "database_fallback",
       "returned": 10,
       "errors": [
@@ -334,7 +334,7 @@
       "bucket": 1898,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 266.73,
+      "latency_ms": 169.32,
       "source": "database_fallback",
       "returned": 1,
       "errors": [
@@ -357,7 +357,7 @@
       "bucket": 1458,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 260.28,
+      "latency_ms": 391.21,
       "source": "database_fallback",
       "returned": 10,
       "errors": [
@@ -380,7 +380,7 @@
       "bucket": 2492,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 274.08,
+      "latency_ms": 416.36,
       "source": "database_fallback",
       "returned": 1,
       "errors": [
@@ -403,7 +403,7 @@
       "bucket": 1213,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 482.38,
+      "latency_ms": 173.04,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -426,7 +426,7 @@
       "bucket": 2143,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 491.47,
+      "latency_ms": 409.03,
       "source": "database_fallback",
       "returned": 4,
       "errors": [
@@ -449,7 +449,7 @@
       "bucket": 2483,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 251.48,
+      "latency_ms": 400.55,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -472,7 +472,7 @@
       "bucket": 2484,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 264.61,
+      "latency_ms": 245.88,
       "source": "database_fallback",
       "returned": 5,
       "errors": [
@@ -495,7 +495,7 @@
       "bucket": 1386,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 255.16,
+      "latency_ms": 385.01,
       "source": "database_fallback",
       "returned": 5,
       "errors": [
@@ -518,7 +518,7 @@
       "bucket": 1089,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 267.57,
+      "latency_ms": 172.19,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -541,7 +541,7 @@
       "bucket": 1228,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 394.99,
+      "latency_ms": 163.27,
       "source": "database_fallback",
       "returned": 1,
       "errors": [
@@ -564,7 +564,7 @@
       "bucket": 1384,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 489.95,
+      "latency_ms": 165.46,
       "source": "database_fallback",
       "returned": 9,
       "errors": [
@@ -587,7 +587,7 @@
       "bucket": 1572,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 268.55,
+      "latency_ms": 157.26,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -610,7 +610,7 @@
       "bucket": 1077,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 259.04,
+      "latency_ms": 172.88,
       "source": "database_fallback",
       "returned": 4,
       "errors": [
@@ -633,7 +633,7 @@
       "bucket": 1117,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 273.82,
+      "latency_ms": 171.54,
       "source": "database_fallback",
       "returned": 6,
       "errors": [
@@ -656,7 +656,7 @@
       "bucket": 1570,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 281.22,
+      "latency_ms": 159.05,
       "source": "database_fallback",
       "returned": 5,
       "errors": [
@@ -679,7 +679,7 @@
       "bucket": 1088,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 270.57,
+      "latency_ms": 188.01,
       "source": "database_fallback",
       "returned": 5,
       "errors": [
@@ -702,7 +702,7 @@
       "bucket": 1665,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 404.13,
+      "latency_ms": 218,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -725,7 +725,7 @@
       "bucket": 1231,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 256.44,
+      "latency_ms": 219.98,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -748,7 +748,7 @@
       "bucket": 1155,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 264.4,
+      "latency_ms": 258.67,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -771,7 +771,7 @@
       "bucket": 1902,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 405.35,
+      "latency_ms": 174,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -794,7 +794,7 @@
       "bucket": 2053,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 506.15,
+      "latency_ms": 160.94,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -817,7 +817,7 @@
       "bucket": 2082,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 263.53,
+      "latency_ms": 163.01,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -840,7 +840,7 @@
       "bucket": 2359,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 271.72,
+      "latency_ms": 461.57,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -863,7 +863,7 @@
       "bucket": 2175,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 251.78,
+      "latency_ms": 170.93,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -886,7 +886,7 @@
       "bucket": 2423,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 488.64,
+      "latency_ms": 413.63,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -909,7 +909,7 @@
       "bucket": 1206,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 260.36,
+      "latency_ms": 387.94,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -932,7 +932,7 @@
       "bucket": 1007,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 267.46,
+      "latency_ms": 171.69,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -941,10 +941,10 @@
     }
   ],
   "evidence": {
-    "workflow_run_id": 30932172067,
-    "workflow_run_url": "https://github.com/hraaaaf/Akarfinder/actions/runs/30932172067",
-    "source_commit": "5d8b9b75327a05b2f2a89002413bbf5331ec843c",
+    "workflow_run_id": 30938316966,
+    "workflow_run_url": "https://github.com/hraaaaf/Akarfinder/actions/runs/30938316966",
+    "source_commit": "641a93ad77cb3a53b64fa48a507428e38f432d78",
     "source_ref": "refs/heads/main",
-    "persisted_at": "2026-08-04T17:06:29.435Z"
+    "persisted_at": "2026-08-04T18:25:09.589Z"
   }
 }
