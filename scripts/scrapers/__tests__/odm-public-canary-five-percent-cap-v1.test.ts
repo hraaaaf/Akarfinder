@@ -9,11 +9,12 @@ import {
 
 const source = readFileSync("lib/odm/odm-public-canary.ts", "utf8");
 
-test("public ODM Canary keeps five percent valid within the twenty-five percent ceiling", () => {
-  assert.equal(ODM_PUBLIC_CANARY_MAX_PERCENT, 25);
+test("public ODM Canary keeps five percent valid within the fifty percent ceiling", () => {
+  assert.equal(ODM_PUBLIC_CANARY_MAX_PERCENT, 50);
   assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "5" } as NodeJS.ProcessEnv), 5);
   assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "25" } as NodeJS.ProcessEnv), 25);
-  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "25.01" } as NodeJS.ProcessEnv), 0);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "50" } as NodeJS.ProcessEnv), 50);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "50.01" } as NodeJS.ProcessEnv), 0);
 });
 
 test("public ODM Canary remains fail-closed behind enabled, approved and stop switches", () => {
