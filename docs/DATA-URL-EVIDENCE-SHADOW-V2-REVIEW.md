@@ -60,14 +60,30 @@ Après normalisation simple de l’URL :
 
 Le potentiel distinct total est élevé, mais la majorité reste `seed_only`. Il serait incorrect de présenter ce volume comme un stock frais.
 
-## 5. Revue du corpus
+## 5. Corpus annoté
 
-Les échantillons connectés confirment notamment :
+Le corpus déterministe est versionné dans :
 
-- des titres et URLs transactionnels explicites ;
-- des identifiants stables dans les chemins Promo Immo et Aykana ;
-- des pages détail `.html` sous une hiérarchie transaction/catégorie pour Dar Agadir ;
-- des pages `/property/` singulières avec bien + transaction pour L’Immobilier Sans Frontières.
+`scripts/audits/fixtures/odm-document-kind-url-evidence-shadow-v2-reviewed.csv`
+
+Il contient 25 URLs distinctes par source, sélectionnées après normalisation d’URL.
+
+| Source | URLs revues | `LISTING` | `CATEGORY` | `AMBIGUOUS` | Précision observée |
+|---|---:|---:|---:|---:|---:|
+| Dar Agadir | 25 | 25 | 0 | 0 | 100 % |
+| Promo Immo Marrakech | 25 | 25 | 0 | 0 | 100 % |
+| Aykana | 25 | 25 | 0 | 0 | 100 % |
+| L’Immobilier Sans Frontières | 25 | 25 | 0 | 0 | 100 % |
+| **Total** | **100** | **100** | **0** | **0** | **100 %** |
+
+La précision observée dépasse le gate de 98 % sur ce corpus. Cette mesure valide uniquement le **document-kind** des patterns testés. Elle ne certifie ni la fraîcheur, ni la disponibilité actuelle, ni la ville, ni le prix, ni la surface.
+
+Constats complémentaires :
+
+- Dar Agadir : 24 des 25 URLs revues sont `seed_only` ;
+- Promo Immo Marrakech : 25 sur 25 sont `seed_only` ;
+- Aykana : 2 URLs sont `fresh_confirmed` dans l’échantillon ;
+- L’Immobilier Sans Frontières : 1 URL est `fresh_confirmed` dans l’échantillon.
 
 La revue a aussi détecté un problème séparé : des expressions comme « route de Casablanca » sont parfois interprétées comme la ville Casablanca alors que le bien se trouve à Marrakech ou Agadir. Le Shadow V2 ne corrige pas et ne réutilise pas cette géographie. La correction géographique appartient à un LOT distinct avec corpus et tests dédiés.
 
@@ -76,8 +92,8 @@ La revue a aussi détecté un problème séparé : des expressions comme « rout
 - migration et chaîne SQL compilées ;
 - zéro source `internal_signal_only` dans la vue Shadow ;
 - déduplication par URL normalisée ;
-- revue manuelle minimale de 25 URLs par source ;
-- précision document-kind cible ≥ 98 % sur le corpus annoté ;
+- revue manuelle de 25 URLs par source : **terminée** ;
+- précision document-kind cible ≥ 98 % : **100 % observé sur 100 URLs** ;
 - `fresh_confirmed` et `seed_only` rapportés séparément ;
 - aucune modification de `display_eligibility` dans le Shadow ;
 - aucune récupération de détail, image, contact ou contenu supplémentaire ;
@@ -88,4 +104,6 @@ La revue a aussi détecté un problème séparé : des expressions comme « rout
 
 Le premier levier DATA n’est pas une nouvelle collecte massive. Il est la récupération prudente de pages détail déjà découvertes et actuellement bloquées par une exigence de champs trop stricte.
 
-La prochaine étape autorisée après certification de cette PR est un Canary borné, en commençant par la source présentant le meilleur compromis entre précision URL, diversité géographique et fraîcheur confirmée. Le nombre de `LISTING` publiques net-new, après déduplication et contrôle de fraîcheur, reste la seule métrique de succès.
+La prochaine étape autorisée après certification de cette PR est un Canary borné. La meilleure première candidate n’est pas forcément la source au plus grand volume : le choix doit intégrer précision URL, diversité géographique, fraîcheur confirmée et capacité de rollback.
+
+Le nombre de `LISTING` publiques net-new, après déduplication et contrôle de fraîcheur, reste la seule métrique de succès.
