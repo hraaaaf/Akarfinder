@@ -1,34 +1,34 @@
-# ODM Canary 25 % — Runbook Production V1
+# ODM Canary 25 % — Certification Production V1
 
-**Statut : PRÉPARATION TECHNIQUE — activation Production non committée**  
-**Palier certifié actuel : 10 %**  
-**Palier proposé : 25 %**
+**Statut : CERTIFIÉ — PASS COMPLET le 4 août 2026**  
+**Palier Production actif : 25 %**  
+**Déploiement runtime certifié : `dpl_7FbDieLdUYzi6JUpNfPMNB4c5Gzd`**  
+**Commit runtime : `2e1d09ddeda5134d4f1d6c1b8291fee71d3db416`**  
+**Commit de campagne : `488af9f9f22c6b0f673c40745bf35256cb3c7fa8`**  
+**Run de preuve : `30932921431`**
 
-## Objectif
+## Verdict
 
-Porter le read model public ODM de 10 % à 25 % sans modifier le ranking, la base de données, la politique d'affichage ou l'ordre commercial canonique.
+Le read model public ODM est certifié en Production au palier **25 %**.
 
-Le relèvement du plafond technique ne constitue pas une activation. Le pourcentage réellement servi reste contrôlé exclusivement par les variables d'environnement Vercel Production.
+Le palier applique toujours l'ordre commercial canonique :
 
-## Préconditions obligatoires
+1. promoteurs premium ;
+2. agences partenaires ;
+3. annonces déposées directement sur AkarFinder ;
+4. annonces publiques indexées.
 
-- certification 10 % PASS complet ;
-- plafond technique `ODM_PUBLIC_CANARY_MAX_PERCENT=25` mergé et déployé ;
-- CI complète verte ;
-- aucun incident runtime récent sur `/search` ou `/api/search` ;
-- kill switch vérifié ;
-- opérateur autorisé disponible pendant toute la campagne ;
-- aucune autre modification Search/Data simultanée.
+La campagne a passé **13/13 gates bloquants**. Aucun ranking, schéma, mapping commercial, donnée métier ou règle de publication n'a été modifié pendant l'activation et la certification.
 
-## Activation Vercel Production
+## Activation confirmée
 
-Modifier uniquement la variable suivante :
+La variable Production active est :
 
 ```text
 ODM_PUBLIC_CANARY_PERCENT=25
 ```
 
-Conserver explicitement :
+Les contrôles de sécurité restent requis :
 
 ```text
 ODM_PUBLIC_CANARY_ENABLED=true
@@ -36,56 +36,105 @@ ODM_PUBLIC_CANARY_APPROVED=true
 ODM_PUBLIC_CANARY_STOP=false
 ```
 
-Ne jamais committer ces valeurs dans le dépôt. Après la modification, créer ou redéployer une version Production afin que la nouvelle valeur soit prise en compte.
+Deux probes déterministes ont confirmé le palier avant la campagne :
 
-## Certification
+- bucket 6,17 % → ODM ;
+- bucket 13,09 % → ODM.
 
-Déclencher manuellement le workflow :
+Le contrôleur conserve un plafond logiciel fail-closed à 25 %. Toute valeur supérieure est interprétée comme 0 % ODM.
 
-```text
-ODM Canary 25 Percent Production Certification V1
-```
+## Campagne Production certifiée
 
-Entrée obligatoire :
+- **240 requêtes** publiques contrôlées ;
+- **120 clés ODM Canary** attendues et observées ;
+- **120 clés Legacy** attendues et observées ;
+- **240/240 réponses HTTP 200** ;
+- **10 villes** couvertes ;
+- **4 types de bien** couverts ;
+- **3 intentions** couvertes ;
+- filtres prix et surface structurés ;
+- offsets fixés à zéro ;
+- requêtes sans texte artificiel ;
+- probes SSR `/search` ;
+- aucune écriture de donnée métier ;
+- aucun accès d'écriture Vercel utilisé pendant la campagne.
 
-```text
-confirm_activation=CERTIFY_25_PERCENT
-```
+### Couverture
 
-Le workflow attend 90 secondes, puis exécute :
+Villes : Casablanca, Rabat, Marrakech, Tanger, Agadir, Fès, Oujda, Kénitra, Témara et Salé.
 
-- 240 requêtes publiques ;
-- 120 clés déterministes dans le bucket ODM 25 % ;
-- 120 clés hors bucket Legacy ;
-- les 10 villes ;
-- les 4 types de bien ;
-- les 3 intentions ;
-- des filtres prix/surface larges et structurés ;
-- 10 à 12 probes SSR `/search` ;
-- aucune écriture de donnée métier.
+Types : appartement, villa, terrain et bureau.
 
-## Gates bloquants
+Intentions : vente, location et neuf.
 
-- 240/240 HTTP 200 ;
-- plan exact 120 Canary / 120 Legacy ;
-- correspondance parfaite entre lane attendue et lane observée ;
-- couverture 10 villes, 4 types et 3 intentions ;
-- aucune fuite de ville, type, intention, prix ou surface ;
-- aucune fuite de contact, galerie ou miniature non autorisée ;
-- aucun badge commercial premium/partenaire/agence/promoteur attribué aux résultats indexés ;
-- provenance réelle conservée ;
-- mode `thin_indexed_seed` ;
-- source originale obligatoire ;
-- taux de bucket compris entre 23,5 % et 26,5 % ;
-- au moins 50 requêtes ODM non vides et les 10 villes représentées ;
-- parité Page/API sur au moins 10 probes ;
-- p95 ODM inférieur ou égal à 5 secondes ;
-- p99 ODM inférieur ou égal à 10 secondes ;
-- aucune erreur runtime Vercel pendant la fenêtre de contrôle.
+## Résultats
+
+| Indicateur | Résultat |
+|---|---:|
+| Requêtes | 240 |
+| HTTP 200 | 240 |
+| Canary attendu / observé | 120 / 120 |
+| Legacy attendu / observé | 120 / 120 |
+| Requêtes ODM non vides | 56 |
+| Villes avec preuve ODM non vide | 10 / 10 |
+| Échecs de contrat | 0 |
+| Échecs des probes SSR | 0 |
+| Taux de bucket mesuré | 24,932 % |
+| Canary p50 | 247,28 ms |
+| Canary p95 | 467,87 ms |
+| Canary p99 | 502,71 ms |
+| Legacy p50 | 482,98 ms |
+| Legacy p95 | 961,58 ms |
+| Legacy p99 | 1 081,85 ms |
+| SSR visible p50 | 363,51 ms |
+| SSR visible p95 | 547,34 ms |
+
+La première probe SSR froide à Casablanca a atteint 1 316,45 ms. Les percentiles visibles et ODM restent nettement sous les seuils bloquants.
+
+## Gates — 13/13 PASS
+
+- ✅ campagne exacte de 240 requêtes ;
+- ✅ plan exact 120 Canary / 120 Legacy ;
+- ✅ 240/240 HTTP 200 ;
+- ✅ couverture des dix villes ;
+- ✅ couverture des quatre types ;
+- ✅ couverture des trois intentions ;
+- ✅ correspondance déterministe parfaite entre bucket attendu et lane observée ;
+- ✅ aucune fuite de filtre, de contrat ou de politique d'affichage ;
+- ✅ taux de bucket compris entre 23,5 % et 26,5 % ;
+- ✅ au moins 50 preuves ODM non vides et les dix villes représentées — résultat réel : 56 requêtes et 10 villes ;
+- ✅ parité visible `/search` et `/api/search` ;
+- ✅ p95 ODM inférieur à 5 secondes ;
+- ✅ p99 ODM inférieur à 10 secondes.
+
+## Frontières de sécurité confirmées
+
+Les résultats ODM :
+
+- restent dans la quatrième catégorie commerciale ;
+- conservent leur provenance réelle ;
+- utilisent le mode `thin_indexed_seed` ;
+- exigent la source originale et le CTA `view_original` ;
+- n'exposent ni contact, ni galerie, ni miniature non autorisée ;
+- ne reçoivent aucun badge premium, partenaire, agence ou promoteur sans signal explicite ;
+- respectent les filtres ville, type, intention, prix et surface.
+
+## Santé Production
+
+Vercel n'a signalé **aucune erreur runtime** sur `/search` ou `/api/search` pendant la fenêtre contrôlée d'une heure suivant la campagne.
+
+## Preuves d'audit
+
+- workflow run : `30932921431` ;
+- commit source de la campagne : `488af9f9f22c6b0f673c40745bf35256cb3c7fa8` ;
+- artifact : `odm-canary-25-production-certification-v1`, conservé 30 jours ;
+- preuve persistée : branche `certification-results` ;
+- fichier : `reports/odm-canary-25-production-latest.json` ;
+- horodatage de la preuve : `2026-08-04T17:15:07.899Z`.
 
 ## Rollback immédiat
 
-Au premier gate rouge, appliquer d'abord :
+Au premier incident bloquant :
 
 ```text
 ODM_PUBLIC_CANARY_STOP=true
@@ -98,21 +147,20 @@ ODM_PUBLIC_CANARY_PERCENT=10
 ODM_PUBLIC_CANARY_STOP=false
 ```
 
-Redéployer la Production et vérifier que les clés situées entre les buckets 10 % et 25 % reviennent au moteur Legacy.
+Créer ensuite un nouveau déploiement Production depuis le `main` courant et vérifier que les clés situées entre les buckets 10 % et 25 % reviennent au moteur Legacy.
 
-Le rollback ne nécessite aucune migration ni modification de ranking.
+Le rollback ne nécessite aucune migration ni modification du ranking.
 
-## Preuves
+## Décision suivante
 
-Le workflow conserve :
+Le palier 25 % est certifié et peut rester actif.
 
-- un artifact JSON pendant 30 jours ;
-- la preuve la plus récente dans la branche `certification-results` ;
-- le fichier `reports/odm-canary-25-production-latest.json` ;
-- l'identifiant du run, le commit source et l'horodatage.
+Toute montée ultérieure doit être un LOT séparé comprenant :
 
-## Décision
+1. observation du palier 25 % sur une fenêtre Production bornée ;
+2. relèvement explicite et testé du plafond technique ;
+3. activation réversible ;
+4. nouvelle campagne équilibrée ;
+5. rollback immédiat au moindre gate rouge.
 
-- tous les gates PASS : palier 25 % certifiable par une PR documentaire séparée ;
-- un seul gate FAIL : retour à 10 %, diagnostic et nouvelle campagne avant toute réactivation ;
-- aucune montée automatique au-delà de 25 %.
+Aucune montée automatique au-delà de 25 % n'est autorisée.
