@@ -22,6 +22,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   contract:
@@ -63,3 +64,55 @@ jobs:
           path: artifacts/odm-canary-10-production-certification-v1.json
           if-no-files-found: error
           retention-days: 30
+      - name: Publish auditable verdict on certification PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("node:fs");
+            const reportPath = "artifacts/odm-canary-10-production-certification-v1.json";
+            let body;
+
+            if (!fs.existsSync(reportPath)) {
+              body = [
+                "## ODM Canary 10 % — campagne Production",
+                "",
+                "**Verdict : FAIL — rapport JSON absent**",
+                "",
+                `Run : ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              ].join("\n");
+            } else {
+              const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+              const pass = Object.values(report.gates || {}).every(Boolean);
+              const gates = Object.entries(report.gates || {})
+                .map(([name, value]) => `- ${value ? "✅" : "❌"} \`${name}\``)
+                .join("\n");
+              body = [
+                "## ODM Canary 10 % — campagne Production",
+                "",
+                `**Verdict : ${pass ? "PASS" : "FAIL"}**`,
+                "",
+                `- Requêtes : **${report.requested}**`,
+                `- HTTP 200 : **${report.http_200}**`,
+                `- Canary observé / Legacy observé : **${report.observed_canary} / ${report.observed_legacy}**`,
+                `- Échecs contrat : **${report.failures}**`,
+                `- Échecs probes SSR : **${report.visible_probe_failures}**`,
+                `- Bucket mesuré : **${(Number(report.bucket_distribution_rate) * 100).toFixed(2)} %**`,
+                `- Canary p50 / p95 / p99 : **${report.latency_ms?.canary_p50} / ${report.latency_ms?.canary_p95} / ${report.latency_ms?.canary_p99} ms**`,
+                `- Legacy p50 / p95 / p99 : **${report.latency_ms?.legacy_p50} / ${report.latency_ms?.legacy_p95} / ${report.latency_ms?.legacy_p99} ms**`,
+                `- Preuves ODM non vides : **${report.non_empty_canary_requests} requêtes / ${(report.non_empty_canary_cities || []).length} villes**`,
+                "",
+                "### Gates",
+                gates || "- ❌ Aucun gate présent",
+                "",
+                `Artifact : \`odm-canary-10-production-certification-v1\` — conservation 30 jours`,
+                `Run : ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              ].join("\n");
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 256,
+              body,
+            });
