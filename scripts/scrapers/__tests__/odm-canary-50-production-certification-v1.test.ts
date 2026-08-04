@@ -12,10 +12,11 @@ const controller = readFileSync("lib/odm/odm-public-canary.ts", "utf8");
 const campaign = readFileSync("scripts/certify-odm-canary-50-production-v1.mjs", "utf8");
 const workflow = readFileSync(".github/workflows/odm-canary-50-production-certification-v1.yml", "utf8");
 
-test("controller permits at most fifty percent and stays fail closed", () => {
-  assert.equal(ODM_PUBLIC_CANARY_MAX_PERCENT, 50);
+test("controller keeps fifty percent valid within the full-cutover ceiling", () => {
+  assert.equal(ODM_PUBLIC_CANARY_MAX_PERCENT, 100);
   assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "50" } as NodeJS.ProcessEnv), 50);
-  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "50.01" } as NodeJS.ProcessEnv), 0);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "100" } as NodeJS.ProcessEnv), 100);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "100.01" } as NodeJS.ProcessEnv), 0);
   assert.equal(shouldServeOdmPublicCanary("stable", {
     ODM_PUBLIC_CANARY_ENABLED: "true",
     ODM_PUBLIC_CANARY_APPROVED: "true",
@@ -28,7 +29,7 @@ test("controller still requires explicit enabled and approved flags", () => {
   assert.match(controller, /ODM_PUBLIC_CANARY_ENABLED/);
   assert.match(controller, /ODM_PUBLIC_CANARY_APPROVED/);
   assert.match(controller, /ODM_PUBLIC_CANARY_STOP/);
-  assert.match(controller, /ODM_PUBLIC_CANARY_MAX_PERCENT = 50/);
+  assert.match(controller, /ODM_PUBLIC_CANARY_MAX_PERCENT = 100/);
   assert.match(controller, /bucket\(stableKey\)\s*<\s*Math\.floor\(percent \* 100\)/);
 });
 
