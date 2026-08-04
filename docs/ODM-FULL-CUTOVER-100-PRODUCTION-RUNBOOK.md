@@ -132,7 +132,7 @@ Le rollback ne nécessite ni migration, ni changement de ranking, ni modificatio
 
 ## Limite du LOT
 
-Legacy reste disponible comme chemin de rollback. Il n'est pas supprimé dans ce LOT.
+Legacy reste disponible comme chemin de rollback : **aucune suppression du moteur Legacy dans ce LOT**.
 
 Le prochain LOT doit traiter séparément :
 
