@@ -9,19 +9,18 @@ import {
 } from "../../../lib/odm/odm-public-canary.ts";
 
 const controller = readFileSync("lib/odm/odm-public-canary.ts", "utf8");
-const campaign = readFileSync("scripts/certify-odm-canary-25-production-v1.mjs", "utf8");
-const workflow = readFileSync(".github/workflows/odm-canary-25-production-certification-v1.yml", "utf8");
+const campaign = readFileSync("scripts/certify-odm-canary-50-production-v1.mjs", "utf8");
+const workflow = readFileSync(".github/workflows/odm-canary-50-production-certification-v1.yml", "utf8");
 
-test("controller keeps twenty-five percent valid within the fifty percent ceiling", () => {
+test("controller permits at most fifty percent and stays fail closed", () => {
   assert.equal(ODM_PUBLIC_CANARY_MAX_PERCENT, 50);
-  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "25" } as NodeJS.ProcessEnv), 25);
   assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "50" } as NodeJS.ProcessEnv), 50);
   assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "50.01" } as NodeJS.ProcessEnv), 0);
   assert.equal(shouldServeOdmPublicCanary("stable", {
     ODM_PUBLIC_CANARY_ENABLED: "true",
     ODM_PUBLIC_CANARY_APPROVED: "true",
     ODM_PUBLIC_CANARY_STOP: "true",
-    ODM_PUBLIC_CANARY_PERCENT: "25",
+    ODM_PUBLIC_CANARY_PERCENT: "50",
   } as NodeJS.ProcessEnv), false);
 });
 
@@ -33,14 +32,14 @@ test("controller still requires explicit enabled and approved flags", () => {
   assert.match(controller, /bucket\(stableKey\)\s*<\s*Math\.floor\(percent \* 100\)/);
 });
 
-test("campaign is an exact balanced 240-request twenty-five-percent plan", () => {
-  assert.match(campaign, /TARGET_PERCENT = 25/);
+test("campaign is an exact balanced 240-request fifty-percent plan", () => {
+  assert.match(campaign, /TARGET_PERCENT = 50/);
   assert.match(campaign, /EXPECTED_REQUESTS = 240/);
   assert.match(campaign, /EXPECTED_CANARY = 120/);
   assert.match(campaign, /EXPECTED_LEGACY = 120/);
   assert.match(campaign, /exact_120_120_lane_plan/);
-  assert.match(campaign, /bucket_rate_near_twenty_five_percent/);
-  assert.match(campaign, /rate >= 0\.235 && rate <= 0\.265/);
+  assert.match(campaign, /bucket_rate_near_fifty_percent/);
+  assert.match(campaign, /rate >= 0\.485 && rate <= 0\.515/);
   assert.match(campaign, /all_ten_cities/);
   assert.match(campaign, /all_four_property_types/);
   assert.match(campaign, /all_three_intents/);
@@ -70,11 +69,12 @@ test("workflow cannot activate Production and requires explicit manual certifica
   assert.match(workflow, /pull_request:/);
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /confirm_activation/);
-  assert.match(workflow, /CERTIFY_25_PERCENT/);
+  assert.match(workflow, /CERTIFY_50_PERCENT/);
   assert.match(workflow, /github\.event_name == 'workflow_dispatch'/);
   assert.match(workflow, /AKARFINDER_CERTIFICATION_DRY_RUN: "true"/);
   assert.match(workflow, /certification-results/);
-  assert.match(workflow, /reports\/odm-canary-25-production-latest\.json/);
-  assert.match(workflow, /! grep -R "ODM_PUBLIC_CANARY_PERCENT=25"/);
-  assert.doesNotMatch(workflow, /vercel env add/);
+  assert.match(workflow, /reports\/odm-canary-50-production-latest\.json/);
+  assert.match(workflow, /! grep -R "ODM_PUBLIC_CANARY_PERCENT=50"/);
+  assert.doesNotMatch(workflow, /vercel env/);
+  assert.doesNotMatch(workflow, /VERCEL_TOKEN/);
 });

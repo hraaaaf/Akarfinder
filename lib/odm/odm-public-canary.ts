@@ -4,8 +4,8 @@ import type { SearchQuery, SearchResult } from "@/lib/search";
 import { prioritizeCommercialSearchListings } from "@/lib/search/search-commercial-priority";
 import type { PublicSearchPage } from "@/lib/search-gateway/public-search-cursor";
 
-// Production ceiling intentionally certified for the controlled 25% ramp.
-export const ODM_PUBLIC_CANARY_MAX_PERCENT = 25;
+// Technical ceiling for the next controlled ramp. Production remains governed by the explicit environment percentage.
+export const ODM_PUBLIC_CANARY_MAX_PERCENT = 50;
 
 function explicitTrue(value: string | undefined): boolean { return value === "true"; }
 
