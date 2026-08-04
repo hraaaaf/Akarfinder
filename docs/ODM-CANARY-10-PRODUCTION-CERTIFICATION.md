@@ -29,6 +29,16 @@ Le LOT ne modifie ni le taux Production, ni le ranking, ni la base de données. 
 - timeout de 30 secondes par requête ;
 - lecture publique uniquement.
 
+## Preuves d'audit
+
+Chaque exécution conserve trois preuves complémentaires :
+
+1. un artifact GitHub Actions conservé 30 jours ;
+2. un verdict publié sur la PR de certification lorsque l'API de commentaire est disponible ;
+3. le JSON complet le plus récent dans la branche non applicative `certification-results`, au chemin `reports/odm-canary-10-production-latest.json`.
+
+La branche de résultats ne déclenche pas le workflow et ne modifie jamais `main`, la Production ou les données applicatives.
+
 ## Gates bloquants
 
 - 240/240 réponses HTTP 200 ;
