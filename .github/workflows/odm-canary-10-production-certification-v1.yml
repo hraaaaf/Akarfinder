@@ -1,0 +1,65 @@
+name: ODM Canary 10 Percent Production Certification V1
+
+on:
+  pull_request:
+    paths:
+      - "lib/odm/odm-public-canary.ts"
+      - "lib/search/search-commercial-priority.ts"
+      - "scripts/certify-odm-canary-10-production-v1.mjs"
+      - "scripts/scrapers/__tests__/odm-canary-10-production-certification-v1.test.ts"
+      - ".github/workflows/odm-canary-10-production-certification-v1.yml"
+      - "docs/ODM-CANARY-10-PRODUCTION-CERTIFICATION.md"
+  push:
+    branches: [main]
+    paths:
+      - "lib/odm/odm-public-canary.ts"
+      - "lib/search/search-commercial-priority.ts"
+      - "scripts/certify-odm-canary-10-production-v1.mjs"
+      - "scripts/scrapers/__tests__/odm-canary-10-production-certification-v1.test.ts"
+      - ".github/workflows/odm-canary-10-production-certification-v1.yml"
+      - "docs/ODM-CANARY-10-PRODUCTION-CERTIFICATION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Validate ten-percent certification contract
+        run: npx tsx --test scripts/scrapers/__tests__/odm-canary-10-production-certification-v1.test.ts
+      - name: Validate commercial-priority regression contract
+        run: npx tsx --test scripts/scrapers/__tests__/search-truth-tier.test.ts
+      - run: npx tsc --noEmit
+
+  certify-production:
+    if: github.event_name != 'pull_request'
+    needs: contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Allow Production routing to settle
+        run: sleep 60
+      - name: Run controlled 240-request Production campaign
+        env:
+          AKARFINDER_PRODUCTION_URL: https://akarfinder.vercel.app
+        run: node scripts/certify-odm-canary-10-production-v1.mjs
+      - name: Upload certification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odm-canary-10-production-certification-v1
+          path: artifacts/odm-canary-10-production-certification-v1.json
+          if-no-files-found: error
+          retention-days: 30
