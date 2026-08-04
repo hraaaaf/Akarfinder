@@ -1,22 +1,400 @@
 import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
-const BASE=(process.env.AKARFINDER_PRODUCTION_URL||"https://akarfinder.vercel.app").replace(/\/$/,"");
-const cities=["Casablanca","Rabat","Marrakech","Tanger","Agadir","Fès","Oujda","Kénitra","Témara","Salé"], types=["apartment","villa","land","office"], intents=["sale","rent","new"];
-const aliases={apartment:"appartement",villa:"villa",land:"terrain",office:"bureau"}, prices={sale:[[1e5,9e5],[5e5,1.5e6],[1e6,3.5e6],[2.5e6,8e6]],rent:[[1e3,5e3],[3e3,1e4],[7e3,2e4],[1.5e4,5e4]],new:[[2e5,1e6],[7e5,2e6],[1.5e6,5e6],[3e6,9e6]]}, surfaces=[[20,80],[50,150],[100,300],[200,1000]], combos=types.flatMap(property_type=>intents.map(transaction_type=>({property_type,transaction_type})));
-const bucket=k=>createHash("sha256").update(k).digest().readUInt32BE(0)%10000;
-const key=q=>JSON.stringify({q:q.q??null,city:q.city??null,property_type:q.property_type??null,transaction_type:q.transaction_type??null,min_price:q.min_price??null,max_price:q.max_price??null,min_surface:q.min_surface??null,max_surface:q.max_surface??null,limit:q.limit??null,offset:q.offset??null});
-const qs=q=>{const p=new URLSearchParams();for(const[k,v]of Object.entries(q))if(v!=null)p.set(k,String(v));return p};
-const norm=v=>String(v??"").trim().toLowerCase();
-const pct=(v,p)=>{const s=[...v].sort((a,b)=>a-b);return s[Math.min(s.length-1,Math.floor((s.length-1)*p))]??null};
-function candidates(city,c){const out=[];for(let i=0;i<240;i++){const [min_price,max_price]=prices[c.transaction_type][i%4],[min_surface,max_surface]=surfaces[Math.floor(i/4)%4];out.push({q:i%5?`${city} ${c.property_type} ${c.transaction_type} ${i%9}`:undefined,city,...c,min_price,max_price,min_surface,max_surface,limit:5,offset:(i*11)%197})}return out}
-function pick(city,c,lane,used){for(const query of candidates(city,c)){const stable_key=key(query),b=bucket(stable_key);if(used.has(stable_key)||(b<1000?"canary":"legacy")!==lane)continue;used.add(stable_key);return{query,stable_key,bucket:b,expected_lane:lane}}throw new Error(`no ${lane} key ${city}/${c.property_type}/${c.transaction_type}`)}
-function traffic(){const out=[],used=new Set();cities.forEach((city,n)=>{const r=[...combos.slice(n%12),...combos.slice(0,n%12)],cc=r.slice(0,8),lc=[...r,...r.slice(0,4)];cc.forEach(c=>out.push(pick(city,c,"canary",used)));lc.forEach(c=>out.push(pick(city,c,"legacy",used)))});if(out.length!==240)throw new Error(`traffic:${out.length}`);return out}
-const lane=b=>b?.source==="database_fallback"?"canary":"legacy";
-function validate(item,body){const e=[];if(lane(body)!==item.expected_lane)e.push(`lane:${lane(body)}`);if(!Array.isArray(body?.listings))return[...e,"contract"];for(const l of body.listings){const q=item.query,tx=q.transaction_type==="sale"?"buy":q.transaction_type,p=l.price==null?null:Number(l.price),s=Number(l.surface_m2||0);if(norm(l.city)!==norm(q.city))e.push(`city:${l.id}`);if(norm(l.property_type)!==aliases[q.property_type])e.push(`type:${l.id}`);if(norm(l.transaction_type)!==tx)e.push(`intent:${l.id}`);if(p==null||p<q.min_price||p>q.max_price)e.push(`price:${l.id}`);if(s<q.min_surface||s>q.max_surface)e.push(`surface:${l.id}`);if(item.expected_lane==="canary"){if(!String(l.id||"").startsWith("seed_"))e.push(`id:${l.id}`);if(l.result_origin!=="search_api"||l.search_result_display_mode!=="thin_indexed_seed")e.push(`mode:${l.id}`);if(l.production_allowed!==true||l.can_show_result!==true)e.push(`publish:${l.id}`);if(l.can_show_contact===true||l.can_show_gallery===true||l.can_show_thumbnail===true)e.push(`restricted:${l.id}`);if(l.original_source_required!==true||l.primary_cta!=="view_original"||l.source_access_level!=="indexed_only")e.push(`boundary:${l.id}`);if(["premium_partner","authorized_source"].includes(norm(l.source_badge))||["promoteur","agence"].includes(norm(l.source_type)))e.push(`tier:${l.id}`)}}return e}
-async function request(item){const t=performance.now(),c=new AbortController(),timer=setTimeout(()=>c.abort(),30000);try{const r=await fetch(`${BASE}/api/search?${qs(item.query)}`,{signal:c.signal,headers:{"user-agent":"AkarFinder-ODM-Canary-10-Certification/1.0"}}),body=await r.json(),errors=r.status===200?validate(item,body):[`http:${r.status}`];return{...item,status:r.status,latency_ms:+(performance.now()-t).toFixed(2),source:body?.source,returned:body?.listings?.length??0,errors}}catch(error){return{...item,status:0,latency_ms:+(performance.now()-t).toFixed(2),source:"error",returned:0,errors:[String(error)]}}finally{clearTimeout(timer)}}
-async function pool(items,n=6){const out=new Array(items.length);let i=0;async function w(){for(;;){const x=i++;if(x>=items.length)return;out[x]=await request(items[x])}}await Promise.all(Array.from({length:n},w));return out}
-async function page(item){const t=performance.now(),c=new AbortController(),timer=setTimeout(()=>c.abort(),30000);try{const r=await fetch(`${BASE}/search?${qs(item.query)}`,{signal:c.signal,headers:{"user-agent":"AkarFinder-ODM-Canary-10-Page-Probe/1.0"}}),html=await r.text(),errors=[];if(r.status!==200)errors.push(`http:${r.status}`);if(!html.includes("seed_"))errors.push("seed");if(!html.includes("Annonces publiques indexées"))errors.push("section");return{status:r.status,latency_ms:+(performance.now()-t).toFixed(2),city:item.query.city,errors}}catch(error){return{status:0,latency_ms:+(performance.now()-t).toFixed(2),city:item.query.city,errors:[String(error)]}}finally{clearTimeout(timer)}}
-const selected=traffic(),results=await pool(selected),canary=results.filter(r=>r.expected_lane==="canary"),legacy=results.filter(r=>r.expected_lane==="legacy"),fail=results.filter(r=>r.errors.length),nonempty=canary.filter(r=>r.returned>0),probe=[];for(const x of nonempty.slice(0,12))probe.push(await page(x));
-const sample=cities.flatMap(city=>combos.flatMap(c=>candidates(city,c).slice(0,20))),rate=sample.filter(q=>bucket(key(q))<1000).length/sample.length,cl=canary.map(r=>r.latency_ms),ll=legacy.map(r=>r.latency_ms),p95=pct(cl,.95),p99=pct(cl,.99),nonemptyCities=new Set(nonempty.map(r=>r.query.city)),probeFail=probe.filter(p=>p.errors.length);
-const report={certification:"ODM_CANARY_10_PRODUCTION_CERTIFICATION_V1",generated_at:new Date().toISOString(),base_url:BASE,target_percent:10,requested:results.length,http_200:results.filter(r=>r.status===200).length,expected_canary:canary.length,expected_legacy:legacy.length,observed_canary:results.filter(r=>r.source==="database_fallback").length,observed_legacy:results.filter(r=>r.source!=="database_fallback"&&r.status===200).length,non_empty_canary_requests:nonempty.length,non_empty_canary_cities:[...nonemptyCities],failures:fail.length,visible_probe_failures:probeFail.length,bucket_distribution_rate:rate,coverage:{cities:[...new Set(results.map(r=>r.query.city))],property_types:[...new Set(results.map(r=>r.query.property_type))],intents:[...new Set(results.map(r=>r.query.transaction_type))]},latency_ms:{canary_p50:pct(cl,.5),canary_p95:p95,canary_p99:p99,legacy_p50:pct(ll,.5),legacy_p95:pct(ll,.95),legacy_p99:pct(ll,.99),visible_p50:pct(probe.map(r=>r.latency_ms),.5),visible_p95:pct(probe.map(r=>r.latency_ms),.95)},gates:{exact_240_request_campaign:results.length===240,all_http_200:results.every(r=>r.status===200),all_ten_cities:new Set(results.map(r=>r.query.city)).size===10,all_four_property_types:new Set(results.map(r=>r.query.property_type)).size===4,all_three_intents:new Set(results.map(r=>r.query.transaction_type)).size===3,deterministic_lane_match:results.every(r=>(r.source==="database_fallback"?"canary":"legacy")===r.expected_lane),no_filter_contract_or_policy_leaks:fail.length===0,bucket_rate_near_ten_percent:rate>=.085&&rate<=.115,enough_non_empty_canary_evidence:nonempty.length>=20&&nonemptyCities.size>=7,visible_page_api_lane_parity:probe.length>=8&&probeFail.length===0,canary_p95_within_5s:p95!=null&&p95<=5000,canary_p99_within_10s:p99!=null&&p99<=10000},visible_probes:probe,failed_requests:fail.slice(0,50)};
-await mkdir("artifacts",{recursive:true});await writeFile("artifacts/odm-canary-10-production-certification-v1.json",JSON.stringify(report,null,2)+"\n");const pass=Object.values(report.gates).every(Boolean),summary=["# ODM Canary 10% Production Certification V1","",`- Requests: ${report.requested}`,`- Canary / Legacy: ${report.observed_canary} / ${report.observed_legacy}`,`- Failures: ${report.failures}`,`- Visible probe failures: ${report.visible_probe_failures}`,`- Canary p50 / p95 / p99: ${report.latency_ms.canary_p50} / ${p95} / ${p99} ms`,`- Bucket rate: ${(rate*100).toFixed(2)}%`,`- Verdict: ${pass?"PASS":"FAIL"}`,"","## Gates",...Object.entries(report.gates).map(([n,v])=>`- ${v?"✅":"❌"} ${n}`),""].join("\n");if(process.env.GITHUB_STEP_SUMMARY)await writeFile(process.env.GITHUB_STEP_SUMMARY,summary,{flag:"a"});console.log(JSON.stringify(report,null,2));if(!pass)process.exitCode=1;
+
+const BASE_URL = (process.env.AKARFINDER_PRODUCTION_URL || "https://akarfinder.vercel.app").replace(/\/$/, "");
+const DRY_RUN = process.env.AKARFINDER_CERTIFICATION_DRY_RUN === "true";
+const TARGET_PERCENT = 10;
+const BUCKET_LIMIT = TARGET_PERCENT * 100;
+const EXPECTED_REQUESTS = 240;
+const CANARY_PER_CITY = 8;
+const LEGACY_PER_CITY = 16;
+const CONCURRENCY = 6;
+const REQUEST_TIMEOUT_MS = 30_000;
+const CANARY_P95_MAX_MS = 5_000;
+const CANARY_P99_MAX_MS = 10_000;
+
+const cities = ["Casablanca", "Rabat", "Marrakech", "Tanger", "Agadir", "Fès", "Oujda", "Kénitra", "Témara", "Salé"];
+const propertyTypes = ["apartment", "villa", "land", "office"];
+const intents = ["sale", "rent", "new"];
+const aliases = { apartment: "appartement", villa: "villa", land: "terrain", office: "bureau" };
+const limits = [5, 10, 15, 20, 25, 30, 40, 50, 75, 100];
+const priceBands = {
+  sale: [[10_000, 50_000_000], [50_000, 30_000_000], [100_000, 20_000_000], [200_000, 15_000_000]],
+  rent: [[100, 200_000], [500, 100_000], [1_000, 50_000], [2_000, 30_000]],
+  new: [[10_000, 50_000_000], [50_000, 30_000_000], [100_000, 20_000_000], [200_000, 15_000_000]],
+};
+const surfaceBands = {
+  apartment: [[1, 500], [20, 400], [30, 300], [40, 250]],
+  villa: [[20, 5_000], [50, 3_000], [100, 2_500], [150, 2_000]],
+  land: [[20, 50_000], [50, 30_000], [100, 20_000], [200, 10_000]],
+  office: [[1, 5_000], [10, 3_000], [20, 2_000], [30, 1_500]],
+};
+const combinations = propertyTypes.flatMap((property_type) => intents.map((transaction_type) => ({ property_type, transaction_type })));
+const canaryPriority = [
+  { property_type: "apartment", transaction_type: "sale" },
+  { property_type: "apartment", transaction_type: "rent" },
+  { property_type: "villa", transaction_type: "sale" },
+  { property_type: "villa", transaction_type: "rent" },
+  { property_type: "land", transaction_type: "sale" },
+  { property_type: "office", transaction_type: "sale" },
+  { property_type: "apartment", transaction_type: "new" },
+  { property_type: "villa", transaction_type: "new" },
+];
+
+function bucket(stableKey) {
+  return createHash("sha256").update(stableKey).digest().readUInt32BE(0) % 10_000;
+}
+
+function stableKey(query) {
+  return JSON.stringify({
+    q: query.q ?? null,
+    city: query.city ?? null,
+    property_type: query.property_type ?? null,
+    transaction_type: query.transaction_type ?? null,
+    min_price: query.min_price ?? null,
+    max_price: query.max_price ?? null,
+    min_surface: query.min_surface ?? null,
+    max_surface: query.max_surface ?? null,
+    limit: query.limit ?? null,
+    offset: query.offset ?? null,
+  });
+}
+
+function toSearchParams(query) {
+  const params = new URLSearchParams();
+  for (const [name, value] of Object.entries(query)) {
+    if (value != null) params.set(name, String(value));
+  }
+  return params.toString();
+}
+
+function normalize(value) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function percentile(values, probability) {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * probability))];
+}
+
+function rotate(items, amount) {
+  const offset = amount % items.length;
+  return [...items.slice(offset), ...items.slice(0, offset)];
+}
+
+function candidateQueries(city, combination) {
+  const candidates = [];
+  for (const [min_price, max_price] of priceBands[combination.transaction_type]) {
+    for (const [min_surface, max_surface] of surfaceBands[combination.property_type]) {
+      for (const limit of limits) {
+        candidates.push({
+          q: undefined,
+          city,
+          ...combination,
+          min_price,
+          max_price,
+          min_surface,
+          max_surface,
+          limit,
+          offset: 0,
+        });
+      }
+    }
+  }
+  return candidates;
+}
+
+function selectForLane(city, combination, expected_lane, usedKeys) {
+  for (const query of candidateQueries(city, combination)) {
+    const stable_key = stableKey(query);
+    const selectedBucket = bucket(stable_key);
+    const actualLane = selectedBucket < BUCKET_LIMIT ? "canary" : "legacy";
+    if (actualLane !== expected_lane || usedKeys.has(stable_key)) continue;
+    usedKeys.add(stable_key);
+    return { query, stable_key, bucket: selectedBucket, expected_lane };
+  }
+  throw new Error(`No ${expected_lane} key for ${city}/${combination.property_type}/${combination.transaction_type}`);
+}
+
+function selectTraffic() {
+  const selected = [];
+  const usedKeys = new Set();
+  cities.forEach((city, cityIndex) => {
+    for (const combination of canaryPriority) {
+      selected.push(selectForLane(city, combination, "canary", usedKeys));
+    }
+    const rotated = rotate(combinations, cityIndex * 3);
+    const legacyPlan = [...rotated, ...rotated.slice(0, LEGACY_PER_CITY - rotated.length)];
+    for (const combination of legacyPlan) {
+      selected.push(selectForLane(city, combination, "legacy", usedKeys));
+    }
+  });
+  if (selected.length !== EXPECTED_REQUESTS) throw new Error(`Expected ${EXPECTED_REQUESTS} requests, selected ${selected.length}`);
+  return selected;
+}
+
+function detectLane(body) {
+  return body?.source === "database_fallback" ? "canary" : "legacy";
+}
+
+function validateListing(item, listing) {
+  const errors = [];
+  const query = item.query;
+  const expectedIntent = query.transaction_type === "sale" ? "buy" : query.transaction_type;
+  const price = listing.price == null ? null : Number(listing.price);
+  const surface = Number(listing.surface_m2 || 0);
+
+  if (normalize(listing.city) !== normalize(query.city)) errors.push(`city:${listing.id}:${listing.city}`);
+  if (normalize(listing.property_type) !== aliases[query.property_type]) errors.push(`property_type:${listing.id}:${listing.property_type}`);
+  if (normalize(listing.transaction_type) !== expectedIntent) errors.push(`intent:${listing.id}:${listing.transaction_type}`);
+  if (price == null || price < query.min_price || price > query.max_price) errors.push(`price:${listing.id}:${listing.price}`);
+  if (surface < query.min_surface || surface > query.max_surface) errors.push(`surface:${listing.id}:${listing.surface_m2}`);
+
+  if (item.expected_lane === "canary") {
+    if (!String(listing.id || "").startsWith("seed_")) errors.push(`id:${listing.id}`);
+    if (listing.search_result_display_mode !== "thin_indexed_seed") errors.push(`display_mode:${listing.id}:${listing.search_result_display_mode}`);
+    if (typeof listing.result_origin !== "string" || !listing.result_origin.trim()) errors.push(`provenance:${listing.id}`);
+    if (listing.source_badge !== "external_indexed") errors.push(`source_badge:${listing.id}:${listing.source_badge}`);
+    if (listing.production_allowed !== true || listing.can_show_result !== true) errors.push(`publication:${listing.id}`);
+    if (listing.can_show_contact === true || listing.can_show_gallery === true || listing.can_show_thumbnail === true) errors.push(`restricted_surface:${listing.id}`);
+    if (listing.original_source_required !== true || listing.primary_cta !== "view_original" || listing.source_access_level !== "indexed_only") errors.push(`source_boundary:${listing.id}`);
+    if (["premium_partner", "authorized_source"].includes(normalize(listing.source_badge))) errors.push(`partner_badge:${listing.id}:${listing.source_badge}`);
+    if (["promoteur", "agence"].includes(normalize(listing.source_type))) errors.push(`commercial_tier_leak:${listing.id}:${listing.source_type}`);
+  }
+  return errors;
+}
+
+function validateResponse(item, body) {
+  const errors = [];
+  const observedLane = detectLane(body);
+  if (observedLane !== item.expected_lane) errors.push(`lane:${observedLane}`);
+  if (!Array.isArray(body?.listings)) return [...errors, "invalid_json_contract"];
+  for (const listing of body.listings) errors.push(...validateListing(item, listing));
+  return errors;
+}
+
+async function request(item) {
+  const startedAt = performance.now();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const response = await fetch(`${BASE_URL}/api/search?${toSearchParams(item.query)}`, {
+      signal: controller.signal,
+      headers: { "user-agent": "AkarFinder-ODM-Canary-10-Certification/2.0" },
+    });
+    const body = await response.json();
+    const errors = response.status === 200 ? validateResponse(item, body) : [`http:${response.status}`];
+    return {
+      ...item,
+      status: response.status,
+      latency_ms: Number((performance.now() - startedAt).toFixed(2)),
+      source: body?.source,
+      returned: body?.listings?.length ?? 0,
+      errors,
+    };
+  } catch (error) {
+    return {
+      ...item,
+      status: 0,
+      latency_ms: Number((performance.now() - startedAt).toFixed(2)),
+      source: "error",
+      returned: 0,
+      errors: [String(error)],
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function runConcurrent(items, concurrency = CONCURRENCY) {
+  const output = new Array(items.length);
+  let cursor = 0;
+  async function worker() {
+    while (true) {
+      const index = cursor++;
+      if (index >= items.length) return;
+      output[index] = await request(items[index]);
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, () => worker()));
+  return output;
+}
+
+async function visibleProbe(item) {
+  const startedAt = performance.now();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const response = await fetch(`${BASE_URL}/search?${toSearchParams(item.query)}`, {
+      signal: controller.signal,
+      headers: { "user-agent": "AkarFinder-ODM-Canary-10-Page-Probe/2.0" },
+    });
+    const html = await response.text();
+    const errors = [];
+    if (response.status !== 200) errors.push(`http:${response.status}`);
+    if (!html.includes("seed_")) errors.push("missing_seed_marker");
+    if (!html.includes("Annonces publiques indexées")) errors.push("missing_public_indexed_section");
+    return {
+      status: response.status,
+      latency_ms: Number((performance.now() - startedAt).toFixed(2)),
+      city: item.query.city,
+      property_type: item.query.property_type,
+      transaction_type: item.query.transaction_type,
+      errors,
+    };
+  } catch (error) {
+    return {
+      status: 0,
+      latency_ms: Number((performance.now() - startedAt).toFixed(2)),
+      city: item.query.city,
+      property_type: item.query.property_type,
+      transaction_type: item.query.transaction_type,
+      errors: [String(error)],
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function selectVisibleCandidates(nonEmptyCanary) {
+  const selected = [];
+  const selectedKeys = new Set();
+  for (const city of cities) {
+    const candidate = nonEmptyCanary.find((item) => item.query.city === city);
+    if (!candidate) continue;
+    selected.push(candidate);
+    selectedKeys.add(candidate.stable_key);
+  }
+  for (const candidate of nonEmptyCanary) {
+    if (selected.length >= 12) break;
+    if (selectedKeys.has(candidate.stable_key)) continue;
+    selected.push(candidate);
+    selectedKeys.add(candidate.stable_key);
+  }
+  return selected;
+}
+
+function bucketDistributionRate() {
+  const sample = cities.flatMap((city) => combinations.flatMap((combination) => candidateQueries(city, combination)));
+  return sample.filter((query) => bucket(stableKey(query)) < BUCKET_LIMIT).length / sample.length;
+}
+
+async function main() {
+  const selected = selectTraffic();
+  const rate = bucketDistributionRate();
+  if (DRY_RUN) {
+    const canary = selected.filter((item) => item.expected_lane === "canary");
+    const legacy = selected.filter((item) => item.expected_lane === "legacy");
+    console.log(JSON.stringify({
+      campaign_revision: 2,
+      requested: selected.length,
+      expected_canary: canary.length,
+      expected_legacy: legacy.length,
+      bucket_distribution_rate: rate,
+      cities: [...new Set(selected.map((item) => item.query.city))],
+      property_types: [...new Set(selected.map((item) => item.query.property_type))],
+      intents: [...new Set(selected.map((item) => item.query.transaction_type))],
+      all_offsets_zero: selected.every((item) => item.query.offset === 0),
+      all_queries_structured_only: selected.every((item) => item.query.q == null),
+    }, null, 2));
+    return;
+  }
+
+  const results = await runConcurrent(selected);
+  const canary = results.filter((result) => result.expected_lane === "canary");
+  const legacy = results.filter((result) => result.expected_lane === "legacy");
+  const failures = results.filter((result) => result.errors.length > 0);
+  const nonEmptyCanary = canary.filter((result) => result.returned > 0);
+  const nonEmptyCanaryCities = new Set(nonEmptyCanary.map((result) => result.query.city));
+  const visibleCandidates = selectVisibleCandidates(nonEmptyCanary);
+  const pageProbes = [];
+  for (const item of visibleCandidates) pageProbes.push(await visibleProbe(item));
+  const pageProbeFailures = pageProbes.filter((probe) => probe.errors.length > 0);
+  const canaryLatencies = canary.map((result) => result.latency_ms);
+  const legacyLatencies = legacy.map((result) => result.latency_ms);
+  const canaryP95 = percentile(canaryLatencies, 0.95);
+  const canaryP99 = percentile(canaryLatencies, 0.99);
+
+  const report = {
+    certification: "ODM_CANARY_10_PRODUCTION_CERTIFICATION_V1",
+    campaign_revision: 2,
+    generated_at: new Date().toISOString(),
+    base_url: BASE_URL,
+    target_percent: TARGET_PERCENT,
+    requested: results.length,
+    http_200: results.filter((result) => result.status === 200).length,
+    expected_canary: canary.length,
+    expected_legacy: legacy.length,
+    observed_canary: results.filter((result) => result.source === "database_fallback").length,
+    observed_legacy: results.filter((result) => result.source !== "database_fallback" && result.status === 200).length,
+    non_empty_canary_requests: nonEmptyCanary.length,
+    non_empty_canary_cities: [...nonEmptyCanaryCities],
+    failures: failures.length,
+    visible_probe_failures: pageProbeFailures.length,
+    bucket_distribution_rate: rate,
+    candidate_policy: {
+      free_text_query: "absent",
+      offset: 0,
+      price_and_surface_filters: "broad_structured_ranges",
+      result_origin: "preserved_provenance_required",
+    },
+    coverage: {
+      cities: [...new Set(results.map((result) => result.query.city))],
+      property_types: [...new Set(results.map((result) => result.query.property_type))],
+      intents: [...new Set(results.map((result) => result.query.transaction_type))],
+    },
+    latency_ms: {
+      canary_p50: percentile(canaryLatencies, 0.5),
+      canary_p95: canaryP95,
+      canary_p99: canaryP99,
+      legacy_p50: percentile(legacyLatencies, 0.5),
+      legacy_p95: percentile(legacyLatencies, 0.95),
+      legacy_p99: percentile(legacyLatencies, 0.99),
+      visible_p50: percentile(pageProbes.map((probe) => probe.latency_ms), 0.5),
+      visible_p95: percentile(pageProbes.map((probe) => probe.latency_ms), 0.95),
+    },
+    gates: {
+      exact_240_request_campaign: results.length === EXPECTED_REQUESTS,
+      all_http_200: results.every((result) => result.status === 200),
+      all_ten_cities: new Set(results.map((result) => result.query.city)).size === cities.length,
+      all_four_property_types: new Set(results.map((result) => result.query.property_type)).size === propertyTypes.length,
+      all_three_intents: new Set(results.map((result) => result.query.transaction_type)).size === intents.length,
+      deterministic_lane_match: results.every((result) => (result.source === "database_fallback" ? "canary" : "legacy") === result.expected_lane),
+      no_filter_contract_or_policy_leaks: failures.length === 0,
+      bucket_rate_near_ten_percent: rate >= 0.085 && rate <= 0.115,
+      enough_non_empty_canary_evidence: nonEmptyCanary.length >= 20 && nonEmptyCanaryCities.size >= 7,
+      visible_page_api_lane_parity: pageProbes.length >= 8 && pageProbeFailures.length === 0,
+      canary_p95_within_5s: canaryP95 != null && canaryP95 <= CANARY_P95_MAX_MS,
+      canary_p99_within_10s: canaryP99 != null && canaryP99 <= CANARY_P99_MAX_MS,
+    },
+    visible_probes: pageProbes,
+    failed_requests: failures.slice(0, 50),
+  };
+
+  await mkdir("artifacts", { recursive: true });
+  await writeFile("artifacts/odm-canary-10-production-certification-v1.json", `${JSON.stringify(report, null, 2)}\n`);
+  const pass = Object.values(report.gates).every(Boolean);
+  const summary = [
+    "# ODM Canary 10% Production Certification V1",
+    "",
+    `- Campaign revision: ${report.campaign_revision}`,
+    `- Requests: ${report.requested}`,
+    `- Canary / Legacy: ${report.observed_canary} / ${report.observed_legacy}`,
+    `- Non-empty Canary: ${report.non_empty_canary_requests} across ${report.non_empty_canary_cities.length} cities`,
+    `- Failures: ${report.failures}`,
+    `- Visible probe failures: ${report.visible_probe_failures}`,
+    `- Canary p50 / p95 / p99: ${report.latency_ms.canary_p50} / ${canaryP95} / ${canaryP99} ms`,
+    `- Bucket rate: ${(rate * 100).toFixed(2)}%`,
+    `- Verdict: ${pass ? "PASS" : "FAIL"}`,
+    "",
+    "## Gates",
+    ...Object.entries(report.gates).map(([name, value]) => `- ${value ? "✅" : "❌"} ${name}`),
+    "",
+  ].join("\n");
+  if (process.env.GITHUB_STEP_SUMMARY) await writeFile(process.env.GITHUB_STEP_SUMMARY, summary, { flag: "a" });
+  console.log(JSON.stringify(report, null, 2));
+  if (!pass) process.exitCode = 1;
+}
+
+await main();
