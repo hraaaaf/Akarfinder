@@ -10,23 +10,24 @@ import {
 
 test("fails closed unless all approval flags are present", () => {
   assert.equal(shouldServeOdmPublicCanary("x", {}), false);
-  assert.equal(shouldServeOdmPublicCanary("x", { ODM_PUBLIC_CANARY_ENABLED: "true", ODM_PUBLIC_CANARY_PERCENT: "25" }), false);
+  assert.equal(shouldServeOdmPublicCanary("x", { ODM_PUBLIC_CANARY_ENABLED: "true", ODM_PUBLIC_CANARY_PERCENT: "50" }), false);
 });
 
-test("accepts the approved fifty percent ceiling and rejects values above it", () => {
-  assert.equal(ODM_PUBLIC_CANARY_MAX_PERCENT, 50);
+test("accepts the approved full-cutover ceiling and rejects values above it", () => {
+  assert.equal(ODM_PUBLIC_CANARY_MAX_PERCENT, 100);
   assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "10" }), 10);
   assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "25" }), 25);
   assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "50" }), 50);
-  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "50.01" }), 0);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "100" }), 100);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "100.01" }), 0);
 });
 
-test("stop flag overrides approval at the fifty percent ceiling", () => {
+test("stop flag overrides approval at the full-cutover ceiling", () => {
   assert.equal(shouldServeOdmPublicCanary("x", {
     ODM_PUBLIC_CANARY_ENABLED: "true",
     ODM_PUBLIC_CANARY_APPROVED: "true",
     ODM_PUBLIC_CANARY_STOP: "true",
-    ODM_PUBLIC_CANARY_PERCENT: "50",
+    ODM_PUBLIC_CANARY_PERCENT: "100",
   }), false);
 });
 
