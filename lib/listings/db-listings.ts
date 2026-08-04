@@ -57,6 +57,8 @@ export type DbListingRow = {
   source_name: string | null;
   listing_url: string | null;
   source_url: string | null;
+  // Optional because historical/local SQLite schemas do not expose this column.
+  // Supabase-backed reads populate it; missing values remain fail-closed in tier 4.
   origin_type?: string | null;
 };
 
@@ -222,14 +224,7 @@ export function queryDbListings(
           WHERE ls.property_listing_id = pl.id AND ls.is_active = 1
           ORDER BY ls.first_seen_at
           LIMIT 1
-        ) AS source_url,
-        (
-          SELECT ls.origin_type
-          FROM listing_sources ls
-          WHERE ls.property_listing_id = pl.id AND ls.is_active = 1
-          ORDER BY ls.first_seen_at
-          LIMIT 1
-        ) AS origin_type
+        ) AS source_url
       FROM property_listings pl
       ${whereClause}
       ORDER BY pl.data_completeness_score DESC, pl.updated_at DESC, pl.id DESC
@@ -328,14 +323,7 @@ export function getDbListingById(
           WHERE ls.property_listing_id = pl.id AND ls.is_active = 1
           ORDER BY ls.first_seen_at
           LIMIT 1
-        ) AS source_url,
-        (
-          SELECT ls.origin_type
-          FROM listing_sources ls
-          WHERE ls.property_listing_id = pl.id AND ls.is_active = 1
-          ORDER BY ls.first_seen_at
-          LIMIT 1
-        ) AS origin_type
+        ) AS source_url
       FROM property_listings pl
       WHERE pl.id = ?
       LIMIT 1
