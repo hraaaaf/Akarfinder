@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "app/api/search/route.ts"
+      - "lib/odm/odm-public-routing.ts"
       - "lib/odm/odm-dual-read-runner.ts"
       - "lib/odm/odm-dual-read-shadow.ts"
       - "lib/odm/odm-shadow-telemetry-store.ts"
@@ -39,14 +40,18 @@ jobs:
         env:
           ODM_DUAL_READ_ENABLED: "false"
           ODM_DUAL_READ_SAMPLE_PERCENT: "0"
-      - name: Enforce shadow-only response boundary
+      - name: Enforce non-blocking dual-read boundary
         run: |
           node <<'NODE'
           const fs = require('node:fs');
           const route = fs.readFileSync('app/api/search/route.ts', 'utf8');
-          if (!route.includes('return NextResponse.json(legacyResult)')) throw new Error('legacy response boundary missing');
+          const router = fs.readFileSync('lib/odm/odm-public-routing.ts', 'utf8');
+          if (!route.includes('const routed = await routePublicSearch')) throw new Error('shared public routing boundary missing');
+          if (!route.includes('if (routed.lane === "legacy_primary")')) throw new Error('shadow must be restricted to the legacy primary lane');
+          if (!route.includes('scheduleOdmDualReadShadow(query, routed.result)')) throw new Error('legacy primary shadow scheduling missing');
           if (!route.includes('after(async () =>')) throw new Error('ODM comparison must execute after the public response');
-          if (route.includes('return NextResponse.json(odm')) throw new Error('ODM response serving is forbidden in dual-read shadow');
+          if (!route.includes('return NextResponse.json(routed.result)')) throw new Error('public response must come from the routing result');
+          if (router.includes('runOdmDualReadShadow')) throw new Error('dual-read shadow must not participate in the public routing response');
           NODE
       - name: Reject committed activation
         run: |

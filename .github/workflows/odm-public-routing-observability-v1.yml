@@ -1,0 +1,40 @@
+name: ODM Public Routing Observability V1
+
+on:
+  pull_request:
+    paths:
+      - "app/api/search/route.ts"
+      - "app/search/page.tsx"
+      - "lib/odm/odm-public-routing.ts"
+      - "lib/odm/odm-public-canary.ts"
+      - "scripts/scrapers/__tests__/odm-public-routing-observability-v1.test.ts"
+      - "scripts/scrapers/__tests__/odm-full-cutover-100-production-certification-v1.test.ts"
+      - "docs/ODM-100-ROUTING-OBSERVABILITY-V1.md"
+      - "docs/ROADMAP.md"
+      - ".github/workflows/odm-public-routing-observability-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Validate centralized routing and structured telemetry
+        run: npx tsx --test scripts/scrapers/__tests__/odm-public-routing-observability-v1.test.ts
+      - name: Preserve certified ODM 100 percent controller contract
+        run: npx tsx --test scripts/scrapers/__tests__/odm-full-cutover-100-production-certification-v1.test.ts
+      - name: Reject committed Production activation
+        run: |
+          ! grep -R "ODM_PUBLIC_CANARY_ENABLED=true" -- . ':!docs' ':!.github'
+          ! grep -R "ODM_PUBLIC_CANARY_APPROVED=true" -- . ':!docs' ':!.github'
+          ! grep -R "ODM_PUBLIC_CANARY_PERCENT=100" -- . ':!docs' ':!.github'
+      - run: npx tsc --noEmit
+      - run: npm run build

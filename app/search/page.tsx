@@ -10,16 +10,15 @@ import { SearchPriceExplorerDock } from "@/components/search/SearchPriceExplorer
 import { runOdmDualReadShadow } from "@/lib/odm/odm-dual-read-runner";
 import { shouldRunOdmDualRead } from "@/lib/odm/odm-dual-read-shadow";
 import {
-  mapOdmPageToSearchResult,
-  shouldServeOdmPublicCanary,
-} from "@/lib/odm/odm-public-canary";
-import { searchListings, type SearchQuery, type SearchResult } from "@/lib/search";
+  buildOdmPublicSearchInput,
+  routePublicSearch,
+} from "@/lib/odm/odm-public-routing";
+import type { SearchQuery, SearchResult } from "@/lib/search";
 import {
   buildRawSearchPageQuery,
   buildSearchPageQuery,
 } from "@/lib/search/search-page-query";
 import { buildSearchStableKey } from "@/lib/search/search-request-query";
-import { searchPublicRepresentations } from "@/lib/search-gateway/public-search-cursor";
 import type { ListingFiltersState } from "@/lib/listings/types";
 
 export const dynamic = "force-dynamic";
@@ -59,20 +58,6 @@ function normalizeTransactionType(raw?: string): ListingFiltersState["transactio
   }
 }
 
-function odmInput(query: SearchQuery) {
-  return {
-    q: query.q,
-    city: query.city,
-    propertyType: query.property_type,
-    intent: query.transaction_type,
-    minPrice: query.min_price,
-    maxPrice: query.max_price,
-    minSurface: query.min_surface,
-    maxSurface: query.max_surface,
-    limit: Math.min(query.limit ?? 50, 100),
-  };
-}
-
 function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResult): void {
   const stableKey = buildSearchStableKey(query);
   if (!shouldRunOdmDualRead(stableKey)) return;
@@ -81,7 +66,7 @@ function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResul
     await runOdmDualReadShadow({
       stableKey,
       legacyResult,
-      odmInput: odmInput(query),
+      odmInput: buildOdmPublicSearchInput(query),
     });
   });
 }
@@ -91,20 +76,18 @@ async function searchVisibleInitialResult(
   publicRequestQuery: SearchQuery,
 ): Promise<SearchResult> {
   const stableKey = buildSearchStableKey(publicRequestQuery);
+  const routed = await routePublicSearch({
+    stableKey,
+    publicQuery: publicRequestQuery,
+    legacyQuery: resolvedQuery,
+    surface: "search_page",
+  });
 
-  if (shouldServeOdmPublicCanary(stableKey)) {
-    try {
-      const odmPage = await searchPublicRepresentations(odmInput(publicRequestQuery));
-      return mapOdmPageToSearchResult(odmPage, publicRequestQuery);
-    } catch (error) {
-      console.warn("[search-page:odm-public-canary:fallback]", error);
-      return searchListings(resolvedQuery);
-    }
+  if (routed.lane === "legacy_primary") {
+    scheduleOdmDualReadShadow(resolvedQuery, routed.result);
   }
 
-  const legacyResult = await searchListings(resolvedQuery);
-  scheduleOdmDualReadShadow(resolvedQuery, legacyResult);
-  return legacyResult;
+  return routed.result;
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
