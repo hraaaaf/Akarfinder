@@ -1,15 +1,15 @@
 {
   "certification": "ODM_CANARY_10_PRODUCTION_CERTIFICATION_V1",
   "campaign_revision": 2,
-  "generated_at": "2026-08-04T18:25:08.873Z",
+  "generated_at": "2026-08-04T19:55:35.582Z",
   "base_url": "https://akarfinder.vercel.app",
   "target_percent": 10,
   "requested": 240,
   "http_200": 240,
   "expected_canary": 80,
   "expected_legacy": 160,
-  "observed_canary": 113,
-  "observed_legacy": 127,
+  "observed_canary": 156,
+  "observed_legacy": 84,
   "non_empty_canary_requests": 46,
   "non_empty_canary_cities": [
     "Casablanca",
@@ -23,7 +23,7 @@
     "Témara",
     "Salé"
   ],
-  "failures": 33,
+  "failures": 76,
   "visible_probe_failures": 0,
   "bucket_distribution_rate": 0.09958333333333333,
   "candidate_policy": {
@@ -58,14 +58,14 @@
     ]
   },
   "latency_ms": {
-    "canary_p50": 184.49,
-    "canary_p95": 2007.58,
-    "canary_p99": 2158.23,
-    "legacy_p50": 418.72,
-    "legacy_p95": 1152.12,
-    "legacy_p99": 1248.64,
-    "visible_p50": 214.67,
-    "visible_p95": 458.77
+    "canary_p50": 251.81,
+    "canary_p95": 2426.58,
+    "canary_p99": 2615,
+    "legacy_p50": 378.4,
+    "legacy_p95": 1292.41,
+    "legacy_p99": 1558.13,
+    "visible_p50": 520,
+    "visible_p95": 669.02
   },
   "gates": {
     "exact_240_request_campaign": true,
@@ -84,7 +84,7 @@
   "visible_probes": [
     {
       "status": 200,
-      "latency_ms": 1516.86,
+      "latency_ms": 1345.2,
       "city": "Casablanca",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -92,7 +92,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 259.53,
+      "latency_ms": 652.29,
       "city": "Rabat",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -100,7 +100,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 211.73,
+      "latency_ms": 591.21,
       "city": "Marrakech",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -108,7 +108,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 234.98,
+      "latency_ms": 669.02,
       "city": "Tanger",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -116,7 +116,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 213.16,
+      "latency_ms": 565.43,
       "city": "Agadir",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -124,7 +124,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 458.77,
+      "latency_ms": 520,
       "city": "Fès",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -132,7 +132,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 193.63,
+      "latency_ms": 320.58,
       "city": "Oujda",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -140,7 +140,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 214.67,
+      "latency_ms": 576.45,
       "city": "Kénitra",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -148,7 +148,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 435.68,
+      "latency_ms": 322.07,
       "city": "Témara",
       "property_type": "apartment",
       "transaction_type": "sale",
@@ -156,7 +156,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 201.79,
+      "latency_ms": 329.39,
       "city": "Salé",
       "property_type": "apartment",
       "transaction_type": "rent",
@@ -164,7 +164,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 216.94,
+      "latency_ms": 328.42,
       "city": "Casablanca",
       "property_type": "apartment",
       "transaction_type": "rent",
@@ -172,7 +172,7 @@
     },
     {
       "status": 200,
-      "latency_ms": 205.52,
+      "latency_ms": 327.1,
       "city": "Casablanca",
       "property_type": "villa",
       "transaction_type": "sale",
@@ -180,6 +180,29 @@
     }
   ],
   "failed_requests": [
+    {
+      "query": {
+        "city": "Casablanca",
+        "property_type": "apartment",
+        "transaction_type": "rent",
+        "min_price": 100,
+        "max_price": 200000,
+        "min_surface": 1,
+        "max_surface": 500,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Casablanca\",\"property_type\":\"apartment\",\"transaction_type\":\"rent\",\"min_price\":100,\"max_price\":200000,\"min_surface\":1,\"max_surface\":500,\"limit\":5,\"offset\":0}",
+      "bucket": 4842,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 492.6,
+      "source": "database_fallback",
+      "returned": 5,
+      "errors": [
+        "lane:canary"
+      ]
+    },
     {
       "query": {
         "city": "Casablanca",
@@ -196,9 +219,101 @@
       "bucket": 1843,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 476.01,
+      "latency_ms": 493.76,
       "source": "database_fallback",
       "returned": 0,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Casablanca",
+        "property_type": "land",
+        "transaction_type": "new",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 20,
+        "max_surface": 50000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Casablanca\",\"property_type\":\"land\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":20,\"max_surface\":50000,\"limit\":5,\"offset\":0}",
+      "bucket": 3741,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 472.89,
+      "source": "database_fallback",
+      "returned": 0,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Casablanca",
+        "property_type": "office",
+        "transaction_type": "sale",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 1,
+        "max_surface": 5000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Casablanca\",\"property_type\":\"office\",\"transaction_type\":\"sale\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 3208,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 593.17,
+      "source": "database_fallback",
+      "returned": 5,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Casablanca",
+        "property_type": "office",
+        "transaction_type": "new",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 1,
+        "max_surface": 5000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Casablanca\",\"property_type\":\"office\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 2899,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 326.08,
+      "source": "database_fallback",
+      "returned": 0,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Rabat",
+        "property_type": "villa",
+        "transaction_type": "rent",
+        "min_price": 100,
+        "max_price": 200000,
+        "min_surface": 20,
+        "max_surface": 5000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Rabat\",\"property_type\":\"villa\",\"transaction_type\":\"rent\",\"min_price\":100,\"max_price\":200000,\"min_surface\":20,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 3926,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 469.92,
+      "source": "database_fallback",
+      "returned": 2,
       "errors": [
         "lane:canary"
       ]
@@ -219,9 +334,55 @@
       "bucket": 1350,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 201.57,
+      "latency_ms": 270.51,
       "source": "database_fallback",
       "returned": 0,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Rabat",
+        "property_type": "land",
+        "transaction_type": "rent",
+        "min_price": 100,
+        "max_price": 200000,
+        "min_surface": 20,
+        "max_surface": 50000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Rabat\",\"property_type\":\"land\",\"transaction_type\":\"rent\",\"min_price\":100,\"max_price\":200000,\"min_surface\":20,\"max_surface\":50000,\"limit\":5,\"offset\":0}",
+      "bucket": 4322,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 501.95,
+      "source": "database_fallback",
+      "returned": 4,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Rabat",
+        "property_type": "office",
+        "transaction_type": "sale",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 1,
+        "max_surface": 5000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Rabat\",\"property_type\":\"office\",\"transaction_type\":\"sale\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 3327,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 533.9,
+      "source": "database_fallback",
+      "returned": 5,
       "errors": [
         "lane:canary"
       ]
@@ -242,9 +403,78 @@
       "bucket": 1294,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 161.82,
+      "latency_ms": 237.52,
       "source": "database_fallback",
       "returned": 5,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Rabat",
+        "property_type": "apartment",
+        "transaction_type": "rent",
+        "min_price": 100,
+        "max_price": 200000,
+        "min_surface": 1,
+        "max_surface": 500,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Rabat\",\"property_type\":\"apartment\",\"transaction_type\":\"rent\",\"min_price\":100,\"max_price\":200000,\"min_surface\":1,\"max_surface\":500,\"limit\":5,\"offset\":0}",
+      "bucket": 4585,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 236.76,
+      "source": "database_fallback",
+      "returned": 4,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Rabat",
+        "property_type": "villa",
+        "transaction_type": "sale",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 20,
+        "max_surface": 5000,
+        "limit": 10,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Rabat\",\"property_type\":\"villa\",\"transaction_type\":\"sale\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":20,\"max_surface\":5000,\"limit\":10,\"offset\":0}",
+      "bucket": 4132,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 474.71,
+      "source": "database_fallback",
+      "returned": 7,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Rabat",
+        "property_type": "land",
+        "transaction_type": "sale",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 20,
+        "max_surface": 50000,
+        "limit": 10,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Rabat\",\"property_type\":\"land\",\"transaction_type\":\"sale\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":20,\"max_surface\":50000,\"limit\":10,\"offset\":0}",
+      "bucket": 3577,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 490.6,
+      "source": "database_fallback",
+      "returned": 9,
       "errors": [
         "lane:canary"
       ]
@@ -265,7 +495,7 @@
       "bucket": 1489,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 165.74,
+      "latency_ms": 229.73,
       "source": "database_fallback",
       "returned": 5,
       "errors": [
@@ -288,7 +518,76 @@
       "bucket": 1982,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 399.93,
+      "latency_ms": 232.13,
+      "source": "database_fallback",
+      "returned": 0,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Marrakech",
+        "property_type": "office",
+        "transaction_type": "sale",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 1,
+        "max_surface": 5000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Marrakech\",\"property_type\":\"office\",\"transaction_type\":\"sale\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 2615,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 541.44,
+      "source": "database_fallback",
+      "returned": 5,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Marrakech",
+        "property_type": "office",
+        "transaction_type": "rent",
+        "min_price": 100,
+        "max_price": 200000,
+        "min_surface": 1,
+        "max_surface": 5000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Marrakech\",\"property_type\":\"office\",\"transaction_type\":\"rent\",\"min_price\":100,\"max_price\":200000,\"min_surface\":1,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 3209,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 237.26,
+      "source": "database_fallback",
+      "returned": 5,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Marrakech",
+        "property_type": "villa",
+        "transaction_type": "new",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 20,
+        "max_surface": 5000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Marrakech\",\"property_type\":\"villa\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":20,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 4654,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 470.51,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -311,7 +610,7 @@
       "bucket": 1121,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 168.64,
+      "latency_ms": 278.71,
       "source": "database_fallback",
       "returned": 10,
       "errors": [
@@ -334,7 +633,7 @@
       "bucket": 1898,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 169.32,
+      "latency_ms": 236.87,
       "source": "database_fallback",
       "returned": 1,
       "errors": [
@@ -357,9 +656,124 @@
       "bucket": 1458,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 391.21,
+      "latency_ms": 236.3,
       "source": "database_fallback",
       "returned": 10,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Tanger",
+        "property_type": "office",
+        "transaction_type": "new",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 1,
+        "max_surface": 5000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Tanger\",\"property_type\":\"office\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 3407,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 236.17,
+      "source": "database_fallback",
+      "returned": 0,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Tanger",
+        "property_type": "land",
+        "transaction_type": "new",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 20,
+        "max_surface": 50000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Tanger\",\"property_type\":\"land\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":20,\"max_surface\":50000,\"limit\":5,\"offset\":0}",
+      "bucket": 3574,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 247.46,
+      "source": "database_fallback",
+      "returned": 0,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Tanger",
+        "property_type": "office",
+        "transaction_type": "sale",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 1,
+        "max_surface": 5000,
+        "limit": 10,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Tanger\",\"property_type\":\"office\",\"transaction_type\":\"sale\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":5000,\"limit\":10,\"offset\":0}",
+      "bucket": 4095,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 472.16,
+      "source": "database_fallback",
+      "returned": 8,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Tanger",
+        "property_type": "apartment",
+        "transaction_type": "sale",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 1,
+        "max_surface": 500,
+        "limit": 10,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Tanger\",\"property_type\":\"apartment\",\"transaction_type\":\"sale\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":500,\"limit\":10,\"offset\":0}",
+      "bucket": 4799,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 504,
+      "source": "database_fallback",
+      "returned": 8,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Agadir",
+        "property_type": "apartment",
+        "transaction_type": "sale",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 1,
+        "max_surface": 500,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Agadir\",\"property_type\":\"apartment\",\"transaction_type\":\"sale\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":500,\"limit\":5,\"offset\":0}",
+      "bucket": 2931,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 505.33,
+      "source": "database_fallback",
+      "returned": 4,
       "errors": [
         "lane:canary"
       ]
@@ -380,7 +794,7 @@
       "bucket": 2492,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 416.36,
+      "latency_ms": 460.32,
       "source": "database_fallback",
       "returned": 1,
       "errors": [
@@ -403,7 +817,7 @@
       "bucket": 1213,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 173.04,
+      "latency_ms": 318.65,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -426,7 +840,7 @@
       "bucket": 2143,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 409.03,
+      "latency_ms": 233.08,
       "source": "database_fallback",
       "returned": 4,
       "errors": [
@@ -449,7 +863,7 @@
       "bucket": 2483,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 400.55,
+      "latency_ms": 235.06,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -472,7 +886,7 @@
       "bucket": 2484,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 245.88,
+      "latency_ms": 247.14,
       "source": "database_fallback",
       "returned": 5,
       "errors": [
@@ -495,7 +909,7 @@
       "bucket": 1386,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 385.01,
+      "latency_ms": 235.39,
       "source": "database_fallback",
       "returned": 5,
       "errors": [
@@ -518,7 +932,7 @@
       "bucket": 1089,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 172.19,
+      "latency_ms": 227.44,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -541,9 +955,32 @@
       "bucket": 1228,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 163.27,
+      "latency_ms": 233.11,
       "source": "database_fallback",
       "returned": 1,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Agadir",
+        "property_type": "apartment",
+        "transaction_type": "new",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 1,
+        "max_surface": 500,
+        "limit": 10,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Agadir\",\"property_type\":\"apartment\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":500,\"limit\":10,\"offset\":0}",
+      "bucket": 4355,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 233.14,
+      "source": "database_fallback",
+      "returned": 0,
       "errors": [
         "lane:canary"
       ]
@@ -564,9 +1001,32 @@
       "bucket": 1384,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 165.46,
+      "latency_ms": 270.31,
       "source": "database_fallback",
       "returned": 9,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Fès",
+        "property_type": "villa",
+        "transaction_type": "new",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 20,
+        "max_surface": 5000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Fès\",\"property_type\":\"villa\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":20,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 4755,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 249.87,
+      "source": "database_fallback",
+      "returned": 0,
       "errors": [
         "lane:canary"
       ]
@@ -587,7 +1047,30 @@
       "bucket": 1572,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 157.26,
+      "latency_ms": 251.08,
+      "source": "database_fallback",
+      "returned": 0,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Fès",
+        "property_type": "office",
+        "transaction_type": "new",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 1,
+        "max_surface": 5000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Fès\",\"property_type\":\"office\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 3472,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 239.65,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -610,9 +1093,32 @@
       "bucket": 1077,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 172.88,
+      "latency_ms": 244.61,
       "source": "database_fallback",
       "returned": 4,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Fès",
+        "property_type": "villa",
+        "transaction_type": "new",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 20,
+        "max_surface": 5000,
+        "limit": 10,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Fès\",\"property_type\":\"villa\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":20,\"max_surface\":5000,\"limit\":10,\"offset\":0}",
+      "bucket": 3137,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 241.86,
+      "source": "database_fallback",
+      "returned": 0,
       "errors": [
         "lane:canary"
       ]
@@ -633,9 +1139,55 @@
       "bucket": 1117,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 171.54,
+      "latency_ms": 235.08,
       "source": "database_fallback",
       "returned": 6,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Oujda",
+        "property_type": "land",
+        "transaction_type": "rent",
+        "min_price": 100,
+        "max_price": 200000,
+        "min_surface": 20,
+        "max_surface": 50000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Oujda\",\"property_type\":\"land\",\"transaction_type\":\"rent\",\"min_price\":100,\"max_price\":200000,\"min_surface\":20,\"max_surface\":50000,\"limit\":5,\"offset\":0}",
+      "bucket": 4028,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 241.06,
+      "source": "database_fallback",
+      "returned": 0,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Oujda",
+        "property_type": "land",
+        "transaction_type": "new",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 20,
+        "max_surface": 50000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Oujda\",\"property_type\":\"land\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":20,\"max_surface\":50000,\"limit\":5,\"offset\":0}",
+      "bucket": 2552,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 241.24,
+      "source": "database_fallback",
+      "returned": 0,
       "errors": [
         "lane:canary"
       ]
@@ -656,9 +1208,32 @@
       "bucket": 1570,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 159.05,
+      "latency_ms": 238.23,
       "source": "database_fallback",
       "returned": 5,
+      "errors": [
+        "lane:canary"
+      ]
+    },
+    {
+      "query": {
+        "city": "Oujda",
+        "property_type": "villa",
+        "transaction_type": "sale",
+        "min_price": 10000,
+        "max_price": 50000000,
+        "min_surface": 20,
+        "max_surface": 5000,
+        "limit": 5,
+        "offset": 0
+      },
+      "stable_key": "{\"q\":null,\"city\":\"Oujda\",\"property_type\":\"villa\",\"transaction_type\":\"sale\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":20,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 4385,
+      "expected_lane": "legacy",
+      "status": 200,
+      "latency_ms": 225.59,
+      "source": "database_fallback",
+      "returned": 0,
       "errors": [
         "lane:canary"
       ]
@@ -679,7 +1254,7 @@
       "bucket": 1088,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 188.01,
+      "latency_ms": 231.77,
       "source": "database_fallback",
       "returned": 5,
       "errors": [
@@ -689,52 +1264,6 @@
     {
       "query": {
         "city": "Kénitra",
-        "property_type": "villa",
-        "transaction_type": "rent",
-        "min_price": 100,
-        "max_price": 200000,
-        "min_surface": 20,
-        "max_surface": 5000,
-        "limit": 5,
-        "offset": 0
-      },
-      "stable_key": "{\"q\":null,\"city\":\"Kénitra\",\"property_type\":\"villa\",\"transaction_type\":\"rent\",\"min_price\":100,\"max_price\":200000,\"min_surface\":20,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
-      "bucket": 1665,
-      "expected_lane": "legacy",
-      "status": 200,
-      "latency_ms": 218,
-      "source": "database_fallback",
-      "returned": 0,
-      "errors": [
-        "lane:canary"
-      ]
-    },
-    {
-      "query": {
-        "city": "Témara",
-        "property_type": "villa",
-        "transaction_type": "rent",
-        "min_price": 100,
-        "max_price": 200000,
-        "min_surface": 20,
-        "max_surface": 5000,
-        "limit": 5,
-        "offset": 0
-      },
-      "stable_key": "{\"q\":null,\"city\":\"Témara\",\"property_type\":\"villa\",\"transaction_type\":\"rent\",\"min_price\":100,\"max_price\":200000,\"min_surface\":20,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
-      "bucket": 1231,
-      "expected_lane": "legacy",
-      "status": 200,
-      "latency_ms": 219.98,
-      "source": "database_fallback",
-      "returned": 0,
-      "errors": [
-        "lane:canary"
-      ]
-    },
-    {
-      "query": {
-        "city": "Témara",
         "property_type": "office",
         "transaction_type": "sale",
         "min_price": 10000,
@@ -744,11 +1273,11 @@
         "limit": 5,
         "offset": 0
       },
-      "stable_key": "{\"q\":null,\"city\":\"Témara\",\"property_type\":\"office\",\"transaction_type\":\"sale\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
-      "bucket": 1155,
+      "stable_key": "{\"q\":null,\"city\":\"Kénitra\",\"property_type\":\"office\",\"transaction_type\":\"sale\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 4338,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 258.67,
+      "latency_ms": 251.03,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -757,7 +1286,7 @@
     },
     {
       "query": {
-        "city": "Témara",
+        "city": "Kénitra",
         "property_type": "office",
         "transaction_type": "rent",
         "min_price": 100,
@@ -767,11 +1296,11 @@
         "limit": 5,
         "offset": 0
       },
-      "stable_key": "{\"q\":null,\"city\":\"Témara\",\"property_type\":\"office\",\"transaction_type\":\"rent\",\"min_price\":100,\"max_price\":200000,\"min_surface\":1,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
-      "bucket": 1902,
+      "stable_key": "{\"q\":null,\"city\":\"Kénitra\",\"property_type\":\"office\",\"transaction_type\":\"rent\",\"min_price\":100,\"max_price\":200000,\"min_surface\":1,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 4673,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 174,
+      "latency_ms": 250.8,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -780,159 +1309,21 @@
     },
     {
       "query": {
-        "city": "Salé",
-        "property_type": "villa",
-        "transaction_type": "sale",
-        "min_price": 10000,
-        "max_price": 50000000,
-        "min_surface": 20,
-        "max_surface": 5000,
-        "limit": 5,
-        "offset": 0
-      },
-      "stable_key": "{\"q\":null,\"city\":\"Salé\",\"property_type\":\"villa\",\"transaction_type\":\"sale\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":20,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
-      "bucket": 2053,
-      "expected_lane": "legacy",
-      "status": 200,
-      "latency_ms": 160.94,
-      "source": "database_fallback",
-      "returned": 0,
-      "errors": [
-        "lane:canary"
-      ]
-    },
-    {
-      "query": {
-        "city": "Salé",
-        "property_type": "villa",
-        "transaction_type": "rent",
-        "min_price": 100,
-        "max_price": 200000,
-        "min_surface": 20,
-        "max_surface": 5000,
-        "limit": 5,
-        "offset": 0
-      },
-      "stable_key": "{\"q\":null,\"city\":\"Salé\",\"property_type\":\"villa\",\"transaction_type\":\"rent\",\"min_price\":100,\"max_price\":200000,\"min_surface\":20,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
-      "bucket": 2082,
-      "expected_lane": "legacy",
-      "status": 200,
-      "latency_ms": 163.01,
-      "source": "database_fallback",
-      "returned": 0,
-      "errors": [
-        "lane:canary"
-      ]
-    },
-    {
-      "query": {
-        "city": "Salé",
-        "property_type": "land",
-        "transaction_type": "new",
-        "min_price": 10000,
-        "max_price": 50000000,
-        "min_surface": 20,
-        "max_surface": 50000,
-        "limit": 5,
-        "offset": 0
-      },
-      "stable_key": "{\"q\":null,\"city\":\"Salé\",\"property_type\":\"land\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":20,\"max_surface\":50000,\"limit\":5,\"offset\":0}",
-      "bucket": 2359,
-      "expected_lane": "legacy",
-      "status": 200,
-      "latency_ms": 461.57,
-      "source": "database_fallback",
-      "returned": 0,
-      "errors": [
-        "lane:canary"
-      ]
-    },
-    {
-      "query": {
-        "city": "Salé",
-        "property_type": "office",
-        "transaction_type": "rent",
-        "min_price": 100,
-        "max_price": 200000,
-        "min_surface": 1,
-        "max_surface": 5000,
-        "limit": 5,
-        "offset": 0
-      },
-      "stable_key": "{\"q\":null,\"city\":\"Salé\",\"property_type\":\"office\",\"transaction_type\":\"rent\",\"min_price\":100,\"max_price\":200000,\"min_surface\":1,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
-      "bucket": 2175,
-      "expected_lane": "legacy",
-      "status": 200,
-      "latency_ms": 170.93,
-      "source": "database_fallback",
-      "returned": 0,
-      "errors": [
-        "lane:canary"
-      ]
-    },
-    {
-      "query": {
-        "city": "Salé",
+        "city": "Kénitra",
         "property_type": "office",
         "transaction_type": "new",
         "min_price": 10000,
         "max_price": 50000000,
         "min_surface": 1,
         "max_surface": 5000,
-        "limit": 10,
+        "limit": 5,
         "offset": 0
       },
-      "stable_key": "{\"q\":null,\"city\":\"Salé\",\"property_type\":\"office\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":5000,\"limit\":10,\"offset\":0}",
-      "bucket": 2423,
+      "stable_key": "{\"q\":null,\"city\":\"Kénitra\",\"property_type\":\"office\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":1,\"max_surface\":5000,\"limit\":5,\"offset\":0}",
+      "bucket": 3719,
       "expected_lane": "legacy",
       "status": 200,
-      "latency_ms": 413.63,
-      "source": "database_fallback",
-      "returned": 0,
-      "errors": [
-        "lane:canary"
-      ]
-    },
-    {
-      "query": {
-        "city": "Salé",
-        "property_type": "villa",
-        "transaction_type": "sale",
-        "min_price": 10000,
-        "max_price": 50000000,
-        "min_surface": 20,
-        "max_surface": 5000,
-        "limit": 10,
-        "offset": 0
-      },
-      "stable_key": "{\"q\":null,\"city\":\"Salé\",\"property_type\":\"villa\",\"transaction_type\":\"sale\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":20,\"max_surface\":5000,\"limit\":10,\"offset\":0}",
-      "bucket": 1206,
-      "expected_lane": "legacy",
-      "status": 200,
-      "latency_ms": 387.94,
-      "source": "database_fallback",
-      "returned": 0,
-      "errors": [
-        "lane:canary"
-      ]
-    },
-    {
-      "query": {
-        "city": "Salé",
-        "property_type": "villa",
-        "transaction_type": "new",
-        "min_price": 10000,
-        "max_price": 50000000,
-        "min_surface": 20,
-        "max_surface": 5000,
-        "limit": 10,
-        "offset": 0
-      },
-      "stable_key": "{\"q\":null,\"city\":\"Salé\",\"property_type\":\"villa\",\"transaction_type\":\"new\",\"min_price\":10000,\"max_price\":50000000,\"min_surface\":20,\"max_surface\":5000,\"limit\":10,\"offset\":0}",
-      "bucket": 1007,
-      "expected_lane": "legacy",
-      "status": 200,
-      "latency_ms": 171.69,
+      "latency_ms": 250.2,
       "source": "database_fallback",
       "returned": 0,
       "errors": [
@@ -941,10 +1332,10 @@
     }
   ],
   "evidence": {
-    "workflow_run_id": 30938316966,
-    "workflow_run_url": "https://github.com/hraaaaf/Akarfinder/actions/runs/30938316966",
-    "source_commit": "641a93ad77cb3a53b64fa48a507428e38f432d78",
+    "workflow_run_id": 30945306906,
+    "workflow_run_url": "https://github.com/hraaaaf/Akarfinder/actions/runs/30945306906",
+    "source_commit": "e6a6db737ee08061ec224ff77cba89ac6efb6634",
     "source_ref": "refs/heads/main",
-    "persisted_at": "2026-08-04T18:25:09.589Z"
+    "persisted_at": "2026-08-04T19:55:36.826Z"
   }
 }
