@@ -11,10 +11,11 @@ const commercialPriority = readFileSync("lib/search/search-commercial-priority.t
 const campaign = readFileSync("scripts/certify-odm-canary-10-production-v1.mjs", "utf8");
 const workflow = readFileSync(".github/workflows/odm-canary-10-production-certification-v1.yml", "utf8");
 
-test("public ODM Canary accepts ten percent and rejects any higher value", () => {
-  assert.equal(ODM_PUBLIC_CANARY_MAX_PERCENT, 10);
+test("public ODM Canary keeps ten percent valid within the twenty-five percent ceiling", () => {
+  assert.equal(ODM_PUBLIC_CANARY_MAX_PERCENT, 25);
   assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "10" } as NodeJS.ProcessEnv), 10);
-  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "10.01" } as NodeJS.ProcessEnv), 0);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "25" } as NodeJS.ProcessEnv), 25);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "25.01" } as NodeJS.ProcessEnv), 0);
 });
 
 test("controller remains fail closed behind approval and emergency-stop flags", () => {
