@@ -21,7 +21,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 jobs:
@@ -64,6 +64,58 @@ jobs:
           path: artifacts/odm-canary-10-production-certification-v1.json
           if-no-files-found: error
           retention-days: 30
+      - name: Persist latest evidence on audit branch
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("node:fs");
+            const reportPath = "artifacts/odm-canary-10-production-certification-v1.json";
+            const targetPath = "reports/odm-canary-10-production-latest.json";
+            const auditBranch = "certification-results";
+            let report;
+
+            if (fs.existsSync(reportPath)) {
+              report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+            } else {
+              report = {
+                certification: "ODM_CANARY_10_PRODUCTION_CERTIFICATION_V1",
+                generated_at: new Date().toISOString(),
+                gates: {},
+                evidence_error: "campaign_report_missing",
+              };
+            }
+
+            report.evidence = {
+              workflow_run_id: context.runId,
+              workflow_run_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              source_commit: context.sha,
+              source_ref: context.ref,
+              persisted_at: new Date().toISOString(),
+            };
+
+            let existingSha;
+            try {
+              const existing = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: targetPath,
+                ref: auditBranch,
+              });
+              if (!Array.isArray(existing.data)) existingSha = existing.data.sha;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: targetPath,
+              branch: auditBranch,
+              message: `audit(search): persist ODM 10 percent evidence from run ${context.runId}`,
+              content: Buffer.from(`${JSON.stringify(report, null, 2)}\n`).toString("base64"),
+              ...(existingSha ? { sha: existingSha } : {}),
+            });
       - name: Publish auditable verdict on certification PR
         if: always()
         uses: actions/github-script@v7
@@ -106,6 +158,7 @@ jobs:
                 gates || "- ❌ Aucun gate présent",
                 "",
                 `Artifact : \`odm-canary-10-production-certification-v1\` — conservation 30 jours`,
+                `Preuve persistée : branche \`certification-results\`, fichier \`reports/odm-canary-10-production-latest.json\``,
                 `Run : ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
               ].join("\n");
             }
