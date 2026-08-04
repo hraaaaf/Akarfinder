@@ -7,6 +7,11 @@ import { attachPublicSerpIntelligenceSummary } from "../../../lib/intelligence/p
 import { mockListings } from "../../../lib/listings/mock-listings.js";
 import { compareRecommendedListings } from "../../../lib/search/ranking.js";
 import {
+  getSearchCommercialTier,
+  partitionCommercialSearchListings,
+  prioritizeCommercialSearchListings,
+} from "../../../lib/search/search-commercial-priority.js";
+import {
   collapseStructuredDuplicateGroups,
   getSearchTruthPresentation,
   partitionStructuredListings,
@@ -112,6 +117,172 @@ describe("Search truth tiers", () => {
   });
 });
 
+
+describe("Search commercial priority", () => {
+  it("enforces promoter, agency partner, direct user, then public indexed order", () => {
+    const publicIndexed = {
+      ...mockListings[0],
+      id: "public",
+      source_name: "mubawab",
+      source_access_level: "indexed_only" as const,
+    };
+    const directUser = {
+      ...mockListings[0],
+      id: "direct",
+      source_name: "akarfinder",
+      acquisition_channel: "first_party_user",
+    };
+    const agencyPartner = {
+      ...structuredBase("agency"),
+      source_type: "Agence" as const,
+      partner_tier: "agency_premium" as const,
+    };
+    const promoterPremium = {
+      ...structuredBase("promoter"),
+      source_type: "Promoteur" as const,
+      partner_tier: "promoter_partner" as const,
+    };
+
+    const ordered = prioritizeCommercialSearchListings([
+      publicIndexed,
+      directUser,
+      agencyPartner,
+      promoterPremium,
+    ]);
+
+    assert.deepEqual(ordered.map((item) => item.id), [
+      "promoter",
+      "agency",
+      "direct",
+      "public",
+    ]);
+  });
+
+  it("preserves the existing ranking order inside each commercial category", () => {
+    const agencyA = { ...structuredBase("agency-a"), source_type: "Agence" as const };
+    const agencyB = { ...structuredBase("agency-b"), source_type: "Agence" as const };
+    const publicA = { ...mockListings[0], id: "public-a", source_name: "mubawab" };
+    const publicB = { ...mockListings[0], id: "public-b", source_name: "mubawab" };
+
+    const ordered = prioritizeCommercialSearchListings([publicA, agencyA, publicB, agencyB]);
+    assert.deepEqual(ordered.map((item) => item.id), [
+      "agency-a",
+      "agency-b",
+      "public-a",
+      "public-b",
+    ]);
+  });
+
+  it("keeps a rich first-party user submission in the direct-user category", () => {
+    const firstPartyRich = {
+      ...mockListings[0],
+      id: "direct-rich",
+      source_name: "akarfinder",
+      source_access_level: "partner_full" as const,
+      search_result_display_mode: "full_partner_listing",
+      original_source_required: false,
+      can_show_contact: true,
+    };
+
+    assert.equal(getSearchCommercialTier(firstPartyRich), "direct_user");
+  });
+
+  it("does not promote a commercial tier without confirmed authorization", () => {
+    const unconfirmedGoldAgency = {
+      ...mockListings[0],
+      id: "gold-unconfirmed",
+      source_type: "Agence" as const,
+      commercial_tier: "gold" as const,
+      partner_activation_status: "active" as const,
+      source_authorization_status: "pending" as const,
+      partner_validation_status: "validated" as const,
+    };
+    const confirmedGoldAgency = {
+      ...unconfirmedGoldAgency,
+      id: "gold-confirmed",
+      source_authorization_status: "confirmed" as const,
+    };
+
+    assert.equal(getSearchCommercialTier(unconfirmedGoldAgency), "public_indexed");
+    assert.equal(getSearchCommercialTier(confirmedGoldAgency), "agency_partner");
+  });
+
+  it("fails unknown or merely promoter-looking sources closed to public indexed", () => {
+    const unknown = { ...mockListings[0], id: "unknown", source_name: "mystery-source" };
+    const publicPromoterSite = {
+      ...mockListings[0],
+      id: "promoter-site",
+      source_type: "Promoteur" as const,
+      source_badge: "promoter_site",
+      source_access_level: "indexed_only" as const,
+    };
+
+    assert.equal(getSearchCommercialTier(unknown), "public_indexed");
+    assert.equal(getSearchCommercialTier(publicPromoterSite), "public_indexed");
+  });
+
+  it("uses truth level only inside the fourth public-indexed category", () => {
+    const publicAnalyzed = attachPublicSerpIntelligenceSummary(
+      { ...mockListings[0], id: "public-analyzed", source_name: "mubawab" },
+      {
+        version: "1.0",
+        status: "available",
+        score: 74,
+        score_label: "Lecture documentaire",
+        coverage_label: "4/5 dimensions documentaires disponibles",
+        signals: [],
+        attention_label: null,
+        disclaimer: "Indicatif",
+      },
+    );
+    const publicPartial = { ...mockListings[0], id: "public-partial", source_name: "mubawab" };
+    const observed = {
+      ...mockListings[0],
+      id: "observed-public",
+      source_badge: "external_web_result",
+      source_display_type: "external_web_result",
+      original_source_required: true,
+      can_show_contact: false,
+    };
+    const promoter = {
+      ...structuredBase("promoter-first"),
+      source_type: "Promoteur" as const,
+      partner_tier: "promoter_partner" as const,
+    };
+
+    const groups = partitionCommercialSearchListings([
+      publicPartial,
+      observed,
+      promoter,
+      publicAnalyzed,
+    ]);
+
+    assert.deepEqual(groups.promoterPremium.map((item) => item.id), ["promoter-first"]);
+    assert.deepEqual(groups.publicIndexed.analyzed.map((item) => item.id), ["public-analyzed"]);
+    assert.deepEqual(groups.publicIndexed.partial.map((item) => item.id), ["public-partial"]);
+    assert.deepEqual(groups.publicIndexed.observed.map((item) => item.id), ["observed-public"]);
+  });
+
+  it("keeps an authorized partner as duplicate-group representative over a lower category copy", () => {
+    const publicCopy = {
+      ...mockListings[0],
+      id: "public-copy",
+      source_name: "mubawab",
+      duplicate_group_id: "same-property",
+    };
+    const agencyCopy = {
+      ...structuredBase("agency-copy"),
+      source_type: "Agence" as const,
+      duplicate_group_id: "same-property",
+    };
+
+    const groups = partitionCommercialSearchListings([publicCopy, agencyCopy]);
+    assert.deepEqual(groups.agencyPartner.map((item) => item.id), ["agency-copy"]);
+    assert.equal(groups.publicIndexed.partial.length, 0);
+    assert.equal(groups.groupedRepresentations, 1);
+  });
+});
+
 describe("Recommended Search ranking", () => {
   it("prefers a disclosed price when two results have equal relevance", () => {
     const priced = {
@@ -167,17 +338,18 @@ describe("Recommended Search ranking", () => {
 });
 
 describe("Search Truth UX source contracts", () => {
-  it("renders analyzed, partial, then observed sections in that order", () => {
+  it("renders the four commercial categories in strict order", () => {
     const shell = source("components/search/LightZillowSearchShell.tsx");
-    const analyzed = shell.indexOf('<StructuredTruthSection kind="analyzed"');
-    const partial = shell.indexOf('<StructuredTruthSection kind="partial"');
-    const observed = shell.indexOf("<ObservedResultsSection");
-    assert.ok(analyzed >= 0 && partial > analyzed && observed > partial);
+    const promoter = shell.indexOf('tier="promoter_premium"');
+    const agency = shell.indexOf('tier="agency_partner"');
+    const direct = shell.indexOf('tier="direct_user"');
+    const indexed = shell.indexOf("<PublicIndexedResultsSection");
+    assert.ok(promoter >= 0 && agency > promoter && direct > agency && indexed > direct);
   });
 
   it("keeps relevance-first ranking explanation and explicit analyzed disclaimer", () => {
     const shell = source("components/search/LightZillowSearchShell.tsx");
-    assert.match(shell, /pertinence de la recherche d’abord/i);
+    assert.match(shell, /Ordre strict : promoteurs premium, agences partenaires/i);
     assert.match(shell, /Analysé ne signifie pas vérifié, certifié ni garanti/i);
   });
 

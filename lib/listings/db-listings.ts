@@ -57,6 +57,9 @@ export type DbListingRow = {
   source_name: string | null;
   listing_url: string | null;
   source_url: string | null;
+  // Optional because historical/local SQLite schemas do not expose this column.
+  // Supabase-backed reads populate it; missing values remain fail-closed in tier 4.
+  origin_type?: string | null;
 };
 
 export type DbListingsQuery = {

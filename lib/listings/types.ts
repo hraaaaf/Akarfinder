@@ -134,6 +134,18 @@ export type Listing = {
   image_fallback_type?: ImageFallbackType;
   source_access_level?: SourceAccessLevel;
 
+  // SEARCH-COMMERCIAL-PRIORITY-V1 — explicit commercial provenance signals.
+  // All fields are optional and fail closed: their absence never promotes a listing.
+  partner_type?: "promoter" | "agency";
+  partner_tier?: "promoter_partner" | "agency_premium" | "agency_partner";
+  organization_type?: "promoter" | "agency";
+  commercial_tier?: "none" | "partner" | "gold" | "premium";
+  partner_activation_status?: "pending" | "onboarding" | "review" | "active" | "paused" | "rejected";
+  source_authorization_status?: "none" | "pending" | "confirmed" | "revoked";
+  partner_validation_status?: "pending" | "validated" | "suspended" | "rejected";
+  acquisition_channel?: string;
+  origin_type?: string;
+
   // V9.5 — Source Display Policy (ENGINE-DISPLAY-POLICY-EXPORT-1, additive opt-in).
   // All fields optional — site works without them for legacy listings.
   source_display_type?: string;        // "public_index_source" | "partner_source" | "audit_source" | …

@@ -22,7 +22,7 @@ import { getListingObservedPriceComparison } from "@/lib/market/get-market-refer
 import { calculatePackageScore } from "@/lib/package-score/calculate-package-score";
 import { getListingProximity } from "@/lib/proximity/get-listing-proximity";
 import { getCityCoord } from "@/lib/search/city-coords";
-import { partitionStructuredListings } from "@/lib/search/search-truth-tier";
+import { partitionCommercialSearchListings } from "@/lib/search/search-commercial-priority";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 import { track } from "@/lib/tracking/track";
 import type { SearchViewMode } from "@/lib/ux/contracts";
@@ -148,32 +148,51 @@ function EmptyState({ onReset, city }: { onReset: () => void; city?: string }) {
   );
 }
 
-function StructuredTruthSection({
-  kind,
+function CommercialListingSection({
+  tier,
   listings,
   isLoading,
 }: {
-  kind: "analyzed" | "partial";
+  tier: "promoter_premium" | "agency_partner" | "direct_user";
   listings: Listing[];
   isLoading: boolean;
 }) {
   if (listings.length === 0) return null;
-  const analyzed = kind === "analyzed";
+
+  const config = {
+    promoter_premium: {
+      title: "Promoteurs premium",
+      description:
+        "Programmes et biens fournis par des promoteurs partenaires avec autorisation explicite de diffusion.",
+      badgeClass: "border-bronze-400/30 bg-bronze-500/10 text-bronze-700 dark:text-bronze-200",
+    },
+    agency_partner: {
+      title: "Agences partenaires",
+      description:
+        "Annonces issues d'agences ou de partenaires autorisés. La pertinence et la qualité départagent les résultats dans cette catégorie.",
+      badgeClass: "border-blue-400/25 bg-blue-500/10 text-blue-700 dark:text-blue-200",
+    },
+    direct_user: {
+      title: "Annonces déposées sur AkarFinder",
+      description:
+        "Biens publiés directement via les parcours AkarFinder, après application des règles d'éligibilité et de qualité.",
+      badgeClass: "border-emerald-400/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200",
+    },
+  }[tier];
+
   return (
-    <section className="space-y-4" aria-label={analyzed ? "Analysé par AkarFinder" : "Analyse partielle"}>
+    <section className="space-y-4" aria-label={config.title}>
       <div className="border-t border-border/15 pt-6 dark:border-white/10">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-[16px] font-extrabold text-foreground dark:text-white/90 sm:text-[18px]">
-            {analyzed ? "Analysé par AkarFinder" : "Analyse partielle"}
+            {config.title}
           </h2>
-          <span className={`rounded-full border px-2.5 py-1 text-[10px] font-extrabold ${analyzed ? "border-emerald-400/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200" : "border-amber-400/25 bg-amber-500/10 text-amber-700 dark:text-amber-200"}`}>
+          <span className={`rounded-full border px-2.5 py-1 text-[10px] font-extrabold ${config.badgeClass}`}>
             {listings.length} affiché{listings.length > 1 ? "s" : ""}
           </span>
         </div>
         <p className="mt-1 max-w-3xl text-[12px] leading-5 text-muted-foreground dark:text-white/50 sm:text-[13px]">
-          {analyzed
-            ? "Fiches structurées pour lesquelles AkarFinder dispose d'une analyse documentaire. Analysé ne signifie pas vérifié, certifié ni garanti."
-            : "Fiches structurées mais encore incomplètes : AkarFinder montre ce qui est disponible sans inventer les informations manquantes."}
+          {config.description}
         </p>
       </div>
       <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
@@ -185,24 +204,72 @@ function StructuredTruthSection({
   );
 }
 
-function ObservedResultsSection({
-  persistedListings,
+function IndexedTruthGroup({
+  kind,
+  listings,
+  isLoading,
+}: {
+  kind: "analyzed" | "partial";
+  listings: Listing[];
+  isLoading: boolean;
+}) {
+  if (listings.length === 0) return null;
+  const analyzed = kind === "analyzed";
+  return (
+    <div className="space-y-4">
+      <div>
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-[14px] font-extrabold text-foreground dark:text-white/85 sm:text-[15px]">
+            {analyzed ? "Analysé par AkarFinder" : "Analyse partielle"}
+          </h3>
+          <span className={`rounded-full border px-2.5 py-1 text-[10px] font-extrabold ${analyzed ? "border-emerald-400/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200" : "border-amber-400/25 bg-amber-500/10 text-amber-700 dark:text-amber-200"}`}>
+            {listings.length} affiché{listings.length > 1 ? "s" : ""}
+          </span>
+        </div>
+        <p className="mt-1 max-w-3xl text-[12px] leading-5 text-muted-foreground dark:text-white/50">
+          {analyzed
+            ? "Analyse documentaire disponible. Analysé ne signifie pas vérifié, certifié ni garanti."
+            : "Informations structurées mais encore incomplètes, affichées sans inventer les éléments manquants."}
+        </p>
+      </div>
+      <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
+        {listings.map((listing) => (
+          <SearchListingCardDark key={listing.id} listing={listing} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PublicIndexedResultsSection({
+  analyzedListings,
+  partialListings,
+  observedListings,
   gatewayResults,
   isLoading,
   isGatewayLoading,
 }: {
-  persistedListings: Listing[];
+  analyzedListings: Listing[];
+  partialListings: Listing[];
+  observedListings: Listing[];
   gatewayResults: SearchGatewayNormalizedResult[];
   isLoading: boolean;
   isGatewayLoading: boolean;
 }) {
-  if (persistedListings.length === 0 && gatewayResults.length === 0 && !isGatewayLoading) return null;
-  const displayed = persistedListings.length + gatewayResults.length;
+  const displayed =
+    analyzedListings.length +
+    partialListings.length +
+    observedListings.length +
+    gatewayResults.length;
+  if (displayed === 0 && !isGatewayLoading) return null;
+
   return (
-    <section className="mt-8 space-y-4" aria-label="Offres observées sur le web">
+    <section className="space-y-6" aria-label="Annonces publiques indexées">
       <div className="border-t border-border/15 pt-6 dark:border-white/10">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-[16px] font-extrabold text-foreground dark:text-white/90 sm:text-[18px]">Offres observées sur le web</h2>
+          <h2 className="text-[16px] font-extrabold text-foreground dark:text-white/90 sm:text-[18px]">
+            Annonces publiques indexées
+          </h2>
           {displayed > 0 ? (
             <span className="rounded-full border border-slate-400/25 bg-slate-500/10 px-2.5 py-1 text-[10px] font-extrabold text-slate-700 dark:text-white/65">
               {displayed} affiché{displayed > 1 ? "s" : ""}
@@ -210,23 +277,46 @@ function ObservedResultsSection({
           ) : null}
         </div>
         <p className="mt-1 max-w-3xl text-[12px] leading-5 text-muted-foreground dark:text-white/50 sm:text-[13px]">
-          Résultats publics avec niveau d'analyse limité. La présence ici n'est pas une validation de fiabilité : vérifiez le prix, la disponibilité et les détails sur la source originale.
+          Quatrième catégorie : résultats publics indexés ou observés, classés entre eux par niveau d'analyse, pertinence, prix disponible et qualité des informations. La source originale reste la référence.
         </p>
       </div>
 
-      {persistedListings.length > 0 ? (
-        <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
-          {persistedListings.map((listing) => (
-            <SearchListingCardDark key={listing.id} listing={listing} />
-          ))}
+      <IndexedTruthGroup kind="analyzed" listings={analyzedListings} isLoading={isLoading} />
+      <IndexedTruthGroup kind="partial" listings={partialListings} isLoading={isLoading} />
+
+      {observedListings.length > 0 || gatewayResults.length > 0 || isGatewayLoading ? (
+        <div className="space-y-4">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-[14px] font-extrabold text-foreground dark:text-white/85 sm:text-[15px]">
+                Offres observées sur le web
+              </h3>
+              {observedListings.length + gatewayResults.length > 0 ? (
+                <span className="rounded-full border border-slate-400/25 bg-slate-500/10 px-2.5 py-1 text-[10px] font-extrabold text-slate-700 dark:text-white/65">
+                  {observedListings.length + gatewayResults.length} affiché{observedListings.length + gatewayResults.length > 1 ? "s" : ""}
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-1 max-w-3xl text-[12px] leading-5 text-muted-foreground dark:text-white/50">
+              Aperçus limités : vérifiez le prix, la disponibilité et les détails sur la source originale.
+            </p>
+          </div>
+
+          {observedListings.length > 0 ? (
+            <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
+              {observedListings.map((listing) => (
+                <SearchListingCardDark key={listing.id} listing={listing} />
+              ))}
+            </div>
+          ) : null}
+
+          <ExternalIndexedResultsSection
+            results={gatewayResults}
+            isLoading={isGatewayLoading}
+            showHeader={false}
+          />
         </div>
       ) : null}
-
-      <ExternalIndexedResultsSection
-        results={gatewayResults}
-        isLoading={isGatewayLoading}
-        showHeader={false}
-      />
     </section>
   );
 }
@@ -418,10 +508,16 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     return sortListings(clientFiltered, sortBy);
   }, [listings, filters, sortBy]);
 
-  const truthGroups = useMemo(() => partitionStructuredListings(filteredListings), [filteredListings]);
-  const analyzedListings = truthGroups.analyzed;
-  const partialListings = truthGroups.partial;
-  const observedIndexedListings = truthGroups.observed;
+  const commercialGroups = useMemo(
+    () => partitionCommercialSearchListings(filteredListings),
+    [filteredListings],
+  );
+  const promoterPremiumListings = commercialGroups.promoterPremium;
+  const agencyPartnerListings = commercialGroups.agencyPartner;
+  const directUserListings = commercialGroups.directUser;
+  const indexedAnalyzedListings = commercialGroups.publicIndexed.analyzed;
+  const indexedPartialListings = commercialGroups.publicIndexed.partial;
+  const observedIndexedListings = commercialGroups.publicIndexed.observed;
 
   const cities = useMemo(() => getSearchCities(listings), [listings]);
   const propertyTypes = useMemo(() => getPropertyTypes(listings), [listings]);
@@ -473,14 +569,18 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   }, [filters]);
 
   const displayedCount = filteredListings.length + gatewayResults.length;
-  const observedCount = observedIndexedListings.length + gatewayResults.length;
+  const publicIndexedCount =
+    indexedAnalyzedListings.length +
+    indexedPartialListings.length +
+    observedIndexedListings.length +
+    gatewayResults.length;
   const isSearching = isLoading || isGatewayLoading;
   const hasAnyResults = displayedCount > 0;
   const showSkeleton = isLoading && filteredListings.length === 0 && gatewayResults.length === 0;
   const sortExplanation =
     sortBy === "recommended"
-      ? "Tri recommandé : pertinence de la recherche d’abord, puis qualité des informations disponibles. Un résultat hors sujet ne passe pas devant un résultat pertinent parce qu’il est mieux rempli."
-      : "Le tri par prix s’applique aux fiches structurées. Les offres observées sur le web restent des aperçus dans l’ordre fourni par leur source de découverte.";
+      ? "Ordre strict : promoteurs premium, agences partenaires, annonces déposées sur AkarFinder, puis annonces publiques indexées. Dans chaque catégorie : pertinence, prix disponible et qualité des informations."
+      : "Les quatre catégories restent prioritaires. Le tri par prix s’applique uniquement à l’intérieur de chaque catégorie ; les offres observées restent des aperçus liés à leur source originale.";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -496,7 +596,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
               </div>
               <h1 className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.045em] text-foreground sm:text-[2.7rem]">Trouvez votre bien au Maroc</h1>
               <p className="mt-2 hidden max-w-2xl text-[14.5px] leading-7 text-muted-foreground sm:block">
-                Pertinence d’abord, niveau d’information explicite, source visible avant de décider.
+                Catégorie de publication explicite, puis pertinence et niveau d’information avant de décider.
               </p>
             </div>
             <span className="shrink-0 rounded-full border border-border/20 bg-surface px-3 py-1.5 text-[11px] font-bold text-foreground/75 dark:border-white/12 dark:bg-white/[0.06] sm:px-4 sm:py-2 sm:text-[12.5px]">
@@ -531,16 +631,17 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
               </p>
               <p className="mt-0.5 text-[12.5px] font-medium text-muted-foreground sm:text-[13.5px]">
                 {[
-                  analyzedListings.length > 0 && `${analyzedListings.length} analysé${analyzedListings.length > 1 ? "s" : ""}`,
-                  partialListings.length > 0 && `${partialListings.length} analyse${partialListings.length > 1 ? "s" : ""} partielle${partialListings.length > 1 ? "s" : ""}`,
-                  observedCount > 0 && `${observedCount} offre${observedCount > 1 ? "s" : ""} observée${observedCount > 1 ? "s" : ""}`,
+                  promoterPremiumListings.length > 0 && `${promoterPremiumListings.length} promoteur${promoterPremiumListings.length > 1 ? "s" : ""} premium`,
+                  agencyPartnerListings.length > 0 && `${agencyPartnerListings.length} agence${agencyPartnerListings.length > 1 ? "s" : ""} partenaire${agencyPartnerListings.length > 1 ? "s" : ""}`,
+                  directUserListings.length > 0 && `${directUserListings.length} dépôt${directUserListings.length > 1 ? "s" : ""} direct${directUserListings.length > 1 ? "s" : ""}`,
+                  publicIndexedCount > 0 && `${publicIndexedCount} annonce${publicIndexedCount > 1 ? "s" : ""} publique${publicIndexedCount > 1 ? "s" : ""}`,
                 ].filter(Boolean).join(" · ") || (isSearching ? "Recherche en cours…" : getIntentLabel(filters.transactionType))}
               </p>
               <p className="mt-1 max-w-3xl text-[11px] leading-5 text-muted-foreground/85">{sortExplanation}</p>
             </div>
 
             <select
-              aria-label="Trier les fiches structurées"
+              aria-label="Trier les annonces à l’intérieur de leur catégorie"
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value as SortBy)}
               className="shrink-0 rounded-full border border-border/20 bg-surface px-3 py-2.5 text-[12px] font-bold text-foreground outline-none dark:border-white/12 dark:bg-white/[0.06] dark:[color-scheme:dark] sm:px-4 sm:text-[13px]"
@@ -581,10 +682,25 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                 </div>
               ) : (
                 <div className="space-y-8">
-                  <StructuredTruthSection kind="analyzed" listings={analyzedListings} isLoading={isLoading} />
-                  <StructuredTruthSection kind="partial" listings={partialListings} isLoading={isLoading} />
-                  <ObservedResultsSection
-                    persistedListings={observedIndexedListings}
+                  <CommercialListingSection
+                    tier="promoter_premium"
+                    listings={promoterPremiumListings}
+                    isLoading={isLoading}
+                  />
+                  <CommercialListingSection
+                    tier="agency_partner"
+                    listings={agencyPartnerListings}
+                    isLoading={isLoading}
+                  />
+                  <CommercialListingSection
+                    tier="direct_user"
+                    listings={directUserListings}
+                    isLoading={isLoading}
+                  />
+                  <PublicIndexedResultsSection
+                    analyzedListings={indexedAnalyzedListings}
+                    partialListings={indexedPartialListings}
+                    observedListings={observedIndexedListings}
                     gatewayResults={gatewayResults}
                     isLoading={isLoading}
                     isGatewayLoading={isGatewayLoading}

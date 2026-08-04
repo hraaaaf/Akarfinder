@@ -148,6 +148,7 @@ function mapToDbRow(row: SupabaseListingRow, resolvedSource?: ReadCandidateSourc
     source_name: activeSource?.source_name ?? null,
     listing_url: activeSource?.listing_url ?? null,
     source_url: activeSource?.source_url ?? null,
+    origin_type: activeSource?.origin_type ?? null,
   };
 }
 

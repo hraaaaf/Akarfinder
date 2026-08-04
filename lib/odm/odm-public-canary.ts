@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { Listing, ListingPropertyType, ListingTransactionType } from "@/lib/listings/types";
 import type { SearchQuery, SearchResult } from "@/lib/search";
+import { prioritizeCommercialSearchListings } from "@/lib/search/search-commercial-priority";
 import type { PublicSearchPage } from "@/lib/search-gateway/public-search-cursor";
 
 export const ODM_PUBLIC_CANARY_MAX_PERCENT = 10;
@@ -83,7 +84,7 @@ export function mapOdmPageToSearchResult(page: PublicSearchPage, query: SearchQu
   }));
 
   return {
-    listings,
+    listings: prioritizeCommercialSearchListings(listings),
     total: page.total_count,
     limit: query.limit ?? 50,
     offset: query.offset ?? 0,
