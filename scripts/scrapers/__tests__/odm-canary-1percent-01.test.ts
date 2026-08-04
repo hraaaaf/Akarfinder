@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  ODM_PUBLIC_CANARY_MAX_PERCENT,
   mapOdmPageToSearchResult,
   readPublicCanaryPercent,
   shouldServeOdmPublicCanary,
@@ -9,20 +10,22 @@ import {
 
 test("fails closed unless all approval flags are present", () => {
   assert.equal(shouldServeOdmPublicCanary("x", {}), false);
-  assert.equal(shouldServeOdmPublicCanary("x", { ODM_PUBLIC_CANARY_ENABLED: "true", ODM_PUBLIC_CANARY_PERCENT: "10" }), false);
+  assert.equal(shouldServeOdmPublicCanary("x", { ODM_PUBLIC_CANARY_ENABLED: "true", ODM_PUBLIC_CANARY_PERCENT: "25" }), false);
 });
 
-test("accepts the approved ten percent ramp and rejects values above it", () => {
+test("accepts the approved twenty-five percent ceiling and rejects values above it", () => {
+  assert.equal(ODM_PUBLIC_CANARY_MAX_PERCENT, 25);
   assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "10" }), 10);
-  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "10.01" }), 0);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "25" }), 25);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "25.01" }), 0);
 });
 
-test("stop flag overrides approval", () => {
+test("stop flag overrides approval at the twenty-five percent ceiling", () => {
   assert.equal(shouldServeOdmPublicCanary("x", {
     ODM_PUBLIC_CANARY_ENABLED: "true",
     ODM_PUBLIC_CANARY_APPROVED: "true",
     ODM_PUBLIC_CANARY_STOP: "true",
-    ODM_PUBLIC_CANARY_PERCENT: "10",
+    ODM_PUBLIC_CANARY_PERCENT: "25",
   }), false);
 });
 

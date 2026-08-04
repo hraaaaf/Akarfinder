@@ -4,7 +4,7 @@ import type { SearchQuery, SearchResult } from "@/lib/search";
 import { prioritizeCommercialSearchListings } from "@/lib/search/search-commercial-priority";
 import type { PublicSearchPage } from "@/lib/search-gateway/public-search-cursor";
 
-export const ODM_PUBLIC_CANARY_MAX_PERCENT = 10;
+export const ODM_PUBLIC_CANARY_MAX_PERCENT = 25;
 
 function explicitTrue(value: string | undefined): boolean { return value === "true"; }
 
