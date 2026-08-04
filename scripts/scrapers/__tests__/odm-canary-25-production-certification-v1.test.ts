@@ -74,6 +74,6 @@ test("workflow cannot activate Production and requires explicit manual certifica
   assert.match(workflow, /AKARFINDER_CERTIFICATION_DRY_RUN: "true"/);
   assert.match(workflow, /certification-results/);
   assert.match(workflow, /reports\/odm-canary-25-production-latest\.json/);
+  assert.match(workflow, /! grep -R "ODM_PUBLIC_CANARY_PERCENT=25"/);
   assert.doesNotMatch(workflow, /vercel env add/);
-  assert.doesNotMatch(workflow, /ODM_PUBLIC_CANARY_PERCENT=25/);
 });
