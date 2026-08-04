@@ -2,10 +2,18 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
+import {
+  ODM_PUBLIC_CANARY_MAX_PERCENT,
+  readPublicCanaryPercent,
+} from "../../../lib/odm/odm-public-canary.ts";
+
 const source = readFileSync("lib/odm/odm-public-canary.ts", "utf8");
 
-test("public ODM Canary safety cap permits the approved 10 percent ramp", () => {
-  assert.match(source, /ODM_PUBLIC_CANARY_MAX_PERCENT\s*=\s*10\s*;/);
+test("public ODM Canary keeps five percent valid within the twenty-five percent ceiling", () => {
+  assert.equal(ODM_PUBLIC_CANARY_MAX_PERCENT, 25);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "5" } as NodeJS.ProcessEnv), 5);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "25" } as NodeJS.ProcessEnv), 25);
+  assert.equal(readPublicCanaryPercent({ ODM_PUBLIC_CANARY_PERCENT: "25.01" } as NodeJS.ProcessEnv), 0);
 });
 
 test("public ODM Canary remains fail-closed behind enabled, approved and stop switches", () => {
