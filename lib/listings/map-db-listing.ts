@@ -273,6 +273,7 @@ export function mapDbRowToListing(
     data_completeness_score: dataCompletenessScore,
     source_name: toTitleCase(row.source_name),
     listing_url: row.listing_url ?? undefined,
+    origin_type: row.origin_type ?? undefined,
     duplicate_group_id: finalGroupId,
     duplicate_score: finalDuplicateScore,
     reliability_badge: reliabilityBadge,

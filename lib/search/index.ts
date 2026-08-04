@@ -3,6 +3,7 @@ import { enrichSearchQueryWithTextIntent } from "./query-intent";
 import { getSearchProvider, useTypesenseSearch } from "./provider";
 import { searchTypesense } from "./typesense-search";
 import { canonicalizeGeoPair } from "@/lib/geo/geo-entity-registry";
+import { prioritizeCommercialSearchListings } from "@/lib/search/search-commercial-priority";
 import { collapseStructuredDuplicateGroups } from "@/lib/search/search-truth-tier";
 import type { SearchQuery, SearchResult } from "./types";
 
@@ -31,7 +32,8 @@ function canonicalizeResultGeo(result: SearchResult): SearchResult {
 
 function projectVisibleDedup(result: SearchResult): SearchResult {
   const canonical = canonicalizeResultGeo(result);
-  const collapsed = collapseStructuredDuplicateGroups(canonical.listings);
+  const commerciallyPrioritized = prioritizeCommercialSearchListings(canonical.listings);
+  const collapsed = collapseStructuredDuplicateGroups(commerciallyPrioritized);
   return {
     ...canonical,
     listings: collapsed.listings,

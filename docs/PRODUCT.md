@@ -1,6 +1,6 @@
 # AkarFinder — Définition produit
 
-**Version : 2026-08-03**  
+**Version : 2026-08-04**  
 **Statut : définition canonique**
 
 ## 1. Définition
@@ -62,6 +62,19 @@ Contenu créé directement par un promoteur, une agence partenaire ou un utilisa
 Représentation limitée d’une page publique découverte légalement : titre/snippet borné, provenance visible, aucune galerie ni contact repris sans droit, CTA principal vers la source originale.
 
 Un résultat web indexé ne doit jamais être présenté comme une annonce partenaire.
+
+### Ordre canonique de la SERP
+
+Après l’éligibilité et la correspondance minimale avec la recherche, les résultats sont affichés dans quatre catégories explicites :
+
+1. promoteurs premium autorisés ;
+2. agences partenaires ou Gold autorisées ;
+3. annonces déposées directement sur AkarFinder ;
+4. annonces publiques indexées ou observées.
+
+Une catégorie commerciale ne permet jamais à un résultat hors sujet de franchir les filtres. À l’intérieur de chaque catégorie, le classement conserve la pertinence, le prix communiqué puis la qualité des informations. Le niveau `Analysé / Analyse partielle / Offre observée` est une subdivision de la quatrième catégorie, pas une priorité supérieure aux trois catégories directes ou partenaires.
+
+Les catégories et leur nature commerciale doivent rester visibles : cette règle ne peut pas être utilisée comme un classement sponsorisé masqué ni modifier artificiellement le score de fiabilité.
 
 ## 5. Pipeline produit canonique
 
