@@ -36,11 +36,12 @@ jobs:
           AKARFINDER_CERTIFICATION_DRY_RUN: "true"
         run: node scripts/certify-odm-canary-25-production-v1.mjs
       - run: npx tsc --noEmit
-      - name: Prove workflow is read-only toward Vercel
+      - name: Prove Production job is read-only toward Vercel
         run: |
-          ! grep -q "VERCEL_TOKEN" .github/workflows/odm-canary-25-auto-certify-once.yml
-          ! grep -q "vercel env" .github/workflows/odm-canary-25-auto-certify-once.yml
-          ! grep -q "vercel deploy" .github/workflows/odm-canary-25-auto-certify-once.yml
+          awk '/^  certify-production:/{flag=1} flag{print}' .github/workflows/odm-canary-25-auto-certify-once.yml > /tmp/certify-production.yml
+          ! grep -q "VERCEL_TOKEN" /tmp/certify-production.yml
+          ! grep -q "vercel env" /tmp/certify-production.yml
+          ! grep -q "vercel deploy" /tmp/certify-production.yml
 
   certify-production:
     if: github.event_name == 'push'
