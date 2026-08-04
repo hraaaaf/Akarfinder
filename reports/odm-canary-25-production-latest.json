@@ -1,13 +1,185 @@
 {
   "certification": "ODM_CANARY_25_PRODUCTION_CERTIFICATION_V1",
-  "generated_at": "2026-08-04T13:22:15.606Z",
-  "gates": {},
-  "evidence_error": "activation_or_campaign_report_missing",
+  "generated_at": "2026-08-04T17:15:06.821Z",
+  "base_url": "https://akarfinder.vercel.app",
+  "target_percent": 25,
+  "requested": 240,
+  "http_200": 240,
+  "expected_canary": 120,
+  "expected_legacy": 120,
+  "observed_canary": 120,
+  "observed_legacy": 120,
+  "non_empty_canary_requests": 56,
+  "non_empty_canary_cities": [
+    "Casablanca",
+    "Rabat",
+    "Marrakech",
+    "Tanger",
+    "Agadir",
+    "Fès",
+    "Oujda",
+    "Kénitra",
+    "Témara",
+    "Salé"
+  ],
+  "failures": 0,
+  "visible_probe_failures": 0,
+  "bucket_distribution_rate": 0.24932291666666667,
+  "coverage": {
+    "cities": [
+      "Casablanca",
+      "Rabat",
+      "Marrakech",
+      "Tanger",
+      "Agadir",
+      "Fès",
+      "Oujda",
+      "Kénitra",
+      "Témara",
+      "Salé"
+    ],
+    "property_types": [
+      "apartment",
+      "villa",
+      "land",
+      "office"
+    ],
+    "intents": [
+      "sale",
+      "rent",
+      "new"
+    ]
+  },
+  "latency_ms": {
+    "canary_p50": 247.28,
+    "canary_p95": 467.87,
+    "canary_p99": 502.71,
+    "legacy_p50": 482.98,
+    "legacy_p95": 961.58,
+    "legacy_p99": 1081.85,
+    "visible_p50": 363.51,
+    "visible_p95": 547.34
+  },
+  "gates": {
+    "exact_240_request_campaign": true,
+    "exact_120_120_lane_plan": true,
+    "all_http_200": true,
+    "all_ten_cities": true,
+    "all_four_property_types": true,
+    "all_three_intents": true,
+    "deterministic_lane_match": true,
+    "no_filter_contract_or_policy_leaks": true,
+    "bucket_rate_near_twenty_five_percent": true,
+    "enough_non_empty_canary_evidence": true,
+    "visible_page_api_lane_parity": true,
+    "canary_p95_within_5s": true,
+    "canary_p99_within_10s": true
+  },
+  "visible_probes": [
+    {
+      "status": 200,
+      "latency_ms": 1316.45,
+      "city": "Casablanca",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "errors": []
+    },
+    {
+      "status": 200,
+      "latency_ms": 363.51,
+      "city": "Rabat",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "errors": []
+    },
+    {
+      "status": 200,
+      "latency_ms": 438.45,
+      "city": "Marrakech",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "errors": []
+    },
+    {
+      "status": 200,
+      "latency_ms": 384.94,
+      "city": "Tanger",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "errors": []
+    },
+    {
+      "status": 200,
+      "latency_ms": 391.32,
+      "city": "Agadir",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "errors": []
+    },
+    {
+      "status": 200,
+      "latency_ms": 286,
+      "city": "Fès",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "errors": []
+    },
+    {
+      "status": 200,
+      "latency_ms": 348.59,
+      "city": "Oujda",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "errors": []
+    },
+    {
+      "status": 200,
+      "latency_ms": 535.03,
+      "city": "Kénitra",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "errors": []
+    },
+    {
+      "status": 200,
+      "latency_ms": 282.97,
+      "city": "Témara",
+      "property_type": "apartment",
+      "transaction_type": "sale",
+      "errors": []
+    },
+    {
+      "status": 200,
+      "latency_ms": 291.65,
+      "city": "Salé",
+      "property_type": "apartment",
+      "transaction_type": "rent",
+      "errors": []
+    },
+    {
+      "status": 200,
+      "latency_ms": 277.38,
+      "city": "Casablanca",
+      "property_type": "apartment",
+      "transaction_type": "rent",
+      "errors": []
+    },
+    {
+      "status": 200,
+      "latency_ms": 547.34,
+      "city": "Casablanca",
+      "property_type": "villa",
+      "transaction_type": "sale",
+      "errors": []
+    }
+  ],
+  "failed_requests": [],
   "evidence": {
-    "workflow_run_id": 30913340888,
-    "workflow_run_url": "https://github.com/hraaaaf/Akarfinder/actions/runs/30913340888",
-    "source_commit": "2e1d09ddeda5134d4f1d6c1b8291fee71d3db416",
+    "workflow_run_id": 30932921431,
+    "workflow_run_url": "https://github.com/hraaaaf/Akarfinder/actions/runs/30932921431",
+    "source_commit": "488af9f9f22c6b0f673c40745bf35256cb3c7fa8",
     "source_ref": "refs/heads/main",
-    "persisted_at": "2026-08-04T13:22:15.606Z"
+    "persisted_at": "2026-08-04T17:15:07.899Z",
+    "trigger": "one_time_read_only_push_certification"
   }
 }
