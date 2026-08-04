@@ -1,0 +1,13 @@
+{
+  "certification": "ODM_CANARY_25_PRODUCTION_CERTIFICATION_V1",
+  "generated_at": "2026-08-04T13:22:15.606Z",
+  "gates": {},
+  "evidence_error": "activation_or_campaign_report_missing",
+  "evidence": {
+    "workflow_run_id": 30913340888,
+    "workflow_run_url": "https://github.com/hraaaaf/Akarfinder/actions/runs/30913340888",
+    "source_commit": "2e1d09ddeda5134d4f1d6c1b8291fee71d3db416",
+    "source_ref": "refs/heads/main",
+    "persisted_at": "2026-08-04T13:22:15.606Z"
+  }
+}
