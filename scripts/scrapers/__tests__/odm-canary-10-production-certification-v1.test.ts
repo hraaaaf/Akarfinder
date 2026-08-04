@@ -33,24 +33,50 @@ test("ODM mapping applies commercial priority and indexed results fail closed to
   assert.match(commercialPriority, /return\s+"public_indexed"/);
 });
 
-test("production campaign is a stratified 240-request ten-percent certification", () => {
-  assert.match(campaign, /target_percent:10/);
-  assert.match(campaign, /results\.length===240/);
-  assert.match(campaign, /expected_canary:canary\.length/);
-  assert.match(campaign, /expected_legacy:legacy\.length/);
+test("campaign revision two uses meaningful structured first-page queries", () => {
+  assert.match(campaign, /campaign_revision:\s*2/);
+  assert.match(campaign, /AKARFINDER_CERTIFICATION_DRY_RUN/);
+  assert.match(campaign, /q:\s*undefined/);
+  assert.match(campaign, /offset:\s*0/);
+  assert.match(campaign, /broad_structured_ranges/);
+  assert.match(campaign, /all_offsets_zero/);
+  assert.match(campaign, /all_queries_structured_only/);
+  assert.doesNotMatch(campaign, /\$\{city\}\s+\$\{c\.property_type\}/);
+});
+
+test("campaign preserves real provenance instead of confusing it with the transport lane", () => {
+  assert.match(campaign, /typeof listing\.result_origin !== "string"/);
+  assert.match(campaign, /listing\.search_result_display_mode !== "thin_indexed_seed"/);
+  assert.match(campaign, /listing\.source_badge !== "external_indexed"/);
+  assert.doesNotMatch(campaign, /listing\.result_origin !== "search_api"/);
+  assert.match(campaign, /result_origin:\s*"preserved_provenance_required"/);
+});
+
+test("production campaign remains a stratified 240-request ten-percent certification", () => {
+  assert.match(campaign, /EXPECTED_REQUESTS\s*=\s*240/);
+  assert.match(campaign, /CANARY_PER_CITY\s*=\s*8/);
+  assert.match(campaign, /LEGACY_PER_CITY\s*=\s*16/);
+  assert.match(campaign, /target_percent:\s*TARGET_PERCENT/);
+  assert.match(campaign, /results\.length\s*===\s*EXPECTED_REQUESTS/);
+  assert.match(campaign, /expected_canary:\s*canary\.length/);
+  assert.match(campaign, /expected_legacy:\s*legacy\.length/);
   assert.match(campaign, /all_ten_cities/);
   assert.match(campaign, /all_four_property_types/);
   assert.match(campaign, /all_three_intents/);
+  assert.match(campaign, /enough_non_empty_canary_evidence/);
+  assert.match(campaign, /selectVisibleCandidates\(nonEmptyCanary\)/);
   assert.match(campaign, /visible_page_api_lane_parity/);
   assert.match(campaign, /canary_p99_within_10s/);
   assert.match(campaign, /no_filter_contract_or_policy_leaks/);
 });
 
-test("workflow runs contracts on PRs and the real campaign only after merge or dispatch", () => {
+test("workflow runs contracts on PRs and persists real evidence only after merge or dispatch", () => {
   assert.match(workflow, /pull_request:/);
   assert.match(workflow, /push:\n\s+branches:\s*\[main\]/);
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /if:\s*github\.event_name\s*!=\s*'pull_request'/);
   assert.match(workflow, /https:\/\/akarfinder\.vercel\.app/);
   assert.match(workflow, /odm-canary-10-production-certification-v1\.json/);
+  assert.match(workflow, /certification-results/);
+  assert.match(workflow, /reports\/odm-canary-10-production-latest\.json/);
 });
