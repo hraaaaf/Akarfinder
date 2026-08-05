@@ -1,0 +1,52 @@
+name: LOT B2 Source Registry v2 Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805174500_lot_b2_source_registry_v2.sql"
+      - "docs/data/LOT-B2-SOURCE-REGISTRY-V2.md"
+      - ".github/workflows/lot-b2-source-registry-v2.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805174500_lot_b2_source_registry_v2.sql"
+      - "docs/data/LOT-B2-SOURCE-REGISTRY-V2.md"
+      - ".github/workflows/lot-b2-source-registry-v2.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-source-registry-v2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Fail-closed source-policy assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          M="supabase/migrations/20260805174500_lot_b2_source_registry_v2.sql"
+          D="docs/data/LOT-B2-SOURCE-REGISTRY-V2.md"
+          grep -q "authorization_status" "$M"
+          grep -q "allowed_discovery_channels" "$M"
+          grep -q "machine_gate" "$M"
+          grep -q "policy_hash" "$M"
+          grep -q "marrakechrealty.com" "$M"
+          grep -q "no_bypass_required=false" "$M"
+          grep -q "unregistered_observed_domains" "$M"
+          grep -q "revoke all on table public.source_policy_registry from public,anon,authenticated" "$M"
+          grep -q "service_role" "$M"
+          grep -q "fail-closed" "$D"
+          if grep -Eiq "update[[:space:]]+public\.thin_index_search_documents|delete[[:space:]]+from[[:space:]]+public\.thin_index_search_documents" "$M"; then
+            echo "B2 must not mutate search documents" >&2
+            exit 1
+          fi
+      - run: npx tsc --noEmit
+      - run: npm run build
