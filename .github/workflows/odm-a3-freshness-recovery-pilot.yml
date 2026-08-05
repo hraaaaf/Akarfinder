@@ -1,0 +1,73 @@
+name: ODM A3 Freshness Recovery Pilot Gate
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260805101500_lot_a3_freshness_recovery_pilot.sql"
+      - "docs/data/ODM-A3-FRESHNESS-RECOVERY-PILOT.md"
+      - "docs/data/ODM-A2-RECOVERABLE-LISTING-DEPTH.md"
+      - ".github/workflows/odm-a3-freshness-recovery-pilot.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805101500_lot_a3_freshness_recovery_pilot.sql"
+      - "docs/data/ODM-A3-FRESHNESS-RECOVERY-PILOT.md"
+      - "docs/data/ODM-A2-RECOVERABLE-LISTING-DEPTH.md"
+      - ".github/workflows/odm-a3-freshness-recovery-pilot.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  certify-a3-freshness-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Fail-closed freshness evidence assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          MIGRATION="supabase/migrations/20260805101500_lot_a3_freshness_recovery_pilot.sql"
+          DOC="docs/data/ODM-A3-FRESHNESS-RECOVERY-PILOT.md"
+
+          grep -q "odm_a3_freshness_recovery_audit_v1" "$MIGRATION"
+          grep -q "odm_refresh_a3_freshness_recovery_pilot_v1" "$MIGRATION"
+          grep -q "odm_a3_freshness_recovery_report_v1" "$MIGRATION"
+          grep -q "odm_a2_recoverable_listing_depth_report_v2" "$MIGRATION"
+          grep -q "provider = 'public_sitemap'" "$MIGRATION"
+          grep -q "compliance_status = 'canonical_link_only'" "$MIGRATION"
+          grep -q "title is null" "$MIGRATION"
+          grep -q "snippet is null" "$MIGRATION"
+          grep -q "metadata #>> '{detail_fetch}' = 'false'" "$MIGRATION"
+          grep -q "metadata #>> '{content_reuse}' = 'false'" "$MIGRATION"
+          grep -q "metadata #>> '{shadow_only}' = 'true'" "$MIGRATION"
+          grep -q "metadata #>> '{public_activation}' = 'false'" "$MIGRATION"
+          grep -q "publication_eligible boolean not null default false" "$MIGRATION"
+          grep -q "reclassification_eligible boolean not null default false" "$MIGRATION"
+          grep -q "from public, anon, authenticated" "$MIGRATION"
+          grep -q "to service_role" "$MIGRATION"
+          grep -q "fresh_window_days',14" "$MIGRATION"
+          grep -q "candidate_depth_is_not_certified_inventory" "$MIGRATION"
+          grep -q "8,057" "$DOC"
+          grep -q "809" "$DOC"
+          grep -q "No live sitemap refresh is claimed" "$DOC"
+
+          if grep -Eiq "update[[:space:]]+public\.(thin_index_search_documents|source_offer_seeds)" "$MIGRATION"; then
+            echo "A3 must not update listing or seed rows" >&2
+            exit 1
+          fi
+          if grep -Eiq "delete[[:space:]]+from[[:space:]]+public\.(thin_index_search_documents|source_offer_seeds|discovery_candidates)" "$MIGRATION"; then
+            echo "A3 must not delete production listing, seed or discovery evidence" >&2
+            exit 1
+          fi
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
