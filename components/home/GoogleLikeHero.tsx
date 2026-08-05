@@ -50,7 +50,7 @@ export function GoogleLikeHero() {
             id="home-hero-title"
             className="max-w-[900px] text-[2.2rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.32)] sm:text-[3.8rem] lg:text-[4.7rem]"
           >
-            Trouvez le bon bien, avec moins de bruit
+            1er moteur de recherche immobilier au Maroc
           </h1>
 
           <p className="mt-4 max-w-[700px] text-[14px] font-medium leading-6 text-white/82 drop-shadow-[0_2px_12px_rgba(0,0,0,0.32)] sm:mt-5 sm:text-[17px] sm:leading-7">
