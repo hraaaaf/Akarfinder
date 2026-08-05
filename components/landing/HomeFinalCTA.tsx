@@ -11,7 +11,8 @@ export function HomeFinalCTA() {
           </span>
 
           <h2 className="mt-5 text-[2.2rem] font-extrabold leading-[1.08] tracking-[-0.03em] text-foreground sm:text-[3rem]">
-            Cherchez directement ou construisez Mon Projet.
+            <span className="block">Vous savez déjà ce que vous cherchez&nbsp;?</span>
+            <span className="mt-2 block">Recherchez directement ou laissez-vous guider.</span>
           </h2>
 
           <p className="mx-auto mt-5 max-w-[590px] text-[1.05rem] leading-relaxed text-muted-foreground">
