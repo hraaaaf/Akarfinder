@@ -1,0 +1,36 @@
+name: LOT B3.3 External Tail Authorization Campaign Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260805203000_lot_b3_3_external_tail_authorization_campaign.sql'
+      - 'docs/data/LOT-B3-3-EXTERNAL-TAIL-AUTHORIZATION-CAMPAIGN.md'
+      - '.github/workflows/lot-b3-3-external-tail-authorization-campaign.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-authorization-campaign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Authorization campaign assertions
+        run: |
+          FILE=supabase/migrations/20260805203000_lot_b3_3_external_tail_authorization_campaign.sql
+          grep -q "source_external_tail_authorization_campaign_v1" "$FILE"
+          grep -q "written_authorization_received boolean not null default false" "$FILE"
+          grep -q "activation_review_eligible boolean generated always" "$FILE"
+          grep -q "publication_eligible',0" "$FILE"
+          grep -q "contact_method in ('email','contact_form','support_portal','manual_research')" "$FILE"
+          grep -q "revoke all on table public.source_external_tail_authorization_campaign_v1 from public, anon, authenticated" "$FILE"
+          grep -q "odm_b3_3_external_tail_authorization_campaign_report_v1" "$FILE"
+          ! grep -Eqi "captcha|proxy rotation|stealth|fake googlebot|detail fetch" "$FILE"
+      - run: npx tsc --noEmit
+      - run: npm run build
