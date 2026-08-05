@@ -1,0 +1,39 @@
+name: LOT B3.1 External Tail Policy Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260805190000_lot_b3_1_external_tail_policy.sql'
+      - 'docs/data/LOT-B3-1-EXTERNAL-TAIL-POLICY.md'
+      - '.github/workflows/lot-b3-1-external-tail-policy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-external-tail-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: External-tail policy assertions
+        run: |
+          FILE=supabase/migrations/20260805190000_lot_b3_1_external_tail_policy.sql
+          grep -q "ingestion_gate" "$FILE"
+          grep -q "display_gate" "$FILE"
+          grep -q "external_tail_link_only" "$FILE"
+          grep -q "pending_source_review" "$FILE"
+          grep -q "forbidden_fields" "$FILE"
+          grep -q "serp_tail_eligible boolean not null default false" "$FILE"
+          grep -q "publication_eligible boolean not null default false" "$FILE"
+          grep -q "security invoker" "$FILE"
+          grep -q "set search_path=''" "$FILE"
+          grep -q "odm_b3_1_external_tail_report_v1" "$FILE"
+          ! grep -Eqi "captcha|proxy rotation|stealth|fake googlebot|copy description|copy image" "$FILE"
+      - run: npx tsc --noEmit
+      - run: npm run build
