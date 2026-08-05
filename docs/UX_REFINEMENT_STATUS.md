@@ -10,8 +10,8 @@
 | P0 — Search clarity | DONE + DEPLOYED | Navigation, SERP filters, result cards, mobile and accessibility | 9.6/10 |
 | P1 LOT 1 — Result → decision continuity | DONE — 18/18 GATES PASS | Property detail decision summary, favorite, compare and Mon Projet continuity | 9.6/10 |
 | P1 LOT 2 — Design-system convergence | DONE — 20/20 GATES PASS | Shared semantic primitives migrated across Search filters and the property decision surface | certified |
-| P1 LOT 3 — Mobile decision ergonomics | IN REVIEW | Sticky property actions, mobile filter bottom sheet and thumb-reachable list/map controls | pending certification |
-| P1 LOT 4 — Motion and perceived quality | TODO | Purposeful transitions, feedback and reduced-motion parity | — |
+| P1 LOT 3 — Mobile decision ergonomics | DONE — 21/21 GATES PASS | Sticky property actions, mobile filter bottom sheet and thumb-reachable list/map controls | certified |
+| P1 LOT 4 — Motion and perceived quality | IN REVIEW | Purposeful short transitions, stable feedback and reduced-motion parity | pending certification |
 | P1 final audit | TODO | Cross-surface responsive/accessibility audit and score certification | — |
 
 ## Completed before this refinement program
@@ -38,7 +38,7 @@ The historical Phase 1 P1 audit ledger is already closed. Its search truth, buye
 - no product logic, DATA, ranking or source-boundary change;
 - full PR gate set: **20/20 successful**.
 
-## P1 LOT 3 definition of done
+## P1 LOT 3 certification evidence
 
 - property detail exposes a safe-area-aware mobile action dock;
 - favorite, compare and Mon Projet remain available without scrolling back to the header;
@@ -47,12 +47,22 @@ The historical Phase 1 P1 audit ledger is already closed. Its search truth, buye
 - list/map/split controls remain thumb-reachable and keep semantic selected states;
 - touch targets are at least 44px on the migrated controls;
 - desktop behavior remains unchanged;
+- full PR gate set: **21/21 successful**.
+
+## P1 LOT 4 definition of done
+
+- motion is short, purposeful and limited to state changes or spatial continuity;
+- favorite and compare feedback is immediate, stable and announced with `aria-live`;
+- the mobile decision dock enters without blocking interaction;
+- new motion primitives have complete `prefers-reduced-motion` parity;
+- no infinite decorative motion is introduced on decision surfaces;
+- no product logic, DATA, ranking, publication or source-boundary change;
 - dedicated contracts, TypeScript, build and responsive/accessibility gates pass.
 
 ## Global estimate
 
 - P0 current refinement: **100%**
-- P1 current refinement: **50% certified; LOT 3 in review**
-- Overall current UX refinement program: **about 72% certified**
+- P1 current refinement: **75% certified; LOT 4 in review**
+- Overall current UX refinement program: **about 86% certified**
 
 This estimate advances only after a LOT is merged and its verification evidence is recorded.
