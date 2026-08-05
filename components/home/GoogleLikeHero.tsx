@@ -34,7 +34,7 @@ export function GoogleLikeHero() {
           className="absolute inset-0 hidden sm:block"
           style={{
             background:
-              "radial-gradient(ellipse 70% 58% at 50% 43%, rgba(3,16,31,0.58) 0%, transparent 72%)",
+              "radial-gradient(ellipse 66% 54% at 50% 42%, rgba(3,16,31,0.62) 0%, rgba(3,16,31,0.30) 54%, transparent 74%)",
           }}
         />
         <div className="absolute inset-0 bg-[#061027]/12" />
@@ -42,22 +42,17 @@ export function GoogleLikeHero() {
 
       <Container className="relative z-10 w-full px-5 pb-14 pt-[calc(env(safe-area-inset-top)+6rem)] sm:pb-24 sm:pt-36 lg:pb-28 lg:pt-40">
         <div className="mx-auto flex max-w-[940px] flex-col items-center text-center">
-          <p className="mb-4 inline-flex rounded-full border border-white/22 bg-black/12 px-3.5 py-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-[#BFDBFE] backdrop-blur-sm sm:mb-5 sm:text-[11.5px]">
-            Recherche immobilière au Maroc
-          </p>
-
           <h1
             id="home-hero-title"
-            className="max-w-[900px] text-[2.2rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.32)] sm:text-[3.8rem] lg:text-[4.7rem]"
+            className="max-w-[820px] text-[2.15rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.42)] sm:text-[4rem] lg:text-[4.8rem]"
           >
             1er moteur de recherche immobilier au Maroc
           </h1>
-
-          <p className="mt-4 max-w-[700px] text-[14px] font-medium leading-6 text-white/82 drop-shadow-[0_2px_12px_rgba(0,0,0,0.32)] sm:mt-5 sm:text-[17px] sm:leading-7">
-            Recherchez plusieurs origines en un seul endroit, comparez les informations disponibles et gardez la source visible.
+          <p className="sr-only">
+            Moteur de recherche immobilier. Comprenez le quartier et consultez les sources originales.
           </p>
 
-          <div className="mt-7 w-full sm:mt-9">
+          <div className="mt-8 w-full sm:mt-10">
             <SearchEntryOrchestrator />
           </div>
         </div>
