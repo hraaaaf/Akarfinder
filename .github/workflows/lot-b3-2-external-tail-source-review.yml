@@ -1,0 +1,39 @@
+name: LOT B3.2 External Tail Source Review Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260805190500_lot_b3_2_external_tail_source_review.sql'
+      - 'docs/data/LOT-B3-2-EXTERNAL-TAIL-SOURCE-REVIEW.md'
+      - '.github/workflows/lot-b3-2-external-tail-source-review.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-source-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Source-review assertions
+        run: |
+          FILE=supabase/migrations/20260805190500_lot_b3_2_external_tail_source_review.sql
+          grep -q "source_external_tail_review_v1" "$FILE"
+          grep -q "permission_required" "$FILE"
+          grep -q "hidden_without_permission" "$FILE"
+          grep -q "serp_tail_eligible boolean not null default false" "$FILE"
+          grep -q "publication_eligible boolean not null default false" "$FILE"
+          grep -q "display_gate = 'hidden'" "$FILE"
+          grep -q "security invoker" "$FILE"
+          grep -q "set search_path=''" "$FILE"
+          grep -q "odm_b3_2_external_tail_source_review_report_v1" "$FILE"
+          grep -q "revoke all on table public.source_external_tail_review_v1 from public,anon,authenticated" "$FILE"
+          ! grep -Eqi "captcha|proxy rotation|stealth|fake googlebot|detail fetch" "$FILE"
+      - run: npx tsc --noEmit
+      - run: npm run build
