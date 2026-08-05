@@ -42,7 +42,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
     (filters.propertyType !== "all" ? 1 : 0);
 
   const fieldClass =
-    "h-11 w-full rounded-xl border border-border/20 bg-surface px-3.5 text-[13px] font-semibold text-foreground outline-none transition placeholder:text-muted-foreground hover:border-bronze-400/45 focus:border-bronze-500 focus:ring-2 focus:ring-bronze-500/15 dark:border-white/12 dark:bg-white/[0.055] dark:text-white";
+    "h-11 w-full rounded-xl border border-border/20 bg-surface px-3.5 text-[13px] font-semibold text-foreground outline-none transition placeholder:text-muted-foreground/80 hover:border-bronze-400/45 focus:border-bronze-500 focus:ring-2 focus:ring-bronze-500/15 dark:border-white/12 dark:bg-white/[0.055] dark:text-white";
 
   return (
     <section
@@ -63,7 +63,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
             value={filters.search}
             onChange={(event) => onChange({ ...filters, search: event.target.value })}
             placeholder="Ville, quartier, résidence ou mot-clé"
-            className="h-12 w-full rounded-2xl border border-border/20 bg-surface pl-11 pr-4 text-[15px] font-semibold text-foreground outline-none transition placeholder:text-muted-foreground focus:border-bronze-500 focus:ring-4 focus:ring-bronze-500/15 dark:border-white/12 dark:bg-white/[0.055] dark:text-white sm:h-14"
+            className="h-12 w-full rounded-2xl border border-border/20 bg-surface pl-11 pr-4 text-[15px] font-semibold text-foreground outline-none transition placeholder:text-muted-foreground/80 focus:border-bronze-500 focus:ring-4 focus:ring-bronze-500/15 dark:border-white/12 dark:bg-white/[0.055] dark:text-white sm:h-14"
           />
         </label>
 
@@ -79,7 +79,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
                 key={tab.value}
                 type="button"
                 onClick={() => onChange({ ...filters, transactionType: tab.value })}
-                aria-pressed={selected}
+                aria-pressed={filters.transactionType === tab.value}
                 className={
                   selected
                     ? "rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-3 py-2.5 text-[13px] font-extrabold text-white shadow-sm"
