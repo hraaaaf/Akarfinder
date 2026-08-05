@@ -5,6 +5,7 @@ on:
     paths:
       - "app/api/seller-drafts/**"
       - "components/vendre/SellerPublicationPanel.tsx"
+      - "components/vendre/SellerReviewStatusPanel.tsx"
       - "lib/seller/publication.ts"
       - "supabase/migrations/20260805190000_seller_controlled_publication_management_v1.sql"
       - "scripts/scrapers/__tests__/ux-p2-seller-controlled-publication-management.test.ts"
