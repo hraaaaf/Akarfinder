@@ -8,6 +8,7 @@ import { Container } from "@/components/ui/Container";
 import { getNeighborhoods, type NeighborhoodPoint } from "@/lib/map/canonical-neighborhood-data";
 
 const FEATURED_IDS = ["rabat-agdal", "casablanca-maarif", "marrakech-gueliz"] as const;
+type FeaturedNeighborhoodId = (typeof FEATURED_IDS)[number];
 
 const FUTURE_DIMENSIONS = [
   "Écoles",
@@ -80,7 +81,7 @@ export function SignatureMapSection() {
       .map((id) => neighborhoods.find((point) => point.id === id))
       .filter((point): point is NeighborhoodPoint => Boolean(point));
   }, []);
-  const [selectedId, setSelectedId] = useState(FEATURED_IDS[0]);
+  const [selectedId, setSelectedId] = useState<FeaturedNeighborhoodId>(FEATURED_IDS[0]);
   const selected = featured.find((point) => point.id === selectedId) ?? featured[0];
 
   if (!selected) return null;
@@ -108,7 +109,7 @@ export function SignatureMapSection() {
                   type="button"
                   role="tab"
                   aria-selected={active}
-                  onClick={() => setSelectedId(point.id as (typeof FEATURED_IDS)[number])}
+                  onClick={() => setSelectedId(point.id as FeaturedNeighborhoodId)}
                   className={`rounded-full border px-4 py-2.5 text-[12px] font-extrabold transition sm:px-5 sm:text-[13px] ${
                     active
                       ? "border-[#60A5FA] bg-[#0B63CE] text-white shadow-[0_12px_30px_rgba(11,99,206,0.28)]"
