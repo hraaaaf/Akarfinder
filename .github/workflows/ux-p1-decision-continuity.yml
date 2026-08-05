@@ -1,0 +1,29 @@
+name: UX P1 Decision Continuity
+
+on:
+  pull_request:
+    paths:
+      - "app/listings/**"
+      - "components/listings/**"
+      - "components/favorites/**"
+      - "components/compare/**"
+      - "scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts"
+      - ".github/workflows/ux-p1-decision-continuity.yml"
+  workflow_dispatch:
+
+jobs:
+  decision-continuity:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Decision continuity contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build

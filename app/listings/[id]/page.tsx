@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { SiteFooter } from "@/components/landing/SiteFooter";
+import { PropertyDecisionHeader } from "@/components/listings/PropertyDecisionHeader";
 import { PropertyDetailV2 } from "@/components/listings/PropertyDetailV2";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Container } from "@/components/ui/Container";
@@ -63,6 +64,7 @@ export default async function ListingDetailPage({
       <main className="min-h-screen bg-[#f8f9fa] text-gray-900">
         <SiteHeader />
         <Container>
+          <PropertyDecisionHeader listing={listing} detail={detail} />
           <PropertyDetailV2 listing={listing} detail={detail} />
         </Container>
         <SiteFooter />
