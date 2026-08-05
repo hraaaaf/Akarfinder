@@ -1,0 +1,28 @@
+name: UX P1 Motion Perceived Quality
+
+on:
+  pull_request:
+    paths:
+      - "components/ui/perceived-quality.module.css"
+      - "components/listings/MobilePropertyDecisionBar.tsx"
+      - "components/favorites/FavoriteToggleButton.tsx"
+      - "components/compare/CompareToggleButton.tsx"
+      - "scripts/scrapers/__tests__/ux-p1-motion-perceived-quality.test.ts"
+      - ".github/workflows/ux-p1-motion-perceived-quality.yml"
+
+jobs:
+  motion-perceived-quality:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Motion and perceived quality contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-p1-motion-perceived-quality.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
