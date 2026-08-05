@@ -219,7 +219,10 @@ export function parseXlsxBuffer(buffer: Buffer, requestedSheet?: string | null):
       value = "'[FORMULA_BLOCKED]";
       neutralized += 1;
     } else if (type === "inlineStr") {
-      value = xmlDecode(body.match(/<t\b[^>]*>([\s\S]*?)<\/t>/)?.[1] ?? "");
+      const inlineValue = xmlDecode(body.match(/<t\b[^>]*>([\s\S]*?)<\/t>/)?.[1] ?? "");
+      const safe = neutralizeFormula(inlineValue);
+      value = safe.value;
+      if (safe.neutralized) neutralized += 1;
     } else {
       const raw = xmlDecode(body.match(/<v>([\s\S]*?)<\/v>/)?.[1] ?? "");
       value = type === "s" ? sharedStrings[Number(raw)] ?? "" : raw;
