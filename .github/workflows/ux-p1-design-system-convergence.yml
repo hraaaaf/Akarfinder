@@ -1,0 +1,29 @@
+name: UX P1 Design System Convergence
+
+on:
+  pull_request:
+    paths:
+      - "components/ui/design-system.ts"
+      - "components/search/QuickFilters.tsx"
+      - "components/listings/PropertyDecisionHeader.tsx"
+      - "app/listings/**"
+      - "scripts/scrapers/__tests__/ux-p1-design-system-convergence.test.ts"
+      - ".github/workflows/ux-p1-design-system-convergence.yml"
+  workflow_dispatch:
+
+jobs:
+  design-system-convergence:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Design-system contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-p1-design-system-convergence.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
