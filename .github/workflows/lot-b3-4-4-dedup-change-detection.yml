@@ -1,0 +1,32 @@
+name: LOT B3.4.4 Dedup Change Detection Gate
+on:
+  pull_request:
+    paths:
+      - 'scripts/partner-feeds/dedup-change-detection.ts'
+      - 'scripts/scrapers/__tests__/partner-feed-dedup-change-detection.test.ts'
+      - 'supabase/migrations/20260805231500_lot_b3_4_4_dedup_change_detection.sql'
+      - 'docs/data/LOT-B3-4-4-DEDUP-CHANGE-DETECTION.md'
+      - '.github/workflows/lot-b3-4-4-dedup-change-detection.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  certify-dedup-change-detection:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Fail-closed assertions
+        run: |
+          FILE=scripts/partner-feeds/dedup-change-detection.ts
+          grep -q 'publication_eligible: false' "$FILE"
+          grep -q 'manual_review' "$FILE"
+          grep -q 'update_offer' "$FILE"
+          ! grep -Eqi 'insert into|update public\.|delete from|publication_eligible: true|captcha|stealth|fake googlebot' "$FILE"
+      - run: npx tsx --test scripts/scrapers/__tests__/partner-feed-dedup-change-detection.test.ts scripts/scrapers/__tests__/partner-feed-canonical-mapping.test.ts
+      - run: npx tsc --noEmit
+      - run: npm run build
