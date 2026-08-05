@@ -22,38 +22,44 @@ describe("Homepage proof UX", () => {
     assert.ok(orchestrator.includes("Pas encore sûr de vos critères ? Construisez votre projet"));
   });
 
-  it("explains the product through real search/noise/information-level behavior", () => {
+  it("explains the product with approved user-facing benefits", () => {
     const why = source("components/landing/WhySection.tsx");
-    assert.ok(why.includes("Une recherche, plusieurs origines"));
-    assert.ok(why.includes("Le bruit est signalé, pas maquillé"));
-    assert.ok(why.includes("Vous savez ce qu'AkarFinder sait"));
-    assert.match(why, /sans prétendre qu'il s'agit forcément du même bien/i);
+    assert.ok(why.includes("Pourquoi rechercher avec AkarFinder ?"));
+    assert.ok(why.includes("Rechercher plus intelligemment"));
+    assert.ok(why.includes("Comprendre avant de visiter"));
+    assert.ok(why.includes("Gagner du temps"));
+    assert.ok(!why.includes("canonical"));
+    assert.ok(!why.includes("cluster"));
   });
 
-  it("separates live index proof from canonical reference counts", () => {
+  it("shows transparent result proof without unstable public counters", () => {
     const proof = source("components/landing/DataProofBlock.tsx");
-    assert.ok(proof.includes("Index actuel"));
-    assert.ok(proof.includes("Référentiel canonique"));
-    assert.ok(proof.includes("GEO_CITIES.length"));
-    assert.ok(proof.includes("getValidatedMapNeighborhoods().length"));
-    assert.match(proof, /Toutes les lignes ne sont pas nécessairement publiables/i);
+    assert.ok(proof.includes("Des résultats plus clairs pour mieux décider"));
+    assert.ok(proof.includes("Source clairement indiquée"));
+    assert.ok(proof.includes("Niveau d’information visible"));
+    assert.ok(proof.includes("Résultats similaires mieux organisés"));
+    assert.ok(!proof.includes("/api/stats"));
+    assert.ok(!proof.includes("Index actuel"));
   });
 
-  it("replaces the duplicate static city map with canonical neighborhood intelligence proof", () => {
+  it("uses canonical neighborhood data for the approved Vivre ici experience", () => {
     const map = source("components/landing/SignatureMapSection.tsx");
     assert.ok(map.includes("@/lib/map/canonical-neighborhood-data"));
-    assert.ok(map.includes("Intelligence quartier"));
-    assert.ok(map.includes("point.benchmark.period"));
-    assert.ok(map.includes("point.confidence"));
+    assert.ok(map.includes("Vivre ici"));
+    assert.ok(map.includes("Un bien ne se résume pas à ses mètres carrés."));
+    assert.ok(map.includes("selected.benchmark.period"));
+    assert.ok(map.includes("selected.confidence"));
+    assert.ok(map.includes("Profil détaillé bientôt disponible"));
     assert.ok(!map.includes("MAP_CITIES"));
   });
 
-  it("has no dead newsletter input/button in the shared footer", () => {
+  it("has no dead newsletter or redundant project block in the shared footer", () => {
     const footer = source("components/landing/SiteFooter.tsx");
     assert.ok(!footer.includes("Votre email"));
     assert.ok(!footer.includes(">OK<"));
-    assert.ok(footer.includes('href="/mon-projet"'));
-    assert.ok(footer.includes("Ouvrir Mon Projet"));
+    assert.ok(!footer.includes('href="/mon-projet"'));
+    assert.ok(!footer.includes("Ouvrir Mon Projet"));
+    assert.ok(footer.includes("Les sources et le niveau d&apos;information restent visibles pour chaque résultat."));
   });
 
   it("final CTA uses Search and Companion, not legacy buyer onboarding", () => {
@@ -62,5 +68,7 @@ describe("Homepage proof UX", () => {
     assert.ok(cta.includes('href="/compagnon"'));
     assert.ok(!cta.includes('href="/onboarding"'));
     assert.ok(cta.includes("Découvrir AkarFinder Pro"));
+    assert.ok(cta.includes("Rechercher un bien"));
+    assert.ok(cta.includes("Me laisser guider"));
   });
 });
