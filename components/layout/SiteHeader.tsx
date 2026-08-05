@@ -14,17 +14,25 @@ type SiteHeaderProps = {
 };
 
 const primaryNav = [
-  { href: "/acheter", label: "Acheter" },
-  { href: "/louer", label: "Louer" },
-  { href: "/neuf", label: "Neuf" },
-  { href: "/search", label: "Recherche" },
+  { href: "/acheter", text: "Acheter" },
+  { href: "/louer", text: "Louer" },
+  { href: "/neuf", text: "Neuf" },
+  { href: "/search", text: "Recherche" },
 ] as const;
 
 const secondaryNav = [
-  { href: "/map", label: "Carte" },
-  { href: "/compagnon", label: "Compagnon" },
-  { href: "/pro/agences", label: "Agences" },
-  { href: "/promoteurs", label: "Promoteurs" },
+  { href: "/map", text: "Carte" },
+  { href: "/compagnon", text: "Compagnon" },
+  { href: "/pro/agences", text: "Agences" },
+  { href: "/promoteurs", text: "Promoteurs" },
+] as const;
+
+const mobileNav = [
+  { href: "/search", label: "Recherche" },
+  { href: "/acheter", label: "Acheter" },
+  { href: "/louer", label: "Louer" },
+  { href: "/vendre", label: "Vendre" },
+  { href: "/pro", label: "Pro" },
 ] as const;
 
 export function SiteHeader({ variant = "light", compact = false }: SiteHeaderProps) {
@@ -48,11 +56,10 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
 
   const transparentActive = isTransparent && !scrolled;
   const darkSurface = isDark || (isTransparent && scrolled);
-  const isProActive = pathname.startsWith("/pro") || pathname.startsWith("/promoteurs");
 
-  const linkClass = (active: boolean) =>
+  const linkClass = (isActive: boolean) =>
     `relative rounded-full px-2 py-1.5 text-[13.5px] font-semibold transition ${
-      active
+      isActive
         ? darkSurface || transparentActive
           ? "text-white after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-bronze-400"
           : "text-foreground after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-[#0B63CE] dark:text-white"
@@ -108,11 +115,15 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
         <nav aria-label="Navigation principale" className="hidden lg:block">
           <ul className="flex items-center gap-4">
             {primaryNav.map((item) => {
-              const active = pathname.startsWith(item.href);
+              const isActive = pathname.startsWith(item.href);
               return (
                 <li key={item.href}>
-                  <Link href={item.href} aria-current={active ? "page" : undefined} className={linkClass(active)}>
-                    {item.label}
+                  <Link
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={linkClass(isActive)}
+                  >
+                    {item.text}
                   </Link>
                 </li>
               );
@@ -128,7 +139,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
                     href={item.href}
                     className="block rounded-xl px-3 py-2.5 text-[13px] font-semibold text-foreground/75 transition hover:bg-surface hover:text-foreground dark:text-white/75 dark:hover:bg-white/8 dark:hover:text-white"
                   >
-                    {item.label}
+                    {item.text}
                   </Link>
                 ))}
               </div>
@@ -189,17 +200,23 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
       </Container>
 
       {menuOpen ? (
-        <nav aria-label="Navigation mobile principale" className="border-t border-border/10 bg-card px-4 py-3 dark:border-white/8 dark:bg-[#071B33] lg:hidden">
+        <nav
+          aria-label="Navigation mobile principale"
+          className="border-t border-border/10 bg-card px-4 py-3 dark:border-white/8 dark:bg-[#071B33] lg:hidden"
+        >
           <div className="grid grid-cols-2 gap-2">
-            {[...primaryNav, ...secondaryNav].map((item) => {
-              const active = pathname.startsWith(item.href);
+            {mobileNav.map((item) => {
+              const isActive =
+                item.href === "/pro"
+                  ? pathname.startsWith("/pro") || pathname.startsWith("/promoteurs")
+                  : pathname.startsWith(item.href);
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={`rounded-xl border px-3 py-3 text-[13px] font-bold transition ${
-                    active
+                  aria-current={isActive ? "page" : undefined}
+                  className={`min-h-10 rounded-xl border px-3 py-3 text-[13px] font-bold transition ${
+                    isActive
                       ? "border-[#0B63CE] bg-[#0B63CE] text-white"
                       : "border-border/15 bg-surface text-foreground/75 hover:border-[#0B63CE]/40 hover:text-foreground dark:border-white/10 dark:bg-white/[0.045] dark:text-white/75"
                   }`}
@@ -209,13 +226,6 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
               );
             })}
           </div>
-          <Link
-            href="/pro"
-            aria-current={isProActive ? "page" : undefined}
-            className="mt-2 block rounded-xl border border-bronze-500/30 bg-bronze-500/10 px-3 py-3 text-center text-[13px] font-extrabold text-bronze-700 dark:text-bronze-200"
-          >
-            Espace professionnel
-          </Link>
         </nav>
       ) : null}
     </header>
