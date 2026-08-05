@@ -1,0 +1,31 @@
+name: UX P2 Seller Controlled Publication Management
+
+on:
+  pull_request:
+    paths:
+      - "app/api/seller-drafts/**"
+      - "components/vendre/SellerPublicationPanel.tsx"
+      - "components/vendre/SellerReviewStatusPanel.tsx"
+      - "lib/seller/publication.ts"
+      - "supabase/migrations/20260805190000_seller_controlled_publication_management_v1.sql"
+      - "scripts/scrapers/__tests__/ux-p2-seller-controlled-publication-management.test.ts"
+      - ".github/workflows/ux-p2-seller-controlled-publication-management.yml"
+  workflow_dispatch:
+
+jobs:
+  seller-controlled-publication:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Controlled publication contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-p2-seller-controlled-publication-management.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
