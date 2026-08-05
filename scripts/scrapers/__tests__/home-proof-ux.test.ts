@@ -7,12 +7,10 @@ const ROOT = process.cwd();
 const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 
 describe("Homepage proof UX", () => {
-  it("uses the current search-first hero claim with accessible doctrine copy", () => {
+  it("uses the approved search-first hero claim and subtitle", () => {
     const hero = source("components/home/GoogleLikeHero.tsx");
     assert.ok(hero.includes("1er moteur de recherche immobilier au Maroc"));
-    assert.ok(hero.includes("Moteur de recherche immobilier"));
-    assert.ok(hero.includes("Comprenez le quartier"));
-    assert.ok(hero.includes("sources originales"));
+    assert.ok(hero.includes("Une recherche plus claire, plus structurée et plus fiable pour l’immobilier au Maroc."));
     assert.ok(!hero.includes("analysez les biens"));
   });
 
@@ -21,7 +19,7 @@ describe("Homepage proof UX", () => {
     assert.equal((orchestrator.match(/href="\/compagnon"/g) ?? []).length, 1);
     assert.equal((orchestrator.match(/<HomeSearchBar/g) ?? []).length, 1);
     assert.equal((orchestrator.match(/href="\/mon-projet"/g) ?? []).length, 0);
-    assert.ok(orchestrator.includes("Vous hésitez sur votre projet ? Lancer le Compagnon"));
+    assert.ok(orchestrator.includes("Pas encore sûr de vos critères ? Construisez votre projet"));
   });
 
   it("explains the product through real search/noise/information-level behavior", () => {
