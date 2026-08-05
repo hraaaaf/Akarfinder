@@ -1,6 +1,3 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
 import { Container } from "@/components/ui/Container";
 
 const proofPoints = [
@@ -25,156 +22,58 @@ const proofPoints = [
 ] as const;
 
 export function DataProofBlock() {
-  const [visible, setVisible] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const element = sectionRef.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.2 }
-    );
-
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <section
-      ref={sectionRef}
-      aria-labelledby="home-data-proof-title"
-      className="overflow-hidden bg-[#071b33] py-16 text-white sm:py-24 lg:py-28"
-    >
+    <section aria-labelledby="home-data-proof-title" className="overflow-hidden bg-[#071b33] py-14 text-white sm:py-24 lg:py-28">
       <Container>
-        <div
-          className={`mx-auto max-w-[760px] text-center transition-all duration-700 motion-reduce:transition-none ${
-            visible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-          }`}
-        >
-          <span className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-[#efb85b]">
-            Une lecture plus transparente
-          </span>
-          <h2
-            id="home-data-proof-title"
-            className="mt-3 text-[1.9rem] font-extrabold tracking-[-0.035em] text-white sm:mt-4 sm:text-[2.65rem]"
-          >
-            Des résultats plus clairs pour mieux décider
-          </h2>
-          <p className="mx-auto mt-4 max-w-[690px] text-[13.5px] leading-6 text-white/70 sm:text-[15px] sm:leading-7">
-            Chaque résultat indique clairement sa source, son niveau d’information et les éléments qui peuvent encore manquer.
-          </p>
-        </div>
-
-        <div className="relative mx-auto mt-10 max-w-[1080px] sm:mt-14 lg:mt-16">
-          <div className="pointer-events-none absolute left-1/2 top-1/2 hidden h-[420px] w-[720px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#1f6f8b]/15 blur-3xl lg:block" />
-
-          <div className="relative grid items-center gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(380px,0.92fr)_minmax(0,1fr)] lg:gap-8">
-            <div className="space-y-4 lg:space-y-6">
-              {proofPoints.slice(0, 2).map((point, index) => (
-                <article
-                  key={point.key}
-                  className={`rounded-2xl border border-white/10 bg-white/[0.055] p-5 shadow-[0_18px_48px_rgba(0,0,0,0.18)] backdrop-blur-sm transition-all duration-700 motion-reduce:transition-none sm:p-6 ${
-                    visible ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"
-                  }`}
-                  style={{ transitionDelay: `${120 + index * 100}ms` }}
-                >
-                  <div className="flex items-start gap-4">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#efb85b]/35 bg-[#efb85b]/10 text-[11px] font-extrabold text-[#efb85b]">
-                      {point.number}
-                    </span>
-                    <div>
-                      <h3 className="text-[15px] font-extrabold tracking-[-0.01em] text-white sm:text-[16px]">
-                        {point.title}
-                      </h3>
-                      <p className="mt-2 text-[12.5px] leading-5 text-white/65 sm:text-[13px] sm:leading-6">
-                        {point.description}
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              ))}
+        <div className="mx-auto max-w-[1120px]">
+          <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-end lg:gap-14">
+            <div>
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.17em] text-[#efb85b] sm:text-[11.5px]">
+                Une lecture plus transparente
+              </span>
+              <h2 id="home-data-proof-title" className="mt-3 text-[2rem] font-extrabold leading-[1.08] tracking-[-0.04em] text-white sm:mt-4 sm:text-[2.75rem]">
+                Des résultats plus clairs pour mieux décider
+              </h2>
+              <p className="mt-4 max-w-[620px] text-[14.5px] leading-7 text-white/72 sm:text-[15.5px]">
+                Chaque résultat indique clairement sa source, son niveau d’information et les éléments qui peuvent encore manquer.
+              </p>
             </div>
 
-            <div
-              className={`relative order-first mx-auto w-full max-w-[430px] transition-all duration-700 motion-reduce:transition-none lg:order-none ${
-                visible ? "translate-y-0 scale-100 opacity-100" : "translate-y-5 scale-[0.98] opacity-0"
-              }`}
-              style={{ transitionDelay: "180ms" }}
-            >
-              <div className="rounded-[28px] border border-white/15 bg-white p-3 shadow-[0_32px_80px_rgba(0,0,0,0.32)] sm:p-4">
-                <div className="overflow-hidden rounded-[21px] bg-[#f2eee7]">
-                  <div className="relative h-[176px] bg-[linear-gradient(135deg,#c7d8dc_0%,#f4e7d2_52%,#d7c5ae_100%)] sm:h-[205px]">
-                    <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#071b33]/55 to-transparent" />
-                    <span className="absolute left-4 top-4 rounded-full bg-white/92 px-3 py-1.5 text-[9.5px] font-extrabold uppercase tracking-[0.12em] text-[#071b33] shadow-sm">
-                      Exemple de lecture
-                    </span>
-                    <span className="absolute bottom-4 left-4 rounded-full bg-[#071b33]/90 px-3 py-1.5 text-[10px] font-bold text-white backdrop-blur-sm">
-                      Appartement · Agdal
-                    </span>
-                  </div>
-
-                  <div className="space-y-4 bg-white p-5 sm:p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#1f6f8b]">
-                          Source indiquée
-                        </p>
-                        <p className="mt-1.5 text-[18px] font-extrabold tracking-[-0.025em] text-[#071b33]">
-                          Résultat immobilier
-                        </p>
-                      </div>
-                      <span className="rounded-full bg-[#edf6f7] px-3 py-1.5 text-[10px] font-extrabold text-[#1f6f8b]">
-                        Informations visibles
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2">
-                      {["Localisation", "Caractéristiques", "Provenance"].map((label) => (
-                        <div key={label} className="rounded-xl bg-[#f5f6f7] px-2.5 py-3 text-center">
-                          <span className="block h-1.5 rounded-full bg-[#1f6f8b]/22" />
-                          <span className="mt-2 block text-[9px] font-bold leading-4 text-[#536274]">{label}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-[#e8ebee] pt-4">
-                      <span className="text-[10.5px] font-bold text-[#687586]">Résultats proches regroupés</span>
-                      <span className="rounded-full bg-[#071b33] px-3 py-1.5 text-[10px] font-extrabold text-white">Comparer</span>
-                    </div>
-                  </div>
+            <div className="rounded-[1.75rem] border border-white/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.035))] p-5 shadow-[0_26px_70px_rgba(0,0,0,0.22)] sm:p-7">
+              <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5">
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#7DD3FC]">Exemple de lecture</p>
+                  <p className="mt-2 text-[1.25rem] font-extrabold tracking-[-0.025em] text-white">Appartement · Agdal</p>
                 </div>
+                <span className="rounded-full border border-white/12 bg-white/[0.07] px-3 py-1.5 text-[11px] font-bold text-white/75">Informations visibles</span>
+              </div>
+              <div className="mt-5 grid grid-cols-3 gap-2.5">
+                {["Localisation", "Caractéristiques", "Provenance"].map((label) => (
+                  <div key={label} className="rounded-xl bg-white/[0.065] px-2.5 py-3.5 text-center">
+                    <span className="mx-auto block h-1.5 w-3/4 rounded-full bg-[#60A5FA]/45" />
+                    <span className="mt-2.5 block text-[10.5px] font-bold leading-4 text-white/68">{label}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-[12px]">
+                <span className="font-semibold text-white/60">Résultats proches regroupés</span>
+                <span className="rounded-full bg-[#0B63CE] px-3 py-1.5 font-extrabold text-white">Comparer</span>
               </div>
             </div>
+          </div>
 
-            <div className="lg:self-center">
-              <article
-                className={`rounded-2xl border border-white/10 bg-white/[0.055] p-5 shadow-[0_18px_48px_rgba(0,0,0,0.18)] backdrop-blur-sm transition-all duration-700 motion-reduce:transition-none sm:p-6 ${
-                  visible ? "translate-x-0 opacity-100" : "translate-x-4 opacity-0"
-                }`}
-                style={{ transitionDelay: "320ms" }}
-              >
-                <div className="flex items-start gap-4">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#efb85b]/35 bg-[#efb85b]/10 text-[11px] font-extrabold text-[#efb85b]">
-                    {proofPoints[2].number}
-                  </span>
-                  <div>
-                    <h3 className="text-[15px] font-extrabold tracking-[-0.01em] text-white sm:text-[16px]">
-                      {proofPoints[2].title}
-                    </h3>
-                    <p className="mt-2 text-[12.5px] leading-5 text-white/65 sm:text-[13px] sm:leading-6">
-                      {proofPoints[2].description}
-                    </p>
-                  </div>
+          <div className="mt-8 divide-y divide-white/10 border-y border-white/10 lg:mt-12 lg:grid lg:grid-cols-3 lg:divide-x lg:divide-y-0">
+            {proofPoints.map((point) => (
+              <article key={point.key} className="flex gap-4 px-1 py-5 sm:py-6 lg:px-7 lg:first:pl-0 lg:last:pr-0">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#efb85b]/35 bg-[#efb85b]/10 text-[12px] font-extrabold text-[#efb85b]">
+                  {point.number}
+                </span>
+                <div>
+                  <h3 className="text-[16px] font-extrabold leading-5 tracking-[-0.01em] text-white">{point.title}</h3>
+                  <p className="mt-2 text-[13.5px] leading-6 text-white/66">{point.description}</p>
                 </div>
               </article>
-            </div>
+            ))}
           </div>
         </div>
       </Container>
