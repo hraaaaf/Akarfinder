@@ -6,6 +6,7 @@ import { nextSellerPublicationStatus } from "../../../lib/seller/publication";
 const migration = readFileSync("supabase/migrations/20260805190000_seller_controlled_publication_management_v1.sql", "utf8");
 const route = readFileSync("app/api/seller-drafts/[draftId]/publication/route.ts", "utf8");
 const panel = readFileSync("components/vendre/SellerPublicationPanel.tsx", "utf8");
+const reviewPanel = readFileSync("components/vendre/SellerReviewStatusPanel.tsx", "utf8");
 
 test("publication transitions remain explicit and owner controlled", () => {
   assert.equal(nextSellerPublicationStatus(null, "publish"), "live");
@@ -29,7 +30,18 @@ test("endpoint requires owner token, explicit confirmation and approved review",
   assert.match(route, /seller_listing_publication_events/);
 });
 
-test("seller UI uses plain language and accessible feedback", () => {
+test("publication controls only appear after human approval", () => {
+  assert.match(reviewPanel, /status === "approved" \? <SellerPublicationPanel/);
+  assert.match(reviewPanel, /Vous restez la seule personne à décider de sa mise en ligne/);
+});
+
+test("seller confirms every visibility change in plain language", () => {
+  assert.match(panel, /role="dialog"/);
+  assert.match(panel, /aria-modal="true"/);
+  assert.match(panel, /Confirmer la mise en ligne/);
+  assert.match(panel, /Confirmer la pause/);
+  assert.match(panel, /Confirmer la remise en ligne/);
+  assert.match(panel, /Confirmer le retrait/);
   assert.match(panel, /Mettre mon annonce en ligne/);
   assert.match(panel, /Mettre en pause/);
   assert.match(panel, /Remettre en ligne/);
