@@ -1,0 +1,39 @@
+name: LOT B3.4.5 Quarantine Review Queue Gate
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/partner-feeds/quarantine-review-queue.ts'
+      - 'scripts/scrapers/__tests__/partner-feed-quarantine-review-queue.test.ts'
+      - 'supabase/migrations/20260805234500_lot_b3_4_5_quarantine_review_queue.sql'
+      - 'docs/data/LOT-B3-4-5-QUARANTINE-REVIEW-QUEUE.md'
+      - '.github/workflows/lot-b3-4-5-quarantine-review-queue.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-quarantine-review-queue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Fail-closed and append-only assertions
+        run: |
+          TS=scripts/partner-feeds/quarantine-review-queue.ts
+          SQL=supabase/migrations/20260805234500_lot_b3_4_5_quarantine_review_queue.sql
+          grep -q 'publication_eligible: false' "$TS"
+          grep -q 'partner_feed_row_snapshots' "$SQL"
+          grep -q 'partner_feed_review_queue' "$SQL"
+          grep -q 'partner_feed_review_events' "$SQL"
+          grep -q 'append-only partner feed history' "$SQL"
+          grep -q 'check (publication_eligible = false)' "$SQL"
+          ! grep -Eqi 'insert into public\.property_listings|update public\.property_listings|delete from public\.property_listings|publication_eligible: true|captcha|stealth|fake googlebot' "$TS" "$SQL"
+      - run: npx tsx --test scripts/scrapers/__tests__/partner-feed-quarantine-review-queue.test.ts scripts/scrapers/__tests__/partner-feed-dedup-change-detection.test.ts scripts/scrapers/__tests__/partner-feed-canonical-mapping.test.ts
+      - run: npx tsc --noEmit
+      - run: npm run build
