@@ -1,0 +1,27 @@
+name: UX P1 Mobile Decision Ergonomics
+
+on:
+  pull_request:
+    paths:
+      - "app/listings/**"
+      - "components/listings/**"
+      - "components/search/**"
+      - "scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts"
+      - ".github/workflows/ux-p1-mobile-decision-ergonomics.yml"
+
+jobs:
+  mobile-decision-ergonomics:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Mobile decision ergonomics contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
