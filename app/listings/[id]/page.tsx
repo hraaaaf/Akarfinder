@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { SiteFooter } from "@/components/landing/SiteFooter";
+import { MobilePropertyDecisionBar } from "@/components/listings/MobilePropertyDecisionBar";
 import { PropertyDecisionHeader } from "@/components/listings/PropertyDecisionHeader";
 import { PropertyDetailV2 } from "@/components/listings/PropertyDetailV2";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -55,13 +56,14 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     if (!detail) notFound();
 
     return (
-      <main className={`min-h-screen ${ui.page}`}>
+      <main className={`min-h-screen pb-24 lg:pb-0 ${ui.page}`}>
         <SiteHeader />
         <Container>
           <PropertyDecisionHeader listing={listing} detail={detail} />
           <PropertyDetailV2 listing={listing} detail={detail} />
         </Container>
         <SiteFooter />
+        <MobilePropertyDecisionBar listingId={listing.id} />
       </main>
     );
   } catch (error) {
