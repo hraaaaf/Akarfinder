@@ -43,9 +43,12 @@ test("approved chips and examples are locked", () => {
 });
 
 test("property chips preserve the selected buy or rent intent", () => {
-  assert.match(search, /chip\.kind === "property"/);
-  assert.match(search, /setPropertyType/);
-  assert.doesNotMatch(search, /chip\.kind === "property"[\s\S]{0,240}setIntent/);
+  const propertyBranch = search.slice(
+    search.indexOf('if (chip.kind === "property")'),
+    search.indexOf('setFurnished((current) => !current)')
+  );
+  assert.match(propertyBranch, /setPropertyType/);
+  assert.doesNotMatch(propertyBranch, /setIntent/);
 });
 
 test("approved companion copy and header scroll behavior remain present", () => {
