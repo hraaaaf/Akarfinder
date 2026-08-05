@@ -10,10 +10,10 @@ export function SearchEntryOrchestrator() {
       <div className="mt-4 flex justify-center sm:mt-5">
         <Link
           href="/compagnon"
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/24 bg-black/10 px-4 py-2 text-[11.5px] font-semibold text-white/90 backdrop-blur-sm transition-colors hover:border-white/45 hover:bg-black/18 hover:text-white sm:text-[12.5px]"
+          className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/28 bg-black/14 px-4 py-2 text-[12px] font-semibold text-white/92 backdrop-blur-sm transition-colors hover:border-white/50 hover:bg-black/22 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#061027] sm:text-[13px]"
         >
-          <Compass size={14} strokeWidth={2.2} aria-hidden="true" />
-          Vous hésitez sur votre projet ? Lancer le Compagnon
+          <Compass size={15} strokeWidth={2.2} aria-hidden="true" />
+          Je ne sais pas encore quoi chercher
         </Link>
       </div>
     </div>
