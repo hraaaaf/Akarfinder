@@ -22,6 +22,6 @@ jobs:
       - name: Mobile decision ergonomics contracts
         run: npx tsx --test scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts
       - name: TypeScript
-        run: npm run typecheck
+        run: npx tsc --noEmit
       - name: Production build
         run: npm run build
