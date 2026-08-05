@@ -1,0 +1,71 @@
+name: ODM A4 Freshness Activation Readiness Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805160500_lot_a4_freshness_activation_readiness.sql"
+      - "docs/data/ODM-A4-FRESHNESS-ACTIVATION-READINESS.md"
+      - ".github/workflows/odm-a4-freshness-activation-readiness.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805160500_lot_a4_freshness_activation_readiness.sql"
+      - "docs/data/ODM-A4-FRESHNESS-ACTIVATION-READINESS.md"
+      - ".github/workflows/odm-a4-freshness-activation-readiness.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  certify-a4-readiness-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Fail-closed A4 assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          MIGRATION="supabase/migrations/20260805160500_lot_a4_freshness_activation_readiness.sql"
+          DOC="docs/data/ODM-A4-FRESHNESS-ACTIVATION-READINESS.md"
+
+          grep -q "odm_a4_activation_readiness_audit_v1" "$MIGRATION"
+          grep -q "odm_refresh_a4_activation_readiness_v1" "$MIGRATION"
+          grep -q "odm_a4_activation_readiness_report_v1" "$MIGRATION"
+          grep -q "ready_for_separate_activation_review" "$MIGRATION"
+          grep -q "publication_eligible boolean not null default false" "$MIGRATION"
+          grep -q "reclassification_eligible boolean not null default false" "$MIGRATION"
+          grep -q "display_policy = 'canonical_link_only'" "$MIGRATION"
+          grep -q "discovery_policy = 'public_sitemap_only'" "$MIGRATION"
+          grep -q "evidence_provider = 'public_sitemap'" "$MIGRATION"
+          grep -q "evidence_detail_fetch = false" "$MIGRATION"
+          grep -q "evidence_content_reuse = false" "$MIGRATION"
+          grep -q "evidence_public_activation = false" "$MIGRATION"
+          grep -q "activation_requires_separate_reviewed_lot" "$MIGRATION"
+          grep -q "candidate_depth_is_not_certified_inventory" "$MIGRATION"
+          grep -q "from public, anon, authenticated" "$MIGRATION"
+          grep -q "to service_role" "$MIGRATION"
+          grep -q "8,057" "$DOC"
+          grep -q "property-level deduplication" "$DOC"
+          grep -q "publication_eligible=false" "$DOC"
+
+          if grep -Eiq "update[[:space:]]+public\.(thin_index_search_documents|source_offer_seeds|discovery_candidates)" "$MIGRATION"; then
+            echo "A4 must not update production listing, seed or discovery rows" >&2
+            exit 1
+          fi
+          if grep -Eiq "delete[[:space:]]+from[[:space:]]+public\.(thin_index_search_documents|source_offer_seeds|discovery_candidates)" "$MIGRATION"; then
+            echo "A4 must not delete production evidence" >&2
+            exit 1
+          fi
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
