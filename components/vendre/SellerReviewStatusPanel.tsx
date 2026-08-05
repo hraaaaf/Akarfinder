@@ -28,7 +28,7 @@ const STATUS_COPY: Record<SellerReviewStatus, { title: string; detail: string }>
   ready_for_review: { title: "À vérifier", detail: "Votre dossier est prêt. Une vérification humaine est nécessaire avant toute publication." },
   needs_changes: { title: "Quelques corrections sont nécessaires", detail: "Suivez les indications ci-dessous, puis renvoyez votre dossier." },
   resubmitted: { title: "Corrections envoyées", detail: "Votre dossier corrigé est de nouveau en cours de vérification." },
-  approved: { title: "Dossier validé", detail: "Votre dossier est validé. Vous restez la seule personne à décider de sa mise en ligne." },
+  approved: { title: "Dossier validé", detail: "Votre dossier est validé, mais il n’est pas encore publié. Vous restez la seule personne à décider de sa mise en ligne." },
 };
 
 export function SellerReviewStatusPanel({ draftId, uploadToken }: Props) {
