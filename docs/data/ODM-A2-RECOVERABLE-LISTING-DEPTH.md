@@ -29,7 +29,7 @@ This LOT is read-only. It does not reclassify a document, fetch a detail page, c
 - structured candidates in a `canonical_link_only` lane: **9,689**;
 - structured candidates blocked by partnership or legal policy: **944**;
 - structured candidates with missing source policy: **21**;
-- A2 V1 originally reported candidates publicly recoverable now as **0**.
+- candidates publicly recoverable now: **0** — A2 V1 legacy output, deprecated after A3.
 
 The canonical-link potential is not certified inventory. Every candidate requires current freshness evidence and source-specific validation.
 
