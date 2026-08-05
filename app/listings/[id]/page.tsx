@@ -7,8 +7,10 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Container } from "@/components/ui/Container";
 import { ui } from "@/components/ui/design-system";
 import { queryListingById } from "@/lib/db/index";
+import type { Listing } from "@/lib/listings/types";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
 import { buildPublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
+import { queryOwnerListingDetail } from "@/lib/seller/owner-listing-detail";
 import { canShowInternalListingDetail } from "@/lib/sources/source-access-registry";
 
 function isSafeHttpUrl(value: string | null | undefined): value is string {
@@ -25,10 +27,36 @@ type ListingDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
+function renderListing(listing: Listing, detail: NonNullable<ReturnType<typeof buildPublicPropertyDetailV2>>) {
+  return (
+    <main className={`min-h-screen pb-24 lg:pb-0 ${ui.page}`}>
+      <SiteHeader />
+      <Container>
+        <PropertyDecisionHeader listing={listing} detail={detail} />
+        <PropertyDetailV2 listing={listing} detail={detail} />
+      </Container>
+      <SiteFooter />
+      <MobilePropertyDecisionBar listingId={listing.id} />
+    </main>
+  );
+}
+
 export default async function ListingDetailPage({ params }: ListingDetailPageProps) {
   const { id } = await params;
 
   try {
+    if (id.startsWith("owner-")) {
+      const ownerListing = await queryOwnerListingDetail(id.slice("owner-".length));
+      if (!ownerListing) notFound();
+      const ownerDetail = buildPublicPropertyDetailV2(ownerListing, {
+        source_name: "Propriétaire",
+        observed_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+      });
+      if (!ownerDetail) notFound();
+      return renderListing(ownerListing, ownerDetail);
+    }
+
     const dbListing = await queryListingById(id);
     if (!dbListing) notFound();
 
@@ -54,18 +82,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     });
 
     if (!detail) notFound();
-
-    return (
-      <main className={`min-h-screen pb-24 lg:pb-0 ${ui.page}`}>
-        <SiteHeader />
-        <Container>
-          <PropertyDecisionHeader listing={listing} detail={detail} />
-          <PropertyDetailV2 listing={listing} detail={detail} />
-        </Container>
-        <SiteFooter />
-        <MobilePropertyDecisionBar listingId={listing.id} />
-      </main>
-    );
+    return renderListing(listing, detail);
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     console.error("[listings] unexpected error loading listing:", id, error);
