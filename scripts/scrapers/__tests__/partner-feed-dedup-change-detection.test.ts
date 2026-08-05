@@ -45,7 +45,7 @@ test("same property with another reference is a new offer", () => {
 });
 
 test("no matching property candidate is a new property", () => {
-  const result = decidePartnerDedup(row({ quartier: "Hay Riad", surface: "240" }), [candidate()]);
+  const result = decidePartnerDedup(row({ reference: "AG-NEW", quartier: "Hay Riad", surface: "240" }), [candidate()]);
   assert.equal(result.decision, "new_property");
 });
 
