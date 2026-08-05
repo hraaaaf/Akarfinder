@@ -1,0 +1,74 @@
+.backdropEnter {
+  animation: pq-fade-in 160ms ease-out both;
+}
+
+.sheetEnter {
+  animation: pq-sheet-up 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dockEnter {
+  animation: pq-dock-up 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.resultsEnter {
+  animation: pq-results-in 180ms ease-out both;
+}
+
+.feedbackEnter {
+  animation: pq-feedback-in 160ms ease-out both;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(var(--foreground) / 0.07), transparent);
+  animation: pq-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes pq-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pq-sheet-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pq-dock-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pq-results-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pq-feedback-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pq-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdropEnter,
+  .sheetEnter,
+  .dockEnter,
+  .resultsEnter,
+  .feedbackEnter,
+  .skeleton::after {
+    animation: none !important;
+    transform: none !important;
+  }
+}
