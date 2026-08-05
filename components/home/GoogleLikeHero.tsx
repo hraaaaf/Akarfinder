@@ -24,23 +24,23 @@ export function GoogleLikeHero() {
       </picture>
 
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(3,16,31,0.58)] via-[rgba(3,16,31,0.38)] to-[rgba(6,27,51,0.18)] sm:hidden" />
-        <div className="absolute inset-x-0 top-0 h-[38%] bg-gradient-to-b from-[rgba(3,16,31,0.62)] via-[rgba(3,16,31,0.30)] to-transparent sm:hidden" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(3,16,31,0.62)] via-[rgba(3,16,31,0.41)] to-[rgba(6,27,51,0.20)] sm:hidden" />
+        <div className="absolute inset-x-0 top-0 h-[40%] bg-gradient-to-b from-[rgba(3,16,31,0.66)] via-[rgba(3,16,31,0.34)] to-transparent sm:hidden" />
         <div className="absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-[rgba(6,27,51,0.42)] to-transparent sm:hidden" />
-        <div className="absolute inset-x-0 top-0 hidden h-[46%] bg-gradient-to-b from-[rgba(3,16,31,0.66)] via-[rgba(3,16,31,0.42)] to-transparent sm:block" />
+        <div className="absolute inset-x-0 top-0 hidden h-[48%] bg-gradient-to-b from-[rgba(3,16,31,0.69)] via-[rgba(3,16,31,0.45)] to-transparent sm:block" />
         <div className="absolute inset-x-0 bottom-0 hidden h-[42%] bg-gradient-to-t from-[rgba(3,16,31,0.52)] to-transparent sm:block" />
         <div
           className="absolute inset-0 hidden sm:block"
           style={{
             background:
-              "radial-gradient(ellipse 68% 56% at 50% 44%, rgba(3,16,31,0.52) 0%, transparent 72%)",
+              "radial-gradient(ellipse 64% 52% at 50% 42%, rgba(3,16,31,0.62) 0%, rgba(3,16,31,0.28) 54%, transparent 74%)",
           }}
         />
         <div
           className="absolute inset-0 sm:hidden"
           style={{
             background:
-              "radial-gradient(ellipse 92% 58% at 50% 40%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.03) 58%, transparent 76%)",
+              "radial-gradient(ellipse 90% 56% at 50% 38%, rgba(3,16,31,0.28) 0%, rgba(3,16,31,0.08) 58%, transparent 76%)",
           }}
         />
         <div className="absolute inset-0 bg-[#061027]/10 sm:bg-[#061027]/14" />
@@ -48,7 +48,7 @@ export function GoogleLikeHero() {
 
       <Container className="relative z-10 w-full px-5 pb-14 pt-[calc(env(safe-area-inset-top)+6rem)] sm:pb-24 sm:pt-36 lg:pb-28 lg:pt-44">
         <div className="mx-auto flex max-w-[920px] flex-col items-center text-center">
-          <h1 className="max-w-[880px] text-[2.15rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.30)] sm:text-[4rem] lg:text-[5rem]">
+          <h1 className="max-w-[820px] text-[2.15rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.42)] sm:text-[4rem] lg:text-[5rem]">
             1er moteur de recherche immobilier au Maroc
           </h1>
           <p className="sr-only">
