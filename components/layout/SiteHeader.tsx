@@ -17,7 +17,7 @@ const primaryNav = [
   { href: "/acheter", label: "Acheter" },
   { href: "/louer", label: "Louer" },
   { href: "/neuf", label: "Neuf" },
-  { href: "/search", label: "Explorer" },
+  { href: "/search", label: "Recherche" },
 ] as const;
 
 const secondaryNav = [
