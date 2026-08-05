@@ -11,7 +11,7 @@ describe("#19G Homepage & Search Entry Orchestration V1", () => {
     const source = readFileSync(join(process.cwd(), "components/home/SearchEntryOrchestrator.tsx"), "utf8");
     assert.ok(source.includes("<HomeSearchBar"));
     assert.ok(source.includes('href="/compagnon"'));
-    assert.ok(source.includes("Vous hésitez sur votre projet ? Lancer le Compagnon"));
+    assert.ok(source.includes("Pas encore sûr de vos critères ? Construisez votre projet"));
   });
 
   it("maps a confirmed guided profile to the canonical structured search URL contract", () => {
