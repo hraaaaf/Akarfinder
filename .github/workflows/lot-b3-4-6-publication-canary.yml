@@ -1,0 +1,29 @@
+name: LOT B3.4.6 Publication Canary Gate
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/scrapers/partner-feed-publication-canary.ts'
+      - 'scripts/scrapers/__tests__/partner-feed-publication-canary.test.ts'
+      - 'supabase/migrations/20260805230000_lot_b3_4_6_publication_canary.sql'
+      - '.github/workflows/lot-b3-4-6-publication-canary.yml'
+      - 'docs/LOT-B3-4-6-PUBLICATION-CANARY.md'
+
+jobs:
+  certify-publication-canary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Fail-closed SQL assertions
+        run: |
+          grep -q "publication_eligible boolean not null default false" supabase/migrations/20260805230000_lot_b3_4_6_publication_canary.sql
+          grep -q "revoke all on table public.partner_feed_publication_batches from public,anon,authenticated" supabase/migrations/20260805230000_lot_b3_4_6_publication_canary.sql
+          ! grep -Eq "insert into public\.(property_listings|listing_sources)|update public\.(property_listings|listing_sources)" supabase/migrations/20260805230000_lot_b3_4_6_publication_canary.sql
+      - run: npx tsx --test scripts/scrapers/__tests__/partner-feed-publication-canary.test.ts scripts/scrapers/__tests__/partner-feed-quarantine-review-queue.test.ts scripts/scrapers/__tests__/partner-feed-dedup-change-detection.test.ts
+      - run: npx tsc --noEmit
+      - run: npm run build
