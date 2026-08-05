@@ -18,12 +18,13 @@ test("all intentions share one dossier and one human readiness label", () => {
   assert.match(dossier, /SellerPropertyDraftForm/);
   assert.match(form, /Annonce prête/);
   assert.match(form, /Plus votre dossier est clair/);
-  assert.doesNotMatch(form, /JSON|pipeline|score technique|complétude des données/i);
+  assert.doesNotMatch(form, /pipeline|score technique|complétude des données/i);
 });
 
-test("draft is saved locally without consent and nothing auto-publishes", () => {
-  assert.match(form, /window\.localStorage\.setItem/);
-  assert.match(form, /consent: false/);
+test("draft excludes sensitive contact details and nothing auto-publishes", () => {
+  assert.match(form, /type SavedDraft = Pick<FormState/);
+  assert.doesNotMatch(form, /type SavedDraft[^;]+phone/);
+  assert.match(form, /phone: "", name: "", consent: false/);
   assert.match(form, /rien n’est publié automatiquement/i);
 });
 
@@ -33,6 +34,7 @@ test("photo checks are local, bounded and understandable", () => {
   assert.match(form, /width < 1200 \|\| height < 800/);
   assert.match(form, /Les photos sont vérifiées sur votre appareil/);
   assert.match(form, /slice\(0, 12\)/);
+  assert.doesNotMatch(form, /dans ce LOT/i);
 });
 
 test("readiness rewards useful information without inventing value", () => {
