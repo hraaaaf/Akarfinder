@@ -1,0 +1,43 @@
+name: LOT B3 Discovery Expansion Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260805184000_lot_b3_discovery_expansion.sql'
+      - 'docs/data/LOT-B3-DISCOVERY-EXPANSION.md'
+      - '.github/workflows/lot-b3-discovery-expansion.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-discovery-expansion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Fail-closed discovery assertions
+        run: |
+          FILE=supabase/migrations/20260805184000_lot_b3_discovery_expansion.sql
+          grep -q "odm_b3_discovery_expansion_audit_v1" "$FILE"
+          grep -q "qualified_canonical_link" "$FILE"
+          grep -q "qualified_internal_signal" "$FILE"
+          grep -q "reserve_channel" "$FILE"
+          grep -q "reserve_freshness" "$FILE"
+          grep -q "reserve_unregistered_source" "$FILE"
+          grep -q "reserve_lane text not null default 'none'" "$FILE"
+          grep -q "reserve_priority smallint not null default 100" "$FILE"
+          grep -q "seed_admission_eligible boolean not null default false" "$FILE"
+          grep -q "publication_eligible boolean not null default false" "$FILE"
+          grep -q "security invoker" "$FILE"
+          grep -q "set search_path=''" "$FILE"
+          grep -q "revoke all on table public.odm_b3_discovery_expansion_audit_v1 from public,anon,authenticated" "$FILE"
+          grep -q "odm_b3_discovery_expansion_report_v1" "$FILE"
+          ! grep -Eqi "captcha|proxy rotation|stealth|fake googlebot|detail fetch" "$FILE"
+      - run: npx tsc --noEmit
+      - run: npm run build
