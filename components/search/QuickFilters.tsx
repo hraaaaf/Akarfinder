@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 import { PropertyTypeVisualSelector } from "@/components/property-types/PropertyTypeVisualSelector";
 import { ui } from "@/components/ui/design-system";
@@ -24,6 +24,15 @@ const transactionTabs = [
 export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset }: QuickFiltersProps) {
   const [showFilters, setShowFilters] = useState(false);
 
+  useEffect(() => {
+    if (!showFilters || typeof document === "undefined") return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [showFilters]);
+
   const allPropertyTypes = useMemo(
     () => Array.from(new Set<Listing["property_type"]>([
       ...OPTION_A_PROPERTY_TYPES.map((item) => item.value),
@@ -40,6 +49,27 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
     (filters.propertyType !== "all" ? 1 : 0);
 
   const fieldClass = `${ui.field} h-11 px-3.5 text-[13px] font-semibold placeholder:text-muted-foreground/80`;
+
+  const advancedFields = (
+    <>
+      <select aria-label="Ville" value={filters.city} onChange={(event) => onChange({ ...filters, city: event.target.value, neighborhood: "all" })} className={fieldClass}>
+        <option value="all">Toutes les villes</option>
+        {cities.map((city) => <option key={city} value={city}>{city}</option>)}
+      </select>
+      <input type="number" min="0" inputMode="numeric" aria-label="Budget minimum" value={filters.minBudget} onChange={(event) => onChange({ ...filters, minBudget: event.target.value })} placeholder="Budget min (DH)" className={fieldClass} />
+      <input type="number" min="0" inputMode="numeric" aria-label="Budget maximum" value={filters.maxBudget} onChange={(event) => onChange({ ...filters, maxBudget: event.target.value })} placeholder="Budget max (DH)" className={fieldClass} />
+      <input type="number" min="0" inputMode="numeric" aria-label="Surface minimum" value={filters.minSurface} onChange={(event) => onChange({ ...filters, minSurface: event.target.value })} placeholder="Surface min (m²)" className={fieldClass} />
+      <select
+        aria-label="Type de bien"
+        value={filters.propertyType}
+        onChange={(event) => onChange({ ...filters, propertyType: event.target.value as ListingFiltersState["propertyType"] })}
+        className={fieldClass}
+      >
+        <option value="all">Tous les types</option>
+        {allPropertyTypes.map((type) => <option key={type} value={type}>{type}</option>)}
+      </select>
+    </>
+  );
 
   return (
     <section aria-label="Filtres de recherche" className={`${ui.surface} p-3 sm:p-4`}>
@@ -66,8 +96,8 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
                 onClick={() => onChange({ ...filters, transactionType: tab.value })}
                 aria-pressed={filters.transactionType === tab.value}
                 className={selected
-                  ? "rounded-xl bg-primary px-3 py-2.5 text-[13px] font-extrabold text-primary-foreground shadow-sm"
-                  : "rounded-xl px-3 py-2.5 text-[13px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground"}
+                  ? "min-h-11 rounded-xl bg-primary px-3 py-2.5 text-[13px] font-extrabold text-primary-foreground shadow-sm"
+                  : "min-h-11 rounded-xl px-3 py-2.5 text-[13px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground"}
               >
                 {tab.label}
               </button>
@@ -90,6 +120,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
           type="button"
           onClick={() => setShowFilters((current) => !current)}
           aria-expanded={showFilters}
+          aria-controls="advanced-search-filters"
           className={`${ui.secondaryAction} flex-1 gap-2 rounded-full text-[13px] sm:flex-none`}
         >
           <SlidersHorizontal size={16} strokeWidth={2.2} aria-hidden="true" />
@@ -110,24 +141,40 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
         ) : null}
       </div>
 
-      <div className={`${showFilters ? "grid" : "hidden"} mt-3 gap-2.5 ${ui.surfaceMuted} p-3 sm:grid-cols-2 lg:grid-cols-5`}>
-        <select aria-label="Ville" value={filters.city} onChange={(event) => onChange({ ...filters, city: event.target.value, neighborhood: "all" })} className={fieldClass}>
-          <option value="all">Toutes les villes</option>
-          {cities.map((city) => <option key={city} value={city}>{city}</option>)}
-        </select>
-        <input type="number" min="0" inputMode="numeric" aria-label="Budget minimum" value={filters.minBudget} onChange={(event) => onChange({ ...filters, minBudget: event.target.value })} placeholder="Budget min (DH)" className={fieldClass} />
-        <input type="number" min="0" inputMode="numeric" aria-label="Budget maximum" value={filters.maxBudget} onChange={(event) => onChange({ ...filters, maxBudget: event.target.value })} placeholder="Budget max (DH)" className={fieldClass} />
-        <input type="number" min="0" inputMode="numeric" aria-label="Surface minimum" value={filters.minSurface} onChange={(event) => onChange({ ...filters, minSurface: event.target.value })} placeholder="Surface min (m²)" className={fieldClass} />
-        <select
-          aria-label="Type de bien"
-          value={filters.propertyType}
-          onChange={(event) => onChange({ ...filters, propertyType: event.target.value as ListingFiltersState["propertyType"] })}
-          className={fieldClass}
-        >
-          <option value="all">Tous les types</option>
-          {allPropertyTypes.map((type) => <option key={type} value={type}>{type}</option>)}
-        </select>
+      <div id="advanced-search-filters" className={`${showFilters ? "sm:grid" : "sm:hidden"} mt-3 hidden gap-2.5 ${ui.surfaceMuted} p-3 sm:grid-cols-2 lg:grid-cols-5`}>
+        {advancedFields}
       </div>
+
+      {showFilters ? (
+        <div className="fixed inset-0 z-50 sm:hidden" role="dialog" aria-modal="true" aria-labelledby="mobile-filters-title">
+          <button
+            type="button"
+            aria-label="Fermer les filtres"
+            onClick={() => setShowFilters(false)}
+            className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
+          />
+          <div
+            className="absolute inset-x-0 bottom-0 max-h-[82dvh] overflow-y-auto rounded-t-[1.5rem] border-t border-border/20 bg-card px-4 pt-3 shadow-[0_-18px_60px_rgba(2,10,24,0.28)]"
+            style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+          >
+            <div className="mx-auto h-1.5 w-12 rounded-full bg-border-strong" aria-hidden="true" />
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 id="mobile-filters-title" className="text-[18px] font-extrabold text-foreground">Affiner la recherche</h2>
+                <p className="mt-0.5 text-[12px] text-muted-foreground">Les résultats se mettent à jour sans perdre votre contexte.</p>
+              </div>
+              <button type="button" onClick={() => setShowFilters(false)} aria-label="Fermer" className="grid h-11 w-11 place-items-center rounded-full border border-border/20 bg-surface text-foreground">
+                <X size={19} aria-hidden="true" />
+              </button>
+            </div>
+            <div className="mt-4 grid gap-3">{advancedFields}</div>
+            <div className="sticky bottom-0 mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-2 border-t border-border/15 bg-card/95 pt-3 backdrop-blur-xl">
+              <button type="button" onClick={onReset} className={`${ui.secondaryAction} px-4`}>Effacer</button>
+              <button type="button" onClick={() => setShowFilters(false)} className={`${ui.primaryAction} px-4`}>Voir les résultats</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
