@@ -1,0 +1,38 @@
+name: LOT B3.4.1 Feed Contract Quarantine Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260805203000_lot_b3_4_1_feed_contract_quarantine.sql'
+      - 'docs/data/LOT-B3-4-1-FEED-CONTRACT-QUARANTINE.md'
+      - '.github/workflows/lot-b3-4-1-feed-contract-quarantine.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-feed-quarantine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Feed quarantine assertions
+        run: |
+          FILE=supabase/migrations/20260805203000_lot_b3_4_1_feed_contract_quarantine.sql
+          grep -q "partner_feed_sources" "$FILE"
+          grep -q "partner_feed_imports" "$FILE"
+          grep -q "partner_feed_import_rows" "$FILE"
+          grep -q "partner_feed_audit_events" "$FILE"
+          grep -q "publication_eligible boolean not null default false" "$FILE"
+          grep -q "byte_size >= 0 and byte_size <= 20971520" "$FILE"
+          grep -q "professional_memberships" "$FILE"
+          grep -q "enable row level security" "$FILE"
+          grep -q "odm_b3_4_1_feed_quarantine_report_v1" "$FILE"
+          ! grep -Eqi "insert into public\.property_listings|update public\.property_listings|detail fetch|captcha|stealth|fake googlebot" "$FILE"
+      - run: npx tsc --noEmit
+      - run: npm run build
