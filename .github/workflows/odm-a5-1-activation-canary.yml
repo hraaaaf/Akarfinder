@@ -1,0 +1,71 @@
+name: ODM A5.1 Reversible Activation Canary Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805162500_lot_a5_1_activation_canary.sql"
+      - "docs/data/ODM-A5-1-ACTIVATION-CANARY.md"
+      - ".github/workflows/odm-a5-1-activation-canary.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805162500_lot_a5_1_activation_canary.sql"
+      - "docs/data/ODM-A5-1-ACTIVATION-CANARY.md"
+      - ".github/workflows/odm-a5-1-activation-canary.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  certify-a5-1-canary-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Fail-closed canary assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          MIGRATION="supabase/migrations/20260805162500_lot_a5_1_activation_canary.sql"
+          DOC="docs/data/ODM-A5-1-ACTIVATION-CANARY.md"
+
+          grep -q "odm_a5_1_activation_canary_snapshot_v1" "$MIGRATION"
+          grep -q "odm_prepare_a5_1_activation_canary_v1" "$MIGRATION"
+          grep -q "odm_activate_a5_1_canary_v1" "$MIGRATION"
+          grep -q "odm_rollback_a5_1_canary_v1" "$MIGRATION"
+          grep -q "odm_a5_1_activation_canary_report_v1" "$MIGRATION"
+          grep -q "source_row <= 100" "$MIGRATION"
+          grep -q "v_rows <> 200" "$MIGRATION"
+          grep -q "v_dar <> 100" "$MIGRATION"
+          grep -q "v_promo <> 100" "$MIGRATION"
+          grep -q "d.title is null" "$MIGRATION"
+          grep -q "d.snippet is null" "$MIGRATION"
+          grep -q "d.normalized_price_mad is null" "$MIGRATION"
+          grep -q "d.normalized_surface_m2 is null" "$MIGRATION"
+          grep -q "rollback_available" "$MIGRATION"
+          grep -q "from public, anon, authenticated" "$MIGRATION"
+          grep -q "to service_role" "$MIGRATION"
+          grep -q "exactly 200" "$DOC"
+          grep -q "100 from" "$DOC"
+          grep -q "no copied description" "$DOC"
+
+          if grep -Eiq "update[[:space:]]+public\.(source_offer_seeds|discovery_candidates)" "$MIGRATION"; then
+            echo "A5.1 must not mutate seeds or discovery evidence" >&2
+            exit 1
+          fi
+          if grep -Eiq "delete[[:space:]]+from[[:space:]]+public\.(thin_index_search_documents|source_offer_seeds|discovery_candidates)" "$MIGRATION"; then
+            echo "A5.1 must not delete production evidence" >&2
+            exit 1
+          fi
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
