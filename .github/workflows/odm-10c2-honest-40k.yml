@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "supabase/migrations/20260727110000_odm_10c2_honest_40k_gate.sql"
+      - "supabase/migrations/20260805092500_lot_a1_truthful_listing_baseline.sql"
       - "docs/data/ODM-10C2-HONEST-40K.md"
       - ".github/workflows/odm-10c2-honest-40k.yml"
   workflow_dispatch: {}
@@ -23,12 +24,19 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
-      - name: Fail-closed contract assertions
+      - name: Fail-closed truthful-listing assertions
         run: |
-          grep -q "public_real_estate >= 40000" supabase/migrations/20260727110000_odm_10c2_honest_40k_gate.sql
-          grep -q "leaked_noise = 0" supabase/migrations/20260727110000_odm_10c2_honest_40k_gate.sql
-          grep -q "discovered_net_new" supabase/migrations/20260727110000_odm_10c2_honest_40k_gate.sql
-          grep -q "admitted_net_new" supabase/migrations/20260727110000_odm_10c2_honest_40k_gate.sql
+          MIGRATION="supabase/migrations/20260805092500_lot_a1_truthful_listing_baseline.sql"
+          grep -q "document_kind = 'LISTING'" "$MIGRATION"
+          grep -q "public_listings >= 40000" "$MIGRATION"
+          grep -q "public_non_listing" "$MIGRATION"
+          grep -q "public_categories" "$MIGRATION"
+          grep -q "public_ambiguous" "$MIGRATION"
+          grep -q "leaked_noise = 0" "$MIGRATION"
+          grep -q "enable row level security" "$MIGRATION"
+          grep -q "from public, anon, authenticated" "$MIGRATION"
+          grep -q "odm_trusted_price_reconciliation_audit_v1_audit_id_seq" "$MIGRATION"
+          grep -q "32,517" docs/data/ODM-10C2-HONEST-40K.md
           grep -q "No robots.txt or sitemap is interpreted as a reuse licence" docs/data/ODM-10C2-HONEST-40K.md
       - name: TypeScript
         run: npx tsc --noEmit

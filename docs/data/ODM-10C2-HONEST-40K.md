@@ -1,29 +1,50 @@
-# ODM-10C2 — Restore Honest 40K
+# ODM-10C2 — Truthful Listing Baseline
 
-## Current truth
+## Canonical production truth — 5 August 2026
 
-After ODM-10C1 noise quarantine, the Thin Index retains 55,946 source documents but only 33,360 are both real-estate-likely and publicly eligible.
+The Thin Index contains 56,792 documents. The previous report counted every publicly eligible `real_estate_likely` document toward 40K, including category and ambiguous pages.
 
-- quarantined non-real-estate documents: 22,586;
-- honest gap to 40,000: 6,640;
-- honest gap to 100,000: 66,640;
+That metric is no longer accepted as listing depth.
+
+- publicly eligible real-estate documents: 22,370;
+- eligible detail pages classified `LISTING`: **7,483**;
+- eligible `AMBIGUOUS` documents: 14,849;
+- eligible `CATEGORY` documents: 38;
+- truthful gap to 40,000 listings: **32,517**;
+- listing pages with city: 7,483;
+- listing pages with property type: 7,108;
+- listing pages with intent: 7,138;
+- listing pages with trusted price: 854;
+- listing pages with surface: 2,085;
+- listing pages with both price and surface: 719;
 - non-real-estate leakage target: zero.
+
+The 7,483 value is an observed production baseline, not a hard-coded database value. The report remains dynamic and must always calculate the current truthful count.
 
 ## Certification rule
 
 The milestone is certified only when:
 
-1. at least 40,000 documents are classified `real_estate_likely`;
-2. those documents are publicly eligible;
-3. no `non_real_estate` document remains publicly eligible;
-4. every net-new document is a real URL with provenance and deduplication evidence.
+1. at least 40,000 documents are classified `LISTING`;
+2. those listings are `real_estate_likely` and publicly eligible;
+3. `CATEGORY`, `AMBIGUOUS`, null and unknown document kinds do not count toward the target;
+4. no `non_real_estate` document remains publicly eligible;
+5. every net-new listing is a real detail URL with provenance, source policy and deduplication evidence.
+
+The report exposes `LISTING`, `CATEGORY`, `AMBIGUOUS` and other document kinds separately. The backward-compatible `public_real_estate` field now mirrors `public_listings`; it no longer represents all public real-estate documents.
 
 ## Acquisition backlog
 
-The backlog allocates the 6,640 net-new target across existing public-sitemap and permission lanes. Allocations are planning quotas, not claims of available inventory. Counts change only after actual discovery and admission.
+The existing acquisition backlog remains a planning tool. Its historical quotas do not close the truthful 32,517-listing deficit and must not be presented as discovered or admitted inventory.
+
+Counts change only after actual acquisition, classification, policy validation, deduplication and admission.
 
 No robots.txt or sitemap is interpreted as a reuse licence. Source Registry remains authoritative for detail fetch, content reuse, imagery and display policy.
 
-## Network limitation during this lot
+## Internal audit security
 
-The execution runtime could not resolve external sitemap hosts. Therefore no sitemap refresh, no net-new URL insertion and no false 40K certification are claimed. The gate is intentionally fail-closed until a connected acquisition run records real evidence.
+`public.odm_trusted_price_reconciliation_audit_v1` is an internal audit table. Row Level Security is enabled and table plus sequence privileges are removed from `PUBLIC`, `anon` and `authenticated`. Operational access remains available to `service_role`; no public RLS policy is created.
+
+## Fail-closed behavior
+
+No document is promoted or reclassified by this LOT. The change corrects measurement and access control only. Certification remains false until the database contains at least 40,000 eligible real-estate `LISTING` documents with zero leaked non-real-estate documents.
