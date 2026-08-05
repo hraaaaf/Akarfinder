@@ -35,6 +35,8 @@ const mobileNav = [
   { href: "/pro", label: "Pro" },
 ] as const;
 
+const professionalAudience = "agences et promoteurs";
+
 export function SiteHeader({ variant = "light", compact = false }: SiteHeaderProps) {
   const pathname = usePathname();
   const isDark = variant === "dark";
@@ -214,6 +216,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-label={item.href === "/pro" ? `Espace Pro — ${professionalAudience}` : undefined}
                   aria-current={isActive ? "page" : undefined}
                   className={`min-h-10 rounded-xl border px-3 py-3 text-[13px] font-bold transition ${
                     isActive
