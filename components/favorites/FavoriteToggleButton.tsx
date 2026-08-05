@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
+import motion from "@/components/ui/perceived-quality.module.css";
 import {
   dispatchFavoritesUpdated,
   isFavorited,
-  readFavoriteIds,
   toggleFavoriteId,
 } from "@/lib/favorites/favorites-storage";
 
@@ -59,7 +59,7 @@ export function FavoriteToggleButton({
           onClick={handleToggle}
           aria-pressed={favorited}
           aria-label={favorited ? "Retirer des favoris" : "Ajouter aux favoris"}
-          className={`flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-[13.5px] font-extrabold transition ${
+          className={`flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-[13.5px] font-extrabold transition duration-150 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none ${
             favorited
               ? "border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
               : "border-[#d8c8a3] bg-[#fffdf8] text-deepblue hover:bg-[#f7f3ea]"
@@ -69,13 +69,14 @@ export function FavoriteToggleButton({
             size={16}
             strokeWidth={2}
             fill={favorited ? "currentColor" : "none"}
+            className={favorited ? "heart-pop motion-reduce:animate-none" : ""}
             aria-hidden="true"
           />
           {favorited ? "Retiré des favoris" : "Ajouter aux favoris"}
         </button>
-        {feedback ? (
-          <p className="text-center text-[11px] font-semibold text-gray-500">{feedback}</p>
-        ) : null}
+        <p aria-live="polite" className="min-h-4 text-center text-[11px] font-semibold text-gray-500">
+          {feedback ? <span className={motion.feedbackEnter}>{feedback}</span> : null}
+        </p>
       </div>
     );
   }
@@ -87,7 +88,7 @@ export function FavoriteToggleButton({
         onClick={handleToggle}
         aria-pressed={favorited}
         aria-label={favorited ? "Retirer des favoris" : "Ajouter aux favoris"}
-        className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border transition ${
+        className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border transition duration-150 active:scale-95 motion-reduce:transform-none motion-reduce:transition-none ${
           favorited
             ? "border-red-200 bg-red-50 text-red-500 hover:bg-red-100"
             : "border-[#eadfca] bg-[#fffdf8] text-gray-400 hover:border-red-200 hover:text-red-500"
@@ -97,12 +98,13 @@ export function FavoriteToggleButton({
           size={17}
           strokeWidth={2}
           fill={favorited ? "currentColor" : "none"}
+          className={favorited ? "heart-pop motion-reduce:animate-none" : ""}
           aria-hidden="true"
         />
       </button>
-      {feedback ? (
-        <span className="whitespace-nowrap text-[10px] font-semibold text-gray-500">{feedback}</span>
-      ) : null}
+      <span aria-live="polite" className="min-h-3 whitespace-nowrap text-[10px] font-semibold text-gray-500">
+        {feedback ? <span className={motion.feedbackEnter}>{feedback}</span> : null}
+      </span>
     </div>
   );
 }
