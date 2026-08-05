@@ -195,7 +195,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           }`}
         >
           <MapPin size={13} aria-hidden="true" />
-          {selected ? "Aperçu ouvert" : "Voir sur la carte"}
+          {selected ? "Aperçu ouvert" : "Repérer sur la carte"}
         </button>
 
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
