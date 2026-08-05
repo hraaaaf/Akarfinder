@@ -3,22 +3,48 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Heart } from "lucide-react";
+import { Heart, Menu, X } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { useFavoriteSelection } from "@/components/favorites/useFavoriteSelection";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { navItems } from "@/lib/site";
 
 type SiteHeaderProps = {
   variant?: "light" | "dark" | "transparent";
   compact?: boolean;
 };
 
+const primaryNav = [
+  { href: "/acheter", text: "Acheter" },
+  { href: "/louer", text: "Louer" },
+  { href: "/neuf", text: "Neuf" },
+  { href: "/search", text: "Recherche" },
+] as const;
+
+const secondaryNav = [
+  { href: "/map", text: "Carte" },
+  { href: "/compagnon", text: "Compagnon" },
+  { href: "/pro/agences", text: "Agences" },
+  { href: "/promoteurs", text: "Promoteurs" },
+] as const;
+
+const mobileNav = [
+  { href: "/search", label: "Recherche" },
+  { href: "/acheter", label: "Acheter" },
+  { href: "/louer", label: "Louer" },
+  { href: "/vendre", label: "Vendre" },
+  { href: "/pro", label: "Pro" },
+] as const;
+
+const professionalAudience = "agences et promoteurs";
+
 export function SiteHeader({ variant = "light", compact = false }: SiteHeaderProps) {
   const pathname = usePathname();
   const isDark = variant === "dark";
   const isTransparent = variant === "transparent";
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { ids: favoriteIds } = useFavoriteSelection();
+  const favoriteCount = favoriteIds.length;
 
   useEffect(() => {
     if (!isTransparent) return;
@@ -28,38 +54,45 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
     return () => window.removeEventListener("scroll", onScroll);
   }, [isTransparent]);
 
+  useEffect(() => setMenuOpen(false), [pathname]);
+
   const transparentActive = isTransparent && !scrolled;
-  const { ids: favoriteIds } = useFavoriteSelection();
-  const favoriteCount = favoriteIds.length;
-  const isProActive = pathname.startsWith("/pro") || pathname.startsWith("/promoteurs");
+  const darkSurface = isDark || (isTransparent && scrolled);
+
+  const linkClass = (isActive: boolean) =>
+    `relative rounded-full px-2 py-1.5 text-[13.5px] font-semibold transition ${
+      isActive
+        ? darkSurface || transparentActive
+          ? "text-white after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-bronze-400"
+          : "text-foreground after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-[#0B63CE] dark:text-white"
+        : darkSurface || transparentActive
+          ? "text-white/78 hover:text-white"
+          : "text-foreground/70 hover:bg-surface-muted hover:text-foreground dark:text-white/75 dark:hover:bg-white/10 dark:hover:text-white"
+    }`;
 
   return (
     <header
-      className={`z-50 border-b transition-all duration-500 ${
+      className={`z-50 border-b transition-all duration-300 ${
         isTransparent ? "fixed left-0 right-0 top-0" : "sticky top-0 z-30"
       } ${
         transparentActive
-          ? "border-white/0 bg-black/0 text-white shadow-none backdrop-blur-[0px]"
-          : isDark || (isTransparent && scrolled)
-          ? "border-white/10 bg-[rgba(7,27,51,0.97)] text-white shadow-[0_18px_45px_rgba(2,10,24,0.32)] backdrop-blur"
-          : "border-border/20 bg-white/96 text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.06)] backdrop-blur supports-[backdrop-filter]:bg-white/88 dark:border-white/10 dark:bg-[rgba(7,27,51,0.97)] dark:text-white dark:shadow-[0_18px_45px_rgba(2,10,24,0.32)] dark:supports-[backdrop-filter]:bg-[rgba(7,27,51,0.95)]"
+          ? "border-transparent bg-transparent text-white"
+          : darkSurface
+            ? "border-white/10 bg-[rgba(7,27,51,0.97)] text-white shadow-[0_16px_40px_rgba(2,10,24,0.28)] backdrop-blur"
+            : "border-border/20 bg-white/94 text-foreground shadow-[0_1px_4px_rgba(0,0,0,0.06)] backdrop-blur dark:border-white/10 dark:bg-[rgba(7,27,51,0.97)] dark:text-white"
       }`}
     >
       <Container
-        className={`flex items-center justify-between gap-2 sm:gap-5 sm:py-4 ${
-          compact ? "py-2 sm:py-3" : "py-2.5 sm:py-3"
-        }`}
+        className={`flex items-center justify-between gap-3 ${compact ? "py-2 sm:py-2.5" : "py-2.5 sm:py-3"}`}
       >
         <Link href="/" className="flex min-w-0 items-center" aria-label="AkarFinder - accueil">
-          {isDark || isTransparent ? (
+          {darkSurface || transparentActive ? (
             <img
               src="/brand/logo-v2/logo-header-dark.png"
               alt="AkarFinder"
               width={132}
               height={33}
-              className={`h-[24px] w-auto sm:h-[34px] ${
-                transparentActive ? "drop-shadow-[0_1px_8px_rgba(0,0,0,0.55)]" : ""
-              }`}
+              className="h-[25px] w-auto sm:h-[34px]"
             />
           ) : (
             <>
@@ -68,160 +101,136 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
                 alt="AkarFinder"
                 width={132}
                 height={33}
-                className="h-[24px] w-auto sm:h-[34px] dark:hidden"
+                className="h-[25px] w-auto sm:h-[34px] dark:hidden"
               />
               <img
                 src="/brand/logo-v2/logo-header-dark.png"
                 alt="AkarFinder"
                 width={132}
                 height={33}
-                className="hidden h-[24px] w-auto sm:h-[34px] dark:block"
+                className="hidden h-[25px] w-auto sm:h-[34px] dark:block"
               />
             </>
           )}
         </Link>
 
         <nav aria-label="Navigation principale" className="hidden lg:block">
-          <ul
-            className={`flex items-center gap-6 text-[13.5px] font-semibold ${
-              isDark || isTransparent
-                ? "text-white/88"
-                : "text-foreground/80 hover:text-foreground dark:text-white/88"
-            }`}
-          >
-            {navItems.map((item) => {
-              const isActive =
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.href.split("?")[0]) && item.href !== "/";
-
+          <ul className="flex items-center gap-4">
+            {primaryNav.map((item) => {
+              const isActive = pathname.startsWith(item.href);
               return (
-                <li key={item.label}>
+                <li key={item.href}>
                   <Link
                     href={item.href}
                     aria-current={isActive ? "page" : undefined}
-                    className={`relative rounded-full px-1.5 py-1 pb-1.5 transition-colors ${
-                      isActive
-                        ? `${
-                            isDark || isTransparent
-                              ? "text-white"
-                              : "text-foreground dark:text-white"
-                          } after:absolute after:bottom-0 after:left-1.5 after:right-1.5 after:h-[2px] after:rounded-full after:bg-[#0B63CE] after:content-['']`
-                        : ""
-                    } ${
-                      isDark || isTransparent
-                        ? "hover:text-white"
-                        : "hover:bg-surface-muted hover:text-foreground dark:hover:bg-white/10 dark:hover:text-white"
-                    }`}
+                    className={linkClass(isActive)}
                   >
-                    {item.label}
+                    {item.text}
                   </Link>
                 </li>
               );
             })}
+            <li className="group relative">
+              <button type="button" className={linkClass(false)} aria-haspopup="menu">
+                Plus
+              </button>
+              <div className="invisible absolute right-0 top-full z-50 mt-2 w-48 translate-y-1 rounded-2xl border border-border/15 bg-card p-2 opacity-0 shadow-xl transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 dark:border-white/10 dark:bg-[#0A213D]">
+                {secondaryNav.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="block rounded-xl px-3 py-2.5 text-[13px] font-semibold text-foreground/75 transition hover:bg-surface hover:text-foreground dark:text-white/75 dark:hover:bg-white/8 dark:hover:text-white"
+                  >
+                    {item.text}
+                  </Link>
+                ))}
+              </div>
+            </li>
           </ul>
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2.5">
-          <ThemeToggle className="h-8 w-8 sm:h-9 sm:w-9" />
+          <ThemeToggle className="h-9 w-9" />
           <Link
             href="/favorites"
             aria-label={favoriteCount > 0 ? `Mes favoris (${favoriteCount})` : "Mes favoris"}
-            className={`relative hidden h-8 w-8 items-center justify-center rounded-full transition sm:flex sm:h-9 sm:w-9 ${
-              isDark || isTransparent
+            className={`relative hidden h-9 w-9 items-center justify-center rounded-full transition sm:flex ${
+              darkSurface || transparentActive
                 ? "text-white/70 hover:bg-white/10 hover:text-white"
-                : "text-muted-foreground hover:bg-red-50 hover:text-red-400 dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white"
+                : "text-muted-foreground hover:bg-red-50 hover:text-red-500 dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white"
             }`}
           >
-            <Heart
-              size={18}
-              strokeWidth={2}
-              fill={favoriteCount > 0 ? "currentColor" : "none"}
-              className={
-                favoriteCount > 0
-                  ? isDark || transparentActive
-                    ? "text-red-300"
-                    : "text-red-400"
-                  : ""
-              }
-            />
+            <Heart size={18} fill={favoriteCount > 0 ? "currentColor" : "none"} />
             {favoriteCount > 0 ? (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-extrabold text-white">
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-extrabold text-white">
                 {favoriteCount > 9 ? "9+" : favoriteCount}
               </span>
             ) : null}
           </Link>
 
           <Link
-            href="/pro"
-            aria-current={isProActive ? "page" : undefined}
-            className={`hidden rounded-xl px-4 py-2 text-[13px] font-bold transition lg:block ${
-              isDark || isTransparent
-                ? "border border-bronze-500/40 bg-white/5 text-bronze-400 hover:bg-bronze-700/20 hover:text-bronze-300"
-                : "border border-bronze-700/30 bg-card text-bronze-700 hover:border-bronze-700/60 hover:bg-[#fef8ed] dark:border-bronze-500/40 dark:bg-white/5 dark:text-bronze-400 dark:hover:bg-bronze-700/20 dark:hover:text-bronze-300"
-            } ${isProActive ? "border-bronze-700/60" : ""}`}
+            href="/vendre"
+            className={`hidden rounded-xl border px-3.5 py-2 text-[12.5px] font-bold transition md:block ${
+              darkSurface || transparentActive
+                ? "border-white/18 bg-white/6 text-white hover:bg-white/12"
+                : "border-border/20 bg-card text-foreground/80 hover:border-bronze-500/40 hover:text-foreground dark:border-white/12 dark:bg-white/5 dark:text-white/80"
+            }`}
           >
-            Espace Pro
+            Publier
           </Link>
 
           <Link
             href="/mon-projet"
             aria-current={pathname.startsWith("/mon-projet") ? "page" : undefined}
-            className={`rounded-xl px-3 py-1.5 text-[11.5px] font-bold transition sm:px-5 sm:py-2.5 sm:text-[13px] ${
-              isDark || isTransparent
-                ? "border border-[#60A5FA]/45 bg-white/8 text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] hover:bg-[#0B63CE] hover:text-white"
-                : "border border-[#60A5FA]/55 bg-[#0B63CE] text-white shadow-[0_4px_14px_rgba(11,99,206,0.26)] hover:bg-[#084BA8] dark:border-[#60A5FA]/45 dark:bg-white/5 dark:hover:bg-[#0B63CE] dark:hover:text-white"
-            }`}
+            className="rounded-xl bg-[#0B63CE] px-3 py-2 text-[11.5px] font-bold text-white shadow-[0_4px_14px_rgba(11,99,206,0.24)] transition hover:bg-[#084BA8] sm:px-4 sm:text-[13px]"
           >
             Mon projet
           </Link>
+
+          <button
+            type="button"
+            aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((open) => !open)}
+            className={`grid h-9 w-9 place-items-center rounded-full lg:hidden ${
+              darkSurface || transparentActive ? "text-white hover:bg-white/10" : "text-foreground hover:bg-surface dark:text-white"
+            }`}
+          >
+            {menuOpen ? <X size={19} /> : <Menu size={19} />}
+          </button>
         </div>
       </Container>
 
-      <nav
-        aria-label="Navigation mobile principale"
-        className={`overflow-x-auto border-t scrollbar-none lg:hidden ${
-          isDark || isTransparent
-            ? "border-white/8 bg-transparent"
-            : "border-border/10 bg-white/96 dark:border-white/8 dark:bg-transparent"
-        }`}
-      >
-        <div className={`flex px-4 ${compact ? "gap-2 py-1.5" : "gap-2.5 py-2"}`}>
-          {[
-            { href: "/search", label: "Recherche", aria: "Rechercher des biens" },
-            { href: "/acheter", label: "Acheter", aria: "Explorer les biens à acheter" },
-            { href: "/louer", label: "Louer", aria: "Explorer les locations" },
-            { href: "/vendre", label: "Vendre", aria: "Préparer la vente de votre bien" },
-            { href: "/pro", label: "Pro", aria: "Découvrir AkarFinder Pro pour agences et promoteurs" },
-          ].map((chip) => {
-            const isActive =
-              chip.href === "/pro"
-                ? isProActive
-                : pathname.startsWith(chip.href);
-            return (
-              <Link
-                key={chip.href}
-                href={chip.href}
-                aria-label={chip.aria}
-                aria-current={isActive ? "page" : undefined}
-                className={`flex min-h-10 flex-shrink-0 items-center whitespace-nowrap rounded-full border font-bold transition focus:outline-none focus:ring-2 focus:ring-[#60A5FA] ${
-                  compact ? "px-3 py-2 text-[11.5px]" : "px-3.5 py-2.5 text-[12px]"
-                } ${
-                  isActive
-                    ? isDark || isTransparent
-                      ? "border-[#60A5FA]/60 bg-[#0B63CE]/18 text-white"
-                      : "border-[#0B63CE] bg-[#0B63CE] text-white dark:border-[#60A5FA]/60 dark:bg-[#0B63CE]/18 dark:text-white"
-                    : isDark || isTransparent
-                    ? "border-white/15 bg-white/6 text-white/80 hover:bg-white/12 hover:text-white"
-                    : "border-blue-200 bg-blue-50 text-deepblue hover:border-[#0B63CE] hover:bg-blue-100 dark:border-white/15 dark:bg-white/6 dark:text-white/80 dark:hover:border-white/25 dark:hover:bg-white/12"
-                }`}
-              >
-                {chip.label}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      {menuOpen ? (
+        <nav
+          aria-label="Navigation mobile principale"
+          className="border-t border-border/10 bg-card px-4 py-3 dark:border-white/8 dark:bg-[#071B33] lg:hidden"
+        >
+          <div className="grid grid-cols-2 gap-2">
+            {mobileNav.map((item) => {
+              const isActive =
+                item.href === "/pro"
+                  ? pathname.startsWith("/pro") || pathname.startsWith("/promoteurs")
+                  : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-label={item.href === "/pro" ? `Espace Pro — ${professionalAudience}` : undefined}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`min-h-10 rounded-xl border px-3 py-3 text-[13px] font-bold transition ${
+                    isActive
+                      ? "border-[#0B63CE] bg-[#0B63CE] text-white"
+                      : "border-border/15 bg-surface text-foreground/75 hover:border-[#0B63CE]/40 hover:text-foreground dark:border-white/10 dark:bg-white/[0.045] dark:text-white/75"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      ) : null}
     </header>
   );
 }

@@ -1,8 +1,7 @@
 "use client";
 
-// SEARCH-RELOOKING-1 — filtres glass dark premium. Logique INCHANGÉE.
-import { useState } from "react";
-import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 import { PropertyTypeVisualSelector } from "@/components/property-types/PropertyTypeVisualSelector";
 import type { Listing, ListingFiltersState } from "@/lib/listings/types";
 import { OPTION_A_PROPERTY_TYPES } from "@/lib/property-types/presentation";
@@ -24,145 +23,189 @@ const transactionTabs = [
 export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset }: QuickFiltersProps) {
   const [showFilters, setShowFilters] = useState(false);
 
-  const fieldClass =
-    "min-h-11 w-full rounded-xl border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-3.5 text-[13.5px] font-semibold text-foreground dark:text-white outline-none transition placeholder:text-muted-foreground/80 hover:border-bronze-400/50 focus:border-bronze-400/70 focus:ring-2 focus:ring-bronze-400/20 lg:w-auto lg:rounded-full";
-  const selectClass = `${fieldClass} dark:[color-scheme:dark]`;
-  const allPropertyTypes = Array.from(
-    new Set<Listing["property_type"]>([
-      ...OPTION_A_PROPERTY_TYPES.map((item) => item.value),
-      ...propertyTypes,
-    ]),
+  const allPropertyTypes = useMemo(
+    () =>
+      Array.from(
+        new Set<Listing["property_type"]>([
+          ...OPTION_A_PROPERTY_TYPES.map((item) => item.value),
+          ...propertyTypes,
+        ]),
+      ),
+    [propertyTypes],
   );
 
   const activeCount =
     (filters.city !== "all" ? 1 : 0) +
+    (filters.minBudget ? 1 : 0) +
     (filters.maxBudget ? 1 : 0) +
     (filters.minSurface ? 1 : 0) +
-    (filters.propertyType !== "all" ? 1 : 0) +
-    (filters.reliability !== "all" ? 1 : 0) +
-    (filters.minReliabilityScore > 0 ? 1 : 0) +
-    (filters.mreOnly ? 1 : 0) +
-    (filters.packageScore !== "all" ? 1 : 0);
+    (filters.propertyType !== "all" ? 1 : 0);
+
+  const fieldClass =
+    "h-11 w-full rounded-xl border border-border/20 bg-surface px-3.5 text-[13px] font-semibold text-foreground outline-none transition placeholder:text-muted-foreground/80 hover:border-bronze-400/45 focus:border-bronze-500 focus:ring-2 focus:ring-bronze-500/15 dark:border-white/12 dark:bg-white/[0.055] dark:text-white";
 
   return (
-    <section className="rounded-2xl border border-border/15 dark:border-white/10 bg-card dark:bg-white/[0.05] p-2.5 shadow-[0_18px_50px_rgba(2,10,24,0.18)] dark:shadow-[0_18px_50px_rgba(2,10,24,0.35)] backdrop-blur-md sm:p-3.5">
-      <div className="grid gap-2.5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+    <section
+      aria-label="Filtres de recherche"
+      className="rounded-2xl border border-border/15 bg-card p-3 shadow-[0_18px_55px_rgba(2,10,24,0.12)] dark:border-white/10 dark:bg-white/[0.045] sm:p-4"
+    >
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
         <label className="relative block" htmlFor="property-search">
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true">
-            <Search size={19} strokeWidth={2.2} />
-          </span>
+          <Search
+            size={19}
+            strokeWidth={2.2}
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
           <input
             id="property-search"
-            type="text"
+            type="search"
             value={filters.search}
             onChange={(event) => onChange({ ...filters, search: event.target.value })}
-            placeholder="Ville, quartier, projet, promoteur..."
-            className="h-12 w-full rounded-2xl border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] pl-11 pr-4 text-[15px] font-semibold text-foreground dark:text-white outline-none transition placeholder:text-muted-foreground/80 focus:border-bronze-400/70 focus:ring-4 focus:ring-bronze-400/15 sm:h-14"
+            placeholder="Ville, quartier, résidence ou mot-clé"
+            className="h-12 w-full rounded-2xl border border-border/20 bg-surface pl-11 pr-4 text-[15px] font-semibold text-foreground outline-none transition placeholder:text-muted-foreground/80 focus:border-bronze-500 focus:ring-4 focus:ring-bronze-500/15 dark:border-white/12 dark:bg-white/[0.055] dark:text-white sm:h-14"
           />
         </label>
 
         <div
           role="group"
           aria-label="Type de transaction"
-          className="grid grid-cols-3 rounded-2xl border border-border/15 dark:border-white/10 bg-surface dark:bg-[#071B33]/70 p-1 lg:min-w-[320px]"
+          className="grid grid-cols-3 rounded-2xl border border-border/15 bg-surface p-1 dark:border-white/10 dark:bg-[#071B33]/70 xl:min-w-[330px]"
         >
-          {transactionTabs.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => onChange({ ...filters, transactionType: tab.value })}
-              aria-pressed={filters.transactionType === tab.value}
-              className={
-                filters.transactionType === tab.value
-                  ? "rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-3 py-2.5 text-[13px] font-extrabold text-white shadow-sm"
-                  : "rounded-xl px-3 py-2.5 text-[13px] font-bold text-foreground/60 transition hover:text-foreground"
-              }
-            >
-              {tab.label}
-            </button>
-          ))}
+          {transactionTabs.map((tab) => {
+            const selected = filters.transactionType === tab.value;
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => onChange({ ...filters, transactionType: tab.value })}
+                aria-pressed={filters.transactionType === tab.value}
+                className={
+                  selected
+                    ? "rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-3 py-2.5 text-[13px] font-extrabold text-white shadow-sm"
+                    : "rounded-xl px-3 py-2.5 text-[13px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground dark:text-white/65 dark:hover:bg-white/8 dark:hover:text-white"
+                }
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <PropertyTypeVisualSelector
-        value={filters.propertyType}
-        onChange={(propertyType) => onChange({ ...filters, propertyType })}
-        showAll
-        className="mt-3 border-t border-border/12 pt-3 dark:border-white/8"
-        ariaLabel="Choisir visuellement le type de bien"
-      />
+      <div className="mt-3 border-t border-border/12 pt-3 dark:border-white/8">
+        <PropertyTypeVisualSelector
+          value={filters.propertyType}
+          onChange={(propertyType) => onChange({ ...filters, propertyType })}
+          showAll
+          ariaLabel="Choisir le type de bien"
+        />
+      </div>
 
-      <div className="mt-1 flex items-center gap-2 lg:hidden">
+      <div className="mt-3 flex items-center gap-2">
         <button
           type="button"
-          onClick={() => setShowFilters((prev) => !prev)}
+          onClick={() => setShowFilters((current) => !current)}
           aria-expanded={showFilters}
-          className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-4 py-2.5 text-[13.5px] font-extrabold text-foreground"
+          className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full border border-border/20 bg-surface px-4 text-[13px] font-extrabold text-foreground transition hover:border-bronze-500/45 dark:border-white/12 dark:bg-white/[0.055] dark:text-white sm:flex-none"
         >
           <SlidersHorizontal size={16} strokeWidth={2.2} aria-hidden="true" />
-          Plus de filtres
+          Filtres
           {activeCount > 0 ? (
-            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-bronze-500 px-1 text-[11px] font-extrabold text-white">
+            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-bronze-600 px-1 text-[11px] font-extrabold text-white">
               {activeCount}
             </span>
           ) : null}
-          <ChevronDown size={14} strokeWidth={2.6} className={`transition-transform ${showFilters ? "rotate-180" : ""}`} aria-hidden="true" />
+          <ChevronDown
+            size={14}
+            strokeWidth={2.6}
+            className={`transition-transform ${showFilters ? "rotate-180" : ""}`}
+            aria-hidden="true"
+          />
         </button>
+
         {activeCount > 0 ? (
-          <button type="button" onClick={onReset} className="rounded-full px-3 py-2.5 text-[13px] font-bold text-muted-foreground transition hover:text-foreground">
+          <button
+            type="button"
+            onClick={onReset}
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-[13px] font-bold text-muted-foreground transition hover:bg-surface hover:text-foreground dark:hover:bg-white/8 dark:hover:text-white"
+          >
+            <X size={14} aria-hidden="true" />
             Effacer
           </button>
         ) : null}
       </div>
 
-      <div className={`${showFilters ? "grid" : "hidden"} mt-2.5 gap-2 border-t border-border/12 dark:border-white/8 pt-3 sm:grid-cols-2 lg:mt-3 lg:flex lg:flex-wrap lg:items-center lg:gap-2 lg:border-t lg:pt-3`}>
-        <select aria-label="Ville" value={filters.city} onChange={(e) => onChange({ ...filters, city: e.target.value, neighborhood: "all" })} className={selectClass}>
+      <div
+        className={`${showFilters ? "grid" : "hidden"} mt-3 gap-2.5 rounded-2xl border border-border/12 bg-surface/60 p-3 dark:border-white/8 dark:bg-white/[0.025] sm:grid-cols-2 lg:grid-cols-5`}
+      >
+        <select
+          aria-label="Ville"
+          value={filters.city}
+          onChange={(event) =>
+            onChange({ ...filters, city: event.target.value, neighborhood: "all" })
+          }
+          className={fieldClass}
+        >
           <option value="all">Toutes les villes</option>
-          {cities.map((city) => <option key={city} value={city}>{city}</option>)}
+          {cities.map((city) => (
+            <option key={city} value={city}>
+              {city}
+            </option>
+          ))}
         </select>
 
-        <input type="number" aria-label="Budget maximum" value={filters.maxBudget} onChange={(e) => onChange({ ...filters, maxBudget: e.target.value })} placeholder="Budget max" className={`${fieldClass} lg:w-36`} />
+        <input
+          type="number"
+          min="0"
+          inputMode="numeric"
+          aria-label="Budget minimum"
+          value={filters.minBudget}
+          onChange={(event) => onChange({ ...filters, minBudget: event.target.value })}
+          placeholder="Budget min (DH)"
+          className={fieldClass}
+        />
 
-        <select aria-label="Type de bien" value={filters.propertyType} onChange={(e) => onChange({ ...filters, propertyType: e.target.value as ListingFiltersState["propertyType"] })} className={selectClass}>
-          <option value="all">Type de bien</option>
-          {allPropertyTypes.map((type) => <option key={type} value={type}>{type}</option>)}
+        <input
+          type="number"
+          min="0"
+          inputMode="numeric"
+          aria-label="Budget maximum"
+          value={filters.maxBudget}
+          onChange={(event) => onChange({ ...filters, maxBudget: event.target.value })}
+          placeholder="Budget max (DH)"
+          className={fieldClass}
+        />
+
+        <input
+          type="number"
+          min="0"
+          inputMode="numeric"
+          aria-label="Surface minimum"
+          value={filters.minSurface}
+          onChange={(event) => onChange({ ...filters, minSurface: event.target.value })}
+          placeholder="Surface min (m²)"
+          className={fieldClass}
+        />
+
+        <select
+          aria-label="Type de bien"
+          value={filters.propertyType}
+          onChange={(event) =>
+            onChange({
+              ...filters,
+              propertyType: event.target.value as ListingFiltersState["propertyType"],
+            })
+          }
+          className={fieldClass}
+        >
+          <option value="all">Tous les types</option>
+          {allPropertyTypes.map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
         </select>
-
-        <input type="number" aria-label="Surface minimum" value={filters.minSurface} onChange={(e) => onChange({ ...filters, minSurface: e.target.value })} placeholder="Surface min" className={`${fieldClass} lg:w-36`} />
-
-        {/* Phase 1: Reliability filters hidden for external search results */}
-        {/* Reserved for first-party / partner-authorized listings only */}
-        {/*
-        <select aria-label="Fiabilité" value={filters.reliability} onChange={(e) => onChange({ ...filters, reliability: e.target.value as ListingFiltersState["reliability"] })} className={selectClass}>
-          <option value="all">Toutes fiabilités</option>
-          <option value="top">Très fiable</option>
-          <option value="high">Fiable</option>
-          <option value="medium">À vérifier</option>
-          <option value="low">Faible confiance</option>
-        </select>
-
-        <div className="flex min-h-11 flex-col justify-center gap-1 rounded-xl border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-3.5 py-2 sm:col-span-2 lg:min-w-[200px] lg:rounded-full">
-          <div className="flex items-center justify-between">
-            <span className="text-[12px] font-bold text-foreground/80">Score min. fiabilité</span>
-            <span className="text-[12px] font-extrabold text-bronze-300">{filters.minReliabilityScore === 0 ? "Tous" : `${filters.minReliabilityScore}/100`}</span>
-          </div>
-          <input type="range" min="0" max="100" step="5" value={filters.minReliabilityScore} onChange={(e) => onChange({ ...filters, minReliabilityScore: Number(e.target.value) })} aria-label="Score minimum de fiabilité" className="h-1.5 w-full cursor-pointer accent-bronze-500" />
-        </div>
-
-        <button type="button" onClick={() => onChange({ ...filters, mreOnly: !filters.mreOnly })} aria-pressed={filters.mreOnly}
-          className={filters.mreOnly ? "min-h-11 rounded-xl bg-bronze-500/20 px-4 text-[13px] font-extrabold text-bronze-500 dark:text-bronze-300 ring-1 ring-bronze-500/40 lg:rounded-full" : "min-h-11 rounded-xl border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-4 text-[13px] font-bold text-foreground/75 transition hover:border-bronze-400/50 lg:rounded-full"}>
-          MRE-friendly
-        </button>
-
-        <button type="button" onClick={() => onChange({ ...filters, packageScore: filters.packageScore === "bon" ? "all" : "bon" })} aria-pressed={filters.packageScore === "bon"}
-          className={filters.packageScore === "bon" ? "min-h-11 rounded-xl bg-emerald-500/20 px-4 text-[13px] font-extrabold text-emerald-600 dark:text-emerald-300 ring-1 ring-emerald-500/40 lg:rounded-full" : "min-h-11 rounded-xl border border-border/20 dark:border-white/12 bg-surface dark:bg-white/[0.06] px-4 text-[13px] font-bold text-foreground/75 transition hover:border-bronze-400/50 lg:rounded-full"}>
-          Bon package
-        </button>
-        */}
-
-        <button type="button" onClick={onReset} className="hidden min-h-11 rounded-full px-3 text-[13px] font-bold text-muted-foreground transition hover:bg-surface hover:text-foreground lg:ml-auto lg:block">
-          Réinitialiser
-        </button>
       </div>
     </section>
   );
