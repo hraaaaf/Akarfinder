@@ -1,0 +1,18 @@
+name: DATA P0 Owner Listing Integration
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  owner-listing-integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/data-p0-owner-listing-integration.test.ts
+      - run: npx tsc --noEmit
+      - run: npm run build
