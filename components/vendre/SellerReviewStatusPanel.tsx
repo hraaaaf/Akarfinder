@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, Clock3, RefreshCw, Send } from "lucide-react";
 import { ui } from "@/components/ui/design-system";
 import {
-  SELLER_REVIEW_REASON_LABELS,
+  sellerReviewReasonLabel,
   type SellerReviewReason,
   type SellerReviewStatus,
 } from "@/lib/seller/moderation";
@@ -26,6 +26,7 @@ type Props = {
 
 const STATUS_COPY: Record<SellerReviewStatus, { title: string; detail: string }> = {
   draft: { title: "Brouillon enregistré", detail: "Votre dossier peut encore être complété avant vérification." },
+  uploading: { title: "Photos en cours d’envoi", detail: "L’envoi privé des photos est en cours." },
   ready_for_review: { title: "À vérifier", detail: "Votre dossier est prêt. Une vérification humaine est nécessaire avant toute publication." },
   needs_changes: { title: "Quelques corrections sont nécessaires", detail: "Suivez les indications ci-dessous, puis renvoyez votre dossier." },
   resubmitted: { title: "Corrections envoyées", detail: "Votre dossier corrigé est de nouveau en cours de vérification." },
@@ -106,7 +107,7 @@ export function SellerReviewStatusPanel({ draftId, uploadToken }: Props) {
         <div className="mt-5">
           <h3 className="text-sm font-extrabold">À améliorer</h3>
           <ul className="mt-3 space-y-2">
-            {reasons.map((reason) => <li key={reason} className="rounded-xl bg-background px-4 py-3 text-sm font-semibold">{SELLER_REVIEW_REASON_LABELS[reason]}</li>)}
+            {reasons.map((reason) => <li key={reason} className="rounded-xl bg-background px-4 py-3 text-sm font-semibold">{sellerReviewReasonLabel(reason)}</li>)}
           </ul>
           {draft?.reviewer_note ? <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">{draft.reviewer_note}</p> : null}
           <label className="mt-5 block text-sm font-extrabold">
