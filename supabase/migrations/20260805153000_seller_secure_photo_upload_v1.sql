@@ -4,6 +4,13 @@ alter table public.seller_property_drafts
   add column if not exists review_status text not null default 'draft'
     check (review_status in ('draft', 'uploading', 'ready_for_review', 'needs_changes', 'approved'));
 
+alter table public.seller_property_drafts
+  drop constraint if exists seller_property_drafts_publication_eligible_false_check;
+
+alter table public.seller_property_drafts
+  add constraint seller_property_drafts_publication_eligible_false_check
+  check (publication_eligible = false);
+
 create table if not exists public.seller_property_draft_photos (
   id uuid primary key default gen_random_uuid(),
   draft_id uuid not null references public.seller_property_drafts(id) on delete cascade,
