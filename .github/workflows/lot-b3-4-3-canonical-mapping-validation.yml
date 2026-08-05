@@ -1,0 +1,38 @@
+name: LOT B3.4.3 Canonical Mapping Validation Gate
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/partner-feeds/canonical-mapping.ts'
+      - 'scripts/scrapers/__tests__/partner-feed-canonical-mapping.test.ts'
+      - 'supabase/migrations/20260805223000_lot_b3_4_3_canonical_mapping_validation.sql'
+      - 'docs/data/LOT-B3-4-3-CANONICAL-MAPPING-VALIDATION.md'
+      - '.github/workflows/lot-b3-4-3-canonical-mapping-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-canonical-mapping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Canonical mapping assertions
+        run: |
+          FILE=scripts/partner-feeds/canonical-mapping.ts
+          grep -q 'prepareSellerPropertyDraft' "$FILE"
+          grep -q 'calculateSellerReadiness' "$FILE"
+          grep -q 'PROPERTY_SCHEMA_VERSION' "$FILE"
+          grep -q 'publication_eligible: false' "$FILE"
+          grep -q 'partner_declared' "$FILE"
+          ! grep -Eqi 'insert into public\.property_listings|update public\.property_listings|detail fetch|captcha|stealth|fake googlebot' "$FILE"
+      - run: npx tsx --test scripts/scrapers/__tests__/partner-feed-canonical-mapping.test.ts
+      - run: npx tsx --test scripts/scrapers/__tests__/phase1-p1-seller-structured-draft.test.ts scripts/scrapers/__tests__/ux-p2-seller-entry-quality-standard.test.ts
+      - run: npx tsc --noEmit
+      - run: npm run build
