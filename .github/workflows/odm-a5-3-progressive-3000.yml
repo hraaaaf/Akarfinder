@@ -1,0 +1,53 @@
+name: ODM A5.3 Progressive 3000 Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805170500_lot_a5_3_progressive_3000.sql"
+      - "docs/data/ODM-A5-3-PROGRESSIVE-3000.md"
+      - ".github/workflows/odm-a5-3-progressive-3000.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805170500_lot_a5_3_progressive_3000.sql"
+      - "docs/data/ODM-A5-3-PROGRESSIVE-3000.md"
+      - ".github/workflows/odm-a5-3-progressive-3000.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-a5-3-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Fail-closed A5.3 assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          M="supabase/migrations/20260805170500_lot_a5_3_progressive_3000.sql"
+          D="docs/data/ODM-A5-3-PROGRESSIVE-3000.md"
+          grep -q "odm_prepare_a5_3_progressive_3000_v1" "$M"
+          grep -q "odm_activate_a5_3_progressive_3000_v1" "$M"
+          grep -q "odm_rollback_a5_3_progressive_3000_v1" "$M"
+          grep -q "odm_a5_3_progressive_3000_report_v1" "$M"
+          grep -q "v_prior<>1000" "$M"
+          grep -q "v_rows<>2000" "$M"
+          grep -q "v_dar<>1000" "$M"
+          grep -q "v_promo<>1000" "$M"
+          grep -q "document_kind_confidence='HIGH'" "$M"
+          grep -q "content_reuse_performed',false" "$M"
+          grep -q "imagery_reuse_performed',false" "$M"
+          grep -q "10,483" "$D"
+          grep -q "No expansion beyond 3,000" "$D"
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
