@@ -4,6 +4,7 @@ import { PropertyDecisionHeader } from "@/components/listings/PropertyDecisionHe
 import { PropertyDetailV2 } from "@/components/listings/PropertyDetailV2";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Container } from "@/components/ui/Container";
+import { ui } from "@/components/ui/design-system";
 import { queryListingById } from "@/lib/db/index";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
 import { buildPublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
@@ -20,14 +21,10 @@ function isSafeHttpUrl(value: string | null | undefined): value is string {
 }
 
 type ListingDetailPageProps = {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
 };
 
-export default async function ListingDetailPage({
-  params,
-}: ListingDetailPageProps) {
+export default async function ListingDetailPage({ params }: ListingDetailPageProps) {
   const { id } = await params;
 
   try {
@@ -42,9 +39,6 @@ export default async function ListingDetailPage({
       notFound();
     }
 
-    // External/indexed offers never get an internal AkarFinder detail page.
-    // When a public card still resolves through /listings/:id, preserve the
-    // source-original contract by redirecting to the canonical source URL.
     if (!canShowInternalListingDetail(listing.source_name ?? "")) {
       if (listing.original_source_required === true && isSafeHttpUrl(listing.listing_url)) {
         redirect(listing.listing_url);
@@ -61,7 +55,7 @@ export default async function ListingDetailPage({
     if (!detail) notFound();
 
     return (
-      <main className="min-h-screen bg-[#f8f9fa] text-gray-900">
+      <main className={`min-h-screen ${ui.page}`}>
         <SiteHeader />
         <Container>
           <PropertyDecisionHeader listing={listing} detail={detail} />
@@ -71,8 +65,6 @@ export default async function ListingDetailPage({
       </main>
     );
   } catch (error) {
-    // Next.js redirect/notFound errors must propagate; only unexpected failures
-    // should be converted to a 404.
     if (error && typeof error === "object" && "digest" in error) throw error;
     console.error("[listings] unexpected error loading listing:", id, error);
     notFound();
