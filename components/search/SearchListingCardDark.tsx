@@ -178,6 +178,12 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           </span>
         </div>
 
+        {!observedExternal && listing.duplicate_score != null && listing.duplicate_score >= 0.7 ? (
+          <p className="mt-2 text-[11px] font-semibold text-amber-700 dark:text-amber-200">
+            Doublon possible
+          </p>
+        ) : null}
+
         <button
           type="button"
           onClick={() => selectListing(listing, "list")}
