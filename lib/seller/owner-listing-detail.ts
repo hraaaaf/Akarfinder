@@ -8,6 +8,7 @@ function propertyType(value: string | null): ListingPropertyType {
     case "studio": return "Studio";
     case "office": return "Bureau";
     case "house": return "Maison";
+    case "riad": return "Riad";
     default: return "Appartement";
   }
 }
@@ -38,8 +39,8 @@ export async function queryOwnerListingDetail(representationId: string): Promise
     bedrooms: data.bedrooms_count ?? 0,
     bathrooms: 0,
     freshness_label: "Mise à jour par le propriétaire",
-    source_type: "Annonce propriétaire",
-    reliability_label: data.quality_score >= 85 ? "Dossier très complet" : "Dossier vérifié",
+    source_type: "Source analysée",
+    reliability_label: data.quality_score >= 85 ? "Informations complètes" : "Infos limitées",
     reliability_score: data.quality_score,
     reliability_available: true,
     is_mre_friendly: false,
@@ -51,16 +52,19 @@ export async function queryOwnerListingDetail(representationId: string): Promise
     listing_url: `/listings/owner-${data.id}`,
     source_name: "Propriétaire",
     source_badge: "owner_published",
-    result_origin: "public_sitemap",
+    source_attribution_label: data.provenance_label,
+    result_origin: "owner_declared",
     search_result_display_mode: "owner_verified_listing",
     can_show_result: true,
     can_show_thumbnail: false,
     can_show_contact: false,
     can_show_gallery: false,
     production_allowed: true,
-    primary_cta: "view_original",
+    primary_cta: "view_full_listing",
     original_source_required: false,
-    source_access_level: "authorized_content",
-    image_permission_status: "source_link_only",
+    source_access_level: "partner_full",
+    image_permission_status: "allowed",
+    images_count: data.photo_count,
+    updated_at_label: "Mise à jour récente",
   };
 }
