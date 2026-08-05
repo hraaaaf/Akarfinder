@@ -1,0 +1,38 @@
+name: LOT B3.4.2 CSV XLSX Parser Gate
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/partner-feeds/quarantine-parser.ts'
+      - 'scripts/scrapers/__tests__/partner-feed-quarantine-parser.test.ts'
+      - 'supabase/migrations/20260805214500_lot_b3_4_2_csv_xlsx_parser.sql'
+      - 'docs/data/LOT-B3-4-2-CSV-XLSX-PARSER.md'
+      - '.github/workflows/lot-b3-4-2-csv-xlsx-parser.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-feed-parser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Parser contract assertions
+        run: |
+          PARSER=scripts/partner-feeds/quarantine-parser.ts
+          MIGRATION=supabase/migrations/20260805214500_lot_b3_4_2_csv_xlsx_parser.sql
+          grep -q "MAX_FEED_ROWS = 10_000" "$PARSER"
+          grep -q "MAX_FEED_COLUMNS = 200" "$PARSER"
+          grep -q "xlsx_macros_forbidden" "$PARSER"
+          grep -q "FORMULA_BLOCKED" "$PARSER"
+          grep -q "odm_b3_4_2_feed_parser_report_v1" "$MIGRATION"
+          ! grep -Eqi "insert into public\.property_listings|update public\.property_listings|detail fetch|captcha|stealth|fake googlebot" "$PARSER" "$MIGRATION"
+      - run: npx tsx --test scripts/scrapers/__tests__/partner-feed-quarantine-parser.test.ts
+      - run: npx tsc --noEmit
+      - run: npm run build
