@@ -1,0 +1,41 @@
+name: LOT B1 Source Freshness Engine Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260805181500_lot_b1_source_freshness_engine.sql'
+      - 'supabase/migrations/20260805181600_lot_b1_source_freshness_runtime_alignment.sql'
+      - 'docs/data/LOT-B1-SOURCE-FRESHNESS-ENGINE.md'
+      - '.github/workflows/lot-b1-source-freshness-engine.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-source-freshness-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Fail-closed freshness contract assertions
+        run: |
+          BASE=supabase/migrations/20260805181500_lot_b1_source_freshness_engine.sql
+          RUNTIME=supabase/migrations/20260805181600_lot_b1_source_freshness_runtime_alignment.sql
+          grep -q "source_freshness_state" "$BASE"
+          grep -q "source_freshness_transition_events" "$BASE"
+          grep -q "publication_eligible boolean not null default false" "$BASE"
+          grep -q "revoke all on table public.source_freshness_state from public,anon,authenticated" "$BASE"
+          grep -q "source_freshness_evaluation_v1" "$RUNTIME"
+          grep -q "blocked_review_overdue" "$RUNTIME"
+          grep -q "blocked_unverified" "$RUNTIME"
+          grep -q "security invoker" "$RUNTIME"
+          grep -q "set search_path=''" "$RUNTIME"
+          grep -q "odm_b1_source_freshness_report_v1" "$BASE"
+          ! grep -Eqi "captcha|proxy rotation|stealth|fake googlebot" "$BASE" "$RUNTIME"
+      - run: npx tsc --noEmit
+      - run: npm run build
