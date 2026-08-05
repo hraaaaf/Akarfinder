@@ -29,9 +29,10 @@ describe("Phase 1 P2 — residual UX closure", () => {
   it("keeps seller success truthful and sends the user to coherent next actions", () => {
     const seller = source("components/vendre/SellerPropertyDraftForm.tsx");
     assert.ok(seller.includes("Brouillon du bien enregistré"));
-    assert.ok(seller.includes("ni une annonce publiée, ni une vérification AkarFinder"));
+    assert.ok(seller.includes("faits déclarés"));
+    assert.ok(seller.includes("Rien n’est publié automatiquement"));
     assert.ok(seller.includes('href="/vendre"'));
-    assert.ok(seller.includes("Voir les offres comparables"));
+    assert.ok(seller.includes("Voir des biens comparables"));
     assert.ok(seller.includes("return `/search?${params.toString()}`"));
   });
 

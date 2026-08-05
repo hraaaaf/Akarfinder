@@ -49,6 +49,7 @@ describe("AF-AUDIT-P1-049 — lead and property dataset remain separate", () => 
   const migration = source("supabase/migrations/20260723050000_seller_property_draft_v1.sql");
   const page = source("app/vendre/dossier/page.tsx");
   const form = source("components/vendre/SellerPropertyDraftForm.tsx");
+  const readiness = source("lib/seller/readiness.ts");
 
   it("persists a distinct seller_property_drafts row linked to the contact lead", () => {
     assert.ok(route.includes('.from("buyer_leads")'));
@@ -69,10 +70,10 @@ describe("AF-AUDIT-P1-049 — lead and property dataset remain separate", () => 
   it("uses the structured draft UI and explains declared-vs-verified truth", () => {
     assert.ok(page.includes("SellerPropertyDraftForm"));
     assert.ok(form.includes("faits déclarés"));
-    assert.ok(form.includes("ni une publication"));
+    assert.ok(form.includes("Rien n’est publié automatiquement"));
     assert.ok(form.includes("form.city.trim()"));
     assert.ok(form.includes("form.propertyType"));
-    assert.ok(form.includes("Number(form.surface) > 0"));
-    assert.ok(form.includes("Voir les offres comparables"));
+    assert.ok(readiness.includes("Number(input.surface) > 0"));
+    assert.ok(form.includes("Voir des biens comparables"));
   });
 });

@@ -1,0 +1,27 @@
+name: UX P2 Seller Entry Quality Standard
+
+on:
+  pull_request:
+    paths:
+      - "app/vendre/**"
+      - "components/vendre/**"
+      - "lib/seller/**"
+      - "scripts/scrapers/__tests__/ux-p2-seller-entry-quality-standard.test.ts"
+      - ".github/workflows/ux-p2-seller-entry-quality-standard.yml"
+
+jobs:
+  seller-entry-quality-standard:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Seller entry contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-p2-seller-entry-quality-standard.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build

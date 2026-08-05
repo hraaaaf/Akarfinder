@@ -4,31 +4,40 @@ import { SiteFooter } from "@/components/landing/SiteFooter";
 import { Container } from "@/components/ui/Container";
 import { SellerPropertyDraftForm } from "@/components/vendre/SellerPropertyDraftForm";
 import { isListingPropertyType } from "@/lib/property-types/presentation";
+import type { SellerIntent } from "@/lib/seller/readiness";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Décrire mon bien — Brouillon vendeur | AkarFinder",
+  title: "Décrire mon bien | AkarFinder",
   description:
-    "Créez un brouillon structuré de votre bien à partir de vos déclarations, distinct de votre demande de contact et jamais publié automatiquement.",
+    "Préparez un dossier clair et complet pour publier, estimer ou confier votre bien à un professionnel.",
 };
+
+const SELLER_INTENTS: SellerIntent[] = ["publish", "estimate", "professional"];
 
 export default async function VendreDossierPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ property_type?: string }>;
+  searchParams?: Promise<{ property_type?: string; intent?: string }>;
 }) {
   const params = searchParams ? await searchParams : {};
   const initialPropertyType = isListingPropertyType(params.property_type)
     ? params.property_type
     : undefined;
+  const initialIntent = SELLER_INTENTS.includes(params.intent as SellerIntent)
+    ? (params.intent as SellerIntent)
+    : "publish";
 
   return (
-    <main className="min-h-screen bg-[#fffdf8]">
-      <SiteHeader variant="light" />
-      <section className="pb-16 pt-12 lg:pb-20 lg:pt-16">
+    <main className="min-h-screen bg-background text-foreground">
+      <SiteHeader compact />
+      <section className="pb-20 pt-8 sm:pt-12">
         <Container>
-          <SellerPropertyDraftForm initialPropertyType={initialPropertyType} />
+          <SellerPropertyDraftForm
+            initialPropertyType={initialPropertyType}
+            initialIntent={initialIntent}
+          />
         </Container>
       </section>
       <SiteFooter />
