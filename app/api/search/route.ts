@@ -9,6 +9,7 @@ import {
   buildOdmPublicSearchInput,
   routePublicSearch,
 } from "@/lib/odm/odm-public-routing";
+import { searchPublicRepresentationsWithOwner } from "@/lib/search-gateway/public-search-with-owner";
 import {
   buildSearchRequestQuery,
   buildSearchStableKey,
@@ -16,8 +17,6 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-// Legacy remains available as an emergency fallback. Reserve enough execution
-// time for fallback and optional shadow telemetry when ODM is explicitly stopped.
 export const maxDuration = 60;
 
 function shadowContext(query: SearchQuery): OdmShadowSearchContext {
@@ -61,6 +60,8 @@ export async function GET(request: NextRequest) {
       stableKey,
       publicQuery: query,
       surface: "api_search",
+    }, {
+      searchOdm: searchPublicRepresentationsWithOwner,
     });
 
     if (routed.lane === "legacy_primary") {

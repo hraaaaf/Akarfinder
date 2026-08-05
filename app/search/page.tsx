@@ -19,6 +19,7 @@ import {
   buildSearchPageQuery,
 } from "@/lib/search/search-page-query";
 import { buildSearchStableKey } from "@/lib/search/search-request-query";
+import { searchPublicRepresentationsWithOwner } from "@/lib/search-gateway/public-search-with-owner";
 import type { ListingFiltersState } from "@/lib/listings/types";
 
 export const dynamic = "force-dynamic";
@@ -81,6 +82,8 @@ async function searchVisibleInitialResult(
     publicQuery: publicRequestQuery,
     legacyQuery: resolvedQuery,
     surface: "search_page",
+  }, {
+    searchOdm: searchPublicRepresentationsWithOwner,
   });
 
   if (routed.lane === "legacy_primary") {

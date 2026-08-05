@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { authorizeSellerDraftUpload } from "@/lib/seller/authorize-draft-upload";
+import { syncOwnerListingProjection } from "@/lib/seller/owner-listing-projection";
 import {
   nextSellerPublicationStatus,
   type SellerPublicationAction,
@@ -79,5 +80,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     event_type: body.action === "publish" ? "published" : body.action === "pause" ? "paused" : body.action === "resume" ? "resumed" : "withdrawn",
   });
 
-  return NextResponse.json({ ok: true, publication });
+  try {
+    await syncOwnerListingProjection(draftId);
+  } catch (projectionError) {
+    console.error("[seller-publication] owner projection failed", projectionError);
+    return NextResponse.json({
+      ok: false,
+      error: "L’état a été enregistré, mais sa synchronisation avec la recherche doit être relancée.",
+      publication,
+    }, { status: 503 });
+  }
+
+  return NextResponse.json({ ok: true, publication, projection_synced: true });
 }
