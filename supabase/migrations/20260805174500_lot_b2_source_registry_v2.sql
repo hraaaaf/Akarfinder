@@ -1,5 +1,5 @@
 -- LOT B2 — Source Registry v2.
--- Adds machine-readable, fail-closed source governance without weakening existing decisions.
+-- Machine-readable, fail-closed source governance without weakening existing decisions.
 
 alter table public.source_policy_registry
   add column if not exists policy_version text not null default 'source_registry_v2',
@@ -23,7 +23,7 @@ insert into public.source_policy_registry (
   robots_status,terms_status,partnership_required,legal_review_required,no_bypass_required,
   evidence_urls,evidence_summary,primary_geography,
   volume_score,diversification_score,structure_score,policy_confidence_score,freshness_score,
-  execution_score,recommended_action,reviewed_at,next_review_at
+  recommended_action,reviewed_at,next_review_at
 )
 select
   'marrakechrealty.com','Marrakech Realty',count(*),
@@ -31,7 +31,7 @@ select
   'unverified','unverified',true,true,true,
   array['https://marrakechrealty.com/'],
   'Observed in the search corpus, but no verified robots, terms, permission or partnership evidence is recorded.',
-  'Marrakech',1,8,6,0,1,16,
+  'Marrakech',1,8,6,0,1,
   'Keep all observations internal. Complete robots, terms and authorization review before any acquisition or public representation.',
   now(),now()
 from public.thin_index_search_documents
@@ -87,6 +87,7 @@ alter table public.source_policy_registry
   add constraint source_policy_registry_review_status_check check (review_status in ('current','due_soon','overdue','due')),
   drop constraint if exists source_policy_registry_machine_gate_check,
   add constraint source_policy_registry_machine_gate_check check (machine_gate in ('blocked_unverified','blocked_review_overdue','blocked_invalid_no_bypass','internal_signal_only','canonical_link_only','authorized_detail_feed','partner_feed')),
+  drop constraint if exists source_policy_registry_revalidation_days_check,
   add constraint source_policy_registry_revalidation_days_check check (max_revalidation_interval_days between 1 and 90);
 
 alter table public.source_policy_registry enable row level security;
@@ -96,7 +97,9 @@ grant select,insert,update,delete on table public.source_policy_registry to serv
 create or replace function public.odm_b2_source_registry_v2_report()
 returns jsonb language sql stable security invoker set search_path='' as $$
 with observed as (
-  select distinct lower(source_domain) source_domain from public.thin_index_search_documents where nullif(btrim(source_domain),'') is not null
+  select distinct lower(source_domain) source_domain
+  from public.thin_index_search_documents
+  where nullif(btrim(source_domain),'') is not null
 ), totals as (
   select count(*)::int registered,
     count(*) filter(where machine_gate='canonical_link_only')::int canonical_link_only,
