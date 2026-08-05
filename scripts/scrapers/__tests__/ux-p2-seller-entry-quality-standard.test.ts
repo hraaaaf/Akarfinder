@@ -4,7 +4,7 @@ import test from "node:test";
 import { calculateSellerReadiness } from "../../../lib/seller/readiness";
 
 const shell = readFileSync("components/vendre/VendrePageShell.tsx", "utf8");
-const form = readFileSync("components/vendre/SellerPropertyDraftForm.tsx", "utf8");
+const form = readFileSync("components/vendre/SellerSecurePublishForm.tsx", "utf8");
 const dossier = readFileSync("app/vendre/dossier/page.tsx", "utf8");
 
 test("seller entry exposes three plain-language intentions", () => {
@@ -14,26 +14,28 @@ test("seller entry exposes three plain-language intentions", () => {
   assert.match(shell, /intent=\$\{intent\}/);
 });
 
-test("all intentions share one dossier and one human readiness label", () => {
-  assert.match(dossier, /SellerPropertyDraftForm/);
-  assert.match(form, /Annonce prête/);
-  assert.match(form, /Plus votre dossier est clair/);
+test("all intentions share one secure dossier and human review states", () => {
+  assert.match(dossier, /SellerSecurePublishForm/);
+  assert.match(form, /Brouillon/);
+  assert.match(form, /Prête à vérifier/);
+  assert.match(form, /faits déclarés/);
   assert.doesNotMatch(form, /pipeline|score technique|complétude des données/i);
 });
 
-test("draft excludes sensitive contact details and nothing auto-publishes", () => {
-  assert.match(form, /type SavedDraft = Pick<FormState/);
-  assert.doesNotMatch(form, /type SavedDraft[^;]+phone/);
-  assert.match(form, /phone: "", name: "", consent: false/);
-  assert.match(form, /rien n’est publié automatiquement/i);
+test("draft excludes automatic publication and keeps consent explicit", () => {
+  assert.match(form, /consent/);
+  assert.match(form, /Rien n’est publié automatiquement/);
+  assert.match(form, /publication n’est possible depuis ce formulaire/);
+  assert.match(form, /Enregistrer le brouillon/);
 });
 
 test("photo checks are local, bounded and understandable", () => {
   assert.match(form, /image\/jpeg/);
   assert.match(form, /15 \* 1024 \* 1024/);
-  assert.match(form, /width < 1200 \|\| height < 800/);
-  assert.match(form, /Les photos sont vérifiées sur votre appareil/);
+  assert.match(form, /naturalWidth >= 1200/);
+  assert.match(form, /naturalHeight >= 800/);
   assert.match(form, /slice\(0, 12\)/);
+  assert.match(form, /Aperçu et ordre des photos/);
   assert.doesNotMatch(form, /dans ce LOT/i);
 });
 
@@ -59,9 +61,9 @@ test("readiness rewards useful information without inventing value", () => {
 });
 
 test("mobile and accessibility contracts remain explicit", () => {
-  assert.match(form, /aria-label="Étapes du dossier"/);
-  assert.match(form, /aria-current=\{active \? "step"/);
-  assert.match(form, /aria-live="polite"/);
+  assert.match(form, /ariaLabel="Type du bien"/);
+  assert.match(form, /aria-label="Monter"/);
+  assert.match(form, /aria-label="Descendre"/);
   assert.match(form, /role="alert"/);
-  assert.match(form, /motion-reduce:transition-none/);
+  assert.match(form, /disabled={!complete}/);
 });
