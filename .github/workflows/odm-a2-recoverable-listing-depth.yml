@@ -1,0 +1,51 @@
+name: ODM A2 Recoverable Listing Depth Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805095500_lot_a2_recoverable_listing_depth.sql"
+      - "docs/data/ODM-A2-RECOVERABLE-LISTING-DEPTH.md"
+      - ".github/workflows/odm-a2-recoverable-listing-depth.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  certify-a2-recoverable-depth-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Read-only fail-closed contract assertions
+        run: |
+          MIGRATION="supabase/migrations/20260805095500_lot_a2_recoverable_listing_depth.sql"
+          DOC="docs/data/ODM-A2-RECOVERABLE-LISTING-DEPTH.md"
+          grep -q "odm_a2_recoverable_listing_depth_report_v1" "$MIGRATION"
+          grep -q "document_kind = 'AMBIGUOUS'" "$MIGRATION"
+          grep -q "detail_evidence" "$MIGRATION"
+          grep -q "structured_detail_candidates" "$MIGRATION"
+          grep -q "canonical_link_after_freshness" "$MIGRATION"
+          grep -q "policy_blocked_structured" "$MIGRATION"
+          grep -q "missing_policy_structured" "$MIGRATION"
+          grep -q "public_recoverable_now" "$MIGRATION"
+          grep -q "no_automatic_reclassification" "$MIGRATION"
+          grep -q "candidate_depth_is_not_certified_inventory" "$MIGRATION"
+          grep -q "network_access',false" "$MIGRATION"
+          grep -q "from public, anon, authenticated" "$MIGRATION"
+          ! grep -Eiq '^[[:space:]]*(update|insert[[:space:]]+into|delete[[:space:]]+from|alter[[:space:]]+table)' "$MIGRATION"
+          grep -q "14,573" "$DOC"
+          grep -q "10,654" "$DOC"
+          grep -q "9,689" "$DOC"
+          grep -q "candidates publicly recoverable now: \*\*0\*\*" "$DOC"
+          grep -q "No robots.txt or sitemap is interpreted as a reuse licence" "$DOC"
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
