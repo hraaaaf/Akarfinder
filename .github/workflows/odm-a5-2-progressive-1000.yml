@@ -1,0 +1,50 @@
+name: ODM A5.2 Progressive 1000 Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805164500_lot_a5_2_progressive_1000.sql"
+      - "docs/data/ODM-A5-2-PROGRESSIVE-1000.md"
+      - ".github/workflows/odm-a5-2-progressive-1000.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805164500_lot_a5_2_progressive_1000.sql"
+      - "docs/data/ODM-A5-2-PROGRESSIVE-1000.md"
+      - ".github/workflows/odm-a5-2-progressive-1000.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-a5-2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Progressive activation contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          M="supabase/migrations/20260805164500_lot_a5_2_progressive_1000.sql"
+          D="docs/data/ODM-A5-2-PROGRESSIVE-1000.md"
+          grep -q "odm_prepare_a5_2_progressive_1000_v1" "$M"
+          grep -q "odm_activate_a5_2_progressive_1000_v1" "$M"
+          grep -q "odm_rollback_a5_2_progressive_1000_v1" "$M"
+          grep -q "odm_a5_2_progressive_1000_report_v1" "$M"
+          grep -q "v_rows<>800" "$M"
+          grep -q "v_dar<>400" "$M"
+          grep -q "v_promo<>400" "$M"
+          grep -q "document_kind_confidence='HIGH'" "$M"
+          grep -q "no source content reused" "$M"
+          grep -q "from public,anon,authenticated" "$M"
+          grep -q "1,000" "$D"
+          grep -q "complete 800-row snapshot" "$D"
+      - run: npx tsc --noEmit
+      - run: npm run build
