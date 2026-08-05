@@ -253,8 +253,8 @@ export function SellerPropertyDraftForm({
     return (
       <div className={`${ui.surface} mx-auto max-w-xl p-8 text-center`}>
         <CheckCircle2 className="mx-auto text-emerald-600" size={38} aria-hidden="true" />
-        <h1 className="mt-4 text-2xl font-extrabold">Votre dossier est bien enregistré</h1>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">Rien n’est publié automatiquement. Nous avons enregistré les informations que vous avez déclarées et votre choix de parcours.</p>
+        <h1 className="mt-4 text-2xl font-extrabold">Brouillon du bien enregistré</h1>
+        <p className="mt-3 text-sm leading-6 text-muted-foreground">Ces faits déclarés restent séparés des informations vérifiées. Rien n’est publié automatiquement et vous gardez la main sur la suite.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link href="/vendre" className={ui.primaryAction}>Retour à Vendre</Link>
           <Link href={comparableHref} className={ui.secondaryAction}>Voir des biens comparables</Link>
