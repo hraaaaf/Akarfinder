@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, Scale, X } from "lucide-react";
 import { useOptionalPropertySelection } from "@/components/search/PropertySelectionProvider";
+import motion from "@/components/ui/perceived-quality.module.css";
 import {
   addCompareId,
   dispatchCompareUpdated,
@@ -98,8 +99,8 @@ export function CompareToggleButton({
   const blocked = !resolvedListingId || ((isFull || canonicalDuplicate) && !isCompared);
   const buttonClasses =
     variant === "block"
-      ? "flex w-full items-center justify-center gap-2 rounded-xl border border-[#d8c8a3] px-4 py-3 text-[13.5px] font-extrabold transition"
-      : "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[12px] font-extrabold transition";
+      ? "flex w-full items-center justify-center gap-2 rounded-xl border border-[#d8c8a3] px-4 py-3 text-[13.5px] font-extrabold transition duration-150 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none"
+      : "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[12px] font-extrabold transition duration-150 active:scale-[0.97] motion-reduce:transform-none motion-reduce:transition-none";
 
   return (
     <div className={variant === "block" ? "space-y-1.5" : "space-y-1"}>
@@ -124,7 +125,7 @@ export function CompareToggleButton({
         disabled={blocked}
       >
         {isCompared ? (
-          <Check size={16} strokeWidth={2.4} aria-hidden="true" />
+          <Check size={16} strokeWidth={2.4} className="motion-safe:animate-[heart-pop_300ms_ease]" aria-hidden="true" />
         ) : blocked ? (
           <X size={16} strokeWidth={2.4} aria-hidden="true" />
         ) : (
@@ -138,7 +139,9 @@ export function CompareToggleButton({
               ? "Comparateur plein"
               : "Comparer"}
       </button>
-      {feedback ? <p className="text-[11px] font-semibold text-gray-500">{feedback}</p> : null}
+      <p aria-live="polite" className="min-h-4 text-[11px] font-semibold text-gray-500">
+        {feedback ? <span className={motion.feedbackEnter}>{feedback}</span> : null}
+      </p>
     </div>
   );
 }
