@@ -1,0 +1,31 @@
+name: UX P2 Seller Moderation Correction Flow
+
+on:
+  pull_request:
+    paths:
+      - "app/api/seller-drafts/**"
+      - "components/vendre/SellerReviewStatusPanel.tsx"
+      - "components/vendre/SellerSecurePublishForm.tsx"
+      - "lib/seller/moderation.ts"
+      - "supabase/migrations/20260805170000_seller_moderation_correction_flow_v1.sql"
+      - "scripts/scrapers/__tests__/ux-p2-seller-moderation-correction-flow.test.ts"
+      - ".github/workflows/ux-p2-seller-moderation-correction-flow.yml"
+  workflow_dispatch:
+
+jobs:
+  seller-moderation-correction:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Moderation correction contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-p2-seller-moderation-correction-flow.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build

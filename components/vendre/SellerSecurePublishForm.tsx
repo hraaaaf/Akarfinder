@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, CheckCircle2, ImagePlus, ShieldCheck, Trash2 } from "lucide-react";
 import { PropertyTypeVisualSelector } from "@/components/property-types/PropertyTypeVisualSelector";
+import { SellerReviewStatusPanel } from "@/components/vendre/SellerReviewStatusPanel";
 import { ui } from "@/components/ui/design-system";
 import type { LeadApiResponse } from "@/lib/leads/types";
 import type { ListingPropertyType } from "@/lib/listings/types";
@@ -27,11 +28,11 @@ type Props = {
 async function inspect(file: File): Promise<DraftPhoto> {
   const id = `${file.name}-${file.size}-${file.lastModified}`;
   const preview = URL.createObjectURL(file);
-  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-    return { id, file, preview, accepted: false, message: 'Choisissez une photo JPG, PNG ou WebP.' };
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    return { id, file, preview, accepted: false, message: "Choisissez une photo JPG, PNG ou WebP." };
   }
   if (file.size > 15 * 1024 * 1024) {
-    return { id, file, preview, accepted: false, message: 'Cette photo dépasse 15 Mo.' };
+    return { id, file, preview, accepted: false, message: "Cette photo dépasse 15 Mo." };
   }
   return await new Promise((resolve) => {
     const image = new Image();
@@ -41,28 +42,34 @@ async function inspect(file: File): Promise<DraftPhoto> {
       preview,
       accepted: image.naturalWidth >= 1200 && image.naturalHeight >= 800,
       message: image.naturalWidth >= 1200 && image.naturalHeight >= 800
-        ? 'Bonne taille pour présenter votre bien.'
-        : 'Choisissez si possible une image d’au moins 1200 × 800.',
+        ? "Bonne taille pour présenter votre bien."
+        : "Choisissez si possible une image d’au moins 1200 × 800.",
     });
-    image.onerror = () => resolve({ id, file, preview, accepted: false, message: 'Cette image ne peut pas être lue.' });
+    image.onerror = () => resolve({ id, file, preview, accepted: false, message: "Cette image ne peut pas être lue." });
     image.src = preview;
   });
 }
 
-export function SellerSecurePublishForm({ initialPropertyType, initialIntent = 'publish' }: Props) {
-  const [propertyType, setPropertyType] = useState<"" | ListingPropertyType>(initialPropertyType ?? '');
-  const [city, setCity] = useState('');
-  const [neighborhood, setNeighborhood] = useState('');
-  const [surface, setSurface] = useState('');
-  const [price, setPrice] = useState('');
-  const [description, setDescription] = useState('');
-  const [phone, setPhone] = useState('');
-  const [name, setName] = useState('');
+export function SellerSecurePublishForm({ initialPropertyType, initialIntent = "publish" }: Props) {
+  const [propertyType, setPropertyType] = useState<"" | ListingPropertyType>(initialPropertyType ?? "");
+  const [city, setCity] = useState("");
+  const [neighborhood, setNeighborhood] = useState("");
+  const [surface, setSurface] = useState("");
+  const [price, setPrice] = useState("");
+  const [description, setDescription] = useState("");
+  const [phone, setPhone] = useState("");
+  const [name, setName] = useState("");
   const [consent, setConsent] = useState(false);
   const [photos, setPhotos] = useState<DraftPhoto[]>([]);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState<{ ok: boolean; error?: string; uploaded?: number } | null>(null);
+  const [result, setResult] = useState<{
+    ok: boolean;
+    error?: string;
+    uploaded?: number;
+    draftId?: string;
+    uploadToken?: string;
+  } | null>(null);
 
   const accepted = useMemo(() => photos.filter((photo) => photo.accepted), [photos]);
   const complete = Boolean(propertyType && city.trim() && Number(surface) > 0 && phone.trim() && consent);
@@ -97,14 +104,14 @@ export function SellerSecurePublishForm({ initialPropertyType, initialIntent = '
     setResult(null);
     setProgress(0);
     try {
-      const leadResponse = await fetch('/api/leads', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
+      const leadResponse = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          source_channel: 'seller',
-          source_page: '/vendre/dossier',
+          source_channel: "seller",
+          source_page: "/vendre/dossier",
           profile: {
-            project: 'vendre',
+            project: "vendre",
             phone,
             name: name || undefined,
             city: city.trim(),
@@ -123,24 +130,31 @@ export function SellerSecurePublishForm({ initialPropertyType, initialIntent = '
 
       let uploaded = 0;
       if (accepted.length > 0) {
-        if (!lead.seller_property_draft_id || !lead.seller_upload_token) throw new Error('Le brouillon est enregistré, mais les photos n’ont pas pu être préparées.');
+        if (!lead.seller_property_draft_id || !lead.seller_upload_token) {
+          throw new Error("Le brouillon est enregistré, mais les photos n’ont pas pu être préparées.");
+        }
         for (const photo of accepted) {
           const form = new FormData();
-          form.append('photo', photo.file, photo.file.name);
+          form.append("photo", photo.file, photo.file.name);
           const response = await fetch(`/api/seller-drafts/${encodeURIComponent(lead.seller_property_draft_id)}/photos`, {
-            method: 'POST',
-            headers: { 'x-draft-upload-token': lead.seller_upload_token },
+            method: "POST",
+            headers: { "x-draft-upload-token": lead.seller_upload_token },
             body: form,
           });
           const payload = await response.json() as { ok: boolean; error?: string };
-          if (!response.ok || !payload.ok) throw new Error(payload.error || 'Une photo n’a pas pu être envoyée.');
+          if (!response.ok || !payload.ok) throw new Error(payload.error || "Une photo n’a pas pu être envoyée.");
           uploaded += 1;
           setProgress(Math.round(uploaded / accepted.length * 100));
         }
       }
-      setResult({ ok: true, uploaded });
+      setResult({
+        ok: true,
+        uploaded,
+        draftId: lead.seller_property_draft_id ?? undefined,
+        uploadToken: lead.seller_upload_token ?? undefined,
+      });
     } catch (error) {
-      setResult({ ok: false, error: error instanceof Error ? error.message : 'Enregistrement impossible.' });
+      setResult({ ok: false, error: error instanceof Error ? error.message : "Enregistrement impossible." });
     } finally {
       setBusy(false);
     }
@@ -148,12 +162,18 @@ export function SellerSecurePublishForm({ initialPropertyType, initialIntent = '
 
   if (result?.ok) {
     return (
-      <section className={`${ui.surface} mx-auto max-w-2xl p-8 text-center`}>
+      <section className={`${ui.surface} mx-auto max-w-2xl p-6 text-center sm:p-8`}>
         <CheckCircle2 className="mx-auto text-emerald-600" size={40} />
-        <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.16em] text-primary">{result.uploaded ? 'Prête à vérifier' : 'Brouillon'}</p>
+        <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.16em] text-primary">{result.uploaded ? "Prête à vérifier" : "Brouillon"}</p>
         <h1 className="mt-2 text-2xl font-extrabold">Brouillon du bien enregistré</h1>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">Ces faits déclarés restent séparés des informations vérifiées. {result.uploaded ? `${result.uploaded} photo(s) sont conservées dans un espace privé. ` : ''}Rien n’est publié automatiquement.</p>
-        <div className="mt-6 flex justify-center gap-3"><Link href="/vendre" className={ui.primaryAction}>Retour à Vendre</Link><Link href="/search" className={ui.secondaryAction}>Voir des biens comparables</Link></div>
+        <p className="mt-3 text-sm leading-6 text-muted-foreground">Ces faits déclarés restent séparés des informations vérifiées. {result.uploaded ? `${result.uploaded} photo(s) sont conservées dans un espace privé. ` : ""}Rien n’est publié automatiquement.</p>
+        {result.draftId && result.uploadToken ? (
+          <SellerReviewStatusPanel draftId={result.draftId} uploadToken={result.uploadToken} />
+        ) : null}
+        <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+          <Link href="/vendre" className={ui.primaryAction}>Retour à Vendre</Link>
+          <Link href="/search" className={ui.secondaryAction}>Voir des biens comparables</Link>
+        </div>
       </section>
     );
   }
@@ -166,7 +186,7 @@ export function SellerSecurePublishForm({ initialPropertyType, initialIntent = '
         <p className="mt-3 text-sm leading-6 text-muted-foreground">Vous voyez l’aperçu exact avant l’envoi. Les photos restent privées et aucune publication n’est possible depuis ce formulaire.</p>
 
         <div className="mt-7">
-          <PropertyTypeVisualSelector value={propertyType} onChange={(value) => setPropertyType(value === 'all' ? '' : value)} ariaLabel="Type du bien" />
+          <PropertyTypeVisualSelector value={propertyType} onChange={(value) => setPropertyType(value === "all" ? "" : value)} ariaLabel="Type du bien" />
         </div>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <label className="text-xs font-extrabold">Ville<input className={field} value={city} onChange={(event) => setCity(event.target.value)} /></label>
@@ -186,10 +206,18 @@ export function SellerSecurePublishForm({ initialPropertyType, initialIntent = '
           </label>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {photos.map((photo, index) => (
-              <article key={photo.id} className={`overflow-hidden rounded-2xl border ${photo.accepted ? 'border-emerald-200' : 'border-amber-200'}`}>
+              <article key={photo.id} className={`overflow-hidden rounded-2xl border ${photo.accepted ? "border-emerald-200" : "border-amber-200"}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={photo.preview} alt={`Aperçu ${index + 1}`} className="aspect-[4/3] w-full object-cover" />
-                <div className="p-3"><p className="truncate text-xs font-extrabold">{index + 1}. {photo.file.name}</p><p className="mt-1 text-xs text-muted-foreground">{photo.message}</p><div className="mt-3 flex gap-2"><button type="button" aria-label="Monter" disabled={index === 0} onClick={() => move(index, -1)} className="grid h-10 w-10 place-items-center rounded-lg border disabled:opacity-30"><ArrowUp size={15} /></button><button type="button" aria-label="Descendre" disabled={index === photos.length - 1} onClick={() => move(index, 1)} className="grid h-10 w-10 place-items-center rounded-lg border disabled:opacity-30"><ArrowDown size={15} /></button><button type="button" onClick={() => removePhoto(photo.id)} className="ml-auto inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 text-xs font-bold text-red-700"><Trash2 size={14} /> Retirer</button></div></div>
+                <div className="p-3">
+                  <p className="truncate text-xs font-extrabold">{index + 1}. {photo.file.name}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{photo.message}</p>
+                  <div className="mt-3 flex gap-2">
+                    <button type="button" aria-label="Monter" disabled={index === 0} onClick={() => move(index, -1)} className="grid h-10 w-10 place-items-center rounded-lg border disabled:opacity-30"><ArrowUp size={15} /></button>
+                    <button type="button" aria-label="Descendre" disabled={index === photos.length - 1} onClick={() => move(index, 1)} className="grid h-10 w-10 place-items-center rounded-lg border disabled:opacity-30"><ArrowDown size={15} /></button>
+                    <button type="button" onClick={() => removePhoto(photo.id)} className="ml-auto inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 text-xs font-bold text-red-700"><Trash2 size={14} /> Retirer</button>
+                  </div>
+                </div>
               </article>
             ))}
           </div>
@@ -197,18 +225,35 @@ export function SellerSecurePublishForm({ initialPropertyType, initialIntent = '
 
         <div className="mt-8 border-t border-border/20 pt-6">
           <h2 className="text-xl font-extrabold">Aperçu final</h2>
-          <div className="mt-4 rounded-2xl bg-surface-muted p-4 text-sm"><strong>{propertyType || 'Type à compléter'}</strong><p className="mt-1 text-muted-foreground">{[neighborhood, city].filter(Boolean).join(', ') || 'Localisation à compléter'} · {surface ? `${surface} m²` : 'surface à compléter'}</p><p className="mt-2 line-clamp-3">{description || 'Votre description apparaîtra ici.'}</p></div>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2"><label className="text-xs font-extrabold">Téléphone<input className={field} value={phone} onChange={(event) => setPhone(event.target.value)} /></label><label className="text-xs font-extrabold">Nom<input className={field} value={name} onChange={(event) => setName(event.target.value)} /></label></div>
-          <label className="mt-5 flex items-start gap-3 rounded-xl bg-surface-muted p-4 text-sm leading-6"><input type="checkbox" className="mt-1" checked={consent} onChange={(event) => setConsent(event.target.checked)} /><span>Je confirme les informations et j’accepte l’envoi privé des photos pour vérification. Rien n’est publié automatiquement.</span></label>
+          <div className="mt-4 rounded-2xl bg-surface-muted p-4 text-sm">
+            <strong>{propertyType || "Type à compléter"}</strong>
+            <p className="mt-1 text-muted-foreground">{[neighborhood, city].filter(Boolean).join(", ") || "Localisation à compléter"} · {surface ? `${surface} m²` : "surface à compléter"}</p>
+            <p className="mt-2 line-clamp-3">{description || "Votre description apparaîtra ici."}</p>
+          </div>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <label className="text-xs font-extrabold">Téléphone<input className={field} value={phone} onChange={(event) => setPhone(event.target.value)} /></label>
+            <label className="text-xs font-extrabold">Nom<input className={field} value={name} onChange={(event) => setName(event.target.value)} /></label>
+          </div>
+          <label className="mt-5 flex items-start gap-3 rounded-xl bg-surface-muted p-4 text-sm leading-6">
+            <input type="checkbox" className="mt-1" checked={consent} onChange={(event) => setConsent(event.target.checked)} />
+            <span>Je confirme les informations et j’accepte l’envoi privé des photos pour vérification. Rien n’est publié automatiquement.</span>
+          </label>
           {busy && accepted.length > 0 ? <div className="mt-4"><p className="text-sm font-bold text-primary">Envoi privé : {progress}%</p><div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-muted"><div className="h-full bg-primary" style={{ width: `${progress}%` }} /></div></div> : null}
           {result && !result.ok ? <p role="alert" className="mt-4 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-700">{result.error}</p> : null}
-          <button type="button" disabled={!complete} onClick={() => void submit()} className={`${ui.primaryAction} mt-5 w-full disabled:cursor-not-allowed disabled:opacity-50`}>{busy ? 'Enregistrement…' : 'Enregistrer le brouillon'}</button>
+          <button type="button" disabled={!complete} onClick={() => void submit()} className={`${ui.primaryAction} mt-5 w-full disabled:cursor-not-allowed disabled:opacity-50`}>{busy ? "Enregistrement…" : "Enregistrer le brouillon"}</button>
         </div>
       </section>
 
       <aside className="lg:sticky lg:top-24">
-        <section className={`${ui.surface} p-5`}><p className="text-xs font-extrabold uppercase tracking-[0.12em] text-primary">Statut</p><p className="mt-2 text-xl font-extrabold">{accepted.length ? 'Prête à envoyer' : 'Brouillon'}</p><p className="mt-2 text-xs leading-5 text-muted-foreground">{accepted.length} photo(s) acceptée(s) sur {photos.length}.</p></section>
-        <section className={`${ui.surfaceMuted} mt-4 p-4`}><p className="flex items-center gap-2 text-xs font-extrabold"><ShieldCheck size={16} className="text-primary" /> Espace privé</p><p className="mt-2 text-xs leading-5 text-muted-foreground">Le stockage n’est pas public. Le serveur vérifie le format, la taille et la signature réelle de chaque image.</p></section>
+        <section className={`${ui.surface} p-5`}>
+          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-primary">Statut</p>
+          <p className="mt-2 text-xl font-extrabold">{accepted.length ? "Prête à envoyer" : "Brouillon"}</p>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">{accepted.length} photo(s) acceptée(s) sur {photos.length}.</p>
+        </section>
+        <section className={`${ui.surfaceMuted} mt-4 p-4`}>
+          <p className="flex items-center gap-2 text-xs font-extrabold"><ShieldCheck size={16} className="text-primary" /> Espace privé</p>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">Le stockage n’est pas public. Le serveur vérifie le format, la taille et la signature réelle de chaque image.</p>
+        </section>
       </aside>
     </div>
   );
