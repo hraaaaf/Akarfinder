@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - "app/api/seller-drafts/**"
+      - "components/vendre/SellerReviewStatusPanel.tsx"
+      - "components/vendre/SellerSecurePublishForm.tsx"
       - "lib/seller/moderation.ts"
       - "supabase/migrations/20260805170000_seller_moderation_correction_flow_v1.sql"
       - "scripts/scrapers/__tests__/ux-p2-seller-moderation-correction-flow.test.ts"
