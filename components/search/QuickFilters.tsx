@@ -39,7 +39,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
     (filters.minSurface ? 1 : 0) +
     (filters.propertyType !== "all" ? 1 : 0);
 
-  const fieldClass = `${ui.field} h-11 px-3.5 text-[13px] font-semibold`;
+  const fieldClass = `${ui.field} h-11 px-3.5 text-[13px] font-semibold placeholder:text-muted-foreground/80`;
 
   return (
     <section aria-label="Filtres de recherche" className={`${ui.surface} p-3 sm:p-4`}>
@@ -52,7 +52,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
             value={filters.search}
             onChange={(event) => onChange({ ...filters, search: event.target.value })}
             placeholder="Ville, quartier, résidence ou mot-clé"
-            className={`${ui.field} h-12 pl-11 pr-4 text-[15px] font-semibold sm:h-14`}
+            className={`${ui.field} h-12 pl-11 pr-4 text-[15px] font-semibold placeholder:text-muted-foreground/80 sm:h-14`}
           />
         </label>
 
@@ -64,7 +64,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
                 key={tab.value}
                 type="button"
                 onClick={() => onChange({ ...filters, transactionType: tab.value })}
-                aria-pressed={selected}
+                aria-pressed={filters.transactionType === tab.value}
                 className={selected
                   ? "rounded-xl bg-primary px-3 py-2.5 text-[13px] font-extrabold text-primary-foreground shadow-sm"
                   : "rounded-xl px-3 py-2.5 text-[13px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground"}
