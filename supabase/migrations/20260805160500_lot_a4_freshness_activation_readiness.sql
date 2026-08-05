@@ -29,8 +29,7 @@ create table if not exists public.odm_a4_activation_readiness_audit_v1 (
     'blocked_canonical_drift',
     'blocked_missing_dimensions',
     'blocked_source_policy',
-    'blocked_provenance_contract',
-    'blocked_freshness'
+    'blocked_provenance_contract'
   )),
   activation_review_eligible boolean not null default false,
   publication_eligible boolean not null default false,
@@ -135,7 +134,8 @@ begin
      and d.display_eligibility in ('eligible_primary','eligible_secondary')
     left join public.source_policy_registry spr
       on spr.source_domain = a.source_domain
-    where a.source_domain in ('daragadir.com','promoimmomarrakech.com')
+    where a.freshness_qualified = true
+      and a.source_domain in ('daragadir.com','promoimmomarrakech.com')
   ), evaluated as (
     select
       c.*,
@@ -149,17 +149,19 @@ begin
         and btrim(c.normalized_intent) <> ''
       ) as dimensions_complete,
       (c.policy_source_domain is not null) as source_policy_present,
-      (
+      coalesce(
         c.display_policy = 'canonical_link_only'
-        and c.discovery_policy = 'public_sitemap_only'
+        and c.discovery_policy = 'public_sitemap_only',
+        false
       ) as policy_allows_canonical_link,
-      (
+      coalesce(
         c.evidence_provider = 'public_sitemap'
         and c.evidence_policy = 'canonical_link_only'
         and c.evidence_detail_fetch = false
         and c.evidence_content_reuse = false
         and c.evidence_shadow_only = true
-        and c.evidence_public_activation = false
+        and c.evidence_public_activation = false,
+        false
       ) as provenance_contract_valid,
       (not c.exact_listing_url_collision and not c.listing_seed_collision) as duplicate_gate_passed
     from candidates c
@@ -167,7 +169,6 @@ begin
     select
       e.*,
       case
-        when not e.freshness_qualified then 'blocked_freshness'
         when e.exact_listing_url_collision then 'blocked_exact_listing_url_collision'
         when e.listing_seed_collision then 'blocked_listing_seed_collision'
         when not e.canonical_url_stable then 'blocked_canonical_drift'
