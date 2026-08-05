@@ -50,7 +50,6 @@ describe("home-motor-purity — MarketPulse fallback ne contient pas de wording 
   }
 
   it("shortDetail fallback: 'Repère disponible' is not 'Annonce analysée'", () => {
-    // listing with no surface/bedrooms/price_per_m2 — triggers the shortDetail fallback
     const l = baseListing({
       surface_m2: 0,
       bedrooms: 0,
@@ -59,7 +58,7 @@ describe("home-motor-purity — MarketPulse fallback ne contient pas de wording 
       reliability_score: 75,
     });
     const item = buildMarketPulseItem(l);
-    if (!item) return; // may not build if operationLabel is missing
+    if (!item) return;
     assert.ok(
       !item.shortDetail.includes("analysée"),
       `shortDetail must not contain "analysée": got "${item.shortDetail}"`
@@ -158,16 +157,11 @@ describe("home-motor-purity — buildMarketPulseItems de-duplication et qualité
     const listings = Array.from({ length: 10 }, (_, i) =>
       authorizedListing(`p${i}`, i < 5 ? "Casablanca" : "Rabat")
     );
-    // Give each a different id so dedup doesn't collapse them
     listings.forEach((l, i) => { (l as Listing).price = 900_000 + i * 1000; });
     const items = buildMarketPulseItems(listings, 3);
     assert.ok(items.length <= 3, "maxItems cap must be respected");
   });
 });
-
-// ─── HomeResultPreview absent du module page ───────────────────────────────────
-// Vérifie que HomeResultPreview n'est plus dans app/page.tsx
-// (test de contenu de fichier source)
 
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -208,25 +202,25 @@ describe("home-motor-purity — hero wording aligné avec la doctrine", () => {
     );
   });
 
-  it("hero contient 'Moteur de recherche immobilier'", () => {
+  it("hero conserve le claim approuvé", () => {
     assert.ok(
-      heroSource.includes("Moteur de recherche immobilier"),
-      "Hero chip must mention 'Moteur de recherche immobilier'"
+      heroSource.includes("1er moteur de recherche immobilier au Maroc"),
+      "Hero must preserve the approved strategic claim"
     );
   });
 
-  it("hero contient 'Comprenez le quartier'", () => {
+  it("hero conserve le sous-titre approuvé", () => {
     assert.ok(
-      heroSource.includes("Comprenez le quartier"),
-      "Hero subtitle must mention 'Comprenez le quartier'"
+      heroSource.includes(
+        "Une recherche plus claire, plus structurée et plus fiable pour l’immobilier au Maroc."
+      ),
+      "Hero must preserve the approved subtitle"
     );
   });
 
-  it("hero contient 'sources originales'", () => {
-    assert.ok(
-      heroSource.includes("sources originales"),
-      "Hero subtitle must mention 'sources originales'"
-    );
+  it("hero ne réintroduit pas les anciens textes abandonnés", () => {
+    assert.ok(!heroSource.includes("Comprenez le quartier"));
+    assert.ok(!heroSource.includes("sources originales"));
   });
 
   it("hero conserve la photo (HERO_DESKTOP path présent)", () => {
