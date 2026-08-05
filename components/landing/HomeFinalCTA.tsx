@@ -3,51 +3,41 @@ import { Container } from "@/components/ui/Container";
 
 export function HomeFinalCTA() {
   return (
-    <section className="bg-surface pb-28 pt-36 sm:pb-36 sm:pt-44">
+    <section className="bg-[#071B33] py-20 text-white sm:py-24 lg:py-28">
       <Container>
-        <div className="mx-auto max-w-[820px] text-center">
-          <span className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-accent">
-            Commencez simplement
-          </span>
-
-          <h2 className="mt-5 text-[2.2rem] font-extrabold leading-[1.08] tracking-[-0.03em] text-foreground sm:text-[3rem]">
+        <div className="mx-auto max-w-[860px] text-center">
+          <h2 className="text-[2.15rem] font-extrabold leading-[1.08] tracking-[-0.04em] sm:text-[3rem] lg:text-[3.35rem]">
             <span className="block">Vous savez déjà ce que vous cherchez&nbsp;?</span>
-            <span className="mt-2 block">Recherchez directement ou laissez-vous guider.</span>
+            <span className="mt-2 block text-white/78">Recherchez directement ou laissez-vous guider.</span>
           </h2>
 
-          <p className="mx-auto mt-5 max-w-[590px] text-[1.05rem] leading-relaxed text-muted-foreground">
-            Vous avez déjà vos critères ? Lancez le moteur. Vous hésitez encore sur vos priorités ? Le Compagnon structure votre projet avant la recherche.
+          <p className="mx-auto mt-5 max-w-[620px] text-[15px] leading-7 text-white/68 sm:text-[16px]">
+            Recherchez directement ou précisez votre projet étape par étape.
           </p>
 
-          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
             <Link
               href="/search"
-              className="w-full rounded-xl bg-accent px-9 py-4 text-[15px] font-extrabold text-white shadow-[0_8px_32px_rgba(11,99,206,0.28)] transition hover:brightness-110 active:scale-[0.98] sm:w-auto"
+              className="w-full rounded-xl bg-[#0B63CE] px-9 py-4 text-[15px] font-extrabold text-white shadow-[0_12px_34px_rgba(11,99,206,0.34)] transition hover:bg-[#0D70E8] active:scale-[0.98] sm:w-auto"
             >
-              Lancer une recherche
+              Rechercher un bien
             </Link>
             <Link
               href="/compagnon"
-              className="w-full rounded-xl border border-border/30 bg-surface-muted px-9 py-4 text-[15px] font-extrabold text-foreground backdrop-blur transition hover:border-border/50 hover:bg-muted sm:w-auto"
+              className="w-full rounded-xl border border-white/24 bg-white/[0.07] px-9 py-4 text-[15px] font-extrabold text-white backdrop-blur transition hover:border-white/38 hover:bg-white/[0.12] sm:w-auto"
             >
-              Construire Mon Projet
+              Me laisser guider
             </Link>
           </div>
 
-          <p className="mt-6 text-[12.5px] text-muted-foreground">
+          <p className="mt-6 text-[12.5px] text-white/62">
             Vous êtes une agence ou un promoteur ?{" "}
-            <Link href="/pro" className="font-extrabold text-accent underline underline-offset-2">
+            <Link href="/pro" className="font-extrabold text-[#93C5FD] underline decoration-white/25 underline-offset-4 transition hover:text-white">
               Découvrir AkarFinder Pro
             </Link>
           </p>
-
-          <p className="mx-auto mt-10 max-w-[620px] text-[11.5px] leading-6 text-muted-foreground">
-            AkarFinder distingue les fiches analysées, les analyses partielles et les offres simplement observées. Les sources et les limites d&apos;information restent visibles.
-          </p>
         </div>
       </Container>
-
-      <div className="mx-auto mt-28 h-px max-w-[160px] bg-gradient-to-r from-transparent via-border/30 to-transparent sm:mt-36" />
     </section>
   );
 }
