@@ -3,6 +3,7 @@ import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { validateLeadPayload, extractLeadPayload, normalizePhone } from "@/lib/leads/validate";
 import { computeLeadTemperature } from "@/lib/onboarding/lead-temperature";
 import { prepareProfessionalActivationRequest } from "@/lib/professional/professional-activation-request";
+import { createSellerUploadToken } from "@/lib/seller/photo-upload";
 import { prepareSellerPropertyDraft } from "@/lib/seller/seller-property-draft";
 import { logConversionEvent } from "@/lib/tracking/log-event";
 import type { BuyerProfile } from "@/lib/onboarding/types";
@@ -34,8 +35,6 @@ export async function POST(request: NextRequest) {
     ? body as Record<string, unknown>
     : {};
 
-  // A seller submission must produce a minimally useful Property Schema V1 draft,
-  // not only a contact lead. These values remain DECLARED and unverified.
   const sellerDraft = source_channel === "seller"
     ? prepareSellerPropertyDraft({
         city: profile.city,
@@ -55,9 +54,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Public professional interest is an activation request, never an anonymous
-  // professional_organization creation. Organizations require authenticated ownership,
-  // validation and source-authorization gates.
+  const sellerUpload = sellerDraft ? createSellerUploadToken() : null;
+
   const professionalRequest = source_channel === "promoter"
     ? prepareProfessionalActivationRequest(
         rawBody.professional_request && typeof rawBody.professional_request === "object"
@@ -73,7 +71,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Re-compute temperature server-side (do not trust client-supplied value)
   const buyerProfile: BuyerProfile = {
     project: profile.project as BuyerProfile["project"],
     city: profile.city,
@@ -99,25 +96,13 @@ export async function POST(request: NextRequest) {
 
   const tempResult =
     source_channel === "visit_request"
-      ? {
-          temperature: "chaud" as const,
-          reason: "Demande de visite directe sur la fiche annonce.",
-        }
+      ? { temperature: "chaud" as const, reason: "Demande de visite directe sur la fiche annonce." }
       : source_channel === "seller"
-      ? {
-          temperature: "tiède" as const,
-          reason: "Demande d'accompagnement vendeur via /vendre/dossier.",
-        }
+      ? { temperature: "tiède" as const, reason: "Demande d'accompagnement vendeur via /vendre/dossier." }
       : source_channel === "promoter"
-      ? {
-          temperature: "tiède" as const,
-          reason: "Demande d'activation AkarFinder Pro.",
-        }
+      ? { temperature: "tiède" as const, reason: "Demande d'activation AkarFinder Pro." }
       : source_channel === "credit"
-      ? {
-          temperature: "tiède" as const,
-          reason: "Demande de rappel financement via simulateur crédit.",
-        }
+      ? { temperature: "tiède" as const, reason: "Demande de rappel financement via simulateur crédit." }
       : computeLeadTemperature(buyerProfile);
 
   const userAgent = request.headers.get("user-agent") ?? undefined;
@@ -182,6 +167,9 @@ export async function POST(request: NextRequest) {
           weighted_completeness: sellerDraft.weighted_completeness,
           required_missing: sellerDraft.required_missing,
           publication_eligible: false,
+          upload_token_hash: sellerUpload?.tokenHash ?? null,
+          photo_count: 0,
+          review_status: "draft",
         })
         .select("id")
         .single();
@@ -252,6 +240,7 @@ export async function POST(request: NextRequest) {
       ok: true,
       lead_id: data.id,
       seller_property_draft_id: sellerPropertyDraftId,
+      seller_upload_token: sellerUpload?.token ?? null,
       professional_activation_request_id: professionalActivationRequestId,
       next: source_channel === "promoter" ? "/pro" : "/search",
     });

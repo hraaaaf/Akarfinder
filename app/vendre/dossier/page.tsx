@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { Container } from "@/components/ui/Container";
-import { SellerPropertyDraftForm } from "@/components/vendre/SellerPropertyDraftForm";
+import { SellerSecurePublishForm } from "@/components/vendre/SellerSecurePublishForm";
 import { isListingPropertyType } from "@/lib/property-types/presentation";
 import type { SellerIntent } from "@/lib/seller/readiness";
 
@@ -34,7 +34,7 @@ export default async function VendreDossierPage({
       <SiteHeader compact />
       <section className="pb-20 pt-8 sm:pt-12">
         <Container>
-          <SellerPropertyDraftForm
+          <SellerSecurePublishForm
             initialPropertyType={initialPropertyType}
             initialIntent={initialIntent}
           />

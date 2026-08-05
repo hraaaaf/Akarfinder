@@ -48,7 +48,7 @@ describe("AF-AUDIT-P1-049 — lead and property dataset remain separate", () => 
   const route = source("app/api/leads/route.ts");
   const migration = source("supabase/migrations/20260723050000_seller_property_draft_v1.sql");
   const page = source("app/vendre/dossier/page.tsx");
-  const form = source("components/vendre/SellerPropertyDraftForm.tsx");
+  const form = source("components/vendre/SellerSecurePublishForm.tsx");
   const readiness = source("lib/seller/readiness.ts");
 
   it("persists a distinct seller_property_drafts row linked to the contact lead", () => {
@@ -67,12 +67,12 @@ describe("AF-AUDIT-P1-049 — lead and property dataset remain separate", () => 
     assert.ok(migration.includes("to service_role"));
   });
 
-  it("uses the structured draft UI and explains declared-vs-verified truth", () => {
-    assert.ok(page.includes("SellerPropertyDraftForm"));
+  it("uses the secure structured draft UI and explains declared-vs-verified truth", () => {
+    assert.ok(page.includes("SellerSecurePublishForm"));
     assert.ok(form.includes("faits déclarés"));
     assert.ok(form.includes("Rien n’est publié automatiquement"));
-    assert.ok(form.includes("form.city.trim()"));
-    assert.ok(form.includes("form.propertyType"));
+    assert.ok(form.includes("city.trim()"));
+    assert.ok(form.includes("propertyType"));
     assert.ok(readiness.includes("Number(input.surface) > 0"));
     assert.ok(form.includes("Voir des biens comparables"));
   });

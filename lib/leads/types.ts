@@ -33,7 +33,14 @@ export type LeadApiPayload = {
 };
 
 export type LeadApiResponse =
-  | { ok: true; lead_id: string; next: string }
+  | {
+      ok: true;
+      lead_id: string;
+      next: string;
+      seller_property_draft_id?: string | null;
+      seller_upload_token?: string | null;
+      professional_activation_request_id?: string | null;
+    }
   | { ok: false; error: string };
 
 export type LeadStatus =
