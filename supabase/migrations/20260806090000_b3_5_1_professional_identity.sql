@@ -56,10 +56,11 @@ declare
   v_organization_id uuid;
   v_validation_status text;
 begin
-  v_organization_id := case
-    when tg_table_name = 'professional_organizations' then coalesce(new.id, old.id)
-    else coalesce(new.organization_id, old.organization_id)
-  end;
+  if tg_table_name = 'professional_organizations' then
+    v_organization_id := case when tg_op = 'DELETE' then old.id else new.id end;
+  else
+    v_organization_id := case when tg_op = 'DELETE' then old.organization_id else new.organization_id end;
+  end if;
 
   select validation_status
   into v_validation_status
@@ -72,7 +73,10 @@ begin
       using errcode = '23514';
   end if;
 
-  return coalesce(new, old);
+  if tg_op = 'DELETE' then
+    return old;
+  end if;
+  return new;
 end;
 $$;
 
