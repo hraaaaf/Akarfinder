@@ -1,0 +1,46 @@
+name: DATA Coverage Mubawab Baseline
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/data-coverage-mubawab-baseline.ts"
+      - "scripts/coverage/**"
+      - "scripts/scrapers/output/mubawab-expansion-clean-listings.json"
+      - "docs/MUBAWAB_DEPTH_EXPANSION_LAST_RUN.json"
+      - "docs/evidence/data-coverage/**"
+      - ".github/workflows/data-coverage-mubawab-baseline.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mubawab-coverage-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Mubawab coverage baseline
+        run: npx tsx scripts/audits/data-coverage-mubawab-baseline.ts
+
+      - name: Upload coverage evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-coverage-mubawab-baseline
+          path: artifacts/data-coverage/mubawab-casablanca-sale-2026-08-06/
+          if-no-files-found: error
+          retention-days: 30
+
+# Retriggered after GitHub-hosted runner queue stalled on 2026-08-06.
