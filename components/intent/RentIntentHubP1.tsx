@@ -36,6 +36,8 @@ const RENT_NEEDS = [
 
 const CITIES = ["Casablanca", "Rabat", "Marrakech", "Tanger", "Agadir", "Fès"] as const;
 
+const RENT_PROPERTY_TYPES = OPTION_A_PROPERTY_TYPES.filter((item) => item.value !== "land");
+
 function resultHref(listing: Listing) {
   return isObservedExternalListing(listing) && listing.listing_url
     ? listing.listing_url
@@ -116,7 +118,7 @@ export function RentIntentHubP1({ listings, totalListings }: RentIntentHubP1Prop
       <section className="border-y border-[#D7E9F2] bg-[#F5FBFC] py-12 sm:py-16">
         <Container>
           <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#087E8B]">Typologies</p><h2 className="mt-2 text-[1.9rem] font-extrabold tracking-[-0.04em] sm:text-[2.5rem]">Explorez les locations par type de bien</h2></div><Link href="/search?transaction_type=rent" className="inline-flex items-center gap-2 text-[12.5px] font-extrabold text-[#087E8B]">Tous les filtres <ArrowRight size={13} /></Link></div>
-          <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">{OPTION_A_PROPERTY_TYPES.map((item) => <Link key={item.value} href={`/search?transaction_type=rent&property_type=${encodeURIComponent(item.value)}`} className="group overflow-hidden rounded-[1.45rem] border border-[#D7E9F2] bg-white p-2.5 shadow-[0_14px_36px_rgba(8,64,92,0.07)]"><div className="aspect-[16/10] overflow-hidden rounded-[1.05rem] bg-[#F5FBFC]"><PropertyTypeArtwork kind={item.value} className="h-full w-full" decorative /></div><div className="mt-2.5 flex items-center justify-between gap-2 px-1 pb-1"><span className="text-[11.5px] font-extrabold">{item.pluralLabel}</span><span className="grid h-7 w-7 place-items-center rounded-[10px] bg-[#E9F7F8] text-[#087E8B]">→</span></div></Link>)}</div>
+          <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">{RENT_PROPERTY_TYPES.map((item) => <Link key={item.value} href={`/search?transaction_type=rent&property_type=${encodeURIComponent(item.value)}`} className="group overflow-hidden rounded-[1.45rem] border border-[#D7E9F2] bg-white p-2.5 shadow-[0_14px_36px_rgba(8,64,92,0.07)]"><div className="aspect-[16/10] overflow-hidden rounded-[1.05rem] bg-[#F5FBFC]"><PropertyTypeArtwork kind={item.value} className="h-full w-full" decorative /></div><div className="mt-2.5 flex items-center justify-between gap-2 px-1 pb-1"><span className="text-[11.5px] font-extrabold">{item.pluralLabel}</span><span className="grid h-7 w-7 place-items-center rounded-[10px] bg-[#E9F7F8] text-[#087E8B]">→</span></div></Link>)}</div>
         </Container>
       </section>
 
