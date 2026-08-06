@@ -5,6 +5,8 @@
 - **Lot** : B3.5.1
 - **Responsabilité** : identité professionnelle, organisation active et conversion atomique
 - **Branche** : `agent/b3-5-1-professional-identity`
+- **PR** : `#308`
+- **Commit certifié avant mise à jour documentaire** : `655d215703e2ba7edfbf1d29bfcffd3a1ae0e580`
 - **Prérequis** : B3.5.0 mergé au commit `a232cb06391e458dfd00273cc150a75c0748a3b0`
 - **Interface workspace** : hors scope
 - **Permissions détaillées** : B3.5.2
@@ -133,6 +135,40 @@ Fichier :
 
 La migration est séparée du code applicatif dans un fichier dédié et ne modifie aucune table métier hors identité professionnelle.
 
+### Validation PostgreSQL réelle
+
+Projet contrôlé : Supabase `AqarFinder`, PostgreSQL `17.6`.
+
+Audit préalable en lecture seule :
+
+| Indicateur | Valeur |
+|---|---:|
+| Organisations | 0 |
+| Organisations sans owner actif | 0 |
+| Organisations validées sans owner actif | 0 |
+| Demandes d’activation | 0 |
+| Demandes `exhibitor` | 0 |
+| Conversions invalides | 0 |
+
+Répétition de migration exécutée dans une transaction réelle :
+
+```text
+BEGIN
+→ fonctions créées
+→ 2 constraint triggers créés
+→ signatures vérifiées
+→ ROLLBACK
+```
+
+Résultat :
+
+- fonction de conversion valide : `true` ;
+- helper owner valide : `true` ;
+- triggers créés : `2` ;
+- rollback des fonctions confirmé : `true` ;
+- rollback des triggers confirmé : `true` ;
+- aucun changement persistant en production.
+
 ## Tests du lot
 
 Fichier :
@@ -152,17 +188,37 @@ Couverture :
 - restriction service-role ;
 - protection du dernier owner.
 
-## Double-check obligatoire
+## Preuves CI
 
-Avant merge :
+Run canonique : `31086219156`.
 
-- vérifier le diff complet ;
-- vérifier qu’aucun second résolveur professionnel ne subsiste ;
-- exécuter le test ciblé ;
-- exécuter typecheck/build et tests concernés ;
-- contrôler la migration sur une base de test ;
-- vérifier les checks GitHub Actions ;
-- mettre à jour les documents de référence.
+Sur le commit `655d215703e2ba7edfbf1d29bfcffd3a1ae0e580` :
+
+- Professional Identity B3.5.1 : `success` ;
+- Professional Auth Ownership Profiles V1 : `success` ;
+- Partner Commercial Activation V1 : `success` ;
+- scraper regression : `success` ;
+- API regression : `success` ;
+- OpenSERP, Market Index, Freshness, Dedup, Lifecycle et Direct Feeds : `success` ;
+- TypeScript : `success` ;
+- build production : `success` ;
+- Canonical Baseline Compile Validation : `success` ;
+- Canonical Baseline Validation : `success`.
+
+Une nouvelle exécution CI est attendue après cette mise à jour documentaire ; elle doit rester verte avant merge.
+
+## Double-check effectué
+
+- diff complet inspecté ;
+- ancien résolveur transformé en façade canonique ;
+- aucun second modèle professionnel créé ;
+- traitement explicite `INSERT / UPDATE / DELETE` dans le trigger ;
+- préférence d’organisation inaccessible refusée ;
+- type `exhibitor` refusé à la conversion ;
+- migration exécutée puis rollback vérifié sur PostgreSQL réel ;
+- tests ciblés et suites de régression verts ;
+- TypeScript et build verts ;
+- documentation et roadmap mises à jour.
 
 ## Definition of Done
 
@@ -174,10 +230,11 @@ Avant merge :
 - [x] `organization_id` et `converted_at` obligatoires à la conversion ;
 - [x] type `exhibitor` refusé pour le workspace ;
 - [x] ancienne résolution raccordée au service canonique ;
-- [x] tests ajoutés ;
-- [x] documentation du lot ajoutée ;
-- [ ] tests runtime et migration réellement exécutés ;
-- [ ] CI verte ;
+- [x] tests ajoutés et exécutés ;
+- [x] migration réellement validée et rollback confirmé ;
+- [x] TypeScript et build verts ;
+- [x] documentation du lot et roadmap mises à jour ;
+- [ ] CI du commit documentaire final verte ;
 - [ ] PR revue et mergée.
 
 ## Prochain lot
