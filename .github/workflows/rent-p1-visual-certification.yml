@@ -78,3 +78,5 @@ jobs:
           name: rent-p1-visual-certification
           path: artifacts/rent-p1
           if-no-files-found: error
+
+# Final recertification after intent-specific typology filtering.
