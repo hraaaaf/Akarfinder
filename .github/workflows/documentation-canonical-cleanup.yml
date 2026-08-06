@@ -37,7 +37,6 @@ jobs:
               'docs/odm/ODM-CANARY-1PERCENT-01.md': [('`docs/START.md` et `docs/ROADMAP.md`', '`docs/SESSION.md` et `docs/ROADMAP.md`')],
               'docs/odm/ODM-CANARY-DUAL-READ-01.md': [('`docs/START.md` et `docs/ROADMAP.md`', '`docs/SESSION.md` et `docs/ROADMAP.md`')],
           }
-
           for filename, pairs in replacements.items():
               path = Path(filename)
               text = path.read_text(encoding='utf-8')
@@ -47,16 +46,78 @@ jobs:
                   text = text.replace(old, new)
               path.write_text(text, encoding='utf-8')
 
+          session = '''# AkarFinder — Session courante
+
+**Mise à jour : 2026-08-06**  
+**Lot actif : DOC-CANONICAL-CLEANUP — consolidation documentaire**
+
+Ce fichier est le handover opérationnel court du projet. L’historique détaillé reste dans Git, les PR, les rapports et les preuves techniques.
+
+## Branche et PR actives
+
+- branche UX consolidée : `ux/home-p1-hero-title-readability` ;
+- PR UX consolidée vers `main` : **#299**, non encore mergée ;
+- branche du présent lot : `chore/documentation-canonical-cleanup` ;
+- ce lot part du commit documentaire consolidé `dfb9e7620aa933110be4b6f4bdb4e03c8a9adfc3`.
+
+## État produit acquis
+
+### Accueil P1 ✅
+
+Hero, Market Pulse, Pourquoi AkarFinder, Preuves DATA, villes, intentions, carte quartier, Comment ça marche, MRE, CTA final, footer et responsive consolidés.
+
+### Neuf P1 ✅
+
+Hero spécialisé, moteur Neuf, villes, typologies, carte Programme fail-closed, promoteurs partenaires, styles de vie préparés, timeline, pédagogie et CTA final. Certification 390 / 768 / 1280 px réalisée. Score UX/UI : **9,1/10**.
+
+## Gouvernance documentaire validée
+
+Trois documents seulement pilotent le projet :
+
+1. `README.md` — identité, doctrine et architecture canonique ;
+2. `docs/ROADMAP.md` — priorités et ordre d’exécution ;
+3. `docs/SESSION.md` — état courant et prochaine action.
+
+Les autres Markdown restent des spécifications ou preuves historiques. Ils ne déterminent jamais seuls l’état courant.
+
+## Audit documentaire
+
+- 202 fichiers Markdown audités ;
+- 36 614 lignes examinées ;
+- 76 spécifications globalement alignées ;
+- 92 preuves historiques utiles ;
+- 21 documents à actualiser par familles ;
+- 10 anciens fichiers de pilotage validés pour suppression et retirés dans le présent lot ;
+- références internes réparées vers les trois documents canoniques.
+
+## Décisions verrouillées
+
+- aucun nouveau Markdown de roadmap, session, statut ou handover sans décision explicite ;
+- aucun document supprimé sans lecture préalable ;
+- aucune preuve historique présentée comme état courant ;
+- une responsabilité principale, une branche et une PR par lot ;
+- aucune décision produit structurante prise automatiquement ;
+- discussion UX avant modification de chaque page.
+
+## Blocages
+
+- la PR UX #299 reste à recertifier puis à merger dans `main` ;
+- les 21 documents techniques à actualiser doivent être traités par familles cohérentes, sans recréer de roadmap parallèle.
+
+## Prochaine action exacte
+
+1. vérifier la CI du lot de nettoyage documentaire ;
+2. merger sa PR dans la branche UX consolidée ;
+3. recertifier puis merger la PR #299 vers `main` ;
+4. reprendre l’audit UX de la prochaine page avec validation avant code.
+'''
+          Path('docs/SESSION.md').write_text(session, encoding='utf-8')
+
           obsolete = [
-              'docs/START.md',
-              'docs/PRODUCT.md',
-              'docs/UX_UI_MASTER_PROGRAM.md',
-              'docs/UX_REFINEMENT_STATUS.md',
-              'docs/SEO_ROADMAP.md',
-              'docs/SESSION-P1-INTENT-HUBS.md',
-              'docs/SESSION_DATA_PHASE_V2.md',
-              'docs/PHASE1_P1_INTENT_HUBS_NEXT.md',
-              'docs/CANONICAL_BASELINE.md',
+              'docs/START.md', 'docs/PRODUCT.md', 'docs/UX_UI_MASTER_PROGRAM.md',
+              'docs/UX_REFINEMENT_STATUS.md', 'docs/SEO_ROADMAP.md',
+              'docs/SESSION-P1-INTENT-HUBS.md', 'docs/SESSION_DATA_PHASE_V2.md',
+              'docs/PHASE1_P1_INTENT_HUBS_NEXT.md', 'docs/CANONICAL_BASELINE.md',
               'docs/DOCUMENTATION_AUDIT_2026-08-03.md',
           ]
           for filename in obsolete:
@@ -67,7 +128,7 @@ jobs:
 
           Path('.github/workflows/documentation-canonical-cleanup.yml').unlink()
           PY
-      - name: Verify no active references remain
+      - name: Verify no obsolete references remain
         run: |
           python - <<'PY'
           from pathlib import Path
