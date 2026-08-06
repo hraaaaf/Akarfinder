@@ -2,7 +2,7 @@
 
 **Version : 2026-08-06**  
 **Référence initiale : B3.5.0 mergé au commit `a232cb06391e458dfd00273cc150a75c0748a3b0`**  
-**Lot actif : B3.5.1 — Modèle canonique d’identité professionnelle**
+**Lot actif : B3.5.1 — certification finale de la PR `#308`**
 
 ## Règles permanentes
 
@@ -25,8 +25,8 @@ Chaque lot B3.5 respecte obligatoirement :
 | Lot | Objet | État | Gate |
 |---|---|---|---|
 | B3.5.0 | Audit et cartographie canonique | ✅ Mergé | Document canonique et décisions de réutilisation |
-| B3.5.1 | Identité professionnelle | 🔵 En cours | Conversion atomique, owner actif, multi-organisation, tests et CI |
-| B3.5.2 | Permissions et capacités | ⏳ Bloqué par B3.5.1 | Service `can()` unique et six rôles couverts |
+| B3.5.1 | Identité professionnelle | 🟢 Implémenté et certifié, merge final en attente | Conversion atomique, owner actif, multi-organisation, migration réelle, tests, TypeScript et build verts |
+| B3.5.2 | Permissions et capacités | ⏳ Bloqué jusqu’au merge B3.5.1 | Service `can()` unique et six rôles couverts |
 | B3.5.3 | Auth, session serveur et RLS | ⏳ Bloqué | Isolation réellement exercée sans service-role partenaire |
 | B3.5.4 | Shell `/pro/workspace` | ⏳ Bloqué | Navigation réelle, données vraies, aucun bouton mort |
 
@@ -64,7 +64,7 @@ Chaque lot B3.5 respecte obligatoirement :
 
 ## État détaillé B3.5.1
 
-### Acquis sur la branche
+### Livré dans la PR #308
 
 - types canoniques `agency` et `promoter` ;
 - états workspace explicites ;
@@ -77,17 +77,26 @@ Chaque lot B3.5 respecte obligatoirement :
 - protection différée du dernier owner ;
 - raccordement des anciens contrôles de permission au résolveur canonique ;
 - endpoint staff de conversion ;
-- tests ciblés et documentation du contrat.
+- test ciblé ajouté comme gate CI permanent ;
+- documentation du contrat et preuves de validation.
 
-### Gates restant avant merge
+### Preuves acquises
 
-- exécution réelle du test ciblé ;
-- vérification TypeScript ;
-- build ;
-- validation de la migration sur base de test ;
-- revue du diff complet ;
-- CI GitHub verte ;
-- mise à jour du statut final dans ce document et dans le document du lot.
+- audit production en lecture seule : tables professionnelles présentes et vides ;
+- migration exécutée dans une transaction PostgreSQL 17 réelle ;
+- 2 fonctions et 2 triggers créés avec succès ;
+- rollback vérifié, aucun objet persistant ;
+- run canonique `31086219156` vert ;
+- test B3.5.1 vert ;
+- suites professionnelles existantes vertes ;
+- régressions DATA/API vertes ;
+- TypeScript vert ;
+- build production vert ;
+- compile gate vert.
+
+### Dernier gate
+
+La mise à jour documentaire finale modifie le SHA de la branche et déclenche une nouvelle CI. Le merge reste interdit jusqu’à la confirmation verte de cette exécution finale.
 
 ## Séquence verrouillée
 
