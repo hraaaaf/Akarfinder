@@ -1,0 +1,87 @@
+name: Neuf P1 Visual Certification
+
+on:
+  pull_request:
+    branches:
+      - ux/home-p1-hero-title-readability
+    paths:
+      - "components/neuf/**"
+      - "app/neuf/**"
+      - ".github/workflows/neuf-p1-visual-certification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-neuf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "placeholder"
+      SUPABASE_URL: "https://example.supabase.co"
+      SUPABASE_SERVICE_ROLE_KEY: "placeholder"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start production server
+        run: |
+          npm start > /tmp/akarfinder-neuf.log 2>&1 &
+          echo $! > /tmp/akarfinder-neuf.pid
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:3000/neuf >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/akarfinder-neuf.log
+          exit 1
+      - name: Capture and audit
+        run: |
+          mkdir -p artifacts/neuf-p1
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const viewports = [
+            { name: '390', width: 390, height: 844 },
+            { name: '768', width: 768, height: 1024 },
+            { name: '1280', width: 1280, height: 900 },
+          ];
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const report = [];
+            for (const vp of viewports) {
+              const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: 1 });
+              await page.goto('http://127.0.0.1:3000/neuf', { waitUntil: 'networkidle' });
+              await page.screenshot({ path: `artifacts/neuf-p1/neuf-${vp.name}.png`, fullPage: true });
+              const metrics = await page.evaluate(() => ({
+                title: document.title,
+                h1: document.querySelectorAll('h1').length,
+                main: document.querySelectorAll('main').length,
+                scrollWidth: document.documentElement.scrollWidth,
+                clientWidth: document.documentElement.clientWidth,
+                height: document.documentElement.scrollHeight,
+                duplicateIds: Object.entries([...document.querySelectorAll('[id]')].reduce((a, el) => ((a[el.id] = (a[el.id] || 0) + 1), a), {})).filter(([,n]) => n > 1),
+                emptyLinks: [...document.querySelectorAll('a')].filter(a => !(a.textContent || '').trim() && !a.getAttribute('aria-label')).length,
+                emptyButtons: [...document.querySelectorAll('button')].filter(b => !(b.textContent || '').trim() && !b.getAttribute('aria-label')).length,
+              }));
+              report.push({ viewport: vp, ...metrics, overflow: metrics.scrollWidth > metrics.clientWidth });
+              if (metrics.h1 !== 1 || metrics.main !== 1 || metrics.scrollWidth > metrics.clientWidth || metrics.duplicateIds.length || metrics.emptyLinks || metrics.emptyButtons) process.exitCode = 1;
+              await page.close();
+            }
+            fs.writeFileSync('artifacts/neuf-p1/report.json', JSON.stringify(report, null, 2));
+            await browser.close();
+          })();
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neuf-p1-visual-certification
+          path: artifacts/neuf-p1
+          retention-days: 7
