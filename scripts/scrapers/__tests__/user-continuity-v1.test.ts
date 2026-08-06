@@ -76,10 +76,14 @@ describe("#19H User Continuity V1", () => {
     assert.equal(workspace.includes("localStorage"), false);
   });
 
-  it("exposes a real account workspace for projects and continuity artifacts", () => {
-    const page = readFileSync(join(process.cwd(), "app/mon-projet/page.tsx"), "utf8");
+  it("exposes the guided project journey and a real account continuity workspace", () => {
+    const projectPage = readFileSync(join(process.cwd(), "app/mon-projet/page.tsx"), "utf8");
+    const workspacePage = readFileSync(join(process.cwd(), "app/mon-projet/espace/page.tsx"), "utf8");
+    const legacyCompanionPage = readFileSync(join(process.cwd(), "app/compagnon/page.tsx"), "utf8");
     const workspace = readFileSync(join(process.cwd(), "components/account/UserContinuityWorkspace.tsx"), "utf8");
-    assert.ok(page.includes("UserContinuityWorkspace"));
+    assert.ok(projectPage.includes("MonProjetWizardP1A"));
+    assert.ok(workspacePage.includes("UserContinuityWorkspace"));
+    assert.ok(legacyCompanionPage.includes('redirect("/mon-projet")'));
     assert.ok(workspace.includes("/api/auth/session"));
     assert.ok(workspace.includes("/api/me/continuity"));
     assert.ok(workspace.includes("Mes projets de recherche"));
