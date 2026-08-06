@@ -1,6 +1,6 @@
 # ODM-CANARY-DUAL-READ-01 — Baseline historique
 
-> **Document historique.** Le dual-read a été conçu comme une phase Shadow sans effet public. Le programme a depuis progressé vers un Canary public contrôlé et un cap technique de 10 %. Les invariants de sécurité ci-dessous restent applicables. État opérationnel : `docs/START.md` et `docs/ROADMAP.md`.
+> **Document historique.** Le dual-read a été conçu comme une phase Shadow sans effet public. Le programme a depuis progressé vers un Canary public contrôlé et un cap technique de 10 %. Les invariants de sécurité ci-dessous restent applicables. État opérationnel : `docs/SESSION.md` et `docs/ROADMAP.md`.
 
 ## Verdict du LOT d’origine
 
