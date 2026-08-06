@@ -11,7 +11,7 @@
 - schéma : migrations versionnées sous `supabase/migrations/` ;
 - données : projet Supabase canonique ;
 - Production : alias Vercel `akarfinder.vercel.app` ;
-- statut produit : `docs/START.md` et `docs/ROADMAP.md`.
+- statut produit : `docs/SESSION.md` et `docs/ROADMAP.md`.
 
 Un merge GitHub n’est pas une preuve de déploiement. Un déploiement `READY` n’est pas une preuve de comportement métier. Les deux doivent être vérifiés séparément.
 

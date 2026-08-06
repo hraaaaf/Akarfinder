@@ -151,4 +151,4 @@ Interdit : "toutes les annonces", "base exhaustive", "annonces vérifiées",
 2. SEARCH-GATEWAY-COVERAGE-EXPANSION-1 (70% → 73%)
 3. BUY-RENT-SERP-RELEVANCE-TUNING-1 (73% → 76%)
 4. PARTNER-RANKING-LIVE-INTEGRATION-1 (76% → 80%)
-5. SEO-FOUNDATION-1 (80% → 83%) — voir docs/SEO_ROADMAP.md
+5. SEO-FOUNDATION-1 (80% → 83%) — voir docs/ROADMAP.md
