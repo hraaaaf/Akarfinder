@@ -151,7 +151,7 @@ La visibilité dépend des capacités. Une section non disponible doit être ann
 |---|---|---|---|
 | B3.5.0 | Audit et cartographie canonique | ✅ Mergé | Document canonique et décisions de réutilisation |
 | B3.5.1 | Identité professionnelle | ✅ Mergé | Conversion atomique, owner actif, multi-organisation, migration réelle et CI verte |
-| B3.5.2 | Permissions et capacités | 🔵 En cours | Service `can()` unique, six rôles et alignement Neuf/Vendre |
+| B3.5.2 | Permissions et capacités | 🔵 Inventaire terminé, implémentation en cours | Service `can()` unique, six rôles et alignement Neuf/Vendre |
 | B3.5.3 | Auth, session serveur et RLS | ⏳ Bloqué | Isolation réellement exercée sans service-role partenaire |
 | B3.5.4 | Shell `/pro/workspace` | ⏳ Bloqué | Navigation réelle, données vraies, aucun bouton mort |
 
@@ -187,6 +187,41 @@ La visibilité dépend des capacités. Une section non disponible doit être ann
 |---|---|---|
 | B3.5.16 | Hardening, QA et certification pilote | À faire |
 
+## Inventaire B3.5.2 — résultat
+
+Document canonique : `docs/B3-5-2-PERMISSION-INVENTORY.md`.
+
+### Systèmes trouvés
+
+1. permissions de rôle dans `lib/professional/permissions.ts` ;
+2. capacités commerciales dans `lib/professional/commercial-activation.ts` ;
+3. contrôles de rôles directs dans les politiques RLS et fonctions SQL B3.4.
+
+### Findings bloquants
+
+- deux matrices applicatives indépendantes ;
+- absence de capacités `feed.*`, `media.*`, `team.read` et `catalogue.submit` ;
+- `listings.manage` trop large ;
+- lecture et gestion d’équipe non séparées ;
+- contrôle média indirect via catalogue/projets ;
+- RLS fondée sur des rôles directs, sans parité TypeScript garantie ;
+- publication commerciale et publication technique insuffisamment séparées ;
+- visibilité des coordonnées de leads non isolée ;
+- repositories service-role contournant RLS, à traiter dans B3.5.3.
+
+### Décision d’architecture
+
+```text
+rôle
++ membership active
++ organisation accessible
++ gate organisationnel/commercial éventuel
++ capacité demandée
+= CapabilityDecision explicable
+```
+
+Les mécanismes staff, seller individuel, service-role et secrets legacy restent hors de la matrice partenaire.
+
 ## Portée précise B3.5.2
 
 B3.5.2 doit :
@@ -205,9 +240,9 @@ B3.5.2 doit :
 | Indicateur | Valeur |
 |---|---:|
 | Lots terminés | 2 / 17 |
-| Phase Fondation | 40 % |
+| Phase Fondation | 40 % terminés ; B3.5.2 activement en cours |
 | Progression mécanique | 12 % |
-| Progression globale pondérée estimée | environ 15 % |
+| Progression globale pondérée estimée | environ 16 % |
 | Workspace partenaire exploitable | non, bloqué jusqu’à B3.5.3 |
 
 ## Séquence verrouillée
