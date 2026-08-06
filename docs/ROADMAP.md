@@ -11,8 +11,8 @@ AkarFinder est un **moteur de recherche immobilier, un index national et une cou
 
 - cœur produit : `/search` ;
 - objectif long terme : **Property Graph du marché immobilier marocain** ;
-- une propriété potentielle peut regrouper plusieurs observations ;
-- provenance, fraîcheur, qualité et divergences doivent rester explicables.
+- provenance, fraîcheur, qualité et divergences restent explicables ;
+- aucune fonctionnalité publique ne doit prétendre exploiter une donnée absente.
 
 Pipeline canonique :
 
@@ -22,32 +22,21 @@ Pipeline canonique :
 
 - no-bypass absolu ;
 - Source Registry avant activation ;
-- aucune publication depuis Discovery ou Thin Index sans eligibility ;
 - aucune donnée, image, coordonnée ou relation partenaire inventée ;
-- vraies photos autorisées prioritaires sur les fallbacks ;
-- migrations additives, réversibles et séparées du code applicatif ;
-- `Shadow → Canary → certification → activation bornée` ;
-- une responsabilité principale, une branche, une PR et un merge par lot ;
-- toute décision UX/UI structurante est discutée avant développement.
+- migrations séparées du code applicatif ;
+- une responsabilité, une branche, une PR et un merge par lot ;
+- aucune nouvelle roadmap ou session concurrente ;
+- Search reste le moteur canonique des parcours publics.
 
 ## 3. État acquis
-
-### Produit public et cœur Search ✅
-
-- application publique active ;
-- `/search` reste le moteur central ;
-- routage public ODM certifié jusqu’à 100 % ;
-- fallback et rollback conservés ;
-- display eligibility, provenance et quarantaine du bruit intégrés ;
-- SERP et fiche bien constituent déjà les surfaces publiques les plus solides.
 
 ### UX publique consolidée ✅
 
 - **Vendre** : terminé ;
-- **Accueil P1** : conçu, codé, certifié et mergé dans `main` via PR #299 ;
-- **Neuf P1** : carte Programme fail-closed et certification 390 / 768 / 1280 ; score **9,1/10** ;
-- **Acheter P1** : parcours spécialisé et certification 390 / 768 / 1280 ; score **9,1/10** ; PR #312 mergée dans `main` ;
-- **Louer P1** : parcours spécialisé codé sur PR #313, certification visuelle en cours de clôture.
+- **Accueil P1** : certifié et mergé via PR #299 ;
+- **Neuf P1** : certifié 390 / 768 / 1280, score **9,1/10** ;
+- **Acheter P1** : certifié et mergé via PR #312, score **9,1/10** ;
+- **Louer P1** : certifié et mergé via PR #313, score **9,0/10**.
 
 ### Fondation DATA acquise ✅
 
@@ -58,103 +47,70 @@ Pipeline canonique :
 - Source Registry ;
 - Market Index / fondation Property Graph ;
 - dédoublonnage conservant les observations ;
-- kit de feeds partenaires et politiques d’admission ;
 - activation progressive ODM certifiée.
 
-## 4. Lot actif — RENT-P1 🟢
+## 4. Lot actif — MON-PROJET-P1A 🟢
 
-Objectif : transformer `/louer` en parcours de location spécialisé tout en conservant Search comme moteur canonique.
+Objectif : transformer Mon Projet en parcours guidé clair, mobile-first et honnête, sans créer de modèle parallèle.
 
 Livré dans le code :
 
-- Hero orienté quotidien et budget mensuel ;
-- recherche par zone, type et budget mensuel ;
-- état meublé / non meublé préparé mais non actif sans donnée fiable ;
-- besoins Proche du travail, Famille, Meublé et Budget maîtrisé sans classification fictive ;
-- typologies illustrées adaptées à la location ;
-- résultats réels avec carrousel mobile et grille desktop ;
-- sections Choisir une location adaptée et Loyer, charges et disponibilité ;
-- exploration villes / quartiers ;
-- niveau d’information explicite ;
-- CTA final ;
-- aucune charge, disponibilité ou courte durée inventée.
+- `/mon-projet` devient la route canonique du parcours ;
+- `/compagnon` redirige vers `/mon-projet` ;
+- l’espace de continuité existant est préservé sous `/mon-projet/espace` ;
+- huit écrans visibles avec barre, numéro et intitulé ;
+- objectif et usage regroupés ;
+- zone et budget regroupés ;
+- budget facultatif avec `Je ne sais pas encore` ;
+- taxonomie visuelle adaptée à l’objectif ;
+- contraintes indispensables extensibles ;
+- six préférences principales puis `Voir plus` ;
+- choix explicite de trois priorités ;
+- compromis concrets ;
+- synthèse humaine et grille technique ;
+- sauvegarde invitée expliquée honnêtement ;
+- persistance serveur conservée pour les utilisateurs authentifiés ;
+- Search reste la destination finale.
 
-Définition de clôture : certification finale 390 / 768 / 1280, documentation alignée, workflow temporaire supprimé, CI complète verte et PR #313 mergée.
+Hors périmètre P1A : reprise automatique, projet actif dans Search, favoris et comparaison. Ces points appartiennent à **MON-PROJET-P1B**.
 
 ## 5. Séquence UX publique validée
 
-1. **Louer P1** — terminer la certification et merger PR #313 ;
-2. **Mon Projet / Compagnon** — continuité de décision et vérité des états ;
+1. **MON-PROJET-P1A** — certification finale et merge PR #314 ;
+2. **MON-PROJET-P1B** — reprise réelle et projet actif dans Search ;
 3. **Carte / Quartier** — usage réel, densité DATA et lisibilité mobile ;
 4. **Pro / Agences / Promoteurs** — pages publiques et activation professionnelle ;
-5. **Immobilier / SEO** — villes, quartiers et intentions uniquement avec contenu utile ;
-6. **recette de cohérence SERP + fiche bien** — sans refonte gratuite du cœur déjà solide.
-
-Aucune page n’est modifiée sans audit de l’existant et discussion section par section.
+5. **Immobilier / SEO** — villes, quartiers et intentions avec contenu utile ;
+6. **recette SERP + fiche bien** — cohérence finale sans refonte gratuite.
 
 ## 6. Séquence DATA prioritaire
 
-1. **B3.4.4 — déduplication et change detection** ;
-2. **B3.4.5 — file de quarantaine et revue** ;
-3. **B3.4.6 — publication Canary bornée** ;
-4. **B3.5 — Professional Workspace**, en consolidant les tables et flux existants ;
+1. B3.4.4 — déduplication et change detection ;
+2. B3.4.5 — quarantaine et revue ;
+3. B3.4.6 — publication Canary bornée ;
+4. B3.5 — Professional Workspace ;
 5. profondeur de vraies pages `LISTING` ;
 6. vérité prix / surface / géographie ;
 7. fraîcheur et lifecycle par source ;
-8. Property Graph et déduplication V3 ;
-9. certification nationale de profondeur et diversité.
+8. Property Graph et déduplication V3.
 
-### B3.5 — principe directeur
-
-Avant toute modification : cartographier organisations, memberships, demandes d’activation, soumissions, projets, médias, ownership, leads, feeds partenaires, routes `/pro/*`, authentification et RLS.
-
-Aucun nouveau modèle parallèle n’est créé lorsqu’une structure actuelle peut être consolidée.
-
-## 7. Cibles
-
-### Qualité publique
-
-- parcours compréhensibles en quelques secondes ;
-- mobile sans débordement ni longueur inutile ;
-- aucun CTA fictif ;
-- données manquantes affichées comme telles ;
-- partenaires et promoteurs seulement après activation réelle.
-
-### Qualité DATA
-
-- augmenter les vraies pages annonce éligibles, pas le volume brut ;
-- améliorer prix, surface, géographie, fraîcheur et diversité ;
-- réduire la concentration par source ;
-- viser **100 000+ représentations exploitables** sans sacrifier droit, provenance, fraîcheur, qualité ni dédoublonnage.
-
-## 8. Ce qui reste interdit
-
-- modèle parallèle inutile ;
-- faux catalogue, faux programme ou faux partenaire ;
-- badge marketing non prouvé ;
-- contenu externe réutilisé sans droit ;
-- collecte massive non gouvernée ;
-- changement de ranking sans expérience contrôlée ;
-- suppression d’un fallback avant certification ;
-- nouvelle roadmap ou nouvelle session concurrente.
-
-## 9. Définition de terminé
+## 7. Définition de terminé
 
 Un lot est terminé uniquement si :
 
-- responsabilité et périmètre respectés ;
+- périmètre respecté ;
 - code et documentation alignés ;
 - tests ciblés, TypeScript et build verts ;
 - CI complète sans régression pertinente ;
-- preuves disponibles pour les affirmations DATA ou UX ;
-- PR mergée dans sa branche cible ;
-- activation et Production distinguées du simple code disponible ;
+- preuves visuelles ou DATA disponibles ;
+- workflow temporaire supprimé ;
+- PR mergée ;
 - `SESSION.md` réécrit avec la prochaine action exacte.
 
-## 10. Prochaine action exacte
+## 8. Prochaine action exacte
 
-1. terminer la certification visuelle finale RENT-P1 ;
-2. supprimer le workflow temporaire ;
+1. terminer la CI de MON-PROJET-P1A ;
+2. supprimer le workflow visuel temporaire ;
 3. recertifier le commit final ;
-4. merger la PR #313 dans `main` ;
-5. auditer **Mon Projet / Compagnon** avant toute modification.
+4. merger la PR #314 dans `main` ;
+5. ouvrir MON-PROJET-P1B uniquement après clôture complète.
