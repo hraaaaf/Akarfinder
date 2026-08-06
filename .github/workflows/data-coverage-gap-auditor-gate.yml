@@ -1,0 +1,38 @@
+name: DATA Coverage Gap Auditor Gate
+
+on:
+  pull_request:
+    paths:
+      - "scripts/coverage/**"
+      - "scripts/audits/data-coverage-gap-audit.ts"
+      - "scripts/scrapers/__tests__/data-coverage-gap-auditor.test.ts"
+      - "docs/DATA_COVERAGE_GAP_AUDITOR.md"
+      - ".github/workflows/data-coverage-gap-auditor-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage-gap-auditor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run DATA-COVERAGE-1 tests
+        run: npx tsx --test scripts/scrapers/__tests__/data-coverage-gap-auditor.test.ts
+
+      - name: Build application
+        run: npm run build
