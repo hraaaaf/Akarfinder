@@ -9,9 +9,9 @@ import {
   roleHasPermission,
 } from "../../../lib/professional/permissions";
 import {
+  parseAddProfessionalMemberInput,
   parseCreateProfessionalOrganizationInput,
-  parseMembershipMutationInput,
-  parseOrganizationUpdateInput,
+  parseUpdateProfessionalProfileInput,
 } from "../../../lib/professional/validation";
 
 const ROOT = process.cwd();
@@ -57,32 +57,61 @@ describe("#19B professional auth, ownership & profiles V1", () => {
       display_name: "Agence Rabat Centre",
       city: "Rabat",
     });
-    assert.equal(organization?.organization_type, "agency");
-    assert.equal(parseCreateProfessionalOrganizationInput({ organization_type: "unknown" }), null);
+    assert.equal(organization.ok, true);
+    if (organization.ok) {
+      assert.equal(organization.value.organization_type, "agency");
+    }
+    assert.equal(
+      parseCreateProfessionalOrganizationInput({ organization_type: "unknown" }).ok,
+      false,
+    );
 
-    assert.deepEqual(parseMembershipMutationInput({ role: "editor", status: "active" }), {
+    const member = parseAddProfessionalMemberInput({
+      user_id: "00000000-0000-4000-8000-000000000001",
       role: "editor",
-      status: "active",
     });
-    assert.equal(parseMembershipMutationInput({ role: "superadmin" }), null);
+    assert.deepEqual(member, {
+      user_id: "00000000-0000-4000-8000-000000000001",
+      role: "editor",
+    });
+    assert.equal(
+      parseAddProfessionalMemberInput({
+        user_id: "00000000-0000-4000-8000-000000000001",
+        role: "superadmin",
+      }),
+      null,
+    );
   });
 
   it("allows branding edits but forbids self-validation and self-upgrading commercial tier", () => {
-    const update = parseOrganizationUpdateInput({
+    const update = parseUpdateProfessionalProfileInput({
       display_name: "Agence Atlas",
       description: "Portefeuille résidentiel",
       logo_url: "https://cdn.example.com/logo.png",
       website_url: "https://example.com",
-      commercial_tier: "premium",
-      validation_status: "validated",
     });
 
     assert.deepEqual(update, {
       display_name: "Agence Atlas",
       description: "Portefeuille résidentiel",
       logo_url: "https://cdn.example.com/logo.png",
-      website_url: "https://example.com",
+      website_url: "https://example.com/",
     });
+
+    assert.equal(
+      parseUpdateProfessionalProfileInput({
+        display_name: "Agence Atlas",
+        commercial_tier: "premium",
+      }),
+      null,
+    );
+    assert.equal(
+      parseUpdateProfessionalProfileInput({
+        display_name: "Agence Atlas",
+        validation_status: "validated",
+      }),
+      null,
+    );
   });
 
   it("migration enables RLS, explicit tenant-scoped lead routing, and removes permissive legacy lead policy", () => {
