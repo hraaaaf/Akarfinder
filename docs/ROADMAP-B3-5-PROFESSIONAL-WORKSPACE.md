@@ -2,7 +2,8 @@
 
 **Version : 2026-08-06**  
 **Référence initiale : B3.5.0 mergé au commit `a232cb06391e458dfd00273cc150a75c0748a3b0`**  
-**Lot actif : B3.5.1 — certification finale de la PR `#308`**
+**Identité canonique : B3.5.1 mergé au commit `2ff5bfa9420dce48e0fe94ba9f07d6ac4a683e7a`**  
+**Lot actif : B3.5.2 — Permissions et matrice de capacités**
 
 ## Règles permanentes
 
@@ -20,33 +21,157 @@ Chaque lot B3.5 respecte obligatoirement :
 - aucun contournement temporaire déclaré comme final ;
 - aucune structure parallèle lorsqu’un modèle canonique existe.
 
+## Contrat transversal Neuf × Vendre × Professional Workspace
+
+Les parcours particulier, professionnel et neuf utilisent un socle commun sans fusionner leurs responsabilités métier.
+
+### Pipeline canonique de publication
+
+```text
+Brouillon
+→ complétude explicable
+→ revue humaine
+→ corrections éventuelles
+→ approbation
+→ publication explicite
+→ pause / reprise / retrait / archivage
+```
+
+Aucune organisation, aucun projet et aucune importation ne permet une publication directe sans gate.
+
+### Modèle canonique
+
+```text
+Professional Project
+├── informations générales
+├── localisation
+├── médias
+├── typologies
+└── offres / disponibilités
+        ↓
+Professional Property Submission
+        ↓
+revue et publication contrôlée
+```
+
+- `professional_projects` représente le programme immobilier neuf ;
+- `professional_property_submissions` représente toute offre ou unité publiable ;
+- aucune table `partner_listings` ne doit être créée ;
+- un projet validé ne valide pas automatiquement chacune de ses unités ;
+- une modification d’un contenu publié crée une nouvelle version en revue, sans remplacer silencieusement la version publique active.
+
+### Catalogue professionnel
+
+Le Catalogue constitue la vue commune des offres publiables :
+
+- saisies manuelles d’agence ;
+- unités rattachées à des projets neufs ;
+- importations partenaires ;
+- annonces revendiquées avec preuve ;
+- vente et location.
+
+Les origines restent visibles et auditables.
+
+### Complétude
+
+Le moteur de complétude réutilise le standard visible de `/vendre`, enrichi par des règles spécialisées :
+
+- socle : type, localisation, prix, surface, description, médias, contact et droits ;
+- Neuf : promoteur, projet, typologie, livraison, disponibilité et prix de départ ;
+- aucune précision ni métrique simulée.
+
+### États canoniques progressifs
+
+```text
+draft
+in_review
+needs_changes
+resubmitted
+approved
+published
+paused
+rejected
+withdrawn
+archived
+```
+
+La migration éventuelle des anciens états doit être précédée d’un inventaire réel et rester séparée du code applicatif.
+
+### Vendre particulier et transfert professionnel
+
+- les brouillons personnels restent personnels lorsqu’un utilisateur rejoint une organisation ;
+- aucun transfert automatique vers une organisation ;
+- rattachement professionnel uniquement via mandat ou revendication explicite ;
+- le déclarant initial et l’historique restent traçables ;
+- `ownership_verified`, `source_rights_confirmed` et `media_rights_confirmed` restent trois preuves distinctes.
+
+### Leads
+
+Une fiche lead unique conserve :
+
+- son origine : neuf, vendre, annonce, projet ou recherche ;
+- l’objet concerné ;
+- l’organisation affectée ;
+- l’historique et les prochaines actions.
+
+CRM et leads restent séparés conceptuellement : lead, contact, activité, tâche et visite ne doivent pas devenir une seule table fourre-tout.
+
+### Médias
+
+Une bibliothèque professionnelle commune rattache les médias à :
+
+- organisation ;
+- projet ;
+- typologie ;
+- unité ou soumission.
+
+Aucun média n’est publiable sans droits confirmés selon le vocabulaire réellement présent dans le schéma.
+
+## Navigation cible
+
+```text
+Vue d’ensemble
+Catalogue
+Projets
+Imports
+Revue
+Publications
+Leads
+Médias
+Analytics
+Équipe
+Organisation
+```
+
+La visibilité dépend des capacités. Une section non disponible doit être annoncée explicitement ; aucun bouton mort.
+
 ## Phase 1 — Fondation
 
 | Lot | Objet | État | Gate |
 |---|---|---|---|
 | B3.5.0 | Audit et cartographie canonique | ✅ Mergé | Document canonique et décisions de réutilisation |
-| B3.5.1 | Identité professionnelle | 🟢 Implémenté et certifié, merge final en attente | Conversion atomique, owner actif, multi-organisation, migration réelle, tests, TypeScript et build verts |
-| B3.5.2 | Permissions et capacités | ⏳ Bloqué jusqu’au merge B3.5.1 | Service `can()` unique et six rôles couverts |
+| B3.5.1 | Identité professionnelle | ✅ Mergé | Conversion atomique, owner actif, multi-organisation, migration réelle et CI verte |
+| B3.5.2 | Permissions et capacités | 🔵 En cours | Service `can()` unique, six rôles et alignement Neuf/Vendre |
 | B3.5.3 | Auth, session serveur et RLS | ⏳ Bloqué | Isolation réellement exercée sans service-role partenaire |
 | B3.5.4 | Shell `/pro/workspace` | ⏳ Bloqué | Navigation réelle, données vraies, aucun bouton mort |
 
 ## Phase 2 — DATA professionnelle
 
-| Lot | Objet | État |
-|---|---|---|
-| B3.5.5 | Catalogue professionnel | À faire |
-| B3.5.6 | Direct Feed Import UI | À faire |
-| B3.5.7 | Review Center et déduplication prouvée | À faire |
-| B3.5.8 | Canary publication et rollback | À faire |
+| Lot | Objet | Ajustement canonique | État |
+|---|---|---|---|
+| B3.5.5 | Catalogue professionnel | Inclure offres agence, unités de projets, imports et claims | À faire |
+| B3.5.6 | Direct Feed Import UI | Produire des soumissions canoniques, jamais une publication directe | À faire |
+| B3.5.7 | Review Center et déduplication prouvée | Revue commune et décisions auditables | À faire |
+| B3.5.8 | Canary publication et rollback | Capacités distinctes approve/publish/rollback | À faire |
 
 ## Phase 3 — Outils métier
 
-| Lot | Objet | État |
-|---|---|---|
-| B3.5.9 | Projets promoteurs | À faire |
-| B3.5.10 | Leads Workspace | À faire |
-| B3.5.11 | Analytics organisationnelles | À faire |
-| B3.5.12 | Médias et droits | À faire |
+| Lot | Objet | Ajustement canonique | État |
+|---|---|---|---|
+| B3.5.9 | Projets promoteurs | Projet parent, typologies et disponibilités liées aux soumissions | À faire |
+| B3.5.10 | Leads Workspace | Lead unique avec origine et objet ; CRM minimal structuré | À faire |
+| B3.5.11 | Médias et droits | Bibliothèque commune avant les KPI complets | À faire |
+| B3.5.12 | Analytics organisationnelles | Après médias, avec périodes, sources et dénominateurs explicites | À faire |
 
 ## Phase 4 — Administration partenaire
 
@@ -62,53 +187,39 @@ Chaque lot B3.5 respecte obligatoirement :
 |---|---|---|
 | B3.5.16 | Hardening, QA et certification pilote | À faire |
 
-## État détaillé B3.5.1
+## Portée précise B3.5.2
 
-### Livré dans la PR #308
+B3.5.2 doit :
 
-- types canoniques `agency` et `promoter` ;
-- états workspace explicites ;
-- sélection déterministe de l’organisation active ;
-- conservation du multi-organisation ;
-- exclusion des memberships inactives ;
-- exclusion des organisations sans owner actif ;
-- conversion transactionnelle d’une demande qualifiée ;
-- création atomique de l’organisation et de la membership owner ;
-- protection différée du dernier owner ;
-- raccordement des anciens contrôles de permission au résolveur canonique ;
-- endpoint staff de conversion ;
-- test ciblé ajouté comme gate CI permanent ;
-- documentation du contrat et preuves de validation.
+- remplacer les contrôles dispersés par une décision unique `can(context, capability)` ;
+- fusionner la matrice de rôles et les gates commerciaux sans confondre les deux ;
+- couvrir les six rôles ;
+- introduire les capacités Catalogue, Projets, Feeds, Revue, Publication, Leads, Analytics, Médias, Équipe et Organisation ;
+- protéger toutes les mutations côté serveur ;
+- préparer l’alignement RLS de B3.5.3 ;
+- maintenir le tier commercial hors ranking et pertinence Search ;
+- appliquer le même droit de publication contrôlée aux offres issues de Neuf, Vendre transféré et feeds partenaires.
 
-### Preuves acquises
+## État global du chantier
 
-- audit production en lecture seule : tables professionnelles présentes et vides ;
-- migration exécutée dans une transaction PostgreSQL 17 réelle ;
-- 2 fonctions et 2 triggers créés avec succès ;
-- rollback vérifié, aucun objet persistant ;
-- run canonique `31086219156` vert ;
-- test B3.5.1 vert ;
-- suites professionnelles existantes vertes ;
-- régressions DATA/API vertes ;
-- TypeScript vert ;
-- build production vert ;
-- compile gate vert.
-
-### Dernier gate
-
-La mise à jour documentaire finale modifie le SHA de la branche et déclenche une nouvelle CI. Le merge reste interdit jusqu’à la confirmation verte de cette exécution finale.
+| Indicateur | Valeur |
+|---|---:|
+| Lots terminés | 2 / 17 |
+| Phase Fondation | 40 % |
+| Progression mécanique | 12 % |
+| Progression globale pondérée estimée | environ 15 % |
+| Workspace partenaire exploitable | non, bloqué jusqu’à B3.5.3 |
 
 ## Séquence verrouillée
 
 ```text
-B3.5.1 identité
-→ B3.5.2 permissions
+B3.5.2 permissions
 → B3.5.3 authentification et RLS
 → B3.5.4 shell
 → B3.5.5 à B3.5.8 DATA professionnelle
-→ outils métier
+→ projets / leads / médias / analytics
 → administration partenaire
 → B3.5.16 certification
 ```
 
-Aucun écran partenaire exploitable ne doit précéder la certification de B3.5.1 à B3.5.3.
+Aucun écran partenaire exploitable ne doit précéder la certification de B3.5.2 et B3.5.3.
