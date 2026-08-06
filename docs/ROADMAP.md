@@ -43,17 +43,13 @@ Pipeline canonique :
 
 Les chiffres DATA, déploiements et activations datés restent dans leurs preuves techniques. Ils ne doivent pas être recopiés ici comme vérités permanentes.
 
-### UX publique consolidée sur la PR #299 🟡
-
-Branche : `ux/home-p1-hero-title-readability`  
-Cible : `main`
+### UX publique consolidée ✅
 
 - **Vendre** : terminé ;
-- **Accueil P1** : conception, code, responsive et audit réalisés ;
-- **Neuf P1** : conception, carte Programme fail-closed, responsive et certification visuelle réalisés ;
-- score UX/UI final Neuf : **9,1/10** ;
-- PR Neuf #306 fusionnée dans la branche consolidée ;
-- aucune de ces évolutions n’est considérée livrée en Production avant merge de la PR #299, CI finale et déploiement vérifié.
+- **Accueil P1** : conçu, codé, certifié et mergé dans `main` via PR #299 ;
+- **Neuf P1** : carte Programme fail-closed, responsive et certification visuelle réalisés ; score final **9,1/10** ;
+- **Acheter P1** : parcours spécialisé codé sur PR #312, CI applicative verte et certification visuelle 390 / 768 / 1280 réussie ;
+- **Louer** : prochain lot après merge de BUY-P1.
 
 ### Fondation DATA acquise ✅
 
@@ -67,30 +63,34 @@ Cible : `main`
 - kit de feeds partenaires et politiques d’admission ;
 - activation progressive ODM certifiée.
 
-## 4. Lot actif — DOC-CANONICAL-1 🔵
+## 4. Lot actif — BUY-P1 🟢
 
-Objectif : rétablir une seule boussole documentaire.
+Objectif : transformer `/acheter` en parcours d’achat spécialisé tout en conservant Search comme moteur canonique et sans modifier `/louer`.
 
-À livrer :
+Livré :
 
-- `README.md`, `docs/ROADMAP.md` et `docs/SESSION.md` comme seuls documents canoniques ;
-- lecture et classification de tous les autres Markdown ;
-- retrait de toute prétention concurrente à décrire l’état courant ;
-- aucun effacement de preuve technique avant vérification des références ;
-- suppression du workflow temporaire d’audit après usage.
+- Hero spécialisé ;
+- recherche par zone, type, budget et projet ;
+- raccourcis Résidence principale, Investissement, Neuf et Terrain ;
+- typologies illustrées ;
+- résultats réels avec carrousel mobile et grille desktop ;
+- sections Habiter / Investir et Définir mon budget ;
+- exploration villes / quartiers ;
+- niveau d’information explicite ;
+- CTA final ;
+- aucune mensualité, aucun rendement et aucun frais inventés.
 
-Gate : inventaire exhaustif, matrice de compatibilité, CI sans régression et validation du propriétaire avant suppression des documents obsolètes.
+Certification : CI applicative verte, build production, route `/acheter`, captures 390 / 768 / 1280, aucun overflow, un seul H1 et un seul `main`, aucun ID dupliqué ni contrôle interactif sans nom.
 
 ## 5. Séquence UX publique validée
 
-Après consolidation documentaire et merge propre de la PR #299 :
-
-1. **Acheter / Louer** — audit commun, questions, décision, lot ciblé ;
-2. **Mon Projet / Compagnon** — continuité de décision et vérité des états ;
-3. **Carte / Quartier** — usage réel, densité DATA et lisibilité mobile ;
-4. **Pro / Agences / Promoteurs** — pages publiques et activation professionnelle ;
-5. **Immobilier / SEO** — villes, quartiers et intentions uniquement avec contenu utile ;
-6. **recette de cohérence SERP + fiche bien** — sans refonte gratuite du cœur déjà solide.
+1. **Acheter P1** — finaliser documentation, supprimer le gate temporaire et merger PR #312 ;
+2. **Louer P1** — parcours spécialisé, puis certification séparée ;
+3. **Mon Projet / Compagnon** — continuité de décision et vérité des états ;
+4. **Carte / Quartier** — usage réel, densité DATA et lisibilité mobile ;
+5. **Pro / Agences / Promoteurs** — pages publiques et activation professionnelle ;
+6. **Immobilier / SEO** — villes, quartiers et intentions uniquement avec contenu utile ;
+7. **recette de cohérence SERP + fiche bien** — sans refonte gratuite du cœur déjà solide.
 
 Aucune page n’est modifiée sans audit de l’existant et discussion section par section.
 
@@ -158,7 +158,7 @@ Un lot est terminé uniquement si :
 
 ## 10. Prochaine action exacte
 
-1. terminer l’audit documentaire et faire valider les documents à retirer ;
-2. supprimer le workflow temporaire d’audit ;
-3. recertifier puis merger la PR #299 dans `main` ;
-4. commencer l’audit **Acheter / Louer**, sans coder avant discussion.
+1. supprimer le workflow temporaire BUY-P1 ;
+2. recertifier le commit final ;
+3. merger la PR #312 dans `main` ;
+4. lancer RENT-P1 sur une branche et une PR séparées.
