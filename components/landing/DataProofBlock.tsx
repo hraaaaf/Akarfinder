@@ -1,138 +1,81 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
 import { Container } from "@/components/ui/Container";
-import { GEO_CITIES, getValidatedMapNeighborhoods } from "@/lib/geo/geo-entity-registry";
 
-type Stats = {
-  total_listings: number;
-  avg_completeness: number;
-  duplicates_detected: number;
-  avg_reliability: number;
-};
-
-const FALLBACK: Stats = {
-  total_listings: 0,
-  avg_completeness: 0,
-  duplicates_detected: 0,
-  avg_reliability: 0,
-};
-
-function AnimatedCounter({ target, triggered }: { target: number; triggered: boolean }) {
-  const [display, setDisplay] = useState("0");
-  const rafRef = useRef<number | null>(null);
-  const startRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (!triggered || target <= 0) return;
-    const step = (timestamp: number) => {
-      if (startRef.current === null) startRef.current = timestamp;
-      const progress = Math.min((timestamp - startRef.current) / 1400, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(Math.round(target * eased).toLocaleString("fr-FR"));
-      if (progress < 1) rafRef.current = requestAnimationFrame(step);
-    };
-    rafRef.current = requestAnimationFrame(step);
-    return () => {
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    };
-  }, [target, triggered]);
-
-  return <span>{display}</span>;
-}
+const proofPoints = [
+  {
+    key: "source",
+    number: "01",
+    title: "Source clairement indiquée",
+    description: "Vous savez toujours d’où provient l’information présentée.",
+  },
+  {
+    key: "information",
+    number: "02",
+    title: "Niveau d’information visible",
+    description: "Les éléments disponibles et ceux qui manquent restent faciles à identifier.",
+  },
+  {
+    key: "similar",
+    number: "03",
+    title: "Résultats similaires mieux organisés",
+    description: "Les offres proches sont rapprochées pour faciliter la comparaison et réduire le bruit.",
+  },
+] as const;
 
 export function DataProofBlock() {
-  const [stats, setStats] = useState<Stats>(FALLBACK);
-  const [triggered, setTriggered] = useState(false);
-  const sectionRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    void fetch("/api/stats", { cache: "no-store" })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (data) setStats(data as Stats);
-      })
-      .catch(() => undefined);
-  }, []);
-
-  useEffect(() => {
-    const element = sectionRef.current;
-    if (!element) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setTriggered(true);
-        observer.disconnect();
-      }
-    }, { threshold: 0.25 });
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  const cards = [
-    {
-      key: "index",
-      category: "Index actuel",
-      value: stats.total_listings > 0 ? stats.total_listings : null,
-      fallback: "En construction",
-      label: "Offres présentes dans l'index",
-      sub: "Volume technique de l'index. Toutes les lignes ne sont pas nécessairement publiables dans la recherche publique.",
-    },
-    {
-      key: "dedup",
-      category: "Index actuel",
-      value: stats.duplicates_detected > 0 ? stats.duplicates_detected : null,
-      fallback: "Signal actif",
-      label: "Rapprochements détectés",
-      sub: "Signaux de ressemblance calculés pour réduire le bruit, sans certifier qu'il s'agit du même bien.",
-    },
-    {
-      key: "cities",
-      category: "Référentiel canonique",
-      value: GEO_CITIES.length,
-      fallback: null,
-      label: "Villes normalisées",
-      sub: "Entités du Geo Registry avec noms canoniques et variantes d'écriture reconnues.",
-    },
-    {
-      key: "neighborhoods",
-      category: "Référentiel canonique",
-      value: getValidatedMapNeighborhoods().length,
-      fallback: null,
-      label: "Quartiers cartographiés",
-      sub: "Quartiers validés pour la carte. Cela ne signifie pas qu'une page SEO est automatiquement publiée.",
-    },
-  ];
-
   return (
-    <section ref={sectionRef} className="bg-surface py-16 sm:py-24 lg:py-28">
+    <section aria-labelledby="home-data-proof-title" className="overflow-hidden bg-[#071b33] py-14 text-white sm:py-24 lg:py-28">
       <Container>
-        <div className="mb-9 text-center sm:mb-14">
-          <span className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-accent">Preuves et référentiels</span>
-          <h2 className="mt-3 text-[1.85rem] font-extrabold tracking-[-0.03em] text-foreground sm:mt-4 sm:text-[2.5rem]">Chaque chiffre dit ce qu'il mesure.</h2>
-          <p className="mx-auto mt-3 max-w-[650px] text-[13.5px] leading-6 text-muted-foreground sm:text-[14.5px] sm:leading-7">
-            Les volumes de l'index, les signaux calculés et les référentiels produit sont volontairement séparés pour éviter les chiffres décoratifs ou ambigus.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-          {cards.map(({ key, category, value, fallback, label, sub }) => (
-            <div key={key} className="rounded-2xl border border-border/15 bg-card p-4 shadow-[0_8px_28px_rgba(7,27,51,0.05)] sm:p-6">
-              <span className="text-[8.5px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground sm:text-[10px] sm:tracking-[0.14em]">{category}</span>
-              {value != null && value > 0 ? (
-                <p className="mt-3 tabular-nums text-[2rem] font-extrabold leading-none tracking-[-0.04em] text-accent sm:mt-4 sm:text-[2.7rem]">
-                  <AnimatedCounter target={value} triggered={triggered} />
-                </p>
-              ) : (
-                <p className="mt-3 text-[1.1rem] font-extrabold leading-tight tracking-tight text-accent sm:mt-4 sm:text-[1.45rem] sm:leading-none">{fallback ?? "Non disponible"}</p>
-              )}
-              <p className="mt-3 text-[12px] font-extrabold leading-5 text-foreground sm:mt-5 sm:text-[14px]">{label}</p>
-              <p className="mt-2 hidden text-[11.5px] leading-5 text-muted-foreground sm:block">{sub}</p>
+        <div className="mx-auto max-w-[1120px]">
+          <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-end lg:gap-14">
+            <div>
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.17em] text-[#efb85b] sm:text-[11.5px]">
+                Une lecture plus transparente
+              </span>
+              <h2 id="home-data-proof-title" className="mt-3 text-[2rem] font-extrabold leading-[1.08] tracking-[-0.04em] text-white sm:mt-4 sm:text-[2.75rem]">
+                Des résultats plus clairs pour mieux décider
+              </h2>
+              <p className="mt-4 max-w-[620px] text-[14.5px] leading-7 text-white/72 sm:text-[15.5px]">
+                Chaque résultat indique clairement sa source, son niveau d’information et les éléments qui peuvent encore manquer.
+              </p>
             </div>
-          ))}
+
+            <div className="rounded-[1.75rem] border border-white/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.035))] p-5 shadow-[0_26px_70px_rgba(0,0,0,0.22)] sm:p-7">
+              <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5">
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#7DD3FC]">Exemple de lecture</p>
+                  <p className="mt-2 text-[1.25rem] font-extrabold tracking-[-0.025em] text-white">Appartement · Agdal</p>
+                </div>
+                <span className="rounded-full border border-white/12 bg-white/[0.07] px-3 py-1.5 text-[11px] font-bold text-white/75">Informations visibles</span>
+              </div>
+              <div className="mt-5 grid grid-cols-3 gap-2.5">
+                {["Localisation", "Caractéristiques", "Provenance"].map((label) => (
+                  <div key={label} className="rounded-xl bg-white/[0.065] px-2.5 py-3.5 text-center">
+                    <span className="mx-auto block h-1.5 w-3/4 rounded-full bg-[#60A5FA]/45" />
+                    <span className="mt-2.5 block text-[10.5px] font-bold leading-4 text-white/68">{label}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-[12px]">
+                <span className="font-semibold text-white/60">Résultats proches regroupés</span>
+                <span className="rounded-full bg-[#0B63CE] px-3 py-1.5 font-extrabold text-white">Comparer</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 divide-y divide-white/10 border-y border-white/10 lg:mt-12 lg:grid lg:grid-cols-3 lg:divide-x lg:divide-y-0">
+            {proofPoints.map((point) => (
+              <article key={point.key} className="flex gap-4 px-1 py-5 sm:py-6 lg:px-7 lg:first:pl-0 lg:last:pr-0">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#efb85b]/35 bg-[#efb85b]/10 text-[12px] font-extrabold text-[#efb85b]">
+                  {point.number}
+                </span>
+                <div>
+                  <h3 className="text-[16px] font-extrabold leading-5 tracking-[-0.01em] text-white">{point.title}</h3>
+                  <p className="mt-2 text-[13.5px] leading-6 text-white/66">{point.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
-        <p className="mt-4 text-[11px] leading-5 text-muted-foreground sm:hidden">
-          Les volumes techniques, signaux de rapprochement et référentiels géographiques sont des mesures distinctes ; ils ne décrivent pas tous le nombre de biens publiés dans Search.
-        </p>
       </Container>
     </section>
   );

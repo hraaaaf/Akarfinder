@@ -49,7 +49,8 @@ describe("Phase 1 P1 — Neuf audience and inventory truth", () => {
   it("does not promise an active partner inventory in metadata or public content", () => {
     assert.ok(page.includes("NeufPageShellV2"));
     assert.equal(page.includes("Projets partenaires"), false);
-    assert.ok(shell.includes("Aucun inventaire partenaire"));
+    assert.ok(shell.includes("<ProgramsSection programs={[]} />"));
+    assert.ok(shell.includes("Aucun programme fictif n’est présenté comme actif"));
     assert.equal(shell.includes("EXAMPLE_PROJECT"), false);
   });
 

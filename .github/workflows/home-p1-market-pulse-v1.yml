@@ -1,0 +1,32 @@
+name: Home P1 Market Pulse V1
+
+on:
+  pull_request:
+    paths:
+      - "app/page.tsx"
+      - "components/landing/MarketPulse.tsx"
+      - "lib/market-pulse/get-market-pulse-listings.ts"
+      - "scripts/__tests__/home-p1-market-pulse-v1.test.mjs"
+      - ".github/workflows/home-p1-market-pulse-v1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Validate approved Market Pulse contracts
+        run: node --test scripts/__tests__/home-p1-market-pulse-v1.test.mjs
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build

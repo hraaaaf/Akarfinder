@@ -14,18 +14,12 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="transparent" compact />
-
-      {/* ── Hero moteur de recherche (remplace ProductHero) ── */}
       <GoogleLikeHero />
-
-      {/* ── Repères récents (moteur pur — sources autorisées uniquement) ── */}
-      <MarketPulse />
-
       <WhySection />
+      <MarketPulse />
       <DataProofBlock />
       <CityIntentGrid />
       <SignatureMapSection />
-
       <HowItWorks />
       <MreTrustSection />
       <HomeFinalCTA />

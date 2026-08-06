@@ -669,7 +669,7 @@ Impact:
 
 * Level 1 landing cleanup must not start yet.
 * Repository work should stay focused on workflow normalization until Level 0.5 is complete.
-* Future implementation missions must clearly align with AGENTS.md and docs/START.md first.
+* Future implementation missions must clearly align with README.md, docs/ROADMAP.md and docs/SESSION.md first.
 
 2026-06-19 - Level 0.5 completed and Level 1 authorized as next mission
 
@@ -1007,7 +1007,7 @@ Reason:
 Impact:
 
 * docs/ROADMAP.md est entièrement réécrit avec la structure en 9 phases.
-* docs/PRODUCT.md est mis à jour pour refléter l'état post-P6 et les nouvelles orientations.
+* La définition produit canonique est mise à jour dans README.md pour refléter l’état post-P6 et les nouvelles orientations.
 * docs/MONETIZATION.md est mis à jour avec les nouveaux flux de revenus (banques, crédit,
   OPCIM, publicité native, leads financement).
 * docs/BUSINESS_MODEL.md est créé (SWOT, acteurs, modèle économique, BCG simplifié).
@@ -1146,7 +1146,7 @@ Reason:
 
 Impact:
 
-* Les docs ROADMAP.md, PRODUCT.md, BUSINESS_MODEL.md, GO_TO_MARKET.md
+* Les docs ROADMAP.md, README.md, BUSINESS_MODEL.md, GO_TO_MARKET.md
   et SESSION.md ont été mis à jour pour refléter cette vision.
 * Phases P11, P12, P13, P14 ajoutées comme NON DÉMARRÉES.
 * Contradiction Phase 5 / P10B-REAL clarifiée :
@@ -2274,7 +2274,7 @@ d'abord, badge ensuite, qualite de fiche ensuite, Gateway en fallback volume.
 Decision 4 :
 Le SEO devient un axe produit prioritaire, mais uniquement via des pages
 utiles, editoriales, ville/intention/quartier, et pages partenaires
-autorisees (docs/SEO_ROADMAP.md).
+autorisées (docs/ROADMAP.md).
 
 Decision 5 :
 Aucune page demo ou fausse annonce ne doit etre indexee. /demo/* reste
