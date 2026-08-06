@@ -3,7 +3,7 @@
 **Version : 2026-08-06**  
 **Statut : consolidation UX publique en cours, moteur ODM actif, priorité parallèle qualité DATA**
 
-Ce fichier est l’unique roadmap du projet. Les anciens plans, ledgers, fichiers `NEXT`, roadmaps SEO et programmes UX sont des preuves historiques ou des spécifications non canoniques.
+Ce fichier est l’unique roadmap du projet. `README.md` définit l’identité et la doctrine ; `docs/SESSION.md` porte uniquement le handover courant.
 
 ## 1. Cap produit
 
@@ -41,15 +41,13 @@ Pipeline canonique :
 - display eligibility, provenance et quarantaine du bruit intégrés ;
 - SERP et fiche bien constituent déjà les surfaces publiques les plus solides.
 
-Les chiffres DATA, déploiements et activations datés restent dans leurs preuves techniques. Ils ne doivent pas être recopiés ici comme vérités permanentes.
-
 ### UX publique consolidée ✅
 
 - **Vendre** : terminé ;
 - **Accueil P1** : conçu, codé, certifié et mergé dans `main` via PR #299 ;
-- **Neuf P1** : carte Programme fail-closed, responsive et certification visuelle réalisés ; score final **9,1/10** ;
-- **Acheter P1** : parcours spécialisé codé sur PR #312, CI applicative verte et certification visuelle 390 / 768 / 1280 réussie ;
-- **Louer** : prochain lot après merge de BUY-P1.
+- **Neuf P1** : carte Programme fail-closed et certification 390 / 768 / 1280 ; score **9,1/10** ;
+- **Acheter P1** : parcours spécialisé et certification 390 / 768 / 1280 ; score **9,1/10** ; PR #312 mergée dans `main` ;
+- **Louer P1** : parcours spécialisé codé sur PR #313, certification visuelle en cours de clôture.
 
 ### Fondation DATA acquise ✅
 
@@ -63,40 +61,38 @@ Les chiffres DATA, déploiements et activations datés restent dans leurs preuve
 - kit de feeds partenaires et politiques d’admission ;
 - activation progressive ODM certifiée.
 
-## 4. Lot actif — BUY-P1 🟢
+## 4. Lot actif — RENT-P1 🟢
 
-Objectif : transformer `/acheter` en parcours d’achat spécialisé tout en conservant Search comme moteur canonique et sans modifier `/louer`.
+Objectif : transformer `/louer` en parcours de location spécialisé tout en conservant Search comme moteur canonique.
 
-Livré :
+Livré dans le code :
 
-- Hero spécialisé ;
-- recherche par zone, type, budget et projet ;
-- raccourcis Résidence principale, Investissement, Neuf et Terrain ;
-- typologies illustrées ;
+- Hero orienté quotidien et budget mensuel ;
+- recherche par zone, type et budget mensuel ;
+- état meublé / non meublé préparé mais non actif sans donnée fiable ;
+- besoins Proche du travail, Famille, Meublé et Budget maîtrisé sans classification fictive ;
+- typologies illustrées adaptées à la location ;
 - résultats réels avec carrousel mobile et grille desktop ;
-- sections Habiter / Investir et Définir mon budget ;
+- sections Choisir une location adaptée et Loyer, charges et disponibilité ;
 - exploration villes / quartiers ;
 - niveau d’information explicite ;
 - CTA final ;
-- aucune mensualité, aucun rendement et aucun frais inventés.
+- aucune charge, disponibilité ou courte durée inventée.
 
-Certification : CI applicative verte, build production, route `/acheter`, captures 390 / 768 / 1280, aucun overflow, un seul H1 et un seul `main`, aucun ID dupliqué ni contrôle interactif sans nom.
+Définition de clôture : certification finale 390 / 768 / 1280, documentation alignée, workflow temporaire supprimé, CI complète verte et PR #313 mergée.
 
 ## 5. Séquence UX publique validée
 
-1. **Acheter P1** — finaliser documentation, supprimer le gate temporaire et merger PR #312 ;
-2. **Louer P1** — parcours spécialisé, puis certification séparée ;
-3. **Mon Projet / Compagnon** — continuité de décision et vérité des états ;
-4. **Carte / Quartier** — usage réel, densité DATA et lisibilité mobile ;
-5. **Pro / Agences / Promoteurs** — pages publiques et activation professionnelle ;
-6. **Immobilier / SEO** — villes, quartiers et intentions uniquement avec contenu utile ;
-7. **recette de cohérence SERP + fiche bien** — sans refonte gratuite du cœur déjà solide.
+1. **Louer P1** — terminer la certification et merger PR #313 ;
+2. **Mon Projet / Compagnon** — continuité de décision et vérité des états ;
+3. **Carte / Quartier** — usage réel, densité DATA et lisibilité mobile ;
+4. **Pro / Agences / Promoteurs** — pages publiques et activation professionnelle ;
+5. **Immobilier / SEO** — villes, quartiers et intentions uniquement avec contenu utile ;
+6. **recette de cohérence SERP + fiche bien** — sans refonte gratuite du cœur déjà solide.
 
 Aucune page n’est modifiée sans audit de l’existant et discussion section par section.
 
 ## 6. Séquence DATA prioritaire
-
-Les lots DATA continuent sans créer de modèle parallèle :
 
 1. **B3.4.4 — déduplication et change detection** ;
 2. **B3.4.5 — file de quarantaine et revue** ;
@@ -110,7 +106,7 @@ Les lots DATA continuent sans créer de modèle parallèle :
 
 ### B3.5 — principe directeur
 
-Avant toute modification : cartographier les structures existantes, notamment organisations, memberships, demandes d’activation, soumissions, projets, médias, ownership, leads, feeds partenaires, routes `/pro/*`, authentification et RLS.
+Avant toute modification : cartographier organisations, memberships, demandes d’activation, soumissions, projets, médias, ownership, leads, feeds partenaires, routes `/pro/*`, authentification et RLS.
 
 Aucun nouveau modèle parallèle n’est créé lorsqu’une structure actuelle peut être consolidée.
 
@@ -150,7 +146,6 @@ Un lot est terminé uniquement si :
 - code et documentation alignés ;
 - tests ciblés, TypeScript et build verts ;
 - CI complète sans régression pertinente ;
-- migrations séparées et réversibles lorsqu’elles existent ;
 - preuves disponibles pour les affirmations DATA ou UX ;
 - PR mergée dans sa branche cible ;
 - activation et Production distinguées du simple code disponible ;
@@ -158,7 +153,8 @@ Un lot est terminé uniquement si :
 
 ## 10. Prochaine action exacte
 
-1. supprimer le workflow temporaire BUY-P1 ;
-2. recertifier le commit final ;
-3. merger la PR #312 dans `main` ;
-4. lancer RENT-P1 sur une branche et une PR séparées.
+1. terminer la certification visuelle finale RENT-P1 ;
+2. supprimer le workflow temporaire ;
+3. recertifier le commit final ;
+4. merger la PR #313 dans `main` ;
+5. auditer **Mon Projet / Compagnon** avant toute modification.
