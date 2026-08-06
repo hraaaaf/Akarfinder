@@ -36,7 +36,7 @@ const RENT_NEEDS = [
 
 const CITIES = ["Casablanca", "Rabat", "Marrakech", "Tanger", "Agadir", "Fès"] as const;
 
-const RENT_PROPERTY_TYPES = OPTION_A_PROPERTY_TYPES.filter((item) => item.value !== "land");
+const RENT_PROPERTY_TYPES = OPTION_A_PROPERTY_TYPES.filter((item) => item.value !== "Terrain");
 
 function resultHref(listing: Listing) {
   return isObservedExternalListing(listing) && listing.listing_url
