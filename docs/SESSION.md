@@ -36,7 +36,8 @@ Ce fichier est le handover opérationnel court du projet. L’historique détail
 - synthèse humaine ;
 - sauvegarde invitée honnête ;
 - persistance authentifiée conservée ;
-- lancement vers Search via le profil structuré existant.
+- lancement vers Search via le profil structuré existant ;
+- bouton Retour fonctionnel : l’état serveur est reconstruit en rejouant les événements validés jusqu’à l’étape cible.
 
 ## Vérité produit
 
@@ -74,8 +75,8 @@ MON-PROJET-P1B portera :
 
 ## Prochaine action exacte
 
-1. supprimer le workflow visuel temporaire ;
-2. attendre la CI complète du commit final ;
-3. corriger uniquement les régressions réelles ;
-4. confirmer le score UX/UI final ;
-5. merger la PR #314 dans `main`.
+1. attendre la CI complète du commit final humain ;
+2. corriger uniquement les régressions réelles ;
+3. confirmer le score UX/UI final ;
+4. merger la PR #314 dans `main` ;
+5. ouvrir MON-PROJET-P1B uniquement après clôture.
