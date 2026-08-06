@@ -8,7 +8,7 @@ Ce fichier est le handover opérationnel court du projet. L’historique détail
 ## Branche et PR actives
 
 - branche : `ux/mon-projet-p1b` ;
-- PR vers `main` : **#315** ;
+- PR vers `main` : **#318** ;
 - composant principal : `components/search/ActiveProjectBanner.tsx` ;
 - intégration : `app/search/page.tsx` ;
 - API réutilisée : `/api/me/continuity` ;
