@@ -3,6 +3,8 @@ import {
   normalizeInternalNotes,
   validateLeadStatusUpdate,
 } from "@/lib/leads/lead-admin";
+import { listCanonicalProfessionalContextsForUser } from "./identity-repository";
+import { workspaceStatusFromValidation } from "./identity";
 import { commercialTierBadgeLabel, permissionsForRole, roleHasPermission } from "./permissions";
 import type {
   ProfessionalListingOwnership,
@@ -26,38 +28,7 @@ function asMembership(row: unknown): ProfessionalMembership {
 export async function listProfessionalContextsForUser(
   userId: string,
 ): Promise<ProfessionalMembershipContext[]> {
-  const supabase = getSupabaseServerClient();
-  const { data: memberships, error: membershipError } = await supabase
-    .from("professional_memberships")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("status", "active");
-
-  if (membershipError) throw new Error(`[professional] memberships: ${membershipError.message}`);
-  const typedMemberships = (memberships ?? []).map(asMembership);
-  if (typedMemberships.length === 0) return [];
-
-  const organizationIds = typedMemberships.map((membership) => membership.organization_id);
-  const { data: organizations, error: organizationError } = await supabase
-    .from("professional_organizations")
-    .select("*")
-    .in("id", organizationIds);
-
-  if (organizationError) throw new Error(`[professional] organizations: ${organizationError.message}`);
-  const byId = new Map((organizations ?? []).map((row) => {
-    const organization = asOrganization(row);
-    return [organization.id, organization] as const;
-  }));
-
-  return typedMemberships.flatMap((membership) => {
-    const organization = byId.get(membership.organization_id);
-    if (!organization) return [];
-    return [{
-      organization,
-      membership,
-      permissions: permissionsForRole(membership.role),
-    }];
-  });
+  return listCanonicalProfessionalContextsForUser(userId);
 }
 
 export async function requireProfessionalPermission(
@@ -123,6 +94,8 @@ export async function createProfessionalOrganizationWithOwner(
     organization,
     membership,
     permissions: permissionsForRole(membership.role),
+    workspace_status: workspaceStatusFromValidation(organization.validation_status),
+    has_active_owner: true,
   };
 }
 
