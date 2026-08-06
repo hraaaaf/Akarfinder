@@ -1,113 +1,65 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-06**  
-**Lot actif : DOC-CANONICAL-1 — boussole documentaire unique**
+**Lot actif : DOC-CANONICAL-CLEANUP — consolidation documentaire**
 
-Ce fichier est un handover court. Il décrit uniquement l’état courant. L’historique détaillé reste dans Git, les PR, les rapports et les preuves techniques.
+Ce fichier est le handover opérationnel court du projet. L’historique détaillé reste dans Git, les PR, les rapports et les preuves techniques.
 
 ## Branche et PR actives
 
-- branche : `ux/home-p1-hero-title-readability` ;
-- PR consolidée vers `main` : **#299** ;
-- état observé avant le lot documentaire : ouverte, mergeable ;
-- la branche regroupe désormais les évolutions Accueil P1 et Neuf P1 ;
-- aucune évolution de cette branche ne doit être annoncée comme livrée en Production avant merge, CI finale et déploiement vérifié.
+- branche UX consolidée : `ux/home-p1-hero-title-readability` ;
+- PR UX consolidée vers `main` : **#299**, non encore mergée ;
+- branche du présent lot : `chore/documentation-canonical-cleanup` ;
+- base documentaire : commit `dfb9e7620aa933110be4b6f4bdb4e03c8a9adfc3`.
 
-## Derniers lots UX terminés
+## État produit acquis
 
 ### Accueil P1 ✅
 
-- Hero validé en conservant exactement « 1er moteur de recherche immobilier au Maroc » ;
-- Market Pulse, Pourquoi AkarFinder, Preuves DATA, villes, intentions, carte quartier, Comment ça marche, MRE, CTA final et footer consolidés ;
-- optimisation mobile réalisée ;
-- dépendances fragiles aux animations supprimées ;
-- audit visuel et gates responsive réalisés.
+Hero, Market Pulse, Pourquoi AkarFinder, Preuves DATA, villes, intentions, carte quartier, Comment ça marche, MRE, CTA final, footer et responsive consolidés.
 
 ### Neuf P1 ✅
 
-- Hero spécialisé et moteur Neuf ;
-- villes, typologies et raccourcis ;
-- carte Programme AkarFinder fail-closed ;
-- aucun programme fictif publié ;
-- états vides programmes et promoteurs partenaires ;
-- styles de vie préparés sans classification inventée ;
-- timeline Sur plan → En construction → Livré ;
-- pédagogie, parcours Acheteur/Promoteur et CTA final ;
-- captures certifiées en 390, 768 et 1280 px ;
-- longueur mobile réduite d’environ 15 % ;
-- score UX/UI final : **9,1/10** ;
-- PR #306 mergée dans la branche consolidée.
+Hero spécialisé, moteur Neuf, villes, typologies, carte Programme fail-closed, promoteurs partenaires, styles de vie préparés, timeline, pédagogie et CTA final. Certification 390 / 768 / 1280 px réalisée. Score UX/UI : **9,1/10**.
 
-## Audit Markdown réalisé
+## Gouvernance documentaire validée
 
-Source auditée : branche consolidée, snapshot initial `a9ac5823ea9b828b99beb39c2f9aba3a97e57622`.
+Trois documents seulement pilotent le projet :
 
-- **202 fichiers Markdown** ;
-- **36 614 lignes** ;
-- contenu complet lu et inventorié ;
-- workflow temporaire créé uniquement pour produire l’artefact d’audit.
+1. `README.md` — identité, doctrine et architecture canonique ;
+2. `docs/ROADMAP.md` — priorités et ordre d’exécution ;
+3. `docs/SESSION.md` — état courant et prochaine action.
 
-### Classification
+Les autres Markdown restent des spécifications ou preuves historiques. Ils ne déterminent jamais seuls l’état courant.
 
-| Catégorie | Nombre | Action |
-|---|---:|---|
-| Documents canoniques | 3 | conserver et maintenir |
-| Spécifications techniques globalement alignées | 76 | conserver comme références non canoniques |
-| Preuves historiques / audits / activations | 92 | conserver, archiver progressivement |
-| Documents techniques nécessitant une mise à jour | 21 | corriger par familles, sans mélanger les responsabilités |
-| Doublons ou références opérationnelles obsolètes | 10 | proposer au retrait après validation |
+## Audit documentaire
 
-### Trois documents canoniques
+- 202 fichiers Markdown audités ;
+- 36 614 lignes examinées ;
+- 76 spécifications globalement alignées ;
+- 92 preuves historiques utiles ;
+- 21 documents à actualiser par familles ;
+- 10 anciens fichiers de pilotage validés pour suppression dans le présent lot ;
+- références internes à réparer vers les trois documents canoniques.
 
-- `README.md` — identité et doctrine ;
-- `docs/ROADMAP.md` — ordre d’exécution ;
-- `docs/SESSION.md` — présent handover.
+## Décisions verrouillées
 
-### Candidats au retrait après validation
-
-- `docs/START.md` ;
-- `docs/PRODUCT.md` ;
-- `docs/UX_UI_MASTER_PROGRAM.md` ;
-- `docs/UX_REFINEMENT_STATUS.md` ;
-- `docs/SEO_ROADMAP.md` ;
-- `docs/SESSION-P1-INTENT-HUBS.md` ;
-- `docs/SESSION_DATA_PHASE_V2.md` ;
-- `docs/PHASE1_P1_INTENT_HUBS_NEXT.md` ;
-- `docs/CANONICAL_BASELINE.md` ;
-- `docs/DOCUMENTATION_AUDIT_2026-08-03.md`.
-
-Aucun de ces fichiers n’a encore été supprimé.
-
-### Familles nécessitant une mise à jour
-
-1. **Architecture et livraison** : architecture, déploiement, scraping ;
-2. **Business et commercial** : business model, monétisation, go-to-market ;
-3. **Professionnels et partenaires** : activation, pages partenaires, auth/ownership ;
-4. **SEO** : fondation, villes/intention, quartiers ;
-5. **Intelligence produit** : marché, quartier, fiche bien, Compagnon ;
-6. **Design** : visual system, theme system, brand system ;
-7. **DATA V2** : statut actuel ODM/Property Graph et séparation des preuves historiques.
-
-## Décisions validées
-
-- seulement trois documents de pilotage ;
-- les autres Markdown peuvent rester comme spécifications ou preuves ;
-- aucun document n’est supprimé sans lecture ;
-- aucune preuve historique n’est présentée comme état courant ;
 - aucun nouveau Markdown de roadmap, session, statut ou handover sans décision explicite ;
-- pour chaque page UX, discussion avant code ;
-- aucune décision produit structurante prise automatiquement.
+- aucun document supprimé sans lecture préalable ;
+- aucune preuve historique présentée comme état courant ;
+- une responsabilité principale, une branche et une PR par lot ;
+- aucune décision produit structurante prise automatiquement ;
+- discussion UX avant modification de chaque page.
 
 ## Blocages
 
-- les 10 candidats au retrait nécessitent une validation explicite avant suppression ;
-- les 21 documents à mettre à jour doivent être traités par familles et PR séparées si le périmètre devient trop large ;
-- la PR #299 n’est pas encore mergée dans `main`.
+- la PR UX #299 reste à recertifier puis à merger dans `main` ;
+- les 21 documents techniques à actualiser doivent être traités par familles cohérentes, sans recréer de roadmap parallèle.
 
 ## Prochaine action exacte
 
-1. présenter le verdict documentaire et faire valider la liste des 10 suppressions ;
-2. supprimer le workflow temporaire d’audit ;
-3. mettre à jour les 21 références techniques par lots cohérents ;
-4. recertifier et merger la PR #299 dans `main` ;
-5. commencer l’audit Acheter / Louer, sans modification avant discussion.
+1. terminer le nettoyage documentaire validé ;
+2. vérifier l’absence de référence active vers les anciens documents ;
+3. ouvrir et valider la PR dédiée ;
+4. merger cette PR dans la branche UX consolidée ;
+5. recertifier puis merger la PR #299 vers `main`.
