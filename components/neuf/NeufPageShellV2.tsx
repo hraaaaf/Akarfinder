@@ -3,6 +3,7 @@ import { ArrowRight, Building2, CheckCircle2, Compass, Home, Info, MapPin, Searc
 
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { NeufCompletionSections } from "@/components/neuf/NeufCompletionSections";
 import { NeufHeroProgramPreview } from "@/components/neuf/NeufHeroProgramPreview";
 import { ProgramsSection } from "@/components/neuf/ProgramCard";
 import { Container } from "@/components/ui/Container";
@@ -73,6 +74,7 @@ export function NeufPageShellV2() {
       </section>
 
       <ProgramsSection programs={[]} />
+      <NeufCompletionSections />
 
       <section className="border-b border-[#DCE8F5] bg-white py-14 sm:py-20">
         <Container>
