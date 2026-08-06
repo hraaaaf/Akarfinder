@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { authenticateProfessionalRequest } from "@/lib/professional/auth";
-import { listProfessionalContextsForUser } from "@/lib/professional/repository";
+import { resolveProfessionalIdentityForUser } from "@/lib/professional/identity-repository";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,14 +12,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
     }
 
-    const contexts = await listProfessionalContextsForUser(identity.user_id);
+    const preferredOrganizationId = request.nextUrl.searchParams.get("organization_id");
+    const resolution = await resolveProfessionalIdentityForUser(
+      identity.user_id,
+      preferredOrganizationId,
+    );
+
     return NextResponse.json({
       user: { id: identity.user_id, email: identity.email },
-      organizations: contexts.map((context) => ({
+      active_organization_id: resolution.active_context?.organization.id ?? null,
+      selection_source: resolution.selection_source,
+      organizations: resolution.available_contexts.map((context) => ({
         organization: context.organization,
         role: context.membership.role,
         membership_status: context.membership.status,
+        workspace_status: context.workspace_status,
+        has_active_owner: context.has_active_owner,
         permissions: context.permissions,
+        is_active: context.organization.id === resolution.active_context?.organization.id,
       })),
     });
   } catch (error) {
