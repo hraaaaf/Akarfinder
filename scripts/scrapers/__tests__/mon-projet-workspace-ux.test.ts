@@ -6,12 +6,15 @@ import { describe, it } from "node:test";
 const source = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
 describe("Mon Projet workspace", () => {
-  it("uses one canonical Mon Projet vocabulary", () => {
+  it("uses one canonical Mon Projet vocabulary and preserves the authenticated workspace", () => {
     const companionPage = source("app/compagnon/page.tsx");
     const projectPage = source("app/mon-projet/page.tsx");
+    const workspacePage = source("app/mon-projet/espace/page.tsx");
     const workspace = source("components/account/UserContinuityWorkspace.tsx");
-    assert.ok(companionPage.includes("Mon Projet AkarFinder"));
-    assert.ok(projectPage.includes("Mon Projet AkarFinder"));
+    assert.ok(companionPage.includes('permanentRedirect("/mon-projet")'));
+    assert.ok(projectPage.includes("MonProjetWizardP1A"));
+    assert.ok(projectPage.includes("Retrouver mes projets enregistrés"));
+    assert.ok(workspacePage.includes("Mes projets AkarFinder"));
     assert.ok(workspace.includes("Mon Projet AkarFinder"));
     assert.ok(!workspace.includes("Mon espace AkarFinder"));
   });
