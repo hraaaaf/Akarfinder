@@ -1,65 +1,86 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-06**  
-**Lot actif : DOC-CANONICAL-CLEANUP — consolidation documentaire**
+**Lot actif : BUY-P1 — parcours Acheter spécialisé**
 
 Ce fichier est le handover opérationnel court du projet. L’historique détaillé reste dans Git, les PR, les rapports et les preuves techniques.
 
 ## Branche et PR actives
 
-- branche UX consolidée : `ux/home-p1-hero-title-readability` ;
-- PR UX consolidée vers `main` : **#299**, non encore mergée ;
-- branche du présent lot : `chore/documentation-canonical-cleanup` ;
-- base documentaire : commit `dfb9e7620aa933110be4b6f4bdb4e03c8a9adfc3`.
+- branche : `ux/buy-p1-specialized-journey` ;
+- PR vers `main` : **#312** ;
+- dernier commit applicatif certifié : `169c84020772f971befd6793f4ee9ea1755b2915` ;
+- workflow visuel temporaire ajouté puis à supprimer avant merge.
 
 ## État produit acquis
 
 ### Accueil P1 ✅
 
-Hero, Market Pulse, Pourquoi AkarFinder, Preuves DATA, villes, intentions, carte quartier, Comment ça marche, MRE, CTA final, footer et responsive consolidés.
+Hero, Market Pulse, Pourquoi AkarFinder, Preuves DATA, villes, intentions, carte quartier, Comment ça marche, MRE, CTA final, footer et responsive consolidés et mergés dans `main`.
 
 ### Neuf P1 ✅
 
 Hero spécialisé, moteur Neuf, villes, typologies, carte Programme fail-closed, promoteurs partenaires, styles de vie préparés, timeline, pédagogie et CTA final. Certification 390 / 768 / 1280 px réalisée. Score UX/UI : **9,1/10**.
 
-## Gouvernance documentaire validée
+### Acheter P1 🟢
 
-Trois documents seulement pilotent le projet :
+Implémentation terminée sur PR #312 :
 
-1. `README.md` — identité, doctrine et architecture canonique ;
-2. `docs/ROADMAP.md` — priorités et ordre d’exécution ;
-3. `docs/SESSION.md` — état courant et prochaine action.
+- Hero spécialisé ;
+- recherche par zone, type, budget et projet ;
+- raccourcis Résidence principale, Investissement, Neuf et Terrain ;
+- typologies illustrées ;
+- aperçu de résultats réels ;
+- carrousel mobile et grille desktop ;
+- sections Habiter / Investir ;
+- budget sans mensualité ou frais inventés ;
+- exploration villes / quartiers ;
+- niveau d’information explicite ;
+- CTA final.
 
-Les autres Markdown restent des spécifications ou preuves historiques. Ils ne déterminent jamais seuls l’état courant.
+## Validations BUY-P1
 
-## Audit documentaire
+- CI applicative : **18/18 verte** sur `169c8402` ;
+- build production : vert ;
+- certification visuelle temporaire : verte sur `8ebcba65` ;
+- captures : 390 / 768 / 1280 px ;
+- hauteurs mesurées : 6550 / 5755 / 4136 px ;
+- overflow horizontal : 0 ;
+- H1 : 1 ;
+- `main` : 1 ;
+- IDs dupliqués : 0 ;
+- liens et boutons sans nom : 0 ;
+- `/louer` non modifiée.
 
-- 202 fichiers Markdown audités ;
-- 36 614 lignes examinées ;
-- 76 spécifications globalement alignées ;
-- 92 preuves historiques utiles ;
-- 21 documents à actualiser par familles ;
-- 10 anciens fichiers de pilotage validés pour suppression dans le présent lot ;
-- références internes à réparer vers les trois documents canoniques.
+## Audit UX/UI BUY-P1
 
-## Décisions verrouillées
+Score final estimé après inspection réelle : **9,1/10**.
 
-- aucun nouveau Markdown de roadmap, session, statut ou handover sans décision explicite ;
-- aucun document supprimé sans lecture préalable ;
-- aucune preuve historique présentée comme état courant ;
-- une responsabilité principale, une branche et une PR par lot ;
-- aucune décision produit structurante prise automatiquement ;
-- discussion UX avant modification de chaque page.
+Points forts : clarté du projet d’achat, recherche structurée, différence Habiter / Investir, transparence budgétaire et bonne cohérence mobile / desktop.
+
+Limite non bloquante : Hero mobile dense, mais lisible et sans débordement. Aucun micro-changement supplémentaire n’est justifié avant retour utilisateur réel.
+
+## Gouvernance documentaire
+
+Les trois documents canoniques restent :
+
+1. `README.md` ;
+2. `docs/ROADMAP.md` ;
+3. `docs/SESSION.md`.
+
+Aucun autre Markdown ne pilote l’état courant.
 
 ## Blocages
 
-- la PR UX #299 reste à recertifier puis à merger dans `main` ;
-- les 21 documents techniques à actualiser doivent être traités par familles cohérentes, sans recréer de roadmap parallèle.
+Aucun blocage applicatif identifié. BUY-P1 doit encore :
+
+- retirer son workflow visuel temporaire ;
+- repasser la CI sur le commit final documentaire ;
+- être mergé dans `main`.
 
 ## Prochaine action exacte
 
-1. terminer le nettoyage documentaire validé ;
-2. vérifier l’absence de référence active vers les anciens documents ;
-3. ouvrir et valider la PR dédiée ;
-4. merger cette PR dans la branche UX consolidée ;
-5. recertifier puis merger la PR #299 vers `main`.
+1. supprimer `.github/workflows/buy-p1-visual-certification.yml` ;
+2. vérifier les gates du commit final ;
+3. merger la PR #312 dans `main` ;
+4. ouvrir RENT-P1 depuis le nouveau `main`.
