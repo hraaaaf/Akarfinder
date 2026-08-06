@@ -27,6 +27,10 @@ Blocked, unavailable, captcha/login-wall and robots-disallowed behavior remains 
 
 Listing URLs are normalized and deduplicated globally across all visited nodes. Overlapping partitions therefore cannot inflate the resulting inventory.
 
+## Validation
+
+The dedicated CI gate runs all adaptive partition tests and the production build before merge.
+
 ## Non-goals
 
 - no live Mubawab filter syntax is guessed;
