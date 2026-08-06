@@ -42,3 +42,5 @@ jobs:
           path: artifacts/data-coverage/mubawab-casablanca-sale-2026-08-06/
           if-no-files-found: error
           retention-days: 30
+
+# Retriggered after GitHub-hosted runner queue stalled on 2026-08-06.
