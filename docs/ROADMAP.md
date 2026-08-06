@@ -36,7 +36,8 @@ Pipeline canonique :
 - **Accueil P1** : certifié et mergé via PR #299 ;
 - **Neuf P1** : certifié 390 / 768 / 1280, score **9,1/10** ;
 - **Acheter P1** : certifié et mergé via PR #312, score **9,1/10** ;
-- **Louer P1** : certifié et mergé via PR #313, score **9,0/10**.
+- **Louer P1** : certifié et mergé via PR #313, score **9,0/10** ;
+- **Mon Projet P1A** : parcours guidé en huit écrans, certifié et mergé via PR #314, score **9,2/10**.
 
 ### Fondation DATA acquise ✅
 
@@ -49,39 +50,31 @@ Pipeline canonique :
 - dédoublonnage conservant les observations ;
 - activation progressive ODM certifiée.
 
-## 4. Lot actif — MON-PROJET-P1A 🟢
+## 4. Lot actif — MON-PROJET-P1B 🟡
 
-Objectif : transformer Mon Projet en parcours guidé clair, mobile-first et honnête, sans créer de modèle parallèle.
+Objectif : conserver le contexte du projet actif jusque dans Search et rendre visible la continuité réelle, sans modèle ni stockage parallèle.
 
-Livré dans le code :
+Livré dans la PR #315 :
 
-- `/mon-projet` devient la route canonique du parcours ;
-- `/compagnon` redirige vers `/mon-projet` ;
-- l’espace de continuité existant est préservé sous `/mon-projet/espace` ;
-- huit écrans visibles avec barre, numéro et intitulé ;
-- objectif et usage regroupés ;
-- zone et budget regroupés ;
-- budget facultatif avec `Je ne sais pas encore` ;
-- taxonomie visuelle adaptée à l’objectif ;
-- contraintes indispensables extensibles ;
-- six préférences principales puis `Voir plus` ;
-- choix explicite de trois priorités ;
-- compromis concrets ;
-- synthèse humaine et grille technique ;
-- sauvegarde invitée expliquée honnêtement ;
-- persistance serveur conservée pour les utilisateurs authentifiés ;
-- Search reste la destination finale.
+- lecture du `project_id` canonique transmis par Mon Projet ;
+- bandeau compact **Projet actif** dans `/search` ;
+- projet affiché uniquement s’il appartient à l’utilisateur authentifié, est actif et possède un profil V2 structuré ;
+- résumé objectif, zone et budget ;
+- compteurs réels de favoris et comparaisons filtrés par `project_id` ;
+- accès direct à `/mon-projet/espace` ;
+- absence de bandeau si le projet est absent, invalide ou inaccessible ;
+- aucune migration, aucun `localStorage`, aucune clé service-role côté navigateur ;
+- contrat intégré à `User Continuity V1`.
 
-Hors périmètre P1A : reprise automatique, projet actif dans Search, favoris et comparaison. Ces points appartiennent à **MON-PROJET-P1B**.
+Hors périmètre P1B : modifier le projet directement dans Search, retirer explicitement le projet actif, écrire de nouvelles actions favoris/comparaison depuis les cartes et toute refonte générale de la SERP.
 
 ## 5. Séquence UX publique validée
 
-1. **MON-PROJET-P1A** — certification finale et merge PR #314 ;
-2. **MON-PROJET-P1B** — reprise réelle et projet actif dans Search ;
-3. **Carte / Quartier** — usage réel, densité DATA et lisibilité mobile ;
-4. **Pro / Agences / Promoteurs** — pages publiques et activation professionnelle ;
-5. **Immobilier / SEO** — villes, quartiers et intentions avec contenu utile ;
-6. **recette SERP + fiche bien** — cohérence finale sans refonte gratuite.
+1. **MON-PROJET-P1B** — CI complète, certification, documentation et merge PR #315 ;
+2. **Carte / Quartier** — audit, questions, usage réel, densité DATA et lisibilité mobile ;
+3. **Pro / Agences / Promoteurs** — pages publiques et activation professionnelle ;
+4. **Immobilier / SEO** — villes, quartiers et intentions avec contenu utile ;
+5. **recette SERP + fiche bien** — cohérence finale sans refonte gratuite.
 
 ## 6. Séquence DATA prioritaire
 
@@ -109,8 +102,8 @@ Un lot est terminé uniquement si :
 
 ## 8. Prochaine action exacte
 
-1. terminer la CI de MON-PROJET-P1A ;
-2. supprimer le workflow visuel temporaire ;
-3. recertifier le commit final ;
-4. merger la PR #314 dans `main` ;
-5. ouvrir MON-PROJET-P1B uniquement après clôture complète.
+1. terminer la relance des gates P1B affectés par l’incident GitHub Actions `Service Unavailable` ;
+2. corriger uniquement une éventuelle régression réelle ;
+3. certifier le bandeau Projet actif dans Search ;
+4. merger la PR #315 dans `main` ;
+5. lancer l’audit Carte / Quartier avec questions avant tout code.
