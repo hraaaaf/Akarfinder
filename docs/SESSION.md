@@ -1,95 +1,81 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-06**  
-**Lot actif : RENT-P1 — parcours Louer spécialisé**
+**Lot actif : MON-PROJET-P1A — parcours guidé et vérité de sauvegarde**
 
-Ce fichier est le handover opérationnel court du projet. L’historique détaillé reste dans Git, les PR, les rapports et les preuves techniques.
+Ce fichier est le handover opérationnel court du projet. L’historique détaillé reste dans Git, les PR et les preuves techniques.
 
 ## Branche et PR actives
 
-- branche : `ux/rent-p1-specialized-journey` ;
-- PR vers `main` : **#313** ;
-- commit applicatif initial : `1b9853306b9dad8b1ab20f9642ec155ed4152abd` ;
-- correction typologies : `e47e73918840450871410785d3ad746be03b84a2` ;
-- recertification visuelle finale déclenchée sur `a5059848a0f5108323c37da1e0816e1bf9a9b821`.
+- branche : `ux/mon-projet-p1a` ;
+- PR vers `main` : **#314** ;
+- composant principal : `components/companion/MonProjetWizardP1A.tsx` ;
+- route canonique : `/mon-projet` ;
+- ancien `/compagnon` : redirection permanente ;
+- espace de continuité préservé : `/mon-projet/espace`.
 
 ## État produit acquis
 
-### Accueil P1 ✅
+- Accueil P1 ✅
+- Neuf P1 ✅ — score 9,1/10
+- Acheter P1 ✅ — score 9,1/10
+- Louer P1 ✅ — PR #313 mergée, score 9,0/10
 
-Conçu, certifié et mergé dans `main`.
+## MON-PROJET-P1A livré dans le code
 
-### Neuf P1 ✅
+- huit écrans visibles ;
+- progression avec numéro, intitulé et barre ;
+- objectif + usage regroupés ;
+- zone + budget regroupés ;
+- budget facultatif ;
+- types de biens adaptés à l’objectif ;
+- contraintes parking/ascenseur extensibles ;
+- préférences principales puis Voir plus ;
+- trois priorités explicites ;
+- compromis centralité/calme et surface/localisation ;
+- synthèse humaine ;
+- sauvegarde invitée honnête ;
+- persistance authentifiée conservée ;
+- lancement vers Search via le profil structuré existant.
 
-Conçu, certifié 390 / 768 / 1280 et mergé. Score UX/UI : **9,1/10**.
+## Vérité produit
 
-### Acheter P1 ✅
+- aucune recommandation ou donnée de quartier fabriquée ;
+- les préférences ne deviennent pas des exclusions silencieuses ;
+- le Fit reste conditionné aux données comparables ;
+- un invité n’est pas présenté comme ayant sauvegardé durablement son projet ;
+- Search reste le moteur canonique ;
+- aucune seconde machine à états n’a été créée.
 
-Parcours spécialisé, certification 390 / 768 / 1280 et PR #312 mergée dans `main`. Score UX/UI : **9,1/10**.
+## Validation visuelle initiale
 
-### Louer P1 🟢
-
-Implémentation terminée sur PR #313 :
-
-- Hero spécialisé ;
-- recherche par zone, type et budget mensuel ;
-- état meublé / non meublé visible mais non actif sans donnée fiable ;
-- besoins Proche du travail, Famille, Meublé et Budget maîtrisé sans qualification fictive ;
-- typologies illustrées adaptées à la location, Terrain retiré du hub ;
-- aperçu de résultats réels ;
-- carrousel mobile et grille desktop ;
-- Choisir une location adaptée ;
-- loyer, charges et disponibilité uniquement si documentés ;
-- villes et quartiers ;
-- niveau d’information explicite ;
-- CTA final.
-
-## Validations RENT-P1
-
-Première certification visuelle réussie :
+Gate dédié vert sur le commit `b09922a8867a8cc8c2bc6b9816bd91c3ab9c8a27` :
 
 - build production vert ;
-- route `/louer` verte ;
-- captures 390 / 768 / 1280 px ;
-- hauteurs : 5430 / 4825 / 3262 px ;
+- route `/mon-projet` verte ;
+- captures 390 / 768 / 1280 ;
+- hauteurs : 1300 / 1037 / 1021 px ;
 - overflow horizontal : 0 ;
 - H1 : 1 ;
 - `main` : 1 ;
 - IDs dupliqués : 0 ;
 - liens et boutons sans nom : 0.
 
-Une seconde certification a été déclenchée après retrait de Terrain des typologies Louer.
+Le premier échec User Journey provenait de deux contrats attachés à l’ancien composant et à l’ancien rôle de `/mon-projet`. Ces tests ont été mis à jour vers l’architecture P1A sans modification produit.
 
-## Vérité produit
+## Hors périmètre
 
-- aucun résultat fictif ;
-- aucun filtre meublé actif sans donnée fiable ;
-- aucune charge ou date de disponibilité estimée ;
-- courte durée non activée sans source et taxonomie propres ;
-- Search reste le moteur canonique.
+MON-PROJET-P1B portera :
 
-## Gouvernance documentaire
-
-Les trois documents canoniques restent :
-
-1. `README.md` ;
-2. `docs/ROADMAP.md` ;
-3. `docs/SESSION.md`.
-
-## Blocages
-
-Aucun blocage applicatif identifié. RENT-P1 doit encore :
-
-- obtenir la seconde certification visuelle verte ;
-- retirer `.github/workflows/rent-p1-visual-certification.yml` ;
-- repasser la CI sur le commit final ;
-- être mergé dans `main`.
+- reprise automatique d’un projet réel ;
+- bandeau Projet actif dans Search ;
+- modifier/enregistrer/retirer depuis Search ;
+- continuité vers favoris et comparaison.
 
 ## Prochaine action exacte
 
-1. récupérer les captures finales ;
-2. confirmer le score UX/UI ;
-3. supprimer le workflow temporaire ;
-4. vérifier tous les gates du commit final ;
-5. merger la PR #313 dans `main` ;
-6. auditer Mon Projet / Compagnon.
+1. supprimer le workflow visuel temporaire ;
+2. attendre la CI complète du commit final ;
+3. corriger uniquement les régressions réelles ;
+4. confirmer le score UX/UI final ;
+5. merger la PR #314 dans `main`.
