@@ -1,319 +1,164 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
-**Version : 2026-08-05**  
-**Statut : Production active — ODM 100 % certifié — priorité DATA → profondeur → qualité**  
-**Code de référence : `main` @ `468eb7f`**  
-**Production certifiée ODM : `dpl_2TD7QvPZSiWagox68bRHVZ1xqb3c` — `READY`**
+**Version : 2026-08-06**  
+**Statut : consolidation UX publique en cours, moteur ODM actif, priorité parallèle qualité DATA**
 
----
+Ce fichier est l’unique roadmap du projet. Les anciens plans, ledgers, fichiers `NEXT`, roadmaps SEO et programmes UX sont des preuves historiques ou des spécifications non canoniques.
 
 ## 1. Cap produit
 
-AkarFinder est un **moteur de recherche immobilier, un index national et une couche d’intelligence**.
+AkarFinder est un **moteur de recherche immobilier, un index national et une couche d’intelligence pour le marché marocain**.
 
-Le cœur produit est `/search`.
-
-L’objectif long terme est le **Property Graph du marché immobilier marocain** : une propriété potentielle, plusieurs observations, une provenance conservée et aucune certitude inventée.
+- cœur produit : `/search` ;
+- objectif long terme : **Property Graph du marché immobilier marocain** ;
+- une propriété potentielle peut regrouper plusieurs observations ;
+- provenance, fraîcheur, qualité et divergences doivent rester explicables.
 
 Pipeline canonique :
 
 `DISCOVERY → INGESTION / OBSERVATION → NORMALIZATION → CANONICALIZATION → FRESHNESS → DEDUPLICATION / CLUSTERING → ENRICHMENT → INTELLIGENCE → DISPLAY ELIGIBILITY → RANKING → PUBLICATION / SERP`
 
----
-
 ## 2. Doctrine non négociable
 
-- aucun proxy, stealth, faux Googlebot ou bypass ;
-- aucun contournement de CAPTCHA, login, rate limit ou restriction ;
-- un sitemap et `robots.txt` sont des signaux techniques, pas une licence ;
-- Source Registry obligatoire avant toute activation ;
+- no-bypass absolu ;
+- Source Registry avant activation ;
 - aucune publication depuis Discovery ou Thin Index sans eligibility ;
-- conservation de la source originale et de la provenance ;
-- aucune donnée absente inventée ;
-- aucune image, galerie ou coordonnée reprise sans droit ;
-- migrations additives et réversibles ;
+- aucune donnée, image, coordonnée ou relation partenaire inventée ;
+- vraies photos autorisées prioritaires sur les fallbacks ;
+- migrations additives, réversibles et séparées du code applicatif ;
 - `Shadow → Canary → certification → activation bornée` ;
-- une responsabilité principale par LOT et par PR.
+- une responsabilité principale, une branche, une PR et un merge par lot ;
+- toute décision UX/UI structurante est discutée avant développement.
 
----
+## 3. État acquis
 
-## 3. État réel au 5 août 2026
-
-### 3.1 Produit et UX ✅
+### Produit public et cœur Search ✅
 
 - application publique active ;
-- Acheter, Louer, Vendre et Recherche opérationnels ;
-- six visuels Option A exacts en Production ;
-- vraie photo autorisée prioritaire sur tout fallback illustré ;
-- parcours principaux protégés par CI responsive et accessibilité.
+- `/search` reste le moteur central ;
+- routage public ODM certifié jusqu’à 100 % ;
+- fallback et rollback conservés ;
+- display eligibility, provenance et quarantaine du bruit intégrés ;
+- SERP et fiche bien constituent déjà les surfaces publiques les plus solides.
 
-### 3.2 Recherche publique ODM ✅
+Les chiffres DATA, déploiements et activations datés restent dans leurs preuves techniques. Ils ne doivent pas être recopiés ici comme vérités permanentes.
 
-- read model ODM connecté à `/search` et `/api/search` ;
-- **100 % des recherches publiques éligibles routées vers ODM** ;
-- campagne Production : **240/240 HTTP 200, 240/240 ODM, 0 Legacy** ;
-- 15/15 gates de cutover PASS ;
-- p50 ODM 226,59 ms, p95 503,43 ms, p99 814,80 ms ;
-- 10 villes, 4 types et 3 intentions couverts ;
-- aucune fuite de contact, galerie, miniature ou badge commercial indu ;
-- aucune erreur runtime Vercel pendant la certification ;
-- stop switch et rollback 50 % conservés ;
-- Legacy conservé comme fallback de sécurité, sans trafic normal.
+### UX publique consolidée sur la PR #299 🟡
 
-Preuve canonique :
+Branche : `ux/home-p1-hero-title-readability`  
+Cible : `main`
 
-- run `30958909536` ;
-- branche `certification-results` ;
-- `reports/odm-full-cutover-100-production-latest.json` ;
-- `docs/ODM-FULL-CUTOVER-100-PRODUCTION-RUNBOOK.md`.
+- **Vendre** : terminé ;
+- **Accueil P1** : conception, code, responsive et audit réalisés ;
+- **Neuf P1** : conception, carte Programme fail-closed, responsive et certification visuelle réalisés ;
+- score UX/UI final Neuf : **9,1/10** ;
+- PR Neuf #306 fusionnée dans la branche consolidée ;
+- aucune de ces évolutions n’est considérée livrée en Production avant merge de la PR #299, CI finale et déploiement vérifié.
 
-### 3.3 Vérité DATA connectée — dernier snapshot certifié
+### Fondation DATA acquise ✅
 
-Snapshot Supabase non destructif du 3 août 2026 :
-
-| Indicateur | Valeur |
-|---|---:|
-| Documents Thin Index | 56 777 |
-| Immobilier probable | 34 172 |
-| Non immobiliers quarantainés | 22 586 |
-| Non classés | 19 |
-| Immobilier + display eligible | 22 481 |
-| **Pages annonce LISTING éligibles au read model public** | **7 483** |
-| Avec ville | 7 483 — 100 % |
-| Avec type | 7 203 — 96,3 % |
-| Avec intention | 7 233 — 96,7 % |
-| Avec prix | 853 — 11,4 % |
-| Avec surface | 2 085 — 27,9 % |
-| Prix + surface | 717 — 9,6 % |
-| `property_listings` | 4 508 |
-| `listing_sources` | 4 513 |
-| `property_clusters` / members | 4 369 / 4 369 |
-| Observations factuelles | 2 767 |
-
-Concentration des 7 483 pages annonce éligibles :
-
-- Agenz : 3 813 ;
-- Mubawab : 1 374 ;
-- MoulDar : 1 289 ;
-- Masaken : 749 ;
-- autres sources : 258.
-
-Les trois premières sources représentent environ **86,5 %** du corpus servi. La diversification est un gate de qualité.
-
-### 3.4 Couverture principale — snapshot du 3 août
-
-- Casablanca : 2 155 ;
-- Marrakech : 1 073 ;
-- Rabat : 984 ;
-- Tanger : 907 ;
-- Agadir : 600 ;
-- Fès : 383 ;
-- Kénitra : 323 ;
-- autres villes : profondeur encore faible ou inégale.
-
----
-
-## 4. LOTS acquis
-
-### Fondation P0 DATA ✅
-
-- référentiel géographique ;
 - Observation Ledger ;
 - Freshness/Lifecycle ;
-- scheduler et workers bornés ;
-- normalisation et qualité ;
+- normalisation et quality tiers ;
 - display eligibility ;
-- Source Registry initial ;
-- sécurité service role et RLS ;
-- Market Index et fondation Property Graph ;
-- dédoublonnage conservant les observations.
+- Source Registry ;
+- Market Index / fondation Property Graph ;
+- dédoublonnage conservant les observations ;
+- kit de feeds partenaires et politiques d’admission ;
+- activation progressive ODM certifiée.
 
-### ODM 01 → 10F ✅
+## 4. Lot actif — DOC-CANONICAL-1 🔵
 
-- read model Thin Index ;
-- curseur public ;
-- qualité et ranking ;
-- quarantaine du bruit vertical ;
-- classification `LISTING / CATEGORY / AMBIGUOUS` ;
-- récupération prudente des signaux économiques stockés ;
-- exclusion publique des catégories et documents ambigus.
-
-### Cutover Search ODM 1 % → 100 % ✅
-
-- dual-read et divergences ;
-- contrôleur déterministe fail-closed ;
-- paliers certifiés 10 %, 25 %, 50 % et 100 % ;
-- fallback Legacy ;
-- parité page/API ;
-- campagne 100 % complète et preuve persistante.
-
-### Visual Option A ✅
-
-- famille exacte approuvée ;
-- intégration Acheter/Louer/Search/Vendre ;
-- fallbacks de cartes ;
-- priorité des vraies photos ;
-- déploiement Production vérifié.
-
----
-
-## 5. Programme actif
-
-## LOT I — Consolidation ODM 100 % P0 🔵
-
-Objectif : rendre le cutover durable sans ralentir le retour au chantier DATA.
+Objectif : rétablir une seule boussole documentaire.
 
 À livrer :
 
-- routeur public unique pour `/search` et `/api/search` ;
-- événements structurés `odm_public_routing_v1` ;
-- distinction `odm / legacy_primary / legacy_fallback` ;
-- latence, volumes, erreurs et état du stop switch observables ;
-- empreinte de clé stable sans requête brute ;
-- fallback Legacy et rollback 50 % conservés ;
-- aucune suppression du moteur Legacy dans ce LOT.
+- `README.md`, `docs/ROADMAP.md` et `docs/SESSION.md` comme seuls documents canoniques ;
+- lecture et classification de tous les autres Markdown ;
+- retrait de toute prétention concurrente à décrire l’état courant ;
+- aucun effacement de preuve technique avant vérification des références ;
+- suppression du workflow temporaire d’audit après usage.
 
-Gate : tests ciblés, TypeScript, build, CI complète et smoke Production sans erreur runtime.
+Gate : inventaire exhaustif, matrice de compatibilité, CI sans régression et validation du propriétaire avant suppression des documents obsolètes.
 
-Après ce LOT, aucun autre chantier de routage ne doit devancer la profondeur DATA.
+## 5. Séquence UX publique validée
 
-## LOT A — Honest Listing Depth P0 🔴
+Après consolidation documentaire et merge propre de la PR #299 :
 
-Objectif : passer de 7 483 à une profondeur significativement supérieure de **vraies pages annonce**, sans bruit.
+1. **Acheter / Louer** — audit commun, questions, décision, lot ciblé ;
+2. **Mon Projet / Compagnon** — continuité de décision et vérité des états ;
+3. **Carte / Quartier** — usage réel, densité DATA et lisibilité mobile ;
+4. **Pro / Agences / Promoteurs** — pages publiques et activation professionnelle ;
+5. **Immobilier / SEO** — villes, quartiers et intentions uniquement avec contenu utile ;
+6. **recette de cohérence SERP + fiche bien** — sans refonte gratuite du cœur déjà solide.
 
-À livrer :
+Aucune page n’est modifiée sans audit de l’existant et discussion section par section.
 
-- acquisition connectée de nouvelles URLs `LISTING` ;
-- aucune page catégorie ou recherche admise ;
-- provenance et canonical URL obligatoires ;
-- déduplication URL avant insertion ;
-- classification verticale et documentaire avant eligibility ;
-- rapport net-new par source, ville, type et intention ;
-- mesure du gain réel après quarantaine.
+## 6. Séquence DATA prioritaire
 
-Gate : aucun objectif de volume validé sur le nombre total de documents Thin Index.
+Les lots DATA continuent sans créer de modèle parallèle :
 
-## LOT B — Source Registry & Partner Feeds P0 🔴
+1. **B3.4.4 — déduplication et change detection** ;
+2. **B3.4.5 — file de quarantaine et revue** ;
+3. **B3.4.6 — publication Canary bornée** ;
+4. **B3.5 — Professional Workspace**, en consolidant les tables et flux existants ;
+5. profondeur de vraies pages `LISTING` ;
+6. vérité prix / surface / géographie ;
+7. fraîcheur et lifecycle par source ;
+8. Property Graph et déduplication V3 ;
+9. certification nationale de profondeur et diversité.
 
-Objectif : réduire la dépendance aux résultats publics indexés par des accès durables et autorisés.
+### B3.5 — principe directeur
 
-Priorités : feeds promoteurs/agences et revue explicite de chaque source : discovery, fetch, stockage, réutilisation, images, contacts, affichage, citation, cadence, expiration et date de revue.
+Avant toute modification : cartographier les structures existantes, notamment organisations, memberships, demandes d’activation, soumissions, projets, médias, ownership, leads, feeds partenaires, routes `/pro/*`, authentification et RLS.
 
-Gate : aucune source n’est déclarée autorisée parce qu’elle possède un sitemap ou un `robots.txt` accessible.
-
-## LOT C — Economic Truth P0 🔴
-
-Objectif : augmenter fortement les 853 prix, 2 085 surfaces et 717 lignes comparables sans deviner.
-
-- typage prix total / loyer / prix au m² / à partir de ;
-- devise et valeur brute ;
-- surfaces habitables, terrain, construites et non typées ;
-- contradictions, provenance et confiance par champ ;
-- suppression publique indépendante des champs ambigus ;
-- précision mesurée sur corpus annoté.
-
-Gate : zéro valeur publiée uniquement parce qu’un nombre existe dans un texte.
-
-## LOT D — Freshness & Lifecycle P0 🟠
-
-Objectif : distinguer observation récente, accessibilité, changement matériel, retrait probable et état inconnu.
-
-- `first_seen`, `last_seen`, `last_successful_fetch`, `last_material_change` ;
-- revisite selon politique de source ;
-- 404/403/429/timeout sans bypass ;
-- circuit breaker et budget par source ;
-- réactivation et expiration explicables.
-
-Gate : l’ancienneté seule ne confirme jamais un retrait.
-
-## LOT F — Property Graph & Dedup V3 P1 🟠
-
-Objectif : une propriété potentielle, plusieurs observations.
-
-- rapprochement multi-source ;
-- géographie, prix, surface, texte et médias autorisés ;
-- doublon fort / rapprochement probable / ressemblance ;
-- propriété canonique versionnée ;
-- explication et rollback ;
-- aucune fusion certaine sur signal faible.
-
-## LOT G — Search Depth Certification P1 🟠
-
-Corpus : principales villes, quartiers, acheter/louer/neuf, types principaux, FR/AR/Darija/mixte.
-
-Mesures : précision, zéro résultat, diversité, fraîcheur, prix/surface, doublons, redirections, latence et accessibilité.
-
-## LOT H — Premium Intelligence P1/P2 🟡
-
-À reprendre seulement après les gates DATA : Map Atlas, Price Atlas, Property Passport, quartiers, comparaison avancée, historique, alertes et expériences professionnelles.
-
----
-
-## 6. Ordre d’exécution verrouillé
-
-1. terminer Consolidation ODM 100 % ;
-2. Honest Listing Depth ;
-3. Source Registry et feeds ;
-4. Economic Truth ;
-5. Freshness ;
-6. Property Graph/Dedup ;
-7. Search Depth Certification ;
-8. couverture nationale équilibrée ;
-9. intelligence premium ;
-10. Final Production Release Gate.
-
----
+Aucun nouveau modèle parallèle n’est créé lorsqu’une structure actuelle peut être consolidée.
 
 ## 7. Cibles
 
-### Prochaine cible intermédiaire
+### Qualité publique
 
-- augmenter le corpus `LISTING` éligible sans bruit ;
-- conserver au minimum 90 % de résultats avec type et intention ;
-- porter prix et surface comparables nettement au-delà de 9,6 % ;
-- réduire la dépendance aux trois premières sources ;
-- mesurer les gains net-new après quarantaine et déduplication.
+- parcours compréhensibles en quelques secondes ;
+- mobile sans débordement ni longueur inutile ;
+- aucun CTA fictif ;
+- données manquantes affichées comme telles ;
+- partenaires et promoteurs seulement après activation réelle.
 
-### Cible stratégique
+### Qualité DATA
 
-**100 000+ représentations immobilières exploitables**, avec une sous-métrique obligatoire et séparée pour les vraies pages annonce `LISTING` publiables.
+- augmenter les vraies pages annonce éligibles, pas le volume brut ;
+- améliorer prix, surface, géographie, fraîcheur et diversité ;
+- réduire la concentration par source ;
+- viser **100 000+ représentations exploitables** sans sacrifier droit, provenance, fraîcheur, qualité ni dédoublonnage.
 
-Le chiffre 100 000 ne peut inclure ni catégories, ni résultats de recherche, ni URLs ambiguës, ni verticales non immobilières.
+## 8. Ce qui reste interdit
 
----
-
-## 8. Ce qui reste gelé
-
-- nouvelles features périphériques ;
-- refonte générale supplémentaire ;
-- collecte massive non autorisée ;
-- suppression immédiate de Legacy ;
-- changement ranking sans expérience contrôlée ;
-- promesse de couverture totale non certifiée ;
-- badges « vérifié », « fiable » ou « partenaire » sans droit et preuve ;
-- réutilisation d’images ou contacts externes sans autorisation.
-
----
+- modèle parallèle inutile ;
+- faux catalogue, faux programme ou faux partenaire ;
+- badge marketing non prouvé ;
+- contenu externe réutilisé sans droit ;
+- collecte massive non gouvernée ;
+- changement de ranking sans expérience contrôlée ;
+- suppression d’un fallback avant certification ;
+- nouvelle roadmap ou nouvelle session concurrente.
 
 ## 9. Définition de terminé
 
-Un LOT est terminé seulement si :
+Un lot est terminé uniquement si :
 
-- code et documentation sont mergés dans `main` ;
-- tests ciblés, TypeScript et build sont verts ;
-- preuve connectée disponible pour toute affirmation DATA ;
-- migrations vérifiées et réversibles lorsqu’elles existent ;
+- responsabilité et périmètre respectés ;
+- code et documentation alignés ;
+- tests ciblés, TypeScript et build verts ;
 - CI complète sans régression pertinente ;
-- activation, trafic et code disponible sont distingués ;
-- rollback démontré ;
-- PR, SHA, limites et prochaine étape documentés.
+- migrations séparées et réversibles lorsqu’elles existent ;
+- preuves disponibles pour les affirmations DATA ou UX ;
+- PR mergée dans sa branche cible ;
+- activation et Production distinguées du simple code disponible ;
+- `SESSION.md` réécrit avec la prochaine action exacte.
 
----
+## 10. Prochaine action exacte
 
-## 10. Prochain point de départ
-
-Après la clôture du LOT I :
-
-**acquisition connectée et gouvernée de vraies pages annonce `LISTING`, suivie d’une recertification complète du corpus public ODM.**
-
-Aucune nouvelle feature UX ou nouvelle phase de routage ne doit devancer ce LOT DATA.
+1. terminer l’audit documentaire et faire valider les documents à retirer ;
+2. supprimer le workflow temporaire d’audit ;
+3. recertifier puis merger la PR #299 dans `main` ;
+4. commencer l’audit **Acheter / Louer**, sans coder avant discussion.
