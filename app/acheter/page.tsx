@@ -1,14 +1,15 @@
 import { redirect } from "next/navigation";
-import { searchListings } from "@/lib/search";
-import { IntentHubV2 } from "@/components/intent/IntentHubV2";
+
+import { BuyIntentHubP1 } from "@/components/intent/BuyIntentHubP1";
 import { LegacyIntentHashRedirect } from "@/components/intent/LegacyIntentHashRedirect";
+import { searchListings } from "@/lib/search";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Acheter au Maroc — AkarFinder",
   description:
-    "Commencez votre recherche d'achat au Maroc puis affinez-la dans le moteur AkarFinder avec des niveaux d'information et des sources explicites.",
+    "Explorez les biens à vendre au Maroc selon votre ville, votre budget et votre projet, avec des informations et des sources explicites.",
 };
 
 export default async function AcheterPage({
@@ -32,8 +33,7 @@ export default async function AcheterPage({
   return (
     <>
       <LegacyIntentHashRedirect intent="buy" />
-      <IntentHubV2
-        intent="buy"
+      <BuyIntentHubP1
         listings={searchResult.listings}
         totalListings={searchResult.total > 0 ? searchResult.total : null}
       />
