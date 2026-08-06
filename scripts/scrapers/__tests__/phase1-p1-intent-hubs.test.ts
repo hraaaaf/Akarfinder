@@ -10,35 +10,42 @@ function source(path: string) {
 describe("Phase 1 P1 — canonical intent hubs", () => {
   const acheterPage = source("app/acheter/page.tsx");
   const louerPage = source("app/louer/page.tsx");
-  const hub = source("components/intent/IntentHubV2.tsx");
+  const buyHub = source("components/intent/BuyIntentHubP1.tsx");
+  const rentHub = source("components/intent/IntentHubV2.tsx");
 
-  it("keeps Acheter and Louer as hubs that hand off to canonical Search", () => {
-    assert.ok(acheterPage.includes("IntentHubV2"));
+  it("keeps Acheter and Louer as specialized hubs that hand off to canonical Search", () => {
+    assert.ok(acheterPage.includes("BuyIntentHubP1"));
     assert.ok(louerPage.includes("IntentHubV2"));
     assert.ok(acheterPage.includes('transaction_type: "buy"'));
     assert.ok(louerPage.includes('transaction_type: "rent"'));
     assert.ok(louerPage.includes('"max_price"'));
     assert.ok(louerPage.includes('"min_price"'));
-    assert.ok(hub.includes('action="/search"'));
-    assert.ok(hub.includes("Tous les filtres"));
+    assert.ok(buyHub.includes('action="/search"'));
+    assert.ok(buyHub.includes('name="transaction_type" value="buy"'));
+    assert.ok(buyHub.includes("Tous les filtres"));
+    assert.ok(rentHub.includes('action="/search"'));
+    assert.ok(rentHub.includes("Tous les filtres"));
   });
 
   it("does not expose fake favorites, pseudo furnishing filters, or the legacy rent alert flow", () => {
-    assert.equal(hub.includes("Heart"), false);
-    assert.equal(hub.includes("Meublé"), false);
-    assert.equal(hub.includes("Vide"), false);
-    assert.equal(hub.includes("RentAlertForm"), false);
-    assert.equal(hub.includes("/api/alerts"), false);
+    assert.equal(rentHub.includes("Heart"), false);
+    assert.equal(rentHub.includes("Meublé"), false);
+    assert.equal(rentHub.includes("Vide"), false);
+    assert.equal(rentHub.includes("RentAlertForm"), false);
+    assert.equal(rentHub.includes("/api/alerts"), false);
     assert.equal(louerPage.includes("RentAlertForm"), false);
+    assert.equal(buyHub.includes("rendement garanti"), false);
   });
 
   it("uses information-level language instead of a generic reliability promise", () => {
-    assert.ok(hub.includes("Niveau d’information explicite"));
-    assert.ok(hub.includes("Analysé par AkarFinder"));
-    assert.ok(hub.includes("Analyse partielle"));
-    assert.ok(hub.includes("Offre observée"));
-    assert.equal(hub.includes("PRIX_OBSERVES"), false);
-    assert.equal(hub.includes("LOYERS_QUARTIERS"), false);
+    for (const hub of [buyHub, rentHub]) {
+      assert.ok(hub.includes("Niveau d’information explicite"));
+      assert.ok(hub.includes("Analysé par AkarFinder"));
+      assert.ok(hub.includes("Analyse partielle"));
+      assert.ok(hub.includes("Offre observée"));
+      assert.equal(hub.includes("PRIX_OBSERVES"), false);
+      assert.equal(hub.includes("LOYERS_QUARTIERS"), false);
+    }
   });
 });
 
