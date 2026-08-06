@@ -1,0 +1,38 @@
+name: RENT P1 Typology Fix
+
+on:
+  push:
+    branches:
+      - ux/rent-p1-specialized-journey
+    paths:
+      - .github/workflows/rent-p1-typology-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ux/rent-p1-specialized-journey
+      - name: Apply scoped correction
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          path = Path('components/intent/RentIntentHubP1.tsx')
+          text = path.read_text()
+          anchor = 'const CITIES = ["Casablanca", "Rabat", "Marrakech", "Tanger", "Agadir", "Fès"] as const;\n'
+          replacement = anchor + '\nconst RENT_PROPERTY_TYPES = OPTION_A_PROPERTY_TYPES.filter((item) => item.value !== "land");\n'
+          if 'const RENT_PROPERTY_TYPES' not in text:
+              text = text.replace(anchor, replacement)
+          text = text.replace('xl:grid-cols-6">{OPTION_A_PROPERTY_TYPES.map((item)', 'xl:grid-cols-5">{RENT_PROPERTY_TYPES.map((item)')
+          path.write_text(text)
+          PY
+          rm .github/workflows/rent-p1-typology-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/intent/RentIntentHubP1.tsx .github/workflows/rent-p1-typology-fix.yml
+          git commit -m "fix(rent): keep rental typologies intent-relevant"
+          git push origin HEAD:ux/rent-p1-specialized-journey
