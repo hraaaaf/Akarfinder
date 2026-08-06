@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { IntentHubV2 } from "@/components/intent/IntentHubV2";
 import { LegacyIntentHashRedirect } from "@/components/intent/LegacyIntentHashRedirect";
+import { RentIntentHubP1 } from "@/components/intent/RentIntentHubP1";
 import { searchListings } from "@/lib/search";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Louer au Maroc — AkarFinder",
   description:
-    "Commencez votre recherche de location au Maroc puis affinez budget, type et localisation dans le moteur AkarFinder.",
+    "Recherchez une location au Maroc selon votre zone, votre budget mensuel et le type de logement, avec des informations et des sources explicites.",
 };
 
 function setPositive(target: URLSearchParams, key: string, value?: string) {
@@ -44,8 +44,7 @@ export default async function LouerPage({
   return (
     <>
       <LegacyIntentHashRedirect intent="rent" />
-      <IntentHubV2
-        intent="rent"
+      <RentIntentHubP1
         listings={searchResult.listings}
         totalListings={searchResult.total > 0 ? searchResult.total : null}
       />
