@@ -3,7 +3,7 @@ import { ArrowRight, Building2, CheckCircle2, Compass, Home, Info, MapPin, Searc
 
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { NeufCompletionSections } from "@/components/neuf/NeufCompletionSections";
+import { NeufCompletionSections, NeufFinalCTA } from "@/components/neuf/NeufCompletionSections";
 import { NeufHeroProgramPreview } from "@/components/neuf/NeufHeroProgramPreview";
 import { ProgramsSection } from "@/components/neuf/ProgramCard";
 import { Container } from "@/components/ui/Container";
@@ -89,6 +89,7 @@ export function NeufPageShellV2() {
         <article className="rounded-3xl border border-[#DCE8F5] bg-[#0B1F3A] p-6 text-white"><p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#F6D28B]">Vous êtes promoteur</p><h2 className="mt-3 text-xl font-extrabold">Structurez et présentez vos programmes</h2><p className="mt-2 text-[13px] leading-6 text-white/70">Découvrez l’expérience cible avant l’activation de vos données réelles et autorisées.</p><div className="mt-5 flex flex-wrap gap-4"><Link href="/demo/promoteur" className="inline-flex items-center gap-2 text-[13px] font-extrabold text-[#F6D28B]">Voir la démo promoteur <ArrowRight size={13} /></Link><Link href="/promoteurs" className="inline-flex items-center gap-2 text-[13px] font-extrabold text-white">Espace promoteurs <ArrowRight size={13} /></Link></div></article>
       </div></Container></section>
 
+      <NeufFinalCTA />
       <SiteFooter />
     </main>
   );
