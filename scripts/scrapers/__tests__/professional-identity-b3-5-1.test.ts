@@ -74,10 +74,12 @@ test("workspace access requires active membership and an active owner", () => {
     })),
     false,
   );
-  assert.equal(
-    isWorkspaceAccessibleContext(context("f", "Zeta", "validated", { has_active_owner: false as true })),
-    false,
-  );
+
+  const ownerlessContext = {
+    ...context("f", "Zeta", "validated"),
+    has_active_owner: false,
+  } as unknown as ProfessionalMembershipContext;
+  assert.equal(isWorkspaceAccessibleContext(ownerlessContext), false);
 });
 
 test("preferred organization wins only when it is accessible", () => {
@@ -127,4 +129,5 @@ test("identity migration protects validated organizations from losing their last
   assert.match(sql, /create constraint trigger professional_organization_active_owner_guard/i);
   assert.match(sql, /create constraint trigger professional_membership_active_owner_guard/i);
   assert.match(sql, /deferrable initially deferred/i);
+  assert.match(sql, /if tg_op = 'DELETE' then[\s\S]*return old;/i);
 });
