@@ -44,13 +44,19 @@ Ce fichier est le handover opérationnel court du projet. L’historique détail
 - Search reste le moteur canonique ;
 - l’espace `/mon-projet/espace` reste l’autorité de continuité utilisateur.
 
-## CI
+## CI et synchronisation
 
-Le premier passage sur le commit `25aca9a75a0fef4ee337fc16155e3ecbd64f5295` a produit 10 gates verts et 11 rouges. Les logs montrent une cause d’infrastructure GitHub Actions avant checkout :
+Le premier passage sur le commit `25aca9a75a0fef4ee337fc16155e3ecbd64f5295` a produit 10 gates verts et 11 rouges. Les logs ont confirmé une cause d’infrastructure GitHub Actions avant checkout :
 
 `Failed to resolve action download info — Service Unavailable`
 
-Les 11 workflows échoués ont été relancés sans modification produit. Les mises à jour documentaires déclenchent ensuite une certification du nouveau commit final.
+La branche a ensuite été synchronisée avec le `main` incluant DATA-COVERAGE-1 par le merge commit `e821ac96df808a0d97031507bb0867f1630fdd1e` :
+
+- branche à jour avec `main` ;
+- aucune perte des fichiers DATA-COVERAGE-1 ;
+- cinq fichiers P1B réappliqués sans conflit ;
+- ancienne file de workflows considérée obsolète ;
+- certification relancée sur le SHA courant via cette mise à jour de handover.
 
 ## Hors périmètre
 
@@ -64,7 +70,7 @@ Ces décisions devront faire l’objet de questions avant un nouveau lot.
 
 ## Prochaine action exacte
 
-1. vérifier la CI complète du commit documentaire final ;
+1. vérifier la CI complète du SHA synchronisé ;
 2. distinguer toute régression réelle d’un incident d’infrastructure ;
 3. certifier le comportement du bandeau dans Search ;
 4. confirmer la mergeabilité de la PR #315 ;
