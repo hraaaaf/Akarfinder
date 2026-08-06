@@ -56,6 +56,8 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/professional-auth-ownership-profiles-v1.test.ts
       - name: Professional Identity B3.5.1 suite
         run: npx tsx --test scripts/scrapers/__tests__/professional-identity-b3-5-1.test.ts
+      - name: Professional Capabilities B3.5.2 suite
+        run: npx tsx --test scripts/scrapers/__tests__/professional-capabilities-b3-5-2.test.ts
       - name: Partner Commercial Activation V1 suite
         run: npx tsx --test scripts/scrapers/__tests__/partner-commercial-activation-v1.test.ts
       - name: Neighborhood Intelligence Reference V2 suite
