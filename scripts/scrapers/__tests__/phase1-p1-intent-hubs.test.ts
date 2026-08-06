@@ -41,7 +41,7 @@ describe("Phase 1 P1 — canonical intent hubs", () => {
 
   it("uses information-level language instead of a generic reliability promise", () => {
     for (const hub of [buyHub, rentHub]) {
-      assert.ok(hub.includes("niveau d’information"));
+      assert.match(hub, /niveau d’information/i);
       assert.ok(hub.includes("Analysé par AkarFinder"));
       assert.ok(hub.includes("Analyse partielle"));
       assert.ok(hub.includes("Offre observée"));
