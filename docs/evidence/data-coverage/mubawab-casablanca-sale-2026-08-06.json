@@ -1,0 +1,19 @@
+{
+  "source": "mubawab.ma",
+  "segmentKey": "casablanca:all-property-types:sale",
+  "categoryUrl": "https://www.mubawab.ma/fr/ct/casablanca/immobilier-a-vendre",
+  "announcedResults": 6446,
+  "observedAt": "2026-08-06T16:30:00.000Z",
+  "observationMethod": "public category page counter",
+  "sourceSnapshot": {
+    "heading": "Immobilier à vendre à Casablanca",
+    "counterText": "(6446 résultats)"
+  },
+  "discoveryManifest": "scripts/scrapers/output/mubawab-expansion-clean-listings.json",
+  "collectorRun": "docs/MUBAWAB_DEPTH_EXPANSION_LAST_RUN.json",
+  "notes": [
+    "The source counter is a point-in-time public observation.",
+    "The discovery manifest was produced on 2026-07-02 and is intentionally retained as historical evidence.",
+    "Individual listing URLs use /fr/a/ or /fr/pa/. Project landing pages using /fr/p/ are excluded from listing coverage."
+  ]
+}
