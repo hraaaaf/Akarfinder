@@ -1,0 +1,58 @@
+name: Documentation Audit Bundle
+
+on:
+  push:
+    branches:
+      - ux/home-p1-hero-title-readability
+    paths:
+      - ".github/workflows/documentation-audit-bundle.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bundle-markdown:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build complete Markdown inventory
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json, re
+
+          excluded = {'.git', 'node_modules', '.next'}
+          paths = sorted(
+              p for p in Path('.').rglob('*.md')
+              if not any(part in excluded for part in p.parts)
+          )
+          out = Path('artifacts/documentation-audit')
+          out.mkdir(parents=True, exist_ok=True)
+          inventory = []
+          bundle = []
+          for path in paths:
+              text = path.read_text(encoding='utf-8', errors='replace')
+              headings = [line.strip() for line in text.splitlines() if re.match(r'^#{1,6}\s+', line)]
+              inventory.append({
+                  'path': path.as_posix(),
+                  'bytes': len(text.encode('utf-8')),
+                  'lines': len(text.splitlines()),
+                  'sha256': hashlib.sha256(text.encode('utf-8')).hexdigest(),
+                  'headings': headings,
+              })
+              bundle.append(f"\n\n===== BEGIN FILE: {path.as_posix()} =====\n{text}\n===== END FILE: {path.as_posix()} =====\n")
+          (out / 'inventory.json').write_text(json.dumps(inventory, ensure_ascii=False, indent=2), encoding='utf-8')
+          (out / 'all-markdown.txt').write_text(''.join(bundle), encoding='utf-8')
+          (out / 'summary.txt').write_text(
+              f"markdown_files={len(paths)}\nbytes={sum(x['bytes'] for x in inventory)}\nlines={sum(x['lines'] for x in inventory)}\n",
+              encoding='utf-8',
+          )
+          print((out / 'summary.txt').read_text())
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: documentation-audit-bundle
+          path: artifacts/documentation-audit
+          retention-days: 7
