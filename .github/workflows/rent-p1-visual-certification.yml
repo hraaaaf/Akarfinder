@@ -79,4 +79,4 @@ jobs:
           path: artifacts/rent-p1
           if-no-files-found: error
 
-# Final recertification after intent-specific typology filtering.
+# Canonical Terrain taxonomy correction certified here.
