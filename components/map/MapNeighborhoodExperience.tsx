@@ -417,20 +417,20 @@ export function MapNeighborhoodExperience({
       : `${cityFilter} · ${visiblePoints.length} quartier${visiblePoints.length !== 1 ? "s" : ""}`;
 
   return (
-    <div className="relative flex flex-col bg-background" style={{ height: "calc(100svh - 64px)" }}>
-      <section className="z-20 flex-shrink-0 border-b border-white/10 bg-deepblue text-white">
-        <div className="mx-auto flex max-w-[1480px] flex-col gap-2 px-3 py-2.5 sm:px-5 md:flex-row md:items-center md:justify-between md:gap-4 md:py-3">
+    <div className="relative flex min-w-0 flex-col bg-background" style={{ height: "calc(100svh - 64px)" }}>
+      <section className="z-20 min-w-0 flex-shrink-0 border-b border-white/10 bg-deepblue text-white">
+        <div className="mx-auto flex min-w-0 max-w-[1480px] flex-col gap-2 px-3 py-2.5 sm:px-5 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-3">
           <div className="min-w-0">
-            <p className="hidden text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-accent-blue-400 md:block">
+            <p className="hidden text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-accent-blue-400 lg:block">
               Carte immobilière · repères indicatifs
             </p>
-            <h1 className="truncate text-[1rem] font-extrabold tracking-[-0.025em] md:mt-0.5 md:text-[1.28rem]">
+            <h1 className="truncate text-[1rem] font-extrabold tracking-[-0.025em] lg:mt-0.5 lg:text-[1.28rem]">
               Explorer les quartiers du Maroc
             </h1>
           </div>
 
-          <div className="flex min-w-0 items-center gap-2">
-            <label className="min-w-0 flex-1 md:w-[205px] md:flex-none">
+          <div className="flex w-full min-w-0 items-center gap-2 lg:w-auto">
+            <label className="min-w-0 flex-1 sm:w-[205px] sm:flex-none">
               <span className="sr-only">Ville</span>
               <select
                 value={cityFilter}
@@ -468,7 +468,7 @@ export function MapNeighborhoodExperience({
         </div>
       </section>
 
-      <div className="relative min-h-0 flex-1 overflow-hidden">
+      <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden">
         <div ref={mapContainerRef} className="absolute inset-0" />
 
         {!mapLoaded ? (
