@@ -60,7 +60,6 @@ write_query() {
   local files
   files="$(cat "${file_list}")"
   cat > "${sql_file}" <<SQL
-INSTALL httpfs;
 LOAD httpfs;
 SET threads=2;
 SET memory_limit='6GB';
