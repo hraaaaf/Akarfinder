@@ -13,87 +13,47 @@ AkarFinder est un **moteur de recherche immobilier, un index national et une cou
 2. `docs/ROADMAP.md` — ordre d’exécution ;
 3. `docs/SESSION.md` — handover opérationnel court.
 
-Ordre de vérité :
-
-`code mergé dans main → README.md → ROADMAP.md → SESSION.md → specs techniques → preuves historiques`.
+Ordre de vérité : `code mergé → README → ROADMAP → SESSION → specs/preuves historiques`.
 
 ## Doctrine
 
 Pipeline :
+`DISCOVERY → INGESTION/OBSERVATION → NORMALIZATION → CANONICALIZATION → FRESHNESS → DEDUPLICATION → ENRICHMENT → INTELLIGENCE → DISPLAY ELIGIBILITY → RANKING → PUBLICATION/SERP`
 
-`DISCOVERY → INGESTION/OBSERVATION → NORMALIZATION → CANONICALIZATION → FRESHNESS → DEDUPLICATION/CLUSTERING → ENRICHMENT → INTELLIGENCE → DISPLAY ELIGIBILITY → RANKING → PUBLICATION/SERP`
-
-Principes non négociables :
-
-- aucune donnée absente n’est inventée ;
-- provenance et canonical URL restent explicables ;
-- volume brut ≠ inventaire publiable ;
-- robots/sitemap/capability ≠ permission ;
-- no-bypass absolu ;
-- Source Registry obligatoire avant activation ;
-- `DISCOVERED ≠ AUDITED ≠ POLICY_ASSIGNED ≠ ELIGIBLE ≠ INGESTIBLE ≠ DISPLAYABLE` ;
-- partner/autorisé ≠ public-indexed ≠ signal interne ;
-- `Shadow → Canary → certification → activation bornée` pour les changements DATA/Search importants ;
-- une responsabilité, une branche, une PR, un merge par lot.
+Invariants : aucune donnée inventée ; provenance explicable ; volume brut ≠ inventaire publiable ; robots/sitemap/capability ≠ permission ; no-bypass absolu ; Source Registry obligatoire ; `Shadow → Canary → certification → activation bornée` ; un lot = une responsabilité/branche/PR/merge.
 
 ## Architecture active
 
-- Next.js 15 / React 19 / TypeScript / Tailwind ;
-- Supabase PostgreSQL ;
-- Vercel ;
-- MapLibre GL ;
-- Geo Registry canonique ;
-- Source Registry v2 ;
-- Observation/Freshness/quality/dedup pipeline ;
-- CI GitHub Actions avec gates DATA, UX, accessibilité et build.
+Next.js 15 / React 19 / TypeScript / Tailwind ; Supabase PostgreSQL ; Vercel ; MapLibre GL ; Geo Registry ; Source Registry v2 ; pipeline Observation/Freshness/quality/dedup ; CI GitHub Actions.
 
 ## État UX
 
-- CARTE-QUARTIER-P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
-- P1A.2 ✅ PR #334 — `district` structuré dans Search ;
-- P1A.3 ✅ PR #349 — Map state/navigation pilotés par URL, **9,3/10** ;
-- prochain UX : **P1A.4 — Map Design System**.
+- P1A.1 ✅ PR #328 — Geo Canonical Core, 9,5/10 ;
+- P1A.2 ✅ PR #334 — Search Geo Contract ;
+- P1A.3 ✅ PR #349 — Map State & Navigation, 9,3/10 ;
+- prochain : **P1A.4 — Map Design System**.
 
 ## État DATA acquis
 
-### DATA-1 — Census / Registry ✅
-
-- réserve B3 : **37 009 URLs / 7 051 domaines** ;
-- Common Crawl : **300/300 Parquet**, **8 727 registered domains** ;
-- univers réconcilié : **15 238 domaines** ;
-- 230 `PRIMARY_SOURCE_CANDIDATE` ;
-- 625 `PORTAL_CANDIDATE` ;
-- DATA-1.5 → DATA-1.6B : capability + policy + Registry, **0 activation non autorisée**.
-
-### DATA-4 — Reservoir Strategy
-
-- DATA-4.0 ✅ PR #341 : Avito + Mubawab = **35 134 normalized**, **3 588 technical display**, **0 policy-activable** ;
-- DATA-4.1A ✅ PR #343 : Avito `unavailable` = 95,06 % bruit/non-immobilier ; seulement **73** core-récupérables, **0 policy-activable** ;
-- DATA-4.2 ✅ PR #344 : `daragadir.com` gagne la lane `ADMISSIBLE_GROWTH`, `agenz.ma` la lane `PARTNERSHIP_UPSIDE` ;
-- DATA-4.3A ✅ PR #347 : Dar Agadir = **5 ELIGIBLE_SHADOW**, **6 425 revalidation-required** ;
-- DATA-4.3B ✅ PR #348 : sitemap actuel = **5 905 URLs**, **5 673 seed-only** encore présentes ;
-- DATA-4.3C ✅ PR #351 : **5 566 SHADOW_READY**, dont **5 564 seed-only**, sans write ni activation ;
-- DATA-4.3D ✅ PR #353 : **100-row reversible freshness evidence canary DRY_RUN**, canal `public_sitemap_presence`, TTL **14 jours**, **100/100 rollback**, **20/20 gates verts**, **0 DB/freshness write**, **0 activation**.
+- DATA-1 ✅ : census/Registry, 15 238 domaines, 230 primary-source candidates, 625 portal candidates ;
+- DATA-4.0 ✅ PR #341 : Avito + Mubawab = 35 134 normalized, 3 588 technical display, 0 policy-activable ;
+- DATA-4.1A ✅ PR #343 : Avito unavailable = 95,06 % bruit ; 73 core-récupérables, 0 policy-activable ;
+- DATA-4.2 ✅ PR #344 : Dar Agadir gagne `ADMISSIBLE_GROWTH`, Agenz `PARTNERSHIP_UPSIDE` ;
+- DATA-4.3A ✅ PR #347 : 5 `ELIGIBLE_SHADOW`, 6 425 revalidation-required ;
+- DATA-4.3B ✅ PR #348 : 5 905 URLs sitemap, 5 673 seed-only encore présentes ;
+- DATA-4.3C ✅ PR #351 : 5 566 `SHADOW_READY`, dont 5 564 seed-only ;
+- DATA-4.3D ✅ PR #353 : 100-row reversible dry-run, `public_sitemap_presence`, TTL 14 jours, 100/100 rollback, 20/20 gates, 0 write/activation ;
+- **DATA-4.3E ✅ PR #355** : premier write freshness production borné sur 10 URLs, 10/10 apply, 10/10 verify, 10/10 rollback, retour exact à `seed_only`/NULL/`[]`/metadata originale. Les 10 URLs restent dans `public_search_representations_v1` après rollback, donc cette présence publique préexistait au canary. Seule trace non restaurée : `updated_at`, ce qui est documenté.
 
 ## Décision DATA courante
 
-**DATA-4.3E — First Bounded Freshness Write Canary**.
-
-Objectif : appliquer le signal `public_sitemap_presence` à un très petit canary réversible, avec :
-
-- scope exact et déterministe ;
-- snapshot before + rollback exact ;
-- aucune activation SERP automatique ;
-- aucun fetch de fiche détail ;
-- aucun content reuse ;
-- Source Registry toujours autoritaire ;
-- vérification production après write puis rollback rehearsal.
+**DATA-4.3F — Controlled Promotion Design** : définir comment promouvoir progressivement le signal `public_sitemap_presence` au-delà du canary, avec batchs bornés, TTL/expiration, rollback, observabilité et aucune activation publique implicite.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 
 ## Règles d’exécution
 
-Un lot n’est terminé que si : scope respecté, tests/build/gates verts, preuves disponibles, Registry respecté, aucun bypass, PR mergée, production vérifiée si write, rollback disponible si mutation, et les 3 MD canoniques alignés.
+Un lot n’est terminé que si : scope respecté, tests/build/gates verts, preuves disponibles, Registry respecté, aucun bypass, PR mergée, production vérifiée si write, rollback vérifié si mutation, et les 3 MD canoniques alignés.
 
 ## Démarrage local
 
