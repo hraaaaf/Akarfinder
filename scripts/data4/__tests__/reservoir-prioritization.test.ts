@@ -58,6 +58,27 @@ test("prohibited source cannot win partnership upside", () => {
   assert.equal(result.lane, "HOLD");
 });
 
+test("small pristine catalog cannot win the scale-oriented partnership lane", () => {
+  const result = prioritizeReservoir(row({
+    sourceDomain: "tiny-perfect.ma",
+    normalizedRows: 191,
+    normalizedOk: 191,
+    freshConfirmed: 191,
+    withCity: 191,
+    withPrice: 100,
+    withSurface: 120,
+    coreStructured: 191,
+    decisionStructured: 191,
+    technicalDisplayRows: 191,
+    avgQualityScore: 80,
+    displayPolicy: "internal_signal_only",
+    displayGate: "hidden",
+    acquisitionMode: "public_index_internal_only",
+  }));
+  assert.equal(result.partnershipScore, 0);
+  assert.equal(result.lane, "HOLD");
+});
+
 test("rankings keep immediate growth and partnership upside separate", () => {
   const ranked = rankReservoirs([
     row({ sourceDomain: "canonical.ma", normalizedRows: 6000 }),
