@@ -3,8 +3,8 @@
 **Mise à jour : 2026-08-07**  
 **Lot DATA acquis : DATA-1.6A — Source Policy Evidence Review ✅ PR #333**  
 **Prochain lot DATA : DATA-1.6B — Source Registry Assignment**  
-**Lot UX certifié : CARTE-QUARTIER-P1A.1 — Geo Canonical Core ✅ PR #328**  
-**Lot UX actif : CARTE-QUARTIER-P1A.2 — Search Geo Contract, PR #334**
+**Lot UX certifié : CARTE-QUARTIER-P1A.2 — Search Geo Contract ✅ PR #334**  
+**Prochain lot UX : CARTE-QUARTIER-P1A.3 — Map State & Navigation**
 
 Ce fichier est le handover opérationnel court du projet. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
@@ -15,6 +15,7 @@ Ce fichier est le handover opérationnel court du projet. `docs/ROADMAP.md` rest
 - Mon Projet P1B ✅ PR #318 ;
 - CARTE-QUARTIER-P1A.0 ✅ PR #327 ;
 - CARTE-QUARTIER-P1A.1 ✅ PR #328, score 9,5/10 ;
+- **CARTE-QUARTIER-P1A.2 ✅ PR #334**, merge `1fbe3e4`, score **9,6/10**, head certifié `9c3a647`, **28/28 workflows verts** ;
 - DATA-1.1 ✅ PR #322 ;
 - DATA-1.2 ✅ PR #323 ;
 - DATA-1.3A ✅ PR #324 ;
@@ -153,6 +154,44 @@ Gate :
 
 uniquement pour les sources dont la décision est démontrable.
 
-## UX — handover
+## UX — état acquis
 
-CARTE-QUARTIER-P1A.2 est en lane UX indépendante via **PR #334**. Objectif : `district` devient un filtre Search structuré réel tandis que `q` reste du texte libre. Le lot DATA ne doit ni réécrire ni masquer cette lane UX.
+### CARTE-QUARTIER-P1A.2 — Search Geo Contract ✅
+
+PR **#334**, merge `1fbe3e4`.
+
+Contrat certifié :
+
+- `district` est un filtre Search structuré réel et indépendant de `q` ;
+- `/search?city=Rabat&district=Agdal` conserve l’identité géographique de bout en bout ;
+- DB et Typesense appliquent le district avec canonicalisation Geo Registry ;
+- SSR, état client et refresh API conservent le quartier via l’état `neighborhood` existant ;
+- page quartier et handoff Map → Search utilisent `city + district` ;
+- ODM ne sert pas les requêtes district tant que son read model ne peut pas certifier ce champ ;
+- le gateway multi-source fail-closed sur district au lieu d’élargir silencieusement à la ville ;
+- aucune migration, aucun nouveau modèle géographique, aucun redesign Map dans ce lot.
+
+Preuve finale : head `9c3a647`, **28/28 workflows verts**, Search Truth, Geo Productization, Canonical Baseline, TypeScript et build production inclus.
+
+**Score final CARTE-QUARTIER-P1A.2 : 9,6/10.**
+
+## Prochain lot UX — CARTE-QUARTIER-P1A.3
+
+### Map State & Navigation
+
+Responsabilité unique : rendre l’état cartographique canonique, partageable et navigable sans perte de contexte.
+
+Contrat cible :
+
+`/map?city=rabat&district=agdal&layer=explore&project_id=...`
+
+À faire :
+
+- `city`, `district`, `layer` et `project_id` quand fourni ;
+- Back/Forward et liens partageables ;
+- Quartier → Map → Search → Mon Projet sans perte de contexte ;
+- suppression de l’écran cinématique ville ;
+- entrée immédiate dans la carte ;
+- aucune géométrie inventée ni modification du contrat DATA.
+
+Le lot DATA-1.6B reste indépendant et ne doit ni réécrire ni masquer cette lane UX.
