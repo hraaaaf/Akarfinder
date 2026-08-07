@@ -48,11 +48,13 @@ test("prestigeimmo is explicitly hard-blocked", () => {
   assert.equal(policy.displayGate, "hidden");
 });
 
-test("migration is coverage-locked to the explicit decisions and refuses overwrite/upsert", () => {
+test("migration is coverage-locked to explicit decisions and never writes generated execution_score", () => {
   validateMigrationCoverage(migrationSql, manifest);
   assert.match(migrationSql, /refuses to overwrite existing Source Registry rows/);
   assert.doesNotMatch(migrationSql, /\bon\s+conflict\b/i);
   assert.match(migrationSql, /safety invariant violated/);
+  const insertColumns = migrationSql.match(/insert into public\.source_policy_registry\s*\(([\s\S]*?)\)\s*select/i)?.[1] ?? "";
+  assert.doesNotMatch(insertColumns, /\bexecution_score\b/i);
 });
 
 test("policy hash drift fails closed", () => {
