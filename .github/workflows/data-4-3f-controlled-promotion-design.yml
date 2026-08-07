@@ -1,0 +1,76 @@
+name: DATA-4.3F Controlled Promotion Design
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data4/daragadir-controlled-promotion.ts"
+      - "scripts/data4/__tests__/daragadir-controlled-promotion.test.ts"
+      - "scripts/audits/data-4-3f-controlled-promotion-design.ts"
+      - ".github/workflows/data-4-3f-controlled-promotion-design.yml"
+      - "docs/data/DATA-4-3F-CONTROLLED-PROMOTION-DESIGN.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: DATA-4.3F unit tests
+        run: npx tsx --test scripts/data4/__tests__/daragadir-controlled-promotion.test.ts
+      - name: DATA-4.3E regression tests
+        run: npx tsx --test scripts/data4/__tests__/daragadir-freshness-write-canary.test.ts
+      - name: Existing seed freshness regression tests
+        run: npm run test:seed-freshness
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+
+  live-design-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_3F_OUT_DIR: .tmp/data-4-3f/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run read-only promotion design audit
+        run: npx tsx scripts/audits/data-4-3f-controlled-promotion-design.ts
+      - name: Enforce design proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_4_3F_OUT_DIR}/proof.json"
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-4-3f/results/proof.json','utf8'));
+          if (p.mode !== 'DESIGN_READ_ONLY') throw new Error(JSON.stringify(p));
+          if (p.previousCanaryResidueRows !== 0) throw new Error(`4.3E residue detected: ${JSON.stringify(p)}`);
+          if (!p.registryEligible || !p.promotionDecision.allowed) throw new Error(JSON.stringify(p));
+          if (p.initialBatchSize !== 50 || p.maxBatchSize !== 100 || p.maxCumulativeRowsBeforeRecertification !== 500) throw new Error(JSON.stringify(p));
+          if (p.channel !== 'public_sitemap_presence' || p.ttlDays !== 14) throw new Error(JSON.stringify(p));
+          if (p.rollbackSemantics.restoreUpdatedAt !== false || p.rollbackSemantics.updatedAtSemantics !== 'AUDIT_TRAIL_NON_ROLLBACKABLE') throw new Error(JSON.stringify(p));
+          if (p.databaseWrites !== 0 || p.freshnessWrites !== 0 || p.policyChanges !== 0 || p.productionActivation !== false) throw new Error(JSON.stringify(p));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-3f-controlled-promotion-design
+          path: .tmp/data-4-3f/results/
+          if-no-files-found: error
+          retention-days: 14
