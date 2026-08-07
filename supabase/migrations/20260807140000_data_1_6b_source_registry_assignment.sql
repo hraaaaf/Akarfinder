@@ -2,6 +2,7 @@
 -- Evidence: DATA-1.6A workflow run 31182352538.
 -- Conservative governance only. No direct ingestion or public content display is activated.
 -- Existing Registry rows are never overwritten.
+-- execution_score is GENERATED ALWAYS by PostgreSQL and must never be written explicitly.
 
 do $$
 declare
@@ -54,7 +55,7 @@ insert into public.source_policy_registry (
   content_reuse_policy, display_policy, robots_status, terms_status, partnership_required,
   legal_review_required, no_bypass_required, evidence_urls, evidence_summary, primary_geography,
   volume_score, diversification_score, structure_score, policy_confidence_score, freshness_score,
-  execution_score, recommended_action, reviewed_at, next_review_at, policy_version,
+  recommended_action, reviewed_at, next_review_at, policy_version,
   authorization_status, acquisition_mode, allowed_discovery_channels, max_revalidation_interval_days,
   review_status, policy_effective_at, policy_expires_at, evidence_observed_at, robots_observed_at,
   terms_observed_at, contact_status, machine_gate, policy_hash, ingestion_gate, display_gate
@@ -98,7 +99,6 @@ select
   d.structure_score,
   d.policy_confidence_score,
   0,
-  null,
   case d.decision_class
     when 'BLOCK_RESTRICTED' then 'Do not fetch or reuse source content. Seek written permission or a partnership before any future activation.'
     when 'INTERNAL_DISCOVERY_PERMISSION_REQUIRED' then 'Keep public-index observations internal only. Obtain written permission or a partner agreement before detail fetch, reuse or display.'
