@@ -52,9 +52,10 @@ Principes non négociables :
 - CARTE-QUARTIER-P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
 - P1A.2 ✅ PR #334 — `district` structuré dans Search ;
 - P1A.3 ✅ PR #349 — Map state/navigation pilotés par URL, **9,3/10** ;
-- P1A.4 ✅ PR #350 — Map Design System, cockpit flottant map-first, **9,3/10**, audit **30 captures / 0 finding** ;
-- P1A.5 ✅ PR #365 — Territorial Explorer **Maroc → ville → quartier**, navigation URL canonique, responsive **390 / 430×932 / 768 / 1280**, états Maroc/Rabat/Rabat→Agdal audités, **9,3/10**, **48 captures / 0 finding** ;
-- prochain UX : **P1A.6 — Responsive hardening**, puis P1B intelligence cartographique.
+- P1A.4 ✅ PR #350 — Map Design System, cockpit flottant map-first, **9,3/10** ;
+- P1A.5 ✅ PR #365 — Territorial Explorer **Maroc → ville → quartier**, navigation URL canonique, responsive **390 / 430×932 / 768 / 1280**, **9,3/10** ;
+- P1A.6 ✅ PR #369 — Responsive hardening, audit natif **3 états × 4 viewports = 12 captures / 0 finding**, chevauchement cockpit↔explorer corrigé, **21/21 tests**, TypeScript/build/gates verts, **9,2/10** ;
+- prochain UX : **P1B — intelligence cartographique**.
 
 ## État DATA acquis
 
@@ -70,22 +71,17 @@ Principes non négociables :
 ### DATA-4 — Reservoir Strategy
 
 - DATA-4.0 ✅ PR #341 : Avito + Mubawab = **35 134 normalized**, **3 588 technical display**, **0 policy-activable** ;
-- DATA-4.1A ✅ PR #343 : Avito `unavailable` = 95,06 % bruit/non-immobilier ; seulement **73** core-récupérables, **0 policy-activable** ;
+- DATA-4.1A ✅ PR #343 : Avito `unavailable` = 95,06 % bruit/non-immobilier ; seulement **73** core-récupérables ;
 - DATA-4.2 ✅ PR #344 : `daragadir.com` gagne la lane `ADMISSIBLE_GROWTH`, `agenz.ma` la lane `PARTNERSHIP_UPSIDE` ;
-- DATA-4.3A ✅ PR #347 : Dar Agadir = **5 ELIGIBLE_SHADOW**, **6 425 revalidation-required** ;
-- DATA-4.3B ✅ PR #348 : sitemap actuel = **5 905 URLs**, **5 673 seed-only** encore présentes ;
-- DATA-4.3C ✅ PR #351 : **5 566 SHADOW_READY**, dont **5 564 seed-only**, sans write ni activation ;
-- DATA-4.3D ✅ PR #353 : **100-row reversible freshness evidence canary DRY_RUN**, canal `public_sitemap_presence`, TTL **14 jours**, **100/100 rollback**, **20/20 gates verts**, **0 DB/freshness write**, **0 activation** ;
-- DATA-4.3E ✅ PR #355 : **10-row production write rehearsal**, 10/10 apply, 10/10 verify, 10/10 rollback ;
-- DATA-4.3F ✅ PR #358 : Controlled Promotion Design, batch initial **50**, hard cap **100/run**, **500** avant re-certification, TTL **14 jours** ;
-- DATA-4.3G ✅ PR #362 : First Persistent Freshness Batch certifié ; contrat déterministe **50 lignes**, canal `public_sitemap_presence`, TTL **14 jours**, snapshot/rollback complet, observabilité Search/display, aucun changement de display policy ;
-- DATA-4.3H ✅ PR #364 : Controlled Expansion to 500 certifiée en **DRY_RUN** ; point de départ **50 persistent rows**, plan **[100,100,100,100,50]**, max **100/run**, Registry+sitemap revalidés à chaque run, drift cap **1 %**, **0 DB write**, **0 activation publique** dans la PR.
+- DATA-4.3A → H ✅ PR #347/#348/#351/#353/#355/#358/#362/#364 : progression Dar Agadir jusqu’au contrat d’expansion contrôlée à 500, batch max **100/run**, TTL **14 jours**, drift cap **1 %**, snapshot/rollback et observabilité Search/display ;
+- DATA-4.3I ✅ PR #367 : ownership fraîcheur multi-canal protégé ; OpenSERP/Yandex ne peut plus effacer/dégrader un canal tiers tel que `public_sitemap_presence` ;
+- DATA-4.3J ✅ PR #368 : ordre du trigger display corrigé (`zzz_thin_index_display_policy_write`) pour calculer l’éligibilité après quality/purity ; migration-only, pas de changement de policy function ni backfill.
 
 ## Décision DATA courante
 
-La prochaine mutation DATA doit suivre strictement le contrat acquis de DATA-4.3H : **premier batch d’expansion persistant ≤100 lignes**, avec préflight Registry+sitemap, snapshot/rollback, TTL 14 jours, drift ≤1 %, mesure Search/display et aucune modification de display/publication policy.
+L’expansion persistante DATA reste conditionnée à la certification post-merge du correctif 4.3J et au contrat 4.3H : batch ≤100, Registry+sitemap revalidés juste avant write, snapshot/rollback, TTL 14 jours, drift ≤1 %, mesure Search/display, aucune modification de display/publication policy.
 
-Aucun nouveau numéro de lot n’est considéré canonique tant qu’il n’est pas explicitement défini dans la roadmap.
+Aucun nouveau numéro de lot n’est canonique tant qu’il n’est pas explicitement défini dans la roadmap.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 
