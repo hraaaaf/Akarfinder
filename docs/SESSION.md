@@ -1,10 +1,10 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-07**  
-**Lot DATA acquis : DATA-1.6A — Source Policy Evidence Review ✅ PR #333**  
-**Prochain lot DATA : DATA-1.6B — Source Registry Assignment**  
-**Lot UX certifié : CARTE-QUARTIER-P1A.1 — Geo Canonical Core ✅ PR #328**  
-**Lot UX actif : CARTE-QUARTIER-P1A.2 — Search Geo Contract, PR #334**
+**Lot DATA acquis : DATA-1.6B — Source Registry Assignment ✅ PR #338 + hotfix #339**  
+**Prochain lot DATA : DATA-4 — Large Reservoir Depth Audit**  
+**Lot UX acquis : CARTE-QUARTIER-P1A.2 — Search Geo Contract ✅ PR #334**  
+**Prochain lot UX : CARTE-QUARTIER-P1A.3 — Map State & Navigation**
 
 Ce fichier est le handover opérationnel court du projet. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
@@ -14,145 +14,214 @@ Ce fichier est le handover opérationnel court du projet. `docs/ROADMAP.md` rest
 
 - Mon Projet P1B ✅ PR #318 ;
 - CARTE-QUARTIER-P1A.0 ✅ PR #327 ;
-- CARTE-QUARTIER-P1A.1 ✅ PR #328, score 9,5/10 ;
+- CARTE-QUARTIER-P1A.1 ✅ PR #328, score **9,5/10** ;
+- CARTE-QUARTIER-P1A.2 ✅ PR #334, merge `1fbe3e4` ;
 - DATA-1.1 ✅ PR #322 ;
 - DATA-1.2 ✅ PR #323 ;
 - DATA-1.3A ✅ PR #324 ;
 - DATA-1.3B ✅ PR #326 ;
 - DATA-1.4 ✅ PR #329 ;
 - DATA-1.5 ✅ PR #331, score **9,4/10** ;
-- **DATA-1.6A ✅ PR #333**, merge `28fbdf5`, score **9,5/10**.
+- DATA-1.6A ✅ PR #333, score **9,5/10** ;
+- DATA-1.6B ✅ PR #338 + #339, score final **9,6/10**.
 
-Invariants DATA : aucune migration DATA-1.6A, aucune policy Source Registry automatique, aucune ingestion, aucun auth/login, aucun bypass, aucun WARC fetch.
+Invariants : no-bypass, aucune activation sans Source Registry explicite, capability ≠ permission, Search reste le moteur canonique, Map reste le moteur spatial complémentaire.
 
-## DATA-1 — état acquis
+# DATA — état acquis
 
-### DATA-1.2 — Reserve Census ✅
+## DATA-1.2 — Existing Reserve Census ✅
 
 - **37 009 URLs distinctes** ;
 - **7 051 domaines**.
 
-### DATA-1.3B — Common Crawl Live Evidence ✅
+## DATA-1.3B — Common Crawl Live Evidence ✅
 
-- **300/300 Parquet** analysés ;
+- crawl : `CC-MAIN-2026-25` ;
+- **300/300 Parquet** ;
 - **9 087 hosts bruts** ;
 - **8 970 hosts canoniques** ;
 - **8 727 registered domains** ;
-- aucun WARC/content fetch, write DB ou source activée.
+- aucun WARC/content fetch, aucune écriture Supabase, aucune activation.
 
-### DATA-1.4 — Candidate Reconciliation ✅
+## DATA-1.4 — Candidate Reconciliation ✅
 
 - univers réconcilié : **15 238 domaines** ;
-- B3 ∩ Common Crawl : **532** ;
-- **15 222 non enregistrés** ;
+- **15 222 non enregistrés** au moment de l’audit ;
 - `PRIMARY_SOURCE_CANDIDATE` : **230** ;
 - `PORTAL_CANDIDATE` : **625** ;
 - fail-closed : 0 write / 0 policy.
 
-### DATA-1.5 — Candidate Technical Capability Audit ✅
+## DATA-1.5 — Candidate Technical Capability Audit ✅
 
 PR **#331**.
 
+Batch P0 :
+
 - **20/20 domaines audités** ;
 - **19 `CAPABILITY_REVIEW_READY`** ;
-- 1 homepage timeout : `damaneimmo.ma` ;
 - familles : 3 RealHomes, 3 Houzez, 5 WordPress génériques, 8 structured-web ;
-- 116 requêtes publiques ; max **7 GET/domain** sur budget 8 ;
+- 116 requêtes publiques ; maximum **7 GET/domain** sur budget 8 ;
 - 0 write DB / 0 policy / 0 auth / 0 bypass / 0 WARC ;
 - score **9,4/10**.
 
-### DATA-1.6A — Source Policy Evidence Review ✅
+## DATA-1.6A — Source Policy Evidence Review ✅
 
 PR **#333**, merge `28fbdf5`.
 
-Entrée : les **19** sources `CAPABILITY_REVIEW_READY` certifiées par DATA-1.5.
-
-Contrat live :
-
-- maximum **5 GET publics/domain** ;
-- UA explicite `AkarFinder-Policy-Evidence-Audit/1.0` ;
-- `robots.txt` puis homepage si autorisée ;
-- jusqu’à trois pages same-site de CGU/legal/privacy dans le budget ;
-- redirects externes ou HTTP refusés ;
-- aucun login/cookie/auth/challenge bypass ;
-- texte juridique tiers non archivé : URL + statut + taille + SHA-256 + identifiants de signaux seulement ;
-- préflight Source Registry : une lecture, zéro écriture.
-
-Preuve finale, run **31182352538** :
+Preuve finale run **31182352538** :
 
 - sources auditées : **19** ;
 - requêtes : **79** ;
-- max observé : **5/5 par domaine** ;
+- max **5/domain** ;
 - `RESTRICTIVE_TERMS_FOUND` : **1** ;
 - `TERMS_FOUND_NO_EXPLICIT_PERMISSION` : **3** ;
 - `INSUFFICIENT_LEGAL_EVIDENCE` : **11** ;
 - `ACCESS_OR_FETCH_LIMITED` : **4** ;
-- `PUBLIC_CHANNEL_SIGNAL_FOUND` : **0** ;
-- robots block-all : 0 ;
-- noindex : 0 ;
-- writes DB : **0** ;
-- policies assigned : **0** ;
-- Registry policy fields préremplis : **0** ;
-- auth attempts : 0 ;
-- bypass attempts : 0 ;
-- WARC : 0.
+- `PUBLIC_CHANNEL_SIGNAL_FOUND` : 0 ;
+- 0 write / 0 policy / 0 auth / 0 bypass / 0 WARC ;
+- head `69f6545` : **20/20 workflows verts** ;
+- score **9,5/10**.
 
-Double-check qualitatif :
+Double-check qualitatif : privacy-only ≠ terms ; legal→homepage ≠ preuve CGU ; timeout/robots-path-limit → access-limited ; une mention générique d’autorisation préalable ne suffit pas à conclure restrictif.
 
-1. privacy-only ne vaut plus `TERMS_FOUND` ;
-2. une URL légale redirigeant vers une homepage/non-legal page ne vaut plus preuve de CGU ;
-3. timeout homepage ou pages légales explicitement disallow par robots deviennent `ACCESS_OR_FETCH_LIMITED` ;
-4. `prior_authorization_required` seul ne suffit plus à conclure restrictif ;
-5. `prestigeimmo.ma` reste `RESTRICTIVE_TERMS_FOUND` car ses CGU portent une restriction substantielle sur accès automatisé/copie/reproduction.
+`prestigeimmo.ma` reste la seule source restrictive du batch car une restriction substantielle sur accès automatisé/copie/reproduction a été observée.
 
-Cas prioritaires pour la revue 1.6B :
+## DATA-1.6B — Source Registry Assignment ✅
 
-- `prestigeimmo.ma` → `PARTNERSHIP_REQUIRED_REVIEW` ;
-- `mhproperties.ma` → `PARTNER_OR_INDEX_ONLY_REVIEW` ;
-- `nouraimmobilier.ma` → `PARTNER_OR_INDEX_ONLY_REVIEW` ;
-- `agadirimmobilier.org` → `PARTNER_OR_INDEX_ONLY_REVIEW` ;
-- `marrakech-luxury-properties.com` → `ACCESS_OR_FETCH_LIMITED` car pages légales observées comme robots-disallowed ;
-- `immobilier-pro-maroc.com` → privacy-only, donc preuve de réutilisation insuffisante ;
-- les autres sources restent en revue manuelle tant que la preuve est insuffisante/limitée.
+### PR et certification
 
-**Score final DATA-1.6A : 9,5/10.**  
-Head certifié : `69f6545` — **20/20 workflows verts**.
+PR **#338**, head `3ecf9d6`, merge `92fd7e0`.
 
-## Doctrine DATA active
+Preflight read-only run **31186041984** :
 
-`DISCOVERED ≠ AUDITED ≠ AUTHORIZED ≠ INGESTIBLE ≠ DISPLAYABLE`
+- 19 décisions ;
+- target déjà présent : **0** ;
+- activating assignments : **0** ;
+- hidden : **19** ;
+- direct fetch : **0** ;
+- partner : **0** ;
+- authorization attendu : 1 prohibited / 3 permission_required / 15 unverified ;
+- **20/20 workflows verts**.
 
-Et :
+### Incident de migration maîtrisé
+
+Première application production : **échec atomique avant tout insert**.
+
+Cause : `source_policy_registry.execution_score` est `GENERATED ALWAYS`; la migration tentait de l’insérer explicitement.
+
+Contrôles après échec :
+
+- **0/19** ligne écrite ;
+- aucune entrée ajoutée dans `supabase_migrations.schema_migrations` ;
+- aucune policy partielle.
+
+Hotfix **PR #339**, merge `3694902` :
+
+- retrait de `execution_score` de l’INSERT ;
+- PostgreSQL le calcule automatiquement ;
+- test permanent interdisant son retour dans la liste INSERT ;
+- **20/20 workflows verts**.
+
+### Production finale certifiée
+
+Migration Supabase : `data_1_6b_source_registry_assignment`  
+Version enregistrée : **`20260807142236`**.
+
+Résultat production :
+
+- nouvelles lignes Registry : **19/19** ;
+- authorization :
+  - `prohibited` : **1** ;
+  - `permission_required` : **3** ;
+  - `unverified` : **15** ;
+- acquisition :
+  - `blocked` : **1** ;
+  - `public_index_internal_only` : **18** ;
+- detail fetch :
+  - `prohibited` : **1** ;
+  - `permission_required` : **3** ;
+  - `legal_review_required` : **11** ;
+  - `paused` : **4** ;
+- display :
+  - `blocked` : **1** ;
+  - `internal_signal_only` : **18** ;
+- `display_gate=hidden` : **19** ;
+- unsafe/activating : **0** ;
+- generated `execution_score` : min **6**, max **30**.
+
+`prestigeimmo.ma` :
+
+- discovery `paused` ;
+- detail `prohibited` ;
+- reuse `prohibited` ;
+- display `blocked` ;
+- authorization `prohibited` ;
+- acquisition `blocked` ;
+- channels `[]` ;
+- machine gate `blocked_invalid_no_bypass` ;
+- ingestion gate `blocked` ;
+- display gate `hidden` ;
+- `no_bypass_required=true`.
+
+**Score final DATA-1.6B : 9,6/10.**
+
+# Doctrine DATA active
+
+`DISCOVERED ≠ AUDITED ≠ POLICY_ASSIGNED ≠ ELIGIBLE ≠ INGESTIBLE ≠ DISPLAYABLE`
 
 `TECHNICAL CAPABILITY ≠ SOURCE PERMISSION`
 
-`PRIVACY PAGE ≠ TERMS ≠ REUSE PERMISSION`
+Les 19 nouvelles lignes du Registry sont des **garde-fous de gouvernance**, pas des activations de sources.
 
-Une détection Houzez/RealHomes/WordPress REST/sitemap/JSON-LD, un robots allow ou une page publique ne crée aucun droit d’usage.
+# Prochain lot DATA — DATA-4
 
-## Prochain lot DATA — DATA-1.6B
+## Large Reservoir Depth Audit
 
-### Source Registry Assignment
+Objectif : déterminer si le multiplicateur vers **20K observations** se trouve déjà dans les grands réservoirs connus avant de multiplier les connecteurs long-tail.
 
-Responsabilité unique : convertir **uniquement les décisions suffisamment prouvées et explicitement revues** en entrées/mises à jour du `source_policy_registry` existant.
+Premier scope audit-only :
 
-Règles :
+1. Mubawab ;
+2. Avito immobilier ;
+3. autres grands portails marocains déjà connus du Registry/Census, classés ensuite par volume × policy × profondeur.
 
-- réutiliser le schéma Registry actuel ; aucune table parallèle ;
-- migration séparée seulement si une vraie lacune de schéma est prouvée ;
-- aucune policy déduite automatiquement de la seule catégorie 1.6A ;
-- `RESTRICTIVE_TERMS_FOUND` doit rester bloqué pour ingestion/réutilisation tant qu’aucune autorisation écrite/partenariat ne change la preuve ;
-- `TERMS_FOUND_NO_EXPLICIT_PERMISSION` nécessite décision humaine explicite avant `INDEX_ONLY`, `PARTNER_ONLY` ou autre policy ;
-- `INSUFFICIENT_LEGAL_EVIDENCE` et `ACCESS_OR_FETCH_LIMITED` restent sans activation et nécessitent preuve/contact supplémentaire ;
-- policy hash, evidence URLs, observed_at, review status et next review doivent rester traçables ;
-- aucun connecteur/ingestion/publication avant gate Registry verte.
+Pour chaque source :
 
-Gate :
+- volume public annoncé/estimé ;
+- couverture AkarFinder actuelle ;
+- profondeur discovery actuelle ;
+- sitemap/pagination/structured data ;
+- robots / CGU / noindex / policy Registry ;
+- historique Common Crawl ;
+- pages détail publiquement atteignables ;
+- fraîcheur ;
+- duplication/bruit ;
+- meilleur mode admissible : `PARTNER_FEED`, `INDEX_ONLY`, `PUBLIC_DISCOVERY`, `NO_INGESTION` ;
+- **gap potentiel d’observations** sans contourner la policy.
 
-`AUDITED → POLICY_ASSIGNED`
+DATA-4 ne construit pas de scraper dans son premier lot. Il mesure d’abord le potentiel réel et la frontière d’usage autorisée.
 
-uniquement pour les sources dont la décision est démontrable.
+# UX — handover
 
-## UX — handover
+## CARTE-QUARTIER-P1A.2 ✅
 
-CARTE-QUARTIER-P1A.2 est en lane UX indépendante via **PR #334**. Objectif : `district` devient un filtre Search structuré réel tandis que `q` reste du texte libre. Le lot DATA ne doit ni réécrire ni masquer cette lane UX.
+PR **#334**, merge `1fbe3e4`, toutes les gates déclenchées vertes.
+
+Acquis :
+
+- `district` est un filtre Search structuré ;
+- `/search?city=Rabat&district=Agdal` porte une identité géographique explicite ;
+- `q` reste texte libre ;
+- DB et Typesense appliquent `district` via Geo Registry ;
+- lane ODM sans district autoritatif fail-closed au lieu d’élargir à la ville ;
+- SSR/client/API conservent le district ;
+- quartier et Map transmettent `city + district` vers Search ;
+- aucune migration ni modèle géographique parallèle.
+
+## Prochain UX : P1A.3 — Map State & Navigation
+
+Cible :
+
+`/map?city=rabat&district=agdal&layer=explore&project_id=...`
+
+Objectif : conserver `city`, `district`, `layer`, filtres/intention utiles et `project_id` de bout en bout, avec Back/Forward et liens partageables.
