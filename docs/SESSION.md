@@ -1,8 +1,8 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-07**  
-**Lot DATA acquis : DATA-4.3D — Freshness Evidence Canary Design ✅ PR #353**  
-**Prochain lot DATA : DATA-4.3E — First Bounded Freshness Write Canary**  
+**Lot DATA acquis : DATA-4.3F — Controlled Promotion Design ✅ PR #358**  
+**Prochain lot DATA : DATA-4.3G — First Persistent Freshness Batch**  
 **Lot UX acquis : CARTE-QUARTIER-P1A.4 ✅ PR #350 — 9,3/10**  
 **Prochain UX : CARTE-QUARTIER-P1A.5 — Territorial Explorer**
 
@@ -18,111 +18,82 @@ Acquis récents :
 - DATA-4.3A ✅ PR #347 ;
 - DATA-4.3B ✅ PR #348 ;
 - DATA-4.3C ✅ PR #351 ;
-- DATA-4.3D ✅ PR #353, merge `019253c` ;
-- P1A.3 ✅ PR #349 ;
-- P1A.4 ✅ PR #350, merge `14c26bf`, **9,3/10**, audit final **30 captures / 0 finding**.
+- DATA-4.3D ✅ PR #353 ;
+- DATA-4.3E ✅ PR #355, merge `41e2b57` ;
+- DATA-4.3F ✅ PR #358, merge `5125e3f` ;
+- P1A.4 ✅ PR #350, **9,3/10**, audit final **30 captures / 0 finding**.
 
 Invariants : no-bypass, capability ≠ permission, Source Registry avant activation, volume technique ≠ inventaire public, Search canonique, Map complément spatial.
 
-# DATA — Dar Agadir
+# DATA-4.3E — rehearsal production certifié
 
-## DATA-4.3B ✅
+- pool seed-only éligible : **5 564** ;
+- canary : **10 URLs** ;
+- canal : `public_sitemap_presence` ;
+- TTL : **14 jours** ;
+- apply production : **10/10** ;
+- verify : **10/10** ;
+- rollback : **10/10** ;
+- post-rollback : 10/10 `seed_only`, `fresh_last_seen_at=NULL`, `fresh_channels=[]`, metadata originale, aucune `freshness_evidence` ;
+- les 10 restent dans `public_search_representations_v1` après rollback : cette représentation n’a pas été créée par le write canary ;
+- `updated_at` reste une trace d’audit non restaurée.
 
-- sitemap actuel : **5 905 URLs** ;
-- overlap AkarFinder : **5 749** ;
-- `seed_only` encore présentes : **5 673** ;
-- 10 requêtes robots/sitemaps ;
-- 0 détail/content reuse/write/activation.
+# DATA-4.3F — Controlled Promotion Design ✅
 
-## DATA-4.3C ✅
-
-Freshness shadow :
-
-- **5 566 SHADOW_READY** ;
-- dont **5 564 seed-only** ;
-- 784 absentes du sitemap ;
-- 148 structure insuffisante ;
-- 35 non normalisées ;
-- 0 duplicate ;
-- 0 policy blocked ;
-- 0 DB/freshness write ;
-- 0 activation.
-
-## DATA-4.3D ✅ PR #353
-
-Canary dry-run réversible :
+Preuve live finale :
 
 | Mesure | Résultat |
 |---|---:|
-| Pool seed-only éligible | **5 564** |
-| Canary | **100** |
-| Canal | `public_sitemap_presence` |
+| Dar Agadir total | **6 533** |
+| `seed_only` | **6 431** |
+| `fresh_confirmed` | **102** |
+| résidu `public_sitemap_presence` du canary | **0** |
+| Registry eligible | **true** |
+| Registry review | `due_soon` |
+| drift | **0 %** |
+| first persistent batch | **50** |
+| hard max / run | **100** |
+| cap avant re-certification | **500** |
 | TTL | **14 jours** |
-| Statut proposé | `fresh_confirmed` |
-| Before/proposed/rollback | **100/100** |
-| Seed-state reads | **100** |
-| Source requests | **10** |
-| DB writes | **0** |
-| Freshness writes | **0** |
-| Policy changes | **0** |
-| Activation publique | **0** |
+| DB/freshness writes | **0** |
+| activation publique | **0** |
 
-Certification : **20/20 workflows verts**, tests DATA-4.3D + régressions seed-freshness + TypeScript + build + live dry-run + proof gate.
+Rollback semantics : freshness status / last seen / channels / metadata sont rollbackables ; `updated_at` est capturé mais explicitement `AUDIT_TRAIL_NON_ROLLBACKABLE`.
 
-Le système OpenSERP/Yandex n’a pas été détourné : son canal reste distinct. Le sitemap propose explicitement `public_sitemap_presence`.
+# Prochain lot DATA — DATA-4.3G
 
-Incident de certification résolu :
+## First Persistent Freshness Batch
 
-1. premier live run : timeout Supabase en lisant trop de `source_offer_seeds` ;
-2. correction : lecture uniquement des 100 URLs du canary par petits chunks ;
-3. deuxième run : robots ne déclarait temporairement aucun sitemap → fail-closed ;
-4. relance sans changement de code : sitemap de nouveau déclaré, canary live vert ;
-5. aucun write n’a eu lieu pendant ces échecs.
-
-# Prochain lot DATA — DATA-4.3E
-
-## First Bounded Freshness Write Canary
-
-Objectif : effectuer le premier **write freshness réel mais minuscule**, sans changer l’affichage public.
+Objectif : appliquer réellement un premier batch persistant de **50 lignes maximum**, sans toucher la display policy.
 
 Règles :
 
-1. canary strictement inférieur à 100 URLs ;
-2. sélection déterministe parmi les 5 564 éligibles ;
-3. revalidation Registry + sitemap juste avant write ;
-4. snapshot before obligatoire ;
-5. write uniquement sur la freshness/evidence ;
-6. canal `public_sitemap_presence` ;
-7. TTL 14 jours ;
-8. aucune page détail ;
-9. aucun content reuse ;
-10. aucune modification display/publication policy ;
-11. post-write verification production ;
-12. rollback rehearsal exact ;
-13. activation SERP interdite.
+1. sélection déterministe ≤50 ;
+2. Registry + sitemap revalidés juste avant write ;
+3. uniquement `seed_only` sans canal `public_sitemap_presence` ;
+4. snapshot complet ;
+5. write freshness/evidence uniquement ;
+6. TTL 14 jours ;
+7. vérification 50/50 post-write ;
+8. observabilité applied/skipped/drifted ;
+9. arrêt si drift >1 % ;
+10. rollback prêt ;
+11. aucune modification display/publication policy ;
+12. aucune page détail/content reuse ;
+13. mesurer Search/display séparément.
 
-Gate fondamentale : **un succès 4.3E prouve uniquement qu’on peut écrire et restaurer proprement une freshness evidence sitemap. Il ne rend pas automatiquement les 5 564 lignes publiques.**
+Gate fondamentale : 4.3G peut persister **un premier batch**, mais ne peut pas promouvoir les 5 564 lignes d’un coup.
 
 # Business parallèle
 
-**Agenz = priorité partenariat/feed** : 4 490 normalized, 1 227 fresh, 1 146 decision-structured, mais hidden/internal-only. Aucun changement Registry/produit avant autorisation écrite.
+**Agenz = priorité partenariat/feed** : 4 490 normalized, 1 227 fresh, 1 146 decision-structured, hidden/internal-only.
 
 # UX
 
 ## P1A.4 ✅ PR #350
 
-Map Design System certifié :
+Map Design System certifié : map-first, cockpit flottant, responsive 390/768/1280, 30 captures/0 finding, score final 9,3/10.
 
-- carte map-first, cockpit clair et flottant ;
-- bleu AkarFinder réservé à la sélection et aux actions ;
-- confiance explicite, jamais portée par la couleur seule ;
-- panneau quartier flottant sans réduire le viewport ;
-- responsive 390 / 768 / 1280 ;
-- MapLibre considéré prêt dès `style.load` pour éviter un faux loader ;
-- URL P1A.3, Geo Registry, Search et continuité Mon Projet inchangés ;
-- **30 captures / 0 finding** ;
-- score final **9,3/10** après reprise du premier pass 7,8/10.
+## Prochain UX — P1A.5 Territorial Explorer
 
-## Prochain lot UX — P1A.5 Territorial Explorer
-
-Construire l’exploration **Maroc → ville → quartier** au-dessus du Map Design System certifié, sans modifier le contrat URL ni inventer de géométrie/proximité. Préserver Map ↔ Search ↔ Quartier ↔ Mon Projet, puis auditer 390 / 768 / 1280 avec seuil **≥9/10**.
+Construire l’exploration **Maroc → ville → quartier** au-dessus du Map Design System certifié, sans modifier le contrat URL ni inventer de géométrie/proximité, puis auditer 390/768/1280 avec seuil ≥9/10.
