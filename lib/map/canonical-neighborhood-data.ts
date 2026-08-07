@@ -1,5 +1,4 @@
 import {
-  buildNeighborhoodSearchHref,
   getBenchmarkLabel as getRawBenchmarkLabel,
   NEIGHBORHOOD_POINTS as RAW_NEIGHBORHOOD_POINTS,
   type DataConfidence,
@@ -13,7 +12,7 @@ import {
   resolveNeighborhoodEntity,
 } from "@/lib/geo/geo-entity-registry";
 
-export { buildNeighborhoodSearchHref, slugifyNeighborhood } from "./neighborhood-data";
+export { slugifyNeighborhood } from "./neighborhood-data";
 export type {
   DataConfidence,
   NeighborhoodConfidence,
@@ -22,6 +21,16 @@ export type {
   NeighborhoodPriceSignal,
   PriceBenchmark,
 } from "./neighborhood-data";
+
+export function buildNeighborhoodSearchHref(city: string, neighborhood?: string): string {
+  const params = new URLSearchParams();
+  params.set("city", canonicalizeCityName(city));
+  if (neighborhood?.trim()) {
+    const entity = resolveNeighborhoodEntity(city, neighborhood);
+    params.set("district", entity?.canonical_name ?? neighborhood.trim());
+  }
+  return `/search?${params.toString()}`;
+}
 
 function canonicalizePoint(point: NeighborhoodPoint): NeighborhoodPoint {
   const cityEntity = resolveCityEntity(point.city);
@@ -42,10 +51,10 @@ function canonicalizePoint(point: NeighborhoodPoint): NeighborhoodPoint {
     neighborhood: neighborhoodEntity.canonical_name,
     neighborhoodSlug: neighborhoodEntity.slug,
     slug: `${cityEntity.slug}-${neighborhoodEntity.slug}`,
-    // Preserve the established search handoff vocabulary. Canonical identity is
-    // carried by city/neighborhood + slugs; changing a useful query alias (e.g.
-    // Ourika) is not required for entity normalization.
-    searchHref: point.searchHref,
+    searchHref: buildNeighborhoodSearchHref(
+      cityEntity.canonical_name,
+      neighborhoodEntity.canonical_name,
+    ),
   };
 }
 
