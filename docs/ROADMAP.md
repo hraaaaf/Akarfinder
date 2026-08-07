@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-07**  
-**Statut : CARTE / QUARTIER P1A.1 en certification via PR #328, en parallèle de DATA-1.3B ; moteur ODM actif ; priorité stratégique DATA = couverture, fraîcheur, qualité et profondeur de recherche**
+**Statut : CARTE / QUARTIER P1A.1 certifié via PR #328, merge final en attente ; P1A.2 prochain ; DATA-1.3B reste actif en lane séparée**
 
 Ce fichier est l’unique roadmap du projet. `README.md` définit l’identité et la doctrine ; `docs/SESSION.md` porte uniquement le handover courant.
 
@@ -67,7 +67,8 @@ Paliers bootstrap :
 - **Louer P1** : certifié et mergé via PR #313, score **9,0/10** ;
 - **Mon Projet P1A** : parcours guidé en huit écrans, certifié et mergé via PR #314, score **9,2/10** ;
 - **Mon Projet P1B** : continuité du `project_id` vers Search, favoris et comparaisons, certifiée et mergée via PR **#318** ;
-- **CARTE-QUARTIER-P1A.0** : contrat produit/documentaire certifié et mergé via PR **#327**, score **9,5/10**, **19/19 workflows verts**.
+- **CARTE-QUARTIER-P1A.0** : contrat produit/documentaire certifié et mergé via PR **#327**, score **9,5/10**, **19/19 workflows verts** ;
+- **CARTE-QUARTIER-P1A.1** : Geo Canonical Core certifié via PR **#328**, score **9,5/10**, **19/19 workflows verts** sur le head fonctionnel/documentaire avant clôture finale.
 
 ### Fondation Carte / Quartier existante ✅
 
@@ -76,7 +77,8 @@ Paliers bootstrap :
 - `/immobilier/[city]/[district]` : route quartier SEO canonique ;
 - Geo Registry : villes/quartiers canoniques avec `seo_eligible` / `map_eligible` ;
 - géométries quartier déjà amorcées, notamment Casablanca ;
-- repères prix existants mais couverture limitée.
+- repères prix existants mais couverture limitée ;
+- `/map` est désormais raccordé à `canonical-neighborhood-data.ts`, lui-même adossé à `geo-entity-registry`.
 
 Audit initial Carte / Quartier : **7,4/10**. Potentiel après consolidation : **~9,1/10**. Le chantier porte sur l’unification, la vérité DATA, l’identité cartographique, la continuité Map → Quartier → Search et l’intelligence spatiale ; il ne part pas de zéro.
 
@@ -95,22 +97,25 @@ Audit initial Carte / Quartier : **7,4/10**. Potentiel après consolidation : **
 - DATA-1.1 / DATA-1.2 / DATA-1.3A acquis ;
 - DATA-1.3B actif en lane DATA séparée.
 
-## 4. Lot UX actif — CARTE-QUARTIER-P1A.1 🔴
+## 4. Lot UX certifié — CARTE-QUARTIER-P1A.1 ✅
 
-PR **#328 — Geo Canonical Core** en certification.
+PR **#328 — Geo Canonical Core**. Merge final autorisé uniquement après la dernière CI du head documentaire.
 
-Objectif : supprimer le bypass géographique de `/map` et imposer une seule identité ville/quartier sans modèle parallèle.
+Objectif atteint : supprimer le bypass géographique de `/map` et imposer une seule identité ville/quartier sans modèle parallèle.
 
-Correctif candidat :
+Livré :
 
 - `MapNeighborhoodExperience` consomme `canonical-neighborhood-data.ts` ;
 - l’import runtime direct de `neighborhood-data.ts` est supprimé de cette surface ;
 - `canonical-neighborhood-data.ts` reste l’adaptateur entre seeds existants et `geo-entity-registry` ;
 - `resolveCityEntity` et `resolveNeighborhoodEntity` restent les autorités de résolution ;
 - la gate Geo Productization protège ce contrat contre une régression ;
-- aucun changement UI, Search `district`, migration ou structure DATA dans ce lot.
+- aucun changement UI, Search `district`, migration ou structure DATA dans ce lot ;
+- les trois MD canoniques sont alignés.
 
-Score candidat architecture/vérité géographique : **9,5/10**, sous réserve de CI complète verte sur le head final.
+Double-check : comportement visuel inchangé, dépendance géographique mieux contrainte, pas de modèle parallèle, DATA lane intacte.
+
+Score final architecture/vérité géographique : **9,5/10**.
 
 ## 5. Séquence UX publique validée
 
@@ -163,35 +168,29 @@ Livré :
 - DATA-1.3B maintenu comme lane DATA active séparée ;
 - aucun code applicatif modifié dans P1A.0.
 
-### P1A.1 — Geo Canonical Core 🔴 EN CERTIFICATION
+### P1A.1 — Geo Canonical Core ✅
 
-PR **#328**.
+PR **#328**. Score **9,5/10**. Certification **19/19 workflows verts** avant la clôture documentaire finale.
 
-Objectif : une seule identité géographique dans tout AkarFinder.
+Architecture livrée :
 
-Architecture cible :
+`Geo Registry → canonical neighborhood data → Map`
 
-`Geo Registry → canonical neighborhood data → Map / Search / SEO / Mon Projet`
+avec extension prévue aux contrats Search/SEO/Mon Projet existants sans modèle parallèle.
 
-Travail :
+Livré :
 
-- supprimer le bypass direct de `/map` vers les seeds non canoniques ;
-- réutiliser le `geo-entity-registry` ;
-- garder le seed brut derrière l’adaptateur canonique, pas comme dépendance runtime publique ;
-- protéger ce contrat dans la gate Geo Productization ;
-- ne créer aucun modèle géographique parallèle.
+- suppression du bypass direct de `/map` vers le seed brut ;
+- réutilisation de `geo-entity-registry` via l’adaptateur canonique existant ;
+- seed brut conservé derrière l’adaptateur, pas comme dépendance runtime publique ;
+- test de non-régression dans la gate Geo Productization ;
+- aucun changement visuel ;
+- aucune migration ;
+- aucun changement Search `district` avant P1A.2.
 
-État candidat :
+Gate : tests canoniques + TypeScript + production build + CI complète + score ≥ 9/10.
 
-- `MapNeighborhoodExperience` importe `canonical-neighborhood-data.ts` ;
-- test de non-régression ajouté ;
-- aucune modification visuelle ;
-- aucun changement du contrat Search `district` ;
-- aucune migration.
-
-Gate : tests canoniques + TypeScript + production build + CI complète + score final ≥ 9/10.
-
-### P1A.2 — Search Geo Contract
+### P1A.2 — Search Geo Contract 🔴 PROCHAIN
 
 Objectif : faire de `district` un filtre Search structuré réel.
 
@@ -754,8 +753,8 @@ Deux lanes peuvent avancer sans se mélanger :
 ### Lane UX
 
 1. **CARTE-QUARTIER-P1A.0 ✅ PR #327** — contrat produit/documentaire ;
-2. **P1A.1 🔴 PR #328** — Geo Canonical Core, en certification ;
-3. P1A.2 — Search Geo Contract `district` ;
+2. **P1A.1 ✅ PR #328** — Geo Canonical Core, certifié, merge final après CI documentaire ;
+3. **P1A.2 🔴 PROCHAIN** — Search Geo Contract `district` ;
 4. P1A.3 — Map State & Navigation ;
 5. P1A.4 — AkarFinder Map Design System ;
 6. P1A.5 — Territorial Explorer ;
@@ -803,14 +802,14 @@ Un lot est terminé uniquement si :
 
 ### UX — CARTE-QUARTIER
 
-1. certifier **PR #328 — P1A.1 Geo Canonical Core** sur le head final ;
-2. exiger tests ciblés, TypeScript, production build et CI complète verts ;
-3. double-check architecture/vérité géographique + score final ≥ 9/10 ;
-4. merger P1A.1 seulement si toutes les gates sont vertes ;
-5. repartir du `main` synchronisé ;
-6. ouvrir **P1A.2 — Search Geo Contract** ;
-7. introduire `district` comme filtre Search structuré réel ;
-8. ne pas continuer vers P1A.3 sous 9/10.
+1. exécuter la dernière CI sur le head documentaire final de **PR #328** ;
+2. merger P1A.1 si toutes les gates restent vertes ;
+3. repartir du `main` synchronisé ;
+4. ouvrir **P1A.2 — Search Geo Contract** ;
+5. introduire `district` comme filtre Search structuré réel ;
+6. préserver les recherches textuelles `q` pour le texte, sans les utiliser comme identité quartier ;
+7. tester parsing, stable key, gateway/routing, filtering/ranking et handoffs ;
+8. double-check + score ≥ 9/10 avant P1A.3.
 
 ### DATA — lane indépendante
 
