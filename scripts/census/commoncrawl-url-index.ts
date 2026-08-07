@@ -94,7 +94,13 @@ export function buildRealEstateUrlRegex(): string {
 }
 
 export function buildMoroccoLocationUrlRegex(): string {
-  const cityTerms = ALL_ACQUISITION_CITIES.map(slugRegexToken);
+  // "Salé" normalizes to "sale", which collides with the English real-estate
+  // transaction word "sale". Excluding this one ambiguous Latin token avoids
+  // turning every global `/sale/` URL into a Morocco signal. Country markers,
+  // Rabat and the other national cities still cover discovery around Salé.
+  const cityTerms = ALL_ACQUISITION_CITIES
+    .map(slugRegexToken)
+    .filter((token) => token !== "sale");
   const terms = ["morocco", "maroc", ...cityTerms];
   return `(?:^|[^a-z])(?:${[...new Set(terms)].join("|")})(?:[^a-z]|$)`;
 }
