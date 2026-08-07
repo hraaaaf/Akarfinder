@@ -1,0 +1,78 @@
+name: DATA-4.3B Dar Agadir Sitemap Revalidation
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data4/daragadir-sitemap-revalidation.ts"
+      - "scripts/data4/__tests__/daragadir-sitemap-revalidation.test.ts"
+      - "scripts/audits/data-4-3b-daragadir-sitemap-revalidation.ts"
+      - ".github/workflows/data-4-3b-daragadir-sitemap-revalidation.yml"
+      - "docs/data/DATA-4-3B-DARAGADIR-SITEMAP-REVALIDATION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-4-3b-daragadir-sitemap-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: DATA-4.3B unit tests
+        run: npx tsx --test scripts/data4/__tests__/daragadir-sitemap-revalidation.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+
+  live-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_3B_OUT_DIR: .tmp/data-4-3b/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run bounded public-sitemap revalidation audit
+        run: npx tsx scripts/audits/data-4-3b-daragadir-sitemap-revalidation.ts
+      - name: Enforce sitemap proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_4_3B_OUT_DIR}/proof.json"
+          test -s "${DATA_4_3B_OUT_DIR}/report.json"
+          test -s "${DATA_4_3B_OUT_DIR}/sitemap-urls.txt"
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-4-3b/results/proof.json','utf8'));
+          if (p.databaseWrites !== 0 || p.policyChanges !== 0 || p.detailPageFetches !== 0 || p.contentReuseOperations !== 0 || p.freshnessWrites !== 0) throw new Error(JSON.stringify(p));
+          if (p.productionActivation !== false) throw new Error(`Activation forbidden in DATA-4.3B: ${JSON.stringify(p)}`);
+          if (p.sourceRequests < 2 || p.sourceRequests > p.sourceRequestBudget || p.sourceRequestBudget !== 40) throw new Error(`Request budget violation: ${JSON.stringify(p)}`);
+          if (p.maxRevalidationIntervalDays !== 14) throw new Error(`Registry revalidation contract drift: ${JSON.stringify(p)}`);
+          if (!['current','due_soon'].includes(p.registryReviewStatus)) throw new Error(`Registry review not valid: ${JSON.stringify(p)}`);
+          if (p.existingPresent + p.existingMissing !== p.existingRows) throw new Error(`Row conservation failed: ${JSON.stringify(p)}`);
+          if (p.seedOnlyPresent > 6425) throw new Error(`Seed-only sitemap presence exceeds DATA-4.3A ceiling: ${JSON.stringify(p)}`);
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-3b-daragadir-sitemap-revalidation
+          path: .tmp/data-4-3b/results/
+          if-no-files-found: error
+          retention-days: 14
