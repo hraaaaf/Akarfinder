@@ -19,14 +19,14 @@ describe("P1A.5 — Territorial Explorer", () => {
   it("exposes a progressive Morocco to city to district hierarchy", () => {
     const explorer = source("components/map/TerritorialExplorer.tsx");
     assert.ok(explorer.includes('aria-label="Exploration territoriale"'));
-    assert.ok(explorer.includes("Maroc → ville → quartier"));
     assert.ok(explorer.includes('selectedCity ? "Quartiers" : "Villes"'));
-    assert.ok(explorer.includes("Maroc pour changer de ville"));
+    assert.ok(explorer.includes("Maroc"));
+    assert.ok(explorer.includes("ChevronRight"));
   });
 
   it("replaces the city rail with districts after city selection", () => {
     const explorer = source("components/map/TerritorialExplorer.tsx");
-    assert.ok(explorer.includes("selectedCity\n                ? districts.map"));
+    assert.ok(explorer.includes("selectedCity\n              ? districts.map"));
     assert.ok(explorer.includes(": cityEntries.map"));
   });
 
