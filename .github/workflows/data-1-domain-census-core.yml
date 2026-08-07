@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - "scripts/census/**"
+      - "scripts/audits/data-1-existing-reserve-census.ts"
       - "docs/DATA_1_MOROCCAN_WEB_CENSUS.md"
+      - "docs/data/DATA-1-2-EXISTING-RESERVE-CENSUS.md"
       - ".github/workflows/data-1-domain-census-core.yml"
   workflow_dispatch:
 
@@ -31,6 +33,17 @@ jobs:
 
       - name: DATA-1 deterministic tests
         run: npx tsx --test scripts/census/__tests__/*.test.ts
+
+      - name: DATA-1.2 audit CLI smoke
+        run: |
+          rm -rf .tmp/data-1-2
+          npx tsx scripts/audits/data-1-existing-reserve-census.ts \
+            --input scripts/census/__fixtures__/existing-reserve-sample.json \
+            --json .tmp/data-1-2/report.json \
+            --markdown .tmp/data-1-2/report.md \
+            --top 3
+          grep -q '"schemaVersion": "data-1-existing-reserve-census-v1"' .tmp/data-1-2/report.json
+          grep -q 'Discovery priority never grants ingestion or publication rights' .tmp/data-1-2/report.md
 
       - name: TypeScript
         run: npx tsc --noEmit

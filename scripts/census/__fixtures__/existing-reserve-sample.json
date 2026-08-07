@@ -1,0 +1,33 @@
+{
+  "generatedAt": "2026-08-07T02:30:00+01:00",
+  "rows": [
+    {
+      "source_domain": "rabatimmo.ma",
+      "canonical_url": "https://rabatimmo.ma/a",
+      "provider": "openserp",
+      "last_seen_at": "2026-08-05T10:00:00Z",
+      "decision": "reserve_unregistered_source"
+    },
+    {
+      "source_domain": "rabatimmo.ma",
+      "canonical_url": "https://rabatimmo.ma/b",
+      "provider": "serper_mass_harvest",
+      "last_seen_at": "2026-08-05T11:00:00Z",
+      "decision": "reserve_unregistered_source"
+    },
+    {
+      "source_domain": "example.ma",
+      "canonical_url": "https://example.ma/property/1",
+      "provider": "openserp",
+      "last_seen_at": "2026-08-05T12:00:00Z",
+      "decision": "reserve_unregistered_source"
+    },
+    {
+      "source_domain": "facebook.com",
+      "canonical_url": "https://facebook.com/example",
+      "provider": "openserp",
+      "last_seen_at": "2026-08-05T13:00:00Z",
+      "decision": "reserve_unregistered_source"
+    }
+  ]
+}
