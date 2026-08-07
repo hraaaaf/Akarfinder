@@ -44,9 +44,9 @@ Principes non négociables :
 - aucune source n’est qualifiée de partenaire sans relation ou autorisation explicite ;
 - aucune image, galerie, coordonnée ou donnée de contact n’est réutilisée sans droit établi ;
 - tout changement DATA/Search important suit `Shadow → Canary → certification → activation bornée` ;
-- aucune frontière de ville/quartier, position exacte, bâtiment, landmark ou proximité n’est fabriqué : une géométrie ou un POI public doit avoir une provenance démontrable ;
+- aucune frontière de ville/quartier, position exacte, bâtiment, landmark ou proximité n’est fabriqué ;
 - une illustration cartographique peut enrichir un landmark réel, mais ne remplace jamais sa géométrie ni sa provenance ;
-- sur la carte, **une couleur possède une seule signification active à la fois** : identité territoriale, prix, offre, couverture ou autre métrique ne doivent jamais être mélangés visuellement.
+- sur la carte, **une couleur possède une seule signification active à la fois**.
 
 ## Doctrine d’acquisition
 
@@ -58,7 +58,8 @@ AkarFinder applique une doctrine **no-bypass** :
 - une capacité technique détectée (`Houzez`, `RealHomes`, WordPress REST, sitemap, JSON-LD, feed) ne vaut jamais permission d’ingestion ou de réutilisation ;
 - une page de confidentialité seule ne vaut pas CGU ni autorisation de réutilisation ;
 - une URL « légale » qui redirige vers une page non légale ne vaut pas preuve de CGU ;
-- Source Registry obligatoire avant toute activation ;
+- **Source Registry obligatoire avant toute activation** ;
+- `DISCOVERED ≠ AUDITED ≠ AUTHORIZED ≠ INGESTIBLE ≠ DISPLAYABLE` ;
 - distinction stricte entre contenu partenaire/autorisé, résultat public indexé et signal marché interne.
 
 ## Architecture active
@@ -69,16 +70,35 @@ AkarFinder applique une doctrine **no-bypass** :
 - Supabase PostgreSQL comme base canonique ;
 - Vercel pour build et exécution ;
 - MapLibre GL comme moteur de rendu cartographique ;
-- **AkarFinder Map Design System** comme cible visuelle : fond, hiérarchie, couleurs, clusters, polygones, dark mode et landmarks propriétaires, sans dépendre visuellement du style cartographique par défaut d’un fournisseur ;
 - Geo Registry comme autorité d’identité ville/quartier ;
-- `/map` consomme les quartiers via `lib/map/canonical-neighborhood-data.ts`, qui canonicalise les seeds avec `geo-entity-registry`; l’import runtime direct de `lib/map/neighborhood-data.ts` est interdit et protégé par la gate Geo Productization ;
-- contrat Geo Canonical Core certifié par **CARTE-QUARTIER-P1A.1 / PR #328**, score **9,5/10**, avec **19/19 workflows verts** avant clôture documentaire ;
+- `/map` consomme les quartiers via `lib/map/canonical-neighborhood-data.ts` ;
+- **CARTE-QUARTIER-P1A.1 / PR #328** : Geo Canonical Core certifié, score **9,5/10** ;
+- **CARTE-QUARTIER-P1A.2 / PR #334** : `district` est désormais un filtre Search structuré, indépendant de `q`, avec routing fail-closed par capacité ;
 - migrations SQL versionnées ;
 - CI GitHub Actions avec tests, build, contrats DATA, accessibilité et preuves ciblées ;
-- **DATA-1.5 / PR #331** certifie le Technical Capability Audit : 20 domaines P0 audités, 19 `CAPABILITY_REVIEW_READY`, familles détectées `3 RealHomes + 3 Houzez + 5 WordPress génériques + 8 structured-web`, score **9,4/10**, sans policy, auth, bypass, WARC ni write DB ;
-- **DATA-1.6A / PR #333** certifie le Source Policy Evidence Review : 19 sources techniquement viables auditées en lecture seule, **1 restriction substantielle**, **3 pages de terms sans permission explicite**, **11 preuves insuffisantes**, **4 accès/fetch limités**, score **9,5/10**, avec **0 write DB / 0 policy / 0 auth / 0 bypass / 0 WARC**.
+- **DATA-1.5 / PR #331** : Technical Capability Audit, 20 domaines P0, 19 review-ready, score **9,4/10** ;
+- **DATA-1.6A / PR #333** : Source Policy Evidence Review, 19 sources, score **9,5/10**, zéro write/policy/auth/bypass/WARC ;
+- **DATA-1.6B / PR #338 + hotfix #339** : 19 sources enregistrées dans `source_policy_registry` en gouvernance conservatrice, **0 source activée**, score final **9,6/10**.
 
-Les spécifications détaillées sous `docs/` restent consultables lorsqu’un lot les concerne, mais ne sont pas des documents de pilotage.
+### DATA-1.6B — état production certifié
+
+La migration `data_1_6b_source_registry_assignment` est appliquée et enregistrée dans Supabase.
+
+Résultat :
+
+- **19/19** nouvelles lignes de gouvernance ;
+- authorization : **1 prohibited / 3 permission_required / 15 unverified** ;
+- acquisition : **1 blocked / 18 public_index_internal_only** ;
+- detail fetch : **1 prohibited / 3 permission_required / 11 legal_review_required / 4 paused** ;
+- display : **1 blocked / 18 internal_signal_only** ;
+- `display_gate=hidden` : **19/19** ;
+- états activants : **0** ;
+- direct fetch : **0** ;
+- partner assignment : **0**.
+
+`prestigeimmo.ma` est explicitement hard-blocked : `prohibited / blocked / hidden / no-bypass`.
+
+La première tentative d’application a échoué **atomiquement avant tout insert** parce que `execution_score` est une colonne PostgreSQL `GENERATED ALWAYS`. PR #339 a retiré cette colonne de l’INSERT et ajouté un test de non-régression. Aucun état partiel n’a existé ; la seconde application a réussi et PostgreSQL calcule désormais `execution_score` automatiquement.
 
 ## Règles d’exécution
 
@@ -93,9 +113,9 @@ Chaque lot doit respecter :
 - aucune décision UX/UI structurante prise sans discussion préalable ;
 - aucun contournement temporaire présenté comme solution finale ;
 - **double-check obligatoire après chaque étape UX/UI** ;
-- **score UX/UI documenté après chaque étape : minimum 9,0/10 pour avancer ; si le score est inférieur, l’étape est retravaillée puis rescorrée avant la suivante** ;
-- certification mobile et desktop adaptée au périmètre du lot, avec vérification de lisibilité, hiérarchie, vérité des données, interactions et accessibilité ;
-- en fin de lot, les trois documents canoniques `README.md`, `docs/ROADMAP.md` et `docs/SESSION.md` sont relus et alignés avec l’état réellement livré avant merge final.
+- **score UX/UI documenté : minimum 9,0/10 pour avancer** ;
+- certification mobile et desktop adaptée au périmètre ;
+- en fin de lot, `README.md`, `docs/ROADMAP.md` et `docs/SESSION.md` sont relus et alignés avec l’état réellement livré.
 
 ## Démarrage local
 
