@@ -11,7 +11,7 @@ import {
   getNeighborhoodCities,
   type NeighborhoodPoint,
   type NeighborhoodConfidence,
-} from "@/lib/map/neighborhood-data";
+} from "@/lib/map/canonical-neighborhood-data";
 import {
   getCityFlyTarget,
   MOROCCO_OVERVIEW,
@@ -581,4 +581,3 @@ export function MapNeighborhoodExperience({
     </div>
   );
 }
-
