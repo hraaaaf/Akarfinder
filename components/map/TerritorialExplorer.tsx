@@ -46,10 +46,13 @@ export function TerritorialExplorer({
     () => districts.find((point) => point.neighborhoodSlug === navigationState.district || point.neighborhood === navigationState.district) ?? null,
     [districts, navigationState.district],
   );
+  const explorerWidthClass = selectedDistrict
+    ? "sm:w-[min(720px,calc(100vw-32px))] md:w-[calc(100vw-438px)] md:max-w-[720px]"
+    : "sm:w-[min(720px,calc(100vw-32px))]";
 
   return (
     <nav
-      className="pointer-events-auto absolute left-3 right-3 top-[92px] z-20 overflow-hidden rounded-2xl border border-border-strong/70 bg-card/94 text-card-foreground shadow-panel backdrop-blur-xl sm:left-4 sm:right-auto sm:top-[96px] sm:w-[min(720px,calc(100vw-32px))]"
+      className={`pointer-events-auto absolute left-3 right-3 top-[92px] z-20 overflow-hidden rounded-2xl border border-border-strong/70 bg-card/94 text-card-foreground shadow-panel backdrop-blur-xl sm:left-4 sm:right-auto sm:top-[96px] ${explorerWidthClass}`}
       aria-label="Exploration territoriale"
     >
       <div className="flex min-w-0 items-center gap-1 border-b border-border px-3 py-1.5 sm:px-3.5">
