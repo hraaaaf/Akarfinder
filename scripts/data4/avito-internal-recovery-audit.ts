@@ -47,6 +47,7 @@ export interface RecoveryRowAudit {
   verticalRealEstate: boolean;
   geoAliasMatch: boolean;
   hasPropertyType: boolean;
+  propertyTypeCompatible: boolean;
   hasIntent: boolean;
   hasStoredCity: boolean;
   hasStoredTitle: boolean;
@@ -74,6 +75,7 @@ export interface AvitoRecoveryReport {
     recoverableCoreRows: number;
     insufficientExistingEvidenceRows: number;
     withPropertyType: number;
+    withCompatiblePropertyType: number;
     withIntent: number;
     withGeoAliasMatch: number;
     withTypeAndIntent: number;
@@ -94,6 +96,19 @@ export interface AvitoRecoveryReport {
   }>;
   rows: RecoveryRowAudit[];
 }
+
+const CATEGORY_PROPERTY_TYPE_COMPATIBILITY: Readonly<Record<string, readonly string[]>> = {
+  appartements: ["apartment"],
+  bureaux: ["office"],
+  local: ["commercial"],
+  terrains_et_fermes: ["land", "farm"],
+  villas_et_riads: ["villa", "riad"],
+  maisons: ["house", "villa"],
+  maisons_et_villas: ["house", "villa"],
+  locations_de_vacances: ["apartment", "duplex", "house", "riad", "studio", "villa"],
+  colocations: ["apartment", "house", "riad", "studio", "villa"],
+  chambre: ["room", "studio", "apartment"],
+};
 
 function safeDecode(value: string): string {
   try {
@@ -147,6 +162,13 @@ function numericPresent(value: number | string | null): boolean {
   return Number.isFinite(parsed);
 }
 
+export function isPropertyTypeCompatible(categorySlug: string | null, propertyType: string | null): boolean {
+  if (!categorySlug || !nonEmpty(propertyType)) return false;
+  const allowed = CATEGORY_PROPERTY_TYPE_COMPATIBILITY[categorySlug];
+  if (!allowed) return false;
+  return allowed.includes(propertyType!.trim().toLowerCase());
+}
+
 export function isRegistryPublicActivable(registry: AvitoRegistrySnapshot): boolean {
   if (registry.display_gate !== "visible") return false;
   if (!["partner_content", "public_index_result"].includes(registry.display_policy)) return false;
@@ -182,6 +204,7 @@ export function buildAvitoInternalRecoveryReport(input: {
     const verticalRealEstate = parsed.categorySlug !== null && realEstateCategories.has(parsed.categorySlug);
     const geoAliasMatch = parsed.locationSlug !== null && geoAliasSet.has(normalizeGeoToken(parsed.locationSlug));
     const hasPropertyType = nonEmpty(row.property_type);
+    const propertyTypeCompatible = verticalRealEstate && isPropertyTypeCompatible(parsed.categorySlug, row.property_type);
     const hasIntent = nonEmpty(row.intent);
     const hasStoredCity = nonEmpty(row.city);
     const hasStoredTitle = nonEmpty(row.title);
@@ -192,7 +215,7 @@ export function buildAvitoInternalRecoveryReport(input: {
     let recoveryClass: RecoveryClass;
     if (!verticalRealEstate) {
       recoveryClass = "NOISE_OR_NON_LISTING";
-    } else if (hasPropertyType && hasIntent && (hasStoredCity || geoAliasMatch)) {
+    } else if (propertyTypeCompatible && hasIntent && (hasStoredCity || geoAliasMatch)) {
       recoveryClass = "RECOVERABLE_FROM_EXISTING_DATA";
     } else {
       recoveryClass = "INSUFFICIENT_EXISTING_EVIDENCE";
@@ -206,6 +229,7 @@ export function buildAvitoInternalRecoveryReport(input: {
       verticalRealEstate,
       geoAliasMatch,
       hasPropertyType,
+      propertyTypeCompatible,
       hasIntent,
       hasStoredCity,
       hasStoredTitle,
@@ -241,9 +265,10 @@ export function buildAvitoInternalRecoveryReport(input: {
     recoverableCoreRows: recoverable.length,
     insufficientExistingEvidenceRows: insufficient.length,
     withPropertyType: canonicalRows.filter((row) => row.hasPropertyType).length,
+    withCompatiblePropertyType: canonicalRows.filter((row) => row.propertyTypeCompatible).length,
     withIntent: canonicalRows.filter((row) => row.hasIntent).length,
     withGeoAliasMatch: canonicalRows.filter((row) => row.geoAliasMatch || row.hasStoredCity).length,
-    withTypeAndIntent: canonicalRows.filter((row) => row.hasPropertyType && row.hasIntent).length,
+    withTypeAndIntent: canonicalRows.filter((row) => row.propertyTypeCompatible && row.hasIntent).length,
     withTypeIntentAndGeo: recoverable.length,
     withStoredTitle: canonicalRows.filter((row) => row.hasStoredTitle).length,
     withStoredSnippet: canonicalRows.filter((row) => row.hasStoredSnippet).length,
@@ -289,17 +314,18 @@ export function renderAvitoRecoveryMarkdown(report: AvitoRecoveryReport): string
     `- unavailable rows audited: **${s.unavailableRows.toLocaleString("en-US")}**`,
     `- canonical real-estate rows: **${s.canonicalRealEstateRows.toLocaleString("en-US")}** (${pct(s.realEstateShare)})`,
     `- noise / non-listing or unruled rows: **${s.noiseOrNonListingRows.toLocaleString("en-US")}** (${pct(s.noiseShare)})`,
-    `- recoverable core rows (type + intent + canonical geo): **${s.recoverableCoreRows.toLocaleString("en-US")}**`,
+    `- recoverable core rows (compatible type + intent + canonical geo): **${s.recoverableCoreRows.toLocaleString("en-US")}**`,
     `- insufficient existing evidence: **${s.insufficientExistingEvidenceRows.toLocaleString("en-US")}**`,
     `- policy-activable public rows: **${s.policyActivableRows}**`,
     "",
     "## Existing signals inside canonical real-estate rows",
     "",
-    `- property type: **${s.withPropertyType}**`,
+    `- property type present: **${s.withPropertyType}**`,
+    `- category-compatible property type: **${s.withCompatiblePropertyType}**`,
     `- intent: **${s.withIntent}**`,
     `- canonical geo match / stored city: **${s.withGeoAliasMatch}**`,
-    `- type + intent: **${s.withTypeAndIntent}**`,
-    `- type + intent + geo: **${s.withTypeIntentAndGeo}**`,
+    `- compatible type + intent: **${s.withTypeAndIntent}**`,
+    `- compatible type + intent + geo: **${s.withTypeIntentAndGeo}**`,
     `- stored title: **${s.withStoredTitle}**`,
     `- stored snippet: **${s.withStoredSnippet}**`,
     `- price: **${s.withPrice}**`,
@@ -313,7 +339,7 @@ export function renderAvitoRecoveryMarkdown(report: AvitoRecoveryReport): string
     "",
     "## Decision",
     "",
-    "AkarFinder must not treat the full Avito Common Crawl reservoir as real-estate inventory. Only canonical vertical-category rows enter recovery analysis. Core recovery remains internal-only and is not public inventory while Source Registry keeps Avito hidden/internal-only.",
+    "AkarFinder must not treat the full Avito Common Crawl reservoir as real-estate inventory. Only canonical vertical-category rows enter recovery analysis, and a row is core-recoverable only when its stored property type is compatible with that category. Ambiguous categories fail closed. Core recovery remains internal-only and is not public inventory while Source Registry keeps Avito hidden/internal-only.",
     "",
   ];
   return `${lines.join("\n")}\n`;
