@@ -125,7 +125,7 @@ describe("Structured intent inferred from free-text Search", () => {
     assert.ok(databaseSearch.includes("enrichSearchQueryWithTextIntent(query)"));
     assert.ok(searchPage.includes("const resolvedQuery = buildSearchPageQuery(params)"));
     assert.ok(searchPage.includes("city = resolvedQuery.city"));
-    assert.ok(searchPage.includes("propertyType = resolvedQuery.property_type"));
+    assert.ok(searchPage.includes("normalizePropertyType(resolvedQuery.property_type)"));
   });
 });
 
