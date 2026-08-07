@@ -520,14 +520,17 @@ export function buildCandidateReconciliationReport(input: {
       0,
     );
     const sourceNames = [...new Set(group.registryRows.map((row) => row.sourceName?.trim()).filter((value): value is string => Boolean(value)))].sort();
+    const explicitMoroccoAnchor = hasMoroccoDomainAnchor(group.domain) || registryHasMoroccoGeography(group.registryRows);
 
     const moroccoRelevance = group.domain.endsWith(".ma")
       ? 100
-      : group.reserveRows.length > 0
-        ? 90
+      : explicitMoroccoAnchor
+        ? 95
         : lanes.includes("MOROCCO_EXTERNAL_REAL_ESTATE")
           ? 70
-          : 50;
+          : group.reserveRows.length > 0
+            ? 50
+            : 30;
     const estimatedInventory = inventoryScore(b3ObservedUrls, ccSignalPages, ccIndexedPages);
     const evidenceDiversity = boundedScore(
       (group.reserveRows.length > 0 ? 40 : 0) + (group.ccRows.length > 0 ? 40 : 0) + (group.registryRows.length > 0 ? 20 : 0),
