@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-07**  
-**Statut : CARTE / QUARTIER P1A.1 certifié via PR #328, merge final en attente ; P1A.2 prochain ; DATA-1.3B reste actif en lane séparée**
+**Statut : CARTE / QUARTIER P1A.1 ✅ PR #328 ; P1A.2 prochain en lane UX ; DATA-1.5 ✅ PR #331 ; DATA-1.6A Source Policy Evidence Review prochain en lane DATA**
 
 Ce fichier est l’unique roadmap du projet. `README.md` définit l’identité et la doctrine ; `docs/SESSION.md` porte uniquement le handover courant.
 
@@ -94,8 +94,9 @@ Audit initial Carte / Quartier : **7,4/10**. Potentiel après consolidation : **
 - activation progressive ODM certifiée ;
 - discovery national déjà amorcé via OpenSERP, sitemaps publics et Common Crawl ;
 - 53 villes/pôles couverts dans la logique d’acquisition existante ;
-- DATA-1.1 / DATA-1.2 / DATA-1.3A acquis ;
-- DATA-1.3B actif en lane DATA séparée.
+- DATA-1.1 / DATA-1.2 / DATA-1.3A / DATA-1.3B / DATA-1.4 acquis ;
+- **DATA-1.5 Technical Capability Audit ✅ PR #331** : 20 candidats P0 audités, 19 techniquement review-ready, familles CMS/connecteurs détectées sans aucune policy automatique ;
+- prochain lot DATA : **DATA-1.6A — Source Policy Evidence Review**, read-only avant toute écriture Source Registry.
 
 ## 4. Lot UX certifié — CARTE-QUARTIER-P1A.1 ✅
 
@@ -470,6 +471,36 @@ Créer un **Domain Census** avec au minimum :
 - policy Source Registry ;
 - potentiel de volume ;
 - priorité d’intégration.
+
+### État d’exécution DATA-1 — 2026-08-07
+
+- **DATA-1.1 — Domain Census Core ✅ PR #322** ;
+- **DATA-1.2 — Existing Reserve Census ✅ PR #323** : 7 051 domaines / 37 009 URLs ;
+- **DATA-1.3A — Common Crawl URL Index Contract ✅ PR #324** ;
+- **DATA-1.3B — Common Crawl Live Evidence ✅ PR #326** : 300/300 Parquet, 8 727 registered domains ;
+- **DATA-1.4 — Candidate Reconciliation ✅ PR #329** : 15 238 domaines réconciliés, 230 `PRIMARY_SOURCE_CANDIDATE` ;
+- **DATA-1.5 — Candidate Technical Capability Audit ✅ PR #331**, merge `1f8b398`, score **9,4/10**.
+
+Preuve DATA-1.5 sur batch P0 de 20 first-party candidates non enregistrés :
+
+- **19/20 `CAPABILITY_REVIEW_READY`** ;
+- 3 `WORDPRESS_REALHOMES` ;
+- 3 `WORDPRESS_HOUZEZ` ;
+- 5 `WORDPRESS_GENERIC` ;
+- 4 `SITEMAP_JSONLD` ;
+- 2 `SITEMAP_STRUCTURED_HTML` ;
+- 2 `STRUCTURED_HTML` ;
+- 1 timeout homepage (`damaneimmo.ma`), conservé review-only ;
+- 116 GET publics au total, maximum 7/domain sur budget 8 ;
+- 0 write DB, 0 policy, 0 auth, 0 bypass, 0 WARC.
+
+Candidats techniquement les plus structurés : `valfoncier.ma`, `marrakech-luxury-properties.com`, `agadirimmobilier.org`, `proimmobilier.ma`, `rabatimmo.ma`, `agadirimmobilier.ma`, `capital-properties.ma`, `immobilier-pro-maroc.com`.
+
+**Prochain lot DATA : DATA-1.6A — Source Policy Evidence Review.**
+
+Responsabilité unique : établir, en lecture seule, les preuves policy des candidats techniquement viables : robots/noindex observés, CGU/licence, restrictions de réutilisation, canaux permis, besoin de partenariat/contact et niveau de confiance. Aucune ingestion et aucune écriture Source Registry dans 1.6A.
+
+Puis **DATA-1.6B — Source Registry Assignment** n’écrira que les décisions suffisamment prouvées, via le schéma Registry existant, avant tout connecteur ou ingestion.
 
 ### Gate DATA-1
 

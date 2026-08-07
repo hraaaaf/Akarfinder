@@ -1,12 +1,12 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-07**  
-**Lot DATA acquis : DATA-1.4 — Candidate Reconciliation & Source Prioritization ✅ PR #329**  
-**Prochain lot DATA : DATA-1.5 — Candidate Technical Capability Audit**  
-**Lot UX certifié : CARTE-QUARTIER-P1A.1 — Geo Canonical Core ✅ PR #328**  
+**Mise à jour : 2026-08-07**
+**Lot DATA acquis : DATA-1.5 — Candidate Technical Capability Audit ✅ PR #331**
+**Prochain lot DATA : DATA-1.6A — Source Policy Evidence Review**
+**Lot UX certifié : CARTE-QUARTIER-P1A.1 — Geo Canonical Core ✅ PR #328**
 **Prochain lot UX : CARTE-QUARTIER-P1A.2 — Search Geo Contract**
 
-Ce fichier est le handover opérationnel court du projet. L’historique détaillé reste dans Git, les PR et les preuves techniques. `docs/ROADMAP.md` reste l’unique roadmap canonique.
+Ce fichier est le handover opérationnel court du projet. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
 ## Main canonique
 
@@ -19,150 +19,122 @@ Ce fichier est le handover opérationnel court du projet. L’historique détail
 - DATA-1.2 ✅ PR #323 ;
 - DATA-1.3A ✅ PR #324 ;
 - DATA-1.3B ✅ PR #326 ;
-- DATA-1.4 ✅ PR #329, merge `2847dd2`.
+- DATA-1.4 ✅ PR #329 ;
+- **DATA-1.5 ✅ PR #331**, merge `1f8b398`, score **9,4/10**.
 
-Invariants conservés : aucune migration DATA-1, aucune activation/policy Source Registry automatique, aucun bypass.
+Invariants : aucune migration DATA-1.5, aucune policy Source Registry automatique, aucune ingestion, aucun auth/login, aucun bypass, aucun WARC fetch.
 
-## DATA-1 — acquis
+## DATA-1 — état acquis
 
-### DATA-1.1 — Domain Census Core ✅
-
-Fondation déterministe et fail-closed : normalisation domaine/URL, agrégation des signaux, adaptateur B3, priorité de revue `HIGH / MEDIUM / LOW / NOISE`.
-
-### DATA-1.2 — Existing Reserve Census ✅
-
-Snapshot Production read-only du 2026-08-07 :
+### DATA-1.2 — Reserve Census ✅
 
 - **37 009 URLs distinctes** ;
-- **7 051 domaines** ;
-- **554 HIGH / 9 280 URLs** ;
-- **429 MEDIUM / 4 880 URLs** ;
-- premier batch initial : **983 domaines HIGH + MEDIUM**.
-
-### DATA-1.3A — Common Crawl URL Index Contract ✅
-
-Deux lanes discovery-only :
-
-- `MA_TLD_REAL_ESTATE` ;
-- `MOROCCO_EXTERNAL_REAL_ESTATE`.
-
-Aucun WARC fetch, aucune ingestion, aucune permission inférée.
+- **7 051 domaines**.
 
 ### DATA-1.3B — Common Crawl Live Evidence ✅
 
-PR **#326**, merge `b69b3e6`.
-
-Preuve `CC-MAIN-2026-25` :
-
 - **300/300 Parquet** analysés ;
-- **0 échec** ;
 - **9 087 hosts bruts** ;
-- **8 970 hosts canoniques** après normalisation `www.` ;
+- **8 970 hosts canoniques** ;
 - **8 727 registered domains** ;
-- lane A `.ma` : **2 056 hosts** ;
-- lane B externe Maroc/ville : **7 031 hosts** ;
-- aucun WARC/content fetch ;
-- aucune écriture Supabase ;
-- aucune source activée.
+- aucun WARC/content fetch, write DB ou source activée.
 
-### DATA-1.4 — Candidate Reconciliation & Source Prioritization ✅
+### DATA-1.4 — Candidate Reconciliation ✅
 
-PR **#329**, merge `2847dd2`.
-
-Le lot réconcilie en lecture seule :
-
-`B3 reserve + Common Crawl certifié + Source Registry v2`.
-
-Preuve live finale :
-
-- B3 : **7 051 domaines** ;
-- Common Crawl : **8 727 registered domains** ;
-- Source Registry : **16 domaines** ;
 - univers réconcilié : **15 238 domaines** ;
 - B3 ∩ Common Crawl : **532** ;
-- Common Crawl only : **8 195** ;
-- B3 only : **6 506** ;
-- déjà dans Source Registry : **16** ;
-- **15 222 domaines non enregistrés**.
-
-Classification conservatrice v1 :
-
+- **15 222 non enregistrés** ;
 - `PRIMARY_SOURCE_CANDIDATE` : **230** ;
 - `PORTAL_CANDIDATE` : **625** ;
-- `CLASSIFIED` : **22** ;
-- `AGGREGATOR` : **29** ;
-- `SHORT_TERM_RENTAL` : **94** ;
-- `OTHER` : **14 237** ;
-- `UNKNOWN` : **1**.
+- fail-closed : 0 write / 0 policy.
 
-Gate finale sur SHA `c3c2d16` : **20/20 workflows verts**.
+### DATA-1.5 — Candidate Technical Capability Audit ✅
 
-Fail-closed confirmé : `readOnly=true`, `writesPerformed=0`, `effectivePoliciesAssigned=0`.
+PR **#331**, merge `1f8b398`.
 
-## Top de revue DATA-1.4
+Batch certifié : les **20 meilleurs `PRIMARY_SOURCE_CANDIDATE` non enregistrés** de DATA-1.4.
 
-Les premiers candidats du rapport final incluent notamment :
+Preuve finale :
 
-1. `limmobiliersansfrontieres.com` — Registry existant, first-party candidate ;
-2. `valfoncier.ma` ;
-3. `damaneimmo.ma` ;
-4. `capital-properties.ma` ;
-5. `leaderimmo.ma` ;
-6. `immotaroudant.com` ;
-7. `mhproperties.ma` ;
-8. `immo-maroc.com` ;
-9. `proimmobilier.ma` ;
-10. `immobest.ma` ;
-11. `christiesrealestatemorocco.com` ;
-12. `immohammedia.com` ;
-13. `rabatimmo.ma` ;
-14. `immobilier-pro-maroc.com` ;
-15. `agadirimmobilier.ma`.
+- **20/20 domaines audités** ;
+- **19 `CAPABILITY_REVIEW_READY`** ;
+- **1 homepage timeout** : `damaneimmo.ma`, conservé `REVIEW_ONLY_HOMEPAGE_UNAVAILABLE` ;
+- 116 requêtes publiques au total ;
+- max **7 GET/domain** sur budget 8 ;
+- robots block-all : 0 ;
+- noindex : 0 ;
+- challenge/access-control final : 0 ;
+- writes DB : 0 ;
+- policies : 0 ;
+- auth : 0 ;
+- bypass : 0 ;
+- WARC : 0.
 
-Portails connus comme `sakane.ma`, `agenz.ma`, `darkom.ma` et `milkiya.ma` restent explicitement séparés des likely first-party sources. Meta-agrégateurs/classifieds/short-term ne peuvent pas être promus en `PRIMARY_SOURCE_CANDIDATE` par le score.
+Familles techniques :
+
+- `WORDPRESS_REALHOMES` : **3** ;
+- `WORDPRESS_HOUZEZ` : **3** ;
+- `WORDPRESS_GENERIC` : **5** ;
+- `SITEMAP_JSONLD` : **4** ;
+- `SITEMAP_STRUCTURED_HTML` : **2** ;
+- `STRUCTURED_HTML` : **2** ;
+- `BLOCKED_OR_INACCESSIBLE` : **1** (timeout, pas interdiction prouvée).
+
+Top capacité observée :
+
+1. `valfoncier.ma` — 100 — RealHomes + sitemap + JSON-LD + WP REST ;
+2. `marrakech-luxury-properties.com` — 100 — WordPress + sitemap + JSON-LD + WP REST ;
+3. `agadirimmobilier.org` — 100 — Houzez + sitemap + JSON-LD + WP REST ;
+4. `proimmobilier.ma` — 95 — RealHomes + WP REST ;
+5. `rabatimmo.ma` — 95 — RealHomes + WP REST ;
+6. `agadirimmobilier.ma` — 95 — Houzez ;
+7. `capital-properties.ma` — 93 — WordPress + WP REST ;
+8. `immobilier-pro-maroc.com` — 93 — WordPress + WP REST.
+
+Volumes structurés remarquables :
+
+- `immo-maroc.com` : **1 210** URLs sitemap observées, **1 090** listing-like ;
+- `leaderimmo.ma` : **799** URLs sitemap et **833** signaux listing cumulés ;
+- `agadirimmobilier.ma` : **320** URLs sitemap ;
+- `mhproperties.ma` : **292** URLs sitemap ;
+- `immohammedia.com` : **282** URLs sitemap.
+
+Deux faux positifs ont été découverts malgré des runs CI verts puis corrigés avant merge : URL homepage mal passée au gate robots, puis détection Cloudflare/CAPTCHA trop large. Les tests protègent désormais ces régressions.
+
+**Score final DATA-1.5 : 9,4/10.**
 
 ## Doctrine DATA active
 
-Invariant :
+`DISCOVERED ≠ AUDITED ≠ AUTHORIZED ≠ INGESTIBLE ≠ DISPLAYABLE`
 
-`DISCOVERED ≠ AUTHORIZED ≠ INGESTIBLE ≠ DISPLAYABLE`
+Et :
 
-Pipeline de qualification :
+`TECHNICAL CAPABILITY ≠ SOURCE PERMISSION`
 
-`DISCOVERY → CENSUS → SOURCE REVIEW → POLICY → CONNECTOR CANDIDATE → INGESTION/INDEXATION SI ÉLIGIBLE`
+La détection Houzez/RealHomes/WordPress REST/sitemap/JSON-LD ne crée aucun droit d’usage.
 
-Une capacité technique, une présence Common Crawl ou un score de priorité ne vaut jamais autorisation.
+## Prochain lot DATA — DATA-1.6A
 
-## Prochain lot DATA — DATA-1.5
+### Source Policy Evidence Review
 
-Objectif : auditer **les capacités techniques** des meilleurs candidats non enregistrés sans encore décider leur policy.
+Responsabilité : établir en **read-only** la preuve policy des candidats techniquement viables avant toute écriture Registry.
 
-Priorité : `PRIMARY_SOURCE_CANDIDATE` puis portails à forte valeur.
+Pour le batch P0 prioritaire :
 
-Pour chaque domaine sélectionné, mesurer uniquement des preuves publiques/admissibles :
+- robots et noindex observés avec date ;
+- CGU / licence / mentions de réutilisation ;
+- distinction consultation publique vs extraction/réutilisation ;
+- canaux techniquement et contractuellement permis ;
+- besoin de partenariat ou consentement ;
+- contact/claim possible ;
+- `legal_review_required` si ambigu ;
+- evidence URLs + résumé + dates ;
+- recommandation de décision, **sans l’écrire dans Source Registry**.
 
-- disponibilité et contenu de `robots.txt` ;
-- sitemap(s) publics ;
-- nombre/structure de pages immobilières détectables ;
-- JSON-LD / Schema.org / microdata ;
-- WordPress générique ;
-- Houzez ;
-- RealHomes / autres familles CMS réellement observées ;
-- REST public déclaré/exposé ;
-- XML/CSV/feed public explicitement exposé ;
-- fréquence/fraîcheur observable ;
-- signaux de login/noindex/blocage ;
-- capability score ;
-- recommandation de **famille de connecteur candidate**, jamais d’autorisation.
+Gate 1.6A : aucune policy finale sans preuve explicite, aucun connecteur activé, aucune ingestion.
 
-Sortie attendue :
-
-`TOP CANDIDATES → TECH AUDIT → CONNECTOR FAMILY CANDIDATE → SOURCE REVIEW/POLICY`.
-
-Aucun site ne doit être ingéré ou ajouté automatiquement à Source Registry pendant DATA-1.5.
+Ensuite seulement : **DATA-1.6B — Source Registry Assignment**, sur le schéma existant, pour les décisions suffisamment prouvées.
 
 ## UX — handover
 
-CARTE-QUARTIER-P1A.1 est mergé via PR #328. Search reste le moteur canonique et `/map` passe par l’identité géographique canonique.
-
-Prochaine étape UX indépendante : **CARTE-QUARTIER-P1A.2 — Search Geo Contract**, avec `district` comme filtre structuré et `q` conservé comme texte libre.
+CARTE-QUARTIER-P1A.1 est mergé via PR #328. Prochaine étape UX indépendante : **CARTE-QUARTIER-P1A.2 — Search Geo Contract**, avec `district` comme filtre structuré et `q` conservé comme texte libre.
