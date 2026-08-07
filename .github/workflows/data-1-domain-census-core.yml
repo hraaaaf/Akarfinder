@@ -5,8 +5,10 @@ on:
     paths:
       - "scripts/census/**"
       - "scripts/audits/data-1-existing-reserve-census.ts"
+      - "scripts/audits/data-1-commoncrawl-url-index-*.ts"
       - "docs/DATA_1_MOROCCAN_WEB_CENSUS.md"
       - "docs/data/DATA-1-2-EXISTING-RESERVE-CENSUS.md"
+      - "docs/data/DATA-1-3-COMMONCRAWL-URL-INDEX.md"
       - ".github/workflows/data-1-domain-census-core.yml"
   workflow_dispatch:
 
@@ -44,6 +46,29 @@ jobs:
             --top 3
           grep -q '"schemaVersion": "data-1-existing-reserve-census-v1"' .tmp/data-1-2/report.json
           grep -q 'Discovery priority never grants ingestion or publication rights' .tmp/data-1-2/report.md
+
+      - name: DATA-1.3 URL Index plan smoke
+        run: |
+          rm -rf .tmp/data-1-3-plan
+          npx tsx scripts/audits/data-1-commoncrawl-url-index-plan.ts \
+            --out-dir .tmp/data-1-3-plan \
+            --crawl CC-MAIN-2026-25 \
+            --min-signal-pages 2
+          grep -q "url_host_registry_suffix = 'ma'" .tmp/data-1-3-plan/01-ma-tld-real-estate.sql
+          grep -q "MOROCCO_EXTERNAL_REAL_ESTATE" .tmp/data-1-3-plan/02-morocco-external-real-estate.sql
+          grep -q '"warcFetchAllowed": false' .tmp/data-1-3-plan/manifest.json
+
+      - name: DATA-1.3 URL Index report smoke
+        run: |
+          rm -rf .tmp/data-1-3-report
+          npx tsx scripts/audits/data-1-commoncrawl-url-index-report.ts \
+            --input scripts/census/__fixtures__/commoncrawl-url-index-sample.json \
+            --json .tmp/data-1-3-report/report.json \
+            --markdown .tmp/data-1-3-report/report.md \
+            --top 10
+          grep -q '"schemaVersion": "data-1-commoncrawl-url-index-v1"' .tmp/data-1-3-report/report.json
+          grep -q '"newDomains": 1' .tmp/data-1-3-report/report.json
+          grep -q 'not authorization' .tmp/data-1-3-report/report.md
 
       - name: TypeScript
         run: npx tsc --noEmit
