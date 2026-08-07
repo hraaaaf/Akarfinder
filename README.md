@@ -74,21 +74,15 @@ Principes non négociables :
 - DATA-4.3A ✅ PR #347 : Dar Agadir = **5 ELIGIBLE_SHADOW**, **6 425 revalidation-required** ;
 - DATA-4.3B ✅ PR #348 : sitemap actuel = **5 905 URLs**, **5 673 seed-only** encore présentes ;
 - DATA-4.3C ✅ PR #351 : **5 566 SHADOW_READY**, dont **5 564 seed-only**, sans write ni activation ;
-- DATA-4.3D ✅ PR #353 : **100-row reversible freshness evidence canary DRY_RUN**, canal `public_sitemap_presence`, TTL **14 jours**, **100/100 rollback**, **20/20 gates verts**, **0 DB/freshness write**, **0 activation**.
+- DATA-4.3D ✅ PR #353 : **100-row reversible freshness evidence canary DRY_RUN**, canal `public_sitemap_presence`, TTL **14 jours**, **100/100 rollback**, **20/20 gates verts**, **0 DB/freshness write**, **0 activation** ;
+- DATA-4.3E ✅ PR #355 : **10-row production write rehearsal**, 10/10 apply, 10/10 verify, 10/10 rollback. Post-rollback exact sur freshness/evidence ; `updated_at` traité comme audit trail non rollbackable ;
+- DATA-4.3F ✅ PR #358 : **Controlled Promotion Design**, live proof = 6 533 total / 6 431 seed-only / 102 fresh-confirmed / **0 résidu canary**, Registry eligible, drift 0 %, batch initial **50**, hard cap **100/run**, **500** avant re-certification, TTL 14 jours, 0 write/activation.
 
 ## Décision DATA courante
 
-**DATA-4.3E — First Bounded Freshness Write Canary**.
+**DATA-4.3G — First Persistent Freshness Batch**.
 
-Objectif : appliquer le signal `public_sitemap_presence` à un très petit canary réversible, avec :
-
-- scope exact et déterministe ;
-- snapshot before + rollback exact ;
-- aucune activation SERP automatique ;
-- aucun fetch de fiche détail ;
-- aucun content reuse ;
-- Source Registry toujours autoritaire ;
-- vérification production après write puis rollback rehearsal.
+Objectif : appliquer un premier batch **persistant de 50 lignes maximum**, avec préconditions exactes, snapshot complet, canal `public_sitemap_presence`, TTL 14 jours, vérification post-write, observabilité applied/skipped/drifted, et aucune modification de display/publication policy.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 
