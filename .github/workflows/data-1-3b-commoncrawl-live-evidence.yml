@@ -68,8 +68,13 @@ jobs:
           cat > .tmp/data-1-3b/lane-a.sql <<SQL
           INSTALL httpfs;
           LOAD httpfs;
-          SET threads=4;
+          SET threads=2;
           SET memory_limit='6GB';
+          SET http_retries=8;
+          SET http_retry_wait_ms=1000;
+          SET http_retry_backoff=2;
+          SET http_timeout=60;
+          SET http_keep_alive=false;
           COPY (
             WITH scoped AS (
               SELECT
@@ -101,7 +106,16 @@ jobs:
             ORDER BY real_estate_signal_pages DESC, indexed_pages DESC, domain ASC
           ) TO '.tmp/data-1-3b/results/lane-a.csv' (HEADER, DELIMITER ',');
           SQL
-          .tmp/data-1-3b/bin/duckdb < .tmp/data-1-3b/lane-a.sql
+          for attempt in 1 2 3; do
+            rm -f .tmp/data-1-3b/results/lane-a.csv
+            if .tmp/data-1-3b/bin/duckdb < .tmp/data-1-3b/lane-a.sql; then
+              break
+            fi
+            if [ "${attempt}" -eq 3 ]; then
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
           wc -l .tmp/data-1-3b/results/lane-a.csv
 
       - name: Query external Morocco real-estate lane
@@ -112,8 +126,13 @@ jobs:
           cat > .tmp/data-1-3b/lane-b.sql <<SQL
           INSTALL httpfs;
           LOAD httpfs;
-          SET threads=4;
+          SET threads=2;
           SET memory_limit='6GB';
+          SET http_retries=8;
+          SET http_retry_wait_ms=1000;
+          SET http_retry_backoff=2;
+          SET http_timeout=60;
+          SET http_keep_alive=false;
           COPY (
             WITH scoped AS (
               SELECT
@@ -149,10 +168,20 @@ jobs:
             ORDER BY real_estate_signal_pages DESC, indexed_pages DESC, domain ASC
           ) TO '.tmp/data-1-3b/results/lane-b.csv' (HEADER, DELIMITER ',');
           SQL
-          .tmp/data-1-3b/bin/duckdb < .tmp/data-1-3b/lane-b.sql
+          for attempt in 1 2 3 4; do
+            rm -f .tmp/data-1-3b/results/lane-b.csv
+            if .tmp/data-1-3b/bin/duckdb < .tmp/data-1-3b/lane-b.sql; then
+              break
+            fi
+            if [ "${attempt}" -eq 4 ]; then
+              exit 1
+            fi
+            sleep $((attempt * 10))
+          done
           wc -l .tmp/data-1-3b/results/lane-b.csv
 
       - name: Produce evidence summary
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
@@ -161,7 +190,10 @@ jobs:
           from pathlib import Path
           out = Path('.tmp/data-1-3b/results')
           def read(name):
-              with (out / name).open(newline='') as f:
+              path = out / name
+              if not path.exists():
+                  return []
+              with path.open(newline='') as f:
                   return list(csv.DictReader(f))
           a = read('lane-a.csv')
           b = read('lane-b.csv')
@@ -172,6 +204,8 @@ jobs:
               'schemaVersion': 'data-1-commoncrawl-live-evidence-v1',
               'crawl': 'CC-MAIN-2026-25',
               'warcFetchAllowed': False,
+              'laneAComplete': bool(a),
+              'laneBComplete': bool(b),
               'laneAHosts': len(a),
               'laneBHosts': len(b),
               'uniqueHosts': len(unique_hosts),
@@ -179,14 +213,30 @@ jobs:
               'rows': len(rows),
           }
           (out / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
-          (out / 'all-domains.txt').write_text('\n'.join(sorted(unique_hosts)) + '\n')
+          (out / 'all-domains.txt').write_text(('\n'.join(sorted(unique_hosts)) + '\n') if unique_hosts else '')
           print(json.dumps(summary, indent=2))
           PY
 
       - name: Upload DATA-1.3B evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: data-1-3b-commoncrawl-live-evidence
           path: .tmp/data-1-3b/results/
           if-no-files-found: error
           retention-days: 14
+
+      - name: Enforce complete live evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s .tmp/data-1-3b/results/lane-a.csv
+          test -s .tmp/data-1-3b/results/lane-b.csv
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          summary = json.loads(Path('.tmp/data-1-3b/results/summary.json').read_text())
+          assert summary['warcFetchAllowed'] is False
+          assert summary['laneAComplete'] is True
+          assert summary['laneBComplete'] is True
+          PY
