@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { extractRobotsSitemaps, parseSitemapXml, sameDarAgadirOrigin } from "../data4/daragadir-sitemap-revalidation";
 import { classifyFreshnessShadowRows, policyAllowsFreshnessShadow, type FreshnessShadowCandidate, type FreshnessShadowPolicy } from "../data4/daragadir-freshness-shadow";
-import { PROMOTION_CHANNEL, PROMOTION_TTL_DAYS, selectPromotionBatch } from "../data4/daragadir-controlled-promotion";
+import { PROMOTION_TTL_DAYS, selectPromotionBatch } from "../data4/daragadir-controlled-promotion";
 import { buildExpansionPlan, requireCertifiedExpansionStart } from "../data4/daragadir-controlled-expansion";
 
 const outDir = process.env.DATA_4_3H_OUT_DIR ?? ".tmp/data-4-3h/results";
@@ -115,8 +115,13 @@ async function main(): Promise<void> {
     visited.add(sitemapUrl);
     const parsed = parseSitemapXml(await fetchAllowedText(sitemapUrl));
     if (parsed.kind === "unknown") throw new Error(`Unknown sitemap ${sitemapUrl}`);
-    if (parsed.kind === "index") for (const child of parsed.locs) if (!visited.has(child) && !queue.includes(child)) queue.push(child);
-    else for (const url of parsed.locs) sitemapUrls.add(url);
+    if (parsed.kind === "index") {
+      for (const child of parsed.locs) {
+        if (!visited.has(child) && !queue.includes(child)) queue.push(child);
+      }
+    } else {
+      for (const url of parsed.locs) sitemapUrls.add(url);
+    }
   }
 
   const displayByUrl = new Map(display.map((row) => [row.canonical_url, row]));
@@ -138,6 +143,7 @@ async function main(): Promise<void> {
     generatedAt:new Date().toISOString(),
     mode:"DRY_RUN",
     currentPersistentRows,
+    currentSitemapUrlCount:sitemapUrls.size,
     eligibleSeedOnlyRows:eligibleSeedOnly.length,
     expansionPlan:plan,
     nextBatchSize:nextBatch.length,
