@@ -1,0 +1,38 @@
+name: DATA-4.3J Display Trigger Ordering
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260807212500_data_4_3j_display_trigger_ordering.sql"
+      - ".github/workflows/data-4-3j-display-trigger-ordering.yml"
+      - "docs/data/DATA-4-3J-DISPLAY-TRIGGER-ORDERING.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Migration ordering contract
+        run: |
+          set -euo pipefail
+          FILE=supabase/migrations/20260807212500_data_4_3j_display_trigger_ordering.sql
+          grep -q 'drop trigger if exists thin_index_display_policy_write' "$FILE"
+          grep -q 'create trigger zzz_thin_index_display_policy_write' "$FILE"
+          grep -q 'execute function public.odm06_set_display_policy()' "$FILE"
+          ! grep -Eqi 'update[[:space:]]+public\.thin_index_search_documents|insert[[:space:]]+into[[:space:]]+public\.thin_index_search_documents|delete[[:space:]]+from[[:space:]]+public\.thin_index_search_documents' "$FILE"
+      - name: Seed freshness regression
+        run: npm run test:seed-freshness
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
