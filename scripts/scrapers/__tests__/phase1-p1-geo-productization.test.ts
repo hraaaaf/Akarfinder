@@ -44,12 +44,18 @@ describe("Phase 1 P1 — Geo productization", () => {
     assert.equal(page.includes("Rechercher dans cette ville"), false);
   });
 
-  it("keeps city-cluster clicks inside map exploration and rewrites legacy intelligence wording", () => {
+  it("uses the URL as the map navigation source of truth", () => {
     const client = source("components/map/MapNeighborhoodClient.tsx");
-    assert.ok(client.includes("a.maplibre-cluster-marker"));
-    assert.ok(client.includes("router.push(`/map?city="));
-    assert.ok(client.includes("Repères quartier · Données indicatives"));
-    assert.ok(client.includes("Repères quartier · AkarFinder"));
+    const experience = source("components/map/MapNeighborhoodExperience.tsx");
+    assert.ok(client.includes("useSearchParams"));
+    assert.ok(client.includes("buildMapHref"));
+    assert.ok(client.includes("router.push"));
+    assert.ok(client.includes("router.replace"));
+    assert.ok(client.includes("initialState"));
+    assert.ok(experience.includes("maplibre-cluster-marker"));
+    assert.ok(experience.includes("Repères quartier · Données indicatives"));
+    assert.equal(experience.includes("showCityOverlay"), false);
+    assert.equal(experience.includes("CityCinematicEntrance"), false);
   });
 
   it("keeps the interactive map on the canonical neighborhood adapter", () => {
@@ -62,6 +68,19 @@ describe("Phase 1 P1 — Geo productization", () => {
     assert.ok(canonical.includes("resolveCityEntity"));
     assert.ok(canonical.includes("resolveNeighborhoodEntity"));
     assert.ok(canonical.includes("RAW_NEIGHBORHOOD_POINTS.map(canonicalizePoint)"));
+  });
+
+  it("preserves structured map context across Search and neighborhood handoffs", () => {
+    const searchPage = source("app/search/page.tsx");
+    const bridge = source("components/search/SearchMapNavigationBridge.tsx");
+    const neighborhoodPage = source("app/immobilier/[city]/[district]/page.tsx");
+    assert.ok(searchPage.includes("SearchMapNavigationBridge"));
+    assert.ok(bridge.includes("CANONICAL_SEARCH_SESSION_EVENT"));
+    assert.ok(bridge.includes('a[href^="/map"]'));
+    assert.ok(bridge.includes("buildMapHref"));
+    assert.ok(neighborhoodPage.includes("buildMapHref"));
+    assert.ok(neighborhoodPage.includes("buildMapSearchHref"));
+    assert.ok(neighborhoodPage.includes("Voir ce quartier sur la carte"));
   });
 });
 

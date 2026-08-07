@@ -1,8 +1,17 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  resolveCityEntity,
+  resolveNeighborhoodEntity,
+} from "@/lib/geo/geo-entity-registry";
+import {
+  buildMapHref,
+  mapNavigationStateFromUrlSearchParams,
+  type MapNavigationState,
+} from "@/lib/map/map-navigation-state";
 
 const MapNeighborhoodExperienceDynamic = dynamic(
   () =>
@@ -22,53 +31,67 @@ const MapNeighborhoodExperienceDynamic = dynamic(
   },
 );
 
-type MapNeighborhoodClientProps = { initialCity?: string };
+type MapNeighborhoodClientProps = {
+  initialState: MapNavigationState;
+};
 
-export function MapNeighborhoodClient(props: MapNeighborhoodClientProps) {
+export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientProps) {
   const router = useRouter();
-  const rootRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const queryString = searchParams.toString();
 
-  // Compatibility adapter for the legacy MapLibre marker factory. A city marker
-  // is an exploration control, not an implicit Search CTA: keep the user inside
-  // /map and reload the map with that canonical city selected.
-  function handleClickCapture(event: React.MouseEvent<HTMLDivElement>) {
-    const target = event.target as HTMLElement | null;
-    const cluster = target?.closest("a.maplibre-cluster-marker") as HTMLAnchorElement | null;
-    if (!cluster) return;
-    const href = cluster.getAttribute("href");
-    if (!href) return;
-    const url = new URL(href, window.location.origin);
-    const city = url.searchParams.get("city");
-    if (!city) return;
-    event.preventDefault();
-    event.stopPropagation();
-    router.push(`/map?city=${encodeURIComponent(city)}`);
-  }
+  const navigationState = useMemo(
+    () => queryString
+      ? mapNavigationStateFromUrlSearchParams(new URLSearchParams(queryString))
+      : initialState,
+    [initialState, queryString],
+  );
+
+  const canonicalHref = useMemo(
+    () => buildMapHref(navigationState),
+    [navigationState],
+  );
+
+  const unmappedDistrict = useMemo(() => {
+    if (navigationState.city === "all" || !navigationState.district) return null;
+    const city = resolveCityEntity(navigationState.city);
+    if (!city) return null;
+    const district = resolveNeighborhoodEntity(city.canonical_name, navigationState.district);
+    return district && !district.map_eligible ? district : null;
+  }, [navigationState.city, navigationState.district]);
 
   useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
+    const currentHref = queryString ? `/map?${queryString}` : "/map";
+    if (currentHref !== canonicalHref) {
+      router.replace(canonicalHref, { scroll: false });
+    }
+  }, [canonicalHref, queryString, router]);
 
-    const applyPublicWording = () => {
-      for (const paragraph of root.querySelectorAll("p")) {
-        const text = paragraph.textContent?.trim() ?? "";
-        if (text === "Intelligence quartier · Repères indicatifs") {
-          paragraph.textContent = "Repères quartier · Données indicatives";
-        } else if (text === "Intelligence quartier · AkarFinder") {
-          paragraph.textContent = "Repères quartier · AkarFinder";
-        }
-      }
-    };
-
-    applyPublicWording();
-    const observer = new MutationObserver(applyPublicWording);
-    observer.observe(root, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, []);
+  const handleNavigationChange = useCallback(
+    (nextState: MapNavigationState) => {
+      router.push(buildMapHref(nextState), { scroll: false });
+    },
+    [router],
+  );
 
   return (
-    <div ref={rootRef} onClickCapture={handleClickCapture}>
-      <MapNeighborhoodExperienceDynamic {...props} />
+    <div className="relative">
+      <MapNeighborhoodExperienceDynamic
+        navigationState={navigationState}
+        onNavigationChange={handleNavigationChange}
+      />
+      {unmappedDistrict ? (
+        <div className="pointer-events-none absolute left-1/2 top-[118px] z-30 w-[min(92vw,430px)] -translate-x-1/2 sm:top-[150px]">
+          <div className="rounded-xl border border-amber-200/80 bg-white/95 px-3.5 py-2.5 text-center shadow-[0_8px_24px_rgba(7,27,51,0.14)] backdrop-blur">
+            <p className="text-[11px] font-extrabold text-[#071B33]">
+              {unmappedDistrict.canonical_name} reste appliqué à votre recherche
+            </p>
+            <p className="mt-0.5 text-[10px] font-semibold text-slate-500">
+              Repère cartographique non publié pour ce quartier — la vue ville est affichée sans inventer de limite.
+            </p>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

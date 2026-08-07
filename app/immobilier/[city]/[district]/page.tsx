@@ -7,13 +7,28 @@ import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Container } from "@/components/ui/Container";
 import { isSeoEligibleGeoPair } from "@/lib/geo/geo-entity-registry";
+import {
+  buildMapHref,
+  buildMapSearchHref,
+  parseMapNavigationState,
+} from "@/lib/map/map-navigation-state";
 import { searchListings } from "@/lib/search";
 import { getAllNeighborhoods, getNeighborhoodBySlug } from "@/lib/seo-neighborhood-pages/neighborhood-seo-data";
 import { generateNeighborhoodSeoMetadata } from "@/lib/seo-neighborhood-pages/seo-metadata";
 import { isValidDistrictSlug } from "@/lib/seo-neighborhood-pages/types";
 import { isValidCitySlug } from "@/lib/seo-city-pages/types";
 
-type PageProps = { params: Promise<{ city: string; district: string }> };
+type PageProps = {
+  params: Promise<{ city: string; district: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function withSearchParam(href: string, key: string, value: string): string {
+  const [pathname, query = ""] = href.split("?");
+  const params = new URLSearchParams(query);
+  params.set(key, value);
+  return `${pathname}?${params.toString()}`;
+}
 
 export async function generateStaticParams() {
   return getAllNeighborhoods()
@@ -38,16 +53,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function DistrictPage({ params }: PageProps) {
+export default async function DistrictPage({ params, searchParams }: PageProps) {
   const { city, district } = await params;
   if (!isValidCitySlug(city) || !isValidDistrictSlug(district) || !isSeoEligibleGeoPair(city, district)) notFound();
   const n = getNeighborhoodBySlug(city, district);
   if (!n) notFound();
 
   const seo = generateNeighborhoodSeoMetadata(n);
-  const cityParam = encodeURIComponent(n.cityDisplayName);
-  const districtParam = encodeURIComponent(n.displayName);
-  const searchHref = `/search?city=${cityParam}&district=${districtParam}`;
+  const continuityParams = searchParams ? await searchParams : {};
+  const navigationState = parseMapNavigationState({
+    ...continuityParams,
+    city: n.citySlug,
+    district: n.slug,
+  });
+  const searchHref = buildMapSearchHref(navigationState);
+  const mapHref = buildMapHref(navigationState);
   const result = await searchListings({ city: n.cityDisplayName, district: n.displayName, limit: 6 }).catch(() => ({ listings: [] }));
 
   const breadcrumbJsonLd = {
@@ -74,9 +94,9 @@ export default async function DistrictPage({ params }: PageProps) {
             <p className="mt-4 max-w-2xl text-[14px] leading-7 text-muted-foreground">{n.description}</p>
           </div>
           <div className="mt-7 flex flex-wrap gap-2">
-            <Link href={`${searchHref}&transaction_type=buy`} className="rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[13px] font-extrabold text-white">Acheter dans ce quartier</Link>
-            <Link href={`${searchHref}&transaction_type=rent`} className="rounded-xl border border-border/20 px-5 py-3 text-[13px] font-extrabold">Louer</Link>
-            <Link href={`/map?city=${cityParam}`} className="inline-flex items-center gap-2 rounded-xl border border-border/20 px-5 py-3 text-[13px] font-extrabold"><MapPin size={14} />Voir la ville sur la carte</Link>
+            <Link href={withSearchParam(searchHref, "transaction_type", "buy")} className="rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[13px] font-extrabold text-white">Acheter dans ce quartier</Link>
+            <Link href={withSearchParam(searchHref, "transaction_type", "rent")} className="rounded-xl border border-border/20 px-5 py-3 text-[13px] font-extrabold">Louer</Link>
+            <Link href={mapHref} className="inline-flex items-center gap-2 rounded-xl border border-border/20 px-5 py-3 text-[13px] font-extrabold"><MapPin size={14} />Voir ce quartier sur la carte</Link>
           </div>
         </Container>
       </section>
@@ -102,7 +122,7 @@ export default async function DistrictPage({ params }: PageProps) {
               <h2 className="mt-4 text-xl font-extrabold">Chercher dans {n.displayName}</h2>
               <p className="mt-2 text-[12.5px] leading-6 text-muted-foreground">Le quartier reste un contexte de recherche. Les résultats sont ensuite classés par pertinence et niveau d’information dans Search.</p>
               <div className="mt-5 flex flex-wrap gap-2">
-                {n.propertyTypes.slice(0, 4).map((type) => <Link key={type} href={`${searchHref}&property_type=${encodeURIComponent(type)}`} className="rounded-full border border-border/15 px-3 py-2 text-[11.5px] font-bold capitalize">{type}</Link>)}
+                {n.propertyTypes.slice(0, 4).map((type) => <Link key={type} href={withSearchParam(searchHref, "property_type", type)} className="rounded-full border border-border/15 px-3 py-2 text-[11.5px] font-bold capitalize">{type}</Link>)}
               </div>
               <Link href={searchHref} className="mt-5 inline-flex items-center gap-2 text-[13px] font-extrabold text-bronze-500">Voir tous les résultats <ArrowRight size={13} /></Link>
             </article>

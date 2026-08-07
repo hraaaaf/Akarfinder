@@ -66,7 +66,8 @@ Doctrine **no-bypass absolue** :
 
 - CARTE-QUARTIER-P1A.1 / PR #328 : Geo Canonical Core, score **9,5/10** ;
 - CARTE-QUARTIER-P1A.2 / PR #334 : `district` structuré dans Search avec routing fail-closed ;
-- prochain UX : **P1A.3 — Map State & Navigation**.
+- CARTE-QUARTIER-P1A.3 / PR #349 : état Map piloté par URL, `city + district + layer=explore`, Back/Forward, continuité Search ↔ Map ↔ Quartier et `project_id`, score contractuel **9,3/10** ;
+- prochain UX : **P1A.4 — Map Design System**.
 
 ## État DATA acquis
 
@@ -83,65 +84,29 @@ Doctrine **no-bypass absolue** :
 
 ### DATA-4.0 — Large Reservoir Baseline ✅ PR #341
 
-Avito + Mubawab :
-
-- **35 134 normalized** ;
-- **3 588 technical display** ;
-- **0 policy-activable** ;
-- Avito : **22 227 unavailable** ;
-- Mubawab : gap public→normalized borné **95 738**, sans permission implicite de crawl.
+Avito + Mubawab : **35 134 normalized**, **3 588 technical display**, **0 policy-activable**.
 
 ### DATA-4.1A — Avito Internal Recovery Audit ✅ PR #343
 
-Sur **22 227** Avito `unavailable` :
-
-- immobilier canonique : **1 098** ;
-- bruit/non-immobilier : **21 129 (95,06 %)** ;
-- type catégorie-compatible : **804** ;
-- type compatible + intent + geo : **73** ;
-- evidence insuffisante : **1 025** ;
-- prix : **0** ; surface : **0** ;
-- policy-activable : **0**.
-
-Décision : ne pas lancer maintenant un Shadow Recovery Avito pour seulement 73 lignes internes et non publiables.
+Sur 22 227 Avito `unavailable`, seulement **73** lignes combinent type compatible + intent + geo ; prix/surface absents et **0 policy-activable**. Décision : pas de Shadow Recovery Avito maintenant.
 
 ### DATA-4.2 — Reservoir Prioritization ✅ PR #344
 
-Preuve live paginée :
+- gagnant `ADMISSIBLE_GROWTH` : **daragadir.com**, score 71,75 ;
+- gagnant `PARTNERSHIP_UPSIDE` : **agenz.ma**, score 58,93 ;
+- 0 write / 0 policy change / 0 activation.
 
-- **56 803** normalized evidence rows ;
-- **22 426** display evidence rows ;
-- **35** Registry rows ;
-- **14** candidats ;
-- DB writes / source requests / policy changes / public activations : **0**.
+### DATA-4.3A — Dar Agadir Canonical-Link Shadow ✅ PR #347
 
-**Gagnant ADMISSIBLE_GROWTH : `daragadir.com`**
+Sur **6 533** lignes : **5 `ELIGIBLE_SHADOW`**, **6 425 `SEED_ONLY_REVALIDATION_REQUIRED`**, 46 non normalisées, 57 insuffisamment structurées, 0 duplicate, 0 policy blocked. Aucun fetch ni write.
 
-- 6 533 normalized ;
-- 6 319 `city + property_type + intent` ;
-- 6 528 technical display ;
-- score **71,75** ;
-- Registry : `public_sitemap_canonical_link / canonical_link_only / external_tail_link_only`.
+### DATA-4.3B — Dar Agadir Sitemap Revalidation ✅ PR #348
 
-**Gagnant PARTNERSHIP_UPSIDE : `agenz.ma`**
+Revalidation live bornée via `public_sitemap` uniquement : robots/sitemaps same-origin, maximum 40 requêtes, aucune page détail, aucun content reuse, aucun write freshness/DB, aucune policy modifiée et aucune activation. La présence sitemap reste un signal distinct de la fraîcheur.
 
-- 4 490 normalized ;
-- 1 227 fresh ;
-- 1 146 decision-structured ;
-- score **58,93** ;
-- Registry : `internal_signal_only / hidden`.
+## Prochaine décision DATA
 
-Un minimum de **500 lignes normalisées** est requis pour gagner la lane partenariat afin de privilégier les multiplicateurs capables d’aider réellement le passage vers 20K.
-
-## Prochain lot DATA
-
-**DATA-4.3A — Dar Agadir Bounded Canonical-Link Activation Audit**.
-
-Objectif : mesurer ce qui peut être représenté utilement à partir des observations déjà détenues dans la frontière actuelle du Registry, sans fetch détail ni réutilisation de contenu.
-
-`canonical_link_only` = lien sortant borné + provenance explicite, jamais fiche partenaire ni contenu réhébergé.
-
-En parallèle business : **Agenz = priorité partenariat/feed**, sans changement de comportement produit avant autorisation écrite.
+Lire la preuve DATA-4.3B puis, seulement si elle le justifie, concevoir un **freshness shadow/write séparé et borné**. Sinon passer au réservoir admissible suivant. En parallèle business : **Agenz = priorité partenariat/feed**, sans changement de comportement produit avant autorisation écrite.
 
 ## Règles d’exécution
 
