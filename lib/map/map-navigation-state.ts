@@ -15,8 +15,10 @@ export type MapNavigationContext = {
   max_price?: string;
   min_surface?: string;
   max_surface?: string;
+  bedrooms?: string;
   mre?: string;
   sort?: string;
+  view?: string;
   project_id?: string;
 };
 
@@ -36,8 +38,10 @@ const CONTEXT_KEYS = [
   "max_price",
   "min_surface",
   "max_surface",
+  "bedrooms",
   "mre",
   "sort",
+  "view",
   "project_id",
 ] as const satisfies ReadonlyArray<keyof MapNavigationContext>;
 
