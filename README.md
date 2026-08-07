@@ -55,6 +55,7 @@ AkarFinder applique une doctrine **no-bypass** :
 - aucun proxy furtif, stealth, faux Googlebot ou contournement de CAPTCHA ;
 - aucun bypass de login, rate limit, restriction d’accès ou contrôle technique ;
 - `robots.txt` et sitemap sont des signaux techniques, jamais une licence ;
+- une capacité technique détectée (`Houzez`, `RealHomes`, WordPress REST, sitemap, JSON-LD, feed) ne vaut jamais permission d’ingestion ou de réutilisation ;
 - Source Registry obligatoire avant toute activation ;
 - distinction stricte entre contenu partenaire/autorisé, résultat public indexé et signal marché interne.
 
@@ -71,7 +72,8 @@ AkarFinder applique une doctrine **no-bypass** :
 - `/map` consomme les quartiers via `lib/map/canonical-neighborhood-data.ts`, qui canonicalise les seeds avec `geo-entity-registry`; l’import runtime direct de `lib/map/neighborhood-data.ts` est interdit et protégé par la gate Geo Productization ;
 - contrat Geo Canonical Core certifié par **CARTE-QUARTIER-P1A.1 / PR #328**, score **9,5/10**, avec **19/19 workflows verts** avant clôture documentaire ;
 - migrations SQL versionnées ;
-- CI GitHub Actions avec tests, build, contrats DATA, accessibilité et preuves ciblées.
+- CI GitHub Actions avec tests, build, contrats DATA, accessibilité et preuves ciblées ;
+- **DATA-1.5 / PR #331** certifie le Technical Capability Audit : 20 domaines P0 audités, 19 `CAPABILITY_REVIEW_READY`, familles détectées `3 RealHomes + 3 Houzez + 5 WordPress génériques + 8 structured-web`, score **9,4/10**, sans policy, auth, bypass, WARC ni write DB.
 
 Les spécifications détaillées sous `docs/` restent consultables lorsqu’un lot les concerne, mais ne sont pas des documents de pilotage.
 
