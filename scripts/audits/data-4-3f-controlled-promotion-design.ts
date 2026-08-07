@@ -77,7 +77,7 @@ async function main(): Promise<void> {
     exactCount("source_offer_seeds", { source_domain: "eq.daragadir.com" }),
     exactCount("source_offer_seeds", { source_domain: "eq.daragadir.com", freshness_status: "eq.seed_only" }),
     exactCount("source_offer_seeds", { source_domain: "eq.daragadir.com", freshness_status: "eq.fresh_confirmed" }),
-    exactCount("source_offer_seeds", { source_domain: "eq.daragadir.com", "metadata->freshness_evidence->write_canary->>run_id": "eq.data-4-3e-daragadir-v1" }),
+    exactCount("source_offer_seeds", { source_domain: "eq.daragadir.com", fresh_channels: "cs.{public_sitemap_presence}" }),
   ]);
 
   const registryEligible = registry.discovery_policy === "public_sitemap_only"
