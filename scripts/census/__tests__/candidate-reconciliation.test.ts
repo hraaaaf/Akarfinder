@@ -99,6 +99,14 @@ test("external generic real-estate brands require an explicit Morocco anchor for
         realEstateSignalPages: 200,
         latestFetchAt: "2026-08-01T00:00:00Z",
       },
+      {
+        lane: "MOROCCO_EXTERNAL_REAL_ESTATE",
+        domain: "professionalestate.com",
+        registeredDomain: "professionalestate.com",
+        indexedPages: 500,
+        realEstateSignalPages: 200,
+        latestFetchAt: "2026-08-01T00:00:00Z",
+      },
     ],
     reserve: [],
     registry: [],
@@ -106,10 +114,12 @@ test("external generic real-estate brands require an explicit Morocco anchor for
 
   const globalImmo = report.candidates.find((candidate) => candidate.domain === "global-immo.com");
   const marrakechRealty = report.candidates.find((candidate) => candidate.domain === "marrakechrealty.com");
+  const professionalEstate = report.candidates.find((candidate) => candidate.domain === "professionalestate.com");
   assert.equal(globalImmo?.primaryClass, "PORTAL_CANDIDATE");
   assert.ok(globalImmo?.classificationReasons.includes("real_estate_domain_without_morocco_primary_anchor"));
   assert.equal(marrakechRealty?.primaryClass, "PRIMARY_SOURCE_CANDIDATE");
   assert.ok(marrakechRealty?.classificationReasons.includes("explicit_morocco_primary_anchor"));
+  assert.equal(professionalEstate?.primaryClass, "PORTAL_CANDIDATE");
 });
 
 test("registry geography can explicitly anchor an external first-party candidate to Morocco", () => {
