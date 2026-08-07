@@ -56,6 +56,12 @@ describe("P1A.5 — Territorial Explorer", () => {
     assert.ok(client.indexOf("<MapNeighborhoodExperienceDynamic") < client.indexOf("<TerritorialExplorer"));
   });
 
+  it("reserves tablet space for the district decision panel when a district is selected", () => {
+    const explorer = source("components/map/TerritorialExplorer.tsx");
+    assert.ok(explorer.includes("md:w-[calc(100vw-438px)]"));
+    assert.ok(explorer.includes("md:max-w-[720px]"));
+  });
+
   it("adds the native Pro Max audit viewport to the final UI smoke", () => {
     const smoke = source("scripts/audits/final-ui-a11y-smoke.ts");
     assert.ok(smoke.includes('{ width: 430, height: 932, label: "430" }'));
