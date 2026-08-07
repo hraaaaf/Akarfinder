@@ -1,0 +1,74 @@
+name: DATA-4.3I Multi-Channel Freshness Ownership
+
+on:
+  pull_request:
+    paths:
+      - "lib/seed-freshness/job.ts"
+      - "scripts/openserp/reconcile-commoncrawl-seed-freshness.ts"
+      - "scripts/scrapers/__tests__/seed-freshness-job.test.ts"
+      - "scripts/audits/data-4-3i-multichannel-freshness-ownership.ts"
+      - ".github/workflows/data-4-3i-multichannel-freshness-ownership.yml"
+      - "docs/data/DATA-4-3I-MULTICHANNEL-FRESHNESS-OWNERSHIP.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Seed freshness ownership tests
+        run: npm run test:seed-freshness
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Static ownership guard
+        run: |
+          grep -q 'computeChannelOwnedFreshnessUpdateBatch' scripts/openserp/reconcile-commoncrawl-seed-freshness.ts
+          grep -q 'protected_foreign_channel_rows' scripts/openserp/reconcile-commoncrawl-seed-freshness.ts
+          grep -q 'public_sitemap_presence' scripts/scrapers/__tests__/seed-freshness-job.test.ts
+
+  live-read-only:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_3I_OUT_DIR: .tmp/data-4-3i/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Audit real 4.3G collision evidence
+        run: npx tsx scripts/audits/data-4-3i-multichannel-freshness-ownership.ts
+      - name: Enforce collision proof
+        run: |
+          set -euo pipefail
+          test -s "${DATA_4_3I_OUT_DIR}/proof.json"
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-4-3i/results/proof.json','utf8'));
+          if (p.mode !== 'READ_ONLY_COLLISION_AUDIT') throw new Error(JSON.stringify(p));
+          if (p.markerRows !== 50 || p.activeEvidenceRows !== 50 || p.recoverableFromTypedEvidenceRows !== 50) throw new Error(JSON.stringify(p));
+          if (p.databaseWrites !== 0 || p.freshnessWrites !== 0 || p.policyChanges !== 0 || p.productionActivation !== false) throw new Error(JSON.stringify(p));
+          if (p.registry.max_revalidation_interval_days !== 14) throw new Error(JSON.stringify(p));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-3i-multichannel-freshness-ownership
+          path: .tmp/data-4-3i/results/
+          if-no-files-found: error
+          retention-days: 14
