@@ -52,23 +52,23 @@ export function TerritorialExplorer({
       className="pointer-events-auto absolute left-3 right-3 top-[92px] z-20 overflow-hidden rounded-2xl border border-border-strong/70 bg-card/94 text-card-foreground shadow-panel backdrop-blur-xl sm:left-4 sm:right-auto sm:top-[96px] sm:w-[min(720px,calc(100vw-32px))]"
       aria-label="Exploration territoriale"
     >
-      <div className="flex min-w-0 items-center gap-1.5 border-b border-border px-3 py-2.5 sm:px-3.5">
+      <div className="flex min-w-0 items-center gap-1 border-b border-border px-3 py-2 sm:px-3.5">
         <button
           type="button"
           onClick={() => onNavigationChange(withMapLocation(navigationState, "all"))}
-          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2 text-[10.5px] font-extrabold text-brand-primary transition hover:bg-brand-primary-soft"
+          className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-lg px-1.5 text-[10.5px] font-extrabold text-brand-primary transition hover:bg-brand-primary-soft"
           aria-current={!selectedCity ? "location" : undefined}
         >
-          <Map size={13} aria-hidden="true" />
+          <Map size={12} aria-hidden="true" />
           Maroc
         </button>
         {selectedCity ? (
           <>
-            <ChevronRight size={13} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+            <ChevronRight size={12} className="shrink-0 text-muted-foreground" aria-hidden="true" />
             <button
               type="button"
               onClick={() => onNavigationChange(withMapLocation(navigationState, selectedCity))}
-              className="min-w-0 truncate rounded-lg px-2 py-1.5 text-[10.5px] font-extrabold text-foreground transition hover:bg-surface-muted"
+              className="min-w-0 truncate rounded-lg px-1.5 py-1.5 text-[10.5px] font-extrabold text-foreground transition hover:bg-surface-muted"
               aria-current={!selectedDistrict ? "location" : undefined}
             >
               {selectedCity}
@@ -77,77 +77,63 @@ export function TerritorialExplorer({
         ) : null}
         {selectedDistrict ? (
           <>
-            <ChevronRight size={13} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+            <ChevronRight size={12} className="shrink-0 text-muted-foreground" aria-hidden="true" />
             <span className="min-w-0 truncate rounded-lg bg-brand-primary-soft px-2 py-1.5 text-[10.5px] font-extrabold text-brand-primary" aria-current="location">
               {selectedDistrict.neighborhood}
             </span>
           </>
         ) : null}
-        <span className="ml-auto hidden shrink-0 text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground sm:inline">
-          Maroc → ville → quartier
+        <span className="ml-auto shrink-0 text-[9px] font-bold text-muted-foreground">
+          {selectedCity
+            ? `${districts.length} quartier${districts.length !== 1 ? "s" : ""}`
+            : `${cityEntries.length} villes`}
         </span>
       </div>
 
       <div className="px-3 py-2.5 sm:px-3.5">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground">
-            {selectedCity ? "Changer de ville" : "Choisir une ville"}
+        <div className="flex items-center gap-2">
+          <p className="inline-flex shrink-0 items-center gap-1 text-[8.5px] font-extrabold uppercase tracking-[0.13em] text-muted-foreground">
+            {selectedCity ? <MapPin size={10} aria-hidden="true" /> : null}
+            {selectedCity ? "Quartiers" : "Villes"}
           </p>
-          <p className="shrink-0 text-[9px] font-semibold text-muted-foreground">
-            {cityEntries.length} villes cartographiées
-          </p>
-        </div>
-        <div className="mt-2 flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {cityEntries.map(({ city, count }) => {
-            const active = city === selectedCity;
-            return (
-              <button
-                key={city}
-                type="button"
-                onClick={() => onNavigationChange(withMapLocation(navigationState, city))}
-                className={active
-                  ? "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-brand-primary px-3 text-[10px] font-extrabold text-white shadow-accent"
-                  : "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-[10px] font-extrabold text-foreground transition hover:border-brand-primary/35 hover:bg-brand-primary-soft/60"}
-                aria-pressed={active}
-              >
-                <span>{city}</span>
-                <span className={active ? "text-white/70" : "text-muted-foreground"}>{count}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {selectedCity && districts.length > 0 ? (
-          <div className="mt-2.5 border-t border-border pt-2.5">
-            <div className="flex items-center justify-between gap-3">
-              <p className="inline-flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground">
-                <MapPin size={11} aria-hidden="true" />
-                Quartiers repérés
-              </p>
-              <p className="shrink-0 text-[9px] font-semibold text-muted-foreground">
-                {districts.length} disponible{districts.length > 1 ? "s" : ""}
-              </p>
-            </div>
-            <div className="mt-2 flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {districts.map((point) => {
-                const active = selectedDistrict?.id === point.id;
-                return (
-                  <button
-                    key={point.id}
-                    type="button"
-                    onClick={() => onNavigationChange(withMapLocation(navigationState, point.city, point.neighborhood))}
-                    className={active
-                      ? "h-8 shrink-0 rounded-full border border-brand-primary bg-brand-primary-soft px-3 text-[10px] font-extrabold text-brand-primary"
-                      : "h-8 shrink-0 rounded-full border border-border bg-surface px-3 text-[10px] font-bold text-text-secondary transition hover:border-brand-primary/35 hover:text-brand-primary"}
-                    aria-pressed={active}
-                  >
-                    {point.neighborhood}
-                  </button>
-                );
-              })}
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <div className="flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {selectedCity
+                ? districts.map((point) => {
+                    const active = selectedDistrict?.id === point.id;
+                    return (
+                      <button
+                        key={point.id}
+                        type="button"
+                        onClick={() => onNavigationChange(withMapLocation(navigationState, point.city, point.neighborhood))}
+                        className={active
+                          ? "h-8 shrink-0 rounded-full border border-brand-primary bg-brand-primary-soft px-3 text-[10px] font-extrabold text-brand-primary"
+                          : "h-8 shrink-0 rounded-full border border-border bg-surface px-3 text-[10px] font-bold text-text-secondary transition hover:border-brand-primary/35 hover:text-brand-primary"}
+                        aria-pressed={active}
+                      >
+                        {point.neighborhood}
+                      </button>
+                    );
+                  })
+                : cityEntries.map(({ city, count }) => (
+                    <button
+                      key={city}
+                      type="button"
+                      onClick={() => onNavigationChange(withMapLocation(navigationState, city))}
+                      className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-[10px] font-extrabold text-foreground transition hover:border-brand-primary/35 hover:bg-brand-primary-soft/60"
+                    >
+                      <span>{city}</span>
+                      <span className="text-muted-foreground">{count}</span>
+                    </button>
+                  ))}
             </div>
           </div>
-        ) : null}
+        </div>
+        <p className="mt-1.5 truncate text-[8.5px] font-semibold text-muted-foreground sm:text-[9px]">
+          {selectedCity
+            ? "Choisissez un quartier · Maroc pour changer de ville"
+            : "Maroc → ville → quartier · repères canoniques publiés"}
+        </p>
       </div>
     </nav>
   );
