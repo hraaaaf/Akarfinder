@@ -168,6 +168,27 @@ const SHORT_TERM_MARKERS = [
   "vrbo.",
 ];
 
+// Bounded list of known portal/product brands. These are useful acquisition
+// candidates but should not be mislabeled as a likely first-party agency or promoter.
+const PORTAL_MARKERS = [
+  "mubawab",
+  "agenz",
+  "yakeey",
+  "sakane",
+  "masaken",
+  "sarouty",
+  "darkom.ma",
+  "milkiya.ma",
+  "logic-immo",
+  "logicimmo",
+  "portail-immobilier",
+  "pap.ma",
+  "jemeloge.ma",
+  "housing.place",
+  "souqcity.ma",
+  "mouldar.com",
+];
+
 const PRIMARY_SOURCE_TOKENS = [
   "immo",
   "immobilier",
@@ -184,6 +205,43 @@ const PRIMARY_SOURCE_TOKENS = [
   "sakan",
   "mulk",
 ];
+
+const MOROCCO_ANCHOR_TOKENS = [
+  "morocco",
+  "maroc",
+  "marrakech",
+  "rabat",
+  "casablanca",
+  "agadir",
+  "tanger",
+  "tangier",
+  "essaouira",
+  "fes",
+  "fez",
+  "meknes",
+  "oujda",
+  "dakhla",
+  "nador",
+  "taroudant",
+  "tetouan",
+  "chefchaouen",
+  "eljadida",
+  "el-jadida",
+  "mohammedia",
+  "kenitra",
+  "ifrane",
+  "safi",
+  "berkane",
+  "khouribga",
+  "benimellal",
+  "beni-mellal",
+  "temara",
+  "skhirat",
+  "bouskoura",
+];
+
+const REGISTRY_MOROCCO_GEOGRAPHY_TOKENS = ["morocco", "maroc", "national", ...MOROCCO_ANCHOR_TOKENS];
+const REGISTRY_REAL_ESTATE_NAME_TOKENS = ["immobilier", "immo", "realty", "property", "estate", "foncier"];
 
 function normalizeDomain(value: string, field: string): string {
   const normalized = value.trim().toLowerCase().replace(/\.$/, "").replace(/^www\./, "");
@@ -238,6 +296,25 @@ function hasPrimarySourceToken(domain: string): boolean {
   return PRIMARY_SOURCE_TOKENS.some((token) => label.includes(token));
 }
 
+function hasMoroccoDomainAnchor(domain: string): boolean {
+  const normalized = domain.toLowerCase();
+  return normalized.endsWith(".ma") || MOROCCO_ANCHOR_TOKENS.some((token) => normalized.includes(token));
+}
+
+function registryHasMoroccoGeography(registry: SourceRegistryEvidence[]): boolean {
+  return registry.some((row) => {
+    const geography = (row.primaryGeography ?? "").toLowerCase().replace(/\s+/g, "");
+    return REGISTRY_MOROCCO_GEOGRAPHY_TOKENS.some((token) => geography.includes(token.replace(/\s+/g, "")));
+  });
+}
+
+function registryHasRealEstateName(registry: SourceRegistryEvidence[]): boolean {
+  return registry.some((row) => {
+    const sourceName = (row.sourceName ?? "").toLowerCase();
+    return REGISTRY_REAL_ESTATE_NAME_TOKENS.some((token) => sourceName.includes(token));
+  });
+}
+
 function classifyCandidate(input: {
   domain: string;
   hosts: string[];
@@ -262,21 +339,42 @@ function classifyCandidate(input: {
     classes.add("SHORT_TERM_RENTAL");
     reasons.add("known_short_term_platform_marker");
   }
-
-  const blockedByMeta = classes.has("AGGREGATOR") || classes.has("CLASSIFIED") || classes.has("SHORT_TERM_RENTAL");
-  if (!blockedByMeta && hasPrimarySourceToken(input.domain)) {
-    classes.add("PRIMARY_SOURCE_CANDIDATE");
-    reasons.add("strong_real_estate_domain_token");
-  }
-
-  if (!blockedByMeta && !classes.has("PRIMARY_SOURCE_CANDIDATE") && (input.b3ObservedUrls >= 50 || input.ccSignalPages >= 100)) {
+  if (domainContainsMarker(haystack, PORTAL_MARKERS)) {
     classes.add("PORTAL_CANDIDATE");
-    reasons.add("high_real_estate_page_density");
+    reasons.add("known_real_estate_portal_marker");
   }
 
-  if (input.registry.some((row) => (row.sourceName ?? "").toLowerCase().includes("immobilier"))) {
-    reasons.add("existing_registry_real_estate_name");
+  const blockedFromPrimary =
+    classes.has("AGGREGATOR") ||
+    classes.has("CLASSIFIED") ||
+    classes.has("SHORT_TERM_RENTAL") ||
+    classes.has("PORTAL_CANDIDATE");
+  const domainRealEstateSignal = hasPrimarySourceToken(input.domain);
+  const explicitMoroccoAnchor = hasMoroccoDomainAnchor(input.domain) || registryHasMoroccoGeography(input.registry);
+  const registryRealEstateName = registryHasRealEstateName(input.registry);
+
+  if (!blockedFromPrimary && (domainRealEstateSignal || registryRealEstateName) && explicitMoroccoAnchor) {
+    classes.add("PRIMARY_SOURCE_CANDIDATE");
+    if (domainRealEstateSignal) reasons.add("strong_real_estate_domain_token");
+    if (registryRealEstateName) reasons.add("existing_registry_real_estate_name");
+    reasons.add("explicit_morocco_primary_anchor");
   }
+
+  if (!blockedFromPrimary && domainRealEstateSignal && !explicitMoroccoAnchor) {
+    classes.add("PORTAL_CANDIDATE");
+    reasons.add("real_estate_domain_without_morocco_primary_anchor");
+  }
+
+  if (
+    !blockedFromPrimary &&
+    !classes.has("PRIMARY_SOURCE_CANDIDATE") &&
+    !classes.has("PORTAL_CANDIDATE") &&
+    (input.b3ObservedUrls >= 50 || input.ccSignalPages >= 100)
+  ) {
+    reasons.add("high_density_without_safe_primary_domain_signal");
+  }
+
+  if (registryRealEstateName) reasons.add("existing_registry_real_estate_name");
 
   if (classes.size === 0) {
     classes.add(input.b3ObservedUrls > 0 || input.ccSignalPages > 0 ? "OTHER" : "UNKNOWN");
