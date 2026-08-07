@@ -1,0 +1,75 @@
+name: DATA-4.2 Reservoir Prioritization
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data4/reservoir-prioritization.ts"
+      - "scripts/data4/__tests__/reservoir-prioritization.test.ts"
+      - "scripts/audits/data-4-2-reservoir-prioritization.ts"
+      - ".github/workflows/data-4-2-reservoir-prioritization.yml"
+      - "docs/data/DATA-4-2-RESERVOIR-PRIORITIZATION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-4-2-reservoir-prioritization-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: DATA-4.2 unit tests
+        run: npx tsx --test scripts/data4/__tests__/reservoir-prioritization.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+
+  live-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_2_OUT_DIR: .tmp/data-4-2/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run read-only prioritization
+        run: npx tsx scripts/audits/data-4-2-reservoir-prioritization.ts
+      - name: Enforce prioritization proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_4_2_OUT_DIR}/proof.json"
+          test -s "${DATA_4_2_OUT_DIR}/report.json"
+          test -s "${DATA_4_2_OUT_DIR}/ranking.csv"
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-4-2/results/proof.json','utf8'));
+          if (p.readOnly !== true || p.databaseWrites !== 0 || p.sourceNetworkRequests !== 0 || p.policyChanges !== 0) throw new Error(JSON.stringify(p));
+          if (p.publicActivableRowsCreated !== 0) throw new Error(`DATA-4.2 cannot activate inventory: ${JSON.stringify(p)}`);
+          if (!p.admissibleGrowthWinner) throw new Error(`No admissible-growth winner: ${JSON.stringify(p)}`);
+          if (!p.partnershipUpsideWinner) throw new Error(`No partnership-upside winner: ${JSON.stringify(p)}`);
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-2-reservoir-prioritization
+          path: .tmp/data-4-2/results/
+          if-no-files-found: error
+          retention-days: 14
