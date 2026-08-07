@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/data-1-3b-commoncrawl-live-evidence.yml"
+      - "scripts/census/run-commoncrawl-live-duckdb.sh"
       - "scripts/census/commoncrawl-url-index.ts"
       - "docs/data/DATA-1-3B-COMMON-CRAWL-LIVE-EVIDENCE.md"
   workflow_dispatch:
@@ -17,6 +18,13 @@ jobs:
     timeout-minutes: 45
     env:
       CC_CRAWL: CC-MAIN-2026-25
+      DUCKDB_BIN: .tmp/data-1-3b/bin/duckdb
+      CC_PARQUET_PATHS_FILE: .tmp/data-1-3b/warc-index-parquet.paths
+      CC_EVIDENCE_OUT_DIR: .tmp/data-1-3b/results
+      CC_EVIDENCE_WORK_DIR: .tmp/data-1-3b/batched
+      CC_PARQUET_BATCH_SIZE: 20
+      CC_BATCH_MAX_ATTEMPTS: 4
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,192 +38,29 @@ jobs:
             https://github.com/duckdb/duckdb/releases/latest/download/duckdb_cli-linux-amd64.zip \
             --output .tmp/data-1-3b/duckdb.zip
           unzip -q .tmp/data-1-3b/duckdb.zip -d .tmp/data-1-3b/bin
-          .tmp/data-1-3b/bin/duckdb --version
+          "${DUCKDB_BIN}" --version
 
       - name: Resolve current crawl Parquet paths
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p .tmp/data-1-3b/results
+          mkdir -p "${CC_EVIDENCE_OUT_DIR}"
           curl --fail --location --retry 4 --retry-all-errors \
             "https://data.commoncrawl.org/crawl-data/${CC_CRAWL}/cc-index-table.paths.gz" \
             --output .tmp/data-1-3b/cc-index-table.paths.gz
           gzip -dc .tmp/data-1-3b/cc-index-table.paths.gz \
             | grep "cc-index/table/cc-main/warc/crawl=${CC_CRAWL}/subset=warc/" \
-            > .tmp/data-1-3b/warc-index-parquet.paths
-          COUNT=$(wc -l < .tmp/data-1-3b/warc-index-parquet.paths | tr -d ' ')
-          echo "parquet_files=${COUNT}" | tee .tmp/data-1-3b/results/manifest.txt
+            > "${CC_PARQUET_PATHS_FILE}"
+          COUNT=$(wc -l < "${CC_PARQUET_PATHS_FILE}" | tr -d ' ')
+          echo "parquet_files=${COUNT}" | tee "${CC_EVIDENCE_OUT_DIR}/manifest.txt"
           test "${COUNT}" -ge 250
           test "${COUNT}" -le 400
 
-      - name: Build DuckDB remote file list
+      - name: Query URL Index in retryable batches
         shell: bash
         run: |
-          set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-          rows = [line.strip() for line in Path('.tmp/data-1-3b/warc-index-parquet.paths').read_text().splitlines() if line.strip()]
-          values = ["'https://data.commoncrawl.org/" + row.replace("'", "''") + "'" for row in rows]
-          Path('.tmp/data-1-3b/parquet-list.sql').write_text('[\n  ' + ',\n  '.join(values) + '\n]\n')
-          print(f'prepared {len(values)} remote parquet URLs')
-          PY
-
-      - name: Query Morocco ccTLD real-estate lane
-        shell: bash
-        run: |
-          set -euo pipefail
-          FILES=$(cat .tmp/data-1-3b/parquet-list.sql)
-          cat > .tmp/data-1-3b/lane-a.sql <<SQL
-          INSTALL httpfs;
-          LOAD httpfs;
-          SET threads=2;
-          SET memory_limit='6GB';
-          SET http_retries=8;
-          SET http_retry_wait_ms=1000;
-          SET http_retry_backoff=2;
-          SET http_timeout=60;
-          SET http_keep_alive=false;
-          COPY (
-            WITH scoped AS (
-              SELECT
-                url_host_name AS domain,
-                url_host_registered_domain AS registered_domain,
-                url,
-                fetch_time,
-                regexp_matches(
-                  lower(concat(coalesce(url_host_name, ''), '/', coalesce(url_path, ''))),
-                  '(^|[^a-z])(immo|immobilier|appartement|apartment|villa|maison|house|terrain|land|riad|studio|duplex|bureau|office|local-commercial|localcommercial|vente|vendre|sale|location|louer|rent|property|properties|real-estate|realestate|residence)([^a-z]|$)'
-                ) AS real_estate_signal
-              FROM read_parquet(${FILES}, hive_partitioning=true, union_by_name=true)
-              WHERE url_host_registry_suffix = 'ma'
-                AND url_host_name IS NOT NULL
-                AND url_host_registered_domain IS NOT NULL
-                AND fetch_status = 200
-            )
-            SELECT
-              'MA_TLD_REAL_ESTATE' AS lane,
-              domain,
-              registered_domain,
-              count(*) AS indexed_pages,
-              count_if(real_estate_signal) AS real_estate_signal_pages,
-              max(fetch_time) AS latest_fetch_at,
-              arg_max(url, fetch_time) AS sample_url
-            FROM scoped
-            GROUP BY domain, registered_domain
-            HAVING count_if(real_estate_signal) >= 1
-            ORDER BY real_estate_signal_pages DESC, indexed_pages DESC, domain ASC
-          ) TO '.tmp/data-1-3b/results/lane-a.csv' (HEADER, DELIMITER ',');
-          SQL
-          for attempt in 1 2 3; do
-            rm -f .tmp/data-1-3b/results/lane-a.csv
-            if .tmp/data-1-3b/bin/duckdb < .tmp/data-1-3b/lane-a.sql; then
-              break
-            fi
-            if [ "${attempt}" -eq 3 ]; then
-              exit 1
-            fi
-            sleep $((attempt * 5))
-          done
-          wc -l .tmp/data-1-3b/results/lane-a.csv
-
-      - name: Query external Morocco real-estate lane
-        shell: bash
-        run: |
-          set -euo pipefail
-          FILES=$(cat .tmp/data-1-3b/parquet-list.sql)
-          cat > .tmp/data-1-3b/lane-b.sql <<SQL
-          INSTALL httpfs;
-          LOAD httpfs;
-          SET threads=2;
-          SET memory_limit='6GB';
-          SET http_retries=8;
-          SET http_retry_wait_ms=1000;
-          SET http_retry_backoff=2;
-          SET http_timeout=60;
-          SET http_keep_alive=false;
-          COPY (
-            WITH scoped AS (
-              SELECT
-                url_host_name AS domain,
-                url_host_registered_domain AS registered_domain,
-                url,
-                fetch_time
-              FROM read_parquet(${FILES}, hive_partitioning=true, union_by_name=true)
-              WHERE url_host_registry_suffix <> 'ma'
-                AND url_host_name IS NOT NULL
-                AND url_host_registered_domain IS NOT NULL
-                AND fetch_status = 200
-                AND regexp_matches(
-                  lower(concat(coalesce(url_host_name, ''), '/', coalesce(url_path, ''))),
-                  '(^|[^a-z])(immo|immobilier|appartement|apartment|villa|maison|house|terrain|land|riad|studio|duplex|bureau|office|local-commercial|localcommercial|vente|vendre|sale|location|louer|rent|property|properties|real-estate|realestate|residence)([^a-z]|$)'
-                )
-                AND regexp_matches(
-                  lower(concat(coalesce(url_host_name, ''), '/', coalesce(url_path, ''))),
-                  '(^|[^a-z])(morocco|maroc|casablanca|rabat|temara|marrakech|tanger|agadir|fes|meknes|kenitra|el[-_/. ]*jadida|oujda|tetouan|nador|mohammedia|essaouira|safi|beni[-_/. ]*mellal|khouribga|settat|berrechid|el[-_/. ]*kelaa[-_/. ]*des[-_/. ]*sraghna|youssoufia|ben[-_/. ]*guerir|larache|ksar[-_/. ]*el[-_/. ]*kebir|chefchaouen|al[-_/. ]*hoceima|taza|taounate|sefrou|ifrane|azrou|berkane|taourirt|errachidia|midelt|ouarzazate|tinghir|taroudant|tiznit|guelmim|laayoune|dakhla|sidi[-_/. ]*kacem|sidi[-_/. ]*slimane|khemisset|bouznika|skhirat|benslimane|ouezzane|fnideq|martil)([^a-z]|$)'
-                )
-            )
-            SELECT
-              'MOROCCO_EXTERNAL_REAL_ESTATE' AS lane,
-              domain,
-              registered_domain,
-              count(*) AS indexed_pages,
-              count(*) AS real_estate_signal_pages,
-              max(fetch_time) AS latest_fetch_at,
-              arg_max(url, fetch_time) AS sample_url
-            FROM scoped
-            GROUP BY domain, registered_domain
-            HAVING count(*) >= 1
-            ORDER BY real_estate_signal_pages DESC, indexed_pages DESC, domain ASC
-          ) TO '.tmp/data-1-3b/results/lane-b.csv' (HEADER, DELIMITER ',');
-          SQL
-          for attempt in 1 2 3 4; do
-            rm -f .tmp/data-1-3b/results/lane-b.csv
-            if .tmp/data-1-3b/bin/duckdb < .tmp/data-1-3b/lane-b.sql; then
-              break
-            fi
-            if [ "${attempt}" -eq 4 ]; then
-              exit 1
-            fi
-            sleep $((attempt * 10))
-          done
-          wc -l .tmp/data-1-3b/results/lane-b.csv
-
-      - name: Produce evidence summary
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          import csv, json
-          from pathlib import Path
-          out = Path('.tmp/data-1-3b/results')
-          def read(name):
-              path = out / name
-              if not path.exists():
-                  return []
-              with path.open(newline='') as f:
-                  return list(csv.DictReader(f))
-          a = read('lane-a.csv')
-          b = read('lane-b.csv')
-          rows = a + b
-          unique_hosts = {r['domain'].lower() for r in rows}
-          unique_registered = {r['registered_domain'].lower() for r in rows}
-          summary = {
-              'schemaVersion': 'data-1-commoncrawl-live-evidence-v1',
-              'crawl': 'CC-MAIN-2026-25',
-              'warcFetchAllowed': False,
-              'laneAComplete': bool(a),
-              'laneBComplete': bool(b),
-              'laneAHosts': len(a),
-              'laneBHosts': len(b),
-              'uniqueHosts': len(unique_hosts),
-              'uniqueRegisteredDomains': len(unique_registered),
-              'rows': len(rows),
-          }
-          (out / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
-          (out / 'all-domains.txt').write_text(('\n'.join(sorted(unique_hosts)) + '\n') if unique_hosts else '')
-          print(json.dumps(summary, indent=2))
-          PY
+          chmod +x scripts/census/run-commoncrawl-live-duckdb.sh
+          scripts/census/run-commoncrawl-live-duckdb.sh
 
       - name: Upload DATA-1.3B evidence
         if: always()
@@ -230,8 +75,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -s .tmp/data-1-3b/results/lane-a.csv
-          test -s .tmp/data-1-3b/results/lane-b.csv
+          test -s "${CC_EVIDENCE_OUT_DIR}/lane-a.csv"
+          test -s "${CC_EVIDENCE_OUT_DIR}/lane-b.csv"
           python - <<'PY'
           import json
           from pathlib import Path
@@ -239,4 +84,6 @@ jobs:
           assert summary['warcFetchAllowed'] is False
           assert summary['laneAComplete'] is True
           assert summary['laneBComplete'] is True
+          assert summary['batchCount'] >= 10
+          print(json.dumps(summary, indent=2))
           PY
