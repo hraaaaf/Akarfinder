@@ -41,7 +41,7 @@ export function buildExpansionPlan(currentPersistentRows: number, candidateRows:
 
 export function requireCertifiedExpansionStart(plan: ExpansionPlan): void {
   if (plan.currentPersistentRows !== 50) throw new Error(`Expected certified 50-row starting point, got ${plan.currentPersistentRows}`);
-  if (!plan.canReachTarget) throw new Error("Insufficient eligible candidates to reach 500-row re-certification cap");
+  if (!plan.canReachTarget) throw new Error(`Insufficient eligible candidates to reach 500-row re-certification cap: candidates=${plan.candidateRows}, required=${plan.remainingToTarget}, plan=${plan.plannedBatchSizes.join(",")}`);
   if (plan.nextBatchSize !== 100) throw new Error(`Expected next batch 100, got ${plan.nextBatchSize}`);
   if (plan.plannedBatchSizes.join(",") !== "100,100,100,100,50") throw new Error(`Unexpected expansion plan: ${plan.plannedBatchSizes.join(",")}`);
 }
