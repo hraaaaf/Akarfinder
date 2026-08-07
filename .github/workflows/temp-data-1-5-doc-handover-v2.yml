@@ -1,0 +1,181 @@
+name: Temporary DATA-1.5 Docs Handover v2
+
+on:
+  push:
+    branches:
+      - docs/data-1-5-handover-20260807
+
+permissions:
+  contents: write
+
+jobs:
+  align:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: docs/data-1-5-handover-20260807
+          fetch-depth: 0
+
+      - name: Update canonical docs
+        shell: python
+        run: |
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              if text.count(old) != 1:
+                  raise SystemExit(f"{path}: expected one match for {old[:70]!r}")
+              p.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              "README.md",
+              "- `robots.txt` et sitemap sont des signaux techniques, jamais une licence ;\n- Source Registry obligatoire avant toute activation ;",
+              "- `robots.txt` et sitemap sont des signaux techniques, jamais une licence ;\n- une capacité technique détectée (`Houzez`, `RealHomes`, WordPress REST, sitemap, JSON-LD, feed) ne vaut jamais permission d’ingestion ou de réutilisation ;\n- Source Registry obligatoire avant toute activation ;",
+          )
+          replace_once(
+              "README.md",
+              "- CI GitHub Actions avec tests, build, contrats DATA, accessibilité et preuves ciblées.\n",
+              "- CI GitHub Actions avec tests, build, contrats DATA, accessibilité et preuves ciblées ;\n- **DATA-1.5 / PR #331** certifie le Technical Capability Audit : 20 domaines P0 audités, 19 `CAPABILITY_REVIEW_READY`, avec 3 RealHomes, 3 Houzez, 5 WordPress génériques et 8 structured-web ; score **9,4/10**, sans policy, auth, bypass, WARC ni write DB.\n",
+          )
+
+          replace_once(
+              "docs/ROADMAP.md",
+              "**Statut : CARTE / QUARTIER P1A.1 certifié via PR #328, merge final en attente ; P1A.2 prochain ; DATA-1.3B reste actif en lane séparée**",
+              "**Statut : CARTE / QUARTIER P1A.1 ✅ PR #328 ; P1A.2 prochain en lane UX ; DATA-1.5 ✅ PR #331 ; DATA-1.6A Source Policy Evidence Review prochain en lane DATA**",
+          )
+          replace_once(
+              "docs/ROADMAP.md",
+              "- DATA-1.1 / DATA-1.2 / DATA-1.3A acquis ;\n- DATA-1.3B actif en lane DATA séparée.",
+              "- DATA-1.1 / DATA-1.2 / DATA-1.3A / DATA-1.3B / DATA-1.4 acquis ;\n- **DATA-1.5 Technical Capability Audit ✅ PR #331** : 20 candidats P0 audités, 19 techniquement review-ready, familles CMS/connecteurs détectées sans aucune policy automatique ;\n- prochain lot DATA : **DATA-1.6A — Source Policy Evidence Review**, read-only avant toute écriture Source Registry.",
+          )
+          marker = "### Gate DATA-1\n\nAvant ingestion :\n"
+          block = """### État d’exécution DATA-1 — 2026-08-07
+
+- **DATA-1.1 ✅ PR #322** — Domain Census Core ;
+- **DATA-1.2 ✅ PR #323** — 7 051 domaines / 37 009 URLs ;
+- **DATA-1.3A ✅ PR #324** — Common Crawl URL Index Contract ;
+- **DATA-1.3B ✅ PR #326** — 300/300 Parquet, 8 727 registered domains ;
+- **DATA-1.4 ✅ PR #329** — 15 238 domaines réconciliés, 230 `PRIMARY_SOURCE_CANDIDATE` ;
+- **DATA-1.5 ✅ PR #331**, merge `1f8b398`, score **9,4/10**.
+
+Preuve DATA-1.5 : **20/20 domaines audités**, **19/20 `CAPABILITY_REVIEW_READY`**, 116 GET publics, maximum 7/domain sur budget 8, 0 write DB, 0 policy, 0 auth, 0 bypass, 0 WARC.
+
+Familles : 3 `WORDPRESS_REALHOMES`, 3 `WORDPRESS_HOUZEZ`, 5 `WORDPRESS_GENERIC`, 4 `SITEMAP_JSONLD`, 2 `SITEMAP_STRUCTURED_HTML`, 2 `STRUCTURED_HTML`; `damaneimmo.ma` reste review-only après timeout homepage.
+
+Candidats les plus structurés : `valfoncier.ma`, `marrakech-luxury-properties.com`, `agadirimmobilier.org`, `proimmobilier.ma`, `rabatimmo.ma`, `agadirimmobilier.ma`, `capital-properties.ma`, `immobilier-pro-maroc.com`.
+
+**DATA-1.6A — Source Policy Evidence Review** est le prochain lot : preuves robots/noindex/CGU/licence/réutilisation/contact en lecture seule, sans écrire de policy. **DATA-1.6B — Source Registry Assignment** n’écrira ensuite que les décisions suffisamment prouvées, via le Registry existant.
+
+"""
+          replace_once("docs/ROADMAP.md", marker, block + marker)
+
+          Path("docs/SESSION.md").write_text("""# AkarFinder — Session courante
+
+**Mise à jour : 2026-08-07**
+
+**Lot DATA acquis : DATA-1.5 — Candidate Technical Capability Audit ✅ PR #331**
+
+**Prochain lot DATA : DATA-1.6A — Source Policy Evidence Review**
+
+**Lot UX certifié : CARTE-QUARTIER-P1A.1 — Geo Canonical Core ✅ PR #328**
+
+**Prochain lot UX : CARTE-QUARTIER-P1A.2 — Search Geo Contract**
+
+`docs/ROADMAP.md` reste l’unique roadmap canonique.
+
+## Main canonique
+
+DATA-1.1 à DATA-1.5 sont acquis. DATA-1.5 est mergé via PR **#331**, merge `1f8b398`, score **9,4/10**.
+
+Invariants : aucune migration DATA-1.5, aucune policy Source Registry automatique, aucune ingestion, aucun auth/login, aucun bypass, aucun WARC fetch.
+
+## DATA-1.5 — preuve finale
+
+Batch : les **20 meilleurs `PRIMARY_SOURCE_CANDIDATE` non enregistrés** issus de DATA-1.4.
+
+- **20/20 domaines audités** ;
+- **19 `CAPABILITY_REVIEW_READY`** ;
+- `damaneimmo.ma` : timeout homepage, conservé `REVIEW_ONLY_HOMEPAGE_UNAVAILABLE` ;
+- 116 requêtes publiques ;
+- maximum **7 GET/domain** sur budget 8 ;
+- robots block-all : 0 ;
+- noindex : 0 ;
+- access-control page-level final : 0 ;
+- writes DB / policies / auth / bypass / WARC : **0 / 0 / 0 / 0 / 0**.
+
+Familles techniques :
+
+- `WORDPRESS_REALHOMES` : **3** ;
+- `WORDPRESS_HOUZEZ` : **3** ;
+- `WORDPRESS_GENERIC` : **5** ;
+- `SITEMAP_JSONLD` : **4** ;
+- `SITEMAP_STRUCTURED_HTML` : **2** ;
+- `STRUCTURED_HTML` : **2** ;
+- timeout/non-évaluable : **1**.
+
+Top capacités :
+
+1. `valfoncier.ma` — 100 — RealHomes + sitemap + JSON-LD + WP REST ;
+2. `marrakech-luxury-properties.com` — 100 — WordPress + sitemap + JSON-LD + WP REST ;
+3. `agadirimmobilier.org` — 100 — Houzez + sitemap + JSON-LD + WP REST ;
+4. `proimmobilier.ma` — 95 — RealHomes + WP REST ;
+5. `rabatimmo.ma` — 95 — RealHomes + WP REST ;
+6. `agadirimmobilier.ma` — 95 — Houzez ;
+7. `capital-properties.ma` — 93 — WordPress + WP REST ;
+8. `immobilier-pro-maroc.com` — 93 — WordPress + WP REST.
+
+Volumes structurés remarquables :
+
+- `immo-maroc.com` : **1 210** URLs sitemap, dont **1 090** listing-like ;
+- `leaderimmo.ma` : **799** URLs sitemap et **833** signaux listing cumulés ;
+- `agadirimmobilier.ma` : **320** URLs sitemap ;
+- `mhproperties.ma` : **292** URLs sitemap ;
+- `immohammedia.com` : **282** URLs sitemap.
+
+Deux faux positifs ont été détectés malgré des runs CI verts puis corrigés avant merge : gate homepage/robots, puis détection Cloudflare/CAPTCHA trop large. Les tests couvrent désormais ces cas.
+
+## Doctrine active
+
+`DISCOVERED ≠ AUDITED ≠ AUTHORIZED ≠ INGESTIBLE ≠ DISPLAYABLE`
+
+`TECHNICAL CAPABILITY ≠ SOURCE PERMISSION`
+
+Houzez, RealHomes, WordPress REST, sitemap ou JSON-LD ne créent aucun droit d’usage.
+
+## Prochain lot DATA — DATA-1.6A
+
+**Source Policy Evidence Review**, responsabilité read-only :
+
+- robots/noindex observés et datés ;
+- CGU, licence et restrictions de réutilisation ;
+- consultation publique vs extraction/réutilisation ;
+- canaux permis ;
+- partenariat/consentement requis ;
+- contact/claim possible ;
+- `legal_review_required` si ambigu ;
+- evidence URLs + résumé + dates ;
+- recommandation de décision sans écriture Registry.
+
+Gate : aucune policy finale, aucun connecteur activé, aucune ingestion dans 1.6A.
+
+Ensuite seulement : **DATA-1.6B — Source Registry Assignment** sur le schéma existant.
+
+## UX — handover
+
+CARTE-QUARTIER-P1A.1 est mergé via PR #328. Prochaine étape indépendante : **P1A.2 — Search Geo Contract**, avec `district` structuré et `q` conservé comme texte libre.
+""")
+
+      - name: Commit docs-only result
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/temp-data-1-5-doc-handover.yml
+          rm -f .github/workflows/temp-data-1-5-doc-handover-v2.yml
+          git config user.name "AkarFinder Docs Handover"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "docs: close DATA-1.5 and hand over DATA-1.6A"
+          git push origin HEAD:docs/data-1-5-handover-20260807
