@@ -13,8 +13,10 @@ The output is a deterministic **review queue**, not a source authorization mecha
 ## Inputs
 
 - DATA-1.2 B3 reserve: read-only from `public.odm_b3_discovery_expansion_audit_v1`;
-- DATA-1.3B evidence: GitHub Actions artifact from run `31168075021`, certified `300/300` Parquet and `9,087` candidate hosts;
+- DATA-1.3B evidence: GitHub Actions artifact from run `31168075021`, certified `300/300` Parquet, `9,087` raw candidate hosts and `8,727` registered domains;
 - Source Registry v2: read-only from `public.source_policy_registry`.
+
+DATA-1.4 removes a leading `www.` during normalization. The certified `9,087` raw hosts therefore become `8,970` canonical hosts while the registered-domain universe remains `8,727`.
 
 ## Reconciliation key
 
@@ -26,14 +28,20 @@ No public-suffix guesser is introduced. When no explicit relationship exists, th
 
 Classification is deliberately conservative:
 
-- `PRIMARY_SOURCE_CANDIDATE` — strong real-estate domain token and no known meta/classified/short-term marker;
-- `PORTAL_CANDIDATE` — high real-estate page density without enough evidence to call it a primary source;
+- `PRIMARY_SOURCE_CANDIDATE` — likely first-party source candidate only when a real-estate domain/name signal is combined with an explicit Morocco anchor (`.ma`, a bounded Morocco/city token, or Moroccan geography already present in Source Registry);
+- `PORTAL_CANDIDATE` — known Moroccan real-estate portals, or real-estate-branded external domains that lack enough evidence to be treated as likely Moroccan first-party sources;
 - `AGGREGATOR` — known meta-search families such as Mitula/Trovit/Nuroa/Properstar/Repimmo;
 - `CLASSIFIED` — known broad classifieds such as Avito/MarocAnnonces/Vivastreet/OpenSooq;
 - `SHORT_TERM_RENTAL` — known accommodation/short-term platforms;
-- `OTHER` / `UNKNOWN` — insufficient evidence for a stronger class.
+- `OTHER` / `UNKNOWN` — evidence exists but is insufficient for a stronger class.
 
-These labels are **review hints**, not legal or commercial truth.
+A high number of matching pages alone does **not** promote a generic domain to `PORTAL_CANDIDATE` or `PRIMARY_SOURCE_CANDIDATE`. This prevents news, automotive, tourism and other sites that merely mention property terms from dominating the review queue.
+
+Morocco/city anchors in external domains use bounded label matching (label/prefix/suffix/hyphen segment), not arbitrary substring matching. For example, the letters `fes` inside an unrelated word do not constitute evidence for Fès.
+
+Known portal, aggregator, classified and short-term markers always block `PRIMARY_SOURCE_CANDIDATE` classification.
+
+These labels are **review hints**, not legal, commercial or ownership truth.
 
 ## Review score v1
 
@@ -69,7 +77,7 @@ A candidate must still follow the canonical gate:
 The DATA-1.4 workflow:
 
 1. downloads the certified DATA-1.3B artifact;
-2. verifies the `300/300` Common Crawl proof;
+2. verifies the `300/300` Common Crawl proof and source cardinalities;
 3. reads B3 reserve and Source Registry using existing GitHub Supabase secrets;
 4. reconciles and ranks the domain universe;
 5. writes only local CI artifacts:
