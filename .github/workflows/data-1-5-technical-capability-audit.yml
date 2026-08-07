@@ -1,0 +1,100 @@
+name: DATA-1.5 Technical Capability Audit
+
+on:
+  pull_request:
+    paths:
+      - "scripts/census/data-1-5-seed.json"
+      - "scripts/census/technical-capability-audit.ts"
+      - "scripts/census/run-technical-capability-audit-live.ts"
+      - "scripts/census/__tests__/technical-capability-audit.test.ts"
+      - ".github/workflows/data-1-5-technical-capability-audit.yml"
+      - "docs/DATA_1_5_TECHNICAL_CAPABILITY_AUDIT.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-1-5-technical-capability-audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: DATA-1.5 unit tests
+        run: npx tsx --test scripts/census/__tests__/technical-capability-audit.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+
+  live-capability-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATA_1_5_SEED: scripts/census/data-1-5-seed.json
+      DATA_1_5_OUT_DIR: .tmp/data-1-5/results
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run bounded public-metadata audit
+        run: npx tsx scripts/census/run-technical-capability-audit-live.ts
+
+      - name: Enforce fail-closed proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_1_5_OUT_DIR}/technical-capability-audit.json"
+          test -s "${DATA_1_5_OUT_DIR}/technical-capability-audit.md"
+          test -s "${DATA_1_5_OUT_DIR}/capability-ranking.csv"
+          test -s "${DATA_1_5_OUT_DIR}/proof.json"
+          node - <<'NODE'
+          const fs = require('fs');
+          const proof = JSON.parse(fs.readFileSync('.tmp/data-1-5/results/proof.json', 'utf8'));
+          if (proof.readOnly !== true) throw new Error('DATA-1.5 must remain read-only');
+          if (proof.writesPerformed !== 0) throw new Error('DATA-1.5 must perform zero writes');
+          if (proof.effectivePoliciesAssigned !== 0) throw new Error('DATA-1.5 must not assign source policies');
+          if (proof.authAttempts !== 0) throw new Error('DATA-1.5 must never attempt authentication');
+          if (proof.bypassAttempts !== 0) throw new Error('DATA-1.5 must never attempt bypass');
+          if (proof.warcFetches !== 0) throw new Error('DATA-1.5 must not fetch WARC content');
+          if (proof.seedCount !== 20 || proof.sitesAudited !== 20) throw new Error(`Expected 20 audited seed domains: ${JSON.stringify(proof)}`);
+          if (proof.maxRequestsPerDomainObserved > proof.maxRequestsPerDomainConfigured || proof.maxRequestsPerDomainConfigured !== 8) {
+            throw new Error(`Per-domain request budget violated: ${JSON.stringify(proof)}`);
+          }
+          console.log(JSON.stringify(proof, null, 2));
+          NODE
+
+      - name: Upload DATA-1.5 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-1-5-technical-capability-audit
+          path: .tmp/data-1-5/results/
+          if-no-files-found: error
+          retention-days: 14
