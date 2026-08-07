@@ -150,6 +150,13 @@ export function buildOdmPublicSearchInput(query: SearchQuery): PublicSearchInput
   };
 }
 
+export function supportsOdmPublicSearchQuery(query: SearchQuery): boolean {
+  // The current thin-index read model has no authoritative district field.
+  // Structured district searches must stay on the provider that can enforce
+  // the canonical neighborhood exactly; never widen them into an ODM query.
+  return !query.district?.trim();
+}
+
 export async function routePublicSearch(
   input: {
     stableKey: string;
@@ -165,8 +172,9 @@ export async function routePublicSearch(
   };
   const startedAt = dependencies.now();
   const legacyQuery = input.legacyQuery ?? input.publicQuery;
+  const odmCapable = supportsOdmPublicSearchQuery(input.publicQuery);
 
-  if (shouldServeOdmPublicCanary(input.stableKey, dependencies.env)) {
+  if (odmCapable && shouldServeOdmPublicCanary(input.stableKey, dependencies.env)) {
     try {
       const page = await dependencies.searchOdm(buildOdmPublicSearchInput(input.publicQuery));
       const result = mapOdmPageToSearchResult(page, input.publicQuery);
