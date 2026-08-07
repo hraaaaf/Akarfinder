@@ -52,7 +52,8 @@ Principes non négociables :
 - CARTE-QUARTIER-P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
 - P1A.2 ✅ PR #334 — `district` structuré dans Search ;
 - P1A.3 ✅ PR #349 — Map state/navigation pilotés par URL, **9,3/10** ;
-- prochain UX : **P1A.4 — Map Design System**.
+- P1A.4 ✅ PR #350 — Map Design System, cockpit flottant map-first, **9,3/10**, audit **30 captures / 0 finding** ;
+- prochain UX : **P1A.5 — Territorial Explorer**.
 
 ## État DATA acquis
 

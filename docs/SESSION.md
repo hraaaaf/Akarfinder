@@ -3,8 +3,8 @@
 **Mise à jour : 2026-08-07**  
 **Lot DATA acquis : DATA-4.3D — Freshness Evidence Canary Design ✅ PR #353**  
 **Prochain lot DATA : DATA-4.3E — First Bounded Freshness Write Canary**  
-**Lot UX acquis : CARTE-QUARTIER-P1A.3 ✅ PR #349**  
-**Prochain UX : CARTE-QUARTIER-P1A.4 — Map Design System**
+**Lot UX acquis : CARTE-QUARTIER-P1A.4 ✅ PR #350 — 9,3/10**  
+**Prochain UX : CARTE-QUARTIER-P1A.5 — Territorial Explorer**
 
 Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
@@ -19,7 +19,8 @@ Acquis récents :
 - DATA-4.3B ✅ PR #348 ;
 - DATA-4.3C ✅ PR #351 ;
 - DATA-4.3D ✅ PR #353, merge `019253c` ;
-- P1A.3 ✅ PR #349.
+- P1A.3 ✅ PR #349 ;
+- P1A.4 ✅ PR #350, merge `14c26bf`, **9,3/10**, audit final **30 captures / 0 finding**.
 
 Invariants : no-bypass, capability ≠ permission, Source Registry avant activation, volume technique ≠ inventaire public, Search canonique, Map complément spatial.
 
@@ -108,4 +109,20 @@ Gate fondamentale : **un succès 4.3E prouve uniquement qu’on peut écrire et 
 
 # UX
 
-Prochain lot : **P1A.4 — Map Design System** avec audit visuel réel et score ≥9/10.
+## P1A.4 ✅ PR #350
+
+Map Design System certifié :
+
+- carte map-first, cockpit clair et flottant ;
+- bleu AkarFinder réservé à la sélection et aux actions ;
+- confiance explicite, jamais portée par la couleur seule ;
+- panneau quartier flottant sans réduire le viewport ;
+- responsive 390 / 768 / 1280 ;
+- MapLibre considéré prêt dès `style.load` pour éviter un faux loader ;
+- URL P1A.3, Geo Registry, Search et continuité Mon Projet inchangés ;
+- **30 captures / 0 finding** ;
+- score final **9,3/10** après reprise du premier pass 7,8/10.
+
+## Prochain lot UX — P1A.5 Territorial Explorer
+
+Construire l’exploration **Maroc → ville → quartier** au-dessus du Map Design System certifié, sans modifier le contrat URL ni inventer de géométrie/proximité. Préserver Map ↔ Search ↔ Quartier ↔ Mon Projet, puis auditer 390 / 768 / 1280 avec seuil **≥9/10**.
