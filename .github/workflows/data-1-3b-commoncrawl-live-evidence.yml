@@ -1,0 +1,247 @@
+name: DATA-1.3B Common Crawl Live Evidence
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/data-1-3b-commoncrawl-live-evidence.yml"
+      - "scripts/census/run-commoncrawl-live-duckdb.sh"
+      - "scripts/census/commoncrawl-url-index.ts"
+  workflow_dispatch:
+
+concurrency:
+  group: data-1-3b-commoncrawl-live-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CC_CRAWL: CC-MAIN-2026-25
+  CC_SHARD_COUNT: 12
+
+jobs:
+  prepare-manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Resolve current crawl Parquet paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/data-1-3b
+          curl --fail --location --retry 4 --retry-all-errors \
+            "https://data.commoncrawl.org/crawl-data/${CC_CRAWL}/cc-index-table.paths.gz" \
+            --output .tmp/data-1-3b/cc-index-table.paths.gz
+          gzip -dc .tmp/data-1-3b/cc-index-table.paths.gz \
+            | grep "cc-index/table/cc-main/warc/crawl=${CC_CRAWL}/subset=warc/" \
+            > .tmp/data-1-3b/warc-index-parquet.paths
+          COUNT=$(wc -l < .tmp/data-1-3b/warc-index-parquet.paths | tr -d ' ')
+          echo "parquet_files=${COUNT}"
+          test "${COUNT}" -eq 300
+
+      - name: Upload manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-1-3b-manifest
+          path: .tmp/data-1-3b/warc-index-parquet.paths
+          if-no-files-found: error
+          retention-days: 2
+
+  scan-shard:
+    needs: prepare-manifest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    env:
+      DUCKDB_BIN: .tmp/data-1-3b/bin/duckdb
+      CC_PARQUET_PATHS_FILE: .tmp/data-1-3b/shard.paths
+      CC_EVIDENCE_OUT_DIR: .tmp/data-1-3b/results
+      CC_EVIDENCE_WORK_DIR: .tmp/data-1-3b/work
+      CC_PARQUET_BATCH_SIZE: 50
+      CC_BATCH_MAX_ATTEMPTS: 1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: data-1-3b-manifest
+          path: .tmp/data-1-3b
+
+      - name: Build shard manifest
+        shell: bash
+        env:
+          SHARD_INDEX: ${{ matrix.shard }}
+        run: |
+          set -euo pipefail
+          awk -v shard="${SHARD_INDEX}" -v total="${CC_SHARD_COUNT}" '((NR - 1) % total) == shard' \
+            .tmp/data-1-3b/warc-index-parquet.paths > "${CC_PARQUET_PATHS_FILE}"
+          COUNT=$(wc -l < "${CC_PARQUET_PATHS_FILE}" | tr -d ' ')
+          echo "shard=${SHARD_INDEX} parquet_files=${COUNT}"
+          test "${COUNT}" -eq 25
+
+      - name: Install DuckDB CLI and httpfs ephemerally
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/data-1-3b/bin
+          curl --fail --location --retry 4 --retry-all-errors \
+            https://github.com/duckdb/duckdb/releases/latest/download/duckdb_cli-linux-amd64.zip \
+            --output .tmp/data-1-3b/duckdb.zip
+          unzip -q .tmp/data-1-3b/duckdb.zip -d .tmp/data-1-3b/bin
+          "${DUCKDB_BIN}" --version
+          "${DUCKDB_BIN}" -c "INSTALL httpfs; LOAD httpfs;"
+
+      - name: Query shard with recursive failure isolation
+        shell: bash
+        run: |
+          bash -n scripts/census/run-commoncrawl-live-duckdb.sh
+          chmod +x scripts/census/run-commoncrawl-live-duckdb.sh
+          scripts/census/run-commoncrawl-live-duckdb.sh
+
+      - name: Enforce shard completeness
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          summary = json.loads(Path('.tmp/data-1-3b/results/summary.json').read_text())
+          assert summary['warcFetchAllowed'] is False
+          assert summary['scanComplete'] is True
+          assert summary['parquetFilesTotal'] == 25
+          assert summary['parquetFilesSucceeded'] == 25
+          assert summary['parquetFilesFailed'] == 0
+          assert summary['coverageRatio'] == 1
+          PY
+
+      - name: Upload shard evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-1-3b-shard-${{ matrix.shard }}
+          path: .tmp/data-1-3b/results/
+          if-no-files-found: error
+          retention-days: 2
+
+  aggregate-evidence:
+    needs: scan-shard
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Download shard evidence
+        uses: actions/download-artifact@v4
+        with:
+          pattern: data-1-3b-shard-*
+          path: .tmp/data-1-3b/shards
+
+      - name: Aggregate and certify 300/300 coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/data-1-3b/final
+          python - <<'PY'
+          import csv
+          import json
+          from collections import defaultdict
+          from pathlib import Path
+
+          root = Path('.tmp/data-1-3b/shards')
+          out = Path('.tmp/data-1-3b/final')
+          shard_dirs = sorted(p for p in root.glob('data-1-3b-shard-*') if p.is_dir())
+          assert len(shard_dirs) == 12, f'expected 12 shard artifacts, got {len(shard_dirs)}'
+
+          summaries = []
+          merged = {}
+          for shard in shard_dirs:
+              summary = json.loads((shard / 'summary.json').read_text())
+              summaries.append(summary)
+              assert summary['warcFetchAllowed'] is False
+              assert summary['scanComplete'] is True
+              assert summary['parquetFilesTotal'] == 25
+              assert summary['parquetFilesSucceeded'] == 25
+              assert summary['parquetFilesFailed'] == 0
+              with (shard / 'all-candidates.csv').open(newline='') as f:
+                  for row in csv.DictReader(f):
+                      key = (row['lane'], row['domain'].lower(), row['registered_domain'].lower())
+                      current = merged.get(key)
+                      indexed = int(row['indexed_pages'])
+                      signal = int(row['real_estate_signal_pages'])
+                      latest = row['latest_fetch_at']
+                      sample = row['sample_url']
+                      if current is None:
+                          merged[key] = {
+                              'lane': row['lane'],
+                              'domain': row['domain'].lower(),
+                              'registered_domain': row['registered_domain'].lower(),
+                              'indexed_pages': indexed,
+                              'real_estate_signal_pages': signal,
+                              'latest_fetch_at': latest,
+                              'sample_url': sample,
+                          }
+                      else:
+                          current['indexed_pages'] += indexed
+                          current['real_estate_signal_pages'] += signal
+                          if latest > current['latest_fetch_at']:
+                              current['latest_fetch_at'] = latest
+                              current['sample_url'] = sample
+
+          rows = sorted(
+              merged.values(),
+              key=lambda r: (r['lane'], -r['real_estate_signal_pages'], -r['indexed_pages'], r['domain'])
+          )
+          fields = ['lane', 'domain', 'registered_domain', 'indexed_pages', 'real_estate_signal_pages', 'latest_fetch_at', 'sample_url']
+
+          def write_csv(path, selected):
+              with path.open('w', newline='') as f:
+                  writer = csv.DictWriter(f, fieldnames=fields)
+                  writer.writeheader()
+                  writer.writerows(selected)
+
+          write_csv(out / 'all-candidates.csv', rows)
+          lane_a = [r for r in rows if r['lane'] == 'MA_TLD_REAL_ESTATE']
+          lane_b = [r for r in rows if r['lane'] == 'MOROCCO_EXTERNAL_REAL_ESTATE']
+          write_csv(out / 'lane-a.csv', lane_a)
+          write_csv(out / 'lane-b.csv', lane_b)
+
+          unique_hosts = {r['domain'] for r in rows}
+          unique_registered = {r['registered_domain'] for r in rows}
+          total = sum(int(s['parquetFilesTotal']) for s in summaries)
+          succeeded = sum(int(s['parquetFilesSucceeded']) for s in summaries)
+          failed = sum(int(s['parquetFilesFailed']) for s in summaries)
+          summary = {
+              'schemaVersion': 'data-1-commoncrawl-live-evidence-v2',
+              'crawl': 'CC-MAIN-2026-25',
+              'warcFetchAllowed': False,
+              'laneAHosts': len(lane_a),
+              'laneBHosts': len(lane_b),
+              'uniqueHosts': len(unique_hosts),
+              'uniqueRegisteredDomains': len(unique_registered),
+              'rows': len(rows),
+              'parquetFilesTotal': total,
+              'parquetFilesSucceeded': succeeded,
+              'parquetFilesFailed': failed,
+              'coverageRatio': succeeded / total if total else 0,
+              'shardCount': len(shard_dirs),
+              'scanComplete': total == 300 and succeeded == 300 and failed == 0,
+          }
+          (out / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
+          (out / 'all-domains.txt').write_text('\n'.join(sorted(unique_hosts)) + '\n')
+          assert summary['scanComplete'] is True
+          assert summary['coverageRatio'] == 1
+          print(json.dumps(summary, indent=2))
+          PY
+
+      - name: Upload final DATA-1.3B evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-1-3b-commoncrawl-live-evidence
+          path: .tmp/data-1-3b/final/
+          if-no-files-found: error
+          retention-days: 14
