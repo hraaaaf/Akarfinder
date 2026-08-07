@@ -30,6 +30,18 @@ function overlaps(a: Rect, b: Rect, tolerance = 2) {
   );
 }
 
+function toRect(box: { x: number; y: number; width: number; height: number } | null): Rect | null {
+  if (!box) return null;
+  return {
+    left: box.x,
+    top: box.y,
+    right: box.x + box.width,
+    bottom: box.y + box.height,
+    width: box.width,
+    height: box.height,
+  };
+}
+
 async function main() {
   mkdirSync(outputDir, { recursive: true });
   const findings: Finding[] = [];
@@ -60,65 +72,60 @@ async function main() {
           });
         }
 
-        const geometry = await page.evaluate(() => {
-          const rect = (selector: string) => {
-            const element = document.querySelector(selector) as HTMLElement | null;
-            if (!element) return null;
-            const r = element.getBoundingClientRect();
-            return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
-          };
-          const explorer = document.querySelector('[aria-label="Exploration territoriale"]');
-          const explorerButtons = explorer
-            ? Array.from(explorer.querySelectorAll("button")).map((button) => {
-                const r = button.getBoundingClientRect();
-                return { width: r.width, height: r.height, text: button.textContent?.trim() ?? "" };
-              })
-            : [];
+        const documentWidth = await page.locator("html").evaluate((element) => element.scrollWidth);
+        const cockpit = toRect(await page.locator('[aria-label="Contrôles de la carte immobilière"]').boundingBox());
+        const explorer = toRect(await page.locator('[aria-label="Exploration territoriale"]').boundingBox());
+        const panelLocator = page.locator('[aria-label^="Fiche repère quartier"]');
+        const panel = (await panelLocator.count()) > 0 ? toRect(await panelLocator.boundingBox()) : null;
 
-          return {
-            documentWidth: document.documentElement.scrollWidth,
-            viewportWidth: window.innerWidth,
-            cockpit: rect('[aria-label="Contrôles de la carte immobilière"]'),
-            explorer: rect('[aria-label="Exploration territoriale"]'),
-            panel: rect('[aria-label^="Fiche repère quartier"]'),
-            explorerButtons,
-          };
-        });
+        const explorerButtons = page.locator('[aria-label="Exploration territoriale"] button');
+        const targetCount = await explorerButtons.count();
+        const targets: Array<{ width: number; height: number; text: string }> = [];
+        for (let index = 0; index < targetCount; index += 1) {
+          const button = explorerButtons.nth(index);
+          const box = await button.boundingBox();
+          if (!box) continue;
+          targets.push({
+            width: box.width,
+            height: box.height,
+            text: (await button.textContent())?.trim() ?? "",
+          });
+        }
 
-        if (geometry.documentWidth > geometry.viewportWidth + 2) {
+        if (documentWidth > viewport.width + 2) {
           findings.push({
             route: route.path,
             viewport: viewport.label,
             check: "horizontal-overflow",
-            detail: `${geometry.documentWidth}px document for ${geometry.viewportWidth}px viewport`,
+            detail: `${documentWidth}px document for ${viewport.width}px viewport`,
           });
         }
-        if (!geometry.cockpit || !geometry.explorer) {
+        if (!cockpit || !explorer) {
           findings.push({
             route: route.path,
             viewport: viewport.label,
             check: "map-controls",
             detail: "Cockpit or territorial explorer missing",
           });
-        } else if (overlaps(geometry.cockpit, geometry.explorer)) {
+        } else if (overlaps(cockpit, explorer)) {
           findings.push({
             route: route.path,
             viewport: viewport.label,
             check: "cockpit-explorer-overlap",
-            detail: JSON.stringify({ cockpit: geometry.cockpit, explorer: geometry.explorer }),
+            detail: JSON.stringify({ cockpit, explorer }),
           });
         }
 
-        if (geometry.panel && geometry.explorer && overlaps(geometry.panel, geometry.explorer, 6)) {
+        if (panel && explorer && overlaps(panel, explorer, 6)) {
           findings.push({
             route: route.path,
             viewport: viewport.label,
             check: "explorer-panel-overlap",
-            detail: JSON.stringify({ explorer: geometry.explorer, panel: geometry.panel }),
+            detail: JSON.stringify({ explorer, panel }),
           });
         }
 
-        for (const target of geometry.explorerButtons) {
+        for (const target of targets) {
           if (target.height < 31 || target.width < 31) {
             findings.push({
               route: route.path,
@@ -129,8 +136,6 @@ async function main() {
           }
         }
 
-        // Screenshot the natural, untouched viewport. Keyboard-focus checks belong to the
-        // global accessibility audit and must not contaminate visual certification images.
         await page.screenshot({
           path: join(outputDir, `${route.slug}-${viewport.label}.png`),
           fullPage: false,
