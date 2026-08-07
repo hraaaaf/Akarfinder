@@ -1,15 +1,17 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-07**  
-**Lot actif : DATA-1.3B — Common Crawl URL Index Live Evidence**
+**Lot DATA actif : DATA-1.3B — Common Crawl URL Index Live Evidence**  
+**Lot UX actif : CARTE-QUARTIER-P1A.0 — Contrat produit & documentaire**
 
 Ce fichier est le handover opérationnel court du projet. L’historique détaillé reste dans Git, les PR et les preuves techniques. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
 ## Main canonique
 
 - `main` inclut la roadmap DATA consolidée ;
-- dernier merge DATA-1 : **PR #324 — DATA-1.3A Common Crawl URL Index discovery contract** ;
-- merge commit : `3bd7ce6d6db306b3927581b743676eedc955df2f` ;
+- dernier merge de synchronisation documentaire : **PR #325** ;
+- `main` confirme **Mon Projet P1B ✅ PR #318** ;
+- DATA-1.1 / DATA-1.2 / DATA-1.3A sont mergés ;
 - aucune migration DATA-1 ;
 - aucune écriture Source Registry automatique ;
 - aucun bypass.
@@ -88,7 +90,77 @@ Une capacité technique ou un résultat Common Crawl ne vaut jamais autorisation
 - Partner Feed B3.4.x ✅
 - DATA-1.1 / 1.2 / 1.3A ✅
 
-## Lot actif — DATA-1.3B
+## Audit Carte / Quartier confirmé sur `main`
+
+Audit initial global : **7,4/10**.
+
+Fondations déjà présentes :
+
+- `/map` = vraie MapLibre interactive ;
+- `/search` = Atlas des résultats + positions exactes certifiées + intelligence quartier ;
+- `/immobilier/[city]/[district]` = page quartier SEO canonique ;
+- `geo-entity-registry` = identité géographique canonique ;
+- `canonical-neighborhood-data.ts` = adaptateur canonique existant ;
+- géométries quartier déjà amorcées, notamment Casablanca.
+
+Failles confirmées :
+
+- `/map` consomme encore directement `lib/map/neighborhood-data.ts` au lieu de la couche canonique ;
+- fallback benchmark quartier → ville sans scope public explicite ;
+- commodités seedées en code sans provenance item-level suffisante ;
+- `/map` ne porte essentiellement que `city` dans l’URL ;
+- page quartier → carte perd `district` ;
+- page quartier → Search utilise encore `city + q` ;
+- Search ne possède pas encore `district` comme filtre structuré dans son contrat de requête ;
+- fond MapLibre clair/sombre reste trop générique et insuffisamment AkarFinder.
+
+## Vision Carte / Quartier verrouillée
+
+- Search = moteur de recherche canonique ;
+- Map = moteur d’exploration spatiale et d’intelligence ;
+- hiérarchie : `Maroc → Ville → Quartier → Zone → Bien` ;
+- route quartier canonique conservée : `/immobilier/[city]/[district]` ;
+- URL Map cible : `city + district + layer + intention utile + project_id si fourni` ;
+- villes puis quartiers différenciés par couleur en mode Explorer uniquement avec géométries réelles ;
+- couches préparées : Explorer, Marché, Densité, Style de vie ;
+- une couleur = une signification active ;
+- prix public = `DISTRICT / CITY / UNAVAILABLE` ;
+- positions de biens exactes uniquement lorsqu’elles sont certifiées ; le reste est agrégé par zone ;
+- Map Design System AkarFinder : plus graphique, chaleureux et premium, sans imitation Google Maps ni copie de Waze ;
+- buildings/landmarks utilisables à fort zoom à partir de géodata traçable ;
+- illustrations de landmarks séparées de la vérité géographique ;
+- mobile = carte plein écran + bottom sheet ;
+- desktop = carte dominante ~65–70 % + intelligence ~30–35 %.
+
+## Gate qualité UX/UI désormais obligatoire
+
+Après **chaque étape UX/UI** :
+
+1. double-check fonctionnel et visuel ;
+2. score documenté ;
+3. **minimum 9,0/10** pour avancer ;
+4. si score < 9,0/10 : reprise immédiate, nouveau double-check et nouveau score ;
+5. aucune dette visuelle connue ne doit être maquillée en « polish futur » si elle appartient au périmètre du lot ;
+6. fin de lot : `README.md`, `docs/ROADMAP.md`, `docs/SESSION.md` relus et alignés avant merge.
+
+## Lot UX actif — CARTE-QUARTIER-P1A.0
+
+Branche : `agent/carte-quartier-p1a0-contract`.
+
+Périmètre : documentation/contrat uniquement.
+
+Livrables :
+
+- correction de la roadmap obsolète Mon Projet P1B (#315 → #318) ;
+- inscription de la roadmap CARTE / QUARTIER P1A/P1B/P2 ;
+- doctrine Map/Search/Geo ajoutée au README ;
+- gate UX/UI ≥ 9/10 ajoutée aux règles d’exécution ;
+- maintien explicite de DATA-1.3B comme lane DATA active ;
+- aucun code applicatif, aucune migration.
+
+Gate P1A.0 : cohérence architecture/produit/documentation ≥ 9/10, puis PR/merge avant P1A.1.
+
+## Lot DATA actif — DATA-1.3B
 
 Objectif : exécuter réellement les deux requêtes URL Index définies par DATA-1.3A avec un moteur compatible Parquet/Common Crawl, puis mesurer le gain net du Census.
 
@@ -105,15 +177,23 @@ Preuves obligatoires :
 - échantillon de faux positifs ;
 - confirmation : aucun WARC fetch.
 
-## Prochaine action exacte
+## Prochaines actions exactes
 
-1. ouvrir une branche dédiée `DATA-1.3B` depuis le `main` courant ;
-2. exécuter `01-ma-tld-real-estate.sql` sur `CC-MAIN-2026-25` ;
-3. exécuter ensuite `02-morocco-external-real-estate.sql` ;
-4. importer les agrégats dans le reporter DATA-1.3A ;
-5. soustraire les domaines déjà connus du Census ;
-6. produire le nombre net `NEW_TO_CENSUS` et le top des nouveaux hosts ;
-7. auditer un échantillon de faux positifs avant toute suite ;
-8. si le rendement est élevé, poursuivre DATA-1.4 Web Data Commons ;
-9. si l’overlap est très élevé, concentrer l’effort sur la qualification des **983 HIGH/MEDIUM** déjà présents ;
-10. ne créer/modifier aucune policy Source Registry avant DATA-1.5/1.6 et une revue explicite.
+### UX
+
+1. certifier et merger **CARTE-QUARTIER-P1A.0** ;
+2. repartir du `main` synchronisé ;
+3. ouvrir **P1A.1 — Geo Canonical Core** ;
+4. inventorier les consommateurs directs des trois couches géographiques avant modification ;
+5. supprimer le bypass de `/map` vers `neighborhood-data.ts` sans modèle parallèle ;
+6. tester l’identité canonique Map/Search/SEO/Mon Projet ;
+7. double-check + score ; ne pas ouvrir P1A.2 tant que P1A.1 < 9/10.
+
+### DATA
+
+1. poursuivre la PR **#326 — DATA-1.3B** sans la mélanger au chantier UX ;
+2. exécuter/valider les deux lanes URL Index ;
+3. mesurer `NEW_TO_CENSUS` contre les **7 051 domaines** ;
+4. auditer les faux positifs ;
+5. ne créer/modifier aucune policy Source Registry avant revue explicite ;
+6. ne faire aucun WARC fetch.
