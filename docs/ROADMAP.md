@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-07**  
-**Statut : UX P1A.4 ✅ / P1A.5 prochain ; DATA-4.3F ✅ PR #358 / DATA-4.3G prochain**
+**Statut : UX P1A.5 ✅ PR #365 / P1A.6 prochain ; DATA-4.3H ✅ PR #364 / première expansion persistante ≤100 prochaine**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -40,13 +40,14 @@ Acquis :
 - P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
 - P1A.2 ✅ PR #334 — Search Geo Contract ;
 - P1A.3 ✅ PR #349 — Map State & Navigation, **9,3/10** ;
-- P1A.4 ✅ PR #350 — Map Design System, **9,3/10**, audit final **30 captures / 0 finding**.
+- P1A.4 ✅ PR #350 — Map Design System, **9,3/10**, audit final **30 captures / 0 finding** ;
+- P1A.5 ✅ PR #365 — Territorial Explorer progressif **Maroc → ville → quartier**, Geo Registry + canonical neighborhood data uniquement, URL/Search contracts préservés, aucun hard-coded geometry, responsive **390 / 430×932 / 768 / 1280**, états `/map`, `Rabat`, `Rabat/Agdal` certifiés, **48 captures / 0 finding**, **9,3/10**.
 
-## P1A.5 — Territorial Explorer 🔴
+## P1A.6 — Responsive hardening 🔴 PROCHAIN UX
 
-Construire l’exploration Maroc → ville → quartier au-dessus du Map Design System sans inventer géométrie/proximité, préserver URL/Search/Quartier/Mon Projet, auditer 390/768/1280, score ≥9/10.
+Objectif : durcir les comportements carte + panneaux + navigation sur mobile/tablette/desktop à partir des viewports certifiés, avec **430×932 obligatoire**, sans modifier les contrats Geo/URL ni introduire de nouvelle intelligence métier.
 
-Puis : P1A.6 Responsive → P1B intelligence cartographique.
+Puis : **P1B — intelligence cartographique**.
 
 # 4. Fondation DATA acquise
 
@@ -62,33 +63,34 @@ Observation Ledger / Freshness / normalization / quality tiers ; Source Registry
 - **4.1A ✅ #343** — Avito unavailable : 95,06 % bruit ; 73 core-récupérables ; 0 policy-activable.
 - **4.2 ✅ #344** — Dar Agadir = `ADMISSIBLE_GROWTH`; Agenz = `PARTNERSHIP_UPSIDE`.
 - **4.3A ✅ #347** — 5 eligible shadow ; 6 425 revalidation-required.
-- **4.3B ✅ #348** — 5 905 URLs sitemap ; 5 673 seed-only encore présentes ; 10 requêtes ; 0 détail/content reuse/write/activation.
-- **4.3C ✅ #351** — 5 566 SHADOW_READY dont 5 564 seed-only ; 0 duplicate/policy blocked/write/activation.
-- **4.3D ✅ #353** — 100-row dry-run réversible ; canal `public_sitemap_presence`; TTL 14 jours ; 100/100 rollback ; 20/20 gates ; 0 write/activation.
-- **4.3E ✅ #355** — 10-row production rehearsal ; 10/10 apply, verify, rollback ; état freshness/evidence restauré ; `updated_at` = audit trail non rollbackable.
-- **4.3F ✅ #358** — controlled promotion design ; live proof : **6 533 total**, **6 431 seed-only**, **102 fresh-confirmed**, **0 canary residue**, Registry eligible, drift 0 %, **50 initial**, **100/run max**, **500 avant re-certification**, TTL 14 jours, 0 write/activation.
+- **4.3B ✅ #348** — 5 905 URLs sitemap ; 5 673 seed-only encore présentes.
+- **4.3C ✅ #351** — 5 566 SHADOW_READY dont 5 564 seed-only ; 0 write/activation.
+- **4.3D ✅ #353** — 100-row dry-run réversible ; `public_sitemap_presence`; TTL 14 jours ; 100/100 rollback ; 0 write/activation.
+- **4.3E ✅ #355** — 10-row production rehearsal ; 10/10 apply, verify, rollback.
+- **4.3F ✅ #358** — controlled promotion design ; initial 50, max 100/run, cap 500 avant re-certification, TTL 14 jours.
+- **4.3G ✅ #362** — First Persistent Freshness Batch certifié ; batch déterministe 50, snapshot/rollback complet, observabilité Search/display, aucune display-policy mutation.
+- **4.3H ✅ #364** — Controlled Expansion to 500 certifiée en DRY_RUN ; départ 50 persistent rows ; plan **[100,100,100,100,50]** ; max **100/run** ; TTL **14 jours** ; Registry+sitemap revalidés ; drift cap **1 %** ; Search/display mesurés ; **0 DB write / 0 activation** dans la PR.
 
-## DATA-4.3G — First Persistent Freshness Batch 🔴 PROCHAIN DATA
+## Prochaine action DATA — première expansion persistante sous contrat 4.3H
 
-Objectif : effectuer le premier batch **persistant** de 50 lignes maximum sans modifier la policy d’affichage.
+Effectuer un premier batch **≤100 lignes** uniquement après préflight exact Registry+sitemap.
 
 Contraintes :
 
-1. batch déterministe ≤50 ;
-2. préflight Registry + sitemap immédiatement avant write ;
-3. seules lignes `seed_only` sans canal `public_sitemap_presence` ;
-4. snapshot complet incluant `updated_at` comme audit trail ;
-5. write uniquement freshness/evidence ;
+1. batch déterministe ≤100 ;
+2. Registry + sitemap revalidés immédiatement avant write ;
+3. seules lignes encore éligibles selon le contrat 4.3H ;
+4. snapshot complet + rollback prêt ;
+5. write freshness/evidence uniquement ;
 6. canal `public_sitemap_presence`, TTL 14 jours ;
-7. vérification 50/50 post-write ;
-8. observabilité applied/skipped/drifted ;
-9. arrêt si drift >1 % ;
-10. rollback disponible mais pas exécuté automatiquement si batch certifié ;
-11. aucune modification display/publication policy ;
-12. aucune page détail/content reuse ;
-13. mesurer l’impact Search/display séparément sans l’interpréter comme nouvelle autorisation.
+7. observabilité applied/skipped/drifted ;
+8. arrêt/rollback si drift >1 % ou précondition cassée ;
+9. mesure Search/display avant/après séparée de toute décision d’autorisation ;
+10. aucune modification display/publication policy ;
+11. aucune page détail/content reuse ;
+12. cap cumulé 500 avant re-certification obligatoire.
 
-Gate : 4.3G peut persister un premier batch fraîcheur, mais ne peut pas bulk-promote les 5 564 ni modifier la policy publique.
+Aucun numéro de lot suivant n’est canonique tant qu’il n’a pas été explicitement défini.
 
 # 7. Lane business parallèle
 
@@ -96,7 +98,7 @@ Gate : 4.3G peut persister un premier batch fraîcheur, mais ne peut pas bulk-pr
 
 # 8. Suite DATA
 
-4.3G first persistent batch → observation TTL/aging + mesure Search/display → batchs suivants jusqu’à 500 max → re-certification obligatoire → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
+Premier batch ≤100 sous contrat 4.3H → observation TTL/aging + mesure Search/display → batchs suivants jusqu’à 500 max → re-certification obligatoire → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
 
 # 9. Définition de terminé
 
@@ -104,10 +106,10 @@ Scope respecté, tests/build/gates verts, preuves, Registry respecté, aucun byp
 
 # 10. Prochaine action exacte
 
-## DATA — DATA-4.3G
+## DATA
 
-Construire et certifier un **premier batch persistant de 50 lignes maximum**, sans changement de display policy ni bulk activation.
+Préparer puis exécuter la **première expansion persistante ≤100 lignes** sous le contrat DATA-4.3H, sans changement de display policy.
 
-## UX — P1A.5
+## UX — P1A.6
 
-Construire le **Territorial Explorer** au-dessus du Map Design System certifié, sans modifier l’identité Geo, le contrat URL ni la vérité des données.
+Durcir le responsive de la carte et de ses panneaux sur **390 / 430×932 / 768 / 1280**, score UX/UI ≥9/10, sans changer les contrats Geo/URL/Search.
