@@ -16,12 +16,18 @@ describe("P1A.5 — Territorial Explorer", () => {
     assert.ok(explorer.includes("withMapLocation"));
   });
 
-  it("exposes an explicit Morocco to city to district hierarchy", () => {
+  it("exposes a progressive Morocco to city to district hierarchy", () => {
     const explorer = source("components/map/TerritorialExplorer.tsx");
     assert.ok(explorer.includes('aria-label="Exploration territoriale"'));
     assert.ok(explorer.includes("Maroc → ville → quartier"));
-    assert.ok(explorer.includes("Choisir une ville"));
-    assert.ok(explorer.includes("Quartiers repérés"));
+    assert.ok(explorer.includes('selectedCity ? "Quartiers" : "Villes"'));
+    assert.ok(explorer.includes("Maroc pour changer de ville"));
+  });
+
+  it("replaces the city rail with districts after city selection", () => {
+    const explorer = source("components/map/TerritorialExplorer.tsx");
+    assert.ok(explorer.includes("selectedCity\n                ? districts.map"));
+    assert.ok(explorer.includes(": cityEntries.map"));
   });
 
   it("keeps territorial state inside the certified URL navigation contract", () => {
