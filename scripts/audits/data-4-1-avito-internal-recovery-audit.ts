@@ -103,8 +103,10 @@ async function main(): Promise<void> {
     recoverableCoreRows: report.summary.recoverableCoreRows,
     insufficientExistingEvidenceRows: report.summary.insufficientExistingEvidenceRows,
     withPropertyType: report.summary.withPropertyType,
+    withCompatiblePropertyType: report.summary.withCompatiblePropertyType,
     withIntent: report.summary.withIntent,
     withGeoAliasMatch: report.summary.withGeoAliasMatch,
+    withTypeAndIntent: report.summary.withTypeAndIntent,
     withTypeIntentAndGeo: report.summary.withTypeIntentAndGeo,
     withStoredTitle: report.summary.withStoredTitle,
     withStoredSnippet: report.summary.withStoredSnippet,
@@ -134,7 +136,7 @@ async function main(): Promise<void> {
   );
 
   const classificationCsv = [
-    ["canonical_url", "category", "location", "class", "geo_match", "property_type", "intent", "stored_title", "stored_snippet", "price", "surface", "policy_blocked_new_observation"],
+    ["canonical_url", "category", "location", "class", "geo_match", "property_type_present", "property_type_compatible", "intent", "stored_title", "stored_snippet", "price", "surface", "policy_blocked_new_observation"],
     ...report.rows.map((row) => [
       row.canonicalUrl,
       row.categorySlug,
@@ -142,6 +144,7 @@ async function main(): Promise<void> {
       row.recoveryClass,
       row.geoAliasMatch,
       row.hasPropertyType,
+      row.propertyTypeCompatible,
       row.hasIntent,
       row.hasStoredTitle,
       row.hasStoredSnippet,
