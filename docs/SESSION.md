@@ -2,7 +2,8 @@
 
 **Mise à jour : 2026-08-07**  
 **Lot DATA actif : DATA-1.3B — Common Crawl URL Index Live Evidence**  
-**Lot UX actif : CARTE-QUARTIER-P1A.1 — Geo Canonical Core, PR #328 en certification**
+**Lot UX certifié : CARTE-QUARTIER-P1A.1 — Geo Canonical Core, PR #328**  
+**Prochain lot UX : CARTE-QUARTIER-P1A.2 — Search Geo Contract**
 
 Ce fichier est le handover opérationnel court du projet. L’historique détaillé reste dans Git, les PR et les preuves techniques. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
@@ -15,6 +16,8 @@ Ce fichier est le handover opérationnel court du projet. L’historique détail
 - aucune migration DATA-1 ;
 - aucune écriture Source Registry automatique ;
 - aucun bypass.
+
+P1A.1 est certifié dans **PR #328** et doit être mergé dès que la dernière CI du head documentaire final confirme les gates déjà vertes.
 
 ## Lots DATA-1 acquis
 
@@ -84,6 +87,7 @@ Une capacité technique ou un résultat Common Crawl ne vaut jamais autorisation
 - Mon Projet P1A ✅ — PR #314
 - Mon Projet P1B ✅ — PR #318
 - CARTE-QUARTIER-P1A.0 ✅ — PR #327, score 9,5/10
+- CARTE-QUARTIER-P1A.1 ✅ certifié — PR #328, score 9,5/10
 - Source Registry v2 ✅
 - Freshness Engine ✅
 - Discovery Expansion B3 ✅
@@ -91,20 +95,19 @@ Une capacité technique ou un résultat Common Crawl ne vaut jamais autorisation
 - Partner Feed B3.4.x ✅
 - DATA-1.1 / 1.2 / 1.3A ✅
 
-## Audit Carte / Quartier confirmé
+## Carte / Quartier — état après P1A.1
 
-Audit initial global : **7,4/10**.
-
-Fondations déjà présentes :
+Fondations :
 
 - `/map` = vraie MapLibre interactive ;
 - `/search` = Atlas des résultats + positions exactes certifiées + intelligence quartier ;
 - `/immobilier/[city]/[district]` = page quartier SEO canonique ;
 - `geo-entity-registry` = identité géographique canonique ;
-- `canonical-neighborhood-data.ts` = adaptateur canonique existant ;
-- géométries quartier déjà amorcées, notamment Casablanca.
+- `canonical-neighborhood-data.ts` = adaptateur canonique ;
+- géométries quartier déjà amorcées, notamment Casablanca ;
+- `MapNeighborhoodExperience` passe désormais par l’adaptateur canonique et non par le seed brut.
 
-Failles restantes après le correctif P1A.1 candidat :
+Failles restantes hors P1A.1 :
 
 - fallback benchmark quartier → ville sans scope public explicite ;
 - commodités seedées en code sans provenance item-level suffisante ;
@@ -113,8 +116,6 @@ Failles restantes après le correctif P1A.1 candidat :
 - page quartier → Search utilise encore `city + q` ;
 - Search ne possède pas encore `district` comme filtre structuré dans son contrat de requête ;
 - fond MapLibre clair/sombre reste trop générique et insuffisamment AkarFinder.
-
-La faille `/map → neighborhood-data.ts` est corrigée dans **PR #328** : `MapNeighborhoodExperience` passe désormais par `canonical-neighborhood-data.ts`, lui-même raccordé à `geo-entity-registry`.
 
 ## Vision Carte / Quartier verrouillée
 
@@ -145,31 +146,36 @@ Après **chaque étape UX/UI** :
 5. aucune dette visuelle connue ne doit être maquillée en « polish futur » si elle appartient au périmètre du lot ;
 6. fin de lot : `README.md`, `docs/ROADMAP.md`, `docs/SESSION.md` relus et alignés avant merge.
 
-## Lot UX actif — CARTE-QUARTIER-P1A.1
+## CARTE-QUARTIER-P1A.1 — certification
 
 PR : **#328**.  
 Branche : `agent/carte-quartier-p1a1-geo-canonical-core`.
 
-Périmètre strict : identité géographique canonique de `/map`, sans refonte UI ni contrat Search `district`.
+Livré :
 
-Correctif candidat :
-
-- `MapNeighborhoodExperience.tsx` importe désormais `@/lib/map/canonical-neighborhood-data` ;
+- `MapNeighborhoodExperience.tsx` importe `@/lib/map/canonical-neighborhood-data` ;
 - aucun import runtime direct du seed brut `@/lib/map/neighborhood-data` dans cette surface ;
-- l’adaptateur canonique continue d’utiliser `resolveCityEntity` et `resolveNeighborhoodEntity` depuis `geo-entity-registry` ;
+- l’adaptateur canonique utilise `resolveCityEntity` et `resolveNeighborhoodEntity` depuis `geo-entity-registry` ;
 - aucune nouvelle table, migration ou structure géographique parallèle ;
 - test de non-régression ajouté à `phase1-p1-geo-productization.test.ts` ;
-- la gate existante reste l’autorité : test ciblé + TypeScript + production build.
-
-Double-check avant CI finale :
-
-- diff fonctionnel limité à un import runtime ;
 - comportement visuel volontairement inchangé ;
-- seed brut conservé uniquement derrière l’adaptateur canonique ;
-- P1A.2 `district` explicitement hors scope ;
-- DATA-1.3B/#326 non modifié.
+- Search `district` reste strictement réservé à P1A.2.
 
-**Score candidat architecture/vérité géographique : 9,5/10.** La certification finale exige la CI complète verte sur le head documentaire final avant merge.
+Validation obtenue avant la clôture documentaire finale :
+
+- **19/19 workflows GitHub Actions verts** ;
+- Geo Productization ✅ ;
+- Neighborhood Geometry Registry Shadow ✅ ;
+- Casablanca Geometry Canary ✅ ;
+- Search Truth ✅ ;
+- Canonical Baseline Compile — TypeScript + production build ✅ ;
+- Canonical Baseline Validation ✅ ;
+- Final Design Accessibility — contrats + responsive/a11y smoke ✅ ;
+- autres gates déclenchées ✅.
+
+Double-check final : pas de régression UI, pas de changement de données, pas de bypass, dépendance cartographique canonique explicitement protégée.
+
+**Score final P1A.1 : 9,5/10.** Gate ≥ 9/10 satisfaite.
 
 ## Lot DATA actif — DATA-1.3B
 
@@ -194,13 +200,13 @@ Preuves obligatoires :
 
 ### UX
 
-1. terminer la certification de **PR #328 — P1A.1 Geo Canonical Core** ;
-2. exiger CI complète verte et score final ≥ 9,0/10 ;
-3. merger seulement après double-check final ;
-4. repartir du `main` synchronisé ;
-5. ouvrir **P1A.2 — Search Geo Contract** ;
-6. introduire `district` dans le contrat Search structuré sans réutiliser `q` comme substitut ;
-7. préserver la compatibilité des URLs textuelles existantes ;
+1. confirmer la dernière CI sur le head documentaire final de **PR #328** ;
+2. merger P1A.1 ;
+3. repartir du `main` synchronisé ;
+4. ouvrir **CARTE-QUARTIER-P1A.2 — Search Geo Contract** ;
+5. introduire `district` dans `SearchQuery`, parsing URL, stable key, gateway/routing et filtering/ranking ;
+6. conserver `q` comme texte libre, pas comme identité quartier ;
+7. migrer les handoffs quartier vers `city + district` avec compatibilité des anciens liens ;
 8. double-check + score ≥ 9/10 avant P1A.3.
 
 ### DATA
