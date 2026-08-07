@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-08-07T03:00:00+01:00",
+  "crawl": "CC-MAIN-2026-25",
+  "knownDomains": ["rabatimmo.ma"],
+  "rows": [
+    {
+      "lane": "MA_TLD_REAL_ESTATE",
+      "domain": "rabatimmo.ma",
+      "registered_domain": "rabatimmo.ma",
+      "indexed_pages": 250,
+      "real_estate_signal_pages": 180,
+      "latest_fetch_at": "2026-06-22T10:00:00Z",
+      "sample_url": "https://rabatimmo.ma/appartement/rabat/1"
+    },
+    {
+      "lane": "MOROCCO_EXTERNAL_REAL_ESTATE",
+      "domain": "properties-example.com",
+      "registered_domain": "properties-example.com",
+      "indexed_pages": 40,
+      "real_estate_signal_pages": 40,
+      "latest_fetch_at": "2026-06-21T10:00:00Z",
+      "sample_url": "https://properties-example.com/morocco/villa/1"
+    }
+  ]
+}
