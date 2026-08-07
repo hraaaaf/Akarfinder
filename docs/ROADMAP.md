@@ -1,158 +1,88 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-07**  
-**Statut : UX P1A.3 ✅ / P1A.4 prochain ; DATA-4.3D ✅ PR #353 / DATA-4.3E prochain**
-
-`README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
+**Statut : UX P1A.3 ✅ / P1A.4 prochain ; DATA-4.3E ✅ PR #355 / DATA-4.3F prochain**
 
 # 1. Cap produit
 
-AkarFinder = **moteur de recherche immobilier + index national + couche d’intelligence** pour le Maroc.
+AkarFinder = **moteur de recherche immobilier + index national + couche d’intelligence** pour le Maroc. Cœur : `/search`. `/map` complète Search. Objectif long terme : **Property Graph**.
 
-- cœur produit : `/search` ;
-- `/map` : complément spatial ;
-- objectif long terme : **Property Graph du marché immobilier marocain** ;
-- North Star DATA : `COVERAGE × FRESHNESS × QUALITY × DEDUP × RELEVANCE` ;
-- paliers : **5K → 20K → 50K → 100K+** observations utiles, jamais du volume artificiel.
+North Star DATA : `COVERAGE × FRESHNESS × QUALITY × DEDUP × RELEVANCE`.
 
-Pipeline canonique :
+Paliers : **5K → 20K → 50K → 100K+** observations utiles, jamais du volume artificiel.
 
-`DISCOVERY → INGESTION/OBSERVATION → NORMALIZATION → CANONICALIZATION → FRESHNESS → DEDUPLICATION/CLUSTERING → ENRICHMENT → INTELLIGENCE → DISPLAY ELIGIBILITY → RANKING → PUBLICATION/SERP`
+Pipeline : `DISCOVERY → OBSERVATION → NORMALIZATION → CANONICALIZATION → FRESHNESS → DEDUP → ENRICHMENT → INTELLIGENCE → DISPLAY ELIGIBILITY → RANKING → PUBLICATION`.
 
 # 2. Doctrine non négociable
 
-- no-bypass absolu ;
-- robots/sitemap/capability ≠ permission ;
-- Source Registry obligatoire avant activation ;
-- `DISCOVERED ≠ AUDITED ≠ POLICY_ASSIGNED ≠ ELIGIBLE ≠ INGESTIBLE ≠ DISPLAYABLE` ;
-- aucune donnée/image/géométrie/coordonnée/proximité/partenariat inventé ;
-- Search reste canonique ; Map partage son identité géographique ;
-- migrations séparées du code applicatif ;
-- une responsabilité / une branche / une PR / un merge ;
-- tests + preuves avant merge ;
-- mutation DATA : rollback avant activation.
+No-bypass ; robots/sitemap/capability ≠ permission ; Source Registry obligatoire ; aucune donnée inventée ; Search canonique ; mutation DATA = preuve + rollback ; un lot = une responsabilité/branche/PR/merge ; tests/gates avant merge.
 
 # 3. Lane UX
 
-Acquis :
-
 - P1A.0 ✅ PR #327 ;
-- P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
-- P1A.2 ✅ PR #334 — Search Geo Contract ;
-- P1A.3 ✅ PR #349 — Map State & Navigation, **9,3/10**.
+- P1A.1 ✅ PR #328 — 9,5/10 ;
+- P1A.2 ✅ PR #334 ;
+- P1A.3 ✅ PR #349 — 9,3/10 ;
+- **P1A.4 — Map Design System 🔴**.
 
-## P1A.4 — Map Design System 🔴
+Puis P1A.5 Territorial Explorer → P1A.6 Responsive → P1B intelligence cartographique.
 
-Hiérarchie carte/contrôles/panneau, tokens couleur, marqueurs/clusters, états hover/focus/loading/empty, responsive, accessibilité, audit visuel réel et score ≥ **9,0/10**.
+# 4. Fondation DATA
 
-Puis : P1A.5 Territorial Explorer → P1A.6 Responsive → P1B intelligence cartographique.
+Observation Ledger/Freshness/quality/dedup ; Source Registry v2 ; display eligibility ; Market Index ; Partner Feed ; OpenSERP/public sitemaps/Common Crawl ; 53 villes/pôles.
 
-# 4. Fondation DATA acquise
+# 5. DATA-1 ✅
 
-- Observation Ledger / Freshness / normalization / quality tiers ;
-- Source Registry v2 / display eligibility ;
-- Market Index / Property Graph foundation ;
-- dedup conservant les observations ;
-- Partner Feed ;
-- OpenSERP / public sitemaps / Common Crawl ;
-- 53 villes/pôles.
-
-# 5. DATA-1 — Moroccan Real Estate Web Census ✅
-
-- DATA-1.1 → 1.6B terminés ;
-- B3 : **37 009 URLs / 7 051 domaines** ;
-- Common Crawl : **300/300 Parquet**, **8 727 registered domains** ;
-- univers : **15 238 domaines** ;
-- 230 primary-source candidates ;
-- 625 portal candidates ;
-- Registry initial : 19 rows, **0 activation non autorisée**.
+37 009 URLs / 7 051 domaines ; 8 727 registered domains Common Crawl ; univers 15 238 domaines ; 230 primary-source candidates ; 625 portal candidates ; Registry initial sans activation non autorisée.
 
 # 6. DATA-4 — Reservoir Strategy
 
-## DATA-4.0 ✅ PR #341
-Avito + Mubawab : **35 134 normalized**, **3 588 technical display**, **0 policy-activable**.
+- **4.0 ✅ #341** — Avito+Mubawab : 35 134 normalized, 3 588 technical display, 0 policy-activable.
+- **4.1A ✅ #343** — Avito unavailable : 95,06 % bruit ; 73 core-récupérables ; 0 policy-activable.
+- **4.2 ✅ #344** — Dar Agadir = `ADMISSIBLE_GROWTH`; Agenz = `PARTNERSHIP_UPSIDE`.
+- **4.3A ✅ #347** — 5 eligible shadow ; 6 425 revalidation-required.
+- **4.3B ✅ #348** — 5 905 URLs sitemap ; 5 673 seed-only encore présentes ; 10 requêtes ; 0 détail/content reuse/write/activation.
+- **4.3C ✅ #351** — 5 566 SHADOW_READY dont 5 564 seed-only ; 0 duplicate/policy blocked/write/activation.
+- **4.3D ✅ #353** — 100-row dry-run réversible ; canal `public_sitemap_presence`; TTL 14 jours ; 100/100 rollback ; 20/20 gates ; 0 write/activation.
+- **4.3E ✅ #355** — premier rehearsal production borné : 10/10 apply freshness, 10/10 vérification, 10/10 rollback. Après rollback : 10/10 `seed_only`, `fresh_last_seen_at=NULL`, `fresh_channels=[]`, metadata originale, aucune `freshness_evidence`. Les 10 restent dans `public_search_representations_v1`, donc cette présence n’a pas été créée par le canary. `updated_at` a été touché et n’était pas dans le snapshot initial : dette explicitement documentée.
 
-## DATA-4.1A ✅ PR #343
-Avito `unavailable` : **21 129 / 22 227 = 95,06 % bruit/non-immobilier** ; seulement **73** core-récupérables ; 0 policy-activable.
+## DATA-4.3F — Controlled Promotion Design 🔴 PROCHAIN DATA
 
-## DATA-4.2 ✅ PR #344
-- `ADMISSIBLE_GROWTH` : **daragadir.com** ;
-- `PARTNERSHIP_UPSIDE` : **agenz.ma**.
+Objectif : passer du rehearsal 10-row à une promotion contrôlée du signal sitemap sans bulk activation implicite.
 
-## DATA-4.3A ✅ PR #347
-Dar Agadir : **5 ELIGIBLE_SHADOW**, **6 425 SEED_ONLY_REVALIDATION_REQUIRED**.
+Scope :
 
-## DATA-4.3B ✅ PR #348
-Public sitemap : **5 905 URLs**, **5 749** overlaps, **5 673 seed-only** encore présentes ; 10 requêtes robots/sitemaps ; 0 détail/content reuse/write/activation.
+1. définir batch size initial et plafonds ;
+2. capturer **toutes** les colonnes mutables dans le snapshot, y compris `updated_at` ou décider explicitement qu’il est audit-log non rollbackable ;
+3. TTL 14 jours et expiration/aging ;
+4. batchs idempotents avec préconditions exactes ;
+5. observabilité : applied/skipped/drifted/rolled-back ;
+6. vérification Search/display avant et après chaque batch ;
+7. aucune modification de Source Registry/display policy dans le même lot ;
+8. aucune page détail/content reuse ;
+9. arrêt automatique sur drift robots/sitemap/Registry ;
+10. pas de promotion des 5 564 en une seule opération.
 
-## DATA-4.3C ✅ PR #351
-Freshness shadow : **5 566 SHADOW_READY**, dont **5 564 seed-only** ; 0 duplicate ; 0 policy blocked ; 0 write/activation.
+Gate : 4.3F doit produire un design + canary plan suffisamment sûr pour décider d’un premier batch persistant séparé. Il ne doit pas activer massivement la SERP.
 
-## DATA-4.3D ✅ PR #353
-Freshness Evidence Canary Design certifié :
+# 7. Business parallèle
 
-- canary déterministe : **100 URLs** ;
-- eligible seed-only pool : **5 564** ;
-- canal proposé : `public_sitemap_presence` ;
-- TTL : **14 jours** ;
-- `freshness_status` proposé : `fresh_confirmed` ;
-- `before/proposed/rollback` : **100/100** ;
-- seed-state reads : **100** ;
-- source requests : **10** ;
-- 0 DB write ; 0 freshness write ; 0 policy change ; 0 activation ;
-- **20/20 workflows verts** ;
-- merge `019253c`.
+**Agenz = priorité partenariat/feed** : 4 490 normalized, 1 227 fresh, 1 146 decision-structured, hidden/internal-only. Aucun changement avant autorisation écrite.
 
-Le matcher OpenSERP/Yandex existant reste inchangé : le canal sitemap demeure explicitement distinct.
+# 8. Suite DATA
 
-## DATA-4.3E — First Bounded Freshness Write Canary 🔴 PROCHAIN DATA
-
-Objectif : effectuer le **premier write freshness borné et réversible**, sans activation SERP.
-
-Contraintes :
-
-1. petit canary déterministe, strictement inférieur au dry-run 100 rows ;
-2. Source Registry doit toujours autoriser `public_sitemap` et rester current/due-soon ;
-3. revalidation sitemap live immédiatement avant write ;
-4. snapshot `before` immuable ;
-5. write uniquement `freshness_status`, `fresh_last_seen_at`, `fresh_channels`, evidence metadata et `updated_at` ;
-6. canal = `public_sitemap_presence` ;
-7. TTL = 14 jours ;
-8. aucune page détail, aucun content reuse ;
-9. aucune modification de display/publication policy ;
-10. vérification production post-write ;
-11. rollback rehearsal exact ;
-12. activation SERP interdite dans ce lot.
-
-Gate de sortie : écrire peu, vérifier tout, prouver rollback et maintenir **0 changement public**.
-
-# 7. Lane business parallèle
-
-**Agenz = priorité partenariat/feed** : 4 490 normalized, 1 227 fresh, 1 146 decision-structured, mais hidden/internal-only. Aucun changement Registry/produit avant autorisation écrite.
-
-# 8. Suite DATA après 4.3E
-
-Si 4.3E est certifié :
-
-1. DATA-4.3F — canary display eligibility shadow sur les lignes fraîchement écrites ;
-2. activation canonical-link éventuelle dans un lot séparé ;
-3. généralisation aux autres sources canonical-link admissibles ;
-4. DATA-3 Universal Site Connector pour sources éligibles ;
-5. DATA-5/6/7 feeds + claim + workspace ;
-6. atteindre **20K observations exploitables**, puis 50K/100K+.
-
-Si 4.3E échoue : rollback immédiat et passage au réservoir admissible suivant.
+4.3F controlled promotion design → premier batch persistant borné si certifié → mesure impact Search/canonical-link → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
 
 # 9. Définition de terminé
 
-Un lot est terminé uniquement si : scope respecté, tests/build/gates verts, preuves disponibles, Registry respecté, aucun bypass, aucun workflow temporaire, PR mergée, production vérifiée si write, rollback vérifié si mutation, et les 3 MD canoniques alignés.
+Scope respecté, tests/build/gates verts, preuves, Registry respecté, aucun bypass, PR mergée, prod vérifiée si write, rollback vérifié, 3 MD alignés.
 
 # 10. Prochaine action exacte
 
-## DATA — DATA-4.3E
+## DATA — DATA-4.3F
 
-Construire puis certifier le premier **bounded freshness write canary** Dar Agadir, sans aucune activation publique.
+Formaliser la promotion contrôlée de `public_sitemap_presence` : batchs bornés, snapshot complet, TTL/aging, idempotence, observabilité et arrêt fail-closed sur drift.
 
 ## UX — P1A.4
 
-Construire le **Map Design System** au-dessus du contrat URL P1A.3 sans modifier l’identité Geo ni la vérité des données.
+Construire le **Map Design System** sans modifier l’identité Geo ni la vérité des données.
