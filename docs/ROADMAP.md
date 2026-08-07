@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-07**  
-**Statut : UX P1A.4 ✅ / P1A.5 prochain ; DATA-4.3F ✅ PR #358 / DATA-4.3G prochain**
+**Statut : UX P1A.4 ✅ / P1A.5 prochain ; DATA-4.3G ✅ PR #362 / DATA-4.3H prochain**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -27,30 +27,21 @@ Pipeline canonique :
 - `DISCOVERED ≠ AUDITED ≠ POLICY_ASSIGNED ≠ ELIGIBLE ≠ INGESTIBLE ≠ DISPLAYABLE` ;
 - aucune donnée/image/géométrie/coordonnée/proximité/partenariat inventé ;
 - Search reste canonique ; Map partage son identité géographique ;
-- migrations séparées du code applicatif ;
 - une responsabilité / une branche / une PR / un merge ;
 - tests + preuves avant merge ;
-- mutation DATA : rollback avant activation.
+- mutation DATA : snapshot + rollback avant activation ou expansion.
 
 # 3. Lane UX
 
-Acquis :
-
-- P1A.0 ✅ PR #327 ;
-- P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
-- P1A.2 ✅ PR #334 — Search Geo Contract ;
-- P1A.3 ✅ PR #349 — Map State & Navigation, **9,3/10** ;
-- P1A.4 ✅ PR #350 — Map Design System, **9,3/10**, audit final **30 captures / 0 finding**.
+Acquis : P1A.0→P1A.4 ✅, avec P1A.4 PR #350, **9,3/10**, audit final **30 captures / 0 finding**.
 
 ## P1A.5 — Territorial Explorer 🔴
 
-Construire l’exploration Maroc → ville → quartier au-dessus du Map Design System sans inventer géométrie/proximité, préserver URL/Search/Quartier/Mon Projet, auditer 390/768/1280, score ≥9/10.
-
-Puis : P1A.6 Responsive → P1B intelligence cartographique.
+Construire l’exploration Maroc → ville → quartier sans inventer géométrie/proximité, préserver URL/Search/Quartier/Mon Projet, auditer 390/768/1280, score ≥9/10.
 
 # 4. Fondation DATA acquise
 
-Observation Ledger / Freshness / normalization / quality tiers ; Source Registry v2 / display eligibility ; Market Index / Property Graph foundation ; dedup ; Partner Feed ; OpenSERP / public sitemaps / Common Crawl ; 53 villes/pôles.
+Observation Ledger / Freshness / normalization / quality tiers ; Source Registry v2 ; display eligibility ; Market Index / Property Graph foundation ; dedup ; Partner Feed ; OpenSERP / public sitemaps / Common Crawl ; 53 villes/pôles.
 
 # 5. DATA-1 ✅
 
@@ -61,34 +52,40 @@ Observation Ledger / Freshness / normalization / quality tiers ; Source Registry
 - **4.0 ✅ #341** — Avito+Mubawab : 35 134 normalized, 3 588 technical display, 0 policy-activable.
 - **4.1A ✅ #343** — Avito unavailable : 95,06 % bruit ; 73 core-récupérables ; 0 policy-activable.
 - **4.2 ✅ #344** — Dar Agadir = `ADMISSIBLE_GROWTH`; Agenz = `PARTNERSHIP_UPSIDE`.
-- **4.3A ✅ #347** — 5 eligible shadow ; 6 425 revalidation-required.
-- **4.3B ✅ #348** — 5 905 URLs sitemap ; 5 673 seed-only encore présentes ; 10 requêtes ; 0 détail/content reuse/write/activation.
-- **4.3C ✅ #351** — 5 566 SHADOW_READY dont 5 564 seed-only ; 0 duplicate/policy blocked/write/activation.
-- **4.3D ✅ #353** — 100-row dry-run réversible ; canal `public_sitemap_presence`; TTL 14 jours ; 100/100 rollback ; 20/20 gates ; 0 write/activation.
-- **4.3E ✅ #355** — 10-row production rehearsal ; 10/10 apply, verify, rollback ; état freshness/evidence restauré ; `updated_at` = audit trail non rollbackable.
-- **4.3F ✅ #358** — controlled promotion design ; live proof : **6 533 total**, **6 431 seed-only**, **102 fresh-confirmed**, **0 canary residue**, Registry eligible, drift 0 %, **50 initial**, **100/run max**, **500 avant re-certification**, TTL 14 jours, 0 write/activation.
+- **4.3A→D ✅ #347/#348/#351/#353** — reservoir Dar Agadir, sitemap revalidation, freshness shadow, evidence canary.
+- **4.3E ✅ #355** — rehearsal production 10 lignes : apply/verify/rollback 10/10.
+- **4.3F ✅ #358** — controlled promotion design : 50 initial, 100/run max, 500 avant re-certification, TTL 14 jours, drift cap 1 %.
+- **4.3G ✅ #362** — premier batch persistant de **50** :
+  - PR : **20/20 workflows verts** ;
+  - dry-run : pool seed-only éligible **5 554**, 50/50 manifest + rollback ;
+  - avant write : Public Search **50**, technical display **50** ;
+  - production apply : **50/50** ;
+  - état post-write : 50/50 `fresh_confirmed`, 50/50 `public_sitemap_presence`, 50/50 evidence typée ;
+  - Public Search **50→50**, technical display **50→50** ;
+  - source Dar Agadir : `seed_only 6431→6381`, `fresh_confirmed 102→152` ;
+  - Registry inchangé : `public_sitemap_only / canonical_link_only / external_tail_link_only`, TTL 14, review `due_soon` ;
+  - drift **0 %** ; rollback disponible mais non déclenché car batch certifié.
 
-## DATA-4.3G — First Persistent Freshness Batch 🔴 PROCHAIN DATA
+## DATA-4.3H — Controlled Expansion to 500 🔴 PROCHAIN DATA
 
-Objectif : effectuer le premier batch **persistant** de 50 lignes maximum sans modifier la policy d’affichage.
+Objectif : étendre le canal `public_sitemap_presence` jusqu’à **500 lignes cumulées maximum** avant re-certification obligatoire.
 
 Contraintes :
 
-1. batch déterministe ≤50 ;
-2. préflight Registry + sitemap immédiatement avant write ;
-3. seules lignes `seed_only` sans canal `public_sitemap_presence` ;
-4. snapshot complet incluant `updated_at` comme audit trail ;
-5. write uniquement freshness/evidence ;
-6. canal `public_sitemap_presence`, TTL 14 jours ;
-7. vérification 50/50 post-write ;
-8. observabilité applied/skipped/drifted ;
-9. arrêt si drift >1 % ;
-10. rollback disponible mais pas exécuté automatiquement si batch certifié ;
-11. aucune modification display/publication policy ;
-12. aucune page détail/content reuse ;
-13. mesurer l’impact Search/display séparément sans l’interpréter comme nouvelle autorisation.
+1. batches déterministes **≤100/run** ;
+2. compter les 50 déjà persistées dans le cumul ;
+3. Registry + sitemap revalidés avant chaque run ;
+4. uniquement `seed_only` sans canal sitemap ;
+5. snapshot/rollback par batch ;
+6. mesurer Public Search + technical display avant/après chaque run ;
+7. TTL 14 jours ;
+8. drift max **1 %** ;
+9. stop immédiat sur partial apply, policy drift, sitemap drift ou effet public inattendu ;
+10. aucune modification display/publication policy ;
+11. aucune page détail/content reuse ;
+12. **re-certification obligatoire à 500**, avant toute extension vers le pool restant.
 
-Gate : 4.3G peut persister un premier batch fraîcheur, mais ne peut pas bulk-promote les 5 564 ni modifier la policy publique.
+Le but de 4.3H est de certifier la **répétabilité opérationnelle**, pas d’autoriser 5,5K lignes d’un coup.
 
 # 7. Lane business parallèle
 
@@ -96,7 +93,7 @@ Gate : 4.3G peut persister un premier batch fraîcheur, mais ne peut pas bulk-pr
 
 # 8. Suite DATA
 
-4.3G first persistent batch → observation TTL/aging + mesure Search/display → batchs suivants jusqu’à 500 max → re-certification obligatoire → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
+4.3H expansion contrôlée jusqu’à 500 → re-certification freshness/aging/Search impact → décision sur extension Dar Agadir → autres sources canonical-link admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
 
 # 9. Définition de terminé
 
@@ -104,9 +101,9 @@ Scope respecté, tests/build/gates verts, preuves, Registry respecté, aucun byp
 
 # 10. Prochaine action exacte
 
-## DATA — DATA-4.3G
+## DATA — DATA-4.3H
 
-Construire et certifier un **premier batch persistant de 50 lignes maximum**, sans changement de display policy ni bulk activation.
+Construire et certifier l’**expansion bornée jusqu’à 500 lignes cumulées**, en batches ≤100/run, sans changement de display policy.
 
 ## UX — P1A.5
 
