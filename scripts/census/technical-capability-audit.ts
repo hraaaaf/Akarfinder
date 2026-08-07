@@ -88,7 +88,7 @@ export type TechnicalCapabilityAudit = {
 };
 
 const LISTING_PATH_RE = /\/(?:property|properties|listing|listings|bien|biens|annonce|annonces|offre|offres|vente|location|programme|programmes|project|projects|projet|projets)(?:\/|[-_?#]|$)/i;
-const ACCESS_CONTROL_RE = /(captcha|verify you are human|cloudflare|access denied|forbidden|connexion requise|login required|sign in to continue)/i;
+const ACCESS_CONTROL_RE = /(captcha|verify you are human|access denied|forbidden|connexion requise|login required|sign in to continue|cf-chl-|challenge-platform|cf-browser-verification|cloudflare ray id|attention required!\s*\|\s*cloudflare)/i;
 const LOGIN_PATH_RE = /\/(?:login|signin|sign-in|auth|account)(?:\/|$)/i;
 
 export function normalizeAuditDomain(value: string): string {
