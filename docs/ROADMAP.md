@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-07**  
-**Statut : CARTE-QUARTIER P1A.3 ✅ PR #349 ; P1A.4 prochain UX ; DATA-4.3C ✅ PR #351 ; DATA-4.3D prochain DATA**
+**Statut : UX P1A.3 ✅ / P1A.4 prochain ; DATA-4.3D ✅ PR #353 / DATA-4.3E prochain**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -10,19 +10,14 @@
 AkarFinder = **moteur de recherche immobilier + index national + couche d’intelligence** pour le Maroc.
 
 - cœur produit : `/search` ;
-- `/map` : exploration spatiale complémentaire ;
+- `/map` : complément spatial ;
 - objectif long terme : **Property Graph du marché immobilier marocain** ;
-- positionnement : search-first / intelligence-first.
+- North Star DATA : `COVERAGE × FRESHNESS × QUALITY × DEDUP × RELEVANCE` ;
+- paliers : **5K → 20K → 50K → 100K+** observations utiles, jamais du volume artificiel.
 
 Pipeline canonique :
 
 `DISCOVERY → INGESTION/OBSERVATION → NORMALIZATION → CANONICALIZATION → FRESHNESS → DEDUPLICATION/CLUSTERING → ENRICHMENT → INTELLIGENCE → DISPLAY ELIGIBILITY → RANKING → PUBLICATION/SERP`
-
-North Star DATA :
-
-`COVERAGE × FRESHNESS × QUALITY × DEDUP × RELEVANCE`
-
-Paliers : **5K→20K → 50K → 100K+**, sans sacrifier légalité, fraîcheur, qualité, provenance ou dédup.
 
 # 2. Doctrine non négociable
 
@@ -30,256 +25,134 @@ Paliers : **5K→20K → 50K → 100K+**, sans sacrifier légalité, fraîcheur,
 - robots/sitemap/capability ≠ permission ;
 - Source Registry obligatoire avant activation ;
 - `DISCOVERED ≠ AUDITED ≠ POLICY_ASSIGNED ≠ ELIGIBLE ≠ INGESTIBLE ≠ DISPLAYABLE` ;
-- privacy policy ≠ CGU ≠ permission ;
-- partenaire/autorisé ≠ public-indexed ≠ signal interne ;
 - aucune donnée/image/géométrie/coordonnée/proximité/partenariat inventé ;
 - Search reste canonique ; Map partage son identité géographique ;
 - migrations séparées du code applicatif ;
 - une responsabilité / une branche / une PR / un merge ;
-- tests + preuves avant merge.
+- tests + preuves avant merge ;
+- mutation DATA : rollback avant activation.
 
-# 3. État UX acquis
+# 3. Lane UX
 
-- Accueil/Neuf/Acheter/Louer/Mon Projet P1 acquis ;
-- CARTE-QUARTIER-P1A.0 ✅ PR #327 ;
-- P1A.1 Geo Canonical Core ✅ PR #328, score **9,5/10** ;
-- P1A.2 Search Geo Contract ✅ PR #334 ;
-- P1A.3 Map State & Navigation ✅ PR #349, score contractuel **9,3/10**.
+Acquis :
 
-## P1A.4 — Map Design System 🔴 PROCHAIN UX
+- P1A.0 ✅ PR #327 ;
+- P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
+- P1A.2 ✅ PR #334 — Search Geo Contract ;
+- P1A.3 ✅ PR #349 — Map State & Navigation, **9,3/10**.
 
-Objectif : transformer le contrat fonctionnel P1A.3 en expérience cartographique premium, cohérente et lisible sans changer la vérité géographique.
+## P1A.4 — Map Design System 🔴
 
-- hiérarchie visuelle carte / contrôles / panneau quartier ;
-- tokens couleur cohérents ville/quartier/layer ;
-- états hover/selected/focus/loading/empty ;
-- densité et lisibilité desktop/tablette/mobile ;
-- aucun signal couleur ambigu ;
-- audit visuel réel + double-check ;
-- score UX/UI minimum **9,0/10**, reprise obligatoire sous 9.
+Hiérarchie carte/contrôles/panneau, tokens couleur, marqueurs/clusters, états hover/focus/loading/empty, responsive, accessibilité, audit visuel réel et score ≥ **9,0/10**.
 
-Puis P1A.5 Territorial Explorer → P1A.6 Responsive → P1B intelligence cartographique.
+Puis : P1A.5 Territorial Explorer → P1A.6 Responsive → P1B intelligence cartographique.
 
 # 4. Fondation DATA acquise
 
 - Observation Ledger / Freshness / normalization / quality tiers ;
-- display eligibility / Source Registry v2 ;
+- Source Registry v2 / display eligibility ;
 - Market Index / Property Graph foundation ;
 - dedup conservant les observations ;
-- Discovery Expansion / Coverage Gap ;
 - Partner Feed ;
-- OpenSERP / sitemaps publics / Common Crawl ;
+- OpenSERP / public sitemaps / Common Crawl ;
 - 53 villes/pôles.
 
 # 5. DATA-1 — Moroccan Real Estate Web Census ✅
 
-- DATA-1.1 ✅ PR #322 ;
-- DATA-1.2 ✅ PR #323 : **37 009 URLs / 7 051 domaines** ;
-- DATA-1.3A ✅ PR #324 ;
-- DATA-1.3B ✅ PR #326 : **300/300 Parquet**, **8 727 registered domains** ;
-- DATA-1.4 ✅ PR #329 : univers **15 238 domaines**, 230 primary-source candidates, 625 portal candidates ;
-- DATA-1.5 ✅ PR #331 : 20 domaines P0, 19 review-ready, score **9,4/10** ;
-- DATA-1.6A ✅ PR #333 : 19 policy reviews, score **9,5/10** ;
-- DATA-1.6B ✅ PR #338 + #339 : 19 Registry rows, 0 activation, score **9,6/10**.
+- DATA-1.1 → 1.6B terminés ;
+- B3 : **37 009 URLs / 7 051 domaines** ;
+- Common Crawl : **300/300 Parquet**, **8 727 registered domains** ;
+- univers : **15 238 domaines** ;
+- 230 primary-source candidates ;
+- 625 portal candidates ;
+- Registry initial : 19 rows, **0 activation non autorisée**.
 
 # 6. DATA-4 — Reservoir Strategy
 
-Objectif : identifier le chemin réel vers **20K observations utiles** sans confondre profondeur technique et inventaire activable.
+## DATA-4.0 ✅ PR #341
+Avito + Mubawab : **35 134 normalized**, **3 588 technical display**, **0 policy-activable**.
 
-## DATA-4.0 — Mubawab + Avito Baseline ✅ PR #341
+## DATA-4.1A ✅ PR #343
+Avito `unavailable` : **21 129 / 22 227 = 95,06 % bruit/non-immobilier** ; seulement **73** core-récupérables ; 0 policy-activable.
 
-- **35 134 normalized** ;
-- **3 588 technical display** ;
-- **0 policy-activable** ;
-- Avito : 22 227 unavailable ;
-- Mubawab : gap public→normalized borné 95 738 ;
-- score **9,6/10**.
+## DATA-4.2 ✅ PR #344
+- `ADMISSIBLE_GROWTH` : **daragadir.com** ;
+- `PARTNERSHIP_UPSIDE` : **agenz.ma**.
 
-## DATA-4.1A — Avito Internal Recovery Audit ✅ PR #343
+## DATA-4.3A ✅ PR #347
+Dar Agadir : **5 ELIGIBLE_SHADOW**, **6 425 SEED_ONLY_REVALIDATION_REQUIRED**.
 
-- **1 098** immobilier canonique sur 22 227 unavailable ;
-- **21 129 (95,06%)** bruit/non-immobilier ;
-- **73** type-compatible + intent + geo ;
-- prix 0 / surface 0 ;
-- policy-activable 0.
+## DATA-4.3B ✅ PR #348
+Public sitemap : **5 905 URLs**, **5 749** overlaps, **5 673 seed-only** encore présentes ; 10 requêtes robots/sitemaps ; 0 détail/content reuse/write/activation.
 
-Décision : pas de Shadow Recovery Avito maintenant.
+## DATA-4.3C ✅ PR #351
+Freshness shadow : **5 566 SHADOW_READY**, dont **5 564 seed-only** ; 0 duplicate ; 0 policy blocked ; 0 write/activation.
 
-## DATA-4.2 — Reservoir Prioritization ✅ PR #344
+## DATA-4.3D ✅ PR #353
+Freshness Evidence Canary Design certifié :
 
-### ADMISSIBLE_GROWTH
+- canary déterministe : **100 URLs** ;
+- eligible seed-only pool : **5 564** ;
+- canal proposé : `public_sitemap_presence` ;
+- TTL : **14 jours** ;
+- `freshness_status` proposé : `fresh_confirmed` ;
+- `before/proposed/rollback` : **100/100** ;
+- seed-state reads : **100** ;
+- source requests : **10** ;
+- 0 DB write ; 0 freshness write ; 0 policy change ; 0 activation ;
+- **20/20 workflows verts** ;
+- merge `019253c`.
 
-1. **daragadir.com — 71,75** ; 6 533 normalized ; 6 319 core-structured ; 6 528 technical display ; canonical-link/external-tail-link only.
-2. promoimmomarrakech.com — 67,91.
-3. aykana.ma — 53,09.
-4. limmobiliersansfrontieres.com — 47,91.
+Le matcher OpenSERP/Yandex existant reste inchangé : le canal sitemap demeure explicitement distinct.
 
-### PARTNERSHIP_UPSIDE
+## DATA-4.3E — First Bounded Freshness Write Canary 🔴 PROCHAIN DATA
 
-1. **agenz.ma — 58,93** ; 4 490 normalized ; 1 227 fresh ; 1 146 decision-structured ; hidden/internal-only.
-2. mouldar.com — 53,56.
-3. masaken.ma — 48,73.
+Objectif : effectuer le **premier write freshness borné et réversible**, sans activation SERP.
 
-## DATA-4.3A — Dar Agadir Canonical-Link Shadow ✅ PR #347
+Contraintes :
 
-- 6 533 lignes ;
-- **5 `ELIGIBLE_SHADOW`** ;
-- **6 425 `SEED_ONLY_REVALIDATION_REQUIRED`** ;
-- 46 non normalisées ; 57 structure insuffisante ;
-- 0 duplicate / 0 policy blocked.
+1. petit canary déterministe, strictement inférieur au dry-run 100 rows ;
+2. Source Registry doit toujours autoriser `public_sitemap` et rester current/due-soon ;
+3. revalidation sitemap live immédiatement avant write ;
+4. snapshot `before` immuable ;
+5. write uniquement `freshness_status`, `fresh_last_seen_at`, `fresh_channels`, evidence metadata et `updated_at` ;
+6. canal = `public_sitemap_presence` ;
+7. TTL = 14 jours ;
+8. aucune page détail, aucun content reuse ;
+9. aucune modification de display/publication policy ;
+10. vérification production post-write ;
+11. rollback rehearsal exact ;
+12. activation SERP interdite dans ce lot.
 
-## DATA-4.3B — Dar Agadir Sitemap Revalidation ✅ PR #348
+Gate de sortie : écrire peu, vérifier tout, prouver rollback et maintenir **0 changement public**.
 
-- **5 905** URLs sitemap courantes ;
-- **5 749 / 6 533** URLs existantes encore présentes ;
-- **5 673 `seed_only`** présentes ;
-- 10 requêtes robots/sitemaps ;
-- 0 page détail / 0 content reuse / 0 write / 0 activation.
+# 7. Lane business parallèle
 
-## DATA-4.3C — Dar Agadir Sitemap-Presence Freshness Shadow ✅ PR #351
+**Agenz = priorité partenariat/feed** : 4 490 normalized, 1 227 fresh, 1 146 decision-structured, mais hidden/internal-only. Aucun changement Registry/produit avant autorisation écrite.
 
-Résultat live certifié :
+# 8. Suite DATA après 4.3E
 
-- **5 566 `SHADOW_READY`** ;
-- dont **5 564 `seed_only`** ;
-- **784** absentes du sitemap courant ;
-- **148** présentes mais structure insuffisante ;
-- **35** présentes mais non normalisées ;
-- **0 duplicate** ;
-- **0 policy blocked** ;
-- **0 DB write / 0 freshness write / 0 activation**.
+Si 4.3E est certifié :
 
-Conclusion : la présence dans le sitemap actuel est un **signal de fraîcheur potentiel massif et utile**, mais n’est pas encore `fresh_confirmed` dans le modèle canonique.
+1. DATA-4.3F — canary display eligibility shadow sur les lignes fraîchement écrites ;
+2. activation canonical-link éventuelle dans un lot séparé ;
+3. généralisation aux autres sources canonical-link admissibles ;
+4. DATA-3 Universal Site Connector pour sources éligibles ;
+5. DATA-5/6/7 feeds + claim + workspace ;
+6. atteindre **20K observations exploitables**, puis 50K/100K+.
 
-## DATA-4.3D — Freshness Evidence Canary Design 🔴 PROCHAIN DATA
+Si 4.3E échoue : rollback immédiat et passage au réservoir admissible suivant.
 
-Objectif : formaliser une preuve `sitemap_presence` traçable et bornée avant tout changement d’état freshness.
+# 9. Définition de terminé
 
-Scope :
+Un lot est terminé uniquement si : scope respecté, tests/build/gates verts, preuves disponibles, Registry respecté, aucun bypass, aucun workflow temporaire, PR mergée, production vérifiée si write, rollback vérifié si mutation, et les 3 MD canoniques alignés.
 
-1. auditer le modèle Freshness/Observation Ledger existant ;
-2. ne pas écraser `seed_only` sans conserver la provenance du signal ;
-3. définir un type d’évidence explicite `sitemap_presence` ou équivalent canonique ;
-4. définir TTL / `max_revalidation_interval_days=14` ;
-5. canary limité et réversible ;
-6. simuler l’impact sur display eligibility avant write ;
-7. rollback explicite ;
-8. aucune activation publique automatique ;
-9. aucune page détail ni contenu source réutilisé ;
-10. Source Registry reste autoritaire.
+# 10. Prochaine action exacte
 
-Gate : un succès 4.3D prouve seulement qu’un signal sitemap peut alimenter la freshness de manière traçable ; l’activation SERP reste un lot distinct.
+## DATA — DATA-4.3E
 
-## Lane business parallèle
-
-**Agenz = priorité partenariat/feed**. Aucun changement Registry ou produit avant autorisation écrite.
-
-# 7. DATA-2 — Structured Web Mining
-
-Common Crawl / Web Data Commons pour discovery et historique. Historical ≠ fresh.
-
-# 8. DATA-3 — Universal Site Connector
-
-Un connecteur par famille technique : WordPress, Houzez, RealHomes, sitemap+JSON-LD, WP REST admissible, XML/CSV/JSON/API autorisée, HTML générique en dernier recours.
-
-`domain → policy gate → tech fingerprint → connector family → observation → canonical pipeline`
-
-Activation uniquement si Registry éligible.
-
-# 9. DATA-5 — Universal Partner Feed
-
-Réutiliser `partner_feed_*` et privilégier feeds directs/licenciés.
-
-# 10. DATA-6 — Claim my agency
-
-`URL agence → discovery → organisation candidate → claim → vérification → feed direct`.
-
-# 11. DATA-7 — Professional Workspace
-
-`Acquisition publique → activation request → qualification → organisation → membres → ownership → feeds → projets/listings → leads`.
-
-# 12. DATA-8 — Open Geodata / Property Graph
-
-Overture / Microsoft footprints / OSM et sources compatibles pour géocodage, canonicalisation, dedup et intelligence spatiale. N’augmente pas le compteur d’annonces.
-
-# 13. DATA-9 — Historical Observation Layer
-
-Apparition/disparition, prix, disponibilité, provenance et historique de cluster lorsque licite.
-
-# 14. DATA-10 — Research Radar
-
-Datasets externes = `RESEARCH_ONLY` avant audit licence/provenance/fraîcheur.
-
-# 15. Stratégie volume
-
-## 5K → 20K
-
-1. exploiter honnêtement profondeur déjà détenue ;
-2. canonical/public-index admissible ;
-3. first-party et feeds autorisables ;
-4. Universal Site Connector ;
-5. profondeur LISTING ;
-6. dedup/freshness ;
-7. ne jamais compter hidden/internal-only comme inventaire public.
-
-## 20K → 50K
-
-Extension nationale + feeds + claim + utilisateurs + reactivation.
-
-## 50K → 100K+
-
-Réseau professionnel + promoteurs + partenariats data + Property Graph + boucle B2B.
-
-# 16. KPI DATA
-
-- domains discovered/audited/policy-assigned/eligible ;
-- observations discovered/normalized/technical-display/policy-activable ;
-- propriétés canoniques ;
-- dedup rate ;
-- freshness ;
-- couverture ville/quartier/type/transaction ;
-- prix/surface/géo completeness ;
-- unavailable/partial/normalized ;
-- stale/removed/churn ;
-- contribution par source/connecteur ;
-- densité SERP.
-
-North Star lancement : **SERP utile, dense, fraîche et dédupliquée**, pas « 100K lignes ».
-
-# 17. Séquence consolidée
-
-## Lane UX
-
-P1A.4 → P1A.5 → P1A.6 → P1B → Pro/Agences/Promoteurs → SEO → recette SERP.
-
-## Lane DATA
-
-1. **DATA-4.3D — Freshness Evidence Canary Design** ;
-2. si certifié : canary freshness borné et réversible ;
-3. activation SERP éventuelle dans un lot séparé ;
-4. parallèle business : partenariat Agenz ;
-5. classer/approfondir les autres sources canonical-link admissibles ;
-6. DATA-3 Universal Site Connector pour sources éligibles ;
-7. atteindre **20K observations exploitables** ;
-8. DATA-5/6/7 feeds + claim + workspace ;
-9. 50K puis DATA-8/9 vers 100K+.
-
-# 18. Définition de terminé
-
-Un lot est terminé uniquement si : périmètre respecté, tests/build/gates verts, preuves disponibles, Registry respecté, aucun bypass, aucun workflow temporaire, PR mergée, production vérifiée si write, et les 3 MD canoniques alignés.
-
-# 19. Prochaine action exacte
-
-## DATA — DATA-4.3D
-
-1. inspecter le modèle canonique Freshness / Observation Ledger ;
-2. identifier où une preuve sitemap peut être stockée sans perte de provenance ;
-3. définir un TTL de 14 jours conforme au Registry ;
-4. préparer un canary limité et réversible ;
-5. mesurer l’effet sur freshness + display sans activation publique ;
-6. zéro page détail / zéro content reuse / zéro bypass ;
-7. rollback obligatoire avant toute application production.
+Construire puis certifier le premier **bounded freshness write canary** Dar Agadir, sans aucune activation publique.
 
 ## UX — P1A.4
 
-Construire le **Map Design System** au-dessus du contrat URL P1A.3 sans modifier l’identité Geo ni la vérité des données : hiérarchie visuelle, couleurs, marqueurs, contrôles, panneau quartier, états responsive et accessibilité, puis audit visuel et score ≥9/10.
+Construire le **Map Design System** au-dessus du contrat URL P1A.3 sans modifier l’identité Geo ni la vérité des données.
