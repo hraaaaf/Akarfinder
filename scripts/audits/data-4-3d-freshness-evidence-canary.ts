@@ -8,6 +8,7 @@ const outDir = process.env.DATA_4_3D_OUT_DIR ?? ".tmp/data-4-3d/results";
 const PAGE_SIZE = 1000;
 const TIMEOUT_MS = 15000;
 const MAX_SOURCE_REQUESTS = 40;
+const SEED_LOOKUP_CHUNK_SIZE = 20;
 let sourceRequests = 0;
 
 function env(name: string): string {
@@ -35,6 +36,10 @@ async function restAll<T>(table: string, params: Record<string, string>): Promis
     rows.push(...page);
     if (page.length < PAGE_SIZE) return rows;
   }
+}
+
+function postgrestIn(values: string[]): string {
+  return `in.(${values.map((value) => `"${value.replaceAll('"', '\\"')}"`).join(",")})`;
 }
 
 async function fetchAllowedText(urlString: string): Promise<string> {
@@ -86,9 +91,22 @@ function numberOrNull(value: number | string | null): number | null {
   return Number.isFinite(number) ? number : null;
 }
 
+async function loadCanarySeedStates(canonicalUrls: string[]): Promise<SeedDbRow[]> {
+  const rows: SeedDbRow[] = [];
+  for (let offset = 0; offset < canonicalUrls.length; offset += SEED_LOOKUP_CHUNK_SIZE) {
+    const chunk = canonicalUrls.slice(offset, offset + SEED_LOOKUP_CHUNK_SIZE);
+    rows.push(...await restPage<SeedDbRow>("source_offer_seeds", {
+      select: "canonical_url,freshness_status,fresh_last_seen_at,fresh_channels,metadata",
+      canonical_url: postgrestIn(chunk),
+      limit: String(chunk.length),
+    }));
+  }
+  return rows;
+}
+
 async function main(): Promise<void> {
   const generatedAt = new Date().toISOString();
-  const [registryRows, normalized, display, seeds] = await Promise.all([
+  const [registryRows, normalized, display] = await Promise.all([
     restAll<RegistryRow>("source_policy_registry", {
       select: "source_domain,acquisition_mode,discovery_policy,display_policy,display_gate,machine_gate,allowed_discovery_channels,max_revalidation_interval_days,review_status",
       source_domain: "eq.daragadir.com",
@@ -101,11 +119,6 @@ async function main(): Promise<void> {
     }),
     restAll<DisplayRow>("thin_index_display_eligible_v1", {
       select: "canonical_url,display_eligibility,quality_score",
-      source_domain: "eq.daragadir.com",
-      order: "canonical_url.asc",
-    }),
-    restAll<SeedDbRow>("source_offer_seeds", {
-      select: "canonical_url,freshness_status,fresh_last_seen_at,fresh_channels,metadata",
       source_domain: "eq.daragadir.com",
       order: "canonical_url.asc",
     }),
@@ -164,6 +177,8 @@ async function main(): Promise<void> {
   const canary = selectDeterministicCanary(eligibleSeedOnly, DEFAULT_CANARY_SIZE);
   if (canary.length !== DEFAULT_CANARY_SIZE) throw new Error(`Expected ${DEFAULT_CANARY_SIZE} canary rows, got ${canary.length}`);
 
+  const seeds = await loadCanarySeedStates(canary.map((candidate) => candidate.canonicalUrl));
+  if (seeds.length !== canary.length) throw new Error(`Expected ${canary.length} seed states, got ${seeds.length}`);
   const seedByUrl = new Map(seeds.map((row) => [row.canonical_url, row]));
   const manifest = canary.map((candidate) => {
     const seed = seedByUrl.get(candidate.canonicalUrl);
@@ -197,6 +212,7 @@ async function main(): Promise<void> {
     expiresAt: canaryExpiresAt(generatedAt),
     sourceRequests,
     sourceRequestBudget: MAX_SOURCE_REQUESTS,
+    seedStateReads: seeds.length,
     databaseWrites: 0,
     freshnessWrites: 0,
     policyChanges: 0,
