@@ -85,6 +85,9 @@ jobs:
           if (summary.scanComplete !== true || summary.parquetFilesSucceeded !== 300 || summary.parquetFilesFailed !== 0) {
             throw new Error(`DATA-1.3B evidence is not certified 300/300: ${JSON.stringify(summary)}`);
           }
+          if (summary.uniqueHosts !== 9087 || summary.uniqueRegisteredDomains !== 8727) {
+            throw new Error(`Unexpected DATA-1.3B corpus cardinality: ${JSON.stringify(summary)}`);
+          }
           NODE
 
       - name: Run read-only reconciliation against B3 and Source Registry
@@ -103,8 +106,12 @@ jobs:
           if (proof.readOnly !== true) throw new Error('DATA-1.4 must remain read-only');
           if (proof.writesPerformed !== 0) throw new Error('DATA-1.4 must perform zero writes');
           if (proof.effectivePoliciesAssigned !== 0) throw new Error('DATA-1.4 must not assign source policies');
-          if (proof.commonCrawlHosts !== 9087) throw new Error(`Expected certified 9,087 Common Crawl hosts, got ${proof.commonCrawlHosts}`);
-          if (proof.b3Domains < 7000) throw new Error(`Unexpected B3 domain regression: ${proof.b3Domains}`);
+          // DATA-1.3B has 9,087 raw hosts. DATA-1.4 canonicalizes leading www.,
+          // so the normalized host universe is intentionally 8,970 while the
+          // registered-domain universe remains the certified 8,727.
+          if (proof.commonCrawlHosts !== 8970) throw new Error(`Unexpected canonical Common Crawl host count: ${proof.commonCrawlHosts}`);
+          if (proof.commonCrawlRegisteredDomains !== 8727) throw new Error(`Unexpected Common Crawl registered-domain count: ${proof.commonCrawlRegisteredDomains}`);
+          if (proof.b3Domains !== 7051) throw new Error(`Unexpected B3 domain count: ${proof.b3Domains}`);
           if (proof.domains < proof.commonCrawlRegisteredDomains) throw new Error('Reconciled universe cannot be smaller than Common Crawl registered-domain input');
           console.log(JSON.stringify(proof, null, 2));
           NODE
