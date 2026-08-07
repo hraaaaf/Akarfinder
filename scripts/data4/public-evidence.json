@@ -1,0 +1,33 @@
+[
+  {
+    "domain": "mubawab.ma",
+    "observedAt": "2026-08-07T14:58:00.000Z",
+    "homepageUrl": "https://www.mubawab.ma/fr/",
+    "robotsUrl": "https://www.mubawab.ma/robots.txt",
+    "termsUrl": "https://www.mubawab.ma/fr/privacy",
+    "announcedInventory": 106947,
+    "announcedInventoryScope": "homepage total real-estate counter observed on 2026-08-07",
+    "sitemapDeclared": false,
+    "observationNotes": [
+      "Homepage publicly displayed 106,947 real-estate properties at observation time.",
+      "Current CGU restrict extraction/reuse/commercial exploitation; this evidence does not authorize crawling or reuse.",
+      "robots.txt exposes bounded path restrictions but does not grant reuse rights."
+    ],
+    "auditRecommendation": "PARTNERSHIP_OR_PUBLIC_INDEX_MEASUREMENT"
+  },
+  {
+    "domain": "avito.ma",
+    "observedAt": "2026-08-07T14:58:00.000Z",
+    "homepageUrl": "https://www.avito.ma/",
+    "robotsUrl": "https://www.avito.ma/robots.txt",
+    "announcedInventory": null,
+    "announcedInventoryScope": "no reliable national real-estate inventory counter observed in the bounded public check",
+    "sitemapDeclared": true,
+    "observationNotes": [
+      "robots.txt publicly declares https://www.avito.ma/sitemap.xml.",
+      "A reliable national real-estate result count was not observed, so DATA-4.0 leaves public inventory unknown instead of estimating it.",
+      "Current Source Registry remains public-index/internal-only and legal review is required before any sitemap-depth expansion."
+    ],
+    "auditRecommendation": "REGISTRY_REVIEW_BEFORE_SITEMAP_MEASUREMENT"
+  }
+]
