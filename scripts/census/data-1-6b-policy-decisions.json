@@ -1,0 +1,218 @@
+{
+  "schemaVersion": "data-1-6b-source-registry-assignment-v1",
+  "sourceEvidenceRunId": 31182352538,
+  "evidenceObservedAt": "2026-08-07T13:25:45.185Z",
+  "policyVersion": "source_registry_v2:data_1_6b_20260807",
+  "decisionMode": "conservative_no_activation",
+  "assignments": [
+    {
+      "domain": "valfoncier.ma",
+      "evidenceStatus": "INSUFFICIENT_LEGAL_EVIDENCE",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_UNVERIFIED",
+      "evidenceUrls": ["https://valfoncier.ma/robots.txt", "https://valfoncier.ma/"],
+      "robotsStatus": "sitemap_declared",
+      "structureScore": 20,
+      "policyConfidenceScore": 6,
+      "policyHash": "d640e22afcc64e59e6a5dc128fe8540326cec7fde4e3428d5787a00fc3bf568c"
+    },
+    {
+      "domain": "capital-properties.ma",
+      "evidenceStatus": "INSUFFICIENT_LEGAL_EVIDENCE",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_UNVERIFIED",
+      "evidenceUrls": ["https://www.capital-properties.ma/robots.txt", "https://www.capital-properties.ma/"],
+      "robotsStatus": "sitemap_declared",
+      "structureScore": 19,
+      "policyConfidenceScore": 6,
+      "policyHash": "33f263763544f15878a5455f4f280276af1b224354f9868ad45164c0de0e80e3"
+    },
+    {
+      "domain": "leaderimmo.ma",
+      "evidenceStatus": "INSUFFICIENT_LEGAL_EVIDENCE",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_UNVERIFIED",
+      "evidenceUrls": ["https://leaderimmo.ma/robots.txt", "https://leaderimmo.ma/"],
+      "robotsStatus": "allow_with_restrictions",
+      "structureScore": 12,
+      "policyConfidenceScore": 6,
+      "policyHash": "b9a4a52bcf274cf69ad78c3686751e21daf9ff42336bc9f8e8f0adf3e694515c"
+    },
+    {
+      "domain": "immotaroudant.com",
+      "evidenceStatus": "INSUFFICIENT_LEGAL_EVIDENCE",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_UNVERIFIED",
+      "evidenceUrls": ["https://immotaroudant.com/robots.txt", "https://www.immotaroudant.com/"],
+      "robotsStatus": "sitemap_declared",
+      "structureScore": 18,
+      "policyConfidenceScore": 6,
+      "policyHash": "b9c7b85d08486b0c850cf545d5859533dd1c52427eb39044e47502483b104d5e"
+    },
+    {
+      "domain": "mhproperties.ma",
+      "evidenceStatus": "TERMS_FOUND_NO_EXPLICIT_PERMISSION",
+      "reviewTrack": "PARTNER_OR_INDEX_ONLY_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_PERMISSION_REQUIRED",
+      "evidenceUrls": ["https://mhproperties.ma/robots.txt", "https://mhproperties.ma/conditions-generales-utilisation"],
+      "robotsStatus": "sitemap_declared",
+      "structureScore": 15,
+      "policyConfidenceScore": 12,
+      "policyHash": "776d4c5e51c1ff94539e6ac1ed109a0bc5246118a1b106012f70d539988e6c0d"
+    },
+    {
+      "domain": "immo-maroc.com",
+      "evidenceStatus": "INSUFFICIENT_LEGAL_EVIDENCE",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_UNVERIFIED",
+      "evidenceUrls": ["https://immo-maroc.com/robots.txt", "https://immo-maroc.com/"],
+      "robotsStatus": "sitemap_declared",
+      "structureScore": 15,
+      "policyConfidenceScore": 6,
+      "policyHash": "d8ee0169a34f007c90f008d4f94ab950228d6182f4dec61e2ba594e59585e727"
+    },
+    {
+      "domain": "proimmobilier.ma",
+      "evidenceStatus": "INSUFFICIENT_LEGAL_EVIDENCE",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_UNVERIFIED",
+      "evidenceUrls": ["https://proimmobilier.ma/robots.txt", "https://proimmobilier.ma/"],
+      "robotsStatus": "sitemap_declared",
+      "structureScore": 19,
+      "policyConfidenceScore": 6,
+      "policyHash": "2a11bbab5496bb763c18583565a9c4229d128250631760402c4555fd218321af"
+    },
+    {
+      "domain": "immobest.ma",
+      "evidenceStatus": "INSUFFICIENT_LEGAL_EVIDENCE",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_UNVERIFIED",
+      "evidenceUrls": ["https://immobest.ma/robots.txt", "https://immobest.ma/"],
+      "robotsStatus": "sitemap_declared",
+      "structureScore": 15,
+      "policyConfidenceScore": 6,
+      "policyHash": "3c4a636464cb063ec6eb51691a6b96bc6a10c3496164875facb690a80f5c67e1"
+    },
+    {
+      "domain": "christiesrealestatemorocco.com",
+      "evidenceStatus": "INSUFFICIENT_LEGAL_EVIDENCE",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_UNVERIFIED",
+      "evidenceUrls": ["https://www.christiesrealestatemorocco.com/robots.txt", "https://www.christiesrealestatemorocco.com/fr/"],
+      "robotsStatus": "sitemap_declared",
+      "structureScore": 15,
+      "policyConfidenceScore": 6,
+      "policyHash": "5d71de4f3ebf49f9814dadb2b946b2685ae17ca15bb91b2a5c5ed2f043059d07"
+    },
+    {
+      "domain": "immohammedia.com",
+      "evidenceStatus": "INSUFFICIENT_LEGAL_EVIDENCE",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_UNVERIFIED",
+      "evidenceUrls": ["https://www.immohammedia.com/robots.txt", "https://www.immohammedia.com/"],
+      "robotsStatus": "allow_with_restrictions",
+      "structureScore": 15,
+      "policyConfidenceScore": 6,
+      "policyHash": "3ea42386273629e8a2a9c5cfee55cfa19a94a0901035b9de8e47ca95de514947"
+    },
+    {
+      "domain": "rabatimmo.ma",
+      "evidenceStatus": "ACCESS_OR_FETCH_LIMITED",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_ACCESS_LIMITED",
+      "evidenceUrls": ["https://rabatimmo.ma/robots.txt"],
+      "robotsStatus": "unverified",
+      "structureScore": 19,
+      "policyConfidenceScore": 0,
+      "policyHash": "e5ac7eef825ae48d7548a6c0c8f4dc1ebfd33b0d49dced464a9ecf76907b971f"
+    },
+    {
+      "domain": "immobilier-pro-maroc.com",
+      "evidenceStatus": "INSUFFICIENT_LEGAL_EVIDENCE",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_UNVERIFIED",
+      "evidenceUrls": ["https://www.immobilier-pro-maroc.com/robots.txt", "https://www.immobilier-pro-maroc.com/", "https://www.immobilier-pro-maroc.com/politique-de-confidentialite/"],
+      "robotsStatus": "allow_with_restrictions",
+      "structureScore": 19,
+      "policyConfidenceScore": 7,
+      "policyHash": "311228e3dbe0481c3a6d3b893c4e4857d3eb9d7e93b6eaaac9357ce7c957f33c"
+    },
+    {
+      "domain": "agadirimmobilier.ma",
+      "evidenceStatus": "INSUFFICIENT_LEGAL_EVIDENCE",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_UNVERIFIED",
+      "evidenceUrls": ["https://agadirimmobilier.ma/robots.txt", "https://agadirimmobilier.ma/"],
+      "robotsStatus": "sitemap_declared",
+      "structureScore": 19,
+      "policyConfidenceScore": 6,
+      "policyHash": "04f2c7f15bf97624f1074855b739f27186a49375c26b63ed87f778521c1f5ec3"
+    },
+    {
+      "domain": "nouraimmobilier.ma",
+      "evidenceStatus": "TERMS_FOUND_NO_EXPLICIT_PERMISSION",
+      "reviewTrack": "PARTNER_OR_INDEX_ONLY_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_PERMISSION_REQUIRED",
+      "evidenceUrls": ["https://nouraimmobilier.ma/robots.txt", "https://nouraimmobilier.ma/terms-and-conditions/"],
+      "robotsStatus": "sitemap_declared",
+      "structureScore": 18,
+      "policyConfidenceScore": 12,
+      "policyHash": "8193d4cd157cff8a3f6ef23d07801e62701d5353fe9872686f1b5fa60cfb6d2a"
+    },
+    {
+      "domain": "marrakech-luxury-properties.com",
+      "evidenceStatus": "ACCESS_OR_FETCH_LIMITED",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_ACCESS_LIMITED",
+      "evidenceUrls": ["https://marrakech-luxury-properties.com/robots.txt", "https://marrakech-luxury-properties.com/", "https://marrakech-luxury-properties.com/mentions-legales/"],
+      "robotsStatus": "allow_with_restrictions",
+      "structureScore": 20,
+      "policyConfidenceScore": 6,
+      "policyHash": "e212a548ee84b5dc40fff0ee6d2b6b34d7071f26fff61d60b4ecb6f16fb23934"
+    },
+    {
+      "domain": "agadirimmobilier.org",
+      "evidenceStatus": "TERMS_FOUND_NO_EXPLICIT_PERMISSION",
+      "reviewTrack": "PARTNER_OR_INDEX_ONLY_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_PERMISSION_REQUIRED",
+      "evidenceUrls": ["https://agadirimmobilier.org/robots.txt", "https://agadirimmobilier.org/terms-and-conditions/"],
+      "robotsStatus": "sitemap_declared",
+      "structureScore": 20,
+      "policyConfidenceScore": 10,
+      "policyHash": "87d8b2ebb6c648fd4e5c9b6bd38b70f49525b927a1e216175e9dd0a91f2ff2c7"
+    },
+    {
+      "domain": "prestigeimmo.ma",
+      "evidenceStatus": "RESTRICTIVE_TERMS_FOUND",
+      "reviewTrack": "PARTNERSHIP_REQUIRED_REVIEW",
+      "decisionClass": "BLOCK_RESTRICTED",
+      "evidenceUrls": ["https://prestigeimmo.ma/robots.txt", "https://www.prestigeimmo.ma/fr/cgu.html"],
+      "robotsStatus": "allow_with_restrictions",
+      "structureScore": 5,
+      "policyConfidenceScore": 14,
+      "policyHash": "952c41527a4161f87fdf02621d0d5f99b84c8deb4ea572fbf09b30db96f97ed6"
+    },
+    {
+      "domain": "alamal-immobilier.ma",
+      "evidenceStatus": "ACCESS_OR_FETCH_LIMITED",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_ACCESS_LIMITED",
+      "evidenceUrls": ["https://www.alamal-immobilier.ma/robots.txt", "https://www.alamal-immobilier.ma/"],
+      "robotsStatus": "unverified",
+      "structureScore": 5,
+      "policyConfidenceScore": 1,
+      "policyHash": "7808bc92dc3a369428e02f0afe538b03def00c862f1571d965fbb481c6a1bd9f"
+    },
+    {
+      "domain": "immobilier-a-marrakech.com",
+      "evidenceStatus": "ACCESS_OR_FETCH_LIMITED",
+      "reviewTrack": "MANUAL_LEGAL_REVIEW",
+      "decisionClass": "INTERNAL_DISCOVERY_ACCESS_LIMITED",
+      "evidenceUrls": ["https://immobilier-a-marrakech.com/robots.txt"],
+      "robotsStatus": "unverified",
+      "structureScore": 12,
+      "policyConfidenceScore": 0,
+      "policyHash": "086b5d0f70a576a71fb98d3c75f08146d0bdc4d7db93bbcac811a45609d8464c"
+    }
+  ]
+}
