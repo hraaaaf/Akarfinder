@@ -53,7 +53,8 @@ describe("Phase 1 P1 — Geo productization", () => {
     assert.ok(client.includes("router.replace"));
     assert.ok(client.includes("initialState"));
     assert.ok(experience.includes("maplibre-cluster-marker"));
-    assert.ok(experience.includes("Carte immobilière · repères indicatifs"));
+    assert.ok(experience.includes("Carte immobilière"));
+    assert.ok(experience.includes('aria-label="Contrôles de la carte immobilière"'));
     assert.equal(experience.includes("showCityOverlay"), false);
     assert.equal(experience.includes("CityCinematicEntrance"), false);
   });
