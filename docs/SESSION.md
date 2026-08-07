@@ -1,21 +1,21 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-07**  
-**Lot DATA acquis : DATA-1.6B — Source Registry Assignment ✅ PR #338 + hotfix #339**  
-**Prochain lot DATA : DATA-4 — Large Reservoir Depth Audit**  
+**Lot DATA acquis : DATA-4.0 — Large Reservoir Depth Audit ✅ PR #341**  
+**Prochain lot DATA : DATA-4.1 — Avito Internal Reservoir Recovery Audit**  
 **Lot UX acquis : CARTE-QUARTIER-P1A.2 — Search Geo Contract ✅ PR #334**  
 **Prochain lot UX : CARTE-QUARTIER-P1A.3 — Map State & Navigation**
 
-Ce fichier est le handover opérationnel court du projet. `docs/ROADMAP.md` reste l’unique roadmap canonique.
+Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
-## Main canonique
+# Main canonique
 
 `main` inclut notamment :
 
 - Mon Projet P1B ✅ PR #318 ;
 - CARTE-QUARTIER-P1A.0 ✅ PR #327 ;
 - CARTE-QUARTIER-P1A.1 ✅ PR #328, score **9,5/10** ;
-- CARTE-QUARTIER-P1A.2 ✅ PR #334, merge `1fbe3e4` ;
+- CARTE-QUARTIER-P1A.2 ✅ PR #334 ;
 - DATA-1.1 ✅ PR #322 ;
 - DATA-1.2 ✅ PR #323 ;
 - DATA-1.3A ✅ PR #324 ;
@@ -23,205 +23,118 @@ Ce fichier est le handover opérationnel court du projet. `docs/ROADMAP.md` rest
 - DATA-1.4 ✅ PR #329 ;
 - DATA-1.5 ✅ PR #331, score **9,4/10** ;
 - DATA-1.6A ✅ PR #333, score **9,5/10** ;
-- DATA-1.6B ✅ PR #338 + #339, score final **9,6/10**.
+- DATA-1.6B ✅ PR #338 + #339, score **9,6/10** ;
+- DATA-4.0 ✅ PR #341, merge `de1368e`, score **9,6/10**.
 
-Invariants : no-bypass, aucune activation sans Source Registry explicite, capability ≠ permission, Search reste le moteur canonique, Map reste le moteur spatial complémentaire.
+Invariants : no-bypass, capability ≠ permission, Source Registry avant activation, volume technique ≠ inventaire public, Search reste canonique et Map reste son complément spatial.
 
-# DATA — état acquis
+# DATA — acquis structurants
 
-## DATA-1.2 — Existing Reserve Census ✅
+## DATA-1 Census / Registry ✅
 
-- **37 009 URLs distinctes** ;
-- **7 051 domaines**.
-
-## DATA-1.3B — Common Crawl Live Evidence ✅
-
-- crawl : `CC-MAIN-2026-25` ;
-- **300/300 Parquet** ;
-- **9 087 hosts bruts** ;
-- **8 970 hosts canoniques** ;
-- **8 727 registered domains** ;
-- aucun WARC/content fetch, aucune écriture Supabase, aucune activation.
-
-## DATA-1.4 — Candidate Reconciliation ✅
-
+- reserve B3 : **37 009 URLs / 7 051 domaines** ;
+- Common Crawl : **300/300 Parquet**, **8 727 registered domains** ;
 - univers réconcilié : **15 238 domaines** ;
-- **15 222 non enregistrés** au moment de l’audit ;
 - `PRIMARY_SOURCE_CANDIDATE` : **230** ;
 - `PORTAL_CANDIDATE` : **625** ;
-- fail-closed : 0 write / 0 policy.
+- 20 domaines P0 audités techniquement, 19 review-ready ;
+- 19 sources policy-reviewed ;
+- 19 nouvelles lignes Source Registry appliquées en production ;
+- authorization : **1 prohibited / 3 permission_required / 15 unverified** ;
+- hidden : **19/19** ;
+- états activants : **0**.
 
-## DATA-1.5 — Candidate Technical Capability Audit ✅
+## DATA-4.0 — Large Reservoir Depth Audit ✅
 
-PR **#331**.
+PR **#341**, merge `de1368e`, **19/19 workflows verts**, score **9,6/10**.
 
-Batch P0 :
+Contrat :
 
-- **20/20 domaines audités** ;
-- **19 `CAPABILITY_REVIEW_READY`** ;
-- familles : 3 RealHomes, 3 Houzez, 5 WordPress génériques, 8 structured-web ;
-- 116 requêtes publiques ; maximum **7 GET/domain** sur budget 8 ;
-- 0 write DB / 0 policy / 0 auth / 0 bypass / 0 WARC ;
-- score **9,4/10**.
+`PUBLIC VISIBLE → DISCOVERED/SEEDED → NORMALIZED → TECHNICALLY DISPLAYABLE → POLICY-ACTIVABLE`
 
-## DATA-1.6A — Source Policy Evidence Review ✅
+Preuve live finale :
 
-PR **#333**, merge `28fbdf5`.
+| Source | Normalized | Technical display | Policy-activable | Unavailable | Fresh confirmed |
+|---|---:|---:|---:|---:|---:|
+| Avito | **23 925** | **231** | **0** | **22 227** | **10** |
+| Mubawab | **11 209** | **3 357** | **0** | **7 506** | **902** |
+| **Total** | **35 134** | **3 588** | **0** | **29 733** | **912** |
 
-Preuve finale run **31182352538** :
+Sécurité du lot :
 
-- sources auditées : **19** ;
-- requêtes : **79** ;
-- max **5/domain** ;
-- `RESTRICTIVE_TERMS_FOUND` : **1** ;
-- `TERMS_FOUND_NO_EXPLICIT_PERMISSION` : **3** ;
-- `INSUFFICIENT_LEGAL_EVIDENCE` : **11** ;
-- `ACCESS_OR_FETCH_LIMITED` : **4** ;
-- `PUBLIC_CHANNEL_SIGNAL_FOUND` : 0 ;
-- 0 write / 0 policy / 0 auth / 0 bypass / 0 WARC ;
-- head `69f6545` : **20/20 workflows verts** ;
-- score **9,5/10**.
+- DB writes : **0** ;
+- policy changes : **0** ;
+- scraper runs : **0** ;
+- sitemap harvests : **0** ;
+- direct fetches : **0**.
 
-Double-check qualitatif : privacy-only ≠ terms ; legal→homepage ≠ preuve CGU ; timeout/robots-path-limit → access-limited ; une mention générique d’autorisation préalable ne suffit pas à conclure restrictif.
+### Avito
 
-`prestigeimmo.ma` reste la seule source restrictive du batch car une restriction substantielle sur accès automatisé/copie/reproduction a été observée.
+- **23 925** rows normalisées au sens pipeline ;
+- **22 227 (~92,9 %) `normalization_status=unavailable`** ;
+- seulement **10 `fresh_confirmed`** ;
+- **231** technical display-eligible ;
+- **0 policy-activable** avec la policy actuelle ;
+- aucun compteur national immobilier fiable n’a été inventé ;
+- le sitemap déclaré reste un signal technique, pas une permission.
 
-## DATA-1.6B — Source Registry Assignment ✅
+### Mubawab
 
-### PR et certification
+- **11 209** normalized ;
+- **3 357** technical display-eligible ;
+- **902** fresh-confirmed ;
+- compteur public borné observé : **106 947** ;
+- gap public→normalized : **95 738** ;
+- **0 policy-activable** ;
+- la policy actuelle impose de traiter ce gap via partenariat/licence ou mode public-index explicitement admissible, jamais comme permission de crawl.
 
-PR **#338**, head `3ecf9d6`, merge `92fd7e0`.
+Conclusion : **technical displayable ≠ policy-activable**. Les grands reservoirs actuels ne doivent pas être comptés comme stock public AkarFinder.
 
-Preflight read-only run **31186041984** :
+# Prochain lot DATA — DATA-4.1
 
-- 19 décisions ;
-- target déjà présent : **0** ;
-- activating assignments : **0** ;
-- hidden : **19** ;
-- direct fetch : **0** ;
-- partner : **0** ;
-- authorization attendu : 1 prohibited / 3 permission_required / 15 unverified ;
-- **20/20 workflows verts**.
+## Avito Internal Reservoir Recovery Audit
 
-### Incident de migration maîtrisé
+Objectif : expliquer et segmenter les **22 227 lignes Avito déjà détenues** en `normalization_status=unavailable`, sans aucune nouvelle observation réseau.
 
-Première application production : **échec atomique avant tout insert**.
+### DATA-4.1A — Read-only recovery census
 
-Cause : `source_policy_registry.execution_score` est `GENERATED ALWAYS`; la migration tentait de l’insérer explicitement.
+Scope :
 
-Contrôles après échec :
+- lire uniquement les données déjà présentes ;
+- croiser `thin_index_normalized_documents_v2`, `source_offer_seeds`, `discovery_candidates` et les observations/provenances existantes ;
+- identifier les causes d’`unavailable` ;
+- mesurer les signaux récupérables depuis les données existantes : title/snippet, city, intent, property type, price, surface, canonical URL, provider/provenance ;
+- classifier chaque cas dans :
+  - `RECOVERABLE_FROM_EXISTING_DATA` ;
+  - `INSUFFICIENT_EXISTING_EVIDENCE` ;
+  - `POLICY_BLOCKED_FOR_NEW_OBSERVATION` ;
+  - `NOISE_OR_NON_LISTING` ;
+- zéro write ;
+- zéro fetch Avito ;
+- zéro sitemap traversal ;
+- zéro policy change ;
+- zéro publication.
 
-- **0/19** ligne écrite ;
-- aucune entrée ajoutée dans `supabase_migrations.schema_migrations` ;
-- aucune policy partielle.
+Sortie attendue :
 
-Hotfix **PR #339**, merge `3694902` :
+`22 227 unavailable → cause → volume → recoverable fields → confidence → next action`
 
-- retrait de `execution_score` de l’INSERT ;
-- PostgreSQL le calcule automatiquement ;
-- test permanent interdisant son retour dans la liste INSERT ;
-- **20/20 workflows verts**.
+Gate fondamentale : **un gain de normalisation interne n’est jamais présenté comme nouvel inventaire public tant que la Source Registry Avito reste hidden/internal-only.**
 
-### Production finale certifiée
+### Après 4.1A
 
-Migration Supabase : `data_1_6b_source_registry_assignment`  
-Version enregistrée : **`20260807142236`**.
-
-Résultat production :
-
-- nouvelles lignes Registry : **19/19** ;
-- authorization :
-  - `prohibited` : **1** ;
-  - `permission_required` : **3** ;
-  - `unverified` : **15** ;
-- acquisition :
-  - `blocked` : **1** ;
-  - `public_index_internal_only` : **18** ;
-- detail fetch :
-  - `prohibited` : **1** ;
-  - `permission_required` : **3** ;
-  - `legal_review_required` : **11** ;
-  - `paused` : **4** ;
-- display :
-  - `blocked` : **1** ;
-  - `internal_signal_only` : **18** ;
-- `display_gate=hidden` : **19** ;
-- unsafe/activating : **0** ;
-- generated `execution_score` : min **6**, max **30**.
-
-`prestigeimmo.ma` :
-
-- discovery `paused` ;
-- detail `prohibited` ;
-- reuse `prohibited` ;
-- display `blocked` ;
-- authorization `prohibited` ;
-- acquisition `blocked` ;
-- channels `[]` ;
-- machine gate `blocked_invalid_no_bypass` ;
-- ingestion gate `blocked` ;
-- display gate `hidden` ;
-- `no_bypass_required=true`.
-
-**Score final DATA-1.6B : 9,6/10.**
-
-# Doctrine DATA active
-
-`DISCOVERED ≠ AUDITED ≠ POLICY_ASSIGNED ≠ ELIGIBLE ≠ INGESTIBLE ≠ DISPLAYABLE`
-
-`TECHNICAL CAPABILITY ≠ SOURCE PERMISSION`
-
-Les 19 nouvelles lignes du Registry sont des **garde-fous de gouvernance**, pas des activations de sources.
-
-# Prochain lot DATA — DATA-4
-
-## Large Reservoir Depth Audit
-
-Objectif : déterminer si le multiplicateur vers **20K observations** se trouve déjà dans les grands réservoirs connus avant de multiplier les connecteurs long-tail.
-
-Premier scope audit-only :
-
-1. Mubawab ;
-2. Avito immobilier ;
-3. autres grands portails marocains déjà connus du Registry/Census, classés ensuite par volume × policy × profondeur.
-
-Pour chaque source :
-
-- volume public annoncé/estimé ;
-- couverture AkarFinder actuelle ;
-- profondeur discovery actuelle ;
-- sitemap/pagination/structured data ;
-- robots / CGU / noindex / policy Registry ;
-- historique Common Crawl ;
-- pages détail publiquement atteignables ;
-- fraîcheur ;
-- duplication/bruit ;
-- meilleur mode admissible : `PARTNER_FEED`, `INDEX_ONLY`, `PUBLIC_DISCOVERY`, `NO_INGESTION` ;
-- **gap potentiel d’observations** sans contourner la policy.
-
-DATA-4 ne construit pas de scraper dans son premier lot. Il mesure d’abord le potentiel réel et la frontière d’usage autorisée.
+Seulement si une récupération déterministe et suffisamment fiable est démontrée : définir un sous-lot de shadow recovery séparé, puis canary/certification avant tout write de production.
 
 # UX — handover
 
 ## CARTE-QUARTIER-P1A.2 ✅
 
-PR **#334**, merge `1fbe3e4`, toutes les gates déclenchées vertes.
+`district` est un filtre Search structuré et le routing fail-closed évite les élargissements silencieux à la ville.
 
-Acquis :
-
-- `district` est un filtre Search structuré ;
-- `/search?city=Rabat&district=Agdal` porte une identité géographique explicite ;
-- `q` reste texte libre ;
-- DB et Typesense appliquent `district` via Geo Registry ;
-- lane ODM sans district autoritatif fail-closed au lieu d’élargir à la ville ;
-- SSR/client/API conservent le district ;
-- quartier et Map transmettent `city + district` vers Search ;
-- aucune migration ni modèle géographique parallèle.
-
-## Prochain UX : P1A.3 — Map State & Navigation
+## Prochain UX — P1A.3 Map State & Navigation
 
 Cible :
 
 `/map?city=rabat&district=agdal&layer=explore&project_id=...`
 
-Objectif : conserver `city`, `district`, `layer`, filtres/intention utiles et `project_id` de bout en bout, avec Back/Forward et liens partageables.
+Conserver `city`, `district`, `layer`, filtres/intention utiles et `project_id` avec Back/Forward et liens partageables.
