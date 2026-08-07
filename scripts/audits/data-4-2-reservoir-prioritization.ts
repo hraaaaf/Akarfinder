@@ -4,6 +4,7 @@ import { rankReservoirs, type ReservoirMetrics } from "../data4/reservoir-priori
 
 const outDir = process.env.DATA_4_2_OUT_DIR ?? ".tmp/data-4-2/results";
 const TIMEOUT_MS = 15_000;
+const PAGE_SIZE = 1_000;
 
 function env(name: string): string {
   const value = process.env[name];
@@ -11,7 +12,7 @@ function env(name: string): string {
   return value;
 }
 
-async function rest<T>(table: string, params: Record<string, string>): Promise<T[]> {
+async function restPage<T>(table: string, params: Record<string, string>): Promise<T[]> {
   const url = new URL(`/rest/v1/${table}`, env("SUPABASE_URL"));
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
   const key = env("SUPABASE_SERVICE_ROLE_KEY");
@@ -22,6 +23,19 @@ async function rest<T>(table: string, params: Record<string, string>): Promise<T
   });
   if (!response.ok) throw new Error(`${table} read failed: HTTP ${response.status} ${await response.text()}`);
   return (await response.json()) as T[];
+}
+
+async function restAll<T>(table: string, params: Record<string, string>): Promise<T[]> {
+  const rows: T[] = [];
+  for (let offset = 0; ; offset += PAGE_SIZE) {
+    const page = await restPage<T>(table, {
+      ...params,
+      limit: String(PAGE_SIZE),
+      offset: String(offset),
+    });
+    rows.push(...page);
+    if (page.length < PAGE_SIZE) return rows;
+  }
 }
 
 type NormalizedRow = {
@@ -51,17 +65,17 @@ function num(value: number | string | null): number { return value === null ? 0 
 
 async function main(): Promise<void> {
   const [norm, display, registry] = await Promise.all([
-    rest<NormalizedRow>("thin_index_normalized_documents_v2", {
+    restAll<NormalizedRow>("thin_index_normalized_documents_v2", {
       select: "source_domain,normalization_status,freshness_status,city,property_type,intent,price_mad,surface_m2",
-      limit: "50000",
+      order: "source_domain.asc,canonical_url.asc",
     }),
-    rest<DisplayRow>("thin_index_display_eligible_v1", {
+    restAll<DisplayRow>("thin_index_display_eligible_v1", {
       select: "source_domain,quality_score",
-      limit: "50000",
+      order: "source_domain.asc,canonical_url.asc",
     }),
-    rest<RegistryRow>("source_policy_registry", {
+    restAll<RegistryRow>("source_policy_registry", {
       select: "source_domain,authorization_status,acquisition_mode,display_policy,display_gate,allowed_discovery_channels,structure_score,execution_score",
-      limit: "1000",
+      order: "source_domain.asc",
     }),
   ]);
 
@@ -132,6 +146,9 @@ async function main(): Promise<void> {
     databaseWrites: 0,
     sourceNetworkRequests: 0,
     policyChanges: 0,
+    normalizedEvidenceRowsRead: norm.length,
+    displayEvidenceRowsRead: display.length,
+    registryRowsRead: registry.length,
     candidates: candidates.length,
     admissibleGrowthWinner: rankings.admissibleGrowth[0]?.sourceDomain ?? null,
     partnershipUpsideWinner: rankings.partnershipUpside[0]?.sourceDomain ?? null,
