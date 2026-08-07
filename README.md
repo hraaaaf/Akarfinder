@@ -68,6 +68,7 @@ AkarFinder applique une doctrine **no-bypass** :
 - MapLibre GL comme moteur de rendu cartographique ;
 - **AkarFinder Map Design System** comme cible visuelle : fond, hiérarchie, couleurs, clusters, polygones, dark mode et landmarks propriétaires, sans dépendre visuellement du style cartographique par défaut d’un fournisseur ;
 - Geo Registry comme autorité d’identité ville/quartier ;
+- `/map` doit consommer les quartiers via `lib/map/canonical-neighborhood-data.ts`, qui canonicalise les seeds avec `geo-entity-registry`; l’import runtime direct de `lib/map/neighborhood-data.ts` est interdit ;
 - migrations SQL versionnées ;
 - CI GitHub Actions avec tests, build, contrats DATA, accessibilité et preuves ciblées.
 
