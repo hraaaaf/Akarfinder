@@ -30,15 +30,7 @@ import { getSearchViewLayout } from "@/lib/ux/search-view";
 
 type LightZillowSearchShellProps = {
   initialListings: Listing[];
-  initialFilters?: Partial<{
-    transactionType: "all" | "buy" | "rent" | "new";
-    city: string;
-    propertyType: string;
-    maxBudget: string;
-    minBudget: string;
-    mreOnly: boolean;
-    search: string;
-  }>;
+  initialFilters?: Partial<ListingFiltersState>;
 };
 
 type ApiSearchResponse = {
@@ -68,6 +60,7 @@ function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy): string {
   const params = new URLSearchParams({ limit: "100" });
   if (filters.search.trim()) params.set("q", filters.search.trim());
   if (filters.city !== "all") params.set("city", filters.city);
+  if (filters.neighborhood && filters.neighborhood !== "all") params.set("district", filters.neighborhood);
   if (filters.transactionType !== "all") params.set("transaction_type", filters.transactionType);
   if (filters.propertyType !== "all") params.set("property_type", filters.propertyType);
   if (filters.minBudget) params.set("min_price", filters.minBudget);
@@ -87,6 +80,7 @@ function buildGatewayUrl(filters: ListingFiltersState, cursor?: string | null): 
   const params = new URLSearchParams({ limit: "100" });
   if (filters.search.trim()) params.set("q", filters.search.trim());
   if (filters.city !== "all") params.set("city", filters.city);
+  if (filters.neighborhood && filters.neighborhood !== "all") params.set("district", filters.neighborhood);
   if (filters.propertyType !== "all") params.set("property_type", filters.propertyType);
   if (filters.transactionType !== "all") params.set("intent", filters.transactionType);
   if (filters.minBudget) params.set("min_price", filters.minBudget);
@@ -326,6 +320,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     ...defaultListingFilters,
     transactionType: initialFilters?.transactionType ?? defaultListingFilters.transactionType,
     city: initialFilters?.city ?? defaultListingFilters.city,
+    neighborhood: initialFilters?.neighborhood ?? defaultListingFilters.neighborhood,
     propertyType: (initialFilters?.propertyType as ListingFiltersState["propertyType"]) ?? defaultListingFilters.propertyType,
     maxBudget: initialFilters?.maxBudget ?? defaultListingFilters.maxBudget,
     minBudget: initialFilters?.minBudget ?? defaultListingFilters.minBudget,
@@ -362,6 +357,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     if (
       next.transactionType !== filters.transactionType ||
       next.city !== filters.city ||
+      next.neighborhood !== filters.neighborhood ||
       next.propertyType !== filters.propertyType ||
       next.reliability !== filters.reliability
     ) {
@@ -369,7 +365,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
         event_name: "search_filter_change",
         source_page: "/search",
         intent: next.transactionType,
-        metadata: { city: next.city, property_type: next.propertyType },
+        metadata: { city: next.city, district: next.neighborhood, property_type: next.propertyType },
       });
     }
     setFilters(next);
@@ -558,6 +554,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   const activeChips = useMemo(() => {
     const chips: Array<{ key: string; label: string; clear: Partial<ListingFiltersState> }> = [];
     if (filters.city !== "all") chips.push({ key: "city", label: filters.city, clear: { city: "all", neighborhood: "all" } });
+    if (filters.neighborhood && filters.neighborhood !== "all") chips.push({ key: "district", label: filters.neighborhood, clear: { neighborhood: "all" } });
     if (filters.transactionType !== "all") {
       const labels: Record<string, string> = { buy: "Acheter", rent: "Louer", new: "Neuf" };
       chips.push({ key: "tx", label: labels[filters.transactionType] ?? filters.transactionType, clear: { transactionType: "all" } });
@@ -742,7 +739,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                   <p className="mt-1.5 text-[12.5px] leading-5 text-muted-foreground">Budget, zones, types, contraintes et préférences dans un seul projet réutilisable.</p>
                 </div>
                 <div className="border-t border-border/12 px-5 py-3 dark:border-white/8">
-                  <Link href="/compagnon" className="flex items-center justify-between text-[13px] font-extrabold text-foreground/80 transition hover:text-foreground dark:text-white/85">
+                  <Link href="/compagnon" className="flex items-center justify-between text-[13px] font-extrabold text-foreground/80 transition hover:text-foreground dark:text-white/85 dark:hover:text-white">
                     Construire Mon Projet<ArrowRight size={14} aria-hidden="true" />
                   </Link>
                 </div>
