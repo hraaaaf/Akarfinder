@@ -56,6 +56,8 @@ AkarFinder applique une doctrine **no-bypass** :
 - aucun bypass de login, rate limit, restriction d’accès ou contrôle technique ;
 - `robots.txt` et sitemap sont des signaux techniques, jamais une licence ;
 - une capacité technique détectée (`Houzez`, `RealHomes`, WordPress REST, sitemap, JSON-LD, feed) ne vaut jamais permission d’ingestion ou de réutilisation ;
+- une page de confidentialité seule ne vaut pas CGU ni autorisation de réutilisation ;
+- une URL « légale » qui redirige vers une page non légale ne vaut pas preuve de CGU ;
 - Source Registry obligatoire avant toute activation ;
 - distinction stricte entre contenu partenaire/autorisé, résultat public indexé et signal marché interne.
 
@@ -73,7 +75,8 @@ AkarFinder applique une doctrine **no-bypass** :
 - contrat Geo Canonical Core certifié par **CARTE-QUARTIER-P1A.1 / PR #328**, score **9,5/10**, avec **19/19 workflows verts** avant clôture documentaire ;
 - migrations SQL versionnées ;
 - CI GitHub Actions avec tests, build, contrats DATA, accessibilité et preuves ciblées ;
-- **DATA-1.5 / PR #331** certifie le Technical Capability Audit : 20 domaines P0 audités, 19 `CAPABILITY_REVIEW_READY`, familles détectées `3 RealHomes + 3 Houzez + 5 WordPress génériques + 8 structured-web`, score **9,4/10**, sans policy, auth, bypass, WARC ni write DB.
+- **DATA-1.5 / PR #331** certifie le Technical Capability Audit : 20 domaines P0 audités, 19 `CAPABILITY_REVIEW_READY`, familles détectées `3 RealHomes + 3 Houzez + 5 WordPress génériques + 8 structured-web`, score **9,4/10**, sans policy, auth, bypass, WARC ni write DB ;
+- **DATA-1.6A / PR #333** certifie le Source Policy Evidence Review : 19 sources techniquement viables auditées en lecture seule, **1 restriction substantielle**, **3 pages de terms sans permission explicite**, **11 preuves insuffisantes**, **4 accès/fetch limités**, score **9,5/10**, avec **0 write DB / 0 policy / 0 auth / 0 bypass / 0 WARC**.
 
 Les spécifications détaillées sous `docs/` restent consultables lorsqu’un lot les concerne, mais ne sont pas des documents de pilotage.
 
