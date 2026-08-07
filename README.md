@@ -53,7 +53,8 @@ Principes non négociables :
 - P1A.2 ✅ PR #334 — `district` structuré dans Search ;
 - P1A.3 ✅ PR #349 — Map state/navigation pilotés par URL, **9,3/10** ;
 - P1A.4 ✅ PR #350 — Map Design System, cockpit flottant map-first, **9,3/10**, audit **30 captures / 0 finding** ;
-- prochain UX : **P1A.5 — Territorial Explorer**.
+- P1A.5 ✅ PR #365 — Territorial Explorer **Maroc → ville → quartier**, navigation URL canonique, responsive **390 / 430×932 / 768 / 1280**, états Maroc/Rabat/Rabat→Agdal audités, **9,3/10**, **48 captures / 0 finding** ;
+- prochain UX : **P1A.6 — Responsive hardening**, puis P1B intelligence cartographique.
 
 ## État DATA acquis
 
@@ -75,14 +76,16 @@ Principes non négociables :
 - DATA-4.3B ✅ PR #348 : sitemap actuel = **5 905 URLs**, **5 673 seed-only** encore présentes ;
 - DATA-4.3C ✅ PR #351 : **5 566 SHADOW_READY**, dont **5 564 seed-only**, sans write ni activation ;
 - DATA-4.3D ✅ PR #353 : **100-row reversible freshness evidence canary DRY_RUN**, canal `public_sitemap_presence`, TTL **14 jours**, **100/100 rollback**, **20/20 gates verts**, **0 DB/freshness write**, **0 activation** ;
-- DATA-4.3E ✅ PR #355 : **10-row production write rehearsal**, 10/10 apply, 10/10 verify, 10/10 rollback. Post-rollback exact sur freshness/evidence ; `updated_at` traité comme audit trail non rollbackable ;
-- DATA-4.3F ✅ PR #358 : **Controlled Promotion Design**, live proof = 6 533 total / 6 431 seed-only / 102 fresh-confirmed / **0 résidu canary**, Registry eligible, drift 0 %, batch initial **50**, hard cap **100/run**, **500** avant re-certification, TTL 14 jours, 0 write/activation.
+- DATA-4.3E ✅ PR #355 : **10-row production write rehearsal**, 10/10 apply, 10/10 verify, 10/10 rollback ;
+- DATA-4.3F ✅ PR #358 : Controlled Promotion Design, batch initial **50**, hard cap **100/run**, **500** avant re-certification, TTL **14 jours** ;
+- DATA-4.3G ✅ PR #362 : First Persistent Freshness Batch certifié ; contrat déterministe **50 lignes**, canal `public_sitemap_presence`, TTL **14 jours**, snapshot/rollback complet, observabilité Search/display, aucun changement de display policy ;
+- DATA-4.3H ✅ PR #364 : Controlled Expansion to 500 certifiée en **DRY_RUN** ; point de départ **50 persistent rows**, plan **[100,100,100,100,50]**, max **100/run**, Registry+sitemap revalidés à chaque run, drift cap **1 %**, **0 DB write**, **0 activation publique** dans la PR.
 
 ## Décision DATA courante
 
-**DATA-4.3G — First Persistent Freshness Batch**.
+La prochaine mutation DATA doit suivre strictement le contrat acquis de DATA-4.3H : **premier batch d’expansion persistant ≤100 lignes**, avec préflight Registry+sitemap, snapshot/rollback, TTL 14 jours, drift ≤1 %, mesure Search/display et aucune modification de display/publication policy.
 
-Objectif : appliquer un premier batch **persistant de 50 lignes maximum**, avec préconditions exactes, snapshot complet, canal `public_sitemap_presence`, TTL 14 jours, vérification post-write, observabilité applied/skipped/drifted, et aucune modification de display/publication policy.
+Aucun nouveau numéro de lot n’est considéré canonique tant qu’il n’est pas explicitement défini dans la roadmap.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 
