@@ -1,8 +1,8 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-07**  
-**Lot DATA acquis : DATA-4.0 — Large Reservoir Depth Audit ✅ PR #341**  
-**Prochain lot DATA : DATA-4.1 — Avito Internal Reservoir Recovery Audit**  
+**Lot DATA acquis : DATA-4.2 — Reservoir Prioritization ✅ PR #344**  
+**Prochain lot DATA : DATA-4.3A — Dar Agadir Bounded Canonical-Link Activation Audit**  
 **Lot UX acquis : CARTE-QUARTIER-P1A.2 — Search Geo Contract ✅ PR #334**  
 **Prochain lot UX : CARTE-QUARTIER-P1A.3 — Map State & Navigation**
 
@@ -12,129 +12,87 @@ Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’uniq
 
 `main` inclut notamment :
 
-- Mon Projet P1B ✅ PR #318 ;
 - CARTE-QUARTIER-P1A.0 ✅ PR #327 ;
 - CARTE-QUARTIER-P1A.1 ✅ PR #328, score **9,5/10** ;
 - CARTE-QUARTIER-P1A.2 ✅ PR #334 ;
-- DATA-1.1 ✅ PR #322 ;
-- DATA-1.2 ✅ PR #323 ;
-- DATA-1.3A ✅ PR #324 ;
-- DATA-1.3B ✅ PR #326 ;
-- DATA-1.4 ✅ PR #329 ;
-- DATA-1.5 ✅ PR #331, score **9,4/10** ;
-- DATA-1.6A ✅ PR #333, score **9,5/10** ;
-- DATA-1.6B ✅ PR #338 + #339, score **9,6/10** ;
-- DATA-4.0 ✅ PR #341, merge `de1368e`, score **9,6/10**.
+- DATA-1.1 → DATA-1.6B ✅ ;
+- DATA-4.0 ✅ PR #341, score **9,6/10** ;
+- DATA-4.1A ✅ PR #343 ;
+- DATA-4.2 ✅ PR #344, merge `19dcd7d`.
 
-Invariants : no-bypass, capability ≠ permission, Source Registry avant activation, volume technique ≠ inventaire public, Search reste canonique et Map reste son complément spatial.
+Invariants : no-bypass, capability ≠ permission, Source Registry avant activation, volume technique ≠ inventaire public, Search reste canonique et Map son complément spatial.
 
-# DATA — acquis structurants
+# DATA — acquis récents
 
-## DATA-1 Census / Registry ✅
+## DATA-4.0 ✅
 
-- reserve B3 : **37 009 URLs / 7 051 domaines** ;
-- Common Crawl : **300/300 Parquet**, **8 727 registered domains** ;
-- univers réconcilié : **15 238 domaines** ;
-- `PRIMARY_SOURCE_CANDIDATE` : **230** ;
-- `PORTAL_CANDIDATE` : **625** ;
-- 20 domaines P0 audités techniquement, 19 review-ready ;
-- 19 sources policy-reviewed ;
-- 19 nouvelles lignes Source Registry appliquées en production ;
-- authorization : **1 prohibited / 3 permission_required / 15 unverified** ;
-- hidden : **19/19** ;
-- états activants : **0**.
+Avito + Mubawab : **35 134 normalized**, **3 588 technical display**, **0 policy-activable**. Avito : 22 227 `unavailable`; Mubawab : gap public→normalized borné à 95 738, sans droit de crawl implicite.
 
-## DATA-4.0 — Large Reservoir Depth Audit ✅
+## DATA-4.1A ✅ PR #343
 
-PR **#341**, merge `de1368e`, **19/19 workflows verts**, score **9,6/10**.
+Audit Avito strictement interne, sans réseau/source fetch :
 
-Contrat :
+- `unavailable` : **22 227** ;
+- immobilier canonique : **1 098** ;
+- bruit/non-immobilier : **21 129 (95,06 %)** ;
+- type compatible catégorie : **804** ;
+- type compatible + intent + geo : **73** ;
+- evidence insuffisante : **1 025** ;
+- prix : **0** ; surface : **0** ;
+- policy-activable : **0**.
 
-`PUBLIC VISIBLE → DISCOVERED/SEEDED → NORMALIZED → TECHNICALLY DISPLAYABLE → POLICY-ACTIVABLE`
+Décision : ne pas investir maintenant dans un Shadow Recovery Avito pour seulement 73 lignes internes et non publiables.
 
-Preuve live finale :
+## DATA-4.2 ✅ PR #344
 
-| Source | Normalized | Technical display | Policy-activable | Unavailable | Fresh confirmed |
-|---|---:|---:|---:|---:|---:|
-| Avito | **23 925** | **231** | **0** | **22 227** | **10** |
-| Mubawab | **11 209** | **3 357** | **0** | **7 506** | **902** |
-| **Total** | **35 134** | **3 588** | **0** | **29 733** | **912** |
+Live ranking paginé et read-only :
 
-Sécurité du lot :
+- normalized evidence rows lues : **56 803** ;
+- display evidence rows : **22 426** ;
+- Source Registry rows : **35** ;
+- candidats classés : **14** ;
+- DB writes / source requests / policy changes / public activations : **0**.
 
-- DB writes : **0** ;
-- policy changes : **0** ;
-- scraper runs : **0** ;
-- sitemap harvests : **0** ;
-- direct fetches : **0**.
+### Lane ADMISSIBLE_GROWTH
 
-### Avito
+1. **daragadir.com** — score **71,75** ; 6 533 normalized ; 6 319 core-structured ; 6 528 technical display ; policy `canonical_link_only / external_tail_link_only`.
+2. promoimmomarrakech.com — 67,91.
+3. aykana.ma — 53,09.
+4. limmobiliersansfrontieres.com — 47,91.
 
-- **23 925** rows normalisées au sens pipeline ;
-- **22 227 (~92,9 %) `normalization_status=unavailable`** ;
-- seulement **10 `fresh_confirmed`** ;
-- **231** technical display-eligible ;
-- **0 policy-activable** avec la policy actuelle ;
-- aucun compteur national immobilier fiable n’a été inventé ;
-- le sitemap déclaré reste un signal technique, pas une permission.
+### Lane PARTNERSHIP_UPSIDE
 
-### Mubawab
+1. **agenz.ma** — score **58,93** ; 4 490 normalized ; 1 227 fresh ; 1 146 decision-structured ; policy `internal_signal_only / hidden`.
+2. mouldar.com — 53,56.
+3. masaken.ma — 48,73.
 
-- **11 209** normalized ;
-- **3 357** technical display-eligible ;
-- **902** fresh-confirmed ;
-- compteur public borné observé : **106 947** ;
-- gap public→normalized : **95 738** ;
-- **0 policy-activable** ;
-- la policy actuelle impose de traiter ce gap via partenariat/licence ou mode public-index explicitement admissible, jamais comme permission de crawl.
+Un plancher de **500 lignes normalisées** est requis pour gagner cette lane afin d’éviter qu’un petit catalogue très propre soit pris pour un multiplicateur vers 20K.
 
-Conclusion : **technical displayable ≠ policy-activable**. Les grands reservoirs actuels ne doivent pas être comptés comme stock public AkarFinder.
+# Prochain lot DATA — DATA-4.3A
 
-# Prochain lot DATA — DATA-4.1
+## Dar Agadir Bounded Canonical-Link Activation Audit
 
-## Avito Internal Reservoir Recovery Audit
+Objectif : déterminer si la profondeur déjà détenue de `daragadir.com` peut être représentée plus utilement dans AkarFinder **sans réutilisation de contenu ni fetch détail**, uniquement dans la frontière déjà enregistrée :
 
-Objectif : expliquer et segmenter les **22 227 lignes Avito déjà détenues** en `normalization_status=unavailable`, sans aucune nouvelle observation réseau.
+`public_sitemap_canonical_link → canonical_link_only → external_tail_link_only`.
 
-### DATA-4.1A — Read-only recovery census
+Scope strict :
 
-Scope :
+- données déjà détenues + facts URL/sitemap autorisés par Registry ;
+- aucun fetch de page détail ;
+- aucune image/contact/description réutilisée ;
+- aucune modification de Source Registry ;
+- aucun passage automatique à une fiche AkarFinder complète ;
+- mesurer fraîcheur, duplication, qualité minimale, vérité city/type/intent et volume de canonical outbound links réellement admissibles ;
+- produire un shadow activation report ;
+- **0 activation production dans 4.3A**.
 
-- lire uniquement les données déjà présentes ;
-- croiser `thin_index_normalized_documents_v2`, `source_offer_seeds`, `discovery_candidates` et les observations/provenances existantes ;
-- identifier les causes d’`unavailable` ;
-- mesurer les signaux récupérables depuis les données existantes : title/snippet, city, intent, property type, price, surface, canonical URL, provider/provenance ;
-- classifier chaque cas dans :
-  - `RECOVERABLE_FROM_EXISTING_DATA` ;
-  - `INSUFFICIENT_EXISTING_EVIDENCE` ;
-  - `POLICY_BLOCKED_FOR_NEW_OBSERVATION` ;
-  - `NOISE_OR_NON_LISTING` ;
-- zéro write ;
-- zéro fetch Avito ;
-- zéro sitemap traversal ;
-- zéro policy change ;
-- zéro publication.
+Gate : `canonical_link_only` signifie lien sortant borné et provenance explicite, jamais contenu partenaire ou annonce réhébergée.
 
-Sortie attendue :
+# Lane business parallèle
 
-`22 227 unavailable → cause → volume → recoverable fields → confidence → next action`
-
-Gate fondamentale : **un gain de normalisation interne n’est jamais présenté comme nouvel inventaire public tant que la Source Registry Avito reste hidden/internal-only.**
-
-### Après 4.1A
-
-Seulement si une récupération déterministe et suffisamment fiable est démontrée : définir un sous-lot de shadow recovery séparé, puis canary/certification avant tout write de production.
+**Agenz** devient la priorité partenariat/feed parmi les réservoirs connus. Tant qu’aucune autorisation écrite ne change le Registry, son corpus reste `hidden/internal_signal_only`.
 
 # UX — handover
 
-## CARTE-QUARTIER-P1A.2 ✅
-
-`district` est un filtre Search structuré et le routing fail-closed évite les élargissements silencieux à la ville.
-
-## Prochain UX — P1A.3 Map State & Navigation
-
-Cible :
-
-`/map?city=rabat&district=agdal&layer=explore&project_id=...`
-
-Conserver `city`, `district`, `layer`, filtres/intention utiles et `project_id` avec Back/Forward et liens partageables.
+P1A.3 reste le prochain lot UX : état URL `/map`, conservation `city/district/layer/project_id`, Back/Forward et transitions Map ↔ Search sans perte de contexte.

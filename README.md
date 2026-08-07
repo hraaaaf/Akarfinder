@@ -3,140 +3,160 @@
 AkarFinder est un **moteur de recherche immobilier, un index national et une couche d’intelligence pour le marché marocain**.
 
 - Produit public : <https://akarfinder.vercel.app>
-- Cœur produit : [`/search`](https://akarfinder.vercel.app/search)
-- Branche canonique livrée : `main`
+- Cœur produit : `/search`
+- Branche canonique : `main`
 - Objectif long terme : **Property Graph du marché immobilier marocain**
 
 ## Documentation canonique
 
-Le projet possède exactement **trois documents de pilotage** :
+Le projet possède exactement trois documents de pilotage :
 
-1. [`README.md`](README.md) — identité, doctrine, architecture et démarrage ;
-2. [`docs/ROADMAP.md`](docs/ROADMAP.md) — priorités, lots, dépendances et ordre d’exécution ;
-3. [`docs/SESSION.md`](docs/SESSION.md) — état opérationnel courant et prochaine action exacte.
+1. `README.md` — identité, doctrine et architecture ;
+2. `docs/ROADMAP.md` — priorités et ordre d’exécution ;
+3. `docs/SESSION.md` — état opérationnel courant.
 
-Tout autre fichier Markdown est une **spécification technique**, une **politique**, une **preuve historique** ou une **archive**. Il ne peut jamais redéfinir l’état courant, la priorité active ou la vision du projet.
+Ordre de vérité :
 
-En cas de contradiction :
-
-`code réellement mergé dans main → README.md → ROADMAP.md → SESSION.md → spécifications techniques → preuves historiques`.
-
-Aucun nouveau document de roadmap, session, handover, statut ou contexte ne doit être créé sans décision explicite du propriétaire du projet.
+`code mergé dans main → README.md → ROADMAP.md → SESSION.md → specs techniques → preuves historiques`.
 
 ## Doctrine produit
 
-AkarFinder est **search-first** et **intelligence-first**. `/search` reste le cœur du produit et le moteur canonique des requêtes immobilières.
+AkarFinder est **search-first / intelligence-first**. `/search` reste le moteur canonique. `/map` est son complément spatial et doit partager la même identité géographique canonique.
 
-`/map` est son complément spatial : **moteur d’exploration géographique et d’intelligence**, pas un second moteur de recherche parallèle. Map, Search, pages SEO et Mon Projet doivent partager la même identité géographique canonique de bout en bout.
+Pipeline :
 
-Pipeline canonique :
+`DISCOVERY → INGESTION/OBSERVATION → NORMALIZATION → CANONICALIZATION → FRESHNESS → DEDUPLICATION/CLUSTERING → ENRICHMENT → INTELLIGENCE → DISPLAY ELIGIBILITY → RANKING → PUBLICATION/SERP`
 
-`DISCOVERY → INGESTION / OBSERVATION → NORMALIZATION → CANONICALIZATION → FRESHNESS → DEDUPLICATION / CLUSTERING → ENRICHMENT → INTELLIGENCE → DISPLAY ELIGIBILITY → RANKING → PUBLICATION / SERP`
-
-Principes non négociables :
+Principes :
 
 - aucune donnée absente n’est inventée ;
 - une annonce est une observation de source, pas automatiquement une propriété unique ;
-- plusieurs observations peuvent représenter une même propriété potentielle ;
-- provenance, canonical URL et divergences restent explicables ;
-- le volume brut n’est jamais présenté comme un inventaire publiable ;
-- les scores de qualité, fiabilité, prix et complétude restent distincts ;
-- aucune source n’est qualifiée de partenaire sans relation ou autorisation explicite ;
-- aucune image, galerie, coordonnée ou donnée de contact n’est réutilisée sans droit établi ;
-- tout changement DATA/Search important suit `Shadow → Canary → certification → activation bornée` ;
-- aucune frontière de ville/quartier, position exacte, bâtiment, landmark ou proximité n’est fabriqué ;
-- une illustration cartographique peut enrichir un landmark réel, mais ne remplace jamais sa géométrie ni sa provenance ;
-- sur la carte, **une couleur possède une seule signification active à la fois**.
+- provenance et canonical URL restent explicables ;
+- volume brut ≠ inventaire publiable ;
+- scores fiabilité/prix/complétude restent séparés ;
+- aucune source n’est appelée partenaire sans preuve ;
+- aucune image/contact/coordonnée n’est réutilisée sans droit établi ;
+- changements DATA/Search importants : `Shadow → Canary → certification → activation bornée` ;
+- aucune géométrie ou proximité fabriquée.
 
 ## Doctrine d’acquisition
 
-AkarFinder applique une doctrine **no-bypass** :
+Doctrine **no-bypass absolue** :
 
-- aucun proxy furtif, stealth, faux Googlebot ou contournement de CAPTCHA ;
-- aucun bypass de login, rate limit, restriction d’accès ou contrôle technique ;
-- `robots.txt` et sitemap sont des signaux techniques, jamais une licence ;
-- une capacité technique détectée (`Houzez`, `RealHomes`, WordPress REST, sitemap, JSON-LD, feed) ne vaut jamais permission d’ingestion ou de réutilisation ;
-- une page de confidentialité seule ne vaut pas CGU ni autorisation de réutilisation ;
-- une URL « légale » qui redirige vers une page non légale ne vaut pas preuve de CGU ;
-- **Source Registry obligatoire avant toute activation** ;
-- `DISCOVERED ≠ AUDITED ≠ AUTHORIZED ≠ INGESTIBLE ≠ DISPLAYABLE` ;
-- distinction stricte entre contenu partenaire/autorisé, résultat public indexé et signal marché interne.
+- pas de stealth/proxy furtif/faux Googlebot/CAPTCHA solve ;
+- pas de bypass login/rate-limit/restriction technique ;
+- robots/sitemap = signaux techniques, jamais licence ;
+- capability technique ≠ permission ;
+- privacy policy ≠ CGU ≠ permission ;
+- Source Registry obligatoire avant activation ;
+- `DISCOVERED ≠ AUDITED ≠ POLICY_ASSIGNED ≠ ELIGIBLE ≠ INGESTIBLE ≠ DISPLAYABLE` ;
+- contenu partenaire/autorisé ≠ résultat public indexé ≠ signal marché interne.
 
 ## Architecture active
 
-- Next.js 15 App Router ;
-- React 19 et TypeScript ;
-- Tailwind CSS ;
-- Supabase PostgreSQL comme base canonique ;
-- Vercel pour build et exécution ;
-- MapLibre GL comme moteur de rendu cartographique ;
-- Geo Registry comme autorité d’identité ville/quartier ;
-- `/map` consomme les quartiers via `lib/map/canonical-neighborhood-data.ts` ;
-- **CARTE-QUARTIER-P1A.1 / PR #328** : Geo Canonical Core certifié, score **9,5/10** ;
-- **CARTE-QUARTIER-P1A.2 / PR #334** : `district` est désormais un filtre Search structuré, indépendant de `q`, avec routing fail-closed par capacité ;
+- Next.js 15, React 19, TypeScript, Tailwind ;
+- Supabase PostgreSQL ;
+- Vercel ;
+- MapLibre GL ;
+- Geo Registry canonique ;
 - migrations SQL versionnées ;
-- CI GitHub Actions avec tests, build, contrats DATA, accessibilité et preuves ciblées ;
-- **DATA-1.5 / PR #331** : Technical Capability Audit, 20 domaines P0, 19 review-ready, score **9,4/10** ;
-- **DATA-1.6A / PR #333** : Source Policy Evidence Review, 19 sources, score **9,5/10**, zéro write/policy/auth/bypass/WARC ;
-- **DATA-1.6B / PR #338 + hotfix #339** : 19 sources enregistrées dans `source_policy_registry` en gouvernance conservatrice, **0 source activée**, score final **9,6/10** ;
-- **DATA-4.0 / PR #341** : Large Reservoir Depth Audit Mubawab + Avito, lecture seule, score **9,6/10**, distinguant profondeur publique, profondeur normalisée, surface techniquement displayable et surface réellement activable par policy.
+- CI GitHub Actions avec tests/build/gates DATA/UX/accessibilité.
 
-### DATA-1.6B — état production certifié
+## État UX acquis
 
-La migration `data_1_6b_source_registry_assignment` est appliquée et enregistrée dans Supabase.
+- CARTE-QUARTIER-P1A.1 / PR #328 : Geo Canonical Core, score **9,5/10** ;
+- CARTE-QUARTIER-P1A.2 / PR #334 : `district` structuré dans Search avec routing fail-closed ;
+- prochain UX : **P1A.3 — Map State & Navigation**.
 
-Résultat :
+## État DATA acquis
 
-- **19/19** nouvelles lignes de gouvernance ;
-- authorization : **1 prohibited / 3 permission_required / 15 unverified** ;
-- acquisition : **1 blocked / 18 public_index_internal_only** ;
-- detail fetch : **1 prohibited / 3 permission_required / 11 legal_review_required / 4 paused** ;
-- display : **1 blocked / 18 internal_signal_only** ;
-- `display_gate=hidden` : **19/19** ;
-- états activants : **0** ;
-- direct fetch : **0** ;
-- partner assignment : **0**.
+### DATA-1 — Web Census / Registry ✅
 
-`prestigeimmo.ma` est explicitement hard-blocked : `prohibited / blocked / hidden / no-bypass`.
+- réserve B3 : **37 009 URLs / 7 051 domaines** ;
+- Common Crawl : **300/300 Parquet**, **8 727 registered domains** ;
+- univers réconcilié : **15 238 domaines** ;
+- `PRIMARY_SOURCE_CANDIDATE` : **230** ;
+- `PORTAL_CANDIDATE` : **625** ;
+- DATA-1.5 : 20 domaines P0 audités techniquement, 19 review-ready, score **9,4/10** ;
+- DATA-1.6A : 19 policy reviews, score **9,5/10** ;
+- DATA-1.6B : 19 lignes Registry appliquées, **0 source activée**, score **9,6/10**.
 
-La première tentative d’application a échoué **atomiquement avant tout insert** parce que `execution_score` est une colonne PostgreSQL `GENERATED ALWAYS`. PR #339 a retiré cette colonne de l’INSERT et ajouté un test de non-régression. Aucun état partiel n’a existé ; la seconde application a réussi et PostgreSQL calcule désormais `execution_score` automatiquement.
+### DATA-4.0 — Large Reservoir Baseline ✅ PR #341
 
-### DATA-4.0 — profondeur des grands réservoirs certifiée
+Avito + Mubawab :
 
-PR **#341**, merge `de1368e`.
+- **35 134 normalized** ;
+- **3 588 technical display** ;
+- **0 policy-activable** ;
+- Avito : **22 227 unavailable** ;
+- Mubawab : gap public→normalized borné **95 738**, sans permission implicite de crawl.
 
-Preuve live finale :
+### DATA-4.1A — Avito Internal Recovery Audit ✅ PR #343
 
-- sources : **Avito + Mubawab** ;
-- normalized : **35 134** ;
-- technical display-eligible : **3 588** ;
-- policy-activable : **0** ;
-- normalization unavailable : **29 733** ;
-- fresh-confirmed : **912** ;
-- DB writes / policy changes / scraper runs / sitemap harvests / direct fetches : **0**.
+Sur **22 227** Avito `unavailable` :
 
-Avito : **23 925 normalized**, dont **22 227 unavailable (~92,9 %)**, **10 fresh-confirmed**, **231 technical display-eligible**, inventaire public non estimé faute de compteur fiable.
+- immobilier canonique : **1 098** ;
+- bruit/non-immobilier : **21 129 (95,06 %)** ;
+- type catégorie-compatible : **804** ;
+- type compatible + intent + geo : **73** ;
+- evidence insuffisante : **1 025** ;
+- prix : **0** ; surface : **0** ;
+- policy-activable : **0**.
 
-Mubawab : **11 209 normalized**, **3 357 technical display-eligible**, **902 fresh-confirmed** ; compteur public borné observé : **106 947**, soit un gap public→normalized de **95 738**. Ce gap reste un sujet partenariat/licence ou public-index admissible, pas une autorisation de crawl.
+Décision : ne pas lancer maintenant un Shadow Recovery Avito pour seulement 73 lignes internes et non publiables.
 
-Conclusion canonique : **technical displayable ≠ policy-activable**. Les deux réservoirs restent actuellement `hidden/internal_signal_only`, donc ils ne constituent pas aujourd’hui une voie directe vers 20K résultats publics.
+### DATA-4.2 — Reservoir Prioritization ✅ PR #344
+
+Preuve live paginée :
+
+- **56 803** normalized evidence rows ;
+- **22 426** display evidence rows ;
+- **35** Registry rows ;
+- **14** candidats ;
+- DB writes / source requests / policy changes / public activations : **0**.
+
+**Gagnant ADMISSIBLE_GROWTH : `daragadir.com`**
+
+- 6 533 normalized ;
+- 6 319 `city + property_type + intent` ;
+- 6 528 technical display ;
+- score **71,75** ;
+- Registry : `public_sitemap_canonical_link / canonical_link_only / external_tail_link_only`.
+
+**Gagnant PARTNERSHIP_UPSIDE : `agenz.ma`**
+
+- 4 490 normalized ;
+- 1 227 fresh ;
+- 1 146 decision-structured ;
+- score **58,93** ;
+- Registry : `internal_signal_only / hidden`.
+
+Un minimum de **500 lignes normalisées** est requis pour gagner la lane partenariat afin de privilégier les multiplicateurs capables d’aider réellement le passage vers 20K.
+
+## Prochain lot DATA
+
+**DATA-4.3A — Dar Agadir Bounded Canonical-Link Activation Audit**.
+
+Objectif : mesurer ce qui peut être représenté utilement à partir des observations déjà détenues dans la frontière actuelle du Registry, sans fetch détail ni réutilisation de contenu.
+
+`canonical_link_only` = lien sortant borné + provenance explicite, jamais fiche partenaire ni contenu réhébergé.
+
+En parallèle business : **Agenz = priorité partenariat/feed**, sans changement de comportement produit avant autorisation écrite.
 
 ## Règles d’exécution
 
-Chaque lot doit respecter :
+Chaque lot :
 
-- une responsabilité claire ;
+- une responsabilité ;
 - une branche ;
 - une PR ;
 - un merge ;
 - migrations séparées du code applicatif ;
-- tests et preuves avant validation ;
-- aucune décision UX/UI structurante prise sans discussion préalable ;
-- aucun contournement temporaire présenté comme solution finale ;
-- **double-check obligatoire après chaque étape UX/UI** ;
-- **score UX/UI documenté : minimum 9,0/10 pour avancer** ;
-- certification mobile et desktop adaptée au périmètre ;
-- en fin de lot, `README.md`, `docs/ROADMAP.md` et `docs/SESSION.md` sont relus et alignés avec l’état réellement livré.
+- tests et preuves avant merge ;
+- aucun contournement temporaire présenté comme final ;
+- double-check après chaque étape UX/UI ;
+- score UX/UI minimum **9,0/10** ;
+- fin de lot : `README.md`, `docs/ROADMAP.md`, `docs/SESSION.md` relus et alignés.
 
 ## Démarrage local
 
@@ -147,4 +167,4 @@ npm test
 npm run dev
 ```
 
-Variables d’environnement : partir de `.env.local.example`. Ne jamais committer de secret ni utiliser une clé service-role côté client.
+Variables : partir de `.env.local.example`. Ne jamais committer de secret ni utiliser une service-role côté client.
