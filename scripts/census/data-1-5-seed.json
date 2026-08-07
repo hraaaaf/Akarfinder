@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "data-1-5-candidate-seed-v1",
+  "source": {
+    "lot": "DATA-1.4",
+    "workflowRunId": 31175110373,
+    "artifactDigest": "sha256:88609917b16608ce11b22cfed75654282b29a77d73a1612c992cff0c963996d2",
+    "selectionRule": "Top 20 unregistered PRIMARY_SOURCE_CANDIDATE domains from the certified DATA-1.4 review queue, excluding existing Source Registry entries."
+  },
+  "candidates": [
+    {"rank":2,"domain":"valfoncier.ma","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":87,"b3Urls":20,"ccSignalPages":891,"ccIndexedPages":1026,"registry":false},
+    {"rank":3,"domain":"damaneimmo.ma","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":85,"b3Urls":52,"ccSignalPages":95,"ccIndexedPages":267,"registry":false},
+    {"rank":4,"domain":"capital-properties.ma","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":85,"b3Urls":6,"ccSignalPages":327,"ccIndexedPages":327,"registry":false},
+    {"rank":5,"domain":"leaderimmo.ma","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":84,"b3Urls":41,"ccSignalPages":35,"ccIndexedPages":46,"registry":false},
+    {"rank":6,"domain":"immotaroudant.com","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":84,"b3Urls":33,"ccSignalPages":190,"ccIndexedPages":190,"registry":false},
+    {"rank":7,"domain":"mhproperties.ma","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":84,"b3Urls":33,"ccSignalPages":76,"ccIndexedPages":82,"registry":false},
+    {"rank":8,"domain":"immo-maroc.com","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":84,"b3Urls":32,"ccSignalPages":167,"ccIndexedPages":167,"registry":false},
+    {"rank":9,"domain":"proimmobilier.ma","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":84,"b3Urls":9,"ccSignalPages":153,"ccIndexedPages":285,"registry":false},
+    {"rank":10,"domain":"immobest.ma","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":84,"b3Urls":3,"ccSignalPages":229,"ccIndexedPages":278,"registry":false},
+    {"rank":11,"domain":"christiesrealestatemorocco.com","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":84,"b3Urls":1,"ccSignalPages":408,"ccIndexedPages":408,"registry":false},
+    {"rank":12,"domain":"immohammedia.com","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":83,"b3Urls":55,"ccSignalPages":64,"ccIndexedPages":64,"registry":false},
+    {"rank":13,"domain":"rabatimmo.ma","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":83,"b3Urls":36,"ccSignalPages":40,"ccIndexedPages":47,"registry":false},
+    {"rank":14,"domain":"immobilier-pro-maroc.com","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":83,"b3Urls":35,"ccSignalPages":129,"ccIndexedPages":129,"registry":false},
+    {"rank":15,"domain":"agadirimmobilier.ma","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":83,"b3Urls":10,"ccSignalPages":73,"ccIndexedPages":105,"registry":false},
+    {"rank":16,"domain":"nouraimmobilier.ma","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":83,"b3Urls":3,"ccSignalPages":145,"ccIndexedPages":158,"registry":false},
+    {"rank":17,"domain":"marrakech-luxury-properties.com","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":83,"b3Urls":2,"ccSignalPages":229,"ccIndexedPages":229,"registry":false},
+    {"rank":18,"domain":"agadirimmobilier.org","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":82,"b3Urls":21,"ccSignalPages":46,"ccIndexedPages":46,"registry":false},
+    {"rank":19,"domain":"prestigeimmo.ma","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":82,"b3Urls":15,"ccSignalPages":46,"ccIndexedPages":56,"registry":false},
+    {"rank":20,"domain":"alamal-immobilier.ma","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":82,"b3Urls":14,"ccSignalPages":33,"ccIndexedPages":33,"registry":false},
+    {"rank":21,"domain":"immobilier-a-marrakech.com","class":"PRIMARY_SOURCE_CANDIDATE","reviewPriority":82,"b3Urls":4,"ccSignalPages":145,"ccIndexedPages":145,"registry":false}
+  ]
+}
