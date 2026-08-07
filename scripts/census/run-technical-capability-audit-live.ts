@@ -3,7 +3,9 @@ import path from "node:path";
 
 import {
   buildTechnicalAudit,
+  detectAccessControl,
   detectCmsFamily,
+  detectNoindex,
   isRobotsPathAllowed,
   normalizeAuditDomain,
   parseRobots,
@@ -202,9 +204,8 @@ async function auditDomain(seed: CandidateSeed): Promise<TechnicalCapabilityAudi
 
   const preliminaryCms = detectCmsFamily(homepageHtml, homepageHeaders);
   const homepageBlocked = !homepageFetch || homepageFetch.evidence.status == null || homepageFetch.evidence.status < 200 || homepageFetch.evidence.status >= 400;
-  const noindex = /(?:name\s*=\s*["']robots["'][^>]+content\s*=\s*["'][^"']*noindex|content\s*=\s*["'][^"']*noindex[^"']*["'][^>]+name\s*=\s*["']robots["'])/i.test(homepageHtml)
-    || /noindex/i.test(homepageHeaders["x-robots-tag"] ?? "");
-  const accessControlled = /(captcha|verify you are human|access denied|cloudflare)/i.test(homepageHtml.slice(0, 200_000));
+  const noindex = detectNoindex(homepageHtml, homepageHeaders);
+  const accessControlled = detectAccessControl(homepageHtml, homepageFetch?.evidence.finalUrl ?? null);
   const allowMetadataProbes = !stopOnRobots && !homepageBlocked && !noindex && !accessControlled;
 
   const sitemapEvidence: HttpEvidence[] = [];
