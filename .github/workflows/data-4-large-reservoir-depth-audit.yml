@@ -1,0 +1,98 @@
+name: DATA-4.0 Large Reservoir Depth Audit
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data4/**"
+      - "scripts/audits/data-4-large-reservoir-depth-audit.ts"
+      - ".github/workflows/data-4-large-reservoir-depth-audit.yml"
+      - "docs/data/DATA-4-0-LARGE-RESERVOIR-DEPTH-AUDIT.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-4-0-large-reservoir-depth-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: DATA-4.0 unit tests
+        run: npx tsx --test scripts/data4/__tests__/reservoir-depth-audit.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+
+  live-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_OUT_DIR: .tmp/data-4-0/results
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run read-only DATA-4.0 audit
+        run: npx tsx scripts/audits/data-4-large-reservoir-depth-audit.ts
+
+      - name: Enforce audit proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_4_OUT_DIR}/proof.json"
+          test -s "${DATA_4_OUT_DIR}/report.json"
+          test -s "${DATA_4_OUT_DIR}/report.md"
+          test -s "${DATA_4_OUT_DIR}/report.csv"
+          node - <<'NODE'
+          const fs = require('fs');
+          const proof = JSON.parse(fs.readFileSync('.tmp/data-4-0/results/proof.json', 'utf8'));
+          if (proof.readOnly !== true || proof.writesPerformed !== 0 || proof.policyChanges !== 0) {
+            throw new Error(`DATA-4.0 is not read-only: ${JSON.stringify(proof)}`);
+          }
+          if (proof.sourceCount !== 2) throw new Error(`Expected 2 sources, got ${proof.sourceCount}`);
+          if (proof.policyActivableRows !== 0) throw new Error(`Current Registry must keep DATA-4.0 sources non-activable: ${JSON.stringify(proof)}`);
+          if (proof.scraperRuns !== 0 || proof.sitemapHarvests !== 0 || proof.directFetches !== 0) {
+            throw new Error(`DATA-4.0 crossed audit-only scope: ${JSON.stringify(proof)}`);
+          }
+          if (proof.avitoPublicCountObserved !== false) throw new Error('Avito public count must remain unknown until directly evidenced');
+          if (proof.mubawabPublicCountObserved !== true) throw new Error('Mubawab public counter evidence missing');
+          NODE
+
+      - name: Upload DATA-4.0 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-4-0-large-reservoir-depth-audit
+          path: .tmp/data-4-0/results/
+          if-no-files-found: error
+          retention-days: 14
