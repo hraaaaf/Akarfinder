@@ -1,0 +1,88 @@
+name: DATA-4.3G First Persistent Freshness Batch
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data4/daragadir-first-persistent-batch.ts"
+      - "scripts/data4/__tests__/daragadir-first-persistent-batch.test.ts"
+      - "scripts/audits/data-4-3g-first-persistent-freshness-batch.ts"
+      - ".github/workflows/data-4-3g-first-persistent-freshness-batch.yml"
+      - "docs/data/DATA-4-3G-FIRST-PERSISTENT-FRESHNESS-BATCH.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: DATA-4.3G unit tests
+        run: npx tsx --test scripts/data4/__tests__/daragadir-first-persistent-batch.test.ts
+      - name: DATA-4.3F regression tests
+        run: npx tsx --test scripts/data4/__tests__/daragadir-controlled-promotion.test.ts
+      - name: DATA-4.3E regression tests
+        run: npx tsx --test scripts/data4/__tests__/daragadir-freshness-write-canary.test.ts
+      - name: Existing seed freshness regression tests
+        run: npm run test:seed-freshness
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+
+  live-dry-run:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_3G_OUT_DIR: .tmp/data-4-3g/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run 50-row persistent batch dry-run
+        run: npx tsx scripts/audits/data-4-3g-first-persistent-freshness-batch.ts
+      - name: Enforce bounded persistent-batch proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_4_3G_OUT_DIR}/proof.json"
+          test -s "${DATA_4_3G_OUT_DIR}/apply-manifest.json"
+          test -s "${DATA_4_3G_OUT_DIR}/rollback-manifest.json"
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-4-3g/results/proof.json','utf8'));
+          const apply = JSON.parse(fs.readFileSync('.tmp/data-4-3g/results/apply-manifest.json','utf8'));
+          const rollback = JSON.parse(fs.readFileSync('.tmp/data-4-3g/results/rollback-manifest.json','utf8'));
+          if (p.mode !== 'DRY_RUN' || p.batchSize !== 50 || apply.length !== 50 || rollback.length !== 50) throw new Error(JSON.stringify(p));
+          if (p.promotionDecision.allowed !== true || p.promotionDecision.effectiveBatchSize !== 50) throw new Error(JSON.stringify(p));
+          if (p.ttlDays !== 14 || p.registryReviewStatus !== 'due_soon') throw new Error(JSON.stringify(p));
+          if (p.databaseWrites !== 0 || p.freshnessWrites !== 0 || p.policyChanges !== 0 || p.displayPolicyChanges !== 0) throw new Error(JSON.stringify(p));
+          if (p.productionActivation !== false || p.detailPageFetches !== 0 || p.contentReuseOperations !== 0) throw new Error(JSON.stringify(p));
+          if (p.seedStateReads !== 50 || p.rollbackRows !== 50) throw new Error(JSON.stringify(p));
+          if (p.sourceRequests < 2 || p.sourceRequests > 40) throw new Error(JSON.stringify(p));
+          for (const row of apply) {
+            if (row.before.freshnessStatus !== 'seed_only') throw new Error('non-seed row selected');
+            if (row.before.freshChannels.includes('public_sitemap_presence')) throw new Error('channel already present');
+            if (row.proposed.freshnessStatus !== 'fresh_confirmed') throw new Error('wrong proposed state');
+            if (!row.proposed.freshChannels.includes('public_sitemap_presence')) throw new Error('missing channel');
+          }
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-3g-first-persistent-freshness-batch
+          path: .tmp/data-4-3g/results/
+          if-no-files-found: error
+          retention-days: 14
