@@ -6,7 +6,7 @@ PATHS_FILE="${CC_PARQUET_PATHS_FILE:-.tmp/data-1-3b/warc-index-parquet.paths}"
 OUT_DIR="${CC_EVIDENCE_OUT_DIR:-.tmp/data-1-3b/results}"
 WORK_DIR="${CC_EVIDENCE_WORK_DIR:-.tmp/data-1-3b/batched}"
 BATCH_SIZE="${CC_PARQUET_BATCH_SIZE:-20}"
-MAX_ATTEMPTS="${CC_BATCH_MAX_ATTEMPTS:-4}"
+MAX_ATTEMPTS="${CC_BATCH_MAX_ATTEMPTS:-2}"
 
 REAL_ESTATE_RE='(^|[^a-z])(immo|immobilier|appartement|apartment|villa|maison|house|terrain|land|riad|studio|duplex|bureau|office|local-commercial|localcommercial|vente|vendre|sale|location|louer|rent|property|properties|real-estate|realestate|residence)([^a-z]|$)'
 LOCATION_RE='(^|[^a-z])(morocco|maroc|casablanca|rabat|temara|marrakech|tanger|agadir|fes|meknes|kenitra|el[-_/. ]*jadida|oujda|tetouan|nador|mohammedia|essaouira|safi|beni[-_/. ]*mellal|khouribga|settat|berrechid|el[-_/. ]*kelaa[-_/. ]*des[-_/. ]*sraghna|youssoufia|ben[-_/. ]*guerir|larache|ksar[-_/. ]*el[-_/. ]*kebir|chefchaouen|al[-_/. ]*hoceima|taza|taounate|sefrou|ifrane|azrou|berkane|taourirt|errachidia|midelt|ouarzazate|tinghir|taroudant|tiznit|guelmim|laayoune|dakhla|sidi[-_/. ]*kacem|sidi[-_/. ]*slimane|khemisset|bouznika|skhirat|benslimane|ouezzane|fnideq|martil)([^a-z]|$)'
@@ -23,15 +23,25 @@ if ! [[ "${BATCH_SIZE}" =~ ^[0-9]+$ ]] || [[ "${BATCH_SIZE}" -lt 1 ]]; then
   echo "CC_PARQUET_BATCH_SIZE must be a positive integer" >&2
   exit 1
 fi
+if ! [[ "${MAX_ATTEMPTS}" =~ ^[0-9]+$ ]] || [[ "${MAX_ATTEMPTS}" -lt 1 ]]; then
+  echo "CC_BATCH_MAX_ATTEMPTS must be a positive integer" >&2
+  exit 1
+fi
 
 rm -rf "${WORK_DIR}"
-mkdir -p "${WORK_DIR}/batches" "${WORK_DIR}/parts" "${OUT_DIR}"
+mkdir -p "${WORK_DIR}/batches" "${WORK_DIR}/parts" "${WORK_DIR}/split" "${OUT_DIR}"
+: > "${OUT_DIR}/failed-parquet-files.txt"
 split -l "${BATCH_SIZE}" -d -a 3 "${PATHS_FILE}" "${WORK_DIR}/batches/batch-"
 
+TOTAL_FILES="$(grep -cve '^$' "${PATHS_FILE}")"
+SUCCESS_FILES=0
+SUCCESS_GROUPS=0
+PART_SEQUENCE=0
+
 build_remote_list() {
-  local batch_file="$1"
+  local source_file="$1"
   local output_file="$2"
-  python - "$batch_file" "$output_file" <<'PY'
+  python - "$source_file" "$output_file" <<'PY'
 from pathlib import Path
 import sys
 source = Path(sys.argv[1])
@@ -43,25 +53,21 @@ print(len(values))
 PY
 }
 
-batch_count=0
-for batch_file in "${WORK_DIR}"/batches/batch-*; do
-  [[ -f "${batch_file}" ]] || continue
-  batch_name="$(basename "${batch_file}")"
-  list_file="${WORK_DIR}/${batch_name}-files.sql"
-  sql_file="${WORK_DIR}/${batch_name}.sql"
-  part_file="${WORK_DIR}/parts/${batch_name}.csv"
-  file_count="$(build_remote_list "${batch_file}" "${list_file}")"
-  files="$(cat "${list_file}")"
-
+write_query() {
+  local file_list="$1"
+  local part_file="$2"
+  local sql_file="$3"
+  local files
+  files="$(cat "${file_list}")"
   cat > "${sql_file}" <<SQL
 INSTALL httpfs;
 LOAD httpfs;
 SET threads=2;
 SET memory_limit='6GB';
-SET http_retries=8;
-SET http_retry_wait_ms=1000;
+SET http_retries=3;
+SET http_retry_wait_ms=750;
 SET http_retry_backoff=2;
-SET http_timeout=60;
+SET http_timeout=45;
 SET http_keep_alive=false;
 COPY (
   WITH base AS (
@@ -119,28 +125,74 @@ COPY (
   SELECT * FROM lane_b
 ) TO '${part_file}' (HEADER, DELIMITER ',');
 SQL
+}
 
-  echo "[DATA-1.3B] ${batch_name}: ${file_count} parquet files"
-  completed=0
+run_group() {
+  local source_file="$1"
+  local label="$2"
+  local file_count
+  file_count="$(grep -cve '^$' "${source_file}")"
+  [[ "${file_count}" -gt 0 ]] || return 0
+
+  local list_file="${WORK_DIR}/split/${label}-files.sql"
+  local sql_file="${WORK_DIR}/split/${label}.sql"
+  local part_file="${WORK_DIR}/parts/part-$(printf '%05d' "${PART_SEQUENCE}").csv"
+  PART_SEQUENCE=$((PART_SEQUENCE + 1))
+  build_remote_list "${source_file}" "${list_file}" >/dev/null
+  write_query "${list_file}" "${part_file}" "${sql_file}"
+
+  echo "[DATA-1.3B] ${label}: querying ${file_count} parquet file(s)"
+  local attempt
   for attempt in $(seq 1 "${MAX_ATTEMPTS}"); do
     rm -f "${part_file}"
     if "${DUCKDB_BIN}" < "${sql_file}"; then
-      completed=1
-      break
+      SUCCESS_FILES=$((SUCCESS_FILES + file_count))
+      SUCCESS_GROUPS=$((SUCCESS_GROUPS + 1))
+      echo "[DATA-1.3B] ${label}: success"
+      return 0
     fi
-    echo "[DATA-1.3B] ${batch_name}: attempt ${attempt}/${MAX_ATTEMPTS} failed" >&2
+    echo "[DATA-1.3B] ${label}: attempt ${attempt}/${MAX_ATTEMPTS} failed" >&2
     if [[ "${attempt}" -lt "${MAX_ATTEMPTS}" ]]; then
-      sleep $((attempt * 8))
+      sleep $((attempt * 4))
     fi
   done
-  if [[ "${completed}" -ne 1 ]] || [[ ! -f "${part_file}" ]]; then
-    echo "[DATA-1.3B] ${batch_name}: exhausted retries" >&2
-    exit 1
+
+  rm -f "${part_file}"
+  if [[ "${file_count}" -eq 1 ]]; then
+    local failed_path
+    failed_path="$(grep -ve '^$' "${source_file}" | head -n 1)"
+    echo "${failed_path}" >> "${OUT_DIR}/failed-parquet-files.txt"
+    echo "[DATA-1.3B] ${label}: isolated inaccessible parquet ${failed_path}" >&2
+    return 0
   fi
-  batch_count=$((batch_count + 1))
+
+  local left_count=$((file_count / 2))
+  local left="${WORK_DIR}/split/${label}-left.paths"
+  local right="${WORK_DIR}/split/${label}-right.paths"
+  head -n "${left_count}" "${source_file}" > "${left}"
+  tail -n "+$((left_count + 1))" "${source_file}" > "${right}"
+  echo "[DATA-1.3B] ${label}: bisecting ${file_count} -> ${left_count} + $((file_count - left_count))" >&2
+  run_group "${left}" "${label}-L"
+  run_group "${right}" "${label}-R"
+}
+
+for batch_file in "${WORK_DIR}"/batches/batch-*; do
+  [[ -f "${batch_file}" ]] || continue
+  run_group "${batch_file}" "$(basename "${batch_file}")"
 done
 
-echo "batches_completed=${batch_count}" | tee -a "${OUT_DIR}/manifest.txt"
+FAILED_FILES="$(grep -cve '^$' "${OUT_DIR}/failed-parquet-files.txt" || true)"
+{
+  echo "parquet_files_total=${TOTAL_FILES}"
+  echo "parquet_files_succeeded=${SUCCESS_FILES}"
+  echo "parquet_files_failed=${FAILED_FILES}"
+  echo "query_groups_succeeded=${SUCCESS_GROUPS}"
+} >> "${OUT_DIR}/manifest.txt"
+
+if ! compgen -G "${WORK_DIR}/parts/*.csv" > /dev/null; then
+  echo "No successful Common Crawl batch output was produced" >&2
+  exit 1
+fi
 
 total_sql="${WORK_DIR}/aggregate.sql"
 cat > "${total_sql}" <<SQL
@@ -192,29 +244,48 @@ import sys
 out = Path(sys.argv[1])
 
 def read(name):
-    path = out / name
-    with path.open(newline='') as f:
+    with (out / name).open(newline='') as f:
         return list(csv.DictReader(f))
 
+def manifest():
+    values = {}
+    for line in (out / 'manifest.txt').read_text().splitlines():
+        if '=' in line:
+            key, value = line.split('=', 1)
+            values[key] = value
+    return values
+
+m = manifest()
 a = read('lane-a.csv')
 b = read('lane-b.csv')
 rows = a + b
 unique_hosts = {r['domain'].lower() for r in rows}
 unique_registered = {r['registered_domain'].lower() for r in rows}
+total = int(m.get('parquet_files_total', '0'))
+succeeded = int(m.get('parquet_files_succeeded', '0'))
+failed = int(m.get('parquet_files_failed', '0'))
 summary = {
     'schemaVersion': 'data-1-commoncrawl-live-evidence-v1',
     'crawl': 'CC-MAIN-2026-25',
     'warcFetchAllowed': False,
-    'laneAComplete': True,
-    'laneBComplete': True,
     'laneAHosts': len(a),
     'laneBHosts': len(b),
     'uniqueHosts': len(unique_hosts),
     'uniqueRegisteredDomains': len(unique_registered),
     'rows': len(rows),
-    'batchCount': int(next((line.split('=', 1)[1] for line in (out / 'manifest.txt').read_text().splitlines() if line.startswith('batches_completed=')), '0')),
+    'parquetFilesTotal': total,
+    'parquetFilesSucceeded': succeeded,
+    'parquetFilesFailed': failed,
+    'coverageRatio': (succeeded / total) if total else 0,
+    'queryGroupsSucceeded': int(m.get('query_groups_succeeded', '0')),
+    'scanComplete': total > 0 and failed == 0 and succeeded == total,
 }
 (out / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
 (out / 'all-domains.txt').write_text('\n'.join(sorted(unique_hosts)) + '\n')
 print(json.dumps(summary, indent=2))
 PY
+
+if [[ "${FAILED_FILES}" -ne 0 ]]; then
+  echo "DATA-1.3B incomplete: ${FAILED_FILES}/${TOTAL_FILES} parquet files remained inaccessible after isolation" >&2
+  exit 2
+fi
