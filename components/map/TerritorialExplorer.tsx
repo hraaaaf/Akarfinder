@@ -52,7 +52,7 @@ export function TerritorialExplorer({
 
   return (
     <nav
-      className={`pointer-events-auto absolute left-3 right-3 top-[92px] z-20 overflow-hidden rounded-2xl border border-border-strong/70 bg-card/94 text-card-foreground shadow-panel backdrop-blur-xl sm:left-4 sm:right-auto sm:top-[96px] ${explorerWidthClass}`}
+      className={`pointer-events-auto absolute left-3 right-3 top-[112px] z-20 overflow-hidden rounded-2xl border border-border-strong/70 bg-card/94 text-card-foreground shadow-panel backdrop-blur-xl sm:left-4 sm:right-auto sm:top-[128px] lg:top-[96px] ${explorerWidthClass}`}
       aria-label="Exploration territoriale"
     >
       <div className="flex min-w-0 items-center gap-1 border-b border-border px-2.5 py-1.5 sm:px-3.5">
