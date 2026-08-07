@@ -8,6 +8,7 @@ import {
 import {
   buildOdmPublicSearchInput,
   routePublicSearch,
+  supportsOdmPublicSearchQuery,
 } from "@/lib/odm/odm-public-routing";
 import { searchPublicRepresentationsWithOwner } from "@/lib/search-gateway/public-search-with-owner";
 import {
@@ -35,6 +36,7 @@ function shadowContext(query: SearchQuery): OdmShadowSearchContext {
 }
 
 function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResult): void {
+  if (!supportsOdmPublicSearchQuery(query)) return;
   const stableKey = buildSearchStableKey(query);
   if (!shouldRunOdmDualRead(stableKey)) return;
 
