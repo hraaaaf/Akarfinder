@@ -18,6 +18,7 @@ export type PolicyReviewTrack =
   | "BLOCKED_REVIEW";
 
 export type LegalEvidenceSource = "HOMEPAGE_LINK" | "STANDARD_PUBLIC_PATH";
+export type LegalEvidenceKind = "TERMS_OR_LEGAL" | "PRIVACY" | "OTHER";
 
 export type LegalEvidencePage = {
   requestedUrl: string;
@@ -87,6 +88,8 @@ export type SourcePolicyEvidenceReview = {
 };
 
 const LEGAL_LINK_RE = /(?:terms(?:-of-use|-and-conditions)?|conditions?(?:-generales?)?|cgu|mentions?(?:-|_)?legales?|legal(?:-|_)?notice|privacy(?:-|_)?policy|politique(?:-|_)?de(?:-|_)?confidentialite|confidentialite|charte(?:-|_)?de(?:-|_)?confidentialite)/i;
+const TERMS_OR_LEGAL_PATH_RE = /(?:terms(?:-of-use|-and-conditions)?|conditions?(?:-generales?)?|cgu|mentions?(?:-|_)?legales?|legal(?:-|_)?notice)/i;
+const PRIVACY_PATH_RE = /(?:privacy(?:-|_)?policy|politique(?:-|_)?de(?:-|_)?confidentialite|confidentialite|charte(?:-|_)?de(?:-|_)?confidentialite)/i;
 
 const RESTRICTIVE_PATTERNS: Array<{ id: string; regex: RegExp }> = [
   {
@@ -110,6 +113,13 @@ const RESTRICTIVE_PATTERNS: Array<{ id: string; regex: RegExp }> = [
     regex: /(?:usage|utilisation|reuse|reutilisation|exploitation).{0,100}(?:commerciale?|commercial).{0,100}(?:interdit|prohibit(?:ed|ion)?|sans\s+autorisation|without\s+(?:prior\s+)?permission)/is,
   },
 ];
+
+const SUBSTANTIVE_RESTRICTIVE_SIGNAL_IDS = new Set([
+  "explicit_reproduction_restriction",
+  "explicit_reproduction_restriction_reverse",
+  "automated_access_restriction",
+  "commercial_reuse_restriction",
+]);
 
 const PROTECTED_CONTENT_PATTERNS: Array<{ id: string; regex: RegExp }> = [
   { id: "copyright_claim", regex: /(?:copyright|droit(?:s)?\s+d['’]auteur|tous\s+droits\s+reserves?|all\s+rights\s+reserved)/i },
@@ -147,6 +157,19 @@ function sameSite(hostname: string, domain: string): boolean {
   return host === normalizedDomain || host.endsWith(`.${normalizedDomain}`);
 }
 
+export function classifyLegalEvidenceUrl(value: string | null): LegalEvidenceKind {
+  if (!value) return "OTHER";
+  try {
+    const url = new URL(value);
+    const searchable = `${url.pathname}${url.search}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (TERMS_OR_LEGAL_PATH_RE.test(searchable)) return "TERMS_OR_LEGAL";
+    if (PRIVACY_PATH_RE.test(searchable)) return "PRIVACY";
+    return "OTHER";
+  } catch {
+    return "OTHER";
+  }
+}
+
 export function extractSameSiteLegalLinks(html: string, baseUrl: string, domain: string): string[] {
   const links = new Set<string>();
   const hrefRe = /<a\b[^>]*\bhref\s*=\s*["']([^"']+)["'][^>]*>/gi;
@@ -165,7 +188,7 @@ export function extractSameSiteLegalLinks(html: string, baseUrl: string, domain:
     }
   }
   return [...links].sort((a, b) => {
-    const priority = (value: string) => (/cgu|terms|conditions|mentions|legal/i.test(value) ? 0 : 1);
+    const priority = (value: string) => (classifyLegalEvidenceUrl(value) === "TERMS_OR_LEGAL" ? 0 : 1);
     return priority(a) - priority(b) || a.localeCompare(b);
   });
 }
@@ -207,6 +230,10 @@ function clampScore(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
+function isSuccessfulEvidencePage(page: LegalEvidencePage): boolean {
+  return page.status != null && page.status >= 200 && page.status < 300 && Boolean(page.bodySha256);
+}
+
 export function buildSourcePolicyEvidenceReview(input: {
   technicalAudit: TechnicalCapabilityAudit;
   generatedAt: string;
@@ -220,18 +247,31 @@ export function buildSourcePolicyEvidenceReview(input: {
   if (!Number.isInteger(input.requestCount) || input.requestCount < 0) throw new Error("DATA-1.6A requestCount must be non-negative");
 
   const domain = normalizePolicyAuditDomain(input.technicalAudit.seed.domain);
-  const successfulLegalPages = input.legalPages.filter((page) => page.status != null && page.status >= 200 && page.status < 300 && page.bodySha256);
-  const restrictiveSignalIds = [...new Set(successfulLegalPages.flatMap((page) => page.signalIds.filter((id) => id.startsWith("restrictive:"))))]
+  const successfulRelevantPages = input.legalPages.filter(
+    (page) => isSuccessfulEvidencePage(page) && classifyLegalEvidenceUrl(page.finalUrl) !== "OTHER",
+  );
+  const successfulTermsPages = successfulRelevantPages.filter((page) => classifyLegalEvidenceUrl(page.finalUrl) === "TERMS_OR_LEGAL");
+  const successfulPrivacyPages = successfulRelevantPages.filter((page) => classifyLegalEvidenceUrl(page.finalUrl) === "PRIVACY");
+  const restrictiveSignalIds = [...new Set(successfulRelevantPages.flatMap((page) => page.signalIds.filter((id) => id.startsWith("restrictive:"))))]
     .map((id) => id.replace(/^restrictive:/, ""))
     .sort();
-  const publicChannelSignalIds = [...new Set(successfulLegalPages.flatMap((page) => page.signalIds.filter((id) => id.startsWith("public_channel:"))))]
+  const substantiveRestrictiveSignalIds = restrictiveSignalIds.filter((id) => SUBSTANTIVE_RESTRICTIVE_SIGNAL_IDS.has(id));
+  const publicChannelSignalIds = [...new Set(successfulRelevantPages.flatMap((page) => page.signalIds.filter((id) => id.startsWith("public_channel:"))))]
     .map((id) => id.replace(/^public_channel:/, ""))
     .sort();
-  const protectedContentSignalIds = [...new Set(successfulLegalPages.flatMap((page) => page.signalIds.filter((id) => id.startsWith("protected_content:"))))]
+  const protectedContentSignalIds = [...new Set(successfulRelevantPages.flatMap((page) => page.signalIds.filter((id) => id.startsWith("protected_content:"))))]
     .map((id) => id.replace(/^protected_content:/, ""))
     .sort();
 
-  const accessLimited = input.robots.status === "BLOCKED" || input.robots.status === "UNAVAILABLE" || input.homepage.accessControlSignal;
+  const robotsBlockedLegalPaths = input.legalPages.filter((page) => page.error === "robots_disallow_path").length;
+  const homepageFetchFailed = input.homepage.status == null && Boolean(input.homepage.error);
+  const accessLimited =
+    input.robots.status === "BLOCKED" ||
+    input.robots.status === "UNAVAILABLE" ||
+    input.homepage.accessControlSignal ||
+    homepageFetchFailed ||
+    (successfulRelevantPages.length === 0 && robotsBlockedLegalPaths > 0);
+
   let evidenceStatus: PolicyEvidenceStatus;
   let reviewTrack: PolicyReviewTrack;
   let nextAction: string;
@@ -244,18 +284,18 @@ export function buildSourcePolicyEvidenceReview(input: {
     evidenceStatus = "NOINDEX_OBSERVED";
     reviewTrack = "BLOCKED_OR_INDEX_ONLY_REVIEW";
     nextAction = "Treat noindex as a blocking governance signal and require explicit manual policy review before any source activation.";
-  } else if (restrictiveSignalIds.length > 0) {
+  } else if (substantiveRestrictiveSignalIds.length > 0) {
     evidenceStatus = "RESTRICTIVE_TERMS_FOUND";
     reviewTrack = "PARTNERSHIP_REQUIRED_REVIEW";
     nextAction = "Escalate for human/legal review and obtain written permission or partnership terms before any ingestion or reuse.";
-  } else if (successfulLegalPages.length > 0 && publicChannelSignalIds.length > 0) {
+  } else if (successfulRelevantPages.length > 0 && publicChannelSignalIds.length > 0) {
     evidenceStatus = "PUBLIC_CHANNEL_SIGNAL_FOUND";
     reviewTrack = "PUBLIC_CHANNEL_REVIEW";
     nextAction = "Review the published channel/license terms manually. A public API/feed/link signal is not itself permission to ingest or reuse content.";
-  } else if (successfulLegalPages.length > 0) {
+  } else if (successfulTermsPages.length > 0) {
     evidenceStatus = "TERMS_FOUND_NO_EXPLICIT_PERMISSION";
     reviewTrack = "PARTNER_OR_INDEX_ONLY_REVIEW";
-    nextAction = "No explicit reuse authorization was established. Review for link-only/index-only treatment or request written permission.";
+    nextAction = "No explicit reuse authorization was established in the observed terms/legal page. Review for link-only/index-only treatment or request written permission.";
   } else if (accessLimited) {
     evidenceStatus = "ACCESS_OR_FETCH_LIMITED";
     reviewTrack = "MANUAL_LEGAL_REVIEW";
@@ -263,20 +303,23 @@ export function buildSourcePolicyEvidenceReview(input: {
   } else {
     evidenceStatus = "INSUFFICIENT_LEGAL_EVIDENCE";
     reviewTrack = "MANUAL_LEGAL_REVIEW";
-    nextAction = "No sufficiently explicit legal/reuse evidence was observed within the bounded public audit. Obtain manual evidence or written permission.";
+    nextAction = successfulPrivacyPages.length > 0
+      ? "Only privacy/data-protection evidence was observed; this does not establish reuse terms. Obtain terms/legal evidence or written permission."
+      : "No sufficiently explicit legal/reuse evidence was observed within the bounded public audit. Obtain manual evidence or written permission.";
   }
 
   const evidenceUrls = [...new Set([
     input.robots.evidenceUrl,
     input.homepage.evidenceUrl,
-    ...input.legalPages.filter((page) => page.status != null).map((page) => page.finalUrl ?? page.requestedUrl),
+    ...input.legalPages.flatMap((page) => [page.requestedUrl, page.finalUrl]),
   ].filter((value): value is string => Boolean(value)))].sort();
 
   const evidenceConfidenceScore = clampScore(
     (input.robots.status === "PRESENT" ? 15 : input.robots.status === "MISSING" ? 5 : 0) +
       (input.homepage.status != null && input.homepage.status >= 200 && input.homepage.status < 300 ? 15 : 0) +
-      Math.min(40, successfulLegalPages.length * 20) +
-      (restrictiveSignalIds.length > 0 ? 20 : 0) +
+      Math.min(40, successfulTermsPages.length * 20) +
+      Math.min(10, successfulPrivacyPages.length * 5) +
+      (substantiveRestrictiveSignalIds.length > 0 ? 20 : 0) +
       (publicChannelSignalIds.length > 0 ? 10 : 0) +
       (protectedContentSignalIds.length > 0 ? 5 : 0),
   );
@@ -349,15 +392,19 @@ export function renderSourcePolicyEvidenceMarkdown(reviews: SourcePolicyEvidence
     "",
     "## Review queue",
     "",
-    "| # | Domain | Evidence status | Confidence | Review track | Legal pages | Technical family |",
-    "|---:|---|---|---:|---|---:|---|",
-    ...reviews.map((review, index) => `| ${index + 1} | ${review.domain} | ${review.evidenceStatus} | ${review.evidenceConfidenceScore} | ${review.reviewTrack} | ${review.legalPages.filter((page) => page.status != null && page.status >= 200 && page.status < 300).length} | ${review.technicalCapability.connectorFamilyCandidate} |`),
+    "| # | Domain | Evidence status | Confidence | Review track | Terms/legal 2xx | Privacy 2xx | Technical family |",
+    "|---:|---|---|---:|---|---:|---:|---|",
+    ...reviews.map((review, index) => {
+      const termsCount = review.legalPages.filter((page) => isSuccessfulEvidencePage(page) && classifyLegalEvidenceUrl(page.finalUrl) === "TERMS_OR_LEGAL").length;
+      const privacyCount = review.legalPages.filter((page) => isSuccessfulEvidencePage(page) && classifyLegalEvidenceUrl(page.finalUrl) === "PRIVACY").length;
+      return `| ${index + 1} | ${review.domain} | ${review.evidenceStatus} | ${review.evidenceConfidenceScore} | ${review.reviewTrack} | ${termsCount} | ${privacyCount} | ${review.technicalCapability.connectorFamilyCandidate} |`;
+    }),
     "",
     "## Governance gate",
     "",
     "`DISCOVERED → AUDITED → POLICY_ASSIGNED → ELIGIBLE → CONNECTOR_SELECTED`",
     "",
-    "DATA-1.6A stops at `AUDITED`. Every Registry candidate field and `policyAssignment` remains `null`. Public technical accessibility, robots allowance, feeds, APIs, sitemaps or CMS fingerprints are never treated as reuse authorization.",
+    "DATA-1.6A stops at `AUDITED`. Privacy-only pages and redirects back to non-legal pages are not counted as terms. Every Registry candidate field and `policyAssignment` remains `null`. Public technical accessibility, robots allowance, feeds, APIs, sitemaps or CMS fingerprints are never treated as reuse authorization.",
     "",
   ];
   return `${lines.join("\n")}\n`;

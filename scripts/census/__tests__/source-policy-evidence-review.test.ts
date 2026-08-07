@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { buildCandidateReconciliationReport } from "../candidate-reconciliation";
 import type { TechnicalCapabilityAudit } from "../technical-capability-audit";
 import {
   buildSourcePolicyEvidenceReview,
+  classifyLegalEvidenceUrl,
   detectPolicySignals,
   extractSameSiteLegalLinks,
   standardLegalUrls,
@@ -52,7 +54,7 @@ function technicalAudit(overrides: Partial<TechnicalCapabilityAudit> = {}): Tech
   };
 }
 
-function legalPage(signalIds: string[] = []): LegalEvidencePage {
+function legalPage(signalIds: string[] = [], options: Partial<LegalEvidencePage> = {}): LegalEvidencePage {
   return {
     requestedUrl: "https://example.ma/cgu/",
     finalUrl: "https://example.ma/cgu/",
@@ -63,6 +65,7 @@ function legalPage(signalIds: string[] = []): LegalEvidencePage {
     source: "HOMEPAGE_LINK",
     signalIds,
     error: null,
+    ...options,
   };
 }
 
@@ -77,6 +80,16 @@ function reviewInput(legalPages: LegalEvidencePage[]) {
   };
 }
 
+test("reconciliation import remains usable alongside policy review tests", () => {
+  const report = buildCandidateReconciliationReport({
+    generatedAt: "2026-08-07T10:00:00Z",
+    commonCrawl: [],
+    reserve: [{ domain: "example.ma", observedUrls: 1 }],
+    registry: [],
+  });
+  assert.equal(report.reconciliation.domains, 1);
+});
+
 test("extracts only same-site legal links", () => {
   const html = `
     <a href="/mentions-legales/">Legal</a>
@@ -88,6 +101,12 @@ test("extracts only same-site legal links", () => {
     "https://example.ma/mentions-legales/",
     "https://www.example.ma/privacy-policy/",
   ]);
+});
+
+test("classifies terms, privacy and non-legal final URLs separately", () => {
+  assert.equal(classifyLegalEvidenceUrl("https://example.ma/cgu/"), "TERMS_OR_LEGAL");
+  assert.equal(classifyLegalEvidenceUrl("https://example.ma/politique-de-confidentialite/"), "PRIVACY");
+  assert.equal(classifyLegalEvidenceUrl("https://example.ma/"), "OTHER");
 });
 
 test("standard legal probes remain HTTPS and same-domain", () => {
@@ -127,6 +146,14 @@ test("restrictive terms route to partnership review and never assign policy", ()
   assert.equal(review.registryDraft.authorizationStatusCandidate, null);
 });
 
+test("generic prior-authorization wording alone is not enough for a restrictive decision", () => {
+  const review = buildSourcePolicyEvidenceReview(reviewInput([
+    legalPage(["restrictive:prior_authorization_required"]),
+  ]));
+  assert.equal(review.evidenceStatus, "TERMS_FOUND_NO_EXPLICIT_PERMISSION");
+  assert.equal(review.reviewTrack, "PARTNER_OR_INDEX_ONLY_REVIEW");
+});
+
 test("terms without explicit permission stay manual/index-or-partner review", () => {
   const review = buildSourcePolicyEvidenceReview(reviewInput([legalPage(["protected_content:copyright_claim"])]));
   assert.equal(review.evidenceStatus, "TERMS_FOUND_NO_EXPLICIT_PERMISSION");
@@ -134,11 +161,57 @@ test("terms without explicit permission stay manual/index-or-partner review", ()
   assert.equal(review.policyAssignment, null);
 });
 
+test("privacy-only evidence is not promoted to terms found", () => {
+  const review = buildSourcePolicyEvidenceReview(reviewInput([
+    legalPage([], {
+      requestedUrl: "https://example.ma/privacy-policy/",
+      finalUrl: "https://example.ma/privacy-policy/",
+    }),
+  ]));
+  assert.equal(review.evidenceStatus, "INSUFFICIENT_LEGAL_EVIDENCE");
+  assert.equal(review.reviewTrack, "MANUAL_LEGAL_REVIEW");
+  assert.match(review.nextAction, /privacy\/data-protection evidence/i);
+});
+
+test("a legal-looking URL that redirects to the homepage is not counted as terms", () => {
+  const review = buildSourcePolicyEvidenceReview(reviewInput([
+    legalPage(["protected_content:copyright_claim"], {
+      requestedUrl: "https://example.ma/mentions-legales/",
+      finalUrl: "https://example.ma/",
+    }),
+  ]));
+  assert.equal(review.evidenceStatus, "INSUFFICIENT_LEGAL_EVIDENCE");
+  assert.deepEqual(review.protectedContentSignalIds, []);
+});
+
 test("missing legal evidence fails closed", () => {
   const review = buildSourcePolicyEvidenceReview(reviewInput([]));
   assert.equal(review.evidenceStatus, "INSUFFICIENT_LEGAL_EVIDENCE");
   assert.equal(review.reviewTrack, "MANUAL_LEGAL_REVIEW");
   assert.equal(review.policyAssignment, null);
+});
+
+test("homepage fetch failure is access-limited instead of falsely insufficient", () => {
+  const input = reviewInput([]);
+  const review = buildSourcePolicyEvidenceReview({
+    ...input,
+    homepage: { ...input.homepage, status: null, evidenceUrl: "https://example.ma/", error: "TimeoutError" },
+  });
+  assert.equal(review.evidenceStatus, "ACCESS_OR_FETCH_LIMITED");
+  assert.equal(review.reviewTrack, "MANUAL_LEGAL_REVIEW");
+});
+
+test("robots-disallowed legal evidence is access-limited without bypass", () => {
+  const review = buildSourcePolicyEvidenceReview(reviewInput([
+    legalPage([], {
+      requestedUrl: "https://example.ma/mentions-legales/",
+      finalUrl: null,
+      status: null,
+      bodySha256: null,
+      error: "robots_disallow_path",
+    }),
+  ]));
+  assert.equal(review.evidenceStatus, "ACCESS_OR_FETCH_LIMITED");
 });
 
 test("robots block-all is a blocking governance signal", () => {
