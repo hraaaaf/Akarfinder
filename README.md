@@ -66,7 +66,8 @@ Doctrine **no-bypass absolue** :
 
 - CARTE-QUARTIER-P1A.1 / PR #328 : Geo Canonical Core, score **9,5/10** ;
 - CARTE-QUARTIER-P1A.2 / PR #334 : `district` structuré dans Search avec routing fail-closed ;
-- prochain UX : **P1A.3 — Map State & Navigation**.
+- CARTE-QUARTIER-P1A.3 / PR #349 : état Map piloté par URL, `city + district + layer=explore`, Back/Forward, continuité Search ↔ Map ↔ Quartier et `project_id`, score contractuel **9,3/10** ;
+- prochain UX : **P1A.4 — Map Design System**.
 
 ## État DATA acquis
 
