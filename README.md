@@ -25,7 +25,9 @@ Aucun nouveau document de roadmap, session, handover, statut ou contexte ne doit
 
 ## Doctrine produit
 
-AkarFinder est **search-first** et **intelligence-first**. `/search` reste le cœur du produit.
+AkarFinder est **search-first** et **intelligence-first**. `/search` reste le cœur du produit et le moteur canonique des requêtes immobilières.
+
+`/map` est son complément spatial : **moteur d’exploration géographique et d’intelligence**, pas un second moteur de recherche parallèle. Map, Search, pages SEO et Mon Projet doivent partager la même identité géographique canonique de bout en bout.
 
 Pipeline canonique :
 
@@ -41,7 +43,10 @@ Principes non négociables :
 - les scores de qualité, fiabilité, prix et complétude restent distincts ;
 - aucune source n’est qualifiée de partenaire sans relation ou autorisation explicite ;
 - aucune image, galerie, coordonnée ou donnée de contact n’est réutilisée sans droit établi ;
-- tout changement DATA/Search important suit `Shadow → Canary → certification → activation bornée`.
+- tout changement DATA/Search important suit `Shadow → Canary → certification → activation bornée` ;
+- aucune frontière de ville/quartier, position exacte, bâtiment, landmark ou proximité n’est fabriqué : une géométrie ou un POI public doit avoir une provenance démontrable ;
+- une illustration cartographique peut enrichir un landmark réel, mais ne remplace jamais sa géométrie ni sa provenance ;
+- sur la carte, **une couleur possède une seule signification active à la fois** : identité territoriale, prix, offre, couverture ou autre métrique ne doivent jamais être mélangés visuellement.
 
 ## Doctrine d’acquisition
 
@@ -60,7 +65,9 @@ AkarFinder applique une doctrine **no-bypass** :
 - Tailwind CSS ;
 - Supabase PostgreSQL comme base canonique ;
 - Vercel pour build et exécution ;
-- MapLibre GL pour la cartographie ;
+- MapLibre GL comme moteur de rendu cartographique ;
+- **AkarFinder Map Design System** comme cible visuelle : fond, hiérarchie, couleurs, clusters, polygones, dark mode et landmarks propriétaires, sans dépendre visuellement du style cartographique par défaut d’un fournisseur ;
+- Geo Registry comme autorité d’identité ville/quartier ;
 - migrations SQL versionnées ;
 - CI GitHub Actions avec tests, build, contrats DATA, accessibilité et preuves ciblées.
 
@@ -77,7 +84,11 @@ Chaque lot doit respecter :
 - migrations séparées du code applicatif ;
 - tests et preuves avant validation ;
 - aucune décision UX/UI structurante prise sans discussion préalable ;
-- aucun contournement temporaire présenté comme solution finale.
+- aucun contournement temporaire présenté comme solution finale ;
+- **double-check obligatoire après chaque étape UX/UI** ;
+- **score UX/UI documenté après chaque étape : minimum 9,0/10 pour avancer ; si le score est inférieur, l’étape est retravaillée puis rescorrée avant la suivante** ;
+- certification mobile et desktop adaptée au périmètre du lot, avec vérification de lisibilité, hiérarchie, vérité des données, interactions et accessibilité ;
+- en fin de lot, les trois documents canoniques `README.md`, `docs/ROADMAP.md` et `docs/SESSION.md` sont relus et alignés avec l’état réellement livré avant merge final.
 
 ## Démarrage local
 
