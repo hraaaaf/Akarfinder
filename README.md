@@ -78,7 +78,8 @@ AkarFinder applique une doctrine **no-bypass** :
 - CI GitHub Actions avec tests, build, contrats DATA, accessibilité et preuves ciblées ;
 - **DATA-1.5 / PR #331** : Technical Capability Audit, 20 domaines P0, 19 review-ready, score **9,4/10** ;
 - **DATA-1.6A / PR #333** : Source Policy Evidence Review, 19 sources, score **9,5/10**, zéro write/policy/auth/bypass/WARC ;
-- **DATA-1.6B / PR #338 + hotfix #339** : 19 sources enregistrées dans `source_policy_registry` en gouvernance conservatrice, **0 source activée**, score final **9,6/10**.
+- **DATA-1.6B / PR #338 + hotfix #339** : 19 sources enregistrées dans `source_policy_registry` en gouvernance conservatrice, **0 source activée**, score final **9,6/10** ;
+- **DATA-4.0 / PR #341** : Large Reservoir Depth Audit Mubawab + Avito, lecture seule, score **9,6/10**, distinguant profondeur publique, profondeur normalisée, surface techniquement displayable et surface réellement activable par policy.
 
 ### DATA-1.6B — état production certifié
 
@@ -99,6 +100,26 @@ Résultat :
 `prestigeimmo.ma` est explicitement hard-blocked : `prohibited / blocked / hidden / no-bypass`.
 
 La première tentative d’application a échoué **atomiquement avant tout insert** parce que `execution_score` est une colonne PostgreSQL `GENERATED ALWAYS`. PR #339 a retiré cette colonne de l’INSERT et ajouté un test de non-régression. Aucun état partiel n’a existé ; la seconde application a réussi et PostgreSQL calcule désormais `execution_score` automatiquement.
+
+### DATA-4.0 — profondeur des grands réservoirs certifiée
+
+PR **#341**, merge `de1368e`.
+
+Preuve live finale :
+
+- sources : **Avito + Mubawab** ;
+- normalized : **35 134** ;
+- technical display-eligible : **3 588** ;
+- policy-activable : **0** ;
+- normalization unavailable : **29 733** ;
+- fresh-confirmed : **912** ;
+- DB writes / policy changes / scraper runs / sitemap harvests / direct fetches : **0**.
+
+Avito : **23 925 normalized**, dont **22 227 unavailable (~92,9 %)**, **10 fresh-confirmed**, **231 technical display-eligible**, inventaire public non estimé faute de compteur fiable.
+
+Mubawab : **11 209 normalized**, **3 357 technical display-eligible**, **902 fresh-confirmed** ; compteur public borné observé : **106 947**, soit un gap public→normalized de **95 738**. Ce gap reste un sujet partenariat/licence ou public-index admissible, pas une autorisation de crawl.
+
+Conclusion canonique : **technical displayable ≠ policy-activable**. Les deux réservoirs restent actuellement `hidden/internal_signal_only`, donc ils ne constituent pas aujourd’hui une voie directe vers 20K résultats publics.
 
 ## Règles d’exécution
 
