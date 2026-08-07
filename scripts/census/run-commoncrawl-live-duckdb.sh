@@ -63,10 +63,10 @@ write_query() {
 LOAD httpfs;
 SET threads=2;
 SET memory_limit='6GB';
-SET http_retries=3;
-SET http_retry_wait_ms=750;
+SET http_retries=1;
+SET http_retry_wait_ms=500;
 SET http_retry_backoff=2;
-SET http_timeout=45;
+SET http_timeout=25;
 SET http_keep_alive=false;
 COPY (
   WITH base AS (
