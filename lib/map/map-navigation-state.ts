@@ -1,4 +1,5 @@
 import {
+  isSeoEligibleGeoPair,
   resolveCityEntity,
   resolveNeighborhoodEntity,
 } from "@/lib/geo/geo-entity-registry";
@@ -50,6 +51,10 @@ function setIfPresent(params: URLSearchParams, key: string, value?: string): voi
   if (value?.trim()) params.set(key, value.trim());
 }
 
+function appendContext(params: URLSearchParams, state: MapNavigationContext): void {
+  for (const key of CONTEXT_KEYS) setIfPresent(params, key, state[key]);
+}
+
 export function parseMapNavigationState(params: MapSearchParams): MapNavigationState {
   const rawCity = pickFirst(params.city);
   const cityEntity = rawCity && rawCity !== "all" ? resolveCityEntity(rawCity) : null;
@@ -87,7 +92,7 @@ export function buildMapHref(state: MapNavigationState): string {
   if (state.city !== "all") params.set("city", state.city);
   if (state.city !== "all" && state.district) params.set("district", state.district);
   params.set("layer", MAP_LAYER_EXPLORE);
-  for (const key of CONTEXT_KEYS) setIfPresent(params, key, state[key]);
+  appendContext(params, state);
   return `/map?${params.toString()}`;
 }
 
@@ -102,7 +107,7 @@ export function buildMapSearchHref(state: MapNavigationState): string {
     }
   }
 
-  for (const key of CONTEXT_KEYS) setIfPresent(params, key, state[key]);
+  appendContext(params, state);
   const query = params.toString();
   return query ? `/search?${query}` : "/search";
 }
@@ -112,6 +117,20 @@ export function buildMapProjectHref(state: MapNavigationState): string {
   setIfPresent(params, "project_id", state.project_id);
   const query = params.toString();
   return query ? `/mon-projet/espace?${query}` : "/mon-projet/espace";
+}
+
+export function buildNeighborhoodPageHref(state: MapNavigationState): string | null {
+  if (state.city === "all" || !state.district) return null;
+  const cityEntity = resolveCityEntity(state.city);
+  if (!cityEntity) return null;
+  const districtEntity = resolveNeighborhoodEntity(cityEntity.canonical_name, state.district);
+  if (!districtEntity || !isSeoEligibleGeoPair(cityEntity.slug, districtEntity.slug)) return null;
+
+  const params = new URLSearchParams();
+  appendContext(params, state);
+  const query = params.toString();
+  const path = `/immobilier/${cityEntity.slug}/${districtEntity.slug}`;
+  return query ? `${path}?${query}` : path;
 }
 
 export function withMapLocation(
