@@ -1,0 +1,111 @@
+name: DATA-4.1A Avito Internal Recovery Audit
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data4/avito-internal-recovery-audit.ts"
+      - "scripts/data4/__tests__/avito-internal-recovery-audit.test.ts"
+      - "scripts/audits/data-4-1-avito-internal-recovery-audit.ts"
+      - ".github/workflows/data-4-1-avito-internal-recovery-audit.yml"
+      - "docs/data/DATA-4-1-AVITO-INTERNAL-RECOVERY-AUDIT.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-4-1a-avito-internal-recovery-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: DATA-4.1A unit tests
+        run: npx tsx --test scripts/data4/__tests__/avito-internal-recovery-audit.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+
+  live-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_1_OUT_DIR: .tmp/data-4-1/results
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run read-only DATA-4.1A audit
+        run: npx tsx scripts/audits/data-4-1-avito-internal-recovery-audit.ts
+
+      - name: Enforce recovery proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_4_1_OUT_DIR}/proof.json"
+          test -s "${DATA_4_1_OUT_DIR}/report.json"
+          test -s "${DATA_4_1_OUT_DIR}/report.md"
+          test -s "${DATA_4_1_OUT_DIR}/categories.csv"
+          test -s "${DATA_4_1_OUT_DIR}/classification.csv"
+          node - <<'NODE'
+          const fs = require('fs');
+          const proof = JSON.parse(fs.readFileSync('.tmp/data-4-1/results/proof.json', 'utf8'));
+          if (proof.readOnly !== true || proof.databaseWrites !== 0 || proof.policyChanges !== 0) {
+            throw new Error(`DATA-4.1A crossed read-only scope: ${JSON.stringify(proof)}`);
+          }
+          if (proof.sourceNetworkRequests !== 0) {
+            throw new Error(`DATA-4.1A must not contact Avito: ${JSON.stringify(proof)}`);
+          }
+          if (proof.policyActivableRows !== 0) {
+            throw new Error(`DATA-4.1A cannot create public inventory: ${JSON.stringify(proof)}`);
+          }
+          if (proof.canonicalRealEstateRows + proof.noiseOrNonListingRows !== proof.unavailableRows) {
+            throw new Error(`DATA-4.1A row conservation failed: ${JSON.stringify(proof)}`);
+          }
+          if (proof.recoverableCoreRows > proof.canonicalRealEstateRows) {
+            throw new Error(`Recoverable core exceeds real-estate subset: ${JSON.stringify(proof)}`);
+          }
+          if (proof.noiseShare <= 0.5) {
+            throw new Error(`Expected reservoir contamination to remain explicit, got ${JSON.stringify(proof)}`);
+          }
+          if (proof.registryDisplayGate !== 'hidden' || proof.registryDisplayPolicy !== 'internal_signal_only') {
+            throw new Error(`Avito Registry boundary changed; re-review required: ${JSON.stringify(proof)}`);
+          }
+          NODE
+
+      - name: Upload DATA-4.1A evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-4-1a-avito-internal-recovery-audit
+          path: .tmp/data-4-1/results/
+          if-no-files-found: error
+          retention-days: 14
