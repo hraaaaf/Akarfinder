@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-07**  
-**Statut : UX P1A.4 ✅ / P1A.5 prochain ; DATA-4.3D ✅ PR #353 / DATA-4.3E prochain**
+**Statut : UX P1A.4 ✅ / P1A.5 prochain ; DATA-4.3F ✅ PR #358 / DATA-4.3G prochain**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -44,126 +44,69 @@ Acquis :
 
 ## P1A.5 — Territorial Explorer 🔴
 
-Objectif : transformer la carte map-first certifiée en explorateur territorial réellement utile sans casser les contrats P1A.1→P1A.4.
-
-Scope attendu :
-
-1. hiérarchie nationale → ville → quartier explicite ;
-2. navigation/zoom cohérents avec l’URL canonique ;
-3. filtres spatiaux visibles uniquement s’ils reposent sur une donnée réellement disponible ;
-4. aucune géométrie ou proximité inventée ;
-5. continuité Map ↔ Search ↔ Quartier ↔ Mon Projet ;
-6. performance et lisibilité clusters/repères à l’échelle nationale ;
-7. audit 390 / 768 / 1280 ;
-8. score UX/UI ≥ **9,0/10**, sinon reprise.
+Construire l’exploration Maroc → ville → quartier au-dessus du Map Design System sans inventer géométrie/proximité, préserver URL/Search/Quartier/Mon Projet, auditer 390/768/1280, score ≥9/10.
 
 Puis : P1A.6 Responsive → P1B intelligence cartographique.
 
 # 4. Fondation DATA acquise
 
-- Observation Ledger / Freshness / normalization / quality tiers ;
-- Source Registry v2 / display eligibility ;
-- Market Index / Property Graph foundation ;
-- dedup conservant les observations ;
-- Partner Feed ;
-- OpenSERP / public sitemaps / Common Crawl ;
-- 53 villes/pôles.
+Observation Ledger / Freshness / normalization / quality tiers ; Source Registry v2 / display eligibility ; Market Index / Property Graph foundation ; dedup ; Partner Feed ; OpenSERP / public sitemaps / Common Crawl ; 53 villes/pôles.
 
-# 5. DATA-1 — Moroccan Real Estate Web Census ✅
+# 5. DATA-1 ✅
 
-- DATA-1.1 → 1.6B terminés ;
-- B3 : **37 009 URLs / 7 051 domaines** ;
-- Common Crawl : **300/300 Parquet**, **8 727 registered domains** ;
-- univers : **15 238 domaines** ;
-- 230 primary-source candidates ;
-- 625 portal candidates ;
-- Registry initial : 19 rows, **0 activation non autorisée**.
+37 009 URLs / 7 051 domaines ; 8 727 registered domains Common Crawl ; univers 15 238 domaines ; 230 primary-source candidates ; 625 portal candidates ; Registry initial sans activation non autorisée.
 
 # 6. DATA-4 — Reservoir Strategy
 
-## DATA-4.0 ✅ PR #341
-Avito + Mubawab : **35 134 normalized**, **3 588 technical display**, **0 policy-activable**.
+- **4.0 ✅ #341** — Avito+Mubawab : 35 134 normalized, 3 588 technical display, 0 policy-activable.
+- **4.1A ✅ #343** — Avito unavailable : 95,06 % bruit ; 73 core-récupérables ; 0 policy-activable.
+- **4.2 ✅ #344** — Dar Agadir = `ADMISSIBLE_GROWTH`; Agenz = `PARTNERSHIP_UPSIDE`.
+- **4.3A ✅ #347** — 5 eligible shadow ; 6 425 revalidation-required.
+- **4.3B ✅ #348** — 5 905 URLs sitemap ; 5 673 seed-only encore présentes ; 10 requêtes ; 0 détail/content reuse/write/activation.
+- **4.3C ✅ #351** — 5 566 SHADOW_READY dont 5 564 seed-only ; 0 duplicate/policy blocked/write/activation.
+- **4.3D ✅ #353** — 100-row dry-run réversible ; canal `public_sitemap_presence`; TTL 14 jours ; 100/100 rollback ; 20/20 gates ; 0 write/activation.
+- **4.3E ✅ #355** — 10-row production rehearsal ; 10/10 apply, verify, rollback ; état freshness/evidence restauré ; `updated_at` = audit trail non rollbackable.
+- **4.3F ✅ #358** — controlled promotion design ; live proof : **6 533 total**, **6 431 seed-only**, **102 fresh-confirmed**, **0 canary residue**, Registry eligible, drift 0 %, **50 initial**, **100/run max**, **500 avant re-certification**, TTL 14 jours, 0 write/activation.
 
-## DATA-4.1A ✅ PR #343
-Avito `unavailable` : **21 129 / 22 227 = 95,06 % bruit/non-immobilier** ; seulement **73** core-récupérables ; 0 policy-activable.
+## DATA-4.3G — First Persistent Freshness Batch 🔴 PROCHAIN DATA
 
-## DATA-4.2 ✅ PR #344
-- `ADMISSIBLE_GROWTH` : **daragadir.com** ;
-- `PARTNERSHIP_UPSIDE` : **agenz.ma**.
-
-## DATA-4.3A ✅ PR #347
-Dar Agadir : **5 ELIGIBLE_SHADOW**, **6 425 SEED_ONLY_REVALIDATION_REQUIRED**.
-
-## DATA-4.3B ✅ PR #348
-Public sitemap : **5 905 URLs**, **5 749** overlaps, **5 673 seed-only** encore présentes ; 10 requêtes robots/sitemaps ; 0 détail/content reuse/write/activation.
-
-## DATA-4.3C ✅ PR #351
-Freshness shadow : **5 566 SHADOW_READY**, dont **5 564 seed-only** ; 0 duplicate ; 0 policy blocked ; 0 write/activation.
-
-## DATA-4.3D ✅ PR #353
-Freshness Evidence Canary Design certifié :
-
-- canary déterministe : **100 URLs** ;
-- eligible seed-only pool : **5 564** ;
-- canal proposé : `public_sitemap_presence` ;
-- TTL : **14 jours** ;
-- `freshness_status` proposé : `fresh_confirmed` ;
-- `before/proposed/rollback` : **100/100** ;
-- seed-state reads : **100** ;
-- source requests : **10** ;
-- 0 DB write ; 0 freshness write ; 0 policy change ; 0 activation ;
-- **20/20 workflows verts** ;
-- merge `019253c`.
-
-Le matcher OpenSERP/Yandex existant reste inchangé : le canal sitemap demeure explicitement distinct.
-
-## DATA-4.3E — First Bounded Freshness Write Canary 🔴 PROCHAIN DATA
-
-Objectif : effectuer le **premier write freshness borné et réversible**, sans activation SERP.
+Objectif : effectuer le premier batch **persistant** de 50 lignes maximum sans modifier la policy d’affichage.
 
 Contraintes :
 
-1. petit canary déterministe, strictement inférieur au dry-run 100 rows ;
-2. Source Registry doit toujours autoriser `public_sitemap` et rester current/due-soon ;
-3. revalidation sitemap live immédiatement avant write ;
-4. snapshot `before` immuable ;
-5. write uniquement `freshness_status`, `fresh_last_seen_at`, `fresh_channels`, evidence metadata et `updated_at` ;
-6. canal = `public_sitemap_presence` ;
-7. TTL = 14 jours ;
-8. aucune page détail, aucun content reuse ;
-9. aucune modification de display/publication policy ;
-10. vérification production post-write ;
-11. rollback rehearsal exact ;
-12. activation SERP interdite dans ce lot.
+1. batch déterministe ≤50 ;
+2. préflight Registry + sitemap immédiatement avant write ;
+3. seules lignes `seed_only` sans canal `public_sitemap_presence` ;
+4. snapshot complet incluant `updated_at` comme audit trail ;
+5. write uniquement freshness/evidence ;
+6. canal `public_sitemap_presence`, TTL 14 jours ;
+7. vérification 50/50 post-write ;
+8. observabilité applied/skipped/drifted ;
+9. arrêt si drift >1 % ;
+10. rollback disponible mais pas exécuté automatiquement si batch certifié ;
+11. aucune modification display/publication policy ;
+12. aucune page détail/content reuse ;
+13. mesurer l’impact Search/display séparément sans l’interpréter comme nouvelle autorisation.
 
-Gate de sortie : écrire peu, vérifier tout, prouver rollback et maintenir **0 changement public**.
+Gate : 4.3G peut persister un premier batch fraîcheur, mais ne peut pas bulk-promote les 5 564 ni modifier la policy publique.
 
 # 7. Lane business parallèle
 
-**Agenz = priorité partenariat/feed** : 4 490 normalized, 1 227 fresh, 1 146 decision-structured, mais hidden/internal-only. Aucun changement Registry/produit avant autorisation écrite.
+**Agenz = priorité partenariat/feed** : 4 490 normalized, 1 227 fresh, 1 146 decision-structured, hidden/internal-only. Aucun changement avant autorisation écrite.
 
-# 8. Suite DATA après 4.3E
+# 8. Suite DATA
 
-Si 4.3E est certifié :
-
-1. DATA-4.3F — canary display eligibility shadow sur les lignes fraîchement écrites ;
-2. activation canonical-link éventuelle dans un lot séparé ;
-3. généralisation aux autres sources canonical-link admissibles ;
-4. DATA-3 Universal Site Connector pour sources éligibles ;
-5. DATA-5/6/7 feeds + claim + workspace ;
-6. atteindre **20K observations exploitables**, puis 50K/100K+.
-
-Si 4.3E échoue : rollback immédiat et passage au réservoir admissible suivant.
+4.3G first persistent batch → observation TTL/aging + mesure Search/display → batchs suivants jusqu’à 500 max → re-certification obligatoire → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
 
 # 9. Définition de terminé
 
-Un lot est terminé uniquement si : scope respecté, tests/build/gates verts, preuves disponibles, Registry respecté, aucun bypass, aucun workflow temporaire, PR mergée, production vérifiée si write, rollback vérifié si mutation, et les 3 MD canoniques alignés.
+Scope respecté, tests/build/gates verts, preuves, Registry respecté, aucun bypass, PR mergée, prod vérifiée si write, rollback disponible, 3 MD alignés.
 
 # 10. Prochaine action exacte
 
-## DATA — DATA-4.3E
+## DATA — DATA-4.3G
 
-Construire puis certifier le premier **bounded freshness write canary** Dar Agadir, sans aucune activation publique.
+Construire et certifier un **premier batch persistant de 50 lignes maximum**, sans changement de display policy ni bulk activation.
 
 ## UX — P1A.5
 
