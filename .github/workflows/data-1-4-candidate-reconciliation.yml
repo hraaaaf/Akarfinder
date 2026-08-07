@@ -1,0 +1,125 @@
+name: DATA-1.4 Candidate Reconciliation
+
+on:
+  pull_request:
+    paths:
+      - "scripts/census/candidate-reconciliation.ts"
+      - "scripts/census/run-candidate-reconciliation-live.ts"
+      - "scripts/census/__tests__/candidate-reconciliation.test.ts"
+      - ".github/workflows/data-1-4-candidate-reconciliation.yml"
+      - "docs/DATA_1_4_CANDIDATE_RECONCILIATION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: data-1-4-candidate-reconciliation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: DATA-1.4 unit tests
+        run: npx tsx --test scripts/census/__tests__/candidate-reconciliation.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+
+  live-reconciliation:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CC_EVIDENCE_RUN_ID: "31168075021"
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      CC_CANDIDATES_CSV: .tmp/data-1-4/commoncrawl/all-candidates.csv
+      DATA_1_4_OUT_DIR: .tmp/data-1-4/results
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download certified DATA-1.3B evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/data-1-4/commoncrawl
+          gh run download "${CC_EVIDENCE_RUN_ID}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --name data-1-3b-commoncrawl-live-evidence \
+            --dir .tmp/data-1-4/commoncrawl
+          test -s "${CC_CANDIDATES_CSV}"
+          test -s .tmp/data-1-4/commoncrawl/summary.json
+          node - <<'NODE'
+          const fs = require('fs');
+          const summary = JSON.parse(fs.readFileSync('.tmp/data-1-4/commoncrawl/summary.json', 'utf8'));
+          if (summary.scanComplete !== true || summary.parquetFilesSucceeded !== 300 || summary.parquetFilesFailed !== 0) {
+            throw new Error(`DATA-1.3B evidence is not certified 300/300: ${JSON.stringify(summary)}`);
+          }
+          if (summary.uniqueHosts !== 9087 || summary.uniqueRegisteredDomains !== 8727) {
+            throw new Error(`Unexpected DATA-1.3B corpus cardinality: ${JSON.stringify(summary)}`);
+          }
+          NODE
+
+      - name: Run read-only reconciliation against B3 and Source Registry
+        run: npx tsx scripts/census/run-candidate-reconciliation-live.ts
+
+      - name: Enforce fail-closed proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_1_4_OUT_DIR}/candidate-reconciliation.json"
+          test -s "${DATA_1_4_OUT_DIR}/candidate-reconciliation.md"
+          test -s "${DATA_1_4_OUT_DIR}/top-100.csv"
+          node - <<'NODE'
+          const fs = require('fs');
+          const proof = JSON.parse(fs.readFileSync('.tmp/data-1-4/results/proof.json', 'utf8'));
+          if (proof.readOnly !== true) throw new Error('DATA-1.4 must remain read-only');
+          if (proof.writesPerformed !== 0) throw new Error('DATA-1.4 must perform zero writes');
+          if (proof.effectivePoliciesAssigned !== 0) throw new Error('DATA-1.4 must not assign source policies');
+          // DATA-1.3B has 9,087 raw hosts. DATA-1.4 canonicalizes leading www.,
+          // so the normalized host universe is intentionally 8,970 while the
+          // registered-domain universe remains the certified 8,727.
+          if (proof.commonCrawlHosts !== 8970) throw new Error(`Unexpected canonical Common Crawl host count: ${proof.commonCrawlHosts}`);
+          if (proof.commonCrawlRegisteredDomains !== 8727) throw new Error(`Unexpected Common Crawl registered-domain count: ${proof.commonCrawlRegisteredDomains}`);
+          if (proof.b3Domains !== 7051) throw new Error(`Unexpected B3 domain count: ${proof.b3Domains}`);
+          if (proof.domains < proof.commonCrawlRegisteredDomains) throw new Error('Reconciled universe cannot be smaller than Common Crawl registered-domain input');
+          console.log(JSON.stringify(proof, null, 2));
+          NODE
+
+      - name: Upload DATA-1.4 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-1-4-candidate-reconciliation
+          path: .tmp/data-1-4/results/
+          if-no-files-found: error
+          retention-days: 14
