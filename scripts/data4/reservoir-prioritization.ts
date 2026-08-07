@@ -33,6 +33,8 @@ export interface ReservoirPriority extends ReservoirMetrics {
   recommendedNextAction: string;
 }
 
+const PARTNERSHIP_MIN_RESERVOIR_ROWS = 500;
+
 function clamp01(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.max(0, Math.min(1, value));
@@ -55,6 +57,7 @@ function policyAdmissibility(row: ReservoirMetrics): number {
 
 function partnershipPolicyNeed(row: ReservoirMetrics): number {
   if (row.authorizationStatus === "prohibited") return 0;
+  if (row.normalizedRows < PARTNERSHIP_MIN_RESERVOIR_ROWS) return 0;
   if (row.displayGate === "hidden" || row.displayPolicy === "internal_signal_only") return 1;
   if (row.authorizationStatus === "permission_required") return 0.8;
   return 0.4;
@@ -80,7 +83,8 @@ export function prioritizeReservoir(row: ReservoirMetrics): ReservoirPriority {
     0.12 * connectability
   ) * admissibility;
 
-  // Partnership lane values richer/fresher stock that is currently blocked from public activation.
+  // Partnership lane targets reservoirs that can materially move national coverage.
+  // Small high-quality catalogs remain useful long-tail candidates, but cannot win this scale-oriented lane.
   const partnershipScore = 100 * (
     0.25 * volume +
     0.20 * structure +
@@ -98,7 +102,7 @@ export function prioritizeReservoir(row: ReservoirMetrics): ReservoirPriority {
     ? "Audit bounded canonical-link tail activation using existing public-sitemap observations only; no content reuse or direct detail fetch."
     : lane === "PARTNERSHIP_UPSIDE"
       ? "Prioritize written partnership/feed outreach; keep current corpus internal-only until explicit authorization changes the Registry."
-      : "Hold. Do not spend engineering capacity until volume, freshness, structure, or policy improves.";
+      : "Hold. Do not spend scale-oriented engineering capacity until volume, freshness, structure, or policy improves.";
 
   return {
     ...row,
@@ -120,7 +124,7 @@ export function rankReservoirs(rows: ReservoirMetrics[]): {
 } {
   const prioritized = rows.map(prioritizeReservoir);
   const byAdmissible = (a: ReservoirPriority, b: ReservoirPriority) => b.admissibleScore - a.admissibleScore || b.normalizedRows - a.normalizedRows || a.sourceDomain.localeCompare(b.sourceDomain);
-  const byPartner = (a: ReservoirPriority, b: ReservoirPriority) => b.partnershipScore - a.partnershipScore || b.decisionStructured - a.decisionStructured || a.sourceDomain.localeCompare(b.sourceDomain);
+  const byPartner = (a: ReservoirPriority, b: ReservoirPriority) => b.partnershipScore - a.partnershipScore || b.normalizedRows - a.normalizedRows || b.decisionStructured - a.decisionStructured || a.sourceDomain.localeCompare(b.sourceDomain);
   return {
     admissibleGrowth: prioritized.filter((row) => row.lane === "ADMISSIBLE_GROWTH").sort(byAdmissible),
     partnershipUpside: prioritized.filter((row) => row.lane === "PARTNERSHIP_UPSIDE").sort(byPartner),
