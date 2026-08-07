@@ -8,6 +8,10 @@ on:
       - "scripts/census/commoncrawl-url-index.ts"
   workflow_dispatch:
 
+concurrency:
+  group: data-1-3b-commoncrawl-live-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -22,7 +26,7 @@ jobs:
       CC_EVIDENCE_OUT_DIR: .tmp/data-1-3b/results
       CC_EVIDENCE_WORK_DIR: .tmp/data-1-3b/batched
       CC_PARQUET_BATCH_SIZE: 20
-      CC_BATCH_MAX_ATTEMPTS: 4
+      CC_BATCH_MAX_ATTEMPTS: 2
 
     steps:
       - name: Checkout
@@ -55,9 +59,10 @@ jobs:
           test "${COUNT}" -ge 250
           test "${COUNT}" -le 400
 
-      - name: Query URL Index in retryable batches
+      - name: Query URL Index with failure isolation
         shell: bash
         run: |
+          bash -n scripts/census/run-commoncrawl-live-duckdb.sh
           chmod +x scripts/census/run-commoncrawl-live-duckdb.sh
           scripts/census/run-commoncrawl-live-duckdb.sh
 
@@ -81,8 +86,11 @@ jobs:
           from pathlib import Path
           summary = json.loads(Path('.tmp/data-1-3b/results/summary.json').read_text())
           assert summary['warcFetchAllowed'] is False
-          assert summary['laneAComplete'] is True
-          assert summary['laneBComplete'] is True
-          assert summary['batchCount'] >= 10
+          assert summary['scanComplete'] is True
+          assert summary['parquetFilesTotal'] >= 250
+          assert summary['parquetFilesSucceeded'] == summary['parquetFilesTotal']
+          assert summary['parquetFilesFailed'] == 0
+          assert summary['coverageRatio'] == 1
+          assert summary['queryGroupsSucceeded'] >= 10
           print(json.dumps(summary, indent=2))
           PY
