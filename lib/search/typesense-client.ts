@@ -1,3 +1,4 @@
+import { canonicalizeGeoPair } from "@/lib/geo/geo-entity-registry";
 import { getResidualSearchText } from "./query-intent";
 import type { SearchQuery, TypesenseListingDocument } from "./types";
 
@@ -187,7 +188,9 @@ export function buildTypesenseSearchParams(params: TypesenseSearchParams): URLSe
   });
 
   const filters: string[] = [];
-  if (params.city) filters.push(`city:=${params.city}`);
+  const geo = canonicalizeGeoPair(params.city ?? "", params.district);
+  if (params.city) filters.push(`city:=${geo.city || params.city}`);
+  if (params.district) filters.push(`district:=${geo.neighborhood ?? params.district.trim()}`);
   if (params.property_type) filters.push(`property_type:=${params.property_type}`);
   if (params.transaction_type) filters.push(`transaction_type:=${params.transaction_type}`);
   if (params.reliability_badge) filters.push(`reliability_badge:=${params.reliability_badge}`);

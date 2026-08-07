@@ -134,7 +134,10 @@ describe("MAP-NEIGHBORHOOD-INTELLIGENCE-1 - neighborhood map contract", () => {
       (point) => point.neighborhood === "Route de l'Ourika"
     );
     assert.ok(ourika);
-    assert.equal(ourika?.searchHref, "/search?city=Marrakech&q=Ourika");
+    assert.equal(
+      ourika?.searchHref,
+      "/search?city=Marrakech&district=Route+de+l%27Ourika"
+    );
     assert.match(getBenchmarkLabel(ourika!), /^~\d[\d\s]* DH\/m²$/);
   });
 

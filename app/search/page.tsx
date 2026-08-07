@@ -13,6 +13,7 @@ import { shouldRunOdmDualRead } from "@/lib/odm/odm-dual-read-shadow";
 import {
   buildOdmPublicSearchInput,
   routePublicSearch,
+  supportsOdmPublicSearchQuery,
 } from "@/lib/odm/odm-public-routing";
 import type { SearchQuery, SearchResult } from "@/lib/search";
 import {
@@ -60,7 +61,24 @@ function normalizeTransactionType(raw?: string): ListingFiltersState["transactio
   }
 }
 
+function normalizePropertyType(raw?: string): ListingFiltersState["propertyType"] {
+  const allowed: ListingFiltersState["propertyType"][] = [
+    "all",
+    "Appartement",
+    "Villa",
+    "Maison",
+    "Studio",
+    "Terrain",
+    "Bureau",
+    "Riad",
+  ];
+  return allowed.includes(raw as ListingFiltersState["propertyType"])
+    ? (raw as ListingFiltersState["propertyType"])
+    : "all";
+}
+
 function scheduleOdmDualReadShadow(query: SearchQuery, legacyResult: SearchResult): void {
+  if (!supportsOdmPublicSearchQuery(query)) return;
   const stableKey = buildSearchStableKey(query);
   if (!shouldRunOdmDualRead(stableKey)) return;
 
@@ -104,8 +122,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   );
   const transactionType = normalizeTransactionType(resolvedQuery.transaction_type);
   const city = resolvedQuery.city ?? "all";
+  const neighborhood = resolvedQuery.district ?? "";
   const mreOnly = (pickFirst(params.mre) ?? "").toLowerCase() === "true";
-  const propertyType = resolvedQuery.property_type ?? "all";
+  const propertyType = normalizePropertyType(resolvedQuery.property_type);
   const minBudget = pickFirst(params.min_price) ?? pickFirst(params.budget_min) ?? "";
   const maxBudget = pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "";
   const search = resolvedQuery.q ?? "";
@@ -124,6 +143,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           initialFilters={{
             transactionType,
             city,
+            neighborhood,
             propertyType,
             minBudget,
             maxBudget,

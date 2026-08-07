@@ -3,6 +3,7 @@ import type { Listing } from "@/lib/listings/types";
 export type SearchQuery = {
   q?: string;
   city?: string;
+  district?: string;
   property_type?: string;
   transaction_type?: string;
   minReliabilityScore?: number;

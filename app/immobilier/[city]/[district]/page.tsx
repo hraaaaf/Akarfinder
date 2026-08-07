@@ -46,9 +46,9 @@ export default async function DistrictPage({ params }: PageProps) {
 
   const seo = generateNeighborhoodSeoMetadata(n);
   const cityParam = encodeURIComponent(n.cityDisplayName);
-  const districtQuery = encodeURIComponent(n.displayName);
-  const searchHref = `/search?city=${cityParam}&q=${districtQuery}`;
-  const result = await searchListings({ city: n.cityDisplayName, q: n.displayName, limit: 6 }).catch(() => ({ listings: [] }));
+  const districtParam = encodeURIComponent(n.displayName);
+  const searchHref = `/search?city=${cityParam}&district=${districtParam}`;
+  const result = await searchListings({ city: n.cityDisplayName, district: n.displayName, limit: 6 }).catch(() => ({ listings: [] }));
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",

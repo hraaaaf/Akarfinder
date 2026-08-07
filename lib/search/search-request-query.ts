@@ -54,6 +54,9 @@ export function buildSearchRequestQuery(read: SearchParamReader): SearchQuery {
   const city = publicValue(read("city"));
   if (city) query.city = city;
 
+  const district = publicValue(read("district"));
+  if (district) query.district = district;
+
   const propertyType = publicValue(read("property_type"));
   if (propertyType) query.property_type = propertyType;
 
@@ -91,6 +94,7 @@ export function buildSearchStableKey(query: SearchQuery): string {
   return JSON.stringify({
     q: query.q ?? null,
     city: query.city ?? null,
+    district: query.district ?? null,
     property_type: query.property_type ?? null,
     transaction_type: query.transaction_type ?? null,
     min_price: query.min_price ?? null,
