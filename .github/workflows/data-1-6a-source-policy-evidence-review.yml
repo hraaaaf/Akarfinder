@@ -1,0 +1,128 @@
+name: DATA-1.6A Source Policy Evidence Review
+
+on:
+  pull_request:
+    paths:
+      - "scripts/census/source-policy-evidence-review.ts"
+      - "scripts/census/run-source-policy-evidence-review-live.ts"
+      - "scripts/census/__tests__/source-policy-evidence-review.test.ts"
+      - ".github/workflows/data-1-6a-source-policy-evidence-review.yml"
+      - "docs/DATA_1_6A_SOURCE_POLICY_EVIDENCE_REVIEW.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: data-1-6a-source-policy-evidence-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: DATA-1.6A unit tests
+        run: npx tsx --test scripts/census/__tests__/source-policy-evidence-review.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+
+  live-policy-evidence-review:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DATA_1_5_EVIDENCE_RUN_ID: "31178327843"
+      DATA_1_6A_TECH_AUDIT_JSON: .tmp/data-1-6a/input/technical-capability-audit.json
+      DATA_1_6A_OUT_DIR: .tmp/data-1-6a/results
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download certified DATA-1.5 evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/data-1-6a/input
+          gh run download "${DATA_1_5_EVIDENCE_RUN_ID}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --name data-1-5-technical-capability-audit \
+            --dir .tmp/data-1-6a/input
+          test -s "${DATA_1_6A_TECH_AUDIT_JSON}"
+          test -s .tmp/data-1-6a/input/proof.json
+          node - <<'NODE'
+          const fs = require('fs');
+          const proof = JSON.parse(fs.readFileSync('.tmp/data-1-6a/input/proof.json', 'utf8'));
+          if (proof.readOnly !== true || proof.writesPerformed !== 0 || proof.effectivePoliciesAssigned !== 0) {
+            throw new Error(`DATA-1.5 evidence is not fail-closed: ${JSON.stringify(proof)}`);
+          }
+          if (proof.seedCount !== 20 || proof.sitesAudited !== 20 || proof.capabilityReviewReady !== 19) {
+            throw new Error(`Unexpected DATA-1.5 certification input: ${JSON.stringify(proof)}`);
+          }
+          NODE
+
+      - name: Run bounded read-only policy evidence review
+        run: npx tsx scripts/census/run-source-policy-evidence-review-live.ts
+
+      - name: Enforce DATA-1.6A fail-closed proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_1_6A_OUT_DIR}/source-policy-evidence-review.json"
+          test -s "${DATA_1_6A_OUT_DIR}/source-policy-evidence-review.md"
+          test -s "${DATA_1_6A_OUT_DIR}/policy-review-queue.csv"
+          test -s "${DATA_1_6A_OUT_DIR}/proof.json"
+          node - <<'NODE'
+          const fs = require('fs');
+          const proof = JSON.parse(fs.readFileSync('.tmp/data-1-6a/results/proof.json', 'utf8'));
+          if (proof.readOnly !== true) throw new Error('DATA-1.6A must remain read-only');
+          if (proof.writesPerformed !== 0) throw new Error('DATA-1.6A must perform zero writes');
+          if (proof.policiesAssigned !== 0) throw new Error('DATA-1.6A must assign zero policies');
+          if (proof.registryCandidateFieldsAssigned !== 0) throw new Error('DATA-1.6A must not prefill Registry policy fields');
+          if (proof.authAttempts !== 0) throw new Error('DATA-1.6A must never attempt authentication');
+          if (proof.bypassAttempts !== 0) throw new Error('DATA-1.6A must never attempt bypass');
+          if (proof.warcFetches !== 0) throw new Error('DATA-1.6A must not fetch WARC content');
+          if (proof.registryReadRequests !== 1) throw new Error('DATA-1.6A Registry preflight must be one bounded read');
+          if (proof.sourceCount !== 19) throw new Error(`Expected 19 DATA-1.5 review-ready sources: ${JSON.stringify(proof)}`);
+          if (proof.maxRequestsPerDomainConfigured !== 5 || proof.maxRequestsPerDomainObserved > 5) {
+            throw new Error(`Per-domain request budget violated: ${JSON.stringify(proof)}`);
+          }
+          console.log(JSON.stringify(proof, null, 2));
+          NODE
+
+      - name: Upload DATA-1.6A evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-1-6a-source-policy-evidence-review
+          path: .tmp/data-1-6a/results/
+          if-no-files-found: error
+          retention-days: 14
