@@ -1,8 +1,8 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-07**  
-**Lot DATA acquis : DATA-4.3F — Controlled Promotion Design ✅ PR #358**  
-**Prochain lot DATA : DATA-4.3G — First Persistent Freshness Batch**  
+**Lot DATA acquis : DATA-4.3G — First Persistent Freshness Batch ✅ PR #362**  
+**Prochain lot DATA : DATA-4.3H — Controlled Expansion to 500**  
 **Lot UX acquis : CARTE-QUARTIER-P1A.4 ✅ PR #350 — 9,3/10**  
 **Prochain UX : CARTE-QUARTIER-P1A.5 — Territorial Explorer**
 
@@ -15,74 +15,82 @@ Acquis récents :
 - DATA-4.0 ✅ PR #341 ;
 - DATA-4.1A ✅ PR #343 ;
 - DATA-4.2 ✅ PR #344 ;
-- DATA-4.3A ✅ PR #347 ;
-- DATA-4.3B ✅ PR #348 ;
-- DATA-4.3C ✅ PR #351 ;
-- DATA-4.3D ✅ PR #353 ;
-- DATA-4.3E ✅ PR #355, merge `41e2b57` ;
-- DATA-4.3F ✅ PR #358, merge `5125e3f` ;
+- DATA-4.3A→D ✅ ;
+- DATA-4.3E ✅ PR #355 ;
+- DATA-4.3F ✅ PR #358 ;
+- DATA-4.3G ✅ PR #362, merge `0286178` ;
 - P1A.4 ✅ PR #350, **9,3/10**, audit final **30 captures / 0 finding**.
 
 Invariants : no-bypass, capability ≠ permission, Source Registry avant activation, volume technique ≠ inventaire public, Search canonique, Map complément spatial.
 
-# DATA-4.3E — rehearsal production certifié
+# DATA — Dar Agadir
 
-- pool seed-only éligible : **5 564** ;
-- canary : **10 URLs** ;
-- canal : `public_sitemap_presence` ;
-- TTL : **14 jours** ;
-- apply production : **10/10** ;
-- verify : **10/10** ;
-- rollback : **10/10** ;
-- post-rollback : 10/10 `seed_only`, `fresh_last_seen_at=NULL`, `fresh_channels=[]`, metadata originale, aucune `freshness_evidence` ;
-- les 10 restent dans `public_search_representations_v1` après rollback : cette représentation n’a pas été créée par le write canary ;
-- `updated_at` reste une trace d’audit non restaurée.
+## DATA-4.3E ✅
 
-# DATA-4.3F — Controlled Promotion Design ✅
+Production rehearsal 10 lignes : apply 10/10, verify 10/10, rollback 10/10. Freshness/evidence restaurée ; `updated_at` documenté comme audit trail non rollbackable.
 
-Preuve live finale :
+## DATA-4.3F ✅ PR #358
+
+- total : **6 533** ;
+- `seed_only` : **6 431** ;
+- `fresh_confirmed` : **102** ;
+- résidu canary : **0** ;
+- batch initial : **50** ;
+- hard max : **100/run** ;
+- cap avant re-certification : **500** ;
+- drift max : **1 %** ;
+- TTL : **14 jours**.
+
+## DATA-4.3G ✅ PR #362
+
+Premier batch freshness **persistant** certifié.
 
 | Mesure | Résultat |
 |---|---:|
-| Dar Agadir total | **6 533** |
-| `seed_only` | **6 431** |
-| `fresh_confirmed` | **102** |
-| résidu `public_sitemap_presence` du canary | **0** |
-| Registry eligible | **true** |
-| Registry review | `due_soon` |
+| PR gates | **20/20 verts** |
+| pool seed-only dry-run | **5 554** |
+| batch | **50** |
+| source requests | **10** |
+| before Public Search | **50/50** |
+| before technical display | **50/50** |
+| apply production | **50/50** |
+| post-write `fresh_confirmed` | **50/50** |
+| post-write `public_sitemap_presence` | **50/50** |
+| typed evidence | **50/50** |
+| Public Search avant → après | **50 → 50** |
+| technical display avant → après | **50 → 50** |
+| Dar Agadir `seed_only` | **6431 → 6381** |
+| Dar Agadir `fresh_confirmed` | **102 → 152** |
 | drift | **0 %** |
-| first persistent batch | **50** |
-| hard max / run | **100** |
-| cap avant re-certification | **500** |
-| TTL | **14 jours** |
-| DB/freshness writes | **0** |
-| activation publique | **0** |
 
-Rollback semantics : freshness status / last seen / channels / metadata sont rollbackables ; `updated_at` est capturé mais explicitement `AUDIT_TRAIL_NON_ROLLBACKABLE`.
+Registry post-write inchangé : `public_sitemap_only`, `canonical_link_only`, `external_tail_link_only`, TTL 14 jours, review `due_soon`.
 
-# Prochain lot DATA — DATA-4.3G
+Le batch reste persistant. Rollback complet disponible mais non exécuté car aucune dérive ni effet public inattendu n’a été observé.
 
-## First Persistent Freshness Batch
+Conclusion importante : les 50 URLs étaient déjà présentes dans `public_search_representations_v1` et technical display **avant** le write. La mutation freshness n’a donc pas créé ces représentations ; elle a seulement ajouté une preuve de fraîcheur typée et traçable.
 
-Objectif : appliquer réellement un premier batch persistant de **50 lignes maximum**, sans toucher la display policy.
+# Prochain lot DATA — DATA-4.3H
+
+## Controlled Expansion to 500
+
+Objectif : monter progressivement de **50 persistées vers 500 maximum**, avant re-certification obligatoire.
 
 Règles :
 
-1. sélection déterministe ≤50 ;
-2. Registry + sitemap revalidés juste avant write ;
-3. uniquement `seed_only` sans canal `public_sitemap_presence` ;
-4. snapshot complet ;
-5. write freshness/evidence uniquement ;
-6. TTL 14 jours ;
-7. vérification 50/50 post-write ;
-8. observabilité applied/skipped/drifted ;
-9. arrêt si drift >1 % ;
-10. rollback prêt ;
-11. aucune modification display/publication policy ;
-12. aucune page détail/content reuse ;
-13. mesurer Search/display séparément.
+1. batches déterministes ≤100/run ;
+2. cumul inclut les 50 déjà persistées ;
+3. Registry + sitemap revalidés avant chaque batch ;
+4. seulement `seed_only` sans `public_sitemap_presence` ;
+5. snapshot + rollback par batch ;
+6. Public Search + technical display mesurés avant/après ;
+7. TTL 14 jours ;
+8. drift ≤1 % ;
+9. stop fail-closed sur partial apply / policy drift / sitemap drift / effet public inattendu ;
+10. aucune modification display/publication policy ;
+11. aucune page détail/content reuse ;
+12. re-certification obligatoire à 500 avant extension supplémentaire.
 
-Gate fondamentale : 4.3G peut persister **un premier batch**, mais ne peut pas promouvoir les 5 564 lignes d’un coup.
+Gate fondamentale : **4.3H prouve la répétabilité des batches ; il n’autorise pas une promotion bulk des ~5,5K lignes.**
 
 # Business parallèle
 
