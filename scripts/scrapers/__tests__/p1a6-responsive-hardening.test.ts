@@ -43,6 +43,13 @@ describe("P1A.6 — Responsive hardening", () => {
     assert.ok(explorer.includes("resolveCityEntity"));
   });
 
+  it("separates the explorer from the taller mobile and tablet cockpit", () => {
+    const explorer = source("components/map/TerritorialExplorer.tsx");
+    assert.ok(explorer.includes("top-[112px]"));
+    assert.ok(explorer.includes("sm:top-[128px]"));
+    assert.ok(explorer.includes("lg:top-[96px]"));
+  });
+
   it("preserves the selected-district tablet collision guard from P1A.5", () => {
     const explorer = source("components/map/TerritorialExplorer.tsx");
     assert.ok(explorer.includes("md:w-[calc(100vw-438px)]"));
