@@ -56,6 +56,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const query = parseStringParam(searchParams.get("q"));
   const city = parseStringParam(searchParams.get("city"));
+  const district = parseStringParam(searchParams.get("district"));
   const propertyType = parseStringParam(searchParams.get("property_type"));
   const intent = parseStringParam(searchParams.get("intent"));
   const cursor = parseStringParam(searchParams.get("cursor"));
@@ -68,6 +69,24 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const locale = parseStringParam(searchParams.get("locale")) ?? "fr-MA";
   const sourcesParam = parseStringParam(searchParams.get("sources"));
   const sources = sourcesParam?.split(",").map((source) => source.trim()) || undefined;
+
+  // SEARCH-GEO-CONTRACT-P1A.2: this gateway combines external live providers
+  // and the ODM thin index, neither of which currently carries an authoritative
+  // district field. Never widen a structured neighborhood request to city-level
+  // results. The canonical /api/search route owns district-capable Search today.
+  if (district) {
+    return NextResponse.json({
+      ok: true,
+      degraded: false,
+      reason: "district_requires_structured_search",
+      sources_queried: [],
+      results_count: 0,
+      total_count: 0,
+      has_more: false,
+      next_cursor: null,
+      results: [],
+    });
+  }
 
   const publicSearchInput = {
     q: query,
