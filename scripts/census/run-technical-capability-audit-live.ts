@@ -152,7 +152,12 @@ function extractSitemapChildren(xml: string): string[] {
 
 function pathAllowed(parsed: ParsedRobots | null, url: string): boolean {
   if (!parsed) return true;
-  try { return isRobotsPathAllowed(parsed, `${new URL(url).pathname}${new URL(url).search}`); } catch { return false; }
+  try {
+    const parsedUrl = new URL(url);
+    return isRobotsPathAllowed(parsed, `${parsedUrl.pathname}${parsedUrl.search}`);
+  } catch {
+    return false;
+  }
 }
 
 async function auditDomain(seed: CandidateSeed): Promise<TechnicalCapabilityAudit> {
@@ -183,8 +188,9 @@ async function auditDomain(seed: CandidateSeed): Promise<TechnicalCapabilityAudi
   let homepageFetch: FetchResult | null = null;
   let homepageHtml = "";
   let homepageHeaders: Record<string, string> = {};
-  if (!stopOnRobots && pathAllowed(parsedRobots, "/")) {
-    homepageFetch = await boundedFetch(`${origin}/`);
+  const homepageUrl = `${origin}/`;
+  if (!stopOnRobots && pathAllowed(parsedRobots, homepageUrl)) {
+    homepageFetch = await boundedFetch(homepageUrl);
     if (homepageFetch) {
       homepageHtml = homepageFetch.text;
       homepageHeaders = homepageFetch.headers;
