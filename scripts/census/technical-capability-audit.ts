@@ -88,8 +88,10 @@ export type TechnicalCapabilityAudit = {
 };
 
 const LISTING_PATH_RE = /\/(?:property|properties|listing|listings|bien|biens|annonce|annonces|offre|offres|vente|location|programme|programmes|project|projects|projet|projets)(?:\/|[-_?#]|$)/i;
-const ACCESS_CONTROL_RE = /(captcha|verify you are human|access denied|forbidden|connexion requise|login required|sign in to continue|cf-chl-|challenge-platform|cf-browser-verification|cloudflare ray id|attention required!\s*\|\s*cloudflare)/i;
 const LOGIN_PATH_RE = /\/(?:login|signin|sign-in|auth|account)(?:\/|$)/i;
+const ACCESS_CONTROL_TITLE_RE = /(access denied|403 forbidden|attention required!\s*\|\s*cloudflare|just a moment|security verification)/i;
+const ACCESS_CONTROL_TEXT_RE = /(verify you are human|checking your browser|performing security verification|enable javascript and cookies to continue|please complete the security check)/i;
+const ACTIVE_CHALLENGE_MARKER_RE = /(cf-chl-|challenge-platform|cf-browser-verification)/i;
 
 export function normalizeAuditDomain(value: string): string {
   const normalized = value.trim().toLowerCase().replace(/\.$/, "").replace(/^www\./, "");
@@ -231,7 +233,11 @@ export function detectNoindex(html: string, headers: Record<string, string> = {}
 }
 
 export function detectAccessControl(html: string, finalUrl: string | null): boolean {
-  if (ACCESS_CONTROL_RE.test(html.slice(0, 200_000))) return true;
+  const sample = html.slice(0, 200_000);
+  const title = extractTitle(sample) ?? "";
+  if (ACCESS_CONTROL_TITLE_RE.test(title)) return true;
+  if (ACCESS_CONTROL_TEXT_RE.test(sample)) return true;
+  if (ACTIVE_CHALLENGE_MARKER_RE.test(sample) && /(challenge|verify|security|browser)/i.test(sample)) return true;
   if (finalUrl) {
     try {
       if (LOGIN_PATH_RE.test(new URL(finalUrl).pathname)) return true;
