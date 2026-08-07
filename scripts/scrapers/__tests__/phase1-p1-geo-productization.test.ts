@@ -51,6 +51,18 @@ describe("Phase 1 P1 — Geo productization", () => {
     assert.ok(client.includes("Repères quartier · Données indicatives"));
     assert.ok(client.includes("Repères quartier · AkarFinder"));
   });
+
+  it("keeps the interactive map on the canonical neighborhood adapter", () => {
+    const experience = source("components/map/MapNeighborhoodExperience.tsx");
+    const canonical = source("lib/map/canonical-neighborhood-data.ts");
+
+    assert.ok(experience.includes('@/lib/map/canonical-neighborhood-data'));
+    assert.equal(experience.includes('@/lib/map/neighborhood-data'), false);
+    assert.ok(canonical.includes('from "@/lib/geo/geo-entity-registry"'));
+    assert.ok(canonical.includes("resolveCityEntity"));
+    assert.ok(canonical.includes("resolveNeighborhoodEntity"));
+    assert.ok(canonical.includes("RAW_NEIGHBORHOOD_POINTS.map(canonicalizePoint)"));
+  });
 });
 
 describe("Phase 1 P1 — structured local Search contracts", () => {
