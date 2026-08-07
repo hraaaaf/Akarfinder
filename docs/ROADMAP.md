@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-07**  
-**Statut : CARTE-QUARTIER P1A.2 ✅ PR #334 ; P1A.3 prochain UX ; DATA-4.2 ✅ PR #344 ; DATA-4.3A prochain DATA**
+**Statut : CARTE-QUARTIER P1A.3 ✅ PR #349 ; P1A.4 prochain UX ; DATA-4.3A ✅ PR #347 ; DATA-4.3B ✅ PR #348**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -43,19 +43,39 @@ Paliers : **5K→20K → 50K → 100K+**, sans sacrifier légalité, fraîcheur,
 - Accueil/Neuf/Acheter/Louer/Mon Projet P1 acquis ;
 - CARTE-QUARTIER-P1A.0 ✅ PR #327 ;
 - P1A.1 Geo Canonical Core ✅ PR #328, score **9,5/10** ;
-- P1A.2 Search Geo Contract ✅ PR #334.
+- P1A.2 Search Geo Contract ✅ PR #334 ;
+- P1A.3 Map State & Navigation ✅ PR #349, score contractuel **9,3/10**.
 
-## P1A.3 — Map State & Navigation 🔴 PROCHAIN UX
+## P1A.3 — Map State & Navigation ✅
 
-Cible : `/map?city=rabat&district=agdal&layer=explore&project_id=...`
+Contrat : `/map?city=rabat&district=agdal&layer=explore&project_id=...`
 
-- conserver city/district/layer/filtres/project_id ;
-- Back/Forward ;
-- URL partageable ;
-- Map ↔ Search ↔ Quartier ↔ Mon Projet sans perte de contexte ;
-- double-check + score ≥9/10.
+Acquis :
 
-Puis P1A.4 Map Design System → P1A.5 Territorial Explorer → P1A.6 Responsive → P1B intelligence cartographique.
+- URL Map = source de vérité ;
+- `city` et `district` canonicalisés via le Geo Registry ;
+- district inconnu ou incohérent rejeté fail-closed ;
+- `layer=explore` canonique ;
+- filtres Search compatibles et `project_id` conservés ;
+- Back/Forward et URL partageable ;
+- Map ↔ Search ↔ Quartier sans perte de contexte ;
+- page quartier exposée depuis Map uniquement pour une paire SEO-éligible ;
+- écran cinématique ville supprimé : entrée directe dans la carte ;
+- gate P1 Geo Productization étendue aux contrats P1A.3, P10B, TypeScript et build.
+
+## P1A.4 — Map Design System 🔴 PROCHAIN UX
+
+Objectif : transformer le contrat fonctionnel P1A.3 en expérience cartographique premium, cohérente et lisible sans changer la vérité géographique.
+
+- hiérarchie visuelle carte / contrôles / panneau quartier ;
+- tokens couleur cohérents ville/quartier/layer ;
+- états hover/selected/focus/loading/empty ;
+- densité et lisibilité desktop/tablette/mobile ;
+- aucun signal couleur ambigu ;
+- audit visuel réel + double-check ;
+- score UX/UI minimum **9,0/10**, reprise obligatoire sous 9.
+
+Puis P1A.5 Territorial Explorer → P1A.6 Responsive → P1B intelligence cartographique.
 
 # 4. Fondation DATA acquise
 
@@ -158,29 +178,37 @@ Live proof paginé :
 
 Minimum **500 lignes normalisées** pour gagner cette lane afin de viser un multiplicateur réellement significatif.
 
-## DATA-4.3A — Dar Agadir Bounded Canonical-Link Activation Audit 🔴 PROCHAIN DATA
+## DATA-4.3A — Dar Agadir Canonical-Link Shadow ✅ PR #347
 
-Objectif : mesurer, **sans activer**, combien des 6 533 observations Dar Agadir peuvent alimenter une surface de résultats externes bornée et vraie sous la policy existante.
+Audit read-only, sans requête source :
 
-Frontière Registry actuelle :
+- 6 533 lignes Dar Agadir auditées ;
+- **5 `ELIGIBLE_SHADOW`** ;
+- **6 425 `SEED_ONLY_REVALIDATION_REQUIRED`** ;
+- 46 `NON_NORMALIZED` ;
+- 57 `INSUFFICIENT_STRUCTURE` ;
+- 0 duplicate ;
+- 0 policy blocked ;
+- 0 fetch / 0 content reuse / 0 write / 0 policy change / 0 activation.
 
-`public_sitemap_canonical_link → canonical_link_only → external_tail_link_only`
+Conclusion : le réservoir ne peut pas être traité comme frais sur sa seule profondeur historique ; une revalidation séparée est nécessaire.
 
-Scope :
+## DATA-4.3B — Dar Agadir Sitemap Revalidation ✅ PR #348
 
-- observations déjà détenues ;
-- aucune page détail fetchée ;
-- aucune description/image/contact copiés ;
-- vérifier canonical URL, city/type/intent, fraîcheur, doublons et qualité minimale ;
-- mesurer overlap avec listings déjà visibles/canoniques ;
-- produire `eligible_shadow / stale / duplicate / insufficient / blocked` ;
-- **0 policy change / 0 production activation en 4.3A**.
+Audit live borné via le seul canal Registry autorisé `public_sitemap` :
 
-Sortie attendue :
+- robots/sitemaps same-origin uniquement ;
+- budget maximum 40 requêtes ;
+- aucune page détail ;
+- aucune réutilisation de contenu ;
+- aucun write DB ou freshness ;
+- aucune policy modifiée ;
+- aucune activation ;
+- gate dédiée, TypeScript et build verts.
 
-`6 533 Dar Agadir → truthful canonical-link candidates → dedup/freshness/quality losses → bounded activation ceiling`
+### Prochaine décision DATA
 
-Si le shadow est propre et utile : DATA-4.3B = canary borné séparé, avec rollback et certification.
+Lire la preuve 4.3B comme **signal de présence sitemap uniquement**, jamais comme fraîcheur ou permission implicite. Un éventuel freshness shadow/write doit rester un lot séparé, borné, fail-closed et certifié ; sinon passer au réservoir admissible suivant.
 
 ## Lane business parallèle
 
@@ -262,12 +290,12 @@ North Star lancement : **SERP utile, dense, fraîche et dédupliquée**, pas « 
 
 ## Lane UX
 
-P1A.3 → P1A.4 → P1A.5 → P1A.6 → P1B → Pro/Agences/Promoteurs → SEO → recette SERP.
+P1A.4 → P1A.5 → P1A.6 → P1B → Pro/Agences/Promoteurs → SEO → recette SERP.
 
 ## Lane DATA
 
-1. DATA-4.3A Dar Agadir shadow audit ;
-2. si certifié : DATA-4.3B canary borné ;
+1. décider le traitement post-4.3B à partir de la preuve sitemap sans confondre présence et fraîcheur ;
+2. si justifié : freshness shadow séparé et borné ; sinon réservoir admissible suivant ;
 3. parallèle business : partenariat Agenz ;
 4. classer/approfondir les autres sources canonical-link admissibles ;
 5. DATA-3 Universal Site Connector pour sources éligibles ;
@@ -281,18 +309,15 @@ Un lot est terminé uniquement si : périmètre respecté, tests/build/gates ver
 
 # 19. Prochaine action exacte
 
-## DATA — DATA-4.3A
+## DATA — décision post-DATA-4.3B
 
-1. partir du `main` incluant PR #344 ;
-2. isoler `daragadir.com` ;
-3. utiliser uniquement observations existantes et facts autorisés ;
-4. mesurer URL canonique, structure, freshness, dedup et quality ;
-5. classifier `ELIGIBLE_SHADOW / STALE / DUPLICATE / INSUFFICIENT / BLOCKED` ;
-6. calculer le plafond de canonical outbound links utiles ;
-7. zéro fetch détail / zéro content reuse / zéro policy change / zéro activation ;
-8. double-check qualitatif ;
-9. score ≥9/10 avant toute proposition de canary 4.3B.
+1. lire l’artefact live 4.3B ;
+2. quantifier présence sitemap sur le réservoir `seed_only` ;
+3. ne jamais convertir présence sitemap en `fresh_confirmed` implicitement ;
+4. si le signal est suffisant, spécifier un freshness shadow/write séparé avec rollback ;
+5. sinon arrêter Dar Agadir et passer au prochain réservoir admissible ;
+6. 0 bypass et Source Registry toujours autoritaire.
 
-## UX — P1A.3
+## UX — P1A.4
 
-Stabiliser l’état URL Map, Back/Forward, partage et transitions Map ↔ Search avec conservation de `district`.
+Construire le **Map Design System** au-dessus du contrat URL P1A.3 sans modifier l’identité Geo ni la vérité des données : hiérarchie visuelle, couleurs, marqueurs, contrôles, panneau quartier, états responsive et accessibilité, puis audit visuel et score ≥9/10.
