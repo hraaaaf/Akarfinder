@@ -13,6 +13,8 @@ const routes = [
   { path: "/vendre", slug: "vendre" },
   { path: "/immobilier", slug: "immobilier" },
   { path: "/map", slug: "map" },
+  { path: "/map?city=Rabat", slug: "map-rabat" },
+  { path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal" },
   { path: "/pro", slug: "pro" },
   { path: "/pro/agences", slug: "agences" },
   { path: "/promoteurs", slug: "promoteurs" },
