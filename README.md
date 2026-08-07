@@ -102,11 +102,27 @@ Sur **6 533** lignes : **5 `ELIGIBLE_SHADOW`**, **6 425 `SEED_ONLY_REVALIDATION_
 
 ### DATA-4.3B — Dar Agadir Sitemap Revalidation ✅ PR #348
 
-Revalidation live bornée via `public_sitemap` uniquement : robots/sitemaps same-origin, maximum 40 requêtes, aucune page détail, aucun content reuse, aucun write freshness/DB, aucune policy modifiée et aucune activation. La présence sitemap reste un signal distinct de la fraîcheur.
+- **5 905** URLs sitemap actuelles ;
+- **5 749 / 6 533** URLs existantes encore présentes ;
+- **5 673** `seed_only` encore présentes ;
+- 10 requêtes bornées robots/sitemaps ;
+- aucune page détail, aucun content reuse, aucun write freshness/DB, aucune policy modifiée et aucune activation.
+
+### DATA-4.3C — Dar Agadir Sitemap-Presence Freshness Shadow ✅ PR #351
+
+- **5 566 `SHADOW_READY`** ;
+- dont **5 564 `seed_only`** ;
+- 784 absentes du sitemap courant ;
+- 148 présentes mais structure insuffisante ;
+- 35 présentes mais non normalisées ;
+- 0 duplicate ; 0 policy blocked ;
+- 0 write DB / 0 write freshness / 0 activation.
+
+Conclusion : la présence sitemap actuelle est un **signal de freshness potentiel massif**, mais reste distincte de `fresh_confirmed` tant qu’un canary/write séparé n’est pas certifié.
 
 ## Prochaine décision DATA
 
-Lire la preuve DATA-4.3B puis, seulement si elle le justifie, concevoir un **freshness shadow/write séparé et borné**. Sinon passer au réservoir admissible suivant. En parallèle business : **Agenz = priorité partenariat/feed**, sans changement de comportement produit avant autorisation écrite.
+**DATA-4.3D — Freshness Evidence Canary Design** : formaliser `sitemap_presence` comme preuve de freshness bornée et traçable, simuler/écrire seulement sur un canary réversible, conserver la provenance et ne jamais activer directement les 5 564 lignes en production. En parallèle business : **Agenz = priorité partenariat/feed**, sans changement produit avant autorisation écrite.
 
 ## Règles d’exécution
 
