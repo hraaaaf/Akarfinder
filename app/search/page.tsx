@@ -7,6 +7,7 @@ import { LightZillowSearchShell } from "@/components/search/LightZillowSearchShe
 import { PropertyQuickPreview } from "@/components/search/PropertyQuickPreview";
 import { PropertySelectionProvider } from "@/components/search/PropertySelectionProvider";
 import { SearchCompareDock } from "@/components/search/SearchCompareDock";
+import { SearchMapNavigationBridge } from "@/components/search/SearchMapNavigationBridge";
 import { SearchPriceExplorerDock } from "@/components/search/SearchPriceExplorerDock";
 import { runOdmDualReadShadow } from "@/lib/odm/odm-dual-read-runner";
 import { shouldRunOdmDualRead } from "@/lib/odm/odm-dual-read-shadow";
@@ -134,6 +135,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" />
       <ActiveProjectBanner requestedProjectId={requestedProjectId} />
+      <SearchMapNavigationBridge projectId={requestedProjectId} />
       <PropertySelectionProvider>
         <SearchPriceExplorerDock />
         <SearchCompareDock />
