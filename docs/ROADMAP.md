@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-07**  
-**Statut : UX P1A.3 ✅ / P1A.4 prochain ; DATA-4.3D ✅ PR #353 / DATA-4.3E prochain**
+**Statut : UX P1A.4 ✅ / P1A.5 prochain ; DATA-4.3D ✅ PR #353 / DATA-4.3E prochain**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -39,13 +39,25 @@ Acquis :
 - P1A.0 ✅ PR #327 ;
 - P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
 - P1A.2 ✅ PR #334 — Search Geo Contract ;
-- P1A.3 ✅ PR #349 — Map State & Navigation, **9,3/10**.
+- P1A.3 ✅ PR #349 — Map State & Navigation, **9,3/10** ;
+- P1A.4 ✅ PR #350 — Map Design System, **9,3/10**, audit final **30 captures / 0 finding**.
 
-## P1A.4 — Map Design System 🔴
+## P1A.5 — Territorial Explorer 🔴
 
-Hiérarchie carte/contrôles/panneau, tokens couleur, marqueurs/clusters, états hover/focus/loading/empty, responsive, accessibilité, audit visuel réel et score ≥ **9,0/10**.
+Objectif : transformer la carte map-first certifiée en explorateur territorial réellement utile sans casser les contrats P1A.1→P1A.4.
 
-Puis : P1A.5 Territorial Explorer → P1A.6 Responsive → P1B intelligence cartographique.
+Scope attendu :
+
+1. hiérarchie nationale → ville → quartier explicite ;
+2. navigation/zoom cohérents avec l’URL canonique ;
+3. filtres spatiaux visibles uniquement s’ils reposent sur une donnée réellement disponible ;
+4. aucune géométrie ou proximité inventée ;
+5. continuité Map ↔ Search ↔ Quartier ↔ Mon Projet ;
+6. performance et lisibilité clusters/repères à l’échelle nationale ;
+7. audit 390 / 768 / 1280 ;
+8. score UX/UI ≥ **9,0/10**, sinon reprise.
+
+Puis : P1A.6 Responsive → P1B intelligence cartographique.
 
 # 4. Fondation DATA acquise
 
@@ -153,6 +165,6 @@ Un lot est terminé uniquement si : scope respecté, tests/build/gates verts, pr
 
 Construire puis certifier le premier **bounded freshness write canary** Dar Agadir, sans aucune activation publique.
 
-## UX — P1A.4
+## UX — P1A.5
 
-Construire le **Map Design System** au-dessus du contrat URL P1A.3 sans modifier l’identité Geo ni la vérité des données.
+Construire le **Territorial Explorer** au-dessus du Map Design System certifié, sans modifier l’identité Geo, le contrat URL ni la vérité des données.
