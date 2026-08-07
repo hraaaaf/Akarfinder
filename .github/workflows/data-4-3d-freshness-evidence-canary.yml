@@ -1,0 +1,90 @@
+name: DATA-4.3D Freshness Evidence Canary
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data4/daragadir-freshness-evidence-canary.ts"
+      - "scripts/data4/__tests__/daragadir-freshness-evidence-canary.test.ts"
+      - "scripts/audits/data-4-3d-freshness-evidence-canary.ts"
+      - ".github/workflows/data-4-3d-freshness-evidence-canary.yml"
+      - "docs/data/DATA-4-3D-FRESHNESS-EVIDENCE-CANARY.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-4-3d-freshness-evidence-canary-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: DATA-4.3D unit tests
+        run: npx tsx --test scripts/data4/__tests__/daragadir-freshness-evidence-canary.test.ts
+      - name: Existing seed freshness regression tests
+        run: npm run test:seed-freshness
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+
+  live-dry-run:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_3D_OUT_DIR: .tmp/data-4-3d/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run 100-row dry-run canary
+        run: npx tsx scripts/audits/data-4-3d-freshness-evidence-canary.ts
+      - name: Enforce reversible canary proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_4_3D_OUT_DIR}/proof.json"
+          test -s "${DATA_4_3D_OUT_DIR}/canary-manifest.json"
+          test -s "${DATA_4_3D_OUT_DIR}/rollback-manifest.json"
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-4-3d/results/proof.json','utf8'));
+          const canary = JSON.parse(fs.readFileSync('.tmp/data-4-3d/results/canary-manifest.json','utf8'));
+          const rollback = JSON.parse(fs.readFileSync('.tmp/data-4-3d/results/rollback-manifest.json','utf8'));
+          if (p.mode !== 'DRY_RUN' || p.canarySize !== 100 || canary.length !== 100 || rollback.length !== 100) throw new Error(JSON.stringify(p));
+          if (p.eligibleSeedOnlyRows !== 5564) throw new Error(`DATA-4.3C ceiling drift: ${JSON.stringify(p)}`);
+          if (p.proposedChannel !== 'public_sitemap_presence' || p.ttlDays !== 14) throw new Error(JSON.stringify(p));
+          if (p.databaseWrites !== 0 || p.freshnessWrites !== 0 || p.policyChanges !== 0 || p.detailPageFetches !== 0 || p.contentReuseOperations !== 0) throw new Error(JSON.stringify(p));
+          if (p.productionActivation !== false || p.rollbackRows !== 100) throw new Error(JSON.stringify(p));
+          if (p.sourceRequests < 2 || p.sourceRequests > 40) throw new Error(JSON.stringify(p));
+          for (let i = 0; i < canary.length; i++) {
+            const c = canary[i];
+            const r = rollback[i];
+            if (c.canonicalUrl !== r.canonicalUrl) throw new Error('Rollback URL mismatch');
+            if (c.before.freshnessStatus !== 'seed_only') throw new Error('Canary must begin seed_only');
+            if (c.proposed.freshnessStatus !== 'fresh_confirmed') throw new Error('Unexpected proposed status');
+            if (!c.proposed.freshChannels.includes('public_sitemap_presence')) throw new Error('Missing typed channel');
+            if (r.freshnessStatus !== c.before.freshnessStatus || r.freshLastSeenAt !== c.before.freshLastSeenAt) throw new Error('Rollback state mismatch');
+          }
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-3d-freshness-evidence-canary
+          path: .tmp/data-4-3d/results/
+          if-no-files-found: error
+          retention-days: 14
