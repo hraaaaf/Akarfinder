@@ -305,11 +305,13 @@ export function MapNeighborhoodExperience({
         },
       });
       mapRef.current = mapInstance;
-      mapInstance.on("load", () => {
+      const markMapReady = () => {
         if (!mapInstance) return;
         hideInternalBoundaries(mapInstance);
         setMapLoaded(true);
-      });
+      };
+      mapInstance.once("style.load", markMapReady);
+      mapInstance.once("load", markMapReady);
       mapInstance.on("zoom", () => {
         if (mapInstance) setMapZoom(mapInstance.getZoom());
       });
