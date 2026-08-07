@@ -1,122 +1,111 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-07**  
-**Lot DATA acquis : DATA-4.3C — Dar Agadir Sitemap-Presence Freshness Shadow ✅ PR #351**  
-**Prochain lot DATA : DATA-4.3D — Freshness Evidence Canary Design**  
-**Lot UX acquis : CARTE-QUARTIER-P1A.3 — Map State & Navigation ✅ PR #349**  
-**Prochain lot UX : CARTE-QUARTIER-P1A.4 — Map Design System**
+**Lot DATA acquis : DATA-4.3D — Freshness Evidence Canary Design ✅ PR #353**  
+**Prochain lot DATA : DATA-4.3E — First Bounded Freshness Write Canary**  
+**Lot UX acquis : CARTE-QUARTIER-P1A.3 ✅ PR #349**  
+**Prochain UX : CARTE-QUARTIER-P1A.4 — Map Design System**
 
 Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
 # Main canonique
 
-`main` inclut notamment :
+Acquis récents :
 
-- CARTE-QUARTIER-P1A.0 ✅ PR #327 ;
-- CARTE-QUARTIER-P1A.1 ✅ PR #328, score **9,5/10** ;
-- CARTE-QUARTIER-P1A.2 ✅ PR #334 ;
-- CARTE-QUARTIER-P1A.3 ✅ PR #349, score contractuel **9,3/10** ;
-- DATA-1.1 → DATA-1.6B ✅ ;
 - DATA-4.0 ✅ PR #341 ;
 - DATA-4.1A ✅ PR #343 ;
 - DATA-4.2 ✅ PR #344 ;
 - DATA-4.3A ✅ PR #347 ;
 - DATA-4.3B ✅ PR #348 ;
-- DATA-4.3C ✅ PR #351, merge `25ecc1a`.
+- DATA-4.3C ✅ PR #351 ;
+- DATA-4.3D ✅ PR #353, merge `019253c` ;
+- P1A.3 ✅ PR #349.
 
-Invariants : no-bypass, capability ≠ permission, Source Registry avant activation, volume technique ≠ inventaire public, Search reste canonique et Map son complément spatial.
+Invariants : no-bypass, capability ≠ permission, Source Registry avant activation, volume technique ≠ inventaire public, Search canonique, Map complément spatial.
 
 # DATA — Dar Agadir
 
-## DATA-4.3A ✅ PR #347
+## DATA-4.3B ✅
 
-Sur 6 533 lignes :
+- sitemap actuel : **5 905 URLs** ;
+- overlap AkarFinder : **5 749** ;
+- `seed_only` encore présentes : **5 673** ;
+- 10 requêtes robots/sitemaps ;
+- 0 détail/content reuse/write/activation.
 
-- `ELIGIBLE_SHADOW` : **5** ;
-- `SEED_ONLY_REVALIDATION_REQUIRED` : **6 425** ;
-- `NON_NORMALIZED` : **46** ;
-- `INSUFFICIENT_STRUCTURE` : **57** ;
-- duplicate : **0** ;
-- policy blocked : **0**.
+## DATA-4.3C ✅
 
-Conclusion : impossible de considérer le réservoir comme frais sans nouvelle preuve.
+Freshness shadow :
 
-## DATA-4.3B ✅ PR #348
-
-Canal Registry autorisé : `public_sitemap` uniquement.
-
-Preuve live :
-
-- **5 905** URLs dans le sitemap actuel ;
-- **5 749** URLs du reservoir AkarFinder encore présentes ;
-- **5 673 `seed_only`** encore présentes ;
-- **784** URLs existantes absentes ;
-- 10 requêtes source : robots + sitemaps same-origin ;
-- 0 page détail ;
-- 0 content reuse ;
+- **5 566 SHADOW_READY** ;
+- dont **5 564 seed-only** ;
+- 784 absentes du sitemap ;
+- 148 structure insuffisante ;
+- 35 non normalisées ;
+- 0 duplicate ;
+- 0 policy blocked ;
 - 0 DB/freshness write ;
-- 0 policy change ;
 - 0 activation.
 
-Présence sitemap = **signal de présence uniquement**, pas `fresh_confirmed`.
+## DATA-4.3D ✅ PR #353
 
-## DATA-4.3C ✅ PR #351
+Canary dry-run réversible :
 
-Freshness shadow read-only : la seule hypothèse ajoutée est
-
-`seed_only + sitemap_present_now → sitemap_present_shadow`
-
-avec maintien obligatoire de : normalization complète + `city + property_type + intent` + quality≥40 + display evidence + non-duplicate.
-
-Preuve live finale :
-
-| Classe | Volume |
+| Mesure | Résultat |
 |---|---:|
-| **SHADOW_READY** | **5 566** |
-| dont `seed_only` | **5 564** |
-| `NOT_PRESENT_IN_CURRENT_SITEMAP` | 784 |
-| `SITEMAP_PRESENT_BUT_INSUFFICIENT_STRUCTURE` | 148 |
-| `SITEMAP_PRESENT_NON_NORMALIZED` | 35 |
-| duplicate | **0** |
-| policy blocked | **0** |
+| Pool seed-only éligible | **5 564** |
+| Canary | **100** |
+| Canal | `public_sitemap_presence` |
+| TTL | **14 jours** |
+| Statut proposé | `fresh_confirmed` |
+| Before/proposed/rollback | **100/100** |
+| Seed-state reads | **100** |
+| Source requests | **10** |
+| DB writes | **0** |
+| Freshness writes | **0** |
+| Policy changes | **0** |
+| Activation publique | **0** |
 
-Sécurité :
+Certification : **20/20 workflows verts**, tests DATA-4.3D + régressions seed-freshness + TypeScript + build + live dry-run + proof gate.
 
-- source requests : **10 / 40 max** ;
-- DB writes : **0** ;
-- freshness writes : **0** ;
-- policy changes : **0** ;
-- detail-page fetches : **0** ;
-- content reuse : **0** ;
-- production activation : **false**.
+Le système OpenSERP/Yandex n’a pas été détourné : son canal reste distinct. Le sitemap propose explicitement `public_sitemap_presence`.
 
-Conclusion : Dar Agadir possède désormais un **potentiel de freshness massif** : 5 564 lignes seed-only satisfont déjà structure/qualité/display et sont encore présentes dans le sitemap courant. Cela justifie un canary freshness séparé, pas une activation directe.
+Incident de certification résolu :
 
-# Prochain lot DATA — DATA-4.3D
+1. premier live run : timeout Supabase en lisant trop de `source_offer_seeds` ;
+2. correction : lecture uniquement des 100 URLs du canary par petits chunks ;
+3. deuxième run : robots ne déclarait temporairement aucun sitemap → fail-closed ;
+4. relance sans changement de code : sitemap de nouveau déclaré, canary live vert ;
+5. aucun write n’a eu lieu pendant ces échecs.
 
-## Freshness Evidence Canary Design
+# Prochain lot DATA — DATA-4.3E
 
-Objectif : formaliser le signal sitemap comme preuve de freshness traçable et réversible avant tout write.
+## First Bounded Freshness Write Canary
 
-Étapes :
+Objectif : effectuer le premier **write freshness réel mais minuscule**, sans changer l’affichage public.
 
-1. inspecter le modèle Freshness / Observation Ledger existant ;
-2. identifier où stocker la provenance `sitemap_presence` sans écraser l’état historique ;
-3. conserver `max_revalidation_interval_days=14` comme TTL/gate ;
-4. définir un canary limité et réversible ;
-5. simuler puis éventuellement écrire uniquement le signal de freshness sur le canary ;
-6. mesurer l’effet sur display eligibility ;
-7. aucune activation SERP automatique ;
-8. rollback explicite obligatoire ;
-9. aucune page détail / aucun content reuse / aucun bypass ;
-10. Source Registry reste autoritaire.
+Règles :
 
-Gate fondamentale : **DATA-4.3D ne peut pas transformer les 5 564 lignes en inventaire public en une seule étape.** Le canary freshness et l’activation SERP sont deux décisions séparées.
+1. canary strictement inférieur à 100 URLs ;
+2. sélection déterministe parmi les 5 564 éligibles ;
+3. revalidation Registry + sitemap juste avant write ;
+4. snapshot before obligatoire ;
+5. write uniquement sur la freshness/evidence ;
+6. canal `public_sitemap_presence` ;
+7. TTL 14 jours ;
+8. aucune page détail ;
+9. aucun content reuse ;
+10. aucune modification display/publication policy ;
+11. post-write verification production ;
+12. rollback rehearsal exact ;
+13. activation SERP interdite.
+
+Gate fondamentale : **un succès 4.3E prouve uniquement qu’on peut écrire et restaurer proprement une freshness evidence sitemap. Il ne rend pas automatiquement les 5 564 lignes publiques.**
 
 # Business parallèle
 
 **Agenz = priorité partenariat/feed** : 4 490 normalized, 1 227 fresh, 1 146 decision-structured, mais hidden/internal-only. Aucun changement Registry/produit avant autorisation écrite.
 
-# UX — P1A.4
+# UX
 
-Prochain lot : **Map Design System** — hiérarchie visuelle, couleurs, marqueurs, contrôles, panneau quartier, responsive/accessibilité, audit visuel et score ≥9/10.
+Prochain lot : **P1A.4 — Map Design System** avec audit visuel réel et score ≥9/10.
