@@ -50,7 +50,7 @@ describe("P1A.5 — Territorial Explorer", () => {
   it("keeps the map canvas primary and the explorer floating", () => {
     const explorer = source("components/map/TerritorialExplorer.tsx");
     const client = source("components/map/MapNeighborhoodClient.tsx");
-    assert.ok(explorer.includes("absolute left-3 right-3 top-[92px]"));
+    assert.ok(explorer.includes("pointer-events-auto absolute left-3 right-3"));
     assert.ok(explorer.includes("bg-card/94"));
     assert.ok(explorer.includes("backdrop-blur-xl"));
     assert.ok(client.indexOf("<MapNeighborhoodExperienceDynamic") < client.indexOf("<TerritorialExplorer"));

@@ -1,0 +1,53 @@
+name: P1A.6 Responsive Hardening
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/map/**"
+      - "scripts/audits/p1a6-map-responsive-smoke.ts"
+      - "scripts/scrapers/__tests__/p1a6-responsive-hardening.test.ts"
+      - ".github/workflows/p1a6-responsive-hardening.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  responsive-map:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: P1A.6 structural contracts
+        run: npx tsx --test scripts/scrapers/__tests__/p1a6-responsive-hardening.test.ts scripts/scrapers/__tests__/p1a5-territorial-explorer.test.ts scripts/scrapers/__tests__/p1a4-map-design-system.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        run: |
+          npm run start -- --hostname 127.0.0.1 --port 3000 > /tmp/p1a6-next.log 2>&1 &
+          echo $! > /tmp/p1a6-next.pid
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3000/map >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/p1a6-next.log
+          exit 1
+      - name: Native responsive map audit
+        run: npx tsx scripts/audits/p1a6-map-responsive-smoke.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p1a6-map-responsive-audit
+          path: artifacts/p1a6-map-responsive/
+          if-no-files-found: warn
+          retention-days: 14
