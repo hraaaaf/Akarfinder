@@ -73,6 +73,7 @@ AkarFinder applique une doctrine **no-bypass** :
 - Geo Registry comme autorité d’identité ville/quartier ;
 - `/map` consomme les quartiers via `lib/map/canonical-neighborhood-data.ts`, qui canonicalise les seeds avec `geo-entity-registry`; l’import runtime direct de `lib/map/neighborhood-data.ts` est interdit et protégé par la gate Geo Productization ;
 - contrat Geo Canonical Core certifié par **CARTE-QUARTIER-P1A.1 / PR #328**, score **9,5/10**, avec **19/19 workflows verts** avant clôture documentaire ;
+- contrat Search géographique certifié par **CARTE-QUARTIER-P1A.2 / PR #334** : `district` est un filtre structuré indépendant de `q`, DB/Typesense appliquent la canonicalisation Geo Registry, les lanes incapables de certifier le quartier restent fail-closed ; score **9,6/10**, head `9c3a647`, **28/28 workflows verts**, merge `1fbe3e4` ;
 - migrations SQL versionnées ;
 - CI GitHub Actions avec tests, build, contrats DATA, accessibilité et preuves ciblées ;
 - **DATA-1.5 / PR #331** certifie le Technical Capability Audit : 20 domaines P0 audités, 19 `CAPABILITY_REVIEW_READY`, familles détectées `3 RealHomes + 3 Houzez + 5 WordPress génériques + 8 structured-web`, score **9,4/10**, sans policy, auth, bypass, WARC ni write DB ;
