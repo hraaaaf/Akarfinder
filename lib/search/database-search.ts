@@ -77,6 +77,20 @@ function matchesFilters(listing: Listing, query: SearchQuery) {
   ) {
     return false;
   }
+  if (query.district) {
+    const queryGeo = canonicalizeGeoPair(query.city ?? listing.city, query.district);
+    const listingGeo = canonicalizeGeoPair(
+      listing.city,
+      listing.neighborhood || listing.district || undefined,
+    );
+    if (
+      !queryGeo.neighborhood ||
+      !listingGeo.neighborhood ||
+      normalize(listingGeo.neighborhood) !== normalize(queryGeo.neighborhood)
+    ) {
+      return false;
+    }
+  }
   if (query.property_type) {
     const mapped = toMappedPropertyType(query.property_type);
     if (mapped && listing.property_type !== mapped) return false;
@@ -230,7 +244,7 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
   if (process.env.NODE_ENV !== "production") {
     console.log(
       `[search:db] scanned=${scannedRows}/${rawTotal} matched=${matchedListings.length} returned=${listings.length} next_cursor=${hasMore ? scanCursor : "end"}`,
-      { city: query.city, property_type: query.property_type, transaction_type: query.transaction_type }
+      { city: query.city, district: query.district, property_type: query.property_type, transaction_type: query.transaction_type }
     );
   }
 
