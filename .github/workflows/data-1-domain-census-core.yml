@@ -1,0 +1,39 @@
+name: DATA-1 Domain Census Core
+
+on:
+  pull_request:
+    paths:
+      - "scripts/census/**"
+      - "docs/DATA_1_MOROCCAN_WEB_CENSUS.md"
+      - ".github/workflows/data-1-domain-census-core.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  census-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: DATA-1 deterministic tests
+        run: npx tsx --test scripts/census/__tests__/*.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
