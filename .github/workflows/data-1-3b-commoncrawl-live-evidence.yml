@@ -6,7 +6,6 @@ on:
       - ".github/workflows/data-1-3b-commoncrawl-live-evidence.yml"
       - "scripts/census/run-commoncrawl-live-duckdb.sh"
       - "scripts/census/commoncrawl-url-index.ts"
-      - "docs/data/DATA-1-3B-COMMON-CRAWL-LIVE-EVIDENCE.md"
   workflow_dispatch:
 
 permissions:
