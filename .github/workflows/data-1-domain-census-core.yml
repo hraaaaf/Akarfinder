@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: DATA-1 deterministic tests
-        run: npx tsx --test scripts/census/__tests__/domain-census.test.ts
+        run: npx tsx --test scripts/census/__tests__/*.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit
