@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   buildAvitoInternalRecoveryReport,
+  isPropertyTypeCompatible,
   normalizeGeoToken,
   parseAvitoUrl,
   type AvitoRegistrySnapshot,
@@ -23,6 +24,8 @@ const registry: AvitoRegistrySnapshot = {
 const rules = [
   { category_slug: "appartements", vertical_classification: "real_estate_likely" },
   { category_slug: "terrains_et_fermes", vertical_classification: "real_estate_likely" },
+  { category_slug: "bureaux", vertical_classification: "real_estate_likely" },
+  { category_slug: "autre_immobilier", vertical_classification: "real_estate_likely" },
 ];
 
 const aliases = [{ normalized_alias: "agdal" }, { normalized_alias: "casablanca" }];
@@ -44,7 +47,14 @@ test("normalizeGeoToken is exact-normalization only, not fuzzy matching", () => 
   assert.notEqual(normalizeGeoToken("Agdal Centre"), normalizeGeoToken("Agdal"));
 });
 
-test("canonical real-estate row is core-recoverable only with type + intent + geo", () => {
+test("property type must be compatible with the canonical Avito category", () => {
+  assert.equal(isPropertyTypeCompatible("appartements", "apartment"), true);
+  assert.equal(isPropertyTypeCompatible("bureaux", "office"), true);
+  assert.equal(isPropertyTypeCompatible("bureaux", "apartment"), false);
+  assert.equal(isPropertyTypeCompatible("autre_immobilier", "commercial"), false);
+});
+
+test("canonical real-estate row is core-recoverable only with compatible type + intent + geo", () => {
   const report = buildAvitoInternalRecoveryReport({
     generatedAt: "2026-08-07T16:00:00Z",
     registry,
@@ -67,9 +77,65 @@ test("canonical real-estate row is core-recoverable only with type + intent + ge
   });
 
   assert.equal(report.summary.recoverableCoreRows, 1);
+  assert.equal(report.summary.withCompatiblePropertyType, 1);
   assert.equal(report.summary.policyActivableRows, 0);
   assert.equal(report.rows[0]?.recoveryClass, "RECOVERABLE_FROM_EXISTING_DATA");
+  assert.equal(report.rows[0]?.propertyTypeCompatible, true);
   assert.equal(report.rows[0]?.publicActivable, false);
+});
+
+test("category/type mismatch remains insufficient despite intent and geo", () => {
+  const report = buildAvitoInternalRecoveryReport({
+    generatedAt: "2026-08-07T16:00:00Z",
+    registry,
+    verticalRules: rules,
+    geoAliases: aliases,
+    rows: [
+      {
+        canonical_url: "https://avito.ma/fr/agdal/bureaux/Appartement_usage_bureau_123.htm",
+        seed_provider: "commoncrawl_cdx",
+        property_type: "apartment",
+        intent: "sale",
+        city: null,
+        title: null,
+        snippet: null,
+        price_mad: null,
+        surface_m2: null,
+        normalization_status: "unavailable",
+      },
+    ],
+  });
+
+  assert.equal(report.summary.recoverableCoreRows, 0);
+  assert.equal(report.summary.insufficientExistingEvidenceRows, 1);
+  assert.equal(report.rows[0]?.propertyTypeCompatible, false);
+  assert.equal(report.rows[0]?.recoveryClass, "INSUFFICIENT_EXISTING_EVIDENCE");
+});
+
+test("ambiguous real-estate category fails closed for core recovery", () => {
+  const report = buildAvitoInternalRecoveryReport({
+    generatedAt: "2026-08-07T16:00:00Z",
+    registry,
+    verticalRules: rules,
+    geoAliases: aliases,
+    rows: [
+      {
+        canonical_url: "https://avito.ma/fr/agdal/autre_immobilier/Local_123.htm",
+        seed_provider: "commoncrawl_cdx",
+        property_type: "commercial",
+        intent: "rent",
+        city: null,
+        title: null,
+        snippet: null,
+        price_mad: null,
+        surface_m2: null,
+        normalization_status: "unavailable",
+      },
+    ],
+  });
+
+  assert.equal(report.summary.recoverableCoreRows, 0);
+  assert.equal(report.rows[0]?.recoveryClass, "INSUFFICIENT_EXISTING_EVIDENCE");
 });
 
 test("real-estate category with incomplete existing evidence stays insufficient", () => {
