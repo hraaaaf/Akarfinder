@@ -1,0 +1,27 @@
+name: DATA Coverage Adaptive Partition Gate
+
+on:
+  pull_request:
+    paths:
+      - "scripts/coverage/adaptive-partition-enumerator.ts"
+      - "scripts/coverage/coverage-gap-auditor.ts"
+      - "scripts/scrapers/__tests__/adaptive-partition-*.test.ts"
+      - "docs/DATA_COVERAGE_ADAPTIVE_PARTITION.md"
+      - ".github/workflows/data-coverage-adaptive-partition-gate.yml"
+  workflow_dispatch:
+
+jobs:
+  adaptive-partition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Run adaptive partition tests
+        run: npx tsx --test scripts/scrapers/__tests__/adaptive-partition-*.test.ts
+      - name: Production build
+        run: npm run build
