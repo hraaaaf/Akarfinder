@@ -9,7 +9,6 @@ import {
   type QualitySnapshot,
   type RegistrySnapshot,
   type ReservoirDomain,
-  type SourceFreshnessSnapshot,
 } from "../data4/reservoir-depth-audit";
 
 const evidencePath = process.env.DATA_4_PUBLIC_EVIDENCE_PATH ?? "scripts/data4/public-evidence.json";
@@ -41,7 +40,10 @@ async function restRows<T>(table: string, params: Record<string, string>): Promi
     headers: headers(serviceRoleKey),
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
-  if (!response.ok) throw new Error(`${table} read failed with HTTP ${response.status}`);
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(`${table} read failed with HTTP ${response.status}${body ? `: ${body.slice(0, 300)}` : ""}`);
+  }
   return (await response.json()) as T[];
 }
 
@@ -56,7 +58,10 @@ async function countRows(table: string, filters: Record<string, string>): Promis
     headers: { ...headers(serviceRoleKey, true), Range: "0-0" },
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
-  if (!response.ok) throw new Error(`${table} count failed with HTTP ${response.status}`);
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(`${table} count failed with HTTP ${response.status}${body ? `: ${body.slice(0, 300)}` : ""}`);
+  }
   const range = response.headers.get("content-range");
   if (!range) throw new Error(`${table} count response lacks content-range`);
   const match = range.match(/\/(\d+|\*)$/);
@@ -75,11 +80,6 @@ async function collectDomain(domain: ReservoirDomain): Promise<InternalReservoir
     source_domain: `eq.${domain}`,
   });
   if (!registry) throw new Error(`DATA-4.0 Registry row missing for ${domain}`);
-
-  const sourceFreshness = await singleRow<SourceFreshnessSnapshot>("source_freshness_evaluation_v1", {
-    select: "source_domain,freshness_state,publication_eligible,effective_machine_gate,evaluated_at,freshness_deadline_at",
-    source_domain: `eq.${domain}`,
-  });
 
   const qualityRaw = await singleRow<Record<string, unknown>>("odm_10d_source_quality_report", {
     select: "source_domain,real_estate_rows,average_score,median_score,tier_a,tier_b,tier_c,tier_d,tier_e,with_city,with_price,with_surface",
@@ -138,7 +138,7 @@ async function collectDomain(domain: ReservoirDomain): Promise<InternalReservoir
     technicalDisplayEligibleRows,
     quality,
     registry,
-    sourceFreshness,
+    sourceFreshness: null,
   };
 }
 
