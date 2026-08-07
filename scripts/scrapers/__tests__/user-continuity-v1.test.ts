@@ -88,4 +88,17 @@ describe("#19H User Continuity V1", () => {
     assert.ok(workspace.includes("/api/me/continuity"));
     assert.ok(workspace.includes("Mes projets de recherche"));
   });
+
+  it("keeps project context visible in Search and scopes continuity counts to that project", () => {
+    const searchPage = readFileSync(join(process.cwd(), "app/search/page.tsx"), "utf8");
+    const banner = readFileSync(join(process.cwd(), "components/search/ActiveProjectBanner.tsx"), "utf8");
+    assert.ok(searchPage.includes("ActiveProjectBanner"));
+    assert.ok(searchPage.includes("params.project_id"));
+    assert.ok(banner.includes("/api/me/continuity"));
+    assert.ok(banner.includes("item.project_id === project.id"));
+    assert.ok(banner.includes("Projet actif"));
+    assert.ok(banner.includes("/mon-projet/espace"));
+    assert.equal(banner.includes("localStorage"), false);
+    assert.equal(banner.includes("SUPABASE_SERVICE_ROLE_KEY"), false);
+  });
 });
