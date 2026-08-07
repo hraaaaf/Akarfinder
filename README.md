@@ -70,19 +70,19 @@ Principes non négociables :
 
 - DATA-4.0 ✅ PR #341 : Avito + Mubawab = **35 134 normalized**, **3 588 technical display**, **0 policy-activable** ;
 - DATA-4.1A ✅ PR #343 : Avito `unavailable` = 95,06 % bruit/non-immobilier ; seulement **73** core-récupérables, **0 policy-activable** ;
-- DATA-4.2 ✅ PR #344 : `daragadir.com` gagne la lane `ADMISSIBLE_GROWTH`, `agenz.ma` la lane `PARTNERSHIP_UPSIDE` ;
-- DATA-4.3A ✅ PR #347 : Dar Agadir = **5 ELIGIBLE_SHADOW**, **6 425 revalidation-required** ;
-- DATA-4.3B ✅ PR #348 : sitemap actuel = **5 905 URLs**, **5 673 seed-only** encore présentes ;
-- DATA-4.3C ✅ PR #351 : **5 566 SHADOW_READY**, dont **5 564 seed-only**, sans write ni activation ;
-- DATA-4.3D ✅ PR #353 : **100-row reversible freshness evidence canary DRY_RUN**, canal `public_sitemap_presence`, TTL **14 jours**, **100/100 rollback**, **20/20 gates verts**, **0 DB/freshness write**, **0 activation** ;
-- DATA-4.3E ✅ PR #355 : **10-row production write rehearsal**, 10/10 apply, 10/10 verify, 10/10 rollback. Post-rollback exact sur freshness/evidence ; `updated_at` traité comme audit trail non rollbackable ;
-- DATA-4.3F ✅ PR #358 : **Controlled Promotion Design**, live proof = 6 533 total / 6 431 seed-only / 102 fresh-confirmed / **0 résidu canary**, Registry eligible, drift 0 %, batch initial **50**, hard cap **100/run**, **500** avant re-certification, TTL 14 jours, 0 write/activation.
+- DATA-4.2 ✅ PR #344 : `daragadir.com` gagne `ADMISSIBLE_GROWTH`, `agenz.ma` gagne `PARTNERSHIP_UPSIDE` ;
+- DATA-4.3A→D ✅ : reservoir Dar Agadir audité, sitemap revalidation, freshness shadow et canary dry-run ;
+- DATA-4.3E ✅ PR #355 : **10-row production rehearsal**, apply/verify/rollback 10/10 ;
+- DATA-4.3F ✅ PR #358 : promotion contrôlée — batch initial 50, hard cap 100/run, **500 avant re-certification**, TTL 14 jours ;
+- DATA-4.3G ✅ PR #362 : **premier batch persistant de 50** certifié. Avant → après : Public Search **50→50**, technical display **50→50**, `seed_only 6431→6381`, `fresh_confirmed 102→152`, canal `public_sitemap_presence` 50/50, Registry inchangé, drift 0 %.
 
 ## Décision DATA courante
 
-**DATA-4.3G — First Persistent Freshness Batch**.
+**DATA-4.3H — Controlled Expansion to 500**.
 
-Objectif : appliquer un premier batch **persistant de 50 lignes maximum**, avec préconditions exactes, snapshot complet, canal `public_sitemap_presence`, TTL 14 jours, vérification post-write, observabilité applied/skipped/drifted, et aucune modification de display/publication policy.
+Objectif : étendre la freshness sitemap de façon bornée jusqu’à **500 lignes cumulées maximum avant re-certification**, avec batches ≤100/run, snapshot/rollback, observation Search/display avant-après, TTL 14 jours et arrêt fail-closed au moindre drift >1 % ou changement Registry.
+
+Cela ne modifie pas la display/publication policy et ne constitue pas une autorisation de bulk-promotion des ~5,5K lignes restantes.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 
