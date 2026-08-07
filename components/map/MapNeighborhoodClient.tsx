@@ -1,8 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  buildMapHref,
+  mapNavigationStateFromUrlSearchParams,
+  type MapNavigationState,
+} from "@/lib/map/map-navigation-state";
 
 const MapNeighborhoodExperienceDynamic = dynamic(
   () =>
@@ -22,53 +27,45 @@ const MapNeighborhoodExperienceDynamic = dynamic(
   },
 );
 
-type MapNeighborhoodClientProps = { initialCity?: string };
+type MapNeighborhoodClientProps = {
+  initialState: MapNavigationState;
+};
 
-export function MapNeighborhoodClient(props: MapNeighborhoodClientProps) {
+export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientProps) {
   const router = useRouter();
-  const rootRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const queryString = searchParams.toString();
 
-  // Compatibility adapter for the legacy MapLibre marker factory. A city marker
-  // is an exploration control, not an implicit Search CTA: keep the user inside
-  // /map and reload the map with that canonical city selected.
-  function handleClickCapture(event: React.MouseEvent<HTMLDivElement>) {
-    const target = event.target as HTMLElement | null;
-    const cluster = target?.closest("a.maplibre-cluster-marker") as HTMLAnchorElement | null;
-    if (!cluster) return;
-    const href = cluster.getAttribute("href");
-    if (!href) return;
-    const url = new URL(href, window.location.origin);
-    const city = url.searchParams.get("city");
-    if (!city) return;
-    event.preventDefault();
-    event.stopPropagation();
-    router.push(`/map?city=${encodeURIComponent(city)}`);
-  }
+  const navigationState = useMemo(
+    () => queryString
+      ? mapNavigationStateFromUrlSearchParams(new URLSearchParams(queryString))
+      : initialState,
+    [initialState, queryString],
+  );
+
+  const canonicalHref = useMemo(
+    () => buildMapHref(navigationState),
+    [navigationState],
+  );
 
   useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
+    const currentHref = queryString ? `/map?${queryString}` : "/map";
+    if (currentHref !== canonicalHref) {
+      router.replace(canonicalHref, { scroll: false });
+    }
+  }, [canonicalHref, queryString, router]);
 
-    const applyPublicWording = () => {
-      for (const paragraph of root.querySelectorAll("p")) {
-        const text = paragraph.textContent?.trim() ?? "";
-        if (text === "Intelligence quartier · Repères indicatifs") {
-          paragraph.textContent = "Repères quartier · Données indicatives";
-        } else if (text === "Intelligence quartier · AkarFinder") {
-          paragraph.textContent = "Repères quartier · AkarFinder";
-        }
-      }
-    };
-
-    applyPublicWording();
-    const observer = new MutationObserver(applyPublicWording);
-    observer.observe(root, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, []);
+  const handleNavigationChange = useCallback(
+    (nextState: MapNavigationState) => {
+      router.push(buildMapHref(nextState), { scroll: false });
+    },
+    [router],
+  );
 
   return (
-    <div ref={rootRef} onClickCapture={handleClickCapture}>
-      <MapNeighborhoodExperienceDynamic {...props} />
-    </div>
+    <MapNeighborhoodExperienceDynamic
+      navigationState={navigationState}
+      onNavigationChange={handleNavigationChange}
+    />
   );
 }
