@@ -45,8 +45,9 @@ jobs:
       - name: Native responsive map audit
         run: npx tsx scripts/audits/p1a6-map-responsive-smoke.ts
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: p1a6-map-responsive-audit
           path: artifacts/p1a6-map-responsive/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
