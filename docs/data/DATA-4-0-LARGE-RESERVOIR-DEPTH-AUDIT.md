@@ -10,7 +10,7 @@ Measure, without activating or scraping a source, the gap between:
 
 `PUBLIC VISIBLE → DISCOVERED/SEEDED → NORMALIZED → TECHNICALLY DISPLAYABLE → POLICY-ACTIVABLE`
 
-The final stage is mandatory. A technically displayable row is **not** public inventory when Source Registry/freshness gates keep it hidden or internal-only.
+The final stage is mandatory. A technically displayable row is **not** public inventory when Source Registry gates keep it hidden or internal-only.
 
 ## Sources in DATA-4.0
 
@@ -48,36 +48,87 @@ Current audit recommendation:
 
 The current Registry allows public-index/Common Crawl internal signals, not a sitemap harvest. The sitemap declaration is technical evidence only.
 
-## Production baseline observed before implementation
+## Certified production evidence
 
-Read-only production queries showed:
+Workflow run **31191560681**, head **`3c457a0a24d2abbc592248010f49b2fce317f14e`**.
 
-| Source | Registry representations | Normalized | Technical display-eligible |
-|---|---:|---:|---:|
-| avito.ma | 23,925 | 23,925 | 231 |
-| mubawab.ma | 10,693 | 11,209 | 3,354 |
+Artifact: `data-4-0-large-reservoir-depth-audit`  
+Digest: `sha256:5bb3dd79fa6a6c64b00a5b0baca9fb0a7af30a7149846d766e7c4fd6f721afb2`
 
-Normalization breakdown:
+Proof:
 
-### Avito
+- read-only: **true** ;
+- writes performed: **0** ;
+- source count: **2** ;
+- normalized rows: **35,134** ;
+- technical display-eligible rows: **3,588** ;
+- policy-activable rows: **0** ;
+- normalization unavailable rows: **29,733** ;
+- fresh-confirmed rows: **912** ;
+- policy changes: **0** ;
+- scraper runs: **0** ;
+- sitemap harvests: **0** ;
+- direct fetches: **0** ;
+- Mubawab public count observed: **true** ;
+- Avito public count observed: **false**.
 
-- normalized rows: **23,925**;
-- `unavailable`: **22,227**;
-- `normalized`: **1,691**;
-- `partial`: **7**;
-- `fresh_confirmed`: **9**.
+### Avito — certified live snapshot
 
-This means roughly **92.9%** of the normalized-document reservoir is currently `normalization_status=unavailable`.
+- discovery candidate rows: **7,128** ;
+- offer seeds: **23,925** ;
+- normalized rows: **23,925** ;
+- `normalization_status=unavailable`: **22,227** ;
+- `normalized`: **1,691** ;
+- `partial`: **7** ;
+- `fresh_confirmed`: **10** ;
+- technical Search representations: **231** ;
+- technical display-eligible rows: **231** ;
+- normalized → technical display ratio: **~1.0%** ;
+- unavailable normalization ratio: **~92.9%** ;
+- policy-blocked technical display rows: **231** ;
+- public inventory: **unknown**.
 
-### Mubawab
+Quality view at certification time:
 
-- normalized rows: **11,209**;
-- `unavailable`: **7,506**;
-- `normalized`: **3,277**;
-- `partial`: **426**;
-- `fresh_confirmed`: **902**.
+- real-estate rows: **1,339** ;
+- average score: **29.23** ;
+- median: **26** ;
+- Tier A/B/C/D/E: **0 / 4 / 220 / 1,115 / 0** ;
+- with city: **208** ;
+- with price: **0** ;
+- with surface: **36**.
 
-The quality view also shows Mubawab currently has materially more structured/high-quality rows than Avito, but both sources remain governed by Source Registry.
+Primary finding: Avito is not currently bottlenecked only by discovery. The dominant internal gap is **seed/normalization depth**: about 92.9% of its normalized-document reservoir is unavailable and only 10 rows are fresh-confirmed.
+
+### Mubawab — certified live snapshot
+
+- discovery candidate rows: **10,070** ;
+- offer seeds: **11,209** ;
+- normalized rows: **11,209** ;
+- `normalization_status=unavailable`: **7,506** ;
+- `normalized`: **3,277** ;
+- `partial`: **426** ;
+- `fresh_confirmed`: **902** ;
+- technical Search representations: **3,357** ;
+- technical display-eligible rows: **3,357** ;
+- public announced inventory: **106,947** ;
+- public → normalized gap: **95,738** ;
+- normalized/public ratio: **~10.5%** ;
+- normalized → technical display ratio: **~29.9%** ;
+- unavailable normalization ratio: **~67.0%** ;
+- policy-blocked technical display rows: **3,357**.
+
+Quality view at certification time:
+
+- real-estate rows: **11,209** ;
+- average score: **35.75** ;
+- median: **32** ;
+- Tier A/B/C/D/E: **576 / 370 / 2,445 / 7,818 / 0** ;
+- with city: **2,463** ;
+- with price: **100** ;
+- with surface: **767**.
+
+Primary finding: Mubawab has a very large public-depth gap, but current terms/Registry make that gap a **partnership/licence or bounded public-index question**, not a direct crawling target.
 
 ## Policy baseline
 
@@ -101,7 +152,7 @@ Current Registry:
 - `display_policy=internal_signal_only`;
 - `display_gate=hidden`.
 
-For both sources the current freshness policy evaluation reports `publication_eligible=false`.
+A separate read-only SQL check also observed `publication_eligible=false` for both current source freshness evaluations. The CI runner does **not** depend on that REST-inaccessible view; the current Source Registry `hidden/internal_signal_only` gates are already sufficient to make policy-activable rows zero.
 
 Therefore the current **policy-activable public row count is 0**, regardless of historical/technical display-eligibility views.
 
@@ -115,10 +166,9 @@ Files:
 - `scripts/audits/data-4-large-reservoir-depth-audit.ts` — live read-only Supabase runner;
 - `.github/workflows/data-4-large-reservoir-depth-audit.yml` — contract + live evidence gate.
 
-The live job reads only:
+The live CI job reads only REST-exposed data from:
 
 - `source_policy_registry`;
-- `source_freshness_evaluation_v1`;
 - `odm_10d_source_quality_report`;
 - `discovery_candidates`;
 - `source_offer_seeds`;
@@ -127,6 +177,8 @@ The live job reads only:
 - `thin_index_display_eligible_v1`.
 
 It performs **no DB write**.
+
+The first live attempt was rejected read-only because `source_freshness_evaluation_v1` was not available through the configured PostgREST surface. That dependency was removed; no data or policy was changed. The certified second run passed completely.
 
 ## Required outputs
 
@@ -152,12 +204,18 @@ CI must fail unless:
 
 DATA-4.0 does **not** choose a new policy or connector.
 
-It decides which next investigation has the best marginal value:
+The evidence now separates three bottlenecks:
 
-1. **Avito internal recovery** — explain/recover `normalization_status=unavailable` without direct source fetching; this may improve internal market intelligence but not public SERP volume while the Registry stays hidden.
-2. **Avito policy re-review** — only after explicit evidence; if a future policy allows sitemap discovery, measure sitemap depth in a separate bounded lot.
-3. **Mubawab partnership/licence path** — the public market-depth gap is large, but current terms make direct expansion inappropriate without permission.
-4. **Authorized/first-party sources** — if the launch KPI is public SERP depth, prioritize sources/feeds whose Registry can actually become displayable rather than counting hidden reservoir rows as launch inventory.
+1. `PUBLIC MARKET → DISCOVERED/NORMALIZED` ;
+2. `NORMALIZED → TECHNICAL DISPLAY` ;
+3. `TECHNICAL DISPLAY → POLICY-ACTIVABLE`.
+
+Recommended next investigations:
+
+1. **DATA-4.1 — Avito Internal Reservoir Recovery Audit**: explain the **22,227 unavailable rows** and test what can be recovered from already-held seed/index evidence, with **no direct source fetch**. This can improve internal intelligence but cannot create public inventory while Registry remains hidden.
+2. **Avito policy re-review**: separate future lot. Only if explicit evidence changes the Registry may sitemap depth be measured; the sitemap declaration alone is never permission.
+3. **Mubawab partnership/licence path**: the public gap is **95,738** against the certified snapshot, but current terms make direct expansion inappropriate without permission.
+4. **Authorized/first-party sources**: for the public 20K launch goal, favor feeds/sources whose Registry can actually become displayable instead of counting hidden reservoir rows as public inventory.
 
 ## Non-goals
 
