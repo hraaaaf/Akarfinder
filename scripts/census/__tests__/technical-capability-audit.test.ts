@@ -69,11 +69,15 @@ test("detects RealHomes and does not confuse generic structured HTML with WordPr
   assert.equal(detectCmsFamily(`<html><body><a href="/properties/villa-1">Villa</a></body></html>`), "CUSTOM");
 });
 
-test("Cloudflare assets are not mistaken for an access-control challenge", () => {
-  const normal = `<html><head><script src="https://cdnjs.cloudflare.com/ajax/libs/app.js"></script></head><body>Listings</body></html>`;
+test("embedded security/CDN assets are not mistaken for page-level access control", () => {
+  const normal = `<html><head><title>Agence immobilière</title><script src="https://cdnjs.cloudflare.com/ajax/libs/app.js"></script></head><body><form><div class="g-recaptcha">Captcha</div></form><script>const forbiddenMessage = 'forbidden';</script><a href="/property/villa">Villa</a></body></html>`;
   const challenge = `<html><title>Attention Required! | Cloudflare</title><div id="cf-chl-widget">Verify you are human</div></html>`;
   assert.equal(detectAccessControl(normal, "https://example.ma/"), false);
   assert.equal(detectAccessControl(challenge, "https://example.ma/"), true);
+});
+
+test("login redirects remain access-control evidence", () => {
+  assert.equal(detectAccessControl(`<html><title>Connexion</title></html>`, "https://example.ma/login"), true);
 });
 
 test("extracts JSON-LD schema types recursively", () => {
