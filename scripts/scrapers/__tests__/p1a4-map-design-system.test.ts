@@ -44,10 +44,19 @@ describe("P1A.4 — Map Design System", () => {
   it("uses a floating decision panel without shrinking the map viewport", () => {
     const experience = source("components/map/MapNeighborhoodExperience.tsx");
     assert.ok(experience.includes("absolute inset-x-3 bottom-3"));
-    assert.ok(experience.includes("md:right-4 md:top-4 md:w-[390px]"));
+    assert.ok(experience.includes("md:right-4 md:top-[92px] md:w-[390px]"));
     assert.ok(experience.includes("max-h-[48vh] overflow-y-auto"));
     assert.ok(experience.includes("Rechercher dans ce quartier"));
     assert.ok(experience.includes("Voir la page quartier"));
+  });
+
+  it("keeps a light floating cockpit over a map-first canvas", () => {
+    const experience = source("components/map/MapNeighborhoodExperience.tsx");
+    assert.ok(experience.includes('aria-label="Contrôles de la carte immobilière"'));
+    assert.ok(experience.includes("bg-card/95"));
+    assert.ok(experience.includes("backdrop-blur-xl"));
+    assert.equal(experience.includes("bg-deepblue text-white"), false);
+    assert.equal(experience.includes("flex-shrink-0 border-b"), false);
   });
 
   it("keeps controls concise and accessible across viewports", () => {
