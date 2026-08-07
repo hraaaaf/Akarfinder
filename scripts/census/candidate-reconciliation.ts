@@ -168,8 +168,6 @@ const SHORT_TERM_MARKERS = [
   "vrbo.",
 ];
 
-// Bounded list of known portal/product brands. These are useful acquisition
-// candidates but should not be mislabeled as a likely first-party agency or promoter.
 const PORTAL_MARKERS = [
   "mubawab",
   "agenz",
@@ -296,9 +294,21 @@ function hasPrimarySourceToken(domain: string): boolean {
   return PRIMARY_SOURCE_TOKENS.some((token) => label.includes(token));
 }
 
+function labelHasBoundedAnchor(label: string, token: string): boolean {
+  return (
+    label === token ||
+    label.startsWith(token) ||
+    label.endsWith(token) ||
+    label.includes(`-${token}`) ||
+    label.includes(`${token}-`)
+  );
+}
+
 function hasMoroccoDomainAnchor(domain: string): boolean {
   const normalized = domain.toLowerCase();
-  return normalized.endsWith(".ma") || MOROCCO_ANCHOR_TOKENS.some((token) => normalized.includes(token));
+  if (normalized.endsWith(".ma")) return true;
+  const labels = normalized.split(".").slice(0, -1);
+  return MOROCCO_ANCHOR_TOKENS.some((token) => labels.some((label) => labelHasBoundedAnchor(label, token)));
 }
 
 function registryHasMoroccoGeography(registry: SourceRegistryEvidence[]): boolean {
