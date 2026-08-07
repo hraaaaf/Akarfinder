@@ -1,431 +1,298 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-07**  
-**Statut : CARTE-QUARTIER P1A.2 ✅ PR #334 ; P1A.3 prochain en UX ; DATA-4.0 ✅ PR #341 ; DATA-4.1 prochain en DATA**
+**Statut : CARTE-QUARTIER P1A.2 ✅ PR #334 ; P1A.3 prochain UX ; DATA-4.2 ✅ PR #344 ; DATA-4.3A prochain DATA**
 
-Ce fichier est l’unique roadmap du projet. `README.md` définit l’identité et la doctrine ; `docs/SESSION.md` porte le handover opérationnel courant.
+`README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
 # 1. Cap produit
 
-AkarFinder est un **moteur de recherche immobilier, un index national et une couche d’intelligence pour le marché marocain**.
+AkarFinder = **moteur de recherche immobilier + index national + couche d’intelligence** pour le Maroc.
 
 - cœur produit : `/search` ;
-- `/map` : moteur complémentaire d’exploration spatiale et d’intelligence ;
+- `/map` : exploration spatiale complémentaire ;
 - objectif long terme : **Property Graph du marché immobilier marocain** ;
-- positionnement : search-first / intelligence-first ;
-- la couverture doit croître sans sacrifier légalité, fraîcheur, qualité, provenance ni dédoublonnage.
+- positionnement : search-first / intelligence-first.
 
 Pipeline canonique :
 
-`DISCOVERY → INGESTION / OBSERVATION → NORMALIZATION → CANONICALIZATION → FRESHNESS → DEDUPLICATION / CLUSTERING → ENRICHMENT → INTELLIGENCE → DISPLAY ELIGIBILITY → RANKING → PUBLICATION / SERP`
+`DISCOVERY → INGESTION/OBSERVATION → NORMALIZATION → CANONICALIZATION → FRESHNESS → DEDUPLICATION/CLUSTERING → ENRICHMENT → INTELLIGENCE → DISPLAY ELIGIBILITY → RANKING → PUBLICATION/SERP`
 
 North Star DATA :
 
 `COVERAGE × FRESHNESS × QUALITY × DEDUP × RELEVANCE`
 
-Paliers bootstrap :
-
-- **5K → 20K observations** : densité crédible sur marchés prioritaires ;
-- **20K → 50K** : couverture nationale multi-source structurée ;
-- **50K → 100K+** : profondeur suffisante pour devenir un réflexe de recherche.
-
-Le volume brut n’est jamais une métrique de succès autonome.
+Paliers : **5K→20K → 50K → 100K+**, sans sacrifier légalité, fraîcheur, qualité, provenance ou dédup.
 
 # 2. Doctrine non négociable
 
-- no-bypass absolu : pas de stealth, proxy furtif, faux Googlebot, CAPTCHA solve, login/rate-limit bypass ;
-- `robots.txt`, sitemap, noindex et capacité technique ne valent jamais permission ;
-- **Source Registry obligatoire avant activation** ;
+- no-bypass absolu ;
+- robots/sitemap/capability ≠ permission ;
+- Source Registry obligatoire avant activation ;
 - `DISCOVERED ≠ AUDITED ≠ POLICY_ASSIGNED ≠ ELIGIBLE ≠ INGESTIBLE ≠ DISPLAYABLE` ;
-- technical capability ≠ permission ;
-- privacy policy ≠ CGU ≠ permission de réutilisation ;
-- contenu partenaire/autorisé ≠ résultat public indexé ≠ signal marché interne ;
-- aucune donnée, image, géométrie, coordonnée, proximité ou partenariat inventé ;
-- Search reste le moteur canonique ;
-- Map, Search, SEO et Mon Projet partagent l’identité géographique canonique ;
+- privacy policy ≠ CGU ≠ permission ;
+- partenaire/autorisé ≠ public-indexed ≠ signal interne ;
+- aucune donnée/image/géométrie/coordonnée/proximité/partenariat inventé ;
+- Search reste canonique ; Map partage son identité géographique ;
 - migrations séparées du code applicatif ;
-- une responsabilité / une branche / une PR / un merge par lot ;
-- tests et preuves avant merge ;
-- aucun contournement temporaire présenté comme final.
+- une responsabilité / une branche / une PR / un merge ;
+- tests + preuves avant merge.
 
-# 3. État acquis
+# 3. État UX acquis
 
-## UX publique ✅
-
-- Accueil P1 ✅ PR #299 ;
-- Neuf P1 ✅ ;
-- Acheter P1 ✅ PR #312 ;
-- Louer P1 ✅ PR #313 ;
-- Mon Projet P1A ✅ PR #314 ;
-- Mon Projet P1B ✅ PR #318 ;
+- Accueil/Neuf/Acheter/Louer/Mon Projet P1 acquis ;
 - CARTE-QUARTIER-P1A.0 ✅ PR #327 ;
-- CARTE-QUARTIER-P1A.1 ✅ PR #328, score **9,5/10** ;
-- CARTE-QUARTIER-P1A.2 ✅ PR #334.
+- P1A.1 Geo Canonical Core ✅ PR #328, score **9,5/10** ;
+- P1A.2 Search Geo Contract ✅ PR #334.
 
-## Fondation DATA ✅
+## P1A.3 — Map State & Navigation 🔴 PROCHAIN UX
 
-- Observation Ledger ;
-- Freshness/Lifecycle ;
-- normalisation et quality tiers ;
-- display eligibility ;
-- Source Registry v2 ;
-- Market Index / fondation Property Graph ;
-- dédoublonnage conservant les observations ;
-- Discovery Expansion B3 ;
-- Coverage Gap Auditor ;
-- Partner Feed B3.4.x ;
-- OpenSERP, sitemaps publics et Common Crawl ;
-- 53 villes/pôles dans la logique acquisition ;
-- DATA-1.1 → DATA-1.6B ✅ ;
-- DATA-4.0 ✅.
+Cible : `/map?city=rabat&district=agdal&layer=explore&project_id=...`
 
-# 4. CARTE / QUARTIER — ROADMAP UX
-
-## Vision
-
-Deux moteurs complémentaires :
-
-- **Search** = recherche immobilière canonique ;
-- **Map** = exploration spatiale et intelligence.
-
-Hiérarchie :
-
-`Maroc → Ville → Quartier → Zone → Bien`
-
-Règles :
-
-1. aucune géométrie inventée ;
-2. aucune précision fabriquée ;
-3. une couleur = une signification active ;
-4. une couche publique exige une provenance suffisante ;
-5. chaque étape UX/UI : double-check + score **≥ 9,0/10**.
-
-### P1A.0 — Contrat produit & documentaire ✅ PR #327
-### P1A.1 — Geo Canonical Core ✅ PR #328
-### P1A.2 — Search Geo Contract ✅ PR #334
-
-Contrat acquis : `/search?city=Rabat&district=Agdal` avec `district` structuré, Geo Registry canonique et fail-closed lorsqu’un provider ne supporte pas le district.
-
-### P1A.3 — Map State & Navigation 🔴 PROCHAIN UX
-
-Contrat cible :
-
-`/map?city=rabat&district=agdal&layer=explore&project_id=...`
-
-Travail :
-
-- conserver `city`, `district`, `layer`, filtres/intention utiles et `project_id` ;
+- conserver city/district/layer/filtres/project_id ;
 - Back/Forward ;
 - URL partageable ;
-- Quartier → Map → Search → Mon Projet sans perte de contexte ;
-- aucune perte silencieuse de `district`.
+- Map ↔ Search ↔ Quartier ↔ Mon Projet sans perte de contexte ;
+- double-check + score ≥9/10.
 
-### P1A.4 — AkarFinder Map Design System
-### P1A.5 — Territorial Explorer
-### P1A.6 — Map UX Responsive
+Puis P1A.4 Map Design System → P1A.5 Territorial Explorer → P1A.6 Responsive → P1B intelligence cartographique.
 
-Puis P1B : truthful market signals, layer engine, heatmaps/choropleths, buildings/landmarks et cockpit quartier.
+# 4. Fondation DATA acquise
 
-# 5. PHASE DATA — P0 STRATÉGIQUE
+- Observation Ledger / Freshness / normalization / quality tiers ;
+- display eligibility / Source Registry v2 ;
+- Market Index / Property Graph foundation ;
+- dedup conservant les observations ;
+- Discovery Expansion / Coverage Gap ;
+- Partner Feed ;
+- OpenSERP / sitemaps publics / Common Crawl ;
+- 53 villes/pôles.
 
-Objectif : un index immobilier marocain **dense, multi-source, frais, dédupliqué et gouverné**.
+# 5. DATA-1 — Moroccan Real Estate Web Census ✅
 
-Le système cumule :
+## DATA-1.1 ✅ PR #322
+## DATA-1.2 ✅ PR #323
 
-- discovery public web ;
-- résultats publics admissibles ;
-- sitemaps / structured data lorsque policy compatible ;
-- connecteurs CMS génériques ;
-- feeds agences/promoteurs ;
-- annonces utilisateurs ;
-- données ouvertes/géographiques ;
-- historique ;
-- partenariats et claim de catalogues.
+- **37 009 URLs / 7 051 domaines** ;
+- 983 HIGH/MEDIUM.
 
-## DATA-0 — Stabiliser le pipeline
-
-- B3.4.4 Deduplication & Change Detection ;
-- B3.4.5 Quarantine & Review ;
-- B3.4.6 Publication Canary ;
-- vérité prix/surface/géographie ;
-- freshness/lifecycle ;
-- profondeur LISTING ;
-- Property Graph / dedup V3.
-
-# 6. DATA-1 — Moroccan Real Estate Web Census ✅
-
-## DATA-1.1 — Domain Census Core ✅ PR #322
-## DATA-1.2 — Existing Reserve Census ✅ PR #323
-
-- **37 009 URLs distinctes** ;
-- **7 051 domaines** ;
-- **983 HIGH/MEDIUM** au premier tri.
-
-## DATA-1.3A — Common Crawl URL Index Contract ✅ PR #324
-## DATA-1.3B — Common Crawl Live Evidence ✅ PR #326
+## DATA-1.3A ✅ PR #324
+## DATA-1.3B ✅ PR #326
 
 - `CC-MAIN-2026-25` ;
 - **300/300 Parquet** ;
-- **9 087 hosts bruts** ;
-- **8 970 hosts canoniques** ;
-- **8 727 registered domains** ;
+- 9 087 hosts bruts ; 8 970 canoniques ; **8 727 registered domains** ;
 - 0 WARC / 0 write / 0 activation.
 
-## DATA-1.4 — Candidate Reconciliation ✅ PR #329
+## DATA-1.4 ✅ PR #329
 
 - univers : **15 238 domaines** ;
-- `PRIMARY_SOURCE_CANDIDATE` : **230** ;
-- `PORTAL_CANDIDATE` : **625**.
+- PRIMARY_SOURCE_CANDIDATE : **230** ;
+- PORTAL_CANDIDATE : **625**.
 
-## DATA-1.5 — Candidate Technical Capability Audit ✅ PR #331
+## DATA-1.5 ✅ PR #331
 
-- 20 domaines P0 ;
-- **19 review-ready** ;
-- 3 RealHomes ; 3 Houzez ; 5 WordPress génériques ; 8 structured-web ;
-- score **9,4/10**.
+20 domaines P0 ; 19 review-ready ; score **9,4/10**.
 
-## DATA-1.6A — Source Policy Evidence Review ✅ PR #333
+## DATA-1.6A ✅ PR #333
 
-- 19 sources ;
-- 1 restrictive ;
-- 3 terms sans permission explicite ;
-- 11 preuves insuffisantes ;
-- 4 access/fetch-limited ;
-- score **9,5/10**.
+19 reviews policy ; score **9,5/10**.
 
-## DATA-1.6B — Source Registry Assignment ✅ PR #338 + #339
+## DATA-1.6B ✅ PR #338 + #339
 
-Production :
+- 19 lignes Registry en production ;
+- 1 prohibited / 3 permission_required / 15 unverified ;
+- hidden : 19/19 ;
+- activations : **0** ;
+- score **9,6/10**.
 
-- **19/19** lignes Registry ;
-- authorization : 1 prohibited / 3 permission_required / 15 unverified ;
-- acquisition : 1 blocked / 18 public_index_internal_only ;
-- hidden : **19/19** ;
-- unsafe/activating : **0** ;
-- migration Supabase version **20260807142236** ;
-- score final **9,6/10**.
+# 6. DATA-4 — Reservoir Strategy
 
-# 7. DATA-4 — Large Reservoir Depth Audit
+Objectif : identifier le chemin réel vers **20K observations utiles** sans confondre profondeur technique et inventaire activable.
 
-Objectif : mesurer si le passage **5K → 20K observations** se trouve déjà dans les grands réservoirs connus, sans confondre profondeur technique et inventaire publiable.
+## DATA-4.0 — Mubawab + Avito Baseline ✅ PR #341
 
-Contrat :
+- **35 134 normalized** ;
+- **3 588 technical display** ;
+- **0 policy-activable** ;
+- Avito : 22 227 unavailable ;
+- Mubawab : gap public→normalized borné 95 738 ;
+- score **9,6/10**.
 
-`PUBLIC VISIBLE → DISCOVERED/SEEDED → NORMALIZED → TECHNICALLY DISPLAYABLE → POLICY-ACTIVABLE`
+## DATA-4.1A — Avito Internal Recovery Audit ✅ PR #343
 
-## DATA-4.0 — Mubawab + Avito Reservoir Baseline ✅ PR #341
+Sur 22 227 unavailable :
 
-Score **9,6/10**, 19/19 workflows verts, audit read-only.
+- **1 098** immobilier canonique ;
+- **21 129 (95,06%)** bruit/non-immobilier ;
+- 804 type-compatible ;
+- **73** type-compatible + intent + geo ;
+- 1 025 insufficient evidence ;
+- prix 0 / surface 0 ;
+- policy-activable 0.
 
-Résultat live certifié :
+Décision : pas de Shadow Recovery Avito maintenant.
 
-| Source | Normalized | Technical display | Policy-activable | Normalization unavailable | Fresh confirmed |
-|---|---:|---:|---:|---:|---:|
-| Avito | **23 925** | **231** | **0** | **22 227** | **10** |
-| Mubawab | **11 209** | **3 357** | **0** | **7 506** | **902** |
-| **Total** | **35 134** | **3 588** | **0** | **29 733** | **912** |
+## DATA-4.2 — Reservoir Prioritization ✅ PR #344
 
-Mubawab : compteur public borné observé **106 947**, soit **95 738** de gap public→normalized. La policy reste restrictive ; ce gap est un sujet partenariat/licence ou public-index admissible, pas une permission de crawl.
+Live proof paginé :
 
-Avito : aucun compteur national immobilier fiable n’a été retenu. Le sitemap déclaré reste un signal technique, pas une autorisation.
+- normalized evidence : **56 803** ;
+- display evidence : **22 426** ;
+- Registry rows : **35** ;
+- candidats : **14** ;
+- writes / source requests / policy changes / activations : **0**.
 
-Conclusion : **les grands réservoirs contiennent beaucoup de profondeur technique mais 0 ligne actuellement policy-activable publiquement**.
+### ADMISSIBLE_GROWTH
 
-## DATA-4.1 — Avito Internal Reservoir Recovery Audit 🔴 PROCHAIN DATA
+1. **daragadir.com — 71,75** ; 6 533 normalized ; 6 319 core-structured ; 6 528 technical display ; canonical-link/external-tail-link only.
+2. promoimmomarrakech.com — 67,91.
+3. aykana.ma — 53,09.
+4. limmobiliersansfrontieres.com — 47,91.
 
-Objectif : expliquer et segmenter les **22 227 lignes Avito déjà détenues** en `normalization_status=unavailable`, sans aucun nouveau fetch source.
+### PARTNERSHIP_UPSIDE
 
-Scope strict :
+1. **agenz.ma — 58,93** ; 4 490 normalized ; 1 227 fresh ; 1 146 decision-structured ; hidden/internal-only.
+2. mouldar.com — 53,56.
+3. masaken.ma — 48,73.
 
-- données déjà présentes dans AkarFinder uniquement ;
-- croiser `discovery_candidates`, `source_offer_seeds`, `thin_index_normalized_documents_v2`, observations/historique déjà stockés et métadonnées de provenance existantes ;
-- identifier pourquoi la normalisation est `unavailable` ;
-- mesurer les champs récupérables sans réseau : city, intent, property type, price, surface, title/snippet, provenance ;
-- distinguer :
-  - `RECOVERABLE_FROM_EXISTING_DATA` ;
-  - `INSUFFICIENT_EXISTING_EVIDENCE` ;
-  - `POLICY_BLOCKED_FOR_NEW_OBSERVATION` ;
-  - `NOISE_OR_NON_LISTING` ;
-- aucune mutation dans DATA-4.1A ;
-- aucun fetch Avito ;
-- aucune sitemap traversal ;
-- aucun changement de Source Registry ;
-- aucune publication.
+Minimum **500 lignes normalisées** pour gagner cette lane afin de viser un multiplicateur réellement significatif.
+
+## DATA-4.3A — Dar Agadir Bounded Canonical-Link Activation Audit 🔴 PROCHAIN DATA
+
+Objectif : mesurer, **sans activer**, combien des 6 533 observations Dar Agadir peuvent alimenter une surface de résultats externes bornée et vraie sous la policy existante.
+
+Frontière Registry actuelle :
+
+`public_sitemap_canonical_link → canonical_link_only → external_tail_link_only`
+
+Scope :
+
+- observations déjà détenues ;
+- aucune page détail fetchée ;
+- aucune description/image/contact copiés ;
+- vérifier canonical URL, city/type/intent, fraîcheur, doublons et qualité minimale ;
+- mesurer overlap avec listings déjà visibles/canoniques ;
+- produire `eligible_shadow / stale / duplicate / insufficient / blocked` ;
+- **0 policy change / 0 production activation en 4.3A**.
 
 Sortie attendue :
 
-`22 227 unavailable → causes → récupérables depuis données existantes → non récupérables → valeur interne potentielle`
+`6 533 Dar Agadir → truthful canonical-link candidates → dedup/freshness/quality losses → bounded activation ceiling`
 
-Gate : DATA-4.1 ne peut jamais transformer un gain de normalisation interne en “nouvel inventaire public” tant que la policy Avito reste hidden/internal-only.
+Si le shadow est propre et utile : DATA-4.3B = canary borné séparé, avec rollback et certification.
 
-## DATA-4.2 — Reservoir Policy / Partnership Decision
+## Lane business parallèle
 
-Après DATA-4.1 :
+**Agenz = priorité partenariat/feed**. Aucun changement Registry ou produit avant autorisation écrite.
 
-- Avito : décider si une re-review policy est justifiée ;
-- Mubawab : partenariat/licence prioritaire si le gap commercial le justifie ;
-- classer ensuite les autres grands portails par `gap × policy × freshness × difficulty`.
+# 7. DATA-2 — Structured Web Mining
 
-# 8. DATA-2 — Structured Web Mining
+Common Crawl / Web Data Commons pour discovery et historique. Historical ≠ fresh.
 
-- Common Crawl URL Index pour discovery/historique ;
-- Web Data Commons pour structured discovery/schema mapping ;
-- données historiques ≠ fraîcheur 2026.
+# 8. DATA-3 — Universal Site Connector
 
-# 9. DATA-3 — Universal Site Connector
-
-Objectif : **un connecteur par famille technique**, pas un scraper par agence.
-
-Familles : WordPress, Houzez, RealHomes, sitemap + JSON-LD, WP REST admissible, XML/CSV/JSON/API publique autorisée, HTML générique en dernier recours.
-
-Architecture :
+Un connecteur par famille technique : WordPress, Houzez, RealHomes, sitemap+JSON-LD, WP REST admissible, XML/CSV/JSON/API autorisée, HTML générique en dernier recours.
 
 `domain → policy gate → tech fingerprint → connector family → observation → canonical pipeline`
 
-Activation seulement pour sources Registry éligibles.
+Activation uniquement si Registry éligible.
 
-# 10. DATA-5 — Universal Partner Feed
+# 9. DATA-5 — Universal Partner Feed
 
-Réutiliser `partner_feed_*` et favoriser les feeds directs/licenciés.
+Réutiliser `partner_feed_*` et privilégier feeds directs/licenciés.
 
-# 11. DATA-6 — Index / Claim my agency
+# 10. DATA-6 — Claim my agency
 
-`URL agence → discovery → organisation candidate → claim → vérification → feed direct`
+`URL agence → discovery → organisation candidate → claim → vérification → feed direct`.
 
-Présence indexée ≠ partenariat.
+# 11. DATA-7 — Professional Workspace
 
-# 12. DATA-7 — Professional Workspace / B3.5
+`Acquisition publique → activation request → qualification → organisation → membres → ownership → feeds → projets/listings → leads`.
 
-Flux canonique :
+# 12. DATA-8 — Open Geodata / Property Graph
 
-`Acquisition publique → activation request → qualification → organisation → membres → ownership → feeds → projets/listings → leads`
+Overture / Microsoft footprints / OSM et sources compatibles pour géocodage, canonicalisation, dedup et intelligence spatiale. N’augmente pas le compteur d’annonces.
 
-Réutiliser les modèles `professional_*`, `partner_feed_*`, auth et RLS existants.
+# 13. DATA-9 — Historical Observation Layer
 
-# 13. DATA-8 — Open Geodata & Property Graph
+Apparition/disparition, prix, disponibilité, provenance et historique de cluster lorsque licite.
 
-Overture Maps, Microsoft Global Building Footprints, OpenStreetMap et autres sources compatibles/licenciées pour géocodage, canonicalisation, dedup et intelligence spatiale. Ces données n’augmentent pas le compteur d’annonces.
+# 14. DATA-10 — Research Radar
 
-# 14. DATA-9 — Historical Observation Layer
+Datasets externes = `RESEARCH_ONLY` avant audit licence/provenance/fraîcheur.
 
-Conserver lorsque licite apparition/disparition, prix, disponibilité, provenance et historique de cluster.
-
-# 15. DATA-10 — External Datasets / Research Radar
-
-GitHub/Hugging Face/datasets tiers = `RESEARCH_ONLY` jusqu’à audit licence, provenance, fraîcheur et sécurité.
-
-# 16. Stratégie de montée en volume
+# 15. Stratégie volume
 
 ## 5K → 20K
 
-1. récupérer la profondeur **déjà détenue** lorsqu’elle est exploitable ;
-2. structured discovery admissible ;
-3. sources first-party et feeds activables ;
-4. connecteurs CMS génériques ;
+1. exploiter honnêtement profondeur déjà détenue ;
+2. canonical/public-index admissible ;
+3. first-party et feeds autorisables ;
+4. Universal Site Connector ;
 5. profondeur LISTING ;
-6. déduplication ;
-7. ne jamais compter les reservoirs hidden comme inventaire public.
+6. dedup/freshness ;
+7. ne jamais compter hidden/internal-only comme inventaire public.
 
 ## 20K → 50K
 
-- extension nationale ;
-- feeds directs ;
-- claim organisations ;
-- utilisateurs ;
-- freshness/reactivation.
+Extension nationale + feeds + claim + utilisateurs + reactivation.
 
 ## 50K → 100K+
 
-- réseau de feeds professionnels ;
-- promoteurs/programmes neufs ;
-- partenariats data ;
-- Property Graph ;
-- boucle B2B.
+Réseau professionnel + promoteurs + partenariats data + Property Graph + boucle B2B.
 
-# 17. KPI DATA obligatoires
+# 16. KPI DATA
 
-- domains discovered / audited / policy-assigned / eligible ;
-- observations découvertes / normalisées / display-eligible / policy-activable ;
-- propriétés canoniques uniques ;
+- domains discovered/audited/policy-assigned/eligible ;
+- observations discovered/normalized/technical-display/policy-activable ;
+- propriétés canoniques ;
 - dedup rate ;
-- freshness buckets ;
+- freshness ;
 - couverture ville/quartier/type/transaction ;
-- complétude prix/surface/géo ;
-- normalisation unavailable/partial/normalized ;
+- prix/surface/géo completeness ;
+- unavailable/partial/normalized ;
 - stale/removed/churn ;
 - contribution par source/connecteur ;
-- part partenaire/indexée/utilisateur ;
-- densité SERP sur intentions prioritaires.
+- densité SERP.
 
-KPI lancement : **SERP utile, dense, fraîche et dédupliquée**, pas « 100K lignes ».
+North Star lancement : **SERP utile, dense, fraîche et dédupliquée**, pas « 100K lignes ».
 
-# 18. Séquence d’exécution consolidée
+# 17. Séquence consolidée
 
 ## Lane UX
 
-1. P1A.0 ✅ ;
-2. P1A.1 ✅ ;
-3. P1A.2 ✅ ;
-4. **P1A.3 — Map State & Navigation** ;
-5. P1A.4 — Map Design System ;
-6. P1A.5 — Territorial Explorer ;
-7. P1A.6 — Responsive certification ;
-8. P1B ;
-9. Pro / Agences / Promoteurs ;
-10. Immobilier / SEO ;
-11. recette SERP + fiche bien.
+P1A.3 → P1A.4 → P1A.5 → P1A.6 → P1B → Pro/Agences/Promoteurs → SEO → recette SERP.
 
 ## Lane DATA
 
-1. DATA-1.6B ✅ ;
-2. DATA-4.0 ✅ ;
-3. **DATA-4.1 — Avito Internal Reservoir Recovery Audit** ;
-4. DATA-4.2 — policy/partnership decision ;
-5. classer les autres grands réservoirs ;
-6. approfondir uniquement les modes admissibles ;
-7. DATA-3 Universal Site Connector pour sources éligibles ;
-8. atteindre **20K observations exploitables** avec preuve qualité ;
-9. DATA-5/6/7 feeds + claim + Professional Workspace ;
-10. atteindre **50K** avec part directe croissante ;
-11. DATA-8 Property Graph/geodata ;
-12. historique/intelligence/SEO vers **100K+**.
+1. DATA-4.3A Dar Agadir shadow audit ;
+2. si certifié : DATA-4.3B canary borné ;
+3. parallèle business : partenariat Agenz ;
+4. classer/approfondir les autres sources canonical-link admissibles ;
+5. DATA-3 Universal Site Connector pour sources éligibles ;
+6. atteindre **20K observations exploitables** ;
+7. DATA-5/6/7 feeds + claim + workspace ;
+8. 50K puis DATA-8/9 vers 100K+.
 
-# 19. Définition de terminé
+# 18. Définition de terminé
 
-Un lot est terminé uniquement si :
+Un lot est terminé uniquement si : périmètre respecté, tests/build/gates verts, preuves disponibles, Registry respecté, aucun bypass, aucun workflow temporaire, PR mergée, production vérifiée si write, et les 3 MD canoniques alignés.
 
-- périmètre respecté ;
-- tests ciblés + TypeScript + build verts si code ;
-- CI sans régression pertinente ;
-- preuves et métriques disponibles ;
-- policy Registry documentée pour toute source gouvernée/activée ;
-- aucun bypass ;
-- aucun workflow temporaire résiduel ;
-- pour UX/UI : double-check + score ≥ 9/10 ;
-- `README.md`, `docs/ROADMAP.md`, `docs/SESSION.md` alignés ;
-- PR mergée ;
-- production vérifiée si migration/write ;
-- SESSION contient la prochaine action exacte.
+# 19. Prochaine action exacte
 
-# 20. Prochaine action exacte
+## DATA — DATA-4.3A
 
-## DATA — DATA-4.1
-
-1. partir du `main` incluant PR #341 ;
-2. prendre uniquement les **22 227 Avito `normalization_status=unavailable` déjà en base** ;
-3. classifier les causes d’indisponibilité ;
-4. rechercher uniquement des signaux déjà stockés dans les tables canoniques ;
-5. quantifier les champs récupérables sans réseau ;
-6. produire une matrice `cause → volume → recoverable fields → confidence → next action` ;
-7. zéro fetch Avito / zéro sitemap / zéro policy change / zéro write en 4.1A ;
-8. ne jamais compter la récupération interne comme inventaire public ;
-9. double-check des chiffres, score et PR avant tout sous-lot de write.
+1. partir du `main` incluant PR #344 ;
+2. isoler `daragadir.com` ;
+3. utiliser uniquement observations existantes et facts autorisés ;
+4. mesurer URL canonique, structure, freshness, dedup et quality ;
+5. classifier `ELIGIBLE_SHADOW / STALE / DUPLICATE / INSUFFICIENT / BLOCKED` ;
+6. calculer le plafond de canonical outbound links utiles ;
+7. zéro fetch détail / zéro content reuse / zéro policy change / zéro activation ;
+8. double-check qualitatif ;
+9. score ≥9/10 avant toute proposition de canary 4.3B.
 
 ## UX — P1A.3
 
-1. introduire `district` dans l’état URL `/map` ;
-2. conserver `city`, `district`, `layer`, filtres utiles et `project_id` ;
-3. rendre Back/Forward et partage stables ;
-4. supprimer les pertes de contexte Map → Search → Quartier ;
-5. double-check fonctionnel/visuel ;
-6. score ≥ 9/10 avant P1A.4.
+Stabiliser l’état URL Map, Back/Forward, partage et transitions Map ↔ Search avec conservation de `district`.
