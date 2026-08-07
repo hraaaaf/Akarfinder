@@ -89,40 +89,27 @@ COPY (
     WHERE url_host_name IS NOT NULL
       AND url_host_registered_domain IS NOT NULL
       AND fetch_status = 200
-  ),
-  lane_a AS (
-    SELECT
-      'MA_TLD_REAL_ESTATE' AS lane,
-      domain,
-      registered_domain,
-      count(*) AS indexed_pages,
-      count_if(real_estate_signal) AS real_estate_signal_pages,
-      max(fetch_time) AS latest_fetch_at,
-      arg_max(url, fetch_time) AS sample_url
-    FROM base
-    WHERE registry_suffix = 'ma'
-    GROUP BY domain, registered_domain
-    HAVING count_if(real_estate_signal) >= 1
-  ),
-  lane_b AS (
-    SELECT
-      'MOROCCO_EXTERNAL_REAL_ESTATE' AS lane,
-      domain,
-      registered_domain,
-      count(*) AS indexed_pages,
-      count(*) AS real_estate_signal_pages,
-      max(fetch_time) AS latest_fetch_at,
-      arg_max(url, fetch_time) AS sample_url
-    FROM base
-    WHERE registry_suffix <> 'ma'
-      AND real_estate_signal
-      AND morocco_location_signal
-    GROUP BY domain, registered_domain
-    HAVING count(*) >= 1
   )
-  SELECT * FROM lane_a
-  UNION ALL
-  SELECT * FROM lane_b
+  SELECT
+    CASE
+      WHEN registry_suffix = 'ma' THEN 'MA_TLD_REAL_ESTATE'
+      ELSE 'MOROCCO_EXTERNAL_REAL_ESTATE'
+    END AS lane,
+    domain,
+    registered_domain,
+    count(*) AS indexed_pages,
+    CASE
+      WHEN registry_suffix = 'ma' THEN count_if(real_estate_signal)
+      ELSE count(*)
+    END AS real_estate_signal_pages,
+    max(fetch_time) AS latest_fetch_at,
+    arg_max(url, fetch_time) AS sample_url
+  FROM base
+  WHERE registry_suffix = 'ma'
+     OR (registry_suffix <> 'ma' AND real_estate_signal AND morocco_location_signal)
+  GROUP BY lane, registry_suffix, domain, registered_domain
+  HAVING registry_suffix <> 'ma' OR count_if(real_estate_signal) >= 1
+  ORDER BY lane, real_estate_signal_pages DESC, indexed_pages DESC, domain ASC
 ) TO '${part_file}' (HEADER, DELIMITER ',');
 SQL
 }
