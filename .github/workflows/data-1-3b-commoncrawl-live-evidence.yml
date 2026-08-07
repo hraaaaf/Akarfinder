@@ -32,7 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install DuckDB CLI ephemerally
+      - name: Install DuckDB CLI and httpfs ephemerally
         shell: bash
         run: |
           set -euo pipefail
@@ -42,6 +42,7 @@ jobs:
             --output .tmp/data-1-3b/duckdb.zip
           unzip -q .tmp/data-1-3b/duckdb.zip -d .tmp/data-1-3b/bin
           "${DUCKDB_BIN}" --version
+          "${DUCKDB_BIN}" -c "INSTALL httpfs; LOAD httpfs;"
 
       - name: Resolve current crawl Parquet paths
         shell: bash
