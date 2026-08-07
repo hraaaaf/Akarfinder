@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-07**  
-**Statut : CARTE / QUARTIER P1A.1 ✅ PR #328 ; P1A.2 prochain en lane UX ; DATA-1.5 ✅ PR #331 ; DATA-1.6A Source Policy Evidence Review prochain en lane DATA**
+**Statut : CARTE / QUARTIER P1A.1 ✅ PR #328 ; P1A.2 actif via PR #334 ; DATA-1.6A ✅ PR #333 ; DATA-1.6B Source Registry Assignment prochain en lane DATA**
 
 Ce fichier est l’unique roadmap du projet. `README.md` définit l’identité et la doctrine ; `docs/SESSION.md` porte uniquement le handover courant.
 
@@ -44,6 +44,8 @@ Paliers bootstrap :
 - `robots.txt`, `noindex`, CGU, licence et politique source doivent être vérifiés avant activation ;
 - **Source Registry obligatoire avant toute ingestion publique ou partenaire** ;
 - chaque source reçoit une politique explicite : `GREEN`, `PARTNER_ONLY`, `INDEX_ONLY`, `RESEARCH_ONLY` ou `BLOCKED` ;
+- **une capacité technique, un robots allow, une page publique ou une privacy policy ne valent jamais permission de réutilisation** ;
+- une page privacy-only ne vaut pas CGU ; une URL légale redirigée vers une homepage ne vaut pas preuve légale ;
 - aucune donnée, image, coordonnée, géométrie, proximité ou relation partenaire inventée ;
 - contenu partenaire/autorisé ≠ résultat public indexé ≠ signal marché interne ;
 - un résultat tiers indexé doit conserver provenance et lien vers la source selon sa policy ;
@@ -68,7 +70,8 @@ Paliers bootstrap :
 - **Mon Projet P1A** : parcours guidé en huit écrans, certifié et mergé via PR #314, score **9,2/10** ;
 - **Mon Projet P1B** : continuité du `project_id` vers Search, favoris et comparaisons, certifiée et mergée via PR **#318** ;
 - **CARTE-QUARTIER-P1A.0** : contrat produit/documentaire certifié et mergé via PR **#327**, score **9,5/10**, **19/19 workflows verts** ;
-- **CARTE-QUARTIER-P1A.1** : Geo Canonical Core certifié via PR **#328**, score **9,5/10**, **19/19 workflows verts** sur le head fonctionnel/documentaire avant clôture finale.
+- **CARTE-QUARTIER-P1A.1** : Geo Canonical Core certifié et mergé via PR **#328**, score **9,5/10**, **19/19 workflows verts** ;
+- **CARTE-QUARTIER-P1A.2** : Search Geo Contract actif via **PR #334** dans la lane UX indépendante.
 
 ### Fondation Carte / Quartier existante ✅
 
@@ -96,11 +99,12 @@ Audit initial Carte / Quartier : **7,4/10**. Potentiel après consolidation : **
 - 53 villes/pôles couverts dans la logique d’acquisition existante ;
 - DATA-1.1 / DATA-1.2 / DATA-1.3A / DATA-1.3B / DATA-1.4 acquis ;
 - **DATA-1.5 Technical Capability Audit ✅ PR #331** : 20 candidats P0 audités, 19 techniquement review-ready, familles CMS/connecteurs détectées sans aucune policy automatique ;
-- prochain lot DATA : **DATA-1.6A — Source Policy Evidence Review**, read-only avant toute écriture Source Registry.
+- **DATA-1.6A Source Policy Evidence Review ✅ PR #333** : 19 sources auditées en lecture seule, preuve juridique/robots bornée, score **9,5/10**, zéro policy écrite ;
+- prochain lot DATA : **DATA-1.6B — Source Registry Assignment**, uniquement pour décisions explicitement revues et suffisamment prouvées.
 
 ## 4. Lot UX certifié — CARTE-QUARTIER-P1A.1 ✅
 
-PR **#328 — Geo Canonical Core**. Merge final autorisé uniquement après la dernière CI du head documentaire.
+PR **#328 — Geo Canonical Core**, mergée.
 
 Objectif atteint : supprimer le bypass géographique de `/map` et imposer une seule identité ville/quartier sans modèle parallèle.
 
@@ -166,12 +170,12 @@ Livré :
 - doctrine Search/Map/Geo verrouillée ;
 - roadmap P1A/P1B/P2 canonique ;
 - gate UX/UI ≥ 9/10 obligatoire ;
-- DATA-1.3B maintenu comme lane DATA active séparée ;
+- DATA lane maintenue séparée ;
 - aucun code applicatif modifié dans P1A.0.
 
 ### P1A.1 — Geo Canonical Core ✅
 
-PR **#328**. Score **9,5/10**. Certification **19/19 workflows verts** avant la clôture documentaire finale.
+PR **#328**, mergée. Score **9,5/10**. Certification **19/19 workflows verts**.
 
 Architecture livrée :
 
@@ -186,12 +190,9 @@ Livré :
 - seed brut conservé derrière l’adaptateur, pas comme dépendance runtime publique ;
 - test de non-régression dans la gate Geo Productization ;
 - aucun changement visuel ;
-- aucune migration ;
-- aucun changement Search `district` avant P1A.2.
+- aucune migration.
 
-Gate : tests canoniques + TypeScript + production build + CI complète + score ≥ 9/10.
-
-### P1A.2 — Search Geo Contract 🔴 PROCHAIN
+### P1A.2 — Search Geo Contract 🔴 ACTIF — PR #334
 
 Objectif : faire de `district` un filtre Search structuré réel.
 
@@ -209,7 +210,7 @@ Travail :
 - API et composants concernés ;
 - compatibilité avec anciennes URLs `q=` sans continuer à utiliser `q` comme contrat quartier.
 
-Gate : `city + district` filtre réellement le quartier.
+Gate : `city + district` filtre réellement le quartier, sans élargissement silencieux à la ville.
 
 ### P1A.3 — Map State & Navigation
 
@@ -479,7 +480,8 @@ Créer un **Domain Census** avec au minimum :
 - **DATA-1.3A — Common Crawl URL Index Contract ✅ PR #324** ;
 - **DATA-1.3B — Common Crawl Live Evidence ✅ PR #326** : 300/300 Parquet, 8 727 registered domains ;
 - **DATA-1.4 — Candidate Reconciliation ✅ PR #329** : 15 238 domaines réconciliés, 230 `PRIMARY_SOURCE_CANDIDATE` ;
-- **DATA-1.5 — Candidate Technical Capability Audit ✅ PR #331**, merge `1f8b398`, score **9,4/10**.
+- **DATA-1.5 — Candidate Technical Capability Audit ✅ PR #331**, merge `1f8b398`, score **9,4/10** ;
+- **DATA-1.6A — Source Policy Evidence Review ✅ PR #333**, merge `28fbdf5`, score **9,5/10**.
 
 Preuve DATA-1.5 sur batch P0 de 20 first-party candidates non enregistrés :
 
@@ -496,11 +498,33 @@ Preuve DATA-1.5 sur batch P0 de 20 first-party candidates non enregistrés :
 
 Candidats techniquement les plus structurés : `valfoncier.ma`, `marrakech-luxury-properties.com`, `agadirimmobilier.org`, `proimmobilier.ma`, `rabatimmo.ma`, `agadirimmobilier.ma`, `capital-properties.ma`, `immobilier-pro-maroc.com`.
 
-**Prochain lot DATA : DATA-1.6A — Source Policy Evidence Review.**
+Preuve DATA-1.6A sur les 19 sources techniquement review-ready :
 
-Responsabilité unique : établir, en lecture seule, les preuves policy des candidats techniquement viables : robots/noindex observés, CGU/licence, restrictions de réutilisation, canaux permis, besoin de partenariat/contact et niveau de confiance. Aucune ingestion et aucune écriture Source Registry dans 1.6A.
+- **79 GET publics** au total ;
+- maximum **5/domain** ;
+- `RESTRICTIVE_TERMS_FOUND` : **1** ;
+- `TERMS_FOUND_NO_EXPLICIT_PERMISSION` : **3** ;
+- `INSUFFICIENT_LEGAL_EVIDENCE` : **11** ;
+- `ACCESS_OR_FETCH_LIMITED` : **4** ;
+- `PUBLIC_CHANNEL_SIGNAL_FOUND` : **0** ;
+- robots block-all : 0 ;
+- noindex : 0 ;
+- 0 write DB, 0 policy, 0 Registry policy field prérempli, 0 auth, 0 bypass, 0 WARC ;
+- head `69f6545` : **20/20 workflows verts**.
 
-Puis **DATA-1.6B — Source Registry Assignment** n’écrira que les décisions suffisamment prouvées, via le schéma Registry existant, avant tout connecteur ou ingestion.
+Double-check 1.6A : privacy-only ne compte pas comme CGU ; redirect legal→homepage ignoré comme preuve légale ; timeout/robots path-disallow classés `ACCESS_OR_FETCH_LIMITED` ; autorisation préalable générique seule insuffisante pour un statut restrictif. `prestigeimmo.ma` reste le seul `RESTRICTIVE_TERMS_FOUND` du batch car une restriction substantielle accès automatisé/copie/reproduction est observée.
+
+**Prochain lot DATA : DATA-1.6B — Source Registry Assignment.**
+
+Responsabilité unique : convertir uniquement les décisions explicitement revues et suffisamment prouvées en policies du `source_policy_registry` existant. Aucune catégorie 1.6A n’est automatiquement traduite en policy.
+
+Règles de départ :
+
+- `RESTRICTIVE_TERMS_FOUND` → aucune ingestion/réutilisation tant qu’une autorisation écrite ou un partenariat ne change pas la preuve ;
+- `TERMS_FOUND_NO_EXPLICIT_PERMISSION` → décision humaine explicite nécessaire avant `INDEX_ONLY`, `PARTNER_ONLY` ou autre policy ;
+- `INSUFFICIENT_LEGAL_EVIDENCE` et `ACCESS_OR_FETCH_LIMITED` → aucune activation, preuve/contact supplémentaire requis ;
+- conserver evidence URLs, timestamps, policy hash, review status et next review ;
+- aucune nouvelle table si le Registry actuel suffit.
 
 ### Gate DATA-1
 
@@ -784,8 +808,8 @@ Deux lanes peuvent avancer sans se mélanger :
 ### Lane UX
 
 1. **CARTE-QUARTIER-P1A.0 ✅ PR #327** — contrat produit/documentaire ;
-2. **P1A.1 ✅ PR #328** — Geo Canonical Core, certifié, merge final après CI documentaire ;
-3. **P1A.2 🔴 PROCHAIN** — Search Geo Contract `district` ;
+2. **P1A.1 ✅ PR #328** — Geo Canonical Core ;
+3. **P1A.2 🔴 ACTIF PR #334** — Search Geo Contract `district` ;
 4. P1A.3 — Map State & Navigation ;
 5. P1A.4 — AkarFinder Map Design System ;
 6. P1A.5 — Territorial Explorer ;
@@ -797,17 +821,15 @@ Deux lanes peuvent avancer sans se mélanger :
 
 ### Lane DATA
 
-1. poursuivre **DATA-1.3B — Common Crawl URL Index Live Evidence** ;
-2. qualifier le rendement net `NEW_TO_CENSUS` contre les 7 051 domaines DATA-1.2 ;
-3. poursuivre DATA-1.4 / DATA-2 selon la preuve obtenue ;
-4. produire le classement réel des domaines/sources par volume × policy × difficulté ;
-5. auditer **DATA-4 — profondeur des grands réservoirs** ;
-6. construire **DATA-3 — Universal Site Connector** à partir des familles dominantes réellement observées ;
-7. atteindre le palier **20K observations** avec preuves de qualité ;
-8. activer **DATA-5/6/7 — feeds + claim + Professional Workspace** ;
-9. atteindre **50K observations** avec une part croissante de données directes ;
-10. construire **DATA-8 — Open Geodata / Property Graph** en articulation avec les besoins Carte / Quartier ;
-11. consolider historique, intelligence, SEO et expansion vers **100K+ observations**.
+1. **DATA-1.6B — Source Registry Assignment** : appliquer seulement les décisions explicitement revues et suffisamment prouvées par DATA-1.6A ;
+2. conserver `INSUFFICIENT_LEGAL_EVIDENCE` / `ACCESS_OR_FETCH_LIMITED` sans activation jusqu’à preuve ou contact supplémentaire ;
+3. auditer **DATA-4 — profondeur des grands réservoirs** ;
+4. construire **DATA-3 — Universal Site Connector** à partir des familles dominantes réellement observées et uniquement pour sources éligibles ;
+5. atteindre le palier **20K observations** avec preuves de qualité ;
+6. activer **DATA-5/6/7 — feeds + claim + Professional Workspace** ;
+7. atteindre **50K observations** avec une part croissante de données directes ;
+8. construire **DATA-8 — Open Geodata / Property Graph** en articulation avec les besoins Carte / Quartier ;
+9. consolider historique, intelligence, SEO et expansion vers **100K+ observations**.
 
 # 11. Définition de terminé
 
@@ -833,19 +855,21 @@ Un lot est terminé uniquement si :
 
 ### UX — CARTE-QUARTIER
 
-1. exécuter la dernière CI sur le head documentaire final de **PR #328** ;
-2. merger P1A.1 si toutes les gates restent vertes ;
-3. repartir du `main` synchronisé ;
-4. ouvrir **P1A.2 — Search Geo Contract** ;
-5. introduire `district` comme filtre Search structuré réel ;
-6. préserver les recherches textuelles `q` pour le texte, sans les utiliser comme identité quartier ;
-7. tester parsing, stable key, gateway/routing, filtering/ranking et handoffs ;
-8. double-check + score ≥ 9/10 avant P1A.3.
+1. poursuivre **PR #334 — P1A.2 Search Geo Contract** sans mélanger le chantier DATA ;
+2. confirmer que `district` est un filtre structuré de bout en bout ;
+3. conserver `q` comme texte libre ;
+4. vérifier gateway/routing, DB/Typesense, hydration et handoffs quartier ;
+5. double-check + score ≥ 9/10 ;
+6. merger P1A.2 si toutes les gates restent vertes ;
+7. repartir ensuite sur **P1A.3 — Map State & Navigation**.
 
 ### DATA — lane indépendante
 
-1. poursuivre **DATA-1.3B — Common Crawl URL Index Live Evidence**, PR #326 ;
-2. conserver exactement le crawl, SQL, artefacts et comparaison contre DATA-1.2 ;
-3. aucun WARC fetch ;
-4. aucune écriture Source Registry automatique ;
-5. ne pas laisser le chantier Carte / Quartier réécrire ou masquer le handover DATA actif.
+1. ouvrir **DATA-1.6B — Source Registry Assignment** depuis `main` synchronisé ;
+2. consommer la preuve certifiée DATA-1.6A, run `31182352538` ;
+3. produire un manifeste de décision explicitement revu : domaine → evidence → policy proposée → justification → reviewer → date/expiry ;
+4. ne jamais convertir automatiquement une catégorie 1.6A en policy ;
+5. bloquer ingestion/réutilisation pour `prestigeimmo.ma` tant qu’aucune autorisation écrite/partenariat ne change la preuve ;
+6. laisser les **11 insuffisants + 4 access-limited** sans activation ;
+7. appliquer uniquement les décisions démontrables dans le `source_policy_registry` existant, avec policy hash et evidence timestamps ;
+8. aucun connecteur, aucune ingestion et aucune publication avant la gate Registry verte.
