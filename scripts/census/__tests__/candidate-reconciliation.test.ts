@@ -58,6 +58,79 @@ test("known aggregators are not promoted to primary-source candidates", () => {
   assert.ok((rabatImmo?.score.sourcePrimarity ?? 0) > (mitula?.score.sourcePrimarity ?? 0));
 });
 
+test("known Moroccan portals are separated from likely first-party sources", () => {
+  const report = buildCandidateReconciliationReport({
+    generatedAt: "2026-08-07T10:00:00Z",
+    commonCrawl: [
+      {
+        lane: "MA_TLD_REAL_ESTATE",
+        domain: "sakane.ma",
+        registeredDomain: "sakane.ma",
+        indexedPages: 1000,
+        realEstateSignalPages: 800,
+        latestFetchAt: "2026-08-01T00:00:00Z",
+      },
+    ],
+    reserve: [{ domain: "sakane.ma", observedUrls: 500 }],
+    registry: [],
+  });
+
+  assert.equal(report.candidates[0]?.primaryClass, "PORTAL_CANDIDATE");
+  assert.ok(report.candidates[0]?.classificationReasons.includes("known_real_estate_portal_marker"));
+});
+
+test("external generic real-estate brands require an explicit Morocco anchor for primary-source status", () => {
+  const report = buildCandidateReconciliationReport({
+    generatedAt: "2026-08-07T10:00:00Z",
+    commonCrawl: [
+      {
+        lane: "MOROCCO_EXTERNAL_REAL_ESTATE",
+        domain: "global-immo.com",
+        registeredDomain: "global-immo.com",
+        indexedPages: 2000,
+        realEstateSignalPages: 500,
+        latestFetchAt: "2026-08-01T00:00:00Z",
+      },
+      {
+        lane: "MOROCCO_EXTERNAL_REAL_ESTATE",
+        domain: "marrakechrealty.com",
+        registeredDomain: "marrakechrealty.com",
+        indexedPages: 500,
+        realEstateSignalPages: 200,
+        latestFetchAt: "2026-08-01T00:00:00Z",
+      },
+    ],
+    reserve: [],
+    registry: [],
+  });
+
+  const globalImmo = report.candidates.find((candidate) => candidate.domain === "global-immo.com");
+  const marrakechRealty = report.candidates.find((candidate) => candidate.domain === "marrakechrealty.com");
+  assert.equal(globalImmo?.primaryClass, "PORTAL_CANDIDATE");
+  assert.ok(globalImmo?.classificationReasons.includes("real_estate_domain_without_morocco_primary_anchor"));
+  assert.equal(marrakechRealty?.primaryClass, "PRIMARY_SOURCE_CANDIDATE");
+  assert.ok(marrakechRealty?.classificationReasons.includes("explicit_morocco_primary_anchor"));
+});
+
+test("registry geography can explicitly anchor an external first-party candidate to Morocco", () => {
+  const report = buildCandidateReconciliationReport({
+    generatedAt: "2026-08-07T10:00:00Z",
+    commonCrawl: [],
+    reserve: [{ domain: "exampleimmobilier.com", observedUrls: 20 }],
+    registry: [
+      {
+        sourceDomain: "exampleimmobilier.com",
+        sourceName: "Example Immobilier",
+        primaryGeography: "Rabat-Salé",
+        machineGate: "canonical_link_only",
+      },
+    ],
+  });
+
+  assert.equal(report.candidates[0]?.primaryClass, "PRIMARY_SOURCE_CANDIDATE");
+  assert.ok(report.candidates[0]?.classificationReasons.includes("explicit_morocco_primary_anchor"));
+});
+
 test("never invents an effective policy candidate", () => {
   const report = buildCandidateReconciliationReport({
     generatedAt: "2026-08-07T10:00:00Z",
