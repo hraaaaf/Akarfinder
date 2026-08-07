@@ -37,8 +37,10 @@ const KNOWN_NOISE_DOMAINS = new Set([
   "en.m.wikipedia.org",
 ]);
 
+// Discovery heuristic only. A match increases review priority; it never proves
+// that the domain is a real-estate source and never grants acquisition rights.
 const REAL_ESTATE_NAME_SIGNAL =
-  /(?:^|[.-])(immo|immobilier|property|properties|realty|estate|housing|home|homes|maison|logement|sakane|sakan|beyt|beyti|dar)(?:[.-]|$)/i;
+  /(?:immo|immobilier|property|properties|realty|estate|housing|homes?|maison|logement|sakane|sakan|beyti?|dar)/i;
 
 const CLASSIFIED_NAME_SIGNAL = /(?:annonce|annonces|classified|souq|souk|market)/i;
 
