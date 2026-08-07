@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Geo productization contracts
-        run: npx tsx --test scripts/scrapers/__tests__/phase1-p1-geo-productization.test.ts scripts/scrapers/__tests__/p1a3-map-navigation.test.ts scripts/scrapers/__tests__/p1a4-map-design-system.test.ts scripts/scrapers/__tests__/p10b-map.test.ts
+        run: npx tsx --test scripts/scrapers/__tests__/phase1-p1-geo-productization.test.ts scripts/scrapers/__tests__/p1a3-map-navigation.test.ts scripts/scrapers/__tests__/p1a4-map-design-system.test.ts scripts/scrapers/__tests__/p1a5-territorial-explorer.test.ts scripts/scrapers/__tests__/p10b-map.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build rehearsal

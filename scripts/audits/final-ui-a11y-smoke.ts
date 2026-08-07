@@ -13,6 +13,8 @@ const routes = [
   { path: "/vendre", slug: "vendre" },
   { path: "/immobilier", slug: "immobilier" },
   { path: "/map", slug: "map" },
+  { path: "/map?city=Rabat", slug: "map-rabat" },
+  { path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal" },
   { path: "/pro", slug: "pro" },
   { path: "/pro/agences", slug: "agences" },
   { path: "/promoteurs", slug: "promoteurs" },
@@ -20,6 +22,7 @@ const routes = [
 
 const viewports = [
   { width: 390, height: 844, label: "390" },
+  { width: 430, height: 932, label: "430" },
   { width: 768, height: 1024, label: "768" },
   { width: 1280, height: 900, label: "1280" },
 ] as const;
