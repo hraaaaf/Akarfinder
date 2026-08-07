@@ -5,7 +5,7 @@
 Rank known Moroccan real-estate reservoirs after DATA-4.0/4.1A using two separate lanes:
 
 1. **ADMISSIBLE_GROWTH** — sources whose current Registry state permits sitemap discovery + canonical outbound-link representation only.
-2. **PARTNERSHIP_UPSIDE** — richer/fresher sources that remain hidden/internal-only and therefore require written authorization/feed partnership before public activation.
+2. **PARTNERSHIP_UPSIDE** — materially sized, richer/fresher sources that remain hidden/internal-only and therefore require written authorization/feed partnership before public activation.
 
 This lot is **read-only**. It creates no scraper, performs no source fetch, changes no Registry policy and activates no inventory.
 
@@ -41,6 +41,8 @@ Partnership-upside score rewards:
 - connectability;
 - while explicitly keeping hidden/internal-only sources non-public until authorization changes.
 
+Because DATA-4.2 is selecting the next reservoir capable of materially moving the 5K→20K target, the scale-oriented partnership lane requires at least **500 normalized rows**. Smaller high-quality catalogs remain useful long-tail candidates, but cannot win this lane.
+
 `technical capability ≠ permission` remains absolute.
 
 ## Pre-run production observations
@@ -62,6 +64,6 @@ The CI artifact must name:
 
 - one **admissible-growth winner** for the next bounded activation audit;
 - one **partnership-upside winner** for business-development/feed outreach;
-- a hold set for sources that do not justify engineering capacity yet.
+- a hold set for sources that do not justify scale-oriented engineering capacity yet.
 
 No source becomes publicly activable in DATA-4.2.
