@@ -9,13 +9,18 @@ AkarFinder est un **moteur de recherche immobilier, un index national et une cou
 
 ## Documentation canonique
 
-1. `README.md` — identité, doctrine, architecture et état macro ;
-2. `docs/ROADMAP.md` — ordre d’exécution ;
-3. `docs/SESSION.md` — handover opérationnel court.
+Avant tout LOT, toute fenêtre/agent doit lire **`AGENTS.md`**, boussole obligatoire de gouvernance et de séparation Builder → Reviewer → Certifier.
+
+1. `AGENTS.md` — constitution permanente des agents, routage et processus de certification ;
+2. `README.md` — identité, doctrine, architecture et état macro ;
+3. `docs/ROADMAP.md` — ordre d’exécution ;
+4. `docs/SESSION.md` — handover opérationnel court.
+
+`CLAUDE.md` est uniquement un pointeur de découvrabilité vers `AGENTS.md`. Les procédures réutilisables vivent sous `.skills/`.
 
 Ordre de vérité :
 
-`code mergé dans main → README.md → ROADMAP.md → SESSION.md → specs techniques → preuves historiques`.
+`code mergé dans main → AGENTS.md → README.md → ROADMAP.md → SESSION.md → specs techniques → preuves historiques`.
 
 ## Doctrine
 
@@ -34,7 +39,8 @@ Principes non négociables :
 - `DISCOVERED ≠ AUDITED ≠ POLICY_ASSIGNED ≠ ELIGIBLE ≠ INGESTIBLE ≠ DISPLAYABLE` ;
 - partner/autorisé ≠ public-indexed ≠ signal interne ;
 - `Shadow → Canary → certification → activation bornée` pour les changements DATA/Search importants ;
-- une responsabilité, une branche, une PR, un merge par lot.
+- une responsabilité, une branche, une PR, un merge par lot ;
+- Builder ≠ Reviewer ≠ Release Certifier ; aucun LOT n'est `100 % ✅ CERTIFIED` avant merge, post-merge CI/gates et verdict final indépendant.
 
 ## Architecture active
 
@@ -98,7 +104,7 @@ En parallèle business : **Agenz = priorité partenariat/feed**, sans changement
 
 ## Règles d’exécution
 
-Un lot n’est terminé que si : scope respecté, tests/build/gates verts, preuves disponibles, Registry respecté, aucun bypass, PR mergée, production vérifiée si write, rollback disponible si mutation, et les 3 MD canoniques alignés.
+Le processus complet est défini dans `AGENTS.md` et les `.skills/` applicables. Un LOT n’est finalement certifié qu’après Reviewer PASS, exact-head CI/gates, Release Certifier pre-merge GO, merge depuis le head attendu, vérification de `main`, post-merge CI/gates et verdict final du Release Certifier. Les trois MD canoniques restent alignés sans remplacer les preuves exact-head de la PR.
 
 ## Démarrage local
 
