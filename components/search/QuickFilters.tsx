@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { PropertyTypeVisualSelector } from "@/components/property-types/PropertyTypeVisualSelector";
 import { ui } from "@/components/ui/design-system";
 import type { Listing, ListingFiltersState } from "@/lib/listings/types";
 import { OPTION_A_PROPERTY_TYPES } from "@/lib/property-types/presentation";
@@ -70,6 +71,16 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
     </>
   );
 
+  const propertyTypeSelector = (
+    <PropertyTypeVisualSelector
+      value={filters.propertyType}
+      onChange={(propertyType) => onChange({ ...filters, propertyType })}
+      showAll
+      ariaLabel="Type de bien"
+      className="min-w-0"
+    />
+  );
+
   return (
     <section aria-label="Filtres de recherche" className="space-y-2.5">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2.5 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
@@ -112,7 +123,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
           className={`${ui.secondaryAction} min-h-11 gap-1.5 rounded-full px-3 text-[12.5px] sm:px-4 sm:text-[13px]`}
         >
           <SlidersHorizontal size={16} strokeWidth={2.2} aria-hidden="true" />
-          <span className="hidden xs:inline">Filtres</span>
+          <span>Filtres</span>
           {activeCount > 0 ? (
             <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-extrabold text-primary-foreground">
               {activeCount}
@@ -122,8 +133,9 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
         </button>
       </div>
 
-      <div id="advanced-search-filters" className={`${showFilters ? "sm:grid" : "sm:hidden"} hidden gap-2.5 ${ui.surfaceMuted} p-3 sm:grid-cols-2 lg:grid-cols-5`}>
-        {advancedFields}
+      <div id="advanced-search-filters" className={`${showFilters ? "sm:block" : "sm:hidden"} hidden ${ui.surfaceMuted} p-3`}>
+        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-5">{advancedFields}</div>
+        <div className="mt-3 border-t border-border/15 pt-3">{propertyTypeSelector}</div>
       </div>
 
       {showFilters ? (
@@ -149,6 +161,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
               </button>
             </div>
             <div className="mt-4 grid gap-3">{advancedFields}</div>
+            <div className="mt-4 border-t border-border/15 pt-4">{propertyTypeSelector}</div>
             <div className="sticky bottom-0 mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-2 border-t border-border/15 bg-card/95 pt-3 backdrop-blur-xl">
               <button type="button" onClick={onReset} className={`${ui.secondaryAction} px-4`}>Effacer</button>
               <button type="button" onClick={() => setShowFilters(false)} className={`${ui.primaryAction} px-4`}>Voir les résultats</button>
