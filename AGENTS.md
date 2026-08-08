@@ -191,7 +191,7 @@ Toute réponse dangereuse `oui` => `CHANGES_REQUIRED`.
 - Toute PR doit utiliser le template `.github/PULL_REQUEST_TEMPLATE.md` et déclarer Builder, reviewers requis, critères d'acceptation, preuves, head SHA et verdicts.
 - Aucun workflow/script temporaire ne peut survivre au merge.
 - Aucun secret, artefact généré ou capture parasite non intentionnelle.
-- Le merge manuel hors protocole ne constitue jamais une certification. Si la protection GitHub ne l'empêche pas techniquement, la gouvernance reste fail-closed : le LOT est `NO_GO`/non certifié jusqu'à post-merge conforme.
+- Le mode de merge GitHub (manuel, bouton UI, API ou automatisation) n'est pas un critère de qualité en soi. Un merge manuel est acceptable dès lors que le head attendu est vérifié et que les étapes Reviewer, CI, Certifier et post-merge sont respectées. L'absence de branch protection n'est pas un finding ni un blocker à elle seule.
 
 ## 15. Rapport final obligatoire
 
