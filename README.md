@@ -31,6 +31,7 @@ Principes non négociables :
 - robots/sitemap/capability ≠ permission ;
 - no-bypass absolu ;
 - Source Registry obligatoire avant activation ;
+- un registre structurel/patterns ne constitue jamais une autorisation de canal ;
 - `DISCOVERED ≠ AUDITED ≠ POLICY_ASSIGNED ≠ ELIGIBLE ≠ INGESTIBLE ≠ DISPLAYABLE` ;
 - partner/autorisé ≠ public-indexed ≠ signal interne ;
 - `Shadow → Canary → certification → activation bornée` pour les changements DATA/Search importants ;
@@ -44,6 +45,7 @@ Principes non négociables :
 - MapLibre GL ;
 - Geo Registry canonique ;
 - Source Registry v2 ;
+- P0.1 operational mass-index gate : Source Registry relu dans harvester + importer, trigger DB fail-closed ;
 - Observation/Freshness/quality/dedup pipeline ;
 - CI GitHub Actions avec gates DATA, UX, accessibilité et build.
 
@@ -109,6 +111,27 @@ La couche **Offre par quartier reste interdite** : 0,45 % de couverture ne justi
 - 625 `PORTAL_CANDIDATE` ;
 - DATA-1.5 → DATA-1.6B : capability + policy + Registry, **0 activation non autorisée**.
 
+### P0.1 — Mass Index Source Registry Operational Gate — PR #392
+
+P0.1 ne crée pas de nouveau Registry et n’accorde aucune permission. Il ferme le décalage entre le registre structurel historique des URL patterns et la policy production.
+
+Contrat :
+
+- le harvester Common Crawl relit `public.source_policy_registry` avant le premier appel CDX ;
+- l’importer relit la policy avant toute écriture afin qu’un artefact ancien ne puisse pas s’auto-autoriser ;
+- PostgreSQL protège ensuite `source_offer_seeds` avec un trigger fail-closed ;
+- admission seulement sur domaine exact + canal exact `commoncrawl` + no-bypass + policy hash + review/date valides + acquisition/machine/ingestion non bloqués ;
+- `next_review_at` réel est vérifié, même si un ancien label `review_status` n’a pas encore été recalculé ;
+- identité source/provider immuable pour les seeds Common Crawl ;
+- insert Common Crawl = `seed_only` : Common Crawl ne fabrique jamais la fraîcheur ;
+- aucune row historique n’est supprimée ou réécrite automatiquement.
+
+Audit live read-only pendant le LOT : **16** candidats structurels, **9** autorisés pour `commoncrawl`, **7** refusés fail-closed (**6 canal non autorisé + 1 policy expirée**). Les 9 domaines admis sont : `1immo.ma`, `agenz.ma`, `avito.ma`, `barnes-marrakech.com`, `kawtarimmobilier.com`, `masaken.ma`, `mouldar.com`, `mubawab.ma`, `soukimmobilier.com`.
+
+Dette historique mesurée : **1 734** rows `commoncrawl_cdx` sur 6 domaines dont la policy actuelle n’autorise plus ce canal. **65** ont été confirmées ensuite par une observation live distincte ; P0.1 ne fait donc aucune blind-quarantine. Il bloque la récidive et expose la dette pour un éventuel LOT séparé.
+
+Migration : `supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql`. Activation uniquement après merge du head certifié, puis vérification rapport/trigger/advisors. Rollback non destructif : suppression du trigger et des fonctions P0.1 ; aucune row historique n’est mutée par la migration.
+
 ### DATA-4 — Reservoir Strategy
 
 - DATA-4.0 ✅ PR #341 : Avito + Mubawab = **35 134 normalized**, **3 588 technical display**, **0 policy-activable** ;
@@ -123,7 +146,7 @@ La couche **Offre par quartier reste interdite** : 0,45 % de couverture ne justi
 
 ## Décision DATA courante
 
-**DATA-4.4C est fermé et certifié en production.** La prochaine décision DATA doit définir explicitement une **expansion bornée** du second réservoir à partir du canary 50 certifié. Aucun passage automatique à +100/+500 n’est autorisé par 4.4C.
+**DATA-4.4C est fermé et certifié en production. P0.1 doit être fermé jusqu’à son activation post-merge.** P0.1 n’autorise aucune expansion automatique, aucun nouveau scraper direct et aucune évolution de policy. Le prochain LOT mass-index sera défini explicitement après certification production de P0.1.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 
