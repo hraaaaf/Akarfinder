@@ -1,0 +1,55 @@
+name: P1B.2 Territorial Intelligence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/map/**"
+      - "lib/map/akarfinder-market-intelligence.ts"
+      - "lib/map/map-navigation-state.ts"
+      - "scripts/audits/p1b2-territorial-intelligence-smoke.ts"
+      - "scripts/scrapers/__tests__/p1b2-territorial-intelligence.test.ts"
+      - ".github/workflows/p1b2-territorial-intelligence.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  territorial-intelligence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: P1B.2 contracts
+        run: npx tsx --test scripts/scrapers/__tests__/p1b2-territorial-intelligence.test.ts scripts/scrapers/__tests__/p1b1-akarfinder-map-visual-layer.test.ts scripts/scrapers/__tests__/p1a6-responsive-hardening.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start preview-canary server
+        run: |
+          VERCEL_ENV=preview NEIGHBORHOOD_GEOMETRY_CANARY_PERCENT=1 npm run start -- --hostname 127.0.0.1 --port 3000 > /tmp/p1b2-next.log 2>&1 &
+          echo $! > /tmp/p1b2-next.pid
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3000/map >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/p1b2-next.log
+          exit 1
+      - name: Native price intelligence audit
+        run: npx tsx scripts/audits/p1b2-territorial-intelligence-smoke.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p1b2-territorial-intelligence-audit
+          path: artifacts/p1b2-territorial-intelligence/
+          if-no-files-found: warn
+          retention-days: 14
