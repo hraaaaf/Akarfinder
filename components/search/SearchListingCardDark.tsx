@@ -132,7 +132,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             </span>
             {imageMode === "fallback_visual" ? (
               <span className="absolute bottom-2 right-2 rounded-full bg-black/45 px-1.5 py-0.5 text-[8px] font-medium text-white/80 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]">
-                Illustration
+                Visuel illustratif
               </span>
             ) : attribution ? (
               <span className="absolute bottom-3 right-3 hidden rounded-full bg-black/45 px-2 py-1 text-[9px] font-medium text-white/75 backdrop-blur-sm sm:inline-flex">
