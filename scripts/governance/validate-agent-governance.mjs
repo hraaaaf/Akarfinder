@@ -6,6 +6,7 @@ const requiredFiles = [
   ".agents/README.md",
   ".github/PULL_REQUEST_TEMPLATE.md",
   ".github/workflows/agent-governance-gate.yml",
+  "scripts/governance/validate-pr-governance.mjs",
   ".skills/lot-execution/SKILL.md",
   ".skills/search-ranking-review/SKILL.md",
   ".skills/data-acquisition-provenance/SKILL.md",
@@ -63,6 +64,16 @@ for (const path of requiredFiles.filter((p) => p.startsWith(".skills/") && exist
 
 if (existsSync("CLAUDE.md") && !readFileSync("CLAUDE.md", "utf8").includes("AGENTS.md")) {
   failures.push("CLAUDE.md must point to AGENTS.md");
+}
+
+if (existsSync(".github/workflows/agent-governance-gate.yml")) {
+  const workflow = readFileSync(".github/workflows/agent-governance-gate.yml", "utf8");
+  for (const command of [
+    "node scripts/governance/validate-agent-governance.mjs",
+    "node scripts/governance/validate-pr-governance.mjs",
+  ]) {
+    if (!workflow.includes(command)) failures.push(`Agent Governance Gate missing command: ${command}`);
+  }
 }
 
 for (const path of ["README.md", "docs/ROADMAP.md", "docs/SESSION.md"]) {
