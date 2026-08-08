@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : UX P1B.2 ✅ PR #376 ; prochain lot UX après audit métriques ; DATA-4.4A ✅ PR #379 ; DATA-4.4B 🔴 Promo Immo revalidation + canary 50**
+**Statut : UX P1B.3 🔴 certification finale ; DATA-4.4B ✅ PR #380 ; DATA-4.4C = prochain lot DATA**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -29,10 +29,11 @@ Pipeline canonique :
 - Search reste canonique ; Map partage son identité géographique ;
 - migrations séparées du code applicatif ;
 - une responsabilité / une branche / une PR / un merge ;
-- tests + preuves avant merge ;
+- Builder ≠ Reviewer ≠ Release Certifier ;
+- tests + preuves exact-head avant merge ;
 - mutation DATA : rollback avant activation.
 
-# 3. Lane UX
+# 3. Lane UX / Carte
 
 Acquis :
 
@@ -40,15 +41,58 @@ Acquis :
 - P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
 - P1A.2 ✅ PR #334 — Search Geo Contract ;
 - P1A.3 ✅ PR #349 — Map State & Navigation, **9,3/10** ;
-- P1A.4 ✅ PR #350 — Map Design System technique, cockpit flottant map-first ;
-- P1A.5 ✅ PR #365 — Territorial Explorer progressif **Maroc → ville → quartier**, Geo Registry + canonical neighborhood data uniquement, URL/Search contracts préservés, responsive **390 / 430×932 / 768 / 1280**, **9,3/10** ;
-- P1A.6 ✅ PR #369 — Responsive Hardening : audit natif **12 captures / 0 finding**, **21/21 tests**, score **9,2/10** ;
-- P1B.1 ✅ PR #371 — **AkarFinder Map Visual Layer**, 16 arrondissements Casablanca shadow, couleurs non sémantiques, audit **3 captures / 0 finding**, score **9,1/10** ;
-- P1B.2 ✅ PR #376 — **Sourced Territorial Intelligence** : `layer=price`, benchmarks quartier exacts appartement/achat, aucune interpolation/fallback ville, audit **3 captures / 0 finding**, score **9,2/10**.
+- P1A.4 ✅ PR #350 — Map Design System technique ;
+- P1A.5 ✅ PR #365 — Territorial Explorer progressif **Maroc → ville → quartier**, **9,3/10** ;
+- P1A.6 ✅ PR #369 — Responsive Hardening, **12 captures / 0 finding**, **9,2/10** ;
+- P1B.1 ✅ PR #371 — **AkarFinder Map Visual Layer**, **9,1/10** ;
+- P1B.2 ✅ PR #376 — **Sourced Territorial Intelligence** `layer=price`, aucune interpolation/fallback ville, **9,2/10**.
 
-## Prochain lot UX — audit préalable obligatoire
+## P1B.3 — Territorial Metric Join Contract 🔴 PR #382
 
-Auditer les métriques réellement calculables à la même granularité que les entités affichées : offre disponible, fraîcheur, confiance DATA et extension des prix exacts. Pas de donnée = neutre ; aucune interpolation ; aucune agrégation ville présentée comme quartier ; 430×932 obligatoire ; score ≥9/10.
+But : déterminer si AkarFinder possède réellement un pont assez fiable entre l’inventaire public affichable et les quartiers canoniques avant d’afficher une couche **Offre** par quartier.
+
+Contrat actuel :
+
+`LISTING réel/displayable → dernier événement geo explicite → statut toujours resolved → quartier canonique validated → ville canonique validated`
+
+Garde-fous :
+
+- aucun quartier déduit d’un titre, d’une URL, d’une ville ou d’une proximité ;
+- aucune interpolation spatiale ;
+- dernier événement géographique autoritaire : une ancienne résolution n’est jamais ressuscitée après un événement `unresolved` ;
+- couverture et collisions utilisent exactement le même dénominateur `real_estate_likely + LISTING + eligible_primary|eligible_secondary` ;
+- collisions latest mesurées avant collapse ; conflits historiques reportés séparément ;
+- aucune conversion non sûre de `source_record_id` vers UUID ;
+- `metric_layers_activated=false` ;
+- aucun changement Search, ranking, display eligibility, publication ou géométrie.
+
+Historique de revue :
+
+| Étape | État / preuve |
+|---|---|
+| Builder initial | ✅ migration fail-closed + tests |
+| Reviewer pass #1 | **CHANGES_REQUIRED** — stale resolution + collision tautologique |
+| Corrections | ✅ latest-event first + vraies collisions |
+| Reviewer pass #2 | **CHANGES_REQUIRED** — collisions hors dénominateur public |
+| Corrections | ✅ même dénominateur public |
+| Reviewer pass #3 | **CHANGES_REQUIRED** — cast externe `source_record_id::uuid` non sûr |
+| Corrections | ✅ comparaison sûre vers `seed_id::text` |
+| Reviewer pass #4 | **CHANGES_REQUIRED** — absence de gate spécialisé exécutant le nouveau contrat |
+| Corrections | ✅ test PostgreSQL/PGlite + workflow permanent |
+| Reviewer final code | ✅ PASS sur head pré-docs ; nouvelle revue requise après closeout MD |
+| PR | #382 |
+| Specialized gate | ✅ `P1B.3 Territorial Metric Join Gate` run `31252849825` sur head pré-docs : static + PostgreSQL semantic + TypeScript verts |
+| Exact-head CI final | 🔄 à relancer après alignement des 3 MD |
+| Release Certifier | ⏳ |
+| Merge / post-merge | ⏳ |
+| Rapport production read-only | ⏳ après migration mergée |
+
+Décision suivante, uniquement après rapport production :
+
+- couverture quartier suffisante + `latest_resolution_collisions = 0` → prochain lot produit = **Offre — annonces affichables indexées** avec couleurs par quartier ;
+- sinon → prochain lot = **Geo Coverage Recovery**, sans choroplèthe fabriqué.
+
+Aucun seuil de couverture n’est inventé dans P1B.3 : la distribution réelle doit être observée et justifiée avant activation produit.
 
 # 4. Fondation DATA acquise
 
@@ -61,53 +105,19 @@ Observation Ledger / Freshness / normalization / quality tiers ; Source Registry
 # 6. DATA-4 — Reservoir Strategy
 
 - **4.0 ✅ #341** — Avito+Mubawab : 35 134 normalized, 3 588 technical display, 0 policy-activable.
-- **4.1A ✅ #343** — Avito unavailable : 95,06 % bruit ; 73 core-récupérables ; 0 policy-activable.
+- **4.1A ✅ #343** — Avito unavailable : 95,06 % bruit ; 73 core-récupérables.
 - **4.2 ✅ #344** — Dar Agadir = `ADMISSIBLE_GROWTH`; Agenz = `PARTNERSHIP_UPSIDE`.
-- **4.3A → H ✅ jusqu’à #377** — Dar Agadir certifié au cap **500** selon `50+100+100+100+100+50`, TTL 14 jours, Search **500/500**, technical display **500/500**, drift **0 %**, Registry inchangé.
+- **4.3A → H ✅ jusqu’à #377** — Dar Agadir certifié au cap **500**, Search/display **500/500**, drift **0 %**.
 - **4.3I ✅ #367** — protection multi-channel freshness ownership.
 - **4.3J ✅ #368** — ordre du trigger display corrigé.
+- **4.4A ✅ #379** — Promo Immo sélectionné `PREFERRED_PENDING_REVALIDATION`, 0 write.
+- **4.4B ✅ #380**, merge `13b6c3c` — source revalidée sur signaux publics actuels : **3 130 URLs sitemap**, **2 935** intersectent le réservoir, **2 456** lignes conservatrices éligibles ; canary préparé **50/50** pour Search, technical display, quality A/B et rollback ; **0 write**.
 
-## DATA-4.4 — Second Reservoir Expansion 🔴 ACTUEL
+## DATA-4.4C — Persistent Canary 50 — PROCHAIN LOT DATA
 
-Objectif : reproduire le modèle Dar Agadir sur un second réservoir à fort rendement sans relâcher Registry, fraîcheur, qualité, déduplication et vérité publique.
+Objectif : écriture transactionnelle réelle des **50** lignes certifiées par 4.4B, puis re-certification production.
 
-### DATA-4.4A — Second Reservoir Qualification ✅ PR #379
-
-Qualification read-only certifiée et mergée (`43d8086c`).
-
-Snapshot production au choix :
-
-| Source | Lignes | Normalized OK | Technical display | Fresh | Seed only | City | Type | Intent | Review |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `promoimmomarrakech.com` | **3 005** | **3 000** | **2 923** | 9 | **2 996** | **3 005** | 2 556 | **2 905** | due_soon |
-| `limmobiliersansfrontieres.com` | 1 414 | 563 | 573 | 94 | 1 320 | 607 | 1 107 | 1 068 | due_soon |
-| `atlasimmobilier.com` | 793 | 414 | 420 | 2 | 791 | 445 | 558 | 70 | due_soon |
-| `aykana.ma` | 647 | 467 | 472 | 62 | 585 | 486 | 507 | 534 | due_soon |
-
-Décision certifiée : **`promoimmomarrakech.com` = `PREFERRED_PENDING_REVALIDATION`**. Qualification ≠ activation ; 0 write en 4.4A.
-
-### DATA-4.4B — Promo Immo Source Revalidation + Canary 50 🔴
-
-Lot actif. Le PR reste **DRY_RUN** jusqu’au merge.
-
-Gates :
-
-1. Registry exact `public_sitemap_canonical_link / public_sitemap_only / canonical_link_only / external_tail_link_only` ;
-2. review `current|due_soon`, TTL 14 j, canal `public_sitemap` ;
-3. `robots.txt` live + sitemap same-origin ;
-4. population sitemap actuelle + intersection normalized ;
-5. canary seulement `seed_only`, normalized, **Marrakech**, type/intention présents ;
-6. quality tiers **A/B** uniquement ; tier C mesuré mais exclu ;
-7. Public Search **50/50** et technical display **50/50** avant write ;
-8. écran collision cross-source exacte sur titre+ville+type+intent+prix+surface ; aucun fuzzy-match inventé ;
-9. contrôle Property Graph quand un lien direct existe ; cluster multi-membre connu = blocage ;
-10. snapshot + apply manifest + rollback manifest exacts **50/50** ;
-11. aucun detail-page fetch, aucune réutilisation contenu/image, aucun changement Registry/policy ;
-12. CI = zéro write et `canaryWriteAuthorizedByThisRun=false`.
-
-Après merge du dry-run uniquement, l’éventuel write des 50 devra avoir un preflight exact, une transaction 50/50, une vérification Search/display avant→après et un drift ≤1 %, sinon rollback immédiat.
-
-Aucun passage à 100/500 n’est autorisé avant certification persistante du canary 50.
+Gates minimaux : preflight exact 50/50, transaction atomique, Search 50/50, technical display 50/50, qualité A/B préservée, drift ≤1 %, provenance intacte, rollback immédiat sur anomalie. Aucun passage à 100/500 avant certification persistante.
 
 # 7. Lane business parallèle
 
@@ -115,18 +125,18 @@ Aucun passage à 100/500 n’est autorisé avant certification persistante du ca
 
 # 8. Suite DATA
 
-DATA-4.4B dry-run → canary 50 transactionnel si certifié → re-certification persistante → décision d’expansion bornée du second réservoir → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
+DATA-4.4C canary 50 persistant → re-certification → décision d’expansion bornée du second réservoir → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
 
 # 9. Définition de terminé
 
-Scope respecté, tests/build/gates verts, preuves, Registry respecté, aucun bypass, PR mergée, prod vérifiée si write, rollback disponible, 3 MD alignés.
+Scope respecté, Reviewer indépendant PASS, tests/build/gates exact-head verts, preuves, Registry respecté, aucun bypass, Release Certifier GO, PR mergée depuis le head attendu, `main` vérifié, post-merge CI/gates verts, production vérifiée si applicable, rollback disponible si mutation, 3 MD alignés.
 
 # 10. Prochaine action exacte
 
+## UX / Carte
+
+Finaliser **P1B.3** : revue du head incluant les 3 MD → exact-head CI → Certifier → merge → post-merge → appliquer/constater la migration en production → exécuter le rapport read-only → choisir mathématiquement entre couche Offre et Geo Coverage Recovery.
+
 ## DATA
 
-Certifier le dry-run **DATA-4.4B** sur les signaux publics actuels de Promo Immo Marrakech. Aucun write avant merge du contrat et des manifests exacts 50.
-
-## UX
-
-Auditer les métriques spatiales possédant une granularité territoriale exacte, une provenance explicable et un dénominateur stable avant de définir le prochain lot UX.
+**DATA-4.4C — Persistent Canary 50** : write transactionnel réel seulement dans son LOT dédié, sans le mélanger à P1B.3.
