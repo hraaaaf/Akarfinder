@@ -53,11 +53,11 @@ Principes non négociables :
 - P1A.2 ✅ PR #334 — `district` structuré dans Search ;
 - P1A.3 ✅ PR #349 — Map state/navigation pilotés par URL, **9,3/10** ;
 - P1A.4 ✅ PR #350 — Map Design System, cockpit flottant map-first ;
-- P1A.5 ✅ PR #365 — Territorial Explorer **Maroc → ville → quartier**, navigation URL canonique, responsive **390 / 430×932 / 768 / 1280**, **9,3/10** ;
-- P1A.6 ✅ PR #369 — Responsive hardening, audit natif **3 états × 4 viewports = 12 captures / 0 finding**, chevauchement cockpit↔explorer corrigé, **21/21 tests**, TypeScript/build/gates verts, **9,2/10** ;
-- P1B.1 ✅ PR #371 — **AkarFinder Map Visual Layer** : basemap générique fortement atténuée, 16 arrondissements Casablanca issus du dataset OSM shadow rendus en preview-canary avec palette territoriale différenciée, contours/labels AkarFinder, couleurs explicitement non sémantiques, audit natif **430 / 768 / 1280 = 3 captures / 0 finding**, **21/21 tests**, TypeScript/build/tous gates verts, contrôle humain **9,1/10** ;
-- P1B.2 ✅ PR #376 — **Sourced Territorial Intelligence** : état URL `layer=price`, benchmarks exacts quartier pour appartement/achat seulement, médiane + fourchette + échantillon + confiance + période visibles, aucun fallback ville présenté comme prix quartier, aucune interpolation/heatmap vers les polygones, audit final **430 / 768 / 1280 = 3 captures / 0 finding**, tous les workflows du head verts, contrôle humain **9,2/10** ;
-- prochain UX : auditer les métriques territoriales réellement disponibles avant de définir le prochain lot canonique ; aucune couche offre/fraîcheur/confiance ne sera ajoutée sans granularité et provenance certifiables.
+- P1A.5 ✅ PR #365 — Territorial Explorer **Maroc → ville → quartier**, **9,3/10** ;
+- P1A.6 ✅ PR #369 — Responsive hardening, **12 captures / 0 finding**, **9,2/10** ;
+- P1B.1 ✅ PR #371 — AkarFinder Map Visual Layer, **3 captures / 0 finding**, **9,1/10** ;
+- P1B.2 ✅ PR #376 — Sourced Territorial Intelligence `layer=price`, benchmarks quartier exacts, aucune interpolation/fallback ville, **3 captures / 0 finding**, **9,2/10** ;
+- prochain UX : audit des métriques territoriales réellement disponibles avant définition d’un nouveau lot.
 
 ## État DATA acquis
 
@@ -74,29 +74,25 @@ Principes non négociables :
 
 - DATA-4.0 ✅ PR #341 : Avito + Mubawab = **35 134 normalized**, **3 588 technical display**, **0 policy-activable** ;
 - DATA-4.1A ✅ PR #343 : Avito `unavailable` = 95,06 % bruit/non-immobilier ; seulement **73** core-récupérables ;
-- DATA-4.2 ✅ PR #344 : `daragadir.com` gagne la lane `ADMISSIBLE_GROWTH`, `agenz.ma` la lane `PARTNERSHIP_UPSIDE` ;
-- DATA-4.3A → H ✅ jusqu’à PR #377 : Dar Agadir a atteint le cap contrôlé de **500 lignes persistantes certifiées** selon `50+100+100+100+100+50`, TTL **14 jours**, Search **500/500**, technical display **500/500**, drift **0 %**, Registry inchangé ;
+- DATA-4.2 ✅ PR #344 : `daragadir.com` = `ADMISSIBLE_GROWTH`, `agenz.ma` = `PARTNERSHIP_UPSIDE` ;
+- DATA-4.3A → H ✅ jusqu’à PR #377 : Dar Agadir certifié au cap **500**, TTL 14 jours, Search **500/500**, technical display **500/500**, drift **0 %**, Registry inchangé ;
 - DATA-4.3I ✅ PR #367 : ownership fraîcheur multi-canal protégé ;
-- DATA-4.3J ✅ PR #368 : ordre du trigger display corrigé.
+- DATA-4.3J ✅ PR #368 : ordre du trigger display corrigé ;
+- DATA-4.4A ✅ PR #379, merge `43d8086c` : qualification read-only du second réservoir ; `promoimmomarrakech.com` sélectionné `PREFERRED_PENDING_REVALIDATION` parmi 4 candidats, avec **0 write**.
 
-### DATA-4.4 — Second Reservoir Expansion 🔴
+### DATA-4.4B — Promo Immo Revalidation + Canary 50 🔴
 
-**DATA-4.4A — qualification read-only du second réservoir.**
+Lot actif en **DRY_RUN**.
 
-Snapshot production des candidats sitemap/canonical-link :
+Le canary proposé est volontairement conservateur : présence dans le sitemap public actuel, `seed_only`, normalized, ville **Marrakech**, type/intention présents, quality tier **A/B**, déjà présent dans Public Search et technical display, aucune collision cross-source exacte détectée.
 
-- `promoimmomarrakech.com` : **3 005** lignes, **3 000 normalized OK**, **2 923 technical display**, **2 996 seed_only**, city **3 005/3 005**, intent **2 905/3 005** ;
-- `limmobiliersansfrontieres.com` : 1 414 lignes ;
-- `atlasimmobilier.com` : 793 lignes ;
-- `aykana.ma` : 647 lignes.
+Le gate vérifie aussi le Registry actuel, `robots.txt`, same-origin, population sitemap, qualité/bruit, Property Graph lorsque le lien existe, et produit des manifests apply/rollback exacts **50/50**. Aucun fuzzy-match n’est inventé et aucune ligne tier C ou non-Marrakech n’entre dans le canary.
 
-Décision déterministe : **`promoimmomarrakech.com` = `PREFERRED_PENDING_REVALIDATION`**.
-
-Cette qualification **n’autorise aucun write**. Le prochain sous-lot est **DATA-4.4B — Source Revalidation + Canary 50** : Registry + robots/sitemap + qualité + dedup + Search/display + rollback, puis seulement un premier batch persistant **≤50** si tous les gates sont verts.
+CI n’autorise **aucun write**. Après merge seulement, l’éventuel write canary devra être transactionnel 50/50 avec preflight exact, Search/display avant→après, drift ≤1 % et rollback immédiat sur anomalie.
 
 ## Décision DATA courante
 
-**DATA-4.3H reste fermé à 500. DATA-4.4A sélectionne le second réservoir sans activation.** Aucun passage direct à 100/500 sur Promo Immo Marrakech n’est autorisé avant certification du canary 50 de DATA-4.4B.
+**DATA-4.3H reste fermé à 500. DATA-4.4A est fermé. DATA-4.4B doit certifier le canary Promo Immo 50 avant toute expansion supérieure.** Aucun passage direct à 100/500 n’est autorisé.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 
