@@ -6,12 +6,14 @@ on:
     paths:
       - "supabase/migrations/20260808120000_p1b4_geo_coverage_recovery.sql"
       - "scripts/scrapers/__tests__/p1b4-geo-coverage-recovery.test.ts"
+      - "scripts/scrapers/__tests__/p1b4-geo-coverage-recovery.pg.test.ts"
       - ".github/workflows/p1b4-geo-coverage-recovery.yml"
   push:
     branches: [main]
     paths:
       - "supabase/migrations/20260808120000_p1b4_geo_coverage_recovery.sql"
       - "scripts/scrapers/__tests__/p1b4-geo-coverage-recovery.test.ts"
+      - "scripts/scrapers/__tests__/p1b4-geo-coverage-recovery.pg.test.ts"
       - ".github/workflows/p1b4-geo-coverage-recovery.yml"
   workflow_dispatch:
 
@@ -35,6 +37,8 @@ jobs:
         run: npm ci
       - name: P1B.4 truth contract
         run: npx tsx --test scripts/scrapers/__tests__/p1b4-geo-coverage-recovery.test.ts
+      - name: P1B.4 PostgreSQL semantic contract
+        run: npx tsx --test scripts/scrapers/__tests__/p1b4-geo-coverage-recovery.pg.test.ts
       - name: P1B.3 regression contract
         run: npx tsx --test scripts/scrapers/__tests__/p1b3-territorial-metric-join.test.ts
       - name: P1B.3 PostgreSQL semantic regression
