@@ -46,7 +46,7 @@ if (existsSync("AGENTS.md")) {
     "contenu réellement inédit vs déjà visible",
     "Reviewer général indépendant",
     "CHANGES_REQUIRED",
-    "expected",
+    "head attendu",
   ]) {
     if (!agents.toLowerCase().includes(token.toLowerCase())) failures.push(`AGENTS.md missing invariant: ${token}`);
   }
