@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
-**Version : 2026-08-07**  
-**Statut : UX P1A.6 ✅ PR #369 / P1B prochain ; DATA-4.3J ✅ PR #368 / certification post-merge avant nouvelle expansion persistante**
+**Version : 2026-08-08**  
+**Statut : UX P1B.1 ✅ PR #371 / P1B.2 prochain ; DATA lane préservée, décision persistante inchangée**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -40,22 +40,25 @@ Acquis :
 - P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
 - P1A.2 ✅ PR #334 — Search Geo Contract ;
 - P1A.3 ✅ PR #349 — Map State & Navigation, **9,3/10** ;
-- P1A.4 ✅ PR #350 — Map Design System, **9,3/10** ;
+- P1A.4 ✅ PR #350 — Map Design System technique, cockpit flottant map-first ;
 - P1A.5 ✅ PR #365 — Territorial Explorer progressif **Maroc → ville → quartier**, Geo Registry + canonical neighborhood data uniquement, URL/Search contracts préservés, responsive **390 / 430×932 / 768 / 1280**, **9,3/10** ;
-- P1A.6 ✅ PR #369 — Responsive Hardening : contrôles tactiles/clavier renforcés, audit natif en viewport réel sur `/map`, `Rabat`, `Rabat/Agdal`, **12 captures / 0 finding**, **21/21 tests**, TypeScript/build/gates verts, défaut cockpit↔explorer détecté puis corrigé, score final **9,2/10**.
+- P1A.6 ✅ PR #369 — Responsive Hardening : contrôles tactiles/clavier renforcés, audit natif en viewport réel sur `/map`, `Rabat`, `Rabat/Agdal`, **12 captures / 0 finding**, **21/21 tests**, TypeScript/build/gates verts, défaut cockpit↔explorer détecté puis corrigé, score final **9,2/10** ;
+- P1B.1 ✅ PR #371 — **AkarFinder Map Visual Layer** : basemap OpenFreeMap/CARTO fortement atténuée, couche territoriale propriétaire MapLibre, 16 arrondissements Casablanca issus exclusivement du dataset OSM shadow existant, palette différenciée mais non sémantique, contours/labels AkarFinder, activation uniquement via le preview-canary protégé, production toujours bloquée par le contrat géométrique, audit natif **430 / 768 / 1280 = 3 captures / 0 finding**, **21/21 tests**, TypeScript/build et gates finaux verts, score humain **9,1/10**.
 
-## P1B — Intelligence cartographique 🔴 PROCHAIN UX
+## P1B.2 — Couches d’intelligence territoriale sourcées 🔴 PROCHAIN UX
 
-Objectif : ajouter de la valeur décisionnelle spatiale au-dessus de la fondation P1A sans inventer de géométrie, proximité ou donnée.
+Objectif : ajouter de la valeur décisionnelle spatiale réelle au-dessus de P1B.1 sans transformer une couleur décorative en faux signal marché.
 
 Principes :
 
 1. Geo Registry reste source de vérité ;
-2. toute nouvelle couche doit être explicable et sourcée ;
-3. aucun décor cartographique ne doit être présenté comme donnée réelle ;
-4. Search reste canonique, Map reste son complément spatial ;
-5. 430×932 reste obligatoire dans toute certification visuelle ;
-6. score UX/UI ≥9/10 avant fermeture.
+2. toute métrique de couche doit être calculée depuis une donnée observable/canonique certifiée ;
+3. aucun prix, densité, demande, fraîcheur, confiance ou proximité ne peut être déduit/inventé pour remplir la carte ;
+4. couleurs de P1B.1 restent du **repérage territorial**, pas un score ;
+5. Search reste canonique, Map reste son complément spatial ;
+6. aucune géométrie shadow n’est promue en production par le seul fait d’être rendue en preview ;
+7. 430×932 reste obligatoire dans toute certification visuelle ;
+8. score UX/UI ≥9/10 avant fermeture.
 
 # 4. Fondation DATA acquise
 
@@ -70,7 +73,7 @@ Observation Ledger / Freshness / normalization / quality tiers ; Source Registry
 - **4.0 ✅ #341** — Avito+Mubawab : 35 134 normalized, 3 588 technical display, 0 policy-activable.
 - **4.1A ✅ #343** — Avito unavailable : 95,06 % bruit ; 73 core-récupérables ; 0 policy-activable.
 - **4.2 ✅ #344** — Dar Agadir = `ADMISSIBLE_GROWTH`; Agenz = `PARTNERSHIP_UPSIDE`.
-- **4.3A → H ✅ #347/#348/#351/#353/#355/#358/#362/#364** — progression Dar Agadir jusqu’au contrat Controlled Expansion to 500 : point de départ 50 persistent rows, plan **[100,100,100,100,50]**, max **100/run**, TTL **14 jours**, Registry+sitemap revalidés, drift cap **1 %**, Search/display mesurés, rollback obligatoire.
+- **4.3A → H ✅ #347/#348/#351/#353/#355/#358/#362/#364** — progression Dar Agadir jusqu’au contrat Controlled Expansion to 500 : point de départ certifié sous contrat, plan borné jusqu’à 500, max **100/run**, TTL **14 jours**, Registry+sitemap revalidés, drift cap **1 %**, Search/display mesurés, rollback obligatoire.
 - **4.3I ✅ #367** — protection multi-channel freshness ownership : OpenSERP/Yandex n’est propriétaire que de `openserp_yandex_discovery` et ne peut pas supprimer un canal tiers tel que `public_sitemap_presence`.
 - **4.3J ✅ #368** — correction migration-only de l’ordre du trigger display ; `zzz_thin_index_display_policy_write` s’exécute après quality/purity ; aucune modification de policy function, aucun backfill dans la PR.
 
@@ -80,7 +83,7 @@ Avant toute nouvelle expansion persistante :
 
 1. appliquer/vérifier la migration 4.3J en production ;
 2. vérifier l’ordre réel des triggers PostgreSQL ;
-3. restaurer/retester le cohort exact des 50 lignes avec evidence `public_sitemap_presence` encore valide ;
+3. restaurer/retester le cohort exact des lignes certifiées avec evidence `public_sitemap_presence` encore valide ;
 4. exiger maintien Search/display avant→après ;
 5. vérifier que le reconciler OpenSERP n’écrase pas le canal sitemap ;
 6. rollback immédiat sur tout delta public inattendu ;
@@ -104,8 +107,8 @@ Scope respecté, tests/build/gates verts, preuves, Registry respecté, aucun byp
 
 ## DATA
 
-Certifier en production le correctif **DATA-4.3J** avant toute nouvelle expansion persistante.
+Conserver la décision DATA courante : certifier en production le correctif **DATA-4.3J** avant toute nouvelle expansion persistante, puis suivre le contrat 4.3H.
 
-## UX — P1B
+## UX — P1B.2
 
-Définir puis exécuter le premier lot **d’intelligence cartographique** au-dessus de la fondation P1A certifiée, sans données spatiales inventées et avec 430×932 obligatoire.
+Définir une première **couche d’intelligence territoriale réellement calculable** depuis les données certifiées disponibles, avec légende explicable, aucune métrique fabriquée, aucune promotion implicite des géométries shadow et 430×932 obligatoire.

@@ -52,10 +52,11 @@ Principes non négociables :
 - CARTE-QUARTIER-P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
 - P1A.2 ✅ PR #334 — `district` structuré dans Search ;
 - P1A.3 ✅ PR #349 — Map state/navigation pilotés par URL, **9,3/10** ;
-- P1A.4 ✅ PR #350 — Map Design System, cockpit flottant map-first, **9,3/10** ;
+- P1A.4 ✅ PR #350 — Map Design System, cockpit flottant map-first ;
 - P1A.5 ✅ PR #365 — Territorial Explorer **Maroc → ville → quartier**, navigation URL canonique, responsive **390 / 430×932 / 768 / 1280**, **9,3/10** ;
 - P1A.6 ✅ PR #369 — Responsive hardening, audit natif **3 états × 4 viewports = 12 captures / 0 finding**, chevauchement cockpit↔explorer corrigé, **21/21 tests**, TypeScript/build/gates verts, **9,2/10** ;
-- prochain UX : **P1B — intelligence cartographique**.
+- P1B.1 ✅ PR #371 — **AkarFinder Map Visual Layer** : basemap générique fortement atténuée, 16 arrondissements Casablanca issus du dataset OSM shadow rendus en preview-canary avec palette territoriale différenciée, contours/labels AkarFinder, couleurs explicitement non sémantiques, audit natif **430 / 768 / 1280 = 3 captures / 0 finding**, **21/21 tests**, TypeScript/build/tous gates verts, contrôle humain **9,1/10** ;
+- prochain UX : **P1B.2 — couches d’intelligence territoriale sourcées**, uniquement à partir de données observables/canoniques certifiées.
 
 ## État DATA acquis
 
