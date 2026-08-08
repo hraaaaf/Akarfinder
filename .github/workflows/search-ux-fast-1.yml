@@ -7,11 +7,16 @@ on:
       - "components/search/LightZillowSearchShell.tsx"
       - "components/search/QuickFilters.tsx"
       - "scripts/scrapers/__tests__/search-ux-fast-1.test.ts"
+      - "scripts/audits/search-ux-fast-1-visual.mjs"
       - ".github/workflows/search-ux-fast-1.yml"
+
+permissions:
+  contents: read
 
 jobs:
   contract-and-types:
     runs-on: ubuntu-24.04
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,3 +26,41 @@ jobs:
       - run: node --test --experimental-strip-types scripts/scrapers/__tests__/search-ux-fast-1.test.ts
       - run: npm ci
       - run: npx tsc --noEmit
+
+  visual-certification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start > /tmp/akarfinder-search-ux-fast.log 2>&1 &
+          echo $! > /tmp/akarfinder-search-ux-fast.pid
+          for i in {1..60}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/akarfinder-search-ux-fast.log
+          exit 1
+      - name: Capture and assert Search UX
+        run: node scripts/audits/search-ux-fast-1-visual.mjs
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: search-ux-fast-1-visual-proof
+          path: |
+            data/audits/search-ux-fast-1
+            /tmp/akarfinder-search-ux-fast.log
+          retention-days: 14
+          if-no-files-found: warn
