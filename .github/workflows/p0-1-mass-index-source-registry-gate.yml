@@ -1,0 +1,86 @@
+name: P0.1 Mass Index Source Registry Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/acquisition-scale-v1/mass-index-source-policy.ts"
+      - "lib/acquisition-scale-v1/mass-index-source-policy-db.ts"
+      - "scripts/openserp/p0-1-project-commoncrawl-registry.ts"
+      - "scripts/scrapers/__tests__/mass-index-source-policy.test.ts"
+      - "scripts/scrapers/__tests__/p0-1-mass-index-source-registry-gate.test.ts"
+      - "supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql"
+      - ".github/workflows/commoncrawl-mass-seed-harvest.yml"
+      - ".github/workflows/p0-1-mass-index-source-registry-gate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "lib/acquisition-scale-v1/mass-index-source-policy.ts"
+      - "lib/acquisition-scale-v1/mass-index-source-policy-db.ts"
+      - "scripts/openserp/p0-1-project-commoncrawl-registry.ts"
+      - "scripts/scrapers/__tests__/mass-index-source-policy.test.ts"
+      - "scripts/scrapers/__tests__/p0-1-mass-index-source-registry-gate.test.ts"
+      - "supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql"
+      - ".github/workflows/commoncrawl-mass-seed-harvest.yml"
+      - ".github/workflows/p0-1-mass-index-source-registry-gate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  source-registry-operational-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: P0.1 focused contracts
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/mass-index-source-policy.test.ts
+          scripts/scrapers/__tests__/p0-1-mass-index-source-registry-gate.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Read-only live Source Registry projection
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/openserp/p0-1-project-commoncrawl-registry.ts
+
+      - name: Assert projection report is fail-closed
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'data/audits/runtime/p0-1-commoncrawl-policy-projection.json';
+          const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+          if (report.fail_closed !== true) throw new Error('P0.1 projection is not fail-closed');
+          if (!Array.isArray(report.allowed_domains) || report.allowed_domains.length === 0) {
+            throw new Error('P0.1 projection returned zero policy-authorized domains');
+          }
+          if (report.policy_rows_loaded > report.structural_candidate_domains) {
+            throw new Error('P0.1 impossible policy/source cardinality');
+          }
+          console.log(JSON.stringify({
+            structural_candidate_domains: report.structural_candidate_domains,
+            policy_rows_loaded: report.policy_rows_loaded,
+            allowed_domains: report.allowed_domains.length,
+            rejection_breakdown: report.rejection_breakdown,
+          }, null, 2));
+          NODE
+
+      - name: Upload P0.1 read-only proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-1-source-registry-proof
+          path: data/audits/runtime/p0-1-commoncrawl-policy-projection.json
+          if-no-files-found: error
+          retention-days: 14
