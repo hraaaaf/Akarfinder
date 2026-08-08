@@ -79,7 +79,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
         }}
         data-property-active={active ? "true" : "false"}
         data-mobile-compact-card
-        className={`group flex min-w-0 flex-col overflow-hidden rounded-[20px] border bg-card transition duration-300 sm:rounded-2xl sm:hover:-translate-y-0.5 dark:bg-white/[0.045] ${
+        className={`group relative flex min-w-0 flex-col overflow-hidden rounded-[20px] border bg-card transition duration-300 sm:rounded-2xl sm:hover:-translate-y-0.5 dark:bg-white/[0.045] ${
           active
             ? "border-bronze-500/70 shadow-[0_12px_28px_rgba(155,120,56,0.16)] ring-1 ring-bronze-500/15 sm:shadow-[0_24px_55px_rgba(155,120,56,0.22)] sm:ring-2"
             : "border-border/10 shadow-[0_5px_16px_rgba(2,10,24,0.08)] sm:border-border/15 sm:shadow-[0_12px_34px_rgba(2,10,24,0.12)] sm:hover:border-bronze-500/35"
@@ -144,8 +144,8 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
 
         <div className="flex flex-1 flex-col p-3 sm:p-5">
           <div className="flex items-start justify-between gap-2 sm:gap-3">
-            <div className="min-w-0">
-              <p className="truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-deepblue dark:text-white sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-bronze-500 dark:sm:text-bronze-300">
+            <div className="min-w-0 flex-1">
+              <p data-mobile-price className="truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-deepblue dark:text-white sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-bronze-500 dark:sm:text-bronze-300">
                 {formatPrice(smartCard.price, listing.currency)}
               </p>
               {smartCard.pricePerM2 != null ? (
@@ -155,7 +155,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
               ) : null}
             </div>
             {!observedExternal ? (
-              <div className="-mr-1 -mt-1 scale-90 sm:mr-0 sm:mt-0 sm:scale-100">
+              <div className="absolute right-2 top-2 z-20 scale-90 sm:static sm:z-auto sm:scale-100">
                 <FavoriteToggleButton listingId={listing.id} variant="icon" />
               </div>
             ) : null}
