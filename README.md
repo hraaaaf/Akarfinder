@@ -74,15 +74,14 @@ Principes non négociables :
 - DATA-4.0 ✅ PR #341 : Avito + Mubawab = **35 134 normalized**, **3 588 technical display**, **0 policy-activable** ;
 - DATA-4.1A ✅ PR #343 : Avito `unavailable` = 95,06 % bruit/non-immobilier ; seulement **73** core-récupérables ;
 - DATA-4.2 ✅ PR #344 : `daragadir.com` gagne la lane `ADMISSIBLE_GROWTH`, `agenz.ma` la lane `PARTNERSHIP_UPSIDE` ;
-- DATA-4.3A → H ✅ PR #347/#348/#351/#353/#355/#358/#362/#364 : progression Dar Agadir jusqu’au contrat d’expansion contrôlée à 500, batch max **100/run**, TTL **14 jours**, drift cap **1 %**, snapshot/rollback et observabilité Search/display ;
+- DATA-4.3A → H ✅ PR #347/#348/#351/#353/#355/#358/#362/#364, puis durcissements #372/#373/#375 : Dar Agadir a atteint le cap contrôlé de **500 lignes persistantes certifiées** selon le plan `50+100+100+100+100+50`, batch max **100/run**, TTL **14 jours**, snapshots/rollbacks et revalidation Registry+sitemap avant chaque batch ;
+- certification finale DATA-4.3H : **6 533 lignes totales**, **605 fresh_confirmed**, **5 928 seed_only**, **502** lignes globales avec `public_sitemap_presence`, cohorte contrôlée **500/500**, Public Search **500/500**, technical display **500/500**, **0 % drift**, Registry inchangé, aucun rollback nécessaire ;
 - DATA-4.3I ✅ PR #367 : ownership fraîcheur multi-canal protégé ; OpenSERP/Yandex ne peut plus effacer/dégrader un canal tiers tel que `public_sitemap_presence` ;
 - DATA-4.3J ✅ PR #368 : ordre du trigger display corrigé (`zzz_thin_index_display_policy_write`) pour calculer l’éligibilité après quality/purity ; migration-only, pas de changement de policy function ni backfill.
 
 ## Décision DATA courante
 
-L’expansion persistante DATA reste conditionnée à la certification post-merge du correctif 4.3J et au contrat 4.3H : batch ≤100, Registry+sitemap revalidés juste avant write, snapshot/rollback, TTL 14 jours, drift ≤1 %, mesure Search/display, aucune modification de display/publication policy.
-
-Aucun nouveau numéro de lot n’est canonique tant qu’il n’est pas explicitement défini dans la roadmap.
+**DATA-4.3H est fermé au cap 500.** Aucune promotion supplémentaire Dar Agadir n’est autorisée par ce lot. Toute extension au-delà de 500 doit être définie comme une nouvelle décision DATA dans `docs/ROADMAP.md`, avec nouvelle certification bornée ; aucun bypass du cap n’est permis.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 

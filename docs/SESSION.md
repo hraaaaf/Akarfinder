@@ -1,7 +1,7 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-08**  
-**Lane DATA : décision persistante préexistante conservée ; commit parallèle DATA-4.3H.1 `e0d4720` préservé pendant le merge UX**  
+**Lane DATA : DATA-4.3H ✅ fermé et certifié en production au cap 500**  
 **Lot UX acquis : P1B.1 — AkarFinder Map Visual Layer ✅ PR #371 — 9,1/10**  
 **Prochain UX : P1B.2 — Couches d’intelligence territoriale sourcées**
 
@@ -11,14 +11,16 @@ Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’uniq
 
 Acquis récents :
 
-- DATA-4.3G ✅ PR #362, merge `0286178` ;
-- DATA-4.3H ✅ PR #364, merge `88a3592` ;
-- DATA-4.3I ✅ PR #367, merge `ad4875e` ;
-- DATA-4.3J ✅ PR #368, merge `bb3a5db` ;
-- P1A.5 ✅ PR #365, merge `c489f000`, **9,3/10** ;
-- P1A.6 ✅ PR #369, merge `dc75016d`, **9,2/10**, audit natif final **12 captures / 0 finding** ;
-- DATA-4.3H.1 commit parallèle `e0d4720` — scope du start count certifié par provenance ;
-- P1B.1 ✅ PR #371, merge **`c5e0373b`**, **9,1/10**, audit final intégré **3 captures / 0 finding**.
+- DATA-4.3G ✅ PR #362 ;
+- DATA-4.3H contrat ✅ PR #364 ;
+- DATA-4.3I ✅ PR #367 ;
+- DATA-4.3J ✅ PR #368 ;
+- DATA-4.3H.1 ✅ PR #372 — start count certifié par provenance ;
+- DATA-4.3H.2 ✅ PR #373 — manifests apply/rollback du premier +100 ;
+- DATA-4.3H.3 ✅ PR #375, merge `77eceaf5` — checkpoints certifiés `50→150→250→350→450→500`, provenance typée, fail-closed sur état partiel/non séquentiel ;
+- P1A.5 ✅ PR #365, **9,3/10** ;
+- P1A.6 ✅ PR #369, **9,2/10**, audit natif final **12 captures / 0 finding** ;
+- P1B.1 ✅ PR #371, **9,1/10**, audit final intégré **3 captures / 0 finding**.
 
 Invariants : no-bypass, capability ≠ permission, Source Registry avant activation, volume technique ≠ inventaire public, Search canonique, Map complément spatial, Geo Registry unique source de vérité.
 
@@ -38,18 +40,12 @@ Acquis :
 - couleurs explicitement **non sémantiques** : elles distinguent les territoires et ne représentent ni prix, ni qualité, ni demande, ni confiance ;
 - contours AkarFinder et labels territoriaux renforcés ;
 - attribution OSM maintenue ;
-- cycle `style.load` MapLibre durci : le montage de la couche ne dépend plus à tort du chargement complet des tuiles via `map.isStyleLoaded()` ;
-- audit navigateur vérifie la requête composant vers l’API canary, l’activation réelle de la layer, le canvas et l’absence d’overflow horizontal ;
+- cycle `style.load` MapLibre durci ;
 - viewports certifiés **430×932 / 768×1024 / 1280×900** ;
 - **21/21 tests P1A.5/P1A.6/P1B.1 verts** ;
 - TypeScript et production build verts ;
-- tous les gates du head intégré verts, dont Geo Productization, Geometry Canary, Responsive, Final Design/A11y, Canonical Baseline et DATA P0 ;
-- head final intégré : `1261db92e8a9996cdbf90c5847dd4c7ff09a7e45` ;
-- run final P1B.1 : `31233550860` ; job `93041885845` ;
-- artefact final : `9014665869` ; digest `sha256:6f187087190d8c0cb4d8497ee2a9b458b520888c7149de6ed90832f95a3daf0b` ;
 - **3 captures / 0 finding** ;
-- contrôle humain final : **9,1/10** ;
-- merge code : `c5e0373b6a20161264ba3e1c995fa863eaacabb8`.
+- contrôle humain final : **9,1/10**.
 
 # Prochain UX — P1B.2 Couches d’intelligence territoriale sourcées
 
@@ -62,34 +58,68 @@ Contraintes :
 - métrique choisie seulement si sa provenance, son calcul, sa fraîcheur et ses limites sont explicables ;
 - Geo Registry reste source de vérité ;
 - Search reste canonique ;
-- Map ne devient jamais une couche décorative trompeuse ;
 - géométries shadow restent shadow tant qu’elles ne sont pas certifiées pour publication ;
 - **430×932 obligatoire** dans la certification visuelle ;
 - score ≥9/10 avant merge.
 
-# DATA — état conservé
+# DATA — DATA-4.3H ✅ CERTIFIÉ À 500
 
-## DATA-4.3H ✅ PR #364
+## Contrat exécuté
 
-Contrat d’expansion contrôlée : batch max **100/run**, cap 500 avant re-certification, TTL **14 jours**, drift cap **1 %**, Registry+sitemap revalidés avant chaque run, rollback obligatoire.
+Plan complet :
 
-## DATA-4.3I ✅ PR #367
+`50 baseline DATA-4.3G + 100 + 100 + 100 + 100 + 50 = 500`
 
-Protection de l’ownership fraîcheur multi-canal : OpenSERP/Yandex ne peut plus dégrader/supprimer une preuve tierce comme `public_sitemap_presence` ; merge additif des preuves fraîches ; pas de DB write ou policy change en CI.
+Chaque batch :
 
-## DATA-4.3J ✅ PR #368
+- Registry + sitemap public revalidés juste avant sélection ;
+- exact preflight DB ;
+- Search/display mesurés avant ;
+- snapshot + rollback complet ;
+- write transactionnel avec assertions de cardinalité ;
+- Search/display vérifiés après ;
+- arrêt fail-closed sur tout écart.
 
-Correction de l’ordre du trigger display : `zzz_thin_index_display_policy_write` s’exécute après quality/purity afin que l’éligibilité soit calculée depuis le tier final. Migration-only, aucune policy-function mutation ni backfill dans la PR.
+Les réponses intermittentes de `robots.txt` sans déclaration sitemap ont déclenché l’arrêt attendu. Aucun ancien sitemap n’a été hardcodé et aucun bypass n’a été utilisé.
 
-## Commit parallèle DATA-4.3H.1 `e0d4720`
+## Production finale
 
-Le commit arrivé sur `main` pendant P1B.1 borne le comptage de départ certifié par provenance (`data-4-3g-daragadir-v1`). Il a été explicitement préservé dans le head final P1B.1 et tous les gates d’intégration ont été rejoués après synchronisation.
+Dar Agadir :
+
+- total : **6 533** ;
+- `fresh_confirmed` : **605** ;
+- `seed_only` : **5 928** ;
+- `public_sitemap_presence` global : **502** ;
+- baseline DATA-4.3G : **50** ;
+- batch1 : **100** ;
+- batch2 : **100** ;
+- batch3 : **100** ;
+- batch4 : **100** ;
+- batch5 : **50** ;
+- cohorte contrôlée : **500/500 `fresh_confirmed` + sitemap** ;
+- Public Search : **500/500** ;
+- technical display : **500/500** ;
+- drift public : **0 %** ;
+- rollback : **non nécessaire**.
+
+Les **2** autres lignes globales avec canal sitemap sont des preuves légitimes préexistantes hors cohorte contrôlée.
+
+## Registry final inchangé
+
+- acquisition : `public_sitemap_canonical_link` ;
+- discovery : `public_sitemap_only` ;
+- display policy : `canonical_link_only` ;
+- display gate : `external_tail_link_only` ;
+- machine gate : `canonical_link_only` ;
+- canal Registry : `public_sitemap` ;
+- TTL : **14 jours** ;
+- review : `due_soon`.
 
 # Prochaine action DATA
 
-Conserver la décision DATA courante portée par la roadmap : certification production requise avant toute nouvelle mutation persistante qui en dépend, puis exécution uniquement sous le contrat borné 4.3H avec Registry+sitemap, mesures Search/display et rollback.
+**Ne pas dépasser le cap 500 sous DATA-4.3H.**
 
-Ne pas inventer un numéro de lot suivant avant définition explicite dans `docs/ROADMAP.md`.
+Observer TTL/aging et stabilité Search/display du cohort 500, puis définir explicitement dans `docs/ROADMAP.md` le prochain lot ou la prochaine source admissible avant toute nouvelle mutation persistante. Aucun nouveau numéro de lot n’est canonique avant cette définition.
 
 # Business parallèle
 

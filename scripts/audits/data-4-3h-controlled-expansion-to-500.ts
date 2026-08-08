@@ -79,6 +79,18 @@ function objectValue(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null ? value as Record<string, unknown> : null;
 }
 
+function rowControlIdentity(row: SeedDbRow): "baseline" | number | null {
+  const evidence = objectValue(row.metadata?.freshness_evidence);
+  const persistent = objectValue(evidence?.persistent_batch);
+  if (persistent?.run_id === CERTIFIED_START_RUN_ID) return "baseline";
+  const marker = objectValue(evidence?.controlled_expansion_batch);
+  if (!marker) return null;
+  const batchNumber = Number(marker.batch_number);
+  if (!Number.isInteger(batchNumber) || batchNumber < 1 || batchNumber > EXPECTED_EXPANSION_BATCH_SIZES.length) return null;
+  if (marker.run_id !== expansionBatchRunId(batchNumber)) return null;
+  return batchNumber;
+}
+
 function certifyPersistedProgress(rows: SeedDbRow[]): Progress {
   let certifiedStartRows = 0;
   const batchCounts = new Map<number, number>();
@@ -86,21 +98,14 @@ function certifyPersistedProgress(rows: SeedDbRow[]): Progress {
 
   for (const row of rows) {
     if (row.freshness_status !== "fresh_confirmed" || !(row.fresh_channels ?? []).includes(PROMOTION_CHANNEL)) continue;
-    const evidence = objectValue(row.metadata?.freshness_evidence);
-    const persistent = objectValue(evidence?.persistent_batch);
-    if (persistent?.run_id === CERTIFIED_START_RUN_ID) certifiedStartRows += 1;
-
-    const marker = objectValue(evidence?.controlled_expansion_batch);
-    if (!marker) continue;
-    const batchNumber = Number(marker.batch_number);
-    if (!Number.isInteger(batchNumber) || batchNumber < 1 || batchNumber > EXPECTED_EXPANSION_BATCH_SIZES.length) {
-      throw new Error(`Invalid persisted DATA-4.3H batch marker on ${row.canonical_url}`);
+    const identity = rowControlIdentity(row);
+    if (identity === "baseline") {
+      certifiedStartRows += 1;
+      continue;
     }
-    if (marker.run_id !== expansionBatchRunId(batchNumber)) {
-      throw new Error(`Persisted DATA-4.3H run-id mismatch on ${row.canonical_url}`);
-    }
+    if (identity === null) continue;
     controlledExpansionRows += 1;
-    batchCounts.set(batchNumber, (batchCounts.get(batchNumber) ?? 0) + 1);
+    batchCounts.set(identity, (batchCounts.get(identity) ?? 0) + 1);
   }
 
   if (certifiedStartRows !== 50) throw new Error(`Expected certified DATA-4.3G baseline 50, got ${certifiedStartRows}`);
@@ -196,23 +201,76 @@ async function main(): Promise<void> {
   }
 
   const displayByUrl = new Map(display.map((row) => [row.canonical_url, row]));
+  const plan = buildExpansionPlan(progress.currentPersistentRows, 0);
+  requireCertifiedExpansionCheckpoint(plan);
+
+  if (progress.currentPersistentRows === 500) {
+    if (progress.controlledExpansionRows !== 450 || progress.completedBatchNumbers.join(",") !== "1,2,3,4,5") {
+      throw new Error(`Invalid final controlled progress: ${JSON.stringify(progress)}`);
+    }
+    const controlledRows = sitemapPersistentRows.filter((row) => rowControlIdentity(row) !== null);
+    const controlledUrls = controlledRows.map((row) => row.canonical_url);
+    if (controlledUrls.length !== 500 || new Set(controlledUrls).size !== 500) throw new Error(`Expected 500 unique controlled URLs, got ${controlledUrls.length}`);
+    const currentSitemapRows = controlledUrls.filter((url) => sitemapByCanonicalUrl.has(url)).length;
+    if (currentSitemapRows !== 500) throw new Error(`Final sitemap re-certification drift: expected 500, got ${currentSitemapRows}`);
+    const publicPresence = await loadUrlPresence("public_search_representations_v1", controlledUrls);
+    const technicalDisplayRows = controlledUrls.filter((url) => displayByUrl.has(url)).length;
+    if (publicPresence.size !== 500) throw new Error(`Final Public Search drift: expected 500, got ${publicPresence.size}`);
+    if (technicalDisplayRows !== 500) throw new Error(`Final technical display drift: expected 500, got ${technicalDisplayRows}`);
+
+    const proof = {
+      schemaVersion:"data-4-3h-final-recertification-v1",
+      generatedAt,
+      mode:"FINAL_RECERTIFICATION",
+      certifiedStartRunId:CERTIFIED_START_RUN_ID,
+      certifiedStartRows:progress.certifiedStartRows,
+      completedBatchNumbers:progress.completedBatchNumbers,
+      controlledExpansionRows:progress.controlledExpansionRows,
+      currentPersistentRows:progress.currentPersistentRows,
+      globalSitemapPersistentRows:sitemapPersistentRows.length,
+      controlledRows:controlledUrls.length,
+      controlledCurrentSitemapRows:currentSitemapRows,
+      controlledPublicSearchRows:publicPresence.size,
+      controlledTechnicalDisplayRows:technicalDisplayRows,
+      currentSitemapUrlCount:sitemapByCanonicalUrl.size,
+      expansionPlan:plan,
+      sourceRequests,
+      sourceRequestBudget:MAX_SOURCE_REQUESTS,
+      registryReviewStatus:policy.reviewStatus,
+      ttlDays:PROMOTION_TTL_DAYS,
+      databaseWrites:0,
+      freshnessWrites:0,
+      policyChanges:0,
+      displayPolicyChanges:0,
+      productionActivation:false,
+      detailPageFetches:0,
+      contentReuseOperations:0,
+      furtherPromotionAuthorized:false,
+    };
+    await fs.mkdir(outDir, { recursive:true });
+    await fs.writeFile(path.join(outDir,"proof.json"), `${JSON.stringify(proof,null,2)}\n`);
+    await fs.writeFile(path.join(outDir,"apply-manifest.json"), "[]\n");
+    await fs.writeFile(path.join(outDir,"rollback-manifest.json"), "[]\n");
+    console.log(JSON.stringify(proof,null,2));
+    return;
+  }
+
   const candidates: FreshnessShadowCandidate[] = normalized.map((row) => {
     const d = displayByUrl.get(row.canonical_url);
     return { canonicalUrl:row.canonical_url, normalizationStatus:row.normalization_status, freshnessStatus:row.freshness_status, city:row.city, propertyType:row.property_type, intent:row.intent, qualityScore:d ? numberOrNull(d.quality_score) : null, displayEligibility:d?.display_eligibility ?? null };
   });
   const shadow = classifyFreshnessShadowRows(candidates, policy, new Set(sitemapByCanonicalUrl.keys()));
   const eligibleSeedOnly = shadow.filter((row) => row.classification === "SHADOW_READY" && row.freshnessStatus === "seed_only");
-  const plan = buildExpansionPlan(progress.currentPersistentRows, eligibleSeedOnly.length);
-  requireCertifiedExpansionCheckpoint(plan);
-  if (progress.currentPersistentRows === 500) throw new Error("DATA-4.3H reached 500; final re-certification is required before any further promotion");
-  const nextBatch = selectPromotionBatch(eligibleSeedOnly, plan.nextBatchSize);
-  if (nextBatch.length !== plan.nextBatchSize) throw new Error(`Expected next batch ${plan.nextBatchSize}, got ${nextBatch.length}`);
+  const expansionPlan = buildExpansionPlan(progress.currentPersistentRows, eligibleSeedOnly.length);
+  requireCertifiedExpansionCheckpoint(expansionPlan);
+  const nextBatch = selectPromotionBatch(eligibleSeedOnly, expansionPlan.nextBatchSize);
+  if (nextBatch.length !== expansionPlan.nextBatchSize) throw new Error(`Expected next batch ${expansionPlan.nextBatchSize}, got ${nextBatch.length}`);
   const urls = nextBatch.map((row) => row.canonicalUrl);
   const [publicPresence, seeds] = await Promise.all([
     loadUrlPresence("public_search_representations_v1", urls),
     loadSeedStates(urls),
   ]);
-  if (seeds.length !== plan.nextBatchSize) throw new Error(`Expected ${plan.nextBatchSize} seed states, got ${seeds.length}`);
+  if (seeds.length !== expansionPlan.nextBatchSize) throw new Error(`Expected ${expansionPlan.nextBatchSize} seed states, got ${seeds.length}`);
   const seedByUrl = new Map(seeds.map((row) => [row.canonical_url,row]));
   const manifest = nextBatch.map((candidate) => {
     const seed = seedByUrl.get(candidate.canonicalUrl);
@@ -245,7 +303,7 @@ async function main(): Promise<void> {
     globalSitemapPersistentRows:sitemapPersistentRows.length,
     currentSitemapUrlCount:sitemapByCanonicalUrl.size,
     eligibleSeedOnlyRows:eligibleSeedOnly.length,
-    expansionPlan:plan,
+    expansionPlan,
     nextBatchSize:nextBatch.length,
     nextBatchFirstUrl:nextBatch[0]?.canonicalUrl ?? null,
     nextBatchLastUrl:nextBatch.at(-1)?.canonicalUrl ?? null,

@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : UX P1B.1 ✅ PR #371 / P1B.2 prochain ; DATA lane préservée, décision persistante inchangée**
+**Statut : UX P1B.1 ✅ / P1B.2 prochain ; DATA-4.3H ✅ certifié en production au cap 500**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -73,21 +73,26 @@ Observation Ledger / Freshness / normalization / quality tiers ; Source Registry
 - **4.0 ✅ #341** — Avito+Mubawab : 35 134 normalized, 3 588 technical display, 0 policy-activable.
 - **4.1A ✅ #343** — Avito unavailable : 95,06 % bruit ; 73 core-récupérables ; 0 policy-activable.
 - **4.2 ✅ #344** — Dar Agadir = `ADMISSIBLE_GROWTH`; Agenz = `PARTNERSHIP_UPSIDE`.
-- **4.3A → H ✅ #347/#348/#351/#353/#355/#358/#362/#364** — progression Dar Agadir jusqu’au contrat Controlled Expansion to 500 : point de départ certifié sous contrat, plan borné jusqu’à 500, max **100/run**, TTL **14 jours**, Registry+sitemap revalidés, drift cap **1 %**, Search/display mesurés, rollback obligatoire.
+- **4.3A → H ✅ #347/#348/#351/#353/#355/#358/#362/#364 + #372/#373/#375** — expansion Dar Agadir exécutée et certifiée jusqu’au cap obligatoire de **500 lignes persistantes contrôlées** : `50 + 100 + 100 + 100 + 100 + 50`, max **100/run**, TTL **14 jours**, Registry+sitemap revalidés, snapshots/rollback, checkpoints fail-closed, Search/display mesurés avant/après.
+- **4.3H certification production finale ✅ 2026-08-08** — Dar Agadir : **6 533 total**, **605 fresh_confirmed**, **5 928 seed_only**, **502** `public_sitemap_presence` globales ; cohorte contrôlée **500/500 fresh+sitemap**, Public Search **500/500**, technical display **500/500**, drift **0 %**, Registry inchangé, aucun rollback nécessaire. Les 2 lignes sitemap globales hors cohorte contrôlée sont des preuves légitimes préexistantes.
 - **4.3I ✅ #367** — protection multi-channel freshness ownership : OpenSERP/Yandex n’est propriétaire que de `openserp_yandex_discovery` et ne peut pas supprimer un canal tiers tel que `public_sitemap_presence`.
 - **4.3J ✅ #368** — correction migration-only de l’ordre du trigger display ; `zzz_thin_index_display_policy_write` s’exécute après quality/purity ; aucune modification de policy function, aucun backfill dans la PR.
 
-## Prochaine action DATA — certification post-merge 4.3J
+## État DATA après certification 4.3H
 
-Avant toute nouvelle expansion persistante :
+Le cap **500 est fermé**. Le lot 4.3H n’autorise aucune promotion supplémentaire Dar Agadir.
 
-1. appliquer/vérifier la migration 4.3J en production ;
-2. vérifier l’ordre réel des triggers PostgreSQL ;
-3. restaurer/retester le cohort exact des lignes certifiées avec evidence `public_sitemap_presence` encore valide ;
-4. exiger maintien Search/display avant→après ;
-5. vérifier que le reconciler OpenSERP n’écrase pas le canal sitemap ;
-6. rollback immédiat sur tout delta public inattendu ;
-7. seulement après certification, reprendre les batchs ≤100 sous contrat 4.3H.
+Invariants certifiés au cap :
+
+1. baseline DATA-4.3G = 50 ;
+2. batchs 4.3H = 100 / 100 / 100 / 100 / 50 ;
+3. union contrôlée = 500, sans partiel ni batch non séquentiel ;
+4. Search/display = 500/500 après writes ;
+5. total source inchangé = 6 533 ;
+6. Registry/display policy inchangés ;
+7. revalidation sitemap publique avant chaque batch ;
+8. aucun ancien sitemap hardcodé lors des réponses intermittentes de `robots.txt` ;
+9. rollback disponible mais jamais nécessaire.
 
 Aucun numéro de lot suivant n’est canonique tant qu’il n’a pas été explicitement défini.
 
@@ -97,7 +102,7 @@ Aucun numéro de lot suivant n’est canonique tant qu’il n’a pas été expl
 
 # 8. Suite DATA
 
-Certification post-merge 4.3J → premier batch ≤100 sous contrat 4.3H → observation TTL/aging + mesure Search/display → batchs suivants jusqu’à 500 max → re-certification obligatoire → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
+Après la fermeture 4.3H : observer TTL/aging et stabilité du cohort 500, exploiter les enseignements de la re-certification, puis définir explicitement le prochain lot avant toute nouvelle promotion. Ensuite : autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
 
 # 9. Définition de terminé
 
@@ -107,7 +112,7 @@ Scope respecté, tests/build/gates verts, preuves, Registry respecté, aucun byp
 
 ## DATA
 
-Conserver la décision DATA courante : certifier en production le correctif **DATA-4.3J** avant toute nouvelle expansion persistante, puis suivre le contrat 4.3H.
+**Ne pas dépasser 500 sous DATA-4.3H.** La prochaine décision DATA doit être explicitement définie avant exécution. Priorité logique : observation TTL/aging + stabilité Search/display du cohort certifié 500, puis choix du prochain réservoir/source admissible sur preuves.
 
 ## UX — P1B.2
 
