@@ -31,7 +31,7 @@ Pipeline canonique :
 - une responsabilité / une branche / une PR / un merge ;
 - Builder ≠ Reviewer ≠ Release Certifier ;
 - tests + preuves exact-head avant merge ;
-- toute mutation avec rollback disponible avant activation.
+- mutation DATA : rollback avant activation.
 
 # 3. Lane UX / Carte
 
@@ -126,12 +126,29 @@ Observation Ledger / Freshness / normalization / quality tiers ; Source Registry
 - **4.3I ✅ #367** — protection multi-channel freshness ownership.
 - **4.3J ✅ #368** — ordre du trigger display corrigé.
 - **4.4A ✅ #379** — Promo Immo sélectionné `PREFERRED_PENDING_REVALIDATION`, 0 write.
-- **4.4B ✅ #380**, merge `13b6c3c` — **3 130 URLs sitemap / 2 935 intersection / 2 456 éligibles**, canary 50 préparé, 0 write.
-- **4.4C ✅ #384/#385** — protection freshness-only du Thin Index + canary persistant **50/50**, Search/display/quality/projection **50/50**, drift **0 %**, Registry inchangé ; Promo Immo **3 005 total / 59 fresh_confirmed / 2 946 seed_only / 50 sitemap-presence** ; rollback non requis.
+- **4.4B ✅ #380**, merge `13b6c3c` — source revalidée sur signaux publics actuels : **3 130 URLs sitemap**, **2 935** intersectent le réservoir, **2 456** lignes conservatrices éligibles ; canary préparé **50/50** pour Search, technical display, quality A/B et rollback ; **0 write**.
+- **4.4C ✅ #384**, merge `ba65943a` — protection freshness-only du Thin Index mergée et migration appliquée en production ; replay live 4.4B juste avant mutation = cohorte immuable **50/50**, mêmes **3 130 / 2 935 / 2 456** ; write transactionnel persistant réussi. Re-certification indépendante : **50/50 fresh_confirmed**, **50/50 public_sitemap_presence**, Search **50/50**, technical display **50/50**, quality A/B **50/50**, projection préservée **50/50**, drift **0 %**, Registry inchangé. État source final Promo Immo : **3 005 total / 59 fresh_confirmed / 2 946 seed_only / 50 sitemap-presence**. Rollback disponible, non requis.
 
 ## DATA-4.4C — Persistent Canary 50 ✅ CLOSED
 
-Le canary exact est persistant et certifié en production. **4.4C n’autorise pas automatiquement +100/+500.** Toute expansion du second réservoir doit être définie comme un nouveau lot borné avec ses propres gates, preuves et rollback.
+Le canary exact de 4.4B est maintenant persistant et certifié en production.
+
+Preuves de fermeture :
+
+1. PR sécurité #384 entièrement verte puis mergée depuis le head attendu ;
+2. migration production `data_4_4c_freshness_projection_safety` appliquée ;
+3. revalidation publique 4.4B rejouée immédiatement avant write, cohorte et compteurs inchangés ;
+4. preflight exact **50/50** ;
+5. transaction atomique avec assertions fail-closed ;
+6. Search **50/50** avant/après ;
+7. technical display **50/50** avant/après ;
+8. quality A/B **50/50** ;
+9. projection enrichie préservée **50/50** ;
+10. drift observé **0 %** ;
+11. provenance, TTL 14 jours, run id et rollback snapshots présents **50/50** ;
+12. aucun changement Registry/policy et aucun rollback nécessaire.
+
+**4.4C n’autorise pas automatiquement un batch +100 ou +500.** Toute expansion du second réservoir doit être définie comme un nouveau lot borné avec ses propres gates, preuve et rollback.
 
 # 7. Lane business parallèle
 
@@ -139,7 +156,9 @@ Le canary exact est persistant et certifié en production. **4.4C n’autorise p
 
 # 8. Suite DATA
 
-DATA-4.4C ✅ → **définir explicitement le prochain lot d’expansion bornée du second réservoir** → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
+DATA-4.4C ✅ → **définir explicitement le prochain lot d’expansion bornée du second réservoir** à partir du canary 50 certifié → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
+
+Aucun numéro de lot, taille +100/+500 ou promotion supplémentaire n’est canonique tant qu’il n’est pas explicitement défini et certifié.
 
 # 9. Définition de terminé
 
