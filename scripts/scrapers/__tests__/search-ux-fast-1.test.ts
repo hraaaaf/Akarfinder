@@ -12,6 +12,13 @@ test("search result path has no project banner before the SERP", () => {
   assert.match(searchPage, /LightZillowSearchShell/);
 });
 
+test("primary listing flow renders before secondary local intelligence", () => {
+  const shellPosition = searchPage.indexOf("<LightZillowSearchShell");
+  const intelligencePosition = searchPage.indexOf("<SearchPriceExplorerDock");
+  assert.ok(shellPosition >= 0, "Search shell must be present");
+  assert.ok(intelligencePosition > shellPosition, "secondary local intelligence must render after the primary listing flow");
+});
+
 test("search shell removes the old pre-result hero and explanatory noise", () => {
   assert.doesNotMatch(shell, /Moteur de recherche immobilier/);
   assert.doesNotMatch(shell, /Trouvez votre bien au Maroc/);
