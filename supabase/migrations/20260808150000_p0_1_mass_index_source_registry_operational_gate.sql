@@ -12,6 +12,17 @@ as $$
 declare
   v_policy public.source_policy_registry%rowtype;
 begin
+  -- A Common Crawl seed cannot escape this guard by changing provider/domain
+  -- after insert. Identity is immutable once either side of an UPDATE is CC.
+  if tg_op = 'UPDATE'
+     and (old.seed_provider = 'commoncrawl_cdx' or new.seed_provider = 'commoncrawl_cdx')
+     and (
+       new.seed_provider is distinct from old.seed_provider
+       or new.source_domain is distinct from old.source_domain
+     ) then
+    raise exception 'P0.1 blocked Common Crawl seed: source/provider identity is immutable';
+  end if;
+
   if new.seed_provider <> 'commoncrawl_cdx' then
     return new;
   end if;
