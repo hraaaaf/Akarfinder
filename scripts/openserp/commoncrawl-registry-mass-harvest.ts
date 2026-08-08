@@ -2,11 +2,12 @@
 // CASABLANCA-MASS-ACQUISITION-V1 — registry-wide Common Crawl seed harvest.
 // COMMONCRAWL-CDX-MIME-FIX-1
 // COMMONCRAWL-FAILSOFT-CANARY-V1
+// P0.1-MASS-INDEX-SOURCE-REGISTRY-OPERATIONAL-GATE
 //
 // This is URL-index metadata only. It never downloads WARC/page content and
-// never requests a source website. Domains are selected exclusively from the
-// existing approved_discovery registry entries that have explicit listing URL
-// patterns. Output is a local JSONL seed artifact; no DB write happens here.
+// never requests a source website. Structural listing URL patterns narrow the
+// candidate set; canonical source_policy_registry authorization for the exact
+// `commoncrawl` channel is mandatory before the first CDX request.
 
 import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -17,6 +18,11 @@ import {
   selectRegistryMassHarvestDomains,
   type CommonCrawlMassSeed,
 } from "@/lib/acquisition-scale-v1/commoncrawl-mass-seeds";
+import {
+  MASS_INDEX_COMMONCRAWL_CHANNEL,
+  evaluateMassIndexDomains,
+} from "@/lib/acquisition-scale-v1/mass-index-source-policy";
+import { loadMassIndexSourcePolicies } from "@/lib/acquisition-scale-v1/mass-index-source-policy-db";
 
 export const MASS_CDX_INDEXES = ["CC-MAIN-2026-25", "CC-MAIN-2026-21", "CC-MAIN-2026-17"] as const;
 export const MASS_CANARY_DOMAINS = ["soukimmobilier.com", "masaken.ma", "atlasimmobilier.com", "daragadir.com"] as const;
@@ -192,12 +198,48 @@ export function selectMassHarvestDomains(allDomains: string[], mode = process.en
 
 async function main() {
   const registry = loadSourceDomainRegistry();
-  const allDomains = selectRegistryMassHarvestDomains(registry);
+  const structuralDomains = selectRegistryMassHarvestDomains(registry);
+  const policies = await loadMassIndexSourcePolicies(structuralDomains);
+  const policyEvaluation = evaluateMassIndexDomains(
+    structuralDomains,
+    MASS_INDEX_COMMONCRAWL_CHANNEL,
+    policies,
+  );
+  if (structuralDomains.length > 0 && policyEvaluation.allowedDomains.length === 0) {
+    throw new Error("P0.1 blocked Common Crawl harvest: zero policy-authorized domains");
+  }
+
   const mode = process.env.COMMONCRAWL_MASS_MODE ?? "all";
-  const domains = selectMassHarvestDomains(allDomains, mode);
+  const domains = selectMassHarvestDomains(policyEvaluation.allowedDomains, mode);
   const outputDirectory = join(process.cwd(), "data/audits/raw-results");
   const outputPath = join(outputDirectory, "commoncrawl-registry-mass-seeds.jsonl");
+  const policyReportPath = join(process.cwd(), "data/audits/runtime/p0-1-commoncrawl-policy-projection.json");
   mkdirSync(outputDirectory, { recursive: true });
+  mkdirSync(join(process.cwd(), "data/audits/runtime"), { recursive: true });
+
+  const rejectionBreakdown = policyEvaluation.decisions
+    .filter((decision) => !decision.allowed)
+    .reduce<Record<string, number>>((acc, decision) => {
+      acc[decision.reason] = (acc[decision.reason] ?? 0) + 1;
+      return acc;
+    }, {});
+  const policyReport = {
+    gate_version: "p0_1_mass_index_source_registry_v1",
+    discovery_channel: MASS_INDEX_COMMONCRAWL_CHANNEL,
+    structural_candidate_domains: structuralDomains.length,
+    policy_rows_loaded: policies.length,
+    allowed_domains: policyEvaluation.allowedDomains,
+    rejected_domains: policyEvaluation.decisions.filter((decision) => !decision.allowed),
+    rejection_breakdown: rejectionBreakdown,
+    fail_closed: policyEvaluation.decisions.every(
+      (decision) => decision.allowed === (decision.reason === "allowed"),
+    ),
+    authority: "public.source_policy_registry",
+  };
+  if (!policyReport.fail_closed) {
+    throw new Error("P0.1 Source Registry evaluation integrity failed");
+  }
+  writeFileSync(policyReportPath, `${JSON.stringify(policyReport, null, 2)}\n`, "utf8");
 
   const allSeeds: CommonCrawlMassSeed[] = [];
   const counters: MassDomainCounters[] = [];
@@ -242,6 +284,7 @@ async function main() {
     counters,
     artifact_path: outputPath,
     artifact_sha256: createHash("sha256").update(jsonl, "utf8").digest("hex"),
+    policy_report_path: policyReportPath,
   };
   console.log("=== COMMON CRAWL MASS HARVEST SUMMARY ===");
   console.log(JSON.stringify(summary, null, 2));
