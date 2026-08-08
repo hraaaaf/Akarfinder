@@ -8,8 +8,15 @@ import {
   type SitemapPresenceEvidence,
 } from "./daragadir-freshness-evidence-canary";
 
-export const EXPANSION_BATCH_RUN_ID = "data-4-3h-daragadir-batch-1-v1";
 export const EXPANSION_BATCH_NUMBER = 1;
+export const EXPANSION_BATCH_RUN_ID = expansionBatchRunId(EXPANSION_BATCH_NUMBER);
+
+export function expansionBatchRunId(batchNumber: number): string {
+  if (!Number.isInteger(batchNumber) || batchNumber < 1 || batchNumber > 5) {
+    throw new Error(`Invalid DATA-4.3H batch number: ${batchNumber}`);
+  }
+  return `data-4-3h-daragadir-batch-${batchNumber}-v1`;
+}
 
 export interface ExpansionPersistentBatchPlan {
   canonicalUrl: string;
@@ -33,14 +40,15 @@ function withExpansionBatchMarker(
   metadata: Record<string, unknown>,
   before: PromotionSnapshot,
   observedAt: string,
+  batchNumber: number,
 ): Record<string, unknown> {
   const next = structuredClone(metadata);
   const evidence = typeof next.freshness_evidence === "object" && next.freshness_evidence !== null
     ? { ...(next.freshness_evidence as Record<string, unknown>) }
     : {};
   evidence.controlled_expansion_batch = {
-    run_id: EXPANSION_BATCH_RUN_ID,
-    batch_number: EXPANSION_BATCH_NUMBER,
+    run_id: expansionBatchRunId(batchNumber),
+    batch_number: batchNumber,
     channel: PROMOTION_CHANNEL,
     ttl_days: PROMOTION_TTL_DAYS,
     observed_at: observedAt,
@@ -58,7 +66,9 @@ function withExpansionBatchMarker(
 export function buildExpansionPersistentBatchPlan(
   before: PromotionSnapshot,
   evidence: SitemapPresenceEvidence,
+  batchNumber = EXPANSION_BATCH_NUMBER,
 ): ExpansionPersistentBatchPlan {
+  expansionBatchRunId(batchNumber);
   if (before.freshnessStatus !== "seed_only") {
     throw new Error(`Expansion batch must begin seed_only: ${before.canonicalUrl}`);
   }
@@ -79,7 +89,7 @@ export function buildExpansionPersistentBatchPlan(
     before: structuredClone(before),
     proposed: {
       ...proposal.proposed,
-      metadata: withExpansionBatchMarker(proposal.proposed.metadata, before, evidence.observedAt),
+      metadata: withExpansionBatchMarker(proposal.proposed.metadata, before, evidence.observedAt, batchNumber),
     },
     rollback: {
       freshnessStatus: before.freshnessStatus,
