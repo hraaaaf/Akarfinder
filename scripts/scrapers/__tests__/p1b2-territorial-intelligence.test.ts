@@ -31,8 +31,8 @@ describe("P1B.2 — Territorial intelligence", () => {
   it("uses exact neighborhood apartment-buy observations only", () => {
     const casablanca = getNeighborhoodsByCity("Casablanca");
     const benchmarks = getExactApartmentBuyBenchmarks(casablanca);
-    assert.deepEqual(benchmarks.map((entry) => entry.neighborhood).sort(), ["Finance City", "Maârif"]);
-    assert.equal(benchmarks.find((entry) => entry.neighborhood === "Finance City")?.medianPricePerM2, 15000);
+    assert.deepEqual(benchmarks.map((entry) => entry.neighborhood).sort(), ["Casablanca Finance City", "Maârif"]);
+    assert.equal(benchmarks.find((entry) => entry.neighborhood === "Casablanca Finance City")?.medianPricePerM2, 15000);
     assert.equal(benchmarks.find((entry) => entry.neighborhood === "Maârif")?.sampleCount, 58);
     assert.equal(getExactApartmentBuyBenchmark(casablanca.find((point) => point.neighborhood === "Bouskoura")!), null);
   });
@@ -42,6 +42,7 @@ describe("P1B.2 — Territorial intelligence", () => {
     const intelligence = source("lib/map/akarfinder-market-intelligence.ts");
     const map = source("components/map/MapNeighborhoodExperience.tsx");
     assert.ok(intelligence.includes("entry.neighborhood !== undefined"));
+    assert.ok(intelligence.includes("resolveNeighborhoodEntity"));
     assert.ok(!map.toLowerCase().includes("heatmap"));
     assert.ok(map.includes("Aucune interpolation sur les zones"));
   });
@@ -52,7 +53,7 @@ describe("P1B.2 — Territorial intelligence", () => {
     assert.ok(map.includes("sampleCount"));
     assert.ok(map.includes("exactBenchmark.confidence"));
     assert.ok(map.includes("exactBenchmark?.period"));
-    assert.ok(map.includes('data-akarfinder-market-marker = priceMode ? "exact-price"'));
+    assert.ok(map.includes('el.dataset.akarfinderMarketMarker = priceMode ? "exact-price"'));
   });
 
   it("keeps territory colors non-semantic while price mode lowers their emphasis", () => {
