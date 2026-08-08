@@ -61,11 +61,15 @@ begin
     raise exception 'P0.1 blocked Common Crawl seed: ingestion gate blocks %', new.source_domain;
   end if;
 
-  -- Common Crawl CDX is historical URL-index metadata only. It can create a
-  -- seed, never manufacture freshness or a public-display state.
-  if new.freshness_status <> 'seed_only'
-     or new.fresh_last_seen_at is not null
-     or cardinality(new.fresh_channels) <> 0 then
+  -- Common Crawl CDX is historical URL-index metadata only. At INSERT time it
+  -- may create only seed_only state. Later exact live corroboration may update
+  -- freshness through the separate freshness pipeline; this trigger does not
+  -- fire on freshness-only updates.
+  if tg_op = 'INSERT' and (
+       new.freshness_status <> 'seed_only'
+       or new.fresh_last_seen_at is not null
+       or cardinality(new.fresh_channels) <> 0
+     ) then
     raise exception 'P0.1 blocked Common Crawl seed: seed-only freshness invariant violated for %', new.source_domain;
   end if;
 
@@ -78,7 +82,7 @@ grant execute on function public.p0_1_enforce_mass_index_seed_policy() to servic
 
 drop trigger if exists p0_1_mass_index_seed_policy_guard on public.source_offer_seeds;
 create trigger p0_1_mass_index_seed_policy_guard
-before insert or update of source_domain, seed_provider, freshness_status, fresh_last_seen_at, fresh_channels
+before insert or update of source_domain, seed_provider
 on public.source_offer_seeds
 for each row
 execute function public.p0_1_enforce_mass_index_seed_policy();
