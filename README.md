@@ -83,7 +83,25 @@ Preuves de certification :
 - Benchmark UX/Search Reviewer : **PASS — mobile 9,3/10, desktop 9,2/10** ;
 - Reviewer technique : **PASS**.
 
-Prochain lot UX/Search séparé : **SEARCH-WORDING-PURITY-1**.
+### SEARCH-WORDING-PURITY-1 ✅ PR #391
+
+Deuxième lot Search : simplification du vocabulaire public sur Search/Home, sans modifier ranking, ordre commercial, récupération de prix, DATA, Registry, structure des cards ou logique Map.
+
+Résultat certifié :
+
+- libellés d’architecture retirés des surfaces transactionnelles : `indexé`, `observé`, `analysé`, `analyse partielle`, `niveau d’information`, `passeport local factuel`, `écart descriptif`, etc. ;
+- informations de confiance utiles conservées en langage simple : source externe, informations limitées, détails utiles, résultats proches, quartier en chiffres ;
+- prudence dédup conservée : un regroupement peut correspondre au même bien **sans certitude** ;
+- `search-truth-tier` conserve exactement les mêmes branches `observed/analyzed/partial`, le même collapse et le même ordre ; seules les chaînes publiques changent ;
+- mobile **360×800 / 390×844** : première annonce à **398 px**, visible dans le premier écran, zéro overflow ;
+- desktop **1280×800 / 1440×900** : première annonce à **328 px**, zéro overflow ;
+- Search et Home : **0 expression retirée détectée** sur les 4 viewports Chromium ;
+- gate permanent `SEARCH-WORDING-PURITY-1 Gate` : contrats + TypeScript + build + Chromium ;
+- **23/23 workflows exact-head verts** avant closeout documentaire ;
+- Benchmark UX/Search Reviewer : **PASS — mobile 9,4/10, desktop 9,3/10** ;
+- Reviewer technique : **PASS**.
+
+Prochain lot UX/Search séparé : **SEARCH-CONTINUOUS-FLOW-1**.
 
 ## État UX / Carte
 
