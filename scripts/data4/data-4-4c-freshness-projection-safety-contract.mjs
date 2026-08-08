@@ -19,10 +19,12 @@ for (const required of [
 }
 
 const safetyStart = sql.indexOf('-- data-4.4c safety gate');
+const normalPathStart = sql.indexOf("if new.freshness_status not in ('seed_only','fresh_confirmed')");
 const rebuildStart = sql.indexOf("evidence_text := concat_ws");
-assert.ok(safetyStart >= 0 && rebuildStart > safetyStart, 'freshness-only fast path must precede sparse-metadata rebuild');
+assert.ok(safetyStart >= 0 && normalPathStart > safetyStart, 'freshness-only fast path must precede normal synchronization path');
+assert.ok(rebuildStart > normalPathStart, 'normal synchronization path must precede sparse-metadata rebuild');
 
-const safetyBlock = sql.slice(safetyStart, rebuildStart);
+const safetyBlock = sql.slice(safetyStart, normalPathStart);
 for (const forbidden of [
   'title=',
   'snippet=',
