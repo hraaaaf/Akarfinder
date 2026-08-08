@@ -337,13 +337,17 @@ describe("Recommended Search ranking", () => {
 });
 
 describe("Search Truth UX source contracts", () => {
-  it("renders the four commercial categories in strict order", () => {
+  it("renders the commercial/truth sequence as one continuous internal flow", () => {
     const shell = source("components/search/LightZillowSearchShell.tsx");
-    const promoter = shell.indexOf('tier="promoter_premium"');
-    const agency = shell.indexOf('tier="agency_partner"');
-    const direct = shell.indexOf('tier="direct_user"');
-    const indexed = shell.indexOf("<PublicIndexedResultsSection");
-    assert.ok(promoter >= 0 && agency > promoter && direct > agency && indexed > direct);
+    const promoter = shell.indexOf("...commercialGroups.promoterPremium");
+    const agency = shell.indexOf("...commercialGroups.agencyPartner");
+    const direct = shell.indexOf("...commercialGroups.directUser");
+    const analyzed = shell.indexOf("...commercialGroups.publicIndexed.analyzed");
+    const partial = shell.indexOf("...commercialGroups.publicIndexed.partial");
+    const observed = shell.indexOf("...commercialGroups.publicIndexed.observed");
+    assert.ok(promoter >= 0 && agency > promoter && direct > agency && analyzed > direct && partial > analyzed && observed > partial);
+    assert.ok(shell.includes("data-search-continuous-flow"));
+    assert.ok(shell.includes("continuousListings.map"));
   });
 
   it("keeps commercial priority internal while public wording stays plain", () => {
@@ -352,8 +356,9 @@ describe("Search Truth UX source contracts", () => {
     assert.doesNotMatch(shell, /Ordre strict : promoteurs premium, agences partenaires/i);
     assert.doesNotMatch(shell, /Annonces publiques indexées|Analysé par AkarFinder|Analyse partielle|Offres observées sur le web/i);
     assert.match(priority, /premium promoter inventory[\s\S]*authorized agency\/partner inventory[\s\S]*first-party user submissions[\s\S]*public indexed \/ observed inventory/i);
-    assert.match(shell, /Informations détaillées/);
-    assert.match(shell, /Informations à compléter/);
+    assert.ok(!shell.includes("Promoteurs premium"));
+    assert.ok(!shell.includes("Agences partenaires"));
+    assert.ok(!shell.includes("Annonces sur AkarFinder"));
   });
 
   it("links Search directly to Companion instead of legacy buyer routes", () => {
