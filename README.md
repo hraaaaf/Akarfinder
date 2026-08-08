@@ -47,6 +47,23 @@ Principes non négociables :
 - Observation/Freshness/quality/dedup pipeline ;
 - CI GitHub Actions avec gates DATA, UX, accessibilité et build.
 
+## Gouvernance UX / Search
+
+Les lots UX majeurs utilisent désormais un **Benchmark UX/Search Reviewer indépendant** avant certification et après implémentation. Référence : `docs/BENCHMARK_UX_SEARCH_AGENT.md`.
+
+Principes verrouillés :
+
+- **mobile = expérience de référence** ; desktop enrichit sans ajouter de bruit ;
+- aucun lot UX majeur n’est certifié avec un score mobile < **9/10** ;
+- `/search` vise `RECHERCHE → FILTRES UTILES → RÉSULTATS` ;
+- aucun jargon d’architecture interne n’est exposé au grand public sans nécessité ;
+- la SERP doit tendre vers un **flux visuel continu**, même si les priorités commerciales/provenance restent appliquées en interne ;
+- les cards convergent vers `IMAGE → PRIX → TITRE → LOCALISATION → 3–4 FACTS → PROVENANCE → ACTION` ;
+- le Benchmark Reviewer est consultatif obligatoire et peut rendre `CHANGES_REQUIRED` ;
+- aucune pratique concurrente n’est copiée automatiquement : elle doit apporter un gain utilisateur compatible avec AkarFinder.
+
+Première mission : `BENCHMARK-SERP-1`, rapport dans `docs/BENCHMARK_SERP_1_REPORT.md`. Premier lot produit recommandé : **SEARCH-UX-FAST-1**.
+
 ## État UX / Carte
 
 - CARTE-QUARTIER-P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
@@ -94,6 +111,8 @@ En parallèle business : **Agenz = priorité partenariat/feed**, sans changement
 ## Règles d’exécution
 
 Un lot n’est terminé que si : scope respecté, revue indépendante, tests/build/gates verts, preuves disponibles, Registry respecté, aucun bypass, PR mergée, post-merge vérifié, production vérifiée si applicable, rollback disponible si mutation, et les 3 MD canoniques alignés.
+
+Pour un lot UX majeur : `Builder → Benchmark UX/Search Reviewer → Reviewer technique → Release Certifier → merge → post-merge`.
 
 ## Démarrage local
 
