@@ -14,6 +14,12 @@ import {
   type NeighborhoodPoint,
 } from "@/lib/map/canonical-neighborhood-data";
 import {
+  formatDhPerM2,
+  formatPriceRange,
+  getExactApartmentBuyBenchmark,
+  getExactApartmentBuyBenchmarks,
+} from "@/lib/map/akarfinder-market-intelligence";
+import {
   addAkarFinderTerritorialLayers,
   applyAkarFinderBasemapTreatment,
   AKARFINDER_TERRITORIAL_FILL_LAYER_ID,
@@ -29,6 +35,9 @@ import {
   buildMapProjectHref,
   buildMapSearchHref,
   buildNeighborhoodPageHref,
+  MAP_LAYER_EXPLORE,
+  MAP_LAYER_PRICE,
+  withMapLayer,
   withMapLocation,
   type MapNavigationState,
 } from "@/lib/map/map-navigation-state";
@@ -66,31 +75,45 @@ function removeAkarFinderTerritorialLayers(map: MapLibreMap) {
 function createNeighborhoodMarkerEl(
   point: NeighborhoodPoint,
   isSelected: boolean,
-): HTMLButtonElement {
+  priceMode: boolean,
+): HTMLButtonElement | null {
+  const exactBenchmark = getExactApartmentBuyBenchmark(point);
+  if (priceMode && !exactBenchmark) return null;
+
   const el = document.createElement("button");
   el.type = "button";
-  const benchmarkLabel = getBenchmarkLabel(point);
-  const confidence = getMapConfidenceMeta(point.confidence);
-  const background = isSelected ? MAP_VISUAL_TOKENS.accent : MAP_VISUAL_TOKENS.surface;
+  const benchmarkLabel = priceMode && exactBenchmark
+    ? `~${formatDhPerM2(exactBenchmark.medianPricePerM2)}`
+    : getBenchmarkLabel(point);
+  const confidence = getMapConfidenceMeta(priceMode && exactBenchmark ? exactBenchmark.confidence : point.confidence);
+  const background = isSelected
+    ? MAP_VISUAL_TOKENS.accent
+    : priceMode ? "rgba(255,255,255,0.97)" : MAP_VISUAL_TOKENS.surface;
   const textColor = isSelected ? "#ffffff" : MAP_VISUAL_TOKENS.navy;
-  const subColor = isSelected ? "rgba(255,255,255,0.78)" : MAP_VISUAL_TOKENS.muted;
-  const border = isSelected ? MAP_VISUAL_TOKENS.accent : MAP_VISUAL_TOKENS.border;
+  const subColor = isSelected ? "rgba(255,255,255,0.82)" : MAP_VISUAL_TOKENS.muted;
+  const border = isSelected ? MAP_VISUAL_TOKENS.accent : priceMode ? "#0B63CE" : MAP_VISUAL_TOKENS.border;
 
   el.className = [
     "maplibre-neighborhood-marker cursor-pointer whitespace-nowrap rounded-xl px-2.5 py-1.5",
     "transition duration-150 ease-out hover:-translate-y-0.5 hover:scale-[1.03] focus:outline-none",
     isSelected ? "z-20 scale-[1.04]" : "z-10",
   ].join(" ");
+  el.dataset.akarfinderMarketMarker = priceMode ? "exact-price" : "territorial-repère";
   el.style.cssText = [
     `background:${background}`,
     `border:1.5px solid ${border}`,
     `box-shadow:${isSelected
       ? `0 0 0 3px ${MAP_VISUAL_TOKENS.accentHalo}55,0 10px 24px rgba(7,27,51,0.24)`
-      : "0 5px 16px rgba(7,27,51,0.16)"}`,
+      : priceMode ? "0 8px 22px rgba(11,99,206,0.18)" : "0 5px 16px rgba(7,27,51,0.16)"}`,
   ].join(";");
+  const detail = priceMode && exactBenchmark
+    ? `${formatPriceRange(exactBenchmark)} · n=${exactBenchmark.sampleCount}`
+    : benchmarkLabel;
   el.setAttribute(
     "aria-label",
-    `Explorer ${point.neighborhood}, ${point.city}. ${benchmarkLabel}. ${confidence.label}.`,
+    priceMode && exactBenchmark
+      ? `${point.neighborhood}, ${point.city}. Prix observé appartement achat ${benchmarkLabel}. Fourchette ${formatPriceRange(exactBenchmark)}. Échantillon ${exactBenchmark.sampleCount}. ${confidence.label}.`
+      : `Explorer ${point.neighborhood}, ${point.city}. ${benchmarkLabel}. ${confidence.label}.`,
   );
   el.setAttribute("aria-pressed", isSelected ? "true" : "false");
   el.innerHTML = `
@@ -98,7 +121,8 @@ function createNeighborhoodMarkerEl(
       <span>${point.neighborhood}</span>
       <span aria-hidden="true" title="${confidence.label}" style="width:6px;height:6px;border-radius:999px;background:${confidence.color};box-shadow:0 0 0 2px ${isSelected ? "rgba(255,255,255,0.32)" : confidence.soft}"></span>
     </span>
-    <span style="display:block;font-size:10px;font-weight:650;line-height:1;margin-top:4px;color:${subColor}">${benchmarkLabel}</span>
+    <span style="display:block;font-size:${priceMode ? "11px" : "10px"};font-weight:${priceMode ? "850" : "650"};line-height:1;margin-top:4px;color:${priceMode && !isSelected ? "#0B63CE" : subColor}">${benchmarkLabel}</span>
+    ${priceMode ? `<span style="display:block;font-size:8.5px;font-weight:650;line-height:1;margin-top:4px;color:${subColor}">${detail}</span>` : ""}
   `;
   return el;
 }
@@ -126,6 +150,7 @@ type NeighborhoodPanelProps = {
   searchHref: string;
   neighborhoodHref: string | null;
   projectHref: string | null;
+  priceMode: boolean;
   onDismiss: () => void;
 };
 
@@ -134,11 +159,15 @@ function NeighborhoodPanel({
   searchHref,
   neighborhoodHref,
   projectHref,
+  priceMode,
   onDismiss,
 }: NeighborhoodPanelProps) {
   if (!point) return null;
-  const benchmarkLabel = getBenchmarkLabel(point);
-  const confidence = getMapConfidenceMeta(point.confidence);
+  const exactBenchmark = getExactApartmentBuyBenchmark(point);
+  const benchmarkLabel = exactBenchmark
+    ? `~${formatDhPerM2(exactBenchmark.medianPricePerM2)}`
+    : getBenchmarkLabel(point);
+  const confidence = getMapConfidenceMeta(exactBenchmark?.confidence ?? point.confidence);
 
   return (
     <aside
@@ -168,7 +197,7 @@ function NeighborhoodPanel({
       <div className="mt-3 rounded-2xl border border-brand-primary/20 bg-brand-primary-soft/65 p-3.5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-brand-primary">
-            Repère prix · {point.benchmark.period}
+            {priceMode ? "Prix observé exact" : "Repère prix"} · {exactBenchmark?.period ?? point.benchmark.period}
           </p>
           <span
             className="inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[9.5px] font-extrabold"
@@ -182,10 +211,27 @@ function NeighborhoodPanel({
             {confidence.label}
           </span>
         </div>
-        <p className="mt-2 text-[1.15rem] font-extrabold tracking-[-0.02em] text-foreground">{benchmarkLabel}</p>
-        <p className="mt-1 text-[10px] font-medium text-muted-foreground">
-          Appartement · achat · indicatif · à confirmer
-        </p>
+        {priceMode && !exactBenchmark ? (
+          <>
+            <p className="mt-2 text-[12px] font-extrabold text-foreground">Pas de benchmark appartement exact pour ce quartier.</p>
+            <p className="mt-1 text-[10px] leading-4 text-muted-foreground">
+              Le fallback ville n’est pas présenté comme un prix de quartier.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="mt-2 text-[1.15rem] font-extrabold tracking-[-0.02em] text-foreground">{benchmarkLabel}</p>
+            <p className="mt-1 text-[10px] font-medium text-muted-foreground">
+              Appartement · achat · indicatif · à confirmer
+            </p>
+            {priceMode && exactBenchmark ? (
+              <div className="mt-2 flex flex-wrap gap-1.5 text-[9.5px] font-bold text-text-secondary">
+                <span className="rounded-full border border-border bg-surface px-2 py-1">Fourchette {formatPriceRange(exactBenchmark)}</span>
+                <span className="rounded-full border border-border bg-surface px-2 py-1">n={exactBenchmark.sampleCount}</span>
+              </div>
+            ) : null}
+          </>
+        )}
       </div>
 
       {point.highlights.length > 0 ? (
@@ -239,7 +285,7 @@ function NeighborhoodPanel({
 
       <div className="mt-3 flex items-start gap-2 border-t border-border pt-3 text-[9.5px] leading-4 text-muted-foreground">
         <Info size={13} className="mt-0.5 shrink-0 text-brand-primary" aria-hidden="true" />
-        <p>Repères indicatifs, sources visibles. Confirmez les informations sur la source originale avant toute décision.</p>
+        <p>{priceMode ? "Prix issus du dataset observé AkarFinder. Aucun prix n’est interpolé entre les repères." : "Repères indicatifs, sources visibles. Confirmez les informations sur la source originale avant toute décision."}</p>
       </div>
     </aside>
   );
@@ -273,13 +319,15 @@ export function MapNeighborhoodExperience({
   const cityFilter = cityEntity?.canonical_name ?? "all";
   const cities = useMemo(() => getNeighborhoodCities(), []);
   const visiblePoints = useMemo(() => filterNeighborhoodsByCity(cityFilter), [cityFilter]);
+  const exactPriceBenchmarks = useMemo(() => getExactApartmentBuyBenchmarks(visiblePoints), [visiblePoints]);
+  const priceMode = navigationState.layer === MAP_LAYER_PRICE && cityFilter !== "all";
   const selectedPoint = useMemo(
     () => cityEntity && navigationState.district
       ? getNeighborhoodBySlug(cityEntity.slug, navigationState.district)
       : null,
     [cityEntity, navigationState.district],
   );
-  const showClusters = mapZoom < CLUSTER_ZOOM_THRESHOLD && !selectedPoint;
+  const showClusters = mapZoom < CLUSTER_ZOOM_THRESHOLD && !selectedPoint && !priceMode;
 
   const cityClusters = useMemo(() => {
     const byCity = new Map<string, number>();
@@ -420,6 +468,16 @@ export function MapNeighborhoodExperience({
 
   useEffect(() => {
     const map = mapRef.current;
+    if (!map || !mapLoaded || !territorialLayerActive || !map.getLayer(AKARFINDER_TERRITORIAL_FILL_LAYER_ID)) return;
+    map.setPaintProperty(
+      AKARFINDER_TERRITORIAL_FILL_LAYER_ID,
+      "fill-opacity",
+      priceMode ? (theme === "dark" ? 0.14 : 0.18) : (theme === "dark" ? 0.38 : 0.52),
+    );
+  }, [priceMode, mapLoaded, territorialLayerActive, theme]);
+
+  useEffect(() => {
+    const map = mapRef.current;
     if (!map || !mapLoaded) return;
     let cancelled = false;
 
@@ -446,7 +504,8 @@ export function MapNeighborhoodExperience({
 
       for (const point of visiblePoints) {
         const isSelected = selectedPoint?.id === point.id;
-        const el = createNeighborhoodMarkerEl(point, isSelected);
+        const el = createNeighborhoodMarkerEl(point, isSelected, priceMode);
+        if (!el) continue;
         el.addEventListener("click", () => {
           onNavigationChange(withMapLocation(navigationState, point.city, point.neighborhood));
         });
@@ -460,20 +519,22 @@ export function MapNeighborhoodExperience({
     return () => {
       cancelled = true;
     };
-  }, [cityClusters, mapLoaded, navigationState, onNavigationChange, selectedPoint, showClusters, visiblePoints]);
+  }, [cityClusters, mapLoaded, navigationState, onNavigationChange, priceMode, selectedPoint, showClusters, visiblePoints]);
 
-  const mapStatus = selectedPoint
-    ? `${selectedPoint.neighborhood} · ${selectedPoint.city}`
-    : cityFilter === "all"
-      ? `${visiblePoints.length} quartiers répertoriés`
-      : `${cityFilter} · ${visiblePoints.length} quartier${visiblePoints.length !== 1 ? "s" : ""}`;
+  const mapStatus = priceMode
+    ? `${cityFilter} · ${exactPriceBenchmarks.length} repère${exactPriceBenchmarks.length !== 1 ? "s" : ""} prix exact${exactPriceBenchmarks.length !== 1 ? "s" : ""}`
+    : selectedPoint
+      ? `${selectedPoint.neighborhood} · ${selectedPoint.city}`
+      : cityFilter === "all"
+        ? `${visiblePoints.length} quartiers répertoriés`
+        : `${cityFilter} · ${visiblePoints.length} quartier${visiblePoints.length !== 1 ? "s" : ""}`;
 
   return (
     <div className="relative min-w-0 overflow-hidden bg-background" style={{ height: "calc(100svh - 64px)" }}>
       <div ref={mapContainerRef} className="absolute inset-0 bg-[#eaf1f7] dark:bg-[#071426]" />
 
       <section
-        className="absolute inset-x-3 top-3 z-20 rounded-2xl border border-border-strong/70 bg-card/95 p-2.5 text-card-foreground shadow-panel backdrop-blur-xl sm:inset-x-auto sm:left-4 sm:right-4 sm:top-4 sm:p-3 lg:right-auto lg:w-auto lg:max-w-[760px]"
+        className="absolute inset-x-3 top-3 z-20 rounded-2xl border border-border-strong/70 bg-card/95 p-2.5 text-card-foreground shadow-panel backdrop-blur-xl sm:inset-x-auto sm:left-4 sm:right-4 sm:top-4 sm:p-3 lg:right-auto lg:w-auto lg:max-w-[820px]"
         aria-label="Contrôles de la carte immobilière"
       >
         <div className="flex min-w-0 items-center gap-2">
@@ -502,7 +563,21 @@ export function MapNeighborhoodExperience({
 
           <button
             type="button"
-            onClick={() => onNavigationChange(withMapLocation(navigationState, "all"))}
+            onClick={() => onNavigationChange(withMapLayer(navigationState, priceMode ? MAP_LAYER_EXPLORE : MAP_LAYER_PRICE))}
+            disabled={cityFilter === "all"}
+            className={`inline-flex h-10 shrink-0 items-center justify-center rounded-xl border px-2.5 text-[10px] font-extrabold transition sm:px-3 ${priceMode ? "border-brand-primary bg-brand-primary text-white shadow-accent" : "border-border-strong bg-surface text-foreground hover:bg-surface-muted"} disabled:cursor-not-allowed disabled:opacity-40`}
+            aria-pressed={priceMode}
+            aria-label={priceMode ? "Afficher les territoires" : "Afficher les prix observés exacts"}
+            title={cityFilter === "all" ? "Choisissez une ville avant d’afficher les prix" : priceMode ? "Revenir aux territoires" : "Prix observés"}
+            data-akarfinder-price-toggle
+          >
+            <span className="sm:hidden">DH</span>
+            <span className="hidden sm:inline">{priceMode ? "Territoires" : "Prix observés"}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigationChange(withMapLocation({ ...navigationState, layer: MAP_LAYER_EXPLORE }, "all"))}
             className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border bg-surface text-muted-foreground transition hover:border-border-strong hover:bg-surface-muted hover:text-foreground"
             aria-label="Réinitialiser la carte"
             title="Réinitialiser"
@@ -526,7 +601,7 @@ export function MapNeighborhoodExperience({
             <p className="truncate text-[10.5px] font-extrabold text-foreground">{mapStatus}</p>
           </div>
           <span className="hidden shrink-0 text-[9px] font-semibold text-muted-foreground sm:inline">
-            {territorialLayerActive ? "Couche AkarFinder active" : "Repères indicatifs"}
+            {priceMode ? "Prix observés exacts" : territorialLayerActive ? "Couche AkarFinder active" : "Repères indicatifs"}
           </span>
         </div>
       </section>
@@ -539,7 +614,7 @@ export function MapNeighborhoodExperience({
           </div>
         </div>
       ) : (
-        <div className="pointer-events-none absolute left-4 top-[92px] z-10 hidden max-w-[280px] lg:block">
+        <div className="pointer-events-none absolute left-4 top-[92px] z-10 hidden max-w-[300px] lg:block">
           <div className="rounded-xl border border-border-strong/60 bg-card/90 px-3 py-2 text-card-foreground shadow-card backdrop-blur-xl">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 shrink-0 rounded-full bg-brand-primary shadow-[0_0_0_3px_rgba(11,99,206,0.12)]" aria-hidden="true" />
@@ -547,9 +622,11 @@ export function MapNeighborhoodExperience({
             </div>
             {!selectedPoint ? (
               <p className="mt-1 text-[9.5px] font-semibold text-muted-foreground">
-                {territorialLayerActive
-                  ? "Couche territoriale AkarFinder · limites OSM certifiées en preview"
-                  : showClusters ? "Choisissez une ville ou zoomez" : "Sélectionnez un quartier pour afficher son repère"}
+                {priceMode
+                  ? "Appartement · achat · benchmarks exacts uniquement"
+                  : territorialLayerActive
+                    ? "Couche territoriale AkarFinder · limites OSM certifiées en preview"
+                    : showClusters ? "Choisissez une ville ou zoomez" : "Sélectionnez un quartier pour afficher son repère"}
               </p>
             ) : null}
           </div>
@@ -558,16 +635,19 @@ export function MapNeighborhoodExperience({
 
       {!selectedPoint ? (
         <div
-          className="pointer-events-none absolute bottom-3 left-3 z-10 max-w-[292px] md:bottom-4 md:left-4"
+          className="pointer-events-none absolute bottom-3 left-3 z-10 max-w-[310px] md:bottom-4 md:left-4"
           data-akarfinder-territorial-layer={territorialLayerActive ? "active" : "inactive"}
+          data-akarfinder-intelligence-layer={priceMode ? "price" : "territory"}
         >
           <div className="rounded-xl border border-border-strong/60 bg-card/90 px-3 py-2 text-card-foreground shadow-card backdrop-blur-xl">
             <div className="flex items-start gap-2">
               <Info size={12} className="mt-0.5 shrink-0 text-brand-primary" aria-hidden="true" />
               <p className="text-[9px] leading-4 text-muted-foreground">
-                {territorialLayerActive
-                  ? "Couleurs AkarFinder = repérage territorial, pas un score de prix. Limites : © OpenStreetMap contributors · preview canary."
-                  : "Repères indicatifs pour préparer la recherche. Aucune limite de quartier n’est inventée."}
+                {priceMode
+                  ? `Prix observés · appartement achat · ${exactPriceBenchmarks[0]?.period ?? "période indisponible"}. ${exactPriceBenchmarks.length} repère${exactPriceBenchmarks.length !== 1 ? "s" : ""} exact${exactPriceBenchmarks.length !== 1 ? "s" : ""}. Fourchette + échantillon visibles. Aucune interpolation sur les zones.`
+                  : territorialLayerActive
+                    ? "Couleurs AkarFinder = repérage territorial, pas un score de prix. Limites : © OpenStreetMap contributors · preview canary."
+                    : "Repères indicatifs pour préparer la recherche. Aucune limite de quartier n’est inventée."}
               </p>
             </div>
           </div>
@@ -579,6 +659,7 @@ export function MapNeighborhoodExperience({
         searchHref={searchHref}
         neighborhoodHref={neighborhoodHref}
         projectHref={projectHref}
+        priceMode={priceMode}
         onDismiss={() => onNavigationChange(withMapLocation(navigationState, cityFilter))}
       />
     </div>
