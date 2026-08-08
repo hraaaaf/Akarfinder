@@ -2,7 +2,6 @@ import { after } from "next/server";
 import type { Metadata } from "next";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { ActiveProjectBanner } from "@/components/search/ActiveProjectBanner";
 import { LightZillowSearchShell } from "@/components/search/LightZillowSearchShell";
 import { PropertyQuickPreview } from "@/components/search/PropertyQuickPreview";
 import { PropertySelectionProvider } from "@/components/search/PropertySelectionProvider";
@@ -134,7 +133,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" />
-      <ActiveProjectBanner requestedProjectId={requestedProjectId} />
       <SearchMapNavigationBridge projectId={requestedProjectId} />
       <PropertySelectionProvider>
         <SearchPriceExplorerDock />
