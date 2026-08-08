@@ -60,9 +60,11 @@ describe("P1B.1 — AkarFinder Map Visual Layer", () => {
   it("reinstalls the territorial layer after every completed MapLibre style reload", () => {
     const map = source("components/map/MapNeighborhoodExperience.tsx");
     assert.ok(map.includes("const [styleRevision, setStyleRevision] = useState(0)"));
+    assert.ok(map.includes('mapInstance.once("style.load", markMapReady)'));
+    assert.ok(map.includes('map.once("style.load", () =>'));
     assert.ok(map.includes("setStyleRevision((revision) => revision + 1)"));
     assert.ok(map.includes("styleRevision === 0"));
     assert.ok(map.includes("[cityEntity?.slug, mapLoaded, styleRevision, theme]"));
-    assert.ok(map.includes("map.isStyleLoaded()"));
+    assert.ok(!map.includes("!map.isStyleLoaded()"));
   });
 });
