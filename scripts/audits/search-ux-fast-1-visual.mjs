@@ -11,6 +11,41 @@ const viewports = [
   { name: "desktop-1440x900", width: 1440, height: 900 },
 ];
 
+const fixtureListing = {
+  id: "search-ux-fast-1-fixture",
+  title: "Appartement lumineux à Rabat",
+  city: "Rabat",
+  neighborhood: "Agdal",
+  price: 1850000,
+  currency: "DH",
+  surface_m2: 112,
+  price_per_m2: 16518,
+  property_type: "Appartement",
+  transaction_type: "buy",
+  bedrooms: 3,
+  bathrooms: 2,
+  freshness_label: "Récent",
+  source_type: "Source analysée",
+  reliability_label: "Informations complètes",
+  reliability_score: 88,
+  reliability_available: true,
+  is_mre_friendly: false,
+  description: "Fixture déterministe de certification visuelle.",
+  image_url: "",
+  reliability_explanation: "Fixture CI",
+  data_completeness_score: 90,
+  source_name: "AkarFinder",
+  duplicate_score: 0.1,
+  can_show_result: true,
+  production_allowed: true,
+  can_show_thumbnail: false,
+  display_images: { policy: "no_listing_image", urls: [] },
+  image_permission_status: "unknown",
+  source_access_level: "indexed_only",
+  acquisition_channel: "first_party_user",
+  origin_type: "first_party_user",
+};
+
 await mkdir(outputDir, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const results = [];
@@ -18,6 +53,29 @@ const results = [];
 try {
   for (const viewport of viewports) {
     const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
+
+    await page.route("**/api/search?**", async (requestRoute) => {
+      await requestRoute.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          listings: [fixtureListing],
+          total: 1,
+          limit: 100,
+          offset: 0,
+          source: "search-ux-fast-1-ci-fixture",
+          generated_at: new Date().toISOString(),
+        }),
+      });
+    });
+    await page.route("**/api/search/gateway?**", async (requestRoute) => {
+      await requestRoute.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ results: [], total_count: 0, next_cursor: null, has_more: false }),
+      });
+    });
+
     const response = await page.goto(`${baseUrl}${route}`, {
       waitUntil: "domcontentloaded",
       timeout: 45_000,
@@ -28,16 +86,10 @@ try {
     }
 
     await page.waitForSelector("#property-search", { timeout: 20_000 });
-    await page.waitForTimeout(1_500);
-
-    const firstResult = page.locator('article[data-property-active], a.group.flex.flex-col').first();
-    const firstResultCount = await firstResult.count();
-    if (firstResultCount === 0) {
-      throw new Error(`${viewport.name}: no result card found`);
-    }
+    await page.waitForSelector('article[data-property-active]', { timeout: 20_000 });
 
     const metrics = await page.evaluate(() => {
-      const first = document.querySelector('article[data-property-active], a.group.flex.flex-col');
+      const first = document.querySelector('article[data-property-active]');
       const search = document.querySelector("#property-search");
       const sort = document.querySelector('select[aria-label="Trier les résultats"]');
       const bodyText = document.body.innerText;
@@ -82,7 +134,7 @@ try {
 
 await writeFile(
   `${outputDir}/metrics.json`,
-  `${JSON.stringify({ route, generated_at: new Date().toISOString(), results }, null, 2)}\n`,
+  `${JSON.stringify({ route, fixture: "deterministic-client-api", generated_at: new Date().toISOString(), results }, null, 2)}\n`,
   "utf8",
 );
 
