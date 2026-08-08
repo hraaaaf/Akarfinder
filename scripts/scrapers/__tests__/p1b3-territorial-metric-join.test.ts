@@ -12,8 +12,13 @@ const migration = source(
 );
 
 describe("P1B.3 — Territorial Metric Join Contract", () => {
-  it("admits only explicit resolved source_offer_seed geography", () => {
-    assert.ok(migration.includes("e.resolution_status = 'resolved'"));
+  it("selects latest geo truth before requiring resolved status", () => {
+    const latestEvent = migration.indexOf("latest_event as (");
+    const latestResolved = migration.indexOf("latest_resolved as (");
+    const resolvedFilter = migration.indexOf("where e.resolution_status = 'resolved'", latestResolved);
+    assert.ok(latestEvent >= 0);
+    assert.ok(latestResolved > latestEvent);
+    assert.ok(resolvedFilter > latestResolved);
     assert.ok(migration.includes("e.source_record_type = 'source_offer_seed'"));
     assert.ok(migration.includes("e.resolved_neighborhood_id is not null"));
   });
@@ -41,14 +46,28 @@ describe("P1B.3 — Territorial Metric Join Contract", () => {
     assert.ok(migration.includes("'no_search_or_display_policy_change', true"));
   });
 
-  it("reports coverage and duplicate assignments explicitly", () => {
-    assert.ok(migration.includes("'coverage_percent'"));
-    assert.ok(migration.includes("'duplicate_seed_assignments'"));
-    assert.ok(migration.includes("'one_assignment_per_seed'"));
+  it("reports real latest-resolution collisions before collapsing to one row", () => {
+    assert.ok(migration.includes("latest_timestamp as ("));
+    assert.ok(migration.includes("latest_collisions as ("));
+    assert.ok(migration.includes("having count(distinct e.resolved_neighborhood_id) > 1"));
+    assert.ok(migration.includes("'latest_resolution_collisions'"));
+    assert.ok(migration.includes("'no_latest_resolution_collision'"));
+  });
+
+  it("reports historical conflicting resolutions separately from blocking latest collisions", () => {
+    assert.ok(migration.includes("conflicting_history as ("));
+    assert.ok(migration.includes("'conflicting_resolution_history'"));
   });
 
   it("does not manufacture territorial market semantics", () => {
-    for (const forbidden of ["demand_score", "heat_score", "price_score", "interpolate", "ST_Contains", "ST_DWithin"]) {
+    for (const forbidden of [
+      "demand_score",
+      "heat_score",
+      "price_score",
+      "interpolate",
+      "ST_Contains",
+      "ST_DWithin",
+    ]) {
       assert.equal(migration.includes(forbidden), false, forbidden);
     }
   });
