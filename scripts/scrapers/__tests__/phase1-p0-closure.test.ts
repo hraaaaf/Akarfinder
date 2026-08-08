@@ -85,16 +85,20 @@ describe("Phase 1 P0 — result regime separation", () => {
     assert.notEqual(external.source_badge, "premium_partner");
   });
 
-  it("Search keeps structured and external regimes explicitly separated", () => {
+  it("Search keeps structured and external regimes separated internally while rendering one continuous public flow", () => {
     const searchShell = source("components/search/LightZillowSearchShell.tsx");
     const truthTier = source("lib/search/search-truth-tier.ts");
-    assert.ok(searchShell.includes("Informations détaillées"));
-    assert.ok(searchShell.includes("Informations à compléter"));
-    assert.ok(searchShell.includes("Autres résultats"));
+    const commercialPriority = source("lib/search/search-commercial-priority.ts");
     assert.ok(searchShell.includes("partitionCommercialSearchListings"));
-    assert.ok(searchShell.includes("Promoteurs premium"));
-    assert.ok(searchShell.includes("Agences partenaires"));
-    assert.ok(searchShell.includes("Annonces sur AkarFinder"));
+    assert.ok(searchShell.includes("data-search-continuous-flow"));
+    assert.ok(searchShell.includes("continuousListings.map"));
+    assert.ok(!searchShell.includes("Promoteurs premium"));
+    assert.ok(!searchShell.includes("Agences partenaires"));
+    assert.ok(!searchShell.includes("Annonces sur AkarFinder"));
+    assert.ok(commercialPriority.includes("promoter_premium"));
+    assert.ok(commercialPriority.includes("agency_partner"));
+    assert.ok(commercialPriority.includes("direct_user"));
+    assert.ok(commercialPriority.includes("public_indexed"));
     assert.ok(truthTier.includes('source_display_type === "external_web_result"'));
     assert.ok(truthTier.includes('source_badge === "external_web_result"'));
     assert.ok(truthTier.includes('tier: "observed"'));
