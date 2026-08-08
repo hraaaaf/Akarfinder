@@ -1,0 +1,70 @@
+name: SEARCH-MOBILE-CARD-GRID-1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "components/search/SearchListingCardDark.tsx"
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "components/search/ExternalIndexedResultsSection.tsx"
+      - "components/search/LightZillowSearchShell.tsx"
+      - "scripts/scrapers/__tests__/search-mobile-card-grid-1.test.ts"
+      - "scripts/audits/search-mobile-card-grid-1-visual.mjs"
+      - ".github/workflows/search-mobile-card-grid-1.yml"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+
+permissions:
+  contents: read
+
+jobs:
+  contract-and-types:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/search-mobile-card-grid-1.test.ts scripts/scrapers/__tests__/search-continuous-flow-1.test.ts scripts/scrapers/__tests__/search-wording-purity-1.test.ts
+      - run: npx tsc --noEmit
+
+  visual-certification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start > /tmp/akarfinder-search-mobile-card-grid.log 2>&1 &
+          echo $! > /tmp/akarfinder-search-mobile-card-grid.pid
+          for i in {1..60}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/akarfinder-search-mobile-card-grid.log
+          exit 1
+      - name: Capture and assert mobile card grid
+        run: node scripts/audits/search-mobile-card-grid-1-visual.mjs
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: search-mobile-card-grid-1-visual-proof
+          path: |
+            data/audits/search-mobile-card-grid-1
+            /tmp/akarfinder-search-mobile-card-grid.log
+          retention-days: 14
+          if-no-files-found: warn

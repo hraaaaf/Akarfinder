@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; prochain lot UX Search = PRICE-COVERAGE-RECOVERY-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 Mass Index Source Registry operational gate = PR #392, activation production post-merge requise**
+**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; prochain lot UX Search = PRICE-COVERAGE-RECOVERY-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 Mass Index Source Registry operational gate = PR #392, activation production post-merge requise**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -113,6 +113,26 @@ Résultat certifié avant closeout documentaire :
 - `SEARCH-CONTINUOUS-FLOW-1 Gate` : contrats + TypeScript + build + Chromium = PASS ;
 - **23/23 workflows exact-head verts** avant closeout documentaire ;
 - Benchmark UX/Search Reviewer : **PASS — mobile 9,5/10, desktop 9,4/10** ;
+- Reviewer technique : **PASS**.
+
+## SEARCH-MOBILE-CARD-GRID-1 ✅ CLOSED — PR #394
+
+Responsabilité unique : **augmenter la densité de scan mobile avec une grille 2 colonnes inspirée des meilleures pratiques du benchmark Airbnb, adaptée à l’immobilier AkarFinder sans modifier les décisions métier**.
+
+Résultat certifié avant closeout documentaire :
+
+- grille verticale continue **2 colonnes** sous `640 px` ; tablette/desktop préservés ;
+- image `164 px`, puis prix → titre → localisation → 3 facts → provenance ;
+- cœur Favori déplacé en overlay mobile pour préserver la largeur du prix ;
+- carte/compare/gros CTA masqués uniquement sur mobile ;
+- Gateway suit le même rythme mobile sans section supplémentaire ;
+- **360×800** : première card `308 px`, `158×306 px`, 2 colonnes réelles, 0 overflow, 0 CTA secondaire, 0 prix tronqué ;
+- **390×844** : première card `308 px`, `173×306 px`, mêmes invariants à zéro ;
+- **1280×800 / 1440×900** : desktop préservé, première card `236 px`, 0 overflow ;
+- provenance, `Visuel illustratif` et prudence dédup/source restent explicites ;
+- gate permanent `SEARCH-MOBILE-CARD-GRID-1 Gate` : contrats + TypeScript + build + Chromium + anti-troncature prix ;
+- **23/23 workflows exact-head verts** sur `76a5dfac10dd47aeee569f85067cc9e677d1cecb` avant closeout documentaire ;
+- Benchmark UX/Search Reviewer : **PASS — mobile 9,6/10, desktop 9,4/10** ;
 - Reviewer technique : **PASS**.
 
 ### Prochains lots UX/Search — ordre strict
