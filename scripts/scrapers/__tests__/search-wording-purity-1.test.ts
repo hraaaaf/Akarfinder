@@ -51,20 +51,18 @@ describe("SEARCH-WORDING-PURITY-1", () => {
     }
   });
 
-  it("uses plain-language result labels while keeping source verification explicit", () => {
+  it("keeps source verification explicit without reintroducing architecture labels", () => {
     const shell = source("components/search/LightZillowSearchShell.tsx");
     const externalCard = source("components/search/ExternalIndexedResultCard.tsx");
     const truth = source("lib/search/search-truth-tier.ts");
 
-    assert.ok(shell.includes("Autres résultats"));
-    assert.ok(shell.includes("Informations détaillées"));
-    assert.ok(shell.includes("Informations à compléter"));
+    assert.ok(shell.includes("data-search-continuous-flow"));
     assert.ok(externalCard.includes("Source externe"));
     assert.ok(externalCard.includes("Informations limitées"));
     assert.ok(truth.includes('tier: "observed"'));
     assert.ok(truth.includes('tier: "analyzed"'));
     assert.ok(truth.includes('tier: "partial"'));
-    assert.match(`${shell}\n${externalCard}`, /site d’origine|source/i);
+    assert.match(externalCard, /site d’origine|source/i);
   });
 
   it("keeps useful neighborhood and price context in plain language", () => {
@@ -81,16 +79,21 @@ describe("SEARCH-WORDING-PURITY-1", () => {
     assert.match(`${price}\n${comparison}\n${similar}`, /Voir la source/);
   });
 
-  it("keeps commercial ordering internal and untouched", () => {
+  it("keeps commercial ordering internal and untouched while hiding category prose", () => {
     const priority = source("lib/search/search-commercial-priority.ts");
     const shell = source("components/search/LightZillowSearchShell.tsx");
 
     assert.match(priority, /premium promoter inventory[\s\S]*authorized agency\/partner inventory[\s\S]*first-party user submissions[\s\S]*public indexed \/ observed inventory/i);
-    const promoter = shell.indexOf('tier="promoter_premium"');
-    const agency = shell.indexOf('tier="agency_partner"');
-    const direct = shell.indexOf('tier="direct_user"');
-    const other = shell.indexOf("<PublicIndexedResultsSection");
-    assert.ok(promoter >= 0 && agency > promoter && direct > agency && other > direct);
+    const promoter = shell.indexOf("...commercialGroups.promoterPremium");
+    const agency = shell.indexOf("...commercialGroups.agencyPartner");
+    const direct = shell.indexOf("...commercialGroups.directUser");
+    const analyzed = shell.indexOf("...commercialGroups.publicIndexed.analyzed");
+    const partial = shell.indexOf("...commercialGroups.publicIndexed.partial");
+    const observed = shell.indexOf("...commercialGroups.publicIndexed.observed");
+    assert.ok(promoter >= 0 && agency > promoter && direct > agency && analyzed > direct && partial > analyzed && observed > partial);
+    for (const retiredHeading of ["Promoteurs premium", "Agences partenaires", "Annonces sur AkarFinder", "Autres résultats", "Informations détaillées", "Informations à compléter", "Autres annonces"]) {
+      assert.ok(!shell.includes(retiredHeading), `category heading should not interrupt the continuous flow: ${retiredHeading}`);
+    }
   });
 
   it("keeps the homepage promise user-facing rather than architecture-facing", () => {
