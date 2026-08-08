@@ -10,6 +10,7 @@ const PAGE_SIZE = 1000;
 const LOOKUP_CHUNK_SIZE = 20;
 const TIMEOUT_MS = 15000;
 const MAX_SOURCE_REQUESTS = 40;
+const CERTIFIED_START_RUN_ID = "data-4-3g-daragadir-v1";
 let sourceRequests = 0;
 
 function env(name: string): string {
@@ -83,10 +84,15 @@ function numberOrNull(value: number | string | null): number | null {
 }
 
 async function main(): Promise<void> {
-  const [registryRows, normalized, display, currentPersistentRows] = await Promise.all([
+  const [registryRows, normalized, display, currentPersistentRows, globalSitemapPersistentRows] = await Promise.all([
     restAll<RegistryRow>("source_policy_registry", { select:"source_domain,acquisition_mode,discovery_policy,display_policy,display_gate,machine_gate,allowed_discovery_channels,max_revalidation_interval_days,review_status", source_domain:"eq.daragadir.com" }),
     restAll<NormalizedRow>("thin_index_normalized_documents_v2", { select:"canonical_url,normalization_status,freshness_status,city,property_type,intent", source_domain:"eq.daragadir.com", order:"canonical_url.asc" }),
     restAll<DisplayRow>("thin_index_display_eligible_v1", { select:"canonical_url,display_eligibility,quality_score", source_domain:"eq.daragadir.com", order:"canonical_url.asc" }),
+    exactCount("source_offer_seeds", {
+      source_domain:"eq.daragadir.com",
+      fresh_channels:"cs.{public_sitemap_presence}",
+      "metadata->freshness_evidence->persistent_batch->>run_id":`eq.${CERTIFIED_START_RUN_ID}`,
+    }),
     exactCount("source_offer_seeds", { source_domain:"eq.daragadir.com", fresh_channels:"cs.{public_sitemap_presence}" }),
   ]);
   if (registryRows.length !== 1) throw new Error(`Expected one Registry row, got ${registryRows.length}`);
@@ -142,7 +148,9 @@ async function main(): Promise<void> {
     schemaVersion:"data-4-3h-controlled-expansion-v1",
     generatedAt:new Date().toISOString(),
     mode:"DRY_RUN",
+    certifiedStartRunId:CERTIFIED_START_RUN_ID,
     currentPersistentRows,
+    globalSitemapPersistentRows,
     currentSitemapUrlCount:sitemapUrls.size,
     eligibleSeedOnlyRows:eligibleSeedOnly.length,
     expansionPlan:plan,
