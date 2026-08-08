@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : P0-GOV-1 🔴 gouvernance agents en certification ; UX P1B.2 ✅ PR #376 ; prochain lot UX après audit métriques ; DATA-4.4A ✅ PR #379 ; DATA-4.4B 🔴 Promo Immo revalidation + canary 50**
+**Statut : P0-GOV-1 🔴 revue indépendante après corrections ; UX P1B.2 ✅ PR #376 ; prochain lot UX après audit métriques ; DATA-4.4A ✅ PR #379 ; DATA-4.4B 🔴 Promo Immo revalidation + canary 50**
 
 `AGENTS.md` est la boussole de gouvernance obligatoire. `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -24,20 +24,22 @@ Processus de certification de **ce LOT lui-même** :
 | Étape | État / preuve |
 |---|---|
 | Builder | ✅ implémentation isolée sur `agent/p0-gov-1-agent-governance` |
-| Reviewer pass #1 | ⏳ après gel du head Builder |
-| Corrections | ⏳ si `CHANGES_REQUIRED` |
-| Reviewer final | ⏳ |
-| PR | ⏳ |
-| Exact-head CI | ⏳ |
-| Specialized governance gate | ⏳ |
+| Reviewer pass #1 | `CHANGES_REQUIRED` — gate initial trop statique ; PR evidence/routage non exécutables |
+| Corrections | ✅ ajout `validate-pr-governance.mjs`, vérification Reviewer PASS + expected-head exact + ROADMAP + critères |
+| Reviewer final | ⏳ revue fraîche du nouveau head requise |
+| PR | ✅ #383 |
+| Exact-head CI | ⏳ nouveau head uniquement |
+| Specialized governance gate | ⏳ `Agent Governance Gate` |
 | Release Certifier pre-merge | ⏳ |
 | Merge | ⏳ |
 | Post-merge CI/gates | ⏳ |
 | Release Certifier final | ⏳ |
 
+Finding infrastructure observé pendant la revue : `main` n'a actuellement pas de branch protection GitHub. Les outils connectés de cette session ne permettent pas d'écrire cette protection. La constitution fail-close donc tout merge hors protocole : il ne peut obtenir aucune certification finale. Le Reviewer/Certifier doit décider si un ruleset/branch-protection renforcé devient un LOT infra séparé ; cette absence ne peut jamais être présentée comme une protection déjà active.
+
 Les SHA exacts de head/merge ne sont jamais inventés dans un commit auto-référentiel : ils sont consignés dans la PR, les commentaires Reviewer/Certifier, les runs GitHub et le rapport final, puis réconciliés dans une mise à jour canonique ultérieure si nécessaire.
 
-**P0-GOV-1 n'est pas terminé tant que le verdict final post-merge n'est pas `CERTIFIED`.**
+**P0-GOV-1 n'est pas terminé tant que le verdict final post-merge n'est pas `CERTIFIED` ou `CERTIFIED_WITH_NON_BLOCKING_FINDINGS`.**
 
 # 1. Cap produit
 
