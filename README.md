@@ -53,10 +53,11 @@ Principes non négociables :
 - P1A.2 ✅ PR #334 — `district` structuré dans Search ;
 - P1A.3 ✅ PR #349 — Map state/navigation pilotés par URL, **9,3/10** ;
 - P1A.4 ✅ PR #350 — Map Design System, cockpit flottant map-first ;
-- P1A.5 ✅ PR #365 — Territorial Explorer **Maroc → ville → quartier**, **9,3/10** ;
-- P1A.6 ✅ PR #369 — Responsive hardening, **12 captures / 0 finding**, **9,2/10** ;
-- P1B.1 ✅ PR #371 — AkarFinder Map Visual Layer, **3 captures / 0 finding**, **9,1/10** ;
-- prochain UX : **P1B.2 — couches d’intelligence territoriale sourcées**.
+- P1A.5 ✅ PR #365 — Territorial Explorer **Maroc → ville → quartier**, navigation URL canonique, responsive **390 / 430×932 / 768 / 1280**, **9,3/10** ;
+- P1A.6 ✅ PR #369 — Responsive hardening, audit natif **3 états × 4 viewports = 12 captures / 0 finding**, chevauchement cockpit↔explorer corrigé, **21/21 tests**, TypeScript/build/gates verts, **9,2/10** ;
+- P1B.1 ✅ PR #371 — **AkarFinder Map Visual Layer** : basemap générique fortement atténuée, 16 arrondissements Casablanca issus du dataset OSM shadow rendus en preview-canary avec palette territoriale différenciée, contours/labels AkarFinder, couleurs explicitement non sémantiques, audit natif **430 / 768 / 1280 = 3 captures / 0 finding**, **21/21 tests**, TypeScript/build/tous gates verts, contrôle humain **9,1/10** ;
+- P1B.2 ✅ PR #376 — **Sourced Territorial Intelligence** : état URL `layer=price`, benchmarks exacts quartier pour appartement/achat seulement, médiane + fourchette + échantillon + confiance + période visibles, aucun fallback ville présenté comme prix quartier, aucune interpolation/heatmap vers les polygones, audit final **430 / 768 / 1280 = 3 captures / 0 finding**, tous les workflows du head verts, contrôle humain **9,2/10** ;
+- prochain UX : auditer les métriques territoriales réellement disponibles avant de définir le prochain lot canonique ; aucune couche offre/fraîcheur/confiance ne sera ajoutée sans granularité et provenance certifiables.
 
 ## État DATA acquis
 
@@ -74,22 +75,22 @@ Principes non négociables :
 - DATA-4.0 ✅ PR #341 : Avito + Mubawab = **35 134 normalized**, **3 588 technical display**, **0 policy-activable** ;
 - DATA-4.1A ✅ PR #343 : Avito `unavailable` = 95,06 % bruit/non-immobilier ; seulement **73** core-récupérables ;
 - DATA-4.2 ✅ PR #344 : `daragadir.com` gagne la lane `ADMISSIBLE_GROWTH`, `agenz.ma` la lane `PARTNERSHIP_UPSIDE` ;
-- DATA-4.3A → H ✅ jusqu’à PR #377 : Dar Agadir certifié au cap **500**, plan `50+100+100+100+100+50`, TTL **14 jours**, Search **500/500**, technical display **500/500**, drift **0 %**, Registry inchangé ;
-- DATA-4.3I ✅ PR #367 : ownership freshness multi-canal protégé ;
+- DATA-4.3A → H ✅ jusqu’à PR #377 : Dar Agadir a atteint le cap contrôlé de **500 lignes persistantes certifiées** selon `50+100+100+100+100+50`, TTL **14 jours**, Search **500/500**, technical display **500/500**, drift **0 %**, Registry inchangé ;
+- DATA-4.3I ✅ PR #367 : ownership fraîcheur multi-canal protégé ;
 - DATA-4.3J ✅ PR #368 : ordre du trigger display corrigé.
 
 ### DATA-4.4 — Second Reservoir Expansion 🔴
 
 **DATA-4.4A — qualification read-only du second réservoir.**
 
-Snapshot actuel des candidats sitemap/canonical-link :
+Snapshot production des candidats sitemap/canonical-link :
 
-- `promoimmomarrakech.com` : **3 005** lignes, **3 000** normalized OK, **2 923** technical display, **2 996 seed_only** ;
+- `promoimmomarrakech.com` : **3 005** lignes, **3 000 normalized OK**, **2 923 technical display**, **2 996 seed_only**, city **3 005/3 005**, intent **2 905/3 005** ;
 - `limmobiliersansfrontieres.com` : 1 414 lignes ;
 - `atlasimmobilier.com` : 793 lignes ;
 - `aykana.ma` : 647 lignes.
 
-Décision déterministe actuelle : **`promoimmomarrakech.com` = `PREFERRED_PENDING_REVALIDATION`**.
+Décision déterministe : **`promoimmomarrakech.com` = `PREFERRED_PENDING_REVALIDATION`**.
 
 Cette qualification **n’autorise aucun write**. Le prochain sous-lot est **DATA-4.4B — Source Revalidation + Canary 50** : Registry + robots/sitemap + qualité + dedup + Search/display + rollback, puis seulement un premier batch persistant **≤50** si tous les gates sont verts.
 
