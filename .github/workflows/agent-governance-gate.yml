@@ -1,0 +1,25 @@
+name: Agent Governance Gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  governance:
+    name: Validate permanent agent governance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+      - name: Use repository Node version
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Validate governance contracts
+        run: node scripts/governance/validate-agent-governance.mjs
