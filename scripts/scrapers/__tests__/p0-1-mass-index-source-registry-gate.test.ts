@@ -1,5 +1,5 @@
 // P0.1 — Static contract proving the operational Source Registry is wired into
-// the scheduled Common Crawl path and the database write boundary.
+// the Common Crawl request path, importer and database write boundary.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -9,25 +9,46 @@ import { join } from "node:path";
 const root = process.cwd();
 const workflow = readFileSync(join(root, ".github/workflows/commoncrawl-mass-seed-harvest.yml"), "utf8");
 const migration = readFileSync(join(root, "supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql"), "utf8");
-const projector = readFileSync(join(root, "scripts/openserp/p0-1-project-commoncrawl-registry.ts"), "utf8");
+const harvester = readFileSync(join(root, "scripts/openserp/commoncrawl-registry-mass-harvest.ts"), "utf8");
+const importer = readFileSync(join(root, "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"), "utf8");
+const audit = readFileSync(join(root, "scripts/openserp/p0-1-audit-commoncrawl-registry.ts"), "utf8");
 
-test("scheduled Common Crawl workflow runs P0.1 policy projection before the first harvest", () => {
-  const gateIndex = workflow.indexOf("p0-1-project-commoncrawl-registry.ts");
-  const harvestIndex = workflow.indexOf("commoncrawl-registry-mass-harvest.ts");
-  assert.ok(gateIndex >= 0, "P0.1 projection step must be present");
-  assert.ok(harvestIndex >= 0, "Common Crawl harvester must still be present");
-  assert.ok(gateIndex < harvestIndex, "policy projection must execute before any Common Crawl harvest");
+test("scheduled Common Crawl workflow provides canonical Registry credentials to both harvest phases", () => {
+  assert.match(workflow, /Harvest policy-authorized Common Crawl canary domains first/);
+  assert.match(workflow, /Harvest remaining policy-authorized Common Crawl domains/);
   assert.match(workflow, /SUPABASE_SERVICE_ROLE_KEY/);
   assert.match(workflow, /SUPABASE_URL/);
+  assert.doesNotMatch(workflow, /p0-1-project-commoncrawl-registry/);
 });
 
-test("runtime projector reads canonical source_policy_registry and can only downgrade structural entries", () => {
-  assert.match(projector, /loadMassIndexSourcePolicies/);
-  assert.match(projector, /MASS_INDEX_COMMONCRAWL_CHANNEL/);
-  assert.match(projector, /status:\s*"unclassified"/);
-  assert.doesNotMatch(projector, /status:\s*"approved_discovery"/);
-  assert.doesNotMatch(projector, /\.from\(["']source_policy_registry["']\)\s*\.update/);
-  assert.doesNotMatch(projector, /\.from\(["']source_policy_registry["']\)\s*\.upsert/);
+test("harvester enforces live Source Registry policy before any CDX loop", () => {
+  const policyIndex = harvester.indexOf("loadMassIndexSourcePolicies(structuralDomains)");
+  const domainLoopIndex = harvester.indexOf("for (const domain of domains)");
+  assert.ok(policyIndex >= 0, "harvester must read canonical policy");
+  assert.ok(domainLoopIndex > policyIndex, "policy read/evaluation must happen before domain CDX requests");
+  assert.match(harvester, /MASS_INDEX_COMMONCRAWL_CHANNEL/);
+  assert.match(harvester, /evaluateMassIndexDomains/);
+  assert.match(harvester, /zero policy-authorized domains/);
+});
+
+test("importer re-reads live Source Registry so a stale artifact cannot authorize itself", () => {
+  const policyIndex = importer.indexOf("loadMassIndexSourcePolicies(sourceDomains)");
+  const insertIndex = importer.indexOf("await insertChunk");
+  assert.ok(policyIndex >= 0, "importer must read canonical policy");
+  assert.ok(insertIndex > policyIndex, "policy evaluation must precede any insert");
+  assert.match(importer, /policyAuthorizedSeeds/);
+  assert.match(importer, /policy_rejected_seed_rows/);
+  assert.match(importer, /MASS_INDEX_COMMONCRAWL_CHANNEL/);
+});
+
+test("read-only certification audit never calls Common Crawl and never mutates the DB", () => {
+  assert.match(audit, /loadMassIndexSourcePolicies/);
+  assert.match(audit, /db_mutation:\s*false/);
+  assert.match(audit, /commoncrawl_request:\s*false/);
+  assert.doesNotMatch(audit, /fetch\(/);
+  assert.doesNotMatch(audit, /\.update\(/);
+  assert.doesNotMatch(audit, /\.upsert\(/);
+  assert.doesNotMatch(audit, /\.insert\(/);
 });
 
 test("database trigger blocks future Common Crawl seed inserts unless exact commoncrawl channel is policy-authorized", () => {
