@@ -17,12 +17,14 @@ jobs:
     steps:
       - name: Checkout exact commit
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Use repository Node version
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
       - name: Validate governance contracts
         run: node scripts/governance/validate-agent-governance.mjs
-      - name: Validate PR role separation and evidence
+      - name: Validate PR role separation, skills and diff routing
         if: github.event_name == 'pull_request'
         run: node scripts/governance/validate-pr-governance.mjs
