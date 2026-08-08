@@ -47,7 +47,7 @@ Principes non négociables :
 - Observation/Freshness/quality/dedup pipeline ;
 - CI GitHub Actions avec gates DATA, UX, accessibilité et build.
 
-## État UX
+## État UX / Carte
 
 - CARTE-QUARTIER-P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
 - P1A.2 ✅ PR #334 — `district` structuré dans Search ;
@@ -57,7 +57,9 @@ Principes non négociables :
 - P1A.6 ✅ PR #369 — Responsive hardening, **12 captures / 0 finding**, **9,2/10** ;
 - P1B.1 ✅ PR #371 — AkarFinder Map Visual Layer, **3 captures / 0 finding**, **9,1/10** ;
 - P1B.2 ✅ PR #376 — Sourced Territorial Intelligence `layer=price`, benchmarks quartier exacts, aucune interpolation/fallback ville, **3 captures / 0 finding**, **9,2/10** ;
-- prochain UX : audit des métriques territoriales réellement disponibles avant définition d’un nouveau lot.
+- P1B.3 🔴 PR #382 — **Territorial Metric Join Contract** : pont fail-closed `LISTING public/displayable → résolution géographique explicite → quartier canonique validé`, couverture/collisions sur un dénominateur unique, aucune inférence et `metric_layers_activated=false`. Gate PostgreSQL spécialisé vert sur le head revu ; merge, post-merge et rapport production read-only encore requis avant certification.
+
+Le futur mode **Offre** quartier n’est autorisé que si le rapport production P1B.3 montre une couverture suffisante et aucune collision latest. Sinon le prochain lot corrige d’abord la couverture géographique.
 
 ## État DATA acquis
 
@@ -78,27 +80,18 @@ Principes non négociables :
 - DATA-4.3A → H ✅ jusqu’à PR #377 : Dar Agadir certifié au cap **500**, TTL 14 jours, Search **500/500**, technical display **500/500**, drift **0 %**, Registry inchangé ;
 - DATA-4.3I ✅ PR #367 : ownership fraîcheur multi-canal protégé ;
 - DATA-4.3J ✅ PR #368 : ordre du trigger display corrigé ;
-- DATA-4.4A ✅ PR #379, merge `43d8086c` : qualification read-only du second réservoir ; `promoimmomarrakech.com` sélectionné `PREFERRED_PENDING_REVALIDATION` parmi 4 candidats, avec **0 write**.
-
-### DATA-4.4B — Promo Immo Revalidation + Canary 50 🔴
-
-Lot actif en **DRY_RUN**.
-
-Le canary proposé est volontairement conservateur : présence dans le sitemap public actuel, `seed_only`, normalized, ville **Marrakech**, type/intention présents, quality tier **A/B**, déjà présent dans Public Search et technical display, aucune collision cross-source exacte détectée.
-
-Le gate vérifie aussi le Registry actuel, `robots.txt`, same-origin, population sitemap, qualité/bruit, Property Graph lorsque le lien existe, et produit des manifests apply/rollback exacts **50/50**. Aucun fuzzy-match n’est inventé et aucune ligne tier C ou non-Marrakech n’entre dans le canary.
-
-CI n’autorise **aucun write**. Après merge seulement, l’éventuel write canary devra être transactionnel 50/50 avec preflight exact, Search/display avant→après, drift ≤1 % et rollback immédiat sur anomalie.
+- DATA-4.4A ✅ PR #379, merge `43d8086c` : qualification read-only du second réservoir ;
+- DATA-4.4B ✅ PR #380, merge `13b6c3c` : Promo Immo revalidé sur signaux publics actuels ; **3 130 URLs sitemap**, **2 935** dans le réservoir, **2 456** lignes conservatrices éligibles ; canary **50/50** préparé pour Search, technical display, quality A/B et rollback ; **0 write** dans le LOT.
 
 ## Décision DATA courante
 
-**DATA-4.3H reste fermé à 500. DATA-4.4A est fermé. DATA-4.4B doit certifier le canary Promo Immo 50 avant toute expansion supérieure.** Aucun passage direct à 100/500 n’est autorisé.
+**DATA-4.4B est fermé. Prochain lot : DATA-4.4C — Persistent Canary 50**, écriture transactionnelle réelle des 50 lignes, puis re-certification production avec drift ≤1 % et rollback immédiat sur anomalie.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 
 ## Règles d’exécution
 
-Un lot n’est terminé que si : scope respecté, tests/build/gates verts, preuves disponibles, Registry respecté, aucun bypass, PR mergée, production vérifiée si write, rollback disponible si mutation, et les 3 MD canoniques alignés.
+Un lot n’est terminé que si : scope respecté, revue indépendante, tests/build/gates verts, preuves disponibles, Registry respecté, aucun bypass, PR mergée, post-merge vérifié, production vérifiée si applicable, rollback disponible si mutation, et les 3 MD canoniques alignés.
 
 ## Démarrage local
 
