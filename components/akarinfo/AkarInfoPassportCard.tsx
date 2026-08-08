@@ -17,6 +17,12 @@ const LEVEL_STYLES: Record<AkarInfoPassport["information_level_label"], string> 
     "border-emerald-400/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200",
 };
 
+const PUBLIC_LEVEL_LABELS: Record<AkarInfoPassport["information_level_label"], string> = {
+  "Aperçu limité": "Informations limitées",
+  "Fiche structurée": "Informations disponibles",
+  "Fiche enrichie": "Informations détaillées",
+};
+
 export function AkarInfoPassportCard({
   passport,
   variant = "compact",
@@ -37,12 +43,12 @@ export function AkarInfoPassportCard({
     >
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-bronze-500 dark:text-bronze-400">
-          Passeport AkarInfo
+          Informations AkarFinder
         </span>
         <span
           className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${LEVEL_STYLES[passport.information_level_label]}`}
         >
-          {passport.information_level_label}
+          {PUBLIC_LEVEL_LABELS[passport.information_level_label]}
         </span>
       </div>
 
@@ -61,14 +67,14 @@ export function AkarInfoPassportCard({
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-bronze-700 dark:text-bronze-300">
-                Lecture AkarFinder
+                Points clés
               </p>
               <p className="mt-1 text-[12px] font-bold text-foreground/85 dark:text-white/80">
                 {intelligence.score_label}
               </p>
             </div>
             <span className="rounded-full border border-bronze-500/25 bg-card/70 px-2.5 py-1 text-[11px] font-extrabold text-bronze-700 dark:bg-white/[0.04] dark:text-bronze-200">
-              {intelligence.score != null ? `${intelligence.score}/100` : "Analyse partielle"}
+              {intelligence.score != null ? `${intelligence.score}/100` : "À compléter"}
             </span>
           </div>
 
@@ -164,7 +170,7 @@ export function AkarInfoPassportCard({
             Comparer
           </p>
           <p className="mt-1 text-[12px] leading-5 text-foreground/78 dark:text-white/68">
-            Comparer avec les résultats similaires possibles avant de contacter.
+            Comparez les résultats proches avant de contacter.
           </p>
           {passport.similar_results.similar_reasons_public.length > 0 ? (
             <div className="mt-2 flex flex-wrap gap-2">
@@ -207,7 +213,7 @@ export function AkarInfoPassportCard({
 
       {!compact ? (
         <p className="mt-3 text-[11px] leading-5 text-muted-foreground dark:text-white/50">
-          Préparation future : {passport.future_signals.join(", ")}.
+          À venir : {passport.future_signals.join(", ")}.
         </p>
       ) : null}
     </div>

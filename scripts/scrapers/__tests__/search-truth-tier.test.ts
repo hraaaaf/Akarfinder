@@ -47,14 +47,14 @@ describe("Search truth tiers", () => {
     });
     const truth = getSearchTruthPresentation(listing);
     assert.equal(truth.tier, "analyzed");
-    assert.equal(truth.label, "Analysé par AkarFinder");
-    assert.match(truth.explanation, /ne signifie pas.*vérifié.*certifié.*garanti/i);
+    assert.equal(truth.label, "Informations détaillées");
+    assert.match(truth.explanation, /principales informations utiles/i);
   });
 
   it("classifies structured listings without sufficient public intelligence as partial", () => {
     const truth = getSearchTruthPresentation(structuredBase("partial"));
     assert.equal(truth.tier, "partial");
-    assert.equal(truth.label, "Analyse partielle");
+    assert.equal(truth.label, "À compléter");
   });
 
   it("classifies external/index-only results as observed, never as low reliability", () => {
@@ -69,8 +69,8 @@ describe("Search truth tiers", () => {
     };
     const truth = getSearchTruthPresentation(listing);
     assert.equal(truth.tier, "observed");
-    assert.equal(truth.label, "Offre observée");
-    assert.equal(truth.informationLabel, "Aperçu limité");
+    assert.equal(truth.label, "Source externe");
+    assert.equal(truth.informationLabel, "Informations limitées");
     assert.doesNotMatch(`${truth.label} ${truth.explanation}`, /peu fiable|faible fiabilité/i);
   });
 
@@ -346,12 +346,14 @@ describe("Search Truth UX source contracts", () => {
     assert.ok(promoter >= 0 && agency > promoter && direct > agency && indexed > direct);
   });
 
-  it("keeps commercial priority internal while preserving the analyzed truth disclaimer", () => {
+  it("keeps commercial priority internal while public wording stays plain", () => {
     const shell = source("components/search/LightZillowSearchShell.tsx");
     const priority = source("lib/search/search-commercial-priority.ts");
     assert.doesNotMatch(shell, /Ordre strict : promoteurs premium, agences partenaires/i);
+    assert.doesNotMatch(shell, /Annonces publiques indexées|Analysé par AkarFinder|Analyse partielle|Offres observées sur le web/i);
     assert.match(priority, /premium promoter inventory[\s\S]*authorized agency\/partner inventory[\s\S]*first-party user submissions[\s\S]*public indexed \/ observed inventory/i);
-    assert.match(shell, /Analysé ne signifie pas vérifié, certifié ni garanti/i);
+    assert.match(shell, /Informations détaillées/);
+    assert.match(shell, /Informations à compléter/);
   });
 
   it("links Search directly to Companion instead of legacy buyer routes", () => {
@@ -368,11 +370,12 @@ describe("Search Truth UX source contracts", () => {
     assert.ok(!header.includes("Se connecter"));
   });
 
-  it("external cards are explicitly observed limited previews", () => {
+  it("external cards expose source and limits in plain language", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-    assert.ok(card.includes("Offre observée"));
-    assert.ok(card.includes("Aperçu limité"));
-    assert.match(card, /sans être nécessairement le même bien/i);
+    assert.ok(card.includes("Source externe"));
+    assert.ok(card.includes("Informations limitées"));
+    assert.doesNotMatch(card, /Offre observée|Aperçu limité/i);
+    assert.match(card, /Comparez les sources/i);
   });
 
   it("structured cards use one truth hierarchy and do not conflate low information with duplicates", () => {
@@ -383,11 +386,12 @@ describe("Search Truth UX source contracts", () => {
     assert.equal((card.match(/Doublon possible/g) ?? []).length, 1);
   });
 
-  it("Search map describes the displayed result set instead of implying total market density", () => {
+  it("Search map describes the displayed result set without architecture jargon", () => {
     const map = source("components/search/SearchMapPanel.tsx");
-    assert.ok(map.includes("Zones des résultats affichés"));
-    assert.match(map, /fiches indexées actuellement affichées/i);
+    assert.ok(map.includes("Zones des résultats"));
+    assert.match(map, /résultats affichés dans cette recherche/i);
     assert.match(map, /n'est pas une estimation du volume total du marché/i);
+    assert.doesNotMatch(map, /fiches indexées|éligibilité/i);
     assert.ok(map.includes("aria-pressed={isActive}"));
   });
 });

@@ -113,7 +113,7 @@ function EmptyState({ onReset, city }: { onReset: () => void; city?: string }) {
       <p className="mt-4 text-[1.1rem] font-extrabold text-foreground">Aucun résultat pour ces critères</p>
       <p className="mx-auto mt-2 max-w-xl text-[14px] leading-6 text-muted-foreground">
         {city && city !== "all"
-          ? `Aucun résultat exploitable trouvé à ${city} avec cette combinaison de filtres.`
+          ? `Aucun résultat trouvé à ${city} avec ces filtres.`
           : "Essayez d'élargir la ville, le budget, la surface ou le type de bien."}
       </p>
       <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
@@ -149,20 +149,17 @@ function CommercialListingSection({
   const config = {
     promoter_premium: {
       title: "Promoteurs premium",
-      description:
-        "Programmes et biens fournis par des promoteurs partenaires avec autorisation explicite de diffusion.",
+      description: "Biens proposés par des promoteurs partenaires.",
       badgeClass: "border-bronze-400/30 bg-bronze-500/10 text-bronze-700 dark:text-bronze-200",
     },
     agency_partner: {
       title: "Agences partenaires",
-      description:
-        "Annonces issues d'agences ou de partenaires autorisés. La pertinence et la qualité départagent les résultats dans cette catégorie.",
+      description: "Biens proposés par des agences partenaires.",
       badgeClass: "border-blue-400/25 bg-blue-500/10 text-blue-700 dark:text-blue-200",
     },
     direct_user: {
-      title: "Annonces déposées sur AkarFinder",
-      description:
-        "Biens publiés directement via les parcours AkarFinder, après application des règles d'éligibilité et de qualité.",
+      title: "Annonces sur AkarFinder",
+      description: "Biens publiés directement sur AkarFinder.",
       badgeClass: "border-emerald-400/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200",
     },
   }[tier];
@@ -207,7 +204,7 @@ function IndexedTruthGroup({
       <div>
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="text-[14px] font-extrabold text-foreground dark:text-white/85 sm:text-[15px]">
-            {analyzed ? "Analysé par AkarFinder" : "Analyse partielle"}
+            {analyzed ? "Informations détaillées" : "Informations à compléter"}
           </h3>
           <span className={`rounded-full border px-2.5 py-1 text-[10px] font-extrabold ${analyzed ? "border-emerald-400/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200" : "border-amber-400/25 bg-amber-500/10 text-amber-700 dark:text-amber-200"}`}>
             {listings.length} affiché{listings.length > 1 ? "s" : ""}
@@ -215,8 +212,8 @@ function IndexedTruthGroup({
         </div>
         <p className="mt-1 max-w-3xl text-[12px] leading-5 text-muted-foreground dark:text-white/50">
           {analyzed
-            ? "Analyse documentaire disponible. Analysé ne signifie pas vérifié, certifié ni garanti."
-            : "Informations structurées mais encore incomplètes, affichées sans inventer les éléments manquants."}
+            ? "Les principales informations utiles sont disponibles."
+            : "Certaines informations utiles restent à compléter."}
         </p>
       </div>
       <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
@@ -251,11 +248,11 @@ function PublicIndexedResultsSection({
   if (displayed === 0 && !isGatewayLoading) return null;
 
   return (
-    <section className="space-y-6" aria-label="Annonces publiques indexées">
+    <section className="space-y-6" aria-label="Autres résultats">
       <div className="border-t border-border/15 pt-6 dark:border-white/10">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-[16px] font-extrabold text-foreground dark:text-white/90 sm:text-[18px]">
-            Annonces publiques indexées
+            Autres résultats
           </h2>
           {displayed > 0 ? (
             <span className="rounded-full border border-slate-400/25 bg-slate-500/10 px-2.5 py-1 text-[10px] font-extrabold text-slate-700 dark:text-white/65">
@@ -264,7 +261,7 @@ function PublicIndexedResultsSection({
           ) : null}
         </div>
         <p className="mt-1 max-w-3xl text-[12px] leading-5 text-muted-foreground dark:text-white/50 sm:text-[13px]">
-          Quatrième catégorie : résultats publics indexés ou observés, classés entre eux par niveau d'analyse, pertinence, prix disponible et qualité des informations. La source originale reste la référence.
+          Comparez les informations disponibles et consultez la source pour confirmer les détails.
         </p>
       </div>
 
@@ -276,7 +273,7 @@ function PublicIndexedResultsSection({
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-[14px] font-extrabold text-foreground dark:text-white/85 sm:text-[15px]">
-                Offres observées sur le web
+                Autres annonces
               </h3>
               {observedListings.length + gatewayResults.length > 0 ? (
                 <span className="rounded-full border border-slate-400/25 bg-slate-500/10 px-2.5 py-1 text-[10px] font-extrabold text-slate-700 dark:text-white/65">
@@ -285,7 +282,7 @@ function PublicIndexedResultsSection({
               ) : null}
             </div>
             <p className="mt-1 max-w-3xl text-[12px] leading-5 text-muted-foreground dark:text-white/50">
-              Aperçus limités : vérifiez le prix, la disponibilité et les détails sur la source originale.
+              Vérifiez le prix, la disponibilité et les détails sur le site d’origine.
             </p>
           </div>
 
@@ -645,7 +642,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                     className="inline-flex items-center gap-2 rounded-full border border-bronze-500/35 bg-bronze-500/10 px-5 py-2.5 text-[13px] font-extrabold text-bronze-300 transition hover:bg-bronze-500/20 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isLoadingMore ? <Loader2 size={15} className="animate-spin" aria-hidden="true" /> : null}
-                    Afficher plus de résultats indexés
+                    Afficher plus de résultats
                   </button>
                 </div>
               ) : null}

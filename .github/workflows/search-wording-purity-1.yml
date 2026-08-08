@@ -1,0 +1,79 @@
+name: SEARCH-WORDING-PURITY-1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "components/search/LightZillowSearchShell.tsx"
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "components/search/ExternalIndexedResultsSection.tsx"
+      - "components/search/SearchMapPanel.tsx"
+      - "components/search/PriceExplorerPanel.tsx"
+      - "components/search/NeighborhoodIntelligencePanel.tsx"
+      - "components/search/CertifiedNeighborhoodComparisonPanel.tsx"
+      - "components/search/CertifiedSimilarNeighborhoodsPanel.tsx"
+      - "components/akarinfo/AkarInfoPassportCard.tsx"
+      - "components/landing/DataProofBlock.tsx"
+      - "components/landing/HowItWorks.tsx"
+      - "lib/search/search-truth-tier.ts"
+      - "scripts/scrapers/__tests__/search-truth-tier.test.ts"
+      - "scripts/scrapers/__tests__/search-wording-purity-1.test.ts"
+      - "scripts/audits/search-wording-purity-1-visual.mjs"
+      - ".github/workflows/search-wording-purity-1.yml"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+
+permissions:
+  contents: read
+
+jobs:
+  contract-and-types:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: node --test --experimental-strip-types scripts/scrapers/__tests__/search-wording-purity-1.test.ts scripts/scrapers/__tests__/search-truth-tier.test.ts
+      - run: npm ci
+      - run: npx tsc --noEmit
+
+  visual-certification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start > /tmp/akarfinder-search-wording.log 2>&1 &
+          echo $! > /tmp/akarfinder-search-wording.pid
+          for i in {1..60}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/akarfinder-search-wording.log
+          exit 1
+      - name: Capture and assert Search/Home wording UX
+        run: node scripts/audits/search-wording-purity-1-visual.mjs
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: search-wording-purity-1-visual-proof
+          path: |
+            data/audits/search-wording-purity-1
+            /tmp/akarfinder-search-wording.log
+          retention-days: 14
+          if-no-files-found: warn

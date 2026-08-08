@@ -85,11 +85,12 @@ test("city scope is mandatory and empty search remains explicit", () => {
   assert.equal(noResults.status, "no_visible_properties");
 });
 
-test("search explorer mounts the neighborhood intelligence passport", () => {
+test("search explorer mounts the neighborhood insight panel with plain wording", () => {
   const dock = readFileSync(resolve(process.cwd(), "components/search/SearchPriceExplorerDock.tsx"), "utf8");
   const panel = readFileSync(resolve(process.cwd(), "components/search/NeighborhoodIntelligencePanel.tsx"), "utf8");
   assert.match(dock, /buildNeighborhoodIntelligenceModel/);
   assert.match(dock, /<NeighborhoodIntelligencePanel/);
-  assert.match(panel, /Passeport local factuel/);
-  assert.match(panel, /Intelligence non encore certifiable/);
+  assert.match(panel, /Le quartier en chiffres/);
+  assert.match(panel, /Ce que montrent les résultats/);
+  assert.match(panel, /Données non disponibles/);
 });

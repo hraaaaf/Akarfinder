@@ -39,11 +39,11 @@ export function ExternalIndexedResultsSection({
       {showHeader ? (
         <div className="border-t border-border/15 pt-6 dark:border-white/10 sm:pt-8">
           <h2 className="mb-1 text-[16px] font-bold text-foreground dark:text-white/90 sm:text-[18px]">
-            Offres observées sur le web
+            Autres annonces
           </h2>
           <p className="text-[12px] text-muted-foreground dark:text-white/50 sm:text-[13px]">
             {results.length > 0 ? `${results.length} résultat${results.length > 1 ? "s" : ""} · ` : ""}
-            Aperçus limités avec source visible — vérifiez toujours le détail sur le site original.
+            Vérifiez le prix, la disponibilité et les détails sur le site d’origine.
           </p>
         </div>
       ) : null}

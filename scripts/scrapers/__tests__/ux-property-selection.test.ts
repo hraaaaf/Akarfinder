@@ -66,7 +66,9 @@ test("search page provides one shared selection context to cards and map", () =>
 
 test("map bridge never claims exact coordinates without certified data", () => {
   const map = readFileSync(resolve(process.cwd(), "components/search/SearchMapPanel.tsx"), "utf8");
-  assert.match(map, /n’affiche pas de position exacte sans coordonnées certifiées/);
+  assert.match(map, /hasCertifiedExactCoordinates\(activeListing\)/);
+  assert.match(map, /activeCoord && !activeHasCertifiedExactCoordinates/);
+  assert.match(map, /buildCertifiedPropertyMapPoints\(visibleListings\)/);
   assert.ok(!map.includes("Math.random"));
   assert.ok(!map.includes("latitude ??"));
   assert.ok(!map.includes("longitude ??"));
