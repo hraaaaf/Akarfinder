@@ -1,0 +1,23 @@
+name: SEARCH-UX-FAST-1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "app/search/page.tsx"
+      - "components/search/LightZillowSearchShell.tsx"
+      - "components/search/QuickFilters.tsx"
+      - "scripts/scrapers/__tests__/search-ux-fast-1.test.ts"
+      - ".github/workflows/search-ux-fast-1.yml"
+
+jobs:
+  contract-and-types:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: node --test --experimental-strip-types scripts/scrapers/__tests__/search-ux-fast-1.test.ts
+      - run: npm ci
+      - run: npx tsc --noEmit
