@@ -9,11 +9,14 @@ import {
   type MassIndexSourcePolicy,
 } from "../../../lib/acquisition-scale-v1/mass-index-source-policy.js";
 
+const NOW = new Date("2026-08-08T14:00:00.000Z");
+
 function policy(overrides: Partial<MassIndexSourcePolicy> = {}): MassIndexSourcePolicy {
   return {
     source_domain: "example.ma",
     allowed_discovery_channels: ["public_index", "commoncrawl"],
     review_status: "current",
+    next_review_at: "2026-08-09T14:00:00.000Z",
     no_bypass_required: true,
     policy_hash: "sha256:fixture",
     acquisition_mode: "public_index_internal_only",
@@ -25,13 +28,13 @@ function policy(overrides: Partial<MassIndexSourcePolicy> = {}): MassIndexSource
 }
 
 test("allows Common Crawl only when the production policy explicitly allows that exact channel", () => {
-  const decision = evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy());
+  const decision = evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy(), NOW);
   assert.equal(decision.allowed, true);
   assert.equal(decision.reason, "allowed");
 });
 
 test("fails closed for an unregistered source", () => {
-  const decision = evaluateMassIndexSourcePolicy("unknown.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, null);
+  const decision = evaluateMassIndexSourcePolicy("unknown.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, null, NOW);
   assert.equal(decision.allowed, false);
   assert.equal(decision.reason, "source_unregistered");
 });
@@ -41,48 +44,71 @@ test("public_sitemap permission never implies Common Crawl permission", () => {
     "example.ma",
     MASS_INDEX_COMMONCRAWL_CHANNEL,
     policy({ allowed_discovery_channels: ["public_sitemap"], acquisition_mode: "public_sitemap_canonical_link" }),
+    NOW,
   );
   assert.equal(decision.allowed, false);
   assert.equal(decision.reason, "channel_not_allowed");
 });
 
 test("fails closed when no-bypass is not explicitly required", () => {
-  const decision = evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ no_bypass_required: false }));
+  const decision = evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ no_bypass_required: false }), NOW);
   assert.equal(decision.allowed, false);
   assert.equal(decision.reason, "invalid_no_bypass");
 });
 
 test("fails closed when the policy hash is missing", () => {
-  const decision = evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ policy_hash: null }));
+  const decision = evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ policy_hash: null }), NOW);
   assert.equal(decision.allowed, false);
   assert.equal(decision.reason, "missing_policy_hash");
 });
 
 test("overdue or due policy review cannot drive mass-index acquisition", () => {
   for (const reviewStatus of ["overdue", "due"]) {
-    const decision = evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ review_status: reviewStatus }));
+    const decision = evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ review_status: reviewStatus }), NOW);
     assert.equal(decision.allowed, false);
     assert.equal(decision.reason, "policy_review_not_current");
   }
 });
 
+test("stale review labels cannot bypass the real next_review_at expiry", () => {
+  for (const reviewStatus of ["current", "due_soon"]) {
+    const expired = evaluateMassIndexSourcePolicy(
+      "example.ma",
+      MASS_INDEX_COMMONCRAWL_CHANNEL,
+      policy({ review_status: reviewStatus, next_review_at: "2026-08-08T13:59:59.000Z" }),
+      NOW,
+    );
+    assert.equal(expired.allowed, false);
+    assert.equal(expired.reason, "policy_review_not_current");
+  }
+
+  const missing = evaluateMassIndexSourcePolicy(
+    "example.ma",
+    MASS_INDEX_COMMONCRAWL_CHANNEL,
+    policy({ next_review_at: null }),
+    NOW,
+  );
+  assert.equal(missing.allowed, false);
+  assert.equal(missing.reason, "policy_review_not_current");
+});
+
 test("blocked acquisition/machine/ingestion gates each fail closed", () => {
   assert.equal(
-    evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ acquisition_mode: "blocked" })).reason,
+    evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ acquisition_mode: "blocked" }), NOW).reason,
     "acquisition_blocked",
   );
   assert.equal(
-    evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ machine_gate: "blocked_review_overdue" })).reason,
+    evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ machine_gate: "blocked_review_overdue" }), NOW).reason,
     "machine_gate_blocked",
   );
   assert.equal(
-    evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ ingestion_gate: "blocked" })).reason,
+    evaluateMassIndexSourcePolicy("example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ ingestion_gate: "blocked" }), NOW).reason,
     "ingestion_gate_blocked",
   );
 });
 
 test("domain matching is exact after normalization; parent policy never authorizes a subdomain", () => {
-  const decision = evaluateMassIndexSourcePolicy("sub.example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ source_domain: "example.ma" }));
+  const decision = evaluateMassIndexSourcePolicy("sub.example.ma", MASS_INDEX_COMMONCRAWL_CHANNEL, policy({ source_domain: "example.ma" }), NOW);
   assert.equal(decision.allowed, false);
   assert.equal(decision.reason, "source_unregistered");
 });
@@ -95,6 +121,7 @@ test("batch evaluation returns only policy-authorized source/channel pairs", () 
       policy({ source_domain: "allowed.ma" }),
       policy({ source_domain: "sitemap-only.ma", allowed_discovery_channels: ["public_sitemap"], acquisition_mode: "public_sitemap_canonical_link" }),
     ],
+    NOW,
   );
 
   assert.deepEqual(result.allowedDomains, ["allowed.ma"]);
