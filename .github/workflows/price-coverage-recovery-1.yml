@@ -1,0 +1,27 @@
+name: PRICE-COVERAGE-RECOVERY-1 Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260808213000_price_coverage_recovery_governance_v1.sql'
+      - 'scripts/audits/price-coverage-recovery-1-contract.mjs'
+      - '.github/workflows/price-coverage-recovery-1.yml'
+      - 'README.md'
+      - 'docs/ROADMAP.md'
+      - 'docs/SESSION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  governance-contract:
+    name: Shadow governance contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+
+      - name: Verify PRICE-COVERAGE-RECOVERY-1 contract
+        run: node scripts/audits/price-coverage-recovery-1-contract.mjs
