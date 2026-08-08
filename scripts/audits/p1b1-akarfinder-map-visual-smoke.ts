@@ -30,6 +30,7 @@ async function main() {
   await mkdir(OUT, { recursive: true });
   const browser = await chromium.launch({ headless: true });
   const findings: string[] = [];
+  const diagnostics: Array<Record<string, unknown>> = [];
   const key = eligibleCanaryKey();
 
   for (const viewport of viewports) {
@@ -42,7 +43,28 @@ async function main() {
         sameSite: "Lax",
       },
     ]);
+
+    const api = await context.request.get(`${BASE_URL}/api/geo/casablanca-arrondissements`);
+    const apiText = await api.text();
+    diagnostics.push({
+      viewport: viewport.name,
+      apiStatus: api.status(),
+      apiCanary: api.headers()["x-akarfinder-geometry-canary"] ?? null,
+      apiBucket: api.headers()["x-akarfinder-geometry-bucket"] ?? null,
+      apiGeometryStatus: api.headers()["x-akarfinder-geometry-status"] ?? null,
+      apiBodyPrefix: apiText.slice(0, 180),
+    });
+    if (api.status() !== 200) {
+      findings.push(`${viewport.name}: canary API HTTP ${api.status()} (${api.headers()["x-akarfinder-geometry-canary"] ?? "no-reason"})`);
+    }
+
     const page = await context.newPage();
+    const consoleErrors: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "error" || message.type() === "warning") consoleErrors.push(`${message.type()}: ${message.text()}`);
+    });
+    page.on("pageerror", (error) => consoleErrors.push(`pageerror: ${error.message}`));
+
     const response = await page.goto(`${BASE_URL}/map?city=Casablanca`, { waitUntil: "networkidle" });
     if (!response || response.status() >= 400) findings.push(`${viewport.name}: page HTTP ${response?.status() ?? "none"}`);
 
@@ -59,6 +81,7 @@ async function main() {
       canvasCount: document.querySelectorAll(".maplibregl-canvas").length,
       active: document.querySelector('[data-akarfinder-territorial-layer="active"]') != null,
     }));
+    diagnostics.push({ viewport: viewport.name, metrics, consoleErrors });
     if (metrics.scrollWidth > metrics.clientWidth + 1) findings.push(`${viewport.name}: horizontal overflow ${metrics.scrollWidth} > ${metrics.clientWidth}`);
     if (metrics.canvasCount < 1) findings.push(`${viewport.name}: MapLibre canvas missing`);
     if (!metrics.active) findings.push(`${viewport.name}: territorial active marker missing`);
@@ -73,6 +96,7 @@ async function main() {
     canaryBucket: bucket(key),
     screenshots: viewports.length,
     findings,
+    diagnostics,
   };
   await writeFile(`${OUT}/report.json`, JSON.stringify(report, null, 2));
   await writeFile(`${OUT}/report.md`, `# P1B.1 AkarFinder Map Visual Audit\n\nScreenshots: ${viewports.length}\nFindings: ${findings.length}\nCanary bucket: ${report.canaryBucket}\n`);
