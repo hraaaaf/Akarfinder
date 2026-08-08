@@ -42,6 +42,13 @@ test("database trigger blocks future Common Crawl seed inserts unless exact comm
   assert.match(migration, /ingestion_gate.*like 'blocked%'/i);
 });
 
+test("Common Crawl source/provider identity is immutable after seed creation", () => {
+  assert.match(migration, /old\.seed_provider = 'commoncrawl_cdx' or new\.seed_provider = 'commoncrawl_cdx'/i);
+  assert.match(migration, /new\.seed_provider is distinct from old\.seed_provider/i);
+  assert.match(migration, /new\.source_domain is distinct from old\.source_domain/i);
+  assert.match(migration, /source\/provider identity is immutable/i);
+});
+
 test("Common Crawl insert guard cannot manufacture freshness and does not block later freshness-only reconciliation", () => {
   assert.match(migration, /tg_op = 'INSERT'/i);
   assert.match(migration, /freshness_status <> 'seed_only'/i);
