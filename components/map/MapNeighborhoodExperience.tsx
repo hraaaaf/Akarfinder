@@ -386,7 +386,7 @@ export function MapNeighborhoodExperience({
     let cancelled = false;
 
     const install = async () => {
-      if (cancelled || !mapRef.current || !map.isStyleLoaded()) return;
+      if (cancelled || !mapRef.current) return;
       applyAkarFinderBasemapTreatment(map, theme);
       removeAkarFinderTerritorialLayers(map);
       setTerritorialLayerActive(false);
@@ -398,9 +398,9 @@ export function MapNeighborhoodExperience({
           credentials: "same-origin",
           cache: "no-store",
         });
-        if (!response.ok || cancelled || !mapRef.current || !map.isStyleLoaded()) return;
+        if (!response.ok || cancelled || !mapRef.current) return;
         const geojson = await response.json() as GeoJSON.FeatureCollection;
-        if (cancelled || !mapRef.current || !map.isStyleLoaded()) return;
+        if (cancelled || !mapRef.current) return;
         addAkarFinderTerritorialLayers(map, geojson, theme);
         setTerritorialLayerActive(
           Boolean(map.getLayer(AKARFINDER_TERRITORIAL_FILL_LAYER_ID) && map.getSource(AKARFINDER_TERRITORIAL_SOURCE_ID)),
