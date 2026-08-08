@@ -60,10 +60,28 @@ async function main() {
 
     const page = await context.newPage();
     const consoleErrors: string[] = [];
+    const geometryResponses: Array<Record<string, unknown>> = [];
     page.on("console", (message) => {
       if (message.type() === "error" || message.type() === "warning") consoleErrors.push(`${message.type()}: ${message.text()}`);
     });
     page.on("pageerror", (error) => consoleErrors.push(`pageerror: ${error.message}`));
+    page.on("response", async (networkResponse) => {
+      if (!networkResponse.url().includes("/api/geo/casablanca-arrondissements")) return;
+      geometryResponses.push({
+        url: networkResponse.url(),
+        status: networkResponse.status(),
+        canary: networkResponse.headers()["x-akarfinder-geometry-canary"] ?? null,
+        bucket: networkResponse.headers()["x-akarfinder-geometry-bucket"] ?? null,
+        geometryStatus: networkResponse.headers()["x-akarfinder-geometry-status"] ?? null,
+      });
+    });
+    page.on("requestfailed", (request) => {
+      if (!request.url().includes("/api/geo/casablanca-arrondissements")) return;
+      geometryResponses.push({
+        url: request.url(),
+        failed: request.failure()?.errorText ?? "unknown",
+      });
+    });
 
     const response = await page.goto(`${BASE_URL}/map?city=Casablanca`, { waitUntil: "networkidle" });
     if (!response || response.status() >= 400) findings.push(`${viewport.name}: page HTTP ${response?.status() ?? "none"}`);
@@ -81,10 +99,11 @@ async function main() {
       canvasCount: document.querySelectorAll(".maplibregl-canvas").length,
       active: document.querySelector('[data-akarfinder-territorial-layer="active"]') != null,
     }));
-    diagnostics.push({ viewport: viewport.name, metrics, consoleErrors });
+    diagnostics.push({ viewport: viewport.name, metrics, consoleErrors, geometryResponses });
     if (metrics.scrollWidth > metrics.clientWidth + 1) findings.push(`${viewport.name}: horizontal overflow ${metrics.scrollWidth} > ${metrics.clientWidth}`);
     if (metrics.canvasCount < 1) findings.push(`${viewport.name}: MapLibre canvas missing`);
     if (!metrics.active) findings.push(`${viewport.name}: territorial active marker missing`);
+    if (geometryResponses.length === 0) findings.push(`${viewport.name}: component never requested territorial geometry`);
 
     await page.screenshot({ path: `${OUT}/casablanca-${viewport.name}.png`, fullPage: false });
     await context.close();
