@@ -1,12 +1,29 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-08**  
+**Gouvernance : P0-GOV-1 🔴 Builder terminé, revue indépendante obligatoire avant merge**  
 **Lane DATA : DATA-4.4B 🔴 Promo Immo Marrakech Source Revalidation + Canary 50**  
 **Lot DATA acquis : DATA-4.4A ✅ PR #379, merge `43d8086c`**  
 **Lot UX acquis : P1B.2 — Sourced Territorial Intelligence ✅ PR #376 — 9,2/10**  
 **Prochain UX : audit des métriques territoriales avant définition du prochain lot canonique**
 
-Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’unique roadmap canonique.
+Ce fichier est le handover opérationnel court. `AGENTS.md` est désormais la boussole obligatoire de gouvernance ; `docs/ROADMAP.md` reste l’unique roadmap canonique.
+
+# Gouvernance — P0-GOV-1 🔴
+
+Builder scope : constitution permanente sans modification produit/DATA :
+
+- `AGENTS.md` : constitution unique ;
+- `CLAUDE.md` : simple pointeur vers `AGENTS.md` ;
+- `.agents/README.md` : index de l'équipe ;
+- 8 `.skills/*/SKILL.md` : procédures Builder/Search/DATA/Geo/UX/Security/DB/Release ;
+- `.github/PULL_REQUEST_TEMPLATE.md` : preuves et routage ;
+- `.github/workflows/agent-governance-gate.yml` + `scripts/governance/validate-agent-governance.mjs` : gate permanent ;
+- README/ROADMAP/SESSION alignés.
+
+Règle désormais proposée pour tout futur LOT : **Inspect → acceptance → Builder → validation → Reviewer indépendant → corrections → PASS → exact-head CI/gates → final diff → ROADMAP → Release Certifier GO → merge expected-head → main verification → post-merge CI/gates → verdict final**.
+
+Aucun `100 % ✅ CERTIFIED` avant le dernier verdict. P0-GOV-1 lui-même doit encore passer Reviewer indépendant, exact-head CI, Release Certifier, merge et post-merge.
 
 # Main canonique
 
@@ -23,7 +40,7 @@ Invariants : no-bypass, capability ≠ permission, Source Registry avant activat
 
 # UX — état courant
 
-P1B.2 est acquis avec `layer=price`, benchmarks quartier exacts uniquement, aucune interpolation/fallback ville, audit final 430/768/1280 sans finding. Le prochain lot UX reste conditionné à un audit préalable des métriques territoriales réelles : offre, fraîcheur, confiance DATA et extension des prix exacts.
+P1B.2 est acquis avec `layer=price`, benchmarks quartier exacts uniquement, aucune interpolation/fallback ville, audit final 430/768/1280 sans finding. Le prochain lot UX reste conditionné à un audit préalable des métriques territoriales réelles : offre, fraîcheur, confiance DATA et extension des prix exacts. Sous P0-GOV-1, tout prochain LOT UX devra obtenir un score final strictement >9.0/10 sur preuves réelles.
 
 # DATA — DATA-4.3H ✅ CERTIFIÉ À 500
 

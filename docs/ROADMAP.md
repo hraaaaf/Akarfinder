@@ -1,9 +1,45 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : UX P1B.2 ✅ PR #376 ; prochain lot UX après audit métriques ; DATA-4.4A ✅ PR #379 ; DATA-4.4B 🔴 Promo Immo revalidation + canary 50**
+**Statut : P0-GOV-1 🔴 revue indépendante après corrections ; UX P1B.2 ✅ PR #376 ; prochain lot UX après audit métriques ; DATA-4.4A ✅ PR #379 ; DATA-4.4B 🔴 Promo Immo revalidation + canary 50**
 
-`README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
+`AGENTS.md` est la boussole de gouvernance obligatoire. `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
+
+# 0. P0-GOV-1 — Agent governance protocol 🔴
+
+Objectif : rendre permanente la séparation **Builder → Reviewer indépendant → Release Certifier → merge → post-merge certification** pour tous les futurs LOTS AkarFinder, sans modifier l'avancement produit/DATA.
+
+Scope du LOT :
+
+- `AGENTS.md` = constitution/boussole unique ;
+- `CLAUDE.md` = pointeur de découvrabilité uniquement ;
+- équipe permanente et routage sous `.agents/` ;
+- 8 procédures obligatoires sous `.skills/` ;
+- template PR avec preuves Builder/Reviewer/Certifier ;
+- `Agent Governance Gate` permanent, exécuté sur PR et push `main` ;
+- processus 18 étapes, invalidation des preuves après changement de head SHA, UX score strictement >9.0 et DATA before/after obligatoire.
+
+Processus de certification de **ce LOT lui-même** :
+
+| Étape | État / preuve |
+|---|---|
+| Builder | ✅ implémentation isolée sur `agent/p0-gov-1-agent-governance` |
+| Reviewer pass #1 | `CHANGES_REQUIRED` — gate initial trop statique ; PR evidence/routage non exécutables |
+| Corrections | ✅ ajout `validate-pr-governance.mjs`, vérification Reviewer PASS + expected-head exact + ROADMAP + critères |
+| Reviewer final | ⏳ revue fraîche du nouveau head requise |
+| PR | ✅ #383 |
+| Exact-head CI | ⏳ nouveau head uniquement |
+| Specialized governance gate | ⏳ `Agent Governance Gate` |
+| Release Certifier pre-merge | ⏳ |
+| Merge | ⏳ |
+| Post-merge CI/gates | ⏳ |
+| Release Certifier final | ⏳ |
+
+Finding infrastructure observé pendant la revue : `main` n'a actuellement pas de branch protection GitHub. Les outils connectés de cette session ne permettent pas d'écrire cette protection. La constitution fail-close donc tout merge hors protocole : il ne peut obtenir aucune certification finale. Le Reviewer/Certifier doit décider si un ruleset/branch-protection renforcé devient un LOT infra séparé ; cette absence ne peut jamais être présentée comme une protection déjà active.
+
+Les SHA exacts de head/merge ne sont jamais inventés dans un commit auto-référentiel : ils sont consignés dans la PR, les commentaires Reviewer/Certifier, les runs GitHub et le rapport final, puis réconciliés dans une mise à jour canonique ultérieure si nécessaire.
+
+**P0-GOV-1 n'est pas terminé tant que le verdict final post-merge n'est pas `CERTIFIED` ou `CERTIFIED_WITH_NON_BLOCKING_FINDINGS`.**
 
 # 1. Cap produit
 
@@ -30,7 +66,8 @@ Pipeline canonique :
 - migrations séparées du code applicatif ;
 - une responsabilité / une branche / une PR / un merge ;
 - tests + preuves avant merge ;
-- mutation DATA : rollback avant activation.
+- mutation DATA : rollback avant activation ;
+- Builder ≠ Reviewer ≠ Release Certifier ; le processus complet est défini dans `AGENTS.md`.
 
 # 3. Lane UX
 
@@ -48,7 +85,7 @@ Acquis :
 
 ## Prochain lot UX — audit préalable obligatoire
 
-Auditer les métriques réellement calculables à la même granularité que les entités affichées : offre disponible, fraîcheur, confiance DATA et extension des prix exacts. Pas de donnée = neutre ; aucune interpolation ; aucune agrégation ville présentée comme quartier ; 430×932 obligatoire ; score ≥9/10.
+Auditer les métriques réellement calculables à la même granularité que les entités affichées : offre disponible, fraîcheur, confiance DATA et extension des prix exacts. Pas de donnée = neutre ; aucune interpolation ; aucune agrégation ville présentée comme quartier ; 430×932 obligatoire ; score strictement >9.0/10 sous la nouvelle gouvernance.
 
 # 4. Fondation DATA acquise
 
@@ -119,9 +156,13 @@ DATA-4.4B dry-run → canary 50 transactionnel si certifié → re-certification
 
 # 9. Définition de terminé
 
-Scope respecté, tests/build/gates verts, preuves, Registry respecté, aucun bypass, PR mergée, prod vérifiée si write, rollback disponible, 3 MD alignés.
+La définition de terminé est désormais celle de `AGENTS.md` : étapes 1→18, Reviewer PASS, exact-head CI/gates, Certifier pre-merge GO, merge depuis le head attendu, `main` vérifié, post-merge CI/gates et verdict final. Aucun `100 % ✅` avant l'étape 18.
 
 # 10. Prochaine action exacte
+
+## Gouvernance
+
+Fermer **P0-GOV-1** uniquement après Reviewer indépendant, corrections éventuelles, exact-head CI, Release Certifier pre-merge, merge attendu et certification post-merge.
 
 ## DATA
 
