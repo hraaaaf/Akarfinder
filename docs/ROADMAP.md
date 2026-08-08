@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : UX P1B.3 🔴 certification finale ; DATA-4.4C ✅ canary 50 persistant certifié ; prochaine décision DATA à définir explicitement**
+**Statut : UX P1B.3 🔴 certification finale ; BENCHMARK-SERP-1 🟠 mission read-only lancée ; DATA-4.4C ✅ canary 50 persistant certifié ; prochaine décision DATA à définir explicitement**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -94,15 +94,62 @@ Décision suivante, uniquement après rapport production :
 
 Aucun seuil de couverture n’est inventé dans P1B.3 : la distribution réelle doit être observée et justifiée avant activation produit.
 
-# 4. Fondation DATA acquise
+# 4. Gouvernance Benchmark UX / Search
+
+Référence : `docs/BENCHMARK_UX_SEARCH_AGENT.md`.
+
+Décisions verrouillées :
+
+- Benchmark UX/Search Reviewer indépendant du Builder, du Reviewer technique et du Release Certifier ;
+- benchmark réel Maroc + international avant les lots UX/Search majeurs, puis comparaison après implémentation ;
+- **mobile = expérience de référence** ; desktop enrichit sans ajouter de bruit gratuit ;
+- score mobile minimal de certification UX majeure : **9/10** ;
+- `/search` vise `RECHERCHE → FILTRES UTILES → RÉSULTATS` ;
+- aucune terminologie d’architecture ou de pipeline visible inutilement côté utilisateur ;
+- flux continu d’annonces : la segmentation interne ne doit pas casser le scroll par de gros blocs explicatifs ;
+- card cible : `IMAGE → PRIX → TITRE → LOCALISATION → 3–4 CARACTÉRISTIQUES → PROVENANCE → ACTION` ;
+- l’ordre commercial reste interne et soumis à éligibilité + pertinence minimale ;
+- le Benchmark Reviewer peut rendre `CHANGES_REQUIRED` lorsqu’un défaut UX essentiel est démontré ;
+- une vraie nouvelle décision produit remonte au fondateur sous forme `Question A/B/C + recommandation`.
+
+Chaîne UX majeure :
+
+`Builder → Benchmark UX/Search Reviewer → Reviewer technique → Release Certifier → merge → post-merge`.
+
+## BENCHMARK-SERP-1 — AkarFinder Search Results Experience 🟠 READ-ONLY
+
+Objectif : établir le benchmark de référence avant les futurs lots de simplification Search.
+
+Scope :
+
+- comparer `/search` AkarFinder aux références marocaines et internationales les plus pertinentes ;
+- priorité mobile 360/390, puis desktop 1280/1440 ;
+- mesurer le nombre d’éléments et la distance avant la première annonce ;
+- mesurer le bruit textuel, les badges, les actions et la densité des cards ;
+- auditer la hiérarchie photo/prix/localisation/caractéristiques ;
+- auditer la continuité Liste ↔ Carte ;
+- scorer AkarFinder et les références sur la grille du Benchmark Agent ;
+- identifier `KEEP / SIMPLIFY / IMPROVE / REMOVE / AKARFINDER_ADVANTAGE` ;
+- poser des questions au fondateur uniquement si une décision réellement nouvelle est nécessaire.
+
+Contraintes :
+
+- mission strictement read-only ;
+- aucune modification UX dans ce lot ;
+- aucune copie de concurrent ;
+- recommandations compatibles avec doctrine AkarFinder, provenance, droits d’affichage et séparation commercial/relevance.
+
+Livrable : rapport benchmark + scoring + P0/P1/P2 + décisions éventuelles. Ce rapport sera l’entrée du premier LOT produit Search.
+
+# 5. Fondation DATA acquise
 
 Observation Ledger / Freshness / normalization / quality tiers ; Source Registry v2 / display eligibility ; Market Index / Property Graph foundation ; dedup ; Partner Feed ; OpenSERP / public sitemaps / Common Crawl ; 53 villes/pôles.
 
-# 5. DATA-1 ✅
+# 6. DATA-1 ✅
 
 37 009 URLs / 7 051 domaines ; 8 727 registered domains Common Crawl ; univers 15 238 domaines ; 230 primary-source candidates ; 625 portal candidates ; Registry initial sans activation non autorisée.
 
-# 6. DATA-4 — Reservoir Strategy
+# 7. DATA-4 — Reservoir Strategy
 
 - **4.0 ✅ #341** — Avito+Mubawab : 35 134 normalized, 3 588 technical display, 0 policy-activable.
 - **4.1A ✅ #343** — Avito unavailable : 95,06 % bruit ; 73 core-récupérables.
@@ -135,25 +182,31 @@ Preuves de fermeture :
 
 **4.4C n’autorise pas automatiquement un batch +100 ou +500.** Toute expansion du second réservoir doit être définie comme un nouveau lot borné avec ses propres gates, preuve et rollback.
 
-# 7. Lane business parallèle
+# 8. Lane business parallèle
 
 **Agenz = priorité partenariat/feed** : hidden/internal-only tant qu’aucune autorisation écrite n’autorise une évolution Registry/produit.
 
-# 8. Suite DATA
+# 9. Suite DATA
 
 DATA-4.4C ✅ → **définir explicitement le prochain lot d’expansion bornée du second réservoir** à partir du canary 50 certifié → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
 
 Aucun numéro de lot, taille +100/+500 ou promotion supplémentaire n’est canonique tant qu’il n’est pas explicitement défini et certifié.
 
-# 9. Définition de terminé
+# 10. Définition de terminé
 
 Scope respecté, Reviewer indépendant PASS, tests/build/gates exact-head verts, preuves, Registry respecté, aucun bypass, Release Certifier GO, PR mergée depuis le head attendu, `main` vérifié, post-merge CI/gates verts, production vérifiée si applicable, rollback disponible si mutation, 3 MD alignés.
 
-# 10. Prochaine action exacte
+Pour les lots UX majeurs, ajouter : Benchmark UX/Search Reviewer PASS et score mobile ≥9/10.
+
+# 11. Prochaine action exacte
 
 ## UX / Carte
 
 Finaliser **P1B.3** : revue du head incluant les 3 MD → exact-head CI → Certifier → merge → post-merge → appliquer/constater la migration en production → exécuter le rapport read-only → choisir mathématiquement entre couche Offre et Geo Coverage Recovery.
+
+## UX / Search — lane benchmark parallèle read-only
+
+Exécuter **BENCHMARK-SERP-1** sans modifier le produit. Le rapport benchmark devient l’entrée du prochain LOT produit Search.
 
 ## DATA
 
