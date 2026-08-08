@@ -23,3 +23,6 @@ jobs:
           node-version-file: .nvmrc
       - name: Validate governance contracts
         run: node scripts/governance/validate-agent-governance.mjs
+      - name: Validate PR role separation and evidence
+        if: github.event_name == 'pull_request'
+        run: node scripts/governance/validate-pr-governance.mjs
