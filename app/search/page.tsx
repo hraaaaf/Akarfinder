@@ -135,7 +135,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       <SiteHeader variant="dark" />
       <SearchMapNavigationBridge projectId={requestedProjectId} />
       <PropertySelectionProvider>
-        <SearchPriceExplorerDock />
         <SearchCompareDock />
         <PropertyQuickPreview />
         <LightZillowSearchShell
@@ -151,6 +150,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             search,
           }}
         />
+        <SearchPriceExplorerDock />
       </PropertySelectionProvider>
       <SiteFooter />
     </main>
