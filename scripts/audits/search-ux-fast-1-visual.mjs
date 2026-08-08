@@ -49,6 +49,7 @@ const fixtureListing = {
 await mkdir(outputDir, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const results = [];
+let failure = null;
 
 try {
   for (const viewport of viewports) {
@@ -76,57 +77,87 @@ try {
       });
     });
 
-    const response = await page.goto(`${baseUrl}${route}`, {
-      waitUntil: "domcontentloaded",
-      timeout: 45_000,
-    });
+    try {
+      const response = await page.goto(`${baseUrl}${route}`, {
+        waitUntil: "domcontentloaded",
+        timeout: 45_000,
+      });
 
-    if (!response || response.status() >= 400) {
-      throw new Error(`${viewport.name}: search route returned ${response?.status() ?? "no response"}`);
+      if (!response || response.status() >= 400) {
+        throw new Error(`${viewport.name}: search route returned ${response?.status() ?? "no response"}`);
+      }
+
+      await page.waitForSelector("#property-search", { timeout: 20_000 });
+      await page.waitForSelector('article[data-property-active]', { timeout: 20_000 });
+
+      const metrics = await page.evaluate(() => {
+        const first = document.querySelector('article[data-property-active]');
+        const search = document.querySelector("#property-search");
+        const sort = document.querySelector('select[aria-label="Trier les résultats"]');
+        const bodyText = document.body.innerText;
+        const rect = first?.getBoundingClientRect();
+        const shell = search?.closest(".min-h-screen");
+        const measuredBlocks = shell
+          ? Array.from(shell.querySelectorAll(":scope > section, :scope > div > section")).map((element) => {
+              const box = element.getBoundingClientRect();
+              return {
+                tag: element.tagName.toLowerCase(),
+                aria: element.getAttribute("aria-label"),
+                top: Math.round(box.top),
+                height: Math.round(box.height),
+                text: (element.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 120),
+              };
+            })
+          : [];
+        const headings = Array.from(document.querySelectorAll("h1,h2,h3")).map((element) => {
+          const box = element.getBoundingClientRect();
+          return {
+            tag: element.tagName.toLowerCase(),
+            top: Math.round(box.top),
+            height: Math.round(box.height),
+            text: (element.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 100),
+          };
+        });
+        return {
+          first_result_top: rect ? Math.round(rect.top) : null,
+          first_result_visible_in_initial_viewport: rect ? rect.top < window.innerHeight : false,
+          search_top: search ? Math.round(search.getBoundingClientRect().top) : null,
+          sort_top: sort ? Math.round(sort.getBoundingClientRect().top) : null,
+          viewport_height: window.innerHeight,
+          viewport_width: window.innerWidth,
+          client_width: document.documentElement.clientWidth,
+          scroll_width: document.documentElement.scrollWidth,
+          horizontal_overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          old_hero_present: bodyText.includes("Trouvez votre bien au Maroc"),
+          old_ranking_explanation_present: bodyText.includes("Ordre strict : promoteurs premium"),
+          old_project_prompt_present: bodyText.includes("Besoin de clarifier vos priorités"),
+          measured_blocks: measuredBlocks,
+          headings,
+        };
+      });
+
+      results.push({ name: viewport.name, ...metrics });
+
+      await page.screenshot({
+        path: `${outputDir}/${viewport.name}.png`,
+        fullPage: true,
+      });
+
+      if (metrics.horizontal_overflow) {
+        throw new Error(`${viewport.name}: horizontal overflow ${metrics.scroll_width}/${metrics.client_width}`);
+      }
+      if (metrics.old_hero_present || metrics.old_ranking_explanation_present || metrics.old_project_prompt_present) {
+        throw new Error(`${viewport.name}: pre-result noise regression detected`);
+      }
+      if (!metrics.first_result_visible_in_initial_viewport) {
+        throw new Error(`${viewport.name}: first result starts below initial viewport at ${metrics.first_result_top}px`);
+      }
+    } catch (error) {
+      failure = error;
+      break;
+    } finally {
+      await page.close();
     }
-
-    await page.waitForSelector("#property-search", { timeout: 20_000 });
-    await page.waitForSelector('article[data-property-active]', { timeout: 20_000 });
-
-    const metrics = await page.evaluate(() => {
-      const first = document.querySelector('article[data-property-active]');
-      const search = document.querySelector("#property-search");
-      const sort = document.querySelector('select[aria-label="Trier les résultats"]');
-      const bodyText = document.body.innerText;
-      const rect = first?.getBoundingClientRect();
-      return {
-        first_result_top: rect ? Math.round(rect.top) : null,
-        first_result_visible_in_initial_viewport: rect ? rect.top < window.innerHeight : false,
-        search_top: search ? Math.round(search.getBoundingClientRect().top) : null,
-        sort_top: sort ? Math.round(sort.getBoundingClientRect().top) : null,
-        viewport_height: window.innerHeight,
-        viewport_width: window.innerWidth,
-        client_width: document.documentElement.clientWidth,
-        scroll_width: document.documentElement.scrollWidth,
-        horizontal_overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
-        old_hero_present: bodyText.includes("Trouvez votre bien au Maroc"),
-        old_ranking_explanation_present: bodyText.includes("Ordre strict : promoteurs premium"),
-        old_project_prompt_present: bodyText.includes("Besoin de clarifier vos priorités"),
-      };
-    });
-
-    if (metrics.horizontal_overflow) {
-      throw new Error(`${viewport.name}: horizontal overflow ${metrics.scroll_width}/${metrics.client_width}`);
-    }
-    if (metrics.old_hero_present || metrics.old_ranking_explanation_present || metrics.old_project_prompt_present) {
-      throw new Error(`${viewport.name}: pre-result noise regression detected`);
-    }
-    if (!metrics.first_result_visible_in_initial_viewport) {
-      throw new Error(`${viewport.name}: first result starts below initial viewport at ${metrics.first_result_top}px`);
-    }
-
-    await page.screenshot({
-      path: `${outputDir}/${viewport.name}.png`,
-      fullPage: true,
-    });
-
-    results.push({ name: viewport.name, ...metrics });
-    await page.close();
   }
 } finally {
   await browser.close();
@@ -134,8 +165,9 @@ try {
 
 await writeFile(
   `${outputDir}/metrics.json`,
-  `${JSON.stringify({ route, fixture: "deterministic-client-api", generated_at: new Date().toISOString(), results }, null, 2)}\n`,
+  `${JSON.stringify({ route, fixture: "deterministic-client-api", generated_at: new Date().toISOString(), results, failure: failure instanceof Error ? failure.message : null }, null, 2)}\n`,
   "utf8",
 );
 
 console.log(JSON.stringify(results, null, 2));
+if (failure) throw failure;
