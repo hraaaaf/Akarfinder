@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : UX P1B.1 ✅ / P1B.2 prochain ; DATA-4.3H ✅ ; DATA-4.4A 🔴 qualification second réservoir**
+**Statut : UX P1B.2 ✅ PR #376 ; prochain lot UX après audit métriques ; DATA-4.3H ✅ ; DATA-4.4A 🔴 qualification second réservoir**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -43,22 +43,29 @@ Acquis :
 - P1A.4 ✅ PR #350 — Map Design System technique, cockpit flottant map-first ;
 - P1A.5 ✅ PR #365 — Territorial Explorer progressif **Maroc → ville → quartier**, Geo Registry + canonical neighborhood data uniquement, URL/Search contracts préservés, responsive **390 / 430×932 / 768 / 1280**, **9,3/10** ;
 - P1A.6 ✅ PR #369 — Responsive Hardening : contrôles tactiles/clavier renforcés, audit natif en viewport réel sur `/map`, `Rabat`, `Rabat/Agdal`, **12 captures / 0 finding**, **21/21 tests**, TypeScript/build/gates verts, défaut cockpit↔explorer détecté puis corrigé, score final **9,2/10** ;
-- P1B.1 ✅ PR #371 — **AkarFinder Map Visual Layer** : basemap OpenFreeMap/CARTO fortement atténuée, couche territoriale propriétaire MapLibre, 16 arrondissements Casablanca issus exclusivement du dataset OSM shadow existant, palette différenciée mais non sémantique, contours/labels AkarFinder, activation uniquement via le preview-canary protégé, production toujours bloquée par le contrat géométrique, audit natif **430 / 768 / 1280 = 3 captures / 0 finding**, **21/21 tests**, TypeScript/build et gates finaux verts, score humain **9,1/10**.
+- P1B.1 ✅ PR #371 — **AkarFinder Map Visual Layer** : basemap OpenFreeMap/CARTO fortement atténuée, couche territoriale propriétaire MapLibre, 16 arrondissements Casablanca issus exclusivement du dataset OSM shadow existant, palette différenciée mais non sémantique, contours/labels AkarFinder, activation uniquement via le preview-canary protégé, production toujours bloquée par le contrat géométrique, audit natif **430 / 768 / 1280 = 3 captures / 0 finding**, **21/21 tests**, TypeScript/build et gates finaux verts, score humain **9,1/10** ;
+- P1B.2 ✅ PR #376 — **Sourced Territorial Intelligence** : état URL canonique `layer=price`, benchmarks quartier exacts uniquement pour appartement/achat, identité Geo Registry utilisée pour les aliases, médiane + fourchette + échantillon + confiance + période visibles, aucun fallback ville présenté comme prix quartier, aucune interpolation/heatmap/propagation du prix aux polygones, couche P1B.1 conservée et atténuée en mode prix, audit final **430 / 768 / 1280 = 3 captures / 0 finding**, tous les workflows du head verts, score humain **9,2/10**.
 
-## P1B.2 — Couches d’intelligence territoriale sourcées 🔴 PROCHAIN UX
+## Prochain lot UX — audit préalable obligatoire
 
-Objectif : ajouter de la valeur décisionnelle spatiale réelle au-dessus de P1B.1 sans transformer une couleur décorative en faux signal marché.
+Avant de définir un nouveau numéro de lot, auditer les métriques réellement calculables à la même granularité que les entités géographiques affichées.
 
-Principes :
+Candidats à vérifier :
 
-1. Geo Registry reste source de vérité ;
-2. toute métrique de couche doit être calculée depuis une donnée observable/canonique certifiée ;
-3. aucun prix, densité, demande, fraîcheur, confiance ou proximité ne peut être déduit/inventé pour remplir la carte ;
-4. couleurs de P1B.1 restent du **repérage territorial**, pas un score ;
-5. Search reste canonique, Map reste son complément spatial ;
-6. aucune géométrie shadow n’est promue en production par le seul fait d’être rendue en preview ;
-7. 430×932 reste obligatoire dans toute certification visuelle ;
-8. score UX/UI ≥9/10 avant fermeture.
+1. **offre disponible** — nombre réel d’annonces canoniques/displayables par ville/quartier ;
+2. **fraîcheur** — part ou compte d’observations avec preuve de fraîcheur encore valide ;
+3. **confiance DATA** — uniquement si le score repose sur des champs audités et explicables ;
+4. **prix observés** — extension du mode P1B.2 uniquement aux quartiers/type/transaction disposant d’un benchmark exact ;
+5. aucun mode ne devient canonique si sa granularité, sa provenance ou son dénominateur ne sont pas prouvés.
+
+Règles de décision :
+
+- pas de donnée = état neutre/indisponible ;
+- aucune interpolation pour remplir visuellement la carte ;
+- aucune agrégation ville présentée comme quartier ;
+- aucune géométrie shadow promue implicitement ;
+- 430×932 obligatoire ;
+- score UX/UI ≥9/10 avant fermeture.
 
 # 4. Fondation DATA acquise
 
@@ -86,7 +93,7 @@ Objectif : reproduire le modèle Dar Agadir sur un second réservoir à fort ren
 
 Qualification **read-only** des sources déjà compatibles avec une lane sitemap/canonical-link.
 
-Snapshot production de départ :
+Snapshot production :
 
 | Source | Lignes | Normalized OK | Technical display | Fresh | Seed only | City | Type | Intent | Review |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
@@ -95,11 +102,11 @@ Snapshot production de départ :
 | `atlasimmobilier.com` | 793 | 414 | 420 | 2 | 791 | 445 | 558 | 70 | due_soon |
 | `aykana.ma` | 647 | 467 | 472 | 62 | 585 | 486 | 507 | 534 | due_soon |
 
-Décision provisoire déterministe : **`promoimmomarrakech.com` = `PREFERRED_PENDING_REVALIDATION`**.
+Décision déterministe : **`promoimmomarrakech.com` = `PREFERRED_PENDING_REVALIDATION`**.
 
 Pourquoi : plus grand réservoir, quasi-totalité normalisée, très forte présence technical display, couverture ville/intention élevée et Registry déjà structurée `public_sitemap_canonical_link / public_sitemap_only / canonical_link_only / external_tail_link_only`.
 
-**Important : qualification ≠ activation.** Aucun write freshness, aucun changement Registry, aucune modification de display/publication policy sous 4.4A.
+**Qualification ≠ activation.** Aucun write freshness, aucun changement Registry, aucune modification de display/publication policy sous 4.4A.
 
 Exit 4.4A : scorer testé + live audit DB read-only + preuve CI + 3 MD alignés + PR mergée.
 
@@ -139,6 +146,6 @@ Scope respecté, tests/build/gates verts, preuves, Registry respecté, aucun byp
 
 Fermer **DATA-4.4A** en prouvant de manière read-only que `promoimmomarrakech.com` reste le meilleur second réservoir sous les métriques et le Registry actuels. Ensuite seulement lancer **DATA-4.4B** pour revalidation externe et canary 50.
 
-## UX — P1B.2
+## UX
 
-Définir une première **couche d’intelligence territoriale réellement calculable** depuis les données certifiées disponibles, avec légende explicable, aucune métrique fabriquée, aucune promotion implicite des géométries shadow et 430×932 obligatoire.
+Auditer le repo et les contrats DATA pour déterminer quelles métriques spatiales possèdent une **granularité territoriale exacte, une provenance explicable et un dénominateur stable**. Définir le prochain lot UX uniquement après ce résultat ; ne pas créer un faux choroplèthe d’offre, fraîcheur ou confiance.
