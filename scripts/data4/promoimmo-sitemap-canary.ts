@@ -64,10 +64,18 @@ export function samePromoImmoOrigin(urlString: string): boolean {
   try {
     const url = new URL(urlString);
     return url.protocol === "https:"
-      && [PROMOIMMO_DOMAIN, `www.${PROMOIMMO_DOMAIN}`].includes(url.hostname as typeof PROMOIMMO_DOMAIN);
+      && [PROMOIMMO_DOMAIN, `www.${PROMOIMMO_DOMAIN}`].includes(url.hostname);
   } catch {
     return false;
   }
+}
+
+export function canonicalizePromoImmoUrl(urlString: string): string | null {
+  if (!samePromoImmoOrigin(urlString)) return null;
+  const url = new URL(urlString);
+  url.hostname = PROMOIMMO_DOMAIN;
+  url.hash = "";
+  return url.toString();
 }
 
 export function extractPromoImmoRobotsSitemaps(text: string): string[] {
@@ -92,7 +100,8 @@ export function parsePromoImmoSitemapXml(xml: string): { kind: "index" | "urlset
   const kind = /<sitemapindex\b/i.test(xml) ? "index" : /<urlset\b/i.test(xml) ? "urlset" : "unknown";
   const locs = [...xml.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/gi)]
     .map((match) => decodeXml(match[1] ?? "").trim())
-    .filter(samePromoImmoOrigin);
+    .map(canonicalizePromoImmoUrl)
+    .filter((value): value is string => value !== null);
   return { kind, locs: [...new Set(locs)].sort() };
 }
 
