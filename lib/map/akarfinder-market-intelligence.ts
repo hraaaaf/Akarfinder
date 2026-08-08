@@ -1,3 +1,4 @@
+import { resolveNeighborhoodEntity } from "@/lib/geo/geo-entity-registry";
 import { MARKET_DATA } from "@/lib/market/morocco-market-prices";
 import type { NeighborhoodConfidence, NeighborhoodPoint } from "@/lib/map/canonical-neighborhood-data";
 
@@ -29,16 +30,20 @@ function normalizeConfidence(value: string): NeighborhoodConfidence {
   return "low";
 }
 
+function resolvesToSameNeighborhood(point: NeighborhoodPoint, observedNeighborhood: string): boolean {
+  const observedEntity = resolveNeighborhoodEntity(point.city, observedNeighborhood);
+  return observedEntity?.slug === point.neighborhoodSlug;
+}
+
 export function getExactApartmentBuyBenchmark(
   point: NeighborhoodPoint,
 ): ExactNeighborhoodPriceBenchmark | null {
   const city = normalizeText(point.city);
-  const neighborhood = normalizeText(point.neighborhood);
   const match = MARKET_DATA.find(
     (entry) =>
       entry.neighborhood !== undefined &&
       normalizeText(entry.city) === city &&
-      normalizeText(entry.neighborhood) === neighborhood &&
+      resolvesToSameNeighborhood(point, entry.neighborhood) &&
       entry.property_type === "appartement" &&
       entry.transaction_type === "buy",
   );
