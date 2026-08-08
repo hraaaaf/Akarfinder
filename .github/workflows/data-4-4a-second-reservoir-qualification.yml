@@ -1,0 +1,75 @@
+name: DATA-4.4A Second Reservoir Qualification
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data4/second-reservoir-qualification.ts"
+      - "scripts/data4/__tests__/second-reservoir-qualification.test.ts"
+      - "scripts/audits/data-4-4a-second-reservoir-qualification.ts"
+      - ".github/workflows/data-4-4a-second-reservoir-qualification.yml"
+      - "docs/data/DATA-4-4A-SECOND-RESERVOIR-QUALIFICATION.md"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: DATA-4.4A unit tests
+        run: npx tsx --test scripts/data4/__tests__/second-reservoir-qualification.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+
+  live-read-only:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_4A_OUT_DIR: .tmp/data-4-4a/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run DATA-4.4A read-only qualification
+        run: npx tsx scripts/audits/data-4-4a-second-reservoir-qualification.ts
+      - name: Enforce proof contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_4_4A_OUT_DIR}/proof.json"
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('.tmp/data-4-4a/results/proof.json','utf8'));
+          if (p.schemaVersion!=='data-4-4a-second-reservoir-qualification-v1') throw new Error(JSON.stringify(p));
+          if (p.mode!=='READ_ONLY_QUALIFICATION') throw new Error(JSON.stringify(p));
+          if (p.preferredCandidate!=='promoimmomarrakech.com') throw new Error(JSON.stringify(p));
+          if (p.preferredDecision!=='PREFERRED_PENDING_REVALIDATION') throw new Error(JSON.stringify(p));
+          if (p.nextLot!=='DATA-4.4B_SOURCE_REVALIDATION_CANARY') throw new Error(JSON.stringify(p));
+          if (p.databaseWrites!==0 || p.registryWrites!==0 || p.freshnessWrites!==0 || p.displayPolicyChanges!==0) throw new Error(JSON.stringify(p));
+          if (!Array.isArray(p.ranking) || p.ranking.length!==4) throw new Error(JSON.stringify(p));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-4a-second-reservoir-qualification
+          path: .tmp/data-4-4a/results/
+          if-no-files-found: error
+          retention-days: 14

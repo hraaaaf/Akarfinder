@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : UX P1B.2 ✅ PR #376 ; prochain lot UX à définir après audit des métriques territoriales ; DATA-4.3H ✅ certifié en production au cap 500**
+**Statut : UX P1B.2 ✅ PR #376 ; prochain lot UX après audit métriques ; DATA-4.3H ✅ ; DATA-4.4A 🔴 qualification second réservoir**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -80,28 +80,53 @@ Observation Ledger / Freshness / normalization / quality tiers ; Source Registry
 - **4.0 ✅ #341** — Avito+Mubawab : 35 134 normalized, 3 588 technical display, 0 policy-activable.
 - **4.1A ✅ #343** — Avito unavailable : 95,06 % bruit ; 73 core-récupérables ; 0 policy-activable.
 - **4.2 ✅ #344** — Dar Agadir = `ADMISSIBLE_GROWTH`; Agenz = `PARTNERSHIP_UPSIDE`.
-- **4.3A → H ✅ #347/#348/#351/#353/#355/#358/#362/#364 + #372/#373/#375** — expansion Dar Agadir exécutée et certifiée jusqu’au cap obligatoire de **500 lignes persistantes contrôlées** : `50 + 100 + 100 + 100 + 100 + 50`, max **100/run**, TTL **14 jours**, Registry+sitemap revalidés, snapshots/rollback, checkpoints fail-closed, Search/display mesurés avant/après.
-- **4.3H certification production finale ✅ 2026-08-08** — Dar Agadir : **6 533 total**, **605 fresh_confirmed**, **5 928 seed_only**, **502** `public_sitemap_presence` globales ; cohorte contrôlée **500/500 fresh+sitemap**, Public Search **500/500**, technical display **500/500**, drift **0 %**, Registry inchangé, aucun rollback nécessaire. Les 2 lignes sitemap globales hors cohorte contrôlée sont des preuves légitimes préexistantes.
-- **4.3I ✅ #367** — protection multi-channel freshness ownership : OpenSERP/Yandex n’est propriétaire que de `openserp_yandex_discovery` et ne peut pas supprimer un canal tiers tel que `public_sitemap_presence`.
-- **4.3J ✅ #368** — correction migration-only de l’ordre du trigger display ; `zzz_thin_index_display_policy_write` s’exécute après quality/purity ; aucune modification de policy function, aucun backfill dans la PR.
+- **4.3A → H ✅ #347/#348/#351/#353/#355/#358/#362/#364 + #372/#373/#375/#377** — expansion Dar Agadir exécutée et certifiée jusqu’au cap obligatoire de **500 lignes persistantes contrôlées** : `50 + 100 + 100 + 100 + 100 + 50`, max **100/run**, TTL **14 jours**, Registry+sitemap revalidés, snapshots/rollback, checkpoints fail-closed, Search/display mesurés avant/après.
+- **4.3H certification production finale ✅ 2026-08-08** — Dar Agadir : **6 533 total**, **605 fresh_confirmed**, **5 928 seed_only**, **502** `public_sitemap_presence` globales ; cohorte contrôlée **500/500 fresh+sitemap**, Public Search **500/500**, technical display **500/500**, drift **0 %**, Registry inchangé, aucun rollback nécessaire.
+- **4.3I ✅ #367** — protection multi-channel freshness ownership.
+- **4.3J ✅ #368** — correction migration-only de l’ordre du trigger display.
 
-## État DATA après certification 4.3H
+## DATA-4.4 — Second Reservoir Expansion 🔴 ACTUEL
 
-Le cap **500 est fermé**. Le lot 4.3H n’autorise aucune promotion supplémentaire Dar Agadir.
+Objectif : reproduire le modèle Dar Agadir sur un second réservoir à fort rendement, sans relâcher les contraintes Registry, fraîcheur, qualité, déduplication et vérité publique.
 
-Invariants certifiés au cap :
+### DATA-4.4A — Second Reservoir Qualification 🔴
 
-1. baseline DATA-4.3G = 50 ;
-2. batchs 4.3H = 100 / 100 / 100 / 100 / 50 ;
-3. union contrôlée = 500, sans partiel ni batch non séquentiel ;
-4. Search/display = 500/500 après writes ;
-5. total source inchangé = 6 533 ;
-6. Registry/display policy inchangés ;
-7. revalidation sitemap publique avant chaque batch ;
-8. aucun ancien sitemap hardcodé lors des réponses intermittentes de `robots.txt` ;
-9. rollback disponible mais jamais nécessaire.
+Qualification **read-only** des sources déjà compatibles avec une lane sitemap/canonical-link.
 
-Aucun numéro de lot suivant n’est canonique tant qu’il n’a pas été explicitement défini.
+Snapshot production :
+
+| Source | Lignes | Normalized OK | Technical display | Fresh | Seed only | City | Type | Intent | Review |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| `promoimmomarrakech.com` | **3 005** | **3 000** | **2 923** | 9 | **2 996** | **3 005** | 2 556 | **2 905** | due_soon |
+| `limmobiliersansfrontieres.com` | 1 414 | 563 | 573 | 94 | 1 320 | 607 | 1 107 | 1 068 | due_soon |
+| `atlasimmobilier.com` | 793 | 414 | 420 | 2 | 791 | 445 | 558 | 70 | due_soon |
+| `aykana.ma` | 647 | 467 | 472 | 62 | 585 | 486 | 507 | 534 | due_soon |
+
+Décision déterministe : **`promoimmomarrakech.com` = `PREFERRED_PENDING_REVALIDATION`**.
+
+Pourquoi : plus grand réservoir, quasi-totalité normalisée, très forte présence technical display, couverture ville/intention élevée et Registry déjà structurée `public_sitemap_canonical_link / public_sitemap_only / canonical_link_only / external_tail_link_only`.
+
+**Qualification ≠ activation.** Aucun write freshness, aucun changement Registry, aucune modification de display/publication policy sous 4.4A.
+
+Exit 4.4A : scorer testé + live audit DB read-only + preuve CI + 3 MD alignés + PR mergée.
+
+### DATA-4.4B — Source Revalidation + Canary 50 ⏭️
+
+Après 4.4A uniquement :
+
+1. revalidation Registry fraîche ;
+2. `robots.txt` + déclaration sitemap publics actuels ;
+3. sitemap same-origin + population actuelle ;
+4. intersection sitemap ↔ normalized ;
+5. audit bruit/qualité ;
+6. risque duplicates/collisions Property Graph ;
+7. mesure Search/display avant write ;
+8. snapshot + rollback exacts ;
+9. **premier canary max 50 lignes** ;
+10. drift max **1 %**, fail-closed ;
+11. aucune réutilisation de contenu/image et aucun detail-page fetch.
+
+Aucun passage à 100/500 n’est autorisé tant que le canary 50 n’est pas certifié persistant.
 
 # 7. Lane business parallèle
 
@@ -109,7 +134,7 @@ Aucun numéro de lot suivant n’est canonique tant qu’il n’a pas été expl
 
 # 8. Suite DATA
 
-Après la fermeture 4.3H : observer TTL/aging et stabilité du cohort 500, exploiter les enseignements de la re-certification, puis définir explicitement le prochain lot avant toute nouvelle promotion. Ensuite : autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
+DATA-4.4A qualification → DATA-4.4B canary 50 → certification → expansion bornée éventuelle du second réservoir → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
 
 # 9. Définition de terminé
 
@@ -119,7 +144,7 @@ Scope respecté, tests/build/gates verts, preuves, Registry respecté, aucun byp
 
 ## DATA
 
-**Ne pas dépasser 500 sous DATA-4.3H.** La prochaine décision DATA doit être explicitement définie avant exécution. Priorité logique : observation TTL/aging + stabilité Search/display du cohort certifié 500, puis choix du prochain réservoir/source admissible sur preuves.
+Fermer **DATA-4.4A** en prouvant de manière read-only que `promoimmomarrakech.com` reste le meilleur second réservoir sous les métriques et le Registry actuels. Ensuite seulement lancer **DATA-4.4B** pour revalidation externe et canary 50.
 
 ## UX
 

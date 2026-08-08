@@ -75,14 +75,28 @@ Principes non négociables :
 - DATA-4.0 ✅ PR #341 : Avito + Mubawab = **35 134 normalized**, **3 588 technical display**, **0 policy-activable** ;
 - DATA-4.1A ✅ PR #343 : Avito `unavailable` = 95,06 % bruit/non-immobilier ; seulement **73** core-récupérables ;
 - DATA-4.2 ✅ PR #344 : `daragadir.com` gagne la lane `ADMISSIBLE_GROWTH`, `agenz.ma` la lane `PARTNERSHIP_UPSIDE` ;
-- DATA-4.3A → H ✅ PR #347/#348/#351/#353/#355/#358/#362/#364, puis durcissements #372/#373/#375 : Dar Agadir a atteint le cap contrôlé de **500 lignes persistantes certifiées** selon le plan `50+100+100+100+100+50`, batch max **100/run**, TTL **14 jours**, snapshots/rollbacks et revalidation Registry+sitemap avant chaque batch ;
-- certification finale DATA-4.3H : **6 533 lignes totales**, **605 fresh_confirmed**, **5 928 seed_only**, **502** lignes globales avec `public_sitemap_presence`, cohorte contrôlée **500/500**, Public Search **500/500**, technical display **500/500**, **0 % drift**, Registry inchangé, aucun rollback nécessaire ;
-- DATA-4.3I ✅ PR #367 : ownership fraîcheur multi-canal protégé ; OpenSERP/Yandex ne peut plus effacer/dégrader un canal tiers tel que `public_sitemap_presence` ;
-- DATA-4.3J ✅ PR #368 : ordre du trigger display corrigé (`zzz_thin_index_display_policy_write`) pour calculer l’éligibilité après quality/purity ; migration-only, pas de changement de policy function ni backfill.
+- DATA-4.3A → H ✅ jusqu’à PR #377 : Dar Agadir a atteint le cap contrôlé de **500 lignes persistantes certifiées** selon `50+100+100+100+100+50`, TTL **14 jours**, Search **500/500**, technical display **500/500**, drift **0 %**, Registry inchangé ;
+- DATA-4.3I ✅ PR #367 : ownership fraîcheur multi-canal protégé ;
+- DATA-4.3J ✅ PR #368 : ordre du trigger display corrigé.
+
+### DATA-4.4 — Second Reservoir Expansion 🔴
+
+**DATA-4.4A — qualification read-only du second réservoir.**
+
+Snapshot production des candidats sitemap/canonical-link :
+
+- `promoimmomarrakech.com` : **3 005** lignes, **3 000 normalized OK**, **2 923 technical display**, **2 996 seed_only**, city **3 005/3 005**, intent **2 905/3 005** ;
+- `limmobiliersansfrontieres.com` : 1 414 lignes ;
+- `atlasimmobilier.com` : 793 lignes ;
+- `aykana.ma` : 647 lignes.
+
+Décision déterministe : **`promoimmomarrakech.com` = `PREFERRED_PENDING_REVALIDATION`**.
+
+Cette qualification **n’autorise aucun write**. Le prochain sous-lot est **DATA-4.4B — Source Revalidation + Canary 50** : Registry + robots/sitemap + qualité + dedup + Search/display + rollback, puis seulement un premier batch persistant **≤50** si tous les gates sont verts.
 
 ## Décision DATA courante
 
-**DATA-4.3H est fermé au cap 500.** Aucune promotion supplémentaire Dar Agadir n’est autorisée par ce lot. Toute extension au-delà de 500 doit être définie comme une nouvelle décision DATA dans `docs/ROADMAP.md`, avec nouvelle certification bornée ; aucun bypass du cap n’est permis.
+**DATA-4.3H reste fermé à 500. DATA-4.4A sélectionne le second réservoir sans activation.** Aucun passage direct à 100/500 sur Promo Immo Marrakech n’est autorisé avant certification du canary 50 de DATA-4.4B.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 
