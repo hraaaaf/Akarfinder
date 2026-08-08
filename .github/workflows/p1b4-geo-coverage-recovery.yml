@@ -1,0 +1,43 @@
+name: P1B.4 Geo Coverage Recovery Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260808120000_p1b4_geo_coverage_recovery.sql"
+      - "scripts/scrapers/__tests__/p1b4-geo-coverage-recovery.test.ts"
+      - ".github/workflows/p1b4-geo-coverage-recovery.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260808120000_p1b4_geo_coverage_recovery.sql"
+      - "scripts/scrapers/__tests__/p1b4-geo-coverage-recovery.test.ts"
+      - ".github/workflows/p1b4-geo-coverage-recovery.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    name: Certify exact geo recovery contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: P1B.4 truth contract
+        run: npx tsx --test scripts/scrapers/__tests__/p1b4-geo-coverage-recovery.test.ts
+      - name: P1B.3 regression contract
+        run: npx tsx --test scripts/scrapers/__tests__/p1b3-territorial-metric-join.test.ts
+      - name: P1B.3 PostgreSQL semantic regression
+        run: npx tsx --test scripts/scrapers/__tests__/p1b3-territorial-metric-join.pg.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
