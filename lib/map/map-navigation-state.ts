@@ -5,7 +5,8 @@ import {
 } from "@/lib/geo/geo-entity-registry";
 
 export const MAP_LAYER_EXPLORE = "explore" as const;
-export type MapLayer = typeof MAP_LAYER_EXPLORE;
+export const MAP_LAYER_PRICE = "price" as const;
+export type MapLayer = typeof MAP_LAYER_EXPLORE | typeof MAP_LAYER_PRICE;
 
 export type MapNavigationContext = {
   q?: string;
@@ -59,6 +60,10 @@ function appendContext(params: URLSearchParams, state: MapNavigationContext): vo
   for (const key of CONTEXT_KEYS) setIfPresent(params, key, state[key]);
 }
 
+function parseMapLayer(value: string | undefined): MapLayer {
+  return value === MAP_LAYER_PRICE ? MAP_LAYER_PRICE : MAP_LAYER_EXPLORE;
+}
+
 export function parseMapNavigationState(params: MapSearchParams): MapNavigationState {
   const rawCity = pickFirst(params.city);
   const cityEntity = rawCity && rawCity !== "all" ? resolveCityEntity(rawCity) : null;
@@ -79,7 +84,7 @@ export function parseMapNavigationState(params: MapSearchParams): MapNavigationS
     ...context,
     city,
     district: districtEntity?.slug,
-    layer: MAP_LAYER_EXPLORE,
+    layer: parseMapLayer(pickFirst(params.layer)),
   };
 }
 
@@ -95,7 +100,7 @@ export function buildMapHref(state: MapNavigationState): string {
   const params = new URLSearchParams();
   if (state.city !== "all") params.set("city", state.city);
   if (state.city !== "all" && state.district) params.set("district", state.district);
-  params.set("layer", MAP_LAYER_EXPLORE);
+  params.set("layer", state.layer);
   appendContext(params, state);
   return `/map?${params.toString()}`;
 }
@@ -143,7 +148,7 @@ export function withMapLocation(
   district?: string,
 ): MapNavigationState {
   const cityEntity = city !== "all" ? resolveCityEntity(city) : null;
-  if (!cityEntity) return { ...state, city: "all", district: undefined };
+  if (!cityEntity) return { ...state, city: "all", district: undefined, layer: MAP_LAYER_EXPLORE };
   const districtEntity = district
     ? resolveNeighborhoodEntity(cityEntity.canonical_name, district)
     : null;
@@ -151,6 +156,10 @@ export function withMapLocation(
     ...state,
     city: cityEntity.slug,
     district: districtEntity?.slug,
-    layer: MAP_LAYER_EXPLORE,
   };
+}
+
+export function withMapLayer(state: MapNavigationState, layer: MapLayer): MapNavigationState {
+  if (layer === MAP_LAYER_PRICE && state.city === "all") return state;
+  return { ...state, layer };
 }
