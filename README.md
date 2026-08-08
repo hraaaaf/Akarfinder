@@ -81,11 +81,12 @@ Le futur mode **Offre** quartier n’est autorisé que si le rapport production 
 - DATA-4.3I ✅ PR #367 : ownership fraîcheur multi-canal protégé ;
 - DATA-4.3J ✅ PR #368 : ordre du trigger display corrigé ;
 - DATA-4.4A ✅ PR #379, merge `43d8086c` : qualification read-only du second réservoir ;
-- DATA-4.4B ✅ PR #380, merge `13b6c3c` : Promo Immo revalidé sur signaux publics actuels ; **3 130 URLs sitemap**, **2 935** dans le réservoir, **2 456** lignes conservatrices éligibles ; canary **50/50** préparé pour Search, technical display, quality A/B et rollback ; **0 write** dans le LOT.
+- DATA-4.4B ✅ PR #380, merge `13b6c3c` : Promo Immo revalidé sur signaux publics actuels ; **3 130 URLs sitemap**, **2 935** dans le réservoir, **2 456** lignes conservatrices éligibles ; canary **50/50** préparé pour Search, technical display, quality A/B et rollback ; **0 write** dans le LOT ;
+- DATA-4.4C ✅ PR #384, merge `ba65943a` : protection du Thin Index sur les writes freshness-only, migration production appliquée puis canary persistant exact **50/50**. Revalidation publique 4.4B rejouée juste avant write avec cohorte immuable ; post-certification : Search **50/50**, technical display **50/50**, quality A/B **50/50**, projection préservée **50/50**, drift **0 %**, Registry inchangé. Promo Immo = **3 005 total / 59 fresh_confirmed / 2 946 seed_only / 50 public_sitemap_presence** ; rollback disponible mais non requis.
 
 ## Décision DATA courante
 
-**DATA-4.4B est fermé. Prochain lot : DATA-4.4C — Persistent Canary 50**, écriture transactionnelle réelle des 50 lignes, puis re-certification production avec drift ≤1 % et rollback immédiat sur anomalie.
+**DATA-4.4C est fermé et certifié en production.** La prochaine décision DATA doit définir explicitement une **expansion bornée** du second réservoir à partir du canary 50 certifié. Aucun passage automatique à +100/+500 n’est autorisé par 4.4C.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 

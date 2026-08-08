@@ -2,20 +2,21 @@
 
 **Mise à jour : 2026-08-08**  
 **Lane UX/Carte : P1B.3 🔴 Territorial Metric Join Contract — PR #382**  
-**Lane DATA : DATA-4.4B ✅ PR #380 ; prochain DATA = DATA-4.4C Persistent Canary 50**  
+**Lane DATA : DATA-4.4C ✅ Persistent Canary 50 certifié ; prochaine décision DATA = expansion bornée à définir explicitement**  
 **Lot UX acquis : P1B.2 — Sourced Territorial Intelligence ✅ PR #376 — 9,2/10**
 
 Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
 # Main canonique
 
-Main au démarrage P1B.3 : `13b6c3c268c30fd103767903bcd69782642b11ee`.
+Base du closeout DATA-4.4C : `ba65943ab71e57eabbe96b0641e8cbdc544ed891` — merge PR #384.
 
 Acquis récents :
 
 - DATA-4.3H ✅ PR #377 — Dar Agadir 500/500, Search/display 500/500, drift 0 % ;
 - DATA-4.4A ✅ PR #379, merge `43d8086c` — second réservoir qualifié, 0 write ;
 - DATA-4.4B ✅ PR #380, merge `13b6c3c` — Promo Immo revalidé, 3 130 URLs sitemap, 2 935 intersection réservoir, 2 456 lignes conservatrices éligibles, canary/rollback 50/50, 0 write ;
+- DATA-4.4C ✅ PR #384, merge `ba65943a` — fix freshness-only du Thin Index, migration production appliquée, canary exact 50 persisté et certifié : Search **50/50**, display **50/50**, quality A/B **50/50**, projection préservée **50/50**, drift **0 %** ; état Promo Immo **3 005 total / 59 fresh / 2 946 seed / 50 sitemap-presence** ; rollback disponible mais non requis ;
 - P1B.1 ✅ PR #371, **9,1/10** ;
 - P1B.2 ✅ PR #376, **9,2/10**.
 
@@ -83,6 +84,29 @@ Après merge et rapport production read-only :
 
 Aucun faux choroplèthe. Aucun seuil inventé avant observation de la distribution réelle.
 
-# DATA — prochain lot
+# DATA — DATA-4.4C ✅ CLOSED
 
-**DATA-4.4C — Persistent Canary 50** : write transactionnel des 50 lignes préparées en 4.4B, preflight exact, Search/display 50/50, drift ≤1 %, rollback immédiat sur anomalie. Cette lane reste séparée de P1B.3.
+Canary exact de 4.4B : **50 lignes**.
+
+Fermeture certifiée :
+
+- PR #384 entièrement verte puis mergée ;
+- migration production freshness-only appliquée ;
+- replay live 4.4B juste avant write : même cohorte 50, mêmes 3 130 URLs sitemap / 2 935 intersection / 2 456 éligibles ;
+- write transactionnel exact **50/50** ;
+- `fresh_confirmed` **50/50** ;
+- `public_sitemap_presence` **50/50** ;
+- Public Search **50/50** ;
+- technical display **50/50** ;
+- quality A/B **50/50** ;
+- projection préservée **50/50** ;
+- drift **0 %** ;
+- Registry inchangé ;
+- TTL 14 jours + provenance + rollback snapshot **50/50** ;
+- rollback non requis.
+
+État source Promo Immo : **3 005 total / 59 fresh_confirmed / 2 946 seed_only / 50 public_sitemap_presence**.
+
+# Prochaine décision DATA
+
+Définir explicitement un **nouveau lot d’expansion bornée** du second réservoir à partir du canary 50 certifié. DATA-4.4C ne donne aucune autorisation automatique de +100/+500.

@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : UX P1B.3 🔴 certification finale ; DATA-4.4B ✅ PR #380 ; DATA-4.4C = prochain lot DATA**
+**Statut : UX P1B.3 🔴 certification finale ; DATA-4.4C ✅ canary 50 persistant certifié ; prochaine décision DATA à définir explicitement**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -112,12 +112,28 @@ Observation Ledger / Freshness / normalization / quality tiers ; Source Registry
 - **4.3J ✅ #368** — ordre du trigger display corrigé.
 - **4.4A ✅ #379** — Promo Immo sélectionné `PREFERRED_PENDING_REVALIDATION`, 0 write.
 - **4.4B ✅ #380**, merge `13b6c3c` — source revalidée sur signaux publics actuels : **3 130 URLs sitemap**, **2 935** intersectent le réservoir, **2 456** lignes conservatrices éligibles ; canary préparé **50/50** pour Search, technical display, quality A/B et rollback ; **0 write**.
+- **4.4C ✅ #384**, merge `ba65943a` — protection freshness-only du Thin Index mergée et migration appliquée en production ; replay live 4.4B juste avant mutation = cohorte immuable **50/50**, mêmes **3 130 / 2 935 / 2 456** ; write transactionnel persistant réussi. Re-certification indépendante : **50/50 fresh_confirmed**, **50/50 public_sitemap_presence**, Search **50/50**, technical display **50/50**, quality A/B **50/50**, projection préservée **50/50**, drift **0 %**, Registry inchangé. État source final Promo Immo : **3 005 total / 59 fresh_confirmed / 2 946 seed_only / 50 sitemap-presence**. Rollback disponible, non requis.
 
-## DATA-4.4C — Persistent Canary 50 — PROCHAIN LOT DATA
+## DATA-4.4C — Persistent Canary 50 ✅ CLOSED
 
-Objectif : écriture transactionnelle réelle des **50** lignes certifiées par 4.4B, puis re-certification production.
+Le canary exact de 4.4B est maintenant persistant et certifié en production.
 
-Gates minimaux : preflight exact 50/50, transaction atomique, Search 50/50, technical display 50/50, qualité A/B préservée, drift ≤1 %, provenance intacte, rollback immédiat sur anomalie. Aucun passage à 100/500 avant certification persistante.
+Preuves de fermeture :
+
+1. PR sécurité #384 entièrement verte puis mergée depuis le head attendu ;
+2. migration production `data_4_4c_freshness_projection_safety` appliquée ;
+3. revalidation publique 4.4B rejouée immédiatement avant write, cohorte et compteurs inchangés ;
+4. preflight exact **50/50** ;
+5. transaction atomique avec assertions fail-closed ;
+6. Search **50/50** avant/après ;
+7. technical display **50/50** avant/après ;
+8. quality A/B **50/50** ;
+9. projection enrichie préservée **50/50** ;
+10. drift observé **0 %** ;
+11. provenance, TTL 14 jours, run id et rollback snapshots présents **50/50** ;
+12. aucun changement Registry/policy et aucun rollback nécessaire.
+
+**4.4C n’autorise pas automatiquement un batch +100 ou +500.** Toute expansion du second réservoir doit être définie comme un nouveau lot borné avec ses propres gates, preuve et rollback.
 
 # 7. Lane business parallèle
 
@@ -125,7 +141,9 @@ Gates minimaux : preflight exact 50/50, transaction atomique, Search 50/50, tech
 
 # 8. Suite DATA
 
-DATA-4.4C canary 50 persistant → re-certification → décision d’expansion bornée du second réservoir → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
+DATA-4.4C ✅ → **définir explicitement le prochain lot d’expansion bornée du second réservoir** à partir du canary 50 certifié → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
+
+Aucun numéro de lot, taille +100/+500 ou promotion supplémentaire n’est canonique tant qu’il n’est pas explicitement défini et certifié.
 
 # 9. Définition de terminé
 
@@ -139,4 +157,4 @@ Finaliser **P1B.3** : revue du head incluant les 3 MD → exact-head CI → Cert
 
 ## DATA
 
-**DATA-4.4C — Persistent Canary 50** : write transactionnel réel seulement dans son LOT dédié, sans le mélanger à P1B.3.
+**Définir explicitement le prochain lot d’expansion bornée du second réservoir** à partir du canary 50 certifié de DATA-4.4C. Aucun +100/+500 n’est autorisé par défaut.
