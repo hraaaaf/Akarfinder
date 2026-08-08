@@ -47,6 +47,25 @@ Principes non négociables :
 - Observation/Freshness/quality/dedup pipeline ;
 - CI GitHub Actions avec gates DATA, UX, accessibilité et build.
 
+## Gouvernance UX / Search
+
+Les lots UX majeurs utilisent désormais un **Benchmark UX/Search Reviewer indépendant**, défini dans `docs/BENCHMARK_UX_SEARCH_AGENT.md`.
+
+Principes verrouillés :
+
+- **mobile = expérience de référence**, desktop = extension optimisée sans bruit supplémentaire ;
+- benchmark réel Maroc + international avant toute décision UX majeure, puis re-benchmark après implémentation ;
+- aucun jargon architectural sur les surfaces grand public ;
+- `/search` vise `RECHERCHE → FILTRES UTILES → RÉSULTATS` ;
+- flux visuel continu d’annonces : les catégories internes ne doivent pas casser le scroll avec des blocs explicatifs lourds ;
+- hiérarchie card cible : `IMAGE → PRIX → TITRE → LOCALISATION → 3–4 CARACTÉRISTIQUES → PROVENANCE → ACTION` ;
+- Benchmark Reviewer consultatif obligatoire avec pouvoir `CHANGES_REQUIRED` ;
+- aucune certification UX majeure si le score mobile est inférieur à **9/10**.
+
+Chaîne UX majeure :
+
+`Builder → Benchmark UX/Search Reviewer → Reviewer technique → Release Certifier → merge → post-merge`.
+
 ## État UX / Carte
 
 - CARTE-QUARTIER-P1A.1 ✅ PR #328 — Geo Canonical Core, **9,5/10** ;
