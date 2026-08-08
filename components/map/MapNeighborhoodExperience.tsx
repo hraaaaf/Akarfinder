@@ -14,6 +14,14 @@ import {
   type NeighborhoodPoint,
 } from "@/lib/map/canonical-neighborhood-data";
 import {
+  addAkarFinderTerritorialLayers,
+  applyAkarFinderBasemapTreatment,
+  AKARFINDER_TERRITORIAL_FILL_LAYER_ID,
+  AKARFINDER_TERRITORIAL_LABEL_LAYER_ID,
+  AKARFINDER_TERRITORIAL_LINE_LAYER_ID,
+  AKARFINDER_TERRITORIAL_SOURCE_ID,
+} from "@/lib/map/akarfinder-territorial-style";
+import {
   getMapConfidenceMeta,
   MAP_VISUAL_TOKENS,
 } from "@/lib/map/map-design-system";
@@ -29,6 +37,7 @@ import { getCityFlyTarget, MOROCCO_OVERVIEW } from "@/lib/map/listing-map";
 const CLUSTER_ZOOM_THRESHOLD = 8;
 const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const DARK_TILE_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
+const CASABLANCA_TERRITORIAL_ENDPOINT = "/api/geo/casablanca-arrondissements";
 
 function styleForTheme(theme: string | undefined) {
   return theme === "dark" ? DARK_TILE_STYLE : LIGHT_TILE_STYLE;
@@ -45,6 +54,13 @@ function hideInternalBoundaries(map: MapLibreMap) {
   ]) {
     if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
   }
+}
+
+function removeAkarFinderTerritorialLayers(map: MapLibreMap) {
+  if (map.getLayer(AKARFINDER_TERRITORIAL_LABEL_LAYER_ID)) map.removeLayer(AKARFINDER_TERRITORIAL_LABEL_LAYER_ID);
+  if (map.getLayer(AKARFINDER_TERRITORIAL_LINE_LAYER_ID)) map.removeLayer(AKARFINDER_TERRITORIAL_LINE_LAYER_ID);
+  if (map.getLayer(AKARFINDER_TERRITORIAL_FILL_LAYER_ID)) map.removeLayer(AKARFINDER_TERRITORIAL_FILL_LAYER_ID);
+  if (map.getSource(AKARFINDER_TERRITORIAL_SOURCE_ID)) map.removeSource(AKARFINDER_TERRITORIAL_SOURCE_ID);
 }
 
 function createNeighborhoodMarkerEl(
@@ -247,6 +263,7 @@ export function MapNeighborhoodExperience({
 
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapZoom, setMapZoom] = useState(MOROCCO_OVERVIEW.zoom);
+  const [territorialLayerActive, setTerritorialLayerActive] = useState(false);
 
   const cityEntity = useMemo(
     () => navigationState.city === "all" ? null : resolveCityEntity(navigationState.city),
@@ -308,6 +325,7 @@ export function MapNeighborhoodExperience({
       const markMapReady = () => {
         if (!mapInstance) return;
         hideInternalBoundaries(mapInstance);
+        applyAkarFinderBasemapTreatment(mapInstance, initialTheme);
         setMapLoaded(true);
       };
       mapInstance.once("style.load", markMapReady);
@@ -350,9 +368,53 @@ export function MapNeighborhoodExperience({
       styleInitRef.current = false;
       return;
     }
+    setTerritorialLayerActive(false);
     map.setStyle(styleForTheme(theme));
-    map.once("style.load", () => hideInternalBoundaries(map));
+    map.once("style.load", () => {
+      hideInternalBoundaries(map);
+      applyAkarFinderBasemapTreatment(map, theme);
+      setMapLoaded(true);
+    });
   }, [mapLoaded, theme]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoaded) return;
+    let cancelled = false;
+
+    const install = async () => {
+      if (cancelled || !mapRef.current) return;
+      applyAkarFinderBasemapTreatment(map, theme);
+      removeAkarFinderTerritorialLayers(map);
+      setTerritorialLayerActive(false);
+
+      if (cityEntity?.slug !== "casablanca") return;
+
+      try {
+        const response = await fetch(CASABLANCA_TERRITORIAL_ENDPOINT, {
+          credentials: "same-origin",
+          cache: "no-store",
+        });
+        if (!response.ok || cancelled || !mapRef.current) return;
+        const geojson = await response.json() as GeoJSON.FeatureCollection;
+        if (cancelled || !mapRef.current) return;
+        addAkarFinderTerritorialLayers(map, geojson, theme);
+        setTerritorialLayerActive(true);
+      } catch {
+        if (!cancelled) setTerritorialLayerActive(false);
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      void install();
+    } else {
+      map.once("style.load", install);
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cityEntity?.slug, mapLoaded, theme]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -406,7 +468,7 @@ export function MapNeighborhoodExperience({
 
   return (
     <div className="relative min-w-0 overflow-hidden bg-background" style={{ height: "calc(100svh - 64px)" }}>
-      <div ref={mapContainerRef} className="absolute inset-0 bg-[#eef3f8]" />
+      <div ref={mapContainerRef} className="absolute inset-0 bg-[#eaf1f7] dark:bg-[#071426]" />
 
       <section
         className="absolute inset-x-3 top-3 z-20 rounded-2xl border border-border-strong/70 bg-card/95 p-2.5 text-card-foreground shadow-panel backdrop-blur-xl sm:inset-x-auto sm:left-4 sm:right-4 sm:top-4 sm:p-3 lg:right-auto lg:w-auto lg:max-w-[760px]"
@@ -415,7 +477,7 @@ export function MapNeighborhoodExperience({
         <div className="flex min-w-0 items-center gap-2">
           <div className="hidden min-w-0 lg:block lg:w-[218px]">
             <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-brand-primary">
-              Carte immobilière
+              Carte immobilière AkarFinder
             </p>
             <h1 className="mt-0.5 truncate text-[13px] font-extrabold tracking-[-0.02em] text-foreground">
               Explorer les quartiers du Maroc
@@ -462,7 +524,7 @@ export function MapNeighborhoodExperience({
             <p className="truncate text-[10.5px] font-extrabold text-foreground">{mapStatus}</p>
           </div>
           <span className="hidden shrink-0 text-[9px] font-semibold text-muted-foreground sm:inline">
-            Repères indicatifs
+            {territorialLayerActive ? "Couche AkarFinder active" : "Repères indicatifs"}
           </span>
         </div>
       </section>
@@ -475,7 +537,7 @@ export function MapNeighborhoodExperience({
           </div>
         </div>
       ) : (
-        <div className="pointer-events-none absolute left-4 top-[92px] z-10 hidden max-w-[260px] lg:block">
+        <div className="pointer-events-none absolute left-4 top-[92px] z-10 hidden max-w-[280px] lg:block">
           <div className="rounded-xl border border-border-strong/60 bg-card/90 px-3 py-2 text-card-foreground shadow-card backdrop-blur-xl">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 shrink-0 rounded-full bg-brand-primary shadow-[0_0_0_3px_rgba(11,99,206,0.12)]" aria-hidden="true" />
@@ -483,7 +545,9 @@ export function MapNeighborhoodExperience({
             </div>
             {!selectedPoint ? (
               <p className="mt-1 text-[9.5px] font-semibold text-muted-foreground">
-                {showClusters ? "Choisissez une ville ou zoomez" : "Sélectionnez un quartier pour afficher son repère"}
+                {territorialLayerActive
+                  ? "Couche territoriale AkarFinder · limites OSM certifiées en preview"
+                  : showClusters ? "Choisissez une ville ou zoomez" : "Sélectionnez un quartier pour afficher son repère"}
               </p>
             ) : null}
           </div>
@@ -491,12 +555,17 @@ export function MapNeighborhoodExperience({
       )}
 
       {!selectedPoint ? (
-        <div className="pointer-events-none absolute bottom-3 left-3 z-10 max-w-[248px] md:bottom-4 md:left-4">
+        <div
+          className="pointer-events-none absolute bottom-3 left-3 z-10 max-w-[292px] md:bottom-4 md:left-4"
+          data-akarfinder-territorial-layer={territorialLayerActive ? "active" : "inactive"}
+        >
           <div className="rounded-xl border border-border-strong/60 bg-card/90 px-3 py-2 text-card-foreground shadow-card backdrop-blur-xl">
             <div className="flex items-start gap-2">
               <Info size={12} className="mt-0.5 shrink-0 text-brand-primary" aria-hidden="true" />
               <p className="text-[9px] leading-4 text-muted-foreground">
-                Repères indicatifs pour préparer la recherche. Aucune limite de quartier n’est inventée.
+                {territorialLayerActive
+                  ? "Couleurs AkarFinder = repérage territorial, pas un score de prix. Limites : © OpenStreetMap contributors · preview canary."
+                  : "Repères indicatifs pour préparer la recherche. Aucune limite de quartier n’est inventée."}
               </p>
             </div>
           </div>
