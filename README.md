@@ -57,9 +57,10 @@ Principes non négociables :
 - P1A.6 ✅ PR #369 — Responsive hardening, **12 captures / 0 finding**, **9,2/10** ;
 - P1B.1 ✅ PR #371 — AkarFinder Map Visual Layer, **3 captures / 0 finding**, **9,1/10** ;
 - P1B.2 ✅ PR #376 — Sourced Territorial Intelligence `layer=price`, benchmarks quartier exacts, aucune interpolation/fallback ville, **3 captures / 0 finding**, **9,2/10** ;
-- P1B.3 🔴 PR #382 — **Territorial Metric Join Contract** : pont fail-closed `LISTING public/displayable → résolution géographique explicite → quartier canonique validé`, couverture/collisions sur un dénominateur unique, aucune inférence et `metric_layers_activated=false`. Gate PostgreSQL spécialisé vert sur le head revu ; merge, post-merge et rapport production read-only encore requis avant certification.
+- P1B.3 ✅ PR #382, merge `dca48b2c` — **Territorial Metric Join Contract** fail-closed, post-merge gate vert ; rapport production initial : **15 399 listings éligibles / 0 résolution quartier / 0 collision / 0 conflit / 0 % coverage**, `metric_layers_activated=false` ;
+- P1B.4 ✅ PR #386, merge `5ab84bcf` — **Geo Coverage Recovery pilot** : preuve explicite `property_listings.district` uniquement, alias Geo Registry exact + ville parente exacte, aucune inférence/fuzzy/spatiale. Preflight **69/69**, write transactionnel **69/69**, **14 quartiers / 5 villes**, rollback append-only disponible. Rapport P1B.3 après write : **15 395 listings éligibles / 69 résolus / 0,45 % coverage / 0 collision / 0 conflit / 0 geo canonique manquante**. Post-merge gate `31254967688` vert ; rollback non requis ; `metric_layers_activated=false`.
 
-Le futur mode **Offre** quartier n’est autorisé que si le rapport production P1B.3 montre une couverture suffisante et aucune collision latest. Sinon le prochain lot corrige d’abord la couverture géographique.
+La couche **Offre par quartier reste interdite** : 0,45 % de couverture ne justifie aucun choroplèthe national. La prochaine étape Carte poursuit la récupération géographique explicite et certifiable ; aucune couverture n’est fabriquée.
 
 ## État DATA acquis
 

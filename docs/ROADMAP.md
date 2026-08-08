@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : UX P1B.3 🔴 certification finale ; DATA-4.4C ✅ canary 50 persistant certifié ; prochaine décision DATA à définir explicitement**
+**Statut : UX/Carte P1B.4 ✅ production certifiée ; couche Offre quartier toujours OFF ; DATA-4.4C ✅ canary 50 persistant certifié ; prochaine décision DATA à définir explicitement**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -45,54 +45,69 @@ Acquis :
 - P1A.5 ✅ PR #365 — Territorial Explorer progressif **Maroc → ville → quartier**, **9,3/10** ;
 - P1A.6 ✅ PR #369 — Responsive Hardening, **12 captures / 0 finding**, **9,2/10** ;
 - P1B.1 ✅ PR #371 — **AkarFinder Map Visual Layer**, **9,1/10** ;
-- P1B.2 ✅ PR #376 — **Sourced Territorial Intelligence** `layer=price`, aucune interpolation/fallback ville, **9,2/10**.
+- P1B.2 ✅ PR #376 — **Sourced Territorial Intelligence** `layer=price`, aucune interpolation/fallback ville, **9,2/10** ;
+- P1B.3 ✅ PR #382 — **Territorial Metric Join Contract** ;
+- P1B.4 ✅ PR #386 — **Geo Coverage Recovery pilot**.
 
-## P1B.3 — Territorial Metric Join Contract 🔴 PR #382
+## P1B.3 — Territorial Metric Join Contract ✅ CLOSED
 
-But : déterminer si AkarFinder possède réellement un pont assez fiable entre l’inventaire public affichable et les quartiers canoniques avant d’afficher une couche **Offre** par quartier.
+Contrat :
 
-Contrat actuel :
+`LISTING public/displayable → dernier événement geo explicite → resolved → quartier canonique validated → ville canonique validated`
 
-`LISTING réel/displayable → dernier événement geo explicite → statut toujours resolved → quartier canonique validated → ville canonique validated`
+Garde-fous certifiés : latest-event-first, même dénominateur public pour coverage/collisions, collisions latest avant collapse, conflits historiques séparés, aucun cast externe dangereux, aucune inférence quartier, aucune interpolation, aucun changement Search/ranking/display/publication/geometry, `metric_layers_activated=false`.
 
-Garde-fous :
+Preuve production initiale après merge `dca48b2c` :
 
-- aucun quartier déduit d’un titre, d’une URL, d’une ville ou d’une proximité ;
-- aucune interpolation spatiale ;
-- dernier événement géographique autoritaire : une ancienne résolution n’est jamais ressuscitée après un événement `unresolved` ;
-- couverture et collisions utilisent exactement le même dénominateur `real_estate_likely + LISTING + eligible_primary|eligible_secondary` ;
-- collisions latest mesurées avant collapse ; conflits historiques reportés séparément ;
-- aucune conversion non sûre de `source_record_id` vers UUID ;
-- `metric_layers_activated=false` ;
-- aucun changement Search, ranking, display eligibility, publication ou géométrie.
+- `eligible_public_listings = 15 399` ;
+- `resolved_neighborhood_listings = 0` ;
+- `coverage_percent = 0.00` ;
+- `latest_resolution_collisions = 0` ;
+- `conflicting_resolution_history = 0` ;
+- `missing_canonical_geo = 0` ;
+- `metric_layers_activated = false`.
 
-Historique de revue :
+Décision : **Geo Coverage Recovery obligatoire**, aucun choroplèthe Offre.
 
-| Étape | État / preuve |
-|---|---|
-| Builder initial | ✅ migration fail-closed + tests |
-| Reviewer pass #1 | **CHANGES_REQUIRED** — stale resolution + collision tautologique |
-| Corrections | ✅ latest-event first + vraies collisions |
-| Reviewer pass #2 | **CHANGES_REQUIRED** — collisions hors dénominateur public |
-| Corrections | ✅ même dénominateur public |
-| Reviewer pass #3 | **CHANGES_REQUIRED** — cast externe `source_record_id::uuid` non sûr |
-| Corrections | ✅ comparaison sûre vers `seed_id::text` |
-| Reviewer pass #4 | **CHANGES_REQUIRED** — absence de gate spécialisé exécutant le nouveau contrat |
-| Corrections | ✅ test PostgreSQL/PGlite + workflow permanent |
-| Reviewer final code | ✅ PASS sur head pré-docs ; nouvelle revue requise après closeout MD |
-| PR | #382 |
-| Specialized gate | ✅ `P1B.3 Territorial Metric Join Gate` run `31252849825` sur head pré-docs : static + PostgreSQL semantic + TypeScript verts |
-| Exact-head CI final | 🔄 à relancer après alignement des 3 MD |
-| Release Certifier | ⏳ |
-| Merge / post-merge | ⏳ |
-| Rapport production read-only | ⏳ après migration mergée |
+## P1B.4 — Geo Coverage Recovery pilot ✅ CLOSED
 
-Décision suivante, uniquement après rapport production :
+But : matérialiser une première cohorte quartier honnête à partir de données déjà persistées, sans inférence.
 
-- couverture quartier suffisante + `latest_resolution_collisions = 0` → prochain lot produit = **Offre — annonces affichables indexées** avec couleurs par quartier ;
-- sinon → prochain lot = **Geo Coverage Recovery**, sans choroplèthe fabriqué.
+Contrat :
 
-Aucun seuil de couverture n’est inventé dans P1B.3 : la distribution réelle doit être observée et justifiée avant activation produit.
+`LISTING public/displayable → coverage_bridge explicite → property_listings.district explicite → alias Geo Registry exact et unique → ville parente validated + alias ville exact → aucun événement geo préalable`
+
+Interdits : fuzzy matching, titre, URL, coordonnées, proximité, interpolation, fallback ville présenté comme quartier.
+
+Certification :
+
+- base : `c036bb061ce4d083e264254387b8eac77f53b565` ;
+- head revu : `c2f99d90406ad696c13456efe1e05baa7ea6dd41` ;
+- PR #386 ;
+- merge : `5ab84bcf4d76f6ddda5371ae3d35ffc3b7f01050` ;
+- Reviewer : PASS après ajout obligatoire d’un test PostgreSQL apply/drift/rollback ;
+- exact-head gate : `31254793603` ✅ ;
+- post-merge gate : `31254967688`, job `93096902922` ✅ ;
+- migration `p1b4_geo_coverage_recovery` appliquée en production ;
+- preflight post-migration : **69 candidates / 69 seeds / 69 property listings / 14 quartiers / 5 villes** ;
+- write transactionnel : **69/69** ;
+- candidate set après write : **0** ;
+- rollback append-only disponible, non requis ;
+- aucun finding Supabase nouveau spécifique P1B.4.
+
+Rapport P1B.3 après P1B.4 :
+
+- `eligible_public_listings = 15 395` ;
+- `resolved_neighborhood_listings = 69` ;
+- `coverage_percent = 0.45` ;
+- `latest_resolution_collisions = 0` ;
+- `conflicting_resolution_history = 0` ;
+- `missing_canonical_geo = 0` ;
+- `metric_layers_activated = false`.
+
+### Décision Carte actuelle
+
+**0,45 % reste insuffisant pour activer une couche Offre par quartier.** Le prochain travail Carte doit poursuivre **Geo Coverage Recovery** à partir de preuves géographiques explicites/canoniques. Aucun seuil artificiel ni numéro de lot suivant n’est déclaré avant audit de la prochaine cohorte récupérable.
 
 # 4. Fondation DATA acquise
 
@@ -153,7 +168,7 @@ Scope respecté, Reviewer indépendant PASS, tests/build/gates exact-head verts,
 
 ## UX / Carte
 
-Finaliser **P1B.3** : revue du head incluant les 3 MD → exact-head CI → Certifier → merge → post-merge → appliquer/constater la migration en production → exécuter le rapport read-only → choisir mathématiquement entre couche Offre et Geo Coverage Recovery.
+Auditer la **prochaine cohorte de Geo Coverage Recovery** : mesurer les districts explicites persistés encore non résolus, les alias manquants/variantes canoniques et les bridges disponibles. N’ajouter au Geo Registry que des alias explicitement justifiés ; aucune déduction titre/URL/proximité. Tant que la couverture reste insuffisante, **Offre quartier = OFF**.
 
 ## DATA
 
