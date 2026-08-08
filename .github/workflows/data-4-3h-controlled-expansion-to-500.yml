@@ -54,9 +54,9 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Run controlled expansion dry-run
+      - name: Run controlled expansion / final recertification
         run: npx tsx scripts/audits/data-4-3h-controlled-expansion-to-500.ts
-      - name: Enforce expansion proof and manifests
+      - name: Enforce expansion or final proof
         shell: bash
         run: |
           set -euo pipefail
@@ -68,6 +68,22 @@ jobs:
           const p=JSON.parse(fs.readFileSync('.tmp/data-4-3h/results/proof.json','utf8'));
           const apply=JSON.parse(fs.readFileSync('.tmp/data-4-3h/results/apply-manifest.json','utf8'));
           const rollback=JSON.parse(fs.readFileSync('.tmp/data-4-3h/results/rollback-manifest.json','utf8'));
+          if (p.ttlDays!==14 || p.registryReviewStatus!=='due_soon') throw new Error(JSON.stringify(p));
+          if (p.databaseWrites!==0 || p.freshnessWrites!==0 || p.policyChanges!==0 || p.displayPolicyChanges!==0) throw new Error(JSON.stringify(p));
+          if (p.productionActivation!==false || p.detailPageFetches!==0 || p.contentReuseOperations!==0) throw new Error(JSON.stringify(p));
+          if (p.sourceRequests<2 || p.sourceRequests>40) throw new Error(JSON.stringify(p));
+
+          if (p.mode==='FINAL_RECERTIFICATION') {
+            if (p.schemaVersion!=='data-4-3h-final-recertification-v1') throw new Error(JSON.stringify(p));
+            if (p.currentPersistentRows!==500 || p.certifiedStartRows!==50 || p.controlledExpansionRows!==450) throw new Error(JSON.stringify(p));
+            if (JSON.stringify(p.completedBatchNumbers)!==JSON.stringify([1,2,3,4,5])) throw new Error(JSON.stringify(p));
+            if (p.controlledRows!==500 || p.controlledCurrentSitemapRows!==500 || p.controlledPublicSearchRows!==500 || p.controlledTechnicalDisplayRows!==500) throw new Error(JSON.stringify(p));
+            if (p.globalSitemapPersistentRows!==502) throw new Error(JSON.stringify(p));
+            if (p.expansionPlan.remainingToTarget!==0 || p.expansionPlan.nextBatchSize!==0 || p.expansionPlan.plannedBatchSizes.length!==0) throw new Error(JSON.stringify(p));
+            if (p.furtherPromotionAuthorized!==false || apply.length!==0 || rollback.length!==0) throw new Error(JSON.stringify(p));
+            process.exit(0);
+          }
+
           const expectedNextByCheckpoint=new Map([[50,100],[150,100],[250,100],[350,100],[450,50]]);
           const expectedBatchByCheckpoint=new Map([[50,1],[150,2],[250,3],[350,4],[450,5]]);
           if (p.mode!=='DRY_RUN' || p.schemaVersion!=='data-4-3h-controlled-expansion-v2') throw new Error(JSON.stringify(p));
@@ -77,10 +93,6 @@ jobs:
           if (p.nextBatchSize!==expectedNext || p.nextBatchNumber!==expectedBatch || p.expansionPlan.canReachTarget!==true) throw new Error(JSON.stringify(p));
           if (p.certifiedStartRows!==50 || p.controlledExpansionRows!==p.currentPersistentRows-50) throw new Error(JSON.stringify(p));
           if (p.runId!==`data-4-3h-daragadir-batch-${expectedBatch}-v1`) throw new Error(JSON.stringify(p));
-          if (p.ttlDays!==14 || p.registryReviewStatus!=='due_soon') throw new Error(JSON.stringify(p));
-          if (p.databaseWrites!==0 || p.freshnessWrites!==0 || p.policyChanges!==0 || p.displayPolicyChanges!==0) throw new Error(JSON.stringify(p));
-          if (p.productionActivation!==false || p.detailPageFetches!==0 || p.contentReuseOperations!==0) throw new Error(JSON.stringify(p));
-          if (p.sourceRequests<2 || p.sourceRequests>40) throw new Error(JSON.stringify(p));
           if (p.seedStateReads!==expectedNext || p.rollbackRows!==expectedNext || apply.length!==expectedNext || rollback.length!==expectedNext) throw new Error(JSON.stringify(p));
           if (p.beforePublicSearchRows!==expectedNext || p.beforeTechnicalDisplayRows!==expectedNext) throw new Error(JSON.stringify(p));
           for (const row of apply) {
