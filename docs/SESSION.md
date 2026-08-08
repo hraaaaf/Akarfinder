@@ -3,14 +3,14 @@
 **Mise à jour : 2026-08-08**  
 **Lane UX/Search : BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; prochain lot = SEARCH-WORDING-PURITY-1**  
 **Lane UX/Carte : P1B.4 ✅ Geo Coverage Recovery pilot certifié en production**  
-**Lane DATA : DATA-4.4C ✅ Persistent Canary 50 certifié ; prochaine décision DATA = expansion bornée à définir explicitement**  
+**Lane DATA : DATA-4.4C ✅ ; P0.1 Mass Index Source Registry operational gate = PR #392, certification/activation post-merge requise**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle 0,45 %**
 
 Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
 # Main canonique
 
-Base de gouvernance Benchmark : merge PR #389 `6b11087366c60c8e5921344d6908abe8a4af35a3`.
+Base de cette mission P0.1 : `main` `89daf17de363ea0be5aa4cca40a0ab5ff9a81edd` (merge PR #390).
 
 Acquis récents :
 
@@ -18,9 +18,47 @@ Acquis récents :
 - P1B.3 ✅ PR #382 — Territorial Metric Join Contract ;
 - P1B.4 ✅ PR #386 — Geo Coverage Recovery pilot, 69/69, coverage 0,45 % ;
 - BENCHMARK-SERP-1 ✅ first pass read-only — rapport `docs/BENCHMARK_SERP_1_REPORT.md` ;
-- SEARCH-UX-FAST-1 ✅ PR #390 — accès direct au premier résultat certifié mobile-first.
+- SEARCH-UX-FAST-1 ✅ PR #390 — accès direct au premier résultat certifié mobile-first ;
+- P0.1 PR #392 — Source Registry rendu opérationnel sur le chemin Common Crawl mass-index, sans nouvelle autorisation de source.
 
 Invariants : no-bypass, provenance réelle, Search canonique, aucune donnée/géométrie inventée, mobile-first pour UX majeur, zéro jargon interne sur les surfaces grand public.
+
+# P0.1 — Mass Index Source Registry Operational Gate
+
+Responsabilité unique : **empêcher le Registry structurel historique de devenir une autorisation implicite pour Common Crawl**.
+
+Finding racine :
+
+- `data/openserp/source-domain-registry.json` connaissait des domaines/patterns `approved_discovery` ;
+- la production `public.source_policy_registry` peut autoriser seulement `public_sitemap`, interdire `commoncrawl`, ou avoir une policy réellement expirée ;
+- le harvester Common Crawl utilisait jusque-là le premier registre pour sélectionner ses domaines.
+
+Contrat P0.1 :
+
+1. le harvester relit le Source Registry production **avant toute requête CDX** ;
+2. l’importer relit le Source Registry avant tout write, donc un artefact ancien ne s’auto-autorise jamais ;
+3. le trigger PostgreSQL bloque en dernier ressort tout `commoncrawl_cdx` hors policy ;
+4. admission seulement si : domaine exact, `commoncrawl` explicitement autorisé, `no_bypass_required=true`, `policy_hash` présent, `review_status in (current,due_soon)` **et** `next_review_at > now()`, acquisition/machine/ingestion non bloqués ;
+5. identité `source_domain + seed_provider` immuable pour un seed Common Crawl ;
+6. un INSERT Common Crawl reste `seed_only` et ne fabrique jamais de fraîcheur ; la revalidation fraîche ultérieure reste un pipeline séparé ;
+7. aucune row historique n’est supprimée ou réécrite automatiquement.
+
+Audit live read-only de certification :
+
+- **16** domaines structurels candidats ;
+- **9** autorisés pour le canal exact `commoncrawl` ;
+- **7** refusés fail-closed : **6 `channel_not_allowed` + 1 `policy_review_not_current`** ;
+- domaines actuellement autorisés : `1immo.ma`, `agenz.ma`, `avito.ma`, `barnes-marrakech.com`, `kawtarimmobilier.com`, `masaken.ma`, `mouldar.com`, `mubawab.ma`, `soukimmobilier.com`.
+
+Dette historique exposée :
+
+- **1 734** rows `commoncrawl_cdx` existent sur 6 domaines dont la policy actuelle n’autorise plus Common Crawl ;
+- **65** sont `fresh_confirmed` par une autre observation live (`openserp_yandex_discovery`) ;
+- la dette n’est donc pas blind-quarantined dans P0.1 ; elle est mesurée, future recurrence bloquée, et toute remediation historique doit rester un LOT distinct.
+
+Migration incluse : `supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql`.
+
+Activation : **uniquement post-merge**, via migration canonique Supabase, puis rapport production + trigger catalog + advisors. Rollback non destructif : drop trigger + fonctions P0.1 ; aucune row historique n’est mutée par la migration.
 
 # Gouvernance UX / Search
 
@@ -54,44 +92,24 @@ Scores heuristiques initiaux :
 - desktop : **7,2/10** ;
 - potentiel après simplification : **9,3–9,5/10**.
 
-Finding principal : trop de structure, texte et segmentation avant le premier résultat. L’intelligence AkarFinder doit améliorer le résultat, pas ralentir son accès.
-
 # SEARCH-UX-FAST-1 ✅ CLOSED — PR #390
 
 Responsabilité : **réduire tout ce qui précède la première annonce sur `/search`**.
 
-Résultat :
-
-- hero Search et prose intermédiaire retirés ;
-- `ActiveProjectBanner` retiré du chemin critique, `project_id` toujours transmis via le bridge Search/Map ;
-- recherche + Acheter/Louer/Neuf + `Filtres` comme contrôles visibles principaux ;
-- Option A toujours accessible derrière `Filtres` ;
-- compteur + Liste/Mixte/Carte + tri compactés ;
-- `SearchPriceExplorerDock` déplacé après le flux primaire, sans suppression de l’intelligence locale ;
-- contrat permanent empêchant le retour de cette intelligence avant les résultats ;
-- overflow 360 px corrigé.
-
 Preuves exactes :
 
 - **360×800** : première annonce `1538 px → 450 px`, Search `69 px`, overflow `false` ;
-- **390×844** : première annonce `450 px`, Search `69 px`, overflow `false` ;
-- **1280×800** : première annonce `328 px`, overflow `false` ;
-- **1440×900** : première annonce `328 px`, overflow `false` ;
-- ancien hero : absent ;
-- ancienne explication de ranking : absente ;
-- ancien prompt projet avant SERP : absent ;
-- build production, TypeScript, contrat spécialisé et Chromium 4 viewports : PASS ;
-- **25/25 workflows exact-head verts avant closeout** ;
+- **390×844** : première annonce `450 px`, overflow `false` ;
+- **1280×800 / 1440×900** : première annonce `328 px`, overflow `false` ;
+- build production, TypeScript, contrat spécialisé et Chromium : PASS ;
 - Benchmark Reviewer : **PASS — mobile 9,3/10, desktop 9,2/10** ;
 - Reviewer technique : **PASS**.
 
-Finding différé, non bloquant pour ce LOT : les grands headers/explications de catégories existent encore. Ils appartiennent aux lots `SEARCH-WORDING-PURITY-1` puis `SEARCH-CONTINUOUS-FLOW-1`.
+Finding différé : headers/explications de catégories → `SEARCH-WORDING-PURITY-1` puis `SEARCH-CONTINUOUS-FLOW-1`.
 
 # PROCHAIN LOT UX/SEARCH
 
 **SEARCH-WORDING-PURITY-1** uniquement.
-
-Objectif : supprimer jargon et prose inutile des surfaces transactionnelles sans mélanger le refactor continuous-flow, le ranking, les cards ou la récupération de prix.
 
 Puis : `SEARCH-CONTINUOUS-FLOW-1` → `PRICE-COVERAGE-RECOVERY-1` → `RANKING-QUALITY-1` → `UNIFIED-LISTING-CARD-1` → `CONTEXTUAL-VISUAL-ASSETS-1`.
 
@@ -101,4 +119,4 @@ P1B.4 production : **69 résolutions / 14 quartiers / 5 villes**, couverture **0
 
 # DATA
 
-DATA-4.4C fermé et certifié. Aucun +100/+500 automatique ; prochain lot d’expansion à définir explicitement.
+DATA-4.4C fermé et certifié. P0.1 ne donne aucune nouvelle permission et n’augmente aucun volume par lui-même. Après closeout production de P0.1, le prochain LOT mass-index doit être défini explicitement ; aucun nouveau scraper/source direct n’est autorisé par P0.1.
