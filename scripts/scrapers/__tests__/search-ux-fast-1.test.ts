@@ -40,12 +40,20 @@ test("Option A remains available only through the expandable filters path", () =
   assert.match(filters, /showFilters \? \(/);
   assert.match(filters, /Voir les résultats/);
 
-  const visibleControlsStart = filters.indexOf("return (");
+  const visibleControlsStart = filters.indexOf(
+    '  return (\n    <section aria-label="Filtres de recherche"',
+  );
   const advancedFiltersStart = filters.indexOf('id="advanced-search-filters"');
+  assert.ok(visibleControlsStart >= 0, "main QuickFilters JSX must be found");
+  assert.ok(advancedFiltersStart > visibleControlsStart, "advanced filters must follow compact controls");
   const directSelectorInVisibleControls = filters
     .slice(visibleControlsStart, advancedFiltersStart)
     .includes("<PropertyTypeVisualSelector");
-  assert.equal(directSelectorInVisibleControls, false, "visual property selector must not sit in the always-visible pre-result controls");
+  assert.equal(
+    directSelectorInVisibleControls,
+    false,
+    "visual property selector must not sit in the always-visible pre-result controls",
+  );
 });
 
 test("mobile controls stay compact and advanced criteria remain reachable", () => {
