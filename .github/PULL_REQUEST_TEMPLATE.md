@@ -12,6 +12,7 @@
 - Required specialist reviewer(s):
 - Independent Reviewer identity/pass:
 - Reviewer verdict: `PENDING | CHANGES_REQUIRED | PASS`
+- Applicable skills loaded:
 
 ## Builder evidence
 - Local validation:
