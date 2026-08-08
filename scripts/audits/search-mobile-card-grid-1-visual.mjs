@@ -87,9 +87,19 @@ try {
         const mobileActions = [...document.querySelectorAll('[data-search-continuous-flow] [data-mobile-compact-card]')]
           .flatMap((card) => [...card.querySelectorAll("button, a")])
           .filter((node) => {
-            const text = node.textContent ?? "";
+            const text = (node.textContent ?? "").trim();
             const style = getComputedStyle(node);
-            return style.display !== "none" && (text.includes("Repérer sur la carte") || text.includes("Comparer"));
+            const actuallyVisible =
+              style.display !== "none" &&
+              style.visibility !== "hidden" &&
+              Number.parseFloat(style.opacity || "1") > 0 &&
+              node.getClientRects().length > 0;
+            const secondaryAction =
+              text.includes("Repérer sur la carte") ||
+              text.includes("Comparer") ||
+              text === "Voir le bien" ||
+              text === "Voir la source";
+            return actuallyVisible && secondaryAction;
           }).length;
         return {
           cardCount: cards.length,
