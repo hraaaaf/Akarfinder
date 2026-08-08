@@ -2,6 +2,7 @@
 
 **Mise à jour : 2026-08-08**  
 **Lane UX/Carte : P1B.3 🔴 Territorial Metric Join Contract — PR #382**  
+**Lane UX/Search : BENCHMARK-SERP-1 🟠 read-only — benchmark mobile-first avant modification produit**  
 **Lane DATA : DATA-4.4C ✅ Persistent Canary 50 certifié ; prochaine décision DATA = expansion bornée à définir explicitement**  
 **Lot UX acquis : P1B.2 — Sourced Territorial Intelligence ✅ PR #376 — 9,2/10**
 
@@ -21,6 +22,47 @@ Acquis récents :
 - P1B.2 ✅ PR #376, **9,2/10**.
 
 Invariants : no-bypass, provenance réelle, Search canonique, Geo Registry source géographique unique, aucune précision ou métrique territoriale fabriquée.
+
+# Gouvernance UX / Search — NOUVEAU
+
+Référence dédiée : `docs/BENCHMARK_UX_SEARCH_AGENT.md`.
+
+Décisions fondatrices :
+
+- Benchmark UX/Search Reviewer indépendant ;
+- benchmark réel Maroc + international avant et après les lots UX majeurs ;
+- **mobile = version de référence**, desktop = extension optimisée sans bruit gratuit ;
+- score mobile minimal de certification UX majeure = **9/10** ;
+- `/search` doit tendre vers `RECHERCHE → FILTRES UTILES → RÉSULTATS` ;
+- zéro jargon architectural inutile côté utilisateur ;
+- flux visuel continu d’annonces, sans gros blocs explicatifs cassant le scroll ;
+- hiérarchie card : `IMAGE → PRIX → TITRE → LOCALISATION → 3–4 CARACTÉRISTIQUES → PROVENANCE → ACTION` ;
+- priorité commerciale conservée en interne mais toujours soumise à éligibilité et pertinence minimale ;
+- le Benchmark Reviewer peut rendre `CHANGES_REQUIRED` ;
+- toute vraie nouvelle décision produit remonte au fondateur sous forme `Question A/B/C + recommandation`.
+
+Chaîne UX majeure :
+
+`Builder → Benchmark UX/Search Reviewer → Reviewer technique → Release Certifier → merge → post-merge`.
+
+## BENCHMARK-SERP-1 🟠 READ-ONLY
+
+Mission lancée avant toute modification de la SERP.
+
+À mesurer :
+
+- références marocaines et internationales réellement accessibles ;
+- mobile 360/390 prioritaire ; desktop 1280/1440 ensuite ;
+- éléments + distance avant première annonce ;
+- bruit textuel ;
+- badges/actions par card ;
+- hiérarchie photo/prix/localisation/facts ;
+- scan de cinq annonces consécutives ;
+- continuité Liste ↔ Carte ;
+- wording grand public / jargon ;
+- scores comparatifs et potentiel AkarFinder.
+
+Sortie : rapport benchmark, `KEEP / SIMPLIFY / IMPROVE / REMOVE / AKARFINDER_ADVANTAGE`, priorités P0/P1/P2 et questions fondatrices uniquement si nécessaires. Aucun changement produit dans cette mission.
 
 # UX / Carte — P1B.3 🔴
 
