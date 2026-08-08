@@ -72,8 +72,8 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
 
   return (
     <section aria-label="Filtres de recherche" className="space-y-2.5">
-      <div className="grid gap-2.5 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
-        <label className="relative block" htmlFor="property-search">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2.5 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+        <label className="relative col-span-2 block lg:col-span-1" htmlFor="property-search">
           <Search size={18} strokeWidth={2.2} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <input
             id="property-search"
@@ -85,7 +85,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
           />
         </label>
 
-        <div role="group" aria-label="Type de transaction" className={`${ui.surfaceMuted} grid grid-cols-3 p-1 lg:min-w-[300px]`}>
+        <div role="group" aria-label="Type de transaction" className={`${ui.surfaceMuted} grid min-w-0 grid-cols-3 p-1 lg:min-w-[300px]`}>
           {transactionTabs.map((tab) => {
             const selected = filters.transactionType === tab.value;
             return (
@@ -95,8 +95,8 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
                 onClick={() => onChange({ ...filters, transactionType: tab.value })}
                 aria-pressed={filters.transactionType === tab.value}
                 className={selected
-                  ? "min-h-10 rounded-xl bg-primary px-3 py-2 text-[12.5px] font-extrabold text-primary-foreground shadow-sm"
-                  : "min-h-10 rounded-xl px-3 py-2 text-[12.5px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground"}
+                  ? "min-h-10 rounded-xl bg-primary px-2 py-2 text-[12px] font-extrabold text-primary-foreground shadow-sm sm:px-3 sm:text-[12.5px]"
+                  : "min-h-10 rounded-xl px-2 py-2 text-[12px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground sm:px-3 sm:text-[12.5px]"}
               >
                 {tab.label}
               </button>
@@ -104,31 +104,22 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
           })}
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowFilters((current) => !current)}
-            aria-expanded={showFilters}
-            aria-controls="advanced-search-filters"
-            className={`${ui.secondaryAction} min-h-11 flex-1 gap-2 rounded-full px-4 text-[13px] lg:flex-none`}
-          >
-            <SlidersHorizontal size={16} strokeWidth={2.2} aria-hidden="true" />
-            Filtres
-            {activeCount > 0 ? (
-              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-extrabold text-primary-foreground">
-                {activeCount}
-              </span>
-            ) : null}
-            <ChevronDown size={14} strokeWidth={2.6} className={`transition-transform ${showFilters ? "rotate-180" : ""}`} aria-hidden="true" />
-          </button>
-
+        <button
+          type="button"
+          onClick={() => setShowFilters((current) => !current)}
+          aria-expanded={showFilters}
+          aria-controls="advanced-search-filters"
+          className={`${ui.secondaryAction} min-h-11 gap-1.5 rounded-full px-3 text-[12.5px] sm:px-4 sm:text-[13px]`}
+        >
+          <SlidersHorizontal size={16} strokeWidth={2.2} aria-hidden="true" />
+          <span className="hidden xs:inline">Filtres</span>
           {activeCount > 0 ? (
-            <button type="button" onClick={onReset} className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-[13px] font-bold text-muted-foreground transition hover:bg-surface-muted hover:text-foreground">
-              <X size={14} aria-hidden="true" />
-              Effacer
-            </button>
+            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-extrabold text-primary-foreground">
+              {activeCount}
+            </span>
           ) : null}
-        </div>
+          <ChevronDown size={14} strokeWidth={2.6} className={`transition-transform ${showFilters ? "rotate-180" : ""}`} aria-hidden="true" />
+        </button>
       </div>
 
       <div id="advanced-search-filters" className={`${showFilters ? "sm:grid" : "sm:hidden"} hidden gap-2.5 ${ui.surfaceMuted} p-3 sm:grid-cols-2 lg:grid-cols-5`}>
