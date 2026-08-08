@@ -48,7 +48,7 @@ export function getSearchTruthPresentation(listing: Listing): SearchTruthPresent
   const groupedCount = groupedRepresentationCount(listing);
   const groupingLabel = groupedCount > 1 ? `${groupedCount} résultats proches` : null;
   const groupingExplanation = groupedCount > 1
-    ? ` ${groupedCount} résultats proches ont été regroupés pour faciliter la lecture. Consultez les sources si vous souhaitez les comparer.`
+    ? ` ${groupedCount} résultats proches ont été regroupés pour faciliter la lecture. Ils peuvent correspondre au même bien, sans certitude. Consultez les sources si vous souhaitez les comparer.`
     : "";
 
   const intelligence = getPublicSerpIntelligenceFromListing(listing);
