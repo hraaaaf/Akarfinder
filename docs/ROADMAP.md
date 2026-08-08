@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; prochain lot UX Search = SEARCH-WORDING-PURITY-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ canary 50 persistant certifié**
+**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; prochain lot UX Search = SEARCH-WORDING-PURITY-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 Mass Index Source Registry operational gate = PR #392, activation production post-merge requise**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -24,6 +24,7 @@ Pipeline canonique :
 - no-bypass absolu ;
 - robots/sitemap/capability ≠ permission ;
 - Source Registry obligatoire avant activation ;
+- un registre structurel/patterns ne peut jamais devenir une autorisation de canal ;
 - `DISCOVERED ≠ AUDITED ≠ POLICY_ASSIGNED ≠ ELIGIBLE ≠ INGESTIBLE ≠ DISPLAYABLE` ;
 - aucune donnée/image/géométrie/coordonnée/proximité/partenariat inventé ;
 - Search reste canonique ; Map partage son identité géographique ;
@@ -124,7 +125,39 @@ Observation Ledger / Freshness / normalization / quality tiers ; Source Registry
 
 37 009 URLs / 7 051 domaines ; 8 727 registered domains Common Crawl ; univers 15 238 domaines ; 230 primary-source candidates ; 625 portal candidates ; Registry initial sans activation non autorisée.
 
-# 7. DATA-4 — Reservoir Strategy
+# 7. P0.1 — Mass Index Source Registry Operational Gate — PR #392
+
+Responsabilité unique : **rendre `public.source_policy_registry` réellement autoritaire sur le chemin Common Crawl mass-index**, sans créer de nouveau Registry et sans activer aucune source.
+
+Finding racine : l’ancien `data/openserp/source-domain-registry.json` contient la structure/patterns URL et un statut historique `approved_discovery`, alors que la policy production peut autoriser uniquement `public_sitemap`, refuser `commoncrawl` ou être réellement expirée. Structure ≠ autorisation.
+
+Contrat :
+
+- le harvester relit la policy production avant toute requête Common Crawl CDX ;
+- l’importer la relit encore avant toute écriture, afin qu’un artefact ancien ne puisse pas s’auto-autoriser ;
+- un trigger DB fail-closed protège `source_offer_seeds` comme dernière frontière ;
+- exact domain + exact channel `commoncrawl` + no-bypass + hash + review/date valide + gates non bloqués sont obligatoires ;
+- `next_review_at > now()` est vérifié indépendamment du label `review_status` ;
+- identité source/provider d’un seed Common Crawl immuable ;
+- insert Common Crawl = `seed_only`, jamais de fraîcheur fabriquée ;
+- aucune suppression/réécriture automatique du stock historique.
+
+Audit live read-only certifiable au cours du LOT :
+
+- **16** domaines structurels candidats ;
+- **9** autorisés sur le canal exact `commoncrawl` ;
+- **7** refusés : **6 `channel_not_allowed` + 1 `policy_review_not_current`** ;
+- autorisés : `1immo.ma`, `agenz.ma`, `avito.ma`, `barnes-marrakech.com`, `kawtarimmobilier.com`, `masaken.ma`, `mouldar.com`, `mubawab.ma`, `soukimmobilier.com`.
+
+Dette historique mesurée avant activation : **1 734** rows `commoncrawl_cdx` sur 6 domaines non autorisés aujourd’hui pour ce canal. **65** ont ensuite été confirmées par un autre canal live ; aucune blind-quarantine dans P0.1. Future recurrence = bloquée ; remediation historique = LOT séparé si nécessaire.
+
+Migration : `supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql`.
+
+Gate de sortie P0.1 : focused tests + TypeScript + audit live read-only + CI exact-head + Reviewer technique PASS + Release Certifier GO + merge head attendu + application post-merge de la migration + rapport production + trigger vérifié + Supabase advisors + post-merge CI. Rollback : drop trigger/fonctions P0.1, sans mutation de rows historiques.
+
+P0.1 **n’autorise aucune expansion de volume par lui-même** et n’autorise aucun scraper direct.
+
+# 8. DATA-4 — Reservoir Strategy
 
 - 4.0 ✅ #341 — Avito+Mubawab : 35 134 normalized, 3 588 technical display, 0 policy-activable ;
 - 4.1A ✅ #343 — Avito unavailable : 95,06 % bruit ; 73 core-récupérables ;
@@ -136,15 +169,15 @@ Observation Ledger / Freshness / normalization / quality tiers ; Source Registry
 
 DATA-4.4C n’autorise aucun +100/+500 automatique. Le prochain lot DATA d’expansion doit être borné explicitement.
 
-# 8. Lane business parallèle
+# 9. Lane business parallèle
 
 **Agenz = priorité partenariat/feed** : hidden/internal-only tant qu’aucune autorisation écrite n’autorise une évolution Registry/produit.
 
-# 9. Définition de terminé
+# 10. Définition de terminé
 
 Scope respecté, Benchmark Reviewer si UX majeur, Reviewer indépendant PASS, tests/build/gates exact-head verts, preuves, Registry respecté, aucun bypass, Release Certifier GO, PR mergée depuis le head attendu, `main` vérifié, post-merge CI/gates verts, production vérifiée si applicable, rollback disponible si mutation, 3 MD alignés.
 
-# 10. Prochaine action exacte
+# 11. Prochaine action exacte
 
 ## UX / Search
 
@@ -156,4 +189,4 @@ Auditer la prochaine cohorte explicite de Geo Coverage Recovery. Tant que couver
 
 ## DATA
 
-Définir explicitement le prochain lot d’expansion bornée à partir du canary 50 certifié. Aucun +100/+500 par défaut.
+**Fermer P0.1 jusqu’au post-merge production** : exact-head CI → Reviewer → Certifier → merge → appliquer la migration P0.1 → vérifier rapport/trigger/advisors → vérifier post-merge. Ensuite seulement définir explicitement le LOT mass-index suivant. Aucun nouveau scraper/source direct et aucune expansion automatique ne sont autorisés par P0.1.

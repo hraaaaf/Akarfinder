@@ -1,10 +1,13 @@
 #!/usr/bin/env tsx
 // CASABLANCA-MASS-ACQUISITION-V1 — guarded Common Crawl seed importer.
+// P0.1-MASS-INDEX-SOURCE-REGISTRY-OPERATIONAL-GATE
 //
 // Default mode is DRY RUN. --apply requires the exact same 3 Production
 // ingestion flags as the scheduled OpenSERP writer. Writes ONLY to
 // source_offer_seeds with ignoreDuplicates=true; never to discovery_candidates,
 // listing_sources, property_listings, clusters or any public-facing table.
+// Canonical Source Registry policy is re-read immediately before validation so
+// a stale artifact can never authorize a source/channel pair by itself.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -15,6 +18,11 @@ import {
   type CommonCrawlMassSeed,
   type SourceOfferSeedInsert,
 } from "@/lib/acquisition-scale-v1/commoncrawl-mass-seeds";
+import {
+  MASS_INDEX_COMMONCRAWL_CHANNEL,
+  evaluateMassIndexDomains,
+} from "@/lib/acquisition-scale-v1/mass-index-source-policy";
+import { loadMassIndexSourcePolicies } from "@/lib/acquisition-scale-v1/mass-index-source-policy-db";
 
 const DEFAULT_INPUT = join(process.cwd(), "data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl");
 const UPSERT_CHUNK = 500;
@@ -25,6 +33,11 @@ function parseArgs(argv: string[]): { apply: boolean; input: string } {
     if (argv[i] === "--input" && argv[i + 1]) input = argv[++i];
   }
   return { apply: argv.includes("--apply"), input };
+}
+
+function normalizedSeedDomain(seed: CommonCrawlMassSeed): string {
+  const value = (seed as { source_domain?: unknown }).source_domain;
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
 
 export function parseSeedJsonl(content: string): CommonCrawlMassSeed[] {
@@ -60,11 +73,31 @@ async function insertChunk(rows: SourceOfferSeedInsert[]): Promise<void> {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const rawSeeds = parseSeedJsonl(readFileSync(args.input, "utf8"));
-  const batch = buildMassSeedInsertBatch(rawSeeds);
+  const sourceDomains = [...new Set(rawSeeds.map(normalizedSeedDomain).filter(Boolean))].sort();
+  const policies = await loadMassIndexSourcePolicies(sourceDomains);
+  const policyEvaluation = evaluateMassIndexDomains(
+    sourceDomains,
+    MASS_INDEX_COMMONCRAWL_CHANNEL,
+    policies,
+  );
+  const allowed = new Set(policyEvaluation.allowedDomains);
+  const policyRejectedRows = rawSeeds.filter((seed) => !allowed.has(normalizedSeedDomain(seed)));
+  const policyAuthorizedSeeds = rawSeeds.filter((seed) => allowed.has(normalizedSeedDomain(seed)));
+  const batch = buildMassSeedInsertBatch(policyAuthorizedSeeds);
+
+  const policyRejectionBreakdown = policyEvaluation.decisions
+    .filter((decision) => !decision.allowed)
+    .reduce<Record<string, number>>((acc, decision) => {
+      acc[decision.reason] = (acc[decision.reason] ?? 0) + 1;
+      return acc;
+    }, {});
 
   const summary = {
     input_path: args.input,
     raw_seed_rows: rawSeeds.length,
+    policy_authorized_seed_rows: policyAuthorizedSeeds.length,
+    policy_rejected_seed_rows: policyRejectedRows.length,
+    policy_rejection_breakdown: policyRejectionBreakdown,
     validated_unique_seed_rows: batch.rows.length,
     rejected_rows: batch.rejections.length,
     rejection_breakdown: batch.rejections.reduce<Record<string, number>>((acc, rejection) => {
@@ -73,6 +106,10 @@ async function main() {
     }, {}),
     apply: args.apply,
   };
+
+  if (rawSeeds.length > 0 && policyAuthorizedSeeds.length === 0) {
+    throw new Error("P0.1 blocked Common Crawl seed import: zero policy-authorized seed rows");
+  }
 
   if (!args.apply) {
     console.log(JSON.stringify({ ok: true, status: "DRY_RUN", ...summary }, null, 2));
