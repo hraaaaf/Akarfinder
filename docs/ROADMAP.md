@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : UX/Carte P1B.4 ✅ production certifiée ; couche Offre quartier toujours OFF ; DATA-4.4C ✅ canary 50 persistant certifié ; prochaine décision DATA à définir explicitement**
+**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ first pass ; prochain lot UX Search = SEARCH-UX-FAST-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ canary 50 persistant certifié**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -29,11 +29,58 @@ Pipeline canonique :
 - Search reste canonique ; Map partage son identité géographique ;
 - migrations séparées du code applicatif ;
 - une responsabilité / une branche / une PR / un merge ;
-- Builder ≠ Reviewer ≠ Release Certifier ;
+- Builder ≠ Benchmark UX/Search Reviewer ≠ Reviewer technique ≠ Release Certifier ;
 - tests + preuves exact-head avant merge ;
-- mutation DATA : rollback avant activation.
+- mutation DATA : rollback avant activation ;
+- mobile = expérience UX de référence ; aucun lot UX majeur certifié avec mobile <9/10 ;
+- aucun jargon d’architecture interne exposé au grand public sans nécessité ;
+- benchmark concurrent = source d’apprentissage, jamais modèle à copier.
 
-# 3. Lane UX / Carte
+# 3. Lane UX / Search
+
+## BENCHMARK-SERP-1 ✅ FIRST PASS
+
+Référence : `docs/BENCHMARK_SERP_1_REPORT.md`. Agent : `docs/BENCHMARK_UX_SEARCH_AGENT.md`.
+
+Verdict : **CHANGES_REQUIRED** sur la SERP actuelle avant closeout UX Search.
+
+Direction verrouillée :
+
+`RECHERCHE → FILTRES COMPACTS → COMPTEUR/TRI → ANNONCE → ANNONCE → ANNONCE`
+
+Scores heuristiques first pass : AkarFinder **6,9/10**, mobile **6,2/10**, desktop **7,2/10** ; potentiel après simplification **9,3–9,5/10**.
+
+Décisions déjà verrouillées :
+
+- flux visuel continu ;
+- mobile comme référence ;
+- desktop enrichit sans ajouter du bruit ;
+- Benchmark Reviewer obligatoire avec pouvoir `CHANGES_REQUIRED` ;
+- zéro jargon grand public ;
+- card cible `IMAGE → PRIX → TITRE → LOCALISATION → 3–4 FACTS → PROVENANCE → ACTION`.
+
+### SEARCH-UX-FAST-1 — PROCHAIN LOT UX SEARCH
+
+Responsabilité unique : **réduire au strict minimum tout ce qui précède le premier résultat sur `/search`**, sans modifier ranking, récupération de prix, ordre commercial, structure des cards, DATA, Registry ou Map.
+
+Objectif : après validation d’une recherche, l’utilisateur doit arriver immédiatement sur les résultats. Mobile 390 px est la référence ; desktop 1280/1440 doit rester au moins aussi lisible sans réintroduire de bruit.
+
+Gates minimaux :
+
+- audit avant/après du nombre d’éléments et de la distance verticale avant la première annonce ;
+- captures 360/390/1280/1440 ;
+- premier résultat visible dans le premier écran utile autant que les contraintes header/filtres le permettent ;
+- aucun texte éditorial/promotionnel avant les résultats ;
+- filtres essentiels conservés ;
+- aucune régression Search fonctionnelle ;
+- Benchmark Reviewer PASS avec mobile ≥9/10 ;
+- Reviewer technique PASS ;
+- Release Certifier GO ;
+- 3 MD canoniques alignés au closeout.
+
+Lots suivants, sans les mélanger : `SEARCH-WORDING-PURITY-1` → `SEARCH-CONTINUOUS-FLOW-1` → `PRICE-COVERAGE-RECOVERY-1` → `RANKING-QUALITY-1` → `UNIFIED-LISTING-CARD-1` → `CONTEXTUAL-VISUAL-ASSETS-1`.
+
+# 4. Lane UX / Carte
 
 Acquis :
 
@@ -51,125 +98,52 @@ Acquis :
 
 ## P1B.3 — Territorial Metric Join Contract ✅ CLOSED
 
-Contrat :
-
-`LISTING public/displayable → dernier événement geo explicite → resolved → quartier canonique validated → ville canonique validated`
-
-Garde-fous certifiés : latest-event-first, même dénominateur public pour coverage/collisions, collisions latest avant collapse, conflits historiques séparés, aucun cast externe dangereux, aucune inférence quartier, aucune interpolation, aucun changement Search/ranking/display/publication/geometry, `metric_layers_activated=false`.
-
-Preuve production initiale après merge `dca48b2c` :
-
-- `eligible_public_listings = 15 399` ;
-- `resolved_neighborhood_listings = 0` ;
-- `coverage_percent = 0.00` ;
-- `latest_resolution_collisions = 0` ;
-- `conflicting_resolution_history = 0` ;
-- `missing_canonical_geo = 0` ;
-- `metric_layers_activated = false`.
-
-Décision : **Geo Coverage Recovery obligatoire**, aucun choroplèthe Offre.
+Production initiale : **15 399 listings éligibles / 0 résolu / 0 % coverage / 0 collision / 0 conflit**, `metric_layers_activated=false`.
 
 ## P1B.4 — Geo Coverage Recovery pilot ✅ CLOSED
 
-But : matérialiser une première cohorte quartier honnête à partir de données déjà persistées, sans inférence.
+Preflight **69/69**, write **69/69**, **14 quartiers / 5 villes**, aucune inférence/fuzzy/spatiale. Rapport post-write : **15 395 listings éligibles / 69 résolus / 0,45 % coverage / 0 collision / 0 conflit**, `metric_layers_activated=false`.
 
-Contrat :
+**Offre quartier reste OFF.** La prochaine lane Carte poursuit la récupération géographique explicite/certifiable ; aucun seuil artificiel ni choroplèthe fabriqué.
 
-`LISTING public/displayable → coverage_bridge explicite → property_listings.district explicite → alias Geo Registry exact et unique → ville parente validated + alias ville exact → aucun événement geo préalable`
-
-Interdits : fuzzy matching, titre, URL, coordonnées, proximité, interpolation, fallback ville présenté comme quartier.
-
-Certification :
-
-- base : `c036bb061ce4d083e264254387b8eac77f53b565` ;
-- head revu : `c2f99d90406ad696c13456efe1e05baa7ea6dd41` ;
-- PR #386 ;
-- merge : `5ab84bcf4d76f6ddda5371ae3d35ffc3b7f01050` ;
-- Reviewer : PASS après ajout obligatoire d’un test PostgreSQL apply/drift/rollback ;
-- exact-head gate : `31254793603` ✅ ;
-- post-merge gate : `31254967688`, job `93096902922` ✅ ;
-- migration `p1b4_geo_coverage_recovery` appliquée en production ;
-- preflight post-migration : **69 candidates / 69 seeds / 69 property listings / 14 quartiers / 5 villes** ;
-- write transactionnel : **69/69** ;
-- candidate set après write : **0** ;
-- rollback append-only disponible, non requis ;
-- aucun finding Supabase nouveau spécifique P1B.4.
-
-Rapport P1B.3 après P1B.4 :
-
-- `eligible_public_listings = 15 395` ;
-- `resolved_neighborhood_listings = 69` ;
-- `coverage_percent = 0.45` ;
-- `latest_resolution_collisions = 0` ;
-- `conflicting_resolution_history = 0` ;
-- `missing_canonical_geo = 0` ;
-- `metric_layers_activated = false`.
-
-### Décision Carte actuelle
-
-**0,45 % reste insuffisant pour activer une couche Offre par quartier.** Le prochain travail Carte doit poursuivre **Geo Coverage Recovery** à partir de preuves géographiques explicites/canoniques. Aucun seuil artificiel ni numéro de lot suivant n’est déclaré avant audit de la prochaine cohorte récupérable.
-
-# 4. Fondation DATA acquise
+# 5. Fondation DATA acquise
 
 Observation Ledger / Freshness / normalization / quality tiers ; Source Registry v2 / display eligibility ; Market Index / Property Graph foundation ; dedup ; Partner Feed ; OpenSERP / public sitemaps / Common Crawl ; 53 villes/pôles.
 
-# 5. DATA-1 ✅
+# 6. DATA-1 ✅
 
 37 009 URLs / 7 051 domaines ; 8 727 registered domains Common Crawl ; univers 15 238 domaines ; 230 primary-source candidates ; 625 portal candidates ; Registry initial sans activation non autorisée.
 
-# 6. DATA-4 — Reservoir Strategy
+# 7. DATA-4 — Reservoir Strategy
 
-- **4.0 ✅ #341** — Avito+Mubawab : 35 134 normalized, 3 588 technical display, 0 policy-activable.
-- **4.1A ✅ #343** — Avito unavailable : 95,06 % bruit ; 73 core-récupérables.
-- **4.2 ✅ #344** — Dar Agadir = `ADMISSIBLE_GROWTH`; Agenz = `PARTNERSHIP_UPSIDE`.
-- **4.3A → H ✅ jusqu’à #377** — Dar Agadir certifié au cap **500**, Search/display **500/500**, drift **0 %**.
-- **4.3I ✅ #367** — protection multi-channel freshness ownership.
-- **4.3J ✅ #368** — ordre du trigger display corrigé.
-- **4.4A ✅ #379** — Promo Immo sélectionné `PREFERRED_PENDING_REVALIDATION`, 0 write.
-- **4.4B ✅ #380**, merge `13b6c3c` — source revalidée sur signaux publics actuels : **3 130 URLs sitemap**, **2 935** intersectent le réservoir, **2 456** lignes conservatrices éligibles ; canary préparé **50/50** pour Search, technical display, quality A/B et rollback ; **0 write**.
-- **4.4C ✅ #384**, merge `ba65943a` — protection freshness-only du Thin Index mergée et migration appliquée en production ; replay live 4.4B juste avant mutation = cohorte immuable **50/50**, mêmes **3 130 / 2 935 / 2 456** ; write transactionnel persistant réussi. Re-certification indépendante : **50/50 fresh_confirmed**, **50/50 public_sitemap_presence**, Search **50/50**, technical display **50/50**, quality A/B **50/50**, projection préservée **50/50**, drift **0 %**, Registry inchangé. État source final Promo Immo : **3 005 total / 59 fresh_confirmed / 2 946 seed_only / 50 sitemap-presence**. Rollback disponible, non requis.
+- 4.0 ✅ #341 — Avito+Mubawab : 35 134 normalized, 3 588 technical display, 0 policy-activable ;
+- 4.1A ✅ #343 — Avito unavailable : 95,06 % bruit ; 73 core-récupérables ;
+- 4.2 ✅ #344 — Dar Agadir = `ADMISSIBLE_GROWTH`; Agenz = `PARTNERSHIP_UPSIDE` ;
+- 4.3A→J ✅ — Dar Agadir 500/500, Search/display 500/500, drift 0 %, ownership fraîcheur et trigger display protégés ;
+- 4.4A ✅ #379 ;
+- 4.4B ✅ #380 — Promo Immo revalidé : 3 130 URLs sitemap / 2 935 intersection / 2 456 éligibles ;
+- 4.4C ✅ #384, merge `ba65943a` — canary 50 persistant certifié, Search/display/quality/projection **50/50**, drift **0 %**, Registry inchangé.
 
-## DATA-4.4C — Persistent Canary 50 ✅ CLOSED
+DATA-4.4C n’autorise aucun +100/+500 automatique. Le prochain lot DATA d’expansion doit être borné explicitement.
 
-Le canary exact de 4.4B est maintenant persistant et certifié en production.
-
-Preuves de fermeture :
-
-1. PR sécurité #384 entièrement verte puis mergée depuis le head attendu ;
-2. migration production `data_4_4c_freshness_projection_safety` appliquée ;
-3. revalidation publique 4.4B rejouée immédiatement avant write, cohorte et compteurs inchangés ;
-4. preflight exact **50/50** ;
-5. transaction atomique avec assertions fail-closed ;
-6. Search **50/50** avant/après ;
-7. technical display **50/50** avant/après ;
-8. quality A/B **50/50** ;
-9. projection enrichie préservée **50/50** ;
-10. drift observé **0 %** ;
-11. provenance, TTL 14 jours, run id et rollback snapshots présents **50/50** ;
-12. aucun changement Registry/policy et aucun rollback nécessaire.
-
-**4.4C n’autorise pas automatiquement un batch +100 ou +500.** Toute expansion du second réservoir doit être définie comme un nouveau lot borné avec ses propres gates, preuve et rollback.
-
-# 7. Lane business parallèle
+# 8. Lane business parallèle
 
 **Agenz = priorité partenariat/feed** : hidden/internal-only tant qu’aucune autorisation écrite n’autorise une évolution Registry/produit.
 
-# 8. Suite DATA
-
-DATA-4.4C ✅ → **définir explicitement le prochain lot d’expansion bornée du second réservoir** à partir du canary 50 certifié → autres sources admissibles → DATA-3 connectors → DATA-5/6/7 feeds/claim/workspace → 20K → 50K → 100K+.
-
-Aucun numéro de lot, taille +100/+500 ou promotion supplémentaire n’est canonique tant qu’il n’est pas explicitement défini et certifié.
-
 # 9. Définition de terminé
 
-Scope respecté, Reviewer indépendant PASS, tests/build/gates exact-head verts, preuves, Registry respecté, aucun bypass, Release Certifier GO, PR mergée depuis le head attendu, `main` vérifié, post-merge CI/gates verts, production vérifiée si applicable, rollback disponible si mutation, 3 MD alignés.
+Scope respecté, Benchmark Reviewer si UX majeur, Reviewer indépendant PASS, tests/build/gates exact-head verts, preuves, Registry respecté, aucun bypass, Release Certifier GO, PR mergée depuis le head attendu, `main` vérifié, post-merge CI/gates verts, production vérifiée si applicable, rollback disponible si mutation, 3 MD alignés.
 
 # 10. Prochaine action exacte
 
+## UX / Search
+
+Exécuter **SEARCH-UX-FAST-1** uniquement : réduire la distance jusqu’au premier résultat sans toucher au ranking, aux cards, au prix ou aux règles commerciales.
+
 ## UX / Carte
 
-Auditer la **prochaine cohorte de Geo Coverage Recovery** : mesurer les districts explicites persistés encore non résolus, les alias manquants/variantes canoniques et les bridges disponibles. N’ajouter au Geo Registry que des alias explicitement justifiés ; aucune déduction titre/URL/proximité. Tant que la couverture reste insuffisante, **Offre quartier = OFF**.
+Auditer la prochaine cohorte explicite de Geo Coverage Recovery. Tant que couverture insuffisante : **Offre quartier = OFF**.
 
 ## DATA
 
-**Définir explicitement le prochain lot d’expansion bornée du second réservoir** à partir du canary 50 certifié de DATA-4.4C. Aucun +100/+500 n’est autorisé par défaut.
+Définir explicitement le prochain lot d’expansion bornée à partir du canary 50 certifié. Aucun +100/+500 par défaut.
