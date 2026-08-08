@@ -22,14 +22,14 @@ test("search shell removes the old pre-result hero and explanatory noise", () =>
 
 test("compact controls precede the listing stream", () => {
   const filtersPosition = shell.indexOf("<QuickFilters");
-  const resultCountPosition = shell.indexOf("résultat${displayedCount");
+  const resultToolbarPosition = shell.indexOf('aria-label="Trier les résultats"');
   const listingStreamPosition = shell.indexOf("<CommercialListingSection");
 
   assert.ok(filtersPosition >= 0, "QuickFilters must remain visible");
-  assert.ok(resultCountPosition > filtersPosition, "result count must follow filters");
-  assert.ok(listingStreamPosition > resultCountPosition, "listing stream must follow the compact result toolbar");
+  assert.ok(resultToolbarPosition > filtersPosition, "result toolbar must follow filters");
+  assert.ok(listingStreamPosition > resultToolbarPosition, "listing stream must follow the compact result toolbar");
   assert.match(shell, /<SearchViewSwitcher value=\{view\} onChange=\{setView\}/);
-  assert.match(shell, /aria-label="Trier les résultats"/);
+  assert.match(shell, /\$\{displayedCount\} résultat/);
 });
 
 test("Option A remains available only through the expandable filters path", () => {
@@ -50,9 +50,9 @@ test("Option A remains available only through the expandable filters path", () =
 
 test("mobile controls stay compact and advanced criteria remain reachable", () => {
   assert.match(filters, /grid-cols-\[minmax\(0,1fr\)_auto\]/);
-  assert.match(filters, />Acheter</);
-  assert.match(filters, />Louer</);
-  assert.match(filters, />Neuf</);
+  assert.match(filters, /label: "Acheter"/);
+  assert.match(filters, /label: "Louer"/);
+  assert.match(filters, /label: "Neuf"/);
   assert.match(filters, />Filtres</);
   assert.match(filters, /aria-label="Ville"/);
   assert.match(filters, /aria-label="Budget minimum"/);
