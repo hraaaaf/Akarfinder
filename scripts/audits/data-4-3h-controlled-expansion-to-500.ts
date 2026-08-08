@@ -2,8 +2,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { extractRobotsSitemaps, parseSitemapXml, sameDarAgadirOrigin } from "../data4/daragadir-sitemap-revalidation";
 import { classifyFreshnessShadowRows, policyAllowsFreshnessShadow, type FreshnessShadowCandidate, type FreshnessShadowPolicy } from "../data4/daragadir-freshness-shadow";
-import { PROMOTION_TTL_DAYS, selectPromotionBatch } from "../data4/daragadir-controlled-promotion";
+import { PROMOTION_TTL_DAYS, selectPromotionBatch, type PromotionSnapshot } from "../data4/daragadir-controlled-promotion";
 import { buildExpansionPlan, requireCertifiedExpansionStart } from "../data4/daragadir-controlled-expansion";
+import { EXPANSION_BATCH_RUN_ID, buildExpansionPersistentBatchPlan } from "../data4/daragadir-expansion-persistent-batch";
 
 const outDir = process.env.DATA_4_3H_OUT_DIR ?? ".tmp/data-4-3h/results";
 const PAGE_SIZE = 1000;
@@ -76,6 +77,7 @@ async function fetchAllowedText(urlString: string): Promise<string> {
 type RegistryRow = { source_domain:string; acquisition_mode:string; discovery_policy:string; display_policy:string; display_gate:string; machine_gate:string; allowed_discovery_channels:string[]|null; max_revalidation_interval_days:number|null; review_status:string|null };
 type NormalizedRow = { canonical_url:string; normalization_status:string; freshness_status:string; city:string|null; property_type:string|null; intent:string|null };
 type DisplayRow = { canonical_url:string; display_eligibility:string; quality_score:number|string|null };
+type SeedDbRow = { canonical_url:string; freshness_status:string; fresh_last_seen_at:string|null; fresh_channels:string[]|null; metadata:Record<string,unknown>|null; updated_at:string|null };
 
 function numberOrNull(value: number | string | null): number | null {
   if (value === null) return null;
@@ -83,7 +85,21 @@ function numberOrNull(value: number | string | null): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+async function loadSeedStates(urls: string[]): Promise<SeedDbRow[]> {
+  const rows: SeedDbRow[] = [];
+  for (let i = 0; i < urls.length; i += LOOKUP_CHUNK_SIZE) {
+    const chunk = urls.slice(i, i + LOOKUP_CHUNK_SIZE);
+    rows.push(...await restPage<SeedDbRow>("source_offer_seeds", {
+      select:"canonical_url,freshness_status,fresh_last_seen_at,fresh_channels,metadata,updated_at",
+      canonical_url:postgrestIn(chunk),
+      limit:String(chunk.length),
+    }));
+  }
+  return rows;
+}
+
 async function main(): Promise<void> {
+  const generatedAt = new Date().toISOString();
   const [registryRows, normalized, display, currentPersistentRows, globalSitemapPersistentRows] = await Promise.all([
     restAll<RegistryRow>("source_policy_registry", { select:"source_domain,acquisition_mode,discovery_policy,display_policy,display_gate,machine_gate,allowed_discovery_channels,max_revalidation_interval_days,review_status", source_domain:"eq.daragadir.com" }),
     restAll<NormalizedRow>("thin_index_normalized_documents_v2", { select:"canonical_url,normalization_status,freshness_status,city,property_type,intent", source_domain:"eq.daragadir.com", order:"canonical_url.asc" }),
@@ -114,7 +130,7 @@ async function main(): Promise<void> {
   const queue = [...extractRobotsSitemaps(robots)];
   if (!queue.length) throw new Error("No sitemap declared");
   const visited = new Set<string>();
-  const sitemapUrls = new Set<string>();
+  const sitemapByCanonicalUrl = new Map<string,string>();
   while (queue.length) {
     const sitemapUrl = queue.shift()!;
     if (visited.has(sitemapUrl)) continue;
@@ -126,7 +142,7 @@ async function main(): Promise<void> {
         if (!visited.has(child) && !queue.includes(child)) queue.push(child);
       }
     } else {
-      for (const url of parsed.locs) sitemapUrls.add(url);
+      for (const canonicalUrl of parsed.locs) sitemapByCanonicalUrl.set(canonicalUrl, sitemapUrl);
     }
   }
 
@@ -135,23 +151,44 @@ async function main(): Promise<void> {
     const d = displayByUrl.get(row.canonical_url);
     return { canonicalUrl:row.canonical_url, normalizationStatus:row.normalization_status, freshnessStatus:row.freshness_status, city:row.city, propertyType:row.property_type, intent:row.intent, qualityScore:d ? numberOrNull(d.quality_score) : null, displayEligibility:d?.display_eligibility ?? null };
   });
-  const shadow = classifyFreshnessShadowRows(candidates, policy, sitemapUrls);
+  const shadow = classifyFreshnessShadowRows(candidates, policy, new Set(sitemapByCanonicalUrl.keys()));
   const eligibleSeedOnly = shadow.filter((row) => row.classification === "SHADOW_READY" && row.freshnessStatus === "seed_only");
   const plan = buildExpansionPlan(currentPersistentRows, eligibleSeedOnly.length);
   requireCertifiedExpansionStart(plan);
   const nextBatch = selectPromotionBatch(eligibleSeedOnly, plan.nextBatchSize);
   if (nextBatch.length !== 100) throw new Error(`Expected next batch 100, got ${nextBatch.length}`);
   const urls = nextBatch.map((row) => row.canonicalUrl);
-  const publicPresence = await loadUrlPresence("public_search_representations_v1", urls);
+  const [publicPresence, seeds] = await Promise.all([
+    loadUrlPresence("public_search_representations_v1", urls),
+    loadSeedStates(urls),
+  ]);
+  if (seeds.length !== 100) throw new Error(`Expected 100 seed states, got ${seeds.length}`);
+  const seedByUrl = new Map(seeds.map((row) => [row.canonical_url,row]));
+  const manifest = nextBatch.map((candidate) => {
+    const seed = seedByUrl.get(candidate.canonicalUrl);
+    if (!seed) throw new Error(`Missing seed state for ${candidate.canonicalUrl}`);
+    const sitemapUrl = sitemapByCanonicalUrl.get(candidate.canonicalUrl);
+    if (!sitemapUrl) throw new Error(`Missing sitemap evidence for ${candidate.canonicalUrl}`);
+    const before: PromotionSnapshot = {
+      canonicalUrl:seed.canonical_url,
+      freshnessStatus:seed.freshness_status,
+      freshLastSeenAt:seed.fresh_last_seen_at,
+      freshChannels:seed.fresh_channels ?? [],
+      metadata:seed.metadata,
+      updatedAt:seed.updated_at,
+    };
+    return buildExpansionPersistentBatchPlan(before, { canonicalUrl:candidate.canonicalUrl, observedAt:generatedAt, sitemapUrl });
+  });
 
   const proof = {
     schemaVersion:"data-4-3h-controlled-expansion-v1",
-    generatedAt:new Date().toISOString(),
+    generatedAt,
     mode:"DRY_RUN",
     certifiedStartRunId:CERTIFIED_START_RUN_ID,
+    runId:EXPANSION_BATCH_RUN_ID,
     currentPersistentRows,
     globalSitemapPersistentRows,
-    currentSitemapUrlCount:sitemapUrls.size,
+    currentSitemapUrlCount:sitemapByCanonicalUrl.size,
     eligibleSeedOnlyRows:eligibleSeedOnly.length,
     expansionPlan:plan,
     nextBatchSize:nextBatch.length,
@@ -159,6 +196,8 @@ async function main(): Promise<void> {
     nextBatchLastUrl:nextBatch.at(-1)?.canonicalUrl ?? null,
     beforePublicSearchRows:publicPresence.size,
     beforeTechnicalDisplayRows:nextBatch.filter((row) => displayByUrl.has(row.canonicalUrl)).length,
+    seedStateReads:seeds.length,
+    rollbackRows:manifest.length,
     sourceRequests,
     sourceRequestBudget:MAX_SOURCE_REQUESTS,
     registryReviewStatus:policy.reviewStatus,
@@ -173,6 +212,8 @@ async function main(): Promise<void> {
   };
   await fs.mkdir(outDir, { recursive:true });
   await fs.writeFile(path.join(outDir,"proof.json"), `${JSON.stringify(proof,null,2)}\n`);
+  await fs.writeFile(path.join(outDir,"apply-manifest.json"), `${JSON.stringify(manifest,null,2)}\n`);
+  await fs.writeFile(path.join(outDir,"rollback-manifest.json"), `${JSON.stringify(manifest.map((row) => ({ canonicalUrl:row.canonicalUrl, ...row.rollback })),null,2)}\n`);
   console.log(JSON.stringify(proof,null,2));
 }
 
