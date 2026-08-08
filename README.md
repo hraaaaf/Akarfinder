@@ -59,7 +59,7 @@ Principes verrouillés :
 - aucun lot UX majeur n’est certifié avec un score mobile < **9/10** ;
 - `/search` vise `RECHERCHE → FILTRES UTILES → RÉSULTATS` ;
 - aucun jargon d’architecture interne n’est exposé au grand public sans nécessité ;
-- la SERP doit tendre vers un **flux visuel continu**, même si les priorités commerciales/provenance restent appliquées en interne ;
+- la SERP doit rester un **flux visuel continu**, même si les priorités commerciales/provenance restent appliquées en interne ;
 - les cards convergent vers `IMAGE → PRIX → TITRE → LOCALISATION → 3–4 FACTS → PROVENANCE → ACTION` ;
 - le Benchmark Reviewer est consultatif obligatoire et peut rendre `CHANGES_REQUIRED` ;
 - aucune pratique concurrente n’est copiée automatiquement : elle doit apporter un gain utilisateur compatible avec AkarFinder.
@@ -101,7 +101,24 @@ Résultat certifié :
 - Benchmark UX/Search Reviewer : **PASS — mobile 9,4/10, desktop 9,3/10** ;
 - Reviewer technique : **PASS**.
 
-Prochain lot UX/Search séparé : **SEARCH-CONTINUOUS-FLOW-1**.
+### SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393
+
+Troisième lot Search : suppression des ruptures visuelles entre catégories d’annonces, sans modifier le classement, la récupération de prix, les cards, DATA, Registry, Map, l’éligibilité ou le dédup.
+
+Résultat certifié avant closeout documentaire :
+
+- les anciens murs `Promoteurs premium`, `Agences partenaires`, `Annonces sur AkarFinder`, `Informations détaillées`, `Informations à compléter` et `Autres annonces` ne segmentent plus la SERP ;
+- les résultats internes sont rendus dans une seule grille continue ; les résultats Gateway suivent sans nouveau header de catégorie ;
+- ordre interne strict conservé : `promoteur premium → agence partenaire → direct user → public analyzed → public partial → public observed → gateway` ;
+- `partitionCommercialSearchListings` reste autoritaire ; aucun changement de ranking ou de truth tier ;
+- Chromium réel **360×800 / 390×844 / 1280×800 / 1440×900** : ordre préservé, 0 header de catégorie, 0 overflow, première annonce dans le premier écran ; sur mobile, aucune rupture verticale entre cards > **24 px** ;
+- `SEARCH-UX-FAST-1`, Search Truth, Visible Dedup, P0 Closure et WORDING-PURITY restent verts ;
+- gate permanent `SEARCH-CONTINUOUS-FLOW-1 Gate` : contrats + TypeScript + build + Chromium ;
+- **23/23 workflows exact-head verts** avant closeout documentaire ;
+- Benchmark UX/Search Reviewer : **PASS — mobile 9,5/10, desktop 9,4/10** ;
+- Reviewer technique : **PASS**.
+
+Prochain lot UX/Search séparé : **PRICE-COVERAGE-RECOVERY-1**.
 
 ## État UX / Carte
 
