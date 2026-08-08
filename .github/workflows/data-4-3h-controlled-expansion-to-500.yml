@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - "scripts/data4/daragadir-controlled-expansion.ts"
+      - "scripts/data4/daragadir-expansion-persistent-batch.ts"
       - "scripts/data4/__tests__/daragadir-controlled-expansion.test.ts"
+      - "scripts/data4/__tests__/daragadir-expansion-persistent-batch.test.ts"
       - "scripts/audits/data-4-3h-controlled-expansion-to-500.ts"
       - ".github/workflows/data-4-3h-controlled-expansion-to-500.yml"
       - "docs/data/DATA-4-3H-CONTROLLED-EXPANSION-TO-500.md"
@@ -25,7 +27,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: DATA-4.3H unit tests
-        run: npx tsx --test scripts/data4/__tests__/daragadir-controlled-expansion.test.ts
+        run: npx tsx --test scripts/data4/__tests__/daragadir-controlled-expansion.test.ts scripts/data4/__tests__/daragadir-expansion-persistent-batch.test.ts
       - name: DATA-4.3F regression tests
         run: npx tsx --test scripts/data4/__tests__/daragadir-controlled-promotion.test.ts
       - name: DATA-4.3G regression tests
@@ -54,21 +56,41 @@ jobs:
       - run: npm ci
       - name: Run controlled expansion dry-run
         run: npx tsx scripts/audits/data-4-3h-controlled-expansion-to-500.ts
-      - name: Enforce expansion proof
+      - name: Enforce expansion proof and manifests
         shell: bash
         run: |
           set -euo pipefail
           test -s "${DATA_4_3H_OUT_DIR}/proof.json"
+          test -s "${DATA_4_3H_OUT_DIR}/apply-manifest.json"
+          test -s "${DATA_4_3H_OUT_DIR}/rollback-manifest.json"
           node - <<'NODE'
           const fs=require('fs');
           const p=JSON.parse(fs.readFileSync('.tmp/data-4-3h/results/proof.json','utf8'));
-          if (p.mode!=='DRY_RUN' || p.currentPersistentRows!==50) throw new Error(JSON.stringify(p));
-          if (JSON.stringify(p.expansionPlan.plannedBatchSizes)!==JSON.stringify([100,100,100,100,50])) throw new Error(JSON.stringify(p));
-          if (p.nextBatchSize!==100 || p.expansionPlan.canReachTarget!==true) throw new Error(JSON.stringify(p));
+          const apply=JSON.parse(fs.readFileSync('.tmp/data-4-3h/results/apply-manifest.json','utf8'));
+          const rollback=JSON.parse(fs.readFileSync('.tmp/data-4-3h/results/rollback-manifest.json','utf8'));
+          const expectedNextByCheckpoint=new Map([[50,100],[150,100],[250,100],[350,100],[450,50]]);
+          const expectedBatchByCheckpoint=new Map([[50,1],[150,2],[250,3],[350,4],[450,5]]);
+          if (p.mode!=='DRY_RUN' || p.schemaVersion!=='data-4-3h-controlled-expansion-v2') throw new Error(JSON.stringify(p));
+          if (!expectedNextByCheckpoint.has(p.currentPersistentRows)) throw new Error(JSON.stringify(p));
+          const expectedNext=expectedNextByCheckpoint.get(p.currentPersistentRows);
+          const expectedBatch=expectedBatchByCheckpoint.get(p.currentPersistentRows);
+          if (p.nextBatchSize!==expectedNext || p.nextBatchNumber!==expectedBatch || p.expansionPlan.canReachTarget!==true) throw new Error(JSON.stringify(p));
+          if (p.certifiedStartRows!==50 || p.controlledExpansionRows!==p.currentPersistentRows-50) throw new Error(JSON.stringify(p));
+          if (p.runId!==`data-4-3h-daragadir-batch-${expectedBatch}-v1`) throw new Error(JSON.stringify(p));
           if (p.ttlDays!==14 || p.registryReviewStatus!=='due_soon') throw new Error(JSON.stringify(p));
           if (p.databaseWrites!==0 || p.freshnessWrites!==0 || p.policyChanges!==0 || p.displayPolicyChanges!==0) throw new Error(JSON.stringify(p));
           if (p.productionActivation!==false || p.detailPageFetches!==0 || p.contentReuseOperations!==0) throw new Error(JSON.stringify(p));
           if (p.sourceRequests<2 || p.sourceRequests>40) throw new Error(JSON.stringify(p));
+          if (p.seedStateReads!==expectedNext || p.rollbackRows!==expectedNext || apply.length!==expectedNext || rollback.length!==expectedNext) throw new Error(JSON.stringify(p));
+          if (p.beforePublicSearchRows!==expectedNext || p.beforeTechnicalDisplayRows!==expectedNext) throw new Error(JSON.stringify(p));
+          for (const row of apply) {
+            if (row.before.freshnessStatus!=='seed_only') throw new Error('non-seed row selected');
+            if (row.before.freshChannels.includes('public_sitemap_presence')) throw new Error('channel already present');
+            if (row.proposed.freshnessStatus!=='fresh_confirmed') throw new Error('wrong proposed state');
+            if (!row.proposed.freshChannels.includes('public_sitemap_presence')) throw new Error('missing channel');
+            const marker=row.proposed.metadata?.freshness_evidence?.controlled_expansion_batch;
+            if (marker?.run_id!==p.runId || marker?.batch_number!==expectedBatch) throw new Error('wrong expansion marker');
+          }
           NODE
       - uses: actions/upload-artifact@v4
         with:
