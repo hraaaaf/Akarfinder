@@ -56,7 +56,8 @@ Principes non négociables :
 - P1A.5 ✅ PR #365 — Territorial Explorer **Maroc → ville → quartier**, navigation URL canonique, responsive **390 / 430×932 / 768 / 1280**, **9,3/10** ;
 - P1A.6 ✅ PR #369 — Responsive hardening, audit natif **3 états × 4 viewports = 12 captures / 0 finding**, chevauchement cockpit↔explorer corrigé, **21/21 tests**, TypeScript/build/gates verts, **9,2/10** ;
 - P1B.1 ✅ PR #371 — **AkarFinder Map Visual Layer** : basemap générique fortement atténuée, 16 arrondissements Casablanca issus du dataset OSM shadow rendus en preview-canary avec palette territoriale différenciée, contours/labels AkarFinder, couleurs explicitement non sémantiques, audit natif **430 / 768 / 1280 = 3 captures / 0 finding**, **21/21 tests**, TypeScript/build/tous gates verts, contrôle humain **9,1/10** ;
-- prochain UX : **P1B.2 — couches d’intelligence territoriale sourcées**, uniquement à partir de données observables/canoniques certifiées.
+- P1B.2 ✅ PR #376 — **Sourced Territorial Intelligence** : état URL `layer=price`, benchmarks exacts quartier pour appartement/achat seulement, médiane + fourchette + échantillon + confiance + période visibles, aucun fallback ville présenté comme prix quartier, aucune interpolation/heatmap vers les polygones, audit final **430 / 768 / 1280 = 3 captures / 0 finding**, tous les workflows du head verts, contrôle humain **9,2/10** ;
+- prochain UX : auditer les métriques territoriales réellement disponibles avant de définir le prochain lot canonique ; aucune couche offre/fraîcheur/confiance ne sera ajoutée sans granularité et provenance certifiables.
 
 ## État DATA acquis
 

@@ -2,8 +2,8 @@
 
 **Mise à jour : 2026-08-08**  
 **Lane DATA : DATA-4.3H ✅ fermé et certifié en production au cap 500**  
-**Lot UX acquis : P1B.1 — AkarFinder Map Visual Layer ✅ PR #371 — 9,1/10**  
-**Prochain UX : P1B.2 — Couches d’intelligence territoriale sourcées**
+**Lot UX acquis : P1B.2 — Sourced Territorial Intelligence ✅ PR #376 — 9,2/10**  
+**Prochain UX : audit des métriques territoriales avant définition du prochain lot canonique**
 
 Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
@@ -18,44 +18,60 @@ Acquis récents :
 - DATA-4.3H.1 ✅ PR #372 — start count certifié par provenance ;
 - DATA-4.3H.2 ✅ PR #373 — manifests apply/rollback du premier +100 ;
 - DATA-4.3H.3 ✅ PR #375, merge `77eceaf5` — checkpoints certifiés `50→150→250→350→450→500`, provenance typée, fail-closed sur état partiel/non séquentiel ;
+- DATA-4.3H certification finale ✅ main `cdaf296f` — cohorte 500/500, Public Search 500/500, technical display 500/500, drift 0 % ;
 - P1A.5 ✅ PR #365, **9,3/10** ;
 - P1A.6 ✅ PR #369, **9,2/10**, audit natif final **12 captures / 0 finding** ;
-- P1B.1 ✅ PR #371, **9,1/10**, audit final intégré **3 captures / 0 finding**.
+- P1B.1 ✅ PR #371, **9,1/10**, audit final intégré **3 captures / 0 finding** ;
+- P1B.2 ✅ PR #376, merge **`0fc20da8`**, **9,2/10**, audit final **430 / 768 / 1280 = 3 captures / 0 finding**.
 
 Invariants : no-bypass, capability ≠ permission, Source Registry avant activation, volume technique ≠ inventaire public, Search canonique, Map complément spatial, Geo Registry unique source de vérité.
 
-# UX — P1B.1 AkarFinder Map Visual Layer ✅
+# UX — P1B.2 Sourced Territorial Intelligence ✅
 
-Objectif acquis : la carte ne repose plus visuellement sur une basemap générique comme élément dominant lorsque la couche Casablanca canary est disponible.
+Objectif acquis : ajouter une première couche décisionnelle réellement sourcée sans transformer la carte en faux signal marché.
 
 Acquis :
 
-- basemap OpenFreeMap/CARTO conservée comme infrastructure mais fortement atténuée ;
-- namespace cartographique propriétaire : `akarfinder-neighborhood-geometry`, `akarfinder-neighborhood-fill`, `akarfinder-neighborhood-outline`, `akarfinder-neighborhood-label` ;
-- **16 arrondissements Casablanca** issus uniquement du dataset OSM shadow existant ;
-- aucune géométrie inventée et aucune promotion automatique shadow → production ;
-- activation via `/api/geo/casablanca-arrondissements` et le canary preview existant ;
-- production reste bloquée par le contrat géométrique existant ;
-- palette territoriale pastel différenciée ;
-- couleurs explicitement **non sémantiques** : elles distinguent les territoires et ne représentent ni prix, ni qualité, ni demande, ni confiance ;
-- contours AkarFinder et labels territoriaux renforcés ;
-- attribution OSM maintenue ;
-- cycle `style.load` MapLibre durci ;
-- viewports certifiés **430×932 / 768×1024 / 1280×900** ;
-- **21/21 tests P1A.5/P1A.6/P1B.1 verts** ;
+- état URL canonique `layer=price` ;
+- activation du mode prix uniquement après sélection d’une ville ;
+- benchmarks exacts quartier uniquement pour **appartement / achat** ;
+- identité géographique comparée via le Geo Registry plutôt que par simple égalité de libellés ;
+- Casablanca certifiée avec exactement **2 repères exacts** : Casablanca Finance City et Maârif ;
+- Bouskoura exclu du mode appartement lorsqu’aucun benchmark appartement exact n’existe ;
+- médiane, fourchette, taille d’échantillon, confiance et période visibles ;
+- aucun fallback ville présenté comme prix de quartier ;
+- aucune interpolation, heatmap ou propagation des prix aux polygones ;
+- couche territoriale P1B.1 maintenue en arrière-plan et volontairement atténuée en mode prix ;
+- correctif mobile final : ancrage des marqueurs vers l’intérieur du viewport selon leur longitude relative au centre de carte ;
+- Maârif n’est plus rogné sur **430×932** ;
+- head final certifié : `6c3157e4251ce4821c390c646683d1367362b013` ;
+- run final P1B.2 : `31248741178` ; job `93081545544` ;
+- artefact final : `9019352472` ; digest `sha256:d97f550dc32e1d69eefc7f80ef8008f2318dfbc01e778629680d401173c9fe9e` ;
+- contrats P1A.6/P1B.1/P1B.2 : **18/18** ;
 - TypeScript et production build verts ;
-- **3 captures / 0 finding** ;
-- contrôle humain final : **9,1/10**.
+- **21 workflows du head verts** ;
+- audit navigateur : **3 captures / 0 finding**, 2 marqueurs exacts à chaque viewport, territorial layer active, aucun overflow, aucune erreur console ;
+- contrôle humain final : **9,2/10** ;
+- merge code : `0fc20da846c2a56aea5264830fbee2dfe014fce4`.
 
-# Prochain UX — P1B.2 Couches d’intelligence territoriale sourcées
+# Prochain UX — audit des métriques territoriales
 
-Ajouter une première couche décisionnelle réellement calculée depuis des données certifiées.
+Avant de créer le prochain numéro de lot, vérifier quelles métriques existent réellement à une granularité compatible avec les entités affichées.
+
+Candidats :
+
+- offre disponible réelle ;
+- fraîcheur des observations ;
+- confiance/qualité DATA ;
+- extension des prix exacts à d’autres quartiers/types/transactions.
 
 Contraintes :
 
-- aucune géométrie/proximité/POI inventée ;
-- aucune couleur de P1B.1 réinterprétée comme un score ;
-- métrique choisie seulement si sa provenance, son calcul, sa fraîcheur et ses limites sont explicables ;
+- granularité exacte et provenance explicable obligatoires ;
+- aucun fallback ville présenté comme quartier ;
+- aucune interpolation pour combler les trous ;
+- dénominateur explicite pour toute proportion ;
+- pas de donnée = état neutre ;
 - Geo Registry reste source de vérité ;
 - Search reste canonique ;
 - géométries shadow restent shadow tant qu’elles ne sont pas certifiées pour publication ;
@@ -90,12 +106,6 @@ Dar Agadir :
 - `fresh_confirmed` : **605** ;
 - `seed_only` : **5 928** ;
 - `public_sitemap_presence` global : **502** ;
-- baseline DATA-4.3G : **50** ;
-- batch1 : **100** ;
-- batch2 : **100** ;
-- batch3 : **100** ;
-- batch4 : **100** ;
-- batch5 : **50** ;
 - cohorte contrôlée : **500/500 `fresh_confirmed` + sitemap** ;
 - Public Search : **500/500** ;
 - technical display : **500/500** ;
@@ -103,17 +113,6 @@ Dar Agadir :
 - rollback : **non nécessaire**.
 
 Les **2** autres lignes globales avec canal sitemap sont des preuves légitimes préexistantes hors cohorte contrôlée.
-
-## Registry final inchangé
-
-- acquisition : `public_sitemap_canonical_link` ;
-- discovery : `public_sitemap_only` ;
-- display policy : `canonical_link_only` ;
-- display gate : `external_tail_link_only` ;
-- machine gate : `canonical_link_only` ;
-- canal Registry : `public_sitemap` ;
-- TTL : **14 jours** ;
-- review : `due_soon`.
 
 # Prochaine action DATA
 
