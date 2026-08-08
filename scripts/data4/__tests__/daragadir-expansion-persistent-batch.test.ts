@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   EXPANSION_BATCH_RUN_ID,
   buildExpansionPersistentBatchPlan,
+  expansionBatchRunId,
 } from "../daragadir-expansion-persistent-batch";
 
 const before = {
@@ -34,10 +35,20 @@ test("builds typed first expansion batch with exact rollback snapshot", () => {
   assert.equal(marker.batch_number, 1);
   assert.equal(marker.channel, "public_sitemap_presence");
   assert.equal(marker.ttl_days, 14);
+});
 
-  const sitemapPresence = freshnessEvidence.sitemap_presence as Record<string, unknown>;
-  assert.equal(sitemapPresence.sitemap_url, evidence.sitemapUrl);
-  assert.equal(sitemapPresence.observed_at, evidence.observedAt);
+test("builds a distinct typed second expansion batch", () => {
+  const plan = buildExpansionPersistentBatchPlan(before, evidence, 2);
+  const freshnessEvidence = plan.proposed.metadata.freshness_evidence as Record<string, unknown>;
+  const marker = freshnessEvidence.controlled_expansion_batch as Record<string, unknown>;
+  assert.equal(marker.run_id, "data-4-3h-daragadir-batch-2-v1");
+  assert.equal(marker.batch_number, 2);
+});
+
+test("run id rejects invalid batch numbers", () => {
+  assert.equal(expansionBatchRunId(5), "data-4-3h-daragadir-batch-5-v1");
+  assert.throws(() => expansionBatchRunId(0));
+  assert.throws(() => expansionBatchRunId(6));
 });
 
 test("rejects non-seed rows", () => {
