@@ -5,29 +5,31 @@ export const AKARFINDER_TERRITORIAL_FILL_LAYER_ID = "akarfinder-neighborhood-fil
 export const AKARFINDER_TERRITORIAL_LINE_LAYER_ID = "akarfinder-neighborhood-outline";
 export const AKARFINDER_TERRITORIAL_LABEL_LAYER_ID = "akarfinder-neighborhood-label";
 
+// A calm but deliberately differentiated territorial palette. Colors distinguish
+// adjacent areas only; they do not encode price, quality, demand, or confidence.
 export const AKARFINDER_TERRITORIAL_PALETTE = [
-  "#DCEEFF",
-  "#C9E5FF",
-  "#B7DCFF",
-  "#A7D1FA",
-  "#96C6F3",
-  "#87BCEB",
-  "#78B1E3",
-  "#6AA6DA",
+  "#B8D4FF",
+  "#BFE5F0",
+  "#C8E5D7",
+  "#E6DFC0",
+  "#EBD2C8",
+  "#DDD2F1",
+  "#C8D1EE",
+  "#BFDDE4",
 ] as const;
 
-const LIGHT_BASEMAP_BACKGROUND = "#EAF1F7";
+const LIGHT_BASEMAP_BACKGROUND = "#EDF3F7";
 const DARK_BASEMAP_BACKGROUND = "#071426";
 
 function mutedLayerPaint(theme: string | undefined) {
   const dark = theme === "dark";
   return {
     background: dark ? DARK_BASEMAP_BACKGROUND : LIGHT_BASEMAP_BACKGROUND,
-    land: dark ? "#0A1A2F" : "#EDF3F7",
-    water: dark ? "#0B2744" : "#D9EAF5",
-    road: dark ? "#21354B" : "#D6E0E8",
-    roadMajor: dark ? "#2D455F" : "#C3D0DA",
-    label: dark ? "#8FA3B8" : "#62748A",
+    land: dark ? "#0A1A2F" : "#F1F5F8",
+    water: dark ? "#0B2744" : "#DCEBF4",
+    road: dark ? "#21354B" : "#D8E0E7",
+    roadMajor: dark ? "#2D455F" : "#C9D3DC",
+    label: dark ? "#8FA3B8" : "#7A8795",
   };
 }
 
@@ -40,17 +42,22 @@ export function applyAkarFinderBasemapTreatment(map: MapLibreMap, theme?: string
         map.setPaintProperty(layer.id, "background-color", palette.background);
       } else if (layer.type === "fill" && /(water|ocean|river|lake)/.test(id)) {
         map.setPaintProperty(layer.id, "fill-color", palette.water);
+        map.setPaintProperty(layer.id, "fill-opacity", 0.78);
       } else if (layer.type === "fill" && /(land|park|landcover|landuse)/.test(id)) {
         map.setPaintProperty(layer.id, "fill-color", palette.land);
-        map.setPaintProperty(layer.id, "fill-opacity", 0.72);
+        map.setPaintProperty(layer.id, "fill-opacity", 0.58);
       } else if (layer.type === "line" && /(motorway|trunk|primary)/.test(id)) {
         map.setPaintProperty(layer.id, "line-color", palette.roadMajor);
-        map.setPaintProperty(layer.id, "line-opacity", 0.72);
+        map.setPaintProperty(layer.id, "line-opacity", 0.44);
       } else if (layer.type === "line" && /(road|street|highway)/.test(id)) {
         map.setPaintProperty(layer.id, "line-color", palette.road);
-        map.setPaintProperty(layer.id, "line-opacity", 0.6);
+        map.setPaintProperty(layer.id, "line-opacity", 0.34);
       } else if (layer.type === "symbol") {
         map.setPaintProperty(layer.id, "text-color", palette.label);
+        map.setPaintProperty(layer.id, "text-opacity", 0.58);
+        if (map.getPaintProperty(layer.id, "icon-opacity") !== undefined) {
+          map.setPaintProperty(layer.id, "icon-opacity", 0.34);
+        }
         if (map.getPaintProperty(layer.id, "text-halo-color") !== undefined) {
           map.setPaintProperty(layer.id, "text-halo-color", darkOrLightHalo(theme));
         }
@@ -62,7 +69,7 @@ export function applyAkarFinderBasemapTreatment(map: MapLibreMap, theme?: string
 }
 
 function darkOrLightHalo(theme?: string) {
-  return theme === "dark" ? "#071426" : "#F6F9FC";
+  return theme === "dark" ? "#071426" : "#F8FAFC";
 }
 
 function mountStage(name: string, action: () => void): void {
@@ -118,7 +125,7 @@ export function addAkarFinderTerritorialLayers(
           "sbata", AKARFINDER_TERRITORIAL_PALETTE[7],
           AKARFINDER_TERRITORIAL_PALETTE[0],
         ],
-        "fill-opacity": theme === "dark" ? 0.32 : 0.46,
+        "fill-opacity": theme === "dark" ? 0.42 : 0.66,
       },
     });
   });
@@ -129,9 +136,9 @@ export function addAkarFinderTerritorialLayers(
       type: "line",
       source: AKARFINDER_TERRITORIAL_SOURCE_ID,
       paint: {
-        "line-color": theme === "dark" ? "#7AB8FF" : "#1769C2",
-        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1.1, 12, 2.2],
-        "line-opacity": 0.9,
+        "line-color": theme === "dark" ? "#8CC3FF" : "#0B63CE",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1.35, 12, 2.45],
+        "line-opacity": 0.94,
       },
     });
   });
@@ -144,14 +151,15 @@ export function addAkarFinderTerritorialLayers(
       minzoom: 9,
       layout: {
         "text-field": ["get", "displayName"],
-        "text-size": ["interpolate", ["linear"], ["zoom"], 9, 11, 12, 14],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 9, 11.5, 12, 14.5],
         "text-font": ["Noto Sans Regular"],
         "text-allow-overlap": false,
       },
       paint: {
-        "text-color": theme === "dark" ? "#D7E9FF" : "#0B315E",
+        "text-color": theme === "dark" ? "#E3F0FF" : "#102F55",
+        "text-opacity": 0.96,
         "text-halo-color": darkOrLightHalo(theme),
-        "text-halo-width": 1.4,
+        "text-halo-width": 1.6,
       },
     });
   });
