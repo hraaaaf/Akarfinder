@@ -45,6 +45,15 @@ describe("P1B.1 — AkarFinder Map Visual Layer", () => {
   it("mutes the generic basemap instead of pretending it is AkarFinder data", () => {
     const visual = source("lib/map/akarfinder-territorial-style.ts");
     assert.ok(visual.includes("applyAkarFinderBasemapTreatment"));
-    assert.ok(visual.includes("OpenStreetMap") === false);
+  });
+
+  it("wires the visual layer into the real map through the protected canary endpoint", () => {
+    const map = source("components/map/MapNeighborhoodExperience.tsx");
+    assert.ok(map.includes('CASABLANCA_TERRITORIAL_ENDPOINT = "/api/geo/casablanca-arrondissements"'));
+    assert.ok(map.includes("applyAkarFinderBasemapTreatment"));
+    assert.ok(map.includes("addAkarFinderTerritorialLayers"));
+    assert.ok(map.includes('cityEntity?.slug !== "casablanca"'));
+    assert.ok(map.includes('data-akarfinder-territorial-layer={territorialLayerActive ? "active" : "inactive"}'));
+    assert.ok(map.includes("Couleurs AkarFinder = repérage territorial, pas un score de prix"));
   });
 });
