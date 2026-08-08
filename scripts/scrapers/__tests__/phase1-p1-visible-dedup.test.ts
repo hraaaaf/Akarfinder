@@ -37,8 +37,8 @@ describe("AF-AUDIT-P1-020 visible dedup", () => {
       listing("c", "group-1"),
     ]);
     const presentation = getSearchTruthPresentation(result.listings[0]);
-    assert.equal(presentation.informationLabel, "3 représentations regroupées");
-    assert.match(presentation.explanation, /identité physique du bien/i);
+    assert.equal(presentation.informationLabel, "3 résultats proches");
+    assert.match(presentation.explanation, /même bien/i);
     assert.equal(result.listings[0].duplicate_score, undefined);
   });
 

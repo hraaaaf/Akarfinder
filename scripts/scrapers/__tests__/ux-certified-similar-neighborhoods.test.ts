@@ -57,5 +57,6 @@ test("search explorer mounts certified similar neighborhoods", () => {
   const panel = readFileSync(resolve(process.cwd(), "components/search/CertifiedSimilarNeighborhoodsPanel.tsx"), "utf8");
   assert.match(dock, /<CertifiedSimilarNeighborhoodsPanel/);
   assert.match(panel, /Quartiers similaires/);
-  assert.match(panel, /Écart descriptif/);
+  assert.match(panel, /Des quartiers aux prix proches/);
+  assert.match(panel, /Écart de prix/);
 });

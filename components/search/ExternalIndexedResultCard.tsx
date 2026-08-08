@@ -59,7 +59,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
             className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
           />
           <span className="absolute bottom-2 left-2 inline-flex items-center rounded-full bg-black/65 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white/95 backdrop-blur-sm">
-            Offre observée
+            Source externe
           </span>
         </div>
       ) : showFallback ? (
@@ -79,11 +79,11 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
             </span>
             {!showThumbnail && !showFallback || thumbError && !showFallback ? (
               <span className="inline-flex flex-shrink-0 items-center rounded-full border border-border/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground dark:border-white/10 dark:text-white/50">
-                Offre observée
+                Source externe
               </span>
             ) : null}
             <span className="inline-flex flex-shrink-0 items-center rounded-full border border-slate-400/20 bg-slate-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-slate-600 dark:text-white/55">
-              Aperçu limité
+              Informations limitées
             </span>
           </div>
           {result.source_badge ? <SourceBadge badge={result.source_badge} variant="dark" /> : null}
@@ -110,7 +110,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
               ) : null}
             </div>
             <p className="mt-1.5 text-[11px] leading-5 text-foreground/75 dark:text-white/70">
-              Ces offres peuvent se ressembler sans être nécessairement le même bien. Comparez les sources originales.
+              Ces offres peuvent se ressembler. Comparez les sources pour confirmer qu’il s’agit du même bien.
             </p>
           </div>
         ) : null}

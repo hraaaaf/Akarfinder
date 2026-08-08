@@ -88,14 +88,13 @@ describe("Phase 1 P0 — result regime separation", () => {
   it("Search keeps structured and external regimes explicitly separated", () => {
     const searchShell = source("components/search/LightZillowSearchShell.tsx");
     const truthTier = source("lib/search/search-truth-tier.ts");
-    assert.ok(searchShell.includes("Analysé par AkarFinder"));
-    assert.ok(searchShell.includes("Analyse partielle"));
-    assert.ok(searchShell.includes("Offres observées sur le web"));
+    assert.ok(searchShell.includes("Informations détaillées"));
+    assert.ok(searchShell.includes("Informations à compléter"));
+    assert.ok(searchShell.includes("Autres résultats"));
     assert.ok(searchShell.includes("partitionCommercialSearchListings"));
     assert.ok(searchShell.includes("Promoteurs premium"));
     assert.ok(searchShell.includes("Agences partenaires"));
-    assert.ok(searchShell.includes("Annonces déposées sur AkarFinder"));
-    assert.ok(searchShell.includes("Annonces publiques indexées"));
+    assert.ok(searchShell.includes("Annonces sur AkarFinder"));
     assert.ok(truthTier.includes('source_display_type === "external_web_result"'));
     assert.ok(truthTier.includes('source_badge === "external_web_result"'));
     assert.ok(truthTier.includes('tier: "observed"'));

@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; prochain lot UX Search = SEARCH-WORDING-PURITY-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 Mass Index Source Registry operational gate = PR #392, activation production post-merge requise**
+**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; prochain lot UX Search = SEARCH-CONTINUOUS-FLOW-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 Mass Index Source Registry operational gate = PR #392, activation production post-merge requise**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -82,14 +82,31 @@ Résultat certifié :
 
 Finding non bloquant réservé aux lots suivants : les headers/explications de catégories existent encore dans le flux. Ils ne précèdent plus la première card de façon bloquante, mais seront traités séparément par `SEARCH-WORDING-PURITY-1` puis `SEARCH-CONTINUOUS-FLOW-1`.
 
+## SEARCH-WORDING-PURITY-1 ✅ CLOSED — PR #391
+
+Responsabilité unique : **remplacer le jargon et la prose d’architecture par un langage utilisateur clair sur Search/Home**, sans modifier ranking, ordre commercial, récupération de prix, DATA, Registry, cards ou Map.
+
+Résultat certifié avant closeout documentaire :
+
+- `search-truth-tier` garde exactement les mêmes branches `observed/analyzed/partial`, le même collapse et le même ordre ; seules les chaînes publiques changent ;
+- les libellés d’architecture (`indexé`, `observé`, `analysé`, `analyse partielle`, `niveau d’information`, `passeport local factuel`, `écart descriptif`, etc.) sont retirés des surfaces transactionnelles ;
+- les informations de confiance nécessaires restent explicites en langage simple ;
+- le garde-fou dédup est conservé : des résultats regroupés peuvent correspondre au même bien **sans certitude** ;
+- mobile **360×800 / 390×844** : première annonce **398 px**, visible dès le premier écran, zéro overflow ;
+- desktop **1280×800 / 1440×900** : première annonce **328 px**, zéro overflow ;
+- Search + Home : **0 expression retirée** sur les 4 viewports Chromium ;
+- gate permanent `SEARCH-WORDING-PURITY-1 Gate` : contrats + TypeScript + build + Chromium ;
+- **23/23 workflows exact-head verts** avant closeout documentaire ;
+- Benchmark UX/Search Reviewer : **PASS — mobile 9,4/10, desktop 9,3/10** ;
+- Reviewer technique : **PASS**.
+
 ### Prochains lots UX/Search — ordre strict
 
-1. **SEARCH-WORDING-PURITY-1** — retirer jargon, libellés techniques et prose inutile des surfaces Search/Home concernées ;
-2. **SEARCH-CONTINUOUS-FLOW-1** — supprimer les ruptures visuelles par grandes catégories sans modifier la priorité commerciale interne ;
-3. **PRICE-COVERAGE-RECOVERY-1** — audit puis récupération policy-compliant des prix manquants ;
-4. **RANKING-QUALITY-1** — qualité/complétude/relevance dans le cadre de la priorité commerciale ;
-5. **UNIFIED-LISTING-CARD-1** — grammaire unique des cards ;
-6. **CONTEXTUAL-VISUAL-ASSETS-1** — visuels contextuels déterministes et truth-safe.
+1. **SEARCH-CONTINUOUS-FLOW-1** — supprimer les ruptures visuelles par grandes catégories sans modifier la priorité commerciale interne ;
+2. **PRICE-COVERAGE-RECOVERY-1** — audit puis récupération policy-compliant des prix manquants ;
+3. **RANKING-QUALITY-1** — qualité/complétude/relevance dans le cadre de la priorité commerciale ;
+4. **UNIFIED-LISTING-CARD-1** — grammaire unique des cards ;
+5. **CONTEXTUAL-VISUAL-ASSETS-1** — visuels contextuels déterministes et truth-safe.
 
 # 4. Lane UX / Carte
 
@@ -181,7 +198,7 @@ Scope respecté, Benchmark Reviewer si UX majeur, Reviewer indépendant PASS, te
 
 ## UX / Search
 
-Exécuter **SEARCH-WORDING-PURITY-1** uniquement : retirer le jargon et la prose non nécessaire sans mélanger continuous-flow, ranking, cards ou récupération de prix.
+Exécuter **SEARCH-CONTINUOUS-FLOW-1** uniquement : supprimer les ruptures visuelles entre catégories d’annonces tout en conservant la priorité commerciale interne et sans mélanger ranking, cards ou récupération de prix.
 
 ## UX / Carte
 

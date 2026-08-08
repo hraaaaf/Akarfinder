@@ -40,7 +40,7 @@ test("deep pagination cursor is part of the search contract and shared API routi
   assert.match(apiSearch, /buildSearchRequestQuery\(/);
   assert.match(databaseSearch, /next_cursor: hasMore \? scanCursor : null/);
   assert.match(databaseSearch, /has_more: hasMore/);
-  assert.match(shell, /Afficher plus de résultats indexés/);
+  assert.match(shell, /Afficher plus de résultats/);
 });
 
 test("cursor advances at raw-row precision instead of skipping the remainder of a DB batch", () => {

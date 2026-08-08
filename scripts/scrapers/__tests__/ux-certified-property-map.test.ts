@@ -74,8 +74,9 @@ test("map interactions remain presentation-only", () => {
 
 test("Atlas renders exact markers only through the certified contract", () => {
   const map = readFileSync(resolve(process.cwd(), "components/search/SearchMapPanel.tsx"), "utf8");
-  assert.match(map, /buildCertifiedPropertyMapPoints/);
-  assert.match(map, /Coordonnées exactes certifiées/);
+  assert.match(map, /buildCertifiedPropertyMapPoints\(visibleListings\)/);
+  assert.match(map, /hasCertifiedExactCoordinates\(activeListing\)/);
+  assert.match(map, /exactPropertyPoints\.map/);
   assert.ok(!map.includes("Math.random"));
   assert.ok(!map.includes("latitude ??"));
   assert.ok(!map.includes("longitude ??"));

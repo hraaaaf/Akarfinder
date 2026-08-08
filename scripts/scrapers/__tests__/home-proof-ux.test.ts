@@ -16,9 +16,9 @@ describe("Homepage proof UX", () => {
 
   it("keeps one direct search entry and one Companion entry", () => {
     const orchestrator = source("components/home/SearchEntryOrchestrator.tsx");
-    assert.equal((orchestrator.match(/href="\/compagnon"/g) ?? []).length, 1);
+    assert.equal(orchestrator.split('href="/compagnon"').length - 1, 1);
     assert.equal((orchestrator.match(/<HomeSearchBar/g) ?? []).length, 1);
-    assert.equal((orchestrator.match(/href="\/mon-projet"/g) ?? []).length, 0);
+    assert.equal(orchestrator.split('href="/mon-projet"').length - 1, 0);
     assert.ok(orchestrator.includes("Pas encore sûr de vos critères ? Construisez votre projet"));
   });
 
@@ -34,10 +34,10 @@ describe("Homepage proof UX", () => {
 
   it("shows transparent result proof without unstable public counters", () => {
     const proof = source("components/landing/DataProofBlock.tsx");
-    assert.ok(proof.includes("Des résultats plus clairs pour mieux décider"));
+    assert.ok(proof.includes("Comparez sans perdre l’essentiel"));
     assert.ok(proof.includes("Source clairement indiquée"));
-    assert.ok(proof.includes("Niveau d’information visible"));
-    assert.ok(proof.includes("Résultats similaires mieux organisés"));
+    assert.ok(proof.includes("Détails utiles en un coup d’œil"));
+    assert.ok(proof.includes("Résultats proches mieux organisés"));
     assert.ok(!proof.includes("/api/stats"));
     assert.ok(!proof.includes("Index actuel"));
   });

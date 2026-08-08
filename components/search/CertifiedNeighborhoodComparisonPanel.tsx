@@ -54,8 +54,8 @@ export function CertifiedNeighborhoodComparisonPanel({
       <div className="border-b border-border/12 bg-surface/70 px-5 py-4 dark:border-white/8 dark:bg-white/[0.03]">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-500 dark:text-bronze-400">Comparateur de quartiers</p>
-            <h2 className="mt-1 text-[1.05rem] font-extrabold tracking-[-0.02em] text-foreground">Comparer des références couvertes</h2>
+            <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-500 dark:text-bronze-400">Comparer les quartiers</p>
+            <h2 className="mt-1 text-[1.05rem] font-extrabold tracking-[-0.02em] text-foreground">Prix et annonces côte à côte</h2>
           </div>
           <span className="grid h-9 w-9 place-items-center rounded-full border border-border/15 bg-background text-bronze-500 dark:border-white/10 dark:bg-white/[0.04]"><Scale size={17} aria-hidden="true" /></span>
         </div>
@@ -93,10 +93,10 @@ export function CertifiedNeighborhoodComparisonPanel({
                 </tr>
               </thead>
               <tbody>
-                <tr><th className="border-b border-border/10 p-3 text-muted-foreground">Référence publiée</th>{model.columns.map((column) => <td key={column.key} className="border-b border-border/10 p-3 font-extrabold text-foreground"><a href={column.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-3">{formatMadPerM2(column.publishedPricePerM2)}</a></td>)}</tr>
-                <tr><th className="border-b border-border/10 p-3 text-muted-foreground">Observation</th>{model.columns.map((column) => <td key={column.key} className="border-b border-border/10 p-3 text-foreground">{column.observedAt.slice(0, 10)}</td>)}</tr>
-                <tr><th className="border-b border-border/10 p-3 text-muted-foreground">Propriétés visibles</th>{model.columns.map((column) => <td key={column.key} className="border-b border-border/10 p-3 text-foreground">{column.visibleCanonicalProperties}</td>)}</tr>
-                <tr><th className="p-3 text-muted-foreground">Médiane visible</th>{model.columns.map((column) => <td key={column.key} className="p-3 text-foreground">{formatMadPerM2(column.visibleMedianPricePerM2)}</td>)}</tr>
+                <tr><th className="border-b border-border/10 p-3 text-muted-foreground">Prix au m²</th>{model.columns.map((column) => <td key={column.key} className="border-b border-border/10 p-3 font-extrabold text-foreground"><a href={column.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-3">{formatMadPerM2(column.publishedPricePerM2)}</a></td>)}</tr>
+                <tr><th className="border-b border-border/10 p-3 text-muted-foreground">Date des données</th>{model.columns.map((column) => <td key={column.key} className="border-b border-border/10 p-3 text-foreground">{column.observedAt.slice(0, 10)}</td>)}</tr>
+                <tr><th className="border-b border-border/10 p-3 text-muted-foreground">Annonces visibles</th>{model.columns.map((column) => <td key={column.key} className="border-b border-border/10 p-3 text-foreground">{column.visibleCanonicalProperties}</td>)}</tr>
+                <tr><th className="p-3 text-muted-foreground">Prix médian</th>{model.columns.map((column) => <td key={column.key} className="p-3 text-foreground">{formatMadPerM2(column.visibleMedianPricePerM2)}</td>)}</tr>
               </tbody>
             </table>
           </div>

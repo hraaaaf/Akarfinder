@@ -6,19 +6,19 @@ const steps = [
   {
     key: "search",
     title: "Cherchez",
-    body: "Décrivez votre recherche avec la ville, le quartier, le budget, le type de bien et vos critères essentiels.",
+    body: "Indiquez la ville, le quartier, le budget, le type de bien et vos critères essentiels.",
     icon: Search,
   },
   {
     key: "compare",
     title: "Comparez",
-    body: "Parcourez des résultats plus clairs avec la source, le niveau d’information, le prix et les offres similaires.",
+    body: "Parcourez des résultats clairs avec le prix, la source et les caractéristiques qui comptent.",
     icon: Scale,
   },
   {
     key: "decide",
     title: "Décidez",
-    body: "Ajoutez le contexte du quartier, les proximités et les informations utiles avant d’organiser une visite.",
+    body: "Ajoutez le contexte du quartier et les informations utiles avant d’organiser une visite.",
     icon: MapPin,
   },
 ] as const;
@@ -54,7 +54,7 @@ function ComparePreview() {
         </div>
       </div>
       <div className="mt-2 flex items-center justify-between rounded-xl border border-[#DCE9F6] bg-white px-3 py-2 text-[9.5px] font-semibold text-slate-500">
-        <span>Niveau d’information</span><span className="text-[#0B63CE]">Élevé</span>
+        <span>Détails disponibles</span><span className="text-[#0B63CE]">Essentiels</span>
       </div>
     </div>
   );

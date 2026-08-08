@@ -47,6 +47,7 @@ test("search explorer mounts the certified neighborhood comparator", () => {
   const dock = readFileSync(resolve(process.cwd(), "components/search/SearchPriceExplorerDock.tsx"), "utf8");
   const panel = readFileSync(resolve(process.cwd(), "components/search/CertifiedNeighborhoodComparisonPanel.tsx"), "utf8");
   assert.match(dock, /<CertifiedNeighborhoodComparisonPanel/);
-  assert.match(panel, /Comparateur de quartiers/);
+  assert.match(panel, /Comparer les quartiers/);
+  assert.match(panel, /Prix et annonces côte à côte/);
   assert.match(panel, /Non renseigné/);
 });

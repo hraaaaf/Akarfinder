@@ -38,36 +38,36 @@ export function getSearchTruthPresentation(listing: Listing): SearchTruthPresent
   if (isObservedExternalListing(listing)) {
     return {
       tier: "observed",
-      label: "Offre observée",
-      informationLabel: "Aperçu limité",
+      label: "Source externe",
+      informationLabel: "Informations limitées",
       explanation:
-        "AkarFinder référence cette offre avec des informations limitées. La source originale reste obligatoire pour vérifier les détails.",
+        "Consultez le site d’origine pour confirmer le prix, la disponibilité et les détails.",
     };
   }
 
   const groupedCount = groupedRepresentationCount(listing);
-  const groupingLabel = groupedCount > 1 ? `${groupedCount} représentations regroupées` : null;
+  const groupingLabel = groupedCount > 1 ? `${groupedCount} résultats proches` : null;
   const groupingExplanation = groupedCount > 1
-    ? ` ${groupedCount} représentations structurées portant le même groupe de dédoublonnage ont été regroupées dans les résultats chargés pour réduire le bruit. Ce rapprochement ne prouve pas à lui seul l’identité physique du bien.`
+    ? ` ${groupedCount} résultats proches ont été regroupés pour faciliter la lecture. Ils peuvent correspondre au même bien, sans certitude. Consultez les sources si vous souhaitez les comparer.`
     : "";
 
   const intelligence = getPublicSerpIntelligenceFromListing(listing);
   if (intelligence?.status === "available" && intelligence.score != null) {
     return {
       tier: "analyzed",
-      label: "Analysé par AkarFinder",
-      informationLabel: groupingLabel ?? "Information structurée",
+      label: "Informations détaillées",
+      informationLabel: groupingLabel ?? "Informations détaillées",
       explanation:
-        `Analyse documentaire fondée sur les informations disponibles. Ce niveau ne signifie pas que le bien est vérifié, certifié ou garanti.${groupingExplanation}`,
+        `Les principales informations utiles sont disponibles pour comparer ce bien.${groupingExplanation}`,
     };
   }
 
   return {
     tier: "partial",
-    label: "Analyse partielle",
+    label: "À compléter",
     informationLabel: groupingLabel ?? "À compléter",
     explanation:
-      `AkarFinder dispose de suffisamment d'éléments pour structurer le résultat, mais pas pour produire une analyse documentaire complète.${groupingExplanation}`,
+      `Certaines informations utiles restent à compléter.${groupingExplanation}`,
   };
 }
 

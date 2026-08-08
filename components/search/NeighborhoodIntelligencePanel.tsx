@@ -14,10 +14,10 @@ export function NeighborhoodIntelligencePanel({ model }: { model: NeighborhoodIn
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-500 dark:text-bronze-400">
-              Intelligence quartier
+              Le quartier en chiffres
             </p>
             <h2 className="mt-1 text-[1.05rem] font-extrabold tracking-[-0.02em] text-foreground">
-              Passeport local factuel
+              Ce que montrent les résultats
             </h2>
           </div>
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border/15 bg-background text-bronze-500 dark:border-white/10 dark:bg-white/[0.04]">
@@ -31,9 +31,9 @@ export function NeighborhoodIntelligencePanel({ model }: { model: NeighborhoodIn
           <div>
             <p className="text-[12px] font-bold text-muted-foreground">{model.scopeLabel}</p>
             <p className="mt-1 text-[1.5rem] font-extrabold tracking-[-0.04em] text-foreground">
-              {model.canonicalPropertyCount.toLocaleString("fr-MA")} propriété{model.canonicalPropertyCount > 1 ? "s" : ""} visible{model.canonicalPropertyCount > 1 ? "s" : ""}
+              {model.canonicalPropertyCount.toLocaleString("fr-MA")} annonce{model.canonicalPropertyCount > 1 ? "s" : ""} distincte{model.canonicalPropertyCount > 1 ? "s" : ""}
             </p>
-            <p className="mt-1 text-[11.5px] font-semibold text-muted-foreground">Après rapprochement canonique des résultats affichés</p>
+            <p className="mt-1 text-[11.5px] font-semibold text-muted-foreground">Après regroupement des annonces similaires</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -44,7 +44,7 @@ export function NeighborhoodIntelligencePanel({ model }: { model: NeighborhoodIn
               </p>
             </div>
             <div className="rounded-xl border border-border/12 bg-surface/60 p-3 dark:border-white/8 dark:bg-white/[0.03]">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">Géolocalisation exacte</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">Position exacte</p>
               <p className="mt-1 text-[12px] font-extrabold text-foreground">
                 {model.exactGeoCount}/{model.canonicalPropertyCount}
               </p>
@@ -53,15 +53,15 @@ export function NeighborhoodIntelligencePanel({ model }: { model: NeighborhoodIn
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-xl border border-border/12 bg-surface/60 p-3 dark:border-white/8 dark:bg-white/[0.03]">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">Médiane des résultats visibles</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">Prix médian affiché</p>
               <p className="mt-1 text-[12px] font-extrabold text-foreground">
                 {model.displayedMedianPricePerM2 != null ? formatMadPerM2(model.displayedMedianPricePerM2) : "Non calculable"}
               </p>
             </div>
             <div className="rounded-xl border border-border/12 bg-surface/60 p-3 dark:border-white/8 dark:bg-white/[0.03]">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">Référence publique</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">Repère de prix</p>
               <p className="mt-1 text-[12px] font-extrabold text-foreground">
-                {model.publishedReferencePricePerM2 != null ? formatMadPerM2(model.publishedReferencePricePerM2) : "Non publiée"}
+                {model.publishedReferencePricePerM2 != null ? formatMadPerM2(model.publishedReferencePricePerM2) : "Non disponible"}
               </p>
               <p className="mt-1 text-[10.5px] font-semibold text-muted-foreground">Confiance : {model.publishedReferenceConfidence}</p>
             </div>
@@ -70,7 +70,7 @@ export function NeighborhoodIntelligencePanel({ model }: { model: NeighborhoodIn
           {model.propertyMix.length > 0 ? (
             <div className="rounded-xl border border-border/12 bg-surface/60 p-3 dark:border-white/8 dark:bg-white/[0.03]">
               <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
-                <Building2 size={12} aria-hidden="true" /> Composition visible
+                <Building2 size={12} aria-hidden="true" /> Types de biens
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {model.propertyMix.map((item) => (
@@ -84,22 +84,22 @@ export function NeighborhoodIntelligencePanel({ model }: { model: NeighborhoodIn
 
           <div className="space-y-2 border-t border-border/12 pt-4 text-[11px] leading-5 text-muted-foreground dark:border-white/8">
             <p className="flex gap-2"><ShieldCheck size={14} className="mt-0.5 shrink-0 text-emerald-500" aria-hidden="true" /><span>{model.disclosure}</span></p>
-            <p className="flex gap-2"><Database size={14} className="mt-0.5 shrink-0 text-bronze-500" aria-hidden="true" /><span>Les propriétés portant le même identifiant canonique ne sont comptées qu’une fois.</span></p>
+            <p className="flex gap-2"><Database size={14} className="mt-0.5 shrink-0 text-bronze-500" aria-hidden="true" /><span>Les annonces reconnues comme similaires ne sont comptées qu’une fois.</span></p>
           </div>
 
           <div className="rounded-xl border border-dashed border-border/15 px-3 py-3 dark:border-white/10">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">Intelligence non encore certifiable</p>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-muted-foreground">Données non disponibles</p>
             <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{model.unavailableInsights.join(" · ")}</p>
           </div>
         </div>
       ) : (
         <div className="px-5 py-5">
           <p className="text-[13px] font-extrabold text-foreground">
-            {model.status === "insufficient_scope" ? "Choisissez une ville" : "Aucune propriété visible"}
+            {model.status === "insufficient_scope" ? "Choisissez une ville" : "Aucune annonce visible"}
           </p>
           <p className="mt-2 flex gap-2 text-[12px] leading-5 text-muted-foreground">
             <Info size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
-            <span>L’intelligence locale n’est affichée que pour un périmètre explicite et des résultats réellement présents.</span>
+            <span>Ces informations apparaissent lorsqu’une zone précise contient suffisamment de résultats.</span>
           </p>
         </div>
       )}
