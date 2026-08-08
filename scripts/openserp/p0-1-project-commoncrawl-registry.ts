@@ -77,13 +77,18 @@ async function main() {
     rejection_breakdown: rejectionBreakdown,
     original_registry_sha256: createHash("sha256").update(originalText).digest("hex"),
     projected_registry_sha256: createHash("sha256").update(projectedText).digest("hex"),
-    fail_closed: evaluated.decisions.every((decision) => decision.allowed || decision.reason !== "allowed"),
+    fail_closed: evaluated.decisions.every(
+      (decision) => decision.allowed === (decision.reason === "allowed"),
+    ),
   };
 
   mkdirSync(dirname(REPORT_PATH), { recursive: true });
   writeFileSync(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, "utf8");
   console.log(JSON.stringify(report, null, 2));
 
+  if (!report.fail_closed) {
+    throw new Error("P0.1 Source Registry projection integrity failed");
+  }
   if (structuralCandidates.length > 0 && evaluated.allowedDomains.length === 0) {
     throw new Error("P0.1 blocked Common Crawl mass harvest: zero policy-authorized domains");
   }
