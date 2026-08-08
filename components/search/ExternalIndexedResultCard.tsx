@@ -67,7 +67,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
         <div className="relative h-[164px] w-full flex-shrink-0 overflow-hidden bg-white sm:h-[130px]">
           <PropertyTypeArtwork kind={safeFallbackPropertyType} className="h-full w-full transition-transform duration-300 group-hover:scale-[1.03]" />
           <span className="absolute bottom-2 left-2 inline-flex items-center rounded-full bg-black/65 px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-wider text-white/95 backdrop-blur-sm sm:text-[9px]">
-            Illustration
+            Visuel illustratif
           </span>
         </div>
       ) : null}
@@ -103,7 +103,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
         {similarResults?.similar_possible ? (
           <div className="mb-2 text-[9px] font-semibold text-amber-800 dark:text-amber-100 sm:mb-3 sm:rounded-xl sm:border sm:border-amber-400/20 sm:bg-amber-500/10 sm:px-3 sm:py-2.5 sm:text-[11px]">
             <span className="font-extrabold">Résultats proches</span>
-            <span className="hidden sm:inline"> · Ils peuvent correspondre au même bien, sans certitude.</span>
+            <span className="hidden sm:inline"> · Ils peuvent correspondre au même bien, sans certitude. Comparez les sources pour confirmer.</span>
           </div>
         ) : null}
 
