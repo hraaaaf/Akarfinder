@@ -43,7 +43,7 @@ select
   r.resolved_at
 from public.thin_index_search_documents d
 join latest_resolved r
-  on r.source_record_id::uuid = d.seed_id
+  on r.source_record_id = d.seed_id::text
 join public.geo_entities neighborhood
   on neighborhood.id = r.resolved_neighborhood_id
  and neighborhood.entity_type = 'neighborhood'
@@ -88,7 +88,7 @@ with eligible_seeds as (
     max(e.created_at) as latest_created_at
   from public.geo_resolution_events e
   join eligible_seeds s
-    on e.source_record_id::uuid = s.seed_id
+    on e.source_record_id = s.seed_id::text
   where e.source_record_type = 'source_offer_seed'
     and e.source_record_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
   group by e.source_record_id
@@ -112,7 +112,7 @@ with eligible_seeds as (
     select e.source_record_id
     from public.geo_resolution_events e
     join eligible_seeds s
-      on e.source_record_id::uuid = s.seed_id
+      on e.source_record_id = s.seed_id::text
     where e.source_record_type = 'source_offer_seed'
       and e.source_record_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
       and e.resolution_status = 'resolved'
