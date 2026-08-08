@@ -1,7 +1,7 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-08**  
-**Lane UX/Search : BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; prochain lot = SEARCH-WORDING-PURITY-1**  
+**Lane UX/Search : BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; prochain lot = SEARCH-CONTINUOUS-FLOW-1**  
 **Lane UX/Carte : P1B.4 ✅ Geo Coverage Recovery pilot certifié en production**  
 **Lane DATA : DATA-4.4C ✅ ; P0.1 Mass Index Source Registry operational gate = PR #392, certification/activation post-merge requise**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle 0,45 %**
@@ -10,7 +10,7 @@ Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’uniq
 
 # Main canonique
 
-Base de cette mission P0.1 : `main` `89daf17de363ea0be5aa4cca40a0ab5ff9a81edd` (merge PR #390).
+Base de ce LOT UX/Search : `main` `1bbf2ff2f3ba7aed2b99eb492f703c965e1ed406`.
 
 Acquis récents :
 
@@ -19,6 +19,7 @@ Acquis récents :
 - P1B.4 ✅ PR #386 — Geo Coverage Recovery pilot, 69/69, coverage 0,45 % ;
 - BENCHMARK-SERP-1 ✅ first pass read-only — rapport `docs/BENCHMARK_SERP_1_REPORT.md` ;
 - SEARCH-UX-FAST-1 ✅ PR #390 — accès direct au premier résultat certifié mobile-first ;
+- SEARCH-WORDING-PURITY-1 ✅ PR #391 — wording public simplifié, truth/ranking inchangés, Chromium 4 viewports ;
 - P0.1 PR #392 — Source Registry rendu opérationnel sur le chemin Common Crawl mass-index, sans nouvelle autorisation de source.
 
 Invariants : no-bypass, provenance réelle, Search canonique, aucune donnée/géométrie inventée, mobile-first pour UX majeur, zéro jargon interne sur les surfaces grand public.
@@ -107,11 +108,28 @@ Preuves exactes :
 
 Finding différé : headers/explications de catégories → `SEARCH-WORDING-PURITY-1` puis `SEARCH-CONTINUOUS-FLOW-1`.
 
+# SEARCH-WORDING-PURITY-1 ✅ CLOSED — PR #391
+
+Responsabilité : **retirer le jargon et la prose d’architecture des surfaces Search/Home concernées**, sans modifier ranking, ordre commercial, récupération de prix, DATA, Registry, structure des cards ou logique Map.
+
+Preuves exactes avant closeout documentaire :
+
+- branches internes `observed/analyzed/partial` inchangées ; même collapse/dédoublonnage et même ordre ;
+- wording public simplifié sur Search/Home, carte, price explorer, quartier, comparateur, résultats externes et AkarInfo ;
+- garde-fou dédup conservé : des résultats regroupés peuvent correspondre au même bien **sans certitude** ;
+- **360×800 / 390×844** : première annonce `398 px`, visible dans le premier écran, overflow `false` ;
+- **1280×800 / 1440×900** : première annonce `328 px`, overflow `false` ;
+- Search + Home : **0 expression retirée détectée** sur les 4 viewports ;
+- `SEARCH-WORDING-PURITY-1 Gate` : contrats + TypeScript + build + Chromium = PASS ;
+- **23/23 workflows exact-head verts** avant closeout documentaire ;
+- Benchmark UX/Search Reviewer : **PASS — mobile 9,4/10, desktop 9,3/10** ;
+- Reviewer technique : **PASS**.
+
 # PROCHAIN LOT UX/SEARCH
 
-**SEARCH-WORDING-PURITY-1** uniquement.
+**SEARCH-CONTINUOUS-FLOW-1** uniquement : supprimer les ruptures visuelles entre catégories d’annonces tout en gardant la priorité commerciale interne inchangée.
 
-Puis : `SEARCH-CONTINUOUS-FLOW-1` → `PRICE-COVERAGE-RECOVERY-1` → `RANKING-QUALITY-1` → `UNIFIED-LISTING-CARD-1` → `CONTEXTUAL-VISUAL-ASSETS-1`.
+Puis : `PRICE-COVERAGE-RECOVERY-1` → `RANKING-QUALITY-1` → `UNIFIED-LISTING-CARD-1` → `CONTEXTUAL-VISUAL-ASSETS-1`.
 
 # UX / Carte — état certifié
 
