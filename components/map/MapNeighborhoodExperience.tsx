@@ -262,6 +262,7 @@ export function MapNeighborhoodExperience({
   const { theme } = useTheme();
 
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [styleRevision, setStyleRevision] = useState(0);
   const [mapZoom, setMapZoom] = useState(MOROCCO_OVERVIEW.zoom);
   const [territorialLayerActive, setTerritorialLayerActive] = useState(false);
 
@@ -303,6 +304,7 @@ export function MapNeighborhoodExperience({
     if (!mapContainerRef.current) return;
     let mapInstance: MapLibreMap | null = null;
     let cancelled = false;
+    let initialStyleReady = false;
 
     void import("maplibre-gl").then(({ Map: MapClass, setRTLTextPlugin }) => {
       if (cancelled || !mapContainerRef.current) return;
@@ -323,13 +325,14 @@ export function MapNeighborhoodExperience({
       });
       mapRef.current = mapInstance;
       const markMapReady = () => {
-        if (!mapInstance) return;
+        if (!mapInstance || initialStyleReady) return;
+        initialStyleReady = true;
         hideInternalBoundaries(mapInstance);
         applyAkarFinderBasemapTreatment(mapInstance, initialTheme);
         setMapLoaded(true);
+        setStyleRevision((revision) => revision + 1);
       };
       mapInstance.once("style.load", markMapReady);
-      mapInstance.once("load", markMapReady);
       mapInstance.on("zoom", () => {
         if (mapInstance) setMapZoom(mapInstance.getZoom());
       });
@@ -373,17 +376,17 @@ export function MapNeighborhoodExperience({
     map.once("style.load", () => {
       hideInternalBoundaries(map);
       applyAkarFinderBasemapTreatment(map, theme);
-      setMapLoaded(true);
+      setStyleRevision((revision) => revision + 1);
     });
   }, [mapLoaded, theme]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !mapLoaded) return;
+    if (!map || !mapLoaded || styleRevision === 0) return;
     let cancelled = false;
 
     const install = async () => {
-      if (cancelled || !mapRef.current) return;
+      if (cancelled || !mapRef.current || !map.isStyleLoaded()) return;
       applyAkarFinderBasemapTreatment(map, theme);
       removeAkarFinderTerritorialLayers(map);
       setTerritorialLayerActive(false);
@@ -395,26 +398,25 @@ export function MapNeighborhoodExperience({
           credentials: "same-origin",
           cache: "no-store",
         });
-        if (!response.ok || cancelled || !mapRef.current) return;
+        if (!response.ok || cancelled || !mapRef.current || !map.isStyleLoaded()) return;
         const geojson = await response.json() as GeoJSON.FeatureCollection;
-        if (cancelled || !mapRef.current) return;
+        if (cancelled || !mapRef.current || !map.isStyleLoaded()) return;
         addAkarFinderTerritorialLayers(map, geojson, theme);
-        setTerritorialLayerActive(true);
-      } catch {
+        setTerritorialLayerActive(
+          Boolean(map.getLayer(AKARFINDER_TERRITORIAL_FILL_LAYER_ID) && map.getSource(AKARFINDER_TERRITORIAL_SOURCE_ID)),
+        );
+      } catch (error) {
+        console.error("[AkarFinderMap:territorial-install]", error);
         if (!cancelled) setTerritorialLayerActive(false);
       }
     };
 
-    if (map.isStyleLoaded()) {
-      void install();
-    } else {
-      map.once("style.load", install);
-    }
+    void install();
 
     return () => {
       cancelled = true;
     };
-  }, [cityEntity?.slug, mapLoaded, theme]);
+  }, [cityEntity?.slug, mapLoaded, styleRevision, theme]);
 
   useEffect(() => {
     const map = mapRef.current;
