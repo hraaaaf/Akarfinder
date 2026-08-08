@@ -1,7 +1,7 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-08**  
-**Lane UX/Search : BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; prochain lot = PRICE-COVERAGE-RECOVERY-1**  
+**Lane UX/Search : BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; prochain lot = PRICE-COVERAGE-RECOVERY-1**  
 **Lane UX/Carte : P1B.4 ✅ Geo Coverage Recovery pilot certifié en production**  
 **Lane DATA : DATA-4.4C ✅ ; P0.1 Mass Index Source Registry operational gate = PR #392, certification/activation post-merge requise**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle 0,45 %**
@@ -10,7 +10,7 @@ Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’uniq
 
 # Main canonique
 
-Base de ce LOT UX/Search : `main` `3cbd7353b12cddfc368094d6266f79f6c8ab30b9`.
+Base de ce LOT UX/Search : `main` `24f7363710fba955c75f1a8f67084bb8840bfa94`.
 
 Acquis récents :
 
@@ -21,6 +21,7 @@ Acquis récents :
 - SEARCH-UX-FAST-1 ✅ PR #390 — accès direct au premier résultat certifié mobile-first ;
 - SEARCH-WORDING-PURITY-1 ✅ PR #391 — wording public simplifié, truth/ranking inchangés, Chromium 4 viewports ;
 - SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 — une seule séquence visuelle de listings, ordre commercial/truth interne inchangé ;
+- SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 — grille mobile 2 colonnes, prix non tronqué, favoris en overlay, desktop préservé ;
 - P0.1 PR #392 — Source Registry rendu opérationnel sur le chemin Common Crawl mass-index, sans nouvelle autorisation de source.
 
 Invariants : no-bypass, provenance réelle, Search canonique, aucune donnée/géométrie inventée, mobile-first pour UX majeur, zéro jargon interne sur les surfaces grand public.
@@ -137,6 +138,25 @@ Preuves avant closeout documentaire :
 - `SEARCH-CONTINUOUS-FLOW-1 Gate`, SEARCH-UX-FAST, P0 Closure, Search Truth, Visible Dedup et WORDING-PURITY : PASS ;
 - **23/23 workflows exact-head verts** avant closeout documentaire ;
 - Benchmark UX/Search Reviewer : **PASS — mobile 9,5/10, desktop 9,4/10** ;
+- Reviewer technique : **PASS**.
+
+# SEARCH-MOBILE-CARD-GRID-1 ✅ CLOSED — PR #394
+
+Responsabilité : **augmenter la densité de scan mobile des résultats dans l’esprit du benchmark Airbnb, sans copier son design et sans modifier ranking, ordre commercial/truth, prix, DATA, Registry ou Map**.
+
+Preuves pré-closeout :
+
+- mobile : grille verticale continue **2 colonnes**, image dominante `164 px`, prix → titre → localisation → 3 facts → provenance ;
+- favoris conservés en **overlay sur l’image** pour libérer toute la largeur du prix ;
+- CTA secondaires `Repérer sur la carte`, gros CTA et `Comparer` masqués uniquement sous `640 px` ; desktop/tablette préservés ;
+- résultats Gateway alignés sur le même rythme mobile sans recréer de section ;
+- **360×800** : première card à `308 px`, largeur `158 px`, hauteur `306 px`, 2 colonnes réelles, `0` CTA secondaire, `0` prix tronqué, `0` overflow ;
+- **390×844** : première card à `308 px`, largeur `173 px`, hauteur `306 px`, mêmes invariants à zéro ;
+- **1280×800 / 1440×900** : desktop préservé, première card à `236 px`, zéro overflow ;
+- `Visuel illustratif`, provenance et prudence `Résultats proches / Comparez les sources` restent explicites ;
+- gate permanent `SEARCH-MOBILE-CARD-GRID-1 Gate` : contrat + TypeScript + build + Chromium 4 viewports + anti-troncature prix ;
+- **23/23 workflows exact-head verts** sur `76a5dfac10dd47aeee569f85067cc9e677d1cecb` avant closeout documentaire ;
+- Benchmark UX/Search Reviewer : **PASS — mobile 9,6/10, desktop 9,4/10** ;
 - Reviewer technique : **PASS**.
 
 # PROCHAIN LOT UX/SEARCH
