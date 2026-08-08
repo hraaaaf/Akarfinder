@@ -1,0 +1,33 @@
+name: DATA-4.4C Freshness Projection Safety
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260808113000_data_4_4c_freshness_projection_safety.sql"
+      - "scripts/data4/data-4-4c-freshness-projection-safety-contract.mjs"
+      - ".github/workflows/data-4-4c-freshness-projection-safety.yml"
+      - "docs/data/DATA-4-4C-PERSISTENT-CANARY-50.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Freshness projection safety contract
+        run: node scripts/data4/data-4-4c-freshness-projection-safety-contract.mjs
+      - name: Existing freshness regressions
+        run: npm run test:seed-freshness
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
