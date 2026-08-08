@@ -56,6 +56,11 @@ describe("P1B.2 — Territorial intelligence", () => {
     assert.ok(map.includes('el.dataset.akarfinderMarketMarker = priceMode ? "exact-price"'));
   });
 
+  it("anchors price markers toward the map interior to prevent mobile edge clipping", () => {
+    const map = source("components/map/MapNeighborhoodExperience.tsx");
+    assert.ok(map.includes('anchor: priceMode ? (point.lng <= map.getCenter().lng ? "left" : "right") : "center"'));
+  });
+
   it("keeps territory colors non-semantic while price mode lowers their emphasis", () => {
     const map = source("components/map/MapNeighborhoodExperience.tsx");
     const territorial = source("lib/map/akarfinder-territorial-style.ts");
