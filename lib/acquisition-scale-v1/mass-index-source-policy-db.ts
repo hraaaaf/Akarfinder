@@ -8,6 +8,7 @@ const POLICY_COLUMNS = [
   "source_domain",
   "allowed_discovery_channels",
   "review_status",
+  "next_review_at",
   "no_bypass_required",
   "policy_hash",
   "acquisition_mode",
