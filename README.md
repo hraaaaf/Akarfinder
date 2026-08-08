@@ -118,6 +118,25 @@ Résultat certifié avant closeout documentaire :
 - Benchmark UX/Search Reviewer : **PASS — mobile 9,5/10, desktop 9,4/10** ;
 - Reviewer technique : **PASS**.
 
+### SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394
+
+Lot mobile ajouté avant la récupération des prix : densité de scan inspirée du meilleur du benchmark Airbnb, adaptée à la recherche immobilière AkarFinder sans copier son design et sans modifier ranking, prix, ordre commercial/truth, DATA, Registry ou Map.
+
+Résultat certifié avant closeout documentaire :
+
+- mobile : grille verticale continue **2 colonnes**, image dominante `164 px`, prix → titre → localisation → 3 facts → provenance ;
+- favoris conservés en overlay sur l’image, ce qui libère la largeur du prix ;
+- CTA secondaires carte/compare/gros CTA masqués uniquement sous `640 px` ; tablette/desktop préservés ;
+- Gateway suit la même densité mobile sans recréer de section ;
+- **360×800** : première card à `308 px`, largeur `158 px`, hauteur `306 px`, `0` CTA secondaire, `0` prix tronqué, `0` overflow ;
+- **390×844** : première card à `308 px`, largeur `173 px`, hauteur `306 px`, mêmes invariants à zéro ;
+- **1280×800 / 1440×900** : comportement desktop préservé, première card à `236 px`, zéro overflow ;
+- `Visuel illustratif`, provenance et prudence `Résultats proches / Comparez les sources` restent explicites ;
+- gate permanent `SEARCH-MOBILE-CARD-GRID-1 Gate` : contrats + TypeScript + build + Chromium 4 viewports + anti-troncature prix ;
+- **23/23 workflows exact-head verts** sur `76a5dfac10dd47aeee569f85067cc9e677d1cecb` avant closeout documentaire ;
+- Benchmark UX/Search Reviewer : **PASS — mobile 9,6/10, desktop 9,4/10** ;
+- Reviewer technique : **PASS**.
+
 Prochain lot UX/Search séparé : **PRICE-COVERAGE-RECOVERY-1**.
 
 ## État UX / Carte
