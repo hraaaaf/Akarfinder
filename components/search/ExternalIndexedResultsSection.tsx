@@ -49,16 +49,16 @@ export function ExternalIndexedResultsSection({
       ) : null}
 
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="h-40 animate-pulse overflow-hidden rounded-2xl border border-border/15 bg-card dark:border-white/10 dark:bg-white/[0.04]"
+              className="h-64 animate-pulse overflow-hidden rounded-[20px] border border-border/10 bg-card dark:border-white/10 dark:bg-white/[0.04] sm:h-40 sm:rounded-2xl"
             />
           ))}
         </div>
       ) : results.length > 0 ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3" data-search-external-mobile-grid>
           {results.map((result) => (
             <ExternalIndexedResultCard
               key={result.id}
