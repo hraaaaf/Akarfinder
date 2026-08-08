@@ -35,6 +35,11 @@ function parseArgs(argv: string[]): { apply: boolean; input: string } {
   return { apply: argv.includes("--apply"), input };
 }
 
+function normalizedSeedDomain(seed: CommonCrawlMassSeed): string {
+  const value = (seed as { source_domain?: unknown }).source_domain;
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
 export function parseSeedJsonl(content: string): CommonCrawlMassSeed[] {
   const seeds: CommonCrawlMassSeed[] = [];
   for (const [index, line] of content.split("\n").entries()) {
@@ -68,7 +73,7 @@ async function insertChunk(rows: SourceOfferSeedInsert[]): Promise<void> {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const rawSeeds = parseSeedJsonl(readFileSync(args.input, "utf8"));
-  const sourceDomains = [...new Set(rawSeeds.map((seed) => seed.source_domain.trim().toLowerCase()).filter(Boolean))].sort();
+  const sourceDomains = [...new Set(rawSeeds.map(normalizedSeedDomain).filter(Boolean))].sort();
   const policies = await loadMassIndexSourcePolicies(sourceDomains);
   const policyEvaluation = evaluateMassIndexDomains(
     sourceDomains,
@@ -76,8 +81,8 @@ async function main() {
     policies,
   );
   const allowed = new Set(policyEvaluation.allowedDomains);
-  const policyRejectedRows = rawSeeds.filter((seed) => !allowed.has(seed.source_domain.trim().toLowerCase()));
-  const policyAuthorizedSeeds = rawSeeds.filter((seed) => allowed.has(seed.source_domain.trim().toLowerCase()));
+  const policyRejectedRows = rawSeeds.filter((seed) => !allowed.has(normalizedSeedDomain(seed)));
+  const policyAuthorizedSeeds = rawSeeds.filter((seed) => allowed.has(normalizedSeedDomain(seed)));
   const batch = buildMassSeedInsertBatch(policyAuthorizedSeeds);
 
   const policyRejectionBreakdown = policyEvaluation.decisions
@@ -102,8 +107,8 @@ async function main() {
     apply: args.apply,
   };
 
-  if (sourceDomains.length > 0 && policyEvaluation.allowedDomains.length === 0) {
-    throw new Error("P0.1 blocked Common Crawl seed import: zero policy-authorized domains");
+  if (rawSeeds.length > 0 && policyAuthorizedSeeds.length === 0) {
+    throw new Error("P0.1 blocked Common Crawl seed import: zero policy-authorized seed rows");
   }
 
   if (!args.apply) {
