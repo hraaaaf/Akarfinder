@@ -10,8 +10,8 @@ name: Common Crawl Mass Seed Harvest
 # reconciliation. No WARC/page fetch, no direct source-site request, no public
 # listing write. Scheduled/push activation runs apply only when the existing
 # three production write gates are enabled; manual runs default to dry-run.
-# P0.1 additionally projects the structural domain registry through the current
-# production Source Registry before any Common Crawl request.
+# P0.1 makes both the harvester and importer re-read the canonical production
+# Source Registry and fail closed on the exact `commoncrawl` channel.
 
 on:
   schedule:
@@ -20,7 +20,8 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/commoncrawl-mass-seed-harvest.yml"
-      - "scripts/openserp/p0-1-project-commoncrawl-registry.ts"
+      - "scripts/openserp/commoncrawl-registry-mass-harvest.ts"
+      - "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy-db.ts"
   workflow_dispatch:
@@ -69,15 +70,11 @@ jobs:
             echo "CC_APPLY=0" >> "$GITHUB_ENV"
           fi
 
-      - name: P0.1 project Common Crawl candidates through canonical Source Registry
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npx tsx scripts/openserp/p0-1-project-commoncrawl-registry.ts
-
-      - name: Harvest Common Crawl canary domains first
+      - name: Harvest policy-authorized Common Crawl canary domains first
         env:
           COMMONCRAWL_MASS_MODE: canary
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npx tsx scripts/openserp/commoncrawl-registry-mass-harvest.ts
 
       - name: Import canary seeds immediately
@@ -97,9 +94,11 @@ jobs:
             npx tsx scripts/openserp/ingest-commoncrawl-mass-seeds.ts
           fi
 
-      - name: Harvest remaining approved registry domains
+      - name: Harvest remaining policy-authorized Common Crawl domains
         env:
           COMMONCRAWL_MASS_MODE: remainder
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npx tsx scripts/openserp/commoncrawl-registry-mass-harvest.ts
 
       - name: Import remainder seeds and reconcile exact freshness
@@ -121,7 +120,7 @@ jobs:
             npx tsx scripts/openserp/reconcile-commoncrawl-seed-freshness.ts
           fi
 
-      - name: Upload final harvest and P0.1 policy projection artifacts
+      - name: Upload final harvest and P0.1 policy proof artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
