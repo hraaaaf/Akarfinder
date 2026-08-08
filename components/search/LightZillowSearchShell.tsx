@@ -135,176 +135,6 @@ function EmptyState({ onReset, city }: { onReset: () => void; city?: string }) {
   );
 }
 
-function CommercialListingSection({
-  tier,
-  listings,
-  isLoading,
-}: {
-  tier: "promoter_premium" | "agency_partner" | "direct_user";
-  listings: Listing[];
-  isLoading: boolean;
-}) {
-  if (listings.length === 0) return null;
-
-  const config = {
-    promoter_premium: {
-      title: "Promoteurs premium",
-      description: "Biens proposés par des promoteurs partenaires.",
-      badgeClass: "border-bronze-400/30 bg-bronze-500/10 text-bronze-700 dark:text-bronze-200",
-    },
-    agency_partner: {
-      title: "Agences partenaires",
-      description: "Biens proposés par des agences partenaires.",
-      badgeClass: "border-blue-400/25 bg-blue-500/10 text-blue-700 dark:text-blue-200",
-    },
-    direct_user: {
-      title: "Annonces sur AkarFinder",
-      description: "Biens publiés directement sur AkarFinder.",
-      badgeClass: "border-emerald-400/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200",
-    },
-  }[tier];
-
-  return (
-    <section className="space-y-4" aria-label={config.title}>
-      <div className="border-t border-border/15 pt-6 dark:border-white/10">
-        <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-[16px] font-extrabold text-foreground dark:text-white/90 sm:text-[18px]">
-            {config.title}
-          </h2>
-          <span className={`rounded-full border px-2.5 py-1 text-[10px] font-extrabold ${config.badgeClass}`}>
-            {listings.length} affiché{listings.length > 1 ? "s" : ""}
-          </span>
-        </div>
-        <p className="mt-1 max-w-3xl text-[12px] leading-5 text-muted-foreground dark:text-white/50 sm:text-[13px]">
-          {config.description}
-        </p>
-      </div>
-      <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
-        {listings.map((listing) => (
-          <SearchListingCardDark key={listing.id} listing={listing} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function IndexedTruthGroup({
-  kind,
-  listings,
-  isLoading,
-}: {
-  kind: "analyzed" | "partial";
-  listings: Listing[];
-  isLoading: boolean;
-}) {
-  if (listings.length === 0) return null;
-  const analyzed = kind === "analyzed";
-  return (
-    <div className="space-y-4">
-      <div>
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="text-[14px] font-extrabold text-foreground dark:text-white/85 sm:text-[15px]">
-            {analyzed ? "Informations détaillées" : "Informations à compléter"}
-          </h3>
-          <span className={`rounded-full border px-2.5 py-1 text-[10px] font-extrabold ${analyzed ? "border-emerald-400/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200" : "border-amber-400/25 bg-amber-500/10 text-amber-700 dark:text-amber-200"}`}>
-            {listings.length} affiché{listings.length > 1 ? "s" : ""}
-          </span>
-        </div>
-        <p className="mt-1 max-w-3xl text-[12px] leading-5 text-muted-foreground dark:text-white/50">
-          {analyzed
-            ? "Les principales informations utiles sont disponibles."
-            : "Certaines informations utiles restent à compléter."}
-        </p>
-      </div>
-      <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
-        {listings.map((listing) => (
-          <SearchListingCardDark key={listing.id} listing={listing} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function PublicIndexedResultsSection({
-  analyzedListings,
-  partialListings,
-  observedListings,
-  gatewayResults,
-  isLoading,
-  isGatewayLoading,
-}: {
-  analyzedListings: Listing[];
-  partialListings: Listing[];
-  observedListings: Listing[];
-  gatewayResults: SearchGatewayNormalizedResult[];
-  isLoading: boolean;
-  isGatewayLoading: boolean;
-}) {
-  const displayed =
-    analyzedListings.length +
-    partialListings.length +
-    observedListings.length +
-    gatewayResults.length;
-  if (displayed === 0 && !isGatewayLoading) return null;
-
-  return (
-    <section className="space-y-6" aria-label="Autres résultats">
-      <div className="border-t border-border/15 pt-6 dark:border-white/10">
-        <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-[16px] font-extrabold text-foreground dark:text-white/90 sm:text-[18px]">
-            Autres résultats
-          </h2>
-          {displayed > 0 ? (
-            <span className="rounded-full border border-slate-400/25 bg-slate-500/10 px-2.5 py-1 text-[10px] font-extrabold text-slate-700 dark:text-white/65">
-              {displayed} affiché{displayed > 1 ? "s" : ""}
-            </span>
-          ) : null}
-        </div>
-        <p className="mt-1 max-w-3xl text-[12px] leading-5 text-muted-foreground dark:text-white/50 sm:text-[13px]">
-          Comparez les informations disponibles et consultez la source pour confirmer les détails.
-        </p>
-      </div>
-
-      <IndexedTruthGroup kind="analyzed" listings={analyzedListings} isLoading={isLoading} />
-      <IndexedTruthGroup kind="partial" listings={partialListings} isLoading={isLoading} />
-
-      {observedListings.length > 0 || gatewayResults.length > 0 || isGatewayLoading ? (
-        <div className="space-y-4">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-[14px] font-extrabold text-foreground dark:text-white/85 sm:text-[15px]">
-                Autres annonces
-              </h3>
-              {observedListings.length + gatewayResults.length > 0 ? (
-                <span className="rounded-full border border-slate-400/25 bg-slate-500/10 px-2.5 py-1 text-[10px] font-extrabold text-slate-700 dark:text-white/65">
-                  {observedListings.length + gatewayResults.length} affiché{observedListings.length + gatewayResults.length > 1 ? "s" : ""}
-                </span>
-              ) : null}
-            </div>
-            <p className="mt-1 max-w-3xl text-[12px] leading-5 text-muted-foreground dark:text-white/50">
-              Vérifiez le prix, la disponibilité et les détails sur le site d’origine.
-            </p>
-          </div>
-
-          {observedListings.length > 0 ? (
-            <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
-              {observedListings.map((listing) => (
-                <SearchListingCardDark key={listing.id} listing={listing} />
-              ))}
-            </div>
-          ) : null}
-
-          <ExternalIndexedResultsSection
-            results={gatewayResults}
-            isLoading={isGatewayLoading}
-            showHeader={false}
-          />
-        </div>
-      ) : null}
-    </section>
-  );
-}
-
 export function LightZillowSearchShell({ initialListings, initialFilters }: LightZillowSearchShellProps) {
   const [filters, setFilters] = useState<ListingFiltersState>({
     ...defaultListingFilters,
@@ -496,12 +326,17 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     () => partitionCommercialSearchListings(filteredListings),
     [filteredListings],
   );
-  const promoterPremiumListings = commercialGroups.promoterPremium;
-  const agencyPartnerListings = commercialGroups.agencyPartner;
-  const directUserListings = commercialGroups.directUser;
-  const indexedAnalyzedListings = commercialGroups.publicIndexed.analyzed;
-  const indexedPartialListings = commercialGroups.publicIndexed.partial;
-  const observedIndexedListings = commercialGroups.publicIndexed.observed;
+  const continuousListings = useMemo(
+    () => [
+      ...commercialGroups.promoterPremium,
+      ...commercialGroups.agencyPartner,
+      ...commercialGroups.directUser,
+      ...commercialGroups.publicIndexed.analyzed,
+      ...commercialGroups.publicIndexed.partial,
+      ...commercialGroups.publicIndexed.observed,
+    ],
+    [commercialGroups],
+  );
 
   const cities = useMemo(() => getSearchCities(listings), [listings]);
   const propertyTypes = useMemo(() => getPropertyTypes(listings), [listings]);
@@ -617,18 +452,21 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                   {[1, 2, 3, 4].map((number) => <SkeletonCard key={number} />)}
                 </div>
               ) : (
-                <div className="space-y-8">
-                  <CommercialListingSection tier="promoter_premium" listings={promoterPremiumListings} isLoading={isLoading} />
-                  <CommercialListingSection tier="agency_partner" listings={agencyPartnerListings} isLoading={isLoading} />
-                  <CommercialListingSection tier="direct_user" listings={directUserListings} isLoading={isLoading} />
-                  <PublicIndexedResultsSection
-                    analyzedListings={indexedAnalyzedListings}
-                    partialListings={indexedPartialListings}
-                    observedListings={observedIndexedListings}
-                    gatewayResults={gatewayResults}
-                    isLoading={isLoading}
-                    isGatewayLoading={isGatewayLoading}
+                <div className="space-y-5" data-search-continuous-flow>
+                  {continuousListings.length > 0 ? (
+                    <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
+                      {continuousListings.map((listing) => (
+                        <SearchListingCardDark key={listing.id} listing={listing} />
+                      ))}
+                    </div>
+                  ) : null}
+
+                  <ExternalIndexedResultsSection
+                    results={gatewayResults}
+                    isLoading={isGatewayLoading}
+                    showHeader={false}
                   />
+
                   {!hasAnyResults && !isSearching ? <EmptyState onReset={handleReset} city={filters.city} /> : null}
                 </div>
               )}
