@@ -5,10 +5,13 @@ name: Common Crawl Mass Seed Harvest
 # COMMONCRAWL-CDX-MIME-FIX-1
 # COMMONCRAWL-FAILSOFT-CANARY-V1
 # DATA-40K-GATE-REHARVEST-2026-07-24-R2
+# P0.1-MASS-INDEX-SOURCE-REGISTRY-OPERATIONAL-GATE
 # Historical URL-index metadata -> source_offer_seeds only -> exact freshness
 # reconciliation. No WARC/page fetch, no direct source-site request, no public
 # listing write. Scheduled/push activation runs apply only when the existing
 # three production write gates are enabled; manual runs default to dry-run.
+# P0.1 additionally projects the structural domain registry through the current
+# production Source Registry before any Common Crawl request.
 
 on:
   schedule:
@@ -17,6 +20,9 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/commoncrawl-mass-seed-harvest.yml"
+      - "scripts/openserp/p0-1-project-commoncrawl-registry.ts"
+      - "lib/acquisition-scale-v1/mass-index-source-policy.ts"
+      - "lib/acquisition-scale-v1/mass-index-source-policy-db.ts"
   workflow_dispatch:
     inputs:
       mode:
@@ -62,6 +68,12 @@ jobs:
           else
             echo "CC_APPLY=0" >> "$GITHUB_ENV"
           fi
+
+      - name: P0.1 project Common Crawl candidates through canonical Source Registry
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/openserp/p0-1-project-commoncrawl-registry.ts
 
       - name: Harvest Common Crawl canary domains first
         env:
@@ -109,11 +121,13 @@ jobs:
             npx tsx scripts/openserp/reconcile-commoncrawl-seed-freshness.ts
           fi
 
-      - name: Upload final harvest artifact
+      - name: Upload final harvest and P0.1 policy projection artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: commoncrawl-registry-mass-seeds
-          path: data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl
+          path: |
+            data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl
+            data/audits/runtime/p0-1-commoncrawl-policy-projection.json
           if-no-files-found: warn
           retention-days: 7
