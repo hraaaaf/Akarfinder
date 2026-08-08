@@ -30,7 +30,8 @@ describe("P1B.3 — Territorial Metric Join Contract", () => {
     assert.ok(migration.includes("city.validation_status = 'validated'"));
   });
 
-  it("uses the same truthful public LISTING denominator", () => {
+  it("uses the same truthful public LISTING denominator for coverage and collision metrics", () => {
+    assert.ok(migration.includes("eligible_seeds as ("));
     assert.ok(migration.includes("d.vertical_classification = 'real_estate_likely'"));
     assert.ok(migration.includes("d.document_kind = 'LISTING'"));
     assert.ok(
@@ -38,6 +39,14 @@ describe("P1B.3 — Territorial Metric Join Contract", () => {
         "d.display_eligibility in ('eligible_primary', 'eligible_secondary')",
       ),
     );
+    assert.ok(migration.includes("join eligible_seeds s"));
+    assert.ok(migration.includes("'same_public_listing_denominator', true"));
+  });
+
+  it("never casts external source_record_id text to uuid", () => {
+    assert.equal(migration.includes("source_record_id::uuid"), false);
+    assert.ok(migration.includes("r.source_record_id = d.seed_id::text"));
+    assert.ok(migration.includes("e.source_record_id = s.seed_id::text"));
   });
 
   it("keeps metric activation off until coverage is proven", () => {
