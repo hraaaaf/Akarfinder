@@ -118,10 +118,12 @@ describe("Phase 1 P0 — single buyer journey", () => {
 });
 
 describe("Phase 1 P0 — public truth and Pro dead-end cleanup", () => {
-  it("Search main code identifies itself as a search engine, not a marketplace", () => {
+  it("Search remains a search engine without forcing explanatory hero copy into the SERP", () => {
+    const readme = source("README.md");
     const searchShell = source("components/search/LightZillowSearchShell.tsx");
-    assert.ok(searchShell.includes("Moteur de recherche immobilier"));
+    assert.match(readme, /moteur de recherche/i);
     assert.ok(!searchShell.includes("Marketplace immobilier AkarFinder"));
+    assert.ok(!searchShell.includes("Moteur de recherche immobilier"));
   });
 
   it("public Pro landing contains no CTA to retired /pro/leads", () => {

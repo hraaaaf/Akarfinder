@@ -89,11 +89,19 @@ describe("#19H User Continuity V1", () => {
     assert.ok(workspace.includes("Mes projets de recherche"));
   });
 
-  it("keeps project context visible in Search and scopes continuity counts to that project", () => {
+  it("preserves project context through Search without forcing a pre-result continuity banner", () => {
     const searchPage = readFileSync(join(process.cwd(), "app/search/page.tsx"), "utf8");
+    const bridge = readFileSync(join(process.cwd(), "components/search/SearchMapNavigationBridge.tsx"), "utf8");
     const banner = readFileSync(join(process.cwd(), "components/search/ActiveProjectBanner.tsx"), "utf8");
-    assert.ok(searchPage.includes("ActiveProjectBanner"));
+
+    assert.equal(searchPage.includes("ActiveProjectBanner"), false);
     assert.ok(searchPage.includes("params.project_id"));
+    assert.ok(searchPage.includes("requestedProjectId"));
+    assert.ok(searchPage.includes("<SearchMapNavigationBridge projectId={requestedProjectId}"));
+    assert.ok(bridge.includes("projectId"));
+
+    // The retained continuity component keeps its project-scoped, authenticated
+    // implementation for surfaces where continuity context is explicitly requested.
     assert.ok(banner.includes("/api/me/continuity"));
     assert.ok(banner.includes("item.project_id === project.id"));
     assert.ok(banner.includes("Projet actif"));

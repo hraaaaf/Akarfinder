@@ -62,7 +62,26 @@ Principes verrouillés :
 - le Benchmark Reviewer est consultatif obligatoire et peut rendre `CHANGES_REQUIRED` ;
 - aucune pratique concurrente n’est copiée automatiquement : elle doit apporter un gain utilisateur compatible avec AkarFinder.
 
-Première mission : `BENCHMARK-SERP-1`, rapport dans `docs/BENCHMARK_SERP_1_REPORT.md`. Premier lot produit recommandé : **SEARCH-UX-FAST-1**.
+Première mission : `BENCHMARK-SERP-1`, rapport dans `docs/BENCHMARK_SERP_1_REPORT.md`.
+
+### SEARCH-UX-FAST-1 ✅ PR #390
+
+Premier lot produit issu du benchmark : chemin direct vers la première annonce, sans modifier ranking, prix, ordre commercial, cards, DATA ou logique Map.
+
+Preuves de certification :
+
+- mobile **360×800** : première annonce `1538 px → 450 px`, Search à `69 px`, zéro overflow ;
+- mobile **390×844** : première annonce à `450 px`, zéro overflow ;
+- desktop **1280×800 / 1440×900** : première annonce à `328 px`, zéro overflow ;
+- hero Search, prose de ranking et prompt projet retirés du chemin critique ;
+- `SearchPriceExplorerDock` conservé mais déplacé **après** le flux primaire de résultats ;
+- Option A des types de biens conservée derrière `Filtres` ;
+- gate permanent `SEARCH-UX-FAST-1 Gate` : contrat/types + build + Chromium 4 viewports ;
+- **25/25 workflows exact-head verts** avant closeout ;
+- Benchmark UX/Search Reviewer : **PASS — mobile 9,3/10, desktop 9,2/10** ;
+- Reviewer technique : **PASS**.
+
+Prochain lot UX/Search séparé : **SEARCH-WORDING-PURITY-1**.
 
 ## État UX / Carte
 

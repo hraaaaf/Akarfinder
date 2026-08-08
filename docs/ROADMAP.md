@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-08**  
-**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ first pass ; prochain lot UX Search = SEARCH-UX-FAST-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ canary 50 persistant certifié**
+**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; prochain lot UX Search = SEARCH-WORDING-PURITY-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ canary 50 persistant certifié**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -42,7 +42,7 @@ Pipeline canonique :
 
 Référence : `docs/BENCHMARK_SERP_1_REPORT.md`. Agent : `docs/BENCHMARK_UX_SEARCH_AGENT.md`.
 
-Verdict : **CHANGES_REQUIRED** sur la SERP actuelle avant closeout UX Search.
+Verdict initial : **CHANGES_REQUIRED** sur la SERP avant les lots de convergence.
 
 Direction verrouillée :
 
@@ -59,26 +59,36 @@ Décisions déjà verrouillées :
 - zéro jargon grand public ;
 - card cible `IMAGE → PRIX → TITRE → LOCALISATION → 3–4 FACTS → PROVENANCE → ACTION`.
 
-### SEARCH-UX-FAST-1 — PROCHAIN LOT UX SEARCH
+## SEARCH-UX-FAST-1 ✅ CLOSED — PR #390
 
 Responsabilité unique : **réduire au strict minimum tout ce qui précède le premier résultat sur `/search`**, sans modifier ranking, récupération de prix, ordre commercial, structure des cards, DATA, Registry ou Map.
 
-Objectif : après validation d’une recherche, l’utilisateur doit arriver immédiatement sur les résultats. Mobile 390 px est la référence ; desktop 1280/1440 doit rester au moins aussi lisible sans réintroduire de bruit.
+Résultat certifié :
 
-Gates minimaux :
+- grand hero Search, prose de ranking et prompt projet retirés du chemin critique ;
+- filtres visibles réduits à recherche + Acheter/Louer/Neuf + `Filtres` ;
+- Option A des types de biens conservée derrière `Filtres` ;
+- compteur, Liste/Mixte/Carte et tri rapprochés du flux ;
+- intelligence locale `SearchPriceExplorerDock` préservée mais déplacée après les résultats ;
+- contrat permanent : le flux primaire doit rester avant l’intelligence locale ;
+- mobile **360×800** : première annonce **1538 px → 450 px**, Search à **69 px**, zéro overflow ;
+- mobile **390×844** : première annonce **450 px**, zéro overflow ;
+- desktop **1280×800 / 1440×900** : première annonce **328 px**, zéro overflow ;
+- Chromium réel sur 4 viewports + build production + TypeScript ;
+- **25/25 workflows exact-head verts** avant closeout ;
+- Benchmark UX/Search Reviewer : **PASS — mobile 9,3/10, desktop 9,2/10** ;
+- Reviewer technique : **PASS**.
 
-- audit avant/après du nombre d’éléments et de la distance verticale avant la première annonce ;
-- captures 360/390/1280/1440 ;
-- premier résultat visible dans le premier écran utile autant que les contraintes header/filtres le permettent ;
-- aucun texte éditorial/promotionnel avant les résultats ;
-- filtres essentiels conservés ;
-- aucune régression Search fonctionnelle ;
-- Benchmark Reviewer PASS avec mobile ≥9/10 ;
-- Reviewer technique PASS ;
-- Release Certifier GO ;
-- 3 MD canoniques alignés au closeout.
+Finding non bloquant réservé aux lots suivants : les headers/explications de catégories existent encore dans le flux. Ils ne précèdent plus la première card de façon bloquante, mais seront traités séparément par `SEARCH-WORDING-PURITY-1` puis `SEARCH-CONTINUOUS-FLOW-1`.
 
-Lots suivants, sans les mélanger : `SEARCH-WORDING-PURITY-1` → `SEARCH-CONTINUOUS-FLOW-1` → `PRICE-COVERAGE-RECOVERY-1` → `RANKING-QUALITY-1` → `UNIFIED-LISTING-CARD-1` → `CONTEXTUAL-VISUAL-ASSETS-1`.
+### Prochains lots UX/Search — ordre strict
+
+1. **SEARCH-WORDING-PURITY-1** — retirer jargon, libellés techniques et prose inutile des surfaces Search/Home concernées ;
+2. **SEARCH-CONTINUOUS-FLOW-1** — supprimer les ruptures visuelles par grandes catégories sans modifier la priorité commerciale interne ;
+3. **PRICE-COVERAGE-RECOVERY-1** — audit puis récupération policy-compliant des prix manquants ;
+4. **RANKING-QUALITY-1** — qualité/complétude/relevance dans le cadre de la priorité commerciale ;
+5. **UNIFIED-LISTING-CARD-1** — grammaire unique des cards ;
+6. **CONTEXTUAL-VISUAL-ASSETS-1** — visuels contextuels déterministes et truth-safe.
 
 # 4. Lane UX / Carte
 
@@ -138,7 +148,7 @@ Scope respecté, Benchmark Reviewer si UX majeur, Reviewer indépendant PASS, te
 
 ## UX / Search
 
-Exécuter **SEARCH-UX-FAST-1** uniquement : réduire la distance jusqu’au premier résultat sans toucher au ranking, aux cards, au prix ou aux règles commerciales.
+Exécuter **SEARCH-WORDING-PURITY-1** uniquement : retirer le jargon et la prose non nécessaire sans mélanger continuous-flow, ranking, cards ou récupération de prix.
 
 ## UX / Carte
 

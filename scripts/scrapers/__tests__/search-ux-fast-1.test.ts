@@ -1,0 +1,77 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+
+const searchPage = readFileSync("app/search/page.tsx", "utf8");
+const shell = readFileSync("components/search/LightZillowSearchShell.tsx", "utf8");
+const filters = readFileSync("components/search/QuickFilters.tsx", "utf8");
+
+test("search result path has no project banner before the SERP", () => {
+  assert.doesNotMatch(searchPage, /ActiveProjectBanner/);
+  assert.match(searchPage, /SearchMapNavigationBridge/);
+  assert.match(searchPage, /LightZillowSearchShell/);
+});
+
+test("primary listing flow renders before secondary local intelligence", () => {
+  const shellPosition = searchPage.indexOf("<LightZillowSearchShell");
+  const intelligencePosition = searchPage.indexOf("<SearchPriceExplorerDock");
+  assert.ok(shellPosition >= 0, "Search shell must be present");
+  assert.ok(intelligencePosition > shellPosition, "secondary local intelligence must render after the primary listing flow");
+});
+
+test("search shell removes the old pre-result hero and explanatory noise", () => {
+  assert.doesNotMatch(shell, /Moteur de recherche immobilier/);
+  assert.doesNotMatch(shell, /Trouvez votre bien au Maroc/);
+  assert.doesNotMatch(shell, /Catégorie de publication explicite/);
+  assert.doesNotMatch(shell, /Besoin de clarifier vos priorités/);
+  assert.doesNotMatch(shell, /Ordre strict : promoteurs premium/);
+});
+
+test("compact controls precede the listing stream", () => {
+  const filtersPosition = shell.indexOf("<QuickFilters");
+  const resultToolbarPosition = shell.indexOf('aria-label="Trier les résultats"');
+  const listingStreamPosition = shell.indexOf("<CommercialListingSection");
+
+  assert.ok(filtersPosition >= 0, "QuickFilters must remain visible");
+  assert.ok(resultToolbarPosition > filtersPosition, "result toolbar must follow filters");
+  assert.ok(listingStreamPosition > resultToolbarPosition, "listing stream must follow the compact result toolbar");
+  assert.match(shell, /<SearchViewSwitcher value=\{view\} onChange=\{setView\}/);
+  assert.match(shell, /\$\{displayedCount\} résultat/);
+});
+
+test("Option A remains available only through the expandable filters path", () => {
+  assert.match(filters, /PropertyTypeVisualSelector/);
+  assert.match(filters, /const propertyTypeSelector/);
+  assert.match(filters, /id="advanced-search-filters"/);
+  assert.match(filters, /\{propertyTypeSelector\}/);
+  assert.match(filters, /showFilters \? \(/);
+  assert.match(filters, /Voir les résultats/);
+
+  const visibleControlsStart = filters.indexOf(
+    '  return (\n    <section aria-label="Filtres de recherche"',
+  );
+  const advancedFiltersStart = filters.indexOf('id="advanced-search-filters"');
+  assert.ok(visibleControlsStart >= 0, "main QuickFilters JSX must be found");
+  assert.ok(advancedFiltersStart > visibleControlsStart, "advanced filters must follow compact controls");
+  const directSelectorInVisibleControls = filters
+    .slice(visibleControlsStart, advancedFiltersStart)
+    .includes("<PropertyTypeVisualSelector");
+  assert.equal(
+    directSelectorInVisibleControls,
+    false,
+    "visual property selector must not sit in the always-visible pre-result controls",
+  );
+});
+
+test("mobile controls stay compact and advanced criteria remain reachable", () => {
+  assert.match(filters, /grid-cols-\[minmax\(0,1fr\)_auto\]/);
+  assert.match(filters, /label: "Acheter"/);
+  assert.match(filters, /label: "Louer"/);
+  assert.match(filters, /label: "Neuf"/);
+  assert.match(filters, />Filtres</);
+  assert.match(filters, /aria-label="Ville"/);
+  assert.match(filters, /aria-label="Budget minimum"/);
+  assert.match(filters, /aria-label="Budget maximum"/);
+  assert.match(filters, /aria-label="Surface minimum"/);
+  assert.match(filters, /aria-label="Type de bien"/);
+});

@@ -90,13 +90,6 @@ function buildGatewayUrl(filters: ListingFiltersState, cursor?: string | null): 
   return `/api/search/gateway?${params.toString()}`;
 }
 
-function getIntentLabel(t: string) {
-  if (t === "rent") return "Locations";
-  if (t === "new") return "Programmes neufs";
-  if (t === "buy") return "Biens à acheter";
-  return "Tous les biens";
-}
-
 function SkeletonCard() {
   return (
     <div className="animate-pulse overflow-hidden rounded-2xl border border-border/15 bg-card dark:border-white/10 dark:bg-white/[0.04]">
@@ -381,9 +374,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
         const response = await fetch(buildSearchUrl(filters, sortBy), { cache: "no-store" });
         if (!response.ok || cancelled) return;
         const payload = (await response.json()) as ApiSearchResponse;
-        if (!cancelled) {
-          setListings(payload.listings);
-        }
+        if (!cancelled) setListings(payload.listings);
       } catch {
         // Preserve the previous stable result set on transient failures.
       } finally {
@@ -517,7 +508,6 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
 
   const cities = useMemo(() => getSearchCities(listings), [listings]);
   const propertyTypes = useMemo(() => getPropertyTypes(listings), [listings]);
-  const displayCity = filters.city === "all" ? "Maroc" : filters.city;
   const handleReset = () => setFilters(defaultListingFilters);
 
   const { cityCounts, otherCount, avgIndex } = useMemo(() => {
@@ -560,117 +550,69 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
       chips.push({ key: "tx", label: labels[filters.transactionType] ?? filters.transactionType, clear: { transactionType: "all" } });
     }
     if (filters.propertyType !== "all") chips.push({ key: "pt", label: filters.propertyType, clear: { propertyType: "all" } });
-    if (filters.maxBudget) chips.push({ key: "budget", label: `Budget max : ${Number(filters.maxBudget).toLocaleString("fr-FR")} DH`, clear: { maxBudget: "" } });
-    if (filters.minSurface) chips.push({ key: "surface", label: `Surface ≥ ${filters.minSurface} m²`, clear: { minSurface: "" } });
+    if (filters.maxBudget) chips.push({ key: "budget", label: `Max ${Number(filters.maxBudget).toLocaleString("fr-FR")} DH`, clear: { maxBudget: "" } });
+    if (filters.minSurface) chips.push({ key: "surface", label: `≥ ${filters.minSurface} m²`, clear: { minSurface: "" } });
     return chips;
   }, [filters]);
 
   const displayedCount = filteredListings.length + gatewayResults.length;
-  const publicIndexedCount =
-    indexedAnalyzedListings.length +
-    indexedPartialListings.length +
-    observedIndexedListings.length +
-    gatewayResults.length;
   const isSearching = isLoading || isGatewayLoading;
   const hasAnyResults = displayedCount > 0;
   const showSkeleton = isLoading && filteredListings.length === 0 && gatewayResults.length === 0;
-  const sortExplanation =
-    sortBy === "recommended"
-      ? "Ordre strict : promoteurs premium, agences partenaires, annonces déposées sur AkarFinder, puis annonces publiques indexées. Dans chaque catégorie : pertinence, prix disponible et qualité des informations."
-      : "Les quatre catégories restent prioritaires. Le tri par prix s’applique uniquement à l’intérieur de chaque catégorie ; les offres observées restent des aperçus liés à leur source originale.";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <section className="relative overflow-hidden border-b border-border/12 bg-surface dark:border-white/8 dark:bg-deepblue">
-        <div className="pointer-events-none absolute inset-0 hidden dark:block" style={{ background: "radial-gradient(ellipse 70% 60% at 60% 20%, rgba(34,72,132,0.6) 0%, transparent 62%)" }} />
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-bronze-500/40 to-transparent" />
-        <div className="relative mx-auto max-w-[1480px] px-4 py-6 sm:px-6 lg:py-9">
-          <div className="mb-4 flex items-end justify-between gap-3">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2.5">
-                <span className="h-px w-7 bg-bronze-500/70" aria-hidden="true" />
-                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-bronze-400 sm:text-[11px]">Moteur de recherche immobilier</p>
-              </div>
-              <h1 className="mt-2 text-[1.7rem] font-extrabold tracking-[-0.045em] text-foreground sm:text-[2.7rem]">Trouvez votre bien au Maroc</h1>
-              <p className="mt-2 hidden max-w-2xl text-[14.5px] leading-7 text-muted-foreground sm:block">
-                Catégorie de publication explicite, puis pertinence et niveau d’information avant de décider.
-              </p>
-            </div>
-            <span className="shrink-0 rounded-full border border-border/20 bg-surface px-3 py-1.5 text-[11px] font-bold text-foreground/75 dark:border-white/12 dark:bg-white/[0.06] sm:px-4 sm:py-2 sm:text-[12.5px]">
-              {isSearching && displayedCount === 0
-                ? "Recherche…"
-                : `${displayedCount} résultat${displayedCount !== 1 ? "s" : ""} affiché${displayedCount !== 1 ? "s" : ""}`}
-            </span>
-          </div>
-
+      <section className="border-b border-border/12 bg-surface/95 dark:border-white/8 dark:bg-deepblue/95">
+        <div className="mx-auto max-w-[1480px] px-4 py-3 sm:px-6 sm:py-3.5">
           <QuickFilters filters={filters} cities={cities} propertyTypes={propertyTypes} onChange={handleFilterChange} onReset={handleReset} />
-
-          <p className="mt-2.5 text-[12px] font-semibold text-muted-foreground">
-            Besoin de clarifier vos priorités?{" "}
-            <Link href="/compagnon" className="font-extrabold text-bronze-400 underline underline-offset-2 transition hover:text-bronze-300">
-              Construire Mon Projet avec le Compagnon
-            </Link>
-          </p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1480px] px-4 py-5 sm:px-6 lg:py-6">
-        <div className="border-b border-border/12 pb-3.5 dark:border-white/8">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="flex items-center gap-2 text-[1.05rem] font-extrabold tracking-[-0.02em] text-foreground sm:text-[1.15rem]">
-                {isSearching ? <Loader2 size={16} strokeWidth={2.5} className="animate-spin text-bronze-400" aria-hidden="true" /> : null}
-                <span>
-                  {filters.search.trim()
-                    ? `Résultats pour "${filters.search.trim()}"${filters.city !== "all" ? ` à ${filters.city}` : ""}`
-                    : `Résultats immobiliers à ${displayCity}`}
-                </span>
-              </p>
-              <p className="mt-0.5 text-[12.5px] font-medium text-muted-foreground sm:text-[13.5px]">
-                {[
-                  promoterPremiumListings.length > 0 && `${promoterPremiumListings.length} promoteur${promoterPremiumListings.length > 1 ? "s" : ""} premium`,
-                  agencyPartnerListings.length > 0 && `${agencyPartnerListings.length} agence${agencyPartnerListings.length > 1 ? "s" : ""} partenaire${agencyPartnerListings.length > 1 ? "s" : ""}`,
-                  directUserListings.length > 0 && `${directUserListings.length} dépôt${directUserListings.length > 1 ? "s" : ""} direct${directUserListings.length > 1 ? "s" : ""}`,
-                  publicIndexedCount > 0 && `${publicIndexedCount} annonce${publicIndexedCount > 1 ? "s" : ""} publique${publicIndexedCount > 1 ? "s" : ""}`,
-                ].filter(Boolean).join(" · ") || (isSearching ? "Recherche en cours…" : getIntentLabel(filters.transactionType))}
-              </p>
-              <p className="mt-1 max-w-3xl text-[11px] leading-5 text-muted-foreground/85">{sortExplanation}</p>
-            </div>
+      <section className="mx-auto max-w-[1480px] px-4 py-3 sm:px-6 sm:py-4">
+        <div className="flex flex-col gap-2.5 border-b border-border/12 pb-3 dark:border-white/8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-2">
+            {isSearching ? <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-bronze-500" aria-hidden="true" /> : null}
+            <h1 className="min-w-0 truncate text-[14px] font-extrabold text-foreground sm:text-[15px]">
+              {isSearching && displayedCount === 0
+                ? "Recherche…"
+                : `${displayedCount} résultat${displayedCount !== 1 ? "s" : ""}${filters.search.trim() ? ` pour “${filters.search.trim()}”` : ""}`}
+            </h1>
+          </div>
 
+          <div className="flex items-center justify-between gap-2 sm:justify-end">
+            <SearchViewSwitcher value={view} onChange={setView} />
             <select
-              aria-label="Trier les annonces à l’intérieur de leur catégorie"
+              aria-label="Trier les résultats"
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value as SortBy)}
-              className="shrink-0 rounded-full border border-border/20 bg-surface px-3 py-2.5 text-[12px] font-bold text-foreground outline-none dark:border-white/12 dark:bg-white/[0.06] dark:[color-scheme:dark] sm:px-4 sm:text-[13px]"
+              className="h-10 shrink-0 rounded-full border border-border/20 bg-surface px-3 text-[12px] font-bold text-foreground outline-none dark:border-white/12 dark:bg-white/[0.06] dark:[color-scheme:dark]"
             >
-              <option value="recommended">Tri recommandé</option>
+              <option value="recommended">Recommandé</option>
               <option value="price-asc">Prix croissant</option>
               <option value="price-desc">Prix décroissant</option>
             </select>
           </div>
-
-          <SearchViewSwitcher value={view} onChange={setView} className="mt-2.5" />
-
-          {activeChips.length > 0 ? (
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              {activeChips.map((chip) => (
-                <button
-                  key={chip.key}
-                  type="button"
-                  onClick={() => setFilters((current) => ({ ...current, ...chip.clear }))}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-bronze-500/30 bg-bronze-500/10 px-3 py-1.5 text-[12px] font-bold text-bronze-200 transition hover:bg-bronze-500/20"
-                >
-                  {chip.label}<X size={11} strokeWidth={2.6} aria-hidden="true" />
-                </button>
-              ))}
-              {activeChips.length > 1 ? (
-                <button type="button" onClick={handleReset} className="rounded-full px-3 py-1.5 text-[12px] font-bold text-muted-foreground transition hover:text-foreground">Tout effacer</button>
-              ) : null}
-            </div>
-          ) : null}
         </div>
 
-        <div className={`mt-4 grid grid-cols-1 gap-5 lg:mt-5 ${view === "split" ? "lg:grid-cols-[minmax(0,1fr)_minmax(390px,0.62fr)]" : "lg:grid-cols-1"} lg:items-start`}>
+        {activeChips.length > 0 ? (
+          <div className="mt-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {activeChips.map((chip) => (
+              <button
+                key={chip.key}
+                type="button"
+                onClick={() => setFilters((current) => ({ ...current, ...chip.clear }))}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/20 bg-surface px-2.5 py-1 text-[11px] font-bold text-foreground/75 transition hover:border-bronze-500/35 hover:text-foreground"
+              >
+                {chip.label}<X size={10} strokeWidth={2.6} aria-hidden="true" />
+              </button>
+            ))}
+            {activeChips.length > 1 ? (
+              <button type="button" onClick={handleReset} className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold text-muted-foreground transition hover:text-foreground">Tout effacer</button>
+            ) : null}
+          </div>
+        ) : null}
+
+        <div className={`mt-3 grid grid-cols-1 gap-5 ${view === "split" ? "lg:grid-cols-[minmax(0,1fr)_minmax(390px,0.62fr)]" : "lg:grid-cols-1"} lg:items-start`}>
           {viewLayout.showList ? (
             <div ref={listRef} className="min-w-0">
               {showSkeleton ? (
@@ -679,21 +621,9 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                 </div>
               ) : (
                 <div className="space-y-8">
-                  <CommercialListingSection
-                    tier="promoter_premium"
-                    listings={promoterPremiumListings}
-                    isLoading={isLoading}
-                  />
-                  <CommercialListingSection
-                    tier="agency_partner"
-                    listings={agencyPartnerListings}
-                    isLoading={isLoading}
-                  />
-                  <CommercialListingSection
-                    tier="direct_user"
-                    listings={directUserListings}
-                    isLoading={isLoading}
-                  />
+                  <CommercialListingSection tier="promoter_premium" listings={promoterPremiumListings} isLoading={isLoading} />
+                  <CommercialListingSection tier="agency_partner" listings={agencyPartnerListings} isLoading={isLoading} />
+                  <CommercialListingSection tier="direct_user" listings={directUserListings} isLoading={isLoading} />
                   <PublicIndexedResultsSection
                     analyzedListings={indexedAnalyzedListings}
                     partialListings={indexedPartialListings}
