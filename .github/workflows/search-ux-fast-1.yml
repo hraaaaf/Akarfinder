@@ -9,6 +9,9 @@ on:
       - "scripts/scrapers/__tests__/search-ux-fast-1.test.ts"
       - "scripts/audits/search-ux-fast-1-visual.mjs"
       - ".github/workflows/search-ux-fast-1.yml"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
 
 permissions:
   contents: read
