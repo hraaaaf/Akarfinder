@@ -67,12 +67,15 @@ stable
 security invoker
 set search_path = ''
 as $$
-with eligible as (
-  select count(*)::bigint as n
+with eligible_seeds as (
+  select d.seed_id
   from public.thin_index_search_documents d
   where d.vertical_classification = 'real_estate_likely'
     and d.document_kind = 'LISTING'
     and d.display_eligibility in ('eligible_primary', 'eligible_secondary')
+), eligible as (
+  select count(*)::bigint as n
+  from eligible_seeds
 ), joined as (
   select
     count(*)::bigint as n,
@@ -84,6 +87,8 @@ with eligible as (
     e.source_record_id,
     max(e.created_at) as latest_created_at
   from public.geo_resolution_events e
+  join eligible_seeds s
+    on e.source_record_id::uuid = s.seed_id
   where e.source_record_type = 'source_offer_seed'
     and e.source_record_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
   group by e.source_record_id
@@ -106,7 +111,10 @@ with eligible as (
   from (
     select e.source_record_id
     from public.geo_resolution_events e
+    join eligible_seeds s
+      on e.source_record_id::uuid = s.seed_id
     where e.source_record_type = 'source_offer_seed'
+      and e.source_record_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
       and e.resolution_status = 'resolved'
       and e.resolved_neighborhood_id is not null
     group by e.source_record_id
@@ -129,6 +137,7 @@ select jsonb_build_object(
     'latest_event_must_be_resolved', true,
     'only_validated_neighborhoods', joined.missing_canonical_geo = 0,
     'no_latest_resolution_collision', latest_collisions.n = 0,
+    'same_public_listing_denominator', true,
     'no_inferred_neighborhoods', true,
     'no_search_or_display_policy_change', true
   )
@@ -146,4 +155,4 @@ comment on view public.odm_territorial_metric_listing_join_v1 is
   'P1B.3 fail-closed listing→neighborhood contract. The latest geo event must still be resolved, geography must be validated and the LISTING must remain publicly displayable.';
 
 comment on function public.odm_territorial_metric_join_report_v1() is
-  'P1B.3 read-only coverage and collision report. Low coverage, stale/unresolved geography or latest collisions block territorial metric activation rather than inferring neighborhoods.';
+  'P1B.3 read-only coverage and collision report over the same public LISTING denominator. Low coverage, stale/unresolved geography or latest collisions block territorial metric activation rather than inferring neighborhoods.';
