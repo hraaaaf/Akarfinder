@@ -9,6 +9,7 @@ export type MassIndexSourcePolicy = {
   source_domain: string;
   allowed_discovery_channels: string[] | null;
   review_status: string | null;
+  next_review_at: string | null;
   no_bypass_required: boolean | null;
   policy_hash: string | null;
   acquisition_mode: string | null;
@@ -41,10 +42,20 @@ function normalizeDomain(value: string): string {
   return value.trim().toLowerCase();
 }
 
+function policyReviewIsCurrent(policy: MassIndexSourcePolicy, now: Date): boolean {
+  if (!(["current", "due_soon"] as const).includes(policy.review_status as "current" | "due_soon")) {
+    return false;
+  }
+  if (!policy.next_review_at) return false;
+  const nextReviewAt = new Date(policy.next_review_at);
+  return Number.isFinite(nextReviewAt.getTime()) && nextReviewAt.getTime() > now.getTime();
+}
+
 export function evaluateMassIndexSourcePolicy(
   sourceDomain: string,
   discoveryChannel: string,
   policy: MassIndexSourcePolicy | null | undefined,
+  now: Date = new Date(),
 ): MassIndexPolicyDecision {
   const domain = normalizeDomain(sourceDomain || "");
   const channel = discoveryChannel.trim().toLowerCase();
@@ -64,7 +75,7 @@ export function evaluateMassIndexSourcePolicy(
   if (!policy.policy_hash?.trim()) {
     return { ...base, allowed: false, reason: "missing_policy_hash" };
   }
-  if (!(["current", "due_soon"] as const).includes(policy.review_status as "current" | "due_soon")) {
+  if (!policyReviewIsCurrent(policy, now)) {
     return { ...base, allowed: false, reason: "policy_review_not_current" };
   }
   if (!(policy.allowed_discovery_channels ?? []).map((item) => item.toLowerCase()).includes(channel)) {
@@ -87,13 +98,14 @@ export function evaluateMassIndexDomains(
   sourceDomains: string[],
   discoveryChannel: string,
   policies: MassIndexSourcePolicy[],
+  now: Date = new Date(),
 ): { allowedDomains: string[]; decisions: MassIndexPolicyDecision[] } {
   const policyByDomain = new Map(
     policies.map((policy) => [normalizeDomain(policy.source_domain), policy] as const),
   );
   const domains = [...new Set(sourceDomains.map(normalizeDomain).filter(Boolean))].sort();
   const decisions = domains.map((domain) =>
-    evaluateMassIndexSourcePolicy(domain, discoveryChannel, policyByDomain.get(domain)),
+    evaluateMassIndexSourcePolicy(domain, discoveryChannel, policyByDomain.get(domain), now),
   );
 
   return {
