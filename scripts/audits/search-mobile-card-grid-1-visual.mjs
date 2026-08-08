@@ -101,6 +101,9 @@ try {
               text === "Voir la source";
             return actuallyVisible && secondaryAction;
           }).length;
+        const clippedPrices = cards
+          .map((card) => card.querySelector('[data-mobile-price]'))
+          .filter((node) => node && node.scrollWidth > node.clientWidth + 1).length;
         return {
           cardCount: cards.length,
           firstResultTop: first ? Math.round(first.top) : null,
@@ -110,6 +113,7 @@ try {
           secondSameRow: Boolean(first && second && Math.abs(first.top - second.top) <= 2),
           thirdNextRow: Boolean(first && third && third.top > first.top + 40),
           mobileActions,
+          clippedPrices,
           clientWidth: document.documentElement.clientWidth,
           scrollWidth: document.documentElement.scrollWidth,
         };
@@ -129,6 +133,7 @@ try {
         }
         if (metrics.firstHeight == null || metrics.firstHeight > 360) throw new Error(`${viewport.name}: mobile card too tall at ${metrics.firstHeight}px`);
         if (metrics.mobileActions !== 0) throw new Error(`${viewport.name}: secondary mobile actions still visible (${metrics.mobileActions})`);
+        if (metrics.clippedPrices !== 0) throw new Error(`${viewport.name}: ${metrics.clippedPrices} mobile prices are truncated`);
       }
 
       results.push({
@@ -139,6 +144,7 @@ try {
         card_height: metrics.firstHeight,
         two_column_mobile: viewport.width < 640 ? metrics.secondSameRow && metrics.thirdNextRow : null,
         secondary_mobile_actions_visible: viewport.width < 640 ? metrics.mobileActions : null,
+        truncated_mobile_prices: viewport.width < 640 ? metrics.clippedPrices : null,
         horizontal_overflow: overflow,
       });
     } catch (error) {
