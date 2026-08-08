@@ -117,7 +117,6 @@ describe("Search truth tiers", () => {
   });
 });
 
-
 describe("Search commercial priority", () => {
   it("enforces promoter, agency partner, direct user, then public indexed order", () => {
     const publicIndexed = {
@@ -347,9 +346,11 @@ describe("Search Truth UX source contracts", () => {
     assert.ok(promoter >= 0 && agency > promoter && direct > agency && indexed > direct);
   });
 
-  it("keeps relevance-first ranking explanation and explicit analyzed disclaimer", () => {
+  it("keeps commercial priority internal while preserving the analyzed truth disclaimer", () => {
     const shell = source("components/search/LightZillowSearchShell.tsx");
-    assert.match(shell, /Ordre strict : promoteurs premium, agences partenaires/i);
+    const priority = source("lib/search/search-commercial-priority.ts");
+    assert.doesNotMatch(shell, /Ordre strict : promoteurs premium, agences partenaires/i);
+    assert.match(priority, /premium promoter inventory[\s\S]*authorized agency\/partner inventory[\s\S]*first-party user submissions[\s\S]*public indexed \/ observed inventory/i);
     assert.match(shell, /Analysé ne signifie pas vérifié, certifié ni garanti/i);
   });
 
