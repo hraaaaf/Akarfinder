@@ -5,7 +5,9 @@ on:
     paths:
       - "lib/acquisition-scale-v1/mass-index-source-policy.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy-db.ts"
-      - "scripts/openserp/p0-1-project-commoncrawl-registry.ts"
+      - "scripts/openserp/p0-1-audit-commoncrawl-registry.ts"
+      - "scripts/openserp/commoncrawl-registry-mass-harvest.ts"
+      - "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"
       - "scripts/scrapers/__tests__/mass-index-source-policy.test.ts"
       - "scripts/scrapers/__tests__/p0-1-mass-index-source-registry-gate.test.ts"
       - "supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql"
@@ -16,7 +18,9 @@ on:
     paths:
       - "lib/acquisition-scale-v1/mass-index-source-policy.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy-db.ts"
-      - "scripts/openserp/p0-1-project-commoncrawl-registry.ts"
+      - "scripts/openserp/p0-1-audit-commoncrawl-registry.ts"
+      - "scripts/openserp/commoncrawl-registry-mass-harvest.ts"
+      - "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"
       - "scripts/scrapers/__tests__/mass-index-source-policy.test.ts"
       - "scripts/scrapers/__tests__/p0-1-mass-index-source-registry-gate.test.ts"
       - "supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql"
@@ -49,21 +53,24 @@ jobs:
       - name: TypeScript
         run: npx tsc --noEmit
 
-      - name: Read-only live Source Registry projection
+      - name: Read-only live Source Registry audit
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npx tsx scripts/openserp/p0-1-project-commoncrawl-registry.ts
+        run: npx tsx scripts/openserp/p0-1-audit-commoncrawl-registry.ts
 
-      - name: Assert projection report is fail-closed
+      - name: Assert live audit is fail-closed
         run: |
           node - <<'NODE'
           const fs = require('fs');
           const path = 'data/audits/runtime/p0-1-commoncrawl-policy-projection.json';
           const report = JSON.parse(fs.readFileSync(path, 'utf8'));
-          if (report.fail_closed !== true) throw new Error('P0.1 projection is not fail-closed');
+          if (report.fail_closed !== true) throw new Error('P0.1 audit is not fail-closed');
+          if (report.db_mutation !== false || report.commoncrawl_request !== false) {
+            throw new Error('P0.1 certification audit must stay read-only');
+          }
           if (!Array.isArray(report.allowed_domains) || report.allowed_domains.length === 0) {
-            throw new Error('P0.1 projection returned zero policy-authorized domains');
+            throw new Error('P0.1 audit returned zero policy-authorized domains');
           }
           if (report.policy_rows_loaded > report.structural_candidate_domains) {
             throw new Error('P0.1 impossible policy/source cardinality');
