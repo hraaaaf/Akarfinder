@@ -509,7 +509,10 @@ export function MapNeighborhoodExperience({
         el.addEventListener("click", () => {
           onNavigationChange(withMapLocation(navigationState, point.city, point.neighborhood));
         });
-        const marker = new Marker({ element: el, anchor: "center" })
+        const marker = new Marker({
+          element: el,
+          anchor: priceMode ? (point.lng <= map.getCenter().lng ? "left" : "right") : "center",
+        })
           .setLngLat([point.lng, point.lat])
           .addTo(mapRef.current!);
         markersRef.current.push(marker);
