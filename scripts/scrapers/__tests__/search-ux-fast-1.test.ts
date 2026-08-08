@@ -30,7 +30,7 @@ test("search shell removes the old pre-result hero and explanatory noise", () =>
 test("compact controls precede the listing stream", () => {
   const filtersPosition = shell.indexOf("<QuickFilters");
   const resultToolbarPosition = shell.indexOf('aria-label="Trier les résultats"');
-  const listingStreamPosition = shell.indexOf("<CommercialListingSection");
+  const listingStreamPosition = shell.indexOf('data-search-continuous-flow');
 
   assert.ok(filtersPosition >= 0, "QuickFilters must remain visible");
   assert.ok(resultToolbarPosition > filtersPosition, "result toolbar must follow filters");
