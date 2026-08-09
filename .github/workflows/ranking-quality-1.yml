@@ -1,0 +1,37 @@
+name: RANKING-QUALITY-1 Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260809023000_ranking_quality_1_composed_display_policy.sql'
+      - 'supabase/migrations/20260809023100_ranking_quality_1_trigger_dependencies.sql'
+      - 'scripts/audits/ranking-quality-1-contract.mjs'
+      - 'scripts/odm-ranking-v2-contract.mjs'
+      - '.github/workflows/ranking-quality-1.yml'
+      - 'README.md'
+      - 'docs/ROADMAP.md'
+      - 'docs/SESSION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ranking-quality-contract:
+    name: Composed ranking quality contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify RANKING-QUALITY-1 contract
+        run: node scripts/audits/ranking-quality-1-contract.mjs
+      - name: Preserve Ranking V2 contract
+        run: node scripts/odm-ranking-v2-contract.mjs
+      - run: npm run typecheck --if-present
+      - run: npm run build
