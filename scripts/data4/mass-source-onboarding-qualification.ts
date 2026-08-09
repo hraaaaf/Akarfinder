@@ -2,6 +2,7 @@ import { gunzipSync } from "node:zlib";
 
 export const DATA_4_9A_CANDIDATES = [
   "agadirimmobilier.ma",
+  "agadirimmobilier.org",
   "capital-properties.ma",
   "christiesrealestatemorocco.com",
   "immo-maroc.com",
@@ -15,6 +16,7 @@ export const DATA_4_9A_CANDIDATES = [
 
 export type Data49aCandidate = typeof DATA_4_9A_CANDIDATES[number];
 export type CapacityKind = "complete" | "lower_bound_request_cap" | "lower_bound_url_cap";
+export type RawCapacityRecommendation = "HIGH_RAW_SITEMAP_CAPACITY" | "MEDIUM_RAW_SITEMAP_CAPACITY" | "LOW_RAW_SITEMAP_CAPACITY" | "NO_CURRENT_SITEMAP_CAPACITY";
 
 export type RegistryRow = {
   source_domain: string;
@@ -28,9 +30,11 @@ export type RegistryRow = {
   review_status: string | null;
   next_review_at: string | null;
   current_representation_count: number | null;
+  evidence_urls: string[] | null;
 };
 
 export type SitemapRead = {
+  robotsUrl: string;
   roots: string[];
   urls: string[];
   sourceRequests: number;
@@ -38,6 +42,7 @@ export type SitemapRead = {
 };
 
 export type PathSignals = {
+  descriptiveOnly: true;
   topPrefixes: Array<{ prefix: string; count: number }>;
   idLikePathRows: number;
   htmlLikeRows: number;
@@ -61,6 +66,19 @@ export function sameOriginHttps(domain: string, rawUrl: string): boolean {
   } catch {
     return false;
   }
+}
+
+export function chooseRegistryRobotsUrl(domain: string, evidenceUrls: string[] | null): string | null {
+  for (const rawUrl of evidenceUrls ?? []) {
+    try {
+      const url = new URL(rawUrl);
+      if (url.protocol !== "https:" || !allowedHost(domain, url.hostname)) continue;
+      if (url.pathname.replace(/\/+$/, "").toLowerCase() === "/robots.txt") return url.toString();
+    } catch {
+      // Ignore malformed Registry evidence fail-closed below.
+    }
+  }
+  return null;
 }
 
 export function extractDeclaredSitemaps(domain: string, robotsText: string): string[] {
@@ -112,6 +130,7 @@ export function registryIsCurrentOnboardingCandidate(domain: string, row: Regist
     && (row.allowed_discovery_channels ?? []).includes("commoncrawl")
     && row.authorization_status !== "prohibited"
     && (row.current_representation_count ?? 0) === 0
+    && chooseRegistryRobotsUrl(domain, row.evidence_urls) !== null
     && nextReview instanceof Date
     && Number.isFinite(nextReview.getTime())
     && nextReview.getTime() > now.getTime();
@@ -135,7 +154,8 @@ async function fetchSourceText(domain: string, rawUrl: string): Promise<string> 
   return decodeSitemapPayload(new Uint8Array(await response.arrayBuffer()));
 }
 
-export async function readDeclaredSitemaps(domain: string): Promise<SitemapRead> {
+export async function readDeclaredSitemaps(domain: string, robotsUrl: string): Promise<SitemapRead> {
+  if (!sameOriginHttps(domain, robotsUrl)) throw new Error(`invalid_registry_robots_url:${robotsUrl}`);
   let sourceRequests = 0;
   const read = async (url: string) => {
     if (sourceRequests >= MAX_REQUESTS_PER_SOURCE) throw new Error("source_request_budget_exceeded");
@@ -143,7 +163,7 @@ export async function readDeclaredSitemaps(domain: string): Promise<SitemapRead>
     return fetchSourceText(domain, url);
   };
 
-  const robots = await read(`https://${domain}/robots.txt`);
+  const robots = await read(robotsUrl);
   const roots = extractDeclaredSitemaps(domain, robots);
   if (roots.length === 0) throw new Error("robots_declares_no_same_origin_https_sitemap");
 
@@ -178,7 +198,7 @@ export async function readDeclaredSitemaps(domain: string): Promise<SitemapRead>
     }
   }
 
-  return { roots, urls: [...urls].sort(), sourceRequests, capacityKind };
+  return { robotsUrl, roots, urls: [...urls].sort(), sourceRequests, capacityKind };
 }
 
 export function summarizePathSignals(urls: string[]): PathSignals {
@@ -202,7 +222,7 @@ export function summarizePathSignals(urls: string[]): PathSignals {
     .sort((a, b) => b.count - a.count || a.prefix.localeCompare(b.prefix))
     .slice(0, 8);
 
-  return { topPrefixes, idLikePathRows, htmlLikeRows, propertyWordRows };
+  return { descriptiveOnly: true, topPrefixes, idLikePathRows, htmlLikeRows, propertyWordRows };
 }
 
 export function computeMassScore(input: {
@@ -222,9 +242,9 @@ export function computeMassScore(input: {
   return Math.max(0, Math.min(100, capacity + evidence + identitySafety + efficiency + truncationPenalty));
 }
 
-export function massRecommendation(score: number, observedNetNewIdentities: number): "HIGH_MASS_ONBOARDING_CANDIDATE" | "MEDIUM_MASS_ONBOARDING_CANDIDATE" | "LOW_MASS_ONBOARDING_CANDIDATE" | "NO_CURRENT_SITEMAP_CAPACITY" {
+export function massRecommendation(score: number, observedNetNewIdentities: number): RawCapacityRecommendation {
   if (observedNetNewIdentities <= 0) return "NO_CURRENT_SITEMAP_CAPACITY";
-  if (score >= 70 && observedNetNewIdentities >= 250) return "HIGH_MASS_ONBOARDING_CANDIDATE";
-  if (score >= 55 && observedNetNewIdentities >= 100) return "MEDIUM_MASS_ONBOARDING_CANDIDATE";
-  return "LOW_MASS_ONBOARDING_CANDIDATE";
+  if (score >= 70 && observedNetNewIdentities >= 250) return "HIGH_RAW_SITEMAP_CAPACITY";
+  if (score >= 55 && observedNetNewIdentities >= 100) return "MEDIUM_RAW_SITEMAP_CAPACITY";
+  return "LOW_RAW_SITEMAP_CAPACITY";
 }
