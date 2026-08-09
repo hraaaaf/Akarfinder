@@ -6,7 +6,7 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 
 ## Vérité canonique après merges parallèles
 
-- Main canonique actuel : `00a459032161f4110de3c580e6589faaff166bec` — merge DATA-4.7B PR #435, descendant direct du merge UX/Search #437.
+- Base documentaire utilisée pour ce closeout : `00a459032161f4110de3c580e6589faaff166bec` — merge DATA-4.7B PR #435, descendant direct du merge UX/Search #437. Les avancées parallèles ultérieures de `main` doivent être conservées ; ce closeout ne prétend pas figer le SHA courant de `main`.
 - `CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1` ✅ : PR #437, exact-head `36620ca20e826be46464ab177e9611fb01f94a16`, **27/27 workflows exact-head verts**, specialized gate PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, audit visuel **9,6/10**, Reviewer PASS, Release Certifier GO, merge `66ee5a9263fbdef673c4f16f6066aa10c7cf0417`.
 - Artefact #437 : `sha256:3b71f26ffccf0614098b3dbd7c893560345d332f2a69e6115a7e7bb3dc828944`. Aucun workflow `push` n'était configuré sur le merge #437 ; le main et son tree exact ont été vérifiés directement avant l'avancement parallèle DATA.
 - Prochain LOT UX/Search : **CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1** — petit pool multi-assets Agadir déterministe, sans district non certifié et sans changement ranking, priorité commerciale, éligibilité, dédup, DATA ou Map.
