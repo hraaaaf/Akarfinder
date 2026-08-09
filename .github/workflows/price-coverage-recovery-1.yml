@@ -1,0 +1,36 @@
+name: PRICE-COVERAGE-RECOVERY-1 Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260809013000_price_coverage_recovery_shadow_governance.sql'
+      - 'scripts/audits/price-coverage-recovery-1-contract.mjs'
+      - 'scripts/odm-price-coverage-recovery-v1-contract.mjs'
+      - '.github/workflows/price-coverage-recovery-1.yml'
+      - 'README.md'
+      - 'docs/ROADMAP.md'
+      - 'docs/SESSION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  governance-contract:
+    name: Shadow governance contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify PRICE-COVERAGE-RECOVERY-1 contract
+        run: node scripts/audits/price-coverage-recovery-1-contract.mjs
+      - name: Preserve predecessor ODM recovery contract
+        run: node scripts/odm-price-coverage-recovery-v1-contract.mjs
+      - run: npm run typecheck --if-present
+      - run: npm run build
