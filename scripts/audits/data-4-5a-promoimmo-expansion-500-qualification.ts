@@ -250,7 +250,7 @@ async function main(): Promise<void> {
   const baselineRows = seedRows.filter((row) => (row.fresh_channels ?? []).includes(PROMOIMMO_CHANNEL)).length;
   if (baselineRows !== 50) throw new Error(`Certified Promo Immo sitemap baseline drift: expected 50, got ${baselineRows}`);
 
-  const robotsText = await fetchAllowedText(`https://${PROMOIMMO_DOMAIN}/robots.txt`);
+  const robotsText = await fetchAllowedText(`https://www.${PROMOIMMO_DOMAIN}/robots.txt`);
   const queue = [...extractPromoImmoRobotsSitemaps(robotsText)];
   if (queue.length === 0) throw new Error("Promo Immo robots.txt declares no same-origin sitemap");
   const visited = new Set<string>();
