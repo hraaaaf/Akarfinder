@@ -50,7 +50,9 @@ describe("SEARCH-MOBILE-CARD-GRID-1", () => {
 
     assert.ok(card.includes("publicAttribution.combinedLabel"));
     assert.doesNotMatch(card, /listing\.source_name\s*\|\|\s*truth\.informationLabel/);
-    assert.ok(external.includes("result.source_name"));
+    assert.ok(external.includes("publicAttribution.typeLabel"));
+    assert.ok(external.includes("publicAttribution.sourceLabel"));
+    assert.doesNotMatch(external, /\{result\.source_name\}|\{result\.result_attribution_label\}/);
     assert.ok(external.includes("Résultats proches"));
   });
 });
