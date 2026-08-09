@@ -54,6 +54,15 @@ test("marks repeated ID-bearing structures as strong evidence", () => {
   assert.equal(evidence.top_signatures[0].id_bearing, true);
 });
 
+test("dated blog archives never become strong evidence merely because year/month/day look numeric", () => {
+  const records = [
+    ...Array.from({ length: 8 }, (_, index) => record(`https://example.ma/2016/03/0${(index % 8) + 1}/real-estate-blog-post-${index}`)),
+    ...Array.from({ length: 6 }, (_, index) => record(`https://example.ma/property/villa-casa-${index}-hay-riad`)),
+  ];
+  const evidence = buildDomainPatternEvidence("example.ma", records);
+  assert.equal(evidence.state, "REVIEWABLE_PATTERN_EVIDENCE");
+});
+
 test("marks repeated property namespace without an identifier as reviewable only", () => {
   const records = Array.from({ length: 8 }, (_, index) => record(`https://example.ma/property/villa-casa-${index}-hay-riad`));
   const evidence = buildDomainPatternEvidence("example.ma", records);
