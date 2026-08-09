@@ -6,65 +6,41 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 
 ## Main / LOT actif
 
-- Main de départ du LOT : `0019f33e6a10a58d76a6db4521c681861067c651` — merge DATA-4.7A PR #433.
-- LOT actif : **DATA-4.7B — LSF Controlled Expansion Write**.
-- PR : **#435**.
-- Exact write head certifié avant mutation : `f3f72f6b4e7e7f877df4eb67fa6c31f0140e81b3`.
-- Specialized CI : run `31330561506` PASS — contract + TypeScript + static safety + live dry-run.
-- Rollback artifact : `sha256:d791172e8036d0b475cbf2119dca0c497938940f87563923dbcbf68370398672`, **250 apply rows / 250 rollback rows**, 0 write pendant CI.
+- Main de base du closeout Carte : `3a22c0830ee6afd8f05be7cdb25906f8d5462f78` — DATA-4.7C parallèle préservé.
+- Lane Carte fermée : **P1B.9 — Tier A Registry Candidate Review ✅**.
+- PR Carte : **#439**.
+- Head exact certifié : `82709261dc4cd2b9e79cedf4d29d47eabb542a52`.
+- Merge Carte : `1e1f8957b855fbcc86bd6319ff0247235b0183b3`.
+- Specialized exact-head run `31334081514` / job `93296918424` : PASS.
+- Exact-head global : **19/19 workflows PASS**.
+- Post-merge push gate : run `31334197550` / job `93297231083` : PASS.
 
-## DATA-4.7A ✅
+## UX / Carte — P1B.9 ✅ CLOSED
 
-LSF qualification live :
+P1B.9 a rejoué en production la cohorte Tier A issue de P1B.8 sans aucune mutation :
 
-- 1 414 seeds ; 99 fresh-confirmed ; 1 315 seed-only au départ ;
-- sitemap courant : 1 423 URLs ;
-- 1 064 identités URL sûres ; 174 groupes collision DB exclus fail-closed ;
-- 983 seed-only encore présentes dans le sitemap ;
-- **353** candidates `seed_only + normalized + display eligible + Public Search` ;
-- tier C long-tail accepté comme `eligible_secondary`, sans exiger prix/surface ni fabriquer de donnée ;
-- 0 mutation.
+- **Agadir — Hay Mohammadi : 5** listings Search-éligibles, bridge explicite, non résolus, **2 sources** (`mouldar.com`, `mubawab.ma`) ;
+- **Agadir — Dakhla : 3** listings Search-éligibles, bridge explicite, non résolus, **2 sources** ;
+- parent canonique `city_agadir` : **validated** ;
+- preuve d'autorité indépendante : `agadir.ma`, héritée de P1B.8 et revalidée dans le contrat ;
+- collisions Registry : **0 ID / 0 slug / 0 normalized_name / 0 exact alias** ;
+- identité candidate proposée fail-closed : `validated`, mais `seo_eligible=false` et `map_eligible=false` tant qu'aucun lot séparé ne l'active ;
+- **0 DB write, 0 Registry mutation, 0 alias/entity creation, 0 geo-resolution write**.
 
-PR #433 mergée : `0019f33e6a10a58d76a6db4521c681861067c651`.
+Verdict : **`TIER_A_REGISTRY_CANDIDATES_READY_FOR_BOUNDED_WRITE_DESIGN`**.
 
-## DATA-4.7B — write production certifié ✅ (merge PR encore à faire)
+Ce verdict autorise uniquement la **conception d'un lot séparé et borné de mutation Registry** pour Hay Mohammadi + Dakhla. P1B.9 n'autorise aucune écriture par lui-même.
 
-Preflight exact avant write :
+La couverture quartier reste celle de P1B.5 : **89 / 15 438 = 0,5765 %**. **Offre quartier reste OFF**.
 
-- 250/250 URLs exactes présentes ;
-- 250/250 encore `seed_only` ;
-- 250/250 sans `public_sitemap_presence` précédent ;
-- 250/250 sans ancien `freshness_evidence` ;
-- digest exact URL set : `79e3982f128c4e639197a64a29766e9c`.
+## Prochaine action Carte
 
-Résultat production :
+Formaliser un lot séparé **P1B.10 — Tier A Registry Write Design**, borné exclusivement à **Hay Mohammadi + Dakhla** : migration déterministe, entités + alias exacts, defaults publics fail-closed, preflight anti-collision, rollback exact, tests PostgreSQL, sans encore écrire de `geo_resolution_events`. Toute activation `map_eligible`/`seo_eligible` et toute résolution des 8 listings doivent rester des décisions séparées après certification Registry.
 
-- write atomique : **250/250** ;
-- fresh-confirmed : **250/250** ;
-- `public_sitemap_presence` : **250/250** ;
-- normalized : **250/250** ;
-- technical display : **250/250** ;
-- Public Search : **250/250** ;
-- Thin Index freshness projection : **250/250** ;
-- rollback : disponible, **non requis** ;
-- Registry/policy : inchangés.
+## DATA parallèle — état à ne pas écraser
 
-LSF après write : **1 414 total / 349 fresh-confirmed / 1 065 seed-only / 250 public_sitemap_presence**.
-
-## Sources en attente
-
-- Promo Immo : `BLOCKED_EXTERNAL_SOURCE` — DNS/source directe ; ne pas contourner.
-- Dar Agadir : `BLOCKED_SOURCE_DRIFT` — robots ne déclare plus le sitemap historique ; ne pas réutiliser une preuve ancienne comme preuve live.
-
-## Prochain DATA
-
-Après merge/closeout de #435 : **DATA-4.7C — Residual Reservoir Requalification**, read-only. Revalider le résiduel LSF (103 candidates seulement dans la preuve pré-write, donc chiffre à recalculer) et le comparer au prochain réservoir admissible, Aykana en premier candidat. Aucun second write automatique.
-
-## Autres lanes
-
-- UX/Search : convergence BENCHMARK-SERP-1 et lots Search majeurs certifiés ; Search reste canonique.
-- UX/Carte : P1B.8 ✅ ; prochain lot carte documenté = P1B.9 Tier A Registry Candidate Review ; Offre quartier reste OFF.
+La lane DATA avance indépendamment. Le main de base contient **DATA-4.7C — Residual Reservoir Requalification**. Les décisions DATA, les sources, les writes de fraîcheur et leurs preuves restent hors scope Carte et doivent être conservés tels quels dans README/ROADMAP lors du closeout documentaire.
 
 ## Invariants
 
-No-bypass ; Source Registry autoritaire ; provenance réelle ; Search canonique ; aucune donnée/géométrie inventée ; une responsabilité/branche/PR/merge par LOT ; rollback avant mutation ; exact-head CI verte avant write ; mise à jour README/ROADMAP/SESSION au closeout.
+No-bypass ; Source Registry autoritaire ; Geo Registry canonique ; provenance réelle ; Search canonique ; aucune donnée/géométrie inventée ; une responsabilité/branche/PR/merge par LOT ; rollback avant mutation ; exact-head CI verte avant write ; `Offre quartier = OFF` tant que couverture/fiabilité sont insuffisantes ; mise à jour README/ROADMAP/SESSION au closeout.
