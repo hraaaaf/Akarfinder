@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowRight, ExternalLink, MapPin } from "lucide-react";
-import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
 import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
@@ -40,8 +39,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   if (listing.can_show_result === false) return null;
   if (process.env.NODE_ENV === "production" && listing.production_allowed === false) return null;
 
-  const { selection, hoverListing, clearHover, selectListing, isActive, registerListing } =
-    usePropertySelection();
+  const { hoverListing, clearHover, isActive, registerListing } = usePropertySelection();
   const [thumbnailError, setThumbnailError] = useState(false);
 
   useEffect(() => registerListing(listing), [listing, registerListing]);
@@ -62,7 +60,6 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   const resultTarget = observedExternal ? "_blank" : undefined;
   const resultRel = observedExternal ? "noopener noreferrer" : undefined;
   const active = isActive(listing);
-  const selected = active && selection.interaction === "selected";
   const showOriginal = Boolean(
     listing.listing_url &&
       (!listing.allowed_ctas ||
@@ -181,9 +178,23 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
 
           <div className="mt-2 flex items-center justify-between gap-2 border-t border-border/10 pt-2 text-[9px] dark:border-white/8 sm:mt-3 sm:gap-3 sm:border-border/12 sm:pt-3 sm:text-[11px]">
             <span className="truncate font-semibold text-muted-foreground">{smartCard.freshnessLabel}</span>
-            <span data-public-attribution className="truncate font-semibold text-muted-foreground">
-              {publicAttribution.combinedLabel}
-            </span>
+            {showOriginal && !observedExternal ? (
+              <a
+                href={listing.listing_url!}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-secondary-source-link
+                className="inline-flex min-w-0 items-center gap-1 font-semibold text-muted-foreground transition hover:text-bronze-700 dark:hover:text-bronze-300"
+                aria-label="Voir la source originale"
+              >
+                <span data-public-attribution className="truncate">{publicAttribution.combinedLabel}</span>
+                <ExternalLink size={11} aria-hidden="true" className="shrink-0" />
+              </a>
+            ) : (
+              <span data-public-attribution className="truncate font-semibold text-muted-foreground">
+                {publicAttribution.combinedLabel}
+              </span>
+            )}
           </div>
 
           {!observedExternal && listing.duplicate_score != null && listing.duplicate_score >= 0.7 ? (
@@ -192,51 +203,36 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             </p>
           ) : null}
 
-          <button
-            type="button"
-            onClick={() => selectListing(listing, "list")}
-            aria-pressed={selected}
-            className={`mt-3 hidden items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-[12px] font-extrabold transition sm:flex ${
-              selected
-                ? "border-bronze-500/60 bg-bronze-500/15 text-bronze-700 dark:text-bronze-200"
-                : "border-border/15 bg-surface/70 text-muted-foreground hover:border-bronze-500/40 hover:text-foreground dark:border-white/10 dark:bg-white/[0.04] dark:hover:text-white"
-            }`}
-          >
-            <MapPin size={13} aria-hidden="true" />
-            {selected ? "Aperçu ouvert" : "Repérer sur la carte"}
-          </button>
 
-          <div className="mt-4 hidden flex-col gap-2 sm:flex sm:flex-row">
-            {!observedExternal ? (
-              <Link
-                href={`/listings/${listing.id}`}
-                onClick={() =>
-                  track({
-                    event_name: "search_result_click",
-                    source_page: "/search",
-                    listing_id: listing.id,
-                    intent: listing.transaction_type === "rent" ? "rent" : "buy",
-                  })
-                }
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.28)] transition hover:from-bronze-600"
-              >
-                Voir le bien
-                <ArrowRight size={15} aria-hidden="true" />
-              </Link>
-            ) : null}
-
-            {showOriginal ? (
-              <a
-                href={listing.listing_url!}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-border/20 bg-surface px-4 py-3 text-[12.5px] font-bold text-foreground/75 transition hover:border-bronze-500/35 hover:text-foreground dark:border-white/12 dark:bg-white/[0.04] dark:text-white/75 dark:hover:text-white"
-              >
-                {observedExternal ? "Voir l’annonce originale" : "Voir la source"}
-                <ExternalLink size={14} aria-hidden="true" />
-              </a>
-            ) : null}
-          </div>
+          {!observedExternal ? (
+            <Link
+              href={resultHref}
+              onClick={() =>
+                track({
+                  event_name: "search_result_click",
+                  source_page: "/search",
+                  listing_id: listing.id,
+                  intent: listing.transaction_type === "rent" ? "rent" : "buy",
+                })
+              }
+              data-card-primary-action
+              className="mt-4 hidden w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.28)] transition hover:from-bronze-600 sm:flex"
+            >
+              Voir le bien
+              <ArrowRight size={15} aria-hidden="true" />
+            </Link>
+          ) : showOriginal ? (
+            <a
+              href={listing.listing_url!}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-card-primary-action
+              className="mt-4 hidden w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.28)] transition hover:from-bronze-600 sm:flex"
+            >
+              Voir l’annonce originale
+              <ExternalLink size={14} aria-hidden="true" />
+            </a>
+          ) : null}
 
           {observedExternal && showOriginal ? (
             <a
@@ -249,11 +245,6 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             </a>
           ) : null}
 
-          {!observedExternal ? (
-            <div className="mt-2 hidden sm:block">
-              <CompareToggleButton listing={listing} className="w-full justify-center" />
-            </div>
-          ) : null}
         </div>
       </article>
 

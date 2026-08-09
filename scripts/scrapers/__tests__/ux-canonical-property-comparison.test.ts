@@ -57,12 +57,13 @@ test("comparison never declares a winner or fabricates market judgment", () => {
   assert.match(model.limitation, /ne désigne pas un meilleur bien/);
 });
 
-test("search mounts the canonical comparison dock and cards pass the whole listing", () => {
+test("search keeps the canonical comparison dock without a competing card-level compare CTA", () => {
   const page = readFileSync(resolve(process.cwd(), "app/search/page.tsx"), "utf8");
   const card = readFileSync(resolve(process.cwd(), "components/search/SearchListingCardDark.tsx"), "utf8");
   const dock = readFileSync(resolve(process.cwd(), "components/search/SearchCompareDock.tsx"), "utf8");
   assert.match(page, /<SearchCompareDock \/>/);
-  assert.match(card, /<CompareToggleButton listing={listing}/);
+  assert.doesNotMatch(card, /CompareToggleButton/);
+  assert.match(card, /data-card-primary-action/);
   assert.match(dock, /Comparaison canonique/);
   assert.match(dock, /Non renseigné/);
 });
