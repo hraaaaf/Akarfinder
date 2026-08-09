@@ -1,0 +1,95 @@
+name: P1B.9 Tier A Registry Candidate Review Gate
+
+on:
+  pull_request:
+    paths:
+      - "data/geo/p1b9-tier-a-registry-candidates.json"
+      - "data/geo/p1b8-authority-evidence.json"
+      - "scripts/audits/p1b9-tier-a-registry-candidate-review.ts"
+      - ".github/workflows/p1b9-tier-a-registry-candidate-review.yml"
+  push:
+    branches: [main]
+    paths:
+      - "data/geo/p1b9-tier-a-registry-candidates.json"
+      - "data/geo/p1b8-authority-evidence.json"
+      - "scripts/audits/p1b9-tier-a-registry-candidate-review.ts"
+      - ".github/workflows/p1b9-tier-a-registry-candidate-review.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  tier-a-registry-candidate-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Static read-only Registry boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const script=fs.readFileSync('scripts/audits/p1b9-tier-a-registry-candidate-review.ts','utf8');
+          for(const token of ['.insert(','.upsert(','.update(','.delete(','fetch(','axios','index.commoncrawl.org']) {
+            if(script.includes(token)) throw new Error(`forbidden P1B.9 operation: ${token}`);
+          }
+          for(const marker of [
+            'db_mutation: false',
+            'registry_mutation: false',
+            'alias_creation: false',
+            'entity_creation: false',
+            'geo_resolution_write: false',
+            'source_site_request: false',
+            'fuzzy_matching: false',
+            'title_snippet_inference: false',
+            'registry_write_authorized: false',
+          ]) if(!script.includes(marker)) throw new Error(`missing P1B.9 safety marker: ${marker}`);
+
+          const manifest=JSON.parse(fs.readFileSync('data/geo/p1b9-tier-a-registry-candidates.json','utf8'));
+          if(manifest.candidates.length!==2) throw new Error('P1B.9 must remain exactly 2 candidates');
+          const names=manifest.candidates.map(c=>`${c.city} — ${c.district}`).sort();
+          if(JSON.stringify(names)!==JSON.stringify(['Agadir — Dakhla','Agadir — Hay Mohammadi'])) throw new Error('P1B.9 candidate scope drift');
+          for(const c of manifest.candidates) {
+            if(c.write_eligible_in_p1b9!==false) throw new Error('P1B.9 may not authorize Registry writes');
+            if(c.proposed_parent_id!=='city_agadir') throw new Error('unexpected parent');
+            if(c.proposed_seo_eligible!==false || c.proposed_map_eligible!==false) throw new Error('new Registry candidates must fail closed for public activation');
+            if(c.authority_domain!=='agadir.ma') throw new Error('Tier A authority drift');
+          }
+          NODE
+      - name: Live Tier A candidate review
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1b9-tier-a-registry-candidate-review.ts
+      - name: Validate P1B.9 decision boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('data/audits/runtime/p1b9-tier-a-registry-candidate-review.json','utf8'));
+          if(r.schema_version!=='p1b9-tier-a-registry-candidate-review-v1') throw new Error('unexpected schema');
+          if(r.verdict!=='TIER_A_REGISTRY_CANDIDATES_READY_FOR_BOUNDED_WRITE_DESIGN') throw new Error(`P1B.9 blocked: ${r.verdict}`);
+          if(r.p1b8_tier_a_baseline.pairs!==2 || r.p1b8_tier_a_baseline.listing_rows!==8) throw new Error('P1B.8 Tier A baseline drift');
+          if(r.parent_city.id!=='city_agadir' || r.parent_city.validated!==true) throw new Error('Agadir parent not ready');
+          if(r.ready_pairs!==2 || r.ready_listing_rows!==8) throw new Error('unexpected ready cohort');
+          for(const c of r.candidates) {
+            if(c.candidate_ready_for_bounded_write_design!==true) throw new Error(`candidate blocked: ${c.district}`);
+            if(c.live_unresolved_rows!==(c.district==='Hay Mohammadi'?5:3)) throw new Error(`live cohort drift: ${c.district}`);
+            if(c.source_domains.length!==2) throw new Error(`source diversity drift: ${c.district}`);
+            if(Object.values(c.collisions).some(Boolean)) throw new Error(`Registry collision: ${c.district}`);
+          }
+          if(r.contract.registry_write_authorized!==false || r.contract.registry_mutation!==false) throw new Error('P1B.9 write boundary violated');
+          NODE
+      - name: Upload P1B.9 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1b9-tier-a-registry-candidate-review
+          path: data/audits/runtime/p1b9-tier-a-registry-candidate-review.json
+          if-no-files-found: error
+          retention-days: 14
