@@ -102,7 +102,7 @@ async function fetchIndexRecords(domain: string, index: string): Promise<Pattern
 }
 
 export async function runP0_3PatternEvidence() {
-  const policies = await loadMassIndexSourcePolicies();
+  const policies = await loadMassIndexSourcePolicies([...P0_3_TARGET_DOMAINS]);
   const policyEvaluation = evaluateMassIndexDomains(
     [...P0_3_TARGET_DOMAINS],
     MASS_INDEX_COMMONCRAWL_CHANNEL,
