@@ -1,0 +1,29 @@
+name: Reconcile SEARCH-DESKTOP-SPLIT-1 Cleanup
+
+on:
+  push:
+    branches:
+      - ux/search-post-results-cleanup-1
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/audits/reconcile-search-desktop-split-cleanup.mjs
+      - run: test "$(git diff --name-only | sort | tr '\n' ' ')" = "scripts/audits/search-desktop-split-1-visual.mjs "
+      - run: git rm .github/workflows/reconcile-search-desktop-split-cleanup.yml scripts/audits/reconcile-search-desktop-split-cleanup.mjs
+      - name: Commit predecessor reconciliation
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/audits/search-desktop-split-1-visual.mjs
+          git commit -m 'test: reconcile split visual with cleanup contract'
+          git push origin HEAD:ux/search-post-results-cleanup-1
