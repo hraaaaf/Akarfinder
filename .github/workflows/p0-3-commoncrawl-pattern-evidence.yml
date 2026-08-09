@@ -1,0 +1,98 @@
+name: P0.3 Common Crawl Pattern Evidence Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/acquisition-scale-v1/commoncrawl-pattern-evidence.ts"
+      - "scripts/census/p0-3-commoncrawl-pattern-evidence.ts"
+      - "scripts/census/__tests__/p0-3-commoncrawl-pattern-evidence.test.ts"
+      - ".github/workflows/p0-3-commoncrawl-pattern-evidence.yml"
+  push:
+    branches: [main]
+    paths:
+      - "lib/acquisition-scale-v1/commoncrawl-pattern-evidence.ts"
+      - "scripts/census/p0-3-commoncrawl-pattern-evidence.ts"
+      - "scripts/census/__tests__/p0-3-commoncrawl-pattern-evidence.test.ts"
+      - ".github/workflows/p0-3-commoncrawl-pattern-evidence.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pattern-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Focused P0.3 contracts
+        run: npx tsx --test scripts/census/__tests__/p0-3-commoncrawl-pattern-evidence.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Static safety contract
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'scripts/census/p0-3-commoncrawl-pattern-evidence.ts';
+          const source = fs.readFileSync(path, 'utf8');
+          for (const token of ['.insert(', '.upsert(', '.update(', '.delete(', 'data.commoncrawl.org/crawl-data']) {
+            if (source.includes(token)) throw new Error(`P0.3 forbidden operation: ${token}`);
+          }
+          for (const required of [
+            'https://index.commoncrawl.org/',
+            'source_site_request: false',
+            'warc_fetch: false',
+            'db_mutation: false',
+            'registry_mutation: false',
+          ]) {
+            if (!source.includes(required)) throw new Error(`P0.3 missing safety marker: ${required}`);
+          }
+          NODE
+
+      - name: Live Common Crawl URL-index evidence
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/census/p0-3-commoncrawl-pattern-evidence.ts
+
+      - name: Validate P0.3 proof
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'data/audits/runtime/p0-3-commoncrawl-pattern-evidence.json';
+          const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+          if (report.schema_version !== 'p0-3-commoncrawl-pattern-evidence-v1') throw new Error('unexpected schema');
+          if (report.target_domains !== 18) throw new Error(`expected 18 target domains, got ${report.target_domains}`);
+          if (report.policy_allowed_targets !== 18 || report.policy_blocked_targets !== 0) throw new Error('P0.2 target cohort policy drifted');
+          if (report.source_site_request !== false || report.warc_fetch !== false || report.db_mutation !== false || report.registry_mutation !== false) throw new Error('P0.3 safety contract failed');
+          if (report.total_requests !== 54 || report.successful_requests !== 54 || report.failed_requests !== 0) throw new Error('P0.3 Common Crawl request coverage incomplete');
+          if (!Array.isArray(report.rows) || report.rows.length !== 18) throw new Error('P0.3 domain evidence incomplete');
+          if (report.total_unique_urls <= 0) throw new Error('P0.3 returned no URL-index evidence');
+          console.log(JSON.stringify({
+            target_domains: report.target_domains,
+            successful_requests: report.successful_requests,
+            evidence_ready_domains: report.evidence_ready_domains,
+            strong_pattern_evidence_domains: report.strong_pattern_evidence_domains,
+            reviewable_pattern_evidence_domains: report.reviewable_pattern_evidence_domains,
+            insufficient_evidence_domains: report.insufficient_evidence_domains,
+            total_unique_urls: report.total_unique_urls,
+          }, null, 2));
+          NODE
+
+      - name: Upload P0.3 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-3-commoncrawl-pattern-evidence
+          path: data/audits/runtime/p0-3-commoncrawl-pattern-evidence.json
+          if-no-files-found: error
+          retention-days: 14
