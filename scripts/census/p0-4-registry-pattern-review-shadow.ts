@@ -22,12 +22,31 @@ import { canonicalizeSourceUrl, extractDomain } from "@/lib/openserp-ingestion/u
 const INDEXES = ["CC-MAIN-2026-25", "CC-MAIN-2026-21", "CC-MAIN-2026-17"] as const;
 const LIMIT = 5_000;
 const RETRYABLE = new Set([429, 500, 502, 503, 504]);
-const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = 6;
+const REQUEST_TIMEOUT_MS = 30_000;
+const BETWEEN_REQUESTS_MS = 1_000;
+const MAX_RETRY_DELAY_MS = 30_000;
 const USER_AGENT = "AkarFinder-P0.4-Pattern-Shadow/1.0 (+https://github.com/hraaaaf/Akarfinder)";
 const OUTPUT_PATH = join(process.cwd(), "data/audits/runtime/p0-4-registry-pattern-review-shadow.json");
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function retryAfterMs(response: Response): number | null {
+  const value = response.headers.get("retry-after");
+  if (!value) return null;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return Math.min(seconds * 1_000, MAX_RETRY_DELAY_MS);
+  }
+  const dateMs = Date.parse(value);
+  if (!Number.isFinite(dateMs)) return null;
+  return Math.min(Math.max(dateMs - Date.now(), 0), MAX_RETRY_DELAY_MS);
+}
+
+function backoffMs(attempt: number): number {
+  return Math.min(1_500 * 2 ** (attempt - 1), 12_000);
 }
 
 export function buildP0_4IndexUrl(domain: string, index: string): string {
@@ -53,34 +72,50 @@ export function parseP0_4IndexLine(line: string, index: string): PatternEvidence
 
 async function fetchIndexRecords(domain: string, index: string): Promise<PatternEvidenceRecord[]> {
   const endpoint = buildP0_4IndexUrl(domain, index);
-  let response: Response | null = null;
+  let lastError = "unknown transport error";
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    response = await fetch(endpoint, {
-      headers: {
-        "User-Agent": USER_AGENT,
-        Accept: "application/json,text/plain;q=0.9,*/*;q=0.1",
-      },
-    });
-    if (response.status === 404) return [];
-    if (response.ok) break;
-    if (!RETRYABLE.has(response.status) || attempt === MAX_ATTEMPTS) {
-      throw new Error(`P0.4 Common Crawl URL-index failed for ${domain}/${index}: HTTP ${response.status}`);
+    try {
+      const response = await fetch(endpoint, {
+        headers: {
+          "User-Agent": USER_AGENT,
+          Accept: "application/json,text/plain;q=0.9,*/*;q=0.1",
+        },
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
+
+      if (response.status === 404) return [];
+      if (response.ok) {
+        const text = await response.text();
+        const records: PatternEvidenceRecord[] = [];
+        for (const line of text.split("\n")) {
+          const record = parseP0_4IndexLine(line, index);
+          if (!record) continue;
+          const canonical = canonicalizeSourceUrl(record.url);
+          const actualDomain = canonical ? extractDomain(canonical) : null;
+          if (!canonical || actualDomain !== domain) continue;
+          records.push({ ...record, url: canonical });
+        }
+        return records;
+      }
+
+      lastError = `HTTP ${response.status}`;
+      if (!RETRYABLE.has(response.status) || attempt === MAX_ATTEMPTS) {
+        throw new Error(`P0.4 Common Crawl URL-index failed for ${domain}/${index}: ${lastError}`);
+      }
+      await sleep(retryAfterMs(response) ?? backoffMs(attempt));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.startsWith("P0.4 Common Crawl URL-index failed")) throw error;
+      lastError = message;
+      if (attempt === MAX_ATTEMPTS) {
+        throw new Error(`P0.4 Common Crawl URL-index failed for ${domain}/${index}: ${lastError}`);
+      }
+      await sleep(backoffMs(attempt));
     }
-    await sleep(500 * 2 ** (attempt - 1));
   }
 
-  const text = await response!.text();
-  const records: PatternEvidenceRecord[] = [];
-  for (const line of text.split("\n")) {
-    const record = parseP0_4IndexLine(line, index);
-    if (!record) continue;
-    const canonical = canonicalizeSourceUrl(record.url);
-    const actualDomain = canonical ? extractDomain(canonical) : null;
-    if (!canonical || actualDomain !== domain) continue;
-    records.push({ ...record, url: canonical });
-  }
-  return records;
+  throw new Error(`P0.4 Common Crawl URL-index failed for ${domain}/${index}: ${lastError}`);
 }
 
 export async function runP0_4RegistryPatternReviewShadow() {
@@ -134,7 +169,7 @@ export async function runP0_4RegistryPatternReviewShadow() {
           error: error instanceof Error ? error.message : String(error),
         });
       }
-      await sleep(250);
+      await sleep(BETWEEN_REQUESTS_MS);
     }
 
     rows.push({
