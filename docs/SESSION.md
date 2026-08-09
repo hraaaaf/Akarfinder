@@ -1,7 +1,7 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-09**  
-**Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ #414 ; prochaine étape à formaliser = attribution déterministe**  
+**Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ #416 ; prochaine étape à formaliser = simplification des actions secondaires**  
 **Lane UX/Carte : P1B.4 ✅ Geo Coverage Recovery pilot certifié en production**  
 **Lane DATA : DATA-4.4C ✅ ; DATA-4.5A Expansion-to-500 Qualification ✅ #410 ; P0.1→P0.5 ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = DATA-4.5B Promo Immo Controlled Expansion Write, indépendant de la lane d'autorisation P0**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle 0,45 %**
@@ -10,7 +10,7 @@ Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’uniq
 
 # Main canonique
 
-Main canonique après CONTEXTUAL-VISUAL-ASSETS-1 : `ae3e254bcec3bb4e98b814b0f057141e84956d10` — merge PR #414. Le LOT n'introduit aucune migration ni write DATA ; preuve de release = exact-head `575f9510587cc244b2f1a3a6bf9aea7ad957fd83`, **24/24 workflows verts**, Chromium 4 viewports, Benchmark **9,3/10**, artefact `sha256:78cf4a742360b87683bd9697a465a15f898979b29dea9e384474baf8b0a7ca69`, présence du merge sur `main`.
+Main canonique après DETERMINISTIC-ATTRIBUTION-1 : `80da5a2abf2d3a7d74dafa6c6043ffe7176929d7` — merge PR #416. Le LOT n'introduit aucune migration ni write DATA ; preuve de release = exact-head `ab4a05ec21434fb414628a181a11adddd68d8293`, **26/26 workflows verts**, Chromium 5 viewports, Benchmark **9,4/10**, Reviewer technique `4891678670`, Release Certifier `4891679276`, présence du merge sur `main`.
 
 P0.4 main merge : `81f4809424757838c099b6acfb8f8d4b719deab7` — PR #402 ; post-merge gate PASS.
 
@@ -28,6 +28,7 @@ Acquis récents :
 - RANKING-QUALITY-1 ✅ #403 — 14 007 rows stale resynchronisées, policy drift production = 0, Ranking V2 inchangé ;
 - UNIFIED-LISTING-CARD-1 ✅ #407 — card Gateway alignée sur la grammaire canonique, preuve visuelle 4 viewports, 0 overflow/prix tronqué, Benchmark PASS 9,2/10 ;
 - CONTEXTUAL-VISUAL-ASSETS-1 ✅ #414 — fallback ville exact/local → type reconnu → neutre, aucune inférence, Chromium 4 viewports, Benchmark PASS 9,3/10 ;
+- DETERMINISTIC-ATTRIBUTION-1 ✅ #416 — attribution publique centralisée, raw source labels interdits, 26/26 workflows, Chromium 5 viewports, Benchmark PASS 9,4/10 ;
 - P0.1 ✅ #392 — Source Registry opérationnel et fail-closed sur Common Crawl ;
 - freshness reconciler hardening ✅ #396 — retry transitoire borné, diagnostics PostgREST explicites, concurrence PATCH 25→5.
 - P0.2 ✅ #398 — coverage audit read-only : 27 policies Common Crawl opérationnelles, 9 harvest-ready, 18 pattern-missing, ratio 33,33 %, 0 seed sur la cohorte manquante.

@@ -158,7 +158,13 @@ Les résultats Gateway sans thumbnail autorisée utilisent désormais un fallbac
 
 Certification : head `575f9510587cc244b2f1a3a6bf9aea7ad957fd83`, **24/24 workflows exact-head verts**, Property Type Visual Option A + UNIFIED predecessor + Search Truth + TypeScript + build PASS. Chromium **360×800 / 390×844 / 768×900 / 1280×900** : 0 label tronqué, 0 prix tronqué, 0 overflow horizontal. Benchmark UX/Search Reviewer **PASS 9,3/10**, Reviewer PASS, Release Certifier GO. Artefact visuel `sha256:78cf4a742360b87683bd9697a465a15f898979b29dea9e384474baf8b0a7ca69`. Merge `ae3e254bcec3bb4e98b814b0f057141e84956d10`.
 
-Prochaine étape UX/Search à formaliser : **attribution déterministe**.
+### DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416
+
+La provenance publique Search est désormais calculée par un resolver canonique fail-closed plutôt que rendue depuis des labels libres. Gateway dérive l'identité depuis `source_id` et la configuration source canonique ; les listings persistés utilisent les signaux structurés d'accès/display plus une allowlist de marques ; AkarInfo consomme le même resolver. Les noms bruts inconnus ne sont jamais réémis dans l'UI.
+
+Certification : head `ab4a05ec21434fb414628a181a11adddd68d8293`, **26/26 workflows exact-head verts**, preuve déterministe **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, 0 overflow, 0 prix tronqué et fixtures avec labels bruts empoisonnés sans fuite. Benchmark UX/Search Reviewer **PASS 9,4/10** (mobile 9,4 / desktop 9,3), Reviewer technique PASS (`4891678670`), Release Certifier GO (`4891679276`). Merge `80da5a2abf2d3a7d74dafa6c6043ffe7176929d7`.
+
+Prochaine étape UX/Search à formaliser : **simplification des actions secondaires**.
 
 ## État UX / Carte
 
