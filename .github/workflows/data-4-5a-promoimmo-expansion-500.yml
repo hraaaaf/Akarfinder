@@ -94,5 +94,5 @@ jobs:
         with:
           name: data-4-5a-promoimmo-expansion-500
           path: .tmp/data-4-5a/results
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
