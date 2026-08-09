@@ -178,7 +178,13 @@ Fondation P0 du système d’illustrations contextuelles scalable : catalogue lo
 
 Certification : head `36620ca20e826be46464ab177e9611fb01f94a16`, **27/27 workflows exact-head verts**, specialized gate PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** avec reload stable, 0 label/prix tronqué et 0 overflow. Audit visuel P0 **9,6/10**, Reviewer PASS, Release Certifier GO. Artefact `sha256:3b71f26ffccf0614098b3dbd7c893560345d332f2a69e6115a7e7bb3dc828944`. Merge `66ee5a9263fbdef673c4f16f6066aa10c7cf0417`.
 
-Prochain lot UX/Search : **CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1**, mini-pool multi-assets borné à Agadir pour réduire la répétition visuelle sans toucher ranking, priorité commerciale, éligibilité, dedupe, DATA ou Map.
+### CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445
+
+Pilote P1 Agadir : **12 assets déterministes = 4 ville + 4 Appartement + 4 Villa**, sans district, sans inférence texte et sans toucher ranking, priorité commerciale, éligibilité, dedupe, DATA, Source Registry ou Map. `Appartement` et `Villa` utilisent le tier `city_type`; les autres types reconnus à Agadir retombent sur le pool `city`. La thumbnail autorisée reste prioritaire et la disclosure publique reste `Illustration`.
+
+Certification : head `f6b1d15e92636439dfca8128e54892fbf32b95a6`, **20/20 workflows exact-head verts**, specialized P1 + predecessor P0 PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, **12/12 assets uniques**, reload stable, 0 label/prix tronqué et 0 overflow. Smoke global **48 captures / 0 finding**. Audit UX **9,4/10**, Reviewer PASS, Release Certifier GO. Artefact `sha256:46441308c3449fe1fabef5c8cd651ae9700cd52f91b190190b153ca7f8152860`. Merge `a2e92ac6c4385792744ab7bf3e105663d040bc9d`, post-merge `main` + tree exact vérifiés.
+
+Prochain lot UX/Search : **CONTEXTUAL-ILLUSTRATIONS-SCALE-1** — étendre le système à d’autres villes/types en conservant le même contrat déterministe et truth-safe, sans activer de district non certifié et sans changer ranking, priorité commerciale, éligibilité, dedupe, DATA, Registry ou Map.
 
 ### DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416
 

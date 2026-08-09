@@ -6,11 +6,12 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 
 ## Vérité canonique après merges parallèles
 
-- Base documentaire utilisée pour ce closeout : `00a459032161f4110de3c580e6589faaff166bec` — merge DATA-4.7B PR #435, descendant direct du merge UX/Search #437. Les avancées parallèles ultérieures de `main` doivent être conservées ; ce closeout ne prétend pas figer le SHA courant de `main`.
+- Base documentaire utilisée pour ce closeout UX/Search : `a2e92ac6c4385792744ab7bf3e105663d040bc9d` — merge de `CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1` PR #445, lui-même descendant du merge Carte P1B.10. Les avancées parallèles ultérieures de `main` doivent être conservées ; ce closeout ne prétend pas figer le SHA courant de `main`.
 - `CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1` ✅ : PR #437, exact-head `36620ca20e826be46464ab177e9611fb01f94a16`, **27/27 workflows exact-head verts**, specialized gate PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, audit visuel **9,6/10**, Reviewer PASS, Release Certifier GO, merge `66ee5a9263fbdef673c4f16f6066aa10c7cf0417`.
-- Artefact #437 : `sha256:3b71f26ffccf0614098b3dbd7c893560345d332f2a69e6115a7e7bb3dc828944`. Aucun workflow `push` n'était configuré sur le merge #437 ; le main et son tree exact ont été vérifiés directement avant l'avancement parallèle DATA.
-- Prochain LOT UX/Search : **CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1** — petit pool multi-assets Agadir déterministe, sans district non certifié et sans changement ranking, priorité commerciale, éligibilité, dédup, DATA ou Map.
-- Ce closeout UX/Search ne modifie aucune décision DATA/Carte ; les sections DATA ci-dessous restent la propriété de leur lane.
+- `CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1` ✅ : PR #445, exact-head `f6b1d15e92636439dfca8128e54892fbf32b95a6`, **20/20 workflows exact-head verts**, specialized P1 + predecessor P0 PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, **12/12 variantes Agadir uniques**, reload stable, 0 label/prix tronqué, 0 overflow, audit visuel **9,4/10**, Reviewer PASS, Release Certifier GO, merge `a2e92ac6c4385792744ab7bf3e105663d040bc9d`.
+- Artefact P1 #445 : `sha256:46441308c3449fe1fabef5c8cd651ae9700cd52f91b190190b153ca7f8152860`. Le smoke global a produit **48 captures / 0 finding**.
+- Prochain LOT UX/Search : **CONTEXTUAL-ILLUSTRATIONS-SCALE-1** — étendre prudemment les pools à d'autres villes/types sur le même resolver déterministe et truth-safe, sans district tant qu'aucun signal structuré certifié n'est disponible.
+- Ce closeout UX/Search ne modifie aucune décision DATA/Carte ; les sections DATA/Carte ci-dessous restent la propriété de leur lane.
 
 ## Main / LOT actif
 
@@ -68,19 +69,21 @@ LSF après write : **1 414 total / 349 fresh-confirmed / 1 065 seed-only / 250 p
 
 Après merge/closeout de #435 : **DATA-4.7C — Residual Reservoir Requalification**, read-only. Revalider le résiduel LSF (103 candidates seulement dans la preuve pré-write, donc chiffre à recalculer) et le comparer au prochain réservoir admissible, Aykana en premier candidat. Aucun second write automatique.
 
-## UX/Search — fondation contextuelle certifiée ✅
+## UX/Search — illustrations contextuelles P1 certifiées ✅
 
-- P0 #437 pose un catalogue local explicite et un resolver pur/fail-closed pour les illustrations contextuelles ; aucun nouvel asset n'a été ajouté dans ce lot.
+- P0 #437 pose un catalogue local explicite et un resolver pur/fail-closed pour les illustrations contextuelles.
+- P1 #445 exploite cette fondation sans modifier le resolver : **4 variantes ville Agadir + 4 Appartement + 4 Villa**.
 - Priorité inchangée : thumbnail autorisée → illustration contextuelle → artwork type reconnu → fallback neutre.
-- Sélection multi-assets : Rendezvous/HRW, déterministe, indépendante de l'ordre des candidats et à faible churn lors de l'ajout futur d'assets.
+- `Appartement` et `Villa` utilisent le tier `city_type`; les autres types reconnus à Agadir retombent sur le pool `city` multi-assets.
+- Sélection multi-assets : Rendezvous/HRW, déterministe, indépendante de l'ordre des candidats et stable au reload.
 - Identité stable : `original_url` normalisée conservativement ; tracking, fragment, trailing slash et ordre de query ne remappent pas, paramètres significatifs restent distincts, URL invalide → fail-closed.
 - Le district reste volontairement inactif tant que Search n'expose pas un signal structuré certifié.
-- Disclosure publique uniforme : `Illustration`.
-- Faiblesse P0 identifiée : répétition du seul asset Agadir actuel ; elle est le scope explicite du prochain mini-pilot, pas un motif pour affaiblir la vérité visuelle.
+- Disclosure publique uniforme : `Illustration`; aucun visuel n'est présenté comme une photo réelle de l'annonce.
+- Certification P1 : **12/12 asset IDs atteignables et distincts**, **20/20 workflows**, 5 viewports Chromium, 0 clipping/overflow, UX **9,4/10**.
 
 ## Autres lanes
 
-- UX/Search : `CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1` ✅ #437 ; prochain LOT = **CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1** ; Search reste canonique.
+- UX/Search : `CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1` ✅ #445 ; prochain LOT = **CONTEXTUAL-ILLUSTRATIONS-SCALE-1** ; Search reste canonique.
 - UX/Carte : P1B.8 ✅ ; prochain lot carte documenté = P1B.9 Tier A Registry Candidate Review ; Offre quartier reste OFF.
 
 ## Invariants
