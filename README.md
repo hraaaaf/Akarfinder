@@ -193,6 +193,16 @@ Preuve E2E post-merge : workflow schedulé **Common Crawl Mass Seed Harvest #24*
 
 Micro-lot séparé après un échec transitoire observé sur le run #23 : le reconciler sérialise désormais explicitement les erreurs PostgREST, retrye de façon bornée les timeouts/5xx/fetch transitoires et réduit la concurrence des PATCH de **25 → 5**. Matching exact canonical URL et ownership `openserp_yandex_discovery` inchangés. **19/19 workflows exact-head verts**, DATA-4.3I contract + live-read-only PASS, Reviewer PASS, Release Certifier GO ; merge `6816e5e7bc4dbfe3c253cfe5da38175a5390606d`. Aucune migration, aucune policy modifiée.
 
+### P0.2 — Common Crawl Discovery Coverage Audit ✅ CLOSED — PR #398
+
+P0.2 ne refait pas le census DATA-1.3B : il mesure le delta opérationnel entre les policies production autorisant `commoncrawl` et la readiness structurelle exigée par le harvester (`approved_discovery` + résultat web externe + pattern de listing).
+
+Preuve live read-only : **28** policies déclarent `commoncrawl`, **27** sont opérationnelles, **9** sont `HARVEST_READY`, **18** sont `POLICY_ALLOWED_PATTERN_MISSING`, **1** est `POLICY_EXPIRED_OR_BLOCKED` (`marrakechrealty.com`). Couverture structurelle : **33,33 %**. Les sources policy-déclarées portent **40 809** seeds Common Crawl ; les **18 pattern-missing portent 0 seed**. Deux sources harvest-ready (`1immo.ma`, `barnes-marrakech.com`) sont encore à 0 seed.
+
+Contrat : **0 requête Common Crawl**, **0 requête source-site**, **0 WARC fetch**, **0 mutation DB**, **0 activation policy/source**. Exact-head : **20/20 workflows verts** ; Reviewer **PASS 9,4/10** ; Release Certifier **GO** ; merge `9112cbf02fef2ada2d0eb0785ec872fe630e293f` ; gate post-merge P0.2 PASS.
+
+Prochain lot mass-index : **P0.3 — Common Crawl Pattern Evidence**. Il doit produire des preuves de patterns à partir de l’URL-index Common Crawl existant, sans WARC content par défaut et sans auto-activation.
+
 ### DATA-4 — Reservoir Strategy
 
 - DATA-4.0 ✅ PR #341 : Avito + Mubawab = **35 134 normalized**, **3 588 technical display**, **0 policy-activable** ;
@@ -207,7 +217,7 @@ Micro-lot séparé après un échec transitoire observé sur le run #23 : le rec
 
 ## Décision DATA courante
 
-**DATA-4.4C et P0.1 sont fermés et certifiés en production.** Le micro-lot reconciler #396 est également fermé. P0.1 n’autorise aucune expansion automatique, aucun nouveau scraper direct et aucune évolution de policy. Le prochain LOT mass-index doit être défini explicitement à partir de cette base certifiée.
+**DATA-4.4C, P0.1 et P0.2 sont fermés et certifiés.** Le micro-lot reconciler #396 est également fermé. P0.2 mesure un gap réel de readiness mais n’autorise aucune expansion automatique, aucun nouveau scraper direct et aucune évolution de policy. Prochain lot mass-index : **P0.3 — Common Crawl Pattern Evidence**, borné et offline-first sur l’URL-index existant.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 

@@ -3,14 +3,14 @@
 **Mise à jour : 2026-08-09**  
 **Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; prochain lot = PRICE-COVERAGE-RECOVERY-1**  
 **Lane UX/Carte : P1B.4 ✅ Geo Coverage Recovery pilot certifié en production**  
-**Lane DATA : DATA-4.4C ✅ ; P0.1 Mass Index Source Registry ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT mass-index à définir explicitement**  
+**Lane DATA : DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 Common Crawl Discovery Coverage ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = P0.3 Pattern Evidence**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle 0,45 %**
 
 Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
 # Main canonique
 
-Base du closeout DATA : `main` `6816e5e7bc4dbfe3c253cfe5da38175a5390606d` — merge PR #396.
+Base du closeout DATA : `main` `9112cbf02fef2ada2d0eb0785ec872fe630e293f` — merge PR #398.
 
 Acquis récents :
 
@@ -24,6 +24,7 @@ Acquis récents :
 - SEARCH-MOBILE-CARD-GRID-1 ✅ #394 — grille mobile 2 colonnes, prix non tronqué, desktop préservé ;
 - P0.1 ✅ #392 — Source Registry opérationnel et fail-closed sur Common Crawl ;
 - freshness reconciler hardening ✅ #396 — retry transitoire borné, diagnostics PostgREST explicites, concurrence PATCH 25→5.
+- P0.2 ✅ #398 — coverage audit read-only : 27 policies Common Crawl opérationnelles, 9 harvest-ready, 18 pattern-missing, ratio 33,33 %, 0 seed sur la cohorte manquante.
 
 Invariants : no-bypass, provenance réelle, Search canonique, aucune donnée/géométrie inventée, mobile-first pour UX majeur, zéro jargon interne sur les surfaces grand public.
 
@@ -88,6 +89,26 @@ Correctif :
 
 Certification : **19/19 workflows exact-head verts** sur `341c06510c8ab5ea7d6cb300f9a8e73c520c605d`, DATA-4.3I contract + live-read-only PASS, TypeScript/build PASS, Reviewer PASS, Release Certifier GO. Merge : `6816e5e7bc4dbfe3c253cfe5da38175a5390606d`.
 
+# P0.2 — Common Crawl Discovery Coverage Audit ✅ CLOSED — PR #398
+
+P0.2 mesure uniquement le delta entre `public.source_policy_registry` et la readiness structurelle du harvester. DATA-1.3B reste le census national existant.
+
+Preuve production read-only :
+
+- **28** policies déclarent `commoncrawl` ;
+- **27** sont opérationnelles ;
+- **9** `HARVEST_READY` ;
+- **18** `POLICY_ALLOWED_PATTERN_MISSING` ;
+- **1** `POLICY_EXPIRED_OR_BLOCKED` (`marrakechrealty.com`) ;
+- ratio ready **33,33 %** ;
+- **40 809** seeds sur les sources policy-déclarées ;
+- cohorte des **18 pattern-missing = 0 seed** ;
+- `1immo.ma` et `barnes-marrakech.com` sont harvest-ready mais encore à 0 seed.
+
+Sécurité : `commoncrawl_request=false`, `source_site_request=false`, `warc_fetch=false`, `db_mutation=false`. **20/20 exact-head PASS**, Reviewer **9,4/10**, Certifier GO, merge `9112cbf02fef2ada2d0eb0785ec872fe630e293f`, post-merge gate PASS.
+
+Prochain lot : **P0.3 — Common Crawl Pattern Evidence**, offline-first sur l’URL-index existant ; aucune activation automatique et aucun WARC par défaut.
+
 # UX / Search — état court
 
 - SEARCH-UX-FAST-1 ✅ #390 — mobile 9,3/10 ;
@@ -104,4 +125,4 @@ P1B.4 : **69 résolutions / 14 quartiers / 5 villes**, couverture **0,45 %**, 0 
 
 # DATA — prochaine action
 
-DATA-4.4C et P0.1 sont fermés. Le reconciler #396 est fermé. **Définir explicitement le prochain LOT mass-index à partir de cette base certifiée** avant toute nouvelle acquisition ou expansion. Aucun nouveau scraper/source direct ni aucune activation ne sont autorisés implicitement.
+DATA-4.4C, P0.1 et P0.2 sont fermés. Le reconciler #396 est fermé. **Prochain LOT mass-index : P0.3 — Common Crawl Pattern Evidence**, strictement offline-first sur l’URL-index existant. Aucun nouveau scraper/source direct, aucune activation implicite et aucune expansion automatique.
