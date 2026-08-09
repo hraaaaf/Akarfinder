@@ -1,0 +1,40 @@
+name: SEARCH-ACTION-HIERARCHY-1 Apply
+
+on:
+  push:
+    branches: [ux/search-action-hierarchy-1]
+    paths:
+      - scripts/audits/apply-search-action-hierarchy-1.mjs
+      - .github/workflows/search-action-hierarchy-1-apply.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ux/search-action-hierarchy-1
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply patch
+        run: node scripts/audits/apply-search-action-hierarchy-1.mjs
+      - name: Verify intended scope
+        run: |
+          git diff --exit-code -- . ':!components/search/SearchListingCardDark.tsx' ':!scripts/scrapers/__tests__/search-mobile-card-grid-1.test.ts'
+          git diff --check
+      - name: Remove temporary apply files
+        run: |
+          rm scripts/audits/apply-search-action-hierarchy-1.mjs
+          rm .github/workflows/search-action-hierarchy-1-apply.yml
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/search/SearchListingCardDark.tsx scripts/scrapers/__tests__/search-mobile-card-grid-1.test.ts scripts/audits/apply-search-action-hierarchy-1.mjs .github/workflows/search-action-hierarchy-1-apply.yml
+          git commit -m "SEARCH-ACTION-HIERARCHY-1 simplify card actions"
+          git push origin HEAD:ux/search-action-hierarchy-1
