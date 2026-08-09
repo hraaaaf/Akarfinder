@@ -21,13 +21,15 @@ jobs:
           ref: docs/p1b5-production-closeout
       - name: Apply P1B.5 canonical docs closeout
         run: python scripts/tmp-p1b5-docs-closeout.py
-      - name: Self-clean and commit only canonical docs
+      - name: Self-clean and commit canonical docs
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git rm scripts/tmp-p1b5-docs-closeout.py .github/workflows/tmp-p1b5-docs-closeout.yml
           git add README.md docs/ROADMAP.md docs/SESSION.md
           git diff --cached --name-only
-          test "$(git diff --cached --name-only | sort | tr '\n' ' ')" = "README.md docs/ROADMAP.md docs/SESSION.md "
+          expected=".github/workflows/tmp-p1b5-docs-closeout.yml README.md docs/ROADMAP.md docs/SESSION.md scripts/tmp-p1b5-docs-closeout.py "
+          actual="$(git diff --cached --name-only | sort | tr '\n' ' ')"
+          test "$actual" = "$expected"
           git commit -m "docs: close P1B.5 production recovery"
           git push origin HEAD:docs/p1b5-production-closeout
