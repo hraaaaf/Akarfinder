@@ -1,0 +1,79 @@
+name: DATA-4.7B One-Shot Hardening
+
+on:
+  push:
+    branches:
+      - data/data-4-7b-lsf-controlled-expansion-write
+    paths:
+      - .github/workflows/data-4-7b-one-shot-hardening.yml
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: data/data-4-7b-lsf-controlled-expansion-write
+          fetch-depth: 0
+      - name: Harden historical one-shot write path
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          script_path = Path('scripts/audits/data-4-7b-lsf-controlled-expansion-write.ts')
+          s = script_path.read_text()
+
+          s = s.replace(
+            '  max_revalidation_interval_days: number | null;\n  review_status: string | null;\n};',
+            '  max_revalidation_interval_days: number | null;\n  review_status: string | null;\n  next_review_at: string | null;\n};',
+            1,
+          )
+
+          old_registry = '''function registryAllows(policy: RegistryRow): boolean {\n  return policy.source_domain === DOMAIN\n    && policy.acquisition_mode === "public_sitemap_canonical_link"\n    && policy.discovery_policy === "public_sitemap_only"\n    && policy.display_policy === "canonical_link_only"\n    && policy.display_gate === "external_tail_link_only"\n    && (policy.allowed_discovery_channels ?? []).includes("public_sitemap")\n    && policy.robots_status === "sitemap_declared"\n    && policy.max_revalidation_interval_days === 14\n    && ["current", "due_soon"].includes(policy.review_status ?? "")\n    && (policy.evidence_urls ?? []).includes(`https://${DOMAIN}/robots.txt`);\n}'''
+          new_registry = '''function registryAllows(policy: RegistryRow, now: Date): boolean {\n  const nextReview = policy.next_review_at ? new Date(policy.next_review_at) : null;\n  return policy.source_domain === DOMAIN\n    && policy.acquisition_mode === "public_sitemap_canonical_link"\n    && policy.discovery_policy === "public_sitemap_only"\n    && policy.display_policy === "canonical_link_only"\n    && policy.display_gate === "external_tail_link_only"\n    && (policy.allowed_discovery_channels ?? []).includes("public_sitemap")\n    && policy.robots_status === "sitemap_declared"\n    && policy.max_revalidation_interval_days === 14\n    && ["current", "due_soon"].includes(policy.review_status ?? "")\n    && nextReview instanceof Date\n    && Number.isFinite(nextReview.getTime())\n    && nextReview.getTime() > now.getTime()\n    && (policy.evidence_urls ?? []).includes(`https://${DOMAIN}/robots.txt`);\n}'''
+          if old_registry not in s:
+            raise SystemExit('registryAllows anchor missing')
+          s = s.replace(old_registry, new_registry, 1)
+
+          number_anchor = '''function numberOrZero(value: number | string | null): number {\n  const n = Number(value);\n  return Number.isFinite(n) ? n : 0;\n}'''
+          helper = '''function metadataRunId(metadata: Record<string, unknown> | null): string | null {\n  const evidence = metadata?.freshness_evidence;\n  if (!evidence || typeof evidence !== "object") return null;\n  const runId = (evidence as Record<string, unknown>).run_id;\n  return typeof runId === "string" ? runId : null;\n}'''
+          if 'function metadataRunId(' not in s:
+            if number_anchor not in s:
+              raise SystemExit('numberOrZero anchor missing')
+            s = s.replace(number_anchor, number_anchor + '\n\n' + helper, 1)
+
+          s = s.replace(
+            'async function main(): Promise<void> {\n  const observedAt = new Date().toISOString();',
+            'async function main(): Promise<void> {\n  const now = new Date();\n  const observedAt = now.toISOString();',
+            1,
+          )
+          s = s.replace(
+            'select: "source_domain,acquisition_mode,discovery_policy,display_policy,display_gate,allowed_discovery_channels,robots_status,evidence_urls,max_revalidation_interval_days,review_status",',
+            'select: "source_domain,acquisition_mode,discovery_policy,display_policy,display_gate,allowed_discovery_channels,robots_status,evidence_urls,max_revalidation_interval_days,review_status,next_review_at",',
+            1,
+          )
+          old_gate = '  if (registryRows.length !== 1 || !registryAllows(registryRows[0]!)) throw new Error(`DATA-4.7B Registry gate failed: ${JSON.stringify(registryRows)}`);\n\n  const robots = await fetchSourceText(`https://${DOMAIN}/robots.txt`);'
+          new_gate = '''  if (registryRows.length !== 1 || !registryAllows(registryRows[0]!, now)) throw new Error(`DATA-4.7B Registry gate failed: ${JSON.stringify(registryRows)}`);\n\n  const existingRunRows = seeds.filter((row) => metadataRunId(row.metadata) === RUN_ID).length;\n  if (existingRunRows > 0) {\n    throw new Error(`DATA-4.7B one-shot run already applied: ${existingRunRows}/${BATCH_SIZE}`);\n  }\n\n  const robots = await fetchSourceText(`https://${DOMAIN}/robots.txt`);'''
+          if old_gate not in s:
+            raise SystemExit('main registry gate anchor missing')
+          s = s.replace(old_gate, new_gate, 1)
+          script_path.write_text(s)
+
+          test_path = Path('scripts/data4/__tests__/data-4-7b-lsf-controlled-expansion-write.test.ts')
+          t = test_path.read_text().rstrip()
+          if 'one-shot run identity and current review date' not in t:
+            t += '''\n\ntest("DATA-4.7B enforces one-shot run identity and current review date", () => {\n  for (const token of [\n    'next_review_at: string | null',\n    'nextReview.getTime() > now.getTime()',\n    'function metadataRunId',\n    'metadataRunId(row.metadata) === RUN_ID',\n    'one-shot run already applied',\n  ]) assert.ok(script.includes(token), `missing one-shot guard ${token}`);\n});\n'''
+          test_path.write_text(t)
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/audits/data-4-7b-lsf-controlled-expansion-write.ts scripts/data4/__tests__/data-4-7b-lsf-controlled-expansion-write.test.ts
+          git diff --cached --check
+          git commit -m "DATA-4.7B: make write path permanently one-shot"
+          git push origin HEAD:data/data-4-7b-lsf-controlled-expansion-write
