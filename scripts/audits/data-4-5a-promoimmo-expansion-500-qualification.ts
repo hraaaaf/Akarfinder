@@ -3,11 +3,7 @@ import path from "node:path";
 import {
   PROMOIMMO_CHANNEL,
   PROMOIMMO_DOMAIN,
-  canonicalizePromoImmoUrl,
-  extractPromoImmoRobotsSitemaps,
-  parsePromoImmoSitemapXml,
   registryAllowsPromoImmoCanary,
-  samePromoImmoOrigin,
   type PromoImmoCandidate,
   type PromoImmoRegistryPolicy,
 } from "../data4/promoimmo-sitemap-canary";
@@ -18,13 +14,34 @@ import {
 } from "../data4/promoimmo-controlled-expansion";
 
 const OUT_DIR = process.env.DATA_4_5A_OUT_DIR ?? ".tmp/data-4-5a/results";
+const SOURCE_PROOF_PATH = process.env.DATA_4_5A_SOURCE_PROOF ?? ".tmp/data-4-5a/source-evidence/proof.json";
+const SOURCE_ARTIFACT_ID = process.env.DATA_4_5A_SOURCE_ARTIFACT_ID ?? "9020834298";
+const SOURCE_ARTIFACT_DIGEST = process.env.DATA_4_5A_SOURCE_ARTIFACT_DIGEST ?? "sha256:f4e4f52fb950ada9283e0d345b6e4840df3844c0ac68e25c72bfca5f4b4b1c4c";
+const SOURCE_HEAD_SHA = "982571bfc9bf4c77920c50fd2850e28db092d2fc";
+const SOURCE_EVIDENCE_MAX_AGE_DAYS = 14;
 const PAGE_SIZE = 1000;
-const MAX_SOURCE_REQUESTS = 40;
 const TIMEOUT_MS = 20_000;
 const MAX_ATTEMPTS = 3;
 const RETRYABLE_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504]);
-let sourceRequests = 0;
 
+type CertifiedSourceProof = {
+  schemaVersion: string;
+  generatedAt: string;
+  mode: string;
+  sourceDomain: string;
+  runId: string;
+  registryGate: string;
+  currentSitemapUrlCount: number;
+  sitemapIntersectionRows: number;
+  conservativeEligibleRows: number;
+  qualityAudit?: { exactCrossSourceCollisions?: number };
+  sourceRequests: number;
+  databaseWrites: number;
+  freshnessWrites: number;
+  registryWrites: number;
+  detailPageFetches: number;
+  canaryWriteAuthorizedByThisRun: boolean;
+};
 type RegistryRow = {
   source_domain: string;
   acquisition_mode: string | null;
@@ -118,7 +135,6 @@ async function restPage<T>(table: string, params: Record<string, string>): Promi
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
       if (response.ok) return await response.json() as T[];
-
       const body = await response.text();
       if (!RETRYABLE_STATUSES.has(response.status) || attempt === MAX_ATTEMPTS) {
         throw new Error(`${table} read failed status=${response.status} attempt=${attempt}/${MAX_ATTEMPTS} path=${url.pathname}: ${body}`);
@@ -131,7 +147,6 @@ async function restPage<T>(table: string, params: Record<string, string>): Promi
       await sleep(500 * (2 ** (attempt - 1)));
     }
   }
-
   throw new Error(`${table} read exhausted retries path=${url.pathname}`);
 }
 
@@ -142,39 +157,6 @@ async function restAll<T>(table: string, params: Record<string, string>): Promis
     rows.push(...page);
     if (page.length < PAGE_SIZE) return rows;
   }
-}
-
-async function fetchAllowedText(urlString: string): Promise<string> {
-  if (!samePromoImmoOrigin(urlString)) throw new Error(`Disallowed Promo Immo URL: ${urlString}`);
-
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    sourceRequests += 1;
-    if (sourceRequests > MAX_SOURCE_REQUESTS) throw new Error("DATA-4.5A source request budget exceeded");
-    try {
-      const response = await fetch(urlString, {
-        redirect: "follow",
-        headers: { "user-agent": "AkarFinder/1.0 (+DATA-4.5A; sitemap-only; no-detail-fetch)" },
-        signal: AbortSignal.timeout(TIMEOUT_MS),
-      });
-      if (!samePromoImmoOrigin(response.url)) {
-        throw new Error(`Promo Immo redirect left allowed origin: ${urlString} -> ${response.url}`);
-      }
-      if (response.ok) return response.text();
-
-      const body = await response.text();
-      if (!RETRYABLE_STATUSES.has(response.status) || attempt === MAX_ATTEMPTS) {
-        throw new Error(`Promo Immo source read failed status=${response.status} attempt=${attempt}/${MAX_ATTEMPTS} url=${urlString}: ${body.slice(0, 500)}`);
-      }
-      await sleep(retryAfterMs(response) ?? 500 * (2 ** (attempt - 1)));
-    } catch (error) {
-      if (!isRetryableFetchError(error) || attempt === MAX_ATTEMPTS) {
-        throw new Error(`Promo Immo source read failed attempt=${attempt}/${MAX_ATTEMPTS} url=${urlString}: ${errorText(error)}`, { cause: error });
-      }
-      await sleep(500 * (2 ** (attempt - 1)));
-    }
-  }
-
-  throw new Error(`Promo Immo source read exhausted retries url=${urlString}`);
 }
 
 function numberOrNull(value: number | string | null): number | null {
@@ -204,9 +186,31 @@ function fingerprint(row: {
   return JSON.stringify([title, row.city, row.propertyType, row.intent, price, surface]);
 }
 
+async function loadCertifiedSourceProof(now: Date): Promise<{ proof: CertifiedSourceProof; ageHours: number }> {
+  const proof = JSON.parse(await fs.readFile(SOURCE_PROOF_PATH, "utf8")) as CertifiedSourceProof;
+  if (proof.schemaVersion !== "data-4-4b-promoimmo-revalidation-canary-v1") throw new Error(`Unexpected DATA-4.4B proof schema: ${proof.schemaVersion}`);
+  if (proof.sourceDomain !== PROMOIMMO_DOMAIN || proof.mode !== "DRY_RUN" || proof.registryGate !== "PASS") throw new Error("DATA-4.4B source proof identity/gate mismatch");
+  if (proof.currentSitemapUrlCount !== 3130 || proof.sitemapIntersectionRows !== 2935 || proof.conservativeEligibleRows !== 2456) {
+    throw new Error(`Unexpected DATA-4.4B certified source counts: ${JSON.stringify({ currentSitemapUrlCount: proof.currentSitemapUrlCount, sitemapIntersectionRows: proof.sitemapIntersectionRows, conservativeEligibleRows: proof.conservativeEligibleRows })}`);
+  }
+  if (proof.qualityAudit?.exactCrossSourceCollisions !== 0) throw new Error("DATA-4.4B source proof had exact cross-source collisions");
+  if (proof.databaseWrites !== 0 || proof.freshnessWrites !== 0 || proof.registryWrites !== 0 || proof.detailPageFetches !== 0 || proof.canaryWriteAuthorizedByThisRun !== false) {
+    throw new Error("DATA-4.4B source proof safety contract mismatch");
+  }
+  const observedAt = Date.parse(proof.generatedAt);
+  if (!Number.isFinite(observedAt)) throw new Error(`Invalid DATA-4.4B generatedAt: ${proof.generatedAt}`);
+  const ageMs = now.getTime() - observedAt;
+  if (ageMs < 0) throw new Error("DATA-4.4B source proof is from the future");
+  const maxAgeMs = SOURCE_EVIDENCE_MAX_AGE_DAYS * 86_400_000;
+  if (ageMs > maxAgeMs) throw new Error(`DATA-4.4B source proof expired: ageHours=${(ageMs / 3_600_000).toFixed(2)}`);
+  return { proof, ageHours: ageMs / 3_600_000 };
+}
+
 async function main(): Promise<void> {
-  const generatedAt = new Date().toISOString();
-  const [registryRows, normalizedRows, displayRows, publicRows, seedRows] = await Promise.all([
+  const now = new Date();
+  const generatedAt = now.toISOString();
+  const [{ proof: sourceProof, ageHours: sourceEvidenceAgeHours }, registryRows, normalizedRows, displayRows, publicRows, seedRows] = await Promise.all([
+    loadCertifiedSourceProof(now),
     restAll<RegistryRow>("source_policy_registry", {
       select: "source_domain,acquisition_mode,discovery_policy,display_policy,display_gate,machine_gate,allowed_discovery_channels,robots_status,max_revalidation_interval_days,review_status",
       source_domain: `eq.${PROMOIMMO_DOMAIN}`,
@@ -250,32 +254,9 @@ async function main(): Promise<void> {
   const baselineRows = seedRows.filter((row) => (row.fresh_channels ?? []).includes(PROMOIMMO_CHANNEL)).length;
   if (baselineRows !== 50) throw new Error(`Certified Promo Immo sitemap baseline drift: expected 50, got ${baselineRows}`);
 
-  const robotsText = await fetchAllowedText(`https://www.${PROMOIMMO_DOMAIN}/robots.txt`);
-  const queue = [...extractPromoImmoRobotsSitemaps(robotsText)];
-  if (queue.length === 0) throw new Error("Promo Immo robots.txt declares no same-origin sitemap");
-  const visited = new Set<string>();
-  const sitemapByCanonicalUrl = new Map<string, string>();
-  while (queue.length > 0) {
-    const rawUrl = queue.shift()!;
-    const sitemapUrl = canonicalizePromoImmoUrl(rawUrl);
-    if (!sitemapUrl || visited.has(sitemapUrl)) continue;
-    visited.add(sitemapUrl);
-    const parsed = parsePromoImmoSitemapXml(await fetchAllowedText(sitemapUrl));
-    if (parsed.kind === "unknown") throw new Error(`Unknown Promo Immo sitemap payload: ${sitemapUrl}`);
-    if (parsed.kind === "index") {
-      for (const child of parsed.locs) if (!visited.has(child) && !queue.includes(child)) queue.push(child);
-    } else {
-      for (const canonicalUrl of parsed.locs) sitemapByCanonicalUrl.set(canonicalUrl, sitemapUrl);
-    }
-  }
-  if (sitemapByCanonicalUrl.size === 0) throw new Error("Promo Immo sitemap population is empty");
-
   const displayByUrl = new Map(displayRows.map((row) => [row.canonical_url, row]));
   const promoPublicUrls = new Set(publicRows.filter((row) => row.source_domain === PROMOIMMO_DOMAIN).map((row) => row.canonical_url));
   const sitemapConfirmedUrls = new Set(seedRows.filter((row) => (row.fresh_channels ?? []).includes(PROMOIMMO_CHANNEL)).map((row) => row.canonical_url));
-  for (const url of sitemapConfirmedUrls) {
-    if (!sitemapByCanonicalUrl.has(url)) throw new Error(`Certified baseline URL missing from current sitemap: ${url}`);
-  }
 
   const otherFingerprints = new Set<string>();
   for (const row of publicRows) {
@@ -291,12 +272,8 @@ async function main(): Promise<void> {
     if (key) otherFingerprints.add(key);
   }
 
-  let sitemapIntersectionRows = 0;
-  let exactCrossSourceCollisions = 0;
-  const candidates: PromoImmoExpansionCandidate[] = [];
-  for (const row of normalizedRows) {
-    if (!sitemapByCanonicalUrl.has(row.canonical_url)) continue;
-    sitemapIntersectionRows += 1;
+  let currentExactCrossSourceCollisions = 0;
+  const candidates: PromoImmoExpansionCandidate[] = normalizedRows.map((row) => {
     const display = displayByUrl.get(row.canonical_url);
     const key = fingerprint({
       title: row.title,
@@ -307,7 +284,7 @@ async function main(): Promise<void> {
       surface: row.surface_m2,
     });
     const exactCrossSourceCollision = key !== null && otherFingerprints.has(key);
-    if (exactCrossSourceCollision) exactCrossSourceCollisions += 1;
+    if (exactCrossSourceCollision) currentExactCrossSourceCollisions += 1;
     const base: PromoImmoCandidate = {
       canonicalUrl: row.canonical_url,
       freshnessStatus: row.freshness_status,
@@ -322,8 +299,8 @@ async function main(): Promise<void> {
       technicalDisplayPresent: display !== undefined,
       exactCrossSourceCollision,
     };
-    candidates.push({ ...base, alreadySitemapConfirmed: sitemapConfirmedUrls.has(row.canonical_url) });
-  }
+    return { ...base, alreadySitemapConfirmed: sitemapConfirmedUrls.has(row.canonical_url) };
+  });
 
   const qualification = qualifyPromoImmoExpansion(candidates, baselineRows);
   requireQualifiedPromoImmoExpansion(qualification);
@@ -333,8 +310,10 @@ async function main(): Promise<void> {
     batch_number: index < 100 ? 1 : index < 200 ? 2 : index < 300 ? 3 : index < 400 ? 4 : 5,
     canonical_url: row.canonicalUrl,
     quality_score: row.qualityScore,
-    current_sitemap_url: sitemapByCanonicalUrl.get(row.canonicalUrl),
     current_freshness_status: row.freshnessStatus,
+    source_snapshot_observed_at: sourceProof.generatedAt,
+    exact_current_sitemap_membership_verified_in_this_lot: false,
+    must_revalidate_current_sitemap_before_write: true,
     rollback_required_before_write: true,
   }));
 
@@ -342,23 +321,36 @@ async function main(): Promise<void> {
     schema_version: "data-4-5a-promoimmo-expansion-500-qualification-v1",
     generated_at: generatedAt,
     source_domain: PROMOIMMO_DOMAIN,
+    qualification_mode: "CERTIFIED_RECENT_SOURCE_SNAPSHOT_PLUS_CURRENT_DB_CAPACITY",
+    source_evidence: {
+      source_head_sha: SOURCE_HEAD_SHA,
+      artifact_id: SOURCE_ARTIFACT_ID,
+      artifact_digest: SOURCE_ARTIFACT_DIGEST,
+      observed_at: sourceProof.generatedAt,
+      age_hours: Number(sourceEvidenceAgeHours.toFixed(2)),
+      max_age_days: SOURCE_EVIDENCE_MAX_AGE_DAYS,
+      sitemap_url_count: sourceProof.currentSitemapUrlCount,
+      sitemap_intersection_rows: sourceProof.sitemapIntersectionRows,
+      conservative_eligible_rows: sourceProof.conservativeEligibleRows,
+      exact_cross_source_collisions: sourceProof.qualityAudit?.exactCrossSourceCollisions ?? null,
+    },
     target_total_rows: qualification.targetTotal,
     certified_baseline_rows: baselineRows,
     required_new_rows: qualification.requiredNewRows,
     batch_sizes: qualification.batchSizes,
     current_seed_rows: seedRows.length,
-    current_sitemap_url_count: sitemapByCanonicalUrl.size,
-    sitemap_intersection_rows: sitemapIntersectionRows,
-    exact_cross_source_collisions: exactCrossSourceCollisions,
+    current_normalized_rows: normalizedRows.length,
+    current_public_search_rows: promoPublicUrls.size,
+    current_technical_display_rows: displayRows.length,
+    current_exact_cross_source_collisions: currentExactCrossSourceCollisions,
     eligible_new_rows: qualification.eligibleNewRows,
     selected_new_rows: selected.length,
     selected_unique_rows: new Set(selectedUrls).size,
     selected_public_search_rows: selected.filter((row) => row.publicSearchPresent).length,
     selected_technical_display_rows: selected.filter((row) => row.technicalDisplayPresent).length,
-    selected_current_sitemap_rows: selected.filter((row) => sitemapByCanonicalUrl.has(row.canonicalUrl)).length,
-    registry_review_status: policy.reviewStatus,
-    source_requests: sourceRequests,
-    source_request_budget: MAX_SOURCE_REQUESTS,
+    selected_exact_collision_free_rows: selected.filter((row) => !row.exactCrossSourceCollision).length,
+    selected_sitemap_revalidation_required_rows: selected.length,
+    source_site_requests: 0,
     source_site_detail_requests: 0,
     database_writes: 0,
     freshness_writes: 0,
@@ -366,8 +358,9 @@ async function main(): Promise<void> {
     policy_changes: 0,
     display_policy_changes: 0,
     production_activation: false,
+    exact_selected_sitemap_membership_certified_by_this_lot: false,
     write_authorized_by_this_lot: false,
-    next_lot_may_prepare_transactional_write: true,
+    next_lot_must_revalidate_current_sitemap_before_each_write: true,
   };
 
   await fs.mkdir(OUT_DIR, { recursive: true });
@@ -381,8 +374,7 @@ main().catch(async (error) => {
     schema_version: "data-4-5a-failure-v1",
     generated_at: new Date().toISOString(),
     error: errorText(error),
-    source_requests: sourceRequests,
-    source_request_budget: MAX_SOURCE_REQUESTS,
+    source_site_requests: 0,
     database_writes: 0,
     freshness_writes: 0,
     registry_mutations: 0,
