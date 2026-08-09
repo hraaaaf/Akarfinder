@@ -1,0 +1,86 @@
+name: DATA-4.7B LSF Controlled Expansion Write
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/data-4-7b-lsf-controlled-expansion-write.ts"
+      - "scripts/data4/__tests__/data-4-7b-lsf-controlled-expansion-write.test.ts"
+      - ".github/workflows/data-4-7b-lsf-controlled-expansion-write.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/audits/data-4-7b-lsf-controlled-expansion-write.ts"
+      - "scripts/data4/__tests__/data-4-7b-lsf-controlled-expansion-write.test.ts"
+      - ".github/workflows/data-4-7b-lsf-controlled-expansion-write.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: DATA-4.7B focused contract test
+        run: npx tsx --test scripts/data4/__tests__/data-4-7b-lsf-controlled-expansion-write.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Static PR safety boundary
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const s = fs.readFileSync('scripts/audits/data-4-7b-lsf-controlled-expansion-write.ts','utf8');
+          for (const required of [
+            'const BATCH_SIZE = 250',
+            'const CHANNEL = "public_sitemap_presence"',
+            'rollback-manifest.json',
+            'DATA_4_7B_APPLY === "true"',
+            'BATCH_1_YES',
+            'sourceSiteDetailRequests: 0',
+          ]) if (!s.includes(required)) throw new Error(`missing contract ${required}`);
+          NODE
+
+  live-dry-run:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_7B_OUT_DIR: .tmp/data-4-7b/results
+      DATA_4_7B_APPLY: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run exact 250-row live dry-run
+        run: npx tsx scripts/audits/data-4-7b-lsf-controlled-expansion-write.ts
+      - name: Enforce rollback-ready proof
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-4-7b/results/proof.json','utf8'));
+          const a = JSON.parse(fs.readFileSync('.tmp/data-4-7b/results/apply-manifest.json','utf8'));
+          const r = JSON.parse(fs.readFileSync('.tmp/data-4-7b/results/rollback-manifest.json','utf8'));
+          if (p.schemaVersion !== 'data-4-7b-lsf-controlled-expansion-write-v1' || p.mode !== 'DRY_RUN_READY') throw new Error(JSON.stringify(p));
+          if (p.batchSize !== 250 || a.rows.length !== 250 || r.rows.length !== 250) throw new Error('DATA-4.7B must prepare exactly 250 rows');
+          if (p.liveCandidateRows < 250) throw new Error(JSON.stringify(p));
+          if (p.databaseWrites !== 0 || p.rollbackWrites !== 0 || p.registryMutations !== 0 || p.policyChanges !== 0 || p.productionActivation !== false || p.applyAuthorized !== false) throw new Error(JSON.stringify(p));
+          if (p.preCertification.expectedRows !== 250 || p.preCertification.seedRows !== 250 || p.preCertification.normalizedRows !== 250 || p.preCertification.technicalDisplayRows !== 250 || p.preCertification.publicSearchRows !== 250) throw new Error(JSON.stringify(p));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-7b-lsf-controlled-expansion-write
+          path: .tmp/data-4-7b/results/
+          if-no-files-found: error
+          retention-days: 14
