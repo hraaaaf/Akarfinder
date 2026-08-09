@@ -2,7 +2,7 @@
 
 **Mise à jour : 2026-08-09**  
 **Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ #418 ; prochaine et dernière étape benchmark à formaliser = split Liste / Carte desktop sans surcharge**  
-**Lane UX/Carte : P1B.5 ✅ Canonical Geo Normalization Recovery certifié en production — PR #419**  
+**Lane UX/Carte : P1B.6 ✅ Geo Coverage Depth Audit — PR #424 ; prochain LOT = P1B.7 Geo Registry Gap Qualification (read-only first)**  
 **Lane DATA : DATA-4.4C ✅ ; DATA-4.5A Expansion-to-500 Qualification ✅ #410 ; P0.1→P0.5 ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = DATA-4.5B Promo Immo Controlled Expansion Write, indépendant de la lane d'autorisation P0**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle **89 / 15 438 = 0,5765 %****
 
@@ -10,7 +10,7 @@ Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’uniq
 
 # Main canonique
 
-Main canonique après SEARCH-ACTION-HIERARCHY-1 : `0987b89286d262e7d01ec8e3a868b2424d85c4d5` — merge PR #418. Le LOT n'introduit aucune migration ni write DATA ; preuve de release = exact-head `a7ddb7d023eac1418eee50e03258f1d056184b64`, **24/24 workflows verts**, Chromium 5 viewports, Benchmark **9,5/10**, Reviewer technique PASS, Release Certifier GO, présence du merge sur `main`.
+Main canonique après P1B.6 : `304726a83e1ef4df5ddacb8ecba925ad2e1c1b30` — merge PR #424. P1B.6 est strictement read-only ; exact-head `311b00bb5d0273f04b4405395e5eb5be13050045`, **19/19 workflows verts**, specialized live gate PASS, Reviewer **9,6/10**, post-merge gate PASS.
 
 P0.4 main merge : `81f4809424757838c099b6acfb8f8d4b719deab7` — PR #402 ; post-merge gate PASS.
 
@@ -20,6 +20,7 @@ Acquis récents :
 - P1B.3 ✅ PR #382 — Territorial Metric Join Contract ;
 - P1B.4 ✅ PR #386 — Geo Coverage Recovery pilot, 69/69, coverage 0,45 % ;
 - P1B.5 ✅ PR #419 — Canonical Geo Normalization Recovery : preflight 20/14/6, write 20/20, 11 Guéliz + 6 Océan + 3 Route de l’Ourika, latest resolved 20/20, coverage Search quartier **89/15 438 = 0,5765 %**, rollback append-only disponible, metric layers OFF ;
+- P1B.6 ✅ PR #424 — Geo Coverage Depth Audit read-only : 15 438 Search, 605 bridged, 89 resolved, 516 unresolved = 71 district explicite + 445 sans district ; 0/71 alias quartier confidence-1, 31 couples, sources corrigées/double-checkées = mouldar 42 / mubawab 21 / marrakechrealty 8 ; verdict `REGISTRY_GAP_IS_NEXT_BOUNDARY` ;
 - BENCHMARK-SERP-1 ✅ first pass read-only — `docs/BENCHMARK_SERP_1_REPORT.md` ;
 - SEARCH-UX-FAST-1 ✅ #390 — première annonce rapprochée, mobile-first ;
 - SEARCH-WORDING-PURITY-1 ✅ #391 — wording public simplifié, truth/ranking inchangés ;

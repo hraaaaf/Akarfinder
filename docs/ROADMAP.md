@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.5 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; prochaine et dernière étape benchmark UX Search à formaliser = split Liste / Carte desktop sans surcharge ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.6 ✅ Geo Coverage Depth Audit certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; prochaine et dernière étape benchmark UX Search à formaliser = split Liste / Carte desktop sans surcharge ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -250,7 +250,13 @@ Production : preflight **20 candidats / 14 map-eligible / 6 canonical-only**, wr
 
 Après write : **15 438 listings Search éligibles / 89 résolus quartier / 0,5765 % coverage**. Exact-head **20/20 PASS** sur `5a1d43dd53937c6b462a7a947d4c72605c41f5ab`, Reviewer technique PASS, merge `0abfd97c85da31e11d0e94ecc5ef5b9317c313ff`, push gate P1B.5 PASS.
 
-**Offre quartier reste OFF.** À **0,5765 %** de couverture, aucun seuil artificiel ni choroplèthe national n’est autorisé. La prochaine lane Carte doit continuer la récupération explicite/certifiable et mesurer chaque gain réel.
+## P1B.6 — Geo Coverage Depth Audit ✅ CLOSED — PR #424
+
+Audit live read-only après P1B.5 : **15 438** listings Search éligibles ; **605** rows avec coverage bridge ; **89** latest-resolved ; **516** non résolues. Sous-cohortes : **71** avec `district` explicite et **445** sans district. Les 71 explicites ont **0 alias quartier validé confidence=1** et forment **31 couples ville/quartier** ; distribution source certifiée après double-check SQL : `mouldar.com` **42**, `mubawab.ma` **21**, `marrakechrealty.com` **8**. Les 445 sans district ne contiennent **aucun champ neighborhood/district/quartier structuré** dans les metadata auditées ; titre/snippet restent interdits comme preuve automatique.
+
+Contrat : read-only, **0 DB/Registry mutation, 0 source-site request, 0 alias/entity creation, 0 fuzzy, 0 title/snippet inference**. Exact-head `311b00bb5d0273f04b4405395e5eb5be13050045`, **19/19 workflows PASS**, specialized live gate PASS, Reviewer **9,6/10**, merge `304726a83e1ef4df5ddacb8ecba925ad2e1c1b30`, post-merge gate PASS. Verdict : **`REGISTRY_GAP_IS_NEXT_BOUNDARY`**.
+
+**Offre quartier reste OFF.** Prochain lot : **P1B.7 — Geo Registry Gap Qualification**, read-only sur les 31 couples avant toute création d’alias/entité. Aucun seuil artificiel ni choroplèthe fabriqué.
 
 # 5. Fondation DATA acquise
 
