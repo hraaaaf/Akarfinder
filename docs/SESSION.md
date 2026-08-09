@@ -2,7 +2,7 @@
 
 **Mise à jour : 2026-08-09**  
 **Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ #423 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE**  
-**Lane UX/Carte : P1B.7 ✅ Geo Registry Gap Qualification — PR #426 ; prochain LOT = P1B.8 Geo Authority Evidence Review (read-only first)**  
+**Lane UX/Carte : P1B.8 ✅ Geo Authority Evidence Review — PR #430 ; prochain LOT = P1B.9 Tier A Registry Candidate Review (read-only, Hay Mohammadi + Dakhla uniquement)**  
 **Lane DATA : DATA-4.4C ✅ ; DATA-4.5A Expansion-to-500 Qualification ✅ #410 ; P0.1→P0.5 ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = DATA-4.5B Promo Immo Controlled Expansion Write, indépendant de la lane d'autorisation P0**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle **89 / 15 438 = 0,5765 %****
 
@@ -10,7 +10,7 @@ Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’uniq
 
 # Main canonique
 
-Main canonique avant ce closeout documentaire : `f9894a70a2415994f00c744da091c91c045a3fa3`, intégrant le closeout SEARCH-DESKTOP-SPLIT-1. P1B.7 technique est mergé via `77bd6ffad41443efbf543cd25caf7539ca593579` — PR #426 ; exact-head final `d76eeda4de755faf08ec90afdaa0989cd4e8f2de`, **19/19 workflows verts**, specialized live gate PASS, Reviewer **9,6/10**, Release Certifier GO, post-merge gate PASS. P1B.7 est strictement read-only et n’autorise aucun write Registry.
+Main canonique après P1B.8 technique : `8f16efe091f76a5e933a201abd7f0bd1f9e53d77` — merge PR #430. Exact-head `e15fc810f2c98ed85fce0c78a465cf6e92cf33c7`, **19/19 workflows verts**, specialized live PASS, Reviewer **9,6/10**, Release Certifier GO, post-merge run `31328973075` PASS. P1B.8 confirme **Hay Mohammadi + Dakhla** en Tier A mais autorise **0 write Registry**.
 
 P0.4 main merge : `81f4809424757838c099b6acfb8f8d4b719deab7` — PR #402 ; post-merge gate PASS.
 
@@ -22,6 +22,7 @@ Acquis récents :
 - P1B.5 ✅ PR #419 — Canonical Geo Normalization Recovery : preflight 20/14/6, write 20/20, 11 Guéliz + 6 Océan + 3 Route de l’Ourika, latest resolved 20/20, coverage Search quartier **89/15 438 = 0,5765 %**, rollback append-only disponible, metric layers OFF ;
 - P1B.6 ✅ PR #424 — Geo Coverage Depth Audit read-only : 15 438 Search, 605 bridged, 89 resolved, 516 unresolved = 71 district explicite + 445 sans district ; 0/71 alias quartier confidence-1, 31 couples, sources corrigées/double-checkées = mouldar 42 / mubawab 21 / marrakechrealty 8 ; verdict `REGISTRY_GAP_IS_NEXT_BOUNDARY` ;
 - P1B.7 ✅ PR #426 — Geo Registry Gap Qualification read-only : 31 couples / 71 rows classés en 10/31 multi-source prioritaires pour validation externe, 9/26 répétitions mono-source, 10/10 singletons, Tanger Centre-ville 1/2 parent-mismatch, Autres Marrakech 1/2 rejet bucket ; verdict `EXTERNAL_AUTHORITY_REQUIRED_BEFORE_REGISTRY_WRITE` ; aucun write Registry autorisé ;
+- P1B.8 ✅ PR #430 — Geo Authority Evidence Review read-only : cohort prioritaire live 10 couples / 31 rows sans drift ; 2 Tier A / 8 rows = Agadir Hay Mohammadi 5 + Dakhla 3 ; tous les autres restent corroboration/type-review/authority-gap ; verdict `AUTHORITY_EVIDENCE_REVIEW_COMPLETE_NO_REGISTRY_WRITE_AUTHORIZED` ; 0 write Registry autorisé ;
 - BENCHMARK-SERP-1 ✅ first pass read-only — `docs/BENCHMARK_SERP_1_REPORT.md` ;
 - SEARCH-UX-FAST-1 ✅ #390 — première annonce rapprochée, mobile-first ;
 - SEARCH-WORDING-PURITY-1 ✅ #391 — wording public simplifié, truth/ranking inchangés ;

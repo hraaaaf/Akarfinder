@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.7 ✅ Geo Registry Gap Qualification certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -284,7 +284,25 @@ Invariants : la récurrence commerciale **n’est pas** une vérité géographiq
 
 Certification : head final concurrency-safe `d76eeda4de755faf08ec90afdaa0989cd4e8f2de` ; **19/19 workflows exact-head PASS**, specialized live gate PASS, Reviewer **9,6/10**, Release Certifier **GO**, merge `77bd6ffad41443efbf543cd25caf7539ca593579`, specialized push gate post-merge PASS. Verdict : **`EXTERNAL_AUTHORITY_REQUIRED_BEFORE_REGISTRY_WRITE`**.
 
-**Offre quartier reste OFF.** Prochain lot : **P1B.8 — Geo Authority Evidence Review**, read-only d’abord sur les 10 couples multi-source prioritaires, puis élargissement uniquement si la méthode d’autorité indépendante est certifiée. P1B.7 n’autorise aucun write Registry.
+## P1B.8 — Geo Authority Evidence Review ✅ CLOSED — PR #430
+
+Responsabilité unique : **appliquer une hiérarchie de preuve géographique indépendante aux 10 couples multi-source prioritaires P1B.7 sans créer ni modifier le Geo Registry**.
+
+Le gate rejoue en production le cohort P1B.7 exact (**10 couples / 31 rows**) avant d’accepter le manifeste de preuves et fail-close sur tout drift. Les portails immobiliers sont interdits comme autorité. Les décisions distinguent autorité municipale/urbanisme, corroboration institutionnelle, type territorial différent ou non résolu, et absence de preuve suffisante dans le périmètre revu.
+
+Résultat certifié :
+
+- **2 couples / 8 rows `AUTHORITY_CONFIRMED_NEIGHBORHOOD`** : Agadir — Hay Mohammadi (5), Agadir — Dakhla (3) ;
+- Gauthier : corroboration institutionnelle quartier, insuffisante pour write ;
+- Palmier : mention institutionnelle/localité, autorité administrative encore requise ;
+- Targa : preuve officielle de localité/zone, type quartier non établi ;
+- Majorelle : preuve officielle landmark/jardin, type mismatch ;
+- Massira : nom officiel présent, type territorial non résolu ;
+- Palmeraie, Route de Fès, Tanger — Nejma : aucune preuve quartier suffisante trouvée dans le périmètre d’autorité revu, sans conclure à la non-existence.
+
+Contrat : **0 DB/Registry mutation, 0 alias/entity creation, 0 geo-resolution write, 0 property-portal authority**. Exact-head `e15fc810f2c98ed85fce0c78a465cf6e92cf33c7`, **19/19 workflows PASS**, specialized live PASS, Reviewer **9,6/10**, Release Certifier **GO**, merge `8f16efe091f76a5e933a201abd7f0bd1f9e53d77`, post-merge specialized run `31328973075` PASS. Verdict : **`AUTHORITY_EVIDENCE_REVIEW_COMPLETE_NO_REGISTRY_WRITE_AUTHORIZED`**.
+
+**Offre quartier reste OFF.** Prochain lot : **P1B.9 — Tier A Registry Candidate Review**, read-only et borné à **Hay Mohammadi + Dakhla**. P1B.8 n’autorise aucun write Registry.
 
 # 5. Fondation DATA acquise
 
