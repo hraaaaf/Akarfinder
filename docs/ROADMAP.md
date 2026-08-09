@@ -271,8 +271,9 @@ Contrat : 0 source-site request, 0 Common Crawl request, 0 WARC/content fetch, 0
 - 4.4A ✅ #379 ;
 - 4.4B ✅ #380 — Promo Immo revalidé : 3 130 URLs sitemap / 2 935 intersection / 2 456 éligibles ;
 - 4.4C ✅ #384, merge `ba65943a` — canary 50 persistant certifié, Search/display/quality/projection **50/50**, drift **0 %**, Registry inchangé.
+- 4.5A ✅ #410, merge `a4710d6f5a88218db7d0751adb775a145a8b04d2` — qualification de capacité read-only vers 500 : snapshot source 4.4B certifié **25,29 h**, **3 130/2 935/2 456**, production **3 005 seeds / 2 923 Search / 2 923 display / 0 collision**, **2 405** nouvelles rows conservatrices, **450/450** sélectionnées provisoirement, batches **100+100+100+100+50**. Les 450 restent à revalider sitemap-live avant write.
 
-DATA-4.4C n’autorise aucun +100/+500 automatique. Le prochain lot DATA d’expansion doit être borné explicitement.
+DATA-4.5A qualifie la capacité mais **n'autorise aucun write par lui-même**. Prochain lot : **DATA-4.5B — Promo Immo Controlled Expansion Write**. Il devra revalider le sitemap courant pour chaque ligne juste avant write, créer le rollback avant mutation, appliquer au maximum **450 nouvelles confirmations** par batches **100+100+100+100+50**, arrêter fail-closed sur toute anomalie et certifier Search/display/quality/projection après chaque batch.
 
 # 9. Lane business parallèle
 
@@ -294,4 +295,4 @@ Auditer la prochaine cohorte explicite de Geo Coverage Recovery. Tant que couver
 
 ## DATA
 
-**P0.1 à P0.5 sont CLOSED.** P0.5 conclut **0/2 ready** : aucun canary mass-index ne doit être lancé tant que l'autorisation/partenariat/revue légale n'est pas résolue et reflétée explicitement dans le Source Registry. Les 3 candidats rejetés P0.4 restent bloqués.
+**DATA-4.5A est CLOSED ✅.** La lane P0.1→P0.5 reste fermée/bloquée sur autorisation externe, sans empêcher la lane DATA indépendante. **Action suivante : DATA-4.5B uniquement**, expansion Promo Immo bornée vers 500 avec revalidation sitemap live avant chaque write et rollback préalable.
