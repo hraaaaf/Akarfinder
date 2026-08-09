@@ -74,8 +74,7 @@ export type ShadowReplayResult = {
 
 function canonicalPath(urlValue: string): string | null {
   try {
-    const url = new URL(urlValue);
-    return `${url.pathname}${url.pathname.endsWith("/") ? "" : ""}`;
+    return new URL(urlValue).pathname;
   } catch {
     return null;
   }
@@ -91,7 +90,7 @@ export function replayPatternProposal(
 ): ShadowReplayResult {
   const regex = new RegExp(proposal.candidate_pattern, "i");
   const expected = new Set(proposal.expected_positive_signatures);
-  const unique = new Map<string, PatternEvidenceRecord>();
+  const uniqueByPath = new Map<string, PatternEvidenceRecord>();
 
   for (const record of records) {
     if (!isHealthyHtml(record)) continue;
@@ -100,7 +99,10 @@ export function replayPatternProposal(
       const host = url.hostname.toLowerCase().replace(/^www\./, "");
       if (host !== proposal.source_domain) continue;
       url.hash = "";
-      unique.set(url.toString(), { ...record, url: url.toString() });
+      const path = url.pathname;
+      if (!uniqueByPath.has(path)) {
+        uniqueByPath.set(path, { ...record, url: url.toString() });
+      }
     } catch {
       // Malformed URL-index rows are ignored; shadow evaluation remains conservative.
     }
@@ -115,7 +117,7 @@ export function replayPatternProposal(
   const matchedNegativeExamples: string[] = [];
   const missedPositiveExamples: string[] = [];
 
-  for (const record of unique.values()) {
+  for (const record of uniqueByPath.values()) {
     const signature = buildPathSignature(record.url);
     if (!signature) continue;
     const positive = expected.has(signature);
