@@ -57,7 +57,9 @@ describe("SEARCH-WORDING-PURITY-1", () => {
     const truth = source("lib/search/search-truth-tier.ts");
 
     assert.ok(shell.includes("data-search-continuous-flow"));
-    assert.ok(externalCard.includes("Source externe"));
+    assert.ok(externalCard.includes("publicAttribution.typeLabel"));
+    assert.ok(externalCard.includes("publicAttribution.sourceLabel"));
+    assert.doesNotMatch(externalCard, /result\.result_attribution_label|result\.source_name/);
     assert.ok(externalCard.includes("Informations limitées"));
     assert.ok(truth.includes('tier: "observed"'));
     assert.ok(truth.includes('tier: "analyzed"'));

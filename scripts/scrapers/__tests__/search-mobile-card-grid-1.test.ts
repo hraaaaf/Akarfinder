@@ -48,7 +48,8 @@ describe("SEARCH-MOBILE-CARD-GRID-1", () => {
     const card = source("components/search/SearchListingCardDark.tsx");
     const external = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.ok(card.includes("listing.source_name || truth.informationLabel"));
+    assert.ok(card.includes("publicAttribution.combinedLabel"));
+    assert.doesNotMatch(card, /listing\.source_name\s*\|\|\s*truth\.informationLabel/);
     assert.ok(external.includes("result.source_name"));
     assert.ok(external.includes("Résultats proches"));
   });
