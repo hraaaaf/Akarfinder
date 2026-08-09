@@ -1,7 +1,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const SOURCES = ["limmobiliersansfrontieres.com", "aykana.ma"] as const;
+const SOURCES = [
+  "daragadir.com",
+  "promoimmomarrakech.com",
+  "aykana.ma",
+  "limmobiliersansfrontieres.com",
+] as const;
 type SourceDomain = typeof SOURCES[number];
 const OUT_DIR = process.env.DATA_4_7C_OUT_DIR ?? ".tmp/data-4-7c/results";
 const PAGE_SIZE = 1000;
@@ -121,6 +126,14 @@ type DisplayRow = {
 
 type PublicRow = { canonical_url: string };
 
+type DbEvidence = {
+  registryRows: RegistryRow[];
+  seeds: SeedRow[];
+  normalized: NormalizedRow[];
+  displayRows: DisplayRow[];
+  publicRows: PublicRow[];
+};
+
 function registryAllows(domain: SourceDomain, row: RegistryRow, now: Date): boolean {
   const nextReview = row.next_review_at ? new Date(row.next_review_at) : null;
   return row.source_domain === domain
@@ -138,16 +151,16 @@ function registryAllows(domain: SourceDomain, row: RegistryRow, now: Date): bool
 }
 
 async function fetchSourceText(domain: SourceDomain, urlString: string, counter: { value: number }): Promise<string> {
-  if (!sameOrigin(domain, urlString)) throw new Error(`DATA-4.7C disallowed source URL: ${urlString}`);
+  if (!sameOrigin(domain, urlString)) throw new Error(`disallowed_source_url:${urlString}`);
   counter.value += 1;
-  if (counter.value > MAX_REQUESTS_PER_SOURCE) throw new Error(`DATA-4.7C ${domain} source request budget exceeded`);
+  if (counter.value > MAX_REQUESTS_PER_SOURCE) throw new Error("source_request_budget_exceeded");
   const response = await fetch(urlString, {
     redirect: "follow",
     headers: { "user-agent": "AkarFinder/1.0 (+DATA-4.7C; sitemap-only; no-detail-fetch)" },
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
-  if (!sameOrigin(domain, response.url)) throw new Error(`DATA-4.7C redirect left ${domain}: ${response.url}`);
-  if (!response.ok) throw new Error(`DATA-4.7C ${domain} source read failed ${response.status}: ${urlString}`);
+  if (!sameOrigin(domain, response.url)) throw new Error(`redirect_left_allowed_origin:${response.url}`);
+  if (!response.ok) throw new Error(`source_read_failed:${response.status}:${urlString}`);
   return response.text();
 }
 
@@ -155,7 +168,7 @@ async function readCurrentSitemap(domain: SourceDomain): Promise<{ urls: string[
   const counter = { value: 0 };
   const robots = await fetchSourceText(domain, `https://${domain}/robots.txt`, counter);
   const roots = extractRobotsSitemaps(domain, robots);
-  if (roots.length === 0) throw new Error(`DATA-4.7C ${domain} robots declares no same-origin HTTPS sitemap`);
+  if (roots.length === 0) throw new Error("robots_declares_no_same_origin_https_sitemap");
   const queue = [...roots];
   const visited = new Set<string>();
   const urls: string[] = [];
@@ -164,24 +177,19 @@ async function readCurrentSitemap(domain: SourceDomain): Promise<{ urls: string[
     if (visited.has(sitemapUrl)) continue;
     visited.add(sitemapUrl);
     const parsed = parseSitemapXml(domain, await fetchSourceText(domain, sitemapUrl, counter));
-    if (parsed.kind === "unknown") throw new Error(`DATA-4.7C ${domain} unknown sitemap payload: ${sitemapUrl}`);
+    if (parsed.kind === "unknown") throw new Error(`unknown_sitemap_payload:${sitemapUrl}`);
     if (parsed.kind === "index") {
       for (const child of parsed.locs) if (!visited.has(child) && !queue.includes(child)) queue.push(child);
     } else {
       urls.push(...parsed.locs);
-      if (urls.length > MAX_SITEMAP_URLS_PER_SOURCE) throw new Error(`DATA-4.7C ${domain} sitemap ceiling exceeded`);
+      if (urls.length > MAX_SITEMAP_URLS_PER_SOURCE) throw new Error("sitemap_url_ceiling_exceeded");
     }
   }
   return { urls: [...new Set(urls)].sort(), requests: counter.value, roots };
 }
 
-function numeric(value: number | string | null): number {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
-}
-
-async function qualify(domain: SourceDomain, observedAt: Date) {
-  const [registryRows, seeds, normalized, displayRows, publicRows, sitemap] = await Promise.all([
+async function loadDbEvidence(domain: SourceDomain): Promise<DbEvidence> {
+  const [registryRows, seeds, normalized, displayRows, publicRows] = await Promise.all([
     restAll<RegistryRow>("source_policy_registry", {
       select: "source_domain,acquisition_mode,discovery_policy,display_policy,display_gate,allowed_discovery_channels,robots_status,review_status,next_review_at,max_revalidation_interval_days",
       source_domain: `eq.${domain}`,
@@ -202,15 +210,81 @@ async function qualify(domain: SourceDomain, observedAt: Date) {
       select: "canonical_url",
       source_domain: `eq.${domain}`,
     }),
-    readCurrentSitemap(domain),
   ]);
+  return { registryRows, seeds, normalized, displayRows, publicRows };
+}
 
-  if (registryRows.length !== 1 || !registryAllows(domain, registryRows[0]!, observedAt)) {
-    throw new Error(`DATA-4.7C ${domain} Registry gate failed: ${JSON.stringify(registryRows)}`);
+function numeric(value: number | string | null): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function preSitemapCandidates(evidence: DbEvidence): NormalizedRow[] {
+  const displayByUrl = new Map(evidence.displayRows.map((row) => [row.canonical_url, row]));
+  const publicSet = new Set(evidence.publicRows.map((row) => row.canonical_url));
+  return evidence.normalized.filter((row) => row.normalization_status === "normalized"
+    && row.freshness_status === "seed_only"
+    && ["eligible_primary", "eligible_secondary"].includes(displayByUrl.get(row.canonical_url)?.display_eligibility ?? "")
+    && publicSet.has(row.canonical_url));
+}
+
+async function qualify(domain: SourceDomain, observedAt: Date) {
+  const evidence = await loadDbEvidence(domain);
+  const seedOnly = evidence.seeds.filter((row) => row.freshness_status === "seed_only").length;
+  const freshConfirmed = evidence.seeds.filter((row) => row.freshness_status === "fresh_confirmed").length;
+  const priorSitemapChannelRows = evidence.seeds.filter((row) => (row.fresh_channels ?? []).includes("public_sitemap_presence")).length;
+  const preSitemap = preSitemapCandidates(evidence);
+  const registry = evidence.registryRows[0] ?? null;
+
+  const base = {
+    sourceDomain: domain,
+    registry: {
+      reviewStatus: registry?.review_status ?? null,
+      nextReviewAt: registry?.next_review_at ?? null,
+      policyCurrent: Boolean(registry && evidence.registryRows.length === 1 && registryAllows(domain, registry, observedAt)),
+    },
+    reservoir: {
+      totalSeeds: evidence.seeds.length,
+      freshConfirmed,
+      seedOnly,
+      priorSitemapChannelRows,
+    },
+    qualification: {
+      preSitemapUpperBound: preSitemap.length,
+      liveCandidateRows: 0,
+      primaryCandidates: 0,
+      secondaryCandidates: 0,
+      excludedBySitemapOrIdentity: preSitemap.length,
+    },
+  };
+
+  if (!registry || evidence.registryRows.length !== 1 || !registryAllows(domain, registry, observedAt)) {
+    return {
+      ...base,
+      status: "BLOCKED_POLICY" as const,
+      blocker: "registry_gate_failed",
+      currentSitemap: { roots: [] as string[], urlCount: 0, sourceRequests: 0, detailPageRequests: 0 },
+      identity: { dbSafeIdentities: 0, dbCollisionGroups: 0, sitemapSafeIdentities: 0, sitemapCollisionGroups: 0 },
+      sampleCandidateUrls: [] as string[],
+    };
+  }
+
+  let sitemap: { urls: string[]; requests: number; roots: string[] };
+  try {
+    sitemap = await readCurrentSitemap(domain);
+  } catch (error) {
+    return {
+      ...base,
+      status: "BLOCKED_SOURCE_EVIDENCE" as const,
+      blocker: error instanceof Error ? error.message : String(error),
+      currentSitemap: { roots: [] as string[], urlCount: 0, sourceRequests: 0, detailPageRequests: 0 },
+      identity: { dbSafeIdentities: 0, dbCollisionGroups: 0, sitemapSafeIdentities: 0, sitemapCollisionGroups: 0 },
+      sampleCandidateUrls: [] as string[],
+    };
   }
 
   const dbIdentity = new Map<string, NormalizedRow[]>();
-  for (const row of normalized) {
+  for (const row of evidence.normalized) {
     const identity = conservativeUrlIdentity(domain, row.canonical_url);
     if (!identity) continue;
     const bucket = dbIdentity.get(identity) ?? [];
@@ -225,17 +299,7 @@ async function qualify(domain: SourceDomain, observedAt: Date) {
     bucket.push(url);
     sitemapIdentity.set(identity, bucket);
   }
-
-  const displayByUrl = new Map(displayRows.map((row) => [row.canonical_url, row]));
-  const publicSet = new Set(publicRows.map((row) => row.canonical_url));
-  const seedByUrl = new Map(seeds.map((row) => [row.canonical_url, row]));
-
-  const preSitemap = normalized.filter((row) => {
-    if (row.normalization_status !== "normalized" || row.freshness_status !== "seed_only") return false;
-    if (!["eligible_primary", "eligible_secondary"].includes(displayByUrl.get(row.canonical_url)?.display_eligibility ?? "")) return false;
-    return publicSet.has(row.canonical_url);
-  });
-
+  const displayByUrl = new Map(evidence.displayRows.map((row) => [row.canonical_url, row]));
   const candidates = preSitemap.filter((row) => {
     const identity = conservativeUrlIdentity(domain, row.canonical_url);
     return Boolean(identity && dbIdentity.get(identity!)?.length === 1 && sitemapIdentity.get(identity!)?.length === 1);
@@ -248,28 +312,12 @@ async function qualify(domain: SourceDomain, observedAt: Date) {
     if (title !== 0) return title;
     return a.canonical_url.localeCompare(b.canonical_url);
   });
-
-  const dbCollisionGroups = [...dbIdentity.values()].filter((rows) => rows.length > 1).length;
-  const sitemapCollisionGroups = [...sitemapIdentity.values()].filter((rows) => rows.length > 1).length;
-  const seedOnly = seeds.filter((row) => row.freshness_status === "seed_only").length;
-  const freshConfirmed = seeds.filter((row) => row.freshness_status === "fresh_confirmed").length;
-  const sitemapChannel = seeds.filter((row) => (row.fresh_channels ?? []).includes("public_sitemap_presence")).length;
   const primaryCandidates = candidates.filter((row) => displayByUrl.get(row.canonical_url)?.display_eligibility === "eligible_primary").length;
-  const secondaryCandidates = candidates.length - primaryCandidates;
 
   return {
-    sourceDomain: domain,
-    registry: {
-      reviewStatus: registryRows[0]!.review_status,
-      nextReviewAt: registryRows[0]!.next_review_at,
-      policyCurrent: true,
-    },
-    reservoir: {
-      totalSeeds: seeds.length,
-      freshConfirmed,
-      seedOnly,
-      priorSitemapChannelRows: sitemapChannel,
-    },
+    ...base,
+    status: "QUALIFIED" as const,
+    blocker: null,
     currentSitemap: {
       roots: sitemap.roots,
       urlCount: sitemap.urls.length,
@@ -278,15 +326,15 @@ async function qualify(domain: SourceDomain, observedAt: Date) {
     },
     identity: {
       dbSafeIdentities: [...dbIdentity.values()].filter((rows) => rows.length === 1).length,
-      dbCollisionGroups,
+      dbCollisionGroups: [...dbIdentity.values()].filter((rows) => rows.length > 1).length,
       sitemapSafeIdentities: [...sitemapIdentity.values()].filter((rows) => rows.length === 1).length,
-      sitemapCollisionGroups,
+      sitemapCollisionGroups: [...sitemapIdentity.values()].filter((rows) => rows.length > 1).length,
     },
     qualification: {
       preSitemapUpperBound: preSitemap.length,
       liveCandidateRows: candidates.length,
       primaryCandidates,
-      secondaryCandidates,
+      secondaryCandidates: candidates.length - primaryCandidates,
       excludedBySitemapOrIdentity: preSitemap.length - candidates.length,
     },
     sampleCandidateUrls: candidates.slice(0, 10).map((row) => row.canonical_url),
@@ -297,26 +345,37 @@ async function main(): Promise<void> {
   const observedAt = new Date();
   const results = [];
   for (const domain of SOURCES) results.push(await qualify(domain, observedAt));
-  const ranked = [...results].sort((a, b) => {
-    const capacity = b.qualification.liveCandidateRows - a.qualification.liveCandidateRows;
-    if (capacity !== 0) return capacity;
-    return b.reservoir.seedOnly - a.reservoir.seedOnly;
-  });
-  const winner = ranked[0]!;
-  const runnerUp = ranked[1]!;
+  const qualified = results.filter((result) => result.status === "QUALIFIED")
+    .sort((a, b) => {
+      const capacity = b.qualification.liveCandidateRows - a.qualification.liveCandidateRows;
+      if (capacity !== 0) return capacity;
+      return b.reservoir.seedOnly - a.reservoir.seedOnly;
+    });
+  if (qualified.length === 0) throw new Error("DATA-4.7C found no live qualified public-sitemap reservoir");
+  const winner = qualified[0]!;
+  const runnerUp = qualified[1] ?? null;
+
   const proof = {
-    schemaVersion: "data-4-7c-residual-reservoir-requalification-v1",
-    mode: "READ_ONLY_RESERVOIR_COMPARISON",
+    schemaVersion: "data-4-7c-residual-reservoir-requalification-v2",
+    mode: "READ_ONLY_SOURCE_ROTATION",
     observedAt: observedAt.toISOString(),
     sources: results,
+    summary: {
+      sourceCount: results.length,
+      qualifiedCount: qualified.length,
+      blockedCount: results.length - qualified.length,
+      totalPreSitemapUpperBound: results.reduce((sum, result) => sum + result.qualification.preSitemapUpperBound, 0),
+      totalLiveCandidateCapacity: qualified.reduce((sum, result) => sum + result.qualification.liveCandidateRows, 0),
+    },
     recommendation: {
       sourceDomain: winner.sourceDomain,
       liveCandidateCapacity: winner.qualification.liveCandidateRows,
-      advantageVsRunnerUp: winner.qualification.liveCandidateRows - runnerUp.qualification.liveCandidateRows,
+      advantageVsRunnerUp: runnerUp ? winner.qualification.liveCandidateRows - runnerUp.qualification.liveCandidateRows : winner.qualification.liveCandidateRows,
       nextLot: "DATA-4.7D_BOUNDED_WRITE",
+      sourceSpecificCanaryRequired: winner.reservoir.priorSitemapChannelRows === 0,
       note: winner.reservoir.priorSitemapChannelRows > 0
         ? "Existing public_sitemap_presence history: bounded write may reuse established source path after exact-head certification."
-        : "No prior public_sitemap_presence write history on this source: next write lot must choose an explicit source-specific canary before broader expansion.",
+        : "No prior public_sitemap_presence write history on winner: next write lot must begin with an explicit source-specific canary, then expand immediately after certification.",
     },
     databaseWrites: 0,
     registryMutations: 0,
@@ -324,7 +383,7 @@ async function main(): Promise<void> {
     sourceSiteDetailRequests: 0,
     productionActivation: false,
   };
-  if (winner.qualification.liveCandidateRows <= 0) throw new Error("DATA-4.7C found no live candidate capacity");
+
   await fs.mkdir(OUT_DIR, { recursive: true });
   await fs.writeFile(path.join(OUT_DIR, "proof.json"), `${JSON.stringify(proof, null, 2)}\n`);
   console.log(JSON.stringify(proof, null, 2));
