@@ -87,24 +87,25 @@ export function buildCommonCrawlDiscoveryCoverage(
 }
 
 export function summarizeCommonCrawlDiscoveryCoverage(rows: CommonCrawlDiscoveryCoverageRow[]) {
-  const byState = rows.reduce<Record<CommonCrawlDiscoveryCoverageState, number>>((acc, row) => {
-    acc[row.state] += 1;
-    return acc;
-  }, {
-    HARVEST_READY: 0,
-    POLICY_ALLOWED_PATTERN_MISSING: 0,
-    POLICY_EXPIRED_OR_BLOCKED: 0,
-  });
+  const operationalRows = rows.filter((row) => row.state !== "POLICY_EXPIRED_OR_BLOCKED");
+  const harvestReadyRows = rows.filter((row) => row.state === "HARVEST_READY");
+  const patternMissingRows = rows.filter((row) => row.state === "POLICY_ALLOWED_PATTERN_MISSING");
+  const expiredOrBlockedRows = rows.filter((row) => row.state === "POLICY_EXPIRED_OR_BLOCKED");
 
   return {
     commoncrawl_policy_domains: rows.length,
-    operational_policy_domains: rows.filter((row) => row.state !== "POLICY_EXPIRED_OR_BLOCKED").length,
-    harvest_ready_domains: byState.HARVEST_READY,
-    pattern_missing_domains: byState.POLICY_ALLOWED_PATTERN_MISSING,
-    expired_or_blocked_domains: byState.POLICY_EXPIRED_OR_BLOCKED,
-    harvest_ready_ratio: rows.filter((row) => row.state !== "POLICY_EXPIRED_OR_BLOCKED").length
-      ? Number((byState.HARVEST_READY / rows.filter((row) => row.state !== "POLICY_EXPIRED_OR_BLOCKED").length).toFixed(4))
+    operational_policy_domains: operationalRows.length,
+    harvest_ready_domains: harvestReadyRows.length,
+    pattern_missing_domains: patternMissingRows.length,
+    expired_or_blocked_domains: expiredOrBlockedRows.length,
+    harvest_ready_ratio: operationalRows.length
+      ? Number((harvestReadyRows.length / operationalRows.length).toFixed(4))
       : 0,
     commoncrawl_seed_rows_on_policy_domains: rows.reduce((sum, row) => sum + row.seed_count, 0),
+    harvest_ready_seed_rows: harvestReadyRows.reduce((sum, row) => sum + row.seed_count, 0),
+    pattern_missing_seed_rows: patternMissingRows.reduce((sum, row) => sum + row.seed_count, 0),
+    expired_or_blocked_seed_rows: expiredOrBlockedRows.reduce((sum, row) => sum + row.seed_count, 0),
+    harvest_ready_zero_seed_domains: harvestReadyRows.filter((row) => row.seed_count === 0).length,
+    pattern_missing_zero_seed_domains: patternMissingRows.filter((row) => row.seed_count === 0).length,
   };
 }
