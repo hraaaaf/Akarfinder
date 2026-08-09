@@ -45,7 +45,7 @@ test("P0.4 parser rejects malformed index rows", () => {
   assert.equal(parsed?.url, "https://leaderimmo.ma/biens/1/foo");
 });
 
-test("dedicated biens namespace passes a clean positive/negative shadow replay", () => {
+test("dedicated biens namespace passes a clean labeled shadow replay", () => {
   const proposal = P0_4_PATTERN_PROPOSALS.find((item) => item.source_domain === "leaderimmo.ma")!;
   const records = [
     ...Array.from({ length: 8 }, (_, index) => record(`https://leaderimmo.ma/biens/${100 + index}/appartement-rabat-${index}`)),
@@ -55,21 +55,22 @@ test("dedicated biens namespace passes a clean positive/negative shadow replay",
   assert.equal(replay.decision, "SHADOW_ACCEPTABLE");
   assert.equal(replay.false_positives, 0);
   assert.equal(replay.false_negatives, 0);
+  assert.equal(replay.matched_ambiguous, 0);
   assert.equal(replay.precision, 1);
   assert.equal(replay.recall, 1);
 });
 
-test("shadow replay rejects a candidate that absorbs a non-listing id-bearing route", () => {
+test("shadow replay rejects a candidate that absorbs a certified negative route", () => {
   const proposal: PatternProposal = {
     source_domain: "immo-maroc.com",
-    candidate_pattern: "^/[^/]+-\\d+/?$",
+    candidate_pattern: "^/(?:vente|article)-[^/]+-\\d+/?$",
     expected_positive_signatures: ["/{slug}-{id}"],
+    certified_negative_signatures: ["/article-{slug}-{id}"],
     rationale: "test-only intentionally broad candidate",
   };
   const records = [
     ...Array.from({ length: 6 }, (_, index) => record(`https://immo-maroc.com/vente-villa-marrakech-${80000000 + index}`)),
-    ...Array.from({ length: 6 }, (_, index) => record(`https://immo-maroc.com/article-conseil-${90000000 + index}`)),
-    ...Array.from({ length: 6 }, (_, index) => record(`https://immo-maroc.com/contact-${index}`)),
+    ...Array.from({ length: 6 }, (_, index) => record(`https://immo-maroc.com/article-conseil-maroc-${90000000 + index}`)),
   ];
   const replay = replayPatternProposal(proposal, records);
   assert.equal(replay.decision, "REJECTED_SHADOW");
@@ -81,17 +82,32 @@ test("shadow replay rejects a too-narrow transaction candidate on recall", () =>
     source_domain: "immo-maroc.com",
     candidate_pattern: "^/vente-[^/]+-\\d+/?$",
     expected_positive_signatures: ["/{slug}-{id}"],
+    certified_negative_signatures: ["/contact"],
     rationale: "test-only intentionally narrow candidate",
   };
   const records = [
     ...Array.from({ length: 5 }, (_, index) => record(`https://immo-maroc.com/vente-villa-marrakech-${81000000 + index}`)),
     ...Array.from({ length: 5 }, (_, index) => record(`https://immo-maroc.com/location-annuelle-appartement-marrakech-${82000000 + index}`)),
-    ...Array.from({ length: 6 }, (_, index) => record(`https://immo-maroc.com/contact/page-${index}`)),
+    ...Array.from({ length: 6 }, () => record("https://immo-maroc.com/contact")),
   ];
   const replay = replayPatternProposal(proposal, records);
   assert.equal(replay.decision, "REJECTED_SHADOW");
   assert.ok(replay.rejection_reasons.includes("recall_below_0_95"));
   assert.equal(replay.false_negatives, 5);
+});
+
+test("matched unlabeled structure is ambiguous and fails closed, not a fabricated false positive", () => {
+  const proposal = P0_4_PATTERN_PROPOSALS.find((item) => item.source_domain === "immohammedia.com")!;
+  const records = [
+    ...Array.from({ length: 6 }, (_, index) => record(`https://immohammedia.com/annonces-location-appartement-mohammedia/appartement-charme-centre-b-${1600 + index}`)),
+    ...Array.from({ length: 6 }, (_, index) => record(`https://immohammedia.com/blog/conseil-immobilier-maroc-${index}`)),
+    record("https://immohammedia.com/annonces-vente-appartement-mohammedia/172-m2-au-1er-etage-quartier-massira-b-1576"),
+  ];
+  const replay = replayPatternProposal(proposal, records);
+  assert.equal(replay.false_positives, 0);
+  assert.equal(replay.matched_ambiguous, 1);
+  assert.equal(replay.decision, "REJECTED_SHADOW");
+  assert.ok(replay.rejection_reasons.includes("ambiguous_match_detected"));
 });
 
 test("queries never change the path-only shadow decision", () => {
@@ -103,4 +119,5 @@ test("queries never change the path-only shadow decision", () => {
   const replay = replayPatternProposal(proposal, records);
   assert.equal(replay.decision, "SHADOW_ACCEPTABLE");
   assert.equal(replay.false_positives, 0);
+  assert.equal(replay.matched_ambiguous, 0);
 });
