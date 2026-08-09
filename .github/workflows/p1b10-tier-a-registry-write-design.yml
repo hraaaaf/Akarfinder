@@ -6,6 +6,9 @@ on:
       - "supabase/migration-designs/p1b10_tier_a_registry_write.sql"
       - "supabase/migration-designs/p1b10_tier_a_registry_rollback.sql"
       - "scripts/scrapers/__tests__/p1b10-tier-a-registry-write-design.test.ts"
+      - "data/geo/p1b9-tier-a-registry-candidates.json"
+      - "data/geo/p1b8-authority-evidence.json"
+      - "scripts/audits/p1b9-tier-a-registry-candidate-review.ts"
       - ".github/workflows/p1b10-tier-a-registry-write-design.yml"
   push:
     branches: [main]
@@ -13,6 +16,9 @@ on:
       - "supabase/migration-designs/p1b10_tier_a_registry_write.sql"
       - "supabase/migration-designs/p1b10_tier_a_registry_rollback.sql"
       - "scripts/scrapers/__tests__/p1b10-tier-a-registry-write-design.test.ts"
+      - "data/geo/p1b9-tier-a-registry-candidates.json"
+      - "data/geo/p1b8-authority-evidence.json"
+      - "scripts/audits/p1b9-tier-a-registry-candidate-review.ts"
       - ".github/workflows/p1b10-tier-a-registry-write-design.yml"
 
 permissions:
@@ -49,22 +55,30 @@ jobs:
             "'agadir.ma'",
           ]) if(!apply.includes(marker)) throw new Error(`missing ${marker}`);
           if(/insert\s+into\s+public\.geo_resolution_events/i.test(apply)) throw new Error('P1B.10 may not resolve listings');
-          if(!rollback.includes('geo_resolution_events')) throw new Error('rollback must guard future geo references');
+          for(const dependency of ['geo_resolution_events','neighborhood_intelligence_profiles','price_m2_references','parent_id']) {
+            if(!rollback.includes(dependency)) throw new Error(`rollback dependency guard missing: ${dependency}`);
+          }
           if(!rollback.includes("metadata ->> 'registry_design_lot' = 'P1B.10'")) throw new Error('rollback ownership marker missing');
           const entityValues=(apply.match(/'district_agadir_(?:dakhla|hay_mohammadi)'/g)||[]).length;
           if(entityValues < 4) throw new Error('candidate identities missing from design/postconditions');
           NODE
       - name: P1B.10 PostgreSQL semantic rehearsal
         run: npx tsx --test scripts/scrapers/__tests__/p1b10-tier-a-registry-write-design.test.ts
-      - name: P1B.9 predecessor static contract
+      - name: Replay P1B.9 live Tier A boundary
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1b9-tier-a-registry-candidate-review.ts
+      - name: Enforce live predecessor verdict
         run: |
           node - <<'NODE'
           const fs=require('fs');
-          const p='data/geo/p1b9-tier-a-registry-candidates.json';
-          if(!fs.existsSync(p)) throw new Error('P1B.9 candidate manifest missing');
-          const m=JSON.parse(fs.readFileSync(p,'utf8'));
-          if(m.candidates.length!==2) throw new Error('P1B.9 candidate scope drift');
-          if(m.candidates.some(c=>c.write_eligible_in_p1b9!==false)) throw new Error('P1B.9 write boundary drift');
+          const r=JSON.parse(fs.readFileSync('data/audits/runtime/p1b9-tier-a-registry-candidate-review.json','utf8'));
+          if(r.verdict!=='TIER_A_REGISTRY_CANDIDATES_READY_FOR_BOUNDED_WRITE_DESIGN') throw new Error(JSON.stringify(r));
+          if(r.ready_pairs!==2 || r.ready_listing_rows!==8) throw new Error('P1B.9 live Tier A cohort drift');
+          if(r.parent_city?.id!=='city_agadir' || r.parent_city?.validated!==true) throw new Error('Agadir parent drift');
+          if(r.contract?.registry_write_authorized!==false || r.contract?.registry_mutation!==false) throw new Error('P1B.9 boundary drift');
+          if(r.candidates.some(c=>Object.values(c.collisions).some(Boolean))) throw new Error('live Registry collision appeared');
           NODE
       - name: TypeScript
         run: npx tsc --noEmit
