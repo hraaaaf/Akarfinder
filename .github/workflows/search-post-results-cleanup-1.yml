@@ -1,0 +1,80 @@
+name: SEARCH-POST-RESULTS-CLEANUP-1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "app/search/page.tsx"
+      - "components/search/LightZillowSearchShell.tsx"
+      - "components/search/SearchMapNeighborhoodDock.tsx"
+      - "components/search/SearchPriceExplorerDock.tsx"
+      - "scripts/scrapers/__tests__/search-post-results-cleanup-1.test.ts"
+      - "scripts/scrapers/__tests__/search-desktop-split-1.test.ts"
+      - "scripts/audits/search-post-results-cleanup-1-visual.mjs"
+      - "scripts/audits/search-desktop-split-1-visual.mjs"
+      - ".github/workflows/search-post-results-cleanup-1.yml"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract-and-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Post-results cleanup contract
+        run: npx tsx --test scripts/scrapers/__tests__/search-post-results-cleanup-1.test.ts
+      - name: Desktop split predecessor
+        run: npx tsx --test scripts/scrapers/__tests__/search-desktop-split-1.test.ts
+      - name: Search action hierarchy predecessor
+        run: npx tsx --test scripts/scrapers/__tests__/search-action-hierarchy-1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build rehearsal
+        run: npm run build
+
+  visual-certification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start > /tmp/akarfinder-search-post-results-cleanup.log 2>&1 &
+          for i in {1..60}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/akarfinder-search-post-results-cleanup.log
+          exit 1
+      - name: Capture and assert post-results cleanup
+        run: node scripts/audits/search-post-results-cleanup-1-visual.mjs
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: search-post-results-cleanup-1-visual-proof
+          path: |
+            data/audits/search-post-results-cleanup-1
+            /tmp/akarfinder-search-post-results-cleanup.log
+          retention-days: 14
+          if-no-files-found: error

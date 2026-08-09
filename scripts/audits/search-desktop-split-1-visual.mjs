@@ -144,7 +144,7 @@ try {
         await page.waitForSelector('[data-search-view-layout="split"]');
       } else {
         if (!split.stacked) throw new Error(`${viewport.name}: non-desktop split stacking changed`);
-        if (split.visibleSecondaryCount !== 2) throw new Error(`${viewport.name}: mobile/tablet secondary content changed`);
+        if (split.visibleSecondaryCount !== 0) throw new Error(`${viewport.name}: split still shows ${split.visibleSecondaryCount} secondary map blocks`);
       }
 
       await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });

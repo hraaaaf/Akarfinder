@@ -66,6 +66,14 @@ export function SearchPriceExplorerDock() {
     };
   }, [search, visibleListings]);
 
+  const hasUsefulContent =
+    context.priceReference.status === "available" ||
+    context.neighborhoodIntelligence.status === "available" ||
+    context.heatmap.status === "available" ||
+    context.similarNeighborhoods.status === "available";
+
+  if (!hasUsefulContent) return null;
+
   return (
     <section className="mx-auto max-w-[1480px] px-4 pt-5 sm:px-6" aria-label="Explorateur local synchronisé">
       <div className="hidden" aria-hidden="true">

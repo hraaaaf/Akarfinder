@@ -44,6 +44,13 @@ export function SearchMapNeighborhoodDock() {
     };
   }, [search]);
 
+  const hasUsefulNeighborhoodContent =
+    context.explorer.status === "available" ||
+    context.heatmap.status === "available" ||
+    context.geometryCanaryRequested;
+
+  if (!hasUsefulNeighborhoodContent) return null;
+
   return (
     <div className="space-y-4 border-t border-[#eef2f8] bg-[#f8fafc] p-4 sm:p-5" aria-label="Exploration ville et quartier">
       <CityNeighborhoodExplorerPanel model={context.explorer} />

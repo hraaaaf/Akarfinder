@@ -497,7 +497,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                 stats={{ total: filteredListings.length, citiesCovered: cityCounts.length, avgIndex, updatedLabel: "Récent" }}
               />
 
-              <div data-search-map-secondary="project" className={`${view === "split" ? "lg:hidden" : ""} overflow-hidden rounded-2xl border border-border/15 bg-card backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04]`}>
+              <div data-search-map-secondary="project" className={`${view === "split" ? "hidden" : ""} overflow-hidden rounded-2xl border border-border/15 bg-card backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04]`}>
                 <div className="px-5 py-4">
                   <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-500 dark:text-bronze-400">Mon Projet AkarFinder</p>
                   <p className="mt-1.5 text-[1rem] font-extrabold text-foreground">Clarifier mes priorités</p>
@@ -513,7 +513,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
               <Link
                 href={`/map${filters.city !== "all" ? `?city=${encodeURIComponent(filters.city)}` : ""}`}
                 data-search-map-secondary="full-map"
-                className={`${view === "split" ? "lg:hidden" : ""} flex items-center justify-center gap-2 rounded-2xl border border-border/20 bg-card px-4 py-3 text-[13px] font-extrabold text-foreground/75 transition hover:border-bronze-500/40 hover:text-foreground dark:border-white/12 dark:bg-white/[0.04] dark:text-white/80 dark:hover:text-white`}
+                className={`${view === "split" ? "hidden" : ""} flex items-center justify-center gap-2 rounded-2xl border border-border/20 bg-card px-4 py-3 text-[13px] font-extrabold text-foreground/75 transition hover:border-bronze-500/40 hover:text-foreground dark:border-white/12 dark:bg-white/[0.04] dark:text-white/80 dark:hover:text-white`}
               >
                 <MapIcon size={15} aria-hidden="true" /> Ouvrir la carte complète
               </Link>
