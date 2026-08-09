@@ -97,8 +97,8 @@ test("shadow replay rejects a too-narrow transaction candidate on recall", () =>
 test("queries never change the path-only shadow decision", () => {
   const proposal = P0_4_PATTERN_PROPOSALS.find((item) => item.source_domain === "immobilier-a-marrakech.com")!;
   const records = [
-    ...Array.from({ length: 6 }, (_, index) => record(`https://immobilier-a-marrakech.com/produit/villa-${index}/${3200 + index}?utm_source=test`)),
-    ...Array.from({ length: 6 }, (_, index) => record(`https://immobilier-a-marrakech.com/posts/article-${index}/${100 + index}?page=1`)),
+    ...Array.from({ length: 6 }, (_, index) => record(`https://immobilier-a-marrakech.com/produit/villa-charme-gueliz-${index}/${3200 + index}?utm_source=test`)),
+    ...Array.from({ length: 6 }, (_, index) => record(`https://immobilier-a-marrakech.com/posts/article-conseil-maroc-${index}/${100 + index}?page=1`)),
   ];
   const replay = replayPatternProposal(proposal, records);
   assert.equal(replay.decision, "SHADOW_ACCEPTABLE");
