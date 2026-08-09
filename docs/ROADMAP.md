@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.6 ✅ Geo Coverage Depth Audit certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.7 ✅ Geo Registry Gap Qualification certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -268,7 +268,23 @@ Audit live read-only après P1B.5 : **15 438** listings Search éligibles ; **60
 
 Contrat : read-only, **0 DB/Registry mutation, 0 source-site request, 0 alias/entity creation, 0 fuzzy, 0 title/snippet inference**. Exact-head `311b00bb5d0273f04b4405395e5eb5be13050045`, **19/19 workflows PASS**, specialized live gate PASS, Reviewer **9,6/10**, merge `304726a83e1ef4df5ddacb8ecba925ad2e1c1b30`, post-merge gate PASS. Verdict : **`REGISTRY_GAP_IS_NEXT_BOUNDARY`**.
 
-**Offre quartier reste OFF.** Prochain lot : **P1B.7 — Geo Registry Gap Qualification**, read-only sur les 31 couples avant toute création d’alias/entité. Aucun seuil artificiel ni choroplèthe fabriqué.
+## P1B.7 — Geo Registry Gap Qualification ✅ CLOSED — PR #426
+
+Responsabilité unique : **qualifier sans write les 31 couples ville/quartier du gap Registry P1B.6 afin de séparer priorité de validation, preuve insuffisante, mismatch parent et faux bucket fournisseur**.
+
+Preuve production live : baseline **15 438 / 605 / 89 / 516 / 71 / 31** inchangé. Décisions :
+
+- **10 couples / 31 rows `PRIORITY_EXTERNAL_VALIDATION`** — récurrence multi-source, utile uniquement pour prioriser une autorité indépendante ;
+- **9 / 26 `SINGLE_SOURCE_REPEAT_NEEDS_AUTHORITY`** ;
+- **10 / 10 `SINGLETON_NEEDS_AUTHORITY`** ;
+- **Tanger — Centre-ville : 1 couple / 2 rows `PARENT_MISMATCH_REVIEW`** — un nom canonique exact existe ailleurs dans le Registry mais pas sous Tanger ;
+- **Marrakech — Autres Marrakech : 1 / 2 `REJECT_PROVIDER_BUCKET`** — bucket fournisseur, pas entité Geo.
+
+Invariants : la récurrence commerciale **n’est pas** une vérité géographique ; aucun alias/entité n’est créé par intuition. Contrat read-only : **0 DB/Registry mutation, 0 alias/entity creation, 0 geo-resolution write, 0 source-site request, 0 fuzzy, 0 title/snippet inference**.
+
+Certification : head final concurrency-safe `d76eeda4de755faf08ec90afdaa0989cd4e8f2de` ; **19/19 workflows exact-head PASS**, specialized live gate PASS, Reviewer **9,6/10**, Release Certifier **GO**, merge `77bd6ffad41443efbf543cd25caf7539ca593579`, specialized push gate post-merge PASS. Verdict : **`EXTERNAL_AUTHORITY_REQUIRED_BEFORE_REGISTRY_WRITE`**.
+
+**Offre quartier reste OFF.** Prochain lot : **P1B.8 — Geo Authority Evidence Review**, read-only d’abord sur les 10 couples multi-source prioritaires, puis élargissement uniquement si la méthode d’autorité indépendante est certifiée. P1B.7 n’autorise aucun write Registry.
 
 # 5. Fondation DATA acquise
 
