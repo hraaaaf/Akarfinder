@@ -38,8 +38,13 @@ function normalizeHost(hostname: string): string {
   return hostname.trim().toLowerCase().replace(/^www\./, "").replace(/\.$/, "");
 }
 
-function normalizeSegment(segment: string): string {
-  let value = decodeURIComponent(segment).toLowerCase();
+function normalizeSegment(segment: string): string | null {
+  let value: string;
+  try {
+    value = decodeURIComponent(segment).toLowerCase();
+  } catch {
+    return null;
+  }
   if (UUID.test(value)) return "{uuid}";
   if (NUMERIC.test(value)) return "{id}";
   if (HEXISH.test(value) && /\d/.test(value)) return "{hex}";
@@ -69,7 +74,12 @@ export function buildPathSignature(urlValue: string): string | null {
   } catch {
     return null;
   }
-  const segments = url.pathname.split("/").filter(Boolean).map(normalizeSegment);
+  const segments: string[] = [];
+  for (const raw of url.pathname.split("/").filter(Boolean)) {
+    const normalized = normalizeSegment(raw);
+    if (normalized == null) return null;
+    segments.push(normalized);
+  }
   return `/${segments.join("/")}${url.pathname.endsWith("/") && segments.length ? "/" : ""}`;
 }
 
@@ -93,13 +103,15 @@ export function buildDomainPatternEvidence(
   records: PatternEvidenceRecord[],
 ): DomainPatternEvidence {
   const normalizedDomain = normalizeHost(domain);
-  const healthy = records.filter(isHealthyHtml);
+  const healthySameHost: PatternEvidenceRecord[] = [];
   const unique = new Map<string, string>();
 
-  for (const record of healthy) {
+  for (const record of records) {
+    if (!isHealthyHtml(record)) continue;
     try {
       const url = new URL(record.url);
       if (normalizeHost(url.hostname) !== normalizedDomain) continue;
+      healthySameHost.push(record);
       url.hash = "";
       unique.set(url.toString(), url.toString());
     } catch {
@@ -145,7 +157,7 @@ export function buildDomainPatternEvidence(
     source_domain: normalizedDomain,
     state,
     raw_records: records.length,
-    healthy_html_records: healthy.length,
+    healthy_html_records: healthySameHost.length,
     unique_urls: total,
     top_signatures: topSignatures,
   };
