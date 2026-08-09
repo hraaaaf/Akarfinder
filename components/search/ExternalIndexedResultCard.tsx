@@ -45,6 +45,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
   const sanitizedTitle = sanitizeVisibleText(result.title) || "Annonce immobilière";
   const sanitizedDisplayUrl = sanitizeVisibleText(result.display_url);
   const showThumbnail = THUMBNAILS_ENABLED && result.can_show_thumbnail && !!result.thumbnail_url;
+  const hasPrice = result.normalized_price_mad != null && Number.isFinite(result.normalized_price_mad) && result.normalized_price_mad > 0;
   const safeFallbackPropertyType = isListingPropertyType(result.normalized_property_type)
     ? result.normalized_property_type
     : null;
@@ -109,7 +110,12 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
       </div>
 
       <div className="flex flex-1 flex-col p-3 sm:p-5">
-        <p data-mobile-price className="truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-deepblue dark:text-white sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-bronze-500 dark:sm:text-bronze-300">
+        <p
+          data-mobile-price
+          className={hasPrice
+            ? "truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-deepblue dark:text-white sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-bronze-500 dark:sm:text-bronze-300"
+            : "min-h-[2.05em] whitespace-normal text-[0.92rem] font-extrabold leading-[1.05] tracking-[-0.02em] text-deepblue dark:text-white sm:min-h-0 sm:whitespace-nowrap sm:text-[1.25rem] sm:leading-none sm:text-bronze-500 dark:sm:text-bronze-300"}
+        >
           {formatIndexedPrice(result.normalized_price_mad)}
         </p>
         {result.price_per_m2_mad != null && result.price_per_m2_mad > 0 ? (
