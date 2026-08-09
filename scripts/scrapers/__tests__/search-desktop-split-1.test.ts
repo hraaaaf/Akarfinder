@@ -27,9 +27,11 @@ test("split renders one list pane and one map pane with a balanced desktop ratio
 
 test("split simplification stays presentation-only", () => {
   const shell = source("components/search/LightZillowSearchShell.tsx");
+  const card = source("components/search/SearchListingCardDark.tsx");
   assert.match(shell, /const viewLayout = getSearchViewLayout\(view\)/);
   assert.match(shell, /<SearchViewSwitcher value=\{view\} onChange=\{setView\}/);
-  assert.match(shell, /onMouseEnter=\{\(\) => hoverListing/);
+  assert.match(card, /onMouseEnter=\{\(\) => hoverListing\(listing, "list"\)\}/);
+  assert.match(card, /onFocus=\{\(\) => hoverListing\(listing, "list"\)\}/);
   assert.equal((shell.match(/sortListings\(clientFiltered, sortBy\)/g) ?? []).length, 1);
   assert.doesNotMatch(shell, /view[^\n]*sortListings|sortListings[^\n]*view/);
 });
