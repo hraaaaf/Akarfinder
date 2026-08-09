@@ -94,6 +94,31 @@ function findCandidatePool(
   return null;
 }
 
+function buildTierSeed(
+  input: ContextualIllustrationInput,
+  stableListingId: string,
+  tier: ContextualIllustrationTier
+): string {
+  const city = input.normalizedCity ?? "";
+
+  switch (tier) {
+    case "district_type":
+      return contextualKey(
+        stableListingId,
+        city,
+        input.normalizedDistrict ?? "",
+        input.normalizedPropertyType ?? "",
+        tier
+      );
+    case "district":
+      return contextualKey(stableListingId, city, input.normalizedDistrict ?? "", tier);
+    case "city_type":
+      return contextualKey(stableListingId, city, input.normalizedPropertyType ?? "", tier);
+    case "city":
+      return contextualKey(stableListingId, city, tier);
+  }
+}
+
 export function resolveContextualIllustrationFromCatalog(
   input: ContextualIllustrationInput,
   catalog: ContextualIllustrationCatalog
@@ -104,13 +129,7 @@ export function resolveContextualIllustrationFromCatalog(
   const pool = findCandidatePool(input, catalog);
   if (!pool) return null;
 
-  const seed = contextualKey(
-    stableListingId,
-    input.normalizedCity ?? "",
-    input.normalizedDistrict ?? "",
-    input.normalizedPropertyType ?? "",
-    pool.tier
-  );
+  const seed = buildTierSeed(input, stableListingId, pool.tier);
   const selected = selectDeterministicAsset(pool.candidates, seed);
   return selected ? { ...selected, tier: pool.tier } : null;
 }
