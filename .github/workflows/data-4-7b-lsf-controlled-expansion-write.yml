@@ -1,0 +1,106 @@
+name: DATA-4.7B LSF Controlled Expansion Write
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/data-4-7b-lsf-controlled-expansion-write.ts"
+      - "scripts/audits/data-4-7b-lsf-post-write-certification.ts"
+      - "scripts/data4/__tests__/data-4-7b-lsf-controlled-expansion-write.test.ts"
+      - ".github/workflows/data-4-7b-lsf-controlled-expansion-write.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/audits/data-4-7b-lsf-controlled-expansion-write.ts"
+      - "scripts/audits/data-4-7b-lsf-post-write-certification.ts"
+      - "scripts/data4/__tests__/data-4-7b-lsf-controlled-expansion-write.test.ts"
+      - ".github/workflows/data-4-7b-lsf-controlled-expansion-write.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: DATA-4.7B historical write contract test
+        run: npx tsx --test scripts/data4/__tests__/data-4-7b-lsf-controlled-expansion-write.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Static closeout safety boundary
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const write = fs.readFileSync('scripts/audits/data-4-7b-lsf-controlled-expansion-write.ts','utf8');
+          const cert = fs.readFileSync('scripts/audits/data-4-7b-lsf-post-write-certification.ts','utf8');
+          for (const required of [
+            'const BATCH_SIZE = 250',
+            'const CHANNEL = "public_sitemap_presence"',
+            'rollback-manifest.json',
+            'DATA_4_7B_APPLY === "true"',
+            'BATCH_1_YES',
+            'sourceSiteDetailRequests: 0',
+            'next_review_at: string | null',
+            'nextReview.getTime() > now.getTime()',
+            'metadataRunId(row.metadata) === RUN_ID',
+            'one-shot run already applied',
+          ]) if (!write.includes(required)) throw new Error(`missing historical write contract ${required}`);
+          for (const required of [
+            'const EXPECTED_BATCH = 250',
+            'const RUN_ID = "data-4-7b-lsf-250-v1"',
+            'POST_WRITE_CERTIFIED_READ_ONLY',
+            'repeatApplyAuthorized: false',
+            'databaseWrites: 0',
+            'sourceSiteDetailRequests: 0',
+            'residualLiveCandidates',
+          ]) if (!cert.includes(required)) throw new Error(`missing post-write closeout contract ${required}`);
+          if (cert.includes('method: "PATCH"') || cert.includes('method: "POST"') || cert.includes('method: "DELETE"')) {
+            throw new Error('post-write certifier must remain read-only');
+          }
+          NODE
+
+  post-write-certification:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_7B_OUT_DIR: .tmp/data-4-7b/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Certify exact written cohort against current sitemap and Search
+        run: npx tsx scripts/audits/data-4-7b-lsf-post-write-certification.ts
+      - name: Enforce post-write read-only proof
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-4-7b/results/post-write-proof.json','utf8'));
+          if (p.schemaVersion !== 'data-4-7b-lsf-post-write-certification-v1' || p.mode !== 'POST_WRITE_CERTIFIED_READ_ONLY') throw new Error(JSON.stringify(p));
+          if (p.runId !== 'data-4-7b-lsf-250-v1') throw new Error(JSON.stringify(p));
+          const c = p.certification;
+          for (const key of ['expectedRows','cohortRows','currentSitemapConfirmedRows','freshConfirmedRows','sitemapChannelRows','normalizedRows','technicalDisplayRows','publicSearchRows','freshnessProjectionRows']) {
+            if (c[key] !== 250) throw new Error(`${key}=${c[key]}`);
+          }
+          if (p.aggregate.totalSeeds !== 1414 || p.aggregate.freshConfirmed < 349 || p.aggregate.sitemapChannel < 250) throw new Error(JSON.stringify(p));
+          if (p.databaseWrites !== 0 || p.rollbackWrites !== 0 || p.registryMutations !== 0 || p.policyChanges !== 0 || p.productionActivation !== false || p.repeatApplyAuthorized !== false) throw new Error(JSON.stringify(p));
+          if (p.sourceSiteDetailRequests !== 0) throw new Error(JSON.stringify(p));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-7b-lsf-post-write-certification
+          path: .tmp/data-4-7b/results/post-write-proof.json
+          if-no-files-found: error
+          retention-days: 14
