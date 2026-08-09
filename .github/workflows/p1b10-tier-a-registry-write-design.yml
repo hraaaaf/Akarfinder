@@ -52,7 +52,7 @@ jobs:
             "'validated'",
             "false, false, 'registry_v1'",
             "'P1B.10'",
-            "'agadir.ma'",
+            '"authority_domain":"agadir.ma"',
           ]) if(!apply.includes(marker)) throw new Error(`missing ${marker}`);
           if(/insert\s+into\s+public\.geo_resolution_events/i.test(apply)) throw new Error('P1B.10 may not resolve listings');
           for(const dependency of ['geo_resolution_events','neighborhood_intelligence_profiles','price_m2_references','parent_id']) {
