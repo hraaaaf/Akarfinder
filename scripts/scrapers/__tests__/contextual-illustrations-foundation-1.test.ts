@@ -68,6 +68,29 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
     assert.deepEqual(forward, reverse);
   });
 
+  it("does not remap a broader fallback when unused structured signals appear", () => {
+    const cityOnlyCatalog: ContextualIllustrationCatalog = {
+      districtType: {},
+      district: {},
+      cityType: {},
+      city: { Agadir: syntheticAssets },
+    };
+    const base = resolveContextualIllustrationFromCatalog(
+      { stableListingId: "listing-stable", normalizedCity: "Agadir" },
+      cityOnlyCatalog
+    );
+    const enriched = resolveContextualIllustrationFromCatalog(
+      {
+        stableListingId: "listing-stable",
+        normalizedCity: "Agadir",
+        normalizedDistrict: "Founty",
+        normalizedPropertyType: "apartment",
+      },
+      cityOnlyCatalog
+    );
+    assert.deepEqual(enriched, base, "city fallback must stay stable until a more specific pool actually exists");
+  });
+
   it("uses the most specific certified structured pool and fails closed by tier", () => {
     const catalog = syntheticCatalog();
     const districtType = resolveContextualIllustrationFromCatalog(
