@@ -20,14 +20,22 @@ test("DATA-4.7A is read-only and sitemap-only", () => {
   assert.equal(/method:\s*["'](?:POST|PATCH|PUT|DELETE)["']/.test(script), false);
 });
 
-test("DATA-4.7A rotates on source drift and gates writes", () => {
+test("DATA-4.7A qualifies the Search long-tail without requiring premium completeness", () => {
   for (const token of [
-    'SOURCE_SITEMAP_DECLARATION_DRIFT',
-    'QUALIFIED_FOR_CONTROLLED_EXPANSION_DESIGN',
-    'ROTATE_TO_NEXT_PUBLIC_SITEMAP_RESERVOIR',
+    'function massTailCandidate',
+    '["eligible_primary", "eligible_secondary"].includes(display.display_eligibility ?? "")',
+    'massTailCandidatesInPublicSearch',
+    'massTailTierB',
+    'massTailTierC',
+    'massTailWithPrice',
+    'massTailWithSurface',
+    'massTailWithTitle',
+    'INSUFFICIENT_MASS_TAIL_LIVE_RESERVOIR',
     'DATA-4.7B_LSF_CONTROLLED_EXPANSION_WRITE',
-    'conservativeCandidatesInPublicSearch',
-  ]) assert.ok(script.includes(token), `missing ${token}`);
+  ]) assert.ok(script.includes(token), `missing mass-tail contract ${token}`);
+
+  assert.equal(script.includes('row.price_mad !== null && row.surface_m2 !== null'), false);
+  assert.equal(script.includes('["A", "B"].includes(display.quality_tier ?? "")'), false);
 });
 
 test("DATA-4.7A compares URL identity conservatively and excludes ambiguous collisions", () => {
