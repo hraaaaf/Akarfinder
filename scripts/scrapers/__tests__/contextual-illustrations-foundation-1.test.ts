@@ -43,26 +43,26 @@ function syntheticCatalog(): ContextualIllustrationCatalog {
 }
 
 describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
-  it("is deterministic for the same stable listing identity and context", () => {
+  it("is deterministic for the same stable representation identity and context", () => {
     const input = {
-      stableListingId: "gateway-source-123",
+      stableRepresentationKey: "https://example.com/property/123",
       normalizedCity: "Agadir",
       normalizedPropertyType: "apartment",
     };
     assert.deepEqual(resolveContextualIllustration(input), resolveContextualIllustration(input));
   });
 
-  it("can distribute different stable listing IDs across a multi-asset pool", () => {
+  it("can distribute different stable representation keys across a multi-asset pool", () => {
     const selected = new Set(
       Array.from({ length: 128 }, (_, index) =>
-        selectDeterministicAsset(syntheticAssets, `listing-${index}`)?.id
+        selectDeterministicAsset(syntheticAssets, `https://example.com/property/${index}`)?.id
       )
     );
-    assert.ok(selected.size > 1, "stable listing IDs must be capable of selecting different variants");
+    assert.ok(selected.size > 1, "stable representation keys must be capable of selecting different variants");
   });
 
   it("is independent of candidate ordering", () => {
-    const seed = "listing-order-invariance";
+    const seed = "https://example.com/property/order-invariance";
     const forward = selectDeterministicAsset(syntheticAssets, seed);
     const reverse = selectDeterministicAsset([...syntheticAssets].reverse(), seed);
     assert.deepEqual(forward, reverse);
@@ -76,12 +76,12 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
       city: { Agadir: syntheticAssets },
     };
     const base = resolveContextualIllustrationFromCatalog(
-      { stableListingId: "listing-stable", normalizedCity: "Agadir" },
+      { stableRepresentationKey: "https://example.com/property/stable", normalizedCity: "Agadir" },
       cityOnlyCatalog
     );
     const enriched = resolveContextualIllustrationFromCatalog(
       {
-        stableListingId: "listing-stable",
+        stableRepresentationKey: "https://example.com/property/stable",
         normalizedCity: "Agadir",
         normalizedDistrict: "Founty",
         normalizedPropertyType: "apartment",
@@ -95,7 +95,7 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
     const catalog = syntheticCatalog();
     const districtType = resolveContextualIllustrationFromCatalog(
       {
-        stableListingId: "listing-a",
+        stableRepresentationKey: "https://example.com/property/a",
         normalizedCity: "Agadir",
         normalizedDistrict: "Founty",
         normalizedPropertyType: "apartment",
@@ -106,7 +106,7 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
 
     const unknownDistrict = resolveContextualIllustrationFromCatalog(
       {
-        stableListingId: "listing-a",
+        stableRepresentationKey: "https://example.com/property/a",
         normalizedCity: "Agadir",
         normalizedDistrict: "Unknown district",
         normalizedPropertyType: "apartment",
@@ -117,7 +117,7 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
 
     const unknownType = resolveContextualIllustrationFromCatalog(
       {
-        stableListingId: "listing-a",
+        stableRepresentationKey: "https://example.com/property/a",
         normalizedCity: "Agadir",
         normalizedPropertyType: "unknown-type",
       },
@@ -127,18 +127,18 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
 
     assert.equal(
       resolveContextualIllustrationFromCatalog(
-        { stableListingId: "listing-a", normalizedCity: "Unknown city" },
+        { stableRepresentationKey: "https://example.com/property/a", normalizedCity: "Unknown city" },
         catalog
       ),
       null
     );
     assert.equal(
       resolveContextualIllustrationFromCatalog(
-        { stableListingId: "", normalizedCity: "Agadir" },
+        { stableRepresentationKey: "", normalizedCity: "Agadir" },
         catalog
       ),
       null,
-      "missing stable identity must fail closed"
+      "missing stable representation identity must fail closed"
     );
   });
 
@@ -152,20 +152,20 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
     assert.doesNotMatch(`${catalog}\n${resolver}`, /title|snippet|description/i);
     assert.doesNotMatch(catalog, /https?:\/\//);
     assert.doesNotMatch(catalog, /fetch\s*\(/);
-    assert.match(resolver, /stableListingId/);
+    assert.match(resolver, /stableRepresentationKey/);
     assert.match(resolver, /normalizedCity/);
     assert.match(resolver, /normalizedDistrict/);
     assert.match(resolver, /normalizedPropertyType/);
   });
 
-  it("keeps authorized thumbnails authoritative and seeds fallback from result.id", () => {
+  it("keeps authorized thumbnails authoritative and seeds fallback from original_url", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
     const thumbnail = card.indexOf("showThumbnail && !thumbError");
     const contextual = card.indexOf("<ContextualListingArtwork");
 
     assert.match(card, /THUMBNAILS_ENABLED && result\.can_show_thumbnail && !!result\.thumbnail_url/);
     assert.ok(thumbnail >= 0 && contextual > thumbnail, "authorized thumbnail must remain first visual branch");
-    assert.match(card, /stableListingId=\{result\.id\}/);
+    assert.match(card, /stableRepresentationKey=\{result\.original_url\}/);
     assert.match(card, /city=\{result\.normalized_city\}/);
     assert.match(card, /propertyType=\{safeFallbackPropertyType\}/);
     assert.doesNotMatch(card, /result\.(district|quartier|neighborhood)/);
