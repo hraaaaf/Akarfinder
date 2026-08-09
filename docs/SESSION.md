@@ -3,7 +3,7 @@
 **Mise à jour : 2026-08-09**  
 **Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; prochain lot = UNIFIED-LISTING-CARD-1**  
 **Lane UX/Carte : P1B.4 ✅ Geo Coverage Recovery pilot certifié en production**  
-**Lane DATA : DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 Common Crawl Pattern Evidence ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = P0.4 Registry Pattern Review Shadow**  
+**Lane DATA : DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 Registry Pattern Review Shadow ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = revue Registry/canary bornée sur les 2 `SHADOW_ACCEPTABLE` uniquement**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle 0,45 %**
 
 Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’unique roadmap canonique.
@@ -11,6 +11,8 @@ Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’uniq
 # Main canonique
 
 Main canonique après RANKING-QUALITY-1 : `c5949063fa1c0e3448e917473239f821a17b7d59` — merge PR #403.
+
+P0.4 main merge : `81f4809424757838c099b6acfb8f8d4b719deab7` — PR #402 ; post-merge gate PASS.
 
 Acquis récents :
 
@@ -127,9 +129,19 @@ Preuve :
 
 Certification : **20/20 exact-head PASS**, Reviewer **9,4/10**, Certifier GO, merge `8ffffc7cfbe0921d21f66887e1c4ecccf3a738cb`, post-merge gate PASS.
 
-# PROCHAIN LOT DATA — P0.4 Registry Pattern Review Shadow
+# P0.4 — Registry Pattern Review Shadow ✅ CLOSED — PR #402
 
-Uniquement les **5 STRONG**. Produire des patterns candidats, corpus positifs/négatifs et replay shadow avec mesure des erreurs. **Zéro mutation Registry, zéro harvest, zéro write production.** Les 6 reviewable ne sont pas incluses automatiquement ; les 7 insufficient restent bloquées.
+P0.4 a revu en shadow les **5 domaines `STRONG_PATTERN_EVIDENCE`** issus de P0.3, sans activer aucun pattern. Le replay utilise un oracle conservateur à trois états : signatures détail certifiées = `POSITIVE`, signatures explicitement non-detail = `NEGATIVE`, tout le reste = `AMBIGUOUS`. Un pattern qui absorbe une URL ambiguë est rejeté fail-closed.
+
+Preuve finale : **15/15 requêtes Common Crawl URL-index réussies**, **2 `SHADOW_ACCEPTABLE` / 3 `REJECTED_SHADOW`**, **0 faux positif**, **1 faux négatif**, **42 matchs ambigus** uniquement sur les candidats rejetés. Acceptés en shadow : `christiesrealestatemorocco.com` (**1024 positifs / 9 négatifs / précision 1 / rappel 1 / 0 ambiguous match**) et `immobilier-a-marrakech.com` (**165 / 15 / précision 1 / rappel 1 / 0 ambiguous match**). Rejetés : `immo-maroc.com` (corpus négatif insuffisant + 4 ambiguous matches), `immohammedia.com` (3 ambiguous matches), `leaderimmo.ma` (35 ambiguous matches).
+
+Finding Reviewer corrigé avant merge : les URL non certifiées ne sont plus fabriquées comme négatives ; elles restent `AMBIGUOUS`. Le client Common Crawl respecte `Retry-After`, utilise retry/timeout bornés et ne contourne aucun rate-limit. **20/20 workflows exact-head verts**, Reviewer **PASS 9,5/10**, Release Certifier **GO**, merge `81f4809424757838c099b6acfb8f8d4b719deab7`, gate P0.4 post-merge **PASS**. Artefact exact-head : `sha256:c772ed6a63daa800238040e93f17dc983d58c24538290ac05ac96f9538e7d22f`.
+
+Contrat : **0 source-site request, 0 WARC/content fetch, 0 DB mutation, 0 Registry/policy mutation, 0 harvest, 0 pattern activation**. P0.4 prouve seulement une aptitude structurelle shadow ; il n'accorde aucune autorisation d'activation.
+
+# PROCHAINE ÉTAPE DATA
+
+LOT séparé de revue Registry/canary uniquement pour `christiesrealestatemorocco.com` et `immobilier-a-marrakech.com`, avec revalidation policy/autorisation et rollback avant toute mutation. `immo-maroc.com`, `immohammedia.com` et `leaderimmo.ma` restent bloqués tant que leur ambiguïté n'est pas résolue.
 
 # UX / Search — état court
 
@@ -149,4 +161,4 @@ P1B.4 : **69 résolutions / 14 quartiers / 5 villes**, couverture **0,45 %**, 0 
 
 # DATA — prochaine action
 
-DATA-4.4C, P0.1, P0.2 et P0.3 sont fermés. Le reconciler #396 est fermé. **Prochain LOT mass-index : P0.4 — Registry Pattern Review Shadow**, limité aux 5 preuves fortes. Aucun nouveau scraper/source direct, aucune activation Registry, aucun harvest et aucune expansion automatique.
+DATA-4.4C, P0.1, P0.2, P0.3 et P0.4 sont fermés. Le reconciler #396 est fermé. **Prochaine étape mass-index : LOT séparé de revue Registry/canary limité aux 2 `SHADOW_ACCEPTABLE`**, sans activation automatique ; les 3 rejetés restent bloqués.
