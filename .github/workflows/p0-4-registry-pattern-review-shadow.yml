@@ -83,7 +83,7 @@ jobs:
           if (report.shadow_acceptable_domains + report.rejected_shadow_domains !== 5) throw new Error('P0.4 decisions incomplete');
           for (const row of report.rows) {
             if (!['SHADOW_ACCEPTABLE', 'REJECTED_SHADOW'].includes(row.decision)) throw new Error(`invalid decision for ${row.source_domain}`);
-            if (row.decision === 'SHADOW_ACCEPTABLE' && (row.false_positives !== 0 || row.precision !== 1 || row.recall < 0.95)) {
+            if (row.decision === 'SHADOW_ACCEPTABLE' && (row.false_positives !== 0 || row.matched_ambiguous !== 0 || row.precision !== 1 || row.recall < 0.95)) {
               throw new Error(`unsafe SHADOW_ACCEPTABLE decision for ${row.source_domain}`);
             }
           }
@@ -94,7 +94,7 @@ jobs:
             rejected_shadow_domains: report.rejected_shadow_domains,
             total_false_positives: report.total_false_positives,
             total_false_negatives: report.total_false_negatives,
-            rows: report.rows.map((row) => ({ source_domain: row.source_domain, decision: row.decision, precision: row.precision, recall: row.recall, rejection_reasons: row.rejection_reasons })),
+            rows: report.rows.map((row) => ({ source_domain: row.source_domain, decision: row.decision, precision: row.precision, recall: row.recall, matched_ambiguous: row.matched_ambiguous, rejection_reasons: row.rejection_reasons })),
           }, null, 2));
           NODE
 
