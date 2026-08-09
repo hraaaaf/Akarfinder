@@ -444,9 +444,9 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
           </div>
         ) : null}
 
-        <div className={`mt-3 grid grid-cols-1 gap-5 ${view === "split" ? "lg:grid-cols-[minmax(0,1fr)_minmax(390px,0.62fr)]" : "lg:grid-cols-1"} lg:items-start`}>
+        <div data-search-view-layout={view} className={`mt-3 grid grid-cols-1 gap-5 ${view === "split" ? "lg:grid-cols-[minmax(0,1.08fr)_minmax(440px,0.92fr)]" : "lg:grid-cols-1"} lg:items-start`}>
           {viewLayout.showList ? (
-            <div ref={listRef} className="min-w-0">
+            <div ref={listRef} data-search-list-pane className="min-w-0">
               {showSkeleton ? (
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
                   {[1, 2, 3, 4].map((number) => <SkeletonCard key={number} />)}
@@ -488,7 +488,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
           ) : null}
 
           {viewLayout.showMap ? (
-            <div className="min-w-0 space-y-4 lg:sticky lg:top-5 lg:self-start">
+            <div data-search-map-pane className="min-w-0 space-y-4 lg:sticky lg:top-5 lg:self-start">
               <SearchMapPanel
                 cityCounts={cityCounts}
                 otherCount={otherCount}
@@ -497,7 +497,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                 stats={{ total: filteredListings.length, citiesCovered: cityCounts.length, avgIndex, updatedLabel: "Récent" }}
               />
 
-              <div className="overflow-hidden rounded-2xl border border-border/15 bg-card backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04]">
+              <div data-search-map-secondary="project" className={`${view === "split" ? "lg:hidden" : ""} overflow-hidden rounded-2xl border border-border/15 bg-card backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04]`}>
                 <div className="px-5 py-4">
                   <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-500 dark:text-bronze-400">Mon Projet AkarFinder</p>
                   <p className="mt-1.5 text-[1rem] font-extrabold text-foreground">Clarifier mes priorités</p>
@@ -512,7 +512,8 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
 
               <Link
                 href={`/map${filters.city !== "all" ? `?city=${encodeURIComponent(filters.city)}` : ""}`}
-                className="flex items-center justify-center gap-2 rounded-2xl border border-border/20 bg-card px-4 py-3 text-[13px] font-extrabold text-foreground/75 transition hover:border-bronze-500/40 hover:text-foreground dark:border-white/12 dark:bg-white/[0.04] dark:text-white/80 dark:hover:text-white"
+                data-search-map-secondary="full-map"
+                className={`${view === "split" ? "lg:hidden" : ""} flex items-center justify-center gap-2 rounded-2xl border border-border/20 bg-card px-4 py-3 text-[13px] font-extrabold text-foreground/75 transition hover:border-bronze-500/40 hover:text-foreground dark:border-white/12 dark:bg-white/[0.04] dark:text-white/80 dark:hover:text-white`}
               >
                 <MapIcon size={15} aria-hidden="true" /> Ouvrir la carte complète
               </Link>
