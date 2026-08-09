@@ -211,7 +211,7 @@ Preuve finale : **54/54** requêtes URL-index réussies sur 3 indexes, **10 254 
 
 Sécurité : **0 requête source-site**, **0 WARC/content fetch**, **0 mutation DB**, **0 mutation Registry/policy**, **0 activation de pattern**. **20/20 workflows exact-head verts**, Reviewer **PASS 9,4/10**, Release Certifier **GO**, merge `8ffffc7cfbe0921d21f66887e1c4ecccf3a738cb`, gate P0.3 post-merge PASS.
 
-Prochain lot mass-index : **P0.4 — Registry Pattern Review Shadow** sur les **5 strong uniquement**. Il doit convertir les signatures en propositions de patterns avec contrôles positifs/négatifs et shadow replay ; aucune activation automatique. Les 6 reviewable restent hors activation et les 7 insufficient restent bloqués.
+Étape mass-index suivante après P0.4 : **revue Registry/canary bornée uniquement aux 2 candidats `SHADOW_ACCEPTABLE`**, dans un LOT séparé avec revalidation policy/autorisation et rollback avant toute mutation. Les 3 candidats rejetés restent bloqués.
 
 ### P0.4 — Registry Pattern Review Shadow ✅ CLOSED — PR #402
 
