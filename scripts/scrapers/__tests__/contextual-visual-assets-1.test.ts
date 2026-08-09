@@ -32,7 +32,7 @@ describe("CONTEXTUAL-VISUAL-ASSETS-1", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
     assert.doesNotMatch(`${catalog}\n${resolver}`, /title|snippet|description/i);
-    assert.ok(card.includes("stableListingId={result.id}"));
+    assert.ok(card.includes("stableRepresentationKey={result.original_url}"));
     assert.ok(card.includes("city={result.normalized_city}"));
     assert.ok(card.includes("propertyType={safeFallbackPropertyType}"));
     assert.doesNotMatch(card, /result\.(district|quartier|neighborhood)/);
