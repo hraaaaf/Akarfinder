@@ -1,0 +1,85 @@
+name: P1B.11 Tier A Registry Production Write Gate
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260809213000_p1b11_tier_a_registry_production_write.sql"
+      - "supabase/migration-designs/p1b10_tier_a_registry_write.sql"
+      - "supabase/migration-designs/p1b10_tier_a_registry_rollback.sql"
+      - "scripts/scrapers/__tests__/p1b10-tier-a-registry-write-design.test.ts"
+      - "data/geo/p1b9-tier-a-registry-candidates.json"
+      - "data/geo/p1b8-authority-evidence.json"
+      - "scripts/audits/p1b9-tier-a-registry-candidate-review.ts"
+      - ".github/workflows/p1b11-tier-a-registry-production-write.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260809213000_p1b11_tier_a_registry_production_write.sql"
+      - "supabase/migration-designs/p1b10_tier_a_registry_write.sql"
+      - "supabase/migration-designs/p1b10_tier_a_registry_rollback.sql"
+      - "scripts/scrapers/__tests__/p1b10-tier-a-registry-write-design.test.ts"
+      - "data/geo/p1b9-tier-a-registry-candidates.json"
+      - "data/geo/p1b8-authority-evidence.json"
+      - "scripts/audits/p1b9-tier-a-registry-candidate-review.ts"
+      - ".github/workflows/p1b11-tier-a-registry-production-write.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-registry-production-write:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: P1B.11 exact promotion boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const designPath='supabase/migration-designs/p1b10_tier_a_registry_write.sql';
+          const migrationPath='supabase/migrations/20260809213000_p1b11_tier_a_registry_production_write.sql';
+          const rollbackPath='supabase/migration-designs/p1b10_tier_a_registry_rollback.sql';
+          for(const p of [designPath,migrationPath,rollbackPath]) if(!fs.existsSync(p)) throw new Error(`missing ${p}`);
+          const design=fs.readFileSync(designPath,'utf8');
+          const migration=fs.readFileSync(migrationPath,'utf8');
+          const executable=s=>s.split(/\r?\n/).filter(line=>!line.trim().startsWith('--')).join('\n').trim();
+          if(executable(design)!==executable(migration)) throw new Error('P1B.11 executable SQL drifted from certified P1B.10 design');
+          if(/insert\s+into\s+public\.geo_resolution_events/i.test(migration)) throw new Error('P1B.11 may not resolve listings');
+          for(const marker of [
+            "'district_agadir_dakhla'",
+            "'district_agadir_hay_mohammadi'",
+            "'city_agadir'",
+            "'validated'",
+            "false, false, 'registry_v1'",
+            '"authority_domain":"agadir.ma"',
+          ]) if(!migration.includes(marker)) throw new Error(`missing ${marker}`);
+          if(!migration.includes("seo_eligible = false") || !migration.includes("map_eligible = false")) throw new Error('P1B.11 fail-closed eligibility postcondition missing');
+          const rollback=fs.readFileSync(rollbackPath,'utf8');
+          for(const dependency of ['geo_resolution_events','neighborhood_intelligence_profiles','price_m2_references','parent_id']) {
+            if(!rollback.includes(dependency)) throw new Error(`rollback dependency guard missing: ${dependency}`);
+          }
+          NODE
+      - name: P1B.11 PostgreSQL semantic rehearsal
+        run: npx tsx --test scripts/scrapers/__tests__/p1b10-tier-a-registry-write-design.test.ts
+      - name: Replay P1B.9 live Tier A boundary
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1b9-tier-a-registry-candidate-review.ts
+      - name: Enforce production predecessor verdict
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('data/audits/runtime/p1b9-tier-a-registry-candidate-review.json','utf8'));
+          if(r.verdict!=='TIER_A_REGISTRY_CANDIDATES_READY_FOR_BOUNDED_WRITE_DESIGN') throw new Error(JSON.stringify(r));
+          if(r.ready_pairs!==2 || r.ready_listing_rows!==8) throw new Error('P1B.9 live Tier A cohort drift');
+          if(r.parent_city?.id!=='city_agadir' || r.parent_city?.validated!==true) throw new Error('Agadir parent drift');
+          if(r.candidates.some(c=>Object.values(c.collisions).some(Boolean))) throw new Error('live Registry collision appeared');
+          NODE
+      - name: TypeScript
+        run: npx tsc --noEmit
