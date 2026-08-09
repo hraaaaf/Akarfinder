@@ -25,15 +25,27 @@ test("post-results intelligence fails closed when every model is unavailable", (
   assert.match(dock, /if \(!hasUsefulContent\) return null;/);
 });
 
-test("cleanup preserves the intelligence feature and does not alter search decisions", () => {
+test("map neighborhood intelligence also fails closed when no useful model exists", () => {
+  const dock = source("components/search/SearchMapNeighborhoodDock.tsx");
+  assert.match(dock, /const hasUsefulNeighborhoodContent =/);
+  assert.match(dock, /context\.explorer\.status === "available"/);
+  assert.match(dock, /context\.heatmap\.status === "available"/);
+  assert.match(dock, /context\.geometryCanaryRequested/);
+  assert.match(dock, /if \(!hasUsefulNeighborhoodContent\) return null;/);
+});
+
+test("cleanup preserves useful intelligence and does not alter search decisions", () => {
   const page = source("app/search/page.tsx");
   const dock = source("components/search/SearchPriceExplorerDock.tsx");
+  const mapDock = source("components/search/SearchMapNeighborhoodDock.tsx");
   const shell = source("components/search/LightZillowSearchShell.tsx");
   assert.match(page, /<SearchPriceExplorerDock \/>/);
   assert.match(dock, /<PriceExplorerPanel result=\{context\.priceReference\} \/>/);
   assert.match(dock, /<NeighborhoodIntelligencePanel model=\{context\.neighborhoodIntelligence\} \/>/);
   assert.match(dock, /<CertifiedNeighborhoodComparisonPanel/);
   assert.match(dock, /<CertifiedSimilarNeighborhoodsPanel/);
+  assert.match(mapDock, /<CityNeighborhoodExplorerPanel model=\{context\.explorer\} \/>/);
+  assert.match(mapDock, /<CertifiedLocalHeatmapPanel model=\{context\.heatmap\} \/>/);
   assert.equal((shell.match(/sortListings\(clientFiltered, sortBy\)/g) ?? []).length, 1);
-  assert.doesNotMatch(dock, /ranking|commercial priority|display eligibility|source_policy/i);
+  assert.doesNotMatch(`${dock}\n${mapDock}`, /commercial priority|display eligibility|source_policy/i);
 });
