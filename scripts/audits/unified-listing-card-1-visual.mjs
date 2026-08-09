@@ -8,6 +8,7 @@ const viewports = [
   { name: "mobile-390x844", width: 390, height: 844 },
   { name: "tablet-768x900", width: 768, height: 900 },
   { name: "desktop-1280x900", width: 1280, height: 900 },
+  { name: "desktop-1440x900", width: 1440, height: 900 },
 ];
 
 const externalResults = [
