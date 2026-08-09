@@ -8,6 +8,7 @@ on:
       - "components/search/ExternalIndexedResultsSection.tsx"
       - "components/search/LightZillowSearchShell.tsx"
       - "scripts/scrapers/__tests__/unified-listing-card-1.test.ts"
+      - "scripts/audits/unified-listing-card-1-visual.mjs"
       - ".github/workflows/unified-listing-card-1.yml"
       - "README.md"
       - "docs/ROADMAP.md"
@@ -36,3 +37,41 @@ jobs:
         run: npx tsc --noEmit
       - name: Production build rehearsal
         run: npm run build
+
+  external-card-visual-certification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start > /tmp/akarfinder-unified-listing-card.log 2>&1 &
+          echo $! > /tmp/akarfinder-unified-listing-card.pid
+          for i in {1..60}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/akarfinder-unified-listing-card.log
+          exit 1
+      - name: Capture and assert external listing cards
+        run: node scripts/audits/unified-listing-card-1-visual.mjs
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-listing-card-1-visual-proof
+          path: |
+            data/audits/unified-listing-card-1
+            /tmp/akarfinder-unified-listing-card.log
+          retention-days: 14
+          if-no-files-found: error
