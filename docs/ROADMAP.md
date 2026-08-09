@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.6 ✅ Geo Coverage Depth Audit certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; prochaine et dernière étape benchmark UX Search à formaliser = split Liste / Carte desktop sans surcharge ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.6 ✅ Geo Coverage Depth Audit certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -212,9 +212,21 @@ Résultat certifié :
 - Benchmark UX/Search Reviewer : **PASS 9,5/10** (mobile 9,6 / tablette 9,5 / desktop 9,5) ; Reviewer technique PASS ; Release Certifier GO ;
 - merge `0987b89286d262e7d01ec8e3a868b2424d85c4d5`, artefact `sha256:c9ec64465039168a44c81b8921ff0ac7e57ab7a25e65a54f91f06f480805a66f`.
 
-### Prochaine étape UX/Search
+## SEARCH-DESKTOP-SPLIT-1 ✅ CLOSED — PR #423
 
-**Split Liste / Carte desktop sans surcharge à formaliser** — dernier chantier du benchmark SERP ; aucun identifiant de LOT n’est créé tant que son contrat n’est pas verrouillé.
+Responsabilité unique : **simplifier le mode Mixte desktop en un vrai split résultats + carte sans surcharge secondaire**, tout en conservant mobile/tablette, Liste, Carte, ranking, filtres, ordre commercial, DATA, attribution et état URL.
+
+Résultat certifié :
+
+- desktop Mixte = deux panes utiles ; les blocs secondaires Mon Projet / carte complète ne sont plus affichés dans cette vue ;
+- mobile/tablette restent empilés avec leurs contenus existants ;
+- Liste et Carte conservent leurs contrats fonctionnels ;
+- Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : 0 overflow, 0 prix tronqué ; desktop **654/558 px** puis **741/631 px**, 0 bloc secondaire ;
+- **26/26 workflows exact-head verts** sur `29b469e17eff6f4516bef18f7d5ed193726308f0` ;
+- Benchmark UX/Search Reviewer **PASS 9,5/10** ; Reviewer technique PASS ; Release Certifier GO ;
+- merge `6bcf402158539c547061a6a92d1b408df1da8d22`, artefact `sha256:9811f9b4a62b8b571ff977953f240e3be5ac17fad41cf3ef87d8d8b30feedf8c`.
+
+**BENCHMARK-SERP-1 convergence = COMPLETE ✅.** Aucun nouveau lot UX/Search n’est pré-engagé dans cette roadmap ; le prochain chantier devra être formalisé séparément.
 
 # 4. Lane UX / Carte
 
