@@ -26,8 +26,8 @@ function replaceOnce(path, source, before, after) {
   source = replaceOnce(
     path,
     source,
-    "CONTEXUAL-VISUAL-ASSETS-1 ✅ PR #414 ; prochaine étape UX Search à formaliser = attribution déterministe",
-    "CONTEXUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; prochaine étape UX Search à formaliser = simplification des actions secondaires"
+    "CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; prochaine étape UX Search à formaliser = attribution déterministe",
+    "CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; prochaine étape UX Search à formaliser = simplification des actions secondaires"
   );
   source = replaceOnce(
     path,
