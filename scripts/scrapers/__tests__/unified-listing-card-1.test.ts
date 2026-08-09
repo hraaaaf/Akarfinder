@@ -47,12 +47,14 @@ describe("UNIFIED-LISTING-CARD-1", () => {
 
   it("preserves external-source safety and thumbnail policy", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
+    const artwork = source("components/search/ContextualListingArtwork.tsx");
 
     assert.ok(card.includes("href={result.original_url}"));
     assert.ok(card.includes('target="_blank"'));
     assert.ok(card.includes('rel="noopener noreferrer"'));
     assert.ok(card.includes("THUMBNAILS_ENABLED && result.can_show_thumbnail"));
-    assert.ok(card.includes("PropertyTypeArtwork kind={safeFallbackPropertyType}"));
+    assert.ok(card.includes("<ContextualListingArtwork"));
+    assert.ok(artwork.includes("<PropertyTypeArtwork"));
     assert.doesNotMatch(card, /href=\{?['"]\/listings\//);
   });
 
