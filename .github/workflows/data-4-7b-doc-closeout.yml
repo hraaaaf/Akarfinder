@@ -19,15 +19,19 @@ jobs:
         with:
           ref: data/data-4-7b-lsf-controlled-expansion-write
           fetch-depth: 0
-      - name: Patch README ROADMAP SESSION from complete checkout
+      - name: Patch canonical docs from complete checkout
         shell: bash
         run: |
           python - <<'PY'
+          import base64
           from pathlib import Path
-
           START = '<!-- DATA-4.7B-CURRENT-START -->'
           END = '<!-- DATA-4.7B-CURRENT-END -->'
-
+          README_B64 = 'IyMgw4l0YXQgREFUQSBjb3VyYW50IOKAlCAyMDI2LTA4LTA5CgpMYSBsYW5lIERBVEEgZXN0IHBhc3PDqWUgZW4gKipyb3RhdGlvbiBkZSByw6lzZXJ2b2lycyoqIDogdW5lIHNvdXJjZSBibG9xdcOpZSBuJ2VzdCBwbHVzIHVuIGNoZW1pbiBjcml0aXF1ZS4gUHJvbW8gSW1tbyByZXN0ZSBibG9xdcOpIHBhciBETlMvc291cmNlIGRpcmVjdGUgOyBEYXIgQWdhZGlyIGVzdCBlbiBkcmlmdCBkZSBkw6ljbGFyYXRpb24gc2l0ZW1hcCA7IEwnSW1tb2JpbGllciBTYW5zIEZyb250acOocmVzIChMU0YpIGVzdCBsZSByw6lzZXJ2b2lyIGFjdGlmIGNlcnRpZmnDqS4KCi0gKipEQVRBLTQuN0Eg4pyFIFBSICM0MzMqKiDigJQgbWVyZ2UgYDAwMTlmMzNlNmExMGE1OGQ3NmE2ZGI0NTIxYzY4MTg2MTA2N2M2NTFgIDogc2l0ZW1hcCBMU0YgY291cmFudCAqKjEgNDIzIFVSTHMqKiwgKioxIDA2NCoqIGlkZW50aXTDqXMgVVJMIHPDu3JlcywgKio5ODMqKiBgc2VlZF9vbmx5YCBwcsOpc2VudGVzIGRhbnMgbGUgc2l0ZW1hcCwgKiozNTMqKiBjYW5kaWRhdGVzIGxvbmctdGFpbCBgbm9ybWFsaXplZCArIGRpc3BsYXkgZWxpZ2libGUgKyBTZWFyY2hgLCBjb2xsaXNpb25zIGQnaWRlbnRpdMOpIGFtYmlndcOrcyBleGNsdWVzIGZhaWwtY2xvc2VkIDsgMCB3cml0ZS4KLSAqKkRBVEEtNC43QiDwn5+gIGNsb3Nlb3V0IGVuIGNvdXJzIOKAlCBQUiAjNDM1KiogOiBleGFjdCB3cml0ZSBoZWFkIGBmM2Y3MmY2YjRlN2U3Zjg3N2RmNGViNjdmYTZjMzFmMDE0MGU4MWIzYCwgc3BlY2lhbGl6ZWQgcnVuIGAzMTMzMDU2MTUwNmAgUEFTUywgcm9sbGJhY2sgYXJ0aWZhY3QgYHNoYTI1NjpkNzkxMTcyZTgwMzZkMGI0NzVjYmYyMTE5ZGNhMGM0OTc5Mzg5NDBmODc1NjM5MjNkYmNiZjY4MzcwMzk4NjcyYCA7IGJhdGNoIGJvcm7DqSAqKjI1MC8yNTAqKiBhcHBsaXF1w6kgcHVpcyBjZXJ0aWZpw6kgZW4gcHJvZHVjdGlvbi4KLSBDb2hvcnRlIDQuN0IgOiAqKjI1MC8yNTAgZnJlc2hfY29uZmlybWVkKiosICoqMjUwLzI1MCBwdWJsaWNfc2l0ZW1hcF9wcmVzZW5jZSoqLCAqKjI1MC8yNTAgbm9ybWFsaXplZCoqLCAqKjI1MC8yNTAgdGVjaG5pY2FsIGRpc3BsYXkqKiwgKioyNTAvMjUwIFB1YmxpYyBTZWFyY2gqKiwgKioyNTAvMjUwIFRoaW4gSW5kZXggZnJlc2huZXNzIHByb2plY3Rpb24qKiA7IHJvbGxiYWNrIGRpc3BvbmlibGUsIG5vbiB1dGlsaXPDqS4KLSBMU0YgYXByw6hzIHdyaXRlIDogKioxIDQxNCB0b3RhbCAvIDM0OSBmcmVzaF9jb25maXJtZWQgLyAxIDA2NSBzZWVkX29ubHkgLyAyNTAgcHVibGljX3NpdGVtYXBfcHJlc2VuY2UqKi4KLSBMZSB0aWVyIEMgbG9uZy10YWlsIHJlc3RlIGF1dG9yaXPDqSB1bmlxdWVtZW50IHZpYSBsZXMgZ2F0ZXMgZXhpc3RhbnRzIGQnw6lsaWdpYmlsaXTDqSBzZWNvbmRhaXJlIGV0IGRlIHJhbmtpbmcgOyBsJ2Fic2VuY2UgZGUgcHJpeC9zdXJmYWNlIG4nZXN0IGphbWFpcyBjb21wZW5zw6llIHBhciB1bmUgZG9ubsOpZSBpbnZlbnTDqWUuCgpMZSBwcm9jaGFpbiBMT1QgREFUQSBuZSBkb2l0IHBhcyBsYW5jZXIgYXV0b21hdGlxdWVtZW50IHVuIHNlY29uZCB3cml0ZSA6IGlsIGRvaXQgKipyZXF1YWxpZmllciBsZSByw6lzaWR1ZWwgTFNGKiogKDEwMyBjYW5kaWRhdGVzIHJlc3RhbnRlcyBkYW5zIGxhIHByZXV2ZSBwcsOpLXdyaXRlLCDDoCByZXZhbGlkZXIgZW4gZGlyZWN0KSBldCBsZSBjb21wYXJlciBhdSBwcm9jaGFpbiByw6lzZXJ2b2lyIGFkbWlzc2libGUsIG5vdGFtbWVudCBBeWthbmEsIHB1aXMgY2hvaXNpciBsZSBtZWlsbGV1ciByZW5kZW1lbnQgc8O7ci4K'
+          ROADMAP_B64 = 'IyAwLiDDiXRhdCBEQVRBIHByaW9yaXRhaXJlIOKAlCByb3RhdGlvbiBkZSBtYXNzZSAyMDI2LTA4LTA5Cgo+IENlIGJsb2MgcHLDqXZhdXQgc3VyIHRvdXRlIGFuY2llbm5lIG1lbnRpb24gcGx1cyBiYXMgaW5kaXF1YW50IERBVEEtNC41QiAvIFByb21vIEltbW8gY29tbWUgwqsgcHJvY2hhaW4gTE9UIMK7LgoKKipPYmplY3RpZiBhY3RpZiA6IGF1Z21lbnRlciBsYSBtYXNzZSByw6llbGxlbWVudCBpbmRleGFibGUgc2FucyBhdHRlbmRyZSB1bmUgc291cmNlIGJsb3F1w6llLCB0b3V0IGVuIGNvbnNlcnZhbnQgUmVnaXN0cnksIGZyYcOuY2hldXIsIGTDqWR1cCwgZGlzcGxheSBlbGlnaWJpbGl0eSBldCByYW5raW5nIGZhaWwtY2xvc2VkLioqCgrDiXRhdCBjZXJ0aWZpw6kgOgoKLSBQcm9tbyBJbW1vIDogYEJMT0NLRURfRVhURVJOQUxfU09VUkNFYCDigJQgRE5TL3NvdXJjZSBkaXJlY3RlIG5vbiBkaXNwb25pYmxlIDsgYXVjdW5lIGJhaXNzZSBkZSBjb250cmF0IGF1dG9yaXPDqWUuCi0gRGFyIEFnYWRpciA6IGBCTE9DS0VEX1NPVVJDRV9EUklGVGAg4oCUIGByb2JvdHMudHh0YCByw6lwb25kIG1haXMgbmUgZMOpY2xhcmUgcGx1cyBsZSBzaXRlbWFwIGhpc3RvcmlxdWUgOyBEQVRBLTQuNkEgZmVybcOpIHNhbnMgbWVyZ2UsIDAgd3JpdGUuCi0gKipEQVRBLTQuN0Eg4pyFIFBSICM0MzMqKiDigJQgTFNGIFNpdGVtYXAgTWFzcyBRdWFsaWZpY2F0aW9uIDsgbWVyZ2UgYDAwMTlmMzNlNmExMGE1OGQ3NmE2ZGI0NTIxYzY4MTg2MTA2N2M2NTFgIDsgKiozNTMqKiBjYW5kaWRhdGVzIGxpdmUgbG9uZy10YWlsIGNlcnRpZmnDqWVzLCAqKjI1MCoqIGNvbW1lIHByZW1pZXIgY2hlY2twb2ludC4KLSAqKkRBVEEtNC43QiDwn5+gIGNsb3Nlb3V0IFBSICM0MzUqKiDigJQgd3JpdGUgZXjDqWN1dMOpIHN1ciBsZSBoZWFkIHByw6lhbGFibGVtZW50IGVudGnDqHJlbWVudCB2ZXJ0IGBmM2Y3MmY2YjRlN2U3Zjg3N2RmNGViNjdmYTZjMzFmMDE0MGU4MWIzYCA7IHJvbGxiYWNrLXJlYWR5IGRyeS1ydW4gcnVuIGAzMTMzMDU2MTUwNmAsIGFydGlmYWN0IGBzaGEyNTY6ZDc5MTE3MmU4MDM2ZDBiNDc1Y2JmMjExOWRjYTBjNDk3OTM4OTQwZjg3NTYzOTIzZGJjYmY2ODM3MDM5ODY3MmAgOyB3cml0ZSBwcm9kdWN0aW9uICoqMjUwLzI1MCoqIDsgcG9zdC1jZXJ0aWZpY2F0aW9uICoqMjUwLzI1MCBmcmVzaG5lc3MgKyBzaXRlbWFwIGNoYW5uZWwgKyBub3JtYWxpemVkICsgdGVjaG5pY2FsIGRpc3BsYXkgKyBQdWJsaWMgU2VhcmNoICsgcHJvamVjdGlvbioqIDsgcm9sbGJhY2sgbm9uIHJlcXVpcy4KLSBMU0YgcHJvZHVjdGlvbiBhcHLDqHMgd3JpdGUgOiAqKjEgNDE0IHNlZWRzIC8gMzQ5IGZyZXNoX2NvbmZpcm1lZCAvIDEgMDY1IHNlZWRfb25seSAvIDI1MCBwdWJsaWNfc2l0ZW1hcF9wcmVzZW5jZSoqLgoKRG9jdHJpbmUgbG9uZy10YWlsIHZlcnJvdWlsbMOpZSA6IHVuZSBvYnNlcnZhdGlvbiBpbmNvbXBsw6h0ZSBwZXV0IHJlc3RlciBgZWxpZ2libGVfc2Vjb25kYXJ5YCBldCDDqnRyZSBjbGFzc8OpZSBiYXMgOyAqKnByaXgvc3VyZmFjZS9BLUIgbmUgc29udCBwYXMgZGVzIHByw6lyZXF1aXMgZCdleGlzdGVuY2UgZGFucyBsJ2luZGV4KiouIEF1Y3VuIGNoYW1wIGFic2VudCBuJ2VzdCBmYWJyaXF1w6kuIExlcyBxdWFsaXR5IHRpZXJzIGV0IFJhbmtpbmcgVjIgcmVzdGVudCBhdXRvcml0YWlyZXMgcG91ciBsJ29yZHJlLgoKKipQcm9jaGFpbiBMT1QgREFUQSA6IERBVEEtNC43QyDigJQgUmVzaWR1YWwgUmVzZXJ2b2lyIFJlcXVhbGlmaWNhdGlvbioqLCByZWFkLW9ubHkuIFJlam91ZXIgbGEgcHJldXZlIExTRiBjb3VyYW50ZSBhcHLDqHMgbGVzIDI1MCB3cml0ZXMsIG1lc3VyZXIgbGUgcsOpc2lkdWVsIHLDqWVsbGVtZW50IGVuY29yZSBzaXRlbWFwLWxpdmUgZXQgU2VhcmNoL2Rpc3BsYXktZWxpZ2libGUsIHB1aXMgbGUgY29tcGFyZXIgYXUgcHJvY2hhaW4gYHB1YmxpY19zaXRlbWFwYCBhZG1pc3NpYmxlIChBeWthbmEgZW4gcHJlbWllciBjYW5kaWRhdCkuIFVuIG5vdXZlYXUgd3JpdGUgZG9pdCByZXN0ZXIgdW4gTE9UIHPDqXBhcsOpLCBib3Juw6kgZXQgcm9sbGJhY2stcmVhZHkuCg=='
+          SESSION_B64 = 'IyBBa2FyRmluZGVyIOKAlCBTZXNzaW9uIGNvdXJhbnRlCgoqKk1pc2Ugw6Agam91ciA6IDIwMjYtMDgtMDkqKgoKQ2UgZmljaGllciBlc3QgbGUgaGFuZG92ZXIgb3DDqXJhdGlvbm5lbCBjb3VydC4gYFJFQURNRS5tZGAgcG9ydGUgbCdpZGVudGl0w6kvZG9jdHJpbmUgZXQgYGRvY3MvUk9BRE1BUC5tZGAgcmVzdGUgbCd1bmlxdWUgcm9hZG1hcCBjYW5vbmlxdWUuCgojIyBNYWluIC8gTE9UIGFjdGlmCgotIE1haW4gZGUgZMOpcGFydCBkdSBMT1QgOiBgMDAxOWYzM2U2YTEwYTU4ZDc2YTZkYjQ1MjFjNjgxODYxMDY3YzY1MWAg4oCUIG1lcmdlIERBVEEtNC43QSBQUiAjNDMzLgotIExPVCBhY3RpZiA6ICoqREFUQS00LjdCIOKAlCBMU0YgQ29udHJvbGxlZCBFeHBhbnNpb24gV3JpdGUqKi4KLSBQUiA6ICoqIzQzNSoqLgotIEV4YWN0IHdyaXRlIGhlYWQgY2VydGlmacOpIGF2YW50IG11dGF0aW9uIDogYGYzZjcyZjZiNGU3ZTdmODc3ZGY0ZWI2N2ZhNmMzMWYwMTQwZTgxYjNgLgotIFNwZWNpYWxpemVkIENJIDogcnVuIGAzMTMzMDU2MTUwNmAgUEFTUyDigJQgY29udHJhY3QgKyBUeXBlU2NyaXB0ICsgc3RhdGljIHNhZmV0eSArIGxpdmUgZHJ5LXJ1bi4KLSBSb2xsYmFjayBhcnRpZmFjdCA6IGBzaGEyNTY6ZDc5MTE3MmU4MDM2ZDBiNDc1Y2JmMjExOWRjYTBjNDk3OTM4OTQwZjg3NTYzOTIzZGJjYmY2ODM3MDM5ODY3MmAsICoqMjUwIGFwcGx5IHJvd3MgLyAyNTAgcm9sbGJhY2sgcm93cyoqLCAwIHdyaXRlIHBlbmRhbnQgQ0kuCgojIyBEQVRBLTQuN0Eg4pyFCgpMU0YgcXVhbGlmaWNhdGlvbiBsaXZlIDoKCi0gMSA0MTQgc2VlZHMgOyA5OSBmcmVzaC1jb25maXJtZWQgOyAxIDMxNSBzZWVkLW9ubHkgYXUgZMOpcGFydCA7Ci0gc2l0ZW1hcCBjb3VyYW50IDogMSA0MjMgVVJMcyA7Ci0gMSAwNjQgaWRlbnRpdMOpcyBVUkwgc8O7cmVzIDsgMTc0IGdyb3VwZXMgY29sbGlzaW9uIERCIGV4Y2x1cyBmYWlsLWNsb3NlZCA7Ci0gOTgzIHNlZWQtb25seSBlbmNvcmUgcHLDqXNlbnRlcyBkYW5zIGxlIHNpdGVtYXAgOwotICoqMzUzKiogY2FuZGlkYXRlcyBgc2VlZF9vbmx5ICsgbm9ybWFsaXplZCArIGRpc3BsYXkgZWxpZ2libGUgKyBQdWJsaWMgU2VhcmNoYCA7Ci0gdGllciBDIGxvbmctdGFpbCBhY2NlcHTDqSBjb21tZSBgZWxpZ2libGVfc2Vjb25kYXJ5YCwgc2FucyBleGlnZXIgcHJpeC9zdXJmYWNlIG5pIGZhYnJpcXVlciBkZSBkb25uw6llIDsKLSAwIG11dGF0aW9uLgoKUFIgIzQzMyBtZXJnw6llIDogYDAwMTlmMzNlNmExMGE1OGQ3NmE2ZGI0NTIxYzY4MTg2MTA2N2M2NTFgLgoKIyMgREFUQS00LjdCIOKAlCB3cml0ZSBwcm9kdWN0aW9uIGNlcnRpZmnDqSDinIUgKG1lcmdlIFBSIGVuY29yZSDDoCBmYWlyZSkKClByZWZsaWdodCBleGFjdCBhdmFudCB3cml0ZSA6CgotIDI1MC8yNTAgVVJMcyBleGFjdGVzIHByw6lzZW50ZXMgOwotIDI1MC8yNTAgZW5jb3JlIGBzZWVkX29ubHlgIDsKLSAyNTAvMjUwIHNhbnMgYHB1YmxpY19zaXRlbWFwX3ByZXNlbmNlYCBwcsOpY8OpZGVudCA7Ci0gMjUwLzI1MCBzYW5zIGFuY2llbiBgZnJlc2huZXNzX2V2aWRlbmNlYCA7Ci0gZGlnZXN0IGV4YWN0IFVSTCBzZXQgOiBgNzllMzk4MmYxMjhjNGU2MzkxOTdhNjRhMjk3NjZlOWNgLgoKUsOpc3VsdGF0IHByb2R1Y3Rpb24gOgoKLSB3cml0ZSBhdG9taXF1ZSA6ICoqMjUwLzI1MCoqIDsKLSBmcmVzaC1jb25maXJtZWQgOiAqKjI1MC8yNTAqKiA7Ci0gYHB1YmxpY19zaXRlbWFwX3ByZXNlbmNlYCA6ICoqMjUwLzI1MCoqIDsKLSBub3JtYWxpemVkIDogKioyNTAvMjUwKiogOwotIHRlY2huaWNhbCBkaXNwbGF5IDogKioyNTAvMjUwKiogOwotIFB1YmxpYyBTZWFyY2ggOiAqKjI1MC8yNTAqKiA7Ci0gVGhpbiBJbmRleCBmcmVzaG5lc3MgcHJvamVjdGlvbiA6ICoqMjUwLzI1MCoqIDsKLSByb2xsYmFjayA6IGRpc3BvbmlibGUsICoqbm9uIHJlcXVpcyoqIDsKLSBSZWdpc3RyeS9wb2xpY3kgOiBpbmNoYW5nw6lzLgoKTFNGIGFwcsOocyB3cml0ZSA6ICoqMSA0MTQgdG90YWwgLyAzNDkgZnJlc2gtY29uZmlybWVkIC8gMSAwNjUgc2VlZC1vbmx5IC8gMjUwIHB1YmxpY19zaXRlbWFwX3ByZXNlbmNlKiouCgojIyBTb3VyY2VzIGVuIGF0dGVudGUKCi0gUHJvbW8gSW1tbyA6IGBCTE9DS0VEX0VYVEVSTkFMX1NPVVJDRWAg4oCUIEROUy9zb3VyY2UgZGlyZWN0ZSA7IG5lIHBhcyBjb250b3VybmVyLgotIERhciBBZ2FkaXIgOiBgQkxPQ0tFRF9TT1VSQ0VfRFJJRlRgIOKAlCByb2JvdHMgbmUgZMOpY2xhcmUgcGx1cyBsZSBzaXRlbWFwIGhpc3RvcmlxdWUgOyBuZSBwYXMgcsOpdXRpbGlzZXIgdW5lIHByZXV2ZSBhbmNpZW5uZSBjb21tZSBwcmV1dmUgbGl2ZS4KCiMjIFByb2NoYWluIERBVEEKCkFwcsOocyBtZXJnZS9jbG9zZW91dCBkZSAjNDM1IDogKipEQVRBLTQuN0Mg4oCUIFJlc2lkdWFsIFJlc2Vydm9pciBSZXF1YWxpZmljYXRpb24qKiwgcmVhZC1vbmx5LiBSZXZhbGlkZXIgbGUgcsOpc2lkdWVsIExTRiAoMTAzIGNhbmRpZGF0ZXMgc2V1bGVtZW50IGRhbnMgbGEgcHJldXZlIHByw6ktd3JpdGUsIGRvbmMgY2hpZmZyZSDDoCByZWNhbGN1bGVyKSBldCBsZSBjb21wYXJlciBhdSBwcm9jaGFpbiByw6lzZXJ2b2lyIGFkbWlzc2libGUsIEF5a2FuYSBlbiBwcmVtaWVyIGNhbmRpZGF0LiBBdWN1biBzZWNvbmQgd3JpdGUgYXV0b21hdGlxdWUuCgojIyBBdXRyZXMgbGFuZXMKCi0gVVgvU2VhcmNoIDogY29udmVyZ2VuY2UgQkVOQ0hNQVJLLVNFUlAtMSBldCBsb3RzIFNlYXJjaCBtYWpldXJzIGNlcnRpZmnDqXMgOyBTZWFyY2ggcmVzdGUgY2Fub25pcXVlLgotIFVYL0NhcnRlIDogUDFCLjgg4pyFIDsgcHJvY2hhaW4gbG90IGNhcnRlIGRvY3VtZW50w6kgPSBQMUIuOSBUaWVyIEEgUmVnaXN0cnkgQ2FuZGlkYXRlIFJldmlldyA7IE9mZnJlIHF1YXJ0aWVyIHJlc3RlIE9GRi4KCiMjIEludmFyaWFudHMKCk5vLWJ5cGFzcyA7IFNvdXJjZSBSZWdpc3RyeSBhdXRvcml0YWlyZSA7IHByb3ZlbmFuY2UgcsOpZWxsZSA7IFNlYXJjaCBjYW5vbmlxdWUgOyBhdWN1bmUgZG9ubsOpZS9nw6lvbcOpdHJpZSBpbnZlbnTDqWUgOyB1bmUgcmVzcG9uc2FiaWxpdMOpL2JyYW5jaGUvUFIvbWVyZ2UgcGFyIExPVCA7IHJvbGxiYWNrIGF2YW50IG11dGF0aW9uIDsgZXhhY3QtaGVhZCBDSSB2ZXJ0ZSBhdmFudCB3cml0ZSA7IG1pc2Ugw6Agam91ciBSRUFETUUvUk9BRE1BUC9TRVNTSU9OIGF1IGNsb3Nlb3V0Lgo='
+          def decode(value: str) -> str:
+              return base64.b64decode(value).decode('utf-8')
           def upsert_before(path: str, anchor: str, body: str) -> None:
               p = Path(path)
               text = p.read_text()
@@ -41,115 +45,11 @@ jobs:
                       raise SystemExit(f'anchor not found in {path}: {anchor}')
                   text = text.replace(anchor, block + '\n' + anchor, 1)
               p.write_text(text)
-
-          readme_block = r'''## État DATA courant — 2026-08-09
-
-La lane DATA est passée en **rotation de réservoirs** : une source bloquée n'est plus un chemin critique. Promo Immo reste bloqué par DNS/source directe ; Dar Agadir est en drift de déclaration sitemap ; L'Immobilier Sans Frontières (LSF) est le réservoir actif certifié.
-
-- **DATA-4.7A ✅ PR #433** — merge `0019f33e6a10a58d76a6db4521c681861067c651` : sitemap LSF courant **1 423 URLs**, **1 064** identités URL sûres, **983** `seed_only` présentes dans le sitemap, **353** candidates long-tail `normalized + display eligible + Search`, collisions d'identité ambiguës exclues fail-closed ; 0 write.
-- **DATA-4.7B 🟠 closeout en cours — PR #435** : exact write head `f3f72f6b4e7e7f877df4eb67fa6c31f0140e81b3`, specialized run `31330561506` PASS, rollback artifact `sha256:d791172e8036d0b475cbf2119dca0c497938940f87563923dbcbf68370398672` ; batch borné **250/250** appliqué puis certifié en production.
-- Cohorte 4.7B : **250/250 fresh_confirmed**, **250/250 public_sitemap_presence**, **250/250 normalized**, **250/250 technical display**, **250/250 Public Search**, **250/250 Thin Index freshness projection** ; rollback disponible, non utilisé.
-- LSF après write : **1 414 total / 349 fresh_confirmed / 1 065 seed_only / 250 public_sitemap_presence**.
-- Le tier C long-tail reste autorisé uniquement via les gates existants d'éligibilité secondaire et de ranking ; l'absence de prix/surface n'est jamais compensée par une donnée inventée.
-
-Le prochain LOT DATA ne doit pas lancer automatiquement un second write : il doit **requalifier le résiduel LSF** (103 candidates restantes dans la preuve pré-write, à revalider en direct) et le comparer au prochain réservoir admissible, notamment Aykana, puis choisir le meilleur rendement sûr.'''
-          upsert_before('README.md', '## Doctrine', readme_block)
-
-          roadmap_block = r'''# 0. État DATA prioritaire — rotation de masse 2026-08-09
-
-> Ce bloc prévaut sur toute ancienne mention plus bas indiquant DATA-4.5B / Promo Immo comme « prochain LOT ».
-
-**Objectif actif : augmenter la masse réellement indexable sans attendre une source bloquée, tout en conservant Registry, fraîcheur, dédup, display eligibility et ranking fail-closed.**
-
-État certifié :
-
-- Promo Immo : `BLOCKED_EXTERNAL_SOURCE` — DNS/source directe non disponible ; aucune baisse de contrat autorisée.
-- Dar Agadir : `BLOCKED_SOURCE_DRIFT` — `robots.txt` répond mais ne déclare plus le sitemap historique ; DATA-4.6A fermé sans merge, 0 write.
-- **DATA-4.7A ✅ PR #433** — LSF Sitemap Mass Qualification ; merge `0019f33e6a10a58d76a6db4521c681861067c651` ; **353** candidates live long-tail certifiées, **250** comme premier checkpoint.
-- **DATA-4.7B 🟠 closeout PR #435** — write exécuté sur le head préalablement entièrement vert `f3f72f6b4e7e7f877df4eb67fa6c31f0140e81b3` ; rollback-ready dry-run run `31330561506`, artifact `sha256:d791172e8036d0b475cbf2119dca0c497938940f87563923dbcbf68370398672` ; write production **250/250** ; post-certification **250/250 freshness + sitemap channel + normalized + technical display + Public Search + projection** ; rollback non requis.
-- LSF production après write : **1 414 seeds / 349 fresh_confirmed / 1 065 seed_only / 250 public_sitemap_presence**.
-
-Doctrine long-tail verrouillée : une observation incomplète peut rester `eligible_secondary` et être classée bas ; **prix/surface/A-B ne sont pas des prérequis d'existence dans l'index**. Aucun champ absent n'est fabriqué. Les quality tiers et Ranking V2 restent autoritaires pour l'ordre.
-
-**Prochain LOT DATA : DATA-4.7C — Residual Reservoir Requalification**, read-only. Rejouer la preuve LSF courante après les 250 writes, mesurer le résiduel réellement encore sitemap-live et Search/display-eligible, puis le comparer au prochain `public_sitemap` admissible (Aykana en premier candidat). Un nouveau write doit rester un LOT séparé, borné et rollback-ready.'''
-          upsert_before('docs/ROADMAP.md', '# 1. Cap produit', roadmap_block)
-
-          session = r'''# AkarFinder — Session courante
-
-**Mise à jour : 2026-08-09**
-
-Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
-
-## Main / LOT actif
-
-- Main de départ du LOT : `0019f33e6a10a58d76a6db4521c681861067c651` — merge DATA-4.7A PR #433.
-- LOT actif : **DATA-4.7B — LSF Controlled Expansion Write**.
-- PR : **#435**.
-- Exact write head certifié avant mutation : `f3f72f6b4e7e7f877df4eb67fa6c31f0140e81b3`.
-- Specialized CI : run `31330561506` PASS — contract + TypeScript + static safety + live dry-run.
-- Rollback artifact : `sha256:d791172e8036d0b475cbf2119dca0c497938940f87563923dbcbf68370398672`, **250 apply rows / 250 rollback rows**, 0 write pendant CI.
-
-## DATA-4.7A ✅
-
-LSF qualification live :
-
-- 1 414 seeds ; 99 fresh-confirmed ; 1 315 seed-only au départ ;
-- sitemap courant : 1 423 URLs ;
-- 1 064 identités URL sûres ; 174 groupes collision DB exclus fail-closed ;
-- 983 seed-only encore présentes dans le sitemap ;
-- **353** candidates `seed_only + normalized + display eligible + Public Search` ;
-- tier C long-tail accepté comme `eligible_secondary`, sans exiger prix/surface ni fabriquer de donnée ;
-- 0 mutation.
-
-PR #433 mergée : `0019f33e6a10a58d76a6db4521c681861067c651`.
-
-## DATA-4.7B — write production certifié ✅ (merge PR encore à faire)
-
-Preflight exact avant write :
-
-- 250/250 URLs exactes présentes ;
-- 250/250 encore `seed_only` ;
-- 250/250 sans `public_sitemap_presence` précédent ;
-- 250/250 sans ancien `freshness_evidence` ;
-- digest exact URL set : `79e3982f128c4e639197a64a29766e9c`.
-
-Résultat production :
-
-- write atomique : **250/250** ;
-- fresh-confirmed : **250/250** ;
-- `public_sitemap_presence` : **250/250** ;
-- normalized : **250/250** ;
-- technical display : **250/250** ;
-- Public Search : **250/250** ;
-- Thin Index freshness projection : **250/250** ;
-- rollback : disponible, **non requis** ;
-- Registry/policy : inchangés.
-
-LSF après write : **1 414 total / 349 fresh-confirmed / 1 065 seed-only / 250 public_sitemap_presence**.
-
-## Sources en attente
-
-- Promo Immo : `BLOCKED_EXTERNAL_SOURCE` — DNS/source directe ; ne pas contourner.
-- Dar Agadir : `BLOCKED_SOURCE_DRIFT` — robots ne déclare plus le sitemap historique ; ne pas réutiliser une preuve ancienne comme preuve live.
-
-## Prochain DATA
-
-Après merge/closeout de #435 : **DATA-4.7C — Residual Reservoir Requalification**, read-only. Revalider le résiduel LSF (103 candidates seulement dans la preuve pré-write, donc chiffre à recalculer) et le comparer au prochain réservoir admissible, Aykana en premier candidat. Aucun second write automatique.
-
-## Autres lanes
-
-- UX/Search : convergence BENCHMARK-SERP-1 et lots Search majeurs certifiés ; Search reste canonique.
-- UX/Carte : P1B.8 ✅ ; prochain lot carte documenté = P1B.9 Tier A Registry Candidate Review ; Offre quartier reste OFF.
-
-## Invariants
-
-No-bypass ; Source Registry autoritaire ; provenance réelle ; Search canonique ; aucune donnée/géométrie inventée ; une responsabilité/branche/PR/merge par LOT ; rollback avant mutation ; exact-head CI verte avant write ; mise à jour README/ROADMAP/SESSION au closeout.
-'''
-          Path('docs/SESSION.md').write_text(session)
-
+          upsert_before('README.md', '## Doctrine', decode(README_B64))
+          upsert_before('docs/ROADMAP.md', '# 1. Cap produit', decode(ROADMAP_B64))
+          Path('docs/SESSION.md').write_text(decode(SESSION_B64))
           Path('.github/workflows/data-4-7b-doc-closeout.yml').unlink()
           PY
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add README.md docs/ROADMAP.md docs/SESSION.md .github/workflows/data-4-7b-doc-closeout.yml
