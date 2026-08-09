@@ -1,0 +1,103 @@
+name: DATA-4.8A Net-New Sitemap Qualification
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/data-4-8a-net-new-sitemap-qualification.ts"
+      - "scripts/data4/__tests__/data-4-8a-net-new-sitemap-qualification.test.ts"
+      - ".github/workflows/data-4-8a-net-new-sitemap-qualification.yml"
+      - "data/openserp/source-domain-registry.json"
+  push:
+    branches:
+      - data/data-4-8a-net-new-sitemap-qualification
+    paths:
+      - "scripts/audits/data-4-8a-net-new-sitemap-qualification.ts"
+      - "scripts/data4/__tests__/data-4-8a-net-new-sitemap-qualification.test.ts"
+      - ".github/workflows/data-4-8a-net-new-sitemap-qualification.yml"
+      - "data/openserp/source-domain-registry.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: DATA-4.8A focused contract tests
+        run: npx tsx --test scripts/data4/__tests__/data-4-8a-net-new-sitemap-qualification.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Static read-only and provenance boundary
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const s = fs.readFileSync('scripts/audits/data-4-8a-net-new-sitemap-qualification.ts','utf8');
+          for (const required of [
+            'READ_ONLY_STRUCTURAL_DETAIL_QUALIFICATION',
+            'data/openserp/source-domain-registry.json',
+            'permissionAuthority: false',
+            'authorizationAuthority: false',
+            'DETAIL_PATTERN_MATCH',
+            'REJECT_BLOCKED_PATTERN',
+            'REJECT_NAMESPACE_ROOT',
+            'REJECT_NO_DETAIL_PATTERN',
+            'function isPlainNamespaceRoot',
+            'candidate-manifest.json',
+            'reject-manifest.json',
+            'databaseWrites: 0',
+            'registryMutations: 0',
+            'policyChanges: 0',
+            'sourceSiteDetailRequests: 0',
+            'productionActivation: false',
+          ]) if (!s.includes(required)) throw new Error(`missing ${required}`);
+          for (const forbidden of ['method: "PATCH"','method: "POST"','method: "DELETE"']) {
+            if (s.includes(forbidden)) throw new Error(`write method forbidden: ${forbidden}`);
+          }
+          NODE
+
+  live-qualification:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_8A_OUT_DIR: .tmp/data-4-8a/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Qualify current seed-absent sitemap identities by reviewed structure
+        run: npx tsx scripts/audits/data-4-8a-net-new-sitemap-qualification.ts
+      - name: Enforce qualification proof
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-4-8a/results/proof.json','utf8'));
+          const c = JSON.parse(fs.readFileSync('.tmp/data-4-8a/results/candidate-manifest.json','utf8'));
+          const r = JSON.parse(fs.readFileSync('.tmp/data-4-8a/results/reject-manifest.json','utf8'));
+          if (p.schemaVersion !== 'data-4-8a-net-new-sitemap-qualification-v1' || p.mode !== 'READ_ONLY_STRUCTURAL_DETAIL_QUALIFICATION') throw new Error(JSON.stringify(p));
+          if (p.structureRegistry.permissionAuthority !== false) throw new Error(JSON.stringify(p));
+          if (!Array.isArray(p.sources) || p.sources.length !== 4 || p.summary.qualifiedSourceCount < 1) throw new Error(JSON.stringify(p));
+          if (p.summary.structuralDetailCandidateRows !== c.length || p.summary.rejectedRows !== r.length || p.summary.netNewIdentityRows !== c.length + r.length) throw new Error(JSON.stringify(p));
+          if (c.some(x => x.classification !== 'DETAIL_PATTERN_MATCH')) throw new Error('candidate manifest contains non-detail-pattern row');
+          if (r.some(x => x.classification === 'DETAIL_PATTERN_MATCH')) throw new Error('reject manifest contains candidate row');
+          if (p.databaseWrites !== 0 || p.registryMutations !== 0 || p.policyChanges !== 0 || p.sourceSiteDetailRequests !== 0 || p.productionActivation !== false) throw new Error(JSON.stringify(p));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-8a-net-new-sitemap-qualification
+          path: .tmp/data-4-8a/results/
+          if-no-files-found: error
+          retention-days: 14
