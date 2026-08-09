@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'supabase/migrations/20260809023000_ranking_quality_1_composed_display_policy.sql'
+      - 'supabase/migrations/20260809023100_ranking_quality_1_trigger_dependencies.sql'
       - 'scripts/audits/ranking-quality-1-contract.mjs'
       - 'scripts/odm-ranking-v2-contract.mjs'
       - '.github/workflows/ranking-quality-1.yml'
