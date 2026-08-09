@@ -112,6 +112,7 @@ type RegistryRow = {
   evidence_urls: string[] | null;
   max_revalidation_interval_days: number | null;
   review_status: string | null;
+  next_review_at: string | null;
 };
 
 type SeedRow = {
@@ -158,7 +159,8 @@ type PlanRow = {
   };
 };
 
-function registryAllows(policy: RegistryRow): boolean {
+function registryAllows(policy: RegistryRow, now: Date): boolean {
+  const nextReview = policy.next_review_at ? new Date(policy.next_review_at) : null;
   return policy.source_domain === DOMAIN
     && policy.acquisition_mode === "public_sitemap_canonical_link"
     && policy.discovery_policy === "public_sitemap_only"
@@ -168,12 +170,22 @@ function registryAllows(policy: RegistryRow): boolean {
     && policy.robots_status === "sitemap_declared"
     && policy.max_revalidation_interval_days === 14
     && ["current", "due_soon"].includes(policy.review_status ?? "")
+    && nextReview instanceof Date
+    && Number.isFinite(nextReview.getTime())
+    && nextReview.getTime() > now.getTime()
     && (policy.evidence_urls ?? []).includes(`https://${DOMAIN}/robots.txt`);
 }
 
 function numberOrZero(value: number | string | null): number {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
+}
+
+function metadataRunId(metadata: Record<string, unknown> | null): string | null {
+  const evidence = metadata?.freshness_evidence;
+  if (!evidence || typeof evidence !== "object") return null;
+  const runId = (evidence as Record<string, unknown>).run_id;
+  return typeof runId === "string" ? runId : null;
 }
 
 async function patchSeed(canonicalUrl: string, payload: Record<string, unknown>, expectedStatus: string): Promise<void> {
@@ -240,10 +252,11 @@ async function certify(urls: Set<string>, requireFresh: boolean): Promise<Record
 }
 
 async function main(): Promise<void> {
-  const observedAt = new Date().toISOString();
+  const now = new Date();
+  const observedAt = now.toISOString();
   const [registryRows, seeds, normalized, displayRows, publicRows] = await Promise.all([
     restAll<RegistryRow>("source_policy_registry", {
-      select: "source_domain,acquisition_mode,discovery_policy,display_policy,display_gate,allowed_discovery_channels,robots_status,evidence_urls,max_revalidation_interval_days,review_status",
+      select: "source_domain,acquisition_mode,discovery_policy,display_policy,display_gate,allowed_discovery_channels,robots_status,evidence_urls,max_revalidation_interval_days,review_status,next_review_at",
       source_domain: `eq.${DOMAIN}`,
     }),
     restAll<SeedRow>("source_offer_seeds", { select: "canonical_url,freshness_status,fresh_last_seen_at,fresh_channels,metadata,updated_at", source_domain: `eq.${DOMAIN}` }),
@@ -251,7 +264,12 @@ async function main(): Promise<void> {
     restAll<DisplayRow>("thin_index_display_eligible_v1", { select: "canonical_url,quality_tier,quality_score,display_eligibility", source_domain: `eq.${DOMAIN}` }),
     restAll<PublicRow>("public_search_representations_v1", { select: "canonical_url", source_domain: `eq.${DOMAIN}` }),
   ]);
-  if (registryRows.length !== 1 || !registryAllows(registryRows[0]!)) throw new Error(`DATA-4.7B Registry gate failed: ${JSON.stringify(registryRows)}`);
+  if (registryRows.length !== 1 || !registryAllows(registryRows[0]!, now)) throw new Error(`DATA-4.7B Registry gate failed: ${JSON.stringify(registryRows)}`);
+
+  const existingRunRows = seeds.filter((row) => metadataRunId(row.metadata) === RUN_ID).length;
+  if (existingRunRows > 0) {
+    throw new Error(`DATA-4.7B one-shot run already applied: ${existingRunRows}/${BATCH_SIZE}`);
+  }
 
   const robots = await fetchSourceText(`https://${DOMAIN}/robots.txt`);
   const roots = extractRobotsSitemaps(robots);

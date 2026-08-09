@@ -58,3 +58,13 @@ test("DATA-4.7B source access is sitemap-only and detail-free", () => {
     'sitemap-only; no-detail-fetch',
   ]) assert.ok(script.includes(token), `missing source boundary ${token}`);
 });
+
+test("DATA-4.7B enforces one-shot run identity and current review date", () => {
+  for (const token of [
+    'next_review_at: string | null',
+    'nextReview.getTime() > now.getTime()',
+    'function metadataRunId',
+    'metadataRunId(row.metadata) === RUN_ID',
+    'one-shot run already applied',
+  ]) assert.ok(script.includes(token), `missing one-shot guard ${token}`);
+});
