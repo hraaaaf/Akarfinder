@@ -1,7 +1,7 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-09**  
-**Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; prochain lot = UNIFIED-LISTING-CARD-1**  
+**Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ #407 ; prochain lot = CONTEXTUAL-VISUAL-ASSETS-1**  
 **Lane UX/Carte : P1B.4 ✅ Geo Coverage Recovery pilot certifié en production**  
 **Lane DATA : DATA-4.4C ✅ ; DATA-4.5A Expansion-to-500 Qualification ✅ #410 ; P0.1→P0.5 ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = DATA-4.5B Promo Immo Controlled Expansion Write, indépendant de la lane d'autorisation P0**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle 0,45 %**
@@ -10,7 +10,7 @@ Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’uniq
 
 # Main canonique
 
-Main canonique après DATA-4.5A : `a4710d6f5a88218db7d0751adb775a145a8b04d2` — merge PR #410 ; post-merge DATA-4.5A gate PASS.
+Main canonique après UNIFIED-LISTING-CARD-1 : `7ad1b7af2a0e7dc268b0b3ea032e083f7ccbb193` — merge PR #407. Le LOT n'introduit aucune migration ni write DATA ; le gate spécialisé est PR-only, donc la preuve de release est l'exact-head PR certifié + la présence du merge sur `main`.
 
 P0.4 main merge : `81f4809424757838c099b6acfb8f8d4b719deab7` — PR #402 ; post-merge gate PASS.
 
@@ -26,6 +26,7 @@ Acquis récents :
 - SEARCH-MOBILE-CARD-GRID-1 ✅ #394 — grille mobile 2 colonnes, prix non tronqué, desktop préservé ;
 - PRICE-COVERAGE-RECOVERY-1 ✅ #395 — 8 shadow price leaks historiques → 0, recovery V1 audit-only, publication/ranking inchangés ;
 - RANKING-QUALITY-1 ✅ #403 — 14 007 rows stale resynchronisées, policy drift production = 0, Ranking V2 inchangé ;
+- UNIFIED-LISTING-CARD-1 ✅ #407 — card Gateway alignée sur la grammaire canonique, preuve visuelle 4 viewports, 0 overflow/prix tronqué, Benchmark PASS 9,2/10 ;
 - P0.1 ✅ #392 — Source Registry opérationnel et fail-closed sur Common Crawl ;
 - freshness reconciler hardening ✅ #396 — retry transitoire borné, diagnostics PostgREST explicites, concurrence PATCH 25→5.
 - P0.2 ✅ #398 — coverage audit read-only : 27 policies Common Crawl opérationnelles, 9 harvest-ready, 18 pattern-missing, ratio 33,33 %, 0 seed sur la cohorte manquante.
@@ -166,9 +167,8 @@ Important : 4.5A **ne certifie pas la présence sitemap live individuelle des 45
 - SEARCH-MOBILE-CARD-GRID-1 ✅ #394 — mobile 9,6/10 ;
 - PRICE-COVERAGE-RECOVERY-1 ✅ #395 — production certifiée, 0 shadow public leak ;
 - RANKING-QUALITY-1 ✅ #403 — production certifiée, `policy_drift_rows=0`, 15 438 LISTING publics ;
-- prochain lot : **UNIFIED-LISTING-CARD-1** uniquement.
-
-Puis : `CONTEXTUAL-VISUAL-ASSETS-1`.
+- UNIFIED-LISTING-CARD-1 ✅ #407 — head `6ddde621f03ccca1f25b8dc5dd34fdded090044b`, **23/23 workflows PR verts**, Chromium 4 viewports, Benchmark **9,2/10**, merge `7ad1b7af2a0e7dc268b0b3ea032e083f7ccbb193` ;
+- prochain lot : **CONTEXTUAL-VISUAL-ASSETS-1** uniquement.
 
 # UX / Carte — état certifié
 

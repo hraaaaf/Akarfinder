@@ -146,7 +146,13 @@ Récupération de prix remise sous gouvernance fail-closed : l’ancien V1 shado
 
 Politique de qualité persistée recomposée et resynchronisée sans modifier Ranking V2 ni la priorité commerciale. Préflight : **14 007 / 56 810** rows stale ; après migration production : `policy_drift_rows=0`, 0 vertical non immobilier/inconnu public, 0 CATEGORY public, 0 AMBIGUOUS primary, 0 LISTING gardant l’ancienne policy ambiguous. Les **587** fallbacks provider-detail explicites restent conservés. Inventaire LISTING public : **15 438** (10 061 primary / 5 377 secondary). Merge `c5949063fa1c0e3448e917473239f821a17b7d59`.
 
-Prochain lot UX/Search séparé : **UNIFIED-LISTING-CARD-1**.
+### UNIFIED-LISTING-CARD-1 ✅ PR #407
+
+La card Gateway/externe a été alignée sur la grammaire canonique `IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE → ACTION`, sans modifier ranking, priorité commerciale, éligibilité, acquisition, Source Registry, policy thumbnails ou schéma. Les états inconnus restent explicites et truth-safe : `Prix non communiqué`, `Localisation non précisée`, `Informations à compléter`.
+
+Certification : head `6ddde621f03ccca1f25b8dc5dd34fdded090044b`, **23/23 workflows PR verts**, gate spécialisé contrat + Search Truth + TypeScript + build PASS, Chromium déterministe **360×800 / 390×844 / 768×900 / 1280×900**, 0 overflow, 0 prix tronqué. Benchmark UX/Search Reviewer **PASS 9,2/10**, Reviewer PASS, Release Certifier GO. Artefact visuel `sha256:784182dd2c8d4f5eca46e907eeedd38493e0f63d586bd99151010fae6b3e542b`. Merge `7ad1b7af2a0e7dc268b0b3ea032e083f7ccbb193`.
+
+Prochain lot UX/Search séparé : **CONTEXTUAL-VISUAL-ASSETS-1**.
 
 ## État UX / Carte
 
