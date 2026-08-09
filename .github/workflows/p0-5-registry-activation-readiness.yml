@@ -1,0 +1,108 @@
+name: P0.5 Registry Activation Readiness Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/acquisition-scale-v1/registry-activation-readiness.ts"
+      - "scripts/census/p0-5-registry-activation-readiness.ts"
+      - "scripts/census/__tests__/p0-5-registry-activation-readiness.test.ts"
+      - ".github/workflows/p0-5-registry-activation-readiness.yml"
+  push:
+    branches: [main]
+    paths:
+      - "lib/acquisition-scale-v1/registry-activation-readiness.ts"
+      - "scripts/census/p0-5-registry-activation-readiness.ts"
+      - "scripts/census/__tests__/p0-5-registry-activation-readiness.test.ts"
+      - ".github/workflows/p0-5-registry-activation-readiness.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  readiness-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Focused P0.5 contracts
+        run: npx tsx --test scripts/census/__tests__/p0-5-registry-activation-readiness.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Static read-only contract
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'scripts/census/p0-5-registry-activation-readiness.ts';
+          const source = fs.readFileSync(path, 'utf8');
+          for (const token of ['.insert(', '.upsert(', '.update(', '.delete(', 'index.commoncrawl.org', 'data.commoncrawl.org/crawl-data']) {
+            if (source.includes(token)) throw new Error(`P0.5 forbidden operation: ${token}`);
+          }
+          for (const required of [
+            'source_site_request: false',
+            'commoncrawl_request: false',
+            'warc_fetch: false',
+            'db_mutation: false',
+            'registry_mutation: false',
+            'harvest: false',
+            'pattern_activation: false',
+            'canary_write: false',
+          ]) {
+            if (!source.includes(required)) throw new Error(`P0.5 missing safety marker: ${required}`);
+          }
+          NODE
+
+      - name: Live production readiness audit
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/census/p0-5-registry-activation-readiness.ts
+
+      - name: Validate current P0.5 proof
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'data/audits/runtime/p0-5-registry-activation-readiness.json';
+          const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+          if (report.schema_version !== 'p0-5-registry-activation-readiness-v1') throw new Error('unexpected schema');
+          if (report.target_domains !== 2 || !Array.isArray(report.rows) || report.rows.length !== 2) throw new Error('P0.5 target cohort drifted');
+          if (report.ready_for_canary_review !== 0 || report.blocked_by_policy !== 2) throw new Error('P0.5 readiness truth changed; review policy before proceeding');
+          if (report.source_site_request !== false || report.commoncrawl_request !== false || report.warc_fetch !== false || report.db_mutation !== false || report.registry_mutation !== false || report.harvest !== false || report.pattern_activation !== false || report.canary_write !== false) throw new Error('P0.5 safety contract failed');
+          for (const row of report.rows) {
+            if (row.p0_4_shadow_decision !== 'SHADOW_ACCEPTABLE') throw new Error(`unexpected P0.4 decision for ${row.source_domain}`);
+            if (row.decision !== 'BLOCKED_BY_POLICY') throw new Error(`unsafe readiness decision for ${row.source_domain}`);
+            if (!row.reasons.includes('authorization_not_positive')) throw new Error(`missing authorization blocker for ${row.source_domain}`);
+            if (!row.reasons.includes('partnership_required')) throw new Error(`missing partnership blocker for ${row.source_domain}`);
+            if (!row.reasons.includes('legal_review_required')) throw new Error(`missing legal-review blocker for ${row.source_domain}`);
+          }
+          console.log(JSON.stringify({
+            target_domains: report.target_domains,
+            ready_for_canary_review: report.ready_for_canary_review,
+            blocked_by_policy: report.blocked_by_policy,
+            rows: report.rows.map((row) => ({
+              source_domain: row.source_domain,
+              decision: row.decision,
+              reasons: row.reasons,
+              seed_rows: row.seed_rows,
+              discovery_candidate_rows: row.discovery_candidate_rows,
+            })),
+          }, null, 2));
+          NODE
+
+      - name: Upload P0.5 readiness proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-5-registry-activation-readiness
+          path: data/audits/runtime/p0-5-registry-activation-readiness.json
+          if-no-files-found: error
+          retention-days: 14
