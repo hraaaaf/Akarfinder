@@ -139,20 +139,18 @@ try {
       if (metrics.visualState[0]?.contextualCity !== "Rabat") throw new Error(`${viewport.name}: Rabat contextual visual missing`);
       if (metrics.visualState[1]?.contextualCity !== "Marrakech") throw new Error(`${viewport.name}: Marrakech contextual visual missing`);
 
-      const mobile = viewport.width < 640;
-      const expectedRabatLabel = mobile ? "Illustration" : "Visuel illustratif · Rabat";
-      const expectedMarrakechLabel = mobile ? "Illustration" : "Visuel illustratif · Marrakech";
-      const expectedGenericLabel = mobile ? "Illustration" : "Visuel illustratif";
-      if (metrics.visualState[0]?.illustrationLabel !== expectedRabatLabel) throw new Error(`${viewport.name}: Rabat illustration disclosure missing`);
-      if (metrics.visualState[1]?.illustrationLabel !== expectedMarrakechLabel) throw new Error(`${viewport.name}: Marrakech illustration disclosure missing`);
+      const expectedIllustrationLabel = "Illustration";
+      if (metrics.visualState[0]?.illustrationLabel !== expectedIllustrationLabel) throw new Error(`${viewport.name}: Rabat illustration disclosure missing`);
+      if (metrics.visualState[1]?.illustrationLabel !== expectedIllustrationLabel) throw new Error(`${viewport.name}: Marrakech illustration disclosure missing`);
       if (metrics.visualState[2]?.contextualCity !== null || metrics.visualState[2]?.neutral) throw new Error(`${viewport.name}: unknown city should fall back to property artwork`);
-      if (metrics.visualState[2]?.illustrationLabel !== expectedGenericLabel) throw new Error(`${viewport.name}: type-only disclosure drift`);
+      if (metrics.visualState[2]?.illustrationLabel !== expectedIllustrationLabel) throw new Error(`${viewport.name}: type-only disclosure drift`);
       if (!metrics.visualState[3]?.neutral) throw new Error(`${viewport.name}: no-context row must use neutral fallback`);
-      if (metrics.visualState[3]?.illustrationLabel !== expectedGenericLabel) throw new Error(`${viewport.name}: neutral disclosure drift`);
+      if (metrics.visualState[3]?.illustrationLabel !== expectedIllustrationLabel) throw new Error(`${viewport.name}: neutral disclosure drift`);
       if (!metrics.visualState[3]?.fullText.includes("Localisation non précisée")) throw new Error(`${viewport.name}: no-context location truth missing`);
       if (metrics.clippedLabels !== 0) throw new Error(`${viewport.name}: ${metrics.clippedLabels} illustration labels clipped`);
       if (metrics.clippedPrices !== 0) throw new Error(`${viewport.name}: ${metrics.clippedPrices} prices clipped`);
 
+      const mobile = viewport.width < 640;
       if (mobile && (!metrics.secondSameRow || !metrics.thirdNextRow)) {
         throw new Error(`${viewport.name}: two-column card rhythm regressed`);
       }
