@@ -46,7 +46,7 @@ function replaceRegex(path, source, regex, after, label) {
                 rel="noopener noreferrer"
                 data-secondary-source-link
                 className="inline-flex min-w-0 items-center gap-1 font-semibold text-muted-foreground transition hover:text-bronze-700 dark:hover:text-bronze-300"
-                aria-label={`Voir la source originale ${listing.title}`}
+                aria-label="Voir la source originale"
               >
                 <span data-public-attribution className="truncate">{publicAttribution.combinedLabel}</span>
                 <ExternalLink size={11} aria-hidden="true" className="shrink-0" />
@@ -67,7 +67,7 @@ function replaceRegex(path, source, regex, after, label) {
     /          <div className="mt-4 hidden flex-col gap-2 sm:flex sm:flex-row">[\s\S]*?          <\/div>\n\n          \{observedExternal && showOriginal \? \(/,
 `          {!observedExternal ? (
             <Link
-              href={`/listings/${listing.id}`}
+              href={resultHref}
               onClick={() =>
                 track({
                   event_name: "search_result_click",
