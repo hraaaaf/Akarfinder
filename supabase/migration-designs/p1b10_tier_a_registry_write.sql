@@ -26,22 +26,33 @@ BEGIN
     RAISE EXCEPTION 'P1B.10 fail-closed: city_agadir parent is missing or not validated';
   END IF;
 
+  -- Collision scope is parent-aware. A legitimate namesake elsewhere in Morocco
+  -- (for example the city of Dakhla) must not block an Agadir neighborhood.
   SELECT count(*) INTO entity_collision_count
   FROM public.geo_entities
   WHERE id IN ('district_agadir_dakhla', 'district_agadir_hay_mohammadi')
-     OR (entity_type = 'neighborhood' AND parent_id = 'city_agadir' AND slug IN ('dakhla', 'hay-mohammadi'))
-     OR normalized_name IN ('dakhla', 'hay mohammadi');
+     OR (
+       entity_type = 'neighborhood'
+       AND parent_id = 'city_agadir'
+       AND (
+         slug IN ('dakhla', 'hay-mohammadi')
+         OR normalized_name IN ('dakhla', 'hay mohammadi')
+       )
+     );
 
   IF entity_collision_count <> 0 THEN
     RAISE EXCEPTION 'P1B.10 fail-closed: Registry entity collision detected (%)', entity_collision_count;
   END IF;
 
   SELECT count(*) INTO alias_collision_count
-  FROM public.geo_aliases
-  WHERE normalized_alias IN ('dakhla', 'hay mohammadi');
+  FROM public.geo_aliases AS ga
+  JOIN public.geo_entities AS ge ON ge.id = ga.geo_entity_id
+  WHERE ge.entity_type = 'neighborhood'
+    AND ge.parent_id = 'city_agadir'
+    AND ga.normalized_alias IN ('dakhla', 'hay mohammadi');
 
   IF alias_collision_count <> 0 THEN
-    RAISE EXCEPTION 'P1B.10 fail-closed: Registry exact-alias collision detected (%)', alias_collision_count;
+    RAISE EXCEPTION 'P1B.10 fail-closed: parent-scoped Registry exact-alias collision detected (%)', alias_collision_count;
   END IF;
 END
 $p1b10$;
