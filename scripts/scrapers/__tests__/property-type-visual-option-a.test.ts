@@ -9,6 +9,7 @@ const intentHub = readFileSync("components/intent/IntentHubV2.tsx", "utf8");
 const quickFilters = readFileSync("components/search/QuickFilters.tsx", "utf8");
 const searchCard = readFileSync("components/search/SearchListingCardDark.tsx", "utf8");
 const externalCard = readFileSync("components/search/ExternalIndexedResultCard.tsx", "utf8");
+const contextualArtwork = readFileSync("components/search/ContextualListingArtwork.tsx", "utf8");
 const sellerPage = readFileSync("components/vendre/VendrePageShell.tsx", "utf8");
 const sellerForm = readFileSync("components/vendre/SellerPropertyDraftForm.tsx", "utf8");
 
@@ -55,10 +56,13 @@ test("listing fallbacks use Option A without replacing authorized real images", 
   assert.match(searchCard, /Visuel illustratif/);
 });
 
-test("external fallbacks only render from a normalized recognized property type", () => {
+test("external fallbacks only pass normalized recognized property types into Option A", () => {
   assert.match(externalCard, /isListingPropertyType\(result\.normalized_property_type\)/);
   assert.match(externalCard, /safeFallbackPropertyType/);
-  assert.match(externalCard, /PropertyTypeArtwork kind=\{safeFallbackPropertyType\}/);
+  assert.match(externalCard, /propertyType=\{safeFallbackPropertyType\}/);
+  assert.match(contextualArtwork, /if \(propertyType\)/);
+  assert.match(contextualArtwork, /<PropertyTypeArtwork/);
+  assert.match(contextualArtwork, /kind=\{propertyType\}/);
 });
 
 test("seller journey reuses the same approved visual taxonomy", () => {

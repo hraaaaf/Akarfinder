@@ -5,7 +5,10 @@ import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import { AkarInfoPassportCard } from "@/components/akarinfo/AkarInfoPassportCard";
 import { SourceBadge } from "@/components/badges/SourceBadge";
-import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
+import {
+  ContextualListingArtwork,
+  getContextualCityVisual,
+} from "@/components/search/ContextualListingArtwork";
 import { buildAkarInfoPassportForGatewayResult } from "@/lib/akarinfo/akarinfo-passport";
 import { isListingPropertyType } from "@/lib/property-types/presentation";
 import type { PublicResultSimilaritySummary } from "@/lib/public-result-similarity/types";
@@ -49,6 +52,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
   const safeFallbackPropertyType = isListingPropertyType(result.normalized_property_type)
     ? result.normalized_property_type
     : null;
+  const contextualCityVisual = getContextualCityVisual(result.normalized_city);
   const [thumbError, setThumbError] = useState(false);
   const showFallback = !showThumbnail || thumbError;
   const facts = [
@@ -81,14 +85,12 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
             onError={() => setThumbError(true)}
             className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.025]"
           />
-        ) : showFallback && safeFallbackPropertyType ? (
-          <PropertyTypeArtwork kind={safeFallbackPropertyType} className="h-full w-full transition duration-500 group-hover:scale-[1.025]" />
         ) : (
-          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-slate-100 to-slate-200 px-6 text-center dark:from-deepblue dark:to-slate-900">
-            <span className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground dark:text-white/55">
-              Annonce indexée
-            </span>
-          </div>
+          <ContextualListingArtwork
+            city={result.normalized_city}
+            propertyType={safeFallbackPropertyType}
+            className="transition duration-500 group-hover:scale-[1.025]"
+          />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#03101f]/58 via-transparent to-transparent sm:from-[#03101f]/78" />
         <div className="absolute left-2 top-2 flex flex-wrap gap-1.5 sm:left-3 sm:top-3 sm:gap-2">
@@ -103,8 +105,14 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
           {safeFallbackPropertyType || "Bien immobilier"}
         </span>
         {showFallback ? (
-          <span className="absolute bottom-2 right-2 rounded-full bg-black/45 px-1.5 py-0.5 text-[8px] font-medium text-white/80 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]">
-            Visuel illustratif
+          <span
+            data-contextual-illustration-label
+            className="absolute bottom-2 right-2 rounded-full bg-black/52 px-1.5 py-0.5 text-[8px] font-medium text-white/90 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]"
+          >
+            <span className="sm:hidden">Illustration</span>
+            <span className="hidden sm:inline">
+              {contextualCityVisual ? `Visuel illustratif · ${contextualCityVisual.label}` : "Visuel illustratif"}
+            </span>
           </span>
         ) : null}
       </div>
