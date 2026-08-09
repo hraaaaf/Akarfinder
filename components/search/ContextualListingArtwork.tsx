@@ -8,7 +8,7 @@ import { resolveContextualIllustration } from "@/lib/contextual-illustrations/re
 export { CONTEXTUAL_CITY_VISUALS, getContextualCityVisual };
 
 type ContextualListingArtworkProps = {
-  stableListingId: string;
+  stableRepresentationKey: string;
   city?: string | null;
   normalizedDistrict?: string | null;
   propertyType?: string | null;
@@ -16,14 +16,14 @@ type ContextualListingArtworkProps = {
 };
 
 export function ContextualListingArtwork({
-  stableListingId,
+  stableRepresentationKey,
   city,
   normalizedDistrict,
   propertyType,
   className = "",
 }: ContextualListingArtworkProps) {
   const contextualVisual = resolveContextualIllustration({
-    stableListingId,
+    stableRepresentationKey,
     normalizedCity: city,
     normalizedDistrict,
     normalizedPropertyType: propertyType,
