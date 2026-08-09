@@ -4,12 +4,16 @@ on:
   pull_request:
     paths:
       - "scripts/audits/data-4-6a-daragadir-mass-expansion-qualification.ts"
+      - "scripts/data4/__tests__/data-4-6a-daragadir-mass-expansion-qualification.test.ts"
       - ".github/workflows/data-4-6a-daragadir-mass-expansion-qualification.yml"
+      - "docs/DATA_4_6A_DARAGADIR_MASS_EXPANSION_QUALIFICATION.md"
   push:
     branches: [main]
     paths:
       - "scripts/audits/data-4-6a-daragadir-mass-expansion-qualification.ts"
+      - "scripts/data4/__tests__/data-4-6a-daragadir-mass-expansion-qualification.test.ts"
       - ".github/workflows/data-4-6a-daragadir-mass-expansion-qualification.yml"
+      - "docs/DATA_4_6A_DARAGADIR_MASS_EXPANSION_QUALIFICATION.md"
   workflow_dispatch:
 
 permissions:
@@ -26,6 +30,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: DATA-4.6A focused contract test
+        run: npx tsx --test scripts/data4/__tests__/data-4-6a-daragadir-mass-expansion-qualification.test.ts
       - name: Dar Agadir sitemap regression tests
         run: npx tsx --test scripts/data4/__tests__/daragadir-sitemap-revalidation.test.ts scripts/data4/__tests__/daragadir-controlled-expansion.test.ts
       - name: TypeScript
