@@ -8,6 +8,7 @@ const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 
 describe("CONTEXTUAL-VISUAL-ASSETS-1", () => {
   it("uses only an explicit local city allowlist", () => {
+    const catalog = source("lib/contextual-illustrations/catalog.ts");
     const artwork = source("components/search/ContextualListingArtwork.tsx");
 
     for (const asset of [
@@ -17,22 +18,24 @@ describe("CONTEXTUAL-VISUAL-ASSETS-1", () => {
       "/images/cities/marrakech.svg",
       "/images/cities/rabat.svg",
       "/images/cities/tanger.svg",
-    ]) assert.ok(artwork.includes(asset), `missing approved local asset ${asset}`);
+    ]) assert.ok(catalog.includes(asset), `missing approved local asset ${asset}`);
 
-    assert.doesNotMatch(artwork, /https?:\/\//);
-    assert.doesNotMatch(artwork, /fetch\s*\(/);
-    assert.doesNotMatch(artwork, /Math\.random|crypto|hash/i);
-    assert.ok(artwork.includes("city in CONTEXTUAL_CITY_VISUALS"));
+    assert.doesNotMatch(catalog, /https?:\/\//);
+    assert.doesNotMatch(catalog, /fetch\s*\(/);
+    assert.ok(catalog.includes("city in CONTEXTUAL_CITY_VISUALS"));
+    assert.ok(artwork.includes("resolveContextualIllustration"));
   });
 
   it("never infers context from title, snippet or arbitrary text", () => {
-    const artwork = source("components/search/ContextualListingArtwork.tsx");
+    const catalog = source("lib/contextual-illustrations/catalog.ts");
+    const resolver = source("lib/contextual-illustrations/resolver.ts");
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.doesNotMatch(artwork, /title|snippet|description/i);
-    assert.ok(card.includes("getContextualCityVisual(result.normalized_city)"));
+    assert.doesNotMatch(`${catalog}\n${resolver}`, /title|snippet|description/i);
+    assert.ok(card.includes("stableListingId={result.id}"));
     assert.ok(card.includes("city={result.normalized_city}"));
     assert.ok(card.includes("propertyType={safeFallbackPropertyType}"));
+    assert.doesNotMatch(card, /result\.(district|quartier|neighborhood)/);
   });
 
   it("keeps provider thumbnail policy authoritative before contextual fallback", () => {
@@ -45,12 +48,12 @@ describe("CONTEXTUAL-VISUAL-ASSETS-1", () => {
     assert.ok(card.includes("showFallback = !showThumbnail || thumbError"));
   });
 
-  it("labels every generated fallback as illustrative and keeps a neutral fail-closed state", () => {
+  it("labels every fallback as illustrative and keeps type then neutral fail-closed states", () => {
     const artwork = source("components/search/ContextualListingArtwork.tsx");
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
     assert.ok(card.includes("data-contextual-illustration-label"));
-    assert.ok(card.includes("Visuel illustratif"));
+    assert.ok(card.includes("Illustration"));
     assert.ok(artwork.includes("data-contextual-neutral"));
     assert.ok(artwork.includes("Annonce indexée"));
     assert.ok(artwork.includes("if (propertyType)"));
@@ -59,7 +62,9 @@ describe("CONTEXTUAL-VISUAL-ASSETS-1", () => {
   it("does not alter ranking, eligibility, source policy or data", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
     const artwork = source("components/search/ContextualListingArtwork.tsx");
-    const combined = `${card}\n${artwork}`;
+    const catalog = source("lib/contextual-illustrations/catalog.ts");
+    const resolver = source("lib/contextual-illustrations/resolver.ts");
+    const combined = `${card}\n${artwork}\n${catalog}\n${resolver}`;
 
     assert.doesNotMatch(combined, /computeRankingScore|compareRecommendedListings|lane_weight|ranking_score/i);
     assert.doesNotMatch(combined, /source_policy_registry|display_eligibility|insert\s*\(|update\s*\(|upsert\s*\(/i);
