@@ -3,14 +3,14 @@
 **Mise à jour : 2026-08-09**  
 **Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; prochain lot = UNIFIED-LISTING-CARD-1**  
 **Lane UX/Carte : P1B.4 ✅ Geo Coverage Recovery pilot certifié en production**  
-**Lane DATA : DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 Registry Pattern Review Shadow ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = revue Registry/canary bornée sur les 2 `SHADOW_ACCEPTABLE` uniquement**  
+**Lane DATA : DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain état = dépendance externe autorisation/partenariat/revue légale, aucun canary autorisé**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle 0,45 %**
 
 Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
 # Main canonique
 
-Main canonique après RANKING-QUALITY-1 : `c5949063fa1c0e3448e917473239f821a17b7d59` — merge PR #403.
+Main canonique après P0.5 : `ac0e240d28b88c5e66da73d1ab964794deb01877` — merge PR #408 ; post-merge gate PASS.
 
 P0.4 main merge : `81f4809424757838c099b6acfb8f8d4b719deab7` — PR #402 ; post-merge gate PASS.
 
@@ -139,9 +139,18 @@ Finding Reviewer corrigé avant merge : les URL non certifiées ne sont plus fab
 
 Contrat : **0 source-site request, 0 WARC/content fetch, 0 DB mutation, 0 Registry/policy mutation, 0 harvest, 0 pattern activation**. P0.4 prouve seulement une aptitude structurelle shadow ; il n'accorde aucune autorisation d'activation.
 
+# P0.5 — Registry Activation Readiness Gate ✅ CLOSED — PR #408
+
+Lecture seule sur les 2 `SHADOW_ACCEPTABLE` P0.4. Verdict production : **0/2 `READY_FOR_CANARY_REVIEW`, 2/2 `BLOCKED_BY_POLICY`**.
+
+- `christiesrealestatemorocco.com` : Common Crawl discovery allowed, mais `authorization_status=unverified` + partenariat requis + revue légale requise ; **0 seed / 5 candidates** ;
+- `immobilier-a-marrakech.com` : mêmes blockers, `detail_fetch_policy=paused` ; **0 seed / 14 candidates**.
+
+Certification : head `e54099e9120d573d8092c8a119c066c911b624bd`, **20/20 PASS**, Reviewer **9,6/10**, Certifier GO, merge `ac0e240d28b88c5e66da73d1ab964794deb01877`, post-merge gate PASS, artefact `sha256:a8617f91147feec1f2d870b971d346f36cddf74386da9019af2b600d4d224536`. **0 source-site/CC/WARC request, 0 DB/Registry mutation, 0 harvest/pattern activation/canary write.**
+
 # PROCHAINE ÉTAPE DATA
 
-LOT séparé de revue Registry/canary uniquement pour `christiesrealestatemorocco.com` et `immobilier-a-marrakech.com`, avec revalidation policy/autorisation et rollback avant toute mutation. `immo-maroc.com`, `immohammedia.com` et `leaderimmo.ma` restent bloqués tant que leur ambiguïté n'est pas résolue.
+**Aucun canary n'est autorisé.** Dépendance externe : obtenir/résoudre autorisation, partenariat et revue légale, puis seulement refléter ce changement par une modification explicite/auditée du Source Registry. Ne pas inventer de P0.6 automatique. `immo-maroc.com`, `immohammedia.com` et `leaderimmo.ma` restent bloqués par P0.4.
 
 # UX / Search — état court
 
@@ -161,4 +170,4 @@ P1B.4 : **69 résolutions / 14 quartiers / 5 villes**, couverture **0,45 %**, 0 
 
 # DATA — prochaine action
 
-DATA-4.4C, P0.1, P0.2, P0.3 et P0.4 sont fermés. Le reconciler #396 est fermé. **Prochaine étape mass-index : LOT séparé de revue Registry/canary limité aux 2 `SHADOW_ACCEPTABLE`**, sans activation automatique ; les 3 rejetés restent bloqués.
+DATA-4.4C et P0.1 à P0.5 sont fermés. Le reconciler #396 est fermé. **P0.5 = 0/2 ready** : aucun canary mass-index jusqu'à résolution externe des blockers d'autorisation/partenariat/revue légale et mise à jour explicite du Source Registry. Les 3 rejetés P0.4 restent bloqués.

@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; prochain lot UX Search = UNIFIED-LISTING-CARD-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 Registry Pattern Review Shadow ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; prochain lot UX Search = UNIFIED-LISTING-CARD-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -250,9 +250,17 @@ Finding Reviewer corrigé avant merge : les URL non certifiées ne sont plus fab
 
 Contrat : **0 source-site request, 0 WARC/content fetch, 0 DB mutation, 0 Registry/policy mutation, 0 harvest, 0 pattern activation**. P0.4 prouve seulement une aptitude structurelle shadow ; il n'accorde aucune autorisation d'activation.
 
-## 7.5 Prochaine étape mass-index
+## 7.5 P0.5 — Registry Activation Readiness Gate ✅ CLOSED — PR #408
 
-Un LOT séparé pourra examiner **uniquement les 2 candidats `SHADOW_ACCEPTABLE`** pour une éventuelle revue Registry/canary bornée. Cette étape devra revalider policy/autorisation, conserver rollback et fail-closed, et ne devra jamais activer automatiquement les 3 candidats rejetés.
+Responsabilité unique : **revalider en lecture seule la readiness Registry/canary des 2 candidats `SHADOW_ACCEPTABLE` de P0.4**, sans mutation et sans transformer une preuve structurelle en autorisation.
+
+Preuve production : **0/2 `READY_FOR_CANARY_REVIEW`, 2/2 `BLOCKED_BY_POLICY`**. Les deux domaines sont Common Crawl-discovery-allowed mais restent `authorization_status=unverified`, `partnership_required=true` et `legal_review_required=true`. Stock actuel : Christie’s **0 seed / 5 discovery candidates** ; Immobilier-à-Marrakech **0 seed / 14 discovery candidates**. Aucun candidate row n'est accepted/promoted/compliance_allowed.
+
+Contrat : 0 source-site request, 0 Common Crawl request, 0 WARC/content fetch, 0 DB mutation, 0 Registry mutation, 0 harvest, 0 pattern activation, 0 canary write. Certification : **20/20 exact-head PASS**, Reviewer **9,6/10**, Certifier GO, merge `ac0e240d28b88c5e66da73d1ab964794deb01877`, gate P0.5 post-merge PASS. Artefact : `sha256:a8617f91147feec1f2d870b971d346f36cddf74386da9019af2b600d4d224536`.
+
+### Dépendance suivante
+
+**Aucun canary technique n'est autorisé actuellement.** La prochaine étape n'est pas un P0.6 automatique : elle dépend d'une résolution externe d'autorisation/partenariat/revue légale, puis d'une modification explicite et auditée du Source Registry vers un état d'autorisation positif. Tant que ce changement n'existe pas, les 2 candidats restent bloqués et les 3 candidats P0.4 rejetés restent hors scope.
 
 # 8. DATA-4 — Reservoir Strategy
 
@@ -286,4 +294,4 @@ Auditer la prochaine cohorte explicite de Geo Coverage Recovery. Tant que couver
 
 ## DATA
 
-**P0.1, P0.2, P0.3 et P0.4 sont CLOSED.** La prochaine étape mass-index est un LOT séparé de revue Registry/canary, limité aux **2 candidats `SHADOW_ACCEPTABLE`** ; aucune activation automatique, et les 3 candidats rejetés restent bloqués.
+**P0.1 à P0.5 sont CLOSED.** P0.5 conclut **0/2 ready** : aucun canary mass-index ne doit être lancé tant que l'autorisation/partenariat/revue légale n'est pas résolue et reflétée explicitement dans le Source Registry. Les 3 candidats rejetés P0.4 restent bloqués.
