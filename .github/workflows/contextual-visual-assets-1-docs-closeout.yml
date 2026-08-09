@@ -1,0 +1,41 @@
+name: CONTEXTUAL-VISUAL-ASSETS-1 Docs Closeout
+
+on:
+  push:
+    branches:
+      - docs/contextual-visual-assets-1-closeout
+    paths:
+      - "scripts/audits/contextual-visual-assets-1-docs-closeout.mjs"
+      - ".github/workflows/contextual-visual-assets-1-docs-closeout.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  closeout:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: docs/contextual-visual-assets-1-closeout
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply exact closeout markers
+        run: node scripts/audits/contextual-visual-assets-1-docs-closeout.mjs
+      - name: Remove temporary closeout machinery
+        run: rm scripts/audits/contextual-visual-assets-1-docs-closeout.mjs .github/workflows/contextual-visual-assets-1-docs-closeout.yml
+      - name: Commit canonical docs
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          actual="$(git diff --cached --name-only | sort)"
+          expected="$(printf '%s\n' '.github/workflows/contextual-visual-assets-1-docs-closeout.yml' 'README.md' 'docs/ROADMAP.md' 'docs/SESSION.md' 'scripts/audits/contextual-visual-assets-1-docs-closeout.mjs' | sort)"
+          test "$actual" = "$expected" || { echo "Unexpected staged scope:"; printf '%s\n' "$actual"; exit 1; }
+          git commit -m "docs: close CONTEXTUAL-VISUAL-ASSETS-1"
+          git push origin HEAD:docs/contextual-visual-assets-1-closeout
