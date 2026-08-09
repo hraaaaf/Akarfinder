@@ -45,7 +45,8 @@ Principes non négociables :
 - MapLibre GL ;
 - Geo Registry canonique ;
 - Source Registry v2 ;
-- P0.1 operational mass-index gate : Source Registry relu dans harvester + importer, trigger DB fail-closed ;
+- P0.1 operational mass-index gate **actif en production** : Source Registry relu dans harvester + importer, trigger DB fail-closed ;
+- reconciler freshness Common Crawl durci contre les timeouts Supabase via PR #396 ;
 - Observation/Freshness/quality/dedup pipeline ;
 - CI GitHub Actions avec gates DATA, UX, accessibilité et build.
 
@@ -165,7 +166,7 @@ La couche **Offre par quartier reste interdite** : 0,45 % de couverture ne justi
 - 625 `PORTAL_CANDIDATE` ;
 - DATA-1.5 → DATA-1.6B : capability + policy + Registry, **0 activation non autorisée**.
 
-### P0.1 — Mass Index Source Registry Operational Gate — PR #392
+### P0.1 — Mass Index Source Registry Operational Gate ✅ CLOSED — PR #392
 
 P0.1 ne crée pas de nouveau Registry et n’accorde aucune permission. Il ferme le décalage entre le registre structurel historique des URL patterns et la policy production.
 
@@ -184,7 +185,13 @@ Audit live read-only pendant le LOT : **16** candidats structurels, **9** autori
 
 Dette historique mesurée : **1 734** rows `commoncrawl_cdx` sur 6 domaines dont la policy actuelle n’autorise plus ce canal. **65** ont été confirmées ensuite par une observation live distincte ; P0.1 ne fait donc aucune blind-quarantine. Il bloque la récidive et expose la dette pour un éventuel LOT séparé.
 
-Migration : `supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql`. Activation uniquement après merge du head certifié, puis vérification rapport/trigger/advisors. Rollback non destructif : suppression du trigger et des fonctions P0.1 ; aucune row historique n’est mutée par la migration.
+Migration `supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql` **appliquée en production** après merge #392 (`1bbf2ff2f3ba7aed2b99eb492f703c965e1ed406`). Trigger, fonctions/ACL, rapport production et probe fail-closed ont été vérifiés ; rollback non destructif disponible.
+
+Preuve E2E post-merge : workflow schedulé **Common Crawl Mass Seed Harvest #24**, run `31293392616`, sur `main` `7169142e9e0b4e327bdd9afe5befe7bbe7c64edd`, **SUCCESS**. Canary : **6/6 CDX**, **931 seeds** ; remainder : **21/21 CDX**, **13 747 seeds** ; imports : **0 policy rejection**, **0 nouvelle row** ; reconciler : `APPLIED`, **56 810 seeds**, **3 299 fresh_confirmed**, **53 511 seed_only**, **1 row modifiée**, **3 206 rows d’autres canaux protégées** ; artefact final SHA-256 `67ea00cca946b992fa3aef2122bab1e6763533ec05346c5ab96239ab32041f59`.
+
+### DATA — Common Crawl freshness reconciler hardening ✅ CLOSED — PR #396
+
+Micro-lot séparé après un échec transitoire observé sur le run #23 : le reconciler sérialise désormais explicitement les erreurs PostgREST, retrye de façon bornée les timeouts/5xx/fetch transitoires et réduit la concurrence des PATCH de **25 → 5**. Matching exact canonical URL et ownership `openserp_yandex_discovery` inchangés. **19/19 workflows exact-head verts**, DATA-4.3I contract + live-read-only PASS, Reviewer PASS, Release Certifier GO ; merge `6816e5e7bc4dbfe3c253cfe5da38175a5390606d`. Aucune migration, aucune policy modifiée.
 
 ### DATA-4 — Reservoir Strategy
 
@@ -200,7 +207,7 @@ Migration : `supabase/migrations/20260808150000_p0_1_mass_index_source_registry_
 
 ## Décision DATA courante
 
-**DATA-4.4C est fermé et certifié en production. P0.1 doit être fermé jusqu’à son activation post-merge.** P0.1 n’autorise aucune expansion automatique, aucun nouveau scraper direct et aucune évolution de policy. Le prochain LOT mass-index sera défini explicitement après certification production de P0.1.
+**DATA-4.4C et P0.1 sont fermés et certifiés en production.** Le micro-lot reconciler #396 est également fermé. P0.1 n’autorise aucune expansion automatique, aucun nouveau scraper direct et aucune évolution de policy. Le prochain LOT mass-index doit être défini explicitement à partir de cette base certifiée.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 
