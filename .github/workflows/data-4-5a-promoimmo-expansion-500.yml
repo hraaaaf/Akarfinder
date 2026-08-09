@@ -1,0 +1,130 @@
+name: DATA-4.5A Promo Immo Expansion 500 Qualification
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data4/promoimmo-controlled-expansion.ts"
+      - "scripts/data4/__tests__/promoimmo-controlled-expansion.test.ts"
+      - "scripts/audits/data-4-5a-promoimmo-expansion-500-qualification.ts"
+      - ".github/workflows/data-4-5a-promoimmo-expansion-500.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/data4/promoimmo-controlled-expansion.ts"
+      - "scripts/data4/__tests__/promoimmo-controlled-expansion.test.ts"
+      - "scripts/audits/data-4-5a-promoimmo-expansion-500-qualification.ts"
+      - ".github/workflows/data-4-5a-promoimmo-expansion-500.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  qualify-expansion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Focused expansion contract
+        run: npx tsx --test scripts/data4/__tests__/promoimmo-controlled-expansion.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Static no-write contract
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const source = fs.readFileSync('scripts/audits/data-4-5a-promoimmo-expansion-500-qualification.ts', 'utf8');
+          for (const token of ['.insert(', '.upsert(', '.update(', '.delete(', 'robots.txt', 'sitemap-propriete.xml']) {
+            if (source.includes(token)) throw new Error(`DATA-4.5A forbidden operation: ${token}`);
+          }
+          for (const marker of [
+            'source_site_requests: 0',
+            'source_site_detail_requests: 0',
+            'database_writes: 0',
+            'freshness_writes: 0',
+            'registry_mutations: 0',
+            'production_activation: false',
+            'exact_selected_sitemap_membership_certified_by_this_lot: false',
+            'write_authorized_by_this_lot: false',
+            'next_lot_must_revalidate_current_sitemap_before_each_write: true',
+          ]) {
+            if (!source.includes(marker)) throw new Error(`DATA-4.5A missing safety marker: ${marker}`);
+          }
+          NODE
+
+      - name: Fetch certified DATA-4.4B source evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/data-4-5a/source-evidence
+          curl --fail --location --silent --show-error \
+            --retry 3 --retry-delay 1 --retry-all-errors \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/hraaaaf/Akarfinder/actions/artifacts/9020834298/zip" \
+            -o .tmp/data-4-5a/source-evidence/data-4-4b.zip
+          echo "f4e4f52fb950ada9283e0d345b6e4840df3844c0ac68e25c72bfca5f4b4b1c4c  .tmp/data-4-5a/source-evidence/data-4-4b.zip" | sha256sum -c -
+          unzip -q .tmp/data-4-5a/source-evidence/data-4-4b.zip proof.json -d .tmp/data-4-5a/source-evidence
+
+      - name: Live production capacity qualification
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DATA_4_5A_SOURCE_PROOF: .tmp/data-4-5a/source-evidence/proof.json
+          DATA_4_5A_SOURCE_ARTIFACT_ID: "9020834298"
+          DATA_4_5A_SOURCE_ARTIFACT_DIGEST: "sha256:f4e4f52fb950ada9283e0d345b6e4840df3844c0ac68e25c72bfca5f4b4b1c4c"
+        run: npx tsx scripts/audits/data-4-5a-promoimmo-expansion-500-qualification.ts
+
+      - name: Validate proof
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const proof = JSON.parse(fs.readFileSync('.tmp/data-4-5a/results/proof.json', 'utf8'));
+          const cohort = JSON.parse(fs.readFileSync('.tmp/data-4-5a/results/qualified-450.json', 'utf8'));
+          if (proof.schema_version !== 'data-4-5a-promoimmo-expansion-500-qualification-v1') throw new Error('unexpected schema');
+          if (proof.qualification_mode !== 'CERTIFIED_RECENT_SOURCE_SNAPSHOT_PLUS_CURRENT_DB_CAPACITY') throw new Error('unexpected qualification mode');
+          if (proof.source_evidence.artifact_id !== '9020834298') throw new Error('wrong source artifact');
+          if (proof.source_evidence.artifact_digest !== 'sha256:f4e4f52fb950ada9283e0d345b6e4840df3844c0ac68e25c72bfca5f4b4b1c4c') throw new Error('wrong source artifact digest');
+          if (proof.source_evidence.age_hours > 336) throw new Error(`source proof expired: ${proof.source_evidence.age_hours}h`);
+          if (proof.source_evidence.sitemap_url_count !== 3130 || proof.source_evidence.sitemap_intersection_rows !== 2935 || proof.source_evidence.conservative_eligible_rows !== 2456) throw new Error('certified source evidence drift');
+          if (proof.certified_baseline_rows !== 50) throw new Error(`baseline drift ${proof.certified_baseline_rows}`);
+          if (proof.required_new_rows !== 450 || proof.selected_new_rows !== 450 || proof.selected_unique_rows !== 450) throw new Error('450-row capacity cohort not certified');
+          if (proof.selected_public_search_rows !== 450 || proof.selected_technical_display_rows !== 450 || proof.selected_exact_collision_free_rows !== 450) throw new Error('selected current DB coverage drift');
+          if (proof.selected_sitemap_revalidation_required_rows !== 450 || proof.exact_selected_sitemap_membership_certified_by_this_lot !== false) throw new Error('sitemap revalidation boundary lost');
+          if (JSON.stringify(proof.batch_sizes) !== JSON.stringify([100,100,100,100,50])) throw new Error('unexpected batch plan');
+          if (proof.source_site_requests !== 0 || proof.database_writes !== 0 || proof.freshness_writes !== 0 || proof.registry_mutations !== 0 || proof.production_activation !== false || proof.write_authorized_by_this_lot !== false) throw new Error('DATA-4.5A safety contract failed');
+          if (!Array.isArray(cohort) || cohort.length !== 450) throw new Error('cohort manifest size mismatch');
+          const counts = cohort.reduce((m, row) => (m[row.batch_number] = (m[row.batch_number] || 0) + 1, m), {});
+          if (JSON.stringify(counts) !== JSON.stringify({1:100,2:100,3:100,4:100,5:50})) throw new Error(`batch counts mismatch ${JSON.stringify(counts)}`);
+          if (cohort.some((row) => row.exact_current_sitemap_membership_verified_in_this_lot !== false || row.must_revalidate_current_sitemap_before_write !== true)) throw new Error('cohort falsely claims current sitemap membership');
+          console.log(JSON.stringify({
+            source_evidence_age_hours: proof.source_evidence.age_hours,
+            certified_sitemap_urls: proof.source_evidence.sitemap_url_count,
+            certified_sitemap_intersection: proof.source_evidence.sitemap_intersection_rows,
+            current_seed_rows: proof.current_seed_rows,
+            eligible_new_rows: proof.eligible_new_rows,
+            selected_new_rows: proof.selected_new_rows,
+            current_exact_cross_source_collisions: proof.current_exact_cross_source_collisions,
+            batch_sizes: proof.batch_sizes,
+            sitemap_revalidation_required: proof.selected_sitemap_revalidation_required_rows,
+          }, null, 2));
+          NODE
+
+      - name: Upload DATA-4.5A proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-4-5a-promoimmo-expansion-500
+          path: .tmp/data-4-5a/results
+          if-no-files-found: warn
+          retention-days: 14
