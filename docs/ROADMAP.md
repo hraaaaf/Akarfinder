@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; prochaine étape UX Search à formaliser = attribution déterministe ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; prochaine étape UX Search à formaliser = simplification des actions secondaires ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -178,9 +178,25 @@ Résultat certifié :
 - Benchmark UX/Search Reviewer : **PASS 9,3/10** ; Reviewer PASS ; Release Certifier GO ;
 - merge `ae3e254bcec3bb4e98b814b0f057141e84956d10`, artefact `sha256:78cf4a742360b87683bd9697a465a15f898979b29dea9e384474baf8b0a7ca69`.
 
+## DETERMINISTIC-ATTRIBUTION-1 ✅ CLOSED — PR #416
+
+Responsabilité : **rendre l'attribution publique Search déterministe et fail-closed, sans exposer de labels source libres ni modifier les décisions métier**.
+
+Résultat certifié :
+
+- resolver canonique `lib/search/public-attribution.ts` partagé par la card Gateway, la card structurée et AkarInfo ;
+- Gateway : identité publique dérivée de `source_id → Search Gateway source config` ;
+- listings persistés : attribution dérivée des signaux structurés d'accès/display et d'une allowlist explicite de marques ;
+- source inconnue/non approuvée → libellé générique, jamais le texte brut reçu ;
+- predecessors Search Truth, Wording, Mobile Grid, UNIFIED et CONTEXTUAL réconciliés sans affaiblir leurs invariants ;
+- preuve Chromium déterministe **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : 0 overflow, 0 prix tronqué, provenance avant action et 0 fuite des faux labels source injectés ;
+- **26/26 workflows exact-head verts** sur `ab4a05ec21434fb414628a181a11adddd68d8293` ;
+- Benchmark UX/Search Reviewer : **PASS 9,4/10** (mobile 9,4 / desktop 9,3) ; Reviewer technique PASS ; Release Certifier GO ;
+- merge `80da5a2abf2d3a7d74dafa6c6043ffe7176929d7`.
+
 ### Prochaine étape UX/Search
 
-**Attribution déterministe à formaliser** — aucun identifiant de LOT n’est créé tant que son contrat n’est pas verrouillé.
+**Simplification des actions secondaires à formaliser** — aucun identifiant de LOT n’est créé tant que son contrat n’est pas verrouillé.
 
 # 4. Lane UX / Carte
 
