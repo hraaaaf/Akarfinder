@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import { AkarInfoPassportCard } from "@/components/akarinfo/AkarInfoPassportCard";
 import { SourceBadge } from "@/components/badges/SourceBadge";
+import { deriveGatewayPublicAttribution } from "@/lib/search/public-attribution";
 import {
   ContextualListingArtwork,
   getContextualCityVisual,
@@ -53,6 +54,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
     ? result.normalized_property_type
     : null;
   const contextualCityVisual = getContextualCityVisual(result.normalized_city);
+  const publicAttribution = deriveGatewayPublicAttribution(result);
   const [thumbError, setThumbError] = useState(false);
   const showFallback = !showThumbnail || thumbError;
   const facts = [
@@ -152,13 +154,13 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
         ) : null}
 
         <div className="mt-2 flex items-center justify-between gap-2 border-t border-border/10 pt-2 text-[9px] dark:border-white/8 sm:mt-3 sm:gap-3 sm:border-border/12 sm:pt-3 sm:text-[11px]">
-          <span className="truncate font-semibold text-muted-foreground">Source externe · {result.result_attribution_label}</span>
-          <span className="truncate font-semibold text-muted-foreground">{result.source_name}</span>
+          <span data-public-attribution-type className="truncate font-semibold text-muted-foreground">{publicAttribution.typeLabel}</span>
+          <span data-public-attribution-source className="truncate font-semibold text-muted-foreground">{publicAttribution.sourceLabel}</span>
         </div>
 
         <div className="mt-2 hidden items-center justify-between gap-2 sm:flex">
           <span className="min-w-0 truncate text-[10px] text-muted-foreground/60 dark:text-white/30">{sanitizedDisplayUrl}</span>
-          {result.source_badge ? <SourceBadge badge={result.source_badge} variant="dark" /> : null}
+          {publicAttribution.badge ? <SourceBadge badge={publicAttribution.badge} variant="dark" /> : null}
         </div>
         <div className="hidden sm:block">
           <AkarInfoPassportCard passport={passport} className="mt-3" />
@@ -166,7 +168,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
 
         <div className="mt-3 flex items-center justify-between gap-2 sm:mt-4 sm:rounded-xl sm:border sm:border-border/15 sm:bg-surface/70 sm:px-3 sm:py-2.5 dark:sm:border-white/10 dark:sm:bg-white/[0.04]">
           <span className="min-w-0 truncate text-[9.5px] font-extrabold text-bronze-700 dark:text-bronze-300 sm:text-[12px]">
-            {result.primary_cta_label}
+            {publicAttribution.primaryCtaLabel ?? "Voir la source originale"}
           </span>
           <ArrowRight size={13} aria-hidden="true" className="shrink-0" />
         </div>

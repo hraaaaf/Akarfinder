@@ -14,6 +14,7 @@ import type { PublicResultChecklistSummary } from "@/lib/public-result-checklist
 import { buildPublicResultChecklist } from "@/lib/public-result-checklist/build-checklist";
 import { assertPublicResultChecklistSafety } from "@/lib/public-result-checklist/public-safety";
 import type { PublicSerpIntelligenceSummaryV1 } from "@/lib/intelligence/public-serp-intelligence-types";
+import { deriveGatewayPublicAttribution, deriveListingPublicAttribution } from "@/lib/search/public-attribution";
 import { getPublicSerpIntelligenceFromListing } from "@/lib/intelligence/public-serp-intelligence-carrier";
 
 export type AkarInfoPassportKind =
@@ -92,6 +93,7 @@ function getListingPointsToVerify(listing: Listing): string[] {
 export function buildAkarInfoPassportForListing(
   listing: Listing,
 ): AkarInfoPassport {
+  const publicAttribution = deriveListingPublicAttribution(listing);
   const sourceAccessType = getSourceAccessType(listing.source_name ?? "");
   const internalDetailAllowed = canHaveInternalDetail(listing);
   const partnerAuthorized =
@@ -103,7 +105,7 @@ export function buildAkarInfoPassportForListing(
       kind: "gateway_external",
       information_level_label: "Aperçu limité",
       source_type_label: "Résultat web externe",
-      source_name: listing.source_name,
+      source_name: publicAttribution.sourceLabel,
       source_original_label: "Source originale à consulter",
       summary:
         "AkarFinder montre ici un aperçu limité. Le contact, la visite et les détails complets restent gérés par la source originale.",
@@ -131,7 +133,7 @@ export function buildAkarInfoPassportForListing(
     source_type_label: partnerAuthorized
       ? "Page partenaire autorisée"
       : "Fiche structurée AkarFinder",
-    source_name: listing.source_name,
+    source_name: publicAttribution.sourceLabel,
     source_original_label: partnerAuthorized
       ? "Contact autorisé si prévu sur la fiche"
       : "Source et détails à confirmer",
@@ -190,13 +192,14 @@ export function buildAkarInfoPassportForGatewayResult(
   result: SearchGatewayNormalizedResult,
   similarResults?: PublicResultSimilaritySummary,
 ): AkarInfoPassport {
+  const publicAttribution = deriveGatewayPublicAttribution(result);
   const observation = resolveGatewayObservationSummary(result);
 
   return {
     kind: "gateway_external",
     information_level_label: "Aperçu limité",
     source_type_label: "Résultat web externe",
-    source_name: result.source_name,
+    source_name: publicAttribution.sourceLabel,
     source_original_label: "Source originale obligatoire",
     summary:
       "AkarFinder référence ce résultat du web avec un aperçu limité et vous renvoie vers la source originale pour le détail complet.",
