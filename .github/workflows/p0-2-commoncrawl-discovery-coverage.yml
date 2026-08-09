@@ -1,0 +1,91 @@
+name: P0.2 Common Crawl Discovery Coverage Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/acquisition-scale-v1/commoncrawl-discovery-coverage.ts"
+      - "scripts/census/p0-2-commoncrawl-discovery-coverage.ts"
+      - "scripts/census/__tests__/p0-2-commoncrawl-discovery-coverage.test.ts"
+      - ".github/workflows/p0-2-commoncrawl-discovery-coverage.yml"
+  push:
+    branches: [main]
+    paths:
+      - "lib/acquisition-scale-v1/commoncrawl-discovery-coverage.ts"
+      - "scripts/census/p0-2-commoncrawl-discovery-coverage.ts"
+      - "scripts/census/__tests__/p0-2-commoncrawl-discovery-coverage.test.ts"
+      - ".github/workflows/p0-2-commoncrawl-discovery-coverage.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  discovery-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Focused P0.2 contracts
+        run: npx tsx --test scripts/census/__tests__/p0-2-commoncrawl-discovery-coverage.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Static read-only contract
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'scripts/census/p0-2-commoncrawl-discovery-coverage.ts';
+          const source = fs.readFileSync(path, 'utf8');
+          const forbidden = ['.insert(', '.upsert(', '.update(', '.delete(', 'fetch('];
+          for (const token of forbidden) {
+            if (source.includes(token)) throw new Error(`P0.2 forbidden operation in audit script: ${token}`);
+          }
+          for (const required of ['db_mutation: false', 'commoncrawl_request: false', 'source_site_request: false', 'warc_fetch: false']) {
+            if (!source.includes(required)) throw new Error(`P0.2 missing contract marker: ${required}`);
+          }
+          NODE
+
+      - name: Live read-only production coverage audit
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/census/p0-2-commoncrawl-discovery-coverage.ts
+
+      - name: Validate P0.2 report
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'data/audits/runtime/p0-2-commoncrawl-discovery-coverage.json';
+          const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+          if (report.schema_version !== 'p0-2-commoncrawl-discovery-coverage-v1') throw new Error('unexpected schema');
+          if (report.read_only !== true || report.db_mutation !== false || report.commoncrawl_request !== false || report.source_site_request !== false || report.warc_fetch !== false) throw new Error('read-only contract failed');
+          if (report.commoncrawl_policy_domains < report.operational_policy_domains) throw new Error('invalid policy cardinality');
+          if (report.operational_policy_domains !== report.harvest_ready_domains + report.pattern_missing_domains) throw new Error('operational coverage denominator mismatch');
+          if (report.pattern_missing_domains <= 0) throw new Error('P0.2 expected a measurable structural coverage gap');
+          console.log(JSON.stringify({
+            commoncrawl_policy_domains: report.commoncrawl_policy_domains,
+            operational_policy_domains: report.operational_policy_domains,
+            harvest_ready_domains: report.harvest_ready_domains,
+            pattern_missing_domains: report.pattern_missing_domains,
+            expired_or_blocked_domains: report.expired_or_blocked_domains,
+            harvest_ready_ratio: report.harvest_ready_ratio,
+            seed_rows: report.commoncrawl_seed_rows_on_policy_domains,
+          }, null, 2));
+          NODE
+
+      - name: Upload P0.2 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-2-commoncrawl-discovery-coverage
+          path: data/audits/runtime/p0-2-commoncrawl-discovery-coverage.json
+          if-no-files-found: error
+          retention-days: 14
