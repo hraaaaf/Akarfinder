@@ -5,6 +5,7 @@ on:
     paths:
       - "app/search/page.tsx"
       - "components/search/LightZillowSearchShell.tsx"
+      - "components/search/SearchMapNeighborhoodDock.tsx"
       - "components/search/SearchPriceExplorerDock.tsx"
       - "scripts/scrapers/__tests__/search-post-results-cleanup-1.test.ts"
       - "scripts/scrapers/__tests__/search-desktop-split-1.test.ts"
