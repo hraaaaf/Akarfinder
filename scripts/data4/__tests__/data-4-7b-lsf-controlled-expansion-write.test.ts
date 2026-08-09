@@ -19,11 +19,15 @@ test("DATA-4.7B is bounded to one 250-row checkpoint", () => {
 
 test("DATA-4.7B prepares rollback before any apply path", () => {
   const rollbackManifest = script.indexOf('rollback-manifest.json');
-  const applyBranch = script.indexOf('if (!APPLY)');
-  const patchLoop = script.indexOf('await patchSeed(row.canonicalUrl');
+  const dryRunBranch = script.indexOf('if (!APPLY)');
+  const acknowledgementGate = script.lastIndexOf('requireApplyAcknowledgements();');
+  const appliedArray = script.indexOf('const applied: PlanRow[] = []', acknowledgementGate);
+  const applyPatch = script.indexOf('await patchSeed(row.canonicalUrl', appliedArray);
   assert.ok(rollbackManifest > 0);
-  assert.ok(applyBranch > rollbackManifest);
-  assert.ok(patchLoop > applyBranch);
+  assert.ok(dryRunBranch > rollbackManifest);
+  assert.ok(acknowledgementGate > dryRunBranch);
+  assert.ok(appliedArray > acknowledgementGate);
+  assert.ok(applyPatch > appliedArray);
   for (const token of [
     'compare-and-set state drift',
     'expectedStatus',
