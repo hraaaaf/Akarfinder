@@ -85,7 +85,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
           />
         ) : (
           <ContextualListingArtwork
-            stableListingId={result.id}
+            stableRepresentationKey={result.original_url}
             city={result.normalized_city}
             propertyType={safeFallbackPropertyType}
             className="transition duration-500 group-hover:scale-[1.025]"
