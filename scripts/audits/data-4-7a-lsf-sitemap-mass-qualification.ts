@@ -147,13 +147,11 @@ function registryAllows(policy: RegistryRow): boolean {
     && (policy.evidence_urls ?? []).includes(`https://${DOMAIN}/robots.txt`);
 }
 
-function conservativeCandidate(row: NormalizedRow, display: DisplayRow | undefined): boolean {
+function massTailCandidate(row: NormalizedRow, display: DisplayRow | undefined): boolean {
   return row.normalization_status === "normalized"
     && row.freshness_status === "seed_only"
-    && !!row.city && !!row.property_type && !!row.intent && !!row.title
-    && row.price_mad !== null && row.surface_m2 !== null
     && !!display
-    && ["A", "B"].includes(display.quality_tier ?? "");
+    && ["eligible_primary", "eligible_secondary"].includes(display.display_eligibility ?? "");
 }
 
 async function main(): Promise<void> {
@@ -248,15 +246,20 @@ async function main(): Promise<void> {
     return key !== null && safeIdentityKeys.has(key);
   });
   const seedOnlyInSitemap = normalizedInSitemap.filter((row) => seedSet.get(row.canonical_url)?.freshness_status === "seed_only");
-  const conservative = seedOnlyInSitemap.filter((row) => conservativeCandidate(row, displayByUrl.get(row.canonical_url)));
-  const conservativePublic = conservative.filter((row) => publicSet.has(row.canonical_url));
-  const checkpoint = conservativePublic.length >= 1000 ? 500 : conservativePublic.length >= 500 ? 250 : conservativePublic.length >= 200 ? 100 : Math.min(50, conservativePublic.length);
+  const massTail = seedOnlyInSitemap.filter((row) => massTailCandidate(row, displayByUrl.get(row.canonical_url)));
+  const massTailPublic = massTail.filter((row) => publicSet.has(row.canonical_url));
+  const massTailTierB = massTailPublic.filter((row) => displayByUrl.get(row.canonical_url)?.quality_tier === "B").length;
+  const massTailTierC = massTailPublic.filter((row) => displayByUrl.get(row.canonical_url)?.quality_tier === "C").length;
+  const massTailWithPrice = massTailPublic.filter((row) => row.price_mad !== null).length;
+  const massTailWithSurface = massTailPublic.filter((row) => row.surface_m2 !== null).length;
+  const massTailWithTitle = massTailPublic.filter((row) => !!row.title).length;
+  const checkpoint = massTailPublic.length >= 250 ? 250 : massTailPublic.length >= 100 ? 100 : Math.min(50, massTailPublic.length);
 
   const proof = {
     schemaVersion: "data-4-7a-lsf-sitemap-mass-qualification-v1",
     generatedAt,
     mode: "READ_ONLY_QUALIFICATION",
-    verdict: conservativePublic.length >= 100 ? "QUALIFIED_FOR_CONTROLLED_EXPANSION_DESIGN" : "INSUFFICIENT_CONSERVATIVE_LIVE_RESERVOIR",
+    verdict: massTailPublic.length >= 100 ? "QUALIFIED_FOR_CONTROLLED_EXPANSION_DESIGN" : "INSUFFICIENT_MASS_TAIL_LIVE_RESERVOIR",
     sourceDomain: DOMAIN,
     totalSeeds: seeds.length,
     alreadyFreshConfirmed: seeds.filter((row) => row.freshness_status === "fresh_confirmed").length,
@@ -273,8 +276,13 @@ async function main(): Promise<void> {
     safeIdentityMatches: normalizedInSitemap.length,
     normalizedInCurrentSitemap: normalizedInSitemap.length,
     seedOnlyInCurrentSitemap: seedOnlyInSitemap.length,
-    conservativeCandidates: conservative.length,
-    conservativeCandidatesInPublicSearch: conservativePublic.length,
+    massTailCandidates: massTail.length,
+    massTailCandidatesInPublicSearch: massTailPublic.length,
+    massTailTierB,
+    massTailTierC,
+    massTailWithPrice,
+    massTailWithSurface,
+    massTailWithTitle,
     sourceRequests,
     sourceRequestBudget: MAX_SOURCE_REQUESTS,
     databaseWrites: 0,
@@ -286,12 +294,12 @@ async function main(): Promise<void> {
     contentReuseOperations: 0,
     writeAuthorized: false,
     suggestedNextCheckpoint: checkpoint,
-    nextLot: conservativePublic.length >= 100 ? "DATA-4.7B_LSF_CONTROLLED_EXPANSION_WRITE" : "ROTATE_TO_NEXT_PUBLIC_SITEMAP_RESERVOIR",
+    nextLot: massTailPublic.length >= 100 ? "DATA-4.7B_LSF_CONTROLLED_EXPANSION_WRITE" : "ROTATE_TO_NEXT_PUBLIC_SITEMAP_RESERVOIR",
   };
 
   await fs.mkdir(OUT_DIR, { recursive: true });
   await fs.writeFile(path.join(OUT_DIR, "proof.json"), `${JSON.stringify(proof, null, 2)}\n`);
-  await fs.writeFile(path.join(OUT_DIR, "candidate-urls.txt"), `${conservativePublic.map((row) => row.canonical_url).sort().join("\n")}\n`);
+  await fs.writeFile(path.join(OUT_DIR, "candidate-urls.txt"), `${massTailPublic.map((row) => row.canonical_url).sort().join("\n")}\n`);
   console.log(JSON.stringify(proof, null, 2));
 }
 
