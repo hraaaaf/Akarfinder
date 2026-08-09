@@ -1,0 +1,98 @@
+name: DATA-4.5A Promo Immo Expansion 500 Qualification
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data4/promoimmo-controlled-expansion.ts"
+      - "scripts/data4/__tests__/promoimmo-controlled-expansion.test.ts"
+      - "scripts/audits/data-4-5a-promoimmo-expansion-500-qualification.ts"
+      - ".github/workflows/data-4-5a-promoimmo-expansion-500.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/data4/promoimmo-controlled-expansion.ts"
+      - "scripts/data4/__tests__/promoimmo-controlled-expansion.test.ts"
+      - "scripts/audits/data-4-5a-promoimmo-expansion-500-qualification.ts"
+      - ".github/workflows/data-4-5a-promoimmo-expansion-500.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-expansion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Focused expansion contract
+        run: npx tsx --test scripts/data4/__tests__/promoimmo-controlled-expansion.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Static no-write contract
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const source = fs.readFileSync('scripts/audits/data-4-5a-promoimmo-expansion-500-qualification.ts', 'utf8');
+          for (const token of ['.insert(', '.upsert(', '.update(', '.delete(', '/property/', '/annonce/']) {
+            if (source.includes(token)) throw new Error(`DATA-4.5A forbidden operation: ${token}`);
+          }
+          for (const marker of [
+            'source_site_detail_requests: 0',
+            'database_writes: 0',
+            'freshness_writes: 0',
+            'registry_mutations: 0',
+            'production_activation: false',
+            'write_authorized_by_this_lot: false',
+          ]) {
+            if (!source.includes(marker)) throw new Error(`DATA-4.5A missing safety marker: ${marker}`);
+          }
+          NODE
+
+      - name: Live production qualification
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/data-4-5a-promoimmo-expansion-500-qualification.ts
+
+      - name: Validate proof
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const proof = JSON.parse(fs.readFileSync('.tmp/data-4-5a/results/proof.json', 'utf8'));
+          const cohort = JSON.parse(fs.readFileSync('.tmp/data-4-5a/results/qualified-450.json', 'utf8'));
+          if (proof.schema_version !== 'data-4-5a-promoimmo-expansion-500-qualification-v1') throw new Error('unexpected schema');
+          if (proof.certified_baseline_rows !== 50) throw new Error(`baseline drift ${proof.certified_baseline_rows}`);
+          if (proof.required_new_rows !== 450 || proof.selected_new_rows !== 450 || proof.selected_unique_rows !== 450) throw new Error('450-row cohort not certified');
+          if (proof.selected_public_search_rows !== 450 || proof.selected_technical_display_rows !== 450 || proof.selected_current_sitemap_rows !== 450) throw new Error('selected cohort coverage drift');
+          if (JSON.stringify(proof.batch_sizes) !== JSON.stringify([100,100,100,100,50])) throw new Error('unexpected batch plan');
+          if (proof.database_writes !== 0 || proof.freshness_writes !== 0 || proof.registry_mutations !== 0 || proof.production_activation !== false || proof.write_authorized_by_this_lot !== false) throw new Error('DATA-4.5A safety contract failed');
+          if (!Array.isArray(cohort) || cohort.length !== 450) throw new Error('cohort manifest size mismatch');
+          const counts = cohort.reduce((m, row) => (m[row.batch_number] = (m[row.batch_number] || 0) + 1, m), {});
+          if (JSON.stringify(counts) !== JSON.stringify({1:100,2:100,3:100,4:100,5:50})) throw new Error(`batch counts mismatch ${JSON.stringify(counts)}`);
+          console.log(JSON.stringify({
+            baseline: proof.certified_baseline_rows,
+            eligible_new_rows: proof.eligible_new_rows,
+            selected_new_rows: proof.selected_new_rows,
+            sitemap_urls: proof.current_sitemap_url_count,
+            sitemap_intersection_rows: proof.sitemap_intersection_rows,
+            exact_cross_source_collisions: proof.exact_cross_source_collisions,
+            batch_sizes: proof.batch_sizes,
+          }, null, 2));
+          NODE
+
+      - name: Upload DATA-4.5A proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-4-5a-promoimmo-expansion-500
+          path: .tmp/data-4-5a/results
+          if-no-files-found: error
+          retention-days: 14
