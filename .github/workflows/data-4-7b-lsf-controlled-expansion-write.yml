@@ -47,6 +47,10 @@ jobs:
             'DATA_4_7B_APPLY === "true"',
             'BATCH_1_YES',
             'sourceSiteDetailRequests: 0',
+            'next_review_at: string | null',
+            'nextReview.getTime() > now.getTime()',
+            'metadataRunId(row.metadata) === RUN_ID',
+            'one-shot run already applied',
           ]) if (!write.includes(required)) throw new Error(`missing historical write contract ${required}`);
           for (const required of [
             'const EXPECTED_BATCH = 250',
