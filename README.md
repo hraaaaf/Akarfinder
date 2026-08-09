@@ -197,7 +197,13 @@ Certification : head `29b469e17eff6f4516bef18f7d5ed193726308f0`, **26/26 workflo
 
 Audit production strictement read-only après P1B.5 : **15 438** listings Search éligibles, **605** rows reliées à `property_listings`, **89** résolues, **516** non résolues. Parmi elles, **71** ont un `district` explicite mais **0/71** ne possède actuellement d’alias quartier validé confiance 1 ; elles forment **31 couples ville/quartier**. Les **445** restantes n’exposent aucun champ quartier/district structuré dans les metadata autorisées. Provenance exacte double-checkée : `mouldar.com` **42**, `mubawab.ma` **21**, `marrakechrealty.com` **8**. Verdict certifié : `REGISTRY_GAP_IS_NEXT_BOUNDARY`. **0 write, 0 mutation Registry, 0 source-site request, 0 fuzzy, 0 parsing titre/snippet.** Exact-head **19/19 PASS**, Reviewer **9,6/10**, merge `304726a83e1ef4df5ddacb8ecba925ad2e1c1b30`, push gate post-merge PASS.
 
-La couche **Offre par quartier reste interdite** : couverture toujours **89 / 15 438 = 0,5765 %**. Prochain lot Carte : **P1B.7 — Geo Registry Gap Qualification**, read-only d’abord sur les 31 couples ; aucun alias ou quartier ne sera créé par simple intuition.
+### P1B.7 ✅ PR #426 — Geo Registry Gap Qualification
+
+Qualification production strictement read-only du gap Registry certifié par P1B.6. Baseline inchangé : **15 438** listings Search éligibles / **605** bridged / **89** resolved / **516** unresolved / **71** avec district explicite / **31** couples ville-quartier. Classification certifiée : **10 couples / 31 rows `PRIORITY_EXTERNAL_VALIDATION`**, **9 / 26 `SINGLE_SOURCE_REPEAT_NEEDS_AUTHORITY`**, **10 / 10 `SINGLETON_NEEDS_AUTHORITY`**, `Tanger — Centre-ville` = **1 / 2 `PARENT_MISMATCH_REVIEW`**, `Marrakech — Autres Marrakech` = **1 / 2 `REJECT_PROVIDER_BUCKET`**. La récurrence commerciale sert uniquement à prioriser une validation indépendante ; elle ne constitue jamais une vérité géographique.
+
+Contrat : **0 DB/Registry mutation, 0 alias/entity creation, 0 geo-resolution write, 0 source-site request, 0 fuzzy, 0 title/snippet inference**. Exact-head final après réalignement `d76eeda4de755faf08ec90afdaa0989cd4e8f2de`, **19/19 workflows PASS**, specialized live gate PASS, Reviewer **9,6/10**, Release Certifier GO, merge `77bd6ffad41443efbf543cd25caf7539ca593579`, post-merge specialized gate PASS. Verdict : **`EXTERNAL_AUTHORITY_REQUIRED_BEFORE_REGISTRY_WRITE`**.
+
+La couche **Offre par quartier reste interdite** : couverture toujours **89 / 15 438 = 0,5765 %**. Prochain lot Carte : **P1B.8 — Geo Authority Evidence Review**, read-only d’abord sur les 10 couples multi-source prioritaires. Aucun write Geo Registry n’est autorisé par P1B.7.
 
 ## État DATA acquis
 
