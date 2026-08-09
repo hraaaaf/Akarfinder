@@ -1,0 +1,101 @@
+name: P1B.8 Geo Authority Evidence Review Gate
+
+on:
+  pull_request:
+    paths:
+      - "data/geo/p1b8-authority-evidence.json"
+      - "scripts/audits/p1b8-geo-authority-evidence-review.ts"
+      - "scripts/audits/p1b7-geo-registry-gap-qualification.ts"
+      - "scripts/audits/p1b6-geo-coverage-depth-audit.ts"
+      - ".github/workflows/p1b8-geo-authority-evidence-review.yml"
+  push:
+    branches: [main]
+    paths:
+      - "data/geo/p1b8-authority-evidence.json"
+      - "scripts/audits/p1b8-geo-authority-evidence-review.ts"
+      - "scripts/audits/p1b7-geo-registry-gap-qualification.ts"
+      - "scripts/audits/p1b6-geo-coverage-depth-audit.ts"
+      - ".github/workflows/p1b8-geo-authority-evidence-review.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  authority-evidence-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Static read-only and authority contract
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const script=fs.readFileSync('scripts/audits/p1b8-geo-authority-evidence-review.ts','utf8');
+          for(const token of ['.insert(','.upsert(','.update(','.delete(','axios','fetch(']) {
+            if(script.includes(token)) throw new Error(`forbidden P1B.8 operation: ${token}`);
+          }
+          for(const marker of [
+            'db_mutation: false',
+            'registry_mutation: false',
+            'alias_creation: false',
+            'entity_creation: false',
+            'geo_resolution_write: false',
+            'property_portals_are_not_authority: true',
+            'commercial_recurrence_is_not_geo_truth: true',
+            'absence_of_evidence_is_not_evidence_of_absence: true',
+          ]) if(!script.includes(marker)) throw new Error(`missing P1B.8 safety marker: ${marker}`);
+
+          const manifest=JSON.parse(fs.readFileSync('data/geo/p1b8-authority-evidence.json','utf8'));
+          if(manifest.pairs.length!==10) throw new Error('P1B.8 manifest must contain exactly 10 pairs');
+          if(manifest.pairs.some(p=>p.write_eligible_in_p1b8!==false)) throw new Error('P1B.8 manifest may not authorize writes');
+          const propertyPortals=new Set(['mouldar.com','mubawab.ma','marrakechrealty.com','avito.ma','agenz.ma']);
+          for(const pair of manifest.pairs) for(const evidence of pair.evidence||[]) {
+            if(propertyPortals.has(String(evidence.domain).toLowerCase())) throw new Error(`commercial portal used as authority: ${evidence.domain}`);
+          }
+          NODE
+      - name: Live P1B.7 cohort replay and P1B.8 authority review
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1b8-geo-authority-evidence-review.ts
+      - name: Validate P1B.8 decision boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('data/audits/runtime/p1b8-geo-authority-evidence-review.json','utf8'));
+          if(r.schema_version!=='p1b8-geo-authority-evidence-review-v1') throw new Error('unexpected schema');
+          if(r.verdict!=='AUTHORITY_EVIDENCE_REVIEW_COMPLETE_NO_REGISTRY_WRITE_AUTHORIZED') throw new Error(`unsafe verdict: ${r.verdict}`);
+          if(r.p1b7_priority_baseline.pairs!==10 || r.p1b7_priority_baseline.listing_rows!==31) throw new Error('P1B.7 priority baseline drifted');
+          if(r.authority_confirmed_neighborhood_pairs!==2) throw new Error('unexpected Tier A neighborhood count');
+          if(r.registry_write_authorized_pairs!==0) throw new Error('P1B.8 must authorize zero Registry writes');
+          const expected={
+            AUTHORITY_CONFIRMED_NEIGHBORHOOD:{pairs:2,listing_rows:8},
+            INSTITUTIONAL_NEIGHBORHOOD_CORROBORATION:{pairs:1,listing_rows:4},
+            INSTITUTIONAL_LOCALITY_MENTION_NEEDS_ADMIN_AUTHORITY:{pairs:1,listing_rows:3},
+            OFFICIAL_LOCALITY_TYPE_REVIEW:{pairs:1,listing_rows:4},
+            OFFICIAL_LANDMARK_TYPE_MISMATCH_REVIEW:{pairs:1,listing_rows:2},
+            OFFICIAL_NAME_MENTION_TYPE_UNRESOLVED:{pairs:1,listing_rows:2},
+            NO_NEIGHBORHOOD_AUTHORITY_EVIDENCE_FOUND_IN_REVIEW_SCOPE:{pairs:3,listing_rows:8},
+          };
+          for(const [decision,counts] of Object.entries(expected)) {
+            const actual=r.decision_counts[decision];
+            if(!actual || actual.pairs!==counts.pairs || actual.listing_rows!==counts.listing_rows) throw new Error(`P1B.8 decision drift for ${decision}`);
+          }
+          const confirmed=r.authority_confirmed_neighborhoods.map(x=>`${x.city} — ${x.district}`).sort();
+          if(JSON.stringify(confirmed)!==JSON.stringify(['Agadir — Dakhla','Agadir — Hay Mohammadi'])) throw new Error('Tier A pair identity drifted');
+          NODE
+      - name: Upload P1B.8 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1b8-geo-authority-evidence-review
+          path: data/audits/runtime/p1b8-geo-authority-evidence-review.json
+          if-no-files-found: error
+          retention-days: 14
