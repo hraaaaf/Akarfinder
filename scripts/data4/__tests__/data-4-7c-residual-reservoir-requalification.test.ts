@@ -10,8 +10,9 @@ test("DATA-4.7C rotates across all display-admissible public-sitemap reservoirs 
     '"promoimmomarrakech.com"',
     '"aykana.ma"',
     '"limmobiliersansfrontieres.com"',
-    'READ_ONLY_SOURCE_ROTATION',
-    'DATA-4.7D_BOUNDED_WRITE',
+    'READ_ONLY_SOURCE_ROTATION_AND_NET_NEW_DELTA',
+    'DATA-4.7D_BOUNDED_FRESHNESS_WRITE',
+    'DATA-4.8A_NET_NEW_SITEMAP_QUALIFICATION',
     'databaseWrites: 0',
     'registryMutations: 0',
     'policyChanges: 0',
@@ -31,8 +32,20 @@ test("DATA-4.7C isolates blocked sources instead of making one source the critic
     'results.filter((result) => result.status === "QUALIFIED")',
     'found no live qualified public-sitemap reservoir',
     'blockedCount',
-    'totalLiveCandidateCapacity',
+    'totalLiveFreshnessCandidateCapacity',
   ]) assert.ok(script.includes(token), `missing rotation boundary ${token}`);
+});
+
+test("DATA-4.7C separates freshness capacity from true net-new sitemap identities", () => {
+  for (const token of [
+    'const seedIdentity = new Map',
+    'netNewSitemapIdentityUpperBound',
+    '!seedIdentity.has(identity)',
+    'sampleNetNewSitemapUrls',
+    'totalNetNewSitemapIdentityUpperBound',
+    'netNewDiscovery',
+    'This is a discovery upper bound only',
+  ]) assert.ok(script.includes(token), `missing net-new boundary ${token}`);
 });
 
 test("DATA-4.7C uses current Registry + same-origin sitemap evidence only", () => {
