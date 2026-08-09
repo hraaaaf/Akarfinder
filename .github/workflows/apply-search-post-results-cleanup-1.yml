@@ -1,0 +1,35 @@
+name: Apply SEARCH-POST-RESULTS-CLEANUP-1
+
+on:
+  push:
+    branches:
+      - ux/search-post-results-cleanup-1
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply bounded patch
+        run: node scripts/audits/apply-search-post-results-cleanup-1.mjs
+      - name: Verify scope
+        run: |
+          test "$(git diff --name-only | sort | tr '\n' ' ')" = "components/search/LightZillowSearchShell.tsx "
+          grep -q 'data-search-map-secondary="project"' components/search/LightZillowSearchShell.tsx
+          grep -q 'data-search-map-secondary="full-map"' components/search/LightZillowSearchShell.tsx
+      - name: Remove temporary machinery
+        run: git rm .github/workflows/apply-search-post-results-cleanup-1.yml scripts/audits/apply-search-post-results-cleanup-1.mjs
+      - name: Commit product patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add components/search/LightZillowSearchShell.tsx
+          git commit -m 'ux: simplify split-mode secondary content'
+          git push origin HEAD:ux/search-post-results-cleanup-1
