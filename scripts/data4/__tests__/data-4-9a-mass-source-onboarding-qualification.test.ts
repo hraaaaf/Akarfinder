@@ -3,6 +3,7 @@ import test from "node:test";
 import { gzipSync } from "node:zlib";
 import {
   DATA_4_9A_CANDIDATES,
+  chooseRegistryRobotsUrl,
   computeMassScore,
   conservativeUrlIdentity,
   decodeSitemapPayload,
@@ -15,8 +16,9 @@ import {
   type RegistryRow,
 } from "../mass-source-onboarding-qualification";
 
-test("candidate cohort excludes retired Promo Immo and contains exactly ten sitemap-declared onboarding candidates", () => {
-  assert.equal(DATA_4_9A_CANDIDATES.length, 10);
+test("candidate cohort excludes retired Promo Immo and contains exactly eleven zero-stock onboarding candidates", () => {
+  assert.equal(DATA_4_9A_CANDIDATES.length, 11);
+  assert.equal(DATA_4_9A_CANDIDATES.includes("agadirimmobilier.org"), true);
   assert.equal(DATA_4_9A_CANDIDATES.includes("promoimmomarrakech.com" as never), false);
   assert.equal(new Set(DATA_4_9A_CANDIDATES).size, DATA_4_9A_CANDIDATES.length);
 });
@@ -27,6 +29,15 @@ test("same-origin gate accepts only HTTPS domain/www and rejects lookalikes", ()
   assert.equal(sameOriginHttps("valfoncier.ma", "http://valfoncier.ma/sitemap.xml"), false);
   assert.equal(sameOriginHttps("valfoncier.ma", "https://evil.example/?u=valfoncier.ma"), false);
   assert.equal(sameOriginHttps("valfoncier.ma", "https://valfoncier.ma.evil.example/sitemap.xml"), false);
+});
+
+test("Registry robots evidence preserves exact apex/www URL and rejects unrelated evidence", () => {
+  assert.equal(chooseRegistryRobotsUrl("capital-properties.ma", [
+    "https://www.capital-properties.ma/robots.txt",
+    "https://www.capital-properties.ma/",
+  ]), "https://www.capital-properties.ma/robots.txt");
+  assert.equal(chooseRegistryRobotsUrl("capital-properties.ma", ["https://evil.example/robots.txt"]), null);
+  assert.equal(chooseRegistryRobotsUrl("capital-properties.ma", ["http://capital-properties.ma/robots.txt"]), null);
 });
 
 test("robots extraction keeps only declared same-origin HTTPS sitemap roots", () => {
@@ -69,7 +80,7 @@ test("conservative identity collapses www/trailing slash/query order but preserv
   assert.equal(conservativeUrlIdentity("immo-maroc.com", "https://other.example/property/a"), null);
 });
 
-test("registry onboarding gate is strict and never equates sitemap evidence with display authorization", () => {
+test("registry onboarding gate is strict and does not equate sitemap evidence with display authorization", () => {
   const future = new Date(Date.now() + 86_400_000).toISOString();
   const row: RegistryRow = {
     source_domain: "valfoncier.ma",
@@ -83,32 +94,54 @@ test("registry onboarding gate is strict and never equates sitemap evidence with
     review_status: "current",
     next_review_at: future,
     current_representation_count: 0,
+    evidence_urls: ["https://valfoncier.ma/robots.txt", "https://valfoncier.ma/"],
   };
   assert.equal(registryIsCurrentOnboardingCandidate("valfoncier.ma", row, new Date()), true);
   assert.equal(registryIsCurrentOnboardingCandidate("valfoncier.ma", { ...row, display_gate: "external_tail_link_only" }, new Date()), false);
   assert.equal(registryIsCurrentOnboardingCandidate("valfoncier.ma", { ...row, authorization_status: "prohibited" }, new Date()), false);
   assert.equal(registryIsCurrentOnboardingCandidate("valfoncier.ma", { ...row, robots_status: "allow_with_restrictions" }, new Date()), false);
   assert.equal(registryIsCurrentOnboardingCandidate("valfoncier.ma", { ...row, current_representation_count: 1 }, new Date()), false);
+  assert.equal(registryIsCurrentOnboardingCandidate("valfoncier.ma", { ...row, evidence_urls: ["https://evil.example/robots.txt"] }, new Date()), false);
 });
 
-test("path signals are descriptive only and expose dominant namespaces", () => {
+test("permission-required sources may be measured read-only but remain hidden/internal-only", () => {
+  const future = new Date(Date.now() + 86_400_000).toISOString();
+  const row: RegistryRow = {
+    source_domain: "agadirimmobilier.org",
+    authorization_status: "permission_required",
+    acquisition_mode: "public_index_internal_only",
+    allowed_discovery_channels: ["public_index", "commoncrawl"],
+    display_gate: "hidden",
+    ingestion_gate: "internal_signal_only",
+    robots_status: "sitemap_declared",
+    terms_status: "permission_required",
+    review_status: "current",
+    next_review_at: future,
+    current_representation_count: 0,
+    evidence_urls: ["https://agadirimmobilier.org/robots.txt"],
+  };
+  assert.equal(registryIsCurrentOnboardingCandidate("agadirimmobilier.org", row, new Date()), true);
+});
+
+test("path signals are descriptive only and never become listing classification", () => {
   const signals = summarizePathSignals([
     "https://valfoncier.ma/property/a-123",
     "https://valfoncier.ma/property/b-456.html",
     "https://valfoncier.ma/blog/news",
   ]);
+  assert.equal(signals.descriptiveOnly, true);
   assert.deepEqual(signals.topPrefixes[0], { prefix: "/property/", count: 2 });
   assert.equal(signals.idLikePathRows, 2);
   assert.equal(signals.htmlLikeRows, 1);
   assert.equal(signals.propertyWordRows, 2);
 });
 
-test("mass scoring rewards observed capacity while treating truncated trees as lower bounds", () => {
+test("raw capacity scoring is explicitly not a listing/onboarding authorization", () => {
   const high = computeMassScore({ observedNetNewIdentities: 800, sourceRequests: 6, collisionRows: 0, uniqueIdentityRows: 800, capacityKind: "complete" });
   const truncated = computeMassScore({ observedNetNewIdentities: 800, sourceRequests: 40, collisionRows: 0, uniqueIdentityRows: 800, capacityKind: "lower_bound_request_cap" });
   assert.equal(high, 85);
-  assert.equal(massRecommendation(high, 800), "HIGH_MASS_ONBOARDING_CANDIDATE");
+  assert.equal(massRecommendation(high, 800), "HIGH_RAW_SITEMAP_CAPACITY");
   assert.ok(truncated < high);
-  assert.equal(massRecommendation(60, 150), "MEDIUM_MASS_ONBOARDING_CANDIDATE");
+  assert.equal(massRecommendation(60, 150), "MEDIUM_RAW_SITEMAP_CAPACITY");
   assert.equal(massRecommendation(90, 0), "NO_CURRENT_SITEMAP_CAPACITY");
 });
