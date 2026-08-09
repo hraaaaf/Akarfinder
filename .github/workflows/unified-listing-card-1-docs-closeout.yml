@@ -33,6 +33,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --check
+          actual="$(git diff --cached --name-only | sort)"
+          expected="$(printf '%s\n' '.github/workflows/unified-listing-card-1-docs-closeout.yml' 'README.md' 'docs/ROADMAP.md' 'docs/SESSION.md' 'scripts/audits/unified-listing-card-1-docs-closeout.mjs' | sort)"
+          if [ "$actual" != "$expected" ]; then
+            echo "Unexpected staged scope"
+            printf 'ACTUAL:\n%s\nEXPECTED:\n%s\n' "$actual" "$expected"
+            exit 1
+          fi
           git commit -m "docs: close UNIFIED-LISTING-CARD-1"
           git push origin HEAD:docs/unified-listing-card-1-closeout
