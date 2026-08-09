@@ -62,33 +62,34 @@ test("dedicated biens namespace passes a clean labeled shadow replay", () => {
 
 test("shadow replay rejects a candidate that absorbs a certified negative route", () => {
   const proposal: PatternProposal = {
-    source_domain: "immo-maroc.com",
-    candidate_pattern: "^/(?:vente|article)-[^/]+-\\d+/?$",
-    expected_positive_signatures: ["/{slug}-{id}"],
-    certified_negative_signatures: ["/article-{slug}-{id}"],
+    source_domain: "leaderimmo.ma",
+    candidate_pattern: "^/(?:biens/\\d+/[^/]+|ville/\\d+/rabat/biens)/?$",
+    expected_positive_signatures: ["/biens/{id}/{slug}"],
+    certified_negative_signatures: ["/ville/{id}/rabat/biens"],
     rationale: "test-only intentionally broad candidate",
   };
   const records = [
-    ...Array.from({ length: 6 }, (_, index) => record(`https://immo-maroc.com/vente-villa-marrakech-${80000000 + index}`)),
-    ...Array.from({ length: 6 }, (_, index) => record(`https://immo-maroc.com/article-conseil-maroc-${90000000 + index}`)),
+    ...Array.from({ length: 6 }, (_, index) => record(`https://leaderimmo.ma/biens/${100 + index}/appartement-rabat-centre`)),
+    ...Array.from({ length: 6 }, (_, index) => record(`https://leaderimmo.ma/ville/${20 + index}/rabat/biens`)),
   ];
   const replay = replayPatternProposal(proposal, records);
   assert.equal(replay.decision, "REJECTED_SHADOW");
+  assert.equal(replay.false_positives, 6);
   assert.ok(replay.rejection_reasons.includes("false_positive_detected"));
 });
 
-test("shadow replay rejects a too-narrow transaction candidate on recall", () => {
+test("shadow replay rejects a too-narrow candidate on recall", () => {
   const proposal: PatternProposal = {
-    source_domain: "immo-maroc.com",
-    candidate_pattern: "^/vente-[^/]+-\\d+/?$",
-    expected_positive_signatures: ["/{slug}-{id}"],
-    certified_negative_signatures: ["/contact"],
+    source_domain: "immobilier-a-marrakech.com",
+    candidate_pattern: "^/produit/vente-[^/]+/\\d+/?$",
+    expected_positive_signatures: ["/produit/{slug}/{id}"],
+    certified_negative_signatures: ["/posts/{slug}/{id}"],
     rationale: "test-only intentionally narrow candidate",
   };
   const records = [
-    ...Array.from({ length: 5 }, (_, index) => record(`https://immo-maroc.com/vente-villa-marrakech-${81000000 + index}`)),
-    ...Array.from({ length: 5 }, (_, index) => record(`https://immo-maroc.com/location-annuelle-appartement-marrakech-${82000000 + index}`)),
-    ...Array.from({ length: 6 }, () => record("https://immo-maroc.com/contact")),
+    ...Array.from({ length: 5 }, (_, index) => record(`https://immobilier-a-marrakech.com/produit/vente-villa-charme-${index}/${3200 + index}`)),
+    ...Array.from({ length: 5 }, (_, index) => record(`https://immobilier-a-marrakech.com/produit/location-villa-charme-${index}/${3300 + index}`)),
+    ...Array.from({ length: 6 }, (_, index) => record(`https://immobilier-a-marrakech.com/posts/conseil-maroc-${index}/${100 + index}`)),
   ];
   const replay = replayPatternProposal(proposal, records);
   assert.equal(replay.decision, "REJECTED_SHADOW");
