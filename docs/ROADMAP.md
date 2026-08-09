@@ -5,6 +5,26 @@
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
+<!-- DATA-4.7B-CURRENT-START -->
+# 0. État DATA prioritaire — rotation de masse 2026-08-09
+
+> Ce bloc prévaut sur toute ancienne mention plus bas indiquant DATA-4.5B / Promo Immo comme « prochain LOT ».
+
+**Objectif actif : augmenter la masse réellement indexable sans attendre une source bloquée, tout en conservant Registry, fraîcheur, dédup, display eligibility et ranking fail-closed.**
+
+État certifié :
+
+- Promo Immo : `BLOCKED_EXTERNAL_SOURCE` — DNS/source directe non disponible ; aucune baisse de contrat autorisée.
+- Dar Agadir : `BLOCKED_SOURCE_DRIFT` — `robots.txt` répond mais ne déclare plus le sitemap historique ; DATA-4.6A fermé sans merge, 0 write.
+- **DATA-4.7A ✅ PR #433** — LSF Sitemap Mass Qualification ; merge `0019f33e6a10a58d76a6db4521c681861067c651` ; **353** candidates live long-tail certifiées, **250** comme premier checkpoint.
+- **DATA-4.7B 🟠 closeout PR #435** — write exécuté sur le head préalablement entièrement vert `f3f72f6b4e7e7f877df4eb67fa6c31f0140e81b3` ; rollback-ready dry-run run `31330561506`, artifact `sha256:d791172e8036d0b475cbf2119dca0c497938940f87563923dbcbf68370398672` ; write production **250/250** ; post-certification **250/250 freshness + sitemap channel + normalized + technical display + Public Search + projection** ; rollback non requis.
+- LSF production après write : **1 414 seeds / 349 fresh_confirmed / 1 065 seed_only / 250 public_sitemap_presence**.
+
+Doctrine long-tail verrouillée : une observation incomplète peut rester `eligible_secondary` et être classée bas ; **prix/surface/A-B ne sont pas des prérequis d'existence dans l'index**. Aucun champ absent n'est fabriqué. Les quality tiers et Ranking V2 restent autoritaires pour l'ordre.
+
+**Prochain LOT DATA : DATA-4.7C — Residual Reservoir Requalification**, read-only. Rejouer la preuve LSF courante après les 250 writes, mesurer le résiduel réellement encore sitemap-live et Search/display-eligible, puis le comparer au prochain `public_sitemap` admissible (Aykana en premier candidat). Un nouveau write doit rester un LOT séparé, borné et rollback-ready.
+<!-- DATA-4.7B-CURRENT-END -->
+
 # 1. Cap produit
 
 AkarFinder = **moteur de recherche immobilier + index national + couche d’intelligence** pour le Maroc.

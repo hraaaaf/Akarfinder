@@ -17,6 +17,20 @@ Ordre de vérité :
 
 `code mergé dans main → README.md → ROADMAP.md → SESSION.md → specs techniques → preuves historiques`.
 
+<!-- DATA-4.7B-CURRENT-START -->
+## État DATA courant — 2026-08-09
+
+La lane DATA est passée en **rotation de réservoirs** : une source bloquée n'est plus un chemin critique. Promo Immo reste bloqué par DNS/source directe ; Dar Agadir est en drift de déclaration sitemap ; L'Immobilier Sans Frontières (LSF) est le réservoir actif certifié.
+
+- **DATA-4.7A ✅ PR #433** — merge `0019f33e6a10a58d76a6db4521c681861067c651` : sitemap LSF courant **1 423 URLs**, **1 064** identités URL sûres, **983** `seed_only` présentes dans le sitemap, **353** candidates long-tail `normalized + display eligible + Search`, collisions d'identité ambiguës exclues fail-closed ; 0 write.
+- **DATA-4.7B 🟠 closeout en cours — PR #435** : exact write head `f3f72f6b4e7e7f877df4eb67fa6c31f0140e81b3`, specialized run `31330561506` PASS, rollback artifact `sha256:d791172e8036d0b475cbf2119dca0c497938940f87563923dbcbf68370398672` ; batch borné **250/250** appliqué puis certifié en production.
+- Cohorte 4.7B : **250/250 fresh_confirmed**, **250/250 public_sitemap_presence**, **250/250 normalized**, **250/250 technical display**, **250/250 Public Search**, **250/250 Thin Index freshness projection** ; rollback disponible, non utilisé.
+- LSF après write : **1 414 total / 349 fresh_confirmed / 1 065 seed_only / 250 public_sitemap_presence**.
+- Le tier C long-tail reste autorisé uniquement via les gates existants d'éligibilité secondaire et de ranking ; l'absence de prix/surface n'est jamais compensée par une donnée inventée.
+
+Le prochain LOT DATA ne doit pas lancer automatiquement un second write : il doit **requalifier le résiduel LSF** (103 candidates restantes dans la preuve pré-write, à revalider en direct) et le comparer au prochain réservoir admissible, notamment Aykana, puis choisir le meilleur rendement sûr.
+<!-- DATA-4.7B-CURRENT-END -->
+
 ## Doctrine
 
 Pipeline :
