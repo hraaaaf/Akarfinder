@@ -25,12 +25,13 @@ describe("SEARCH-MOBILE-CARD-GRID-1", () => {
     assert.ok(card.includes("h-[164px]"));
   });
 
-  it("removes secondary mobile actions while preserving them from sm upward", () => {
+  it("keeps mobile free of secondary actions while desktop exposes only one primary action", () => {
     const card = source("components/search/SearchListingCardDark.tsx");
 
-    assert.match(card, /Repérer sur la carte[\s\S]*hidden[\s\S]*sm:flex|hidden[\s\S]*sm:flex[\s\S]*Repérer sur la carte/);
-    assert.ok(card.includes('className="mt-4 hidden flex-col gap-2 sm:flex sm:flex-row"'));
-    assert.ok(card.includes('className="mt-2 hidden sm:block"'));
+    assert.ok(card.includes("data-card-primary-action"));
+    assert.ok(card.includes("sm:flex"));
+    assert.doesNotMatch(card, /Repérer sur la carte|CompareToggleButton/);
+    assert.ok(card.includes("data-secondary-source-link"));
   });
 
   it("aligns gateway cards to the same two-column mobile rhythm", () => {
