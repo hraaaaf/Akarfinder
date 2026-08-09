@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, MapPin } from "lucide-react";
 import { AkarInfoPassportCard } from "@/components/akarinfo/AkarInfoPassportCard";
 import { SourceBadge } from "@/components/badges/SourceBadge";
 import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
@@ -27,18 +27,38 @@ function sanitizeVisibleText(value: string | null | undefined) {
     .trim();
 }
 
+function formatIndexedPrice(price?: number) {
+  if (price == null || !Number.isFinite(price) || price <= 0) return "Prix non communiqué";
+  return `${Math.round(price).toLocaleString("fr-MA")} DH`;
+}
+
+function getIntentLabel(intent?: string) {
+  if (intent === "rent" || intent === "location") return "Location";
+  if (intent === "new" || intent === "neuf") return "Neuf";
+  if (intent === "buy" || intent === "sale" || intent === "achat") return "Achat";
+  return "Annonce indexée";
+}
+
 export function ExternalIndexedResultCard({ result, similarResults }: ExternalIndexedResultCardProps) {
   if (!result.can_show_result) return null;
   const passport = buildAkarInfoPassportForGatewayResult(result, similarResults);
-  const sanitizedTitle = sanitizeVisibleText(result.title);
-  const sanitizedSnippet = sanitizeVisibleText(result.snippet);
+  const sanitizedTitle = sanitizeVisibleText(result.title) || "Annonce immobilière";
   const sanitizedDisplayUrl = sanitizeVisibleText(result.display_url);
   const showThumbnail = THUMBNAILS_ENABLED && result.can_show_thumbnail && !!result.thumbnail_url;
   const safeFallbackPropertyType = isListingPropertyType(result.normalized_property_type)
     ? result.normalized_property_type
     : null;
   const [thumbError, setThumbError] = useState(false);
-  const showFallback = (!showThumbnail || thumbError) && safeFallbackPropertyType !== null;
+  const showFallback = !showThumbnail || thumbError;
+  const facts = [
+    safeFallbackPropertyType,
+    result.normalized_surface_m2 != null && result.normalized_surface_m2 > 0
+      ? `${Math.round(result.normalized_surface_m2).toLocaleString("fr-MA")} m²`
+      : null,
+    result.price_per_m2_mad != null && result.price_per_m2_mad > 0
+      ? `${Math.round(result.price_per_m2_mad).toLocaleString("fr-MA")} DH/m²`
+      : null,
+  ].filter((value): value is string => Boolean(value));
 
   return (
     <Link
@@ -46,77 +66,95 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
       target="_blank"
       rel="noopener noreferrer"
       data-mobile-compact-external-card
-      className="group flex min-w-0 flex-col overflow-hidden rounded-[20px] border border-border/10 bg-card shadow-[0_5px_16px_rgba(2,10,24,0.08)] transition-all hover:border-border/30 dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-white/20 sm:rounded-2xl sm:border-border/15 sm:shadow-none sm:hover:shadow-lg dark:sm:hover:shadow-black/30"
+      data-unified-listing-card
+      className="group flex min-w-0 flex-col overflow-hidden rounded-[20px] border border-border/10 bg-card shadow-[0_5px_16px_rgba(2,10,24,0.08)] transition duration-300 hover:border-bronze-500/35 sm:rounded-2xl sm:border-border/15 sm:shadow-[0_12px_34px_rgba(2,10,24,0.12)] sm:hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/[0.045]"
     >
-      {showThumbnail && !thumbError ? (
-        <div className="relative h-[164px] w-full flex-shrink-0 overflow-hidden bg-muted/30 dark:bg-white/[0.03] sm:h-[130px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+      <div className="relative h-[164px] w-full flex-shrink-0 overflow-hidden bg-white sm:h-[220px]">
+        {showThumbnail && !thumbError ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={result.thumbnail_url}
-            alt=""
+            alt={sanitizedTitle}
             loading="lazy"
             decoding="async"
             onError={() => setThumbError(true)}
-            className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.025]"
           />
-          <span className="absolute bottom-2 left-2 inline-flex items-center rounded-full bg-black/65 px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-wider text-white/95 backdrop-blur-sm sm:text-[9px]">
-            Source externe
+        ) : showFallback && safeFallbackPropertyType ? (
+          <PropertyTypeArtwork kind={safeFallbackPropertyType} className="h-full w-full transition duration-500 group-hover:scale-[1.025]" />
+        ) : (
+          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-slate-100 to-slate-200 px-6 text-center dark:from-deepblue dark:to-slate-900">
+            <span className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground dark:text-white/55">
+              Annonce indexée
+            </span>
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#03101f]/58 via-transparent to-transparent sm:from-[#03101f]/78" />
+        <div className="absolute left-2 top-2 flex flex-wrap gap-1.5 sm:left-3 sm:top-3 sm:gap-2">
+          <span className="rounded-full bg-deepblue/88 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.05em] text-white ring-1 ring-white/15 backdrop-blur sm:px-2.5 sm:py-1 sm:text-[10.5px]">
+            {getIntentLabel(result.normalized_intent)}
+          </span>
+          <span className="hidden rounded-full border border-slate-400/25 bg-slate-500/10 px-2.5 py-1 text-[10.5px] font-extrabold text-white/80 backdrop-blur sm:inline-flex">
+            Informations limitées
           </span>
         </div>
-      ) : showFallback ? (
-        <div className="relative h-[164px] w-full flex-shrink-0 overflow-hidden bg-white sm:h-[130px]">
-          <PropertyTypeArtwork kind={safeFallbackPropertyType} className="h-full w-full transition-transform duration-300 group-hover:scale-[1.03]" />
-          <span className="absolute bottom-2 left-2 inline-flex items-center rounded-full bg-black/65 px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-wider text-white/95 backdrop-blur-sm sm:text-[9px]">
+        <span className="absolute bottom-2 left-2 rounded-full bg-white/92 px-2 py-0.5 text-[9px] font-extrabold text-deepblue shadow-sm backdrop-blur sm:bottom-3 sm:left-3 sm:px-2.5 sm:py-1 sm:text-[10px]">
+          {safeFallbackPropertyType || "Bien immobilier"}
+        </span>
+        {showFallback ? (
+          <span className="absolute bottom-2 right-2 rounded-full bg-black/45 px-1.5 py-0.5 text-[8px] font-medium text-white/80 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]">
             Visuel illustratif
           </span>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
 
       <div className="flex flex-1 flex-col p-3 sm:p-5">
-        <div className="mb-1.5 flex items-center justify-between gap-2 sm:mb-3">
-          <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
-            <span className="truncate text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground dark:text-white/50 sm:text-[10px]">
-              {result.source_name}
-            </span>
-            {!showThumbnail && !showFallback || thumbError && !showFallback ? (
-              <span className="inline-flex flex-shrink-0 items-center rounded-full border border-border/20 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wider text-muted-foreground dark:border-white/10 dark:text-white/50 sm:text-[9px]">
-                Source externe
-              </span>
-            ) : null}
-            <span className="hidden flex-shrink-0 items-center rounded-full border border-slate-400/20 bg-slate-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-slate-600 dark:text-white/55 sm:inline-flex">
-              Informations limitées
-            </span>
-          </div>
-          <div className="hidden sm:block">
-            {result.source_badge ? <SourceBadge badge={result.source_badge} variant="dark" /> : null}
-          </div>
-        </div>
+        <p data-mobile-price className="truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-deepblue dark:text-white sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-bronze-500 dark:sm:text-bronze-300">
+          {formatIndexedPrice(result.normalized_price_mad)}
+        </p>
+        {result.price_per_m2_mad != null && result.price_per_m2_mad > 0 ? (
+          <p className="mt-1 hidden text-[12px] font-bold text-muted-foreground sm:block">
+            {Math.round(result.price_per_m2_mad).toLocaleString("fr-MA")} DH/m²
+          </p>
+        ) : null}
 
-        <h3 className="mb-1 line-clamp-2 text-[12.5px] font-extrabold leading-snug text-foreground transition group-hover:text-bronze-600 dark:text-white/90 dark:group-hover:text-bronze-300 sm:mb-2 sm:text-base sm:font-semibold sm:group-hover:text-[#0B63CE] dark:sm:group-hover:text-blue-400">
+        <h3 className="mt-1.5 line-clamp-1 text-[12.5px] font-extrabold leading-snug text-foreground transition group-hover:text-bronze-600 dark:text-white sm:mt-3 sm:line-clamp-2 sm:text-[1.02rem] dark:group-hover:text-bronze-300">
           {sanitizedTitle}
         </h3>
 
-        {sanitizedSnippet ? (
-          <p className="mb-3 hidden line-clamp-2 text-[13px] text-muted-foreground dark:text-white/60 sm:block">{sanitizedSnippet}</p>
-        ) : null}
+        <p className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-muted-foreground sm:mt-1.5 sm:gap-1.5 sm:text-[13px]">
+          <MapPin size={11} className="shrink-0 text-bronze-500 sm:h-[13px] sm:w-[13px]" aria-hidden="true" />
+          <span className="truncate">{result.normalized_city || "Localisation non précisée"}</span>
+        </p>
 
-        {similarResults?.similar_possible ? (
-          <div className="mb-2 text-[9px] font-semibold text-amber-800 dark:text-amber-100 sm:mb-3 sm:rounded-xl sm:border sm:border-amber-400/20 sm:bg-amber-500/10 sm:px-3 sm:py-2.5 sm:text-[11px]">
-            <span className="font-extrabold">Résultats proches</span>
-            <span className="hidden sm:inline"> · Ils peuvent correspondre au même bien, sans certitude. Comparez les sources pour confirmer.</span>
-          </div>
-        ) : null}
-
-        <div className="mt-auto flex items-center justify-between gap-2 border-t border-border/10 pt-2 dark:border-white/5 sm:pt-3">
-          <span className="truncate text-[8.5px] text-muted-foreground dark:text-white/40 sm:text-[10px]">{result.result_attribution_label}</span>
-          <span className="inline-flex shrink-0 items-center gap-1 text-[9.5px] font-extrabold text-bronze-700 transition-all group-hover:gap-2 dark:text-bronze-300 sm:text-[11px] sm:text-[#0B63CE] dark:sm:text-blue-400">
-            {result.primary_cta_label}<ArrowRight size={11} aria-hidden="true" className="sm:h-3 sm:w-3" />
-          </span>
+        <div className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[9.5px] font-bold text-foreground/65 dark:text-white/65 sm:mt-3 sm:flex-wrap sm:gap-x-3 sm:gap-y-1.5 sm:text-[12px]">
+          {facts.length > 0 ? facts.slice(0, 3).map((fact) => <span key={fact}>{fact}</span>) : <span>Informations à compléter</span>}
         </div>
 
-        <p className="mt-1.5 hidden truncate text-[10px] text-muted-foreground/60 dark:text-white/30 sm:block">{sanitizedDisplayUrl}</p>
+        {similarResults?.similar_possible ? (
+          <p className="mt-1.5 text-[9px] font-semibold text-amber-800 dark:text-amber-100 sm:mt-2 sm:text-[11px]">
+            Résultats proches · doublon possible. Comparez les sources pour confirmer.
+          </p>
+        ) : null}
+
+        <div className="mt-2 flex items-center justify-between gap-2 border-t border-border/10 pt-2 text-[9px] dark:border-white/8 sm:mt-3 sm:gap-3 sm:border-border/12 sm:pt-3 sm:text-[11px]">
+          <span className="truncate font-semibold text-muted-foreground">Source externe · {result.result_attribution_label}</span>
+          <span className="truncate font-semibold text-muted-foreground">{result.source_name}</span>
+        </div>
+
+        <div className="mt-2 hidden items-center justify-between gap-2 sm:flex">
+          <span className="min-w-0 truncate text-[10px] text-muted-foreground/60 dark:text-white/30">{sanitizedDisplayUrl}</span>
+          {result.source_badge ? <SourceBadge badge={result.source_badge} variant="dark" /> : null}
+        </div>
         <div className="hidden sm:block">
           <AkarInfoPassportCard passport={passport} className="mt-3" />
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-2 sm:mt-4 sm:rounded-xl sm:border sm:border-border/15 sm:bg-surface/70 sm:px-3 sm:py-2.5 dark:sm:border-white/10 dark:sm:bg-white/[0.04]">
+          <span className="min-w-0 truncate text-[9.5px] font-extrabold text-bronze-700 dark:text-bronze-300 sm:text-[12px]">
+            {result.primary_cta_label}
+          </span>
+          <ArrowRight size={13} aria-hidden="true" className="shrink-0" />
         </div>
       </div>
     </Link>
