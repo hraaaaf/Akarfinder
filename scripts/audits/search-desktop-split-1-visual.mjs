@@ -57,12 +57,6 @@ const browser = await chromium.launch({ headless: true });
 const results = [];
 let failure = null;
 
-function visible(node) {
-  if (!node) return false;
-  const style = getComputedStyle(node);
-  return style.display !== "none" && style.visibility !== "hidden" && Number.parseFloat(style.opacity || "1") > 0 && node.getClientRects().length > 0;
-}
-
 try {
   for (const viewport of viewports) {
     const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
@@ -82,7 +76,7 @@ try {
       if (!response || response.status() >= 400) throw new Error(`${viewport.name}: search returned ${response?.status() ?? "no response"}`);
       await page.waitForSelector('[data-search-view-layout="split"]', { timeout: 20_000 });
       await page.waitForSelector('[data-search-list-pane] [data-mobile-compact-card]', { timeout: 20_000 });
-      await page.waitForSelector('[data-search-map-pane] aside', { timeout: 20_000 });
+      await page.waitForSelector('[data-search-map-pane]', { state: "visible", timeout: 20_000 });
 
       const split = await page.evaluate(() => {
         const layout = document.querySelector('[data-search-view-layout="split"]');
