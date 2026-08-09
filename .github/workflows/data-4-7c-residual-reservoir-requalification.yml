@@ -43,9 +43,11 @@ jobs:
             '"promoimmomarrakech.com"',
             '"aykana.ma"',
             '"limmobiliersansfrontieres.com"',
-            'READ_ONLY_SOURCE_ROTATION',
+            'READ_ONLY_SOURCE_ROTATION_AND_NET_NEW_DELTA',
             'BLOCKED_SOURCE_EVIDENCE',
-            'DATA-4.7D_BOUNDED_WRITE',
+            'netNewSitemapIdentityUpperBound',
+            'DATA-4.7D_BOUNDED_FRESHNESS_WRITE',
+            'DATA-4.8A_NET_NEW_SITEMAP_QUALIFICATION',
             'databaseWrites: 0',
             'registryMutations: 0',
             'policyChanges: 0',
@@ -75,24 +77,29 @@ jobs:
       - run: npm ci
       - name: Rotate across live public-sitemap reservoirs
         run: npx tsx scripts/audits/data-4-7c-residual-reservoir-requalification.ts
-      - name: Enforce read-only rotation proof
+      - name: Enforce read-only rotation and net-new proof
         run: |
           node - <<'NODE'
           const fs = require('fs');
           const p = JSON.parse(fs.readFileSync('.tmp/data-4-7c/results/proof.json','utf8'));
-          if (p.schemaVersion !== 'data-4-7c-residual-reservoir-requalification-v2' || p.mode !== 'READ_ONLY_SOURCE_ROTATION') throw new Error(JSON.stringify(p));
+          if (p.schemaVersion !== 'data-4-7c-residual-reservoir-requalification-v3' || p.mode !== 'READ_ONLY_SOURCE_ROTATION_AND_NET_NEW_DELTA') throw new Error(JSON.stringify(p));
           if (!Array.isArray(p.sources) || p.sources.length !== 4) throw new Error(JSON.stringify(p));
           const domains = p.sources.map(s => s.sourceDomain).sort();
           const expected = ['aykana.ma','daragadir.com','limmobiliersansfrontieres.com','promoimmomarrakech.com'];
           if (JSON.stringify(domains) !== JSON.stringify(expected)) throw new Error(JSON.stringify(p));
           if (p.summary.qualifiedCount < 1 || p.summary.qualifiedCount + p.summary.blockedCount !== 4) throw new Error(JSON.stringify(p));
+          if (p.summary.totalNetNewSitemapIdentityUpperBound < 0 || p.summary.totalLiveFreshnessCandidateCapacity < 0) throw new Error(JSON.stringify(p));
           for (const s of p.sources) {
             if (s.currentSitemap.detailPageRequests !== 0) throw new Error(JSON.stringify(s));
             if (s.qualification.liveCandidateRows < 0 || s.qualification.liveCandidateRows > s.qualification.preSitemapUpperBound) throw new Error(JSON.stringify(s));
+            if (s.qualification.netNewSitemapIdentityUpperBound < 0) throw new Error(JSON.stringify(s));
             if (s.status === 'QUALIFIED' && (s.registry.policyCurrent !== true || s.currentSitemap.urlCount <= 0)) throw new Error(JSON.stringify(s));
-            if (s.status !== 'QUALIFIED' && s.qualification.liveCandidateRows !== 0) throw new Error(JSON.stringify(s));
+            if (s.status !== 'QUALIFIED' && (s.qualification.liveCandidateRows !== 0 || s.qualification.netNewSitemapIdentityUpperBound !== 0)) throw new Error(JSON.stringify(s));
           }
-          if (!p.recommendation.sourceDomain || p.recommendation.liveCandidateCapacity <= 0 || p.recommendation.nextLot !== 'DATA-4.7D_BOUNDED_WRITE') throw new Error(JSON.stringify(p));
+          if (!p.recommendation.freshness.sourceDomain || p.recommendation.freshness.liveCandidateCapacity < 0 || p.recommendation.freshness.nextLot !== 'DATA-4.7D_BOUNDED_FRESHNESS_WRITE') throw new Error(JSON.stringify(p));
+          const n = p.recommendation.netNewDiscovery;
+          if (n.sitemapIdentityUpperBound > 0 && (!n.sourceDomain || n.nextLot !== 'DATA-4.8A_NET_NEW_SITEMAP_QUALIFICATION')) throw new Error(JSON.stringify(p));
+          if (n.sitemapIdentityUpperBound === 0 && (n.sourceDomain !== null || n.nextLot !== 'NO_CURRENT_SITEMAP_NET_NEW_DELTA')) throw new Error(JSON.stringify(p));
           if (p.databaseWrites !== 0 || p.registryMutations !== 0 || p.policyChanges !== 0 || p.sourceSiteDetailRequests !== 0 || p.productionActivation !== false) throw new Error(JSON.stringify(p));
           NODE
       - uses: actions/upload-artifact@v4
