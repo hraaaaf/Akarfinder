@@ -152,7 +152,13 @@ La card Gateway/externe a été alignée sur la grammaire canonique `IMAGE → P
 
 Certification : head `6ddde621f03ccca1f25b8dc5dd34fdded090044b`, **23/23 workflows PR verts**, gate spécialisé contrat + Search Truth + TypeScript + build PASS, Chromium déterministe **360×800 / 390×844 / 768×900 / 1280×900**, 0 overflow, 0 prix tronqué. Benchmark UX/Search Reviewer **PASS 9,2/10**, Reviewer PASS, Release Certifier GO. Artefact visuel `sha256:784182dd2c8d4f5eca46e907eeedd38493e0f63d586bd99151010fae6b3e542b`. Merge `7ad1b7af2a0e7dc268b0b3ea032e083f7ccbb193`.
 
-Prochain lot UX/Search séparé : **CONTEXTUAL-VISUAL-ASSETS-1**.
+### CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414
+
+Les résultats Gateway sans thumbnail autorisée utilisent désormais un fallback contextuel déterministe et truth-safe : thumbnail autorisée d’abord ; sinon illustration de ville uniquement sur `normalized_city` exact et allowlist locale ; sinon artwork du type normalisé reconnu ; sinon état neutre `Annonce indexée`. Aucun parsing titre/snippet, fuzzy matching, hasard, réseau ou lookup d’image externe.
+
+Certification : head `575f9510587cc244b2f1a3a6bf9aea7ad957fd83`, **24/24 workflows exact-head verts**, Property Type Visual Option A + UNIFIED predecessor + Search Truth + TypeScript + build PASS. Chromium **360×800 / 390×844 / 768×900 / 1280×900** : 0 label tronqué, 0 prix tronqué, 0 overflow horizontal. Benchmark UX/Search Reviewer **PASS 9,3/10**, Reviewer PASS, Release Certifier GO. Artefact visuel `sha256:78cf4a742360b87683bd9697a465a15f898979b29dea9e384474baf8b0a7ca69`. Merge `ae3e254bcec3bb4e98b814b0f057141e84956d10`.
+
+Prochaine étape UX/Search à formaliser : **attribution déterministe**.
 
 ## État UX / Carte
 
