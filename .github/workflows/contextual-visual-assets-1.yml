@@ -1,0 +1,75 @@
+name: CONTEXTUAL-VISUAL-ASSETS-1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "components/search/ContextualListingArtwork.tsx"
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "scripts/scrapers/__tests__/contextual-visual-assets-1.test.ts"
+      - "scripts/scrapers/__tests__/unified-listing-card-1.test.ts"
+      - "scripts/audits/contextual-visual-assets-1-visual.mjs"
+      - ".github/workflows/contextual-visual-assets-1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contextual-visual-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Contextual visual truth contract
+        run: npx tsx --test scripts/scrapers/__tests__/contextual-visual-assets-1.test.ts
+      - name: Unified card predecessor contract
+        run: npx tsx --test scripts/scrapers/__tests__/unified-listing-card-1.test.ts
+      - name: Search truth regressions
+        run: npx tsx --test scripts/scrapers/__tests__/search-truth-tier.test.ts scripts/scrapers/__tests__/serp-gateway-first.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build rehearsal
+        run: npm run build
+
+  contextual-visual-certification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start > /tmp/akarfinder-contextual-visual-assets.log 2>&1 &
+          echo $! > /tmp/akarfinder-contextual-visual-assets.pid
+          for i in {1..60}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/akarfinder-contextual-visual-assets.log
+          exit 1
+      - name: Capture and assert contextual listing visuals
+        run: node scripts/audits/contextual-visual-assets-1-visual.mjs
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contextual-visual-assets-1-visual-proof
+          path: |
+            data/audits/contextual-visual-assets-1
+            /tmp/akarfinder-contextual-visual-assets.log
+          retention-days: 14
+          if-no-files-found: error
