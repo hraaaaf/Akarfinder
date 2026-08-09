@@ -377,7 +377,9 @@ describe("Search Truth UX source contracts", () => {
 
   it("external cards expose source and limits in plain language", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-    assert.ok(card.includes("Source externe"));
+    assert.ok(card.includes("publicAttribution.typeLabel"));
+    assert.ok(card.includes("publicAttribution.sourceLabel"));
+    assert.doesNotMatch(card, /result\.result_attribution_label|result\.source_name/);
     assert.ok(card.includes("Informations limitées"));
     assert.doesNotMatch(card, /Offre observée|Aperçu limité/i);
     assert.match(card, /Comparez les sources/i);

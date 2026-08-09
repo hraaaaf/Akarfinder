@@ -18,6 +18,7 @@ import {
 } from "@/lib/search/search-truth-tier";
 import { track } from "@/lib/tracking/track";
 import { buildSmartPropertyCardModel } from "@/lib/ux/smart-property-card";
+import { deriveListingPublicAttribution } from "@/lib/search/public-attribution";
 
 function getTransactionLabel(type: Listing["transaction_type"]) {
   if (type === "rent") return "Location";
@@ -55,6 +56,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   const truth = getSearchTruthPresentation(listing);
   const smartCard = buildSmartPropertyCardModel(listing);
   const observedExternal = isObservedExternalListing(listing);
+  const publicAttribution = deriveListingPublicAttribution(listing);
   const resultHref =
     observedExternal && listing.listing_url ? listing.listing_url : `/listings/${listing.id}`;
   const resultTarget = observedExternal ? "_blank" : undefined;
@@ -179,8 +181,8 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
 
           <div className="mt-2 flex items-center justify-between gap-2 border-t border-border/10 pt-2 text-[9px] dark:border-white/8 sm:mt-3 sm:gap-3 sm:border-border/12 sm:pt-3 sm:text-[11px]">
             <span className="truncate font-semibold text-muted-foreground">{smartCard.freshnessLabel}</span>
-            <span className="truncate font-semibold text-muted-foreground">
-              {listing.source_name || truth.informationLabel}
+            <span data-public-attribution className="truncate font-semibold text-muted-foreground">
+              {publicAttribution.combinedLabel}
             </span>
           </div>
 

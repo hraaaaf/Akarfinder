@@ -21,9 +21,9 @@ describe("UNIFIED-LISTING-CARD-1", () => {
     const title = positionOrFail(card, '<h3 className="mt-1.5');
     const location = positionOrFail(card, 'result.normalized_city || "Localisation non précisée"');
     const facts = positionOrFail(card, "facts.length > 0");
-    const provenance = positionOrFail(card, "Source externe · {result.result_attribution_label}");
+    const provenance = positionOrFail(card, "data-public-attribution-type");
     const passport = positionOrFail(card, "<AkarInfoPassportCard passport={passport}");
-    const action = positionOrFail(card, "{result.primary_cta_label}");
+    const action = positionOrFail(card, 'publicAttribution.primaryCtaLabel ?? "Voir la source originale"');
 
     assert.ok(image < price, "IMAGE must precede PRICE");
     assert.ok(price < title, "PRICE must precede TITLE");
@@ -41,7 +41,8 @@ describe("UNIFIED-LISTING-CARD-1", () => {
     assert.ok(card.includes("Localisation non précisée"));
     assert.ok(card.includes("Informations à compléter"));
     assert.ok(card.includes("Informations limitées"));
-    assert.ok(card.includes("Source externe"));
+    assert.ok(card.includes("publicAttribution.typeLabel"));
+    assert.ok(card.includes("publicAttribution.sourceLabel"));
     assert.ok(card.includes("Comparez les sources"));
   });
 
@@ -56,6 +57,16 @@ describe("UNIFIED-LISTING-CARD-1", () => {
     assert.ok(card.includes("<ContextualListingArtwork"));
     assert.ok(artwork.includes("<PropertyTypeArtwork"));
     assert.doesNotMatch(card, /href=\{?['"]\/listings\//);
+  });
+
+  it("keeps provenance deterministic instead of rendering payload labels directly", () => {
+    const card = source("components/search/ExternalIndexedResultCard.tsx");
+
+    assert.ok(card.includes("deriveGatewayPublicAttribution(result)"));
+    assert.doesNotMatch(card, /\{result\.source_name\}/);
+    assert.doesNotMatch(card, /\{result\.result_attribution_label\}/);
+    assert.doesNotMatch(card, /\{result\.primary_cta_label\}/);
+    assert.doesNotMatch(card, /badge=\{result\.source_badge\}/);
   });
 
   it("does not introduce ranking or commercial-priority logic into the card", () => {

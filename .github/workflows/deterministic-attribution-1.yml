@@ -1,0 +1,86 @@
+name: DETERMINISTIC-ATTRIBUTION-1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/search/public-attribution.ts"
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "components/search/SearchListingCardDark.tsx"
+      - "lib/akarinfo/akarinfo-passport.ts"
+      - "scripts/scrapers/__tests__/deterministic-attribution-1.test.ts"
+      - "scripts/scrapers/__tests__/unified-listing-card-1.test.ts"
+      - "scripts/audits/unified-listing-card-1-visual.mjs"
+      - "scripts/audits/deterministic-attribution-1-contract.mjs"
+      - ".github/workflows/deterministic-attribution-1.yml"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  attribution-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Deterministic attribution static contract
+        run: node scripts/audits/deterministic-attribution-1-contract.mjs
+      - name: Deterministic attribution behavioral tests
+        run: npx tsx --test scripts/scrapers/__tests__/deterministic-attribution-1.test.ts
+      - name: AkarInfo attribution regression
+        run: npx tsx --test scripts/scrapers/__tests__/akarinfo-passport.test.ts
+      - name: Unified card predecessor
+        run: npx tsx --test scripts/scrapers/__tests__/unified-listing-card-1.test.ts
+      - name: Contextual visual predecessor
+        run: npx tsx --test scripts/scrapers/__tests__/contextual-visual-assets-1.test.ts
+      - name: Search truth regressions
+        run: npx tsx --test scripts/scrapers/__tests__/search-truth-tier.test.ts scripts/scrapers/__tests__/serp-gateway-first.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build rehearsal
+        run: npm run build
+
+  attribution-visual-certification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start > /tmp/akarfinder-deterministic-attribution.log 2>&1 &
+          for i in {1..60}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/akarfinder-deterministic-attribution.log
+          exit 1
+      - name: Capture and assert deterministic public attribution
+        run: node scripts/audits/unified-listing-card-1-visual.mjs
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deterministic-attribution-1-visual-proof
+          path: |
+            data/audits/unified-listing-card-1
+            /tmp/akarfinder-deterministic-attribution.log
+          retention-days: 14
+          if-no-files-found: error
