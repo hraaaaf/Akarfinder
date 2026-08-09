@@ -4,6 +4,24 @@
 
 Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
 
+<!-- DATA-CURRENT-START -->
+## DATA — vérité courante
+
+- DATA-4.7B ✅ PR #435 — merge `00a459032161f4110de3c580e6589faaff166bec`.
+- DATA-4.7C ✅ PR #438 — merge `3a22c0830ee6afd8f05be7cdb25906f8d5462f78`.
+- DATA-4.8A 🟠 PR #442 — Net-New Sitemap Qualification, exact-head specialized gate PASS ; zéro write.
+- Public Search : **22 068 canonical URL representations / 16 domaines**, pas un compteur de biens uniques dédupliqués.
+- Réservoir : **56 810 seeds / 4 108 fresh-confirmed / 52 702 seed-only**.
+- Preuve 4.8A actuelle : **185** identités LSF absentes des seeds → **0 candidate detail**, 184 `REJECT_NO_DETAIL_PATTERN` + 1 `REJECT_NAMESPACE_ROOT` (`/property/`). Dar/Aykana/Promo : `BLOCKED_SOURCE_EVIDENCE` sur ce snapshot.
+- 0 detail-page fetch ; 0 DB/Registry/policy mutation.
+
+**Décision quantité :** les quatre sources publiques sitemap actuelles sont saturées en net-new pages détail sur la preuve courante. Les milliers de rows revalidables concernent surtout la fraîcheur de rows déjà connues.
+
+**Prochain LOT après merge #442 : DATA-4.9A — New Public Source Onboarding Qualification**, read-only. Candidats techniques initiaux : `agadirimmobilier.ma`, `capital-properties.ma`, `christiesrealestatemorocco.com`, `immobest.ma`, `immotaroudant.com`, `proimmobilier.ma`, `valfoncier.ma` — sélection technique seulement, aucune autorisation implicite.
+
+Lane secondaire : 28 signaux `public_index_result` encore fresh pourraient récupérer Search eligibility via un replay borné.
+<!-- DATA-CURRENT-END -->
+
 ## Vérité canonique après merges parallèles
 
 - Base documentaire utilisée pour ce closeout UX/Search : `a2e92ac6c4385792744ab7bf3e105663d040bc9d` — merge de `CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1` PR #445, lui-même descendant du merge Carte P1B.10. Les avancées parallèles ultérieures de `main` doivent être conservées ; ce closeout ne prétend pas figer le SHA courant de `main`.

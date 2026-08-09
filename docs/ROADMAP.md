@@ -6,23 +6,34 @@
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
 <!-- DATA-4.7B-CURRENT-START -->
-# 0. État DATA prioritaire — rotation de masse 2026-08-09
+# 0. État DATA prioritaire — quantité réelle 2026-08-09
 
-> Ce bloc prévaut sur toute ancienne mention plus bas indiquant DATA-4.5B / Promo Immo comme « prochain LOT ».
+> Ce bloc prévaut sur les anciennes mentions DATA plus bas lorsqu'elles désignent un prochain LOT désormais dépassé.
 
-**Objectif actif : augmenter la masse réellement indexable sans attendre une source bloquée, tout en conservant Registry, fraîcheur, dédup, display eligibility et ranking fail-closed.**
+**North Star : augmenter les observations utiles réellement admissibles sans transformer fraîcheur, taxonomy ou signaux internes en faux volume.**
 
-État certifié :
+- Public Search : **22 068 canonical URL representations / 16 domaines**, pas un nombre de biens uniques dédupliqués.
+- Réservoir : **56 810 seeds / 4 108 fresh_confirmed / 52 702 seed_only**.
+- **DATA-4.7B ✅ #435** — merge `00a459032161f4110de3c580e6589faaff166bec`, +250 LSF freshness, one-shot permanent.
+- **DATA-4.7C ✅ #438** — merge `3a22c0830ee6afd8f05be7cdb25906f8d5462f78`, rotation read-only et séparation freshness/net-new.
+- **DATA-4.8A 🟠 #442** — après correction du faux positif `/property/`, preuve exact-head : **185** identités LSF absentes des seeds, **0** candidate detail, **185** rejets = 184 non-detail + 1 namespace root ; Dar/Aykana/Promo bloqués sur la preuve source du snapshot ; **0 write**.
 
-- Promo Immo : `BLOCKED_EXTERNAL_SOURCE` — DNS/source directe non disponible ; aucune baisse de contrat autorisée.
-- Dar Agadir : `BLOCKED_SOURCE_DRIFT` — `robots.txt` répond mais ne déclare plus le sitemap historique ; DATA-4.6A fermé sans merge, 0 write.
-- **DATA-4.7A ✅ PR #433** — LSF Sitemap Mass Qualification ; merge `0019f33e6a10a58d76a6db4521c681861067c651` ; **353** candidates live long-tail certifiées, **250** comme premier checkpoint.
-- **DATA-4.7B 🟠 closeout PR #435** — write exécuté sur le head préalablement entièrement vert `f3f72f6b4e7e7f877df4eb67fa6c31f0140e81b3` ; rollback-ready dry-run run `31330561506`, artifact `sha256:d791172e8036d0b475cbf2119dca0c497938940f87563923dbcbf68370398672` ; write production **250/250** ; post-certification **250/250 freshness + sitemap channel + normalized + technical display + Public Search + projection** ; rollback non requis.
-- LSF production après write : **1 414 seeds / 349 fresh_confirmed / 1 065 seed_only / 250 public_sitemap_presence**.
+**Décision : aucun DATA-4.8B seed write ne doit être ouvert à partir de ce résultat.**
 
-Doctrine long-tail verrouillée : une observation incomplète peut rester `eligible_secondary` et être classée bas ; **prix/surface/A-B ne sont pas des prérequis d'existence dans l'index**. Aucun champ absent n'est fabriqué. Les quality tiers et Ranking V2 restent autoritaires pour l'ordre.
+## Prochain LOT DATA — DATA-4.9A New Public Source Onboarding Qualification
 
-**Prochain LOT DATA : DATA-4.7C — Residual Reservoir Requalification**, read-only. Rejouer la preuve LSF courante après les 250 writes, mesurer le résiduel réellement encore sitemap-live et Search/display-eligible, puis le comparer au prochain `public_sitemap` admissible (Aykana en premier candidat). Un nouveau write doit rester un LOT séparé, borné et rollback-ready.
+Strictement read-only.
+
+1. partir du Source Registry live, pas du registre structurel historique ;
+2. recenser les domaines `current` avec capacité de découverte publique documentable et zéro/faible stock ;
+3. mesurer robots/sitemap/public-index et structure détail sans fetcher les pages détail ;
+4. séparer `unverified`, `permission_required`, `prohibited` et `internal_signal_only` sans promotion implicite ;
+5. classer par **net-new detail discovery potential** avec blocker explicite ;
+6. n'autoriser ni ingestion, ni publication.
+
+Candidats techniques initiaux à auditer — aucune autorisation implicite : `agadirimmobilier.ma`, `capital-properties.ma`, `christiesrealestatemorocco.com`, `immobest.ma`, `immotaroudant.com`, `proimmobilier.ma`, `valfoncier.ma`.
+
+Lane secondaire : qualifier séparément le replay borné des **28 signaux public-index fresh** déjà persistés pouvant récupérer Search eligibility.
 <!-- DATA-4.7B-CURRENT-END -->
 
 # 1. Cap produit

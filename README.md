@@ -20,15 +20,19 @@ Ordre de vérité :
 <!-- DATA-4.7B-CURRENT-START -->
 ## État DATA courant — 2026-08-09
 
-La lane DATA est passée en **rotation de réservoirs** : une source bloquée n'est plus un chemin critique. Promo Immo reste bloqué par DNS/source directe ; Dar Agadir est en drift de déclaration sitemap ; L'Immobilier Sans Frontières (LSF) est le réservoir actif certifié.
+La lane DATA sépare désormais **volume brut**, **fraîcheur** et **net-new Search**.
 
-- **DATA-4.7A ✅ PR #433** — merge `0019f33e6a10a58d76a6db4521c681861067c651` : sitemap LSF courant **1 423 URLs**, **1 064** identités URL sûres, **983** `seed_only` présentes dans le sitemap, **353** candidates long-tail `normalized + display eligible + Search`, collisions d'identité ambiguës exclues fail-closed ; 0 write.
-- **DATA-4.7B 🟠 closeout en cours — PR #435** : exact write head `f3f72f6b4e7e7f877df4eb67fa6c31f0140e81b3`, specialized run `31330561506` PASS, rollback artifact `sha256:d791172e8036d0b475cbf2119dca0c497938940f87563923dbcbf68370398672` ; batch borné **250/250** appliqué puis certifié en production.
-- Cohorte 4.7B : **250/250 fresh_confirmed**, **250/250 public_sitemap_presence**, **250/250 normalized**, **250/250 technical display**, **250/250 Public Search**, **250/250 Thin Index freshness projection** ; rollback disponible, non utilisé.
-- LSF après write : **1 414 total / 349 fresh_confirmed / 1 065 seed_only / 250 public_sitemap_presence**.
-- Le tier C long-tail reste autorisé uniquement via les gates existants d'éligibilité secondaire et de ranking ; l'absence de prix/surface n'est jamais compensée par une donnée inventée.
+- Public Search : **22 068 canonical URL representations / 16 domaines** — pas un compteur de biens uniques dédupliqués.
+- Réservoir : **56 810 seeds / 4 108 fresh_confirmed / 52 702 seed_only**.
+- **DATA-4.7B ✅ PR #435** — merge `00a459032161f4110de3c580e6589faaff166bec`, +250 LSF fresh-confirmed, 250/250 certifiés, one-shot permanent, post-merge PASS.
+- **DATA-4.7C ✅ PR #438** — merge `3a22c0830ee6afd8f05be7cdb25906f8d5462f78`, source rotation read-only et séparation freshness vs net-new.
+- **DATA-4.8A 🟠 PR #442** — Net-New Sitemap Qualification : faux positif namespace `/property/` détecté puis corrigé par `REJECT_NAMESPACE_ROOT`. Preuve exacte-head : **185** identités LSF absentes des seeds → **0 candidate detail**, 184 non-detail + 1 namespace root rejeté ; Dar/Aykana/Promo `BLOCKED_SOURCE_EVIDENCE` sur ce snapshot. **0 write / 0 detail-page fetch**.
 
-Le prochain LOT DATA ne doit pas lancer automatiquement un second write : il doit **requalifier le résiduel LSF** (103 candidates restantes dans la preuve pré-write, à revalider en direct) et le comparer au prochain réservoir admissible, notamment Aykana, puis choisir le meilleur rendement sûr.
+Conclusion : les quatre réservoirs publics sitemap actuels sont **saturés en net-new détail sur le snapshot certifié**. Revalider des rows déjà connues améliore la fraîcheur mais ne fait pas monter mécaniquement Search.
+
+**Prochain chantier masse après closeout 4.8A : DATA-4.9A — New Public Source Onboarding Qualification**, read-only : ouvrir de nouveaux réservoirs sans promouvoir implicitement une policy `hidden`, `internal_signal_only`, `permission_required` ou `prohibited`.
+
+Lane secondaire distincte : **28** signaux public-index encore fresh pourraient récupérer Search eligibility via un replay borné, sans baisser le quality gate.
 <!-- DATA-4.7B-CURRENT-END -->
 
 ## Doctrine
