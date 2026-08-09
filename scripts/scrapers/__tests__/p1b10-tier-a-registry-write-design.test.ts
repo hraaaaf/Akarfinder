@@ -121,6 +121,7 @@ test("P1B.10 rollback refuses every known external Registry dependency", async (
     await db.exec(APPLY_SQL);
     await db.exec(dependencySql);
     await assert.rejects(() => db.exec(ROLLBACK_SQL), /external dependencies exist/);
+    await db.exec("rollback");
     assert.deepEqual(await scalar(db, `select count(*)::int n from public.geo_entities where id in ('district_agadir_dakhla','district_agadir_hay_mohammadi')`), { n: 2 });
     await db.close();
   }
