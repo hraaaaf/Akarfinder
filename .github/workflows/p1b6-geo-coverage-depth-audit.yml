@@ -1,0 +1,65 @@
+name: P1B.6 Geo Coverage Depth Audit Gate
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/p1b6-geo-coverage-depth-audit.ts"
+      - ".github/workflows/p1b6-geo-coverage-depth-audit.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/audits/p1b6-geo-coverage-depth-audit.ts"
+      - ".github/workflows/p1b6-geo-coverage-depth-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  geo-depth-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Static read-only contract
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('scripts/audits/p1b6-geo-coverage-depth-audit.ts','utf8');
+          for(const token of ['.insert(','.upsert(','.update(','.delete(','fetch(','axios','index.commoncrawl.org']) if(s.includes(token)) throw new Error(`forbidden P1B.6 operation: ${token}`);
+          for(const marker of ['db_mutation:false','registry_mutation:false','source_site_request:false','alias_creation:false','entity_creation:false','fuzzy_matching:false','title_snippet_inference:false']) if(!s.includes(marker)) throw new Error(`missing safety marker: ${marker}`);
+          NODE
+      - name: Live production depth audit
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1b6-geo-coverage-depth-audit.ts
+      - name: Validate P1B.6 decision boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('data/audits/runtime/p1b6-geo-coverage-depth-audit.json','utf8'));
+          if(r.schema_version!=='p1b6-geo-coverage-depth-audit-v1') throw new Error('unexpected schema');
+          if(r.verdict!=='REGISTRY_GAP_IS_NEXT_BOUNDARY') throw new Error(`P1B.6 boundary changed: ${r.verdict}`);
+          if(r.search.currently_resolved < 89) throw new Error('resolved Geo coverage regressed below P1B.5 baseline');
+          if(r.search.unresolved !== r.search.unresolved_with_explicit_district + r.search.unresolved_without_explicit_district) throw new Error('unresolved partition mismatch');
+          if(r.explicit_district_gap.rows_with_existing_confidence_one_neighborhood_alias !== 0) throw new Error('new exact alias evidence exists; reassess before Registry-gap lot');
+          if(r.no_district_gap.structured_neighborhood_keys.length !== 0) throw new Error('new structured neighborhood evidence exists; reassess P1B.7');
+          if(r.explicit_district_gap.rows <= 0 || r.explicit_district_gap.distinct_city_district_pairs <= 0) throw new Error('no explicit Registry-gap cohort');
+          if(r.contract.db_mutation!==false || r.contract.registry_mutation!==false || r.contract.source_site_request!==false || r.contract.fuzzy_matching!==false || r.contract.title_snippet_inference!==false) throw new Error('safety contract failed');
+          console.log(JSON.stringify({search:r.search,explicit_district_gap:{rows:r.explicit_district_gap.rows,pairs:r.explicit_district_gap.distinct_city_district_pairs,by_city:r.explicit_district_gap.by_city,by_source_domain:r.explicit_district_gap.by_source_domain},no_district_rows:r.no_district_gap.rows,verdict:r.verdict},null,2));
+          NODE
+      - name: Upload P1B.6 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1b6-geo-coverage-depth-audit
+          path: data/audits/runtime/p1b6-geo-coverage-depth-audit.json
+          if-no-files-found: error
+          retention-days: 14
