@@ -12,7 +12,7 @@ export type ContextualIllustrationTier =
   | "city";
 
 export type ContextualIllustrationInput = {
-  stableListingId: string;
+  stableRepresentationKey: string;
   normalizedCity?: string | null;
   normalizedDistrict?: string | null;
   normalizedPropertyType?: string | null;
@@ -96,7 +96,7 @@ function findCandidatePool(
 
 function buildTierSeed(
   input: ContextualIllustrationInput,
-  stableListingId: string,
+  stableRepresentationKey: string,
   tier: ContextualIllustrationTier
 ): string {
   const city = input.normalizedCity ?? "";
@@ -104,18 +104,18 @@ function buildTierSeed(
   switch (tier) {
     case "district_type":
       return contextualKey(
-        stableListingId,
+        stableRepresentationKey,
         city,
         input.normalizedDistrict ?? "",
         input.normalizedPropertyType ?? "",
         tier
       );
     case "district":
-      return contextualKey(stableListingId, city, input.normalizedDistrict ?? "", tier);
+      return contextualKey(stableRepresentationKey, city, input.normalizedDistrict ?? "", tier);
     case "city_type":
-      return contextualKey(stableListingId, city, input.normalizedPropertyType ?? "", tier);
+      return contextualKey(stableRepresentationKey, city, input.normalizedPropertyType ?? "", tier);
     case "city":
-      return contextualKey(stableListingId, city, tier);
+      return contextualKey(stableRepresentationKey, city, tier);
   }
 }
 
@@ -123,13 +123,13 @@ export function resolveContextualIllustrationFromCatalog(
   input: ContextualIllustrationInput,
   catalog: ContextualIllustrationCatalog
 ): ResolvedContextualIllustration | null {
-  const stableListingId = input.stableListingId.trim();
-  if (!stableListingId) return null;
+  const stableRepresentationKey = input.stableRepresentationKey.trim();
+  if (!stableRepresentationKey) return null;
 
   const pool = findCandidatePool(input, catalog);
   if (!pool) return null;
 
-  const seed = buildTierSeed(input, stableListingId, pool.tier);
+  const seed = buildTierSeed(input, stableRepresentationKey, pool.tier);
   const selected = selectDeterministicAsset(pool.candidates, seed);
   return selected ? { ...selected, tier: pool.tier } : null;
 }
