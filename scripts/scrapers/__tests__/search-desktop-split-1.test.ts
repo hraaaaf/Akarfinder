@@ -22,7 +22,7 @@ test("split renders one list pane and one map pane with a balanced desktop ratio
   assert.match(shell, /data-search-map-pane/);
   assert.match(shell, /lg:grid-cols-\[minmax\(0,1\.08fr\)_minmax\(440px,0\.92fr\)\]/);
   assert.equal((shell.match(/data-search-map-secondary=/g) ?? []).length, 2);
-  assert.equal((shell.match(/view === "split" \? "lg:hidden" : ""/g) ?? []).length, 2);
+  assert.equal((shell.match(/view === "split" \? "hidden" : ""/g) ?? []).length, 2);
 });
 
 test("split simplification stays presentation-only", () => {
@@ -36,10 +36,11 @@ test("split simplification stays presentation-only", () => {
   assert.doesNotMatch(shell, /view[^\n]*sortListings|sortListings[^\n]*view/);
 });
 
-test("secondary map content remains available outside desktop split", () => {
+test("secondary map content remains available in dedicated map mode", () => {
   const shell = source("components/search/LightZillowSearchShell.tsx");
   assert.match(shell, /Mon Projet AkarFinder/);
   assert.match(shell, /Ouvrir la carte complète/);
   assert.match(shell, /data-search-map-secondary="project"/);
   assert.match(shell, /data-search-map-secondary="full-map"/);
+  assert.equal((shell.match(/view === "split" \? "hidden" : ""/g) ?? []).length, 2);
 });
