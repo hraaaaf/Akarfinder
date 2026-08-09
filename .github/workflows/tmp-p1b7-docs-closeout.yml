@@ -1,0 +1,31 @@
+name: TMP P1B.7 Docs Closeout
+
+on:
+  push:
+    branches: [docs/p1b7-closeout]
+    paths:
+      - "scripts/tmp-p1b7-docs-closeout.py"
+      - ".github/workflows/tmp-p1b7-docs-closeout.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: docs/p1b7-closeout
+          fetch-depth: 0
+      - name: Apply P1B.7 docs closeout
+        run: python scripts/tmp-p1b7-docs-closeout.py
+      - name: Self-clean temporary files
+        run: rm scripts/tmp-p1b7-docs-closeout.py .github/workflows/tmp-p1b7-docs-closeout.yml
+      - name: Commit canonical docs only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/ROADMAP.md docs/SESSION.md scripts/tmp-p1b7-docs-closeout.py .github/workflows/tmp-p1b7-docs-closeout.yml
+          git commit -m "Docs — close P1B.7 Geo Registry Gap Qualification"
+          git push origin HEAD:docs/p1b7-closeout
