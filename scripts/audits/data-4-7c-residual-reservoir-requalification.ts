@@ -255,6 +255,7 @@ async function qualify(domain: SourceDomain, observedAt: Date) {
       primaryCandidates: 0,
       secondaryCandidates: 0,
       excludedBySitemapOrIdentity: preSitemap.length,
+      netNewSitemapIdentityUpperBound: 0,
     },
   };
 
@@ -264,8 +265,9 @@ async function qualify(domain: SourceDomain, observedAt: Date) {
       status: "BLOCKED_POLICY" as const,
       blocker: "registry_gate_failed",
       currentSitemap: { roots: [] as string[], urlCount: 0, sourceRequests: 0, detailPageRequests: 0 },
-      identity: { dbSafeIdentities: 0, dbCollisionGroups: 0, sitemapSafeIdentities: 0, sitemapCollisionGroups: 0 },
+      identity: { seedSafeIdentities: 0, seedCollisionGroups: 0, dbSafeIdentities: 0, dbCollisionGroups: 0, sitemapSafeIdentities: 0, sitemapCollisionGroups: 0 },
       sampleCandidateUrls: [] as string[],
+      sampleNetNewSitemapUrls: [] as string[],
     };
   }
 
@@ -278,9 +280,19 @@ async function qualify(domain: SourceDomain, observedAt: Date) {
       status: "BLOCKED_SOURCE_EVIDENCE" as const,
       blocker: error instanceof Error ? error.message : String(error),
       currentSitemap: { roots: [] as string[], urlCount: 0, sourceRequests: 0, detailPageRequests: 0 },
-      identity: { dbSafeIdentities: 0, dbCollisionGroups: 0, sitemapSafeIdentities: 0, sitemapCollisionGroups: 0 },
+      identity: { seedSafeIdentities: 0, seedCollisionGroups: 0, dbSafeIdentities: 0, dbCollisionGroups: 0, sitemapSafeIdentities: 0, sitemapCollisionGroups: 0 },
       sampleCandidateUrls: [] as string[],
+      sampleNetNewSitemapUrls: [] as string[],
     };
+  }
+
+  const seedIdentity = new Map<string, SeedRow[]>();
+  for (const row of evidence.seeds) {
+    const identity = conservativeUrlIdentity(domain, row.canonical_url);
+    if (!identity) continue;
+    const bucket = seedIdentity.get(identity) ?? [];
+    bucket.push(row);
+    seedIdentity.set(identity, bucket);
   }
 
   const dbIdentity = new Map<string, NormalizedRow[]>();
@@ -291,6 +303,7 @@ async function qualify(domain: SourceDomain, observedAt: Date) {
     bucket.push(row);
     dbIdentity.set(identity, bucket);
   }
+
   const sitemapIdentity = new Map<string, string[]>();
   for (const url of sitemap.urls) {
     const identity = conservativeUrlIdentity(domain, url);
@@ -299,6 +312,7 @@ async function qualify(domain: SourceDomain, observedAt: Date) {
     bucket.push(url);
     sitemapIdentity.set(identity, bucket);
   }
+
   const displayByUrl = new Map(evidence.displayRows.map((row) => [row.canonical_url, row]));
   const candidates = preSitemap.filter((row) => {
     const identity = conservativeUrlIdentity(domain, row.canonical_url);
@@ -312,6 +326,11 @@ async function qualify(domain: SourceDomain, observedAt: Date) {
     if (title !== 0) return title;
     return a.canonical_url.localeCompare(b.canonical_url);
   });
+
+  const netNewSitemapUrls = [...sitemapIdentity.entries()]
+    .filter(([identity, rows]) => rows.length === 1 && !seedIdentity.has(identity))
+    .map(([, rows]) => rows[0]!)
+    .sort();
   const primaryCandidates = candidates.filter((row) => displayByUrl.get(row.canonical_url)?.display_eligibility === "eligible_primary").length;
 
   return {
@@ -325,6 +344,8 @@ async function qualify(domain: SourceDomain, observedAt: Date) {
       detailPageRequests: 0,
     },
     identity: {
+      seedSafeIdentities: [...seedIdentity.values()].filter((rows) => rows.length === 1).length,
+      seedCollisionGroups: [...seedIdentity.values()].filter((rows) => rows.length > 1).length,
       dbSafeIdentities: [...dbIdentity.values()].filter((rows) => rows.length === 1).length,
       dbCollisionGroups: [...dbIdentity.values()].filter((rows) => rows.length > 1).length,
       sitemapSafeIdentities: [...sitemapIdentity.values()].filter((rows) => rows.length === 1).length,
@@ -336,8 +357,10 @@ async function qualify(domain: SourceDomain, observedAt: Date) {
       primaryCandidates,
       secondaryCandidates: candidates.length - primaryCandidates,
       excludedBySitemapOrIdentity: preSitemap.length - candidates.length,
+      netNewSitemapIdentityUpperBound: netNewSitemapUrls.length,
     },
     sampleCandidateUrls: candidates.slice(0, 10).map((row) => row.canonical_url),
+    sampleNetNewSitemapUrls: netNewSitemapUrls.slice(0, 10),
   };
 }
 
@@ -345,19 +368,29 @@ async function main(): Promise<void> {
   const observedAt = new Date();
   const results = [];
   for (const domain of SOURCES) results.push(await qualify(domain, observedAt));
-  const qualified = results.filter((result) => result.status === "QUALIFIED")
-    .sort((a, b) => {
-      const capacity = b.qualification.liveCandidateRows - a.qualification.liveCandidateRows;
-      if (capacity !== 0) return capacity;
-      return b.reservoir.seedOnly - a.reservoir.seedOnly;
-    });
+
+  const qualified = results.filter((result) => result.status === "QUALIFIED");
   if (qualified.length === 0) throw new Error("DATA-4.7C found no live qualified public-sitemap reservoir");
-  const winner = qualified[0]!;
-  const runnerUp = qualified[1] ?? null;
+
+  const freshnessRanked = [...qualified].sort((a, b) => {
+    const capacity = b.qualification.liveCandidateRows - a.qualification.liveCandidateRows;
+    if (capacity !== 0) return capacity;
+    return b.reservoir.seedOnly - a.reservoir.seedOnly;
+  });
+  const freshnessWinner = freshnessRanked[0]!;
+  const freshnessRunnerUp = freshnessRanked[1] ?? null;
+
+  const netNewRanked = [...qualified].sort((a, b) => {
+    const capacity = b.qualification.netNewSitemapIdentityUpperBound - a.qualification.netNewSitemapIdentityUpperBound;
+    if (capacity !== 0) return capacity;
+    return b.currentSitemap.urlCount - a.currentSitemap.urlCount;
+  });
+  const netNewWinner = netNewRanked[0]!;
+  const hasNetNew = netNewWinner.qualification.netNewSitemapIdentityUpperBound > 0;
 
   const proof = {
-    schemaVersion: "data-4-7c-residual-reservoir-requalification-v2",
-    mode: "READ_ONLY_SOURCE_ROTATION",
+    schemaVersion: "data-4-7c-residual-reservoir-requalification-v3",
+    mode: "READ_ONLY_SOURCE_ROTATION_AND_NET_NEW_DELTA",
     observedAt: observedAt.toISOString(),
     sources: results,
     summary: {
@@ -365,17 +398,23 @@ async function main(): Promise<void> {
       qualifiedCount: qualified.length,
       blockedCount: results.length - qualified.length,
       totalPreSitemapUpperBound: results.reduce((sum, result) => sum + result.qualification.preSitemapUpperBound, 0),
-      totalLiveCandidateCapacity: qualified.reduce((sum, result) => sum + result.qualification.liveCandidateRows, 0),
+      totalLiveFreshnessCandidateCapacity: qualified.reduce((sum, result) => sum + result.qualification.liveCandidateRows, 0),
+      totalNetNewSitemapIdentityUpperBound: qualified.reduce((sum, result) => sum + result.qualification.netNewSitemapIdentityUpperBound, 0),
     },
     recommendation: {
-      sourceDomain: winner.sourceDomain,
-      liveCandidateCapacity: winner.qualification.liveCandidateRows,
-      advantageVsRunnerUp: runnerUp ? winner.qualification.liveCandidateRows - runnerUp.qualification.liveCandidateRows : winner.qualification.liveCandidateRows,
-      nextLot: "DATA-4.7D_BOUNDED_WRITE",
-      sourceSpecificCanaryRequired: winner.reservoir.priorSitemapChannelRows === 0,
-      note: winner.reservoir.priorSitemapChannelRows > 0
-        ? "Existing public_sitemap_presence history: bounded write may reuse established source path after exact-head certification."
-        : "No prior public_sitemap_presence write history on winner: next write lot must begin with an explicit source-specific canary, then expand immediately after certification.",
+      freshness: {
+        sourceDomain: freshnessWinner.sourceDomain,
+        liveCandidateCapacity: freshnessWinner.qualification.liveCandidateRows,
+        advantageVsRunnerUp: freshnessRunnerUp ? freshnessWinner.qualification.liveCandidateRows - freshnessRunnerUp.qualification.liveCandidateRows : freshnessWinner.qualification.liveCandidateRows,
+        nextLot: "DATA-4.7D_BOUNDED_FRESHNESS_WRITE",
+        sourceSpecificCanaryRequired: freshnessWinner.reservoir.priorSitemapChannelRows === 0,
+      },
+      netNewDiscovery: {
+        sourceDomain: hasNetNew ? netNewWinner.sourceDomain : null,
+        sitemapIdentityUpperBound: hasNetNew ? netNewWinner.qualification.netNewSitemapIdentityUpperBound : 0,
+        nextLot: hasNetNew ? "DATA-4.8A_NET_NEW_SITEMAP_QUALIFICATION" : "NO_CURRENT_SITEMAP_NET_NEW_DELTA",
+        note: "This is a discovery upper bound only. Net-new sitemap identities are not automatically real-estate listings, display-eligible, or authorized for detail reuse; a separate qualification lot is mandatory before ingestion.",
+      },
     },
     databaseWrites: 0,
     registryMutations: 0,
