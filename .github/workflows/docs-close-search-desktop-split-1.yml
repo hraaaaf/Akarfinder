@@ -28,11 +28,10 @@ jobs:
           grep -q 'SEARCH-DESKTOP-SPLIT-1 ✅ #423' docs/SESSION.md
       - name: Remove temporary closeout machinery
         run: git rm .github/workflows/docs-close-search-desktop-split-1.yml scripts/audits/apply-search-desktop-split-1-closeout.mjs
-      - name: Commit docs only
+      - name: Commit closeout
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add README.md docs/ROADMAP.md docs/SESSION.md
-          test "$(git diff --cached --name-only | sort | tr '\n' ' ')" = "README.md docs/ROADMAP.md docs/SESSION.md "
           git commit -m 'docs: close SEARCH-DESKTOP-SPLIT-1 benchmark convergence'
           git push origin HEAD:docs/close-search-desktop-split-1
