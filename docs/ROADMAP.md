@@ -234,9 +234,19 @@ Finding Reviewer corrigé : une archive de blog `/{year}/{month}/{day}/...` pouv
 
 Contrat : 0 source-site request, 0 WARC/content fetch, 0 DB mutation, 0 Registry/policy mutation, 0 pattern activation. Certification : **20/20 exact-head PASS**, Reviewer **9,4/10**, Certifier GO, merge `8ffffc7cfbe0921d21f66887e1c4ecccf3a738cb`, gate P0.3 post-merge PASS.
 
-## 7.4 P0.4 — Registry Pattern Review Shadow — NEXT
+## 7.4 P0.4 — Registry Pattern Review Shadow ✅ CLOSED — PR #402
 
-Scope strict : **les 5 domaines strong uniquement**. Transformer chaque signature en proposition de `listing_url_pattern`, constituer des jeux positifs/négatifs depuis l’évidence URL-index, mesurer faux positifs/faux négatifs en shadow replay et refuser toute proposition ambiguë. **Aucune activation Registry, aucun harvest, aucun write production dans P0.4**. Les 6 reviewable restent en evidence refinement séparé ; les 7 insufficient restent bloqués.
+P0.4 a revu en shadow les **5 domaines `STRONG_PATTERN_EVIDENCE`** issus de P0.3, sans activer aucun pattern. Le replay utilise un oracle conservateur à trois états : signatures détail certifiées = `POSITIVE`, signatures explicitement non-detail = `NEGATIVE`, tout le reste = `AMBIGUOUS`. Un pattern qui absorbe une URL ambiguë est rejeté fail-closed.
+
+Preuve finale : **15/15 requêtes Common Crawl URL-index réussies**, **2 `SHADOW_ACCEPTABLE` / 3 `REJECTED_SHADOW`**, **0 faux positif**, **1 faux négatif**, **42 matchs ambigus** uniquement sur les candidats rejetés. Acceptés en shadow : `christiesrealestatemorocco.com` (**1024 positifs / 9 négatifs / précision 1 / rappel 1 / 0 ambiguous match**) et `immobilier-a-marrakech.com` (**165 / 15 / précision 1 / rappel 1 / 0 ambiguous match**). Rejetés : `immo-maroc.com` (corpus négatif insuffisant + 4 ambiguous matches), `immohammedia.com` (3 ambiguous matches), `leaderimmo.ma` (35 ambiguous matches).
+
+Finding Reviewer corrigé avant merge : les URL non certifiées ne sont plus fabriquées comme négatives ; elles restent `AMBIGUOUS`. Le client Common Crawl respecte `Retry-After`, utilise retry/timeout bornés et ne contourne aucun rate-limit. **20/20 workflows exact-head verts**, Reviewer **PASS 9,5/10**, Release Certifier **GO**, merge `81f4809424757838c099b6acfb8f8d4b719deab7`, gate P0.4 post-merge **PASS**. Artefact exact-head : `sha256:c772ed6a63daa800238040e93f17dc983d58c24538290ac05ac96f9538e7d22f`.
+
+Contrat : **0 source-site request, 0 WARC/content fetch, 0 DB mutation, 0 Registry/policy mutation, 0 harvest, 0 pattern activation**. P0.4 prouve seulement une aptitude structurelle shadow ; il n'accorde aucune autorisation d'activation.
+
+## 7.5 Prochaine étape mass-index
+
+Un LOT séparé pourra examiner **uniquement les 2 candidats `SHADOW_ACCEPTABLE`** pour une éventuelle revue Registry/canary bornée. Cette étape devra revalider policy/autorisation, conserver rollback et fail-closed, et ne devra jamais activer automatiquement les 3 candidats rejetés.
 
 # 8. DATA-4 — Reservoir Strategy
 
@@ -270,4 +280,4 @@ Auditer la prochaine cohorte explicite de Geo Coverage Recovery. Tant que couver
 
 ## DATA
 
-**P0.1, P0.2 et P0.3 sont CLOSED.** Exécuter ensuite **P0.4 — Registry Pattern Review Shadow** uniquement sur les 5 domaines `STRONG_PATTERN_EVIDENCE`. Le LOT reste read-only/shadow : propositions + tests positifs/négatifs + replay, sans mutation Registry, sans harvest, sans nouvelle source et sans expansion automatique.
+**P0.1, P0.2, P0.3 et P0.4 sont CLOSED.** La prochaine étape mass-index est un LOT séparé de revue Registry/canary, limité aux **2 candidats `SHADOW_ACCEPTABLE`** ; aucune activation automatique, et les 3 candidats rejetés restent bloqués.
