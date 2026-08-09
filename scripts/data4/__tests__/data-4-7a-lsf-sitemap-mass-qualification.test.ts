@@ -29,3 +29,18 @@ test("DATA-4.7A rotates on source drift and gates writes", () => {
     'conservativeCandidatesInPublicSearch',
   ]) assert.ok(script.includes(token), `missing ${token}`);
 });
+
+test("DATA-4.7A compares URL identity conservatively and excludes ambiguous collisions", () => {
+  for (const token of [
+    'function conservativeUrlIdentity',
+    'decodeURIComponent(pathname).normalize("NFC")',
+    'replace(/^www\\./, "")',
+    'pathname.replace(/\\/+$/, "")',
+    'dbIdentityCollisions',
+    'sitemapIdentityCollisions',
+    'safeIdentityKeys',
+    'rows.length === 1 && sitemapByIdentity.get(key)?.length === 1',
+    'exactUrlMatches',
+    'safeIdentityMatches',
+  ]) assert.ok(script.includes(token), `missing conservative identity contract ${token}`);
+});
