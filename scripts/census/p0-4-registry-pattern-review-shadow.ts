@@ -37,9 +37,7 @@ function retryAfterMs(response: Response): number | null {
   const value = response.headers.get("retry-after");
   if (!value) return null;
   const seconds = Number(value);
-  if (Number.isFinite(seconds) && seconds >= 0) {
-    return Math.min(seconds * 1_000, MAX_RETRY_DELAY_MS);
-  }
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.min(seconds * 1_000, MAX_RETRY_DELAY_MS);
   const dateMs = Date.parse(value);
   if (!Number.isFinite(dateMs)) return null;
   return Math.min(Math.max(dateMs - Date.now(), 0), MAX_RETRY_DELAY_MS);
@@ -58,13 +56,7 @@ export function parseP0_4IndexLine(line: string, index: string): PatternEvidence
   try {
     const parsed = JSON.parse(line) as { url?: string; timestamp?: string; status?: string; mime?: string; mimetype?: string };
     if (!parsed.url || !parsed.timestamp) return null;
-    return {
-      url: parsed.url,
-      timestamp: parsed.timestamp,
-      status: parsed.status,
-      mime: parsed.mime ?? parsed.mimetype,
-      index,
-    };
+    return { url: parsed.url, timestamp: parsed.timestamp, status: parsed.status, mime: parsed.mime ?? parsed.mimetype, index };
   } catch {
     return null;
   }
@@ -77,13 +69,9 @@ async function fetchIndexRecords(domain: string, index: string): Promise<Pattern
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     try {
       const response = await fetch(endpoint, {
-        headers: {
-          "User-Agent": USER_AGENT,
-          Accept: "application/json,text/plain;q=0.9,*/*;q=0.1",
-        },
+        headers: { "User-Agent": USER_AGENT, Accept: "application/json,text/plain;q=0.9,*/*;q=0.1" },
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
-
       if (response.status === 404) return [];
       if (response.ok) {
         const text = await response.text();
@@ -98,7 +86,6 @@ async function fetchIndexRecords(domain: string, index: string): Promise<Pattern
         }
         return records;
       }
-
       lastError = `HTTP ${response.status}`;
       if (!RETRYABLE.has(response.status) || attempt === MAX_ATTEMPTS) {
         throw new Error(`P0.4 Common Crawl URL-index failed for ${domain}/${index}: ${lastError}`);
@@ -114,27 +101,22 @@ async function fetchIndexRecords(domain: string, index: string): Promise<Pattern
       await sleep(backoffMs(attempt));
     }
   }
-
   throw new Error(`P0.4 Common Crawl URL-index failed for ${domain}/${index}: ${lastError}`);
 }
 
 export async function runP0_4RegistryPatternReviewShadow() {
   const policies = await loadMassIndexSourcePolicies([...P0_4_STRONG_DOMAINS]);
-  const policyEvaluation = evaluateMassIndexDomains(
-    [...P0_4_STRONG_DOMAINS],
-    MASS_INDEX_COMMONCRAWL_CHANNEL,
-    policies,
-  );
+  const policyEvaluation = evaluateMassIndexDomains([...P0_4_STRONG_DOMAINS], MASS_INDEX_COMMONCRAWL_CHANNEL, policies);
   const allowed = new Set(policyEvaluation.allowedDomains);
 
   const rows = [] as Array<ReturnType<typeof replayPatternProposal> & {
     rationale: string;
     expected_positive_signatures: string[];
+    certified_negative_signatures: string[];
     indexes_succeeded: number;
     indexes_failed: number;
     request_failures: Array<{ index: string; error: string }>;
   }>;
-
   let totalRequests = 0;
   let successfulRequests = 0;
   let failedRequests = 0;
@@ -145,6 +127,7 @@ export async function runP0_4RegistryPatternReviewShadow() {
         ...replayPatternProposal(proposal, []),
         rationale: proposal.rationale,
         expected_positive_signatures: proposal.expected_positive_signatures,
+        certified_negative_signatures: proposal.certified_negative_signatures,
         indexes_succeeded: 0,
         indexes_failed: 0,
         request_failures: [],
@@ -155,7 +138,6 @@ export async function runP0_4RegistryPatternReviewShadow() {
     const records: PatternEvidenceRecord[] = [];
     const failures: Array<{ index: string; error: string }> = [];
     let indexesSucceeded = 0;
-
     for (const index of INDEXES) {
       totalRequests += 1;
       try {
@@ -164,10 +146,7 @@ export async function runP0_4RegistryPatternReviewShadow() {
         successfulRequests += 1;
       } catch (error) {
         failedRequests += 1;
-        failures.push({
-          index,
-          error: error instanceof Error ? error.message : String(error),
-        });
+        failures.push({ index, error: error instanceof Error ? error.message : String(error) });
       }
       await sleep(BETWEEN_REQUESTS_MS);
     }
@@ -176,6 +155,7 @@ export async function runP0_4RegistryPatternReviewShadow() {
       ...replayPatternProposal(proposal, records),
       rationale: proposal.rationale,
       expected_positive_signatures: proposal.expected_positive_signatures,
+      certified_negative_signatures: proposal.certified_negative_signatures,
       indexes_succeeded: indexesSucceeded,
       indexes_failed: failures.length,
       request_failures: failures,
@@ -210,6 +190,7 @@ export async function runP0_4RegistryPatternReviewShadow() {
     rejected_shadow_domains: rejected.length,
     total_false_positives: rows.reduce((sum, row) => sum + row.false_positives, 0),
     total_false_negatives: rows.reduce((sum, row) => sum + row.false_negatives, 0),
+    total_matched_ambiguous: rows.reduce((sum, row) => sum + row.matched_ambiguous, 0),
     policy_decisions: policyEvaluation.decisions,
     rows,
   };
@@ -225,11 +206,14 @@ export async function runP0_4RegistryPatternReviewShadow() {
     rejected_shadow_domains: report.rejected_shadow_domains,
     total_false_positives: report.total_false_positives,
     total_false_negatives: report.total_false_negatives,
+    total_matched_ambiguous: report.total_matched_ambiguous,
     rows: rows.map((row) => ({
       source_domain: row.source_domain,
       decision: row.decision,
       positives: row.positives,
       negatives: row.negatives,
+      ambiguous: row.ambiguous,
+      matched_ambiguous: row.matched_ambiguous,
       false_positives: row.false_positives,
       false_negatives: row.false_negatives,
       precision: row.precision,
