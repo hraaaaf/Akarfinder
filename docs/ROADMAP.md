@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; prochain lot UX Search = PRICE-COVERAGE-RECOVERY-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 Mass Index Source Registry ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; prochain lot UX Search = PRICE-COVERAGE-RECOVERY-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 Common Crawl Discovery Coverage ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -214,6 +214,16 @@ Finding séparé du LOT P0.1 : un run antérieur avait échoué sur un objet Pos
 
 Certification : **19/19 workflows exact-head verts**, DATA-4.3I contract + live-read-only PASS, Reviewer PASS, Release Certifier GO ; merge `6816e5e7bc4dbfe3c253cfe5da38175a5390606d`. Aucune migration, aucune policy/source activation.
 
+# 7.2 P0.2 — Common Crawl Discovery Coverage Audit ✅ CLOSED — PR #398
+
+Responsabilité unique : **mesurer le gap entre policy Common Crawl production et readiness structurelle du harvester**, sans refaire DATA-1.3B et sans acquisition.
+
+Preuve live read-only : **28** policies `commoncrawl`, **27** opérationnelles, **9** `HARVEST_READY`, **18** `POLICY_ALLOWED_PATTERN_MISSING`, **1** expirée/bloquée ; ratio harvest-ready **33,33 %**. Les policies concernées portent **40 809** seeds ; les **18 pattern-missing portent 0 seed**. Deux sources harvest-ready sont encore à 0 seed.
+
+Contrat permanent P0.2 : 0 Common Crawl request, 0 source-site request, 0 WARC fetch, 0 DB mutation, 0 policy/source activation. Certification : **20/20 workflows exact-head verts**, Reviewer **PASS 9,4/10**, Release Certifier **GO**, merge `9112cbf02fef2ada2d0eb0785ec872fe630e293f`, gate spécialisée post-merge PASS.
+
+P0.2 ne dérive ni n’active aucun pattern. Le prochain lot est **P0.3 — Common Crawl Pattern Evidence** : produire offline-first des preuves de structure d’URL sur la cohorte des 18 sources, à partir de l’URL-index Common Crawl existant ; WARC/content uniquement si un besoin ultérieur distinct est démontré.
+
 # 8. DATA-4 — Reservoir Strategy
 
 - 4.0 ✅ #341 — Avito+Mubawab : 35 134 normalized, 3 588 technical display, 0 policy-activable ;
@@ -246,4 +256,4 @@ Auditer la prochaine cohorte explicite de Geo Coverage Recovery. Tant que couver
 
 ## DATA
 
-**P0.1 est CLOSED.** Définir explicitement le prochain LOT mass-index à partir de la base certifiée avant toute nouvelle acquisition/expansion. Aucun nouveau scraper/source direct, aucune activation de source et aucune expansion automatique ne sont autorisés implicitement par P0.1.
+**P0.1 et P0.2 sont CLOSED.** Exécuter ensuite **P0.3 — Common Crawl Pattern Evidence** uniquement : audit offline-first de la cohorte `POLICY_ALLOWED_PATTERN_MISSING` sur l’URL-index existant, sans WARC par défaut, sans nouveau scraper/source direct, sans activation de source et sans expansion automatique.
