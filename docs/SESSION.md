@@ -3,14 +3,14 @@
 **Mise à jour : 2026-08-09**  
 **Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; prochain lot = PRICE-COVERAGE-RECOVERY-1**  
 **Lane UX/Carte : P1B.4 ✅ Geo Coverage Recovery pilot certifié en production**  
-**Lane DATA : DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 Common Crawl Discovery Coverage ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = P0.3 Pattern Evidence**  
+**Lane DATA : DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 Common Crawl Pattern Evidence ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = P0.4 Registry Pattern Review Shadow**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle 0,45 %**
 
 Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
 # Main canonique
 
-Base du closeout DATA : `main` `9112cbf02fef2ada2d0eb0785ec872fe630e293f` — merge PR #398.
+Base du closeout DATA : `main` `8ffffc7cfbe0921d21f66887e1c4ecccf3a738cb` — merge PR #400.
 
 Acquis récents :
 
@@ -109,6 +109,26 @@ Sécurité : `commoncrawl_request=false`, `source_site_request=false`, `warc_fet
 
 Prochain lot : **P0.3 — Common Crawl Pattern Evidence**, offline-first sur l’URL-index existant ; aucune activation automatique et aucun WARC par défaut.
 
+# P0.3 — Common Crawl Pattern Evidence ✅ CLOSED — PR #400
+
+Cohorte figée P0.2 : **18 domaines**. Revalidation policy production avant requête ; collecte limitée à `index.commoncrawl.org` sur trois indexes.
+
+Preuve :
+
+- **54/54** requêtes URL-index réussies ;
+- **10 254** URL uniques ;
+- **5 STRONG** : `christiesrealestatemorocco.com`, `immo-maroc.com`, `immobilier-a-marrakech.com`, `immohammedia.com`, `leaderimmo.ma` ;
+- **6 REVIEWABLE** ;
+- **7 INSUFFICIENT** ;
+- faux positif archive datée détecté/corrigé avant certification ;
+- `source_site_request=false`, `warc_fetch=false`, `db_mutation=false`, `registry_mutation=false`.
+
+Certification : **20/20 exact-head PASS**, Reviewer **9,4/10**, Certifier GO, merge `8ffffc7cfbe0921d21f66887e1c4ecccf3a738cb`, post-merge gate PASS.
+
+# PROCHAIN LOT DATA — P0.4 Registry Pattern Review Shadow
+
+Uniquement les **5 STRONG**. Produire des patterns candidats, corpus positifs/négatifs et replay shadow avec mesure des erreurs. **Zéro mutation Registry, zéro harvest, zéro write production.** Les 6 reviewable ne sont pas incluses automatiquement ; les 7 insufficient restent bloquées.
+
 # UX / Search — état court
 
 - SEARCH-UX-FAST-1 ✅ #390 — mobile 9,3/10 ;
@@ -125,4 +145,4 @@ P1B.4 : **69 résolutions / 14 quartiers / 5 villes**, couverture **0,45 %**, 0 
 
 # DATA — prochaine action
 
-DATA-4.4C, P0.1 et P0.2 sont fermés. Le reconciler #396 est fermé. **Prochain LOT mass-index : P0.3 — Common Crawl Pattern Evidence**, strictement offline-first sur l’URL-index existant. Aucun nouveau scraper/source direct, aucune activation implicite et aucune expansion automatique.
+DATA-4.4C, P0.1, P0.2 et P0.3 sont fermés. Le reconciler #396 est fermé. **Prochain LOT mass-index : P0.4 — Registry Pattern Review Shadow**, limité aux 5 preuves fortes. Aucun nouveau scraper/source direct, aucune activation Registry, aucun harvest et aucune expansion automatique.
