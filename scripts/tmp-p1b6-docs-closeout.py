@@ -16,7 +16,7 @@ readme.write_text(r.replace(old,new,1))
 
 m=roadmap.read_text()
 m=m.replace('**Statut : UX/Carte P1B.5 ✅ production certifiée ;','**Statut : UX/Carte P1B.6 ✅ Geo Coverage Depth Audit certifié ;',1)
-old2="**Offre quartier reste OFF.** La prochaine lane Carte poursuit la récupération géographique explicite/certifiable ; aucun seuil artificiel ni choroplèthe fabriqué."
+old2="**Offre quartier reste OFF.** À **0,5765 %** de couverture, aucun seuil artificiel ni choroplèthe national n’est autorisé. La prochaine lane Carte doit continuer la récupération explicite/certifiable et mesurer chaque gain réel."
 new2="""## P1B.6 — Geo Coverage Depth Audit ✅ CLOSED — PR #424
 
 Audit live read-only après P1B.5 : **15 438** listings Search éligibles ; **605** rows avec coverage bridge ; **89** latest-resolved ; **516** non résolues. Sous-cohortes : **71** avec `district` explicite et **445** sans district. Les 71 explicites ont **0 alias quartier validé confidence=1** et forment **31 couples ville/quartier** ; distribution source certifiée après double-check SQL : `mouldar.com` **42**, `mubawab.ma` **21**, `marrakechrealty.com` **8**. Les 445 sans district ne contiennent **aucun champ neighborhood/district/quartier structuré** dans les metadata auditées ; titre/snippet restent interdits comme preuve automatique.
