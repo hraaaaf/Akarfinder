@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; prochaine étape UX Search à formaliser = simplification des actions secondaires ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.5 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; prochaine étape UX Search à formaliser = simplification des actions secondaires ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -213,6 +213,7 @@ Acquis :
 - P1B.2 ✅ PR #376 — **Sourced Territorial Intelligence** `layer=price`, aucune interpolation/fallback ville, **9,2/10** ;
 - P1B.3 ✅ PR #382 — **Territorial Metric Join Contract** ;
 - P1B.4 ✅ PR #386 — **Geo Coverage Recovery pilot**.
+- P1B.5 ✅ PR #419 — **Canonical Geo Normalization Recovery**.
 
 ## P1B.3 — Territorial Metric Join Contract ✅ CLOSED
 
@@ -222,7 +223,16 @@ Production initiale : **15 399 listings éligibles / 0 résolu / 0 % coverage / 
 
 Preflight **69/69**, write **69/69**, **14 quartiers / 5 villes**, aucune inférence/fuzzy/spatiale. Rapport post-write : **15 395 listings éligibles / 69 résolus / 0,45 % coverage / 0 collision / 0 conflit**, `metric_layers_activated=false`.
 
-**Offre quartier reste OFF.** La prochaine lane Carte poursuit la récupération géographique explicite/certifiable ; aucun seuil artificiel ni choroplèthe fabriqué.
+
+## P1B.5 — Canonical Geo Normalization Recovery ✅ CLOSED
+
+Delta strict de normalisation sur des `property_listings.district` déjà persistés : fold canonique des accents via `odm04_fold_text()` + suppression d’apostrophes uniquement. Aucun alias créé, aucun fuzzy/synonyme/spatial/titre/URL/proximité/réseau.
+
+Production : preflight **20 candidats / 14 map-eligible / 6 canonical-only**, write atomique **20/20**, réparti en **11 Guéliz / 6 Océan / 3 Route de l’Ourika**. Les 20 événements P1B.5 sont les événements latest `resolved`, puis le preflight retombe à **0**. Rollback append-only disponible ; couches métriques toujours désactivées.
+
+Après write : **15 438 listings Search éligibles / 89 résolus quartier / 0,5765 % coverage**. Exact-head **20/20 PASS** sur `5a1d43dd53937c6b462a7a947d4c72605c41f5ab`, Reviewer technique PASS, merge `0abfd97c85da31e11d0e94ecc5ef5b9317c313ff`, push gate P1B.5 PASS.
+
+**Offre quartier reste OFF.** À **0,5765 %** de couverture, aucun seuil artificiel ni choroplèthe national n’est autorisé. La prochaine lane Carte doit continuer la récupération explicite/certifiable et mesurer chaque gain réel.
 
 # 5. Fondation DATA acquise
 
