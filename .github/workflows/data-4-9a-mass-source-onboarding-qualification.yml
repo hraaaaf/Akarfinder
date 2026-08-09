@@ -1,0 +1,86 @@
+name: DATA-4.9A Mass Source Onboarding Qualification
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data4/mass-source-onboarding-qualification.ts"
+      - "scripts/data4/__tests__/data-4-9a-mass-source-onboarding-qualification.test.ts"
+      - "scripts/audits/data-4-9a-mass-source-onboarding-qualification.ts"
+      - ".github/workflows/data-4-9a-mass-source-onboarding-qualification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: DATA-4.9A unit contracts
+        run: npx tsx --test scripts/data4/__tests__/data-4-9a-mass-source-onboarding-qualification.test.ts
+      - name: Static read-only / active-cohort boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -F 'promoimmomarrakech.com' scripts/data4/mass-source-onboarding-qualification.ts
+          ! grep -E 'method:.*(POST|PATCH|PUT|DELETE)' scripts/audits/data-4-9a-mass-source-onboarding-qualification.ts
+          ! grep -E '\b(fetchDetail|fetchListingDetail|readDetailPage|crawlDetailPage)\b' scripts/data4/mass-source-onboarding-qualification.ts scripts/audits/data-4-9a-mass-source-onboarding-qualification.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+  live-qualification:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_9A_OUT_DIR: .tmp/data-4-9a/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run DATA-4.9A live read-only qualification
+        run: npx tsx scripts/audits/data-4-9a-mass-source-onboarding-qualification.ts
+      - name: Enforce proof contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_4_9A_OUT_DIR}/proof.json"
+          test -s "${DATA_4_9A_OUT_DIR}/ranking.json"
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-4-9a/results/proof.json', 'utf8'));
+          const ranking = JSON.parse(fs.readFileSync('.tmp/data-4-9a/results/ranking.json', 'utf8'));
+          if (p.schemaVersion !== 'data-4-9a-mass-source-onboarding-qualification-v1' || p.lot !== 'DATA-4.9A' || p.mode !== 'READ_ONLY') throw new Error(JSON.stringify(p));
+          if (p.candidateCount !== 10 || p.candidateDomains.length !== 10) throw new Error('wrong candidate cohort');
+          if (p.candidateDomains.includes('promoimmomarrakech.com')) throw new Error('retired Promo Immo re-entered active cohort');
+          if (p.databaseWrites !== 0 || p.registryWrites !== 0 || p.policyChanges !== 0 || p.publicDisplayActivations !== 0 || p.detailPageFetches !== 0) throw new Error('mutation/display boundary violated');
+          if (p.qualifiedSourceCount + p.blockedSourceCount !== 10) throw new Error('source accounting mismatch');
+          for (const row of p.results) {
+            if (row.registry.publicDisplayAuthorizedByThisLot !== false) throw new Error('display authorization fabricated');
+            if (row.currentSourceEvidence.detailPageFetches !== 0) throw new Error('detail page fetch detected');
+            if (row.currentSourceEvidence.sourceRequests > 40) throw new Error('source request budget exceeded');
+          }
+          for (let i = 1; i < ranking.length; i++) {
+            const a = ranking[i - 1];
+            const b = ranking[i];
+            if (a.massScore < b.massScore) throw new Error('ranking not score-descending');
+          }
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-9a-mass-source-onboarding-qualification
+          path: .tmp/data-4-9a/results/
+          if-no-files-found: error
+          retention-days: 14
