@@ -1,0 +1,108 @@
+name: DATA-4.5B Promo Immo Controlled Expansion Write
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data4/promoimmo-controlled-expansion-write.ts"
+      - "scripts/data4/__tests__/promoimmo-controlled-expansion-write.test.ts"
+      - "scripts/audits/data-4-5b-collect-promoimmo-sitemap-evidence.ts"
+      - "scripts/audits/data-4-5b-promoimmo-controlled-expansion-write.ts"
+      - ".github/workflows/data-4-5b-promoimmo-controlled-expansion-write.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/data4/promoimmo-controlled-expansion-write.ts"
+      - "scripts/data4/__tests__/promoimmo-controlled-expansion-write.test.ts"
+      - "scripts/audits/data-4-5b-collect-promoimmo-sitemap-evidence.ts"
+      - "scripts/audits/data-4-5b-promoimmo-controlled-expansion-write.ts"
+      - ".github/workflows/data-4-5b-promoimmo-controlled-expansion-write.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: DATA-4.5B focused tests
+        run: npx tsx --test scripts/data4/__tests__/promoimmo-controlled-expansion-write.test.ts
+      - name: Promo Immo regression tests
+        run: npx tsx --test scripts/data4/__tests__/promoimmo-sitemap-canary.test.ts scripts/data4/__tests__/promoimmo-controlled-expansion.test.ts
+      - name: Existing seed freshness regressions
+        run: npm run test:seed-freshness
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Static write boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const helper=fs.readFileSync('scripts/data4/promoimmo-controlled-expansion-write.ts','utf8');
+          const audit=fs.readFileSync('scripts/audits/data-4-5b-promoimmo-controlled-expansion-write.ts','utf8');
+          const collector=fs.readFileSync('scripts/audits/data-4-5b-collect-promoimmo-sitemap-evidence.ts','utf8');
+          for (const required of [
+            'DATA_4_5B_EVIDENCE_MAX_AGE_MS = 2 * 60 * 60 * 1000',
+            'DATA_4_5B_BATCH_SIZES = [100, 100, 100, 100, 50]',
+            'current sitemap evidence',
+            'rollback',
+          ]) if (!helper.includes(required) && !audit.includes(required)) throw new Error(`missing safety contract ${required}`);
+          if (!audit.includes('DATA_4_5B_APPLY === "true"')) throw new Error('apply flag missing');
+          if (!audit.includes('DATA_4_5B_CURRENT_SITEMAP_EVIDENCE_SHA256')) throw new Error('evidence digest binding missing');
+          for (const ack of ['DATA_4_5B_CONFIRM_CURRENT_SITEMAP','DATA_4_5B_CONFIRM_ROLLBACK_READY','DATA_4_5B_CONFIRM_BOUNDED_WRITE']) {
+            if (!audit.includes(ack)) throw new Error(`missing acknowledgement ${ack}`);
+          }
+          if (!audit.includes('if (APPLY) throw new Error("DATA-4.5B APPLY forbidden without current sitemap evidence")')) throw new Error('missing no-evidence fail close');
+          if (!audit.includes('freshness_status", `eq.${expectedFreshnessStatus}`')) throw new Error('compare-and-set freshness guard missing');
+          if (!audit.includes('await writeManifests(plan, evidenceDigest);')) throw new Error('rollback/apply manifests must precede mutation');
+          if (!audit.includes('await rollback(applied)') || !audit.includes('await verifyRollback(applied)')) throw new Error('verified automatic rollback missing');
+          if (!audit.includes('freshProjectionRows') || !audit.includes('requireFresh && result.freshProjectionRows !== expectedRows')) throw new Error('freshness projection certification missing');
+          if (collector.includes('/property/') || collector.includes('/annonce/')) throw new Error('collector must not fetch detail paths');
+          if (!collector.includes('sourceSiteDetailRequests: 0')) throw new Error('collector detail-fetch proof missing');
+          NODE
+
+  live-read-only-preflight:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_5B_OUT_DIR: .tmp/data-4-5b/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Prove no-evidence state is read-only and fail-closed for apply
+        run: npx tsx scripts/audits/data-4-5b-promoimmo-controlled-expansion-write.ts
+      - name: Enforce preflight proof
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('.tmp/data-4-5b/results/proof.json','utf8'));
+          if (p.schemaVersion!=='data-4-5b-promoimmo-controlled-expansion-write-v1') throw new Error(JSON.stringify(p));
+          if (p.mode!=='EVIDENCE_REQUIRED') throw new Error(JSON.stringify(p));
+          if (p.sourceDomain!=='promoimmomarrakech.com') throw new Error(JSON.stringify(p));
+          if (p.currentPersistentRows!==50) throw new Error(`baseline drift ${JSON.stringify(p)}`);
+          if (p.nextBatchNumber!==1 || p.nextBatchSize!==100) throw new Error(JSON.stringify(p));
+          if (p.conservativeCurrentDbCandidates<450) throw new Error(JSON.stringify(p));
+          if (p.currentSitemapEvidencePresent!==false || p.applyAuthorized!==false) throw new Error(JSON.stringify(p));
+          if (p.sourceSiteRequests!==0 || p.sourceSiteDetailRequests!==0 || p.databaseWrites!==0 || p.rollbackWrites!==0 || p.registryMutations!==0 || p.policyChanges!==0 || p.productionActivation!==false) throw new Error(JSON.stringify(p));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-5b-preflight
+          path: .tmp/data-4-5b/results/
+          if-no-files-found: error
+          retention-days: 14
