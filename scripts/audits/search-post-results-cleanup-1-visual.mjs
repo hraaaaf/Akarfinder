@@ -90,10 +90,12 @@ try {
           return style.display !== "none" && style.visibility !== "hidden" && node.getClientRects().length > 0;
         }).length;
         const dock = document.querySelector('section[aria-label="Explorateur local synchronisé"]');
+        const mapNeighborhoodDock = document.querySelector('[aria-label="Exploration ville et quartier"]');
         const firstPrice = document.querySelector('[data-search-list-pane] [data-mobile-price]');
         return {
           visibleSecondaryCount,
           emptyDockVisible: Boolean(dock && getComputedStyle(dock).display !== "none" && dock.getClientRects().length > 0),
+          emptyMapNeighborhoodDockVisible: Boolean(mapNeighborhoodDock && getComputedStyle(mapNeighborhoodDock).display !== "none" && mapNeighborhoodDock.getClientRects().length > 0),
           clippedPrice: Boolean(firstPrice && firstPrice.scrollWidth > firstPrice.clientWidth + 1),
           clientWidth: document.documentElement.clientWidth,
           scrollWidth: document.documentElement.scrollWidth,
@@ -103,6 +105,7 @@ try {
 
       if (generalMetrics.visibleSecondaryCount !== 0) throw new Error(`${viewport.name}: split shows ${generalMetrics.visibleSecondaryCount} secondary map blocks`);
       if (generalMetrics.emptyDockVisible) throw new Error(`${viewport.name}: empty post-results intelligence dock is visible`);
+      if (generalMetrics.emptyMapNeighborhoodDockVisible) throw new Error(`${viewport.name}: empty map neighborhood dock is visible`);
       if (generalMetrics.scrollWidth > generalMetrics.clientWidth) throw new Error(`${viewport.name}: horizontal overflow ${generalMetrics.scrollWidth}/${generalMetrics.clientWidth}`);
       if (generalMetrics.clippedPrice) throw new Error(`${viewport.name}: first price is truncated`);
 
@@ -112,14 +115,17 @@ try {
       if (!useful || useful.status() >= 400) throw new Error(`${viewport.name}: useful search returned ${useful?.status() ?? "no response"}`);
       await page.waitForSelector('[data-search-list-pane] [data-mobile-compact-card]', { timeout: 20_000 });
       await page.waitForSelector('section[aria-label="Explorateur local synchronisé"]', { state: "visible", timeout: 20_000 });
+      await page.waitForSelector('[aria-label="Exploration ville et quartier"]', { state: "visible", timeout: 20_000 });
       await page.waitForTimeout(250);
 
       const usefulMetrics = await page.evaluate(() => ({
         dockVisible: Boolean(document.querySelector('section[aria-label="Explorateur local synchronisé"]')),
+        mapNeighborhoodDockVisible: Boolean(document.querySelector('[aria-label="Exploration ville et quartier"]')),
         clientWidth: document.documentElement.clientWidth,
         scrollWidth: document.documentElement.scrollWidth,
       }));
       if (!usefulMetrics.dockVisible) throw new Error(`${viewport.name}: useful local intelligence did not reappear`);
+      if (!usefulMetrics.mapNeighborhoodDockVisible) throw new Error(`${viewport.name}: useful map neighborhood intelligence did not reappear`);
       if (usefulMetrics.scrollWidth > usefulMetrics.clientWidth) throw new Error(`${viewport.name}: useful context horizontal overflow ${usefulMetrics.scrollWidth}/${usefulMetrics.clientWidth}`);
 
       await page.screenshot({ path: `${outputDir}/${viewport.name}-useful.png`, fullPage: true });
@@ -127,7 +133,9 @@ try {
         name: viewport.name,
         split_secondary_blocks_visible: generalMetrics.visibleSecondaryCount,
         empty_dock_visible: generalMetrics.emptyDockVisible,
+        empty_map_neighborhood_dock_visible: generalMetrics.emptyMapNeighborhoodDockVisible,
         useful_dock_visible: usefulMetrics.dockVisible,
+        useful_map_neighborhood_dock_visible: usefulMetrics.mapNeighborhoodDockVisible,
         general_page_height: generalMetrics.pageHeight,
         horizontal_overflow: false,
         truncated_price: generalMetrics.clippedPrice,
