@@ -18,10 +18,40 @@ function env(name: string): string {
 function sameOrigin(urlString: string): boolean {
   try {
     const url = new URL(urlString);
-    return url.protocol === "https:" && [DOMAIN, `www.${DOMAIN}`].includes(url.hostname);
+    return url.protocol === "https:" && [DOMAIN, `www.${DOMAIN}`].includes(url.hostname.toLowerCase());
   } catch {
     return false;
   }
+}
+
+function conservativeUrlIdentity(urlString: string): string | null {
+  try {
+    const url = new URL(urlString);
+    if (!sameOrigin(urlString)) return null;
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    let pathname = url.pathname;
+    try {
+      pathname = decodeURIComponent(pathname).normalize("NFC");
+    } catch {
+      pathname = url.pathname;
+    }
+    pathname = pathname.replace(/\/+$/, "") || "/";
+    return `https://${host}${pathname}${url.search}`;
+  } catch {
+    return null;
+  }
+}
+
+function groupByIdentity<T>(rows: T[], getUrl: (row: T) => string): Map<string, T[]> {
+  const grouped = new Map<string, T[]>();
+  for (const row of rows) {
+    const key = conservativeUrlIdentity(getUrl(row));
+    if (!key) continue;
+    const bucket = grouped.get(key) ?? [];
+    bucket.push(row);
+    grouped.set(key, bucket);
+  }
+  return grouped;
 }
 
 function extractRobotsSitemaps(text: string): string[] {
@@ -202,7 +232,21 @@ async function main(): Promise<void> {
     }
   }
 
-  const normalizedInSitemap = normalized.filter((row) => sitemapUrls.has(row.canonical_url));
+  const exactUrlMatches = normalized.filter((row) => sitemapUrls.has(row.canonical_url)).length;
+  const normalizedByIdentity = groupByIdentity(normalized, (row) => row.canonical_url);
+  const sitemapByIdentity = groupByIdentity([...sitemapUrls], (url) => url);
+  const dbIdentityCollisions = [...normalizedByIdentity.values()].filter((rows) => rows.length !== 1).length;
+  const sitemapIdentityCollisions = [...sitemapByIdentity.values()].filter((rows) => rows.length !== 1).length;
+  const safeIdentityKeys = new Set(
+    [...normalizedByIdentity.entries()]
+      .filter(([key, rows]) => rows.length === 1 && sitemapByIdentity.get(key)?.length === 1)
+      .map(([key]) => key),
+  );
+
+  const normalizedInSitemap = normalized.filter((row) => {
+    const key = conservativeUrlIdentity(row.canonical_url);
+    return key !== null && safeIdentityKeys.has(key);
+  });
   const seedOnlyInSitemap = normalizedInSitemap.filter((row) => seedSet.get(row.canonical_url)?.freshness_status === "seed_only");
   const conservative = seedOnlyInSitemap.filter((row) => conservativeCandidate(row, displayByUrl.get(row.canonical_url)));
   const conservativePublic = conservative.filter((row) => publicSet.has(row.canonical_url));
@@ -223,6 +267,10 @@ async function main(): Promise<void> {
     rootSitemaps,
     sitemapDocumentsRead: visited.size,
     currentSitemapUrlCount: sitemapUrls.size,
+    exactUrlMatches,
+    dbIdentityCollisions,
+    sitemapIdentityCollisions,
+    safeIdentityMatches: normalizedInSitemap.length,
     normalizedInCurrentSitemap: normalizedInSitemap.length,
     seedOnlyInCurrentSitemap: seedOnlyInSitemap.length,
     conservativeCandidates: conservative.length,
