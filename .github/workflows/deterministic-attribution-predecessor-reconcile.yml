@@ -1,0 +1,49 @@
+name: DETERMINISTIC-ATTRIBUTION Predecessor Reconcile
+
+on:
+  push:
+    branches:
+      - ux/deterministic-attribution-1
+    paths:
+      - "scripts/audits/apply-deterministic-attribution-predecessor-reconcile.mjs"
+      - ".github/workflows/deterministic-attribution-predecessor-reconcile.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ux/deterministic-attribution-1
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/audits/apply-deterministic-attribution-predecessor-reconcile.mjs
+      - name: Verify intended scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only | sort)"
+          expected="$(printf '%s\n' \
+            scripts/scrapers/__tests__/search-mobile-card-grid-1.test.ts \
+            scripts/scrapers/__tests__/search-truth-tier.test.ts \
+            scripts/scrapers/__tests__/search-wording-purity-1.test.ts | sort)"
+          test "$changed" = "$expected"
+      - name: Remove temporary reconcile files
+        run: |
+          git rm scripts/audits/apply-deterministic-attribution-predecessor-reconcile.mjs
+          git rm .github/workflows/deterministic-attribution-predecessor-reconcile.yml
+      - name: Commit reconcile
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "hraaaaf"
+          git config user.email "123034021+hraaaaf@users.noreply.github.com"
+          git add scripts/scrapers/__tests__/search-mobile-card-grid-1.test.ts scripts/scrapers/__tests__/search-truth-tier.test.ts scripts/scrapers/__tests__/search-wording-purity-1.test.ts
+          git commit -m "test(search): reconcile deterministic attribution predecessors"
+          git push origin HEAD:ux/deterministic-attribution-1
