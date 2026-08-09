@@ -33,15 +33,18 @@ jobs:
         run: npx tsx --test scripts/data4/__tests__/data-4-7c-residual-reservoir-requalification.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
-      - name: Static read-only boundary
+      - name: Static read-only rotation boundary
         run: |
           node - <<'NODE'
           const fs = require('fs');
           const s = fs.readFileSync('scripts/audits/data-4-7c-residual-reservoir-requalification.ts','utf8');
           for (const required of [
-            '"limmobiliersansfrontieres.com"',
+            '"daragadir.com"',
+            '"promoimmomarrakech.com"',
             '"aykana.ma"',
-            'READ_ONLY_RESERVOIR_COMPARISON',
+            '"limmobiliersansfrontieres.com"',
+            'READ_ONLY_SOURCE_ROTATION',
+            'BLOCKED_SOURCE_EVIDENCE',
             'DATA-4.7D_BOUNDED_WRITE',
             'databaseWrites: 0',
             'registryMutations: 0',
@@ -49,6 +52,7 @@ jobs:
             'sourceSiteDetailRequests: 0',
             'productionActivation: false',
           ]) if (!s.includes(required)) throw new Error(`missing ${required}`);
+          if (s.includes('"atlasimmobilier.com"')) throw new Error('hidden Atlas policy must not enter display rotation');
           for (const forbidden of ['method: "PATCH"','method: "POST"','method: "DELETE"']) {
             if (s.includes(forbidden)) throw new Error(`write method forbidden in DATA-4.7C: ${forbidden}`);
           }
@@ -69,20 +73,24 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Compare live LSF and Aykana reservoirs
+      - name: Rotate across live public-sitemap reservoirs
         run: npx tsx scripts/audits/data-4-7c-residual-reservoir-requalification.ts
-      - name: Enforce read-only qualification proof
+      - name: Enforce read-only rotation proof
         run: |
           node - <<'NODE'
           const fs = require('fs');
           const p = JSON.parse(fs.readFileSync('.tmp/data-4-7c/results/proof.json','utf8'));
-          if (p.schemaVersion !== 'data-4-7c-residual-reservoir-requalification-v1' || p.mode !== 'READ_ONLY_RESERVOIR_COMPARISON') throw new Error(JSON.stringify(p));
-          if (!Array.isArray(p.sources) || p.sources.length !== 2) throw new Error(JSON.stringify(p));
+          if (p.schemaVersion !== 'data-4-7c-residual-reservoir-requalification-v2' || p.mode !== 'READ_ONLY_SOURCE_ROTATION') throw new Error(JSON.stringify(p));
+          if (!Array.isArray(p.sources) || p.sources.length !== 4) throw new Error(JSON.stringify(p));
           const domains = p.sources.map(s => s.sourceDomain).sort();
-          if (JSON.stringify(domains) !== JSON.stringify(['aykana.ma','limmobiliersansfrontieres.com'])) throw new Error(JSON.stringify(p));
+          const expected = ['aykana.ma','daragadir.com','limmobiliersansfrontieres.com','promoimmomarrakech.com'];
+          if (JSON.stringify(domains) !== JSON.stringify(expected)) throw new Error(JSON.stringify(p));
+          if (p.summary.qualifiedCount < 1 || p.summary.qualifiedCount + p.summary.blockedCount !== 4) throw new Error(JSON.stringify(p));
           for (const s of p.sources) {
-            if (s.registry.policyCurrent !== true || s.currentSitemap.urlCount <= 0 || s.currentSitemap.detailPageRequests !== 0) throw new Error(JSON.stringify(s));
+            if (s.currentSitemap.detailPageRequests !== 0) throw new Error(JSON.stringify(s));
             if (s.qualification.liveCandidateRows < 0 || s.qualification.liveCandidateRows > s.qualification.preSitemapUpperBound) throw new Error(JSON.stringify(s));
+            if (s.status === 'QUALIFIED' && (s.registry.policyCurrent !== true || s.currentSitemap.urlCount <= 0)) throw new Error(JSON.stringify(s));
+            if (s.status !== 'QUALIFIED' && s.qualification.liveCandidateRows !== 0) throw new Error(JSON.stringify(s));
           }
           if (!p.recommendation.sourceDomain || p.recommendation.liveCandidateCapacity <= 0 || p.recommendation.nextLot !== 'DATA-4.7D_BOUNDED_WRITE') throw new Error(JSON.stringify(p));
           if (p.databaseWrites !== 0 || p.registryMutations !== 0 || p.policyChanges !== 0 || p.sourceSiteDetailRequests !== 0 || p.productionActivation !== false) throw new Error(JSON.stringify(p));
