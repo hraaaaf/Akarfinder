@@ -72,6 +72,14 @@ test("P1B.10 apply creates exactly two fail-closed Tier A Registry candidates an
   await db.close();
 });
 
+test("P1B.10 allows legitimate namesakes outside the Agadir parent", async () => {
+  const db = await fixture();
+  await db.exec(`insert into public.geo_entities(id,entity_type,parent_id,slug,canonical_name,normalized_name,validation_status,seo_eligible,map_eligible,source_version,metadata) values ('city_dakhla','city',null,'dakhla','Dakhla','dakhla','validated',false,false,'registry_v1','{}')`);
+  await db.exec(APPLY_SQL);
+  assert.deepEqual(await scalar(db, `select count(*)::int n from public.geo_entities where id='district_agadir_dakhla'`), { n: 1 });
+  await db.close();
+});
+
 test("P1B.10 fails closed when parent is not validated", async () => {
   const db = await fixture();
   await db.exec(`update public.geo_entities set validation_status='draft' where id='city_agadir'`);
@@ -79,7 +87,7 @@ test("P1B.10 fails closed when parent is not validated", async () => {
   await db.close();
 });
 
-test("P1B.10 fails closed on slug, normalized-name and exact-alias collisions", async () => {
+test("P1B.10 fails closed on parent-scoped slug, normalized-name and exact-alias collisions", async () => {
   for (const collisionSql of [
     `insert into public.geo_entities values ('collision_slug','neighborhood','city_agadir','dakhla','Other','other','validated',false,false,'registry_v1','{}')`,
     `insert into public.geo_entities values ('collision_name','neighborhood','city_agadir','other','Dakhla','dakhla','validated',false,false,'registry_v1','{}')`,
