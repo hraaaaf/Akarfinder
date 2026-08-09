@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; prochain lot UX Search = UNIFIED-LISTING-CARD-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; prochain lot UX Search = CONTEXTUAL-VISUAL-ASSETS-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -143,10 +143,26 @@ Responsabilité : neutraliser l’ancien shadow price recovery V1 qui pouvait é
 
 Responsabilité : resynchroniser la policy de qualité persistée avec vertical/document-kind/provider-detail sans modifier Ranking V2 ni l’ordre commercial. Préflight : **14 007 / 56 810** rows différaient de la policy composée. Production après migrations : `policy_drift_rows=0`, tous les invariants fail-closed à zéro, **587** fallbacks provider-detail conservés, **15 438** LISTING publics (10 061 primary / 5 377 secondary). Reviewer PASS, Release Certifier GO, **19/19** workflows exact-head verts, merge `c5949063fa1c0e3448e917473239f821a17b7d59`.
 
+## UNIFIED-LISTING-CARD-1 ✅ CLOSED — PR #407
+
+Responsabilité : unifier la hiérarchie visible des résultats Gateway/externes avec la card Search canonique, sans changer ranking, ordre commercial, éligibilité, acquisition, publication, Source Registry ni policy thumbnails.
+
+Résultat certifié :
+
+- grammaire `IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE → ACTION` ;
+- états inconnus explicites, sans donnée fabriquée ;
+- `Source externe`, prudence de comparaison et CTA vers la source originale conservés ;
+- fallback visuel déterministe : thumbnail autorisée, sinon artwork type de bien connu, sinon visuel neutre ;
+- finding mobile corrigé avant certification : `Prix non communiqué` reste entièrement lisible à 360 px ;
+- preuve Chromium dédiée : **360×800 / 390×844 / 768×900 / 1280×900**, 0 overflow, 0 prix tronqué, provenance avant action ;
+- gate permanent `UNIFIED-LISTING-CARD-1 Gate` : contrat + Search Truth + TypeScript + build + preuve visuelle externe ;
+- **23/23 workflows PR verts** sur `6ddde621f03ccca1f25b8dc5dd34fdded090044b` ;
+- Benchmark UX/Search Reviewer : **PASS 9,2/10** ; Reviewer PASS ; Release Certifier GO ;
+- merge `7ad1b7af2a0e7dc268b0b3ea032e083f7ccbb193`, artefact `sha256:784182dd2c8d4f5eca46e907eeedd38493e0f63d586bd99151010fae6b3e542b`.
+
 ### Prochains lots UX/Search — ordre strict
 
-1. **UNIFIED-LISTING-CARD-1** — grammaire unique des cards ;
-2. **CONTEXTUAL-VISUAL-ASSETS-1** — visuels contextuels déterministes et truth-safe.
+1. **CONTEXTUAL-VISUAL-ASSETS-1** — visuels contextuels déterministes et truth-safe.
 
 # 4. Lane UX / Carte
 
