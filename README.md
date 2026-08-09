@@ -203,7 +203,13 @@ Qualification production strictement read-only du gap Registry certifié par P1B
 
 Contrat : **0 DB/Registry mutation, 0 alias/entity creation, 0 geo-resolution write, 0 source-site request, 0 fuzzy, 0 title/snippet inference**. Exact-head final après réalignement `d76eeda4de755faf08ec90afdaa0989cd4e8f2de`, **19/19 workflows PASS**, specialized live gate PASS, Reviewer **9,6/10**, Release Certifier GO, merge `77bd6ffad41443efbf543cd25caf7539ca593579`, post-merge specialized gate PASS. Verdict : **`EXTERNAL_AUTHORITY_REQUIRED_BEFORE_REGISTRY_WRITE`**.
 
-La couche **Offre par quartier reste interdite** : couverture toujours **89 / 15 438 = 0,5765 %**. Prochain lot Carte : **P1B.8 — Geo Authority Evidence Review**, read-only d’abord sur les 10 couples multi-source prioritaires. Aucun write Geo Registry n’est autorisé par P1B.7.
+### P1B.8 ✅ PR #430 — Geo Authority Evidence Review
+
+Revue d’autorité indépendante strictement read-only des **10 couples / 31 rows** prioritaires P1B.7. Les portails immobiliers sont explicitement interdits comme autorité géographique. Le gate rejoue la cohorte P1B.7 live et échoue sur tout drift de couple, volume ou source. Résultat : **2 couples / 8 rows `AUTHORITY_CONFIRMED_NEIGHBORHOOD`** — **Agadir — Hay Mohammadi (5)** et **Agadir — Dakhla (3)**. Gauthier reste corroboration institutionnelle seulement ; Palmier nécessite encore autorité administrative ; Targa reste locality/type review ; Majorelle landmark/type mismatch ; Massira name/type unresolved ; Palmeraie, Route de Fès et Tanger — Nejma restent sans preuve quartier suffisante dans le périmètre revu. Absence de preuve ≠ preuve d’absence.
+
+Contrat : **0 DB/Registry mutation, 0 alias/entity creation, 0 geo-resolution write, 0 property-portal authority**. Exact-head `e15fc810f2c98ed85fce0c78a465cf6e92cf33c7`, **19/19 workflows PASS**, specialized live gate PASS, Reviewer **9,6/10**, Release Certifier GO, merge `8f16efe091f76a5e933a201abd7f0bd1f9e53d77`, post-merge run `31328973075` PASS. Verdict : **`AUTHORITY_EVIDENCE_REVIEW_COMPLETE_NO_REGISTRY_WRITE_AUTHORIZED`**.
+
+La couche **Offre par quartier reste interdite** : couverture **89 / 15 438 = 0,5765 %**. Prochain lot Carte : **P1B.9 — Tier A Registry Candidate Review**, strictement read-only sur **Hay Mohammadi + Dakhla** avant toute éventuelle mutation Registry.
 
 ## État DATA acquis
 
