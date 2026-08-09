@@ -7,7 +7,7 @@ const lower = sql.toLowerCase();
 
 for (const token of [
   'create or replace function public.odm06_set_display_policy()',
-  "new.vertical_classification = 'non_real_estate'",
+  "new.vertical_classification is distinct from 'real_estate_likely'",
   "new.document_kind = 'category'",
   "new.document_kind = 'ambiguous'",
   "new.document_kind = 'listing' and v_detail_precision",
@@ -22,7 +22,7 @@ for (const token of [
   'd.ranking_quality_boost is distinct from e.expected_boost',
   'create or replace function public.odm_ranking_quality_1_report_v1()',
   "'policy_drift_rows'",
-  "'non_real_estate_public_rows'",
+  "'non_real_estate_or_unknown_public_rows'",
   "'category_public_rows'",
   "'ambiguous_primary_rows'",
   "'listing_with_ambiguous_policy_rows'",
@@ -62,7 +62,7 @@ for (const watchedColumn of [
 const setterMatch = sql.match(/create or replace function public\.odm06_set_display_policy\(\)[\s\S]*?\n\$\$;/i);
 assert.ok(setterMatch, 'composed ODM-06 setter body missing');
 const setter = setterMatch[0].toLowerCase();
-assert.ok(setter.indexOf("new.vertical_classification = 'non_real_estate'") < setter.indexOf("new.document_kind = 'category'"), 'vertical purity must precede document-kind overrides');
+assert.ok(setter.indexOf("new.vertical_classification is distinct from 'real_estate_likely'") < setter.indexOf("new.document_kind = 'category'"), 'fail-closed vertical purity must precede document-kind overrides');
 assert.ok(setter.indexOf("new.document_kind = 'category'") < setter.indexOf("new.document_kind = 'ambiguous'"), 'CATEGORY must be resolved before AMBIGUOUS');
 assert.ok(setter.indexOf("new.document_kind = 'ambiguous'") < setter.indexOf("new.document_kind = 'listing' and v_detail_precision"), 'AMBIGUOUS cap must precede detail LISTING override');
 
