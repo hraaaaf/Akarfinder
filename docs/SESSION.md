@@ -1,7 +1,7 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-09**  
-**Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ #418 ; prochaine et dernière étape benchmark à formaliser = split Liste / Carte desktop sans surcharge**  
+**Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ #423 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE**  
 **Lane UX/Carte : P1B.6 ✅ Geo Coverage Depth Audit — PR #424 ; prochain LOT = P1B.7 Geo Registry Gap Qualification (read-only first)**  
 **Lane DATA : DATA-4.4C ✅ ; DATA-4.5A Expansion-to-500 Qualification ✅ #410 ; P0.1→P0.5 ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = DATA-4.5B Promo Immo Controlled Expansion Write, indépendant de la lane d'autorisation P0**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle **89 / 15 438 = 0,5765 %****
@@ -10,7 +10,7 @@ Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’uniq
 
 # Main canonique
 
-Main canonique après P1B.6 : `304726a83e1ef4df5ddacb8ecba925ad2e1c1b30` — merge PR #424. P1B.6 est strictement read-only ; exact-head `311b00bb5d0273f04b4405395e5eb5be13050045`, **19/19 workflows verts**, specialized live gate PASS, Reviewer **9,6/10**, post-merge gate PASS.
+Main canonique après SEARCH-DESKTOP-SPLIT-1 : `6bcf402158539c547061a6a92d1b408df1da8d22` — merge PR #423. Head certifié `29b469e17eff6f4516bef18f7d5ed193726308f0`, **26/26 workflows exact-head verts**, Chromium 5 viewports PASS, Benchmark UX/Search Reviewer **9,5/10**, Reviewer PASS, Certifier GO. P1B.6 reste acquis et strictement read-only.
 
 P0.4 main merge : `81f4809424757838c099b6acfb8f8d4b719deab7` — PR #402 ; post-merge gate PASS.
 
@@ -32,6 +32,7 @@ Acquis récents :
 - CONTEXTUAL-VISUAL-ASSETS-1 ✅ #414 — fallback ville exact/local → type reconnu → neutre, aucune inférence, Chromium 4 viewports, Benchmark PASS 9,3/10 ;
 - DETERMINISTIC-ATTRIBUTION-1 ✅ #416 — attribution publique centralisée, raw source labels interdits, 26/26 workflows, Chromium 5 viewports, Benchmark PASS 9,4/10 ;
 - SEARCH-ACTION-HIERARCHY-1 ✅ #418 — une action forte par card tablette/desktop, Map/Compare retirés de la card mais capacités globales conservées, 24/24 workflows, Chromium 5 viewports, Benchmark PASS 9,5/10 ;
+- SEARCH-DESKTOP-SPLIT-1 ✅ #423 — desktop Mixte = résultats + carte sans blocs secondaires, mobile/tablette inchangés, 26/26 workflows, Chromium 5 viewports, Benchmark PASS 9,5/10, merge `6bcf402158539c547061a6a92d1b408df1da8d22` ;
 - P0.1 ✅ #392 — Source Registry opérationnel et fail-closed sur Common Crawl ;
 - freshness reconciler hardening ✅ #396 — retry transitoire borné, diagnostics PostgREST explicites, concurrence PATCH 25→5.
 - P0.2 ✅ #398 — coverage audit read-only : 27 policies Common Crawl opérationnelles, 9 harvest-ready, 18 pattern-missing, ratio 33,33 %, 0 seed sur la cohorte manquante.

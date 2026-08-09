@@ -170,7 +170,14 @@ La hiérarchie d’actions des cards Search a été simplifiée sans modifier ra
 
 Certification : head `a7ddb7d023eac1418eee50e03258f1d056184b64`, **24/24 workflows exact-head verts**, Chromium déterministe **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, 0 overflow, 0 ancien CTA Map/Compare, 0 prix mobile tronqué. Benchmark UX/Search Reviewer **PASS 9,5/10** (mobile 9,6 / tablette 9,5 / desktop 9,5), Reviewer PASS, Release Certifier GO. Artefact visuel `sha256:c9ec64465039168a44c81b8921ff0ac7e57ab7a25e65a54f91f06f480805a66f`. Merge `0987b89286d262e7d01ec8e3a868b2424d85c4d5`.
 
-Prochaine et dernière étape benchmark UX/Search à formaliser : **split Liste / Carte desktop sans surcharge**.
+### SEARCH-DESKTOP-SPLIT-1 ✅ PR #423
+
+Dernier lot de convergence BENCHMARK-SERP-1 : le mode `Mixte` desktop est désormais un vrai split **résultats + carte**, sans réintroduire les blocs secondaires `Mon Projet AkarFinder` et `Ouvrir la carte complète` dans la colonne Map. Mobile/tablette restent empilés et inchangés ; `Liste` et `Carte` conservent leurs contrats fonctionnels. Aucun changement ranking, filtres, éligibilité, ordre commercial, DATA, attribution ou état URL.
+
+Certification : head `29b469e17eff6f4516bef18f7d5ed193726308f0`, **26/26 workflows exact-head verts**, gate spécialisé contrat + predecessors + TypeScript + build + Chromium PASS. Preuve **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : mobile/tablette empilés, desktop **654/558 px** puis **741/631 px** résultats/carte, **0 bloc secondaire desktop**, **0 overflow horizontal**, **0 prix tronqué**. Benchmark UX/Search Reviewer **PASS 9,5/10**, Reviewer technique PASS, Release Certifier GO. Artefact `sha256:9811f9b4a62b8b571ff977953f240e3be5ac17fad41cf3ef87d8d8b30feedf8c`. Merge `6bcf402158539c547061a6a92d1b408df1da8d22`.
+
+**BENCHMARK-SERP-1 — séquence de convergence terminée ✅.** Toute nouvelle évolution UX/Search doit désormais être formalisée comme un nouveau lot, avec benchmark et contrat propres.
+
 
 ## État UX / Carte
 
