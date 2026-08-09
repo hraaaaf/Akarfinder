@@ -1,0 +1,70 @@
+name: P1B.10 Tier A Registry Write Design Gate
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migration-designs/p1b10_tier_a_registry_write.sql"
+      - "supabase/migration-designs/p1b10_tier_a_registry_rollback.sql"
+      - "scripts/scrapers/__tests__/p1b10-tier-a-registry-write-design.test.ts"
+      - ".github/workflows/p1b10-tier-a-registry-write-design.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migration-designs/p1b10_tier_a_registry_write.sql"
+      - "supabase/migration-designs/p1b10_tier_a_registry_rollback.sql"
+      - "scripts/scrapers/__tests__/p1b10-tier-a-registry-write-design.test.ts"
+      - ".github/workflows/p1b10-tier-a-registry-write-design.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-registry-write-design:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: P1B.10 static design boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const applyPath='supabase/migration-designs/p1b10_tier_a_registry_write.sql';
+          const rollbackPath='supabase/migration-designs/p1b10_tier_a_registry_rollback.sql';
+          if(!fs.existsSync(applyPath)||!fs.existsSync(rollbackPath)) throw new Error('P1B.10 design SQL missing');
+          if(fs.readdirSync('supabase/migrations').some(n=>n.includes('p1b10'))) throw new Error('P1B.10 must not enter executable migrations');
+          const apply=fs.readFileSync(applyPath,'utf8');
+          const rollback=fs.readFileSync(rollbackPath,'utf8');
+          for(const marker of [
+            "'district_agadir_dakhla'",
+            "'district_agadir_hay_mohammadi'",
+            "'city_agadir'",
+            "'validated'",
+            "false, false, 'registry_v1'",
+            "'P1B.10'",
+            "'agadir.ma'",
+          ]) if(!apply.includes(marker)) throw new Error(`missing ${marker}`);
+          if(/insert\s+into\s+public\.geo_resolution_events/i.test(apply)) throw new Error('P1B.10 may not resolve listings');
+          if(!rollback.includes('geo_resolution_events')) throw new Error('rollback must guard future geo references');
+          if(!rollback.includes("metadata ->> 'registry_design_lot' = 'P1B.10'")) throw new Error('rollback ownership marker missing');
+          const entityValues=(apply.match(/'district_agadir_(?:dakhla|hay_mohammadi)'/g)||[]).length;
+          if(entityValues < 4) throw new Error('candidate identities missing from design/postconditions');
+          NODE
+      - name: P1B.10 PostgreSQL semantic rehearsal
+        run: npx tsx --test scripts/scrapers/__tests__/p1b10-tier-a-registry-write-design.test.ts
+      - name: P1B.9 predecessor static contract
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='data/geo/p1b9-tier-a-registry-candidates.json';
+          if(!fs.existsSync(p)) throw new Error('P1B.9 candidate manifest missing');
+          const m=JSON.parse(fs.readFileSync(p,'utf8'));
+          if(m.candidates.length!==2) throw new Error('P1B.9 candidate scope drift');
+          if(m.candidates.some(c=>c.write_eligible_in_p1b9!==false)) throw new Error('P1B.9 write boundary drift');
+          NODE
+      - name: TypeScript
+        run: npx tsc --noEmit
