@@ -1,0 +1,88 @@
+name: DATA-4.7C Residual Reservoir Requalification
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/data-4-7c-residual-reservoir-requalification.ts"
+      - "scripts/data4/__tests__/data-4-7c-residual-reservoir-requalification.test.ts"
+      - ".github/workflows/data-4-7c-residual-reservoir-requalification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: DATA-4.7C focused contract tests
+        run: npx tsx --test scripts/data4/__tests__/data-4-7c-residual-reservoir-requalification.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Static read-only boundary
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const s = fs.readFileSync('scripts/audits/data-4-7c-residual-reservoir-requalification.ts','utf8');
+          for (const required of [
+            '"limmobiliersansfrontieres.com"',
+            '"aykana.ma"',
+            'READ_ONLY_RESERVOIR_COMPARISON',
+            'DATA-4.7D_BOUNDED_WRITE',
+            'databaseWrites: 0',
+            'registryMutations: 0',
+            'policyChanges: 0',
+            'sourceSiteDetailRequests: 0',
+            'productionActivation: false',
+          ]) if (!s.includes(required)) throw new Error(`missing ${required}`);
+          for (const forbidden of ['method: "PATCH"','method: "POST"','method: "DELETE"']) {
+            if (s.includes(forbidden)) throw new Error(`write method forbidden in DATA-4.7C: ${forbidden}`);
+          }
+          NODE
+
+  live-qualification:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_7C_OUT_DIR: .tmp/data-4-7c/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Compare live LSF and Aykana reservoirs
+        run: npx tsx scripts/audits/data-4-7c-residual-reservoir-requalification.ts
+      - name: Enforce read-only qualification proof
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-4-7c/results/proof.json','utf8'));
+          if (p.schemaVersion !== 'data-4-7c-residual-reservoir-requalification-v1' || p.mode !== 'READ_ONLY_RESERVOIR_COMPARISON') throw new Error(JSON.stringify(p));
+          if (!Array.isArray(p.sources) || p.sources.length !== 2) throw new Error(JSON.stringify(p));
+          const domains = p.sources.map(s => s.sourceDomain).sort();
+          if (JSON.stringify(domains) !== JSON.stringify(['aykana.ma','limmobiliersansfrontieres.com'])) throw new Error(JSON.stringify(p));
+          for (const s of p.sources) {
+            if (s.registry.policyCurrent !== true || s.currentSitemap.urlCount <= 0 || s.currentSitemap.detailPageRequests !== 0) throw new Error(JSON.stringify(s));
+            if (s.qualification.liveCandidateRows < 0 || s.qualification.liveCandidateRows > s.qualification.preSitemapUpperBound) throw new Error(JSON.stringify(s));
+          }
+          if (!p.recommendation.sourceDomain || p.recommendation.liveCandidateCapacity <= 0 || p.recommendation.nextLot !== 'DATA-4.7D_BOUNDED_WRITE') throw new Error(JSON.stringify(p));
+          if (p.databaseWrites !== 0 || p.registryMutations !== 0 || p.policyChanges !== 0 || p.sourceSiteDetailRequests !== 0 || p.productionActivation !== false) throw new Error(JSON.stringify(p));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-7c-residual-reservoir-requalification
+          path: .tmp/data-4-7c/results/proof.json
+          if-no-files-found: error
+          retention-days: 14
