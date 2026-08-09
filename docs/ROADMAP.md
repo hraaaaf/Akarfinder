@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; prochain lot UX Search = PRICE-COVERAGE-RECOVERY-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 Common Crawl Discovery Coverage ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; prochain lot UX Search = UNIFIED-LISTING-CARD-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 Common Crawl Discovery Coverage ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -135,12 +135,18 @@ Résultat certifié avant closeout documentaire :
 - Benchmark UX/Search Reviewer : **PASS — mobile 9,6/10, desktop 9,4/10** ;
 - Reviewer technique : **PASS**.
 
+## PRICE-COVERAGE-RECOVERY-1 ✅ CLOSED — PR #395
+
+Responsabilité : neutraliser l’ancien shadow price recovery V1 qui pouvait écrire dans le prix public. Production certifiée : **8 → 0 shadow leaks**, aucune valeur raw/trusted touchée, materializer rendu audit-only, publication=false, ranking=false. Migration canonique `20260809013000_price_coverage_recovery_shadow_governance`.
+
+## RANKING-QUALITY-1 ✅ CLOSED — PR #403
+
+Responsabilité : resynchroniser la policy de qualité persistée avec vertical/document-kind/provider-detail sans modifier Ranking V2 ni l’ordre commercial. Préflight : **14 007 / 56 810** rows différaient de la policy composée. Production après migrations : `policy_drift_rows=0`, tous les invariants fail-closed à zéro, **587** fallbacks provider-detail conservés, **15 438** LISTING publics (10 061 primary / 5 377 secondary). Reviewer PASS, Release Certifier GO, **19/19** workflows exact-head verts, merge `c5949063fa1c0e3448e917473239f821a17b7d59`.
+
 ### Prochains lots UX/Search — ordre strict
 
-1. **PRICE-COVERAGE-RECOVERY-1** — audit puis récupération policy-compliant des prix manquants ;
-2. **RANKING-QUALITY-1** — qualité/complétude/relevance dans le cadre de la priorité commerciale ;
-3. **UNIFIED-LISTING-CARD-1** — grammaire unique des cards ;
-4. **CONTEXTUAL-VISUAL-ASSETS-1** — visuels contextuels déterministes et truth-safe.
+1. **UNIFIED-LISTING-CARD-1** — grammaire unique des cards ;
+2. **CONTEXTUAL-VISUAL-ASSETS-1** — visuels contextuels déterministes et truth-safe.
 
 # 4. Lane UX / Carte
 

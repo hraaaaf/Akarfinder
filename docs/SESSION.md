@@ -1,7 +1,7 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-09**  
-**Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; prochain lot = PRICE-COVERAGE-RECOVERY-1**  
+**Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; prochain lot = UNIFIED-LISTING-CARD-1**  
 **Lane UX/Carte : P1B.4 ✅ Geo Coverage Recovery pilot certifié en production**  
 **Lane DATA : DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 Common Crawl Pattern Evidence ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = P0.4 Registry Pattern Review Shadow**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle 0,45 %**
@@ -10,7 +10,7 @@ Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’uniq
 
 # Main canonique
 
-Base du closeout DATA : `main` `8ffffc7cfbe0921d21f66887e1c4ecccf3a738cb` — merge PR #400.
+Main canonique après RANKING-QUALITY-1 : `c5949063fa1c0e3448e917473239f821a17b7d59` — merge PR #403.
 
 Acquis récents :
 
@@ -22,6 +22,8 @@ Acquis récents :
 - SEARCH-WORDING-PURITY-1 ✅ #391 — wording public simplifié, truth/ranking inchangés ;
 - SEARCH-CONTINUOUS-FLOW-1 ✅ #393 — une seule séquence visuelle de listings, ordre métier inchangé ;
 - SEARCH-MOBILE-CARD-GRID-1 ✅ #394 — grille mobile 2 colonnes, prix non tronqué, desktop préservé ;
+- PRICE-COVERAGE-RECOVERY-1 ✅ #395 — 8 shadow price leaks historiques → 0, recovery V1 audit-only, publication/ranking inchangés ;
+- RANKING-QUALITY-1 ✅ #403 — 14 007 rows stale resynchronisées, policy drift production = 0, Ranking V2 inchangé ;
 - P0.1 ✅ #392 — Source Registry opérationnel et fail-closed sur Common Crawl ;
 - freshness reconciler hardening ✅ #396 — retry transitoire borné, diagnostics PostgREST explicites, concurrence PATCH 25→5.
 - P0.2 ✅ #398 — coverage audit read-only : 27 policies Common Crawl opérationnelles, 9 harvest-ready, 18 pattern-missing, ratio 33,33 %, 0 seed sur la cohorte manquante.
@@ -135,9 +137,11 @@ Uniquement les **5 STRONG**. Produire des patterns candidats, corpus positifs/n�
 - SEARCH-WORDING-PURITY-1 ✅ #391 — mobile 9,4/10 ;
 - SEARCH-CONTINUOUS-FLOW-1 ✅ #393 — mobile 9,5/10 ;
 - SEARCH-MOBILE-CARD-GRID-1 ✅ #394 — mobile 9,6/10 ;
-- prochain lot : **PRICE-COVERAGE-RECOVERY-1** uniquement.
+- PRICE-COVERAGE-RECOVERY-1 ✅ #395 — production certifiée, 0 shadow public leak ;
+- RANKING-QUALITY-1 ✅ #403 — production certifiée, `policy_drift_rows=0`, 15 438 LISTING publics ;
+- prochain lot : **UNIFIED-LISTING-CARD-1** uniquement.
 
-Puis : `RANKING-QUALITY-1` → `UNIFIED-LISTING-CARD-1` → `CONTEXTUAL-VISUAL-ASSETS-1`.
+Puis : `CONTEXTUAL-VISUAL-ASSETS-1`.
 
 # UX / Carte — état certifié
 

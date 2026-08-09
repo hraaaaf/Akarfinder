@@ -138,7 +138,15 @@ Résultat certifié avant closeout documentaire :
 - Benchmark UX/Search Reviewer : **PASS — mobile 9,6/10, desktop 9,4/10** ;
 - Reviewer technique : **PASS**.
 
-Prochain lot UX/Search séparé : **PRICE-COVERAGE-RECOVERY-1**.
+### PRICE-COVERAGE-RECOVERY-1 ✅ PR #395
+
+Récupération de prix remise sous gouvernance fail-closed : l’ancien V1 shadow est désormais audit-only, les **8 fuites publiques** historiques ont été nettoyées en production, publication et ranking restent désactivés pour ce shadow. Migration canonique `20260809013000_price_coverage_recovery_shadow_governance`, report production `shadow_public_leaks=0`.
+
+### RANKING-QUALITY-1 ✅ PR #403
+
+Politique de qualité persistée recomposée et resynchronisée sans modifier Ranking V2 ni la priorité commerciale. Préflight : **14 007 / 56 810** rows stale ; après migration production : `policy_drift_rows=0`, 0 vertical non immobilier/inconnu public, 0 CATEGORY public, 0 AMBIGUOUS primary, 0 LISTING gardant l’ancienne policy ambiguous. Les **587** fallbacks provider-detail explicites restent conservés. Inventaire LISTING public : **15 438** (10 061 primary / 5 377 secondary). Merge `c5949063fa1c0e3448e917473239f821a17b7d59`.
+
+Prochain lot UX/Search séparé : **UNIFIED-LISTING-CARD-1**.
 
 ## État UX / Carte
 
