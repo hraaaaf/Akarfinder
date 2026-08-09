@@ -98,6 +98,11 @@ function signatureHasPropertyNamespace(signature: string): boolean {
     .some((segment) => PROPERTY_NAMESPACE.test(segment.replace(/[{}]/g, "")));
 }
 
+function signatureLooksLikeDateArchive(signature: string): boolean {
+  const segments = signature.split("/").filter(Boolean);
+  return segments.length >= 4 && segments[0] === "{id}" && segments[1] === "{id}" && segments[2] === "{id}";
+}
+
 export function buildDomainPatternEvidence(
   domain: string,
   records: PatternEvidenceRecord[],
@@ -141,7 +146,10 @@ export function buildDomainPatternEvidence(
     .slice(0, 10);
 
   const strong = topSignatures.some((candidate) =>
-    candidate.url_count >= 5 && candidate.share >= 0.1 && candidate.id_bearing,
+    candidate.url_count >= 5 &&
+    candidate.share >= 0.1 &&
+    candidate.id_bearing &&
+    !signatureLooksLikeDateArchive(candidate.signature),
   );
   const reviewable = topSignatures.some((candidate) =>
     candidate.url_count >= 5 && candidate.share >= 0.1 && candidate.property_namespace,
