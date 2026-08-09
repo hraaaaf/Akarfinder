@@ -1,0 +1,81 @@
+name: Temporary P0.3 docs closeout
+
+on:
+  push:
+    branches: [docs/close-p0-3]
+    paths:
+      - ".github/workflows/tmp-close-p0-3-docs.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: docs/close-p0-3
+
+      - name: Update canonical MDs and self-delete
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              if old not in text:
+                  raise SystemExit(f"anchor missing in {path}: {old[:100]!r}")
+              p.write_text(text.replace(old, new, 1))
+
+          # README
+          readme = Path('README.md')
+          text = readme.read_text()
+          anchor = '### DATA-4 — Reservoir Strategy\n'
+          if anchor not in text:
+              raise SystemExit('README DATA-4 anchor missing')
+          p03 = '''### P0.3 — Common Crawl Pattern Evidence ✅ CLOSED — PR #400\n\nP0.3 analyse uniquement les métadonnées de l’URL-index Common Crawl pour la cohorte figée des **18** sources `POLICY_ALLOWED_PATTERN_MISSING` de P0.2. Les policies production sont relues avant les requêtes ; aucun site source et aucun contenu WARC ne sont appelés.\n\nPreuve finale : **54/54** requêtes URL-index réussies sur 3 indexes, **10 254 URL uniques**, **5 `STRONG_PATTERN_EVIDENCE`**, **6 `REVIEWABLE_PATTERN_EVIDENCE`**, **7 `INSUFFICIENT_URL_INDEX_EVIDENCE`**. Les 5 strong sont : `christiesrealestatemorocco.com`, `immo-maroc.com`, `immobilier-a-marrakech.com`, `immohammedia.com`, `leaderimmo.ma`. Un faux positif d’archive datée `/YYYY/MM/DD/...` a été détecté puis neutralisé avant certification ; test permanent ajouté.\n\nSécurité : **0 requête source-site**, **0 WARC/content fetch**, **0 mutation DB**, **0 mutation Registry/policy**, **0 activation de pattern**. **20/20 workflows exact-head verts**, Reviewer **PASS 9,4/10**, Release Certifier **GO**, merge `8ffffc7cfbe0921d21f66887e1c4ecccf3a738cb`, gate P0.3 post-merge PASS.\n\nProchain lot mass-index : **P0.4 — Registry Pattern Review Shadow** sur les **5 strong uniquement**. Il doit convertir les signatures en propositions de patterns avec contrôles positifs/négatifs et shadow replay ; aucune activation automatique. Les 6 reviewable restent hors activation et les 7 insufficient restent bloqués.\n\n'''
+          readme.write_text(text.replace(anchor, p03 + anchor, 1))
+          replace_once('README.md',
+              '**DATA-4.4C, P0.1 et P0.2 sont fermés et certifiés.** Le micro-lot reconciler #396 est également fermé. P0.2 mesure un gap réel de readiness mais n’autorise aucune expansion automatique, aucun nouveau scraper direct et aucune évolution de policy. Prochain lot mass-index : **P0.3 — Common Crawl Pattern Evidence**, borné et offline-first sur l’URL-index existant.',
+              '**DATA-4.4C, P0.1, P0.2 et P0.3 sont fermés et certifiés.** Le micro-lot reconciler #396 est également fermé. P0.3 a produit 5 preuves fortes, 6 reviewable et 7 insuffisantes, sans aucune activation. Prochain lot mass-index : **P0.4 — Registry Pattern Review Shadow**, strictement borné aux 5 preuves fortes.')
+
+          # ROADMAP
+          roadmap = Path('docs/ROADMAP.md')
+          text = roadmap.read_text()
+          anchor = '# 8. DATA-4 — Reservoir Strategy\n'
+          if anchor not in text:
+              raise SystemExit('ROADMAP DATA-4 anchor missing')
+          p03r = '''# 7.3 P0.3 — Common Crawl Pattern Evidence ✅ CLOSED — PR #400\n\nResponsabilité unique : **produire des preuves de structure d’URL sur les 18 sources pattern-missing certifiées par P0.2**, via l’URL-index Common Crawl uniquement, sans écrire de pattern dans le Registry.\n\nPreuve finale : **18/18** targets encore policy-allowed, **54/54** requêtes réussies, **10 254 URL uniques**. Classification conservative : **5 strong / 6 reviewable / 7 insufficient**. Strong : `christiesrealestatemorocco.com`, `immo-maroc.com`, `immobilier-a-marrakech.com`, `immohammedia.com`, `leaderimmo.ma`.\n\nFinding Reviewer corrigé : une archive de blog `/{year}/{month}/{day}/...` pouvait ressembler à une signature ID-bearing. Ces signatures datées sont maintenant explicitement exclues de `STRONG_PATTERN_EVIDENCE` et un test permanent couvre ce cas. Les `REVIEWABLE` ne sont pas automatiquement activables ; notamment `valfoncier.ma` présente une signature dominante incluant des chemins médias imbriqués.\n\nContrat : 0 source-site request, 0 WARC/content fetch, 0 DB mutation, 0 Registry/policy mutation, 0 pattern activation. Certification : **20/20 exact-head PASS**, Reviewer **9,4/10**, Certifier GO, merge `8ffffc7cfbe0921d21f66887e1c4ecccf3a738cb`, gate P0.3 post-merge PASS.\n\n## 7.4 P0.4 — Registry Pattern Review Shadow — NEXT\n\nScope strict : **les 5 domaines strong uniquement**. Transformer chaque signature en proposition de `listing_url_pattern`, constituer des jeux positifs/négatifs depuis l’évidence URL-index, mesurer faux positifs/faux négatifs en shadow replay et refuser toute proposition ambiguë. **Aucune activation Registry, aucun harvest, aucun write production dans P0.4**. Les 6 reviewable restent en evidence refinement séparé ; les 7 insufficient restent bloqués.\n\n'''
+          roadmap.write_text(text.replace(anchor, p03r + anchor, 1))
+          replace_once('docs/ROADMAP.md',
+              '**P0.1 et P0.2 sont CLOSED.** Exécuter ensuite **P0.3 — Common Crawl Pattern Evidence** uniquement : audit offline-first de la cohorte `POLICY_ALLOWED_PATTERN_MISSING` sur l’URL-index existant, sans WARC par défaut, sans nouveau scraper/source direct, sans activation de source et sans expansion automatique.',
+              '**P0.1, P0.2 et P0.3 sont CLOSED.** Exécuter ensuite **P0.4 — Registry Pattern Review Shadow** uniquement sur les 5 domaines `STRONG_PATTERN_EVIDENCE`. Le LOT reste read-only/shadow : propositions + tests positifs/négatifs + replay, sans mutation Registry, sans harvest, sans nouvelle source et sans expansion automatique.')
+
+          # SESSION
+          replace_once('docs/SESSION.md',
+              '**Lane DATA : DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 Common Crawl Discovery Coverage ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = P0.3 Pattern Evidence**',
+              '**Lane DATA : DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 Common Crawl Pattern Evidence ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = P0.4 Registry Pattern Review Shadow**')
+          replace_once('docs/SESSION.md',
+              'Base du closeout DATA : `main` `9112cbf02fef2ada2d0eb0785ec872fe630e293f` — merge PR #398.',
+              'Base du closeout DATA : `main` `8ffffc7cfbe0921d21f66887e1c4ecccf3a738cb` — merge PR #400.')
+          session = Path('docs/SESSION.md')
+          text = session.read_text()
+          anchor = '# UX / Search — état court\n'
+          if anchor not in text:
+              raise SystemExit('SESSION UX anchor missing')
+          p03s = '''# P0.3 — Common Crawl Pattern Evidence ✅ CLOSED — PR #400\n\nCohorte figée P0.2 : **18 domaines**. Revalidation policy production avant requête ; collecte limitée à `index.commoncrawl.org` sur trois indexes.\n\nPreuve :\n\n- **54/54** requêtes URL-index réussies ;\n- **10 254** URL uniques ;\n- **5 STRONG** : `christiesrealestatemorocco.com`, `immo-maroc.com`, `immobilier-a-marrakech.com`, `immohammedia.com`, `leaderimmo.ma` ;\n- **6 REVIEWABLE** ;\n- **7 INSUFFICIENT** ;\n- faux positif archive datée détecté/corrigé avant certification ;\n- `source_site_request=false`, `warc_fetch=false`, `db_mutation=false`, `registry_mutation=false`.\n\nCertification : **20/20 exact-head PASS**, Reviewer **9,4/10**, Certifier GO, merge `8ffffc7cfbe0921d21f66887e1c4ecccf3a738cb`, post-merge gate PASS.\n\n# PROCHAIN LOT DATA — P0.4 Registry Pattern Review Shadow\n\nUniquement les **5 STRONG**. Produire des patterns candidats, corpus positifs/négatifs et replay shadow avec mesure des erreurs. **Zéro mutation Registry, zéro harvest, zéro write production.** Les 6 reviewable ne sont pas incluses automatiquement ; les 7 insufficient restent bloquées.\n\n'''
+          session.write_text(text.replace(anchor, p03s + anchor, 1))
+          replace_once('docs/SESSION.md',
+              'DATA-4.4C, P0.1 et P0.2 sont fermés. Le reconciler #396 est fermé. **Prochain LOT mass-index : P0.3 — Common Crawl Pattern Evidence**, strictement offline-first sur l’URL-index existant. Aucun nouveau scraper/source direct, aucune activation implicite et aucune expansion automatique.',
+              'DATA-4.4C, P0.1, P0.2 et P0.3 sont fermés. Le reconciler #396 est fermé. **Prochain LOT mass-index : P0.4 — Registry Pattern Review Shadow**, limité aux 5 preuves fortes. Aucun nouveau scraper/source direct, aucune activation Registry, aucun harvest et aucune expansion automatique.')
+
+          Path('.github/workflows/tmp-close-p0-3-docs.yml').unlink()
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/ROADMAP.md docs/SESSION.md .github/workflows/tmp-close-p0-3-docs.yml
+          git commit -m "docs: close P0.3 and set P0.4 shadow handover"
+          git push origin HEAD:docs/close-p0-3
