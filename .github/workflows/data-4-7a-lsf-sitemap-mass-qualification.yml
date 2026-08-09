@@ -47,6 +47,7 @@ jobs:
             'detailPageFetches: 0',
             'writeAuthorized: false',
             'MAX_SOURCE_REQUESTS = 40',
+            'massTailCandidatesInPublicSearch',
           ]) if (!s.includes(required)) throw new Error(`missing contract ${required}`);
           if (/method:\s*["'](?:POST|PATCH|PUT|DELETE)["']/.test(s)) throw new Error('mutation HTTP method forbidden');
           NODE
@@ -77,9 +78,12 @@ jobs:
           if (p.mode !== 'READ_ONLY_QUALIFICATION' || p.sourceDomain !== 'limmobiliersansfrontieres.com') throw new Error(JSON.stringify(p));
           if (p.databaseWrites !== 0 || p.freshnessWrites !== 0 || p.registryMutations !== 0 || p.policyChanges !== 0 || p.productionActivation !== false || p.detailPageFetches !== 0 || p.writeAuthorized !== false) throw new Error(JSON.stringify(p));
           if (p.sourceRequests < 1 || p.sourceRequests > 40 || p.totalSeeds < 1) throw new Error(JSON.stringify(p));
-          const allowed = new Set(['SOURCE_SITEMAP_DECLARATION_DRIFT','QUALIFIED_FOR_CONTROLLED_EXPANSION_DESIGN','INSUFFICIENT_CONSERVATIVE_LIVE_RESERVOIR']);
+          const allowed = new Set(['SOURCE_SITEMAP_DECLARATION_DRIFT','QUALIFIED_FOR_CONTROLLED_EXPANSION_DESIGN','INSUFFICIENT_MASS_TAIL_LIVE_RESERVOIR']);
           if (!allowed.has(p.verdict)) throw new Error(JSON.stringify(p));
-          if (p.verdict === 'QUALIFIED_FOR_CONTROLLED_EXPANSION_DESIGN' && p.conservativeCandidatesInPublicSearch < 100) throw new Error(JSON.stringify(p));
+          if (p.verdict !== 'SOURCE_SITEMAP_DECLARATION_DRIFT') {
+            if (p.safeIdentityMatches > p.currentSitemapUrlCount || p.massTailCandidatesInPublicSearch > p.massTailCandidates) throw new Error(JSON.stringify(p));
+          }
+          if (p.verdict === 'QUALIFIED_FOR_CONTROLLED_EXPANSION_DESIGN' && p.massTailCandidatesInPublicSearch < 100) throw new Error(JSON.stringify(p));
           NODE
       - uses: actions/upload-artifact@v4
         with:
