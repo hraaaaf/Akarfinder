@@ -164,7 +164,13 @@ La provenance publique Search est désormais calculée par un resolver canonique
 
 Certification : head `ab4a05ec21434fb414628a181a11adddd68d8293`, **26/26 workflows exact-head verts**, preuve déterministe **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, 0 overflow, 0 prix tronqué et fixtures avec labels bruts empoisonnés sans fuite. Benchmark UX/Search Reviewer **PASS 9,4/10** (mobile 9,4 / desktop 9,3), Reviewer technique PASS (`4891678670`), Release Certifier GO (`4891679276`). Merge `80da5a2abf2d3a7d74dafa6c6043ffe7176929d7`.
 
-Prochaine étape UX/Search à formaliser : **simplification des actions secondaires**.
+### SEARCH-ACTION-HIERARCHY-1 ✅ PR #418
+
+La hiérarchie d’actions des cards Search a été simplifiée sans modifier ranking, priorité commerciale, éligibilité, DATA, attribution ou état Map. Sur tablette/desktop, une card interne expose désormais une seule action forte `Voir le bien`; les contrôles dédiés `Repérer sur la carte` et `Comparer` ont été retirés de la card, tandis que la continuité Search↔Map par hover/focus et le comparateur global restent disponibles. Lorsqu’une source originale existe, elle reste accessible comme lien discret de provenance au lieu d’un deuxième gros CTA. Mobile reste compact et inchangé.
+
+Certification : head `a7ddb7d023eac1418eee50e03258f1d056184b64`, **24/24 workflows exact-head verts**, Chromium déterministe **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, 0 overflow, 0 ancien CTA Map/Compare, 0 prix mobile tronqué. Benchmark UX/Search Reviewer **PASS 9,5/10** (mobile 9,6 / tablette 9,5 / desktop 9,5), Reviewer PASS, Release Certifier GO. Artefact visuel `sha256:c9ec64465039168a44c81b8921ff0ac7e57ab7a25e65a54f91f06f480805a66f`. Merge `0987b89286d262e7d01ec8e3a868b2424d85c4d5`.
+
+Prochaine et dernière étape benchmark UX/Search à formaliser : **split Liste / Carte desktop sans surcharge**.
 
 ## État UX / Carte
 

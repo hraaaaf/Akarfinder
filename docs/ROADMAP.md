@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.5 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; prochaine étape UX Search à formaliser = simplification des actions secondaires ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.5 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; prochaine et dernière étape benchmark UX Search à formaliser = split Liste / Carte desktop sans surcharge ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -194,9 +194,27 @@ Résultat certifié :
 - Benchmark UX/Search Reviewer : **PASS 9,4/10** (mobile 9,4 / desktop 9,3) ; Reviewer technique PASS ; Release Certifier GO ;
 - merge `80da5a2abf2d3a7d74dafa6c6043ffe7176929d7`.
 
+## SEARCH-ACTION-HIERARCHY-1 ✅ CLOSED — PR #418
+
+Responsabilité : **réduire la concurrence entre actions dans les cards Search sans retirer les capacités globales de comparaison ou de continuité Search↔Map**.
+
+Résultat certifié :
+
+- mobile conservé compact, sans nouveau CTA ;
+- tablette/desktop : **1 CTA fort maximum par card** ;
+- card interne : `Voir le bien` reste l’action principale ;
+- `Repérer sur la carte` et le toggle `Comparer` sont retirés de la card ; le comparateur global et le shared selection context restent actifs ;
+- hover/focus card → Map reste actif, sans modifier ranking ni sélection métier ;
+- source originale disponible → lien discret dans la provenance au lieu d’un deuxième gros bouton ;
+- card externe observée conserve une seule action forte vers l’annonce originale ; Gateway inchangé ;
+- Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : 0 overflow, 0 ancien CTA Map/Compare, mobile 0 prix tronqué ;
+- **24/24 workflows exact-head verts** sur `a7ddb7d023eac1418eee50e03258f1d056184b64` ;
+- Benchmark UX/Search Reviewer : **PASS 9,5/10** (mobile 9,6 / tablette 9,5 / desktop 9,5) ; Reviewer technique PASS ; Release Certifier GO ;
+- merge `0987b89286d262e7d01ec8e3a868b2424d85c4d5`, artefact `sha256:c9ec64465039168a44c81b8921ff0ac7e57ab7a25e65a54f91f06f480805a66f`.
+
 ### Prochaine étape UX/Search
 
-**Simplification des actions secondaires à formaliser** — aucun identifiant de LOT n’est créé tant que son contrat n’est pas verrouillé.
+**Split Liste / Carte desktop sans surcharge à formaliser** — dernier chantier du benchmark SERP ; aucun identifiant de LOT n’est créé tant que son contrat n’est pas verrouillé.
 
 # 4. Lane UX / Carte
 
