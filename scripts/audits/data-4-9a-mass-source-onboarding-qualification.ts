@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import {
   DATA_4_9A_CANDIDATES,
+  chooseRegistryRobotsUrl,
   computeMassScore,
   conservativeUrlIdentity,
   massRecommendation,
@@ -20,7 +21,7 @@ type SeedRow = { canonical_url: string };
 
 type SourceResult = {
   sourceDomain: string;
-  status: "QUALIFIED_CAPACITY" | "BLOCKED_POLICY_SNAPSHOT" | "BLOCKED_SOURCE_EVIDENCE";
+  status: "QUALIFIED_RAW_CAPACITY" | "BLOCKED_POLICY_SNAPSHOT" | "BLOCKED_SOURCE_EVIDENCE";
   blocker: string | null;
   registry: {
     authorizationStatus: string | null;
@@ -30,9 +31,13 @@ type SourceResult = {
     displayGate: string | null;
     ingestionGate: string | null;
     currentRepresentationCount: number;
+    robotsEvidenceUrl: string | null;
     publicDisplayAuthorizedByThisLot: false;
+    ingestionAuthorizedByThisLot: false;
+    policyMutationAuthorizedByThisLot: false;
   };
   currentSourceEvidence: {
+    robotsUrl: string | null;
     declaredSitemapRoots: string[];
     observedSitemapUrls: number;
     capacityKind: "complete" | "lower_bound_request_cap" | "lower_bound_url_cap" | null;
@@ -40,6 +45,7 @@ type SourceResult = {
     detailPageFetches: 0;
   };
   identity: {
+    rawCapacityNotListings: true;
     uniqueSitemapIdentities: number;
     sitemapIdentityCollisionRows: number;
     existingSeedIdentityMatches: number;
@@ -48,8 +54,8 @@ type SourceResult = {
     digestSha256: string | null;
   };
   pathSignals: ReturnType<typeof summarizePathSignals> | null;
-  massScore: number;
-  recommendation: ReturnType<typeof massRecommendation> | "BLOCKED";
+  rawMassScore: number;
+  technicalCapacityRecommendation: ReturnType<typeof massRecommendation> | "BLOCKED";
 };
 
 function requiredEnv(name: string): string {
@@ -88,10 +94,22 @@ function digest(lines: string[]): string {
   return crypto.createHash("sha256").update(lines.join("\n")).digest("hex");
 }
 
+function emptyIdentity() {
+  return {
+    rawCapacityNotListings: true as const,
+    uniqueSitemapIdentities: 0,
+    sitemapIdentityCollisionRows: 0,
+    existingSeedIdentityMatches: 0,
+    observedNetNewSitemapIdentityCapacity: 0,
+    capacityInterpretation: "unavailable" as const,
+    digestSha256: null,
+  };
+}
+
 async function qualifySource(domain: typeof DATA_4_9A_CANDIDATES[number], observedAt: Date): Promise<SourceResult> {
   const [registryRows, seedRows] = await Promise.all([
     restAll<RegistryRow>("source_policy_registry", {
-      select: "source_domain,authorization_status,acquisition_mode,allowed_discovery_channels,display_gate,ingestion_gate,robots_status,terms_status,review_status,next_review_at,current_representation_count",
+      select: "source_domain,authorization_status,acquisition_mode,allowed_discovery_channels,display_gate,ingestion_gate,robots_status,terms_status,review_status,next_review_at,current_representation_count,evidence_urls",
       source_domain: `eq.${domain}`,
     }),
     restAll<SeedRow>("source_offer_seeds", {
@@ -101,6 +119,7 @@ async function qualifySource(domain: typeof DATA_4_9A_CANDIDATES[number], observ
   ]);
 
   const registry = registryRows[0] ?? null;
+  const robotsEvidenceUrl = registry ? chooseRegistryRobotsUrl(domain, registry.evidence_urls) : null;
   const registrySummary = {
     authorizationStatus: registry?.authorization_status ?? null,
     termsStatus: registry?.terms_status ?? null,
@@ -109,51 +128,40 @@ async function qualifySource(domain: typeof DATA_4_9A_CANDIDATES[number], observ
     displayGate: registry?.display_gate ?? null,
     ingestionGate: registry?.ingestion_gate ?? null,
     currentRepresentationCount: registry?.current_representation_count ?? 0,
+    robotsEvidenceUrl,
     publicDisplayAuthorizedByThisLot: false as const,
+    ingestionAuthorizedByThisLot: false as const,
+    policyMutationAuthorizedByThisLot: false as const,
   };
 
-  if (!registry || registryRows.length !== 1 || !registryIsCurrentOnboardingCandidate(domain, registry, observedAt)) {
+  if (!registry || registryRows.length !== 1 || !registryIsCurrentOnboardingCandidate(domain, registry, observedAt) || !robotsEvidenceUrl) {
     return {
       sourceDomain: domain,
       status: "BLOCKED_POLICY_SNAPSHOT",
       blocker: "registry_onboarding_candidate_gate_failed",
       registry: registrySummary,
-      currentSourceEvidence: { declaredSitemapRoots: [], observedSitemapUrls: 0, capacityKind: null, sourceRequests: 0, detailPageFetches: 0 },
-      identity: {
-        uniqueSitemapIdentities: 0,
-        sitemapIdentityCollisionRows: 0,
-        existingSeedIdentityMatches: 0,
-        observedNetNewSitemapIdentityCapacity: 0,
-        capacityInterpretation: "unavailable",
-        digestSha256: null,
-      },
+      currentSourceEvidence: { robotsUrl: robotsEvidenceUrl, declaredSitemapRoots: [], observedSitemapUrls: 0, capacityKind: null, sourceRequests: 0, detailPageFetches: 0 },
+      identity: emptyIdentity(),
       pathSignals: null,
-      massScore: 0,
-      recommendation: "BLOCKED",
+      rawMassScore: 0,
+      technicalCapacityRecommendation: "BLOCKED",
     };
   }
 
   let sitemap;
   try {
-    sitemap = await readDeclaredSitemaps(domain);
+    sitemap = await readDeclaredSitemaps(domain, robotsEvidenceUrl);
   } catch (error) {
     return {
       sourceDomain: domain,
       status: "BLOCKED_SOURCE_EVIDENCE",
       blocker: error instanceof Error ? error.message : String(error),
       registry: registrySummary,
-      currentSourceEvidence: { declaredSitemapRoots: [], observedSitemapUrls: 0, capacityKind: null, sourceRequests: 0, detailPageFetches: 0 },
-      identity: {
-        uniqueSitemapIdentities: 0,
-        sitemapIdentityCollisionRows: 0,
-        existingSeedIdentityMatches: 0,
-        observedNetNewSitemapIdentityCapacity: 0,
-        capacityInterpretation: "unavailable",
-        digestSha256: null,
-      },
+      currentSourceEvidence: { robotsUrl: robotsEvidenceUrl, declaredSitemapRoots: [], observedSitemapUrls: 0, capacityKind: null, sourceRequests: 0, detailPageFetches: 0 },
+      identity: emptyIdentity(),
       pathSignals: null,
-      massScore: 0,
-      recommendation: "BLOCKED",
+      rawMassScore: 0,
+      technicalCapacityRecommendation: "BLOCKED",
     };
   }
 
@@ -181,7 +189,7 @@ async function qualifySource(domain: typeof DATA_4_9A_CANDIDATES[number], observ
     .sort();
   const existingSeedIdentityMatches = uniqueSitemapIdentities.length - netNewIdentities.length;
   const capacityInterpretation = sitemap.capacityKind === "complete" ? "complete_upper_bound" as const : "observed_lower_bound" as const;
-  const massScore = computeMassScore({
+  const rawMassScore = computeMassScore({
     observedNetNewIdentities: netNewIdentities.length,
     sourceRequests: sitemap.sourceRequests,
     collisionRows: sitemapIdentityCollisionRows,
@@ -191,10 +199,11 @@ async function qualifySource(domain: typeof DATA_4_9A_CANDIDATES[number], observ
 
   return {
     sourceDomain: domain,
-    status: "QUALIFIED_CAPACITY",
+    status: "QUALIFIED_RAW_CAPACITY",
     blocker: null,
     registry: registrySummary,
     currentSourceEvidence: {
+      robotsUrl: sitemap.robotsUrl,
       declaredSitemapRoots: sitemap.roots,
       observedSitemapUrls: sitemap.urls.length,
       capacityKind: sitemap.capacityKind,
@@ -202,6 +211,7 @@ async function qualifySource(domain: typeof DATA_4_9A_CANDIDATES[number], observ
       detailPageFetches: 0,
     },
     identity: {
+      rawCapacityNotListings: true,
       uniqueSitemapIdentities: uniqueSitemapIdentities.length,
       sitemapIdentityCollisionRows,
       existingSeedIdentityMatches,
@@ -210,8 +220,8 @@ async function qualifySource(domain: typeof DATA_4_9A_CANDIDATES[number], observ
       digestSha256: digest(netNewIdentities),
     },
     pathSignals: summarizePathSignals(sitemap.urls),
-    massScore,
-    recommendation: massRecommendation(massScore, netNewIdentities.length),
+    rawMassScore,
+    technicalCapacityRecommendation: massRecommendation(rawMassScore, netNewIdentities.length),
   };
 }
 
@@ -224,17 +234,24 @@ async function main(): Promise<void> {
   }
 
   const ranked = results
-    .filter((row) => row.status === "QUALIFIED_CAPACITY")
-    .sort((a, b) => b.massScore - a.massScore
+    .filter((row) => row.status === "QUALIFIED_RAW_CAPACITY")
+    .sort((a, b) => b.rawMassScore - a.rawMassScore
       || b.identity.observedNetNewSitemapIdentityCapacity - a.identity.observedNetNewSitemapIdentityCapacity
       || a.sourceDomain.localeCompare(b.sourceDomain));
 
   const proof = {
-    schemaVersion: "data-4-9a-mass-source-onboarding-qualification-v1",
+    schemaVersion: "data-4-9a-mass-source-onboarding-qualification-v2",
     lot: "DATA-4.9A",
-    mode: "READ_ONLY",
+    mode: "READ_ONLY_RAW_SITEMAP_CAPACITY",
     observedAt: observedAt.toISOString(),
-    responsibility: "Measure current declared-sitemap capacity for new source onboarding candidates without authorizing display, fetching detail pages, or mutating production.",
+    responsibility: "Measure current raw declared-sitemap capacity for zero-stock onboarding candidates without calling raw URLs listings, authorizing ingestion/display, fetching detail pages, or mutating production.",
+    truthBoundary: {
+      rawSitemapCapacityIsNotListingInventory: true,
+      pathSignalsAreDescriptiveOnly: true,
+      publicDisplayAuthorizedByThisLot: false,
+      ingestionAuthorizedByThisLot: false,
+      policyMutationAuthorizedByThisLot: false,
+    },
     candidateCount: DATA_4_9A_CANDIDATES.length,
     candidateDomains: [...DATA_4_9A_CANDIDATES],
     excludedCriticalPathDomains: ["promoimmomarrakech.com"],
@@ -246,14 +263,15 @@ async function main(): Promise<void> {
     truncatedObservedNetNewSitemapIdentityLowerBound: ranked
       .filter((row) => row.identity.capacityInterpretation === "observed_lower_bound")
       .reduce((sum, row) => sum + row.identity.observedNetNewSitemapIdentityCapacity, 0),
-    highMassCandidateCount: ranked.filter((row) => row.recommendation === "HIGH_MASS_ONBOARDING_CANDIDATE").length,
-    mediumMassCandidateCount: ranked.filter((row) => row.recommendation === "MEDIUM_MASS_ONBOARDING_CANDIDATE").length,
+    highRawCapacitySourceCount: ranked.filter((row) => row.technicalCapacityRecommendation === "HIGH_RAW_SITEMAP_CAPACITY").length,
+    mediumRawCapacitySourceCount: ranked.filter((row) => row.technicalCapacityRecommendation === "MEDIUM_RAW_SITEMAP_CAPACITY").length,
     databaseWrites: 0,
     registryWrites: 0,
     policyChanges: 0,
     publicDisplayActivations: 0,
+    ingestionActivations: 0,
     detailPageFetches: 0,
-    nextDecision: "Use the highest-capacity sources only as inputs to a separate structural-pattern + legal/policy onboarding review before any public activation or write.",
+    nextDecision: "Use the highest raw-capacity sources only as inputs to a separate structural-detail + legal/policy onboarding review. This proof does not identify listings and cannot authorize ingestion or public display.",
     results,
   };
 
@@ -269,14 +287,16 @@ async function main(): Promise<void> {
     blockedSourceCount: proof.blockedSourceCount,
     completeUpperBound: proof.completeObservedNetNewSitemapIdentityUpperBound,
     truncatedLowerBound: proof.truncatedObservedNetNewSitemapIdentityLowerBound,
-    highMassCandidateCount: proof.highMassCandidateCount,
-    mediumMassCandidateCount: proof.mediumMassCandidateCount,
+    highRawCapacitySourceCount: proof.highRawCapacitySourceCount,
+    mediumRawCapacitySourceCount: proof.mediumRawCapacitySourceCount,
     ranking: ranked.map((row) => ({
       sourceDomain: row.sourceDomain,
-      score: row.massScore,
-      recommendation: row.recommendation,
-      capacity: row.identity.observedNetNewSitemapIdentityCapacity,
+      authorizationStatus: row.registry.authorizationStatus,
+      score: row.rawMassScore,
+      recommendation: row.technicalCapacityRecommendation,
+      rawCapacity: row.identity.observedNetNewSitemapIdentityCapacity,
       interpretation: row.identity.capacityInterpretation,
+      rawCapacityNotListings: row.identity.rawCapacityNotListings,
     })),
   }, null, 2));
 }
