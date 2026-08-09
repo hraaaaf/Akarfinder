@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; prochain lot UX Search = CONTEXTUAL-VISUAL-ASSETS-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; prochaine étape UX Search à formaliser = attribution déterministe ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -160,9 +160,27 @@ Résultat certifié :
 - Benchmark UX/Search Reviewer : **PASS 9,2/10** ; Reviewer PASS ; Release Certifier GO ;
 - merge `7ad1b7af2a0e7dc268b0b3ea032e083f7ccbb193`, artefact `sha256:784182dd2c8d4f5eca46e907eeedd38493e0f63d586bd99151010fae6b3e542b`.
 
-### Prochains lots UX/Search — ordre strict
+## CONTEXTUAL-VISUAL-ASSETS-1 ✅ CLOSED — PR #414
 
-1. **CONTEXTUAL-VISUAL-ASSETS-1** — visuels contextuels déterministes et truth-safe.
+Responsabilité : améliorer les fallbacks visuels des résultats Gateway sans photo autorisée, sans fabriquer de représentation du bien et sans modifier les décisions métier.
+
+Résultat certifié :
+
+- thumbnail provider autorisée reste prioritaire ;
+- contexte ville uniquement depuis `normalized_city` exact, allowlist locale Agadir/Casablanca/Fès/Marrakech/Rabat/Tanger ;
+- aucune inférence depuis titre/snippet/description, aucun fuzzy, hasard, fetch réseau ou lookup externe ;
+- ville non reconnue + type reconnu → `PropertyTypeArtwork` existant ; contexte absent → état neutre `Annonce indexée` ;
+- disclosure permanente : `Illustration` sur mobile, `Visuel illustratif · Ville` sur tablette/desktop ;
+- finding 360 px corrigé avant certification : aucun label illustratif tronqué ;
+- Chromium **360×800 / 390×844 / 768×900 / 1280×900** : 0 label tronqué, 0 prix tronqué, 0 overflow horizontal ;
+- gate permanent `CONTEXTUAL-VISUAL-ASSETS-1 Gate` : truth contract + UNIFIED predecessor + Search Truth + TypeScript + build + Chromium ;
+- **24/24 workflows exact-head verts** sur `575f9510587cc244b2f1a3a6bf9aea7ad957fd83` ;
+- Benchmark UX/Search Reviewer : **PASS 9,3/10** ; Reviewer PASS ; Release Certifier GO ;
+- merge `ae3e254bcec3bb4e98b814b0f057141e84956d10`, artefact `sha256:78cf4a742360b87683bd9697a465a15f898979b29dea9e384474baf8b0a7ca69`.
+
+### Prochaine étape UX/Search
+
+**Attribution déterministe à formaliser** — aucun identifiant de LOT n’est créé tant que son contrat n’est pas verrouillé.
 
 # 4. Lane UX / Carte
 
