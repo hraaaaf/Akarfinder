@@ -29,16 +29,26 @@ async function readAll(table: string, columns: string, build?: (q: any) => any) 
   return rows;
 }
 
-async function readInChunks(table: string, columns: string, column: string, values: string[]) {
+async function readInChunks(table: string, columns: string, column: string, values: string[], build?: (q: any) => any) {
   const client = getSupabaseServerClient();
   const rows: any[] = [];
   const unique = [...new Set(values)];
   for (let i = 0; i < unique.length; i += 100) {
-    const { data, error } = await client.from(table).select(columns).in(column, unique.slice(i, i + 100));
+    let q: any = client.from(table).select(columns).in(column, unique.slice(i, i + 100));
+    if (build) q = build(q);
+    const { data, error } = await q;
     if (error) throw new Error(`P1B.6 ${table} chunk read failed: ${error.message}`);
     rows.push(...(data ?? []));
   }
   return rows;
+}
+
+function isNewerEvent(candidate: any, previous: any) {
+  if (!previous) return true;
+  const candidateAt = String(candidate.created_at);
+  const previousAt = String(previous.created_at);
+  if (candidateAt !== previousAt) return candidateAt > previousAt;
+  try { return BigInt(String(candidate.id)) > BigInt(String(previous.id)); } catch { return String(candidate.id) > String(previous.id); }
 }
 
 export async function runP1B6GeoCoverageDepthAudit() {
@@ -49,12 +59,18 @@ export async function runP1B6GeoCoverageDepthAudit() {
 
   const listings = await readInChunks("property_listings", "id,city,district", "id", bridgedSeeds.map((s) => String(s.metadata.coverage_bridge.property_listing_id)));
   const listingById = new Map(listings.map((r) => [String(r.id), r]));
-  const events = await readInChunks("geo_resolution_events", "id,source_record_id,resolution_status,resolved_neighborhood_id,created_at", "source_record_id", bridgedSeeds.map((s) => String(s.id)));
+  const events = await readInChunks(
+    "geo_resolution_events",
+    "id,source_record_type,source_record_id,resolution_status,resolved_neighborhood_id,created_at",
+    "source_record_id",
+    bridgedSeeds.map((s) => String(s.id)),
+    (q) => q.eq("source_record_type", "source_offer_seed"),
+  );
   const latest = new Map<string, any>();
   for (const event of events) {
     const key = String(event.source_record_id);
     const prev = latest.get(key);
-    if (!prev || String(event.created_at) > String(prev.created_at) || (String(event.created_at) === String(prev.created_at) && String(event.id) > String(prev.id))) latest.set(key, event);
+    if (isNewerEvent(event, prev)) latest.set(key, event);
   }
 
   const unresolved = bridgedSeeds.filter((s) => { const e = latest.get(String(s.id)); return !(e?.resolution_status === "resolved" && e?.resolved_neighborhood_id); });
@@ -100,7 +116,7 @@ export async function runP1B6GeoCoverageDepthAudit() {
 
   const report={
     schema_version:"p1b6-geo-coverage-depth-audit-v1",generated_at:new Date().toISOString(),
-    contract:{read_only:true,db_mutation:false,registry_mutation:false,source_site_request:false,external_network_request:false,alias_creation:false,entity_creation:false,fuzzy_matching:false,title_snippet_inference:false},
+    contract:{read_only:true,db_mutation:false,registry_mutation:false,source_site_request:false,source_network_request:false,alias_creation:false,entity_creation:false,fuzzy_matching:false,title_snippet_inference:false},
     search:{eligible_listings:eligibleSeedIds.size,bridged_rows:bridgedSeeds.length,currently_resolved:bridgedSeeds.length-unresolved.length,unresolved:unresolved.length,unresolved_with_explicit_district:explicitDistrict.length,unresolved_without_explicit_district:noDistrict.length},
     explicit_district_gap:{rows:explicitDistrict.length,rows_with_existing_confidence_one_neighborhood_alias:explicitWithExistingAlias,distinct_city_district_pairs:pairCounts.size,by_city:Object.fromEntries([...byCity.entries()].sort((a,b)=>b[1]-a[1])),by_source_domain:Object.fromEntries([...bySource.entries()].sort((a,b)=>b[1]-a[1])),pairs},
     no_district_gap:{rows:noDistrict.length,structured_neighborhood_keys:[...structuredNeighborhoodKeys].sort(),metadata_key_counts:Object.fromEntries([...metadataKeyCounts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,30)),forbidden_evidence_keys_not_used:["title","snippet"]},
