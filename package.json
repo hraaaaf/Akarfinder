@@ -16,7 +16,7 @@
     "test:index-lifecycle": "npx tsx --test scripts/scrapers/__tests__/index-lifecycle-state-machine.test.ts",
     "test:direct-feeds": "npx tsx --test scripts/scrapers/__tests__/direct-feeds-ingestion.test.ts scripts/scrapers/__tests__/index-lifecycle-state-machine.test.ts",
     "test:property-schema": "npx tsx --test scripts/scrapers/__tests__/property-schema-track-b.test.ts scripts/scrapers/__tests__/property-schema-adapter-safety.test.ts",
-    "test:seed-freshness": "npx tsx --test scripts/scrapers/__tests__/seed-freshness-matcher.test.ts scripts/scrapers/__tests__/seed-freshness-job.test.ts",
+    "test:seed-freshness": "npx tsx --test scripts/scrapers/__tests__/seed-freshness-matcher.test.ts scripts/scrapers/__tests__/seed-freshness-job.test.ts scripts/scrapers/__tests__/seed-freshness-supabase-retry.test.ts",
     "test:observation-history": "npx tsx --test scripts/scrapers/__tests__/observation-history.test.ts",
     "test:price-position": "npx tsx --test scripts/scrapers/__tests__/price-position.test.ts",
     "audit:avito-google-like": "tsx scripts/audits/audit-avito-google-like.ts",
