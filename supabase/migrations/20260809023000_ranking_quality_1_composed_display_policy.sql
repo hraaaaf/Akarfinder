@@ -46,8 +46,9 @@ begin
     'odm_mubawab_detail_geo_precision_v1'
   );
 
-  -- Vertical purity is the strongest invariant and must survive the final zzz trigger.
-  if new.vertical_classification = 'non_real_estate' then
+  -- Vertical purity is the strongest invariant. Only positively classified
+  -- real-estate rows may reach document-kind or provider-detail policy.
+  if new.vertical_classification is distinct from 'real_estate_likely' then
     new.display_eligibility := 'ineligible';
     new.display_eligibility_reason := 'vertical_not_real_estate';
     new.ranking_quality_boost := 0;
@@ -159,7 +160,7 @@ with base as (
   select
     seed_id,
     case
-      when vertical_classification = 'non_real_estate' then 'ineligible'
+      when vertical_classification is distinct from 'real_estate_likely' then 'ineligible'
       when document_kind = 'CATEGORY' then 'ineligible'
       when document_kind = 'AMBIGUOUS' and base_eligibility <> 'ineligible'
         then 'eligible_secondary'
@@ -168,7 +169,7 @@ with base as (
       else base_eligibility
     end as expected_eligibility,
     case
-      when vertical_classification = 'non_real_estate' then 'vertical_not_real_estate'
+      when vertical_classification is distinct from 'real_estate_likely' then 'vertical_not_real_estate'
       when document_kind = 'CATEGORY' then 'category_page_not_listing'
       when document_kind = 'AMBIGUOUS' and base_eligibility <> 'ineligible'
         then 'ambiguous_property_result'
@@ -177,14 +178,14 @@ with base as (
       else base_reason
     end as expected_reason,
     case
-      when vertical_classification = 'non_real_estate' then 0::real
+      when vertical_classification is distinct from 'real_estate_likely' then 0::real
       when document_kind = 'CATEGORY' then 0::real
       when document_kind = 'AMBIGUOUS' and base_eligibility <> 'ineligible'
         then least(base_boost, 0.05::real)
       else base_boost
     end as expected_boost,
     case
-      when vertical_classification = 'non_real_estate'
+      when vertical_classification is distinct from 'real_estate_likely'
         then coalesce(ranking_policy_version, 'odm06-v1')
       when document_kind in ('CATEGORY', 'AMBIGUOUS')
         then 'odm_document_kind_v1'
@@ -246,7 +247,7 @@ with base as (
   select
     base.*,
     case
-      when vertical_classification = 'non_real_estate' then 'ineligible'
+      when vertical_classification is distinct from 'real_estate_likely' then 'ineligible'
       when document_kind = 'CATEGORY' then 'ineligible'
       when document_kind = 'AMBIGUOUS' and base_eligibility <> 'ineligible'
         then 'eligible_secondary'
@@ -255,7 +256,7 @@ with base as (
       else base_eligibility
     end as expected_eligibility,
     case
-      when vertical_classification = 'non_real_estate' then 'vertical_not_real_estate'
+      when vertical_classification is distinct from 'real_estate_likely' then 'vertical_not_real_estate'
       when document_kind = 'CATEGORY' then 'category_page_not_listing'
       when document_kind = 'AMBIGUOUS' and base_eligibility <> 'ineligible'
         then 'ambiguous_property_result'
@@ -264,7 +265,7 @@ with base as (
       else base_reason
     end as expected_reason,
     case
-      when vertical_classification = 'non_real_estate' then 0::real
+      when vertical_classification is distinct from 'real_estate_likely' then 0::real
       when document_kind = 'CATEGORY' then 0::real
       when document_kind = 'AMBIGUOUS' and base_eligibility <> 'ineligible'
         then least(base_boost, 0.05::real)
@@ -280,12 +281,12 @@ with base as (
          or ranking_quality_boost is distinct from expected_boost
     )::int as policy_drift_rows,
     count(*) filter (
-      where vertical_classification = 'non_real_estate'
-        and display_eligibility <> 'ineligible'
-    )::int as non_real_estate_public_rows,
+      where vertical_classification is distinct from 'real_estate_likely'
+        and display_eligibility is distinct from 'ineligible'
+    )::int as non_real_estate_or_unknown_public_rows,
     count(*) filter (
       where document_kind = 'CATEGORY'
-        and display_eligibility <> 'ineligible'
+        and display_eligibility is distinct from 'ineligible'
     )::int as category_public_rows,
     count(*) filter (
       where document_kind = 'AMBIGUOUS'
@@ -308,7 +309,7 @@ select jsonb_build_object(
   'version', 'ranking-quality-1',
   'total_rows', total_rows,
   'policy_drift_rows', policy_drift_rows,
-  'non_real_estate_public_rows', non_real_estate_public_rows,
+  'non_real_estate_or_unknown_public_rows', non_real_estate_or_unknown_public_rows,
   'category_public_rows', category_public_rows,
   'ambiguous_primary_rows', ambiguous_primary_rows,
   'listing_with_ambiguous_policy_rows', listing_with_ambiguous_policy_rows,
