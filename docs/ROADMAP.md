@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -268,7 +268,26 @@ Résultat certifié :
 - artefact `sha256:3b71f26ffccf0614098b3dbd7c893560345d332f2a69e6115a7e7bb3dc828944` ;
 - merge `66ee5a9263fbdef673c4f16f6066aa10c7cf0417` ; aucun workflow `push` n’était configuré pour ce merge commit, `main` + tree certifié vérifiés directement.
 
-**Prochain lot UX/Search : CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1.** Scope : petit pool multi-assets Agadir, variation déterministe sur les résultats sans photo autorisée, sans district non certifié, sans ranking/commercial priority/eligibility/dedupe/DATA/Map change. Le but principal est de réduire la répétition visuelle observée en P0 tout en conservant le contrat de vérité.
+## CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ CLOSED — PR #445
+
+Responsabilité unique : **réduire la répétition des illustrations contextuelles sur Agadir en exploitant la fondation P0 sans affaiblir le contrat de vérité**.
+
+Résultat certifié :
+
+- **12 assets Agadir** : 4 variantes ville, 4 `Appartement`, 4 `Villa` ;
+- resolver P0 inchangé : sélection Rendezvous/HRW déterministe à partir de l'identité stable `original_url` ;
+- `Appartement` et `Villa` utilisent `city_type`; les autres types reconnus à Agadir utilisent le pool `city` multi-assets ;
+- `district` et `districtType` restent vides ; aucune inférence quartier/titre/snippet/description ;
+- thumbnail autorisée reste prioritaire ; ville inconnue + type connu conserve le fallback type ; contexte absent conserve le fallback neutre ;
+- disclosure publique uniforme `Illustration`, sans prétendre représenter le bien réel ;
+- **20/20 workflows exact-head verts** sur `f6b1d15e92636439dfca8128e54892fbf32b95a6` ; specialized P1 + predecessor P0 PASS ;
+- Chromium exact-head **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : **12/12 asset IDs uniques**, reload stable, 0 label tronqué, 0 prix tronqué, 0 overflow ;
+- smoke global : **48 captures / 0 finding** ;
+- audit visuel **9,4/10**, Reviewer PASS, Release Certifier GO ;
+- artefact `sha256:46441308c3449fe1fabef5c8cd651ae9700cd52f91b190190b153ca7f8152860` ;
+- merge `a2e92ac6c4385792744ab7bf3e105663d040bc9d`, post-merge `main` + tree exact vérifiés.
+
+**Prochain lot UX/Search : CONTEXTUAL-ILLUSTRATIONS-SCALE-1.** Étendre le catalogue à d'autres villes/types de façon bornée et mesurable, conserver le resolver déterministe et la disclosure `Illustration`, et laisser tout tier district inactif tant que Search n'expose pas une donnée quartier structurée et certifiée. Aucun changement ranking/commercial priority/eligibility/dedupe/DATA/Registry/Map n'est implicite dans ce lot.
 
 # 4. Lane UX / Carte
 
@@ -459,7 +478,7 @@ Scope respecté, Benchmark Reviewer si UX majeur, Reviewer indépendant PASS, te
 
 ## UX / Search
 
-Exécuter **CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1** uniquement : ajouter un petit pool d’illustrations locales Agadir certifiées et déterministes, branché sur la fondation #437, sans utiliser de district non certifié et sans modifier ranking, priorité commerciale, éligibilité, dedupe, DATA, Source Registry ou Map. Rejouer le Benchmark UX/Search Reviewer et le protocole Chromium multi-viewport ; score UX cible ≥ **9/10**.
+Exécuter **CONTEXTUAL-ILLUSTRATIONS-SCALE-1** uniquement : étendre les pools contextuels à d'autres villes/types sur la fondation #437 et le pilote Agadir #445, de façon bornée et déterministe. Conserver `Illustration`, la priorité des thumbnails autorisées, les fallbacks type/neutre et l'absence totale de district tant qu'aucun signal quartier structuré certifié n'est disponible. Aucun changement ranking, priorité commerciale, éligibilité, dedupe, DATA, Source Registry ou Map. Rejouer le Benchmark UX/Search Reviewer et le protocole Chromium multi-viewport ; score UX cible ≥ **9/10**.
 
 ## UX / Carte
 
