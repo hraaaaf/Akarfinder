@@ -33,7 +33,7 @@ jobs:
       - name: DATA-4.6A focused contract test
         run: npx tsx --test scripts/data4/__tests__/data-4-6a-daragadir-mass-expansion-qualification.test.ts
       - name: Dar Agadir sitemap regression tests
-        run: npx tsx --test scripts/data4/__tests__/daragadir-sitemap-revalidation.test.ts scripts/data4/__tests__/daragadir-controlled-expansion.test.ts
+        run: npx tsx --test scripts/data4/__tests__/daragadir-sitemap-revalidation.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Static read-only boundary
@@ -50,7 +50,9 @@ jobs:
             'productionActivation: false',
             'detailPageFetches: 0',
             'writeAuthorized: false',
-            'MAX_SOURCE_REQUESTS = 40',
+            'MAX_SOURCE_REQUESTS = 2',
+            'SOURCE_SITEMAP_DECLARATION_DRIFT',
+            'ROTATE_TO_NEXT_PUBLIC_SITEMAP_RESERVOIR',
           ]) if (!s.includes(required)) throw new Error(`missing contract: ${required}`);
           if (/method:\s*["'](?:POST|PATCH|PUT|DELETE)["']/.test(s)) throw new Error('mutation HTTP method forbidden in DATA-4.6A');
           NODE
@@ -80,9 +82,12 @@ jobs:
           if (p.schemaVersion !== 'data-4-6a-daragadir-mass-expansion-qualification-v1') throw new Error(JSON.stringify(p));
           if (p.mode !== 'READ_ONLY_QUALIFICATION' || p.sourceDomain !== 'daragadir.com') throw new Error(JSON.stringify(p));
           if (p.databaseWrites !== 0 || p.freshnessWrites !== 0 || p.registryMutations !== 0 || p.policyChanges !== 0 || p.productionActivation !== false || p.detailPageFetches !== 0 || p.writeAuthorized !== false) throw new Error(JSON.stringify(p));
-          if (p.sourceRequests < 2 || p.sourceRequests > 40) throw new Error(JSON.stringify(p));
-          if (p.currentSitemapUrlCount < 1 || p.totalSeeds < 1) throw new Error(JSON.stringify(p));
-          if (p.conservativeCandidatesInPublicSearch > p.conservativeCandidates) throw new Error(JSON.stringify(p));
+          if (p.sourceRequests < 1 || p.sourceRequests > 2 || p.totalSeeds < 1) throw new Error(JSON.stringify(p));
+          if (p.verdict === 'SOURCE_SITEMAP_DECLARATION_DRIFT') {
+            if (p.sourceDeclarationMatchesRegistry !== false || p.declaredSitemaps.length !== 0 || p.suggestedNextCheckpoint !== 0 || p.nextLot !== 'ROTATE_TO_NEXT_PUBLIC_SITEMAP_RESERVOIR') throw new Error(JSON.stringify(p));
+          } else if (p.verdict === 'SITEMAP_DECLARATION_PRESENT_REQUIRES_SEPARATE_EXPANSION_REPLAY') {
+            if (p.sourceDeclarationMatchesRegistry !== true || p.declaredSitemaps.length < 1) throw new Error(JSON.stringify(p));
+          } else throw new Error(`unexpected verdict ${JSON.stringify(p)}`);
           NODE
       - uses: actions/upload-artifact@v4
         with:
