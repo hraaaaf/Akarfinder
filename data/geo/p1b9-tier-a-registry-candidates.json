@@ -1,0 +1,57 @@
+{
+  "schema_version": "p1b9-tier-a-registry-candidates-v1",
+  "reviewed_at": "2026-08-09",
+  "input_contract": "P1B.8 exact authority-confirmed Tier A cohort only",
+  "policy": {
+    "read_only": true,
+    "db_mutation": false,
+    "registry_mutation": false,
+    "alias_creation": false,
+    "entity_creation": false,
+    "geo_resolution_write": false,
+    "source_site_request": false,
+    "fuzzy_matching": false,
+    "title_snippet_inference": false,
+    "registry_write_authorized": false
+  },
+  "candidates": [
+    {
+      "city": "Agadir",
+      "district": "Dakhla",
+      "p1b8_authority_tier": "A",
+      "p1b8_decision": "AUTHORITY_CONFIRMED_NEIGHBORHOOD",
+      "p1b8_listing_rows": 3,
+      "authority_domain": "agadir.ma",
+      "authority_url": "https://agadir.ma/fr/agadir-ville-durable/les-quartiers/",
+      "proposed_entity_id": "district_agadir_dakhla",
+      "proposed_parent_id": "city_agadir",
+      "proposed_slug": "dakhla",
+      "proposed_canonical_name": "Dakhla",
+      "proposed_normalized_name": "dakhla",
+      "proposed_validation_status": "validated",
+      "proposed_seo_eligible": false,
+      "proposed_map_eligible": false,
+      "proposed_exact_alias": "Dakhla",
+      "write_eligible_in_p1b9": false
+    },
+    {
+      "city": "Agadir",
+      "district": "Hay Mohammadi",
+      "p1b8_authority_tier": "A",
+      "p1b8_decision": "AUTHORITY_CONFIRMED_NEIGHBORHOOD",
+      "p1b8_listing_rows": 5,
+      "authority_domain": "agadir.ma",
+      "authority_url": "https://agadir.ma/fr/agadir-ville-durable/les-quartiers/",
+      "proposed_entity_id": "district_agadir_hay_mohammadi",
+      "proposed_parent_id": "city_agadir",
+      "proposed_slug": "hay-mohammadi",
+      "proposed_canonical_name": "Hay Mohammadi",
+      "proposed_normalized_name": "hay mohammadi",
+      "proposed_validation_status": "validated",
+      "proposed_seo_eligible": false,
+      "proposed_map_eligible": false,
+      "proposed_exact_alias": "Hay Mohammadi",
+      "write_eligible_in_p1b9": false
+    }
+  ]
+}
