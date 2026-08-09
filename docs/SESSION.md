@@ -2,9 +2,9 @@
 
 **Mise à jour : 2026-08-09**  
 **Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ #416 ; prochaine étape à formaliser = simplification des actions secondaires**  
-**Lane UX/Carte : P1B.4 ✅ Geo Coverage Recovery pilot certifié en production**  
+**Lane UX/Carte : P1B.5 ✅ Canonical Geo Normalization Recovery certifié en production — PR #419**  
 **Lane DATA : DATA-4.4C ✅ ; DATA-4.5A Expansion-to-500 Qualification ✅ #410 ; P0.1→P0.5 ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = DATA-4.5B Promo Immo Controlled Expansion Write, indépendant de la lane d'autorisation P0**  
-**Couche Offre quartier : OFF — couverture certifiée actuelle 0,45 %**
+**Couche Offre quartier : OFF — couverture certifiée actuelle **89 / 15 438 = 0,5765 %****
 
 Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
@@ -19,6 +19,7 @@ Acquis récents :
 - DATA-4.4C ✅ PR #384/#385 — canary exact 50 persisté et certifié, drift 0 % ;
 - P1B.3 ✅ PR #382 — Territorial Metric Join Contract ;
 - P1B.4 ✅ PR #386 — Geo Coverage Recovery pilot, 69/69, coverage 0,45 % ;
+- P1B.5 ✅ PR #419 — Canonical Geo Normalization Recovery : preflight 20/14/6, write 20/20, 11 Guéliz + 6 Océan + 3 Route de l’Ourika, latest resolved 20/20, coverage Search quartier **89/15 438 = 0,5765 %**, rollback append-only disponible, metric layers OFF ;
 - BENCHMARK-SERP-1 ✅ first pass read-only — `docs/BENCHMARK_SERP_1_REPORT.md` ;
 - SEARCH-UX-FAST-1 ✅ #390 — première annonce rapprochée, mobile-first ;
 - SEARCH-WORDING-PURITY-1 ✅ #391 — wording public simplifié, truth/ranking inchangés ;
