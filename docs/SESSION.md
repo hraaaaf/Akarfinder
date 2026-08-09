@@ -3,14 +3,14 @@
 **Mise à jour : 2026-08-09**  
 **Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; prochain lot = UNIFIED-LISTING-CARD-1**  
 **Lane UX/Carte : P1B.4 ✅ Geo Coverage Recovery pilot certifié en production**  
-**Lane DATA : DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain état = dépendance externe autorisation/partenariat/revue légale, aucun canary autorisé**  
+**Lane DATA : DATA-4.4C ✅ ; DATA-4.5A Expansion-to-500 Qualification ✅ #410 ; P0.1→P0.5 ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = DATA-4.5B Promo Immo Controlled Expansion Write, indépendant de la lane d'autorisation P0**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle 0,45 %**
 
 Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
 # Main canonique
 
-Main canonique après P0.5 : `ac0e240d28b88c5e66da73d1ab964794deb01877` — merge PR #408 ; post-merge gate PASS.
+Main canonique après DATA-4.5A : `a4710d6f5a88218db7d0751adb775a145a8b04d2` — merge PR #410 ; post-merge DATA-4.5A gate PASS.
 
 P0.4 main merge : `81f4809424757838c099b6acfb8f8d4b719deab7` — PR #402 ; post-merge gate PASS.
 
@@ -148,9 +148,15 @@ Lecture seule sur les 2 `SHADOW_ACCEPTABLE` P0.4. Verdict production : **0/2 `RE
 
 Certification : head `e54099e9120d573d8092c8a119c066c911b624bd`, **20/20 PASS**, Reviewer **9,6/10**, Certifier GO, merge `ac0e240d28b88c5e66da73d1ab964794deb01877`, post-merge gate PASS, artefact `sha256:a8617f91147feec1f2d870b971d346f36cddf74386da9019af2b600d4d224536`. **0 source-site/CC/WARC request, 0 DB/Registry mutation, 0 harvest/pattern activation/canary write.**
 
+# DATA-4.5A — Promo Immo Expansion-to-500 Qualification ✅ CLOSED — PR #410
+
+Qualification read-only de capacité à partir du baseline persistant **50**. Source evidence 4.4B exact-head, artefact `9020834298`, digest vérifié, âge **25,29 h** : **3 130 URLs sitemap / 2 935 intersections / 2 456 éligibles / 0 collision exacte**. Production au run : **3 005 seeds / 2 923 Search / 2 923 technical display / 0 collision exacte / 2 405 nouvelles rows conservatrices**. Cohorte provisoire : **450/450**, unique, Search/display/collision-free, batches **100+100+100+100+50**.
+
+Important : 4.5A **ne certifie pas la présence sitemap live individuelle des 450**. Les 450 sont toutes marquées `must_revalidate_current_sitemap_before_write=true`. Contrat : **0 source-site request, 0 detail fetch, 0 DB/freshness/Registry write, 0 activation**. Exact-head `7338b0108e7bd633af7c51ef4e7ce9c8a595dabc`, **20/20 PASS**, Reviewer **9,6/10**, Certifier GO, merge `a4710d6f5a88218db7d0751adb775a145a8b04d2`, post-merge gate PASS.
+
 # PROCHAINE ÉTAPE DATA
 
-**Aucun canary n'est autorisé.** Dépendance externe : obtenir/résoudre autorisation, partenariat et revue légale, puis seulement refléter ce changement par une modification explicite/auditée du Source Registry. Ne pas inventer de P0.6 automatique. `immo-maroc.com`, `immohammedia.com` et `leaderimmo.ma` restent bloqués par P0.4.
+**DATA-4.5B — Promo Immo Controlled Expansion Write** uniquement. La lane P0 peut rester bloquée sur autorisation externe sans bloquer ce chantier. 4.5B devra obtenir une preuve sitemap actuelle pour chaque ligne avant write, préparer le rollback avant mutation, écrire au plus **450** rows en batches **100+100+100+100+50**, et stopper/rollback immédiatement sur drift Search/display/quality/projection.
 
 # UX / Search — état court
 
@@ -170,4 +176,4 @@ P1B.4 : **69 résolutions / 14 quartiers / 5 villes**, couverture **0,45 %**, 0 
 
 # DATA — prochaine action
 
-DATA-4.4C et P0.1 à P0.5 sont fermés. Le reconciler #396 est fermé. **P0.5 = 0/2 ready** : aucun canary mass-index jusqu'à résolution externe des blockers d'autorisation/partenariat/revue légale et mise à jour explicite du Source Registry. Les 3 rejetés P0.4 restent bloqués.
+DATA-4.4C, DATA-4.5A et P0.1 à P0.5 sont fermés. Le reconciler #396 est fermé. **Prochaine action DATA : DATA-4.5B**, expansion Promo Immo bornée vers 500 ; la lane d'autorisation P0 reste séparée et ne bloque plus ce chantier.
