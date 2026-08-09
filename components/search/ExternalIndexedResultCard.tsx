@@ -107,9 +107,12 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
         {showFallback ? (
           <span
             data-contextual-illustration-label
-            className="absolute bottom-2 right-2 max-w-[56%] truncate rounded-full bg-black/52 px-1.5 py-0.5 text-[8px] font-medium text-white/90 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:max-w-[62%] sm:px-2 sm:py-1 sm:text-[9px]"
+            className="absolute bottom-2 right-2 rounded-full bg-black/52 px-1.5 py-0.5 text-[8px] font-medium text-white/90 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]"
           >
-            {contextualCityVisual ? `Visuel illustratif · ${contextualCityVisual.label}` : "Visuel illustratif"}
+            <span className="sm:hidden">Illustration</span>
+            <span className="hidden sm:inline">
+              {contextualCityVisual ? `Visuel illustratif · ${contextualCityVisual.label}` : "Visuel illustratif"}
+            </span>
           </span>
         ) : null}
       </div>
