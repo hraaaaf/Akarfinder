@@ -4,20 +4,35 @@ import fs from "node:fs";
 
 const script = fs.readFileSync("scripts/audits/data-4-7c-residual-reservoir-requalification.ts", "utf8");
 
-test("DATA-4.7C compares exactly LSF and Aykana read-only", () => {
+test("DATA-4.7C rotates across all display-admissible public-sitemap reservoirs read-only", () => {
   for (const token of [
-    '"limmobiliersansfrontieres.com"',
+    '"daragadir.com"',
+    '"promoimmomarrakech.com"',
     '"aykana.ma"',
-    'READ_ONLY_RESERVOIR_COMPARISON',
+    '"limmobiliersansfrontieres.com"',
+    'READ_ONLY_SOURCE_ROTATION',
     'DATA-4.7D_BOUNDED_WRITE',
     'databaseWrites: 0',
     'registryMutations: 0',
     'policyChanges: 0',
     'productionActivation: false',
   ]) assert.ok(script.includes(token), `missing ${token}`);
+  assert.equal(script.includes('"atlasimmobilier.com"'), false);
   assert.equal(script.includes('method: "PATCH"'), false);
   assert.equal(script.includes('method: "POST"'), false);
   assert.equal(script.includes('method: "DELETE"'), false);
+});
+
+test("DATA-4.7C isolates blocked sources instead of making one source the critical path", () => {
+  for (const token of [
+    'BLOCKED_POLICY',
+    'BLOCKED_SOURCE_EVIDENCE',
+    'status: "QUALIFIED"',
+    'results.filter((result) => result.status === "QUALIFIED")',
+    'found no live qualified public-sitemap reservoir',
+    'blockedCount',
+    'totalLiveCandidateCapacity',
+  ]) assert.ok(script.includes(token), `missing rotation boundary ${token}`);
 });
 
 test("DATA-4.7C uses current Registry + same-origin sitemap evidence only", () => {
