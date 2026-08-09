@@ -194,12 +194,13 @@ try {
       });
 
       const overflow = metrics.scrollWidth > metrics.clientWidth;
+      const compactPriceText = metrics.firstText.replace(/[.\s\u00a0\u202f]/g, "");
       await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });
 
       if (metrics.cardCount !== 4) throw new Error(`${viewport.name}: expected 4 external cards, got ${metrics.cardCount}`);
       if (overflow) throw new Error(`${viewport.name}: horizontal overflow ${metrics.scrollWidth}/${metrics.clientWidth}`);
       if (!metrics.provenanceBeforeAction) throw new Error(`${viewport.name}: provenance must precede final action`);
-      if (!metrics.firstText.includes("1 850 000 DH") && !metrics.firstText.includes("1 850 000 DH")) throw new Error(`${viewport.name}: normalized price is not visible`);
+      if (!compactPriceText.includes("1850000DH")) throw new Error(`${viewport.name}: normalized price is not visible`);
       if (!metrics.firstText.includes("Rabat") || !metrics.firstText.includes("112 m²")) throw new Error(`${viewport.name}: normalized location/facts are not visible`);
       if (!metrics.unknownText.includes("Prix non communiqué")) throw new Error(`${viewport.name}: missing unknown-price state`);
       if (!metrics.unknownText.includes("Localisation non précisée")) throw new Error(`${viewport.name}: missing unknown-location state`);
