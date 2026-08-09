@@ -1,42 +1,43 @@
 import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
+import {
+  CONTEXTUAL_CITY_VISUALS,
+  getContextualCityVisual,
+} from "@/lib/contextual-illustrations/catalog";
+import { resolveContextualIllustration } from "@/lib/contextual-illustrations/resolver";
 
-export const CONTEXTUAL_CITY_VISUALS = {
-  Agadir: { asset: "/images/cities/agadir.svg", label: "Agadir" },
-  Casablanca: { asset: "/images/cities/casablanca.svg", label: "Casablanca" },
-  Fes: { asset: "/images/fes-card.svg", label: "Fès" },
-  "Fès": { asset: "/images/fes-card.svg", label: "Fès" },
-  Marrakech: { asset: "/images/cities/marrakech.svg", label: "Marrakech" },
-  Rabat: { asset: "/images/cities/rabat.svg", label: "Rabat" },
-  Tanger: { asset: "/images/cities/tanger.svg", label: "Tanger" },
-} as const;
-
-type ContextualCity = keyof typeof CONTEXTUAL_CITY_VISUALS;
+export { CONTEXTUAL_CITY_VISUALS, getContextualCityVisual };
 
 type ContextualListingArtworkProps = {
+  stableListingId: string;
   city?: string | null;
+  normalizedDistrict?: string | null;
   propertyType?: string | null;
   className?: string;
 };
 
-export function getContextualCityVisual(city?: string | null) {
-  if (!city || !(city in CONTEXTUAL_CITY_VISUALS)) return null;
-  return CONTEXTUAL_CITY_VISUALS[city as ContextualCity];
-}
-
 export function ContextualListingArtwork({
+  stableListingId,
   city,
+  normalizedDistrict,
   propertyType,
   className = "",
 }: ContextualListingArtworkProps) {
-  const cityVisual = getContextualCityVisual(city);
+  const contextualVisual = resolveContextualIllustration({
+    stableListingId,
+    normalizedCity: city,
+    normalizedDistrict,
+    normalizedPropertyType: propertyType,
+  });
 
-  if (cityVisual) {
+  if (contextualVisual) {
     return (
       <img
-        src={cityVisual.asset}
+        src={contextualVisual.asset}
         alt=""
         aria-hidden="true"
-        data-contextual-city={cityVisual.label}
+        data-contextual-city={contextualVisual.label}
+        data-contextual-asset-id={contextualVisual.id}
+        data-contextual-tier={contextualVisual.tier}
         className={`block h-full w-full object-cover object-center ${className}`.trim()}
         loading="lazy"
         decoding="async"
