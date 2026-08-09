@@ -1,0 +1,38 @@
+name: Docs Close SEARCH-DESKTOP-SPLIT-1
+
+on:
+  push:
+    branches:
+      - docs/close-search-desktop-split-1
+
+permissions:
+  contents: write
+
+jobs:
+  closeout:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply canonical docs closeout
+        run: node scripts/audits/apply-search-desktop-split-1-closeout.mjs
+      - name: Verify only canonical docs changed
+        run: |
+          test "$(git diff --name-only | sort | tr '\n' ' ')" = "README.md docs/ROADMAP.md docs/SESSION.md "
+          grep -q 'SEARCH-DESKTOP-SPLIT-1 ✅ PR #423' README.md
+          grep -q 'SEARCH-DESKTOP-SPLIT-1 ✅ CLOSED — PR #423' docs/ROADMAP.md
+          grep -q 'SEARCH-DESKTOP-SPLIT-1 ✅ #423' docs/SESSION.md
+      - name: Remove temporary closeout machinery
+        run: git rm .github/workflows/docs-close-search-desktop-split-1.yml scripts/audits/apply-search-desktop-split-1-closeout.mjs
+      - name: Commit docs only
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add README.md docs/ROADMAP.md docs/SESSION.md
+          test "$(git diff --cached --name-only | sort | tr '\n' ' ')" = "README.md docs/ROADMAP.md docs/SESSION.md "
+          git commit -m 'docs: close SEARCH-DESKTOP-SPLIT-1 benchmark convergence'
+          git push origin HEAD:docs/close-search-desktop-split-1
