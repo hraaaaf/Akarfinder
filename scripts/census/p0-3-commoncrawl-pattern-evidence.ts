@@ -4,6 +4,7 @@
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { pathToFileURL } from "node:url";
 import {
   buildDomainPatternEvidence,
   type PatternEvidenceRecord,
@@ -100,7 +101,7 @@ async function fetchIndexRecords(domain: string, index: string): Promise<Pattern
   return records;
 }
 
-async function main() {
+export async function runP0_3PatternEvidence() {
   const policies = await loadMassIndexSourcePolicies();
   const policyEvaluation = evaluateMassIndexDomains(
     [...P0_3_TARGET_DOMAINS],
@@ -203,9 +204,13 @@ async function main() {
     insufficient_evidence_domains: report.insufficient_evidence_domains,
     total_unique_urls: report.total_unique_urls,
   }, null, 2));
+  return report;
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.stack ?? error.message : String(error));
-  process.exitCode = 1;
-});
+const invokedAsScript = Boolean(process.argv[1]) && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (invokedAsScript) {
+  runP0_3PatternEvidence().catch((error) => {
+    console.error(error instanceof Error ? error.stack ?? error.message : String(error));
+    process.exitCode = 1;
+  });
+}
