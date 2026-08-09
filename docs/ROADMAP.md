@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
-**Version : 2026-08-08**  
-**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; prochain lot UX Search = PRICE-COVERAGE-RECOVERY-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 Mass Index Source Registry operational gate = PR #392, activation production post-merge requise**
+**Version : 2026-08-09**  
+**Statut : UX/Carte P1B.4 ✅ production certifiée ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; prochain lot UX Search = PRICE-COVERAGE-RECOVERY-1 ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 Mass Index Source Registry ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -176,7 +176,7 @@ Observation Ledger / Freshness / normalization / quality tiers ; Source Registry
 
 37 009 URLs / 7 051 domaines ; 8 727 registered domains Common Crawl ; univers 15 238 domaines ; 230 primary-source candidates ; 625 portal candidates ; Registry initial sans activation non autorisée.
 
-# 7. P0.1 — Mass Index Source Registry Operational Gate — PR #392
+# 7. P0.1 — Mass Index Source Registry Operational Gate ✅ CLOSED — PR #392
 
 Responsabilité unique : **rendre `public.source_policy_registry` réellement autoritaire sur le chemin Common Crawl mass-index**, sans créer de nouveau Registry et sans activer aucune source.
 
@@ -193,7 +193,7 @@ Contrat :
 - insert Common Crawl = `seed_only`, jamais de fraîcheur fabriquée ;
 - aucune suppression/réécriture automatique du stock historique.
 
-Audit live read-only certifiable au cours du LOT :
+Audit live read-only du LOT :
 
 - **16** domaines structurels candidats ;
 - **9** autorisés sur le canal exact `commoncrawl` ;
@@ -202,11 +202,17 @@ Audit live read-only certifiable au cours du LOT :
 
 Dette historique mesurée avant activation : **1 734** rows `commoncrawl_cdx` sur 6 domaines non autorisés aujourd’hui pour ce canal. **65** ont ensuite été confirmées par un autre canal live ; aucune blind-quarantine dans P0.1. Future recurrence = bloquée ; remediation historique = LOT séparé si nécessaire.
 
-Migration : `supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql`.
+Migration `supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql` appliquée en production après merge #392 (`1bbf2ff2f3ba7aed2b99eb492f703c965e1ed406`). Rapport production, trigger catalog, ACL/fonctions, advisors et probe transactionnel fail-closed vérifiés. Rollback : drop trigger/fonctions P0.1, sans mutation de rows historiques.
 
-Gate de sortie P0.1 : focused tests + TypeScript + audit live read-only + CI exact-head + Reviewer technique PASS + Release Certifier GO + merge head attendu + application post-merge de la migration + rapport production + trigger vérifié + Supabase advisors + post-merge CI. Rollback : drop trigger/fonctions P0.1, sans mutation de rows historiques.
+Preuve E2E de sortie : workflow schedulé **Common Crawl Mass Seed Harvest #24**, run `31293392616`, sur `main` `7169142e9e0b4e327bdd9afe5befe7bbe7c64edd`, **SUCCESS**. Canary **6/6 CDX / 931 seeds** ; remainder **21/21 CDX / 13 747 seeds** ; imports **0 policy rejection / 0 nouvelle row** ; reconciler `APPLIED` avec **56 810 seeds / 3 299 fresh_confirmed / 53 511 seed_only / 1 row modifiée / 3 206 rows étrangères protégées** ; artefact final `sha256:67ea00cca946b992fa3aef2122bab1e6763533ec05346c5ab96239ab32041f59`.
 
 P0.1 **n’autorise aucune expansion de volume par lui-même** et n’autorise aucun scraper direct.
+
+## 7.1 DATA — Common Crawl freshness reconciler hardening ✅ CLOSED — PR #396
+
+Finding séparé du LOT P0.1 : un run antérieur avait échoué sur un objet PostgREST affiché comme `[object Object]`, avec des `statement timeout` PostgreSQL observés. Le micro-lot #396 ajoute : erreurs PostgREST explicites, retry borné uniquement sur erreurs transitoires, concurrence PATCH **25 → 5**, sans changer exact canonical matching ni ownership de fraîcheur.
+
+Certification : **19/19 workflows exact-head verts**, DATA-4.3I contract + live-read-only PASS, Reviewer PASS, Release Certifier GO ; merge `6816e5e7bc4dbfe3c253cfe5da38175a5390606d`. Aucune migration, aucune policy/source activation.
 
 # 8. DATA-4 — Reservoir Strategy
 
@@ -240,4 +246,4 @@ Auditer la prochaine cohorte explicite de Geo Coverage Recovery. Tant que couver
 
 ## DATA
 
-**Fermer P0.1 jusqu’au post-merge production** : exact-head CI → Reviewer → Certifier → merge → appliquer la migration P0.1 → vérifier rapport/trigger/advisors → vérifier post-merge. Ensuite seulement définir explicitement le LOT mass-index suivant. Aucun nouveau scraper/source direct et aucune expansion automatique ne sont autorisés par P0.1.
+**P0.1 est CLOSED.** Définir explicitement le prochain LOT mass-index à partir de la base certifiée avant toute nouvelle acquisition/expansion. Aucun nouveau scraper/source direct, aucune activation de source et aucune expansion automatique ne sont autorisés implicitement par P0.1.
