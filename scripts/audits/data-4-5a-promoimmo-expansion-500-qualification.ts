@@ -20,7 +20,9 @@ import {
 const OUT_DIR = process.env.DATA_4_5A_OUT_DIR ?? ".tmp/data-4-5a/results";
 const PAGE_SIZE = 1000;
 const MAX_SOURCE_REQUESTS = 40;
-const TIMEOUT_MS = 15_000;
+const TIMEOUT_MS = 20_000;
+const MAX_ATTEMPTS = 3;
+const RETRYABLE_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504]);
 let sourceRequests = 0;
 
 type RegistryRow = {
@@ -74,16 +76,63 @@ function env(name: string): string {
   return value;
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function retryAfterMs(response: Response): number | null {
+  const raw = response.headers.get("retry-after");
+  if (!raw) return null;
+  const seconds = Number(raw);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.min(seconds * 1000, 10_000);
+  const at = Date.parse(raw);
+  if (!Number.isFinite(at)) return null;
+  return Math.min(Math.max(0, at - Date.now()), 10_000);
+}
+
+function isRetryableFetchError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return error.name === "AbortError"
+    || error.name === "TimeoutError"
+    || /fetch failed|timed out|timeout/i.test(error.message);
+}
+
+function errorText(error: unknown): string {
+  if (error instanceof Error) return `${error.name}: ${error.message}`;
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
+
 async function restPage<T>(table: string, params: Record<string, string>): Promise<T[]> {
   const url = new URL(`/rest/v1/${table}`, env("SUPABASE_URL"));
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
   const key = env("SUPABASE_SERVICE_ROLE_KEY");
-  const response = await fetch(url, {
-    headers: { apikey: key, authorization: `Bearer ${key}` },
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-  });
-  if (!response.ok) throw new Error(`${table} read failed: ${response.status} ${await response.text()}`);
-  return await response.json() as T[];
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await fetch(url, {
+        headers: { apikey: key, authorization: `Bearer ${key}` },
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+      if (response.ok) return await response.json() as T[];
+
+      const body = await response.text();
+      if (!RETRYABLE_STATUSES.has(response.status) || attempt === MAX_ATTEMPTS) {
+        throw new Error(`${table} read failed status=${response.status} attempt=${attempt}/${MAX_ATTEMPTS} path=${url.pathname}: ${body}`);
+      }
+      await sleep(retryAfterMs(response) ?? 500 * (2 ** (attempt - 1)));
+    } catch (error) {
+      if (!isRetryableFetchError(error) || attempt === MAX_ATTEMPTS) {
+        throw new Error(`${table} read failed attempt=${attempt}/${MAX_ATTEMPTS} path=${url.pathname}: ${errorText(error)}`, { cause: error });
+      }
+      await sleep(500 * (2 ** (attempt - 1)));
+    }
+  }
+
+  throw new Error(`${table} read exhausted retries path=${url.pathname}`);
 }
 
 async function restAll<T>(table: string, params: Record<string, string>): Promise<T[]> {
@@ -97,17 +146,35 @@ async function restAll<T>(table: string, params: Record<string, string>): Promis
 
 async function fetchAllowedText(urlString: string): Promise<string> {
   if (!samePromoImmoOrigin(urlString)) throw new Error(`Disallowed Promo Immo URL: ${urlString}`);
-  sourceRequests += 1;
-  if (sourceRequests > MAX_SOURCE_REQUESTS) throw new Error("DATA-4.5A source request budget exceeded");
-  const response = await fetch(urlString, {
-    redirect: "follow",
-    headers: { "user-agent": "AkarFinder/1.0 (+DATA-4.5A; sitemap-only; no-detail-fetch)" },
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-  });
-  if (!response.ok || !samePromoImmoOrigin(response.url)) {
-    throw new Error(`Promo Immo source read failed ${response.status}: ${urlString}`);
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    sourceRequests += 1;
+    if (sourceRequests > MAX_SOURCE_REQUESTS) throw new Error("DATA-4.5A source request budget exceeded");
+    try {
+      const response = await fetch(urlString, {
+        redirect: "follow",
+        headers: { "user-agent": "AkarFinder/1.0 (+DATA-4.5A; sitemap-only; no-detail-fetch)" },
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+      if (!samePromoImmoOrigin(response.url)) {
+        throw new Error(`Promo Immo redirect left allowed origin: ${urlString} -> ${response.url}`);
+      }
+      if (response.ok) return response.text();
+
+      const body = await response.text();
+      if (!RETRYABLE_STATUSES.has(response.status) || attempt === MAX_ATTEMPTS) {
+        throw new Error(`Promo Immo source read failed status=${response.status} attempt=${attempt}/${MAX_ATTEMPTS} url=${urlString}: ${body.slice(0, 500)}`);
+      }
+      await sleep(retryAfterMs(response) ?? 500 * (2 ** (attempt - 1)));
+    } catch (error) {
+      if (!isRetryableFetchError(error) || attempt === MAX_ATTEMPTS) {
+        throw new Error(`Promo Immo source read failed attempt=${attempt}/${MAX_ATTEMPTS} url=${urlString}: ${errorText(error)}`, { cause: error });
+      }
+      await sleep(500 * (2 ** (attempt - 1)));
+    }
   }
-  return response.text();
+
+  throw new Error(`Promo Immo source read exhausted retries url=${urlString}`);
 }
 
 function numberOrNull(value: number | string | null): number | null {
@@ -309,7 +376,23 @@ async function main(): Promise<void> {
   console.log(JSON.stringify(proof, null, 2));
 }
 
-main().catch((error) => {
+main().catch(async (error) => {
+  const diagnostic = {
+    schema_version: "data-4-5a-failure-v1",
+    generated_at: new Date().toISOString(),
+    error: errorText(error),
+    source_requests: sourceRequests,
+    source_request_budget: MAX_SOURCE_REQUESTS,
+    database_writes: 0,
+    freshness_writes: 0,
+    registry_mutations: 0,
+  };
+  try {
+    await fs.mkdir(OUT_DIR, { recursive: true });
+    await fs.writeFile(path.join(OUT_DIR, "failure.json"), `${JSON.stringify(diagnostic, null, 2)}\n`);
+  } catch {
+    // Preserve the primary qualification error.
+  }
   console.error(error instanceof Error ? error.stack : JSON.stringify(error));
   process.exitCode = 1;
 });
