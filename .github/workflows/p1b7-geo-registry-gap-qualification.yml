@@ -1,0 +1,82 @@
+name: P1B.7 Geo Registry Gap Qualification Gate
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/p1b7-geo-registry-gap-qualification.ts"
+      - "scripts/audits/p1b6-geo-coverage-depth-audit.ts"
+      - ".github/workflows/p1b7-geo-registry-gap-qualification.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/audits/p1b7-geo-registry-gap-qualification.ts"
+      - "scripts/audits/p1b6-geo-coverage-depth-audit.ts"
+      - ".github/workflows/p1b7-geo-registry-gap-qualification.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  registry-gap-qualification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Static read-only contract
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          for(const path of ['scripts/audits/p1b7-geo-registry-gap-qualification.ts','scripts/audits/p1b6-geo-coverage-depth-audit.ts']) {
+            const s=fs.readFileSync(path,'utf8');
+            for(const token of ['.insert(','.upsert(','.update(','.delete(','axios','index.commoncrawl.org']) if(s.includes(token)) throw new Error(`forbidden P1B.7 operation in ${path}: ${token}`);
+          }
+          const s=fs.readFileSync('scripts/audits/p1b7-geo-registry-gap-qualification.ts','utf8');
+          for(const marker of ['db_mutation: false','registry_mutation: false','source_site_request: false','alias_creation: false','entity_creation: false','geo_resolution_write: false','fuzzy_matching: false','title_snippet_inference: false','commercial_recurrence_is_not_geo_truth: true']) if(!s.includes(marker)) throw new Error(`missing P1B.7 safety marker: ${marker}`);
+          NODE
+      - name: Live production Registry gap qualification
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1b7-geo-registry-gap-qualification.ts
+      - name: Validate P1B.7 certified boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('data/audits/runtime/p1b7-geo-registry-gap-qualification.json','utf8'));
+          if(r.schema_version!=='p1b7-geo-registry-gap-qualification-v1') throw new Error('unexpected schema');
+          if(r.verdict!=='EXTERNAL_AUTHORITY_REQUIRED_BEFORE_REGISTRY_WRITE') throw new Error(`unsafe verdict: ${r.verdict}`);
+          if(r.p1b6_baseline.eligible_listings!==15438 || r.p1b6_baseline.bridged_rows!==605 || r.p1b6_baseline.currently_resolved!==89 || r.p1b6_baseline.unresolved!==516 || r.p1b6_baseline.explicit_district_rows!==71 || r.p1b6_baseline.explicit_district_pairs!==31) throw new Error('P1B.6 input cohort drifted; re-audit before qualification');
+          const expected={
+            PRIORITY_EXTERNAL_VALIDATION:{pairs:10,listing_rows:31},
+            SINGLE_SOURCE_REPEAT_NEEDS_AUTHORITY:{pairs:9,listing_rows:26},
+            SINGLETON_NEEDS_AUTHORITY:{pairs:10,listing_rows:10},
+            PARENT_MISMATCH_REVIEW:{pairs:1,listing_rows:2},
+            REJECT_PROVIDER_BUCKET:{pairs:1,listing_rows:2},
+          };
+          for(const [decision,counts] of Object.entries(expected)) {
+            const actual=r.decision_counts[decision];
+            if(!actual || actual.pairs!==counts.pairs || actual.listing_rows!==counts.listing_rows) throw new Error(`P1B.7 decision drift for ${decision}`);
+          }
+          if(r.decision_counts.REASSESS_EXISTING_ALIAS || r.decision_counts.EXISTING_ENTITY_ALIAS_GAP) throw new Error('new deterministic Registry evidence exists; reassess before external validation lot');
+          const bucket=r.rows.filter(x=>x.decision==='REJECT_PROVIDER_BUCKET');
+          if(bucket.length!==1 || bucket[0].city!=='Marrakech' || bucket[0].district!=='Autres Marrakech') throw new Error('provider bucket proof drifted');
+          const mismatch=r.rows.filter(x=>x.decision==='PARENT_MISMATCH_REVIEW');
+          if(mismatch.length!==1 || mismatch[0].city!=='Tanger' || mismatch[0].district!=='Centre-ville') throw new Error('parent mismatch proof drifted');
+          if(r.contract.db_mutation!==false || r.contract.registry_mutation!==false || r.contract.alias_creation!==false || r.contract.entity_creation!==false || r.contract.geo_resolution_write!==false || r.contract.commercial_recurrence_is_not_geo_truth!==true) throw new Error('safety contract failed');
+          console.log(JSON.stringify({baseline:r.p1b6_baseline,decision_counts:r.decision_counts,verdict:r.verdict},null,2));
+          NODE
+      - name: Upload P1B.7 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1b7-geo-registry-gap-qualification
+          path: data/audits/runtime/p1b7-geo-registry-gap-qualification.json
+          if-no-files-found: error
+          retention-days: 14
