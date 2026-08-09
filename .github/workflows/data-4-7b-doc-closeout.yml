@@ -1,0 +1,158 @@
+name: DATA-4.7B Canonical Doc Closeout
+
+on:
+  push:
+    branches:
+      - data/data-4-7b-lsf-controlled-expansion-write
+    paths:
+      - .github/workflows/data-4-7b-doc-closeout.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-canonical-docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: data/data-4-7b-lsf-controlled-expansion-write
+          fetch-depth: 0
+      - name: Patch README ROADMAP SESSION from complete checkout
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          START = '<!-- DATA-4.7B-CURRENT-START -->'
+          END = '<!-- DATA-4.7B-CURRENT-END -->'
+
+          def upsert_before(path: str, anchor: str, body: str) -> None:
+              p = Path(path)
+              text = p.read_text()
+              block = f"{START}\n{body.rstrip()}\n{END}\n"
+              if START in text and END in text:
+                  before, rest = text.split(START, 1)
+                  _, after = rest.split(END, 1)
+                  text = before + block + after.lstrip('\n')
+              else:
+                  if anchor not in text:
+                      raise SystemExit(f'anchor not found in {path}: {anchor}')
+                  text = text.replace(anchor, block + '\n' + anchor, 1)
+              p.write_text(text)
+
+          readme_block = r'''## État DATA courant — 2026-08-09
+
+La lane DATA est passée en **rotation de réservoirs** : une source bloquée n'est plus un chemin critique. Promo Immo reste bloqué par DNS/source directe ; Dar Agadir est en drift de déclaration sitemap ; L'Immobilier Sans Frontières (LSF) est le réservoir actif certifié.
+
+- **DATA-4.7A ✅ PR #433** — merge `0019f33e6a10a58d76a6db4521c681861067c651` : sitemap LSF courant **1 423 URLs**, **1 064** identités URL sûres, **983** `seed_only` présentes dans le sitemap, **353** candidates long-tail `normalized + display eligible + Search`, collisions d'identité ambiguës exclues fail-closed ; 0 write.
+- **DATA-4.7B 🟠 closeout en cours — PR #435** : exact write head `f3f72f6b4e7e7f877df4eb67fa6c31f0140e81b3`, specialized run `31330561506` PASS, rollback artifact `sha256:d791172e8036d0b475cbf2119dca0c497938940f87563923dbcbf68370398672` ; batch borné **250/250** appliqué puis certifié en production.
+- Cohorte 4.7B : **250/250 fresh_confirmed**, **250/250 public_sitemap_presence**, **250/250 normalized**, **250/250 technical display**, **250/250 Public Search**, **250/250 Thin Index freshness projection** ; rollback disponible, non utilisé.
+- LSF après write : **1 414 total / 349 fresh_confirmed / 1 065 seed_only / 250 public_sitemap_presence**.
+- Le tier C long-tail reste autorisé uniquement via les gates existants d'éligibilité secondaire et de ranking ; l'absence de prix/surface n'est jamais compensée par une donnée inventée.
+
+Le prochain LOT DATA ne doit pas lancer automatiquement un second write : il doit **requalifier le résiduel LSF** (103 candidates restantes dans la preuve pré-write, à revalider en direct) et le comparer au prochain réservoir admissible, notamment Aykana, puis choisir le meilleur rendement sûr.'''
+          upsert_before('README.md', '## Doctrine', readme_block)
+
+          roadmap_block = r'''# 0. État DATA prioritaire — rotation de masse 2026-08-09
+
+> Ce bloc prévaut sur toute ancienne mention plus bas indiquant DATA-4.5B / Promo Immo comme « prochain LOT ».
+
+**Objectif actif : augmenter la masse réellement indexable sans attendre une source bloquée, tout en conservant Registry, fraîcheur, dédup, display eligibility et ranking fail-closed.**
+
+État certifié :
+
+- Promo Immo : `BLOCKED_EXTERNAL_SOURCE` — DNS/source directe non disponible ; aucune baisse de contrat autorisée.
+- Dar Agadir : `BLOCKED_SOURCE_DRIFT` — `robots.txt` répond mais ne déclare plus le sitemap historique ; DATA-4.6A fermé sans merge, 0 write.
+- **DATA-4.7A ✅ PR #433** — LSF Sitemap Mass Qualification ; merge `0019f33e6a10a58d76a6db4521c681861067c651` ; **353** candidates live long-tail certifiées, **250** comme premier checkpoint.
+- **DATA-4.7B 🟠 closeout PR #435** — write exécuté sur le head préalablement entièrement vert `f3f72f6b4e7e7f877df4eb67fa6c31f0140e81b3` ; rollback-ready dry-run run `31330561506`, artifact `sha256:d791172e8036d0b475cbf2119dca0c497938940f87563923dbcbf68370398672` ; write production **250/250** ; post-certification **250/250 freshness + sitemap channel + normalized + technical display + Public Search + projection** ; rollback non requis.
+- LSF production après write : **1 414 seeds / 349 fresh_confirmed / 1 065 seed_only / 250 public_sitemap_presence**.
+
+Doctrine long-tail verrouillée : une observation incomplète peut rester `eligible_secondary` et être classée bas ; **prix/surface/A-B ne sont pas des prérequis d'existence dans l'index**. Aucun champ absent n'est fabriqué. Les quality tiers et Ranking V2 restent autoritaires pour l'ordre.
+
+**Prochain LOT DATA : DATA-4.7C — Residual Reservoir Requalification**, read-only. Rejouer la preuve LSF courante après les 250 writes, mesurer le résiduel réellement encore sitemap-live et Search/display-eligible, puis le comparer au prochain `public_sitemap` admissible (Aykana en premier candidat). Un nouveau write doit rester un LOT séparé, borné et rollback-ready.'''
+          upsert_before('docs/ROADMAP.md', '# 1. Cap produit', roadmap_block)
+
+          session = r'''# AkarFinder — Session courante
+
+**Mise à jour : 2026-08-09**
+
+Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
+
+## Main / LOT actif
+
+- Main de départ du LOT : `0019f33e6a10a58d76a6db4521c681861067c651` — merge DATA-4.7A PR #433.
+- LOT actif : **DATA-4.7B — LSF Controlled Expansion Write**.
+- PR : **#435**.
+- Exact write head certifié avant mutation : `f3f72f6b4e7e7f877df4eb67fa6c31f0140e81b3`.
+- Specialized CI : run `31330561506` PASS — contract + TypeScript + static safety + live dry-run.
+- Rollback artifact : `sha256:d791172e8036d0b475cbf2119dca0c497938940f87563923dbcbf68370398672`, **250 apply rows / 250 rollback rows**, 0 write pendant CI.
+
+## DATA-4.7A ✅
+
+LSF qualification live :
+
+- 1 414 seeds ; 99 fresh-confirmed ; 1 315 seed-only au départ ;
+- sitemap courant : 1 423 URLs ;
+- 1 064 identités URL sûres ; 174 groupes collision DB exclus fail-closed ;
+- 983 seed-only encore présentes dans le sitemap ;
+- **353** candidates `seed_only + normalized + display eligible + Public Search` ;
+- tier C long-tail accepté comme `eligible_secondary`, sans exiger prix/surface ni fabriquer de donnée ;
+- 0 mutation.
+
+PR #433 mergée : `0019f33e6a10a58d76a6db4521c681861067c651`.
+
+## DATA-4.7B — write production certifié ✅ (merge PR encore à faire)
+
+Preflight exact avant write :
+
+- 250/250 URLs exactes présentes ;
+- 250/250 encore `seed_only` ;
+- 250/250 sans `public_sitemap_presence` précédent ;
+- 250/250 sans ancien `freshness_evidence` ;
+- digest exact URL set : `79e3982f128c4e639197a64a29766e9c`.
+
+Résultat production :
+
+- write atomique : **250/250** ;
+- fresh-confirmed : **250/250** ;
+- `public_sitemap_presence` : **250/250** ;
+- normalized : **250/250** ;
+- technical display : **250/250** ;
+- Public Search : **250/250** ;
+- Thin Index freshness projection : **250/250** ;
+- rollback : disponible, **non requis** ;
+- Registry/policy : inchangés.
+
+LSF après write : **1 414 total / 349 fresh-confirmed / 1 065 seed-only / 250 public_sitemap_presence**.
+
+## Sources en attente
+
+- Promo Immo : `BLOCKED_EXTERNAL_SOURCE` — DNS/source directe ; ne pas contourner.
+- Dar Agadir : `BLOCKED_SOURCE_DRIFT` — robots ne déclare plus le sitemap historique ; ne pas réutiliser une preuve ancienne comme preuve live.
+
+## Prochain DATA
+
+Après merge/closeout de #435 : **DATA-4.7C — Residual Reservoir Requalification**, read-only. Revalider le résiduel LSF (103 candidates seulement dans la preuve pré-write, donc chiffre à recalculer) et le comparer au prochain réservoir admissible, Aykana en premier candidat. Aucun second write automatique.
+
+## Autres lanes
+
+- UX/Search : convergence BENCHMARK-SERP-1 et lots Search majeurs certifiés ; Search reste canonique.
+- UX/Carte : P1B.8 ✅ ; prochain lot carte documenté = P1B.9 Tier A Registry Candidate Review ; Offre quartier reste OFF.
+
+## Invariants
+
+No-bypass ; Source Registry autoritaire ; provenance réelle ; Search canonique ; aucune donnée/géométrie inventée ; une responsabilité/branche/PR/merge par LOT ; rollback avant mutation ; exact-head CI verte avant write ; mise à jour README/ROADMAP/SESSION au closeout.
+'''
+          Path('docs/SESSION.md').write_text(session)
+
+          Path('.github/workflows/data-4-7b-doc-closeout.yml').unlink()
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/ROADMAP.md docs/SESSION.md .github/workflows/data-4-7b-doc-closeout.yml
+          git diff --cached --check
+          git commit -m "DATA-4.7B: close canonical docs"
+          git push origin HEAD:data/data-4-7b-lsf-controlled-expansion-write
