@@ -158,6 +158,14 @@ Les résultats Gateway sans thumbnail autorisée utilisent désormais un fallbac
 
 Certification : head `575f9510587cc244b2f1a3a6bf9aea7ad957fd83`, **24/24 workflows exact-head verts**, Property Type Visual Option A + UNIFIED predecessor + Search Truth + TypeScript + build PASS. Chromium **360×800 / 390×844 / 768×900 / 1280×900** : 0 label tronqué, 0 prix tronqué, 0 overflow horizontal. Benchmark UX/Search Reviewer **PASS 9,3/10**, Reviewer PASS, Release Certifier GO. Artefact visuel `sha256:78cf4a742360b87683bd9697a465a15f898979b29dea9e384474baf8b0a7ca69`. Merge `ae3e254bcec3bb4e98b814b0f057141e84956d10`.
 
+### CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437
+
+Fondation P0 du système d’illustrations contextuelles scalable : catalogue local explicite + resolver pur, déterministe et fail-closed, sans introduire de nouvel asset dans ce lot. La priorité reste `thumbnail autorisée → illustration contextuelle → artwork type reconnu → fallback neutre`. La sélection multi-assets utilise Rendezvous/HRW, l’identité stable vient de `original_url` normalisée de façon conservatrice, et aucun district n’est consommé tant que Search n’expose pas un signal structuré certifié.
+
+Certification : head `36620ca20e826be46464ab177e9611fb01f94a16`, **27/27 workflows exact-head verts**, specialized gate PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** avec reload stable, 0 label/prix tronqué et 0 overflow. Audit visuel P0 **9,6/10**, Reviewer PASS, Release Certifier GO. Artefact `sha256:3b71f26ffccf0614098b3dbd7c893560345d332f2a69e6115a7e7bb3dc828944`. Merge `66ee5a9263fbdef673c4f16f6066aa10c7cf0417`.
+
+Prochain lot UX/Search : **CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1**, mini-pool multi-assets borné à Agadir pour réduire la répétition visuelle sans toucher ranking, priorité commerciale, éligibilité, dedupe, DATA ou Map.
+
 ### DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416
 
 La provenance publique Search est désormais calculée par un resolver canonique fail-closed plutôt que rendue depuis des labels libres. Gateway dérive l'identité depuis `source_id` et la configuration source canonique ; les listings persistés utilisent les signaux structurés d'accès/display plus une allowlist de marques ; AkarInfo consomme le même resolver. Les noms bruts inconnus ne sont jamais réémis dans l'UI.
