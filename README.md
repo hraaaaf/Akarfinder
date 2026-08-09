@@ -203,6 +203,16 @@ Contrat : **0 requête Common Crawl**, **0 requête source-site**, **0 WARC fetc
 
 Prochain lot mass-index : **P0.3 — Common Crawl Pattern Evidence**. Il doit produire des preuves de patterns à partir de l’URL-index Common Crawl existant, sans WARC content par défaut et sans auto-activation.
 
+### P0.3 — Common Crawl Pattern Evidence ✅ CLOSED — PR #400
+
+P0.3 analyse uniquement les métadonnées de l’URL-index Common Crawl pour la cohorte figée des **18** sources `POLICY_ALLOWED_PATTERN_MISSING` de P0.2. Les policies production sont relues avant les requêtes ; aucun site source et aucun contenu WARC ne sont appelés.
+
+Preuve finale : **54/54** requêtes URL-index réussies sur 3 indexes, **10 254 URL uniques**, **5 `STRONG_PATTERN_EVIDENCE`**, **6 `REVIEWABLE_PATTERN_EVIDENCE`**, **7 `INSUFFICIENT_URL_INDEX_EVIDENCE`**. Les 5 strong sont : `christiesrealestatemorocco.com`, `immo-maroc.com`, `immobilier-a-marrakech.com`, `immohammedia.com`, `leaderimmo.ma`. Un faux positif d’archive datée `/YYYY/MM/DD/...` a été détecté puis neutralisé avant certification ; test permanent ajouté.
+
+Sécurité : **0 requête source-site**, **0 WARC/content fetch**, **0 mutation DB**, **0 mutation Registry/policy**, **0 activation de pattern**. **20/20 workflows exact-head verts**, Reviewer **PASS 9,4/10**, Release Certifier **GO**, merge `8ffffc7cfbe0921d21f66887e1c4ecccf3a738cb`, gate P0.3 post-merge PASS.
+
+Prochain lot mass-index : **P0.4 — Registry Pattern Review Shadow** sur les **5 strong uniquement**. Il doit convertir les signatures en propositions de patterns avec contrôles positifs/négatifs et shadow replay ; aucune activation automatique. Les 6 reviewable restent hors activation et les 7 insufficient restent bloqués.
+
 ### DATA-4 — Reservoir Strategy
 
 - DATA-4.0 ✅ PR #341 : Avito + Mubawab = **35 134 normalized**, **3 588 technical display**, **0 policy-activable** ;
@@ -217,7 +227,7 @@ Prochain lot mass-index : **P0.3 — Common Crawl Pattern Evidence**. Il doit pr
 
 ## Décision DATA courante
 
-**DATA-4.4C, P0.1 et P0.2 sont fermés et certifiés.** Le micro-lot reconciler #396 est également fermé. P0.2 mesure un gap réel de readiness mais n’autorise aucune expansion automatique, aucun nouveau scraper direct et aucune évolution de policy. Prochain lot mass-index : **P0.3 — Common Crawl Pattern Evidence**, borné et offline-first sur l’URL-index existant.
+**DATA-4.4C, P0.1, P0.2 et P0.3 sont fermés et certifiés.** Le micro-lot reconciler #396 est également fermé. P0.3 a produit 5 preuves fortes, 6 reviewable et 7 insuffisantes, sans aucune activation. Prochain lot mass-index : **P0.4 — Registry Pattern Review Shadow**, strictement borné aux 5 preuves fortes.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 

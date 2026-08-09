@@ -224,6 +224,20 @@ Contrat permanent P0.2 : 0 Common Crawl request, 0 source-site request, 0 WARC f
 
 P0.2 ne dérive ni n’active aucun pattern. Le prochain lot est **P0.3 — Common Crawl Pattern Evidence** : produire offline-first des preuves de structure d’URL sur la cohorte des 18 sources, à partir de l’URL-index Common Crawl existant ; WARC/content uniquement si un besoin ultérieur distinct est démontré.
 
+# 7.3 P0.3 — Common Crawl Pattern Evidence ✅ CLOSED — PR #400
+
+Responsabilité unique : **produire des preuves de structure d’URL sur les 18 sources pattern-missing certifiées par P0.2**, via l’URL-index Common Crawl uniquement, sans écrire de pattern dans le Registry.
+
+Preuve finale : **18/18** targets encore policy-allowed, **54/54** requêtes réussies, **10 254 URL uniques**. Classification conservative : **5 strong / 6 reviewable / 7 insufficient**. Strong : `christiesrealestatemorocco.com`, `immo-maroc.com`, `immobilier-a-marrakech.com`, `immohammedia.com`, `leaderimmo.ma`.
+
+Finding Reviewer corrigé : une archive de blog `/{year}/{month}/{day}/...` pouvait ressembler à une signature ID-bearing. Ces signatures datées sont maintenant explicitement exclues de `STRONG_PATTERN_EVIDENCE` et un test permanent couvre ce cas. Les `REVIEWABLE` ne sont pas automatiquement activables ; notamment `valfoncier.ma` présente une signature dominante incluant des chemins médias imbriqués.
+
+Contrat : 0 source-site request, 0 WARC/content fetch, 0 DB mutation, 0 Registry/policy mutation, 0 pattern activation. Certification : **20/20 exact-head PASS**, Reviewer **9,4/10**, Certifier GO, merge `8ffffc7cfbe0921d21f66887e1c4ecccf3a738cb`, gate P0.3 post-merge PASS.
+
+## 7.4 P0.4 — Registry Pattern Review Shadow — NEXT
+
+Scope strict : **les 5 domaines strong uniquement**. Transformer chaque signature en proposition de `listing_url_pattern`, constituer des jeux positifs/négatifs depuis l’évidence URL-index, mesurer faux positifs/faux négatifs en shadow replay et refuser toute proposition ambiguë. **Aucune activation Registry, aucun harvest, aucun write production dans P0.4**. Les 6 reviewable restent en evidence refinement séparé ; les 7 insufficient restent bloqués.
+
 # 8. DATA-4 — Reservoir Strategy
 
 - 4.0 ✅ #341 — Avito+Mubawab : 35 134 normalized, 3 588 technical display, 0 policy-activable ;
@@ -256,4 +270,4 @@ Auditer la prochaine cohorte explicite de Geo Coverage Recovery. Tant que couver
 
 ## DATA
 
-**P0.1 et P0.2 sont CLOSED.** Exécuter ensuite **P0.3 — Common Crawl Pattern Evidence** uniquement : audit offline-first de la cohorte `POLICY_ALLOWED_PATTERN_MISSING` sur l’URL-index existant, sans WARC par défaut, sans nouveau scraper/source direct, sans activation de source et sans expansion automatique.
+**P0.1, P0.2 et P0.3 sont CLOSED.** Exécuter ensuite **P0.4 — Registry Pattern Review Shadow** uniquement sur les 5 domaines `STRONG_PATTERN_EVIDENCE`. Le LOT reste read-only/shadow : propositions + tests positifs/négatifs + replay, sans mutation Registry, sans harvest, sans nouvelle source et sans expansion automatique.
