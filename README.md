@@ -219,7 +219,7 @@ Preuve finale : **54/54** requêtes URL-index réussies sur 3 indexes, **10 254 
 
 Sécurité : **0 requête source-site**, **0 WARC/content fetch**, **0 mutation DB**, **0 mutation Registry/policy**, **0 activation de pattern**. **20/20 workflows exact-head verts**, Reviewer **PASS 9,4/10**, Release Certifier **GO**, merge `8ffffc7cfbe0921d21f66887e1c4ecccf3a738cb`, gate P0.3 post-merge PASS.
 
-Étape mass-index suivante après P0.4 : **revue Registry/canary bornée uniquement aux 2 candidats `SHADOW_ACCEPTABLE`**, dans un LOT séparé avec revalidation policy/autorisation et rollback avant toute mutation. Les 3 candidats rejetés restent bloqués.
+P0.5 a exécuté cette revue de readiness en lecture seule : **0/2 candidat autorisé pour une revue canary**. Les deux restent bloqués par l'autorisation/partenariat/revue légale ; aucun canary n'est permis tant que le Source Registry n'évolue pas explicitement.
 
 ### P0.4 — Registry Pattern Review Shadow ✅ CLOSED — PR #402
 
@@ -230,6 +230,19 @@ Preuve finale : **15/15 requêtes Common Crawl URL-index réussies**, **2 `SHADO
 Finding Reviewer corrigé avant merge : les URL non certifiées ne sont plus fabriquées comme négatives ; elles restent `AMBIGUOUS`. Le client Common Crawl respecte `Retry-After`, utilise retry/timeout bornés et ne contourne aucun rate-limit. **20/20 workflows exact-head verts**, Reviewer **PASS 9,5/10**, Release Certifier **GO**, merge `81f4809424757838c099b6acfb8f8d4b719deab7`, gate P0.4 post-merge **PASS**. Artefact exact-head : `sha256:c772ed6a63daa800238040e93f17dc983d58c24538290ac05ac96f9538e7d22f`.
 
 Contrat : **0 source-site request, 0 WARC/content fetch, 0 DB mutation, 0 Registry/policy mutation, 0 harvest, 0 pattern activation**. P0.4 prouve seulement une aptitude structurelle shadow ; il n'accorde aucune autorisation d'activation.
+
+### P0.5 — Registry Activation Readiness Gate ✅ CLOSED — PR #408
+
+P0.5 a requalifié en **lecture seule** les 2 candidats `SHADOW_ACCEPTABLE` de P0.4 avant toute éventuelle mutation Registry/canary. Le résultat production est fail-closed : **0/2 `READY_FOR_CANARY_REVIEW`, 2/2 `BLOCKED_BY_POLICY`**.
+
+- `christiesrealestatemorocco.com` : Common Crawl discovery autorisé, mais `authorization_status=unverified`, `partnership_required=true`, `legal_review_required=true` ; **0 seed / 5 discovery candidates** ;
+- `immobilier-a-marrakech.com` : Common Crawl discovery autorisé, mais `authorization_status=unverified`, `partnership_required=true`, `legal_review_required=true`, `detail_fetch_policy=paused` ; **0 seed / 14 discovery candidates**.
+
+Le contrat distingue explicitement **preuve structurelle ≠ canal de discovery autorisé ≠ autorisation de canary**. `READY_FOR_CANARY_REVIEW` reste un état review-only pour un éventuel `commoncrawl_seed_only_internal`; il n'active ni pattern, ni source, ni détail, ni affichage.
+
+Certification : **20/20 workflows exact-head verts** sur `e54099e9120d573d8092c8a119c066c911b624bd`, Reviewer **PASS 9,6/10**, Release Certifier **GO**, merge `ac0e240d28b88c5e66da73d1ab964794deb01877`, gate P0.5 post-merge **PASS**. Artefact exact-head : `sha256:a8617f91147feec1f2d870b971d346f36cddf74386da9019af2b600d4d224536`.
+
+Contrat : **0 source-site request, 0 Common Crawl request, 0 WARC/content fetch, 0 DB mutation, 0 Registry mutation, 0 harvest, 0 pattern activation, 0 canary write**. Aucun rollback n'est requis puisqu'aucune mutation n'a eu lieu.
 
 ### DATA-4 — Reservoir Strategy
 
@@ -245,7 +258,7 @@ Contrat : **0 source-site request, 0 WARC/content fetch, 0 DB mutation, 0 Regist
 
 ## Décision DATA courante
 
-**DATA-4.4C, P0.1, P0.2 et P0.3 sont fermés et certifiés.** Le micro-lot reconciler #396 est également fermé. P0.3 a produit 5 preuves fortes, 6 reviewable et 7 insuffisantes, sans aucune activation. Prochain lot mass-index : **P0.4 — Registry Pattern Review Shadow**, strictement borné aux 5 preuves fortes.
+**DATA-4.4C, P0.1, P0.2, P0.3, P0.4 et P0.5 sont fermés et certifiés.** Le micro-lot reconciler #396 est également fermé. **État mass-index actuel : 0/2 candidat P0.4 autorisé pour une revue canary.** La prochaine dépendance est externe : autorisation/partenariat/revue légale puis mise à jour explicite du Source Registry. Aucun canary ni nouveau lot d'activation ne doit partir tant que ces blockers ne sont pas levés.
 
 En parallèle business : **Agenz = priorité partenariat/feed**, sans changement Registry ou produit avant autorisation écrite.
 
