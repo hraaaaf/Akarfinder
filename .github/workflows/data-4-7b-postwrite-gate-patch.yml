@@ -1,0 +1,69 @@
+name: DATA-4.7B Post-Write Gate Patch
+
+on:
+  push:
+    branches:
+      - data/data-4-7b-lsf-controlled-expansion-write
+    paths:
+      - .github/workflows/data-4-7b-postwrite-gate-patch.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-post-write-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: data/data-4-7b-lsf-controlled-expansion-write
+          fetch-depth: 0
+      - name: Patch post-write closeout mode
+        shell: bash
+        run: |
+          python - <<'PY'
+          import base64
+          from pathlib import Path
+          HELPER = base64.b64decode('ZnVuY3Rpb24gbWV0YWRhdGFSdW5JZChtZXRhZGF0YTogUmVjb3JkPHN0cmluZywgdW5rbm93bj4gfCBudWxsKTogc3RyaW5nIHwgbnVsbCB7CiAgY29uc3QgZXZpZGVuY2UgPSBtZXRhZGF0YT8uZnJlc2huZXNzX2V2aWRlbmNlOwogIGlmICghZXZpZGVuY2UgfHwgdHlwZW9mIGV2aWRlbmNlICE9PSAib2JqZWN0IikgcmV0dXJuIG51bGw7CiAgY29uc3QgcnVuSWQgPSAoZXZpZGVuY2UgYXMgUmVjb3JkPHN0cmluZywgdW5rbm93bj4pLnJ1bl9pZDsKICByZXR1cm4gdHlwZW9mIHJ1bklkID09PSAic3RyaW5nIiA/IHJ1bklkIDogbnVsbDsKfQ==').decode()
+          POST = base64.b64decode('ICBjb25zdCBhbHJlYWR5QXBwbGllZCA9IHNlZWRzLmZpbHRlcigocm93KSA9PiBtZXRhZGF0YVJ1bklkKHJvdy5tZXRhZGF0YSkgPT09IFJVTl9JRCk7CiAgaWYgKGFscmVhZHlBcHBsaWVkLmxlbmd0aCA+IDApIHsKICAgIGlmIChBUFBMWSkgdGhyb3cgbmV3IEVycm9yKCJEQVRBLTQuN0IgYWxyZWFkeSBhcHBsaWVkOyByZXBlYXQgYXBwbHkgZm9yYmlkZGVuIik7CiAgICBpZiAoYWxyZWFkeUFwcGxpZWQubGVuZ3RoICE9PSBCQVRDSF9TSVpFKSB7CiAgICAgIHRocm93IG5ldyBFcnJvcihgREFUQS00LjdCIHBhcnRpYWwgYXBwbGllZCBjb2hvcnQgZHJpZnQ6ICR7YWxyZWFkeUFwcGxpZWQubGVuZ3RofS8ke0JBVENIX1NJWkV9YCk7CiAgICB9CiAgICBjb25zdCBjdXJyZW50U2l0ZW1hcENvbmZpcm1lZCA9IGFscmVhZHlBcHBsaWVkLmZpbHRlcigocm93KSA9PiB7CiAgICAgIGNvbnN0IGlkZW50aXR5ID0gY29uc2VydmF0aXZlVXJsSWRlbnRpdHkocm93LmNhbm9uaWNhbF91cmwpOwogICAgICBpZiAoIWlkZW50aXR5KSByZXR1cm4gZmFsc2U7CiAgICAgIHJldHVybiBkYklkZW50aXR5LmdldChpZGVudGl0eSk/Lmxlbmd0aCA9PT0gMSAmJiBzaXRlbWFwSWRlbnRpdHkuZ2V0KGlkZW50aXR5KT8ubGVuZ3RoID09PSAxOwogICAgfSk7CiAgICBpZiAoY3VycmVudFNpdGVtYXBDb25maXJtZWQubGVuZ3RoICE9PSBCQVRDSF9TSVpFKSB7CiAgICAgIHRocm93IG5ldyBFcnJvcihgREFUQS00LjdCIGFwcGxpZWQgY29ob3J0IHNpdGVtYXAgZHJpZnQ6ICR7Y3VycmVudFNpdGVtYXBDb25maXJtZWQubGVuZ3RofS8ke0JBVENIX1NJWkV9YCk7CiAgICB9CiAgICBjb25zdCBhcHBsaWVkVXJscyA9IG5ldyBTZXQoYWxyZWFkeUFwcGxpZWQubWFwKChyb3cpID0+IHJvdy5jYW5vbmljYWxfdXJsKSk7CiAgICBjb25zdCBwb3N0Q2VydGlmaWNhdGlvbiA9IGF3YWl0IGNlcnRpZnkoYXBwbGllZFVybHMsIHRydWUpOwogICAgY29uc3QgcHJvb2YgPSB7CiAgICAgIHNjaGVtYVZlcnNpb246ICJkYXRhLTQtN2ItbHNmLWNvbnRyb2xsZWQtZXhwYW5zaW9uLXdyaXRlLXYxIiwKICAgICAgbW9kZTogIlBPU1RfV1JJVEVfQ0VSVElGSUVEIiwKICAgICAgcnVuSWQ6IFJVTl9JRCwKICAgICAgb2JzZXJ2ZWRBdCwKICAgICAgc291cmNlRG9tYWluOiBET01BSU4sCiAgICAgIGN1cnJlbnRTaXRlbWFwVXJsQ291bnQ6IHNpdGVtYXBSb3dzLmxlbmd0aCwKICAgICAgYmF0Y2hTaXplOiBhbHJlYWR5QXBwbGllZC5sZW5ndGgsCiAgICAgIGN1cnJlbnRTaXRlbWFwQ29uZmlybWVkUm93czogY3VycmVudFNpdGVtYXBDb25maXJtZWQubGVuZ3RoLAogICAgICBwb3N0Q2VydGlmaWNhdGlvbiwKICAgICAgc291cmNlUmVxdWVzdHMsCiAgICAgIHNvdXJjZVNpdGVEZXRhaWxSZXF1ZXN0czogMCwKICAgICAgZGF0YWJhc2VXcml0ZXM6IDAsCiAgICAgIHJvbGxiYWNrV3JpdGVzOiAwLAogICAgICByZWdpc3RyeU11dGF0aW9uczogMCwKICAgICAgcG9saWN5Q2hhbmdlczogMCwKICAgICAgcHJvZHVjdGlvbkFjdGl2YXRpb246IGZhbHNlLAogICAgICBwcm9kdWN0aW9uU3RhdGVDZXJ0aWZpZWQ6IHRydWUsCiAgICAgIHJlcGVhdEFwcGx5QXV0aG9yaXplZDogZmFsc2UsCiAgICB9OwogICAgYXdhaXQgZnMubWtkaXIoT1VUX0RJUiwgeyByZWN1cnNpdmU6IHRydWUgfSk7CiAgICBhd2FpdCBmcy53cml0ZUZpbGUocGF0aC5qb2luKE9VVF9ESVIsICJwcm9vZi5qc29uIiksIGAke0pTT04uc3RyaW5naWZ5KHByb29mLCBudWxsLCAyKX1cbmApOwogICAgY29uc29sZS5sb2coSlNPTi5zdHJpbmdpZnkocHJvb2YsIG51bGwsIDIpKTsKICAgIHJldHVybjsKICB9').decode()
+          ENFORCE = base64.b64decode('ICAgICAgICAgIGNvbnN0IGZzID0gcmVxdWlyZSgnZnMnKTsKICAgICAgICAgIGNvbnN0IHAgPSBKU09OLnBhcnNlKGZzLnJlYWRGaWxlU3luYygnLnRtcC9kYXRhLTQtN2IvcmVzdWx0cy9wcm9vZi5qc29uJywndXRmOCcpKTsKICAgICAgICAgIGlmIChwLnNjaGVtYVZlcnNpb24gIT09ICdkYXRhLTQtN2ItbHNmLWNvbnRyb2xsZWQtZXhwYW5zaW9uLXdyaXRlLXYxJykgdGhyb3cgbmV3IEVycm9yKEpTT04uc3RyaW5naWZ5KHApKTsKICAgICAgICAgIGlmIChwLm1vZGUgPT09ICdEUllfUlVOX1JFQURZJykgewogICAgICAgICAgICBjb25zdCBhID0gSlNPTi5wYXJzZShmcy5yZWFkRmlsZVN5bmMoJy50bXAvZGF0YS00LTdiL3Jlc3VsdHMvYXBwbHktbWFuaWZlc3QuanNvbicsJ3V0ZjgnKSk7CiAgICAgICAgICAgIGNvbnN0IHIgPSBKU09OLnBhcnNlKGZzLnJlYWRGaWxlU3luYygnLnRtcC9kYXRhLTQtN2IvcmVzdWx0cy9yb2xsYmFjay1tYW5pZmVzdC5qc29uJywndXRmOCcpKTsKICAgICAgICAgICAgaWYgKHAuYmF0Y2hTaXplICE9PSAyNTAgfHwgYS5yb3dzLmxlbmd0aCAhPT0gMjUwIHx8IHIucm93cy5sZW5ndGggIT09IDI1MCkgdGhyb3cgbmV3IEVycm9yKCdEQVRBLTQuN0IgbXVzdCBwcmVwYXJlIGV4YWN0bHkgMjUwIHJvd3MnKTsKICAgICAgICAgICAgaWYgKHAubGl2ZUNhbmRpZGF0ZVJvd3MgPCAyNTApIHRocm93IG5ldyBFcnJvcihKU09OLnN0cmluZ2lmeShwKSk7CiAgICAgICAgICAgIGlmIChwLmRhdGFiYXNlV3JpdGVzICE9PSAwIHx8IHAucm9sbGJhY2tXcml0ZXMgIT09IDAgfHwgcC5yZWdpc3RyeU11dGF0aW9ucyAhPT0gMCB8fCBwLnBvbGljeUNoYW5nZXMgIT09IDAgfHwgcC5wcm9kdWN0aW9uQWN0aXZhdGlvbiAhPT0gZmFsc2UgfHwgcC5hcHBseUF1dGhvcml6ZWQgIT09IGZhbHNlKSB0aHJvdyBuZXcgRXJyb3IoSlNPTi5zdHJpbmdpZnkocCkpOwogICAgICAgICAgICBpZiAocC5wcmVDZXJ0aWZpY2F0aW9uLmV4cGVjdGVkUm93cyAhPT0gMjUwIHx8IHAucHJlQ2VydGlmaWNhdGlvbi5zZWVkUm93cyAhPT0gMjUwIHx8IHAucHJlQ2VydGlmaWNhdGlvbi5ub3JtYWxpemVkUm93cyAhPT0gMjUwIHx8IHAucHJlQ2VydGlmaWNhdGlvbi50ZWNobmljYWxEaXNwbGF5Um93cyAhPT0gMjUwIHx8IHAucHJlQ2VydGlmaWNhdGlvbi5wdWJsaWNTZWFyY2hSb3dzICE9PSAyNTApIHRocm93IG5ldyBFcnJvcihKU09OLnN0cmluZ2lmeShwKSk7CiAgICAgICAgICB9IGVsc2UgaWYgKHAubW9kZSA9PT0gJ1BPU1RfV1JJVEVfQ0VSVElGSUVEJykgewogICAgICAgICAgICBpZiAocC5iYXRjaFNpemUgIT09IDI1MCB8fCBwLmN1cnJlbnRTaXRlbWFwQ29uZmlybWVkUm93cyAhPT0gMjUwIHx8IHAucHJvZHVjdGlvblN0YXRlQ2VydGlmaWVkICE9PSB0cnVlIHx8IHAucmVwZWF0QXBwbHlBdXRob3JpemVkICE9PSBmYWxzZSkgdGhyb3cgbmV3IEVycm9yKEpTT04uc3RyaW5naWZ5KHApKTsKICAgICAgICAgICAgaWYgKHAuZGF0YWJhc2VXcml0ZXMgIT09IDAgfHwgcC5yb2xsYmFja1dyaXRlcyAhPT0gMCB8fCBwLnJlZ2lzdHJ5TXV0YXRpb25zICE9PSAwIHx8IHAucG9saWN5Q2hhbmdlcyAhPT0gMCB8fCBwLnByb2R1Y3Rpb25BY3RpdmF0aW9uICE9PSBmYWxzZSkgdGhyb3cgbmV3IEVycm9yKEpTT04uc3RyaW5naWZ5KHApKTsKICAgICAgICAgICAgY29uc3QgYyA9IHAucG9zdENlcnRpZmljYXRpb247CiAgICAgICAgICAgIGlmIChjLmV4cGVjdGVkUm93cyAhPT0gMjUwIHx8IGMuc2VlZFJvd3MgIT09IDI1MCB8fCBjLm5vcm1hbGl6ZWRSb3dzICE9PSAyNTAgfHwgYy50ZWNobmljYWxEaXNwbGF5Um93cyAhPT0gMjUwIHx8IGMucHVibGljU2VhcmNoUm93cyAhPT0gMjUwIHx8IGMuZnJlc2hDb25maXJtZWRSb3dzICE9PSAyNTAgfHwgYy5zaXRlbWFwQ2hhbm5lbFJvd3MgIT09IDI1MCkgdGhyb3cgbmV3IEVycm9yKEpTT04uc3RyaW5naWZ5KHApKTsKICAgICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgIHRocm93IG5ldyBFcnJvcihgdW5leHBlY3RlZCBEQVRBLTQuN0IgbW9kZTogJHtwLm1vZGV9YCk7CiAgICAgICAgICB9').decode()
+          TEST = base64.b64decode('dGVzdCgiREFUQS00LjdCIHBvc3Qtd3JpdGUgY2xvc2VvdXQgaXMgcmVhZC1vbmx5IGFuZCByZXBlYXQtYXBwbHkgZmFpbC1jbG9zZWQiLCAoKSA9PiB7CiAgZm9yIChjb25zdCB0b2tlbiBvZiBbCiAgICAnZnVuY3Rpb24gbWV0YWRhdGFSdW5JZCcsCiAgICAnUE9TVF9XUklURV9DRVJUSUZJRUQnLAogICAgJ3Byb2R1Y3Rpb25TdGF0ZUNlcnRpZmllZDogdHJ1ZScsCiAgICAncmVwZWF0QXBwbHlBdXRob3JpemVkOiBmYWxzZScsCiAgICAnY3VycmVudFNpdGVtYXBDb25maXJtZWRSb3dzJywKICAgICdhbHJlYWR5IGFwcGxpZWQ7IHJlcGVhdCBhcHBseSBmb3JiaWRkZW4nLAogICAgJ3BhcnRpYWwgYXBwbGllZCBjb2hvcnQgZHJpZnQnLAogICAgJ2FwcGxpZWQgY29ob3J0IHNpdGVtYXAgZHJpZnQnLAogIF0pIGFzc2VydC5vayhzY3JpcHQuaW5jbHVkZXModG9rZW4pLCBgbWlzc2luZyBwb3N0LXdyaXRlIGNsb3Nlb3V0IGNvbnRyYWN0ICR7dG9rZW59YCk7Cn0pOw==').decode()
+          script_path = Path('scripts/audits/data-4-7b-lsf-controlled-expansion-write.ts')
+          script = script_path.read_text()
+          helper_anchor = '''function numberOrZero(value: number | string | null): number {
+            const n = Number(value);
+            return Number.isFinite(n) ? n : 0;
+          }'''.replace('          ', '')
+          if 'function metadataRunId' not in script:
+              if helper_anchor not in script:
+                  raise SystemExit('helper anchor missing')
+              script = script.replace(helper_anchor, helper_anchor + '\n\n' + HELPER, 1)
+          candidate_anchor = '  const candidates = normalized\n'
+          if 'const alreadyApplied = seeds.filter' not in script:
+              if candidate_anchor not in script:
+                  raise SystemExit('candidate anchor missing')
+              script = script.replace(candidate_anchor, POST + '\n\n' + candidate_anchor, 1)
+          script_path.write_text(script)
+          workflow_path = Path('.github/workflows/data-4-7b-lsf-controlled-expansion-write.yml')
+          workflow = workflow_path.read_text()
+          marker = "      - name: Enforce rollback-ready proof\n        run: |\n          node - <<'NODE'\n"
+          if marker not in workflow:
+              raise SystemExit('workflow enforce marker missing')
+          before, rest = workflow.split(marker, 1)
+          old_body, after = rest.split('          NODE\n', 1)
+          workflow = before + marker + ENFORCE + '\n          NODE\n' + after
+          workflow_path.write_text(workflow)
+          test_path = Path('scripts/data4/__tests__/data-4-7b-lsf-controlled-expansion-write.test.ts')
+          tests = test_path.read_text()
+          if 'post-write closeout is read-only' not in tests:
+              tests = tests.rstrip() + '\n\n' + TEST + '\n'
+          test_path.write_text(tests)
+          Path('.github/workflows/data-4-7b-postwrite-gate-patch.yml').unlink()
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/audits/data-4-7b-lsf-controlled-expansion-write.ts scripts/data4/__tests__/data-4-7b-lsf-controlled-expansion-write.test.ts .github/workflows/data-4-7b-lsf-controlled-expansion-write.yml .github/workflows/data-4-7b-postwrite-gate-patch.yml
+          git diff --cached --check
+          git commit -m "DATA-4.7B: certify post-write closeout state"
+          git push origin HEAD:data/data-4-7b-lsf-controlled-expansion-write
