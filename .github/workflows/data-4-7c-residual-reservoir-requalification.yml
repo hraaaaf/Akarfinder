@@ -6,6 +6,13 @@ on:
       - "scripts/audits/data-4-7c-residual-reservoir-requalification.ts"
       - "scripts/data4/__tests__/data-4-7c-residual-reservoir-requalification.test.ts"
       - ".github/workflows/data-4-7c-residual-reservoir-requalification.yml"
+  push:
+    branches:
+      - data/data-4-7c-residual-reservoir-requalification
+    paths:
+      - "scripts/audits/data-4-7c-residual-reservoir-requalification.ts"
+      - "scripts/data4/__tests__/data-4-7c-residual-reservoir-requalification.test.ts"
+      - ".github/workflows/data-4-7c-residual-reservoir-requalification.yml"
   workflow_dispatch:
 
 permissions:
