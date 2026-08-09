@@ -1,0 +1,38 @@
+name: UNIFIED-LISTING-CARD-1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "components/search/SearchListingCardDark.tsx"
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "components/search/ExternalIndexedResultsSection.tsx"
+      - "components/search/LightZillowSearchShell.tsx"
+      - "scripts/scrapers/__tests__/unified-listing-card-1.test.ts"
+      - ".github/workflows/unified-listing-card-1.yml"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unified-card-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Unified listing card contract
+        run: npx tsx --test scripts/scrapers/__tests__/unified-listing-card-1.test.ts
+      - name: Search truth regression contract
+        run: npx tsx --test scripts/scrapers/__tests__/search-truth-tier.test.ts scripts/scrapers/__tests__/serp-gateway-first.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build rehearsal
+        run: npm run build
