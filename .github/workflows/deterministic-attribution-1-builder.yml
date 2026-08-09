@@ -1,0 +1,51 @@
+name: DETERMINISTIC-ATTRIBUTION-1 Builder
+
+on:
+  push:
+    branches:
+      - ux/deterministic-attribution-1
+    paths:
+      - "scripts/audits/apply-deterministic-attribution-1.mjs"
+      - ".github/workflows/deterministic-attribution-1-builder.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ux/deterministic-attribution-1
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/audits/apply-deterministic-attribution-1.mjs
+      - name: Verify intended application scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only | sort)
+          printf '%s\n' "${changed[@]}"
+          expected=(
+            components/search/ExternalIndexedResultCard.tsx
+            components/search/SearchListingCardDark.tsx
+            lib/akarinfo/akarinfo-passport.ts
+          )
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
+          test "$(printf '%s\n' "${changed[@]}")" = "$(printf '%s\n' "${expected_sorted[@]}")"
+      - name: Remove temporary builder
+        run: |
+          git rm scripts/audits/apply-deterministic-attribution-1.mjs
+          git rm .github/workflows/deterministic-attribution-1-builder.yml
+      - name: Commit final builder result
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/search/ExternalIndexedResultCard.tsx components/search/SearchListingCardDark.tsx lib/akarinfo/akarinfo-passport.ts
+          git commit -m "feat(search): route public attribution through canonical resolver"
+          git push origin HEAD:ux/deterministic-attribution-1
