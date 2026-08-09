@@ -72,7 +72,7 @@ try {
     });
 
     try {
-      const response = await page.goto(`${baseUrl}/search?q=appartement%20rabat`, { waitUntil: "domcontentloaded", timeout: 45_000 });
+      const response = await page.goto(`${baseUrl}/search?q=appartement%20rabat&view=split`, { waitUntil: "domcontentloaded", timeout: 45_000 });
       if (!response || response.status() >= 400) throw new Error(`${viewport.name}: search returned ${response?.status() ?? "no response"}`);
       await page.waitForSelector('[data-search-view-layout="split"]', { timeout: 20_000 });
       await page.waitForSelector('[data-search-list-pane] [data-mobile-compact-card]', { timeout: 20_000 });
