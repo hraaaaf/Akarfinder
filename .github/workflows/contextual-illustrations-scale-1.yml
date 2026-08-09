@@ -1,0 +1,76 @@
+name: CONTEXTUAL-ILLUSTRATIONS-SCALE-1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "public/images/contextual/marrakech/**"
+      - "public/images/contextual/casablanca/**"
+      - "lib/contextual-illustrations/**"
+      - "scripts/scrapers/__tests__/contextual-illustrations-scale-1.test.ts"
+      - "scripts/audits/contextual-illustrations-scale-1-visual.mjs"
+      - ".github/workflows/contextual-illustrations-scale-1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scale-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: SCALE-1 contract
+        run: npx tsx --test scripts/scrapers/__tests__/contextual-illustrations-scale-1.test.ts
+      - name: Agadir P1 predecessor
+        run: npx tsx --test scripts/scrapers/__tests__/contextual-illustrations-agadir-pilot-1.test.ts
+      - name: P0 contextual predecessor
+        run: npx tsx --test scripts/scrapers/__tests__/contextual-illustrations-foundation-1.test.ts
+      - name: Visual and card predecessors
+        run: npx tsx --test scripts/scrapers/__tests__/contextual-visual-assets-1.test.ts scripts/scrapers/__tests__/unified-listing-card-1.test.ts
+      - name: Search truth predecessors
+        run: npx tsx --test scripts/scrapers/__tests__/search-truth-tier.test.ts scripts/scrapers/__tests__/serp-gateway-first.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build rehearsal
+        run: npm run build
+
+  scale-visual-certification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start > /tmp/akarfinder-contextual-scale-1.log 2>&1 &
+          for i in {1..60}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/akarfinder-contextual-scale-1.log
+          exit 1
+      - name: Capture and assert SCALE-1
+        run: node scripts/audits/contextual-illustrations-scale-1-visual.mjs
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contextual-illustrations-scale-1-visual-proof
+          path: |
+            data/audits/contextual-illustrations-scale-1
+            /tmp/akarfinder-contextual-scale-1.log
+          retention-days: 14
+          if-no-files-found: error

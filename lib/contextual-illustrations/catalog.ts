@@ -32,41 +32,57 @@ export function getContextualCityVisual(city?: string | null): ContextualIllustr
   return CONTEXTUAL_CITY_VISUALS[city as ContextualCity];
 }
 
-const AGADIR_CITY_VISUALS: readonly ContextualIllustrationAsset[] = [
-  CONTEXTUAL_CITY_VISUALS.Agadir,
-  { id: "agadir-city-02", asset: "/images/contextual/agadir/agadir-city-02.svg", label: "Agadir" },
-  { id: "agadir-city-03", asset: "/images/contextual/agadir/agadir-city-03.svg", label: "Agadir" },
-  { id: "agadir-city-04", asset: "/images/contextual/agadir/agadir-city-04.svg", label: "Agadir" },
-];
+const pool = (
+  city: "Agadir" | "Marrakech" | "Casablanca",
+  kind: "city" | "apartment" | "villa"
+): readonly ContextualIllustrationAsset[] => {
+  const label = city;
+  const slug = city.toLowerCase();
+  if (kind === "city") {
+    const canonical = CONTEXTUAL_CITY_VISUALS[city];
+    return [
+      canonical,
+      ...[2, 3, 4].map((n) => ({
+        id: `${slug}-city-0${n}`,
+        asset: `/images/contextual/${slug}/${slug}-city-0${n}.svg`,
+        label,
+      })),
+    ];
+  }
+  return [1, 2, 3, 4].map((n) => ({
+    id: `${slug}-${kind}-0${n}`,
+    asset: `/images/contextual/${slug}/${slug}-${kind}-0${n}.svg`,
+    label,
+  }));
+};
 
-const AGADIR_APARTMENT_VISUALS: readonly ContextualIllustrationAsset[] = [
-  { id: "agadir-apartment-01", asset: "/images/contextual/agadir/agadir-apartment-01.svg", label: "Agadir" },
-  { id: "agadir-apartment-02", asset: "/images/contextual/agadir/agadir-apartment-02.svg", label: "Agadir" },
-  { id: "agadir-apartment-03", asset: "/images/contextual/agadir/agadir-apartment-03.svg", label: "Agadir" },
-  { id: "agadir-apartment-04", asset: "/images/contextual/agadir/agadir-apartment-04.svg", label: "Agadir" },
-];
+const AGADIR_CITY_VISUALS = pool("Agadir", "city");
+const AGADIR_APARTMENT_VISUALS = pool("Agadir", "apartment");
+const AGADIR_VILLA_VISUALS = pool("Agadir", "villa");
+const MARRAKECH_CITY_VISUALS = pool("Marrakech", "city");
+const MARRAKECH_APARTMENT_VISUALS = pool("Marrakech", "apartment");
+const MARRAKECH_VILLA_VISUALS = pool("Marrakech", "villa");
+const CASABLANCA_CITY_VISUALS = pool("Casablanca", "city");
+const CASABLANCA_APARTMENT_VISUALS = pool("Casablanca", "apartment");
+const CASABLANCA_VILLA_VISUALS = pool("Casablanca", "villa");
 
-const AGADIR_VILLA_VISUALS: readonly ContextualIllustrationAsset[] = [
-  { id: "agadir-villa-01", asset: "/images/contextual/agadir/agadir-villa-01.svg", label: "Agadir" },
-  { id: "agadir-villa-02", asset: "/images/contextual/agadir/agadir-villa-02.svg", label: "Agadir" },
-  { id: "agadir-villa-03", asset: "/images/contextual/agadir/agadir-villa-03.svg", label: "Agadir" },
-  { id: "agadir-villa-04", asset: "/images/contextual/agadir/agadir-villa-04.svg", label: "Agadir" },
-];
+const CITY_POOL_OVERRIDES: Readonly<Record<string, readonly ContextualIllustrationAsset[]>> = {
+  Agadir: AGADIR_CITY_VISUALS,
+  Marrakech: MARRAKECH_CITY_VISUALS,
+  Casablanca: CASABLANCA_CITY_VISUALS,
+};
 
 function cityPools(): Readonly<Record<string, readonly ContextualIllustrationAsset[]>> {
   return Object.fromEntries(
-    Object.entries(CONTEXTUAL_CITY_VISUALS).map(([city, asset]) => [
-      city,
-      city === "Agadir" ? AGADIR_CITY_VISUALS : [asset] as const,
-    ])
+    Object.entries(CONTEXTUAL_CITY_VISUALS).map(([city, asset]) => [city, CITY_POOL_OVERRIDES[city] ?? [asset]])
   );
 }
 
 /**
  * Production catalog for truth-safe contextual artwork.
  *
- * The Agadir P1 pilot adds only city and city/type pools backed by structured
- * Search fields already present in the public DTO. District pools remain empty
+ * P1 Agadir plus SCALE-1 Marrakech/Casablanca use only structured city and
+ * property-type fields already exposed by Search. District pools remain empty
  * until a certified normalized district signal is available to Search.
  */
 export const CONTEXTUAL_ILLUSTRATION_CATALOG: ContextualIllustrationCatalog = {
@@ -75,6 +91,10 @@ export const CONTEXTUAL_ILLUSTRATION_CATALOG: ContextualIllustrationCatalog = {
   cityType: {
     [contextualKey("Agadir", "Appartement")]: AGADIR_APARTMENT_VISUALS,
     [contextualKey("Agadir", "Villa")]: AGADIR_VILLA_VISUALS,
+    [contextualKey("Marrakech", "Appartement")]: MARRAKECH_APARTMENT_VISUALS,
+    [contextualKey("Marrakech", "Villa")]: MARRAKECH_VILLA_VISUALS,
+    [contextualKey("Casablanca", "Appartement")]: CASABLANCA_APARTMENT_VISUALS,
+    [contextualKey("Casablanca", "Villa")]: CASABLANCA_VILLA_VISUALS,
   },
   city: cityPools(),
 };
