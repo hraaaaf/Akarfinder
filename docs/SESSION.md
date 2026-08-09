@@ -1,7 +1,7 @@
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-09**  
-**Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ #423 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE**  
+**Lane UX/Search : SEARCH-UX-FAST-1 ✅ #390 ; SEARCH-WORDING-PURITY-1 ✅ #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ #395 ; RANKING-QUALITY-1 ✅ #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ #437 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; prochain LOT = CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1**  
 **Lane UX/Carte : P1B.8 ✅ Geo Authority Evidence Review — PR #430 ; prochain LOT = P1B.9 Tier A Registry Candidate Review (read-only, Hay Mohammadi + Dakhla uniquement)**  
 **Lane DATA : DATA-4.4C ✅ ; DATA-4.5A Expansion-to-500 Qualification ✅ #410 ; P0.1→P0.5 ✅ CLOSED ; freshness reconciler hardening ✅ #396 ; prochain LOT = DATA-4.5B Promo Immo Controlled Expansion Write, indépendant de la lane d'autorisation P0**  
 **Couche Offre quartier : OFF — couverture certifiée actuelle **89 / 15 438 = 0,5765 %****
@@ -10,7 +10,7 @@ Ce fichier est le handover opérationnel court. `docs/ROADMAP.md` reste l’uniq
 
 # Main canonique
 
-Main canonique après P1B.8 technique : `8f16efe091f76a5e933a201abd7f0bd1f9e53d77` — merge PR #430. Exact-head `e15fc810f2c98ed85fce0c78a465cf6e92cf33c7`, **19/19 workflows verts**, specialized live PASS, Reviewer **9,6/10**, Release Certifier GO, post-merge run `31328973075` PASS. P1B.8 confirme **Hay Mohammadi + Dakhla** en Tier A mais autorise **0 write Registry**.
+Main canonique après `CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1` : `66ee5a9263fbdef673c4f16f6066aa10c7cf0417` — merge PR #437. Exact-head `36620ca20e826be46464ab177e9611fb01f94a16`, **27/27 workflows verts**, specialized gate PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, audit visuel P0 **9,6/10**, Reviewer PASS, Release Certifier GO. Artefact `sha256:3b71f26ffccf0614098b3dbd7c893560345d332f2a69e6115a7e7bb3dc828944`. Aucun workflow `push` n’est configuré sur ce merge commit ; `main` et le tree certifié `df67bf1b06ec6d01de8920350fd7df1b7eccce37` ont été vérifiés directement. Ce closeout ne modifie aucune décision DATA/Carte.
 
 P0.4 main merge : `81f4809424757838c099b6acfb8f8d4b719deab7` — PR #402 ; post-merge gate PASS.
 
@@ -35,6 +35,7 @@ Acquis récents :
 - DETERMINISTIC-ATTRIBUTION-1 ✅ #416 — attribution publique centralisée, raw source labels interdits, 26/26 workflows, Chromium 5 viewports, Benchmark PASS 9,4/10 ;
 - SEARCH-ACTION-HIERARCHY-1 ✅ #418 — une action forte par card tablette/desktop, Map/Compare retirés de la card mais capacités globales conservées, 24/24 workflows, Chromium 5 viewports, Benchmark PASS 9,5/10 ;
 - SEARCH-DESKTOP-SPLIT-1 ✅ #423 — desktop Mixte = résultats + carte sans blocs secondaires, mobile/tablette inchangés, 26/26 workflows, Chromium 5 viewports, Benchmark PASS 9,5/10, merge `6bcf402158539c547061a6a92d1b408df1da8d22` ;
+- CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ #437 — catalogue/resolver local déterministe fail-closed avec Rendezvous/HRW, identité `original_url` normalisée, district non consommé faute de signal Search certifié, **27/27 workflows**, Chromium 5 viewports, audit visuel **9,6/10**, merge `66ee5a9263fbdef673c4f16f6066aa10c7cf0417` ;
 - P0.1 ✅ #392 — Source Registry opérationnel et fail-closed sur Common Crawl ;
 - freshness reconciler hardening ✅ #396 — retry transitoire borné, diagnostics PostgREST explicites, concurrence PATCH 25→5.
 - P0.2 ✅ #398 — coverage audit read-only : 27 policies Common Crawl opérationnelles, 9 harvest-ready, 18 pattern-missing, ratio 33,33 %, 0 seed sur la cohorte manquante.
@@ -177,7 +178,11 @@ Important : 4.5A **ne certifie pas la présence sitemap live individuelle des 45
 - RANKING-QUALITY-1 ✅ #403 — production certifiée, `policy_drift_rows=0`, 15 438 LISTING publics ;
 - UNIFIED-LISTING-CARD-1 ✅ #407 — head `6ddde621f03ccca1f25b8dc5dd34fdded090044b`, **23/23 workflows PR verts**, Chromium 4 viewports, Benchmark **9,2/10**, merge `7ad1b7af2a0e7dc268b0b3ea032e083f7ccbb193` ;
 - CONTEXTUAL-VISUAL-ASSETS-1 ✅ #414 — head `575f9510587cc244b2f1a3a6bf9aea7ad957fd83`, **24/24 workflows exact-head verts**, Chromium 4 viewports, Benchmark **9,3/10**, merge `ae3e254bcec3bb4e98b814b0f057141e84956d10` ;
-- prochaine étape : **attribution déterministe à formaliser**, sans identifiant de LOT inventé.
+- DETERMINISTIC-ATTRIBUTION-1 ✅ #416 — 26/26 workflows, Chromium 5 viewports, Benchmark **9,4/10** ;
+- SEARCH-ACTION-HIERARCHY-1 ✅ #418 — 24/24 workflows, Chromium 5 viewports, Benchmark **9,5/10** ;
+- SEARCH-DESKTOP-SPLIT-1 ✅ #423 — 26/26 workflows, Chromium 5 viewports, Benchmark **9,5/10** ;
+- CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ #437 — head `36620ca20e826be46464ab177e9611fb01f94a16`, **27/27 workflows exact-head verts**, Chromium 5 viewports, audit visuel **9,6/10**, merge `66ee5a9263fbdef673c4f16f6066aa10c7cf0417` ;
+- prochaine étape : **CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1** — petit pool multi-assets Agadir déterministe, sans district non certifié ni changement ranking/commercial/eligibility/dedupe/DATA/Map.
 
 # UX / Carte — état certifié
 
