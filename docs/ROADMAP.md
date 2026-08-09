@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-09**  
-**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -226,7 +226,29 @@ Résultat certifié :
 - Benchmark UX/Search Reviewer **PASS 9,5/10** ; Reviewer technique PASS ; Release Certifier GO ;
 - merge `6bcf402158539c547061a6a92d1b408df1da8d22`, artefact `sha256:9811f9b4a62b8b571ff977953f240e3be5ac17fad41cf3ef87d8d8b30feedf8c`.
 
-**BENCHMARK-SERP-1 convergence = COMPLETE ✅.** Aucun nouveau lot UX/Search n’est pré-engagé dans cette roadmap ; le prochain chantier devra être formalisé séparément.
+**BENCHMARK-SERP-1 convergence = COMPLETE ✅.**
+
+## CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ CLOSED — PR #437
+
+Responsabilité unique : **poser une fondation déterministe et truth-safe pour faire varier les illustrations contextuelles sans remapper massivement les résultats ni utiliser de signaux non certifiés**.
+
+Résultat certifié :
+
+- catalogue local explicite, sans nouvel asset dans le lot P0 ;
+- hiérarchie conservée : thumbnail autorisée → contextual illustration → artwork type reconnu → neutre ;
+- resolver pur, fail-closed et sans `Math.random()` ;
+- sélection Rendezvous/HRW, indépendante de l’ordre des candidats et à churn minimal lors de l’ajout futur d’assets ;
+- identité stable dérivée de `original_url` avec normalisation conservative : tracking/fragment/trailing slash/ordre de query ne remappent pas, paramètres significatifs restent distincts, URL invalide → null ;
+- seuls les signaux du tier réellement choisi entrent dans le seed ;
+- district non consommé tant que Search n’expose pas un champ structuré certifié ;
+- disclosure uniforme `Illustration` ;
+- Chromium exact-head **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : reload stable, 0 label tronqué, 0 prix tronqué, 0 overflow ;
+- **27/27 workflows exact-head verts** sur `36620ca20e826be46464ab177e9611fb01f94a16` ;
+- audit visuel P0 **9,6/10**, Reviewer PASS, Release Certifier GO ;
+- artefact `sha256:3b71f26ffccf0614098b3dbd7c893560345d332f2a69e6115a7e7bb3dc828944` ;
+- merge `66ee5a9263fbdef673c4f16f6066aa10c7cf0417` ; aucun workflow `push` n’est configuré pour ce merge commit, `main` + tree certifié vérifiés directement.
+
+**Prochain lot UX/Search : CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1.** Scope : petit pool multi-assets Agadir, variation déterministe sur les résultats sans photo autorisée, sans district non certifié, sans ranking/commercial priority/eligibility/dedupe/DATA/Map change. Le but principal est de réduire la répétition visuelle observée en P0 tout en conservant le contrat de vérité.
 
 # 4. Lane UX / Carte
 
@@ -417,7 +439,7 @@ Scope respecté, Benchmark Reviewer si UX majeur, Reviewer indépendant PASS, te
 
 ## UX / Search
 
-Exécuter **PRICE-COVERAGE-RECOVERY-1** uniquement : auditer les résultats sans prix et récupérer uniquement les prix explicitement disponibles via des canaux policy-compliant, sans estimation, sans scraping direct non autorisé et sans mélanger ranking ou card redesign.
+Exécuter **CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1** uniquement : ajouter un petit pool d’illustrations locales Agadir certifiées et déterministes, branché sur la fondation #437, sans utiliser de district non certifié et sans modifier ranking, priorité commerciale, éligibilité, dedupe, DATA, Source Registry ou Map. Rejouer le Benchmark UX/Search Reviewer et le protocole Chromium multi-viewport ; score UX cible ≥ **9/10**.
 
 ## UX / Carte
 
