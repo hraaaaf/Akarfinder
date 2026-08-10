@@ -18,6 +18,7 @@ describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
   it("ships exactly 8 real-photo entries for each of 5 Rabat districts", () => {
     assert.equal(RABAT_REAL_PHOTO_ASSETS.length, 40);
     assert.equal(new Set(RABAT_REAL_PHOTO_ASSETS.map((asset) => asset.id)).size, 40);
+    assert.equal(new Set(RABAT_REAL_PHOTO_ASSETS.map((asset) => asset.fileName)).size, 40);
     assert.equal(new Set(RABAT_REAL_PHOTO_ASSETS.map((asset) => asset.sourcePage)).size, 40);
 
     for (const district of DISTRICTS) {
@@ -31,9 +32,10 @@ describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
     for (const asset of RABAT_REAL_PHOTO_ASSETS) {
       assert.match(asset.asset, /^https:\/\/commons\.wikimedia\.org\/wiki\/Special:Redirect\/file\//);
       assert.match(asset.asset, /\?width=960$/);
-      assert.match(asset.sourcePage, /^https:\/\/commons\.wikimedia\.org\/wiki\/File:/);
+      assert.match(asset.sourcePage, /^https:\/\/commons\.wikimedia\.org\/wiki\/File%3A/i);
       assert.equal(asset.sourceName, "Wikimedia Commons");
-      assert.doesNotMatch(`${asset.asset}\n${asset.sourcePage}`, /openai|dall-?e|firefly|midjourney|generated/i);
+      assert.ok(asset.fileName.length > 4);
+      assert.doesNotMatch(`${asset.fileName}\n${asset.asset}\n${asset.sourcePage}`, /openai|dall-?e|firefly|midjourney|generated/i);
     }
   });
 
