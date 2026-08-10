@@ -22,68 +22,134 @@ La couche publique **Offre quartier reste OFF**. Le Registry peut contenir une e
 
 ---
 
-# Lot actuel
+# P1C — Intelligence Offre quartier
 
-## P1C.1 — Offre quartier Shadow 🟠 CURRENT
+## P1C.1 — Offre quartier Shadow ✅
 
-Construire une première couche de métriques **strictement interne / service-role only** à partir de :
+PR #463 mergée sur `9c53a99924d6ae577ce099ae5ef58f7f35834a0c`, exact-head CI **22/22 PASS**, puis 4/4 push gates exact-merge verts. Migration production appliquée en **views/functions uniquement**, sans écriture de listing ni mutation Geo.
 
-`P1B.3 latest resolved Geo → thin_index normalized offer fields → Shadow metrics`
+Contrat :
 
-Le contrat P1C.1 sépare explicitement :
-
-- **summary quartier** : volume, vente/location, typologies, fraîcheur, couverture des champs et taille d’échantillon ;
+- **listing Shadow** : provenance de chaque observation, transaction/type, fraîcheur, qualité et source du prix/m² ;
+- **summary quartier** : volume observé, vente/location, typologies, fraîcheur, complétude et taille d’échantillon ;
 - **segment quartier × transaction** : prix médian, surface médiane et prix/m² ;
-- **listing Shadow** : provenance de chaque observation et source du prix/m².
+- vente et location ne sont jamais mélangées dans les médianes de prix ;
+- `normalized_price_m2` est préféré ; sinon dérivation uniquement avec `normalized_price_mad / normalized_surface_m2` lorsque les deux valeurs exactes positives existent ;
+- absence de prix = `NULL`, jamais imputée ;
+- `metric_state=shadow`, `reliability_certified=false`, `public_activation=false`, `metric_layers_activated=false` ;
+- ACL : `anon` et `authenticated` sans SELECT/EXECUTE ; `service_role` uniquement pour la consommation interne.
 
-Règles :
+### Rapport production P1C.1
 
-- vente et location ne sont **jamais mélangées** dans une médiane de prix ;
-- `normalized_price_m2` est utilisé lorsqu’il existe ; sinon un prix/m² peut être dérivé uniquement de `normalized_price_mad / normalized_surface_m2` lorsque les deux valeurs exactes positives existent ;
-- une absence de prix reste `NULL`, jamais imputée ;
-- chaque métrique expose son nombre d’observations et sa couverture ;
-- `metric_state=shadow` ;
-- `reliability_certified=false` ;
-- `public_activation=false` ;
-- `metric_layers_activated=false` ;
-- aucune consommation par l’UI/API publique.
+- **102 / 102** listings Geo résolus dans Shadow ;
+- **18 quartiers** ;
+- **32 segments quartier × transaction** ;
+- prix disponibles : **9 / 102 = 8,82 %** ;
+- surface disponible : **84 / 102 = 82,35 %** ;
+- prix/m² disponible : **6 / 102 = 5,88 %** ;
+- **71** `fresh_confirmed`, **31** `seed_only` ;
+- 0 collision Geo latest ;
+- 0 conflit historique ;
+- 0 canonical geo manquant ;
+- public/reliability/metric layers toujours OFF.
 
-### Preflight production avant déploiement
-
-Le snapshot initial P1C.1 montre déjà pourquoi P1C.2 est indispensable : les dimensions intention/type sont bien plus complètes que les prix. Par exemple, Oasis et Maârif ont des listings Geo résolus mais **aucun prix disponible** dans le snapshot examiné. P1C.1 doit mesurer ce manque au lieu de le masquer.
-
-### Gate de sortie P1C.1
-
-- vues Shadow déployées en `service_role` uniquement ;
-- le nombre de lignes Shadow reste identique au dénominateur Geo résolu P1B.3 ;
-- 0 collision Geo, 0 conflit historique, 0 canonical geo manquant ;
-- séparation sale/rent certifiée ;
-- sample sizes et complétude visibles ;
-- aucune route/composant public ne consomme les vues ;
-- rapport post-déploiement certifié ;
-- **P1C.2 Reliability Engine** devient le lot suivant.
+Le résultat P1C.1 démontre que la couche Shadow fonctionne, mais aussi que la couverture prix est trop faible pour publier des médianes sans moteur de fiabilité.
 
 ---
 
-# P1C — Intelligence Offre quartier
+# Lot actuel
 
-## P1C.1 — Offre quartier Shadow 🟠 CURRENT
+## P1C.2 — Reliability Engine 🟠 CURRENT
 
-Calculer **sans exposition publique** : volume d’annonces, prix médian, prix/m², vente/location, typologies, fraîcheur, couverture et taille d’échantillon.
+P1C.2 évalue la **fiabilité de chaque métrique**, sans la publier.
 
-Aucune métrique Shadow ne devient automatiquement publique.
+### Métriques évaluées séparément
 
-## P1C.2 — Reliability Engine ⏭️ NEXT
+Pour chaque **quartier × transaction**, le moteur conserve trois lignes distinctes :
 
-Définir et certifier la fiabilité de chaque métrique : taille minimale d’échantillon, fraîcheur, dispersion, outliers, provenance et niveau de confiance.
+1. `price_mad` ;
+2. `surface_m2` ;
+3. `price_per_m2_mad`.
 
-Principe : **données insuffisantes > fausse précision**.
+Même une métrique sans aucune donnée reste visible comme ligne `sample_count=0 / insufficient` : l’absence d’information ne doit jamais disparaître des audits.
 
-## P1C.3 — Activation Offre quartier
+### Niveaux
+
+`insufficient → limited → moderate → strong`
+
+Les seuils sont une **politique interne AkarFinder versionnée**, pas un standard statistique externe.
+
+#### Metric reliability
+
+**Limited** :
+- échantillon ≥ 5 ;
+- couverture du champ ≥ 50 % ;
+- fraîcheur du sous-échantillon ≥ 50 % ;
+- ≥ 2 sources ;
+- outliers ≤ 30 % ;
+- IQR / médiane ≤ 1,50.
+
+**Moderate** :
+- échantillon ≥ 10 ;
+- couverture ≥ 60 % ;
+- fraîcheur ≥ 60 % ;
+- ≥ 2 sources ;
+- outliers ≤ 20 % ;
+- IQR / médiane ≤ 1,00.
+
+**Strong** :
+- échantillon ≥ 20 ;
+- couverture ≥ 75 % ;
+- fraîcheur ≥ 70 % ;
+- ≥ 3 sources ;
+- outliers ≤ 15 % ;
+- IQR / médiane ≤ 0,75.
+
+Tout le reste = **insufficient**. En particulier, **moins de 5 observations = toujours insufficient**, quelle que soit la couverture apparente.
+
+Outliers : fences de Tukey `1,5 × IQR`.  
+Dispersion : `IQR / médiane` sur les métriques positives.
+
+### Sample health séparé
+
+Le nombre d’annonces, la fraîcheur et la diversité des sources produisent également un niveau de **sample health** du segment. Ce signal mesure uniquement la qualité de l’échantillon observé.
+
+Il ne signifie jamais : « ce volume représente tout le marché ».
+
+`market_representativeness_certified=false` reste obligatoire tant qu’une certification séparée de couverture/acquisition n’existe pas.
+
+### Snapshot actuel avant P1C.2
+
+Les **32 segments** P1C.1 montrent une forte asymétrie :
+
+- aucun segment prix n’a actuellement ≥ 5 observations ;
+- aucun segment prix/m² n’a actuellement ≥ 5 observations ;
+- certains segments ont de bons échantillons de surface/fraîcheur ;
+- plusieurs valeurs isolées sont potentiellement aberrantes, ce qui justifie IQR/outliers plutôt qu’une confiance naïve.
+
+Conséquence attendue et correcte : les médianes prix/prix-m² actuelles doivent rester **`insufficient`** jusqu’à enrichissement réel des données.
+
+### Gate de sortie P1C.2
+
+- politique 5/10/20 et seuils versionnés certifiés ;
+- tests PostgreSQL des frontières exactes ;
+- zero-sample rows conservées ;
+- IQR/outliers capables de dégrader un segment ;
+- `sample_health` séparé de la représentativité marché ;
+- `public_activation=false` ;
+- `metric_layers_activated=false` ;
+- `market_representativeness_certified=false` ;
+- aucune consommation publique runtime ;
+- rapport production post-déploiement ;
+- P1C.3 reçoit uniquement des **review candidates** `moderate/strong`, jamais une auto-activation.
+
+## P1C.3 — Activation Offre quartier ⏭️ NEXT AFTER P1C.2
 
 Promotion contrôlée :
 
 `OFF → SHADOW → CANARY → ON`
+
+P1C.3 ne peut examiner que des métriques `moderate/strong` et doit conserver une revue explicite avant canary. **Aucune métrique n’est auto-publiée par P1C.2.**
 
 Aucune activation nationale en bloc. Activation uniquement par périmètre réellement certifié et métrique suffisamment fiable.
 
@@ -167,11 +233,11 @@ P1B.14  Typed Geometry Coverage                   ✅
    ↓
 P1B.15  Geo Certification Gate                    ✅
    ↓
-P1C.1   Offre quartier Shadow                     🟠 CURRENT
+P1C.1   Offre quartier Shadow                     ✅
    ↓
-P1C.2   Reliability Engine                        ⏭️ NEXT
+P1C.2   Reliability Engine                        🟠 CURRENT
    ↓
-P1C.3   Activation Offre : OFF→SHADOW→CANARY→ON
+P1C.3   Activation Offre : OFF→SHADOW→CANARY→ON   ⏭️ NEXT
    ↓
 P2      Carte immobilière interactive
    ↓
@@ -186,6 +252,6 @@ CARTE AKARFINDER CERTIFIÉE
 
 ## Règle de passage à « la suite »
 
-Nous ne devons **pas attendre une couverture nationale parfaite** pour commencer P1C. Le passage se fait dès qu’un périmètre possède une chaîne Geo certifiée et, pour une future exposition publique, un échantillon suffisamment fiable pour la métrique concernée.
+Nous ne devons **pas attendre une couverture nationale parfaite** pour progresser. En revanche, chaque métrique publique future doit passer ses propres gates de fiabilité et d’activation.
 
-P1C Shadow peut donc progresser pendant que la couverture Geo continue de s’étendre. En revanche, aucune zone non certifiée ne doit être colorée ou enrichie comme si elle disposait de données fiables, et aucun arrondissement administratif ne doit être présenté comme polygon de quartier immobilier sans preuve territoriale explicite.
+P1C.2 peut donc conclure honnêtement qu’une métrique est `insufficient`; ce n’est pas un échec du moteur, c’est une protection contre la fausse précision. Aucun segment non certifié ne doit être présenté comme une vérité de marché, et aucun arrondissement administratif ne doit être présenté comme polygon de quartier immobilier sans preuve territoriale explicite.

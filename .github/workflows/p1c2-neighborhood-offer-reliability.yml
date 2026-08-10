@@ -1,0 +1,104 @@
+name: P1C.2 Neighborhood Offer Reliability Gate
+
+on:
+  pull_request:
+    paths:
+      - 'data/market/p1c2-neighborhood-offer-reliability-policy.json'
+      - 'supabase/migrations/20260810133000_p1c2_neighborhood_offer_reliability.sql'
+      - 'scripts/audits/p1c2-neighborhood-offer-reliability-preflight.ts'
+      - 'scripts/scrapers/__tests__/p1c2-neighborhood-offer-reliability.test.ts'
+      - '.github/workflows/p1c2-neighborhood-offer-reliability.yml'
+      - 'docs/CARTE_ROADMAP.md'
+      - 'supabase/migrations/20260810130500_p1c1_neighborhood_offer_shadow.sql'
+  push:
+    branches: [main]
+    paths:
+      - 'data/market/p1c2-neighborhood-offer-reliability-policy.json'
+      - 'supabase/migrations/20260810133000_p1c2_neighborhood_offer_reliability.sql'
+      - 'scripts/audits/p1c2-neighborhood-offer-reliability-preflight.ts'
+      - 'scripts/scrapers/__tests__/p1c2-neighborhood-offer-reliability.test.ts'
+      - '.github/workflows/p1c2-neighborhood-offer-reliability.yml'
+      - 'docs/CARTE_ROADMAP.md'
+      - 'supabase/migrations/20260810130500_p1c1_neighborhood_offer_shadow.sql'
+
+permissions:
+  contents: read
+
+jobs:
+  certify-neighborhood-offer-reliability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: P1C.2 static reliability boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const policy=JSON.parse(fs.readFileSync('data/market/p1c2-neighborhood-offer-reliability-policy.json','utf8'));
+          const sql=fs.readFileSync('supabase/migrations/20260810133000_p1c2_neighborhood_offer_reliability.sql','utf8');
+          if(policy.schema_version!=='p1c2-neighborhood-offer-reliability-policy-v1') throw new Error('policy schema drift');
+          for(const level of ['limited','moderate','strong']) {
+            const p=policy.metric_thresholds[level];
+            if(!p||p.min_sample_count<=0||p.min_field_coverage_percent<=0||p.min_fresh_sample_percent<=0||p.min_source_domain_count<=0) throw new Error(`invalid threshold ${level}`);
+          }
+          if(policy.metric_thresholds.limited.min_sample_count!==5||policy.metric_thresholds.moderate.min_sample_count!==10||policy.metric_thresholds.strong.min_sample_count!==20) throw new Error('5/10/20 sample gates drift');
+          if(policy.principles.less_than_five_samples_is_always_insufficient!==true) throw new Error('fail-closed minimum missing');
+          if(policy.principles.market_representativeness_requires_separate_acquisition_certification!==true) throw new Error('representativeness boundary missing');
+          for(const marker of [
+            'odm_p1c2_metric_reliability_level_v1',
+            'odm_p1c2_segment_sample_health_level_v1',
+            'odm_neighborhood_offer_reliability_metric_v1',
+            'odm_neighborhood_offer_reliability_segment_health_v1',
+            'odm_neighborhood_offer_reliability_report_v1',
+            "values ('price_mad'::text), ('surface_m2'::text), ('price_per_m2_mad'::text)",
+            'false as market_representativeness_certified',
+            'false as public_activation',
+            'false as metric_layers_activated',
+            'false as p1c3_auto_activation',
+          ]) if(!sql.includes(marker)) throw new Error(`missing ${marker}`);
+          if(/insert\s+into\s+/i.test(sql)||/update\s+public\./i.test(sql)||/delete\s+from\s+/i.test(sql)) throw new Error('P1C.2 must not mutate business data');
+          if(/grant\s+(select|execute).*\s+to\s+(anon|authenticated|public)/i.test(sql)) throw new Error('Reliability engine exposed to public roles');
+          NODE
+
+      - name: No public runtime consumer
+        run: |
+          if grep -R -n -E 'odm_(p1c2|neighborhood_offer_reliability_)' app components lib --exclude-dir=node_modules; then
+            echo 'P1C.2 must remain internal until P1C.3 review'
+            exit 1
+          fi
+
+      - name: PostgreSQL semantic reliability rehearsal
+        run: npx tsx --test scripts/scrapers/__tests__/p1c2-neighborhood-offer-reliability.test.ts
+
+      - name: Live P1C.1 predecessor + P1C.2 distribution preflight
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1c2-neighborhood-offer-reliability-preflight.ts
+
+      - name: Enforce reliability readiness boundary
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/p1c2-neighborhood-offer-reliability-preflight.json');
+          if(r.verdict!=='P1C2_RELIABILITY_ENGINE_READY_FOR_DEPLOYMENT') throw new Error(JSON.stringify(r));
+          if(r.predecessor.listing_rows<=0||r.predecessor.neighborhoods<=0||r.predecessor.transaction_segments<=0) throw new Error('P1C.1 predecessor disappeared');
+          for(const k of ['geo_latest_resolution_collisions','geo_conflicting_resolution_history','geo_missing_canonical_geo']) if(r.predecessor[k]!==0) throw new Error(`${k}=${r.predecessor[k]}`);
+          if(r.live_distribution.segments!==r.predecessor.transaction_segments) throw new Error('segment denominator drift');
+          if(r.contract.public_activation!==false||r.contract.metric_layers_activated!==false||r.contract.market_representativeness_certified!==false) throw new Error('P1C.2 activation boundary drift');
+          if(r.observations.low_reliability_is_a_valid_engine_output!==true||r.observations.p1c3_requires_explicit_review_after_reliability!==true) throw new Error('fail-closed handoff missing');
+          NODE
+
+      - name: Roadmap handoff
+        run: |
+          grep -q 'P1C.1.*Offre quartier Shadow' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.2.*Reliability Engine' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.3.*Activation Offre' docs/CARTE_ROADMAP.md
+
+      - name: TypeScript
+        run: npx tsc --noEmit
