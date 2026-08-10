@@ -1,118 +1,76 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-10**
+**Mise à jour : 2026-08-10 20:25 +01:00**
 
-Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
+Ce fichier est le handover court. Lire avant toute action :
 
-<!-- DATA-CURRENT-START -->
-## DATA — vérité courante
+1. `README.md` ;
+2. `docs/ROADMAP.md` — **roadmap unique de toutes les fenêtres** ;
+3. `docs/SESSION.md` ;
+4. doc spécialisée seulement si nécessaire.
 
-- DATA-4.9A ✅ PR #444 — merge `18be46c7349e8a56b2b68b56005d79f85e125675`.
-- DATA-4.9B 🟠 PR #452 — High-Capacity Structural Detail Qualification, read-only.
-- Snapshot durci certifié : head `ae4b212e28f6ca0929548299860b04936daea218`, run `31369710665` PASS, observé `2026-08-10T08:24:02.397Z`.
-- Artefact : `sha256:dce77812b6666b09f29d7e716500cd5abed39e6902fcbcc71a515eeb4680f33d`.
-- **10 128** net-new URL identities → **2 326 structural detail candidate URL representations** + **7 802 rejects**, 0 collision.
-- Par source : Val Foncier **709**, Christie's **602**, Immo Maroc **276**, AgadirImmobilier.ma **37**, ProImmobilier **99**, Capital Properties **603**.
-- **2 326 n'est pas un nombre de biens uniques** ; le proof machine l'interdit explicitement.
-- 0 detail-page fetch ; 0 DB/Registry/policy mutation ; 0 ingestion/display activation.
-- Les six sources restent live Registry `unverified + hidden + internal_signal_only`, `current_representation_count=0`.
+## Règle de travail désormais globale
 
-**Prochain LOT : DATA-4.9C — Source Policy Decision & Registry Assignment.** Revue de preuves officielles actuelles et décision par source ; mutation du Registry uniquement si démontrée, jamais d'ingestion dans ce lot.
+Chaque étape significative doit avoir un **double check indépendant + note /10**. Aucun lot n’est fermé sous **9,0/10**. Si la note est <9, les findings sont ajoutés à la roadmap et corrigés avant certification. Cette règle vaut pour UX/UI, DATA, Search, Backend, Carte/Geo et sécurité.
 
-Ensuite **DATA-4.9D** pourra concevoir un canary d'ingestion borné uniquement pour les sources effectivement autorisées.
-<!-- DATA-CURRENT-END -->
+## Main canonique de départ
 
-## Vérité canonique après merges parallèles
+`main@f4563602119c8c01298bf694285e35856097bbd6` — merge P1C.4A #472 au démarrage du chantier MASS-FIRST.
 
-- Base documentaire utilisée pour ce closeout UX/Search : `07d9fc07fe24a9a176ad8830bd0e6852631ed1a4` — `main` après DATA-4.9B et merge `CONTEXTUAL-ILLUSTRATIONS-SCALE-2` PR #453. Les blocs DATA/Carte de cette base sont conservés ; le closeout UX/Search n'en change aucune décision.
-- `CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1` ✅ : PR #437, exact-head `36620ca20e826be46464ab177e9611fb01f94a16`, **27/27 workflows exact-head verts**, specialized gate PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, audit visuel **9,6/10**, Reviewer PASS, Release Certifier GO, merge `66ee5a9263fbdef673c4f16f6066aa10c7cf0417`.
-- `CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1` ✅ : PR #445, exact-head `f6b1d15e92636439dfca8128e54892fbf32b95a6`, **20/20 workflows exact-head verts**, specialized P1 + predecessor P0 PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, **12/12 variantes Agadir uniques**, reload stable, 0 label/prix tronqué, 0 overflow, audit visuel **9,4/10**, Reviewer PASS, Release Certifier GO, merge `a2e92ac6c4385792744ab7bf3e105663d040bc9d`.
-- `CONTEXTUAL-ILLUSTRATIONS-SCALE-1` ✅ : PR #448, exact-head final `3a4df096c16cf1fe1f9c051dfd24f59bd750b5a4`, **21/21 workflows exact-head verts**, specialized SCALE + Agadir P1 + P0 PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, **24/24 variantes Marrakech + Casablanca uniques**, lazy images explicitement hydratées avant capture, reload stable, 0 label/prix tronqué, 0 overflow, audit visuel **9,3/10**, Reviewer PASS, Release Certifier GO, merge `081d51ebd38ff728366694aca9ae6c1923a54fe5`.
-- Artefact SCALE-1 #448 : `sha256:b80d2539afea1fda4bfc8e515fe94ffe7821aee0d2f71c45e29c844f586ca8f5`.
-- `CONTEXTUAL-ILLUSTRATIONS-SCALE-2` ✅ : PR #453, exact-head `e242960788f57975ae9d107ab04766f14fa29d87`, **22/22 workflows exact-head SUCCESS**, specialized SCALE-2 + SCALE-1 + Agadir P1 + P0 PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, **36/36 variantes Rabat + Tanger + Fès uniques**, Fes/Fès alias-safe, lazy-load hydraté, reload stable, 0 clipping/overflow, audit visuel **9,3/10**, Reviewer PASS, Release Certifier GO, merge `07d9fc07fe24a9a176ad8830bd0e6852631ed1a4`.
-- Artefact SCALE-2 #453 : `sha256:85659a415e52e28d4258b152fc26ea43dd726d16203e23b3941efb3a6d4ad564`.
-- `RABAT-REAL-PHOTO-LIBRARY-1` ✅ : PR #468, exact-head `3de085a2058862edc52bab4fe0dcd3aca04a4f4c`, **29/29 workflows exact-head SUCCESS**, **40/40 sources + licences Commons** vérifiées, TypeScript + build PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, 10/10 photos chargées, reload stable, 0 clipping/overflow, mobile **2 colonnes**, audit visuel **9,2/10**, Reviewer PASS, Release Certifier GO, merge `2585017ea377d72b3a54ca1083dbf1b609899ad9`.
-- Rabat real-photo : **40 vraies photos = 8 × Agdal/Hay Riad/Souissi/Océan/Hassan** ; bibliothèque séparée, activation uniquement sur signal `listing.neighborhood` structuré + `fallback_visual`, sans inférence texte.
-- Les 6 villes contextualisées disposent désormais de **12 variantes chacune = 72 IDs contextuels uniques**.
-- Prochain LOT UX/Search : **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1**, read-only ; mesurer couverture/répétition réelle **après #468**, y compris le tier Rabat real-photo et son taux d'échec distant, avant tout nouvel asset. Le district du catalogue d'illustrations historique reste OFF.
-- Ce closeout UX/Search ne modifie aucune décision DATA/Carte ; les sections DATA/Carte ci-dessous restent la propriété de leur lane.
+Toujours re-vérifier le vrai `main` avant tout nouveau lot.
 
-## Main / LOT actif
+## LOT actif P0 — MASS-FIRST Search / Quality Policy
 
-- Main de départ du LOT : `0019f33e6a10a58d76a6db4521c681861067c651` — merge DATA-4.7A PR #433.
-- LOT actif : **DATA-4.7B — LSF Controlled Expansion Write**.
-- PR : **#435**.
-- Exact write head certifié avant mutation : `f3f72f6b4e7e7f877df4eb67fa6c31f0140e81b3`.
-- Specialized CI : run `31330561506` PASS — contract + TypeScript + static safety + live dry-run.
-- Rollback artifact : `sha256:d791172e8036d0b475cbf2119dca0c497938940f87563923dbcbf68370398672`, **250 apply rows / 250 rollback rows**, 0 write pendant CI.
+- Branche : `feat/mass-first-search-quality-policy`.
+- PR : **#474**.
+- 5 lots codés : Source Policy gate ; Quality ≠ Eligibility ; Listing Power 0–100 ; Search ranking ; reclassification/certification.
+- Auto-review a trouvé puis corrigé la fuite conceptuelle `AMBIGUOUS → eligible_secondary` ; seuls `LISTING + real_estate_likely` peuvent être publics.
+- Head après ce correctif fonctionnel : `b6a911ecebc38b736e902e7fb6d9d51d0c7cad52`; les commits docs suivants ne changent pas la logique métier.
+- Score double check provisoire : **8,8/10 — NON CERTIFIÉ**.
+- Merge interdit tant que score final <9/10 ou qu’un gate CI/PostgreSQL/sécurité reste non prouvé.
 
-## DATA-4.7A ✅
+### À terminer avant merge #474
 
-LSF qualification live :
+1. CI exact-head complète ;
+2. Canonical Compile + Baseline + Search Truth verts ;
+3. migrations PostgreSQL/Supabase réellement testées ;
+4. reports MASS-FIRST exécutés et compteurs contrôlés ;
+5. audit ACL / `SECURITY DEFINER` / rôle consommateur Search ;
+6. plan/performance Search ;
+7. diff avant/après volume + sources + villes + qualité + fraîcheur + Power Score ;
+8. tests Q0/Q1 valides toujours trouvables ;
+9. tests prohibited/unverified/CATEGORY/AMBIGUOUS = zéro fuite ;
+10. Reviewer technique ;
+11. Release Certifier ;
+12. re-note ≥9/10 ; sinon correction + nouvelle boucle ;
+13. merge ;
+14. vérification post-merge sur `main` ;
+15. closeout README/ROADMAP/SESSION.
 
-- 1 414 seeds ; 99 fresh-confirmed ; 1 315 seed-only au départ ;
-- sitemap courant : 1 423 URLs ;
-- 1 064 identités URL sûres ; 174 groupes collision DB exclus fail-closed ;
-- 983 seed-only encore présentes dans le sitemap ;
-- **353** candidates `seed_only + normalized + display eligible + Public Search` ;
-- tier C long-tail accepté comme `eligible_secondary`, sans exiger prix/surface ni fabriquer de donnée ;
-- 0 mutation.
+## DATA parallèle
 
-PR #433 mergée : `0019f33e6a10a58d76a6db4521c681861067c651`.
+- DATA-4.9A ✅.
+- DATA-4.9B : **10 128 URL identities net-new → 2 326 candidate URL representations + 7 802 rejets** ; ce n’est pas un nombre de biens uniques.
+- Prochain lot : **DATA-4.9C — Source Policy Decision & Registry Assignment**.
+- Ensuite seulement : DATA-4.9D canary borné pour sources réellement autorisées.
+- P1C.4A Carte attend également un lot DATA séparé de preuve exact-scope Registry + depth/freshness.
 
-## DATA-4.7B — write production certifié ✅ (merge PR encore à faire)
+## UX/Search parallèle
 
-Preflight exact avant write :
+- Mobile 2 colonnes : conserver.
+- Prochain chantier densité après stabilisation #474 : **UX-SEARCH-DENSITY-2**.
+- Cible : desktop large 4 cartes/ligne ; desktop intermédiaire 3 ; tablette 2 ; mobile 2.
+- Double check visuel réel et scores mobile + desktop ≥9/10 obligatoires.
+- `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` reste read-only avant ajout de nouveaux assets.
 
-- 250/250 URLs exactes présentes ;
-- 250/250 encore `seed_only` ;
-- 250/250 sans `public_sitemap_presence` précédent ;
-- 250/250 sans ancien `freshness_evidence` ;
-- digest exact URL set : `79e3982f128c4e639197a64a29766e9c`.
+## Carte / Geo
 
-Résultat production :
-
-- write atomique : **250/250** ;
-- fresh-confirmed : **250/250** ;
-- `public_sitemap_presence` : **250/250** ;
-- normalized : **250/250** ;
-- technical display : **250/250** ;
-- Public Search : **250/250** ;
-- Thin Index freshness projection : **250/250** ;
-- rollback : disponible, **non requis** ;
-- Registry/policy : inchangés.
-
-LSF après write : **1 414 total / 349 fresh-confirmed / 1 065 seed-only / 250 public_sitemap_presence**.
-
-## Sources en attente
-
-- Promo Immo : `BLOCKED_EXTERNAL_SOURCE` — DNS/source directe ; ne pas contourner.
-- Dar Agadir : `BLOCKED_SOURCE_DRIFT` — robots ne déclare plus le sitemap historique ; ne pas réutiliser une preuve ancienne comme preuve live.
-
-## Prochain DATA
-
-Après merge/closeout de #435 : **DATA-4.7C — Residual Reservoir Requalification**, read-only. Revalider le résiduel LSF (103 candidates seulement dans la preuve pré-write, donc chiffre à recalculer) et le comparer au prochain réservoir admissible, Aykana en premier candidat. Aucun second write automatique.
-
-## UX/Search — illustrations contextuelles + Rabat real-photo certifiées ✅
-
-- P0 #437 pose le resolver déterministe ; P1 #445 apporte Agadir ; SCALE-1 #448 Marrakech/Casablanca ; SCALE-2 #453 Rabat/Tanger/Fès.
-- Pool certifié total : **6 villes × 12 variantes = 72 IDs contextuels uniques**.
-- Par ville : **4 variantes ville + 4 Appartement + 4 Villa** ; `Appartement` / `Villa` utilisent `city_type`, les autres types reconnus retombent sur `city`.
-- `Fes` / `Fès` partagent exactement le même pool `fes-*` ; aucun doublon sémantique ajouté.
-- Priorité inchangée : thumbnail autorisée → illustration contextuelle → artwork type reconnu → fallback neutre.
-- Sélection multi-assets : Rendezvous/HRW, déterministe, indépendante de l'ordre des candidats et stable au reload.
-- Identité stable : `original_url` normalisée conservativement ; tracking/fragment/trailing slash/ordre de query ne remappent pas.
-- Le tier `district` du catalogue d'illustrations historique reste inactif. **Exception bornée et séparée** : Rabat real-photo consomme uniquement `listing.neighborhood` structuré pour Agdal, Hay Riad, Souissi, Océan et Hassan.
-- Disclosure illustrations historiques : `Illustration`. Pour Rabat real-photo : `Photo d’ambiance` + `Rabat • Quartier` + crédit/licence Commons ; aucune photo d'ambiance n'est présentée comme une photo réelle de l'annonce.
-- Certification SCALE-2 : **36/36 IDs Rabat/Tanger/Fès**, **22/22 workflows**, 5 viewports Chromium, lazy-load hydraté, 0 clipping/overflow, UX **9,3/10**.
-- Certification Rabat real-photo #468 : **40/40 Commons**, **29/29 workflows**, 5 viewports Chromium, 10/10 photos chargées, reload stable, 0 clipping/overflow, mobile 2 colonnes, UX **9,2/10**.
-- Prochaine décision : **coverage audit read-only** incluant le tier Rabat real-photo ; pas de nouveau pack d'assets par intuition.
-
-## Autres lanes
-
-- UX/Search : `CONTEXTUAL-ILLUSTRATIONS-SCALE-2` ✅ #453 + `RABAT-REAL-PHOTO-LIBRARY-1` ✅ #468 ; prochain LOT = **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1** read-only ; Search reste canonique.
-- UX/Carte : P1B.12 est présent sur `main`; les prochaines décisions Carte restent dans sa lane ; Offre quartier reste gouvernée par ses gates propres.
+- P1C.4 : `NOT_CERTIFIABLE`.
+- P1C.4A : `DESIGNED_NOT_PROVEN`.
+- Offre quartier publique : **OFF**.
+- P1C.5 : **LOCKED** jusqu’à preuve DATA exact-scope puis replay P1C.4A/P1C.4 et certification de représentativité.
+- `docs/CARTE_ROADMAP.md` conserve le détail chronologique, mais `docs/ROADMAP.md` reste l’autorité globale.
 
 ## Invariants
 
-No-bypass ; Source Registry autoritaire ; provenance réelle ; Search canonique ; aucune donnée/géométrie inventée ; une responsabilité/branche/PR/merge par LOT ; rollback avant mutation ; exact-head CI verte avant write ; mise à jour README/ROADMAP/SESSION au closeout.
+No-bypass ; Source Registry autoritaire ; provenance réelle ; aucune donnée/géométrie inventée ; Search canonique ; une responsabilité/branche/PR/certification ; rollback avant mutation sensible ; exact-head CI ; double check ; **score final ≥9/10** ; mise à jour des 3 docs canoniques après merge.
