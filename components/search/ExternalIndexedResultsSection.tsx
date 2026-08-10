@@ -38,9 +38,7 @@ export function ExternalIndexedResultsSection({
     <div className="space-y-4 sm:space-y-5">
       {showHeader ? (
         <div className="border-t border-border/15 pt-6 dark:border-white/10 sm:pt-8">
-          <h2 className="mb-1 text-[16px] font-bold text-foreground dark:text-white/90 sm:text-[18px]">
-            Autres annonces
-          </h2>
+          <h2 className="mb-1 text-[16px] font-bold text-foreground dark:text-white/90 sm:text-[18px]">Autres annonces</h2>
           <p className="text-[12px] text-muted-foreground dark:text-white/50 sm:text-[13px]">
             {results.length > 0 ? `${results.length} résultat${results.length > 1 ? "s" : ""} · ` : ""}
             Vérifiez le prix, la disponibilité et les détails sur le site d’origine.
@@ -49,22 +47,18 @@ export function ExternalIndexedResultsSection({
       ) : null}
 
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-          {[...Array(3)].map((_, i) => (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className="h-64 animate-pulse overflow-hidden rounded-[20px] border border-border/10 bg-card dark:border-white/10 dark:bg-white/[0.04] sm:h-40 sm:rounded-2xl"
+              className="aspect-[4/5] animate-pulse overflow-hidden rounded-[16px] border border-border/10 bg-card dark:border-white/10 dark:bg-white/[0.04]"
             />
           ))}
         </div>
       ) : results.length > 0 ? (
-        <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3" data-search-external-mobile-grid>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4" data-search-external-mobile-grid>
           {results.map((result) => (
-            <ExternalIndexedResultCard
-              key={result.id}
-              result={result}
-              similarResults={similaritySummaries[result.id]}
-            />
+            <ExternalIndexedResultCard key={result.id} result={result} similarResults={similaritySummaries[result.id]} />
           ))}
         </div>
       ) : null}
