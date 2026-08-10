@@ -25,7 +25,7 @@ La lane DATA distingue strictement **raw sitemap capacity**, **pages détail str
 - Public Search avant 4.9A : **22 068 canonical URL representations / 16 domaines** — pas un compteur de biens uniques dédupliqués.
 - Réservoir avant 4.9A : **56 810 seeds / 4 108 fresh_confirmed / 52 702 seed_only**.
 - **DATA-4.8A ✅ PR #442** — merge `b9d38932bb3af0acfd08a681cc79abb5254b81e3`. Preuve finale : Dar Agadir + Aykana + LSF = **506 identités sitemap seed-absent → 0 page détail structurellement qualifiée** ; Promo Immo reste bloqué DNS. 0 write / 0 detail fetch.
-- **DATA-4.9A 🟠 PR #444** — exact-head `52a62b94985570c257e19d48c265bd3789c191ad`, specialized run `31365691647` PASS, artefact `sha256:8ef6a5f728c323906bf7f4a471a964613a5d19657c42f76fabfea047a12b2d47`.
+- **DATA-4.9A 🟠 PR #444** — certified audit head `52a62b94985570c257e19d48c265bd3789c191ad`, specialized run `31365691647` PASS, artefact `sha256:8ef6a5f728c323906bf7f4a471a964613a5d19657c42f76fabfea047a12b2d47`.
 - 11 sources zéro-stock auditées ; **10 qualifiées**, 1 bloquée (`immobest.ma` sitemap payload non reconnu).
 - Capacité sitemap net-new brute qualifiée : **11 480 identités**. Ce chiffre **n'est pas un nombre d'annonces**.
 - Top capacité brute : `valfoncier.ma` **6 195** (dont **5 798** sous `/bien-immobilier/`), `christiesrealestatemorocco.com` **1 252**, `immo-maroc.com` **1 204**, `capital-properties.ma` **844**, `agadirimmobilier.org` **519**, `nouraimmobilier.ma` **516**.

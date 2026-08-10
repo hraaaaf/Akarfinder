@@ -1,6 +1,6 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-09**
+**Mise à jour : 2026-08-10**
 
 Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
 
@@ -9,7 +9,7 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 
 - DATA-4.8A ✅ PR #442 — merge `b9d38932bb3af0acfd08a681cc79abb5254b81e3` ; preuve finale **506 → 0 detail candidate** sur Dar/Aykana/LSF ; Promo DNS bloqué ; zéro write.
 - DATA-4.9A 🟠 PR #444 — Mass Source Onboarding Qualification, read-only raw sitemap capacity.
-- Exact head : `52a62b94985570c257e19d48c265bd3789c191ad`.
+- Certified audit head : `52a62b94985570c257e19d48c265bd3789c191ad`.
 - Specialized run `31365691647` : contract v2 + 11-source tests + static boundary + TypeScript + live qualification **PASS**.
 - Artefact : `sha256:8ef6a5f728c323906bf7f4a471a964613a5d19657c42f76fabfea047a12b2d47`.
 - 11 sources zéro-stock auditées ; 10 live qualifiées ; `immobest.ma` bloquée sur payload `sitemap.rss` non reconnu.

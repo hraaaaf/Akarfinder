@@ -1,6 +1,6 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
-**Version : 2026-08-09**  
+**Version : 2026-08-10**  
 **Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
@@ -15,7 +15,7 @@
 - Public Search avant 4.9A : **22 068 canonical URL representations / 16 domaines**.
 - Réservoir avant 4.9A : **56 810 seeds / 4 108 fresh_confirmed / 52 702 seed_only**.
 - **DATA-4.8A ✅ #442** — merge `b9d38932bb3af0acfd08a681cc79abb5254b81e3` ; **506** identités sitemap seed-absent live sur Dar/Aykana/LSF → **0** detail candidate ; zéro write.
-- **DATA-4.9A 🟠 #444** — exact-head `52a62b94985570c257e19d48c265bd3789c191ad`, specialized run `31365691647` PASS ; 11 sources auditées, 10 qualifiées, **11 480 identités sitemap net-new brutes**, 0 mutation.
+- **DATA-4.9A 🟠 #444** — certified audit head `52a62b94985570c257e19d48c265bd3789c191ad`, specialized run `31365691647` PASS ; 11 sources auditées, 10 qualifiées, **11 480 identités sitemap net-new brutes**, 0 mutation.
 
 ## Résultat DATA-4.9A — raw capacity, pas inventaire
 
