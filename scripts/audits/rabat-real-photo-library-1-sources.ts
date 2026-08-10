@@ -51,38 +51,45 @@ async function verifyAsset(asset: (typeof RABAT_REAL_PHOTO_ASSETS)[number]) {
   };
 }
 
-await mkdir(OUTPUT_DIR, { recursive: true });
-const results: Awaited<ReturnType<typeof verifyAsset>>[] = [];
-const failures: string[] = [];
-const queue = [...RABAT_REAL_PHOTO_ASSETS];
+async function main() {
+  await mkdir(OUTPUT_DIR, { recursive: true });
+  const results: Awaited<ReturnType<typeof verifyAsset>>[] = [];
+  const failures: string[] = [];
+  const queue = [...RABAT_REAL_PHOTO_ASSETS];
 
-async function worker() {
-  while (queue.length > 0) {
-    const asset = queue.shift();
-    if (!asset) return;
-    try {
-      results.push(await verifyAsset(asset));
-    } catch (error) {
-      failures.push(error instanceof Error ? error.message : String(error));
+  async function worker() {
+    while (queue.length > 0) {
+      const asset = queue.shift();
+      if (!asset) return;
+      try {
+        results.push(await verifyAsset(asset));
+      } catch (error) {
+        failures.push(error instanceof Error ? error.message : String(error));
+      }
     }
   }
+
+  await Promise.all(Array.from({ length: 4 }, () => worker()));
+  results.sort((a, b) => a.id.localeCompare(b.id));
+  failures.sort();
+
+  const report = {
+    generated_at: new Date().toISOString(),
+    expected: 40,
+    verified: results.length,
+    failures,
+    results,
+  };
+  await writeFile(`${OUTPUT_DIR}/source-check.json`, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+
+  if (results.length !== 40 || failures.length > 0) {
+    throw new Error(`Rabat real-photo source validation failed: ${results.length}/40 verified; ${failures.join(" | ")}`);
+  }
+
+  console.log(`Rabat real-photo sources verified: ${results.length}/40`);
 }
 
-await Promise.all(Array.from({ length: 4 }, () => worker()));
-results.sort((a, b) => a.id.localeCompare(b.id));
-failures.sort();
-
-const report = {
-  generated_at: new Date().toISOString(),
-  expected: 40,
-  verified: results.length,
-  failures,
-  results,
-};
-await writeFile(`${OUTPUT_DIR}/source-check.json`, `${JSON.stringify(report, null, 2)}\n`, "utf8");
-
-if (results.length !== 40 || failures.length > 0) {
-  throw new Error(`Rabat real-photo source validation failed: ${results.length}/40 verified; ${failures.join(" | ")}`);
-}
-
-console.log(`Rabat real-photo sources verified: ${results.length}/40`);
+void main().catch((error) => {
+  console.error(error instanceof Error ? error.stack ?? error.message : String(error));
+  process.exitCode = 1;
+});
