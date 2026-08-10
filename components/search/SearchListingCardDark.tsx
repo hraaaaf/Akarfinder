@@ -95,6 +95,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
         href={resultHref}
         target={resultTarget}
         rel={resultRel}
+        data-card-primary-link
         aria-label={observedExternal ? `Voir la source originale ${listing.title}` : `Voir le bien ${listing.title}`}
         onClick={() =>
           track({
@@ -203,7 +204,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           </div>
         ) : null}
 
-        <p data-mobile-price className="mt-2 truncate text-[13px] font-black leading-none tracking-[-0.025em] text-deepblue dark:text-white sm:mt-2.5 sm:text-[17px]">
+        <p data-mobile-price className="mt-2 whitespace-normal break-words text-[12px] font-black leading-[1.05] tracking-[-0.035em] text-deepblue dark:text-white sm:mt-2.5 sm:text-[17px] sm:leading-none">
           {formatPrice(smartCard.price, listing.currency)}
         </p>
 
