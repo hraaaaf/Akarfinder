@@ -23,6 +23,30 @@ Responsabilité unique : augmenter la densité de scan des résultats Search san
 **Prochain LOT UX/Search : UX-SEARCH-2 — Compact Search & Filters.** Objectif : réduire la hauteur avant inventaire, sans rouvrir UX-SEARCH-1.
 <!-- UX-SEARCH-1-CLOSEOUT-END -->
 
+<!-- UX-SEARCH-2-CLOSEOUT-START -->
+## UX-SEARCH-2 — Compact Search & Filters ✅ CERTIFIED — PR #480
+
+Responsabilité unique : **réduire la hauteur et la fragmentation des contrôles avant l’inventaire sur /search**, sans modifier DATA, ranking, Source Registry, dédup, prix, ordre commercial ni logique Map.
+
+Résultat certifié :
+
+- mobile **360×800 / 390×844** : recherche + Filtres sur **une seule ligne de 48 px**, puis compteur + vue + tri sur une seule barre compacte ;
+- transaction mobile/tablette reste intégralement accessible dans le panneau Filtres ; desktop conserve Acheter / Louer / Neuf directement sur la ligne primaire ;
+- mobile : modes Liste/Mixte/Carte passent par un select compact **48 px** au lieu de l’ancien segmented control sticky ;
+- première annonce à **240 px** sur 360/390, contre **347 px** au début de UX-SEARCH-1 ;
+- tablette 768 : première annonce **252 px** ; desktop 1024/1280/1440 : première annonce **250 px** ;
+- contrat de densité UX-SEARCH-1 préservé : **390=2 colonnes / 768=2 / 1024=3 / 1280=4 / 1440=4** ;
+- quick filters fermés : **48 px mobile/tablette, 46 px desktop** ; toolbar résultats : **59 px mobile, 61 px tablette/desktop** ;
+- touch targets critiques mobile recherche / filtres / vue / tri = **48 px** ;
+- **0 overflow horizontal** sur les 6 viewports ; aucune information de confiance/source retirée ;
+- les anciens contrats Search/A11y/Mobile ont été réconciliés avec le nouveau pattern sans affaiblir leur intention : états ARIA conservés, bottom sheet safe-area conservée, Option A reste derrière Filtres ;
+- exact-head comportemental 7226fe892d109c847dd704a73dc90b013ef4fb31 : **31 workflows SUCCESS** ; Search Truth, dedup, accessibility, mobile ergonomics, SEARCH-UX-FAST, UX-SEARCH-1 predecessor, TypeScript et build production verts ;
+- run spécialisé 31438758126 : **Product Design Reviewer PASS + Independent Release Certifier PASS** sur deux builds/replays indépendants ;
+- audit visuel humain des captures 390×844 et 1440×900 : **9,5/10** — gate ≥9/10 atteint.
+
+**Prochain LOT UX/Search : UX-SEARCH-3 — Card Architecture.** Objectif : converger la hiérarchie interne des cards vers IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE, préserver transparence/trust AkarFinder et maintenir la densité certifiée. Gate UX ≥9/10 avant clôture.
+<!-- UX-SEARCH-2-CLOSEOUT-END -->
+
 
 <!-- DATA-CURRENT-START -->
 ## DATA — vérité courante
@@ -54,7 +78,7 @@ Ensuite **DATA-4.9D** pourra concevoir un canary d'ingestion borné uniquement p
 - `RABAT-REAL-PHOTO-LIBRARY-1` ✅ : PR #468, exact-head `3de085a2058862edc52bab4fe0dcd3aca04a4f4c`, **29/29 workflows exact-head SUCCESS**, **40/40 sources + licences Commons** vérifiées, TypeScript + build PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, 10/10 photos chargées, reload stable, 0 clipping/overflow, mobile **2 colonnes**, audit visuel **9,2/10**, Reviewer PASS, Release Certifier GO, merge `2585017ea377d72b3a54ca1083dbf1b609899ad9`.
 - Rabat real-photo : **40 vraies photos = 8 × Agdal/Hay Riad/Souissi/Océan/Hassan** ; bibliothèque séparée, activation uniquement sur signal `listing.neighborhood` structuré + `fallback_visual`, sans inférence texte.
 - Les 6 villes contextualisées disposent désormais de **12 variantes chacune = 72 IDs contextuels uniques**.
-- Prochain LOT UX/Search : **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1**, read-only ; mesurer couverture/répétition réelle **après #468**, y compris le tier Rabat real-photo et son taux d'échec distant, avant tout nouvel asset. Le district du catalogue d'illustrations historique reste OFF.
+- Prochain LOT UX/Search : **UX-SEARCH-3 — Card Architecture** ; la convergence Search continue avant le coverage audit illustrations. `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` reste queued read-only, sans nouvel asset par intuition.
 - Ce closeout UX/Search ne modifie aucune décision DATA/Carte ; les sections DATA/Carte ci-dessous restent la propriété de leur lane.
 
 ## Main / LOT actif
@@ -130,7 +154,7 @@ Après merge/closeout de #435 : **DATA-4.7C — Residual Reservoir Requalificati
 
 ## Autres lanes
 
-- UX/Search : `CONTEXTUAL-ILLUSTRATIONS-SCALE-2` ✅ #453 + `RABAT-REAL-PHOTO-LIBRARY-1` ✅ #468 ; prochain LOT = **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1** read-only ; Search reste canonique.
+- UX/Search : `UX-SEARCH-1` ✅ #479 + `UX-SEARCH-2` ✅ #480 ; prochain LOT = **UX-SEARCH-3 — Card Architecture** ; `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` reste queued read-only ; Search reste canonique.
 - UX/Carte : P1B.12 est présent sur `main`; les prochaines décisions Carte restent dans sa lane ; Offre quartier reste gouvernée par ses gates propres.
 
 ## Invariants

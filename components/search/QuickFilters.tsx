@@ -21,6 +21,11 @@ const transactionTabs = [
   { value: "new", label: "Neuf" },
 ] as const;
 
+const compactTransactionTabs = [
+  { value: "all", label: "Tous" },
+  ...transactionTabs,
+] as const;
+
 export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset }: QuickFiltersProps) {
   const [showFilters, setShowFilters] = useState(false);
 
@@ -81,22 +86,46 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
     />
   );
 
+  const compactTransactionSelector = (
+    <div data-search-compact-transaction>
+      <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground">Transaction</p>
+      <div role="group" aria-label="Type de transaction" className={`${ui.surfaceMuted} grid grid-cols-4 p-1`}>
+        {compactTransactionTabs.map((tab) => {
+          const selected = filters.transactionType === tab.value;
+          return (
+            <button
+              key={tab.value}
+              type="button"
+              onClick={() => onChange({ ...filters, transactionType: tab.value })}
+              aria-pressed={filters.transactionType === tab.value}
+              className={selected
+                ? "min-h-11 rounded-xl bg-primary px-2 py-2 text-[12px] font-extrabold text-primary-foreground shadow-sm"
+                : "min-h-11 rounded-xl px-2 py-2 text-[12px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground"}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   return (
-    <section aria-label="Filtres de recherche" className="space-y-2.5">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2.5 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
-        <label className="relative col-span-2 block lg:col-span-1" htmlFor="property-search">
-          <Search size={18} strokeWidth={2.2} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+    <section aria-label="Filtres de recherche" data-search-quick-filters className="space-y-2">
+      <div data-search-primary-filter-row className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 lg:grid-cols-[minmax(320px,1fr)_auto_auto]">
+        <label data-search-primary-search className="relative min-w-0" htmlFor="property-search">
+          <Search size={18} strokeWidth={2.2} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <input
             id="property-search"
             type="search"
             value={filters.search}
             onChange={(event) => onChange({ ...filters, search: event.target.value })}
             placeholder="Ville, quartier, résidence ou mot-clé"
-            className={`${ui.field} h-11 pl-11 pr-4 text-[14px] font-semibold placeholder:text-muted-foreground/80 sm:h-12 sm:text-[15px]`}
+            className={`${ui.field} h-12 min-w-0 pl-10 pr-3 text-[13px] font-semibold placeholder:text-muted-foreground/80 lg:h-11 lg:text-[14px]`}
           />
         </label>
 
-        <div role="group" aria-label="Type de transaction" className={`${ui.surfaceMuted} grid min-w-0 grid-cols-3 p-1 lg:min-w-[300px]`}>
+        <div data-search-desktop-transaction-tabs role="group" aria-label="Type de transaction" className={`${ui.surfaceMuted} hidden min-w-[288px] grid-cols-3 p-1 lg:grid`}>
           {transactionTabs.map((tab) => {
             const selected = filters.transactionType === tab.value;
             return (
@@ -106,8 +135,8 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
                 onClick={() => onChange({ ...filters, transactionType: tab.value })}
                 aria-pressed={filters.transactionType === tab.value}
                 className={selected
-                  ? "min-h-10 rounded-xl bg-primary px-2 py-2 text-[12px] font-extrabold text-primary-foreground shadow-sm sm:px-3 sm:text-[12.5px]"
-                  : "min-h-10 rounded-xl px-2 py-2 text-[12px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground sm:px-3 sm:text-[12.5px]"}
+                  ? "min-h-9 rounded-xl bg-primary px-3 py-1.5 text-[12px] font-extrabold text-primary-foreground shadow-sm"
+                  : "min-h-9 rounded-xl px-3 py-1.5 text-[12px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground"}
               >
                 {tab.label}
               </button>
@@ -116,24 +145,27 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
         </div>
 
         <button
+          data-search-filter-trigger
           type="button"
           onClick={() => setShowFilters((current) => !current)}
           aria-expanded={showFilters}
           aria-controls="advanced-search-filters"
-          className={`${ui.secondaryAction} min-h-11 gap-1.5 rounded-full px-3 text-[12.5px] sm:px-4 sm:text-[13px]`}
+          aria-label="Ouvrir les filtres"
+          className={`${ui.secondaryAction} min-h-12 gap-1.5 rounded-full px-3 text-[12.5px] lg:min-h-11 lg:px-4 lg:text-[13px]`}
         >
           <SlidersHorizontal size={16} strokeWidth={2.2} aria-hidden="true" />
-          <span>Filtres</span>
+          <span className="hidden min-[380px]:inline">Filtres</span>
           {activeCount > 0 ? (
             <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-extrabold text-primary-foreground">
               {activeCount}
             </span>
           ) : null}
-          <ChevronDown size={14} strokeWidth={2.6} className={`transition-transform ${showFilters ? "rotate-180" : ""}`} aria-hidden="true" />
+          <ChevronDown size={14} strokeWidth={2.6} className={`hidden transition-transform min-[380px]:block ${showFilters ? "rotate-180" : ""}`} aria-hidden="true" />
         </button>
       </div>
 
       <div id="advanced-search-filters" className={`${showFilters ? "sm:block" : "sm:hidden"} hidden ${ui.surfaceMuted} p-3`}>
+        <div className="mb-3 lg:hidden">{compactTransactionSelector}</div>
         <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-5">{advancedFields}</div>
         <div className="mt-3 border-t border-border/15 pt-3">{propertyTypeSelector}</div>
       </div>
@@ -154,17 +186,18 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
             <div className="mt-3 flex items-center justify-between gap-3">
               <div>
                 <h2 id="mobile-filters-title" className="text-[18px] font-extrabold text-foreground">Affiner la recherche</h2>
-                <p className="mt-0.5 text-[12px] text-muted-foreground">Ville, budget, surface et type de bien.</p>
+                <p className="mt-0.5 text-[12px] text-muted-foreground">Transaction, ville, budget, surface et type de bien.</p>
               </div>
-              <button type="button" onClick={() => setShowFilters(false)} aria-label="Fermer" className="grid h-11 w-11 place-items-center rounded-full border border-border/20 bg-surface text-foreground">
+              <button type="button" onClick={() => setShowFilters(false)} aria-label="Fermer" className="grid h-12 w-12 place-items-center rounded-full border border-border/20 bg-surface text-foreground">
                 <X size={19} aria-hidden="true" />
               </button>
             </div>
+            <div className="mt-4">{compactTransactionSelector}</div>
             <div className="mt-4 grid gap-3">{advancedFields}</div>
             <div className="mt-4 border-t border-border/15 pt-4">{propertyTypeSelector}</div>
             <div className="sticky bottom-0 mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-2 border-t border-border/15 bg-card/95 pt-3 backdrop-blur-xl">
-              <button type="button" onClick={onReset} className={`${ui.secondaryAction} px-4`}>Effacer</button>
-              <button type="button" onClick={() => setShowFilters(false)} className={`${ui.primaryAction} px-4`}>Voir les résultats</button>
+              <button type="button" onClick={onReset} className={`${ui.secondaryAction} min-h-12 px-4`}>Effacer</button>
+              <button type="button" onClick={() => setShowFilters(false)} className={`${ui.primaryAction} min-h-12 px-4`}>Voir les résultats</button>
             </div>
           </div>
         </div>
