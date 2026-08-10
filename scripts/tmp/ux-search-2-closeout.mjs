@@ -13,7 +13,7 @@ Responsabilité unique : **réduire la hauteur et la fragmentation des contrôle
 Résultat certifié :
 
 - mobile **360×800 / 390×844** : recherche + Filtres sur **une seule ligne de 48 px**, puis compteur + vue + tri sur une seule barre compacte ;
-- transaction mobile/tablette reste intégralement accessible dans le panneau Filtres ; desktop conserve `Acheter / Louer / Neuf` directement sur la ligne primaire ;
+- transaction mobile/tablette reste intégralement accessible dans le panneau Filtres ; desktop conserve Acheter / Louer / Neuf directement sur la ligne primaire ;
 - mobile : modes Liste/Mixte/Carte passent par un select compact **48 px** au lieu de l’ancien segmented control sticky ;
 - première annonce à **240 px** sur 360/390, contre **347 px** au début de UX-SEARCH-1 ;
 - tablette 768 : première annonce **252 px** ; desktop 1024/1280/1440 : première annonce **250 px** ;
@@ -22,11 +22,11 @@ Résultat certifié :
 - touch targets critiques mobile recherche / filtres / vue / tri = **48 px** ;
 - **0 overflow horizontal** sur les 6 viewports ; aucune information de confiance/source retirée ;
 - les anciens contrats Search/A11y/Mobile ont été réconciliés avec le nouveau pattern sans affaiblir leur intention : états ARIA conservés, bottom sheet safe-area conservée, Option A reste derrière Filtres ;
-- exact-head comportemental \`${head}\` : **31 workflows SUCCESS** ; Search Truth, dedup, accessibility, mobile ergonomics, SEARCH-UX-FAST, UX-SEARCH-1 predecessor, TypeScript et build production verts ;
-- run spécialisé \`${run}\` : **Product Design Reviewer PASS + Independent Release Certifier PASS** sur deux builds/replays indépendants ;
+- exact-head comportemental ${head} : **31 workflows SUCCESS** ; Search Truth, dedup, accessibility, mobile ergonomics, SEARCH-UX-FAST, UX-SEARCH-1 predecessor, TypeScript et build production verts ;
+- run spécialisé ${run} : **Product Design Reviewer PASS + Independent Release Certifier PASS** sur deux builds/replays indépendants ;
 - audit visuel humain des captures 390×844 et 1440×900 : **9,5/10** — gate ≥9/10 atteint.
 
-**Prochain LOT UX/Search : UX-SEARCH-3 — Card Architecture.** Objectif : converger la hiérarchie interne des cards vers `IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE`, préserver transparence/trust AkarFinder et maintenir la densité certifiée. Gate UX ≥9/10 avant clôture.
+**Prochain LOT UX/Search : UX-SEARCH-3 — Card Architecture.** Objectif : converger la hiérarchie interne des cards vers IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE, préserver transparence/trust AkarFinder et maintenir la densité certifiée. Gate UX ≥9/10 avant clôture.
 <!-- UX-SEARCH-2-CLOSEOUT-END -->`;
 
 let roadmap = await readFile(roadmapPath, "utf8");
