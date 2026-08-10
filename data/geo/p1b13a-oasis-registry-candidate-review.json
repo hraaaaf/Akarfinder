@@ -1,0 +1,31 @@
+{
+  "schema_version": "p1b13a-oasis-registry-candidate-review-v1",
+  "reviewed_at": "2026-08-10",
+  "candidate": {
+    "city_id": "city_casablanca",
+    "city": "Casablanca",
+    "district": "Oasis",
+    "proposed_entity_id": "district_casablanca_oasis",
+    "proposed_slug": "oasis",
+    "proposed_canonical_name": "Oasis",
+    "proposed_normalized_name": "oasis",
+    "proposed_alias": "Oasis",
+    "authority_tier": "A",
+    "authority_source": "casablancacity.ma",
+    "authority_url": "https://www.casablancacity.ma/fr/actualite/978/mise-en-service-de-la-nouvelle-fourriere-communale-de-oulad-azzouz",
+    "expected_listing_rows": 5,
+    "expected_source_domains": 1
+  },
+  "policy": {
+    "read_only": true,
+    "db_mutation": false,
+    "registry_mutation": false,
+    "alias_creation": false,
+    "entity_creation": false,
+    "geo_resolution_write": false,
+    "map_activation": false,
+    "seo_activation": false,
+    "commercial_recurrence_is_not_geo_truth": true
+  },
+  "next_boundary": "Separate Registry write design lot only if live parent/collision/cohort checks remain clean."
+}
