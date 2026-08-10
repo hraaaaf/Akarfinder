@@ -2,79 +2,132 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { RABAT_REAL_PHOTO_ASSETS } from "../../lib/contextual-illustrations/rabat-real-photo-library";
 
 const OUTPUT_DIR = "data/audits/rabat-real-photo-library-1";
+const COMMONS_API = "https://commons.wikimedia.org/w/api.php";
 const USER_AGENT = "AkarFinder/1.0 (real-photo-license-validation; https://akarfinder.vercel.app)";
-const LICENSE_PATTERN = /Creative Commons Attribution|CC[- ]BY|CC[- ]BY-SA/i;
+const LICENSE_PATTERN = /^CC BY(?:-SA)?(?: |$)/i;
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+type CommonsExtMetadata = {
+  LicenseShortName?: { value?: string };
+  LicenseUrl?: { value?: string };
+  Artist?: { value?: string };
+  Credit?: { value?: string };
+};
 
-async function fetchWithRetry(url: string, init: RequestInit = {}, attempts = 3): Promise<Response> {
-  let lastError: unknown = null;
-  for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    try {
-      const response = await fetch(url, {
-        ...init,
-        redirect: "follow",
-        headers: { "user-agent": USER_AGENT, ...(init.headers ?? {}) },
-        signal: AbortSignal.timeout(20_000),
-      });
-      if (response.status !== 429 && response.status < 500) return response;
-      lastError = new Error(`${response.status} ${response.statusText}`);
-    } catch (error) {
-      lastError = error;
-    }
-    await sleep(600 * attempt);
-  }
-  throw lastError instanceof Error ? lastError : new Error(`Failed to fetch ${url}`);
+type CommonsImageInfo = {
+  url?: string;
+  thumburl?: string;
+  mime?: string;
+  extmetadata?: CommonsExtMetadata;
+};
+
+type CommonsPage = {
+  pageid?: number;
+  title?: string;
+  missing?: boolean;
+  imageinfo?: CommonsImageInfo[];
+};
+
+type CommonsApiResponse = {
+  query?: {
+    pages?: CommonsPage[];
+  };
+};
+
+function normalizeTitle(value: string): string {
+  return value
+    .normalize("NFC")
+    .replace(/_/g, " ")
+    .trim()
+    .toLocaleLowerCase("en-US");
 }
 
-async function verifyAsset(asset: (typeof RABAT_REAL_PHOTO_ASSETS)[number]) {
-  const sourceResponse = await fetchWithRetry(asset.sourcePage);
-  if (!sourceResponse.ok) throw new Error(`${asset.id}: source page returned ${sourceResponse.status}`);
-  const html = await sourceResponse.text();
-  if (!LICENSE_PATTERN.test(html)) throw new Error(`${asset.id}: no Creative Commons attribution license found`);
+async function fetchCommonsMetadata(): Promise<CommonsPage[]> {
+  const params = new URLSearchParams({
+    action: "query",
+    format: "json",
+    formatversion: "2",
+    prop: "imageinfo",
+    iiprop: "url|mime|extmetadata",
+    iiurlwidth: "960",
+    redirects: "1",
+    titles: RABAT_REAL_PHOTO_ASSETS.map((asset) => `File:${asset.fileName}`).join("|"),
+  });
 
-  const imageResponse = await fetchWithRetry(asset.asset);
-  const contentType = imageResponse.headers.get("content-type") ?? "";
-  if (!imageResponse.ok || !contentType.toLowerCase().startsWith("image/")) {
-    await imageResponse.body?.cancel();
-    throw new Error(`${asset.id}: asset is not a reachable image (${imageResponse.status}, ${contentType || "no content-type"})`);
+  const response = await fetch(COMMONS_API, {
+    method: "POST",
+    headers: {
+      "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+      "user-agent": USER_AGENT,
+    },
+    body: params,
+    signal: AbortSignal.timeout(30_000),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Commons API returned ${response.status} ${response.statusText}`);
   }
-  await imageResponse.body?.cancel();
 
-  return {
-    id: asset.id,
-    district: asset.district,
-    source_page: asset.sourcePage,
-    final_image_url: imageResponse.url,
-    content_type: contentType,
-    creative_commons_license_detected: true,
-  };
+  const payload = (await response.json()) as CommonsApiResponse;
+  return payload.query?.pages ?? [];
+}
+
+function stripHtml(value?: string): string | null {
+  if (!value) return null;
+  return value.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim() || null;
 }
 
 async function main() {
   await mkdir(OUTPUT_DIR, { recursive: true });
-  const results: Awaited<ReturnType<typeof verifyAsset>>[] = [];
+  const pages = await fetchCommonsMetadata();
+  const byTitle = new Map(
+    pages
+      .filter((page) => page.title)
+      .map((page) => [normalizeTitle(page.title!), page] as const),
+  );
+
+  const results: Array<Record<string, unknown>> = [];
   const failures: string[] = [];
-  const queue = [...RABAT_REAL_PHOTO_ASSETS];
 
-  async function worker() {
-    while (queue.length > 0) {
-      const asset = queue.shift();
-      if (!asset) return;
-      try {
-        results.push(await verifyAsset(asset));
-      } catch (error) {
-        failures.push(error instanceof Error ? error.message : String(error));
-      }
+  for (const asset of RABAT_REAL_PHOTO_ASSETS) {
+    const expectedTitle = `File:${asset.fileName}`;
+    const page = byTitle.get(normalizeTitle(expectedTitle));
+    if (!page || page.missing || !page.pageid) {
+      failures.push(`${asset.id}: Commons file does not exist (${expectedTitle})`);
+      continue;
     }
-  }
 
-  await Promise.all(Array.from({ length: 4 }, () => worker()));
-  results.sort((a, b) => a.id.localeCompare(b.id));
-  failures.sort();
+    const imageInfo = page.imageinfo?.[0];
+    const license = imageInfo?.extmetadata?.LicenseShortName?.value?.trim() ?? "";
+    const licenseUrl = imageInfo?.extmetadata?.LicenseUrl?.value?.trim() ?? "";
+    const canonicalImageUrl = imageInfo?.thumburl ?? imageInfo?.url ?? "";
+    const mime = imageInfo?.mime ?? "";
+
+    if (!LICENSE_PATTERN.test(license) || !licenseUrl.startsWith("https://creativecommons.org/")) {
+      failures.push(`${asset.id}: incompatible or missing Creative Commons attribution license (${license || "none"})`);
+      continue;
+    }
+    if (!canonicalImageUrl.startsWith("https://upload.wikimedia.org/") || !mime.startsWith("image/")) {
+      failures.push(`${asset.id}: Commons API returned no canonical image URL`);
+      continue;
+    }
+
+    results.push({
+      id: asset.id,
+      district: asset.district,
+      file_name: asset.fileName,
+      source_page: asset.sourcePage,
+      canonical_image_url: canonicalImageUrl,
+      mime,
+      license,
+      license_url: licenseUrl,
+      creator: stripHtml(imageInfo?.extmetadata?.Artist?.value),
+      credit: stripHtml(imageInfo?.extmetadata?.Credit?.value),
+    });
+  }
 
   const report = {
     generated_at: new Date().toISOString(),
+    validation_method: "single MediaWiki imageinfo/extmetadata batch query",
     expected: 40,
     verified: results.length,
     failures,
@@ -86,7 +139,7 @@ async function main() {
     throw new Error(`Rabat real-photo source validation failed: ${results.length}/40 verified; ${failures.join(" | ")}`);
   }
 
-  console.log(`Rabat real-photo sources verified: ${results.length}/40`);
+  console.log(`Rabat real-photo Commons metadata verified: ${results.length}/40`);
 }
 
 void main().catch((error) => {
