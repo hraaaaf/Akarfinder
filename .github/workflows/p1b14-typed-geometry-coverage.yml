@@ -52,9 +52,11 @@ jobs:
           const r=require('./data/audits/runtime/p1b14-typed-geometry-coverage.json');
           if(r.verdict!=='P1B14_TYPED_GEOMETRY_FOUNDATION_CERTIFIED_FAIL_CLOSED') throw new Error(JSON.stringify(r));
           if(r.administrative_geometry.features!==16||r.administrative_geometry.topology_status!=='passed') throw new Error('geometry source drift');
+          if(r.neighborhood_registry_targets!==2) throw new Error('Registry target drift');
           if(r.certified_neighborhood_geometry_bindings!==0||r.neighborhood_choropleth_allowed!==false) throw new Error('false neighborhood polygon binding detected');
+          if(r.map_eligible_does_not_imply_polygon_binding!==true) throw new Error('Registry map eligibility must not imply polygon binding');
           if(!r.administrative_arrondissement_layer_preserved||r.blocked_cross_type_bindings.length!==1) throw new Error('typed geometry boundary drift');
-          if(r.contract.registry_mutation!==false||r.contract.resolution_mutation!==false||r.contract.map_activation!==false) throw new Error('P1B.14 mutation/activation drift');
+          if(r.contract.registry_mutation!==false||r.contract.resolution_mutation!==false||r.contract.map_activation!==false||r.contract.name_only_cross_type_binding_forbidden!==true) throw new Error('P1B.14 mutation/activation drift');
           NODE
       - name: TypeScript
         run: npx tsc --noEmit
