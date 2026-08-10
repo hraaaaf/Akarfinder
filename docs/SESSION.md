@@ -50,6 +50,14 @@ Vieille branche `agent/b3-5-3-professional-auth-rls`. Re-audit current main avan
 
 Branche `agent/p0-gov-1-agent-governance`. La roadmap unique, Reviewer/Certifier et gate ≥9 sont déjà absorbés. Faire un unique-value check ; ne porter que ce qui manque réellement, sinon fermer superseded.
 
+### #475 — BLOCKED / dependent on #474
+
+Branche `audit/live-rabat-search-20260810`, PR draft empilée sur `feat/mass-first-search-quality-policy` / #474.
+
+Responsabilité : alignement documentaire de la fenêtre visuelle Search. Preuve Product Design : run `31417065973` SUCCESS, artifact `9073861382`, digest `sha256:355a13772550fe1fdc735a088311213207ab02989757206d88da9ca9d0f65363`.
+
+#475 n’est **pas** active par inertie : elle dépend de #474 et touche les mêmes `docs/ROADMAP.md` + `docs/SESSION.md`. Après stabilisation/merge de #474, #475 doit être retarget/rebase sur current `main`, conserver un diff strictement docs-only, puis passer double check + score ≥9 avant certification/merge.
+
 ## Fenêtre DATA-4.4C — réconciliation historique ✅
 
 DATA-4.4C n’est plus une prochaine étape ; il est **CLOSED / HISTORICAL**.
@@ -75,11 +83,11 @@ Le snapshot exhaustif est dans `docs/ROADMAP.md`.
 
 - **ACTIVE** : #474, #473.
 - **RECONCILIATION REQUIRED** : #454, #383.
-- **BLOCKED** : #310.
+- **BLOCKED** : #310, #475.
 - **SUPERSEDED** : #228, #229, #230, #231, #232, #234, #250, #81, #282, #52.
 - **HISTORICAL** : #337, #319, #289, #255, #113, #133, #54, #126, #125, #124, #121, #118, #115, #110.
 
-Aucune PR historique/superseded n’est active uniquement parce qu’elle reste `OPEN`.
+Aucune PR historique/superseded/dépendante n’est active uniquement parce qu’elle reste `OPEN`.
 
 ## DATA prochaine
 
