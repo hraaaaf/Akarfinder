@@ -5,66 +5,63 @@
 
 ## État réel au 2026-08-10
 
-Fondations Carte déjà certifiées : P1A.1 → P1A.6, P1B.1 → P1B.12.
+Fondations Carte certifiées : **P1A.1 → P1A.6, P1B.1 → P1B.14**.
 
 Derniers lots Geo :
 
 - **P1B.8 ✅ Geo Authority Evidence Review** — 2 couples Tier A confirmés : Agadir — Hay Mohammadi (5 listings) et Agadir — Dakhla (3 listings).
 - **P1B.9 ✅ Tier A Registry Candidate Review** — review read-only, 2 candidats / 8 listings, aucun write.
 - **P1B.10 ✅ Tier A Registry Write Design** — design forward/rollback certifié, rehearsal PostgreSQL réel, aucun write production.
-- **P1B.11 ✅ Tier A Registry Production Write** — 2 entités + 2 alias créés en production ; `map_eligible=false`, `seo_eligible=false` ; **0 `geo_resolution_events` automatique**.
-- **P1B.12 ✅ Tier A Resolution Canary** — PR #450 mergée ; post-merge spécialisé PASS ; migration production appliquée ; **8/8** résolutions append-only (3 Dakhla + 5 Hay Mohammadi), **0 collision latest**, **0 conflit historique**, **0 canonical geo manquant** ; couverture publique quartier **97 / 15 438 = 0,6283 %** ; rollback append-only prouvé et non requis.
+- **P1B.11 ✅ Tier A Registry Production Write** — Dakhla + Hay Mohammadi créés dans le Registry avec alias exacts ; Map/SEO OFF ; 0 résolution automatique.
+- **P1B.12 ✅ Tier A Resolution Canary** — 8/8 résolutions append-only Agadir (3 Dakhla + 5 Hay Mohammadi), rollback prouvé, aucune collision latest ni conflit historique.
+- **P1B.13 ✅ Geo Coverage Recovery Expansion — Oasis micro-chain** — authority/candidate review → Registry design → production write → canary exact **5/5 Oasis**. Après write : **102 / 15 438 listings publics résolus = 0,66 %**, 0 collision latest, 0 conflit historique, 0 canonical geo manquant.
+- **P1B.14 ✅ Typed Geometry Coverage** — les **16** géométries Casablanca existantes sont certifiées comme **arrondissements administratifs OSM `admin_level=10`**, topology-auditées et conservées en Shadow. **0 binding polygon quartier certifié**. Maârif arrondissement ≠ automatiquement quartier Maârif ; Oasis reste sans polygon quartier. Choroplèthe quartier OFF.
 
-La couche publique **Offre quartier reste OFF**. Le Registry peut contenir une entité sans que cela autorise automatiquement son affichage, ses métriques ou la résolution d’annonces.
+La couche publique **Offre quartier reste OFF**. Le Registry peut contenir une entité ou même avoir `map_eligible=true` sans que cela constitue une preuve de polygon quartier ou une autorisation d’afficher des métriques.
 
 ---
 
-# Chronologie restante
+# Lot actuel
 
-## P1B.13 — Geo Coverage Recovery Expansion 🟠 NEXT
+## P1B.15 — Geo Certification Gate 🟠 CURRENT
 
-Rejouer le gap P1B.6/P1B.7 après le canary Tier A et traiter les candidats restants uniquement par cohortes dont l’autorité indépendante et le type territorial sont démontrés.
+Réconciliation finale des fondations Geo sans mutation :
 
-Replay production d’ouverture P1B.13 :
+`Listing → Geo Resolution Event → Neighborhood Registry → Parent City`
 
-- **63** listings Search-éligibles encore non résolus avec `district` explicite ;
-- **29** couples ville/quartier Registry-gap ;
-- **0** match Registry exact restant dans cette cohorte ;
-- **3** domaines source concernés ;
-- principaux gaps par volume : Casablanca — Oasis (5), Casablanca — Californie (4), Casablanca — Gauthier (4), Marrakech — Palmeraie (4), Marrakech — Targa (4).
+et, séparément :
 
-Priorité :
+`Geometry source → territorial type → topology/provenance → publication boundary`.
 
-1. candidats déjà corroborés mais insuffisants en P1B.8 ;
-2. nouvelles preuves officielles/urbanisme ;
-3. création Registry uniquement dans des micro-lots séparés ;
-4. résolution des listings uniquement après Registry certifié.
+Le gate certifie :
 
-**Interdit :** transformer la récurrence commerciale en vérité géographique.
+- lineage contrôlée des **13 canaries** : 8 Agadir + 5 Oasis ;
+- Registry protégé et validé ;
+- contrat territorial global latest-event-first ;
+- 0 collision latest, 0 conflit historique, 0 canonical geo manquant ;
+- absence d’inférence fuzzy ;
+- identité Search/Geo non modifiée ;
+- géométrie administrative correctement typée ;
+- **0 polygon quartier certifié** à ce stade ;
+- Offer metrics publics OFF ;
+- choroplèthe quartier OFF.
 
-**Gate de sortie P1B.13 :** produire des cohortes Registry candidates avec autorité indépendante démontrée, provenance explicite et type territorial non ambigu ; aucun write Registry ou résolution listing dans le lot de qualification lui-même.
+### Gate de sortie P1B.15
 
-## P1B.14 — Geometry Coverage Expansion
+Si tous les invariants restent verts :
 
-Associer progressivement les quartiers canoniques validés à des géométries sourcées et vérifiées.
+- **P1C.1 Offre quartier Shadow = autorisé** ;
+- **P1C public = interdit** ;
+- **Offer metric layer public = interdit** ;
+- **P2 choroplèthe quartier = interdit** tant qu’une géométrie neighborhood-grade sourcée et revue n’existe pas.
 
-Ordre cible : Casablanca → Rabat → Marrakech → Tanger → Agadir, ajustable selon disponibilité/qualité des datasets.
-
-Gates : provenance, topologie, absence d’overlap incohérent, parentage ville/quartier, aucune géométrie inventée.
-
-## P1B.15 — Geo Certification Gate
-
-Réconciliation finale de la chaîne :
-
-`Listing → Geo Resolution Event → Neighborhood Registry → Parent City → Geometry`
-
-Search et Map doivent partager la même identité géographique. Ce gate décide si la lane peut passer à l’intelligence Offre quartier.
+Le passage à P1C Shadow ne prétend pas que 100 % du Maroc est géocodé. Il signifie uniquement que la chaîne de vérité Geo et ses barrières sont suffisamment certifiées pour commencer les calculs internes non publics.
 
 ---
 
 # P1C — Intelligence Offre quartier
 
-## P1C.1 — Offre quartier Shadow
+## P1C.1 — Offre quartier Shadow ⏭️ NEXT AFTER P1B.15
 
 Calculer **sans exposition publique** :
 
@@ -75,6 +72,8 @@ Calculer **sans exposition publique** :
 - typologies ;
 - fraîcheur ;
 - couverture et taille d’échantillon.
+
+Aucune métrique Shadow ne devient automatiquement publique.
 
 ## P1C.2 — Reliability Engine
 
@@ -88,7 +87,7 @@ Promotion contrôlée :
 
 `OFF → SHADOW → CANARY → ON`
 
-Aucune activation nationale en bloc. Activation par périmètre réellement certifié.
+Aucune activation nationale en bloc. Activation uniquement par périmètre réellement certifié et métrique suffisamment fiable.
 
 ---
 
@@ -97,6 +96,8 @@ Aucune activation nationale en bloc. Activation par périmètre réellement cert
 ## P2.1 — Choroplèthe immobilier
 
 Couches candidates : prix/m², prix médian, volume d’offres et dynamique de marché, avec légende/échelle cohérentes et reliability visible.
+
+**Précondition supplémentaire :** polygon quartier neighborhood-grade sourcé, topology-validé et explicitement revu. Les polygones d’arrondissement ne peuvent pas être substitués aux quartiers immobiliers par égalité de nom.
 
 ## P2.2 — Filtres Carte ↔ Search
 
@@ -162,13 +163,13 @@ P1B.11  Registry Production Write                 ✅
    ↓
 P1B.12  Tier A Resolution Canary                  ✅
    ↓
-P1B.13  Geo Coverage Recovery Expansion           🟠 NEXT
+P1B.13  Geo Coverage Recovery Expansion           ✅
    ↓
-P1B.14  Geometry Coverage Expansion
+P1B.14  Typed Geometry Coverage                   ✅
    ↓
-P1B.15  Geo Certification Gate
+P1B.15  Geo Certification Gate                    🟠 CURRENT
    ↓
-P1C.1   Offre quartier Shadow
+P1C.1   Offre quartier Shadow                     ⏭️ NEXT
    ↓
 P1C.2   Reliability Engine
    ↓
@@ -187,6 +188,6 @@ CARTE AKARFINDER CERTIFIÉE
 
 ## Règle de passage à « la suite »
 
-Nous ne devons **pas attendre une couverture nationale parfaite** pour commencer P1C/P2. Le passage se fait dès qu’un périmètre géographique possède une chaîne Geo certifiée et un échantillon suffisamment fiable pour la métrique concernée. Les premières activations peuvent donc être **ville/quartier par ville/quartier**, pendant que P1B continue d’étendre la couverture ailleurs.
+Nous ne devons **pas attendre une couverture nationale parfaite** pour commencer P1C. Le passage se fait dès qu’un périmètre possède une chaîne Geo certifiée et, pour une future exposition publique, un échantillon suffisamment fiable pour la métrique concernée.
 
-En revanche, aucune zone non certifiée ne doit être colorée ou enrichie comme si elle disposait de données fiables.
+P1C Shadow peut donc progresser pendant que la couverture Geo continue de s’étendre. En revanche, aucune zone non certifiée ne doit être colorée ou enrichie comme si elle disposait de données fiables, et aucun arrondissement administratif ne doit être présenté comme polygon de quartier immobilier sans preuve territoriale explicite.
