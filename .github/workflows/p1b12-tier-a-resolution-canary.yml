@@ -1,0 +1,72 @@
+name: P1B.12 Tier A Resolution Canary Gate
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260809221500_p1b12_tier_a_resolution_canary.sql"
+      - "scripts/audits/p1b12-tier-a-resolution-canary-preflight.ts"
+      - "scripts/scrapers/__tests__/p1b12-tier-a-resolution-canary.test.ts"
+      - ".github/workflows/p1b12-tier-a-resolution-canary.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260809221500_p1b12_tier_a_resolution_canary.sql"
+      - "scripts/audits/p1b12-tier-a-resolution-canary-preflight.ts"
+      - "scripts/scrapers/__tests__/p1b12-tier-a-resolution-canary.test.ts"
+      - ".github/workflows/p1b12-tier-a-resolution-canary.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-tier-a-resolution-canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: P1B.12 static boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='supabase/migrations/20260809221500_p1b12_tier_a_resolution_canary.sql';
+          const s=fs.readFileSync(p,'utf8');
+          for(const marker of [
+            'p1b12_tier_a_authority_canary_v1',
+            'district_agadir_dakhla',
+            'district_agadir_hay_mohammadi',
+            'city_agadir',
+            'p1b12_tier_a_resolution_apply_v1',
+            'p1b12_tier_a_resolution_rollback_v1',
+            "'unresolved'",
+          ]) if(!s.includes(marker)) throw new Error(`missing ${marker}`);
+          const ids=[...s.matchAll(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g)].map(m=>m[0]);
+          const allowlist=new Set(ids.filter(x=>!x.startsWith('00000000')));
+          if(allowlist.size!==8) throw new Error(`expected exactly 8 allowlisted seed UUIDs, got ${allowlist.size}`);
+          if(/delete\s+from\s+public\.geo_resolution_events/i.test(s)) throw new Error('append-only contract violated');
+          if(/update\s+public\.geo_resolution_events/i.test(s)) throw new Error('resolution history may not be rewritten');
+          if(/update\s+public\.geo_entities/i.test(s)) throw new Error('P1B.12 may not activate or mutate Registry entities');
+          if(/insert\s+into\s+public\.geo_entities/i.test(s)||/insert\s+into\s+public\.geo_aliases/i.test(s)) throw new Error('P1B.12 may not create Registry data');
+          NODE
+      - name: P1B.12 PostgreSQL semantic rehearsal
+        run: npx tsx --test scripts/scrapers/__tests__/p1b12-tier-a-resolution-canary.test.ts
+      - name: P1B.12 live read-only preflight
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1b12-tier-a-resolution-canary-preflight.ts
+      - name: Enforce live 8-row boundary
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/p1b12-tier-a-resolution-canary-preflight.json');
+          if(r.verdict!=='TIER_A_RESOLUTION_CANARY_READY_8') throw new Error(JSON.stringify(r));
+          if(r.rows!==8||r.dakhla_rows!==3||r.hay_mohammadi_rows!==5||r.source_domains.length!==2) throw new Error('P1B.12 cohort drift');
+          if(!r.target_registry_ready||!r.exact_aliases_ready) throw new Error('P1B.11 Registry targets drifted');
+          if(r.contract.db_mutation!==false||r.contract.geo_resolution_write!==false||r.contract.map_activation!==false||r.contract.seo_activation!==false) throw new Error('P1B.12 preflight boundary drift');
+          NODE
+      - name: TypeScript
+        run: npx tsc --noEmit
