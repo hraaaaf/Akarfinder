@@ -59,19 +59,19 @@ function isExactNeighborhoodQuery(query: string): boolean {
   return q.includes("gueliz") || q.includes("guéliz");
 }
 
-async function readAllMarrakechDiscoveryCandidates(db: any): Promise<any[]> {
+async function readDiscoveryCandidatesByPattern(db: any, pattern: string): Promise<any[]> {
   const rows: any[] = [];
   for (let from = 0; ; from += PAGE_SIZE) {
     const response = await db
       .from("discovery_candidates")
-      .select("provider,discovery_query,result_rank,source_domain,discovered_at,last_seen_at")
-      .ilike("discovery_query", "%Marrakech%")
+      .select("id,provider,discovery_query,result_rank,source_domain,discovered_at,last_seen_at")
+      .ilike("discovery_query", pattern)
       .range(from, from + PAGE_SIZE - 1);
-    if (response.error) throw new Error(`P1C.4 discovery_candidates read failed: ${response.error.message}`);
+    if (response.error) throw new Error(`P1C.4 discovery_candidates read failed (${pattern}): ${response.error.message}`);
     const page = response.data ?? [];
     rows.push(...page);
     if (page.length < PAGE_SIZE) return rows;
-    if (rows.length > SAFETY_BOUND) throw new Error("P1C.4 discovery-candidate safety bound exceeded");
+    if (rows.length > SAFETY_BOUND) throw new Error(`P1C.4 discovery-candidate safety bound exceeded (${pattern})`);
   }
 }
 
@@ -148,13 +148,22 @@ export async function runP1C4Audit() {
   if (policyResponse.error) throw new Error(`P1C.4 source policy read failed: ${policyResponse.error.message}`);
   const observedSourcePolicies = policyResponse.data ?? [];
 
-  const discoveryRows = await readAllMarrakechDiscoveryCandidates(db);
+  const discoveryRows = await readDiscoveryCandidatesByPattern(db, "%Marrakech%");
   const cityRentRows = discoveryRows.filter((row) => isRentQuery(String(row.discovery_query ?? "")));
   const cityRentQueries = [...new Set(cityRentRows.map((row) => String(row.discovery_query ?? "")))];
   const cityRentDomains = [...new Set(cityRentRows.map((row) => String(row.source_domain ?? "")).filter(Boolean))];
   const cityRentProviders = [...new Set(cityRentRows.map((row) => String(row.provider ?? "")).filter(Boolean))];
-  const exactNeighborhoodQueryRows = cityRentRows.filter((row) => isExactNeighborhoodQuery(String(row.discovery_query ?? "")));
+
+  const exactUnaccented = await readDiscoveryCandidatesByPattern(db, "%Gueliz%");
+  const exactAccented = await readDiscoveryCandidatesByPattern(db, "%Guéliz%");
+  const exactById = new Map<string, any>();
+  for (const row of [...exactUnaccented, ...exactAccented]) exactById.set(String(row.id), row);
+  const exactNeighborhoodQueryRows = [...exactById.values()].filter((row) =>
+    isExactNeighborhoodQuery(String(row.discovery_query ?? ""))
+    && isRentQuery(String(row.discovery_query ?? "")),
+  );
   const exactNeighborhoodQueries = [...new Set(exactNeighborhoodQueryRows.map((row) => String(row.discovery_query ?? "")))];
+
   const maxRankByQuery = new Map<string, number>();
   for (const row of cityRentRows) {
     const query = String(row.discovery_query ?? "");
@@ -262,7 +271,7 @@ export async function runP1C4Audit() {
         content_reuse_policy: row.content_reuse_policy,
         display_policy: row.display_policy,
       })),
-      real_market_coverage: "Unknown. The acquired/discoverable set cannot be equated with the real Guéliz rental market without an independently defined exact-scope denominator."
+      real_market_coverage: "Unknown. The acquired/discoverable set cannot be equated with the real Guéliz rental market without an independently defined exact-scope denominator.",
     },
     blockers: policy.current_blockers,
     certification: {
