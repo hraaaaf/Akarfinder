@@ -1,6 +1,6 @@
 # AKARFINDER — ROADMAP CANONIQUE UNIQUE
 
-**Version : 2026-08-10 20:57 +01:00**  
+**Version : 2026-08-10 20:58 +01:00**  
 **Autorité : ce fichier est l’unique roadmap d’exécution de toutes les fenêtres/lane AkarFinder.**
 
 `README.md` = identité/doctrine. `docs/SESSION.md` = handover court. Les roadmaps spécialisées (ex. `docs/CARTE_ROADMAP.md`) sont des journaux détaillés et ne peuvent jamais définir une priorité concurrente à ce fichier.
@@ -326,3 +326,33 @@ Prochaine étape :
 ```
 
 **Interdiction de marquer CLOSED si `Score final < 9,0`.**
+
+---
+
+# 9. Réconciliation fenêtre MON-PROJET → Carte / Quartier
+
+## MON-PROJET-P1B — projet actif dans Search ✅ MERGED / HISTORICAL
+
+- **Lane :** UX / Mon Projet → Search continuity.
+- **Responsabilité :** conserver le contexte du projet actif jusque dans `/search` et rattacher favoris/comparaisons au même `project_id`, sans stockage parallèle.
+- **Dépendances :** MON-PROJET-P1A #314 ; `/api/me/continuity` ; User Continuity V1 ; Search existant ; synchronisation avec DATA-COVERAGE-1 avant merge.
+- **Branche :** `ux/mon-projet-p1b`.
+- **PR :** #318 ; remplace/supersède la tentative #315.
+- **État :** `MERGED / HISTORICAL` — merge `29306523a4d1ad11d089299b1c7ed6a090063ebd` sur head exact `7f1e9b10162adad4c9a9694df9117ba053fd9e05`.
+- **Preuves :** bandeau `Projet actif` dans Search ; validation du projet via `/api/me/continuity` ; favoris/comparaisons filtrés par `project_id` ; accès `/mon-projet/espace` ; aucune migration, aucun `localStorage`, aucun stockage parallèle ; `Canonical Baseline Validation` workflow_dispatch run #784 **SUCCESS** sur le head final avant merge.
+- **Double check / score :** certification fonctionnelle finale PASS ; **aucune note UX indépendante finale /10 n’a été archivée dans #318**. Pour respecter la règle universelle, ce lot n’est pas requalifié artificiellement en `CLOSED ≥9`; il reste `MERGED / HISTORICAL` et devra être re-audité avec score ≥9 uniquement si une nouvelle modification Mon Projet/Search le rouvre.
+- **Blocker :** aucun blocker runtime identifié au merge ; l’incident GitHub Actions ayant perturbé la certification était externe et résolu par un run manuel sur le head exact.
+- **Prochaine étape :** aucune reprise automatique. Toute évolution Mon Projet doit être un nouveau lot current-main avec double check, score ≥9 et certification.
+
+## Audit Carte / Quartier initié dans cette fenêtre — AUCUN NOUVEAU LOT OUVERT
+
+- **Lane :** Carte / Geo.
+- **Responsabilité :** audit exploratoire seulement ; aucune responsabilité d’implémentation n’a été ouverte.
+- **Dépendances :** lane Carte canonique existante P1C.4/P1C.4A et preuve DATA exact-scope.
+- **Branche :** aucune.
+- **PR :** aucune.
+- **État :** `STOPPED BEFORE IMPLEMENTATION / ABSORBED BY CANONICAL CARTE LANE`.
+- **Preuves :** lecture de `/search`, `SearchMapPanel`, `SearchMapNeighborhoodDock`, explorer ville→quartier, choroplèthe Casablanca, benchmark prix et invariants géographiques ; **0 code, 0 migration, 0 commit, 0 PR** issus de cet audit.
+- **Double check / score :** **non scoré** car audit interrompu avant verdict et avant définition d’un lot ; aucune note artificielle n’est créée.
+- **Blocker :** P1C.4A reste `DESIGNED_NOT_PROVEN`, P1C.4 `NOT_CERTIFIABLE`, P1C.5 `LOCKED`; Offre quartier publique OFF jusqu’à preuve DATA exact-scope et replays certifiés.
+- **Prochaine étape :** ne pas créer de roadmap parallèle. Suivre strictement : DATA exact-scope evidence → replay P1C.4A → replay P1C.4 → éventuel P1C.5, avec double check et score ≥9 à chaque étape.
