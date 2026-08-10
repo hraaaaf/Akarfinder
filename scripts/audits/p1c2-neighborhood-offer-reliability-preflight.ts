@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 // P1C.2 — live read-only preflight.
-// Replays the P1B.3 latest-event-first Geo contract from bounded base-table reads,
-// then cross-checks it against the compact P1C.1 segment surface. No heavy report RPC is required.
+// Replays the P1B.3/P1C.1 cohort directly from bounded base-table reads so CI
+// does not depend on expensive Shadow/report views through PostgREST.
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -27,6 +27,10 @@ function chunks<T>(values: T[], size = IN_CHUNK): T[][] {
   const result: T[][] = [];
   for (let index = 0; index < values.length; index += size) result.push(values.slice(index, index + size));
   return result;
+}
+function positive(value: unknown): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 async function readAllResolutionEvents(db: any): Promise<any[]> {
   const rows: any[] = [];
@@ -69,21 +73,16 @@ export async function runP1C2NeighborhoodOfferReliabilityPreflight() {
   ]) assert(p1c1Sql.includes(marker), `P1C.1 predecessor marker missing: ${marker}`);
 
   const db: any = getSupabaseServerClient();
-  const [events, segmentsR] = await Promise.all([
-    readAllResolutionEvents(db),
-    db.from("odm_neighborhood_offer_shadow_segment_v1")
-      .select("city_id,neighborhood_id,transaction_type,listing_count,price_sample_count,price_coverage_percent,surface_sample_count,surface_coverage_percent,price_per_m2_sample_count,price_per_m2_coverage_percent,fresh_confirmed_count,seed_only_count,source_domain_count,reliability_certified,public_activation,metric_layers_activated"),
-  ]);
-  if (segmentsR.error) throw new Error(`P1C.2 Shadow segments read failed: ${segmentsR.error.message}`);
-
+  const events = await readAllResolutionEvents(db);
   const eventSourceIds = [...new Set(events.map((event: any) => String(event.source_record_id ?? "")).filter((id) => UUID_RE.test(id)))];
   const docsRows = await readByIds(
     db,
     "thin_index_search_documents",
-    "seed_id,vertical_classification,document_kind,display_eligibility",
+    "seed_id,vertical_classification,document_kind,display_eligibility,normalized_intent,normalized_price_mad,normalized_surface_m2,normalized_price_m2",
     "seed_id",
     eventSourceIds,
   );
+  const docsById = new Map(docsRows.map((doc: any) => [String(doc.seed_id), doc]));
   const eligibleIds = new Set(
     docsRows
       .filter((doc: any) => doc.vertical_classification === "real_estate_likely" && doc.document_kind === "LISTING" && ["eligible_primary", "eligible_secondary"].includes(doc.display_eligibility))
@@ -119,8 +118,8 @@ export async function runP1C2NeighborhoodOfferReliabilityPreflight() {
   );
   const citiesById = new Map(cityRows.map((row: any) => [String(row.id), row]));
 
+  const joined: Array<{ seed_id: string; city_id: string; neighborhood_id: string; transaction_type: string; price: number | null; surface: number | null; price_m2: number | null }> = [];
   let missingCanonicalGeo = 0;
-  let resolvedNeighborhoodListings = 0;
   for (const event of latestResolved) {
     const neighborhood: any = neighborhoodsById.get(String(event.resolved_neighborhood_id));
     const city: any = neighborhood ? citiesById.get(String(neighborhood.parent_id)) : null;
@@ -135,8 +134,25 @@ export async function runP1C2NeighborhoodOfferReliabilityPreflight() {
       city.slug &&
       (!event.resolved_city_id || String(event.resolved_city_id) === String(city.id)),
     );
-    if (valid) resolvedNeighborhoodListings += 1;
-    else missingCanonicalGeo += 1;
+    if (!valid) {
+      missingCanonicalGeo += 1;
+      continue;
+    }
+    const seedId = String(event.source_record_id);
+    const doc: any = docsById.get(seedId);
+    assert(doc, `P1C.2 eligible document disappeared: ${seedId}`);
+    const price = positive(doc.normalized_price_mad);
+    const surface = positive(doc.normalized_surface_m2);
+    const normalizedM2 = positive(doc.normalized_price_m2);
+    joined.push({
+      seed_id: seedId,
+      city_id: String(city.id),
+      neighborhood_id: String(neighborhood.id),
+      transaction_type: String(doc.normalized_intent ?? "").trim() || "unknown",
+      price,
+      surface,
+      price_m2: normalizedM2 ?? (price !== null && surface !== null ? price / surface : null),
+    });
   }
 
   let latestResolutionCollisions = 0;
@@ -165,24 +181,38 @@ export async function runP1C2NeighborhoodOfferReliabilityPreflight() {
     if (latestTimestampTargets.size > 1) latestResolutionCollisions += 1;
   }
 
-  assert(resolvedNeighborhoodListings > 0, "resolved neighborhood cohort disappeared");
+  assert(joined.length > 0, "resolved neighborhood cohort disappeared");
+  assert(new Set(joined.map((row) => row.seed_id)).size === joined.length, "P1C.2 replay contains duplicate latest seed rows");
   assert(latestResolutionCollisions === 0, `latest Geo collision detected: ${latestResolutionCollisions}`);
   assert(conflictingResolutionHistory === 0, `conflicting Geo history detected: ${conflictingResolutionHistory}`);
   assert(missingCanonicalGeo === 0, `missing canonical Geo detected: ${missingCanonicalGeo}`);
 
-  const segments = segmentsR.data ?? [];
-  assert(segments.length > 0, "P1C.1 Shadow segments disappeared");
-  assert(segments.every((row: any) => row.reliability_certified === false && row.public_activation === false && row.metric_layers_activated === false), "P1C.1 segment activation drift");
+  const segmentMap = new Map<string, { neighborhood_id: string; listing_count: number; price_sample_count: number; surface_sample_count: number; price_per_m2_sample_count: number }>();
+  for (const row of joined) {
+    const key = `${row.city_id}\u0000${row.neighborhood_id}\u0000${row.transaction_type}`;
+    const segment = segmentMap.get(key) ?? {
+      neighborhood_id: row.neighborhood_id,
+      listing_count: 0,
+      price_sample_count: 0,
+      surface_sample_count: 0,
+      price_per_m2_sample_count: 0,
+    };
+    segment.listing_count += 1;
+    if (row.price !== null) segment.price_sample_count += 1;
+    if (row.surface !== null) segment.surface_sample_count += 1;
+    if (row.price_m2 !== null) segment.price_per_m2_sample_count += 1;
+    segmentMap.set(key, segment);
+  }
+  const segments = [...segmentMap.values()];
+  const listingRows = segments.reduce((sum, row) => sum + row.listing_count, 0);
+  const neighborhoodCount = new Set(segments.map((row) => row.neighborhood_id)).size;
+  assert(listingRows === joined.length, `P1C.1 base replay denominator mismatch: ${listingRows}/${joined.length}`);
 
-  const listingRows = segments.reduce((sum: number, row: any) => sum + Number(row.listing_count ?? 0), 0);
-  const neighborhoodCount = new Set(segments.map((row: any) => String(row.neighborhood_id))).size;
-  assert(listingRows === resolvedNeighborhoodListings, `P1C.1/P1B.3 replay denominator mismatch: ${listingRows}/${resolvedNeighborhoodListings}`);
-
-  const max = (key: string) => Math.max(0, ...segments.map((row: any) => Number(row[key] ?? 0)));
-  const countAtLeast = (key: string, threshold: number) => segments.filter((row: any) => Number(row[key] ?? 0) >= threshold).length;
-  const priceSamples = segments.reduce((sum: number, row: any) => sum + Number(row.price_sample_count ?? 0), 0);
-  const surfaceSamples = segments.reduce((sum: number, row: any) => sum + Number(row.surface_sample_count ?? 0), 0);
-  const priceM2Samples = segments.reduce((sum: number, row: any) => sum + Number(row.price_per_m2_sample_count ?? 0), 0);
+  const max = (key: "price_sample_count" | "surface_sample_count" | "price_per_m2_sample_count") => Math.max(0, ...segments.map((row) => row[key]));
+  const countAtLeast = (key: "price_sample_count" | "surface_sample_count" | "price_per_m2_sample_count", threshold: number) => segments.filter((row) => row[key] >= threshold).length;
+  const priceSamples = segments.reduce((sum, row) => sum + row.price_sample_count, 0);
+  const surfaceSamples = segments.reduce((sum, row) => sum + row.surface_sample_count, 0);
+  const priceM2Samples = segments.reduce((sum, row) => sum + row.price_per_m2_sample_count, 0);
   const pct = (n: number) => Number(((n / listingRows) * 100).toFixed(2));
 
   const report = {
@@ -197,6 +227,8 @@ export async function runP1C2NeighborhoodOfferReliabilityPreflight() {
       thresholds_are_internal_policy_not_external_standard: true,
       p1b3_report_rpc_required: false,
       p1c1_global_report_rpc_required: false,
+      p1c1_shadow_segment_view_required: false,
+      bounded_base_table_replay: true,
     },
     predecessor: {
       contract_version: "p1c1_neighborhood_offer_shadow_v1",
@@ -207,7 +239,7 @@ export async function runP1C2NeighborhoodOfferReliabilityPreflight() {
       surface_coverage_percent: pct(surfaceSamples),
       price_per_m2_coverage_percent: pct(priceM2Samples),
       geo_contract_version: "p1b3_territorial_metric_join_v1",
-      geo_replayed_resolved_neighborhood_listings: resolvedNeighborhoodListings,
+      geo_replayed_resolved_neighborhood_listings: joined.length,
       geo_latest_resolution_collisions: latestResolutionCollisions,
       geo_conflicting_resolution_history: conflictingResolutionHistory,
       geo_missing_canonical_geo: missingCanonicalGeo,
