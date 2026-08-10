@@ -1,0 +1,99 @@
+name: UX-SEARCH-3 Card Architecture Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/search/SearchListingCardDark.tsx"
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "components/akarinfo/AkarInfoPassportCard.tsx"
+      - "scripts/audits/ux-search-card-architecture-3.mjs"
+      - "scripts/scrapers/__tests__/ux-search-card-architecture-3.test.ts"
+      - ".github/workflows/ux-search-3-card-architecture.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Card architecture structural contract
+        run: npx tsx --test scripts/scrapers/__tests__/ux-search-card-architecture-3.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        run: |
+          npm run start -- -p 3103 > /tmp/ux3-server.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3103/search?city=Rabat >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ux3-server.log
+          exit 1
+      - name: Review hierarchy, scan speed and responsive density
+        env:
+          BASE_URL: http://127.0.0.1:3103
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/ux-search-card-architecture-3.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ux-search-3-product-design-proof
+          path: data/audits/ux-search-card-architecture-3/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Independently replay structural contract
+        run: npx tsx --test scripts/scrapers/__tests__/ux-search-card-architecture-3.test.ts
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent production server
+        run: |
+          npm run start -- -p 3104 > /tmp/ux3-certifier.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3104/search?city=Rabat >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ux3-certifier.log
+          exit 1
+      - name: Independently replay card architecture certification
+        env:
+          BASE_URL: http://127.0.0.1:3104
+          AUDIT_VARIANT: independent-certifier
+        run: node scripts/audits/ux-search-card-architecture-3.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ux-search-3-independent-proof
+          path: data/audits/ux-search-card-architecture-3/independent-certifier
+          if-no-files-found: error
+          retention-days: 14
