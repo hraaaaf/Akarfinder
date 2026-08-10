@@ -47,6 +47,28 @@ Résultat certifié :
 **Prochain LOT UX/Search : UX-SEARCH-3 — Card Architecture.** Objectif : converger la hiérarchie interne des cards vers IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE, préserver transparence/trust AkarFinder et maintenir la densité certifiée. Gate UX ≥9/10 avant clôture.
 <!-- UX-SEARCH-2-CLOSEOUT-END -->
 
+<!-- UX-SEARCH-3-CLOSEOUT-START -->
+## UX-SEARCH-3 — Card Architecture ✅ CERTIFIED — PR #481
+
+Responsabilité unique : **converger la hiérarchie interne des cards Search vers IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE → ACTION**, sans modifier DATA, ranking, Source Registry, dédup, prix, ordre commercial ni logique Map.
+
+Résultat certifié :
+
+- cards internes et externes utilisent la même séquence visuelle canonique ;
+- mobile **360×800 / 390×844** : 2 colonnes, première annonce **239,5 px**, cartes typiques **342,9 px**, maximum certifié **362,4 px**, 0 overflow ;
+- tablette 768 : 2 colonnes, première annonce **252,3 px** ;
+- desktop 1024 : 3 colonnes ; 1280/1440 : 4 colonnes ; première annonce **250,3 px** ; cartes **398,5 px** puis max **419 px**, 0 overflow ;
+- titres à 2 lignes max ; prix dominant ; localisation, facts et provenance alignés sur un rythme de scan unique ;
+- crédit des photos d’ambiance Rabat placé après la provenance : il ne coupe plus la lecture LOCALISATION → FACTS ;
+- provenance, fraîcheur, source et signaux de confiance restent explicites ; AkarInfo Gateway utilise une variante SERP compacte sans retirer la version complète ;
+- ancien contrat Action Hierarchy réconcilié avec UX-SEARCH-1 : desktop dense garde 0 gros CTA redondant, la card reste directement cliquable et le maximum reste 1 action forte ;
+- exact-head `17d42fc363a126a453b23cd9159f3ce870c406b3` : **30/30 workflows SUCCESS** ;
+- run spécialisé `31442655754` : **Product Design Reviewer PASS + Independent Release Certifier PASS** ;
+- contrat machine six viewports : **10/10** ; audit visuel humain : **9,4/10** — gate ≥9/10 atteint.
+
+**Prochain LOT UX/Search : UX-SEARCH-4 — Visual Inventory System.**
+<!-- UX-SEARCH-3-CLOSEOUT-END -->
+
 
 <!-- DATA-CURRENT-START -->
 ## DATA — vérité courante
@@ -78,7 +100,7 @@ Ensuite **DATA-4.9D** pourra concevoir un canary d'ingestion borné uniquement p
 - `RABAT-REAL-PHOTO-LIBRARY-1` ✅ : PR #468, exact-head `3de085a2058862edc52bab4fe0dcd3aca04a4f4c`, **29/29 workflows exact-head SUCCESS**, **40/40 sources + licences Commons** vérifiées, TypeScript + build PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, 10/10 photos chargées, reload stable, 0 clipping/overflow, mobile **2 colonnes**, audit visuel **9,2/10**, Reviewer PASS, Release Certifier GO, merge `2585017ea377d72b3a54ca1083dbf1b609899ad9`.
 - Rabat real-photo : **40 vraies photos = 8 × Agdal/Hay Riad/Souissi/Océan/Hassan** ; bibliothèque séparée, activation uniquement sur signal `listing.neighborhood` structuré + `fallback_visual`, sans inférence texte.
 - Les 6 villes contextualisées disposent désormais de **12 variantes chacune = 72 IDs contextuels uniques**.
-- Prochain LOT UX/Search : **UX-SEARCH-3 — Card Architecture** ; la convergence Search continue avant le coverage audit illustrations. `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` reste queued read-only, sans nouvel asset par intuition.
+- Prochain LOT UX/Search : **UX-SEARCH-4 — Visual Inventory System** ; `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` devient une preuve read-only intégrée à ce lot, sans nouvel asset par intuition.
 - Ce closeout UX/Search ne modifie aucune décision DATA/Carte ; les sections DATA/Carte ci-dessous restent la propriété de leur lane.
 
 ## Main / LOT actif
