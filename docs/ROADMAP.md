@@ -5,6 +5,26 @@
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
+<!-- UX-SEARCH-1-CLOSEOUT-START -->
+## UX-SEARCH-1 — Density First ✅ CERTIFIED — PR #479
+
+Responsabilité unique : augmenter la densité de scan des résultats Search sans modifier DATA, ranking, filtres, Registry ni logique Map.
+
+- passe initiale Reviewer rejetée : carte desktop **474 px**, au-dessus du gate ; correction puis replay complet ;
+- certification finale exact-head `8e75bc8cf43bd094850c6dbf3453ff6f996d4954` ; run spécialisé `31436735917` ;
+- **Product Design Reviewer PASS** + **Independent Release Certifier PASS** sur deux builds/replays séparés ;
+- **23/23 workflows exact-head SUCCESS** ; TypeScript, production build, Search Truth, dedup, accessibility, UX fast et canary ODM verts ;
+- grille certifiée : **390 px = 2 colonnes**, **768 px = 2**, **1024 px = 3**, **1280/1440 px = 4** ;
+- desktop list : cartes **381 px** de haut à 1024/1280/1440 ; deuxième rangée visible dès **669 px** ; zéro overflow sur les 5 viewports ;
+- mobile 390×844 : cartes **173×321 px**, 2 colonnes conservées, zéro overflow ;
+- split view reste à 2 colonnes avec pane Map préservée ;
+- toutes les informations prix/titre/localisation/facts/fraîcheur/source/confiance sont conservées ; seul le gros CTA redondant disparaît en list desktop ;
+- audit visuel final contre la référence fournie : **densité 9,3/10** — gate ≥9/10 atteint.
+
+**Prochain LOT UX/Search : UX-SEARCH-2 — Compact Search & Filters.** Objectif : réduire la hauteur avant inventaire, sans rouvrir UX-SEARCH-1.
+<!-- UX-SEARCH-1-CLOSEOUT-END -->
+
+
 <!-- DATA-4.7B-CURRENT-START -->
 # 0. État DATA prioritaire — quantité réelle 2026-08-10
 
