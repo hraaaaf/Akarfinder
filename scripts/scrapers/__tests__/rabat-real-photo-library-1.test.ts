@@ -77,6 +77,7 @@ describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
 
   it("keeps property photos authoritative and uses neighborhood photos only for fallback_visual", () => {
     const card = source("components/search/SearchListingCardDark.tsx");
+    const shell = source("components/search/LightZillowSearchShell.tsx");
     const providerThumbnail = card.indexOf('imageMode === "db_provider_thumbnail"');
     const ownedImage = card.indexOf('imageMode !== "fallback_visual"');
     const neighborhoodPhoto = card.indexOf("showNeighborhoodPhoto ?");
@@ -97,6 +98,8 @@ describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
     assert.match(card, /Photo d’ambiance/);
     assert.match(card, /Crédit & licence · Wikimedia Commons/);
     assert.match(card, /data-neighborhood-photo-brand-overlay/);
-    assert.match(card, /repeat\(2, minmax\(0, 1fr\)\)/);
+    assert.match(shell, /grid-cols-2/);
+    assert.match(shell, /lg:grid-cols-3/);
+    assert.match(shell, /xl:grid-cols-4/);
   });
 });
