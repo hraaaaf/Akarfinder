@@ -1,0 +1,39 @@
+{
+  "schema_version": "p1b15-geo-certification-policy-v1",
+  "scope": "Geo foundation certification for transition to P1C Shadow only",
+  "principles": {
+    "read_only": true,
+    "registry_mutation": false,
+    "resolution_mutation": false,
+    "search_ranking_mutation": false,
+    "display_policy_mutation": false,
+    "no_fuzzy_geo_inference": true,
+    "no_name_only_cross_type_geometry_binding": true
+  },
+  "resolution_integrity": {
+    "controlled_canary_seed_count": 13,
+    "controlled_agadir_seed_count": 8,
+    "controlled_oasis_seed_count": 5,
+    "global_resolved_listings_must_be_positive": true,
+    "latest_resolution_collisions_max": 0,
+    "conflicting_resolution_history_max": 0,
+    "missing_canonical_geo_max": 0,
+    "metric_layers_must_remain_off": true
+  },
+  "geometry_integrity": {
+    "casablanca_administrative_geometry_type": "arrondissement",
+    "casablanca_admin_level": "10",
+    "casablanca_topology_audited_features": 16,
+    "certified_neighborhood_polygon_bindings": 0,
+    "neighborhood_choropleth_allowed": false,
+    "map_eligible_does_not_imply_polygon_binding": true
+  },
+  "activation_decision": {
+    "p1c_shadow_allowed": true,
+    "p1c_public_activation_allowed": false,
+    "offer_metric_layer_allowed": false,
+    "p2_neighborhood_choropleth_allowed": false,
+    "administrative_geometry_shadow_allowed": true
+  },
+  "next_lot": "P1C.1 — Offre quartier Shadow"
+}
