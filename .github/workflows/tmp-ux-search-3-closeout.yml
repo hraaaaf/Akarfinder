@@ -1,0 +1,110 @@
+name: TEMP UX-SEARCH-3 Certified Closeout
+
+on:
+  push:
+    branches:
+      - ux/search-card-architecture-3
+    paths:
+      - ".github/workflows/tmp-ux-search-3-closeout.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ux/search-card-architecture-3
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Update canonical UX/Search closeout docs
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          const certifiedHead = '17d42fc363a126a453b23cd9159f3ce870c406b3';
+          const specializedRun = '31442655754';
+          const nextLot = 'UX-SEARCH-4 — Visual Inventory System';
+
+          const closeout = [
+            '<!-- UX-SEARCH-3-CLOSEOUT-START -->',
+            '## UX-SEARCH-3 — Card Architecture ✅ CERTIFIED — PR #481',
+            '',
+            'Responsabilité unique : **converger la hiérarchie interne des cards Search vers IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE → ACTION**, sans modifier DATA, ranking, Source Registry, dédup, prix, ordre commercial ni logique Map.',
+            '',
+            'Résultat certifié :',
+            '',
+            '- cards internes et externes utilisent la même séquence visuelle canonique ;',
+            '- mobile **360×800 / 390×844** : 2 colonnes, première annonce **239,5 px**, cartes typiques **342,9 px**, maximum certifié **362,4 px**, 0 overflow ;',
+            '- tablette 768 : 2 colonnes, première annonce **252,3 px** ;',
+            '- desktop 1024 : 3 colonnes ; 1280/1440 : 4 colonnes ; première annonce **250,3 px** ; cartes **398,5 px** puis max **419 px**, 0 overflow ;',
+            '- titres à 2 lignes max ; prix dominant ; localisation, facts et provenance alignés sur un rythme de scan unique ;',
+            '- crédit des photos d’ambiance Rabat placé après la provenance : il ne coupe plus la lecture LOCALISATION → FACTS ;',
+            '- provenance, fraîcheur, source et signaux de confiance restent explicites ; AkarInfo Gateway utilise une variante SERP compacte sans retirer la version complète ;',
+            '- ancien contrat Action Hierarchy réconcilié avec UX-SEARCH-1 : desktop dense garde 0 gros CTA redondant, la card reste directement cliquable et le maximum reste 1 action forte ;',
+            '- exact-head `' + certifiedHead + '` : **30/30 workflows SUCCESS** ;',
+            '- run spécialisé `' + specializedRun + '` : **Product Design Reviewer PASS + Independent Release Certifier PASS** ;',
+            '- contrat machine six viewports : **10/10** ; audit visuel humain : **9,4/10** — gate ≥9/10 atteint.',
+            '',
+            '**Prochain LOT UX/Search : ' + nextLot + '.**',
+            '<!-- UX-SEARCH-3-CLOSEOUT-END -->'
+          ].join('\n');
+
+          function replaceBetween(text, start, end, replacement) {
+            const a = text.indexOf(start);
+            const b = text.indexOf(end);
+            if (a < 0 || b < a) throw new Error('missing block markers: ' + start + ' / ' + end);
+            return text.slice(0, a) + replacement + text.slice(b + end.length);
+          }
+
+          const readmePath = 'README.md';
+          let readme = fs.readFileSync(readmePath, 'utf8');
+          const readmeBlock = [
+            '<!-- UX-SEARCH-CONVERGENCE-CURRENT-START -->',
+            '### Convergence Search actuelle — UX-SEARCH-1 + UX-SEARCH-2 + UX-SEARCH-3 ✅',
+            '',
+            '- **UX-SEARCH-1 — Density First ✅ PR #479** : mobile 2 colonnes conservé, tablette 2, desktop intermédiaire 3, large desktop 4 ; cartes liste desktop compactées ; densité certifiée **9,3/10**.',
+            '- **UX-SEARCH-2 — Compact Search & Filters ✅ PR #480** : recherche + filtres ramenés à une ligne primaire compacte ; première annonce à **240 px** sur 360/390, **252 px** sur 768 et **250 px** sur 1024/1280/1440 ; touch targets mobiles critiques **48 px** ; 0 overflow ; Product Design Reviewer + Independent Release Certifier PASS ; audit visuel **9,5/10**.',
+            '- **UX-SEARCH-3 — Card Architecture ✅ PR #481** : hiérarchie canonique **IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE**, mobile 2 colonnes préservé, première annonce **239,5 px** sur 360/390 et **250,3 px** sur desktop, hauteur dense desktop max **419 px**, provenance/trust/crédits préservés ; Product Design Reviewer + Independent Release Certifier PASS ; audit visuel **9,4/10**.',
+            '- Les trois lots préservent ranking, DATA, Source Registry, dédup, ordre commercial, prix, Map et informations de confiance/source.',
+            '- **Prochain LOT UX/Search : ' + nextLot + '** : améliorer diversité, pertinence et qualité perçue des visuels réellement rendus, sans inventer de représentation du bien et sans rouvrir DATA/ranking/Registry/Map ; gate UX ≥9/10.',
+            '<!-- UX-SEARCH-CONVERGENCE-CURRENT-END -->'
+          ].join('\n');
+          readme = replaceBetween(readme, '<!-- UX-SEARCH-CONVERGENCE-CURRENT-START -->', '<!-- UX-SEARCH-CONVERGENCE-CURRENT-END -->', readmeBlock);
+          fs.writeFileSync(readmePath, readme);
+
+          const roadmapPath = 'docs/ROADMAP.md';
+          let roadmap = fs.readFileSync(roadmapPath, 'utf8');
+          roadmap = roadmap.replace('UX-SEARCH-1 ✅ PR #479 ; UX-SEARCH-2 ✅ PR #480 ;', 'UX-SEARCH-1 ✅ PR #479 ; UX-SEARCH-2 ✅ PR #480 ; UX-SEARCH-3 ✅ PR #481 ;');
+          if (!roadmap.includes('UX-SEARCH-3 — Card Architecture ✅ CERTIFIED — PR #481')) {
+            const anchor = '<!-- UX-SEARCH-2-CLOSEOUT-END -->';
+            if (!roadmap.includes(anchor)) throw new Error('ROADMAP UX-SEARCH-2 anchor missing');
+            roadmap = roadmap.replace(anchor, anchor + '\n\n' + closeout);
+          }
+          roadmap = roadmap.replace('Exécuter **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1** uniquement : audit read-only de la couverture réelle des fallbacks visuels Search après #468. Mesurer par ville/type/quartier la part thumbnail autorisée, **Rabat real-photo district**, `city_type`, `city`, fallback type et neutre ; mesurer répétition effective, stabilité et taux d’échec des photos distantes. **0 nouvel asset, 0 DATA/Registry/ranking/eligibility/dedupe/Map.** Le district du catalogue d’illustrations historique reste OFF ; le prochain build visuel doit être décidé depuis ces preuves, pas par intuition.', 'Exécuter **' + nextLot + '** uniquement : améliorer la qualité, la diversité et la pertinence perçue de l’inventaire visuel Search à partir des mécanismes truth-safe déjà certifiés. Préserver thumbnail autorisée → photo d’ambiance bornée → illustration contextuelle → fallback type → neutre ; **0 donnée inventée, 0 DATA/Registry/ranking/eligibility/dedupe/Map**. Le coverage audit illustrations reste une preuve read-only à intégrer au lot, pas une lane concurrente.');
+          fs.writeFileSync(roadmapPath, roadmap);
+
+          const sessionPath = 'docs/SESSION.md';
+          let session = fs.readFileSync(sessionPath, 'utf8');
+          if (!session.includes('UX-SEARCH-3 — Card Architecture ✅ CERTIFIED — PR #481')) {
+            const anchor = '<!-- UX-SEARCH-2-CLOSEOUT-END -->';
+            if (!session.includes(anchor)) throw new Error('SESSION UX-SEARCH-2 anchor missing');
+            session = session.replace(anchor, anchor + '\n\n' + closeout);
+          }
+          session = session.replace('- Prochain LOT UX/Search : **UX-SEARCH-3 — Card Architecture** ; la convergence Search continue avant le coverage audit illustrations. `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` reste queued read-only, sans nouvel asset par intuition.', '- Prochain LOT UX/Search : **' + nextLot + '** ; `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` devient une preuve read-only intégrée à ce lot, sans nouvel asset par intuition.');
+          fs.writeFileSync(sessionPath, session);
+          NODE
+      - name: Self-remove and commit certified docs
+        shell: bash
+        run: |
+          rm .github/workflows/tmp-ux-search-3-closeout.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/ROADMAP.md docs/SESSION.md .github/workflows/tmp-ux-search-3-closeout.yml
+          git commit -m "docs(search): certify UX-SEARCH-3 card architecture"
+          git push origin HEAD:ux/search-card-architecture-3
