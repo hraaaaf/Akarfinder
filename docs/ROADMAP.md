@@ -6,46 +6,54 @@
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
 <!-- DATA-4.7B-CURRENT-START -->
-# 0. État DATA prioritaire — quantité réelle 2026-08-10
+# 0. État DATA prioritaire — permission avant ingestion 2026-08-10
 
 > Ce bloc prévaut sur les anciennes mentions DATA plus bas lorsqu'elles désignent un prochain LOT désormais dépassé.
 
-**North Star : augmenter l'inventaire utile réellement admissible sans transformer sitemap, URL détail, fraîcheur, taxonomy ou signal interne en faux nombre de biens.**
+**North Star : augmenter l'inventaire Search réellement admissible. Une URL techniquement accessible mais non autorisée ne constitue pas de la masse exploitable.**
 
-- **DATA-4.9A ✅ #444** — merge `18be46c7349e8a56b2b68b56005d79f85e125675` ; jusqu'à **11 480** identités sitemap net-new brutes observées sur 10 sources live ; 0 mutation.
-- **DATA-4.9B 🟠 #452** — snapshot durci au head `ae4b212e28f6ca0929548299860b04936daea218`, specialized run `31369710665` PASS, artefact `sha256:dce77812b6666b09f29d7e716500cd5abed39e6902fcbcc71a515eeb4680f33d`.
-- Résultat structurel certifié : **10 128 URL identities net-new → 2 326 candidate URL representations + 7 802 rejets**, 0 collision ; **aucun compteur de biens uniques produit par ce LOT**.
+- **DATA-4.9A ✅ #444** — merge `18be46c7349e8a56b2b68b56005d79f85e125675` ; jusqu'à 11 480 identités sitemap brutes.
+- **DATA-4.9B ✅ #452** — merge `45631345a6efb653256273354d2fb903b33c1ff9` ; exact-head final **2 326 structural-detail URL representations**, pas biens uniques, 0 mutation.
+- **DATA-4.9C 🟠 #454** — décision policy sur 6 gagnants structurels.
 
-## DATA-4.9B — rendement structurel par source
+## DATA-4.9C — résultat policy certifié
 
-1. `valfoncier.ma` — **6 195** net-new → **709** candidate URL reps / 5 486 rejets.
-2. `christiesrealestatemorocco.com` — **1 252** → **602** / 650.
-3. `immo-maroc.com` — **1 204** → **276** / 928.
-4. `capital-properties.ma` — **844** → **603** / 241 ; source optionnelle/non bloquante, variantes localisées possibles.
-5. `proimmobilier.ma` — **267** → **99** / 168.
-6. `agadirimmobilier.ma` — **366** → **37** / 329.
+Pre-write :
+- head `78bbcbcd40cbbabb7a46769c8239b58b94aa3682` ; run `31371504161` PASS ; artefact `sha256:07529455c3438f2e6b51461c4f1babce7f80a18ef55fd1ef0b3d83e5657637aa` ;
+- 1 mutation Registry restrictive planifiée : `agadirimmobilier.ma` ;
+- before/after + CAS exact + rollback certifié ;
+- 5 autres sources `remain_unverified` ; 0 `authorized`, 0 `prohibited`.
 
-Truth boundary machine-enforced :
-- candidate rows = **URL representations**, pas biens uniques ;
-- structure pattern ≠ autorisation ;
-- robots/sitemap ≠ permission ;
-- Registry live reste l'autorité ;
-- 0 detail fetch / 0 write / 0 policy change / 0 ingestion / 0 display activation.
+Production :
+- CAS Agadir **1/1** appliqué sans drift ;
+- `authorization_status=permission_required` ; `terms_status=permission_required` ; `content_reuse_policy=permission_required` ; `detail_fetch_policy=permission_required` ;
+- `machine_gate=internal_signal_only` ; `ingestion_gate=internal_signal_only` ; `display_gate=hidden` ; `display_policy=internal_signal_only` ;
+- `current_representation_count=0` ; no-bypass conservé ;
+- 5 autres sources inchangées `unverified + hidden + internal_signal_only`.
 
-## Prochain LOT DATA — DATA-4.9C Source Policy Decision & Registry Assignment
+Post-apply :
+- head `d61e23bf7908d8be14dac718d87603ec9c8e3bb9` ; run `31372192768` PASS ; artefact `sha256:679b2f55bacebac0652bc84f4646e5530df1c53d9e3ebcebfadc7a44d9e942af` ;
+- Agadir = `ALREADY_APPLIED_RESTRICTIVE` ; 5 sources = `NO_MUTATION` ; 12 preuves officielles observées, 0 failure ;
+- CI = 0 Registry write / 0 seed write / 0 detail listing fetch / 0 ingestion / 0 public display.
 
-Responsabilité unique : déterminer puis, si et seulement si les preuves l'autorisent, matérialiser la policy Source Registry des gagnants structurels. **Aucune ingestion d'annonce dans 4.9C.**
+**Registry final : 0 source `limited_public_facts`, 0 `authorized_partner`.**
 
-Priorité : `valfoncier.ma`, `christiesrealestatemorocco.com`, `immo-maroc.com`, `proimmobilier.ma`, `agadirimmobilier.ma`; `capital-properties.ma` reste opportuniste/non bloquant.
+## DATA-4.9D — BLOCKED_BY_POLICY
 
-1. relire preuves officielles actuelles : CGU/terms, robots, pages source pertinentes et Registry live ;
-2. séparer capability technique de permission ;
-3. décider par source `authorized / permission_required / prohibited / remain_unverified` et le mode admissible ;
-4. si décision positive, mutation Registry uniquement, avec before/after manifest et rollback ;
-5. si preuve insuffisante, aucune promotion implicite : `hidden/internal_signal_only` demeure ;
-6. 0 seed write, 0 ingestion, 0 Search activation.
+Ne pas ouvrir de canary d'ingestion : aucun gagnant 4.9B n'a reçu une autorisation exploitable. Le fait d'avoir **2 326 URL reps détail structurelles** ne change pas ce verdict.
 
-**DATA-4.9D** : canary d'ingestion borné, seulement pour les sources dont 4.9C a réellement autorisé un canal exploitable.
+## Prochain LOT DATA — DATA-4.10A Authorization Conversion & Partner Feed Readiness
+
+Strictement read-only / préparation de permission, sans nouveau scraping de contenu.
+
+1. classer les sources par upside structurel : Val Foncier 709 URL reps, Christie's 602, Capital 603 non bloquant, Immo Maroc 276, ProImmobilier 99, AgadirImmobilier.ma 37 ;
+2. recenser uniquement les canaux de contact officiels et les éventuels dispositifs pro/feed/API/partenariat ;
+3. préparer pour chaque source une proposition minimale : canonical link + faits publics strictement bornés, ou feed partenaire/API si disponible ;
+4. expliciter provenance, cadence, suppression, dédup, no-cache/no-detail-fetch selon le mode demandé ;
+5. définir le statut de sortie : `READY_FOR_PERMISSION_OUTREACH`, `PARTNER_FEED_PATH_FOUND`, `NO_CONTACT_PATH`, `DO_NOT_PURSUE` ;
+6. 0 email/message envoyé automatiquement ; 0 mutation Registry ; 0 ingestion ; 0 display activation.
+
+**Après autorisation réelle seulement :** un nouveau lot distinct concevra le canary ingestion/partner-feed avec rollback et certification.
 <!-- DATA-4.7B-CURRENT-END -->
 
 # 1. Cap produit

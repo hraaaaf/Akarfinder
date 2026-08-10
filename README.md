@@ -20,20 +20,20 @@ Ordre de vérité :
 <!-- DATA-4.7B-CURRENT-START -->
 ## État DATA courant — 2026-08-10
 
-La lane DATA distingue strictement **capacité sitemap brute**, **représentations URL de pages détail**, **biens uniques dédupliqués**, **fraîcheur** et **inventaire Search**.
+La lane DATA distingue strictement **capacité technique**, **représentations URL détail**, **biens uniques**, **permission Source Registry**, **ingestion** et **publication Search**.
 
-- **DATA-4.9A ✅ PR #444** — merge `18be46c7349e8a56b2b68b56005d79f85e125675` : onboarding read-only de 11 sources zéro-stock ; jusqu'à **11 480 identités sitemap net-new brutes** observées selon snapshot, sans les appeler annonces.
-- **DATA-4.9B 🟠 PR #452** — High-Capacity Structural Detail Qualification, strictement read-only. Snapshot durci certifié au head `ae4b212e28f6ca0929548299860b04936daea218`, run `31369710665` PASS, artefact `sha256:dce77812b6666b09f29d7e716500cd5abed39e6902fcbcc71a515eeb4680f33d`, observé `2026-08-10T08:24:02.397Z`.
-- **10 128 identités URL net-new** qualifiées sur 6 sources → **2 326 représentations URL structurellement compatibles avec une page détail** + **7 802 rejets explicites** ; 0 collision d'identité sur ce snapshot.
-- Détail candidats URL : Val Foncier **709**, Christie's Morocco **602**, Immo Maroc **276**, AgadirImmobilier.ma **37**, ProImmobilier **99**, Capital Properties **603** (optionnel/non bloquant).
-- **2 326 ≠ 2 326 biens uniques.** Le proof l'impose désormais : `structuralDetailCandidateRowsAreUrlRepresentationsNotUniqueProperties=true` et `deduplicatedUniquePropertyCountProducedByThisLot=false`.
-- Val Foncier illustre le filtre : les pages `/bien-immobilier/<slug>` qualifient, tandis que des milliers de sous-URLs d'attachments/images sont rejetées.
-- 0 detail-page fetch ; 0 DB/Registry/policy write ; 0 ingestion ; 0 activation Search/public display.
-- Registry live : les six sources restent `unverified + hidden + internal_signal_only` avec 0 représentation active ; sitemap/structure n'est jamais une permission.
+- **DATA-4.9A ✅ PR #444** — merge `18be46c7349e8a56b2b68b56005d79f85e125675` : jusqu'à **11 480 identités sitemap net-new brutes**, jamais assimilées à des annonces.
+- **DATA-4.9B ✅ PR #452** — merge `45631345a6efb653256273354d2fb903b33c1ff9` : exact-head final **10 127 URL identities → 2 326 structural-detail candidate URL representations + 7 801 rejets**, 0 collision, 0 mutation. **2 326 ≠ 2 326 biens uniques.**
+- **DATA-4.9C 🟠 PR #454** — Source Policy Decision & Registry Assignment.
+- Pre-write exact-head `78bbcbcd40cbbabb7a46769c8239b58b94aa3682`, run `31371504161` PASS, artefact rollback/plan `sha256:07529455c3438f2e6b51461c4f1babce7f80a18ef55fd1ef0b3d83e5657637aa` : **1 plan CAS restrictif Agadir + 1 rollback**, 5 sources `remain_unverified`, 0 authorization.
+- Mutation production CAS appliquée **1/1** : `agadirimmobilier.ma` → `permission_required` pour réutilisation contenu + detail fetch, tout en restant `hidden + internal_signal_only`, `current_representation_count=0`.
+- Motif : les CGU officielles Agadir vérifiées imposent un usage personnel/non-commercial et exigent un accord écrit préalable pour la reproduction/diffusion/exploitation non autorisée ; robots/sitemap ne remplace jamais cette permission.
+- Post-apply head `d61e23bf7908d8be14dac718d87603ec9c8e3bb9`, run `31372192768` PASS, artefact `sha256:679b2f55bacebac0652bc84f4646e5530df1c53d9e3ebcebfadc7a44d9e942af` : Agadir `ALREADY_APPLIED_RESTRICTIVE`, 5 sources `NO_MUTATION`, **12/12 preuves officielles relues sans failure**, 0 write CI, 0 ingestion/display/seed activation.
+- Registry final : Agadir = `permission_required`; Val Foncier, Christie's Morocco, Immo Maroc, ProImmobilier, Capital Properties = `unverified`; **0 source `limited_public_facts` / `authorized_partner`**.
 
-**Prochain LOT : DATA-4.9C — Source Policy Decision & Registry Assignment.** Revue actuelle des preuves officielles/CGU/robots et décision par source. Aucune ingestion dans ce lot ; une mutation du Source Registry n'est permise que si les preuves justifient explicitement la policy choisie, sinon la source reste fail-closed.
+**Décision : DATA-4.9D ingestion canary = BLOCKED_BY_POLICY.** Aucun canary d'ingestion de ces sources ne doit être ouvert tant qu'une source n'obtient pas une autorisation exploitable.
 
-**DATA-4.9D** ne pourra être qu'un canary d'ingestion borné/rollback-ready pour les sources réellement autorisées par 4.9C.
+**Prochain LOT masse : DATA-4.10A — Authorization Conversion & Partner Feed Readiness**, read-only : transformer les gagnants structurels en dossiers de permission/partenariat concrets (impact potentiel, contact officiel, proposition de mode link+facts/feed, exigences de provenance/dédup, critères d'acceptation) sans scraper davantage et sans envoyer de message automatiquement.
 <!-- DATA-4.7B-CURRENT-END -->
 
 ## Doctrine
