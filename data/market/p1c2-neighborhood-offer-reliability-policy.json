@@ -1,0 +1,68 @@
+{
+  "schema_version": "p1c2-neighborhood-offer-reliability-policy-v1",
+  "scope": "Internal-only reliability evaluation for P1C.1 neighborhood offer Shadow metrics",
+  "metric_levels": ["insufficient", "limited", "moderate", "strong"],
+  "metric_thresholds": {
+    "limited": {
+      "min_sample_count": 5,
+      "min_field_coverage_percent": 50,
+      "min_fresh_sample_percent": 50,
+      "min_source_domain_count": 2,
+      "max_outlier_percent": 30,
+      "max_iqr_to_median_ratio": 1.5
+    },
+    "moderate": {
+      "min_sample_count": 10,
+      "min_field_coverage_percent": 60,
+      "min_fresh_sample_percent": 60,
+      "min_source_domain_count": 2,
+      "max_outlier_percent": 20,
+      "max_iqr_to_median_ratio": 1.0
+    },
+    "strong": {
+      "min_sample_count": 20,
+      "min_field_coverage_percent": 75,
+      "min_fresh_sample_percent": 70,
+      "min_source_domain_count": 3,
+      "max_outlier_percent": 15,
+      "max_iqr_to_median_ratio": 0.75
+    }
+  },
+  "segment_sample_health_thresholds": {
+    "limited": {
+      "min_listing_count": 5,
+      "min_fresh_listing_percent": 50,
+      "min_source_domain_count": 2
+    },
+    "moderate": {
+      "min_listing_count": 10,
+      "min_fresh_listing_percent": 60,
+      "min_source_domain_count": 2
+    },
+    "strong": {
+      "min_listing_count": 20,
+      "min_fresh_listing_percent": 70,
+      "min_source_domain_count": 3
+    }
+  },
+  "metric_catalog": ["price_mad", "surface_m2", "price_per_m2_mad"],
+  "outlier_rule": "Tukey 1.5 IQR fences",
+  "dispersion_rule": "IQR / median for positive-value metrics",
+  "principles": {
+    "thresholds_are_internal_policy_not_external_standard": true,
+    "missing_metric_rows_are_explicit": true,
+    "less_than_five_samples_is_always_insufficient": true,
+    "sample_sizes_disclosed": true,
+    "sale_and_rent_are_never_mixed": true,
+    "reliability_does_not_activate_public_metrics": true,
+    "market_representativeness_requires_separate_acquisition_certification": true,
+    "no_fuzzy_geo_inference": true
+  },
+  "activation_boundary": {
+    "public_activation": false,
+    "metric_layers_activated": false,
+    "market_representativeness_certified": false,
+    "p1c3_review_candidate_levels": ["moderate", "strong"],
+    "p1c3_auto_activation": false
+  }
+}
