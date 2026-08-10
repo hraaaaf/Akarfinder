@@ -189,11 +189,17 @@ Pilote P1 Agadir : **12 assets déterministes = 4 ville + 4 Appartement + 4 Vill
 
 Certification : head `f6b1d15e92636439dfca8128e54892fbf32b95a6`, **20/20 workflows exact-head verts**, specialized P1 + predecessor P0 PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, **12/12 assets uniques**, reload stable, 0 label/prix tronqué et 0 overflow. Smoke global **48 captures / 0 finding**. Audit UX **9,4/10**, Reviewer PASS, Release Certifier GO. Artefact `sha256:46441308c3449fe1fabef5c8cd651ae9700cd52f91b190190b153ca7f8152860`. Merge `a2e92ac6c4385792744ab7bf3e105663d040bc9d`, post-merge `main` + tree exact vérifiés.
 
-Prochain lot UX/Search : **CONTEXTUAL-ILLUSTRATIONS-SCALE-1** — étendre le système à d’autres villes/types en conservant le même contrat déterministe et truth-safe, sans activer de district non certifié et sans changer ranking, priorité commerciale, éligibilité, dedupe, DATA, Registry ou Map.
+### CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448
+
+Extension bornée du système P0/P1 aux deux villes à plus fort impact restant après Agadir : **Marrakech + Casablanca**. Chaque ville dispose désormais de **4 variantes ville + 4 Appartement + 4 Villa**, soit **24 variantes certifiées** sur la cohorte SCALE-1. Le resolver HRW/Rendezvous, l'identité stable `original_url`, la priorité des thumbnails autorisées, les fallbacks type/neutre et le label `Illustration` restent inchangés. Agadir P1 est rejoué comme predecessor ; Rabat, Tanger et Fès restent singleton dans ce lot. Aucun district n'est activé.
+
+Certification : head final `3a4df096c16cf1fe1f9c051dfd24f59bd750b5a4`, **21/21 workflows exact-head verts**, specialized SCALE-1 + Agadir P1 + P0 + Unified Card + Search Truth PASS, TypeScript + build PASS. Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : **24/24 asset IDs uniques**, images hors écran explicitement hydratées (`complete && naturalWidth > 0`) avant capture, reload stable, 0 label/prix tronqué et 0 overflow. Audit UX **9,3/10**, Reviewer PASS, Release Certifier GO. Artefact `sha256:b80d2539afea1fda4bfc8e515fe94ffe7821aee0d2f71c45e29c844f586ca8f5`. Merge `081d51ebd38ff728366694aca9ae6c1923a54fe5`, post-merge `main` + tree exact vérifiés.
+
+Prochain lot UX/Search : **CONTEXTUAL-ILLUSTRATIONS-SCALE-2** — étendre de façon bornée les pools aux villes encore singleton à plus fort impact restant (**Rabat + Tanger + Fès**), en conservant le même resolver déterministe/truth-safe, `Illustration`, les fallbacks existants et district OFF. Aucun changement ranking, priorité commerciale, éligibilité, dedupe, DATA, Registry ou Map n'est implicite.
 
 ### DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416
 
-La provenance publique Search est désormais calculée par un resolver canonique fail-closed plutôt que rendue depuis des labels libres. Gateway dérive l'identité depuis `source_id` et la configuration source canonique ; les listings persistés utilisent les signaux structurés d'accès/display plus une allowlist de marques ; AkarInfo consomme le même resolver. Les noms bruts inconnus ne sont jamais réémis dans l'UI.
+La provenance publique Search est désormais calculée par un resolver canonique fail-closed plutôt que rendue depuis des labels libres. Gateway dérive l’identité depuis `source_id` et la configuration source canonique ; les listings persistés utilisent les signaux structurés d'accès/display plus une allowlist de marques ; AkarInfo consomme le même resolver. Les noms bruts inconnus ne sont jamais réémis dans l'UI.
 
 Certification : head `ab4a05ec21434fb414628a181a11adddd68d8293`, **26/26 workflows exact-head verts**, preuve déterministe **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, 0 overflow, 0 prix tronqué et fixtures avec labels bruts empoisonnés sans fuite. Benchmark UX/Search Reviewer **PASS 9,4/10** (mobile 9,4 / desktop 9,3), Reviewer technique PASS (`4891678670`), Release Certifier GO (`4891679276`). Merge `80da5a2abf2d3a7d74dafa6c6043ffe7176929d7`.
 

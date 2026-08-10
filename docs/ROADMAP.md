@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-10**  
-**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -314,7 +314,28 @@ Résultat certifié :
 - artefact `sha256:46441308c3449fe1fabef5c8cd651ae9700cd52f91b190190b153ca7f8152860` ;
 - merge `a2e92ac6c4385792744ab7bf3e105663d040bc9d`, post-merge `main` + tree exact vérifiés.
 
-**Prochain lot UX/Search : CONTEXTUAL-ILLUSTRATIONS-SCALE-1.** Étendre le catalogue à d'autres villes/types de façon bornée et mesurable, conserver le resolver déterministe et la disclosure `Illustration`, et laisser tout tier district inactif tant que Search n'expose pas une donnée quartier structurée et certifiée. Aucun changement ranking/commercial priority/eligibility/dedupe/DATA/Registry/Map n'est implicite dans ce lot.
+## CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ CLOSED — PR #448
+
+Responsabilité unique : **étendre la réduction de répétition contextuelle aux deux villes à plus fort impact suivant Agadir — Marrakech + Casablanca — sans modifier le resolver ni les décisions métier**.
+
+Résultat certifié :
+
+- **24 assets SCALE-1** : Marrakech 4 ville + 4 `Appartement` + 4 `Villa`; Casablanca 4 ville + 4 `Appartement` + 4 `Villa` ;
+- 22 nouveaux SVG locaux ; les assets ville historiques Marrakech/Casablanca restent `city-01` ;
+- resolver P0 inchangé : HRW/Rendezvous déterministe à partir de l'identité stable `original_url` ;
+- `Appartement` et `Villa` utilisent `city_type`; les autres types reconnus utilisent le pool `city` ;
+- Agadir P1 12 variantes est rejoué comme predecessor et reste intégralement vert ;
+- Rabat, Tanger et Fès restent singleton dans SCALE-1 ;
+- `district` et `districtType` restent vides ; aucune inférence quartier/titre/snippet/description ;
+- thumbnail autorisée reste prioritaire ; fallback type et fallback neutre préservés ;
+- disclosure publique uniforme `Illustration` ;
+- **21/21 workflows exact-head verts** sur `3a4df096c16cf1fe1f9c051dfd24f59bd750b5a4` ; specialized SCALE-1 + Agadir P1 + P0 + Unified Card + Search Truth PASS ;
+- Chromium exact-head **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : **24/24 asset IDs uniques**, images lazy hors écran explicitement hydratées avant capture, reload stable, 0 label tronqué, 0 prix tronqué, 0 overflow ;
+- audit visuel **9,3/10**, Reviewer PASS, Release Certifier GO ;
+- artefact `sha256:b80d2539afea1fda4bfc8e515fe94ffe7821aee0d2f71c45e29c844f586ca8f5` ;
+- merge `081d51ebd38ff728366694aca9ae6c1923a54fe5`, post-merge `main` + tree exact vérifiés.
+
+**Prochain lot UX/Search : CONTEXTUAL-ILLUSTRATIONS-SCALE-2.** Étendre les pools aux trois villes encore singleton à plus fort impact restant — **Rabat + Tanger + Fès** — de façon bornée et mesurable. Conserver le resolver déterministe, la disclosure `Illustration`, la priorité des thumbnails autorisées et les fallbacks type/neutre ; laisser tout tier district inactif tant que Search n'expose pas une donnée quartier structurée et certifiée. Aucun changement ranking/commercial priority/eligibility/dedupe/DATA/Registry/Map n'est implicite dans ce lot.
 
 # 4. Lane UX / Carte
 
@@ -505,7 +526,7 @@ Scope respecté, Benchmark Reviewer si UX majeur, Reviewer indépendant PASS, te
 
 ## UX / Search
 
-Exécuter **CONTEXTUAL-ILLUSTRATIONS-SCALE-1** uniquement : étendre les pools contextuels à d'autres villes/types sur la fondation #437 et le pilote Agadir #445, de façon bornée et déterministe. Conserver `Illustration`, la priorité des thumbnails autorisées, les fallbacks type/neutre et l'absence totale de district tant qu'aucun signal quartier structuré certifié n'est disponible. Aucun changement ranking, priorité commerciale, éligibilité, dedupe, DATA, Source Registry ou Map. Rejouer le Benchmark UX/Search Reviewer et le protocole Chromium multi-viewport ; score UX cible ≥ **9/10**.
+Exécuter **CONTEXTUAL-ILLUSTRATIONS-SCALE-2** uniquement : étendre les pools contextuels aux villes encore singleton à plus fort impact restant, **Rabat + Tanger + Fès**, sur la fondation #437, le pilote Agadir #445 et SCALE-1 #448. Conserver `Illustration`, la priorité des thumbnails autorisées, les fallbacks type/neutre et l'absence totale de district tant qu'aucun signal quartier structuré certifié n'est disponible. Aucun changement ranking, priorité commerciale, éligibilité, dedupe, DATA, Source Registry ou Map. Rejouer le Benchmark UX/Search Reviewer et le protocole Chromium multi-viewport avec hydratation explicite des images hors écran ; score UX cible ≥ **9/10**.
 
 ## UX / Carte
 
