@@ -1,0 +1,136 @@
+name: P1C.4A Acquisition Source Universe Gate
+
+on:
+  pull_request:
+    paths:
+      - 'data/market/p1c4a-acquisition-source-universe.json'
+      - 'scripts/audits/p1c4a-acquisition-source-universe.ts'
+      - 'scripts/scrapers/__tests__/p1c4a-acquisition-source-universe.test.ts'
+      - '.github/workflows/p1c4a-acquisition-source-universe.yml'
+      - '.github/workflows/p1c4-acquisition-representativeness.yml'
+      - 'docs/CARTE_ROADMAP.md'
+  push:
+    branches: [main]
+    paths:
+      - 'data/market/p1c4a-acquisition-source-universe.json'
+      - 'scripts/audits/p1c4a-acquisition-source-universe.ts'
+      - 'scripts/scrapers/__tests__/p1c4a-acquisition-source-universe.test.ts'
+      - '.github/workflows/p1c4a-acquisition-source-universe.yml'
+      - '.github/workflows/p1c4-acquisition-representativeness.yml'
+      - 'docs/CARTE_ROADMAP.md'
+
+permissions:
+  contents: read
+
+jobs:
+  reviewer-p1c4a-source-universe:
+    name: Reviewer — P1C.4A source universe
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Static denominator and read-only boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('data/market/p1c4a-acquisition-source-universe.json','utf8'));
+          const audit=fs.readFileSync('scripts/audits/p1c4a-acquisition-source-universe.ts','utf8');
+          if(d.schema_version!=='p1c4a-acquisition-source-universe-v1') throw new Error('P1C.4A schema drift');
+          const s=d.scope;
+          if(s.city_slug!=='marrakech'||s.neighborhood_slug!=='gueliz'||s.transaction_type!=='rent'||s.metric_name!=='surface_m2') throw new Error('P1C.4A scope drift');
+          if(!d.denominator_design_version||d.contract.p1c4a_is_read_only!==true) throw new Error('P1C.4A version/read-only boundary missing');
+          if(d.contract.source_list_frozen_before_numerator!==true||d.contract.observed_p1c3_sources_used_to_define_universe!==false) throw new Error('P1C.4A denominator independence missing');
+          if(d.contract.public_index_is_discovery_evidence_not_inventory_depth!==true) throw new Error('P1C.4A SERP-depth guard missing');
+          if(d.contract.robots_or_sitemap_visibility_is_not_authorization!==true||d.contract.source_policy_registry_remains_acquisition_authority!==true) throw new Error('P1C.4A authorization boundary missing');
+          if(d.contract.unknown_scope_is_not_exclusion!==true||d.contract.no_arbitrary_numeric_market_coverage_threshold!==true) throw new Error('P1C.4A fail-closed market boundary missing');
+          if(d.current_expected_status!=='DESIGNED_NOT_PROVEN'||d.current_expected_verdict!=='P1C4A_DENOMINATOR_DESIGN_COMPLETE_EVIDENCE_GAPS') throw new Error('P1C.4A expected verdict drift');
+          if(!Array.isArray(d.baseline_expected_sources)||d.baseline_expected_sources.length<=3) throw new Error('P1C.4A baseline collapsed to observed cohort');
+          const domains=d.baseline_expected_sources.map(x=>x.source_domain);
+          if(new Set(domains).size!==domains.length) throw new Error('P1C.4A duplicate baseline source');
+          for(const row of d.baseline_expected_sources) if(!row.independent_inclusion_basis) throw new Error(`missing independent inclusion basis: ${row.source_domain}`);
+          for(const mutation of ['.insert(','.update(','.delete(','.upsert(','apply_migration','create_branch(']) if(audit.includes(mutation)) throw new Error(`P1C.4A audit must be DB read-only: ${mutation}`);
+          NODE
+          if compgen -G 'supabase/migrations/*p1c4a*' > /dev/null; then
+            echo 'P1C.4A is read-only; DATA writes require a separate lot'
+            exit 1
+          fi
+
+      - name: No public runtime consumer
+        run: |
+          if grep -R -n -E 'p1c4a-acquisition-source-universe|P1C4A_DENOMINATOR' app components lib --exclude-dir=node_modules; then
+            echo 'P1C.4A design must not be consumed by public runtime/UI'
+            exit 1
+          fi
+
+      - name: Decision semantics
+        run: npx tsx --test scripts/scrapers/__tests__/p1c4a-acquisition-source-universe.test.ts
+
+      - name: Live read-only source-universe audit
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1c4a-acquisition-source-universe.ts
+
+      - name: Reviewer fail-closed assertions
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/p1c4a-acquisition-source-universe.json');
+          if(r.verdict!=='P1C4A_DENOMINATOR_DESIGN_COMPLETE_EVIDENCE_GAPS'||r.certification.status!=='DESIGNED_NOT_PROVEN') throw new Error(JSON.stringify(r));
+          if(r.baseline.independent_from_p1c3_observed_cohort!==true||r.baseline.frozen_before_numerator!==true) throw new Error('baseline independence drift');
+          if(r.baseline.source_count<=3||r.baseline.registry_missing_domains.length!==0) throw new Error('baseline registry contract drift');
+          if(r.challenger.domains_outside_frozen_baseline.length===0) throw new Error('challenger no longer invalidates baseline completeness; re-review required');
+          if(r.challenger.domains_outside_source_policy_registry.length===0) throw new Error('Source Registry gap no longer present; re-review required');
+          if(r.challenger.serp_or_public_index_signal_proves_inventory_depth!==false) throw new Error('SERP depth was misclassified');
+          if(r.denominator.source_universe_proven_complete!==false||r.denominator.independent_denominator_defined!==false||r.denominator.numerator_evaluation_allowed!==false) throw new Error('denominator was promoted without proof');
+          if(r.denominator.market_coverage_percentage!==null||r.denominator.arbitrary_numeric_threshold_used!==false) throw new Error('unsupported market coverage asserted');
+          if(r.contract.read_only!==true||r.contract.db_mutation!==false||r.contract.source_registry_write!==false||r.contract.public_activation!==false||r.contract.metric_layers_activated!==false||r.contract.p1c5_opened!==false) throw new Error('P1C.4A boundary drift');
+          if(r.contract.new_acquisition_requires_separate_data_lot!==true) throw new Error('DATA handoff boundary missing');
+          NODE
+
+      - name: Roadmap handoff
+        run: |
+          grep -q 'P1C.4.*Acquisition Representativeness Qualification.*✅ CLOSED' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.4A.*Acquisition Source Universe & Denominator Design.*✅ CLOSED' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.5.*LOCKED\|P1C.5.*🔒' docs/CARTE_ROADMAP.md
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+  certifier-p1c4a-release:
+    name: Release Certifier — P1C.4A fail-closed
+    needs: reviewer-p1c4a-source-universe
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Independent live certification replay
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1c4a-acquisition-source-universe.ts
+
+      - name: Certify exact fail-closed boundary
+        run: |
+          node - <<'NODE'
+          const d=require('./data/market/p1c4a-acquisition-source-universe.json');
+          const r=require('./data/audits/runtime/p1c4a-acquisition-source-universe.json');
+          if(r.denominator_design_version!==d.denominator_design_version) throw new Error('design/audit version mismatch');
+          if(r.verdict!==d.current_expected_verdict||r.certification.status!==d.current_expected_status) throw new Error('P1C.4A verdict mismatch');
+          if(r.certification.classification_input.observed_sources_used_to_define_universe!==false) throw new Error('circular universe detected');
+          if(r.certification.classification_input.per_source_inventory_depth_unproven_count===0) throw new Error('inventory-depth proof unexpectedly complete; re-review required');
+          if(r.contract.db_mutation||r.contract.source_registry_write||r.contract.discovery_write||r.contract.listing_write||r.contract.geo_write||r.contract.source_policy_change||r.contract.search_change||r.contract.ranking_change||r.contract.public_activation) throw new Error('P1C.4A write/runtime boundary violated');
+          if(r.next_boundary!==d.next_boundary) throw new Error('fail-closed DATA handoff mismatch');
+          console.log('P1C4A_RELEASE_CERTIFIED_FAIL_CLOSED');
+          NODE
