@@ -13,25 +13,24 @@ function positionOrFail(content: string, needle: string) {
 }
 
 describe("UNIFIED-LISTING-CARD-1", () => {
-  it("keeps the external Search card on the canonical decision hierarchy", () => {
+  it("keeps the external Search card on the inventory-first decision hierarchy", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
     const image = positionOrFail(card, "showThumbnail && !thumbError");
-    const price = positionOrFail(card, "formatIndexedPrice(result.normalized_price_mad)");
     const title = positionOrFail(card, '<h3 className="mt-1.5');
     const location = positionOrFail(card, 'result.normalized_city || "Localisation non précisée"');
     const facts = positionOrFail(card, "facts.length > 0");
+    const price = positionOrFail(card, "formatIndexedPrice(result.normalized_price_mad)");
     const provenance = positionOrFail(card, "data-public-attribution-type");
-    const passport = positionOrFail(card, "<AkarInfoPassportCard passport={passport}");
-    const action = positionOrFail(card, 'publicAttribution.primaryCtaLabel ?? "Voir la source originale"');
+    const action = positionOrFail(card, 'href={result.original_url}');
 
-    assert.ok(image < price, "IMAGE must precede PRICE");
-    assert.ok(price < title, "PRICE must precede TITLE");
+    assert.ok(action < image, "the whole card must remain the external action target");
+    assert.ok(image < title, "IMAGE must precede TITLE");
     assert.ok(title < location, "TITLE must precede LOCATION");
     assert.ok(location < facts, "LOCATION must precede FACTS");
-    assert.ok(facts < provenance, "FACTS must precede PROVENANCE");
-    assert.ok(provenance < action, "PROVENANCE must precede ACTION");
-    assert.ok(passport < action, "ACTION must remain the final desktop decision step");
+    assert.ok(facts < price, "FACTS must precede PRICE");
+    assert.ok(price < provenance, "PRICE must precede PROVENANCE");
+    assert.doesNotMatch(card, /AkarInfoPassportCard/);
   });
 
   it("fails visibly closed when normalized facts are unavailable", () => {
