@@ -1,0 +1,139 @@
+{
+  "schemaVersion": "data-4-9c-source-policy-decisions-v1",
+  "lot": "DATA-4.9C",
+  "reviewDate": "2026-08-10",
+  "doctrine": {
+    "robotsOrSitemapIsNotPermission": true,
+    "absenceOfTermsIsNotPermission": true,
+    "noImplicitAuthorization": true,
+    "ingestionAuthorizedByThisLot": false,
+    "publicDisplayAuthorizedByThisLot": false
+  },
+  "sources": [
+    {
+      "sourceDomain": "agadirimmobilier.ma",
+      "decision": "permission_required",
+      "registryMutationPlanned": true,
+      "evidence": [
+        {
+          "url": "https://agadirimmobilier.ma/termes-et-conditions/",
+          "kind": "official_terms",
+          "requiredPhrases": [
+            "usage personnel et non commercial",
+            "Toute reproduction, diffusion ou exploitation non autorisée"
+          ]
+        },
+        {
+          "url": "https://agadirimmobilier.ma/robots.txt",
+          "kind": "official_robots",
+          "requiredPhrases": []
+        }
+      ],
+      "rationale": "Official terms expressly limit site services to personal/non-commercial use and require prior written agreement for reproduction, distribution or exploitation of protected site content. Robots capability does not override those terms.",
+      "target": {
+        "authorization_status": "permission_required",
+        "terms_status": "permission_required",
+        "content_reuse_policy": "permission_required",
+        "detail_fetch_policy": "permission_required",
+        "partnership_required": true,
+        "legal_review_required": true,
+        "recommended_action": "obtain_written_permission_before_content_reuse_or_detail_fetch",
+        "machine_gate": "internal_signal_only",
+        "ingestion_gate": "internal_signal_only",
+        "display_gate": "hidden",
+        "display_policy": "internal_signal_only"
+      }
+    },
+    {
+      "sourceDomain": "valfoncier.ma",
+      "decision": "remain_unverified",
+      "registryMutationPlanned": false,
+      "evidence": [
+        {
+          "url": "https://valfoncier.ma/",
+          "kind": "official_site",
+          "requiredPhrases": ["VAL FONCIER"]
+        },
+        {
+          "url": "https://valfoncier.ma/robots.txt",
+          "kind": "official_robots",
+          "requiredPhrases": []
+        }
+      ],
+      "rationale": "Current reviewed official evidence establishes a public site and technical discovery capability but does not provide an explicit reuse license. Absence of a reuse grant cannot be converted into authorization."
+    },
+    {
+      "sourceDomain": "christiesrealestatemorocco.com",
+      "decision": "remain_unverified",
+      "registryMutationPlanned": false,
+      "evidence": [
+        {
+          "url": "https://www.christiesrealestatemorocco.com/en/legal-notice-fee-schedule/",
+          "kind": "official_legal_notice",
+          "requiredPhrases": ["Legal Notice", "Editors"]
+        },
+        {
+          "url": "https://www.christiesrealestatemorocco.com/robots.txt",
+          "kind": "official_robots",
+          "requiredPhrases": []
+        }
+      ],
+      "rationale": "The official legal notice identifies the publisher and fee schedule but the reviewed evidence does not grant AkarFinder a reuse license. No authorization is inferred."
+    },
+    {
+      "sourceDomain": "immo-maroc.com",
+      "decision": "remain_unverified",
+      "registryMutationPlanned": false,
+      "evidence": [
+        {
+          "url": "https://en.immo-maroc.com/",
+          "kind": "official_site",
+          "requiredPhrases": ["Immobilier International Marrakech"]
+        },
+        {
+          "url": "https://immo-maroc.com/robots.txt",
+          "kind": "official_robots",
+          "requiredPhrases": []
+        }
+      ],
+      "rationale": "Current official site evidence does not provide an explicit reuse license. Public availability and sitemap/robots capability are not permission."
+    },
+    {
+      "sourceDomain": "proimmobilier.ma",
+      "decision": "remain_unverified",
+      "registryMutationPlanned": false,
+      "evidence": [
+        {
+          "url": "https://proimmobilier.ma/",
+          "kind": "official_site",
+          "requiredPhrases": ["Proimmobilier"]
+        },
+        {
+          "url": "https://proimmobilier.ma/robots.txt",
+          "kind": "official_robots",
+          "requiredPhrases": []
+        }
+      ],
+      "rationale": "The official site reserves rights but the exact legal scope for minimal factual/link-only indexing is not resolved by the reviewed evidence. Fail closed as unverified; do not infer permission or prohibition."
+    },
+    {
+      "sourceDomain": "capital-properties.ma",
+      "decision": "remain_unverified",
+      "registryMutationPlanned": false,
+      "nonBlocking": true,
+      "evidence": [
+        {
+          "url": "https://www.capital-properties.ma/en/",
+          "kind": "official_site",
+          "requiredPhrases": ["CAPITAL PROPERTIES"]
+        },
+        {
+          "url": "https://www.capital-properties.ma/robots.txt",
+          "kind": "official_robots",
+          "requiredPhrases": []
+        }
+      ],
+      "rationale": "The official site states that rights are reserved, but the precise scope for minimal factual/link-only indexing is not established by this evidence. Keep unverified and hidden; availability cannot block the lane."
+    }
+  ]
+}
