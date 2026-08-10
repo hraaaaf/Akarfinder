@@ -356,3 +356,16 @@ Prochaine étape :
 - **Double check / score :** **non scoré** car audit interrompu avant verdict et avant définition d’un lot ; aucune note artificielle n’est créée.
 - **Blocker :** P1C.4A reste `DESIGNED_NOT_PROVEN`, P1C.4 `NOT_CERTIFIABLE`, P1C.5 `LOCKED`; Offre quartier publique OFF jusqu’à preuve DATA exact-scope et replays certifiés.
 - **Prochaine étape :** ne pas créer de roadmap parallèle. Suivre strictement : DATA exact-scope evidence → replay P1C.4A → replay P1C.4 → éventuel P1C.5, avec double check et score ≥9 à chaque étape.
+
+## PR #475 — Search visual window alignment — BLOCKED / DEPENDENT ON #474
+
+- **Lane :** UX / Search visual documentation.
+- **Responsabilité :** aligner l’audit visuel Search et le programme de représentation visuelle sur la roadmap unifiée, sans code runtime.
+- **Dépendances :** base empilée `feat/mass-first-search-quality-policy` / PR #474 ; Product Design capture evidence ; closeout Rabat real-photo #468/#471 ; coordination avec #473.
+- **Branche :** `audit/live-rabat-search-20260810`.
+- **PR :** #475, draft, base #474.
+- **État :** `BLOCKED / DEPENDENT` — ne doit pas être mergée indépendamment avant réconciliation/merge de #474.
+- **Preuves :** run Product Design `31417065973` SUCCESS ; artifact `9073861382`, digest `sha256:355a13772550fe1fdc735a088311213207ab02989757206d88da9ca9d0f65363` ; diff annoncé docs-only `docs/ROADMAP.md` + `docs/SESSION.md`.
+- **Double check / score :** aucune note finale indépendante de la PR #475 n’est encore canonique ; **non certifiée**.
+- **Blocker :** #474 vient d’avancer sur les mêmes deux fichiers canoniques ; #475 doit être réalignée/rebasée après stabilisation de #474 pour préserver les ajouts cross-window et éviter un écrasement documentaire.
+- **Prochaine étape :** après #474 stabilisée/mergée, retarget/rebase #475 sur current `main`, vérifier un diff strictement docs-only, rejouer double check + score ≥9 avant toute certification/merge.
