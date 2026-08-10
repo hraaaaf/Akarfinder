@@ -72,7 +72,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
       data-unified-listing-card
       className="group flex min-w-0 flex-col overflow-hidden rounded-[20px] border border-border/10 bg-card shadow-[0_5px_16px_rgba(2,10,24,0.08)] transition duration-300 hover:border-bronze-500/35 sm:rounded-2xl sm:border-border/15 sm:shadow-[0_12px_34px_rgba(2,10,24,0.12)] sm:hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/[0.045]"
     >
-      <div className="relative h-[164px] w-full flex-shrink-0 overflow-hidden bg-white sm:h-[220px]">
+      <div data-card-image className="relative h-[164px] w-full flex-shrink-0 overflow-hidden bg-white sm:h-[196px]">
         {showThumbnail && !thumbError ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -113,9 +113,10 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col p-3 sm:p-5">
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
         <p
           data-mobile-price
+          data-card-price
           className={hasPrice
             ? "truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-deepblue dark:text-white sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-bronze-500 dark:sm:text-bronze-300"
             : "min-h-[2.05em] whitespace-normal text-[0.92rem] font-extrabold leading-[1.05] tracking-[-0.02em] text-deepblue dark:text-white sm:min-h-0 sm:whitespace-nowrap sm:text-[1.25rem] sm:leading-none sm:text-bronze-500 dark:sm:text-bronze-300"}
@@ -128,39 +129,39 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
           </p>
         ) : null}
 
-        <h3 className="mt-1.5 line-clamp-1 text-[12.5px] font-extrabold leading-snug text-foreground transition group-hover:text-bronze-600 dark:text-white sm:mt-3 sm:line-clamp-2 sm:text-[1.02rem] dark:group-hover:text-bronze-300">
+        <h3 data-card-title className="mt-1.5 line-clamp-2 text-[12.5px] font-extrabold leading-snug text-foreground transition group-hover:text-bronze-600 dark:text-white sm:mt-2.5 sm:line-clamp-2 sm:text-[1.02rem] dark:group-hover:text-bronze-300">
           {sanitizedTitle}
         </h3>
 
-        <p className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-muted-foreground sm:mt-1.5 sm:gap-1.5 sm:text-[13px]">
+        <p data-card-location className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-muted-foreground sm:mt-1.5 sm:gap-1.5 sm:text-[13px]">
           <MapPin size={11} className="shrink-0 text-bronze-500 sm:h-[13px] sm:w-[13px]" aria-hidden="true" />
           <span className="truncate">{result.normalized_city || "Localisation non précisée"}</span>
         </p>
 
-        <div className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[9.5px] font-bold text-foreground/65 dark:text-white/65 sm:mt-3 sm:flex-wrap sm:gap-x-3 sm:gap-y-1.5 sm:text-[12px]">
+        <div data-card-facts className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[10px] font-bold text-foreground/65 dark:text-white/65 sm:mt-2.5 sm:flex-wrap sm:gap-x-3 sm:gap-y-1.5 sm:text-[12px]">
           {facts.length > 0 ? facts.slice(0, 3).map((fact) => <span key={fact}>{fact}</span>) : <span>Informations à compléter</span>}
         </div>
 
-        {similarResults?.similar_possible ? (
-          <p className="mt-1.5 text-[9px] font-semibold text-amber-800 dark:text-amber-100 sm:mt-2 sm:text-[11px]">
-            Résultats proches · doublon possible. Comparez les sources pour confirmer.
-          </p>
-        ) : null}
 
-        <div className="mt-2 flex items-center justify-between gap-2 border-t border-border/10 pt-2 text-[9px] dark:border-white/8 sm:mt-3 sm:gap-3 sm:border-border/12 sm:pt-3 sm:text-[11px]">
+        <div data-card-provenance className="mt-2 flex items-center justify-between gap-2 border-t border-border/10 pt-2 text-[9.5px] dark:border-white/8 sm:mt-2.5 sm:gap-3 sm:border-border/12 sm:pt-3 sm:text-[11px]">
           <span data-public-attribution-type className="truncate font-semibold text-muted-foreground">{publicAttribution.typeLabel}</span>
           <span data-public-attribution-source className="truncate font-semibold text-muted-foreground">{publicAttribution.sourceLabel}</span>
         </div>
 
-        <div className="mt-2 hidden items-center justify-between gap-2 sm:flex">
+        {similarResults?.similar_possible ? (
+          <p data-card-trust-note className="mt-1.5 text-[9px] font-semibold text-amber-800 dark:text-amber-100 sm:mt-2 sm:text-[11px]">
+            Résultats proches · doublon possible. Comparez les sources pour confirmer.
+          </p>
+        ) : null}
+        <div data-card-provenance-detail className="mt-2 hidden items-center justify-between gap-2 sm:flex">
           <span className="min-w-0 truncate text-[10px] text-muted-foreground/60 dark:text-white/30">{sanitizedDisplayUrl}</span>
           {publicAttribution.badge ? <SourceBadge badge={publicAttribution.badge} variant="dark" /> : null}
         </div>
-        <div className="hidden sm:block">
-          <AkarInfoPassportCard passport={passport} className="mt-3" />
+        <div data-card-provenance-detail className="hidden sm:block">
+          <AkarInfoPassportCard passport={passport} variant="serp" className="mt-2" />
         </div>
 
-        <div className="mt-3 flex items-center justify-between gap-2 sm:mt-4 sm:rounded-xl sm:border sm:border-border/15 sm:bg-surface/70 sm:px-3 sm:py-2.5 dark:sm:border-white/10 dark:sm:bg-white/[0.04]">
+        <div data-card-action className="mt-2.5 flex items-center justify-between gap-2 sm:mt-3 sm:rounded-xl sm:border sm:border-border/15 sm:bg-surface/70 sm:px-3 sm:py-2.5 dark:sm:border-white/10 dark:sm:bg-white/[0.04]">
           <span className="min-w-0 truncate text-[9.5px] font-extrabold text-bronze-700 dark:text-bronze-300 sm:text-[12px]">
             {publicAttribution.primaryCtaLabel ?? "Voir la source originale"}
           </span>

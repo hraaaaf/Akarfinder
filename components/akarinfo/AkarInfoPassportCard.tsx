@@ -4,7 +4,7 @@ import type { AkarInfoPassport } from "@/lib/akarinfo/akarinfo-passport";
 
 type AkarInfoPassportCardProps = {
   passport: AkarInfoPassport;
-  variant?: "compact" | "full";
+  variant?: "serp" | "compact" | "full";
   className?: string;
 };
 
@@ -28,7 +28,8 @@ export function AkarInfoPassportCard({
   variant = "compact",
   className = "",
 }: AkarInfoPassportCardProps) {
-  const compact = variant === "compact";
+  const serp = variant === "serp";
+  const compact = variant !== "full";
   const points = compact
     ? passport.points_to_verify.slice(0, 2)
     : passport.points_to_verify;
@@ -36,6 +37,29 @@ export function AkarInfoPassportCard({
     ? Object.entries(passport.lifestyle_summary.lifestyle_indicators)
     : [];
   const intelligence = passport.intelligence;
+
+  if (serp) {
+    return (
+      <div
+        data-akarinfo-serp
+        className={`rounded-xl border border-border/12 bg-surface/55 px-2.5 py-2 dark:border-white/8 dark:bg-white/[0.025] ${className}`}
+      >
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <span className="truncate text-[9px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground dark:text-white/45">
+            Informations AkarFinder
+          </span>
+          <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold ${LEVEL_STYLES[passport.information_level_label]}`}>
+            {PUBLIC_LEVEL_LABELS[passport.information_level_label]}
+          </span>
+        </div>
+        {points[0] ? (
+          <p className="mt-1 truncate text-[9.5px] font-semibold text-muted-foreground dark:text-white/50">
+            À vérifier · {points[0]}
+          </p>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div

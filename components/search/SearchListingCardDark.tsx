@@ -102,7 +102,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           className="block"
           aria-label={observedExternal ? `Voir la source originale ${listing.title}` : `Voir le bien ${listing.title}`}
         >
-          <div className="relative h-[164px] overflow-hidden bg-white sm:h-[220px]">
+          <div data-card-image className="relative h-[164px] overflow-hidden bg-white sm:h-[196px]">
             <div className="absolute inset-0 transition duration-500 group-hover:scale-[1.025]">
               {imageMode === "db_provider_thumbnail" ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -192,10 +192,10 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           </div>
         </Link>
 
-        <div className="flex flex-1 flex-col p-3 sm:p-5">
+        <div className="flex flex-1 flex-col p-3 sm:p-4">
           <div className="flex items-start justify-between gap-2 sm:gap-3">
             <div className="min-w-0 flex-1">
-              <p data-mobile-price className="truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-deepblue dark:text-white sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-bronze-500 dark:sm:text-bronze-300">
+              <p data-mobile-price data-card-price className="truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-deepblue dark:text-white sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-bronze-500 dark:sm:text-bronze-300">
                 {formatPrice(smartCard.price, listing.currency)}
               </p>
               {smartCard.pricePerM2 != null ? (
@@ -211,36 +211,24 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             ) : null}
           </div>
 
-          <Link href={resultHref} target={resultTarget} rel={resultRel} className="mt-1.5 block sm:mt-3">
-            <h2 className="line-clamp-1 text-[12.5px] font-extrabold leading-snug text-foreground transition group-hover:text-bronze-600 dark:text-white dark:group-hover:text-bronze-300 sm:line-clamp-2 sm:text-[1.02rem]">
+          <Link href={resultHref} target={resultTarget} rel={resultRel} className="mt-1.5 block sm:mt-2.5">
+            <h2 data-card-title className="line-clamp-2 text-[12.5px] font-extrabold leading-snug text-foreground transition group-hover:text-bronze-600 dark:text-white dark:group-hover:text-bronze-300 sm:line-clamp-2 sm:text-[1.02rem]">
               {smartCard.title}
             </h2>
-            <p className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-muted-foreground sm:mt-1.5 sm:gap-1.5 sm:text-[13px]">
+            <p data-card-location className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-muted-foreground sm:mt-1.5 sm:gap-1.5 sm:text-[13px]">
               <MapPin size={11} className="shrink-0 text-bronze-500 sm:h-[13px] sm:w-[13px]" aria-hidden="true" />
               <span className="truncate">{smartCard.locationLabel}</span>
             </p>
           </Link>
 
-          {showNeighborhoodPhoto ? (
-            <a
-              href={neighborhoodPhoto.sourcePage}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-neighborhood-photo-credit
-              className="mt-1 inline-flex w-fit max-w-full truncate text-[7.5px] font-semibold text-muted-foreground/75 underline-offset-2 hover:text-foreground hover:underline sm:text-[9px]"
-              aria-label={`Crédit et licence de la photo d’ambiance ${neighborhoodPhoto.label}`}
-            >
-              Crédit & licence · Wikimedia Commons
-            </a>
-          ) : null}
 
-          <div className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[9.5px] font-bold text-foreground/65 dark:text-white/65 sm:mt-3 sm:flex-wrap sm:gap-x-3 sm:gap-y-1.5 sm:text-[12px]">
+          <div data-card-facts className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[10px] font-bold text-foreground/65 dark:text-white/65 sm:mt-2.5 sm:flex-wrap sm:gap-x-3 sm:gap-y-1.5 sm:text-[12px]">
             {smartCard.facts.slice(0, 3).map((fact) => (
               <span key={fact} className="shrink-0 sm:shrink">{fact}</span>
             ))}
           </div>
 
-          <div className="mt-2 flex items-center justify-between gap-2 border-t border-border/10 pt-2 text-[9px] dark:border-white/8 sm:mt-3 sm:gap-3 sm:border-border/12 sm:pt-3 sm:text-[11px]">
+          <div data-card-provenance className="mt-2 flex items-center justify-between gap-2 border-t border-border/10 pt-2 text-[9.5px] dark:border-white/8 sm:mt-2.5 sm:gap-3 sm:border-border/12 sm:pt-3 sm:text-[11px]">
             <span className="truncate font-semibold text-muted-foreground">{smartCard.freshnessLabel}</span>
             {showOriginal && !observedExternal ? (
               <a
@@ -261,6 +249,18 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             )}
           </div>
 
+          {showNeighborhoodPhoto ? (
+            <a
+              href={neighborhoodPhoto.sourcePage}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-neighborhood-photo-credit
+              className="mt-1.5 inline-flex w-fit max-w-full truncate text-[8.5px] font-semibold text-muted-foreground/75 underline-offset-2 hover:text-foreground hover:underline sm:text-[9px]"
+              aria-label={`Crédit et licence de la photo d’ambiance ${neighborhoodPhoto.label}`}
+            >
+              Crédit & licence · Wikimedia Commons
+            </a>
+          ) : null}
           {!observedExternal && listing.duplicate_score != null && listing.duplicate_score >= 0.7 ? (
             <p className="mt-1.5 text-[9px] font-semibold text-amber-700 dark:text-amber-200 sm:mt-2 sm:text-[11px]">
               Doublon possible
@@ -279,7 +279,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
                 })
               }
               data-card-primary-action
-              className="mt-4 hidden w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.28)] transition hover:from-bronze-600 sm:flex"
+              className="mt-3 hidden w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.28)] transition hover:from-bronze-600 sm:flex"
             >
               Voir le bien
               <ArrowRight size={15} aria-hidden="true" />
@@ -290,7 +290,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
               target="_blank"
               rel="noopener noreferrer"
               data-card-primary-action
-              className="mt-4 hidden w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.28)] transition hover:from-bronze-600 sm:flex"
+              className="mt-3 hidden w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.28)] transition hover:from-bronze-600 sm:flex"
             >
               Voir l’annonce originale
               <ExternalLink size={14} aria-hidden="true" />
