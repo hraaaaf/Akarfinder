@@ -90,23 +90,24 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#03101f]/38 via-transparent to-[#03101f]/30" />
 
-        <span className="absolute left-2 top-2 max-w-[calc(100%-3rem)] truncate rounded-md bg-deepblue/82 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.07em] text-white backdrop-blur-sm sm:left-2.5 sm:top-2.5 sm:px-2 sm:text-[9.5px]">
-          {placeLabel}
-        </span>
+        <div className="absolute left-2 top-2 max-w-[calc(100%-3rem)] sm:left-2.5 sm:top-2.5">
+          <span className="block truncate rounded-md bg-deepblue/82 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.07em] text-white backdrop-blur-sm sm:px-2 sm:text-[9.5px]">
+            {placeLabel}
+          </span>
+          <span className="mt-1 hidden text-[8px] font-semibold text-white/95 drop-shadow sm:block">Informations limitées</span>
+        </div>
         <ExternalLink size={15} className="absolute right-2 top-2 text-white drop-shadow sm:right-2.5 sm:top-2.5" aria-hidden="true" />
 
         <span className="absolute bottom-2 left-2 max-w-[72%] truncate rounded-md bg-white/94 px-1.5 py-0.5 text-[8.5px] font-extrabold text-deepblue shadow-sm backdrop-blur sm:bottom-2.5 sm:left-2.5 sm:px-2 sm:py-1 sm:text-[10px]">
           {safeFallbackPropertyType || "Bien immobilier"}
         </span>
         {showFallback ? (
-          <span className="absolute bottom-2 right-2 rounded-md bg-black/48 px-1.5 py-0.5 text-[7.5px] font-semibold text-white/90 backdrop-blur-sm sm:bottom-2.5 sm:right-2.5 sm:text-[8.5px]">
-            Illustration
-          </span>
+          <span className="absolute bottom-2 right-2 rounded-md bg-black/48 px-1.5 py-0.5 text-[7.5px] font-semibold text-white/90 backdrop-blur-sm sm:bottom-2.5 sm:right-2.5 sm:text-[8.5px]">Illustration</span>
         ) : null}
       </div>
 
       <div className="flex flex-1 flex-col p-2.5 sm:p-3.5">
-        <h3 className="line-clamp-2 min-h-[2.45em] text-[11.5px] font-extrabold leading-[1.22] text-foreground transition group-hover:text-bronze-700 dark:text-white dark:group-hover:text-bronze-300 sm:text-[14px]">
+        <h3 className="mt-1.5 line-clamp-2 min-h-[2.45em] text-[11.5px] font-extrabold leading-[1.22] text-foreground transition group-hover:text-bronze-700 dark:text-white dark:group-hover:text-bronze-300 sm:mt-0 sm:text-[14px]">
           {sanitizedTitle}
         </h3>
 
@@ -115,31 +116,24 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
           <span className="truncate">{result.normalized_city || "Localisation non précisée"}</span>
         </p>
 
-        {facts.length > 0 ? (
-          <div className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[8.5px] font-bold text-foreground/60 dark:text-white/60 sm:mt-2 sm:gap-x-2 sm:text-[10.5px]">
-            {facts.slice(0, 2).map((fact) => <span key={fact} className="shrink-0">{fact}</span>)}
-          </div>
-        ) : null}
+        <div className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[8.5px] font-bold text-foreground/60 dark:text-white/60 sm:mt-2 sm:gap-x-2 sm:text-[10.5px]">
+          {facts.length > 0 ? facts.slice(0, 2).map((fact) => <span key={fact} className="shrink-0">{fact}</span>) : <span>Informations à compléter</span>}
+        </div>
 
         <p data-mobile-price className="mt-2 truncate text-[13px] font-black leading-none tracking-[-0.025em] text-deepblue dark:text-white sm:mt-2.5 sm:text-[17px]">
           {formatIndexedPrice(result.normalized_price_mad)}
         </p>
 
         <div className="mt-2 flex min-w-0 items-center justify-between gap-1.5 border-t border-border/10 pt-1.5 text-[7.5px] dark:border-white/8 sm:mt-2.5 sm:pt-2 sm:text-[9px]">
-          <span data-public-attribution-type className="min-w-0 truncate font-semibold text-muted-foreground">
-            {publicAttribution.typeLabel}
-          </span>
-          <span data-public-attribution-source className="max-w-[55%] truncate font-semibold text-muted-foreground">
-            {publicAttribution.sourceLabel}
-          </span>
+          <span data-public-attribution-type className="min-w-0 truncate font-semibold text-muted-foreground">{publicAttribution.typeLabel}</span>
+          <span data-public-attribution-source className="max-w-[55%] truncate font-semibold text-muted-foreground">{publicAttribution.sourceLabel}</span>
         </div>
 
-        {publicAttribution.badge ? (
-          <div className="mt-1 hidden sm:block"><SourceBadge badge={publicAttribution.badge} variant="dark" /></div>
-        ) : null}
+        <span className="sr-only">{publicAttribution.primaryCtaLabel ?? "Voir la source originale"}</span>
+        {publicAttribution.badge ? <div className="mt-1 hidden sm:block"><SourceBadge badge={publicAttribution.badge} variant="dark" /></div> : null}
 
         {similarResults?.similar_possible ? (
-          <p className="mt-1 text-[7.5px] font-semibold text-amber-800 dark:text-amber-100 sm:text-[9px]">Doublon possible</p>
+          <p className="mt-1 text-[7.5px] font-semibold text-amber-800 dark:text-amber-100 sm:text-[9px]">Doublon possible · Comparez les sources</p>
         ) : null}
       </div>
     </Link>
