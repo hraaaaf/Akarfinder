@@ -4,7 +4,8 @@ import { RABAT_REAL_PHOTO_ASSETS } from "../../lib/contextual-illustrations/raba
 const OUTPUT_DIR = "data/audits/rabat-real-photo-library-1";
 const COMMONS_API = "https://commons.wikimedia.org/w/api.php";
 const USER_AGENT = "AkarFinder/1.0 (real-photo-license-validation; https://akarfinder.vercel.app)";
-const LICENSE_PATTERN = /^CC BY(?:-SA)?(?: |$)/i;
+const ATTRIBUTION_LICENSE_PATTERN = /^CC BY(?:-SA)?(?: |$)/i;
+const CC0_PATTERN = /^CC0(?: |$)/i;
 
 type CommonsExtMetadata = {
   LicenseShortName?: { value?: string };
@@ -39,6 +40,17 @@ function normalizeTitle(value: string): string {
     .replace(/_/g, " ")
     .trim()
     .toLocaleLowerCase("en-US");
+}
+
+function isCompatibleCommonsLicense(license: string, licenseUrl: string): boolean {
+  const normalizedUrl = licenseUrl.replace(/^http:/i, "https:");
+  if (ATTRIBUTION_LICENSE_PATTERN.test(license)) {
+    return normalizedUrl.startsWith("https://creativecommons.org/licenses/");
+  }
+  if (CC0_PATTERN.test(license)) {
+    return normalizedUrl.startsWith("https://creativecommons.org/publicdomain/zero/");
+  }
+  return false;
 }
 
 async function fetchCommonsMetadata(): Promise<CommonsPage[]> {
@@ -102,8 +114,8 @@ async function main() {
     const canonicalImageUrl = imageInfo?.thumburl ?? imageInfo?.url ?? "";
     const mime = imageInfo?.mime ?? "";
 
-    if (!LICENSE_PATTERN.test(license) || !licenseUrl.startsWith("https://creativecommons.org/")) {
-      failures.push(`${asset.id}: incompatible or missing Creative Commons attribution license (${license || "none"})`);
+    if (!isCompatibleCommonsLicense(license, licenseUrl)) {
+      failures.push(`${asset.id}: incompatible or missing reusable Commons license (${license || "none"})`);
       continue;
     }
     if (!canonicalImageUrl.startsWith("https://upload.wikimedia.org/") || !mime.startsWith("image/")) {
@@ -128,6 +140,7 @@ async function main() {
   const report = {
     generated_at: new Date().toISOString(),
     validation_method: "single MediaWiki imageinfo/extmetadata batch query",
+    accepted_licenses: ["CC BY", "CC BY-SA", "CC0"],
     expected: 40,
     verified: results.length,
     failures,
