@@ -197,7 +197,7 @@ Aucun merge direct d’une branche historique sur `main`.
 
 - Thin Index observé : ~56,8k documents ;
 - réservoir historique `blocked_quality` : ~11,8k à réauditer selon doctrine MASS-FIRST ;
-- DATA-4.9B : **2 326 représentations URL structurellement compatibles détail**, pas 2 326 biens uniques.
+- **DATA-4.9B ✅ CLOSED — PR #452**, merge `45631345a6efb653256273354d2fb903b33c1ff9` : **2 326 représentations URL structurellement compatibles détail**, pas 2 326 biens uniques.
 
 ## DATA-MASS-FIRST
 
@@ -221,6 +221,8 @@ En parallèle, MASS COVERAGE continue uniquement sur les sources déjà admissib
 
 DATA doit aussi produire la preuve indépendante Registry + profondeur/fraîcheur exacte nécessaire à Marrakech / Guéliz / rent / `surface_m2` avant tout replay P1C.4A/P1C.4.
 
+Cette preuve Carte **ne doit pas être absorbée implicitement par DATA-4.9C/#454** : #454 est une réconciliation Source Policy sur une cohorte distincte et ancienne. Si l’evidence Guéliz exige de nouvelles observations, un nouveau lot DATA borné doit être créé avec sa propre branche/PR, sans write ni acquisition non autorisée par simple continuité.
+
 ---
 
 # 4. Lane UX / Search
@@ -241,20 +243,101 @@ Read-only. Mesurer couverture réelle, répétition, fallback rate, échec dista
 
 # 5. Lane Carte / Geo
 
-Détail historique : `docs/CARTE_ROADMAP.md`.
+Détail historique : `docs/CARTE_ROADMAP.md`. Cette section est la vérité cross-window ; la roadmap spécialisée ne peut que la détailler.
 
-Acquis : P1A.1→P1A.6, P1B.1→P1B.15, P1C.1, P1C.2, P1C.3, P1C.4, P1C.4A.
+## Préconditions Geo fermées — P1B.9 → P1B.15 ✅
 
-État :
+La micro-chaîne ayant ouvert P1C est fermée : P1B.9 #439 review Tier A read-only → P1B.10 #443 design Registry/rollback → P1B.11 #447 write Registry Dakhla + Hay Mohammadi, Map/SEO OFF → P1B.12 #450 canary **8/8 Agadir** → P1B.13 #455 + micro-chaîne Oasis, canary **5/5 Oasis** → P1B.14 #461 typed geometry (**16 arrondissements OSM admin_level=10, 0 polygon quartier certifié**) → P1B.15 #462, merge `9856e7a947e0796acef87502c9c13cc45891084c`, lineage **13/13** et P1C Shadow autorisé seulement. Aucun de ces lots n’autorise l’exposition publique Offre ni un choroplèthe quartier.
 
-- Offre quartier publique **OFF** ;
-- P1C.4 = `NOT_CERTIFIABLE` ;
-- P1C.4A = `DESIGNED_NOT_PROVEN` ;
-- P1C.5 **LOCKED**.
+Ces préconditions sont `CLOSED/HISTORICAL` pour la fenêtre actuelle ; les preuves détaillées restent dans `docs/CARTE_ROADMAP.md` et les PR concernées. Elles ne sont pas des prochaines étapes.
 
-Ordre : DATA exact-scope evidence → replay P1C.4A → replay P1C.4 → seulement si certified, P1C.5 canary → P1C.6 observation → P1C.7 scoped ON. Choroplèthe seulement avec géométrie neighborhood-grade sourcée et certifiée.
+## P1C.1 — Offre quartier Shadow ✅ CLOSED
 
-Chaque étape : double check + note ≥9/10.
+- **Lane :** Carte / Intelligence Offre quartier.
+- **Responsabilité :** construire une couche métrique interne-only quartier à partir de Geo certifié, en gardant prix/surface/prix-m² manquants explicitement `NULL` et sans activation publique.
+- **Dépendances :** P1B.15 #462 ; territorial join P1B.3 ; Geo latest-event-first.
+- **Branche :** `agent/carte-p1c1-neighborhood-offer-shadow`.
+- **PR :** #463 ; merge `9c53a99924d6ae577ce099ae5ef58f7f35834a0c`.
+- **État :** `CLOSED / SHADOW ONLY`.
+- **Preuves :** exact-head **22/22 PASS** + 4/4 push gates exact-merge ; production views/functions uniquement ; **102/102** listings Geo dans Shadow, **18 quartiers**, **32 segments**, prix **9/102**, surface **84/102**, prix/m² **6/102**, **71 fresh_confirmed / 31 seed_only** ; ACL service-role only ; public/reliability/metric layers OFF.
+- **Double check / score :** **9,4/10 — note de réconciliation 2026-08-10**. Truth boundary, ACL, absence d’imputation, live counts et CI revérifiés ; aucun score historique absent n’est inventé.
+- **Blocker :** aucune publication possible sans Reliability puis Representativeness.
+- **Prochaine étape :** exécutée via P1C.2.
+
+## P1C.2 — Reliability Engine ✅ CLOSED
+
+- **Lane :** Carte / Intelligence Offre quartier.
+- **Responsabilité :** évaluer séparément `price_mad`, `surface_m2`, `price_per_m2_mad` par quartier × transaction avec une policy versionnée `insufficient → limited → moderate → strong`, sans confondre fiabilité d’échantillon et représentativité marché.
+- **Dépendances :** P1C.1.
+- **Branche :** `agent/carte-p1c2-neighborhood-offer-reliability` ; correction gate `agent/carte-p1c1-preflight-rpc-free`.
+- **PR :** #464 + hotfix #465 ; merges `9f158648892e2412338cd736c7112a1720bb7dae` puis `a7d9e25cd5f59bd63aef6187febcf713e45e05f1`.
+- **État :** `CLOSED`.
+- **Preuves :** #464 exact-head **23/23 PASS** ; push gate a détecté un timeout du vieux RPC global, corrigé fail-closed par #465 ; hotfix exact-head **20/20 PASS**, puis P1C.1/P1C.2 push gates verts. Production : **32 segments / 96 metric rows = 92 insufficient / 3 limited / 1 moderate / 0 strong** ; seul candidat moderate = Marrakech / Guéliz / rent / `surface_m2`, **n=10 / 9 fresh / 3 sources** ; `market_representativeness_certified=false`, activation OFF.
+- **Double check / score :** **9,5/10 — note de réconciliation** après cycle réel `finding → correction → re-test` de #465. Le timeout n’a pas été masqué ; la dépendance lourde a été supprimée et les predecessors rejoués.
+- **Blocker :** reliability seule ne peut jamais autoriser SHADOW→CANARY.
+- **Prochaine étape :** exécutée via P1C.3.
+
+## P1C.3 — Activation Review ✅ CLOSED / HOLD
+
+- **Lane :** Carte / Activation governance.
+- **Responsabilité :** revoir read-only les métriques moderate/strong et empêcher toute auto-activation sans représentativité marché exacte.
+- **Dépendances :** P1C.2.
+- **Branche :** `agent/carte-p1c3-activation-review`.
+- **PR :** #466 ; merge `26f0b676bb2f0be70caf75e03dcc98d4ef9f37f7`.
+- **État :** `CLOSED / HOLD`, pas `CANARY`.
+- **Preuves :** **102 Shadow / 32 segments / 96 métriques / 1 review candidate / 0 canary eligible / 0 price candidate** ; verdict `P1C3_ACTIVATION_REVIEW_HOLD`, raison `HOLD_MARKET_REPRESENTATIVENESS_REQUIRED` ; aucune migration/write/activation.
+- **Double check / score :** **9,5/10 — note de réconciliation** : boundary read-only, absence d’auto-activation et handoff exact-scope confirmés contre PR et état Carte canonique.
+- **Blocker :** représentativité marché indépendante absente.
+- **Prochaine étape :** exécutée via P1C.4.
+
+## P1C.4 — Acquisition Representativeness Qualification ✅ CLOSED / NOT_CERTIFIABLE
+
+- **Lane :** Carte + DATA evidence boundary.
+- **Responsabilité :** déterminer en lecture seule si le candidat Guéliz / rent / `surface_m2` possède un dénominateur d’acquisition indépendant, versionné et exact-scope.
+- **Dépendances :** P1C.3 ; discovery evidence ; Source Policy Registry ; canaux acquisition existants.
+- **Branche :** `agent/carte-p1c4-acquisition-representativeness`.
+- **PR :** #469 ; merge `4546617bc676303e078b08275e76c5f6c7263d2f`.
+- **État :** `CLOSED / NOT_CERTIFIABLE`.
+- **Preuves :** candidat = **10 observations / 9 fresh / 3 sources** (Mubawab 6 / Mouldar 2 / Marrakech Realty 2) ; univers diagnostic Marrakech-rent **1 200 rows / 129 queries / 48 domaines / 1 provider** ; rang moteur 10 explicitement ≠ profondeur inventaire source ; **0** query acquisition exact Guéliz×rent ; **0** partner feed actif ; **0** run Common Crawl/public-index enregistré dans la table dédiée ; les 3 sources observées ne peuvent pas définir leur propre dénominateur. Exact-head **25/25 workflows SUCCESS** ; Reviewer + Release Certifier live replays PASS ; post-merge dédié également PASS.
+- **Double check / score :** **9,6/10 — note de réconciliation** : aucune fausse couverture numérique n’est produite, circular denominator interdit, canaux et limites explicités.
+- **Blocker :** `EXACT_NEIGHBORHOOD_DENOMINATOR_ABSENT`, univers exact-scope non versionné, profondeur/fraîcheur par source non prouvées, canaux non réconciliés.
+- **Prochaine étape :** exécutée via P1C.4A.
+
+### PR #470 — duplicate P1C.4 — SUPERSEDED / HISTORICAL
+
+PR #470, branche `agent/carte-p1c4-representativeness-qualification`, a été créée concurremment avec #469. Elle a été fermée **sans merge** après que #469 ait mergé le même lot fonctionnel sur `main`. Elle n’est ni ACTIVE ni RECONCILIATION REQUIRED ; **ne pas la rouvrir ni forcer son diff**.
+
+## P1C.4A — Acquisition Source Universe & Denominator Design ✅ CLOSED / DESIGNED_NOT_PROVEN
+
+- **Lane :** Carte / DATA denominator design.
+- **Responsabilité :** fixer un design de dénominateur indépendant/versionné/exact-scope/révocable pour Guéliz × rent sans utiliser le cohort observé comme définition du marché et sans mutation DATA.
+- **Dépendances :** P1C.4 ; Source Policy Registry ; discovery exact-scope utilisé uniquement comme challenger de complétude.
+- **Branche :** `feat/p1c4a-acquisition-source-universe`.
+- **PR :** #472 ; merge `f4563602119c8c01298bf694285e35856097bbd6`.
+- **État :** `CLOSED / DESIGNED_NOT_PROVEN`.
+- **Preuves :** baseline indépendante versionnée **12 sources** ; market presence séparée des droits acquisition/reuse/display ; unknown geography = trou, jamais exclusion automatique ; source-level identifiability/channel/inventory-depth/freshness/known-holes requis avant preuve ; exact-scope discovery = challenger seulement. Exact-head **26/26 workflows SUCCESS** ; Reviewer et Release Certifier PASS ; post-merge run `31414213930` : Reviewer **SUCCESS** + Release Certifier **SUCCESS**, second live replay indépendant. Post-merge métier inchangé : Guéliz/rent/surface_m2 **10 samples / 9 fresh / 3 sources / moderate / SHADOW**, `market_representativeness=false`, `public_activation=false`, `metric_layers_activated=false`.
+- **Double check / score :** **9,6/10 — note de réconciliation** : denominator circularity, read-only boundary, rights-vs-presence, challenger semantics, live replay et absence d’activation ont été revérifiés.
+- **Blocker :** design complet mais non prouvé : sources exact-scope manquantes/à qualifier, profondeur d’inventaire par source absente, fraîcheur et channel reconciliation incomplètes, admissibilité variable. **Aucun pourcentage de couverture marché n’est autorisé à ce stade.**
+- **Prochaine étape :** lot DATA séparé exact-scope pour Source Registry review/expansion et preuves depth/freshness/channel si nécessaire ; puis replay read-only P1C.4A → P1C.4.
+
+## P1C.5 — Scoped Canary Activation Write 🔒 BLOCKED
+
+- **Lane :** Carte / Activation write.
+- **Responsabilité :** futur write borné d’une métrique quartier uniquement après certification réelle de représentativité.
+- **Dépendances :** P1C.4A `PROVEN` + replay P1C.4 = `CERTIFIED` ; Geo truth et Reliability toujours valides.
+- **Branche :** aucune — lot non ouvert.
+- **PR :** aucune — lot non ouvert.
+- **État :** `BLOCKED / NOT STARTED`.
+- **Preuves :** P1C.4 = NOT_CERTIFIABLE ; P1C.4A = DESIGNED_NOT_PROVEN ; production reste SHADOW/OFF.
+- **Double check / score :** non scoré : aucune implémentation ne doit commencer avant levée des blockers.
+- **Blocker :** dénominateur marché non prouvé et evidence DATA exact-scope incomplète.
+- **Prochaine étape :** DATA evidence → replay P1C.4A → replay P1C.4. Seulement après `CERTIFIED`, créer une branche/PR P1C.5 avec rollback avant mutation.
+
+## Ordre Carte canonique
+
+`DATA exact-scope evidence → replay P1C.4A → replay P1C.4 → si CERTIFIED seulement : P1C.5 canary → P1C.6 observation → P1C.7 scoped ON`.
+
+Offre quartier publique **OFF**. Choroplèthe quartier également OFF tant qu’une géométrie neighborhood-grade sourcée, topology-validée et explicitement certifiée n’existe pas. Une géométrie d’arrondissement portant un nom similaire n’est jamais substituée à un quartier.
 
 ---
 
@@ -283,6 +366,7 @@ APRÈS PREMIER MERGE SEARCH
 DATA
 → reconcile/close #454 DATA-4.9C
 → DATA-4.10A Authorization / Partner Feed Readiness
+→ produire séparément l’evidence exact-scope Guéliz si nécessaire
 → MASS COVERAGE uniquement sur sources admissibles
 
 UX
