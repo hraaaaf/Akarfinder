@@ -7,18 +7,19 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 <!-- DATA-CURRENT-START -->
 ## DATA — vérité courante
 
-- DATA-4.8A ✅ PR #442 — merge `b9d38932bb3af0acfd08a681cc79abb5254b81e3` ; preuve finale **506 → 0 detail candidate** sur Dar/Aykana/LSF ; Promo DNS bloqué ; zéro write.
-- DATA-4.9A 🟠 PR #444 — Mass Source Onboarding Qualification, read-only raw sitemap capacity.
-- Snapshot live de closeout : head `0c7cfd9ee6b135e3ef0373933921452d8c35fd3f`, run `31366418643` PASS, observé `2026-08-10T07:38:55.953Z`.
-- Artefact : `sha256:5c867a1e17ab4a70b43cba13e33933426d4ed97c6af6863acbf465d2e0ca6080`.
-- 11 sources zéro-stock auditées ; **9 live qualifiées / 2 bloquées** : Capital Properties et Immobest sur payload sitemap non reconnu.
-- Capacité sitemap net-new brute totale qualifiée : **10 631** — explicitement **pas** un compteur d'annonces.
-- Top : Val Foncier **6 190** dont `/bien-immobilier/` **5 793** ; Christie's Morocco **1 252** ; Immo Maroc **1 204** ; AgadirImmobilier.org **519** ; Noura Immobilier **516**.
+- DATA-4.9A ✅ PR #444 — merge `18be46c7349e8a56b2b68b56005d79f85e125675`.
+- DATA-4.9B 🟠 PR #452 — High-Capacity Structural Detail Qualification, read-only.
+- Snapshot durci certifié : head `ae4b212e28f6ca0929548299860b04936daea218`, run `31369710665` PASS, observé `2026-08-10T08:24:02.397Z`.
+- Artefact : `sha256:dce77812b6666b09f29d7e716500cd5abed39e6902fcbcc71a515eeb4680f33d`.
+- **10 128** net-new URL identities → **2 326 structural detail candidate URL representations** + **7 802 rejects**, 0 collision.
+- Par source : Val Foncier **709**, Christie's **602**, Immo Maroc **276**, AgadirImmobilier.ma **37**, ProImmobilier **99**, Capital Properties **603**.
+- **2 326 n'est pas un nombre de biens uniques** ; le proof machine l'interdit explicitement.
 - 0 detail-page fetch ; 0 DB/Registry/policy mutation ; 0 ingestion/display activation.
+- Les six sources restent live Registry `unverified + hidden + internal_signal_only`, `current_representation_count=0`.
 
-**Prochain LOT : DATA-4.9B — High-Capacity Structural Detail Qualification**, read-only. Chemin critique source-live `unverified` : Val Foncier, Christie's Morocco, Immo Maroc, AgadirImmobilier.ma, ProImmobilier. Capital Properties est requalifiable à part si son sitemap courant redevient lisible.
+**Prochain LOT : DATA-4.9C — Source Policy Decision & Registry Assignment.** Revue de preuves officielles actuelles et décision par source ; mutation du Registry uniquement si démontrée, jamais d'ingestion dans ce lot.
 
-4.9B doit produire le nombre réel de pages détail structurellement qualifiées. 4.9C décidera ensuite la policy ; 4.9D seulement pourra envisager un canary d'ingestion borné.
+Ensuite **DATA-4.9D** pourra concevoir un canary d'ingestion borné uniquement pour les sources effectivement autorisées.
 <!-- DATA-CURRENT-END -->
 
 ## Vérité canonique après merges parallèles
