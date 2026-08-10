@@ -1,0 +1,61 @@
+name: P1B.13D Oasis Resolution Canary Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260810115000_p1b13d_oasis_resolution_canary.sql'
+      - 'scripts/audits/p1b13d-oasis-resolution-canary-preflight.ts'
+      - 'scripts/scrapers/__tests__/p1b13d-oasis-resolution-canary.test.ts'
+      - '.github/workflows/p1b13d-oasis-resolution-canary.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/20260810115000_p1b13d_oasis_resolution_canary.sql'
+      - 'scripts/audits/p1b13d-oasis-resolution-canary-preflight.ts'
+      - 'scripts/scrapers/__tests__/p1b13d-oasis-resolution-canary.test.ts'
+      - '.github/workflows/p1b13d-oasis-resolution-canary.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify-oasis-resolution-canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: P1B.13D static boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='supabase/migrations/20260810115000_p1b13d_oasis_resolution_canary.sql';
+          const s=fs.readFileSync(p,'utf8');
+          for(const marker of ['p1b13d_oasis_authority_canary_v1','district_casablanca_oasis','city_casablanca','p1b13d_oasis_resolution_apply_v1','p1b13d_oasis_resolution_rollback_v1',"'unresolved'"]) if(!s.includes(marker)) throw new Error(`missing ${marker}`);
+          const ids=[...s.matchAll(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g)].map(m=>m[0]);
+          if(new Set(ids).size!==5) throw new Error(`expected exactly 5 allowlisted seed UUIDs, got ${new Set(ids).size}`);
+          if(/delete\s+from\s+public\.geo_resolution_events/i.test(s)||/update\s+public\.geo_resolution_events/i.test(s)) throw new Error('append-only resolution history violated');
+          if(/update\s+public\.geo_entities/i.test(s)||/insert\s+into\s+public\.geo_entities/i.test(s)||/insert\s+into\s+public\.geo_aliases/i.test(s)) throw new Error('P1B.13D may not mutate Registry');
+          NODE
+      - name: P1B.13D PostgreSQL semantic rehearsal
+        run: npx tsx --test scripts/scrapers/__tests__/p1b13d-oasis-resolution-canary.test.ts
+      - name: P1B.13D live read-only preflight
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1b13d-oasis-resolution-canary-preflight.ts
+      - name: Enforce live 5-row boundary
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/p1b13d-oasis-resolution-canary-preflight.json');
+          if(r.verdict!=='OASIS_RESOLUTION_CANARY_READY_5') throw new Error(JSON.stringify(r));
+          if(r.rows!==5||r.oasis_rows!==5||r.source_domains.length!==1) throw new Error('P1B.13D cohort drift');
+          if(!r.target_registry_ready||!r.exact_alias_ready) throw new Error('Oasis Registry target drifted');
+          if(r.contract.db_mutation!==false||r.contract.geo_resolution_write!==false||r.contract.map_activation!==false||r.contract.seo_activation!==false) throw new Error('P1B.13D preflight boundary drift');
+          NODE
+      - name: TypeScript
+        run: npx tsc --noEmit
