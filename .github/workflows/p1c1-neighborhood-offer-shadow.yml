@@ -40,6 +40,7 @@ jobs:
           const fs=require('fs');
           const p='supabase/migrations/20260810130500_p1c1_neighborhood_offer_shadow.sql';
           const s=fs.readFileSync(p,'utf8');
+          const preflight=fs.readFileSync('scripts/audits/p1c1-neighborhood-offer-shadow-preflight.ts','utf8');
           for(const marker of [
             'odm_neighborhood_offer_shadow_listing_v1',
             'odm_neighborhood_offer_shadow_segment_v1',
@@ -57,6 +58,7 @@ jobs:
           const grants=[...s.matchAll(/grant\s+(?:select|execute).*?\s+to\s+service_role/gi)];
           if(grants.length<4) throw new Error(`expected service_role-only grants for 3 views + report, got ${grants.length}`);
           if(!s.includes("'sale_rent_price_medians_mixed', false")) throw new Error('sale/rent mixing guard missing');
+          if(preflight.includes('odm_territorial_metric_join_report_v1')||preflight.includes('.rpc(')) throw new Error('P1C.1 live preflight must not depend on heavy global report RPCs');
           NODE
 
       - name: No public runtime consumer
@@ -85,6 +87,7 @@ jobs:
           for(const k of ['latest_resolution_collisions','conflicting_resolution_history','missing_canonical_geo']) if(r.geo[k]!==0) throw new Error(`Geo integrity ${k}=${r.geo[k]}`);
           if(r.shadow.bridged_property_listing_rows!==r.shadow.listing_rows) throw new Error('coverage bridge drift');
           if(r.contract.public_activation!==false||r.contract.reliability_certified!==false||r.contract.metric_layers_activated!==false||r.contract.sale_rent_price_medians_mixed!==false||r.contract.fuzzy_geo_inference!==false) throw new Error('P1C.1 Shadow boundary drift');
+          if(r.contract.p1b3_report_rpc_required!==false) throw new Error('heavy Geo report RPC dependency returned');
           if(r.observations.reliability_engine_required_before_publication!==true) throw new Error('P1C.2 boundary missing');
           NODE
 
