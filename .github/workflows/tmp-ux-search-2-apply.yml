@@ -1,0 +1,38 @@
+name: TEMP UX-SEARCH-2 Apply
+
+on:
+  push:
+    branches:
+      - ux/search-compact-filters-2
+    paths:
+      - ".github/workflows/tmp-ux-search-2-apply.yml"
+      - "scripts/tmp/ux-search-2-apply.mjs"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ux/search-compact-filters-2
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply shell compaction
+        run: node scripts/tmp/ux-search-2-apply.mjs
+      - name: Remove temporary applicator and commit product change
+        shell: bash
+        run: |
+          rm scripts/tmp/ux-search-2-apply.mjs
+          rm .github/workflows/tmp-ux-search-2-apply.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/search/LightZillowSearchShell.tsx scripts/tmp/ux-search-2-apply.mjs .github/workflows/tmp-ux-search-2-apply.yml
+          git diff --cached --check
+          git commit -m "feat(search): compact results controls"
+          git push origin HEAD:ux/search-compact-filters-2
