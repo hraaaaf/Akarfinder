@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-10**  
-**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; RABAT-REAL-PHOTO-LIBRARY-1 ✅ PR #468 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -350,9 +350,26 @@ Résultat certifié :
 - artefact `sha256:85659a415e52e28d4258b152fc26ea43dd726d16203e23b3941efb3a6d4ad564` ;
 - merge `07d9fc07fe24a9a176ad8830bd0e6852631ed1a4`, post-merge `main` vérifié.
 
+## RABAT-REAL-PHOTO-LIBRARY-1 ✅ CLOSED — PR #468
+
+Responsabilité unique : **ajouter un fallback photo réel, séparé et borné pour 5 quartiers structurés de Rabat, sans modifier ranking, DATA, Registry, Map, dédup ni le catalogue d'illustrations historique**.
+
+Résultat certifié :
+
+- **40 vraies photos Wikimedia Commons = 8 × 5 quartiers** : Agdal, Hay Riad, Souissi, Océan, Hassan ;
+- activation uniquement sur `city=Rabat` + `listing.neighborhood` structuré reconnu + `fallback_visual` ;
+- thumbnail/photo du bien autorisée reste prioritaire ; échec photo ou quartier inconnu → artwork historique ;
+- aucune inférence titre/description/snippet ; sélection déterministe et stable au reload ;
+- disclosure visible `Rabat • Quartier` + `Photo d’ambiance` + `Crédit & licence · Wikimedia Commons` ;
+- **40/40 fichiers + licences Commons** validés par MediaWiki ;
+- exact-head `3de085a2058862edc52bab4fe0dcd3aca04a4f4c` : **29/29 workflows SUCCESS**, predecessors Search/illustrations PASS, TypeScript + build PASS ;
+- Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : 10/10 photos chargées, reload stable, 0 clipping, 0 overflow, **2 colonnes mobile** ;
+- audit visuel humain **9,2/10**, Reviewer PASS, Release Certifier GO ;
+- merge `2585017ea377d72b3a54ca1083dbf1b609899ad9`, post-merge `main` vérifié.
+
 Les 6 villes contextualisées disposent désormais chacune de **12 variantes = 72 IDs contextuels uniques**.
 
-**Prochain lot UX/Search : CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1.** Audit read-only de la couverture de rendu réelle avant toute nouvelle création d'assets : thumbnail autorisée / `city_type` / `city` / fallback type / neutre, distribution ville/type, répétition effective et demande hors des 6 villes. Aucun nouvel asset ni changement DATA/Registry/ranking/Map ; district reste OFF.
+**Prochain lot UX/Search : CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1.** Audit read-only de la couverture de rendu réelle après #468 : thumbnail autorisée / **Rabat real-photo district** / `city_type` / `city` / fallback type / neutre, distribution ville/type/quartier, répétition effective et taux d'échec des photos distantes. Aucun nouvel asset ni changement DATA/Registry/ranking/Map. Le district du catalogue d'illustrations historique reste OFF ; le signal quartier est utilisé uniquement par la bibliothèque Rabat bornée.
 
 # 4. Lane UX / Carte
 
@@ -543,7 +560,7 @@ Scope respecté, Benchmark Reviewer si UX majeur, Reviewer indépendant PASS, te
 
 ## UX / Search
 
-Exécuter **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1** uniquement : audit read-only de la couverture réelle des fallbacks visuels Search après #453. Mesurer par ville/type la part thumbnail autorisée, `city_type`, `city`, fallback type et neutre ; mesurer la répétition effective et les villes hors allowlist qui justifieraient un futur asset lot. **0 nouvel asset, 0 DATA/Registry/ranking/eligibility/dedupe/Map, district OFF.** Le prochain build visuel doit être décidé depuis ces preuves, pas par intuition.
+Exécuter **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1** uniquement : audit read-only de la couverture réelle des fallbacks visuels Search après #468. Mesurer par ville/type/quartier la part thumbnail autorisée, **Rabat real-photo district**, `city_type`, `city`, fallback type et neutre ; mesurer répétition effective, stabilité et taux d'échec des photos distantes. **0 nouvel asset, 0 DATA/Registry/ranking/eligibility/dedupe/Map.** Le district du catalogue d'illustrations historique reste OFF ; le prochain build visuel doit être décidé depuis ces preuves, pas par intuition.
 
 ## UX / Carte
 

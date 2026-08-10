@@ -201,9 +201,17 @@ Extension finale du scale par ville aux trois villes encore singleton : **Rabat 
 
 Certification : head final `e242960788f57975ae9d107ab04766f14fa29d87`, **22/22 workflows exact-head SUCCESS**, specialized SCALE-2 + SCALE-1 + Agadir P1 + P0 + Unified Card + Search Truth PASS, TypeScript + build PASS. Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : **36/36 asset IDs uniques**, lazy images hydratées avant capture, reload stable, 0 label/prix tronqué et 0 overflow. Audit UX exact-head **9,3/10**, Reviewer PASS, Release Certifier GO. Artefact `sha256:85659a415e52e28d4258b152fc26ea43dd726d16203e23b3941efb3a6d4ad564`. Merge `07d9fc07fe24a9a176ad8830bd0e6852631ed1a4`, post-merge `main` vérifié.
 
+### RABAT-REAL-PHOTO-LIBRARY-1 ✅ PR #468
+
+Rabat dispose désormais d'une **bibliothèque séparée de 40 vraies photos Wikimedia Commons**, soit **8 photos × 5 quartiers structurés** : Agdal, Hay Riad, Souissi, Océan et Hassan. Cette bibliothèque ne modifie pas le catalogue historique d'illustrations : elle s'active uniquement lorsque `city=Rabat`, qu'un `listing.neighborhood` structuré correspond exactement à l'un des 5 quartiers et que la card est déjà en `fallback_visual`. Une photo du bien autorisée reste prioritaire ; quartier inconnu ou échec de chargement → artwork existant. Aucune inférence depuis titre, description ou snippet.
+
+La sélection est déterministe par identité stable de l'annonce. Chaque card affiche `Rabat • Quartier`, `Photo d’ambiance` et un lien `Crédit & licence · Wikimedia Commons`. L'identité AkarFinder est appliquée uniquement au rendu CSS ; le fichier Commons reste intact.
+
+Certification : head `3de085a2058862edc52bab4fe0dcd3aca04a4f4c`, **29/29 workflows exact-head SUCCESS**, gate spécialisé PASS, **40/40 sources + licences Commons** vérifiées, TypeScript + build PASS. Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : 10/10 photos chargées sur la cohorte visuelle, reload stable, 0 clipping, 0 overflow, mobile **2 colonnes**. Audit visuel humain **9,2/10**, Reviewer PASS, Release Certifier GO. Merge `2585017ea377d72b3a54ca1083dbf1b609899ad9`, post-merge `main` vérifié.
+
 Les **6 villes contextualisées** (Agadir, Marrakech, Casablanca, Rabat, Tanger, Fès) disposent désormais chacune de **12 variantes**, soit **72 IDs contextuels uniques**. Aucune nouvelle extension d'assets par ville ne doit être lancée sans mesure d'usage réelle.
 
-Prochain lot UX/Search : **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1** — audit read-only de la couverture réellement rendue dans Search : thumbnail autorisée vs `city_type` vs `city` vs fallback type vs neutre, distribution ville/type, répétition effective et demande hors des 6 villes. **0 nouvel asset / 0 DATA / 0 Registry / 0 ranking / 0 Map / district OFF**. Le prochain lot de création visuelle devra être décidé uniquement depuis cette preuve.
+Prochain lot UX/Search : **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1** — audit read-only de la couverture réellement rendue dans Search après #468 : thumbnail autorisée vs **Rabat real-photo district** vs `city_type` vs `city` vs fallback type vs neutre, distribution ville/type/quartier, répétition effective et taux d'échec des photos distantes. **0 nouvel asset / 0 DATA / 0 Registry / 0 ranking / 0 Map**. Le tier district du catalogue d'illustrations historique reste OFF ; seule la bibliothèque Rabat bornée utilise le signal structuré `listing.neighborhood`.
 
 ### DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416
 

@@ -31,8 +31,10 @@ Ensuite **DATA-4.9D** pourra concevoir un canary d'ingestion borné uniquement p
 - Artefact SCALE-1 #448 : `sha256:b80d2539afea1fda4bfc8e515fe94ffe7821aee0d2f71c45e29c844f586ca8f5`.
 - `CONTEXTUAL-ILLUSTRATIONS-SCALE-2` ✅ : PR #453, exact-head `e242960788f57975ae9d107ab04766f14fa29d87`, **22/22 workflows exact-head SUCCESS**, specialized SCALE-2 + SCALE-1 + Agadir P1 + P0 PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, **36/36 variantes Rabat + Tanger + Fès uniques**, Fes/Fès alias-safe, lazy-load hydraté, reload stable, 0 clipping/overflow, audit visuel **9,3/10**, Reviewer PASS, Release Certifier GO, merge `07d9fc07fe24a9a176ad8830bd0e6852631ed1a4`.
 - Artefact SCALE-2 #453 : `sha256:85659a415e52e28d4258b152fc26ea43dd726d16203e23b3941efb3a6d4ad564`.
+- `RABAT-REAL-PHOTO-LIBRARY-1` ✅ : PR #468, exact-head `3de085a2058862edc52bab4fe0dcd3aca04a4f4c`, **29/29 workflows exact-head SUCCESS**, **40/40 sources + licences Commons** vérifiées, TypeScript + build PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, 10/10 photos chargées, reload stable, 0 clipping/overflow, mobile **2 colonnes**, audit visuel **9,2/10**, Reviewer PASS, Release Certifier GO, merge `2585017ea377d72b3a54ca1083dbf1b609899ad9`.
+- Rabat real-photo : **40 vraies photos = 8 × Agdal/Hay Riad/Souissi/Océan/Hassan** ; bibliothèque séparée, activation uniquement sur signal `listing.neighborhood` structuré + `fallback_visual`, sans inférence texte.
 - Les 6 villes contextualisées disposent désormais de **12 variantes chacune = 72 IDs contextuels uniques**.
-- Prochain LOT UX/Search : **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1**, read-only ; mesurer couverture/répétition réelle avant tout nouvel asset. District reste OFF.
+- Prochain LOT UX/Search : **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1**, read-only ; mesurer couverture/répétition réelle **après #468**, y compris le tier Rabat real-photo et son taux d'échec distant, avant tout nouvel asset. Le district du catalogue d'illustrations historique reste OFF.
 - Ce closeout UX/Search ne modifie aucune décision DATA/Carte ; les sections DATA/Carte ci-dessous restent la propriété de leur lane.
 
 ## Main / LOT actif
@@ -91,7 +93,7 @@ LSF après write : **1 414 total / 349 fresh-confirmed / 1 065 seed-only / 250 p
 
 Après merge/closeout de #435 : **DATA-4.7C — Residual Reservoir Requalification**, read-only. Revalider le résiduel LSF (103 candidates seulement dans la preuve pré-write, donc chiffre à recalculer) et le comparer au prochain réservoir admissible, Aykana en premier candidat. Aucun second write automatique.
 
-## UX/Search — illustrations contextuelles SCALE-2 certifiées ✅
+## UX/Search — illustrations contextuelles + Rabat real-photo certifiées ✅
 
 - P0 #437 pose le resolver déterministe ; P1 #445 apporte Agadir ; SCALE-1 #448 Marrakech/Casablanca ; SCALE-2 #453 Rabat/Tanger/Fès.
 - Pool certifié total : **6 villes × 12 variantes = 72 IDs contextuels uniques**.
@@ -100,14 +102,15 @@ Après merge/closeout de #435 : **DATA-4.7C — Residual Reservoir Requalificati
 - Priorité inchangée : thumbnail autorisée → illustration contextuelle → artwork type reconnu → fallback neutre.
 - Sélection multi-assets : Rendezvous/HRW, déterministe, indépendante de l'ordre des candidats et stable au reload.
 - Identité stable : `original_url` normalisée conservativement ; tracking/fragment/trailing slash/ordre de query ne remappent pas.
-- District toujours inactif tant que Search n'expose pas un signal structuré certifié.
-- Disclosure publique uniforme : `Illustration`; aucun visuel n'est présenté comme une photo réelle de l'annonce.
+- Le tier `district` du catalogue d'illustrations historique reste inactif. **Exception bornée et séparée** : Rabat real-photo consomme uniquement `listing.neighborhood` structuré pour Agdal, Hay Riad, Souissi, Océan et Hassan.
+- Disclosure illustrations historiques : `Illustration`. Pour Rabat real-photo : `Photo d’ambiance` + `Rabat • Quartier` + crédit/licence Commons ; aucune photo d'ambiance n'est présentée comme une photo réelle de l'annonce.
 - Certification SCALE-2 : **36/36 IDs Rabat/Tanger/Fès**, **22/22 workflows**, 5 viewports Chromium, lazy-load hydraté, 0 clipping/overflow, UX **9,3/10**.
-- Prochaine décision : **coverage audit read-only**, pas de nouveau pack d'assets par intuition.
+- Certification Rabat real-photo #468 : **40/40 Commons**, **29/29 workflows**, 5 viewports Chromium, 10/10 photos chargées, reload stable, 0 clipping/overflow, mobile 2 colonnes, UX **9,2/10**.
+- Prochaine décision : **coverage audit read-only** incluant le tier Rabat real-photo ; pas de nouveau pack d'assets par intuition.
 
 ## Autres lanes
 
-- UX/Search : `CONTEXTUAL-ILLUSTRATIONS-SCALE-2` ✅ #453 ; prochain LOT = **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1** read-only ; Search reste canonique.
+- UX/Search : `CONTEXTUAL-ILLUSTRATIONS-SCALE-2` ✅ #453 + `RABAT-REAL-PHOTO-LIBRARY-1` ✅ #468 ; prochain LOT = **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1** read-only ; Search reste canonique.
 - UX/Carte : P1B.12 est présent sur `main`; les prochaines décisions Carte restent dans sa lane ; Offre quartier reste gouvernée par ses gates propres.
 
 ## Invariants
