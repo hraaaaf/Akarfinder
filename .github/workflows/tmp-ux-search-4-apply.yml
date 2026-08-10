@@ -1,0 +1,104 @@
+name: TEMP UX-SEARCH-4 Apply
+
+on:
+  push:
+    branches:
+      - ux/search-visual-inventory-4
+    paths:
+      - ".github/workflows/tmp-ux-search-4-apply.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ux/search-visual-inventory-4
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply visual inventory hierarchy
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          const internalPath = 'components/search/SearchListingCardDark.tsx';
+          let internal = fs.readFileSync(internalPath, 'utf8');
+          const importNeedle = 'import { resolveRabatRealPhoto } from "@/lib/contextual-illustrations/rabat-real-photo-library";';
+          if (!internal.includes('resolveContextualIllustration')) {
+            internal = internal.replace(importNeedle, `${importNeedle}\nimport { resolveContextualIllustration } from "@/lib/contextual-illustrations/resolver";`);
+          }
+
+          const stateNeedle = '  const showNeighborhoodPhoto = neighborhoodPhoto !== null;\n';
+          const stateReplacement = `  const showNeighborhoodPhoto = neighborhoodPhoto !== null;\n  const contextualFallback =\n    imageMode === "fallback_visual" && !showNeighborhoodPhoto\n      ? resolveContextualIllustration({\n          stableRepresentationKey: listing.listing_url ?? "",\n          normalizedCity: listing.city,\n          normalizedDistrict: listing.neighborhood,\n          normalizedPropertyType: listing.property_type,\n        })\n      : null;\n`;
+          if (!internal.includes('const contextualFallback =')) {
+            if (!internal.includes(stateNeedle)) throw new Error('internal state anchor missing');
+            internal = internal.replace(stateNeedle, stateReplacement);
+          }
+
+          internal = internal.replace(
+            '                  className="h-full w-full object-cover"\n                />',
+            '                  data-visual-inventory-class="authorized_or_listing_image"\n                  className="h-full w-full object-cover"\n                />'
+          );
+          internal = internal.replace(
+            '                  fill\n                  className="object-cover"',
+            '                  fill\n                  data-visual-inventory-class="authorized_or_listing_image"\n                  className="object-cover"'
+          );
+          internal = internal.replace(
+            '                    data-neighborhood-photo-district={neighborhoodPhoto.district}\n                    className=',
+            '                    data-neighborhood-photo-district={neighborhoodPhoto.district}\n                    data-visual-inventory-class="neighborhood_photo"\n                    className='
+          );
+
+          const fallbackNeedle = `              ) : (\n                <PropertyTypeArtwork kind={listing.property_type} className="h-full w-full" />\n              )}`;
+          const fallbackReplacement = `              ) : contextualFallback ? (\n                // Contextual illustration uses only certified structured city/type fields.\n                // It is never presented as a photo of the property.\n                // eslint-disable-next-line @next/next/no-img-element\n                <img\n                  src={contextualFallback.asset}\n                  alt=""\n                  aria-hidden="true"\n                  loading="lazy"\n                  decoding="async"\n                  data-contextual-city={contextualFallback.label}\n                  data-contextual-asset-id={contextualFallback.id}\n                  data-contextual-tier={contextualFallback.tier}\n                  data-visual-inventory-class="contextual_illustration"\n                  className="h-full w-full object-cover object-center"\n                />\n              ) : (\n                <div data-visual-inventory-class="generic_illustration" className="h-full w-full">\n                  <PropertyTypeArtwork kind={listing.property_type} className="h-full w-full" />\n                </div>\n              )}`;
+          if (internal.includes(fallbackNeedle)) internal = internal.replace(fallbackNeedle, fallbackReplacement);
+          else if (!internal.includes('data-visual-inventory-class="contextual_illustration"')) throw new Error('internal fallback anchor missing');
+
+          const disclosureNeedle = `              ) : (\n                <span className="absolute bottom-2 right-2 rounded-full bg-black/45 px-1.5 py-0.5 text-[8px] font-medium text-white/80 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]">\n                  Visuel illustratif\n                </span>\n              )`;
+          const disclosureReplacement = `              ) : contextualFallback ? (\n                <span\n                  data-contextual-illustration-label\n                  className="absolute bottom-2 right-2 rounded-full bg-black/52 px-1.5 py-0.5 text-[8px] font-medium text-white/90 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]"\n                  aria-label={\`Illustration contextuelle \${contextualFallback.label}\`}\n                >\n                  Illustration\n                </span>\n              ) : (\n                <span className="absolute bottom-2 right-2 rounded-full bg-black/45 px-1.5 py-0.5 text-[8px] font-medium text-white/80 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]">\n                  Visuel illustratif\n                </span>\n              )`;
+          if (internal.includes(disclosureNeedle)) internal = internal.replace(disclosureNeedle, disclosureReplacement);
+          else if (!internal.includes('aria-label={`Illustration contextuelle ${contextualFallback.label}`}')) throw new Error('internal disclosure anchor missing');
+          fs.writeFileSync(internalPath, internal);
+
+          const contextualPath = 'components/search/ContextualListingArtwork.tsx';
+          let contextual = fs.readFileSync(contextualPath, 'utf8');
+          if (!contextual.includes('data-visual-inventory-class="contextual_illustration"')) {
+            contextual = contextual.replace(
+              '        data-contextual-tier={contextualVisual.tier}\n        className=',
+              '        data-contextual-tier={contextualVisual.tier}\n        data-visual-inventory-class="contextual_illustration"\n        className='
+            );
+            contextual = contextual.replace(
+              `    return (\n      <PropertyTypeArtwork\n        kind={propertyType}\n        className={className}\n        decorative\n      />\n    );`,
+              `    return (\n      <div data-visual-inventory-class="generic_illustration" className="h-full w-full">\n        <PropertyTypeArtwork\n          kind={propertyType}\n          className={className}\n          decorative\n        />\n      </div>\n    );`
+            );
+            contextual = contextual.replace(
+              '      data-contextual-neutral\n      className=',
+              '      data-contextual-neutral\n      data-visual-inventory-class="neutral"\n      className='
+            );
+          }
+          fs.writeFileSync(contextualPath, contextual);
+
+          const externalPath = 'components/search/ExternalIndexedResultCard.tsx';
+          let external = fs.readFileSync(externalPath, 'utf8');
+          if (!external.includes('data-visual-inventory-class="authorized_or_listing_image"')) {
+            external = external.replace(
+              '            decoding="async"\n            onError={() => setThumbError(true)}',
+              '            decoding="async"\n            data-visual-inventory-class="authorized_or_listing_image"\n            onError={() => setThumbError(true)}'
+            );
+          }
+          fs.writeFileSync(externalPath, external);
+          NODE
+      - name: Self-remove and commit
+        shell: bash
+        run: |
+          rm .github/workflows/tmp-ux-search-4-apply.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/search/SearchListingCardDark.tsx components/search/ContextualListingArtwork.tsx components/search/ExternalIndexedResultCard.tsx .github/workflows/tmp-ux-search-4-apply.yml
+          git commit -m "feat(search): unify truth-safe visual inventory fallbacks"
+          git push origin HEAD:ux/search-visual-inventory-4
