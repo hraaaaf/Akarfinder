@@ -1,0 +1,45 @@
+name: P1B.13B Oasis Registry Write Design Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migration-designs/p1b13b_oasis_registry_write.sql'
+      - 'supabase/migration-designs/p1b13b_oasis_registry_rollback.sql'
+      - 'scripts/audits/p1b13b-oasis-registry-write-design-rehearsal.ts'
+      - '.github/workflows/p1b13b-oasis-registry-write-design.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migration-designs/p1b13b_oasis_registry_write.sql'
+      - 'supabase/migration-designs/p1b13b_oasis_registry_rollback.sql'
+      - 'scripts/audits/p1b13b-oasis-registry-write-design-rehearsal.ts'
+      - '.github/workflows/p1b13b-oasis-registry-write-design.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify-oasis-write-design:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Static non-deployable boundary
+        run: |
+          test -f supabase/migration-designs/p1b13b_oasis_registry_write.sql
+          test -f supabase/migration-designs/p1b13b_oasis_registry_rollback.sql
+          test ! -e supabase/migrations/p1b13b_oasis_registry_write.sql
+          grep -q "district_casablanca_oasis" supabase/migration-designs/p1b13b_oasis_registry_write.sql
+          grep -q "city_casablanca" supabase/migration-designs/p1b13b_oasis_registry_write.sql
+          grep -q "casablancacity.ma" supabase/migration-designs/p1b13b_oasis_registry_write.sql
+          grep -q "false" supabase/migration-designs/p1b13b_oasis_registry_write.sql
+          if grep -qi "insert into geo_resolution_events" supabase/migration-designs/p1b13b_oasis_registry_write.sql; then exit 1; fi
+      - name: PostgreSQL semantic rehearsal
+        run: npx tsx scripts/audits/p1b13b-oasis-registry-write-design-rehearsal.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
