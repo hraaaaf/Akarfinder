@@ -8,9 +8,6 @@ on:
       - "scripts/audits/data-4-4b-promoimmo-revalidation-canary.ts"
       - ".github/workflows/data-4-4b-promoimmo-revalidation-canary.yml"
       - "docs/data/DATA-4-4B-PROMOIMMO-REVALIDATION-CANARY.md"
-      - "README.md"
-      - "docs/ROADMAP.md"
-      - "docs/SESSION.md"
   workflow_dispatch:
 
 permissions:
@@ -36,8 +33,40 @@ jobs:
       - name: Production build
         run: npm run build
 
-  live-dry-run:
+  source-preflight:
     needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      reachable: ${{ steps.dns.outputs.reachable }}
+      error_code: ${{ steps.dns.outputs.error_code }}
+    steps:
+      - name: Resolve Promo Immo DNS
+        id: dns
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const dns = require('node:dns').promises;
+          const fs = require('node:fs');
+          (async () => {
+            try {
+              const result = await dns.lookup('promoimmomarrakech.com');
+              fs.appendFileSync(process.env.GITHUB_OUTPUT, `reachable=true\naddress=${result.address}\nerror_code=\n`);
+              console.log(`Promo Immo DNS reachable: ${result.address}`);
+            } catch (error) {
+              const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : 'DNS_LOOKUP_FAILED';
+              fs.appendFileSync(process.env.GITHUB_OUTPUT, `reachable=false\nerror_code=${code}\n`);
+              console.log(`Promo Immo DNS unavailable: ${code}`);
+            }
+          })().catch((error) => {
+            console.error(error);
+            process.exitCode = 1;
+          });
+          NODE
+
+  live-dry-run:
+    needs: [contract, source-preflight]
+    if: needs.source-preflight.outputs.reachable == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -87,6 +116,65 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: data-4-4b-promoimmo-revalidation-canary
+          path: .tmp/data-4-4b/results/
+          if-no-files-found: error
+          retention-days: 14
+
+  source-unreachable-hold:
+    needs: [contract, source-preflight]
+    if: needs.source-preflight.outputs.reachable != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      DATA_4_4B_OUT_DIR: .tmp/data-4-4b/results
+      DNS_ERROR_CODE: ${{ needs.source-preflight.outputs.error_code }}
+    steps:
+      - name: Emit fail-closed source hold proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${DATA_4_4B_OUT_DIR}"
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const out = process.env.DATA_4_4B_OUT_DIR;
+          const proof = {
+            schemaVersion: 'data-4-4b-source-availability-hold-v1',
+            generatedAt: new Date().toISOString(),
+            sourceDomain: 'promoimmomarrakech.com',
+            verdict: 'HOLD_SOURCE_UNREACHABLE',
+            sourceReachable: false,
+            transportErrorCode: process.env.DNS_ERROR_CODE || 'DNS_LOOKUP_FAILED',
+            freshnessEvidenceProduced: false,
+            canaryWriteAuthorizedByThisRun: false,
+            databaseWrites: 0,
+            freshnessWrites: 0,
+            registryWrites: 0,
+            policyChanges: 0,
+            displayPolicyChanges: 0
+          };
+          fs.writeFileSync(path.join(out, 'hold-proof.json'), JSON.stringify(proof, null, 2) + '\n');
+          fs.writeFileSync(path.join(out, 'apply-manifest.json'), '[]\n');
+          fs.writeFileSync(path.join(out, 'rollback-manifest.json'), '[]\n');
+          console.log(JSON.stringify(proof, null, 2));
+          NODE
+      - name: Enforce fail-closed hold
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-4-4b/results/hold-proof.json', 'utf8'));
+          const apply = JSON.parse(fs.readFileSync('.tmp/data-4-4b/results/apply-manifest.json', 'utf8'));
+          const rollback = JSON.parse(fs.readFileSync('.tmp/data-4-4b/results/rollback-manifest.json', 'utf8'));
+          if (p.verdict !== 'HOLD_SOURCE_UNREACHABLE' || p.sourceReachable !== false) throw new Error(JSON.stringify(p));
+          if (p.freshnessEvidenceProduced !== false || p.canaryWriteAuthorizedByThisRun !== false) throw new Error(JSON.stringify(p));
+          if (p.databaseWrites !== 0 || p.freshnessWrites !== 0 || p.registryWrites !== 0 || p.policyChanges !== 0 || p.displayPolicyChanges !== 0) throw new Error(JSON.stringify(p));
+          if (apply.length !== 0 || rollback.length !== 0) throw new Error('unreachable source must produce empty manifests');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-4-4b-promoimmo-source-unreachable-hold
           path: .tmp/data-4-4b/results/
           if-no-files-found: error
           retention-days: 14
