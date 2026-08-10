@@ -7,12 +7,13 @@ const ROOT = process.cwd();
 const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 
 describe("SEARCH-ACTION-HIERARCHY-1", () => {
-  it("keeps one strong card action and removes secondary card controls", () => {
+  it("uses the whole card as the single strong action and removes oversized CTA blocks", () => {
     const card = source("components/search/SearchListingCardDark.tsx");
 
-    assert.ok(card.includes("data-card-primary-action"));
-    assert.ok(card.includes("Voir le bien"));
-    assert.ok(card.includes("Voir l’annonce originale"));
+    assert.ok(card.includes("data-card-primary-link"));
+    assert.ok(card.includes('className="absolute inset-0 z-10'));
+    assert.doesNotMatch(card, /data-card-primary-action/);
+    assert.doesNotMatch(card, /Voir le bien[\s\S]*bg-gradient-to-br|Voir l’annonce originale[\s\S]*bg-gradient-to-br/);
     assert.doesNotMatch(card, /Repérer sur la carte|CompareToggleButton/);
   });
 
@@ -44,11 +45,12 @@ describe("SEARCH-ACTION-HIERARCHY-1", () => {
     assert.ok(card.includes("data-public-attribution"));
   });
 
-  it("does not change the external Gateway card action hierarchy", () => {
+  it("keeps the external Gateway card as one direct source action", () => {
     const external = source("components/search/ExternalIndexedResultCard.tsx");
 
     assert.ok(external.includes("publicAttribution.primaryCtaLabel"));
-    assert.ok(external.includes("result.original_url"));
+    assert.ok(external.includes("href={result.original_url}"));
+    assert.ok(external.includes('target="_blank"'));
     assert.doesNotMatch(external, /Repérer sur la carte|CompareToggleButton/);
   });
 });
