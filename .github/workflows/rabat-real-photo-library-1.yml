@@ -1,0 +1,91 @@
+name: RABAT-REAL-PHOTO-LIBRARY-1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/contextual-illustrations/rabat-real-photo-library.ts"
+      - "components/search/SearchListingCardDark.tsx"
+      - "scripts/scrapers/__tests__/rabat-real-photo-library-1.test.ts"
+      - "scripts/audits/rabat-real-photo-library-1-sources.ts"
+      - "scripts/audits/rabat-real-photo-library-1-visual.mjs"
+      - ".github/workflows/rabat-real-photo-library-1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rabat-real-photo-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Rabat real-photo contract
+        run: npx tsx --test scripts/scrapers/__tests__/rabat-real-photo-library-1.test.ts
+      - name: Contextual illustration predecessors
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/contextual-illustrations-foundation-1.test.ts
+          scripts/scrapers/__tests__/contextual-illustrations-agadir-pilot-1.test.ts
+          scripts/scrapers/__tests__/contextual-illustrations-scale-1.test.ts
+          scripts/scrapers/__tests__/contextual-illustrations-scale-2.test.ts
+      - name: Search/card predecessors
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/unified-listing-card-1.test.ts
+          scripts/scrapers/__tests__/search-truth-tier.test.ts
+          scripts/scrapers/__tests__/serp-gateway-first.test.ts
+      - name: Verify all 40 Commons sources and licenses
+        run: npx tsx scripts/audits/rabat-real-photo-library-1-sources.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build rehearsal
+        run: npm run build
+      - name: Upload source proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rabat-real-photo-source-proof
+          path: data/audits/rabat-real-photo-library-1/source-check.json
+          retention-days: 14
+          if-no-files-found: warn
+
+  rabat-real-photo-visual:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start > /tmp/akarfinder-rabat-real-photo.log 2>&1 &
+          for i in {1..60}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/akarfinder-rabat-real-photo.log
+          exit 1
+      - name: Certify real-photo cards and mobile 2-column grid
+        run: node scripts/audits/rabat-real-photo-library-1-visual.mjs
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rabat-real-photo-visual-proof
+          path: |
+            data/audits/rabat-real-photo-library-1
+            /tmp/akarfinder-rabat-real-photo.log
+          retention-days: 14
+          if-no-files-found: error

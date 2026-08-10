@@ -7,6 +7,7 @@ import { ArrowRight, ExternalLink, MapPin } from "lucide-react";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
 import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
+import { resolveRabatRealPhoto } from "@/lib/contextual-illustrations/rabat-real-photo-library";
 import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-policy";
 import type { Listing } from "@/lib/listings/types";
 import { formatPrice } from "@/lib/listings/utils";
@@ -41,6 +42,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
 
   const { hoverListing, clearHover, isActive, registerListing } = usePropertySelection();
   const [thumbnailError, setThumbnailError] = useState(false);
+  const [neighborhoodPhotoError, setNeighborhoodPhotoError] = useState(false);
 
   useEffect(() => registerListing(listing), [listing, registerListing]);
 
@@ -66,6 +68,15 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
         listing.allowed_ctas.includes("view_original") ||
         listing.allowed_ctas.includes("view_source")),
   );
+  const neighborhoodPhoto =
+    imageMode === "fallback_visual" && !neighborhoodPhotoError
+      ? resolveRabatRealPhoto({
+          stableKey: listing.listing_url ?? listing.id,
+          city: listing.city,
+          district: listing.neighborhood,
+        })
+      : null;
+  const showNeighborhoodPhoto = neighborhoodPhoto !== null;
 
   return (
     <>
@@ -111,6 +122,28 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
                   className="object-cover"
                   sizes="(max-width: 640px) 50vw, 420px"
                 />
+              ) : showNeighborhoodPhoto ? (
+                <div className="relative h-full w-full" data-neighborhood-photo-frame>
+                  {/* Commons source stays intact; AkarFinder identity is applied only as CSS presentation. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={neighborhoodPhoto.asset}
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
+                    onError={() => setNeighborhoodPhotoError(true)}
+                    data-neighborhood-photo-id={neighborhoodPhoto.id}
+                    data-neighborhood-photo-district={neighborhoodPhoto.district}
+                    className="h-full w-full object-cover object-center brightness-[0.96] contrast-[1.06] saturate-[0.88]"
+                  />
+                  <div
+                    aria-hidden="true"
+                    data-neighborhood-photo-brand-overlay
+                    className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(3,16,31,0.34),rgba(10,82,135,0.12)_52%,rgba(255,255,255,0.04))]"
+                  />
+                </div>
               ) : (
                 <PropertyTypeArtwork kind={listing.property_type} className="h-full w-full" />
               )}
@@ -126,13 +159,31 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
               </span>
             </div>
 
+            {showNeighborhoodPhoto ? (
+              <span
+                data-neighborhood-photo-title
+                className="absolute bottom-8 left-2 right-2 truncate text-[9px] font-black uppercase tracking-[0.08em] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.65)] sm:bottom-11 sm:left-3 sm:right-3 sm:text-[11px]"
+              >
+                {neighborhoodPhoto.label}
+              </span>
+            ) : null}
+
             <span className="absolute bottom-2 left-2 rounded-full bg-white/92 px-2 py-0.5 text-[9px] font-extrabold text-deepblue shadow-sm backdrop-blur sm:bottom-3 sm:left-3 sm:px-2.5 sm:py-1 sm:text-[10px]">
               {listing.property_type}
             </span>
             {imageMode === "fallback_visual" ? (
-              <span className="absolute bottom-2 right-2 rounded-full bg-black/45 px-1.5 py-0.5 text-[8px] font-medium text-white/80 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]">
-                Visuel illustratif
-              </span>
+              showNeighborhoodPhoto ? (
+                <span
+                  data-neighborhood-photo-disclosure
+                  className="absolute bottom-2 right-2 rounded-full bg-deepblue/82 px-1.5 py-0.5 text-[8px] font-semibold text-white/95 ring-1 ring-white/10 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]"
+                >
+                  Photo d’ambiance
+                </span>
+              ) : (
+                <span className="absolute bottom-2 right-2 rounded-full bg-black/45 px-1.5 py-0.5 text-[8px] font-medium text-white/80 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]">
+                  Visuel illustratif
+                </span>
+              )
             ) : attribution ? (
               <span className="absolute bottom-3 right-3 hidden rounded-full bg-black/45 px-2 py-1 text-[9px] font-medium text-white/75 backdrop-blur-sm sm:inline-flex">
                 {attribution}
@@ -170,6 +221,19 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             </p>
           </Link>
 
+          {showNeighborhoodPhoto ? (
+            <a
+              href={neighborhoodPhoto.sourcePage}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-neighborhood-photo-credit
+              className="mt-1 inline-flex w-fit max-w-full truncate text-[7.5px] font-semibold text-muted-foreground/75 underline-offset-2 hover:text-foreground hover:underline sm:text-[9px]"
+              aria-label={`Crédit et licence de la photo d’ambiance ${neighborhoodPhoto.label}`}
+            >
+              Crédit & licence · Wikimedia Commons
+            </a>
+          ) : null}
+
           <div className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[9.5px] font-bold text-foreground/65 dark:text-white/65 sm:mt-3 sm:flex-wrap sm:gap-x-3 sm:gap-y-1.5 sm:text-[12px]">
             {smartCard.facts.slice(0, 3).map((fact) => (
               <span key={fact} className="shrink-0 sm:shrink">{fact}</span>
@@ -202,7 +266,6 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
               Doublon possible
             </p>
           ) : null}
-
 
           {!observedExternal ? (
             <Link
@@ -244,7 +307,6 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
               Voir l’annonce
             </a>
           ) : null}
-
         </div>
       </article>
 
