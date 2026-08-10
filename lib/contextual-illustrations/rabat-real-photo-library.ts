@@ -10,20 +10,25 @@ export type RabatRealPhotoAsset = {
   city: "Rabat";
   district: RabatNeighborhood;
   label: string;
+  fileName: string;
   asset: string;
   sourcePage: string;
   sourceName: "Wikimedia Commons";
 };
 
 const COMMONS_FILE_REDIRECT = "https://commons.wikimedia.org/wiki/Special:Redirect/file/";
-const COMMONS_FILE_PAGE = "https://commons.wikimedia.org/wiki/File:";
+const COMMONS_WIKI = "https://commons.wikimedia.org/wiki/";
+
+function encodeCommonsTitle(value: string): string {
+  return encodeURIComponent(value.replace(/ /g, "_")).replace(/'/g, "%27");
+}
 
 function commonsFileUrl(filename: string): string {
-  return `${COMMONS_FILE_REDIRECT}${encodeURIComponent(filename)}?width=960`;
+  return `${COMMONS_FILE_REDIRECT}${encodeCommonsTitle(filename)}?width=960`;
 }
 
 function commonsSourcePage(filename: string): string {
-  return `${COMMONS_FILE_PAGE}${encodeURIComponent(filename)}`;
+  return `${COMMONS_WIKI}${encodeCommonsTitle(`File:${filename}`)}`;
 }
 
 function photo(
@@ -37,6 +42,7 @@ function photo(
     city: "Rabat",
     district,
     label: `Rabat • ${district}`,
+    fileName: filename,
     asset: commonsFileUrl(filename),
     sourcePage: commonsSourcePage(filename),
     sourceName: "Wikimedia Commons",
