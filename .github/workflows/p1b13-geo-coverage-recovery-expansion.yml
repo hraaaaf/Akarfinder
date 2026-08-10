@@ -1,0 +1,60 @@
+name: P1B.13 Geo Coverage Recovery Expansion Gate
+
+on:
+  pull_request:
+    paths:
+      - "data/geo/p1b13-priority-authority-evidence.json"
+      - "scripts/audits/p1b13-geo-coverage-recovery-expansion.ts"
+      - ".github/workflows/p1b13-geo-coverage-recovery-expansion.yml"
+      - "docs/CARTE_ROADMAP.md"
+  push:
+    branches: [main]
+    paths:
+      - "data/geo/p1b13-priority-authority-evidence.json"
+      - "scripts/audits/p1b13-geo-coverage-recovery-expansion.ts"
+      - ".github/workflows/p1b13-geo-coverage-recovery-expansion.yml"
+      - "docs/CARTE_ROADMAP.md"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-p1b13-priority-authority-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Static read-only authority boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('data/geo/p1b13-priority-authority-evidence.json','utf8'));
+          const s=fs.readFileSync('scripts/audits/p1b13-geo-coverage-recovery-expansion.ts','utf8');
+          if(m.schema_version!=='p1b13-priority-authority-evidence-v1'||m.pairs.length!==5) throw new Error('wrong P1B.13 manifest boundary');
+          if(m.pairs.filter(x=>x.authority_tier==='A').length!==1) throw new Error('expected exactly one Tier A pair');
+          if(!m.pairs.some(x=>x.city==='Casablanca'&&x.district==='Oasis'&&x.authority_tier==='A'&&x.rows===5)) throw new Error('Oasis Tier A proof missing');
+          if(m.pairs.some(x=>x.registry_write_authorized_in_p1b13!==false)) throw new Error('P1B.13 may not authorize Registry write');
+          for(const forbidden of ['insert(','.insert(','.update(','.delete(','geo_resolution_events).insert']) if(s.includes(forbidden)) throw new Error(`write primitive forbidden: ${forbidden}`);
+          NODE
+      - name: Live P1B.13 priority cohort + authority audit
+        run: npx tsx scripts/audits/p1b13-geo-coverage-recovery-expansion.ts
+      - name: Enforce P1B.13 verdict
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/p1b13-geo-coverage-recovery-expansion.json');
+          if(r.verdict!=='P1B13_PRIORITY_AUTHORITY_REVIEW_COMPLETE_NO_WRITE') throw new Error(JSON.stringify(r));
+          if(r.priority_pairs!==5||r.priority_listing_rows!==21) throw new Error('priority cohort drift');
+          if(r.authority_confirmed_neighborhood_pairs!==1||r.authority_confirmed_listing_rows!==5) throw new Error('Tier A decision drift');
+          if(r.registry_write_authorized_pairs!==0) throw new Error('write authorization forbidden');
+          if(r.contract.db_mutation!==false||r.contract.registry_mutation!==false||r.contract.geo_resolution_write!==false) throw new Error('read-only contract drift');
+          NODE
+      - name: TypeScript
+        run: npx tsc --noEmit
