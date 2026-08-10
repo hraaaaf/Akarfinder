@@ -102,7 +102,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
           {safeFallbackPropertyType || "Bien immobilier"}
         </span>
         {showFallback ? (
-          <span className="absolute bottom-2 right-2 rounded-md bg-black/48 px-1.5 py-0.5 text-[7.5px] font-semibold text-white/90 backdrop-blur-sm sm:bottom-2.5 sm:right-2.5 sm:text-[8.5px]">Illustration</span>
+          <span data-contextual-illustration-label className="absolute bottom-2 right-2 rounded-md bg-black/48 px-1.5 py-0.5 text-[7.5px] font-semibold text-white/90 backdrop-blur-sm sm:bottom-2.5 sm:right-2.5 sm:text-[8.5px]">Illustration</span>
         ) : null}
       </div>
 
