@@ -83,15 +83,29 @@ Aucune PR historique/superseded n’est active uniquement parce qu’elle reste 
 
 ## DATA prochaine
 
+**DATA-4.9B est CLOSED ✅ — PR #452 mergée** (`45631345a6efb653256273354d2fb903b33c1ff9`). Le compteur **2 326** désigne des représentations URL structurellement compatibles détail, jamais un nombre de biens uniques.
+
 Après réconciliation #454 : **DATA-4.10A Authorization Conversion & Partner Feed Readiness**, read-only. MASS COVERAGE continue seulement sur sources policy-admissibles.
 
-DATA doit également produire l’evidence exact-scope Registry + profondeur/fraîcheur requise pour le replay Carte P1C.4A/P1C.4.
+DATA doit également produire l’evidence exact-scope Registry + profondeur/fraîcheur requise pour le replay Carte P1C.4A/P1C.4. Cette preuve Guéliz ne doit pas être assimilée automatiquement à #454 : si elle exige un nouveau travail, créer un lot DATA séparé et borné.
 
-## Carte / Geo
+## Carte / Geo — handover P1C aligné
 
-P1C.4 = `NOT_CERTIFIABLE`, P1C.4A = `DESIGNED_NOT_PROVEN`, P1C.5 LOCKED. Offre quartier publique OFF.
+Préconditions Geo P1B.9→P1B.15 : **CLOSED**. P1B.15 #462 a certifié **13/13** lineages contrôlées et n’autorise que P1C Shadow ; Offre publique et choroplèthe quartier restent OFF.
 
-Ordre : DATA exact-scope evidence → replay P1C.4A → replay P1C.4 → éventuel P1C.5 canary → observation → scoped ON.
+- **P1C.1 ✅ #463** — Offre quartier Shadow ; merge `9c53a999...` ; **102/102** observations Geo, 18 quartiers, 32 segments ; 22/22 exact-head PASS ; score de réconciliation **9,4/10**.
+- **P1C.2 ✅ #464 + correction #465** — Reliability Engine ; 96 metric rows = 92 insufficient / 3 limited / 1 moderate / 0 strong ; seul moderate = Guéliz/rent/surface_m2, n=10, 9 fresh, 3 sources ; cycle finding RPC timeout → correction → re-test vert ; score **9,5/10**.
+- **P1C.3 ✅ HOLD #466** — 1 review candidate, **0 canary eligible**, verdict `P1C3_ACTIVATION_REVIEW_HOLD` ; score **9,5/10**.
+- **P1C.4 ✅ NOT_CERTIFIABLE #469** — 10 observations / 9 fresh / 3 sources, mais aucun dénominateur indépendant exact-scope ; 25/25 exact-head + Reviewer/Certifier live PASS ; score **9,6/10**.
+- **#470 = SUPERSEDED/HISTORICAL**, duplicate concurrent P1C.4 fermé sans merge après #469 ; ne pas rouvrir.
+- **P1C.4A ✅ DESIGNED_NOT_PROVEN #472** — baseline indépendante versionnée 12 sources, exact-scope discovery challenger seulement ; merge `f4563602119c8c01298bf694285e35856097bbd6` ; 26/26 exact-head SUCCESS ; post-merge run `31414213930` Reviewer + Release Certifier SUCCESS ; métier inchangé : **10 samples / 9 fresh / 3 sources / moderate / SHADOW**, representativeness/public activation/metric layers = false ; score **9,6/10**.
+- **P1C.5 🔒 BLOCKED** — aucune branche, aucune PR. Ne pas coder tant que P1C.4A n’est pas réellement `PROVEN` et qu’un replay P1C.4 ne retourne pas `CERTIFIED`.
+
+Ordre Carte canonique :
+
+`DATA exact-scope evidence → replay P1C.4A → replay P1C.4 → si CERTIFIED seulement P1C.5 canary → P1C.6 observation → P1C.7 scoped ON`.
+
+Les notes P1C ci-dessus sont des **notes de double-check/réconciliation de cette fenêtre**, établies à partir des preuves CI/live/merge ; elles ne prétendent pas réécrire un score historique qui n’aurait pas été formalisé.
 
 ## UX après #473
 
