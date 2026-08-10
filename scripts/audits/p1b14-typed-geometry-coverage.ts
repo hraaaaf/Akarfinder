@@ -38,27 +38,27 @@ export async function runP1B14TypedGeometryCoverage(){
  assert(decisions.find((d:any)=>d.registry_entity_id==="district_casablanca_maarif")?.decision==="REJECT_CROSS_TYPE_NAME_ONLY_BINDING","Maârif cross-type rejection missing");
  assert(decisions.find((d:any)=>d.registry_entity_id==="district_casablanca_oasis")?.decision==="KEEP_GEOMETRY_UNRESOLVED","Oasis unresolved decision missing");
 
+ // Live proof is deliberately narrow: P1B.14 certifies geometry typing, not listing-resolution coverage.
+ // Querying the territorial join here is both unnecessary and expensive; prior Geo lots own that proof.
  const db=getSupabaseServerClient();
  const targets=["district_casablanca_maarif","district_casablanca_oasis"];
- const [entitiesR,joinR]=await Promise.all([
-  db.from("geo_entities").select("id,entity_type,parent_id,validation_status,map_eligible,seo_eligible").in("id",targets),
-  db.from("odm_territorial_metric_listing_join_v1").select("seed_id,neighborhood_id").in("neighborhood_id",targets),
- ]);
+ const entitiesR=await db.from("geo_entities")
+  .select("id,entity_type,parent_id,validation_status,map_eligible,seo_eligible")
+  .in("id",targets);
  if(entitiesR.error)throw new Error(`P1B.14 entities read failed: ${entitiesR.error.message}`);
- if(joinR.error)throw new Error(`P1B.14 territorial join read failed: ${joinR.error.message}`);
  const entities=entitiesR.data??[];
  assert(entities.length===2&&entities.every((e:any)=>e.entity_type==="neighborhood"&&e.parent_id==="city_casablanca"&&e.validation_status==="validated"),"Registry neighborhood identity drift");
- const joined=joinR.data??[];
- const counts=Object.fromEntries(targets.map(id=>[id,joined.filter((r:any)=>r.neighborhood_id===id).length]));
- assert(counts.district_casablanca_maarif>0&&counts.district_casablanca_oasis>0,"certification cohort disappeared");
+ const registryState=Object.fromEntries(entities.map((e:any)=>[e.id,{map_eligible:e.map_eligible,seo_eligible:e.seo_eligible}]));
+ assert(registryState.district_casablanca_maarif&&registryState.district_casablanca_oasis,"Registry target state missing");
 
  const report={
   schema_version:"p1b14-typed-geometry-coverage-v1",
   generated_at:new Date().toISOString(),
-  contract:{read_only:true,registry_mutation:false,resolution_mutation:false,map_activation:false,seo_activation:false,name_only_cross_type_binding:false},
+  contract:{read_only:true,registry_mutation:false,resolution_mutation:false,map_activation:false,seo_activation:false,name_only_cross_type_binding_forbidden:true},
   administrative_geometry:{territorial_type:"arrondissement",features:16,source_admin_level:"10",topology_status:"passed",publication_status:"shadow",license:"ODbL-1.0"},
   neighborhood_registry_targets:2,
-  resolved_listing_examples:counts,
+  registry_target_state:registryState,
+  map_eligible_does_not_imply_polygon_binding:true,
   certified_neighborhood_geometry_bindings:0,
   blocked_cross_type_bindings:[{registry_entity_id:"district_casablanca_maarif",geometry_canonical_id:"maarif",relation_id:2801474,reason:"source_geometry_is_arrondissement_not_neighborhood"}],
   unresolved_neighborhood_geometry:["district_casablanca_oasis"],
