@@ -7,19 +7,19 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 <!-- DATA-CURRENT-START -->
 ## DATA — vérité courante
 
-- DATA-4.7B ✅ PR #435 — merge `00a459032161f4110de3c580e6589faaff166bec`.
-- DATA-4.7C ✅ PR #438 — merge `3a22c0830ee6afd8f05be7cdb25906f8d5462f78`.
-- DATA-4.8A 🟠 PR #442 — Net-New Sitemap Qualification, exact-head specialized gate PASS ; zéro write.
-- Public Search : **22 068 canonical URL representations / 16 domaines**, pas un compteur de biens uniques dédupliqués.
-- Réservoir : **56 810 seeds / 4 108 fresh-confirmed / 52 702 seed-only**.
-- Preuve 4.8A actuelle : **185** identités LSF absentes des seeds → **0 candidate detail**, 184 `REJECT_NO_DETAIL_PATTERN` + 1 `REJECT_NAMESPACE_ROOT` (`/property/`). Dar/Aykana/Promo : `BLOCKED_SOURCE_EVIDENCE` sur ce snapshot.
-- 0 detail-page fetch ; 0 DB/Registry/policy mutation.
+- DATA-4.8A ✅ PR #442 — merge `b9d38932bb3af0acfd08a681cc79abb5254b81e3` ; preuve finale **506 → 0 detail candidate** sur Dar/Aykana/LSF ; Promo DNS bloqué ; zéro write.
+- DATA-4.9A 🟠 PR #444 — Mass Source Onboarding Qualification, read-only raw sitemap capacity.
+- Exact head : `52a62b94985570c257e19d48c265bd3789c191ad`.
+- Specialized run `31365691647` : contract v2 + 11-source tests + static boundary + TypeScript + live qualification **PASS**.
+- Artefact : `sha256:8ef6a5f728c323906bf7f4a471a964613a5d19657c42f76fabfea047a12b2d47`.
+- 11 sources zéro-stock auditées ; 10 live qualifiées ; `immobest.ma` bloquée sur payload `sitemap.rss` non reconnu.
+- Capacité sitemap net-new brute totale : **11 480** — explicitement **pas** un compteur d'annonces.
+- Top : Val Foncier **6 195** dont `/bien-immobilier/` **5 798** ; Christie's Morocco **1 252** ; Immo Maroc **1 204** ; Capital Properties **844** ; AgadirImmobilier.org **519** ; Noura Immobilier **516**.
+- 0 detail-page fetch ; 0 DB/Registry/policy mutation ; 0 ingestion/display activation.
 
-**Décision quantité :** les quatre sources publiques sitemap actuelles sont saturées en net-new pages détail sur la preuve courante. Les milliers de rows revalidables concernent surtout la fraîcheur de rows déjà connues.
+**Prochain LOT : DATA-4.9B — High-Capacity Structural Detail Qualification**, read-only. Priorité aux sources `unverified` high-capacity : Val Foncier, Christie's Morocco, Immo Maroc, Capital Properties, AgadirImmobilier.ma, ProImmobilier.
 
-**Prochain LOT après merge #442 : DATA-4.9A — New Public Source Onboarding Qualification**, read-only. Candidats techniques initiaux : `agadirimmobilier.ma`, `capital-properties.ma`, `christiesrealestatemorocco.com`, `immobest.ma`, `immotaroudant.com`, `proimmobilier.ma`, `valfoncier.ma` — sélection technique seulement, aucune autorisation implicite.
-
-Lane secondaire : 28 signaux `public_index_result` encore fresh pourraient récupérer Search eligibility via un replay borné.
+4.9B doit produire le nombre réel de pages détail structurellement qualifiées. 4.9C décidera ensuite la policy ; 4.9D seulement pourra envisager un canary d'ingestion borné.
 <!-- DATA-CURRENT-END -->
 
 ## Vérité canonique après merges parallèles

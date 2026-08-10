@@ -6,34 +6,49 @@
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
 <!-- DATA-4.7B-CURRENT-START -->
-# 0. État DATA prioritaire — quantité réelle 2026-08-09
+# 0. État DATA prioritaire — quantité réelle 2026-08-10
 
 > Ce bloc prévaut sur les anciennes mentions DATA plus bas lorsqu'elles désignent un prochain LOT désormais dépassé.
 
-**North Star : augmenter les observations utiles réellement admissibles sans transformer fraîcheur, taxonomy ou signaux internes en faux volume.**
+**North Star : augmenter l'inventaire utile réellement admissible sans transformer sitemap, fraîcheur, taxonomy ou signal interne en faux volume.**
 
-- Public Search : **22 068 canonical URL representations / 16 domaines**, pas un nombre de biens uniques dédupliqués.
-- Réservoir : **56 810 seeds / 4 108 fresh_confirmed / 52 702 seed_only**.
-- **DATA-4.7B ✅ #435** — merge `00a459032161f4110de3c580e6589faaff166bec`, +250 LSF freshness, one-shot permanent.
-- **DATA-4.7C ✅ #438** — merge `3a22c0830ee6afd8f05be7cdb25906f8d5462f78`, rotation read-only et séparation freshness/net-new.
-- **DATA-4.8A 🟠 #442** — après correction du faux positif `/property/`, preuve exact-head : **185** identités LSF absentes des seeds, **0** candidate detail, **185** rejets = 184 non-detail + 1 namespace root ; Dar/Aykana/Promo bloqués sur la preuve source du snapshot ; **0 write**.
+- Public Search avant 4.9A : **22 068 canonical URL representations / 16 domaines**.
+- Réservoir avant 4.9A : **56 810 seeds / 4 108 fresh_confirmed / 52 702 seed_only**.
+- **DATA-4.8A ✅ #442** — merge `b9d38932bb3af0acfd08a681cc79abb5254b81e3` ; **506** identités sitemap seed-absent live sur Dar/Aykana/LSF → **0** detail candidate ; zéro write.
+- **DATA-4.9A 🟠 #444** — exact-head `52a62b94985570c257e19d48c265bd3789c191ad`, specialized run `31365691647` PASS ; 11 sources auditées, 10 qualifiées, **11 480 identités sitemap net-new brutes**, 0 mutation.
 
-**Décision : aucun DATA-4.8B seed write ne doit être ouvert à partir de ce résultat.**
+## Résultat DATA-4.9A — raw capacity, pas inventaire
 
-## Prochain LOT DATA — DATA-4.9A New Public Source Onboarding Qualification
+Classement principal :
 
-Strictement read-only.
+1. `valfoncier.ma` — **6 195** raw net-new ; `/bien-immobilier/` = **5 798** ; auth `unverified` ; hidden/internal-only.
+2. `christiesrealestatemorocco.com` — **1 252** ; auth `unverified` ; hidden/internal-only.
+3. `immo-maroc.com` — **1 204** ; auth `unverified` ; hidden/internal-only.
+4. `capital-properties.ma` — **844** ; auth `unverified` ; hidden/internal-only.
+5. `agadirimmobilier.org` — **519** ; `permission_required` ; hidden/internal-only.
+6. `nouraimmobilier.ma` — **516** ; `permission_required` ; hidden/internal-only.
+7. `agadirimmobilier.ma` — **366** ; auth `unverified`.
+8. `mhproperties.ma` — **294** ; `permission_required`.
+9. `proimmobilier.ma` — **267** ; auth `unverified`.
+10. `immotaroudant.com` — **23** ; auth `unverified`.
+11. `immobest.ma` — `BLOCKED_SOURCE_EVIDENCE` (`sitemap.rss` non reconnu comme sitemap XML).
 
-1. partir du Source Registry live, pas du registre structurel historique ;
-2. recenser les domaines `current` avec capacité de découverte publique documentable et zéro/faible stock ;
-3. mesurer robots/sitemap/public-index et structure détail sans fetcher les pages détail ;
-4. séparer `unverified`, `permission_required`, `prohibited` et `internal_signal_only` sans promotion implicite ;
-5. classer par **net-new detail discovery potential** avec blocker explicite ;
-6. n'autoriser ni ingestion, ni publication.
+**Interdiction d'interprétation : 11 480 ≠ 11 480 annonces.** Les path signals sont descriptifs uniquement. Robots/sitemap ≠ permission.
 
-Candidats techniques initiaux à auditer — aucune autorisation implicite : `agadirimmobilier.ma`, `capital-properties.ma`, `christiesrealestatemorocco.com`, `immobest.ma`, `immotaroudant.com`, `proimmobilier.ma`, `valfoncier.ma`.
+## Prochain LOT DATA — DATA-4.9B High-Capacity Structural Detail Qualification
 
-Lane secondaire : qualifier séparément le replay borné des **28 signaux public-index fresh** déjà persistés pouvant récupérer Search eligibility.
+Strictement read-only, sans fetch détail.
+
+1. prioriser les sources `unverified` high-capacity non prohibées : Val Foncier, Christie's Morocco, Immo Maroc, Capital Properties, AgadirImmobilier.ma, ProImmobilier ;
+2. établir/revoir des patterns structurels positifs + exclusions taxonomy/category/agent/pagination ;
+3. appliquer `REJECT_NAMESPACE_ROOT` et collisions fail-closed ;
+4. produire manifests candidate/reject complets et digests ;
+5. mesurer le **net-new detail candidate** réel par source ;
+6. 0 DB/Registry/policy write, 0 ingestion/display activation.
+
+**Après 4.9B seulement :** DATA-4.9C Source Policy Decision pour les gagnants, puis DATA-4.9D bounded seed canary si et seulement si la policy l'autorise.
+
+Lane secondaire distincte : 28 signaux `public_index_result` fresh peuvent être requalifiés pour Search, mais ce n'est pas le chemin principal de masse.
 <!-- DATA-4.7B-CURRENT-END -->
 
 # 1. Cap produit
