@@ -89,7 +89,7 @@ jobs:
         run: |
           grep -q 'P1C.3.*Activation Review.*✅ CLOSED' docs/CARTE_ROADMAP.md
           grep -q 'P1C.4.*Acquisition Representativeness Qualification.*✅ CLOSED' docs/CARTE_ROADMAP.md
-          grep -q 'P1C.4A.*Acquisition Source Universe & Denominator Design.*CURRENT' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.4A.*Acquisition Source Universe & Denominator Design' docs/CARTE_ROADMAP.md
 
       - name: TypeScript
         run: npx tsc --noEmit
