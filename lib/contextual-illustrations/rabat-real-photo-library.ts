@@ -68,7 +68,7 @@ export const RABAT_REAL_PHOTO_LIBRARY: Readonly<Record<RabatNeighborhood, readon
     photo("Hay Riad", "hay-riad", 5, "Mahaj.jpg"),
     photo("Hay Riad", "hay-riad", 6, "Riad District.jpg"),
     photo("Hay Riad", "hay-riad", 7, "Mahaj-Meditel.jpg"),
-    photo("Hay Riad", "hay-riad", 8, "Quartier d'affaire.jpg"),
+    photo("Hay Riad", "hay-riad", 8, "\u062d\u064a \u0627\u0644\u0631\u064a\u0627\u0636 \u0628\u0627\u0644\u0631\u0628\u0627\u0637.jpg"),
   ],
   Souissi: [
     photo("Souissi", "souissi", 1, "Rabat,Souissi1.jpg"),
