@@ -53,7 +53,7 @@ test("listing fallbacks use Option A without replacing authorized real images", 
   assert.match(searchCard, /imageMode === "db_provider_thumbnail"/);
   assert.match(searchCard, /imageMode !== "fallback_visual"/);
   assert.match(searchCard, /PropertyTypeArtwork kind=\{listing\.property_type\}/);
-  assert.match(searchCard, /Visuel illustratif/);
+  assert.match(searchCard, /"Illustration"/);
 });
 
 test("external fallbacks only pass normalized recognized property types into Option A", () => {
