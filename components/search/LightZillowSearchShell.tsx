@@ -93,12 +93,11 @@ function buildGatewayUrl(filters: ListingFiltersState, cursor?: string | null): 
 function SkeletonCard() {
   return (
     <div className="animate-pulse overflow-hidden rounded-2xl border border-border/15 bg-card dark:border-white/10 dark:bg-white/[0.04]">
-      <div className="h-[210px] bg-surface dark:bg-white/10" />
-      <div className="space-y-3 p-5">
-        <div className="h-6 w-2/3 rounded-full bg-surface dark:bg-white/10" />
-        <div className="h-4 w-1/3 rounded-full bg-surface dark:bg-white/10" />
-        <div className="h-4 w-1/2 rounded-full bg-surface dark:bg-white/10" />
-        <div className="mt-2 h-10 rounded-xl bg-surface dark:bg-white/10" />
+      <div className="aspect-[4/3] bg-surface dark:bg-white/10" />
+      <div className="space-y-2.5 p-3.5">
+        <div className="h-4 w-4/5 rounded-full bg-surface dark:bg-white/10" />
+        <div className="h-3 w-2/5 rounded-full bg-surface dark:bg-white/10" />
+        <div className="h-5 w-3/5 rounded-full bg-surface dark:bg-white/10" />
       </div>
     </div>
   );
@@ -147,7 +146,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     mreOnly: initialFilters?.mreOnly ?? defaultListingFilters.mreOnly,
     search: initialFilters?.search ?? defaultListingFilters.search,
   });
-  const [view, setView] = useState<SearchViewMode>("split");
+  const [view, setView] = useState<SearchViewMode>("list");
   const [sortBy, setSortBy] = useState<SortBy>("recommended");
   const [listings, setListings] = useState(initialListings);
   const [isLoading, setIsLoading] = useState(true);
@@ -448,13 +447,13 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
           {viewLayout.showList ? (
             <div ref={listRef} data-search-list-pane className="min-w-0">
               {showSkeleton ? (
-                <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                   {[1, 2, 3, 4].map((number) => <SkeletonCard key={number} />)}
                 </div>
               ) : (
                 <div className="space-y-5" data-search-continuous-flow>
                   {continuousListings.length > 0 ? (
-                    <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
+                    <div className={`grid grid-cols-2 gap-x-3 gap-y-5 transition-opacity duration-200 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 ${isLoading ? "opacity-60" : "opacity-100"}`}>
                       {continuousListings.map((listing) => (
                         <SearchListingCardDark key={listing.id} listing={listing} />
                       ))}
