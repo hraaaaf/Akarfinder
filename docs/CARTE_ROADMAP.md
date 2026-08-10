@@ -1,11 +1,11 @@
 # AKARFINDER — ROADMAP D’EXÉCUTION CARTE
 
-**Date : 2026-08-09**  
+**Date : 2026-08-10**  
 **Rôle : vue chronologique détaillée de la lane Carte.** `docs/ROADMAP.md` reste la roadmap canonique globale du produit ; ce document détaille uniquement l’enchaînement Carte et doit rester cohérent avec elle.
 
-## État réel au 2026-08-09
+## État réel au 2026-08-10
 
-Fondations Carte déjà certifiées : P1A.1 → P1A.6, P1B.1 → P1B.11.
+Fondations Carte déjà certifiées : P1A.1 → P1A.6, P1B.1 → P1B.12.
 
 Derniers lots Geo :
 
@@ -13,6 +13,7 @@ Derniers lots Geo :
 - **P1B.9 ✅ Tier A Registry Candidate Review** — review read-only, 2 candidats / 8 listings, aucun write.
 - **P1B.10 ✅ Tier A Registry Write Design** — design forward/rollback certifié, rehearsal PostgreSQL réel, aucun write production.
 - **P1B.11 ✅ Tier A Registry Production Write** — 2 entités + 2 alias créés en production ; `map_eligible=false`, `seo_eligible=false` ; **0 `geo_resolution_events` automatique**.
+- **P1B.12 ✅ Tier A Resolution Canary** — PR #450 mergée ; post-merge spécialisé PASS ; migration production appliquée ; **8/8** résolutions append-only (3 Dakhla + 5 Hay Mohammadi), **0 collision latest**, **0 conflit historique**, **0 canonical geo manquant** ; couverture publique quartier **97 / 15 438 = 0,6283 %** ; rollback append-only prouvé et non requis.
 
 La couche publique **Offre quartier reste OFF**. Le Registry peut contenir une entité sans que cela autorise automatiquement son affichage, ses métriques ou la résolution d’annonces.
 
@@ -20,27 +21,17 @@ La couche publique **Offre quartier reste OFF**. Le Registry peut contenir une e
 
 # Chronologie restante
 
-## P1B.12 — Tier A Resolution Canary 🟠 NEXT
-
-Responsabilité unique : relier de façon bornée les **8 listings déjà qualifiés** aux 2 entités Tier A désormais présentes dans le Registry.
-
-Contrat :
-
-- replay live exact du cohort P1B.8/P1B.9 ;
-- 5 → Hay Mohammadi ; 3 → Dakhla ;
-- latest-event-first ;
-- write append-only dans `geo_resolution_events` ;
-- idempotence + collision gate + rollback append-only ;
-- aucun fuzzy, titre/snippet, proximité ou inférence ;
-- aucun changement Search/ranking ;
-- `map_eligible=false` et `seo_eligible=false` inchangés ;
-- rapport P1B.3 avant/après.
-
-**Gate de sortie :** 8/8 résolutions attendues, 0 collision latest, 0 conflit historique nouveau, 0 canonical geo manquant, rollback prouvé.
-
-## P1B.13 — Geo Coverage Recovery Expansion
+## P1B.13 — Geo Coverage Recovery Expansion 🟠 NEXT
 
 Rejouer le gap P1B.6/P1B.7 après le canary Tier A et traiter les candidats restants uniquement par cohortes dont l’autorité indépendante et le type territorial sont démontrés.
+
+Replay production d’ouverture P1B.13 :
+
+- **63** listings Search-éligibles encore non résolus avec `district` explicite ;
+- **29** couples ville/quartier Registry-gap ;
+- **0** match Registry exact restant dans cette cohorte ;
+- **3** domaines source concernés ;
+- principaux gaps par volume : Casablanca — Oasis (5), Casablanca — Californie (4), Casablanca — Gauthier (4), Marrakech — Palmeraie (4), Marrakech — Targa (4).
 
 Priorité :
 
@@ -50,6 +41,8 @@ Priorité :
 4. résolution des listings uniquement après Registry certifié.
 
 **Interdit :** transformer la récurrence commerciale en vérité géographique.
+
+**Gate de sortie P1B.13 :** produire des cohortes Registry candidates avec autorité indépendante démontrée, provenance explicite et type territorial non ambigu ; aucun write Registry ou résolution listing dans le lot de qualification lui-même.
 
 ## P1B.14 — Geometry Coverage Expansion
 
@@ -167,9 +160,9 @@ Mettre en évidence les quartiers compatibles avec un projet utilisateur à part
 ```text
 P1B.11  Registry Production Write                 ✅
    ↓
-P1B.12  Tier A Resolution Canary                  🟠 NEXT
+P1B.12  Tier A Resolution Canary                  ✅
    ↓
-P1B.13  Geo Coverage Recovery Expansion
+P1B.13  Geo Coverage Recovery Expansion           🟠 NEXT
    ↓
 P1B.14  Geometry Coverage Expansion
    ↓

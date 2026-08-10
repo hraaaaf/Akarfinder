@@ -1,0 +1,106 @@
+{
+  "schema_version": "p1b13-priority-authority-evidence-v1",
+  "reviewed_at": "2026-08-10",
+  "input_contract": "P1B.13 live top-5 unresolved explicit-district Registry-gap cohort",
+  "policy": {
+    "read_only": true,
+    "db_mutation": false,
+    "registry_mutation": false,
+    "alias_creation": false,
+    "entity_creation": false,
+    "geo_resolution_write": false,
+    "commercial_recurrence_is_not_geo_truth": true,
+    "property_portals_are_not_authority": true,
+    "entity_type_must_be_explicitly_supported": true
+  },
+  "pairs": [
+    {
+      "city": "Casablanca",
+      "district": "Oasis",
+      "rows": 5,
+      "source_domains": ["mouldar.com"],
+      "authority_tier": "A",
+      "decision": "AUTHORITY_CONFIRMED_NEIGHBORHOOD",
+      "observed_entity_type": "neighborhood",
+      "evidence": [
+        {
+          "domain": "casablancacity.ma",
+          "url": "https://www.casablancacity.ma/fr/actualite/978/mise-en-service-de-la-nouvelle-fourriere-communale-de-oulad-azzouz",
+          "authority_kind": "municipality",
+          "claim_kind": "explicit_neighborhood_wording",
+          "summary": "The official Commune of Casablanca page explicitly uses the wording quartier Oasis while locating a municipal pre-impound facility in Casablanca."
+        }
+      ],
+      "registry_write_authorized_in_p1b13": false,
+      "next_action": "separate_bounded_registry_candidate_review"
+    },
+    {
+      "city": "Casablanca",
+      "district": "Gauthier",
+      "rows": 4,
+      "source_domains": ["mouldar.com", "mubawab.ma"],
+      "authority_tier": "B",
+      "decision": "INSTITUTIONAL_NEIGHBORHOOD_CORROBORATION_NEEDS_PLANNING_AUTHORITY",
+      "observed_entity_type": "neighborhood_wording",
+      "evidence": [
+        {
+          "domain": "visitcasablanca.ma",
+          "url": "https://visitcasablanca.ma/hebergements/stayhere-casablanca-gauthier/",
+          "authority_kind": "official_regional_tourism_council",
+          "claim_kind": "explicit_neighborhood_wording",
+          "summary": "The official Casablanca-Settat tourism authority uses neighborhood wording for Gauthier, but no reviewed municipal or urban-planning authority evidence yet establishes Registry-grade neighborhood authority."
+        }
+      ],
+      "reviewed_authorities": ["auc.ma", "casablancacity.ma"],
+      "registry_write_authorized_in_p1b13": false,
+      "next_action": "seek_municipal_or_planning_authority"
+    },
+    {
+      "city": "Casablanca",
+      "district": "Californie",
+      "rows": 4,
+      "source_domains": ["mouldar.com"],
+      "authority_tier": "NONE",
+      "decision": "NO_NEIGHBORHOOD_AUTHORITY_EVIDENCE_FOUND_IN_REVIEW_SCOPE",
+      "observed_entity_type": "unresolved",
+      "evidence": [],
+      "reviewed_authorities": ["auc.ma", "casablancacity.ma"],
+      "registry_write_authorized_in_p1b13": false,
+      "next_action": "keep_unresolved"
+    },
+    {
+      "city": "Marrakech",
+      "district": "Palmeraie",
+      "rows": 4,
+      "source_domains": ["marrakechrealty.com", "mouldar.com"],
+      "authority_tier": "NONE",
+      "decision": "NO_NEIGHBORHOOD_AUTHORITY_EVIDENCE_FOUND_IN_REVIEW_SCOPE",
+      "observed_entity_type": "unresolved",
+      "evidence": [],
+      "reviewed_authorities": ["ville-marrakech.ma", "aumarrakech.ma"],
+      "registry_write_authorized_in_p1b13": false,
+      "next_action": "keep_unresolved_and_seek_planning_authority"
+    },
+    {
+      "city": "Marrakech",
+      "district": "Targa",
+      "rows": 4,
+      "source_domains": ["marrakechrealty.com", "mouldar.com"],
+      "authority_tier": "C",
+      "decision": "OFFICIAL_LOCALITY_TYPE_REVIEW",
+      "observed_entity_type": "zone",
+      "evidence": [
+        {
+          "domain": "ville-marrakech.ma",
+          "url": "https://www.ville-marrakech.ma/blog/visite-de-madame-la-presidente-fatima-ezzahra-el-mansouri-aux-projets-structurants-de-marrakech/1747/",
+          "authority_kind": "municipality",
+          "claim_kind": "official_zone_wording",
+          "summary": "The Commune of Marrakech explicitly refers to zone de Targa in municipal infrastructure works; that proves the locality name but not Registry-grade neighborhood type."
+        }
+      ],
+      "reviewed_authorities": ["aumarrakech.ma"],
+      "registry_write_authorized_in_p1b13": false,
+      "next_action": "resolve_entity_type_before_any_registry_write"
+    }
+  ]
+}
