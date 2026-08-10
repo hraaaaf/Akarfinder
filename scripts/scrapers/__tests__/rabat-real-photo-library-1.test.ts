@@ -82,7 +82,16 @@ describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
     assert.ok(providerThumbnail >= 0 && ownedImage > providerThumbnail && neighborhoodPhoto > ownedImage);
     assert.match(card, /resolveRabatRealPhoto/);
     assert.match(card, /district: listing\.neighborhood/);
-    assert.doesNotMatch(card, /resolveRabatRealPhoto\([\s\S]*listing\.(title|description)/);
+
+    const resolverStart = card.indexOf("resolveRabatRealPhoto({");
+    const resolverEnd = card.indexOf("})", resolverStart);
+    assert.ok(resolverStart >= 0 && resolverEnd > resolverStart, "resolver call must be present");
+    const resolverCall = card.slice(resolverStart, resolverEnd + 2);
+    assert.doesNotMatch(resolverCall, /listing\.(title|description|description_snippet)/);
+    assert.match(resolverCall, /stableKey: listing\.listing_url \?\? listing\.id/);
+    assert.match(resolverCall, /city: listing\.city/);
+    assert.match(resolverCall, /district: listing\.neighborhood/);
+
     assert.match(card, /Photo d’ambiance/);
     assert.match(card, /Crédit & licence · Wikimedia Commons/);
     assert.match(card, /data-neighborhood-photo-brand-overlay/);
