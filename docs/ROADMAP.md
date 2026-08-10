@@ -87,6 +87,32 @@ Le statut GitHub `OPEN` n’implique plus qu’une PR est active. Toute PR ouver
 - **Blocker :** réalignement obligatoire après toute PR Search/Ranking mergée avant elle, notamment #474 si #474 merge en premier, puis rerun de tous les gates Search/UX.
 - **Prochaine étape :** double-check visuel indépendant → note desktop/mobile → corrections si <9 → re-test → re-note → certification.
 
+### PR #475 — Search visual roadmap alignment 🟦 ACTIVE / DEPENDENT
+
+- **Lane :** UX / Search documentation & visual audit.
+- **Responsabilité :** aligner le programme visuel Search et son audit live sur la roadmap unifiée, sans runtime change.
+- **Dépendances :** PR #474 ; branche empilée sur `feat/mass-first-search-quality-policy`.
+- **Branche :** `audit/live-rabat-search-20260810`.
+- **PR :** #475, DRAFT.
+- **État :** `ACTIVE / DEPENDENT ON #474`.
+- **Preuves :** Product Design live capture + patch docs-only annoncés dans la PR ; diff final doit rester borné à ROADMAP/SESSION.
+- **Double check / score :** piloté dans la fenêtre #475 ; aucune certification autonome ne doit être inférée depuis son statut OPEN.
+- **Blocker :** #474 doit être réconciliée/mergée avant intégration à `main` ; retarget/rebase ensuite requis.
+- **Prochaine étape :** préserver le delta UX/Search, retarget sur current main après #474, vérifier diff docs-only puis certifier selon son propre score.
+
+### PR #476 — Carte P1C roadmap alignment 🟦 ACTIVE / DEPENDENT
+
+- **Lane :** Carte / documentation cross-window.
+- **Responsabilité :** inscrire P1C.1→P1C.5, leurs preuves, scores de réconciliation, blockers et handoff DATA dans la roadmap maître sans toucher aux autres lanes.
+- **Dépendances :** PR #474 ; `docs/CARTE_ROADMAP.md` + PR #463/#464/#465/#466/#469/#472 comme preuves historiques ; current `main@f456360...`.
+- **Branche :** `feat/p1c4a-acquisition-source-universe` réalignée sur la tête #474 avant patch documentaire.
+- **PR :** #476, DRAFT.
+- **État :** `ACTIVE / DOCS-ONLY / DEPENDENT ON #474`.
+- **Preuves :** diff contre head #474 limité à `docs/ROADMAP.md` + `docs/SESSION.md` ; P1C live/CI/merge evidence réconciliée ci-dessous.
+- **Double check / score :** scope documentaire en cours de validation ; aucune fermeture avant vérification du diff final et dépendance #474.
+- **Blocker :** ne pas merger vers `main` avant #474 ; après #474, retarget/rebase et revérifier que le delta reste Carte/P1C only.
+- **Prochaine étape :** CI/diff review de #476 → après merge #474, retarget → re-test docs/gates applicables → score/certification → merge.
+
 ## RECONCILIATION REQUIRED
 
 ### PR #454 — DATA-4.9C Source Policy Decision & Registry Assignment 🟠
@@ -153,6 +179,8 @@ Le tableau ci-dessous empêche toute vieille PR `OPEN` d’être interprétée c
 
 | PR | Classification canonique | Motif / règle de reprise |
 |---|---|---|
+| #476 | **ACTIVE / DEPENDENT** | Docs Carte/P1C empilés sur #474 ; pas de merge indépendant. |
+| #475 | **ACTIVE / DEPENDENT** | Docs Search visuel empilés sur #474 ; pas de merge indépendant. |
 | #474 | **ACTIVE** | MASS-FIRST P0 actuel ; certification ≥9 requise. |
 | #473 | **ACTIVE** | SEARCH-UX-1 P0 parallèle ; réalignement après premier merge Search. |
 | #454 | **RECONCILIATION REQUIRED** | Mutation Registry production déjà appliquée ; old base. |
@@ -357,6 +385,10 @@ Après stabilisation de #474/#473, exécuter un audit current-main court pour d�
 PARALLÈLE P0
 ├─ #474 MASS-FIRST Search policy/ranking          🟠 certification
 └─ #473 SEARCH-UX-1 4/3/2/2 cards/grid           🟠 certification visuelle
+
+DOCS CROSS-WINDOW EMPILÉS SUR #474
+├─ #475 Search visual alignment                   🟦 dependent
+└─ #476 Carte/P1C alignment                       🟦 dependent
 
 APRÈS PREMIER MERGE SEARCH
 → réaligner l’autre PR sur current main
