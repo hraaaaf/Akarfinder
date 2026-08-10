@@ -1,0 +1,29 @@
+name: TEMP UX-SEARCH-3 Apply
+on:
+  push:
+    branches:
+      - ux/search-card-architecture-3
+permissions:
+  contents: write
+jobs:
+  apply:
+    if: ${{ !contains(github.event.head_commit.message, 'apply UX-SEARCH-3 card architecture') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ux/search-card-architecture-3
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply card architecture
+        run: node scripts/tmp/ux-search-3-apply.mjs
+      - name: Self-remove and commit
+        run: |
+          rm -f scripts/tmp/ux-search-3-apply.mjs .github/workflows/tmp-ux-search-3-apply.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/search/SearchListingCardDark.tsx components/search/ExternalIndexedResultCard.tsx components/akarinfo/AkarInfoPassportCard.tsx scripts/tmp/ux-search-3-apply.mjs .github/workflows/tmp-ux-search-3-apply.yml
+          git commit -m "feat: apply UX-SEARCH-3 card architecture"
+          git push origin HEAD:ux/search-card-architecture-3
