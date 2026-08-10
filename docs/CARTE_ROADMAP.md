@@ -57,101 +57,117 @@ Le résultat P1C.1 démontre que la couche Shadow fonctionne, mais aussi que la 
 
 ---
 
-# Lot actuel
+## P1C.2 — Reliability Engine ✅
 
-## P1C.2 — Reliability Engine 🟠 CURRENT
+PR #464 mergée sur `9f158648892e2412338cd736c7112a1720bb7dae`, exact-head CI **23/23 PASS**. Le push gate P1C.1 a ensuite révélé un timeout structurel du vieux RPC global P1B.3 ; le hotfix **PR #465** a supprimé cette dépendance dans les preflights P1C.1/P1C.2, exact-head **20/20 PASS**, puis push gates P1C.1 + P1C.2 verts sur `a7d9e25cd5f59bd63aef6187febcf713e45e05f1`.
 
-P1C.2 évalue la **fiabilité de chaque métrique**, sans la publier.
+Migration production P1C.2 appliquée en **functions/views uniquement**, sans mutation métier.
 
-### Métriques évaluées séparément
+### Politique de fiabilité
 
-Pour chaque **quartier × transaction**, le moteur conserve trois lignes distinctes :
+Trois métriques sont évaluées séparément pour chaque **quartier × transaction** :
 
 1. `price_mad` ;
 2. `surface_m2` ;
 3. `price_per_m2_mad`.
 
-Même une métrique sans aucune donnée reste visible comme ligne `sample_count=0 / insufficient` : l’absence d’information ne doit jamais disparaître des audits.
+Niveaux : `insufficient → limited → moderate → strong`.
 
-### Niveaux
+Les seuils sont une **politique interne AkarFinder versionnée**, pas un standard statistique externe :
 
-`insufficient → limited → moderate → strong`
+- **Limited** : n≥5, couverture≥50 %, fraîcheur≥50 %, ≥2 sources, outliers≤30 %, IQR/médiane≤1,50 ;
+- **Moderate** : n≥10, couverture≥60 %, fraîcheur≥60 %, ≥2 sources, outliers≤20 %, IQR/médiane≤1,00 ;
+- **Strong** : n≥20, couverture≥75 %, fraîcheur≥70 %, ≥3 sources, outliers≤15 %, IQR/médiane≤0,75.
 
-Les seuils sont une **politique interne AkarFinder versionnée**, pas un standard statistique externe.
+Moins de 5 observations = toujours `insufficient`. Les lignes sans donnée restent explicites avec `sample_count=0`. Le `sample_health` du segment est séparé de la représentativité globale du marché.
 
-#### Metric reliability
+### Rapport production P1C.2
 
-**Limited** :
-- échantillon ≥ 5 ;
-- couverture du champ ≥ 50 % ;
-- fraîcheur du sous-échantillon ≥ 50 % ;
-- ≥ 2 sources ;
-- outliers ≤ 30 % ;
-- IQR / médiane ≤ 1,50.
-
-**Moderate** :
-- échantillon ≥ 10 ;
-- couverture ≥ 60 % ;
-- fraîcheur ≥ 60 % ;
-- ≥ 2 sources ;
-- outliers ≤ 20 % ;
-- IQR / médiane ≤ 1,00.
-
-**Strong** :
-- échantillon ≥ 20 ;
-- couverture ≥ 75 % ;
-- fraîcheur ≥ 70 % ;
-- ≥ 3 sources ;
-- outliers ≤ 15 % ;
-- IQR / médiane ≤ 0,75.
-
-Tout le reste = **insufficient**. En particulier, **moins de 5 observations = toujours insufficient**, quelle que soit la couverture apparente.
-
-Outliers : fences de Tukey `1,5 × IQR`.  
-Dispersion : `IQR / médiane` sur les métriques positives.
-
-### Sample health séparé
-
-Le nombre d’annonces, la fraîcheur et la diversité des sources produisent également un niveau de **sample health** du segment. Ce signal mesure uniquement la qualité de l’échantillon observé.
-
-Il ne signifie jamais : « ce volume représente tout le marché ».
-
-`market_representativeness_certified=false` reste obligatoire tant qu’une certification séparée de couverture/acquisition n’existe pas.
-
-### Snapshot actuel avant P1C.2
-
-Les **32 segments** P1C.1 montrent une forte asymétrie :
-
-- aucun segment prix n’a actuellement ≥ 5 observations ;
-- aucun segment prix/m² n’a actuellement ≥ 5 observations ;
-- certains segments ont de bons échantillons de surface/fraîcheur ;
-- plusieurs valeurs isolées sont potentiellement aberrantes, ce qui justifie IQR/outliers plutôt qu’une confiance naïve.
-
-Conséquence attendue et correcte : les médianes prix/prix-m² actuelles doivent rester **`insufficient`** jusqu’à enrichissement réel des données.
-
-### Gate de sortie P1C.2
-
-- politique 5/10/20 et seuils versionnés certifiés ;
-- tests PostgreSQL des frontières exactes ;
-- zero-sample rows conservées ;
-- IQR/outliers capables de dégrader un segment ;
-- `sample_health` séparé de la représentativité marché ;
+- **32 segments** ;
+- **96 metric rows** = 32 × 3 métriques ;
+- **92 insufficient** ;
+- **3 limited** ;
+- **1 moderate** ;
+- **0 strong** ;
+- sample health : **25 insufficient / 6 limited / 1 moderate / 0 strong** ;
+- `price_mad` : **32/32 insufficient**, échantillon max = 1 ;
+- `price_per_m2_mad` : **32/32 insufficient**, échantillon max = 1 ;
+- **0 candidat prix/prix-m²** pour P1C.3 ;
+- seul candidat `moderate` : **Marrakech / Guéliz / location / surface_m2**, n=10, couverture 100 %, fraîcheur 90 %, 3 sources, médiane observée 84 m², IQR/médiane 0,3958, 0 % outlier ;
+- `market_representativeness_certified=false` ;
 - `public_activation=false` ;
 - `metric_layers_activated=false` ;
-- `market_representativeness_certified=false` ;
-- aucune consommation publique runtime ;
-- rapport production post-déploiement ;
-- P1C.3 reçoit uniquement des **review candidates** `moderate/strong`, jamais une auto-activation.
+- `p1c3_auto_activation=false` ;
+- ACL effectifs : `anon=false`, `authenticated=false`, `service_role=true`.
 
-## P1C.3 — Activation Offre quartier ⏭️ NEXT AFTER P1C.2
+P1C.2 est donc **CLOSED** : le moteur fait correctement son travail, y compris lorsqu’il conclut que les données sont insuffisantes.
 
-Promotion contrôlée :
+---
+
+# Lot actuel
+
+## P1C.3 — Activation Review 🟠 CURRENT
+
+P1C.3 est une **revue read-only**. Il ne contient aucun SQL de mutation et n’active aucune métrique.
+
+Promotion conceptuelle :
 
 `OFF → SHADOW → CANARY → ON`
 
-P1C.3 ne peut examiner que des métriques `moderate/strong` et doit conserver une revue explicite avant canary. **Aucune métrique n’est auto-publiée par P1C.2.**
+Mais le passage `SHADOW → CANARY` exige simultanément :
 
-Aucune activation nationale en bloc. Activation uniquement par périmètre réellement certifié et métrique suffisamment fiable.
+- métrique `moderate` ou `strong` ;
+- scope exact **quartier × transaction × métrique** ;
+- représentativité d’acquisition certifiée séparément sur ce même scope ;
+- activation publique encore OFF avant promotion ;
+- metric layer encore OFF avant promotion ;
+- revue explicite ;
+- aucune activation nationale en bloc.
+
+**Fiabilité ≠ représentativité marché.** Une métrique peut être statistiquement cohérente sur les annonces observées tout en restant non représentative du marché réellement disponible.
+
+### Décision attendue avec l’état production actuel
+
+- candidat Reliability : Guéliz / location / `surface_m2` ;
+- `market_representativeness_certified=false` ;
+- candidat prix : 0 ;
+- canary public autorisable aujourd’hui : **0** ;
+- décision correcte : **HOLD**.
+
+P1C.3 doit produire ce HOLD explicitement ; il ne doit jamais transformer l’absence de certification d’acquisition en activation implicite.
+
+### Gate de sortie P1C.3
+
+- uniquement `moderate/strong` examinés comme review candidates ;
+- toutes les métriques restent Shadow ;
+- 0 mutation DB ;
+- 0 consommation runtime publique ;
+- 0 RPC global lourd ;
+- 0 auto-activation ;
+- 0 canary tant que la représentativité n’est pas certifiée ;
+- décision et raisons auditées par scope exact ;
+- passage explicite vers P1C.4 si verdict `HOLD`.
+
+## P1C.4 — Acquisition Representativeness Qualification ⏭️ NEXT AFTER P1C.3 HOLD
+
+Objectif : certifier **localement**, et non nationalement, si l’échantillon d’annonces observé est assez représentatif pour autoriser un canary public sur un scope précis.
+
+Le lot devra notamment définir et prouver :
+
+- le périmètre d’acquisition réellement couvert pour le quartier/transaction ;
+- les sources attendues vs réellement observées ;
+- la fraîcheur et la profondeur par source ;
+- les biais de collecte connus ;
+- le dénominateur utilisé pour parler de couverture ;
+- une certification versionnée et révocable ;
+- aucune extrapolation nationale à partir d’un scope local.
+
+**On ne doit pas attendre une couverture nationale parfaite.** Un scope local peut devenir canary dès que sa chaîne Geo + Reliability + Representativeness est certifiée.
+
+Après P1C.4 :
+
+- si aucun scope n’est certifié → Offre publique reste OFF et enrichissement DATA ciblé ;
+- si un scope est certifié → lot séparé de **Canary Write/Activation**, puis observation et rollback avant ON.
 
 ---
 
@@ -223,21 +239,25 @@ Mettre en évidence les quartiers compatibles avec un projet utilisateur à part
 # Vue chronologique
 
 ```text
-P1B.11  Registry Production Write                 ✅
+P1B.11  Registry Production Write                       ✅
    ↓
-P1B.12  Tier A Resolution Canary                  ✅
+P1B.12  Tier A Resolution Canary                        ✅
    ↓
-P1B.13  Geo Coverage Recovery Expansion           ✅
+P1B.13  Geo Coverage Recovery Expansion                 ✅
    ↓
-P1B.14  Typed Geometry Coverage                   ✅
+P1B.14  Typed Geometry Coverage                         ✅
    ↓
-P1B.15  Geo Certification Gate                    ✅
+P1B.15  Geo Certification Gate                          ✅
    ↓
-P1C.1   Offre quartier Shadow                     ✅
+P1C.1   Offre quartier Shadow                           ✅
    ↓
-P1C.2   Reliability Engine                        🟠 CURRENT
+P1C.2   Reliability Engine                              ✅
    ↓
-P1C.3   Activation Offre : OFF→SHADOW→CANARY→ON   ⏭️ NEXT
+P1C.3   Activation Review                               🟠 CURRENT
+   ↓
+P1C.4   Acquisition Representativeness Qualification    ⏭️ NEXT
+   ↓
+P1C.x   Scoped Canary Write / Observation / ON          si certifié
    ↓
 P2      Carte immobilière interactive
    ↓
@@ -252,6 +272,6 @@ CARTE AKARFINDER CERTIFIÉE
 
 ## Règle de passage à « la suite »
 
-Nous ne devons **pas attendre une couverture nationale parfaite** pour progresser. En revanche, chaque métrique publique future doit passer ses propres gates de fiabilité et d’activation.
+Nous ne devons **pas attendre une couverture nationale parfaite** pour progresser. En revanche, chaque métrique publique future doit passer ses propres gates de **Geo truth → Reliability → Representativeness → Activation**.
 
-P1C.2 peut donc conclure honnêtement qu’une métrique est `insufficient`; ce n’est pas un échec du moteur, c’est une protection contre la fausse précision. Aucun segment non certifié ne doit être présenté comme une vérité de marché, et aucun arrondissement administratif ne doit être présenté comme polygon de quartier immobilier sans preuve territoriale explicite.
+Une conclusion `insufficient` ou `HOLD` n’est pas un échec : c’est la protection contre la fausse précision. Aucun segment non certifié ne doit être présenté comme vérité de marché, et aucun arrondissement administratif ne doit être présenté comme polygon de quartier immobilier sans preuve territoriale explicite.
