@@ -63,7 +63,8 @@ test("search keeps the canonical comparison dock without a competing card-level 
   const dock = readFileSync(resolve(process.cwd(), "components/search/SearchCompareDock.tsx"), "utf8");
   assert.match(page, /<SearchCompareDock \/>/);
   assert.doesNotMatch(card, /CompareToggleButton/);
-  assert.match(card, /data-card-primary-action/);
+  assert.match(card, /data-card-primary-link/);
+  assert.doesNotMatch(card, /data-card-primary-action/);
   assert.match(dock, /Comparaison canonique/);
   assert.match(dock, /Non renseigné/);
 });
