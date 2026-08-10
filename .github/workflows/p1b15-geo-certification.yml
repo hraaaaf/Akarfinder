@@ -1,0 +1,87 @@
+name: P1B.15 Geo Certification Gate
+
+on:
+  pull_request:
+    paths:
+      - 'data/geo/p1b15-geo-certification-policy.json'
+      - 'scripts/audits/p1b15-geo-certification.ts'
+      - '.github/workflows/p1b15-geo-certification.yml'
+      - 'docs/CARTE_ROADMAP.md'
+      - 'data/geo/p1b14-geometry-level-policy.json'
+      - 'scripts/audits/p1b14-typed-geometry-coverage.ts'
+      - 'supabase/migrations/20260808101500_p1b3_territorial_metric_join_contract.sql'
+  push:
+    branches: [main]
+    paths:
+      - 'data/geo/p1b15-geo-certification-policy.json'
+      - 'scripts/audits/p1b15-geo-certification.ts'
+      - '.github/workflows/p1b15-geo-certification.yml'
+      - 'docs/CARTE_ROADMAP.md'
+      - 'data/geo/p1b14-geometry-level-policy.json'
+      - 'scripts/audits/p1b14-typed-geometry-coverage.ts'
+      - 'supabase/migrations/20260808101500_p1b3_territorial_metric_join_contract.sql'
+
+permissions:
+  contents: read
+
+jobs:
+  certify-geo-foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: P1B.15 static activation and mutation boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const policy=JSON.parse(fs.readFileSync('data/geo/p1b15-geo-certification-policy.json','utf8'));
+          const audit=fs.readFileSync('scripts/audits/p1b15-geo-certification.ts','utf8');
+          if(policy.schema_version!=='p1b15-geo-certification-policy-v1') throw new Error('P1B.15 policy schema drift');
+          if(policy.resolution_integrity.controlled_canary_seed_count!==13||policy.resolution_integrity.controlled_agadir_seed_count!==8||policy.resolution_integrity.controlled_oasis_seed_count!==5) throw new Error('controlled cohort boundary drift');
+          if(policy.activation_decision.p1c_shadow_allowed!==true) throw new Error('P1C Shadow transition missing');
+          for(const key of ['p1c_public_activation_allowed','offer_metric_layer_allowed','p2_neighborhood_choropleth_allowed']) if(policy.activation_decision[key]!==false) throw new Error(`${key} must remain false`);
+          for(const primitive of ['.insert(','.update(','.delete(','.upsert(']) if(audit.includes(primitive)) throw new Error(`P1B.15 write primitive forbidden: ${primitive}`);
+          NODE
+
+      - name: P1B.14 typed geometry predecessor replay
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1b14-typed-geometry-coverage.ts
+
+      - name: Existing geometry topology and production barriers
+        run: npx tsx --test scripts/scrapers/__tests__/neighborhood-geometry-registry.test.ts scripts/scrapers/__tests__/casablanca-geometry-canary.test.ts
+
+      - name: P1B.15 live Geo certification
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1b15-geo-certification.ts
+
+      - name: Enforce Geo certification verdict
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/p1b15-geo-certification.json');
+          if(r.verdict!=='P1B15_GEO_FOUNDATION_CERTIFIED_FOR_P1C_SHADOW') throw new Error(JSON.stringify(r));
+          if(r.controlled_resolution_lineage.total_latest_resolved!==13||r.controlled_resolution_lineage.agadir_latest_resolved!==8||r.controlled_resolution_lineage.oasis_latest_resolved!==5) throw new Error('controlled resolution lineage drift');
+          if(r.global_geo_integrity.resolved_neighborhood_listings<=0||r.global_geo_integrity.eligible_public_listings<=0) throw new Error('Geo coverage disappeared');
+          for(const key of ['latest_resolution_collisions','conflicting_resolution_history','missing_canonical_geo']) if(r.global_geo_integrity[key]!==0) throw new Error(`${key}=${r.global_geo_integrity[key]}`);
+          if(r.global_geo_integrity.metric_layers_activated!==false) throw new Error('Offer metric layer activated too early');
+          if(r.geometry_integrity.certified_neighborhood_polygon_bindings!==0||r.geometry_integrity.neighborhood_choropleth_allowed!==false) throw new Error('neighborhood polygon truth boundary violated');
+          if(r.geometry_integrity.map_eligible_does_not_imply_polygon_binding!==true) throw new Error('map eligibility/polygon distinction lost');
+          if(r.activation_decision.p1c_shadow_allowed!==true||r.activation_decision.p1c_public_activation_allowed!==false||r.activation_decision.offer_metric_layer_allowed!==false||r.activation_decision.p2_neighborhood_choropleth_allowed!==false) throw new Error('activation decision drift');
+          NODE
+
+      - name: Roadmap transition is explicit
+        run: |
+          grep -q 'P1B.15.*Geo Certification' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.1.*Offre quartier Shadow' docs/CARTE_ROADMAP.md
+
+      - name: TypeScript
+        run: npx tsc --noEmit

@@ -40,19 +40,23 @@ jobs:
           const s=fs.readFileSync('scripts/audits/p1b13a-oasis-registry-candidate-review.ts','utf8');
           if(m.schema_version!=='p1b13a-oasis-registry-candidate-review-v1') throw new Error('wrong manifest schema');
           if(m.candidate.city!=='Casablanca'||m.candidate.district!=='Oasis'||m.candidate.authority_tier!=='A') throw new Error('wrong Oasis candidate');
-          if(m.candidate.expected_listing_rows!==5||m.candidate.expected_source_domains!==1) throw new Error('wrong live boundary');
+          if(m.candidate.expected_listing_rows!==5||m.candidate.expected_source_domains!==1) throw new Error('wrong historical boundary');
           for(const k of ['db_mutation','registry_mutation','alias_creation','entity_creation','geo_resolution_write','map_activation','seo_activation']) if(m.policy[k]!==false) throw new Error(`unsafe marker ${k}`);
           for(const forbidden of ['.insert(','.update(','.delete(','geo_resolution_events).insert']) if(s.includes(forbidden)) throw new Error(`write primitive forbidden: ${forbidden}`);
           NODE
-      - name: Live Oasis Registry candidate review
+      - name: Live Oasis Registry candidate lifecycle review
         run: npx tsx scripts/audits/p1b13a-oasis-registry-candidate-review.ts
-      - name: Enforce verdict
+      - name: Enforce lifecycle verdict
         run: |
           node - <<'NODE'
           const r=require('./data/audits/runtime/p1b13a-oasis-registry-candidate-review.json');
-          if(r.verdict!=='P1B13A_OASIS_REGISTRY_CANDIDATE_READY_FOR_SEPARATE_WRITE_DESIGN') throw new Error(JSON.stringify(r));
-          if(r.live.parent_validated!==true||r.live.eligible_unresolved_seeds!==5||r.live.source_domains!==1) throw new Error('Oasis live boundary drift');
-          for(const k of ['target_entity_id_collisions','target_slug_collisions','target_name_collisions','target_alias_collisions']) if(r.live[k]!==0) throw new Error(`collision ${k}`);
+          const ready=r.verdict==='P1B13A_OASIS_REGISTRY_CANDIDATE_READY_FOR_SEPARATE_WRITE_DESIGN';
+          const promoted=r.verdict==='P1B13A_OASIS_REGISTRY_CANDIDATE_PROMOTED_CLOSED';
+          if(!ready&&!promoted) throw new Error(JSON.stringify(r));
+          if(r.live.parent_validated!==true||r.live.source_domains!==1) throw new Error('Oasis live boundary drift');
+          for(const k of ['foreign_target_entity_id_collisions','foreign_target_slug_collisions','foreign_target_name_collisions','foreign_target_alias_collisions']) if(r.live[k]!==0) throw new Error(`foreign collision ${k}`);
+          if(ready && (r.lifecycle_state!=='CANDIDATE_READY'||r.live.target_entity_present!==false||r.live.eligible_unresolved_seeds!==5||r.live.promoted_resolved_seeds!==0)) throw new Error('candidate-ready lifecycle drift');
+          if(promoted && (r.lifecycle_state!=='PROMOTED_BY_P1B13C_D'||r.live.target_entity_present!==true||r.live.eligible_unresolved_seeds!==0||r.live.promoted_resolved_seeds!==5)) throw new Error('promoted lifecycle drift');
           if(r.registry_write_authorized_by_this_lot!==false) throw new Error('P1B.13A may not authorize a Registry write');
           NODE
       - name: TypeScript

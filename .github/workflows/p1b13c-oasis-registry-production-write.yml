@@ -60,15 +60,19 @@ jobs:
           NODE
       - name: PostgreSQL semantic rehearsal of certified design
         run: npx tsx scripts/audits/p1b13b-oasis-registry-write-design-rehearsal.ts
-      - name: Live P1B.13A predecessor replay
+      - name: Live P1B.13A predecessor lifecycle replay
         run: npx tsx scripts/audits/p1b13a-oasis-registry-candidate-review.ts
-      - name: Enforce predecessor verdict
+      - name: Enforce predecessor lifecycle verdict
         run: |
           node - <<'NODE'
           const r=require('./data/audits/runtime/p1b13a-oasis-registry-candidate-review.json');
-          if(r.verdict!=='P1B13A_OASIS_REGISTRY_CANDIDATE_READY_FOR_SEPARATE_WRITE_DESIGN') throw new Error(JSON.stringify(r));
-          if(r.live.eligible_unresolved_seeds!==5 || r.live.source_domains!==1) throw new Error('Oasis live cohort drift');
-          for(const k of ['target_entity_id_collisions','target_slug_collisions','target_name_collisions','target_alias_collisions']) if(r.live[k]!==0) throw new Error(`${k}=${r.live[k]}`);
+          const ready=r.verdict==='P1B13A_OASIS_REGISTRY_CANDIDATE_READY_FOR_SEPARATE_WRITE_DESIGN';
+          const promoted=r.verdict==='P1B13A_OASIS_REGISTRY_CANDIDATE_PROMOTED_CLOSED';
+          if(!ready&&!promoted) throw new Error(JSON.stringify(r));
+          if(r.live.source_domains!==1) throw new Error('Oasis source-domain drift');
+          for(const k of ['foreign_target_entity_id_collisions','foreign_target_slug_collisions','foreign_target_name_collisions','foreign_target_alias_collisions']) if(r.live[k]!==0) throw new Error(`${k}=${r.live[k]}`);
+          if(ready && (r.live.target_entity_present!==false||r.live.eligible_unresolved_seeds!==5||r.live.promoted_resolved_seeds!==0)) throw new Error('pre-write predecessor drift');
+          if(promoted && (r.live.target_entity_present!==true||r.live.eligible_unresolved_seeds!==0||r.live.promoted_resolved_seeds!==5)) throw new Error('post-write predecessor drift');
           if(r.registry_write_authorized_by_this_lot!==false) throw new Error('P1B.13A authorization contract drift');
           NODE
       - name: TypeScript

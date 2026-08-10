@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 // P1B.13 — Geo Coverage Recovery Expansion
-// Read-only qualification of the current top-5 explicit-district Registry gaps.
-// No Registry or geo-resolution mutation is authorized by this audit.
+// Read-only historical qualification of the top-5 explicit-district Registry gaps.
+// A later certified promotion may remove a pair from the unresolved cohort without invalidating this review.
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -10,14 +10,9 @@ import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 
 const MANIFEST = join(process.cwd(), "data/geo/p1b13-priority-authority-evidence.json");
 const OUTPUT = join(process.cwd(), "data/audits/runtime/p1b13-geo-coverage-recovery-expansion.json");
+const OASIS_PROMOTED_TARGET = "district_casablanca_oasis";
 
-const ALLOWED_AUTHORITIES = new Set([
-  "auc.ma",
-  "casablancacity.ma",
-  "visitcasablanca.ma",
-  "aumarrakech.ma",
-  "ville-marrakech.ma",
-]);
+const ALLOWED_AUTHORITIES = new Set(["auc.ma", "casablancacity.ma", "visitcasablanca.ma", "aumarrakech.ma", "ville-marrakech.ma"]);
 const COMMERCIAL = new Set(["mouldar.com", "mubawab.ma", "marrakechrealty.com", "avito.ma", "agenz.ma"]);
 
 type Pair = {
@@ -33,27 +28,12 @@ type Pair = {
   registry_write_authorized_in_p1b13: boolean;
   next_action: string;
 };
+type Manifest = { schema_version: string; reviewed_at: string; input_contract: string; policy: Record<string, boolean>; pairs: Pair[] };
 
-type Manifest = {
-  schema_version: string;
-  reviewed_at: string;
-  input_contract: string;
-  policy: Record<string, boolean>;
-  pairs: Pair[];
-};
-
-function norm(value: unknown) {
-  return String(value ?? "").trim().replace(/\s+/g, " ").toLowerCase();
-}
-function domain(value: string) {
-  return new URL(value).hostname.toLowerCase().replace(/^www\./, "");
-}
-function key(city: string, district: string) {
-  return `${norm(city)}\u0000${norm(district)}`;
-}
-function assert(value: unknown, message: string): asserts value {
-  if (!value) throw new Error(message);
-}
+function norm(value: unknown) { return String(value ?? "").trim().replace(/\s+/g, " ").toLowerCase(); }
+function domain(value: string) { return new URL(value).hostname.toLowerCase().replace(/^www\./, ""); }
+function key(city: string, district: string) { return `${norm(city)}\u0000${norm(district)}`; }
+function assert(value: unknown, message: string): asserts value { if (!value) throw new Error(message); }
 function latestBySource(events: any[]) {
   const latest = new Map<string, any>();
   for (const event of events) {
@@ -139,13 +119,34 @@ export async function runP1B13GeoCoverageRecoveryExpansion() {
     live.set(pairKey, bucket);
   }
 
+  const promotedAuthorityPairs: Array<{ city: string; district: string; rows: number; target: string }> = [];
   for (const pair of manifest.pairs) {
-    const current = live.get(key(pair.city, pair.district));
-    assert(current, `P1B.13 live pair disappeared: ${pair.city} — ${pair.district}`);
-    assert(current.rows === pair.rows, `P1B.13 row drift ${pair.city} — ${pair.district}: expected ${pair.rows}, got ${current.rows}`);
-    const actualDomains = [...current.domains].sort();
+    const pairKey = key(pair.city, pair.district);
+    const current = live.get(pairKey);
+    if (current) {
+      assert(current.rows === pair.rows, `P1B.13 row drift ${pair.city} — ${pair.district}: expected ${pair.rows}, got ${current.rows}`);
+      const actualDomains = [...current.domains].sort();
+      const expectedDomains = [...pair.source_domains].sort();
+      assert(JSON.stringify(actualDomains) === JSON.stringify(expectedDomains), `P1B.13 source drift ${pair.city} — ${pair.district}`);
+      continue;
+    }
+
+    const isPromotedOasis = pair.city === "Casablanca" && pair.district === "Oasis" && pair.authority_tier === "A";
+    assert(isPromotedOasis, `P1B.13 live pair disappeared without certified lifecycle transition: ${pair.city} — ${pair.district}`);
+    const originalPairSeeds = (seeds as any[]).filter((seed) => {
+      if (!eligible.has(String(seed.id))) return false;
+      const listing: any = listingById.get(String(seed?.metadata?.coverage_bridge?.property_listing_id ?? ""));
+      return listing && key(listing.city, listing.district) === pairKey;
+    });
+    const promoted = originalPairSeeds.filter((seed) => {
+      const event = latest.get(String(seed.id));
+      return event?.resolution_status === "resolved" && event?.resolved_neighborhood_id === OASIS_PROMOTED_TARGET;
+    });
+    assert(promoted.length === pair.rows, `P1B.13 promoted Oasis drift: expected ${pair.rows}, got ${promoted.length}`);
+    const actualDomains = [...new Set(promoted.map((seed: any) => String(seed.source_domain)))].sort();
     const expectedDomains = [...pair.source_domains].sort();
-    assert(JSON.stringify(actualDomains) === JSON.stringify(expectedDomains), `P1B.13 source drift ${pair.city} — ${pair.district}`);
+    assert(JSON.stringify(actualDomains) === JSON.stringify(expectedDomains), "P1B.13 promoted Oasis source drift");
+    promotedAuthorityPairs.push({ city: pair.city, district: pair.district, rows: promoted.length, target: OASIS_PROMOTED_TARGET });
   }
 
   const tierA = manifest.pairs.filter((pair) => pair.authority_tier === "A");
@@ -158,9 +159,10 @@ export async function runP1B13GeoCoverageRecoveryExpansion() {
     authority_confirmed_neighborhood_pairs: tierA.length,
     authority_confirmed_listing_rows: tierA.reduce((sum, pair) => sum + pair.rows, 0),
     authority_confirmed: tierA.map((pair) => ({ city: pair.city, district: pair.district, rows: pair.rows })),
+    promoted_authority_pairs: promotedAuthorityPairs,
     registry_write_authorized_pairs: 0,
     verdict: "P1B13_PRIORITY_AUTHORITY_REVIEW_COMPLETE_NO_WRITE",
-    next_boundary: tierA.length > 0 ? "Separate bounded Registry candidate review for Tier A pairs only." : "Continue authority evidence recovery; no Registry candidate is ready.",
+    next_boundary: promotedAuthorityPairs.length > 0 ? "Tier A historical candidate was promoted by later certified lots; remaining evidence review stays read-only." : "Separate bounded Registry candidate review for Tier A pairs only.",
   };
   mkdirSync(dirname(OUTPUT), { recursive: true });
   writeFileSync(OUTPUT, `${JSON.stringify(report, null, 2)}\n`);
