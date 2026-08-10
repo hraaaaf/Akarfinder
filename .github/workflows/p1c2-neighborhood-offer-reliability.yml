@@ -67,7 +67,7 @@ jobs:
           ]) if(!sql.includes(marker)) throw new Error(`missing ${marker}`);
           if(/insert\s+into\s+/i.test(sql)||/update\s+public\./i.test(sql)||/delete\s+from\s+/i.test(sql)) throw new Error('P1C.2 must not mutate business data');
           if(/grant\s+(select|execute).*\s+to\s+(anon|authenticated|public)/i.test(sql)) throw new Error('Reliability engine exposed to public roles');
-          if(preflight.includes('odm_territorial_metric_join_report_v1')||preflight.includes('odm_neighborhood_offer_shadow_report_v1')||preflight.includes('.rpc(')) throw new Error('P1C.2 live preflight must not depend on heavy global report RPCs');
+          if(preflight.includes('odm_territorial_metric_join_report_v1')||preflight.includes('odm_neighborhood_offer_shadow_report_v1')||preflight.includes('odm_neighborhood_offer_shadow_segment_v1')||preflight.includes('.rpc(')) throw new Error('P1C.2 live preflight must use bounded base-table replay only');
           NODE
 
       - name: No public runtime consumer
@@ -95,7 +95,7 @@ jobs:
           for(const k of ['geo_latest_resolution_collisions','geo_conflicting_resolution_history','geo_missing_canonical_geo']) if(r.predecessor[k]!==0) throw new Error(`${k}=${r.predecessor[k]}`);
           if(r.live_distribution.segments!==r.predecessor.transaction_segments) throw new Error('segment denominator drift');
           if(r.contract.public_activation!==false||r.contract.metric_layers_activated!==false||r.contract.market_representativeness_certified!==false) throw new Error('P1C.2 activation boundary drift');
-          if(r.contract.p1b3_report_rpc_required!==false||r.contract.p1c1_global_report_rpc_required!==false) throw new Error('heavy report RPC dependency returned');
+          if(r.contract.p1b3_report_rpc_required!==false||r.contract.p1c1_global_report_rpc_required!==false||r.contract.p1c1_shadow_segment_view_required!==false||r.contract.bounded_base_table_replay!==true) throw new Error('bounded base-table replay boundary drift');
           if(r.observations.low_reliability_is_a_valid_engine_output!==true||r.observations.p1c3_requires_explicit_review_after_reliability!==true) throw new Error('fail-closed handoff missing');
           NODE
 
@@ -103,7 +103,7 @@ jobs:
         run: |
           grep -q 'P1C.1.*Offre quartier Shadow' docs/CARTE_ROADMAP.md
           grep -q 'P1C.2.*Reliability Engine' docs/CARTE_ROADMAP.md
-          grep -q 'P1C.3.*Activation Offre' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.3.*Activation Offre\|P1C.3.*Activation Review' docs/CARTE_ROADMAP.md
 
       - name: TypeScript
         run: npx tsc --noEmit
