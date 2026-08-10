@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, MapPin } from "lucide-react";
-import { AkarInfoPassportCard } from "@/components/akarinfo/AkarInfoPassportCard";
+import { ExternalLink, MapPin } from "lucide-react";
 import { SourceBadge } from "@/components/badges/SourceBadge";
-import { deriveGatewayPublicAttribution } from "@/lib/search/public-attribution";
 import { ContextualListingArtwork } from "@/components/search/ContextualListingArtwork";
-import { buildAkarInfoPassportForGatewayResult } from "@/lib/akarinfo/akarinfo-passport";
+import { deriveGatewayPublicAttribution } from "@/lib/search/public-attribution";
 import { isListingPropertyType } from "@/lib/property-types/presentation";
 import type { PublicResultSimilaritySummary } from "@/lib/public-result-similarity/types";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
@@ -42,11 +40,9 @@ function getIntentLabel(intent?: string) {
 
 export function ExternalIndexedResultCard({ result, similarResults }: ExternalIndexedResultCardProps) {
   if (!result.can_show_result) return null;
-  const passport = buildAkarInfoPassportForGatewayResult(result, similarResults);
+
   const sanitizedTitle = sanitizeVisibleText(result.title) || "Annonce immobilière";
-  const sanitizedDisplayUrl = sanitizeVisibleText(result.display_url);
   const showThumbnail = THUMBNAILS_ENABLED && result.can_show_thumbnail && !!result.thumbnail_url;
-  const hasPrice = result.normalized_price_mad != null && Number.isFinite(result.normalized_price_mad) && result.normalized_price_mad > 0;
   const safeFallbackPropertyType = isListingPropertyType(result.normalized_property_type)
     ? result.normalized_property_type
     : null;
@@ -54,7 +50,6 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
   const [thumbError, setThumbError] = useState(false);
   const showFallback = !showThumbnail || thumbError;
   const facts = [
-    safeFallbackPropertyType,
     result.normalized_surface_m2 != null && result.normalized_surface_m2 > 0
       ? `${Math.round(result.normalized_surface_m2).toLocaleString("fr-MA")} m²`
       : null,
@@ -62,6 +57,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
       ? `${Math.round(result.price_per_m2_mad).toLocaleString("fr-MA")} DH/m²`
       : null,
   ].filter((value): value is string => Boolean(value));
+  const placeLabel = result.normalized_city || getIntentLabel(result.normalized_intent);
 
   return (
     <Link
@@ -70,9 +66,10 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
       rel="noopener noreferrer"
       data-mobile-compact-external-card
       data-unified-listing-card
-      className="group flex min-w-0 flex-col overflow-hidden rounded-[20px] border border-border/10 bg-card shadow-[0_5px_16px_rgba(2,10,24,0.08)] transition duration-300 hover:border-bronze-500/35 sm:rounded-2xl sm:border-border/15 sm:shadow-[0_12px_34px_rgba(2,10,24,0.12)] sm:hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/[0.045]"
+      aria-label={`Voir la source originale ${sanitizedTitle}`}
+      className="group flex min-w-0 flex-col overflow-hidden rounded-[16px] border border-border/12 bg-card shadow-[0_4px_14px_rgba(2,10,24,0.07)] transition duration-200 hover:-translate-y-0.5 hover:border-bronze-500/30 hover:shadow-[0_12px_28px_rgba(2,10,24,0.11)] focus:outline-none focus-visible:ring-2 focus-visible:ring-bronze-500/45 dark:border-white/10 dark:bg-white/[0.045]"
     >
-      <div className="relative h-[164px] w-full flex-shrink-0 overflow-hidden bg-white sm:h-[220px]">
+      <div className="relative aspect-[4/3] w-full flex-shrink-0 overflow-hidden bg-white">
         {showThumbnail && !thumbError ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -91,81 +88,59 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
             className="transition duration-500 group-hover:scale-[1.025]"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#03101f]/58 via-transparent to-transparent sm:from-[#03101f]/78" />
-        <div className="absolute left-2 top-2 flex flex-wrap gap-1.5 sm:left-3 sm:top-3 sm:gap-2">
-          <span className="rounded-full bg-deepblue/88 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.05em] text-white ring-1 ring-white/15 backdrop-blur sm:px-2.5 sm:py-1 sm:text-[10.5px]">
-            {getIntentLabel(result.normalized_intent)}
-          </span>
-          <span className="hidden rounded-full border border-slate-400/25 bg-slate-500/10 px-2.5 py-1 text-[10.5px] font-extrabold text-white/80 backdrop-blur sm:inline-flex">
-            Informations limitées
-          </span>
-        </div>
-        <span className="absolute bottom-2 left-2 rounded-full bg-white/92 px-2 py-0.5 text-[9px] font-extrabold text-deepblue shadow-sm backdrop-blur sm:bottom-3 sm:left-3 sm:px-2.5 sm:py-1 sm:text-[10px]">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#03101f]/38 via-transparent to-[#03101f]/30" />
+
+        <span className="absolute left-2 top-2 max-w-[calc(100%-3rem)] truncate rounded-md bg-deepblue/82 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.07em] text-white backdrop-blur-sm sm:left-2.5 sm:top-2.5 sm:px-2 sm:text-[9.5px]">
+          {placeLabel}
+        </span>
+        <ExternalLink size={15} className="absolute right-2 top-2 text-white drop-shadow sm:right-2.5 sm:top-2.5" aria-hidden="true" />
+
+        <span className="absolute bottom-2 left-2 max-w-[72%] truncate rounded-md bg-white/94 px-1.5 py-0.5 text-[8.5px] font-extrabold text-deepblue shadow-sm backdrop-blur sm:bottom-2.5 sm:left-2.5 sm:px-2 sm:py-1 sm:text-[10px]">
           {safeFallbackPropertyType || "Bien immobilier"}
         </span>
         {showFallback ? (
-          <span
-            data-contextual-illustration-label
-            className="absolute bottom-2 right-2 rounded-full bg-black/52 px-1.5 py-0.5 text-[8px] font-medium text-white/90 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]"
-          >
+          <span className="absolute bottom-2 right-2 rounded-md bg-black/48 px-1.5 py-0.5 text-[7.5px] font-semibold text-white/90 backdrop-blur-sm sm:bottom-2.5 sm:right-2.5 sm:text-[8.5px]">
             Illustration
           </span>
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col p-3 sm:p-5">
-        <p
-          data-mobile-price
-          className={hasPrice
-            ? "truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-deepblue dark:text-white sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-bronze-500 dark:sm:text-bronze-300"
-            : "min-h-[2.05em] whitespace-normal text-[0.92rem] font-extrabold leading-[1.05] tracking-[-0.02em] text-deepblue dark:text-white sm:min-h-0 sm:whitespace-nowrap sm:text-[1.25rem] sm:leading-none sm:text-bronze-500 dark:sm:text-bronze-300"}
-        >
-          {formatIndexedPrice(result.normalized_price_mad)}
-        </p>
-        {result.price_per_m2_mad != null && result.price_per_m2_mad > 0 ? (
-          <p className="mt-1 hidden text-[12px] font-bold text-muted-foreground sm:block">
-            {Math.round(result.price_per_m2_mad).toLocaleString("fr-MA")} DH/m²
-          </p>
-        ) : null}
-
-        <h3 className="mt-1.5 line-clamp-1 text-[12.5px] font-extrabold leading-snug text-foreground transition group-hover:text-bronze-600 dark:text-white sm:mt-3 sm:line-clamp-2 sm:text-[1.02rem] dark:group-hover:text-bronze-300">
+      <div className="flex flex-1 flex-col p-2.5 sm:p-3.5">
+        <h3 className="line-clamp-2 min-h-[2.45em] text-[11.5px] font-extrabold leading-[1.22] text-foreground transition group-hover:text-bronze-700 dark:text-white dark:group-hover:text-bronze-300 sm:text-[14px]">
           {sanitizedTitle}
         </h3>
 
-        <p className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-muted-foreground sm:mt-1.5 sm:gap-1.5 sm:text-[13px]">
-          <MapPin size={11} className="shrink-0 text-bronze-500 sm:h-[13px] sm:w-[13px]" aria-hidden="true" />
+        <p className="mt-1 flex min-w-0 items-center gap-1 text-[9px] font-semibold text-muted-foreground sm:text-[11px]">
+          <MapPin size={10} className="shrink-0 text-bronze-500 sm:h-3 sm:w-3" aria-hidden="true" />
           <span className="truncate">{result.normalized_city || "Localisation non précisée"}</span>
         </p>
 
-        <div className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[9.5px] font-bold text-foreground/65 dark:text-white/65 sm:mt-3 sm:flex-wrap sm:gap-x-3 sm:gap-y-1.5 sm:text-[12px]">
-          {facts.length > 0 ? facts.slice(0, 3).map((fact) => <span key={fact}>{fact}</span>) : <span>Informations à compléter</span>}
-        </div>
-
-        {similarResults?.similar_possible ? (
-          <p className="mt-1.5 text-[9px] font-semibold text-amber-800 dark:text-amber-100 sm:mt-2 sm:text-[11px]">
-            Résultats proches · doublon possible. Comparez les sources pour confirmer.
-          </p>
+        {facts.length > 0 ? (
+          <div className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[8.5px] font-bold text-foreground/60 dark:text-white/60 sm:mt-2 sm:gap-x-2 sm:text-[10.5px]">
+            {facts.slice(0, 2).map((fact) => <span key={fact} className="shrink-0">{fact}</span>)}
+          </div>
         ) : null}
 
-        <div className="mt-2 flex items-center justify-between gap-2 border-t border-border/10 pt-2 text-[9px] dark:border-white/8 sm:mt-3 sm:gap-3 sm:border-border/12 sm:pt-3 sm:text-[11px]">
-          <span data-public-attribution-type className="truncate font-semibold text-muted-foreground">{publicAttribution.typeLabel}</span>
-          <span data-public-attribution-source className="truncate font-semibold text-muted-foreground">{publicAttribution.sourceLabel}</span>
-        </div>
+        <p data-mobile-price className="mt-2 truncate text-[13px] font-black leading-none tracking-[-0.025em] text-deepblue dark:text-white sm:mt-2.5 sm:text-[17px]">
+          {formatIndexedPrice(result.normalized_price_mad)}
+        </p>
 
-        <div className="mt-2 hidden items-center justify-between gap-2 sm:flex">
-          <span className="min-w-0 truncate text-[10px] text-muted-foreground/60 dark:text-white/30">{sanitizedDisplayUrl}</span>
-          {publicAttribution.badge ? <SourceBadge badge={publicAttribution.badge} variant="dark" /> : null}
-        </div>
-        <div className="hidden sm:block">
-          <AkarInfoPassportCard passport={passport} className="mt-3" />
-        </div>
-
-        <div className="mt-3 flex items-center justify-between gap-2 sm:mt-4 sm:rounded-xl sm:border sm:border-border/15 sm:bg-surface/70 sm:px-3 sm:py-2.5 dark:sm:border-white/10 dark:sm:bg-white/[0.04]">
-          <span className="min-w-0 truncate text-[9.5px] font-extrabold text-bronze-700 dark:text-bronze-300 sm:text-[12px]">
-            {publicAttribution.primaryCtaLabel ?? "Voir la source originale"}
+        <div className="mt-2 flex min-w-0 items-center justify-between gap-1.5 border-t border-border/10 pt-1.5 text-[7.5px] dark:border-white/8 sm:mt-2.5 sm:pt-2 sm:text-[9px]">
+          <span data-public-attribution-type className="min-w-0 truncate font-semibold text-muted-foreground">
+            {publicAttribution.typeLabel}
           </span>
-          <ArrowRight size={13} aria-hidden="true" className="shrink-0" />
+          <span data-public-attribution-source className="max-w-[55%] truncate font-semibold text-muted-foreground">
+            {publicAttribution.sourceLabel}
+          </span>
         </div>
+
+        {publicAttribution.badge ? (
+          <div className="mt-1 hidden sm:block"><SourceBadge badge={publicAttribution.badge} variant="dark" /></div>
+        ) : null}
+
+        {similarResults?.similar_possible ? (
+          <p className="mt-1 text-[7.5px] font-semibold text-amber-800 dark:text-amber-100 sm:text-[9px]">Doublon possible</p>
+        ) : null}
       </div>
     </Link>
   );
