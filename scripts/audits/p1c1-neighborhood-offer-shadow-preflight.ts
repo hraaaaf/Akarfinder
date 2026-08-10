@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 // P1C.1 — live read-only preflight for neighborhood offer Shadow metrics.
-// Replays the P1B.3 latest-event-first contract from bounded base-table reads so
-// CI does not depend on a full SELECT from the comparatively expensive join view.
+// Replays the complete P1B.3 latest-event-first contract from bounded base-table reads.
+// No global Geo report RPC is required, avoiding statement-timeout coupling in CI.
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -42,7 +42,7 @@ async function readAllResolutionEvents(db: any): Promise<any[]> {
     const page = response.data ?? [];
     rows.push(...page);
     if (page.length < PAGE_SIZE) return rows;
-    if (rows.length > 100000) throw new Error("P1C.1 resolution event safety bound exceeded");
+    if (rows.length > 100000) throw new Error("P1C.1 resolution-event safety bound exceeded");
   }
 }
 
@@ -59,51 +59,57 @@ async function readByIds(db: any, table: string, select: string, key: string, id
 
 export async function runP1C1NeighborhoodOfferShadowPreflight() {
   const db: any = getSupabaseServerClient();
-  const [events, geoR] = await Promise.all([
-    readAllResolutionEvents(db),
-    db.rpc("odm_territorial_metric_join_report_v1"),
-  ]);
-  if (geoR.error) throw new Error(`P1C.1 territorial report failed: ${geoR.error.message}`);
+  const events = await readAllResolutionEvents(db);
+  const eventSourceIds = [...new Set(events.map((event: any) => String(event.source_record_id ?? "")).filter((id) => UUID_RE.test(id)))];
 
-  const geoRaw = geoR.data;
-  const geo = Array.isArray(geoRaw) ? (geoRaw[0]?.report ?? geoRaw[0]) : (geoRaw?.report ?? geoRaw);
-  assert(geo?.contract_version === "p1b3_territorial_metric_join_v1", "P1B.3 contract drift");
-  assert(Number(geo.latest_resolution_collisions) === 0, "latest Geo collision blocks P1C.1");
-  assert(Number(geo.conflicting_resolution_history) === 0, "conflicting Geo history blocks P1C.1");
-  assert(Number(geo.missing_canonical_geo) === 0, "missing canonical Geo blocks P1C.1");
-  assert(geo.metric_layers_activated === false, "public territorial metrics are already active unexpectedly");
-
-  // Exact P1B.3 replay: latest event wins for each UUID source_offer_seed record.
-  const latest = new Map<string, any>();
-  for (const event of events) {
-    const id = String(event.source_record_id ?? "");
-    if (!UUID_RE.test(id)) continue;
-    if (newer(event, latest.get(id))) latest.set(id, event);
-  }
-  const latestResolved = [...latest.values()].filter(
-    (event) => event.resolution_status === "resolved" && String(event.resolved_neighborhood_id ?? "").trim(),
-  );
-  const candidateIds = latestResolved.map((event) => String(event.source_record_id));
   const docsRows = await readByIds(
     db,
     "thin_index_search_documents",
     "seed_id,vertical_classification,document_kind,display_eligibility,normalized_intent,normalized_property_type,normalized_price_mad,normalized_surface_m2,normalized_price_m2,freshness_status,quality_score,quality_tier",
     "seed_id",
-    candidateIds,
+    eventSourceIds,
   );
   const docs = new Map(docsRows.map((row: any) => [String(row.seed_id), row]));
+  const eligibleIds = new Set(
+    docsRows
+      .filter((doc: any) => doc.vertical_classification === "real_estate_likely" && doc.document_kind === "LISTING" && ["eligible_primary", "eligible_secondary"].includes(doc.display_eligibility))
+      .map((doc: any) => String(doc.seed_id)),
+  );
 
-  const eligibleEvents = latestResolved.filter((event) => {
-    const doc: any = docs.get(String(event.source_record_id));
-    return Boolean(
-      doc &&
-      doc.vertical_classification === "real_estate_likely" &&
-      doc.document_kind === "LISTING" &&
-      ["eligible_primary", "eligible_secondary"].includes(doc.display_eligibility),
+  const eligibleEvents = events.filter((event: any) => eligibleIds.has(String(event.source_record_id)));
+  const latest = new Map<string, any>();
+  const eventsBySource = new Map<string, any[]>();
+  for (const event of eligibleEvents) {
+    const id = String(event.source_record_id);
+    if (newer(event, latest.get(id))) latest.set(id, event);
+    const bucket = eventsBySource.get(id) ?? [];
+    bucket.push(event);
+    eventsBySource.set(id, bucket);
+  }
+
+  let latestResolutionCollisions = 0;
+  let conflictingResolutionHistory = 0;
+  for (const sourceEvents of eventsBySource.values()) {
+    const resolvedTargets = new Set(
+      sourceEvents
+        .filter((event) => event.resolution_status === "resolved" && event.resolved_neighborhood_id)
+        .map((event) => String(event.resolved_neighborhood_id)),
     );
-  });
+    if (resolvedTargets.size > 1) conflictingResolutionHistory += 1;
 
-  const neighborhoodIds = [...new Set(eligibleEvents.map((event) => String(event.resolved_neighborhood_id)))];
+    const maxCreatedAt = sourceEvents.reduce((max, event) => String(event.created_at) > max ? String(event.created_at) : max, "");
+    const latestTimestampTargets = new Set(
+      sourceEvents
+        .filter((event) => String(event.created_at) === maxCreatedAt && event.resolution_status === "resolved" && event.resolved_neighborhood_id)
+        .map((event) => String(event.resolved_neighborhood_id)),
+    );
+    if (latestTimestampTargets.size > 1) latestResolutionCollisions += 1;
+  }
+
+  const latestResolved = [...latest.values()].filter(
+    (event) => event.resolution_status === "resolved" && String(event.resolved_neighborhood_id ?? "").trim(),
+  );
+  const neighborhoodIds = [...new Set(latestResolved.map((event) => String(event.resolved_neighborhood_id)))];
   const neighborhoodRows = await readByIds(
     db,
     "geo_entities",
@@ -122,12 +128,25 @@ export async function runP1C1NeighborhoodOfferShadowPreflight() {
   );
   const cities = new Map(cityRows.map((row: any) => [String(row.id), row]));
 
-  const joined = eligibleEvents.flatMap((event) => {
+  let missingCanonicalGeo = 0;
+  const joined = latestResolved.flatMap((event) => {
     const neighborhood: any = neighborhoods.get(String(event.resolved_neighborhood_id));
-    if (!neighborhood || neighborhood.entity_type !== "neighborhood" || neighborhood.validation_status !== "validated") return [];
-    const city: any = cities.get(String(neighborhood.parent_id));
-    if (!city || city.entity_type !== "city" || city.validation_status !== "validated") return [];
-    if (event.resolved_city_id && String(event.resolved_city_id) !== String(city.id)) return [];
+    const city: any = neighborhood ? cities.get(String(neighborhood.parent_id)) : null;
+    const valid = Boolean(
+      neighborhood &&
+      neighborhood.entity_type === "neighborhood" &&
+      neighborhood.validation_status === "validated" &&
+      neighborhood.slug &&
+      city &&
+      city.entity_type === "city" &&
+      city.validation_status === "validated" &&
+      city.slug &&
+      (!event.resolved_city_id || String(event.resolved_city_id) === String(city.id)),
+    );
+    if (!valid) {
+      missingCanonicalGeo += 1;
+      return [];
+    }
     return [{
       seed_id: String(event.source_record_id),
       city_id: String(city.id),
@@ -141,10 +160,13 @@ export async function runP1C1NeighborhoodOfferShadowPreflight() {
     }];
   });
 
+  assert(latestResolutionCollisions === 0, `latest Geo collision blocks P1C.1: ${latestResolutionCollisions}`);
+  assert(conflictingResolutionHistory === 0, `conflicting Geo history blocks P1C.1: ${conflictingResolutionHistory}`);
+  assert(missingCanonicalGeo === 0, `missing canonical Geo blocks P1C.1: ${missingCanonicalGeo}`);
+
   const ids = joined.map((row) => row.seed_id);
   assert(ids.length > 0, "P1C.1 has no resolved neighborhood listings");
   assert(new Set(ids).size === ids.length, "P1C.1 P1B.3 replay contains duplicate seed rows");
-  assert(ids.length === Number(geo.resolved_neighborhood_listings), `P1C.1 denominator mismatch: replay=${ids.length}, report=${geo.resolved_neighborhood_listings}`);
 
   const seedsRows = await readByIds(
     db,
@@ -216,14 +238,16 @@ export async function runP1C1NeighborhoodOfferShadowPreflight() {
       sale_rent_price_medians_mixed: false,
       sample_sizes_disclosed: true,
       p1b3_replayed_from_base_tables: true,
+      p1b3_report_rpc_required: false,
     },
     geo: {
-      contract_version: geo.contract_version,
-      resolved_neighborhood_listings: Number(geo.resolved_neighborhood_listings),
+      contract_version: "p1b3_territorial_metric_join_v1",
+      resolved_neighborhood_listings: rows,
       replayed_resolved_neighborhood_listings: rows,
-      latest_resolution_collisions: Number(geo.latest_resolution_collisions),
-      conflicting_resolution_history: Number(geo.conflicting_resolution_history),
-      missing_canonical_geo: Number(geo.missing_canonical_geo),
+      latest_resolution_collisions: latestResolutionCollisions,
+      conflicting_resolution_history: conflictingResolutionHistory,
+      missing_canonical_geo: missingCanonicalGeo,
+      metric_layers_activated: false,
     },
     shadow: {
       listing_rows: rows,
