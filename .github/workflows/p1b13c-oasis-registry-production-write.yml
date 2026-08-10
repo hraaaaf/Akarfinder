@@ -1,0 +1,75 @@
+name: P1B.13C Oasis Registry Production Write Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260810113500_p1b13c_oasis_registry_production_write.sql'
+      - 'supabase/migration-designs/p1b13b_oasis_registry_write.sql'
+      - 'scripts/audits/p1b13b-oasis-registry-write-design-rehearsal.ts'
+      - 'scripts/audits/p1b13a-oasis-registry-candidate-review.ts'
+      - 'data/geo/p1b13a-oasis-registry-candidate-review.json'
+      - '.github/workflows/p1b13c-oasis-registry-production-write.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/20260810113500_p1b13c_oasis_registry_production_write.sql'
+      - 'supabase/migration-designs/p1b13b_oasis_registry_write.sql'
+      - 'scripts/audits/p1b13b-oasis-registry-write-design-rehearsal.ts'
+      - 'scripts/audits/p1b13a-oasis-registry-candidate-review.ts'
+      - 'data/geo/p1b13a-oasis-registry-candidate-review.json'
+      - '.github/workflows/p1b13c-oasis-registry-production-write.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify-oasis-production-write:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Exact certified-design parity and write boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          DESIGN='supabase/migration-designs/p1b13b_oasis_registry_write.sql'
+          MIGRATION='supabase/migrations/20260810113500_p1b13c_oasis_registry_production_write.sql'
+          cmp -s "$DESIGN" "$MIGRATION"
+          grep -q "district_casablanca_oasis" "$MIGRATION"
+          grep -q "city_casablanca" "$MIGRATION"
+          grep -q "casablancacity.ma" "$MIGRATION"
+          if grep -Eqi 'geo_resolution_events|property_listings|source_offer_seeds|thin_index_search_documents' "$MIGRATION"; then
+            echo 'P1B.13C may only write the Oasis Registry entity/alias'
+            exit 1
+          fi
+          node - <<'NODE'
+          const fs = require('fs');
+          const s = fs.readFileSync('supabase/migrations/20260810113500_p1b13c_oasis_registry_production_write.sql','utf8');
+          const ids = [...s.matchAll(/district_[a-z0-9_]+/g)].map(m=>m[0]);
+          const unique = [...new Set(ids)];
+          if (unique.length !== 1 || unique[0] !== 'district_casablanca_oasis') throw new Error(`unexpected district targets: ${unique.join(',')}`);
+          if (!/validation_status, seo_eligible, map_eligible/.test(s) || !/'validated',\s*false,\s*false,/s.test(s)) throw new Error('Oasis must remain validated with SEO/Map OFF');
+          NODE
+      - name: PostgreSQL semantic rehearsal of certified design
+        run: npx tsx scripts/audits/p1b13b-oasis-registry-write-design-rehearsal.ts
+      - name: Live P1B.13A predecessor replay
+        run: npx tsx scripts/audits/p1b13a-oasis-registry-candidate-review.ts
+      - name: Enforce predecessor verdict
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/p1b13a-oasis-registry-candidate-review.json');
+          if(r.verdict!=='P1B13A_OASIS_REGISTRY_CANDIDATE_READY_FOR_SEPARATE_WRITE_DESIGN') throw new Error(JSON.stringify(r));
+          if(r.live.eligible_unresolved_seeds!==5 || r.live.source_domains!==1) throw new Error('Oasis live cohort drift');
+          for(const k of ['target_entity_id_collisions','target_slug_collisions','target_name_collisions','target_alias_collisions']) if(r.live[k]!==0) throw new Error(`${k}=${r.live[k]}`);
+          if(r.registry_write_authorized_by_this_lot!==false) throw new Error('P1B.13A authorization contract drift');
+          NODE
+      - name: TypeScript
+        run: npx tsc --noEmit
