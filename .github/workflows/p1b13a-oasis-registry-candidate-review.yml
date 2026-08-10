@@ -1,0 +1,59 @@
+name: P1B.13A Oasis Registry Candidate Review Gate
+
+on:
+  pull_request:
+    paths:
+      - "data/geo/p1b13a-oasis-registry-candidate-review.json"
+      - "scripts/audits/p1b13a-oasis-registry-candidate-review.ts"
+      - ".github/workflows/p1b13a-oasis-registry-candidate-review.yml"
+      - "docs/CARTE_ROADMAP.md"
+  push:
+    branches: [main]
+    paths:
+      - "data/geo/p1b13a-oasis-registry-candidate-review.json"
+      - "scripts/audits/p1b13a-oasis-registry-candidate-review.ts"
+      - ".github/workflows/p1b13a-oasis-registry-candidate-review.yml"
+      - "docs/CARTE_ROADMAP.md"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-oasis-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Static read-only boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('data/geo/p1b13a-oasis-registry-candidate-review.json','utf8'));
+          const s=fs.readFileSync('scripts/audits/p1b13a-oasis-registry-candidate-review.ts','utf8');
+          if(m.schema_version!=='p1b13a-oasis-registry-candidate-review-v1') throw new Error('wrong manifest schema');
+          if(m.candidate.city!=='Casablanca'||m.candidate.district!=='Oasis'||m.candidate.authority_tier!=='A') throw new Error('wrong Oasis candidate');
+          if(m.candidate.expected_listing_rows!==5||m.candidate.expected_source_domains!==1) throw new Error('wrong live boundary');
+          for(const k of ['db_mutation','registry_mutation','alias_creation','entity_creation','geo_resolution_write','map_activation','seo_activation']) if(m.policy[k]!==false) throw new Error(`unsafe marker ${k}`);
+          for(const forbidden of ['.insert(','.update(','.delete(','geo_resolution_events).insert']) if(s.includes(forbidden)) throw new Error(`write primitive forbidden: ${forbidden}`);
+          NODE
+      - name: Live Oasis Registry candidate review
+        run: npx tsx scripts/audits/p1b13a-oasis-registry-candidate-review.ts
+      - name: Enforce verdict
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/p1b13a-oasis-registry-candidate-review.json');
+          if(r.verdict!=='P1B13A_OASIS_REGISTRY_CANDIDATE_READY_FOR_SEPARATE_WRITE_DESIGN') throw new Error(JSON.stringify(r));
+          if(r.live.parent_validated!==true||r.live.eligible_unresolved_seeds!==5||r.live.source_domains!==1) throw new Error('Oasis live boundary drift');
+          for(const k of ['target_entity_id_collisions','target_slug_collisions','target_name_collisions','target_alias_collisions']) if(r.live[k]!==0) throw new Error(`collision ${k}`);
+          if(r.registry_write_authorized_by_this_lot!==false) throw new Error('P1B.13A may not authorize a Registry write');
+          NODE
+      - name: TypeScript
+        run: npx tsc --noEmit
