@@ -8,6 +8,7 @@ import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButto
 import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
 import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
 import { resolveRabatRealPhoto } from "@/lib/contextual-illustrations/rabat-real-photo-library";
+import { resolveContextualIllustration } from "@/lib/contextual-illustrations/resolver";
 import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-policy";
 import type { Listing } from "@/lib/listings/types";
 import { formatPrice } from "@/lib/listings/utils";
@@ -77,6 +78,15 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
         })
       : null;
   const showNeighborhoodPhoto = neighborhoodPhoto !== null;
+  const contextualFallback =
+    imageMode === "fallback_visual" && !showNeighborhoodPhoto
+      ? resolveContextualIllustration({
+          stableRepresentationKey: listing.listing_url ?? "",
+          normalizedCity: listing.city,
+          normalizedDistrict: listing.neighborhood,
+          normalizedPropertyType: listing.property_type,
+        })
+      : null;
 
   return (
     <>
@@ -112,6 +122,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
                   loading="lazy"
                   decoding="async"
                   onError={() => setThumbnailError(true)}
+                  data-visual-inventory-class="authorized_or_listing_image"
                   className="h-full w-full object-cover"
                 />
               ) : imageMode !== "fallback_visual" ? (
@@ -119,6 +130,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
                   src={listing.main_image_url!}
                   alt={listing.title}
                   fill
+                  data-visual-inventory-class="authorized_or_listing_image"
                   className="object-cover"
                   sizes="(max-width: 640px) 50vw, 420px"
                 />
@@ -136,6 +148,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
                     onError={() => setNeighborhoodPhotoError(true)}
                     data-neighborhood-photo-id={neighborhoodPhoto.id}
                     data-neighborhood-photo-district={neighborhoodPhoto.district}
+                    data-visual-inventory-class="neighborhood_photo"
                     className="h-full w-full object-cover object-center brightness-[0.96] contrast-[1.06] saturate-[0.88]"
                   />
                   <div
@@ -144,8 +157,26 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
                     className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(3,16,31,0.34),rgba(10,82,135,0.12)_52%,rgba(255,255,255,0.04))]"
                   />
                 </div>
+              ) : contextualFallback ? (
+                // Contextual illustration uses only certified structured city/type fields.
+                // It is never presented as a photo of the property.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={contextualFallback.asset}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  decoding="async"
+                  data-contextual-city={contextualFallback.label}
+                  data-contextual-asset-id={contextualFallback.id}
+                  data-contextual-tier={contextualFallback.tier}
+                  data-visual-inventory-class="contextual_illustration"
+                  className="h-full w-full object-cover object-center"
+                />
               ) : (
-                <PropertyTypeArtwork kind={listing.property_type} className="h-full w-full" />
+                <div data-visual-inventory-class="generic_illustration" className="h-full w-full">
+                  <PropertyTypeArtwork kind={listing.property_type} className="h-full w-full" />
+                </div>
               )}
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-[#03101f]/58 via-transparent to-transparent sm:from-[#03101f]/78" />
@@ -178,6 +209,14 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
                   className="absolute bottom-2 right-2 rounded-full bg-deepblue/82 px-1.5 py-0.5 text-[8px] font-semibold text-white/95 ring-1 ring-white/10 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]"
                 >
                   Photo d’ambiance
+                </span>
+              ) : contextualFallback ? (
+                <span
+                  data-contextual-illustration-label
+                  className="absolute bottom-2 right-2 rounded-full bg-black/52 px-1.5 py-0.5 text-[8px] font-medium text-white/90 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]"
+                  aria-label={`Illustration contextuelle ${contextualFallback.label}`}
+                >
+                  Illustration
                 </span>
               ) : (
                 <span className="absolute bottom-2 right-2 rounded-full bg-black/45 px-1.5 py-0.5 text-[8px] font-medium text-white/80 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]">

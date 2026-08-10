@@ -38,6 +38,7 @@ export function ContextualListingArtwork({
         data-contextual-city={contextualVisual.label}
         data-contextual-asset-id={contextualVisual.id}
         data-contextual-tier={contextualVisual.tier}
+        data-visual-inventory-class="contextual_illustration"
         className={`block h-full w-full object-cover object-center ${className}`.trim()}
         loading="lazy"
         decoding="async"
@@ -47,17 +48,20 @@ export function ContextualListingArtwork({
 
   if (propertyType) {
     return (
-      <PropertyTypeArtwork
-        kind={propertyType}
-        className={className}
-        decorative
-      />
+      <div data-visual-inventory-class="generic_illustration" className="h-full w-full">
+        <PropertyTypeArtwork
+          kind={propertyType}
+          className={className}
+          decorative
+        />
+      </div>
     );
   }
 
   return (
     <div
       data-contextual-neutral
+      data-visual-inventory-class="neutral"
       className={`grid h-full w-full place-items-center bg-gradient-to-br from-slate-100 to-slate-200 px-6 text-center dark:from-deepblue dark:to-slate-900 ${className}`.trim()}
     >
       <span className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground dark:text-white/55">
