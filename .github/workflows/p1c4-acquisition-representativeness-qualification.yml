@@ -1,0 +1,95 @@
+name: P1C.4 Acquisition Representativeness Qualification Gate
+
+on:
+  pull_request:
+    paths:
+      - 'data/market/p1c4-acquisition-representativeness-policy.json'
+      - 'scripts/audits/p1c4-acquisition-representativeness-qualification.ts'
+      - 'scripts/scrapers/__tests__/p1c4-acquisition-representativeness-qualification.test.ts'
+      - '.github/workflows/p1c4-acquisition-representativeness-qualification.yml'
+      - 'docs/CARTE_ROADMAP.md'
+  push:
+    branches: [main]
+    paths:
+      - 'data/market/p1c4-acquisition-representativeness-policy.json'
+      - 'scripts/audits/p1c4-acquisition-representativeness-qualification.ts'
+      - 'scripts/scrapers/__tests__/p1c4-acquisition-representativeness-qualification.test.ts'
+      - '.github/workflows/p1c4-acquisition-representativeness-qualification.yml'
+      - 'docs/CARTE_ROADMAP.md'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-acquisition-representativeness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: P1C.4 static read-only boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const policy=JSON.parse(fs.readFileSync('data/market/p1c4-acquisition-representativeness-policy.json','utf8'));
+          const audit=fs.readFileSync('scripts/audits/p1c4-acquisition-representativeness-qualification.ts','utf8');
+          if(policy.schema_version!=='p1c4-acquisition-representativeness-policy-v1') throw new Error('P1C.4 policy schema drift');
+          if(JSON.stringify(policy.qualification_states)!==JSON.stringify(['CERTIFIED','INSUFFICIENT','NOT_CERTIFIABLE'])) throw new Error('P1C.4 qualification states drift');
+          if(policy.principles.p1c4_is_read_only!==true) throw new Error('P1C.4 read-only principle missing');
+          if(policy.principles.observed_sources_never_define_the_denominator!==true) throw new Error('independent denominator principle missing');
+          if(policy.principles.discovery_candidate_counts_are_diagnostic_not_a_certified_denominator!==true) throw new Error('discovery diagnostic boundary missing');
+          if(policy.principles.no_unversioned_numeric_thresholds!==true) throw new Error('unversioned threshold prohibition missing');
+          if(policy.principles.robots_sitemap_or_public_access_are_not_reuse_permission!==true) throw new Error('permission boundary missing');
+          if(policy.current_expected_outcome.classification!=='NOT_CERTIFIABLE'||policy.current_expected_outcome.verdict!=='P1C4_REPRESENTATIVENESS_NOT_CERTIFIABLE') throw new Error('P1C.4 current fail-closed expectation drift');
+          if(policy.current_expected_outcome.next_boundary!=='P1C.4A Acquisition Source Universe & Denominator Design') throw new Error('P1C.4A handoff drift');
+          if(!audit.includes('discovery_candidates')||!audit.includes('source_policy_registry')) throw new Error('independent acquisition/registry evidence reads missing');
+          for(const mutation of ['.insert(','.update(','.delete(','.upsert(','.rpc(']) if(audit.includes(mutation)) throw new Error(`P1C.4 audit must be bounded read-only: ${mutation}`);
+          NODE
+          if compgen -G 'supabase/migrations/*p1c4*' > /dev/null; then
+            echo 'P1C.4 is read-only; no P1C.4 migration is allowed'
+            exit 1
+          fi
+
+      - name: No public runtime consumer
+        run: |
+          if grep -R -n -E 'p1c4-acquisition-representativeness|P1C4_REPRESENTATIVENESS' app components lib --exclude-dir=node_modules; then
+            echo 'P1C.4 qualification must not be consumed by public runtime/UI'
+            exit 1
+          fi
+
+      - name: Qualification semantics
+        run: npx tsx --test scripts/scrapers/__tests__/p1c4-acquisition-representativeness-qualification.test.ts
+
+      - name: Live read-only representativeness qualification
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1c4-acquisition-representativeness-qualification.ts
+
+      - name: Enforce fail-closed representativeness verdict
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/p1c4-acquisition-representativeness-qualification.json');
+          if(r.verdict!=='P1C4_REPRESENTATIVENESS_NOT_CERTIFIABLE'||r.classification!=='NOT_CERTIFIABLE'||r.decision!=='FAIL_CLOSED') throw new Error(JSON.stringify(r));
+          if(r.observed_shadow.sample_count<=0||r.observed_shadow.source_domain_count<=0) throw new Error('exact Shadow scope unexpectedly empty');
+          if(r.independent_acquisition_evidence.candidate_domain_count<=r.observed_shadow.source_domain_count) throw new Error('independent acquisition source gap unexpectedly absent');
+          if(r.independent_acquisition_evidence.unrepresented_candidate_domain_count<=0) throw new Error('unrepresented acquisition sources unexpectedly absent');
+          if(r.missing_design_artifacts.length<=0) throw new Error('P1C.4A design artifacts unexpectedly complete; explicit re-review required');
+          if(r.certification.market_representativeness_certified!==false||r.certification.denominator_certified!==false||r.certification.numeric_pass_threshold_applied!==false) throw new Error('representativeness certification boundary drift');
+          if(r.contract.read_only!==true||r.contract.db_mutation!==false||r.contract.registry_write!==false||r.contract.listing_write!==false||r.contract.geo_write!==false||r.contract.public_activation!==false||r.contract.search_change!==false||r.contract.ranking_change!==false||r.contract.data_policy_change!==false||r.contract.national_bulk_activation!==false) throw new Error('P1C.4 mutation/activation boundary drift');
+          if(r.next_boundary!=='P1C.4A Acquisition Source Universe & Denominator Design') throw new Error(`unexpected next boundary ${r.next_boundary}`);
+          NODE
+
+      - name: Roadmap handoff
+        run: |
+          grep -q 'P1C.3.*Activation Review.*✅' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.4.*Acquisition Representativeness Qualification.*✅' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.4A.*Acquisition Source Universe.*CURRENT' docs/CARTE_ROADMAP.md
+
+      - name: TypeScript
+        run: npx tsc --noEmit
