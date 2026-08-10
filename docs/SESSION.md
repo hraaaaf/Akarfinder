@@ -30,6 +30,13 @@ Preuve actuelle : smoke UI/accessibilité **12 routes × 4 viewports = 48 captur
 
 #473 peut avancer en parallèle de #474, mais le second à merger doit se réaligner sur le nouveau `main` puis rejouer les gates complets.
 
+### #475 / #476 — alignements docs cross-window 🟦 DEPENDENT ON #474
+
+- **#475** : Search visual roadmap alignment, DRAFT, branche `audit/live-rabat-search-20260810`.
+- **#476** : Carte/P1C roadmap alignment, DRAFT, branche `feat/p1c4a-acquisition-source-universe` réalignée sur head #474 avant patch.
+
+Ces deux PR sont docs-only et empilées sur #474. Elles sont **ACTIVE/DEPENDENT**, mais ne doivent pas être mergées indépendamment vers `main`. Après #474 : retarget/rebase, diff review, re-test et certification de leur scope propre.
+
 ## PR à réconcilier / bloquées
 
 ### #454 — DATA-4.9C — RECONCILIATION REQUIRED
@@ -74,6 +81,7 @@ Aucun +100/+500 automatique ne découle de 4.4C. Les lanes DATA ultérieures 4.7
 Le snapshot exhaustif est dans `docs/ROADMAP.md`.
 
 - **ACTIVE** : #474, #473.
+- **ACTIVE / DEPENDENT** : #475, #476.
 - **RECONCILIATION REQUIRED** : #454, #383.
 - **BLOCKED** : #310.
 - **SUPERSEDED** : #228, #229, #230, #231, #232, #234, #250, #81, #282, #52.
