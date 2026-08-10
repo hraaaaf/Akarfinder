@@ -16,14 +16,14 @@ describe("UNIFIED-LISTING-CARD-1", () => {
   it("keeps the external Search card on the canonical decision hierarchy", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
-    const image = positionOrFail(card, "showThumbnail && !thumbError");
-    const price = positionOrFail(card, "formatIndexedPrice(result.normalized_price_mad)");
-    const title = positionOrFail(card, '<h3 className="mt-1.5');
-    const location = positionOrFail(card, 'result.normalized_city || "Localisation non précisée"');
-    const facts = positionOrFail(card, "facts.length > 0");
-    const provenance = positionOrFail(card, "data-public-attribution-type");
+    const image = positionOrFail(card, "data-card-image");
+    const price = positionOrFail(card, "data-card-price");
+    const title = positionOrFail(card, "data-card-title");
+    const location = positionOrFail(card, "data-card-location");
+    const facts = positionOrFail(card, "data-card-facts");
+    const provenance = positionOrFail(card, "data-card-provenance");
     const passport = positionOrFail(card, "<AkarInfoPassportCard passport={passport}");
-    const action = positionOrFail(card, 'publicAttribution.primaryCtaLabel ?? "Voir la source originale"');
+    const action = positionOrFail(card, "data-card-action");
 
     assert.ok(image < price, "IMAGE must precede PRICE");
     assert.ok(price < title, "PRICE must precede TITLE");
