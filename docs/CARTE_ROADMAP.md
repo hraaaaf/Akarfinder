@@ -5,7 +5,7 @@
 
 ## État réel au 2026-08-10
 
-Fondations Carte certifiées : **P1A.1 → P1A.6, P1B.1 → P1B.14**.
+Fondations Carte/Geo certifiées : **P1A.1 → P1A.6, P1B.1 → P1B.15**.
 
 Derniers lots Geo :
 
@@ -16,6 +16,7 @@ Derniers lots Geo :
 - **P1B.12 ✅ Tier A Resolution Canary** — 8/8 résolutions append-only Agadir (3 Dakhla + 5 Hay Mohammadi), rollback prouvé, aucune collision latest ni conflit historique.
 - **P1B.13 ✅ Geo Coverage Recovery Expansion — Oasis micro-chain** — authority/candidate review → Registry design → production write → canary exact **5/5 Oasis**. Après write : **102 / 15 438 listings publics résolus = 0,66 %**, 0 collision latest, 0 conflit historique, 0 canonical geo manquant.
 - **P1B.14 ✅ Typed Geometry Coverage** — les **16** géométries Casablanca existantes sont certifiées comme **arrondissements administratifs OSM `admin_level=10`**, topology-auditées et conservées en Shadow. **0 binding polygon quartier certifié**. Maârif arrondissement ≠ automatiquement quartier Maârif ; Oasis reste sans polygon quartier. Choroplèthe quartier OFF.
+- **P1B.15 ✅ Geo Certification Gate** — lineage contrôlée 13/13 (8 Agadir + 5 Oasis), 3 Registry targets protégés, intégrité P1B.3 sans collision/conflit/canonical manquant, géométrie fail-closed. PR #462 mergée sur `9856e7a947e0796acef87502c9c13cc45891084c` ; les 4 push gates exact-merge P1B.13/P1B.13A/P1B.13C/P1B.15 sont verts. **P1C Shadow autorisé ; exposition publique et choroplèthe quartier toujours interdits.**
 
 La couche publique **Offre quartier reste OFF**. Le Registry peut contenir une entité ou même avoir `map_eligible=true` sans que cela constitue une preuve de polygon quartier ou une autorisation d’afficher des métriques.
 
@@ -23,59 +24,56 @@ La couche publique **Offre quartier reste OFF**. Le Registry peut contenir une e
 
 # Lot actuel
 
-## P1B.15 — Geo Certification Gate 🟠 CURRENT
+## P1C.1 — Offre quartier Shadow 🟠 CURRENT
 
-Réconciliation finale des fondations Geo sans mutation :
+Construire une première couche de métriques **strictement interne / service-role only** à partir de :
 
-`Listing → Geo Resolution Event → Neighborhood Registry → Parent City`
+`P1B.3 latest resolved Geo → thin_index normalized offer fields → Shadow metrics`
 
-et, séparément :
+Le contrat P1C.1 sépare explicitement :
 
-`Geometry source → territorial type → topology/provenance → publication boundary`.
+- **summary quartier** : volume, vente/location, typologies, fraîcheur, couverture des champs et taille d’échantillon ;
+- **segment quartier × transaction** : prix médian, surface médiane et prix/m² ;
+- **listing Shadow** : provenance de chaque observation et source du prix/m².
 
-Le gate certifie :
+Règles :
 
-- lineage contrôlée des **13 canaries** : 8 Agadir + 5 Oasis ;
-- Registry protégé et validé ;
-- contrat territorial global latest-event-first ;
-- 0 collision latest, 0 conflit historique, 0 canonical geo manquant ;
-- absence d’inférence fuzzy ;
-- identité Search/Geo non modifiée ;
-- géométrie administrative correctement typée ;
-- **0 polygon quartier certifié** à ce stade ;
-- Offer metrics publics OFF ;
-- choroplèthe quartier OFF.
+- vente et location ne sont **jamais mélangées** dans une médiane de prix ;
+- `normalized_price_m2` est utilisé lorsqu’il existe ; sinon un prix/m² peut être dérivé uniquement de `normalized_price_mad / normalized_surface_m2` lorsque les deux valeurs exactes positives existent ;
+- une absence de prix reste `NULL`, jamais imputée ;
+- chaque métrique expose son nombre d’observations et sa couverture ;
+- `metric_state=shadow` ;
+- `reliability_certified=false` ;
+- `public_activation=false` ;
+- `metric_layers_activated=false` ;
+- aucune consommation par l’UI/API publique.
 
-### Gate de sortie P1B.15
+### Preflight production avant déploiement
 
-Si tous les invariants restent verts :
+Le snapshot initial P1C.1 montre déjà pourquoi P1C.2 est indispensable : les dimensions intention/type sont bien plus complètes que les prix. Par exemple, Oasis et Maârif ont des listings Geo résolus mais **aucun prix disponible** dans le snapshot examiné. P1C.1 doit mesurer ce manque au lieu de le masquer.
 
-- **P1C.1 Offre quartier Shadow = autorisé** ;
-- **P1C public = interdit** ;
-- **Offer metric layer public = interdit** ;
-- **P2 choroplèthe quartier = interdit** tant qu’une géométrie neighborhood-grade sourcée et revue n’existe pas.
+### Gate de sortie P1C.1
 
-Le passage à P1C Shadow ne prétend pas que 100 % du Maroc est géocodé. Il signifie uniquement que la chaîne de vérité Geo et ses barrières sont suffisamment certifiées pour commencer les calculs internes non publics.
+- vues Shadow déployées en `service_role` uniquement ;
+- le nombre de lignes Shadow reste identique au dénominateur Geo résolu P1B.3 ;
+- 0 collision Geo, 0 conflit historique, 0 canonical geo manquant ;
+- séparation sale/rent certifiée ;
+- sample sizes et complétude visibles ;
+- aucune route/composant public ne consomme les vues ;
+- rapport post-déploiement certifié ;
+- **P1C.2 Reliability Engine** devient le lot suivant.
 
 ---
 
 # P1C — Intelligence Offre quartier
 
-## P1C.1 — Offre quartier Shadow ⏭️ NEXT AFTER P1B.15
+## P1C.1 — Offre quartier Shadow 🟠 CURRENT
 
-Calculer **sans exposition publique** :
-
-- volume d’annonces ;
-- prix médian ;
-- prix/m² ;
-- vente/location ;
-- typologies ;
-- fraîcheur ;
-- couverture et taille d’échantillon.
+Calculer **sans exposition publique** : volume d’annonces, prix médian, prix/m², vente/location, typologies, fraîcheur, couverture et taille d’échantillon.
 
 Aucune métrique Shadow ne devient automatiquement publique.
 
-## P1C.2 — Reliability Engine
+## P1C.2 — Reliability Engine ⏭️ NEXT
 
 Définir et certifier la fiabilité de chaque métrique : taille minimale d’échantillon, fraîcheur, dispersion, outliers, provenance et niveau de confiance.
 
@@ -167,11 +165,11 @@ P1B.13  Geo Coverage Recovery Expansion           ✅
    ↓
 P1B.14  Typed Geometry Coverage                   ✅
    ↓
-P1B.15  Geo Certification Gate                    🟠 CURRENT
+P1B.15  Geo Certification Gate                    ✅
    ↓
-P1C.1   Offre quartier Shadow                     ⏭️ NEXT
+P1C.1   Offre quartier Shadow                     🟠 CURRENT
    ↓
-P1C.2   Reliability Engine
+P1C.2   Reliability Engine                        ⏭️ NEXT
    ↓
 P1C.3   Activation Offre : OFF→SHADOW→CANARY→ON
    ↓
