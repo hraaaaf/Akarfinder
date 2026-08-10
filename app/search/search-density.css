@@ -34,32 +34,46 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.875rem;
   }
+}
 
-  /* Compact the desktop cards without removing any trust/source information. */
-  [data-mobile-compact-card] > a:first-of-type > div,
-  [data-mobile-compact-external-card] > div:first-child {
-    height: 10.5rem;
+/* Compact list cards from desktop-intermediate upward without removing
+ * price, title, location, facts, freshness, source or trust information.
+ * The large redundant CTA disappears in dense list mode because image/title
+ * remain direct result links; split view keeps the original card treatment.
+ */
+@media (min-width: 900px) {
+  [data-search-view-layout="list"] [data-mobile-compact-card] > a:first-of-type > div,
+  [data-search-view-layout="list"] [data-mobile-compact-external-card] > div:first-child {
+    height: 9.75rem;
   }
 
-  [data-mobile-compact-card] > div,
-  [data-mobile-compact-external-card] > div:last-child {
-    padding: 0.875rem;
+  [data-search-view-layout="list"] [data-mobile-compact-card] > div,
+  [data-search-view-layout="list"] [data-mobile-compact-external-card] > div:last-child {
+    padding: 0.75rem;
   }
 
-  [data-mobile-compact-card] [data-mobile-price],
-  [data-mobile-compact-external-card] [data-mobile-price] {
-    font-size: 1.18rem;
-    line-height: 1.1;
+  [data-search-view-layout="list"] [data-mobile-compact-card] [data-mobile-price],
+  [data-search-view-layout="list"] [data-mobile-compact-external-card] [data-mobile-price] {
+    font-size: 1.12rem;
+    line-height: 1.08;
   }
 
-  [data-mobile-compact-card] [data-card-primary-action] {
-    margin-top: 0.75rem;
-    padding: 0.625rem 0.8rem;
-    font-size: 0.76rem;
+  [data-search-view-layout="list"] [data-mobile-compact-card] [data-card-primary-action] {
+    display: none;
   }
 
-  [data-mobile-compact-card],
-  [data-mobile-compact-external-card] {
+  [data-search-view-layout="list"] [data-mobile-compact-card],
+  [data-search-view-layout="list"] [data-mobile-compact-external-card] {
     border-radius: 1rem;
+  }
+
+  [data-search-view-layout="list"] [data-mobile-compact-card] h2 {
+    font-size: 0.9rem;
+    line-height: 1.25;
+  }
+
+  [data-search-view-layout="list"] [data-mobile-compact-card] > div > a,
+  [data-search-view-layout="list"] [data-mobile-compact-card] > div > div {
+    margin-top: 0.5rem;
   }
 }
