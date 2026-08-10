@@ -1,0 +1,98 @@
+name: P1C.1 Neighborhood Offer Shadow Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260810130500_p1c1_neighborhood_offer_shadow.sql'
+      - 'scripts/audits/p1c1-neighborhood-offer-shadow-preflight.ts'
+      - 'scripts/scrapers/__tests__/p1c1-neighborhood-offer-shadow.test.ts'
+      - '.github/workflows/p1c1-neighborhood-offer-shadow.yml'
+      - 'docs/CARTE_ROADMAP.md'
+      - 'supabase/migrations/20260808101500_p1b3_territorial_metric_join_contract.sql'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/20260810130500_p1c1_neighborhood_offer_shadow.sql'
+      - 'scripts/audits/p1c1-neighborhood-offer-shadow-preflight.ts'
+      - 'scripts/scrapers/__tests__/p1c1-neighborhood-offer-shadow.test.ts'
+      - '.github/workflows/p1c1-neighborhood-offer-shadow.yml'
+      - 'docs/CARTE_ROADMAP.md'
+      - 'supabase/migrations/20260808101500_p1b3_territorial_metric_join_contract.sql'
+
+permissions:
+  contents: read
+
+jobs:
+  certify-neighborhood-offer-shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: P1C.1 static Shadow boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='supabase/migrations/20260810130500_p1c1_neighborhood_offer_shadow.sql';
+          const s=fs.readFileSync(p,'utf8');
+          for(const marker of [
+            'odm_neighborhood_offer_shadow_listing_v1',
+            'odm_neighborhood_offer_shadow_segment_v1',
+            'odm_neighborhood_offer_shadow_summary_v1',
+            'odm_neighborhood_offer_shadow_report_v1',
+            "'shadow'::text as metric_state",
+            'false as reliability_certified',
+            'false as public_activation',
+            'false as metric_layers_activated',
+            "'derived_exact_price_surface'",
+            "'normalized_price_m2'",
+          ]) if(!s.includes(marker)) throw new Error(`missing ${marker}`);
+          if(/insert\s+into\s+/i.test(s)||/update\s+public\./i.test(s)||/delete\s+from\s+/i.test(s)) throw new Error('P1C.1 must not mutate listing/Geo data');
+          if(/grant\s+(select|execute).*\s+to\s+(anon|authenticated|public)/i.test(s)) throw new Error('Shadow contract exposed to public roles');
+          const grants=[...s.matchAll(/grant\s+(?:select|execute).*?\s+to\s+service_role/gi)];
+          if(grants.length<4) throw new Error(`expected service_role-only grants for 3 views + report, got ${grants.length}`);
+          if(!s.includes("'sale_rent_price_medians_mixed', false")) throw new Error('sale/rent mixing guard missing');
+          NODE
+
+      - name: No public runtime consumer
+        run: |
+          if grep -R -n -E 'odm_neighborhood_offer_shadow_(listing|segment|summary|report)_v1' app components lib --exclude-dir=node_modules; then
+            echo 'P1C.1 Shadow must not be consumed by public runtime/UI yet'
+            exit 1
+          fi
+
+      - name: PostgreSQL semantic rehearsal
+        run: npx tsx --test scripts/scrapers/__tests__/p1c1-neighborhood-offer-shadow.test.ts
+
+      - name: Live read-only P1C.1 preflight
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1c1-neighborhood-offer-shadow-preflight.ts
+
+      - name: Enforce live Shadow boundary
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/p1c1-neighborhood-offer-shadow-preflight.json');
+          if(r.verdict!=='P1C1_NEIGHBORHOOD_OFFER_SHADOW_READY') throw new Error(JSON.stringify(r));
+          if(r.shadow.listing_rows<=0||r.shadow.neighborhoods<=0||r.shadow.transaction_segments<=0) throw new Error('empty Shadow cohort');
+          if(r.shadow.listing_rows!==r.geo.resolved_neighborhood_listings) throw new Error('P1B.3 denominator mismatch');
+          for(const k of ['latest_resolution_collisions','conflicting_resolution_history','missing_canonical_geo']) if(r.geo[k]!==0) throw new Error(`Geo integrity ${k}=${r.geo[k]}`);
+          if(r.shadow.bridged_property_listing_rows!==r.shadow.listing_rows) throw new Error('coverage bridge drift');
+          if(r.contract.public_activation!==false||r.contract.reliability_certified!==false||r.contract.metric_layers_activated!==false||r.contract.sale_rent_price_medians_mixed!==false||r.contract.fuzzy_geo_inference!==false) throw new Error('P1C.1 Shadow boundary drift');
+          if(r.observations.reliability_engine_required_before_publication!==true) throw new Error('P1C.2 boundary missing');
+          NODE
+
+      - name: Roadmap handoff
+        run: |
+          grep -q 'P1B.15.*Geo Certification' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.1.*Offre quartier Shadow' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.2.*Reliability Engine' docs/CARTE_ROADMAP.md
+
+      - name: TypeScript
+        run: npx tsc --noEmit
