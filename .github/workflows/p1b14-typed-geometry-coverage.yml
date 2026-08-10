@@ -1,0 +1,60 @@
+name: P1B.14 Typed Geometry Coverage Gate
+
+on:
+  pull_request:
+    paths:
+      - 'data/geo/p1b14-geometry-level-policy.json'
+      - 'scripts/audits/p1b14-typed-geometry-coverage.ts'
+      - '.github/workflows/p1b14-typed-geometry-coverage.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/geo/p1b14-geometry-level-policy.json'
+      - 'scripts/audits/p1b14-typed-geometry-coverage.ts'
+      - '.github/workflows/p1b14-typed-geometry-coverage.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify-typed-geometry-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: P1B.14 static truth boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('data/geo/p1b14-geometry-level-policy.json','utf8'));
+          const s=fs.readFileSync('scripts/audits/p1b14-typed-geometry-coverage.ts','utf8');
+          if(p.schema_version!=='p1b14-typed-geometry-policy-v1') throw new Error('policy schema drift');
+          if(p.casablanca_administrative_inventory.territorial_type!=='arrondissement'||p.casablanca_administrative_inventory.source_admin_level!=='10'||p.casablanca_administrative_inventory.expected_features!==16) throw new Error('administrative inventory drift');
+          if(p.explicit_decisions.find(x=>x.registry_entity_id==='district_casablanca_maarif')?.decision!=='REJECT_CROSS_TYPE_NAME_ONLY_BINDING') throw new Error('Maârif type mismatch must remain blocked');
+          if(p.explicit_decisions.find(x=>x.registry_entity_id==='district_casablanca_oasis')?.decision!=='KEEP_GEOMETRY_UNRESOLVED') throw new Error('Oasis must remain geometry-unresolved');
+          for(const forbidden of ['.insert(','.update(','.delete(','geo_resolution_events).insert']) if(s.includes(forbidden)) throw new Error(`write primitive forbidden: ${forbidden}`);
+          NODE
+      - name: Existing Casablanca geometry provenance/topology contracts
+        run: npx tsx --test scripts/scrapers/__tests__/neighborhood-geometry-registry.test.ts scripts/scrapers/__tests__/casablanca-geometry-canary.test.ts
+      - name: Live typed geometry coverage audit
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1b14-typed-geometry-coverage.ts
+      - name: Enforce fail-closed verdict
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/p1b14-typed-geometry-coverage.json');
+          if(r.verdict!=='P1B14_TYPED_GEOMETRY_FOUNDATION_CERTIFIED_FAIL_CLOSED') throw new Error(JSON.stringify(r));
+          if(r.administrative_geometry.features!==16||r.administrative_geometry.topology_status!=='passed') throw new Error('geometry source drift');
+          if(r.certified_neighborhood_geometry_bindings!==0||r.neighborhood_choropleth_allowed!==false) throw new Error('false neighborhood polygon binding detected');
+          if(!r.administrative_arrondissement_layer_preserved||r.blocked_cross_type_bindings.length!==1) throw new Error('typed geometry boundary drift');
+          if(r.contract.registry_mutation!==false||r.contract.resolution_mutation!==false||r.contract.map_activation!==false) throw new Error('P1B.14 mutation/activation drift');
+          NODE
+      - name: TypeScript
+        run: npx tsc --noEmit
