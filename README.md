@@ -20,20 +20,20 @@ Ordre de vérité :
 <!-- DATA-4.7B-CURRENT-START -->
 ## État DATA courant — 2026-08-10
 
-La lane DATA distingue strictement **raw sitemap capacity**, **pages détail structurelles**, **fraîcheur** et **inventaire Search**.
+La lane DATA distingue strictement **capacité sitemap brute**, **représentations URL de pages détail**, **biens uniques dédupliqués**, **fraîcheur** et **inventaire Search**.
 
-- Public Search avant 4.9A : **22 068 canonical URL representations / 16 domaines** — pas un compteur de biens uniques dédupliqués.
-- Réservoir avant 4.9A : **56 810 seeds / 4 108 fresh_confirmed / 52 702 seed_only**.
-- **DATA-4.8A ✅ PR #442** — merge `b9d38932bb3af0acfd08a681cc79abb5254b81e3`. Preuve finale : Dar Agadir + Aykana + LSF = **506 identités sitemap seed-absent → 0 page détail structurellement qualifiée** ; Promo Immo reste bloqué DNS. 0 write / 0 detail fetch.
-- **DATA-4.9A 🟠 PR #444** — snapshot live de closeout certifié au head `0c7cfd9ee6b135e3ef0373933921452d8c35fd3f`, run `31366418643` PASS, artefact `sha256:5c867a1e17ab4a70b43cba13e33933426d4ed97c6af6863acbf465d2e0ca6080`, observé `2026-08-10T07:38:55.953Z`.
-- 11 sources zéro-stock auditées ; **9 qualifiées**, **2 bloquées** : `capital-properties.ma` (`sitemap_index.xml` non reconnu sur ce snapshot) et `immobest.ma` (`sitemap.rss` non reconnu).
-- Capacité sitemap net-new brute qualifiée : **10 631 identités**. Ce chiffre **n'est pas un nombre d'annonces**.
-- Top capacité brute qualifiée : `valfoncier.ma` **6 190** (dont **5 793** sous `/bien-immobilier/`), `christiesrealestatemorocco.com` **1 252**, `immo-maroc.com` **1 204**, `agadirimmobilier.org` **519**, `nouraimmobilier.ma` **516**.
-- 0 DB write, 0 Registry write, 0 policy change, 0 ingestion/display activation, 0 detail-page fetch.
+- **DATA-4.9A ✅ PR #444** — merge `18be46c7349e8a56b2b68b56005d79f85e125675` : onboarding read-only de 11 sources zéro-stock ; jusqu'à **11 480 identités sitemap net-new brutes** observées selon snapshot, sans les appeler annonces.
+- **DATA-4.9B 🟠 PR #452** — High-Capacity Structural Detail Qualification, strictement read-only. Snapshot durci certifié au head `ae4b212e28f6ca0929548299860b04936daea218`, run `31369710665` PASS, artefact `sha256:dce77812b6666b09f29d7e716500cd5abed39e6902fcbcc71a515eeb4680f33d`, observé `2026-08-10T08:24:02.397Z`.
+- **10 128 identités URL net-new** qualifiées sur 6 sources → **2 326 représentations URL structurellement compatibles avec une page détail** + **7 802 rejets explicites** ; 0 collision d'identité sur ce snapshot.
+- Détail candidats URL : Val Foncier **709**, Christie's Morocco **602**, Immo Maroc **276**, AgadirImmobilier.ma **37**, ProImmobilier **99**, Capital Properties **603** (optionnel/non bloquant).
+- **2 326 ≠ 2 326 biens uniques.** Le proof l'impose désormais : `structuralDetailCandidateRowsAreUrlRepresentationsNotUniqueProperties=true` et `deduplicatedUniquePropertyCountProducedByThisLot=false`.
+- Val Foncier illustre le filtre : les pages `/bien-immobilier/<slug>` qualifient, tandis que des milliers de sous-URLs d'attachments/images sont rejetées.
+- 0 detail-page fetch ; 0 DB/Registry/policy write ; 0 ingestion ; 0 activation Search/public display.
+- Registry live : les six sources restent `unverified + hidden + internal_signal_only` avec 0 représentation active ; sitemap/structure n'est jamais une permission.
 
-**Prochain LOT masse : DATA-4.9B — High-Capacity Structural Detail Qualification**, read-only. Chemin critique `unverified` actuellement source-live : Val Foncier, Christie's Morocco, Immo Maroc, AgadirImmobilier.ma et ProImmobilier. Capital Properties reste hors chemin critique tant que son sitemap courant n'est pas requalifié.
+**Prochain LOT : DATA-4.9C — Source Policy Decision & Registry Assignment.** Revue actuelle des preuves officielles/CGU/robots et décision par source. Aucune ingestion dans ce lot ; une mutation du Source Registry n'est permise que si les preuves justifient explicitement la policy choisie, sinon la source reste fail-closed.
 
-Ensuite seulement : lot séparé de décision Source Policy, puis canary d'ingestion borné si autorisé.
+**DATA-4.9D** ne pourra être qu'un canary d'ingestion borné/rollback-ready pour les sources réellement autorisées par 4.9C.
 <!-- DATA-4.7B-CURRENT-END -->
 
 ## Doctrine

@@ -10,46 +10,42 @@
 
 > Ce bloc prévaut sur les anciennes mentions DATA plus bas lorsqu'elles désignent un prochain LOT désormais dépassé.
 
-**North Star : augmenter l'inventaire utile réellement admissible sans transformer sitemap, fraîcheur, taxonomy ou signal interne en faux volume.**
+**North Star : augmenter l'inventaire utile réellement admissible sans transformer sitemap, URL détail, fraîcheur, taxonomy ou signal interne en faux nombre de biens.**
 
-- Public Search avant 4.9A : **22 068 canonical URL representations / 16 domaines**.
-- Réservoir avant 4.9A : **56 810 seeds / 4 108 fresh_confirmed / 52 702 seed_only**.
-- **DATA-4.8A ✅ #442** — merge `b9d38932bb3af0acfd08a681cc79abb5254b81e3` ; **506** identités sitemap seed-absent live sur Dar/Aykana/LSF → **0** detail candidate ; zéro write.
-- **DATA-4.9A 🟠 #444** — snapshot live de closeout au head `0c7cfd9ee6b135e3ef0373933921452d8c35fd3f`, specialized run `31366418643` PASS ; **11 auditées / 9 qualifiées / 2 bloquées / 10 631 identités sitemap net-new brutes / 0 mutation**.
+- **DATA-4.9A ✅ #444** — merge `18be46c7349e8a56b2b68b56005d79f85e125675` ; jusqu'à **11 480** identités sitemap net-new brutes observées sur 10 sources live ; 0 mutation.
+- **DATA-4.9B 🟠 #452** — snapshot durci au head `ae4b212e28f6ca0929548299860b04936daea218`, specialized run `31369710665` PASS, artefact `sha256:dce77812b6666b09f29d7e716500cd5abed39e6902fcbcc71a515eeb4680f33d`.
+- Résultat structurel certifié : **10 128 URL identities net-new → 2 326 candidate URL representations + 7 802 rejets**, 0 collision ; **aucun compteur de biens uniques produit par ce LOT**.
 
-## Résultat DATA-4.9A — raw capacity, pas inventaire
+## DATA-4.9B — rendement structurel par source
 
-Snapshot certifié observé `2026-08-10T07:38:55.953Z`, artefact `sha256:5c867a1e17ab4a70b43cba13e33933426d4ed97c6af6863acbf465d2e0ca6080` :
+1. `valfoncier.ma` — **6 195** net-new → **709** candidate URL reps / 5 486 rejets.
+2. `christiesrealestatemorocco.com` — **1 252** → **602** / 650.
+3. `immo-maroc.com` — **1 204** → **276** / 928.
+4. `capital-properties.ma` — **844** → **603** / 241 ; source optionnelle/non bloquante, variantes localisées possibles.
+5. `proimmobilier.ma` — **267** → **99** / 168.
+6. `agadirimmobilier.ma` — **366** → **37** / 329.
 
-1. `valfoncier.ma` — **6 190** raw net-new ; `/bien-immobilier/` = **5 793** ; auth `unverified` ; hidden/internal-only.
-2. `christiesrealestatemorocco.com` — **1 252** ; auth `unverified` ; hidden/internal-only.
-3. `immo-maroc.com` — **1 204** ; auth `unverified` ; hidden/internal-only.
-4. `agadirimmobilier.org` — **519** ; `permission_required` ; hidden/internal-only.
-5. `nouraimmobilier.ma` — **516** ; `permission_required` ; hidden/internal-only.
-6. `agadirimmobilier.ma` — **366** ; auth `unverified`.
-7. `mhproperties.ma` — **294** ; `permission_required`.
-8. `proimmobilier.ma` — **267** ; auth `unverified`.
-9. `immotaroudant.com` — **23** ; auth `unverified`.
-10. `capital-properties.ma` — `BLOCKED_SOURCE_EVIDENCE` (`sitemap_index.xml` non reconnu sur ce snapshot).
-11. `immobest.ma` — `BLOCKED_SOURCE_EVIDENCE` (`sitemap.rss` non reconnu comme sitemap XML).
+Truth boundary machine-enforced :
+- candidate rows = **URL representations**, pas biens uniques ;
+- structure pattern ≠ autorisation ;
+- robots/sitemap ≠ permission ;
+- Registry live reste l'autorité ;
+- 0 detail fetch / 0 write / 0 policy change / 0 ingestion / 0 display activation.
 
-**Interdiction d'interprétation : 10 631 ≠ 10 631 annonces.** Les path signals sont descriptifs uniquement. Robots/sitemap ≠ permission.
+## Prochain LOT DATA — DATA-4.9C Source Policy Decision & Registry Assignment
 
-## Prochain LOT DATA — DATA-4.9B High-Capacity Structural Detail Qualification
+Responsabilité unique : déterminer puis, si et seulement si les preuves l'autorisent, matérialiser la policy Source Registry des gagnants structurels. **Aucune ingestion d'annonce dans 4.9C.**
 
-Strictement read-only, sans fetch détail.
+Priorité : `valfoncier.ma`, `christiesrealestatemorocco.com`, `immo-maroc.com`, `proimmobilier.ma`, `agadirimmobilier.ma`; `capital-properties.ma` reste opportuniste/non bloquant.
 
-1. chemin critique source-live `unverified` : Val Foncier, Christie's Morocco, Immo Maroc, AgadirImmobilier.ma, ProImmobilier ;
-2. établir/revoir des patterns structurels positifs + exclusions taxonomy/category/agent/pagination ;
-3. appliquer `REJECT_NAMESPACE_ROOT` et collisions fail-closed ;
-4. produire manifests candidate/reject complets et digests ;
-5. mesurer le **net-new detail candidate** réel par source ;
-6. 0 DB/Registry/policy write, 0 ingestion/display activation ;
-7. requalifier Capital Properties séparément si son sitemap courant redevient lisible, sans en faire un blocker du chemin critique.
+1. relire preuves officielles actuelles : CGU/terms, robots, pages source pertinentes et Registry live ;
+2. séparer capability technique de permission ;
+3. décider par source `authorized / permission_required / prohibited / remain_unverified` et le mode admissible ;
+4. si décision positive, mutation Registry uniquement, avec before/after manifest et rollback ;
+5. si preuve insuffisante, aucune promotion implicite : `hidden/internal_signal_only` demeure ;
+6. 0 seed write, 0 ingestion, 0 Search activation.
 
-**Après 4.9B seulement :** DATA-4.9C Source Policy Decision pour les gagnants, puis DATA-4.9D bounded seed canary si et seulement si la policy l'autorise.
-
-Lane secondaire distincte : 28 signaux `public_index_result` fresh peuvent être requalifiés pour Search, mais ce n'est pas le chemin principal de masse.
+**DATA-4.9D** : canary d'ingestion borné, seulement pour les sources dont 4.9C a réellement autorisé un canal exploitable.
 <!-- DATA-4.7B-CURRENT-END -->
 
 # 1. Cap produit
