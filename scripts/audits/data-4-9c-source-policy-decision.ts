@@ -6,6 +6,7 @@ import {
   evidenceContainsRequiredPhrases,
   isOfficialEvidenceUrl,
   patchIsNonActivating,
+  registryRowMatchesAppliedRestrictiveTarget,
   registryRowMatchesSafePrecondition,
   validateDecisionDocument,
   type PolicyDecision,
@@ -156,6 +157,7 @@ async function main(): Promise<void> {
   const evidenceManifest: EvidenceObservation[] = [];
   const registryBefore: RegistryPolicyRow[] = [];
   const mutationPlan: MutationPlanEntry[] = [];
+  const postApplyCertification: RegistryPolicyRow[] = [];
   const rollbackPlan: Array<{
     sourceDomain: string;
     restore: RegistryPolicyRow;
@@ -169,6 +171,8 @@ async function main(): Promise<void> {
     registryPreconditionOk: boolean;
     evidenceOk: boolean;
     mutationPlanReady: boolean;
+    registryAppliedRestrictive: boolean;
+    transitionState: "PLAN_READY" | "ALREADY_APPLIED_RESTRICTIVE" | "NO_MUTATION" | "BLOCKED";
     blocker: string | null;
   }> = [];
 
@@ -178,6 +182,9 @@ async function main(): Promise<void> {
     const before = rows[0]!;
     registryBefore.push(before);
     const registryPreconditionOk = registryRowMatchesSafePrecondition(before);
+    const registryAppliedRestrictive = decision.registryMutationPlanned
+      ? registryRowMatchesAppliedRestrictiveTarget(before, decision)
+      : false;
 
     const observations: EvidenceObservation[] = [];
     for (const spec of decision.evidence) observations.push(await observeEvidence(decision.sourceDomain, spec));
@@ -191,12 +198,16 @@ async function main(): Promise<void> {
       : true;
 
     let mutationPlanReady = false;
+    let transitionState: "PLAN_READY" | "ALREADY_APPLIED_RESTRICTIVE" | "NO_MUTATION" | "BLOCKED" = decision.registryMutationPlanned ? "BLOCKED" : "NO_MUTATION";
     let blocker: string | null = null;
     if (decision.registryMutationPlanned) {
-      if (!registryPreconditionOk) {
-        blocker = "registry_safe_precondition_failed";
-      } else if (!evidenceOk) {
+      if (!evidenceOk) {
         blocker = "explicit_terms_evidence_failed";
+      } else if (registryAppliedRestrictive) {
+        postApplyCertification.push(before);
+        transitionState = "ALREADY_APPLIED_RESTRICTIVE";
+      } else if (!registryPreconditionOk) {
+        blocker = "registry_safe_precondition_failed";
       } else {
         const evidenceDigest = sha256(JSON.stringify(
           observations.map((row) => ({ url: row.url, finalUrl: row.finalUrl, bodySha256: row.bodySha256, ok: row.ok })),
@@ -231,6 +242,7 @@ async function main(): Promise<void> {
           rollbackAuthorizedByCi: false,
         });
         mutationPlanReady = true;
+        transitionState = "PLAN_READY";
       }
     }
 
@@ -241,6 +253,8 @@ async function main(): Promise<void> {
       registryPreconditionOk,
       evidenceOk,
       mutationPlanReady,
+      registryAppliedRestrictive,
+      transitionState,
       blocker,
     });
   }
@@ -259,6 +273,8 @@ async function main(): Promise<void> {
       prohibited: 0,
     },
     plannedRegistryMutationCount: mutationPlan.length,
+    alreadyAppliedRestrictiveCount: postApplyCertification.length,
+    postApplyCertifiedCount: postApplyCertification.length,
     rollbackPlanCount: rollbackPlan.length,
     evidenceObservationCount: evidenceManifest.length,
     evidenceFailures: evidenceManifest.filter((row) => !row.ok).map((row) => ({ sourceDomain: row.sourceDomain, url: row.url, blocker: row.blocker })),
@@ -280,7 +296,9 @@ async function main(): Promise<void> {
     sourceDecisions,
     nextDecision: mutationPlan.length === 1
       ? "Apply the single CAS-restrictive Agadir policy transition outside CI, then post-certify Registry. No ingestion follows from this lot."
-      : "No Registry mutation is safe on this evidence snapshot; remain fail-closed.",
+      : postApplyCertification.length === 1
+        ? "Restrictive Agadir policy is already applied and post-certified. Close DATA-4.9C; no ingestion follows from this lot."
+        : "No Registry transition state is safe on this evidence snapshot; remain fail-closed.",
   };
 
   if (proof.decisions.authorized !== 0 || proof.truthBoundary.ingestionAuthorizedByThisLot || proof.truthBoundary.publicDisplayAuthorizedByThisLot) {
@@ -288,6 +306,12 @@ async function main(): Promise<void> {
   }
   if (mutationPlan.length > 1 || mutationPlan.some((row) => row.sourceDomain !== "agadirimmobilier.ma")) {
     throw new Error("DATA-4.9C unexpected mutation cohort");
+  }
+  if (postApplyCertification.length > 1 || postApplyCertification.some((row) => row.source_domain !== "agadirimmobilier.ma")) {
+    throw new Error("DATA-4.9C unexpected post-apply cohort");
+  }
+  if (mutationPlan.length + postApplyCertification.length !== 1) {
+    throw new Error("DATA-4.9C expected exactly one safe Agadir transition state");
   }
 
   await fs.mkdir(OUT_DIR, { recursive: true });
@@ -297,6 +321,7 @@ async function main(): Promise<void> {
     fs.writeFile(path.join(OUT_DIR, "registry-before.json"), JSON.stringify(registryBefore, null, 2) + "\n"),
     fs.writeFile(path.join(OUT_DIR, "mutation-plan.json"), JSON.stringify(mutationPlan, null, 2) + "\n"),
     fs.writeFile(path.join(OUT_DIR, "rollback-plan.json"), JSON.stringify(rollbackPlan, null, 2) + "\n"),
+    fs.writeFile(path.join(OUT_DIR, "post-apply-certification.json"), JSON.stringify(postApplyCertification, null, 2) + "\n"),
   ]);
 
   console.log(JSON.stringify({
@@ -304,6 +329,7 @@ async function main(): Promise<void> {
     sourceCount: proof.sourceCount,
     decisions: proof.decisions,
     plannedRegistryMutationCount: proof.plannedRegistryMutationCount,
+    alreadyAppliedRestrictiveCount: proof.alreadyAppliedRestrictiveCount,
     evidenceFailures: proof.evidenceFailures,
     sourceDecisions,
   }, null, 2));

@@ -6,6 +6,7 @@ import {
   evidenceContainsRequiredPhrases,
   isOfficialEvidenceUrl,
   patchIsNonActivating,
+  registryRowMatchesAppliedRestrictiveTarget,
   registryRowMatchesSafePrecondition,
   validateDecisionDocument,
   type PolicyDecisionDocument,
@@ -103,6 +104,38 @@ test("planned Agadir patch is strictly restrictive and preserves hidden/internal
   assert.equal(patch.partnership_required, true);
   assert.equal(patchIsNonActivating(patch), true);
   assert.ok(patch.evidence_urls.includes("https://agadirimmobilier.ma/termes-et-conditions/"));
+});
+
+test("post-apply Agadir row is recognized only when restrictive target and evidence are intact", () => {
+  const decision = doc.sources.find((row) => row.sourceDomain === "agadirimmobilier.ma")!;
+  const applied = registryRow({
+    authorization_status: "permission_required",
+    terms_status: "permission_required",
+    content_reuse_policy: "permission_required",
+    detail_fetch_policy: "permission_required",
+    partnership_required: true,
+    legal_review_required: true,
+    recommended_action: "obtain_written_permission_before_content_reuse_or_detail_fetch",
+    machine_gate: "internal_signal_only",
+    ingestion_gate: "internal_signal_only",
+    display_gate: "hidden",
+    display_policy: "internal_signal_only",
+    evidence_urls: [
+      "https://agadirimmobilier.ma/",
+      "https://agadirimmobilier.ma/robots.txt",
+      "https://agadirimmobilier.ma/termes-et-conditions/",
+    ],
+    review_status: "current",
+    policy_hash: "sha256:test",
+    policy_effective_at: "2026-08-10T08:46:47.251Z",
+    evidence_observed_at: "2026-08-10T08:46:47.251Z",
+    terms_observed_at: "2026-08-10T08:46:47.251Z",
+  });
+  assert.equal(registryRowMatchesSafePrecondition(applied), false);
+  assert.equal(registryRowMatchesAppliedRestrictiveTarget(applied, decision), true);
+  assert.equal(registryRowMatchesAppliedRestrictiveTarget({ ...applied, display_gate: "canonical_link_only" }, decision), false);
+  assert.equal(registryRowMatchesAppliedRestrictiveTarget({ ...applied, policy_hash: null }, decision), false);
+  assert.equal(registryRowMatchesAppliedRestrictiveTarget({ ...applied, evidence_urls: ["https://agadirimmobilier.ma/"] }, decision), false);
 });
 
 test("remain-unverified sources never produce Registry mutations", () => {

@@ -179,6 +179,36 @@ export function registryRowMatchesSafePrecondition(row: RegistryPolicyRow): bool
     && row.no_bypass_required === true;
 }
 
+export function registryRowMatchesAppliedRestrictiveTarget(
+  row: RegistryPolicyRow,
+  decision: PolicyDecision,
+): boolean {
+  if (!decision.registryMutationPlanned || !decision.target) return false;
+  const target = decision.target;
+  const requiredEvidenceUrls = decision.evidence.map((item) => item.url);
+  return row.source_domain === decision.sourceDomain
+    && row.authorization_status === target.authorization_status
+    && row.terms_status === target.terms_status
+    && row.content_reuse_policy === target.content_reuse_policy
+    && row.detail_fetch_policy === target.detail_fetch_policy
+    && row.partnership_required === target.partnership_required
+    && row.legal_review_required === target.legal_review_required
+    && row.recommended_action === target.recommended_action
+    && row.machine_gate === target.machine_gate
+    && row.ingestion_gate === target.ingestion_gate
+    && row.display_gate === target.display_gate
+    && row.display_policy === target.display_policy
+    && row.current_representation_count === 0
+    && row.no_bypass_required === true
+    && row.review_status === "current"
+    && typeof row.policy_hash === "string"
+    && row.policy_hash.startsWith("sha256:")
+    && requiredEvidenceUrls.every((url) => row.evidence_urls.includes(url))
+    && row.policy_effective_at !== null
+    && row.evidence_observed_at !== null
+    && row.terms_observed_at !== null;
+}
+
 export function buildRestrictivePatch(
   before: RegistryPolicyRow,
   decision: PolicyDecision,
