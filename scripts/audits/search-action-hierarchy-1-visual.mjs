@@ -91,6 +91,7 @@ try {
         const perCard = cards.map((card) => {
           const primary = [...card.querySelectorAll('[data-card-primary-action]')].filter(visible);
           const sourceLinks = [...card.querySelectorAll('[data-secondary-source-link]')].filter(visible);
+          const directResultLinks = [...card.querySelectorAll('a[aria-label^="Voir le bien"], a[aria-label^="Voir la source originale"]')].filter(visible);
           const legacySecondary = [...card.querySelectorAll("button, a")].filter((node) => {
             if (!visible(node)) return false;
             const text = (node.textContent ?? "").trim();
@@ -100,6 +101,7 @@ try {
           return {
             primaryActions: primary.length,
             primaryText: primary.map((node) => (node.textContent ?? "").trim()),
+            directResultLinks: directResultLinks.length,
             sourceLinks: sourceLinks.length,
             sourceText: sourceLinks.map((node) => (node.textContent ?? "").trim()),
             legacySecondary: legacySecondary.length,
@@ -119,12 +121,20 @@ try {
       if (metrics.cardCount !== 4) throw new Error(`${viewport.name}: expected 4 cards, got ${metrics.cardCount}`);
       if (overflow) throw new Error(`${viewport.name}: horizontal overflow ${metrics.scrollWidth}/${metrics.clientWidth}`);
       if (metrics.perCard.some((card) => card.legacySecondary !== 0)) throw new Error(`${viewport.name}: legacy Map/Compare action is visible`);
+      if (metrics.perCard.some((card) => card.primaryActions > 1)) throw new Error(`${viewport.name}: more than one strong CTA is visible on a card`);
+      if (metrics.perCard.some((card) => card.directResultLinks < 1)) throw new Error(`${viewport.name}: direct result click target missing`);
+
       if (viewport.width < 640) {
         if (metrics.perCard.some((card) => card.primaryActions !== 0)) throw new Error(`${viewport.name}: strong card CTA visible on mobile`);
         if (metrics.perCard.some((card) => card.priceClipped)) throw new Error(`${viewport.name}: truncated mobile price`);
-      } else {
-        if (metrics.perCard.some((card) => card.primaryActions !== 1)) throw new Error(`${viewport.name}: expected exactly one strong CTA per card`);
+      } else if (viewport.width < 900) {
+        if (metrics.perCard.some((card) => card.primaryActions !== 1)) throw new Error(`${viewport.name}: expected exactly one strong CTA per tablet card`);
         if (!metrics.perCard[0]?.primaryText.some((text) => text.includes("Voir le bien"))) throw new Error(`${viewport.name}: internal primary CTA missing`);
+        if (metrics.perCard[0]?.sourceLinks !== 1) throw new Error(`${viewport.name}: discrete source attribution link missing`);
+      } else {
+        // UX-SEARCH-1 intentionally removes the redundant large CTA in dense desktop List mode.
+        // The card itself remains directly clickable and the invariant is still <= 1 strong CTA.
+        if (metrics.perCard.some((card) => card.primaryActions !== 0)) throw new Error(`${viewport.name}: dense desktop list should not restore the redundant strong CTA`);
         if (metrics.perCard[0]?.sourceLinks !== 1) throw new Error(`${viewport.name}: discrete source attribution link missing`);
       }
 
