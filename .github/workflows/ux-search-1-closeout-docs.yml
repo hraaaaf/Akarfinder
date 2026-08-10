@@ -1,0 +1,76 @@
+name: UX-SEARCH-1 Closeout Docs
+
+on:
+  push:
+    branches:
+      - ux/search-density-first
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  closeout-docs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ux/search-density-first
+          fetch-depth: 0
+      - name: Update ROADMAP and SESSION without touching parallel lane content
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          roadmap = Path('docs/ROADMAP.md')
+          session = Path('docs/SESSION.md')
+          marker = '<!-- UX-SEARCH-1-CLOSEOUT-START -->'
+
+          block = '''<!-- UX-SEARCH-1-CLOSEOUT-START -->
+          ## UX-SEARCH-1 — Density First ✅ CERTIFIED — PR #479
+
+          Responsabilité unique : augmenter la densité de scan des résultats Search sans modifier DATA, ranking, filtres, Registry ni logique Map.
+
+          - passe initiale Reviewer rejetée : carte desktop **474 px**, au-dessus du gate ; correction puis replay complet ;
+          - certification finale exact-head `8e75bc8cf43bd094850c6dbf3453ff6f996d4954` ; run spécialisé `31436735917` ;
+          - **Product Design Reviewer PASS** + **Independent Release Certifier PASS** sur deux builds/replays séparés ;
+          - **23/23 workflows exact-head SUCCESS** ; TypeScript, production build, Search Truth, dedup, accessibility, UX fast et canary ODM verts ;
+          - grille certifiée : **390 px = 2 colonnes**, **768 px = 2**, **1024 px = 3**, **1280/1440 px = 4** ;
+          - desktop list : cartes **381 px** de haut à 1024/1280/1440 ; deuxième rangée visible dès **669 px** ; zéro overflow sur les 5 viewports ;
+          - mobile 390×844 : cartes **173×321 px**, 2 colonnes conservées, zéro overflow ;
+          - split view reste à 2 colonnes avec pane Map préservée ;
+          - toutes les informations prix/titre/localisation/facts/fraîcheur/source/confiance sont conservées ; seul le gros CTA redondant disparaît en list desktop ;
+          - audit visuel final contre la référence fournie : **densité 9,3/10** — gate ≥9/10 atteint.
+
+          **Prochain LOT UX/Search : UX-SEARCH-2 — Compact Search & Filters.** Objectif : réduire la hauteur avant inventaire, sans rouvrir UX-SEARCH-1.
+          <!-- UX-SEARCH-1-CLOSEOUT-END -->
+          '''.replace('          ', '')
+
+          r = roadmap.read_text(encoding='utf-8')
+          if marker not in r:
+              anchor = '`README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.\n'
+              if anchor not in r:
+                  raise SystemExit('ROADMAP anchor not found')
+              r = r.replace(anchor, anchor + '\n' + block + '\n', 1)
+              roadmap.write_text(r, encoding='utf-8')
+
+          s = session.read_text(encoding='utf-8')
+          if marker not in s:
+              anchor = "Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.\n"
+              if anchor not in s:
+                  raise SystemExit('SESSION anchor not found')
+              s = s.replace(anchor, anchor + '\n' + block + '\n', 1)
+              session.write_text(s, encoding='utf-8')
+          PY
+      - name: Self-remove one-shot workflow and commit closeout
+        shell: bash
+        run: |
+          rm .github/workflows/ux-search-1-closeout-docs.yml
+          git config user.name "AkarFinder Release Certifier"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/ROADMAP.md docs/SESSION.md .github/workflows/ux-search-1-closeout-docs.yml
+          git diff --cached --check
+          git commit -m "docs(search): certify UX-SEARCH-1 density first"
+          git push origin HEAD:ux/search-density-first
