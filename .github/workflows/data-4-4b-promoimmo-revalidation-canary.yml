@@ -8,9 +8,6 @@ on:
       - "scripts/audits/data-4-4b-promoimmo-revalidation-canary.ts"
       - ".github/workflows/data-4-4b-promoimmo-revalidation-canary.yml"
       - "docs/data/DATA-4-4B-PROMOIMMO-REVALIDATION-CANARY.md"
-      - "README.md"
-      - "docs/ROADMAP.md"
-      - "docs/SESSION.md"
   workflow_dispatch:
 
 permissions:
