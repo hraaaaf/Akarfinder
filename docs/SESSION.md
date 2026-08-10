@@ -1,76 +1,65 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-10 20:25 +01:00**
+**Mise à jour : 2026-08-10 20:35 +01:00**
 
-Ce fichier est le handover court. Lire avant toute action :
+`docs/ROADMAP.md` est l’unique roadmap de toutes les fenêtres. Lire : `README.md` → `docs/ROADMAP.md` → ce fichier → doc spécialisée éventuelle.
 
-1. `README.md` ;
-2. `docs/ROADMAP.md` — **roadmap unique de toutes les fenêtres** ;
-3. `docs/SESSION.md` ;
-4. doc spécialisée seulement si nécessaire.
+## Règle universelle
 
-## Règle de travail désormais globale
+`IMPLEMENTATION → DOUBLE CHECK → NOTE /10 → CORRECTIONS → RE-TEST → RE-NOTE → CERTIFICATION`.
 
-Chaque étape significative doit avoir un **double check indépendant + note /10**. Aucun lot n’est fermé sous **9,0/10**. Si la note est <9, les findings sont ajoutés à la roadmap et corrigés avant certification. Cette règle vaut pour UX/UI, DATA, Search, Backend, Carte/Geo et sécurité.
+Aucun lot CLOSED < **9,0/10**.
 
-## Main canonique de départ
+## PR réellement actives
 
-`main@f4563602119c8c01298bf694285e35856097bbd6` — merge P1C.4A #472 au démarrage du chantier MASS-FIRST.
+### #474 — MASS-FIRST + canonical unified roadmap 🟠 P0
 
-Toujours re-vérifier le vrai `main` avant tout nouveau lot.
+Branche `feat/mass-first-search-quality-policy`.
 
-## LOT actif P0 — MASS-FIRST Search / Quality Policy
+5 lots codés : Source Policy public gate ; Quality ≠ Eligibility ; Listing Power 0–100 ; Search ranking ; mass reclassification/certification.
 
-- Branche : `feat/mass-first-search-quality-policy`.
-- PR : **#474**.
-- 5 lots codés : Source Policy gate ; Quality ≠ Eligibility ; Listing Power 0–100 ; Search ranking ; reclassification/certification.
-- Auto-review a trouvé puis corrigé la fuite conceptuelle `AMBIGUOUS → eligible_secondary` ; seuls `LISTING + real_estate_likely` peuvent être publics.
-- Head après ce correctif fonctionnel : `b6a911ecebc38b736e902e7fb6d9d51d0c7cad52`; les commits docs suivants ne changent pas la logique métier.
-- Score double check provisoire : **8,8/10 — NON CERTIFIÉ**.
-- Merge interdit tant que score final <9/10 ou qu’un gate CI/PostgreSQL/sécurité reste non prouvé.
+Score provisoire **8,8/10 — non certifié**. Restent notamment CI exact-head, PostgreSQL/Supabase proof, reports, sécurité ACL/SECURITY DEFINER, perf Search, before/after, Reviewer et Release Certifier. Aucun merge avant ≥9.
 
-### À terminer avant merge #474
+### #473 — SEARCH-UX-1 Inventory-first cards & grid 🟠 P0 parallèle
 
-1. CI exact-head complète ;
-2. Canonical Compile + Baseline + Search Truth verts ;
-3. migrations PostgreSQL/Supabase réellement testées ;
-4. reports MASS-FIRST exécutés et compteurs contrôlés ;
-5. audit ACL / `SECURITY DEFINER` / rôle consommateur Search ;
-6. plan/performance Search ;
-7. diff avant/après volume + sources + villes + qualité + fraîcheur + Power Score ;
-8. tests Q0/Q1 valides toujours trouvables ;
-9. tests prohibited/unverified/CATEGORY/AMBIGUOUS = zéro fuite ;
-10. Reviewer technique ;
-11. Release Certifier ;
-12. re-note ≥9/10 ; sinon correction + nouvelle boucle ;
-13. merge ;
-14. vérification post-merge sur `main` ;
-15. closeout README/ROADMAP/SESSION.
+Branche `feat/search-ux-1-cards-grid`.
 
-## DATA parallèle
+Cible : wide desktop 4 cards, desktop 3, tablette/mobile 2 ; cards compactes image-first ; whole-card click ; provenance/truth/favoris préservés.
 
-- DATA-4.9A ✅.
-- DATA-4.9B : **10 128 URL identities net-new → 2 326 candidate URL representations + 7 802 rejets** ; ce n’est pas un nombre de biens uniques.
-- Prochain lot : **DATA-4.9C — Source Policy Decision & Registry Assignment**.
-- Ensuite seulement : DATA-4.9D canary borné pour sources réellement autorisées.
-- P1C.4A Carte attend également un lot DATA séparé de preuve exact-scope Registry + depth/freshness.
+Certification desktop + mobile ≥9/10. Peut avancer en parallèle de #474, mais le second à merger doit se réaligner sur le nouveau `main` puis rejouer les gates complets.
 
-## UX/Search parallèle
+## PR à réconcilier
 
-- Mobile 2 colonnes : conserver.
-- Prochain chantier densité après stabilisation #474 : **UX-SEARCH-DENSITY-2**.
-- Cible : desktop large 4 cartes/ligne ; desktop intermédiaire 3 ; tablette 2 ; mobile 2.
-- Double check visuel réel et scores mobile + desktop ≥9/10 obligatoires.
-- `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` reste read-only avant ajout de nouveaux assets.
+### #454 — DATA-4.9C
+
+Une mutation restrictive production a déjà été appliquée : `agadirimmobilier.ma = permission_required + hidden + internal_signal_only`.
+
+Les cinq autres sources du cohort restent `unverified`. **0 source autorisée** ; DATA-4.9D pour ce cohort est `BLOCKED_BY_POLICY`.
+
+Avant merge/close : comparer à current main + Registry live, préserver Agadir, ne reconstruire que le résidu encore nécessaire, re-certifier ≥9. Si tout le code est supersédé, closeout documentaire puis fermeture superseded.
+
+## Backlog à revalider
+
+- #310 Professional auth/session/RLS : re-audit current main avant toute reprise ; vieux branch interdit au merge direct.
+- #383 governance : probablement largement superseded par la roadmap/gouvernance actuelles ; comparer puis fermer si aucune capacité unique ne manque.
+- autres vieilles PR GitHub ouvertes : historique par défaut, jamais actives uniquement parce que `OPEN`.
+
+## DATA prochaine
+
+Après réconciliation #454 : **DATA-4.10A Authorization Conversion & Partner Feed Readiness**, read-only. MASS COVERAGE continue seulement sur sources policy-admissibles.
+
+DATA doit également produire l’evidence exact-scope Registry + profondeur/fraîcheur requise pour le replay Carte P1C.4A/P1C.4.
 
 ## Carte / Geo
 
-- P1C.4 : `NOT_CERTIFIABLE`.
-- P1C.4A : `DESIGNED_NOT_PROVEN`.
-- Offre quartier publique : **OFF**.
-- P1C.5 : **LOCKED** jusqu’à preuve DATA exact-scope puis replay P1C.4A/P1C.4 et certification de représentativité.
-- `docs/CARTE_ROADMAP.md` conserve le détail chronologique, mais `docs/ROADMAP.md` reste l’autorité globale.
+P1C.4 = `NOT_CERTIFIABLE`, P1C.4A = `DESIGNED_NOT_PROVEN`, P1C.5 LOCKED. Offre quartier publique OFF.
+
+Ordre : DATA exact-scope evidence → replay P1C.4A → replay P1C.4 → éventuel P1C.5 canary → observation → scoped ON.
+
+## UX après #473
+
+`CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` read-only avant tout nouvel asset.
 
 ## Invariants
 
-No-bypass ; Source Registry autoritaire ; provenance réelle ; aucune donnée/géométrie inventée ; Search canonique ; une responsabilité/branche/PR/certification ; rollback avant mutation sensible ; exact-head CI ; double check ; **score final ≥9/10** ; mise à jour des 3 docs canoniques après merge.
+No-bypass ; Source Registry autoritaire ; aucune donnée/géométrie inventée ; Search canonique ; branches parallèles sans écrasement ; merge uniquement sur current main réaligné ; exact-head CI + double check + score ≥9 ; README/ROADMAP/SESSION mis à jour au closeout.
