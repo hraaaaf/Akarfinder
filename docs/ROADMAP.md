@@ -1,318 +1,490 @@
 # AKARFINDER — ROADMAP CANONIQUE UNIQUE
 
-**Version : 2026-08-10 20:58 +01:00**  
-**Autorité : ce fichier est l’unique roadmap d’exécution de toutes les fenêtres/lane AkarFinder.**
+**Version : 2026-08-10 21:38 +01:00**  
+**Autorité : ce fichier est l’unique roadmap d’exécution de toutes les fenêtres / lanes AkarFinder.**
 
-`README.md` = identité/doctrine. `docs/SESSION.md` = handover court. Les roadmaps spécialisées (ex. `docs/CARTE_ROADMAP.md`) sont des journaux détaillés et ne peuvent jamais définir une priorité concurrente à ce fichier.
+`README.md` = identité/doctrine. `docs/SESSION.md` = handover court. Les fichiers spécialisés (`docs/CARTE_ROADMAP.md`, rapports d’audit, specs) sont des journaux/preuves et ne peuvent jamais définir une priorité concurrente.
 
 ---
 
-# 0. Gouvernance globale — obligatoire dans toutes les fenêtres
+# 0. Règles universelles
 
-Toute fenêtre/agent travaillant sur AkarFinder doit commencer par lire, dans cet ordre :
+Toute fenêtre commence par :
 
 1. `README.md` ;
 2. `docs/ROADMAP.md` ;
 3. `docs/SESSION.md` ;
-4. le fichier spécialisé de sa lane si nécessaire.
+4. la doc spécialisée de sa lane si nécessaire.
 
-Toute nouvelle idée, dette, lot, finding, audit ou prochaine étape provenant d’une fenêtre parallèle doit être enregistrée ici avant d’être considérée comme faisant partie du plan produit.
+Toute idée, dette, audit, P, lot, PR, blocker ou prochaine étape doit être enregistrée ici, **même si le lot n’a pas encore commencé**.
 
-## Gate universel DOUBLE CHECK + NOTE ≥9/10
+## Gate obligatoire
 
 `IMPLEMENTATION → DOUBLE CHECK INDÉPENDANT → NOTE /10 → CORRECTIONS → RE-TEST → RE-NOTE → CERTIFICATION`
 
-Règles :
+- aucun lot `CLOSED` sous **9,0/10** ;
+- si score <9 : findings → sous-étapes ici → correction → nouveau score ;
+- CI exact-head verte est nécessaire mais insuffisante seule ;
+- UX/UI : mobile et desktop scorés séparément lorsque pertinent, mobile ≥9 obligatoire ;
+- DATA/Search/Backend : correctness, fail-closed/security, tests, performance, observabilité, rollback et architecture entrent dans la note ;
+- Carte/Geo : provenance, exactitude géographique et absence d’inférence non prouvée entrent dans la note ;
+- mutation production : before/after + rollback + replay ;
+- lots critiques : Builder, Reviewer et Release Certifier distincts ;
+- après merge : relire `main`, rejouer les gates critiques et synchroniser README/ROADMAP/SESSION.
 
-- aucun lot n’est `CLOSED` avec une note finale < **9,0/10** ;
-- si la première note est <9,0, le lot reste ouvert et les findings deviennent des sous-étapes de cette roadmap ;
-- DATA/Search/Backend : correctness, sécurité/fail-closed, tests, observabilité, rollback, performance et cohérence architecture font partie du score ;
-- UX/UI : note séparée mobile/desktop lorsque pertinent ; **mobile ≥9/10** obligatoire ;
-- Carte/Geo : exactitude géographique, provenance et absence d’inférence non prouvée font partie du score ;
-- mutation production : preuve before/after + rollback lorsque applicable ;
-- CI exact-head verte est nécessaire mais ne suffit pas seule à obtenir 9/10 ;
-- Reviewer indépendant et Release Certifier restent distincts du Builder pour les lots critiques ;
-- après merge : relire `main`, rejouer les gates critiques et mettre à jour README/ROADMAP/SESSION.
+## Statuts canoniques
+
+`PLANNED → READY → IMPLEMENTING → REVIEW → CERTIFIED → MERGED → CLOSED`
+
+États spéciaux : `BLOCKED`, `RECONCILIATION_REQUIRED`, `SUPERSEDED`, `HISTORICAL`.
+
+Le statut GitHub `OPEN` ne rend jamais une PR active par lui-même.
 
 ---
 
-# 1. North Star produit
+# 1. North Star
 
 AkarFinder = **moteur de recherche immobilier + index national + couche d’intelligence du marché marocain**.
 
 Doctrine :
 
 - **MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME** ;
-- la qualité ordonne/enrichit ; elle ne doit pas, seule, effacer une annonce structurellement et juridiquement admissible ;
-- volume brut ≠ inventaire publiable ;
-- sitemap/robots/capability ≠ permission ;
+- une annonce juridiquement/structurellement admissible peut être pauvre et rester visible ;
+- la qualité décide surtout **où elle ranke**, pas si elle existe ;
+- `Listing Power` mesure la puissance informationnelle, jamais le droit d’affichage ;
 - Source Registry autoritaire et fail-closed ;
-- aucune donnée, image, géométrie, coordonnée, prix ou partenariat inventé ;
-- Search reste le cœur produit ; Map est une projection spatiale de la même vérité ;
+- sitemap/robots/capability ≠ permission ;
+- aucune donnée, photo, géométrie, coordonnée, prix ou partenariat inventé ;
+- Search est le cœur ; Map est une projection spatiale de la même vérité ;
 - `DISCOVERED ≠ AUDITED ≠ POLICY_ASSIGNED ≠ ELIGIBLE ≠ INGESTIBLE ≠ DISPLAYABLE` ;
-- une responsabilité = une branche = une PR = une certification ;
-- Shadow → Canary → certification → activation bornée pour les changements sensibles.
+- Shadow → Canary → observation → certification → activation bornée pour les changements sensibles.
 
 ---
 
-# 2. REGISTRE MAÎTRE DES PR / FENÊTRES
-
-Le statut GitHub `OPEN` n’implique plus qu’une PR est active. Toute PR ouverte est classée ici avant reprise.
-
-## ACTIVE — critical path
-
-### PR #474 — MASS-FIRST + canonical unified roadmap 🟠 P0 NOW
-
-- **Lane :** DATA / Search policy & ranking.
-- **Responsabilité :** rendre Search mass-first sans affaiblir Source Policy : Source Policy public gate → Quality ≠ Eligibility → Listing Power Score 0–100 → ranking public par Listing Power → mass reclassification + certification fail-closed.
-- **Dépendances :** `main@f4563602119c8c01298bf694285e35856097bbd6`; Source Registry/policies actuels ; Search Truth ; reclassification production/rehearsal ; coordination de merge avec #473.
-- **Branche :** `feat/mass-first-search-quality-policy`.
-- **PR :** #474.
-- **État :** `ACTIVE / CODED / CERTIFICATION REQUIRED`.
-- **Preuves :** 5 migrations MASS-FIRST dans la PR ; roadmap unifiée ; invariants fail-closed décrits dans la PR.
-- **Double check / score :** **8,8/10 provisoire — NON CERTIFIÉ**.
-- **Blockers :** CI exact-head complète, PostgreSQL/Supabase réel ou rehearsal fidèle, rapports MASS-FIRST, audit ACL/`SECURITY DEFINER`, plan/perf Search, before/after inventory, tests Q0/Q1, 0 fuite prohibited/unverified/CATEGORY/AMBIGUOUS, Reviewer indépendant, Release Certifier.
-- **Prochaine étape :** corriger tout finding, re-test, re-score ≥9/10 ; merge interdit avant certification.
-
-### PR #473 — SEARCH-UX-1 Inventory-first cards & responsive grid 🟠 P0 PARALLÈLE
-
-- **Lane :** UX / Search.
-- **Responsabilité :** densité et scan Search : wide desktop 4 cartes/ligne, desktop 3, tablette/mobile 2 ; cards image-first compactes ; whole-card click ; CTA secondaires réduits ; provenance/truth/favoris conservés.
-- **Dépendances :** Search Truth + contracts UX ; ordre de merge avec #474. Le second à merger doit repartir du nouveau `main`.
-- **Branche :** `feat/search-ux-1-cards-grid`.
-- **PR :** #473.
-- **État :** `ACTIVE / IMPLEMENTED / VISUAL CERTIFICATION IN PROGRESS`.
-- **Preuves :** smoke UI/accessibilité GitHub Actions observé sur **12 routes × 4 viewports = 48 captures, 0 finding** ; PR mergeable sur sa base actuelle.
-- **Double check / score :** smoke technique positif, mais **score final indépendant non encore enregistré** ; certification requiert desktop 1440×900 ≥9/10 et mobile 390×844 ≥9/10.
-- **Blocker :** réalignement obligatoire après toute PR Search/Ranking mergée avant elle, notamment #474 si #474 merge en premier, puis rerun de tous les gates Search/UX.
-- **Prochaine étape :** double-check visuel indépendant → note desktop/mobile → corrections si <9 → re-test → re-note → certification.
-
-## RECONCILIATION REQUIRED
-
-### PR #454 — DATA-4.9C Source Policy Decision & Registry Assignment 🟠
-
-- **Lane :** DATA / Source Policy.
-- **Responsabilité :** décider la policy des gagnants 4.9B et matérialiser uniquement les décisions démontrées.
-- **Dépendances :** preuves officielles actuelles, Registry live, comparaison exacte avec current `main`, préservation de la mutation restrictive Agadir déjà appliquée.
-- **Branche :** `data/data-4-9c-source-policy-decision-registry-assignment`.
-- **PR :** #454.
-- **État :** `RECONCILIATION REQUIRED` — vieille base, mais effet production réel.
-- **Preuves :** `agadirimmobilier.ma → permission_required + hidden + internal_signal_only`; Val Foncier / Christie’s / Immo Maroc / ProImmobilier / Capital Properties restent `unverified`; **0 source autorisée**.
-- **Double check / score :** décision source certifiée dans la fenêtre d’origine, mais **score de closeout current-main à refaire** ; aucun CLOSED avant ≥9/10.
-- **Blocker :** DATA-4.9D pour ce cohort = **BLOCKED_BY_POLICY** ; la PR ne peut pas être mergée telle quelle depuis sa vieille base.
-- **Prochaine étape :** comparer diff #454 + Registry live au current main, conserver Agadir, reconstruire seulement le résidu nécessaire, CI exact-head + Registry read-only audit + score ≥9 ; sinon fermer explicitement comme superseded après closeout documentaire.
-
-## BLOCKED / REVALIDATION REQUIRED
-
-### PR #310 — Professional auth/session/RLS hardening 🔵
-
-- **Lane :** Security / Professional.
-- **Responsabilité :** séparation auth/session/service-role et isolation RLS inter-tenant.
-- **Dépendances :** audit actuel `/api/pro/*`, clients Supabase, RLS/RPC, request-scoped user context.
-- **Branche :** `agent/b3-5-3-professional-auth-rls`.
-- **PR :** #310.
-- **État :** `BLOCKED` — vieille architecture ; revalidation obligatoire avant reprise.
-- **Preuves :** PR historique documente le finding, mais aucune preuve current-main ne permet un merge direct.
-- **Double check / score :** **non applicable tant que l’audit current-main n’est pas rejoué** ; futur lot doit atteindre ≥9/10 avec Security Reviewer indépendant.
-- **Blocker :** architecture potentiellement divergente depuis la création de la PR.
-- **Prochaine étape :** re-audit current main ; si finding encore réel, reconstruire un lot frais avec PostgreSQL réel + tests explicites d’isolation ; sinon fermer #310 comme superseded.
-
-## SUPERSEDED CANDIDATE / RECONCILIATION
-
-### PR #383 — Permanent AkarFinder agent governance
-
-- **Lane :** Governance.
-- **Responsabilité :** gouvernance permanente agents/Reviewer/Certifier.
-- **Dépendances :** comparer ses capacités au current main et à cette roadmap unique.
-- **Branche :** `agent/p0-gov-1-agent-governance`.
-- **PR :** #383.
-- **État :** `RECONCILIATION REQUIRED / SUPERSEDED CANDIDATE`.
-- **Preuves :** roadmap unique, séparation Builder/Reviewer/Certifier et gate ≥9/10 sont déjà absorbés dans le current roadmap/main.
-- **Double check / score :** pas de score current-main ; aucune certification valide pour merger le snapshot historique.
-- **Blocker :** base `13b6c3c...` très ancienne par rapport au current main.
-- **Prochaine étape :** unique-value check ; garder uniquement une capacité réellement absente, sinon fermer comme superseded avec preuve successor/current-main.
-
-## CLOSED / HISTORICAL — fenêtre DATA-4.4C réconciliée
-
-### DATA-4.4C — Persistent Promo Immo Canary 50 ✅ CLOSED
-
-- **Lane :** DATA / Freshness / Search projection safety.
-- **Responsabilité :** persister exactement le canary 50 préparé par DATA-4.4B sans dégrader Thin Index/Search, avec rollback et drift ≤1%.
-- **Dépendances :** DATA-4.4B PR #380 ; manifest immuable 50/50 ; Registry Promo Immo ; Search/display/quality gates.
-- **Branches :** `agent/data-4-4c-freshness-projection-safety` (#384) puis `agent/data-4-4c-closeout` (#385).
-- **PR :** #384 safety fix + #385 closeout documentaire ; toutes deux mergées.
-- **État :** `CLOSED / HISTORICAL`, non réactivable automatiquement.
-- **Preuves :** première écriture a révélé un rebuild Thin Index lossy ; rollback immédiat ; projections restaurées depuis snapshots A5.2/A5.3/A5.4 ; #384 merge `ba65943ab71e57eabbe96b0641e8cbdc544ed891` ; migration production appliquée ; replay live 4.4B avant second write ; persistent write **50/50** ; fresh-confirmed **50/50** ; `public_sitemap_presence` **50/50** ; Public Search **50/50** ; technical display **50/50** ; quality A/B **50/50** ; projection préservée **50/50** ; drift **0%** ; Registry inchangé ; Promo Immo final **3 005 total / 59 fresh / 2 946 seed_only / 50 sitemap-presence** ; #385 **21/21 workflows exact-head verts**, merge `c036bb061ce4d083e264254387b8eac77f53b565`.
-- **Double check / score :** double-check de réconciliation 2026-08-10 = **9,6/10**. Justification : incident détecté fail-closed, rollback effectif, root cause corrigée, second write atomique, re-certification indépendante à drift 0, closeout exact-head vert. Cette note est une **note de réconciliation**, pas une réécriture du score historique d’origine.
-- **Blocker :** aucun blocker résiduel du lot ; expansion automatique +100/+500 explicitement interdite par son closeout.
-- **Prochaine étape :** aucune dans cette lane historique ; les décisions DATA ultérieures 4.7/4.9 et MASS-FIRST prévalent désormais.
-
-## Classification exhaustive des PR encore OPEN — snapshot 2026-08-10 20:57 +01:00
-
-Le tableau ci-dessous empêche toute vieille PR `OPEN` d’être interprétée comme active par inertie.
-
-| PR | Classification canonique | Motif / règle de reprise |
-|---|---|---|
-| #474 | **ACTIVE** | MASS-FIRST P0 actuel ; certification ≥9 requise. |
-| #473 | **ACTIVE** | SEARCH-UX-1 P0 parallèle ; réalignement après premier merge Search. |
-| #454 | **RECONCILIATION REQUIRED** | Mutation Registry production déjà appliquée ; old base. |
-| #383 | **RECONCILIATION REQUIRED** | Gouvernance largement absorbée ; unique-value check avant fermeture/mini-port éventuel. |
-| #310 | **BLOCKED** | Security current-main audit requis avant reprise. |
-| #228 | **SUPERSEDED** | Ancienne preview Desktop V2 ; Search actuel + #473 ont remplacé cette direction. |
-| #229 | **SUPERSEDED** | Ancienne preview Mobile V2 ; remplacée par les lots Search mergés + #473. |
-| #230 | **SUPERSEDED** | Ancienne intégration SERP preview ; current `/search` a évolué au-delà. |
-| #231 | **SUPERSEDED** | Anciennes cards V2 preview ; cards actuelles + #473 sont la lane canonique. |
-| #232 | **SUPERSEDED** | Preview cumulative LOTS 1–5 historique. |
-| #234 | **SUPERSEDED** | Preview cumulative V2 historique. |
-| #250 | **SUPERSEDED** | Ancienne SERP V2 paginée ; remplacée par la chaîne Search certifiée et #473. |
-| #81 | **SUPERSEDED** | Ancienne Search Entry refinement ; Search UX actuel a été reconstruit/certifié depuis. |
-| #282 | **SUPERSEDED** | Ancienne réécriture roadmap ; cette roadmap unique est son successeur. |
-| #52 | **SUPERSEDED** | Ancienne consolidation documentaire ; hiérarchie documentaire actuelle la remplace. |
-| #337 | **HISTORICAL** | Closeout P1A.2 ancien ; aucune reprise nécessaire sans besoin explicite. |
-| #319 | **HISTORICAL** | Adaptive partition DATA ancien ; re-audit current main avant toute valeur résiduelle. |
-| #289 | **HISTORICAL** | A5.4 recovery ancien ; ne pas réactiver un write historique. |
-| #255 | **HISTORICAL** | Honest Listing Depth baseline ancienne ; les lanes DATA actuelles ont progressé au-delà. |
-| #113 | **HISTORICAL** | ODM-09 activation gate ancien ; current Search contracts prévalent. |
-| #133 | **HISTORICAL** | ODM-10C4 acquisition ancienne ; current Registry/MASS-FIRST prévalent. |
-| #54 | **HISTORICAL** | Bulk seed confirmation ancien ; ne pas reprendre sans current-main audit. |
-| #126 | **HISTORICAL** | Transactional recrawl activation ancien ; migrations/état prod doivent être réaudités avant toute reprise. |
-| #125 | **HISTORICAL** | Authorized source adapter ancien ; aucune permission actuelle ne doit être inférée de cette PR. |
-| #124 | **HISTORICAL** | Recrawl scheduler ancien ; revalidation policy/architecture obligatoire. |
-| #121 | **HISTORICAL** | Freshness Lifecycle ancien ; current freshness pipeline prévaut. |
-| #118 | **HISTORICAL** | Observation Ledger ancien ; current main doit être audité avant toute reprise. |
-| #115 | **HISTORICAL** | Property Intelligence backfill ancien ; aucune activation publique implicite. |
-| #110 | **HISTORICAL** | Property Intelligence foundation ancienne ; current architecture d’abord. |
-
-Règle universelle pour `HISTORICAL`/`SUPERSEDED` :
-
-`CURRENT MAIN AUDIT → UNIQUE VALUE CHECK → REBUILD ON CURRENT MAIN SI NÉCESSAIRE → DOUBLE CHECK → SCORE ≥9 → NEW/REALIGNED PR`
-
-Aucun merge direct d’une branche historique sur `main`.
-
----
-
-# 3. Lane DATA — MASS COVERAGE + PARTNER CONVERSION
-
-## Baseline utile
-
-- Thin Index observé : ~56,8k documents ;
-- réservoir historique `blocked_quality` : ~11,8k à réauditer selon doctrine MASS-FIRST ;
-- DATA-4.9B : **2 326 représentations URL structurellement compatibles détail**, pas 2 326 biens uniques.
-
-## DATA-MASS-FIRST
-
-Porté actuellement par #474 : qualité ≠ droit d’exister ; une annonce admissible pauvre reste visible plus bas grâce au Listing Power.
-
-## DATA-4.9C
-
-Voir registre #454 : décision déjà exécutée partiellement en production, réconciliation requise.
-
-## DATA-4.9D
-
-**LOCKED pour le cohort 4.9C** : aucune source autorisée.
-
-## DATA-4.10A — Authorization Conversion & Partner Feed Readiness 🔵 NEXT DATA
-
-Read-only en priorité : dossiers de permission/partenariat, contact officiel, upside inventaire, proposition canonical-link/public-facts ou feed/API, provenance, suppression, dédup, fraîcheur. Aucun scraping additionnel, aucun Registry write implicite, aucune activation.
-
-En parallèle, MASS COVERAGE continue uniquement sur les sources déjà admissibles par policy.
-
-## Handoff Carte exact-scope
-
-DATA doit aussi produire la preuve indépendante Registry + profondeur/fraîcheur exacte nécessaire à Marrakech / Guéliz / rent / `surface_m2` avant tout replay P1C.4A/P1C.4.
-
----
-
-# 4. Lane UX / Search
-
-## PR #473 — ACTIVE
-
-C’est désormais le lot officiel de densité Search : 4/3/2/2, cards compactes et inventory-first.
-
-## CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1 🔵 APRÈS #473
-
-Read-only. Mesurer couverture réelle, répétition, fallback rate, échec distant, authorized thumbnail vs city_type vs city vs type vs neutral, y compris Rabat real-photo. Aucun nouvel asset avant cette mesure.
-
-## Règle d’intégration #473 ↔ #474
-
-#474 modifie Search policy/ranking SQL ; #473 modifie principalement UX/cards/grid. Ils peuvent avancer en parallèle, mais **le second à merger doit se réaligner sur le premier merge**, puis rejouer Search Truth, typecheck, build et certification UX/Ranking pertinente. Aucun merge sur base stale accepté.
-
----
-
-# 5. Lane Carte / Geo
-
-Détail historique : `docs/CARTE_ROADMAP.md`.
-
-Acquis : P1A.1→P1A.6, P1B.1→P1B.15, P1C.1, P1C.2, P1C.3, P1C.4, P1C.4A.
-
-État :
-
-- Offre quartier publique **OFF** ;
-- P1C.4 = `NOT_CERTIFIABLE` ;
-- P1C.4A = `DESIGNED_NOT_PROVEN` ;
-- P1C.5 **LOCKED**.
-
-Ordre : DATA exact-scope evidence → replay P1C.4A → replay P1C.4 → seulement si certified, P1C.5 canary → P1C.6 observation → P1C.7 scoped ON. Choroplèthe seulement avec géométrie neighborhood-grade sourcée et certifiée.
-
-Chaque étape : double check + note ≥9/10.
-
----
-
-# 6. Lane Security / Professional
-
-## AUTH-RLS-REVALIDATION 🔵 BACKLOG IMPORTANT
-
-Source : PR historique #310.
-
-Après stabilisation de #474/#473, exécuter un audit current-main court pour déterminer si la séparation user-scoped/service-role et l’isolation inter-tenant restent une dette réelle. Si oui : nouveau lot dédié frais. Si non : fermer #310.
-
----
-
-# 7. Ordre d’exécution global
+# 2. Vue exécutive — ordre global
 
 ```text
-PARALLÈLE P0
-├─ #474 MASS-FIRST Search policy/ranking          🟠 certification
-└─ #473 SEARCH-UX-1 4/3/2/2 cards/grid           🟠 certification visuelle
+P0 — SEARCH / MASS FIRST
+├─ #474 MASS-FIRST policy/ranking                         ACTIVE — certification
+└─ #473 SEARCH-UX-1 cards/grid 4/3/2/2                  ACTIVE — certification visuelle
 
-APRÈS PREMIER MERGE SEARCH
-→ réaligner l’autre PR sur current main
-→ rerun gates complets
-→ merge seulement si score ≥9/10
+Après premier merge Search
+→ réaligner le second sur current main
+→ rerun Search Truth + CI + double-check
+→ score ≥9
+→ merge
 
-DATA
-→ reconcile/close #454 DATA-4.9C
-→ DATA-4.10A Authorization / Partner Feed Readiness
-→ MASS COVERAGE uniquement sur sources admissibles
+P0/P1 — DATA
+├─ #454 DATA-4.9C                                       RECONCILIATION_REQUIRED
+├─ DATA-4.10A Authorization / Partner Feed Readiness    PLANNED
+├─ MASS-COVERAGE-ADMISSIBLE-1                           PLANNED
+└─ DATA-EXACT-SCOPE-GUELIZ-1                            PLANNED — débloque Carte
 
-UX
-→ Contextual Illustrations Coverage Audit
+P1 — SEARCH VISUAL
+├─ SEARCH-VISUAL-REFERENCE-AUDIT-1                      REVIEW
+├─ VISUAL-REPRESENTATION-ENGINE-1                       PLANNED
+├─ VISUAL-CARD-COMPOSITION-1                            PLANNED
+└─ RABAT-NEIGHBORHOOD-ACTIVATION-1                      PLANNED
 
-CARTE
-→ DATA exact-scope evidence
-→ P1C.4A/P1C.4 replay
-→ éventuel P1C.5
+P1 — CARTE / INTELLIGENCE QUARTIER
+├─ P1C.4A replay après DATA exact-scope                 PLANNED
+├─ P1C.4 replay                                          PLANNED
+├─ P1C.5 bounded canary                                 LOCKED
+├─ P1C.6 observation                                    PLANNED_AFTER_P1C5
+└─ P1C.7 scoped public ON                               PLANNED_AFTER_P1C6
 
-SECURITY
-→ re-audit #310 sur current main
+P1/P2 — SECURITY
+└─ AUTH-RLS-REVALIDATION                                PLANNED / current-main audit
 
 CLEANUP
-→ fermer explicitement les PR SUPERSEDED après vérification successor/current-main
-→ laisser HISTORICAL non actives tant qu’aucun unique-value check ne justifie une reconstruction
+├─ #383 unique-value check                              RECONCILIATION_REQUIRED
+└─ anciennes PR superseded/historical                   close/rebuild seulement si valeur unique
 ```
 
 ---
 
-# 8. Template obligatoire pour tout nouveau lot
+# 3. Registre maître des fenêtres / PR actives ou dépendantes
+
+## #474 — MASS-FIRST + roadmap unifiée 🟠 P0 ACTIVE
+
+- **Lane :** DATA / Search policy & ranking.
+- **Branche :** `feat/mass-first-search-quality-policy`.
+- **PR :** #474.
+- **Responsabilité :** Source Policy public gate → Quality ≠ Eligibility → Listing Power 0–100 → ranking → mass reclassification/certification.
+- **État :** `ACTIVE / CODED / CERTIFICATION_REQUIRED`.
+- **Score actuel :** **8,8/10 provisoire — NON CERTIFIÉ**.
+- **Reste :** CI exact-head complète ; PostgreSQL/Supabase réel ou rehearsal fidèle ; rapports MASS-FIRST ; ACL/`SECURITY DEFINER` ; perf/plan Search ; before/after inventory ; Q0/Q1 ; 0 prohibited/unverified/CATEGORY/AMBIGUOUS public ; Reviewer ; Release Certifier.
+- **Merge :** interdit avant score final ≥9.
+
+## #473 — SEARCH-UX-1 Inventory-first cards & responsive grid 🟠 P0 ACTIVE
+
+- **Lane :** UX / Search.
+- **Branche :** `feat/search-ux-1-cards-grid`.
+- **PR :** #473.
+- **Responsabilité :** 4 cards wide desktop / 3 desktop / 2 tablette / 2 mobile ; cards compactes image-first ; whole-card click ; provenance/truth/favoris préservés.
+- **État :** `ACTIVE / IMPLEMENTED / VISUAL_CERTIFICATION_IN_PROGRESS`.
+- **Preuve actuelle :** smoke UI/accessibilité 12 routes × 4 viewports = 48 captures, 0 finding.
+- **Score :** final indépendant non encore enregistré ; desktop 1440×900 ≥9 et mobile 390×844 ≥9 obligatoires.
+- **Dépendance :** le second à merger entre #473/#474 doit repartir du nouveau `main` et rejouer tous les gates.
+
+## #475 — Search Visual alignment 🟡 DEPENDENT
+
+- **Lane :** UX / Search Visual.
+- **Branche :** `audit/live-rabat-search-20260810`.
+- **PR :** #475 draft, empilée sur #474.
+- **Responsabilité :** documentation/audit du programme visuel Search.
+- **État :** `BLOCKED / DEPENDENT_ON_#474`.
+- **Important :** **les lots futurs qu’elle décrit sont désormais copiés dans cette roadmap maître ci-dessous** ; #475 n’est plus nécessaire comme source de vérité.
+- **Après #474 :** retarget/rebase ; conserver uniquement une valeur documentaire non déjà absorbée ; sinon fermer superseded.
+
+## #476 — Carte/P1C alignment 🟡 DEPENDENT
+
+- **Lane :** Carte / Geo / Intelligence quartier.
+- **Branche :** `feat/p1c4a-acquisition-source-universe`.
+- **PR :** #476 draft, empilée sur #474.
+- **Responsabilité :** réconciliation documentaire P1C.1→P1C.5.
+- **État :** `BLOCKED / DEPENDENT_ON_#474`.
+- **Important :** **la chaîne Carte passée et future est désormais enregistrée directement ici** ; #476 n’est plus nécessaire comme source de vérité.
+- **Après #474 :** retarget/rebase ; ne conserver qu’un delta documentaire réellement absent ; sinon fermer superseded.
+
+## #454 — DATA-4.9C Source Policy 🟠 RECONCILIATION_REQUIRED
+
+- **Lane :** DATA / Source Policy.
+- **Branche :** `data/data-4-9c-source-policy-decision-registry-assignment`.
+- **PR :** #454.
+- **Effet production déjà réel :** `agadirimmobilier.ma = permission_required + hidden + internal_signal_only`.
+- Val Foncier / Christie’s / Immo Maroc / ProImmobilier / Capital Properties restent `unverified` ; **0 source autorisée**.
+- **DATA-4.9D pour ce cohort :** `BLOCKED_BY_POLICY`.
+- **Action :** comparer diff #454 + Registry live au current main ; préserver Agadir ; reconstruire uniquement le résidu nécessaire ; double-check + score ≥9 ; sinon closeout puis fermeture superseded.
+
+## #310 — Professional auth/session/RLS 🔵 REVALIDATION
+
+- **Lane :** Security / Professional.
+- **État :** vieille branche, aucun merge direct.
+- **Action :** audit current-main `/api/pro/*`, clients Supabase, RLS/RPC, user-scoped vs service-role et isolation inter-tenant.
+- Si finding encore réel : nouveau lot frais + PostgreSQL réel + Security Reviewer + score ≥9.
+- Sinon : fermer #310 superseded.
+
+## #383 — Permanent agent governance 🔵 RECONCILIATION
+
+La roadmap unique, Reviewer/Certifier et gate ≥9 absorbent déjà l’essentiel. Faire un `UNIQUE_VALUE_CHECK`; porter seulement une capacité réellement absente, sinon fermer superseded.
+
+---
+
+# 4. Lane DATA — MASS COVERAGE + PARTNER CONVERSION
+
+## Baseline
+
+- Thin Index observé : ~56,8k documents ;
+- réservoir historique `blocked_quality` : ~11,8k ;
+- DATA-4.9B #452 : **2 326 représentations URL structurellement compatibles détail**, pas 2 326 biens uniques ;
+- DATA-4.4C : canary 50 fermé avec drift 0 %, réconciliation 9,6/10 ; aucune expansion automatique n’en découle.
+
+## DATA-MASS-FIRST — porté par #474 🟠
+
+**Objectif :** qualité ≠ éligibilité. Une annonce admissible pauvre reste visible plus bas grâce au Listing Power.
+
+### Sous-lots #474
+
+1. Source Policy public gate.
+2. Quality ≠ Eligibility.
+3. Listing Power Score 0–100 déterministe/explicable.
+4. Ranking Search intégrant Listing Power.
+5. Mass reclassification + certification fail-closed.
+
+Tous doivent être certifiés ensemble avant merge #474.
+
+## DATA-4.9C — #454 🟠 RECONCILIATION
+
+Voir registre maître. Aucun droit d’ingestion ne doit être déduit de sitemap/robots/structure.
+
+## DATA-4.9D — cohort 4.9C 🔒 LOCKED
+
+Aucune source du cohort n’est actuellement autorisée. Ne pas créer de canary tant que la policy ne change pas sur preuve explicite.
+
+## DATA-4.10A — Authorization Conversion & Partner Feed Readiness 🔵 PLANNED
+
+**Responsabilité :** transformer les meilleures sources non autorisées en opportunités autorisées/partenaires.
+
+Read-only d’abord :
+
+- contact officiel / propriétaire de la donnée ;
+- permission explicite ou proposition de partenariat ;
+- feed/API/export/canonical-link/public-facts ;
+- inventaire potentiel ;
+- fraîcheur ;
+- provenance ;
+- suppression/takedown ;
+- dédup ;
+- modalités d’affichage ;
+- aucune activation ou Registry write implicite.
+
+**Sortie :** dossier par source + décision `READY_FOR_PERMISSION / PARTNER_FEED_CANDIDATE / HOLD / REJECT`.
+
+## MASS-COVERAGE-ADMISSIBLE-1 🔵 PLANNED
+
+**Responsabilité :** maximiser la couverture uniquement sur les sources déjà policy-admissibles.
+
+- réauditer les lignes historiquement `blocked_quality` ;
+- missing price/surface/photo ≠ exclusion ;
+- exclure uniquement hard gates : source non admissible, non immobilier, faux signal, URL/canonical invalide, document non LISTING ;
+- Listing Power faible = rang plus bas ;
+- mesurer before/after : documents éligibles, primary/secondary, sources, villes, fraîcheur, duplication, latence Search ;
+- canary/rollback si mutation massive.
+
+**Dépend de :** #474 certifiée/mergée.
+
+## DATA-EXACT-SCOPE-GUELIZ-1 🔵 PLANNED
+
+**Responsabilité :** produire la preuve indépendante nécessaire à Carte pour `Marrakech / Guéliz / rent / surface_m2`.
+
+Doit établir, sans inventer de dénominateur :
+
+- source universe versionné ;
+- policy/channel par source ;
+- identifiabilité exacte ;
+- profondeur inventaire ;
+- fraîcheur ;
+- known holes ;
+- exact-scope acquisition evidence ;
+- séparation stricte market presence / permission / display rights.
+
+**Important :** ce lot est distinct de #454. Nouvelle branche/PR lorsqu’il démarre.
+
+---
+
+# 5. Lane UX / Search
+
+## SEARCH-UX-1 — #473 🟠 ACTIVE
+
+Voir registre maître.
+
+## SEARCH-VISUAL-REFERENCE-AUDIT-1 🟠 REVIEW
+
+**Responsabilité :** comparer Search Rabat live à la référence approuvée desktop/mobile avant nouvelle implémentation visuelle.
+
+- preuves : Product Design run `31417065973` SUCCESS ; artifact `9073861382` ; captures 1440×900 / 390×844 ;
+- scorer : architecture, header/search, filtres, densité, cards, hiérarchie, visual stack, mobile 2-colonnes, actions, navigation, accessibilité visible ;
+- convertir findings en P0/P1/P2 ;
+- aucun score final inventé avant revue.
+
+## AKAR VISUAL STACK — doctrine cible
+
+`PROPERTY_PHOTO → BUILDING/STREET_PHOTO → DISTRICT_PHOTO → CITY_PHOTO → TYPE_ILLUSTRATION → NEUTRAL`
+
+Règles :
+
+- photo réelle autorisée du bien = priorité absolue ;
+- building/street seulement avec preuve géographique suffisante ;
+- district seulement avec quartier structuré/certifié ;
+- city seulement avec ville structurée/certifiée ;
+- illustrations type restent des fallbacks explicites, jamais pseudo-photo du bien ;
+- aucune image fictive/générée ne représente un quartier ou bien réel ;
+- disclosure explicite pour photo d’ambiance ;
+- aucune activation quartier depuis titre/snippet libre seul ;
+- sélection déterministe/stable ;
+- mobile 2 cards/ligne reste invariant.
+
+## VISUAL-REPRESENTATION-ENGINE-1 🔵 PLANNED
+
+**Responsabilité :** resolver central du Visual Stack retournant `visual_type`, asset/source, disclosure et niveau de vérité.
+
+**Dépend de :** audit visuel final + #473/#474 stabilisées.
+
+Tests obligatoires :
+
+- property photo prioritaire ;
+- quartier structuré → district photo ;
+- ville seule → city photo ;
+- type seul → illustration type ;
+- contexte absent → neutral ;
+- titre contenant `Agdal` avec `neighborhood=null` ne doit jamais activer Agdal.
+
+## VISUAL-CARD-COMPOSITION-1 🔵 PLANNED AFTER ENGINE
+
+**Responsabilité :** composer visuel réel/contextuel + identité AkarFinder + type de bien sans deux images concurrentes.
+
+**Dépend de :** Visual Engine certifié + #473 certifiée.
+
+Certification : 1440×900 + 360/390 ; 4/3/2/2 ; disclosures lisibles ; 0 confusion photo du bien / photo d’ambiance.
+
+## RABAT-NEIGHBORHOOD-ACTIVATION-1 🔵 PLANNED AFTER ENGINE
+
+**Responsabilité :** augmenter l’usage réel des 40 photos Rabat uniquement avec signaux quartier structurés/certifiés.
+
+Signaux admissibles : source structurée, adresse normalisée, coordonnées/point-in-polygon sourcé avec confidence explicite. Fail-closed sous seuil. Aucun titre libre seul comme vérité finale.
+
+## CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1 🟡 ABSORBED AS EVIDENCE
+
+Ses métriques restent obligatoires dans l’audit/Visual Stack : couverture, répétition, fallback rate, remote failure, authorized thumbnail vs district/city/type/neutral. Aucun nouvel asset avant mesure.
+
+---
+
+# 6. Lane Carte / Geo / Intelligence quartier
+
+`docs/CARTE_ROADMAP.md` conserve le détail historique ; cette section définit la priorité cross-window.
+
+## Préconditions fermées
+
+P1A.1→P1A.6 et P1B.1→P1B.15 sont historiques/fermées. P1B.15 a autorisé P1C Shadow uniquement, jamais l’Offre publique ni un choroplèthe quartier non sourcé.
+
+## P1C.1 — Offre quartier Shadow ✅ CLOSED
+
+- PR #463 ; internal/service-role only ;
+- aucune imputation ; public OFF ;
+- réconciliation **9,4/10**.
+
+## P1C.2 — Reliability Engine ✅ CLOSED
+
+- PR #464 + hotfix #465 ;
+- reliability par métrique distincte de représentativité marché ;
+- réconciliation **9,5/10**.
+
+## P1C.3 — Activation Review ✅ CLOSED / HOLD
+
+- PR #466 ;
+- 1 review candidate, 0 canary eligible ;
+- représentativité obligatoire ;
+- réconciliation **9,5/10**.
+
+## P1C.4 — Acquisition Representativeness ✅ CLOSED / NOT_CERTIFIABLE
+
+- PR #469 ; #470 duplicate = superseded ;
+- aucun dénominateur exact-scope indépendant démontré ;
+- réconciliation **9,6/10**.
+
+## P1C.4A — Acquisition Source Universe & Denominator Design ✅ CLOSED / DESIGNED_NOT_PROVEN
+
+- PR #472 ;
+- baseline indépendante 12 sources ;
+- design du dénominateur établi mais preuve DATA absente ;
+- aucune activation.
+
+## P1C.4A-REPLAY 🔵 PLANNED
+
+**Dépend de :** `DATA-EXACT-SCOPE-GUELIZ-1`.
+
+Rejouer le design contre les nouvelles preuves. Sortie uniquement `PROVEN / NOT_PROVEN`; aucune activation dans ce lot. Score ≥9.
+
+## P1C.4-REPLAY 🔵 PLANNED
+
+**Dépend de :** P1C.4A-REPLAY = PROVEN.
+
+Requalifier la représentativité exact-scope. Sortie `CERTIFIED / INSUFFICIENT / NOT_CERTIFIABLE`. Aucun canary si autre chose que CERTIFIED. Score ≥9.
+
+## P1C.5 — Bounded Offer Canary 🔒 LOCKED
+
+**Responsabilité :** première activation strictement bornée d’une métrique Offre quartier certifiée.
+
+**Conditions d’ouverture :** P1C.4-REPLAY `CERTIFIED` + rollback + scope exact + no national bulk activation.
+
+Mutation séparée, canary explicite, before/after, rollback testé, score ≥9.
+
+## P1C.6 — Canary Observation 🔵 PLANNED_AFTER_P1C5
+
+Observer qualité, fraîcheur, stabilité, drift, provenance, cohérence UI/Map et absence de leakage hors scope. Aucun élargissement automatique.
+
+## P1C.7 — Scoped Public ON 🔵 PLANNED_AFTER_P1C6
+
+Activation publique uniquement du scope certifié si observation P1C.6 PASS ≥9. Toute expansion géographique/métrique = nouveau lot.
+
+## Choroplèthe quartier
+
+Toujours bloqué sans géométrie neighborhood-grade sourcée, reviewée et certifiée. Les 16 polygones OSM `admin_level=10` Casablanca ne sont pas des polygones quartier certifiés.
+
+---
+
+# 7. Lane Security / Professional
+
+## AUTH-RLS-REVALIDATION 🔵 PLANNED
+
+**Responsabilité :** déterminer sur current main si la dette historique #310 existe encore.
+
+Audit :
+
+- `/api/pro/*` ;
+- clients Supabase ;
+- service-role exposure ;
+- request-scoped user context ;
+- RLS/RPC ;
+- isolation inter-tenant ;
+- tests PostgreSQL réels.
+
+Sortie : `NO_FINDING_CLOSE_#310` ou nouveau lot `AUTH-RLS-HARDENING-CURRENT-1` avec Security Reviewer et score ≥9.
+
+---
+
+# 8. Lane Mon Projet
+
+## MON-PROJET-P1B — PR #318 ✅ MERGED / HISTORICAL
+
+Projet actif conservé dans Search ; favoris/comparaisons rattachés au `project_id`; aucune migration/stockage parallèle. Pas de score UX indépendant historique archivé : ne pas inventer un ≥9 rétroactif. Toute nouvelle évolution = nouveau lot current-main avec gate universel.
+
+Aucun lot Mon Projet actif supplémentaire n’est actuellement enregistré.
+
+---
+
+# 9. Cleanup / gouvernance des anciennes PR
+
+## SUPERSEDED connus
+
+#228, #229, #230, #231, #232, #234, #250, #81, #282, #52 et duplicate #470.
+
+## HISTORICAL connus
+
+#337, #319, #289, #255, #113, #133, #54, #126, #125, #124, #121, #118, #115, #110, ainsi que les lots fermés explicitement ci-dessus.
+
+Règle :
+
+`CURRENT MAIN AUDIT → UNIQUE VALUE CHECK → REBUILD ON CURRENT MAIN SI NÉCESSAIRE → DOUBLE CHECK → SCORE ≥9 → NEW/REALIGNED PR`
+
+Aucun merge direct d’une branche historique.
+
+---
+
+# 10. Dépendances inter-lanes
+
+```text
+#474 MASS-FIRST ───────────────┐
+                              ├→ current Search stable
+#473 SEARCH-UX ────────────────┘        │
+                                       ├→ Visual Engine → Card Composition → Rabat activation
+                                       │
+                                       └→ MASS-COVERAGE-ADMISSIBLE-1
+
+#454 reconciliation → DATA-4.10A Partner/Authorization
+
+DATA-EXACT-SCOPE-GUELIZ-1
+        ↓
+P1C.4A-REPLAY
+        ↓ PROVEN
+P1C.4-REPLAY
+        ↓ CERTIFIED
+P1C.5 CANARY
+        ↓ PASS
+P1C.6 OBSERVATION
+        ↓ PASS ≥9
+P1C.7 SCOPED PUBLIC ON
+
+Search stabilization
+        ↓
+AUTH-RLS-REVALIDATION peut être exécuté sans bloquer DATA/Carte
+```
+
+---
+
+# 11. Template obligatoire pour tout nouveau lot
 
 ```text
 LOT-ID — Nom
 Responsabilité unique :
 Lane :
+Priorité : P0 / P1 / P2
 Dépend de :
+Débloque :
 Branche :
 PR :
-État : PLANNED / CODED / REVIEW / CERTIFIED / MERGED / CLOSED / SUPERSEDED
+État : PLANNED / READY / IMPLEMENTING / REVIEW / CERTIFIED / MERGED / CLOSED / BLOCKED / SUPERSEDED
 Preuves :
 Double check findings :
 Score initial /10 :
@@ -329,43 +501,13 @@ Prochaine étape :
 
 ---
 
-# 9. Réconciliation fenêtre MON-PROJET → Carte / Quartier
+# 12. Règle de synchronisation cross-window
 
-## MON-PROJET-P1B — projet actif dans Search ✅ MERGED / HISTORICAL
+À partir de maintenant :
 
-- **Lane :** UX / Mon Projet → Search continuity.
-- **Responsabilité :** conserver le contexte du projet actif jusque dans `/search` et rattacher favoris/comparaisons au même `project_id`, sans stockage parallèle.
-- **Dépendances :** MON-PROJET-P1A #314 ; `/api/me/continuity` ; User Continuity V1 ; Search existant ; synchronisation avec DATA-COVERAGE-1 avant merge.
-- **Branche :** `ux/mon-projet-p1b`.
-- **PR :** #318 ; remplace/supersède la tentative #315.
-- **État :** `MERGED / HISTORICAL` — merge `29306523a4d1ad11d089299b1c7ed6a090063ebd` sur head exact `7f1e9b10162adad4c9a9694df9117ba053fd9e05`.
-- **Preuves :** bandeau `Projet actif` dans Search ; validation du projet via `/api/me/continuity` ; favoris/comparaisons filtrés par `project_id` ; accès `/mon-projet/espace` ; aucune migration, aucun `localStorage`, aucun stockage parallèle ; `Canonical Baseline Validation` workflow_dispatch run #784 **SUCCESS** sur le head final avant merge.
-- **Double check / score :** certification fonctionnelle finale PASS ; **aucune note UX indépendante finale /10 n’a été archivée dans #318**. Pour respecter la règle universelle, ce lot n’est pas requalifié artificiellement en `CLOSED ≥9`; il reste `MERGED / HISTORICAL` et devra être re-audité avec score ≥9 uniquement si une nouvelle modification Mon Projet/Search le rouvre.
-- **Blocker :** aucun blocker runtime identifié au merge ; l’incident GitHub Actions ayant perturbé la certification était externe et résolu par un run manuel sur le head exact.
-- **Prochaine étape :** aucune reprise automatique. Toute évolution Mon Projet doit être un nouveau lot current-main avec double check, score ≥9 et certification.
-
-## Audit Carte / Quartier initié dans cette fenêtre — AUCUN NOUVEAU LOT OUVERT
-
-- **Lane :** Carte / Geo.
-- **Responsabilité :** audit exploratoire seulement ; aucune responsabilité d’implémentation n’a été ouverte.
-- **Dépendances :** lane Carte canonique existante P1C.4/P1C.4A et preuve DATA exact-scope.
-- **Branche :** aucune.
-- **PR :** aucune.
-- **État :** `STOPPED BEFORE IMPLEMENTATION / ABSORBED BY CANONICAL CARTE LANE`.
-- **Preuves :** lecture de `/search`, `SearchMapPanel`, `SearchMapNeighborhoodDock`, explorer ville→quartier, choroplèthe Casablanca, benchmark prix et invariants géographiques ; **0 code, 0 migration, 0 commit, 0 PR** issus de cet audit.
-- **Double check / score :** **non scoré** car audit interrompu avant verdict et avant définition d’un lot ; aucune note artificielle n’est créée.
-- **Blocker :** P1C.4A reste `DESIGNED_NOT_PROVEN`, P1C.4 `NOT_CERTIFIABLE`, P1C.5 `LOCKED`; Offre quartier publique OFF jusqu’à preuve DATA exact-scope et replays certifiés.
-- **Prochaine étape :** ne pas créer de roadmap parallèle. Suivre strictement : DATA exact-scope evidence → replay P1C.4A → replay P1C.4 → éventuel P1C.5, avec double check et score ≥9 à chaque étape.
-
-## PR #475 — Search visual window alignment — BLOCKED / DEPENDENT ON #474
-
-- **Lane :** UX / Search visual documentation.
-- **Responsabilité :** aligner l’audit visuel Search et le programme de représentation visuelle sur la roadmap unifiée, sans code runtime.
-- **Dépendances :** base empilée `feat/mass-first-search-quality-policy` / PR #474 ; Product Design capture evidence ; closeout Rabat real-photo #468/#471 ; coordination avec #473.
-- **Branche :** `audit/live-rabat-search-20260810`.
-- **PR :** #475, draft, base #474.
-- **État :** `BLOCKED / DEPENDENT` — ne doit pas être mergée indépendamment avant réconciliation/merge de #474.
-- **Preuves :** run Product Design `31417065973` SUCCESS ; artifact `9073861382`, digest `sha256:355a13772550fe1fdc735a088311213207ab02989757206d88da9ca9d0f65363` ; diff annoncé docs-only `docs/ROADMAP.md` + `docs/SESSION.md`.
-- **Double check / score :** aucune note finale indépendante de la PR #475 n’est encore canonique ; **non certifiée**.
-- **Blocker :** #474 vient d’avancer sur les mêmes deux fichiers canoniques ; #475 doit être réalignée/rebasée après stabilisation de #474 pour préserver les ajouts cross-window et éviter un écrasement documentaire.
-- **Prochaine étape :** après #474 stabilisée/mergée, retarget/rebase #475 sur current `main`, vérifier un diff strictement docs-only, rejouer double check + score ≥9 avant toute certification/merge.
+- **tout lot futur est écrit ici dès sa planification**, même sans branche ni PR ;
+- les fenêtres parallèles peuvent détailler leur lane ailleurs, mais elles doivent mettre à jour cette roadmap maître ;
+- une PR docs-only empilée (#475/#476) n’est pas une roadmap concurrente : son contenu utile doit être absorbé ici ;
+- si deux fenêtres proposent le même lot, on fusionne le plan avant implémentation ;
+- si deux lots touchent le même contrat, l’ordre de merge est explicite ici avant code ;
+- la roadmap décrit **tout le travail connu**, pas seulement le travail déjà commencé.
