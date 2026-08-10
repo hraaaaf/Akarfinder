@@ -1,0 +1,67 @@
+{
+  "schema_version": "p1c4-acquisition-representativeness-policy-v1",
+  "policy_id": "p1c4_acquisition_representativeness_v1",
+  "policy_version": "2026-08-10.v1",
+  "effective_at": "2026-08-10T00:00:00Z",
+  "revocable": true,
+  "scope": {
+    "city_slug": "marrakech",
+    "neighborhood_slug": "gueliz",
+    "transaction_type": "rent",
+    "metric_name": "surface_m2"
+  },
+  "principles": {
+    "p1c4_is_read_only": true,
+    "independent_denominator_required": true,
+    "observed_sources_must_not_define_the_denominator": true,
+    "exact_neighborhood_transaction_scope_required": true,
+    "source_universe_must_be_versioned": true,
+    "per_source_depth_and_freshness_evidence_required": true,
+    "known_material_gaps_force_fail_closed": true,
+    "no_arbitrary_numeric_market_coverage_threshold": true,
+    "certification_is_revocable": true,
+    "public_activation_requires_separate_write_lot": true,
+    "national_extrapolation_forbidden": true
+  },
+  "classification": {
+    "CERTIFIED": "An independently defined, versioned exact-scope source universe exists; acquisition channels are reconcilable; expected-source inclusion/exclusion is justified; per-source depth and freshness are evidenced; and no denominator-critical gap remains.",
+    "INSUFFICIENT": "An independent exact-scope denominator exists, but one or more required per-source depth, freshness, completion or gap proofs are incomplete or stale.",
+    "NOT_CERTIFIABLE": "The denominator is absent, circular, derived from observed sources, not exact-scope, or acquisition channels cannot be reconciled into a defensible universe. Missing proof cannot be converted into coverage."
+  },
+  "current_evidence_snapshot": {
+    "observed_metric_sample_count": 10,
+    "observed_metric_fresh_sample_count": 9,
+    "observed_metric_source_domain_count": 3,
+    "observed_sources": {
+      "mubawab.ma": 6,
+      "mouldar.com": 2,
+      "marrakechrealty.com": 2
+    },
+    "seed_provider": "serper_search",
+    "fresh_channel_family": "OpenSERP/public-index bridge",
+    "marrakech_rent_discovery_candidate_rows": 1200,
+    "marrakech_rent_distinct_queries": 129,
+    "marrakech_rent_distinct_domains": 48,
+    "marrakech_rent_discovery_providers": 1,
+    "gueliz_scoped_discovery_query_rows": 0,
+    "global_deepest_result_rank": 10,
+    "queries_reaching_rank_10": 111,
+    "queries_explicitly_excluding_avito_mubawab_sarouty_agenz": 8,
+    "active_partner_feeds": 0,
+    "commoncrawl_public_index_runs": 0,
+    "independent_exact_scope_denominator_available": false,
+    "snapshot_observed_at": "2026-08-10"
+  },
+  "current_blockers": [
+    "EXACT_NEIGHBORHOOD_DENOMINATOR_ABSENT",
+    "OBSERVED_SOURCE_SET_CANNOT_DEFINE_DENOMINATOR",
+    "CITY_LEVEL_DISCOVERY_CANNOT_PROVE_GUELIZ_COMPLETENESS",
+    "RESULT_RANK_DEPTH_IS_SEARCH_ENGINE_DEPTH_NOT_SOURCE_INVENTORY_DEPTH",
+    "ACQUISITION_CHANNELS_NOT_RECONCILED_AT_EXACT_SCOPE",
+    "KNOWN_POLICY_CONSTRAINTS_PREVENT_TREATING_DISCOVERABLE_MARKET_AS_ACQUIRED_MARKET"
+  ],
+  "current_expected_status": "NOT_CERTIFIABLE",
+  "current_expected_verdict": "P1C4_REPRESENTATIVENESS_NOT_CERTIFIABLE",
+  "next_boundary_if_not_certifiable": "P1C.4A Acquisition Source Universe & Denominator Design",
+  "next_boundary_if_certified": "P1C.5 Scoped Canary Activation Write"
+}

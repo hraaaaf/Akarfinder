@@ -90,7 +90,7 @@ jobs:
       - name: Roadmap handoff
         run: |
           grep -q 'P1C.2.*Reliability Engine.*✅' docs/CARTE_ROADMAP.md
-          grep -q 'P1C.3.*Activation Review.*CURRENT' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.3.*Activation Review' docs/CARTE_ROADMAP.md
           grep -q 'P1C.4.*Acquisition Representativeness Qualification' docs/CARTE_ROADMAP.md
 
       - name: TypeScript

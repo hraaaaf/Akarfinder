@@ -106,68 +106,118 @@ P1C.2 est donc **CLOSED** : le moteur fait correctement son travail, y compris l
 
 # Lot actuel
 
-## P1C.3 — Activation Review 🟠 CURRENT
+## P1C.3 — Activation Review ✅ CLOSED
 
-P1C.3 est une **revue read-only**. Il ne contient aucun SQL de mutation et n’active aucune métrique.
+PR #466 mergée sur `main@26f0b676bb2f0be70caf75e03dcc98d4ef9f37f7`.
 
-Promotion conceptuelle :
+P1C.3 a revu en lecture seule le seul candidat `moderate`, **Marrakech / Guéliz / location / `surface_m2`**, et a confirmé que Reliability ne constitue pas une preuve de représentativité marché.
 
-`OFF → SHADOW → CANARY → ON`
+Résultat live :
 
-Mais le passage `SHADOW → CANARY` exige simultanément :
+- **102** listings Shadow ;
+- **32** segments ;
+- **96** métriques ;
+- **1** review candidate ;
+- **0** canary eligible ;
+- **0** price candidate ;
+- verdict : `P1C3_ACTIVATION_REVIEW_HOLD` ;
+- raison : `HOLD_MARKET_REPRESENTATIVENESS_REQUIRED` ;
+- aucune mutation DB ;
+- aucune activation publique ;
+- aucune auto-activation.
 
-- métrique `moderate` ou `strong` ;
-- scope exact **quartier × transaction × métrique** ;
-- représentativité d’acquisition certifiée séparément sur ce même scope ;
-- activation publique encore OFF avant promotion ;
-- metric layer encore OFF avant promotion ;
-- revue explicite ;
-- aucune activation nationale en bloc.
+Promotion conceptuelle conservée : `OFF → SHADOW → CANARY → ON`, mais `SHADOW → CANARY` reste conditionné à une certification de représentativité indépendante sur le scope exact **quartier × transaction × métrique**.
 
-**Fiabilité ≠ représentativité marché.** Une métrique peut être statistiquement cohérente sur les annonces observées tout en restant non représentative du marché réellement disponible.
+---
 
-### Décision attendue avec l’état production actuel
+## P1C.4 — Acquisition Representativeness Qualification ✅ CLOSED
 
-- candidat Reliability : Guéliz / location / `surface_m2` ;
-- `market_representativeness_certified=false` ;
-- candidat prix : 0 ;
-- canary public autorisable aujourd’hui : **0** ;
-- décision correcte : **HOLD**.
+P1C.4 est une **qualification read-only**, sans Registry write, listing write, Geo write, activation publique, changement Search/Ranking ni changement de policy DATA.
 
-P1C.3 doit produire ce HOLD explicitement ; il ne doit jamais transformer l’absence de certification d’acquisition en activation implicite.
+Scope exact audité : **Marrakech / Guéliz / `rent` / `surface_m2`** (`rent` est la valeur canonique DB de la transaction location).
 
-### Gate de sortie P1C.3
+### Univers observé
 
-- uniquement `moderate/strong` examinés comme review candidates ;
-- toutes les métriques restent Shadow ;
-- 0 mutation DB ;
-- 0 consommation runtime publique ;
-- 0 RPC global lourd ;
-- 0 auto-activation ;
-- 0 canary tant que la représentativité n’est pas certifiée ;
-- décision et raisons auditées par scope exact ;
-- passage explicite vers P1C.4 si verdict `HOLD`.
+Le candidat reste statistiquement cohérent :
 
-## P1C.4 — Acquisition Representativeness Qualification ⏭️ NEXT AFTER P1C.3 HOLD
+- **10** observations de surface ;
+- **9** `fresh_confirmed` + **1** `seed_only` ;
+- **3** domaines observés ;
+- concentration : **Mubawab 6 / Mouldar 2 / Marrakech Realty 2** ;
+- toutes les seeds observées proviennent de `serper_search` / bridge public-index OpenSERP ;
+- plusieurs observations reposent sur des snippets de découverte, ce qui ne constitue pas une preuve d’exhaustivité source.
 
-Objectif : certifier **localement**, et non nationalement, si l’échantillon d’annonces observé est assez représentatif pour autoriser un canary public sur un scope précis.
+L’univers d’acquisition indépendant disponible au niveau Marrakech-location montre :
 
-Le lot devra notamment définir et prouver :
+- **1 200** discovery candidate rows ;
+- **129** requêtes distinctes ;
+- **48** domaines distincts ;
+- **1** provider de cette campagne : `serper_mass_harvest` ;
+- profondeur maximale observée : rang **10** ;
+- **111** requêtes atteignent le rang 10, ce qui prouve une profondeur de résultat moteur mais pas une profondeur d’inventaire du portail ;
+- **8** requêtes excluent explicitement Avito + Mubawab + Sarouty + Agenz ;
+- **0** requête d’acquisition explicitement scopée Guéliz × location ;
+- **0** partner feed actif ;
+- **0** run Common Crawl/public-index enregistré dans `odm_10c4_public_index_runs`.
 
-- le périmètre d’acquisition réellement couvert pour le quartier/transaction ;
-- les sources attendues vs réellement observées ;
-- la fraîcheur et la profondeur par source ;
-- les biais de collecte connus ;
-- le dénominateur utilisé pour parler de couverture ;
-- une certification versionnée et révocable ;
-- aucune extrapolation nationale à partir d’un scope local.
+### Dénominateur
 
-**On ne doit pas attendre une couverture nationale parfaite.** Un scope local peut devenir canary dès que sa chaîne Geo + Reliability + Representativeness est certifiée.
+Le dénominateur requis doit être **indépendant**, versionné et exact-scope. Les 3 sources observées ne peuvent pas devenir le dénominateur par définition, et les 1 200 résultats Marrakech-ville ne peuvent pas être transformés en univers Guéliz.
 
-Après P1C.4 :
+À l’état production audité, il n’existe donc pas de preuve permettant d’établir :
 
-- si aucun scope n’est certifié → Offre publique reste OFF et enrichissement DATA ciblé ;
-- si un scope est certifié → lot séparé de **Canary Write/Activation**, puis observation et rollback avant ON.
+- les sources réellement attendues sur Guéliz × location ;
+- la complétude par source ;
+- la profondeur d’inventaire par source ;
+- une couverture calculable contre un univers indépendant ;
+- la réconciliation OpenSERP / sitemap / Common Crawl / partner feed sur ce scope ;
+- l’absence de trous matériels liés aux permissions, à la fraîcheur ou aux canaux non acquis.
+
+Les contraintes `source_policy_registry` renforcent le caractère fail-closed : l’existence technique d’une source ou sa découvrabilité publique ne vaut pas autorisation ni acquisition représentative.
+
+### Certification P1C.4
+
+Policy versionnée : `p1c4-acquisition-representativeness-policy-v1`.
+
+Statuts possibles :
+
+- `CERTIFIED` — dénominateur indépendant exact-scope + univers versionné + canaux réconciliés + profondeur/fraîcheur par source prouvées + aucun trou critique ;
+- `INSUFFICIENT` — dénominateur indépendant valide, mais preuves de profondeur/fraîcheur/complétude encore incomplètes ;
+- `NOT_CERTIFIABLE` — dénominateur absent, circulaire, non exact-scope ou canaux non réconciliables.
+
+Verdict actuel : **`P1C4_REPRESENTATIVENESS_NOT_CERTIFIABLE`**.
+
+Raisons principales :
+
+- `EXACT_NEIGHBORHOOD_DENOMINATOR_ABSENT` ;
+- `OBSERVED_SOURCE_SET_CANNOT_DEFINE_DENOMINATOR` ;
+- `CITY_LEVEL_DISCOVERY_CANNOT_PROVE_GUELIZ_COMPLETENESS` ;
+- `RESULT_RANK_DEPTH_IS_SEARCH_ENGINE_DEPTH_NOT_SOURCE_INVENTORY_DEPTH` ;
+- `ACQUISITION_CHANNELS_NOT_RECONCILED_AT_EXACT_SCOPE` ;
+- `KNOWN_POLICY_CONSTRAINTS_PREVENT_TREATING_DISCOVERABLE_MARKET_AS_ACQUIRED_MARKET`.
+
+**P1C.5 n’est pas ouvert.** Offre publique, metric layer et canary restent OFF.
+
+---
+
+## P1C.4A — Acquisition Source Universe & Denominator Design 🔵 CURRENT
+
+Objectif : construire le premier dénominateur d’acquisition **indépendant, versionné, exact-scope et révocable** pour Guéliz × location, sans modifier la policy DATA ni contourner les autorisations.
+
+Le design doit au minimum fournir :
+
+- une liste versionnée des sources attendues avec justification d’inclusion/exclusion indépendante des 3 sources déjà observées ;
+- le canal autorisé/observable par source : public index, sitemap, Common Crawl, partner feed ou autre canal explicitement admissible ;
+- la profondeur/completion evidence par source, distincte du simple rang d’un moteur de recherche ;
+- la fraîcheur et la date d’observation par source ;
+- la capacité ou non d’identifier Guéliz × location dans chaque source ;
+- les trous connus : permission, accès, pagination, couverture, géographie, duplication, fraîcheur ;
+- une méthode de couverture dont le numérateur ne peut être évalué qu’après fixation du dénominateur ;
+- une version/date et une règle de révocation.
+
+Si l’obtention de cette preuve exige de nouvelles acquisitions ou écritures, elles devront être exécutées dans un **lot DATA séparé** avec leurs propres gates. P1C.4A ne doit pas écraser cette lane.
+
+Gate de sortie : une fois le dénominateur réellement défini et prouvé, repasser une qualification de représentativité read-only. **Aucun P1C.5 avant certification.**
 
 ---
 
@@ -253,11 +303,17 @@ P1C.1   Offre quartier Shadow                           ✅
    ↓
 P1C.2   Reliability Engine                              ✅
    ↓
-P1C.3   Activation Review                               🟠 CURRENT
+P1C.3   Activation Review                               ✅ CLOSED
    ↓
-P1C.4   Acquisition Representativeness Qualification    ⏭️ NEXT
+P1C.4   Acquisition Representativeness Qualification    ✅ CLOSED — NOT_CERTIFIABLE
    ↓
-P1C.x   Scoped Canary Write / Observation / ON          si certifié
+P1C.4A  Acquisition Source Universe & Denominator Design 🔵 CURRENT
+   ↓
+P1C.5   Scoped Canary Activation Write                  ⛔ BLOCKED jusqu’à certification
+   ↓
+P1C.6   Canary Observation                              après canary
+   ↓
+P1C.7   Scoped ON                                       après observation réussie
    ↓
 P2      Carte immobilière interactive
    ↓
@@ -274,4 +330,4 @@ CARTE AKARFINDER CERTIFIÉE
 
 Nous ne devons **pas attendre une couverture nationale parfaite** pour progresser. En revanche, chaque métrique publique future doit passer ses propres gates de **Geo truth → Reliability → Representativeness → Activation**.
 
-Une conclusion `insufficient` ou `HOLD` n’est pas un échec : c’est la protection contre la fausse précision. Aucun segment non certifié ne doit être présenté comme vérité de marché, et aucun arrondissement administratif ne doit être présenté comme polygon de quartier immobilier sans preuve territoriale explicite.
+Une conclusion `insufficient`, `HOLD` ou `NOT_CERTIFIABLE` n’est pas un échec : c’est la protection contre la fausse précision. Aucun segment non certifié ne doit être présenté comme vérité de marché, et aucun arrondissement administratif ne doit être présenté comme polygon de quartier immobilier sans preuve territoriale explicite.
