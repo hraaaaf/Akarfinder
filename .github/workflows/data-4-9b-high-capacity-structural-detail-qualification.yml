@@ -1,0 +1,116 @@
+name: DATA-4.9B High-Capacity Structural Detail Qualification
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data4/high-capacity-structural-detail-qualification.ts"
+      - "scripts/data4/__tests__/data-4-9b-high-capacity-structural-detail-qualification.test.ts"
+      - "scripts/audits/data-4-9b-high-capacity-structural-detail-qualification.ts"
+      - ".github/workflows/data-4-9b-high-capacity-structural-detail-qualification.yml"
+      - ".github/workflows/data-4-9b-closeout-docs.yml"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+  push:
+    branches:
+      - data/data-4-9b-high-capacity-structural-detail-qualification
+    paths:
+      - "scripts/data4/high-capacity-structural-detail-qualification.ts"
+      - "scripts/data4/__tests__/data-4-9b-high-capacity-structural-detail-qualification.test.ts"
+      - "scripts/audits/data-4-9b-high-capacity-structural-detail-qualification.ts"
+      - ".github/workflows/data-4-9b-high-capacity-structural-detail-qualification.yml"
+      - ".github/workflows/data-4-9b-closeout-docs.yml"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: DATA-4.9B focused contracts
+        run: npx tsx --test scripts/data4/__tests__/data-4-9b-high-capacity-structural-detail-qualification.test.ts
+      - name: DATA-4.9A helper regression
+        run: npx tsx --test scripts/data4/__tests__/data-4-9a-mass-source-onboarding-qualification.test.ts
+      - name: Static no-write / no-detail-fetch boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -E 'method:.*(POST|PATCH|PUT|DELETE)' scripts/audits/data-4-9b-high-capacity-structural-detail-qualification.ts
+          ! grep -E '\b(fetchDetail|fetchListingDetail|readDetailPage|crawlDetailPage)\b' scripts/data4/high-capacity-structural-detail-qualification.ts scripts/audits/data-4-9b-high-capacity-structural-detail-qualification.ts
+          grep -F 'structuralDetailCandidateRowsAreUrlRepresentationsNotUniqueProperties: true' scripts/audits/data-4-9b-high-capacity-structural-detail-qualification.ts
+          grep -F 'deduplicatedUniquePropertyCountProducedByThisLot: false' scripts/audits/data-4-9b-high-capacity-structural-detail-qualification.ts
+          grep -F 'structureRulesAuthorizationAuthority: false' scripts/audits/data-4-9b-high-capacity-structural-detail-qualification.ts
+          grep -F 'publicDisplayAuthorizedByThisLot: false' scripts/audits/data-4-9b-high-capacity-structural-detail-qualification.ts
+          grep -F 'ingestionAuthorizedByThisLot: false' scripts/audits/data-4-9b-high-capacity-structural-detail-qualification.ts
+          grep -F 'policyMutationAuthorizedByThisLot: false' scripts/audits/data-4-9b-high-capacity-structural-detail-qualification.ts
+          grep -F 'REJECT_IDENTITY_COLLISION' scripts/data4/high-capacity-structural-detail-qualification.ts
+          grep -F 'REJECT_NAMESPACE_ROOT' scripts/data4/high-capacity-structural-detail-qualification.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+  live-qualification:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_4_9B_OUT_DIR: .tmp/data-4-9b/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run DATA-4.9B live read-only structural qualification
+        run: npx tsx scripts/audits/data-4-9b-high-capacity-structural-detail-qualification.ts
+      - name: Enforce structural proof contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_4_9B_OUT_DIR}/proof.json"
+          test -s "${DATA_4_9B_OUT_DIR}/candidate-manifest.json"
+          test -s "${DATA_4_9B_OUT_DIR}/reject-manifest.json"
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-4-9b/results/proof.json', 'utf8'));
+          const c = JSON.parse(fs.readFileSync('.tmp/data-4-9b/results/candidate-manifest.json', 'utf8'));
+          const r = JSON.parse(fs.readFileSync('.tmp/data-4-9b/results/reject-manifest.json', 'utf8'));
+          if (p.schemaVersion !== 'data-4-9b-high-capacity-structural-detail-qualification-v1' || p.lot !== 'DATA-4.9B' || p.mode !== 'READ_ONLY_STRUCTURAL_DETAIL_QUALIFICATION') throw new Error(JSON.stringify(p));
+          if (p.sourceCount !== 6 || p.criticalSourceCount !== 5) throw new Error('wrong 4.9B source cohort');
+          if (!Array.isArray(p.optionalNonBlockingSources) || p.optionalNonBlockingSources.length !== 1 || p.optionalNonBlockingSources[0] !== 'capital-properties.ma') throw new Error('Capital must be the only optional non-blocking source');
+          if (p.qualifiedCriticalSourceCount < 3) throw new Error('insufficient critical-source live evidence');
+          if (p.summary.structuralDetailCandidateRows !== c.length || p.summary.rejectedIdentityRows !== r.length || p.summary.netNewIdentityRows !== c.length + r.length) throw new Error('manifest accounting mismatch');
+          if (c.some(x => x.classification !== 'DETAIL_PATTERN_MATCH')) throw new Error('candidate manifest contains non-detail classification');
+          if (r.some(x => x.classification === 'DETAIL_PATTERN_MATCH')) throw new Error('reject manifest contains detail candidate');
+          if (p.truthBoundary?.structuralDetailCandidateRowsAreUrlRepresentationsNotUniqueProperties !== true || p.truthBoundary?.deduplicatedUniquePropertyCountProducedByThisLot !== false) throw new Error('URL-representation truth boundary violated');
+          if (p.truthBoundary?.structuralPatternMatchIsNotPublicAuthorization !== true || p.truthBoundary?.structureRulesAuthorizationAuthority !== false || p.truthBoundary?.robotsOrSitemapIsNotPermission !== true) throw new Error('truth boundary violated');
+          if (p.truthBoundary?.publicDisplayAuthorizedByThisLot !== false || p.truthBoundary?.ingestionAuthorizedByThisLot !== false || p.truthBoundary?.policyMutationAuthorizedByThisLot !== false) throw new Error('authorization boundary violated');
+          if (p.databaseWrites !== 0 || p.registryWrites !== 0 || p.policyChanges !== 0 || p.ingestionActivations !== 0 || p.publicDisplayActivations !== 0 || p.detailPageFetches !== 0) throw new Error('mutation boundary violated');
+          for (const row of p.results) {
+            if (row.registry.publicDisplayAuthorizedByThisLot !== false || row.registry.ingestionAuthorizedByThisLot !== false || row.registry.policyMutationAuthorizedByThisLot !== false) throw new Error('source authorization fabricated');
+            if (row.structure.authorizationAuthority !== false) throw new Error('structure rules became authorization authority');
+            if (row.currentSourceEvidence.detailPageFetches !== 0 || row.currentSourceEvidence.sourceRequests > 40) throw new Error('source request boundary violated');
+            if (row.status === 'QUALIFIED_STRUCTURAL' && row.identity.netNewIdentityRows !== row.identity.structuralDetailCandidateRows + row.identity.rejectedIdentityRows) throw new Error('source identity accounting mismatch');
+          }
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: data-4-9b-high-capacity-structural-detail-qualification
+          path: .tmp/data-4-9b/results/
+          if-no-files-found: error
+          retention-days: 14
