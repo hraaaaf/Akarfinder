@@ -1,0 +1,70 @@
+{
+  "schema_version": "p1c4-acquisition-representativeness-policy-v1",
+  "scope": {
+    "city_slug": "marrakech",
+    "neighborhood_slug": "gueliz",
+    "transaction_type": "rent",
+    "metric_name": "surface_m2"
+  },
+  "qualification_states": [
+    "CERTIFIED",
+    "INSUFFICIENT",
+    "NOT_CERTIFIABLE"
+  ],
+  "verdict_codes": {
+    "CERTIFIED": "P1C4_REPRESENTATIVENESS_CERTIFIED",
+    "INSUFFICIENT": "P1C4_REPRESENTATIVENESS_INSUFFICIENT",
+    "NOT_CERTIFIABLE": "P1C4_REPRESENTATIVENESS_NOT_CERTIFIABLE"
+  },
+  "principles": {
+    "p1c4_is_read_only": true,
+    "observed_sources_never_define_the_denominator": true,
+    "independent_acquisition_evidence_is_required": true,
+    "reliability_is_not_market_representativeness": true,
+    "discovery_candidate_counts_are_diagnostic_not_a_certified_denominator": true,
+    "source_registry_policy_is_not_market_share": true,
+    "robots_sitemap_or_public_access_are_not_reuse_permission": true,
+    "no_unversioned_numeric_thresholds": true,
+    "known_biases_must_be_explicit": true,
+    "certification_is_scope_exact_and_revocable": true,
+    "public_activation_requires_a_separate_write_lot": true,
+    "national_extrapolation_is_forbidden": true
+  },
+  "certification_design_requirements": {
+    "exact_scope_source_universe_manifest": true,
+    "versioned_query_universe": true,
+    "per_source_depth_contract": true,
+    "source_inclusion_exclusion_reasons": true,
+    "freshness_contract": true,
+    "duplicate_handling_contract": true,
+    "known_holes_register": true,
+    "source_policy_snapshot": true,
+    "exact_scope_geo_semantics_review": true,
+    "live_discovery_reconciliation": true
+  },
+  "required_design_artifacts": {
+    "source_universe_manifest": "data/market/p1c4a-gueliz-rent-source-universe-v1.json",
+    "query_universe_manifest": "data/market/p1c4a-gueliz-rent-query-universe-v1.json",
+    "source_depth_contract": "data/market/p1c4a-gueliz-rent-source-depth-contract-v1.json",
+    "known_holes_register": "data/market/p1c4a-gueliz-rent-known-holes-v1.json"
+  },
+  "evidence_dimensions": [
+    "source_concentration",
+    "discovery_channel_concentration",
+    "freshness_skew",
+    "pagination_or_depth_gap",
+    "portal_coverage_gap",
+    "duplicate_pressure",
+    "seed_only_share",
+    "policy_or_authorization_mix",
+    "proximity_language_scope_contamination",
+    "unregistered_candidate_sources"
+  ],
+  "current_expected_outcome": {
+    "classification": "NOT_CERTIFIABLE",
+    "verdict": "P1C4_REPRESENTATIVENESS_NOT_CERTIFIABLE",
+    "market_representativeness_certified": false,
+    "public_activation": false,
+    "next_boundary": "P1C.4A Acquisition Source Universe & Denominator Design"
+  }
+}
