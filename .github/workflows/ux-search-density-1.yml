@@ -1,0 +1,116 @@
+name: UX-SEARCH-1 Density First Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/search/page.tsx"
+      - "app/search/search-density.css"
+      - "components/search/**"
+      - "scripts/audits/ux-search-density-1-visual.mjs"
+      - ".github/workflows/ux-search-density-1.yml"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start > /tmp/ux-search-density-1-reviewer.log 2>&1 &
+          for i in {1..60}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ux-search-density-1-reviewer.log
+          exit 1
+      - name: Assert density and capture five viewports
+        run: node scripts/audits/ux-search-density-1-visual.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-search-density-1-product-design-proof
+          path: |
+            data/audits/ux-search-density-1
+            /tmp/ux-search-density-1-reviewer.log
+          retention-days: 14
+          if-no-files-found: error
+
+  release-certifier:
+    name: Independent Release Certifier
+    needs: product-design-reviewer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start independent production server
+        shell: bash
+        run: |
+          npm run start > /tmp/ux-search-density-1-certifier.log 2>&1 &
+          for i in {1..60}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ux-search-density-1-certifier.log
+          exit 1
+      - name: Independently replay density certification
+        run: node scripts/audits/ux-search-density-1-visual.mjs
+      - name: Certify metrics contract
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const proof = JSON.parse(fs.readFileSync('data/audits/ux-search-density-1/metrics.json','utf8'));
+          if (proof.failure) throw new Error(proof.failure);
+          const byName = new Map(proof.results.map((x) => [x.name, x]));
+          const required = new Map([
+            ['mobile-390x844', 2],
+            ['tablet-768x900', 2],
+            ['desktop-1024x800', 3],
+            ['desktop-1280x800', 4],
+            ['desktop-1440x900', 4],
+          ]);
+          for (const [name, columns] of required) {
+            const result = byName.get(name);
+            if (!result) throw new Error(`missing ${name}`);
+            if (result.column_count !== columns || result.first_row_count !== columns) throw new Error(`${name}: density mismatch`);
+            if (result.horizontal_overflow) throw new Error(`${name}: overflow`);
+          }
+          for (const name of ['desktop-1280x800','desktop-1440x900']) {
+            if (!byName.get(name).second_row_visible) throw new Error(`${name}: second row not visible`);
+          }
+          console.log('UX-SEARCH-1 RELEASE CERTIFIER: PASS');
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-search-density-1-release-certifier-proof
+          path: |
+            data/audits/ux-search-density-1
+            /tmp/ux-search-density-1-certifier.log
+          retention-days: 14
+          if-no-files-found: error

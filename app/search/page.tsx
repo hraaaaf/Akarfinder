@@ -23,6 +23,7 @@ import {
 import { buildSearchStableKey } from "@/lib/search/search-request-query";
 import { searchPublicRepresentationsWithOwner } from "@/lib/search-gateway/public-search-with-owner";
 import type { ListingFiltersState } from "@/lib/listings/types";
+import "./search-density.css";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;

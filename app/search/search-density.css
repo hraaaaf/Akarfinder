@@ -1,0 +1,80 @@
+/* UX-SEARCH-1 — Density First
+ * Scope: search result density only. Keep ranking, data, filters and map behavior intact.
+ * Closeout docs are committed; this comment creates the final user-authored exact-head certification run.
+ */
+
+/* Two-column scan is intentional on phones. */
+[data-search-continuous-flow] > div.grid,
+[data-search-external-mobile-grid] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 0.75rem;
+  row-gap: 1rem;
+}
+
+/* Keep split view readable while preserving its map pane. */
+@media (min-width: 1024px) {
+  [data-search-view-layout="split"] [data-search-continuous-flow] > div.grid,
+  [data-search-view-layout="split"] [data-search-external-mobile-grid] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.875rem;
+  }
+}
+
+/* List mode is the high-density browsing surface. */
+@media (min-width: 900px) and (max-width: 1279px) {
+  [data-search-view-layout="list"] [data-search-continuous-flow] > div.grid,
+  [data-search-view-layout="list"] [data-search-external-mobile-grid] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.875rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  [data-search-view-layout="list"] [data-search-continuous-flow] > div.grid,
+  [data-search-view-layout="list"] [data-search-external-mobile-grid] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.875rem;
+  }
+}
+
+/* Compact list cards from desktop-intermediate upward without removing
+ * price, title, location, facts, freshness, source or trust information.
+ * The large redundant CTA disappears in dense list mode because image/title
+ * remain direct result links; split view keeps the original card treatment.
+ */
+@media (min-width: 900px) {
+  [data-search-view-layout="list"] [data-mobile-compact-card] > a:first-of-type > div,
+  [data-search-view-layout="list"] [data-mobile-compact-external-card] > div:first-child {
+    height: 9.75rem;
+  }
+
+  [data-search-view-layout="list"] [data-mobile-compact-card] > div,
+  [data-search-view-layout="list"] [data-mobile-compact-external-card] > div:last-child {
+    padding: 0.75rem;
+  }
+
+  [data-search-view-layout="list"] [data-mobile-compact-card] [data-mobile-price],
+  [data-search-view-layout="list"] [data-mobile-compact-external-card] [data-mobile-price] {
+    font-size: 1.12rem;
+    line-height: 1.08;
+  }
+
+  [data-search-view-layout="list"] [data-mobile-compact-card] [data-card-primary-action] {
+    display: none;
+  }
+
+  [data-search-view-layout="list"] [data-mobile-compact-card],
+  [data-search-view-layout="list"] [data-mobile-compact-external-card] {
+    border-radius: 1rem;
+  }
+
+  [data-search-view-layout="list"] [data-mobile-compact-card] h2 {
+    font-size: 0.9rem;
+    line-height: 1.25;
+  }
+
+  [data-search-view-layout="list"] [data-mobile-compact-card] > div > a,
+  [data-search-view-layout="list"] [data-mobile-compact-card] > div > div {
+    margin-top: 0.5rem;
+  }
+}
