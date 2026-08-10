@@ -1,6 +1,9 @@
 -- MASS-FIRST-4 — Public Search Power Ranking
 -- Preserve query/filter/cursor contract. Source policy is fail-closed and
--- Listing Power becomes the dominant non-text ranking signal.
+-- channel-aware. Listing Power is the dominant non-text ranking signal.
+-- canonical_link_only rows are deliberately redacted at the RPC boundary:
+-- Search may expose the canonical link plus structural dimensions, never source
+-- snippet/price/surface content that the Registry has not authorized for reuse.
 
 create or replace function public.search_public_representations_v1(
   p_query text default null,
@@ -28,6 +31,7 @@ returns table(
 )
 language plpgsql
 stable
+security invoker
 set search_path = ''
 as $function$
 #variable_conflict use_column
@@ -45,35 +49,54 @@ begin
   ), queries as (
     select p.*, case when p.q is null then null else websearch_to_tsquery('simple', p.q) end as q_ts
     from params p
+  ), eligible as (
+    select
+      d.*,
+      public.mass_first_source_public_mode_v1(d.source_domain,d.seed_provider) as public_mode
+    from public.thin_index_search_documents d
+    where d.document_kind = 'LISTING'
+      and d.vertical_classification = 'real_estate_likely'
+      and d.display_eligibility in ('eligible_primary','eligible_secondary')
+      and d.seed_provider in ('public_sitemap','commoncrawl_cdx','serper_search')
+      and d.freshness_status in ('seed_only','fresh_confirmed')
+      and nullif(btrim(d.canonical_url), '') is not null
   ), ranked as (
     select
       d.seed_id as representation_id,
-      d.canonical_url,d.source_domain,d.seed_provider,d.freshness_status,d.title,d.snippet,
-      d.normalized_city,d.normalized_property_type,d.normalized_intent,d.normalized_price_mad,
-      d.normalized_surface_m2,d.price_per_m2_mad,d.quality_tier,d.quality_score,
-      d.display_eligibility,d.display_eligibility_reason,d.ranking_quality_boost,d.updated_at,
-      (case d.display_eligibility when 'eligible_primary' then 0 else 1 end)::smallint as lane_weight,
+      d.canonical_url,
+      d.source_domain,
+      d.seed_provider,
+      d.freshness_status,
+      case when d.public_mode='partner_content' then d.title else null end as title,
+      case when d.public_mode='partner_content' then d.snippet else null end as snippet,
+      d.normalized_city,
+      d.normalized_property_type,
+      d.normalized_intent,
+      case when d.public_mode='partner_content' then d.normalized_price_mad else null end as normalized_price_mad,
+      case when d.public_mode='partner_content' then d.normalized_surface_m2 else null end as normalized_surface_m2,
+      case when d.public_mode='partner_content' then d.price_per_m2_mad else null end as price_per_m2_mad,
+      d.quality_tier,
+      d.quality_score,
+      d.display_eligibility,
+      d.display_eligibility_reason,
+      d.ranking_quality_boost,
+      d.updated_at,
+      (case d.public_mode when 'partner_content' then 0 else 1 end)::smallint as lane_weight,
       (
         (case when q.q_ts is null then 0::real else ts_rank_cd(d.search_vector, q.q_ts, 32) end)
         + (coalesce(d.listing_power_score,0)::real / 100.0::real * 0.75::real)
       )::real as ranking_score
-    from public.thin_index_search_documents d
+    from eligible d
     cross join queries q
-    where d.document_kind = 'LISTING'
-      and d.vertical_classification = 'real_estate_likely'
-      and d.display_eligibility in ('eligible_primary','eligible_secondary')
-      and public.mass_first_source_public_allowed_v1(d.source_domain)
-      and d.seed_provider in ('public_sitemap','commoncrawl_cdx','serper_search')
-      and d.freshness_status in ('seed_only','fresh_confirmed')
-      and nullif(btrim(d.canonical_url), '') is not null
+    where d.public_mode in ('canonical_link_only','partner_content')
       and (q.q_ts is null or d.search_vector @@ q.q_ts)
       and (q.canonical_city is null or d.normalized_city = q.canonical_city)
       and (q.canonical_property_type is null or d.normalized_property_type = q.canonical_property_type)
       and (q.canonical_intent is null or d.normalized_intent = q.canonical_intent)
-      and (p_min_price is null or d.normalized_price_mad >= p_min_price)
-      and (p_max_price is null or d.normalized_price_mad <= p_max_price)
-      and (p_min_surface is null or d.normalized_surface_m2 >= p_min_surface)
-      and (p_max_surface is null or d.normalized_surface_m2 <= p_max_surface)
+      and (p_min_price is null or (d.public_mode='partner_content' and d.normalized_price_mad >= p_min_price))
+      and (p_max_price is null or (d.public_mode='partner_content' and d.normalized_price_mad <= p_max_price))
+      and (p_min_surface is null or (d.public_mode='partner_content' and d.normalized_surface_m2 >= p_min_surface))
+      and (p_max_surface is null or (d.public_mode='partner_content' and d.normalized_surface_m2 <= p_max_surface))
   ), counted as (
     select r.*, count(*) over () as total_count from ranked r
   ), page as (
@@ -95,5 +118,8 @@ begin
 end;
 $function$;
 
+revoke all on function public.search_public_representations_v1(text,text,text,text,numeric,numeric,numeric,numeric,integer,smallint,real,timestamptz,uuid) from public,anon,authenticated;
+grant execute on function public.search_public_representations_v1(text,text,text,text,numeric,numeric,numeric,numeric,integer,smallint,real,timestamptz,uuid) to service_role;
+
 comment on function public.search_public_representations_v1(text,text,text,text,numeric,numeric,numeric,numeric,integer,smallint,real,timestamptz,uuid) is
-  'MASS-FIRST public Search: fail-closed Source Registry gate, structural eligibility, Listing Power dominant ranking signal, stable cursor contract.';
+  'MASS-FIRST public Search: channel-aware Source Registry gate, quality-independent structural eligibility, Listing Power ranking, and RPC-level redaction for canonical-link-only sources.';
