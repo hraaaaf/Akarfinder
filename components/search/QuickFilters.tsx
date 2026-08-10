@@ -97,7 +97,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
               key={tab.value}
               type="button"
               onClick={() => onChange({ ...filters, transactionType: tab.value })}
-              aria-pressed={selected}
+              aria-pressed={filters.transactionType === tab.value}
               className={selected
                 ? "min-h-11 rounded-xl bg-primary px-2 py-2 text-[12px] font-extrabold text-primary-foreground shadow-sm"
                 : "min-h-11 rounded-xl px-2 py-2 text-[12px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground"}
@@ -111,7 +111,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
   );
 
   return (
-    <section data-search-quick-filters aria-label="Filtres de recherche" className="space-y-2">
+    <section aria-label="Filtres de recherche" data-search-quick-filters className="space-y-2">
       <div data-search-primary-filter-row className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 lg:grid-cols-[minmax(320px,1fr)_auto_auto]">
         <label data-search-primary-search className="relative min-w-0" htmlFor="property-search">
           <Search size={18} strokeWidth={2.2} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
@@ -133,7 +133,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
                 key={tab.value}
                 type="button"
                 onClick={() => onChange({ ...filters, transactionType: tab.value })}
-                aria-pressed={selected}
+                aria-pressed={filters.transactionType === tab.value}
                 className={selected
                   ? "min-h-9 rounded-xl bg-primary px-3 py-1.5 text-[12px] font-extrabold text-primary-foreground shadow-sm"
                   : "min-h-9 rounded-xl px-3 py-1.5 text-[12px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground"}
