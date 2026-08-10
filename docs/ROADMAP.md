@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-10**  
-**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -331,7 +331,28 @@ Résultat certifié :
 - artefact `sha256:b80d2539afea1fda4bfc8e515fe94ffe7821aee0d2f71c45e29c844f586ca8f5` ;
 - merge `081d51ebd38ff728366694aca9ae6c1923a54fe5`, post-merge `main` + tree exact vérifiés.
 
-**Prochain lot UX/Search : CONTEXTUAL-ILLUSTRATIONS-SCALE-2.** Étendre les pools aux trois villes encore singleton à plus fort impact restant — **Rabat + Tanger + Fès** — de façon bornée et mesurable. Conserver le resolver déterministe, la disclosure `Illustration`, la priorité des thumbnails autorisées et les fallbacks type/neutre ; laisser tout tier district inactif tant que Search n'expose pas une donnée quartier structurée et certifiée. Aucun changement ranking/commercial priority/eligibility/dedupe/DATA/Registry/Map n'est implicite dans ce lot.
+## CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ CLOSED — PR #453
+
+Responsabilité unique : **étendre les pools contextuels à Rabat + Tanger + Fès sans modifier le resolver ni les décisions métier**.
+
+Résultat certifié :
+
+- **36 variantes SCALE-2** : Rabat, Tanger et Fès = chacune 4 ville + 4 `Appartement` + 4 `Villa` ;
+- **33 nouveaux SVG locaux** ; les trois `city-01` historiques sont conservés ;
+- `Fes` et `Fès` partagent les mêmes pools et IDs/paths ASCII `fes-*` ;
+- resolver HRW/Rendezvous inchangé ; identité stable `original_url` inchangée ;
+- Agadir P1 et SCALE-1 Marrakech/Casablanca rejoués comme predecessors ;
+- `district` / `districtType` restent vides ; aucun signal texte, fuzzy, random ou réseau ;
+- thumbnail autorisée reste prioritaire ; fallbacks type/neutre et disclosure `Illustration` préservés ;
+- **22/22 workflows exact-head SUCCESS** sur `e242960788f57975ae9d107ab04766f14fa29d87` ;
+- Chromium exact-head **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : **36/36 IDs uniques**, lazy-load hydraté, reload stable, 0 clipping/overflow ;
+- audit visuel exact-head **9,3/10**, Reviewer PASS, Release Certifier GO ;
+- artefact `sha256:85659a415e52e28d4258b152fc26ea43dd726d16203e23b3941efb3a6d4ad564` ;
+- merge `07d9fc07fe24a9a176ad8830bd0e6852631ed1a4`, post-merge `main` vérifié.
+
+Les 6 villes contextualisées disposent désormais chacune de **12 variantes = 72 IDs contextuels uniques**.
+
+**Prochain lot UX/Search : CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1.** Audit read-only de la couverture de rendu réelle avant toute nouvelle création d'assets : thumbnail autorisée / `city_type` / `city` / fallback type / neutre, distribution ville/type, répétition effective et demande hors des 6 villes. Aucun nouvel asset ni changement DATA/Registry/ranking/Map ; district reste OFF.
 
 # 4. Lane UX / Carte
 
@@ -522,7 +543,7 @@ Scope respecté, Benchmark Reviewer si UX majeur, Reviewer indépendant PASS, te
 
 ## UX / Search
 
-Exécuter **CONTEXTUAL-ILLUSTRATIONS-SCALE-2** uniquement : étendre les pools contextuels aux villes encore singleton à plus fort impact restant, **Rabat + Tanger + Fès**, sur la fondation #437, le pilote Agadir #445 et SCALE-1 #448. Conserver `Illustration`, la priorité des thumbnails autorisées, les fallbacks type/neutre et l'absence totale de district tant qu'aucun signal quartier structuré certifié n'est disponible. Aucun changement ranking, priorité commerciale, éligibilité, dedupe, DATA, Source Registry ou Map. Rejouer le Benchmark UX/Search Reviewer et le protocole Chromium multi-viewport avec hydratation explicite des images hors écran ; score UX cible ≥ **9/10**.
+Exécuter **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1** uniquement : audit read-only de la couverture réelle des fallbacks visuels Search après #453. Mesurer par ville/type la part thumbnail autorisée, `city_type`, `city`, fallback type et neutre ; mesurer la répétition effective et les villes hors allowlist qui justifieraient un futur asset lot. **0 nouvel asset, 0 DATA/Registry/ranking/eligibility/dedupe/Map, district OFF.** Le prochain build visuel doit être décidé depuis ces preuves, pas par intuition.
 
 ## UX / Carte
 

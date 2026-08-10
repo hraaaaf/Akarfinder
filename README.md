@@ -195,7 +195,15 @@ Extension bornée du système P0/P1 aux deux villes à plus fort impact restant 
 
 Certification : head final `3a4df096c16cf1fe1f9c051dfd24f59bd750b5a4`, **21/21 workflows exact-head verts**, specialized SCALE-1 + Agadir P1 + P0 + Unified Card + Search Truth PASS, TypeScript + build PASS. Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : **24/24 asset IDs uniques**, images hors écran explicitement hydratées (`complete && naturalWidth > 0`) avant capture, reload stable, 0 label/prix tronqué et 0 overflow. Audit UX **9,3/10**, Reviewer PASS, Release Certifier GO. Artefact `sha256:b80d2539afea1fda4bfc8e515fe94ffe7821aee0d2f71c45e29c844f586ca8f5`. Merge `081d51ebd38ff728366694aca9ae6c1923a54fe5`, post-merge `main` + tree exact vérifiés.
 
-Prochain lot UX/Search : **CONTEXTUAL-ILLUSTRATIONS-SCALE-2** — étendre de façon bornée les pools aux villes encore singleton à plus fort impact restant (**Rabat + Tanger + Fès**), en conservant le même resolver déterministe/truth-safe, `Illustration`, les fallbacks existants et district OFF. Aucun changement ranking, priorité commerciale, éligibilité, dedupe, DATA, Registry ou Map n'est implicite.
+### CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453
+
+Extension finale du scale par ville aux trois villes encore singleton : **Rabat + Tanger + Fès**. Chaque ville dispose désormais de **4 variantes ville + 4 Appartement + 4 Villa**, soit **36 variantes SCALE-2** et **33 nouveaux SVG locaux**. Les clés structurées `Fes` / `Fès` partagent exactement les mêmes pools et les mêmes IDs/paths ASCII `fes-*`. Le resolver HRW/Rendezvous, l'identité stable `original_url`, la priorité des thumbnails autorisées, les fallbacks type/neutre, le label `Illustration` et district OFF restent inchangés.
+
+Certification : head final `e242960788f57975ae9d107ab04766f14fa29d87`, **22/22 workflows exact-head SUCCESS**, specialized SCALE-2 + SCALE-1 + Agadir P1 + P0 + Unified Card + Search Truth PASS, TypeScript + build PASS. Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900** : **36/36 asset IDs uniques**, lazy images hydratées avant capture, reload stable, 0 label/prix tronqué et 0 overflow. Audit UX exact-head **9,3/10**, Reviewer PASS, Release Certifier GO. Artefact `sha256:85659a415e52e28d4258b152fc26ea43dd726d16203e23b3941efb3a6d4ad564`. Merge `07d9fc07fe24a9a176ad8830bd0e6852631ed1a4`, post-merge `main` vérifié.
+
+Les **6 villes contextualisées** (Agadir, Marrakech, Casablanca, Rabat, Tanger, Fès) disposent désormais chacune de **12 variantes**, soit **72 IDs contextuels uniques**. Aucune nouvelle extension d'assets par ville ne doit être lancée sans mesure d'usage réelle.
+
+Prochain lot UX/Search : **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1** — audit read-only de la couverture réellement rendue dans Search : thumbnail autorisée vs `city_type` vs `city` vs fallback type vs neutre, distribution ville/type, répétition effective et demande hors des 6 villes. **0 nouvel asset / 0 DATA / 0 Registry / 0 ranking / 0 Map / district OFF**. Le prochain lot de création visuelle devra être décidé uniquement depuis cette preuve.
 
 ### DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416
 

@@ -24,12 +24,15 @@ Ensuite **DATA-4.9D** pourra concevoir un canary d'ingestion borné uniquement p
 
 ## Vérité canonique après merges parallèles
 
-- Base documentaire utilisée pour ce closeout UX/Search : `aeb29a76c225bda24e65c8b262007b9348be3f36` — `main` après DATA-4.9A puis P1B.12 Carte. P1B.12 n'a modifié aucun des 3 MD canoniques ; ses 4 fichiers Carte sont conservés. Le `main` contient déjà le merge `CONTEXTUAL-ILLUSTRATIONS-SCALE-1` PR #448 (`081d51ebd38ff728366694aca9ae6c1923a54fe5`). Les blocs DATA/Carte de cette base sont conservés ; le closeout UX/Search n'en change aucune décision.
+- Base documentaire utilisée pour ce closeout UX/Search : `07d9fc07fe24a9a176ad8830bd0e6852631ed1a4` — `main` après DATA-4.9B et merge `CONTEXTUAL-ILLUSTRATIONS-SCALE-2` PR #453. Les blocs DATA/Carte de cette base sont conservés ; le closeout UX/Search n'en change aucune décision.
 - `CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1` ✅ : PR #437, exact-head `36620ca20e826be46464ab177e9611fb01f94a16`, **27/27 workflows exact-head verts**, specialized gate PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, audit visuel **9,6/10**, Reviewer PASS, Release Certifier GO, merge `66ee5a9263fbdef673c4f16f6066aa10c7cf0417`.
 - `CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1` ✅ : PR #445, exact-head `f6b1d15e92636439dfca8128e54892fbf32b95a6`, **20/20 workflows exact-head verts**, specialized P1 + predecessor P0 PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, **12/12 variantes Agadir uniques**, reload stable, 0 label/prix tronqué, 0 overflow, audit visuel **9,4/10**, Reviewer PASS, Release Certifier GO, merge `a2e92ac6c4385792744ab7bf3e105663d040bc9d`.
 - `CONTEXTUAL-ILLUSTRATIONS-SCALE-1` ✅ : PR #448, exact-head final `3a4df096c16cf1fe1f9c051dfd24f59bd750b5a4`, **21/21 workflows exact-head verts**, specialized SCALE + Agadir P1 + P0 PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, **24/24 variantes Marrakech + Casablanca uniques**, lazy images explicitement hydratées avant capture, reload stable, 0 label/prix tronqué, 0 overflow, audit visuel **9,3/10**, Reviewer PASS, Release Certifier GO, merge `081d51ebd38ff728366694aca9ae6c1923a54fe5`.
 - Artefact SCALE-1 #448 : `sha256:b80d2539afea1fda4bfc8e515fe94ffe7821aee0d2f71c45e29c844f586ca8f5`.
-- Prochain LOT UX/Search : **CONTEXTUAL-ILLUSTRATIONS-SCALE-2** — étendre prudemment les pools aux villes encore singleton à plus fort impact restant, **Rabat + Tanger + Fès**, sur le même resolver déterministe et truth-safe ; district toujours inactif tant qu'aucun signal structuré certifié n'est disponible.
+- `CONTEXTUAL-ILLUSTRATIONS-SCALE-2` ✅ : PR #453, exact-head `e242960788f57975ae9d107ab04766f14fa29d87`, **22/22 workflows exact-head SUCCESS**, specialized SCALE-2 + SCALE-1 + Agadir P1 + P0 PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, **36/36 variantes Rabat + Tanger + Fès uniques**, Fes/Fès alias-safe, lazy-load hydraté, reload stable, 0 clipping/overflow, audit visuel **9,3/10**, Reviewer PASS, Release Certifier GO, merge `07d9fc07fe24a9a176ad8830bd0e6852631ed1a4`.
+- Artefact SCALE-2 #453 : `sha256:85659a415e52e28d4258b152fc26ea43dd726d16203e23b3941efb3a6d4ad564`.
+- Les 6 villes contextualisées disposent désormais de **12 variantes chacune = 72 IDs contextuels uniques**.
+- Prochain LOT UX/Search : **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1**, read-only ; mesurer couverture/répétition réelle avant tout nouvel asset. District reste OFF.
 - Ce closeout UX/Search ne modifie aucune décision DATA/Carte ; les sections DATA/Carte ci-dessous restent la propriété de leur lane.
 
 ## Main / LOT actif
@@ -88,22 +91,23 @@ LSF après write : **1 414 total / 349 fresh-confirmed / 1 065 seed-only / 250 p
 
 Après merge/closeout de #435 : **DATA-4.7C — Residual Reservoir Requalification**, read-only. Revalider le résiduel LSF (103 candidates seulement dans la preuve pré-write, donc chiffre à recalculer) et le comparer au prochain réservoir admissible, Aykana en premier candidat. Aucun second write automatique.
 
-## UX/Search — illustrations contextuelles SCALE-1 certifiées ✅
+## UX/Search — illustrations contextuelles SCALE-2 certifiées ✅
 
-- P0 #437 pose le catalogue local explicite et le resolver pur/fail-closed ; P1 #445 prouve le multi-assets Agadir ; SCALE-1 #448 étend exactement la même mécanique à Marrakech et Casablanca.
-- Pool actif certifié : **Agadir 12 variantes + Marrakech 12 + Casablanca 12**, soit 36 variantes contextuelles sur ces trois villes, sans modifier le resolver.
-- Pour Marrakech et Casablanca : **4 variantes ville + 4 Appartement + 4 Villa** ; `Appartement` et `Villa` utilisent `city_type`, les autres types reconnus retombent sur `city`.
-- Rabat, Tanger et Fès restent volontairement singleton dans SCALE-1 et constituent la cohorte bornée proposée pour SCALE-2.
+- P0 #437 pose le resolver déterministe ; P1 #445 apporte Agadir ; SCALE-1 #448 Marrakech/Casablanca ; SCALE-2 #453 Rabat/Tanger/Fès.
+- Pool certifié total : **6 villes × 12 variantes = 72 IDs contextuels uniques**.
+- Par ville : **4 variantes ville + 4 Appartement + 4 Villa** ; `Appartement` / `Villa` utilisent `city_type`, les autres types reconnus retombent sur `city`.
+- `Fes` / `Fès` partagent exactement le même pool `fes-*` ; aucun doublon sémantique ajouté.
 - Priorité inchangée : thumbnail autorisée → illustration contextuelle → artwork type reconnu → fallback neutre.
 - Sélection multi-assets : Rendezvous/HRW, déterministe, indépendante de l'ordre des candidats et stable au reload.
 - Identité stable : `original_url` normalisée conservativement ; tracking/fragment/trailing slash/ordre de query ne remappent pas.
-- Le district reste volontairement inactif tant que Search n'expose pas un signal structuré certifié.
+- District toujours inactif tant que Search n'expose pas un signal structuré certifié.
 - Disclosure publique uniforme : `Illustration`; aucun visuel n'est présenté comme une photo réelle de l'annonce.
-- Certification SCALE-1 : **24/24 asset IDs Marrakech/Casa atteignables et distincts**, **21/21 workflows**, 5 viewports Chromium, lazy-load réellement hydraté avant capture, 0 clipping/overflow, UX **9,3/10**.
+- Certification SCALE-2 : **36/36 IDs Rabat/Tanger/Fès**, **22/22 workflows**, 5 viewports Chromium, lazy-load hydraté, 0 clipping/overflow, UX **9,3/10**.
+- Prochaine décision : **coverage audit read-only**, pas de nouveau pack d'assets par intuition.
 
 ## Autres lanes
 
-- UX/Search : `CONTEXTUAL-ILLUSTRATIONS-SCALE-1` ✅ #448 ; prochain LOT = **CONTEXTUAL-ILLUSTRATIONS-SCALE-2** sur Rabat + Tanger + Fès ; Search reste canonique.
+- UX/Search : `CONTEXTUAL-ILLUSTRATIONS-SCALE-2` ✅ #453 ; prochain LOT = **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1** read-only ; Search reste canonique.
 - UX/Carte : P1B.12 est présent sur `main`; les prochaines décisions Carte restent dans sa lane ; Offre quartier reste gouvernée par ses gates propres.
 
 ## Invariants
