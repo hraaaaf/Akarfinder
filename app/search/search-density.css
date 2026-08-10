@@ -1,0 +1,65 @@
+/* UX-SEARCH-1 — Density First
+ * Scope: search result density only. Keep ranking, data, filters and map behavior intact.
+ */
+
+/* Two-column scan is intentional on phones. */
+[data-search-continuous-flow] > div.grid,
+[data-search-external-mobile-grid] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 0.75rem;
+  row-gap: 1rem;
+}
+
+/* Keep split view readable while preserving its map pane. */
+@media (min-width: 1024px) {
+  [data-search-view-layout="split"] [data-search-continuous-flow] > div.grid,
+  [data-search-view-layout="split"] [data-search-external-mobile-grid] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.875rem;
+  }
+}
+
+/* List mode is the high-density browsing surface. */
+@media (min-width: 900px) and (max-width: 1279px) {
+  [data-search-view-layout="list"] [data-search-continuous-flow] > div.grid,
+  [data-search-view-layout="list"] [data-search-external-mobile-grid] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.875rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  [data-search-view-layout="list"] [data-search-continuous-flow] > div.grid,
+  [data-search-view-layout="list"] [data-search-external-mobile-grid] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.875rem;
+  }
+
+  /* Compact the desktop cards without removing any trust/source information. */
+  [data-mobile-compact-card] > a:first-of-type > div,
+  [data-mobile-compact-external-card] > div:first-child {
+    height: 10.5rem;
+  }
+
+  [data-mobile-compact-card] > div,
+  [data-mobile-compact-external-card] > div:last-child {
+    padding: 0.875rem;
+  }
+
+  [data-mobile-compact-card] [data-mobile-price],
+  [data-mobile-compact-external-card] [data-mobile-price] {
+    font-size: 1.18rem;
+    line-height: 1.1;
+  }
+
+  [data-mobile-compact-card] [data-card-primary-action] {
+    margin-top: 0.75rem;
+    padding: 0.625rem 0.8rem;
+    font-size: 0.76rem;
+  }
+
+  [data-mobile-compact-card],
+  [data-mobile-compact-external-card] {
+    border-radius: 1rem;
+  }
+}
