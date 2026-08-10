@@ -18,21 +18,22 @@ Ordre de vérité :
 `code mergé dans main → README.md → ROADMAP.md → SESSION.md → specs techniques → preuves historiques`.
 
 <!-- DATA-4.7B-CURRENT-START -->
-## État DATA courant — 2026-08-09
+## État DATA courant — 2026-08-10
 
-La lane DATA sépare désormais **volume brut**, **fraîcheur** et **net-new Search**.
+La lane DATA distingue strictement **raw sitemap capacity**, **pages détail structurelles**, **fraîcheur** et **inventaire Search**.
 
-- Public Search : **22 068 canonical URL representations / 16 domaines** — pas un compteur de biens uniques dédupliqués.
-- Réservoir : **56 810 seeds / 4 108 fresh_confirmed / 52 702 seed_only**.
-- **DATA-4.7B ✅ PR #435** — merge `00a459032161f4110de3c580e6589faaff166bec`, +250 LSF fresh-confirmed, 250/250 certifiés, one-shot permanent, post-merge PASS.
-- **DATA-4.7C ✅ PR #438** — merge `3a22c0830ee6afd8f05be7cdb25906f8d5462f78`, source rotation read-only et séparation freshness vs net-new.
-- **DATA-4.8A 🟠 PR #442** — Net-New Sitemap Qualification : faux positif namespace `/property/` détecté puis corrigé par `REJECT_NAMESPACE_ROOT`. Preuve exacte-head : **185** identités LSF absentes des seeds → **0 candidate detail**, 184 non-detail + 1 namespace root rejeté ; Dar/Aykana/Promo `BLOCKED_SOURCE_EVIDENCE` sur ce snapshot. **0 write / 0 detail-page fetch**.
+- Public Search avant 4.9A : **22 068 canonical URL representations / 16 domaines** — pas un compteur de biens uniques dédupliqués.
+- Réservoir avant 4.9A : **56 810 seeds / 4 108 fresh_confirmed / 52 702 seed_only**.
+- **DATA-4.8A ✅ PR #442** — merge `b9d38932bb3af0acfd08a681cc79abb5254b81e3`. Preuve finale : Dar Agadir + Aykana + LSF = **506 identités sitemap seed-absent → 0 page détail structurellement qualifiée** ; Promo Immo reste bloqué DNS. 0 write / 0 detail fetch.
+- **DATA-4.9A 🟠 PR #444** — snapshot live de closeout certifié au head `0c7cfd9ee6b135e3ef0373933921452d8c35fd3f`, run `31366418643` PASS, artefact `sha256:5c867a1e17ab4a70b43cba13e33933426d4ed97c6af6863acbf465d2e0ca6080`, observé `2026-08-10T07:38:55.953Z`.
+- 11 sources zéro-stock auditées ; **9 qualifiées**, **2 bloquées** : `capital-properties.ma` (`sitemap_index.xml` non reconnu sur ce snapshot) et `immobest.ma` (`sitemap.rss` non reconnu).
+- Capacité sitemap net-new brute qualifiée : **10 631 identités**. Ce chiffre **n'est pas un nombre d'annonces**.
+- Top capacité brute qualifiée : `valfoncier.ma` **6 190** (dont **5 793** sous `/bien-immobilier/`), `christiesrealestatemorocco.com` **1 252**, `immo-maroc.com` **1 204**, `agadirimmobilier.org` **519**, `nouraimmobilier.ma` **516**.
+- 0 DB write, 0 Registry write, 0 policy change, 0 ingestion/display activation, 0 detail-page fetch.
 
-Conclusion : les quatre réservoirs publics sitemap actuels sont **saturés en net-new détail sur le snapshot certifié**. Revalider des rows déjà connues améliore la fraîcheur mais ne fait pas monter mécaniquement Search.
+**Prochain LOT masse : DATA-4.9B — High-Capacity Structural Detail Qualification**, read-only. Chemin critique `unverified` actuellement source-live : Val Foncier, Christie's Morocco, Immo Maroc, AgadirImmobilier.ma et ProImmobilier. Capital Properties reste hors chemin critique tant que son sitemap courant n'est pas requalifié.
 
-**Prochain chantier masse après closeout 4.8A : DATA-4.9A — New Public Source Onboarding Qualification**, read-only : ouvrir de nouveaux réservoirs sans promouvoir implicitement une policy `hidden`, `internal_signal_only`, `permission_required` ou `prohibited`.
-
-Lane secondaire distincte : **28** signaux public-index encore fresh pourraient récupérer Search eligibility via un replay borné, sans baisser le quality gate.
+Ensuite seulement : lot séparé de décision Source Policy, puis canary d'ingestion borné si autorisé.
 <!-- DATA-4.7B-CURRENT-END -->
 
 ## Doctrine
