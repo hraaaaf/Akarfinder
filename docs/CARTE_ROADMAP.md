@@ -200,24 +200,63 @@ Raisons principales :
 
 ---
 
-## P1C.4A — Acquisition Source Universe & Denominator Design 🔵 CURRENT
+## P1C.4A — Acquisition Source Universe & Denominator Design ✅ CLOSED
 
-Objectif : construire le premier dénominateur d’acquisition **indépendant, versionné, exact-scope et révocable** pour Guéliz × location, sans modifier la policy DATA ni contourner les autorisations.
+P1C.4A formalise le **contrat de dénominateur**, pas une fausse certification de couverture. Le lot reste entièrement read-only : aucune migration, aucun write Registry/listing/Geo, aucun changement Search/Ranking, aucune activation publique.
 
-Le design doit au minimum fournir :
+Design versionné : `p1c4a-acquisition-source-universe-v1` / `2026-08-10.v1`.
 
-- une liste versionnée des sources attendues avec justification d’inclusion/exclusion indépendante des 3 sources déjà observées ;
-- le canal autorisé/observable par source : public index, sitemap, Common Crawl, partner feed ou autre canal explicitement admissible ;
-- la profondeur/completion evidence par source, distincte du simple rang d’un moteur de recherche ;
-- la fraîcheur et la date d’observation par source ;
-- la capacité ou non d’identifier Guéliz × location dans chaque source ;
-- les trous connus : permission, accès, pagination, couverture, géographie, duplication, fraîcheur ;
-- une méthode de couverture dont le numérateur ne peut être évalué qu’après fixation du dénominateur ;
-- une version/date et une règle de révocation.
+### Baseline indépendante
 
-Si l’obtention de cette preuve exige de nouvelles acquisitions ou écritures, elles devront être exécutées dans un **lot DATA séparé** avec leurs propres gates. P1C.4A ne doit pas écraser cette lane.
+Une baseline de **12 sources attendues à vérifier** est gelée **avant tout calcul de numérateur**, à partir du `source_policy_registry` préexistant et de sa géographie enregistrée `National`, `Morocco` ou `Marrakech` :
 
-Gate de sortie : une fois le dénominateur réellement défini et prouvé, repasser une qualification de représentativité read-only. **Aucun P1C.5 avant certification.**
+- `1immo.ma` ;
+- `agenz.ma` ;
+- `avito.ma` ;
+- `barnes-marrakech.com` ;
+- `kawtarimmobilier.com` ;
+- `marrakechrealty.com` ;
+- `masaken.ma` ;
+- `mouldar.com` ;
+- `mubawab.ma` ;
+- `promoimmomarrakech.com` ;
+- `sarouty.ma` ;
+- `soukimmobilier.com`.
+
+Cette liste n’est **pas dérivée** des 3 sources du candidat P1C.3. Elle est un univers candidat indépendant à challenger, pas encore un dénominateur marché prouvé.
+
+### Challenger de complétude
+
+Après gel de la baseline, la discovery exacte-scope est utilisée uniquement comme **challenger** : un domaine Guéliz × location hors baseline peut invalider la complétude, mais il ne peut pas être ajouté silencieusement au dénominateur ni transformer un rang SERP en profondeur d’inventaire.
+
+Le contrôle read-only actuel détecte déjà des domaines hors baseline et des domaines hors `source_policy_registry`. Cela démontre que le Registry/source universe doit encore être réconcilié avant toute certification.
+
+Les preuves publiques enregistrées confirment par ailleurs l’existence d’un signal Guéliz × location pour plusieurs sources — notamment Mubawab et Promo Immo Marrakech sur des pages first-party exact-scope, ainsi que des preuves public-index pour Agenz/Sarouty — mais **aucune de ces preuves ne démontre à elle seule la profondeur ou la complétude de l’inventaire source**, et aucune visibilité robots/sitemap n’est interprétée comme autorisation de réutilisation.
+
+### Gate par source
+
+Chaque source doit encore disposer de :
+
+- identifiabilité Guéliz × `rent` ;
+- canal d’acquisition autorisé/observable validé par le Source Registry ou une attestation partenaire ;
+- profondeur/completion source-level, distincte d’un rang moteur ;
+- fraîcheur + date d’observation ;
+- trous connus permission/accès/pagination/couverture/géographie/duplication/fraîcheur ;
+- état de réutilisation/display séparé de sa présence dans le marché.
+
+Les sources du Registry à géographie inconnue ne sont **jamais exclues par défaut** : elles restent des trous à résoudre.
+
+### Verdict P1C.4A
+
+Statuts du design : `PROVEN | DESIGNED_NOT_PROVEN | INVALID`.
+
+Verdict actuel : **`P1C4A_DENOMINATOR_DESIGN_COMPLETE_EVIDENCE_GAPS`** (`DESIGNED_NOT_PROVEN`).
+
+Le design est donc fermé et certifiable en mode fail-closed, mais le **dénominateur indépendant n’est pas encore prouvé**. Aucun pourcentage de couverture marché n’est calculé et aucun seuil arbitraire n’est inventé.
+
+Handoff requis : **lot DATA séparé** pour l’expansion/revue exact-scope du Source Registry et la preuve de profondeur/fraîcheur par source. Après ce lot DATA, rejouer P1C.4A puis P1C.4 en lecture seule.
+
+**P1C.5 🔒 LOCKED** — Offre publique, metric layer et canary restent OFF jusqu’à `P1C4_REPRESENTATIVENESS_CERTIFIED`.
 
 ---
 
@@ -289,31 +328,35 @@ Mettre en évidence les quartiers compatibles avec un projet utilisateur à part
 # Vue chronologique
 
 ```text
-P1B.11  Registry Production Write                       ✅
+P1B.11  Registry Production Write                        ✅
    ↓
-P1B.12  Tier A Resolution Canary                        ✅
+P1B.12  Tier A Resolution Canary                         ✅
    ↓
-P1B.13  Geo Coverage Recovery Expansion                 ✅
+P1B.13  Geo Coverage Recovery Expansion                  ✅
    ↓
-P1B.14  Typed Geometry Coverage                         ✅
+P1B.14  Typed Geometry Coverage                          ✅
    ↓
-P1B.15  Geo Certification Gate                          ✅
+P1B.15  Geo Certification Gate                           ✅
    ↓
-P1C.1   Offre quartier Shadow                           ✅
+P1C.1   Offre quartier Shadow                            ✅
    ↓
-P1C.2   Reliability Engine                              ✅
+P1C.2   Reliability Engine                               ✅
    ↓
-P1C.3   Activation Review                               ✅ CLOSED
+P1C.3   Activation Review                                ✅ CLOSED
    ↓
-P1C.4   Acquisition Representativeness Qualification    ✅ CLOSED — NOT_CERTIFIABLE
+P1C.4   Acquisition Representativeness Qualification     ✅ CLOSED — NOT_CERTIFIABLE
    ↓
-P1C.4A  Acquisition Source Universe & Denominator Design 🔵 CURRENT
+P1C.4A  Acquisition Source Universe & Denominator Design ✅ CLOSED — DESIGNED_NOT_PROVEN
    ↓
-P1C.5   Scoped Canary Activation Write                  ⛔ BLOCKED jusqu’à certification
+DATA    Exact-scope Registry + depth/freshness evidence  🔵 REQUIRED — separate lane
    ↓
-P1C.6   Canary Observation                              après canary
+P1C.4   Read-only representativeness replay              🔒 après preuve DATA
    ↓
-P1C.7   Scoped ON                                       après observation réussie
+P1C.5   Scoped Canary Activation Write                   🔒 LOCKED jusqu’à certification
+   ↓
+P1C.6   Canary Observation                               après canary
+   ↓
+P1C.7   Scoped ON                                        après observation réussie
    ↓
 P2      Carte immobilière interactive
    ↓
@@ -330,4 +373,4 @@ CARTE AKARFINDER CERTIFIÉE
 
 Nous ne devons **pas attendre une couverture nationale parfaite** pour progresser. En revanche, chaque métrique publique future doit passer ses propres gates de **Geo truth → Reliability → Representativeness → Activation**.
 
-Une conclusion `insufficient`, `HOLD` ou `NOT_CERTIFIABLE` n’est pas un échec : c’est la protection contre la fausse précision. Aucun segment non certifié ne doit être présenté comme vérité de marché, et aucun arrondissement administratif ne doit être présenté comme polygon de quartier immobilier sans preuve territoriale explicite.
+Une conclusion `insufficient`, `HOLD`, `NOT_CERTIFIABLE` ou `DESIGNED_NOT_PROVEN` n’est pas un échec : c’est la protection contre la fausse précision. Aucun segment non certifié ne doit être présenté comme vérité de marché, et aucun arrondissement administratif ne doit être présenté comme polygon de quartier immobilier sans preuve territoriale explicite.
