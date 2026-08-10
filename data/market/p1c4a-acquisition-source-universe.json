@@ -1,0 +1,105 @@
+{
+  "schema_version": "p1c4a-acquisition-source-universe-v1",
+  "denominator_design_id": "gueliz-rent-acquisition-denominator",
+  "denominator_design_version": "2026-08-10.v1",
+  "as_of": "2026-08-10T17:30:00+01:00",
+  "scope": {
+    "city_slug": "marrakech",
+    "neighborhood_slug": "gueliz",
+    "transaction_type": "rent",
+    "metric_name": "surface_m2"
+  },
+  "contract": {
+    "p1c4a_is_read_only": true,
+    "source_list_frozen_before_numerator": true,
+    "observed_p1c3_sources_used_to_define_universe": false,
+    "public_index_is_discovery_evidence_not_inventory_depth": true,
+    "robots_or_sitemap_visibility_is_not_authorization": true,
+    "source_policy_registry_remains_acquisition_authority": true,
+    "unknown_scope_is_not_exclusion": true,
+    "no_arbitrary_numeric_market_coverage_threshold": true,
+    "new_acquisition_or_registry_writes_require_separate_data_lot": true,
+    "public_activation_allowed": false,
+    "metric_layer_activation_allowed": false
+  },
+  "method": {
+    "independent_baseline": "Freeze sources from the pre-existing Source Policy Registry whose recorded primary geography is National, Morocco or Marrakech. This baseline predates and is independent from the three-source P1C.3 observed cohort.",
+    "challenger": "After the baseline is frozen, use exact-scope discovery evidence only as a challenger for missing domains. Challenger hits can invalidate completeness but cannot silently expand the denominator or prove source inventory depth.",
+    "scope_resolution": "For every baseline or challenger source, establish whether Guéliz × rent can be identified from source-level evidence. Unknown remains a denominator-critical hole.",
+    "depth_resolution": "Inventory depth/completion must be established from source inventory structure, bounded feed/sitemap inventory, partner feed, or another separately admissible source-level mechanism. Search-engine result rank never counts as inventory depth.",
+    "coverage": "Only after the expected-source universe is fixed and proven may a numerator be evaluated. Coverage is reported as reconciled expected sources / fixed expected sources together with source-level depth and freshness evidence; no market-representativeness percentage is asserted while denominator-critical gaps remain.",
+    "revocation": "Revoke the proof if the Source Policy Registry review expires, a new material exact-scope source appears outside the frozen universe, a source changes acquisition policy/channel, or source-level depth/freshness evidence becomes stale. A revoked denominator returns to DESIGNED_NOT_PROVEN until re-reviewed."
+  },
+  "baseline_expected_sources": [
+    {"source_domain":"1immo.ma","independent_inclusion_basis":"preexisting_registry_primary_geography_morocco"},
+    {"source_domain":"agenz.ma","independent_inclusion_basis":"preexisting_registry_primary_geography_national"},
+    {"source_domain":"avito.ma","independent_inclusion_basis":"preexisting_registry_primary_geography_national"},
+    {"source_domain":"barnes-marrakech.com","independent_inclusion_basis":"preexisting_registry_primary_geography_marrakech"},
+    {"source_domain":"kawtarimmobilier.com","independent_inclusion_basis":"preexisting_registry_primary_geography_morocco"},
+    {"source_domain":"marrakechrealty.com","independent_inclusion_basis":"preexisting_registry_primary_geography_marrakech"},
+    {"source_domain":"masaken.ma","independent_inclusion_basis":"preexisting_registry_primary_geography_national"},
+    {"source_domain":"mouldar.com","independent_inclusion_basis":"preexisting_registry_primary_geography_national"},
+    {"source_domain":"mubawab.ma","independent_inclusion_basis":"preexisting_registry_primary_geography_national"},
+    {"source_domain":"promoimmomarrakech.com","independent_inclusion_basis":"preexisting_registry_primary_geography_marrakech"},
+    {"source_domain":"sarouty.ma","independent_inclusion_basis":"preexisting_registry_primary_geography_national"},
+    {"source_domain":"soukimmobilier.com","independent_inclusion_basis":"preexisting_registry_primary_geography_morocco"}
+  ],
+  "recorded_external_scope_evidence": [
+    {
+      "source_domain": "mubawab.ma",
+      "observed_at": "2026-08-10",
+      "evidence_kind": "first_party_exact_scope_landing_page",
+      "url": "https://www.mubawab.ma/en/cd/marrakech/gu%C3%A9liz/real-estate-for-rent",
+      "scope_signal": "Guéliz, Marrakech real estate for rent",
+      "inventory_depth_proven": false,
+      "authorization_inferred": false
+    },
+    {
+      "source_domain": "promoimmomarrakech.com",
+      "observed_at": "2026-08-10",
+      "evidence_kind": "first_party_exact_scope_listing",
+      "url": "https://www.promoimmomarrakech.com/produit/ml-254/location-magasin-marrakech-guliz.html",
+      "scope_signal": "Location Magasin à Marrakech Guéliz",
+      "inventory_depth_proven": false,
+      "authorization_inferred": false
+    },
+    {
+      "source_domain": "agenz.ma",
+      "observed_at": "2026-08-10",
+      "evidence_kind": "public_index_exact_scope_listing_stale",
+      "url": "https://agenz.ma/fr/annonces/immo-marrakech/location-bureaux/gueliz/184176",
+      "scope_signal": "Louer Marrakech Bureau Guéliz",
+      "inventory_depth_proven": false,
+      "authorization_inferred": false
+    },
+    {
+      "source_domain": "sarouty.ma",
+      "observed_at": "2026-08-10",
+      "evidence_kind": "public_index_exact_scope_rent_listing_stale",
+      "url": "https://www.sarouty.ma/ar/plp/%D9%84%D9%84%D9%83%D8%B1%D8%A7%D8%A1/%D9%81%D9%8A%D9%84%D8%A7-%D9%84%D9%84%D9%83%D8%B1%D8%A7%D8%A1-%D9%85%D8%B1%D8%A7%D9%83%D8%B4-%D9%83%D9%8A%D9%84%D9%8A%D8%B2-891671.html",
+      "scope_signal": "location à Guéliz",
+      "inventory_depth_proven": false,
+      "authorization_inferred": false
+    }
+  ],
+  "proof_requirements_per_source": {
+    "scope_identifiability": "required",
+    "acquisition_channel_authority": "required_from_source_policy_registry_or_partner_attestation",
+    "inventory_depth_or_completion": "required_and_must_not_be_serp_rank",
+    "freshness_observed_at": "required",
+    "known_holes": "required",
+    "permission_and_reuse_state": "required_but_does_not_remove_market_source_from_denominator"
+  },
+  "current_expected_status": "DESIGNED_NOT_PROVEN",
+  "current_expected_verdict": "P1C4A_DENOMINATOR_DESIGN_COMPLETE_EVIDENCE_GAPS",
+  "current_blockers": [
+    "SOURCE_UNIVERSE_COMPLETENESS_NOT_PROVEN",
+    "EXACT_SCOPE_CHALLENGER_DOMAINS_EXIST_OUTSIDE_BASELINE",
+    "SOURCE_LEVEL_INVENTORY_DEPTH_NOT_PROVEN",
+    "SOURCE_LEVEL_FRESHNESS_NOT_PROVEN_FOR_ALL_EXPECTED_SOURCES",
+    "EXACT_GUELIZ_RENT_IDENTIFIABILITY_NOT_PROVEN_FOR_ALL_EXPECTED_SOURCES",
+    "ACQUISITION_CHANNELS_NOT_RECONCILED_AT_EXACT_SCOPE",
+    "SOURCE_POLICY_AUTHORIZATION_OR_REVIEW_GAPS_REMAIN"
+  ],
+  "next_boundary": "DATA handoff — exact-scope Source Registry expansion and per-source inventory/freshness evidence, then replay P1C.4A and P1C.4 read-only"
+}
