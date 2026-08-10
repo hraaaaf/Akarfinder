@@ -310,13 +310,13 @@ with metric_counts as (
 ), segment_counts as (
   select
     count(*)::bigint as segments,
+    sum(listing_count)::bigint as listing_rows,
+    count(distinct neighborhood_id)::bigint as neighborhoods,
     count(*) filter (where sample_health_level='insufficient')::bigint as insufficient,
     count(*) filter (where sample_health_level='limited')::bigint as limited,
     count(*) filter (where sample_health_level='moderate')::bigint as moderate,
     count(*) filter (where sample_health_level='strong')::bigint as strong
   from public.odm_neighborhood_offer_reliability_segment_health_v1
-), p1c1 as (
-  select public.odm_neighborhood_offer_shadow_report_v1() as report
 )
 select jsonb_build_object(
   'contract_version', 'p1c2_neighborhood_offer_reliability_v1',
@@ -336,9 +336,10 @@ select jsonb_build_object(
     'moderate', s.moderate,
     'strong', s.strong
   ),
-  'p1c1_contract_version', p.report->>'contract_version',
-  'p1c1_listing_rows', (p.report->>'listing_rows')::bigint,
-  'p1c1_neighborhoods', (p.report->>'neighborhoods')::bigint,
+  'p1c1_contract_version', 'p1c1_neighborhood_offer_shadow_v1',
+  'p1c1_listing_rows', s.listing_rows,
+  'p1c1_neighborhoods', s.neighborhoods,
+  'heavy_p1c1_global_rpc_required', false,
   'thresholds_are_internal_policy_not_external_standard', true,
   'reliability_evaluated', true,
   'market_representativeness_certified', false,
@@ -348,8 +349,7 @@ select jsonb_build_object(
   'next_boundary', 'P1C.3 may review moderate/strong metric rows individually; no metric is auto-published.'
 )
 from metric_counts m
-cross join segment_counts s
-cross join p1c1 p;
+cross join segment_counts s;
 $$;
 
 revoke all on function public.odm_neighborhood_offer_reliability_report_v1() from public, anon, authenticated;
