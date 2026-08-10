@@ -8,6 +8,11 @@ on:
       - "scripts/data4/__tests__/data-4-9c-source-policy-decision.test.ts"
       - "scripts/audits/data-4-9c-source-policy-decision.ts"
       - ".github/workflows/data-4-9c-source-policy-decision.yml"
+      - ".github/workflows/data-4-9c-post-apply-hardening.yml"
+      - ".github/workflows/data-4-9c-closeout-docs.yml"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
   push:
     branches:
       - data/data-4-9c-source-policy-decision-registry-assignment
@@ -17,6 +22,11 @@ on:
       - "scripts/data4/__tests__/data-4-9c-source-policy-decision.test.ts"
       - "scripts/audits/data-4-9c-source-policy-decision.ts"
       - ".github/workflows/data-4-9c-source-policy-decision.yml"
+      - ".github/workflows/data-4-9c-post-apply-hardening.yml"
+      - ".github/workflows/data-4-9c-closeout-docs.yml"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
   workflow_dispatch:
 
 permissions:
@@ -46,6 +56,8 @@ jobs:
           grep -F 'seedWriteAuthorizedByThisLot: false' scripts/audits/data-4-9c-source-policy-decision.ts
           grep -F 'applyAuthorizedByCi: false' scripts/audits/data-4-9c-source-policy-decision.ts
           grep -F 'rollbackAuthorizedByCi: false' scripts/audits/data-4-9c-source-policy-decision.ts
+          grep -F 'registryRowMatchesAppliedRestrictiveTarget' scripts/audits/data-4-9c-source-policy-decision.ts
+          grep -F 'ALREADY_APPLIED_RESTRICTIVE' scripts/audits/data-4-9c-source-policy-decision.ts
       - name: TypeScript
         run: npx tsc --noEmit
 
@@ -66,11 +78,11 @@ jobs:
       - run: npm ci
       - name: Run current official evidence + Registry read-only policy audit
         run: npx tsx scripts/audits/data-4-9c-source-policy-decision.ts
-      - name: Enforce policy proof and CAS plan
+      - name: Enforce policy proof and transition state
         shell: bash
         run: |
           set -euo pipefail
-          for f in proof.json evidence-manifest.json registry-before.json mutation-plan.json rollback-plan.json; do
+          for f in proof.json evidence-manifest.json registry-before.json mutation-plan.json rollback-plan.json post-apply-certification.json; do
             test -s "${DATA_4_9C_OUT_DIR}/${f}"
           done
           node - <<'NODE'
@@ -78,18 +90,37 @@ jobs:
           const base = '.tmp/data-4-9c/results';
           const p = JSON.parse(fs.readFileSync(`${base}/proof.json`, 'utf8'));
           const e = JSON.parse(fs.readFileSync(`${base}/evidence-manifest.json`, 'utf8'));
+          const b = JSON.parse(fs.readFileSync(`${base}/registry-before.json`, 'utf8'));
           const m = JSON.parse(fs.readFileSync(`${base}/mutation-plan.json`, 'utf8'));
           const r = JSON.parse(fs.readFileSync(`${base}/rollback-plan.json`, 'utf8'));
+          const a = JSON.parse(fs.readFileSync(`${base}/post-apply-certification.json`, 'utf8'));
           if (p.schemaVersion !== 'data-4-9c-source-policy-decision-v1' || p.lot !== 'DATA-4.9C' || p.mode !== 'READ_ONLY_POLICY_DECISION_AND_CAS_PLAN') throw new Error(JSON.stringify(p));
           if (p.sourceCount !== 6 || p.decisions.permissionRequired !== 1 || p.decisions.remainUnverified !== 5 || p.decisions.authorized !== 0 || p.decisions.prohibited !== 0) throw new Error('decision accounting mismatch');
-          if (p.plannedRegistryMutationCount !== 1 || m.length !== 1 || r.length !== 1) throw new Error('expected one restrictive Registry mutation and rollback');
-          if (m[0].sourceDomain !== 'agadirimmobilier.ma' || m[0].decision !== 'permission_required' || m[0].applyAuthorizedByCi !== false) throw new Error('unexpected mutation source');
-          const after = m[0].afterPatch;
-          if (after.authorization_status !== 'permission_required' || after.terms_status !== 'permission_required' || after.content_reuse_policy !== 'permission_required' || after.detail_fetch_policy !== 'permission_required') throw new Error('target not restrictive');
-          if (after.machine_gate !== 'internal_signal_only' || after.ingestion_gate !== 'internal_signal_only' || after.display_gate !== 'hidden' || after.display_policy !== 'internal_signal_only') throw new Error('activation boundary violated');
-          if (r[0].sourceDomain !== 'agadirimmobilier.ma' || r[0].rollbackAuthorizedByCi !== false || r[0].casPolicyHash !== after.policy_hash) throw new Error('rollback plan mismatch');
+          const planReady = p.plannedRegistryMutationCount === 1 && p.alreadyAppliedRestrictiveCount === 0 && m.length === 1 && r.length === 1 && a.length === 0;
+          const alreadyApplied = p.plannedRegistryMutationCount === 0 && p.alreadyAppliedRestrictiveCount === 1 && p.postApplyCertifiedCount === 1 && m.length === 0 && r.length === 0 && a.length === 1;
+          if (planReady === alreadyApplied) throw new Error('expected exactly one valid Agadir transition state');
+          const decision = p.sourceDecisions.find(x => x.sourceDomain === 'agadirimmobilier.ma');
+          if (!decision || decision.decision !== 'permission_required' || decision.evidenceOk !== true) throw new Error('Agadir decision/evidence invalid');
+          if (planReady) {
+            if (decision.transitionState !== 'PLAN_READY' || decision.mutationPlanReady !== true || decision.registryAppliedRestrictive !== false) throw new Error('plan-ready state mismatch');
+            if (m[0].sourceDomain !== 'agadirimmobilier.ma' || m[0].decision !== 'permission_required' || m[0].applyAuthorizedByCi !== false) throw new Error('unexpected mutation source');
+            const after = m[0].afterPatch;
+            if (after.authorization_status !== 'permission_required' || after.terms_status !== 'permission_required' || after.content_reuse_policy !== 'permission_required' || after.detail_fetch_policy !== 'permission_required') throw new Error('target not restrictive');
+            if (after.machine_gate !== 'internal_signal_only' || after.ingestion_gate !== 'internal_signal_only' || after.display_gate !== 'hidden' || after.display_policy !== 'internal_signal_only') throw new Error('activation boundary violated');
+            if (r[0].sourceDomain !== 'agadirimmobilier.ma' || r[0].rollbackAuthorizedByCi !== false || r[0].casPolicyHash !== after.policy_hash) throw new Error('rollback plan mismatch');
+          } else {
+            if (decision.transitionState !== 'ALREADY_APPLIED_RESTRICTIVE' || decision.mutationPlanReady !== false || decision.registryAppliedRestrictive !== true) throw new Error('post-apply transition state mismatch');
+            const row = a[0];
+            if (row.source_domain !== 'agadirimmobilier.ma') throw new Error('wrong post-apply source');
+            if (row.authorization_status !== 'permission_required' || row.terms_status !== 'permission_required' || row.content_reuse_policy !== 'permission_required' || row.detail_fetch_policy !== 'permission_required') throw new Error('post-apply row is not restrictive');
+            if (row.machine_gate !== 'internal_signal_only' || row.ingestion_gate !== 'internal_signal_only' || row.display_gate !== 'hidden' || row.display_policy !== 'internal_signal_only') throw new Error('post-apply activation boundary violated');
+            if (row.current_representation_count !== 0 || row.no_bypass_required !== true || typeof row.policy_hash !== 'string' || !row.policy_hash.startsWith('sha256:')) throw new Error('post-apply safety state invalid');
+            if (!row.evidence_urls.includes('https://agadirimmobilier.ma/termes-et-conditions/') || !row.policy_effective_at || !row.evidence_observed_at || !row.terms_observed_at) throw new Error('post-apply evidence state incomplete');
+          }
           const terms = e.filter(x => x.sourceDomain === 'agadirimmobilier.ma' && x.kind === 'official_terms');
           if (terms.length !== 1 || terms[0].ok !== true || terms[0].requiredPhrasesMatched !== true) throw new Error('explicit Agadir terms evidence not verified');
+          const others = b.filter(x => x.source_domain !== 'agadirimmobilier.ma');
+          if (others.length !== 5 || others.some(x => x.authorization_status !== 'unverified' || x.ingestion_gate !== 'internal_signal_only' || x.display_gate !== 'hidden' || x.current_representation_count !== 0)) throw new Error('non-Agadir sources drifted from fail-closed state');
           if (p.truthBoundary.robotsOrSitemapIsNotPermission !== true || p.truthBoundary.absenceOfTermsIsNotPermission !== true || p.truthBoundary.noImplicitAuthorization !== true || p.truthBoundary.registryMutationCanOnlyTightenPolicy !== true) throw new Error('truth boundary violated');
           if (p.truthBoundary.ingestionAuthorizedByThisLot !== false || p.truthBoundary.publicDisplayAuthorizedByThisLot !== false || p.truthBoundary.seedWriteAuthorizedByThisLot !== false || p.truthBoundary.listingDetailFetches !== 0) throw new Error('ingestion/display/detail boundary violated');
           if (p.databaseWrites !== 0 || p.registryWrites !== 0 || p.policyActivations !== 0 || p.ingestionActivations !== 0 || p.publicDisplayActivations !== 0) throw new Error('CI performed mutation');
