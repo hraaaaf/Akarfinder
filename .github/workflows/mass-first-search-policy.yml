@@ -1,0 +1,36 @@
+name: MASS-FIRST Search Policy Gate
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/2026081020*_mass_first_*.sql'
+      - 'scripts/scrapers/__tests__/mass-first-search-policy*.test.ts'
+      - '.github/workflows/mass-first-search-policy.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/2026081020*_mass_first_*.sql'
+      - 'scripts/scrapers/__tests__/mass-first-search-policy*.test.ts'
+      - '.github/workflows/mass-first-search-policy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mass-first-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Static truth contract
+        run: npx tsx --test scripts/scrapers/__tests__/mass-first-search-policy.test.ts
+      - name: PostgreSQL semantic migration chain
+        run: npx tsx --test scripts/scrapers/__tests__/mass-first-search-policy.pg.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
