@@ -1,0 +1,36 @@
+name: UX-SEARCH-4 Production Visual Coverage Baseline
+
+on:
+  push:
+    branches:
+      - ux/search-visual-inventory-4
+    paths:
+      - "scripts/audits/ux-search-4-production-visual-coverage.mjs"
+      - ".github/workflows/ux-search-4-production-visual-coverage.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Audit current production visual coverage
+        env:
+          UX_SEARCH_4_PRODUCTION_URL: https://akarfinder.vercel.app
+        run: node scripts/audits/ux-search-4-production-visual-coverage.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ux-search-4-production-baseline
+          path: data/audits/ux-search-4-production-baseline
+          if-no-files-found: error
+          retention-days: 14
