@@ -1,6 +1,6 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-10 20:57 +01:00**
+**Mise à jour : 2026-08-10 20:58 +01:00**
 
 `docs/ROADMAP.md` est l’unique roadmap de toutes les fenêtres. Lire : `README.md` → `docs/ROADMAP.md` → ce fichier → doc spécialisée éventuelle.
 
@@ -96,6 +96,22 @@ Ordre : DATA exact-scope evidence → replay P1C.4A → replay P1C.4 → éventu
 ## UX après #473
 
 `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` read-only avant tout nouvel asset.
+
+## Fenêtre MON-PROJET → Carte / Quartier réconciliée
+
+### MON-PROJET-P1B — MERGED / HISTORICAL
+
+- branche `ux/mon-projet-p1b` ; PR **#318**, remplaçant #315 ;
+- head final `7f1e9b10162adad4c9a9694df9117ba053fd9e05` ; merge `29306523a4d1ad11d089299b1c7ed6a090063ebd` ;
+- livré : bandeau Projet actif dans `/search`, validation via `/api/me/continuity`, favoris/comparaisons rattachés au `project_id`, accès `/mon-projet/espace`, aucune migration ni stockage parallèle ;
+- preuve finale : `Canonical Baseline Validation` run manuel #784 **SUCCESS** sur le head exact ;
+- aucune note UX indépendante finale /10 n’a été archivée dans #318 : ne pas inventer un score ni requalifier le lot en `CLOSED ≥9`. Il reste `MERGED / HISTORICAL` ; toute reprise future doit passer le gate universel complet.
+
+### Audit Carte / Quartier de cette fenêtre
+
+L’audit exploratoire a été **arrêté avant implémentation**. Il a seulement inspecté le Search/Map existant (`SearchMapPanel`, dock quartier, explorer ville→quartier, choroplèthe Casablanca, benchmark prix) : **0 code, 0 migration, 0 branche, 0 PR**.
+
+Ne pas ouvrir une roadmap Carte parallèle. Cette fenêtre reprend la séquence canonique existante : **DATA exact-scope evidence → P1C.4A replay → P1C.4 replay → éventuel P1C.5**, avec double check + score ≥9 à chaque étape.
 
 ## Invariants
 
