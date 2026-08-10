@@ -75,13 +75,13 @@ begin
     new.display_eligibility := 'ineligible';
     new.display_eligibility_reason := 'category_page_not_listing';
     new.ranking_policy_version := 'mass-first-v1';
+  elsif new.document_kind is distinct from 'LISTING' then
+    new.display_eligibility := 'ineligible';
+    new.display_eligibility_reason := 'document_not_listing';
+    new.ranking_policy_version := 'mass-first-v1';
   elsif v_base_eligibility = 'ineligible' then
     new.display_eligibility := v_base_eligibility;
     new.display_eligibility_reason := v_base_reason;
-    new.ranking_policy_version := 'mass-first-v1';
-  elsif new.document_kind = 'AMBIGUOUS' then
-    new.display_eligibility := 'eligible_secondary';
-    new.display_eligibility_reason := 'ambiguous_property_result';
     new.ranking_policy_version := 'mass-first-v1';
   else
     new.display_eligibility := 'eligible_primary';
