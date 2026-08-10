@@ -120,7 +120,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
           {facts.length > 0 ? facts.slice(0, 2).map((fact) => <span key={fact} className="shrink-0">{fact}</span>) : <span>Informations à compléter</span>}
         </div>
 
-        <p data-mobile-price className="mt-2 truncate text-[13px] font-black leading-none tracking-[-0.025em] text-deepblue dark:text-white sm:mt-2.5 sm:text-[17px]">
+        <p data-mobile-price className="mt-2 whitespace-normal break-words text-[12px] font-black leading-[1.05] tracking-[-0.035em] text-deepblue dark:text-white sm:mt-2.5 sm:text-[17px] sm:leading-none">
           {formatIndexedPrice(result.normalized_price_mad)}
         </p>
 
@@ -133,7 +133,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
         {publicAttribution.badge ? <div className="mt-1 hidden sm:block"><SourceBadge badge={publicAttribution.badge} variant="dark" /></div> : null}
 
         {similarResults?.similar_possible ? (
-          <p className="mt-1 text-[7.5px] font-semibold text-amber-800 dark:text-amber-100 sm:text-[9px]">Doublon possible · Comparez les sources</p>
+          <p className="mt-1 text-[7.5px] font-semibold text-amber-800 dark:text-amber-100 sm:text-[9px]">Résultats proches · Comparez les sources</p>
         ) : null}
       </div>
     </Link>
