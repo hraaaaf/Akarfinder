@@ -26,6 +26,16 @@ export const CONTEXTUAL_CITY_VISUALS = {
 } as const satisfies Readonly<Record<string, ContextualIllustrationAsset>>;
 
 type ContextualCity = keyof typeof CONTEXTUAL_CITY_VISUALS;
+type PoolCity = "Agadir" | "Marrakech" | "Casablanca" | "Rabat" | "Tanger" | "Fès";
+
+const CITY_SLUGS: Readonly<Record<PoolCity, string>> = {
+  Agadir: "agadir",
+  Marrakech: "marrakech",
+  Casablanca: "casablanca",
+  Rabat: "rabat",
+  Tanger: "tanger",
+  "Fès": "fes",
+};
 
 export function getContextualCityVisual(city?: string | null): ContextualIllustrationAsset | null {
   if (!city || !(city in CONTEXTUAL_CITY_VISUALS)) return null;
@@ -33,11 +43,11 @@ export function getContextualCityVisual(city?: string | null): ContextualIllustr
 }
 
 const pool = (
-  city: "Agadir" | "Marrakech" | "Casablanca",
+  city: PoolCity,
   kind: "city" | "apartment" | "villa"
 ): readonly ContextualIllustrationAsset[] => {
   const label = city;
-  const slug = city.toLowerCase();
+  const slug = CITY_SLUGS[city];
   if (kind === "city") {
     const canonical = CONTEXTUAL_CITY_VISUALS[city];
     return [
@@ -65,11 +75,24 @@ const MARRAKECH_VILLA_VISUALS = pool("Marrakech", "villa");
 const CASABLANCA_CITY_VISUALS = pool("Casablanca", "city");
 const CASABLANCA_APARTMENT_VISUALS = pool("Casablanca", "apartment");
 const CASABLANCA_VILLA_VISUALS = pool("Casablanca", "villa");
+const RABAT_CITY_VISUALS = pool("Rabat", "city");
+const RABAT_APARTMENT_VISUALS = pool("Rabat", "apartment");
+const RABAT_VILLA_VISUALS = pool("Rabat", "villa");
+const TANGER_CITY_VISUALS = pool("Tanger", "city");
+const TANGER_APARTMENT_VISUALS = pool("Tanger", "apartment");
+const TANGER_VILLA_VISUALS = pool("Tanger", "villa");
+const FES_CITY_VISUALS = pool("Fès", "city");
+const FES_APARTMENT_VISUALS = pool("Fès", "apartment");
+const FES_VILLA_VISUALS = pool("Fès", "villa");
 
 const CITY_POOL_OVERRIDES: Readonly<Record<string, readonly ContextualIllustrationAsset[]>> = {
   Agadir: AGADIR_CITY_VISUALS,
   Marrakech: MARRAKECH_CITY_VISUALS,
   Casablanca: CASABLANCA_CITY_VISUALS,
+  Rabat: RABAT_CITY_VISUALS,
+  Tanger: TANGER_CITY_VISUALS,
+  Fes: FES_CITY_VISUALS,
+  "Fès": FES_CITY_VISUALS,
 };
 
 function cityPools(): Readonly<Record<string, readonly ContextualIllustrationAsset[]>> {
@@ -81,9 +104,11 @@ function cityPools(): Readonly<Record<string, readonly ContextualIllustrationAss
 /**
  * Production catalog for truth-safe contextual artwork.
  *
- * P1 Agadir plus SCALE-1 Marrakech/Casablanca use only structured city and
- * property-type fields already exposed by Search. District pools remain empty
- * until a certified normalized district signal is available to Search.
+ * P1 Agadir, SCALE-1 Marrakech/Casablanca and SCALE-2 Rabat/Tanger/Fès use
+ * only structured city and property-type fields already exposed by Search.
+ * Fes/Fès are explicit structured aliases that share the same asset pools.
+ * District pools remain empty until a certified normalized district signal is
+ * available to Search.
  */
 export const CONTEXTUAL_ILLUSTRATION_CATALOG: ContextualIllustrationCatalog = {
   districtType: {},
@@ -95,6 +120,14 @@ export const CONTEXTUAL_ILLUSTRATION_CATALOG: ContextualIllustrationCatalog = {
     [contextualKey("Marrakech", "Villa")]: MARRAKECH_VILLA_VISUALS,
     [contextualKey("Casablanca", "Appartement")]: CASABLANCA_APARTMENT_VISUALS,
     [contextualKey("Casablanca", "Villa")]: CASABLANCA_VILLA_VISUALS,
+    [contextualKey("Rabat", "Appartement")]: RABAT_APARTMENT_VISUALS,
+    [contextualKey("Rabat", "Villa")]: RABAT_VILLA_VISUALS,
+    [contextualKey("Tanger", "Appartement")]: TANGER_APARTMENT_VISUALS,
+    [contextualKey("Tanger", "Villa")]: TANGER_VILLA_VISUALS,
+    [contextualKey("Fes", "Appartement")]: FES_APARTMENT_VISUALS,
+    [contextualKey("Fes", "Villa")]: FES_VILLA_VISUALS,
+    [contextualKey("Fès", "Appartement")]: FES_APARTMENT_VISUALS,
+    [contextualKey("Fès", "Villa")]: FES_VILLA_VISUALS,
   },
   city: cityPools(),
 };

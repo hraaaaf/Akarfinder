@@ -37,7 +37,7 @@ const fixtures = [
 ] as const;
 
 describe("CONTEXTUAL-ILLUSTRATIONS-SCALE-1", () => {
-  it("scales only Marrakech and Casablanca to 4+4+4 pools", () => {
+  it("keeps Marrakech and Casablanca at certified 4+4+4 pools", () => {
     for (const city of scaleCities) {
       assert.equal(CONTEXTUAL_ILLUSTRATION_CATALOG.city[city]?.length, 4);
       assert.equal(CONTEXTUAL_ILLUSTRATION_CATALOG.cityType[contextualKey(city, "Appartement")]?.length, 4);
@@ -48,7 +48,7 @@ describe("CONTEXTUAL-ILLUSTRATIONS-SCALE-1", () => {
     assert.deepEqual(CONTEXTUAL_ILLUSTRATION_CATALOG.districtType, {});
   });
 
-  it("ships exactly 24 unique scale asset IDs backed by local SVGs", () => {
+  it("ships exactly 24 unique SCALE-1 asset IDs backed by local SVGs", () => {
     const assets = scaleCities.flatMap((city) => [
       ...(CONTEXTUAL_ILLUSTRATION_CATALOG.city[city] ?? []),
       ...(CONTEXTUAL_ILLUSTRATION_CATALOG.cityType[contextualKey(city, "Appartement")] ?? []),
@@ -63,7 +63,7 @@ describe("CONTEXTUAL-ILLUSTRATIONS-SCALE-1", () => {
     }
   });
 
-  it("deterministically reaches all 24 scaled variants", () => {
+  it("deterministically reaches all 24 SCALE-1 variants", () => {
     const reached = new Set<string>();
     for (const [city, propertyType, url, expectedId, expectedTier] of fixtures) {
       const resolved = resolveContextualIllustration({ stableRepresentationKey: url, normalizedCity: city, normalizedPropertyType: propertyType });
@@ -75,12 +75,11 @@ describe("CONTEXTUAL-ILLUSTRATIONS-SCALE-1", () => {
     assert.equal(reached.size, 24);
   });
 
-  it("preserves Agadir P1 and singletons outside the scale cohort", () => {
+  it("preserves Agadir P1 while allowing later bounded city extensions", () => {
     assert.equal(CONTEXTUAL_ILLUSTRATION_CATALOG.city.Agadir?.length, 4);
-    assert.equal(CONTEXTUAL_ILLUSTRATION_CATALOG.city.Rabat?.length, 1);
-    assert.equal(CONTEXTUAL_ILLUSTRATION_CATALOG.city.Tanger?.length, 1);
-    assert.equal(CONTEXTUAL_ILLUSTRATION_CATALOG.city["Fès"]?.length, 1);
-    assert.equal(CONTEXTUAL_ILLUSTRATION_CATALOG.cityType[contextualKey("Rabat", "Appartement")], undefined);
+    assert.equal(CONTEXTUAL_ILLUSTRATION_CATALOG.cityType[contextualKey("Agadir", "Appartement")]?.length, 4);
+    assert.equal(CONTEXTUAL_ILLUSTRATION_CATALOG.cityType[contextualKey("Agadir", "Villa")]?.length, 4);
+    for (const city of ["Rabat", "Tanger", "Fès"] as const) assert.ok((CONTEXTUAL_ILLUSTRATION_CATALOG.city[city]?.length ?? 0) >= 1);
   });
 
   it("keeps truth and scope boundaries intact", () => {
@@ -96,7 +95,7 @@ describe("CONTEXTUAL-ILLUSTRATIONS-SCALE-1", () => {
     assert.match(card, />\s*Illustration\s*</);
   });
 
-  it("certifies five viewports, 24 scale assets and fallbacks", () => {
+  it("keeps the SCALE-1 five-viewport visual contract", () => {
     const audit = source("scripts/audits/contextual-illustrations-scale-1-visual.mjs");
     for (const marker of ["360x800", "390x844", "768x900", "1280x900", "1440x900"]) assert.ok(audit.includes(marker));
     assert.match(audit, /EXPECTED_SCALE_IDS/);
