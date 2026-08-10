@@ -194,9 +194,9 @@ with segments as (
     count(v.metric_value)::bigint as sample_count,
     count(v.metric_value) filter (where v.freshness_status = 'fresh_confirmed')::bigint as fresh_sample_count,
     count(distinct v.source_domain)::bigint as source_domain_count,
-    percentile_cont(0.25) within group (order by v.metric_value) filter (where v.metric_value is not null)::numeric as q1,
-    percentile_cont(0.50) within group (order by v.metric_value) filter (where v.metric_value is not null)::numeric as median,
-    percentile_cont(0.75) within group (order by v.metric_value) filter (where v.metric_value is not null)::numeric as q3
+    (percentile_cont(0.25) within group (order by v.metric_value) filter (where v.metric_value is not null))::numeric as q1,
+    (percentile_cont(0.50) within group (order by v.metric_value) filter (where v.metric_value is not null))::numeric as median,
+    (percentile_cont(0.75) within group (order by v.metric_value) filter (where v.metric_value is not null))::numeric as q3
   from segments s
   cross join metric_catalog m
   left join metric_values v
@@ -297,34 +297,48 @@ stable
 security invoker
 set search_path = ''
 as $$
-with metric as (
-  select * from public.odm_neighborhood_offer_reliability_metric_v1
-), segment as (
-  select * from public.odm_neighborhood_offer_reliability_segment_health_v1
+with metric_counts as (
+  select
+    count(*)::bigint as metric_rows,
+    count(*) filter (where reliability_level='insufficient')::bigint as insufficient,
+    count(*) filter (where reliability_level='limited')::bigint as limited,
+    count(*) filter (where reliability_level='moderate')::bigint as moderate,
+    count(*) filter (where reliability_level='strong')::bigint as strong,
+    count(*) filter (where p1c3_review_candidate)::bigint as review_candidates,
+    count(*) filter (where metric_name in ('price_mad','price_per_m2_mad') and p1c3_review_candidate)::bigint as price_review_candidates
+  from public.odm_neighborhood_offer_reliability_metric_v1
+), segment_counts as (
+  select
+    count(*)::bigint as segments,
+    count(*) filter (where sample_health_level='insufficient')::bigint as insufficient,
+    count(*) filter (where sample_health_level='limited')::bigint as limited,
+    count(*) filter (where sample_health_level='moderate')::bigint as moderate,
+    count(*) filter (where sample_health_level='strong')::bigint as strong
+  from public.odm_neighborhood_offer_reliability_segment_health_v1
 ), p1c1 as (
   select public.odm_neighborhood_offer_shadow_report_v1() as report
 )
 select jsonb_build_object(
   'contract_version', 'p1c2_neighborhood_offer_reliability_v1',
-  'metric_rows', count(*)::bigint,
-  'segments', (select count(*)::bigint from segment),
+  'metric_rows', m.metric_rows,
+  'segments', s.segments,
   'metric_levels', jsonb_build_object(
-    'insufficient', count(*) filter (where reliability_level='insufficient'),
-    'limited', count(*) filter (where reliability_level='limited'),
-    'moderate', count(*) filter (where reliability_level='moderate'),
-    'strong', count(*) filter (where reliability_level='strong')
+    'insufficient', m.insufficient,
+    'limited', m.limited,
+    'moderate', m.moderate,
+    'strong', m.strong
   ),
-  'p1c3_review_candidates', count(*) filter (where p1c3_review_candidate),
-  'price_metric_review_candidates', count(*) filter (where metric_name in ('price_mad','price_per_m2_mad') and p1c3_review_candidate),
+  'p1c3_review_candidates', m.review_candidates,
+  'price_metric_review_candidates', m.price_review_candidates,
   'segment_sample_health_levels', jsonb_build_object(
-    'insufficient', (select count(*) from segment where sample_health_level='insufficient'),
-    'limited', (select count(*) from segment where sample_health_level='limited'),
-    'moderate', (select count(*) from segment where sample_health_level='moderate'),
-    'strong', (select count(*) from segment where sample_health_level='strong')
+    'insufficient', s.insufficient,
+    'limited', s.limited,
+    'moderate', s.moderate,
+    'strong', s.strong
   ),
-  'p1c1_contract_version', p1c1.report->>'contract_version',
-  'p1c1_listing_rows', (p1c1.report->>'listing_rows')::bigint,
-  'p1c1_neighborhoods', (p1c1.report->>'neighborhoods')::bigint,
+  'p1c1_contract_version', p.report->>'contract_version',
+  'p1c1_listing_rows', (p.report->>'listing_rows')::bigint,
+  'p1c1_neighborhoods', (p.report->>'neighborhoods')::bigint,
   'thresholds_are_internal_policy_not_external_standard', true,
   'reliability_evaluated', true,
   'market_representativeness_certified', false,
@@ -333,9 +347,9 @@ select jsonb_build_object(
   'p1c3_auto_activation', false,
   'next_boundary', 'P1C.3 may review moderate/strong metric rows individually; no metric is auto-published.'
 )
-from metric
-cross join p1c1
-;
+from metric_counts m
+cross join segment_counts s
+cross join p1c1 p;
 $$;
 
 revoke all on function public.odm_neighborhood_offer_reliability_report_v1() from public, anon, authenticated;
