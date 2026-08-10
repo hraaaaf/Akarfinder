@@ -28,11 +28,14 @@ test("P1 LOT 3 mobile decision ergonomics", async (t) => {
     assert.ok(filters.includes("aria-controls=\"advanced-search-filters\""));
   });
 
-  await t.test("keeps list and map modes thumb-reachable", () => {
+  await t.test("keeps list and map modes compact, explicit and touch-safe", () => {
     const switcher = read("components/search/SearchViewSwitcher.tsx");
-    assert.ok(switcher.includes("sticky bottom-[max(0.75rem,env(safe-area-inset-bottom))]"));
-    assert.ok(switcher.includes("min-h-11"));
+    assert.ok(switcher.includes("data-search-mobile-view-select"));
+    assert.ok(switcher.includes('aria-label="Mode d’affichage des résultats"'));
+    assert.ok(switcher.includes("h-12"));
+    assert.ok(switcher.includes("sm:hidden"));
+    assert.ok(switcher.includes("data-search-desktop-view-switcher"));
+    assert.ok(switcher.includes('role="group"'));
     assert.ok(switcher.includes("aria-pressed={active}"));
-    assert.ok(switcher.includes("sm:static"));
   });
 });
