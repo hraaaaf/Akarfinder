@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-10**  
-**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; RABAT-REAL-PHOTO-LIBRARY-1 ✅ PR #468 ; SEARCH-UX-1 🟠 PR #473 ACTIVE/BLOCKED_BY_CI ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; RABAT-REAL-PHOTO-LIBRARY-1 ✅ PR #468 ; SEARCH-UX-1 🟠 PR #473 ACTIVE/NOT CERTIFIED ; MASS-FIRST 🟠 PR #474 ACTIVE P0 PARALLÈLE ; DATA-4.9C 🟠 PR #454 RECONCILIATION REQUIRED ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -18,19 +18,32 @@ Règle de lifecycle obligatoire pour tous les lots ci-dessous :
 
 **Aucun lot UX/Search n'est CLOSED sous 9/10.** Une PR ouverte n'est jamais considérée active par son seul état GitHub : elle doit être classée et prouvée.
 
-## SEARCH-UX-1 — Inventory-first cards & responsive grid — 🟠 ACTIVE / BLOCKED_BY_CI — PR #473
+## MASS-FIRST Search Policy / Listing Power — 🟠 ACTIVE P0 PARALLÈLE / NOT CERTIFIED — PR #474
+
+- **Lane** : Search/Ranking + gouvernance roadmap, fenêtre parallèle.
+- **Responsabilité** : Source Policy public gate fail-closed ; séparer qualité et éligibilité ; Listing Power Score déterministe 0–100 ; faire de Listing Power le signal non textuel dominant du ranking public ; reclassification MASS-FIRST + certification fail-closed.
+- **Dépendances** : `main@f4563602119c8c01298bf694285e35856097bbd6` ; chevauche les sémantiques Search/Ranking consommées par #473.
+- **Branche** : `feat/mass-first-search-quality-policy`.
+- **PR** : #474 `MASS-FIRST + canonical unified roadmap`.
+- **État** : **ACTIVE P0 / NON CERTIFIÉ**. Ce lot peut avancer en parallèle de #473 mais crée une dépendance stricte d'ordre de merge.
+- **Preuves** : head observé `6e712ed318f88418f34f774c3bc48826d729a5a4` ; la CI exact-head était encore majoritairement queued/in-progress au dernier contrôle, avec le gate B2B déjà SUCCESS.
+- **Double-check / score** : score provisoire déclaré dans la fenêtre #474 **8,8/10 — NON CERTIFIÉ** ; aucune fermeture autorisée sous 9/10.
+- **Blocker** : certification exact-head complète + preuve PostgreSQL/Supabase/rehearsal, sécurité/ACL, inventory before/after, perf Search, Reviewer indépendant et Release Certifier ; conflit potentiel si #473 reste basé sur un Search/Ranking antérieur.
+- **Prochaine étape** : le premier des PR #473/#474 à merger devient la nouvelle base ; le second doit se réaligner sur ce `main`, résoudre le diff sémantique et rejouer tous ses gates pertinents avant certification.
+
+## SEARCH-UX-1 — Inventory-first cards & responsive grid — 🟠 ACTIVE / BLOCKED_BY_CI_AND_MERGE_ORDER — PR #473
 
 - **Lane** : UX/Search.
 - **Responsabilité** : faire converger la SERP vers `real estate before interface` : cards compactes, image-first/inventory-first, densité **2 colonnes mobile/tablette → 3 desktop intermédiaire → 4 wide desktop**, whole-card primary action, suppression du gros CTA plein largeur, favoris/attribution/truth conservés en couche secondaire.
-- **Dépendances** : SEARCH-UX-FAST-1 #390 ; SEARCH-WORDING-PURITY-1 #391 ; SEARCH-CONTINUOUS-FLOW-1 #393 ; SEARCH-MOBILE-CARD-GRID-1 #394 ; UNIFIED-LISTING-CARD-1 #407 ; CONTEXTUAL-VISUAL-ASSETS-1 #414 ; DETERMINISTIC-ATTRIBUTION-1 #416 ; SEARCH-ACTION-HIERARCHY-1 #418 ; SEARCH-DESKTOP-SPLIT-1 #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 #437 ; RABAT-REAL-PHOTO-LIBRARY-1 #468.
+- **Dépendances** : SEARCH-UX-FAST-1 #390 ; SEARCH-WORDING-PURITY-1 #391 ; SEARCH-CONTINUOUS-FLOW-1 #393 ; SEARCH-MOBILE-CARD-GRID-1 #394 ; UNIFIED-LISTING-CARD-1 #407 ; CONTEXTUAL-VISUAL-ASSETS-1 #414 ; DETERMINISTIC-ATTRIBUTION-1 #416 ; SEARCH-ACTION-HIERARCHY-1 #418 ; SEARCH-DESKTOP-SPLIT-1 #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 #437 ; RABAT-REAL-PHOTO-LIBRARY-1 #468 ; **PR #474 MASS-FIRST si elle merge avant #473**.
 - **Branche** : `feat/search-ux-1-cards-grid`.
 - **PR** : #473 `SEARCH-UX-1 — Inventory-first cards & responsive grid`.
-- **Head exact documenté** : `42e951814b204ca67b846b81613a1080de3e9ea3` avant les commits documentaires de cette reconciliation.
-- **État** : ACTIVE mais **NON CERTIFIÉ**. Merge interdit tant que tous les exact-head gates et l'audit visuel final ne sont pas verts.
+- **Head code certifié partiellement avant commits documentaires** : `42e951814b204ca67b846b81613a1080de3e9ea3`.
+- **État** : ACTIVE mais **NON CERTIFIÉ**. Merge interdit tant que tous les exact-head gates, la realign éventuelle post-#474 et l'audit visuel final ne sont pas verts.
 - **Preuves acquises au head `42e951…`** : Visible Dedup, P0 Closure, Final Design Accessibility, UX Gate 0, Canonical Baseline Compile/Validation, Search UX Fast, B2B, Seller Structured Draft, User Journey, Home Proof, Unified Listing Card, Contextual Illustrations Foundation, Desktop Split, Mobile Card Grid, Wording Purity, Final Sweep, Geo Productization, Post-results Cleanup, Intent Hubs, Search Truth, Deterministic Attribution, Property Type Visual Option A et ODM-09D = SUCCESS.
 - **Double-check / score** : **pas de score final attribuable sur le head courant**. Les preuves visuelles d'anciens heads ne ferment pas ce lot. Certification attendue sur **1440×900 + 390×844**, score **>=9/10** après re-test exact-head.
-- **Blocker** : `SEARCH-ACTION-HIERARCHY-1 Gate` — contrat/types/build SUCCESS mais **visual-certification FAILURE** sur le head courant. Lors du dernier contrôle, `UX P1 Mobile Decision Ergonomics` et `CONTEXTUAL-VISUAL-ASSETS-1` étaient encore en cours.
-- **Prochaine étape** : réconcilier/corriger le finding visuel sans restaurer le gros CTA, attendre les workflows exact-head restants, recapturer 1440×900 et 390×844, Benchmark/Reviewer indépendant, score, corriger si <9, re-test/re-score puis Release Certification avant merge.
+- **Blocker** : au dernier exact-head code contrôlé, `SEARCH-ACTION-HIERARCHY-1 Gate` avait contrat/types/build SUCCESS mais **visual-certification FAILURE** ; les commits documentaires ont ensuite relancé les gates. En plus, #473 doit être réalignée si #474 merge en premier.
+- **Prochaine étape** : attendre/inspecter la CI exact-head du head courant ; corriger ou réconcilier tout finding visuel sans restaurer le gros CTA ; si #474 merge d'abord, rebase/realign sur le nouveau `main` et rejouer Search Truth + UX ; recapturer 1440×900 et 390×844, Benchmark/Reviewer indépendant, score, corriger si <9, re-test/re-score puis Release Certification avant merge.
 
 ## VISUAL-REPRESENTATION-ENGINE-1 — 🟡 PLANNED / BLOCKED_BY_SEARCH-UX-1
 
@@ -95,13 +108,16 @@ Règle de lifecycle obligatoire pour tous les lots ci-dessous :
 
 ### Reconciliation DATA constatée sans réécriture de sa lane
 
-`DATA-4.9B` n'est plus actif : **PR #452 CLOSED/MERGED**, head final `e79db482bcab23c819766d1378833025b33ebbd2`, merge `45631345a6efb653256273354d2fb903b33c1ff9`. Toute ancienne mention `DATA-4.9B 🟠` dans ce document est classée **HISTORICAL/OBSOLETE**. La prochaine responsabilité DATA reste celle définie par sa lane (`DATA-4.9C`) ; cette fenêtre UX/Search n'en change pas le scope.
+- **DATA-4.9B / PR #452 — HISTORICAL / CLOSED-MERGED.** Head final `e79db482bcab23c819766d1378833025b33ebbd2`, merge `45631345a6efb653256273354d2fb903b33c1ff9`. Toute ancienne mention `DATA-4.9B 🟠` plus bas est historique/obsolète.
+- **DATA-4.9C / PR #454 — RECONCILIATION REQUIRED.** Lane DATA ; responsabilité Source Policy Decision & Registry Assignment ; branche `data/data-4-9c-source-policy-decision-registry-assignment` ; head observé `8ad1e95f3354caed93c391f36bce596ee3b0f1b6`. Une mutation restrictive production a déjà été appliquée : `agadirimmobilier.ma → permission_required + hidden + internal_signal_only`; les cinq autres sources du cohort restent `unverified`; **0 source autorisée** ; DATA-4.9D = **BLOCKED_BY_POLICY**. La PR est OPEN sur une base ancienne : elle n'est donc pas ACTIVE. Preuve/score historique ne suffit pas à la fermer sur current main. **Blocker** : diff #454 vs current main + Registry live non réconcilié. **Prochaine étape** : préserver l'état restrictif Agadir, identifier le résidu encore nécessaire, rebase/rebuild sur current main, rerun exact-head CI + audit Registry read-only + score >=9/10, puis merge ou close-as-superseded avec successor explicite.
+- **P0-GOV-1 / PR #383 — SUPERSEDED CANDIDATE / RECONCILIATION REQUIRED, pas active.** Branche historique `agent/p0-gov-1-agent-governance`, base `13b6c3c…`; une grande partie de sa gouvernance est déjà absorbée. Avant toute reprise : unique-value check contre current main ; fermer comme superseded si aucun résidu utile.
+- **B3.5.3 / PR #310 — SECURITY BACKLOG / REVALIDATE BEFORE RESUME, pas active.** Branche historique `agent/b3-5-3-professional-auth-rls`. Réauditer current `/api/pro/*`, clients Supabase/RLS/RPC et isolation tenant ; si finding encore réel, reconstruire un lot frais current-main avec PostgreSQL réel, Security Reviewer et score >=9/10 ; sinon fermer comme superseded.
 <!-- SEARCH-UX-WINDOW-RECONCILIATION-END -->
 
 <!-- DATA-4.7B-CURRENT-START -->
 # 0. État DATA prioritaire — quantité réelle 2026-08-10
 
-> Ce bloc prévaut sur les anciennes mentions DATA plus bas lorsqu'elles désignent un prochain LOT désormais dépassé.
+> Ce bloc prévaut sur les anciennes mentions DATA plus bas lorsqu'elles désignent un prochain LOT désormais dépassé, sauf les classifications plus récentes du bloc 0A ci-dessus.
 
 **North Star : augmenter l'inventaire utile réellement admissible sans transformer sitemap, URL détail, fraîcheur, taxonomy ou signal interne en faux nombre de biens.**
 
@@ -127,6 +143,8 @@ Truth boundary machine-enforced :
 
 ## Prochain LOT DATA — DATA-4.9C Source Policy Decision & Registry Assignment
 
+> **HISTORICAL / superseded by bloc 0A** : DATA-4.9C est déjà portée par la PR #454 et doit être réconciliée ; ce texte décrit son intention d'origine et n'autorise aucune nouvelle exécution parallèle.
+
 Responsabilité unique : déterminer puis, si et seulement si les preuves l'autorisent, matérialiser la policy Source Registry des gagnants structurels. **Aucune ingestion d'annonce dans 4.9C.**
 
 Priorité : `valfoncier.ma`, `christiesrealestatemorocco.com`, `immo-maroc.com`, `proimmobilier.ma`, `agadirimmobilier.ma`; `capital-properties.ma` reste opportuniste/non bloquant.
@@ -138,7 +156,7 @@ Priorité : `valfoncier.ma`, `christiesrealestatemorocco.com`, `immo-maroc.com`,
 5. si preuve insuffisante, aucune promotion implicite : `hidden/internal_signal_only` demeure ;
 6. 0 seed write, 0 ingestion, 0 Search activation.
 
-**DATA-4.9D** : canary d'ingestion borné, seulement pour les sources dont 4.9C a réellement autorisé un canal exploitable.
+**DATA-4.9D** : canary d'ingestion borné, seulement pour les sources dont 4.9C a réellement autorisé un canal exploitable. État courant du cohort #454 : **BLOCKED_BY_POLICY**.
 <!-- DATA-4.7B-CURRENT-END -->
 
 # 1. Cap produit
@@ -462,7 +480,7 @@ Résultat certifié :
 
 Les 6 villes contextualisées disposent désormais chacune de **12 variantes = 72 IDs contextuels uniques**.
 
-**Prochain lot UX/Search : CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1.** Audit read-only de la couverture de rendu réelle après #468 : thumbnail autorisée / **Rabat real-photo district** / `city_type` / `city` / fallback type / neutre, distribution ville/type/quartier, répétition effective et taux d'échec des photos distantes. Aucun nouvel asset ni changement DATA/Registry/ranking/Map. Le district du catalogue d'illustrations historique reste OFF ; le signal quartier est utilisé uniquement par la bibliothèque Rabat bornée.
+**Ancienne prochaine étape UX/Search — CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1 : RECONCILIATION REQUIRED.** Voir bloc 0A. L'audit reste utile mais n'est plus le prochain lot exécutable avant stabilisation de SEARCH-UX-1 puis du contrat Visual Representation Engine.
 
 # 4. Lane UX / Carte
 
@@ -652,7 +670,7 @@ Scope respecté, Benchmark Reviewer si UX majeur, Reviewer indépendant PASS, te
 
 ## UX / Search
 
-**Ordre actuel : finir SEARCH-UX-1 #473.** L'ancien ordre qui lançait directement `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` est **RECONCILIATION REQUIRED** et n'est plus exécutable avant stabilisation de la nouvelle card/Visual Stack. Après #473 certifié/mergé : **VISUAL-REPRESENTATION-ENGINE-1**, puis SEARCH-UX-2 header/filtres, SEARCH-UX-3 mobile first-viewport, SEARCH-UX-4 modes/navigation. Chaque lot suit le cycle obligatoire et exige >=9/10 avant close.
+**Ordre actuel : finir SEARCH-UX-1 #473 en coordination stricte avec MASS-FIRST #474.** Les deux peuvent avancer en parallèle ; le second à merger doit se réaligner sur le premier `main` et rejouer ses gates. Après #473 certifié/mergé : **VISUAL-REPRESENTATION-ENGINE-1**, puis SEARCH-UX-2 header/filtres, SEARCH-UX-3 mobile first-viewport, SEARCH-UX-4 modes/navigation. `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` reste **RECONCILIATION REQUIRED** et sera replanifié après stabilisation du VRE. Chaque lot suit le cycle obligatoire et exige >=9/10 avant close.
 
 ## UX / Carte
 
@@ -660,4 +678,4 @@ Auditer la prochaine cohorte explicite de Geo Coverage Recovery. Tant que couver
 
 ## DATA
 
-**DATA-4.5A est CLOSED ✅.** La lane P0.1→P0.5 reste fermée/bloquée sur autorisation externe, sans empêcher la lane DATA indépendante. **Action suivante : DATA-4.5B uniquement**, expansion Promo Immo bornée vers 500 avec revalidation sitemap live avant chaque write et rollback préalable.
+**DATA-4.9C n'est plus un lot frais à lancer : PR #454 = RECONCILIATION REQUIRED et DATA-4.9D = BLOCKED_BY_POLICY (0 source autorisée dans ce cohort).** Préserver la mutation restrictive Agadir, réconcilier #454 contre current main/Registry live puis décider merge ou close-as-superseded. La lane P0.1→P0.5 reste fermée/bloquée sur autorisation externe ; aucune ingestion non autorisée n'est permise.
