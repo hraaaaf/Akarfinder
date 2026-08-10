@@ -1,0 +1,135 @@
+name: DATA-4.9A Proof Drift Docs
+
+on:
+  push:
+    branches:
+      - data/data-4-9a-mass-source-onboarding-qualification
+    paths:
+      - ".github/workflows/data-4-9a-proof-drift-docs.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: data/data-4-9a-mass-source-onboarding-qualification
+          fetch-depth: 0
+      - name: Replace DATA snapshot blocks only
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_block(path, start, end, block):
+              p = Path(path)
+              text = p.read_text()
+              a = text.index(start)
+              b = text.index(end, a) + len(end)
+              p.write_text(text[:a] + block.strip() + text[b:])
+
+          readme = r'''
+          <!-- DATA-4.7B-CURRENT-START -->
+          ## État DATA courant — 2026-08-10
+
+          La lane DATA distingue strictement **raw sitemap capacity**, **pages détail structurelles**, **fraîcheur** et **inventaire Search**.
+
+          - Public Search avant 4.9A : **22 068 canonical URL representations / 16 domaines** — pas un compteur de biens uniques dédupliqués.
+          - Réservoir avant 4.9A : **56 810 seeds / 4 108 fresh_confirmed / 52 702 seed_only**.
+          - **DATA-4.8A ✅ PR #442** — merge `b9d38932bb3af0acfd08a681cc79abb5254b81e3`. Preuve finale : Dar Agadir + Aykana + LSF = **506 identités sitemap seed-absent → 0 page détail structurellement qualifiée** ; Promo Immo reste bloqué DNS. 0 write / 0 detail fetch.
+          - **DATA-4.9A 🟠 PR #444** — snapshot live de closeout certifié au head `0c7cfd9ee6b135e3ef0373933921452d8c35fd3f`, run `31366418643` PASS, artefact `sha256:5c867a1e17ab4a70b43cba13e33933426d4ed97c6af6863acbf465d2e0ca6080`, observé `2026-08-10T07:38:55.953Z`.
+          - 11 sources zéro-stock auditées ; **9 qualifiées**, **2 bloquées** : `capital-properties.ma` (`sitemap_index.xml` non reconnu sur ce snapshot) et `immobest.ma` (`sitemap.rss` non reconnu).
+          - Capacité sitemap net-new brute qualifiée : **10 631 identités**. Ce chiffre **n'est pas un nombre d'annonces**.
+          - Top capacité brute qualifiée : `valfoncier.ma` **6 190** (dont **5 793** sous `/bien-immobilier/`), `christiesrealestatemorocco.com` **1 252**, `immo-maroc.com` **1 204**, `agadirimmobilier.org` **519**, `nouraimmobilier.ma` **516**.
+          - 0 DB write, 0 Registry write, 0 policy change, 0 ingestion/display activation, 0 detail-page fetch.
+
+          **Prochain LOT masse : DATA-4.9B — High-Capacity Structural Detail Qualification**, read-only. Chemin critique `unverified` actuellement source-live : Val Foncier, Christie's Morocco, Immo Maroc, AgadirImmobilier.ma et ProImmobilier. Capital Properties reste hors chemin critique tant que son sitemap courant n'est pas requalifié.
+
+          Ensuite seulement : lot séparé de décision Source Policy, puis canary d'ingestion borné si autorisé.
+          <!-- DATA-4.7B-CURRENT-END -->
+          '''
+
+          roadmap = r'''
+          <!-- DATA-4.7B-CURRENT-START -->
+          # 0. État DATA prioritaire — quantité réelle 2026-08-10
+
+          > Ce bloc prévaut sur les anciennes mentions DATA plus bas lorsqu'elles désignent un prochain LOT désormais dépassé.
+
+          **North Star : augmenter l'inventaire utile réellement admissible sans transformer sitemap, fraîcheur, taxonomy ou signal interne en faux volume.**
+
+          - Public Search avant 4.9A : **22 068 canonical URL representations / 16 domaines**.
+          - Réservoir avant 4.9A : **56 810 seeds / 4 108 fresh_confirmed / 52 702 seed_only**.
+          - **DATA-4.8A ✅ #442** — merge `b9d38932bb3af0acfd08a681cc79abb5254b81e3` ; **506** identités sitemap seed-absent live sur Dar/Aykana/LSF → **0** detail candidate ; zéro write.
+          - **DATA-4.9A 🟠 #444** — snapshot live de closeout au head `0c7cfd9ee6b135e3ef0373933921452d8c35fd3f`, specialized run `31366418643` PASS ; **11 auditées / 9 qualifiées / 2 bloquées / 10 631 identités sitemap net-new brutes / 0 mutation**.
+
+          ## Résultat DATA-4.9A — raw capacity, pas inventaire
+
+          Snapshot certifié observé `2026-08-10T07:38:55.953Z`, artefact `sha256:5c867a1e17ab4a70b43cba13e33933426d4ed97c6af6863acbf465d2e0ca6080` :
+
+          1. `valfoncier.ma` — **6 190** raw net-new ; `/bien-immobilier/` = **5 793** ; auth `unverified` ; hidden/internal-only.
+          2. `christiesrealestatemorocco.com` — **1 252** ; auth `unverified` ; hidden/internal-only.
+          3. `immo-maroc.com` — **1 204** ; auth `unverified` ; hidden/internal-only.
+          4. `agadirimmobilier.org` — **519** ; `permission_required` ; hidden/internal-only.
+          5. `nouraimmobilier.ma` — **516** ; `permission_required` ; hidden/internal-only.
+          6. `agadirimmobilier.ma` — **366** ; auth `unverified`.
+          7. `mhproperties.ma` — **294** ; `permission_required`.
+          8. `proimmobilier.ma` — **267** ; auth `unverified`.
+          9. `immotaroudant.com` — **23** ; auth `unverified`.
+          10. `capital-properties.ma` — `BLOCKED_SOURCE_EVIDENCE` (`sitemap_index.xml` non reconnu sur ce snapshot).
+          11. `immobest.ma` — `BLOCKED_SOURCE_EVIDENCE` (`sitemap.rss` non reconnu comme sitemap XML).
+
+          **Interdiction d'interprétation : 10 631 ≠ 10 631 annonces.** Les path signals sont descriptifs uniquement. Robots/sitemap ≠ permission.
+
+          ## Prochain LOT DATA — DATA-4.9B High-Capacity Structural Detail Qualification
+
+          Strictement read-only, sans fetch détail.
+
+          1. chemin critique source-live `unverified` : Val Foncier, Christie's Morocco, Immo Maroc, AgadirImmobilier.ma, ProImmobilier ;
+          2. établir/revoir des patterns structurels positifs + exclusions taxonomy/category/agent/pagination ;
+          3. appliquer `REJECT_NAMESPACE_ROOT` et collisions fail-closed ;
+          4. produire manifests candidate/reject complets et digests ;
+          5. mesurer le **net-new detail candidate** réel par source ;
+          6. 0 DB/Registry/policy write, 0 ingestion/display activation ;
+          7. requalifier Capital Properties séparément si son sitemap courant redevient lisible, sans en faire un blocker du chemin critique.
+
+          **Après 4.9B seulement :** DATA-4.9C Source Policy Decision pour les gagnants, puis DATA-4.9D bounded seed canary si et seulement si la policy l'autorise.
+
+          Lane secondaire distincte : 28 signaux `public_index_result` fresh peuvent être requalifiés pour Search, mais ce n'est pas le chemin principal de masse.
+          <!-- DATA-4.7B-CURRENT-END -->
+          '''
+
+          session = r'''
+          <!-- DATA-CURRENT-START -->
+          ## DATA — vérité courante
+
+          - DATA-4.8A ✅ PR #442 — merge `b9d38932bb3af0acfd08a681cc79abb5254b81e3` ; preuve finale **506 → 0 detail candidate** sur Dar/Aykana/LSF ; Promo DNS bloqué ; zéro write.
+          - DATA-4.9A 🟠 PR #444 — Mass Source Onboarding Qualification, read-only raw sitemap capacity.
+          - Snapshot live de closeout : head `0c7cfd9ee6b135e3ef0373933921452d8c35fd3f`, run `31366418643` PASS, observé `2026-08-10T07:38:55.953Z`.
+          - Artefact : `sha256:5c867a1e17ab4a70b43cba13e33933426d4ed97c6af6863acbf465d2e0ca6080`.
+          - 11 sources zéro-stock auditées ; **9 live qualifiées / 2 bloquées** : Capital Properties et Immobest sur payload sitemap non reconnu.
+          - Capacité sitemap net-new brute totale qualifiée : **10 631** — explicitement **pas** un compteur d'annonces.
+          - Top : Val Foncier **6 190** dont `/bien-immobilier/` **5 793** ; Christie's Morocco **1 252** ; Immo Maroc **1 204** ; AgadirImmobilier.org **519** ; Noura Immobilier **516**.
+          - 0 detail-page fetch ; 0 DB/Registry/policy mutation ; 0 ingestion/display activation.
+
+          **Prochain LOT : DATA-4.9B — High-Capacity Structural Detail Qualification**, read-only. Chemin critique source-live `unverified` : Val Foncier, Christie's Morocco, Immo Maroc, AgadirImmobilier.ma, ProImmobilier. Capital Properties est requalifiable à part si son sitemap courant redevient lisible.
+
+          4.9B doit produire le nombre réel de pages détail structurellement qualifiées. 4.9C décidera ensuite la policy ; 4.9D seulement pourra envisager un canary d'ingestion borné.
+          <!-- DATA-CURRENT-END -->
+          '''
+
+          replace_block('README.md', '<!-- DATA-4.7B-CURRENT-START -->', '<!-- DATA-4.7B-CURRENT-END -->', readme)
+          replace_block('docs/ROADMAP.md', '<!-- DATA-4.7B-CURRENT-START -->', '<!-- DATA-4.7B-CURRENT-END -->', roadmap)
+          replace_block('docs/SESSION.md', '<!-- DATA-CURRENT-START -->', '<!-- DATA-CURRENT-END -->', session)
+          PY
+      - name: Commit corrected DATA snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/ROADMAP.md docs/SESSION.md
+          git commit -m "DATA-4.9A: record exact-head source drift in canonical docs"
+          git push origin HEAD:data/data-4-9a-mass-source-onboarding-qualification
