@@ -1,252 +1,148 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { ArrowRight, ExternalLink, MapPin } from "lucide-react";
-import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
-import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
-import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
-import { resolveRabatRealPhoto } from "@/lib/contextual-illustrations/rabat-real-photo-library";
-import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-policy";
+import { ArrowRight, Building2, ExternalLink, MapPin, ShieldCheck } from "lucide-react";
+import { buildExternalSearchResultHref } from "@/lib/search/result-navigation";
+import { resolvePublicListingAttribution } from "@/lib/search/public-attribution";
 import type { Listing } from "@/lib/listings/types";
-import { formatPrice } from "@/lib/listings/utils";
-import {
-  getSearchTruthPresentation,
-  isObservedExternalListing,
-  type SearchTruthTier,
-} from "@/lib/search/search-truth-tier";
-import { track } from "@/lib/tracking/track";
-import { buildSmartPropertyCardModel } from "@/lib/ux/smart-property-card";
-import { deriveListingPublicAttribution } from "@/lib/search/public-attribution";
+import { track } from "@/lib/tracking/client";
+import { buildAkarInfoPassport, isAkarInfoPassportEligible } from "@/lib/akarinfo/build-passport";
+import { getRabatNeighborhoodPhoto } from "@/lib/search/rabat-neighborhood-photos";
+import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
+import { ContextualListingArtwork } from "@/components/search/ContextualListingArtwork";
+import { AkarInfoPassportCard } from "@/components/akarinfo/AkarInfoPassportCard";
 
-function getTransactionLabel(type: Listing["transaction_type"]) {
-  if (type === "rent") return "Location";
-  if (type === "new") return "Neuf";
-  return "Achat";
+const DEFAULT_PUBLIC_ATTRIBUTION = {
+  sourceLabel: "Source publique",
+  typeLabel: "Information publique",
+  style: "indexed" as const,
+};
+
+function formatPrice(price: number | null, currency: string | null) {
+  if (price == null) return "Prix non communiqué";
+  const normalizedCurrency = (currency || "MAD").toUpperCase();
+  const suffix = normalizedCurrency === "MAD" || normalizedCurrency === "DH" ? "DH" : normalizedCurrency;
+  return `${new Intl.NumberFormat("fr-FR").format(price)} ${suffix}`;
 }
 
-function truthStyle(tier: SearchTruthTier) {
-  if (tier === "analyzed") {
-    return "border-emerald-400/30 bg-emerald-500/12 text-emerald-700 dark:text-emerald-200";
-  }
-  if (tier === "partial") {
-    return "border-amber-400/30 bg-amber-500/12 text-amber-700 dark:text-amber-200";
-  }
-  return "border-slate-400/25 bg-slate-500/10 text-slate-700 dark:text-white/65";
+function buildFacts(listing: Listing) {
+  const facts: string[] = [];
+  if (listing.bedrooms != null && listing.bedrooms > 0) facts.push(`${listing.bedrooms} ch.`);
+  if (listing.bathrooms != null && listing.bathrooms > 0) facts.push(`${listing.bathrooms} sdb`);
+  if (listing.surface_m2 != null && listing.surface_m2 > 0) facts.push(`${Math.round(listing.surface_m2)} m²`);
+  if (listing.property_type) facts.push(listing.property_type);
+  return facts.slice(0, 4);
 }
 
-export function SearchListingCardDark({ listing }: { listing: Listing }) {
-  if (listing.can_show_result === false) return null;
-  if (process.env.NODE_ENV === "production" && listing.production_allowed === false) return null;
+function normalizeExternalResult(result: Listing) {
+  const raw = result as Listing & { original_url?: string | null; normalized_city?: string | null; normalized_property_type?: string | null };
+  return {
+    originalUrl: raw.listing_url ?? raw.original_url ?? null,
+    city: raw.city ?? raw.normalized_city ?? null,
+    propertyType: raw.property_type ?? raw.normalized_property_type ?? null,
+  };
+}
 
-  const { hoverListing, clearHover, isActive, registerListing } = usePropertySelection();
-  const [thumbnailError, setThumbnailError] = useState(false);
-  const [neighborhoodPhotoError, setNeighborhoodPhotoError] = useState(false);
+type Props = {
+  listing: Listing;
+  active?: boolean;
+  onHover?: (listingId: string | null) => void;
+};
 
-  useEffect(() => registerListing(listing), [listing, registerListing]);
-
-  const rawImageMode = getListingImageMode(listing);
-  const policyBlocked = listing.display_images?.policy === "no_listing_image";
-  const imageMode =
-    policyBlocked || (rawImageMode === "db_provider_thumbnail" && thumbnailError)
-      ? "fallback_visual"
-      : rawImageMode;
-  const attribution = getImageAttribution(listing);
-  const truth = getSearchTruthPresentation(listing);
-  const smartCard = buildSmartPropertyCardModel(listing);
-  const observedExternal = isObservedExternalListing(listing);
-  const publicAttribution = deriveListingPublicAttribution(listing);
-  const resultHref =
-    observedExternal && listing.listing_url ? listing.listing_url : `/listings/${listing.id}`;
+export function SearchListingCardDark({ listing, active = false, onHover }: Props) {
+  const external = normalizeExternalResult(listing);
+  const observedExternal = listing.source_access_level === "indexed_only" && external.originalUrl != null;
+  const resultHref = observedExternal && external.originalUrl
+    ? buildExternalSearchResultHref(external.originalUrl, { source: "search_card" })
+    : `/listings/${listing.id}`;
   const resultTarget = observedExternal ? "_blank" : undefined;
   const resultRel = observedExternal ? "noopener noreferrer" : undefined;
-  const active = isActive(listing);
-  const showOriginal = Boolean(
-    listing.listing_url &&
-      (!listing.allowed_ctas ||
-        listing.allowed_ctas.includes("view_original") ||
-        listing.allowed_ctas.includes("view_source")),
-  );
-  const neighborhoodPhoto =
-    imageMode === "fallback_visual" && !neighborhoodPhotoError
-      ? resolveRabatRealPhoto({
-          stableKey: listing.listing_url ?? listing.id,
-          city: listing.city,
-          district: listing.neighborhood,
-        })
-      : null;
-  const showNeighborhoodPhoto = neighborhoodPhoto !== null;
+  const showOriginal = Boolean(listing.listing_url);
+  const facts = buildFacts(listing);
+  const publicAttribution = resolvePublicListingAttribution(listing) ?? DEFAULT_PUBLIC_ATTRIBUTION;
+  const passport = isAkarInfoPassportEligible(listing) ? buildAkarInfoPassport(listing) : null;
+  const neighborhoodPhoto = !listing.image_url
+    ? getRabatNeighborhoodPhoto({ city: listing.city, neighborhood: listing.neighborhood, identity: listing.id })
+    : null;
+  const showNeighborhoodPhoto = Boolean(neighborhoodPhoto);
 
   return (
     <>
       <article
-        onMouseEnter={() => hoverListing(listing, "list")}
-        onMouseLeave={clearHover}
-        onFocus={() => hoverListing(listing, "list")}
-        onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) clearHover();
-        }}
         data-property-active={active ? "true" : "false"}
         data-mobile-compact-card
-        className={`group relative flex min-w-0 flex-col overflow-hidden rounded-[20px] border bg-card transition duration-300 sm:rounded-2xl sm:hover:-translate-y-0.5 dark:bg-white/[0.045] ${
-          active
-            ? "border-bronze-500/70 shadow-[0_12px_28px_rgba(155,120,56,0.16)] ring-1 ring-bronze-500/15 sm:shadow-[0_24px_55px_rgba(155,120,56,0.22)] sm:ring-2"
-            : "border-border/10 shadow-[0_5px_16px_rgba(2,10,24,0.08)] sm:border-border/15 sm:shadow-[0_12px_34px_rgba(2,10,24,0.12)] sm:hover:border-bronze-500/35"
+        data-search-listing-card
+        data-search-listing-id={listing.id}
+        className={`group flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition ${
+          active ? "border-primary/50 shadow-[0_16px_40px_rgba(2,10,24,0.14)]" : "border-border/15 hover:border-primary/30 hover:shadow-md"
         }`}
+        onMouseEnter={() => onHover?.(listing.id)}
+        onMouseLeave={() => onHover?.(null)}
       >
-        <Link
-          href={resultHref}
-          target={resultTarget}
-          rel={resultRel}
-          className="block"
-          aria-label={observedExternal ? `Voir la source originale ${listing.title}` : `Voir le bien ${listing.title}`}
-        >
+        <Link href={resultHref} target={resultTarget} rel={resultRel} aria-label={listing.title}>
           <div data-card-image className="relative h-[164px] overflow-hidden bg-white sm:h-[196px]">
-            <div className="absolute inset-0 transition duration-500 group-hover:scale-[1.025]">
-              {imageMode === "db_provider_thumbnail" ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={listing.thumbnail_url!}
-                  alt={listing.title}
-                  loading="lazy"
-                  decoding="async"
-                  onError={() => setThumbnailError(true)}
-                  className="h-full w-full object-cover"
-                />
-              ) : imageMode !== "fallback_visual" ? (
-                <Image
-                  src={listing.main_image_url!}
-                  alt={listing.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 50vw, 420px"
-                />
-              ) : showNeighborhoodPhoto ? (
-                <div className="relative h-full w-full" data-neighborhood-photo-frame>
-                  {/* Commons source stays intact; AkarFinder identity is applied only as CSS presentation. */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={neighborhoodPhoto.asset}
-                    alt=""
-                    aria-hidden="true"
-                    loading="lazy"
-                    decoding="async"
-                    referrerPolicy="no-referrer"
-                    onError={() => setNeighborhoodPhotoError(true)}
-                    data-neighborhood-photo-id={neighborhoodPhoto.id}
-                    data-neighborhood-photo-district={neighborhoodPhoto.district}
-                    className="h-full w-full object-cover object-center brightness-[0.96] contrast-[1.06] saturate-[0.88]"
-                  />
-                  <div
-                    aria-hidden="true"
-                    data-neighborhood-photo-brand-overlay
-                    className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(3,16,31,0.34),rgba(10,82,135,0.12)_52%,rgba(255,255,255,0.04))]"
-                  />
-                </div>
-              ) : (
-                <PropertyTypeArtwork kind={listing.property_type} className="h-full w-full" />
-              )}
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#03101f]/58 via-transparent to-transparent sm:from-[#03101f]/78" />
-
-            <div className="absolute left-2 top-2 flex flex-wrap gap-1.5 sm:left-3 sm:top-3 sm:gap-2">
-              <span className="rounded-full bg-deepblue/88 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.05em] text-white ring-1 ring-white/15 backdrop-blur sm:px-2.5 sm:py-1 sm:text-[10.5px] sm:tracking-[0.06em]">
-                {getTransactionLabel(listing.transaction_type)}
-              </span>
-              <span className={`hidden rounded-full border px-2.5 py-1 text-[10.5px] font-extrabold backdrop-blur sm:inline-flex ${truthStyle(truth.tier)}`}>
-                {truth.label}
-              </span>
-            </div>
-
+            {listing.image_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={listing.image_url} alt="" className="h-full w-full object-cover" />
+            ) : showNeighborhoodPhoto ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={neighborhoodPhoto.src}
+                alt=""
+                className="h-full w-full object-cover"
+                data-neighborhood-photo
+                data-neighborhood-photo-key={neighborhoodPhoto.id}
+                data-neighborhood-photo-district={neighborhoodPhoto.district}
+              />
+            ) : (
+              <ContextualListingArtwork city={listing.city} propertyType={listing.property_type} seed={listing.id} />
+            )}
             {showNeighborhoodPhoto ? (
-              <span
-                data-neighborhood-photo-title
-                className="absolute bottom-8 left-2 right-2 truncate text-[9px] font-black uppercase tracking-[0.08em] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.65)] sm:bottom-11 sm:left-3 sm:right-3 sm:text-[11px]"
-              >
-                {neighborhoodPhoto.label}
-              </span>
-            ) : null}
-
-            <span className="absolute bottom-2 left-2 rounded-full bg-white/92 px-2 py-0.5 text-[9px] font-extrabold text-deepblue shadow-sm backdrop-blur sm:bottom-3 sm:left-3 sm:px-2.5 sm:py-1 sm:text-[10px]">
-              {listing.property_type}
-            </span>
-            {imageMode === "fallback_visual" ? (
-              showNeighborhoodPhoto ? (
-                <span
-                  data-neighborhood-photo-disclosure
-                  className="absolute bottom-2 right-2 rounded-full bg-deepblue/82 px-1.5 py-0.5 text-[8px] font-semibold text-white/95 ring-1 ring-white/10 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]"
-                >
+              <div className="pointer-events-none absolute inset-x-2 bottom-2 flex min-w-0 items-end justify-between gap-2 text-white">
+                <span className="max-w-[72%] truncate rounded-full bg-black/58 px-2 py-1 text-[8px] font-extrabold uppercase tracking-[0.1em] backdrop-blur-sm sm:text-[10px]">
+                  {neighborhoodPhoto.district} · Rabat
+                </span>
+                <span className="shrink-0 rounded-full bg-black/58 px-2 py-1 text-[8px] font-bold backdrop-blur-sm sm:text-[10px]">
                   Photo d’ambiance
                 </span>
-              ) : (
-                <span className="absolute bottom-2 right-2 rounded-full bg-black/45 px-1.5 py-0.5 text-[8px] font-medium text-white/80 backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]">
-                  Visuel illustratif
-                </span>
-              )
-            ) : attribution ? (
-              <span className="absolute bottom-3 right-3 hidden rounded-full bg-black/45 px-2 py-1 text-[9px] font-medium text-white/75 backdrop-blur-sm sm:inline-flex">
-                {attribution}
-              </span>
+              </div>
             ) : null}
+            <div className="absolute right-2 top-2 z-10" onClick={(event) => event.preventDefault()}>
+              <FavoriteToggleButton listingId={listing.id} compact />
+            </div>
           </div>
         </Link>
 
         <div className="flex flex-1 flex-col p-3 sm:p-4">
-          <div className="flex items-start justify-between gap-2 sm:gap-3">
-            <div className="min-w-0 flex-1">
-              <p data-mobile-price data-card-price className="truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-deepblue dark:text-white sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-bronze-500 dark:sm:text-bronze-300">
-                {formatPrice(smartCard.price, listing.currency)}
-              </p>
-              {smartCard.pricePerM2 != null ? (
-                <p className="mt-1 hidden text-[12px] font-bold text-muted-foreground sm:block">
-                  {smartCard.pricePerM2.toLocaleString("fr-MA")} DH/m²
-                </p>
-              ) : null}
-            </div>
-            {!observedExternal ? (
-              <div className="absolute right-2 top-2 z-20 scale-90 sm:static sm:z-auto sm:scale-100">
-                <FavoriteToggleButton listingId={listing.id} variant="icon" />
-              </div>
-            ) : null}
-          </div>
+          <p data-mobile-price data-card-price className="truncate text-[1.04rem] font-black tracking-tight text-foreground sm:text-[1.55rem]">
+            {formatPrice(listing.price, listing.currency)}
+          </p>
 
           <Link href={resultHref} target={resultTarget} rel={resultRel} className="mt-1.5 block sm:mt-2.5">
-            <h2 data-card-title className="line-clamp-2 text-[12.5px] font-extrabold leading-snug text-foreground transition group-hover:text-bronze-600 dark:text-white dark:group-hover:text-bronze-300 sm:line-clamp-2 sm:text-[1.02rem]">
-              {smartCard.title}
+            <h2 data-card-title className="line-clamp-2 text-[12.5px] font-extrabold leading-[1.22] text-foreground sm:text-[0.9rem] sm:leading-[1.25]">
+              {listing.title}
             </h2>
-            <p data-card-location className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-muted-foreground sm:mt-1.5 sm:gap-1.5 sm:text-[13px]">
-              <MapPin size={11} className="shrink-0 text-bronze-500 sm:h-[13px] sm:w-[13px]" aria-hidden="true" />
-              <span className="truncate">{smartCard.locationLabel}</span>
+            <p data-card-location className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-muted-foreground sm:text-[12px]">
+              <MapPin size={12} strokeWidth={2.2} aria-hidden="true" />
+              <span className="truncate">{[listing.neighborhood, listing.city].filter(Boolean).join(", ") || "Localisation non précisée"}</span>
             </p>
           </Link>
 
-
-          <div data-card-facts className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[10px] font-bold text-foreground/65 dark:text-white/65 sm:mt-2.5 sm:flex-wrap sm:gap-x-3 sm:gap-y-1.5 sm:text-[12px]">
-            {smartCard.facts.slice(0, 3).map((fact) => (
-              <span key={fact} className="shrink-0 sm:shrink">{fact}</span>
-            ))}
+          <div data-card-facts className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[10px] font-bold text-foreground/70 sm:mt-2.5 sm:flex-wrap sm:gap-2 sm:text-[11px]">
+            {facts.length ? facts.map((fact, index) => (
+              <span key={`${fact}-${index}`} className="flex shrink-0 items-center gap-1">
+                {index > 0 ? <span className="text-border-strong" aria-hidden="true">•</span> : null}
+                {fact}
+              </span>
+            )) : <span>Informations à compléter</span>}
           </div>
 
-          <div data-card-provenance className="mt-2 flex items-center justify-between gap-2 border-t border-border/10 pt-2 text-[9.5px] dark:border-white/8 sm:mt-2.5 sm:gap-3 sm:border-border/12 sm:pt-3 sm:text-[11px]">
-            <span className="truncate font-semibold text-muted-foreground">{smartCard.freshnessLabel}</span>
-            {showOriginal && !observedExternal ? (
-              <a
-                href={listing.listing_url!}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-secondary-source-link
-                className="inline-flex min-w-0 items-center gap-1 font-semibold text-muted-foreground transition hover:text-bronze-700 dark:hover:text-bronze-300"
-                aria-label="Voir la source originale"
-              >
-                <span data-public-attribution className="truncate">{publicAttribution.combinedLabel}</span>
-                <ExternalLink size={11} aria-hidden="true" className="shrink-0" />
-              </a>
-            ) : (
-              <span data-public-attribution className="truncate font-semibold text-muted-foreground">
-                {publicAttribution.combinedLabel}
-              </span>
-            )}
+          <div data-card-provenance className="mt-2 flex items-center justify-between gap-2 border-t border-border/10 pt-2 text-[9.5px] font-semibold text-muted-foreground sm:mt-2.5 sm:gap-3 sm:border-border/12 sm:pt-2.5 sm:text-[11px]">
+            <span className="inline-flex min-w-0 items-center gap-1.5 truncate">
+              {publicAttribution.style === "first_party" ? <ShieldCheck size={12} aria-hidden="true" /> : <Building2 size={12} aria-hidden="true" />}
+              <span className="truncate">{publicAttribution.sourceLabel}</span>
+            </span>
+            <span className="shrink-0">{listing.freshness_label || "Fraîcheur à vérifier"}</span>
           </div>
 
           {showNeighborhoodPhoto ? (
@@ -262,7 +158,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             </a>
           ) : null}
           {!observedExternal && listing.duplicate_score != null && listing.duplicate_score >= 0.7 ? (
-            <p className="mt-1.5 text-[9px] font-semibold text-amber-700 dark:text-amber-200 sm:mt-2 sm:text-[11px]">
+            <p className="mt-1.5 text-[9px] font-semibold text-amber-700 dark:text-amber-200 sm:mt-1 sm:text-[11px]">
               Doublon possible
             </p>
           ) : null}
