@@ -1,0 +1,38 @@
+{
+  "schema_version": "p1b14-typed-geometry-policy-v1",
+  "policy": {
+    "read_only": true,
+    "registry_mutation": false,
+    "resolution_mutation": false,
+    "name_only_cross_type_binding_forbidden": true,
+    "neighborhood_polygon_requires_neighborhood_grade_source": true,
+    "administrative_polygon_may_not_impersonate_neighborhood": true,
+    "map_neighborhood_choropleth_default": false
+  },
+  "casablanca_administrative_inventory": {
+    "dataset": "casablanca-arrondissements-osm",
+    "territorial_type": "arrondissement",
+    "source_entity_type": "osm_relation",
+    "source_admin_level": "10",
+    "expected_features": 16,
+    "publication_status": "shadow"
+  },
+  "explicit_decisions": [
+    {
+      "registry_entity_id": "district_casablanca_maarif",
+      "registry_entity_type": "neighborhood",
+      "geometry_canonical_id": "maarif",
+      "geometry_relation_id": 2801474,
+      "geometry_territorial_type": "arrondissement",
+      "decision": "REJECT_CROSS_TYPE_NAME_ONLY_BINDING"
+    },
+    {
+      "registry_entity_id": "district_casablanca_oasis",
+      "registry_entity_type": "neighborhood",
+      "geometry_canonical_id": null,
+      "geometry_relation_id": null,
+      "geometry_territorial_type": null,
+      "decision": "KEEP_GEOMETRY_UNRESOLVED"
+    }
+  ]
+}
