@@ -1,0 +1,96 @@
+name: P1C.3 Neighborhood Offer Activation Review Gate
+
+on:
+  pull_request:
+    paths:
+      - 'data/market/p1c3-neighborhood-offer-activation-review-policy.json'
+      - 'scripts/audits/p1c3-neighborhood-offer-activation-review.ts'
+      - 'scripts/scrapers/__tests__/p1c3-neighborhood-offer-activation-review.test.ts'
+      - '.github/workflows/p1c3-neighborhood-offer-activation-review.yml'
+      - 'docs/CARTE_ROADMAP.md'
+      - 'data/market/p1c2-neighborhood-offer-reliability-policy.json'
+      - 'supabase/migrations/20260810133000_p1c2_neighborhood_offer_reliability.sql'
+  push:
+    branches: [main]
+    paths:
+      - 'data/market/p1c3-neighborhood-offer-activation-review-policy.json'
+      - 'scripts/audits/p1c3-neighborhood-offer-activation-review.ts'
+      - 'scripts/scrapers/__tests__/p1c3-neighborhood-offer-activation-review.test.ts'
+      - '.github/workflows/p1c3-neighborhood-offer-activation-review.yml'
+      - 'docs/CARTE_ROADMAP.md'
+      - 'data/market/p1c2-neighborhood-offer-reliability-policy.json'
+      - 'supabase/migrations/20260810133000_p1c2_neighborhood_offer_reliability.sql'
+
+permissions:
+  contents: read
+
+jobs:
+  review-neighborhood-offer-activation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: P1C.3 static activation-review boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const policy=JSON.parse(fs.readFileSync('data/market/p1c3-neighborhood-offer-activation-review-policy.json','utf8'));
+          const audit=fs.readFileSync('scripts/audits/p1c3-neighborhood-offer-activation-review.ts','utf8');
+          if(policy.schema_version!=='p1c3-neighborhood-offer-activation-review-policy-v1') throw new Error('P1C.3 policy schema drift');
+          if(JSON.stringify(policy.review_candidate_levels)!==JSON.stringify(['moderate','strong'])) throw new Error('P1C.3 review levels drift');
+          if(policy.principles.reliability_is_necessary_but_not_sufficient!==true) throw new Error('reliability boundary missing');
+          if(policy.principles.missing_acquisition_representativeness_forces_hold!==true) throw new Error('representativeness HOLD missing');
+          if(policy.principles.p1c3_is_read_only_review!==true||policy.principles.public_metric_activation_requires_separate_write_lot!==true) throw new Error('P1C.3 read-only/write-lot boundary drift');
+          if(policy.current_certification_boundary.acquisition_representativeness_source_available!==false) throw new Error('P1C.4 boundary unexpectedly bypassed');
+          if(policy.current_certification_boundary.expected_canary_eligible_count!==0) throw new Error('current canary expectation drift');
+          if(audit.includes('.rpc(')) throw new Error('P1C.3 must not depend on global report RPCs');
+          for(const mutation of ['.insert(','.update(','.delete(','.upsert(']) if(audit.includes(mutation)) throw new Error(`P1C.3 audit must be read-only: ${mutation}`);
+          NODE
+          if compgen -G 'supabase/migrations/*p1c3*' > /dev/null; then
+            echo 'P1C.3 is a review-only lot; activation writes require a separate lot'
+            exit 1
+          fi
+
+      - name: No public runtime consumer
+        run: |
+          if grep -R -n -E 'p1c3-neighborhood-offer-activation-review|P1C3_(ACTIVATION|CANARY)' app components lib --exclude-dir=node_modules; then
+            echo 'P1C.3 review must not be consumed by public runtime/UI'
+            exit 1
+          fi
+
+      - name: Decision semantics
+        run: npx tsx --test scripts/scrapers/__tests__/p1c3-neighborhood-offer-activation-review.test.ts
+
+      - name: Live read-only activation review
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/p1c3-neighborhood-offer-activation-review.ts
+
+      - name: Enforce fail-closed activation decision
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/p1c3-neighborhood-offer-activation-review.json');
+          if(r.verdict!=='P1C3_ACTIVATION_REVIEW_HOLD'||r.decision!=='HOLD') throw new Error(JSON.stringify(r));
+          if(r.review.canary_eligible_count!==0||r.review.activation_drift_count!==0||r.review.price_canary_eligible_count!==0) throw new Error('unexpected P1C.3 activation eligibility/drift');
+          if(r.review.candidate_count!==r.review.representativeness_hold_count) throw new Error('review candidate escaped representativeness HOLD');
+          if(r.contract.read_only!==true||r.contract.db_mutation!==false||r.contract.public_activation!==false||r.contract.metric_layers_activated!==false||r.contract.auto_activation!==false||r.contract.national_bulk_activation!==false) throw new Error('P1C.3 activation boundary drift');
+          if(r.contract.acquisition_representativeness_source_available!==false||r.contract.market_representativeness_certified!==false) throw new Error('P1C.4 boundary drift');
+          if(r.contract.global_report_rpc_required!==false) throw new Error('heavy RPC dependency returned');
+          if(r.next_boundary!=='P1C.4 Acquisition Representativeness Qualification') throw new Error(`unexpected next boundary ${r.next_boundary}`);
+          NODE
+
+      - name: Roadmap handoff
+        run: |
+          grep -q 'P1C.2.*Reliability Engine.*✅' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.3.*Activation Review.*CURRENT' docs/CARTE_ROADMAP.md
+          grep -q 'P1C.4.*Acquisition Representativeness Qualification' docs/CARTE_ROADMAP.md
+
+      - name: TypeScript
+        run: npx tsc --noEmit

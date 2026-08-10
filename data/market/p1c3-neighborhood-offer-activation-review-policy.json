@@ -1,0 +1,41 @@
+{
+  "schema_version": "p1c3-neighborhood-offer-activation-review-policy-v1",
+  "scope": "Explicit activation review for P1C.2 neighborhood offer reliability candidates",
+  "activation_states": ["off", "shadow", "canary", "on"],
+  "review_candidate_levels": ["moderate", "strong"],
+  "metric_catalog": ["price_mad", "surface_m2", "price_per_m2_mad"],
+  "decision_codes": [
+    "NOT_REVIEW_CANDIDATE",
+    "HOLD_ACTIVATION_DRIFT",
+    "HOLD_MARKET_REPRESENTATIVENESS_REQUIRED",
+    "CANARY_ELIGIBLE"
+  ],
+  "requirements_for_canary": {
+    "reliability_level_must_be_review_candidate": true,
+    "market_representativeness_certified_for_exact_scope": true,
+    "explicit_human_or_release_review_required": true,
+    "public_activation_must_still_be_false_before_promotion": true,
+    "metric_layers_must_still_be_false_before_promotion": true,
+    "activation_scope_is_neighborhood_transaction_metric": true,
+    "national_bulk_activation_forbidden": true
+  },
+  "principles": {
+    "reliability_is_necessary_but_not_sufficient": true,
+    "missing_acquisition_representativeness_forces_hold": true,
+    "p1c2_never_auto_activates": true,
+    "p1c3_is_read_only_review": true,
+    "no_fuzzy_geo_inference": true,
+    "price_and_rent_never_mixed": true,
+    "public_metric_activation_requires_separate_write_lot": true,
+    "p2_geometry_certification_is_separate_from_offer_metric_activation": true
+  },
+  "current_certification_boundary": {
+    "acquisition_representativeness_source_available": false,
+    "market_representativeness_certified": false,
+    "public_activation": false,
+    "metric_layers_activated": false,
+    "expected_canary_eligible_count": 0,
+    "expected_decision_until_p1c4": "HOLD"
+  },
+  "next_boundary_if_hold": "P1C.4 Acquisition Representativeness Qualification"
+}
