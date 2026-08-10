@@ -1,9 +1,102 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-10**  
-**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; RABAT-REAL-PHOTO-LIBRARY-1 ✅ PR #468 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; RABAT-REAL-PHOTO-LIBRARY-1 ✅ PR #468 ; SEARCH-UX-1 🟠 PR #473 ACTIVE/BLOCKED_BY_CI ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
+
+<!-- SEARCH-UX-WINDOW-RECONCILIATION-START -->
+# 0A. Reconciliation cross-window — Search UX / Visual Stack — 2026-08-10
+
+> **Bloc prioritaire pour la lane UX/Search de cette fenêtre.** Il prévaut sur les anciennes mentions `Prochain lot UX/Search`, `coverage audit next` ou `Prochaine action exacte / UX Search` plus bas lorsqu'elles décrivent un ordre désormais dépassé. Il ne réécrit pas les décisions des lanes DATA/Carte.
+
+Main vérifié avant documentation : `f4563602119c8c01298bf694285e35856097bbd6` — merge PR #472 `P1C.4A — Acquisition Source Universe & Denominator Design`. La branche de cette fenêtre part de ce main.
+
+Règle de lifecycle obligatoire pour tous les lots ci-dessous :
+
+`IMPLEMENTATION → DOUBLE CHECK → SCORE /10 → CORRECTIONS → RE-TEST → RE-SCORE → CERTIFICATION`
+
+**Aucun lot UX/Search n'est CLOSED sous 9/10.** Une PR ouverte n'est jamais considérée active par son seul état GitHub : elle doit être classée et prouvée.
+
+## SEARCH-UX-1 — Inventory-first cards & responsive grid — 🟠 ACTIVE / BLOCKED_BY_CI — PR #473
+
+- **Lane** : UX/Search.
+- **Responsabilité** : faire converger la SERP vers `real estate before interface` : cards compactes, image-first/inventory-first, densité **2 colonnes mobile/tablette → 3 desktop intermédiaire → 4 wide desktop**, whole-card primary action, suppression du gros CTA plein largeur, favoris/attribution/truth conservés en couche secondaire.
+- **Dépendances** : SEARCH-UX-FAST-1 #390 ; SEARCH-WORDING-PURITY-1 #391 ; SEARCH-CONTINUOUS-FLOW-1 #393 ; SEARCH-MOBILE-CARD-GRID-1 #394 ; UNIFIED-LISTING-CARD-1 #407 ; CONTEXTUAL-VISUAL-ASSETS-1 #414 ; DETERMINISTIC-ATTRIBUTION-1 #416 ; SEARCH-ACTION-HIERARCHY-1 #418 ; SEARCH-DESKTOP-SPLIT-1 #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 #437 ; RABAT-REAL-PHOTO-LIBRARY-1 #468.
+- **Branche** : `feat/search-ux-1-cards-grid`.
+- **PR** : #473 `SEARCH-UX-1 — Inventory-first cards & responsive grid`.
+- **Head exact documenté** : `42e951814b204ca67b846b81613a1080de3e9ea3` avant les commits documentaires de cette reconciliation.
+- **État** : ACTIVE mais **NON CERTIFIÉ**. Merge interdit tant que tous les exact-head gates et l'audit visuel final ne sont pas verts.
+- **Preuves acquises au head `42e951…`** : Visible Dedup, P0 Closure, Final Design Accessibility, UX Gate 0, Canonical Baseline Compile/Validation, Search UX Fast, B2B, Seller Structured Draft, User Journey, Home Proof, Unified Listing Card, Contextual Illustrations Foundation, Desktop Split, Mobile Card Grid, Wording Purity, Final Sweep, Geo Productization, Post-results Cleanup, Intent Hubs, Search Truth, Deterministic Attribution, Property Type Visual Option A et ODM-09D = SUCCESS.
+- **Double-check / score** : **pas de score final attribuable sur le head courant**. Les preuves visuelles d'anciens heads ne ferment pas ce lot. Certification attendue sur **1440×900 + 390×844**, score **>=9/10** après re-test exact-head.
+- **Blocker** : `SEARCH-ACTION-HIERARCHY-1 Gate` — contrat/types/build SUCCESS mais **visual-certification FAILURE** sur le head courant. Lors du dernier contrôle, `UX P1 Mobile Decision Ergonomics` et `CONTEXTUAL-VISUAL-ASSETS-1` étaient encore en cours.
+- **Prochaine étape** : réconcilier/corriger le finding visuel sans restaurer le gros CTA, attendre les workflows exact-head restants, recapturer 1440×900 et 390×844, Benchmark/Reviewer indépendant, score, corriger si <9, re-test/re-score puis Release Certification avant merge.
+
+## VISUAL-REPRESENTATION-ENGINE-1 — 🟡 PLANNED / BLOCKED_BY_SEARCH-UX-1
+
+- **Lane** : UX/Search + Visual Stack.
+- **Responsabilité** : créer le contrat de sélection visuelle déterministe et truth-safe pour les cards : `PROPERTY → STREET → DISTRICT → CITY → TYPE`, avec fallback explicite pour inventaire incomplet ; une photo d'ambiance ne doit jamais être présentée comme photo du bien.
+- **Dépendances** : SEARCH-UX-1 certifié/mergé ; `RABAT-REAL-PHOTO-LIBRARY-1`; contextual assets/foundation ; signaux ville/quartier/rue uniquement lorsqu'ils sont structurés et certifiés ; image policy/provenance existante.
+- **Branche** : aucune — **ne pas ouvrir avant le main post-#473**.
+- **PR** : aucune.
+- **État** : PLANNED / BLOCKED_BY_SEARCH-UX-1.
+- **Preuves** : hiérarchie produit décidée dans cette fenêtre ; assets et résolveurs existants réutilisables, mais aucun contrat VRE complet certifié à ce stade.
+- **Double-check / score** : N/A avant implémentation ; cible >=9/10 après intégration dans Search.
+- **Blocker** : #473 non fermé et chaîne visuelle actuelle encore en mutation.
+- **Prochaine étape** : créer une branche/PR dédiée depuis le `main` post-#473 et définir tests déterministes pour photo du bien, rue, district, ville, type, erreurs distantes, données absentes, stabilité/reload, provenance et no-fabrication.
+
+## SEARCH-UX-2 — Compact Search Header & Filters — 🟡 PLANNED
+
+- **Lane** : UX/Search desktop + responsive.
+- **Responsabilité** : navbar claire/légère, search row compacte, Type/Prix/Plus de filtres/Rechercher, catégories secondaires, compteur + tri ; réduire la masse visuelle navy sans perdre l'identité AkarFinder.
+- **Dépendances** : SEARCH-UX-1 + contrat VRE pour éviter de stabiliser le chrome avant la card/visual stack.
+- **Branche / PR** : aucune.
+- **État** : PLANNED.
+- **Preuves** : audit de référence de cette fenêtre ; target desktop 1440×900.
+- **Double-check / score** : N/A ; cible >=9/10.
+- **Blocker** : prédécesseurs non fermés.
+- **Prochaine étape** : après VRE, définir budget vertical mesurable du chrome et position Y de la première rangée avant implémentation.
+
+## SEARCH-UX-3 — Mobile First-Viewport Compression — 🟡 PLANNED
+
+- **Lane** : UX/Search mobile.
+- **Responsabilité** : réduire drastiquement l'interface avant inventaire, garder **2 colonnes**, exposer `recherche + filtre + compteur/tri` puis résultats presque immédiatement.
+- **Dépendances** : SEARCH-UX-2 ; Mobile Card Grid #394 reste predecessor.
+- **Branche / PR** : aucune.
+- **État** : PLANNED.
+- **Preuves** : benchmark de référence + audits 390×844 ; aucune nouvelle implémentation encore certifiée.
+- **Double-check / score** : N/A ; cible >=9/10.
+- **Blocker** : header/search compact non stabilisé.
+- **Prochaine étape** : verrouiller un seuil mesurable pour Y de la première card et le budget vertical de contrôles avant code.
+
+## SEARCH-UX-4 — View Modes & Secondary Navigation — 🟡 PLANNED
+
+- **Lane** : UX/Search ; coordination Carte obligatoire.
+- **Responsabilité** : réévaluer `Liste/Mixte/Carte`; simplifier mobile vers `Liste | Carte`, réserver Mixte au desktop si utile, puis décider séparément une éventuelle navigation secondaire `Recherche/Favoris/Publier/Alertes/Menu`.
+- **Dépendances** : SEARCH-UX-2/3 + SEARCH-DESKTOP-SPLIT-1 #423 ; aucune modification de la logique Carte sans coordination de sa lane.
+- **Branche / PR** : aucune.
+- **État** : PLANNED.
+- **Preuves** : audit de référence uniquement.
+- **Double-check / score** : N/A ; cible >=9/10.
+- **Blocker** : décisions desktop/mobile précédentes non terminées.
+- **Prochaine étape** : prototyper/mesurer l'utilité de chaque mode après stabilisation des cards et du chrome.
+
+## CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1 — 🟠 RECONCILIATION REQUIRED
+
+- **Lane** : UX/Search Visual Stack.
+- **Responsabilité** : audit read-only de la couverture/répétition/échec des fallbacks visuels après #468.
+- **Dépendances** : #468 ; désormais aussi SEARCH-UX-1 et le futur VRE, car ces lots changent la présentation et la chaîne de fallback mesurée.
+- **Branche / PR** : aucune.
+- **État** : **RECONCILIATION REQUIRED**, pas ACTIVE. L'ancien texte qui le désigne comme `prochain lot UX/Search` est devenu obsolète.
+- **Preuves** : aucun nouvel audit post-#473/VRE disponible.
+- **Double-check / score** : N/A, audit read-only.
+- **Blocker** : mesure prématurée tant que la nouvelle card/Visual Stack n'est pas stabilisée.
+- **Prochaine étape** : le replanifier après le contrat VRE, ou l'intégrer comme sous-preuve read-only de VRE ; aucun nouvel asset par intuition.
+
+### Reconciliation DATA constatée sans réécriture de sa lane
+
+`DATA-4.9B` n'est plus actif : **PR #452 CLOSED/MERGED**, head final `e79db482bcab23c819766d1378833025b33ebbd2`, merge `45631345a6efb653256273354d2fb903b33c1ff9`. Toute ancienne mention `DATA-4.9B 🟠` dans ce document est classée **HISTORICAL/OBSOLETE**. La prochaine responsabilité DATA reste celle définie par sa lane (`DATA-4.9C`) ; cette fenêtre UX/Search n'en change pas le scope.
+<!-- SEARCH-UX-WINDOW-RECONCILIATION-END -->
 
 <!-- DATA-4.7B-CURRENT-START -->
 # 0. État DATA prioritaire — quantité réelle 2026-08-10
@@ -396,7 +489,6 @@ Production initiale : **15 399 listings éligibles / 0 résolu / 0 % coverage / 
 
 Preflight **69/69**, write **69/69**, **14 quartiers / 5 villes**, aucune inférence/fuzzy/spatiale. Rapport post-write : **15 395 listings éligibles / 69 résolus / 0,45 % coverage / 0 collision / 0 conflit**, `metric_layers_activated=false`.
 
-
 ## P1B.5 — Canonical Geo Normalization Recovery ✅ CLOSED
 
 Delta strict de normalisation sur des `property_listings.district` déjà persistés : fold canonique des accents via `odm04_fold_text()` + suppression d’apostrophes uniquement. Aucun alias créé, aucun fuzzy/synonyme/spatial/titre/URL/proximité/réseau.
@@ -560,7 +652,7 @@ Scope respecté, Benchmark Reviewer si UX majeur, Reviewer indépendant PASS, te
 
 ## UX / Search
 
-Exécuter **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1** uniquement : audit read-only de la couverture réelle des fallbacks visuels Search après #468. Mesurer par ville/type/quartier la part thumbnail autorisée, **Rabat real-photo district**, `city_type`, `city`, fallback type et neutre ; mesurer répétition effective, stabilité et taux d'échec des photos distantes. **0 nouvel asset, 0 DATA/Registry/ranking/eligibility/dedupe/Map.** Le district du catalogue d'illustrations historique reste OFF ; le prochain build visuel doit être décidé depuis ces preuves, pas par intuition.
+**Ordre actuel : finir SEARCH-UX-1 #473.** L'ancien ordre qui lançait directement `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` est **RECONCILIATION REQUIRED** et n'est plus exécutable avant stabilisation de la nouvelle card/Visual Stack. Après #473 certifié/mergé : **VISUAL-REPRESENTATION-ENGINE-1**, puis SEARCH-UX-2 header/filtres, SEARCH-UX-3 mobile first-viewport, SEARCH-UX-4 modes/navigation. Chaque lot suit le cycle obligatoire et exige >=9/10 avant close.
 
 ## UX / Carte
 
