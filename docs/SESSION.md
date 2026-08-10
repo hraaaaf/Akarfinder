@@ -4,6 +4,41 @@
 
 Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
 
+<!-- SEARCH-UX-WINDOW-RECONCILIATION-START -->
+## Fenêtre active — Search UX convergence
+
+> Ce bloc est le handover prioritaire de cette fenêtre. Il prévaut sur les anciennes mentions `Main / LOT actif`, `Prochain LOT UX/Search` et `coverage audit next` plus bas lorsqu'elles décrivent un ordre désormais dépassé. Les autres lanes restent intactes.
+
+- `main` relu le 2026-08-10 : `f4563602119c8c01298bf694285e35856097bbd6` — merge PR #472 `P1C.4A — Acquisition Source Universe & Denominator Design`.
+- Branche de travail actuelle : `feat/search-ux-1-cards-grid`.
+- PR actuelle : **#473 — SEARCH-UX-1 — Inventory-first cards & responsive grid**.
+- Exact head courant documenté : `42e951814b204ca67b846b81613a1080de3e9ea3`.
+- État : **ACTIVE — BLOCKED_BY_CI / NOT CERTIFIED**. La PR est ouverte et mergeable, mais l'ouverture seule n'est pas une preuve d'activité ni de certification.
+- Responsabilité : convergence Search vers une SERP **image-first + inventory-first** : cards compactes, 2 colonnes mobile/tablette, 3 desktop intermédiaire, 4 wide desktop, whole-card primary action, disparition du gros CTA plein largeur, transparence/provenance conservée en couche secondaire.
+- Dépendances réutilisées : SEARCH-UX-FAST-1 #390, SEARCH-WORDING-PURITY-1 #391, SEARCH-CONTINUOUS-FLOW-1 #393, SEARCH-MOBILE-CARD-GRID-1 #394, UNIFIED-LISTING-CARD-1 #407, CONTEXTUAL-VISUAL-ASSETS-1 #414, DETERMINISTIC-ATTRIBUTION-1 #416, SEARCH-ACTION-HIERARCHY-1 #418, SEARCH-DESKTOP-SPLIT-1 #423, CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 #437 et RABAT-REAL-PHOTO-LIBRARY-1 #468.
+- Preuves exact-head actuellement acquises sur `42e951…` : Visible Dedup, P0 Closure, Final Design Accessibility, UX Gate 0, Canonical Baseline Compile/Validation, Search UX Fast, B2B, Seller, User Journey, Home Proof, Unified Card, Contextual Illustrations Foundation, Desktop Split, Mobile Card Grid, Wording Purity, Final Sweep, Geo Productization, Post-results Cleanup, Intent Hubs, Search Truth, Deterministic Attribution, Property Type Visual Option A et ODM-09D = **SUCCESS**.
+- Blocker exact : `SEARCH-ACTION-HIERARCHY-1 Gate` a son contrat/types/build **SUCCESS** mais sa **visual-certification FAILURE** sur le head courant. `UX P1 Mobile Decision Ergonomics` et `CONTEXTUAL-VISUAL-ASSETS-1` étaient encore en cours lors du dernier contrôle.
+- Score : **NON ATTRIBUÉ / NON CERTIFIÉ** sur ce head. Les scores ou captures d'anciens heads ne ferment pas le lot. Gate obligatoire : **>= 9/10** sur **1440×900** et **390×844** après re-test exact-head.
+- Prochaine étape : corriger ou réconcilier le finding visuel Action Hierarchy sans restaurer le gros CTA, attendre l'ensemble des workflows exact-head, re-capturer les deux viewports de certification, double-check indépendant, score, corrections si <9, re-test, re-score puis seulement Release Certification/merge.
+
+### Lots suivants verrouillés par cette fenêtre
+
+1. **VISUAL-REPRESENTATION-ENGINE-1 — PLANNED / BLOCKED_BY_SEARCH-UX-1**  
+   Lane : UX/Search + Visual Stack. Responsabilité : formaliser et brancher une sélection visuelle déterministe `PROPERTY → STREET → DISTRICT → CITY → TYPE`, sans inventer de géographie ni présenter une photo d'ambiance comme photo du bien. Dépend de #473 + signaux Geo structurés certifiés + assets contextuels existants. Branche/PR : **aucune tant que #473 n'est pas certifiée et mergée**. Score : N/A. Prochaine étape : ouvrir un lot/branche séparé depuis le `main` post-#473.
+2. **SEARCH-UX-2 — Compact Search Header & Filters — PLANNED**  
+   Lane : UX/Search. Responsabilité : header clair, recherche/filtres compacts, catégories, compteur/tri, réduction de la masse navy. Dépend de SEARCH-UX-1 et du contrat visuel VRE. Branche/PR : aucune. Score : N/A. Blocker : prédécesseurs non fermés.
+3. **SEARCH-UX-3 — Mobile First-Viewport Compression — PLANNED**  
+   Lane : UX/Search mobile. Responsabilité : faire apparaître le début de la première rangée presque immédiatement, en conservant 2 colonnes et les contrôles essentiels. Dépend de SEARCH-UX-2. Branche/PR : aucune. Score : N/A.
+4. **SEARCH-UX-4 — View Modes & Secondary Navigation — PLANNED**  
+   Lane : UX/Search. Responsabilité : réévaluer `Liste/Mixte/Carte`, simplifier mobile vers Liste/Carte et décider séparément la navigation secondaire. Dépend de SEARCH-UX-2/3 et ne doit pas empiéter sur la lane Carte. Branche/PR : aucune. Score : N/A.
+5. **CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1 — RECONCILIATION REQUIRED**  
+   Ancien prochain lot UX/Search après #468. Il reste utile comme audit read-only, mais **n'est plus le prochain lot exécutable** : #473 modifie la présentation et le futur VRE modifiera la chaîne de fallback. Branche/PR : aucune. Prochaine étape : le replanifier après le contrat VRE ou l'intégrer comme preuve read-only de ce lot, sans nouvel asset par intuition.
+
+Règle de fermeture de cette fenêtre : `IMPLEMENTATION → DOUBLE CHECK → SCORE /10 → CORRECTIONS → RE-TEST → RE-SCORE → CERTIFICATION`. **Aucun lot CLOSED sous 9/10.**
+
+Correction cross-window vérifiée : **DATA-4.9B PR #452 est CLOSED/MERGED**, merge `45631345a6efb653256273354d2fb903b33c1ff9`, head final `e79db482bcab23c819766d1378833025b33ebbd2`. Toute ancienne mention `DATA-4.9B 🟠` plus bas est **HISTORICAL/OBSOLETE**, sans modifier la propriété de la lane DATA.
+<!-- SEARCH-UX-WINDOW-RECONCILIATION-END -->
+
 <!-- DATA-CURRENT-START -->
 ## DATA — vérité courante
 
