@@ -86,13 +86,14 @@ for (const viewport of viewports) {
   const response = await page.goto(`${baseUrl}/search?view=list`, { waitUntil: "domcontentloaded", timeout: 60_000 });
   if (!response || response.status() >= 400) failures.push(`${viewport.name}: search route returned ${response?.status() ?? "no response"}`);
   await page.waitForFunction(() => document.querySelectorAll("article[data-property-active]").length >= 14, null, { timeout: 30_000 });
+  await page.waitForSelector('[data-search-global-header="exact-white"]', { timeout: 20_000 });
   await page.waitForTimeout(450);
 
   const metrics = await page.evaluate(() => {
-    const header = document.querySelector('[data-search-global-header="compact"]');
+    const header = document.querySelector('[data-search-global-header="exact-white"]');
     const headerBox = header?.getBoundingClientRect() ?? null;
-    const brand = header?.querySelector('a[href="/"]');
-    const brandBox = brand?.getBoundingClientRect() ?? null;
+    const brandImage = header?.querySelector('a[aria-label="AkarFinder - accueil"] img');
+    const brandBox = brandImage?.getBoundingClientRect() ?? null;
     const searchInput = document.querySelector('[data-search-primary-search]');
     const searchBox = searchInput?.getBoundingClientRect() ?? null;
     const cards = Array.from(document.querySelectorAll("article[data-property-active]")).slice(0, 14);
@@ -102,14 +103,16 @@ for (const viewport of viewports) {
     const visualClasses = cards.map((card) => card.querySelector('[data-visual-inventory-class]')?.getAttribute('data-visual-inventory-class') ?? null);
     const desktopNav = header?.querySelector('nav[aria-label="Navigation principale"]');
     const mobileMenu = header?.querySelector('[aria-label="Ouvrir le menu"]');
-    const monProjet = Array.from(header?.querySelectorAll('a') ?? []).find((node) => node.textContent?.trim() === 'Mon projet');
-    const isVisible = (node) => Boolean(node && getComputedStyle(node).display !== 'none' && node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0);
+    const account = header?.querySelector('[aria-label="Mon compte"]');
+    const visible = (node) => Boolean(node && getComputedStyle(node).display !== 'none' && getComputedStyle(node).visibility !== 'hidden' && node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0);
+    const navLinks = Array.from(desktopNav?.querySelectorAll('a') ?? []).filter(visible).map((node) => node.textContent?.trim() ?? '');
     return {
       headerHeight: headerBox ? Math.round(headerBox.height * 10) / 10 : null,
       headerWidth: headerBox ? Math.round(headerBox.width * 10) / 10 : null,
       brandX: brandBox ? Math.round(brandBox.x * 10) / 10 : null,
+      brandCenterDelta: brandBox ? Math.round(Math.abs((brandBox.left + brandBox.width / 2) - window.innerWidth / 2) * 10) / 10 : null,
       searchX: searchBox ? Math.round(searchBox.x * 10) / 10 : null,
-      alignmentDelta: brandBox && searchBox ? Math.round(Math.abs(brandBox.x - searchBox.x) * 10) / 10 : null,
+      desktopAlignmentDelta: brandBox && searchBox ? Math.round(Math.abs(brandBox.x - searchBox.x) * 10) / 10 : null,
       firstTop: cards[0] ? Math.round(cards[0].getBoundingClientRect().top * 10) / 10 : null,
       maxCardHeight: heights.length ? Math.max(...heights) : null,
       cardCount: cards.length,
@@ -119,15 +122,22 @@ for (const viewport of viewports) {
       contextualCount: visualClasses.filter((value) => value === 'contextual_illustration').length,
       neighborhoodCount: visualClasses.filter((value) => value === 'neighborhood_photo').length,
       genericCount: visualClasses.filter((value) => value === 'generic_illustration').length,
-      desktopNavVisible: isVisible(desktopNav),
-      mobileMenuVisible: isVisible(mobileMenu),
-      monProjetVisible: isVisible(monProjet),
+      desktopNavVisible: visible(desktopNav),
+      mobileMenuVisible: visible(mobileMenu),
+      accountVisible: visible(account),
+      navLinks,
     };
   });
 
-  if (metrics.headerHeight == null || metrics.headerHeight > viewport.headerMax) failures.push(`${viewport.name}: compact header height ${metrics.headerHeight}px > ${viewport.headerMax}px`);
+  if (metrics.headerHeight == null || metrics.headerHeight > viewport.headerMax) failures.push(`${viewport.name}: exact-white header height ${metrics.headerHeight}px > ${viewport.headerMax}px`);
   if (metrics.headerWidth == null || Math.abs(metrics.headerWidth - viewport.width) > 1) failures.push(`${viewport.name}: header does not span viewport (${metrics.headerWidth}px)`);
-  if (metrics.alignmentDelta == null || metrics.alignmentDelta > 3) failures.push(`${viewport.name}: header/Search left alignment delta ${metrics.alignmentDelta}px > 3px`);
+  if (viewport.desktopNav) {
+    if (metrics.desktopAlignmentDelta == null || metrics.desktopAlignmentDelta > 3) failures.push(`${viewport.name}: header/Search left alignment delta ${metrics.desktopAlignmentDelta}px > 3px`);
+    const expectedNav = ["Acheter", "Louer", "Neuf", "Agences", "Conseils"];
+    if (JSON.stringify(metrics.navLinks) !== JSON.stringify(expectedNav)) failures.push(`${viewport.name}: certified desktop nav drift ${JSON.stringify(metrics.navLinks)}`);
+  } else if (metrics.brandCenterDelta == null || metrics.brandCenterDelta > 1) {
+    failures.push(`${viewport.name}: mobile/tablet logo center delta ${metrics.brandCenterDelta}px > 1px`);
+  }
   if (metrics.columns !== viewport.columns) failures.push(`${viewport.name}: expected ${viewport.columns} columns, got ${metrics.columns}`);
   if (metrics.firstTop == null || metrics.firstTop > viewport.topMax) failures.push(`${viewport.name}: first card top ${metrics.firstTop}px > ${viewport.topMax}px`);
   if (metrics.maxCardHeight == null || metrics.maxCardHeight > viewport.cardMax) failures.push(`${viewport.name}: card height ${metrics.maxCardHeight}px > ${viewport.cardMax}px`);
@@ -136,8 +146,8 @@ for (const viewport of viewports) {
   if (metrics.brokenImages !== 0) failures.push(`${viewport.name}: ${metrics.brokenImages} broken visual(s)`);
   if (metrics.contextualCount !== 11 || metrics.neighborhoodCount !== 1 || metrics.genericCount !== 2) failures.push(`${viewport.name}: UX-SEARCH-4 visual inventory predecessor drift (${metrics.contextualCount}/${metrics.neighborhoodCount}/${metrics.genericCount})`);
   if (metrics.desktopNavVisible !== viewport.desktopNav) failures.push(`${viewport.name}: desktop navigation visibility mismatch`);
-  if (metrics.mobileMenuVisible === viewport.desktopNav) failures.push(`${viewport.name}: mobile menu visibility mismatch`);
-  if (!metrics.monProjetVisible) failures.push(`${viewport.name}: Mon projet action must remain available`);
+  if (metrics.mobileMenuVisible !== !viewport.desktopNav) failures.push(`${viewport.name}: mobile menu visibility mismatch`);
+  if (!metrics.accountVisible) failures.push(`${viewport.name}: Mon compte action must remain available`);
 
   const screenshot = path.join(outDir, `${viewport.name}.png`);
   await page.screenshot({ path: screenshot, fullPage: true });
@@ -148,8 +158,8 @@ for (const viewport of viewports) {
 await browser.close();
 
 const scoreParts = {
-  hierarchy: failures.filter((item) => item.includes("header height") || item.includes("alignment delta") || item.includes("header does not span")).length === 0 ? 3.5 : 0,
-  navigationContinuity: failures.filter((item) => item.includes("navigation visibility") || item.includes("menu visibility") || item.includes("Mon projet")).length === 0 ? 2 : 0,
+  hierarchy: failures.filter((item) => item.includes("header height") || item.includes("alignment delta") || item.includes("logo center") || item.includes("header does not span")).length === 0 ? 3.5 : 0,
+  navigationContinuity: failures.filter((item) => item.includes("navigation visibility") || item.includes("menu visibility") || item.includes("Mon compte") || item.includes("desktop nav drift")).length === 0 ? 2 : 0,
   responsiveDensity: failures.filter((item) => item.includes("columns") || item.includes("first card") || item.includes("card height")).length === 0 ? 2 : 0,
   predecessorIntegrity: failures.filter((item) => item.includes("predecessor drift") || item.includes("broken visual")).length === 0 ? 1.5 : 0,
   overflow: failures.filter((item) => item.includes("overflow")).length === 0 ? 1 : 0,
@@ -157,6 +167,6 @@ const scoreParts = {
 const score = Object.values(scoreParts).reduce((sum, value) => sum + value, 0);
 const report = { variant, baseUrl, score, scoreParts, failures, viewports: results };
 await fs.writeFile(path.join(outDir, "metrics.json"), JSON.stringify(report, null, 2));
-await fs.writeFile(path.join(outDir, "report.md"), `# UX-SEARCH-5 Navigation & Hierarchy Polish — ${variant}\n\nScore contract: **${score.toFixed(1)}/10**\n\n${failures.length ? failures.map((item) => `- FAIL: ${item}`).join("\n") : "- PASS: compact header, Search alignment, navigation continuity, predecessor density and visual integrity all pass."}\n`);
+await fs.writeFile(path.join(outDir, "report.md"), `# UX-SEARCH-5 Navigation & Hierarchy Polish — ${variant}\n\nScore contract: **${score.toFixed(1)}/10**\n\n${failures.length ? failures.map((item) => `- FAIL: ${item}`).join("\n") : "- PASS: certified exact-white Search header, responsive navigation, predecessor density and visual integrity all pass."}\n`);
 console.log(JSON.stringify(report, null, 2));
 if (failures.length || score < 9) process.exit(1);
