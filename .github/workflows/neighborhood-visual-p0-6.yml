@@ -1,0 +1,144 @@
+name: Neighborhood Visual P0.6 v2 Souissi Visual QA
+
+on:
+  pull_request:
+    paths:
+      - "app/visual-qa/souissi/**"
+      - "components/search/SouissiNeighborhoodVisualQAFixture.tsx"
+      - "components/search/NeighborhoodVisualIdentityOverlay.tsx"
+      - "lib/contextual-illustrations/souissi-*-visual.ts"
+      - "scripts/audits/neighborhood-visual-p0-6-souissi-visual-qa.mjs"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p0-6-souissi-visual-qa.test.ts"
+      - ".github/workflows/neighborhood-visual-p0-6.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NEIGHBORHOOD_VISUAL_QA: "1"
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer — Souissi 3-scene QA v2
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: P0.6 v2 contract + predecessors
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p0-6-souissi-visual-qa.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-5-souissi-lifestyle.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-4-souissi-immobilier.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-3-souissi-signature.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-2-souissi-source.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Physically ingest certified Commons masters for QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          curl --fail --location --retry 4 --retry-all-errors "https://commons.wikimedia.org/wiki/Special:Redirect/file/Avenue%20Mohamed%20VI%20Souissi%20Rabat.jpg" -o public/__qa/souissi-signature.jpg
+          curl --fail --location --retry 4 --retry-all-errors "https://commons.wikimedia.org/wiki/Special:Redirect/file/Rabat%2CSouissi1.jpg" -o public/__qa/souissi-immobilier.jpg
+          curl --fail --location --retry 4 --retry-all-errors "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hassan%20II%20Park%20-%20Rabat%20-%20November%202024%20-%201.jpg" -o public/__qa/souissi-lifestyle.jpg
+          echo "d8e09bfdbad2fdef60f28840b90b79b45f77b8c6  public/__qa/souissi-signature.jpg" | sha1sum --check --strict
+          test "$(wc -c < public/__qa/souissi-signature.jpg)" -eq 1338653
+          test -s public/__qa/souissi-immobilier.jpg
+          test -s public/__qa/souissi-lifestyle.jpg
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start QA production server
+        shell: bash
+        run: |
+          npm run start -- -p 3143 > /tmp/souissi-p06-v2-product.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3143/visual-qa/souissi >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/souissi-p06-v2-product.log
+          exit 1
+      - name: Certify 390 and 1440 Search-card visuals
+        env:
+          BASE_URL: http://127.0.0.1:3143
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/neighborhood-visual-p0-6-souissi-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p0-6-v2-product-design-proof
+          path: data/audits/neighborhood-visual-p0-6-v2/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Souissi 3-scene QA v2
+    needs: product-design-reviewer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Independently replay P0.6 v2 contract + predecessors
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p0-6-souissi-visual-qa.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-5-souissi-lifestyle.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-4-souissi-immobilier.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-3-souissi-signature.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-2-souissi-source.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Independent TypeScript
+        run: npx tsc --noEmit
+      - name: Independently ingest the same Commons masters
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          curl --fail --location --retry 4 --retry-all-errors "https://commons.wikimedia.org/wiki/Special:Redirect/file/Avenue%20Mohamed%20VI%20Souissi%20Rabat.jpg" -o public/__qa/souissi-signature.jpg
+          curl --fail --location --retry 4 --retry-all-errors "https://commons.wikimedia.org/wiki/Special:Redirect/file/Rabat%2CSouissi1.jpg" -o public/__qa/souissi-immobilier.jpg
+          curl --fail --location --retry 4 --retry-all-errors "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hassan%20II%20Park%20-%20Rabat%20-%20November%202024%20-%201.jpg" -o public/__qa/souissi-lifestyle.jpg
+          echo "d8e09bfdbad2fdef60f28840b90b79b45f77b8c6  public/__qa/souissi-signature.jpg" | sha1sum --check --strict
+          test "$(wc -c < public/__qa/souissi-signature.jpg)" -eq 1338653
+          test -s public/__qa/souissi-immobilier.jpg
+          test -s public/__qa/souissi-lifestyle.jpg
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent QA server
+        shell: bash
+        run: |
+          npm run start -- -p 3144 > /tmp/souissi-p06-v2-release.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3144/visual-qa/souissi >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/souissi-p06-v2-release.log
+          exit 1
+      - name: Independently certify 390 and 1440 Search-card visuals
+        env:
+          BASE_URL: http://127.0.0.1:3144
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/neighborhood-visual-p0-6-souissi-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p0-6-v2-release-certifier-proof
+          path: data/audits/neighborhood-visual-p0-6-v2/release-certifier
+          if-no-files-found: error
+          retention-days: 14
