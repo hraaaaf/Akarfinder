@@ -24,6 +24,28 @@ Responsibility: make the `/search` header match the locked visual contract exact
 **Next UX section:** Search / filters. Do not reopen the Header unless a measured regression appears.
 <!-- UX-HEADER-10OF10-1-CLOSEOUT-END -->
 
+<!-- UX-SEARCH-CONTROLS-10OF10-1-CLOSEOUT-START -->
+## UX-SEARCH-CONTROLS-10OF10-1 — Exact Light Search Controls ✅ CERTIFIED
+
+Responsabilité unique : verrouiller la section Recherche / Filtres de `/search` sur la cible décidée, sans rouvrir le Header ni modifier les résultats, cards, DATA, ranking, Registry, dédup, prix, ordre commercial ou Map.
+
+- head comportemental certifié : `436721ec175251578d169fe2626674769b5b6853` ;
+- run spécialisé : `31535196572` — **Product Design Reviewer 10/10 PASS + Independent Release Certifier 10/10 PASS** ;
+- preuve indépendante : artefact `ux-search-controls-10of10-release-certifier-proof`, digest `sha256:e28d45a936312f4f19606a5b0353e7a4fd80edb5d92fd24f5302f9b5cba5fa34` ;
+- Chromium réel : **360×800 / 390×844 / 768×900 / 1024×800 / 1440×900** ;
+- surface Recherche/Filtres **blanche pure**, y compris sous `colorScheme=dark`, avec thème sémantique local `data-theme=light` ;
+- couleurs : primitives sémantiques AkarFinder, bleu primaire `#0B63CE`, navy/foreground, blanc/neutres ; **0 orange / 0 bronze** dans la section ;
+- mobile 360/390 : ligne primaire **48 px**, inset **16 px**, gap Search↔Filtres **8 px** ; tablette 768 : **48 px**, inset **24 px** ;
+- desktop 1024/1440 : ligne primaire **44 px**, Search **520 px**, sélecteur Acheter/Louer/Neuf **288×44 px**, Filtres **120×44 px**, inset **24 px** ;
+- section complète avec divider : **65 px mobile/tablette / 69 px desktop** ; 0 overflow horizontal ;
+- filtres avancés préservés : ville, budget min/max, surface min, type de bien + sélecteur visuel ; sheet mobile blanche, safe-area friendly, cibles critiques ≥48 px ;
+- predecessor Header préservé à **54 px**, blanc exact et logo bleu ;
+- exact-head : **32 workflows associés terminés SUCCESS** après rerun du seul échec réseau transitoire Google Fonts ; les tests Casablanca étaient 16/16 PASS avant cet échec de fetch et le rerun build est SUCCESS ;
+- inspection humaine des preuves 390×844 et 1440×900 : la section implémentée correspond au contrat verrouillé **10/10**. La toolbar sombre et la bottom-nav actuelle restent volontairement hors scope et seront traitées dans leurs lots dédiés.
+
+**Prochain LOT : UX-RESULTS-TOOLBAR-10OF10-1 — Results Toolbar.**
+<!-- UX-SEARCH-CONTROLS-10OF10-1-CLOSEOUT-END -->
+
 
 <!-- UX-SEARCH-1-CLOSEOUT-START -->
 ## UX-SEARCH-1 — Density First ✅ CERTIFIED — PR #479
