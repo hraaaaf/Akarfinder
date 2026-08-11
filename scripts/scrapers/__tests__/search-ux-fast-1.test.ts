@@ -47,9 +47,7 @@ test("Option A remains available only through the expandable filters path", () =
   assert.match(filters, /showFilters \? \(/);
   assert.match(filters, /Voir les résultats/);
 
-  const visibleControlsStart = filters.indexOf(
-    '  return (\n    <section aria-label="Filtres de recherche"',
-  );
+  const visibleControlsStart = filters.indexOf("data-search-quick-filters");
   const advancedFiltersStart = filters.indexOf('id="advanced-search-filters"');
   assert.ok(visibleControlsStart >= 0, "main QuickFilters JSX must be found");
   assert.ok(advancedFiltersStart > visibleControlsStart, "advanced filters must follow compact controls");
