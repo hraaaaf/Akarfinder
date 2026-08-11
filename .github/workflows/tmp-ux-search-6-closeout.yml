@@ -1,0 +1,113 @@
+name: TEMP UX-SEARCH-6 Certified Closeout
+
+on:
+  push:
+    branches:
+      - ux/search-mobile-precision-6
+    paths:
+      - ".github/workflows/tmp-ux-search-6-closeout.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ux/search-mobile-precision-6
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Update canonical UX/Search closeout docs
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const certifiedHead = '5a1dadfb1cc501428d8d3216f6e667132958ca45';
+          const specializedRun = '31472416080';
+          const nextLot = 'UX-SEARCH-7 — Final Visual Certification';
+          const score = '9,5/10';
+          const closeout = [
+            '<!-- UX-SEARCH-6-CLOSEOUT-START -->',
+            '## UX-SEARCH-6 — Mobile Precision Pass ✅ CERTIFIED — PR #484',
+            '',
+            'Responsabilité unique : **finaliser la précision mobile de `/search` sur 360/390 px**, sans rouvrir UX-SEARCH-1 à 5 et sans modifier DATA, ranking, Source Registry, dédup, prix, ordre commercial ni logique Map.',
+            '',
+            'Résultat certifié :',
+            '',
+            '- grille mobile **2 colonnes** conservée ; rythme resserré à **10 px entre colonnes / 14 px entre rangées** ;',
+            '- mobile **360×800** : première card **191 px**, max **334,9 px**, 0 overflow ; mobile **390×844** : première card **191 px**, max **342,9 px**, 0 overflow ;',
+            '- recherche, Filtres, vue et tri restent à **48 px** de hauteur sur 360/390 ;',
+            '- **0 clipping** détecté sur prix, localisation et facts ; provenance/source reste visible ; 0 image cassée ;',
+            '- précision 360 px : paddings et contrôles resserrés, image card **156 px**, sans casser la hiérarchie `IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE` ;',
+            '- continuité responsive préservée : **768=2 colonnes, 1024=3, 1280/1440=4**, 0 overflow ;',
+            '- predecessor UX-SEARCH-1/3/4/5 + Search Truth/A11y restent verts ;',
+            '- exact-head `' + certifiedHead + '` : **21/21 workflows SUCCESS** ;',
+            '- run spécialisé `' + specializedRun + '` : **Product Design Reviewer PASS + Independent Release Certifier PASS**, contrat machine **10/10** ;',
+            '- revue humaine des captures 360×800 et 390×844 : **' + score + '** — scan plus net, contrôles stables et aucune micro-coupure bloquante.',
+            '',
+            '**Prochain LOT UX/Search : ' + nextLot + '.**',
+            '<!-- UX-SEARCH-6-CLOSEOUT-END -->'
+          ].join('\n');
+
+          function replaceBetween(text, start, end, replacement) {
+            const a = text.indexOf(start);
+            const b = text.indexOf(end);
+            if (a < 0 || b < a) throw new Error('missing markers ' + start + ' / ' + end);
+            return text.slice(0, a) + replacement + text.slice(b + end.length);
+          }
+
+          const readmePath = 'README.md';
+          let readme = fs.readFileSync(readmePath, 'utf8');
+          const readmeBlock = [
+            '<!-- UX-SEARCH-CONVERGENCE-CURRENT-START -->',
+            '### Convergence Search actuelle — UX-SEARCH-1 à UX-SEARCH-6 ✅',
+            '',
+            '- **UX-SEARCH-1 — Density First ✅ PR #479** : grille certifiée 2/2/3/4/4 ; densité **9,3/10**.',
+            '- **UX-SEARCH-2 — Compact Search & Filters ✅ PR #480** : première annonce ~240–250 px, touch targets 48 px, 0 overflow ; **9,5/10**.',
+            '- **UX-SEARCH-3 — Card Architecture ✅ PR #481** : `IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE`, confiance/source préservées ; **9,4/10**.',
+            '- **UX-SEARCH-4 — Visual Inventory System ✅ PR #482** : fallbacks contextuels truth-safe activés ; variété visuelle certifiée, stable et transparente ; **9,5/10**.',
+            '- **UX-SEARCH-5 — Navigation & Hierarchy Polish ✅ PR #483** : header Search compact/fluid, alignement **0 px**, hauteur **49–53,8 px**, première card **193–203,8 px** ; **9,5/10**.',
+            '- **UX-SEARCH-6 — Mobile Precision Pass ✅ PR #484** : mobile 360/390 à **2 colonnes**, gaps **10/14 px**, première card **191 px**, contrôles critiques **48 px**, 0 clipping/overflow ; **' + score + '**.',
+            '- Les six lots préservent ranking, DATA, Source Registry, dédup, ordre commercial, prix, Map et transparence de provenance.',
+            '- **Prochain LOT UX/Search : ' + nextLot + '** : certification visuelle finale de la convergence Search sur mobile + desktop, sans rouvrir les lots 1–6 ; gate UX ≥9/10.',
+            '<!-- UX-SEARCH-CONVERGENCE-CURRENT-END -->'
+          ].join('\n');
+          readme = replaceBetween(readme, '<!-- UX-SEARCH-CONVERGENCE-CURRENT-START -->', '<!-- UX-SEARCH-CONVERGENCE-CURRENT-END -->', readmeBlock);
+          fs.writeFileSync(readmePath, readme);
+
+          const roadmapPath = 'docs/ROADMAP.md';
+          let roadmap = fs.readFileSync(roadmapPath, 'utf8');
+          roadmap = roadmap.replace('UX-SEARCH-5 ✅ PR #483 ;', 'UX-SEARCH-5 ✅ PR #483 ; UX-SEARCH-6 ✅ PR #484 ;');
+          if (!roadmap.includes('UX-SEARCH-6 — Mobile Precision Pass ✅ CERTIFIED — PR #484')) {
+            const anchor = '<!-- UX-SEARCH-5-CLOSEOUT-END -->';
+            if (!roadmap.includes(anchor)) throw new Error('ROADMAP UX5 anchor missing');
+            roadmap = roadmap.replace(anchor, anchor + '\n\n' + closeout);
+          }
+          roadmap = roadmap.replace(/\*\*Prochain LOT UX\/Search : UX-SEARCH-6 — Mobile Precision Pass\.\*\*/g, '**Prochain LOT UX/Search : ' + nextLot + '.**');
+          roadmap = roadmap.replace('**Version : 2026-08-10**', '**Version : 2026-08-11**');
+          fs.writeFileSync(roadmapPath, roadmap);
+
+          const sessionPath = 'docs/SESSION.md';
+          let session = fs.readFileSync(sessionPath, 'utf8');
+          if (!session.includes('UX-SEARCH-6 — Mobile Precision Pass ✅ CERTIFIED — PR #484')) {
+            const anchor = '<!-- UX-SEARCH-5-CLOSEOUT-END -->';
+            if (!session.includes(anchor)) throw new Error('SESSION UX5 anchor missing');
+            session = session.replace(anchor, anchor + '\n\n' + closeout);
+          }
+          session = session.replace(/- Prochain LOT UX\/Search : \*\*UX-SEARCH-6 — Mobile Precision Pass\*\*[^\n]*/g, '- Prochain LOT UX/Search : **' + nextLot + '** ; UX-SEARCH-1 à 6 sont fermés et doivent rester des predecessor gates.');
+          session = session.replace('**Mise à jour : 2026-08-10**', '**Mise à jour : 2026-08-11**');
+          fs.writeFileSync(sessionPath, session);
+          NODE
+      - name: Self-remove and commit certified docs
+        shell: bash
+        run: |
+          rm .github/workflows/tmp-ux-search-6-closeout.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/ROADMAP.md docs/SESSION.md .github/workflows/tmp-ux-search-6-closeout.yml
+          git commit -m "docs(search): certify UX-SEARCH-6 mobile precision"
+          git push origin HEAD:ux/search-mobile-precision-6
