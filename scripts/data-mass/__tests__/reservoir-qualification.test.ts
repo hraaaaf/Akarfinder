@@ -212,7 +212,13 @@ test("existing canonical-link tail is only prioritized after a compatible policy
 test("aggregates city and transaction coverage for Morocco inventory", () => {
   const rows = [
     candidate({ title: "Appartement à vendre Rabat", contentFingerprint: "a" }),
-    candidate({ url: "https://marocannonces.com/annonce/villa-rabat-654321", title: "Villa à louer Rabat", discoveryQuery: "location rabat", contentFingerprint: "b" }),
+    candidate({
+      url: "https://marocannonces.com/annonce/villa-rabat-654321",
+      title: "Villa à louer Rabat",
+      snippet: "Villa immobilier 250 m2 à louer Rabat Maroc",
+      discoveryQuery: "location rabat",
+      contentFingerprint: "b",
+    }),
     candidate({ url: "https://marocannonces.com/annonce/terrain-marrakech-777777", title: "Terrain à vendre Marrakech", discoveryQuery: "vente Marrakech", contentFingerprint: "c" }),
   ];
   const summary = summarizeDomainReservoir("marocannonces.com", rows, null);
