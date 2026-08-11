@@ -12,6 +12,7 @@ export function NeighborhoodVisualIdentityOverlay({
   disclosureLabel = "Photo d’ambiance",
 }: NeighborhoodVisualIdentityOverlayProps) {
   const visibleDescriptors = descriptors.slice(0, 3);
+  const mobileDescriptors = visibleDescriptors.slice(0, 2);
 
   return (
     <>
@@ -30,9 +31,14 @@ export function NeighborhoodVisualIdentityOverlay({
         <p className="mt-0.5 text-[8px] font-semibold text-white/82 sm:text-[10px]">{city}</p>
         <p
           data-neighborhood-template-a-descriptors
-          className="mt-1 hidden truncate text-[8px] font-semibold text-white/88 sm:block sm:text-[9px]"
+          className="mt-0.5 truncate text-[7.5px] font-semibold leading-tight text-white/90 sm:mt-1 sm:text-[9px]"
         >
-          {visibleDescriptors.join(" • ")}
+          <span data-neighborhood-template-a-descriptors-mobile className="sm:hidden">
+            {mobileDescriptors.join(" • ")}
+          </span>
+          <span data-neighborhood-template-a-descriptors-desktop className="hidden sm:inline">
+            {visibleDescriptors.join(" • ")}
+          </span>
         </p>
       </div>
       <span
