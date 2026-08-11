@@ -7,7 +7,7 @@ function encodeCommonsTitle(value: string): string {
   return encodeURIComponent(value.replace(/ /g, "_")).replace(/'/g, "%27");
 }
 
-const FILE_NAME = "Avenue Mohamed VI Souissi Rabat -1.jpg";
+const FILE_NAME = "Avenue Mohamed VI Souissi Rabat.jpg";
 
 export const SOUISSI_SIGNATURE_VISUAL = {
   id: "rabat-souissi-signature-v1",
@@ -25,10 +25,10 @@ export const SOUISSI_SIGNATURE_VISUAL = {
     sourceName: "Wikimedia Commons",
     author: "YousraElkh9",
     license: "CC BY-SA 4.0",
-    capturedAt: "2016-01-18",
+    capturedAt: "2015-10-19",
     width: 3072,
     height: 1728,
-    sha1: "c801e690e27a571c38d68de199824b34b925b6e4",
+    sha1: "d8e09bfdbad2fdef60f28840b90b79b45f77b8c6",
     geoVerified: true,
     location: "Avenue Mohammed VI, Souissi, Rabat, Morocco",
   },
