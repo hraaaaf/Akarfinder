@@ -12,6 +12,10 @@ const metadataMigration = readFileSync(
   resolve(ROOT, "supabase/migrations/20260811211600_neighborhood_visual_p0_7_souissi_metadata.sql"),
   "utf8",
 );
+const securityCloseoutMigration = readFileSync(
+  resolve(ROOT, "supabase/migrations/20260811213000_neighborhood_visual_p0_7_security_closeout.sql"),
+  "utf8",
+);
 const ingestFunction = readFileSync(
   resolve(ROOT, "supabase/functions/neighborhood-visual-p0-7-ingest/index.ts"),
   "utf8",
@@ -27,7 +31,7 @@ describe("NEIGHBORHOOD-VISUAL-P0.7 — Souissi Storage + metadata", () => {
     assert.doesNotMatch(bucketMigration, /create policy/i);
   });
 
-  it("ingests only the three hard-coded certified sources into deterministic paths", () => {
+  it("keeps the completed ingestion recipe bounded to three certified deterministic sources", () => {
     const sourceUrls = ingestFunction.match(/https:\/\/commons\.wikimedia\.org\/wiki\/Special:Redirect\/file\//g) ?? [];
     assert.equal(sourceUrls.length, 3);
     for (const path of [
@@ -84,5 +88,12 @@ describe("NEIGHBORHOOD-VISUAL-P0.7 — Souissi Storage + metadata", () => {
     assert.equal(nullAssignments.length, 3);
     assert.doesNotMatch(metadataMigration, /sothebysrealty/i);
     assert.doesNotMatch(metadataMigration, /visitrabat/i);
+  });
+
+  it("closes the one-shot write surface and removes temporary pg_net after ingestion", () => {
+    assert.match(ingestFunction, /const INGESTION_ENABLED = false/);
+    assert.match(ingestFunction, /P0\.7 one-shot ingestion is closed/);
+    assert.match(ingestFunction, /status: 410/);
+    assert.match(securityCloseoutMigration, /drop extension if exists pg_net/);
   });
 });
