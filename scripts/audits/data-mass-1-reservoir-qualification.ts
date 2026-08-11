@@ -60,17 +60,11 @@ async function restAllById<T extends { id: string }>(table: string, params: Reco
   let lastId: string | null = null;
 
   for (;;) {
-    const query: Record<string, string> = {
-      ...params,
-      order: "id.asc",
-      limit: String(PAGE_SIZE),
-    };
+    const query: Record<string, string> = { ...params, order: "id.asc", limit: String(PAGE_SIZE) };
     if (lastId) query.id = `gt.${lastId}`;
-
     const page = await restPage<T>(table, query);
     rows.push(...page);
     if (page.length < PAGE_SIZE) return rows;
-
     const nextId = page.at(-1)?.id ?? null;
     if (!nextId || nextId === lastId) throw new Error(`${table} keyset pagination did not advance`);
     lastId = nextId;
@@ -153,8 +147,8 @@ async function main(): Promise<void> {
     });
   }
 
-  // MASS-1 is representation qualification, not property deduplication. We collapse only exact
-  // canonical/source URL repetitions so one discovered URL representation is counted once.
+  // Representation qualification only: exact canonical/source URL repetitions are collapsed.
+  // No claim is made that distinct URLs correspond to distinct properties.
   const uniqueDiscovery = new Map<string, DiscoveryRow>();
   for (const row of discoveryRows) {
     const rawUrl = row.canonical_url || row.source_url;
@@ -188,12 +182,13 @@ async function main(): Promise<void> {
     ),
   );
 
-  const queueCounts = summaries.reduce<Record<string, { domains: number; urls: number; likelyRealEstate: number; likelyDetail: number }>>((acc, row) => {
-    const current = acc[row.massQueue] ?? { domains: 0, urls: 0, likelyRealEstate: 0, likelyDetail: 0 };
+  const queueCounts = summaries.reduce<Record<string, { domains: number; urls: number; likelyRealEstate: number; likelyMoroccoRealEstate: number; likelyMoroccoDetail: number }>>((acc, row) => {
+    const current = acc[row.massQueue] ?? { domains: 0, urls: 0, likelyRealEstate: 0, likelyMoroccoRealEstate: 0, likelyMoroccoDetail: 0 };
     current.domains += 1;
     current.urls += row.urlRepresentations;
     current.likelyRealEstate += row.likelyRealEstateUrls;
-    current.likelyDetail += row.likelyListingDetailUrls;
+    current.likelyMoroccoRealEstate += row.likelyMoroccoRealEstateUrls;
+    current.likelyMoroccoDetail += row.likelyMoroccoListingDetailUrls;
     acc[row.massQueue] = current;
     return acc;
   }, {});
@@ -202,13 +197,32 @@ async function main(): Promise<void> {
   const policyCompatibleTail = summaries.filter((row) => row.massQueue === "POLICY_COMPATIBLE_TAIL");
   const transportLeakage = sourceFactory.filter((row) => row.domainRole === "DISCOVERY_TRANSPORT");
   const socialLeakage = sourceFactory.filter((row) => row.domainRole === "SOCIAL");
+  const foreignOnlyLeakage = sourceFactory.filter((row) => row.likelyMoroccoRealEstateUrls === 0);
+  const weakMoroccoLeakage = sourceFactory.filter((row) => row.likelyMoroccoRealEstateUrls < 20 || row.moroccoShareOfRealEstate < 0.1);
+
   const netNewUrlRepresentations = summaries.reduce((sum, row) => sum + row.urlRepresentations, 0);
   const likelyRealEstateUrlRepresentations = summaries.reduce((sum, row) => sum + row.likelyRealEstateUrls, 0);
   const likelyListingDetailUrlRepresentations = summaries.reduce((sum, row) => sum + row.likelyListingDetailUrls, 0);
+  const likelyMoroccoRealEstateUrlRepresentations = summaries.reduce((sum, row) => sum + row.likelyMoroccoRealEstateUrls, 0);
+  const likelyMoroccoListingDetailUrlRepresentations = summaries.reduce((sum, row) => sum + row.likelyMoroccoListingDetailUrls, 0);
   const duplicateSignalRows = summaries.reduce((sum, row) => sum + row.duplicateSignalRows, 0);
+  const saleLikelyMoroccoUrlRepresentations = summaries.reduce((sum, row) => sum + row.saleLikelyMoroccoUrls, 0);
+  const rentLikelyMoroccoUrlRepresentations = summaries.reduce((sum, row) => sum + row.rentLikelyMoroccoUrls, 0);
+  const bothTransactionLikelyMoroccoUrlRepresentations = summaries.reduce((sum, row) => sum + row.bothTransactionLikelyMoroccoUrls, 0);
+  const unknownTransactionLikelyMoroccoUrlRepresentations = summaries.reduce((sum, row) => sum + row.unknownTransactionLikelyMoroccoUrls, 0);
+
+  const globalCityCounts = new Map<string, number>();
+  for (const row of summaries) {
+    for (const city of row.detectedCities) {
+      globalCityCounts.set(city.city, (globalCityCounts.get(city.city) ?? 0) + city.urlRepresentations);
+    }
+  }
+  const detectedCities = [...globalCityCounts.entries()]
+    .map(([city, urlRepresentations]) => ({ city, urlRepresentations }))
+    .sort((a, b) => b.urlRepresentations - a.urlRepresentations || a.city.localeCompare(b.city));
 
   const proof = {
-    schemaVersion: "data-mass-1-reservoir-qualification-v1",
+    schemaVersion: "data-mass-1-reservoir-qualification-v2",
     generatedAt: new Date().toISOString(),
     readOnly: true,
     databaseWrites: 0,
@@ -230,15 +244,34 @@ async function main(): Promise<void> {
     netNewDomains: summaries.length,
     likelyRealEstateUrlRepresentations,
     likelyListingDetailUrlRepresentations,
+    likelyMoroccoRealEstateUrlRepresentations,
+    likelyMoroccoListingDetailUrlRepresentations,
     duplicateSignalRows,
+    saleLikelyMoroccoUrlRepresentations,
+    rentLikelyMoroccoUrlRepresentations,
+    bothTransactionLikelyMoroccoUrlRepresentations,
+    unknownTransactionLikelyMoroccoUrlRepresentations,
+    detectedCities,
     sourceFactoryCandidateDomains: sourceFactory.length,
     sourceFactoryCandidateUrlRepresentations: sourceFactory.reduce((sum, row) => sum + row.urlRepresentations, 0),
+    sourceFactoryLikelyMoroccoRealEstateUrlRepresentations: sourceFactory.reduce((sum, row) => sum + row.likelyMoroccoRealEstateUrls, 0),
+    sourceFactoryLikelyMoroccoListingDetailUrlRepresentations: sourceFactory.reduce((sum, row) => sum + row.likelyMoroccoListingDetailUrls, 0),
     policyCompatibleTailDomains: policyCompatibleTail.length,
     policyCompatibleTailUrlRepresentations: policyCompatibleTail.reduce((sum, row) => sum + row.urlRepresentations, 0),
     transportLeakageIntoSourceFactory: transportLeakage.length,
     socialLeakageIntoSourceFactory: socialLeakage.length,
+    foreignOnlyLeakageIntoSourceFactory: foreignOnlyLeakage.length,
+    weakMoroccoLeakageIntoSourceFactory: weakMoroccoLeakage.length,
     queueCounts,
-    topSourceFactoryDomains: sourceFactory.slice(0, 20).map((row) => row.sourceDomain),
+    topSourceFactoryDomains: sourceFactory.slice(0, 20).map((row) => ({
+      sourceDomain: row.sourceDomain,
+      massPotentialScore: row.massPotentialScore,
+      urlRepresentations: row.urlRepresentations,
+      likelyMoroccoRealEstateUrls: row.likelyMoroccoRealEstateUrls,
+      likelyMoroccoListingDetailUrls: row.likelyMoroccoListingDetailUrls,
+      moroccoShareOfRealEstate: row.moroccoShareOfRealEstate,
+      detectedCities: row.detectedCities.slice(0, 5),
+    })),
   };
 
   const top50 = summaries.slice(0, 50);
@@ -248,6 +281,8 @@ async function main(): Promise<void> {
       urlRepresentationsAreNotUniqueProperties: true,
       likelyRealEstateIsHeuristicOnly: true,
       likelyListingDetailIsHeuristicOnly: true,
+      moroccoScopeIsHeuristicOnly: true,
+      cityAndTransactionSignalsAreHeuristicOnly: true,
       sourceRegistryRemainsAuthoritative: true,
       mass1GrantsNoAuthorization: true,
       duplicateSignalIsNotPropertyDeduplication: true,
@@ -259,19 +294,24 @@ async function main(): Promise<void> {
 
   const csvHeader = [
     "source_domain", "domain_role", "mass_queue", "mass_potential_score", "url_representations",
-    "likely_real_estate_urls", "real_estate_share", "likely_listing_detail_urls", "likely_detail_share",
-    "category_or_search_urls", "ambiguous_urls", "non_real_estate_urls", "duplicate_signal_rows",
-    "duplicate_signal_ratio", "registry_status", "authorization_status", "display_policy", "display_gate",
-    "acquisition_mode", "ingestion_gate", "public_activable_now", "recommended_next_action",
+    "likely_real_estate_urls", "likely_morocco_real_estate_urls", "likely_morocco_listing_detail_urls",
+    "morocco_share_of_real_estate", "likely_morocco_detail_share", "sale_morocco_urls", "rent_morocco_urls",
+    "both_transaction_morocco_urls", "unknown_transaction_morocco_urls", "top_cities",
+    "duplicate_signal_rows", "duplicate_signal_ratio", "registry_status", "authorization_status",
+    "display_policy", "display_gate", "acquisition_mode", "ingestion_gate", "public_activable_now",
+    "recommended_next_action",
   ];
   const csv = [
     csvHeader.join(","),
     ...summaries.map((row) => [
       row.sourceDomain, row.domainRole, row.massQueue, row.massPotentialScore, row.urlRepresentations,
-      row.likelyRealEstateUrls, row.realEstateShare, row.likelyListingDetailUrls, row.likelyDetailShare,
-      row.likelyCategoryOrSearchUrls, row.ambiguousUrls, row.nonRealEstateUrls, row.duplicateSignalRows,
-      row.duplicateSignalRatio, row.registryStatus, row.authorizationStatus, row.displayPolicy, row.displayGate,
-      row.acquisitionMode, row.ingestionGate, row.publicActivableNow, row.recommendedNextAction,
+      row.likelyRealEstateUrls, row.likelyMoroccoRealEstateUrls, row.likelyMoroccoListingDetailUrls,
+      row.moroccoShareOfRealEstate, row.likelyMoroccoDetailShare, row.saleLikelyMoroccoUrls,
+      row.rentLikelyMoroccoUrls, row.bothTransactionLikelyMoroccoUrls, row.unknownTransactionLikelyMoroccoUrls,
+      row.detectedCities.slice(0, 8).map((city) => `${city.city}:${city.urlRepresentations}`).join("|"),
+      row.duplicateSignalRows, row.duplicateSignalRatio, row.registryStatus, row.authorizationStatus,
+      row.displayPolicy, row.displayGate, row.acquisitionMode, row.ingestionGate, row.publicActivableNow,
+      row.recommendedNextAction,
     ].map(csvCell).join(",")),
   ].join("\n");
 
@@ -283,7 +323,7 @@ async function main(): Promise<void> {
     "## Truth boundary",
     "",
     "- Unit = URL representation, never unique property.",
-    "- Likely-real-estate and likely-detail are deterministic qualification signals only.",
+    "- Real-estate, Morocco, city, transaction and detail signals are deterministic prioritization heuristics only.",
     "- MASS-1 does not fetch source pages, mutate Registry policy, ingest listings or activate Search.",
     "- Duplicate signal is representation-level evidence only; it is not property deduplication.",
     "",
@@ -295,17 +335,20 @@ async function main(): Promise<void> {
     `- Net-new URL representations: **${proof.netNewUrlRepresentations.toLocaleString("en-US")}**`,
     `- Net-new domains: **${proof.netNewDomains.toLocaleString("en-US")}**`,
     `- Likely real-estate representations: **${proof.likelyRealEstateUrlRepresentations.toLocaleString("en-US")}**`,
-    `- Likely listing-detail representations: **${proof.likelyListingDetailUrlRepresentations.toLocaleString("en-US")}**`,
+    `- Likely Morocco real-estate representations: **${proof.likelyMoroccoRealEstateUrlRepresentations.toLocaleString("en-US")}**`,
+    `- Likely Morocco listing-detail representations: **${proof.likelyMoroccoListingDetailUrlRepresentations.toLocaleString("en-US")}**`,
     `- Source Factory candidate domains: **${proof.sourceFactoryCandidateDomains.toLocaleString("en-US")}**`,
-    `- Source Factory candidate URL representations: **${proof.sourceFactoryCandidateUrlRepresentations.toLocaleString("en-US")}**`,
+    `- Source Factory likely-Morocco RE representations: **${proof.sourceFactoryLikelyMoroccoRealEstateUrlRepresentations.toLocaleString("en-US")}**`,
     `- Policy-compatible tail domains: **${proof.policyCompatibleTailDomains}**`,
-    `- Transport/social leakage into Source Factory: **${proof.transportLeakageIntoSourceFactory}/${proof.socialLeakageIntoSourceFactory}**`,
+    `- Transport/social/foreign-only/weak-Morocco leakage into Source Factory: **${proof.transportLeakageIntoSourceFactory}/${proof.socialLeakageIntoSourceFactory}/${proof.foreignOnlyLeakageIntoSourceFactory}/${proof.weakMoroccoLeakageIntoSourceFactory}**`,
+    `- Transaction signals (sale / rent / both / unknown): **${proof.saleLikelyMoroccoUrlRepresentations.toLocaleString("en-US")} / ${proof.rentLikelyMoroccoUrlRepresentations.toLocaleString("en-US")} / ${proof.bothTransactionLikelyMoroccoUrlRepresentations.toLocaleString("en-US")} / ${proof.unknownTransactionLikelyMoroccoUrlRepresentations.toLocaleString("en-US")}**`,
+    `- Top cities: **${detectedCities.slice(0, 10).map((city) => `${city.city} ${city.urlRepresentations.toLocaleString("en-US")}`).join(" · ")}**`,
     "",
     "## Top 50 MASS domains",
     "",
-    "| # | Domain | Role | Queue | URLs | RE | Detail | Dup signal | Score | Registry |",
-    "|---:|---|---|---|---:|---:|---:|---:|---:|---|",
-    ...top50.map((row, index) => `| ${index + 1} | ${row.sourceDomain} | ${row.domainRole} | ${row.massQueue} | ${row.urlRepresentations} | ${pct(row.realEstateShare)} | ${pct(row.likelyDetailShare)} | ${pct(row.duplicateSignalRatio)} | ${row.massPotentialScore.toFixed(2)} | ${row.registryStatus} |`),
+    "| # | Domain | Role | Queue | URLs | Morocco RE | Morocco detail | MA share | Sale | Rent | Top cities | Score | Registry |",
+    "|---:|---|---|---|---:|---:|---:|---:|---:|---:|---|---:|---|",
+    ...top50.map((row, index) => `| ${index + 1} | ${row.sourceDomain} | ${row.domainRole} | ${row.massQueue} | ${row.urlRepresentations} | ${row.likelyMoroccoRealEstateUrls} | ${row.likelyMoroccoListingDetailUrls} | ${pct(row.moroccoShareOfRealEstate)} | ${row.saleLikelyMoroccoUrls} | ${row.rentLikelyMoroccoUrls} | ${row.detectedCities.slice(0, 3).map((city) => `${city.city}:${city.urlRepresentations}`).join(" · ") || "—"} | ${row.massPotentialScore.toFixed(2)} | ${row.registryStatus} |`),
     "",
   ].join("\n");
 
