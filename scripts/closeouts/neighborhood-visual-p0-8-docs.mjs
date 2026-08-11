@@ -1,16 +1,18 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
-const CLOSEOUT = `<!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->
-## Bibliothèque visuelle quartiers — Souissi Pilot ✅ CLOSED
-
-- **P0.1→P0.5** : Modèle A verrouillé et trois scènes réelles Souissi certifiées (`signature / immobilier / lifestyle`) à partir de sources Wikimedia Commons vérifiées, sans génération ex nihilo.
-- **P0.6 ✅** : les trois scènes ont été rejouées dans les vraies cards Search sur la matrice responsive ; gate humain final **9,2/10**, disclosure `Photo d’ambiance` et crédits/licences préservés.
-- **P0.7 ✅ PR #506 + P0.7S #507** : bucket Supabase `neighborhood-visuals` matérialisé ; trois masters réels présents sous `rabat/souissi/{signature|immobilier|lifestyle}/master.jpg` ; les trois rows canoniques portent provenance/licence/attribution et `verified_location=true`.
-- Le master source reste **intact**. Le traitement AkarFinder certifié du pilote est **non destructif et rendu en CSS/UI** ; aucun bitmap dérivé n’est requis, donc `transformed_asset_url = NULL` est l’état canonique attendu pour ces trois assets.
-- La fonction d’ingestion P0.7 est désormais fail-closed (`410`) et l’extension temporaire `pg_net` a été supprimée après ingestion.
-- **Aucune activation implicite du Visual Resolver V2** : la consommation généralisée de cette bibliothèque reste dans **P2**. Le pilote prouve source → droits → ingestion → rendu → QA → Storage/metadata, pas une nouvelle règle de ranking/publication.
-- **Prochain LOT de cette lane : P1.1 — Agdal**, 3 scènes réelles selon le pipeline Souissi certifié.
-<!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-END -->`;
+const CLOSEOUT = [
+  "<!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->",
+  "## Bibliothèque visuelle quartiers — Souissi Pilot ✅ CLOSED",
+  "",
+  "- **P0.1→P0.5** : Modèle A verrouillé et trois scènes réelles Souissi certifiées (`signature / immobilier / lifestyle`) à partir de sources Wikimedia Commons vérifiées, sans génération ex nihilo.",
+  "- **P0.6 ✅** : les trois scènes ont été rejouées dans les vraies cards Search sur la matrice responsive ; gate humain final **9,2/10**, disclosure `Photo d’ambiance` et crédits/licences préservés.",
+  "- **P0.7 ✅ PR #506 + P0.7S #507** : bucket Supabase `neighborhood-visuals` matérialisé ; trois masters réels présents sous `rabat/souissi/{signature|immobilier|lifestyle}/master.jpg` ; les trois rows canoniques portent provenance/licence/attribution et `verified_location=true`.",
+  "- Le master source reste **intact**. Le traitement AkarFinder certifié du pilote est **non destructif et rendu en CSS/UI** ; aucun bitmap dérivé n’est requis, donc `transformed_asset_url = NULL` est l’état canonique attendu pour ces trois assets.",
+  "- La fonction d’ingestion P0.7 est désormais fail-closed (`410`) et l’extension temporaire `pg_net` a été supprimée après ingestion.",
+  "- **Aucune activation implicite du Visual Resolver V2** : la consommation généralisée de cette bibliothèque reste dans **P2**. Le pilote prouve source → droits → ingestion → rendu → QA → Storage/metadata, pas une nouvelle règle de ranking/publication.",
+  "- **Prochain LOT de cette lane : P1.1 — Agdal**, 3 scènes réelles selon le pipeline Souissi certifié.",
+  "<!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-END -->",
+].join("\n");
 
 function upsertBlock(path, anchor) {
   let text = readFileSync(path, "utf8");
@@ -88,17 +90,19 @@ visual = visual
     "**État actuel : P0 Souissi Pilot CLOSED ✅. Trois masters réels sont stockés et trois rows canoniques sont réconciliées ; le rendu Modèle A est non destructif et certifié en Search à 9,2/10 ; `transformed_asset_url` reste volontairement `NULL`. Prochain LOT : P1.1 Agdal.**",
   );
 
-const p0Closeout = `<!-- SOUISSI-PILOT-EVIDENCE-START -->
-## Preuves de clôture P0 — Souissi
-
-- P0.6 : vraies cards Search, mobile + desktop, score humain **9,2/10** ; aucun asset fictif accepté.
-- P0.7 : PR #506 mergée ; trois masters publics stockés dans le bucket `neighborhood-visuals`.
-- P0.7S : PR #507 mergée ; ingestion one-shot fermée et `pg_net` supprimé.
-- Storage paths : `rabat/souissi/signature/master.jpg`, `rabat/souissi/immobilier/master.jpg`, `rabat/souissi/lifestyle/master.jpg`.
-- Source/licence : Wikimedia Commons ; Signature et Lifestyle CC BY-SA 4.0, Immobilier CC BY-SA 3.0 ; attribution et ShareAlike conservés.
-- Doctrine finale du pilote : **master intact + identité AkarFinder au rendu**. Un bitmap transformé n’est jamais fabriqué uniquement pour remplir une colonne DB.
-- P2 reste la frontière d’activation du resolver bibliothèque quartier.
-<!-- SOUISSI-PILOT-EVIDENCE-END -->`;
+const p0Closeout = [
+  "<!-- SOUISSI-PILOT-EVIDENCE-START -->",
+  "## Preuves de clôture P0 — Souissi",
+  "",
+  "- P0.6 : vraies cards Search, mobile + desktop, score humain **9,2/10** ; aucun asset fictif accepté.",
+  "- P0.7 : PR #506 mergée ; trois masters publics stockés dans le bucket `neighborhood-visuals`.",
+  "- P0.7S : PR #507 mergée ; ingestion one-shot fermée et `pg_net` supprimé.",
+  "- Storage paths : `rabat/souissi/signature/master.jpg`, `rabat/souissi/immobilier/master.jpg`, `rabat/souissi/lifestyle/master.jpg`.",
+  "- Source/licence : Wikimedia Commons ; Signature et Lifestyle CC BY-SA 4.0, Immobilier CC BY-SA 3.0 ; attribution et ShareAlike conservés.",
+  "- Doctrine finale du pilote : **master intact + identité AkarFinder au rendu**. Un bitmap transformé n’est jamais fabriqué uniquement pour remplir une colonne DB.",
+  "- P2 reste la frontière d’activation du resolver bibliothèque quartier.",
+  "<!-- SOUISSI-PILOT-EVIDENCE-END -->",
+].join("\n");
 const p1Anchor = "---\n\n# P1 — RABAT PILOT SCALE";
 if (!visual.includes("<!-- SOUISSI-PILOT-EVIDENCE-START -->")) {
   const idx = visual.indexOf(p1Anchor);
