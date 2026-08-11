@@ -91,6 +91,48 @@ test("registered hidden source remains measure-only even with huge volume", () =
   assert.equal(summary.publicActivableNow, false);
 });
 
+test("restrictive authorization always wins over stale canonical-link fields", () => {
+  const rows = Array.from({ length: 50 }, (_, i) => candidate({
+    sourceDomain: "blocked-example.ma",
+    url: `https://blocked-example.ma/annonce/appartement-rabat-${10000 + i}`,
+    contentFingerprint: `blocked-${i}`,
+  }));
+
+  for (const authorizationStatus of ["prohibited", "permission_required", "unverified", "expired", " PERMISSION_REQUIRED "]) {
+    const summary = summarizeDomainReservoir("blocked-example.ma", rows, policy({
+      sourceDomain: "blocked-example.ma",
+      authorizationStatus,
+      displayPolicy: "canonical_link_only",
+      displayGate: "external_tail_link_only",
+      acquisitionMode: "public_sitemap_canonical_link",
+      ingestionGate: "canonical_link_only",
+    }));
+    assert.equal(summary.massQueue, "MEASURE_ONLY", authorizationStatus);
+    assert.equal(summary.publicActivableNow, false);
+  }
+});
+
+test("hidden/internal gates remain fail-closed despite an otherwise compatible authorization", () => {
+  const rows = Array.from({ length: 50 }, (_, i) => candidate({
+    sourceDomain: "hidden-example.ma",
+    url: `https://hidden-example.ma/annonce/appartement-rabat-${10000 + i}`,
+    contentFingerprint: `hidden-${i}`,
+  }));
+
+  for (const restrictivePolicy of [
+    { displayPolicy: "internal_signal_only", displayGate: "external_tail_link_only", ingestionGate: "canonical_link_only" },
+    { displayPolicy: "canonical_link_only", displayGate: "hidden", ingestionGate: "canonical_link_only" },
+    { displayPolicy: "canonical_link_only", displayGate: "external_tail_link_only", ingestionGate: "internal_signal_only" },
+  ]) {
+    const summary = summarizeDomainReservoir("hidden-example.ma", rows, policy({
+      sourceDomain: "hidden-example.ma",
+      authorizationStatus: "policy_compatible",
+      ...restrictivePolicy,
+    }));
+    assert.equal(summary.massQueue, "MEASURE_ONLY");
+  }
+});
+
 test("existing canonical-link tail is only prioritized for policy verification", () => {
   const rows = Array.from({ length: 50 }, (_, i) => candidate({
     sourceDomain: "promoimmomarrakech.com",
@@ -99,6 +141,7 @@ test("existing canonical-link tail is only prioritized for policy verification",
   }));
   const summary = summarizeDomainReservoir("promoimmomarrakech.com", rows, policy({
     sourceDomain: "promoimmomarrakech.com",
+    authorizationStatus: "policy_compatible",
     displayPolicy: "canonical_link_only",
     displayGate: "external_tail_link_only",
     acquisitionMode: "public_sitemap_canonical_link",
