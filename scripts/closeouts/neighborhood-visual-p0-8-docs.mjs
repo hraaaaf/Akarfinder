@@ -70,6 +70,12 @@ for (const [from, to] of [
   ["## P0.2 — Souissi Signature Source", "## P0.2 — Souissi Signature Source ✅ CLOSED"],
   ["## P0.3 — Souissi Signature Asset", "## P0.3 — Souissi Signature Asset ✅ CLOSED"],
   ["## P0.4 — Souissi Immobilier Source + Asset", "## P0.4 — Souissi Immobilier Source + Asset ✅ CLOSED"],
+  ["## P0.5 — Souissi Lifestyle Source + Asset", "## absurd"],
+]) {
+  if (to === "## absurd") continue;
+  visual = replaceLine(visual, from, to);
+}
+for (const [from, to] of [
   ["## P0.5 — Souissi Lifestyle Source + Asset", "## P0.5 — Souissi Lifestyle Source + Asset ✅ CLOSED"],
   ["## P0.6 — Visual Gate Search", "## P0.6 — Visual Gate Search ✅ CLOSED"],
   ["## P0.7 — DB & Storage Integration", "## P0.7 — DB & Storage Integration ✅ CLOSED"],
@@ -124,6 +130,13 @@ visual = replaceExact(
   visual,
   "**État actuel : P0.1 Modèle A choisi ; formalisation production à certifier. Souissi DB possède déjà 3 slots (`signature / immobilier / lifestyle`), sans transformation finale validée.**",
   "**État actuel : P0 Souissi Pilot CLOSED ✅. Trois masters réels sont stockés et trois rows canoniques sont réconciliées ; le rendu Modèle A est non destructif et certifié en Search à 9,2/10 ; `transformed_asset_url` reste volontairement `NULL`. Prochain LOT : P1.1 Agdal.**",
+);
+
+// Normalize any duplicate closeout markers left by older non-idempotent runs.
+visual = visual.replace(/(?: ✅ CLOSED){2,}/g, " ✅ CLOSED");
+visual = visual.replace(
+  /(?: Pilote Souissi final : \*\*9,2\/10 PASS\*\*\.){2,}/g,
+  " Pilote Souissi final : **9,2/10 PASS**.",
 );
 
 const p0Closeout = [
