@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-10**  
-**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; RABAT-REAL-PHOTO-LIBRARY-1 ✅ PR #468 ; UX-SEARCH-1 ✅ PR #479 ; UX-SEARCH-2 ✅ PR #480 ; UX-SEARCH-3 ✅ PR #481 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; RABAT-REAL-PHOTO-LIBRARY-1 ✅ PR #468 ; UX-SEARCH-1 ✅ PR #479 ; UX-SEARCH-2 ✅ PR #480 ; UX-SEARCH-3 ✅ PR #481 ; UX-SEARCH-4 ✅ PR #482 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -67,8 +67,28 @@ Résultat certifié :
 - run spécialisé `31442655754` : **Product Design Reviewer PASS + Independent Release Certifier PASS** ;
 - contrat machine six viewports : **10/10** ; audit visuel humain : **9,4/10** — gate ≥9/10 atteint.
 
-**Prochain LOT UX/Search : UX-SEARCH-4 — Visual Inventory System.**
+**Prochain LOT UX/Search : UX-SEARCH-5 — Navigation & Hierarchy Polish.**
 <!-- UX-SEARCH-3-CLOSEOUT-END -->
+
+<!-- UX-SEARCH-4-CLOSEOUT-START -->
+## UX-SEARCH-4 — Visual Inventory System ✅ CERTIFIED — PR #482
+
+Responsabilité unique : **améliorer la diversité, la pertinence et la qualité perçue des visuels Search sans inventer de photo du bien**, sans modifier DATA, ranking, Source Registry, dédup, prix, ordre commercial ni logique Map.
+
+Résultat certifié :
+
+- audit production read-only préalable, run `31444276171` : **288 cards observées / 288 fallbacks génériques / 276 paires adjacentes dupliquées**, 0 image cassée, 0 overflow ; preuve que le stock contextuel existant n’était pas consommé par la card interne dominante ;
+- hiérarchie visuelle canonique interne + Gateway : **photo du bien autorisée → photo d’ambiance quartier bornée → illustration contextuelle ville/type → illustration type → neutre** ;
+- aucune inférence depuis titre, description ou snippet ; aucun hasard ; resolver contextuel HRW/Rendezvous existant réutilisé avec champs structurés ville/quartier/type + URL stable uniquement ; hors allowlist = fail-closed vers fallback générique ;
+- Rabat real-photo exact `city + neighborhood` garde la priorité et conserve `Photo d’ambiance` + crédit/licence Wikimedia Commons ;
+- fixture indépendante 14 cards : **11 illustrations contextuelles = 11 IDs distincts + 1 photo d’ambiance Agdal + 2 fallbacks génériques hors allowlist**, stable après reload sur les 6 viewports ;
+- densité préservée : **360/390=2 colonnes, 768=2, 1024=3, 1280/1440=4** ; première card **201 px mobile**, **213,8 px tablette**, **211,8 px desktop** ; max **342,9 px mobile**, **398,5 px desktop** ; 0 overflow ; 0 image cassée ;
+- exact-head `c1de08a2323b29ab8cef25818e320ff8c991b3d4` : **31/31 workflows SUCCESS** ; UX-SEARCH-1/3, Search Truth, mobile grid, accessibility, attribution, contextual assets et Rabat real-photo restent verts ;
+- run spécialisé `31444537676` : **Product Design Reviewer PASS + Independent Release Certifier PASS**, contrat machine **10/10** ;
+- revue humaine des captures 390×844 et 1440×900 : **9,5/10** — variété nette sans transformer une illustration ou une photo d’ambiance en photo du bien.
+
+**Prochain LOT UX/Search : UX-SEARCH-5 — Navigation & Hierarchy Polish.**
+<!-- UX-SEARCH-4-CLOSEOUT-END -->
 
 
 <!-- DATA-4.7B-CURRENT-START -->

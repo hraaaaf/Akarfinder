@@ -87,13 +87,14 @@ Principes verrouillés :
 Première mission : `BENCHMARK-SERP-1`, rapport dans `docs/BENCHMARK_SERP_1_REPORT.md`.
 
 <!-- UX-SEARCH-CONVERGENCE-CURRENT-START -->
-### Convergence Search actuelle — UX-SEARCH-1 + UX-SEARCH-2 + UX-SEARCH-3 ✅
+### Convergence Search actuelle — UX-SEARCH-1 à UX-SEARCH-4 ✅
 
-- **UX-SEARCH-1 — Density First ✅ PR #479** : mobile 2 colonnes conservé, tablette 2, desktop intermédiaire 3, large desktop 4 ; cartes liste desktop compactées ; densité certifiée **9,3/10**.
-- **UX-SEARCH-2 — Compact Search & Filters ✅ PR #480** : recherche + filtres ramenés à une ligne primaire compacte ; première annonce à **240 px** sur 360/390, **252 px** sur 768 et **250 px** sur 1024/1280/1440 ; touch targets mobiles critiques **48 px** ; 0 overflow ; Product Design Reviewer + Independent Release Certifier PASS ; audit visuel **9,5/10**.
-- **UX-SEARCH-3 — Card Architecture ✅ PR #481** : hiérarchie canonique **IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE**, mobile 2 colonnes préservé, première annonce **239,5 px** sur 360/390 et **250,3 px** sur desktop, hauteur dense desktop max **419 px**, provenance/trust/crédits préservés ; Product Design Reviewer + Independent Release Certifier PASS ; audit visuel **9,4/10**.
-- Les trois lots préservent ranking, DATA, Source Registry, dédup, ordre commercial, prix, Map et informations de confiance/source.
-- **Prochain LOT UX/Search : UX-SEARCH-4 — Visual Inventory System** : améliorer diversité, pertinence et qualité perçue des visuels réellement rendus, sans inventer de représentation du bien et sans rouvrir DATA/ranking/Registry/Map ; gate UX ≥9/10.
+- **UX-SEARCH-1 — Density First ✅ PR #479** : grille certifiée 2/2/3/4/4 ; densité **9,3/10**.
+- **UX-SEARCH-2 — Compact Search & Filters ✅ PR #480** : première annonce ~240–250 px, touch targets 48 px, 0 overflow ; **9,5/10**.
+- **UX-SEARCH-3 — Card Architecture ✅ PR #481** : `IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE`, confiance/source préservées ; **9,4/10**.
+- **UX-SEARCH-4 — Visual Inventory System ✅ PR #482** : audit public initial **288/288 fallbacks génériques, 276 doublons adjacents** ; cards internes branchées sur les fallbacks contextuels truth-safe existants ; fixture certifiée 11 contextuels distincts + 1 photo d’ambiance + 2 fail-closed, stabilité reload, 0 image cassée/overflow ; **9,5/10**.
+- Les quatre lots préservent ranking, DATA, Source Registry, dédup, ordre commercial, prix, Map et transparence de provenance.
+- **Prochain LOT UX/Search : UX-SEARCH-5 — Navigation & Hierarchy Polish** : réduire la domination visuelle de la navigation et finaliser la hiérarchie globale sans rouvrir les lots 1–4 ; gate UX ≥9/10.
 <!-- UX-SEARCH-CONVERGENCE-CURRENT-END -->
 
 ### SEARCH-UX-FAST-1 ✅ PR #390
