@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-11**  
-**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; RABAT-REAL-PHOTO-LIBRARY-1 ✅ PR #468 ; UX-SEARCH-1 ✅ PR #479 ; UX-SEARCH-2 ✅ PR #480 ; UX-SEARCH-3 ✅ PR #481 ; UX-SEARCH-4 ✅ PR #482 ; UX-SEARCH-5 ✅ PR #483 ; UX-SEARCH-6 ✅ PR #484 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; RABAT-REAL-PHOTO-LIBRARY-1 ✅ PR #468 ; UX-SEARCH-1 ✅ PR #479 ; UX-SEARCH-2 ✅ PR #480 ; UX-SEARCH-3 ✅ PR #481 ; UX-SEARCH-4 ✅ PR #482 ; UX-SEARCH-5 ✅ PR #483 ; UX-SEARCH-6 ✅ PR #484 ; UX-SEARCH-7 ✅ PR #485 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -67,7 +67,7 @@ Résultat certifié :
 - run spécialisé `31442655754` : **Product Design Reviewer PASS + Independent Release Certifier PASS** ;
 - contrat machine six viewports : **10/10** ; audit visuel humain : **9,4/10** — gate ≥9/10 atteint.
 
-**Prochain LOT UX/Search : UX-SEARCH-7 — Final Visual Certification.**
+**Convergence UX/Search : UX-SEARCH-1 → UX-SEARCH-7 ✅ COMPLETE.**
 <!-- UX-SEARCH-3-CLOSEOUT-END -->
 
 <!-- UX-SEARCH-4-CLOSEOUT-START -->
@@ -87,7 +87,7 @@ Résultat certifié :
 - run spécialisé `31444537676` : **Product Design Reviewer PASS + Independent Release Certifier PASS**, contrat machine **10/10** ;
 - revue humaine des captures 390×844 et 1440×900 : **9,5/10** — variété nette sans transformer une illustration ou une photo d’ambiance en photo du bien.
 
-**Prochain LOT UX/Search : UX-SEARCH-7 — Final Visual Certification.**
+**Convergence UX/Search : UX-SEARCH-1 → UX-SEARCH-7 ✅ COMPLETE.**
 <!-- UX-SEARCH-4-CLOSEOUT-END -->
 
 <!-- UX-SEARCH-5-CLOSEOUT-START -->
@@ -107,7 +107,7 @@ Résultat certifié :
 - run spécialisé `31446472569` : **Product Design Reviewer PASS + Independent Release Certifier PASS**, contrat machine **10/10** ;
 - revue humaine des captures 390×844 et 1440×900 : **9,5/10** — le header devient une infrastructure discrète et l’inventaire reprend la priorité visuelle.
 
-**Prochain LOT UX/Search : UX-SEARCH-7 — Final Visual Certification.**
+**Convergence UX/Search : UX-SEARCH-1 → UX-SEARCH-7 ✅ COMPLETE.**
 <!-- UX-SEARCH-5-CLOSEOUT-END -->
 
 <!-- UX-SEARCH-6-CLOSEOUT-START -->
@@ -128,8 +128,32 @@ Résultat certifié :
 - run spécialisé `31472416080` : **Product Design Reviewer PASS + Independent Release Certifier PASS**, contrat machine **10/10** ;
 - revue humaine des captures 360×800 et 390×844 : **9,5/10** — scan plus net, contrôles stables et aucune micro-coupure bloquante.
 
-**Prochain LOT UX/Search : UX-SEARCH-7 — Final Visual Certification.**
+**Convergence UX/Search : UX-SEARCH-1 → UX-SEARCH-7 ✅ COMPLETE.**
 <!-- UX-SEARCH-6-CLOSEOUT-END -->
+
+<!-- UX-SEARCH-7-CLOSEOUT-START -->
+## UX-SEARCH-7 — Final Visual Certification ✅ CERTIFIED — PR #485
+
+Responsabilité unique : **certifier visuellement la convergence finale de `/search` après UX-SEARCH-1 à 6**, sans modification runtime produit et sans toucher DATA, ranking, Source Registry, dédup, prix, ordre commercial ni logique Map.
+
+Résultat certifié :
+
+- exact-head comportemental `ec0da231b6868c31acee1f58a431cfaa82905596` : **19/19 workflows SUCCESS** ;
+- run spécialisé `31475434171` : **Product Design Reviewer PASS + Independent Release Certifier PASS**, avec deux builds/replays Chromium indépendants ;
+- replay des contrats UX-SEARCH-1 à 6 : **22/22 tests PASS** dans le Product Design Reviewer ; TypeScript et production build PASS ;
+- contrat final machine : **10/10 — 9/9 axes PASS** : header/navigation, recherche/filtres, densité desktop, cards, visuels, hiérarchie, mobile 2 colonnes, scan speed, trust/transparence ;
+- six viewports : **360×800 / 390×844 / 768×900 / 1024×800 / 1280×900 / 1440×900** ; grille **2 / 2 / 2 / 3 / 4 / 4** ;
+- avec `city=Rabat` actif : première card **229,5 px mobile**, **244,25 px tablette**, **242,25 px desktop** ; max card **362,4 px mobile**, **528,1 px tablette**, **419 px desktop** ;
+- header **49 px mobile / 53,75 px tablette-desktop** ; alignement canonique max **2 px** ; contrôles critiques mobile **48 px** ;
+- desktop 1280/1440 : **8 cards intersectent le premier viewport** ; mobile 360/390 : **4 cards** ;
+- **11 visuels distincts sur 12 cards**, signature déterministe stable sur tous les viewports ; 0 image cassée ;
+- 0 overflow horizontal ; 0 clipping prix/localisation/facts ; hiérarchie `IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE` respectée ; prix visuellement dominant ;
+- provenance et disclosure `Photo d’ambiance` / `Illustration` restent explicites ; aucune image d’ambiance n’est présentée comme photo du bien ;
+- revue humaine finale des captures 360×800, 390×844 et 1440×900 : **9,5/10** — inventaire dense, lisible et varié, contrôles subordonnés aux résultats, aucun finding bloquant ;
+- aucun fichier runtime produit modifié dans UX-SEARCH-7 : le lot est **certification-only**.
+
+**Convergence UX-SEARCH-1 → UX-SEARCH-7 : ✅ COMPLETE.** Les prochaines évolutions Search nécessitent un finding mesuré distinct ; les lots certifiés ne sont pas rouverts par défaut.
+<!-- UX-SEARCH-7-CLOSEOUT-END -->
 
 
 <!-- DATA-4.7B-CURRENT-START -->

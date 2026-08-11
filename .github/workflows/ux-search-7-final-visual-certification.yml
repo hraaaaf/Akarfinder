@@ -1,0 +1,128 @@
+name: UX-SEARCH-7 Final Visual Certification
+# Exact-head replay after calibrating the final audit to the certified active-filter state and UX-SEARCH-5 alignment tolerance.
+
+on:
+  pull_request:
+    paths:
+      - "app/search/**"
+      - "components/layout/SiteHeader.tsx"
+      - "components/search/**"
+      - "components/ui/Container.tsx"
+      - "lib/contextual-illustrations/**"
+      - "lib/listings/**"
+      - "lib/search/**"
+      - "lib/ux/**"
+      - "scripts/audits/ux-search-final-visual-certification-7.mjs"
+      - "scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts"
+      - "scripts/scrapers/__tests__/search-mobile-card-grid-1.test.ts"
+      - "scripts/scrapers/__tests__/ux-search-card-architecture-3.test.ts"
+      - "scripts/scrapers/__tests__/ux-search-visual-inventory-4.test.ts"
+      - "scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts"
+      - "scripts/scrapers/__tests__/ux-search-mobile-precision-6.test.ts"
+      - ".github/workflows/ux-search-7-final-visual-certification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Replay UX-SEARCH-1 to 6 contracts
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts
+          scripts/scrapers/__tests__/search-mobile-card-grid-1.test.ts
+          scripts/scrapers/__tests__/ux-search-card-architecture-3.test.ts
+          scripts/scrapers/__tests__/ux-search-visual-inventory-4.test.ts
+          scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts
+          scripts/scrapers/__tests__/ux-search-mobile-precision-6.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3135 > /tmp/ux7-product-design.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3135/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ux7-product-design.log
+          exit 1
+      - name: Final Search visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3135
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/ux-search-final-visual-certification-7.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-search-7-product-design-proof
+          path: data/audits/ux-search-final-visual-certification-7/product-design
+          if-no-files-found: warn
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Independently replay UX-SEARCH-1 to 6 contracts
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts
+          scripts/scrapers/__tests__/search-mobile-card-grid-1.test.ts
+          scripts/scrapers/__tests__/ux-search-card-architecture-3.test.ts
+          scripts/scrapers/__tests__/ux-search-visual-inventory-4.test.ts
+          scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts
+          scripts/scrapers/__tests__/ux-search-mobile-precision-6.test.ts
+      - name: Independent TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent production server
+        shell: bash
+        run: |
+          npm run start -- -p 3136 > /tmp/ux7-release-certifier.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3136/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ux7-release-certifier.log
+          exit 1
+      - name: Independently replay final Search visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3136
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/ux-search-final-visual-certification-7.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-search-7-release-certifier-proof
+          path: data/audits/ux-search-final-visual-certification-7/release-certifier
+          if-no-files-found: warn
+          retention-days: 14
