@@ -10,6 +10,7 @@ type MasterSpec = {
 };
 
 const BUCKET = "neighborhood-visuals";
+const INGESTION_ENABLED = false;
 const MASTERS: readonly MasterSpec[] = [
   {
     role: "signature",
@@ -76,6 +77,10 @@ async function sha1Hex(bytes: Uint8Array): Promise<string> {
 }
 
 Deno.serve(async (req: Request) => {
+  if (!INGESTION_ENABLED) {
+    return Response.json({ error: "P0.7 one-shot ingestion is closed" }, { status: 410 });
+  }
+
   if (req.method !== "POST") return new Response("POST required", { status: 405 });
 
   const body = await req.json().catch(() => null) as { lot?: string; confirmExactSources?: boolean } | null;
