@@ -1,0 +1,42 @@
+name: TEMP UX-SEARCH-7 Audit Fix
+
+on:
+  push:
+    branches:
+      - ux/search-final-visual-certification-7
+    paths:
+      - ".github/workflows/tmp-ux-search-7-audit-fix.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ux/search-final-visual-certification-7
+          fetch-depth: 0
+      - name: Use UX-SEARCH-5 canonical alignment nodes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("scripts/audits/ux-search-final-visual-certification-7.mjs")
+          s = p.read_text()
+          old = 'const brand = document.querySelector("[data-search-header-brand]");'
+          new = 'const brand = header?.querySelector(\'a[href="/"]\');'
+          if old not in s:
+              raise SystemExit("expected alignment probe not found")
+          p.write_text(s.replace(old, new, 1))
+          PY
+      - name: Self-remove and commit
+        shell: bash
+        run: |
+          git rm .github/workflows/tmp-ux-search-7-audit-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/audits/ux-search-final-visual-certification-7.mjs
+          git commit -m "test(search): use canonical UX-SEARCH-5 alignment probe"
+          git push origin HEAD:ux/search-final-visual-certification-7
