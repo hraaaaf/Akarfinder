@@ -11,15 +11,15 @@ const overlaySource = readFileSync(
 );
 
 describe("NEIGHBORHOOD-VISUAL-P0.3 — Souissi signature product asset", () => {
-  it("uses the exact P0.2 certified real master", () => {
-    assert.equal(SOUISSI_SIGNATURE_VISUAL.source.fileName, "Avenue Mohamed VI Souissi Rabat -1.jpg");
+  it("uses the corrected P0.2R certified real landscape master", () => {
+    assert.equal(SOUISSI_SIGNATURE_VISUAL.source.fileName, "Avenue Mohamed VI Souissi Rabat.jpg");
     assert.equal(SOUISSI_SIGNATURE_VISUAL.source.sourceName, "Wikimedia Commons");
     assert.equal(SOUISSI_SIGNATURE_VISUAL.source.author, "YousraElkh9");
     assert.equal(SOUISSI_SIGNATURE_VISUAL.source.license, "CC BY-SA 4.0");
     assert.equal(SOUISSI_SIGNATURE_VISUAL.source.geoVerified, true);
     assert.equal(SOUISSI_SIGNATURE_VISUAL.source.width, 3072);
     assert.equal(SOUISSI_SIGNATURE_VISUAL.source.height, 1728);
-    assert.equal(SOUISSI_SIGNATURE_VISUAL.source.sha1, "c801e690e27a571c38d68de199824b34b925b6e4");
+    assert.equal(SOUISSI_SIGNATURE_VISUAL.source.sha1, "d8e09bfdbad2fdef60f28840b90b79b45f77b8c6");
   });
 
   it("keeps source reality intact and applies identity only as UI presentation", () => {
