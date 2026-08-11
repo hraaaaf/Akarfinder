@@ -44,7 +44,7 @@ Le template retenu pour les assets quartiers est **Modèle A** :
 
 Objectif : prouver le pipeline complet sur un seul quartier avant toute industrialisation.
 
-## P0.1 — Template Lock ✅ CLOSED
+## P0.1 — Template Lock ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : formaliser le contrat graphique du Modèle A pour un usage production.
 
@@ -58,7 +58,7 @@ Actions :
 
 Sortie : **Template A canonique prêt à appliquer**.
 
-## P0.2 — Souissi Signature Source ✅ CLOSED
+## P0.2 — Souissi Signature Source ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : certifier la source réelle Signature.
 
@@ -74,7 +74,7 @@ Actions :
 
 Sortie : **SOURCE RÉELLE INGÉRÉE ✅**.
 
-## P0.3 — Souissi Signature Asset ✅ CLOSED
+## P0.3 — Souissi Signature Asset ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : appliquer réellement le Modèle A à la source P0.2 sans altérer le master. Le pilote a retenu un traitement CSS/UI non destructif ; aucun bitmap dérivé n’est créé lorsque le rendu suffit.
 
@@ -102,7 +102,7 @@ Gate : **score global ≥ 9/10**.
 
 Sortie : `Souissi / signature`.
 
-## P0.4 — Souissi Immobilier Source + Asset ✅ CLOSED
+## P0.4 — Souissi Immobilier Source + Asset ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : produire un asset `immobilier` à partir d’une vraie villa/grande propriété de Souissi avec droits suffisants.
 
@@ -118,7 +118,7 @@ Actions :
 
 Sortie : `Souissi / immobilier`.
 
-## P0.5 — Souissi Lifestyle Source + Asset ✅ CLOSED
+## P0.5 — Souissi Lifestyle Source + Asset ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : produire un asset `lifestyle` réel du calme/verdure/cadre résidentiel de Souissi.
 
@@ -132,7 +132,7 @@ Actions identiques à P0.4 avec priorité à :
 
 Sortie : `Souissi / lifestyle`.
 
-## P0.6 — Visual Gate Search ✅ CLOSED
+## P0.6 — Visual Gate Search ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : tester les 3 assets dans les vraies cards AkarFinder.
 
@@ -156,9 +156,9 @@ Mesurer :
 - transparence `Photo d’ambiance` ;
 - cohérence avec les cards Search certifiées.
 
-Gate : **UX/UI ≥9/10**. Pilote Souissi final : **9,2/10 PASS**.
+Gate : **UX/UI ≥9/10**. Pilote Souissi final : **9,2/10 PASS**. Pilote Souissi final : **9,2/10 PASS**.
 
-## P0.7 — DB & Storage Integration ✅ CLOSED
+## P0.7 — DB & Storage Integration ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : matérialiser les 3 assets certifiés dans la bibliothèque Supabase.
 
@@ -174,7 +174,7 @@ Actions :
 
 Sortie : **Souissi 3/3 READY ✅** — 3 masters physiques + 3 rows canoniques vérifiées.
 
-## P0.8 — Production Certification ✅ CLOSED
+## P0.8 — Production Certification ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : fermer le pilote Souissi.
 
