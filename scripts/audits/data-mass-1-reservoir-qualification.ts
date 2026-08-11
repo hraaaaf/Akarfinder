@@ -8,8 +8,9 @@ import {
 } from "../data-mass/reservoir-qualification";
 
 const OUT_DIR = process.env.DATA_MASS_1_OUT_DIR ?? ".tmp/data-mass-1/results";
-const TIMEOUT_MS = 20_000;
+const TIMEOUT_MS = 30_000;
 const PAGE_SIZE = 1_000;
+const MAX_RETRIES = 3;
 
 function env(name: string): string {
   const value = process.env[name];
@@ -17,19 +18,32 @@ function env(name: string): string {
   return value;
 }
 
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function restPage<T>(table: string, params: Record<string, string>): Promise<T[]> {
   const url = new URL(`/rest/v1/${table}`, env("SUPABASE_URL"));
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
   const key = env("SUPABASE_SERVICE_ROLE_KEY");
-  const response = await fetch(url, {
-    method: "GET",
-    headers: { apikey: key, authorization: `Bearer ${key}` },
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-  });
-  if (!response.ok) {
-    throw new Error(`${table} read failed: HTTP ${response.status} ${await response.text()}`);
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { apikey: key, authorization: `Bearer ${key}` },
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    if (response.ok) return (await response.json()) as T[];
+
+    const body = await response.text();
+    const retryable = response.status === 429 || response.status >= 500;
+    if (!retryable || attempt === MAX_RETRIES) {
+      throw new Error(`${table} read failed: HTTP ${response.status} ${body}`);
+    }
+    await delay(250 * attempt);
   }
-  return (await response.json()) as T[];
+
+  throw new Error(`${table} read failed after ${MAX_RETRIES} attempts`);
 }
 
 async function restAll<T>(table: string, params: Record<string, string>): Promise<T[]> {
@@ -41,7 +55,30 @@ async function restAll<T>(table: string, params: Record<string, string>): Promis
   }
 }
 
+async function restAllById<T extends { id: string }>(table: string, params: Record<string, string>): Promise<T[]> {
+  const rows: T[] = [];
+  let lastId: string | null = null;
+
+  for (;;) {
+    const query: Record<string, string> = {
+      ...params,
+      order: "id.asc",
+      limit: String(PAGE_SIZE),
+    };
+    if (lastId) query.id = `gt.${lastId}`;
+
+    const page = await restPage<T>(table, query);
+    rows.push(...page);
+    if (page.length < PAGE_SIZE) return rows;
+
+    const nextId = page.at(-1)?.id ?? null;
+    if (!nextId || nextId === lastId) throw new Error(`${table} keyset pagination did not advance`);
+    lastId = nextId;
+  }
+}
+
 type DiscoveryRow = {
+  id: string;
   source_domain: string;
   source_url: string;
   canonical_url: string | null;
@@ -89,9 +126,8 @@ function pct(value: number): string {
 
 async function main(): Promise<void> {
   const [discoveryRows, thinRows, registryRows] = await Promise.all([
-    restAll<DiscoveryRow>("discovery_candidates", {
-      select: "source_domain,source_url,canonical_url,title,snippet,discovery_query,content_fingerprint,last_seen_at",
-      order: "source_domain.asc,source_url.asc",
+    restAllById<DiscoveryRow>("discovery_candidates", {
+      select: "id,source_domain,source_url,canonical_url,title,snippet,discovery_query,content_fingerprint,last_seen_at",
     }),
     restAll<ThinIndexRow>("thin_index_search_documents", {
       select: "canonical_url",
@@ -183,6 +219,8 @@ async function main(): Promise<void> {
     publicRowsCreated: 0,
     uniquePropertiesClaimed: 0,
     unitOfCount: "URL_REPRESENTATION",
+    paginationMode: "UUID_KEYSET",
+    transientReadRetriesBounded: MAX_RETRIES,
     discoveryRowsRead: discoveryRows.length,
     distinctDiscoveryUrlRepresentations: uniqueDiscovery.size,
     thinIndexUrlRepresentationsRead: thinRows.length,
