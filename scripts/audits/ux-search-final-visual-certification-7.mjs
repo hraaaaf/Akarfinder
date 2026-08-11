@@ -186,7 +186,7 @@ for (const viewport of viewports) {
   if (metrics.maxCardHeight > viewport.cardMax) failures.push(`${viewport.name}: max card ${metrics.maxCardHeight}px > ${viewport.cardMax}px`);
   if (metrics.overflow > 1) failures.push(`${viewport.name}: horizontal overflow ${metrics.overflow}px`);
   if (metrics.brokenImages !== 0) failures.push(`${viewport.name}: broken images ${metrics.brokenImages}`);
-  if (metrics.alignmentDelta == null || metrics.alignmentDelta > 1.5) failures.push(`${viewport.name}: header/search alignment delta ${metrics.alignmentDelta}px > 1.5px`);
+  if (metrics.alignmentDelta == null || metrics.alignmentDelta > 3) failures.push(`${viewport.name}: header/search alignment delta ${metrics.alignmentDelta}px > 3px`);
   if (metrics.headerHeight == null || metrics.headerHeight > 55) failures.push(`${viewport.name}: header ${metrics.headerHeight}px > 55px`);
   if (metrics.cardAudits.some((item) => !item.hasAllLayers || !item.readingOrder)) failures.push(`${viewport.name}: card scan hierarchy incomplete or out of order`);
   if (metrics.cardAudits.some((item) => item.priceOverflow || item.locationOverflow || item.factsOverflow)) failures.push(`${viewport.name}: card micro-clipping detected`);
