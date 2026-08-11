@@ -187,6 +187,10 @@ const DETAIL_MARKERS = [
   "/listing/", "/vente/", "/location/", "/acheter/", "/louer/",
 ];
 
+const RESTRICTED_AUTHORIZATION_STATUSES = new Set([
+  "prohibited", "permission_required", "unverified", "expired",
+]);
+
 function normalizeDomain(domain: string): string {
   return domain.trim().toLowerCase().replace(/^www\./, "");
 }
@@ -198,6 +202,10 @@ function normalizeText(value: string | null | undefined): string {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function policyToken(value: string | null | undefined): string {
+  return value?.trim().toLowerCase() ?? "";
 }
 
 function boundedRatio(numerator: number, denominator: number): number {
@@ -344,18 +352,37 @@ function normalizedDuplicateSignature(candidate: ReservoirCandidate): string | n
   return `text:${title.slice(0, 180)}|${snippet.slice(0, 260)}`;
 }
 
+function policyForcesMeasureOnly(
+  summary: Pick<DomainReservoirSummary, "authorizationStatus" | "displayPolicy" | "displayGate" | "ingestionGate">,
+): boolean {
+  const authorizationStatus = policyToken(summary.authorizationStatus);
+  const displayPolicy = policyToken(summary.displayPolicy);
+  const displayGate = policyToken(summary.displayGate);
+  const ingestionGate = policyToken(summary.ingestionGate);
+
+  if (!authorizationStatus) return true;
+  if (RESTRICTED_AUTHORIZATION_STATUSES.has(authorizationStatus)) return true;
+  if (displayGate === "hidden") return true;
+  if (displayPolicy === "internal_signal_only") return true;
+  if (ingestionGate === "internal_signal_only") return true;
+  return false;
+}
+
 function chooseQueue(
   summary: Omit<DomainReservoirSummary, "massQueue" | "massPotentialScore" | "publicActivableNow" | "recommendedNextAction">,
 ): MassQueue {
-  if (
-    summary.displayGate === "external_tail_link_only" &&
-    summary.displayPolicy === "canonical_link_only" &&
-    summary.likelyMoroccoRealEstateUrls > 0
-  ) {
-    return "POLICY_COMPATIBLE_TAIL";
+  if (summary.registryStatus === "REGISTERED") {
+    if (policyForcesMeasureOnly(summary)) return "MEASURE_ONLY";
+    if (
+      policyToken(summary.displayGate) === "external_tail_link_only" &&
+      policyToken(summary.displayPolicy) === "canonical_link_only" &&
+      summary.likelyMoroccoRealEstateUrls > 0
+    ) {
+      return "POLICY_COMPATIBLE_TAIL";
+    }
+    return "MEASURE_ONLY";
   }
 
-  if (summary.registryStatus === "REGISTERED") return "MEASURE_ONLY";
   if (summary.domainRole === "SOCIAL" || summary.domainRole === "DISCOVERY_TRANSPORT") return "HOLD";
 
   if (
