@@ -16,7 +16,7 @@ permissions:
 
 concurrency:
   group: neighborhood-visual-p0-8-${{ github.event.pull_request.number }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   STORAGE_BASE: https://kusfiyimwvxblvsrhaes.supabase.co/storage/v1/object/public/neighborhood-visuals/rabat/souissi
