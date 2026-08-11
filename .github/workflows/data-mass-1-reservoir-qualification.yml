@@ -80,6 +80,10 @@ jobs:
           if (p.foreignOnlyLeakageIntoSourceFactory !== 0 || p.weakMoroccoLeakageIntoSourceFactory !== 0) throw new Error(`Morocco-scope leakage: ${JSON.stringify(p)}`);
           if (!Array.isArray(p.detectedCities) || p.detectedCities.length === 0) throw new Error(`No city coverage produced: ${JSON.stringify(p)}`);
 
+          const pseudoCities = new Set(['Agdal', 'Souissi', 'Guéliz', 'Hay Riad', 'Maârif', 'Aïn Diab', 'Oasis']);
+          const citySemanticLeakage = (p.detectedCities ?? []).filter((row) => pseudoCities.has(row.city));
+          if (citySemanticLeakage.length) throw new Error(`Neighborhood/locality leaked into detectedCities: ${JSON.stringify(citySemanticLeakage)}`);
+
           const token = (value) => String(value ?? '').trim().toLowerCase();
           const restricted = new Set(['prohibited', 'permission_required', 'unverified', 'expired']);
           const policyCompatibleTail = Array.isArray(report.policyCompatibleTail) ? report.policyCompatibleTail : [];
@@ -108,6 +112,9 @@ jobs:
             row.domainRole === 'DISCOVERY_TRANSPORT'
           );
           if (weakSourceFactory.length) throw new Error(`SOURCE_FACTORY threshold/policy leakage: ${JSON.stringify(weakSourceFactory.slice(0, 10))}`);
+
+          const knownDirectoryLeakage = sourceFactory.filter((row) => ['tiendeo.ma', 'telecontact.ma'].includes(row.sourceDomain));
+          if (knownDirectoryLeakage.length) throw new Error(`Known directory/catalog source leaked into SOURCE_FACTORY: ${JSON.stringify(knownDirectoryLeakage)}`);
           NODE
       - uses: actions/upload-artifact@v4
         with:
