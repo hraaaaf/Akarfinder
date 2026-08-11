@@ -1,0 +1,97 @@
+name: UX-HEADER-10OF10-1 Exact Visual Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/search/page.tsx"
+      - "components/layout/SiteHeader.tsx"
+      - "scripts/audits/ux-header-10of10-1.mjs"
+      - ".github/workflows/ux-header-10of10-1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer — Header 10/10
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3141 > /tmp/header10-product.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3141/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/header10-product.log
+          exit 1
+      - name: Exact header visual contract
+        env:
+          BASE_URL: http://127.0.0.1:3141
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/ux-header-10of10-1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-header-10of10-product-design-proof
+          path: data/audits/ux-header-10of10-1/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Header 10/10
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Independent TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent production server
+        shell: bash
+        run: |
+          npm run start -- -p 3142 > /tmp/header10-release.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3142/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/header10-release.log
+          exit 1
+      - name: Independently replay exact header visual contract
+        env:
+          BASE_URL: http://127.0.0.1:3142
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/ux-header-10of10-1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-header-10of10-release-certifier-proof
+          path: data/audits/ux-header-10of10-1/release-certifier
+          if-no-files-found: error
+          retention-days: 14
