@@ -96,7 +96,7 @@ for (const viewport of viewports) {
     const cards = Array.from(document.querySelectorAll("article[data-mobile-compact-card]")).slice(0, 12);
     const grid = document.querySelector("[data-search-continuous-flow] > div.grid");
     const header = document.querySelector("[data-search-global-header]");
-    const brand = document.querySelector("[data-search-header-brand]");
+    const brand = header?.querySelector('a[href="/"]');
     const toolbar = document.querySelector("[data-search-results-toolbar]");
     const primaryRow = document.querySelector("[data-search-primary-filter-row]");
     const first = cards[0];
