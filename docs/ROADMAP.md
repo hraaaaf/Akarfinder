@@ -5,6 +5,26 @@
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
+<!-- UX-HEADER-10OF10-1-CLOSEOUT-START -->
+## UX-HEADER-10OF10-1 — Exact White Search Header ✅ CERTIFIED
+
+Responsibility: make the `/search` header match the locked visual contract exactly before moving to the next section.
+
+- desktop 1440×900: one continuous pure-white header surface, blue AkarFinder logo, `Acheter / Louer / Neuf / Agences / Conseils`, then `Favoris / Publier / Mon compte`;
+- mobile 390×844: `Menu / centered AkarFinder / Mon compte` on one continuous pure-white surface;
+- exact rendered height: **54 px** on both certified viewports;
+- no blue header band, no orange, no dark-mode override on the Search header;
+- Product Design Reviewer: **10/10 PASS**;
+- Independent Release Certifier: **10/10 PASS**;
+- synchronized certified behavioral head: `413f854979e5b4349866955b92bb3f4d9d5ba72c`;
+- specialized synchronized run: `31524218758` SUCCESS;
+- perceptual resemblance to the supplied mockup after double-check: **9.8/10**; remaining difference is limited to micro-spacing/font rendering, while the implemented contract itself is **10/10 exact**;
+- DATA, ranking, Source Registry, dedup, price, commercial ordering and Map logic unchanged.
+
+**Next UX section:** Search / filters. Do not reopen the Header unless a measured regression appears.
+<!-- UX-HEADER-10OF10-1-CLOSEOUT-END -->
+
+
 <!-- UX-SEARCH-1-CLOSEOUT-START -->
 ## UX-SEARCH-1 — Density First ✅ CERTIFIED — PR #479
 
