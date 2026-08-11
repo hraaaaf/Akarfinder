@@ -1,0 +1,31 @@
+name: Neighborhood Visual Template A P0.1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/contextual-illustrations/neighborhood-visual-template-a.ts"
+      - "components/search/SearchListingCardDark.tsx"
+      - "scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts"
+      - ".github/workflows/neighborhood-visual-template-a-p0-1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  template-a-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Template A contract
+        run: npx tsx --test scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Rabat real-photo predecessor
+        run: npx tsx --test scripts/scrapers/__tests__/rabat-real-photo-library-1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
