@@ -65,10 +65,10 @@ export function SiteHeader({ variant = "light", compact = false, fluid = false }
       isActive
         ? darkSurface || transparentActive
           ? "text-white after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-bronze-400"
-          : "text-foreground after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-[#0B63CE] dark:text-white"
+          : "text-slate-900 after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-[#0B63CE]"
         : darkSurface || transparentActive
           ? "text-white/78 hover:text-white"
-          : "text-foreground/70 hover:bg-surface-muted hover:text-foreground dark:text-white/75 dark:hover:bg-white/10 dark:hover:text-white"
+          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
     }`;
 
   return (
@@ -81,7 +81,7 @@ export function SiteHeader({ variant = "light", compact = false, fluid = false }
           ? "border-transparent bg-transparent text-white"
           : darkSurface
             ? "border-white/10 bg-[rgba(7,27,51,0.97)] text-white shadow-[0_16px_40px_rgba(2,10,24,0.28)] backdrop-blur"
-            : "border-border/20 bg-white/94 text-foreground shadow-[0_1px_4px_rgba(0,0,0,0.06)] backdrop-blur dark:border-white/10 dark:bg-[rgba(7,27,51,0.97)] dark:text-white"
+            : "border-slate-200/80 bg-white text-slate-900 shadow-[0_1px_4px_rgba(15,23,42,0.05)] backdrop-blur"
       }`}
     >
       <Container
@@ -98,22 +98,13 @@ export function SiteHeader({ variant = "light", compact = false, fluid = false }
               className={compact ? "h-[23px] w-auto sm:h-[28px]" : "h-[25px] w-auto sm:h-[34px]"}
             />
           ) : (
-            <>
-              <img
-                src="/brand/logo-v2/logo-header-light.png"
-                alt="AkarFinder"
-                width={132}
-                height={33}
-                className={compact ? "h-[23px] w-auto sm:h-[28px] dark:hidden" : "h-[25px] w-auto sm:h-[34px] dark:hidden"}
-              />
-              <img
-                src="/brand/logo-v2/logo-header-dark.png"
-                alt="AkarFinder"
-                width={132}
-                height={33}
-                className={compact ? "hidden h-[23px] w-auto sm:h-[28px] dark:block" : "hidden h-[25px] w-auto sm:h-[34px] dark:block"}
-              />
-            </>
+            <img
+              src="/brand/logo-v2/logo-header-light.png"
+              alt="AkarFinder"
+              width={132}
+              height={33}
+              className={compact ? "h-[23px] w-auto sm:h-[28px]" : "h-[25px] w-auto sm:h-[34px]"}
+            />
           )}
         </Link>
 
@@ -160,7 +151,7 @@ export function SiteHeader({ variant = "light", compact = false, fluid = false }
             className={`relative hidden h-9 w-9 items-center justify-center rounded-full transition sm:flex ${
               darkSurface || transparentActive
                 ? "text-white/70 hover:bg-white/10 hover:text-white"
-                : "text-muted-foreground hover:bg-red-50 hover:text-red-500 dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white"
+                : "text-slate-500 hover:bg-red-50 hover:text-red-500"
             }`}
           >
             <Heart size={18} fill={favoriteCount > 0 ? "currentColor" : "none"} />
@@ -176,7 +167,7 @@ export function SiteHeader({ variant = "light", compact = false, fluid = false }
             className={`hidden rounded-xl border px-3.5 py-2 text-[12.5px] font-bold transition md:block ${
               darkSurface || transparentActive
                 ? "border-white/18 bg-white/6 text-white hover:bg-white/12"
-                : "border-border/20 bg-card text-foreground/80 hover:border-bronze-500/40 hover:text-foreground dark:border-white/12 dark:bg-white/5 dark:text-white/80"
+                : "border-slate-200 bg-white text-slate-700 hover:border-[#0B63CE]/35 hover:text-slate-900"
             }`}
           >
             Publier
@@ -200,7 +191,7 @@ export function SiteHeader({ variant = "light", compact = false, fluid = false }
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((open) => !open)}
             className={`grid h-9 w-9 place-items-center rounded-full lg:hidden ${
-              darkSurface || transparentActive ? "text-white hover:bg-white/10" : "text-foreground hover:bg-surface dark:text-white"
+              darkSurface || transparentActive ? "text-white hover:bg-white/10" : "text-slate-700 hover:bg-slate-100"
             }`}
           >
             {menuOpen ? <X size={19} /> : <Menu size={19} />}
