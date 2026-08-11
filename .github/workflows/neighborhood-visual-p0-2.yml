@@ -1,0 +1,33 @@
+name: Neighborhood Visual P0.2 Souissi Source Gate
+
+on:
+  pull_request:
+    paths:
+      - "data/audits/neighborhood-visual-p0-2/**"
+      - "supabase/migrations/20260811172000_neighborhood_visual_p0_2_souissi_signature_source.sql"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p0-2-souissi-source.test.ts"
+      - ".github/workflows/neighborhood-visual-p0-2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: P0.2 Souissi source contract
+        run: npx tsx --test scripts/scrapers/__tests__/neighborhood-visual-p0-2-souissi-source.test.ts
+      - name: Replay P0.1 Template A contract
+        run: npx tsx --test scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Replay Rabat real-photo predecessor
+        run: npx tsx --test scripts/scrapers/__tests__/rabat-real-photo-library-1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
