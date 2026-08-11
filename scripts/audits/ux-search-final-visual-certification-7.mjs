@@ -6,9 +6,6 @@ const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3135";
 const variant = process.env.AUDIT_VARIANT ?? "product-design";
 const outDir = process.env.AUDIT_DIR ?? path.join("data", "audits", "ux-search-final-visual-certification-7", variant);
 
-// Final certification deliberately keeps city=Rabat active so the filter-chip state is
-// part of the proof. Thresholds therefore include the legitimate active-chip row while
-// remaining bounded by the certified UX-SEARCH-1/2/3 density envelope.
 const viewports = [
   { name: "mobile-360x800", width: 360, height: 800, columns: 2, firstTopMax: 235, cardMax: 365 },
   { name: "mobile-390x844", width: 390, height: 844, columns: 2, firstTopMax: 235, cardMax: 365 },
@@ -20,7 +17,6 @@ const viewports = [
 
 const neighborhoods = ["Agdal", "Hay Riad", "Souissi", "Hassan", "Océan", "Aviation", "Akkari", "Yacoub El Mansour", "Agdal", "Hay Riad", "Souissi", "Hassan"];
 const propertyTypes = ["Appartement", "Villa", "Maison", "Studio", "Terrain", "Bureau", "Riad", "Appartement", "Villa", "Maison", "Studio", "Bureau"];
-
 const listings = neighborhoods.map((neighborhood, index) => ({
   id: `ux-search-7-${index + 1}`,
   title: index % 2 === 0
@@ -64,50 +60,47 @@ const browser = await chromium.launch({ headless: true });
 const failures = [];
 const results = [];
 let canonicalVisualSignature = null;
-
 const imageFixture = '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540"><rect width="960" height="540" fill="#7f99aa"/><path d="M0 390L240 170l160 150 180-120 380 340H0z" fill="#d8c6a2"/><rect x="390" y="180" width="170" height="210" rx="12" fill="#e9e4d8"/></svg>';
 
 for (const viewport of viewports) {
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
   const page = await context.newPage();
-
   for (const pattern of ["https://commons.wikimedia.org/**", "https://upload.wikimedia.org/**"]) {
-    await page.route(pattern, async (route) => {
-      await route.fulfill({ status: 200, contentType: "image/svg+xml", body: imageFixture });
-    });
+    await page.route(pattern, async (route) => route.fulfill({ status: 200, contentType: "image/svg+xml", body: imageFixture }));
   }
-  await page.route("**/api/search?**", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ listings, total: listings.length, limit: 100, offset: 0, source: "ux-search-7-ci", generated_at: new Date().toISOString() }),
-    });
-  });
-  await page.route("**/api/search/gateway?**", async (route) => {
-    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ results: [], total_count: 0, next_cursor: null, has_more: false }) });
-  });
+  await page.route("**/api/search?**", async (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ listings, total: listings.length, limit: 100, offset: 0, source: "ux-search-7-ci", generated_at: new Date().toISOString() }),
+  }));
+  await page.route("**/api/search/gateway?**", async (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ results: [], total_count: 0, next_cursor: null, has_more: false }),
+  }));
 
   const response = await page.goto(`${baseUrl}/search?city=Rabat&view=list`, { waitUntil: "domcontentloaded", timeout: 60_000 });
   if (!response || response.status() >= 400) failures.push(`${viewport.name}: search returned ${response?.status() ?? "no response"}`);
   await page.waitForFunction(() => document.querySelectorAll("article[data-mobile-compact-card]").length >= 12, null, { timeout: 30_000 });
+  await page.waitForSelector('[data-search-global-header="exact-white"]', { timeout: 20_000 });
   await page.waitForTimeout(500);
 
   const metrics = await page.evaluate(() => {
+    const visible = (node) => Boolean(node && getComputedStyle(node).display !== "none" && getComputedStyle(node).visibility !== "hidden" && node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0);
     const cards = Array.from(document.querySelectorAll("article[data-mobile-compact-card]")).slice(0, 12);
     const grid = document.querySelector("[data-search-continuous-flow] > div.grid");
-    const header = document.querySelector("[data-search-global-header]");
-    const brand = header?.querySelector('a[href="/"]');
+    const header = document.querySelector('[data-search-global-header="exact-white"]');
+    const brand = Array.from(header?.querySelectorAll('a[aria-label="AkarFinder - accueil"]') ?? []).find(visible);
     const toolbar = document.querySelector("[data-search-results-toolbar]");
     const primaryRow = document.querySelector("[data-search-primary-filter-row]");
     const first = cards[0];
+    const brandRect = brand?.getBoundingClientRect() ?? null;
+    const rowRect = primaryRow?.getBoundingClientRect() ?? null;
+    const headerAlignmentDelta = window.innerWidth >= 1024
+      ? brandRect && rowRect ? Math.abs(brandRect.left - rowRect.left) : null
+      : brandRect ? Math.abs((brandRect.left + brandRect.width / 2) - window.innerWidth / 2) : null;
     const cardRects = cards.map((card) => card.getBoundingClientRect());
     const cardHeights = cardRects.map((rect) => rect.height);
-    // UX-SEARCH-5 established brand → primary-filter-row as the canonical horizontal
-    // alignment contract. Comparing outer section boxes would merely measure padding.
-    const alignmentDelta = brand && primaryRow
-      ? Math.abs(brand.getBoundingClientRect().left - primaryRow.getBoundingClientRect().left)
-      : null;
-
     const controlSelectors = [
       "[data-search-primary-search] input",
       "[data-search-filter-trigger]",
@@ -118,7 +111,6 @@ for (const viewport of viewports) {
       const node = document.querySelector(selector);
       return node ? { selector, height: node.getBoundingClientRect().height, width: node.getBoundingClientRect().width } : null;
     }).filter(Boolean);
-
     const cardAudits = cards.map((card) => {
       const image = card.querySelector("[data-card-image]");
       const price = card.querySelector("[data-card-price]");
@@ -133,32 +125,22 @@ for (const viewport of viewports) {
       const nodes = [image, price, title, location, facts, provenance];
       const tops = nodes.map((node) => node?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY);
       const readingOrder = tops.every((value, index) => index === 0 || value >= tops[index - 1] - 1);
-      const priceStyle = price ? getComputedStyle(price) : null;
-      const titleStyle = title ? getComputedStyle(title) : null;
-      const rect = card.getBoundingClientRect();
-      const factsOverflow = Boolean(facts && facts.scrollWidth - facts.clientWidth > 1);
-      const priceOverflow = Boolean(price && price.scrollWidth - price.clientWidth > 1);
-      const locationOverflow = Boolean(location && location.getBoundingClientRect().right > rect.right + 1);
+      const cardRect = card.getBoundingClientRect();
       return {
         readingOrder,
         hasAllLayers: nodes.every(Boolean),
-        priceFont: priceStyle ? parseFloat(priceStyle.fontSize) : 0,
-        titleFont: titleStyle ? parseFloat(titleStyle.fontSize) : 0,
-        factsOverflow,
-        priceOverflow,
-        locationOverflow,
+        priceFont: price ? parseFloat(getComputedStyle(price).fontSize) : 0,
+        titleFont: title ? parseFloat(getComputedStyle(title).fontSize) : 0,
+        factsOverflow: Boolean(facts && facts.scrollWidth - facts.clientWidth > 1),
+        priceOverflow: Boolean(price && price.scrollWidth - price.clientWidth > 1),
+        locationOverflow: Boolean(location && location.getBoundingClientRect().right > cardRect.right + 1),
         visualToken: neighborhoodPhoto?.getAttribute("data-neighborhood-photo-id") ?? contextual?.getAttribute("data-contextual-asset-id") ?? visualClass ?? "none",
         visualClass,
         truthDisclosure: visualClass === "authorized_or_listing_image" || Boolean(disclosure),
         provenanceText: provenance?.textContent?.trim() ?? "",
       };
     });
-
-    const visibleInFirstViewport = cardRects.filter((rect) => rect.top < window.innerHeight && rect.bottom > 0).length;
     const visualTokens = cardAudits.map((item) => item.visualToken);
-    const distinctVisuals = new Set(visualTokens).size;
-    const brokenImages = cards.flatMap((card) => Array.from(card.querySelectorAll("[data-card-image] img"))).filter((img) => !(img.complete && img.naturalWidth > 0)).length;
-
     return {
       cardCount: cards.length,
       columns: grid ? getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length : 0,
@@ -169,14 +151,15 @@ for (const viewport of viewports) {
       headerHeight: header?.getBoundingClientRect().height ?? null,
       toolbarHeight: toolbar?.getBoundingClientRect().height ?? null,
       primaryRowHeight: primaryRow?.getBoundingClientRect().height ?? null,
-      alignmentDelta,
-      visibleInFirstViewport,
+      alignmentDelta: headerAlignmentDelta,
+      alignmentMode: window.innerWidth >= 1024 ? "desktop-left" : "mobile-centered-brand",
+      visibleInFirstViewport: cardRects.filter((rect) => rect.top < window.innerHeight && rect.bottom > 0).length,
       overflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
-      brokenImages,
+      brokenImages: cards.flatMap((card) => Array.from(card.querySelectorAll("[data-card-image] img"))).filter((img) => !(img.complete && img.naturalWidth > 0)).length,
       controls,
       cardAudits,
       visualTokens,
-      distinctVisuals,
+      distinctVisuals: new Set(visualTokens).size,
     };
   });
 
@@ -186,7 +169,7 @@ for (const viewport of viewports) {
   if (metrics.maxCardHeight > viewport.cardMax) failures.push(`${viewport.name}: max card ${metrics.maxCardHeight}px > ${viewport.cardMax}px`);
   if (metrics.overflow > 1) failures.push(`${viewport.name}: horizontal overflow ${metrics.overflow}px`);
   if (metrics.brokenImages !== 0) failures.push(`${viewport.name}: broken images ${metrics.brokenImages}`);
-  if (metrics.alignmentDelta == null || metrics.alignmentDelta > 3) failures.push(`${viewport.name}: header/search alignment delta ${metrics.alignmentDelta}px > 3px`);
+  if (metrics.alignmentDelta == null || metrics.alignmentDelta > 3) failures.push(`${viewport.name}: certified header alignment delta ${metrics.alignmentDelta}px > 3px (${metrics.alignmentMode})`);
   if (metrics.headerHeight == null || metrics.headerHeight > 55) failures.push(`${viewport.name}: header ${metrics.headerHeight}px > 55px`);
   if (metrics.cardAudits.some((item) => !item.hasAllLayers || !item.readingOrder)) failures.push(`${viewport.name}: card scan hierarchy incomplete or out of order`);
   if (metrics.cardAudits.some((item) => item.priceOverflow || item.locationOverflow || item.factsOverflow)) failures.push(`${viewport.name}: card micro-clipping detected`);
@@ -194,20 +177,13 @@ for (const viewport of viewports) {
   if (metrics.cardAudits.some((item) => !item.truthDisclosure)) failures.push(`${viewport.name}: fallback visual missing truth disclosure`);
   if (metrics.cardAudits.some((item) => item.priceFont < item.titleFont * 1.08)) failures.push(`${viewport.name}: price is not visually dominant over title`);
   if (metrics.distinctVisuals < 8) failures.push(`${viewport.name}: only ${metrics.distinctVisuals}/12 distinct visual tokens`);
-
   if (viewport.width < 640) {
-    for (const control of metrics.controls) {
-      if (control.height < 47.5) failures.push(`${viewport.name}: ${control.selector} touch target ${control.height}px < 48px`);
-    }
+    for (const control of metrics.controls) if (control.height < 47.5) failures.push(`${viewport.name}: ${control.selector} touch target ${control.height}px < 48px`);
     if (metrics.rowGap == null || metrics.rowGap > 16) failures.push(`${viewport.name}: row gap ${metrics.rowGap}px > 16px`);
     if (metrics.columnGap == null || metrics.columnGap > 12) failures.push(`${viewport.name}: column gap ${metrics.columnGap}px > 12px`);
     if (metrics.visibleInFirstViewport < 4) failures.push(`${viewport.name}: only ${metrics.visibleInFirstViewport} cards intersect the first viewport`);
   }
-
-  if (viewport.width >= 1280 && metrics.visibleInFirstViewport < 8) {
-    failures.push(`${viewport.name}: fewer than 8 cards intersect the first viewport`);
-  }
-
+  if (viewport.width >= 1280 && metrics.visibleInFirstViewport < 8) failures.push(`${viewport.name}: fewer than 8 cards intersect the first viewport`);
   const signature = metrics.visualTokens.join("|");
   if (canonicalVisualSignature == null) canonicalVisualSignature = signature;
   else if (signature !== canonicalVisualSignature) failures.push(`${viewport.name}: deterministic visual signature drifted across viewports`);
@@ -219,7 +195,6 @@ for (const viewport of viewports) {
 }
 
 await browser.close();
-
 const mobile = results.filter((item) => item.width < 640);
 const desktop = results.filter((item) => item.width >= 1024);
 const contract = {
@@ -252,11 +227,7 @@ const report = {
   },
   viewports: results,
 };
-
 await fs.writeFile(path.join(outDir, "metrics.json"), JSON.stringify(report, null, 2));
-await fs.writeFile(
-  path.join(outDir, "report.md"),
-  `# UX-SEARCH-7 Final Visual Certification — ${variant}\n\nMachine contract: **${machineScore.toFixed(1)}/10** (${contractPassCount}/${Object.keys(contract).length} axes)\n\n${failures.length ? failures.map((item) => `- FAIL: ${item}`).join("\n") : "- PASS: all nine final Search axes satisfy the objective visual/interaction contract."}\n`,
-);
+await fs.writeFile(path.join(outDir, "report.md"), `# UX-SEARCH-7 Final Visual Certification — ${variant}\n\nMachine contract: **${machineScore.toFixed(1)}/10** (${contractPassCount}/${Object.keys(contract).length} axes)\n\n${failures.length ? failures.map((item) => `- FAIL: ${item}`).join("\n") : "- PASS: all nine final Search axes satisfy the current certified visual/interaction contract."}\n`);
 console.log(JSON.stringify(report, null, 2));
 if (failures.length || machineScore < 9) process.exit(1);

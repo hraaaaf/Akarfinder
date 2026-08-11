@@ -4,7 +4,7 @@ import test from "node:test";
 
 test("UX-SEARCH-5 scopes the compact fluid global header to Search", async () => {
   const page = await readFile("app/search/page.tsx", "utf8");
-  assert.match(page, /<SiteHeader variant="dark" compact fluid \/>/);
+  assert.match(page, /<SiteHeader variant="light" compact fluid searchMode \/>/);
 });
 
 test("UX-SEARCH-5 keeps the global header complete while reducing its Search visual weight", async () => {
