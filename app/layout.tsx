@@ -5,6 +5,7 @@ import "./globals.css";
 import "./a11y.css";
 import { ThemeProvider, NO_FLASH_SCRIPT } from "@/components/theme/ThemeProvider";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { NavigationFeedback } from "@/components/ui/NavigationFeedback";
 import { getOrganizationJsonLd, getWebsiteJsonLd } from "@/lib/seo/structured-data";
 import { siteConfig } from "@/lib/seo/site";
@@ -86,9 +87,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Suspense fallback={null}>
             <NavigationFeedback />
           </Suspense>
-          <div id="main-content" tabIndex={-1}>
+          <div id="main-content" tabIndex={-1} className="pb-[calc(64px+env(safe-area-inset-bottom))] md:pb-0">
             {children}
           </div>
+          <MobileBottomNav />
         </ThemeProvider>
       </body>
     </html>
