@@ -1,0 +1,107 @@
+name: ODM-10C4 Strict Public-Index Delta
+
+on:
+  push:
+    branches: [agent/odm-10c4-strict-public-index-delta]
+    paths:
+      - "scripts/openserp/odm-10c4-import-strict-public-index.ts"
+      - "supabase/migrations/20260727150000_odm_10c4_strict_public_index_delta.sql"
+      - ".github/workflows/odm-10c4-strict-public-index-delta.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/openserp/odm-10c4-import-strict-public-index.ts"
+      - "supabase/migrations/20260727150000_odm_10c4_strict_public_index_delta.sql"
+      - ".github/workflows/odm-10c4-strict-public-index-delta.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: odm-10c4-strict-public-index-delta-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  strict-public-index-delta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Restrict registry and indexes for ODM-10C4
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const registryPath = 'data/openserp/source-domain-registry.json';
+          const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+          const wanted = new Set(['agenz.ma','sarouty.ma','1immo.ma','mouldar.com','soukimmobilier.com','masaken.ma']);
+          registry.domains = registry.domains.filter((entry) => wanted.has(entry.domain));
+          for (const entry of registry.domains) {
+            if (entry.status !== 'approved_discovery' || !entry.external_web_result || !Array.isArray(entry.listing_url_patterns) || entry.listing_url_patterns.length === 0) {
+              throw new Error(`Unsafe ODM-10C4 registry entry: ${entry.domain}`);
+            }
+            if (entry.source_type === 'classifieds_marketplace') throw new Error(`Marketplace excluded from ODM-10C4: ${entry.domain}`);
+          }
+          if (registry.domains.length !== wanted.size) throw new Error('ODM-10C4 domain missing from canonical registry');
+          fs.writeFileSync(registryPath, JSON.stringify(registry, null, 2) + '\n');
+
+          const scriptPath = 'scripts/openserp/commoncrawl-registry-mass-harvest.ts';
+          let script = fs.readFileSync(scriptPath, 'utf8');
+          const before = 'export const MASS_CDX_INDEXES = ["CC-MAIN-2026-25", "CC-MAIN-2026-21", "CC-MAIN-2026-17"] as const;';
+          const after = 'export const MASS_CDX_INDEXES = ["CC-MAIN-2026-25", "CC-MAIN-2026-21", "CC-MAIN-2026-17", "CC-MAIN-2026-12", "CC-MAIN-2026-08", "CC-MAIN-2026-04"] as const;';
+          if (!script.includes(before)) throw new Error('Canonical Common Crawl indexes changed; refuse blind patch');
+          fs.writeFileSync(scriptPath, script.replace(before, after));
+          NODE
+
+      - name: Contract assertions
+        run: |
+          grep -q "internal_signal_only" scripts/openserp/odm-10c4-import-strict-public-index.ts
+          grep -q "source_policy_internal_signal_only" supabase/migrations/20260727150000_odm_10c4_strict_public_index_delta.sql
+          ! grep -Eqi "avito|captcha|proxy|stealth|fake.?googlebot" scripts/openserp/odm-10c4-import-strict-public-index.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Harvest official Common Crawl URL indexes
+        env:
+          COMMONCRAWL_MASS_MODE: all
+        run: npx tsx scripts/openserp/commoncrawl-registry-mass-harvest.ts | tee odm-10c4-harvest.log
+
+      - name: Connected dry run
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/openserp/odm-10c4-import-strict-public-index.ts | tee odm-10c4-dry-run.json
+
+      - name: Apply guarded internal-signal delta
+        if: github.event_name == 'push'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
+          OPENSERP_INGESTION_WRITE_ENABLED: ${{ secrets.OPENSERP_INGESTION_WRITE_ENABLED }}
+          OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
+        run: npx tsx scripts/openserp/odm-10c4-import-strict-public-index.ts --apply | tee odm-10c4-apply.json
+
+      - name: Production build
+        run: npm run build
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odm-10c4-strict-public-index-delta
+          path: |
+            odm-10c4-harvest.log
+            odm-10c4-dry-run.json
+            odm-10c4-apply.json
+            data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl
+          if-no-files-found: warn
+          retention-days: 14
