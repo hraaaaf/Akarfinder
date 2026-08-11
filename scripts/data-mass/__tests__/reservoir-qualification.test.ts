@@ -56,6 +56,29 @@ test("detects Morocco city and rent signals without granting eligibility", () =>
   assert.equal(result.transactionSignal, "RENT");
 });
 
+test("Morocco neighborhood signal does not masquerade as a city", () => {
+  const result = classifyReservoirCandidate(candidate({
+    sourceDomain: "agency.example",
+    url: "https://agency.example/property/987654",
+    title: "Appartement à louer Agdal",
+    snippet: "Appartement immobilier 90 m2 à louer Agdal",
+    discoveryQuery: null,
+  }));
+  assert.equal(result.geographyScope, "MOROCCO_LIKELY");
+  assert.deepEqual(result.detectedCities, []);
+});
+
+test("explicit foreign geography overrides a weak dot-ma domain prior", () => {
+  const result = classifyReservoirCandidate(candidate({
+    sourceDomain: "example.ma",
+    url: "https://example.ma/property/987654",
+    title: "Appartement à vendre Paris France",
+    snippet: "Property 80 m2 Paris France for sale",
+    discoveryQuery: null,
+  }));
+  assert.equal(result.geographyScope, "FOREIGN_LIKELY");
+});
+
 test("does not promote discovery transport into source inventory", () => {
   const row = candidate({
     sourceDomain: "duckduckgo.com",
@@ -67,6 +90,36 @@ test("does not promote discovery transport into source inventory", () => {
   assert.equal(classifyDomainRole("duckduckgo.com"), "DISCOVERY_TRANSPORT");
   assert.equal(summary.massQueue, "HOLD");
   assert.equal(summary.massPotentialScore, 0);
+});
+
+test("generic retail directories are discovery transport, not property sources", () => {
+  for (const sourceDomain of ["tiendeo.ma", "telecontact.ma"]) {
+    const rows = Array.from({ length: 100 }, (_, i) => candidate({
+      sourceDomain,
+      url: `https://${sourceDomain}/directory/${10000 + i}`,
+      title: sourceDomain === "tiendeo.ma" ? "Marjane Market Agadir catalogue magasin" : "Agences immobilières à Fès annuaire professionnels",
+      snippet: sourceDomain === "tiendeo.ma" ? "Horaires téléphone produits et économies en magasin" : "Coordonnées des professionnels et pages jaunes du Maroc",
+      discoveryQuery: "immobilier maroc",
+      contentFingerprint: `directory-${sourceDomain}-${i}`,
+    }));
+    const summary = summarizeDomainReservoir(sourceDomain, rows, null);
+    assert.equal(summary.domainRole, "DISCOVERY_TRANSPORT", sourceDomain);
+    assert.equal(summary.massQueue, "HOLD", sourceDomain);
+    assert.equal(summary.massPotentialScore, 0, sourceDomain);
+  }
+});
+
+test("holiday-rental pages are down-weighted outside property inventory", () => {
+  const result = classifyReservoirCandidate(candidate({
+    sourceDomain: "airbnb.fr",
+    url: "https://airbnb.fr/marrakesh-morocco/stays/apartments",
+    title: "Marrakech locations d'appartements de vacances Airbnb",
+    snippet: "Locations de vacances à partir de 35 euros par nuit à Marrakech Maroc",
+    discoveryQuery: null,
+  }));
+  assert.equal(result.geographyScope, "MOROCCO_LIKELY");
+  assert.equal(result.likelyRealEstate, false);
+  assert.equal(result.pageKind, "NON_REAL_ESTATE");
 });
 
 test("does not promote social platforms into Source Factory", () => {
