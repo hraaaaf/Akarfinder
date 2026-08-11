@@ -90,7 +90,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div id="main-content" tabIndex={-1} className="pb-[calc(64px+env(safe-area-inset-bottom))] md:pb-0">
             {children}
           </div>
-          <MobileBottomNav />
+          <Suspense fallback={null}>
+            <MobileBottomNav />
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>
