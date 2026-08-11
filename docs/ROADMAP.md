@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-10**  
-**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; RABAT-REAL-PHOTO-LIBRARY-1 ✅ PR #468 ; UX-SEARCH-1 ✅ PR #479 ; UX-SEARCH-2 ✅ PR #480 ; UX-SEARCH-3 ✅ PR #481 ; UX-SEARCH-4 ✅ PR #482 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Statut : UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; RABAT-REAL-PHOTO-LIBRARY-1 ✅ PR #468 ; UX-SEARCH-1 ✅ PR #479 ; UX-SEARCH-2 ✅ PR #480 ; UX-SEARCH-3 ✅ PR #481 ; UX-SEARCH-4 ✅ PR #482 ; UX-SEARCH-5 ✅ PR #483 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -67,7 +67,7 @@ Résultat certifié :
 - run spécialisé `31442655754` : **Product Design Reviewer PASS + Independent Release Certifier PASS** ;
 - contrat machine six viewports : **10/10** ; audit visuel humain : **9,4/10** — gate ≥9/10 atteint.
 
-**Prochain LOT UX/Search : UX-SEARCH-5 — Navigation & Hierarchy Polish.**
+**Prochain LOT UX/Search : UX-SEARCH-6 — Mobile Precision Pass.**
 <!-- UX-SEARCH-3-CLOSEOUT-END -->
 
 <!-- UX-SEARCH-4-CLOSEOUT-START -->
@@ -87,8 +87,28 @@ Résultat certifié :
 - run spécialisé `31444537676` : **Product Design Reviewer PASS + Independent Release Certifier PASS**, contrat machine **10/10** ;
 - revue humaine des captures 390×844 et 1440×900 : **9,5/10** — variété nette sans transformer une illustration ou une photo d’ambiance en photo du bien.
 
-**Prochain LOT UX/Search : UX-SEARCH-5 — Navigation & Hierarchy Polish.**
+**Prochain LOT UX/Search : UX-SEARCH-6 — Mobile Precision Pass.**
 <!-- UX-SEARCH-4-CLOSEOUT-END -->
+
+<!-- UX-SEARCH-5-CLOSEOUT-START -->
+## UX-SEARCH-5 — Navigation & Hierarchy Polish ✅ CERTIFIED — PR #483
+
+Responsabilité unique : **réduire la domination visuelle de la navigation globale sur `/search` et réaligner le header avec le flux Search**, sans modifier DATA, ranking, Source Registry, dédup, prix, ordre commercial ni logique Map.
+
+Résultat certifié :
+
+- Search utilise désormais le header en mode **compact + fluid**, sans modifier le comportement global par défaut du `Container` ;
+- alignement horizontal header → recherche → inventaire : **delta 0 px** sur les 6 viewports certifiés ;
+- hauteur header : **49 px sur 360/390**, **53,8 px sur 768/1024/1280/1440** ; logo/nav/espacements compactés et `Mon projet` rendu secondaire dans le contexte Search ;
+- première card : **193 px mobile**, **205,8 px tablette**, **203,8 px desktop** ; grille conservée **2/2/3/4/4**, 0 overflow et 0 image cassée ;
+- navigation complète, favoris, publication, thème, menu mobile et sticky behavior restent disponibles ;
+- predecessor UX-SEARCH-1/3/4 intégralement vert, notamment le stock visuel certifié **11 contextuels + 1 photo d’ambiance + 2 fail-closed** ;
+- exact-head `771e197027c4c9cd018db8e540313405050b2cc9` : **25/25 workflows SUCCESS** ;
+- run spécialisé `31446472569` : **Product Design Reviewer PASS + Independent Release Certifier PASS**, contrat machine **10/10** ;
+- revue humaine des captures 390×844 et 1440×900 : **9,5/10** — le header devient une infrastructure discrète et l’inventaire reprend la priorité visuelle.
+
+**Prochain LOT UX/Search : UX-SEARCH-6 — Mobile Precision Pass.**
+<!-- UX-SEARCH-5-CLOSEOUT-END -->
 
 
 <!-- DATA-4.7B-CURRENT-START -->
