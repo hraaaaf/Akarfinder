@@ -409,3 +409,11 @@ npm run dev
 ```
 
 Partir de `.env.local.example`. Ne jamais committer de secret ni utiliser une service-role côté client.
+
+
+## UX-SHELL-WHITE-HEADER-1 ✅ CLOSED
+
+- PR #489 — light header locked to a white surface with the blue/light AkarFinder logo, including dark-OS contexts.
+- Header navigation/control contrast recalibrated for white; compact `Mon projet` remains legible and secondary.
+- Dark/transparent header variants preserved. Search, DATA, ranking, dedup and Map unchanged.
+- Behavioral head `033a805470bd25004eca047fa72e06886027d93b`: Product Design Reviewer PASS + Independent Release Certifier PASS; production build and TypeScript PASS.
