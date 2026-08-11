@@ -1,6 +1,6 @@
 # AkarFinder — Bibliothèque visuelle quartiers
 
-**Statut : PLANNED**  
+**Statut : P0 SOUISSI PILOT CLOSED ✅ — P1.1 AGDAL NEXT**  
 **Date : 2026-08-11**  
 **Chantier : IMAGE-LIBRARY — Reality → AkarFinder**
 
@@ -10,7 +10,7 @@ Ce document détaille le sous-plan d’exécution de la bibliothèque visuelle n
 
 Pipeline obligatoire :
 
-`VRAIE PHOTO → vérification lieu → vérification droits/licence → ingestion du fichier original → transformation AkarFinder → comparaison original/résultat → score fidélité → stockage → intégration Search`
+`VRAIE PHOTO → vérification lieu → vérification droits/licence → ingestion du master intact → traitement AkarFinder non destructif au rendu (bitmap dérivé seulement si nécessaire) → comparaison source/rendu → score fidélité/UX → Storage + métadonnées → intégration Search`
 
 Règles :
 
@@ -18,7 +18,8 @@ Règles :
 - aucune source non matériellement ingérée ne peut être présentée comme transformation ;
 - aucune ambiance de quartier n’est présentée comme photo du bien ;
 - aucun landmark, bâtiment, végétation, mer, café, villa, tour ou élément urbain ajouté arbitrairement ;
-- toute transformation visuelle majeure doit atteindre **≥ 9/10** avant validation ;
+- tout traitement visuel majeur doit atteindre **≥ 9/10** avant validation ;
+- un traitement CSS/UI non destructif est canonique lorsqu’il suffit : dans ce cas le master reste intact et `transformed_asset_url = NULL` est attendu ;
 - licence, attribution, droit de modification et droit de publication restent distincts ;
 - une responsabilité = une branche = une PR = un LOT.
 
@@ -43,7 +44,7 @@ Le template retenu pour les assets quartiers est **Modèle A** :
 
 Objectif : prouver le pipeline complet sur un seul quartier avant toute industrialisation.
 
-## P0.1 — Template Lock
+## P0.1 — Template Lock ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : formaliser le contrat graphique du Modèle A pour un usage production.
 
@@ -57,11 +58,11 @@ Actions :
 
 Sortie : **Template A canonique prêt à appliquer**.
 
-## P0.2 — Souissi Signature Source
+## P0.2 — Souissi Signature Source ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : certifier la source réelle Signature.
 
-Source pilote prioritaire : `Avenue Mohamed VI Souissi Rabat -1.jpg` — Wikimedia Commons.
+Source pilote certifiée : `Avenue Mohamed VI Souissi Rabat.jpg` — Wikimedia Commons, version paysage 3072×1728.
 
 Actions :
 
@@ -73,9 +74,9 @@ Actions :
 
 Sortie : **SOURCE RÉELLE INGÉRÉE ✅**.
 
-## P0.3 — Souissi Signature Asset
+## P0.3 — Souissi Signature Asset ✅ CLOSED ✅ CLOSED
 
-Responsabilité unique : transformer réellement la source P0.2 selon Modèle A.
+Responsabilité unique : appliquer réellement le Modèle A à la source P0.2 sans altérer le master. Le pilote a retenu un traitement CSS/UI non destructif ; aucun bitmap dérivé n’est créé lorsque le rendu suffit.
 
 À préserver :
 
@@ -101,7 +102,7 @@ Gate : **score global ≥ 9/10**.
 
 Sortie : `Souissi / signature`.
 
-## P0.4 — Souissi Immobilier Source + Asset
+## P0.4 — Souissi Immobilier Source + Asset ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : produire un asset `immobilier` à partir d’une vraie villa/grande propriété de Souissi avec droits suffisants.
 
@@ -111,13 +112,13 @@ Actions :
 - préférer Creative Commons/open licence ;
 - ne pas réutiliser automatiquement une photo d’annonce ou une référence `reference_only` ;
 - ingérer le fichier source ;
-- transformer selon Modèle A ;
+- appliquer le Modèle A au rendu, ou créer un dérivé uniquement si un traitement pixel est réellement nécessaire ;
 - conserver rapport bâtiment/jardin, parcelle, faible densité et volumes réels ;
 - scorer ≥9/10.
 
 Sortie : `Souissi / immobilier`.
 
-## P0.5 — Souissi Lifestyle Source + Asset
+## P0.5 — Souissi Lifestyle Source + Asset ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : produire un asset `lifestyle` réel du calme/verdure/cadre résidentiel de Souissi.
 
@@ -131,7 +132,7 @@ Actions identiques à P0.4 avec priorité à :
 
 Sortie : `Souissi / lifestyle`.
 
-## P0.6 — Visual Gate Search
+## P0.6 — Visual Gate Search ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : tester les 3 assets dans les vraies cards AkarFinder.
 
@@ -155,24 +156,25 @@ Mesurer :
 - transparence `Photo d’ambiance` ;
 - cohérence avec les cards Search certifiées.
 
-Gate : **UX/UI ≥9/10**.
+Gate : **UX/UI ≥9/10**. Pilote Souissi final : **9,2/10 PASS**. Pilote Souissi final : **9,2/10 PASS**.
 
-## P0.7 — DB & Storage Integration
+## P0.7 — DB & Storage Integration ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : matérialiser les 3 assets certifiés dans la bibliothèque Supabase.
 
 Actions :
 
-- stocker originaux et transformations séparément ;
+- stocker les originaux certifiés dans `neighborhood-visuals` ;
+- stocker séparément un dérivé uniquement lorsqu’un vrai bitmap transformé existe ;
 - compléter provenance/licence/attribution ;
-- renseigner source path + transformed asset URL ;
-- renseigner fidélité et statut style ;
+- renseigner `image_storage_path` ; `transformed_asset_url` reste `NULL` pour le traitement CSS/UI non destructif certifié du pilote ;
+- conserver les notes de fidélité et le statut du rendu ;
 - vérifier RLS fail-closed ;
 - zéro publication publique implicite depuis la DB.
 
-Sortie : **Souissi 3/3 READY**.
+Sortie : **Souissi 3/3 READY ✅** — 3 masters physiques + 3 rows canoniques vérifiées.
 
-## P0.8 — Production Certification
+## P0.8 — Production Certification ✅ CLOSED ✅ CLOSED
 
 Responsabilité unique : fermer le pilote Souissi.
 
@@ -187,7 +189,19 @@ Gate :
 - docs canoniques alignées ;
 - PR mergée + post-merge check.
 
-Sortie : **SOUISSI PILOT CLOSED**.
+Sortie : **SOUISSI PILOT CLOSED ✅**.
+
+<!-- SOUISSI-PILOT-EVIDENCE-START -->
+## Preuves de clôture P0 — Souissi
+
+- P0.6 : vraies cards Search, mobile + desktop, score humain **9,2/10** ; aucun asset fictif accepté.
+- P0.7 : PR #506 mergée ; trois masters publics stockés dans le bucket `neighborhood-visuals`.
+- P0.7S : PR #507 mergée ; ingestion one-shot fermée et `pg_net` supprimé.
+- Storage paths : `rabat/souissi/signature/master.jpg`, `rabat/souissi/immobilier/master.jpg`, `rabat/souissi/lifestyle/master.jpg`.
+- Source/licence : Wikimedia Commons ; Signature et Lifestyle CC BY-SA 4.0, Immobilier CC BY-SA 3.0 ; attribution et ShareAlike conservés.
+- Doctrine finale du pilote : **master intact + identité AkarFinder au rendu**. Un bitmap transformé n’est jamais fabriqué uniquement pour remplir une colonne DB.
+- P2 reste la frontière d’activation du resolver bibliothèque quartier.
+<!-- SOUISSI-PILOT-EVIDENCE-END -->
 
 ---
 
@@ -233,7 +247,7 @@ Objectif : appliquer le pipeline certifié Souissi aux 9 autres quartiers Rabat 
 
 Pour chaque quartier :
 
-`source réelle → droits → geo vérification → ingestion → transformation Modèle A → score ≥9 → DB`.
+`source réelle → droits → geo vérification → ingestion du master → traitement Modèle A non destructif (dérivé seulement si nécessaire) → score ≥9 → DB/Storage`.
 
 ## P1.10 — Rabat Certification
 
@@ -322,7 +336,7 @@ Ordre de priorité initial :
 
 Pipeline industrialisé :
 
-`Neighborhood Registry → source discovery → rights/license → geo verification → DB slots → ingestion → transformation → fidelity QA → Search QA`.
+`Neighborhood Registry → source discovery → rights/license → geo verification → DB slots → ingestion master → traitement non destructif ou dérivé justifié → fidelity QA → Search QA`.
 
 L’automatisation peut assister la recherche et la préparation ; **la validation visuelle finale reste obligatoire**.
 
@@ -370,4 +384,4 @@ Le chantier commence strictement par :
 
 Aucun P1/P2/P3/P4 n’est activé avant certification du pilote Souissi.
 
-**État actuel : P0.1 Modèle A choisi ; formalisation production à certifier. Souissi DB possède déjà 3 slots (`signature / immobilier / lifestyle`), sans transformation finale validée.**
+**État actuel : P0 Souissi Pilot CLOSED ✅. Trois masters réels sont stockés et trois rows canoniques sont réconciliées ; le rendu Modèle A est non destructif et certifié en Search à 9,2/10 ; `transformed_asset_url` reste volontairement `NULL`. Prochain LOT : P1.1 Agdal.**
