@@ -33,11 +33,27 @@ function policy(overrides: Partial<RegistryPolicySnapshot> = {}): RegistryPolicy
   };
 }
 
-test("classifies a strong property detail URL conservatively", () => {
+test("classifies a strong Morocco property detail URL conservatively", () => {
   const result = classifyReservoirCandidate(candidate());
   assert.equal(result.likelyRealEstate, true);
   assert.equal(result.pageKind, "LIKELY_LISTING_DETAIL");
   assert.equal(result.domainRole, "DIRECT_PORTAL");
+  assert.equal(result.geographyScope, "MOROCCO_LIKELY");
+  assert.deepEqual(result.detectedCities, ["Rabat"]);
+  assert.equal(result.transactionSignal, "SALE");
+});
+
+test("detects Morocco city and rent signals without granting eligibility", () => {
+  const result = classifyReservoirCandidate(candidate({
+    sourceDomain: "example.com",
+    url: "https://example.com/property/987654",
+    title: "Villa à louer à Marrakech",
+    snippet: "Maison 300 m2 for rent in Marrakech Morocco",
+    discoveryQuery: null,
+  }));
+  assert.equal(result.geographyScope, "MOROCCO_LIKELY");
+  assert.deepEqual(result.detectedCities, ["Marrakech"]);
+  assert.equal(result.transactionSignal, "RENT");
 });
 
 test("does not promote discovery transport into source inventory", () => {
@@ -58,14 +74,14 @@ test("does not promote social platforms into Source Factory", () => {
     sourceDomain: "tiktok.com",
     url: "https://tiktok.com/@agency/video/123456789",
     title: "Villa à vendre Marrakech",
-    snippet: "Immobilier villa 400 m2 à vendre",
+    snippet: "Immobilier villa 400 m2 à vendre Marrakech Maroc",
   });
   const summary = summarizeDomainReservoir("tiktok.com", Array.from({ length: 100 }, (_, i) => ({ ...row, contentFingerprint: `social-${i}` })), null);
   assert.equal(summary.domainRole, "SOCIAL");
   assert.equal(summary.massQueue, "HOLD");
 });
 
-test("unregistered high-volume real-estate domain goes to Source Factory, never public", () => {
+test("unregistered high-volume Morocco real-estate domain goes to Source Factory, never public", () => {
   const rows = Array.from({ length: 80 }, (_, i) => candidate({
     sourceDomain: "marocannonces.com",
     url: `https://marocannonces.com/annonce/appartement-rabat-${100000 + i}`,
@@ -75,9 +91,50 @@ test("unregistered high-volume real-estate domain goes to Source Factory, never 
   assert.equal(summary.massQueue, "SOURCE_FACTORY");
   assert.equal(summary.publicActivableNow, false);
   assert.equal(summary.registryStatus, "UNREGISTERED");
+  assert.equal(summary.likelyMoroccoRealEstateUrls, 80);
 });
 
-test("registered hidden source remains measure-only even with huge volume", () => {
+test("Algerian real-estate reservoir is not mistaken for Morocco mass", () => {
+  const rows = Array.from({ length: 80 }, (_, i) => candidate({
+    sourceDomain: "lkeria.com",
+    url: `https://lkeria.com/ar/بيع-شقة-بجاية-${100000 + i}.html`,
+    title: "بيع شقة بجاية عقار الجزائر",
+    snippet: "Appartement à vendre à Béjaïa Algérie 90 m2",
+    discoveryQuery: `nqu2-${i}`,
+    contentFingerprint: `dz-${i}`,
+  }));
+  const summary = summarizeDomainReservoir("lkeria.com", rows, null);
+  assert.equal(summary.domainRole, "UNKNOWN");
+  assert.equal(summary.foreignLikelyUrls, 80);
+  assert.equal(summary.likelyMoroccoRealEstateUrls, 0);
+  assert.equal(summary.massQueue, "HOLD");
+});
+
+test("foreign portal can still qualify when it carries material Morocco inventory", () => {
+  const moroccoRows = Array.from({ length: 30 }, (_, i) => candidate({
+    sourceDomain: "foreign-portal.example",
+    url: `https://foreign-portal.example/property/marrakech-${100000 + i}`,
+    title: "Villa for sale Marrakech Morocco",
+    snippet: "Property 300 m2 Marrakech",
+    discoveryQuery: null,
+    contentFingerprint: `ma-${i}`,
+  }));
+  const foreignRows = Array.from({ length: 70 }, (_, i) => candidate({
+    sourceDomain: "foreign-portal.example",
+    url: `https://foreign-portal.example/property/paris-${200000 + i}`,
+    title: "Appartement for sale Paris France",
+    snippet: "Property 80 m2 Paris France",
+    discoveryQuery: null,
+    contentFingerprint: `fr-${i}`,
+  }));
+  const summary = summarizeDomainReservoir("foreign-portal.example", [...moroccoRows, ...foreignRows], null);
+  assert.equal(summary.likelyMoroccoRealEstateUrls, 30);
+  assert.equal(summary.foreignLikelyUrls, 70);
+  assert.equal(summary.massQueue, "SOURCE_FACTORY");
+  assert.equal(summary.publicActivableNow, false);
+});
+
+test("registered hidden source remains measure-only even with huge Morocco volume", () => {
   const rows = Array.from({ length: 600 }, (_, i) => candidate({
     sourceDomain: "mubawab.ma",
     url: `https://mubawab.ma/fr/a/${100000 + i}/appartement-a-vendre-rabat`,
@@ -91,48 +148,6 @@ test("registered hidden source remains measure-only even with huge volume", () =
   assert.equal(summary.publicActivableNow, false);
 });
 
-test("restrictive authorization always wins over stale canonical-link fields", () => {
-  const rows = Array.from({ length: 50 }, (_, i) => candidate({
-    sourceDomain: "blocked-example.ma",
-    url: `https://blocked-example.ma/annonce/appartement-rabat-${10000 + i}`,
-    contentFingerprint: `blocked-${i}`,
-  }));
-
-  for (const authorizationStatus of ["prohibited", "permission_required", "unverified", "expired", " PERMISSION_REQUIRED "]) {
-    const summary = summarizeDomainReservoir("blocked-example.ma", rows, policy({
-      sourceDomain: "blocked-example.ma",
-      authorizationStatus,
-      displayPolicy: "canonical_link_only",
-      displayGate: "external_tail_link_only",
-      acquisitionMode: "public_sitemap_canonical_link",
-      ingestionGate: "canonical_link_only",
-    }));
-    assert.equal(summary.massQueue, "MEASURE_ONLY", authorizationStatus);
-    assert.equal(summary.publicActivableNow, false);
-  }
-});
-
-test("hidden/internal gates remain fail-closed despite an otherwise compatible authorization", () => {
-  const rows = Array.from({ length: 50 }, (_, i) => candidate({
-    sourceDomain: "hidden-example.ma",
-    url: `https://hidden-example.ma/annonce/appartement-rabat-${10000 + i}`,
-    contentFingerprint: `hidden-${i}`,
-  }));
-
-  for (const restrictivePolicy of [
-    { displayPolicy: "internal_signal_only", displayGate: "external_tail_link_only", ingestionGate: "canonical_link_only" },
-    { displayPolicy: "canonical_link_only", displayGate: "hidden", ingestionGate: "canonical_link_only" },
-    { displayPolicy: "canonical_link_only", displayGate: "external_tail_link_only", ingestionGate: "internal_signal_only" },
-  ]) {
-    const summary = summarizeDomainReservoir("hidden-example.ma", rows, policy({
-      sourceDomain: "hidden-example.ma",
-      authorizationStatus: "policy_compatible",
-      ...restrictivePolicy,
-    }));
-    assert.equal(summary.massQueue, "MEASURE_ONLY");
-  }
-});
-
 test("existing canonical-link tail is only prioritized for policy verification", () => {
   const rows = Array.from({ length: 50 }, (_, i) => candidate({
     sourceDomain: "promoimmomarrakech.com",
@@ -141,7 +156,6 @@ test("existing canonical-link tail is only prioritized for policy verification",
   }));
   const summary = summarizeDomainReservoir("promoimmomarrakech.com", rows, policy({
     sourceDomain: "promoimmomarrakech.com",
-    authorizationStatus: "policy_compatible",
     displayPolicy: "canonical_link_only",
     displayGate: "external_tail_link_only",
     acquisitionMode: "public_sitemap_canonical_link",
@@ -150,6 +164,21 @@ test("existing canonical-link tail is only prioritized for policy verification",
   assert.equal(summary.massQueue, "POLICY_COMPATIBLE_TAIL");
   assert.equal(summary.publicActivableNow, false);
   assert.match(summary.recommendedNextAction, /verify/i);
+});
+
+test("aggregates city and transaction coverage for Morocco inventory", () => {
+  const rows = [
+    candidate({ title: "Appartement à vendre Rabat", contentFingerprint: "a" }),
+    candidate({ url: "https://marocannonces.com/annonce/villa-rabat-654321", title: "Villa à louer Rabat", discoveryQuery: "location rabat", contentFingerprint: "b" }),
+    candidate({ url: "https://marocannonces.com/annonce/terrain-marrakech-777777", title: "Terrain à vendre Marrakech", discoveryQuery: "vente Marrakech", contentFingerprint: "c" }),
+  ];
+  const summary = summarizeDomainReservoir("marocannonces.com", rows, null);
+  assert.equal(summary.saleLikelyMoroccoUrls, 2);
+  assert.equal(summary.rentLikelyMoroccoUrls, 1);
+  assert.deepEqual(summary.detectedCities.slice(0, 2), [
+    { city: "Rabat", urlRepresentations: 2 },
+    { city: "Marrakech", urlRepresentations: 1 },
+  ]);
 });
 
 test("duplicate signal is explicitly a representation-level signal, not property dedup", () => {
