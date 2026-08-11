@@ -1,5 +1,5 @@
 name: UX-SEARCH-7 Final Visual Certification
-# Exact-head replay after calibrating the final audit to the certified active-filter state.
+# Exact-head replay after calibrating the final audit to the certified active-filter state and UX-SEARCH-5 alignment tolerance.
 
 on:
   pull_request:
