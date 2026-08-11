@@ -68,11 +68,15 @@ function jpegDimensions(bytes: Uint8Array): { width: number; height: number } {
 }
 
 async function sha1Hex(bytes: Uint8Array): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-1", bytes);
+  const exactBuffer = bytes.buffer.slice(
+    bytes.byteOffset,
+    bytes.byteOffset + bytes.byteLength,
+  ) as ArrayBuffer;
+  const digest = await crypto.subtle.digest("SHA-1", exactBuffer);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return new Response("POST required", { status: 405 });
 
   const body = await req.json().catch(() => null) as { lot?: string; confirmExactSources?: boolean } | null;
@@ -107,7 +111,11 @@ Deno.serve(async (req) => {
       throw new Error(`${master.role}: SHA-1 mismatch ${sha1}`);
     }
 
-    const blob = new Blob([bytes], { type: "image/jpeg" });
+    const exactBuffer = bytes.buffer.slice(
+      bytes.byteOffset,
+      bytes.byteOffset + bytes.byteLength,
+    ) as ArrayBuffer;
+    const blob = new Blob([exactBuffer], { type: "image/jpeg" });
     const { data, error } = await admin.storage.from(BUCKET).upload(master.storagePath, blob, {
       contentType: "image/jpeg",
       cacheControl: "31536000",
