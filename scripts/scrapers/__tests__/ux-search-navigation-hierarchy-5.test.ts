@@ -21,7 +21,7 @@ test("UX-SEARCH-5 keeps the global header complete while reducing its Search vis
   assert.match(source, /href="\/favorites"/);
   assert.match(source, /"Mes favoris"/);
   assert.match(source, /"Ouvrir le menu"/);
-  assert.doesNotMatch(source, /compact[\s\S]{0,300}sticky/);
+  assert.match(source, /isTransparent \? "fixed left-0 right-0 top-0" : "sticky top-0 z-30"/);
 });
 
 test("UX-SEARCH-5 adds fluid alignment without changing the default Container contract", async () => {
