@@ -1,0 +1,99 @@
+.overlay {
+  position: fixed;
+  top: max(12px, calc(env(safe-area-inset-top) + 8px));
+  left: 50%;
+  z-index: 2147483000;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.card {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 14px 8px 10px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  border-radius: 999px;
+  background: rgba(7, 27, 51, 0.94);
+  color: #f8fafc;
+  box-shadow: 0 12px 32px rgba(2, 10, 24, 0.24);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.radar {
+  position: relative;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  place-items: center;
+}
+
+.wave {
+  position: absolute;
+  inset: 5px;
+  border: 1.5px solid rgba(96, 165, 250, 0.72);
+  border-radius: 999px;
+  animation: akar-navigation-radar 1.35s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+}
+
+.waveTwo {
+  animation-delay: 0.58s;
+}
+
+.pin {
+  position: relative;
+  z-index: 2;
+  width: 17px;
+  height: 17px;
+  color: #60a5fa;
+  filter: drop-shadow(0 2px 5px rgba(96, 165, 250, 0.28));
+  animation: akar-navigation-pin 1.15s ease-in-out infinite;
+}
+
+.label {
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+@keyframes akar-navigation-radar {
+  0% {
+    opacity: 0.78;
+    transform: scale(0.48);
+  }
+  78%,
+  100% {
+    opacity: 0;
+    transform: scale(1.48);
+  }
+}
+
+@keyframes akar-navigation-pin {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave,
+  .pin {
+    animation: none;
+  }
+
+  .wave {
+    opacity: 0.42;
+    transform: none;
+  }
+
+  .waveTwo {
+    display: none;
+  }
+}

@@ -4,6 +4,19 @@
 
 Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
 
+<!-- UX-LISTING-NAV-FEEDBACK-1-CLOSEOUT-START -->
+## UX-LISTING-NAV-FEEDBACK-1 ✅ CERTIFIED — PR #486
+
+- finding utilisateur : ouverture d’annonce en nouvel onglet + absence de feedback perceptible pendant une navigation lente ;
+- action principale Search/Gateway désormais **même onglet** ; Précédent revient au Search précédent ;
+- liens secondaires source/crédit restent volontairement `target="_blank"` ;
+- loader AkarFinder pin/radar après **280 ms**, non bloquant, reset route/query/Back/BFCache, reduced-motion ;
+- gate permanent `UX Listing Navigation Feedback Gate` run `31490771461` PASS : contrat + TypeScript ; head comportemental `ea36ca6650af9774c5bca778069c7997766ce43c` ;
+- ranking, DATA, Registry, dédup, prix, densité, ordre commercial et Map inchangés ;
+- la convergence UX-SEARCH-1→7 reste fermée ; prochain lot planifié = `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1`.
+<!-- UX-LISTING-NAV-FEEDBACK-1-CLOSEOUT-END -->
+
+
 <!-- UX-SEARCH-1-CLOSEOUT-START -->
 ## UX-SEARCH-1 — Density First ✅ CERTIFIED — PR #479
 

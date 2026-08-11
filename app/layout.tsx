@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import "./a11y.css";
 import { ThemeProvider, NO_FLASH_SCRIPT } from "@/components/theme/ThemeProvider";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { NavigationFeedback } from "@/components/ui/NavigationFeedback";
 import { getOrganizationJsonLd, getWebsiteJsonLd } from "@/lib/seo/structured-data";
 import { siteConfig } from "@/lib/seo/site";
 
@@ -81,6 +83,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Aller au contenu principal
         </a>
         <ThemeProvider>
+          <Suspense fallback={null}>
+            <NavigationFeedback />
+          </Suspense>
           <div id="main-content" tabIndex={-1}>
             {children}
           </div>

@@ -101,6 +101,18 @@ Première mission : `BENCHMARK-SERP-1`, rapport dans `docs/BENCHMARK_SERP_1_REPO
 - **Convergence UX/Search fermée.** Toute évolution suivante doit repartir d’un finding utilisateur/production mesuré, sans rouvrir les lots certifiés par défaut.
 <!-- UX-SEARCH-CONVERGENCE-CURRENT-END -->
 
+### UX-LISTING-NAV-FEEDBACK-1 ✅ CERTIFIED — PR #486
+
+Finding utilisateur distinct après la convergence UX-SEARCH-1→7 : l’action principale d’une annonce ouvrait un nouvel onglet, cassant la continuité naturelle du bouton Précédent, et les navigations lentes n’exprimaient aucun état d’attente.
+
+- ouverture principale des résultats internes, observés et Gateway **dans le même onglet** ; le bouton Précédent du navigateur revient donc au Search précédent ;
+- les liens secondaires explicitement externes (source originale secondaire, crédit/licence photo) restent en nouvel onglet ;
+- feedback global AkarFinder **pin + radar** uniquement si la navigation dépasse **280 ms**, non bloquant et sans flash sur les transitions rapides ;
+- reset sur changement de route/query, `pageshow`/BFCache et `popstate` ; `prefers-reduced-motion` respecté ;
+- aucun changement de ranking, DATA, Source Registry, dédup, prix, densité, ordre commercial ou Map ;
+- head comportemental `ea36ca6650af9774c5bca778069c7997766ce43c` : gate dédié `UX Listing Navigation Feedback Gate` run `31490771461` **PASS** — contrat navigation/loading + TypeScript ; les predecessor gates du PR sont rejoués avant merge.
+
+
 ### SEARCH-UX-FAST-1 ✅ PR #390
 
 Premier lot produit issu du benchmark : chemin direct vers la première annonce, sans modifier ranking, prix, ordre commercial, cards, DATA ou logique Map.
