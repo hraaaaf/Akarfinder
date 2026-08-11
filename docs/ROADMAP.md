@@ -740,3 +740,11 @@ Auditer la prochaine cohorte explicite de Geo Coverage Recovery. Tant que couver
 ## DATA
 
 **DATA-4.5A est CLOSED ✅.** La lane P0.1→P0.5 reste fermée/bloquée sur autorisation externe, sans empêcher la lane DATA indépendante. **Action suivante : DATA-4.5B uniquement**, expansion Promo Immo bornée vers 500 avec revalidation sitemap live avant chaque write et rollback préalable.
+
+
+## UX-SHELL-WHITE-HEADER-1 ✅ CLOSED
+
+- PR #489 — light header locked to a white surface with the blue/light AkarFinder logo, including dark-OS contexts.
+- Header navigation/control contrast recalibrated for white; compact `Mon projet` remains legible and secondary.
+- Dark/transparent header variants preserved. Search, DATA, ranking, dedup and Map unchanged.
+- Behavioral head `033a805470bd25004eca047fa72e06886027d93b`: Product Design Reviewer PASS + Independent Release Certifier PASS; production build and TypeScript PASS.

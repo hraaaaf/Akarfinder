@@ -280,3 +280,11 @@ Après merge/closeout de #435 : **DATA-4.7C — Residual Reservoir Requalificati
 ## Invariants
 
 No-bypass ; Source Registry autoritaire ; provenance réelle ; Search canonique ; aucune donnée/géométrie inventée ; une responsabilité/branche/PR/merge par LOT ; rollback avant mutation ; exact-head CI verte avant write ; mise à jour README/ROADMAP/SESSION au closeout.
+
+
+## UX-SHELL-WHITE-HEADER-1 ✅ CLOSED
+
+- PR #489 — light header locked to a white surface with the blue/light AkarFinder logo, including dark-OS contexts.
+- Header navigation/control contrast recalibrated for white; compact `Mon projet` remains legible and secondary.
+- Dark/transparent header variants preserved. Search, DATA, ranking, dedup and Map unchanged.
+- Behavioral head `033a805470bd25004eca047fa72e06886027d93b`: Product Design Reviewer PASS + Independent Release Certifier PASS; production build and TypeScript PASS.
