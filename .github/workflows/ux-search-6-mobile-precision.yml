@@ -1,0 +1,105 @@
+name: UX-SEARCH-6 Mobile Precision Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/search/search-density.css"
+      - "components/search/LightZillowSearchShell.tsx"
+      - "components/search/QuickFilters.tsx"
+      - "components/search/SearchListingCardDark.tsx"
+      - "components/search/SearchViewSwitcher.tsx"
+      - "scripts/audits/ux-search-mobile-precision-6.mjs"
+      - "scripts/scrapers/__tests__/ux-search-mobile-precision-6.test.ts"
+      - ".github/workflows/ux-search-6-mobile-precision.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: UX-SEARCH-6 structural contract
+        run: npx tsx --test scripts/scrapers/__tests__/ux-search-mobile-precision-6.test.ts
+      - name: Predecessor Search UX contracts
+        run: npx tsx --test scripts/scrapers/__tests__/search-mobile-card-grid-1.test.ts scripts/scrapers/__tests__/ux-search-card-architecture-3.test.ts scripts/scrapers/__tests__/ux-search-visual-inventory-4.test.ts scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3125 > /tmp/ux6-product-design.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3125/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ux6-product-design.log
+          exit 1
+      - name: Review mobile precision and responsive continuity
+        env:
+          BASE_URL: http://127.0.0.1:3125
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/ux-search-mobile-precision-6.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ux-search-6-product-design-proof
+          path: data/audits/ux-search-mobile-precision-6/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Independently replay UX-SEARCH-6 and predecessors
+        run: npx tsx --test scripts/scrapers/__tests__/ux-search-mobile-precision-6.test.ts scripts/scrapers/__tests__/ux-search-card-architecture-3.test.ts scripts/scrapers/__tests__/ux-search-visual-inventory-4.test.ts scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts
+      - name: Independent TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent production server
+        shell: bash
+        run: |
+          npm run start -- -p 3126 > /tmp/ux6-release-certifier.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3126/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ux6-release-certifier.log
+          exit 1
+      - name: Independently replay mobile precision certification
+        env:
+          BASE_URL: http://127.0.0.1:3126
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/ux-search-mobile-precision-6.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ux-search-6-release-certifier-proof
+          path: data/audits/ux-search-mobile-precision-6/release-certifier
+          if-no-files-found: error
+          retention-days: 14
