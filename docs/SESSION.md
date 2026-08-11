@@ -127,8 +127,32 @@ Résultat certifié :
 - run spécialisé `31472416080` : **Product Design Reviewer PASS + Independent Release Certifier PASS**, contrat machine **10/10** ;
 - revue humaine des captures 360×800 et 390×844 : **9,5/10** — scan plus net, contrôles stables et aucune micro-coupure bloquante.
 
-**Prochain LOT UX/Search : UX-SEARCH-7 — Final Visual Certification.**
+**Convergence UX/Search : UX-SEARCH-1 → UX-SEARCH-7 ✅ COMPLETE.**
 <!-- UX-SEARCH-6-CLOSEOUT-END -->
+
+<!-- UX-SEARCH-7-CLOSEOUT-START -->
+## UX-SEARCH-7 — Final Visual Certification ✅ CERTIFIED — PR #485
+
+Responsabilité unique : **certifier visuellement la convergence finale de `/search` après UX-SEARCH-1 à 6**, sans modification runtime produit et sans toucher DATA, ranking, Source Registry, dédup, prix, ordre commercial ni logique Map.
+
+Résultat certifié :
+
+- exact-head comportemental `ec0da231b6868c31acee1f58a431cfaa82905596` : **19/19 workflows SUCCESS** ;
+- run spécialisé `31475434171` : **Product Design Reviewer PASS + Independent Release Certifier PASS**, avec deux builds/replays Chromium indépendants ;
+- replay des contrats UX-SEARCH-1 à 6 : **22/22 tests PASS** dans le Product Design Reviewer ; TypeScript et production build PASS ;
+- contrat final machine : **10/10 — 9/9 axes PASS** : header/navigation, recherche/filtres, densité desktop, cards, visuels, hiérarchie, mobile 2 colonnes, scan speed, trust/transparence ;
+- six viewports : **360×800 / 390×844 / 768×900 / 1024×800 / 1280×900 / 1440×900** ; grille **2 / 2 / 2 / 3 / 4 / 4** ;
+- avec `city=Rabat` actif : première card **229,5 px mobile**, **244,25 px tablette**, **242,25 px desktop** ; max card **362,4 px mobile**, **528,1 px tablette**, **419 px desktop** ;
+- header **49 px mobile / 53,75 px tablette-desktop** ; alignement canonique max **2 px** ; contrôles critiques mobile **48 px** ;
+- desktop 1280/1440 : **8 cards intersectent le premier viewport** ; mobile 360/390 : **4 cards** ;
+- **11 visuels distincts sur 12 cards**, signature déterministe stable sur tous les viewports ; 0 image cassée ;
+- 0 overflow horizontal ; 0 clipping prix/localisation/facts ; hiérarchie `IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE` respectée ; prix visuellement dominant ;
+- provenance et disclosure `Photo d’ambiance` / `Illustration` restent explicites ; aucune image d’ambiance n’est présentée comme photo du bien ;
+- revue humaine finale des captures 360×800, 390×844 et 1440×900 : **9,5/10** — inventaire dense, lisible et varié, contrôles subordonnés aux résultats, aucun finding bloquant ;
+- aucun fichier runtime produit modifié dans UX-SEARCH-7 : le lot est **certification-only**.
+
+**Convergence UX-SEARCH-1 → UX-SEARCH-7 : ✅ COMPLETE.** Les prochaines évolutions Search nécessitent un finding mesuré distinct ; les lots certifiés ne sont pas rouverts par défaut.
+<!-- UX-SEARCH-7-CLOSEOUT-END -->
 
 
 <!-- DATA-CURRENT-START -->

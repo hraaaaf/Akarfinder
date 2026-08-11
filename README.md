@@ -87,16 +87,18 @@ Principes verrouillés :
 Première mission : `BENCHMARK-SERP-1`, rapport dans `docs/BENCHMARK_SERP_1_REPORT.md`.
 
 <!-- UX-SEARCH-CONVERGENCE-CURRENT-START -->
-### Convergence Search actuelle — UX-SEARCH-1 à UX-SEARCH-6 ✅
+### Convergence Search actuelle — UX-SEARCH-1 à UX-SEARCH-7 ✅ COMPLETE
 
 - **UX-SEARCH-1 — Density First ✅ PR #479** : grille certifiée 2/2/3/4/4 ; densité **9,3/10**.
 - **UX-SEARCH-2 — Compact Search & Filters ✅ PR #480** : première annonce ~240–250 px, touch targets 48 px, 0 overflow ; **9,5/10**.
 - **UX-SEARCH-3 — Card Architecture ✅ PR #481** : `IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE`, confiance/source préservées ; **9,4/10**.
 - **UX-SEARCH-4 — Visual Inventory System ✅ PR #482** : fallbacks contextuels truth-safe activés ; variété visuelle certifiée, stable et transparente ; **9,5/10**.
-- **UX-SEARCH-5 — Navigation & Hierarchy Polish ✅ PR #483** : header Search compact/fluid, alignement **0 px**, hauteur **49–53,8 px**, première card **193–203,8 px** ; **9,5/10**.
-- **UX-SEARCH-6 — Mobile Precision Pass ✅ PR #484** : mobile 360/390 à **2 colonnes**, gaps **10/14 px**, première card **191 px**, contrôles critiques **48 px**, 0 clipping/overflow ; **9,5/10**.
-- Les six lots préservent ranking, DATA, Source Registry, dédup, ordre commercial, prix, Map et transparence de provenance.
-- **Prochain LOT UX/Search : UX-SEARCH-7 — Final Visual Certification** : certification visuelle finale de la convergence Search sur mobile + desktop, sans rouvrir les lots 1–6 ; gate UX ≥9/10.
+- **UX-SEARCH-5 — Navigation & Hierarchy Polish ✅ PR #483** : header Search compact/fluid, hauteur **49–53,8 px**, inventaire prioritaire ; **9,5/10**.
+- **UX-SEARCH-6 — Mobile Precision Pass ✅ PR #484** : mobile 360/390 à **2 colonnes**, gaps **10/14 px**, contrôles critiques **48 px**, 0 clipping/overflow ; **9,5/10**.
+- **UX-SEARCH-7 — Final Visual Certification ✅ PR #485** : six viewports **360/390/768/1024/1280/1440**, grille **2/2/2/3/4/4**, contrat final **10/10 (9/9 axes)**, audit humain **9,5/10**, **19/19 workflows exact-head SUCCESS**, Product Design Reviewer + Independent Release Certifier PASS.
+- Preuves finales : première card **229,5 px mobile / 242,25 px desktop** avec filtre Rabat actif ; max card **362,4 px mobile / 419 px desktop** ; **11/12 visuels distincts**, 0 overflow, 0 image cassée, provenance et disclosure truth-safe conservées.
+- Les sept lots préservent ranking, DATA, Source Registry, dédup, ordre commercial, prix, Map et transparence de provenance.
+- **Convergence UX/Search fermée.** Toute évolution suivante doit repartir d’un finding utilisateur/production mesuré, sans rouvrir les lots certifiés par défaut.
 <!-- UX-SEARCH-CONVERGENCE-CURRENT-END -->
 
 ### SEARCH-UX-FAST-1 ✅ PR #390
