@@ -1,0 +1,65 @@
+name: Neighborhood Visual P0.2R Souissi Signature Source Correction
+
+on:
+  pull_request:
+    paths:
+      - "data/audits/neighborhood-visual-p0-2/souissi-signature-source.json"
+      - "lib/contextual-illustrations/souissi-signature-visual.ts"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p0-2-souissi-source.test.ts"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p0-3-souissi-signature.test.ts"
+      - "supabase/migrations/20260811203500_neighborhood_visual_p0_2r_souissi_signature_source_correction.sql"
+      - ".github/workflows/neighborhood-visual-p0-2r.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  corrected-source-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: P0.2R and P0.3 contracts
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p0-2-souissi-source.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-3-souissi-signature.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Physically verify corrected landscape master
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 4 --retry-all-errors \
+            "https://commons.wikimedia.org/wiki/Special:Redirect/file/Avenue%20Mohamed%20VI%20Souissi%20Rabat.jpg" \
+            -o /tmp/souissi-signature-landscape.jpg
+          echo "d8e09bfdbad2fdef60f28840b90b79b45f77b8c6  /tmp/souissi-signature-landscape.jpg" | sha1sum --check --strict
+          test "$(wc -c < /tmp/souissi-signature-landscape.jpg)" -eq 1338653
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('/tmp/souissi-signature-landscape.jpg').read_bytes()
+          i = 2
+          w = h = None
+          while i < len(p):
+              if p[i] != 0xFF:
+                  i += 1
+                  continue
+              marker = p[i + 1]
+              i += 2
+              if marker in (0xD8, 0xD9):
+                  continue
+              length = int.from_bytes(p[i:i+2], 'big')
+              if marker in (0xC0,0xC1,0xC2,0xC3,0xC5,0xC6,0xC7,0xC9,0xCA,0xCB,0xCD,0xCE,0xCF):
+                  h = int.from_bytes(p[i+3:i+5], 'big')
+                  w = int.from_bytes(p[i+5:i+7], 'big')
+                  break
+              i += length
+          assert (w, h) == (3072, 1728), (w, h)
+          print(f'JPEG dimensions verified: {w}x{h}')
+          PY
