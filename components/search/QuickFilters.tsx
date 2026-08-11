@@ -131,7 +131,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
               onClick={() => onChange({ ...filters, transactionType: tab.value })}
               aria-pressed={filters.transactionType === tab.value}
               className={selected
-                ? "min-h-11 rounded-lg bg-primary px-2 py-2 text-[12px] font-extrabold text-primary-foreground shadow-sm"
+                ? "min-h-11 rounded-lg bg-primary-token px-2 py-2 text-[12px] font-extrabold text-primary-token-foreground shadow-sm"
                 : "min-h-11 rounded-lg px-2 py-2 text-[12px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground"}
             >
               {tab.label}
@@ -187,7 +187,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
                 onClick={() => onChange({ ...filters, transactionType: tab.value })}
                 aria-pressed={filters.transactionType === tab.value}
                 className={selected
-                  ? "min-h-9 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-extrabold text-primary-foreground shadow-sm"
+                  ? "min-h-9 rounded-lg bg-primary-token px-3 py-1.5 text-[12px] font-extrabold text-primary-token-foreground shadow-sm"
                   : "min-h-9 rounded-lg px-3 py-1.5 text-[12px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground"}
               >
                 {tab.label}
@@ -208,7 +208,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
           <SlidersHorizontal size={16} strokeWidth={2.2} aria-hidden="true" />
           <span className="hidden min-[380px]:inline">Filtres</span>
           {activeCount > 0 ? (
-            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-extrabold text-primary-foreground">
+            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary-token px-1 text-[11px] font-extrabold text-primary-token-foreground">
               {activeCount}
             </span>
           ) : null}
@@ -264,7 +264,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
             <div className="mt-4 border-t border-border/15 pt-4">{propertyTypeSelector}</div>
             <div className="sticky bottom-0 mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-2 border-t border-border/15 bg-card/95 pt-3 backdrop-blur-xl">
               <button type="button" onClick={onReset} className={`${ui.secondaryAction} min-h-12 px-4`}>Effacer</button>
-              <button type="button" onClick={() => setShowFilters(false)} className={`${ui.primaryAction} min-h-12 px-4`}>Voir les résultats</button>
+              <button type="button" onClick={() => setShowFilters(false)} className={`${ui.primaryAction} min-h-12 bg-primary-token px-4 text-primary-token-foreground`}>Voir les résultats</button>
             </div>
           </div>
         </div>
