@@ -60,8 +60,6 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   const publicAttribution = deriveListingPublicAttribution(listing);
   const resultHref =
     observedExternal && listing.listing_url ? listing.listing_url : `/listings/${listing.id}`;
-  const resultTarget = observedExternal ? "_blank" : undefined;
-  const resultRel = observedExternal ? "noopener noreferrer" : undefined;
   const active = isActive(listing);
   const showOriginal = Boolean(
     listing.listing_url &&
@@ -107,8 +105,6 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
       >
         <Link
           href={resultHref}
-          target={resultTarget}
-          rel={resultRel}
           className="block"
           aria-label={observedExternal ? `Voir la source originale ${listing.title}` : `Voir le bien ${listing.title}`}
         >
@@ -250,7 +246,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             ) : null}
           </div>
 
-          <Link href={resultHref} target={resultTarget} rel={resultRel} className="mt-1.5 block sm:mt-2.5">
+          <Link href={resultHref} className="mt-1.5 block sm:mt-2.5">
             <h2 data-card-title className="line-clamp-2 text-[12.5px] font-extrabold leading-snug text-foreground transition group-hover:text-bronze-600 dark:text-white dark:group-hover:text-bronze-300 sm:line-clamp-2 sm:text-[1.02rem]">
               {smartCard.title}
             </h2>
@@ -326,8 +322,6 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           ) : showOriginal ? (
             <a
               href={listing.listing_url!}
-              target="_blank"
-              rel="noopener noreferrer"
               data-card-primary-action
               className="mt-3 hidden w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.28)] transition hover:from-bronze-600 sm:flex"
             >
@@ -339,8 +333,6 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           {observedExternal && showOriginal ? (
             <a
               href={listing.listing_url!}
-              target="_blank"
-              rel="noopener noreferrer"
               className="mt-2 text-[10px] font-extrabold text-bronze-700 dark:text-bronze-300 sm:hidden"
             >
               Voir l’annonce
