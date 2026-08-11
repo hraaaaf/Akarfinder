@@ -7,6 +7,7 @@ on:
       - "supabase/migrations/20260811211500_neighborhood_visual_p0_7_storage_bucket.sql"
       - "supabase/migrations/20260811211600_neighborhood_visual_p0_7_souissi_metadata.sql"
       - "scripts/scrapers/__tests__/neighborhood-visual-p0-7-souissi-storage.test.ts"
+      - "tsconfig.json"
       - ".github/workflows/neighborhood-visual-p0-7.yml"
   workflow_dispatch:
 
@@ -23,6 +24,9 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
       - run: npm ci
       - name: P0.7 Storage contract
         run: npx tsx --test scripts/scrapers/__tests__/neighborhood-visual-p0-7-souissi-storage.test.ts
@@ -36,5 +40,7 @@ jobs:
           scripts/scrapers/__tests__/neighborhood-visual-p0-3-souissi-signature.test.ts
           scripts/scrapers/__tests__/neighborhood-visual-p0-2-souissi-source.test.ts
           scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
-      - name: TypeScript
+      - name: Deno type-check Edge Function
+        run: deno check supabase/functions/neighborhood-visual-p0-7-ingest/index.ts
+      - name: Next TypeScript
         run: npx tsc --noEmit
