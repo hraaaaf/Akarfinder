@@ -65,6 +65,8 @@ jobs:
           node - <<'NODE'
           const fs = require('fs');
           const p = JSON.parse(fs.readFileSync('.tmp/data-mass-1/results/proof.json', 'utf8'));
+          const report = JSON.parse(fs.readFileSync('.tmp/data-mass-1/results/report.json', 'utf8'));
+
           if (p.readOnly !== true) throw new Error(`MASS-1 must be read-only: ${JSON.stringify(p)}`);
           if (p.databaseWrites !== 0 || p.ddlChanges !== 0 || p.policyChanges !== 0) throw new Error(`MASS-1 mutation boundary violated: ${JSON.stringify(p)}`);
           if (p.sourceNetworkRequests !== 0 || p.detailPageFetches !== 0) throw new Error(`MASS-1 cannot fetch source pages: ${JSON.stringify(p)}`);
@@ -77,6 +79,35 @@ jobs:
           if (p.transportLeakageIntoSourceFactory !== 0 || p.socialLeakageIntoSourceFactory !== 0) throw new Error(`Transport/social leakage: ${JSON.stringify(p)}`);
           if (p.foreignOnlyLeakageIntoSourceFactory !== 0 || p.weakMoroccoLeakageIntoSourceFactory !== 0) throw new Error(`Morocco-scope leakage: ${JSON.stringify(p)}`);
           if (!Array.isArray(p.detectedCities) || p.detectedCities.length === 0) throw new Error(`No city coverage produced: ${JSON.stringify(p)}`);
+
+          const token = (value) => String(value ?? '').trim().toLowerCase();
+          const restricted = new Set(['prohibited', 'permission_required', 'unverified', 'expired']);
+          const policyCompatibleTail = Array.isArray(report.policyCompatibleTail) ? report.policyCompatibleTail : [];
+          const tailLeakage = policyCompatibleTail.filter((row) =>
+            !token(row.authorizationStatus) ||
+            restricted.has(token(row.authorizationStatus)) ||
+            token(row.displayGate) === 'hidden' ||
+            token(row.displayPolicy) === 'internal_signal_only' ||
+            token(row.ingestionGate) === 'internal_signal_only' ||
+            token(row.displayGate) !== 'external_tail_link_only' ||
+            token(row.displayPolicy) !== 'canonical_link_only'
+          );
+          if (tailLeakage.length) throw new Error(`Restrictive/stale policy leaked into POLICY_COMPATIBLE_TAIL: ${JSON.stringify(tailLeakage.slice(0, 10))}`);
+
+          const allDomains = Array.isArray(report.allDomains) ? report.allDomains : [];
+          const activableRows = allDomains.filter((row) => row.publicActivableNow !== false);
+          if (activableRows.length) throw new Error(`MASS-1 must keep every domain non-activable: ${JSON.stringify(activableRows.slice(0, 10))}`);
+
+          const sourceFactory = Array.isArray(report.sourceFactory) ? report.sourceFactory : [];
+          const weakSourceFactory = sourceFactory.filter((row) =>
+            row.registryStatus !== 'UNREGISTERED' ||
+            !(Number(row.likelyMoroccoRealEstateUrls) >= 20) ||
+            !(Number(row.realEstateShare) >= 0.5) ||
+            !(Number(row.moroccoShareOfRealEstate) >= 0.1) ||
+            row.domainRole === 'SOCIAL' ||
+            row.domainRole === 'DISCOVERY_TRANSPORT'
+          );
+          if (weakSourceFactory.length) throw new Error(`SOURCE_FACTORY threshold/policy leakage: ${JSON.stringify(weakSourceFactory.slice(0, 10))}`);
           NODE
       - uses: actions/upload-artifact@v4
         with:
