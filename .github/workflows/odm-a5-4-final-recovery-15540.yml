@@ -1,0 +1,62 @@
+name: ODM A5.4 Final Recovery 15540 Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805170500_lot_a5_4_final_recovery_15540.sql"
+      - "docs/data/ODM-A5-4-FINAL-RECOVERY-15540.md"
+      - ".github/workflows/odm-a5-4-final-recovery-15540.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805170500_lot_a5_4_final_recovery_15540.sql"
+      - "docs/data/ODM-A5-4-FINAL-RECOVERY-15540.md"
+      - ".github/workflows/odm-a5-4-final-recovery-15540.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  certify-a5-4-final-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Fail-closed A5.4 assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          MIGRATION="supabase/migrations/20260805170500_lot_a5_4_final_recovery_15540.sql"
+          DOC="docs/data/ODM-A5-4-FINAL-RECOVERY-15540.md"
+          grep -q "odm_a5_4_final_recovery_snapshot_v1" "$MIGRATION"
+          grep -q "odm_prepare_a5_4_final_recovery_15540_v1" "$MIGRATION"
+          grep -q "odm_activate_a5_4_final_recovery_15540_v1" "$MIGRATION"
+          grep -q "odm_rollback_a5_4_final_recovery_15540_v1" "$MIGRATION"
+          grep -q "odm_a5_4_final_recovery_report_v1" "$MIGRATION"
+          grep -q "v_rows<>5057" "$MIGRATION"
+          grep -q "v_dar<>4066" "$MIGRATION"
+          grep -q "v_promo<>991" "$MIGRATION"
+          grep -q "v_before<>10483" "$MIGRATION"
+          grep -q "v_after<>15540" "$MIGRATION"
+          grep -q "document_kind_confidence='HIGH'" "$MIGRATION"
+          grep -q "content_reuse_performed',false" "$MIGRATION"
+          grep -q "imagery_reuse_performed',false" "$MIGRATION"
+          grep -q "from public,anon,authenticated" "$MIGRATION"
+          grep -q "to service_role" "$MIGRATION"
+          grep -q "15,540" "$DOC"
+          grep -q "24,460" "$DOC"
+          if grep -Eiq "update[[:space:]]+public\.(source_offer_seeds|discovery_candidates)" "$MIGRATION"; then
+            echo "A5.4 must not mutate source seeds or discovery evidence" >&2
+            exit 1
+          fi
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
