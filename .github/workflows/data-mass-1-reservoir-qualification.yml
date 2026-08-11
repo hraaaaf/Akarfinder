@@ -1,0 +1,82 @@
+name: DATA MASS-1 Reservoir Qualification
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data-mass/reservoir-qualification.ts"
+      - "scripts/data-mass/__tests__/reservoir-qualification.test.ts"
+      - "scripts/audits/data-mass-1-reservoir-qualification.ts"
+      - ".github/workflows/data-mass-1-reservoir-qualification.yml"
+      - "docs/data/DATA-MASS-1-RESERVOIR-QUALIFICATION.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-mass-1-reservoir-qualification-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: MASS-1 unit tests
+        run: npx tsx --test scripts/data-mass/__tests__/reservoir-qualification.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+
+  live-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_MASS_1_OUT_DIR: .tmp/data-mass-1/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run MASS-1 production read-only audit
+        run: npx tsx scripts/audits/data-mass-1-reservoir-qualification.ts
+      - name: Enforce MASS-1 truth boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_MASS_1_OUT_DIR}/proof.json"
+          test -s "${DATA_MASS_1_OUT_DIR}/report.json"
+          test -s "${DATA_MASS_1_OUT_DIR}/domains.csv"
+          test -s "${DATA_MASS_1_OUT_DIR}/summary.md"
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-mass-1/results/proof.json', 'utf8'));
+          if (p.readOnly !== true) throw new Error(`MASS-1 must be read-only: ${JSON.stringify(p)}`);
+          if (p.databaseWrites !== 0 || p.ddlChanges !== 0 || p.policyChanges !== 0) throw new Error(`MASS-1 mutation boundary violated: ${JSON.stringify(p)}`);
+          if (p.sourceNetworkRequests !== 0 || p.detailPageFetches !== 0) throw new Error(`MASS-1 cannot fetch source pages: ${JSON.stringify(p)}`);
+          if (p.publicRowsCreated !== 0 || p.uniquePropertiesClaimed !== 0) throw new Error(`MASS-1 cannot activate inventory or claim unique properties: ${JSON.stringify(p)}`);
+          if (p.unitOfCount !== 'URL_REPRESENTATION') throw new Error(`Wrong count unit: ${JSON.stringify(p)}`);
+          if (!(p.netNewUrlRepresentations > 0) || !(p.netNewDomains > 0)) throw new Error(`Empty reservoir: ${JSON.stringify(p)}`);
+          if (!(p.sourceFactoryCandidateDomains > 0)) throw new Error(`No Source Factory candidates produced: ${JSON.stringify(p)}`);
+          if (p.transportLeakageIntoSourceFactory !== 0 || p.socialLeakageIntoSourceFactory !== 0) throw new Error(`Transport/social leakage: ${JSON.stringify(p)}`);
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-1-reservoir-qualification
+          path: .tmp/data-mass-1/results/
+          if-no-files-found: error
+          retention-days: 30
