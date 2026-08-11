@@ -1,0 +1,43 @@
+name: UX Listing Navigation Feedback Gate
+
+on:
+  pull_request:
+    paths:
+      - "app/layout.tsx"
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "components/search/SearchListingCardDark.tsx"
+      - "components/ui/NavigationFeedback.tsx"
+      - "components/ui/navigation-feedback.module.css"
+      - "scripts/scrapers/__tests__/unified-listing-card-1.test.ts"
+      - "scripts/scrapers/__tests__/ux-listing-navigation-feedback.test.ts"
+      - ".github/workflows/ux-listing-navigation-feedback.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app/layout.tsx"
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "components/search/SearchListingCardDark.tsx"
+      - "components/ui/NavigationFeedback.tsx"
+      - "components/ui/navigation-feedback.module.css"
+      - "scripts/scrapers/__tests__/unified-listing-card-1.test.ts"
+      - "scripts/scrapers/__tests__/ux-listing-navigation-feedback.test.ts"
+      - ".github/workflows/ux-listing-navigation-feedback.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  navigation-feedback-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Listing navigation and loading contract
+        run: npx tsx --test scripts/scrapers/__tests__/ux-listing-navigation-feedback.test.ts scripts/scrapers/__tests__/unified-listing-card-1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
