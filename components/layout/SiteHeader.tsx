@@ -57,6 +57,12 @@ export function SiteHeader({ variant = "light", compact = false, fluid = false }
 
   useEffect(() => setMenuOpen(false), [pathname]);
 
+  useEffect(() => {
+    const openMobileMenu = () => setMenuOpen(true);
+    window.addEventListener("akarfinder:open-mobile-menu", openMobileMenu);
+    return () => window.removeEventListener("akarfinder:open-mobile-menu", openMobileMenu);
+  }, []);
+
   const transparentActive = isTransparent && !scrolled;
   const darkSurface = isDark || (isTransparent && scrolled);
 
@@ -81,7 +87,7 @@ export function SiteHeader({ variant = "light", compact = false, fluid = false }
           ? "border-transparent bg-transparent text-white"
           : darkSurface
             ? "border-white/10 bg-[rgba(7,27,51,0.97)] text-white shadow-[0_16px_40px_rgba(2,10,24,0.28)] backdrop-blur"
-            : "border-border/20 bg-white/94 text-foreground shadow-[0_1px_4px_rgba(0,0,0,0.06)] backdrop-blur dark:border-white/10 dark:bg-[rgba(7,27,51,0.97)] dark:text-white"
+            : "border-[#E5EAF0] bg-white text-foreground shadow-[0_1px_4px_rgba(7,27,51,0.055)] dark:border-white/10 dark:bg-[rgba(7,27,51,0.97)] dark:text-white"
       }`}
     >
       <Container
@@ -176,7 +182,7 @@ export function SiteHeader({ variant = "light", compact = false, fluid = false }
             className={`hidden rounded-xl border px-3.5 py-2 text-[12.5px] font-bold transition md:block ${
               darkSurface || transparentActive
                 ? "border-white/18 bg-white/6 text-white hover:bg-white/12"
-                : "border-border/20 bg-card text-foreground/80 hover:border-bronze-500/40 hover:text-foreground dark:border-white/12 dark:bg-white/5 dark:text-white/80"
+                : "border-border/20 bg-card text-foreground/80 hover:border-[#0B63CE]/35 hover:text-foreground dark:border-white/12 dark:bg-white/5 dark:text-white/80"
             }`}
           >
             Publier
@@ -187,7 +193,9 @@ export function SiteHeader({ variant = "light", compact = false, fluid = false }
             aria-current={pathname.startsWith("/mon-projet") ? "page" : undefined}
             className={
               compact
-                ? "rounded-lg border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[11.5px] font-bold text-white transition hover:bg-white/[0.14] sm:px-3.5 sm:text-[12.5px]"
+                ? darkSurface || transparentActive
+                  ? "rounded-lg border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[11.5px] font-bold text-white transition hover:bg-white/[0.14] sm:px-3.5 sm:text-[12.5px]"
+                  : "rounded-lg border border-[#D9E1EA] bg-white px-3 py-1.5 text-[11.5px] font-bold text-[#12345B] transition hover:border-[#0B63CE]/35 hover:bg-[#F7FAFD] sm:px-3.5 sm:text-[12.5px] dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14]"
                 : "rounded-xl bg-[#0B63CE] px-3 py-2 text-[11.5px] font-bold text-white shadow-[0_4px_14px_rgba(11,99,206,0.24)] transition hover:bg-[#084BA8] sm:px-4 sm:text-[13px]"
             }
           >
