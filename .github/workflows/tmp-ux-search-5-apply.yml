@@ -1,0 +1,108 @@
+name: TEMP UX-SEARCH-5 Apply
+
+on:
+  push:
+    branches:
+      - ux/search-navigation-hierarchy-5
+    paths:
+      - ".github/workflows/tmp-ux-search-5-apply.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ux/search-navigation-hierarchy-5
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply Search navigation hierarchy polish
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          function replaceExact(path, from, to) {
+            let text = fs.readFileSync(path, 'utf8');
+            if (!text.includes(from)) throw new Error(`Missing expected block in ${path}: ${from.slice(0, 100)}`);
+            text = text.replace(from, to);
+            fs.writeFileSync(path, text);
+          }
+
+          replaceExact(
+            'components/ui/Container.tsx',
+            `type ContainerProps = {\n  children: React.ReactNode;\n  className?: string;\n};\n\nexport function Container({ children, className = "" }: ContainerProps) {\n  return (\n    <div className={\`mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8 \${className}\`.trim()}>`,
+            `type ContainerProps = {\n  children: React.ReactNode;\n  className?: string;\n  fluid?: boolean;\n};\n\nexport function Container({ children, className = "", fluid = false }: ContainerProps) {\n  return (\n    <div\n      className={\`mx-auto w-full \${\n        fluid ? "max-w-none px-4 sm:px-6" : "max-w-7xl px-5 sm:px-6 lg:px-8"\n      } \${className}\`.trim()}\n    >`
+          );
+
+          replaceExact(
+            'components/layout/SiteHeader.tsx',
+            `type SiteHeaderProps = {\n  variant?: "light" | "dark" | "transparent";\n  compact?: boolean;\n};`,
+            `type SiteHeaderProps = {\n  variant?: "light" | "dark" | "transparent";\n  compact?: boolean;\n  fluid?: boolean;\n};`
+          );
+          replaceExact(
+            'components/layout/SiteHeader.tsx',
+            `export function SiteHeader({ variant = "light", compact = false }: SiteHeaderProps) {`,
+            `export function SiteHeader({ variant = "light", compact = false, fluid = false }: SiteHeaderProps) {`
+          );
+          replaceExact(
+            'components/layout/SiteHeader.tsx',
+            `  const linkClass = (isActive: boolean) =>\n    \`relative rounded-full px-2 py-1.5 text-[13.5px] font-semibold transition \${`,
+            `  const linkClass = (isActive: boolean) =>\n    \`relative rounded-full \${compact ? "px-1.5 py-1 text-[12.5px]" : "px-2 py-1.5 text-[13.5px]"} font-semibold transition \${`
+          );
+          replaceExact(
+            'components/layout/SiteHeader.tsx',
+            `    <header\n      className={\`z-50 border-b transition-all duration-300 \${`,
+            `    <header\n      data-search-global-header={compact ? "compact" : undefined}\n      className={\`z-50 border-b transition-all duration-300 \${`
+          );
+          replaceExact(
+            'components/layout/SiteHeader.tsx',
+            `      <Container\n        className={\`flex items-center justify-between gap-3 \${compact ? "py-2 sm:py-2.5" : "py-2.5 sm:py-3"}\`}\n      >`,
+            `      <Container\n        fluid={fluid}\n        className={\`flex items-center justify-between gap-3 \${compact ? "py-1.5 sm:py-2" : "py-2.5 sm:py-3"}\`}\n      >`
+          );
+          replaceExact(
+            'components/layout/SiteHeader.tsx',
+            `              className="h-[25px] w-auto sm:h-[34px]"`,
+            `              className={compact ? "h-[23px] w-auto sm:h-[28px]" : "h-[25px] w-auto sm:h-[34px]"}`
+          );
+          replaceExact(
+            'components/layout/SiteHeader.tsx',
+            `                className="h-[25px] w-auto sm:h-[34px] dark:hidden"`,
+            `                className={compact ? "h-[23px] w-auto sm:h-[28px] dark:hidden" : "h-[25px] w-auto sm:h-[34px] dark:hidden"}`
+          );
+          replaceExact(
+            'components/layout/SiteHeader.tsx',
+            `                className="hidden h-[25px] w-auto sm:h-[34px] dark:block"`,
+            `                className={compact ? "hidden h-[23px] w-auto sm:h-[28px] dark:block" : "hidden h-[25px] w-auto sm:h-[34px] dark:block"}`
+          );
+          replaceExact(
+            'components/layout/SiteHeader.tsx',
+            `          <ul className="flex items-center gap-4">`,
+            `          <ul className={\`flex items-center \${compact ? "gap-2.5 xl:gap-3.5" : "gap-4"}\`}>`
+          );
+          replaceExact(
+            'components/layout/SiteHeader.tsx',
+            `          <Link\n            href="/mon-projet"\n            aria-current={pathname.startsWith("/mon-projet") ? "page" : undefined}\n            className="rounded-xl bg-[#0B63CE] px-3 py-2 text-[11.5px] font-bold text-white shadow-[0_4px_14px_rgba(11,99,206,0.24)] transition hover:bg-[#084BA8] sm:px-4 sm:text-[13px]"\n          >`,
+            `          <Link\n            href="/mon-projet"\n            aria-current={pathname.startsWith("/mon-projet") ? "page" : undefined}\n            className={\n              compact\n                ? "rounded-lg border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[11.5px] font-bold text-white transition hover:bg-white/[0.14] sm:px-3.5 sm:text-[12.5px]"\n                : "rounded-xl bg-[#0B63CE] px-3 py-2 text-[11.5px] font-bold text-white shadow-[0_4px_14px_rgba(11,99,206,0.24)] transition hover:bg-[#084BA8] sm:px-4 sm:text-[13px]"\n            }\n          >`
+          );
+
+          replaceExact(
+            'app/search/page.tsx',
+            `      <SiteHeader variant="dark" />`,
+            `      <SiteHeader variant="dark" compact fluid />`
+          );
+          NODE
+      - name: Self-remove and commit
+        shell: bash
+        run: |
+          rm .github/workflows/tmp-ux-search-5-apply.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/search/page.tsx components/layout/SiteHeader.tsx components/ui/Container.tsx .github/workflows/tmp-ux-search-5-apply.yml
+          git commit -m "feat(search): polish navigation hierarchy"
+          git push origin HEAD:ux/search-navigation-hierarchy-5
