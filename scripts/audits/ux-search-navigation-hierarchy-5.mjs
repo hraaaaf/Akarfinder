@@ -91,8 +91,9 @@ for (const viewport of viewports) {
 
   const metrics = await page.evaluate(() => {
     const header = document.querySelector('[data-search-global-header="exact-white"]');
+    const visible = (node) => Boolean(node && getComputedStyle(node).display !== 'none' && getComputedStyle(node).visibility !== 'hidden' && node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0);
     const headerBox = header?.getBoundingClientRect() ?? null;
-    const brandImage = header?.querySelector('a[aria-label="AkarFinder - accueil"] img');
+    const brandImage = Array.from(header?.querySelectorAll('a[aria-label="AkarFinder - accueil"] img') ?? []).find(visible);
     const brandBox = brandImage?.getBoundingClientRect() ?? null;
     const searchInput = document.querySelector('[data-search-primary-search]');
     const searchBox = searchInput?.getBoundingClientRect() ?? null;
@@ -102,9 +103,8 @@ for (const viewport of viewports) {
     const brokenImages = cards.flatMap((card) => Array.from(card.querySelectorAll('[data-card-image] img'))).filter((img) => !(img.complete && img.naturalWidth > 0)).length;
     const visualClasses = cards.map((card) => card.querySelector('[data-visual-inventory-class]')?.getAttribute('data-visual-inventory-class') ?? null);
     const desktopNav = header?.querySelector('nav[aria-label="Navigation principale"]');
-    const mobileMenu = header?.querySelector('[aria-label="Ouvrir le menu"]');
-    const account = header?.querySelector('[aria-label="Mon compte"]');
-    const visible = (node) => Boolean(node && getComputedStyle(node).display !== 'none' && getComputedStyle(node).visibility !== 'hidden' && node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0);
+    const mobileMenu = Array.from(header?.querySelectorAll('[aria-label="Ouvrir le menu"]') ?? []).find(visible);
+    const account = Array.from(header?.querySelectorAll('[aria-label="Mon compte"]') ?? []).find(visible);
     const navLinks = Array.from(desktopNav?.querySelectorAll('a') ?? []).filter(visible).map((node) => node.textContent?.trim() ?? '');
     return {
       headerHeight: headerBox ? Math.round(headerBox.height * 10) / 10 : null,
