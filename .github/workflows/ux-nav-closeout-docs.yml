@@ -1,0 +1,36 @@
+name: UX Nav Closeout Docs Patch
+
+on:
+  push:
+    branches:
+      - fix/ux-listing-navigation-loading
+    paths:
+      - .github/workflows/ux-nav-closeout-docs.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-canonical-docs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/ux-listing-navigation-loading
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Patch README ROADMAP SESSION
+        run: node scripts/ux-listing-nav-feedback-closeout.mjs
+      - name: Commit canonical closeout
+        run: |
+          if git diff --quiet -- README.md docs/ROADMAP.md docs/SESSION.md; then
+            echo "Canonical closeout already applied."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/ROADMAP.md docs/SESSION.md
+          git commit -m "docs(ux): close listing navigation feedback lot"
+          git push origin HEAD:fix/ux-listing-navigation-loading
