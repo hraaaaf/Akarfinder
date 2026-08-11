@@ -15,9 +15,11 @@ test("UX-SEARCH-5 keeps the global header complete while reducing its Search vis
   assert.match(source, /h-\[23px\].*sm:h-\[28px\]/s);
   assert.match(source, /compact \? "gap-2\.5 xl:gap-3\.5" : "gap-4"/);
   assert.match(source, /bg-white\/\[0\.08\]/);
-  for (const label of ["Acheter", "Louer", "Neuf", "Recherche", "Plus", "Favoris", "Publier", "Mon projet"]) {
+  for (const label of ["Acheter", "Louer", "Neuf", "Recherche", "Plus", "Publier", "Mon projet"]) {
     assert.ok(source.includes(label), `navigation item ${label} must remain available`);
   }
+  assert.match(source, /href="\/favorites"/);
+  assert.match(source, /"Mes favoris"/);
   assert.match(source, /aria-label="Ouvrir le menu"/);
   assert.doesNotMatch(source, /compact[\s\S]{0,300}sticky/);
 });

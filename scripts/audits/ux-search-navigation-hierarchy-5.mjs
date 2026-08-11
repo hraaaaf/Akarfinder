@@ -9,7 +9,7 @@ const viewports = [
   { name: "mobile-360x800", width: 360, height: 800, columns: 2, headerMax: 54, topMax: 260, cardMax: 390, desktopNav: false },
   { name: "mobile-390x844", width: 390, height: 844, columns: 2, headerMax: 54, topMax: 260, cardMax: 390, desktopNav: false },
   { name: "tablet-768x900", width: 768, height: 900, columns: 2, headerMax: 56, topMax: 275, cardMax: 620, desktopNav: false },
-  { name: "desktop-1024x800", width: 1024, height: 800, columns: 3, headerMax: 56, topMax: 270, cardMax: 420, desktopNav: false },
+  { name: "desktop-1024x800", width: 1024, height: 800, columns: 3, headerMax: 56, topMax: 270, cardMax: 420, desktopNav: true },
   { name: "desktop-1280x900", width: 1280, height: 900, columns: 4, headerMax: 56, topMax: 270, cardMax: 420, desktopNav: true },
   { name: "desktop-1440x900", width: 1440, height: 900, columns: 4, headerMax: 56, topMax: 270, cardMax: 420, desktopNav: true },
 ];
