@@ -20,6 +20,7 @@ function upsertBlock(path, anchor) {
   const end = "<!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-END -->";
   const s = text.indexOf(start);
   const e = text.indexOf(end);
+
   if (s >= 0 && e >= s) {
     text = `${text.slice(0, s)}${CLOSEOUT}${text.slice(e + end.length)}`;
   } else {
@@ -29,14 +30,6 @@ function upsertBlock(path, anchor) {
     text = `${text.slice(0, insertAt)}\n\n${CLOSEOUT}${text.slice(insertAt)}`;
   }
   writeFileSync(path, text);
-}
-
-function replaceExact(text, from, to) {
-  return text.includes(from) ? text.replace(from, to) : text;
-}
-
-function replaceLine(text, from, to) {
-  return replaceExact(text, `${from}\n`, `${to}\n`);
 }
 
 upsertBlock(
@@ -54,85 +47,65 @@ upsertBlock(
 
 const visualPath = "docs/NEIGHBORHOOD_VISUAL_LIBRARY_ROADMAP.md";
 let visual = readFileSync(visualPath, "utf8");
-visual = replaceExact(visual, "**Statut : PLANNED**", "**Statut : P0 SOUISSI PILOT CLOSED ✅ — P1.1 AGDAL NEXT**");
-visual = replaceExact(
-  visual,
-  "`VRAIE PHOTO → vérification lieu → vérification droits/licence → ingestion du fichier original → transformation AkarFinder → comparaison original/résultat → score fidélité → stockage → intégration Search`",
-  "`VRAIE PHOTO → vérification lieu → vérification droits/licence → ingestion du master intact → traitement AkarFinder non destructif au rendu (bitmap dérivé seulement si nécessaire) → comparaison source/rendu → score fidélité/UX → Storage + métadonnées → intégration Search`",
-);
-visual = replaceExact(
-  visual,
-  "- toute transformation visuelle majeure doit atteindre **≥ 9/10** avant validation ;",
-  "- tout traitement visuel majeur doit atteindre **≥ 9/10** avant validation ;\n- un traitement CSS/UI non destructif est canonique lorsqu’il suffit : dans ce cas le master reste intact et `transformed_asset_url = NULL` est attendu ;",
-);
-for (const [from, to] of [
-  ["## P0.1 — Template Lock", "## P0.1 — Template Lock ✅ CLOSED"],
-  ["## P0.2 — Souissi Signature Source", "## P0.2 — Souissi Signature Source ✅ CLOSED"],
-  ["## P0.3 — Souissi Signature Asset", "## P0.3 — Souissi Signature Asset ✅ CLOSED"],
-  ["## P0.4 — Souissi Immobilier Source + Asset", "## P0.4 — Souissi Immobilier Source + Asset ✅ CLOSED"],
-  ["## P0.5 — Souissi Lifestyle Source + Asset", "## absurd"],
-]) {
-  if (to === "## absurd") continue;
-  visual = replaceLine(visual, from, to);
-}
-for (const [from, to] of [
-  ["## P0.5 — Souissi Lifestyle Source + Asset", "## P0.5 — Souissi Lifestyle Source + Asset ✅ CLOSED"],
-  ["## P0.6 — Visual Gate Search", "## P0.6 — Visual Gate Search ✅ CLOSED"],
-  ["## P0.7 — DB & Storage Integration", "## P0.7 — DB & Storage Integration ✅ CLOSED"],
-  ["## P0.8 — Production Certification", "## P0.8 — Production Certification ✅ CLOSED"],
-]) visual = replaceLine(visual, from, to);
-visual = replaceExact(
-  visual,
-  "Source pilote prioritaire : `Avenue Mohamed VI Souissi Rabat -1.jpg` — Wikimedia Commons.",
-  "Source pilote certifiée : `Avenue Mohamed VI Souissi Rabat.jpg` — Wikimedia Commons, version paysage 3072×1728.",
-);
-visual = replaceExact(
-  visual,
-  "Responsabilité unique : transformer réellement la source P0.2 selon Modèle A.",
-  "Responsabilité unique : appliquer réellement le Modèle A à la source P0.2 sans altérer le master. Le pilote a retenu un traitement CSS/UI non destructif ; aucun bitmap dérivé n’est créé lorsque le rendu suffit.",
-);
-visual = replaceLine(
-  visual,
-  "- transformer selon Modèle A ;",
-  "- appliquer le Modèle A au rendu, ou créer un dérivé uniquement si un traitement pixel est réellement nécessaire ;",
-);
-visual = replaceLine(
-  visual,
-  "Gate : **UX/UI ≥9/10**.",
-  "Gate : **UX/UI ≥9/10**. Pilote Souissi final : **9,2/10 PASS**.",
-);
-visual = replaceExact(
-  visual,
-  "- stocker originaux et transformations séparément ;\n- compléter provenance/licence/attribution ;\n- renseigner source path + transformed asset URL ;\n- renseigner fidélité et statut style ;",
-  "- stocker les originaux certifiés dans `neighborhood-visuals` ;\n- stocker séparément un dérivé uniquement lorsqu’un vrai bitmap transformé existe ;\n- compléter provenance/licence/attribution ;\n- renseigner `image_storage_path` ; `transformed_asset_url` reste `NULL` pour le traitement CSS/UI non destructif certifié du pilote ;\n- conserver les notes de fidélité et le statut du rendu ;",
-);
-visual = replaceExact(
-  visual,
-  "Sortie : **Souissi 3/3 READY**.",
-  "Sortie : **Souissi 3/3 READY ✅** — 3 masters physiques + 3 rows canoniques vérifiées.",
-);
-visual = replaceExact(
-  visual,
-  "Sortie : **SOUISSI PILOT CLOSED**.",
-  "Sortie : **SOUISSI PILOT CLOSED ✅**.",
-);
-visual = replaceExact(
-  visual,
-  "`source réelle → droits → geo vérification → ingestion → transformation Modèle A → score ≥9 → DB`",
-  "`source réelle → droits → geo vérification → ingestion du master → traitement Modèle A non destructif (dérivé seulement si nécessaire) → score ≥9 → DB/Storage`",
-);
-visual = replaceExact(
-  visual,
-  "`Neighborhood Registry → source discovery → rights/license → geo verification → DB slots → ingestion → transformation → fidelity QA → Search QA`",
-  "`Neighborhood Registry → source discovery → rights/license → geo verification → DB slots → ingestion master → traitement non destructif ou dérivé justifié → fidelity QA → Search QA`",
-);
-visual = replaceExact(
-  visual,
-  "**État actuel : P0.1 Modèle A choisi ; formalisation production à certifier. Souissi DB possède déjà 3 slots (`signature / immobilier / lifestyle`), sans transformation finale validée.**",
-  "**État actuel : P0 Souissi Pilot CLOSED ✅. Trois masters réels sont stockés et trois rows canoniques sont réconciliées ; le rendu Modèle A est non destructif et certifié en Search à 9,2/10 ; `transformed_asset_url` reste volontairement `NULL`. Prochain LOT : P1.1 Agdal.**",
-);
 
-// Normalize any duplicate closeout markers left by older non-idempotent runs.
+const exactReplacements = [
+  ["**Statut : PLANNED**", "**Statut : P0 SOUISSI PILOT CLOSED ✅ — P1.1 AGDAL NEXT**"],
+  [
+    "`VRAIE PHOTO → vérification lieu → vérification droits/licence → ingestion du fichier original → transformation AkarFinder → comparaison original/résultat → score fidélité → stockage → intégration Search`",
+    "`VRAIE PHOTO → vérification lieu → vérification droits/licence → ingestion du master intact → traitement AkarFinder non destructif au rendu (bitmap dérivé seulement si nécessaire) → comparaison source/rendu → score fidélité/UX → Storage + métadonnées → intégration Search`",
+  ],
+  [
+    "Source pilote prioritaire : `Avenue Mohamed VI Souissi Rabat -1.jpg` — Wikimedia Commons.",
+    "Source pilote certifiée : `Avenue Mohamed VI Souissi Rabat.jpg` — Wikimedia Commons, version paysage 3072×1728.",
+  ],
+  [
+    "Responsabilité unique : transformer réellement la source P0.2 selon Modèle A.",
+    "Responsabilité unique : appliquer réellement le Modèle A à la source P0.2 sans altérer le master. Le pilote a retenu un traitement CSS/UI non destructif ; aucun bitmap dérivé n’est créé lorsque le rendu suffit.",
+  ],
+  [
+    "- toute transformation visuelle majeure doit atteindre **≥ 9/10** avant validation ;",
+    "- tout traitement visuel majeur doit atteindre **≥ 9/10** avant validation ;\n- un traitement CSS/UI non destructif est canonique lorsqu’il suffit : dans ce cas le master reste intact et `transformed_asset_url = NULL` est attendu ;",
+  ],
+  ["- transformer selon Modèle A ;", "- appliquer le Modèle A au rendu, ou créer un dérivé uniquement si un traitement pixel est réellement nécessaire ;"],
+  ["Gate : **UX/UI ≥9/10**.", "Gate : **UX/UI ≥9/10**. Pilote Souissi final : **9,2/10 PASS**."],
+  [
+    "- stocker originaux et transformations séparément ;\n- compléter provenance/licence/attribution ;\n- renseigner source path + transformed asset URL ;\n- renseigner fidélité et statut style ;",
+    "- stocker les originaux certifiés dans `neighborhood-visuals` ;\n- stocker séparément un dérivé uniquement lorsqu’un vrai bitmap transformé existe ;\n- compléter provenance/licence/attribution ;\n- renseigner `image_storage_path` ; `transformed_asset_url` reste `NULL` pour le traitement CSS/UI non destructif certifié du pilote ;\n- conserver les notes de fidélité et le statut du rendu ;",
+  ],
+  ["Sortie : **Souissi 3/3 READY**.", "Sortie : **Souissi 3/3 READY ✅** — 3 masters physiques + 3 rows canoniques vérifiées."],
+  ["Sortie : **SOUISSI PILOT CLOSED**.", "Sortie : **SOUISSI PILOT CLOSED ✅**."],
+  [
+    "`source réelle → droits → geo vérification → ingestion → transformation Modèle A → score ≥9 → DB`",
+    "`source réelle → droits → geo vérification → ingestion du master → traitement Modèle A non destructif (dérivé seulement si nécessaire) → score ≥9 → DB/Storage`",
+  ],
+  [
+    "`Neighborhood Registry → source discovery → rights/license → geo verification → DB slots → ingestion → transformation → fidelity QA → Search QA`",
+    "`Neighborhood Registry → source discovery → rights/license → geo verification → DB slots → ingestion master → traitement non destructif ou dérivé justifié → fidelity QA → Search QA`",
+  ],
+  [
+    "**État actuel : P0.1 Modèle A choisi ; formalisation production à certifier. Souissi DB possède déjà 3 slots (`signature / immobilier / lifestyle`), sans transformation finale validée.**",
+    "**État actuel : P0 Souissi Pilot CLOSED ✅. Trois masters réels sont stockés et trois rows canoniques sont réconciliées ; le rendu Modèle A est non destructif et certifié en Search à 9,2/10 ; `transformed_asset_url` reste volontairement `NULL`. Prochain LOT : P1.1 Agdal.**",
+  ],
+];
+for (const [from, to] of exactReplacements) {
+  if (visual.includes(from)) visual = visual.replace(from, to);
+}
+
+for (const heading of [
+  "P0.1 — Template Lock",
+  "P0.2 — Souissi Signature Source",
+  "P0.3 — Souissi Signature Asset",
+  "P0.4 — Souissi Immobilier Source + Asset",
+  "P0.5 — Souissi Lifestyle Source + Asset",
+  "P0.6 — Visual Gate Search",
+  "P0.7 — DB & Storage Integration",
+  "P0.8 — Production Certification",
+]) {
+  const bare = `## ${heading}`;
+  if (visual.includes(`${bare}\n`)) visual = visual.replace(`${bare}\n`, `${bare} ✅ CLOSED\n`);
+}
+
+// Normalize residue from older non-idempotent runs.
 visual = visual.replace(/(?: ✅ CLOSED){2,}/g, " ✅ CLOSED");
 visual = visual.replace(
   /(?: Pilote Souissi final : \*\*9,2\/10 PASS\*\*\.){2,}/g,
@@ -152,10 +125,12 @@ const p0Closeout = [
   "- P2 reste la frontière d’activation du resolver bibliothèque quartier.",
   "<!-- SOUISSI-PILOT-EVIDENCE-END -->",
 ].join("\n");
-const p1Anchor = "---\n\n# P1 — RABAT PILOT SCALE";
+
 if (!visual.includes("<!-- SOUISSI-PILOT-EVIDENCE-START -->")) {
+  const p1Anchor = "---\n\n# P1 — RABAT PILOT SCALE";
   const idx = visual.indexOf(p1Anchor);
   if (idx < 0) throw new Error("visual roadmap P1 anchor not found");
   visual = `${visual.slice(0, idx)}${p0Closeout}\n\n${visual.slice(idx)}`;
 }
+
 writeFileSync(visualPath, visual);
