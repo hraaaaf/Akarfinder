@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Heart, Menu, X } from "lucide-react";
+import { Heart, Menu, UserRound, X } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { useFavoriteSelection } from "@/components/favorites/useFavoriteSelection";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -12,6 +12,7 @@ type SiteHeaderProps = {
   variant?: "light" | "dark" | "transparent";
   compact?: boolean;
   fluid?: boolean;
+  searchMode?: boolean;
 };
 
 const primaryNav = [
@@ -19,6 +20,14 @@ const primaryNav = [
   { href: "/louer", text: "Louer" },
   { href: "/neuf", text: "Neuf" },
   { href: "/search", text: "Recherche" },
+] as const;
+
+const searchPrimaryNav = [
+  { href: "/acheter", text: "Acheter" },
+  { href: "/louer", text: "Louer" },
+  { href: "/neuf", text: "Neuf" },
+  { href: "/pro/agences", text: "Agences" },
+  { href: "/compagnon", text: "Conseils" },
 ] as const;
 
 const secondaryNav = [
@@ -38,7 +47,12 @@ const mobileNav = [
 
 const professionalAudience = "agences et promoteurs";
 
-export function SiteHeader({ variant = "light", compact = false, fluid = false }: SiteHeaderProps) {
+export function SiteHeader({
+  variant = "light",
+  compact = false,
+  fluid = false,
+  searchMode = false,
+}: SiteHeaderProps) {
   const pathname = usePathname();
   const isDark = variant === "dark";
   const isTransparent = variant === "transparent";
@@ -56,6 +70,143 @@ export function SiteHeader({ variant = "light", compact = false, fluid = false }
   }, [isTransparent]);
 
   useEffect(() => setMenuOpen(false), [pathname]);
+
+  if (searchMode) {
+    return (
+      <header
+        data-search-global-header="exact-white"
+        className="sticky top-0 z-30 border-b border-slate-200/80 bg-white text-slate-900 shadow-[0_1px_3px_rgba(15,23,42,0.04)]"
+      >
+        <Container fluid={fluid} className="relative h-[53px]">
+          <div className="grid h-full grid-cols-[44px_1fr_44px] items-center lg:hidden">
+            <button
+              type="button"
+              aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((open) => !open)}
+              className="grid h-11 w-11 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100"
+            >
+              {menuOpen ? <X size={21} /> : <Menu size={21} />}
+            </button>
+
+            <Link href="/" className="mx-auto flex items-center" aria-label="AkarFinder - accueil">
+              <img
+                src="/brand/logo-v2/logo-header-light.png"
+                alt="AkarFinder"
+                width={132}
+                height={33}
+                className="h-[27px] w-auto"
+              />
+            </Link>
+
+            <Link
+              href="/mon-projet"
+              aria-label="Mon compte"
+              className="grid h-11 w-11 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100"
+            >
+              <UserRound size={21} />
+            </Link>
+          </div>
+
+          <div className="hidden h-full items-center justify-between gap-8 lg:flex">
+            <div className="flex min-w-0 items-center gap-10">
+              <Link href="/" className="flex shrink-0 items-center" aria-label="AkarFinder - accueil">
+                <img
+                  src="/brand/logo-v2/logo-header-light.png"
+                  alt="AkarFinder"
+                  width={142}
+                  height={35}
+                  className="h-[29px] w-auto"
+                />
+              </Link>
+
+              <nav aria-label="Navigation principale">
+                <ul className="flex h-[53px] items-center gap-7">
+                  {searchPrimaryNav.map((item) => {
+                    const isActive = pathname.startsWith(item.href);
+                    return (
+                      <li key={item.href} className="h-full">
+                        <Link
+                          href={item.href}
+                          aria-current={isActive ? "page" : undefined}
+                          className={`relative flex h-full items-center px-0.5 text-[13px] font-semibold transition ${
+                            isActive
+                              ? "text-[#0B2545] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#0B63CE]"
+                              : "text-slate-700 hover:text-[#0B2545]"
+                          }`}
+                        >
+                          {item.text}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2">
+              <Link
+                href="/favorites"
+                aria-label={favoriteCount > 0 ? `Mes favoris (${favoriteCount})` : "Mes favoris"}
+                className="relative flex h-10 items-center gap-2 rounded-lg px-3 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-[#0B2545]"
+              >
+                <Heart size={18} fill={favoriteCount > 0 ? "currentColor" : "none"} />
+                <span>Favoris</span>
+                {favoriteCount > 0 ? (
+                  <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0B63CE] px-1 text-[9px] font-extrabold text-white">
+                    {favoriteCount > 9 ? "9+" : favoriteCount}
+                  </span>
+                ) : null}
+              </Link>
+
+              <Link
+                href="/vendre"
+                className="rounded-lg border border-[#0B2545]/25 bg-white px-4 py-2.5 text-[12.5px] font-bold text-[#0B2545] transition hover:border-[#0B63CE]/45 hover:bg-slate-50"
+              >
+                Publier
+              </Link>
+
+              <Link
+                href="/mon-projet"
+                aria-label="Mon compte"
+                className="grid h-10 w-10 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100"
+              >
+                <UserRound size={20} />
+              </Link>
+            </div>
+          </div>
+        </Container>
+
+        {menuOpen ? (
+          <nav aria-label="Navigation mobile principale" className="border-t border-slate-200 bg-white px-4 py-3 lg:hidden">
+            <div className="grid grid-cols-2 gap-2">
+              {mobileNav.map((item) => {
+                const isActive =
+                  item.href === "/pro"
+                    ? pathname.startsWith("/pro") || pathname.startsWith("/promoteurs")
+                    : pathname.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-label={item.href === "/pro" ? `Espace Pro — ${professionalAudience}` : undefined}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`min-h-11 rounded-xl border px-3 py-3 text-[13px] font-bold transition ${
+                      isActive
+                        ? "border-[#0B63CE] bg-[#0B63CE] text-white"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-[#0B63CE]/40 hover:text-[#0B2545]"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+        ) : null}
+      </header>
+    );
+  }
 
   const transparentActive = isTransparent && !scrolled;
   const darkSurface = isDark || (isTransparent && scrolled);
