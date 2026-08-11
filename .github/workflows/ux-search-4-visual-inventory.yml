@@ -1,0 +1,101 @@
+name: UX-SEARCH-4 Visual Inventory Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/search/SearchListingCardDark.tsx"
+      - "components/search/ContextualListingArtwork.tsx"
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "scripts/audits/ux-search-visual-inventory-4.mjs"
+      - "scripts/scrapers/__tests__/ux-search-visual-inventory-4.test.ts"
+      - ".github/workflows/ux-search-4-visual-inventory.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Visual inventory structural contract
+        run: npx tsx --test scripts/scrapers/__tests__/ux-search-visual-inventory-4.test.ts
+      - name: Predecessor visual contracts
+        run: npx tsx --test scripts/scrapers/__tests__/unified-listing-card-1.test.ts scripts/scrapers/__tests__/search-mobile-card-grid-1.test.ts scripts/scrapers/__tests__/ux-search-card-architecture-3.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        run: |
+          npm run start -- -p 3105 > /tmp/ux4-server.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3105/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ux4-server.log
+          exit 1
+      - name: Review visual diversity, truth and responsive inventory
+        env:
+          BASE_URL: http://127.0.0.1:3105
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/ux-search-visual-inventory-4.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ux-search-4-product-design-proof
+          path: data/audits/ux-search-visual-inventory-4/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Independently replay visual inventory contract
+        run: npx tsx --test scripts/scrapers/__tests__/ux-search-visual-inventory-4.test.ts
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent production server
+        run: |
+          npm run start -- -p 3106 > /tmp/ux4-certifier.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3106/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ux4-certifier.log
+          exit 1
+      - name: Independently replay visual inventory certification
+        env:
+          BASE_URL: http://127.0.0.1:3106
+          AUDIT_VARIANT: independent-certifier
+        run: node scripts/audits/ux-search-visual-inventory-4.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ux-search-4-independent-proof
+          path: data/audits/ux-search-visual-inventory-4/independent-certifier
+          if-no-files-found: error
+          retention-days: 14

@@ -80,6 +80,7 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
             alt={sanitizedTitle}
             loading="lazy"
             decoding="async"
+            data-visual-inventory-class="authorized_or_listing_image"
             onError={() => setThumbError(true)}
             className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.025]"
           />

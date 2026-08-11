@@ -69,6 +69,26 @@ Résultat certifié :
 **Prochain LOT UX/Search : UX-SEARCH-4 — Visual Inventory System.**
 <!-- UX-SEARCH-3-CLOSEOUT-END -->
 
+<!-- UX-SEARCH-4-CLOSEOUT-START -->
+## UX-SEARCH-4 — Visual Inventory System ✅ CERTIFIED — PR #482
+
+Responsabilité unique : **améliorer la diversité, la pertinence et la qualité perçue des visuels Search sans inventer de photo du bien**, sans modifier DATA, ranking, Source Registry, dédup, prix, ordre commercial ni logique Map.
+
+Résultat certifié :
+
+- audit production read-only préalable, run `31444276171` : **288 cards observées / 288 fallbacks génériques / 276 paires adjacentes dupliquées**, 0 image cassée, 0 overflow ; preuve que le stock contextuel existant n’était pas consommé par la card interne dominante ;
+- hiérarchie visuelle canonique interne + Gateway : **photo du bien autorisée → photo d’ambiance quartier bornée → illustration contextuelle ville/type → illustration type → neutre** ;
+- aucune inférence depuis titre, description ou snippet ; aucun hasard ; resolver contextuel HRW/Rendezvous existant réutilisé avec champs structurés ville/quartier/type + URL stable uniquement ; hors allowlist = fail-closed vers fallback générique ;
+- Rabat real-photo exact `city + neighborhood` garde la priorité et conserve `Photo d’ambiance` + crédit/licence Wikimedia Commons ;
+- fixture indépendante 14 cards : **11 illustrations contextuelles = 11 IDs distincts + 1 photo d’ambiance Agdal + 2 fallbacks génériques hors allowlist**, stable après reload sur les 6 viewports ;
+- densité préservée : **360/390=2 colonnes, 768=2, 1024=3, 1280/1440=4** ; première card **201 px mobile**, **213,8 px tablette**, **211,8 px desktop** ; max **342,9 px mobile**, **398,5 px desktop** ; 0 overflow ; 0 image cassée ;
+- exact-head `c1de08a2323b29ab8cef25818e320ff8c991b3d4` : **31/31 workflows SUCCESS** ; UX-SEARCH-1/3, Search Truth, mobile grid, accessibility, attribution, contextual assets et Rabat real-photo restent verts ;
+- run spécialisé `31444537676` : **Product Design Reviewer PASS + Independent Release Certifier PASS**, contrat machine **10/10** ;
+- revue humaine des captures 390×844 et 1440×900 : **9,5/10** — variété nette sans transformer une illustration ou une photo d’ambiance en photo du bien.
+
+**Prochain LOT UX/Search : UX-SEARCH-5 — Navigation & Hierarchy Polish.**
+<!-- UX-SEARCH-4-CLOSEOUT-END -->
+
 
 <!-- DATA-CURRENT-START -->
 ## DATA — vérité courante
@@ -100,7 +120,7 @@ Ensuite **DATA-4.9D** pourra concevoir un canary d'ingestion borné uniquement p
 - `RABAT-REAL-PHOTO-LIBRARY-1` ✅ : PR #468, exact-head `3de085a2058862edc52bab4fe0dcd3aca04a4f4c`, **29/29 workflows exact-head SUCCESS**, **40/40 sources + licences Commons** vérifiées, TypeScript + build PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, 10/10 photos chargées, reload stable, 0 clipping/overflow, mobile **2 colonnes**, audit visuel **9,2/10**, Reviewer PASS, Release Certifier GO, merge `2585017ea377d72b3a54ca1083dbf1b609899ad9`.
 - Rabat real-photo : **40 vraies photos = 8 × Agdal/Hay Riad/Souissi/Océan/Hassan** ; bibliothèque séparée, activation uniquement sur signal `listing.neighborhood` structuré + `fallback_visual`, sans inférence texte.
 - Les 6 villes contextualisées disposent désormais de **12 variantes chacune = 72 IDs contextuels uniques**.
-- Prochain LOT UX/Search : **UX-SEARCH-4 — Visual Inventory System** ; `CONTEXTUAL-ILLUSTRATIONS-COVERAGE-AUDIT-1` devient une preuve read-only intégrée à ce lot, sans nouvel asset par intuition.
+- Prochain LOT UX/Search : **UX-SEARCH-5 — Navigation & Hierarchy Polish** ; UX-SEARCH-1 à 4 sont fermés et doivent rester des predecessor gates.
 - Ce closeout UX/Search ne modifie aucune décision DATA/Carte ; les sections DATA/Carte ci-dessous restent la propriété de leur lane.
 
 ## Main / LOT actif
