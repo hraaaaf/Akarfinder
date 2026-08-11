@@ -30,7 +30,7 @@ export function NeighborhoodVisualIdentityOverlay({
         <p className="mt-0.5 text-[8px] font-semibold text-white/82 sm:text-[10px]">{city}</p>
         <p
           data-neighborhood-template-a-descriptors
-          className="mt-1 hidden truncate text-[8px] font-semibold text-white/88 sm:block sm:text-[9px]"
+          className="mt-0.5 truncate text-[7px] font-semibold leading-tight text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.65)] sm:mt-1 sm:text-[9px]"
         >
           {visibleDescriptors.join(" • ")}
         </p>
