@@ -66,8 +66,6 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
   return (
     <Link
       href={result.original_url}
-      target="_blank"
-      rel="noopener noreferrer"
       data-mobile-compact-external-card
       data-unified-listing-card
       className="group flex min-w-0 flex-col overflow-hidden rounded-[20px] border border-border/10 bg-card shadow-[0_5px_16px_rgba(2,10,24,0.08)] transition duration-300 hover:border-bronze-500/35 sm:rounded-2xl sm:border-border/15 sm:shadow-[0_12px_34px_rgba(2,10,24,0.12)] sm:hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/[0.045]"
