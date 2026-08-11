@@ -1,6 +1,6 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-10**
+**Mise à jour : 2026-08-11**
 
 Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
 
@@ -109,6 +109,27 @@ Résultat certifié :
 **Prochain LOT UX/Search : UX-SEARCH-6 — Mobile Precision Pass.**
 <!-- UX-SEARCH-5-CLOSEOUT-END -->
 
+<!-- UX-SEARCH-6-CLOSEOUT-START -->
+## UX-SEARCH-6 — Mobile Precision Pass ✅ CERTIFIED — PR #484
+
+Responsabilité unique : **finaliser la précision mobile de `/search` sur 360/390 px**, sans rouvrir UX-SEARCH-1 à 5 et sans modifier DATA, ranking, Source Registry, dédup, prix, ordre commercial ni logique Map.
+
+Résultat certifié :
+
+- grille mobile **2 colonnes** conservée ; rythme resserré à **10 px entre colonnes / 14 px entre rangées** ;
+- mobile **360×800** : première card **191 px**, max **334,9 px**, 0 overflow ; mobile **390×844** : première card **191 px**, max **342,9 px**, 0 overflow ;
+- recherche, Filtres, vue et tri restent à **48 px** de hauteur sur 360/390 ;
+- **0 clipping** détecté sur prix, localisation et facts ; provenance/source reste visible ; 0 image cassée ;
+- précision 360 px : paddings et contrôles resserrés, image card **156 px**, sans casser la hiérarchie `IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE` ;
+- continuité responsive préservée : **768=2 colonnes, 1024=3, 1280/1440=4**, 0 overflow ;
+- predecessor UX-SEARCH-1/3/4/5 + Search Truth/A11y restent verts ;
+- exact-head `5a1dadfb1cc501428d8d3216f6e667132958ca45` : **21/21 workflows SUCCESS** ;
+- run spécialisé `31472416080` : **Product Design Reviewer PASS + Independent Release Certifier PASS**, contrat machine **10/10** ;
+- revue humaine des captures 360×800 et 390×844 : **9,5/10** — scan plus net, contrôles stables et aucune micro-coupure bloquante.
+
+**Prochain LOT UX/Search : UX-SEARCH-7 — Final Visual Certification.**
+<!-- UX-SEARCH-6-CLOSEOUT-END -->
+
 
 <!-- DATA-CURRENT-START -->
 ## DATA — vérité courante
@@ -140,7 +161,7 @@ Ensuite **DATA-4.9D** pourra concevoir un canary d'ingestion borné uniquement p
 - `RABAT-REAL-PHOTO-LIBRARY-1` ✅ : PR #468, exact-head `3de085a2058862edc52bab4fe0dcd3aca04a4f4c`, **29/29 workflows exact-head SUCCESS**, **40/40 sources + licences Commons** vérifiées, TypeScript + build PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, 10/10 photos chargées, reload stable, 0 clipping/overflow, mobile **2 colonnes**, audit visuel **9,2/10**, Reviewer PASS, Release Certifier GO, merge `2585017ea377d72b3a54ca1083dbf1b609899ad9`.
 - Rabat real-photo : **40 vraies photos = 8 × Agdal/Hay Riad/Souissi/Océan/Hassan** ; bibliothèque séparée, activation uniquement sur signal `listing.neighborhood` structuré + `fallback_visual`, sans inférence texte.
 - Les 6 villes contextualisées disposent désormais de **12 variantes chacune = 72 IDs contextuels uniques**.
-- Prochain LOT UX/Search : **UX-SEARCH-6 — Mobile Precision Pass** ; UX-SEARCH-1 à 5 sont fermés et doivent rester des predecessor gates.
+- Prochain LOT UX/Search : **UX-SEARCH-7 — Final Visual Certification** ; UX-SEARCH-1 à 6 sont fermés et doivent rester des predecessor gates.
 - Ce closeout UX/Search ne modifie aucune décision DATA/Carte ; les sections DATA/Carte ci-dessous restent la propriété de leur lane.
 
 ## Main / LOT actif
