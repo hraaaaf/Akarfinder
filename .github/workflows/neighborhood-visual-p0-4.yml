@@ -1,0 +1,32 @@
+name: Neighborhood Visual P0.4 Souissi Immobilier Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/contextual-illustrations/souissi-immobilier-visual.ts"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p0-4-souissi-immobilier.test.ts"
+      - ".github/workflows/neighborhood-visual-p0-4.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  immobilier-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: P0.4 Souissi immobilier contract
+        run: npx tsx --test scripts/scrapers/__tests__/neighborhood-visual-p0-4-souissi-immobilier.test.ts
+      - name: Replay P0.3 Souissi signature contract
+        run: npx tsx --test scripts/scrapers/__tests__/neighborhood-visual-p0-3-souissi-signature.test.ts
+      - name: Replay P0.1 Template A contract
+        run: npx tsx --test scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
