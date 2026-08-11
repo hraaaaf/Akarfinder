@@ -178,7 +178,9 @@ export function SiteHeader({ variant = "light", compact = false, fluid = false }
             aria-current={pathname.startsWith("/mon-projet") ? "page" : undefined}
             className={
               compact
-                ? "rounded-lg border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[11.5px] font-bold text-white transition hover:bg-white/[0.14] sm:px-3.5 sm:text-[12.5px]"
+                ? darkSurface || transparentActive
+                  ? "rounded-lg border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[11.5px] font-bold text-white transition hover:bg-white/[0.14] sm:px-3.5 sm:text-[12.5px]"
+                  : "rounded-lg border border-[#0B63CE]/20 bg-[#0B63CE]/[0.06] px-3 py-1.5 text-[11.5px] font-bold text-[#0B63CE] transition hover:bg-[#0B63CE]/[0.10] sm:px-3.5 sm:text-[12.5px]"
                 : "rounded-xl bg-[#0B63CE] px-3 py-2 text-[11.5px] font-bold text-white shadow-[0_4px_14px_rgba(11,99,206,0.24)] transition hover:bg-[#084BA8] sm:px-4 sm:text-[13px]"
             }
           >
