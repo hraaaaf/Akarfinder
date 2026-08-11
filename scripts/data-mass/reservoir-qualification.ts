@@ -101,7 +101,7 @@ const SOCIAL_DOMAINS = new Set([
 const DISCOVERY_TRANSPORT_DOMAINS = new Set([
   "google.com", "bing.com", "duckduckgo.com", "search.yahoo.com", "support.google.com",
   "support.microsoft.com", "microsoft.com", "wikipedia.org", "en.wikipedia.org",
-  "fr.wikipedia.org", "stackoverflow.com", "zhihu.com",
+  "fr.wikipedia.org", "stackoverflow.com", "zhihu.com", "telecontact.ma", "tiendeo.ma",
 ]);
 
 const AGGREGATOR_DOMAINS = new Set([
@@ -118,7 +118,7 @@ const DIRECT_PORTAL_DOMAINS = new Set([
 
 const RE_STRONG = [
   "immobilier", "appartement", "villa", "terrain", "studio", "duplex", "riad",
-  "maison", "bureau", "commerce", "magasin", "local commercial", "residence",
+  "maison", "bureau", "commerce", "local commercial", "magasin a vendre", "magasin a louer", "residence",
   "property", "apartment", "house", "land", "office", "real estate",
   "عقار", "شقة", "فيلا", "منزل", "أرض", "ارض", "مكتب", "محل",
 ];
@@ -129,10 +129,15 @@ const RE_FACT = ["m²", "m2", "mad", " dh ", "dhs", "chambre", "chambres", "bedr
 
 const NEGATIVE_CONTEXT = [
   "emploi", "job", "voiture", "auto", "moto", "restaurant", "recette", "football",
-  "support", "documentation", "wikipedia", "hotel booking", "vol pas cher",
+  "support", "documentation", "wikipedia", "hotel booking", "vol pas cher", "airbnb",
+  "location vacances", "locations de vacances", "vacation rental", "holiday rental", "par nuit", "per night",
 ];
 
 const MOROCCO_COUNTRY_SIGNALS = ["maroc", "morocco", "المغرب", "marocain", "marocaine"];
+const MOROCCO_LOCATION_SIGNALS = [
+  "gueliz", "souissi", "agdal", "hay riad", "hay ryad", "maarif", "ain diab",
+  "oasis casablanca", "oasis casa",
+];
 const FOREIGN_COUNTRY_SIGNALS = [
   "algerie", "algeria", "الجزائر", "tunisie", "tunisia", "تونس", "france", "paris",
   "marseille", "lyon", "luxembourg", "belgique", "belgium", "espagne", "spain",
@@ -168,13 +173,6 @@ const CITY_SIGNALS: Array<[string, string[]]> = [
   ["Tamesna", ["tamesna"]],
   ["Harhoura", ["harhoura"]],
   ["Skhirat", ["skhirat"]],
-  ["Guéliz", ["gueliz"]],
-  ["Souissi", ["souissi"]],
-  ["Agdal", ["agdal"]],
-  ["Hay Riad", ["hay riad", "hay ryad"]],
-  ["Maârif", ["maarif"]],
-  ["Aïn Diab", ["ain diab"]],
-  ["Oasis", ["oasis casablanca", "oasis casa"]],
 ];
 
 const CATEGORY_MARKERS = [
@@ -256,9 +254,11 @@ function detectTransaction(text: string): TransactionSignal {
 }
 
 function detectGeography(sourceDomain: string, text: string, detectedCities: string[]): GeographyScope {
-  const moroccoSignal = domainHasMoroccoPrior(sourceDomain) || detectedCities.length > 0 || hasAny(text, MOROCCO_COUNTRY_SIGNALS);
-  if (moroccoSignal) return "MOROCCO_LIKELY";
-  if (hasAny(text, FOREIGN_COUNTRY_SIGNALS)) return "FOREIGN_LIKELY";
+  const explicitMorocco = detectedCities.length > 0 || hasAny(text, MOROCCO_COUNTRY_SIGNALS) || hasAny(text, MOROCCO_LOCATION_SIGNALS);
+  const explicitForeign = hasAny(text, FOREIGN_COUNTRY_SIGNALS);
+  if (explicitMorocco) return "MOROCCO_LIKELY";
+  if (explicitForeign) return "FOREIGN_LIKELY";
+  if (domainHasMoroccoPrior(sourceDomain)) return "MOROCCO_LIKELY";
   return "UNKNOWN";
 }
 
