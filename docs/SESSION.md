@@ -89,6 +89,26 @@ Résultat certifié :
 **Prochain LOT UX/Search : UX-SEARCH-5 — Navigation & Hierarchy Polish.**
 <!-- UX-SEARCH-4-CLOSEOUT-END -->
 
+<!-- UX-SEARCH-5-CLOSEOUT-START -->
+## UX-SEARCH-5 — Navigation & Hierarchy Polish ✅ CERTIFIED — PR #483
+
+Responsabilité unique : **réduire la domination visuelle de la navigation globale sur `/search` et réaligner le header avec le flux Search**, sans modifier DATA, ranking, Source Registry, dédup, prix, ordre commercial ni logique Map.
+
+Résultat certifié :
+
+- Search utilise désormais le header en mode **compact + fluid**, sans modifier le comportement global par défaut du `Container` ;
+- alignement horizontal header → recherche → inventaire : **delta 0 px** sur les 6 viewports certifiés ;
+- hauteur header : **49 px sur 360/390**, **53,8 px sur 768/1024/1280/1440** ; logo/nav/espacements compactés et `Mon projet` rendu secondaire dans le contexte Search ;
+- première card : **193 px mobile**, **205,8 px tablette**, **203,8 px desktop** ; grille conservée **2/2/3/4/4**, 0 overflow et 0 image cassée ;
+- navigation complète, favoris, publication, thème, menu mobile et sticky behavior restent disponibles ;
+- predecessor UX-SEARCH-1/3/4 intégralement vert, notamment le stock visuel certifié **11 contextuels + 1 photo d’ambiance + 2 fail-closed** ;
+- exact-head `771e197027c4c9cd018db8e540313405050b2cc9` : **25/25 workflows SUCCESS** ;
+- run spécialisé `31446472569` : **Product Design Reviewer PASS + Independent Release Certifier PASS**, contrat machine **10/10** ;
+- revue humaine des captures 390×844 et 1440×900 : **9,5/10** — le header devient une infrastructure discrète et l’inventaire reprend la priorité visuelle.
+
+**Prochain LOT UX/Search : UX-SEARCH-6 — Mobile Precision Pass.**
+<!-- UX-SEARCH-5-CLOSEOUT-END -->
+
 
 <!-- DATA-CURRENT-START -->
 ## DATA — vérité courante
@@ -120,7 +140,7 @@ Ensuite **DATA-4.9D** pourra concevoir un canary d'ingestion borné uniquement p
 - `RABAT-REAL-PHOTO-LIBRARY-1` ✅ : PR #468, exact-head `3de085a2058862edc52bab4fe0dcd3aca04a4f4c`, **29/29 workflows exact-head SUCCESS**, **40/40 sources + licences Commons** vérifiées, TypeScript + build PASS, Chromium **360×800 / 390×844 / 768×900 / 1280×900 / 1440×900**, 10/10 photos chargées, reload stable, 0 clipping/overflow, mobile **2 colonnes**, audit visuel **9,2/10**, Reviewer PASS, Release Certifier GO, merge `2585017ea377d72b3a54ca1083dbf1b609899ad9`.
 - Rabat real-photo : **40 vraies photos = 8 × Agdal/Hay Riad/Souissi/Océan/Hassan** ; bibliothèque séparée, activation uniquement sur signal `listing.neighborhood` structuré + `fallback_visual`, sans inférence texte.
 - Les 6 villes contextualisées disposent désormais de **12 variantes chacune = 72 IDs contextuels uniques**.
-- Prochain LOT UX/Search : **UX-SEARCH-5 — Navigation & Hierarchy Polish** ; UX-SEARCH-1 à 4 sont fermés et doivent rester des predecessor gates.
+- Prochain LOT UX/Search : **UX-SEARCH-6 — Mobile Precision Pass** ; UX-SEARCH-1 à 5 sont fermés et doivent rester des predecessor gates.
 - Ce closeout UX/Search ne modifie aucune décision DATA/Carte ; les sections DATA/Carte ci-dessous restent la propriété de leur lane.
 
 ## Main / LOT actif

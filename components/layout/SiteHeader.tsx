@@ -11,6 +11,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 type SiteHeaderProps = {
   variant?: "light" | "dark" | "transparent";
   compact?: boolean;
+  fluid?: boolean;
 };
 
 const primaryNav = [
@@ -37,7 +38,7 @@ const mobileNav = [
 
 const professionalAudience = "agences et promoteurs";
 
-export function SiteHeader({ variant = "light", compact = false }: SiteHeaderProps) {
+export function SiteHeader({ variant = "light", compact = false, fluid = false }: SiteHeaderProps) {
   const pathname = usePathname();
   const isDark = variant === "dark";
   const isTransparent = variant === "transparent";
@@ -60,7 +61,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
   const darkSurface = isDark || (isTransparent && scrolled);
 
   const linkClass = (isActive: boolean) =>
-    `relative rounded-full px-2 py-1.5 text-[13.5px] font-semibold transition ${
+    `relative rounded-full ${compact ? "px-1.5 py-1 text-[12.5px]" : "px-2 py-1.5 text-[13.5px]"} font-semibold transition ${
       isActive
         ? darkSurface || transparentActive
           ? "text-white after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-bronze-400"
@@ -72,6 +73,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
 
   return (
     <header
+      data-search-global-header={compact ? "compact" : undefined}
       className={`z-50 border-b transition-all duration-300 ${
         isTransparent ? "fixed left-0 right-0 top-0" : "sticky top-0 z-30"
       } ${
@@ -83,7 +85,8 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
       }`}
     >
       <Container
-        className={`flex items-center justify-between gap-3 ${compact ? "py-2 sm:py-2.5" : "py-2.5 sm:py-3"}`}
+        fluid={fluid}
+        className={`flex items-center justify-between gap-3 ${compact ? "py-1.5 sm:py-2" : "py-2.5 sm:py-3"}`}
       >
         <Link href="/" className="flex min-w-0 items-center" aria-label="AkarFinder - accueil">
           {darkSurface || transparentActive ? (
@@ -92,7 +95,7 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
               alt="AkarFinder"
               width={132}
               height={33}
-              className="h-[25px] w-auto sm:h-[34px]"
+              className={compact ? "h-[23px] w-auto sm:h-[28px]" : "h-[25px] w-auto sm:h-[34px]"}
             />
           ) : (
             <>
@@ -101,21 +104,21 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
                 alt="AkarFinder"
                 width={132}
                 height={33}
-                className="h-[25px] w-auto sm:h-[34px] dark:hidden"
+                className={compact ? "h-[23px] w-auto sm:h-[28px] dark:hidden" : "h-[25px] w-auto sm:h-[34px] dark:hidden"}
               />
               <img
                 src="/brand/logo-v2/logo-header-dark.png"
                 alt="AkarFinder"
                 width={132}
                 height={33}
-                className="hidden h-[25px] w-auto sm:h-[34px] dark:block"
+                className={compact ? "hidden h-[23px] w-auto sm:h-[28px] dark:block" : "hidden h-[25px] w-auto sm:h-[34px] dark:block"}
               />
             </>
           )}
         </Link>
 
         <nav aria-label="Navigation principale" className="hidden lg:block">
-          <ul className="flex items-center gap-4">
+          <ul className={`flex items-center ${compact ? "gap-2.5 xl:gap-3.5" : "gap-4"}`}>
             {primaryNav.map((item) => {
               const isActive = pathname.startsWith(item.href);
               return (
@@ -182,7 +185,11 @@ export function SiteHeader({ variant = "light", compact = false }: SiteHeaderPro
           <Link
             href="/mon-projet"
             aria-current={pathname.startsWith("/mon-projet") ? "page" : undefined}
-            className="rounded-xl bg-[#0B63CE] px-3 py-2 text-[11.5px] font-bold text-white shadow-[0_4px_14px_rgba(11,99,206,0.24)] transition hover:bg-[#084BA8] sm:px-4 sm:text-[13px]"
+            className={
+              compact
+                ? "rounded-lg border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[11.5px] font-bold text-white transition hover:bg-white/[0.14] sm:px-3.5 sm:text-[12.5px]"
+                : "rounded-xl bg-[#0B63CE] px-3 py-2 text-[11.5px] font-bold text-white shadow-[0_4px_14px_rgba(11,99,206,0.24)] transition hover:bg-[#084BA8] sm:px-4 sm:text-[13px]"
+            }
           >
             Mon projet
           </Link>

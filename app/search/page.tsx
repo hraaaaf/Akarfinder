@@ -133,7 +133,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader variant="dark" />
+      <SiteHeader variant="dark" compact fluid />
       <SearchMapNavigationBridge projectId={requestedProjectId} />
       <PropertySelectionProvider>
         <SearchCompareDock />

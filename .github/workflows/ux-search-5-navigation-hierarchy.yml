@@ -1,0 +1,103 @@
+name: UX-SEARCH-5 Navigation Hierarchy Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/search/page.tsx"
+      - "components/layout/SiteHeader.tsx"
+      - "components/ui/Container.tsx"
+      - "scripts/audits/ux-search-navigation-hierarchy-5.mjs"
+      - "scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts"
+      - ".github/workflows/ux-search-5-navigation-hierarchy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: UX-SEARCH-5 structural contract
+        run: npx tsx --test scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts
+      - name: Predecessor Search UX contracts
+        run: npx tsx --test scripts/scrapers/__tests__/search-mobile-card-grid-1.test.ts scripts/scrapers/__tests__/unified-listing-card-1.test.ts scripts/scrapers/__tests__/ux-search-card-architecture-3.test.ts scripts/scrapers/__tests__/ux-search-visual-inventory-4.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3115 > /tmp/ux5-product-design.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3115/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ux5-product-design.log
+          exit 1
+      - name: Review navigation hierarchy and responsive inventory
+        env:
+          BASE_URL: http://127.0.0.1:3115
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/ux-search-navigation-hierarchy-5.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ux-search-5-product-design-proof
+          path: data/audits/ux-search-navigation-hierarchy-5/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Independently replay UX-SEARCH-5 contract
+        run: npx tsx --test scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts scripts/scrapers/__tests__/ux-search-card-architecture-3.test.ts scripts/scrapers/__tests__/ux-search-visual-inventory-4.test.ts
+      - name: Independent TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent production server
+        shell: bash
+        run: |
+          npm run start -- -p 3116 > /tmp/ux5-release-certifier.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3116/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ux5-release-certifier.log
+          exit 1
+      - name: Independently replay navigation hierarchy certification
+        env:
+          BASE_URL: http://127.0.0.1:3116
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/ux-search-navigation-hierarchy-5.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ux-search-5-release-certifier-proof
+          path: data/audits/ux-search-navigation-hierarchy-5/release-certifier
+          if-no-files-found: error
+          retention-days: 14

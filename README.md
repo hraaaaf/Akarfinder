@@ -87,14 +87,15 @@ Principes verrouillés :
 Première mission : `BENCHMARK-SERP-1`, rapport dans `docs/BENCHMARK_SERP_1_REPORT.md`.
 
 <!-- UX-SEARCH-CONVERGENCE-CURRENT-START -->
-### Convergence Search actuelle — UX-SEARCH-1 à UX-SEARCH-4 ✅
+### Convergence Search actuelle — UX-SEARCH-1 à UX-SEARCH-5 ✅
 
 - **UX-SEARCH-1 — Density First ✅ PR #479** : grille certifiée 2/2/3/4/4 ; densité **9,3/10**.
 - **UX-SEARCH-2 — Compact Search & Filters ✅ PR #480** : première annonce ~240–250 px, touch targets 48 px, 0 overflow ; **9,5/10**.
 - **UX-SEARCH-3 — Card Architecture ✅ PR #481** : `IMAGE → PRIX → TITRE → LOCALISATION → FACTS → PROVENANCE`, confiance/source préservées ; **9,4/10**.
-- **UX-SEARCH-4 — Visual Inventory System ✅ PR #482** : audit public initial **288/288 fallbacks génériques, 276 doublons adjacents** ; cards internes branchées sur les fallbacks contextuels truth-safe existants ; fixture certifiée 11 contextuels distincts + 1 photo d’ambiance + 2 fail-closed, stabilité reload, 0 image cassée/overflow ; **9,5/10**.
-- Les quatre lots préservent ranking, DATA, Source Registry, dédup, ordre commercial, prix, Map et transparence de provenance.
-- **Prochain LOT UX/Search : UX-SEARCH-5 — Navigation & Hierarchy Polish** : réduire la domination visuelle de la navigation et finaliser la hiérarchie globale sans rouvrir les lots 1–4 ; gate UX ≥9/10.
+- **UX-SEARCH-4 — Visual Inventory System ✅ PR #482** : fallbacks contextuels truth-safe activés ; variété visuelle certifiée, stable et transparente ; **9,5/10**.
+- **UX-SEARCH-5 — Navigation & Hierarchy Polish ✅ PR #483** : header Search compact/fluid, alignement **0 px**, hauteur **49–53,8 px**, première card **193–203,8 px**, grille et predecessor gates préservés ; **9,5/10**.
+- Les cinq lots préservent ranking, DATA, Source Registry, dédup, ordre commercial, prix, Map et transparence de provenance.
+- **Prochain LOT UX/Search : UX-SEARCH-6 — Mobile Precision Pass** : precision pass mobile sur rythme, contrôles, touch ergonomics et micro-clipping, sans rouvrir les lots 1–5 ; gate UX ≥9/10.
 <!-- UX-SEARCH-CONVERGENCE-CURRENT-END -->
 
 ### SEARCH-UX-FAST-1 ✅ PR #390
