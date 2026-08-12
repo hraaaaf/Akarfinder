@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
 
+# Source-discovery only. This workflow is removed once the three P1.2 sources are locked.
 jobs:
   commons-geosearch:
     runs-on: ubuntu-24.04
