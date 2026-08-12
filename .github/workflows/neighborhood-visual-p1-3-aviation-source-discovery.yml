@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Sweep KartaView around Quartier Aviation
+      - name: Sweep KartaView around verified Aviation / Avenue Souss area
         shell: bash
         run: |
           set -euo pipefail
@@ -25,17 +25,15 @@ jobs:
           import hashlib, json, math, pathlib, urllib.parse, urllib.request
           OUT=pathlib.Path("data/audits/neighborhood-visual-p1-3-aviation/source-discovery")
           IMG=OUT/"images"
-          # Aviation is documented along Mohammed VI / Avenue Souss; use several nearby query points
-          # rather than pretending one database point defines the whole neighborhood.
           CENTERS=[
-            ("aviation-center",34.000813,-6.847437),
-            ("aviation-north",34.0030,-6.8480),
-            ("aviation-south",33.9985,-6.8475),
-            ("aviation-west",34.0010,-6.8510),
-            ("aviation-east",34.0010,-6.8440),
-            ("mohammed-vi-axis",33.9995,-6.8530),
+            ("avenue-souss",34.02240,-6.83454),
+            ("aviation-west",34.02240,-6.83700),
+            ("aviation-east",34.02240,-6.83200),
+            ("aviation-south",34.02050,-6.83450),
+            ("aviation-north",34.02420,-6.83450),
+            ("asshoul-junction",34.02180,-6.83280),
           ]
-          UA="AkarFinder-P1.3-source-audit/1.0"
+          UA="AkarFinder-P1.3-source-audit/2.0"
           def f(v):
             try:return float(v)
             except:return None
