@@ -1,0 +1,132 @@
+name: MASS-1 Canonical Docs Sync
+
+on:
+  push:
+    branches:
+      - data/mass-1-reservoir-qualification
+    paths:
+      - ".github/mass1-doc-sync.trigger"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: data/mass-1-reservoir-qualification
+          fetch-depth: 0
+      - name: Sync MASS program into canonical docs
+        shell: python
+        run: |
+          from pathlib import Path
+
+          def upsert(path, start, end, block, anchor):
+              p = Path(path)
+              text = p.read_text(encoding="utf-8")
+              rendered = f"{start}\n{block.strip()}\n{end}\n\n"
+              if start in text and end in text:
+                  a = text.index(start)
+                  b = text.index(end, a) + len(end)
+                  suffix = text[b:]
+                  if suffix.startswith("\n\n"):
+                      suffix = suffix[2:]
+                  elif suffix.startswith("\n"):
+                      suffix = suffix[1:]
+                  text = text[:a] + rendered + suffix
+              else:
+                  if anchor not in text:
+                      raise RuntimeError(f"anchor not found in {path}: {anchor}")
+                  text = text.replace(anchor, rendered + anchor, 1)
+              p.write_text(text, encoding="utf-8")
+
+          roadmap = r'''
+          ## DATA MASS — Programme national de volume
+
+          **Doctrine : `MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME`.**  
+          **Règle : l’admissibilité décide si une représentation peut exister ; la qualité décide où elle se classe.**
+
+          ### MASS-1 — Reservoir Qualification ✅ CERTIFIED / MERGE PENDING — PR #511
+
+          Responsabilité : qualifier en lecture seule le réservoir `discovery_candidates`, mesurer les représentations URL net-new et produire une queue MASS-2 par domaine sans fetch source, write DB/DDL/Registry, ingestion ni activation Search.
+
+          Preuve production certifiée au head comportemental `d768f47e4662430c71066ea9aaa43c85b23477fb` :
+
+          - **199 381** rows Discovery lues ; **101 131** représentations URL distinctes ;
+          - Thin Index : **56 812** ; Registry : **35** sources ;
+          - **86 741 représentations URL net-new** ;
+          - **51 326** signaux immobilier Maroc probables ; **24 028** structures détail Maroc probables ;
+          - **101 domaines MASS-2** après double-check, portant **15 790** signaux immobilier Maroc probables ;
+          - 0 write / 0 activation / 0 source-page fetch / 0 claim de bien unique ;
+          - 0 fuite SOCIAL / DISCOVERY_TRANSPORT / FOREIGN_ONLY / policy restrictive dans `SOURCE_FACTORY` ;
+          - run `31556168993` SUCCESS ; artefact `9126213992` ; digest `sha256:6f99427010bc4477c822f46559823ad7289b18acdc38f99bcfdee69e42bd0dc1` ;
+          - SQL indépendant : **199 381 / 101 131 / 56 812 / 35 / 86 741** réconciliés ;
+          - **19/19 workflows exact-head comportemental SUCCESS** ; score final **9,5/10**.
+
+          MASS-1 ne transforme aucune URL en annonce publique et ne confère aucune permission. `docs/data/DATA-MASS-1-RESERVOIR-QUALIFICATION.md` porte le détail de preuve.
+
+          ### MASS-2 — Source Factory 🔴 NEXT
+
+          Audit des **101 domaines** par rendement attendu : identité de source, nature réelle du stock, robots.txt/CGU/permissions, canal autorisé, sitemap/structure, fraîcheur et mode Registry. Une décision se prend **par domaine**, jamais par URL. Sortie : `AUTHORIZED/POLICY_COMPATIBLE`, `CANONICAL_LINK_ONLY`, `INTERNAL_ONLY`, `PERMISSION_REQUIRED`, `PROHIBITED` ou maintien fail-closed selon preuve. Aucun domaine n’est autorisé par MASS-1.
+
+          ### MASS-3 — Minimal Listing Index 🔵 PLANNED
+
+          Pour toute source devenue policy-admissible, permettre une représentation minimale : canonical URL + source + titre/signal structurel fiable + géographie disponible. Prix, surface, photo, quartier et description deviennent des facteurs de Listing Power/ranking, pas des prérequis d’existence. Zéro invention de champ absent.
+
+          ### MASS-4 — Mass Reclassification 🔵 PLANNED
+
+          Réévaluer le stock historique `blocked_quality` sous `Quality ≠ Eligibility` : une représentation structurellement immobilière et policy-admissible peut rester Searchable avec faible Listing Power. Les gates policy, catégorie non-listing, ambiguïté et dédup restent fail-closed.
+
+          ### MASS-5 — Discovery Expansion 🔵 PLANNED
+
+          Élargir le réservoir via sitemaps publics, index publics, Common Crawl, agences/promoteurs indépendants et feeds partenaires. Toute découverte rentre d’abord dans le Reservoir ; aucune voie ne contourne le Source Registry.
+
+          ### MASS-6 — National Mass Engine 🔵 PLANNED
+
+          Industrialiser `DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DEDUP → RANK` avec scheduler, quotas, observabilité par ville/source, couverture nationale, freshness et rollback.
+
+          **Ordre verrouillé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6.**  
+          Aucun lot MASS n’est CLOSED sous 9/10 et chaque lot suit branche/PR/certification/post-merge.
+          '''
+
+          session = r'''
+          ## DATA MASS — handover prioritaire
+
+          - **MASS-1 / PR #511 : ✅ CERTIFIED 9,5/10 — merge pending.** Head comportemental certifié `d768f47e4662430c71066ea9aaa43c85b23477fb`.
+          - Prod : **86 741 URL-représentations net-new**, **51 326** signaux immobilier Maroc probables, **24 028** structures détail Maroc probables.
+          - Queue MASS-2 après corrections : **101 domaines / 17 376 URL-représentations / 15 790 signaux immobilier Maroc probables**.
+          - Run `31556168993` SUCCESS ; artefact `9126213992`, digest `sha256:6f99427010bc4477c822f46559823ad7289b18acdc38f99bcfdee69e42bd0dc1` ; SQL indépendant réconcilié.
+          - Limites : 0 write, 0 ingestion, 0 activation Search, 0 permission inférée, 0 claim de bien unique. Source Registry reste autorité fail-closed.
+          - **NEXT : MASS-2 — Source Factory**, revue des 101 domaines par rendement/policy avant toute ingestion.
+          - Suite déjà planifiée dans ROADMAP : **MASS-3 Minimal Listing Index → MASS-4 Mass Reclassification → MASS-5 Discovery Expansion → MASS-6 National Mass Engine**.
+          '''
+
+          readme = r'''
+          ## DATA MASS — état courant
+
+          La priorité DATA actuelle est **la masse nationale policy-safe**. Le programme canonique est `MASS-1 → MASS-6` et suit la doctrine **MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME**.
+
+          **MASS-1 — Reservoir Qualification** est certifié **9,5/10** sur PR #511, merge en attente : **86 741 représentations URL net-new** ont été mesurées, dont **51 326 signaux immobilier Maroc probables**. Après trois passes de double-check et exclusion des annuaires, hospitality/travel et portails foreign-only non pertinents, la queue **MASS-2 Source Factory** contient **101 domaines** portant **15 790 signaux immobilier Maroc probables**.
+
+          MASS-1 est strictement read-only : **0 fetch source détail, 0 write DB/DDL/Registry, 0 ingestion, 0 activation publique, 0 permission inférée et 0 claim de bien unique**. La prochaine étape est **MASS-2 — Source Factory**, puis Minimal Listing Index, Mass Reclassification, Discovery Expansion et National Mass Engine. Voir `docs/ROADMAP.md` et `docs/data/DATA-MASS-1-RESERVOIR-QUALIFICATION.md`.
+          '''
+
+          anchor = "<!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->"
+          upsert("docs/ROADMAP.md", "<!-- DATA-MASS-PROGRAM-START -->", "<!-- DATA-MASS-PROGRAM-END -->", roadmap, anchor)
+          upsert("docs/SESSION.md", "<!-- DATA-MASS-HANDOVER-START -->", "<!-- DATA-MASS-HANDOVER-END -->", session, anchor)
+          upsert("README.md", "<!-- DATA-MASS-CURRENT-START -->", "<!-- DATA-MASS-CURRENT-END -->", readme, anchor)
+      - name: Commit canonical docs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/ROADMAP.md docs/SESSION.md
+          if git diff --cached --quiet; then
+            echo "Canonical docs already synchronized."
+            exit 0
+          fi
+          git commit -m "docs(mass-1): sync canonical mass roadmap"
+          git push origin HEAD:data/mass-1-reservoir-qualification
