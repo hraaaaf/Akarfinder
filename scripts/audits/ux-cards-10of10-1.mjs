@@ -9,12 +9,12 @@ const outDir = path.join("data", "audits", "ux-cards-10of10-1", variant);
 fs.mkdirSync(outDir, { recursive: true });
 
 const viewports = [
-  { width: 360, height: 800, expectedColumns: 2, expectedImageHeight: 164 },
-  { width: 390, height: 844, expectedColumns: 2, expectedImageHeight: 164 },
-  { width: 768, height: 900, expectedColumns: 2, expectedImageHeight: 196 },
-  { width: 1024, height: 900, expectedColumns: 3, expectedImageHeight: 196 },
-  { width: 1280, height: 900, expectedColumns: 4, expectedImageHeight: 196 },
-  { width: 1440, height: 1000, expectedColumns: 4, expectedImageHeight: 196 },
+  { width: 360, height: 800, expectedColumns: 2, expectedImageHeight: 156, maxCardHeight: 365, action: "hidden" },
+  { width: 390, height: 844, expectedColumns: 2, expectedImageHeight: 164, maxCardHeight: 365, action: "hidden" },
+  { width: 768, height: 900, expectedColumns: 2, expectedImageHeight: 196, maxCardHeight: 540, action: "visible" },
+  { width: 1024, height: 900, expectedColumns: 3, expectedImageHeight: 156, maxCardHeight: 420, action: "hidden" },
+  { width: 1280, height: 900, expectedColumns: 4, expectedImageHeight: 156, maxCardHeight: 420, action: "hidden" },
+  { width: 1440, height: 1000, expectedColumns: 4, expectedImageHeight: 156, maxCardHeight: 420, action: "hidden" },
 ];
 
 const districts = ["Agdal", "Hay Riad", "Océan", "Hassan", "Souissi", "Agdal", "Hay Riad", "Océan"];
@@ -218,7 +218,8 @@ try {
     } else {
       if (visibleCards !== listings.length) localFailures.push(`expected ${listings.length} deterministic cards, got ${visibleCards}`);
       if (metrics.columns !== viewport.expectedColumns) localFailures.push(`expected ${viewport.expectedColumns} first-row cards, got ${metrics.columns}`);
-      if (!closeTo(metrics.imageHeight, viewport.expectedImageHeight, 4)) localFailures.push(`image height ${metrics.imageHeight}px != ${viewport.expectedImageHeight}px`);
+      if (!closeTo(metrics.imageHeight, viewport.expectedImageHeight, 4)) localFailures.push(`image height ${metrics.imageHeight}px != compact target ${viewport.expectedImageHeight}px`);
+      if (metrics.card.height > viewport.maxCardHeight) localFailures.push(`card height ${metrics.card.height}px exceeds compact ${viewport.maxCardHeight}px budget`);
       if (!isLight(metrics.card.background)) localFailures.push(`card background is not light: ${metrics.card.background}`);
       if (isBronze(metrics.card.border)) localFailures.push(`legacy bronze card border detected: ${metrics.card.border}`);
       if (!isBlue(metrics.priceColor)) localFailures.push(`price is not blue-led: ${metrics.priceColor}`);
@@ -227,12 +228,13 @@ try {
       if (metrics.factRadius != null && metrics.factRadius > 9) localFailures.push(`fact treatment is too pill-like: radius ${metrics.factRadius}px`);
       if (!metrics.favorite) localFailures.push("favorite control is missing from first-party card fixture");
       if (metrics.favorite && (metrics.favorite.width < 43.5 || metrics.favorite.height < 43.5)) localFailures.push(`favorite touch target below 44px: ${metrics.favorite.width}x${metrics.favorite.height}`);
-      if (viewport.width >= 640) {
-        if (!metrics.action) localFailures.push("desktop primary action is missing");
+      if (viewport.action === "visible") {
+        if (!metrics.action) localFailures.push("tablet primary action is missing");
         if (metrics.action && metrics.action.height < 43.5) localFailures.push(`primary action below 44px: ${metrics.action.height}px`);
         if (metrics.action && !isBlue(metrics.action.color)) localFailures.push(`primary action text is not blue-led: ${metrics.action.color}`);
         if (metrics.action && !isLight(metrics.action.background)) localFailures.push(`primary action background is not light: ${metrics.action.background}`);
       }
+      if (viewport.action === "hidden" && metrics.action) localFailures.push("redundant primary action must stay hidden in compact two-column mobile and 3/4-column desktop states");
       if (metrics.overflowX > 1) localFailures.push(`horizontal overflow ${metrics.overflowX}px`);
       if (viewport.width <= 390 && metrics.card.top > 255) localFailures.push(`first mobile card starts too low at ${metrics.card.top}px`);
       if (viewport.width <= 390 && (metrics.card.width < 145 || metrics.card.width > 190)) localFailures.push(`mobile two-column card width out of range: ${metrics.card.width}px`);
