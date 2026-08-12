@@ -50,6 +50,8 @@ for (const testCase of cases) {
     const logoLink = Array.from(header.querySelectorAll('a[aria-label="AkarFinder - accueil"]')).find(visible);
     const logo = logoLink?.querySelector("img") ?? null;
     const logoRect = logo?.getBoundingClientRect() ?? null;
+    const searchPrimary = document.querySelector('[data-search-primary-search]');
+    const searchRect = searchPrimary?.getBoundingClientRect() ?? null;
     const menu = Array.from(header.querySelectorAll("button")).find((el) => (el.getAttribute("aria-label") ?? "").includes("menu") && visible(el));
     const account = Array.from(header.querySelectorAll('a[aria-label="Mon compte"]')).find(visible);
     const menuRect = menu?.getBoundingClientRect() ?? null;
@@ -72,6 +74,9 @@ for (const testCase of cases) {
       boxShadow: style.boxShadow,
       logoSrc: logo?.getAttribute("src") ?? "",
       logoHeight: logoRect?.height ?? null,
+      logoX: logoRect?.left ?? null,
+      searchX: searchRect?.left ?? null,
+      desktopSearchAxisDelta: logoRect && searchRect ? Math.abs(logoRect.left - searchRect.left) : null,
       logoCenterDelta: logoRect ? Math.abs((logoRect.left + logoRect.width / 2) - window.innerWidth / 2) : null,
       menuWidth: menuRect?.width ?? null,
       menuHeight: menuRect?.height ?? null,
@@ -112,6 +117,7 @@ for (const testCase of cases) {
       const forbidden = ["Favoris", "Publier", "Acheter", "Louer", "Neuf", "Agences", "Conseils", "Mon projet"];
       for (const text of forbidden) if (metrics.visibleLinks.includes(text)) failures.push(`${testCase.name}: unexpected visible header item ${text}`);
     } else {
+      if (metrics.desktopSearchAxisDelta == null || metrics.desktopSearchAxisDelta > 3) failures.push(`${testCase.name}: header/Search left-axis delta ${metrics.desktopSearchAxisDelta}px > 3px`);
       const expectedNav = ["Acheter", "Louer", "Neuf", "Agences", "Conseils"];
       if (JSON.stringify(metrics.navLinks) !== JSON.stringify(expectedNav)) failures.push(`${testCase.name}: nav ${JSON.stringify(metrics.navLinks)} != ${JSON.stringify(expectedNav)}`);
       if (!metrics.visibleLinks.includes("Favoris")) failures.push(`${testCase.name}: Favoris missing`);
@@ -139,6 +145,7 @@ const report = {
     desktopLogoHeightPx: 31,
     sideTouchTargetPx: 44,
     geometricMobileCenterTolerancePx: 1,
+    desktopSearchAxisTolerancePx: 3,
     minimumSideInsetPx: 16,
     surface: "pure-white-with-hairline-and-subtle-depth",
     noOrange: true,
