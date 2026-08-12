@@ -8,17 +8,26 @@
 
 ## Responsibility
 
-Turn the live MASS-1 `SOURCE_FACTORY` queue into a deterministic, reproducible set of per-domain review dossiers for MASS-2B/C/D.
+Turn the MASS-1 certified `SOURCE_FACTORY` queue into a deterministic, reproducible set of per-domain review dossiers for MASS-2B/C/D and define the fail-closed machine contract that later audits must satisfy.
 
-MASS-2A is a **review scheduling and evidence-contract engine**, not a legal/policy decision engine.
+MASS-2A is a **review scheduling + evidence validation engine**, not an autonomous legal/policy interpreter.
+
+## Certified upstream boundary
+
+MASS-1 certified exactly:
+
+- **101 Source Factory domains**;
+- **15 790 likely-Morocco real-estate URL representations** carried by that queue.
+
+For the MASS-2 handoff, **101 is pinned**. If the live reservoir no longer reconstructs exactly 101 domains during MASS-2A certification, CI must fail and the drift must be reviewed explicitly. The lot must not silently resize its cohorts.
 
 ## Truth boundary
 
 MASS-2A MUST NOT:
 
-- infer permission from volume, sitemap shape, domain type or Registry history;
-- browse or interpret current robots.txt / CGU / source terms for the 101 domains;
-- fetch source detail pages;
+- infer permission from volume, sitemap shape, robots.txt, domain type or Registry history;
+- autonomously interpret current CGU/terms as legal advice;
+- fetch source detail pages in the 2A live audit;
 - write Source Registry rows or policy;
 - ingest listings;
 - create public rows or activate Search;
@@ -36,17 +45,17 @@ A Registry row, when present, is copied only as `OBSERVED_REGISTRY_ONLY`; it nev
 
 ## Deterministic cohorts
 
-The engine reuses MASS-1 `rankDomainReservoirs` and `massPotentialScore` without introducing a second ranking algorithm.
+The scheduling engine reuses MASS-1 `rankDomainReservoirs` and `massPotentialScore` without introducing a second ranking algorithm.
 
-- ranks 1–20 → `HIGH_YIELD`;
-- ranks 21–50 → `MID_YIELD`;
-- ranks 51+ → `LONG_TAIL`.
+- ranks **1–20** → `HIGH_YIELD`;
+- ranks **21–50** → `MID_YIELD`;
+- ranks **51–101** → `LONG_TAIL`.
 
-The live number of candidates is not hard-coded. MASS-1 certified 101 domains, but MASS-2A must tolerate reservoir drift while preserving exact coverage of the current live `SOURCE_FACTORY` queue.
+Certified split for the current handoff: **20 / 30 / 51**.
 
 ## Dossier contract
 
-Each dossier records:
+Each initial dossier records:
 
 - domain and MASS-1 source role;
 - deterministic rank/cohort and scheduling score;
@@ -60,7 +69,42 @@ Allowed later review outcomes are:
 
 `POLICY_COMPATIBLE`, `CANONICAL_LINK_ONLY`, `INTERNAL_ONLY`, `PERMISSION_REQUIRED`, `PROHIBITED`, `HOLD`.
 
-**MASS-2A itself emits only `HOLD`.** Current-source evidence collection and decisions belong to MASS-2B/C/D.
+**MASS-2A initial dossiers emit only `HOLD`.** Current-source evidence collection and domain decisions belong to MASS-2B/C/D.
+
+## Dated evidence / channel validator
+
+`source-factory-decision.ts` defines the contract B/C/D must use when converting a dossier into a reviewed decision.
+
+Each proposed decision carries:
+
+- exact `sourceDomain`;
+- requested decision;
+- explicit allowed channel(s);
+- rationale;
+- evidence records with `kind`, `reference`, `observedAt`, optional `expiresAt`, assertion, decision and channels supported;
+- the dossier's potential-volume snapshot.
+
+Evidence kinds include source identity, Morocco relevance, robots, terms, rights/permission, sitemap/structure, freshness and Registry snapshot.
+
+Fail-closed rules:
+
+- missing, malformed, future-dated or expired evidence ⇒ `HOLD`;
+- contradictory current evidence ⇒ `HOLD`;
+- channel not backed by policy/rights evidence ⇒ `HOLD`;
+- `robots.txt` or sitemap/structure **alone can never establish permission**;
+- `PUBLIC_SITEMAP`, `COMMON_CRAWL` and `DIRECT_FETCH` require a current robots observation in addition to policy/rights proof;
+- `PUBLIC_SITEMAP` also requires sitemap/structure evidence;
+- `CANONICAL_LINK_ONLY` can expose only the canonical-link channel;
+- `INTERNAL_ONLY` can expose only the internal-signal channel;
+- `PERMISSION_REQUIRED`, `PROHIBITED` and `HOLD` expose no actionable channel.
+
+Even a decision that passes this validator remains:
+
+- `permissionInferred = false`;
+- `publicActivableNow = false`;
+- `registryWriteAllowed = false`.
+
+It may only become eligible for the **MASS-2E Registry preview**. The validator never writes production policy.
 
 ## Live audit inputs
 
@@ -83,16 +127,18 @@ Network access is restricted to the configured Supabase origin. Any source-domai
 
 ## Blocking gates
 
-- one dossier exactly per live MASS-1 `SOURCE_FACTORY` domain;
-- no duplicate domain;
+- exactly **101** live MASS-1 `SOURCE_FACTORY` domains at certification time;
+- exactly **101 unique dossiers**;
 - deterministic contiguous ranking;
-- 20/30/remainder cohort split;
-- 100 % `UNREVIEWED`;
-- 100 % `HOLD`;
+- exact cohort split **20 / 30 / 51**;
+- 100 % `UNREVIEWED` initial dossiers;
+- 100 % `HOLD` initial dossiers;
 - 100 % `permissionInferred=false`;
 - 100 % `publicActivableNow=false`;
-- 100 % external evidence `NOT_REVIEWED`;
-- source network/detail-page requests = 0;
+- 100 % external evidence `NOT_REVIEWED` in the initial queue;
+- dated-evidence validator tests green, including expired/conflicting proof and channel mismatch;
+- explicit test proving robots+sitemap alone cannot authorize a channel;
+- source network/detail-page requests = 0 in the live 2A audit;
 - DB/DDL/Registry/policy writes = 0;
 - public rows/Search activations = 0;
 - MASS-1 predecessor tests remain green;
@@ -102,4 +148,4 @@ Network access is restricted to the configured Supabase origin. Any source-domai
 
 ## Handoff
 
-When MASS-2A is certified and merged, MASS-2B starts from the new `main` and reviews the `HIGH_YIELD` cohort with current web evidence. No MASS-2A dossier is itself an authorization.
+When MASS-2A is certified and merged, MASS-2B starts from the new `main` and reviews the **20 HIGH_YIELD domains** with current web evidence under the dated-evidence/channel contract. No MASS-2A dossier is itself an authorization.
