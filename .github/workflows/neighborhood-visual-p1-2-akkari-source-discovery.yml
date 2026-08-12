@@ -27,7 +27,7 @@ jobs:
 
           OUT = pathlib.Path("data/audits/neighborhood-visual-p1-2-akkari/kartaview")
           IMG = OUT / "images"
-          CENTER = (34.00890, -6.86252)  # Laakkari / Akkari locality
+          CENTER = (34.00890, -6.86252)
           API = (
               "https://api.openstreetcam.org/2.0/photo/"
               f"?lat={CENTER[0]}&lng={CENTER[1]}&zoomLevel=17"
@@ -40,15 +40,6 @@ jobs:
               raw = json.load(r)
           (OUT / "raw.json").write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
 
-          def walk(v):
-              if isinstance(v, dict):
-                  yield v
-                  for x in v.values():
-                      yield from walk(x)
-              elif isinstance(v, list):
-                  for x in v:
-                      yield from walk(x)
-
           def fnum(v):
               try: return float(v)
               except Exception: return None
@@ -60,54 +51,35 @@ jobs:
               a=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2
               return 2*R*math.asin(math.sqrt(a))
 
-          candidates = {}
-          for d in walk(raw):
-              lat = fnum(d.get("lat") if "lat" in d else d.get("latitude"))
-              lon = fnum(d.get("lng") if "lng" in d else d.get("lon", d.get("longitude")))
+          data = raw.get("result", {}).get("data", [])
+          rows=[]
+          for d in data:
+              lat=fnum(d.get("lat")); lon=fnum(d.get("lng"))
               if lat is None or lon is None:
                   continue
               urls=[]
-              for k in ("name","lth_name","th_name","url","imageUrl","image_url","photo"):
+              for k in ("fileurlLTh","fileurlProc","fileurlTh","imageLthUrl","imageProcUrl","imageThUrl"):
                   v=d.get(k)
                   if isinstance(v,str) and v.startswith("http"):
                       urls.append(v)
-              pid = d.get("id") or d.get("photoId") or d.get("photo_id") or f"{lat},{lon}"
-              key=str(pid)
-              prev=candidates.get(key,{})
-              prev.update({
-                  "id": pid, "lat": lat, "lng": lon,
+              seq=d.get("sequence") or {}
+              rows.append({
+                  "id": d.get("id"), "lat": lat, "lng": lon,
                   "distance_m": round(hav(CENTER[0],CENTER[1],lat,lon),1),
                   "heading": d.get("heading"),
-                  "sequence_id": d.get("sequence_id") or d.get("sequenceId"),
-                  "date": d.get("date_added") or d.get("date") or d.get("createdAt"),
-                  "urls": list(dict.fromkeys(prev.get("urls",[])+urls)),
+                  "date": d.get("dateAdded"),
+                  "sequence_id": seq.get("id"),
+                  "sequence_address": seq.get("address"),
+                  "width": d.get("width"), "height": d.get("height"),
+                  "urls": list(dict.fromkeys(urls)),
               })
-              candidates[key]=prev
 
-          rows=sorted(candidates.values(), key=lambda x:x["distance_m"])
-          (OUT / "candidates.json").write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
-
-          lines=[
-              "# KartaView Akkari source discovery",
-              "",
-              "License: CC BY-SA 4.0 per KartaView Terms; required credit: © Grab and KartaView Contributors.",
-              f"Center: {CENTER[0]}, {CENTER[1]}",
-              f"Candidates with coordinates: {len(rows)}",
-              "",
-              "| # | Distance | Photo ID | Sequence | Date | Heading | URLs |",
-              "|---:|---:|---|---|---|---:|---:|",
-          ]
-          for i,r in enumerate(rows[:100],1):
-              lines.append(f"| {i} | {r['distance_m']} m | {r['id']} | {r['sequence_id']} | {r['date']} | {r['heading']} | {len(r['urls'])} |")
-          (OUT / "candidates.md").write_text("\n".join(lines)+"\n", encoding="utf-8")
-
-          # Materialize up to 24 nearest street frames for human visual gate.
+          rows.sort(key=lambda x:x["distance_m"])
           downloaded=0
           for r in rows:
-              if downloaded>=24 or r["distance_m"]>1200:
-                  break
-              if not r["urls"]:
+              if downloaded>=12 or r["distance_m"]>1200 or not r["urls"]:
                   continue
+              # Prefer the large thumbnail URL; it is a deterministic rendition of the real KartaView frame.
               url=r["urls"][0]
               try:
                   req=urllib.request.Request(url, headers={"User-Agent":UA})
@@ -115,8 +87,7 @@ jobs:
                       b=resp.read()
                   if len(b)<5000:
                       continue
-                  ext=".jpg"
-                  p=IMG/f"{downloaded+1:02d}_{round(r['distance_m']):04d}m_{r['id']}{ext}"
+                  p=IMG/f"{downloaded+1:02d}_{round(r['distance_m']):04d}m_{r['id']}.jpg"
                   p.write_bytes(b)
                   r["downloaded_file"]=p.name
                   r["sha1"]=hashlib.sha1(b).hexdigest()
@@ -125,10 +96,23 @@ jobs:
               except Exception as e:
                   r["download_error"]=str(e)
 
-          (OUT / "candidates-with-downloads.json").write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+          (OUT / "candidates.json").write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+          lines=[
+              "# KartaView Akkari source discovery",
+              "",
+              "License: CC BY-SA 4.0 per KartaView Terms; attribution required.",
+              f"Center: {CENTER[0]}, {CENTER[1]}",
+              f"Candidates: {len(rows)} · downloaded: {downloaded}",
+              "",
+              "| # | Distance | Photo ID | Sequence | Date | Heading | Address | File |",
+              "|---:|---:|---|---|---|---:|---|---|",
+          ]
+          for i,r in enumerate(rows[:50],1):
+              lines.append(f"| {i} | {r['distance_m']} m | {r['id']} | {r['sequence_id']} | {r['date']} | {r['heading']} | {r['sequence_address']} | {r.get('downloaded_file','')} |")
+          (OUT / "candidates.md").write_text("\n".join(lines)+"\n", encoding="utf-8")
           print(f"AKKARI_KARTAVIEW candidates={len(rows)} downloaded={downloaded}")
-          for r in rows[:30]:
-              print(r["distance_m"], r["id"], r.get("sequence_id"), r.get("downloaded_file"), r.get("download_error"))
+          for r in rows[:20]:
+              print(r["distance_m"], r["id"], r.get("sequence_address"), r.get("downloaded_file"), r.get("sha1"), r.get("download_error"))
           PY
       - uses: actions/upload-artifact@v4
         with:
