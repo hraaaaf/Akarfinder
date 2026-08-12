@@ -25,7 +25,7 @@ export function SearchViewSwitcher({
         aria-label="Mode d’affichage des résultats"
         value={value}
         onChange={(event) => onChange(event.target.value as SearchViewMode)}
-        className={`${styles.mobileSelect} h-12 max-w-[92px] rounded-full border border-border/20 bg-surface px-3 text-[12px] font-extrabold text-foreground outline-none sm:hidden dark:border-white/12 dark:bg-white/[0.06] dark:[color-scheme:dark]`}
+        className="h-12 hidden max-w-[92px] rounded-full border border-border/20 bg-surface px-3 text-[12px] font-extrabold text-foreground outline-none dark:border-white/12 dark:bg-white/[0.06] dark:[color-scheme:dark]"
       >
         {SEARCH_VIEW_ORDER.map((mode) => (
           <option key={mode} value={mode}>
