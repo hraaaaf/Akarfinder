@@ -20,13 +20,16 @@ Ordre de vérité :
 <!-- DATA-MASS-CURRENT-START -->
 ## DATA MASS — état courant
 
-La priorité DATA actuelle est **la masse nationale policy-safe**. Le programme canonique est `MASS-1 → MASS-6` et suit la doctrine **MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME**.
+La priorité DATA actuelle est **la masse nationale policy-safe**. Le programme canonique reste `MASS-1 → MASS-6` avec la doctrine **MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME**.
 
-**MASS-1 — Reservoir Qualification** est **CLOSED / certifié 9,5/10** ; PR #511 a figé le handoff Source Factory à **101 domaines**. **MASS-2A — Factory Engine** est désormais **CERTIFIED 9,5/10** dans la PR #519 sur le head comportemental `a1a473a99db3ea2a203948ce59e4cb9062cff773` : run dédié `31633323123` SUCCESS, **40/40 tests**, TypeScript + build production verts, audit production read-only vert et artefact `9156633723` (`sha256:e16c4e1e8a970435a8577c95b86a6e518c7d24c5c50750baf6c2fad06d759e77`).
+- **MASS-1 — Reservoir Qualification ✅ CLOSED / 9,5/10** : handoff Source Factory figé à **101 domaines**.
+- **MASS-2A — Factory Engine ✅ CLOSED / 9,5/10** : PR #519, merge `6cd7625b2ba8e7179ce556841f6306225ba1a3fa`; cohorte immuable **20 high-yield / 30 mid-yield / 51 long-tail**, décisions initiales fail-closed, zéro permission/activation.
+- **MASS-2B — High-Yield Sources ✅ CLOSED / 9,4/10** : PR #523, merge `97bb8c6a9596553d7e8794b5f3b06a71cd845d2f`; **20/20** audités = **17 `PERMISSION_REQUIRED` / 3 `HOLD`**, **17** candidats `CANONICAL_LINK_ONLY_CANDIDATE`, **0 approuvé**, Registry **0/20**, zéro write/fetch/activation.
+- **MASS-2C — Mid-Yield Sources ✅ CERTIFIED / 9,4/10 — PR #524** : **30/30** rangs 21→50 audités = **17 `PERMISSION_REQUIRED` / 13 `HOLD`**, **17** candidats canonical-link, **0 approuvé**. Rendement figé du cohort : **3 026 URL-représentations / 1 758 signaux immobilier Maroc / 967 structures détail**. Run exact-head `31644744613` SUCCESS; artefact `9160596350`, digest `sha256:53f83d11f9c0ca01da99eba88e3db2d69c277efc4bce8888a17202898823ad63`; Registry **0/30**, drift **0**, zéro DB/DDL/Registry/policy write, zéro source/detail fetch, zéro ingestion/Search activation, zéro permission inférée.
 
-Le cohort MASS-2A reste exactement **101 domaines = 20 high-yield / 30 mid-yield / 51 long-tail**, avec membership/rank/score gelés sur l’artefact MASS-1 certifié. La production actuelle lue en shadow compte **203 317 Discovery / 56 814 Thin Index / 35 Registry** ; la recomputation live donne **106 Source Factory**, soit **5 ajouts post-snapshot** (`inmarrakechimmo.com`, `le-25.com`, `mri-immo.com`, `nourreska.com`, `sunlife.ma`) et **0 domaine certifié perdu**. Ce drift est observé séparément et ne redimensionne jamais silencieusement le lot.
+Doctrine MASS-2 : **acquisition directe** et **index minimal attribué** sont deux axes séparés. `Source : X` + lien canonique est obligatoire pour toute future représentation tierce, mais l’attribution ne remplace jamais une permission. `CANONICAL_LINK_ONLY_CANDIDATE` reste non activable tant qu’une baseline transversale ou une permission explicite ne l’autorise pas. Photos et descriptions complètes ne sont jamais réutilisées par défaut; robots/sitemap/capacité ne confèrent aucun droit.
 
-MASS-2A est strictement fail-closed : **0 fetch source détail, 0 write DB/DDL/Registry, 0 policy change, 0 ingestion, 0 activation Search, 0 permission inférée, 0 décision non-HOLD**. Les scans massifs utilisent un keyset UUID indexé (`discovery_candidates.id` + `thin_index_search_documents.seed_id`) ; aucun retour à OFFSET n’est accepté par le truth-gate. **Prochain sous-lot après merge de #519 : MASS-2B — High-Yield Sources**, puis 2C → 2D → 2E → 2F. Voir `docs/ROADMAP.md` et `docs/data/DATA-MASS-2A-SOURCE-FACTORY-ENGINE.md`.
+**Prochain sous-lot : MASS-2D — Long-Tail Sources**, rangs 51→101, après landing de #524. Ensuite MASS-2E Policy Matrix puis MASS-2F Certification.
 <!-- DATA-MASS-CURRENT-END -->
 
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->

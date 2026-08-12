@@ -7,14 +7,13 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 <!-- DATA-MASS-HANDOVER-START -->
 ## DATA MASS — handover prioritaire
 
-- **MASS-1 / PR #511 : ✅ CLOSED / CERTIFIED 9,5/10.** Handoff immuable vers MASS-2 : **101 domaines**, clean-head `0a2856e68b44bee6f7b398b5c314d53711d95a67`, artefact `9126627714`, digest `sha256:84333105c8edda9be5733184c42e2e1afc865109edb580a5ae1705219c1cd932`.
-- **MASS-2A / PR #519 : ✅ FACTORY ENGINE CERTIFIED 9,5/10.** Head comportemental `a1a473a99db3ea2a203948ce59e4cb9062cff773`; run dédié `31633323123` SUCCESS ; **40/40 tests**, TypeScript + production build PASS ; live-audit read-only + truth-boundary PASS.
-- Artefact 2A : `9156633723`, digest `sha256:e16c4e1e8a970435a8577c95b86a6e518c7d24c5c50750baf6c2fad06d759e77`. Recheck indépendant du ZIP : digest exact, **101/101 dossiers uniques**, rangs contigus, split **20/30/51**, 100 % `UNREVIEWED + HOLD`, 0 activable, 0 permission inférée.
-- Production observée : **203 317 Discovery / 56 814 Thin Index / 35 Registry**. Recompute live Source Factory = **106**, soit **5 ajouts post-snapshot** (`inmarrakechimmo.com`, `le-25.com`, `mri-immo.com`, `nourreska.com`, `sunlife.ma`) et **0 certifié perdu**. Le cohort 2A reste gelé à 101 ; le drift n’autorise rien.
-- Sécurité : **0 DB/DDL/Registry/policy write, 0 source/detail fetch, 0 public row, 0 Search activation, 0 permission inférée, 0 décision non-HOLD**. Discovery et Thin Index sont scannés en UUID keyset (`id` / `seed_id`), jamais OFFSET.
-- Deux rouges transverses du même head ont été classés hors scope : ancien workflow MASS-1 timeout sur son OFFSET historique ; UX-SEARCH-2 échoue sur son propre gate toolbar 70 px. Aucun fichier concerné n’est modifié par #519 ; les tests/build MASS-2A restent verts.
-- **NEXT après merge #519 : MASS-2B — High-Yield Sources uniquement.** Auditer le cohort high-yield certifié domaine par domaine avec preuves datées ; aucune permission implicite, aucun Registry write/ingestion/activation dans 2B.
-- Suite verrouillée : **2B → 2C → 2D → 2E → 2F**, puis MASS-3 Minimal Listing Index → MASS-4 Mass Reclassification → MASS-5 Discovery Expansion → MASS-6 National Mass Engine.
+- **MASS-1 ✅ CLOSED / 9,5/10** — cohorte Source Factory certifiée : **101 domaines**.
+- **MASS-2A ✅ CLOSED / 9,5/10** — PR #519, merge `6cd7625b2ba8e7179ce556841f6306225ba1a3fa`; moteur déterministe/fail-closed, split **20/30/51**.
+- **MASS-2B ✅ CLOSED / 9,4/10** — PR #523, merge `97bb8c6a9596553d7e8794b5f3b06a71cd845d2f`; **20/20 = 17 PERMISSION_REQUIRED / 3 HOLD**, 17 canonical-link candidates, 0 approved.
+- **MASS-2C ✅ CERTIFIED / 9,4/10 — PR #524** — **30/30 = 17 PERMISSION_REQUIRED / 13 HOLD**, 17 canonical-link candidates, 0 approved; rendements **3 026 / 1 758 / 967**. Exact-head behavior proof `217d6240a877d0aab96b1d2c5f6c33479e00d2da`, run `31644744613` SUCCESS, artefact `9160596350`, digest `sha256:53f83d11f9c0ca01da99eba88e3db2d69c277efc4bce8888a17202898823ad63`; Registry **0/30**, drift 0.
+- Limites MASS-2B/C : **0 direct acquisition authorized, 0 source photo/full-description reuse, 0 DB/DDL/Registry/policy write, 0 source/detail fetch by CI, 0 ingestion, 0 Search/public activation, 0 permission inferred**.
+- Doctrine produit : AkarFinder = **attributed minimal index**; attribution ≠ permission; acquisition directe ≠ canonical-link indexing; canonical-link candidates remain non-activable until the transversal baseline or explicit permission exists.
+- **NEXT : MASS-2D — Long-Tail Sources**, certified ranks **51→101**, after #524 lands. Do not start MASS-2E before 2D is certified/merged.
 <!-- DATA-MASS-HANDOVER-END -->
 
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->

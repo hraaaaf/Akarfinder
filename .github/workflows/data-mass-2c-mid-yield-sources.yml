@@ -1,0 +1,90 @@
+name: DATA MASS-2C Mid-Yield Source Review
+
+on:
+  pull_request:
+    paths:
+      - "data/data-mass-2c/mid-yield-source-review.json"
+      - "scripts/data-mass/source-factory-mid-yield-review.ts"
+      - "scripts/data-mass/__tests__/source-factory-mid-yield-review.test.ts"
+      - "scripts/audits/data-mass-2c-mid-yield-sources.ts"
+      - ".github/workflows/data-mass-2c-mid-yield-sources.yml"
+      - "docs/data/DATA-MASS-2C-MID-YIELD-SOURCES.md"
+      - "data/data-mass-2a/mass-1-certified-source-factory.json"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-mass-2c-mid-yield-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: MASS-2C + predecessor tests
+        run: npx tsx --test scripts/data-mass/__tests__/source-factory-mid-yield-review.test.ts scripts/data-mass/__tests__/source-factory-high-yield-review.test.ts scripts/data-mass/__tests__/source-factory-certified-cohort.test.ts scripts/data-mass/__tests__/source-factory-decision.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+
+  live-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_MASS_2C_OUT_DIR: .tmp/data-mass-2c/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run MASS-2C production read-only Registry audit
+        run: npx tsx scripts/audits/data-mass-2c-mid-yield-sources.ts
+      - name: Enforce MASS-2C fail-closed truth boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_MASS_2C_OUT_DIR}/proof.json"
+          test -s "${DATA_MASS_2C_OUT_DIR}/review.json"
+          test -s "${DATA_MASS_2C_OUT_DIR}/summary.md"
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-mass-2c/results/proof.json', 'utf8'));
+          const review = JSON.parse(fs.readFileSync('data/data-mass-2c/mid-yield-source-review.json', 'utf8'));
+          const expectedHead = '7af59953c4b3d0da11c5692dc97e455e2dfaa5b1';
+          const expectedDigest = 'sha256:4e73419bbbfe032d4e66667a1612db20423aacea997e38b24d5ea6dbe40a1798';
+          const expectedMerge = '97bb8c6a9596553d7e8794b5f3b06a71cd845d2f';
+
+          if (p.readOnly !== true || p.databaseWrites !== 0 || p.ddlChanges !== 0 || p.registryWrites !== 0 || p.policyChanges !== 0) throw new Error(`Mutation boundary: ${JSON.stringify(p)}`);
+          if (p.sourceNetworkRequests !== 0 || p.sourceSiteRequests !== 0 || p.detailPageFetches !== 0 || p.blockedNetworkRequests !== 0) throw new Error(`Network boundary: ${JSON.stringify(p)}`);
+          if (p.publicRowsCreated !== 0 || p.searchActivations !== 0 || p.permissionsInferred !== 0 || p.publicActivableNowCount !== 0 || p.registryWriteAllowedCount !== 0) throw new Error(`Activation boundary: ${JSON.stringify(p)}`);
+          if (p.mass2bFinalHead !== expectedHead || p.mass2bFinalRunId !== 31642731238 || p.mass2bFinalArtifactId !== 9159540462 || p.mass2bFinalArtifactDigest !== expectedDigest || p.mass2bMergeCommit !== expectedMerge) throw new Error(`Predecessor drift: ${JSON.stringify(p)}`);
+          if (p.domainsReviewed !== 30 || p.permissionRequiredCount !== 17 || p.holdCount !== 13 || p.canonicalLinkCandidateCount !== 17 || p.canonicalLinkApprovedCount !== 0) throw new Error(`Decision drift: ${JSON.stringify(p)}`);
+          if (p.directAcquisitionAllowedCount !== 0 || p.copyPhotosAllowedCount !== 0 || p.copyDescriptionAllowedCount !== 0 || p.sourceAttributionRequiredCount !== 30) throw new Error(`Content boundary: ${JSON.stringify(p)}`);
+          if (p.currentRegistryRowsForReviewedDomains !== 0 || p.registryDriftSinceReviewCount !== 0) throw new Error(`Registry changed after review: ${JSON.stringify(p)}`);
+          if (review.doctrine.model !== 'ATTRIBUTED_MINIMAL_INDEX' || review.safety.allowedChannels !== 'NONE_ONLY' || review.safety.publicActivableNow !== false || review.safety.registryWriteAllowed !== false) throw new Error('Doctrine/safety drift');
+          if (review.summary.totalUrlRepresentations !== 3026 || review.summary.totalLikelyMoroccoRealEstateUrls !== 1758 || review.summary.totalLikelyMoroccoListingDetailUrls !== 967) throw new Error(`Yield totals drift: ${JSON.stringify(review.summary)}`);
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-2c-mid-yield-source-review
+          path: .tmp/data-mass-2c/results/
+          if-no-files-found: error
+          retention-days: 30
