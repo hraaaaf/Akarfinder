@@ -8,6 +8,10 @@ type FooterGroup = {
   links: FooterLink[];
 };
 
+type SiteFooterProps = {
+  variant?: "default" | "search";
+};
+
 const footerGroups: FooterGroup[] = [
   {
     title: "Explorer",
@@ -41,33 +45,65 @@ const footerGroups: FooterGroup[] = [
   },
 ];
 
-export function SiteFooter() {
+const focusClasses =
+  "rounded-sm transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4B9BFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#041426]";
+
+export function SiteFooter({ variant = "default" }: SiteFooterProps) {
   const showBeta = process.env.NEXT_PUBLIC_APP_STAGE === "beta";
+  const isSearch = variant === "search";
 
   return (
-    <footer id="footer" className="bg-[#041426] py-12 text-white sm:py-14 lg:py-16">
+    <footer
+      id="footer"
+      data-search-footer={isSearch ? "compact" : undefined}
+      className={
+        isSearch
+          ? "bg-[#041426] py-7 text-white sm:py-8 lg:py-8"
+          : "bg-[#041426] py-12 text-white sm:py-14 lg:py-16"
+      }
+    >
       <Container>
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_2fr] lg:gap-16">
+        <div
+          className={
+            isSearch
+              ? "grid gap-6 lg:grid-cols-[0.9fr_2.1fr] lg:gap-12"
+              : "grid gap-10 lg:grid-cols-[1.2fr_2fr] lg:gap-16"
+          }
+        >
           <div>
             <img
               src="/brand/logo-v2/logo-header-dark.png"
               alt="AkarFinder"
               width={184}
               height={46}
-              className="h-[44px] w-auto"
+              className={isSearch ? "h-8 w-auto sm:h-9" : "h-[44px] w-auto"}
             />
-            <p className="mt-5 max-w-md text-[14px] leading-7 text-white/66 sm:text-[14.5px]">
+            <p
+              className={
+                isSearch
+                  ? "mt-3 hidden max-w-sm text-[13px] leading-5 text-white/66 sm:block"
+                  : "mt-5 max-w-md text-[14px] leading-7 text-white/66 sm:text-[14.5px]"
+              }
+            >
               Le moteur de recherche immobilier qui vous aide à chercher, comparer et comprendre avant de décider.
             </p>
           </div>
 
-          <div className="hidden gap-10 sm:grid sm:grid-cols-3">
+          <div className={isSearch ? "hidden gap-7 sm:grid sm:grid-cols-3" : "hidden gap-10 sm:grid sm:grid-cols-3"}>
             {footerGroups.map((group) => (
               <div key={group.title}>
-                <h3 className="text-[13px] font-extrabold text-white">{group.title}</h3>
-                <div className="mt-4 grid gap-2.5 text-[13px] text-white/62">
+                <h3 className={isSearch ? "text-[12.5px] font-extrabold text-white" : "text-[13px] font-extrabold text-white"}>
+                  {group.title}
+                </h3>
+                <div
+                  className={
+                    isSearch
+                      ? "mt-3 grid gap-1.5 text-[12.5px] leading-[18px] text-white/62"
+                      : "mt-4 grid gap-2.5 text-[13px] text-white/62"
+                  }
+                >
                   {group.links.map((link) => (
-                    <Link key={link.label} href={link.href} className="transition hover:text-white">
+                    <Link key={link.label} href={link.href} data-footer-link className={focusClasses}>
                       {link.label}
                     </Link>
                   ))}
@@ -76,16 +112,43 @@ export function SiteFooter() {
             ))}
           </div>
 
-          <div className="space-y-2 sm:hidden">
+          <div className={isSearch ? "divide-y divide-white/10 border-y border-white/10 sm:hidden" : "space-y-2 sm:hidden"}>
             {footerGroups.map((group) => (
-              <details key={group.title} className="group rounded-xl border border-white/10 bg-white/[0.035] px-4 py-1">
-                <summary className="flex cursor-pointer list-none items-center justify-between py-3 text-[13px] font-extrabold text-white">
+              <details
+                key={group.title}
+                data-footer-mobile-group
+                className={
+                  isSearch
+                    ? "group"
+                    : "group rounded-xl border border-white/10 bg-white/[0.035] px-4 py-1"
+                }
+              >
+                <summary
+                  className={
+                    isSearch
+                      ? "flex min-h-11 cursor-pointer list-none items-center justify-between text-[13px] font-extrabold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#4B9BFF]"
+                      : "flex cursor-pointer list-none items-center justify-between py-3 text-[13px] font-extrabold text-white"
+                  }
+                >
                   {group.title}
-                  <span aria-hidden="true" className="text-lg font-light text-white/55 transition group-open:rotate-45">+</span>
+                  <span aria-hidden="true" className="text-lg font-light text-white/55 transition group-open:rotate-45">
+                    +
+                  </span>
                 </summary>
-                <div className="grid gap-3 border-t border-white/8 pb-4 pt-3 text-[13px] text-white/62">
+                <div
+                  className={
+                    isSearch
+                      ? "grid border-t border-white/8 py-1 text-[13px] text-white/62"
+                      : "grid gap-3 border-t border-white/8 pb-4 pt-3 text-[13px] text-white/62"
+                  }
+                >
                   {group.links.map((link) => (
-                    <Link key={link.label} href={link.href} className="transition hover:text-white">
+                    <Link
+                      key={link.label}
+                      href={link.href}
+                      data-footer-link
+                      className={isSearch ? `flex min-h-11 items-center ${focusClasses}` : focusClasses}
+                    >
                       {link.label}
                     </Link>
                   ))}
@@ -95,10 +158,15 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 text-[11.5px] leading-5 text-white/48 sm:flex-row sm:items-center sm:justify-between">
-          <span>
-            © 2026 AkarFinder.ma{showBeta ? " — Version bêta" : ""}
-          </span>
+        <div
+          data-footer-trust-line
+          className={
+            isSearch
+              ? "mt-6 flex flex-col gap-2 border-t border-white/10 pt-4 text-[11.5px] leading-5 text-white/48 sm:flex-row sm:items-center sm:justify-between"
+              : "mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 text-[11.5px] leading-5 text-white/48 sm:flex-row sm:items-center sm:justify-between"
+          }
+        >
+          <span>© 2026 AkarFinder.ma{showBeta ? " — Version bêta" : ""}</span>
           <span>Les sources et le niveau d&apos;information restent visibles pour chaque résultat.</span>
         </div>
       </Container>
