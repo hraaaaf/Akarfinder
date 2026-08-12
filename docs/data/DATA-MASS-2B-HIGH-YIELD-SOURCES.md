@@ -1,6 +1,6 @@
 # DATA MASS-2B — High-Yield Source Policy Review
 
-**Statut : ACTIVE — certification required**  
+**Statut : CERTIFICATION GREEN — 9,4/10 — PR #523**  
 **Branche : `data/mass-2b-high-yield-sources`**  
 **Prédécesseur : MASS-2A merge `6cd7625b2ba8e7179ce556841f6306225ba1a3fa`**
 
@@ -99,12 +99,27 @@ Le workflow `DATA MASS-2B High-Yield Source Review` impose :
 - 0 permission inférée ;
 - 0 photo ou description source déclarée réutilisable.
 
-## 6. Hors scope
+## 6. Certification exacte
+
+Certification comportementale sur `849c2ea3c2cd17f849148a9465e18bc26e5349fa` :
+
+- workflow dédié run **`31642330356` SUCCESS** ;
+- contract : tests MASS-2B + predecessor MASS-2A PASS, TypeScript PASS, production build PASS ;
+- live-audit Registry read-only PASS ;
+- truth-boundary PASS ;
+- artefact **`9159409987`** ; digest **`sha256:5a20abf1cf5b68236ae2b8901dd3475eb463a3689831669b5d1db5634531a145`** ; rehash ZIP indépendant identique ;
+- proof : **20/20**, **17 permission-required / 3 hold**, **17 canonical-link candidates / 0 approved**, direct acquisition **0**, Registry rows **0/20**, Registry drift **0** ;
+- sécurité : **0 DB/DDL/Registry/policy write, 0 source/detail fetch, 0 public row, 0 Search activation, 0 permission inférée** ;
+- finding CI corrigé avant certification : le premier live-audit échouait uniquement sur un top-level `await` incompatible avec la sortie CJS de `tsx`; correction bornée vers `main().catch(...)`, puis replay complet vert.
+
+Score technique : **9,4/10**. La dette restante n'est pas une faiblesse du review 2B : la baseline transversale autorisant ou non `CANONICAL_LINK_ONLY` reste volontairement hors de ce lot et aucune source n'est promue en son absence.
+
+## 7. Hors scope
 
 MASS-2B ne tranche pas la baseline générale de droit applicable à un **simple lien canonique + métadonnées factuelles minimales obtenues indépendamment de la source**. Cette question doit être traitée comme un contrat policy/juridique transversal avant d'autoriser `CANONICAL_LINK_ONLY` à grande échelle.
 
 MASS-2B ne contacte pas non plus les propriétaires des sites, ne négocie aucun partenariat et ne transforme aucune preuve de structure/robots/sitemap en permission.
 
-## 7. Critère de fermeture
+## 8. Sortie du lot
 
-MASS-2B n'est CLOSED qu'après exact-head CI + artefact live read-only + cohorte 20/20 + zéro drift Registry non revu + score technique ≥9/10. Le prochain sous-lot reste **MASS-2C — Mid-Yield Sources**, seulement après merge de 2B.
+Après merge de PR #523 et vérification SHA/tree post-merge, **MASS-2B est CLOSED**. Le prochain sous-lot est **MASS-2C — Mid-Yield Sources**, uniquement depuis le nouveau `main`.
