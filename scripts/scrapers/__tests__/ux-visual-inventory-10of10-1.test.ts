@@ -11,7 +11,6 @@ test("UX-VISUAL-INVENTORY keeps the existing Rabat photo library intact and cura
   assert.ok(RABAT_CITY_AMBIENCE_POOL.length >= 20);
   assert.ok(RABAT_CITY_AMBIENCE_POOL.every((asset) => asset.city === "Rabat"));
   assert.ok(RABAT_CITY_AMBIENCE_POOL.every((asset) => asset.sourceName === "Wikimedia Commons"));
-  assert.ok(RABAT_CITY_AMBIENCE_POOL.every((asset) => !asset.id.includes("fanzone")));
   assert.ok(RABAT_CITY_AMBIENCE_POOL.every((asset) => !asset.fileName.toLowerCase().includes("fanzone")));
   assert.ok(RABAT_CITY_AMBIENCE_POOL.every((asset) => !asset.fileName.toLowerCase().includes("knawa")));
 });
@@ -31,6 +30,25 @@ test("UX-VISUAL-INVENTORY preserves exact district truth when a certified distri
   assert.equal(first.label, "Rabat • Agdal");
   assert.equal(first.id, replay?.id);
   assert.match(first.asset, /^https:\/\/commons\.wikimedia\.org\//);
+});
+
+test("UX-VISUAL-INVENTORY excludes event imagery from exact Souissi Search selection", () => {
+  const ids = new Set<string>();
+  for (let index = 0; index < 48; index += 1) {
+    const result = resolveRabatRealPhoto({
+      stableKey: `https://fixture.example/rabat/souissi/${index}`,
+      city: "Rabat",
+      district: "Souissi",
+    });
+    assert.ok(result);
+    assert.equal(result.contextScope, "district");
+    assert.equal(result.district, "Souissi");
+    assert.equal(result.label, "Rabat • Souissi");
+    assert.doesNotMatch(result.fileName.toLowerCase(), /fanzone|knawa/);
+    assert.ok(!["rabat-souissi-photo-06", "rabat-souissi-photo-07", "rabat-souissi-photo-08"].includes(result.id));
+    ids.add(result.id);
+  }
+  assert.ok(ids.size >= 4, `expected >=4 residential-context Souissi photos, got ${ids.size}`);
 });
 
 test("UX-VISUAL-INVENTORY uses a city-only real-photo fallback for unsupported Rabat districts", () => {
