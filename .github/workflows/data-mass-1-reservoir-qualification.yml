@@ -110,18 +110,20 @@ jobs:
             !(Number(row.realEstateShare) >= 0.5) ||
             !(Number(row.moroccoShareOfRealEstate) >= 0.1) ||
             row.domainRole === 'SOCIAL' ||
-            row.domainRole === 'DISCOVERY_TRANSPORT'
+            row.domainRole === 'DISCOVERY_TRANSPORT' ||
+            row.domainRole === 'FOREIGN_ONLY'
           );
           if (weakSourceFactory.length) throw new Error(`SOURCE_FACTORY threshold/policy leakage: ${JSON.stringify(weakSourceFactory.slice(0, 10))}`);
 
           const excludedNonInventory = new Set([
-            'tiendeo.ma', 'telecontact.ma',
+            'tiendeo.ma', 'telecontact.ma', 'petitfute.com', 'combien-coute.net', 'ma.annuaire-horaire.com',
             'booking.com', 'agoda.com', 'allhotelsmorocco.com', 'hotels.com', 'expedia.com',
             'airbnb.com', 'airbnb.fr', 'tripadvisor.com', 'tripadvisor.fr', 'vrbo.com', 'abritel.fr',
-            'villanovo.fr', 'cozycozy.com'
+            'villanovo.fr', 'cozycozy.com',
+            'mubawab.tn', 'ouedkniss.com', 'ouestfrance-immo.com', 'geolocaux.com'
           ]);
           const knownNonInventoryLeakage = sourceFactory.filter((row) => excludedNonInventory.has(row.sourceDomain));
-          if (knownNonInventoryLeakage.length) throw new Error(`Known directory/hospitality source leaked into SOURCE_FACTORY: ${JSON.stringify(knownNonInventoryLeakage)}`);
+          if (knownNonInventoryLeakage.length) throw new Error(`Known non-Morocco/non-inventory source leaked into SOURCE_FACTORY: ${JSON.stringify(knownNonInventoryLeakage)}`);
           NODE
       - uses: actions/upload-artifact@v4
         with:
