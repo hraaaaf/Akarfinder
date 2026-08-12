@@ -78,7 +78,7 @@ export function SiteHeader({
         data-premium-search-header="ux-premium-header-1"
         className="sticky top-0 z-30 border-b border-slate-200/70 bg-white text-slate-900 shadow-[0_1px_12px_rgba(11,37,69,0.035)]"
       >
-        <Container fluid={fluid} className="relative h-[67px] !px-4 sm:!px-6 lg:h-[63px] lg:!px-8">
+        <Container fluid={fluid} className="relative h-[67px] !px-4 sm:!px-6 lg:h-[63px] lg:!px-6">
           <div className="grid h-full grid-cols-[44px_1fr_44px] items-center lg:hidden">
             <button
               type="button"
