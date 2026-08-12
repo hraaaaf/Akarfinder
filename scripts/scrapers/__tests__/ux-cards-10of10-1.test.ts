@@ -31,6 +31,16 @@ test("cards use the certified light blue visual language instead of the legacy b
   assert.doesNotMatch(card, /bronze-/);
 });
 
+test("partial truth disclosure stays semantic but uses the AkarFinder blue language instead of amber", () => {
+  const start = card.indexOf('if (tier === "partial")');
+  assert.ok(start >= 0, "partial truth style must remain explicit");
+  const partialBlock = card.slice(start, start + 260);
+  assert.match(partialBlock, /border-\[#8fb1dc\]\/60/);
+  assert.match(partialBlock, /bg-\[#eaf2fb\]\/90/);
+  assert.match(partialBlock, /text-\[#285b99\]/);
+  assert.doesNotMatch(partialBlock, /amber|orange|bronze/i);
+});
+
 test("card hierarchy remains scan-first and compact", () => {
   assert.match(card, /data-card-image className="relative h-\[164px\].*sm:h-\[196px\]"/);
   assert.match(card, /data-card-title className="line-clamp-2/);
