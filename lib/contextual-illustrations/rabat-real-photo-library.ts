@@ -16,6 +16,11 @@ export type RabatRealPhotoAsset = {
   sourceName: "Wikimedia Commons";
 };
 
+export type ResolvedRabatRealPhotoAsset = RabatRealPhotoAsset & {
+  /** Exact normalized district match, or city-wide ambience fallback. */
+  contextScope: "district" | "city";
+};
+
 const COMMONS_FILE_REDIRECT = "https://commons.wikimedia.org/wiki/Special:Redirect/file/";
 const COMMONS_WIKI = "https://commons.wikimedia.org/wiki/";
 
@@ -68,7 +73,7 @@ export const RABAT_REAL_PHOTO_LIBRARY: Readonly<Record<RabatNeighborhood, readon
     photo("Hay Riad", "hay-riad", 5, "Mahaj.jpg"),
     photo("Hay Riad", "hay-riad", 6, "Riad District.jpg"),
     photo("Hay Riad", "hay-riad", 7, "Mahaj-Meditel.jpg"),
-    photo("Hay Riad", "hay-riad", 8, "\u062d\u064a \u0627\u0644\u0631\u064a\u0627\u0636 \u0628\u0627\u0644\u0631\u0628\u0627\u0637.jpg"),
+    photo("Hay Riad", "hay-riad", 8, "حي الرياض بالرباط.jpg"),
   ],
   Souissi: [
     photo("Souissi", "souissi", 1, "Rabat,Souissi1.jpg"),
@@ -101,6 +106,42 @@ export const RABAT_REAL_PHOTO_LIBRARY: Readonly<Record<RabatNeighborhood, readon
     photo("Hassan", "hassan", 8, "PIcture of Hassan Tower during a sunny day in Rabat.jpg"),
   ],
 };
+
+export const RABAT_REAL_PHOTO_ASSETS = Object.values(RABAT_REAL_PHOTO_LIBRARY).flat();
+
+/**
+ * Curated city-wide ambience pool for Rabat listings whose district has no
+ * certified exact photo pool yet. Avoid event/fanzone imagery and keep the
+ * public label city-only so a city fallback can never imply a district match.
+ */
+const RABAT_CITY_AMBIENCE_IDS = new Set([
+  "rabat-agdal-photo-01",
+  "rabat-agdal-photo-02",
+  "rabat-agdal-photo-05",
+  "rabat-hay-riad-photo-01",
+  "rabat-hay-riad-photo-04",
+  "rabat-hay-riad-photo-05",
+  "rabat-hay-riad-photo-06",
+  "rabat-souissi-photo-01",
+  "rabat-souissi-photo-02",
+  "rabat-souissi-photo-03",
+  "rabat-souissi-photo-04",
+  "rabat-souissi-photo-05",
+  "rabat-ocean-photo-01",
+  "rabat-ocean-photo-02",
+  "rabat-ocean-photo-03",
+  "rabat-ocean-photo-04",
+  "rabat-ocean-photo-06",
+  "rabat-hassan-photo-01",
+  "rabat-hassan-photo-02",
+  "rabat-hassan-photo-03",
+  "rabat-hassan-photo-04",
+  "rabat-hassan-photo-05",
+]);
+
+export const RABAT_CITY_AMBIENCE_POOL = RABAT_REAL_PHOTO_ASSETS.filter((asset) =>
+  RABAT_CITY_AMBIENCE_IDS.has(asset.id),
+);
 
 const DISTRICT_ALIASES: Readonly<Record<string, RabatNeighborhood>> = {
   agdal: "Agdal",
@@ -145,7 +186,7 @@ function selectHighestRandomWeight(
   let winner: RabatRealPhotoAsset | null = null;
   let winnerScore = -1;
   for (const candidate of candidates) {
-    const score = hash32(`rabat-real-photo-v1\u001f${stableKey}\u001f${candidate.id}`);
+    const score = hash32(`rabat-real-photo-v2\u001f${stableKey}\u001f${candidate.id}`);
     if (score > winnerScore || (score === winnerScore && winner !== null && candidate.id < winner.id)) {
       winner = candidate;
       winnerScore = score;
@@ -158,11 +199,24 @@ export function resolveRabatRealPhoto(input: {
   stableKey: string;
   city?: string | null;
   district?: string | null;
-}): RabatRealPhotoAsset | null {
+}): ResolvedRabatRealPhotoAsset | null {
   if (normalizeStructuredValue(input.city) !== "rabat") return null;
-  const district = normalizeRabatNeighborhood(input.district);
-  if (!district) return null;
-  return selectHighestRandomWeight(RABAT_REAL_PHOTO_LIBRARY[district], input.stableKey);
-}
 
-export const RABAT_REAL_PHOTO_ASSETS = Object.values(RABAT_REAL_PHOTO_LIBRARY).flat();
+  const district = normalizeRabatNeighborhood(input.district);
+  if (district) {
+    const selected = selectHighestRandomWeight(RABAT_REAL_PHOTO_LIBRARY[district], input.stableKey);
+    return selected ? { ...selected, contextScope: "district" } : null;
+  }
+
+  const selected = selectHighestRandomWeight(
+    RABAT_CITY_AMBIENCE_POOL,
+    `city-ambience\u001f${input.stableKey}`,
+  );
+  return selected
+    ? {
+        ...selected,
+        label: "Rabat",
+        contextScope: "city",
+      }
+    : null;
+}
