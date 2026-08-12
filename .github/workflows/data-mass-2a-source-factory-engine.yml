@@ -85,6 +85,8 @@ jobs:
           if (p.sourceNetworkRequests !== 0 || p.detailPageFetches !== 0) throw new Error(`MASS-2A source fetch boundary violated: ${JSON.stringify(p)}`);
           if (p.publicRowsCreated !== 0 || p.searchActivations !== 0 || p.permissionsInferred !== 0 || p.nonHoldDecisions !== 0 || p.publicActivableNowCount !== 0) throw new Error(`MASS-2A activation/permission boundary violated: ${JSON.stringify(p)}`);
           if (p.paginationMode !== 'UUID_KEYSET') throw new Error(`MASS-2A must preserve large-scan keyset pagination: ${JSON.stringify(p)}`);
+          if (p.discoveryPaginationMode !== 'ID_UUID_KEYSET') throw new Error(`Discovery must use id UUID keyset pagination: ${JSON.stringify(p)}`);
+          if (p.thinIndexPaginationMode !== 'SEED_ID_UUID_KEYSET') throw new Error(`Thin Index must use seed_id UUID keyset pagination: ${JSON.stringify(p)}`);
           if (p.inputMode !== 'MASS_1_CERTIFIED_SNAPSHOT_WITH_LIVE_DRIFT_OBSERVATION') throw new Error(`Wrong MASS-2A input mode: ${JSON.stringify(p)}`);
 
           const expectedHead = '0a2856e68b44bee6f7b398b5c314d53711d95a67';
