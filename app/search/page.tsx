@@ -154,7 +154,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         />
         <SearchPriceExplorerDock />
       </PropertySelectionProvider>
-      <SiteFooter />
+      <SiteFooter variant="search" />
     </main>
   );
 }
