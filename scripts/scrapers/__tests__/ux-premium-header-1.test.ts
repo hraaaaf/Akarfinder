@@ -7,7 +7,7 @@ const searchPagePath = new URL("../../../app/search/page.tsx", import.meta.url);
 
 test("UX-PREMIUM-HEADER-1 keeps Search on the dedicated header mode", async () => {
   const searchPage = await readFile(searchPagePath, "utf8");
-  assert.match(searchPage, /<SiteHeader\s+searchMode\s*\/>/);
+  assert.match(searchPage, /<SiteHeader[^>]*\bsearchMode\b[^>]*\/>/);
 });
 
 test("UX-PREMIUM-HEADER-1 encodes the exact premium geometry", async () => {
