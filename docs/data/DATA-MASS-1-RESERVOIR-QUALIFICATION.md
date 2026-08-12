@@ -1,11 +1,15 @@
 # DATA MASS-1 — Reservoir Qualification
 
-**Status:** ✅ CERTIFIED / MERGE PENDING  
+**Status:** ✅ CLOSED / CERTIFIED 9.5/10  
 **Lane:** DATA / Mass Coverage  
 **Base:** `main@20ff1683af02c0d4d6fc1efa4a5821674eb88d0f`  
 **Branch:** `data/mass-1-reservoir-qualification`  
-**PR:** #511  
+**PR:** #511 — MERGED  
+**Merge commit:** `d2dce59e4aab914fb2a54e0547ccee427128f638`  
+**Clean exact-head:** `0a2856e68b44bee6f7b398b5c314d53711d95a67` — 37/37 workflows SUCCESS  
 **Certified behavioral head:** `d768f47e4662430c71066ea9aaa43c85b23477fb`  
+**Final clean-head MASS run:** `31557215870` — SUCCESS  
+**Final artifact:** `9126627714` — `sha256:84333105c8edda9be5733184c42e2e1afc865109edb580a5ae1705219c1cd932`  
 **Score:** **9.5/10**
 
 ## Responsibility
@@ -174,4 +178,4 @@ The remaining 0.5 reflects that MASS-1 is a deterministic prioritization/review 
 
 ## Closeout condition
 
-MASS-1 becomes **CLOSED** only after PR #511 merge, post-merge replay/verification on the new `main`, and canonical `README.md` + `docs/ROADMAP.md` + `docs/SESSION.md` synchronization.
+MASS-1 is **CLOSED**: PR #511 merged as `d2dce59e4aab914fb2a54e0547ccee427128f638`; the merge tree is file-identical to certified clean-head `0a2856e68b44bee6f7b398b5c314d53711d95a67`; canonical README/ROADMAP/SESSION are synchronized. **NEXT = MASS-2 — Source Factory.**

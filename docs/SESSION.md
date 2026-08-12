@@ -7,7 +7,7 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 <!-- DATA-MASS-HANDOVER-START -->
 ## DATA MASS — handover prioritaire
 
-- **MASS-1 / PR #511 : ✅ CERTIFIED 9,5/10 — merge pending.** Head comportemental certifié `d768f47e4662430c71066ea9aaa43c85b23477fb`.
+- **MASS-1 / PR #511 : ✅ CLOSED / CERTIFIED 9,5/10.** Merge `d2dce59e4aab914fb2a54e0547ccee427128f638` ; clean-head `0a2856e68b44bee6f7b398b5c314d53711d95a67` avec **37/37 workflows SUCCESS** ; arbre mergé sans dérive de fichier. Head comportemental certifié `d768f47e4662430c71066ea9aaa43c85b23477fb`.
 - Prod : **86 741 URL-représentations net-new**, **51 326** signaux immobilier Maroc probables, **24 028** structures détail Maroc probables.
 - Queue MASS-2 après corrections : **101 domaines / 17 376 URL-représentations / 15 790 signaux immobilier Maroc probables**.
 - Run `31556168993` SUCCESS ; artefact `9126213992`, digest `sha256:6f99427010bc4477c822f46559823ad7289b18acdc38f99bcfdee69e42bd0dc1` ; SQL indépendant réconcilié.

@@ -11,7 +11,7 @@
 **Doctrine : `MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME`.**  
 **Règle : l’admissibilité décide si une représentation peut exister ; la qualité décide où elle se classe.**
 
-### MASS-1 — Reservoir Qualification ✅ CERTIFIED / MERGE PENDING — PR #511
+### MASS-1 — Reservoir Qualification ✅ CLOSED / CERTIFIED 9,5/10 — PR #511
 
 Responsabilité : qualifier en lecture seule le réservoir `discovery_candidates`, mesurer les représentations URL net-new et produire une queue MASS-2 par domaine sans fetch source, write DB/DDL/Registry, ingestion ni activation Search.
 
@@ -26,7 +26,9 @@ Preuve production certifiée au head comportemental `d768f47e4662430c71066ea9aaa
 - 0 fuite SOCIAL / DISCOVERY_TRANSPORT / FOREIGN_ONLY / policy restrictive dans `SOURCE_FACTORY` ;
 - run `31556168993` SUCCESS ; artefact `9126213992` ; digest `sha256:6f99427010bc4477c822f46559823ad7289b18acdc38f99bcfdee69e42bd0dc1` ;
 - SQL indépendant : **199 381 / 101 131 / 56 812 / 35 / 86 741** réconciliés ;
-- **19/19 workflows exact-head comportemental SUCCESS** ; score final **9,5/10**.
+- **19/19 workflows exact-head comportemental SUCCESS** ;
+- clean-head final `0a2856e68b44bee6f7b398b5c314d53711d95a67` : **37/37 workflows associés SUCCESS**, run MASS-1 `31557215870` SUCCESS, artefact `9126627714`, digest `sha256:84333105c8edda9be5733184c42e2e1afc865109edb580a5ae1705219c1cd932` ;
+- PR #511 mergée dans `main` : `d2dce59e4aab914fb2a54e0547ccee427128f638` ; comparaison `0a2856e… → d2dce59e…` = **0 fichier différent** ; score final **9,5/10**.
 
 MASS-1 ne transforme aucune URL en annonce publique et ne confère aucune permission. `docs/data/DATA-MASS-1-RESERVOIR-QUALIFICATION.md` porte le détail de preuve.
 
