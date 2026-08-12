@@ -83,8 +83,28 @@ async function restAllById<T extends { id: string }>(table: string, params: Reco
     rows.push(...page);
     if (page.length < PAGE_SIZE) return rows;
     const nextId = page.at(-1)?.id ?? null;
-    if (!nextId || nextId === lastId) throw new Error(`${table} keyset pagination did not advance`);
+    if (!nextId || nextId === lastId) throw new Error(`${table} id keyset pagination did not advance`);
     lastId = nextId;
+  }
+}
+
+async function restAllBySeedId<T extends { seed_id: string }>(
+  table: string,
+  params: Record<string, string>,
+): Promise<T[]> {
+  const rows: T[] = [];
+  let lastSeedId: string | null = null;
+  for (;;) {
+    const query: Record<string, string> = { ...params, order: "seed_id.asc", limit: String(PAGE_SIZE) };
+    if (lastSeedId) query.seed_id = `gt.${lastSeedId}`;
+    const page = await restPage<T>(table, query);
+    rows.push(...page);
+    if (page.length < PAGE_SIZE) return rows;
+    const nextSeedId = page.at(-1)?.seed_id ?? null;
+    if (!nextSeedId || nextSeedId === lastSeedId) {
+      throw new Error(`${table} seed_id keyset pagination did not advance`);
+    }
+    lastSeedId = nextSeedId;
   }
 }
 
@@ -99,7 +119,7 @@ type DiscoveryRow = {
   content_fingerprint: string | null;
   last_seen_at: string | null;
 };
-type ThinIndexRow = { canonical_url: string };
+type ThinIndexRow = { seed_id: string; canonical_url: string };
 type RegistryRow = {
   source_domain: string;
   authorization_status: string | null;
@@ -142,9 +162,8 @@ async function main(): Promise<void> {
     restAllById<DiscoveryRow>("discovery_candidates", {
       select: "id,source_domain,source_url,canonical_url,title,snippet,discovery_query,content_fingerprint,last_seen_at",
     }),
-    restAll<ThinIndexRow>("thin_index_search_documents", {
-      select: "canonical_url",
-      order: "canonical_url.asc",
+    restAllBySeedId<ThinIndexRow>("thin_index_search_documents", {
+      select: "seed_id,canonical_url",
     }),
     restAll<RegistryRow>("source_policy_registry", {
       select: "source_domain,authorization_status,display_policy,display_gate,acquisition_mode,ingestion_gate",
@@ -219,6 +238,8 @@ async function main(): Promise<void> {
     nonHoldDecisions: batch.summary.nonHoldDecisionCount,
     publicActivableNowCount: batch.summary.publicActivableNowCount,
     paginationMode: "UUID_KEYSET",
+    discoveryPaginationMode: "ID_UUID_KEYSET",
+    thinIndexPaginationMode: "SEED_ID_UUID_KEYSET",
     mass1CertifiedHead: certifiedCohort.mass1Head,
     mass1CertifiedRunId: certifiedCohort.mass1RunId,
     mass1CertifiedArtifactId: certifiedCohort.mass1ArtifactId,
@@ -295,6 +316,7 @@ async function main(): Promise<void> {
     "- MASS-2A does not perform current robots/CGU/permission review.",
     "- Every dossier starts UNREVIEWED + HOLD + non-activable.",
     "- Network is restricted to the configured Supabase origin; no source page is fetched.",
+    "- Discovery and Thin Index use UUID keyset pagination; large scans never use OFFSET.",
     "",
     "## Certified handoff",
     "",
