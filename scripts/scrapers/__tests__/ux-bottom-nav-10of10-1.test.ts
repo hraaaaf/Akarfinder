@@ -50,8 +50,9 @@ test("UX-BOTTOM-NAV derives active state from pathname and exposes accessible cu
   assert.match(nav, /focus-visible:ring-2/);
 });
 
-test("UX-BOTTOM-NAV keeps touch, safe-area and page-bottom geometry explicit", () => {
-  assert.match(nav, /h-16/);
+test("UX-BOTTOM-NAV keeps touch, safe-area and exact page-bottom geometry explicit", () => {
+  assert.match(nav, /h-\[63px\]/);
+  assert.match(nav, /border-t/);
   assert.match(nav, /min-h-11/);
   assert.match(nav, /pb-\[env\(safe-area-inset-bottom\)\]/);
   assert.match(layout, /pb-\[calc\(64px\+env\(safe-area-inset-bottom\)\)\] md:pb-0/);
