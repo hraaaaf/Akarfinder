@@ -16,29 +16,27 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Discover reusable KartaView street imagery at Akkari
+      - name: Sweep reusable KartaView imagery across Akkari
         shell: bash
         run: |
           set -euo pipefail
           OUT="data/audits/neighborhood-visual-p1-2-akkari/kartaview"
           mkdir -p "$OUT/images"
           python3 - <<'PY'
-          import hashlib, json, math, pathlib, urllib.request
+          import hashlib, json, math, pathlib, urllib.parse, urllib.request
 
           OUT = pathlib.Path("data/audits/neighborhood-visual-p1-2-akkari/kartaview")
           IMG = OUT / "images"
-          CENTER = (34.00890, -6.86252)
-          API = (
-              "https://api.openstreetcam.org/2.0/photo/"
-              f"?lat={CENTER[0]}&lng={CENTER[1]}&zoomLevel=17"
-              "&join=sequence&orderBy=id&orderDirection=desc"
-          )
+          CENTERS = [
+              ("akkari-west", 34.00890, -6.86252),
+              ("akkari-center", 34.00900, -6.86050),
+              ("mosque-market", 34.00975, -6.85841),
+              ("souk-south", 34.00910, -6.85930),
+              ("assalam-south", 34.00670, -6.85920),
+              ("zerktouni-east", 34.00887, -6.85369),
+              ("hospital-north", 34.01200, -6.86200),
+          ]
           UA = "AkarFinder-P1.2-source-audit/1.0"
-
-          req = urllib.request.Request(API, headers={"User-Agent": UA, "Accept": "application/json"})
-          with urllib.request.urlopen(req, timeout=45) as r:
-              raw = json.load(r)
-          (OUT / "raw.json").write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
 
           def fnum(v):
               try: return float(v)
@@ -51,68 +49,65 @@ jobs:
               a=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2
               return 2*R*math.asin(math.sqrt(a))
 
-          data = raw.get("result", {}).get("data", [])
-          rows=[]
-          for d in data:
-              lat=fnum(d.get("lat")); lon=fnum(d.get("lng"))
-              if lat is None or lon is None:
-                  continue
-              urls=[]
-              for k in ("fileurlLTh","fileurlProc","fileurlTh","imageLthUrl","imageProcUrl","imageThUrl"):
-                  v=d.get(k)
-                  if isinstance(v,str) and v.startswith("http"):
-                      urls.append(v)
-              seq=d.get("sequence") or {}
-              rows.append({
-                  "id": d.get("id"), "lat": lat, "lng": lon,
-                  "distance_m": round(hav(CENTER[0],CENTER[1],lat,lon),1),
-                  "heading": d.get("heading"),
-                  "date": d.get("dateAdded"),
-                  "sequence_id": seq.get("id"),
-                  "sequence_address": seq.get("address"),
-                  "width": d.get("width"), "height": d.get("height"),
-                  "urls": list(dict.fromkeys(urls)),
+          by_id={}
+          raw_payloads={}
+          for label, qlat, qlng in CENTERS:
+              params=urllib.parse.urlencode({
+                  "lat": qlat, "lng": qlng, "zoomLevel": 17,
+                  "join": "sequence", "orderBy": "id", "orderDirection": "desc",
               })
+              url="https://api.openstreetcam.org/2.0/photo/?"+params
+              req=urllib.request.Request(url,headers={"User-Agent":UA,"Accept":"application/json"})
+              with urllib.request.urlopen(req,timeout=45) as r:
+                  raw=json.load(r)
+              raw_payloads[label]=raw
+              for d in raw.get("result",{}).get("data",[]):
+                  lat=fnum(d.get("lat")); lon=fnum(d.get("lng"))
+                  if lat is None or lon is None: continue
+                  urls=[]
+                  for k in ("fileurlLTh","fileurlProc","fileurlTh","imageLthUrl","imageProcUrl","imageThUrl"):
+                      v=d.get(k)
+                      if isinstance(v,str) and v.startswith("http"): urls.append(v)
+                  seq=d.get("sequence") or {}
+                  pid=str(d.get("id"))
+                  row=by_id.get(pid,{
+                      "id":d.get("id"),"lat":lat,"lng":lon,"heading":d.get("heading"),
+                      "date":d.get("dateAdded"),"shot_date":d.get("shotDate"),
+                      "sequence_id":seq.get("id"),"sequence_address":seq.get("address"),
+                      "width":d.get("width"),"height":d.get("height"),"urls":list(dict.fromkeys(urls)),
+                      "query_hits":[],
+                  })
+                  row["query_hits"].append({"label":label,"distance_m":round(hav(qlat,qlng,lat,lon),1)})
+                  by_id[pid]=row
 
-          rows.sort(key=lambda x:x["distance_m"])
+          (OUT/"raw-sweep.json").write_text(json.dumps(raw_payloads,ensure_ascii=False,indent=2),encoding="utf-8")
+          rows=list(by_id.values())
+          for r in rows:
+              r["best_query_distance_m"]=min(h["distance_m"] for h in r["query_hits"])
+          rows.sort(key=lambda x:x["best_query_distance_m"])
+
           downloaded=0
           for r in rows:
-              if downloaded>=12 or r["distance_m"]>1200 or not r["urls"]:
-                  continue
-              # Prefer the large thumbnail URL; it is a deterministic rendition of the real KartaView frame.
-              url=r["urls"][0]
+              if downloaded>=20 or r["best_query_distance_m"]>500 or not r["urls"]: continue
               try:
-                  req=urllib.request.Request(url, headers={"User-Agent":UA})
-                  with urllib.request.urlopen(req, timeout=45) as resp:
-                      b=resp.read()
-                  if len(b)<5000:
-                      continue
-                  p=IMG/f"{downloaded+1:02d}_{round(r['distance_m']):04d}m_{r['id']}.jpg"
+                  req=urllib.request.Request(r["urls"][0],headers={"User-Agent":UA})
+                  with urllib.request.urlopen(req,timeout=45) as resp: b=resp.read()
+                  if len(b)<5000: continue
+                  p=IMG/f"{downloaded+1:02d}_{round(r['best_query_distance_m']):04d}m_{r['id']}.jpg"
                   p.write_bytes(b)
                   r["downloaded_file"]=p.name
-                  r["sha1"]=hashlib.sha1(b).hexdigest()
-                  r["bytes"]=len(b)
+                  r["sha1"]=hashlib.sha1(b).hexdigest(); r["bytes"]=len(b)
                   downloaded+=1
               except Exception as e:
                   r["download_error"]=str(e)
 
-          (OUT / "candidates.json").write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
-          lines=[
-              "# KartaView Akkari source discovery",
-              "",
-              "License: CC BY-SA 4.0 per KartaView Terms; attribution required.",
-              f"Center: {CENTER[0]}, {CENTER[1]}",
-              f"Candidates: {len(rows)} · downloaded: {downloaded}",
-              "",
-              "| # | Distance | Photo ID | Sequence | Date | Heading | Address | File |",
-              "|---:|---:|---|---|---|---:|---|---|",
-          ]
+          (OUT/"candidates.json").write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding="utf-8")
+          lines=["# KartaView Akkari sweep","","License: CC BY-SA 4.0 per KartaView Terms; attribution required.",f"Query points: {len(CENTERS)} · unique frames: {len(rows)} · downloaded: {downloaded}","","| # | Nearest query | Photo ID | Coordinates | Heading | Shot date | File |","|---:|---:|---|---|---:|---|---|"]
           for i,r in enumerate(rows[:50],1):
-              lines.append(f"| {i} | {r['distance_m']} m | {r['id']} | {r['sequence_id']} | {r['date']} | {r['heading']} | {r['sequence_address']} | {r.get('downloaded_file','')} |")
-          (OUT / "candidates.md").write_text("\n".join(lines)+"\n", encoding="utf-8")
-          print(f"AKKARI_KARTAVIEW candidates={len(rows)} downloaded={downloaded}")
-          for r in rows[:20]:
-              print(r["distance_m"], r["id"], r.get("sequence_address"), r.get("downloaded_file"), r.get("sha1"), r.get("download_error"))
+              lines.append(f"| {i} | {r['best_query_distance_m']} m | {r['id']} | {r['lat']},{r['lng']} | {r['heading']} | {r['shot_date'] or r['date']} | {r.get('downloaded_file','')} |")
+          (OUT/"candidates.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
+          print(f"AKKARI_KARTAVIEW_SWEEP unique={len(rows)} downloaded={downloaded}")
+          for r in rows[:30]: print(r["best_query_distance_m"],r["id"],r["lat"],r["lng"],r.get("downloaded_file"),r.get("sha1"),r.get("download_error"))
           PY
       - uses: actions/upload-artifact@v4
         with:
