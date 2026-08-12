@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import test from "node:test";
 
@@ -12,10 +13,15 @@ import type { DomainReservoirSummary } from "../reservoir-qualification";
 
 const MANIFEST_PATH = "data/data-mass-2a/mass-1-certified-source-factory.json";
 const EXPECTED_HEAD = "0a2856e68b44bee6f7b398b5c314d53711d95a67";
-const EXPECTED_DIGEST = "sha256:84333105c8edda9be5733184c42e2e1afc865109edb580a5ae1705219c1cd932";
+const EXPECTED_ARTIFACT_DIGEST = "sha256:84333105c8edda9be5733184c42e2e1afc865109edb580a5ae1705219c1cd932";
+const EXPECTED_COHORT_DIGEST = "sha256:5ea66f2505cd7aca7e13993f54485c4bcd519d9bb3117b8d0c95447914f83ab5";
 
 function manifest(): CertifiedSourceFactoryCohortManifest {
   return JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8")) as CertifiedSourceFactoryCohortManifest;
+}
+
+function canonicalCohortDigest(cohort: CertifiedSourceFactoryCohortManifest["cohort"]): string {
+  return `sha256:${crypto.createHash("sha256").update(JSON.stringify(cohort)).digest("hex")}`;
 }
 
 function row(
@@ -69,7 +75,9 @@ test("certified MASS-1 cohort is exactly the immutable 101-domain handoff", () =
   assert.equal(cohort.mass1Head, EXPECTED_HEAD);
   assert.equal(cohort.mass1RunId, 31557215870);
   assert.equal(cohort.mass1ArtifactId, 9126627714);
-  assert.equal(cohort.mass1ArtifactDigest, EXPECTED_DIGEST);
+  assert.equal(cohort.mass1ArtifactDigest, EXPECTED_ARTIFACT_DIGEST);
+  assert.equal(cohort.mass1SourceFactoryCohortDigest, EXPECTED_COHORT_DIGEST);
+  assert.equal(canonicalCohortDigest(cohort.cohort), EXPECTED_COHORT_DIGEST);
   assert.equal(cohort.mass1GeneratedAt, "2026-08-12T02:45:47.595Z");
   assert.equal(cohort.certifiedDiscoveryRowsRead, 199381);
   assert.equal(cohort.certifiedSourceFactoryDomains, 101);
