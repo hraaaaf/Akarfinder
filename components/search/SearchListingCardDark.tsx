@@ -241,7 +241,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
               ) : null}
             </div>
             {!observedExternal ? (
-              <div data-card-favorite className="absolute right-2 top-2 z-20 scale-90 sm:static sm:z-auto sm:scale-100">
+              <div data-card-favorite className="absolute right-2 top-2 z-20 sm:static sm:z-auto">
                 <FavoriteToggleButton listingId={listing.id} variant="icon" />
               </div>
             ) : null}
@@ -346,7 +346,35 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           [data-search-continuous-flow] > div.grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             column-gap: 0.75rem;
-            row-gap: 1.5rem;
+            row-gap: 1.25rem;
+          }
+        }
+
+        @media (min-width: 640px) {
+          [data-search-continuous-flow] > div.grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            column-gap: 1rem;
+            row-gap: 1.25rem;
+          }
+        }
+
+        @media (min-width: 960px) {
+          [data-search-view-layout="list"] [data-search-continuous-flow] > div.grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+
+          [data-search-view-layout="split"] [data-search-continuous-flow] > div.grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (min-width: 1280px) {
+          [data-search-view-layout="list"] [data-search-continuous-flow] > div.grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+          }
+
+          [data-search-view-layout="split"] [data-search-continuous-flow] > div.grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
         }
       `}</style>
