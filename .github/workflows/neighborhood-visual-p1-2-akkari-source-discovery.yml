@@ -9,116 +9,74 @@ on:
 permissions:
   contents: read
 
-# Source-discovery only. This workflow is removed once the three P1.2 sources are locked.
+# Temporary source-discovery gate. Removed once P1.2 sources are locked.
 jobs:
-  commons-geosearch:
+  selected-candidates:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Discover geolocated Commons candidates around Akkari
+      - name: Fetch exact selected real candidates
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p data/audits/neighborhood-visual-p1-2-akkari/source-discovery/thumbs
-          python3 - <<'PY'
-          import json, math, pathlib, re, urllib.parse, urllib.request
+          OUT="data/audits/neighborhood-visual-p1-2-akkari/selected-candidates"
+          mkdir -p "$OUT"
+          UA='AkarFinder-P1.2/1.0 source-audit contact=github.com/hraaaaf/Akarfinder'
 
-          OUT = pathlib.Path("data/audits/neighborhood-visual-p1-2-akkari/source-discovery")
-          THUMBS = OUT / "thumbs"
-          CENTER = (34.0090, -6.8590)
-          UA = "AkarFinder-P1.2-source-discovery/1.0 (GitHub Actions; source audit only)"
+          fetch() {
+            local file="$1" out="$2"
+            curl --fail --location --retry 6 --retry-delay 4 --retry-all-errors \
+              --user-agent "$UA" \
+              "https://commons.wikimedia.org/wiki/Special:Redirect/file/${file}" \
+              -o "$OUT/$out"
+            sleep 4
+          }
 
-          def api(params):
-              url = "https://commons.wikimedia.org/w/api.php?" + urllib.parse.urlencode(params)
-              req = urllib.request.Request(url, headers={"User-Agent": UA})
-              with urllib.request.urlopen(req, timeout=30) as r:
-                  return json.load(r)
+          fetch 'Haj%20Hassan%20Al%20Akkari%20Mosque%20-%20Rabat.jpg' 'signature-haj-hassan-akkari.jpg'
+          fetch 'Place%20Mohammed%20Zarqtouni%20Rabat.jpg' 'place-mohammed-zarqtouni.jpg'
+          fetch 'Moulay%20Youssef%20Hospital%20Center%20Rabat.jpg' 'moulay-youssef-hospital.jpg'
 
-          geo = api({
-              "action": "query", "format": "json", "list": "geosearch",
-              "gscoord": f"{CENTER[0]}|{CENTER[1]}", "gsradius": 2500,
-              "gsnamespace": 6, "gslimit": 100,
-          })["query"]["geosearch"]
+          echo 'b81c1ec25a3de2b176911a8e6662ad8967d2c411  data/audits/neighborhood-visual-p1-2-akkari/selected-candidates/signature-haj-hassan-akkari.jpg' | sha1sum --check --strict
+          echo 'dd6d922196aba82e802d5d70cf9c21df7c47f0c7  data/audits/neighborhood-visual-p1-2-akkari/selected-candidates/place-mohammed-zarqtouni.jpg' | sha1sum --check --strict
+          echo '5a2af1a480d1d249387ac7ecefaa14fbb6129e9d  data/audits/neighborhood-visual-p1-2-akkari/selected-candidates/moulay-youssef-hospital.jpg' | sha1sum --check --strict
 
-          titles = [x["title"] for x in geo]
-          details = {}
-          for start in range(0, len(titles), 25):
-              batch = titles[start:start+25]
-              data = api({
-                  "action": "query", "format": "json", "titles": "|".join(batch),
-                  "prop": "imageinfo", "iiprop": "url|sha1|size|extmetadata",
-                  "iiurlwidth": 960,
-              })
-              for page in data.get("query", {}).get("pages", {}).values():
-                  if "imageinfo" in page:
-                      details[page["title"]] = page["imageinfo"][0]
+          test "$(wc -c < "$OUT/signature-haj-hassan-akkari.jpg")" -eq 2417308
+          test "$(wc -c < "$OUT/place-mohammed-zarqtouni.jpg")" -eq 1985581
+          test "$(wc -c < "$OUT/moulay-youssef-hospital.jpg")" -eq 2326171
 
-          def clean_html(value):
-              if not value: return ""
-              value = re.sub(r"<[^>]+>", " ", value)
-              return re.sub(r"\s+", " ", value).strip()
+          cat > "$OUT/source-proof.txt" <<'EOF'
+          Signature candidate
+          File: Haj Hassan Al Akkari Mosque - Rabat.jpg
+          Author: RACHID BAYA
+          License: CC BY-SA 4.0
+          Coordinates: 34.01288605, -6.86349618
+          Dimensions: 3000x4000
+          Bytes: 2417308
+          SHA-1: b81c1ec25a3de2b176911a8e6662ad8967d2c411
 
-          rows = []
-          for g in geo:
-              info = details.get(g["title"], {})
-              meta = info.get("extmetadata", {})
-              license_name = meta.get("LicenseShortName", {}).get("value", "")
-              reusable = bool(re.search(r"CC\s*(BY|0)|Public domain|PD", license_name, re.I))
-              rows.append({
-                  "title": g["title"],
-                  "distance_m": round(g.get("dist", 0), 1),
-                  "lat": g.get("lat"), "lon": g.get("lon"),
-                  "width": info.get("width"), "height": info.get("height"),
-                  "bytes": info.get("size"), "sha1": info.get("sha1"),
-                  "license": license_name,
-                  "artist": clean_html(meta.get("Artist", {}).get("value", "")),
-                  "description": clean_html(meta.get("ImageDescription", {}).get("value", "")),
-                  "date": meta.get("DateTimeOriginal", {}).get("value") or meta.get("DateTime", {}).get("value"),
-                  "source_url": info.get("descriptionurl"),
-                  "thumb_url": info.get("thumburl"),
-                  "reusable": reusable,
-              })
+          Built-morphology candidate
+          File: Place Mohammed Zarqtouni Rabat.jpg
+          Author: RACHID BAYA
+          License: CC BY-SA 4.0
+          Coordinates: 34.00887484, -6.85369415
+          Dimensions: 4000x3000
+          Bytes: 1985581
+          SHA-1: dd6d922196aba82e802d5d70cf9c21df7c47f0c7
 
-          rows.sort(key=lambda x: x["distance_m"])
-          (OUT / "candidates.json").write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+          Alternative built/public-space candidate
+          File: Moulay Youssef Hospital Center Rabat.jpg
+          Author: RACHID BAYA
+          License: CC BY-SA 4.0
+          Coordinates: 34.01288605, -6.86349618
+          Dimensions: 4000x3000
+          Bytes: 2326171
+          SHA-1: 5a2af1a480d1d249387ac7ecefaa14fbb6129e9d
+          EOF
 
-          lines = [
-              "# Akkari Commons geosearch — source discovery only",
-              "",
-              f"Center: {CENTER[0]}, {CENTER[1]} · radius 2500 m · candidates: {len(rows)}",
-              "",
-              "| # | Distance | File | License | Size | Description |",
-              "|---:|---:|---|---|---|---|",
-          ]
-          for i, r in enumerate(rows, 1):
-              desc = (r["description"] or "").replace("|", "\\|")[:160]
-              lines.append(f'| {i} | {r["distance_m"]} m | {r["title"]} | {r["license"]} | {r["width"]}×{r["height"]} | {desc} |')
-          (OUT / "candidates.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
-
-          # Download only reusable candidates in the nearest 1500 m, capped to 40 thumbnails.
-          n = 0
-          for i, r in enumerate(rows, 1):
-              if n >= 40 or r["distance_m"] > 1500 or not r["reusable"] or not r["thumb_url"]:
-                  continue
-              safe = re.sub(r"[^A-Za-z0-9._-]+", "_", r["title"].removeprefix("File:"))[:100]
-              ext = pathlib.Path(urllib.parse.urlparse(r["thumb_url"]).path).suffix or ".jpg"
-              target = THUMBS / f"{i:03d}_{round(r['distance_m']):04d}m_{safe}{ext}"
-              req = urllib.request.Request(r["thumb_url"], headers={"User-Agent": UA})
-              try:
-                  with urllib.request.urlopen(req, timeout=30) as resp:
-                      target.write_bytes(resp.read())
-                  n += 1
-              except Exception as exc:
-                  print(f"thumbnail failed {r['title']}: {exc}")
-
-          print(f"AKKARI_SOURCE_DISCOVERY candidates={len(rows)} reusable_thumbs={n}")
-          for r in rows[:30]:
-              print(f"{r['distance_m']:>7}m | {r['license']:<18} | {r['title']} | {r['sha1']}")
-          PY
       - uses: actions/upload-artifact@v4
         with:
-          name: neighborhood-visual-p1-2-akkari-source-discovery
-          path: data/audits/neighborhood-visual-p1-2-akkari/source-discovery
+          name: neighborhood-visual-p1-2-akkari-selected-candidates
+          path: data/audits/neighborhood-visual-p1-2-akkari/selected-candidates
           if-no-files-found: error
           retention-days: 7
