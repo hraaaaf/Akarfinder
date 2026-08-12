@@ -214,7 +214,10 @@ export function resolveRabatRealPhoto(input: {
 
   const district = normalizeRabatNeighborhood(input.district);
   if (district) {
-    const selected = selectHighestRandomWeight(RABAT_SEARCH_DISTRICT_POOLS[district], input.stableKey);
+    const searchStableKey = district === "Souissi"
+      ? `residential-context\u001f${input.stableKey}`
+      : input.stableKey;
+    const selected = selectHighestRandomWeight(RABAT_SEARCH_DISTRICT_POOLS[district], searchStableKey);
     return selected ? { ...selected, contextScope: "district" } : null;
   }
 
