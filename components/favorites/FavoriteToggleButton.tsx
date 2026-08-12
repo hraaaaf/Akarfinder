@@ -82,7 +82,7 @@ export function FavoriteToggleButton({
   }
 
   return (
-    <div className={`inline-flex flex-col items-end gap-0.5 ${className}`}>
+    <div className={`relative inline-flex items-center ${className}`}>
       <button
         type="button"
         onClick={handleToggle}
@@ -102,8 +102,8 @@ export function FavoriteToggleButton({
           aria-hidden="true"
         />
       </button>
-      <span aria-live="polite" className="min-h-3 whitespace-nowrap text-[10px] font-semibold text-gray-500">
-        {feedback ? <span className={motion.feedbackEnter}>{feedback}</span> : null}
+      <span aria-live="polite" className="sr-only">
+        {feedback}
       </span>
     </div>
   );
