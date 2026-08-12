@@ -3,6 +3,7 @@ export type DomainRole =
   | "AGGREGATOR"
   | "SOCIAL"
   | "DISCOVERY_TRANSPORT"
+  | "FOREIGN_ONLY"
   | "UNKNOWN";
 
 export type PageKind =
@@ -98,15 +99,22 @@ const SOCIAL_DOMAINS = new Set([
   "x.com", "twitter.com", "linkedin.com",
 ]);
 
-// Discovery/search/directory/hospitality surfaces can carry real-estate-looking text
-// but are not acquisition inventory sources for the long-term property index.
+// Search, directories, editorial cost guides and hospitality surfaces may contain
+// real-estate-looking text, but they are not property inventory sources.
 const DISCOVERY_TRANSPORT_DOMAINS = new Set([
   "google.com", "bing.com", "duckduckgo.com", "search.yahoo.com", "support.google.com",
   "support.microsoft.com", "microsoft.com", "wikipedia.org", "en.wikipedia.org",
   "fr.wikipedia.org", "stackoverflow.com", "zhihu.com", "telecontact.ma", "tiendeo.ma",
+  "petitfute.com", "combien-coute.net", "annuaire-horaire.com",
   "booking.com", "agoda.com", "allhotelsmorocco.com", "hotels.com", "expedia.com",
   "airbnb.com", "airbnb.fr", "tripadvisor.com", "tripadvisor.fr", "vrbo.com", "abritel.fr",
   "villanovo.fr", "cozycozy.com",
+]);
+
+// Explicit foreign-market portals observed in the live reservoir. They remain measurable,
+// but must not consume MASS-2 Morocco Source Factory review capacity.
+const FOREIGN_ONLY_DOMAINS = new Set([
+  "mubawab.tn", "ouedkniss.com", "ouestfrance-immo.com", "geolocaux.com",
 ]);
 
 const AGGREGATOR_DOMAINS = new Set([
@@ -238,6 +246,7 @@ export function classifyDomainRole(inputDomain: string): DomainRole {
   const domain = normalizeDomain(inputDomain);
   if (domainMatches(domain, SOCIAL_DOMAINS)) return "SOCIAL";
   if (domainMatches(domain, DISCOVERY_TRANSPORT_DOMAINS)) return "DISCOVERY_TRANSPORT";
+  if (domainMatches(domain, FOREIGN_ONLY_DOMAINS)) return "FOREIGN_ONLY";
   if (domainMatches(domain, AGGREGATOR_DOMAINS)) return "AGGREGATOR";
   if (domainMatches(domain, DIRECT_PORTAL_DOMAINS)) return "DIRECT_PORTAL";
   return "UNKNOWN";
@@ -388,7 +397,11 @@ function chooseQueue(
     return "MEASURE_ONLY";
   }
 
-  if (summary.domainRole === "SOCIAL" || summary.domainRole === "DISCOVERY_TRANSPORT") return "HOLD";
+  if (
+    summary.domainRole === "SOCIAL" ||
+    summary.domainRole === "DISCOVERY_TRANSPORT" ||
+    summary.domainRole === "FOREIGN_ONLY"
+  ) return "HOLD";
 
   if (
     summary.likelyMoroccoRealEstateUrls >= 20 &&
