@@ -2,7 +2,7 @@
 
 **Status:** 🟠 ACTIVE / CERTIFICATION REQUIRED  
 **Lane:** DATA / Mass Coverage  
-**Branch:** `data/mass-2-source-factory`  
+**Branch:** `data/mass-2a-source-factory-engine`  
 **Parent:** MASS-2 — Source Factory  
 **Weight in MASS-2:** 15 %
 
