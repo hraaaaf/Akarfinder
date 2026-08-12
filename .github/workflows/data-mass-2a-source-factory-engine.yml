@@ -1,0 +1,105 @@
+name: DATA MASS-2A Source Factory Engine
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data-mass/source-factory.ts"
+      - "scripts/data-mass/__tests__/source-factory.test.ts"
+      - "scripts/data-mass/reservoir-qualification.ts"
+      - "scripts/data-mass/__tests__/reservoir-qualification.test.ts"
+      - "scripts/data-mass/__tests__/reservoir-hospitality-exclusions.test.ts"
+      - "scripts/audits/data-mass-2a-source-factory-engine.ts"
+      - ".github/workflows/data-mass-2a-source-factory-engine.yml"
+      - "docs/data/DATA-MASS-2A-SOURCE-FACTORY-ENGINE.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-mass-2a-source-factory-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: MASS-2A + MASS-1 predecessor tests
+        run: npx tsx --test scripts/data-mass/__tests__/source-factory.test.ts scripts/data-mass/__tests__/reservoir-qualification.test.ts scripts/data-mass/__tests__/reservoir-hospitality-exclusions.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+
+  live-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_MASS_2A_OUT_DIR: .tmp/data-mass-2a/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run MASS-2A production read-only audit
+        run: npx tsx scripts/audits/data-mass-2a-source-factory-engine.ts
+      - name: Enforce MASS-2A fail-closed truth boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_MASS_2A_OUT_DIR}/proof.json"
+          test -s "${DATA_MASS_2A_OUT_DIR}/dossiers.json"
+          test -s "${DATA_MASS_2A_OUT_DIR}/dossiers.csv"
+          test -s "${DATA_MASS_2A_OUT_DIR}/summary.md"
+          node - <<'NODE'
+          const fs = require('fs');
+          const dir = '.tmp/data-mass-2a/results';
+          const p = JSON.parse(fs.readFileSync(`${dir}/proof.json`, 'utf8'));
+          const batch = JSON.parse(fs.readFileSync(`${dir}/dossiers.json`, 'utf8'));
+          const dossiers = Array.isArray(batch.dossiers) ? batch.dossiers : [];
+
+          if (p.readOnly !== true) throw new Error(`MASS-2A must be read-only: ${JSON.stringify(p)}`);
+          if (p.databaseWrites !== 0 || p.ddlChanges !== 0 || p.registryWrites !== 0 || p.policyChanges !== 0) throw new Error(`MASS-2A mutation boundary violated: ${JSON.stringify(p)}`);
+          if (p.sourceNetworkRequests !== 0 || p.detailPageFetches !== 0) throw new Error(`MASS-2A source fetch boundary violated: ${JSON.stringify(p)}`);
+          if (p.publicRowsCreated !== 0 || p.searchActivations !== 0 || p.permissionsInferred !== 0) throw new Error(`MASS-2A activation/permission boundary violated: ${JSON.stringify(p)}`);
+          if (p.paginationMode !== 'UUID_KEYSET') throw new Error(`MASS-2A must preserve large-scan keyset pagination: ${JSON.stringify(p)}`);
+          if (!(p.mass1SourceFactoryDomains > 0) || p.dossiersProduced !== p.mass1SourceFactoryDomains) throw new Error(`MASS-2A coverage mismatch: ${JSON.stringify(p)}`);
+          if (p.uniqueDossierDomains !== p.dossiersProduced) throw new Error(`Duplicate/missing dossier domain: ${JSON.stringify(p)}`);
+          if (p.highYieldDomains !== Math.min(20, p.dossiersProduced)) throw new Error(`High-yield cohort drift: ${JSON.stringify(p)}`);
+          const expectedMid = Math.min(30, Math.max(0, p.dossiersProduced - 20));
+          if (p.midYieldDomains !== expectedMid) throw new Error(`Mid-yield cohort drift: ${JSON.stringify(p)}`);
+          if (p.longTailDomains !== Math.max(0, p.dossiersProduced - 50)) throw new Error(`Long-tail cohort drift: ${JSON.stringify(p)}`);
+          if (!p.allDossiersUnreviewed || !p.allDossiersHold || !p.allDossiersNonActivable || !p.allPermissionsNotInferred || !p.allExternalEvidenceNotReviewed) throw new Error(`Fail-closed dossier invariant violated: ${JSON.stringify(p)}`);
+
+          const escaped = dossiers.filter((d) =>
+            d.reviewStatus !== 'UNREVIEWED' ||
+            d.proposedDecision !== 'HOLD' ||
+            d.permissionInferred !== false ||
+            d.publicActivableNow !== false ||
+            d.reviewPriorityBasis !== 'MASS_1_MASS_POTENTIAL_SCORE_ONLY'
+          );
+          if (escaped.length) throw new Error(`MASS-2A dossier escaped review boundary: ${JSON.stringify(escaped.slice(0, 5))}`);
+
+          const ranks = dossiers.map((d) => d.rank);
+          if (ranks.some((rank, i) => rank !== i + 1)) throw new Error(`Non-contiguous deterministic ranks: ${JSON.stringify(ranks.slice(0, 20))}`);
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-2a-source-factory-engine
+          path: .tmp/data-mass-2a/results/
+          if-no-files-found: error
+          retention-days: 30
