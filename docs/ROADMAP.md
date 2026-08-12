@@ -32,57 +32,35 @@ Preuve production certifiée au head comportemental `d768f47e4662430c71066ea9aaa
 
 MASS-1 ne transforme aucune URL en annonce publique et ne confère aucune permission. `docs/data/DATA-MASS-1-RESERVOIR-QUALIFICATION.md` porte le détail de preuve.
 
-### MASS-2 — Source Factory 🔴 ACTIVE
+### MASS-2 — Source Factory 🔴 ACTIVE — 60 % certifié à l’issue de 2C
 
-Responsabilité globale : convertir la queue MASS-1 de **101 domaines / 15 790 signaux immobilier Maroc probables** en décisions de source explicites, prouvées et fail-closed. Une décision se prend **par domaine**, jamais par URL. MASS-2 n'ingère aucune annonce et n'active aucune source dans Search.
+Responsabilité globale : convertir les **101 domaines** issus de MASS-1 en décisions de source explicites, prouvées et fail-closed. Une décision se prend par domaine. MASS-2 n’ingère aucune annonce et n’active aucune source dans Search.
 
-#### MASS-2A — Factory Engine ✅ TECHNICALLY CERTIFIED 9,5/10 — PR #519 — 15 %
+Doctrine produit verrouillée : AkarFinder vise un **index minimal attribué** (`Source : X` + lien canonique), pas une republication. L’attribution ne remplace pas la permission; acquisition directe et indexation canonical-link sont évaluées séparément; photos/descriptions complètes ne sont pas réutilisables par défaut; robots/sitemap/capacité ne confèrent aucun droit.
 
-Responsabilité : construire le moteur déterministe de Source Factory — schéma de preuve, identité de domaine, rendement attendu, classification de surface, états de décision, raisons fail-closed, couverture Registry et contrat de sortie reproductible — sans jugement juridique automatique, Registry write, ingestion ni activation.
+#### MASS-2A — Factory Engine ✅ CLOSED — 15 %
 
-Preuves de certification technique au head comportemental `a1a473a99db3ea2a203948ce59e4cb9062cff773` :
+PR #519, merge `6cd7625b2ba8e7179ce556841f6306225ba1a3fa`, score **9,5/10**. Cohorte certifiée immuable **101 = 20 HIGH_YIELD / 30 MID_YIELD / 51 LONG_TAIL**; moteur déterministe, schéma de preuve et décisions fail-closed; 0 write/fetch/activation/permission inférée.
 
-- workflow dédié `DATA MASS-2A Source Factory Engine`, run **`31633323123` SUCCESS** ;
-- contract : **40/40 tests PASS**, `npx tsc --noEmit` PASS, build production Next.js PASS ;
-- live-audit production read-only + truth-boundary PASS ;
-- artefact `9156633723`, digest **`sha256:e16c4e1e8a970435a8577c95b86a6e518c7d24c5c50750baf6c2fad06d759e77`** ; rehash indépendant du ZIP identique ;
-- handoff MASS-1 figé par manifeste : **101 domaines exacts**, rangs/scores immuables, digest cohort **`sha256:5ea66f2505cd7aca7e13993f54485c4bcd519d9bb3117b8d0c95447914f83ab5`** ;
-- dossiers 2A : **101/101 uniques**, rangs contigus, cohortes **20 high-yield / 30 mid-yield / 51 long-tail** ; frontières exactes 20/21/50/51 préservées ;
-- chaque dossier = `UNREVIEWED + HOLD`, `permissionInferred=false`, `publicActivableNow=false` ; **0 décision non-HOLD** ;
-- production observée : **203 317 Discovery / 102 508 représentations Discovery distinctes / 56 814 Thin Index / 35 Registry** ;
-- drift live : **106** domaines recomputés `SOURCE_FACTORY`, soit **5 ajouts post-snapshot** (`inmarrakechimmo.com`, `le-25.com`, `mri-immo.com`, `nourreska.com`, `sunlife.ma`) et **0 domaine certifié perdu** ; le drift reste observation-only et ne redimensionne pas le cohort en vol ;
-- rendement courant du cohort figé : **17 602 représentations candidates / 16 018 signaux immobilier Maroc probables / 3 051 structures détail probables** ;
-- sécurité : **0 DB write / 0 DDL / 0 Registry write / 0 policy change / 0 source-network request / 0 detail fetch / 0 public row / 0 Search activation / 0 permission inférée** ;
-- scans massifs : keyset UUID indexé sur `discovery_candidates.id` et `thin_index_search_documents.seed_id`; le truth-gate interdit le retour à OFFSET ;
-- finding corrigé avant certification : l’ancien scan Thin Index OFFSET produisait `57014 statement timeout`; le chemin `seed_id` PK keyset a été validé directement en production ;
-- deux workflows transverses rouges du même head sont classés hors scope : l’ancien MASS-1 live-audit échoue sur son propre OFFSET historique alors que son contract/build est vert ; UX-SEARCH-2 échoue sur son gate toolbar mobile 70 px sans aucun fichier UX modifié par #519 ;
-- aucun thread de review ouvert ; **self-review technique 9,5/10**. Aucune revue humaine indépendante n’est inventée ici ; l’indépendance finale de l’ensemble Source Factory reste explicitement portée par MASS-2F.
+#### MASS-2B — High-Yield Sources ✅ CLOSED — 25 %
 
-MASS-2A gèle uniquement le moteur et le cohort. Il **n’accorde aucune permission** aux 101 domaines. Les preuves robots/CGU/rights/channel sont la responsabilité des sous-lots 2B/2C/2D.
+PR #523, merge `97bb8c6a9596553d7e8794b5f3b06a71cd845d2f`, score **9,4/10**. **20/20** : **17 `PERMISSION_REQUIRED` / 3 `HOLD`**; **17** `CANONICAL_LINK_ONLY_CANDIDATE`, **0 approuvé**; Registry 0/20 et zéro mutation/activation.
 
-#### MASS-2B — High-Yield Sources 🔵 NEXT AFTER #519 MERGE — 25 %
+#### MASS-2C — Mid-Yield Sources ✅ CERTIFIED — 20 %
 
-Auditer en priorité les **20 domaines high-yield certifiés** par MASS-2A. Pour chaque domaine : identité réelle, stock Maroc, robots.txt, CGU/permissions publiques disponibles, canaux observables, sitemap/structure, fraîcheur et proposition de mode. Chaque preuve doit être datée et attribuée. Toute absence, contradiction ou ambiguïté reste fail-closed. **Aucun Registry write, aucune ingestion, aucune activation Search dans 2B.**
+PR #524. **30/30 rangs 21→50** : **17 `PERMISSION_REQUIRED` / 13 `HOLD`**; **17** canonical-link candidates, **0 approuvé**. Rendement certifié conservé : **3 026 URL-représentations / 1 758 signaux immobilier Maroc / 967 structures détail**. Run `31644744613` SUCCESS; artefact `9160596350`, digest `sha256:53f83d11f9c0ca01da99eba88e3db2d69c277efc4bce8888a17202898823ad63`; Registry **0/30**, drift 0; 0 DB/DDL/Registry/policy write, source/detail fetch, ingestion, Search activation ou permission inférée.
 
-#### MASS-2C — Mid-Yield Sources 🔵 PLANNED — 20 %
+#### MASS-2D — Long-Tail Sources 🔵 NEXT — 20 %
 
-Auditer le deuxième groupe de **30 domaines** selon le même contrat de preuve et de décision, sans abaisser les gates pour gagner du volume.
-
-#### MASS-2D — Long-Tail Sources 🔵 PLANNED — 20 %
-
-Auditer les **51 domaines** restants jusqu'à **101/101 domaines couverts** et classer explicitement les domaines non exploitables, étrangers, annuaires, agrégateurs non admissibles ou sans preuve suffisante.
+Auditer les **51 domaines rangs 51→101** avec exactement le même contrat : identité, preuves officielles actuelles, séparation acquisition directe / index minimal attribué, `HOLD` par défaut en cas d’absence/ambiguïté. Aucun Registry write, ingestion ou Search activation.
 
 #### MASS-2E — Policy Matrix & Registry Preview 🔵 PLANNED — 10 %
 
-Consolider la matrice finale `domain → evidence → channel → proposed policy → expected yield`, détecter conflits/expirations et produire un **Registry preview**. Aucun write production n'est permis sans preuve explicite et gate séparé ; par défaut le preview reste read-only.
+Consolider 2B/2C/2D en matrice de policy et preview Registry, détecter contradictions/expirations, sans mutation automatique. La baseline transversale `CANONICAL_LINK_ONLY` doit être résolue ici ou avant toute activation.
 
-#### MASS-2F — Source Factory Certification 🔵 PLANNED — 10 %
+#### MASS-2F — Certification 🔵 PLANNED — 10 %
 
-Double-check indépendant de la couverture 101/101, revalidation des preuves temporelles, tests fail-closed, exact-head CI, rapport de volume potentiellement récupérable et score final. MASS-2 ne peut être CLOSED sous **9,0/10**.
-
-Décisions autorisées comme **sorties de revue**, jamais comme permission implicite : `POLICY_COMPATIBLE`, `CANONICAL_LINK_ONLY`, `INTERNAL_ONLY`, `PERMISSION_REQUIRED`, `PROHIBITED`, `HOLD`.
-
-**Ordre MASS-2 verrouillé : 2A → 2B → 2C → 2D → 2E → 2F.** Chaque sous-lot = une responsabilité, une branche/PR/certification ; le sous-lot suivant repart du nouveau `main`.
+Certification complète des 101 domaines : couverture, preuves datées, décisions, conflits, expirations, zero-bypass et cohérence Registry/Search. Aucun domaine ne devient activable par volume ou attribution seule.
 ### MASS-3 — Minimal Listing Index 🔵 PLANNED
 
 Pour toute source devenue policy-admissible, permettre une représentation minimale : canonical URL + source + titre/signal structurel fiable + géographie disponible. Prix, surface, photo, quartier et description deviennent des facteurs de Listing Power/ranking, pas des prérequis d’existence. Zéro invention de champ absent.
