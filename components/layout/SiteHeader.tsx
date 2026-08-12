@@ -75,53 +75,54 @@ export function SiteHeader({
     return (
       <header
         data-search-global-header="exact-white"
-        className="sticky top-0 z-30 border-b border-slate-200/80 bg-white text-slate-900 shadow-[0_1px_3px_rgba(15,23,42,0.04)]"
+        data-premium-search-header="ux-premium-header-1"
+        className="sticky top-0 z-30 border-b border-slate-200/70 bg-white text-slate-900 shadow-[0_1px_12px_rgba(11,37,69,0.035)]"
       >
-        <Container fluid={fluid} className="relative h-[53px]">
+        <Container fluid={fluid} className="relative h-[67px] !px-4 sm:!px-6 lg:h-[63px] lg:!px-8">
           <div className="grid h-full grid-cols-[44px_1fr_44px] items-center lg:hidden">
             <button
               type="button"
               aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((open) => !open)}
-              className="grid h-11 w-11 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100"
+              className="grid h-11 w-11 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]/30"
             >
-              {menuOpen ? <X size={21} /> : <Menu size={21} />}
+              {menuOpen ? <X size={23} strokeWidth={1.8} /> : <Menu size={23} strokeWidth={1.8} />}
             </button>
 
-            <Link href="/" className="mx-auto flex items-center" aria-label="AkarFinder - accueil">
+            <Link href="/" className="mx-auto flex items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]/30" aria-label="AkarFinder - accueil">
               <img
                 src="/brand/logo-v2/logo-header-light.png"
                 alt="AkarFinder"
-                width={132}
-                height={33}
-                className="h-[27px] w-auto"
+                width={142}
+                height={35}
+                className="h-[29px] w-auto"
               />
             </Link>
 
             <Link
               href="/mon-projet"
               aria-label="Mon compte"
-              className="grid h-11 w-11 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100"
+              className="grid h-11 w-11 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]/30"
             >
-              <UserRound size={21} />
+              <UserRound size={23} strokeWidth={1.8} />
             </Link>
           </div>
 
           <div className="hidden h-full items-center justify-between gap-8 lg:flex">
             <div className="flex min-w-0 items-center gap-10">
-              <Link href="/" className="flex shrink-0 items-center" aria-label="AkarFinder - accueil">
+              <Link href="/" className="flex shrink-0 items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]/30" aria-label="AkarFinder - accueil">
                 <img
                   src="/brand/logo-v2/logo-header-light.png"
                   alt="AkarFinder"
-                  width={142}
-                  height={35}
-                  className="h-[29px] w-auto"
+                  width={150}
+                  height={37}
+                  className="h-[31px] w-auto"
                 />
               </Link>
 
               <nav aria-label="Navigation principale">
-                <ul className="flex h-[53px] items-center gap-7">
+                <ul className="flex h-[63px] items-center gap-7">
                   {searchPrimaryNav.map((item) => {
                     const isActive = pathname.startsWith(item.href);
                     return (
@@ -169,9 +170,9 @@ export function SiteHeader({
               <Link
                 href="/mon-projet"
                 aria-label="Mon compte"
-                className="grid h-10 w-10 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100"
+                className="grid h-10 w-10 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]/30"
               >
-                <UserRound size={20} />
+                <UserRound size={21} strokeWidth={1.8} />
               </Link>
             </div>
           </div>
