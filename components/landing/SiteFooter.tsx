@@ -58,7 +58,7 @@ export function SiteFooter({ variant = "default" }: SiteFooterProps) {
       data-search-footer={isSearch ? "compact" : undefined}
       className={
         isSearch
-          ? "bg-[#041426] py-7 text-white sm:py-8 lg:py-9"
+          ? "bg-[#041426] py-7 text-white sm:py-8 lg:py-8"
           : "bg-[#041426] py-12 text-white sm:py-14 lg:py-16"
       }
     >
@@ -98,17 +98,12 @@ export function SiteFooter({ variant = "default" }: SiteFooterProps) {
                 <div
                   className={
                     isSearch
-                      ? "mt-3 grid gap-2 text-[12.5px] leading-[18px] text-white/62"
+                      ? "mt-3 grid gap-1.5 text-[12.5px] leading-[18px] text-white/62"
                       : "mt-4 grid gap-2.5 text-[13px] text-white/62"
                   }
                 >
                   {group.links.map((link) => (
-                    <Link
-                      key={link.label}
-                      href={link.href}
-                      data-footer-link
-                      className={focusClasses}
-                    >
+                    <Link key={link.label} href={link.href} data-footer-link className={focusClasses}>
                       {link.label}
                     </Link>
                   ))}
@@ -167,7 +162,7 @@ export function SiteFooter({ variant = "default" }: SiteFooterProps) {
           data-footer-trust-line
           className={
             isSearch
-              ? "mt-6 flex flex-col gap-2 border-t border-white/10 pt-4 text-[11.5px] leading-5 text-white/48 sm:mt-7 sm:flex-row sm:items-center sm:justify-between"
+              ? "mt-6 flex flex-col gap-2 border-t border-white/10 pt-4 text-[11.5px] leading-5 text-white/48 sm:flex-row sm:items-center sm:justify-between"
               : "mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 text-[11.5px] leading-5 text-white/48 sm:flex-row sm:items-center sm:justify-between"
           }
         >
