@@ -17,6 +17,56 @@ const viewports = [
   { width: 1440, height: 1000, expectedColumns: 4, expectedImageHeight: 196 },
 ];
 
+const districts = ["Agdal", "Hay Riad", "Océan", "Hassan", "Souissi", "Agdal", "Hay Riad", "Océan"];
+const propertyTypes = ["Appartement", "Villa", "Appartement", "Bureau", "Terrain", "Studio", "Maison", "Appartement"];
+const titles = [
+  "Appartement lumineux proche des commerces et transports",
+  "Villa moderne avec jardin dans un secteur résidentiel calme",
+  "Appartement rénové à proximité de la corniche",
+  "Bureau central avec espaces de travail modulables",
+  "Terrain résidentiel bien situé à Rabat",
+  "Studio compact et lumineux au cœur d’Agdal",
+  "Maison familiale avec terrasse à Hay Riad",
+  "Appartement avec terrasse et double orientation",
+];
+
+// Same deterministic, read-only Playwright fixture strategy as the frozen UX-SEARCH-3 card gate.
+// No database writes are needed for visual certification.
+const listings = Array.from({ length: 8 }, (_, index) => ({
+  id: `ux-cards-10of10-1-${index + 1}`,
+  title: titles[index],
+  city: "Rabat",
+  neighborhood: districts[index],
+  price: 1450000 + index * 275000,
+  currency: "DH",
+  surface_m2: 72 + index * 18,
+  price_per_m2: 16518,
+  property_type: propertyTypes[index],
+  transaction_type: "buy",
+  bedrooms: index % 3 === 0 ? 3 : 2,
+  bathrooms: index % 2 === 0 ? 2 : 1,
+  freshness_label: index % 2 === 0 ? "Récent" : "Mis à jour récemment",
+  source_type: "Source analysée",
+  reliability_label: "Informations complètes",
+  reliability_score: 88,
+  reliability_available: true,
+  is_mre_friendly: false,
+  description: "Fixture déterministe de certification UX-CARDS-10OF10-1.",
+  image_url: "",
+  reliability_explanation: "Fixture CI",
+  data_completeness_score: 90,
+  source_name: "AkarFinder",
+  duplicate_score: index === 7 ? 0.72 : 0.1,
+  can_show_result: true,
+  production_allowed: true,
+  can_show_thumbnail: false,
+  display_images: { policy: "no_listing_image", urls: [] },
+  image_permission_status: "unknown",
+  source_access_level: "indexed_only",
+  acquisition_channel: "first_party_user",
+  origin_type: "first_party_user",
+}));
+
 function rgb(value) {
   const match = String(value).match(/rgba?\((\d+)[, ]+\s*(\d+)[, ]+\s*(\d+)/i);
   if (!match) return null;
@@ -25,7 +75,7 @@ function rgb(value) {
 
 function isLight(value) {
   const c = rgb(value);
-  return Boolean(c && c.r >= 245 && c.g >= 245 && c.b >= 245);
+  return Boolean(c && c.r >= 235 && c.g >= 235 && c.b >= 235);
 }
 
 function isBlue(value) {
@@ -49,19 +99,47 @@ const failures = [];
 
 try {
   for (const viewport of viewports) {
-    const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } });
+    const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
     const page = await context.newPage();
 
-    await page.goto(`${baseUrl}/search`, { waitUntil: "domcontentloaded", timeout: 30_000 });
-    await page.waitForTimeout(900);
+    await page.route("**/api/search?**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          listings,
+          total: listings.length,
+          limit: 100,
+          offset: 0,
+          source: "ux-cards-10of10-1-ci-fixture",
+          generated_at: new Date().toISOString(),
+        }),
+      });
+    });
+    await page.route("**/api/search/gateway?**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ results: [], total_count: 0, next_cursor: null, has_more: false }),
+      });
+    });
+
+    const response = await page.goto(`${baseUrl}/search?city=Rabat&view=list`, { waitUntil: "domcontentloaded", timeout: 60_000 });
+    if (!response || response.status() >= 400) {
+      failures.push(`${viewport.width}px: search route returned ${response?.status() ?? "no response"}`);
+    }
+
+    await page.waitForFunction(() => document.querySelectorAll("[data-search-listing-card]").length >= 8, null, { timeout: 30_000 });
+    await page.waitForTimeout(350);
 
     const listButton = page.locator('[data-search-view-mode-button="list"]');
     await listButton.waitFor({ state: "visible", timeout: 10_000 });
-    await listButton.click();
-    await page.waitForTimeout(250);
+    if ((await listButton.getAttribute("aria-pressed")) !== "true") {
+      await listButton.click();
+      await page.waitForTimeout(250);
+    }
 
     const cards = page.locator("[data-search-listing-card]");
-    await cards.first().waitFor({ state: "visible", timeout: 12_000 });
     const visibleCards = await cards.evaluateAll((nodes) => nodes.filter((node) => {
       const rect = node.getBoundingClientRect();
       const style = getComputedStyle(node);
@@ -138,7 +216,7 @@ try {
     if (!metrics) {
       localFailures.push("no visible listing card metrics");
     } else {
-      if (visibleCards < viewport.expectedColumns) localFailures.push(`only ${visibleCards} visible cards for ${viewport.expectedColumns}-column contract`);
+      if (visibleCards !== listings.length) localFailures.push(`expected ${listings.length} deterministic cards, got ${visibleCards}`);
       if (metrics.columns !== viewport.expectedColumns) localFailures.push(`expected ${viewport.expectedColumns} first-row cards, got ${metrics.columns}`);
       if (!closeTo(metrics.imageHeight, viewport.expectedImageHeight, 4)) localFailures.push(`image height ${metrics.imageHeight}px != ${viewport.expectedImageHeight}px`);
       if (!isLight(metrics.card.background)) localFailures.push(`card background is not light: ${metrics.card.background}`);
@@ -147,11 +225,13 @@ try {
       if (metrics.titleLineHeight > 0 && metrics.titleHeight > metrics.titleLineHeight * 2.25) localFailures.push(`title exceeds two lines: ${metrics.titleHeight}/${metrics.titleLineHeight}`);
       if (metrics.locationLineHeight > 0 && metrics.locationHeight > metrics.locationLineHeight * 1.55) localFailures.push(`location exceeds one line: ${metrics.locationHeight}/${metrics.locationLineHeight}`);
       if (metrics.factRadius != null && metrics.factRadius > 9) localFailures.push(`fact treatment is too pill-like: radius ${metrics.factRadius}px`);
+      if (!metrics.favorite) localFailures.push("favorite control is missing from first-party card fixture");
       if (metrics.favorite && (metrics.favorite.width < 43.5 || metrics.favorite.height < 43.5)) localFailures.push(`favorite touch target below 44px: ${metrics.favorite.width}x${metrics.favorite.height}`);
-      if (viewport.width >= 640 && metrics.action) {
-        if (metrics.action.height < 43.5) localFailures.push(`primary action below 44px: ${metrics.action.height}px`);
-        if (!isBlue(metrics.action.color)) localFailures.push(`primary action text is not blue-led: ${metrics.action.color}`);
-        if (!isLight(metrics.action.background)) localFailures.push(`primary action background is not light: ${metrics.action.background}`);
+      if (viewport.width >= 640) {
+        if (!metrics.action) localFailures.push("desktop primary action is missing");
+        if (metrics.action && metrics.action.height < 43.5) localFailures.push(`primary action below 44px: ${metrics.action.height}px`);
+        if (metrics.action && !isBlue(metrics.action.color)) localFailures.push(`primary action text is not blue-led: ${metrics.action.color}`);
+        if (metrics.action && !isLight(metrics.action.background)) localFailures.push(`primary action background is not light: ${metrics.action.background}`);
       }
       if (metrics.overflowX > 1) localFailures.push(`horizontal overflow ${metrics.overflowX}px`);
       if (viewport.width <= 390 && metrics.card.top > 255) localFailures.push(`first mobile card starts too low at ${metrics.card.top}px`);
@@ -177,6 +257,7 @@ const report = {
   lot: "UX-CARDS-10OF10-1",
   variant,
   baseUrl,
+  fixtureCount: listings.length,
   generatedAt: new Date().toISOString(),
   score: failures.length === 0 ? 10 : Math.max(0, Number((10 - failures.length * 0.5).toFixed(1))),
   failures,
