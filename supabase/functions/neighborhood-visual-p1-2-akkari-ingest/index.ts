@@ -2,7 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 type AssetSpec = {
   role: "signature" | "immobilier" | "lifestyle";
-  sourceKind: "commons_master" | "kartaview_master";
+  sourceKind: "commons_master" | "pinned_kartaview_master";
   sourceUrl: string;
   storagePath: string;
   width: number;
@@ -26,8 +26,8 @@ const ASSETS: readonly AssetSpec[] = [
   },
   {
     role: "immobilier",
-    sourceKind: "kartaview_master",
-    sourceUrl: "https://storage13.openstreetcam.org/files/photo/2018/5/22/proc/2832730_479bad4edbb80a6bec06b52502e18f2e.jpg",
+    sourceKind: "pinned_kartaview_master",
+    sourceUrl: "https://raw.githubusercontent.com/hraaaaf/Akarfinder/main/public/neighborhood-visuals/rabat/akkari/immobilier/kartaview-260132875.jpg",
     storagePath: "rabat/akkari/immobilier/master.jpg",
     width: 1280,
     height: 720,
@@ -36,8 +36,8 @@ const ASSETS: readonly AssetSpec[] = [
   },
   {
     role: "lifestyle",
-    sourceKind: "kartaview_master",
-    sourceUrl: "https://storage13.openstreetcam.org/files/photo/2018/5/22/proc/2833707_bf541ee984ec833564dedfdb5d056a29.jpg",
+    sourceKind: "pinned_kartaview_master",
+    sourceUrl: "https://raw.githubusercontent.com/hraaaaf/Akarfinder/main/public/neighborhood-visuals/rabat/akkari/lifestyle/kartaview-260133961.jpg",
     storagePath: "rabat/akkari/lifestyle/master.jpg",
     width: 1280,
     height: 720,
