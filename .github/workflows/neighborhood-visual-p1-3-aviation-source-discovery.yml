@@ -1,0 +1,89 @@
+name: Neighborhood Visual P1.3 Aviation Source Discovery
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/neighborhood-visual-p1-3-aviation-source-discovery.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sweep KartaView around Quartier Aviation
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="data/audits/neighborhood-visual-p1-3-aviation/source-discovery"
+          mkdir -p "$OUT/images"
+          python3 - <<'PY'
+          import hashlib, json, math, pathlib, urllib.parse, urllib.request
+          OUT=pathlib.Path("data/audits/neighborhood-visual-p1-3-aviation/source-discovery")
+          IMG=OUT/"images"
+          # Aviation is documented along Mohammed VI / Avenue Souss; use several nearby query points
+          # rather than pretending one database point defines the whole neighborhood.
+          CENTERS=[
+            ("aviation-center",34.000813,-6.847437),
+            ("aviation-north",34.0030,-6.8480),
+            ("aviation-south",33.9985,-6.8475),
+            ("aviation-west",34.0010,-6.8510),
+            ("aviation-east",34.0010,-6.8440),
+            ("mohammed-vi-axis",33.9995,-6.8530),
+          ]
+          UA="AkarFinder-P1.3-source-audit/1.0"
+          def f(v):
+            try:return float(v)
+            except:return None
+          def hav(a,b,c,d):
+            R=6371000.; p1,p2=math.radians(a),math.radians(c); dp=math.radians(c-a); dl=math.radians(d-b)
+            x=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2
+            return 2*R*math.asin(math.sqrt(x))
+          by={}; raws={}
+          for label,qlat,qlng in CENTERS:
+            q=urllib.parse.urlencode({"lat":qlat,"lng":qlng,"zoomLevel":17,"join":"sequence","orderBy":"id","orderDirection":"desc"})
+            req=urllib.request.Request("https://api.openstreetcam.org/2.0/photo/?"+q,headers={"User-Agent":UA,"Accept":"application/json"})
+            with urllib.request.urlopen(req,timeout=45) as r: raw=json.load(r)
+            raws[label]=raw
+            for d in raw.get("result",{}).get("data",[]):
+              lat=f(d.get("lat")); lon=f(d.get("lng"))
+              if lat is None or lon is None: continue
+              urls=[]
+              for k in ("fileurlLTh","fileurlProc","fileurlTh","imageLthUrl","imageProcUrl","imageThUrl"):
+                v=d.get(k)
+                if isinstance(v,str) and v.startswith("http"): urls.append(v)
+              seq=d.get("sequence") or {}; pid=str(d.get("id"))
+              row=by.get(pid,{"id":d.get("id"),"lat":lat,"lng":lon,"heading":d.get("heading"),"date":d.get("dateAdded"),"shot_date":d.get("shotDate"),"sequence_id":seq.get("id"),"sequence_address":seq.get("address"),"urls":list(dict.fromkeys(urls)),"query_hits":[]})
+              row["query_hits"].append({"label":label,"distance_m":round(hav(qlat,qlng,lat,lon),1)})
+              by[pid]=row
+          rows=list(by.values())
+          for r in rows:r["best_query_distance_m"]=min(x["distance_m"] for x in r["query_hits"])
+          rows.sort(key=lambda r:r["best_query_distance_m"])
+          n=0
+          for r in rows:
+            if n>=30 or r["best_query_distance_m"]>700 or not r["urls"]: continue
+            try:
+              req=urllib.request.Request(r["urls"][0],headers={"User-Agent":UA})
+              with urllib.request.urlopen(req,timeout=45) as resp:b=resp.read()
+              if len(b)<5000:continue
+              p=IMG/f"{n+1:02d}_{round(r['best_query_distance_m']):04d}m_{r['id']}.jpg"; p.write_bytes(b)
+              r["downloaded_file"]=p.name; r["sha1"]=hashlib.sha1(b).hexdigest(); r["bytes"]=len(b); n+=1
+            except Exception as e:r["download_error"]=str(e)
+          (OUT/"raw.json").write_text(json.dumps(raws,ensure_ascii=False,indent=2),encoding="utf-8")
+          (OUT/"candidates.json").write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding="utf-8")
+          lines=["# Aviation source discovery","",f"Unique frames: {len(rows)} · downloaded: {n}","","| # | Distance | Photo | Coordinates | Heading | Sequence | File |","|---:|---:|---|---|---:|---|---|"]
+          for i,r in enumerate(rows[:60],1):lines.append(f"| {i} | {r['best_query_distance_m']} m | {r['id']} | {r['lat']},{r['lng']} | {r['heading']} | {r['sequence_id']} | {r.get('downloaded_file','')} |")
+          (OUT/"candidates.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
+          print(f"AVIATION_DISCOVERY unique={len(rows)} downloaded={n}")
+          for r in rows[:30]: print(r["best_query_distance_m"],r["id"],r["lat"],r["lng"],r.get("downloaded_file"),r.get("sha1"))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-visual-p1-3-aviation-source-discovery
+          path: data/audits/neighborhood-visual-p1-3-aviation/source-discovery
+          if-no-files-found: error
+          retention-days: 7
