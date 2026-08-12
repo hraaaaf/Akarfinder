@@ -1,0 +1,133 @@
+name: DATA MASS-1 Reservoir Qualification
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data-mass/reservoir-qualification.ts"
+      - "scripts/data-mass/__tests__/reservoir-qualification.test.ts"
+      - "scripts/data-mass/__tests__/reservoir-hospitality-exclusions.test.ts"
+      - "scripts/audits/data-mass-1-reservoir-qualification.ts"
+      - ".github/workflows/data-mass-1-reservoir-qualification.yml"
+      - "docs/data/DATA-MASS-1-RESERVOIR-QUALIFICATION.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-mass-1-reservoir-qualification-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: MASS-1 unit tests
+        run: npx tsx --test scripts/data-mass/__tests__/reservoir-qualification.test.ts scripts/data-mass/__tests__/reservoir-hospitality-exclusions.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+
+  live-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_MASS_1_OUT_DIR: .tmp/data-mass-1/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run MASS-1 production read-only audit
+        run: npx tsx scripts/audits/data-mass-1-reservoir-qualification.ts
+      - name: Enforce MASS-1 truth boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_MASS_1_OUT_DIR}/proof.json"
+          test -s "${DATA_MASS_1_OUT_DIR}/report.json"
+          test -s "${DATA_MASS_1_OUT_DIR}/domains.csv"
+          test -s "${DATA_MASS_1_OUT_DIR}/summary.md"
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('.tmp/data-mass-1/results/proof.json', 'utf8'));
+          const report = JSON.parse(fs.readFileSync('.tmp/data-mass-1/results/report.json', 'utf8'));
+
+          if (p.readOnly !== true) throw new Error(`MASS-1 must be read-only: ${JSON.stringify(p)}`);
+          if (p.databaseWrites !== 0 || p.ddlChanges !== 0 || p.policyChanges !== 0) throw new Error(`MASS-1 mutation boundary violated: ${JSON.stringify(p)}`);
+          if (p.sourceNetworkRequests !== 0 || p.detailPageFetches !== 0) throw new Error(`MASS-1 cannot fetch source pages: ${JSON.stringify(p)}`);
+          if (p.publicRowsCreated !== 0 || p.uniquePropertiesClaimed !== 0) throw new Error(`MASS-1 cannot activate inventory or claim unique properties: ${JSON.stringify(p)}`);
+          if (p.unitOfCount !== 'URL_REPRESENTATION') throw new Error(`Wrong count unit: ${JSON.stringify(p)}`);
+          if (p.paginationMode !== 'UUID_KEYSET') throw new Error(`Large discovery scan must use keyset pagination: ${JSON.stringify(p)}`);
+          if (!(p.netNewUrlRepresentations > 0) || !(p.netNewDomains > 0)) throw new Error(`Empty reservoir: ${JSON.stringify(p)}`);
+          if (!(p.likelyMoroccoRealEstateUrlRepresentations > 0)) throw new Error(`No Morocco-scoped real-estate reservoir produced: ${JSON.stringify(p)}`);
+          if (!(p.sourceFactoryCandidateDomains > 0) || !(p.sourceFactoryLikelyMoroccoRealEstateUrlRepresentations > 0)) throw new Error(`No Morocco Source Factory candidates produced: ${JSON.stringify(p)}`);
+          if (p.transportLeakageIntoSourceFactory !== 0 || p.socialLeakageIntoSourceFactory !== 0) throw new Error(`Transport/social leakage: ${JSON.stringify(p)}`);
+          if (p.foreignOnlyLeakageIntoSourceFactory !== 0 || p.weakMoroccoLeakageIntoSourceFactory !== 0) throw new Error(`Morocco-scope leakage: ${JSON.stringify(p)}`);
+          if (!Array.isArray(p.detectedCities) || p.detectedCities.length === 0) throw new Error(`No city coverage produced: ${JSON.stringify(p)}`);
+
+          const pseudoCities = new Set(['Agdal', 'Souissi', 'Guéliz', 'Hay Riad', 'Maârif', 'Aïn Diab', 'Oasis']);
+          const citySemanticLeakage = (p.detectedCities ?? []).filter((row) => pseudoCities.has(row.city));
+          if (citySemanticLeakage.length) throw new Error(`Neighborhood/locality leaked into detectedCities: ${JSON.stringify(citySemanticLeakage)}`);
+
+          const token = (value) => String(value ?? '').trim().toLowerCase();
+          const restricted = new Set(['prohibited', 'permission_required', 'unverified', 'expired']);
+          const policyCompatibleTail = Array.isArray(report.policyCompatibleTail) ? report.policyCompatibleTail : [];
+          const tailLeakage = policyCompatibleTail.filter((row) =>
+            !token(row.authorizationStatus) ||
+            restricted.has(token(row.authorizationStatus)) ||
+            token(row.displayGate) === 'hidden' ||
+            token(row.displayPolicy) === 'internal_signal_only' ||
+            token(row.ingestionGate) === 'internal_signal_only' ||
+            token(row.displayGate) !== 'external_tail_link_only' ||
+            token(row.displayPolicy) !== 'canonical_link_only'
+          );
+          if (tailLeakage.length) throw new Error(`Restrictive/stale policy leaked into POLICY_COMPATIBLE_TAIL: ${JSON.stringify(tailLeakage.slice(0, 10))}`);
+
+          const allDomains = Array.isArray(report.allDomains) ? report.allDomains : [];
+          const activableRows = allDomains.filter((row) => row.publicActivableNow !== false);
+          if (activableRows.length) throw new Error(`MASS-1 must keep every domain non-activable: ${JSON.stringify(activableRows.slice(0, 10))}`);
+
+          const sourceFactory = Array.isArray(report.sourceFactory) ? report.sourceFactory : [];
+          const weakSourceFactory = sourceFactory.filter((row) =>
+            row.registryStatus !== 'UNREGISTERED' ||
+            !(Number(row.likelyMoroccoRealEstateUrls) >= 20) ||
+            !(Number(row.realEstateShare) >= 0.5) ||
+            !(Number(row.moroccoShareOfRealEstate) >= 0.1) ||
+            row.domainRole === 'SOCIAL' ||
+            row.domainRole === 'DISCOVERY_TRANSPORT' ||
+            row.domainRole === 'FOREIGN_ONLY'
+          );
+          if (weakSourceFactory.length) throw new Error(`SOURCE_FACTORY threshold/policy leakage: ${JSON.stringify(weakSourceFactory.slice(0, 10))}`);
+
+          const excludedNonInventory = new Set([
+            'tiendeo.ma', 'telecontact.ma', 'petitfute.com', 'combien-coute.net', 'ma.annuaire-horaire.com',
+            'booking.com', 'agoda.com', 'allhotelsmorocco.com', 'hotels.com', 'expedia.com',
+            'airbnb.com', 'airbnb.fr', 'tripadvisor.com', 'tripadvisor.fr', 'vrbo.com', 'abritel.fr',
+            'villanovo.fr', 'cozycozy.com',
+            'mubawab.tn', 'ouedkniss.com', 'ouestfrance-immo.com', 'geolocaux.com'
+          ]);
+          const knownNonInventoryLeakage = sourceFactory.filter((row) => excludedNonInventory.has(row.sourceDomain));
+          if (knownNonInventoryLeakage.length) throw new Error(`Known non-Morocco/non-inventory source leaked into SOURCE_FACTORY: ${JSON.stringify(knownNonInventoryLeakage)}`);
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-1-reservoir-qualification
+          path: .tmp/data-mass-1/results/
+          if-no-files-found: error
+          retention-days: 30

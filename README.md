@@ -17,6 +17,16 @@ Ordre de vérité :
 
 `code mergé dans main → README.md → ROADMAP.md → SESSION.md → specs techniques → preuves historiques`.
 
+<!-- DATA-MASS-CURRENT-START -->
+## DATA MASS — état courant
+
+La priorité DATA actuelle est **la masse nationale policy-safe**. Le programme canonique est `MASS-1 → MASS-6` et suit la doctrine **MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME**.
+
+**MASS-1 — Reservoir Qualification** est certifié **9,5/10** sur PR #511, merge en attente : **86 741 représentations URL net-new** ont été mesurées, dont **51 326 signaux immobilier Maroc probables**. Après trois passes de double-check et exclusion des annuaires, hospitality/travel et portails foreign-only non pertinents, la queue **MASS-2 Source Factory** contient **101 domaines** portant **15 790 signaux immobilier Maroc probables**.
+
+MASS-1 est strictement read-only : **0 fetch source détail, 0 write DB/DDL/Registry, 0 ingestion, 0 activation publique, 0 permission inférée et 0 claim de bien unique**. La prochaine étape est **MASS-2 — Source Factory**, puis Minimal Listing Index, Mass Reclassification, Discovery Expansion et National Mass Engine. Voir `docs/ROADMAP.md` et `docs/data/DATA-MASS-1-RESERVOIR-QUALIFICATION.md`.
+<!-- DATA-MASS-CURRENT-END -->
+
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->
 ## Bibliothèque visuelle quartiers — Souissi Pilot ✅ CLOSED
 

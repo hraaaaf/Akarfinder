@@ -4,6 +4,18 @@
 
 Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
 
+<!-- DATA-MASS-HANDOVER-START -->
+## DATA MASS — handover prioritaire
+
+- **MASS-1 / PR #511 : ✅ CERTIFIED 9,5/10 — merge pending.** Head comportemental certifié `d768f47e4662430c71066ea9aaa43c85b23477fb`.
+- Prod : **86 741 URL-représentations net-new**, **51 326** signaux immobilier Maroc probables, **24 028** structures détail Maroc probables.
+- Queue MASS-2 après corrections : **101 domaines / 17 376 URL-représentations / 15 790 signaux immobilier Maroc probables**.
+- Run `31556168993` SUCCESS ; artefact `9126213992`, digest `sha256:6f99427010bc4477c822f46559823ad7289b18acdc38f99bcfdee69e42bd0dc1` ; SQL indépendant réconcilié.
+- Limites : 0 write, 0 ingestion, 0 activation Search, 0 permission inférée, 0 claim de bien unique. Source Registry reste autorité fail-closed.
+- **NEXT : MASS-2 — Source Factory**, revue des 101 domaines par rendement/policy avant toute ingestion.
+- Suite déjà planifiée dans ROADMAP : **MASS-3 Minimal Listing Index → MASS-4 Mass Reclassification → MASS-5 Discovery Expansion → MASS-6 National Mass Engine**.
+<!-- DATA-MASS-HANDOVER-END -->
+
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->
 ## Bibliothèque visuelle quartiers — Souissi Pilot ✅ CLOSED
 
