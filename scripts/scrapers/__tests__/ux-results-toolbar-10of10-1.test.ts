@@ -10,6 +10,9 @@ test("results toolbar keeps the canonical result count, sort and three search vi
   assert.match(shell, /data-search-results-toolbar/);
   assert.match(shell, /\$\{displayedCount\} résultat/);
   assert.match(shell, /data-search-sort-select/);
+  assert.match(shell, /<option value="recommended">Recommandé<\/option>/);
+  assert.match(shell, /<option value="price-asc">Prix croissant<\/option>/);
+  assert.match(shell, /<option value="price-desc">Prix décroissant<\/option>/);
   assert.match(shell, /<SearchViewSwitcher value=\{view\} onChange=\{setView\}/);
   assert.match(switcher, /SEARCH_VIEW_ORDER\.map/);
   assert.match(switcher, /data-search-desktop-view-switcher/);
