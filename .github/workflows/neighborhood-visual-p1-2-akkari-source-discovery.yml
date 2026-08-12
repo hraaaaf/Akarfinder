@@ -1,0 +1,123 @@
+name: Neighborhood Visual P1.2 Akkari Source Discovery
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/neighborhood-visual-p1-2-akkari-source-discovery.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  commons-geosearch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Discover geolocated Commons candidates around Akkari
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data/audits/neighborhood-visual-p1-2-akkari/source-discovery/thumbs
+          python3 - <<'PY'
+          import json, math, pathlib, re, urllib.parse, urllib.request
+
+          OUT = pathlib.Path("data/audits/neighborhood-visual-p1-2-akkari/source-discovery")
+          THUMBS = OUT / "thumbs"
+          CENTER = (34.0090, -6.8590)
+          UA = "AkarFinder-P1.2-source-discovery/1.0 (GitHub Actions; source audit only)"
+
+          def api(params):
+              url = "https://commons.wikimedia.org/w/api.php?" + urllib.parse.urlencode(params)
+              req = urllib.request.Request(url, headers={"User-Agent": UA})
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.load(r)
+
+          geo = api({
+              "action": "query", "format": "json", "list": "geosearch",
+              "gscoord": f"{CENTER[0]}|{CENTER[1]}", "gsradius": 2500,
+              "gsnamespace": 6, "gslimit": 100,
+          })["query"]["geosearch"]
+
+          titles = [x["title"] for x in geo]
+          details = {}
+          for start in range(0, len(titles), 25):
+              batch = titles[start:start+25]
+              data = api({
+                  "action": "query", "format": "json", "titles": "|".join(batch),
+                  "prop": "imageinfo", "iiprop": "url|sha1|size|extmetadata",
+                  "iiurlwidth": 960,
+              })
+              for page in data.get("query", {}).get("pages", {}).values():
+                  if "imageinfo" in page:
+                      details[page["title"]] = page["imageinfo"][0]
+
+          def clean_html(value):
+              if not value: return ""
+              value = re.sub(r"<[^>]+>", " ", value)
+              return re.sub(r"\s+", " ", value).strip()
+
+          rows = []
+          for g in geo:
+              info = details.get(g["title"], {})
+              meta = info.get("extmetadata", {})
+              license_name = meta.get("LicenseShortName", {}).get("value", "")
+              reusable = bool(re.search(r"CC\s*(BY|0)|Public domain|PD", license_name, re.I))
+              rows.append({
+                  "title": g["title"],
+                  "distance_m": round(g.get("dist", 0), 1),
+                  "lat": g.get("lat"), "lon": g.get("lon"),
+                  "width": info.get("width"), "height": info.get("height"),
+                  "bytes": info.get("size"), "sha1": info.get("sha1"),
+                  "license": license_name,
+                  "artist": clean_html(meta.get("Artist", {}).get("value", "")),
+                  "description": clean_html(meta.get("ImageDescription", {}).get("value", "")),
+                  "date": meta.get("DateTimeOriginal", {}).get("value") or meta.get("DateTime", {}).get("value"),
+                  "source_url": info.get("descriptionurl"),
+                  "thumb_url": info.get("thumburl"),
+                  "reusable": reusable,
+              })
+
+          rows.sort(key=lambda x: x["distance_m"])
+          (OUT / "candidates.json").write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+
+          lines = [
+              "# Akkari Commons geosearch — source discovery only",
+              "",
+              f"Center: {CENTER[0]}, {CENTER[1]} · radius 2500 m · candidates: {len(rows)}",
+              "",
+              "| # | Distance | File | License | Size | Description |",
+              "|---:|---:|---|---|---|---|",
+          ]
+          for i, r in enumerate(rows, 1):
+              desc = (r["description"] or "").replace("|", "\\|")[:160]
+              lines.append(f'| {i} | {r["distance_m"]} m | {r["title"]} | {r["license"]} | {r["width"]}×{r["height"]} | {desc} |')
+          (OUT / "candidates.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+          # Download only reusable candidates in the nearest 1500 m, capped to 40 thumbnails.
+          n = 0
+          for i, r in enumerate(rows, 1):
+              if n >= 40 or r["distance_m"] > 1500 or not r["reusable"] or not r["thumb_url"]:
+                  continue
+              safe = re.sub(r"[^A-Za-z0-9._-]+", "_", r["title"].removeprefix("File:"))[:100]
+              ext = pathlib.Path(urllib.parse.urlparse(r["thumb_url"]).path).suffix or ".jpg"
+              target = THUMBS / f"{i:03d}_{round(r['distance_m']):04d}m_{safe}{ext}"
+              req = urllib.request.Request(r["thumb_url"], headers={"User-Agent": UA})
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as resp:
+                      target.write_bytes(resp.read())
+                  n += 1
+              except Exception as exc:
+                  print(f"thumbnail failed {r['title']}: {exc}")
+
+          print(f"AKKARI_SOURCE_DISCOVERY candidates={len(rows)} reusable_thumbs={n}")
+          for r in rows[:30]:
+              print(f"{r['distance_m']:>7}m | {r['license']:<18} | {r['title']} | {r['sha1']}")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-visual-p1-2-akkari-source-discovery
+          path: data/audits/neighborhood-visual-p1-2-akkari/source-discovery
+          if-no-files-found: error
+          retention-days: 7
