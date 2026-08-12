@@ -1,0 +1,136 @@
+name: DATA MASS-2B High-Yield Source Review
+
+on:
+  pull_request:
+    paths:
+      - "data/data-mass-2b/high-yield-source-review.json"
+      - "scripts/data-mass/source-factory-high-yield-review.ts"
+      - "scripts/data-mass/__tests__/source-factory-high-yield-review.test.ts"
+      - "scripts/audits/data-mass-2b-high-yield-sources.ts"
+      - ".github/workflows/data-mass-2b-high-yield-sources.yml"
+      - "docs/data/DATA-MASS-2B-HIGH-YIELD-SOURCES.md"
+      - "data/data-mass-2a/mass-1-certified-source-factory.json"
+      - "scripts/data-mass/source-factory-certified-cohort.ts"
+      - "scripts/data-mass/source-factory-decision.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-mass-2b-high-yield-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: MASS-2B + MASS-2A predecessor tests
+        run: npx tsx --test scripts/data-mass/__tests__/source-factory-high-yield-review.test.ts scripts/data-mass/__tests__/source-factory-certified-cohort.test.ts scripts/data-mass/__tests__/source-factory-decision.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+
+  live-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_MASS_2B_OUT_DIR: .tmp/data-mass-2b/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run MASS-2B production read-only Registry audit
+        run: npx tsx scripts/audits/data-mass-2b-high-yield-sources.ts
+      - name: Enforce MASS-2B fail-closed truth boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${DATA_MASS_2B_OUT_DIR}/proof.json"
+          test -s "${DATA_MASS_2B_OUT_DIR}/review.json"
+          test -s "${DATA_MASS_2B_OUT_DIR}/summary.md"
+          node - <<'NODE'
+          const fs = require('fs');
+          const dir = '.tmp/data-mass-2b/results';
+          const p = JSON.parse(fs.readFileSync(`${dir}/proof.json`, 'utf8'));
+          const review = JSON.parse(fs.readFileSync('data/data-mass-2b/high-yield-source-review.json', 'utf8'));
+
+          if (p.readOnly !== true) throw new Error(`MASS-2B must be read-only: ${JSON.stringify(p)}`);
+          if (p.databaseWrites !== 0 || p.ddlChanges !== 0 || p.registryWrites !== 0 || p.policyChanges !== 0) {
+            throw new Error(`MASS-2B mutation boundary violated: ${JSON.stringify(p)}`);
+          }
+          if (p.sourceNetworkRequests !== 0 || p.sourceSiteRequests !== 0 || p.detailPageFetches !== 0) {
+            throw new Error(`MASS-2B CI source fetch boundary violated: ${JSON.stringify(p)}`);
+          }
+          if (p.publicRowsCreated !== 0 || p.searchActivations !== 0 || p.permissionsInferred !== 0 ||
+              p.publicActivableNowCount !== 0 || p.registryWriteAllowedCount !== 0) {
+            throw new Error(`MASS-2B activation boundary violated: ${JSON.stringify(p)}`);
+          }
+          if (p.inputMode !== 'MASS_2A_CERTIFIED_HIGH_YIELD_WITH_CURRENT_REGISTRY_DRIFT_CHECK') {
+            throw new Error(`Wrong MASS-2B input: ${JSON.stringify(p)}`);
+          }
+
+          const expectedHead = '8d3bf2ecedd3c2ed05e8027e8b37b5799eb9ab48';
+          const expectedDigest = 'sha256:2dbe6ce641471ae62e3e3e7caaa59274e3bb407305441154c5a5dd66b9d24a7d';
+          const expectedMerge = '6cd7625b2ba8e7179ce556841f6306225ba1a3fa';
+          if (p.mass2aFinalHead !== expectedHead || p.mass2aFinalArtifactDigest !== expectedDigest || p.mass2aMergeCommit !== expectedMerge) {
+            throw new Error(`MASS-2A predecessor drift: ${JSON.stringify(p)}`);
+          }
+
+          if (p.domainsReviewed !== 20 || p.permissionRequiredCount !== 17 || p.holdCount !== 3) {
+            throw new Error(`MASS-2B decision distribution drift: ${JSON.stringify(p)}`);
+          }
+          if (p.policyCompatibleCount !== 0 || p.canonicalLinkApprovedCount !== 0 || p.canonicalLinkCandidateCount !== 17) {
+            throw new Error(`MASS-2B indexing posture drift: ${JSON.stringify(p)}`);
+          }
+          if (p.directAcquisitionAllowedCount !== 0 || p.copyPhotosAllowedCount !== 0 ||
+              p.copyDescriptionAllowedCount !== 0 || p.sourceAttributionRequiredCount !== 20) {
+            throw new Error(`MASS-2B content/acquisition boundary violated: ${JSON.stringify(p)}`);
+          }
+          if (p.currentRegistryRowsForReviewedDomains !== 0 || p.registryDriftSinceReviewCount !== 0) {
+            throw new Error(`MASS-2B Registry changed after review; re-review required: ${JSON.stringify(p)}`);
+          }
+
+          if (review.doctrine.model !== 'ATTRIBUTED_MINIMAL_INDEX' ||
+              review.doctrine.directSourceAcquisitionAndPublicIndexingAreSeparateAxes !== true ||
+              review.doctrine.sourceAttributionDoesNotOverrideSourceTerms !== true ||
+              review.doctrine.canonicalLinkOnlyIsCandidateUntilSeparateBaselineOrPermission !== true ||
+              review.doctrine.robotsOrSitemapNeverGrantPermission !== true ||
+              review.doctrine.noPhotosOrFullDescriptionsByDefault !== true) {
+            throw new Error('MASS-2B indexing doctrine drift');
+          }
+
+          const s = review.safety;
+          if (s.allowedChannels !== 'NONE_ONLY' ||
+              s.directAcquisitionAllowed !== false ||
+              s.copyPhotosAllowed !== false ||
+              s.copyDescriptionAllowed !== false ||
+              s.permissionInferred !== false ||
+              s.publicActivableNow !== false ||
+              s.registryWriteAllowed !== false ||
+              s.sourceAttributionRequired !== true ||
+              s.canonicalLinkCandidateRequiresSeparateBaseline !== true ||
+              s.registrySnapshot !== 'UNREGISTERED_AT_REVIEW') {
+            throw new Error(`MASS-2B safety boundary drift: ${JSON.stringify(s)}`);
+          }
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-2b-high-yield-source-review
+          path: .tmp/data-mass-2b/results/
+          if-no-files-found: error
+          retention-days: 30
