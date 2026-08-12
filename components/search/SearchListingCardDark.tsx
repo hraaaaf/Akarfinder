@@ -228,7 +228,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           </div>
         </Link>
 
-        <div className="flex flex-1 flex-col p-3 sm:p-4">
+        <div className="flex flex-1 flex-col px-3 pb-2.5 pt-3 sm:p-4">
           <div className="flex items-start justify-between gap-2 sm:gap-3">
             <div className="min-w-0 flex-1">
               <p data-mobile-price data-card-price className="truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-[#173d6b] sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-[#2f63a4]">
