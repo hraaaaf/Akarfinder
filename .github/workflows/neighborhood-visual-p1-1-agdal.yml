@@ -1,0 +1,166 @@
+name: Neighborhood Visual P1.1 Agdal Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/visual-qa/agdal/**"
+      - "components/search/AgdalNeighborhoodVisualQAFixture.tsx"
+      - "lib/contextual-illustrations/agdal-neighborhood-visuals.ts"
+      - "public/neighborhood-visuals/rabat/agdal/**"
+      - "scripts/audits/neighborhood-visual-p1-1-agdal-visual-qa.mjs"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p1-1-agdal.test.ts"
+      - "supabase/functions/neighborhood-visual-p1-1-agdal-ingest/**"
+      - "supabase/migrations/20260811235500_neighborhood_visual_p1_1_agdal_metadata.sql"
+      - ".github/workflows/neighborhood-visual-p1-1-agdal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neighborhood-visual-p1-1-agdal-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEIGHBORHOOD_VISUAL_QA: "1"
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer — Agdal 3-scene QA
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: P1.1 contract + Template A predecessor
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p1-1-agdal.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Deno type-check bounded ingestion
+        run: deno check supabase/functions/neighborhood-visual-p1-1-agdal-ingest/index.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Materialize exact real assets for QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          curl --fail --location --retry 4 --retry-all-errors "https://commons.wikimedia.org/wiki/Special:Redirect/file/Al%20Boraq%20Railway%20station%20Rabat%20Agdal.jpg" -o public/__qa/agdal-signature.jpg
+          cp public/neighborhood-visuals/rabat/agdal/immobilier/fal-ould-oumeir-search.jpg public/__qa/agdal-immobilier.jpg
+          curl --fail --location --retry 4 --retry-all-errors "https://commons.wikimedia.org/wiki/Special:Redirect/file/Jardin%20d%27essai%20botanique%2C%20Rabat.jpg" -o public/__qa/agdal-lifestyle.jpg
+          echo "6cded8a860ea6b7517e81c432c1bf858ccf6b52e  public/__qa/agdal-signature.jpg" | sha1sum --check --strict
+          echo "dd4eaab40b68090dcba6f85c58f1365213e0177f  public/__qa/agdal-immobilier.jpg" | sha1sum --check --strict
+          echo "73da97f09b0dc9cf796a9bac8a210f78525667ff  public/__qa/agdal-lifestyle.jpg" | sha1sum --check --strict
+          test "$(wc -c < public/__qa/agdal-signature.jpg)" -eq 2880808
+          test "$(wc -c < public/__qa/agdal-immobilier.jpg)" -eq 11487
+          test "$(wc -c < public/__qa/agdal-lifestyle.jpg)" -eq 3651983
+          node --input-type=module <<'NODE'
+          import sharp from "sharp";
+          const info = await sharp("public/__qa/agdal-immobilier.jpg").metadata();
+          if (info.width !== 320 || info.height !== 180 || info.format !== "jpeg") throw new Error(`Fal Search derivative drift: ${info.width}x${info.height} ${info.format}`);
+          NODE
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start QA production server
+        shell: bash
+        run: |
+          npm run start -- -p 3151 > /tmp/agdal-p11-product.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3151/visual-qa/agdal >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/agdal-p11-product.log
+          exit 1
+      - name: Certify full responsive Search-card matrix
+        env:
+          BASE_URL: http://127.0.0.1:3151
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/neighborhood-visual-p1-1-agdal-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p1-1-agdal-product-design-proof
+          path: data/audits/neighborhood-visual-p1-1-agdal/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Agdal 3-scene QA
+    needs: product-design-reviewer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: Independent P1.1 contract replay
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p1-1-agdal.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Independent Deno check
+        run: deno check supabase/functions/neighborhood-visual-p1-1-agdal-ingest/index.ts
+      - name: Independent TypeScript
+        run: npx tsc --noEmit
+      - name: Independently materialize exact real assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          curl --fail --location --retry 4 --retry-all-errors "https://commons.wikimedia.org/wiki/Special:Redirect/file/Al%20Boraq%20Railway%20station%20Rabat%20Agdal.jpg" -o public/__qa/agdal-signature.jpg
+          cp public/neighborhood-visuals/rabat/agdal/immobilier/fal-ould-oumeir-search.jpg public/__qa/agdal-immobilier.jpg
+          curl --fail --location --retry 4 --retry-all-errors "https://commons.wikimedia.org/wiki/Special:Redirect/file/Jardin%20d%27essai%20botanique%2C%20Rabat.jpg" -o public/__qa/agdal-lifestyle.jpg
+          echo "6cded8a860ea6b7517e81c432c1bf858ccf6b52e  public/__qa/agdal-signature.jpg" | sha1sum --check --strict
+          echo "dd4eaab40b68090dcba6f85c58f1365213e0177f  public/__qa/agdal-immobilier.jpg" | sha1sum --check --strict
+          echo "73da97f09b0dc9cf796a9bac8a210f78525667ff  public/__qa/agdal-lifestyle.jpg" | sha1sum --check --strict
+          test "$(wc -c < public/__qa/agdal-signature.jpg)" -eq 2880808
+          test "$(wc -c < public/__qa/agdal-immobilier.jpg)" -eq 11487
+          test "$(wc -c < public/__qa/agdal-lifestyle.jpg)" -eq 3651983
+          node --input-type=module <<'NODE'
+          import sharp from "sharp";
+          const info = await sharp("public/__qa/agdal-immobilier.jpg").metadata();
+          if (info.width !== 320 || info.height !== 180 || info.format !== "jpeg") throw new Error(`Fal Search derivative drift: ${info.width}x${info.height} ${info.format}`);
+          NODE
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent QA server
+        shell: bash
+        run: |
+          npm run start -- -p 3152 > /tmp/agdal-p11-release.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3152/visual-qa/agdal >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/agdal-p11-release.log
+          exit 1
+      - name: Independently certify full responsive Search-card matrix
+        env:
+          BASE_URL: http://127.0.0.1:3152
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/neighborhood-visual-p1-1-agdal-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p1-1-agdal-release-proof
+          path: data/audits/neighborhood-visual-p1-1-agdal/release-certifier
+          if-no-files-found: error
+          retention-days: 14
