@@ -1,7 +1,8 @@
 # DATA MASS-2C — Mid-Yield Source Policy Review
 
-**Statut : ACTIVE — certification required**  
+**Statut : ✅ CERTIFIED — merge pending**  
 **Branche : `data/mass-2c-mid-yield-sources`**  
+**PR : #524**  
 **Prédécesseur : MASS-2B merge `97bb8c6a9596553d7e8794b5f3b06a71cd845d2f`**
 
 ## 1. Responsabilité
@@ -19,7 +20,7 @@ Auditer les **30 domaines MID_YIELD certifiés par MASS-2A (rangs 21→50)** sou
 - preuve absente/inaccessible/ambiguë = `HOLD` ;
 - 0 canal direct autorisé dans ce lot.
 
-## 3. Résultat de revue après double-check
+## 3. Résultat certifié après double-check
 
 - **30/30** domaines audités ;
 - **17 `PERMISSION_REQUIRED`** ;
@@ -30,7 +31,8 @@ Auditer les **30 domaines MID_YIELD certifiés par MASS-2A (rangs 21→50)** sou
 - **0** photo/description complète autorisée ;
 - **0** permission inférée ;
 - **0** activation publique ;
-- **0/30** source présente dans `source_policy_registry` lors du double-check production.
+- **0/30** source présente dans `source_policy_registry` au live-audit final ;
+- Registry drift final : **0**.
 
 ### `PERMISSION_REQUIRED`
 
@@ -55,9 +57,26 @@ La première passe conservatrice était plus restrictive. Le second passage a r�
 
 Aucune de ces décisions n'autorise un fetch direct ni une activation publique.
 
-## 5. Gate machine
+## 5. Preuve de certification
 
-Le workflow `DATA MASS-2C Mid-Yield Source Review` doit prouver sur le head exact :
+Behavioral/final-code head : `b338c0d7165052229e9a252dc693130dcbe242e6`.
+
+- workflow dédié `DATA MASS-2C Mid-Yield Source Review` ;
+- run exact-head **`31647972661` SUCCESS** ;
+- contract : tests MASS-2C + prédécesseurs PASS, TypeScript PASS, build production PASS ;
+- live-audit production read-only PASS ;
+- truth-boundary PASS ;
+- artefact **`9161645965`** ;
+- digest GitHub **`sha256:04a2cbb6f202a91610a099fdd21a0e37d2a7beb8f1eb7a9e92d8d692a3d80007`** ;
+- rehash indépendant du ZIP : **identique** ;
+- preuve machine : 30/30, 17/13, 17 candidats canonical-link / 0 approuvé, Registry 0/30, drift 0 ;
+- **0 DB write / 0 DDL / 0 Registry write / 0 policy change / 0 source-network request / 0 source-site request / 0 detail fetch / 0 public row / 0 Search activation / 0 permission inférée**.
+
+Le lot a également été rebasé/résolu par merge sur le `main` contenant **P1.1 Agdal** avant cette certification, sans écraser sa lane. Les blocs DATA de README/ROADMAP/SESSION ont été réappliqués uniquement après ce réalignement.
+
+## 6. Gate machine permanent
+
+Le workflow `DATA MASS-2C Mid-Yield Source Review` vérifie :
 
 - cohorte exacte rangs **21→50**, scores MASS-1 immuables ;
 - predecessor MASS-2B exact : head/run/artifact/digest/merge ;
@@ -70,10 +89,10 @@ Le workflow `DATA MASS-2C Mid-Yield Source Review` doit prouver sur le head exac
 - firewall CI : Supabase uniquement, aucun fetch vers les 30 sources ;
 - 0 DB/DDL/Registry/policy write, 0 ingestion, 0 Search activation, 0 permission inférée.
 
-## 6. Hors scope
+## 7. Hors scope
 
 MASS-2C ne résout pas la baseline transversale qui décidera si un **lien canonique + métadonnées factuelles minimales obtenues sur une base indépendante** peut devenir `CANONICAL_LINK_ONLY`. Tant que cette baseline n'existe pas, les 17 candidats restent non activables.
 
-## 7. Fermeture
+## 8. Fermeture
 
-MASS-2C ne devient CLOSED qu'après CI exact-head, artefact live read-only, score technique ≥9/10, merge et vérification post-merge SHA/tree. **MASS-2D ne démarre qu'ensuite.**
+Le contenu fonctionnel et documentaire de MASS-2C est certifié. La clôture devient définitive après merge SHA-lock de #524 et vérification post-merge SHA/tree. **MASS-2D ne démarre qu'ensuite.**
