@@ -15,42 +15,42 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Lock three real Aviation candidates
+      - name: Compare real Aviation immobilier candidates
         shell: bash
         run: |
           set -euo pipefail
-          OUT="data/audits/neighborhood-visual-p1-3-aviation/source-lock"
+          OUT="data/audits/neighborhood-visual-p1-3-aviation/immobilier-compare"
           rm -rf "$OUT" && mkdir -p "$OUT/images"
           python3 - <<'PY'
-          import hashlib, json, pathlib, urllib.parse, urllib.request
-          OUT=pathlib.Path("data/audits/neighborhood-visual-p1-3-aviation/source-lock")
-          IMG=OUT/"images"; UA="AkarFinder-P1.3-source-lock/1.0"
-          commons=[
-            ("signature","Sofitel Rabat.jpg"),
-            ("immobilier","Avenue Mohamed VI Souissi Rabat.jpg"),
+          import hashlib,json,pathlib,urllib.parse,urllib.request
+          OUT=pathlib.Path('data/audits/neighborhood-visual-p1-3-aviation/immobilier-compare'); IMG=OUT/'images'; UA='AkarFinder-P1.3-immobilier-compare/1.0'
+          titles=[
+            'Avenue Mohamed VI Souissi Rabat.jpg',
+            'Avenue Mohamed VI Souissi Rabat -1.jpg',
+            'Avenue Mohamed VI Souissi Rabat -2.jpg',
+            'Avenue Mohamed VI Souissi Rabat -3.jpg',
           ]
           rows=[]
-          for role,title in commons:
-            q=urllib.parse.urlencode({"action":"query","format":"json","titles":"File:"+title,"prop":"imageinfo","iiprop":"url|size|sha1|extmetadata"})
-            req=urllib.request.Request("https://commons.wikimedia.org/w/api.php?"+q,headers={"User-Agent":UA,"Accept":"application/json"})
-            with urllib.request.urlopen(req,timeout=45) as r: raw=json.load(r)
-            page=next(iter(raw["query"]["pages"].values())); ii=page["imageinfo"][0]; meta=ii.get("extmetadata") or {}
-            url=ii["url"]; req=urllib.request.Request(url,headers={"User-Agent":UA})
-            with urllib.request.urlopen(req,timeout=60) as r: b=r.read()
-            p=IMG/f"{role}.jpg"; p.write_bytes(b)
-            rows.append({"role":role,"source":"Wikimedia Commons","title":title,"url":url,"source_page":"https://commons.wikimedia.org/wiki/File:"+urllib.parse.quote(title.replace(' ','_')),"author":(meta.get("Artist") or {}).get("value"),"license":(meta.get("LicenseShortName") or {}).get("value"),"width":ii.get("width"),"height":ii.get("height"),"bytes":len(b),"sha1":hashlib.sha1(b).hexdigest(),"api_sha1":ii.get("sha1")})
-          # Existing exact KartaView frame inside Aviation / Avenue Souss sweep.
-          url="https://storage8.openstreetcam.org/files/photo/2018/6/6/lth/1224667_91ca7_23.jpg"
-          req=urllib.request.Request(url,headers={"User-Agent":UA})
-          with urllib.request.urlopen(req,timeout=45) as r: b=r.read()
-          p=IMG/"lifestyle.jpg"; p.write_bytes(b)
-          rows.append({"role":"lifestyle","source":"KartaView","photo_id":260184419,"sequence_id":1224667,"url":url,"source_page":"https://api.openstreetcam.org/2.0/photo/?id=260184419","author":"© Grab and KartaView Contributors","license":"CC BY-SA 4.0","lat":34.020405,"lng":-6.834417,"heading":235,"captured_at":"2018-06-06 08:48:20","bytes":len(b),"sha1":hashlib.sha1(b).hexdigest()})
-          (OUT/"sources.json").write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding="utf-8")
-          for r in rows: print(r)
+          for i,title in enumerate(titles,1):
+            q=urllib.parse.urlencode({'action':'query','format':'json','titles':'File:'+title,'prop':'imageinfo','iiprop':'url|size|sha1|extmetadata'})
+            req=urllib.request.Request('https://commons.wikimedia.org/w/api.php?'+q,headers={'User-Agent':UA,'Accept':'application/json'})
+            try:
+              with urllib.request.urlopen(req,timeout=45) as r: raw=json.load(r)
+              page=next(iter(raw['query']['pages'].values()))
+              if 'missing' in page or not page.get('imageinfo'):
+                rows.append({'title':title,'missing':True}); continue
+              ii=page['imageinfo'][0]; meta=ii.get('extmetadata') or {}; url=ii['url']
+              req=urllib.request.Request(url,headers={'User-Agent':UA})
+              with urllib.request.urlopen(req,timeout=60) as r:b=r.read()
+              p=IMG/f'{i:02d}.jpg'; p.write_bytes(b)
+              rows.append({'title':title,'file':p.name,'source_page':'https://commons.wikimedia.org/wiki/File:'+urllib.parse.quote(title.replace(' ','_')),'author':(meta.get('Artist') or {}).get('value'),'license':(meta.get('LicenseShortName') or {}).get('value'),'width':ii.get('width'),'height':ii.get('height'),'bytes':len(b),'sha1':hashlib.sha1(b).hexdigest(),'api_sha1':ii.get('sha1')})
+            except Exception as e: rows.append({'title':title,'error':str(e)})
+          (OUT/'sources.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding='utf-8')
+          for x in rows: print(x)
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: neighborhood-visual-p1-3-aviation-source-lock
-          path: data/audits/neighborhood-visual-p1-3-aviation/source-lock
+          name: neighborhood-visual-p1-3-aviation-immobilier-compare
+          path: data/audits/neighborhood-visual-p1-3-aviation/immobilier-compare
           if-no-files-found: error
           retention-days: 7
