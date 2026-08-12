@@ -4,7 +4,10 @@ on:
   pull_request:
     paths:
       - "scripts/data-mass/source-factory.ts"
+      - "scripts/data-mass/source-factory-decision.ts"
       - "scripts/data-mass/__tests__/source-factory.test.ts"
+      - "scripts/data-mass/__tests__/source-factory-101.test.ts"
+      - "scripts/data-mass/__tests__/source-factory-decision.test.ts"
       - "scripts/data-mass/reservoir-qualification.ts"
       - "scripts/data-mass/__tests__/reservoir-qualification.test.ts"
       - "scripts/data-mass/__tests__/reservoir-hospitality-exclusions.test.ts"
@@ -34,7 +37,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: MASS-2A + MASS-1 predecessor tests
-        run: npx tsx --test scripts/data-mass/__tests__/source-factory.test.ts scripts/data-mass/__tests__/reservoir-qualification.test.ts scripts/data-mass/__tests__/reservoir-hospitality-exclusions.test.ts
+        run: npx tsx --test scripts/data-mass/__tests__/source-factory.test.ts scripts/data-mass/__tests__/source-factory-101.test.ts scripts/data-mass/__tests__/source-factory-decision.test.ts scripts/data-mass/__tests__/reservoir-qualification.test.ts scripts/data-mass/__tests__/reservoir-hospitality-exclusions.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build
@@ -75,14 +78,18 @@ jobs:
           if (p.readOnly !== true) throw new Error(`MASS-2A must be read-only: ${JSON.stringify(p)}`);
           if (p.databaseWrites !== 0 || p.ddlChanges !== 0 || p.registryWrites !== 0 || p.policyChanges !== 0) throw new Error(`MASS-2A mutation boundary violated: ${JSON.stringify(p)}`);
           if (p.sourceNetworkRequests !== 0 || p.detailPageFetches !== 0) throw new Error(`MASS-2A source fetch boundary violated: ${JSON.stringify(p)}`);
-          if (p.publicRowsCreated !== 0 || p.searchActivations !== 0 || p.permissionsInferred !== 0) throw new Error(`MASS-2A activation/permission boundary violated: ${JSON.stringify(p)}`);
+          if (p.publicRowsCreated !== 0 || p.searchActivations !== 0 || p.permissionsInferred !== 0 || p.nonHoldDecisions !== 0 || p.publicActivableNowCount !== 0) throw new Error(`MASS-2A activation/permission boundary violated: ${JSON.stringify(p)}`);
           if (p.paginationMode !== 'UUID_KEYSET') throw new Error(`MASS-2A must preserve large-scan keyset pagination: ${JSON.stringify(p)}`);
-          if (!(p.mass1SourceFactoryDomains > 0) || p.dossiersProduced !== p.mass1SourceFactoryDomains) throw new Error(`MASS-2A coverage mismatch: ${JSON.stringify(p)}`);
-          if (p.uniqueDossierDomains !== p.dossiersProduced) throw new Error(`Duplicate/missing dossier domain: ${JSON.stringify(p)}`);
-          if (p.highYieldDomains !== Math.min(20, p.dossiersProduced)) throw new Error(`High-yield cohort drift: ${JSON.stringify(p)}`);
-          const expectedMid = Math.min(30, Math.max(0, p.dossiersProduced - 20));
-          if (p.midYieldDomains !== expectedMid) throw new Error(`Mid-yield cohort drift: ${JSON.stringify(p)}`);
-          if (p.longTailDomains !== Math.max(0, p.dossiersProduced - 50)) throw new Error(`Long-tail cohort drift: ${JSON.stringify(p)}`);
+
+          // MASS-1 certified exactly 101 Source Factory domains for this handoff.
+          // Any drift is a blocking finding, not a silent cohort resize.
+          if (p.mass1SourceFactoryDomains !== 101 || p.dossiersProduced !== 101 || p.uniqueDossierDomains !== 101) {
+            throw new Error(`MASS-2A certified reservoir drift: expected 101 domains: ${JSON.stringify(p)}`);
+          }
+          if (p.coverageMatchesMass1Queue !== true) throw new Error(`MASS-2A coverage mismatch: ${JSON.stringify(p)}`);
+          if (p.highYieldDomains !== 20 || p.midYieldDomains !== 30 || p.longTailDomains !== 51) {
+            throw new Error(`MASS-2A cohort drift: expected 20/30/51: ${JSON.stringify(p)}`);
+          }
           if (!p.allDossiersUnreviewed || !p.allDossiersHold || !p.allDossiersNonActivable || !p.allPermissionsNotInferred || !p.allExternalEvidenceNotReviewed) throw new Error(`Fail-closed dossier invariant violated: ${JSON.stringify(p)}`);
 
           const escaped = dossiers.filter((d) =>
