@@ -31,9 +31,6 @@ jobs:
               text = text.replace(old, new, 1)
               p.write_text(text, encoding="utf-8")
 
-          merge_sha = "d2dce59e4aab914fb2a54e0547ccee427128f638"
-          clean_sha = "0a2856e68b44bee6f7b398b5c314d53711d95a67"
-
           replace_exact(
               "docs/ROADMAP.md",
               "### MASS-1 — Reservoir Qualification ✅ CERTIFIED / MERGE PENDING — PR #511",
@@ -44,19 +41,16 @@ jobs:
               "- **19/19 workflows exact-head comportemental SUCCESS** ; score final **9,5/10**.",
               "- **19/19 workflows exact-head comportemental SUCCESS** ;\n- clean-head final `0a2856e68b44bee6f7b398b5c314d53711d95a67` : **37/37 workflows associés SUCCESS**, run MASS-1 `31557215870` SUCCESS, artefact `9126627714`, digest `sha256:84333105c8edda9be5733184c42e2e1afc865109edb580a5ae1705219c1cd932` ;\n- PR #511 mergée dans `main` : `d2dce59e4aab914fb2a54e0547ccee427128f638` ; comparaison `0a2856e… → d2dce59e…` = **0 fichier différent** ; score final **9,5/10**.",
           )
-
           replace_exact(
               "README.md",
               "**MASS-1 — Reservoir Qualification** est certifié **9,5/10** sur PR #511, merge en attente :",
               "**MASS-1 — Reservoir Qualification** est **CLOSED / certifié 9,5/10** ; PR #511 mergée dans `main@d2dce59e4aab914fb2a54e0547ccee427128f638` :",
           )
-
           replace_exact(
               "docs/SESSION.md",
               "- **MASS-1 / PR #511 : ✅ CERTIFIED 9,5/10 — merge pending.** Head comportemental certifié `d768f47e4662430c71066ea9aaa43c85b23477fb`.",
               "- **MASS-1 / PR #511 : ✅ CLOSED / CERTIFIED 9,5/10.** Merge `d2dce59e4aab914fb2a54e0547ccee427128f638` ; clean-head `0a2856e68b44bee6f7b398b5c314d53711d95a67` avec **37/37 workflows SUCCESS** ; arbre mergé sans dérive de fichier. Head comportemental certifié `d768f47e4662430c71066ea9aaa43c85b23477fb`.",
           )
-
           replace_exact(
               "docs/data/DATA-MASS-1-RESERVOIR-QUALIFICATION.md",
               "**Status:** ✅ CERTIFIED / MERGE PENDING  ",
@@ -79,6 +73,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add README.md docs/ROADMAP.md docs/SESSION.md docs/data/DATA-MASS-1-RESERVOIR-QUALIFICATION.md
-          git diff --cached --check
           git commit -m "docs(mass-1): close post-merge certification"
           git push origin HEAD:docs/mass-1-post-merge-closeout
