@@ -72,6 +72,7 @@ jobs:
           test -s "${DATA_MASS_2A_OUT_DIR}/dossiers.csv"
           test -s "${DATA_MASS_2A_OUT_DIR}/summary.md"
           node - <<'NODE'
+          const crypto = require('crypto');
           const fs = require('fs');
           const dir = '.tmp/data-mass-2a/results';
           const p = JSON.parse(fs.readFileSync(`${dir}/proof.json`, 'utf8'));
@@ -87,9 +88,12 @@ jobs:
           if (p.inputMode !== 'MASS_1_CERTIFIED_SNAPSHOT_WITH_LIVE_DRIFT_OBSERVATION') throw new Error(`Wrong MASS-2A input mode: ${JSON.stringify(p)}`);
 
           const expectedHead = '0a2856e68b44bee6f7b398b5c314d53711d95a67';
-          const expectedDigest = 'sha256:84333105c8edda9be5733184c42e2e1afc865109edb580a5ae1705219c1cd932';
+          const expectedArtifactDigest = 'sha256:84333105c8edda9be5733184c42e2e1afc865109edb580a5ae1705219c1cd932';
+          const expectedCohortDigest = 'sha256:5ea66f2505cd7aca7e13993f54485c4bcd519d9bb3117b8d0c95447914f83ab5';
+          const actualCohortDigest = `sha256:${crypto.createHash('sha256').update(JSON.stringify(manifest.cohort)).digest('hex')}`;
           if (manifest.mass1Head !== expectedHead || p.mass1CertifiedHead !== expectedHead) throw new Error(`MASS-1 head mismatch: ${JSON.stringify(p)}`);
-          if (manifest.mass1ArtifactDigest !== expectedDigest || p.mass1CertifiedArtifactDigest !== expectedDigest) throw new Error(`MASS-1 artifact digest mismatch: ${JSON.stringify(p)}`);
+          if (manifest.mass1ArtifactDigest !== expectedArtifactDigest || p.mass1CertifiedArtifactDigest !== expectedArtifactDigest) throw new Error(`MASS-1 artifact digest mismatch: ${JSON.stringify(p)}`);
+          if (manifest.mass1SourceFactoryCohortDigest !== expectedCohortDigest || actualCohortDigest !== expectedCohortDigest) throw new Error(`MASS-1 certified cohort digest mismatch: ${actualCohortDigest}`);
           if (manifest.certifiedSourceFactoryDomains !== 101 || p.mass1CertifiedSourceFactoryDomains !== 101 || p.dossiersProduced !== 101 || p.uniqueDossierDomains !== 101) {
             throw new Error(`MASS-2A certified cohort mismatch: expected 101 domains: ${JSON.stringify(p)}`);
           }
