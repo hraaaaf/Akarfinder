@@ -13,9 +13,10 @@ import {
 const ROOT = process.cwd();
 const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 const DISTRICTS: readonly RabatNeighborhood[] = ["Agdal", "Hay Riad", "Souissi", "Océan", "Hassan"];
+const FULL_SEARCH_DISTRICTS: readonly RabatNeighborhood[] = ["Agdal", "Hay Riad", "Océan", "Hassan"];
 
 describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
-  it("ships exactly 8 real-photo entries for each of 5 Rabat districts", () => {
+  it("ships exactly 8 real-photo source entries for each of 5 Rabat districts", () => {
     assert.equal(RABAT_REAL_PHOTO_ASSETS.length, 40);
     assert.equal(new Set(RABAT_REAL_PHOTO_ASSETS.map((asset) => asset.id)).size, 40);
     assert.equal(new Set(RABAT_REAL_PHOTO_ASSETS.map((asset) => asset.fileName)).size, 40);
@@ -23,7 +24,7 @@ describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
 
     for (const district of DISTRICTS) {
       const pool = RABAT_REAL_PHOTO_LIBRARY[district];
-      assert.equal(pool.length, 8, `${district} must have exactly 8 photos`);
+      assert.equal(pool.length, 8, `${district} must keep exactly 8 source photos`);
       assert.ok(pool.every((asset) => asset.city === "Rabat" && asset.district === district));
     }
   });
@@ -48,24 +49,59 @@ describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
     assert.equal(normalizeRabatNeighborhood("Unknown"), null);
   });
 
-  it("is deterministic and can reach all 8 photos in every district", () => {
-    for (const district of DISTRICTS) {
+  it("stays deterministic while Search uses all 8 variants except the curated residential Souissi subset", () => {
+    for (const district of FULL_SEARCH_DISTRICTS) {
       const reached = new Set<string>();
       for (let index = 0; index < 10_000 && reached.size < 8; index += 1) {
         const stableKey = `listing-${district}-${index}`;
         const first = resolveRabatRealPhoto({ stableKey, city: "Rabat", district });
         const second = resolveRabatRealPhoto({ stableKey, city: "Rabat", district });
         assert.deepEqual(first, second);
+        assert.equal(first?.contextScope, "district");
         if (first) reached.add(first.id);
       }
-      assert.equal(reached.size, 8, `${district} must deterministically reach all 8 variants`);
+      assert.equal(reached.size, 8, `${district} must deterministically reach all 8 Search variants`);
     }
+
+    const souissiReached = new Set<string>();
+    for (let index = 0; index < 10_000 && souissiReached.size < 5; index += 1) {
+      const stableKey = `listing-Souissi-${index}`;
+      const first = resolveRabatRealPhoto({ stableKey, city: "Rabat", district: "Souissi" });
+      const second = resolveRabatRealPhoto({ stableKey, city: "Rabat", district: "Souissi" });
+      assert.deepEqual(first, second);
+      assert.equal(first?.contextScope, "district");
+      assert.equal(first?.district, "Souissi");
+      assert.doesNotMatch(first?.fileName.toLowerCase() ?? "", /fanzone|knawa/);
+      if (first) souissiReached.add(first.id);
+    }
+    assert.equal(souissiReached.size, 5, "Souissi Search must reach all 5 curated residential-context variants");
+    assert.ok(
+      [...souissiReached].every((id) => !["rabat-souissi-photo-06", "rabat-souissi-photo-07", "rabat-souissi-photo-08"].includes(id)),
+      "Souissi Search must never surface the 3 event/fanzone source assets",
+    );
   });
 
-  it("fails closed outside a structured Rabat district", () => {
+  it("fails closed outside Rabat and uses a city-only truth-safe fallback for unsupported Rabat districts", () => {
     assert.equal(resolveRabatRealPhoto({ stableKey: "a", city: "Casablanca", district: "Agdal" }), null);
-    assert.equal(resolveRabatRealPhoto({ stableKey: "a", city: "Rabat", district: "Unknown" }), null);
     assert.equal(resolveRabatRealPhoto({ stableKey: "", city: "Rabat", district: "Agdal" }), null);
+
+    const unsupported = resolveRabatRealPhoto({
+      stableKey: "unsupported-rabat-district-a",
+      city: "Rabat",
+      district: "Unknown",
+    });
+    const replay = resolveRabatRealPhoto({
+      stableKey: "unsupported-rabat-district-a",
+      city: "Rabat",
+      district: "Unknown",
+    });
+    assert.ok(unsupported);
+    assert.deepEqual(unsupported, replay);
+    assert.equal(unsupported.contextScope, "city");
+    assert.equal(unsupported.city, "Rabat");
+    assert.equal(unsupported.label, "Rabat");
+    assert.equal(unsupported.sourceName, "Wikimedia Commons");
+    assert.match(unsupported.asset, /^https:\/\/commons\.wikimedia\.org\//);
   });
 
   it("keeps the legacy contextual illustration catalog untouched", () => {
