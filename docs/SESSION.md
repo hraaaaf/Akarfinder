@@ -237,19 +237,18 @@ Résultat certifié :
 <!-- DATA-CURRENT-START -->
 ## DATA — vérité courante
 
-- DATA-4.9A ✅ PR #444 — merge `18be46c7349e8a56b2b68b56005d79f85e125675`.
-- DATA-4.9B 🟠 PR #452 — High-Capacity Structural Detail Qualification, read-only.
-- Snapshot durci certifié : head `ae4b212e28f6ca0929548299860b04936daea218`, run `31369710665` PASS, observé `2026-08-10T08:24:02.397Z`.
-- Artefact : `sha256:dce77812b6666b09f29d7e716500cd5abed39e6902fcbcc71a515eeb4680f33d`.
-- **10 128** net-new URL identities → **2 326 structural detail candidate URL representations** + **7 802 rejects**, 0 collision.
-- Par source : Val Foncier **709**, Christie's **602**, Immo Maroc **276**, AgadirImmobilier.ma **37**, ProImmobilier **99**, Capital Properties **603**.
-- **2 326 n'est pas un nombre de biens uniques** ; le proof machine l'interdit explicitement.
-- 0 detail-page fetch ; 0 DB/Registry/policy mutation ; 0 ingestion/display activation.
-- Les six sources restent live Registry `unverified + hidden + internal_signal_only`, `current_representation_count=0`.
+- DATA-4.9B ✅ PR #452 — merge `45631345a6efb653256273354d2fb903b33c1ff9` ; **2 326 structural-detail URL reps**, pas biens uniques.
+- DATA-4.9C 🟠 PR #454 — policy decision / Registry assignment.
+- Pre-write : head `78bbcbcd40cbbabb7a46769c8239b58b94aa3682`, run `31371504161` PASS, rollback-plan artefact `sha256:07529455c3438f2e6b51461c4f1babce7f80a18ef55fd1ef0b3d83e5657637aa`.
+- Mutation CAS production : **1/1 Agadir** → `permission_required`; hidden/internal-only inchangé ; 0 representation active.
+- Post-apply : head `d61e23bf7908d8be14dac718d87603ec9c8e3bb9`, run `31372192768` PASS, artefact `sha256:679b2f55bacebac0652bc84f4646e5530df1c53d9e3ebcebfadc7a44d9e942af`.
+- Post-proof : Agadir `ALREADY_APPLIED_RESTRICTIVE`; Val Foncier / Christie's / Immo Maroc / ProImmobilier / Capital = `NO_MUTATION` et restent `unverified`.
+- 12/12 preuves officielles relues sans failure ; 0 CI write ; 0 seed/detail-fetch/ingestion/display activation.
+- Registry final : **1 permission_required + 5 unverified + 0 authorized** ; aucune source `limited_public_facts` / `authorized_partner`.
 
-**Prochain LOT : DATA-4.9C — Source Policy Decision & Registry Assignment.** Revue de preuves officielles actuelles et décision par source ; mutation du Registry uniquement si démontrée, jamais d'ingestion dans ce lot.
+**DATA-4.9D = BLOCKED_BY_POLICY.** Aucun canary ingestion ne doit être ouvert sur cette cohorte.
 
-Ensuite **DATA-4.9D** pourra concevoir un canary d'ingestion borné uniquement pour les sources effectivement autorisées.
+**Prochain LOT : DATA-4.10A — Authorization Conversion & Partner Feed Readiness**, read-only : produire les dossiers de permission/partenariat et chemins feed/API officiels des sources à plus fort upside, sans envoi automatique et sans ingestion.
 <!-- DATA-CURRENT-END -->
 
 ## Vérité canonique après merges parallèles
