@@ -19,12 +19,13 @@ Auditer les **30 domaines MID_YIELD certifiés par MASS-2A (rangs 21→50)** sou
 - preuve absente/inaccessible/ambiguë = `HOLD` ;
 - 0 canal direct autorisé dans ce lot.
 
-## 3. Résultat de revue
+## 3. Résultat de revue après double-check
 
 - **30/30** domaines audités ;
-- **16 `PERMISSION_REQUIRED`** ;
-- **14 `HOLD`** ;
-- **16** `CANONICAL_LINK_ONLY_CANDIDATE`, **0 approuvé** ;
+- **17 `PERMISSION_REQUIRED`** ;
+- **13 `HOLD`** ;
+- **17** `CANONICAL_LINK_ONLY_CANDIDATE`, **0 approuvé** ;
+- rendement certifié MASS-2A conservé : **3 026 URL-représentations / 1 758 signaux immobilier Maroc / 967 structures détail** ;
 - **0** acquisition directe autorisée ;
 - **0** photo/description complète autorisée ;
 - **0** permission inférée ;
@@ -33,35 +34,35 @@ Auditer les **30 domaines MID_YIELD certifiés par MASS-2A (rangs 21→50)** sou
 
 ### `PERMISSION_REQUIRED`
 
-`immobilier.cari.ma`, `toutypasse.com`, `logic-immo.com`, `luxuryestate.com`, `holprop.fr`, `annonces-express.com`, `souika.ma`, `bakimmo.com`, `paruvendu.fr`, `2ememain.be`, `chridari.ma`, `kensingtonmorocco.com`, `proprietes.lefigaro.fr`, `emilegarcin.com`, `quicherchequoi.com`, `abicapital.ma`.
+`immobilier.cari.ma`, `toutypasse.com`, `logic-immo.com`, `luxuryestate.com`, `holprop.fr`, `annonces-express.com`, `properstar.fr`, `souika.ma`, `bakimmo.com`, `paruvendu.fr`, `acropole-immo.net`, `chridari.ma`, `kensingtonmorocco.com`, `proprietes.lefigaro.fr`, `emilegarcin.com`, `quicherchequoi.com`, `abicapital.ma`.
 
 ### `HOLD`
 
-`fazwaz.fr`, `capalmrabat.com`, `lyz-marrakech-immobilier.com`, `fadlimmo.com`, `properstar.fr`, `maroc.realigro.fr`, `maisons-maroc.com`, `acropole-immo.net`, `immobakkali.com`, `baytchamal.com`, `kaynly.com`, `mbi-maroc.com`, `dardar.ma`, `mbi-invest.com`.
+`fazwaz.fr`, `capalmrabat.com`, `lyz-marrakech-immobilier.com`, `fadlimmo.com`, `maroc.realigro.fr`, `maisons-maroc.com`, `immobakkali.com`, `2ememain.be`, `baytchamal.com`, `kaynly.com`, `mbi-maroc.com`, `dardar.ma`, `mbi-invest.com`.
 
 `HOLD` ne signifie pas interdit : il signifie uniquement que la preuve publique actuelle n'est pas assez résolue pour sortir du fail-closed.
 
-## 4. Preuves structurantes
+## 4. Double-check qui a modifié la première distribution
 
-Le manifeste `data/data-mass-2c/mid-yield-source-review.json` conserve l'URL officielle utilisée lorsqu'une décision `PERMISSION_REQUIRED` est rendue.
+La première passe conservatrice était plus restrictive. Le second passage a résolu des preuves officielles supplémentaires :
 
-Exemples nets :
+- `immobilier.cari.ma` : conditions officielles Cari résolues ; aucune concession publique de réutilisation aval n'est établie → `PERMISSION_REQUIRED` ;
+- `toutypasse.com` : mentions légales officielles interdisent l'usage/reproduction sans autorisation écrite → `PERMISSION_REQUIRED` ;
+- `holprop.fr` : rattachement au réseau Holprop LTD et conditions/copyright résolus ; aucune concession publique de réutilisation aval → `PERMISSION_REQUIRED` ;
+- `properstar.fr` : conditions Properstar résolues, sans concession publique de réutilisation pour un index tiers → `PERMISSION_REQUIRED` ;
+- `acropole-immo.net` : propriété/copyright officiel résolu mais aucune concession publique de réutilisation → `PERMISSION_REQUIRED` ;
+- `2ememain.be` : la politique de réutilisation pertinente n'est pas suffisamment résolue dans ce lot → reste `HOLD`.
 
-- ParuVendu : CGU — reproduction/représentation/modification/adaptation/traduction/extraction interdites sans autorisation ;
-- Propriétés Le Figaro : reproduction, extraction de base et collecte automatisée commerciale restreintes sans autorisation préalable ;
-- LuxuryEstate : exploitation commerciale et reproduction/distribution non autorisées ;
-- Kensington Morocco : copie/reproduction/distribution/republication/commercial copying interdits sans autorisation ;
-- Emile Garcin : usage hors reproduction/consultation individuelles et privées interdit sans autorisation ;
-- QuiChercheQuoi : reproduction/représentation/diffusion/extraction/réutilisation interdites sans autorisation écrite ;
-- ABI Capital : reproduction/transmission/modification/usage public ou commercial et création de liens interdits sans autorisation écrite préalable.
+Aucune de ces décisions n'autorise un fetch direct ni une activation publique.
 
 ## 5. Gate machine
 
 Le workflow `DATA MASS-2C Mid-Yield Source Review` doit prouver sur le head exact :
 
 - cohorte exacte rangs **21→50**, scores MASS-1 immuables ;
-- predecessor MASS-2B exact (head/run/artifact/digest/merge) ;
-- distribution **16/14** ;
+- predecessor MASS-2B exact : head/run/artifact/digest/merge ;
+- distribution **17/13** et **17 candidats canonical-link / 0 approuvé** ;
+- rendements exacts **3 026 / 1 758 / 967** ;
 - tests MASS-2C + predecessors ;
 - TypeScript + build production ;
 - live-audit Registry strictement read-only ;
@@ -71,7 +72,7 @@ Le workflow `DATA MASS-2C Mid-Yield Source Review` doit prouver sur le head exac
 
 ## 6. Hors scope
 
-MASS-2C ne résout pas la baseline transversale qui décidera si un **lien canonique + métadonnées factuelles minimales obtenues sur une base indépendante** peut devenir `CANONICAL_LINK_ONLY`. Tant que cette baseline n'existe pas, les 16 candidats restent non activables.
+MASS-2C ne résout pas la baseline transversale qui décidera si un **lien canonique + métadonnées factuelles minimales obtenues sur une base indépendante** peut devenir `CANONICAL_LINK_ONLY`. Tant que cette baseline n'existe pas, les 17 candidats restent non activables.
 
 ## 7. Fermeture
 

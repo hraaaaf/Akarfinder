@@ -72,11 +72,12 @@ jobs:
           if (p.readOnly !== true || p.databaseWrites !== 0 || p.ddlChanges !== 0 || p.registryWrites !== 0 || p.policyChanges !== 0) throw new Error(`Mutation boundary: ${JSON.stringify(p)}`);
           if (p.sourceNetworkRequests !== 0 || p.sourceSiteRequests !== 0 || p.detailPageFetches !== 0 || p.blockedNetworkRequests !== 0) throw new Error(`Network boundary: ${JSON.stringify(p)}`);
           if (p.publicRowsCreated !== 0 || p.searchActivations !== 0 || p.permissionsInferred !== 0 || p.publicActivableNowCount !== 0 || p.registryWriteAllowedCount !== 0) throw new Error(`Activation boundary: ${JSON.stringify(p)}`);
-          if (p.mass2bFinalHead !== expectedHead || p.mass2bFinalArtifactDigest !== expectedDigest || p.mass2bMergeCommit !== expectedMerge) throw new Error(`Predecessor drift: ${JSON.stringify(p)}`);
-          if (p.domainsReviewed !== 30 || p.permissionRequiredCount !== 16 || p.holdCount !== 14 || p.canonicalLinkCandidateCount !== 16 || p.canonicalLinkApprovedCount !== 0) throw new Error(`Decision drift: ${JSON.stringify(p)}`);
+          if (p.mass2bFinalHead !== expectedHead || p.mass2bFinalRunId !== 31642731238 || p.mass2bFinalArtifactId !== 9159540462 || p.mass2bFinalArtifactDigest !== expectedDigest || p.mass2bMergeCommit !== expectedMerge) throw new Error(`Predecessor drift: ${JSON.stringify(p)}`);
+          if (p.domainsReviewed !== 30 || p.permissionRequiredCount !== 17 || p.holdCount !== 13 || p.canonicalLinkCandidateCount !== 17 || p.canonicalLinkApprovedCount !== 0) throw new Error(`Decision drift: ${JSON.stringify(p)}`);
           if (p.directAcquisitionAllowedCount !== 0 || p.copyPhotosAllowedCount !== 0 || p.copyDescriptionAllowedCount !== 0 || p.sourceAttributionRequiredCount !== 30) throw new Error(`Content boundary: ${JSON.stringify(p)}`);
           if (p.currentRegistryRowsForReviewedDomains !== 0 || p.registryDriftSinceReviewCount !== 0) throw new Error(`Registry changed after review: ${JSON.stringify(p)}`);
           if (review.doctrine.model !== 'ATTRIBUTED_MINIMAL_INDEX' || review.safety.allowedChannels !== 'NONE_ONLY' || review.safety.publicActivableNow !== false || review.safety.registryWriteAllowed !== false) throw new Error('Doctrine/safety drift');
+          if (review.summary.totalUrlRepresentations !== 3026 || review.summary.totalLikelyMoroccoRealEstateUrls !== 1758 || review.summary.totalLikelyMoroccoListingDetailUrls !== 967) throw new Error(`Yield totals drift: ${JSON.stringify(review.summary)}`);
           NODE
       - uses: actions/upload-artifact@v4
         with:

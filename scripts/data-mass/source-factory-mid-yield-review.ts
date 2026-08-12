@@ -63,15 +63,18 @@ export interface MidYieldReviewManifest {
   records: MidYieldReviewRecord[];
   summary: {
     domainsReviewed: 30;
-    permissionRequired: 16;
-    hold: 14;
+    permissionRequired: 17;
+    hold: 13;
     policyCompatible: 0;
     canonicalLinkApproved: 0;
     directAcquisitionAllowed: 0;
-    canonicalLinkCandidates: 16;
+    canonicalLinkCandidates: 17;
     publicActivableNow: 0;
     registryWriteAllowed: 0;
     permissionInferred: 0;
+    totalUrlRepresentations: 3026;
+    totalLikelyMoroccoRealEstateUrls: 1758;
+    totalLikelyMoroccoListingDetailUrls: 967;
   };
 }
 
@@ -175,15 +178,13 @@ export function validateMidYieldReviewManifest(
       if (record.sourceAcquisition === "DIRECT_SOURCE_UNRESOLVED_TERMS" || record.termsStatus === "TERMS_UNRESOLVED") {
         throw new Error(`${record.sourceDomain}:UNRESOLVED_PERMISSION_DECISION`);
       }
-    } else {
-      if (
-        record.termsUrl !== null ||
-        record.publicIndexingMode !== "UNRESOLVED" ||
-        record.sourceAcquisition !== "DIRECT_SOURCE_UNRESOLVED_TERMS" ||
-        record.termsStatus !== "TERMS_UNRESOLVED"
-      ) {
-        throw new Error(`${record.sourceDomain}:HOLD_BOUNDARY_VIOLATED`);
-      }
+    } else if (
+      record.termsUrl !== null ||
+      record.publicIndexingMode !== "UNRESOLVED" ||
+      record.sourceAcquisition !== "DIRECT_SOURCE_UNRESOLVED_TERMS" ||
+      record.termsStatus !== "TERMS_UNRESOLVED"
+    ) {
+      throw new Error(`${record.sourceDomain}:HOLD_BOUNDARY_VIOLATED`);
     }
   }
 
@@ -202,7 +203,7 @@ export function validateMidYieldReviewManifest(
     { urlRepresentations: 0, likelyMoroccoRealEstateUrls: 0, likelyMoroccoListingDetailUrls: 0 },
   );
 
-  if (permissionRequired !== 16 || hold !== 14 || canonicalCandidates !== 16) {
+  if (permissionRequired !== 17 || hold !== 13 || canonicalCandidates !== 17) {
     throw new Error(`DECISION_DISTRIBUTION:${permissionRequired}:${hold}:${canonicalCandidates}`);
   }
   if (
@@ -218,7 +219,10 @@ export function validateMidYieldReviewManifest(
     summary.domainsReviewed !== 30 ||
     summary.permissionRequired !== permissionRequired ||
     summary.hold !== hold ||
-    summary.canonicalLinkCandidates !== canonicalCandidates
+    summary.canonicalLinkCandidates !== canonicalCandidates ||
+    summary.totalUrlRepresentations !== EXPECTED_TOTALS.urlRepresentations ||
+    summary.totalLikelyMoroccoRealEstateUrls !== EXPECTED_TOTALS.likelyMoroccoRealEstateUrls ||
+    summary.totalLikelyMoroccoListingDetailUrls !== EXPECTED_TOTALS.likelyMoroccoListingDetailUrls
   ) {
     throw new Error("SUMMARY_DRIFT");
   }
