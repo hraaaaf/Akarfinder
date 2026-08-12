@@ -106,13 +106,13 @@
     display: grid !important;
     grid-template-columns: minmax(0, 1fr);
     align-items: stretch !important;
-    gap: 6px !important;
-    padding-top: 4px !important;
-    padding-bottom: 10px !important;
+    gap: 2px !important;
+    padding-top: 0 !important;
+    padding-bottom: 1px !important;
   }
 
   :global([data-search-results-toolbar]):has(.root) > :first-child {
-    min-height: 20px;
+    min-height: 18px;
     width: 100%;
   }
 
@@ -121,8 +121,8 @@
     overflow: visible;
     text-overflow: clip;
     white-space: normal;
-    font-size: 14px !important;
-    line-height: 20px;
+    font-size: 13px !important;
+    line-height: 18px;
   }
 
   :global([data-search-results-toolbar]):has(.root) > :last-child {
