@@ -1,19 +1,20 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-11**
+**Mise à jour : 2026-08-12**
 
 Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
 
 <!-- DATA-MASS-HANDOVER-START -->
 ## DATA MASS — handover prioritaire
 
-- **MASS-1 / PR #511 : ✅ CLOSED / CERTIFIED 9,5/10.** Merge `d2dce59e4aab914fb2a54e0547ccee427128f638` ; clean-head `0a2856e68b44bee6f7b398b5c314d53711d95a67` avec **37/37 workflows SUCCESS** ; arbre mergé sans dérive de fichier. Head comportemental certifié `d768f47e4662430c71066ea9aaa43c85b23477fb`.
-- Prod : **86 741 URL-représentations net-new**, **51 326** signaux immobilier Maroc probables, **24 028** structures détail Maroc probables.
-- Queue MASS-2 après corrections : **101 domaines / 17 376 URL-représentations / 15 790 signaux immobilier Maroc probables**.
-- Run `31556168993` SUCCESS ; artefact `9126213992`, digest `sha256:6f99427010bc4477c822f46559823ad7289b18acdc38f99bcfdee69e42bd0dc1` ; SQL indépendant réconcilié.
-- Limites : 0 write, 0 ingestion, 0 activation Search, 0 permission inférée, 0 claim de bien unique. Source Registry reste autorité fail-closed.
-- **NEXT : MASS-2 — Source Factory**, revue des 101 domaines par rendement/policy avant toute ingestion.
-- Suite déjà planifiée dans ROADMAP : **MASS-3 Minimal Listing Index → MASS-4 Mass Reclassification → MASS-5 Discovery Expansion → MASS-6 National Mass Engine**.
+- **MASS-1 / PR #511 : ✅ CLOSED / CERTIFIED 9,5/10.** Handoff immuable vers MASS-2 : **101 domaines**, clean-head `0a2856e68b44bee6f7b398b5c314d53711d95a67`, artefact `9126627714`, digest `sha256:84333105c8edda9be5733184c42e2e1afc865109edb580a5ae1705219c1cd932`.
+- **MASS-2A / PR #519 : ✅ FACTORY ENGINE CERTIFIED 9,5/10.** Head comportemental `a1a473a99db3ea2a203948ce59e4cb9062cff773`; run dédié `31633323123` SUCCESS ; **40/40 tests**, TypeScript + production build PASS ; live-audit read-only + truth-boundary PASS.
+- Artefact 2A : `9156633723`, digest `sha256:e16c4e1e8a970435a8577c95b86a6e518c7d24c5c50750baf6c2fad06d759e77`. Recheck indépendant du ZIP : digest exact, **101/101 dossiers uniques**, rangs contigus, split **20/30/51**, 100 % `UNREVIEWED + HOLD`, 0 activable, 0 permission inférée.
+- Production observée : **203 317 Discovery / 56 814 Thin Index / 35 Registry**. Recompute live Source Factory = **106**, soit **5 ajouts post-snapshot** (`inmarrakechimmo.com`, `le-25.com`, `mri-immo.com`, `nourreska.com`, `sunlife.ma`) et **0 certifié perdu**. Le cohort 2A reste gelé à 101 ; le drift n’autorise rien.
+- Sécurité : **0 DB/DDL/Registry/policy write, 0 source/detail fetch, 0 public row, 0 Search activation, 0 permission inférée, 0 décision non-HOLD**. Discovery et Thin Index sont scannés en UUID keyset (`id` / `seed_id`), jamais OFFSET.
+- Deux rouges transverses du même head ont été classés hors scope : ancien workflow MASS-1 timeout sur son OFFSET historique ; UX-SEARCH-2 échoue sur son propre gate toolbar 70 px. Aucun fichier concerné n’est modifié par #519 ; les tests/build MASS-2A restent verts.
+- **NEXT après merge #519 : MASS-2B — High-Yield Sources uniquement.** Auditer le cohort high-yield certifié domaine par domaine avec preuves datées ; aucune permission implicite, aucun Registry write/ingestion/activation dans 2B.
+- Suite verrouillée : **2B → 2C → 2D → 2E → 2F**, puis MASS-3 Minimal Listing Index → MASS-4 Mass Reclassification → MASS-5 Discovery Expansion → MASS-6 National Mass Engine.
 <!-- DATA-MASS-HANDOVER-END -->
 
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->
