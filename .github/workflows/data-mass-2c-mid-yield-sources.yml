@@ -8,8 +8,12 @@ on:
       - "scripts/data-mass/__tests__/source-factory-mid-yield-review.test.ts"
       - "scripts/audits/data-mass-2c-mid-yield-sources.ts"
       - ".github/workflows/data-mass-2c-mid-yield-sources.yml"
+      - ".github/workflows/data-mass-2c-canonical-closeout.yml"
       - "docs/data/DATA-MASS-2C-MID-YIELD-SOURCES.md"
       - "data/data-mass-2a/mass-1-certified-source-factory.json"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
   workflow_dispatch:
 
 permissions:
