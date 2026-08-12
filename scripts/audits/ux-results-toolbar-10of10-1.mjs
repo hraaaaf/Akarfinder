@@ -48,7 +48,11 @@ for (const testCase of cases) {
   await page.waitForSelector("[data-search-controls-section]", { timeout: 20_000 });
   await page.waitForSelector("[data-search-results-toolbar]", { timeout: 20_000 });
   await page.waitForSelector("[data-search-desktop-view-switcher]", { state: "visible", timeout: 20_000 });
-  await page.waitForTimeout(250);
+  await page.waitForFunction(() => {
+    const heading = document.querySelector("[data-search-results-toolbar] h1");
+    return Boolean(heading && /résultat/.test(heading.textContent ?? ""));
+  }, null, { timeout: 30_000 });
+  await page.waitForTimeout(100);
 
   const metrics = await page.evaluate(() => {
     const header = document.querySelector('[data-search-global-header="exact-white"]');
@@ -64,7 +68,7 @@ for (const testCase of cases) {
     const countGroup = toolbar.firstElementChild;
     const actions = toolbar.lastElementChild;
     const heading = countGroup?.querySelector("h1");
-    const buttons = Array.from(switcher.querySelectorAll("button"));
+    const buttons = Array.from(switcher.querySelectorAll("[data-search-view-mode-button]"));
     if (!countGroup || !actions || !heading || buttons.length !== 3) return null;
 
     const rect = (element) => {
@@ -148,7 +152,8 @@ for (const testCase of cases) {
     if (metrics.layout.rect.y - metrics.toolbar.rect.bottom > 12) failures.push(`${testCase.name}: first results layout starts ${metrics.layout.rect.y - metrics.toolbar.rect.bottom}px after toolbar (>12)`);
 
     if (phone) {
-      if (metrics.actions.rect.y < metrics.countGroup.bottom + 5) failures.push(`${testCase.name}: mobile count and controls are still compressed onto one row`);
+      if (metrics.toolbar.rect.height > 71) failures.push(`${testCase.name}: compact mobile toolbar ${metrics.toolbar.rect.height}px > 71px`);
+      if (metrics.actions.rect.y < metrics.countGroup.bottom + 1) failures.push(`${testCase.name}: mobile count does not keep its own line`);
       if (!closeTo(metrics.actions.rect.x, metrics.toolbar.rect.x, 1) || !closeTo(metrics.actions.rect.right, metrics.toolbar.rect.right, 1)) failures.push(`${testCase.name}: mobile controls do not use the full toolbar width`);
       if (!closeTo(metrics.sort.rect.width, 136, 1)) failures.push(`${testCase.name}: mobile sort width ${metrics.sort.rect.width} != 136`);
       if (!closeTo(metrics.sort.rect.height, 48, 1)) failures.push(`${testCase.name}: mobile sort target ${metrics.sort.rect.height} != 48`);
@@ -203,6 +208,7 @@ const report = {
     sortPreserved: ["Recommandé", "Prix croissant", "Prix décroissant"],
     viewsPreserved: ["Liste", "Mixte", "Carte"],
     mobileCountOnOwnLine: true,
+    mobileToolbarMaxPx: 71,
     mobileCriticalTargetPx: 48,
     mobileViewSortGapPx: 8,
     tabletDesktopSingleRow: true,
