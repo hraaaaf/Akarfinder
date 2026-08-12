@@ -5,6 +5,55 @@
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
+<!-- DATA-MASS-PROGRAM-START -->
+## DATA MASS — Programme national de volume
+
+**Doctrine : `MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME`.**  
+**Règle : l’admissibilité décide si une représentation peut exister ; la qualité décide où elle se classe.**
+
+### MASS-1 — Reservoir Qualification ✅ CERTIFIED / MERGE PENDING — PR #511
+
+Responsabilité : qualifier en lecture seule le réservoir `discovery_candidates`, mesurer les représentations URL net-new et produire une queue MASS-2 par domaine sans fetch source, write DB/DDL/Registry, ingestion ni activation Search.
+
+Preuve production certifiée au head comportemental `d768f47e4662430c71066ea9aaa43c85b23477fb` :
+
+- **199 381** rows Discovery lues ; **101 131** représentations URL distinctes ;
+- Thin Index : **56 812** ; Registry : **35** sources ;
+- **86 741 représentations URL net-new** ;
+- **51 326** signaux immobilier Maroc probables ; **24 028** structures détail Maroc probables ;
+- **101 domaines MASS-2** après double-check, portant **15 790** signaux immobilier Maroc probables ;
+- 0 write / 0 activation / 0 source-page fetch / 0 claim de bien unique ;
+- 0 fuite SOCIAL / DISCOVERY_TRANSPORT / FOREIGN_ONLY / policy restrictive dans `SOURCE_FACTORY` ;
+- run `31556168993` SUCCESS ; artefact `9126213992` ; digest `sha256:6f99427010bc4477c822f46559823ad7289b18acdc38f99bcfdee69e42bd0dc1` ;
+- SQL indépendant : **199 381 / 101 131 / 56 812 / 35 / 86 741** réconciliés ;
+- **19/19 workflows exact-head comportemental SUCCESS** ; score final **9,5/10**.
+
+MASS-1 ne transforme aucune URL en annonce publique et ne confère aucune permission. `docs/data/DATA-MASS-1-RESERVOIR-QUALIFICATION.md` porte le détail de preuve.
+
+### MASS-2 — Source Factory 🔴 NEXT
+
+Audit des **101 domaines** par rendement attendu : identité de source, nature réelle du stock, robots.txt/CGU/permissions, canal autorisé, sitemap/structure, fraîcheur et mode Registry. Une décision se prend **par domaine**, jamais par URL. Sortie : `AUTHORIZED/POLICY_COMPATIBLE`, `CANONICAL_LINK_ONLY`, `INTERNAL_ONLY`, `PERMISSION_REQUIRED`, `PROHIBITED` ou maintien fail-closed selon preuve. Aucun domaine n’est autorisé par MASS-1.
+
+### MASS-3 — Minimal Listing Index 🔵 PLANNED
+
+Pour toute source devenue policy-admissible, permettre une représentation minimale : canonical URL + source + titre/signal structurel fiable + géographie disponible. Prix, surface, photo, quartier et description deviennent des facteurs de Listing Power/ranking, pas des prérequis d’existence. Zéro invention de champ absent.
+
+### MASS-4 — Mass Reclassification 🔵 PLANNED
+
+Réévaluer le stock historique `blocked_quality` sous `Quality ≠ Eligibility` : une représentation structurellement immobilière et policy-admissible peut rester Searchable avec faible Listing Power. Les gates policy, catégorie non-listing, ambiguïté et dédup restent fail-closed.
+
+### MASS-5 — Discovery Expansion 🔵 PLANNED
+
+Élargir le réservoir via sitemaps publics, index publics, Common Crawl, agences/promoteurs indépendants et feeds partenaires. Toute découverte rentre d’abord dans le Reservoir ; aucune voie ne contourne le Source Registry.
+
+### MASS-6 — National Mass Engine 🔵 PLANNED
+
+Industrialiser `DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DEDUP → RANK` avec scheduler, quotas, observabilité par ville/source, couverture nationale, freshness et rollback.
+
+**Ordre verrouillé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6.**  
+Aucun lot MASS n’est CLOSED sous 9/10 et chaque lot suit branche/PR/certification/post-merge.
+<!-- DATA-MASS-PROGRAM-END -->
+
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->
 ## Bibliothèque visuelle quartiers — Souissi Pilot ✅ CLOSED
 
