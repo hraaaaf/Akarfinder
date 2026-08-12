@@ -82,16 +82,16 @@ export function FavoriteToggleButton({
   }
 
   return (
-    <div className={`inline-flex flex-col items-end gap-0.5 ${className}`}>
+    <div className={`relative inline-flex items-center ${className}`}>
       <button
         type="button"
         onClick={handleToggle}
         aria-pressed={favorited}
         aria-label={favorited ? "Retirer des favoris" : "Ajouter aux favoris"}
-        className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border transition duration-150 active:scale-95 motion-reduce:transform-none motion-reduce:transition-none ${
+        className={`grid h-11 w-11 shrink-0 place-items-center rounded-full border bg-white transition duration-150 active:scale-95 motion-reduce:transform-none motion-reduce:transition-none ${
           favorited
-            ? "border-red-200 bg-red-50 text-red-500 hover:bg-red-100"
-            : "border-[#eadfca] bg-[#fffdf8] text-gray-400 hover:border-red-200 hover:text-red-500"
+            ? "border-red-200 text-red-500 hover:bg-red-50"
+            : "border-slate-200 text-slate-500 shadow-sm hover:border-red-200 hover:text-red-500"
         }`}
       >
         <Heart
@@ -102,8 +102,8 @@ export function FavoriteToggleButton({
           aria-hidden="true"
         />
       </button>
-      <span aria-live="polite" className="min-h-3 whitespace-nowrap text-[10px] font-semibold text-gray-500">
-        {feedback ? <span className={motion.feedbackEnter}>{feedback}</span> : null}
+      <span aria-live="polite" className="sr-only">
+        {feedback}
       </span>
     </div>
   );

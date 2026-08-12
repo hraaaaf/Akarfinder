@@ -1,0 +1,102 @@
+name: UX-CARDS-10OF10-1 Exact Visual Certification
+
+on:
+  pull_request:
+    paths:
+      - "components/search/SearchListingCardDark.tsx"
+      - "components/favorites/FavoriteToggleButton.tsx"
+      - "scripts/audits/ux-cards-10of10-1.mjs"
+      - "scripts/scrapers/__tests__/ux-cards-10of10-1.test.ts"
+      - ".github/workflows/ux-cards-10of10-1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer — Cards 10/10
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Cards + predecessor contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-cards-10of10-1.test.ts scripts/scrapers/__tests__/ux-results-toolbar-10of10-1.test.ts scripts/scrapers/__tests__/search-ux-fast-1.test.ts scripts/scrapers/__tests__/phase1-final-design-a11y.test.ts scripts/scrapers/__tests__/ux-p1-design-system-convergence.test.ts scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3163 > /tmp/cards-product.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3163/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/cards-product.log
+          exit 1
+      - name: Exact Cards visual contract
+        env:
+          BASE_URL: http://127.0.0.1:3163
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/ux-cards-10of10-1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-cards-10of10-product-design-proof
+          path: data/audits/ux-cards-10of10-1/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Cards 10/10
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Independent Cards + predecessor contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-cards-10of10-1.test.ts scripts/scrapers/__tests__/ux-results-toolbar-10of10-1.test.ts scripts/scrapers/__tests__/search-ux-fast-1.test.ts scripts/scrapers/__tests__/phase1-final-design-a11y.test.ts scripts/scrapers/__tests__/ux-p1-design-system-convergence.test.ts scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts
+      - name: Independent TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent production server
+        shell: bash
+        run: |
+          npm run start -- -p 3164 > /tmp/cards-release.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3164/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/cards-release.log
+          exit 1
+      - name: Independently replay exact Cards visual contract
+        env:
+          BASE_URL: http://127.0.0.1:3164
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/ux-cards-10of10-1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-cards-10of10-release-certifier-proof
+          path: data/audits/ux-cards-10of10-1/release-certifier
+          if-no-files-found: error
+          retention-days: 14

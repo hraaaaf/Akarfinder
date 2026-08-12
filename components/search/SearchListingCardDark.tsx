@@ -97,10 +97,11 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
         }}
         data-property-active={active ? "true" : "false"}
         data-mobile-compact-card
-        className={`group relative flex min-w-0 flex-col overflow-hidden rounded-[20px] border bg-card transition duration-300 sm:rounded-2xl sm:hover:-translate-y-0.5 dark:bg-white/[0.045] ${
+        data-search-listing-card
+        className={`group relative flex min-w-0 flex-col overflow-hidden rounded-[20px] border bg-white transition duration-300 sm:rounded-2xl sm:hover:-translate-y-0.5 ${
           active
-            ? "border-bronze-500/70 shadow-[0_12px_28px_rgba(155,120,56,0.16)] ring-1 ring-bronze-500/15 sm:shadow-[0_24px_55px_rgba(155,120,56,0.22)] sm:ring-2"
-            : "border-border/10 shadow-[0_5px_16px_rgba(2,10,24,0.08)] sm:border-border/15 sm:shadow-[0_12px_34px_rgba(2,10,24,0.12)] sm:hover:border-bronze-500/35"
+            ? "border-[#8fb1dc] shadow-[0_12px_30px_rgba(47,99,164,0.16)] ring-1 ring-[#2f63a4]/10 sm:shadow-[0_20px_46px_rgba(47,99,164,0.18)] sm:ring-2"
+            : "border-slate-200/90 shadow-[0_5px_16px_rgba(15,23,42,0.07)] sm:shadow-[0_12px_30px_rgba(15,23,42,0.09)] sm:hover:border-[#9ab8de] sm:hover:shadow-[0_18px_38px_rgba(15,23,42,0.12)]"
         }`}
       >
         <Link
@@ -108,7 +109,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           className="block"
           aria-label={observedExternal ? `Voir la source originale ${listing.title}` : `Voir le bien ${listing.title}`}
         >
-          <div data-card-image className="relative h-[164px] overflow-hidden bg-white sm:h-[196px]">
+          <div data-card-image className="relative h-[164px] overflow-hidden bg-slate-100 sm:h-[196px]">
             <div className="absolute inset-0 transition duration-500 group-hover:scale-[1.025]">
               {imageMode === "db_provider_thumbnail" ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -227,58 +228,57 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           </div>
         </Link>
 
-        <div className="flex flex-1 flex-col p-3 sm:p-4">
+        <div className="flex flex-1 flex-col px-3 pb-2.5 pt-3 sm:p-4">
           <div className="flex items-start justify-between gap-2 sm:gap-3">
             <div className="min-w-0 flex-1">
-              <p data-mobile-price data-card-price className="truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-deepblue dark:text-white sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-bronze-500 dark:sm:text-bronze-300">
+              <p data-mobile-price data-card-price className="truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-[#173d6b] sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-[#2f63a4]">
                 {formatPrice(smartCard.price, listing.currency)}
               </p>
               {smartCard.pricePerM2 != null ? (
-                <p className="mt-1 hidden text-[12px] font-bold text-muted-foreground sm:block">
+                <p className="mt-1 hidden text-[12px] font-bold text-slate-500 sm:block">
                   {smartCard.pricePerM2.toLocaleString("fr-MA")} DH/m²
                 </p>
               ) : null}
             </div>
             {!observedExternal ? (
-              <div className="absolute right-2 top-2 z-20 scale-90 sm:static sm:z-auto sm:scale-100">
+              <div data-card-favorite className="absolute right-2 top-2 z-20 sm:static sm:z-auto">
                 <FavoriteToggleButton listingId={listing.id} variant="icon" />
               </div>
             ) : null}
           </div>
 
           <Link href={resultHref} className="mt-1.5 block sm:mt-2.5">
-            <h2 data-card-title className="line-clamp-2 text-[12.5px] font-extrabold leading-snug text-foreground transition group-hover:text-bronze-600 dark:text-white dark:group-hover:text-bronze-300 sm:line-clamp-2 sm:text-[1.02rem]">
+            <h2 data-card-title className="line-clamp-2 text-[12.5px] font-extrabold leading-snug text-slate-900 transition group-hover:text-[#2f63a4] sm:text-[1.02rem]">
               {smartCard.title}
             </h2>
-            <p data-card-location className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-muted-foreground sm:mt-1.5 sm:gap-1.5 sm:text-[13px]">
-              <MapPin size={11} className="shrink-0 text-bronze-500 sm:h-[13px] sm:w-[13px]" aria-hidden="true" />
+            <p data-card-location className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-slate-500 sm:mt-1.5 sm:gap-1.5 sm:text-[13px]">
+              <MapPin size={11} className="shrink-0 text-[#5f84b2] sm:h-[13px] sm:w-[13px]" aria-hidden="true" />
               <span className="truncate">{smartCard.locationLabel}</span>
             </p>
           </Link>
 
-
-          <div data-card-facts className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[10px] font-bold text-foreground/65 dark:text-white/65 sm:mt-2.5 sm:flex-wrap sm:gap-x-3 sm:gap-y-1.5 sm:text-[12px]">
+          <div data-card-facts className="mt-1.5 flex min-h-5 items-center gap-1 overflow-hidden text-[9.5px] font-bold text-slate-600 sm:mt-2.5 sm:flex-wrap sm:gap-1.5 sm:text-[11px]">
             {smartCard.facts.slice(0, 3).map((fact) => (
-              <span key={fact} className="shrink-0 sm:shrink">{fact}</span>
+              <span key={fact} className="shrink-0 rounded-md border border-slate-200/80 bg-slate-50 px-1.5 py-0.5 sm:shrink sm:px-2">{fact}</span>
             ))}
           </div>
 
-          <div data-card-provenance className="mt-2 flex items-center justify-between gap-2 border-t border-border/10 pt-2 text-[9.5px] dark:border-white/8 sm:mt-2.5 sm:gap-3 sm:border-border/12 sm:pt-3 sm:text-[11px]">
-            <span className="truncate font-semibold text-muted-foreground">{smartCard.freshnessLabel}</span>
+          <div data-card-provenance className="mt-2 flex items-center justify-between gap-2 border-t border-slate-200/80 pt-2 text-[9.5px] sm:mt-2.5 sm:gap-3 sm:pt-3 sm:text-[11px]">
+            <span className="truncate font-semibold text-slate-500">{smartCard.freshnessLabel}</span>
             {showOriginal && !observedExternal ? (
               <a
                 href={listing.listing_url!}
                 target="_blank"
                 rel="noopener noreferrer"
                 data-secondary-source-link
-                className="inline-flex min-w-0 items-center gap-1 font-semibold text-muted-foreground transition hover:text-bronze-700 dark:hover:text-bronze-300"
+                className="inline-flex min-w-0 items-center gap-1 font-semibold text-slate-500 transition hover:text-[#2f63a4]"
                 aria-label="Voir la source originale"
               >
                 <span data-public-attribution className="truncate">{publicAttribution.combinedLabel}</span>
                 <ExternalLink size={11} aria-hidden="true" className="shrink-0" />
               </a>
             ) : (
-              <span data-public-attribution className="truncate font-semibold text-muted-foreground">
+              <span data-public-attribution className="truncate font-semibold text-slate-500">
                 {publicAttribution.combinedLabel}
               </span>
             )}
@@ -290,14 +290,14 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
               target="_blank"
               rel="noopener noreferrer"
               data-neighborhood-photo-credit
-              className="mt-1.5 inline-flex w-fit max-w-full truncate text-[8.5px] font-semibold text-muted-foreground/75 underline-offset-2 hover:text-foreground hover:underline sm:text-[9px]"
+              className="mt-1.5 inline-flex w-fit max-w-full truncate text-[8.5px] font-semibold text-slate-400 underline-offset-2 hover:text-slate-700 hover:underline sm:text-[9px]"
               aria-label={`Crédit et licence de la photo d’ambiance ${neighborhoodPhoto.label}`}
             >
               Crédit & licence · Wikimedia Commons
             </a>
           ) : null}
           {!observedExternal && listing.duplicate_score != null && listing.duplicate_score >= 0.7 ? (
-            <p className="mt-1.5 text-[9px] font-semibold text-amber-700 dark:text-amber-200 sm:mt-1 sm:text-[11px]">
+            <p className="mt-1.5 text-[9px] font-semibold text-amber-700 sm:mt-1 sm:text-[11px]">
               Doublon possible
             </p>
           ) : null}
@@ -314,7 +314,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
                 })
               }
               data-card-primary-action
-              className="mt-3 hidden w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.28)] transition hover:from-bronze-600 sm:flex"
+              className="mt-3 hidden min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#b7cbe4] bg-[#eef5fd] px-4 py-2.5 text-[13.5px] font-extrabold text-[#285b99] shadow-[0_4px_12px_rgba(47,99,164,0.10)] transition hover:border-[#8fb1dc] hover:bg-[#e4effb] sm:flex"
             >
               Voir le bien
               <ArrowRight size={15} aria-hidden="true" />
@@ -323,7 +323,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
             <a
               href={listing.listing_url!}
               data-card-primary-action
-              className="mt-3 hidden w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_6px_18px_rgba(155,120,56,0.28)] transition hover:from-bronze-600 sm:flex"
+              className="mt-3 hidden min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#b7cbe4] bg-[#eef5fd] px-4 py-2.5 text-[13.5px] font-extrabold text-[#285b99] shadow-[0_4px_12px_rgba(47,99,164,0.10)] transition hover:border-[#8fb1dc] hover:bg-[#e4effb] sm:flex"
             >
               Voir l’annonce originale
               <ExternalLink size={14} aria-hidden="true" />
@@ -333,7 +333,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           {observedExternal && showOriginal ? (
             <a
               href={listing.listing_url!}
-              className="mt-2 text-[10px] font-extrabold text-bronze-700 dark:text-bronze-300 sm:hidden"
+              className="mt-2 text-[10px] font-extrabold text-[#2f63a4] sm:hidden"
             >
               Voir l’annonce
             </a>
@@ -346,7 +346,35 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
           [data-search-continuous-flow] > div.grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             column-gap: 0.75rem;
-            row-gap: 1.5rem;
+            row-gap: 1.25rem;
+          }
+        }
+
+        @media (min-width: 640px) {
+          [data-search-continuous-flow] > div.grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            column-gap: 1rem;
+            row-gap: 1.25rem;
+          }
+        }
+
+        @media (min-width: 960px) {
+          [data-search-view-layout="list"] [data-search-continuous-flow] > div.grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+
+          [data-search-view-layout="split"] [data-search-continuous-flow] > div.grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (min-width: 1280px) {
+          [data-search-view-layout="list"] [data-search-continuous-flow] > div.grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+          }
+
+          [data-search-view-layout="split"] [data-search-continuous-flow] > div.grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
         }
       `}</style>
