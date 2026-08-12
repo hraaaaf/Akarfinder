@@ -109,6 +109,25 @@ type RegistryRow = {
   ingestion_gate: string | null;
 };
 
+async function restAllThinIndex(): Promise<ThinIndexRow[]> {
+  const rows: ThinIndexRow[] = [];
+  let lastUrl: string | null = null;
+  for (;;) {
+    const query: Record<string, string> = {
+      select: "canonical_url",
+      order: "canonical_url.asc",
+      limit: String(PAGE_SIZE),
+    };
+    if (lastUrl) query.canonical_url = `gt.${lastUrl}`;
+    const page = await restPage<ThinIndexRow>("thin_index_search_documents", query);
+    rows.push(...page);
+    if (page.length < PAGE_SIZE) return rows;
+    const nextUrl = page.at(-1)?.canonical_url ?? null;
+    if (!nextUrl || nextUrl === lastUrl) throw new Error("thin_index_search_documents keyset pagination did not advance");
+    lastUrl = nextUrl;
+  }
+}
+
 function normalizedDomain(value: string): string {
   return value.trim().toLowerCase().replace(/^www\./, "");
 }
@@ -135,10 +154,7 @@ async function main(): Promise<void> {
     restAllById<DiscoveryRow>("discovery_candidates", {
       select: "id,source_domain,source_url,canonical_url,title,snippet,discovery_query,content_fingerprint,last_seen_at",
     }),
-    restAll<ThinIndexRow>("thin_index_search_documents", {
-      select: "canonical_url",
-      order: "canonical_url.asc",
-    }),
+    restAllThinIndex(),
     restAll<RegistryRow>("source_policy_registry", {
       select: "source_domain,authorization_status,display_policy,display_gate,acquisition_mode,ingestion_gate",
       order: "source_domain.asc",
@@ -209,7 +225,7 @@ async function main(): Promise<void> {
     permissionsInferred: batch.summary.permissionInferredCount,
     nonHoldDecisions: batch.summary.nonHoldDecisionCount,
     publicActivableNowCount: batch.summary.publicActivableNowCount,
-    paginationMode: "UUID_KEYSET",
+    paginationMode: "UUID_AND_CANONICAL_URL_KEYSET",
     discoveryRowsRead: discoveryRows.length,
     distinctDiscoveryUrlRepresentations: uniqueDiscovery.size,
     thinIndexUrlRepresentationsRead: thinRows.length,
