@@ -56,7 +56,7 @@ export function MobileBottomNav() {
       data-theme="light"
       className="fixed inset-x-0 bottom-0 z-[70] border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] text-[#0B2545] shadow-[0_-6px_22px_rgba(15,23,42,0.07)] md:hidden"
     >
-      <div className="mx-auto grid h-16 max-w-lg grid-cols-5 px-1.5">
+      <div className="mx-auto grid h-[63px] max-w-lg grid-cols-5 px-1.5">
         {items.map(({ href, label, icon: Icon, primary, activePrefixes }) => {
           const isActive = activePrefixes.some((prefix) => matchesPath(pathname, prefix));
 
@@ -69,7 +69,7 @@ export function MobileBottomNav() {
               data-mobile-bottom-nav-item={href}
               data-mobile-bottom-nav-active={isActive ? "true" : "false"}
               data-mobile-bottom-nav-primary={primary ? "true" : "false"}
-              className={`relative flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-semibold leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE] focus-visible:ring-offset-2 ${
+              className={`relative flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10.5px] font-semibold leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE] focus-visible:ring-offset-2 ${
                 isActive ? "text-[#0B63CE]" : "text-slate-500 hover:text-[#0B2545]"
               }`}
             >
