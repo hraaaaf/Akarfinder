@@ -1,0 +1,103 @@
+name: UX-PREMIUM-HEADER-1 Exact Visual Certification
+
+on:
+  pull_request:
+    paths:
+      - "components/layout/SiteHeader.tsx"
+      - "app/search/page.tsx"
+      - "scripts/audits/ux-premium-header-1.mjs"
+      - "scripts/audits/ux-header-10of10-1.mjs"
+      - "scripts/audits/ux-search-final-visual-certification-7.mjs"
+      - "scripts/scrapers/__tests__/ux-premium-header-1.test.ts"
+      - ".github/workflows/ux-premium-header-1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer — Premium Header
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Premium Header source contract
+        run: npx tsx --test scripts/scrapers/__tests__/ux-premium-header-1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3191 > /tmp/premium-header-product.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3191/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/premium-header-product.log
+          exit 1
+      - name: Exact premium header Chromium contract
+        env:
+          BASE_URL: http://127.0.0.1:3191
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/ux-premium-header-1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-premium-header-1-product-design-proof
+          path: data/audits/ux-premium-header-1/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Premium Header
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Independently replay Premium Header source contract
+        run: npx tsx --test scripts/scrapers/__tests__/ux-premium-header-1.test.ts
+      - name: Independent TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent production server
+        shell: bash
+        run: |
+          npm run start -- -p 3192 > /tmp/premium-header-release.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3192/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/premium-header-release.log
+          exit 1
+      - name: Independently replay exact premium header Chromium contract
+        env:
+          BASE_URL: http://127.0.0.1:3192
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/ux-premium-header-1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-premium-header-1-release-certifier-proof
+          path: data/audits/ux-premium-header-1/release-certifier
+          if-no-files-found: error
+          retention-days: 14

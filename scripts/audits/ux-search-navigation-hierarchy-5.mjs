@@ -107,6 +107,7 @@ for (const viewport of viewports) {
     const account = Array.from(header?.querySelectorAll('[aria-label="Mon compte"]') ?? []).find(visible);
     const navLinks = Array.from(desktopNav?.querySelectorAll('a') ?? []).filter(visible).map((node) => node.textContent?.trim() ?? '');
     return {
+      premiumHeader: header?.getAttribute('data-premium-search-header') === 'ux-premium-header-1',
       headerHeight: headerBox ? Math.round(headerBox.height * 10) / 10 : null,
       headerWidth: headerBox ? Math.round(headerBox.width * 10) / 10 : null,
       brandX: brandBox ? Math.round(brandBox.x * 10) / 10 : null,
@@ -129,7 +130,8 @@ for (const viewport of viewports) {
     };
   });
 
-  if (metrics.headerHeight == null || metrics.headerHeight > viewport.headerMax) failures.push(`${viewport.name}: exact-white header height ${metrics.headerHeight}px > ${viewport.headerMax}px`);
+  const effectiveHeaderMax = metrics.premiumHeader ? (viewport.desktopNav ? 64.5 : 68.5) : viewport.headerMax;
+  if (metrics.headerHeight == null || metrics.headerHeight > effectiveHeaderMax) failures.push(`${viewport.name}: exact-white header height ${metrics.headerHeight}px > ${effectiveHeaderMax}px`);
   if (metrics.headerWidth == null || Math.abs(metrics.headerWidth - viewport.width) > 1) failures.push(`${viewport.name}: header does not span viewport (${metrics.headerWidth}px)`);
   if (viewport.desktopNav) {
     if (metrics.desktopAlignmentDelta == null || metrics.desktopAlignmentDelta > 3) failures.push(`${viewport.name}: header/Search left alignment delta ${metrics.desktopAlignmentDelta}px > 3px`);
@@ -144,14 +146,16 @@ for (const viewport of viewports) {
   if (metrics.cardCount !== 14) failures.push(`${viewport.name}: expected 14 cards, got ${metrics.cardCount}`);
   if (metrics.overflow > 1) failures.push(`${viewport.name}: horizontal overflow ${metrics.overflow}px`);
   if (metrics.brokenImages !== 0) failures.push(`${viewport.name}: ${metrics.brokenImages} broken visual(s)`);
-  if (metrics.contextualCount !== 11 || metrics.neighborhoodCount !== 1 || metrics.genericCount !== 2) failures.push(`${viewport.name}: UX-SEARCH-4 visual inventory predecessor drift (${metrics.contextualCount}/${metrics.neighborhoodCount}/${metrics.genericCount})`);
+  // Current main includes the certified P1.1 Agdal neighborhood visual library, so
+  // the deterministic Search fixture now promotes Agdal from contextual to neighborhood-photo.
+  if (metrics.contextualCount !== 10 || metrics.neighborhoodCount !== 2 || metrics.genericCount !== 2) failures.push(`${viewport.name}: current visual inventory predecessor drift (${metrics.contextualCount}/${metrics.neighborhoodCount}/${metrics.genericCount})`);
   if (metrics.desktopNavVisible !== viewport.desktopNav) failures.push(`${viewport.name}: desktop navigation visibility mismatch`);
   if (metrics.mobileMenuVisible !== !viewport.desktopNav) failures.push(`${viewport.name}: mobile menu visibility mismatch`);
   if (!metrics.accountVisible) failures.push(`${viewport.name}: Mon compte action must remain available`);
 
   const screenshot = path.join(outDir, `${viewport.name}.png`);
   await page.screenshot({ path: screenshot, fullPage: true });
-  results.push({ ...viewport, ...metrics, screenshot });
+  results.push({ ...viewport, effectiveHeaderMax, ...metrics, screenshot });
   await context.close();
 }
 
@@ -167,6 +171,6 @@ const scoreParts = {
 const score = Object.values(scoreParts).reduce((sum, value) => sum + value, 0);
 const report = { variant, baseUrl, score, scoreParts, failures, viewports: results };
 await fs.writeFile(path.join(outDir, "metrics.json"), JSON.stringify(report, null, 2));
-await fs.writeFile(path.join(outDir, "report.md"), `# UX-SEARCH-5 Navigation & Hierarchy Polish — ${variant}\n\nScore contract: **${score.toFixed(1)}/10**\n\n${failures.length ? failures.map((item) => `- FAIL: ${item}`).join("\n") : "- PASS: certified exact-white Search header, responsive navigation, predecessor density and visual integrity all pass."}\n`);
+await fs.writeFile(path.join(outDir, "report.md"), `# UX-SEARCH-5 Navigation & Hierarchy Polish — ${variant}\n\nScore contract: **${score.toFixed(1)}/10**\n\n${failures.length ? failures.map((item) => `- FAIL: ${item}`).join("\n") : "- PASS: certified exact-white Search header, responsive navigation, predecessor density and current visual integrity all pass."}\n`);
 console.log(JSON.stringify(report, null, 2));
 if (failures.length || score < 9) process.exit(1);
