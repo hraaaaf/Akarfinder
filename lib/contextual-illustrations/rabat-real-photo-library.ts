@@ -110,6 +110,16 @@ export const RABAT_REAL_PHOTO_LIBRARY: Readonly<Record<RabatNeighborhood, readon
 export const RABAT_REAL_PHOTO_ASSETS = Object.values(RABAT_REAL_PHOTO_LIBRARY).flat();
 
 /**
+ * Search may use a stricter subset than the historical source library. The
+ * Souissi pool deliberately excludes event/fanzone/performer imagery so the
+ * listing inventory reads as residential neighbourhood context.
+ */
+const RABAT_SEARCH_DISTRICT_POOLS: Readonly<Record<RabatNeighborhood, readonly RabatRealPhotoAsset[]>> = {
+  ...RABAT_REAL_PHOTO_LIBRARY,
+  Souissi: RABAT_REAL_PHOTO_LIBRARY.Souissi.slice(0, 5),
+};
+
+/**
  * Curated city-wide ambience pool for Rabat listings whose district has no
  * certified exact photo pool yet. Avoid event/fanzone imagery and keep the
  * public label city-only so a city fallback can never imply a district match.
@@ -204,7 +214,7 @@ export function resolveRabatRealPhoto(input: {
 
   const district = normalizeRabatNeighborhood(input.district);
   if (district) {
-    const selected = selectHighestRandomWeight(RABAT_REAL_PHOTO_LIBRARY[district], input.stableKey);
+    const selected = selectHighestRandomWeight(RABAT_SEARCH_DISTRICT_POOLS[district], input.stableKey);
     return selected ? { ...selected, contextScope: "district" } : null;
   }
 
