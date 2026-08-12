@@ -6,6 +6,7 @@ on:
       - "app/visual-qa/akkari/**"
       - "components/search/AkkariNeighborhoodVisualQAFixture.tsx"
       - "lib/contextual-illustrations/akkari-neighborhood-visuals.ts"
+      - "public/neighborhood-visuals/rabat/akkari/**"
       - "scripts/audits/neighborhood-visual-p1-2-akkari-visual-qa.mjs"
       - "scripts/scrapers/__tests__/neighborhood-visual-p1-2-akkari.test.ts"
       - "supabase/functions/neighborhood-visual-p1-2-akkari-ingest/**"
@@ -56,8 +57,8 @@ jobs:
           mkdir -p public/__qa
           UA='AkarFinder-P1.2-certification/1.0'
           curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" "https://commons.wikimedia.org/wiki/Special:Redirect/file/Haj%20Hassan%20Al%20Akkari%20Mosque%20-%20Rabat.jpg" -o public/__qa/akkari-signature.jpg
-          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" "https://storage13.openstreetcam.org/files/photo/2018/5/22/proc/2832730_479bad4edbb80a6bec06b52502e18f2e.jpg" -o public/__qa/akkari-immobilier.jpg
-          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" "https://storage13.openstreetcam.org/files/photo/2018/5/22/proc/2833707_bf541ee984ec833564dedfdb5d056a29.jpg" -o public/__qa/akkari-lifestyle.jpg
+          cp public/neighborhood-visuals/rabat/akkari/immobilier/kartaview-260132875.jpg public/__qa/akkari-immobilier.jpg
+          cp public/neighborhood-visuals/rabat/akkari/lifestyle/kartaview-260133961.jpg public/__qa/akkari-lifestyle.jpg
           echo "b81c1ec25a3de2b176911a8e6662ad8967d2c411  public/__qa/akkari-signature.jpg" | sha1sum --check --strict
           echo "2466f43109b1f2b0b5c55b4acca2a59585a7438e  public/__qa/akkari-immobilier.jpg" | sha1sum --check --strict
           echo "015123bef3d8a5c98d9f31ab3f3a581272a6ae4e  public/__qa/akkari-lifestyle.jpg" | sha1sum --check --strict
@@ -128,8 +129,8 @@ jobs:
           mkdir -p public/__qa
           UA='AkarFinder-P1.2-release-certifier/1.0'
           curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" "https://commons.wikimedia.org/wiki/Special:Redirect/file/Haj%20Hassan%20Al%20Akkari%20Mosque%20-%20Rabat.jpg" -o public/__qa/akkari-signature.jpg
-          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" "https://storage13.openstreetcam.org/files/photo/2018/5/22/proc/2832730_479bad4edbb80a6bec06b52502e18f2e.jpg" -o public/__qa/akkari-immobilier.jpg
-          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" "https://storage13.openstreetcam.org/files/photo/2018/5/22/proc/2833707_bf541ee984ec833564dedfdb5d056a29.jpg" -o public/__qa/akkari-lifestyle.jpg
+          cp public/neighborhood-visuals/rabat/akkari/immobilier/kartaview-260132875.jpg public/__qa/akkari-immobilier.jpg
+          cp public/neighborhood-visuals/rabat/akkari/lifestyle/kartaview-260133961.jpg public/__qa/akkari-lifestyle.jpg
           echo "b81c1ec25a3de2b176911a8e6662ad8967d2c411  public/__qa/akkari-signature.jpg" | sha1sum --check --strict
           echo "2466f43109b1f2b0b5c55b4acca2a59585a7438e  public/__qa/akkari-immobilier.jpg" | sha1sum --check --strict
           echo "015123bef3d8a5c98d9f31ab3f3a581272a6ae4e  public/__qa/akkari-lifestyle.jpg" | sha1sum --check --strict
