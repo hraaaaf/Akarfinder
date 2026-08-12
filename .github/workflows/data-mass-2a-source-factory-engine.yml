@@ -3,10 +3,13 @@ name: DATA MASS-2A Source Factory Engine
 on:
   pull_request:
     paths:
+      - "data/data-mass-2a/mass-1-certified-source-factory.json"
       - "scripts/data-mass/source-factory.ts"
+      - "scripts/data-mass/source-factory-certified-cohort.ts"
       - "scripts/data-mass/source-factory-decision.ts"
       - "scripts/data-mass/__tests__/source-factory.test.ts"
       - "scripts/data-mass/__tests__/source-factory-101.test.ts"
+      - "scripts/data-mass/__tests__/source-factory-certified-cohort.test.ts"
       - "scripts/data-mass/__tests__/source-factory-decision.test.ts"
       - "scripts/data-mass/reservoir-qualification.ts"
       - "scripts/data-mass/__tests__/reservoir-qualification.test.ts"
@@ -37,7 +40,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: MASS-2A + MASS-1 predecessor tests
-        run: npx tsx --test scripts/data-mass/__tests__/source-factory.test.ts scripts/data-mass/__tests__/source-factory-101.test.ts scripts/data-mass/__tests__/source-factory-decision.test.ts scripts/data-mass/__tests__/reservoir-qualification.test.ts scripts/data-mass/__tests__/reservoir-hospitality-exclusions.test.ts
+        run: npx tsx --test scripts/data-mass/__tests__/source-factory.test.ts scripts/data-mass/__tests__/source-factory-101.test.ts scripts/data-mass/__tests__/source-factory-certified-cohort.test.ts scripts/data-mass/__tests__/source-factory-decision.test.ts scripts/data-mass/__tests__/reservoir-qualification.test.ts scripts/data-mass/__tests__/reservoir-hospitality-exclusions.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build
@@ -73,6 +76,7 @@ jobs:
           const dir = '.tmp/data-mass-2a/results';
           const p = JSON.parse(fs.readFileSync(`${dir}/proof.json`, 'utf8'));
           const batch = JSON.parse(fs.readFileSync(`${dir}/dossiers.json`, 'utf8'));
+          const manifest = JSON.parse(fs.readFileSync('data/data-mass-2a/mass-1-certified-source-factory.json', 'utf8'));
           const dossiers = Array.isArray(batch.dossiers) ? batch.dossiers : [];
 
           if (p.readOnly !== true) throw new Error(`MASS-2A must be read-only: ${JSON.stringify(p)}`);
@@ -80,17 +84,26 @@ jobs:
           if (p.sourceNetworkRequests !== 0 || p.detailPageFetches !== 0) throw new Error(`MASS-2A source fetch boundary violated: ${JSON.stringify(p)}`);
           if (p.publicRowsCreated !== 0 || p.searchActivations !== 0 || p.permissionsInferred !== 0 || p.nonHoldDecisions !== 0 || p.publicActivableNowCount !== 0) throw new Error(`MASS-2A activation/permission boundary violated: ${JSON.stringify(p)}`);
           if (p.paginationMode !== 'UUID_KEYSET') throw new Error(`MASS-2A must preserve large-scan keyset pagination: ${JSON.stringify(p)}`);
+          if (p.inputMode !== 'MASS_1_CERTIFIED_SNAPSHOT_WITH_LIVE_DRIFT_OBSERVATION') throw new Error(`Wrong MASS-2A input mode: ${JSON.stringify(p)}`);
 
-          // MASS-1 certified exactly 101 Source Factory domains for this handoff.
-          // Any drift is a blocking finding, not a silent cohort resize.
-          if (p.mass1SourceFactoryDomains !== 101 || p.dossiersProduced !== 101 || p.uniqueDossierDomains !== 101) {
-            throw new Error(`MASS-2A certified reservoir drift: expected 101 domains: ${JSON.stringify(p)}`);
+          const expectedHead = '0a2856e68b44bee6f7b398b5c314d53711d95a67';
+          const expectedDigest = 'sha256:84333105c8edda9be5733184c42e2e1afc865109edb580a5ae1705219c1cd932';
+          if (manifest.mass1Head !== expectedHead || p.mass1CertifiedHead !== expectedHead) throw new Error(`MASS-1 head mismatch: ${JSON.stringify(p)}`);
+          if (manifest.mass1ArtifactDigest !== expectedDigest || p.mass1CertifiedArtifactDigest !== expectedDigest) throw new Error(`MASS-1 artifact digest mismatch: ${JSON.stringify(p)}`);
+          if (manifest.certifiedSourceFactoryDomains !== 101 || p.mass1CertifiedSourceFactoryDomains !== 101 || p.dossiersProduced !== 101 || p.uniqueDossierDomains !== 101) {
+            throw new Error(`MASS-2A certified cohort mismatch: expected 101 domains: ${JSON.stringify(p)}`);
           }
-          if (p.coverageMatchesMass1Queue !== true) throw new Error(`MASS-2A coverage mismatch: ${JSON.stringify(p)}`);
+          if (p.coverageMatchesCertifiedCohort !== true) throw new Error(`MASS-2A certified cohort coverage mismatch: ${JSON.stringify(p)}`);
           if (p.highYieldDomains !== 20 || p.midYieldDomains !== 30 || p.longTailDomains !== 51) {
             throw new Error(`MASS-2A cohort drift: expected 20/30/51: ${JSON.stringify(p)}`);
           }
           if (!p.allDossiersUnreviewed || !p.allDossiersHold || !p.allDossiersNonActivable || !p.allPermissionsNotInferred || !p.allExternalEvidenceNotReviewed) throw new Error(`Fail-closed dossier invariant violated: ${JSON.stringify(p)}`);
+
+          if (!Array.isArray(p.postSnapshotAddedLiveSourceFactoryDomains) || !Array.isArray(p.certifiedDomainsNoLongerLiveSourceFactory)) {
+            throw new Error(`MASS-2A must report live drift sets: ${JSON.stringify(p)}`);
+          }
+          if (p.postSnapshotAddedLiveSourceFactoryDomainCount !== p.postSnapshotAddedLiveSourceFactoryDomains.length) throw new Error(`Added drift count mismatch: ${JSON.stringify(p)}`);
+          if (p.certifiedDomainsNoLongerLiveSourceFactoryCount !== p.certifiedDomainsNoLongerLiveSourceFactory.length) throw new Error(`Removed drift count mismatch: ${JSON.stringify(p)}`);
 
           const escaped = dossiers.filter((d) =>
             d.reviewStatus !== 'UNREVIEWED' ||
@@ -102,7 +115,13 @@ jobs:
           if (escaped.length) throw new Error(`MASS-2A dossier escaped review boundary: ${JSON.stringify(escaped.slice(0, 5))}`);
 
           const ranks = dossiers.map((d) => d.rank);
-          if (ranks.some((rank, i) => rank !== i + 1)) throw new Error(`Non-contiguous deterministic ranks: ${JSON.stringify(ranks.slice(0, 20))}`);
+          if (ranks.some((rank, i) => rank !== i + 1)) throw new Error(`Non-contiguous certified ranks: ${JSON.stringify(ranks.slice(0, 20))}`);
+          const dossierDomains = dossiers.map((d) => d.sourceDomain);
+          const manifestDomains = manifest.cohort.map((d) => d.sourceDomain);
+          if (JSON.stringify(dossierDomains) !== JSON.stringify(manifestDomains)) throw new Error('Dossier membership/order differs from certified MASS-1 cohort');
+          const dossierScores = dossiers.map((d) => d.reviewPriorityScore);
+          const manifestScores = manifest.cohort.map((d) => d.massPotentialScore);
+          if (JSON.stringify(dossierScores) !== JSON.stringify(manifestScores)) throw new Error('Dossier scores differ from certified MASS-1 cohort');
           NODE
       - uses: actions/upload-artifact@v4
         with:
