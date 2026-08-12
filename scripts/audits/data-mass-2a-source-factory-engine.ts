@@ -7,9 +7,15 @@ import {
   type RegistryPolicySnapshot,
   type ReservoirCandidate,
 } from "../data-mass/reservoir-qualification";
-import { buildSourceFactoryDossiers } from "../data-mass/source-factory";
+import {
+  assertCertifiedSourceFactoryCohort,
+  buildSourceFactoryDossiersFromCertifiedCohort,
+  diffCertifiedSourceFactoryCohort,
+  type CertifiedSourceFactoryCohortManifest,
+} from "../data-mass/source-factory-certified-cohort";
 
 const OUT_DIR = process.env.DATA_MASS_2A_OUT_DIR ?? ".tmp/data-mass-2a/results";
+const COHORT_PATH = process.env.DATA_MASS_2A_COHORT_PATH ?? "data/data-mass-2a/mass-1-certified-source-factory.json";
 const TIMEOUT_MS = 30_000;
 const PAGE_SIZE = 1_000;
 const MAX_RETRIES = 3;
@@ -124,7 +130,14 @@ function csvCell(value: unknown): string {
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
+async function readCertifiedCohort(): Promise<CertifiedSourceFactoryCohortManifest> {
+  const parsed = JSON.parse(await fs.readFile(COHORT_PATH, "utf8")) as CertifiedSourceFactoryCohortManifest;
+  assertCertifiedSourceFactoryCohort(parsed);
+  return parsed;
+}
+
 async function main(): Promise<void> {
+  const certifiedCohort = await readCertifiedCohort();
   const [discoveryRows, thinRows, registryRows] = await Promise.all([
     restAllById<DiscoveryRow>("discovery_candidates", {
       select: "id,source_domain,source_url,canonical_url,title,snippet,discovery_query,content_fingerprint,last_seen_at",
@@ -185,11 +198,13 @@ async function main(): Promise<void> {
       summarizeDomainReservoir(domain, candidates, registry.get(domain) ?? null),
     ),
   );
-  const sourceFactory = summaries.filter((row) => row.massQueue === "SOURCE_FACTORY");
-  const batch = buildSourceFactoryDossiers(sourceFactory);
+  const liveSourceFactory = summaries.filter((row) => row.massQueue === "SOURCE_FACTORY");
+  const drift = diffCertifiedSourceFactoryCohort(liveSourceFactory, certifiedCohort);
+  const batch = buildSourceFactoryDossiersFromCertifiedCohort(summaries, certifiedCohort);
 
   const proof = {
-    schemaVersion: "data-mass-2a-source-factory-engine-v1",
+    schemaVersion: "data-mass-2a-source-factory-engine-v2",
+    inputMode: "MASS_1_CERTIFIED_SNAPSHOT_WITH_LIVE_DRIFT_OBSERVATION",
     generatedAt: new Date().toISOString(),
     readOnly: true,
     databaseWrites: 0,
@@ -204,13 +219,25 @@ async function main(): Promise<void> {
     nonHoldDecisions: batch.summary.nonHoldDecisionCount,
     publicActivableNowCount: batch.summary.publicActivableNowCount,
     paginationMode: "UUID_KEYSET",
+    mass1CertifiedHead: certifiedCohort.mass1Head,
+    mass1CertifiedRunId: certifiedCohort.mass1RunId,
+    mass1CertifiedArtifactId: certifiedCohort.mass1ArtifactId,
+    mass1CertifiedArtifactDigest: certifiedCohort.mass1ArtifactDigest,
+    mass1CertifiedGeneratedAt: certifiedCohort.mass1GeneratedAt,
+    mass1CertifiedDiscoveryRowsRead: certifiedCohort.certifiedDiscoveryRowsRead,
+    mass1CertifiedSourceFactoryDomains: certifiedCohort.certifiedSourceFactoryDomains,
     discoveryRowsRead: discoveryRows.length,
+    discoveryRowCountDeltaSinceCertifiedSnapshot: discoveryRows.length - certifiedCohort.certifiedDiscoveryRowsRead,
     distinctDiscoveryUrlRepresentations: uniqueDiscovery.size,
     thinIndexUrlRepresentationsRead: thinRows.length,
     registryRowsRead: registryRows.length,
-    mass1SourceFactoryDomains: sourceFactory.length,
+    liveRecomputedSourceFactoryDomains: liveSourceFactory.length,
+    postSnapshotAddedLiveSourceFactoryDomains: drift.postSnapshotAddedLiveSourceFactoryDomains,
+    postSnapshotAddedLiveSourceFactoryDomainCount: drift.postSnapshotAddedLiveSourceFactoryDomains.length,
+    certifiedDomainsNoLongerLiveSourceFactory: drift.certifiedDomainsNoLongerLiveSourceFactory,
+    certifiedDomainsNoLongerLiveSourceFactoryCount: drift.certifiedDomainsNoLongerLiveSourceFactory.length,
     dossiersProduced: batch.summary.totalDomains,
-    coverageMatchesMass1Queue: batch.summary.totalDomains === sourceFactory.length,
+    coverageMatchesCertifiedCohort: batch.summary.totalDomains === certifiedCohort.certifiedSourceFactoryDomains,
     uniqueDossierDomains: new Set(batch.dossiers.map((row) => row.sourceDomain)).size,
     highYieldDomains: batch.summary.highYieldDomains,
     midYieldDomains: batch.summary.midYieldDomains,
@@ -226,10 +253,16 @@ async function main(): Promise<void> {
   };
 
   if (sourceNetworkRequests !== 0) throw new Error(`Source network firewall violation: ${sourceNetworkRequests}`);
-  if (!proof.coverageMatchesMass1Queue || proof.uniqueDossierDomains !== proof.dossiersProduced) {
-    throw new Error(`MASS-2A dossier coverage mismatch: ${JSON.stringify(proof)}`);
+  if (!proof.coverageMatchesCertifiedCohort || proof.uniqueDossierDomains !== proof.dossiersProduced) {
+    throw new Error(`MASS-2A certified cohort coverage mismatch: ${JSON.stringify(proof)}`);
   }
-  if (!proof.allDossiersUnreviewed || !proof.allDossiersHold || !proof.allDossiersNonActivable || !proof.allPermissionsNotInferred) {
+  if (proof.mass1CertifiedSourceFactoryDomains !== 101 || proof.dossiersProduced !== 101) {
+    throw new Error(`MASS-2A must materialize the certified 101-domain cohort: ${JSON.stringify(proof)}`);
+  }
+  if (proof.highYieldDomains !== 20 || proof.midYieldDomains !== 30 || proof.longTailDomains !== 51) {
+    throw new Error(`MASS-2A certified cohort split drift: ${JSON.stringify(proof)}`);
+  }
+  if (!proof.allDossiersUnreviewed || !proof.allDossiersHold || !proof.allDossiersNonActivable || !proof.allPermissionsNotInferred || !proof.allExternalEvidenceNotReviewed) {
     throw new Error(`MASS-2A fail-closed invariant violated: ${JSON.stringify(proof)}`);
   }
 
@@ -257,23 +290,31 @@ async function main(): Promise<void> {
     "",
     "## Boundary",
     "",
-    "- MASS-2A schedules source review; it does not perform the current robots/CGU/permission review.",
-    "- Yield and priority are never permission or public eligibility.",
+    "- Membership/rank are frozen to the certified MASS-1 101-domain artifact; live reservoir drift is measured separately.",
+    "- Current yield and Registry fields are observations only; they cannot alter certified cohort membership or grant permission.",
+    "- MASS-2A does not perform current robots/CGU/permission review.",
     "- Every dossier starts UNREVIEWED + HOLD + non-activable.",
     "- Network is restricted to the configured Supabase origin; no source page is fetched.",
     "",
-    "## Live handoff",
+    "## Certified handoff",
     "",
-    `- Source Factory domains: **${proof.dossiersProduced}**`,
+    `- MASS-1 certified head: **${proof.mass1CertifiedHead}**`,
+    `- MASS-1 artifact digest: **${proof.mass1CertifiedArtifactDigest}**`,
+    `- Certified Source Factory domains / dossiers: **${proof.mass1CertifiedSourceFactoryDomains} / ${proof.dossiersProduced}**`,
     `- Cohorts high / mid / long-tail: **${proof.highYieldDomains} / ${proof.midYieldDomains} / ${proof.longTailDomains}**`,
-    `- Candidate URL representations: **${proof.candidateUrlRepresentations.toLocaleString("en-US")}**`,
-    `- Likely Morocco RE representations: **${proof.likelyMoroccoRealEstateUrlRepresentations.toLocaleString("en-US")}**`,
-    `- Likely Morocco detail representations: **${proof.likelyMoroccoListingDetailUrlRepresentations.toLocaleString("en-US")}**`,
+    `- Current Discovery rows / certified snapshot rows / delta: **${proof.discoveryRowsRead.toLocaleString("en-US")} / ${proof.mass1CertifiedDiscoveryRowsRead.toLocaleString("en-US")} / ${proof.discoveryRowCountDeltaSinceCertifiedSnapshot.toLocaleString("en-US")}**`,
+    `- Live recomputed Source Factory domains: **${proof.liveRecomputedSourceFactoryDomains}**`,
+    `- Post-snapshot additions / certified domains no longer live-qualifying: **${proof.postSnapshotAddedLiveSourceFactoryDomainCount} / ${proof.certifiedDomainsNoLongerLiveSourceFactoryCount}**`,
     `- Source network requests / writes / activations: **${proof.sourceNetworkRequests} / ${proof.databaseWrites} / ${proof.searchActivations}**`,
     "",
-    "## High-yield cohort",
+    "## Drift observation",
     "",
-    "| # | Domain | Role | Morocco RE | Detail | Score | Decision |",
+    `- Added live Source Factory domains: ${proof.postSnapshotAddedLiveSourceFactoryDomains.join(", ") || "none"}`,
+    `- Certified domains no longer live-qualifying: ${proof.certifiedDomainsNoLongerLiveSourceFactory.join(", ") || "none"}`,
+    "",
+    "## High-yield certified cohort",
+    "",
+    "| # | Domain | Role | Morocco RE | Detail | Frozen score | Decision |",
     "|---:|---|---|---:|---:|---:|---|",
     ...batch.dossiers.filter((row) => row.reviewCohort === "HIGH_YIELD").map((row) =>
       `| ${row.rank} | ${row.sourceDomain} | ${row.sourceRole} | ${row.yield.likelyMoroccoRealEstateUrls} | ${row.yield.likelyMoroccoListingDetailUrls} | ${row.reviewPriorityScore.toFixed(2)} | ${row.proposedDecision} |`,
