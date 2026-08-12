@@ -32,10 +32,37 @@ Preuve production certifiée au head comportemental `d768f47e4662430c71066ea9aaa
 
 MASS-1 ne transforme aucune URL en annonce publique et ne confère aucune permission. `docs/data/DATA-MASS-1-RESERVOIR-QUALIFICATION.md` porte le détail de preuve.
 
-### MASS-2 — Source Factory 🔴 NEXT
+### MASS-2 — Source Factory 🔴 ACTIVE
 
-Audit des **101 domaines** par rendement attendu : identité de source, nature réelle du stock, robots.txt/CGU/permissions, canal autorisé, sitemap/structure, fraîcheur et mode Registry. Une décision se prend **par domaine**, jamais par URL. Sortie : `AUTHORIZED/POLICY_COMPATIBLE`, `CANONICAL_LINK_ONLY`, `INTERNAL_ONLY`, `PERMISSION_REQUIRED`, `PROHIBITED` ou maintien fail-closed selon preuve. Aucun domaine n’est autorisé par MASS-1.
+Responsabilité globale : convertir la queue MASS-1 de **101 domaines / 15 790 signaux immobilier Maroc probables** en décisions de source explicites, prouvées et fail-closed. Une décision se prend **par domaine**, jamais par URL. MASS-2 n'ingère aucune annonce et n'active aucune source dans Search.
 
+#### MASS-2A — Factory Engine 🟠 ACTIVE — 15 %
+
+Construire le moteur déterministe de Source Factory : schéma de preuve, identité de domaine, rendement attendu, classification de surface, états de décision, raisons fail-closed, couverture Registry et contrat de sortie reproductible. **Aucun jugement juridique automatique et aucun Registry write.**
+
+#### MASS-2B — High-Yield Sources 🔵 PLANNED — 25 %
+
+Auditer en priorité les ~15–20 domaines portant le plus de volume potentiel. Pour chaque domaine : identité réelle, stock Maroc, robots.txt, CGU/permissions publiques disponibles, canaux observables, sitemap/structure, fraîcheur et proposition de mode. Toute absence ou ambiguïté de preuve reste fail-closed.
+
+#### MASS-2C — Mid-Yield Sources 🔵 PLANNED — 20 %
+
+Auditer le deuxième groupe d'environ 30 domaines selon le même contrat de preuve et de décision, sans abaisser les gates pour gagner du volume.
+
+#### MASS-2D — Long-Tail Sources 🔵 PLANNED — 20 %
+
+Auditer tout le reliquat jusqu'à **101/101 domaines couverts** et classer explicitement les domaines non exploitables, étrangers, annuaires, agrégateurs non admissibles ou sans preuve suffisante.
+
+#### MASS-2E — Policy Matrix & Registry Preview 🔵 PLANNED — 10 %
+
+Consolider la matrice finale `domain → evidence → channel → proposed policy → expected yield`, détecter conflits/expirations et produire un **Registry preview**. Aucun write production n'est permis sans preuve explicite et gate séparé ; par défaut le preview reste read-only.
+
+#### MASS-2F — Source Factory Certification 🔵 PLANNED — 10 %
+
+Double-check indépendant de la couverture 101/101, revalidation des preuves temporelles, tests fail-closed, exact-head CI, rapport de volume potentiellement récupérable et score final. MASS-2 ne peut être CLOSED sous **9,0/10**.
+
+Décisions autorisées comme **sorties de revue**, jamais comme permission implicite : `POLICY_COMPATIBLE`, `CANONICAL_LINK_ONLY`, `INTERNAL_ONLY`, `PERMISSION_REQUIRED`, `PROHIBITED`, `HOLD`.
+
+**Ordre MASS-2 verrouillé : 2A → 2B → 2C → 2D → 2E → 2F.** Chaque sous-lot = une responsabilité, une branche/PR/certification ; le sous-lot suivant repart du nouveau `main`.
 ### MASS-3 — Minimal Listing Index 🔵 PLANNED
 
 Pour toute source devenue policy-admissible, permettre une représentation minimale : canonical URL + source + titre/signal structurel fiable + géographie disponible. Prix, surface, photo, quartier et description deviennent des facteurs de Listing Power/ranking, pas des prérequis d’existence. Zéro invention de champ absent.
