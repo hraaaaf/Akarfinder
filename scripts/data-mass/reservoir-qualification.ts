@@ -98,15 +98,20 @@ const SOCIAL_DOMAINS = new Set([
   "x.com", "twitter.com", "linkedin.com",
 ]);
 
+// Discovery/search/directory/hospitality surfaces can carry real-estate-looking text
+// but are not acquisition inventory sources for the long-term property index.
 const DISCOVERY_TRANSPORT_DOMAINS = new Set([
   "google.com", "bing.com", "duckduckgo.com", "search.yahoo.com", "support.google.com",
   "support.microsoft.com", "microsoft.com", "wikipedia.org", "en.wikipedia.org",
   "fr.wikipedia.org", "stackoverflow.com", "zhihu.com", "telecontact.ma", "tiendeo.ma",
+  "booking.com", "agoda.com", "allhotelsmorocco.com", "hotels.com", "expedia.com",
+  "airbnb.com", "airbnb.fr", "tripadvisor.com", "tripadvisor.fr", "vrbo.com", "abritel.fr",
+  "villanovo.fr", "cozycozy.com",
 ]);
 
 const AGGREGATOR_DOMAINS = new Set([
   "immo.mitula.ma", "immobilier.trovit.ma", "nuroa.ma", "logic-immo.com",
-  "immobilier.cari.ma", "housing.place", "cozycozy.com",
+  "immobilier.cari.ma", "housing.place",
 ]);
 
 const DIRECT_PORTAL_DOMAINS = new Set([
