@@ -6,7 +6,6 @@ on:
       - "data/data-mass-2c/mid-yield-source-review.json"
       - "scripts/data-mass/source-factory-mid-yield-review.ts"
       - "scripts/data-mass/__tests__/source-factory-mid-yield-review.test.ts"
-      - "scripts/data-mass/closeout-mass-2c-canonical.py"
       - "scripts/audits/data-mass-2c-mid-yield-sources.ts"
       - ".github/workflows/data-mass-2c-mid-yield-sources.yml"
       - "docs/data/DATA-MASS-2C-MID-YIELD-SOURCES.md"
@@ -89,38 +88,3 @@ jobs:
           path: .tmp/data-mass-2c/results/
           if-no-files-found: error
           retention-days: 30
-
-  canonical-closeout:
-    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'data/mass-2c-mid-yield-sources' }}
-    needs: live-audit
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
-      - name: Update canonical DATA MASS blocks only
-        run: python scripts/data-mass/closeout-mass-2c-canonical.py
-      - name: Commit canonical closeout if needed
-        shell: bash
-        run: |
-          set -euo pipefail
-          unexpected="$(git status --porcelain | grep -vE ' (README\.md|docs/ROADMAP\.md|docs/SESSION\.md)$' || true)"
-          if [ -n "$unexpected" ]; then
-            echo "Unexpected worktree changes:"
-            echo "$unexpected"
-            exit 1
-          fi
-          git diff --check
-          git add README.md docs/ROADMAP.md docs/SESSION.md
-          if git diff --cached --quiet; then
-            echo "Canonical DATA MASS blocks already current"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "docs(data): close MASS-2C canonical state"
-          git push origin HEAD:${{ github.head_ref }}
