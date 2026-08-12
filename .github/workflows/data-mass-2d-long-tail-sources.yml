@@ -23,7 +23,7 @@ jobs:
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - name: MASS-2D + predecessor tests
-        run: npx vitest run scripts/data-mass/__tests__/source-factory-long-tail-review.test.ts scripts/data-mass/__tests__/source-factory-mid-yield-review.test.ts scripts/data-mass/__tests__/source-factory-certified-cohort.test.ts
+        run: node --test --import tsx scripts/data-mass/__tests__/source-factory-long-tail-review.test.ts scripts/data-mass/__tests__/source-factory-mid-yield-review.test.ts scripts/data-mass/__tests__/source-factory-certified-cohort.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build
