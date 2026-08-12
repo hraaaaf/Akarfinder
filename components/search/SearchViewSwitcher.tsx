@@ -48,6 +48,7 @@ export function SearchViewSwitcher({
             <button
               key={mode}
               type="button"
+              data-search-view-mode-button={mode}
               onClick={() => onChange(mode)}
               aria-pressed={active}
               className={`${styles.option} ${active ? styles.active : ""} min-h-10 min-w-0 rounded-full px-3 py-2 text-[12px] font-extrabold transition sm:text-[13px] ${
