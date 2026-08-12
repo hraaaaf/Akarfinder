@@ -1,0 +1,157 @@
+name: Neighborhood Visual P1.2 Akkari Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/visual-qa/akkari/**"
+      - "components/search/AkkariNeighborhoodVisualQAFixture.tsx"
+      - "lib/contextual-illustrations/akkari-neighborhood-visuals.ts"
+      - "scripts/audits/neighborhood-visual-p1-2-akkari-visual-qa.mjs"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p1-2-akkari.test.ts"
+      - "supabase/functions/neighborhood-visual-p1-2-akkari-ingest/**"
+      - "supabase/migrations/20260812233500_neighborhood_visual_p1_2_akkari_metadata.sql"
+      - ".github/workflows/neighborhood-visual-p1-2-akkari.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neighborhood-visual-p1-2-akkari-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEIGHBORHOOD_VISUAL_QA: "1"
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer — Akkari 3-scene QA
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: P1.2 contract + predecessors
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p1-2-akkari.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-1-agdal.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Deno type-check bounded ingestion
+        run: deno check supabase/functions/neighborhood-visual-p1-2-akkari-ingest/index.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Materialize exact real assets for QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          UA='AkarFinder-P1.2-certification/1.0'
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" "https://commons.wikimedia.org/wiki/Special:Redirect/file/Haj%20Hassan%20Al%20Akkari%20Mosque%20-%20Rabat.jpg" -o public/__qa/akkari-signature.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" "https://storage13.openstreetcam.org/files/photo/2018/5/22/proc/2832730_479bad4edbb80a6bec06b52502e18f2e.jpg" -o public/__qa/akkari-immobilier.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" "https://storage13.openstreetcam.org/files/photo/2018/5/22/proc/2833707_bf541ee984ec833564dedfdb5d056a29.jpg" -o public/__qa/akkari-lifestyle.jpg
+          echo "b81c1ec25a3de2b176911a8e6662ad8967d2c411  public/__qa/akkari-signature.jpg" | sha1sum --check --strict
+          echo "2466f43109b1f2b0b5c55b4acca2a59585a7438e  public/__qa/akkari-immobilier.jpg" | sha1sum --check --strict
+          echo "015123bef3d8a5c98d9f31ab3f3a581272a6ae4e  public/__qa/akkari-lifestyle.jpg" | sha1sum --check --strict
+          test "$(wc -c < public/__qa/akkari-signature.jpg)" -eq 2417308
+          test "$(wc -c < public/__qa/akkari-immobilier.jpg)" -eq 270159
+          test "$(wc -c < public/__qa/akkari-lifestyle.jpg)" -eq 251579
+          node --input-type=module <<'NODE'
+          import sharp from "sharp";
+          const sig = await sharp("public/__qa/akkari-signature.jpg").metadata();
+          const imm = await sharp("public/__qa/akkari-immobilier.jpg").metadata();
+          const life = await sharp("public/__qa/akkari-lifestyle.jpg").metadata();
+          if (sig.width !== 4000 || sig.height !== 3000 || sig.orientation !== 6 || sig.format !== "jpeg") throw new Error(`signature drift ${sig.width}x${sig.height} o=${sig.orientation}`);
+          if (imm.width !== 1280 || imm.height !== 720 || imm.format !== "jpeg") throw new Error(`immobilier drift ${imm.width}x${imm.height}`);
+          if (life.width !== 1280 || life.height !== 720 || life.format !== "jpeg") throw new Error(`lifestyle drift ${life.width}x${life.height}`);
+          NODE
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start QA production server
+        shell: bash
+        run: |
+          npm run start -- -p 3161 > /tmp/akkari-p12-product.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3161/visual-qa/akkari >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/akkari-p12-product.log; exit 1
+      - name: Certify full responsive Search-card matrix
+        env:
+          BASE_URL: http://127.0.0.1:3161
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/neighborhood-visual-p1-2-akkari-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p1-2-akkari-product-design-proof
+          path: data/audits/neighborhood-visual-p1-2-akkari/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Akkari 3-scene QA
+    needs: product-design-reviewer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: Independent contract replay
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p1-2-akkari.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-1-agdal.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Independent Deno + TypeScript
+        run: |
+          deno check supabase/functions/neighborhood-visual-p1-2-akkari-ingest/index.ts
+          npx tsc --noEmit
+      - name: Independently materialize exact real assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          UA='AkarFinder-P1.2-release-certifier/1.0'
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" "https://commons.wikimedia.org/wiki/Special:Redirect/file/Haj%20Hassan%20Al%20Akkari%20Mosque%20-%20Rabat.jpg" -o public/__qa/akkari-signature.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" "https://storage13.openstreetcam.org/files/photo/2018/5/22/proc/2832730_479bad4edbb80a6bec06b52502e18f2e.jpg" -o public/__qa/akkari-immobilier.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" "https://storage13.openstreetcam.org/files/photo/2018/5/22/proc/2833707_bf541ee984ec833564dedfdb5d056a29.jpg" -o public/__qa/akkari-lifestyle.jpg
+          echo "b81c1ec25a3de2b176911a8e6662ad8967d2c411  public/__qa/akkari-signature.jpg" | sha1sum --check --strict
+          echo "2466f43109b1f2b0b5c55b4acca2a59585a7438e  public/__qa/akkari-immobilier.jpg" | sha1sum --check --strict
+          echo "015123bef3d8a5c98d9f31ab3f3a581272a6ae4e  public/__qa/akkari-lifestyle.jpg" | sha1sum --check --strict
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent QA server
+        shell: bash
+        run: |
+          npm run start -- -p 3162 > /tmp/akkari-p12-release.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3162/visual-qa/akkari >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/akkari-p12-release.log; exit 1
+      - name: Independently certify full responsive Search-card matrix
+        env:
+          BASE_URL: http://127.0.0.1:3162
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/neighborhood-visual-p1-2-akkari-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p1-2-akkari-release-proof
+          path: data/audits/neighborhood-visual-p1-2-akkari/release-certifier
+          if-no-files-found: error
+          retention-days: 14
