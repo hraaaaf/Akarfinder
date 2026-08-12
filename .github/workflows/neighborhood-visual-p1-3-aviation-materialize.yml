@@ -1,0 +1,48 @@
+name: Neighborhood Visual P1.3 Aviation Materialize
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/neighborhood-visual-p1-3-aviation-materialize.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Restore exact certified Aviation sources
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/aviation-artifact
+          mkdir -p public/neighborhood-visuals/rabat/aviation/{signature,immobilier,lifestyle}
+          curl -fsSL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/9163096609/zip" \
+            -o /tmp/aviation-artifact.zip
+          unzip -q /tmp/aviation-artifact.zip -d /tmp/aviation-artifact
+          cp /tmp/aviation-artifact/images/signature.jpg public/neighborhood-visuals/rabat/aviation/signature/sofitel-rabat.jpg
+          cp /tmp/aviation-artifact/images/immobilier.jpg public/neighborhood-visuals/rabat/aviation/immobilier/avenue-mohamed-vi.jpg
+          cp /tmp/aviation-artifact/images/lifestyle.jpg public/neighborhood-visuals/rabat/aviation/lifestyle/kartaview-260184419.jpg
+          echo "9301a9696cbe7a420951f7179d12c755a6492610  public/neighborhood-visuals/rabat/aviation/signature/sofitel-rabat.jpg" | sha1sum --check --strict
+          echo "d8e09bfdbad2fdef60f28840b90b79b45f77b8c6  public/neighborhood-visuals/rabat/aviation/immobilier/avenue-mohamed-vi.jpg" | sha1sum --check --strict
+          echo "3bfd758bb1bc62a0b9598de68f5940932a898eb7  public/neighborhood-visuals/rabat/aviation/lifestyle/kartaview-260184419.jpg" | sha1sum --check --strict
+      - name: Commit pinned assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "akarfinder-bot"
+          git config user.email "akarfinder-bot@users.noreply.github.com"
+          git add public/neighborhood-visuals/rabat/aviation
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "fix: pin certified Aviation visual assets"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
