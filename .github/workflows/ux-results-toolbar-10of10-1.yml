@@ -1,0 +1,103 @@
+name: UX-RESULTS-TOOLBAR-10OF10-1 Exact Visual Certification
+
+on:
+  pull_request:
+    paths:
+      - "components/search/LightZillowSearchShell.tsx"
+      - "components/search/SearchViewSwitcher.tsx"
+      - "components/search/SearchViewSwitcher.module.css"
+      - "scripts/audits/ux-results-toolbar-10of10-1.mjs"
+      - "scripts/scrapers/__tests__/ux-results-toolbar-10of10-1.test.ts"
+      - ".github/workflows/ux-results-toolbar-10of10-1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer — Results Toolbar 10/10
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Toolbar + predecessor contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-results-toolbar-10of10-1.test.ts scripts/scrapers/__tests__/search-ux-fast-1.test.ts scripts/scrapers/__tests__/phase1-final-design-a11y.test.ts scripts/scrapers/__tests__/ux-p1-design-system-convergence.test.ts scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3161 > /tmp/results-toolbar-product.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3161/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/results-toolbar-product.log
+          exit 1
+      - name: Exact Results toolbar visual contract
+        env:
+          BASE_URL: http://127.0.0.1:3161
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/ux-results-toolbar-10of10-1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-results-toolbar-10of10-product-design-proof
+          path: data/audits/ux-results-toolbar-10of10-1/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Results Toolbar 10/10
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Independent Toolbar + predecessor contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-results-toolbar-10of10-1.test.ts scripts/scrapers/__tests__/search-ux-fast-1.test.ts scripts/scrapers/__tests__/phase1-final-design-a11y.test.ts scripts/scrapers/__tests__/ux-p1-design-system-convergence.test.ts scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts
+      - name: Independent TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent production server
+        shell: bash
+        run: |
+          npm run start -- -p 3162 > /tmp/results-toolbar-release.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3162/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/results-toolbar-release.log
+          exit 1
+      - name: Independently replay exact Results toolbar visual contract
+        env:
+          BASE_URL: http://127.0.0.1:3162
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/ux-results-toolbar-10of10-1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-results-toolbar-10of10-release-certifier-proof
+          path: data/audits/ux-results-toolbar-10of10-1/release-certifier
+          if-no-files-found: error
+          retention-days: 14
