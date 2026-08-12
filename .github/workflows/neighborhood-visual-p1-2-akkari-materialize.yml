@@ -1,0 +1,52 @@
+name: Neighborhood Visual P1.2 Akkari Materialize
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/neighborhood-visual-p1-2-akkari-materialize.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Restore exact certified KartaView files from source-audit artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/akkari-artifact
+          mkdir -p public/neighborhood-visuals/rabat/akkari/immobilier
+          mkdir -p public/neighborhood-visuals/rabat/akkari/lifestyle
+          curl -fsSL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/9161745958/zip" \
+            -o /tmp/akkari-artifact.zip
+          unzip -q /tmp/akkari-artifact.zip -d /tmp/akkari-artifact
+          cp /tmp/akkari-artifact/images/02_0010m_260132875.jpg public/neighborhood-visuals/rabat/akkari/immobilier/kartaview-260132875.jpg
+          cp /tmp/akkari-artifact/images/06_0024m_260133961.jpg public/neighborhood-visuals/rabat/akkari/lifestyle/kartaview-260133961.jpg
+          echo "2466f43109b1f2b0b5c55b4acca2a59585a7438e  public/neighborhood-visuals/rabat/akkari/immobilier/kartaview-260132875.jpg" | sha1sum --check --strict
+          echo "015123bef3d8a5c98d9f31ab3f3a581272a6ae4e  public/neighborhood-visuals/rabat/akkari/lifestyle/kartaview-260133961.jpg" | sha1sum --check --strict
+          test "$(wc -c < public/neighborhood-visuals/rabat/akkari/immobilier/kartaview-260132875.jpg)" -eq 270159
+          test "$(wc -c < public/neighborhood-visuals/rabat/akkari/lifestyle/kartaview-260133961.jpg)" -eq 251579
+      - name: Commit pinned assets to PR branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "akarfinder-bot"
+          git config user.email "akarfinder-bot@users.noreply.github.com"
+          git add public/neighborhood-visuals/rabat/akkari
+          if git diff --cached --quiet; then
+            echo "Certified Akkari assets already materialized"
+            exit 0
+          fi
+          git commit -m "fix: pin certified Akkari KartaView assets"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
