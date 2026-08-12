@@ -15,69 +15,93 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Sweep KartaView around verified Aviation / Avenue Souss area
+      - name: Discover reusable Aviation imagery from KartaView and Wikimedia Commons
         shell: bash
         run: |
           set -euo pipefail
           OUT="data/audits/neighborhood-visual-p1-3-aviation/source-discovery"
-          mkdir -p "$OUT/images"
+          rm -rf "$OUT" && mkdir -p "$OUT/kartaview/images" "$OUT/commons/images"
           python3 - <<'PY'
           import hashlib, json, math, pathlib, urllib.parse, urllib.request
           OUT=pathlib.Path("data/audits/neighborhood-visual-p1-3-aviation/source-discovery")
-          IMG=OUT/"images"
-          CENTERS=[
-            ("avenue-souss",34.02240,-6.83454),
-            ("aviation-west",34.02240,-6.83700),
-            ("aviation-east",34.02240,-6.83200),
-            ("aviation-south",34.02050,-6.83450),
-            ("aviation-north",34.02420,-6.83450),
-            ("asshoul-junction",34.02180,-6.83280),
-          ]
-          UA="AkarFinder-P1.3-source-audit/2.0"
-          def f(v):
-            try:return float(v)
-            except:return None
+          CENTER=(34.02240,-6.83454)
+          UA="AkarFinder-P1.3-source-audit/3.0"
+
+          def req_json(url):
+            req=urllib.request.Request(url,headers={"User-Agent":UA,"Accept":"application/json"})
+            with urllib.request.urlopen(req,timeout=45) as r:return json.load(r)
           def hav(a,b,c,d):
             R=6371000.; p1,p2=math.radians(a),math.radians(c); dp=math.radians(c-a); dl=math.radians(d-b)
             x=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2
             return 2*R*math.asin(math.sqrt(x))
-          by={}; raws={}
-          for label,qlat,qlng in CENTERS:
+
+          # KartaView exact district sweep
+          centers=[("avenue-souss",34.02240,-6.83454),("west",34.02240,-6.83700),("east",34.02240,-6.83200),("south",34.02050,-6.83450),("north",34.02420,-6.83450),("asshoul",34.02180,-6.83280)]
+          by={}
+          for label,qlat,qlng in centers:
             q=urllib.parse.urlencode({"lat":qlat,"lng":qlng,"zoomLevel":17,"join":"sequence","orderBy":"id","orderDirection":"desc"})
-            req=urllib.request.Request("https://api.openstreetcam.org/2.0/photo/?"+q,headers={"User-Agent":UA,"Accept":"application/json"})
-            with urllib.request.urlopen(req,timeout=45) as r: raw=json.load(r)
-            raws[label]=raw
+            raw=req_json("https://api.openstreetcam.org/2.0/photo/?"+q)
             for d in raw.get("result",{}).get("data",[]):
-              lat=f(d.get("lat")); lon=f(d.get("lng"))
-              if lat is None or lon is None: continue
-              urls=[]
-              for k in ("fileurlLTh","fileurlProc","fileurlTh","imageLthUrl","imageProcUrl","imageThUrl"):
-                v=d.get(k)
-                if isinstance(v,str) and v.startswith("http"): urls.append(v)
+              try: lat=float(d["lat"]); lon=float(d["lng"])
+              except: continue
+              urls=[d[k] for k in ("fileurlLTh","fileurlProc","fileurlTh") if isinstance(d.get(k),str) and d[k].startswith("http")]
               seq=d.get("sequence") or {}; pid=str(d.get("id"))
-              row=by.get(pid,{"id":d.get("id"),"lat":lat,"lng":lon,"heading":d.get("heading"),"date":d.get("dateAdded"),"shot_date":d.get("shotDate"),"sequence_id":seq.get("id"),"sequence_address":seq.get("address"),"urls":list(dict.fromkeys(urls)),"query_hits":[]})
-              row["query_hits"].append({"label":label,"distance_m":round(hav(qlat,qlng,lat,lon),1)})
-              by[pid]=row
-          rows=list(by.values())
-          for r in rows:r["best_query_distance_m"]=min(x["distance_m"] for x in r["query_hits"])
-          rows.sort(key=lambda r:r["best_query_distance_m"])
-          n=0
-          for r in rows:
-            if n>=30 or r["best_query_distance_m"]>700 or not r["urls"]: continue
+              row=by.get(pid,{"id":d.get("id"),"lat":lat,"lng":lon,"heading":d.get("heading"),"date":d.get("dateAdded"),"sequence_id":seq.get("id"),"urls":list(dict.fromkeys(urls)),"query_hits":[]})
+              row["query_hits"].append({"label":label,"distance_m":round(hav(qlat,qlng,lat,lon),1)}); by[pid]=row
+          krows=list(by.values())
+          for r in krows:r["best_query_distance_m"]=min(x["distance_m"] for x in r["query_hits"])
+          krows.sort(key=lambda r:r["best_query_distance_m"])
+          kn=0
+          for r in krows:
+            if kn>=20 or r["best_query_distance_m"]>800 or not r["urls"]: continue
             try:
               req=urllib.request.Request(r["urls"][0],headers={"User-Agent":UA})
               with urllib.request.urlopen(req,timeout=45) as resp:b=resp.read()
               if len(b)<5000:continue
-              p=IMG/f"{n+1:02d}_{round(r['best_query_distance_m']):04d}m_{r['id']}.jpg"; p.write_bytes(b)
-              r["downloaded_file"]=p.name; r["sha1"]=hashlib.sha1(b).hexdigest(); r["bytes"]=len(b); n+=1
+              p=OUT/"kartaview/images"/f"{kn+1:02d}_{round(r['best_query_distance_m']):04d}m_{r['id']}.jpg"; p.write_bytes(b)
+              r["downloaded_file"]=p.name;r["sha1"]=hashlib.sha1(b).hexdigest();r["bytes"]=len(b);kn+=1
             except Exception as e:r["download_error"]=str(e)
-          (OUT/"raw.json").write_text(json.dumps(raws,ensure_ascii=False,indent=2),encoding="utf-8")
-          (OUT/"candidates.json").write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding="utf-8")
-          lines=["# Aviation source discovery","",f"Unique frames: {len(rows)} · downloaded: {n}","","| # | Distance | Photo | Coordinates | Heading | Sequence | File |","|---:|---:|---|---|---:|---|---|"]
-          for i,r in enumerate(rows[:60],1):lines.append(f"| {i} | {r['best_query_distance_m']} m | {r['id']} | {r['lat']},{r['lng']} | {r['heading']} | {r['sequence_id']} | {r.get('downloaded_file','')} |")
-          (OUT/"candidates.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
-          print(f"AVIATION_DISCOVERY unique={len(rows)} downloaded={n}")
-          for r in rows[:30]: print(r["best_query_distance_m"],r["id"],r["lat"],r["lng"],r.get("downloaded_file"),r.get("sha1"))
+          (OUT/"kartaview/candidates.json").write_text(json.dumps(krows,ensure_ascii=False,indent=2),encoding="utf-8")
+
+          # Wikimedia Commons geosearch, exact Aviation center, 2 km radius.
+          params={"action":"query","format":"json","generator":"geosearch","ggsprimary":"all","ggsnamespace":6,"ggsradius":2000,"ggscoord":f"{CENTER[0]}|{CENTER[1]}","ggslimit":100,"prop":"imageinfo|coordinates","iiprop":"url|size|sha1|extmetadata"}
+          raw=req_json("https://commons.wikimedia.org/w/api.php?"+urllib.parse.urlencode(params))
+          crows=[]
+          for page in (raw.get("query",{}).get("pages",{}) or {}).values():
+            ii=(page.get("imageinfo") or [{}])[0]; coords=(page.get("coordinates") or [{}])[0]
+            lat=coords.get("lat");lon=coords.get("lon")
+            if lat is None or lon is None: continue
+            meta=ii.get("extmetadata") or {}
+            title=page.get("title","")
+            mime=ii.get("mime") or ""
+            if not mime.startswith("image/"): continue
+            crows.append({
+              "pageid":page.get("pageid"),"title":title,"lat":lat,"lng":lon,
+              "distance_m":round(hav(CENTER[0],CENTER[1],lat,lon),1),"url":ii.get("url"),
+              "width":ii.get("width"),"height":ii.get("height"),"bytes":ii.get("size"),"sha1":ii.get("sha1"),
+              "license":(meta.get("LicenseShortName") or {}).get("value"),"artist":(meta.get("Artist") or {}).get("value"),
+              "description":(meta.get("ImageDescription") or {}).get("value"),"credit":(meta.get("Credit") or {}).get("value")
+            })
+          crows.sort(key=lambda r:r["distance_m"])
+          cn=0
+          allowed=("CC0","CC BY","CC-BY","CC BY-SA","CC-BY-SA","Public domain")
+          for r in crows:
+            lic=r.get("license") or ""
+            if not any(x.lower() in lic.lower() for x in allowed) or not r.get("url"): continue
+            if cn>=24: break
+            try:
+              req=urllib.request.Request(r["url"],headers={"User-Agent":UA})
+              with urllib.request.urlopen(req,timeout=60) as resp:b=resp.read()
+              if len(b)<10000: continue
+              ext=".jpg" if "jpeg" in (resp.headers.get("Content-Type") or "").lower() else ".img"
+              p=OUT/"commons/images"/f"{cn+1:02d}_{round(r['distance_m']):04d}m_{r['pageid']}{ext}"; p.write_bytes(b)
+              r["downloaded_file"]=p.name;r["download_sha1"]=hashlib.sha1(b).hexdigest();r["download_bytes"]=len(b);cn+=1
+            except Exception as e:r["download_error"]=str(e)
+          (OUT/"commons/candidates.json").write_text(json.dumps(crows,ensure_ascii=False,indent=2),encoding="utf-8")
+          lines=["# Aviation source discovery","",f"KartaView: {len(krows)} candidates / {kn} downloaded",f"Commons: {len(crows)} geotagged candidates / {cn} reusable downloaded","","## Nearest Commons","","| # | Distance | Title | License | File |","|---:|---:|---|---|---|"]
+          for i,r in enumerate(crows[:40],1):lines.append(f"| {i} | {r['distance_m']} m | {r['title']} | {r.get('license','')} | {r.get('downloaded_file','')} |")
+          (OUT/"summary.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
+          print(f"AVIATION_DISCOVERY_V3 kartaview={len(krows)}/{kn} commons={len(crows)}/{cn}")
           PY
       - uses: actions/upload-artifact@v4
         with:
