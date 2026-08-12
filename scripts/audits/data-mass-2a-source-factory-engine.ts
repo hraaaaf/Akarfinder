@@ -26,11 +26,17 @@ function delay(ms: number): Promise<void> {
 
 const supabaseOrigin = new URL(env("SUPABASE_URL")).origin;
 let sourceNetworkRequests = 0;
+let supabaseMutationAttempts = 0;
 
 async function allowedFetch(input: URL, init: RequestInit): Promise<Response> {
   if (input.origin !== supabaseOrigin) {
     sourceNetworkRequests += 1;
     throw new Error(`MASS-2A source-network firewall blocked ${input.origin}`);
+  }
+  const method = String(init.method ?? "GET").toUpperCase();
+  if (method !== "GET") {
+    supabaseMutationAttempts += 1;
+    throw new Error(`MASS-2A read-only firewall blocked Supabase ${method}`);
   }
   return fetch(input, init);
 }
@@ -192,7 +198,7 @@ async function main(): Promise<void> {
     schemaVersion: "data-mass-2a-source-factory-engine-v1",
     generatedAt: new Date().toISOString(),
     readOnly: true,
-    databaseWrites: 0,
+    databaseWrites: supabaseMutationAttempts,
     ddlChanges: 0,
     registryWrites: 0,
     policyChanges: 0,
@@ -225,7 +231,9 @@ async function main(): Promise<void> {
     allExternalEvidenceNotReviewed: batch.dossiers.every((row) => Object.values(row.evidence).every((state) => state === "NOT_REVIEWED")),
   };
 
-  if (sourceNetworkRequests !== 0) throw new Error(`Source network firewall violation: ${sourceNetworkRequests}`);
+  if (sourceNetworkRequests !== 0 || supabaseMutationAttempts !== 0) {
+    throw new Error(`MASS-2A read-only firewall violation: ${JSON.stringify({ sourceNetworkRequests, supabaseMutationAttempts })}`);
+  }
   if (!proof.coverageMatchesMass1Queue || proof.uniqueDossierDomains !== proof.dossiersProduced) {
     throw new Error(`MASS-2A dossier coverage mismatch: ${JSON.stringify(proof)}`);
   }
@@ -260,7 +268,7 @@ async function main(): Promise<void> {
     "- MASS-2A schedules source review; it does not perform the current robots/CGU/permission review.",
     "- Yield and priority are never permission or public eligibility.",
     "- Every dossier starts UNREVIEWED + HOLD + non-activable.",
-    "- Network is restricted to the configured Supabase origin; no source page is fetched.",
+    "- Network is restricted to the configured Supabase origin and GET only; no source page or mutation request is allowed.",
     "",
     "## Live handoff",
     "",
@@ -269,7 +277,7 @@ async function main(): Promise<void> {
     `- Candidate URL representations: **${proof.candidateUrlRepresentations.toLocaleString("en-US")}**`,
     `- Likely Morocco RE representations: **${proof.likelyMoroccoRealEstateUrlRepresentations.toLocaleString("en-US")}**`,
     `- Likely Morocco detail representations: **${proof.likelyMoroccoListingDetailUrlRepresentations.toLocaleString("en-US")}**`,
-    `- Source network requests / writes / activations: **${proof.sourceNetworkRequests} / ${proof.databaseWrites} / ${proof.searchActivations}**`,
+    `- Source network requests / mutation attempts / activations: **${proof.sourceNetworkRequests} / ${proof.databaseWrites} / ${proof.searchActivations}**`,
     "",
     "## High-yield cohort",
     "",
