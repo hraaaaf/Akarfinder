@@ -32,7 +32,7 @@ function truthStyle(tier: SearchTruthTier) {
     return "border-emerald-400/30 bg-emerald-500/12 text-emerald-700 dark:text-emerald-200";
   }
   if (tier === "partial") {
-    return "border-amber-400/30 bg-amber-500/12 text-amber-700 dark:text-amber-200";
+    return "border-[#8fb1dc]/60 bg-[#eaf2fb]/90 text-[#285b99] dark:border-[#8fb1dc]/35 dark:bg-[#173d6b]/75 dark:text-[#dbeafe]";
   }
   return "border-slate-400/25 bg-slate-500/10 text-slate-700 dark:text-white/65";
 }
