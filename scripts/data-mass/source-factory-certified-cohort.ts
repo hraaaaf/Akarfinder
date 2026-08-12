@@ -18,6 +18,7 @@ export interface CertifiedSourceFactoryCohortManifest {
   mass1RunId: number;
   mass1ArtifactId: number;
   mass1ArtifactDigest: string;
+  mass1SourceFactoryCohortDigest: string;
   mass1GeneratedAt: string;
   certifiedDiscoveryRowsRead: number;
   certifiedSourceFactoryDomains: number;
@@ -47,6 +48,12 @@ export function assertCertifiedSourceFactoryCohort(
   }
   if (manifest.source !== "MASS_1_CERTIFIED_ARTIFACT") {
     throw new Error(`Unexpected MASS-2A cohort source: ${manifest.source}`);
+  }
+  if (!/^sha256:[a-f0-9]{64}$/.test(manifest.mass1ArtifactDigest)) {
+    throw new Error(`Invalid MASS-1 artifact digest: ${manifest.mass1ArtifactDigest}`);
+  }
+  if (!/^sha256:[a-f0-9]{64}$/.test(manifest.mass1SourceFactoryCohortDigest)) {
+    throw new Error(`Invalid MASS-1 Source Factory cohort digest: ${manifest.mass1SourceFactoryCohortDigest}`);
   }
   if (manifest.certifiedSourceFactoryDomains !== manifest.cohort.length) {
     throw new Error(
