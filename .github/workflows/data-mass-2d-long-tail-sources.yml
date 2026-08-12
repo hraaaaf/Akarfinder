@@ -1,0 +1,62 @@
+name: DATA MASS-2D Long-Tail Source Review
+on:
+  pull_request:
+    paths:
+      - "data/data-mass-2d/**"
+      - "scripts/data-mass/source-factory-long-tail-review.ts"
+      - "scripts/data-mass/__tests__/source-factory-long-tail-review.test.ts"
+      - "scripts/audits/data-mass-2d-long-tail-sources.ts"
+      - ".github/workflows/data-mass-2d-long-tail-sources.yml"
+      - "docs/data/DATA-MASS-2D-LONG-TAIL-SOURCES.md"
+permissions:
+  contents: read
+concurrency:
+  group: data-mass-2d-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: MASS-2D + predecessor tests
+        run: node --test --import tsx scripts/data-mass/__tests__/source-factory-long-tail-review.test.ts scripts/data-mass/__tests__/source-factory-mid-yield-review.test.ts scripts/data-mass/__tests__/source-factory-certified-cohort.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+  live-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Run MASS-2D production read-only Registry audit
+        run: npx tsx scripts/audits/data-mass-2d-long-tail-sources.ts
+      - name: Enforce MASS-2D fail-closed truth boundary
+        run: |
+          node - <<'NODE'
+          const p=require('./.tmp/data-mass-2d/results/proof.json');
+          const ok=p.readOnly===true && p.domainsReviewed===51 && p.permissionRequiredCount===9 && p.holdCount===42 &&
+            p.canonicalLinkCandidateCount===9 && p.canonicalLinkApprovedCount===0 && p.directAcquisitionAllowedCount===0 &&
+            p.currentRegistryRowsForReviewedDomains===0 && p.registryDriftSinceReviewCount===0 &&
+            p.databaseWrites===0 && p.ddlChanges===0 && p.registryWrites===0 && p.policyChanges===0 &&
+            p.sourceNetworkRequests===0 && p.sourceSiteRequests===0 && p.detailPageFetches===0 &&
+            p.publicRowsCreated===0 && p.searchActivations===0 && p.permissionsInferred===0 && p.publicActivableNowCount===0 &&
+            p.totals.totalUrlRepresentations===2028 && p.totals.totalLikelyMoroccoRealEstateUrls===1889 &&
+            p.totals.totalLikelyMoroccoListingDetailUrls===96;
+          if(!ok){console.error(p); process.exit(1)}
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-2d-long-tail-source-review
+          path: .tmp/data-mass-2d/results/
