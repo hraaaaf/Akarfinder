@@ -76,7 +76,7 @@ jobs:
           if (p.databaseWrites !== 0 || p.ddlChanges !== 0 || p.registryWrites !== 0 || p.policyChanges !== 0) throw new Error(`MASS-2A mutation boundary violated: ${JSON.stringify(p)}`);
           if (p.sourceNetworkRequests !== 0 || p.detailPageFetches !== 0) throw new Error(`MASS-2A source fetch boundary violated: ${JSON.stringify(p)}`);
           if (p.publicRowsCreated !== 0 || p.searchActivations !== 0 || p.permissionsInferred !== 0) throw new Error(`MASS-2A activation/permission boundary violated: ${JSON.stringify(p)}`);
-          if (p.paginationMode !== 'UUID_KEYSET') throw new Error(`MASS-2A must preserve large-scan keyset pagination: ${JSON.stringify(p)}`);
+          if (p.paginationMode !== 'UUID_AND_CANONICAL_URL_KEYSET') throw new Error(`MASS-2A must use keyset pagination for both large scans: ${JSON.stringify(p)}`);
           if (!(p.mass1SourceFactoryDomains > 0) || p.dossiersProduced !== p.mass1SourceFactoryDomains) throw new Error(`MASS-2A coverage mismatch: ${JSON.stringify(p)}`);
           if (p.uniqueDossierDomains !== p.dossiersProduced) throw new Error(`Duplicate/missing dossier domain: ${JSON.stringify(p)}`);
           if (p.highYieldDomains !== Math.min(20, p.dossiersProduced)) throw new Error(`High-yield cohort drift: ${JSON.stringify(p)}`);
