@@ -92,14 +92,16 @@ try {
         return r.width > 0 && r.height > 0 && s.display !== "none" && s.visibility !== "hidden";
       });
       const summaries = visibleMobileGroups.map((group) => group.querySelector("summary")).filter(Boolean);
-      const desktopLinks = [...footer.querySelectorAll("[data-footer-link]")].filter((link) => {
-        const r = link.getBoundingClientRect();
-        const s = getComputedStyle(link);
-        return r.width > 0 && r.height > 0 && s.display !== "none" && s.visibility !== "hidden";
-      });
+      const desktopLinks = [...footer.querySelectorAll("[data-footer-link]")]
+        .filter((link) => !link.closest("[data-footer-mobile-group]"))
+        .filter((link) => {
+          const r = link.getBoundingClientRect();
+          const s = getComputedStyle(link);
+          return r.width > 0 && r.height > 0 && s.display !== "none" && s.visibility !== "hidden";
+        });
       const trust = footer.querySelector("[data-footer-trust-line]");
       const trustRect = trust?.getBoundingClientRect();
-      const colors = [footer, ...footer.querySelectorAll("*")].flatMap((element) => {
+      const renderedColors = [footer, ...footer.querySelectorAll("*")].flatMap((element) => {
         const s = getComputedStyle(element);
         return [s.color, s.backgroundColor, s.borderTopColor, s.borderBottomColor];
       });
@@ -109,12 +111,13 @@ try {
         background: style.backgroundColor,
         logoHeight: logoRect?.height ?? 0,
         mobileGroupCount: visibleMobileGroups.length,
+        mobileOpenCount: visibleMobileGroups.filter((group) => group.open).length,
         summaries: summaries.map((summary) => summary.getBoundingClientRect().height),
-        visibleLinkCount: desktopLinks.length,
+        visibleDesktopLinkCount: desktopLinks.length,
         trustVisible: Boolean(trustRect && trustRect.width > 0 && trustRect.height > 0),
         trustText: trust?.textContent ?? "",
         overflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-        colors,
+        renderedColors,
       };
     });
 
@@ -127,17 +130,18 @@ try {
       if (metrics.overflowX > 1) local.push(`horizontal overflow ${metrics.overflowX}px`);
       if (!metrics.trustVisible) local.push("trust line is not visible");
       if (!metrics.trustText.includes("AkarFinder.ma") || !metrics.trustText.includes("sources")) local.push("trust/legal disclosure incomplete");
-      const badColors = metrics.colors.filter(isOrangeOrBronze);
-      if (badColors.length > 0) local.push(`orange/bronze rendered inside footer: ${[...new Set(badColors)].join(", ")}`);
+      const badColors = [...new Set(metrics.renderedColors.filter(isOrangeOrBronze))];
+      if (badColors.length > 0) local.push(`orange/bronze rendered inside footer: ${badColors.join(", ")}`);
 
       if (viewport.width < 640) {
-        if (metrics.mobileGroupCount !== 3) local.push(`expected 3 collapsed mobile groups, got ${metrics.mobileGroupCount}`);
+        if (metrics.mobileGroupCount !== 3) local.push(`expected 3 mobile groups, got ${metrics.mobileGroupCount}`);
+        if (metrics.mobileOpenCount !== 0) local.push(`mobile footer must start collapsed, got ${metrics.mobileOpenCount} open groups`);
         if (metrics.summaries.some((height) => height < 44)) local.push(`mobile summary touch target below 44px: ${JSON.stringify(metrics.summaries)}`);
-        if (metrics.visibleLinkCount !== 0) local.push(`collapsed mobile footer must hide links, got ${metrics.visibleLinkCount} visible links`);
+        if (metrics.visibleDesktopLinkCount !== 0) local.push(`desktop link grid must be hidden on mobile, got ${metrics.visibleDesktopLinkCount} visible links`);
         if (Math.abs(metrics.logoHeight - 32) > 0.5) local.push(`mobile logo must be 32px high, got ${metrics.logoHeight}px`);
       } else {
         if (metrics.mobileGroupCount !== 0) local.push("mobile accordion groups must be hidden at sm and above");
-        if (metrics.visibleLinkCount !== 15) local.push(`expected 15 visible desktop/tablet links, got ${metrics.visibleLinkCount}`);
+        if (metrics.visibleDesktopLinkCount !== 15) local.push(`expected 15 visible desktop/tablet links, got ${metrics.visibleDesktopLinkCount}`);
         if (Math.abs(metrics.logoHeight - 36) > 0.5) local.push(`tablet/desktop logo must be 36px high, got ${metrics.logoHeight}px`);
       }
     }
@@ -147,6 +151,8 @@ try {
       for (let index = 0; index < (await groups.count()); index += 1) {
         const group = groups.nth(index);
         await group.locator("summary").click();
+        const isOpen = await group.evaluate((node) => node.open);
+        if (!isOpen) local.push(`mobile group ${index} did not open`);
         const linkHeights = await group.locator("[data-footer-link]").evaluateAll((links) =>
           links.map((link) => link.getBoundingClientRect().height),
         );
@@ -155,10 +161,25 @@ try {
       }
     }
 
+    const compactMetrics = metrics
+      ? {
+          height: metrics.height,
+          width: metrics.width,
+          background: metrics.background,
+          logoHeight: metrics.logoHeight,
+          mobileGroupCount: metrics.mobileGroupCount,
+          mobileOpenCount: metrics.mobileOpenCount,
+          summaries: metrics.summaries,
+          visibleDesktopLinkCount: metrics.visibleDesktopLinkCount,
+          trustVisible: metrics.trustVisible,
+          overflowX: metrics.overflowX,
+        }
+      : null;
+
     await footer.scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(outDir, `${viewport.name}.png`), fullPage: false });
 
-    results.push({ viewport, metrics, failures: local });
+    results.push({ viewport, metrics: compactMetrics, failures: local });
     for (const failure of local) failures.push(`${viewport.name}: ${failure}`);
     await context.close();
   }
