@@ -40,7 +40,9 @@ jobs:
         run: |
           git rm scripts/ux/apply-search-real-indexed-total.mjs .github/workflows/fix-search-real-indexed-total.yml
           git add components/search/LightZillowSearchShell.tsx
-          test "$(git diff --cached --name-only | sort)" = "components/search/LightZillowSearchShell.tsx"
+          actual="$(git diff --cached --name-only | sort)"
+          expected="$(printf '%s\n' '.github/workflows/fix-search-real-indexed-total.yml' 'components/search/LightZillowSearchShell.tsx' 'scripts/ux/apply-search-real-indexed-total.mjs' | sort)"
+          test "$actual" = "$expected"
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git commit -m 'fix(search): show real indexed result total'
