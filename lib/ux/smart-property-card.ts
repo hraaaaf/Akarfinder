@@ -27,9 +27,10 @@ export function buildSmartPropertyCardModel(listing: Listing): SmartPropertyCard
   const bedrooms = positiveInteger(listing.bedrooms);
   const bathrooms = positiveInteger(listing.bathrooms);
 
-  if (surface != null) facts.push(`${surface.toLocaleString("fr-MA")} m²`);
-  if (bedrooms != null) facts.push(`${bedrooms} ch.`);
-  if (bathrooms != null) facts.push(`${bathrooms} sdb`);
+  // UX-PREMIUM-CARD-LAYOUT-SPECS-D — canonical scan order: bedrooms, bathrooms, surface.
+  if (bedrooms != null) facts.push(`\u{1F6CF}\uFE0E ${bedrooms} ch.`);
+  if (bathrooms != null) facts.push(`\u{1F6C1}\uFE0E ${bathrooms} sdb`);
+  if (surface != null) facts.push(`\u2194 ${surface.toLocaleString("fr-MA")} m²`);
 
   const hasCertifiedGroup = Boolean(listing.duplicate_group_id?.trim());
 
