@@ -11,63 +11,61 @@ permissions:
 
 jobs:
   discover:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Discover reusable Commons imagery near Les Orangers
+      - name: Discover exact Les Orangers imagery without Commons API sweep
         shell: bash
         run: |
           set -euo pipefail
           OUT="data/audits/neighborhood-visual-p1-6-les-orangers/source-discovery"
-          mkdir -p "$OUT/images"
-          UA='AkarFinder-P1.6-Les-Orangers/1.0'
+          rm -rf "$OUT" && mkdir -p "$OUT/commons" "$OUT/kartaview/images"
+          curl --fail --location --retry 5 --retry-all-errors --user-agent 'AkarFinder-P1.6-Les-Orangers/2.0' \
+            'https://commons.wikimedia.org/wiki/Special:Redirect/file/Quartier%20Des%20Orangers%2C%20Rabat%2C%20Morocco%20-%20panoramio.jpg' \
+            -o "$OUT/commons/signature.jpg"
+          sha1sum "$OUT/commons/signature.jpg" > "$OUT/commons/sha1.txt"
+          wc -c "$OUT/commons/signature.jpg" > "$OUT/commons/bytes.txt"
           python3 - <<'PY'
-          import json, urllib.parse, urllib.request, pathlib, hashlib
-          out=pathlib.Path('data/audits/neighborhood-visual-p1-6-les-orangers/source-discovery')
-          ua={'User-Agent':'AkarFinder-P1.6-Les-Orangers/1.0'}
-          api='https://commons.wikimedia.org/w/api.php'
-          titles=[]
-          def call(params):
-              url=api+'?'+urllib.parse.urlencode(params)
-              return json.load(urllib.request.urlopen(urllib.request.Request(url,headers=ua), timeout=30))
-          for q in ['"Quartier Des Orangers" Rabat','Les Orangers Rabat','Orangers Rabat Morocco']:
-              data=call({'action':'query','generator':'search','gsrsearch':q,'gsrnamespace':6,'gsrlimit':20,'prop':'imageinfo','iiprop':'url|size|sha1|extmetadata','format':'json'})
-              for p in (data.get('query',{}).get('pages',{}) or {}).values():
-                  if p.get('title'): titles.append(p['title'])
-          geo=call({'action':'query','generator':'geosearch','ggsprimary':'all','ggsnamespace':6,'ggscoord':'34.016912|-6.836610','ggsradius':1800,'ggslimit':80,'prop':'imageinfo','iiprop':'url|size|sha1|extmetadata','format':'json'})
-          for p in (geo.get('query',{}).get('pages',{}) or {}).values():
-              if p.get('title'): titles.append(p['title'])
-          seen=[]
-          for t in titles:
-              if t not in seen: seen.append(t)
-          rows=[]
-          for t in seen:
-              d=call({'action':'query','titles':t,'prop':'imageinfo','iiprop':'url|size|sha1|extmetadata','format':'json'})
-              p=next(iter(d.get('query',{}).get('pages',{}).values()),{})
-              ii=(p.get('imageinfo') or [{}])[0]
-              ext=ii.get('extmetadata') or {}
-              lic=(ext.get('LicenseShortName') or {}).get('value','')
-              desc=(ext.get('ImageDescription') or {}).get('value','')
-              artist=(ext.get('Artist') or {}).get('value','')
-              rows.append({'title':t,'url':ii.get('url'),'width':ii.get('width'),'height':ii.get('height'),'size':ii.get('size'),'sha1':ii.get('sha1'),'license':lic,'description':desc[:500],'artist':artist[:300]})
-          (out/'candidates.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2))
-          # Download only openly licensed candidates, cap at 20.
+          import hashlib, json, math, pathlib, urllib.parse, urllib.request
+          OUT=pathlib.Path('data/audits/neighborhood-visual-p1-6-les-orangers/source-discovery')
+          UA='AkarFinder-P1.6-Les-Orangers/2.0'
+          centers=[('center',34.016912,-6.836610),('west',34.0169,-6.8390),('east',34.0169,-6.8342),('south',34.0150,-6.8366),('north',34.0187,-6.8366)]
+          def req_json(url):
+            req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'application/json'})
+            with urllib.request.urlopen(req,timeout=45) as r:return json.load(r)
+          def hav(a,b,c,d):
+            R=6371000.; p1,p2=math.radians(a),math.radians(c); dp=math.radians(c-a); dl=math.radians(d-b)
+            x=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2
+            return 2*R*math.asin(math.sqrt(x))
+          by={}
+          for label,qlat,qlng in centers:
+            q=urllib.parse.urlencode({'lat':qlat,'lng':qlng,'zoomLevel':17,'join':'sequence','orderBy':'id','orderDirection':'desc'})
+            raw=req_json('https://api.openstreetcam.org/2.0/photo/?'+q)
+            for d in raw.get('result',{}).get('data',[]):
+              try: lat=float(d['lat']); lon=float(d['lng'])
+              except: continue
+              urls=[d[k] for k in ('fileurlLTh','fileurlProc','fileurlTh') if isinstance(d.get(k),str) and d[k].startswith('http')]
+              pid=str(d.get('id')); seq=d.get('sequence') or {}
+              row=by.get(pid,{'id':d.get('id'),'lat':lat,'lng':lon,'heading':d.get('heading'),'date':d.get('dateAdded'),'sequence_id':seq.get('id'),'urls':list(dict.fromkeys(urls)),'query_hits':[]})
+              row['query_hits'].append({'label':label,'distance_m':round(hav(qlat,qlng,lat,lon),1)}); by[pid]=row
+          rows=list(by.values())
+          for r in rows:r['best_query_distance_m']=min(x['distance_m'] for x in r['query_hits'])
+          rows.sort(key=lambda r:r['best_query_distance_m'])
           n=0
           for r in rows:
-              if n>=20: break
-              lic=(r.get('license') or '').lower()
-              if not any(x in lic for x in ['cc by','public domain','cc0']): continue
-              url=r.get('url')
-              if not url: continue
+            if n>=20 or r['best_query_distance_m']>700 or not r['urls']: continue
+            for url in r['urls']:
               try:
-                  b=urllib.request.urlopen(urllib.request.Request(url,headers=ua), timeout=40).read()
-              except Exception:
-                  continue
-              fn=f'{n:02d}.jpg'
-              (out/'images'/fn).write_bytes(b)
-              r['download']=fn; r['actual_sha1']=hashlib.sha1(b).hexdigest(); r['actual_bytes']=len(b); n+=1
-          (out/'candidates.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2))
+                req=urllib.request.Request(url,headers={'User-Agent':UA})
+                with urllib.request.urlopen(req,timeout=45) as resp:b=resp.read()
+                if len(b)<5000: continue
+                p=OUT/'kartaview/images'/f"{n+1:02d}_{round(r['best_query_distance_m']):04d}m_{r['id']}.jpg"
+                p.write_bytes(b); r['downloaded_file']=p.name; r['sha1']=hashlib.sha1(b).hexdigest(); r['bytes']=len(b); n+=1; break
+              except Exception as e:r['download_error']=str(e)
+          (OUT/'kartaview/candidates.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding='utf-8')
+          (OUT/'summary.md').write_text(f'# Les Orangers source discovery\n\nExact Commons: 1\nKartaView: {len(rows)} candidates / {n} downloaded\n',encoding='utf-8')
+          print(f'LES_ORANGERS_DISCOVERY_V2 kartaview={len(rows)}/{n}')
           PY
       - uses: actions/upload-artifact@v4
         with:
