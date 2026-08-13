@@ -1,6 +1,6 @@
 /* UX-PREMIUM-CARD-DENSITY-1 — mobile card compaction only; truth/provenance remain visible. */
 @media(max-width:639px){
-[data-search-listing-card] [data-card-image]{height:108px!important}
+[data-search-listing-card] [data-card-image]{height:128px!important}
 [data-search-listing-card]>div.flex.flex-1{padding:8px 9px 7px!important}
 [data-search-listing-card] [data-card-price]{font-size:15.75px!important;line-height:1.1!important}
 [data-search-listing-card] [data-card-title]{display:-webkit-box!important;overflow:hidden!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:1!important;font-size:11.75px!important;line-height:1.16!important}
