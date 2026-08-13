@@ -7,13 +7,13 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 <!-- DATA-MASS-HANDOVER-START -->
 ## DATA MASS — handover prioritaire
 
-- **MASS-1 ✅ CLOSED / 9,5/10** — cohorte Source Factory certifiée : **101 domaines**.
-- **MASS-2A ✅ CLOSED / 9,5/10** — PR #519, merge `6cd7625b2ba8e7179ce556841f6306225ba1a3fa`; moteur déterministe/fail-closed, split **20/30/51**.
-- **MASS-2B ✅ CLOSED / 9,4/10** — PR #523, merge `97bb8c6a9596553d7e8794b5f3b06a71cd845d2f`; **20/20 = 17 PERMISSION_REQUIRED / 3 HOLD**, 17 canonical-link candidates, 0 approved.
-- **MASS-2C ✅ CERTIFIED / 9,4/10 — PR #524** — **30/30 = 17 PERMISSION_REQUIRED / 13 HOLD**, 17 canonical-link candidates, 0 approved; rendements **3 026 / 1 758 / 967**. Exact-head behavior proof `217d6240a877d0aab96b1d2c5f6c33479e00d2da`, run `31644744613` SUCCESS, artefact `9160596350`, digest `sha256:53f83d11f9c0ca01da99eba88e3db2d69c277efc4bce8888a17202898823ad63`; Registry **0/30**, drift 0.
-- Limites MASS-2B/C : **0 direct acquisition authorized, 0 source photo/full-description reuse, 0 DB/DDL/Registry/policy write, 0 source/detail fetch by CI, 0 ingestion, 0 Search/public activation, 0 permission inferred**.
-- Doctrine produit : AkarFinder = **attributed minimal index**; attribution ≠ permission; acquisition directe ≠ canonical-link indexing; canonical-link candidates remain non-activable until the transversal baseline or explicit permission exists.
-- **NEXT : MASS-2D — Long-Tail Sources**, certified ranks **51→101**, after #524 lands. Do not start MASS-2E before 2D is certified/merged.
+- **MASS-1 ✅ CLOSED / 9,5/10** — cohorte Source Factory : **101 domaines**.
+- **MASS-2 ✅ CLOSED / 100 %** — 2A #519 ✅ ; 2B #523 ✅ ; 2C #524 ✅ ; 2D #527 ✅ ; 2E #533 ✅ ; 2F #540 ✅.
+- Matrice finale : **101 = 43 PERMISSION_REQUIRED / 58 HOLD** ; **43 CANONICAL_LINK_ONLY_CANDIDATE / 0 approved / 0 public activable**.
+- Rendements certifiés : **17 602 URL reps / 16 018 signaux immobilier Maroc / 3 051 structures détail**.
+- Preuve 2F : run comportemental `31685990668` SUCCESS ; artefact `9175523127` ; digest `sha256:091dfed025731076bf4ccb2d1be0b1e5a1263edeca61563a3857daf1c53db0dd` ; 0 conflit, 0 preuve expirée/future, Registry **0/101**, Search public **0/101**, Thin Index **0/101**, zéro mutation/fetch/activation/permission inférée.
+- Doctrine : attribution ≠ permission ; acquisition directe ≠ canonical-link indexing ; candidate ≠ authorization ; robots/sitemap/capability ≠ permission.
+- **NEXT : MASS-3 — Minimal Listing Index**, uniquement pour une source explicitement policy-admissible.
 <!-- DATA-MASS-HANDOVER-END -->
 
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->

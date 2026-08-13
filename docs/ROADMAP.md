@@ -13,72 +13,33 @@
 
 ### MASS-1 — Reservoir Qualification ✅ CLOSED / CERTIFIED 9,5/10 — PR #511
 
-Responsabilité : qualifier en lecture seule le réservoir `discovery_candidates`, mesurer les représentations URL net-new et produire une queue MASS-2 par domaine sans fetch source, write DB/DDL/Registry, ingestion ni activation Search.
+Handoff Source Factory figé à **101 domaines**. Aucune permission ni activation conférée.
 
-Preuve production certifiée au head comportemental `d768f47e4662430c71066ea9aaa43c85b23477fb` :
+### MASS-2 — Source Factory ✅ CLOSED — 100 %
 
-- **199 381** rows Discovery lues ; **101 131** représentations URL distinctes ;
-- Thin Index : **56 812** ; Registry : **35** sources ;
-- **86 741 représentations URL net-new** ;
-- **51 326** signaux immobilier Maroc probables ; **24 028** structures détail Maroc probables ;
-- **101 domaines MASS-2** après double-check, portant **15 790** signaux immobilier Maroc probables ;
-- 0 write / 0 activation / 0 source-page fetch / 0 claim de bien unique ;
-- 0 fuite SOCIAL / DISCOVERY_TRANSPORT / FOREIGN_ONLY / policy restrictive dans `SOURCE_FACTORY` ;
-- run `31556168993` SUCCESS ; artefact `9126213992` ; digest `sha256:6f99427010bc4477c822f46559823ad7289b18acdc38f99bcfdee69e42bd0dc1` ;
-- SQL indépendant : **199 381 / 101 131 / 56 812 / 35 / 86 741** réconciliés ;
-- **19/19 workflows exact-head comportemental SUCCESS** ;
-- clean-head final `0a2856e68b44bee6f7b398b5c314d53711d95a67` : **37/37 workflows associés SUCCESS**, run MASS-1 `31557215870` SUCCESS, artefact `9126627714`, digest `sha256:84333105c8edda9be5733184c42e2e1afc865109edb580a5ae1705219c1cd932` ;
-- PR #511 mergée dans `main` : `d2dce59e4aab914fb2a54e0547ccee427128f638` ; comparaison `0a2856e… → d2dce59e…` = **0 fichier différent** ; score final **9,5/10**.
+- **2A ✅ 15 %** — PR #519 : Factory Engine, cohorte immuable **20 / 30 / 51**.
+- **2B ✅ 25 %** — PR #523 : **20/20 = 17 PERMISSION_REQUIRED / 3 HOLD**, 17 candidates, 0 approved.
+- **2C ✅ 20 %** — PR #524 : **30/30 = 17 PERMISSION_REQUIRED / 13 HOLD**, 17 candidates, 0 approved.
+- **2D ✅ 20 %** — PR #527 : **51/51 = 9 PERMISSION_REQUIRED / 42 HOLD**, 9 candidates, 0 approved.
+- **2E ✅ 10 %** — PR #533, merge `85e12a077343e2a4223de41455f958696085cfe2` : **101 = 43 PERMISSION_REQUIRED / 58 HOLD**, **43 candidates / 0 approved**, Registry 0/101, **17 602 / 16 018 / 3 051**, zéro mutation/activation.
+- **2F ✅ 10 %** — PR #540, run comportemental `31685990668` SUCCESS, artefact `9175523127`, digest `sha256:091dfed025731076bf4ccb2d1be0b1e5a1263edeca61563a3857daf1c53db0dd`; **101/101**, 0 conflit, 0 preuve expirée/future, Registry 0/101, Search public 0/101, Thin Index 0/101, zéro write/fetch/activation/permission inférée.
 
-MASS-1 ne transforme aucune URL en annonce publique et ne confère aucune permission. `docs/data/DATA-MASS-1-RESERVOIR-QUALIFICATION.md` porte le détail de preuve.
+Doctrine finale : candidate ≠ authorization ; attribution, robots, sitemap ou crawlability ne confèrent aucun droit ; aucun des 101 domaines ne devient activable par volume seul.
 
-### MASS-2 — Source Factory 🔴 ACTIVE — 60 % certifié à l’issue de 2C
+### MASS-3 — Minimal Listing Index 🔵 NEXT
 
-Responsabilité globale : convertir les **101 domaines** issus de MASS-1 en décisions de source explicites, prouvées et fail-closed. Une décision se prend par domaine. MASS-2 n’ingère aucune annonce et n’active aucune source dans Search.
-
-Doctrine produit verrouillée : AkarFinder vise un **index minimal attribué** (`Source : X` + lien canonique), pas une republication. L’attribution ne remplace pas la permission; acquisition directe et indexation canonical-link sont évaluées séparément; photos/descriptions complètes ne sont pas réutilisables par défaut; robots/sitemap/capacité ne confèrent aucun droit.
-
-#### MASS-2A — Factory Engine ✅ CLOSED — 15 %
-
-PR #519, merge `6cd7625b2ba8e7179ce556841f6306225ba1a3fa`, score **9,5/10**. Cohorte certifiée immuable **101 = 20 HIGH_YIELD / 30 MID_YIELD / 51 LONG_TAIL**; moteur déterministe, schéma de preuve et décisions fail-closed; 0 write/fetch/activation/permission inférée.
-
-#### MASS-2B — High-Yield Sources ✅ CLOSED — 25 %
-
-PR #523, merge `97bb8c6a9596553d7e8794b5f3b06a71cd845d2f`, score **9,4/10**. **20/20** : **17 `PERMISSION_REQUIRED` / 3 `HOLD`**; **17** `CANONICAL_LINK_ONLY_CANDIDATE`, **0 approuvé**; Registry 0/20 et zéro mutation/activation.
-
-#### MASS-2C — Mid-Yield Sources ✅ CERTIFIED — 20 %
-
-PR #524. **30/30 rangs 21→50** : **17 `PERMISSION_REQUIRED` / 13 `HOLD`**; **17** canonical-link candidates, **0 approuvé**. Rendement certifié conservé : **3 026 URL-représentations / 1 758 signaux immobilier Maroc / 967 structures détail**. Run `31644744613` SUCCESS; artefact `9160596350`, digest `sha256:53f83d11f9c0ca01da99eba88e3db2d69c277efc4bce8888a17202898823ad63`; Registry **0/30**, drift 0; 0 DB/DDL/Registry/policy write, source/detail fetch, ingestion, Search activation ou permission inférée.
-
-#### MASS-2D — Long-Tail Sources 🔵 NEXT — 20 %
-
-Auditer les **51 domaines rangs 51→101** avec exactement le même contrat : identité, preuves officielles actuelles, séparation acquisition directe / index minimal attribué, `HOLD` par défaut en cas d’absence/ambiguïté. Aucun Registry write, ingestion ou Search activation.
-
-#### MASS-2E — Policy Matrix & Registry Preview 🔵 PLANNED — 10 %
-
-Consolider 2B/2C/2D en matrice de policy et preview Registry, détecter contradictions/expirations, sans mutation automatique. La baseline transversale `CANONICAL_LINK_ONLY` doit être résolue ici ou avant toute activation.
-
-#### MASS-2F — Certification 🔵 PLANNED — 10 %
-
-Certification complète des 101 domaines : couverture, preuves datées, décisions, conflits, expirations, zero-bypass et cohérence Registry/Search. Aucun domaine ne devient activable par volume ou attribution seule.
-### MASS-3 — Minimal Listing Index 🔵 PLANNED
-
-Pour toute source devenue policy-admissible, permettre une représentation minimale : canonical URL + source + titre/signal structurel fiable + géographie disponible. Prix, surface, photo, quartier et description deviennent des facteurs de Listing Power/ranking, pas des prérequis d’existence. Zéro invention de champ absent.
+Pour toute source **explicitement policy-admissible**, permettre une représentation minimale : canonical URL + source + titre/signal structurel fiable + géographie disponible. Zéro invention et aucun bypass Registry.
 
 ### MASS-4 — Mass Reclassification 🔵 PLANNED
-
-Réévaluer le stock historique `blocked_quality` sous `Quality ≠ Eligibility` : une représentation structurellement immobilière et policy-admissible peut rester Searchable avec faible Listing Power. Les gates policy, catégorie non-listing, ambiguïté et dédup restent fail-closed.
+Réévaluer le stock historique sous `Quality ≠ Eligibility` sans affaiblir les gates.
 
 ### MASS-5 — Discovery Expansion 🔵 PLANNED
-
-Élargir le réservoir via sitemaps publics, index publics, Common Crawl, agences/promoteurs indépendants et feeds partenaires. Toute découverte rentre d’abord dans le Reservoir ; aucune voie ne contourne le Source Registry.
+Élargir le réservoir via voies publiques/partenaires admissibles ; toute découverte repasse par Reservoir puis Registry.
 
 ### MASS-6 — National Mass Engine 🔵 PLANNED
+Industrialiser `DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DEDUP → RANK`.
 
-Industrialiser `DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DEDUP → RANK` avec scheduler, quotas, observabilité par ville/source, couverture nationale, freshness et rollback.
-
-**Ordre verrouillé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6.**  
-Aucun lot MASS n’est CLOSED sous 9/10 et chaque lot suit branche/PR/certification/post-merge.
+**Ordre verrouillé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6.**
 <!-- DATA-MASS-PROGRAM-END -->
 
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->
