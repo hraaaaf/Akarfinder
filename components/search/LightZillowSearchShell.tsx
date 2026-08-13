@@ -160,7 +160,6 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
   const gatewayEnabled = process.env.NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED !== "false";
   const [isGatewayLoading, setIsGatewayLoading] = useState(gatewayEnabled);
   const viewLayout = getSearchViewLayout(view);
-  void indexedTotalCount;
 
   useCanonicalSearchSession({
     filters,
@@ -387,9 +386,12 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
     return chips;
   }, [filters]);
 
-  const displayedCount = filteredListings.length + gatewayResults.length;
+  const loadedResultCount = filteredListings.length + gatewayResults.length;
+  const totalResultCount = indexedTotalCount == null
+    ? loadedResultCount
+    : Math.max(indexedTotalCount, loadedResultCount);
   const isSearching = isLoading || isGatewayLoading;
-  const hasAnyResults = displayedCount > 0;
+  const hasAnyResults = loadedResultCount > 0;
   const showSkeleton = isLoading && filteredListings.length === 0 && gatewayResults.length === 0;
 
   return (
@@ -405,9 +407,9 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
           <div className="flex min-w-0 items-center gap-2">
             {isSearching ? <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-bronze-500" aria-hidden="true" /> : null}
             <h1 className="min-w-0 truncate text-[14px] font-extrabold text-foreground sm:text-[15px]">
-              {isSearching && displayedCount === 0
+              {isSearching && totalResultCount === 0
                 ? "Recherche…"
-                : `${displayedCount} résultat${displayedCount !== 1 ? "s" : ""}${filters.search.trim() ? ` pour “${filters.search.trim()}”` : ""}`}
+                : `${totalResultCount.toLocaleString("fr-FR")} résultat${totalResultCount !== 1 ? "s" : ""}${filters.search.trim() ? ` pour “${filters.search.trim()}”` : ""}`}
             </h1>
           </div>
 
