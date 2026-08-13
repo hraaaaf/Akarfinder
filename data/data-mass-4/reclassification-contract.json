@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "MASS_4_RECLASSIFICATION_SHADOW_V1",
+  "mode": "shadow_read_only",
+  "principle": "QUALITY_NOT_ELIGIBILITY",
+  "requirements": {
+    "policyAuthority": "source_policy_registry",
+    "policyAdmissibilityCheckedBeforeQuality": true,
+    "structuralEligibilityIndependentFromQuality": true,
+    "lowQualityCannotGrantPermission": true,
+    "highQualityCannotGrantPermission": true,
+    "qualityMayOnlyAffectRankingOrEnrichment": true
+  },
+  "prohibitions": {
+    "databaseWrites": 0,
+    "registryWrites": 0,
+    "searchActivations": 0,
+    "sourceNetworkRequests": 0,
+    "detailPageFetches": 0,
+    "permissionsInferred": 0
+  }
+}

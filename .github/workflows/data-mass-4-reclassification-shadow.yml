@@ -1,0 +1,65 @@
+name: DATA MASS-4 Reclassification Shadow
+
+on:
+  pull_request:
+    paths:
+      - "data/data-mass-4/**"
+      - "scripts/data-mass/mass-reclassification*.ts"
+      - "scripts/data-mass/__tests__/mass-reclassification.test.ts"
+      - ".github/workflows/data-mass-4-reclassification-shadow.yml"
+      - "docs/data/DATA-MASS-4-RECLASSIFICATION-SHADOW.md"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: MASS-4 quality versus eligibility tests
+        run: node --test --import tsx scripts/data-mass/__tests__/mass-reclassification.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+
+  live-census:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run read-only MASS-4 census
+        run: |
+          mkdir -p .tmp/data-mass-4/results
+          npx tsx scripts/data-mass/mass-reclassification-live.ts | tee .tmp/data-mass-4/results/proof.json
+      - name: Enforce no-mutation boundary
+        run: |
+          node - <<'NODE'
+          const p=require('./.tmp/data-mass-4/results/proof.json');
+          const ok=p.status==='PASS' && p.mode==='shadow_read_only' &&
+            p.qualityCanGrantPermission===false && p.qualityCanRevokeStructuralEligibility===false &&
+            p.databaseWrites===0 && p.registryWrites===0 && p.searchActivations===0 &&
+            p.sourceNetworkRequests===0 && p.detailPageFetches===0 && p.permissionsInferred===0;
+          if(!ok){console.error(p);process.exit(1)}
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-4-reclassification-shadow
+          path: .tmp/data-mass-4/results/
