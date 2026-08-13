@@ -1,0 +1,55 @@
+name: DATA MASS-3A Minimal Listing Shadow
+on:
+  pull_request:
+    paths:
+      - "data/data-mass-3a/**"
+      - "scripts/data-mass/minimal-listing-index-policy.ts"
+      - "scripts/data-mass/__tests__/minimal-listing-index-policy.test.ts"
+      - "scripts/audits/data-mass-3a-minimal-listing-shadow.ts"
+      - ".github/workflows/data-mass-3a-minimal-listing-shadow.yml"
+      - "docs/data/DATA-MASS-3A-MINIMAL-LISTING-SHADOW.md"
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: MASS-3A policy tests
+        run: node --test --import tsx scripts/data-mass/__tests__/minimal-listing-index-policy.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+  live-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Run read-only Registry shadow audit
+        run: npx tsx scripts/audits/data-mass-3a-minimal-listing-shadow.ts
+      - name: Enforce MASS-3A shadow truth boundary
+        run: |
+          node - <<'NODE'
+          const p=require('./.tmp/data-mass-3a/results/proof.json');
+          const ok=p.status==='PASS' && p.readOnly===true && Number.isInteger(p.registryRows) && p.registryRows>=0 && p.policyAdmissibleRows===0 &&
+            p.databaseWrites===0 && p.registryWrites===0 && p.searchActivations===0 && p.sourceNetworkRequests===0 &&
+            p.detailPageFetches===0 && p.permissionsInferred===0;
+          if(!ok){console.error(p);process.exit(1)}
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-3a-minimal-listing-shadow
+          path: .tmp/data-mass-3a/results/
