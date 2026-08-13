@@ -1,15 +1,14 @@
-name: Neighborhood Visual P1.7 Medina Contract
+name: Neighborhood Visual P1.8 Ocean Contract
 
 on:
   pull_request:
     paths:
-      - "lib/contextual-illustrations/medina-neighborhood-visuals.ts"
-      - "app/visual-qa/medina/**"
-      - "components/search/MedinaNeighborhoodVisualQAFixture.tsx"
-      - "scripts/audits/neighborhood-visual-p1-7-medina-visual-qa.mjs"
-      - "scripts/scrapers/__tests__/neighborhood-visual-p1-7-medina.test.ts"
-      - "supabase/functions/neighborhood-visual-p1-7-medina-ingest/**"
-      - ".github/workflows/neighborhood-visual-p1-7-medina-contract.yml"
+      - "lib/contextual-illustrations/ocean-neighborhood-visuals.ts"
+      - "app/visual-qa/ocean/**"
+      - "components/search/OceanNeighborhoodVisualQAFixture.tsx"
+      - "scripts/audits/neighborhood-visual-p1-8-ocean-visual-qa.mjs"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p1-8-ocean.test.ts"
+      - ".github/workflows/neighborhood-visual-p1-8-ocean-contract.yml"
 
 permissions:
   contents: read
@@ -24,6 +23,6 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx tsx --test scripts/scrapers/__tests__/neighborhood-visual-p1-7-medina.test.ts
+      - run: npx tsx --test scripts/scrapers/__tests__/neighborhood-visual-p1-8-ocean.test.ts
       - run: npx tsc --noEmit
       - run: npm run build
