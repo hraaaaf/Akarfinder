@@ -1,0 +1,103 @@
+name: DATA MASS-4/5 Canonical Closeout
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: docs/mass-4-5-closeout
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Update canonical MASS blocks
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          function replaceBlock(path,start,end,replacement){
+            const src=fs.readFileSync(path,'utf8');
+            const a=src.indexOf(start), b=src.indexOf(end);
+            if(a<0||b<0||b<a) throw new Error(`markers missing: ${path}`);
+            fs.writeFileSync(path,src.slice(0,a)+replacement.trimEnd()+'\n'+src.slice(b+end.length));
+          }
+
+          const readme=`<!-- DATA-MASS-CURRENT-START -->
+## DATA MASS — état courant
+
+- **MASS-1 ✅ CLOSED / 9,5/10** — réservoir qualifié à 101 domaines.
+- **MASS-2 ✅ CLOSED / 100 %** — 101/101 audités ; 43 \`PERMISSION_REQUIRED\`, 58 \`HOLD\`, 0 permission positive/activation inférée.
+- **MASS-3 ✅ CLOSED — PR #566** — Minimal Listing Index fail-closed ; merge \`604306a82e646596fd320fed88b4256f5caca49f\` ; 35 Registry rows, 0 admissible, 0 canary, 0 mutation.
+- **MASS-4 ✅ CLOSED — PR #568** — Mass Reclassification read-only ; merge \`4abc7fcee96f00fa5745937c4c12daea0b541b47\` ; exact head \`72d83c939175c0470e6d96d0d699a1730788efe1\` ; run \`31726483908\` SUCCESS ; artefact \`9191563403\`, digest \`sha256:3f4c4ddbc19254685ae86b1d7ad2e804b6c7038b2287bcd7e4408203bda8537e\` ; 5 279 listings, 5 284 sources actives, 35 Registry, 0 admissible, 5 284 policy-blocked, 5 271 haute qualité mais policy-blocked, 0 write/fetch/permission inférée.
+- **MASS-5 ✅ CLOSED — PR #569** — Discovery Expansion Shadow ; merge \`7b4503bf00ea7a99fb44f798748698d282cf3d8c\` ; exact head \`be58b8941b62570922fd52c6b19a3a3280d310b5\` ; run \`31727831232\` SUCCESS ; artefact \`9192248949\`, digest \`sha256:c591b4e10840f0199e0b8e7e5acd163dceb063a730b608849826d554804ef266\` ; 108 Source Factory domains live vs 101 certifiés, soit 7 nouveaux domaines / 148 URL representations / 144 signaux Maroc immo / 14 détails probables ; les 7 restent UNREGISTERED et publicActivableNow=false ; 0 write/fetch/permission inférée.
+
+Doctrine : attribution ≠ permission ; robots/sitemap/capability ≠ permission ; candidate ≠ authorization ; Source Registry autoritaire ; no-bypass.
+
+**NEXT : MASS-6 — National Mass Engine, strictement read-only au démarrage.**
+<!-- DATA-MASS-CURRENT-END -->`;
+
+          const roadmap=`<!-- DATA-MASS-PROGRAM-START -->
+## DATA MASS — Programme national de volume
+
+**Doctrine : \`MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME\`.**
+
+### MASS-1 ✅ CLOSED
+### MASS-2 ✅ CLOSED / 100 %
+### MASS-3 ✅ CLOSED — PR #566
+### MASS-4 ✅ CLOSED — PR #568
+Reclassification live read-only ; 5 284 sources actives, 0 admissible, 5 271 haute qualité mais policy-blocked. \`Quality ≠ Eligibility ≠ Permission\` confirmé.
+
+### MASS-5 ✅ CLOSED — PR #569
+Discovery Expansion Shadow ; run \`31727831232\` SUCCESS ; 7 nouveaux domaines au-dessus de la cohorte 101, 148 URL representations, tous UNREGISTERED et non activables publiquement.
+
+### MASS-6 🔄 NEXT — National Mass Engine
+Industrialiser en lecture seule \`DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DEDUP → RANK\` sans transformer capacité, qualité ou découverte en permission. Toute mutation/activation reste soumise à gate explicite séparé.
+
+**Ordre verrouillé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6.**
+<!-- DATA-MASS-PROGRAM-END -->`;
+
+          replaceBlock('README.md','<!-- DATA-MASS-CURRENT-START -->','<!-- DATA-MASS-CURRENT-END -->',readme);
+          replaceBlock('docs/ROADMAP.md','<!-- DATA-MASS-PROGRAM-START -->','<!-- DATA-MASS-PROGRAM-END -->',roadmap);
+
+          let r=fs.readFileSync('docs/ROADMAP.md','utf8');
+          r=r.replace(/^\*\*Statut :.*\*\*$/m,'**Statut : MASS-1 ✅ CLOSED ; MASS-2 ✅ CLOSED / 100 % ; MASS-3 ✅ CLOSED ; MASS-4 ✅ CLOSED PR #568 ; MASS-5 ✅ CLOSED PR #569 ; MASS-6 🔄 NEXT — National Mass Engine read-only.**');
+          fs.writeFileSync('docs/ROADMAP.md',r);
+
+          let s=fs.readFileSync('docs/SESSION.md','utf8');
+          s=s.replace(/### DATA MASS[\s\S]*?### UX\/Search/,`### DATA MASS
+
+- **MASS-1 ✅ CLOSED / 9,5/10** — réservoir qualifié à 101 domaines.
+- **MASS-2 ✅ CLOSED / 100 %** — 101/101 audités ; 43 \`PERMISSION_REQUIRED\`, 58 \`HOLD\`.
+- **MASS-3 ✅ CLOSED — PR #566** — fail-closed, 0 source admissible.
+- **MASS-4 ✅ CLOSED — PR #568** — merge \`4abc7fcee96f00fa5745937c4c12daea0b541b47\` ; run \`31726483908\` SUCCESS ; artefact \`9191563403\` ; 5 284 sources actives, 0 admissible, 5 271 haute qualité mais policy-blocked ; 0 mutation.
+- **MASS-5 ✅ CLOSED — PR #569** — merge \`7b4503bf00ea7a99fb44f798748698d282cf3d8c\` ; run \`31727831232\` SUCCESS ; artefact \`9192248949\` ; 7 nouveaux domaines, 148 URL representations, tous UNREGISTERED/non activables ; 0 mutation/fetch/permission inférée.
+- **MASS-6 🔄 NEXT — National Mass Engine read-only**.
+- Doctrine : attribution ≠ permission ; robots/sitemap/capability ≠ permission ; Source Registry autoritaire ; no-bypass.
+
+### UX/Search`);
+          s=s.replace(/## Reprise exacte[\s\S]*$/m,`## Reprise exacte
+
+**DATA MASS-6** : figer le contrat National Mass Engine read-only → composer les sorties certifiées MASS-1→5 en pipeline déterministe → vérifier idempotence, provenance, freshness/dedup/rank boundaries et no-bypass → preuve exact-head + artefact → closeout. Aucune écriture DB/Registry/Search ni activation sans gate humain explicite séparé.
+
+En parallèle, **P1.8 Océan** reste une lane indépendante et ne doit pas être cassée par le lot DATA.
+`);
+          fs.writeFileSync('docs/SESSION.md',s);
+          NODE
+      - name: Verify scope and remove helper
+        run: |
+          test -n "$(git diff -- README.md docs/ROADMAP.md docs/SESSION.md)"
+          test -z "$(git diff --name-only | grep -Ev '^(README.md|docs/ROADMAP.md|docs/SESSION.md)$')"
+          git rm .github/workflows/data-mass-4-5-canonical-closeout.yml
+      - name: Commit closeout
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/ROADMAP.md docs/SESSION.md
+          git commit -m "docs: close MASS-4 and MASS-5; hand off MASS-6"
+          git push origin HEAD:docs/mass-4-5-closeout
