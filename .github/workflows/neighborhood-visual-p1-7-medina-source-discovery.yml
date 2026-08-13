@@ -1,0 +1,45 @@
+name: Neighborhood Visual P1.7 Medina Source Discovery
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/neighborhood-visual-p1-7-medina-source-discovery.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lock exact Medina Commons candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="data/audits/neighborhood-visual-p1-7-medina/source-discovery"
+          mkdir -p "$OUT"
+          UA='AkarFinder-P1.7-Medina/1.0'
+          declare -A FILES=(
+            [signature]='Old Medina of Rabat.jpg'
+            [immobilier]='Mosque in the medina of Rabat (12366658684).jpg'
+            [lifestyle]='Market Stalls and Thatched Roof - Medina (Old City) - Rabat - Morocco.jpg'
+          )
+          for role in signature immobilier lifestyle; do
+            f="${FILES[$role]}"
+            enc=$(python3 -c 'import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1]))' "$f")
+            curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" "https://commons.wikimedia.org/wiki/Special:Redirect/file/$enc" -o "$OUT/$role.jpg"
+            sha1sum "$OUT/$role.jpg"
+            wc -c "$OUT/$role.jpg"
+            file "$OUT/$role.jpg"
+          done
+          sha1sum "$OUT"/*.jpg > "$OUT/sha1.txt"
+          wc -c "$OUT"/*.jpg > "$OUT/bytes.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-visual-p1-7-medina-source-discovery
+          path: data/audits/neighborhood-visual-p1-7-medina/source-discovery
+          if-no-files-found: error
+          retention-days: 7
