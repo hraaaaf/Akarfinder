@@ -14,9 +14,11 @@ Consolidate the certified MASS-2B, 2C and 2D review outputs into one determinist
 - 0 public activable
 
 Certified yield handoff:
-- 22,656 URL representations
-- 19,665 likely Morocco real-estate signals
-- 4,114 likely listing-detail structures
+- 17,602 URL representations
+- 16,018 likely Morocco real-estate signals
+- 3,051 likely listing-detail structures
+
+These totals are the exact MASS-2A certified Source Factory handoff and equal the sum of the certified 2B + 2C + 2D cohorts.
 
 ## Preview doctrine
 A candidate is not authorization. Every preview row therefore remains machine-gated as `internal_signal_only`, ingestion-gated as `internal_signal_only`, and `display_gate=hidden`. `allowed_discovery_channels=[]` for all 101 rows.
