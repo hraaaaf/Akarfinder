@@ -1,0 +1,37 @@
+name: DATA MASS-3 Canonical Closeout Apply
+
+on:
+  push:
+    branches:
+      - docs/mass-3-closeout
+    paths:
+      - ".github/workflows/data-mass-3-canonical-closeout-apply.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: docs/mass-3-closeout
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Render canonical closeout
+        run: node scripts/docs/closeout-data-mass-3.mjs
+      - name: Verify docs-only scope
+        run: |
+          test -n "$(git diff -- README.md docs/ROADMAP.md docs/SESSION.md)"
+          test -z "$(git diff --name-only | grep -Ev '^(README.md|docs/ROADMAP.md|docs/SESSION.md)$')"
+      - name: Commit canonical docs only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/ROADMAP.md docs/SESSION.md
+          git commit -m "docs: close MASS-3 and hand off MASS-4"
+          git push origin HEAD:docs/mass-3-closeout
