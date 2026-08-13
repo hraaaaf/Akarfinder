@@ -1,7 +1,11 @@
 name: DATA MASS-4/5 Canonical Closeout
 
 on:
-  workflow_dispatch: {}
+  push:
+    branches:
+      - docs/mass-4-5-closeout
+    paths:
+      - ".github/workflows/data-mass-4-5-canonical-closeout.yml"
 
 permissions:
   contents: write
@@ -27,7 +31,6 @@ jobs:
             if(a<0||b<0||b<a) throw new Error(`markers missing: ${path}`);
             fs.writeFileSync(path,src.slice(0,a)+replacement.trimEnd()+'\n'+src.slice(b+end.length));
           }
-
           const readme=`<!-- DATA-MASS-CURRENT-START -->
 ## DATA MASS — état courant
 
@@ -41,7 +44,6 @@ Doctrine : attribution ≠ permission ; robots/sitemap/capability ≠ permission
 
 **NEXT : MASS-6 — National Mass Engine, strictement read-only au démarrage.**
 <!-- DATA-MASS-CURRENT-END -->`;
-
           const roadmap=`<!-- DATA-MASS-PROGRAM-START -->
 ## DATA MASS — Programme national de volume
 
@@ -61,14 +63,11 @@ Industrialiser en lecture seule \`DISCOVER → CLASSIFY → POLICY → INDEX →
 
 **Ordre verrouillé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6.**
 <!-- DATA-MASS-PROGRAM-END -->`;
-
           replaceBlock('README.md','<!-- DATA-MASS-CURRENT-START -->','<!-- DATA-MASS-CURRENT-END -->',readme);
           replaceBlock('docs/ROADMAP.md','<!-- DATA-MASS-PROGRAM-START -->','<!-- DATA-MASS-PROGRAM-END -->',roadmap);
-
           let r=fs.readFileSync('docs/ROADMAP.md','utf8');
           r=r.replace(/^\*\*Statut :.*\*\*$/m,'**Statut : MASS-1 ✅ CLOSED ; MASS-2 ✅ CLOSED / 100 % ; MASS-3 ✅ CLOSED ; MASS-4 ✅ CLOSED PR #568 ; MASS-5 ✅ CLOSED PR #569 ; MASS-6 🔄 NEXT — National Mass Engine read-only.**');
           fs.writeFileSync('docs/ROADMAP.md',r);
-
           let s=fs.readFileSync('docs/SESSION.md','utf8');
           s=s.replace(/### DATA MASS[\s\S]*?### UX\/Search/,`### DATA MASS
 
