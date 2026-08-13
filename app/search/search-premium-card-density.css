@@ -55,5 +55,11 @@ main [data-search-results-section] [data-search-results-toolbar] [data-search-so
 [data-search-listing-card] [data-card-location] svg{width:10px!important;height:10px!important;flex:0 0 10px!important}
 [data-search-listing-card] [data-card-facts]{margin-top:6px!important;min-height:16px!important;gap:7px!important;font-size:9px!important;font-weight:650!important;line-height:1!important;letter-spacing:-.01em!important}
 [data-search-listing-card] [data-card-facts]>span{display:inline-flex!important;align-items:center!important;white-space:nowrap!important;color:rgb(71 91 116)!important}
+[data-search-listing-card] [data-card-facts]:has(>span:nth-child(3))>span:nth-child(1){order:3}
+[data-search-listing-card] [data-card-facts]:has(>span:nth-child(3))>span:nth-child(2){order:1}
+[data-search-listing-card] [data-card-facts]:has(>span:nth-child(3))>span:nth-child(3){order:2}
+[data-search-listing-card] [data-card-facts]:has(>span:nth-child(3))>span:nth-child(1)::before{content:"↔";margin-right:3px;font-size:9.5px;font-weight:700;color:rgb(79 111 151)}
+[data-search-listing-card] [data-card-facts]:has(>span:nth-child(3))>span:nth-child(2)::before{content:"🛏︎";margin-right:3px;font-size:9.5px;font-weight:500;color:rgb(79 111 151)}
+[data-search-listing-card] [data-card-facts]:has(>span:nth-child(3))>span:nth-child(3)::before{content:"🛁︎";margin-right:3px;font-size:9.5px;font-weight:500;color:rgb(79 111 151)}
 [data-search-listing-card] [data-card-provenance]{margin-top:6px!important;gap:5px!important;padding-top:5px!important;font-size:7.5px!important;line-height:1.08!important}
 }
