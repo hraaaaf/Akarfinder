@@ -19,3 +19,12 @@
 [data-premium-quickfilters-row] .premium-quickfilter-chip{min-width:0!important;min-height:42px!important;gap:4px!important;padding-left:8px!important;padding-right:8px!important;font-size:11.5px!important;line-height:1!important}
 [data-premium-quickfilters-row] .premium-quickfilter-chip svg{width:14px!important;height:14px!important;flex:0 0 14px!important}
 }
+
+/* UX-PREMIUM-FINAL-POLISH-1 — mobile header/logo + results toolbar presence. */
+@media(max-width:639px){
+[data-premium-search-header="ux-premium-header-1"]>div{height:70px!important}
+[data-premium-search-header="ux-premium-header-1"] img[alt="AkarFinder"]{height:34px!important;width:auto!important}
+main [data-search-results-section] [data-search-results-toolbar]{min-height:58px!important;gap:10px!important}
+main [data-search-results-section] [data-search-results-toolbar] h1{font-size:16px!important;line-height:1.15!important}
+main [data-search-results-section] [data-search-results-toolbar] [data-search-sort-select]{min-width:124px!important;font-size:12.5px!important;padding-left:13px!important}
+}
