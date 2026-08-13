@@ -26,6 +26,7 @@ import type { ListingFiltersState } from "@/lib/listings/types";
 import "./search-density.css";
 import "./search-controls-10of10.css";
 import "./search-premium-card-content.css";
+import "./search-premium-grid.css";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
