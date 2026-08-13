@@ -1,0 +1,64 @@
+name: Neighborhood Visual P1.7 Medina Reviewer
+
+on:
+  pull_request:
+    paths:
+      - "lib/contextual-illustrations/medina-neighborhood-visuals.ts"
+      - "app/visual-qa/medina/**"
+      - "components/search/MedinaNeighborhoodVisualQAFixture.tsx"
+      - "scripts/audits/neighborhood-visual-p1-7-medina-visual-qa.mjs"
+      - ".github/workflows/neighborhood-visual-p1-7-medina-reviewer.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  NEIGHBORHOOD_VISUAL_QA: "1"
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  reviewer:
+    name: Product Design Reviewer — Medina 3-scene QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: neighborhood-visual-p1-7-medina-source-discovery
+          path: public/__qa-source
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: hraaaaf/Akarfinder
+          run-id: 31699782860
+      - name: Materialize locked images
+        run: |
+          mkdir -p public/__qa
+          cp public/__qa-source/signature.jpg public/__qa/medina-signature.jpg
+          cp public/__qa-source/immobilier.jpg public/__qa/medina-immobilier.jpg
+          cp public/__qa-source/lifestyle.jpg public/__qa/medina-lifestyle.jpg
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start QA server
+        run: |
+          npm run start -- -p 3169 > /tmp/medina-reviewer.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3169/visual-qa/medina >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/medina-reviewer.log
+          exit 1
+      - name: Certify Medina
+        env:
+          BASE_URL: http://127.0.0.1:3169
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/neighborhood-visual-p1-7-medina-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p1-7-medina-product-design-proof
+          path: data/audits/neighborhood-visual-p1-7-medina/product-design
+          if-no-files-found: error
+          retention-days: 14
