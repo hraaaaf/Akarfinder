@@ -1,0 +1,62 @@
+name: TEMP MASS-X closeout
+on:
+  push:
+    branches: [docs/mass-x1-x2-closeout]
+permissions:
+  contents: write
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: docs/mass-x1-x2-closeout
+      - name: Render canonical docs
+        shell: python
+        run: |
+          from pathlib import Path
+          def rep(path,a,b,new):
+            p=Path(path); s=p.read_text(); i=s.index(a); j=s.index(b,i)+len(b); p.write_text(s[:i]+new+s[j:])
+          rep('README.md','<!-- DATA-MASS-CURRENT-START -->','<!-- DATA-MASS-CURRENT-END -->','''<!-- DATA-MASS-CURRENT-START -->
+## DATA MASS — état courant
+
+- **MASS-1 → MASS-6 ✅ CLOSED** — programme national historique certifié.
+- **MASS-X1 ✅ CLOSED — PR #581** — run `31751875324` SUCCESS ; merge `f5699e35d608471050d526020cb68cf79f6a3ecb` ; 24 505 candidates détail Maroc ; 0 promotable / 24 505 policy-blocked ; 0 mutation.
+- **MASS-X2 ✅ CLOSED — PR #583** — exact head `af00e703e46db757b447503c07f0a1ed04d4daa2` ; 18 checks SUCCESS ; merge `1884a07acdfcc79a371089d3df768c46a73169ce` ; +1 100 candidates détail structurelles ; projection shadow 25 605 URL representations ; 0 mutation.
+
+Doctrine : attribution ≠ permission ; candidate ≠ authorization ; Source Registry autoritaire ; no-bypass.
+
+**MASS-X reste shadow/read-only ; toute mutation/activation production exige un gate humain explicite.**
+<!-- DATA-MASS-CURRENT-END -->''')
+          rep('docs/ROADMAP.md','<!-- DATA-MASS-PROGRAM-START -->','<!-- DATA-MASS-PROGRAM-END -->','''<!-- DATA-MASS-PROGRAM-START -->
+## DATA MASS — Programme national de volume
+
+### MASS-1 → MASS-6 ✅ CLOSED
+### MASS-X1 ✅ CLOSED — PR #581
+24 505 candidates détail ; 0 promotable avec Registry 0 admissible ; aucune mutation.
+
+### MASS-X2 ✅ CLOSED — PR #583
++1 100 candidates structurelles shadow ; projection 25 605 URL representations ; aucune mutation.
+
+**Prochaine lane MASS : expansion supplémentaire du réservoir en shadow/read-only.**
+<!-- DATA-MASS-PROGRAM-END -->''')
+          p=Path('docs/SESSION.md'); s=p.read_text(); a=s.index('### DATA MASS'); b=s.index('### UX/Search',a)
+          block='''### DATA MASS
+
+- **MASS-1 → MASS-6 ✅ CLOSED**.
+- **MASS-X1 ✅ CLOSED — PR #581** — run `31751875324` SUCCESS ; merge `f5699e35d608471050d526020cb68cf79f6a3ecb` ; 24 505 candidates détail ; 0 promotable / 24 505 policy-blocked.
+- **MASS-X2 ✅ CLOSED — PR #583** — head `af00e703e46db757b447503c07f0a1ed04d4daa2` ; merge `1884a07acdfcc79a371089d3df768c46a73169ce` ; +1 100 candidates ; projection shadow 25 605 URL representations.
+- Aucune écriture DB/Registry/Search ni activation sans feu vert humain explicite.
+
+'''
+          s=s[:a]+block+s[b:]
+          s=s.replace('**DATA MASS : MASS-1 → MASS-6 ✅ CLOSED.** Aucun MASS-7 canonique n’est défini. Le National Mass Engine reste shadow/read-only et fail-closed à POLICY tant que le Source Registry ne contient aucune autorisation positive. Toute écriture DB/Registry/Search ou activation exige un feu vert humain explicite préalable.','**DATA MASS : MASS-X1 et MASS-X2 ✅ CLOSED après MASS-1 → MASS-6.** Prochaine action : continuer l’expansion shadow/read-only du réservoir utile. Toute écriture DB/Registry/Search ou activation exige un feu vert humain explicite préalable.')
+          p.write_text(s)
+      - name: Self-clean and commit
+        run: |
+          git rm .github/workflows/tmp-mass-x-closeout.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add README.md docs/ROADMAP.md docs/SESSION.md
+          git commit -m "docs(data): close MASS-X1 and MASS-X2"
+          git push
