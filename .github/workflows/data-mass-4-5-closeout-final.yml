@@ -1,0 +1,40 @@
+name: DATA MASS-4/5 Closeout Final
+
+on:
+  push:
+    branches:
+      - docs/mass-4-5-closeout
+    paths:
+      - ".github/workflows/data-mass-4-5-closeout-final.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: docs/mass-4-5-closeout
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/docs/closeout-mass-4-5.mjs
+      - name: Verify docs-only scope
+        run: |
+          test -n "$(git diff -- README.md docs/ROADMAP.md docs/SESSION.md)"
+          test -z "$(git diff --name-only | grep -Ev '^(README.md|docs/ROADMAP.md|docs/SESSION.md)$')"
+      - name: Remove temporary helpers
+        run: |
+          git rm .github/workflows/data-mass-4-5-canonical-closeout.yml
+          git rm .github/workflows/data-mass-4-5-closeout-final.yml
+          git rm scripts/docs/closeout-mass-4-5.mjs
+      - name: Commit closeout
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/ROADMAP.md docs/SESSION.md
+          git commit -m "docs: close MASS-4 and MASS-5; hand off MASS-6"
+          git push origin HEAD:docs/mass-4-5-closeout
