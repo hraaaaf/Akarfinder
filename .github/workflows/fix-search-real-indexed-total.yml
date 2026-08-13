@@ -1,0 +1,47 @@
+name: FIX Search Real Indexed Total
+
+on:
+  push:
+    branches:
+      - fix/search-real-indexed-total
+    paths:
+      - scripts/ux/apply-search-real-indexed-total.mjs
+      - .github/workflows/fix-search-real-indexed-total.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply focused counter fix
+        run: node scripts/ux/apply-search-real-indexed-total.mjs
+      - name: Verify focused source contract
+        run: |
+          grep -F 'const totalResultCount = indexedTotalCount == null' components/search/LightZillowSearchShell.tsx
+          grep -F 'totalResultCount.toLocaleString("fr-FR")' components/search/LightZillowSearchShell.tsx
+          grep -F 'const hasAnyResults = loadedResultCount > 0' components/search/LightZillowSearchShell.tsx
+          ! grep -F 'void indexedTotalCount' components/search/LightZillowSearchShell.tsx
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Self-clean and commit focused fix
+        run: |
+          git rm scripts/ux/apply-search-real-indexed-total.mjs .github/workflows/fix-search-real-indexed-total.yml
+          git add components/search/LightZillowSearchShell.tsx
+          test "$(git diff --cached --name-only | sort)" = "components/search/LightZillowSearchShell.tsx"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m 'fix(search): show real indexed result total'
+          git push
