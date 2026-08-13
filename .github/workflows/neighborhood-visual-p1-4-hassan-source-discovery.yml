@@ -1,0 +1,45 @@
+name: Neighborhood Visual P1.4 Hassan Source Discovery
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/neighborhood-visual-p1-4-hassan-source-discovery.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize Hassan Commons candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="data/audits/neighborhood-visual-p1-4-hassan/source-discovery"
+          mkdir -p "$OUT"
+          UA='AkarFinder-P1.4-Hassan/1.0'
+          declare -A FILES=(
+            [signature]='نافورة صومعة حسان.jpg'
+            [immobilier]='Quartier Hassan, Rabat, Morocco - panoramio (5).jpg'
+            [lifestyle]='Quartier Hassan, Rabat, Morocco - panoramio (4).jpg'
+          )
+          for role in signature immobilier lifestyle; do
+            f="${FILES[$role]}"
+            enc=$(python3 -c 'import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1]))' "$f")
+            curl --fail --location --retry 5 --retry-all-errors --user-agent "$UA" "https://commons.wikimedia.org/wiki/Special:Redirect/file/$enc" -o "$OUT/$role.jpg"
+            printf '%s  %s\n' "$(sha1sum "$OUT/$role.jpg" | awk '{print $1}')" "$role.jpg"
+            identify "$OUT/$role.jpg" || true
+            wc -c "$OUT/$role.jpg"
+          done
+          sha1sum "$OUT"/*.jpg > "$OUT/sha1.txt"
+          wc -c "$OUT"/*.jpg > "$OUT/bytes.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-visual-p1-4-hassan-source-discovery
+          path: data/audits/neighborhood-visual-p1-4-hassan/source-discovery
+          if-no-files-found: error
+          retention-days: 7
