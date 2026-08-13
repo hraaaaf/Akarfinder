@@ -41,7 +41,9 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 
 - **MASS-1 ✅ CLOSED / 9,5/10** — réservoir qualifié à 101 domaines.
 - **MASS-2 ✅ CLOSED / 100 %** — 101/101 audités ; 43 `PERMISSION_REQUIRED`, 58 `HOLD`, 0 permission positive/activation inférée.
-- **MASS-3 🔄** — Minimal Listing Index uniquement pour sources explicitement policy-admissibles.
+- **MASS-3A ✅ CLOSED — PR #553** — contrat Minimal Listing Index shadow/read-only, merge `2355eb99c22ca3b7a521d3b7402651c69bb04f0b` ; aucune source policy-admissible observée.
+- **MASS-3B ✅ CLOSED — PR #557** — projection minimale sur inventaire réel, merge `b654e0f5ebe8bc82f230e31686ff1a72cb2ca2c7` ; exact-head `72d3b5acf37484885926fa1e1979370c77f4dd44` ; run `31700957263` SUCCESS ; artefact `9181260990`, digest `sha256:1f977aa6b88691e85ddb7fb924e218d03081c1aa615fc37909e3ac2dcf7ed568` ; preuve live : 5 260 `property_listings`, 5 265 `listing_sources` actives, 35 Registry rows, 0 policy-admissible, 5 265 policy-rejected, 0 projected, 0 mutation/fetch/permission inférée.
+- **MASS-3C 🔄 NEXT — Canary Readiness, strictement read-only** : aucun canary non nul ni aucune écriture DB tant qu’une source explicitement policy-admissible n’existe pas et sans feu vert humain explicite préalable.
 - Doctrine : attribution ≠ permission ; robots/sitemap/capability ≠ permission ; candidate ≠ authorization ; Source Registry autoritaire ; no-bypass.
 
 ### UX/Search
@@ -55,10 +57,13 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 - `code mergé dans main → SESSION/ROADMAP/README cohérents → lot suivant` ;
 - zéro donnée, permission, géographie ou provenance inventée ;
 - une responsabilité / branche / PR / merge par lot ;
+- **aucune écriture DB sans feu vert humain explicite préalable** ;
 - mutation production uniquement après preuve bornée + rollback lorsque applicable ;
 - CI GitHub en cours n'interrompt pas le travail indépendant ;
 - exact-head + preuve visuelle requise avant certification d'un lot visuel.
 
 ## Reprise exacte
 
-**P1.8 Océan** : vérifier le diff final de PR #559 contre `main` après merge Médina → éliminer tout reliquat de scaffold Médina → lancer/analyser Contract + Product Design Reviewer + Independent Release Certifier → inspecter les six captures → gate humain ≥9/10 → merge → closeout canonique → P1.9 Yacoub El Mansour.
+**DATA MASS-3C** : figer le contrat Canary Readiness read-only → tester les chemins fail-closed → audit live sans écriture → artefact exact-head → closeout. Tant que `policyAdmissibleRegistryRows = 0`, le résultat attendu reste **BLOCKED / 0 canary / 0 write**. Toute première écriture DB exige un feu vert humain explicite séparé.
+
+En parallèle, **P1.8 Océan** reste une lane indépendante et ne doit pas être cassée par le lot DATA.
