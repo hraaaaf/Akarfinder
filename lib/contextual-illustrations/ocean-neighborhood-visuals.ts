@@ -32,8 +32,8 @@ function commonsSource(details: {
 const common = {
   templateId: NEIGHBORHOOD_VISUAL_TEMPLATE_A.id,
   city: "Rabat",
-  neighborhood: "Aviation",
-  title: "AVIATION",
+  neighborhood: "Océan",
+  title: "OCÉAN",
   cityLabel: "Rabat",
   presentation: {
     treatment: "css_only",
@@ -44,76 +44,75 @@ const common = {
   },
   activation: {
     searchEnabled: false,
-    reason: "P1.3 certifies a truthful Aviation context library; generalized Search resolution remains gated by P2.",
+    reason: "P1.8 certifies a truthful Océan context library; generalized Search resolution remains gated by P2.",
   },
 } as const;
 
-export const AVIATION_SIGNATURE_VISUAL = {
+export const OCEAN_SIGNATURE_VISUAL = {
   ...common,
-  id: "rabat-aviation-signature-v1",
+  id: "rabat-ocean-signature-v1",
   sceneRole: "signature",
-  semanticRole: "cadre_vert_proche",
-  descriptors: ["Verdure", "Promenade", "Proximité"] as const,
+  semanticRole: "front_atlantique",
+  descriptors: ["Atlantique", "Phare", "Front de mer"] as const,
   source: commonsSource({
-    fileName: "Hassan II Park - Rabat - November 2024 - 1.jpg",
-    author: "Anass Sedrati",
-    width: 4032,
-    height: 3024,
-    bytes: 3_222_903,
-    sha1: "93cbebc360cb7424cfb554896b968fd917d43511",
-    location: "Hassan II Park, Rabat (34.000481, -6.831461)",
-    locationEvidence: "Commons geotag 34.000481,-6.831461. Used only as nearby green-context imagery for Aviation; it is not represented as being inside the neighborhood.",
+    fileName: "Phare de Rabat 01.jpg",
+    author: "Froh-Leïla Belfakir",
+    width: 3919,
+    height: 2208,
+    bytes: 5_083_289,
+    sha1: "561b72a1093fd4fc207e573447f9de94330e66b1",
+    location: "Phare de Rabat / Borj Sirat, front atlantique de Rabat",
+    locationEvidence: "Commons explicitly identifies Rabat Lighthouse on Borj Sirat above the Atlantic. Used strictly as nearby waterfront identity for Océan, never as an inside-neighborhood property claim.",
     relationship: "nearby_context",
   }),
   truthBoundary: {
     depictsSpecificProperty: false,
     claimInsideNeighborhood: false,
     claimPropertyForSale: false,
-    allowedMeaning: "Nearby green public-space context only; never proof that the park lies inside Aviation",
+    allowedMeaning: "Nearby Atlantic waterfront identity only; never proof that the lighthouse lies inside Océan",
   },
 } as const;
 
-export const AVIATION_IMMOBILIER_VISUAL = {
+export const OCEAN_IMMOBILIER_VISUAL = {
   ...common,
-  id: "rabat-aviation-immobilier-v1",
+  id: "rabat-ocean-immobilier-v1",
   sceneRole: "immobilier",
-  semanticRole: "trame_urbaine_lisiere",
-  descriptors: ["Résidentiel", "Verdoyant", "Grand axe"] as const,
+  semanticRole: "lisiere_bab_el_had",
+  descriptors: ["Urbain", "Patrimoine", "Lisière"] as const,
   source: commonsSource({
-    fileName: "Avenue Mohamed VI Souissi Rabat.jpg",
-    author: "YousraElkh9",
-    width: 3072,
-    height: 1728,
-    bytes: 1_338_653,
-    sha1: "d8e09bfdbad2fdef60f28840b90b79b45f77b8c6",
-    location: "Avenue Mohammed VI, Souissi, Rabat — edge context for Aviation",
-    locationEvidence: "Commons explicitly identifies Avenue Mohammed VI in Souissi. Aviation is documented on the adjoining urban sector; this source is used strictly as edge morphology, not as an inside-Aviation property claim.",
+    fileName: "Bab El Had (46314).jpg",
+    author: "RACHID BAYA",
+    width: 4000,
+    height: 3000,
+    bytes: 4_207_608,
+    sha1: "33bc545195a8ba9904e9b68519cf2c4714af11b7",
+    location: "Bab El Had, Rabat (34.021865, -6.840533)",
+    locationEvidence: "Commons geotag verifies Bab El Had. Rabat Région Mobilité/MAP documents Rue Bruxelles in the heart of quartier Océan as being near Bab El Had. Used only as edge morphology. Physical JPEG is 4000×3000 with EXIF rotation; Commons displays 3000×4000.",
     relationship: "edge_context",
   }),
   truthBoundary: {
     depictsSpecificProperty: false,
     claimInsideNeighborhood: false,
-    claimVilla: false,
     claimPropertyForSale: false,
-    allowedMeaning: "Green boulevard morphology on the Aviation/Souissi edge only",
+    allowedMeaning: "Urban and heritage morphology on the Bab El Had edge of Océan only",
   },
 } as const;
 
-export const AVIATION_LIFESTYLE_VISUAL = {
+export const OCEAN_LIFESTYLE_VISUAL = {
   ...common,
-  id: "rabat-aviation-lifestyle-v1",
+  id: "rabat-ocean-lifestyle-v1",
   sceneRole: "lifestyle",
-  semanticRole: "loisirs_proches",
-  descriptors: ["Loisirs", "Espace vert", "Rabat"] as const,
+  semanticRole: "coucher_de_soleil_atlantique",
+  descriptors: ["Coucher de soleil", "Océan", "Rabat"] as const,
   source: commonsSource({
-    fileName: "Hassan II Park - Rabat - November 2024 - 2.jpg",
-    author: "Anass Sedrati",
-    width: 4032,
-    height: 3024,
-    bytes: 3_502_946,
-    sha1: "88d981adf174f55cdd77a5ad7518891dd1ec951d",
-    location: "Hassan II Park, Rabat (34.000528, -6.831544)",
-    locationEvidence: "Commons geotag 34.000528,-6.831544. Used only as nearby public leisure context for Aviation; it is not represented as an Aviation street.",
+    fileName: "Coucher de soleil à quartier l'Océan.JPG",
+    author: "Etotheraf",
+    width: 2592,
+    height: 1936,
+    bytes: 1_644_663,
+    sha1: "ec76f6f5f505a30bafc32810158e7bc014eb4983",
+    location: "À côté du quartier l'Océan, Rabat",
+    locationEvidence: "Commons description explicitly states that the sunset was photographed next to quartier l'Océan, Rabat.",
     relationship: "nearby_context",
   }),
   truthBoundary: {
@@ -121,14 +120,14 @@ export const AVIATION_LIFESTYLE_VISUAL = {
     claimInsideNeighborhood: false,
     claimPrivateAmenity: false,
     claimPropertyForSale: false,
-    allowedMeaning: "Nearby public leisure and greenery context only",
+    allowedMeaning: "Nearby Atlantic lifestyle context explicitly associated with quartier l'Océan",
   },
 } as const;
 
-export const AVIATION_NEIGHBORHOOD_VISUALS = [
-  AVIATION_SIGNATURE_VISUAL,
-  AVIATION_IMMOBILIER_VISUAL,
-  AVIATION_LIFESTYLE_VISUAL,
+export const OCEAN_NEIGHBORHOOD_VISUALS = [
+  OCEAN_SIGNATURE_VISUAL,
+  OCEAN_IMMOBILIER_VISUAL,
+  OCEAN_LIFESTYLE_VISUAL,
 ] as const;
 
-export type AviationNeighborhoodVisual = (typeof AVIATION_NEIGHBORHOOD_VISUALS)[number];
+export type OceanNeighborhoodVisual = (typeof OCEAN_NEIGHBORHOOD_VISUALS)[number];
