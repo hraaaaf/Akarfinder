@@ -11,11 +11,22 @@ function normalizeDomain(value: string): string {
   return value.trim().toLowerCase().replace(/^www\./, "").replace(/\.$/, "");
 }
 
+function assertMass1ReadOnlyProof(proof: Record<string, unknown>): void {
+  const expectedZero = ["databaseWrites", "ddlChanges", "policyChanges", "sourceNetworkRequests", "detailPageFetches", "publicRowsCreated"];
+  if (proof.readOnly !== true) throw new Error("MASS_1_PREDECESSOR_NOT_READ_ONLY");
+  for (const key of expectedZero) {
+    if (proof[key] !== 0) throw new Error(`MASS_1_PREDECESSOR_${key.toUpperCase()}_NOT_ZERO`);
+  }
+  if (proof.unitOfCount !== "URL_REPRESENTATION") throw new Error("MASS_1_PREDECESSOR_UNIT_DRIFT");
+}
+
 async function main() {
   const report = JSON.parse(await fs.readFile(REPORT_PATH, "utf8")) as {
     proof: Record<string, unknown>;
     allDomains: DomainReservoirSummary[];
   };
+  assertMass1ReadOnlyProof(report.proof);
+
   const cohort = JSON.parse(await fs.readFile(COHORT_PATH, "utf8")) as CertifiedSourceFactoryCohortManifest;
   assertCertifiedSourceFactoryCohort(cohort);
 
@@ -28,10 +39,15 @@ async function main() {
   const liveDomains = new Set(currentSourceFactory.map((row) => normalizeDomain(row.sourceDomain)));
   const missing = cohort.cohort.map((row) => normalizeDomain(row.sourceDomain)).filter((domain) => !liveDomains.has(domain)).sort();
 
+  if (added.some((row) => row.publicActivableNow !== false)) {
+    throw new Error("MASS_5_ADDED_DOMAIN_PUBLIC_ACTIVATION_DRIFT");
+  }
+
   const proof = {
     schemaVersion: "MASS_5_DISCOVERY_EXPANSION_SHADOW_V1",
     status: "PASS",
     mode: "shadow_read_only",
+    predecessorReadOnlyProofVerified: true,
     baselineCertifiedDomains: cohort.certifiedSourceFactoryDomains,
     baselineMass1GeneratedAt: cohort.mass1GeneratedAt,
     currentSourceFactoryDomains: currentSourceFactory.length,
