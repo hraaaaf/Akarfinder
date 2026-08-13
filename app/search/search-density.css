@@ -232,3 +232,78 @@
     height: 172px !important;
   }
 }
+
+/* UX-PREMIUM-CARDS-CONTENT-1 — content hierarchy only.
+ * Keep price/title/location/facts/provenance truthful and present.
+ */
+[data-mobile-compact-card] [data-card-price] {
+  color: rgb(15 89 196) !important;
+  font-size: 19px !important;
+  font-weight: 850 !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.035em !important;
+}
+
+[data-mobile-compact-card] [data-card-title] {
+  color: rgb(17 38 67) !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  line-height: 1.28 !important;
+}
+
+[data-mobile-compact-card] [data-card-location] {
+  margin-top: 5px !important;
+  color: rgb(96 113 135) !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+}
+
+[data-mobile-compact-card] [data-card-facts] {
+  min-height: 18px !important;
+  gap: 6px !important;
+  color: rgb(73 92 116) !important;
+  font-size: 10.5px !important;
+}
+
+[data-mobile-compact-card] [data-card-facts] > span {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+[data-mobile-compact-card] [data-card-provenance] {
+  margin-top: 9px !important;
+  padding-top: 8px !important;
+  border-color: rgb(226 232 240) !important;
+  color: rgb(111 126 145) !important;
+  font-size: 10px !important;
+}
+
+@media (max-width: 639px) {
+  [data-mobile-compact-card] > div:last-child {
+    padding: 12px 11px 11px !important;
+  }
+
+  [data-mobile-compact-card] [data-card-price] {
+    font-size: 18px !important;
+  }
+
+  [data-mobile-compact-card] [data-card-title] {
+    font-size: 12.75px !important;
+  }
+}
+
+@media (min-width: 640px) {
+  [data-mobile-compact-card] [data-card-price] {
+    font-size: 22px !important;
+  }
+
+  [data-mobile-compact-card] [data-card-title] {
+    font-size: 14.5px !important;
+  }
+
+  [data-mobile-compact-card] [data-card-location] {
+    font-size: 12px !important;
+  }
+}
