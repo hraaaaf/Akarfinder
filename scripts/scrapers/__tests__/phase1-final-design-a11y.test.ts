@@ -22,7 +22,9 @@ describe("Phase 1 final UI — structural accessibility contracts", () => {
 
     assert.ok(filters.includes('role="group"'));
     assert.ok(filters.includes('aria-label="Type de transaction"'));
-    assert.ok(filters.includes("aria-pressed={filters.transactionType === tab.value}"));
+    assert.ok(filters.includes("const selected = filters.transactionType === tab.value"));
+    assert.ok(filters.includes("aria-pressed={selected}"));
+    assert.ok(filters.includes('aria-pressed={filters.transactionType === "all"}'));
     assert.ok(header.includes('aria-current={isActive ? "page" : undefined}'));
     assert.ok(header.includes('aria-label="Navigation mobile principale"'));
     assert.ok(viewSwitcher.includes('role="group"'));
