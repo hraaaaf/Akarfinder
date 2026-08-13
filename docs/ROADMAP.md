@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
-**Version : 2026-08-12**  
-**Statut : MASS-2A ✅ Factory Engine certifié techniquement 9,5/10 PR #519 ; UX/Carte P1B.8 ✅ Geo Authority Evidence Review certifié ; BENCHMARK-SERP-1 ✅ ; SEARCH-UX-FAST-1 ✅ PR #390 ; SEARCH-WORDING-PURITY-1 ✅ PR #391 ; SEARCH-CONTINUOUS-FLOW-1 ✅ PR #393 ; SEARCH-MOBILE-CARD-GRID-1 ✅ PR #394 ; PRICE-COVERAGE-RECOVERY-1 ✅ PR #395 ; RANKING-QUALITY-1 ✅ PR #403 production certifiée ; UNIFIED-LISTING-CARD-1 ✅ PR #407 ; CONTEXTUAL-VISUAL-ASSETS-1 ✅ PR #414 ; DETERMINISTIC-ATTRIBUTION-1 ✅ PR #416 ; SEARCH-ACTION-HIERARCHY-1 ✅ PR #418 ; SEARCH-DESKTOP-SPLIT-1 ✅ PR #423 ; CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 ✅ PR #437 ; CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1 ✅ PR #445 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-1 ✅ PR #448 ; CONTEXTUAL-ILLUSTRATIONS-SCALE-2 ✅ PR #453 ; RABAT-REAL-PHOTO-LIBRARY-1 ✅ PR #468 ; UX-SEARCH-1 ✅ PR #479 ; UX-SEARCH-2 ✅ PR #480 ; UX-SEARCH-3 ✅ PR #481 ; UX-SEARCH-4 ✅ PR #482 ; UX-SEARCH-5 ✅ PR #483 ; UX-SEARCH-6 ✅ PR #484 ; UX-SEARCH-7 ✅ PR #485 ; UX-LISTING-NAV-FEEDBACK-1 ✅ PR #486 ; BENCHMARK-SERP-1 convergence ✅ COMPLETE ; couche Offre quartier OFF ; DATA-4.4C ✅ ; P0.1 ✅ ; P0.2 ✅ ; P0.3 ✅ ; P0.4 ✅ ; P0.5 Registry Activation Readiness Gate ✅ CLOSED ; freshness reconciler hardening ✅ PR #396**
+**Version : 2026-08-13**  
+**Statut : MASS-2 ✅ CLOSED / 100 % ; MASS-3A ✅ CLOSED ; MASS-3B ✅ CLOSED ; MASS-3C 🔄 Canary Readiness read-only.**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -9,26 +9,18 @@
 ## DATA MASS — Programme national de volume
 
 **Doctrine : `MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME`.**  
-**Règle : l’admissibilité décide si une représentation peut exister ; la qualité décide où elle se classe.**
+**Règle : l'admissibilité décide si une représentation peut exister ; la qualité décide où elle se classe.**
 
-### MASS-1 — Reservoir Qualification ✅ CLOSED / CERTIFIED 9,5/10 — PR #511
-
-Handoff Source Factory figé à **101 domaines**. Aucune permission ni activation conférée.
+### MASS-1 — Reservoir Qualification ✅ CLOSED / 9,5/10 — PR #511
+Réservoir figé à 101 domaines. Aucune permission ni activation conférée.
 
 ### MASS-2 — Source Factory ✅ CLOSED — 100 %
+2A→2F fermés ; 101/101 audités ; 43 `PERMISSION_REQUIRED` / 58 `HOLD` ; 0 autorisation positive ; 0 activation inférée.
 
-- **2A ✅ 15 %** — PR #519 : Factory Engine, cohorte immuable **20 / 30 / 51**.
-- **2B ✅ 25 %** — PR #523 : **20/20 = 17 PERMISSION_REQUIRED / 3 HOLD**, 17 candidates, 0 approved.
-- **2C ✅ 20 %** — PR #524 : **30/30 = 17 PERMISSION_REQUIRED / 13 HOLD**, 17 candidates, 0 approved.
-- **2D ✅ 20 %** — PR #527 : **51/51 = 9 PERMISSION_REQUIRED / 42 HOLD**, 9 candidates, 0 approved.
-- **2E ✅ 10 %** — PR #533, merge `85e12a077343e2a4223de41455f958696085cfe2` : **101 = 43 PERMISSION_REQUIRED / 58 HOLD**, **43 candidates / 0 approved**, Registry 0/101, **17 602 / 16 018 / 3 051**, zéro mutation/activation.
-- **2F ✅ 10 %** — PR #540, run comportemental `31685990668` SUCCESS, artefact `9175523127`, digest `sha256:091dfed025731076bf4ccb2d1be0b1e5a1263edeca61563a3857daf1c53db0dd`; **101/101**, 0 conflit, 0 preuve expirée/future, Registry 0/101, Search public 0/101, Thin Index 0/101, zéro write/fetch/activation/permission inférée.
-
-Doctrine finale : candidate ≠ authorization ; attribution, robots, sitemap ou crawlability ne confèrent aucun droit ; aucun des 101 domaines ne devient activable par volume seul.
-
-### MASS-3 — Minimal Listing Index 🔵 NEXT
-
-Pour toute source **explicitement policy-admissible**, permettre une représentation minimale : canonical URL + source + titre/signal structurel fiable + géographie disponible. Zéro invention et aucun bypass Registry.
+### MASS-3 — Minimal Listing Index 🔄 ACTIVE
+- **3A ✅ CLOSED — PR #553** : contrat shadow/read-only ; 0 source policy-admissible.
+- **3B ✅ CLOSED — PR #557** : projection live read-only ; run `31700957263` SUCCESS ; 0 projected / 0 mutation.
+- **3C 🔄 ACTIVE — Canary Readiness Shadow** : gate fail-closed ; zéro canary non nul tant qu'une source explicitement policy-admissible n'existe pas ; aucune écriture DB sans feu vert humain explicite préalable ; toute activation appartient à un lot canary séparé.
 
 ### MASS-4 — Mass Reclassification 🔵 PLANNED
 Réévaluer le stock historique sous `Quality ≠ Eligibility` sans affaiblir les gates.
@@ -41,6 +33,7 @@ Industrialiser `DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DED
 
 **Ordre verrouillé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6.**
 <!-- DATA-MASS-PROGRAM-END -->
+
 
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->
 ## Bibliothèque visuelle quartiers — Souissi Pilot ✅ CLOSED
