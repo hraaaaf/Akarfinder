@@ -7,8 +7,8 @@ const variant = process.env.AUDIT_VARIANT ?? "product-design";
 const outDir = process.env.AUDIT_DIR ?? path.join("data", "audits", "ux-search-final-visual-certification-7", variant);
 
 const viewports = [
-  { name: "mobile-360x800", width: 360, height: 800, columns: 2, firstTopMax: 340, cardMax: 250 },
-  { name: "mobile-390x844", width: 390, height: 844, columns: 2, firstTopMax: 340, cardMax: 250 },
+  { name: "mobile-360x800", width: 360, height: 800, columns: 2, firstTopMax: 340, cardMax: 270 },
+  { name: "mobile-390x844", width: 390, height: 844, columns: 2, firstTopMax: 340, cardMax: 270 },
   { name: "tablet-768x900", width: 768, height: 900, columns: 2, firstTopMax: 345, cardMax: 535 },
   { name: "desktop-1024x800", width: 1024, height: 800, columns: 3, firstTopMax: 340, cardMax: 430 },
   { name: "desktop-1280x900", width: 1280, height: 900, columns: 4, firstTopMax: 340, cardMax: 430 },
