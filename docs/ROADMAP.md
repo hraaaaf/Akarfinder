@@ -1,38 +1,29 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-13**  
-**Statut : MASS-2 ✅ CLOSED / 100 % ; MASS-3A ✅ CLOSED ; MASS-3B ✅ CLOSED ; MASS-3C 🔄 Canary Readiness read-only.**
+**Statut : MASS-1 ✅ CLOSED ; MASS-2 ✅ CLOSED / 100 % ; MASS-3 ✅ CLOSED PR #566 ; MASS-4 🔄 NEXT — Mass Reclassification read-only.**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
 <!-- DATA-MASS-PROGRAM-START -->
 ## DATA MASS — Programme national de volume
 
-**Doctrine : `MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME`.**  
-**Règle : l'admissibilité décide si une représentation peut exister ; la qualité décide où elle se classe.**
+**Doctrine : `MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME`.**
 
-### MASS-1 — Reservoir Qualification ✅ CLOSED / 9,5/10 — PR #511
-Réservoir figé à 101 domaines. Aucune permission ni activation conférée.
+### MASS-1 ✅ CLOSED
+### MASS-2 ✅ CLOSED / 100 %
+### MASS-3 ✅ CLOSED — PR #566
+3A contrat shadow/read-only ; 3B projection live read-only ; 3C Canary Readiness fail-closed. État final : 35 Registry rows, 0 admissible, 0 canary, 0 mutation.
 
-### MASS-2 — Source Factory ✅ CLOSED — 100 %
-2A→2F fermés ; 101/101 audités ; 43 `PERMISSION_REQUIRED` / 58 `HOLD` ; 0 autorisation positive ; 0 activation inférée.
+### MASS-4 🔄 NEXT — Mass Reclassification
+Réévaluer le stock historique sous `Quality ≠ Eligibility`, strictement read-only, sans transformer qualité/crawlabilité/attribution en permission.
 
-### MASS-3 — Minimal Listing Index 🔄 ACTIVE
-- **3A ✅ CLOSED — PR #553** : contrat shadow/read-only ; 0 source policy-admissible.
-- **3B ✅ CLOSED — PR #557** : projection live read-only ; run `31700957263` SUCCESS ; 0 projected / 0 mutation.
-- **3C 🔄 ACTIVE — Canary Readiness Shadow** : gate fail-closed ; zéro canary non nul tant qu'une source explicitement policy-admissible n'existe pas ; aucune écriture DB sans feu vert humain explicite préalable ; toute activation appartient à un lot canary séparé.
-
-### MASS-4 — Mass Reclassification 🔵 PLANNED
-Réévaluer le stock historique sous `Quality ≠ Eligibility` sans affaiblir les gates.
-
-### MASS-5 — Discovery Expansion 🔵 PLANNED
-Élargir le réservoir via voies publiques/partenaires admissibles ; toute découverte repasse par Reservoir puis Registry.
-
-### MASS-6 — National Mass Engine 🔵 PLANNED
-Industrialiser `DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DEDUP → RANK`.
+### MASS-5 🔵 PLANNED — Discovery Expansion
+### MASS-6 🔵 PLANNED — National Mass Engine
 
 **Ordre verrouillé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6.**
 <!-- DATA-MASS-PROGRAM-END -->
+
 
 
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->
