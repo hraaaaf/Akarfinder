@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "MASS_X2_DISCOVERY_DEEP_EXPANSION_AUDIT_V1",
+  "mode": "shadow_read_only",
+  "observedAt": "2026-08-14",
+  "mass6BaselineLikelyMoroccoListingDetailUrlRepresentations": 24505,
+  "shadowMeasuredIncrementalDetailCandidates": 1100,
+  "projectedDetailRepresentationsIfAppliedToMass6Baseline": 25605,
+  "projectionNotCertifiedFinalCount": true,
+  "patterns": [
+    {"pattern":"DABA_HEX_DETAIL","netNewDetailGain":563},
+    {"pattern":"MARRAKECHREALTY_STATUS_SLUG","netNewDetailGain":267},
+    {"pattern":"YAKEEY_ID_SUFFIX","netNewDetailGain":118},
+    {"pattern":"SOUQCITY_LISTING_ID","netNewDetailGain":68},
+    {"pattern":"JIBRIL_BIENS_SLUG","netNewDetailGain":40},
+    {"pattern":"SW_PROPRIETE_SLUG","netNewDetailGain":27},
+    {"pattern":"ATLAS_PROPERTY_SLUG","netNewDetailGain":9},
+    {"pattern":"LOCO_IMMOBILIERS_SLUG","netNewDetailGain":6},
+    {"pattern":"SOUQCITY_AD_ID","netNewDetailGain":2}
+  ],
+  "databaseWrites": 0,
+  "registryWrites": 0,
+  "searchActivations": 0,
+  "sourceNetworkRequests": 0,
+  "detailPageFetches": 0,
+  "permissionsInferred": 0,
+  "truthBoundary": {
+    "countsAreUrlRepresentationsNotUniqueProperties": true,
+    "auditIsStructuralShadowMeasurement": true,
+    "candidateDoesNotGrantAuthorization": true,
+    "sourceRegistryRemainsAuthoritative": true
+  }
+}
