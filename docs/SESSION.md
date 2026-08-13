@@ -52,10 +52,12 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 ### DATA MASS
 
 - **MASS-1 ✅ CLOSED / 9,5/10** — réservoir qualifié à 101 domaines.
-- **MASS-2 ✅ CLOSED / 100 %** — 101/101 audités ; 43 `PERMISSION_REQUIRED`, 58 `HOLD`, 0 permission positive/activation inférée.
-- **MASS-3 ✅ CLOSED — PR #566** — merge `604306a82e646596fd320fed88b4256f5caca49f`; 35 Registry rows, 0 policy-admissible, 0 canary, 0 write/activation/fetch/permission inférée ; artefact final `9188818350`, digest `sha256:2e09090dfec5bd9bec304221889ee0e3e4304fb9e7f16f54c25a2bd80e97a047`.
-- **MASS-4 🔄 NEXT — Mass Reclassification read-only**.
-- Doctrine : attribution ≠ permission ; robots/sitemap/capability ≠ permission ; candidate ≠ authorization ; Source Registry autoritaire ; no-bypass.
+- **MASS-2 ✅ CLOSED / 100 %** — 101/101 audités ; 43 `PERMISSION_REQUIRED`, 58 `HOLD`.
+- **MASS-3 ✅ CLOSED — PR #566** — fail-closed, 0 source admissible.
+- **MASS-4 ✅ CLOSED — PR #568** — merge `4abc7fcee96f00fa5745937c4c12daea0b541b47` ; run `31726483908` SUCCESS ; artefact `9191563403` ; 5 284 sources actives, 0 admissible, 5 271 haute qualité mais policy-blocked ; 0 mutation.
+- **MASS-5 ✅ CLOSED — PR #569** — merge `7b4503bf00ea7a99fb44f798748698d282cf3d8c` ; run `31727831232` SUCCESS ; artefact `9192248949` ; 7 nouveaux domaines, 148 URL representations, tous UNREGISTERED/non activables ; 0 mutation/fetch/permission inférée.
+- **MASS-6 🔄 NEXT — National Mass Engine read-only**.
+- Doctrine : attribution ≠ permission ; robots/sitemap/capability ≠ permission ; Source Registry autoritaire ; no-bypass.
 
 ### UX/Search
 
@@ -75,6 +77,6 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 
 ## Reprise exacte
 
-**DATA MASS-4** : figer le contrat Mass Reclassification read-only → classifier le stock historique sans mutation → distinguer qualité, éligibilité et permission → preuve/artefact → closeout. Zéro écriture DB/Registry/Search.
+**DATA MASS-6** : figer le contrat National Mass Engine read-only → composer les sorties certifiées MASS-1→5 en pipeline déterministe → vérifier idempotence, provenance, freshness/dedup/rank boundaries et no-bypass → preuve exact-head + artefact → closeout. Aucune écriture DB/Registry/Search ni activation sans gate humain explicite séparé.
 
 En parallèle, **P1.8 Océan** reste une lane indépendante et ne doit pas être cassée par le lot DATA.
