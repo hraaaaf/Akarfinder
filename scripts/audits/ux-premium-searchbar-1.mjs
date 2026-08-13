@@ -26,10 +26,11 @@ for (const viewport of viewports) {
     const input = document.querySelector('.premium-search-input');
     const trigger = document.querySelector('.premium-filter-trigger');
     const row = document.querySelector('[data-search-primary-filter-row]');
+    const tx = document.querySelector('[data-search-desktop-transaction-tabs]');
     if (!marker || !input || !trigger || !row) return null;
     const a = input.getBoundingClientRect(); const b = trigger.getBoundingClientRect(); const r = row.getBoundingClientRect();
-    const inputStyle = getComputedStyle(input); const triggerStyle = getComputedStyle(trigger);
-    return {input:{x:a.x,y:a.y,width:a.width,height:a.height,radius:inputStyle.borderRadius},trigger:{x:b.x,y:b.y,width:b.width,height:b.height,radius:triggerStyle.borderRadius},row:{x:r.x,width:r.width},gap:b.x-(a.x+a.width),overflowX:document.documentElement.scrollWidth-document.documentElement.clientWidth,marker:marker.getAttribute('data-premium-searchbar')};
+    const t = tx?.getBoundingClientRect(); const inputStyle = getComputedStyle(input); const triggerStyle = getComputedStyle(trigger);
+    return {input:{x:a.x,y:a.y,width:a.width,height:a.height,radius:inputStyle.borderRadius},trigger:{x:b.x,y:b.y,width:b.width,height:b.height,radius:triggerStyle.borderRadius},row:{x:r.x,width:r.width},searchToTriggerGap:b.x-(a.x+a.width),searchToTransactionGap:t?t.x-(a.x+a.width):null,transactionToTriggerGap:t?b.x-(t.x+t.width):null,overflowX:document.documentElement.scrollWidth-document.documentElement.clientWidth,marker:marker.getAttribute('data-premium-searchbar')};
   });
   if (!metrics) failures.push(`${viewport.name}: premium searchbar nodes missing`);
   else {
@@ -38,7 +39,12 @@ for (const viewport of viewports) {
     if (Math.abs(metrics.trigger.height - viewport.expectedHeight) > tol) failures.push(`${viewport.name}: trigger height ${metrics.trigger.height}`);
     if (metrics.input.width < (viewport.width < 640 ? 240 : 320)) failures.push(`${viewport.name}: input too narrow ${metrics.input.width}`);
     if (metrics.trigger.width < 44) failures.push(`${viewport.name}: filter trigger too narrow ${metrics.trigger.width}`);
-    if (metrics.gap < 8 || metrics.gap > 14) failures.push(`${viewport.name}: gap ${metrics.gap}`);
+    if (viewport.width < 1024) {
+      if (metrics.searchToTriggerGap < 8 || metrics.searchToTriggerGap > 14) failures.push(`${viewport.name}: search/filter gap ${metrics.searchToTriggerGap}`);
+    } else {
+      if (metrics.searchToTransactionGap == null || metrics.searchToTransactionGap < 8 || metrics.searchToTransactionGap > 14) failures.push(`${viewport.name}: search/transaction gap ${metrics.searchToTransactionGap}`);
+      if (metrics.transactionToTriggerGap == null || metrics.transactionToTriggerGap < 8 || metrics.transactionToTriggerGap > 14) failures.push(`${viewport.name}: transaction/filter gap ${metrics.transactionToTriggerGap}`);
+    }
     if (metrics.overflowX !== 0) failures.push(`${viewport.name}: overflowX ${metrics.overflowX}`);
     if (Number.parseFloat(metrics.input.radius) < 24) failures.push(`${viewport.name}: input radius ${metrics.input.radius}`);
     if (Number.parseFloat(metrics.trigger.radius) < 24) failures.push(`${viewport.name}: trigger radius ${metrics.trigger.radius}`);
