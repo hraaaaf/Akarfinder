@@ -1,4 +1,4 @@
-name: Neighborhood Visual P1.8 Ocean Reviewer
+name: Neighborhood Visual P1.8 Ocean Independent Certifier
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
       - "app/visual-qa/ocean/**"
       - "components/search/OceanNeighborhoodVisualQAFixture.tsx"
       - "scripts/audits/neighborhood-visual-p1-8-ocean-visual-qa.mjs"
-      - ".github/workflows/neighborhood-visual-p1-8-ocean-reviewer.yml"
+      - ".github/workflows/neighborhood-visual-p1-8-ocean-release-certifier.yml"
 
 permissions:
   contents: read
@@ -17,8 +17,8 @@ env:
   NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
 
 jobs:
-  reviewer:
-    name: Product Design Reviewer — Ocean 3-scene QA
+  certifier:
+    name: Independent Release Certifier — Ocean 3-scene QA
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -41,19 +41,19 @@ jobs:
       - run: npm run build
       - name: Start QA server
         run: |
-          npm run start -- -p 3171 > /tmp/ocean-reviewer.log 2>&1 &
-          for i in {1..40}; do if curl -fsS http://127.0.0.1:3171/visual-qa/ocean >/dev/null; then exit 0; fi; sleep 1; done
-          cat /tmp/ocean-reviewer.log
+          npm run start -- -p 3172 > /tmp/ocean-release.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3172/visual-qa/ocean >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/ocean-release.log
           exit 1
-      - name: Certify Ocean
+      - name: Certify Ocean independently
         env:
-          BASE_URL: http://127.0.0.1:3171
-          AUDIT_VARIANT: product-design
+          BASE_URL: http://127.0.0.1:3172
+          AUDIT_VARIANT: release-certifier
         run: node scripts/audits/neighborhood-visual-p1-8-ocean-visual-qa.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: neighborhood-visual-p1-8-ocean-product-design-proof
-          path: data/audits/neighborhood-visual-p1-8-ocean/product-design
+          name: neighborhood-visual-p1-8-ocean-release-proof
+          path: data/audits/neighborhood-visual-p1-8-ocean/release-certifier
           if-no-files-found: error
           retention-days: 14
