@@ -3,7 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 
 const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 const variant = process.env.AUDIT_VARIANT ?? "local";
-const outputDir = `data/audits/neighborhood-visual-p1-7-medina/${variant}`;
+const outputDir = `data/audits/neighborhood-visual-p1-8-ocean/${variant}`;
 const viewports = [
   ["mobile-360x800", 360, 800, 164],
   ["mobile-390x844", 390, 844, 164],
@@ -22,11 +22,11 @@ try {
   for (const [name, width, height, imageHeight] of viewports) {
     const page = await browser.newPage({ viewport: { width, height } });
     try {
-      const response = await page.goto(`${baseUrl}/visual-qa/medina`, { waitUntil: "networkidle", timeout: 45000 });
+      const response = await page.goto(`${baseUrl}/visual-qa/ocean`, { waitUntil: "networkidle", timeout: 45000 });
       if (!response || response.status() >= 400) throw new Error(`${name}: route failed`);
-      await page.waitForSelector("[data-medina-qa-card]", { timeout: 15000 });
+      await page.waitForSelector("[data-ocean-qa-card]", { timeout: 15000 });
       const metrics = await page.evaluate(() => {
-        const cards = [...document.querySelectorAll("[data-medina-qa-card]")];
+        const cards = [...document.querySelectorAll("[data-ocean-qa-card]")];
         return {
           clientWidth: document.documentElement.clientWidth,
           scrollWidth: document.documentElement.scrollWidth,
@@ -34,7 +34,7 @@ try {
             role: card.getAttribute("data-scene-role"),
             id: card.getAttribute("data-visual-id"),
             imageHeight: card.querySelector("[data-card-image]")?.getBoundingClientRect().height ?? 0,
-            credit: card.querySelector("[data-medina-qa-credit]")?.textContent ?? "",
+            credit: card.querySelector("[data-ocean-qa-credit]")?.textContent ?? "",
             background: getComputedStyle(card.querySelector("[data-card-image]"), "::before").backgroundImage,
           })),
         };
@@ -42,12 +42,13 @@ try {
       if (metrics.cards.length !== 3) throw new Error(`${name}: expected 3 cards`);
       if (metrics.scrollWidth > metrics.clientWidth + 1) throw new Error(`${name}: horizontal overflow`);
       if (new Set(metrics.cards.map((card) => card.background)).size !== 3) throw new Error(`${name}: backgrounds not distinct`);
+      if (JSON.stringify(metrics.cards.map((card) => card.role)) !== JSON.stringify(["signature","immobilier","lifestyle"])) throw new Error(`${name}: scene role drift`);
       for (const card of metrics.cards) {
         if (Math.abs(card.imageHeight - imageHeight) > 1.5) throw new Error(`${name}: image height drift`);
-        if (!/CC BY-SA/.test(card.credit)) throw new Error(`${name}: credit missing`);
+        if (!/CC BY-SA 4\.0/.test(card.credit)) throw new Error(`${name}: credit missing`);
       }
       await page.screenshot({ path: `${outputDir}/${name}.png`, fullPage: true });
-      results.push({ viewport: name, machine_quality_score: 10, horizontal_overflow: false, duplicate_labels: false });
+      results.push({ viewport: name, machine_quality_score: 10, horizontal_overflow: false, distinct_backgrounds: true });
     } catch (error) {
       failure = error;
       break;
