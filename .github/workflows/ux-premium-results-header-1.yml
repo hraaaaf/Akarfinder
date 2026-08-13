@@ -1,0 +1,89 @@
+name: UX-PREMIUM-RESULTS-HEADER-1 Exact Visual Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/search/search-controls-10of10.css"
+      - "components/search/LightZillowSearchShell.tsx"
+      - "scripts/audits/ux-premium-results-header-1.mjs"
+      - "scripts/scrapers/__tests__/ux-premium-results-header-1.test.ts"
+      - ".github/workflows/ux-premium-results-header-1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer — Premium Results Header
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/ux-premium-searchbar-1.test.ts scripts/scrapers/__tests__/ux-premium-quickfilters-1.test.ts scripts/scrapers/__tests__/ux-premium-results-header-1.test.ts
+      - run: npx tsc --noEmit
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - shell: bash
+        run: |
+          npm run start -- -p 3197 > /tmp/premium-results-header-product.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3197/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/premium-results-header-product.log
+          exit 1
+      - env:
+          BASE_URL: http://127.0.0.1:3197
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/ux-premium-results-header-1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-premium-results-header-1-product-design-proof
+          path: data/audits/ux-premium-results-header-1/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Premium Results Header
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/ux-premium-searchbar-1.test.ts scripts/scrapers/__tests__/ux-premium-quickfilters-1.test.ts scripts/scrapers/__tests__/ux-premium-results-header-1.test.ts
+      - run: npx tsc --noEmit
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - shell: bash
+        run: |
+          npm run start -- -p 3198 > /tmp/premium-results-header-release.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3198/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/premium-results-header-release.log
+          exit 1
+      - env:
+          BASE_URL: http://127.0.0.1:3198
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/ux-premium-results-header-1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-premium-results-header-1-release-certifier-proof
+          path: data/audits/ux-premium-results-header-1/release-certifier
+          if-no-files-found: error
+          retention-days: 14
