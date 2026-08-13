@@ -1,0 +1,13 @@
+name: DATA MASS-X3 Long-tail Source Factory
+on: [pull_request]
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24}
+      - run: node -e "const c=require('./data/data-mass-x3/long-tail-source-factory-contract.json');if(c.mode!=='shadow_read_only'||c.baselineSourceFactoryDomains!==109||!c.requiresNotInCurrentSourceFactory||c.databaseWrites||c.registryWrites||c.searchActivations||c.sourceNetworkRequests||c.detailPageFetches||c.permissionsInferred)process.exit(1)"
+      - run: grep -q "15 domaines / 102 URL representations" docs/data/DATA-MASS-X3-LONG-TAIL-SOURCE-FACTORY.md
