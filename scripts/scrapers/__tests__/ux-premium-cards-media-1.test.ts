@@ -14,7 +14,9 @@ test("UX-PREMIUM-CARDS-MEDIA-1 source contract", () => {
   assert.match(css, /backdrop-filter: blur\(12px\)/);
 
   assert.match(card, /getListingImageMode\(listing\)/);
-  assert.match(card, /image_permission_status/);
+  assert.match(card, /getImageAttribution\(listing\)/);
+  assert.match(card, /resolveRabatRealPhoto/);
+  assert.match(card, /resolveContextualIllustration/);
   assert.match(card, /data-visual-inventory-class=/);
   assert.match(card, /data-card-image/);
   assert.match(card, /data-card-favorite/);
