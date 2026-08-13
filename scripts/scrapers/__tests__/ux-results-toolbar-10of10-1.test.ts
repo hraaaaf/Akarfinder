@@ -8,7 +8,10 @@ const styles = readFileSync("components/search/SearchViewSwitcher.module.css", "
 
 test("results toolbar keeps the canonical result count, sort and three search views", () => {
   assert.match(shell, /data-search-results-toolbar/);
-  assert.match(shell, /\$\{displayedCount\} résultat/);
+  assert.match(shell, /const loadedResultCount = filteredListings\.length \+ gatewayResults\.length/);
+  assert.match(shell, /const totalResultCount = indexedTotalCount == null/);
+  assert.match(shell, /Math\.max\(indexedTotalCount, loadedResultCount\)/);
+  assert.match(shell, /\$\{totalResultCount\.toLocaleString\("fr-FR"\)\} résultat/);
   assert.match(shell, /data-search-sort-select/);
   assert.match(shell, /<option value="recommended">Recommandé<\/option>/);
   assert.match(shell, /<option value="price-asc">Prix croissant<\/option>/);
