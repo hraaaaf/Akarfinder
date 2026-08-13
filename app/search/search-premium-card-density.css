@@ -45,3 +45,21 @@ main [data-search-results-section] [data-search-results-toolbar]{min-height:52px
 main [data-search-results-section] [data-search-results-toolbar] h1{font-size:15.5px!important;line-height:1.15!important}
 main [data-search-results-section] [data-search-results-toolbar] [data-search-sort-select]{height:44px!important;min-width:124px!important;max-width:124px!important;padding-left:12px!important;padding-right:27px!important;font-size:12px!important;box-shadow:0 1px 5px rgb(24 56 96/.025)!important}
 }
+
+/* UX-PREMIUM-CARD-LAYOUT-SPECS-D — premium mobile card hierarchy + compact factual specs. */
+@media(max-width:639px){
+[data-search-listing-card]>div.flex.flex-1{padding:9px 10px 8px!important}
+[data-search-listing-card] [data-card-price]{font-size:16px!important;line-height:1.08!important;letter-spacing:-.025em!important}
+[data-search-listing-card] [data-card-title]{font-size:12px!important;line-height:1.18!important}
+[data-search-listing-card] [data-card-location]{margin-top:3px!important;gap:3px!important;font-size:9.4px!important;line-height:1.18!important}
+[data-search-listing-card] [data-card-location] svg{width:10px!important;height:10px!important;flex:0 0 10px!important}
+[data-search-listing-card] [data-card-facts]{margin-top:6px!important;min-height:16px!important;gap:7px!important;font-size:9px!important;font-weight:650!important;line-height:1!important;letter-spacing:-.01em!important}
+[data-search-listing-card] [data-card-facts]>span{display:inline-flex!important;align-items:center!important;white-space:nowrap!important;color:rgb(71 91 116)!important}
+[data-search-listing-card] [data-card-facts]:has(>span:nth-child(3))>span:nth-child(1){order:3}
+[data-search-listing-card] [data-card-facts]:has(>span:nth-child(3))>span:nth-child(2){order:1}
+[data-search-listing-card] [data-card-facts]:has(>span:nth-child(3))>span:nth-child(3){order:2}
+[data-search-listing-card] [data-card-facts]:has(>span:nth-child(3))>span:nth-child(1)::before{content:"\2194";margin-right:3px;font-size:9.5px;font-weight:700;color:rgb(79 111 151)}
+[data-search-listing-card] [data-card-facts]:has(>span:nth-child(3))>span:nth-child(2)::before{content:"\1F6CF";margin-right:3px;font-size:9.5px;font-weight:500;color:rgb(79 111 151)}
+[data-search-listing-card] [data-card-facts]:has(>span:nth-child(3))>span:nth-child(3)::before{content:"\1F6C1";margin-right:3px;font-size:9.5px;font-weight:500;color:rgb(79 111 151)}
+[data-search-listing-card] [data-card-provenance]{margin-top:6px!important;gap:5px!important;padding-top:5px!important;font-size:7.5px!important;line-height:1.08!important}
+}
