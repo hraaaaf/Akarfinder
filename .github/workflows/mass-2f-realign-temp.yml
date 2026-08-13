@@ -1,0 +1,70 @@
+name: MASS-2F Realign Temp
+
+on:
+  push:
+    branches:
+      - "data/mass-2f-final-certification"
+    paths:
+      - ".github/workflows/mass-2f-realign-temp.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  realign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: "data/mass-2f-final-certification"
+          fetch-depth: 0
+      - name: Save canonical DATA blocks
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          items=[
+            ('README.md','<!-- DATA-MASS-CURRENT-START -->','<!-- DATA-MASS-CURRENT-END -->','/tmp/readme.block'),
+            ('docs/ROADMAP.md','<!-- DATA-MASS-PROGRAM-START -->','<!-- DATA-MASS-PROGRAM-END -->','/tmp/roadmap.block'),
+            ('docs/SESSION.md','<!-- DATA-MASS-HANDOVER-START -->','<!-- DATA-MASS-HANDOVER-END -->','/tmp/session.block'),
+          ]
+          for path,start,end,out in items:
+              s=Path(path).read_text()
+              a=s.index(start); b=s.index(end,a)+len(end)
+              Path(out).write_text(s[a:b])
+          PY
+      - name: Merge current main and preserve DATA closeout
+        run: |
+          git config user.name "AkarFinder CI"
+          git config user.email "actions@users.noreply.github.com"
+          git fetch origin main
+          set +e
+          git merge --no-ff --no-commit origin/main
+          merge_status=$?
+          set -e
+          if [ "$merge_status" -ne 0 ]; then
+            for f in README.md docs/ROADMAP.md docs/SESSION.md; do
+              git checkout --theirs -- "$f" || true
+            done
+          fi
+          python - <<'PY'
+          from pathlib import Path
+          items=[
+            ('README.md','<!-- DATA-MASS-CURRENT-START -->','<!-- DATA-MASS-CURRENT-END -->','/tmp/readme.block'),
+            ('docs/ROADMAP.md','<!-- DATA-MASS-PROGRAM-START -->','<!-- DATA-MASS-PROGRAM-END -->','/tmp/roadmap.block'),
+            ('docs/SESSION.md','<!-- DATA-MASS-HANDOVER-START -->','<!-- DATA-MASS-HANDOVER-END -->','/tmp/session.block'),
+          ]
+          for path,start,end,src in items:
+              p=Path(path); s=p.read_text(); block=Path(src).read_text()
+              a=s.index(start); b=s.index(end,a)+len(end)
+              p.write_text(s[:a]+block+s[b:])
+          PY
+          git add README.md docs/ROADMAP.md docs/SESSION.md
+          unresolved=$(git diff --name-only --diff-filter=U)
+          if [ -n "$unresolved" ]; then
+            echo "Unresolved conflicts:"
+            echo "$unresolved"
+            exit 1
+          fi
+          git diff --cached --check
+          git commit -m "MASS-2F — realign with current main preserving DATA closeout"
+          git push origin HEAD:data/mass-2f-final-certification
