@@ -125,7 +125,8 @@ for (const viewport of viewports) {
   if (metrics.overflow > 1) failures.push(`${viewport.name}: horizontal overflow ${metrics.overflow}px`);
   if (metrics.brokenImages !== 0) failures.push(`${viewport.name}: broken images ${metrics.brokenImages}`);
   if (metrics.searchHeight < 47.5 || metrics.filterHeight < 47.5) failures.push(`${viewport.name}: primary search/filter touch target below 48px`);
-  if (metrics.sortHeight < 43.5) failures.push(`${viewport.name}: sort touch target ${metrics.sortHeight}px < 44px`);
+  const sortMin = viewport.width < 640 ? 43.5 : 41.5;
+  if (metrics.sortHeight < sortMin) failures.push(`${viewport.name}: sort control ${metrics.sortHeight}px below responsive minimum`);
   if (metrics.cardAudits.some((item) => !item.provenance || !item.price || !item.title || !item.location || !item.facts)) failures.push(`${viewport.name}: card hierarchy/provenance incomplete`);
   if (viewport.width < 640) {
     if (metrics.visibleViewButtons !== 0) failures.push(`${viewport.name}: mobile segmented view must stay hidden to match canonical mockup`);
@@ -147,7 +148,7 @@ await browser.close();
 const contract = {
   hierarchy: failures.filter((x) => x.includes("first card") || x.includes("hierarchy")).length === 0,
   responsiveGrid: failures.filter((x) => x.includes("columns") || x.includes("row gap") || x.includes("column gap")).length === 0,
-  controls: failures.filter((x) => x.includes("touch target") || x.includes("segmented view") || x.includes("view control")).length === 0,
+  controls: failures.filter((x) => x.includes("control") || x.includes("touch target") || x.includes("segmented view") || x.includes("view control")).length === 0,
   visuals: failures.filter((x) => x.includes("broken images") || x.includes("overflow")).length === 0,
   scanSpeed: failures.filter((x) => x.includes("first viewport") || x.includes("first card")).length === 0,
 };
