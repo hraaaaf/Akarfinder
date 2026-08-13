@@ -44,6 +44,7 @@ jobs:
           node - <<'NODE'
           const p=require('./.tmp/data-mass-5/results/proof.json');
           const ok=p.status==='PASS' && p.mode==='shadow_read_only' &&
+            p.predecessorReadOnlyProofVerified===true &&
             p.baselineCertifiedDomains===101 &&
             p.sourceRegistryRemainsAuthoritative===true &&
             p.discoveryExpansionGrantsAuthorization===false &&
