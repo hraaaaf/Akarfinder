@@ -15,9 +15,9 @@ const viewports = [
 const expectedRoles = ["signature", "immobilier", "lifestyle"];
 const expectedIds = ["rabat-aviation-signature-v1", "rabat-aviation-immobilier-v1", "rabat-aviation-lifestyle-v1"];
 const expectedSourceDimensions = [
-  { path: "/neighborhood-visuals/rabat/aviation/signature/sofitel-rabat.jpg", width: 2560, height: 1440 },
-  { path: "/neighborhood-visuals/rabat/aviation/immobilier/avenue-mohamed-vi.jpg", width: 3072, height: 1728 },
-  { path: "/neighborhood-visuals/rabat/aviation/lifestyle/kartaview-260184419.jpg", width: 1280, height: 720 },
+  { path: "/__qa/aviation-signature.jpg", width: 4032, height: 3024 },
+  { path: "/__qa/aviation-immobilier.jpg", width: 3072, height: 1728 },
+  { path: "/__qa/aviation-lifestyle.jpg", width: 4032, height: 3024 },
 ];
 
 await mkdir(outputDir, { recursive: true });
@@ -38,7 +38,7 @@ async function readMetrics(page) {
         const activeDetails = isVisible(mobileDetails) ? mobileDetails : isVisible(desktopDetails) ? desktopDetails : null;
         const detailText = text(activeDetails);
         return {
-          role: card.getAttribute("data-scene-role"), id: card.getAttribute("data-visual-id"),
+          role: card.getAttribute("data-scene-role"), id: card.getAttribute("data-visual-id"), relationship: card.getAttribute("data-source-relationship"),
           width: card.getBoundingClientRect().width, imageHeight: frame?.getBoundingClientRect().height ?? 0,
           title: text(card.querySelector("[data-neighborhood-template-a-title]")),
           city: text(card.querySelector("[data-neighborhood-template-a-title]")?.nextElementSibling),
@@ -88,10 +88,11 @@ try {
         if (viewport.width >= 640 && (card.mobileDetailsVisible || !card.desktopDetailsVisible)) throw new Error(`${viewport.name}/${card.role}: desktop detail visibility contract failed`);
         if (card.disclosure !== "Photo d’ambiance") throw new Error(`${viewport.name}/${card.role}: disclosure drift`);
         if (!card.credit.includes("CC BY-SA 4.0")) throw new Error(`${viewport.name}/${card.role}: license credit missing`);
+        if (!card.credit.includes(card.relationship === "edge_context" ? "lisière" : "proximité")) throw new Error(`${viewport.name}/${card.role}: scope disclosure missing`);
         if (card.oldTitleVisible || card.oldDisclosureVisible || card.oldCreditVisible) throw new Error(`${viewport.name}/${card.role}: duplicate legacy labeling remains visible`);
       }
       await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });
-      results.push({ viewport: viewport.name, scene_roles: roles, visual_ids: ids, decoded_sources: decodedSources, horizontal_overflow: false, duplicate_labels: false, disclosure: "Photo d’ambiance", attribution: "source-aware", machine_quality_score: 10 });
+      results.push({ viewport: viewport.name, scene_roles: roles, visual_ids: ids, decoded_sources: decodedSources, horizontal_overflow: false, duplicate_labels: false, scope_disclosed: true, disclosure: "Photo d’ambiance", attribution: "source-aware", machine_quality_score: 10 });
     } catch (error) { failure = error; break; } finally { await page.close(); }
   }
 } finally { await browser.close(); }
