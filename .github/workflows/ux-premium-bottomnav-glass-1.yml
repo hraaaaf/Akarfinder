@@ -1,0 +1,101 @@
+name: UX-PREMIUM-BOTTOMNAV-GLASS-1 Exact Visual Certification
+
+on:
+  pull_request:
+    paths:
+      - "components/layout/MobileBottomNav.tsx"
+      - "app/alerts/page.tsx"
+      - "scripts/audits/ux-premium-bottomnav-glass-1.mjs"
+      - "scripts/scrapers/__tests__/ux-premium-bottomnav-glass-1.test.ts"
+      - ".github/workflows/ux-premium-bottomnav-glass-1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer — Premium Bottom Nav Glass
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/ux-premium-searchbar-1.test.ts scripts/scrapers/__tests__/ux-premium-quickfilters-1.test.ts scripts/scrapers/__tests__/ux-premium-results-header-1.test.ts scripts/scrapers/__tests__/ux-premium-cards-media-1.test.ts scripts/scrapers/__tests__/ux-premium-cards-content-1.test.ts scripts/scrapers/__tests__/ux-premium-grid-1.test.ts scripts/scrapers/__tests__/ux-premium-bottomnav-glass-1.test.ts
+      - run: npx tsc --noEmit
+      - run: npx playwright install --with-deps chromium
+      - name: Production build with one transient-network retry
+        shell: bash
+        run: |
+          if npm run build; then exit 0; fi
+          echo "First build failed; retrying once for transient external font/network failure."
+          rm -rf .next
+          npm run build
+      - shell: bash
+        run: |
+          npm run start -- -p 3205 > /tmp/premium-bottomnav-product.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3205/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/premium-bottomnav-product.log
+          exit 1
+      - env:
+          BASE_URL: http://127.0.0.1:3205
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/ux-premium-bottomnav-glass-1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-premium-bottomnav-glass-1-product-design-proof
+          path: data/audits/ux-premium-bottomnav-glass-1/product-design
+          if-no-files-found: warn
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Premium Bottom Nav Glass
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/ux-premium-searchbar-1.test.ts scripts/scrapers/__tests__/ux-premium-quickfilters-1.test.ts scripts/scrapers/__tests__/ux-premium-results-header-1.test.ts scripts/scrapers/__tests__/ux-premium-cards-media-1.test.ts scripts/scrapers/__tests__/ux-premium-cards-content-1.test.ts scripts/scrapers/__tests__/ux-premium-grid-1.test.ts scripts/scrapers/__tests__/ux-premium-bottomnav-glass-1.test.ts
+      - run: npx tsc --noEmit
+      - run: npx playwright install --with-deps chromium
+      - name: Independent production build with one transient-network retry
+        shell: bash
+        run: |
+          if npm run build; then exit 0; fi
+          echo "First build failed; retrying once for transient external font/network failure."
+          rm -rf .next
+          npm run build
+      - shell: bash
+        run: |
+          npm run start -- -p 3206 > /tmp/premium-bottomnav-release.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3206/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/premium-bottomnav-release.log
+          exit 1
+      - env:
+          BASE_URL: http://127.0.0.1:3206
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/ux-premium-bottomnav-glass-1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-premium-bottomnav-glass-1-release-certifier-proof
+          path: data/audits/ux-premium-bottomnav-glass-1/release-certifier
+          if-no-files-found: warn
+          retention-days: 14
