@@ -4,7 +4,7 @@ export interface ReviewRecordLike {
   sourceAcquisition:string; termsStatus:string; publicIndexingMode:string; identityUrl:string; termsUrl:string|null; rationale:string;
   yield?: { urlRepresentations:number; likelyMoroccoRealEstateUrls:number; likelyMoroccoListingDetailUrls:number };
 }
-export interface ReviewManifestLike { reviewedAt:string; records:ReviewRecordLike[] }
+export interface ReviewManifestLike { reviewedAt:string; records:ReviewRecordLike[]; summary?:{totalUrlRepresentations?:number; totalLikelyMoroccoRealEstateUrls?:number; totalLikelyMoroccoListingDetailUrls?:number} }
 export interface RegistryPreviewRow {
   source_domain:string; source_name:string; current_representation_count:number; discovery_policy:"public_index_only";
   detail_fetch_policy:"permission_required"|"legal_review_required"; content_reuse_policy:"permission_required"|"unknown";
@@ -21,6 +21,10 @@ export interface PolicyMatrix { schemaVersion:"MASS_2E_POLICY_MATRIX_V1"; genera
 
 function domainName(domain:string){ return domain.replace(/^www\./,""); }
 function clamp(n:number,min:number,max:number){ return Math.max(min,Math.min(max,n)); }
+function manifestTotals(m:ReviewManifestLike){
+  if(m.summary?.totalUrlRepresentations!==undefined) return {a:m.summary.totalUrlRepresentations,b:m.summary.totalLikelyMoroccoRealEstateUrls??0,c:m.summary.totalLikelyMoroccoListingDetailUrls??0};
+  return m.records.reduce((s,r)=>{const y=r.yield??{urlRepresentations:0,likelyMoroccoRealEstateUrls:0,likelyMoroccoListingDetailUrls:0}; return {a:s.a+y.urlRepresentations,b:s.b+y.likelyMoroccoRealEstateUrls,c:s.c+y.likelyMoroccoListingDetailUrls}}, {a:0,b:0,c:0});
+}
 export function buildPolicyMatrix(high:ReviewManifestLike, mid:ReviewManifestLike, long:ReviewManifestLike, generatedAt:string):PolicyMatrix {
   const records=[...high.records,...mid.records,...long.records].sort((a,b)=>a.rank-b.rank);
   if(records.length!==101) throw new Error(`DOMAIN_COUNT:${records.length}`);
@@ -50,7 +54,7 @@ export function buildPolicyMatrix(high:ReviewManifestLike, mid:ReviewManifestLik
   const permissionRequired=records.filter(r=>r.decision==="PERMISSION_REQUIRED").length;
   const hold=records.filter(r=>r.decision==="HOLD").length;
   const canonicalCandidates=records.filter(r=>r.publicIndexingMode==="CANONICAL_LINK_ONLY_CANDIDATE").length;
-  const totals=records.reduce((s,r)=>{const y=r.yield??{urlRepresentations:0,likelyMoroccoRealEstateUrls:0,likelyMoroccoListingDetailUrls:0}; return {a:s.a+y.urlRepresentations,b:s.b+y.likelyMoroccoRealEstateUrls,c:s.c+y.likelyMoroccoListingDetailUrls}}, {a:0,b:0,c:0});
+  const h=manifestTotals(high), m=manifestTotals(mid), l=manifestTotals(long); const totals={a:h.a+m.a+l.a,b:h.b+m.b+l.b,c:h.c+m.c+l.c};
   return {schemaVersion:"MASS_2E_POLICY_MATRIX_V1",generatedAt,records,registryPreview,summary:{domains:101,permissionRequired,hold,canonicalCandidates,canonicalApproved:0,publicActivable:0,registryWrites:0,totalUrlRepresentations:totals.a,totalLikelyMoroccoRealEstateUrls:totals.b,totalLikelyMoroccoListingDetailUrls:totals.c}};
 }
 
