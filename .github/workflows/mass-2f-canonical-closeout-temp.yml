@@ -19,82 +19,11 @@ jobs:
           ref: "data/mass-2f-final-certification"
       - name: Patch canonical DATA blocks
         shell: bash
+        env:
+          PATCH_B64: "CmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aApkZWYgcmVwbGFjZV9ibG9jayhwYXRoLHN0YXJ0LGVuZCxuZXcpOgogICAgcD1QYXRoKHBhdGgpOyBzPXAucmVhZF90ZXh0KCkKICAgIGE9cy5pbmRleChzdGFydCk7IGI9cy5pbmRleChlbmQsYSkrbGVuKGVuZCkKICAgIHAud3JpdGVfdGV4dChzWzphXStuZXcrc1tiOl0pCgpyZXBsYWNlX2Jsb2NrKCdSRUFETUUubWQnLCc8IS0tIERBVEEtNQVNTLUNVUlJFTlQtU1RBUlQgLS0+JywnPCEtLSBEQVRBLU1BU1MtQ1VSUkVOVC1FTkQgLS0+JywiIiI8IS0tIERBVEEtTUFTUy1DVVJSRU5ULVNUQVJUIC0tPgojIyBEQVRBIE1BU1Mg4oCUIMOpdGF0IGNvdXJhbnQKCkxhIHByaW9yaXTDqSBEQVRBIHJlc3RlICoqbGEgbWFzc2UgbmF0aW9uYWxlIHBvbGljeS1zYWZlKiogYXZlYyBsYSBkb2N0cmluZSAqKk1BU1MgRklSU1Qg4oaS IFFVQUxJVFkgTEFURVIg4oaSIFBBUlRORVIgUkVQTEFDRU1FTlQgT1ZFUiBUSU1FKiouCg==-PLACEHOLDER" 
         run: |
-          python3 <<'PY'
-          from pathlib import Path
-          def replace_block(path,start,end,new):
-              p=Path(path); s=p.read_text()
-              a=s.index(start); b=s.index(end,a)+len(end)
-              p.write_text(s[:a]+new+s[b:])
-
-          replace_block('README.md','<!-- DATA-MASS-CURRENT-START -->','<!-- DATA-MASS-CURRENT-END -->','''<!-- DATA-MASS-CURRENT-START -->
-## DATA MASS — état courant
-
-La priorité DATA reste **la masse nationale policy-safe** avec la doctrine **MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME**.
-
-- **MASS-1 — Reservoir Qualification ✅ CLOSED / 9,5/10** : handoff Source Factory figé à **101 domaines**.
-- **MASS-2 — Source Factory ✅ CLOSED** : les **101 domaines** ont été audités et certifiés fail-closed sur toute la chaîne 2A→2F.
-  - 2A Factory Engine ✅ PR #519 ; cohorte immuable **20 / 30 / 51**.
-  - 2B High-Yield ✅ PR #523 : **17 PERMISSION_REQUIRED / 3 HOLD**.
-  - 2C Mid-Yield ✅ PR #524 : **17 PERMISSION_REQUIRED / 13 HOLD**.
-  - 2D Long-Tail ✅ PR #527 : **9 PERMISSION_REQUIRED / 42 HOLD**.
-  - 2E Policy Matrix ✅ PR #533, merge `85e12a077343e2a4223de41455f958696085cfe2` : **43 PERMISSION_REQUIRED / 58 HOLD**, **43 CANONICAL_LINK_ONLY_CANDIDATE / 0 approuvé**, Registry **0/101**, totaux **17 602 / 16 018 / 3 051**.
-  - 2F Final Certification ✅ PR #540 : run comportemental `31685990668` SUCCESS, artefact `9175523127`, digest `sha256:091dfed025731076bf4ccb2d1be0b1e5a1263edeca61563a3857daf1c53db0dd`; **0 conflit**, **0 preuve expirée/future**, Registry **0/101**, Search public **0/101**, Thin Index **0/101**, **0 write / fetch / activation / permission inférée**.
-
-Doctrine MASS-2 verrouillée : attribution ≠ permission ; `CANONICAL_LINK_ONLY_CANDIDATE` ≠ autorisation ; robots/sitemap/capacité ≠ permission. Aucun des 101 domaines n'est activable par volume seul.
-
-**NEXT : MASS-3 — Minimal Listing Index**, uniquement pour les sources explicitement policy-admissibles.
-<!-- DATA-MASS-CURRENT-END -->''')
-
-          replace_block('docs/ROADMAP.md','<!-- DATA-MASS-PROGRAM-START -->','<!-- DATA-MASS-PROGRAM-END -->','''<!-- DATA-MASS-PROGRAM-START -->
-## DATA MASS — Programme national de volume
-
-**Doctrine : `MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME`.**  
-**Règle : l’admissibilité décide si une représentation peut exister ; la qualité décide où elle se classe.**
-
-### MASS-1 — Reservoir Qualification ✅ CLOSED / CERTIFIED 9,5/10 — PR #511
-
-Handoff Source Factory figé à **101 domaines**. Aucune permission ni activation conférée.
-
-### MASS-2 — Source Factory ✅ CLOSED — 100 %
-
-- **2A ✅ 15 %** — PR #519 : Factory Engine, cohorte immuable **20 / 30 / 51**.
-- **2B ✅ 25 %** — PR #523 : **20/20 = 17 PERMISSION_REQUIRED / 3 HOLD**, 17 candidates, 0 approved.
-- **2C ✅ 20 %** — PR #524 : **30/30 = 17 PERMISSION_REQUIRED / 13 HOLD**, 17 candidates, 0 approved.
-- **2D ✅ 20 %** — PR #527 : **51/51 = 9 PERMISSION_REQUIRED / 42 HOLD**, 9 candidates, 0 approved.
-- **2E ✅ 10 %** — PR #533, merge `85e12a077343e2a4223de41455f958696085cfe2` : **101 = 43 PERMISSION_REQUIRED / 58 HOLD**, **43 candidates / 0 approved**, Registry 0/101, **17 602 / 16 018 / 3 051**, zéro mutation/activation.
-- **2F ✅ 10 %** — PR #540, run comportemental `31685990668` SUCCESS, artefact `9175523127`, digest `sha256:091dfed025731076bf4ccb2d1be0b1e5a1263edeca61563a3857daf1c53db0dd`; **101/101**, 0 conflit, 0 preuve expirée/future, Registry 0/101, Search public 0/101, Thin Index 0/101, zéro write/fetch/activation/permission inférée.
-
-Doctrine finale : candidate ≠ authorization ; attribution, robots, sitemap ou crawlability ne confèrent aucun droit ; aucun des 101 domaines ne devient activable par volume seul.
-
-### MASS-3 — Minimal Listing Index 🔵 NEXT
-
-Pour toute source **explicitement policy-admissible**, permettre une représentation minimale : canonical URL + source + titre/signal structurel fiable + géographie disponible. Zéro invention et aucun bypass Registry.
-
-### MASS-4 — Mass Reclassification 🔵 PLANNED
-Réévaluer le stock historique sous `Quality ≠ Eligibility` sans affaiblir les gates.
-
-### MASS-5 — Discovery Expansion 🔵 PLANNED
-Élargir le réservoir via voies publiques/partenaires admissibles ; toute découverte repasse par Reservoir puis Registry.
-
-### MASS-6 — National Mass Engine 🔵 PLANNED
-Industrialiser `DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DEDUP → RANK`.
-
-**Ordre verrouillé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6.**
-<!-- DATA-MASS-PROGRAM-END -->''')
-
-          replace_block('docs/SESSION.md','<!-- DATA-MASS-HANDOVER-START -->','<!-- DATA-MASS-HANDOVER-END -->','''<!-- DATA-MASS-HANDOVER-START -->
-## DATA MASS — handover prioritaire
-
-- **MASS-1 ✅ CLOSED / 9,5/10** — cohorte Source Factory : **101 domaines**.
-- **MASS-2 ✅ CLOSED / 100 %** — 2A #519 ✅ ; 2B #523 ✅ ; 2C #524 ✅ ; 2D #527 ✅ ; 2E #533 ✅ ; 2F #540 ✅.
-- Matrice finale : **101 = 43 PERMISSION_REQUIRED / 58 HOLD** ; **43 CANONICAL_LINK_ONLY_CANDIDATE / 0 approved / 0 public activable**.
-- Rendements certifiés : **17 602 URL reps / 16 018 signaux immobilier Maroc / 3 051 structures détail**.
-- Preuve 2F : run comportemental `31685990668` SUCCESS ; artefact `9175523127` ; digest `sha256:091dfed025731076bf4ccb2d1be0b1e5a1263edeca61563a3857daf1c53db0dd` ; 0 conflit, 0 preuve expirée/future, Registry **0/101**, Search public **0/101**, Thin Index **0/101**, zéro mutation/fetch/activation/permission inférée.
-- Doctrine : attribution ≠ permission ; acquisition directe ≠ canonical-link indexing ; candidate ≠ authorization ; robots/sitemap/capability ≠ permission.
-- **NEXT : MASS-3 — Minimal Listing Index**, uniquement pour une source explicitement policy-admissible.
-<!-- DATA-MASS-HANDOVER-END -->''')
-          PY
+          printf '%s' "$PATCH_B64" | base64 -d > /tmp/patch.py
+          python3 /tmp/patch.py
       - name: Commit canonical closeout
         shell: bash
         run: |
