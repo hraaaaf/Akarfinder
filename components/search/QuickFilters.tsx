@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, Home, KeyRound, Search, SlidersHorizontal, Tag, X } from "lucide-react";
 import { PropertyTypeVisualSelector } from "@/components/property-types/PropertyTypeVisualSelector";
 import { ui } from "@/components/ui/design-system";
 import type { Listing, ListingFiltersState } from "@/lib/listings/types";
@@ -15,15 +15,11 @@ type QuickFiltersProps = {
   onReset: () => void;
 };
 
-const transactionTabs = [
+const compactTransactionTabs = [
+  { value: "all", label: "Tous" },
   { value: "buy", label: "Acheter" },
   { value: "rent", label: "Louer" },
   { value: "new", label: "Neuf" },
-] as const;
-
-const compactTransactionTabs = [
-  { value: "all", label: "Tous" },
-  ...transactionTabs,
 ] as const;
 
 export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset }: QuickFiltersProps) {
@@ -82,7 +78,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
         {compactTransactionTabs.map((tab) => {
           const selected = filters.transactionType === tab.value;
           return (
-            <button key={tab.value} type="button" onClick={() => onChange({ ...filters, transactionType: tab.value })} aria-pressed={filters.transactionType === tab.value} className={selected ? "min-h-11 rounded-lg bg-primary-token px-2 py-2 text-[12px] font-extrabold text-primary-token-foreground shadow-sm" : "min-h-11 rounded-lg px-2 py-2 text-[12px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground"}>
+            <button key={tab.value} type="button" onClick={() => onChange({ ...filters, transactionType: tab.value })} aria-pressed={selected} className={selected ? "min-h-11 rounded-lg bg-primary-token px-2 py-2 text-[12px] font-extrabold text-primary-token-foreground shadow-sm" : "min-h-11 rounded-lg px-2 py-2 text-[12px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground"}>
               {tab.label}
             </button>
           );
@@ -91,35 +87,48 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
     </div>
   );
 
+  const setTransaction = (transactionType: ListingFiltersState["transactionType"]) =>
+    onChange({ ...filters, transactionType });
+
   return (
-    <section aria-label="Filtres de recherche" data-search-quick-filters data-search-controls-theme="light" data-theme="light" data-premium-searchbar="ux-premium-searchbar-1" className="space-y-2 text-foreground" style={{ colorScheme: "light" }}>
-      <div data-search-primary-filter-row className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 lg:grid-cols-[minmax(420px,1fr)_auto_auto]">
+    <section aria-label="Filtres de recherche" data-search-quick-filters data-search-controls-theme="light" data-theme="light" data-premium-searchbar="ux-premium-searchbar-1" data-premium-quickfilters="ux-premium-quickfilters-1" className="space-y-3 text-foreground" style={{ colorScheme: "light" }}>
+      <div data-search-primary-filter-row className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <label data-search-primary-search className="relative min-w-0" htmlFor="property-search">
           <Search size={20} strokeWidth={2.15} className="pointer-events-none absolute left-[18px] top-1/2 -translate-y-1/2 text-[#6b7b91]" aria-hidden="true" />
           <input id="property-search" type="search" value={filters.search} onChange={(event) => onChange({ ...filters, search: event.target.value })} placeholder="Ville, quartier, résidence ou mot-clé" className="premium-search-input min-w-0" />
         </label>
 
-        <div data-search-desktop-transaction-tabs role="group" aria-label="Type de transaction" className={`${ui.surfaceMuted} hidden min-w-[288px] grid-cols-3 !rounded-xl p-1 lg:grid`}>
-          {transactionTabs.map((tab) => {
-            const selected = filters.transactionType === tab.value;
-            return (
-              <button key={tab.value} type="button" onClick={() => onChange({ ...filters, transactionType: tab.value })} aria-pressed={filters.transactionType === tab.value} className={selected ? "min-h-9 rounded-lg bg-primary-token px-3 py-1.5 text-[12px] font-extrabold text-primary-token-foreground shadow-sm" : "min-h-9 rounded-lg px-3 py-1.5 text-[12px] font-bold text-foreground/65 transition hover:bg-card hover:text-foreground"}>
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-
         <button data-search-filter-trigger type="button" onClick={() => setShowFilters((current) => !current)} aria-expanded={showFilters} aria-controls="advanced-search-filters" aria-label="Ouvrir les filtres" className="premium-filter-trigger">
           <SlidersHorizontal size={19} strokeWidth={2.2} aria-hidden="true" />
-          <span className="hidden min-[380px]:inline">Filtres</span>
+          <span className="hidden min-[640px]:inline">Filtres</span>
           {activeCount > 0 ? <span className="premium-filter-count">{activeCount}</span> : null}
-          <ChevronDown size={14} strokeWidth={2.6} className={`hidden transition-transform min-[380px]:block ${showFilters ? "rotate-180" : ""}`} aria-hidden="true" />
+        </button>
+      </div>
+
+      <div data-premium-quickfilters-row role="group" aria-label="Filtres rapides" className="premium-quickfilters-row">
+        <button type="button" data-quickfilter="all" aria-pressed={filters.transactionType === "all"} onClick={() => setTransaction("all")} className="premium-quickfilter-chip">
+          <Home size={17} strokeWidth={2.1} aria-hidden="true" />
+          <span>Tous</span>
+        </button>
+        <button type="button" data-quickfilter="buy" aria-pressed={filters.transactionType === "buy"} onClick={() => setTransaction("buy")} className="premium-quickfilter-chip">
+          <Tag size={17} strokeWidth={2.1} aria-hidden="true" />
+          <span>À vendre</span>
+        </button>
+        <button type="button" data-quickfilter="rent" aria-pressed={filters.transactionType === "rent"} onClick={() => setTransaction("rent")} className="premium-quickfilter-chip">
+          <KeyRound size={17} strokeWidth={2.1} aria-hidden="true" />
+          <span>À louer</span>
+        </button>
+        <button type="button" data-quickfilter="price" aria-expanded={showFilters} onClick={() => setShowFilters(true)} className="premium-quickfilter-chip">
+          <span>Prix</span><ChevronDown size={14} strokeWidth={2.4} aria-hidden="true" />
+        </button>
+        <button type="button" data-quickfilter="filters" aria-expanded={showFilters} onClick={() => setShowFilters(true)} className="premium-quickfilter-chip">
+          <span>Filtres</span><ChevronDown size={14} strokeWidth={2.4} aria-hidden="true" />
+          {activeCount > 0 ? <span className="premium-quickfilter-count">{activeCount}</span> : null}
         </button>
       </div>
 
       <div id="advanced-search-filters" data-search-advanced-filters className={`${showFilters ? "sm:block" : "sm:hidden"} hidden ${ui.surface} p-3`}>
-        <div className="mb-3 lg:hidden">{compactTransactionSelector}</div>
+        <div className="mb-3">{compactTransactionSelector}</div>
         <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-5">{advancedFields}</div>
         <div className="mt-3 border-t border-border/15 pt-3">{propertyTypeSelector}</div>
       </div>
