@@ -8,9 +8,9 @@ import { AVIATION_NEIGHBORHOOD_VISUALS } from "@/lib/contextual-illustrations/av
 import type { Listing } from "@/lib/listings/types";
 
 const LOCAL_QA_ASSETS: Record<(typeof AVIATION_NEIGHBORHOOD_VISUALS)[number]["sceneRole"], string> = {
-  signature: "/neighborhood-visuals/rabat/aviation/signature/sofitel-rabat.jpg",
-  immobilier: "/neighborhood-visuals/rabat/aviation/immobilier/avenue-mohamed-vi.jpg",
-  lifestyle: "/neighborhood-visuals/rabat/aviation/lifestyle/kartaview-260184419.jpg",
+  signature: "/__qa/aviation-signature.jpg",
+  immobilier: "/__qa/aviation-immobilier.jpg",
+  lifestyle: "/__qa/aviation-lifestyle.jpg",
 };
 
 function qaListing(index: number, sceneRole: (typeof AVIATION_NEIGHBORHOOD_VISUALS)[number]["sceneRole"]): Listing {
@@ -56,7 +56,8 @@ function qaListing(index: number, sceneRole: (typeof AVIATION_NEIGHBORHOOD_VISUA
 }
 
 function creditLabel(visual: (typeof AVIATION_NEIGHBORHOOD_VISUALS)[number]): string {
-  return `${visual.source.author} · ${visual.source.license} · ${visual.source.sourceName}`;
+  const scope = visual.source.relationshipToNeighborhood === "edge_context" ? "lisière" : "proximité";
+  return `${visual.source.author} · ${visual.source.license} · ${visual.source.sourceName} · ${scope}`;
 }
 
 export function AviationNeighborhoodVisualQAFixture() {
@@ -74,6 +75,7 @@ export function AviationNeighborhoodVisualQAFixture() {
               data-visual-id={visual.id}
               data-source-license={visual.source.license}
               data-source-kind={visual.source.sourceKind}
+              data-source-relationship={visual.source.relationshipToNeighborhood}
               style={style}
               className="relative min-w-0 [&_[data-neighborhood-photo-credit]]:hidden [&_[data-neighborhood-photo-disclosure]]:hidden [&_[data-neighborhood-photo-title]]:hidden"
             >
