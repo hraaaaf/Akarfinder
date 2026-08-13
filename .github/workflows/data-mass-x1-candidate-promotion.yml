@@ -1,0 +1,32 @@
+name: DATA MASS-X1 Candidate Promotion
+
+on:
+  pull_request:
+    paths:
+      - "data/data-mass-x1/**"
+      - "docs/data/DATA-MASS-X1-CANDIDATE-PROMOTION-SHADOW.md"
+      - "scripts/data-mass/candidate-promotion.ts"
+      - "scripts/data-mass/__tests__/candidate-promotion.test.ts"
+      - ".github/workflows/data-mass-x1-candidate-promotion.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: MASS-X1 promotion tests
+        run: npx tsx --test scripts/data-mass/__tests__/candidate-promotion.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Enforce read-only contract
+        run: node -e "const c=require('./data/data-mass-x1/candidate-promotion-contract.json'); if(c.databaseWrites!==0||c.registryWrites!==0||c.searchActivations!==0||c.sourceNetworkRequests!==0||c.detailPageFetches!==0||c.permissionsInferred!==0) process.exit(1)"
