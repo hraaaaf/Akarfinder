@@ -1,3 +1,4 @@
+# Final P1.3 certification trigger after source pinning and temporary-workflow cleanup.
 name: Neighborhood Visual P1.3 Aviation Certification
 
 on:
