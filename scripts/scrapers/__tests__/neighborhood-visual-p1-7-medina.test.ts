@@ -7,7 +7,6 @@ const fixture = readFileSync("components/search/MedinaNeighborhoodVisualQAFixtur
 const route = readFileSync("app/visual-qa/medina/page.tsx", "utf8");
 const audit = readFileSync("scripts/audits/neighborhood-visual-p1-7-medina-visual-qa.mjs", "utf8");
 const ingest = readFileSync("supabase/functions/neighborhood-visual-p1-7-medina-ingest/index.ts", "utf8");
-const migration = readFileSync("supabase/migrations/20260813134000_neighborhood_visual_p1_7_medina_metadata.sql", "utf8");
 
 describe("NEIGHBORHOOD-VISUAL-P1.7 — Medina", () => {
   it("locks three distinct sources", () => {
@@ -24,8 +23,7 @@ describe("NEIGHBORHOOD-VISUAL-P1.7 — Medina", () => {
   });
 
   it("pins exact source hashes", () => {
-    const hashes = MEDINA_NEIGHBORHOOD_VISUALS.map(v => v.source.sha1);
-    assert.deepEqual(hashes, [
+    assert.deepEqual(MEDINA_NEIGHBORHOOD_VISUALS.map(v => v.source.sha1), [
       "6867e5f4d6a6891f13c167ba1a9eaaea266793ff",
       "4d41183ad3ca272837e1d668cc3433ad967a72ba",
       "d2a1ba64022489a7d501b6cb649d8291f1d591f2",
@@ -44,10 +42,9 @@ describe("NEIGHBORHOOD-VISUAL-P1.7 — Medina", () => {
     assert.ok(audit.includes("target_score: 9"));
   });
 
-  it("bounds ingestion and reconciliation", () => {
+  it("bounds physical ingestion while production activation stays gated", () => {
     for (const sha of ["6867e5f4d6a6891f13c167ba1a9eaaea266793ff", "4d41183ad3ca272837e1d668cc3433ad967a72ba", "d2a1ba64022489a7d501b6cb649d8291f1d591f2"]) assert.ok(ingest.includes(sha));
     assert.ok(ingest.includes("P1.7-MEDINA"));
-    assert.ok(migration.includes("expected exactly 3 ingested Medina visual objects"));
-    assert.ok(migration.includes("neighborhood_slug = 'medina'"));
+    for (const visual of MEDINA_NEIGHBORHOOD_VISUALS) assert.equal(visual.activation.searchEnabled, false);
   });
 });
