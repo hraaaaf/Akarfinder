@@ -1,11 +1,13 @@
 # DATA MASS-X3 — Long-tail Source Factory Shadow
 
-Objectif : élargir la Source Factory à la longue traîne déjà observée dans `discovery_candidates`, sans fetch source ni mutation.
+Audit read-only 2026-08-14.
 
-Audit read-only du 2026-08-14 : **44 domaines non enregistrés** passent le seuil conservateur de **5 URL representations strong-detailish Maroc** ; ensemble **1 496 URL representations**. Les domaines explicitement `.ma` ou `maroc` représentent **18 domaines / 887 URLs**.
+44 domaines bruts passaient le seuil structurel. Après comparaison avec la baseline Source Factory actuelle de **109 domaines**, **29 sont déjà connus**.
 
-Top gisements : sakane.ma 371 ; marocannonces.com 302 ; housing.place 103 ; expat.com 74 ; 1000-annonces.com 61 ; fazwaz.fr 54 ; capalmrabat.com 52 ; logic-immo.com 40 ; souqcity.ma 39 ; domio.ma 35 ; fadlimmo.com 33 ; portail-immobilier.ma 27 ; yakeey.com 25 ; toutypasse.com 21.
+**Gain net-new X3 : 15 domaines / 102 URL representations strong-detailish Maroc.**
 
-Exclusions explicites de cette mesure : Facebook, Instagram, TikTok, YouTube, DuckDuckGo, Mubawab Tunisie et 2ememain.be.
+Net-new : barnes-international.com 11 ; krihani.ma 11 ; yabiladi.com 8 ; adopteunbienmaroc.com 7 ; immoneuf.avito.ma 7 ; sawim.ma 7 ; seloger.com 7 ; charme-traditions.com 6 ; homefinder.ma 6 ; the-agency.ma 6 ; ya-maroc.com 6 ; lux-residence.com 5 ; properstar.ch 5 ; terre-diamant.com 5 ; villanovo.fr 5.
 
-Une candidate Source Factory n'est pas une autorisation. Source Registry reste autoritaire. 0 DB/Registry/Search write, 0 source/detail fetch, 0 activation, 0 permission inférée. Les comptes sont des URL representations, pas des biens uniques.
+7 domaines `.ma`/`maroc` représentent 50 URLs.
+
+Candidate != authorization. Source Registry autoritaire. 0 DB/Registry/Search write, 0 source/detail fetch, 0 activation, 0 permission inférée. URL representations != biens uniques.
