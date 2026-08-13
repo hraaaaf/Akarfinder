@@ -53,10 +53,11 @@ export function MobileBottomNav() {
     <nav
       aria-label="Navigation mobile"
       data-mobile-bottom-nav="exact-light-blue"
+      data-premium-bottomnav="ux-premium-bottomnav-glass-1"
       data-theme="light"
-      className="fixed inset-x-0 bottom-0 z-[70] border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] text-[#0B2545] shadow-[0_-6px_22px_rgba(15,23,42,0.07)] md:hidden"
+      className="fixed bottom-[calc(8px+env(safe-area-inset-bottom))] left-[10px] right-[10px] z-[70] overflow-hidden rounded-[24px] border border-white/75 bg-white/80 text-[#0B2545] shadow-[0_14px_40px_rgba(15,23,42,0.16),0_2px_10px_rgba(15,23,42,0.08)] backdrop-blur-[20px] supports-[backdrop-filter]:bg-white/72 md:hidden"
     >
-      <div className="mx-auto grid h-[63px] max-w-lg grid-cols-5 px-1.5">
+      <div className="mx-auto grid h-[66px] max-w-lg grid-cols-5 px-1.5 py-1">
         {items.map(({ href, label, icon: Icon, primary, activePrefixes }) => {
           const isActive = activePrefixes.some((prefix) => matchesPath(pathname, prefix));
 
@@ -69,30 +70,26 @@ export function MobileBottomNav() {
               data-mobile-bottom-nav-item={href}
               data-mobile-bottom-nav-active={isActive ? "true" : "false"}
               data-mobile-bottom-nav-primary={primary ? "true" : "false"}
-              className={`relative flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10.5px] font-semibold leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE] focus-visible:ring-offset-2 ${
-                isActive ? "text-[#0B63CE]" : "text-slate-500 hover:text-[#0B2545]"
+              className={`relative flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-[18px] px-1 text-[10px] font-semibold leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE] focus-visible:ring-inset ${
+                isActive ? "bg-[#eef6ff]/95 text-[#0B63CE]" : "text-slate-500 hover:bg-white/70 hover:text-[#0B2545]"
               }`}
             >
-              {primary ? (
-                <span
-                  data-mobile-bottom-nav-primary-icon
-                  className={`grid h-9 w-9 place-items-center rounded-full text-white transition-colors ${
-                    isActive ? "bg-[#0B2545]" : "bg-[#0B63CE]"
-                  }`}
-                >
-                  <Icon size={20} strokeWidth={2.35} />
-                </span>
-              ) : (
-                <span
-                  data-mobile-bottom-nav-icon
-                  className={`grid h-7 w-10 place-items-center rounded-lg transition-colors ${
-                    isActive ? "bg-blue-50 text-[#0B63CE]" : "bg-transparent"
-                  }`}
-                >
-                  <Icon size={20} strokeWidth={isActive ? 2.35 : 2} />
-                </span>
-              )}
-              <span className={`max-w-full truncate ${primary ? "mt-[-1px] text-[#0B2545]" : ""}`}>{label}</span>
+              <span
+                data-mobile-bottom-nav-icon
+                data-mobile-bottom-nav-primary-icon={primary ? "true" : undefined}
+                className={`grid h-8 w-10 place-items-center rounded-[14px] transition-colors ${
+                  primary
+                    ? isActive
+                      ? "bg-[#0B63CE] text-white"
+                      : "bg-[#eaf3ff] text-[#0B63CE]"
+                    : isActive
+                      ? "text-[#0B63CE]"
+                      : "bg-transparent"
+                }`}
+              >
+                <Icon size={20} strokeWidth={isActive || primary ? 2.35 : 2} />
+              </span>
+              <span className="max-w-full truncate">{label}</span>
             </Link>
           );
         })}
