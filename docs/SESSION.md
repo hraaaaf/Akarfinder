@@ -56,7 +56,7 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 - **MASS-3 ✅ CLOSED — PR #566** — fail-closed, 0 source admissible.
 - **MASS-4 ✅ CLOSED — PR #568** — merge `4abc7fcee96f00fa5745937c4c12daea0b541b47` ; run `31726483908` SUCCESS ; artefact `9191563403` ; 5 284 sources actives, 0 admissible, 5 271 haute qualité mais policy-blocked ; 0 mutation.
 - **MASS-5 ✅ CLOSED — PR #569** — merge `7b4503bf00ea7a99fb44f798748698d282cf3d8c` ; run `31727831232` SUCCESS ; artefact `9192248949` ; 7 nouveaux domaines, 148 URL representations, tous UNREGISTERED/non activables ; 0 mutation/fetch/permission inférée.
-- **MASS-6 🔄 NEXT — National Mass Engine read-only**.
+- **MASS-6 ✅ CLOSED — PR #572** — National Mass Engine shadow ; merge `471e792f0ea14b6a0bf54ef7fad09eff0d341030` ; exact head `b50e6275393043b736f35c783415b393b86751f9` ; run `31731327963` SUCCESS ; artefact `9196734887`, digest `sha256:48c0a4cdf3bf83dc9f8f4f1d9a7a37c48dc4ad636412a0a3b83817e49e0bc9e0` ; pipeline `DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DEDUP → RANK` fail-closed, bloqué à `POLICY` ; 209 109 discovery rows, 109 domaines Source Factory, 8 nouveaux domaines post-baseline, 0 Registry admissible ; preuves MASS-1/4/5 read-only vérifiées ; 0 write/fetch/activation/permission inférée.
 - Doctrine : attribution ≠ permission ; robots/sitemap/capability ≠ permission ; Source Registry autoritaire ; no-bypass.
 
 ### UX/Search
@@ -77,6 +77,6 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 
 ## Reprise exacte
 
-**DATA MASS-6** : figer le contrat National Mass Engine read-only → composer les sorties certifiées MASS-1→5 en pipeline déterministe → vérifier idempotence, provenance, freshness/dedup/rank boundaries et no-bypass → preuve exact-head + artefact → closeout. Aucune écriture DB/Registry/Search ni activation sans gate humain explicite séparé.
+**DATA MASS : MASS-1 → MASS-6 ✅ CLOSED.** Aucun MASS-7 canonique n’est défini. Le National Mass Engine reste shadow/read-only et fail-closed à POLICY tant que le Source Registry ne contient aucune autorisation positive. Toute écriture DB/Registry/Search ou activation exige un feu vert humain explicite préalable.
 
 En parallèle, **P1.8 Océan** reste une lane indépendante et ne doit pas être cassée par le lot DATA.

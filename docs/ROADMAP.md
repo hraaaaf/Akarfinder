@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-13**  
-**Statut : MASS-1 ✅ CLOSED ; MASS-2 ✅ CLOSED / 100 % ; MASS-3 ✅ CLOSED ; MASS-4 ✅ CLOSED PR #568 ; MASS-5 ✅ CLOSED PR #569 ; MASS-6 🔄 NEXT — National Mass Engine read-only.**
+**Statut : MASS-1 ✅ CLOSED ; MASS-2 ✅ CLOSED / 100 % ; MASS-3 ✅ CLOSED ; MASS-4 ✅ CLOSED PR #568 ; MASS-5 ✅ CLOSED PR #569 ; MASS-6 ✅ CLOSED PR #572.**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -14,15 +14,15 @@
 ### MASS-2 ✅ CLOSED / 100 %
 ### MASS-3 ✅ CLOSED — PR #566
 ### MASS-4 ✅ CLOSED — PR #568
-Reclassification live read-only ; 5 284 sources actives, 0 admissible, 5 271 haute qualité mais policy-blocked. `Quality ≠ Eligibility ≠ Permission` confirmé.
+Reclassification live read-only ; `Quality ≠ Eligibility ≠ Permission` confirmé.
 
 ### MASS-5 ✅ CLOSED — PR #569
-Discovery Expansion Shadow ; run `31727831232` SUCCESS ; 7 nouveaux domaines au-dessus de la cohorte 101, 148 URL representations, tous UNREGISTERED et non activables publiquement.
+Discovery Expansion Shadow ; nouveaux domaines mesurés sans autorisation implicite.
 
-### MASS-6 🔄 NEXT — National Mass Engine
-Industrialiser en lecture seule `DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DEDUP → RANK` sans transformer capacité, qualité ou découverte en permission. Toute mutation/activation reste soumise à gate explicite séparé.
+### MASS-6 ✅ CLOSED — PR #572
+National Mass Engine shadow ; exact head `b50e6275393043b736f35c783415b393b86751f9` ; run `31731327963` SUCCESS ; artefact `9196734887`, digest `sha256:48c0a4cdf3bf83dc9f8f4f1d9a7a37c48dc4ad636412a0a3b83817e49e0bc9e0`. Le pipeline national ordonné est fail-closed et s’arrête à `POLICY` avec 0 source Registry admissible ; 209 109 discovery rows, 109 domaines Source Factory, 8 ajouts post-baseline ; 0 mutation/fetch/activation/permission inférée.
 
-**Ordre verrouillé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6.**
+**Ordre verrouillé et terminé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6. Aucun MASS-7 n’est défini dans la roadmap.**
 <!-- DATA-MASS-PROGRAM-END -->
 
 
