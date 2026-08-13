@@ -1,17 +1,16 @@
-name: Neighborhood Visual P1.7 Medina Reviewer
+name: Neighborhood Visual P1.8 Ocean Reviewer
 
 on:
   pull_request:
     paths:
-      - "lib/contextual-illustrations/medina-neighborhood-visuals.ts"
-      - "app/visual-qa/medina/**"
-      - "components/search/MedinaNeighborhoodVisualQAFixture.tsx"
-      - "scripts/audits/neighborhood-visual-p1-7-medina-visual-qa.mjs"
-      - ".github/workflows/neighborhood-visual-p1-7-medina-reviewer.yml"
+      - "lib/contextual-illustrations/ocean-neighborhood-visuals.ts"
+      - "app/visual-qa/ocean/**"
+      - "components/search/OceanNeighborhoodVisualQAFixture.tsx"
+      - "scripts/audits/neighborhood-visual-p1-8-ocean-visual-qa.mjs"
+      - ".github/workflows/neighborhood-visual-p1-8-ocean-reviewer.yml"
 
 permissions:
   contents: read
-  actions: read
 
 env:
   NEIGHBORHOOD_VISUAL_QA: "1"
@@ -19,7 +18,7 @@ env:
 
 jobs:
   reviewer:
-    name: Product Design Reviewer — Medina 3-scene QA
+    name: Product Design Reviewer — Ocean 3-scene QA
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -29,36 +28,32 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - uses: actions/download-artifact@v4
-        with:
-          name: neighborhood-visual-p1-7-medina-source-discovery
-          path: public/__qa-source
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: hraaaaf/Akarfinder
-          run-id: 31699782860
-      - name: Materialize locked images
+      - name: Materialize exact Commons sources
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p public/__qa
-          cp public/__qa-source/signature.jpg public/__qa/medina-signature.jpg
-          cp public/__qa-source/immobilier.jpg public/__qa/medina-immobilier.jpg
-          cp public/__qa-source/lifestyle.jpg public/__qa/medina-lifestyle.jpg
+          curl -fL --retry 5 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Phare%20de%20Rabat%2001.jpg' -o public/__qa/ocean-signature.jpg
+          curl -fL --retry 5 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Bab%20El%20Had%20%2846314%29.jpg' -o public/__qa/ocean-immobilier.jpg
+          curl -fL --retry 5 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Coucher%20de%20soleil%20%C3%A0%20quartier%20l%27Oc%C3%A9an.JPG' -o public/__qa/ocean-lifestyle.jpg
+          printf '%s  %s\n' '561b72a1093fd4fc207e573447f9de94330e66b1' 'public/__qa/ocean-signature.jpg' '33bc545195a8ba9904e9b68519cf2c4714af11b7' 'public/__qa/ocean-immobilier.jpg' 'ec76f6f5f505a30bafc32810158e7bc014eb4983' 'public/__qa/ocean-lifestyle.jpg' | sha1sum -c -
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - name: Start QA server
         run: |
-          npm run start -- -p 3169 > /tmp/medina-reviewer.log 2>&1 &
-          for i in {1..40}; do if curl -fsS http://127.0.0.1:3169/visual-qa/medina >/dev/null; then exit 0; fi; sleep 1; done
-          cat /tmp/medina-reviewer.log
+          npm run start -- -p 3171 > /tmp/ocean-reviewer.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3171/visual-qa/ocean >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/ocean-reviewer.log
           exit 1
-      - name: Certify Medina
+      - name: Certify Ocean
         env:
-          BASE_URL: http://127.0.0.1:3169
+          BASE_URL: http://127.0.0.1:3171
           AUDIT_VARIANT: product-design
-        run: node scripts/audits/neighborhood-visual-p1-7-medina-visual-qa.mjs
+        run: node scripts/audits/neighborhood-visual-p1-8-ocean-visual-qa.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: neighborhood-visual-p1-7-medina-product-design-proof
-          path: data/audits/neighborhood-visual-p1-7-medina/product-design
+          name: neighborhood-visual-p1-8-ocean-product-design-proof
+          path: data/audits/neighborhood-visual-p1-8-ocean/product-design
           if-no-files-found: error
           retention-days: 14
