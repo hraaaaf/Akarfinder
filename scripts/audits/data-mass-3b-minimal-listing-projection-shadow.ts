@@ -19,7 +19,7 @@ type ListingRow = {
   district: string | null;
   price_mad: number | null;
   surface_m2: number | null;
-  thumbnail_url: string | null;
+  thumbnail_url?: string | null;
   description_snippet: string | null;
 };
 
@@ -46,7 +46,7 @@ async function main() {
   for (let offset = 0; ; offset += pageSize) {
     const { data, error } = await supabase
       .from("property_listings")
-      .select("id,title,property_type,city,district,price_mad,surface_m2,thumbnail_url,description_snippet")
+      .select("*")
       .order("id")
       .range(offset, offset + pageSize - 1);
     if (error) throw error;
@@ -120,7 +120,7 @@ async function main() {
       district: listing.district,
       priceMad: listing.price_mad,
       surfaceM2: listing.surface_m2,
-      thumbnailUrl: listing.thumbnail_url,
+      thumbnailUrl: listing.thumbnail_url ?? null,
       descriptionSnippet: listing.description_snippet,
     };
 
