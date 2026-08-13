@@ -1,0 +1,36 @@
+name: DATA MASS-3 Canonical Closeout Render
+
+on:
+  push:
+    branches:
+      - docs/mass-3-closeout
+    paths:
+      - "scripts/docs/closeout-data-mass-3.mjs"
+      - ".github/workflows/data-mass-3-canonical-closeout-render.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Render canonical closeout
+        run: node scripts/docs/closeout-data-mass-3.mjs
+      - name: Verify scope
+        run: |
+          test -n "$(git diff -- README.md docs/ROADMAP.md docs/SESSION.md)"
+          test -z "$(git diff --name-only | grep -Ev '^(README.md|docs/ROADMAP.md|docs/SESSION.md)$')"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-3-canonical-closeout
+          path: |
+            README.md
+            docs/ROADMAP.md
+            docs/SESSION.md
