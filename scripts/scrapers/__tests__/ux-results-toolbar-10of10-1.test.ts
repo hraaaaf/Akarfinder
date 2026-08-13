@@ -24,15 +24,15 @@ test("mobile exposes the segmented view control and keeps the toolbar maximally 
   assert.match(switcher, /SearchViewSwitcher\.module\.css/);
   assert.match(switcher, /data-results-toolbar-view-control/);
   assert.match(styles, /@media \(max-width: 639px\)/);
-  assert.match(styles, /grid-template-columns: minmax\(0, 1fr\)/);
-  assert.match(styles, /grid-template-columns: minmax\(176px, 1fr\) 136px/);
-  assert.match(styles, /gap: 2px !important/);
+  assert.match(styles, /display: flex !important/);
+  assert.match(styles, /justify-content: space-between !important/);
+  assert.match(styles, /gap: 10px !important/);
   assert.match(styles, /padding-top: 0 !important/);
-  assert.match(styles, /padding-bottom: 1px !important/);
-  assert.match(styles, /min-height: 18px/);
-  assert.match(styles, /line-height: 18px/);
-  assert.match(styles, /min-height: 48px/);
-  assert.match(styles, /height: 48px !important/);
+  assert.match(styles, /padding-bottom: 0 !important/);
+  assert.match(styles, /\.segmented\s*\{[\s\S]*min-height: 40px/);
+  assert.match(styles, /\.option\s*\{[\s\S]*min-height: 40px !important/);
+  assert.match(styles, /width: 124px !important/);
+  assert.match(styles, /height: 44px !important/);
   assert.match(styles, /\.mobileSelect\s*\{[\s\S]*display: none !important/);
 });
 
