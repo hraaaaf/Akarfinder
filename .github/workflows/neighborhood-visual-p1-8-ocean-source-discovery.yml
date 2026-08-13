@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
-      - name: Lock Commons anchors and sweep KartaView
+      - name: Lock three Commons anchors and sweep KartaView
         shell: bash
         run: |
           set -euo pipefail
@@ -24,8 +24,10 @@ jobs:
           UA='AkarFinder-P1.8-Ocean/1.0'
           curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Phare%20de%20Rabat%2001.jpg' -o "$OUT/commons/phare.jpg"
           curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Coucher%20de%20soleil%20%C3%A0%20quartier%20l%27Oc%C3%A9an.JPG' -o "$OUT/commons/sunset.jpg"
-          sha1sum "$OUT/commons"/* > "$OUT/commons/sha1.txt"
-          wc -c "$OUT/commons"/* > "$OUT/commons/bytes.txt"
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Bab%20El%20Had%20%2846314%29.jpg' -o "$OUT/commons/bab-el-had.jpg"
+          sha1sum "$OUT/commons"/*.jpg > "$OUT/commons/sha1.txt"
+          wc -c "$OUT/commons"/*.jpg > "$OUT/commons/bytes.txt"
+          file "$OUT/commons"/*.jpg > "$OUT/commons/file.txt"
           python3 - <<'PY'
           import hashlib,json,math,pathlib,urllib.parse,urllib.request
           out=pathlib.Path('data/audits/neighborhood-visual-p1-8-ocean/source-discovery/kartaview')
