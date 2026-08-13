@@ -20,11 +20,19 @@
 [data-premium-quickfilters-row] .premium-quickfilter-chip svg{width:14px!important;height:14px!important;flex:0 0 14px!important}
 }
 
-/* UX-PREMIUM-FINAL-POLISH-1 — mobile header/logo + results toolbar presence. */
+/* UX-PREMIUM-FINAL-POLISH-1 — results toolbar presence retained from Lot 12. */
 @media(max-width:639px){
-[data-premium-search-header="ux-premium-header-1"]>div{height:70px!important}
-[data-premium-search-header="ux-premium-header-1"] img[alt="AkarFinder"]{height:34px!important;width:auto!important}
 main [data-search-results-section] [data-search-results-toolbar]{min-height:58px!important;gap:10px!important}
 main [data-search-results-section] [data-search-results-toolbar] h1{font-size:16px!important;line-height:1.15!important}
 main [data-search-results-section] [data-search-results-toolbar] [data-search-sort-select]{min-width:124px!important;font-size:12.5px!important;padding-left:13px!important}
+}
+
+/* UX-PREMIUM-HEADER-SEARCH-POLISH-B — mobile header/search convergence only. */
+@media(max-width:639px){
+[data-premium-search-header="ux-premium-header-1"]>div{height:62px!important}
+[data-premium-search-header="ux-premium-header-1"] img[alt="AkarFinder"]{height:31px!important;width:auto!important}
+[data-search-controls-section]>div{padding-top:10px!important;padding-bottom:10px!important}
+[data-premium-searchbar="ux-premium-searchbar-1"] [data-search-primary-filter-row]{gap:8px!important}
+[data-premium-searchbar="ux-premium-searchbar-1"] .premium-search-input{height:48px!important;padding-left:46px!important;padding-right:18px!important;font-size:13.5px!important;box-shadow:0 2px 10px rgb(24 56 96/.055),inset 0 1px 0 rgb(255 255 255/.95)!important}
+[data-premium-searchbar="ux-premium-searchbar-1"] .premium-filter-trigger{width:48px!important;min-width:48px!important;height:48px!important;padding:0!important;box-shadow:0 2px 10px rgb(24 56 96/.055),inset 0 1px 0 rgb(255 255 255/.95)!important}
 }
