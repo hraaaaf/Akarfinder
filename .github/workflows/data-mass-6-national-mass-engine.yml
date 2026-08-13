@@ -51,9 +51,9 @@ jobs:
           node - <<'NODE'
           const p=require('./.tmp/data-mass-6/results/proof.json');
           const ok=p.status==='PASS' && p.mode==='shadow_read_only' &&
-            p.predecessorReadOnlyProofVerified===true &&
+            p.predecessorReadOnlyProofVerified===true && p.predecessorZeroMutationProofVerified===true &&
             p.stageState.DISCOVER===true && p.stageState.CLASSIFY===true &&
-            ((p.policyAdmissibleRegistryRows===0 && p.blockedAt==='POLICY' && p.rankEligible===false) || p.policyAdmissibleRegistryRows>0) &&
+            p.policyAdmissibleRegistryRows===0 && p.blockedAt==='POLICY' && p.rankEligible===false &&
             p.databaseWrites===0 && p.registryWrites===0 && p.searchActivations===0 &&
             p.sourceNetworkRequests===0 && p.detailPageFetches===0 && p.permissionsInferred===0;
           if(!ok){console.error(p);process.exit(1)}
