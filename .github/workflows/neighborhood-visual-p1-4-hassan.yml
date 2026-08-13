@@ -1,0 +1,150 @@
+name: Neighborhood Visual P1.4 Hassan Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/visual-qa/hassan/**"
+      - "components/search/HassanNeighborhoodVisualQAFixture.tsx"
+      - "lib/contextual-illustrations/hassan-neighborhood-visuals.ts"
+      - "scripts/audits/neighborhood-visual-p1-4-hassan-visual-qa.mjs"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p1-4-hassan.test.ts"
+      - "supabase/functions/neighborhood-visual-p1-4-hassan-ingest/**"
+      - "supabase/migrations/20260813105000_neighborhood_visual_p1_4_hassan_metadata.sql"
+      - ".github/workflows/neighborhood-visual-p1-4-hassan.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neighborhood-visual-p1-4-hassan-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEIGHBORHOOD_VISUAL_QA: "1"
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer — Hassan 3-scene QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: P1.4 contract + predecessors
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p1-4-hassan.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-3-aviation.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-2-akkari.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Deno + TypeScript
+        run: |
+          deno check supabase/functions/neighborhood-visual-p1-4-hassan-ingest/index.ts
+          npx tsc --noEmit
+      - name: Materialize exact Commons sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          UA='AkarFinder-P1.4-Hassan-certification/1.0'
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/%D9%86%D8%A7%D9%81%D9%88%D8%B1%D8%A9%20%D8%B5%D9%88%D9%85%D8%B9%D8%A9%20%D8%AD%D8%B3%D8%A7%D9%86.jpg' -o public/__qa/hassan-signature.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/View-of-Rabat-from-Hassan-Tower.jpg' -o public/__qa/hassan-immobilier.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Quartier%20Hassan%2C%20Rabat%2C%20Morocco%20-%20panoramio%20%281%29.jpg' -o public/__qa/hassan-lifestyle.jpg
+          echo '6522403ac6ec1bf56276a8aa5794693a66aa7c08  public/__qa/hassan-signature.jpg' | sha1sum --check --strict
+          echo 'ffc30f2a48e055403880d933e29e16a853986e3e  public/__qa/hassan-immobilier.jpg' | sha1sum --check --strict
+          echo 'fe36362031f75d1835931f46e15f8e43dccc4a7c  public/__qa/hassan-lifestyle.jpg' | sha1sum --check --strict
+          test "$(wc -c < public/__qa/hassan-signature.jpg)" -eq 8754722
+          test "$(wc -c < public/__qa/hassan-immobilier.jpg)" -eq 2877341
+          test "$(wc -c < public/__qa/hassan-lifestyle.jpg)" -eq 365717
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start QA production server
+        shell: bash
+        run: |
+          npm run start -- -p 3165 > /tmp/hassan-p14-product.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3165/visual-qa/hassan >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/hassan-p14-product.log; exit 1
+      - name: Certify full responsive Search-card matrix
+        env:
+          BASE_URL: http://127.0.0.1:3165
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/neighborhood-visual-p1-4-hassan-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p1-4-hassan-product-design-proof
+          path: data/audits/neighborhood-visual-p1-4-hassan/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Hassan 3-scene QA
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: Independent contract replay
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p1-4-hassan.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-3-aviation.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-2-akkari.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Independent Deno + TypeScript
+        run: |
+          deno check supabase/functions/neighborhood-visual-p1-4-hassan-ingest/index.ts
+          npx tsc --noEmit
+      - name: Independently materialize exact Commons sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          UA='AkarFinder-P1.4-Hassan-release/1.0'
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/%D9%86%D8%A7%D9%81%D9%88%D8%B1%D8%A9%20%D8%B5%D9%88%D9%85%D8%B9%D8%A9%20%D8%AD%D8%B3%D8%A7%D9%86.jpg' -o public/__qa/hassan-signature.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/View-of-Rabat-from-Hassan-Tower.jpg' -o public/__qa/hassan-immobilier.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Quartier%20Hassan%2C%20Rabat%2C%20Morocco%20-%20panoramio%20%281%29.jpg' -o public/__qa/hassan-lifestyle.jpg
+          echo '6522403ac6ec1bf56276a8aa5794693a66aa7c08  public/__qa/hassan-signature.jpg' | sha1sum --check --strict
+          echo 'ffc30f2a48e055403880d933e29e16a853986e3e  public/__qa/hassan-immobilier.jpg' | sha1sum --check --strict
+          echo 'fe36362031f75d1835931f46e15f8e43dccc4a7c  public/__qa/hassan-lifestyle.jpg' | sha1sum --check --strict
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent QA server
+        shell: bash
+        run: |
+          npm run start -- -p 3166 > /tmp/hassan-p14-release.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3166/visual-qa/hassan >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/hassan-p14-release.log; exit 1
+      - name: Independently certify full responsive Search-card matrix
+        env:
+          BASE_URL: http://127.0.0.1:3166
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/neighborhood-visual-p1-4-hassan-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p1-4-hassan-release-proof
+          path: data/audits/neighborhood-visual-p1-4-hassan/release-certifier
+          if-no-files-found: error
+          retention-days: 14
