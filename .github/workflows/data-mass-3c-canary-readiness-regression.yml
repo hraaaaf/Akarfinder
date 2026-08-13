@@ -1,0 +1,33 @@
+name: DATA MASS-3C Canary Readiness Regression
+
+on:
+  pull_request:
+    paths:
+      - "data/data-mass-3c/**"
+      - "scripts/data-mass/minimal-listing-canary-readiness.ts"
+      - "scripts/data-mass/__tests__/minimal-listing-canary-readiness-zero.test.ts"
+      - "scripts/audits/data-mass-3c-canary-readiness-shadow.ts"
+      - ".github/workflows/data-mass-3c-canary-readiness-regression.yml"
+      - "docs/data/DATA-MASS-3C-CANARY-READINESS-SHADOW.md"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: MASS-3C zero-source regression
+        run: node --test --import tsx scripts/data-mass/__tests__/minimal-listing-canary-readiness-zero.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
