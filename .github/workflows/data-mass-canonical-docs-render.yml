@@ -1,0 +1,93 @@
+name: DATA MASS Canonical Docs Render
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/data-mass-canonical-docs-render.yml"
+      - "docs/SESSION.md"
+      - "docs/data/DATA-MASS-3C-CANARY-READINESS-SHADOW.md"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Render canonical MASS blocks
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          function replaceBlock(path, start, end, replacement) {
+            const src = fs.readFileSync(path, 'utf8');
+            const a = src.indexOf(start), b = src.indexOf(end);
+            if (a < 0 || b < 0 || b < a) throw new Error(`markers missing: ${path}`);
+            const next = src.slice(0, a) + replacement.trimEnd() + '\n' + src.slice(b + end.length);
+            fs.writeFileSync(path, next);
+          }
+          const readme = `<!-- DATA-MASS-CURRENT-START -->
+## DATA MASS — état courant
+
+La priorité DATA reste **la masse nationale policy-safe** avec la doctrine **MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME**.
+
+- **MASS-1 ✅ CLOSED / 9,5/10** — réservoir qualifié à 101 domaines.
+- **MASS-2 ✅ CLOSED / 100 %** — 101/101 audités ; 43 \`PERMISSION_REQUIRED\`, 58 \`HOLD\`, aucune permission positive/activation inférée.
+- **MASS-3A ✅ CLOSED — PR #553** — contrat Minimal Listing shadow/read-only ; merge \`2355eb99c22ca3b7a521d3b7402651c69bb04f0b\` ; 0 source policy-admissible.
+- **MASS-3B ✅ CLOSED — PR #557** — projection réelle read-only ; merge \`b654e0f5ebe8bc82f230e31686ff1a72cb2ca2c7\` ; run \`31700957263\` SUCCESS ; artefact \`9181260990\` ; 5 260 listings / 5 265 sources actives / 35 Registry / 0 admissible / 0 projected / 0 mutation.
+- **MASS-3C 🔄 ACTIVE** — Canary Readiness strictement read-only. Sortie attendue tant que Registry admissible = 0 : **BLOCKED / 0 canary / 0 write**. Toute première écriture DB exige un feu vert humain explicite préalable et un canary séparé revu.
+
+Doctrine : attribution ≠ permission ; robots/sitemap/capability ≠ permission ; candidate ≠ authorization ; Source Registry autoritaire ; no-bypass.
+
+**NEXT : MASS-3C — Canary Readiness Shadow.**
+<!-- DATA-MASS-CURRENT-END -->`;
+          const roadmap = `<!-- DATA-MASS-PROGRAM-START -->
+## DATA MASS — Programme national de volume
+
+**Doctrine : \`MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME\`.**  
+**Règle : l'admissibilité décide si une représentation peut exister ; la qualité décide où elle se classe.**
+
+### MASS-1 — Reservoir Qualification ✅ CLOSED / 9,5/10 — PR #511
+Réservoir figé à 101 domaines. Aucune permission ni activation conférée.
+
+### MASS-2 — Source Factory ✅ CLOSED — 100 %
+2A→2F fermés ; 101/101 audités ; 43 \`PERMISSION_REQUIRED\` / 58 \`HOLD\` ; 0 autorisation positive ; 0 activation inférée.
+
+### MASS-3 — Minimal Listing Index 🔄 ACTIVE
+- **3A ✅ CLOSED — PR #553** : contrat shadow/read-only ; 0 source policy-admissible.
+- **3B ✅ CLOSED — PR #557** : projection live read-only ; run \`31700957263\` SUCCESS ; 0 projected / 0 mutation.
+- **3C 🔄 ACTIVE — Canary Readiness Shadow** : gate fail-closed ; zéro canary non nul tant qu'une source explicitement policy-admissible n'existe pas ; aucune écriture DB sans feu vert humain explicite préalable ; toute activation appartient à un lot canary séparé.
+
+### MASS-4 — Mass Reclassification 🔵 PLANNED
+Réévaluer le stock historique sous \`Quality ≠ Eligibility\` sans affaiblir les gates.
+
+### MASS-5 — Discovery Expansion 🔵 PLANNED
+Élargir le réservoir via voies publiques/partenaires admissibles ; toute découverte repasse par Reservoir puis Registry.
+
+### MASS-6 — National Mass Engine 🔵 PLANNED
+Industrialiser \`DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DEDUP → RANK\`.
+
+**Ordre verrouillé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6.**
+<!-- DATA-MASS-PROGRAM-END -->`;
+          replaceBlock('README.md','<!-- DATA-MASS-CURRENT-START -->','<!-- DATA-MASS-CURRENT-END -->',readme);
+          replaceBlock('docs/ROADMAP.md','<!-- DATA-MASS-PROGRAM-START -->','<!-- DATA-MASS-PROGRAM-END -->',roadmap);
+          let r = fs.readFileSync('docs/ROADMAP.md','utf8');
+          r = r.replace('**Version : 2026-08-12**','**Version : 2026-08-13**');
+          r = r.replace(/^\*\*Statut :.*\*\*$/m,'**Statut : MASS-2 ✅ CLOSED / 100 % ; MASS-3A ✅ CLOSED ; MASS-3B ✅ CLOSED ; MASS-3C 🔄 Canary Readiness read-only.**');
+          fs.writeFileSync('docs/ROADMAP.md',r);
+          NODE
+      - name: Verify only canonical docs changed
+        run: |
+          git diff --exit-code -- docs/SESSION.md || true
+          git diff --name-only | grep -Ev '^(README.md|docs/ROADMAP.md)$' && exit 1 || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-canonical-docs-render
+          path: |
+            README.md
+            docs/ROADMAP.md
