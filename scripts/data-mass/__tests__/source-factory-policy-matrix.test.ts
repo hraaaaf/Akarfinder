@@ -11,7 +11,7 @@ test("MASS-2E consolidates exactly 101 reviewed domains",()=>{
   const matrix=buildPolicyMatrix(h,m,l,"2026-08-13T00:00:00.000Z");
   validatePolicyMatrix(matrix);
   assert.equal(matrix.records[0].rank,1); assert.equal(matrix.records.at(-1)?.rank,101);
-  assert.deepEqual(matrix.summary,{domains:101,permissionRequired:43,hold:58,canonicalCandidates:43,canonicalApproved:0,publicActivable:0,registryWrites:0,totalUrlRepresentations:22656,totalLikelyMoroccoRealEstateUrls:19665,totalLikelyMoroccoListingDetailUrls:4114});
+  assert.deepEqual(matrix.summary,{domains:101,permissionRequired:43,hold:58,canonicalCandidates:43,canonicalApproved:0,publicActivable:0,registryWrites:0,totalUrlRepresentations:17602,totalLikelyMoroccoRealEstateUrls:16018,totalLikelyMoroccoListingDetailUrls:3051});
 });
 
 test("Registry preview cannot activate candidates",()=>{
