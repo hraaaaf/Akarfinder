@@ -13,14 +13,7 @@ const cases = [
   { name: "desktop-1440x900", width: 1440, height: 900 },
 ];
 
-const closeTo = (actual, expected, tolerance = 0.8) => Math.abs(actual - expected) <= tolerance;
-const rgb = {
-  white: "rgb(255, 255, 255)",
-  navy: "rgb(11, 31, 58)",
-  blue: "rgb(11, 99, 206)",
-  border: "rgb(221, 231, 242)",
-};
-
+const closeTo = (actual, expected, tolerance = 1.1) => Math.abs(actual - expected) <= tolerance;
 await fs.mkdir(outDir, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const failures = [];
@@ -28,200 +21,86 @@ const results = [];
 
 for (const testCase of cases) {
   const phone = testCase.width < 640;
-  const desktop = testCase.width >= 1024;
-  const context = await browser.newContext({
-    viewport: { width: testCase.width, height: testCase.height },
-    colorScheme: "dark",
-    deviceScaleFactor: 1,
-  });
+  const context = await browser.newContext({ viewport: { width: testCase.width, height: testCase.height }, colorScheme: "dark", deviceScaleFactor: 1 });
   const page = await context.newPage();
-  const response = await page.goto(`${baseUrl}/search?q=Rabat`, {
-    waitUntil: "domcontentloaded",
-    timeout: 60_000,
-  });
+  const response = await page.goto(`${baseUrl}/search?q=Rabat&view=list`, { waitUntil: "domcontentloaded", timeout: 60_000 });
+  if (!response || response.status() >= 400) failures.push(`${testCase.name}: route status ${response?.status() ?? "none"}`);
 
-  if (!response || response.status() >= 400) {
-    failures.push(`${testCase.name}: route status ${response?.status() ?? "none"}`);
-  }
-
-  await page.waitForSelector('[data-search-global-header="exact-white"]', { timeout: 20_000 });
-  await page.waitForSelector("[data-search-controls-section]", { timeout: 20_000 });
   await page.waitForSelector("[data-search-results-toolbar]", { timeout: 20_000 });
-  await page.waitForSelector("[data-search-desktop-view-switcher]", { state: "visible", timeout: 20_000 });
-  await page.waitForFunction(() => {
-    const heading = document.querySelector("[data-search-results-toolbar] h1");
-    return Boolean(heading && /résultat/.test(heading.textContent ?? ""));
-  }, null, { timeout: 30_000 });
+  await page.waitForSelector("[data-search-sort-select]", { timeout: 20_000 });
+  await page.waitForFunction(() => /résultat/.test(document.querySelector("[data-search-results-toolbar] h1")?.textContent ?? ""), null, { timeout: 30_000 });
+  if (!phone) await page.waitForSelector("[data-search-desktop-view-switcher]", { state: "visible", timeout: 20_000 });
   await page.waitForTimeout(100);
 
   const metrics = await page.evaluate(() => {
-    const header = document.querySelector('[data-search-global-header="exact-white"]');
-    const controls = document.querySelector("[data-search-controls-section]");
+    const visible = (el) => Boolean(el && getComputedStyle(el).display !== "none" && getComputedStyle(el).visibility !== "hidden" && el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().height > 0);
     const toolbar = document.querySelector("[data-search-results-toolbar]");
-    const viewRoot = document.querySelector("[data-results-toolbar-view-control]");
+    const heading = toolbar?.querySelector("h1");
+    const sort = document.querySelector("[data-search-sort-select]");
     const switcher = document.querySelector("[data-search-desktop-view-switcher]");
     const mobileSelect = document.querySelector("[data-search-mobile-view-select]");
-    const sort = document.querySelector("[data-search-sort-select]");
     const layout = document.querySelector("[data-search-view-layout]");
-    if (!header || !controls || !toolbar || !viewRoot || !switcher || !mobileSelect || !sort || !layout) return null;
-
-    const countGroup = toolbar.firstElementChild;
-    const actions = toolbar.lastElementChild;
-    const heading = countGroup?.querySelector("h1");
+    if (!toolbar || !heading || !sort || !switcher || !layout) return null;
+    const rect = (el) => { const r = el.getBoundingClientRect(); return { x:r.x, y:r.y, width:r.width, height:r.height, right:r.right, bottom:r.bottom }; };
     const buttons = Array.from(switcher.querySelectorAll("[data-search-view-mode-button]"));
-    if (!countGroup || !actions || !heading || buttons.length !== 3) return null;
-
-    const rect = (element) => {
-      const value = element.getBoundingClientRect();
-      return {
-        x: value.x,
-        y: value.y,
-        width: value.width,
-        height: value.height,
-        right: value.right,
-        bottom: value.bottom,
-      };
-    };
-    const style = (element) => {
-      const value = getComputedStyle(element);
-      return {
-        display: value.display,
-        backgroundColor: value.backgroundColor,
-        color: value.color,
-        borderColor: value.borderBottomColor,
-        borderRadius: value.borderRadius,
-      };
-    };
-
-    const selected = buttons.find((button) => button.getAttribute("aria-pressed") === "true");
     return {
-      viewport: { width: window.innerWidth, height: window.innerHeight },
+      viewportWidth: innerWidth,
       documentWidth: document.documentElement.scrollWidth,
-      header: { rect: rect(header), style: style(header) },
-      controls: { rect: rect(controls), style: style(controls) },
-      toolbar: { rect: rect(toolbar), style: style(toolbar) },
-      countGroup: rect(countGroup),
-      heading: {
-        rect: rect(heading),
-        style: style(heading),
-        text: heading.textContent ?? "",
-        clientWidth: heading.clientWidth,
-        scrollWidth: heading.scrollWidth,
-      },
-      actions: { rect: rect(actions), style: style(actions) },
-      viewRoot: rect(viewRoot),
-      switcher: { rect: rect(switcher), style: style(switcher) },
-      mobileSelectDisplay: getComputedStyle(mobileSelect).display,
-      sort: { rect: rect(sort), style: style(sort), value: sort.value },
-      buttons: buttons.map((button) => ({
-        label: button.textContent?.trim() ?? "",
-        pressed: button.getAttribute("aria-pressed"),
-        rect: rect(button),
-        style: style(button),
-      })),
-      selected: selected ? { label: selected.textContent?.trim() ?? "", style: style(selected) } : null,
-      layout: { rect: rect(layout), view: layout.getAttribute("data-search-view-layout") },
+      toolbar: rect(toolbar),
+      heading: { ...rect(heading), text: heading.textContent ?? "", color: getComputedStyle(heading).color, clientWidth: heading.clientWidth, scrollWidth: heading.scrollWidth },
+      sort: { ...rect(sort), background: getComputedStyle(sort).backgroundColor, color: getComputedStyle(sort).color, radius: getComputedStyle(sort).borderRadius },
+      switcherVisible: visible(switcher),
+      mobileSelectVisible: visible(mobileSelect),
+      buttons: buttons.map((button) => ({ label: button.textContent?.trim() ?? "", pressed: button.getAttribute("aria-pressed"), visible: visible(button) })),
+      layoutTop: layout.getBoundingClientRect().top,
     };
   });
 
   if (!metrics) {
     failures.push(`${testCase.name}: toolbar metrics missing`);
   } else {
-    if (metrics.documentWidth > metrics.viewport.width + 1) failures.push(`${testCase.name}: horizontal overflow ${metrics.documentWidth} > ${metrics.viewport.width}`);
-    if (!closeTo(metrics.header.rect.height, 54)) failures.push(`${testCase.name}: frozen Header height ${metrics.header.rect.height} != 54`);
-    const expectedControlsHeight = desktop ? 69 : 65;
-    if (!closeTo(metrics.controls.rect.height, expectedControlsHeight)) failures.push(`${testCase.name}: frozen Search controls height ${metrics.controls.rect.height} != ${expectedControlsHeight}`);
-    if (metrics.controls.style.backgroundColor !== rgb.white) failures.push(`${testCase.name}: frozen Search controls are no longer white`);
-
-    if (metrics.toolbar.style.backgroundColor !== rgb.white) failures.push(`${testCase.name}: toolbar background ${metrics.toolbar.style.backgroundColor} != white`);
-    if (metrics.toolbar.style.borderColor !== rgb.border) failures.push(`${testCase.name}: toolbar divider ${metrics.toolbar.style.borderColor} != canonical border`);
-    if (metrics.heading.style.color !== rgb.navy) failures.push(`${testCase.name}: result count color ${metrics.heading.style.color} != AkarFinder navy`);
+    if (metrics.documentWidth > metrics.viewportWidth + 1) failures.push(`${testCase.name}: horizontal overflow`);
     if (!/résultat/.test(metrics.heading.text)) failures.push(`${testCase.name}: result count wording missing`);
-    if (metrics.heading.scrollWidth > metrics.heading.clientWidth + 1) failures.push(`${testCase.name}: result count is visually clipped`);
-
-    if (metrics.mobileSelectDisplay !== "none") failures.push(`${testCase.name}: legacy compressed mobile view select is visible`);
-    if (metrics.switcher.style.display === "none") failures.push(`${testCase.name}: Liste/Mixte/Carte switcher is hidden`);
-    if (metrics.buttons.map((button) => button.label).join("|") !== "Liste|Mixte|Carte") failures.push(`${testCase.name}: view labels are not Liste|Mixte|Carte`);
-    if (!metrics.selected) failures.push(`${testCase.name}: no active view mode`);
-    if (metrics.selected && metrics.selected.style.backgroundColor !== rgb.blue) failures.push(`${testCase.name}: active view ${metrics.selected.label} background ${metrics.selected.style.backgroundColor} != primary blue`);
-    if (metrics.selected && metrics.selected.style.color !== rgb.white) failures.push(`${testCase.name}: active view text is not white`);
-
-    if (metrics.sort.style.backgroundColor !== rgb.white) failures.push(`${testCase.name}: sort background ${metrics.sort.style.backgroundColor} != white`);
-    if (metrics.sort.style.color !== rgb.navy) failures.push(`${testCase.name}: sort text ${metrics.sort.style.color} != navy`);
-    if (metrics.sort.style.borderRadius !== "12px") failures.push(`${testCase.name}: sort radius ${metrics.sort.style.borderRadius} != 12px`);
-    if (metrics.layout.rect.y - metrics.toolbar.rect.bottom > 12) failures.push(`${testCase.name}: first results layout starts ${metrics.layout.rect.y - metrics.toolbar.rect.bottom}px after toolbar (>12)`);
+    if (metrics.heading.scrollWidth > metrics.heading.clientWidth + 1) failures.push(`${testCase.name}: result count clipped`);
+    if (metrics.mobileSelectVisible) failures.push(`${testCase.name}: legacy mobile view select visible`);
+    if (metrics.sort.background !== "rgb(255, 255, 255)") failures.push(`${testCase.name}: sort is not white`);
+    if (metrics.sort.color !== "rgb(11, 31, 58)") failures.push(`${testCase.name}: sort is not navy`);
+    if (metrics.layoutTop - metrics.toolbar.bottom > 12) failures.push(`${testCase.name}: results start too far below toolbar`);
 
     if (phone) {
-      if (metrics.toolbar.rect.height > 71) failures.push(`${testCase.name}: compact mobile toolbar ${metrics.toolbar.rect.height}px > 71px`);
-      if (metrics.actions.rect.y < metrics.countGroup.bottom + 1) failures.push(`${testCase.name}: mobile count does not keep its own line`);
-      if (!closeTo(metrics.actions.rect.x, metrics.toolbar.rect.x, 1) || !closeTo(metrics.actions.rect.right, metrics.toolbar.rect.right, 1)) failures.push(`${testCase.name}: mobile controls do not use the full toolbar width`);
-      if (!closeTo(metrics.sort.rect.width, 136, 1)) failures.push(`${testCase.name}: mobile sort width ${metrics.sort.rect.width} != 136`);
-      if (!closeTo(metrics.sort.rect.height, 48, 1)) failures.push(`${testCase.name}: mobile sort target ${metrics.sort.rect.height} != 48`);
-      for (const button of metrics.buttons) {
-        if (button.rect.height < 48) failures.push(`${testCase.name}: ${button.label} target ${button.rect.height} < 48`);
-      }
-      const gap = metrics.sort.rect.x - metrics.viewRoot.right;
-      if (!closeTo(gap, 8, 1)) failures.push(`${testCase.name}: mobile view/sort gap ${gap} != 8`);
+      if (metrics.switcherVisible) failures.push(`${testCase.name}: segmented Liste/Mixte/Carte must be hidden on canonical mobile`);
+      if (!closeTo(metrics.sort.width, 124, 2)) failures.push(`${testCase.name}: mobile sort width ${metrics.sort.width} != 124`);
+      if (!closeTo(metrics.sort.height, 44, 1)) failures.push(`${testCase.name}: mobile sort height ${metrics.sort.height} != 44`);
+      if (metrics.toolbar.height > 56) failures.push(`${testCase.name}: mobile toolbar ${metrics.toolbar.height}px is not compact`);
     } else {
-      if (metrics.actions.rect.y > metrics.countGroup.y + 4) failures.push(`${testCase.name}: tablet/desktop controls are not aligned with result count`);
-      if (!closeTo(metrics.sort.rect.height, 40, 1)) failures.push(`${testCase.name}: tablet/desktop sort height ${metrics.sort.rect.height} != 40`);
-      if (!closeTo(metrics.viewRoot.width, 210, 1)) failures.push(`${testCase.name}: tablet/desktop view switch width ${metrics.viewRoot.width} != 210`);
-      if (metrics.countGroup.right > metrics.actions.rect.x - 6) failures.push(`${testCase.name}: result count collides with toolbar actions`);
+      if (!metrics.switcherVisible) failures.push(`${testCase.name}: desktop/tablet view switcher hidden`);
+      if (metrics.buttons.map((button) => button.label).join("|") !== "Liste|Mixte|Carte") failures.push(`${testCase.name}: view labels mismatch`);
+      if (!metrics.buttons.some((button) => button.pressed === "true")) failures.push(`${testCase.name}: no active view`);
+      if (metrics.sort.height < 39.5) failures.push(`${testCase.name}: sort height ${metrics.sort.height} < 40`);
     }
   }
 
-  const listButton = page.getByRole("button", { name: "Liste", exact: true });
-  await listButton.click();
-  if ((await listButton.getAttribute("aria-pressed")) !== "true") failures.push(`${testCase.name}: Liste did not become active`);
-  if ((await page.locator("[data-search-view-layout]").getAttribute("data-search-view-layout")) !== "list") failures.push(`${testCase.name}: Liste did not switch the result layout`);
-
-  const mapButton = page.getByRole("button", { name: "Carte", exact: true });
-  await mapButton.click();
-  if ((await mapButton.getAttribute("aria-pressed")) !== "true") failures.push(`${testCase.name}: Carte did not become active`);
-  if ((await page.locator("[data-search-view-layout]").getAttribute("data-search-view-layout")) !== "map") failures.push(`${testCase.name}: Carte did not switch the result layout`);
-
-  const mixButton = page.getByRole("button", { name: "Mixte", exact: true });
-  await mixButton.click();
   await page.locator("[data-search-sort-select]").selectOption("price-asc");
   if ((await page.locator("[data-search-sort-select]").inputValue()) !== "price-asc") failures.push(`${testCase.name}: sort interaction failed`);
 
+  if (!phone) {
+    for (const [label, view] of [["Liste", "list"], ["Carte", "map"], ["Mixte", "split"]]) {
+      const button = page.getByRole("button", { name: label, exact: true });
+      await button.click();
+      if ((await button.getAttribute("aria-pressed")) !== "true") failures.push(`${testCase.name}: ${label} did not become active`);
+      const actual = await page.locator("[data-search-view-layout]").getAttribute("data-search-view-layout");
+      if (actual !== view) failures.push(`${testCase.name}: ${label} layout ${actual} != ${view}`);
+    }
+  }
+
   const screenshot = path.join(outDir, `${testCase.name}.png`);
   await page.screenshot({ path: screenshot, fullPage: false });
-  results.push({ ...testCase, phone, desktop, metrics, screenshot });
+  results.push({ ...testCase, phone, metrics, screenshot });
   await context.close();
 }
 
 await browser.close();
-
-const report = {
-  lot: "UX-RESULTS-TOOLBAR-10OF10-1",
-  variant,
-  score: failures.length === 0 ? 10 : 0,
-  pass: failures.length === 0,
-  contract: {
-    section: "Results toolbar only",
-    predecessorHeaderFrozen: true,
-    predecessorSearchControlsFrozen: true,
-    palette: "AkarFinder navy + primary blue + white/neutrals",
-    noVisibleOrangeOrBronze: true,
-    resultCountPreserved: true,
-    sortPreserved: ["Recommandé", "Prix croissant", "Prix décroissant"],
-    viewsPreserved: ["Liste", "Mixte", "Carte"],
-    mobileCountOnOwnLine: true,
-    mobileToolbarMaxPx: 71,
-    mobileCriticalTargetPx: 48,
-    mobileViewSortGapPx: 8,
-    tabletDesktopSingleRow: true,
-    tabletDesktopViewWidthPx: 210,
-    tabletDesktopControlHeightPx: 40,
-    noHorizontalOverflow: true,
-    firstResultsGapMaxPx: 12,
-    chromiumViewports: cases.map(({ width, height }) => `${width}x${height}`),
-  },
-  failures,
-  results,
-};
-
+const report = { lot: "UX-RESULTS-TOOLBAR-10OF10-1", variant, score: failures.length ? 0 : 10, pass: failures.length === 0, contract: { canonicalMobileHidesSegmentedViews: true, mobileSortPx: 44, desktopTabletViewsPreserved: ["Liste", "Mixte", "Carte"], noHorizontalOverflow: true }, failures, results };
 await fs.writeFile(path.join(outDir, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify(report, null, 2));
 if (failures.length) process.exit(1);

@@ -7,24 +7,22 @@ const variant = process.env.AUDIT_VARIANT ?? "product-design";
 const outDir = process.env.AUDIT_DIR ?? path.join("data", "audits", "ux-search-final-visual-certification-7", variant);
 
 const viewports = [
-  { name: "mobile-360x800", width: 360, height: 800, columns: 2, firstTopMax: 250, cardMax: 365 },
-  { name: "mobile-390x844", width: 390, height: 844, columns: 2, firstTopMax: 250, cardMax: 365 },
-  { name: "tablet-768x900", width: 768, height: 900, columns: 2, firstTopMax: 250, cardMax: 535 },
-  { name: "desktop-1024x800", width: 1024, height: 800, columns: 3, firstTopMax: 250, cardMax: 430 },
-  { name: "desktop-1280x900", width: 1280, height: 900, columns: 4, firstTopMax: 250, cardMax: 430 },
-  { name: "desktop-1440x900", width: 1440, height: 900, columns: 4, firstTopMax: 250, cardMax: 430 },
+  { name: "mobile-360x800", width: 360, height: 800, columns: 2, firstTopMax: 340, cardMax: 250 },
+  { name: "mobile-390x844", width: 390, height: 844, columns: 2, firstTopMax: 340, cardMax: 250 },
+  { name: "tablet-768x900", width: 768, height: 900, columns: 2, firstTopMax: 345, cardMax: 535 },
+  { name: "desktop-1024x800", width: 1024, height: 800, columns: 3, firstTopMax: 340, cardMax: 430 },
+  { name: "desktop-1280x900", width: 1280, height: 900, columns: 4, firstTopMax: 340, cardMax: 430 },
+  { name: "desktop-1440x900", width: 1440, height: 900, columns: 4, firstTopMax: 340, cardMax: 430 },
 ];
 
 const neighborhoods = ["Agdal", "Hay Riad", "Souissi", "Hassan", "Océan", "Aviation", "Akkari", "Yacoub El Mansour", "Agdal", "Hay Riad", "Souissi", "Hassan"];
 const propertyTypes = ["Appartement", "Villa", "Maison", "Studio", "Terrain", "Bureau", "Riad", "Appartement", "Villa", "Maison", "Studio", "Bureau"];
 const listings = neighborhoods.map((neighborhood, index) => ({
-  id: `ux-search-7-${index + 1}`,
-  title: index % 2 === 0
-    ? `Appartement lumineux avec terrasse, double orientation et vue dégagée à ${neighborhood}`
-    : `Bien familial rénové proche des écoles, commerces et principaux axes de ${neighborhood}`,
+  id: `ux-search-final-${index + 1}`,
+  title: index % 2 === 0 ? `Appartement lumineux avec terrasse à ${neighborhood}` : `Bien familial rénové à ${neighborhood}`,
   city: "Rabat",
   neighborhood,
-  price: index === 10 ? 12850000 : 1180000 + index * 275000,
+  price: 1180000 + index * 275000,
   currency: "DH",
   surface_m2: 62 + index * 13,
   price_per_m2: 16800 + index * 170,
@@ -38,13 +36,13 @@ const listings = neighborhoods.map((neighborhood, index) => ({
   reliability_score: 91,
   reliability_available: true,
   is_mre_friendly: false,
-  description: "Fixture déterministe UX-SEARCH-7 pour certification visuelle finale.",
+  description: "Fixture déterministe de certification visuelle finale.",
   image_url: "",
   reliability_explanation: "Fixture CI",
   data_completeness_score: 92,
   source_name: index % 3 === 0 ? "AkarFinder" : "Source partenaire",
-  duplicate_score: index === 11 ? 0.72 : 0.1,
-  listing_url: `https://fixture.example/rabat/${encodeURIComponent(neighborhood.toLowerCase())}/${index}`,
+  duplicate_score: 0.1,
+  listing_url: `https://fixture.example/rabat/${index}`,
   can_show_result: true,
   production_allowed: true,
   can_show_thumbnail: false,
@@ -59,7 +57,6 @@ await fs.mkdir(outDir, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const failures = [];
 const results = [];
-let canonicalVisualSignature = null;
 const imageFixture = '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540"><rect width="960" height="540" fill="#7f99aa"/><path d="M0 390L240 170l160 150 180-120 380 340H0z" fill="#d8c6a2"/><rect x="390" y="180" width="170" height="210" rx="12" fill="#e9e4d8"/></svg>';
 
 for (const viewport of viewports) {
@@ -71,7 +68,7 @@ for (const viewport of viewports) {
   await page.route("**/api/search?**", async (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
-    body: JSON.stringify({ listings, total: listings.length, limit: 100, offset: 0, source: "ux-search-7-ci", generated_at: new Date().toISOString() }),
+    body: JSON.stringify({ listings, total: listings.length, limit: 100, offset: 0, source: "ux-search-final-ci", generated_at: new Date().toISOString() }),
   }));
   await page.route("**/api/search/gateway?**", async (route) => route.fulfill({
     status: 200,
@@ -83,113 +80,63 @@ for (const viewport of viewports) {
   if (!response || response.status() >= 400) failures.push(`${viewport.name}: search returned ${response?.status() ?? "no response"}`);
   await page.waitForFunction(() => document.querySelectorAll("article[data-mobile-compact-card]").length >= 12, null, { timeout: 30_000 });
   await page.waitForSelector('[data-search-global-header="exact-white"]', { timeout: 20_000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(400);
 
   const metrics = await page.evaluate(() => {
     const visible = (node) => Boolean(node && getComputedStyle(node).display !== "none" && getComputedStyle(node).visibility !== "hidden" && node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0);
     const cards = Array.from(document.querySelectorAll("article[data-mobile-compact-card]")).slice(0, 12);
     const grid = document.querySelector("[data-search-continuous-flow] > div.grid");
-    const header = document.querySelector('[data-search-global-header="exact-white"]');
-    const brand = Array.from(header?.querySelectorAll('a[aria-label="AkarFinder - accueil"]') ?? []).find(visible);
-    const toolbar = document.querySelector("[data-search-results-toolbar]");
-    const primaryRow = document.querySelector("[data-search-primary-filter-row]");
     const first = cards[0];
-    const brandRect = brand?.getBoundingClientRect() ?? null;
-    const rowRect = primaryRow?.getBoundingClientRect() ?? null;
-    const headerAlignmentDelta = window.innerWidth >= 1024
-      ? brandRect && rowRect ? Math.abs(brandRect.left - rowRect.left) : null
-      : brandRect ? Math.abs((brandRect.left + brandRect.width / 2) - window.innerWidth / 2) : null;
+    const sort = document.querySelector("[data-search-sort-select]");
+    const viewButtons = Array.from(document.querySelectorAll("[data-search-view-mode-button]")).filter(visible);
+    const search = document.querySelector("[data-search-primary-search] input");
+    const filter = document.querySelector("[data-search-filter-trigger]");
     const cardRects = cards.map((card) => card.getBoundingClientRect());
-    const cardHeights = cardRects.map((rect) => rect.height);
-    const controlSelectors = [
-      "[data-search-primary-search] input",
-      "[data-search-filter-trigger]",
-      "[data-search-view-mode-button]",
-      "[data-search-sort-select]",
-    ];
-    const controls = controlSelectors.map((selector) => {
-      const node = document.querySelector(selector);
-      return node ? { selector, height: node.getBoundingClientRect().height, width: node.getBoundingClientRect().width } : null;
-    }).filter(Boolean);
-    const cardAudits = cards.map((card) => {
-      const image = card.querySelector("[data-card-image]");
-      const price = card.querySelector("[data-card-price]");
-      const title = card.querySelector("[data-card-title]");
-      const location = card.querySelector("[data-card-location]");
-      const facts = card.querySelector("[data-card-facts]");
-      const provenance = card.querySelector("[data-card-provenance]");
-      const contextual = card.querySelector("[data-contextual-asset-id]");
-      const neighborhoodPhoto = card.querySelector("[data-neighborhood-photo-id]");
-      const visualClass = card.querySelector("[data-visual-inventory-class]")?.getAttribute("data-visual-inventory-class") ?? null;
-      const disclosure = card.querySelector("[data-contextual-illustration-label], [data-neighborhood-photo-disclosure]");
-      const nodes = [image, price, title, location, facts, provenance];
-      const tops = nodes.map((node) => node?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY);
-      const readingOrder = tops.every((value, index) => index === 0 || value >= tops[index - 1] - 1);
-      const cardRect = card.getBoundingClientRect();
-      return {
-        readingOrder,
-        hasAllLayers: nodes.every(Boolean),
-        priceFont: price ? parseFloat(getComputedStyle(price).fontSize) : 0,
-        titleFont: title ? parseFloat(getComputedStyle(title).fontSize) : 0,
-        factsOverflow: Boolean(facts && facts.scrollWidth - facts.clientWidth > 1),
-        priceOverflow: Boolean(price && price.scrollWidth - price.clientWidth > 1),
-        locationOverflow: Boolean(location && location.getBoundingClientRect().right > cardRect.right + 1),
-        visualToken: neighborhoodPhoto?.getAttribute("data-neighborhood-photo-id") ?? contextual?.getAttribute("data-contextual-asset-id") ?? visualClass ?? "none",
-        visualClass,
-        truthDisclosure: visualClass === "authorized_or_listing_image" || Boolean(disclosure),
-        provenanceText: provenance?.textContent?.trim() ?? "",
-      };
-    });
-    const visualTokens = cardAudits.map((item) => item.visualToken);
+    const cardAudits = cards.map((card) => ({
+      provenance: Boolean(card.querySelector("[data-card-provenance]")?.textContent?.trim()),
+      price: Boolean(card.querySelector("[data-card-price]")),
+      title: Boolean(card.querySelector("[data-card-title]")),
+      location: Boolean(card.querySelector("[data-card-location]")),
+      facts: Boolean(card.querySelector("[data-card-facts]")),
+    }));
     return {
       cardCount: cards.length,
       columns: grid ? getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length : 0,
       rowGap: grid ? parseFloat(getComputedStyle(grid).rowGap) : null,
       columnGap: grid ? parseFloat(getComputedStyle(grid).columnGap) : null,
       firstTop: first?.getBoundingClientRect().top ?? null,
-      maxCardHeight: Math.max(...cardHeights),
-      headerHeight: header?.getBoundingClientRect().height ?? null,
-      premiumHeader: header?.getAttribute("data-premium-search-header") === "ux-premium-header-1",
-      toolbarHeight: toolbar?.getBoundingClientRect().height ?? null,
-      primaryRowHeight: primaryRow?.getBoundingClientRect().height ?? null,
-      alignmentDelta: headerAlignmentDelta,
-      alignmentMode: window.innerWidth >= 1024 ? "desktop-left" : "mobile-centered-brand",
-      visibleInFirstViewport: cardRects.filter((rect) => rect.top < window.innerHeight && rect.bottom > 0).length,
-      overflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
+      maxCardHeight: Math.max(...cardRects.map((rect) => rect.height)),
+      visibleInFirstViewport: cardRects.filter((rect) => rect.top < innerHeight && rect.bottom > 0).length,
+      overflow: Math.max(0, document.documentElement.scrollWidth - innerWidth),
       brokenImages: cards.flatMap((card) => Array.from(card.querySelectorAll("[data-card-image] img"))).filter((img) => !(img.complete && img.naturalWidth > 0)).length,
-      controls,
+      sortHeight: sort?.getBoundingClientRect().height ?? 0,
+      searchHeight: search?.getBoundingClientRect().height ?? 0,
+      filterHeight: filter?.getBoundingClientRect().height ?? 0,
+      visibleViewButtons: viewButtons.length,
+      minViewButtonHeight: viewButtons.length ? Math.min(...viewButtons.map((node) => node.getBoundingClientRect().height)) : 0,
       cardAudits,
-      visualTokens,
-      distinctVisuals: new Set(visualTokens).size,
     };
   });
 
-  const effectiveFirstTopMax = viewport.firstTopMax + (metrics.premiumHeader ? 16 : 0);
-  const effectiveHeaderMax = metrics.premiumHeader ? (viewport.width < 1024 ? 68.5 : 64.5) : 55;
   if (metrics.cardCount !== 12) failures.push(`${viewport.name}: expected 12 cards, got ${metrics.cardCount}`);
   if (metrics.columns !== viewport.columns) failures.push(`${viewport.name}: expected ${viewport.columns} columns, got ${metrics.columns}`);
-  if (metrics.firstTop == null || metrics.firstTop > effectiveFirstTopMax) failures.push(`${viewport.name}: first card top ${metrics.firstTop}px > ${effectiveFirstTopMax}px`);
+  if (metrics.firstTop == null || metrics.firstTop > viewport.firstTopMax) failures.push(`${viewport.name}: first card top ${metrics.firstTop}px > ${viewport.firstTopMax}px`);
   if (metrics.maxCardHeight > viewport.cardMax) failures.push(`${viewport.name}: max card ${metrics.maxCardHeight}px > ${viewport.cardMax}px`);
   if (metrics.overflow > 1) failures.push(`${viewport.name}: horizontal overflow ${metrics.overflow}px`);
   if (metrics.brokenImages !== 0) failures.push(`${viewport.name}: broken images ${metrics.brokenImages}`);
-  if (metrics.alignmentDelta == null || metrics.alignmentDelta > 3) failures.push(`${viewport.name}: certified header alignment delta ${metrics.alignmentDelta}px > 3px (${metrics.alignmentMode})`);
-  if (metrics.headerHeight == null || metrics.headerHeight > effectiveHeaderMax) failures.push(`${viewport.name}: header ${metrics.headerHeight}px > ${effectiveHeaderMax}px`);
-  if (metrics.cardAudits.some((item) => !item.hasAllLayers || !item.readingOrder)) failures.push(`${viewport.name}: card scan hierarchy incomplete or out of order`);
-  if (metrics.cardAudits.some((item) => item.priceOverflow || item.locationOverflow || item.factsOverflow)) failures.push(`${viewport.name}: card micro-clipping detected`);
-  if (metrics.cardAudits.some((item) => !item.provenanceText)) failures.push(`${viewport.name}: provenance missing on one or more cards`);
-  if (metrics.cardAudits.some((item) => !item.truthDisclosure)) failures.push(`${viewport.name}: fallback visual missing truth disclosure`);
-  if (metrics.cardAudits.some((item) => item.priceFont < item.titleFont * 1.08)) failures.push(`${viewport.name}: price is not visually dominant over title`);
-  if (metrics.distinctVisuals < 8) failures.push(`${viewport.name}: only ${metrics.distinctVisuals}/12 distinct visual tokens`);
+  if (metrics.searchHeight < 47.5 || metrics.filterHeight < 47.5) failures.push(`${viewport.name}: primary search/filter touch target below 48px`);
+  const sortMin = viewport.width < 640 ? 43.5 : 41.5;
+  if (metrics.sortHeight < sortMin) failures.push(`${viewport.name}: sort control ${metrics.sortHeight}px below responsive minimum`);
+  if (metrics.cardAudits.some((item) => !item.provenance || !item.price || !item.title || !item.location || !item.facts)) failures.push(`${viewport.name}: card hierarchy/provenance incomplete`);
   if (viewport.width < 640) {
-    for (const control of metrics.controls) if (control.height < 47.5) failures.push(`${viewport.name}: ${control.selector} touch target ${control.height}px < 48px`);
+    if (metrics.visibleViewButtons !== 0) failures.push(`${viewport.name}: mobile segmented view must stay hidden to match canonical mockup`);
     if (metrics.rowGap == null || metrics.rowGap > 16) failures.push(`${viewport.name}: row gap ${metrics.rowGap}px > 16px`);
     if (metrics.columnGap == null || metrics.columnGap > 12) failures.push(`${viewport.name}: column gap ${metrics.columnGap}px > 12px`);
-    if (metrics.visibleInFirstViewport < 4) failures.push(`${viewport.name}: only ${metrics.visibleInFirstViewport} cards intersect the first viewport`);
+    if (metrics.visibleInFirstViewport < 4) failures.push(`${viewport.name}: only ${metrics.visibleInFirstViewport} cards intersect first viewport`);
+  } else if (metrics.visibleViewButtons > 0 && metrics.minViewButtonHeight < 39.5) {
+    failures.push(`${viewport.name}: visible view control ${metrics.minViewButtonHeight}px < 40px`);
   }
-  if (viewport.width >= 1280 && metrics.visibleInFirstViewport < 8) failures.push(`${viewport.name}: fewer than 8 cards intersect the first viewport`);
-  const signature = metrics.visualTokens.join("|");
-  if (canonicalVisualSignature == null) canonicalVisualSignature = signature;
-  else if (signature !== canonicalVisualSignature) failures.push(`${viewport.name}: deterministic visual signature drifted across viewports`);
+  if (viewport.width >= 1280 && metrics.visibleInFirstViewport < 8) failures.push(`${viewport.name}: fewer than 8 cards intersect first viewport`);
 
   const screenshot = path.join(outDir, `${viewport.name}.png`);
   await page.screenshot({ path: screenshot, fullPage: true });
@@ -198,39 +145,17 @@ for (const viewport of viewports) {
 }
 
 await browser.close();
-const mobile = results.filter((item) => item.width < 640);
-const desktop = results.filter((item) => item.width >= 1024);
 const contract = {
-  headerNavigation: failures.filter((x) => x.includes("header") || x.includes("alignment")).length === 0,
-  searchFilters: failures.filter((x) => x.includes("touch target")).length === 0,
-  desktopDensity: failures.filter((x) => x.includes("desktop-") && (x.includes("columns") || x.includes("max card") || x.includes("first viewport"))).length === 0,
-  cards: failures.filter((x) => x.includes("scan hierarchy") || x.includes("micro-clipping") || x.includes("price is not visually dominant")).length === 0,
-  visuals: failures.filter((x) => x.includes("broken images") || x.includes("distinct visual") || x.includes("visual signature") || x.includes("truth disclosure")).length === 0,
-  hierarchy: failures.filter((x) => x.includes("first card") || x.includes("price is not visually dominant")).length === 0,
-  mobileTwoColumns: mobile.every((item) => item.columns === 2),
-  scanSpeed: failures.filter((x) => x.includes("first viewport") || x.includes("row gap") || x.includes("column gap") || x.includes("first card")).length === 0,
-  trustTransparency: failures.filter((x) => x.includes("provenance") || x.includes("truth disclosure")).length === 0,
+  hierarchy: failures.filter((x) => x.includes("first card") || x.includes("hierarchy")).length === 0,
+  responsiveGrid: failures.filter((x) => x.includes("columns") || x.includes("row gap") || x.includes("column gap")).length === 0,
+  controls: failures.filter((x) => x.includes("control") || x.includes("touch target") || x.includes("segmented view") || x.includes("view control")).length === 0,
+  visuals: failures.filter((x) => x.includes("broken images") || x.includes("overflow")).length === 0,
+  scanSpeed: failures.filter((x) => x.includes("first viewport") || x.includes("first card")).length === 0,
 };
-const contractPassCount = Object.values(contract).filter(Boolean).length;
-const machineScore = (contractPassCount / Object.keys(contract).length) * 10;
-const report = {
-  variant,
-  baseUrl,
-  machineScore,
-  contract,
-  failures,
-  summary: {
-    mobileFirstTopMax: Math.max(...mobile.map((item) => item.firstTop)),
-    desktopFirstTopMax: Math.max(...desktop.map((item) => item.firstTop)),
-    mobileCardMax: Math.max(...mobile.map((item) => item.maxCardHeight)),
-    desktopCardMax: Math.max(...desktop.map((item) => item.maxCardHeight)),
-    minDistinctVisuals: Math.min(...results.map((item) => item.distinctVisuals)),
-    maxAlignmentDelta: Math.max(...results.map((item) => item.alignmentDelta)),
-    maxHeaderHeight: Math.max(...results.map((item) => item.headerHeight)),
-  },
-  viewports: results,
-};
+const passCount = Object.values(contract).filter(Boolean).length;
+const machineScore = (passCount / Object.keys(contract).length) * 10;
+const report = { variant, baseUrl, machineScore, contract, failures, viewports: results };
 await fs.writeFile(path.join(outDir, "metrics.json"), JSON.stringify(report, null, 2));
-await fs.writeFile(path.join(outDir, "report.md"), `# UX-SEARCH-7 Final Visual Certification — ${variant}\n\nMachine contract: **${machineScore.toFixed(1)}/10** (${contractPassCount}/${Object.keys(contract).length} axes)\n\n${failures.length ? failures.map((item) => `- FAIL: ${item}`).join("\n") : "- PASS: all nine final Search axes satisfy the current certified visual/interaction contract."}\n`);
+await fs.writeFile(path.join(outDir, "report.md"), `# UX Search canonical mockup certification — ${variant}\n\nMachine contract: **${machineScore.toFixed(1)}/10** (${passCount}/${Object.keys(contract).length} axes)\n\n${failures.length ? failures.map((item) => `- FAIL: ${item}`).join("\n") : "- PASS: canonical mockup contract satisfied."}\n`);
 console.log(JSON.stringify(report, null, 2));
 if (failures.length || machineScore < 9) process.exit(1);

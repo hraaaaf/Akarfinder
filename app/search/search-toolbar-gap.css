@@ -1,0 +1,4 @@
+/* UX-RESULTS-TOOLBAR-10OF10-1 — preserve the historical <=12px toolbar-to-results contract. */
+[data-search-view-layout] {
+  margin-top: 8px !important;
+}
