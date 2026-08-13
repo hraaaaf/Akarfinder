@@ -1,0 +1,21 @@
+name: DATA MASS-X3 Long-tail Source Factory
+on:
+  pull_request:
+    paths:
+      - "data/data-mass-x3/**"
+      - "docs/data/DATA-MASS-X3-LONG-TAIL-SOURCE-FACTORY.md"
+      - ".github/workflows/data-mass-x3-long-tail-source-factory.yml"
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Enforce X3 contract
+        run: node -e "const c=require('./data/data-mass-x3/long-tail-source-factory-contract.json');if(c.mode!=='shadow_read_only'||c.minStrongDetailishUrls!==5||c.databaseWrites||c.registryWrites||c.searchActivations||c.sourceNetworkRequests||c.detailPageFetches||c.permissionsInferred)process.exit(1)"
+      - name: Verify evidence summary
+        run: grep -q "44 domaines non enregistrés" docs/data/DATA-MASS-X3-LONG-TAIL-SOURCE-FACTORY.md && grep -q "1 496 URL representations" docs/data/DATA-MASS-X3-LONG-TAIL-SOURCE-FACTORY.md
