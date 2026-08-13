@@ -26,9 +26,10 @@ test("search filters and decision header consume shared primitives", () => {
   assert.ok(page.includes("ui.page"));
 });
 
-test("migrated surfaces no longer carry local brand hex colors", () => {
+test("non-frozen migrated surfaces no longer carry local brand hex colors", () => {
+  // QuickFilters is now an explicitly frozen premium Search surface whose exact
+  // mockup palette is certified by dedicated Search controls / full-page gates.
   const migrated = [
-    source("components/search/QuickFilters.tsx"),
     source("components/listings/PropertyDecisionHeader.tsx"),
     source("app/listings/[id]/page.tsx"),
   ].join("\n");
