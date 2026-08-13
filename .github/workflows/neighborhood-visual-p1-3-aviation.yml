@@ -1,4 +1,3 @@
-# Final P1.3 certification trigger after source pinning and temporary-workflow cleanup.
 name: Neighborhood Visual P1.3 Aviation Certification
 
 on:
@@ -7,7 +6,6 @@ on:
       - "app/visual-qa/aviation/**"
       - "components/search/AviationNeighborhoodVisualQAFixture.tsx"
       - "lib/contextual-illustrations/aviation-neighborhood-visuals.ts"
-      - "public/neighborhood-visuals/rabat/aviation/**"
       - "scripts/audits/neighborhood-visual-p1-3-aviation-visual-qa.mjs"
       - "scripts/scrapers/__tests__/neighborhood-visual-p1-3-aviation.test.ts"
       - "supabase/functions/neighborhood-visual-p1-3-aviation-ingest/**"
@@ -29,7 +27,7 @@ env:
 jobs:
   product-design-reviewer:
     name: Product Design Reviewer — Aviation 3-scene QA
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -51,13 +49,21 @@ jobs:
         run: |
           deno check supabase/functions/neighborhood-visual-p1-3-aviation-ingest/index.ts
           npx tsc --noEmit
-      - name: Verify pinned source bytes
+      - name: Materialize exact Commons sources
         shell: bash
         run: |
           set -euo pipefail
-          echo "9301a9696cbe7a420951f7179d12c755a6492610  public/neighborhood-visuals/rabat/aviation/signature/sofitel-rabat.jpg" | sha1sum --check --strict
-          echo "d8e09bfdbad2fdef60f28840b90b79b45f77b8c6  public/neighborhood-visuals/rabat/aviation/immobilier/avenue-mohamed-vi.jpg" | sha1sum --check --strict
-          echo "3bfd758bb1bc62a0b9598de68f5940932a898eb7  public/neighborhood-visuals/rabat/aviation/lifestyle/kartaview-260184419.jpg" | sha1sum --check --strict
+          mkdir -p public/__qa
+          UA='AkarFinder-P1.3-Aviation-certification/1.0'
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hassan%20II%20Park%20-%20Rabat%20-%20November%202024%20-%201.jpg' -o public/__qa/aviation-signature.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Avenue%20Mohamed%20VI%20Souissi%20Rabat.jpg' -o public/__qa/aviation-immobilier.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hassan%20II%20Park%20-%20Rabat%20-%20November%202024%20-%202.jpg' -o public/__qa/aviation-lifestyle.jpg
+          echo '93cbebc360cb7424cfb554896b968fd917d43511  public/__qa/aviation-signature.jpg' | sha1sum --check --strict
+          echo 'd8e09bfdbad2fdef60f28840b90b79b45f77b8c6  public/__qa/aviation-immobilier.jpg' | sha1sum --check --strict
+          echo '88d981adf174f55cdd77a5ad7518891dd1ec951d  public/__qa/aviation-lifestyle.jpg' | sha1sum --check --strict
+          test "$(wc -c < public/__qa/aviation-signature.jpg)" -eq 3222903
+          test "$(wc -c < public/__qa/aviation-immobilier.jpg)" -eq 1338653
+          test "$(wc -c < public/__qa/aviation-lifestyle.jpg)" -eq 3502946
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Production build
@@ -84,7 +90,7 @@ jobs:
   independent-release-certifier:
     name: Independent Release Certifier — Aviation 3-scene QA
     needs: product-design-reviewer
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -106,12 +112,18 @@ jobs:
         run: |
           deno check supabase/functions/neighborhood-visual-p1-3-aviation-ingest/index.ts
           npx tsc --noEmit
-      - name: Independently verify pinned source bytes
+      - name: Independently materialize exact Commons sources
         shell: bash
         run: |
-          echo "9301a9696cbe7a420951f7179d12c755a6492610  public/neighborhood-visuals/rabat/aviation/signature/sofitel-rabat.jpg" | sha1sum --check --strict
-          echo "d8e09bfdbad2fdef60f28840b90b79b45f77b8c6  public/neighborhood-visuals/rabat/aviation/immobilier/avenue-mohamed-vi.jpg" | sha1sum --check --strict
-          echo "3bfd758bb1bc62a0b9598de68f5940932a898eb7  public/neighborhood-visuals/rabat/aviation/lifestyle/kartaview-260184419.jpg" | sha1sum --check --strict
+          set -euo pipefail
+          mkdir -p public/__qa
+          UA='AkarFinder-P1.3-Aviation-release/1.0'
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hassan%20II%20Park%20-%20Rabat%20-%20November%202024%20-%201.jpg' -o public/__qa/aviation-signature.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Avenue%20Mohamed%20VI%20Souissi%20Rabat.jpg' -o public/__qa/aviation-immobilier.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hassan%20II%20Park%20-%20Rabat%20-%20November%202024%20-%202.jpg' -o public/__qa/aviation-lifestyle.jpg
+          echo '93cbebc360cb7424cfb554896b968fd917d43511  public/__qa/aviation-signature.jpg' | sha1sum --check --strict
+          echo 'd8e09bfdbad2fdef60f28840b90b79b45f77b8c6  public/__qa/aviation-immobilier.jpg' | sha1sum --check --strict
+          echo '88d981adf174f55cdd77a5ad7518891dd1ec951d  public/__qa/aviation-lifestyle.jpg' | sha1sum --check --strict
       - name: Install Chromium independently
         run: npx playwright install --with-deps chromium
       - name: Independent production build
