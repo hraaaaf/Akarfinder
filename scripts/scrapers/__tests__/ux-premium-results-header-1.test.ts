@@ -12,5 +12,5 @@ test("UX-PREMIUM-RESULTS-HEADER-1 source contract", () => {
   assert.match(css, /\[data-search-results-toolbar\]\{min-height:54px/);
   assert.match(css, /\[data-search-results-toolbar\] h1\{font-size:16px/);
   assert.match(css, /\[data-search-results-toolbar\] \[data-search-sort-select\]\{height:44px/);
-  assert.match(css, /overflowX/,{ message: "placeholder" });
+  assert.match(css, /\[data-search-results-section\]\{background:#fff/);
 });
