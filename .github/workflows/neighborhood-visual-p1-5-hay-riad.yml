@@ -1,0 +1,131 @@
+name: Neighborhood Visual P1.5 Hay Riad Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/visual-qa/hay-riad/**"
+      - "components/search/HayRiadNeighborhoodVisualQAFixture.tsx"
+      - "lib/contextual-illustrations/hay-riad-neighborhood-visuals.ts"
+      - "scripts/audits/neighborhood-visual-p1-5-hay-riad-visual-qa.mjs"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p1-5-hay-riad.test.ts"
+      - "supabase/functions/neighborhood-visual-p1-5-hay-riad-ingest/**"
+      - "supabase/migrations/20260813114500_neighborhood_visual_p1_5_hay_riad_metadata.sql"
+      - ".github/workflows/neighborhood-visual-p1-5-hay-riad.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NEIGHBORHOOD_VISUAL_QA: "1"
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer — Hay Riad 3-scene QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - uses: denoland/setup-deno@v2
+        with: { deno-version: v2.x }
+      - run: npm ci
+      - name: P1.5 contract + predecessors
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p1-5-hay-riad.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-4-hassan.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-3-aviation.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Deno + TypeScript
+        run: |
+          deno check supabase/functions/neighborhood-visual-p1-5-hay-riad-ingest/index.ts
+          npx tsc --noEmit
+      - name: Materialize exact Commons sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          UA='AkarFinder-P1.5-Hay-Riad-certification/1.0'
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Rabat%20hay%20ryad.jpg' -o public/__qa/hay-riad-signature.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hay%20Riad%20%28335665610%29.jpg' -o public/__qa/hay-riad-immobilier.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hay%20Riad%20%28335665617%29.jpg' -o public/__qa/hay-riad-lifestyle.jpg
+          echo 'f02d4795b4df3c7cd6608472b82f9fda1c5d4796  public/__qa/hay-riad-signature.jpg' | sha1sum --check --strict
+          echo '54c45f4914839a1a9ee3a65acf3d570f3450b653  public/__qa/hay-riad-immobilier.jpg' | sha1sum --check --strict
+          echo 'a91237d667511ed212e9c46b343d96cff5054c5f  public/__qa/hay-riad-lifestyle.jpg' | sha1sum --check --strict
+          test "$(wc -c < public/__qa/hay-riad-signature.jpg)" -eq 6395398
+          test "$(wc -c < public/__qa/hay-riad-immobilier.jpg)" -eq 4353803
+          test "$(wc -c < public/__qa/hay-riad-lifestyle.jpg)" -eq 921974
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start QA server
+        shell: bash
+        run: |
+          npm run start -- -p 3165 > /tmp/hay-riad-p15-product.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3165/visual-qa/hay-riad >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/hay-riad-p15-product.log; exit 1
+      - name: Certify responsive matrix
+        env: { BASE_URL: "http://127.0.0.1:3165", AUDIT_VARIANT: "product-design" }
+        run: node scripts/audits/neighborhood-visual-p1-5-hay-riad-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p1-5-hay-riad-product-design-proof
+          path: data/audits/neighborhood-visual-p1-5-hay-riad/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Hay Riad 3-scene QA
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - uses: denoland/setup-deno@v2
+        with: { deno-version: v2.x }
+      - run: npm ci
+      - name: Independent contract replay
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p1-5-hay-riad.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-4-hassan.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Independent Deno + TypeScript
+        run: |
+          deno check supabase/functions/neighborhood-visual-p1-5-hay-riad-ingest/index.ts
+          npx tsc --noEmit
+      - name: Independently materialize exact Commons sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          UA='AkarFinder-P1.5-Hay-Riad-release/1.0'
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Rabat%20hay%20ryad.jpg' -o public/__qa/hay-riad-signature.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hay%20Riad%20%28335665610%29.jpg' -o public/__qa/hay-riad-immobilier.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hay%20Riad%20%28335665617%29.jpg' -o public/__qa/hay-riad-lifestyle.jpg
+          echo 'f02d4795b4df3c7cd6608472b82f9fda1c5d4796  public/__qa/hay-riad-signature.jpg' | sha1sum --check --strict
+          echo '54c45f4914839a1a9ee3a65acf3d570f3450b653  public/__qa/hay-riad-immobilier.jpg' | sha1sum --check --strict
+          echo 'a91237d667511ed212e9c46b343d96cff5054c5f  public/__qa/hay-riad-lifestyle.jpg' | sha1sum --check --strict
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start independent QA server
+        shell: bash
+        run: |
+          npm run start -- -p 3166 > /tmp/hay-riad-p15-release.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3166/visual-qa/hay-riad >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/hay-riad-p15-release.log; exit 1
+      - name: Independently certify responsive matrix
+        env: { BASE_URL: "http://127.0.0.1:3166", AUDIT_VARIANT: "release-certifier" }
+        run: node scripts/audits/neighborhood-visual-p1-5-hay-riad-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p1-5-hay-riad-release-proof
+          path: data/audits/neighborhood-visual-p1-5-hay-riad/release-certifier
+          if-no-files-found: error
+          retention-days: 14
