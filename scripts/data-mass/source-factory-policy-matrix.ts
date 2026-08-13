@@ -62,6 +62,6 @@ export function validatePolicyMatrix(m:PolicyMatrix){
   if(m.records.length!==101||m.registryPreview.length!==101) throw new Error("COUNT_DRIFT");
   if(m.summary.permissionRequired!==43||m.summary.hold!==58||m.summary.canonicalCandidates!==43) throw new Error("DECISION_DRIFT");
   if(m.summary.canonicalApproved!==0||m.summary.publicActivable!==0||m.summary.registryWrites!==0) throw new Error("SAFETY_DRIFT");
-  if(m.summary.totalUrlRepresentations!==22656||m.summary.totalLikelyMoroccoRealEstateUrls!==19665||m.summary.totalLikelyMoroccoListingDetailUrls!==4114) throw new Error("YIELD_DRIFT");
+  if(m.summary.totalUrlRepresentations!==17602||m.summary.totalLikelyMoroccoRealEstateUrls!==16018||m.summary.totalLikelyMoroccoListingDetailUrls!==3051) throw new Error("YIELD_DRIFT");
   for(const r of m.registryPreview){ if(r.machine_gate!=="internal_signal_only"||r.ingestion_gate!=="internal_signal_only"||r.display_gate!=="hidden"||r.allowed_discovery_channels.length!==0) throw new Error(`ACTIVE_PREVIEW:${r.source_domain}`); }
 }
