@@ -11,11 +11,11 @@ type AssetSpec = {
 };
 
 const BUCKET = "neighborhood-visuals";
-const RAW = "https://raw.githubusercontent.com/hraaaaf/Akarfinder/main/public/neighborhood-visuals/rabat/aviation";
+const COMMONS = "https://commons.wikimedia.org/wiki/Special:Redirect/file/";
 const ASSETS: readonly AssetSpec[] = [
-  { role: "signature", sourceUrl: `${RAW}/signature/sofitel-rabat.jpg`, storagePath: "rabat/aviation/signature/master.jpg", width: 2560, height: 1440, bytes: 621_270, sha1: "9301a9696cbe7a420951f7179d12c755a6492610" },
-  { role: "immobilier", sourceUrl: `${RAW}/immobilier/avenue-mohamed-vi.jpg`, storagePath: "rabat/aviation/immobilier/master.jpg", width: 3072, height: 1728, bytes: 1_338_653, sha1: "d8e09bfdbad2fdef60f28840b90b79b45f77b8c6" },
-  { role: "lifestyle", sourceUrl: `${RAW}/lifestyle/kartaview-260184419.jpg`, storagePath: "rabat/aviation/lifestyle/master.jpg", width: 1280, height: 720, bytes: 292_304, sha1: "3bfd758bb1bc62a0b9598de68f5940932a898eb7" },
+  { role: "signature", sourceUrl: `${COMMONS}Hassan%20II%20Park%20-%20Rabat%20-%20November%202024%20-%201.jpg`, storagePath: "rabat/aviation/signature/master.jpg", width: 4032, height: 3024, bytes: 3_222_903, sha1: "93cbebc360cb7424cfb554896b968fd917d43511" },
+  { role: "immobilier", sourceUrl: `${COMMONS}Avenue%20Mohamed%20VI%20Souissi%20Rabat.jpg`, storagePath: "rabat/aviation/immobilier/master.jpg", width: 3072, height: 1728, bytes: 1_338_653, sha1: "d8e09bfdbad2fdef60f28840b90b79b45f77b8c6" },
+  { role: "lifestyle", sourceUrl: `${COMMONS}Hassan%20II%20Park%20-%20Rabat%20-%20November%202024%20-%202.jpg`, storagePath: "rabat/aviation/lifestyle/master.jpg", width: 4032, height: 3024, bytes: 3_502_946, sha1: "88d981adf174f55cdd77a5ad7518891dd1ec951d" },
 ] as const;
 
 function jpegDimensions(bytes: Uint8Array): { width: number; height: number } {
@@ -56,8 +56,8 @@ Deno.serve(async (req: Request) => {
   const results: Array<Record<string, unknown>> = [];
 
   for (const asset of ASSETS) {
-    const response = await fetch(asset.sourceUrl, { redirect: "follow" });
-    if (!response.ok) throw new Error(`${asset.role}: pinned source fetch failed ${response.status}`);
+    const response = await fetch(asset.sourceUrl, { headers: { "User-Agent": "AkarFinder-P1.3-Aviation/1.0" }, redirect: "follow" });
+    if (!response.ok) throw new Error(`${asset.role}: source fetch failed ${response.status}`);
     const bytes = new Uint8Array(await response.arrayBuffer());
     const dimensions = jpegDimensions(bytes);
     if (dimensions.width !== asset.width || dimensions.height !== asset.height) throw new Error(`${asset.role}: dimension drift ${dimensions.width}x${dimensions.height}`);
