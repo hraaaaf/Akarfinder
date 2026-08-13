@@ -22,12 +22,15 @@ Ordre de vérité :
 
 - **MASS-1 ✅ CLOSED / 9,5/10** — réservoir qualifié à 101 domaines.
 - **MASS-2 ✅ CLOSED / 100 %** — 101/101 audités ; 43 `PERMISSION_REQUIRED`, 58 `HOLD`, 0 permission positive/activation inférée.
-- **MASS-3 ✅ CLOSED — PR #566** — Minimal Listing Index certifié fail-closed. Merge `604306a82e646596fd320fed88b4256f5caca49f`; 35 Registry rows, 0 policy-admissible, 0 canary, 0 write/activation/fetch/permission inférée ; artefact final `9188818350`, digest `sha256:2e09090dfec5bd9bec304221889ee0e3e4304fb9e7f16f54c25a2bd80e97a047`.
+- **MASS-3 ✅ CLOSED — PR #566** — Minimal Listing Index fail-closed ; merge `604306a82e646596fd320fed88b4256f5caca49f` ; 35 Registry rows, 0 admissible, 0 canary, 0 mutation.
+- **MASS-4 ✅ CLOSED — PR #568** — Mass Reclassification read-only ; merge `4abc7fcee96f00fa5745937c4c12daea0b541b47` ; exact head `72d83c939175c0470e6d96d0d699a1730788efe1` ; run `31726483908` SUCCESS ; artefact `9191563403`, digest `sha256:3f4c4ddbc19254685ae86b1d7ad2e804b6c7038b2287bcd7e4408203bda8537e` ; 5 279 listings, 5 284 sources actives, 35 Registry, 0 admissible, 5 284 policy-blocked, 5 271 haute qualité mais policy-blocked, 0 write/fetch/permission inférée.
+- **MASS-5 ✅ CLOSED — PR #569** — Discovery Expansion Shadow ; merge `7b4503bf00ea7a99fb44f798748698d282cf3d8c` ; exact head `be58b8941b62570922fd52c6b19a3a3280d310b5` ; run `31727831232` SUCCESS ; artefact `9192248949`, digest `sha256:c591b4e10840f0199e0b8e7e5acd163dceb063a730b608849826d554804ef266` ; 108 Source Factory domains live vs 101 certifiés, soit 7 nouveaux domaines / 148 URL representations / 144 signaux Maroc immo / 14 détails probables ; les 7 restent UNREGISTERED et publicActivableNow=false ; 0 write/fetch/permission inférée.
 
 Doctrine : attribution ≠ permission ; robots/sitemap/capability ≠ permission ; candidate ≠ authorization ; Source Registry autoritaire ; no-bypass.
 
-**NEXT : MASS-4 — Mass Reclassification, strictement read-only.**
+**NEXT : MASS-6 — National Mass Engine, strictement read-only au démarrage.**
 <!-- DATA-MASS-CURRENT-END -->
+
 
 
 

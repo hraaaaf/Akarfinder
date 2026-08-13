@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-13**  
-**Statut : MASS-1 ✅ CLOSED ; MASS-2 ✅ CLOSED / 100 % ; MASS-3 ✅ CLOSED PR #566 ; MASS-4 🔄 NEXT — Mass Reclassification read-only.**
+**Statut : MASS-1 ✅ CLOSED ; MASS-2 ✅ CLOSED / 100 % ; MASS-3 ✅ CLOSED ; MASS-4 ✅ CLOSED PR #568 ; MASS-5 ✅ CLOSED PR #569 ; MASS-6 🔄 NEXT — National Mass Engine read-only.**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -13,16 +13,18 @@
 ### MASS-1 ✅ CLOSED
 ### MASS-2 ✅ CLOSED / 100 %
 ### MASS-3 ✅ CLOSED — PR #566
-3A contrat shadow/read-only ; 3B projection live read-only ; 3C Canary Readiness fail-closed. État final : 35 Registry rows, 0 admissible, 0 canary, 0 mutation.
+### MASS-4 ✅ CLOSED — PR #568
+Reclassification live read-only ; 5 284 sources actives, 0 admissible, 5 271 haute qualité mais policy-blocked. `Quality ≠ Eligibility ≠ Permission` confirmé.
 
-### MASS-4 🔄 NEXT — Mass Reclassification
-Réévaluer le stock historique sous `Quality ≠ Eligibility`, strictement read-only, sans transformer qualité/crawlabilité/attribution en permission.
+### MASS-5 ✅ CLOSED — PR #569
+Discovery Expansion Shadow ; run `31727831232` SUCCESS ; 7 nouveaux domaines au-dessus de la cohorte 101, 148 URL representations, tous UNREGISTERED et non activables publiquement.
 
-### MASS-5 🔵 PLANNED — Discovery Expansion
-### MASS-6 🔵 PLANNED — National Mass Engine
+### MASS-6 🔄 NEXT — National Mass Engine
+Industrialiser en lecture seule `DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DEDUP → RANK` sans transformer capacité, qualité ou découverte en permission. Toute mutation/activation reste soumise à gate explicite séparé.
 
 **Ordre verrouillé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6.**
 <!-- DATA-MASS-PROGRAM-END -->
+
 
 
 
