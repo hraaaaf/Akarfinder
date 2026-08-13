@@ -1,9 +1,10 @@
 export type MinimalListingRegistryRow = {
   source_domain: string;
   authorization_status: string | null;
+  acquisition_mode: string | null;
   machine_gate: string | null;
   ingestion_gate: string | null;
-  display_gate: string | null;
+  display_policy: string | null;
   policy_expires_at: string | null;
 };
 
@@ -18,16 +19,24 @@ export type MinimalListingInput = {
   description?: string | null;
 };
 
-const POSITIVE_AUTH = new Set(["authorized", "approved", "permission_granted"]);
-const POSITIVE_MACHINE = new Set(["canonical_link_only", "allowed", "enabled"]);
-const POSITIVE_INGESTION = new Set(["canonical_link_only", "allowed", "enabled"]);
-const POSITIVE_DISPLAY = new Set(["external_tail_link_only", "canonical_link_only", "allowed", "enabled"]);
+function policyPathIsPositive(row: MinimalListingRegistryRow): boolean {
+  if (row.authorization_status === "limited_public_facts") {
+    return row.acquisition_mode === "public_sitemap_canonical_link" &&
+      row.machine_gate === "canonical_link_only" &&
+      row.ingestion_gate === "canonical_link_only" &&
+      row.display_policy === "canonical_link_only";
+  }
+  if (row.authorization_status === "authorized_partner") {
+    const partnerMode = row.acquisition_mode === "authorized_detail_feed" || row.acquisition_mode === "partner_feed";
+    const matchingMachine = row.machine_gate === "authorized_detail_feed" || row.machine_gate === "partner_feed";
+    const matchingIngestion = row.ingestion_gate === "authorized_detail_feed" || row.ingestion_gate === "partner_feed";
+    return partnerMode && matchingMachine && matchingIngestion && row.display_policy === "partner_content";
+  }
+  return false;
+}
 
 export function isPolicyAdmissible(row: MinimalListingRegistryRow, now = new Date()): boolean {
-  if (!row.source_domain || !POSITIVE_AUTH.has(row.authorization_status ?? "")) return false;
-  if (!POSITIVE_MACHINE.has(row.machine_gate ?? "")) return false;
-  if (!POSITIVE_INGESTION.has(row.ingestion_gate ?? "")) return false;
-  if (!POSITIVE_DISPLAY.has(row.display_gate ?? "")) return false;
+  if (!row.source_domain || !policyPathIsPositive(row)) return false;
   if (!row.policy_expires_at) return false;
   const expires = new Date(row.policy_expires_at);
   if (!Number.isFinite(expires.getTime()) || expires <= now) return false;
