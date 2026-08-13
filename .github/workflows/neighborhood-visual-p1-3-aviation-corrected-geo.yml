@@ -1,0 +1,97 @@
+name: Neighborhood Visual P1.3 Aviation Corrected Geo Audit
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/neighborhood-visual-p1-3-aviation-corrected-geo.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Discover exact reusable imagery around verified Aviation coordinates
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="data/audits/neighborhood-visual-p1-3-aviation/corrected-geo"
+          rm -rf "$OUT" && mkdir -p "$OUT/kartaview" "$OUT/commons"
+          python3 - <<'PY'
+          import hashlib,json,math,pathlib,urllib.parse,urllib.request
+          OUT=pathlib.Path('data/audits/neighborhood-visual-p1-3-aviation/corrected-geo'); UA='AkarFinder-P1.3-corrected-geo/1.0'
+          # Verified anchor: Collège Saint-Exupéry, Quartier Aviation = 33.9900005,-6.8270343.
+          CENTERS=[
+            ('saint-exupery',33.9900005,-6.8270343),
+            ('aviation-west',33.9900,-6.8320),
+            ('aviation-north',33.9940,-6.8270),
+            ('aviation-south',33.9860,-6.8270),
+            ('aviation-east',33.9900,-6.8220),
+            ('avenue-souss-west',33.9920,-6.8340),
+          ]
+          def f(v):
+            try:return float(v)
+            except:return None
+          def hav(a,b,c,d):
+            R=6371000.;p1,p2=math.radians(a),math.radians(c);dp=math.radians(c-a);dl=math.radians(d-b)
+            x=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2
+            return 2*R*math.asin(math.sqrt(x))
+          kv={}
+          for label,qlat,qlng in CENTERS:
+            q=urllib.parse.urlencode({'lat':qlat,'lng':qlng,'zoomLevel':17,'join':'sequence','orderBy':'id','orderDirection':'desc'})
+            req=urllib.request.Request('https://api.openstreetcam.org/2.0/photo/?'+q,headers={'User-Agent':UA,'Accept':'application/json'})
+            try:
+              with urllib.request.urlopen(req,timeout=45) as r:raw=json.load(r)
+            except Exception as e:
+              print('KV query error',label,e);continue
+            for d in raw.get('result',{}).get('data',[]):
+              lat=f(d.get('lat'));lon=f(d.get('lng'))
+              if lat is None or lon is None:continue
+              urls=[]
+              for k in ('fileurlLTh','fileurlProc','fileurlTh','imageLthUrl','imageProcUrl','imageThUrl'):
+                v=d.get(k)
+                if isinstance(v,str) and v.startswith('http'):urls.append(v)
+              pid=str(d.get('id'));seq=d.get('sequence') or {}
+              row=kv.get(pid,{'id':d.get('id'),'lat':lat,'lng':lon,'heading':d.get('heading'),'date':d.get('dateAdded'),'shot_date':d.get('shotDate'),'sequence_id':seq.get('id'),'sequence_address':seq.get('address'),'urls':list(dict.fromkeys(urls)),'hits':[]})
+              row['hits'].append({'label':label,'distance_m':round(hav(qlat,qlng,lat,lon),1)});kv[pid]=row
+          rows=list(kv.values())
+          for r in rows:r['best_distance_m']=min(x['distance_m'] for x in r['hits'])
+          rows.sort(key=lambda r:r['best_distance_m'])
+          n=0
+          for r in rows:
+            if n>=30 or r['best_distance_m']>800 or not r['urls']:continue
+            try:
+              req=urllib.request.Request(r['urls'][0],headers={'User-Agent':UA})
+              with urllib.request.urlopen(req,timeout=45) as resp:b=resp.read()
+              if len(b)<5000:continue
+              p=OUT/'kartaview'/f"{n+1:02d}_{round(r['best_distance_m']):04d}m_{r['id']}.jpg";p.write_bytes(b)
+              r['file']=p.name;r['bytes']=len(b);r['sha1']=hashlib.sha1(b).hexdigest();n+=1
+            except Exception as e:r['download_error']=str(e)
+          (OUT/'kartaview.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding='utf-8')
+
+          # Commons geosearch around verified Aviation anchor, broad enough for local landmarks only.
+          q=urllib.parse.urlencode({'action':'query','format':'json','generator':'geosearch','ggsprimary':'all','ggsnamespace':6,'ggsradius':1800,'ggscoord':'33.9900005|-6.8270343','ggslimit':100,'prop':'imageinfo|coordinates','iiprop':'url|size|sha1|extmetadata'})
+          req=urllib.request.Request('https://commons.wikimedia.org/w/api.php?'+q,headers={'User-Agent':UA,'Accept':'application/json'})
+          with urllib.request.urlopen(req,timeout=60) as r:raw=json.load(r)
+          cr=[]
+          for page in (raw.get('query',{}).get('pages') or {}).values():
+            ii=(page.get('imageinfo') or [{}])[0];meta=ii.get('extmetadata') or {};coords=(page.get('coordinates') or [{}])[0]
+            lat=f(coords.get('lat'));lon=f(coords.get('lon'))
+            if lat is None or lon is None:continue
+            cr.append({'title':page.get('title'),'distance_m':round(hav(33.9900005,-6.8270343,lat,lon),1),'lat':lat,'lng':lon,'url':ii.get('url'),'width':ii.get('width'),'height':ii.get('height'),'sha1':ii.get('sha1'),'author':(meta.get('Artist') or {}).get('value'),'license':(meta.get('LicenseShortName') or {}).get('value'),'description':(meta.get('ImageDescription') or {}).get('value')})
+          cr.sort(key=lambda x:x['distance_m'])
+          (OUT/'commons.json').write_text(json.dumps(cr,ensure_ascii=False,indent=2),encoding='utf-8')
+          print('KARTAVIEW',len(rows),'downloaded',n)
+          for r in rows[:20]:print('KV',r['best_distance_m'],r['id'],r['lat'],r['lng'],r.get('file'))
+          print('COMMONS',len(cr))
+          for r in cr[:40]:print('C',r['distance_m'],r['title'],r['license'],r['lat'],r['lng'])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-visual-p1-3-aviation-corrected-geo
+          path: data/audits/neighborhood-visual-p1-3-aviation/corrected-geo
+          if-no-files-found: error
+          retention-days: 7
