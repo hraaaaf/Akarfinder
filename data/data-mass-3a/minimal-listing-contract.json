@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "MASS_3A_MINIMAL_LISTING_CONTRACT_V1",
+  "mode": "shadow_read_only",
+  "requiredFields": ["canonicalUrl", "sourceDomain", "titleOrStructuralSignal"],
+  "optionalFields": ["geography", "price", "surface", "photoUrl", "description"],
+  "policyRequirements": {
+    "positiveAuthorizationRequired": true,
+    "nonExpiredPolicyRequired": true,
+    "positiveMachineGateRequired": true,
+    "positiveIngestionGateRequired": true,
+    "positiveDisplayGateRequired": true,
+    "failClosed": true
+  },
+  "currentProductionExpectation": {
+    "registryRows": 35,
+    "nonExpiredRowsObserved": 19,
+    "positiveAuthorizationRows": 0,
+    "fullyPolicyAdmissibleRows": 0
+  },
+  "prohibitions": {
+    "databaseWrites": 0,
+    "registryWrites": 0,
+    "searchActivations": 0,
+    "sourceNetworkRequests": 0,
+    "detailPageFetches": 0,
+    "permissionsInferred": 0,
+    "inventedOptionalFields": 0
+  }
+}
