@@ -22,19 +22,17 @@ Ordre de vérité :
 
 La priorité DATA reste **la masse nationale policy-safe** avec la doctrine **MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME**.
 
-- **MASS-1 — Reservoir Qualification ✅ CLOSED / 9,5/10** : handoff Source Factory figé à **101 domaines**.
-- **MASS-2 — Source Factory ✅ CLOSED** : les **101 domaines** ont été audités et certifiés fail-closed sur toute la chaîne 2A→2F.
-  - 2A Factory Engine ✅ PR #519 ; cohorte immuable **20 / 30 / 51**.
-  - 2B High-Yield ✅ PR #523 : **17 PERMISSION_REQUIRED / 3 HOLD**.
-  - 2C Mid-Yield ✅ PR #524 : **17 PERMISSION_REQUIRED / 13 HOLD**.
-  - 2D Long-Tail ✅ PR #527 : **9 PERMISSION_REQUIRED / 42 HOLD**.
-  - 2E Policy Matrix ✅ PR #533, merge `85e12a077343e2a4223de41455f958696085cfe2` : **43 PERMISSION_REQUIRED / 58 HOLD**, **43 CANONICAL_LINK_ONLY_CANDIDATE / 0 approuvé**, Registry **0/101**, totaux **17 602 / 16 018 / 3 051**.
-  - 2F Final Certification ✅ PR #540 : run comportemental `31685990668` SUCCESS, artefact `9175523127`, digest `sha256:091dfed025731076bf4ccb2d1be0b1e5a1263edeca61563a3857daf1c53db0dd`; **0 conflit**, **0 preuve expirée/future**, Registry **0/101**, Search public **0/101**, Thin Index **0/101**, **0 write / fetch / activation / permission inférée**.
+- **MASS-1 ✅ CLOSED / 9,5/10** — réservoir qualifié à 101 domaines.
+- **MASS-2 ✅ CLOSED / 100 %** — 101/101 audités ; 43 `PERMISSION_REQUIRED`, 58 `HOLD`, aucune permission positive/activation inférée.
+- **MASS-3A ✅ CLOSED — PR #553** — contrat Minimal Listing shadow/read-only ; merge `2355eb99c22ca3b7a521d3b7402651c69bb04f0b` ; 0 source policy-admissible.
+- **MASS-3B ✅ CLOSED — PR #557** — projection réelle read-only ; merge `b654e0f5ebe8bc82f230e31686ff1a72cb2ca2c7` ; run `31700957263` SUCCESS ; artefact `9181260990` ; 5 260 listings / 5 265 sources actives / 35 Registry / 0 admissible / 0 projected / 0 mutation.
+- **MASS-3C 🔄 ACTIVE** — Canary Readiness strictement read-only. Sortie attendue tant que Registry admissible = 0 : **BLOCKED / 0 canary / 0 write**. Toute première écriture DB exige un feu vert humain explicite préalable et un canary séparé revu.
 
-Doctrine MASS-2 verrouillée : attribution ≠ permission ; `CANONICAL_LINK_ONLY_CANDIDATE` ≠ autorisation ; robots/sitemap/capacité ≠ permission. Aucun des 101 domaines n'est activable par volume seul.
+Doctrine : attribution ≠ permission ; robots/sitemap/capability ≠ permission ; candidate ≠ authorization ; Source Registry autoritaire ; no-bypass.
 
-**NEXT : MASS-3 — Minimal Listing Index**, uniquement pour les sources explicitement policy-admissibles.
+**NEXT : MASS-3C — Canary Readiness Shadow.**
 <!-- DATA-MASS-CURRENT-END -->
+
 
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->
 ## Bibliothèque visuelle quartiers — Souissi Pilot ✅ CLOSED

@@ -44,6 +44,8 @@ function matchesPath(pathname: string, prefix: string): boolean {
 export function MobileBottomNav() {
   const pathname = usePathname();
 
+  if (pathname.startsWith("/visual-qa/")) return null;
+
   return (
     <nav
       aria-label="Navigation mobile"

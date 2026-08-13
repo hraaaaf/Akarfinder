@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "MASS_3B_MINIMAL_LISTING_PROJECTION_CONTRACT_V1",
+  "mode": "shadow_read_only",
+  "inputTables": ["property_listings", "listing_sources", "source_policy_registry"],
+  "forbiddenInputTables": ["source_offer_seeds"],
+  "sourceRequirements": {
+    "sourceKind": "listing_source",
+    "activeOnly": true,
+    "canonicalUrlFrom": "listing_sources.listing_url",
+    "sourceDomainFrom": "listing_sources.listing_url hostname",
+    "policy": "MASS_3A explicit positive non-expired policy"
+  },
+  "signalPriority": ["property_listings.title", "property_listings.property_type"],
+  "optionalFieldMapping": {
+    "geography": ["property_listings.district", "property_listings.city"],
+    "price": "property_listings.price_mad",
+    "surface": "property_listings.surface_m2",
+    "photoUrl": "property_listings.thumbnail_url",
+    "description": "property_listings.description_snippet"
+  },
+  "currentExpectedState": {
+    "policyAdmissibleRegistryRows": 0,
+    "projectedRows": 0
+  },
+  "prohibitions": {
+    "sourceOfferSeedPromotions": 0,
+    "databaseWrites": 0,
+    "registryWrites": 0,
+    "searchActivations": 0,
+    "sourceNetworkRequests": 0,
+    "detailPageFetches": 0,
+    "permissionsInferred": 0,
+    "inventedFields": 0
+  }
+}

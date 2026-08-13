@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "MASS_3C_CANARY_READINESS_CONTRACT_V1",
+  "mode": "shadow_read_only",
+  "requiresPolicyAdmissibleSource": true,
+  "requiresProjectableRepresentation": true,
+  "requiresExplicitHumanApprovalBeforeProductionWrite": true,
+  "separateReviewedCanaryRequired": true,
+  "currentExpectedStatus": "BLOCKED_NO_POLICY_ADMISSIBLE_SOURCE",
+  "currentExpectedCandidates": 0,
+  "productionWritesAllowedByThisLot": false,
+  "searchActivationAllowedByThisLot": false,
+  "permissionInferenceAllowed": false
+}
