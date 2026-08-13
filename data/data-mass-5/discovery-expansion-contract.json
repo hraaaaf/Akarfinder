@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "MASS_5_DISCOVERY_EXPANSION_SHADOW_V1",
+  "mode": "shadow_read_only",
+  "baseline": "MASS_2A_CERTIFIED_COHORT_V1",
+  "unit": "URL_REPRESENTATION",
+  "purpose": "Measure post-MASS-1 discovery expansion candidates without granting acquisition, ingestion or display rights.",
+  "requirements": {
+    "reuseMass1ReservoirClassifier": true,
+    "subtractCertified101DomainCohort": true,
+    "sourceRegistryRemainsAuthoritative": true,
+    "newDomainCandidateIsNotAuthorization": true,
+    "capacityIsNotPermission": true,
+    "structureIsNotPermission": true
+  },
+  "prohibitions": {
+    "databaseWrites": 0,
+    "registryWrites": 0,
+    "searchActivations": 0,
+    "sourceNetworkRequests": 0,
+    "detailPageFetches": 0,
+    "permissionsInferred": 0
+  }
+}
