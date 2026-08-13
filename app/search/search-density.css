@@ -170,3 +170,65 @@
     margin-top: 0.5rem;
   }
 }
+
+/* UX-PREMIUM-CARDS-MEDIA-1 — media treatment only.
+ * Preserve listing truth, image-policy gates, attribution and card content.
+ */
+[data-mobile-compact-card] {
+  border-radius: 20px !important;
+  border-color: rgb(220 228 238 / 0.92) !important;
+  box-shadow: 0 7px 22px rgb(24 56 96 / 0.075) !important;
+}
+
+[data-mobile-compact-card] [data-card-image] {
+  height: 164px !important;
+  background: rgb(241 245 249) !important;
+}
+
+[data-mobile-compact-card] [data-card-image] > div:first-child {
+  transform: translateZ(0);
+}
+
+[data-mobile-compact-card] [data-card-image] img {
+  object-position: center center;
+}
+
+[data-mobile-compact-card] [data-card-favorite] button {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  border: 1px solid rgb(255 255 255 / 0.75) !important;
+  border-radius: 9999px !important;
+  background: rgb(255 255 255 / 0.9) !important;
+  box-shadow: 0 4px 14px rgb(15 23 42 / 0.12) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@media (max-width: 639px) {
+  [data-mobile-compact-card] [data-card-image] {
+    height: 160px !important;
+  }
+
+  [data-mobile-compact-card] [data-card-favorite] {
+    right: 8px !important;
+    top: 8px !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  [data-mobile-compact-card] [data-card-image] {
+    height: 190px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-search-view-layout="split"] [data-mobile-compact-card] [data-card-image] {
+    height: 188px !important;
+  }
+
+  [data-search-view-layout="list"] [data-mobile-compact-card] [data-card-image] {
+    height: 172px !important;
+  }
+}
