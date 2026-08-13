@@ -30,6 +30,7 @@ try {
         return {
           clientWidth: document.documentElement.clientWidth,
           scrollWidth: document.documentElement.scrollWidth,
+          mobileBottomNavPresent: Boolean(document.querySelector("[data-mobile-bottom-nav]")),
           cards: cards.map((card) => ({
             role: card.getAttribute("data-scene-role"),
             id: card.getAttribute("data-visual-id"),
@@ -41,6 +42,7 @@ try {
       });
       if (metrics.cards.length !== 3) throw new Error(`${name}: expected 3 cards`);
       if (metrics.scrollWidth > metrics.clientWidth + 1) throw new Error(`${name}: horizontal overflow`);
+      if (metrics.mobileBottomNavPresent) throw new Error(`${name}: global mobile bottom nav leaked into visual QA`);
       if (new Set(metrics.cards.map((card) => card.background)).size !== 3) throw new Error(`${name}: backgrounds not distinct`);
       if (JSON.stringify(metrics.cards.map((card) => card.role)) !== JSON.stringify(["signature","immobilier","lifestyle"])) throw new Error(`${name}: scene role drift`);
       for (const card of metrics.cards) {
@@ -48,7 +50,7 @@ try {
         if (!/CC BY-SA 4\.0/.test(card.credit)) throw new Error(`${name}: credit missing`);
       }
       await page.screenshot({ path: `${outputDir}/${name}.png`, fullPage: true });
-      results.push({ viewport: name, machine_quality_score: 10, horizontal_overflow: false, distinct_backgrounds: true });
+      results.push({ viewport: name, machine_quality_score: 10, horizontal_overflow: false, mobile_bottom_nav_present: false, distinct_backgrounds: true });
     } catch (error) {
       failure = error;
       break;
