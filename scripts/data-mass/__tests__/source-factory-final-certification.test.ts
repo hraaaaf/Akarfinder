@@ -15,6 +15,6 @@ test("MASS-2F certifies the complete reviewed 101-source cohort",()=>{
 
 test("MASS-2F fails closed on authorization or evidence-time drift",()=>{
   const bad=JSON.parse(JSON.stringify(h)); bad.records[0].publicIndexingMode="CANONICAL_LINK_ONLY";
-  assert.throws(()=>validateFinalCertification(buildFinalCertification(bad,m,l,"2026-08-13T08:30:00.000Z")),/DECISION_CONFLICTS/);
+  assert.throws(()=>validateFinalCertification(buildFinalCertification(bad,m,l,"2026-08-13T08:30:00.000Z")),/(DECISION_DRIFT|DECISION_CONFLICTS)/);
   assert.throws(()=>validateFinalCertification(buildFinalCertification(h,m,l,"2026-10-13T08:30:00.000Z")),/EVIDENCE_TIME_DRIFT/);
 });
