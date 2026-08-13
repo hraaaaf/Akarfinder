@@ -1,0 +1,28 @@
+name: Neighborhood Visual P1.8 Ocean Contract
+
+on:
+  pull_request:
+    paths:
+      - "lib/contextual-illustrations/ocean-neighborhood-visuals.ts"
+      - "app/visual-qa/ocean/**"
+      - "components/search/OceanNeighborhoodVisualQAFixture.tsx"
+      - "scripts/audits/neighborhood-visual-p1-8-ocean-visual-qa.mjs"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p1-8-ocean.test.ts"
+      - ".github/workflows/neighborhood-visual-p1-8-ocean-contract.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/neighborhood-visual-p1-8-ocean.test.ts
+      - run: npx tsc --noEmit
+      - run: npm run build
