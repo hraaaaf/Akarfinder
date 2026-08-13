@@ -20,19 +20,31 @@ jobs:
         run: |
           set -euo pipefail
           OUT="data/audits/neighborhood-visual-p1-4-hassan/source-discovery"
-          mkdir -p "$OUT"
-          UA='AkarFinder-P1.4-Hassan/1.0'
+          rm -rf "$OUT" && mkdir -p "$OUT"
+          UA='AkarFinder-P1.4-Hassan/2.0'
           declare -A FILES=(
             [signature]='نافورة صومعة حسان.jpg'
-            [immobilier]='Quartier Hassan, Rabat, Morocco - panoramio (5).jpg'
-            [lifestyle]='Quartier Hassan, Rabat, Morocco - panoramio (4).jpg'
+            [immobilier]='Avenue Hassan II Rabat.jpg'
+            [lifestyle]='Quartier Hassan, Rabat, Morocco - panoramio (1).jpg'
           )
           for role in signature immobilier lifestyle; do
             f="${FILES[$role]}"
             enc=$(python3 -c 'import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1]))' "$f")
             curl --fail --location --retry 5 --retry-all-errors --user-agent "$UA" "https://commons.wikimedia.org/wiki/Special:Redirect/file/$enc" -o "$OUT/$role.jpg"
             printf '%s  %s\n' "$(sha1sum "$OUT/$role.jpg" | awk '{print $1}')" "$role.jpg"
-            identify "$OUT/$role.jpg" || true
+            python3 - "$OUT/$role.jpg" <<'PY'
+import struct,sys
+p=sys.argv[1]; b=open(p,'rb').read(); i=2
+while i+9<len(b):
+    if b[i]!=0xff: i+=1; continue
+    m=b[i+1]; i+=2
+    if m in (0xd8,0xd9): continue
+    if i+2>len(b): break
+    n=(b[i]<<8)|b[i+1]
+    if m in (0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf):
+        print('DIM',p,(b[i+5]<<8)|b[i+6],(b[i+3]<<8)|b[i+4]); break
+    i+=n
+PY
             wc -c "$OUT/$role.jpg"
           done
           sha1sum "$OUT"/*.jpg > "$OUT/sha1.txt"
