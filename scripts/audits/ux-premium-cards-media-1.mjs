@@ -6,10 +6,10 @@ const BASE_URL = process.env.BASE_URL ?? "http://127.0.0.1:3199";
 const variant = process.env.AUDIT_VARIANT ?? "local";
 const outDir = path.join("data", "audits", "ux-premium-cards-media-1", variant);
 const viewports = [
-  { name: "mobile-360x800", width: 360, height: 800, expectedMediaHeight: 160 },
-  { name: "mobile-390x844", width: 390, height: 844, expectedMediaHeight: 160 },
-  { name: "tablet-768x900", width: 768, height: 900, expectedMediaHeight: 190 },
-  { name: "desktop-1440x900", width: 1440, height: 900, expectedMediaHeight: 188 },
+  { name: "mobile-360x800", width: 360, height: 800, expectedMediaHeight: 160, view: null },
+  { name: "mobile-390x844", width: 390, height: 844, expectedMediaHeight: 160, view: null },
+  { name: "tablet-768x900", width: 768, height: 900, expectedMediaHeight: 190, view: null },
+  { name: "desktop-1440x900", width: 1440, height: 900, expectedMediaHeight: 188, view: "split" },
 ];
 
 const fixture = {
@@ -62,6 +62,13 @@ for (const v of viewports) {
     });
   });
   await page.goto(`${BASE_URL}/search`, { waitUntil: "networkidle" });
+  if (v.view === "split") {
+    const split = page.locator('[data-search-view-mode-button="split"]');
+    if (await split.isVisible()) {
+      await split.click();
+      await page.locator('[data-search-view-layout="split"]').waitFor();
+    }
+  }
   const card = page.locator('[data-mobile-compact-card]').first();
   await card.waitFor({ timeout: 15000 });
   const metrics = await page.evaluate(() => {
@@ -76,6 +83,7 @@ for (const v of viewports) {
     const mediaStyle = getComputedStyle(media);
     const favoriteStyle = favorite ? getComputedStyle(favorite) : null;
     return {
+      view: document.querySelector('[data-search-view-layout]')?.getAttribute('data-search-view-layout') ?? null,
       card: { x: cb.x, y: cb.y, width: cb.width, height: cb.height, radius: cardStyle.borderRadius },
       media: { x: mb.x, y: mb.y, width: mb.width, height: mb.height, background: mediaStyle.backgroundColor },
       favorite: fb && favoriteStyle ? { width: fb.width, height: fb.height, radius: favoriteStyle.borderRadius } : null,
@@ -87,6 +95,7 @@ for (const v of viewports) {
   if (!metrics) {
     failures.push(`${v.name}: card/media missing`);
   } else {
+    if (v.view && metrics.view !== v.view) failures.push(`${v.name}: view ${metrics.view}`);
     if (Math.abs(metrics.media.height - v.expectedMediaHeight) > 1.5) failures.push(`${v.name}: media height ${metrics.media.height}`);
     if (Number.parseFloat(metrics.card.radius) < 18) failures.push(`${v.name}: card radius ${metrics.card.radius}`);
     if (metrics.card.width < 140) failures.push(`${v.name}: card width ${metrics.card.width}`);
