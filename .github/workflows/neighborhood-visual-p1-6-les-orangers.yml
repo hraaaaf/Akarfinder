@@ -1,0 +1,131 @@
+name: Neighborhood Visual P1.6 Les Orangers Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/visual-qa/les-orangers/**"
+      - "components/search/LesOrangersNeighborhoodVisualQAFixture.tsx"
+      - "lib/contextual-illustrations/les-orangers-neighborhood-visuals.ts"
+      - "scripts/audits/neighborhood-visual-p1-6-les-orangers-visual-qa.mjs"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p1-6-les-orangers.test.ts"
+      - "supabase/functions/neighborhood-visual-p1-6-les-orangers-ingest/**"
+      - "supabase/migrations/20260813125500_neighborhood_visual_p1_6_les_orangers_metadata.sql"
+      - ".github/workflows/neighborhood-visual-p1-6-les-orangers.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NEIGHBORHOOD_VISUAL_QA: "1"
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer — Les Orangers 3-scene QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - uses: denoland/setup-deno@v2
+        with: { deno-version: v2.x }
+      - run: npm ci
+      - name: P1.6 contract + predecessors
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p1-6-les-orangers.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-5-hay-riad.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-4-hassan.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Deno + TypeScript
+        run: |
+          deno check supabase/functions/neighborhood-visual-p1-6-les-orangers-ingest/index.ts
+          npx tsc --noEmit
+      - name: Materialize exact Les Orangers sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          UA='AkarFinder-P1.6-Les-Orangers-certification/1.0'
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Quartier%20Des%20Orangers%2C%20Rabat%2C%20Morocco%20-%20panoramio.jpg' -o public/__qa/les-orangers-signature.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://storage8.openstreetcam.org/files/photo/2018/6/6/lth/1224661_946fe_14.jpg' -o public/__qa/les-orangers-immobilier.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://storage8.openstreetcam.org/files/photo/2018/6/6/lth/1224693_63b33_74.jpg' -o public/__qa/les-orangers-lifestyle.jpg
+          echo '0770e25288f7ecd3841cd246587f1ad4f1cde18c  public/__qa/les-orangers-signature.jpg' | sha1sum --check --strict
+          echo 'cb978ea2874cb2e171aee6363175c38cd08305aa  public/__qa/les-orangers-immobilier.jpg' | sha1sum --check --strict
+          echo 'f24100d91a8ccd20724ce9bb0a11e03c902d4adf  public/__qa/les-orangers-lifestyle.jpg' | sha1sum --check --strict
+          test "$(wc -c < public/__qa/les-orangers-signature.jpg)" -eq 732633
+          test "$(wc -c < public/__qa/les-orangers-immobilier.jpg)" -eq 183593
+          test "$(wc -c < public/__qa/les-orangers-lifestyle.jpg)" -eq 304750
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start QA server
+        shell: bash
+        run: |
+          npm run start -- -p 3167 > /tmp/les-orangers-p16-product.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3167/visual-qa/les-orangers >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/les-orangers-p16-product.log; exit 1
+      - name: Certify responsive matrix
+        env: { BASE_URL: "http://127.0.0.1:3167", AUDIT_VARIANT: "product-design" }
+        run: node scripts/audits/neighborhood-visual-p1-6-les-orangers-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p1-6-les-orangers-product-design-proof
+          path: data/audits/neighborhood-visual-p1-6-les-orangers/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Les Orangers 3-scene QA
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - uses: denoland/setup-deno@v2
+        with: { deno-version: v2.x }
+      - run: npm ci
+      - name: Independent contract replay
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p1-6-les-orangers.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-5-hay-riad.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Independent Deno + TypeScript
+        run: |
+          deno check supabase/functions/neighborhood-visual-p1-6-les-orangers-ingest/index.ts
+          npx tsc --noEmit
+      - name: Independently materialize exact Les Orangers sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          UA='AkarFinder-P1.6-Les-Orangers-release/1.0'
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Quartier%20Des%20Orangers%2C%20Rabat%2C%20Morocco%20-%20panoramio.jpg' -o public/__qa/les-orangers-signature.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://storage8.openstreetcam.org/files/photo/2018/6/6/lth/1224661_946fe_14.jpg' -o public/__qa/les-orangers-immobilier.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://storage8.openstreetcam.org/files/photo/2018/6/6/lth/1224693_63b33_74.jpg' -o public/__qa/les-orangers-lifestyle.jpg
+          echo '0770e25288f7ecd3841cd246587f1ad4f1cde18c  public/__qa/les-orangers-signature.jpg' | sha1sum --check --strict
+          echo 'cb978ea2874cb2e171aee6363175c38cd08305aa  public/__qa/les-orangers-immobilier.jpg' | sha1sum --check --strict
+          echo 'f24100d91a8ccd20724ce9bb0a11e03c902d4adf  public/__qa/les-orangers-lifestyle.jpg' | sha1sum --check --strict
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start independent QA server
+        shell: bash
+        run: |
+          npm run start -- -p 3168 > /tmp/les-orangers-p16-release.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3168/visual-qa/les-orangers >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/les-orangers-p16-release.log; exit 1
+      - name: Independently certify responsive matrix
+        env: { BASE_URL: "http://127.0.0.1:3168", AUDIT_VARIANT: "release-certifier" }
+        run: node scripts/audits/neighborhood-visual-p1-6-les-orangers-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p1-6-les-orangers-release-proof
+          path: data/audits/neighborhood-visual-p1-6-les-orangers/release-certifier
+          if-no-files-found: error
+          retention-days: 14
