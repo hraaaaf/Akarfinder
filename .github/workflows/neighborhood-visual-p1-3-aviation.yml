@@ -1,0 +1,148 @@
+name: Neighborhood Visual P1.3 Aviation Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/visual-qa/aviation/**"
+      - "components/search/AviationNeighborhoodVisualQAFixture.tsx"
+      - "lib/contextual-illustrations/aviation-neighborhood-visuals.ts"
+      - "scripts/audits/neighborhood-visual-p1-3-aviation-visual-qa.mjs"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p1-3-aviation.test.ts"
+      - "supabase/functions/neighborhood-visual-p1-3-aviation-ingest/**"
+      - "supabase/migrations/20260813000500_neighborhood_visual_p1_3_aviation_metadata.sql"
+      - ".github/workflows/neighborhood-visual-p1-3-aviation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neighborhood-visual-p1-3-aviation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEIGHBORHOOD_VISUAL_QA: "1"
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  product-design-reviewer:
+    name: Product Design Reviewer — Aviation 3-scene QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: P1.3 contract + predecessors
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p1-3-aviation.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-2-akkari.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Deno + TypeScript
+        run: |
+          deno check supabase/functions/neighborhood-visual-p1-3-aviation-ingest/index.ts
+          npx tsc --noEmit
+      - name: Materialize exact Commons sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          UA='AkarFinder-P1.3-Aviation-certification/1.0'
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hassan%20II%20Park%20-%20Rabat%20-%20November%202024%20-%201.jpg' -o public/__qa/aviation-signature.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Avenue%20Mohamed%20VI%20Souissi%20Rabat.jpg' -o public/__qa/aviation-immobilier.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hassan%20II%20Park%20-%20Rabat%20-%20November%202024%20-%202.jpg' -o public/__qa/aviation-lifestyle.jpg
+          echo '93cbebc360cb7424cfb554896b968fd917d43511  public/__qa/aviation-signature.jpg' | sha1sum --check --strict
+          echo 'd8e09bfdbad2fdef60f28840b90b79b45f77b8c6  public/__qa/aviation-immobilier.jpg' | sha1sum --check --strict
+          echo '88d981adf174f55cdd77a5ad7518891dd1ec951d  public/__qa/aviation-lifestyle.jpg' | sha1sum --check --strict
+          test "$(wc -c < public/__qa/aviation-signature.jpg)" -eq 3222903
+          test "$(wc -c < public/__qa/aviation-immobilier.jpg)" -eq 1338653
+          test "$(wc -c < public/__qa/aviation-lifestyle.jpg)" -eq 3502946
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start QA production server
+        shell: bash
+        run: |
+          npm run start -- -p 3163 > /tmp/aviation-p13-product.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3163/visual-qa/aviation >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/aviation-p13-product.log; exit 1
+      - name: Certify full responsive Search-card matrix
+        env:
+          BASE_URL: http://127.0.0.1:3163
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/neighborhood-visual-p1-3-aviation-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p1-3-aviation-product-design-proof
+          path: data/audits/neighborhood-visual-p1-3-aviation/product-design
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Aviation 3-scene QA
+    needs: product-design-reviewer
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: Independent contract replay
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p1-3-aviation.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p1-2-akkari.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+      - name: Independent Deno + TypeScript
+        run: |
+          deno check supabase/functions/neighborhood-visual-p1-3-aviation-ingest/index.ts
+          npx tsc --noEmit
+      - name: Independently materialize exact Commons sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          UA='AkarFinder-P1.3-Aviation-release/1.0'
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hassan%20II%20Park%20-%20Rabat%20-%20November%202024%20-%201.jpg' -o public/__qa/aviation-signature.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Avenue%20Mohamed%20VI%20Souissi%20Rabat.jpg' -o public/__qa/aviation-immobilier.jpg
+          curl --fail --location --retry 6 --retry-all-errors --user-agent "$UA" 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hassan%20II%20Park%20-%20Rabat%20-%20November%202024%20-%202.jpg' -o public/__qa/aviation-lifestyle.jpg
+          echo '93cbebc360cb7424cfb554896b968fd917d43511  public/__qa/aviation-signature.jpg' | sha1sum --check --strict
+          echo 'd8e09bfdbad2fdef60f28840b90b79b45f77b8c6  public/__qa/aviation-immobilier.jpg' | sha1sum --check --strict
+          echo '88d981adf174f55cdd77a5ad7518891dd1ec951d  public/__qa/aviation-lifestyle.jpg' | sha1sum --check --strict
+      - name: Install Chromium independently
+        run: npx playwright install --with-deps chromium
+      - name: Independent production build
+        run: npm run build
+      - name: Start independent QA server
+        shell: bash
+        run: |
+          npm run start -- -p 3164 > /tmp/aviation-p13-release.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3164/visual-qa/aviation >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/aviation-p13-release.log; exit 1
+      - name: Independently certify full responsive Search-card matrix
+        env:
+          BASE_URL: http://127.0.0.1:3164
+          AUDIT_VARIANT: release-certifier
+        run: node scripts/audits/neighborhood-visual-p1-3-aviation-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p1-3-aviation-release-proof
+          path: data/audits/neighborhood-visual-p1-3-aviation/release-certifier
+          if-no-files-found: error
+          retention-days: 14
