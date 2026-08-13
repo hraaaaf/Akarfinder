@@ -1,0 +1,61 @@
+name: DATA MASS-2E Policy Matrix Registry Preview
+on:
+  pull_request:
+    paths:
+      - "data/data-mass-2e/**"
+      - "scripts/data-mass/source-factory-policy-matrix.ts"
+      - "scripts/data-mass/__tests__/source-factory-policy-matrix.test.ts"
+      - "scripts/audits/data-mass-2e-policy-matrix-registry-preview.ts"
+      - ".github/workflows/data-mass-2e-policy-matrix-registry-preview.yml"
+      - "docs/data/DATA-MASS-2E-POLICY-MATRIX-REGISTRY-PREVIEW.md"
+permissions:
+  contents: read
+concurrency:
+  group: data-mass-2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: MASS-2E matrix tests
+        run: node --test --import tsx scripts/data-mass/__tests__/source-factory-policy-matrix.test.ts scripts/data-mass/__tests__/source-factory-long-tail-review.test.ts scripts/data-mass/__tests__/source-factory-mid-yield-review.test.ts scripts/data-mass/__tests__/source-factory-certified-cohort.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+  live-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Generate read-only policy matrix and Registry preview
+        run: npx tsx scripts/audits/data-mass-2e-policy-matrix-registry-preview.ts
+      - name: Enforce MASS-2E truth boundary
+        run: |
+          node - <<'NODE'
+          const p=require('./.tmp/data-mass-2e/results/proof.json');
+          const ok=p.readOnly===true && p.domains===101 && p.permissionRequired===43 && p.hold===58 &&
+            p.canonicalCandidates===43 && p.canonicalApproved===0 && p.publicActivable===0 &&
+            p.currentRegistryRowsForReviewedDomains===0 && p.databaseWrites===0 && p.ddlChanges===0 &&
+            p.registryWrites===0 && p.policyChanges===0 && p.sourceNetworkRequests===0 &&
+            p.detailPageFetches===0 && p.searchActivations===0 && p.permissionsInferred===0 &&
+            p.totals.totalUrlRepresentations===22656 && p.totals.totalLikelyMoroccoRealEstateUrls===19665 &&
+            p.totals.totalLikelyMoroccoListingDetailUrls===4114;
+          if(!ok){console.error(p);process.exit(1)}
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-2e-policy-matrix-registry-preview
+          path: .tmp/data-mass-2e/results/
