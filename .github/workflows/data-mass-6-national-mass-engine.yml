@@ -1,0 +1,68 @@
+name: DATA MASS-6 National Mass Engine
+
+on:
+  pull_request:
+    paths:
+      - "data/data-mass-6/**"
+      - "scripts/data-mass/national-mass-engine*.ts"
+      - "scripts/data-mass/__tests__/national-mass-engine.test.ts"
+      - "scripts/audits/data-mass-1-reservoir-qualification.ts"
+      - "scripts/data-mass/mass-reclassification-live.ts"
+      - "scripts/data-mass/discovery-expansion-shadow.ts"
+      - ".github/workflows/data-mass-6-national-mass-engine.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  contract-and-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_MASS_1_OUT_DIR: .tmp/data-mass-6/mass1
+      DATA_MASS_5_MASS1_REPORT: .tmp/data-mass-6/mass1/report.json
+      DATA_MASS_5_OUT_DIR: .tmp/data-mass-6/mass5
+      DATA_MASS_6_OUT_DIR: .tmp/data-mass-6/results
+      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: MASS-6 no-bypass tests
+        run: node --test --import tsx scripts/data-mass/__tests__/national-mass-engine.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Replay MASS-1 read-only
+        run: npx tsx scripts/audits/data-mass-1-reservoir-qualification.ts
+      - name: Replay MASS-4 read-only
+        run: mkdir -p .tmp/data-mass-6 && npx tsx scripts/data-mass/mass-reclassification-live.ts > .tmp/data-mass-6/mass4.json
+      - name: Replay MASS-5 read-only
+        run: npx tsx scripts/data-mass/discovery-expansion-shadow.ts
+      - name: Evaluate national mass engine
+        run: npx tsx scripts/data-mass/national-mass-engine-live.ts
+      - name: Enforce fail-closed national boundary
+        run: |
+          node - <<'NODE'
+          const p=require('./.tmp/data-mass-6/results/proof.json');
+          const ok=p.status==='PASS' && p.mode==='shadow_read_only' &&
+            p.predecessorReadOnlyProofVerified===true &&
+            p.stageState.DISCOVER===true && p.stageState.CLASSIFY===true &&
+            ((p.policyAdmissibleRegistryRows===0 && p.blockedAt==='POLICY' && p.rankEligible===false) || p.policyAdmissibleRegistryRows>0) &&
+            p.databaseWrites===0 && p.registryWrites===0 && p.searchActivations===0 &&
+            p.sourceNetworkRequests===0 && p.detailPageFetches===0 && p.permissionsInferred===0;
+          if(!ok){console.error(p);process.exit(1)}
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-6-national-mass-engine
+          path: |
+            .tmp/data-mass-6/results/
+            .tmp/data-mass-6/mass1/proof.json
+            .tmp/data-mass-6/mass4.json
+            .tmp/data-mass-6/mass5/proof.json
