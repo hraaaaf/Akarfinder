@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "MASS_2F_FINAL_CERTIFICATION_CONTRACT_V1",
+  "predecessor": {
+    "mass2eMergeCommit": "85e12a077343e2a4223de41455f958696085cfe2",
+    "mass2eRunId": 31681167235,
+    "mass2eArtifactId": 9173562753,
+    "mass2eArtifactDigest": "sha256:0e956c7d29722a775abe34d9ab2c6350568637df9365e9d1980bd0c54aa8ea3d"
+  },
+  "expected": {
+    "domains": 101,
+    "permissionRequired": 43,
+    "hold": 58,
+    "canonicalCandidates": 43,
+    "canonicalApproved": 0,
+    "publicActivable": 0,
+    "decisionConflicts": 0,
+    "expiredEvidence": 0,
+    "futureDatedEvidence": 0,
+    "registryRowsForReviewedDomains": 0,
+    "publicSearchRowsForReviewedDomains": 0,
+    "totalUrlRepresentations": 17602,
+    "totalLikelyMoroccoRealEstateUrls": 16018,
+    "totalLikelyMoroccoListingDetailUrls": 3051
+  },
+  "safety": {
+    "readOnly": true,
+    "databaseWrites": 0,
+    "registryWrites": 0,
+    "policyChanges": 0,
+    "sourceNetworkRequests": 0,
+    "detailPageFetches": 0,
+    "searchActivations": 0,
+    "permissionsInferred": 0
+  }
+}

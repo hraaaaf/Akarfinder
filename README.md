@@ -20,16 +20,20 @@ Ordre de vérité :
 <!-- DATA-MASS-CURRENT-START -->
 ## DATA MASS — état courant
 
-La priorité DATA actuelle est **la masse nationale policy-safe**. Le programme canonique reste `MASS-1 → MASS-6` avec la doctrine **MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME**.
+La priorité DATA reste **la masse nationale policy-safe** avec la doctrine **MASS FIRST → QUALITY LATER → PARTNER REPLACEMENT OVER TIME**.
 
 - **MASS-1 — Reservoir Qualification ✅ CLOSED / 9,5/10** : handoff Source Factory figé à **101 domaines**.
-- **MASS-2A — Factory Engine ✅ CLOSED / 9,5/10** : PR #519, merge `6cd7625b2ba8e7179ce556841f6306225ba1a3fa`; cohorte immuable **20 high-yield / 30 mid-yield / 51 long-tail**, décisions initiales fail-closed, zéro permission/activation.
-- **MASS-2B — High-Yield Sources ✅ CLOSED / 9,4/10** : PR #523, merge `97bb8c6a9596553d7e8794b5f3b06a71cd845d2f`; **20/20** audités = **17 `PERMISSION_REQUIRED` / 3 `HOLD`**, **17** candidats `CANONICAL_LINK_ONLY_CANDIDATE`, **0 approuvé**, Registry **0/20**, zéro write/fetch/activation.
-- **MASS-2C — Mid-Yield Sources ✅ CERTIFIED / 9,4/10 — PR #524** : **30/30** rangs 21→50 audités = **17 `PERMISSION_REQUIRED` / 13 `HOLD`**, **17** candidats canonical-link, **0 approuvé**. Rendement figé du cohort : **3 026 URL-représentations / 1 758 signaux immobilier Maroc / 967 structures détail**. Run exact-head `31644744613` SUCCESS; artefact `9160596350`, digest `sha256:53f83d11f9c0ca01da99eba88e3db2d69c277efc4bce8888a17202898823ad63`; Registry **0/30**, drift **0**, zéro DB/DDL/Registry/policy write, zéro source/detail fetch, zéro ingestion/Search activation, zéro permission inférée.
+- **MASS-2 — Source Factory ✅ CLOSED** : les **101 domaines** ont été audités et certifiés fail-closed sur toute la chaîne 2A→2F.
+  - 2A Factory Engine ✅ PR #519 ; cohorte immuable **20 / 30 / 51**.
+  - 2B High-Yield ✅ PR #523 : **17 PERMISSION_REQUIRED / 3 HOLD**.
+  - 2C Mid-Yield ✅ PR #524 : **17 PERMISSION_REQUIRED / 13 HOLD**.
+  - 2D Long-Tail ✅ PR #527 : **9 PERMISSION_REQUIRED / 42 HOLD**.
+  - 2E Policy Matrix ✅ PR #533, merge `85e12a077343e2a4223de41455f958696085cfe2` : **43 PERMISSION_REQUIRED / 58 HOLD**, **43 CANONICAL_LINK_ONLY_CANDIDATE / 0 approuvé**, Registry **0/101**, totaux **17 602 / 16 018 / 3 051**.
+  - 2F Final Certification ✅ PR #540 : run comportemental `31685990668` SUCCESS, artefact `9175523127`, digest `sha256:091dfed025731076bf4ccb2d1be0b1e5a1263edeca61563a3857daf1c53db0dd`; **0 conflit**, **0 preuve expirée/future**, Registry **0/101**, Search public **0/101**, Thin Index **0/101**, **0 write / fetch / activation / permission inférée**.
 
-Doctrine MASS-2 : **acquisition directe** et **index minimal attribué** sont deux axes séparés. `Source : X` + lien canonique est obligatoire pour toute future représentation tierce, mais l’attribution ne remplace jamais une permission. `CANONICAL_LINK_ONLY_CANDIDATE` reste non activable tant qu’une baseline transversale ou une permission explicite ne l’autorise pas. Photos et descriptions complètes ne sont jamais réutilisées par défaut; robots/sitemap/capacité ne confèrent aucun droit.
+Doctrine MASS-2 verrouillée : attribution ≠ permission ; `CANONICAL_LINK_ONLY_CANDIDATE` ≠ autorisation ; robots/sitemap/capacité ≠ permission. Aucun des 101 domaines n'est activable par volume seul.
 
-**Prochain sous-lot : MASS-2D — Long-Tail Sources**, rangs 51→101, après landing de #524. Ensuite MASS-2E Policy Matrix puis MASS-2F Certification.
+**NEXT : MASS-3 — Minimal Listing Index**, uniquement pour les sources explicitement policy-admissibles.
 <!-- DATA-MASS-CURRENT-END -->
 
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->

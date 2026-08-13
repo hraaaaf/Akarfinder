@@ -1,0 +1,66 @@
+name: DATA MASS-2F Final Certification
+on:
+  pull_request:
+    paths:
+      - "data/data-mass-2f/**"
+      - "scripts/data-mass/source-factory-final-certification.ts"
+      - "scripts/data-mass/__tests__/source-factory-final-certification.test.ts"
+      - "scripts/audits/data-mass-2f-final-certification.ts"
+      - ".github/workflows/data-mass-2f-final-certification.yml"
+      - "docs/data/DATA-MASS-2F-FINAL-CERTIFICATION.md"
+      - "README.md"
+      - "docs/ROADMAP.md"
+      - "docs/SESSION.md"
+permissions:
+  contents: read
+concurrency:
+  group: data-mass-2f-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: MASS-2F certification tests
+        run: node --test --import tsx scripts/data-mass/__tests__/source-factory-final-certification.test.ts scripts/data-mass/__tests__/source-factory-policy-matrix.test.ts scripts/data-mass/__tests__/source-factory-long-tail-review.test.ts scripts/data-mass/__tests__/source-factory-mid-yield-review.test.ts scripts/data-mass/__tests__/source-factory-certified-cohort.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+  live-audit:
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Run read-only final certification
+        run: npx tsx scripts/audits/data-mass-2f-final-certification.ts
+      - name: Enforce MASS-2F final truth boundary
+        run: |
+          node - <<'NODE'
+          const p=require('./.tmp/data-mass-2f/results/proof.json');
+          const c=p.certification;
+          const ok=p.status==='PASS' && p.readOnly===true && c.domains===101 && c.permissionRequired===43 && c.hold===58 &&
+            c.canonicalCandidates===43 && c.canonicalApproved===0 && c.publicActivable===0 && c.decisionConflicts===0 &&
+            c.expiredEvidence===0 && c.futureDatedEvidence===0 && p.registryRowsForReviewedDomains===0 &&
+            p.publicSearchRowsForReviewedDomains===0 && p.databaseWrites===0 && p.ddlChanges===0 && p.registryWrites===0 &&
+            p.policyChanges===0 && p.sourceNetworkRequests===0 && p.detailPageFetches===0 && p.searchActivations===0 &&
+            p.permissionsInferred===0 && c.totals.totalUrlRepresentations===17602 &&
+            c.totals.totalLikelyMoroccoRealEstateUrls===16018 && c.totals.totalLikelyMoroccoListingDetailUrls===3051;
+          if(!ok){console.error(p);process.exit(1)}
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-2f-final-certification
+          path: .tmp/data-mass-2f/results/
