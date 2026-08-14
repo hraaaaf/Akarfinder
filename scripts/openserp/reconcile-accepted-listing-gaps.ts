@@ -6,6 +6,9 @@
 // Safety:
 // - dry-run unless --apply is explicit;
 // - --apply requires the exact same three Production ingestion flags as cron;
+// - automated reconciliation scans only discovery_status=accepted: that is the
+//   concrete accepted->listing gap this workflow exists to heal;
+// - accepted rows are keyset-paginated by UUID primary key, never OFFSET-scanned;
 // - only approved-domain candidates that CURRENT code re-admits with HIGH
 //   confidence are eligible;
 // - canonical URLs already present in listing_sources are skipped;
@@ -59,21 +62,29 @@ function safeEngine(metadata: Record<string, unknown> | null): "bing" | "ecosia"
   return value === "bing" || value === "ecosia" || value === "duckduckgo" || value === "searxng_yandex" ? value : null;
 }
 
-async function loadAllDiscoveries(): Promise<DiscoveryRow[]> {
+async function loadAcceptedDiscoveries(): Promise<DiscoveryRow[]> {
   const supabase = getSupabaseServerClient();
   const out: DiscoveryRow[] = [];
   const pageSize = 1000;
-  for (let from = 0; ; from += pageSize) {
-    const response = await supabase
+  let afterId: string | null = null;
+
+  for (;;) {
+    let query = supabase
       .from("discovery_candidates")
       .select("id,discovery_query,result_rank,source_url,canonical_url,title,snippet,discovery_status,discovered_at,metadata")
-      .order("created_at", { ascending: true })
-      .range(from, from + pageSize - 1);
+      .eq("discovery_status", "accepted")
+      .order("id", { ascending: true })
+      .limit(pageSize);
+    if (afterId !== null) query = query.gt("id", afterId);
+
+    const response = await query;
     if (response.error) throw new Error(`discovery read failed: ${response.error.message}`);
     const rows = (response.data ?? []) as DiscoveryRow[];
     out.push(...rows);
     if (rows.length < pageSize) break;
+    afterId = rows[rows.length - 1]!.id;
   }
+
   return out;
 }
 
@@ -98,7 +109,7 @@ async function main() {
   const mode = parseMode();
   const universe = buildQueryUniverseV2();
   const queryById = new Map(universe.queries.map((item) => [item.query_id, item]));
-  const [rows, existingSourceUrls] = await Promise.all([loadAllDiscoveries(), loadExistingSourceUrls()]);
+  const [rows, existingSourceUrls] = await Promise.all([loadAcceptedDiscoveries(), loadExistingSourceUrls()]);
 
   const selectedByUrl = new Map<string, { decision: AdmissionDecision; oldStatus: DiscoveryRow["discovery_status"] }>();
   let alreadyLinked = 0;
@@ -141,8 +152,11 @@ async function main() {
 
   const selected = [...selectedByUrl.values()];
   const acceptedGapCount = selected.filter((item) => item.oldStatus === "accepted").length;
-  const recoveredFromRejected = selected.filter((item) => item.oldStatus === "rejected").length;
-  const recoveredFromUnclassified = selected.filter((item) => item.oldStatus === "unclassified").length;
+  // Automated reconciliation deliberately no longer scans rejected/unclassified
+  // history. Those rows are not an accepted->listing writer gap and made every
+  // successful OpenSERP run re-read the entire discovery table.
+  const recoveredFromRejected = 0;
+  const recoveredFromUnclassified = 0;
   const byDomain: Record<string, number> = {};
   for (const item of selected) {
     const domain = item.decision.classified!.source_domain;
@@ -151,6 +165,8 @@ async function main() {
 
   const plan = {
     mode,
+    reconciliation_scope: "accepted_only",
+    pagination: "keyset_id",
     discoveries_scanned: rows.length,
     existing_source_urls: existingSourceUrls.size,
     already_linked_rows_seen: alreadyLinked,
