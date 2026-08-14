@@ -1,0 +1,51 @@
+name: Ranking v2 Canonical Closeout
+
+on:
+  push:
+    branches:
+      - docs/ranking-v2-closeout
+    paths:
+      - '.github/workflows/ranking-v2-closeout-docs.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  closeout:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: docs/ranking-v2-closeout
+      - name: Update canonical docs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          block = '''\n<!-- SEARCH-RANKING-V2-CURRENT-START -->\n## Search Ranking v2 — état courant\n\n- **PR #629 ✅ MERGED** — merge `7d20556a610c69b0898b21e3ccf2baa3bb50a580`, exact head certifié `f7565350d91651706e8aaea76fd9f25ed7c1c45f`.\n- Gates exact-head : `SEARCH Ranking v2`, ODM-09B, ODM-09C, ODM-09E, Search Truth, canonical compile/validation et design accessibility **SUCCESS**. UX Gate 0 a échoué uniquement sur un fetch Google Fonts externe ; ses contrats/TypeScript étaient verts.\n- Migration production `search_ranking_v2` appliquée avec succès. Audit DB : **15 438** résultats, **101/101 URL distinctes** sur le lookahead, stock actuel **lane 3 externe** faute d'entitlement business actif ; pagination 100 + 100 avec **0 overlap** et total stable 15 438.\n- Hiérarchie codée : `premium_promoter` → `partner_agency` → owner AkarFinder → externe. Aucun entitlement commercial n'est inventé.\n- Intra-lane : pertinence texte + quality boost + fraîcheur + complétude ; dédup URL canonique ; diversification applicative max 1 source consécutive quand une alternative existe.\n- **Déploiement applicatif production BLOQUÉ** : le dernier déploiement Vercel reste sur `aa75e7c6f584a6180933c70f9550f1efdf7025e0`; le workflow de déploiement contrôlé a confirmé que `VERCEL_TOKEN` est absent/vide dans GitHub Actions. Le RPC v2 est actif en base, mais l'interleaving applicatif de `main` n'est pas encore servi par Vercel.\n- Prochaine action exacte : restaurer un canal de déploiement Vercel authentifié, déployer `main`, vérifier `/api/search` et `/search` en production, puis marquer Ranking v2 CLOSED.\n<!-- SEARCH-RANKING-V2-CURRENT-END -->\n'''
+
+          def insert(path, anchor):
+              p = Path(path)
+              text = p.read_text()
+              if '<!-- SEARCH-RANKING-V2-CURRENT-START -->' in text:
+                  return
+              idx = text.find(anchor)
+              if idx == -1:
+                  text = text.rstrip() + '\n' + block + '\n'
+              else:
+                  text = text[:idx] + block + '\n' + text[idx:]
+              p.write_text(text)
+
+          insert('README.md', '<!-- DATA-MASS-CURRENT-START -->')
+          insert('docs/ROADMAP.md', '#')
+          insert('docs/SESSION.md', '## Audit Toutes Pages')
+          PY
+      - name: Commit canonical docs
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add README.md docs/ROADMAP.md docs/SESSION.md
+          git commit -m 'docs(search): record ranking v2 merged and deployment blocker'
+          git push origin HEAD:docs/ranking-v2-closeout
