@@ -5,14 +5,19 @@
 Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
 
 <!-- UI-POLISH-SEARCH-V1-START -->
-## UI polish — Search v1 figé, reprise globale active
+## UI polish — Search v1 figé, audit global mesuré
 
-- **P0 Search ✅ TECHNIQUEMENT CLOSED** — PR #582 mergée (`599a85aa31da435faa23a4c81f1a549058b2f602`) ; ancienne #578 fermée sans merge.
+- **P0 Search ✅ CLOSED** — PR #582 mergée (`599a85aa31da435faa23a4c81f1a549058b2f602`) ; baseline persistée par PR #596 (`bd3132bbbcb474bd1e4eb3bce5b22789f0c07cbd`).
 - Head Search final certifié : `af8cd4106abaeda62faa3e95d9fe1a4de858c95e`.
 - Workflow exact-head `31752327411` : **SUCCESS** avec Product Design Reviewer + Independent Release Certifier.
-- Matrice réelle certifiée : **360×800 / 390×844 / 768×900 / 1024×800 / 1280×900 / 1440×900**.
 - Référence persistante : `docs/UX_SEARCH_V1_REFERENCE.md`.
-- **P1 NEXT** : audit réel mobile 390 / 430 px de `/search`, `/favorites`, `/map`, `/alerts`, `/compare`, `/mon-projet`, puis routes secondaires actives.
+- **P1 Audit réel mobile ✅ CLOSED — PR #597**, merge `9edf7241142fc9239d7fdd7d882ee07decf285d4`.
+- P1 : **12/12 captures réelles** sur `/search`, `/favorites`, `/map`, `/alerts`, `/compare`, `/mon-projet`, en **390×844 / 430×932**, HTTP 200 partout, **0 overflow horizontal**.
+- Preuves P1 : Product Design artefact `9203817261`, Independent Release Certifier artefact `9203859194`.
+- Scores visuels réels : Favoris **7,5/10** ; Carte **8,0/10** ; Alertes **6,5/10** ; Comparer **7,0/10** ; Mon Projet **8,0/10** ; Search reste la référence certifiée.
+- Findings : `/compare` n'activait aucun item de bottom-nav ; correction engagée dans P2 en rattachant Comparer à Favoris. Le `401` de `/api/me/continuity` sur Mon Projet hors session est conforme au contrat d'authentification et n'est pas un bug produit.
+- **P2 Design system transversal 🔄 ACTIF — PR #598** : primitives premium communes + glass bottom-nav + contrat design system v1.
+- **P3.1 Favoris 🔄 ACTIF — PR #600**, empilée sur #598 : convergence visuelle sans modification du comportement Favoris.
 - Mockup board = référence visuelle v1 ; Carte verrouillée sur **quartiers colorés + légende + pins prix + sélection quartier + card/bottom-sheet**.
 - La lane DATA et la bibliothèque visuelle quartiers restent indépendantes et ne doivent pas être écrasées par la reprise UI.
 <!-- UI-POLISH-SEARCH-V1-END -->
@@ -33,10 +38,10 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 
 ### UI polish / mockup v1
 
-- **P0 Search closeout ✅** — baseline Search persistée ; aucun redesign sans finding mesuré.
-- **P1 Audit réel mobile 🔄 ACTIF** — `/search`, `/favorites`, `/map`, `/alerts`, `/compare`, `/mon-projet` ; 390 / 430 px ; score, écarts, composants réutilisables et composants à harmoniser.
-- **P2 Design system transversal ⏳** — header, glass bottom-nav, surfaces/cards, radius/shadows/blur, typo, chips/boutons, toolbar, spacing, loading/empty/error.
-- **P3 Pages prioritaires ⏳** — Favoris → Carte → Alertes → Comparer → Mon projet/Compte.
+- **P0 Search closeout ✅ CLOSED** — baseline Search persistée ; aucun redesign sans finding mesuré.
+- **P1 Audit réel mobile ✅ CLOSED — PR #597** — 12/12 captures réelles, 390 / 430 px, 0 overflow, scores et findings persistés dans `docs/UI_POLISH_P1_AUDIT.md`.
+- **P2 Design system transversal 🔄 ACTIF — PR #598** — étendre l'existant ; header/chrome, glass bottom-nav, surfaces/cards, radius/shadows/blur, typo, chips/boutons, toolbar, spacing, loading/empty/error.
+- **P3 Pages prioritaires 🔄 ACTIF** — P3.1 Favoris #600 → Carte → Alertes → Comparer → Mon projet/Compte.
 - **P4 Pages secondaires ⏳** — seulement routes publiques réellement actives.
 - **P5 Certification globale ⏳** — 390 / 430 / 768 / 1280, FR + AR si concerné, zéro overflow, accessibilité, navigation/bottom-nav cohérentes, aucun conflit DATA/search/ranking.
 
@@ -99,7 +104,7 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 
 ## Reprise exacte
 
-**UI polish : P1 Audit réel mobile 390 / 430 px est la lane active de cette conversation.** P0 Search est clos et sert de référence visuelle v1.
+**UI polish : P1 Audit réel mobile est CLOSED. P2 Design System (#598) et P3.1 Favoris (#600, empilée sur #598) sont les lanes actives.** Search v1 reste la référence visuelle figée.
 
 **DATA MASS : MASS-1 → MASS-6 ✅ CLOSED.** Aucun MASS-7 canonique n’est défini. Le National Mass Engine reste shadow/read-only et fail-closed à POLICY tant que le Source Registry ne contient aucune autorisation positive. Toute écriture DB/Registry/Search ou activation exige un feu vert humain explicite préalable.
 
