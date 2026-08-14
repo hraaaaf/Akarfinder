@@ -88,7 +88,7 @@ async function main() {
   console.log(JSON.stringify({ write, limit, candidates: candidates.length, fetched, extracted, updated, robotsSkipped, failed }, null, 2));
 }
 
-if (process.argv[1]?.includes("daragadir-long-term-price-enrichment")) {
+if (process.argv[1]?.endsWith("/daragadir-long-term-price-enrichment.ts")) {
   main().catch((error) => {
     console.error(error);
     process.exitCode = 1;
