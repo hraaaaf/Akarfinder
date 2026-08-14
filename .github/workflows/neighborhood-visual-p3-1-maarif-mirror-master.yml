@@ -1,0 +1,41 @@
+name: Neighborhood Visual P3.1 Maârif Mirror Residential Master
+
+on:
+  push:
+    branches:
+      - agent/neighborhood-visual-p3-1-casablanca-maarif-discovery
+    paths:
+      - .github/workflows/neighborhood-visual-p3-1-maarif-mirror-master.yml
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/neighborhood-visual-p3-1-casablanca-maarif-discovery
+          fetch-depth: 0
+      - name: Download and pin exact KartaView source bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEST="public/images/neighborhoods/casablanca/maarif/immobilier-v1.jpg"
+          mkdir -p "$(dirname "$DEST")"
+          curl --fail --location --retry 10 --retry-all-errors --retry-delay 2 \
+            --user-agent 'AkarFinder-P3.1/1.0' \
+            'https://storage8.openstreetcam.org/files/photo/2018/5/1/lth/1173831_da367_6186.jpg' \
+            -o "$DEST"
+          echo 'a7d19b5cf7b2989554bd40b4dd9143e039e6929a  public/images/neighborhoods/casablanca/maarif/immobilier-v1.jpg' | sha1sum -c -
+          test "$(wc -c < "$DEST")" = "413452"
+      - name: Commit exact licensed master
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/images/neighborhoods/casablanca/maarif/immobilier-v1.jpg
+          git commit -m 'P3.1: mirror exact Maârif residential source master'
+          git push origin HEAD:agent/neighborhood-visual-p3-1-casablanca-maarif-discovery
