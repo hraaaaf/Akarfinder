@@ -9,10 +9,12 @@ import {
 const newDistricts = ["Akkari", "Aviation", "Les Orangers", "Médina", "Yacoub El Mansour"] as const;
 
 describe("NEIGHBORHOOD-VISUAL-P2 — Rabat resolver integration", () => {
-  it("activates exactly the five previously missing certified P1 pools", () => {
+  it("activates exactly the five previously missing certified P1 pools with context-safe public labels", () => {
     for (const district of newDistricts) {
-      assert.equal(RABAT_REAL_PHOTO_LIBRARY[district].length, 3, district);
-      assert.equal(new Set(RABAT_REAL_PHOTO_LIBRARY[district].map((asset) => asset.id)).size, 3, district);
+      const pool = RABAT_REAL_PHOTO_LIBRARY[district];
+      assert.equal(pool.length, 3, district);
+      assert.equal(new Set(pool.map((asset) => asset.id)).size, 3, district);
+      assert.ok(pool.every((asset) => asset.label === `Rabat • contexte ${district}`), district);
     }
   });
 
@@ -35,6 +37,7 @@ describe("NEIGHBORHOOD-VISUAL-P2 — Rabat resolver integration", () => {
       assert.deepEqual(second, first, district);
       assert.equal(first.contextScope, "district", district);
       assert.equal(first.district, district, district);
+      assert.equal(first.label, `Rabat • contexte ${district}`, district);
       assert.ok(RABAT_REAL_PHOTO_LIBRARY[district].some((asset) => asset.id === first.id), district);
       assert.equal(resolveRabatRealPhoto({ ...input, city: "Casablanca" }), null, district);
     }
