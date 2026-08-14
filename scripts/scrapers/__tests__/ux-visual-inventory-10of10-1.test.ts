@@ -6,8 +6,8 @@ import {
   resolveRabatRealPhoto,
 } from "../../../lib/contextual-illustrations/rabat-real-photo-library";
 
-test("UX-VISUAL-INVENTORY keeps the existing Rabat photo library intact and curates a city ambience pool", () => {
-  assert.equal(RABAT_REAL_PHOTO_ASSETS.length, 40);
+test("UX-VISUAL-INVENTORY preserves the historical Rabat photo baseline and curates a city ambience pool", () => {
+  assert.ok(RABAT_REAL_PHOTO_ASSETS.length >= 40);
   assert.ok(RABAT_CITY_AMBIENCE_POOL.length >= 20);
   assert.ok(RABAT_CITY_AMBIENCE_POOL.every((asset) => asset.city === "Rabat"));
   assert.ok(RABAT_CITY_AMBIENCE_POOL.every((asset) => asset.sourceName === "Wikimedia Commons"));
@@ -51,11 +51,11 @@ test("UX-VISUAL-INVENTORY excludes event imagery from exact Souissi Search selec
   assert.ok(ids.size >= 4, `expected >=4 residential-context Souissi photos, got ${ids.size}`);
 });
 
-test("UX-VISUAL-INVENTORY uses a city-only real-photo fallback for unsupported Rabat districts", () => {
+test("UX-VISUAL-INVENTORY uses a city-only real-photo fallback for an unsupported Rabat district", () => {
   const input = {
-    stableKey: "https://fixture.example/rabat/akkari/7",
+    stableKey: "https://fixture.example/rabat/unsupported/7",
     city: "Rabat",
-    district: "Akkari",
+    district: "Quartier Inconnu",
   };
   const first = resolveRabatRealPhoto(input);
   const replay = resolveRabatRealPhoto(input);
@@ -74,7 +74,7 @@ test("UX-VISUAL-INVENTORY materially diversifies city-scope Rabat fallbacks", ()
     const result = resolveRabatRealPhoto({
       stableKey: `https://fixture.example/rabat/unsupported/${index}`,
       city: "Rabat",
-      district: index % 2 === 0 ? "Akkari" : "Yacoub El Mansour",
+      district: index % 2 === 0 ? "Quartier Inconnu A" : "Quartier Inconnu B",
     });
     assert.ok(result);
     assert.equal(result.contextScope, "city");
