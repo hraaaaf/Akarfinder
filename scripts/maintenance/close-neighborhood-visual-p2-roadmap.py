@@ -1,4 +1,5 @@
 from pathlib import Path
+import subprocess
 
 path = Path('docs/ROADMAP.md')
 text = path.read_text(encoding='utf-8')
@@ -31,3 +32,15 @@ _, after = tail.split(end, 1)
 updated = before + replacement + after
 updated = updated.replace('**Version : 2026-08-13**', '**Version : 2026-08-14**', 1)
 path.write_text(updated, encoding='utf-8')
+
+subprocess.run(['git','diff','--check'], check=True)
+changed=subprocess.check_output(['git','diff','--name-only'], text=True).splitlines()
+if changed != ['docs/ROADMAP.md']:
+    raise SystemExit(f'unexpected runtime diff: {changed}')
+if 'P2 Visual Resolver integration ✅ CLOSED — PR #605' not in updated or 'P3.1 Casablanca / Maârif' not in updated:
+    raise SystemExit('canonical closeout markers missing')
+subprocess.run(['git','config','user.name','github-actions[bot]'], check=True)
+subprocess.run(['git','config','user.email','41898282+github-actions[bot]@users.noreply.github.com'], check=True)
+subprocess.run(['git','add','docs/ROADMAP.md'], check=True)
+subprocess.run(['git','commit','-m','Close P2 visual resolver in canonical roadmap'], check=True)
+subprocess.run(['git','push','origin','HEAD:agent/neighborhood-visual-roadmap-p2-closeout'], check=True)
