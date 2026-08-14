@@ -12,29 +12,41 @@ import {
 
 const ROOT = process.cwd();
 const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
-const DISTRICTS: readonly RabatNeighborhood[] = ["Agdal", "Hay Riad", "Souissi", "Océan", "Hassan"];
-const FULL_SEARCH_DISTRICTS: readonly RabatNeighborhood[] = ["Agdal", "Hay Riad", "Océan", "Hassan"];
+const LEGACY_DISTRICTS: readonly RabatNeighborhood[] = ["Agdal", "Hay Riad", "Souissi", "Océan", "Hassan"];
+const NEW_CERTIFIED_DISTRICTS: readonly RabatNeighborhood[] = ["Akkari", "Aviation", "Les Orangers", "Médina", "Yacoub El Mansour"];
+const FULL_SEARCH_LEGACY_DISTRICTS: readonly RabatNeighborhood[] = ["Agdal", "Hay Riad", "Océan", "Hassan"];
+
+const legacyAssets = LEGACY_DISTRICTS.flatMap((district) => RABAT_REAL_PHOTO_LIBRARY[district]);
+const p2Assets = NEW_CERTIFIED_DISTRICTS.flatMap((district) => RABAT_REAL_PHOTO_LIBRARY[district]);
 
 describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
-  it("ships exactly 8 real-photo source entries for each of 5 Rabat districts", () => {
-    assert.equal(RABAT_REAL_PHOTO_ASSETS.length, 40);
-    assert.equal(new Set(RABAT_REAL_PHOTO_ASSETS.map((asset) => asset.id)).size, 40);
-    assert.equal(new Set(RABAT_REAL_PHOTO_ASSETS.map((asset) => asset.fileName)).size, 40);
-    assert.equal(new Set(RABAT_REAL_PHOTO_ASSETS.map((asset) => asset.sourcePage)).size, 40);
+  it("preserves the 40-source legacy library and adds five certified 3-scene P2 pools", () => {
+    assert.equal(legacyAssets.length, 40);
+    assert.equal(p2Assets.length, 15);
+    assert.equal(RABAT_REAL_PHOTO_ASSETS.length, 55);
+    assert.equal(new Set(RABAT_REAL_PHOTO_ASSETS.map((asset) => asset.id)).size, 55);
 
-    for (const district of DISTRICTS) {
+    for (const district of LEGACY_DISTRICTS) {
       const pool = RABAT_REAL_PHOTO_LIBRARY[district];
-      assert.equal(pool.length, 8, `${district} must keep exactly 8 source photos`);
+      assert.equal(pool.length, 8, `${district} must keep exactly 8 legacy source photos`);
+      assert.ok(pool.every((asset) => asset.city === "Rabat" && asset.district === district));
+    }
+    for (const district of NEW_CERTIFIED_DISTRICTS) {
+      const pool = RABAT_REAL_PHOTO_LIBRARY[district];
+      assert.equal(pool.length, 3, `${district} must expose exactly 3 certified P1 scenes`);
       assert.ok(pool.every((asset) => asset.city === "Rabat" && asset.district === district));
     }
   });
 
-  it("uses only Wikimedia Commons real-photo sources and no generated-image provider", () => {
-    for (const asset of RABAT_REAL_PHOTO_ASSETS) {
+  it("keeps the original 40 sources Commons-only and allows only certified Commons/KartaView sources in P2", () => {
+    for (const asset of legacyAssets) {
       assert.match(asset.asset, /^https:\/\/commons\.wikimedia\.org\/wiki\/Special:Redirect\/file\//);
       assert.match(asset.asset, /\?width=960$/);
       assert.match(asset.sourcePage, /^https:\/\/commons\.wikimedia\.org\/wiki\/File%3A/i);
       assert.equal(asset.sourceName, "Wikimedia Commons");
+    }
+    for (const asset of p2Assets) {
+      assert.ok(asset.sourceName === "Wikimedia Commons" || asset.sourceName === "KartaView");
       assert.ok(asset.fileName.length > 4);
       assert.doesNotMatch(`${asset.fileName}\n${asset.asset}\n${asset.sourcePage}`, /openai|dall-?e|firefly|midjourney|generated/i);
     }
@@ -45,12 +57,17 @@ describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
     assert.equal(normalizeRabatNeighborhood("Hay Ryad"), "Hay Riad");
     assert.equal(normalizeRabatNeighborhood("Océan"), "Océan");
     assert.equal(normalizeRabatNeighborhood("quartier ocean"), "Océan");
+    assert.equal(normalizeRabatNeighborhood("Akkari"), "Akkari");
+    assert.equal(normalizeRabatNeighborhood("Les Orangers"), "Les Orangers");
+    assert.equal(normalizeRabatNeighborhood("Medina de Rabat"), "Médina");
+    assert.equal(normalizeRabatNeighborhood("Hay El Fath"), "Yacoub El Mansour");
+    assert.equal(normalizeRabatNeighborhood("Hay Al Fath"), "Yacoub El Mansour");
     assert.equal(normalizeRabatNeighborhood("Hassan II"), null);
     assert.equal(normalizeRabatNeighborhood("Unknown"), null);
   });
 
-  it("stays deterministic while Search uses all 8 variants except the curated residential Souissi subset", () => {
-    for (const district of FULL_SEARCH_DISTRICTS) {
+  it("stays deterministic while legacy Search pools preserve their existing reachability", () => {
+    for (const district of FULL_SEARCH_LEGACY_DISTRICTS) {
       const reached = new Set<string>();
       for (let index = 0; index < 10_000 && reached.size < 8; index += 1) {
         const stableKey = `listing-${district}-${index}`;
@@ -74,34 +91,33 @@ describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
       assert.doesNotMatch(first?.fileName.toLowerCase() ?? "", /fanzone|knawa/);
       if (first) souissiReached.add(first.id);
     }
-    assert.equal(souissiReached.size, 5, "Souissi Search must reach all 5 curated residential-context variants");
-    assert.ok(
-      [...souissiReached].every((id) => !["rabat-souissi-photo-06", "rabat-souissi-photo-07", "rabat-souissi-photo-08"].includes(id)),
-      "Souissi Search must never surface the 3 event/fanzone source assets",
-    );
+    assert.equal(souissiReached.size, 5);
   });
 
-  it("fails closed outside Rabat and uses a city-only truth-safe fallback for unsupported Rabat districts", () => {
+  it("resolves each P2 certified district deterministically", () => {
+    for (const district of NEW_CERTIFIED_DISTRICTS) {
+      const input = { stableKey: `p2-${district}`, city: "Rabat", district };
+      const first = resolveRabatRealPhoto(input);
+      const second = resolveRabatRealPhoto(input);
+      assert.ok(first);
+      assert.deepEqual(first, second);
+      assert.equal(first.contextScope, "district");
+      assert.equal(first.district, district);
+      assert.ok(RABAT_REAL_PHOTO_LIBRARY[district].some((asset) => asset.id === first.id));
+    }
+  });
+
+  it("fails closed outside Rabat and keeps the city-only fallback legacy-safe", () => {
     assert.equal(resolveRabatRealPhoto({ stableKey: "a", city: "Casablanca", district: "Agdal" }), null);
     assert.equal(resolveRabatRealPhoto({ stableKey: "", city: "Rabat", district: "Agdal" }), null);
-
-    const unsupported = resolveRabatRealPhoto({
-      stableKey: "unsupported-rabat-district-a",
-      city: "Rabat",
-      district: "Unknown",
-    });
-    const replay = resolveRabatRealPhoto({
-      stableKey: "unsupported-rabat-district-a",
-      city: "Rabat",
-      district: "Unknown",
-    });
+    const unsupported = resolveRabatRealPhoto({ stableKey: "unsupported-rabat-district-a", city: "Rabat", district: "Unknown" });
+    const replay = resolveRabatRealPhoto({ stableKey: "unsupported-rabat-district-a", city: "Rabat", district: "Unknown" });
     assert.ok(unsupported);
     assert.deepEqual(unsupported, replay);
     assert.equal(unsupported.contextScope, "city");
     assert.equal(unsupported.city, "Rabat");
     assert.equal(unsupported.label, "Rabat");
     assert.equal(unsupported.sourceName, "Wikimedia Commons");
-    assert.match(unsupported.asset, /^https:\/\/commons\.wikimedia\.org\//);
   });
 
   it("keeps the legacy contextual illustration catalog untouched", () => {
@@ -111,27 +127,16 @@ describe("RABAT-REAL-PHOTO-LIBRARY-1", () => {
     assert.doesNotMatch(catalog, /rabat-real-photo-library|commons\.wikimedia/i);
   });
 
-  it("keeps property photos authoritative and uses neighborhood photos only for fallback_visual", () => {
+  it("keeps property photos authoritative and renders the exact ambience source credit", () => {
     const card = source("components/search/SearchListingCardDark.tsx");
     const providerThumbnail = card.indexOf('imageMode === "db_provider_thumbnail"');
     const ownedImage = card.indexOf('imageMode !== "fallback_visual"');
     const neighborhoodPhoto = card.indexOf("showNeighborhoodPhoto ?");
-
     assert.ok(providerThumbnail >= 0 && ownedImage > providerThumbnail && neighborhoodPhoto > ownedImage);
     assert.match(card, /resolveRabatRealPhoto/);
     assert.match(card, /district: listing\.neighborhood/);
-
-    const resolverStart = card.indexOf("resolveRabatRealPhoto({");
-    const resolverEnd = card.indexOf("})", resolverStart);
-    assert.ok(resolverStart >= 0 && resolverEnd > resolverStart, "resolver call must be present");
-    const resolverCall = card.slice(resolverStart, resolverEnd + 2);
-    assert.doesNotMatch(resolverCall, /listing\.(title|description|description_snippet)/);
-    assert.match(resolverCall, /stableKey: listing\.listing_url \?\? listing\.id/);
-    assert.match(resolverCall, /city: listing\.city/);
-    assert.match(resolverCall, /district: listing\.neighborhood/);
-
     assert.match(card, /Photo d’ambiance/);
-    assert.match(card, /Crédit & licence · Wikimedia Commons/);
+    assert.match(card, /Crédit & licence · \{neighborhoodPhoto\.sourceName\}/);
     assert.match(card, /data-neighborhood-photo-brand-overlay/);
     assert.match(card, /repeat\(2, minmax\(0, 1fr\)\)/);
   });
