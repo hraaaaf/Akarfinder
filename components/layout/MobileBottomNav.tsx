@@ -15,7 +15,7 @@ const items = [
     href: "/favorites",
     label: "Favoris",
     icon: Heart,
-    activePrefixes: ["/favorites"],
+    activePrefixes: ["/favorites", "/compare"],
   },
   {
     href: "/map",
