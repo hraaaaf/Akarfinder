@@ -36,7 +36,7 @@ jobs:
       - name: Synchronize canonical closeout docs idempotently
         shell: bash
         run: |
-          if grep -Fq "## Bibliothèque visuelle quartiers — Rabat P0 → P2 ✅ CLOSED" docs/ROADMAP.md; then
+          if grep -Fq "## Bibliothèque visuelle quartiers — Rabat P0 → P2 ✅ CLOSED" docs/ROADMAP.md || grep -Fq "Rabat P0 → P2 Visual Resolver integration ✅ CLOSED" docs/SESSION.md; then
             echo "Newer Rabat P0→P2 canonical state detected; skip legacy P0.8 doc mutation."
           else
             node scripts/closeouts/neighborhood-visual-p0-8-docs.mjs
@@ -124,7 +124,7 @@ jobs:
       - name: Confirm docs are already synchronized
         shell: bash
         run: |
-          if grep -Fq "## Bibliothèque visuelle quartiers — Rabat P0 → P2 ✅ CLOSED" docs/ROADMAP.md; then
+          if grep -Fq "## Bibliothèque visuelle quartiers — Rabat P0 → P2 ✅ CLOSED" docs/ROADMAP.md || grep -Fq "Rabat P0 → P2 Visual Resolver integration ✅ CLOSED" docs/SESSION.md; then
             echo "Newer Rabat P0→P2 canonical state detected; legacy P0.8 doc sync intentionally skipped."
           else
             node scripts/closeouts/neighborhood-visual-p0-8-docs.mjs
