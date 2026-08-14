@@ -2,6 +2,8 @@ export const ui = {
   page: "bg-background text-foreground",
   pageLight: "bg-[#F8FAFC] text-[#0B1F3A]",
   chrome: "border-slate-200/80 bg-white text-[#0B2545]",
+  searchChrome:
+    "border-b border-slate-200/70 bg-white text-slate-900 shadow-[0_1px_12px_rgba(11,37,69,0.035)]",
   surface:
     "rounded-2xl border border-border/20 bg-card text-card-foreground shadow-[0_14px_38px_rgba(2,10,24,0.1)] dark:border-white/10 dark:shadow-[0_18px_42px_rgba(2,10,24,0.28)]",
   surfacePremium:
