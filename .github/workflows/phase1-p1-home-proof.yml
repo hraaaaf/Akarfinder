@@ -3,6 +3,15 @@ name: Phase 1 P1 Home Proof Gate
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "app/page.tsx"
+      - "components/home/**"
+      - "components/landing/**"
+      - "lib/market-pulse/**"
+      - "lib/sources/source-access-registry.ts"
+      - "scripts/scrapers/__tests__/home-proof-ux.test.ts"
+      - "scripts/scrapers/__tests__/home-motor-purity.test.ts"
+      - ".github/workflows/phase1-p1-home-proof.yml"
   workflow_dispatch:
 
 concurrency:
