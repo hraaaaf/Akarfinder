@@ -4,6 +4,7 @@ import { ProfessionalAudiencePage } from "@/components/pro/ProfessionalAudienceP
 export const metadata: Metadata = {
   title: "AkarFinder Pro pour agences immobilières",
   description: "Structurez vos données de biens, leurs droits et leur complétude avant publication dans les expériences AkarFinder.",
+  alternates: { canonical: "/pro/agences" },
 };
 
 export default function ProAgencesPage() {
