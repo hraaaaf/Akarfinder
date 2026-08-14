@@ -1,0 +1,94 @@
+name: Neighborhood Visual P3.1 Casablanca Maârif KartaView Discovery
+
+on:
+  push:
+    branches:
+      - agent/neighborhood-visual-p3-1-casablanca-maarif-discovery
+    paths:
+      - .github/workflows/neighborhood-visual-p3-1-casablanca-maarif-kartaview-discovery.yml
+  pull_request:
+    paths:
+      - .github/workflows/neighborhood-visual-p3-1-casablanca-maarif-kartaview-discovery.yml
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sweep Maârif residential street imagery
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="data/audits/neighborhood-visual-p3-1-casablanca-maarif-kartaview"
+          mkdir -p "$OUT"
+          python3 - <<'PY'
+          import hashlib,json,math,pathlib,time,urllib.error,urllib.parse,urllib.request
+          out=pathlib.Path('data/audits/neighborhood-visual-p3-1-casablanca-maarif-kartaview')
+          ua={'User-Agent':'AkarFinder/1.0 (P3.1 Maarif residential source discovery)','Accept':'application/json'}
+          centers=[
+            ('maarif-panoramio-anchor',33.588754,-7.633991),
+            ('maarif-street-sign-anchor',33.586056,-7.639639),
+            ('maarif-northwest',33.5920,-7.6400),
+            ('maarif-northeast',33.5920,-7.6310),
+            ('maarif-southwest',33.5830,-7.6410),
+            ('maarif-southeast',33.5830,-7.6310),
+            ('maarif-core-west',33.5880,-7.6420),
+            ('maarif-core-east',33.5880,-7.6290),
+          ]
+          def get_json(url):
+            for attempt in range(3):
+              try:
+                req=urllib.request.Request(url,headers=ua)
+                with urllib.request.urlopen(req,timeout=40) as r:return json.load(r)
+              except urllib.error.HTTPError as exc:
+                if exc.code != 429 or attempt == 2: raise
+                time.sleep(min(max(int(exc.headers.get('Retry-After','3')),1),10))
+          def hav(a,b,c,d):
+            R=6371000.;p1,p2=math.radians(a),math.radians(c);dp=math.radians(c-a);dl=math.radians(d-b)
+            x=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2
+            return 2*R*math.asin(math.sqrt(x))
+          rows={}
+          for label,lat,lng in centers:
+            q=urllib.parse.urlencode({'lat':lat,'lng':lng,'radius':900,'join':'sequence','orderBy':'id','orderDirection':'desc'})
+            try:data=(get_json('https://api.openstreetcam.org/2.0/photo/?'+q) or {}).get('result',{}).get('data',[])
+            except Exception as exc:
+              print(f'{label}: API error {type(exc).__name__}: {exc}');continue
+            for d in data:
+              try:plat=float(d['lat']);plng=float(d['lng'])
+              except Exception:continue
+              urls=[d[k] for k in ('fileurlLTh','fileurlProc','fileurlTh') if isinstance(d.get(k),str) and d[k].startswith('http')]
+              if not urls:continue
+              pid=str(d.get('id'));dist=round(hav(lat,lng,plat,plng),1)
+              row=rows.get(pid,{'id':d.get('id'),'lat':plat,'lng':plng,'heading':d.get('heading'),'sequence_id':(d.get('sequence') or {}).get('id'),'urls':urls,'hits':[]})
+              row['hits'].append({'label':label,'distance_m':dist});rows[pid]=row
+          vals=list(rows.values())
+          for r in vals:r['best_distance_m']=min(h['distance_m'] for h in r['hits'])
+          vals.sort(key=lambda r:r['best_distance_m'])
+          downloaded=0
+          for r in vals:
+            if downloaded>=40 or r['best_distance_m']>1200:continue
+            try:
+              req=urllib.request.Request(r['urls'][0],headers=ua)
+              with urllib.request.urlopen(req,timeout=40) as resp:b=resp.read()
+              if len(b)<5000:continue
+              p=out/f"{downloaded+1:02d}_{round(r['best_distance_m']):04d}m_{r['id']}.jpg"
+              p.write_bytes(b);r['downloaded_file']=p.name;r['sha1']=hashlib.sha1(b).hexdigest();r['bytes']=len(b);downloaded+=1
+              time.sleep(1)
+            except Exception as exc:r['download_error']=f'{type(exc).__name__}: {exc}'
+          report={'scope':'P3.1 Casablanca Maârif residential KartaView discovery','centers':centers,'candidate_count':len(vals),'downloaded':downloaded,'candidates':vals}
+          (out/'candidates.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print(f'MAARIF_KARTAVIEW candidates={len(vals)} downloaded={downloaded}')
+          if downloaded < 6: raise SystemExit(f'Only {downloaded} Maârif review pixels downloaded')
+          PY
+      - name: Upload Maârif KartaView proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-visual-p3-1-casablanca-maarif-kartaview-discovery
+          path: data/audits/neighborhood-visual-p3-1-casablanca-maarif-kartaview
+          retention-days: 14
+          if-no-files-found: error
