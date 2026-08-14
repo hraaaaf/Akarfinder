@@ -6,7 +6,7 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 
 ## UI polish / mockup v1
 
-- **Progression stricte : 3/10 jalons CLOSED = 30 %** — seuls les lots certifiés + mergés comptent.
+- **Progression stricte : 4/10 jalons CLOSED = 40 %** — seuls les lots certifiés + mergés comptent.
 - **P0 Search ✅ CLOSED** — Search v1 reste la référence visuelle figée.
 - **P1 Audit réel mobile ✅ CLOSED — PR #597** — 12/12 captures réelles sur `/search`, `/favorites`, `/map`, `/alerts`, `/compare`, `/mon-projet` en 390×844 / 430×932, 0 overflow horizontal.
 - **P2 Design system transversal ✅ CLOSED — PR #615**, merge `993adff175e156eb3d159e63b687a6f992203b1d`, exact head `8e8487be7ff06a92e603ed9a262762aca00ab8bc`.
@@ -15,7 +15,11 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
   - Search Final : machineScore 10, 6 viewports, 0 overflow, 0 image cassée ; référence Search visuellement préservée.
 - **CI flow ✅ optimisé — PR #608**, merge `28b9e885e947edb909c4c314665ecc60e34ab0cc` — `cancel-in-progress` + scoping des lanes hors sujet ; la fan-out UI observée est passée d'environ 22–100+ runs à ~9–12 runs utiles selon le scope.
 - **Visual Inventory stale contracts ✅ corrigés — PR #613**, merge `db93d63650bf44d14e6877bda03dd572628b6a90` — contrat + audit alignés sur les pools Rabat certifiés actuels, sans runtime/data/ranking mutation.
-- **P3 Pages prioritaires 🔄 BRANCHES V3 PRÊTES, PR NON OUVERTES** — Favoris `89bd1c8b…` ; Carte `2de1cb1f…` ; Alertes `bfe770b8…` ; Comparer `8eb0e6db…` ; Mon Projet `98b8a81b…`. Ouvrir/certifier/merger une seule page à la fois pour préserver le flow CI.
+- **P3 visual certification ✅ ACTIVE — PR #616**, merge `e23be20203efd8566079665b5d27b504d0ce4133` — workflow 5 routes × 4 viewports = 20 captures réelles ; harness corrigé pour mesurer la visibilité CSS réelle de la bottom-nav et sa destination active.
+- **P3.1 Favoris ✅ CLOSED — PR #617**, merge `a4fd6506803805e6ff0ab464cf80ca3aa103e5bf`, exact head `1395fe11d6ce2af3d127f62f3ba9f5b5bc68b929`.
+  - 20-shot exact-head `31802048676` ✅ ; Canonical `31802048710` ✅ ; Compile `31802048765` ✅ ; A11y `31802048822` ✅ ; Design System `31802048795` ✅ ;
+  - inspection humaine 390×844 : CTA vide corrigé en bleu canonique `#0B63CE`, bottom-nav active Favoris, 0 overflow ; artefact `9219711069`, digest `sha256:b73ea87c9bb831f4decbe6d89a652c87979fdfc672c3b97dc37392eb3be08b47`.
+- **P3.2 Carte 🔄 NEXT** — branche v4 préparée ; puis Alertes, Comparer, Mon Projet, une PR à la fois.
 - La lane UI ne doit pas écraser DATA ni la bibliothèque visuelle.
 
 ## Bibliothèque visuelle quartiers — Rabat
@@ -65,7 +69,7 @@ Doctrine verrouillée : photos réelles uniquement, provenance/licence défendab
 
 ## Reprise exacte
 
-**UI polish : P0 → P2 ✅ CLOSED, progression stricte 30 %. Prochaine action exacte : P3.1 Favoris, reconstruire la branche v3 sur le merge P2 `993adff1…`, ouvrir une seule PR, certifier 390 / 430 / 768 / 1280, inspecter les captures, corriger puis merger.**
+**UI polish : P0 → P3.1 Favoris ✅ CLOSED, progression stricte 40 %. Prochaine action exacte : P3.2 Carte, ouvrir la branche v4 préparée sur le main courant, certifier 390 / 430 / 768 / 1280, inspecter les captures, corriger puis merger.**
 
 **Bibliothèque visuelle : P0 → P2 ✅ CLOSED. Prochaine action exacte : P3 national rollout.**
 
