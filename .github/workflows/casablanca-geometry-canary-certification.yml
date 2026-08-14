@@ -3,7 +3,20 @@ name: Casablanca Geometry Canary Certification
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "lib/geo/**"
+      - "data/geo/**"
+      - "app/api/geo/**"
+      - "components/search/CasablancaNeighborhoodChoropleth.tsx"
+      - "components/search/SearchMapNeighborhoodDock.tsx"
+      - "scripts/scrapers/__tests__/casablanca-geometry-canary.test.ts"
+      - "scripts/scrapers/__tests__/neighborhood-geometry-registry.test.ts"
+      - ".github/workflows/casablanca-geometry-canary-certification.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
