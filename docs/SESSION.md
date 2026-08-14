@@ -31,7 +31,7 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 - Le master source reste **intact**. Le traitement AkarFinder certifié du pilote est **non destructif et rendu en CSS/UI** ; aucun bitmap dérivé n’est requis, donc `transformed_asset_url = NULL` est l’état canonique attendu pour ces trois assets.
 - La fonction d’ingestion P0.7 est désormais fail-closed (`410`) et l’extension temporaire `pg_net` a été supprimée après ingestion.
 - **Aucune activation implicite du Visual Resolver V2** : la consommation généralisée de cette bibliothèque reste dans **P2**. Le pilote prouve source → droits → ingestion → rendu → QA → Storage/metadata, pas une nouvelle règle de ranking/publication.
-- **Prochain LOT de cette lane : P1.1 — Agdal**, 3 scènes réelles selon le pipeline Souissi certifié.
+- **P1 Rabat désormais terminé jusqu’à P1.9** ; prochaine étape de cette lane : **P2 Visual Resolver integration**.
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-END -->
 
 ## Priorité d’exécution
@@ -65,15 +65,21 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
   - gate visuel humain **9,1/10** ;
   - correctif QA : la navigation mobile globale ne se rend plus sur `/visual-qa/*`, avec les gates bottom-nav exact-head restés verts ;
   - aucune activation Search implicite.
-- **P1.8 Océan 🔄 ACTIF — PR #559**.
-  - branche `agent/neighborhood-visual-p1-8-ocean-source` ;
-  - sourcing réel verrouillé : Phare de Rabat / Bab El Had / coucher de soleil associé au quartier Océan ;
-  - source-discovery exact : `561b72a1093fd4fc207e573447f9de94330e66b1`, `33bc545195a8ba9904e9b68519cf2c4714af11b7`, `ec76f6f5f505a30bafc32810158e7bc014eb4983` ;
-  - relations truth-safe : `nearby_context / edge_context / nearby_context` ; jamais de claim `inside Océan` ;
-  - registry, route QA, fixture Search, audit six viewports, contract, reviewer et release-certifier en cours de certification ;
-  - P1.8 reste read-only côté activation : Storage/DB/Search généralisé attend P2.
-- **P1.9 Yacoub El Mansour ⏳ NEXT** après closeout P1.8.
-- **P2 Visual Resolver integration ⏳** après P1 Rabat.
+- **P1.8 Océan ✅ CLOSED — PR #588**.
+  - merge `48188de7f62c80da163ff157040940712e45c93f` ;
+  - exact head `3dc9a6daa6aa56192d8237cd9d79a727f9a65475` ;
+  - 3 sources réelles `signature / immobilier / lifestyle`, Product Design Reviewer ✅, Independent Release Certifier ✅ ;
+  - QA machine **10/10** sur 360 / 390 / 768 / 1024 / 1280 / 1440 ;
+  - aucune activation Search implicite.
+- **P1.9 Yacoub El Mansour / Hay El Fath ✅ CLOSED — PR #595**.
+  - merge `ab8f283c727f14b23f6f5717b6cadac5450ad07a` ; head certifié `9fbd8f18dd15ca538469ee4cbaaf2e8b8f9152b9` ;
+  - 3 scènes réelles : deux contextes résidentiels Hay El Fath via KartaView + une scène Atlantique Wikimedia Commons explicitement associée à Yacoub El Mansour ;
+  - SHA-1 verrouillés : `18a08e3074db9881953a8ad348f29fb33d5c5743`, `531354e2a02ddf5e936aa5eb3754643b129154d4`, `e9951191d89fcba47159bd021143ab9be76145a2` ;
+  - Contract `31759100755` ✅ ; Product Design Reviewer `31759100703` ✅ ; Independent Release Certifier `31759100686` ✅ ;
+  - preuves : artefact Product Design `9204072131`, artefact Independent Release `9204061400` ;
+  - QA machine **10/10** sur 360 / 390 / 768 / 1024 / 1280 / 1440, zéro overflow, trois backgrounds distincts ;
+  - human gate **PASS** ; aucune activation Search implicite.
+- **P2 Visual Resolver integration 🔄 NEXT** — intégrer la bibliothèque certifiée sans contourner les truth boundaries ni la doctrine d’activation.
 - **P3 national rollout ⏳** puis **P4 visual intelligence ⏳**.
 
 ### DATA MASS
@@ -106,6 +112,6 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 
 **UI polish : P1 Audit réel mobile est CLOSED. P2 Design System (#598) et P3.1 Favoris (#600, empilée sur #598) sont les lanes actives.** Search v1 reste la référence visuelle figée.
 
-**DATA MASS : MASS-1 → MASS-6 ✅ CLOSED.** Aucun MASS-7 canonique n’est défini. Le National Mass Engine reste shadow/read-only et fail-closed à POLICY tant que le Source Registry ne contient aucune autorisation positive. Toute écriture DB/Registry/Search ou activation exige un feu vert humain explicite préalable.
+**Bibliothèque visuelle : P1.1 → P1.9 ✅ CLOSED. Prochaine action exacte : P2 Visual Resolver integration.** Search généralisé reste fail-closed tant que P2 n’a pas été certifié.
 
-En parallèle, **P1.8 Océan** reste une lane indépendante et ne doit pas être cassée par le lot UI.
+**DATA MASS : MASS-1 → MASS-6 ✅ CLOSED.** Aucun MASS-7 canonique n’est défini. Le National Mass Engine reste shadow/read-only et fail-closed à POLICY tant que le Source Registry ne contient aucune autorisation positive. Toute écriture DB/Registry/Search ou activation exige un feu vert humain explicite préalable.
