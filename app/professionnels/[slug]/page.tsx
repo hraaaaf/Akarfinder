@@ -4,21 +4,38 @@ import { Building2, Globe, Mail, MapPin, Phone, ShieldCheck } from "lucide-react
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { Container } from "@/components/ui/Container";
-import { getPublicProfessionalProfileViewBySlug } from "@/lib/professional/public-profile";
+import {
+  getDemoProfessionalProfileView,
+  getPublicProfessionalProfileViewBySlug,
+} from "@/lib/professional/public-profile";
 import { normalizeProfessionalSlug } from "@/lib/professional/validation";
 
 export const dynamic = "force-dynamic";
 
-type PageProps = { params: Promise<{ slug: string }> };
+type PageProps = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ preview?: string }>;
+};
 
 function profileTypeLabel(type: "agency" | "promoter") {
   return type === "promoter" ? "Promoteur" : "Agence immobilière";
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { slug: rawSlug } = await params;
+  const { preview } = await searchParams;
   const slug = normalizeProfessionalSlug(rawSlug);
   if (!slug) return { title: "Professionnel introuvable — AkarFinder", robots: { index: false, follow: false } };
+
+  if (preview === "demo") {
+    const profile = getDemoProfessionalProfileView(slug);
+    if (!profile) return { title: "Professionnel introuvable — AkarFinder", robots: { index: false, follow: false } };
+    return {
+      title: `${profile.display_name} — Exemple de profil partenaire AkarFinder`,
+      description: "Exemple fictif et non publié de page agence partenaire AkarFinder.",
+      robots: { index: false, follow: false },
+    };
+  }
 
   try {
     const profile = await getPublicProfessionalProfileViewBySlug(slug);
@@ -40,13 +57,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function ProfessionalProfilePage({ params }: PageProps) {
+export default async function ProfessionalProfilePage({ params, searchParams }: PageProps) {
   const { slug: rawSlug } = await params;
+  const { preview } = await searchParams;
   const slug = normalizeProfessionalSlug(rawSlug);
   if (!slug) notFound();
 
+  const isDemo = preview === "demo";
+
   try {
-    const profile = await getPublicProfessionalProfileViewBySlug(slug);
+    const profile = isDemo
+      ? getDemoProfessionalProfileView(slug)
+      : await getPublicProfessionalProfileViewBySlug(slug);
     if (!profile) notFound();
 
     const typeLabel = profileTypeLabel(profile.organization_type);
@@ -54,6 +76,13 @@ export default async function ProfessionalProfilePage({ params }: PageProps) {
 
     return (
       <main className="min-h-screen bg-[#f8f9fa] text-gray-900">
+        {isDemo ? (
+          <div className="sticky top-0 z-50 flex items-center justify-center gap-2 border-b border-amber-400 bg-amber-400 px-4 py-2.5 text-center text-[12px] font-extrabold text-amber-950">
+            <span aria-hidden="true">⚠</span>
+            <span>Exemple de démonstration — non publié. Aucune agence réelle n’est représentée.</span>
+          </div>
+        ) : null}
+
         <SiteHeader />
 
         <section className="bg-deepblue px-4 py-10 text-white sm:py-14">
@@ -74,7 +103,7 @@ export default async function ProfessionalProfilePage({ params }: PageProps) {
                 )}
                 <div className="min-w-0">
                   <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-bronze-400">
-                    {typeLabel} · profil public validé
+                    {typeLabel} · {isDemo ? "exemple partenaire" : "profil public validé"}
                   </p>
                   <h1 className="mt-2 break-words text-[2rem] font-extrabold tracking-[-0.045em] sm:text-[2.8rem]">
                     {profile.display_name}
@@ -139,13 +168,17 @@ export default async function ProfessionalProfilePage({ params }: PageProps) {
 
               {!hasPublicContact ? (
                 <p className="mt-5 rounded-xl bg-[#f8fafc] px-4 py-3 text-[12px] leading-5 text-gray-500">
-                  Coordonnées publiques non renseignées. AkarFinder n’affiche pas de contact déduit ou issu d’une source non autorisée.
+                  {isDemo
+                    ? "Aucune coordonnée réelle dans cette démonstration."
+                    : "Coordonnées publiques non renseignées. AkarFinder n’affiche pas de contact déduit ou issu d’une source non autorisée."}
                 </p>
               ) : null}
             </article>
 
             <aside className="rounded-[1.6rem] border border-[#eadfca] bg-[#fffdf8] p-6 shadow-[0_8px_24px_rgba(15,35,65,0.05)]">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-gray-500">Portefeuille public vérifié</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-gray-500">
+                {isDemo ? "Portefeuille illustratif" : "Portefeuille public vérifié"}
+              </p>
               <dl className="mt-5 space-y-4">
                 <div className="flex items-center justify-between gap-4 border-b border-[#eadfca] pb-4">
                   <dt className="text-sm text-gray-600">Biens avec ownership confirmé</dt>
@@ -167,7 +200,9 @@ export default async function ProfessionalProfilePage({ params }: PageProps) {
               <div>
                 <h2 className="font-extrabold text-deepblue">Ce que signifie ce profil</h2>
                 <p className="mt-1 text-[12.5px] leading-6 text-gray-600">
-                  L’organisation est validée et a choisi de rendre ce profil public. Les compteurs ci-dessus portent uniquement sur des ownerships vérifiés et des projets publiés. Le badge commercial décrit la relation avec AkarFinder : il ne certifie pas une annonce et ne modifie pas la pertinence organique des résultats.
+                  {isDemo
+                    ? "Cette surface est une démonstration fictive et non indexée. Elle sert uniquement à vérifier la présentation cible d’une agence partenaire, sans créer de statut réel, de contact ni d’annonce publique."
+                    : "L’organisation est validée et a choisi de rendre ce profil public. Les compteurs ci-dessus portent uniquement sur des ownerships vérifiés et des projets publiés. Le badge commercial décrit la relation avec AkarFinder : il ne certifie pas une annonce et ne modifie pas la pertinence organique des résultats."}
                 </p>
               </div>
             </div>
