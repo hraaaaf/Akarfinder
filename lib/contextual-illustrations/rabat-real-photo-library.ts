@@ -71,7 +71,7 @@ type CertifiedNeighborhoodVisual = {
     fileName: string;
     asset: string;
     sourcePage: string;
-    sourceName: "Wikimedia Commons" | "KartaView";
+    sourceName: string;
   };
 };
 
@@ -79,16 +79,22 @@ function certifiedPool(
   district: RabatNeighborhood,
   visuals: readonly CertifiedNeighborhoodVisual[],
 ): readonly RabatRealPhotoAsset[] {
-  return visuals.map((visual) => ({
-    id: visual.id,
-    city: "Rabat" as const,
-    district,
-    label: `Rabat • contexte ${district}`,
-    fileName: visual.source.fileName,
-    asset: visual.source.asset,
-    sourcePage: visual.source.sourcePage,
-    sourceName: visual.source.sourceName,
-  }));
+  return visuals.map((visual) => {
+    const sourceName = visual.source.sourceName;
+    if (sourceName !== "Wikimedia Commons" && sourceName !== "KartaView") {
+      throw new Error(`Unsupported certified neighborhood visual source: ${sourceName}`);
+    }
+    return {
+      id: visual.id,
+      city: "Rabat" as const,
+      district,
+      label: `Rabat • contexte ${district}`,
+      fileName: visual.source.fileName,
+      asset: visual.source.asset,
+      sourcePage: visual.source.sourcePage,
+      sourceName,
+    };
+  });
 }
 
 export const RABAT_REAL_PHOTO_LIBRARY: Readonly<Record<RabatNeighborhood, readonly RabatRealPhotoAsset[]>> = {
