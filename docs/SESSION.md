@@ -4,23 +4,23 @@
 
 Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
 
-## Audit Toutes Pages — chantier actif
+## Audit Toutes Pages — chantier CLOSED
 
-- **Progression stricte : 4/5 jalons CLOSED = 80 %** — seuls les jalons certifiés + mergés comptent.
+- **Progression stricte : 5/5 jalons CLOSED = 100 %** — seuls les jalons certifiés + mergés comptent.
 - **A1 Inventaire exhaustif ✅ CLOSED — PR #626**, merge `34ab649e2571303972d7791ea0738c6560dde3b6`.
   - inventaire automatique `app/**/page.tsx` : **64 pages = 57 statiques + 7 dynamiques** ; 0 doublon ; 0 route dynamique non classée.
 - **A2 Baseline exhaustive ✅ CLOSED — PR #630**, merge `598d778915dad3f326872e11f41cc26071a4aee4`.
   - run `31818373848` ✅ ; **252/252 captures** ; baseline initiale **120 findings sur 19 routes**.
 - **A3 Remédiation structurée ✅ CLOSED — PR #631**, merge `27b109abde4c868bdf43d41c9f3003e761ccad48`.
   - vrai défaut produit corrigé : overflow `/vendre/dossier` ; inspection humaine 390 / 430 / 768 / 1280 PASS ;
-  - redirects et 401 attendus modélisés explicitement ; aucune erreur générique whitelistée ;
+  - redirects et 401 attendus modélisés explicitement ; aucune erreur générique whitelistée ;
   - inventaire final : **52 pages rendables + 12 blockers explicitement typés** ;
   - run `31822919168` ✅ ; **208/208 captures, 0 finding** ; artefact `9227821372`, digest `sha256:48a05a18873353c74de7c857fe3035f66ae79183ba527c7dc2ec78502b8f17aa`.
 - **A4 Recertification stricte ✅ CLOSED — PR #633**, merge `9107c0143ea053a329bd55cfae06ae2b36cbd8ed`, exact head `3a696cab09dbd81c188aa26b25b3156badd9b996`.
   - run `31824121689` ✅ ; **208/208 captures, 0 finding, 0 route en défaut** ;
   - gate strict : couverture complète obligatoire, 0 finding inattendu, blockers autorisés uniquement s’ils sont typés + justifiés ;
   - artefact `9228248430`, digest `sha256:7047553be163e3572e8b5d0b3d4d3613257010cddfbb43b19405e92a2b103f6a`.
-- **A5 Gouvernance / closeout ⏳ ACTIVE — PR #635**.
+- **A5 Gouvernance / closeout ✅ CLOSED — PR #635**, merge `1e429371fe6a0abef5dc440f647bdb06ccc51cd5`.
   - archive finale : `docs/UI_ALL_PAGES_V1_CERTIFICATION.md` ;
   - dette suivie : issue **#634** ;
   - 2 `DATA_FIXTURE_REQUIRED` : `/listings/[id]`, `/professionnels/[slug]` ;
@@ -66,4 +66,4 @@ Viewports certifiés : **390×844 / 430×932 / 768×900 / 1280×900**.
 
 ## Reprise exacte
 
-**Audit Toutes Pages — 80 %. A1→A4 CLOSED. A5 ACTIVE sur PR #635 : attendre uniquement les checks devenus nécessaires, merger le closeout si verts, vérifier `main` + archive + SESSION, puis le chantier passe à 100 %. Issue #634 conserve la dette des 12 fixtures sans falsifier la certification.**
+**Audit Toutes Pages — 100 %. A1→A5 CLOSED. PR #635 mergée sur `1e429371fe6a0abef5dc440f647bdb06ccc51cd5`. Issue #634 conserve la dette des 12 fixtures sans falsifier la certification.**
