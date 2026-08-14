@@ -4,8 +4,14 @@ import path from "node:path";
 const appDir = path.resolve("app");
 const outputDir = path.resolve(process.env.AUDIT_OUTPUT_DIR ?? "data/audits/ui-all-pages-inventory");
 
+const expectedContinuity401 = [{ path: "/api/me/continuity", status: 401 }];
+
 const dynamicAuditByPattern = new Map([
-  ["/listings/[id]", { fixtureUrl: "/listings/casablanca-finance-city-terrasse", auditMode: "render" }],
+  ["/listings/[id]", {
+    fixtureUrl: null,
+    auditMode: "data-fixture-required",
+    blocker: "No deterministic local listing id is guaranteed: the page requires a database-backed listing visible under the current source-access registry.",
+  }],
   ["/immobilier/[city]", { fixtureUrl: "/immobilier/rabat", auditMode: "render" }],
   ["/immobilier/[city]/[district]", { fixtureUrl: "/immobilier/rabat/agdal", auditMode: "render" }],
   ["/quartiers/[citySlug]/[neighborhoodSlug]", { fixtureUrl: "/quartiers/rabat/agdal", auditMode: "render" }],
@@ -16,6 +22,16 @@ const dynamicAuditByPattern = new Map([
     auditMode: "data-fixture-required",
     blocker: "No deterministic local public professional exists: the page requires a validated + public professional_organizations row.",
   }],
+]);
+
+const staticAuditByPattern = new Map([
+  ["/compagnon", { expectedFinalPath: "/mon-projet", expectedResourceFailures: expectedContinuity401 }],
+  ["/onboarding", { expectedFinalPath: "/mon-projet", expectedResourceFailures: expectedContinuity401 }],
+  ["/profil-recherche", { expectedFinalPath: "/mon-projet", expectedResourceFailures: expectedContinuity401 }],
+  ["/mon-projet", { expectedResourceFailures: expectedContinuity401 }],
+  ["/mon-projet/espace", { expectedResourceFailures: expectedContinuity401 }],
+  ["/pro/leads", { expectedFinalPath: "/pro" }],
+  ["/quartiers", { expectedFinalPath: "/immobilier" }],
 ]);
 
 async function collectPageFiles(dir, relative = "") {
@@ -57,6 +73,7 @@ const pages = pageFiles.map((sourcePath) => {
   const routePattern = fileToRoutePattern(sourcePath);
   const dynamic = isDynamicRoute(routePattern);
   const dynamicAudit = dynamic ? dynamicAuditByPattern.get(routePattern) ?? null : null;
+  const staticAudit = !dynamic ? staticAuditByPattern.get(routePattern) ?? null : null;
   return {
     sourcePath: `app/${sourcePath}`,
     routePattern,
@@ -65,6 +82,8 @@ const pages = pageFiles.map((sourcePath) => {
     auditMode: dynamic ? dynamicAudit?.auditMode ?? null : "render",
     blocker: dynamicAudit?.blocker ?? null,
     family: routeFamily(routePattern),
+    expectedFinalPath: staticAudit?.expectedFinalPath ?? null,
+    expectedResourceFailures: staticAudit?.expectedResourceFailures ?? [],
   };
 });
 
@@ -78,7 +97,7 @@ const duplicateRoutes = Object.entries(
 ).filter(([, count]) => count > 1);
 
 const report = {
-  schemaVersion: "UI_ALL_PAGES_INVENTORY_V1",
+  schemaVersion: "UI_ALL_PAGES_INVENTORY_V2",
   generatedAt: new Date().toISOString(),
   pageCount: pages.length,
   dynamicPageCount: pages.filter((page) => page.dynamic).length,
