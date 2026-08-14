@@ -23,7 +23,7 @@ const route = readFileSync(
 
 test("opaque cursor round-trips the complete ordering tuple", () => {
   const payload = {
-    v: 1 as const,
+    v: 2 as const,
     lane: 1,
     rank: 0.42,
     updatedAt: "2026-07-26T20:00:00.000Z",
@@ -36,7 +36,7 @@ test("opaque cursor round-trips the complete ordering tuple", () => {
 
 test("cursor rejects tampering", () => {
   const cursor = encodePublicSearchCursor({
-    v: 1,
+    v: 2,
     lane: 0,
     rank: 1.2,
     updatedAt: "2026-07-26T20:00:00.000Z",

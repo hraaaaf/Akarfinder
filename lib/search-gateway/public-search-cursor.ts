@@ -2,10 +2,11 @@ import { Buffer } from "node:buffer";
 import { createHash, timingSafeEqual } from "node:crypto";
 
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { diversifySearchGatewayResults } from "@/lib/search-gateway/search-gateway-diversify";
 import { mapSeedToThinIndexResult } from "@/lib/search-gateway/seed-thin-index";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
-const CURSOR_VERSION = 1 as const;
+const CURSOR_VERSION = 2 as const;
 const MAX_PAGE_SIZE = 100;
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -145,11 +146,25 @@ function toSeedRow(row: PublicSearchRpcRow) {
   };
 }
 
+function mapAndDiversifyWithinBusinessLanes(rows: PublicSearchRpcRow[]): SearchGatewayNormalizedResult[] {
+  const laneOrder = [...new Set(rows.map((row) => row.lane_weight))].sort((a, b) => a - b);
+  const diversified: SearchGatewayNormalizedResult[] = [];
+
+  for (const lane of laneOrder) {
+    const laneResults = rows
+      .filter((row) => row.lane_weight === lane)
+      .map((row) => mapSeedToThinIndexResult(toSeedRow(row) as never));
+    diversified.push(...diversifySearchGatewayResults(laneResults, 1));
+  }
+
+  return diversified;
+}
+
 export async function searchPublicRepresentations(input: PublicSearchInput): Promise<PublicSearchPage> {
   const cursor = decodePublicSearchCursor(input.cursor);
   const pageSize = Math.max(1, Math.min(Math.trunc(input.limit ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE));
   const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase.rpc("search_public_representations_v1", {
+  const { data, error } = await supabase.rpc("search_public_representations_v2", {
     p_query: input.q?.trim() || null,
     p_city: input.city?.trim() || null,
     p_property_type: input.propertyType?.trim() || null,
@@ -164,14 +179,14 @@ export async function searchPublicRepresentations(input: PublicSearchInput): Pro
     p_after_updated_at: cursor?.updatedAt ?? null,
     p_after_representation_id: cursor?.representationId ?? null,
   });
-  if (error) throw new Error(`public_search_rpc_failed:${error.message}`);
+  if (error) throw new Error(`public_search_rpc_v2_failed:${error.message}`);
 
   const rows = (data ?? []) as PublicSearchRpcRow[];
   const hasMore = rows.length > pageSize;
   const pageRows = rows.slice(0, pageSize);
   const tail = pageRows.at(-1);
   return {
-    results: pageRows.map((row) => mapSeedToThinIndexResult(toSeedRow(row) as never)),
+    results: mapAndDiversifyWithinBusinessLanes(pageRows),
     results_count: pageRows.length,
     total_count: Number(pageRows[0]?.total_count ?? 0),
     has_more: hasMore,
