@@ -28,7 +28,18 @@ const neighborhoods = [
   "Souissi",
   "Hassan",
 ];
-const supportedDistricts = new Set(["Agdal", "Hay Riad", "Souissi", "Hassan", "Océan"]);
+const supportedDistricts = new Set([
+  "Agdal",
+  "Akkari",
+  "Aviation",
+  "Hay Riad",
+  "Souissi",
+  "Océan",
+  "Hassan",
+  "Les Orangers",
+  "Médina",
+  "Yacoub El Mansour",
+]);
 const propertyTypes = ["Appartement", "Villa", "Maison", "Studio", "Terrain", "Bureau", "Riad", "Appartement", "Villa", "Maison", "Studio", "Bureau"];
 
 const listings = neighborhoods.map((neighborhood, index) => ({
@@ -82,7 +93,7 @@ try {
     });
     const page = await context.newPage();
 
-    // Deliberately DO NOT intercept Wikimedia image requests. This gate exists
+    // Deliberately DO NOT intercept certified real-photo requests. This gate exists
     // to prove the actual photographic inventory rather than the synthetic SVG
     // used by the broad UX-SEARCH-7 stability gate.
     await page.route("**/api/search?**", async (route) => {
@@ -197,8 +208,10 @@ try {
     if (metrics.creditCount !== 12) localFailures.push(`photo credit/license links ${metrics.creditCount}/12`);
 
     for (const record of metrics.records) {
-      if (!record.src.startsWith("https://commons.wikimedia.org/")) {
-        localFailures.push(`${record.expectedDistrict}: non-Commons photo source ${record.src || "missing"}`);
+      const isCommons = record.src.startsWith("https://commons.wikimedia.org/");
+      const isCertifiedLocal = record.src.startsWith(`${baseUrl}/neighborhood-visuals/`);
+      if (!isCommons && !isCertifiedLocal) {
+        localFailures.push(`${record.expectedDistrict}: unsupported real-photo source ${record.src || "missing"}`);
       }
       if (record.exactExpected) {
         if (!record.title.includes(record.expectedDistrict)) {
