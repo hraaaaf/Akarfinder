@@ -10,6 +10,13 @@ const populatedCompareIds = [
   "casablanca-maarif-studio-renove",
 ];
 
+const dynamicFixtures = new Map([
+  ["/listings/[id]", "/listings/casablanca-finance-city-terrasse"],
+  ["/projets/[slug]", "/projets/residence-demo-akarfinder?preview=demo"],
+  ["/promoteurs/[slug]", "/promoteurs/promoteur-demo-akarfinder?preview=demo"],
+  ["/quartiers/[citySlug]/[neighborhoodSlug]", "/quartiers/rabat/agdal"],
+]);
+
 const viewports = [
   ["390x844", 390, 844],
   ["430x932", 430, 932],
@@ -79,12 +86,12 @@ const unresolvedDynamicTemplates = [];
 const discoveredRoutes = templates.map((template) => {
   if (!isDynamicTemplate(template)) return { template, route: template, source: "static" };
   const regex = routeRegex(template);
-  const route = sitemapPaths.find((pathname) => regex.test(pathname));
-  if (!route) {
-    unresolvedDynamicTemplates.push(template);
-    return { template, route: null, source: "unresolved-dynamic" };
-  }
-  return { template, route, source: "sitemap" };
+  const sitemapRoute = sitemapPaths.find((pathname) => regex.test(pathname));
+  if (sitemapRoute) return { template, route: sitemapRoute, source: "sitemap" };
+  const fixtureRoute = dynamicFixtures.get(template);
+  if (fixtureRoute) return { template, route: fixtureRoute, source: "fixture" };
+  unresolvedDynamicTemplates.push(template);
+  return { template, route: null, source: "unresolved-dynamic" };
 });
 
 const scenarios = discoveredRoutes
@@ -102,7 +109,7 @@ scenarios.push({
 await mkdir(outputDir, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const results = [];
-const failures = unresolvedDynamicTemplates.map((template) => `${template}: no concrete public route found in sitemap.xml`);
+const failures = unresolvedDynamicTemplates.map((template) => `${template}: no concrete audit fixture found`);
 
 try {
   for (const scenario of scenarios) {
@@ -125,7 +132,7 @@ try {
         const status = response?.status() ?? 0;
         await page.locator("body").waitFor({ state: "visible", timeout: 15000 });
         await page.evaluate(async () => { if (document.fonts?.ready) await document.fonts.ready; });
-        await page.waitForTimeout(route === "/map" ? 2200 : 650);
+        await page.waitForTimeout(route.startsWith("/map") ? 2200 : 650);
 
         const metrics = await page.evaluate(() => {
           const root = document.documentElement;
