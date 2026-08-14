@@ -6,7 +6,7 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 
 ## UI polish / mockup v1
 
-- **Progression stricte : 9/10 jalons CLOSED = 90 %** — seuls les lots certifiés + mergés comptent.
+- **Progression stricte : 10/10 jalons CLOSED = 100 %** — seuls les lots certifiés + mergés comptent.
 - **P0 Search ✅ CLOSED** — Search v1 reste la référence visuelle figée.
 - **P1 Audit réel mobile ✅ CLOSED — PR #597** — 12/12 captures réelles sur `/search`, `/favorites`, `/map`, `/alerts`, `/compare`, `/mon-projet` en 390×844 / 430×932, 0 overflow horizontal.
 - **P2 Design system transversal ✅ CLOSED — PR #615**, merge `993adff175e156eb3d159e63b687a6f992203b1d`.
@@ -23,8 +23,12 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
   - baseline 40-shot `31811601185` ✅ ; after-state 40-shot `31812334242` ✅ ; Search Final `31812334233` ✅ ; Canonical `31812334751` ✅ ; Compile `31812334387` ✅ ; A11y `31812334223` ✅ ; P3 regression `31812334278` ✅ ;
   - 10 routes secondaires couvertes sur 390 / 430 / 768 / 1280 ; 7 pages réellement dérivantes migrées vers `SecondaryPageShell`; `/acheter`, `/accompagnement`, `/compagnon` préservés car aucune anomalie structurelle nécessitant refonte ;
   - inspection humaine after-state PASS ; safe zone mobile `pb-28` vérifiée ; artefact `9223686303`, digest `sha256:f254721a672c1a4acd35786ed2528ddf2180e7dc858bf7d720c4a2147a645885`.
-- **P5 🔄 NEXT** — certification globale unique de toutes les surfaces prioritaires + secondaires, puis closeout final.
-- La lane UI ne doit pas écraser DATA ni la bibliothèque visuelle.
+- **P5 certification globale ✅ CLOSED — PR #624**, merge `f2ed71568105b7d022e3e7bc370964adcf73e9b8`, exact head `6c5dace409b9a2960faa7edb863094549d6777c2`.
+  - run final `31814084564` ✅ ; 17 scénarios × 4 viewports = **68/68 captures**, **0 failure**, **0 overflow horizontal** ; Canonical `31814084526` ✅ ; Compile `31814084579` ✅ ; A11y `31814084513` ✅ ; Gate0 `31814084569` ✅ ; P0/P1/P2/P3 regressions ✅ ;
+  - Comparer populated-state recertifié avec 2 biens sur 390 / 430 / 768 / 1280 ; inspection humaine finale PASS ; artefact `9224380594`, digest `sha256:d177d5faf18e7c930c626686bde74a2da9fa24299e3460ad228acb0810b6d424` ;
+  - run initial `31813395364` conservé comme preuve superseded : 68 captures produites mais faux négatif du harness sur deux sélecteurs Compare inexistants ; aucun défaut produit associé.
+- **UI polish / mockup v1 ✅ CLOSED — 100 %** — P0 → P5 certifiés et mergés.
+- La lane UI n'a pas modifié DATA, ranking, Registry, persistance, géographie ou moteur listing hors de son périmètre.
 
 ## Bibliothèque visuelle quartiers — Rabat
 
@@ -49,4 +53,4 @@ Doctrine verrouillée : photos réelles uniquement, provenance/licence défendab
 
 ## Reprise exacte
 
-**UI polish : P0 → P4 ✅ CLOSED, progression stricte 90 %. Prochaine action exacte : P5 certification globale sur le main courant, inspection humaine finale, correction de toute régression mesurée, merge puis closeout canonique.**
+**UI polish / mockup v1 : P0 → P5 ✅ CLOSED, progression stricte 100 %. Aucun lot UI de cette roadmap ne reste ouvert. Prochaine reprise UI uniquement sur nouveau finding mesuré ou nouvelle roadmap explicitement définie.**
