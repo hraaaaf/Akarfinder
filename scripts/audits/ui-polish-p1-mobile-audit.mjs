@@ -2,7 +2,8 @@ import { chromium } from "playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 
 const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3000";
-const outputDir = process.env.AUDIT_OUTPUT_DIR ?? "data/audits/ui-polish-p1-mobile";
+const variant = process.env.AUDIT_VARIANT ?? null;
+const outputDir = process.env.AUDIT_OUTPUT_DIR ?? (variant ? `data/audits/ux-bottom-nav-10of10-1/${variant}/ui-polish-p1-mobile` : "data/audits/ui-polish-p1-mobile");
 
 const routes = [
   ["search", "/search"],
