@@ -2,6 +2,16 @@ name: Phase 1 P1 Visible Dedup Gate
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "lib/search/**"
+      - "lib/listings/mock-listings.ts"
+      - "lib/intelligence/public-serp-intelligence-carrier.ts"
+      - "components/search/LightZillowSearchShell.tsx"
+      - "components/layout/SiteHeader.tsx"
+      - "scripts/scrapers/__tests__/phase1-p1-visible-dedup.test.ts"
+      - "scripts/scrapers/__tests__/phase1-p1-visible-dedup-wiring.test.ts"
+      - "scripts/scrapers/__tests__/search-truth-tier.test.ts"
+      - ".github/workflows/phase1-p1-visible-dedup-gate.yml"
   workflow_dispatch: {}
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
