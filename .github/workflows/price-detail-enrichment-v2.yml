@@ -1,0 +1,51 @@
+name: SEARCH Price Detail Enrichment v2
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/scrapers/price-detail-enrichment-v2.ts'
+      - 'scripts/scrapers/__tests__/price-detail-v2-safety.test.ts'
+      - '.github/workflows/price-detail-enrichment-v2.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/price-detail-v2-safety.test.ts scripts/scrapers/__tests__/price-extraction-v2.test.ts
+      - run: npx tsc --noEmit
+
+  daragadir-expansion:
+    needs: certify
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+      PRICE_DETAIL_ENRICH_WRITE: 'true'
+      PRICE_DETAIL_LIMIT: '120'
+      PRICE_DETAIL_SOURCES: 'daragadir.com'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify Supabase credentials are present
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Enrich next bounded DarAgadir detail batch
+        run: npx tsx scripts/scrapers/price-detail-enrichment-v2.ts
