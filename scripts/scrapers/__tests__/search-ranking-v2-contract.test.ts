@@ -34,12 +34,15 @@ test("ranking v2 deduplicates exact URLs and applies bounded source diversity pe
   assert.match(sql, /least\(0\.08::real/);
 });
 
-test("public cursor uses only ranking v2 and invalidates v1 cursors", async () => {
+test("public cursor uses ranking v2, invalidates v1 cursors and diversifies within lanes only", async () => {
   const source = await readFile(cursorPath, "utf8");
 
   assert.match(source, /const CURSOR_VERSION = 2 as const/);
   assert.match(source, /search_public_representations_v2/);
   assert.doesNotMatch(source, /search_public_representations_v1/);
+  assert.match(source, /mapAndDiversifyWithinBusinessLanes/);
+  assert.match(source, /diversifySearchGatewayResults\(laneResults, 1\)/);
+  assert.match(source, /laneOrder = \[\.\.\.new Set\(rows\.map\(\(row\) => row\.lane_weight\)\)\]\.sort/);
   assert.match(source, /lane: tail\.lane_weight/);
   assert.match(source, /rank: tail\.ranking_score/);
 });
