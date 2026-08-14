@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Scale, Trash2 } from "lucide-react";
+import { ArrowRight, Trash2 } from "lucide-react";
 import { ListingVisual } from "@/components/listings/ListingVisual";
 import { ReliabilityBadge } from "@/components/ui/ReliabilityBadge";
+import { ui } from "@/components/ui/design-system";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
 import type { CompareListingInsights } from "@/lib/compare/types";
 
@@ -13,10 +14,7 @@ function getReliabilityLevel(score: number): "high" | "medium" | "low" {
 }
 
 function compareValue(items: CompareListingInsights[], getter: (item: CompareListingInsights) => string | number | null) {
-  return items.map((item) => ({
-    id: item.listing.id,
-    value: getter(item),
-  }));
+  return items.map((item) => ({ id: item.listing.id, value: getter(item) }));
 }
 
 function getPriceLabel(item: CompareListingInsights) {
@@ -25,20 +23,14 @@ function getPriceLabel(item: CompareListingInsights) {
     : formatPrice(item.listing.price, item.listing.currency);
 }
 
-function TableRow({
-  label,
-  values,
-}: {
-  label: string;
-  values: Array<{ id: string; value: string | number | null }>;
-}) {
+function TableRow({ label, values }: { label: string; values: Array<{ id: string; value: string | number | null }> }) {
   return (
-    <tr className="border-t border-[#efe7d8]">
-      <th className="min-w-[180px] bg-[#fbfaf5] px-4 py-3 text-left text-[12px] font-extrabold uppercase tracking-[0.12em] text-gray-500">
+    <tr className="border-t border-slate-200">
+      <th className="min-w-[180px] bg-slate-50 px-4 py-3 text-left text-[12px] font-extrabold uppercase tracking-[0.12em] text-slate-500">
         {label}
       </th>
       {values.map((item) => (
-        <td key={`${label}-${item.id}`} className="px-4 py-3 text-[14px] font-semibold text-gray-700">
+        <td key={`${label}-${item.id}`} className="px-4 py-3 text-[14px] font-semibold text-slate-700">
           {item.value ?? "—"}
         </td>
       ))}
@@ -55,21 +47,13 @@ type CompareTableProps = {
 export function CompareTable({ items, onRemove, onClear }: CompareTableProps) {
   return (
     <>
-      <section className="hidden overflow-hidden rounded-[1.5rem] border border-[#eadfca] bg-white shadow-[0_12px_32px_rgba(7,27,51,0.06)] lg:block">
-        <div className="flex items-center justify-between border-b border-[#efe7d8] bg-[#fbfaf5] px-5 py-4">
+      <section className={`${ui.surfacePremium} hidden overflow-hidden lg:block`}>
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/70 px-5 py-4">
           <div>
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-bronze-700">
-              Tableau comparatif
-            </p>
-            <h2 className="mt-1 text-[1.25rem] font-extrabold tracking-[-0.03em] text-deepblue">
-              2 à 4 biens côte à côte
-            </h2>
+            <p className={ui.eyebrow}>Tableau comparatif</p>
+            <h2 className="mt-1 text-[1.25rem] font-extrabold tracking-[-0.03em] text-[#0B1F3A]">2 à 4 biens côte à côte</h2>
           </div>
-          <button
-            type="button"
-            onClick={onClear}
-            className="inline-flex items-center gap-2 rounded-full border border-[#eadfca] bg-white px-4 py-2 text-[12px] font-extrabold text-gray-600 transition hover:bg-[#f7f3ea] hover:text-deepblue"
-          >
+          <button type="button" onClick={onClear} className={`${ui.secondaryActionPill} gap-2 text-[12px]`}>
             <Trash2 size={14} strokeWidth={2.4} aria-hidden="true" />
             Vider la comparaison
           </button>
@@ -79,43 +63,26 @@ export function CompareTable({ items, onRemove, onClear }: CompareTableProps) {
           <table className="min-w-full border-collapse">
             <thead>
               <tr>
-                <th className="bg-[#fbfaf5] px-4 py-4 text-left text-[12px] font-extrabold uppercase tracking-[0.12em] text-gray-500">
-                  Critère
-                </th>
+                <th className="bg-slate-50 px-4 py-4 text-left text-[12px] font-extrabold uppercase tracking-[0.12em] text-slate-500">Critère</th>
                 {items.map((item) => (
-                  <th key={item.listing.id} className="w-[300px] min-w-[300px] border-l border-[#efe7d8] px-4 py-4 align-top">
+                  <th key={item.listing.id} className="w-[300px] min-w-[300px] border-l border-slate-200 px-4 py-4 align-top">
                     <div className="space-y-3">
-                      <div className="relative h-[180px] overflow-hidden rounded-[1.2rem]">
+                      <div className="relative h-[180px] overflow-hidden rounded-2xl">
                         {item.imageMode !== "fallback_visual" && item.listing.main_image_url ? (
-                          <Image
-                            src={item.listing.main_image_url}
-                            alt={item.listing.title}
-                            fill
-                            className="object-cover"
-                            sizes="300px"
-                          />
+                          <Image src={item.listing.main_image_url} alt={item.listing.title} fill className="object-cover" sizes="300px" />
                         ) : (
                           <ListingVisual listing={item.listing} className="h-full w-full" />
                         )}
                       </div>
                       <div className="space-y-2 text-left">
-                        <Link
-                          href={`/listings/${item.listing.id}`}
-                          className="line-clamp-2 text-[1rem] font-extrabold leading-snug text-deepblue hover:underline"
-                        >
+                        <Link href={`/listings/${item.listing.id}`} className="line-clamp-2 text-[1rem] font-extrabold leading-snug text-[#0B1F3A] hover:underline">
                           {item.listing.title}
                         </Link>
-                        <p className="text-[13px] font-semibold text-gray-500">
-                          {item.listing.city}
-                          {item.listing.neighborhood ? ` · ${item.listing.neighborhood}` : ""}
+                        <p className="text-[13px] font-semibold text-slate-500">
+                          {item.listing.city}{item.listing.neighborhood ? ` · ${item.listing.neighborhood}` : ""}
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => onRemove(item.listing.id)}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-[#eadfca] px-3 py-1.5 text-[11px] font-extrabold text-gray-500 transition hover:bg-[#f7f3ea] hover:text-deepblue"
-                        >
-                          <Trash2 size={13} strokeWidth={2.4} aria-hidden="true" />
-                          Retirer
+                        <button type="button" onClick={() => onRemove(item.listing.id)} className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-extrabold text-slate-500 transition hover:bg-slate-50 hover:text-[#0B2545]">
+                          <Trash2 size={13} strokeWidth={2.4} aria-hidden="true" /> Retirer
                         </button>
                       </div>
                     </div>
@@ -136,23 +103,14 @@ export function CompareTable({ items, onRemove, onClear }: CompareTableProps) {
               <TableRow label="Doublon possible" values={compareValue(items, (item) => item.duplicatePossible ? "Oui" : "Non signalé")} />
               <TableRow label="Prix observé" values={compareValue(items, (item) => item.observedPriceDeltaLabel ? `${item.observedPriceLabel} (${item.observedPriceDeltaLabel})` : item.observedPriceLabel)} />
               <TableRow label="Proximité utile" values={compareValue(items, (item) => item.proximitySummary)} />
-              <tr className="border-t border-[#efe7d8]">
-                <th className="bg-[#fbfaf5] px-4 py-3 text-left text-[12px] font-extrabold uppercase tracking-[0.12em] text-gray-500">
-                  Actions
-                </th>
+              <tr className="border-t border-slate-200">
+                <th className="bg-slate-50 px-4 py-3 text-left text-[12px] font-extrabold uppercase tracking-[0.12em] text-slate-500">Actions</th>
                 {items.map((item) => (
                   <td key={`actions-${item.listing.id}`} className="space-y-2 px-4 py-3">
-                    <Link
-                      href={`/listings/${item.listing.id}`}
-                      className="flex items-center justify-center gap-2 rounded-xl bg-deepblue px-4 py-3 text-[13px] font-extrabold text-white transition hover:bg-deepblue-700"
-                    >
-                      Voir le bien
-                      <ArrowRight size={15} strokeWidth={2.4} aria-hidden="true" />
+                    <Link href={`/listings/${item.listing.id}`} className={`${ui.primaryActionPill} w-full gap-2 text-[13px]`}>
+                      Voir le bien <ArrowRight size={15} strokeWidth={2.4} aria-hidden="true" />
                     </Link>
-                    <Link
-                      href={`/listings/${item.listing.id}`}
-                      className="flex items-center justify-center gap-2 rounded-xl border border-[#d8c8a3] bg-[#fffdf8] px-4 py-3 text-[13px] font-extrabold text-deepblue transition hover:bg-[#f7f3ea]"
-                    >
+                    <Link href={`/listings/${item.listing.id}#visite`} className={`${ui.secondaryActionPill} w-full text-[13px]`}>
                       Demander une visite
                     </Link>
                   </td>
@@ -164,114 +122,69 @@ export function CompareTable({ items, onRemove, onClear }: CompareTableProps) {
       </section>
 
       <section className="space-y-4 lg:hidden">
+        <div className={`${ui.surfaceGlass} sticky top-[71px] z-20 flex gap-2 overflow-x-auto p-2`} data-compare-mobile-identity>
+          {items.map((item, index) => (
+            <Link key={item.listing.id} href={`#compare-${item.listing.id}`} className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 text-left">
+              <span className="block text-[9px] font-extrabold uppercase tracking-[0.1em] text-primary">Bien {index + 1}</span>
+              <span className="mt-0.5 block truncate text-[11px] font-extrabold text-[#0B1F3A]">{item.listing.title}</span>
+            </Link>
+          ))}
+        </div>
+
         {items.map((item) => (
-          <article
-            key={item.listing.id}
-            className="overflow-hidden rounded-[1.5rem] border border-[#eadfca] bg-white shadow-[0_10px_26px_rgba(7,27,51,0.06)]"
-          >
+          <article id={`compare-${item.listing.id}`} key={item.listing.id} className="scroll-mt-36 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_26px_rgba(24,56,96,0.07)]">
             <div className="relative h-[210px] overflow-hidden">
               {item.imageMode !== "fallback_visual" && item.listing.main_image_url ? (
-                <Image
-                  src={item.listing.main_image_url}
-                  alt={item.listing.title}
-                  fill
-                  className="object-cover"
-                  sizes="100vw"
-                />
+                <Image src={item.listing.main_image_url} alt={item.listing.title} fill className="object-cover" sizes="100vw" />
               ) : (
                 <ListingVisual listing={item.listing} className="h-full w-full" />
               )}
-              <div className="absolute left-3 top-3 rounded-full bg-white/92 px-3 py-1.5 text-[11px] font-extrabold text-deepblue">
+              <div className="absolute left-3 top-3 rounded-full border border-white/70 bg-white/92 px-3 py-1.5 text-[11px] font-extrabold text-[#0B2545] shadow-sm backdrop-blur">
                 {item.listing.property_type}
               </div>
             </div>
             <div className="space-y-4 p-4">
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <Link href={`/listings/${item.listing.id}`} className="text-[1.1rem] font-extrabold leading-snug text-deepblue">
-                    {item.listing.title}
-                  </Link>
-                  <p className="mt-1 text-[13px] text-gray-500">
-                    {item.listing.city}
-                    {item.listing.neighborhood ? ` · ${item.listing.neighborhood}` : ""}
-                  </p>
+                <div className="min-w-0">
+                  <Link href={`/listings/${item.listing.id}`} className="text-[1.1rem] font-extrabold leading-snug text-[#0B1F3A]">{item.listing.title}</Link>
+                  <p className="mt-1 text-[13px] text-slate-500">{item.listing.city}{item.listing.neighborhood ? ` · ${item.listing.neighborhood}` : ""}</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => onRemove(item.listing.id)}
-                  className="inline-flex items-center gap-1 rounded-full border border-[#eadfca] px-3 py-1.5 text-[11px] font-extrabold text-gray-500"
-                >
-                  <Trash2 size={13} strokeWidth={2.4} aria-hidden="true" />
-                  Retirer
+                <button type="button" onClick={() => onRemove(item.listing.id)} className="inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-extrabold text-slate-500">
+                  <Trash2 size={13} strokeWidth={2.4} aria-hidden="true" /> Retirer
                 </button>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <ReliabilityBadge
-                  level={getReliabilityLevel(item.listing.reliability_score)}
-                  label={item.reliabilityLabel}
-                />
-                <span className="rounded-full border border-[#e2cfab] bg-[#fffaf0] px-2.5 py-1 text-[11px] font-extrabold text-[#8a6a2f]">
-                  {item.packageScore.overall_label}
-                </span>
+                <ReliabilityBadge level={getReliabilityLevel(item.listing.reliability_score)} label={item.reliabilityLabel} />
+                <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-extrabold text-primary">{item.packageScore.overall_label}</span>
               </div>
 
               <dl className="grid grid-cols-2 gap-2 text-[13px]">
-                <div className="rounded-xl bg-[#f8f5ed] p-3">
-                  <dt className="font-extrabold uppercase tracking-[0.08em] text-gray-500">Prix</dt>
-                  <dd className="mt-1 font-bold text-deepblue">{getPriceLabel(item)}</dd>
-                </div>
-                <div className="rounded-xl bg-[#f8f5ed] p-3">
-                  <dt className="font-extrabold uppercase tracking-[0.08em] text-gray-500">Surface</dt>
-                  <dd className="mt-1 font-bold text-deepblue">{formatSurface(item.listing.surface_m2)}</dd>
-                </div>
-                <div className="rounded-xl bg-[#f8f5ed] p-3">
-                  <dt className="font-extrabold uppercase tracking-[0.08em] text-gray-500">Prix / m²</dt>
-                  <dd className="mt-1 font-bold text-deepblue">{item.listing.price_per_m2 != null ? `${item.listing.price_per_m2.toLocaleString("fr-FR")} DH/m²` : "Prix non communique"}</dd>
-                </div>
-                <div className="rounded-xl bg-[#f8f5ed] p-3">
-                  <dt className="font-extrabold uppercase tracking-[0.08em] text-gray-500">Source</dt>
-                  <dd className="mt-1 font-bold text-deepblue">{item.sourceLabel}</dd>
-                </div>
-                <div className="rounded-xl bg-[#f8f5ed] p-3">
-                  <dt className="font-extrabold uppercase tracking-[0.08em] text-gray-500">Prix observé</dt>
-                  <dd className="mt-1 font-bold text-deepblue">
-                    {item.observedPriceDeltaLabel
-                      ? `${item.observedPriceLabel} (${item.observedPriceDeltaLabel})`
-                      : item.observedPriceLabel}
-                  </dd>
-                </div>
-                <div className="rounded-xl bg-[#f8f5ed] p-3">
-                  <dt className="font-extrabold uppercase tracking-[0.08em] text-gray-500">Proximité utile</dt>
-                  <dd className="mt-1 font-bold text-deepblue">{item.proximitySummary}</dd>
-                </div>
+                {[
+                  ["Prix", getPriceLabel(item)],
+                  ["Surface", formatSurface(item.listing.surface_m2)],
+                  ["Prix / m²", item.listing.price_per_m2 != null ? `${item.listing.price_per_m2.toLocaleString("fr-FR")} DH/m²` : "Prix non communique"],
+                  ["Source", item.sourceLabel],
+                  ["Prix observé", item.observedPriceDeltaLabel ? `${item.observedPriceLabel} (${item.observedPriceDeltaLabel})` : item.observedPriceLabel],
+                  ["Proximité utile", item.proximitySummary],
+                ].map(([label, value]) => (
+                  <div key={String(label)} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+                    <dt className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">{label}</dt>
+                    <dd className="mt-1 font-bold text-[#0B1F3A]">{value}</dd>
+                  </div>
+                ))}
               </dl>
 
               <div className="flex gap-2">
-                <Link
-                  href={`/listings/${item.listing.id}`}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-deepblue px-4 py-3 text-[13px] font-extrabold text-white"
-                >
-                  Voir le bien
-                </Link>
-                <Link
-                  href={`/listings/${item.listing.id}`}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#d8c8a3] bg-[#fffdf8] px-4 py-3 text-[13px] font-extrabold text-deepblue"
-                >
-                  Demander une visite
-                </Link>
+                <Link href={`/listings/${item.listing.id}`} className={`${ui.primaryActionPill} flex-1 text-[12px]`}>Voir le bien</Link>
+                <Link href={`/listings/${item.listing.id}#visite`} className={`${ui.secondaryActionPill} flex-1 text-[12px]`}>Demander une visite</Link>
               </div>
             </div>
           </article>
         ))}
 
-        <button
-          type="button"
-          onClick={onClear}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#eadfca] bg-white px-4 py-3 text-[13px] font-extrabold text-gray-600"
-        >
-          <Trash2 size={15} strokeWidth={2.3} aria-hidden="true" />
-          Vider la comparaison
+        <button type="button" onClick={onClear} className={`${ui.secondaryActionPill} w-full gap-2`}>
+          <Trash2 size={15} strokeWidth={2.3} aria-hidden="true" /> Vider la comparaison
         </button>
       </section>
     </>
