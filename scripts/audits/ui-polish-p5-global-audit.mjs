@@ -3,6 +3,10 @@ import { mkdir, writeFile } from "node:fs/promises";
 
 const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 const outputDir = process.env.AUDIT_OUTPUT_DIR ?? "data/audits/ui-polish-p5";
+const populatedCompareIds = [
+  "casablanca-finance-city-terrasse",
+  "casablanca-maarif-studio-renove",
+];
 
 const scenarios = [
   ["search", "/search"],
@@ -10,7 +14,7 @@ const scenarios = [
   ["map", "/map"],
   ["alerts", "/alerts"],
   ["compare", "/compare"],
-  ["compare-populated", "/compare", { compareIds: ["casablanca-finance-city-terrasse", "casablanca-maarif-studio-renove"] }],
+  ["compare-populated", "/compare", { compareIds: populatedCompareIds }],
   ["mon-projet", "/mon-projet"],
   ["a-propos", "/a-propos"],
   ["accompagnement", "/accompagnement"],
@@ -78,9 +82,17 @@ try {
         const metrics = await page.evaluate(() => {
           const root = document.documentElement;
           const bottomNav = document.querySelector("[data-mobile-bottom-nav]");
+          const compareIdentity = document.querySelector("[data-compare-mobile-identity]");
+          const compareDesktopTable = document.querySelector("table");
           const bottomNavVisible = bottomNav instanceof HTMLElement
             && getComputedStyle(bottomNav).display !== "none"
             && bottomNav.getClientRects().length > 0;
+          const compareIdentityVisible = compareIdentity instanceof HTMLElement
+            && getComputedStyle(compareIdentity).display !== "none"
+            && compareIdentity.getClientRects().length > 0;
+          const compareDesktopTableVisible = compareDesktopTable instanceof HTMLElement
+            && getComputedStyle(compareDesktopTable).display !== "none"
+            && compareDesktopTable.getClientRects().length > 0;
           return {
             clientWidth: root.clientWidth,
             scrollWidth: root.scrollWidth,
@@ -89,6 +101,9 @@ try {
             bottomNavPresent: Boolean(bottomNav),
             bottomNavVisible,
             finalPathname: window.location.pathname,
+            compareCardCount: document.querySelectorAll('[id^="compare-"]').length,
+            compareIdentityVisible,
+            compareDesktopTableVisible,
           };
         });
 
@@ -101,10 +116,15 @@ try {
         if (width >= 768 && metrics.bottomNavVisible) failures.push(`${scenarioKey} @ ${viewportKey}: mobile nav visible at md+`);
 
         if (scenarioKey === "compare-populated") {
-          const mobileRailVisible = await page.locator("[data-compare-mobile-identity-rail]").isVisible().catch(() => false);
-          const desktopTableVisible = await page.locator("[data-compare-desktop-table]").isVisible().catch(() => false);
-          if (width < 1024 && !mobileRailVisible) failures.push(`${scenarioKey} @ ${viewportKey}: populated mobile identity rail missing`);
-          if (width >= 1024 && !desktopTableVisible) failures.push(`${scenarioKey} @ ${viewportKey}: populated desktop table missing`);
+          if (metrics.compareCardCount < populatedCompareIds.length) {
+            failures.push(`${scenarioKey} @ ${viewportKey}: expected ${populatedCompareIds.length} populated compare cards, got ${metrics.compareCardCount}`);
+          }
+          if (width < 1024 && !metrics.compareIdentityVisible) {
+            failures.push(`${scenarioKey} @ ${viewportKey}: populated mobile/tablet identity rail missing or hidden`);
+          }
+          if (width >= 1024 && !metrics.compareDesktopTableVisible) {
+            failures.push(`${scenarioKey} @ ${viewportKey}: populated desktop table missing or hidden`);
+          }
         }
 
         const screenshot = `${scenarioKey}-${viewportKey}.png`;
