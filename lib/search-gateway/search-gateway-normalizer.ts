@@ -1,5 +1,6 @@
 // SEARCH-GATEWAY-MULTISOURCE-SERP-1A
 // Normalize raw Search API results to safe SearchGatewayNormalizedResult
+// REAL-LISTINGS-ONLY-1: live provider observation never grants publication.
 
 import type {
   SearchGatewayRawResult,
@@ -8,10 +9,6 @@ import type {
 import { getSearchGatewaySourceById } from "./search-gateway-sources";
 import { isRealEstateGatewayResult } from "./search-gateway-real-estate-filter";
 
-// SERP-RESULT-QUALITY-DEGROUPING-1 — external snippets must never carry a
-// claim that could read as an AkarFinder-issued validation. If found, the
-// snippet is replaced with a neutral, non-committal sentence rather than
-// risk showing "verified"/"certified"/"confidence" style marketing copy.
 const RISKY_SNIPPET_CLAIMS: ReadonlyArray<string> = [
   "verified",
   "confidence",
@@ -44,52 +41,35 @@ export function normalizeSearchGatewayResult(
   const sourceConfig = getSearchGatewaySourceById(sourceId);
   if (!sourceConfig) return null;
 
-  // Title is mandatory
   const title = (raw.title ?? "").trim();
   if (!title) return null;
 
-  // Original URL is mandatory
   const originalUrl = (raw.link ?? raw.url ?? "").trim();
   if (!originalUrl) return null;
 
-  // Verify URL belongs to the source domain
   try {
     const url = new URL(originalUrl);
-    if (!url.hostname.includes(sourceConfig.domain)) {
-      return null;
-    }
+    if (!url.hostname.includes(sourceConfig.domain)) return null;
   } catch {
     return null;
   }
 
-  // Real-estate-only filter — reject vehicle listings (Avito cars, etc.)
   const snippet = (raw.snippet ?? "").trim();
-  if (!isRealEstateGatewayResult(title, snippet || undefined, originalUrl)) {
-    return null;
-  }
+  if (!isRealEstateGatewayResult(title, snippet || undefined, originalUrl)) return null;
 
-  // Display URL (host + path)
   let displayUrl = originalUrl;
   try {
     const url = new URL(originalUrl);
     displayUrl = url.hostname + (url.pathname.length > 1 ? url.pathname : "");
   } catch {
-    // fallback to original URL
+    // Keep original URL for attribution only.
   }
 
-  // Generate unique ID from URL hash
   const id = `gateway_${sourceId}_${hashString(originalUrl)}`;
 
-  // Thumbnails — provider-served (Google-cached) images from Serper.
-  // Gated by: feature flag + source thumbnail_risk_accepted + non-empty imageUrl.
-  // Never downloaded/cached/proxied — raw remote URL only.
-  const thumbnailsEnabled =
-    process.env.NEXT_PUBLIC_SEARCH_GATEWAY_THUMBNAILS_ENABLED === "true";
-  const rawThumbnail = (raw.imageUrl ?? "").trim();
-  const canShowThumbnail =
-    thumbnailsEnabled && sourceConfig.thumbnail_risk_accepted && !!rawThumbnail;
-  const thumbnailUrl = canShowThumbnail ? rawThumbnail : undefined;
-
+  // Search-provider observations remain intelligence-only until the live Source
+  // Policy Registry explicitly authorizes their public display. Thumbnails are
+  // therefore also fail-closed here.
   return {
     id,
     title,
@@ -102,19 +82,19 @@ export function normalizeSearchGatewayResult(
     result_origin: "search_api",
     search_result_display_mode: "thin_indexed_result",
     source_badge: sourceConfig.source_badge,
-    production_allowed: true, // TODO: read from env flags
-    can_show_result: true,
-    can_show_thumbnail: canShowThumbnail,
-    can_show_contact: false, // Always false for external sources
-    can_show_gallery: false, // Always false for external sources
-    can_cache_thumbnail: false, // Never cache third-party images
-    can_download_thumbnail: false, // Never download third-party images
+    production_allowed: false,
+    can_show_result: false,
+    can_show_thumbnail: false,
+    can_show_contact: false,
+    can_show_gallery: false,
+    can_cache_thumbnail: false,
+    can_download_thumbnail: false,
     primary_cta: "view_original",
     primary_cta_label: `Voir sur ${sourceConfig.source_name}`,
-    result_attribution_label: "Résultat web externe",
-    thumbnail_url: thumbnailUrl,
+    result_attribution_label: "Signal web externe — non publié",
+    thumbnail_url: undefined,
     thumbnail_provider_name: undefined,
-    thumbnail_risk_accepted: sourceConfig.thumbnail_risk_accepted,
+    thumbnail_risk_accepted: false,
   };
 }
 
@@ -123,7 +103,7 @@ function hashString(str: string): string {
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
     hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32-bit integer
+    hash = hash & hash;
   }
   return Math.abs(hash).toString(16);
 }
