@@ -22,6 +22,7 @@ jobs:
       VERCEL_ORG_ID: team_NNhXPDOIfjGNBcn253btpyk0
       VERCEL_PROJECT_ID: prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_SCOPE: achraf-benmoussa-s-projects
     steps:
       - name: Checkout current main
         uses: actions/checkout@v4
@@ -36,9 +37,13 @@ jobs:
       - name: Verify Vercel credentials
         run: test -n "$VERCEL_TOKEN"
       - run: npm ci
+      - name: Re-link Vercel project
+        run: |
+          rm -rf .vercel
+          npx vercel@latest link --yes --project=akarfinder --scope="$VERCEL_SCOPE" --token="$VERCEL_TOKEN"
       - name: Pull production environment
-        run: npx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN"
+        run: npx vercel@latest pull --yes --environment=production --scope="$VERCEL_SCOPE" --token="$VERCEL_TOKEN"
       - name: Build production bundle
-        run: npx vercel@latest build --prod --token="$VERCEL_TOKEN"
+        run: npx vercel@latest build --prod --scope="$VERCEL_SCOPE" --token="$VERCEL_TOKEN"
       - name: Deploy prebuilt production bundle
-        run: npx vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+        run: npx vercel@latest deploy --prebuilt --prod --scope="$VERCEL_SCOPE" --token="$VERCEL_TOKEN"
