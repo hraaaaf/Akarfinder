@@ -6,6 +6,7 @@ import { Scale, SearchX } from "lucide-react";
 import { CompareSummary } from "@/components/compare/CompareSummary";
 import { CompareTable } from "@/components/compare/CompareTable";
 import { useCompareSelection } from "@/components/compare/useCompareSelection";
+import { ui } from "@/components/ui/design-system";
 import { mockListings } from "@/lib/listings/mock-listings";
 import {
   clearCompareIds,
@@ -22,44 +23,30 @@ type ApiSearchResponse = {
 
 function EmptyState() {
   return (
-    <section className="rounded-[1.6rem] border border-dashed border-border/20 dark:border-white/12 bg-card p-10 text-center shadow-[0_8px_24px_rgba(7,27,51,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.2)]">
-      <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-surface-muted dark:bg-white/[0.06]">
-        <Scale size={24} strokeWidth={2.3} className="text-bronze-700 dark:text-bronze-400" aria-hidden="true" />
+    <section className={ui.emptyState}>
+      <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-blue-50 text-primary">
+        <Scale size={24} strokeWidth={2.3} aria-hidden="true" />
       </span>
-      <h1 className="mt-4 text-[1.5rem] font-extrabold tracking-[-0.04em] text-foreground">
-        Comparateur de biens
-      </h1>
-      <p className="mt-2 text-[14px] leading-7 text-muted-foreground">
+      <h1 className="mt-4 text-[1.5rem] font-extrabold tracking-[-0.04em] text-[#0B1F3A]">Comparateur de biens</h1>
+      <p className="mx-auto mt-2 max-w-xl text-[14px] leading-7 text-slate-500">
         Ajoutez 2 à 4 biens depuis la recherche ou une fiche détail pour voir les signaux indicatifs côte à côte.
       </p>
-      <Link
-        href="/search"
-        className="mt-5 inline-flex items-center justify-center rounded-full bg-deepblue px-5 py-3 text-[13px] font-extrabold text-white transition hover:bg-deepblue-700"
-      >
-        Explorer les biens
-      </Link>
+      <Link href="/search" className={`mt-5 ${ui.primaryActionPill}`}>Explorer les biens</Link>
     </section>
   );
 }
 
 function OneItemState() {
   return (
-    <section className="rounded-[1.6rem] border border-border/20 dark:border-white/12 bg-card p-10 text-center shadow-[0_8px_24px_rgba(7,27,51,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.2)]">
-      <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-surface-muted dark:bg-white/[0.06]">
-        <SearchX size={24} strokeWidth={2.3} className="text-bronze-700 dark:text-bronze-400" aria-hidden="true" />
+    <section className={ui.emptyState}>
+      <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-blue-50 text-primary">
+        <SearchX size={24} strokeWidth={2.3} aria-hidden="true" />
       </span>
-      <h1 className="mt-4 text-[1.5rem] font-extrabold tracking-[-0.04em] text-foreground">
-        Ajoutez au moins 2 biens
-      </h1>
-      <p className="mt-2 text-[14px] leading-7 text-muted-foreground">
+      <h1 className="mt-4 text-[1.5rem] font-extrabold tracking-[-0.04em] text-[#0B1F3A]">Ajoutez au moins 2 biens</h1>
+      <p className="mx-auto mt-2 max-w-xl text-[14px] leading-7 text-slate-500">
         Le comparateur devient utile à partir de 2 biens. Vous pouvez en sélectionner jusqu’à {MAX_COMPARE_LISTINGS}.
       </p>
-      <Link
-        href="/search"
-        className="mt-5 inline-flex items-center justify-center rounded-full bg-deepblue px-5 py-3 text-[13px] font-extrabold text-white transition hover:bg-deepblue-700"
-      >
-        Ajouter un autre bien
-      </Link>
+      <Link href="/search" className={`mt-5 ${ui.primaryActionPill}`}>Ajouter un autre bien</Link>
     </section>
   );
 }
@@ -121,20 +108,25 @@ export function ComparePageShell() {
   }
 
   return (
-    <section className="pb-16 pt-8 lg:pt-10">
-      <div className="rounded-[1.7rem] border border-[#eadfca] bg-deepblue px-6 py-7 text-white shadow-[0_18px_42px_rgba(7,27,51,0.16)]">
-        <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-bronze-400">
-          P15A — Comparateur de biens
-        </p>
-        <h1 className="mt-2 text-[2rem] font-extrabold tracking-[-0.05em] sm:text-[2.6rem]">
-          Comparez avant de contacter
-        </h1>
-        <p className="mt-3 max-w-3xl text-[14px] leading-7 text-white/72">
-          Fiabilité visible, prix observé, package score, doublon possible et proximité utile. Les signaux restent indicatifs et à confirmer avant décision.
-        </p>
+    <section className="pb-24 pt-5 sm:pt-7 lg:pt-8">
+      <div className={`${ui.surfacePremium} px-5 py-6 sm:px-7 sm:py-7`}>
+        <p className={ui.eyebrow}>Comparer</p>
+        <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-[1.9rem] font-extrabold tracking-[-0.05em] text-[#0B1F3A] sm:text-[2.35rem]">Comparez avant de contacter</h1>
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-slate-500">
+              Prix, fiabilité, package score, doublon possible et proximité utile restent indicatifs et à confirmer avant décision.
+            </p>
+          </div>
+          {selectedListings.length > 0 ? (
+            <span className="inline-flex w-fit rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-[11px] font-extrabold text-primary">
+              {selectedListings.length}/{MAX_COMPARE_LISTINGS} biens
+            </span>
+          ) : null}
+        </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-5">
         {selectedListings.length === 0 ? (
           <EmptyState />
         ) : selectedListings.length < MIN_COMPARE_LISTINGS ? (
@@ -146,11 +138,7 @@ export function ComparePageShell() {
           </div>
         )}
 
-        {isLoading ? (
-          <p className="mt-4 text-[12px] font-medium text-muted-foreground">
-            Chargement des biens comparables…
-          </p>
-        ) : null}
+        {isLoading ? <p className="mt-4 text-[12px] font-medium text-slate-400">Chargement des biens comparables…</p> : null}
       </div>
     </section>
   );
