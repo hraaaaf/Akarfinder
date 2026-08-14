@@ -8,6 +8,7 @@ test("UI-POLISH-P2 transverse design primitives exist", () => {
   for (const primitive of [
     "pageLight",
     "chrome",
+    "searchChrome",
     "surfacePremium",
     "surfaceGlass",
     "fieldPill",
@@ -24,6 +25,7 @@ test("UI-POLISH-P2 transverse design primitives exist", () => {
   assert.match(source, /bg-primary/);
   assert.match(source, /border-slate-200/);
   assert.match(source, /backdrop-blur-\[20px\]/);
+  assert.match(source, /shadow-\[0_1px_12px_rgba\(11,37,69,0\.035\)\]/);
   assert.doesNotMatch(source, /bronze/i);
 });
 
