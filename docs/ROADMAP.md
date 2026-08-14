@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-13**  
-**Statut : MASS-1 ✅ CLOSED ; MASS-2 ✅ CLOSED / 100 % ; MASS-3 ✅ CLOSED ; MASS-4 ✅ CLOSED PR #568 ; MASS-5 ✅ CLOSED PR #569 ; MASS-6 ✅ CLOSED PR #572.**
+**Statut : DATA MASS ✅ CLOSED ; MASS-X5 ✅ CLOSED PR #609 ; lanes UI/Visual indépendantes.**
 
 `README.md` définit l’identité/doctrine. `docs/SESSION.md` porte le handover court. Ce fichier est l’unique roadmap.
 
@@ -14,15 +14,16 @@
 ### MASS-2 ✅ CLOSED / 100 %
 ### MASS-3 ✅ CLOSED — PR #566
 ### MASS-4 ✅ CLOSED — PR #568
-Reclassification live read-only ; `Quality ≠ Eligibility ≠ Permission` confirmé.
-
 ### MASS-5 ✅ CLOSED — PR #569
-Discovery Expansion Shadow ; nouveaux domaines mesurés sans autorisation implicite.
-
 ### MASS-6 ✅ CLOSED — PR #572
-National Mass Engine shadow ; exact head `b50e6275393043b736f35c783415b393b86751f9` ; run `31731327963` SUCCESS ; artefact `9196734887`, digest `sha256:48c0a4cdf3bf83dc9f8f4f1d9a7a37c48dc4ad636412a0a3b83817e49e0bc9e0`. Le pipeline national ordonné est fail-closed et s’arrête à `POLICY` avec 0 source Registry admissible ; 209 109 discovery rows, 109 domaines Source Factory, 8 ajouts post-baseline ; 0 mutation/fetch/activation/permission inférée.
+National Mass Engine shadow ; pipeline ordonné fail-closed, 0 source Registry admissible.
 
-**Ordre verrouillé et terminé : MASS-1 → MASS-2 → MASS-3 → MASS-4 → MASS-5 → MASS-6. Aucun MASS-7 n’est défini dans la roadmap.**
+### MASS-X5 ✅ CLOSED — PR #609
+Exact Reconciliation Shadow v2 ; merge `3f1724faf03fd3c93fdafc2f522d61465d377e5b` ; exact head `f66c5578c433df52da37a00dc36d9a39010846ae` ; run `31762998799` SUCCESS ; artefact `9205427369`, digest `sha256:d3aeb0f481e985c8a7662553ee3e5e589148af724586ad1ed68122dc2f126d43` ; 51 169 candidats uniques = 36 732 overlap exact + 14 437 net-new exact ; invariants fail-closed tous à zéro ; aucune autorisation ou activation implicite.
+
+#599/run `31759264360` reste une preuve historique superseded (50 200 / 35 764 / 14 436) mais n'est pas le closeout canonique à cause de la divergence de branche.
+
+**Programme DATA MASS clôturé. Toute étape ultérieure d'activation, ingestion ou mutation production est un nouveau programme séparé avec gate humain explicite.**
 <!-- DATA-MASS-PROGRAM-END -->
 
 

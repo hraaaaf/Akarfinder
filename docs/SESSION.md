@@ -84,13 +84,12 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 
 ### DATA MASS
 
-- **MASS-1 ✅ CLOSED / 9,5/10** — réservoir qualifié à 101 domaines.
-- **MASS-2 ✅ CLOSED / 100 %** — 101/101 audités ; 43 `PERMISSION_REQUIRED`, 58 `HOLD`.
-- **MASS-3 ✅ CLOSED — PR #566** — fail-closed, 0 source admissible.
-- **MASS-4 ✅ CLOSED — PR #568** — merge `4abc7fcee96f00fa5745937c4c12daea0b541b47` ; run `31726483908` SUCCESS ; artefact `9191563403` ; 5 284 sources actives, 0 admissible, 5 271 haute qualité mais policy-blocked ; 0 mutation.
-- **MASS-5 ✅ CLOSED — PR #569** — merge `7b4503bf00ea7a99fb44f798748698d282cf3d8c` ; run `31727831232` SUCCESS ; artefact `9192248949` ; 7 nouveaux domaines, 148 URL representations, tous UNREGISTERED/non activables ; 0 mutation/fetch/permission inférée.
-- **MASS-6 ✅ CLOSED — PR #572** — National Mass Engine shadow ; merge `471e792f0ea14b6a0bf54ef7fad09eff0d341030` ; exact head `b50e6275393043b736f35c783415b393b86751f9` ; run `31731327963` SUCCESS ; artefact `9196734887`, digest `sha256:48c0a4cdf3bf83dc9f8f4f1d9a7a37c48dc4ad636412a0a3b83817e49e0bc9e0` ; pipeline `DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DEDUP → RANK` fail-closed, bloqué à `POLICY` ; 209 109 discovery rows, 109 domaines Source Factory, 8 nouveaux domaines post-baseline, 0 Registry admissible ; preuves MASS-1/4/5 read-only vérifiées ; 0 write/fetch/activation/permission inférée.
-- Doctrine : attribution ≠ permission ; robots/sitemap/capability ≠ permission ; Source Registry autoritaire ; no-bypass.
+- **MASS-1 → MASS-6 ✅ CLOSED** — programme national fail-closed déjà certifié.
+- **MASS-X5 ✅ CLOSED — PR #609** — Exact Reconciliation Shadow v2 ; merge `3f1724faf03fd3c93fdafc2f522d61465d377e5b` ; exact head `f66c5578c433df52da37a00dc36d9a39010846ae` ; run `31762998799` SUCCESS ; artefact `9205427369`, digest `sha256:d3aeb0f481e985c8a7662553ee3e5e589148af724586ad1ed68122dc2f126d43`.
+- Résultat exact : **51 169 candidats uniques = 36 732 overlaps + 14 437 net-new**.
+- Invariants : **0 DB write / 0 Registry write / 0 Search activation / 0 source-page fetch / 0 WARC / 0 permission inference** ; `candidate_grants_authorization=false`.
+- #599/run `31759264360` est conservé comme preuve historique superseded ; #609 est la recertification canonique sur main courant.
+- **DATA MASS est réellement CLOSED.** Toute activation ou mutation production est hors scope et exige un gate humain explicite.
 
 ### UX/Search
 
@@ -114,4 +113,4 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 
 **Bibliothèque visuelle : P1.1 → P1.9 ✅ CLOSED. Prochaine action exacte : P2 Visual Resolver integration.** Search généralisé reste fail-closed tant que P2 n’a pas été certifié.
 
-**DATA MASS : MASS-1 → MASS-6 ✅ CLOSED.** Aucun MASS-7 canonique n’est défini. Le National Mass Engine reste shadow/read-only et fail-closed à POLICY tant que le Source Registry ne contient aucune autorisation positive. Toute écriture DB/Registry/Search ou activation exige un feu vert humain explicite préalable.
+**DATA MASS : programme CLOSED, MASS-X5 PR #609 certifié et mergé.** Aucune écriture DB/Registry/Search ni activation n’a été effectuée ; toute mutation production future exige un feu vert humain explicite préalable.
