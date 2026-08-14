@@ -1,13 +1,11 @@
-function parseBooleanEnv(value: string | undefined | null): boolean | null {
-  if (value === "true") return true;
-  if (value === "false") return false;
-  return null;
-}
+// REAL-LISTINGS-ONLY-1
+// Persisted OpenSERP rows are real observed URLs, but observation is not
+// publication authorization. The live Source Policy Registry is authoritative.
+// Until the public read-model is bridged to that Registry at request time,
+// persisted third-party rows must fail closed on public Search surfaces.
 
 export function isPersistedOpenSerpListingsEnabled(
-  env: NodeJS.ProcessEnv = process.env,
+  _env: NodeJS.ProcessEnv = process.env,
 ): boolean {
-  const serverValue = parseBooleanEnv(env.PERSISTED_OPENSERP_LISTINGS_ENABLED);
-  if (serverValue !== null) return serverValue;
   return false;
 }
