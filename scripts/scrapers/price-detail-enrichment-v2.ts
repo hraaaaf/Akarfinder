@@ -3,7 +3,6 @@ import { extractDetail, loadHtml } from "./utils/extract";
 import { fetchHtml, isAllowedByRobots } from "./utils/fetch-html";
 import { getThirdPartyIngestionGuard } from "./utils/motor-purity-guard";
 import { safeDelay } from "./utils/safe-delay";
-import { normalizePrice } from "./normalizers/normalize-price";
 
 type Candidate = {
   seed_id: string;
@@ -55,14 +54,16 @@ export function isRecognizedDetailUrl(domain: string, url: string): boolean {
   }
 }
 
-function parseAmount(raw: string | null | undefined): number | null {
+export function parseMoneyAmount(raw: string | null | undefined): number | null {
   if (!raw) return null;
-  const cleaned = raw
-    .replace(/\u00a0/g, " ")
-    .trim()
-    .replace(/([.,])00(?=\s*(?:dh|dhs|mad|dirhams?)?\b)/i, "");
-  const n = normalizePrice(cleaned);
-  return n != null && Number.isFinite(n) ? n : null;
+  const text = raw.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+  const match = text.match(
+    /(?:^|[^0-9])([0-9]{1,3}(?:[ .][0-9]{3})+|[0-9]{4,9})(?:[.,]00)?\s*(?:dh|dhs|mad|dirhams?)\b/i,
+  );
+  if (!match) return null;
+  const digits = match[1].replace(/[^0-9]/g, "");
+  const n = Number(digits);
+  return Number.isFinite(n) ? n : null;
 }
 
 function plausible(amount: number | null, intent: "sale" | "rent" | null): number | null {
@@ -76,7 +77,7 @@ function hasPerM2Context(raw: string): boolean {
   return /(?:dh|dhs|mad|dirhams?)\s*(?:\/|par|le)\s*m(?:²|2)\b/i.test(raw);
 }
 
-function explicitHeadingPrice(html: string): string | null {
+function explicitHeadingAmount(html: string): number | null {
   try {
     const $ = loadHtml(html);
     const values = [
@@ -87,8 +88,9 @@ function explicitHeadingPrice(html: string): string | null {
     for (const value of values) {
       const text = value.replace(/\s+/g, " ").trim();
       if (!text || /prix\s+(?:sur\s+demande|à\s+consulter|a\s+consulter)/i.test(text)) continue;
-      const m = text.match(/([0-9][0-9\s.,]{2,18})\s*(dh|dhs|mad|dirhams?)\b/i);
-      if (m && !hasPerM2Context(text)) return `${m[1]} ${m[2]}`;
+      if (hasPerM2Context(text)) continue;
+      const amount = parseMoneyAmount(text);
+      if (amount != null) return amount;
     }
   } catch {
     return null;
@@ -102,12 +104,11 @@ export function extractStrictDetailPrice(
 ): number | null {
   const detail = extractDetail(html);
   if (detail.price_raw && detail._confidence.price === "high" && !hasPerM2Context(detail.price_raw)) {
-    const n = plausible(parseAmount(detail.price_raw), intent);
+    const n = plausible(parseMoneyAmount(detail.price_raw), intent);
     if (n != null) return n;
   }
 
-  const heading = explicitHeadingPrice(html);
-  const headingAmount = plausible(parseAmount(heading), intent);
+  const headingAmount = plausible(explicitHeadingAmount(html), intent);
   if (headingAmount != null) return headingAmount;
 
   return null;
