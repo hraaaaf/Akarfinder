@@ -293,7 +293,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
               className="mt-1.5 inline-flex w-fit max-w-full truncate text-[8.5px] font-semibold text-slate-400 underline-offset-2 hover:text-slate-700 hover:underline sm:text-[9px]"
               aria-label={`Crédit et licence de la photo d’ambiance ${neighborhoodPhoto.label}`}
             >
-              Crédit & licence · Wikimedia Commons
+              Crédit & licence · {neighborhoodPhoto.sourceName}
             </a>
           ) : null}
           {!observedExternal && listing.duplicate_score != null && listing.duplicate_score >= 0.7 ? (

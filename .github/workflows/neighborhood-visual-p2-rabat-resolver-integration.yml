@@ -1,0 +1,26 @@
+name: Neighborhood Visual P2 Rabat Resolver Integration
+
+on:
+  pull_request:
+    paths:
+      - "lib/contextual-illustrations/rabat-real-photo-library.ts"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p2-rabat-resolver-integration.test.ts"
+      - ".github/workflows/neighborhood-visual-p2-rabat-resolver-integration.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/neighborhood-visual-p2-rabat-resolver-integration.test.ts
+      - run: npx tsc --noEmit
+      - run: npm run build
