@@ -12,6 +12,7 @@ const COPY = {
     title: "Transformez un portefeuille d’annonces en données plus utiles.",
     description: "Un même bien peut alimenter Search, une fiche structurée et une demande qualifiée — à condition que les données, les droits et la provenance soient explicites.",
     demo: "/demo/agence",
+    activation: "/pro?type=agence&source=agency#contact",
     data: ["Identité et type du bien", "Prix, surfaces et pièces", "Localisation et quartier", "Équipements et état", "Médias avec droits", "Informations manquantes explicites"],
     icon: Users,
   },
@@ -20,6 +21,7 @@ const COPY = {
     title: "Structurez vos projets, typologies et médias avant de les diffuser.",
     description: "AkarFinder sépare projet, typologies, prix, livraison, plans et médias afin de produire une expérience plus comparable sans inventer les informations absentes.",
     demo: "/demo/promoteur",
+    activation: "/pro?type=promoteur&source=promoter#contact",
     data: ["Identité du projet", "Typologies et unités", "Prix et surfaces", "Livraison et statut", "Plans, brochures et droits", "Transparence et données manquantes"],
     icon: Building2,
   },
@@ -40,7 +42,7 @@ export function ProfessionalAudiencePage({ audience }: { audience: Audience }) {
             <h1 className="mt-4 text-[2.35rem] font-extrabold leading-[1.04] tracking-[-0.05em] sm:text-[3.5rem]">{copy.title}</h1>
             <p className="mx-auto mt-5 max-w-3xl text-[15px] leading-7 text-white/68">{copy.description}</p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Link href="/pro#contact" className="inline-flex items-center gap-2 rounded-xl bg-bronze-700 px-6 py-3.5 text-[14px] font-extrabold text-white">Demander une activation pilote <ArrowRight size={14} /></Link>
+              <Link href={copy.activation} className="inline-flex items-center gap-2 rounded-xl bg-bronze-700 px-6 py-3.5 text-[14px] font-extrabold text-white">Demander une activation pilote <ArrowRight size={14} /></Link>
               <Link href={copy.demo} className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/[0.06] px-6 py-3.5 text-[14px] font-extrabold text-white/90">Voir la démo fictive</Link>
             </div>
           </div>
@@ -86,7 +88,7 @@ export function ProfessionalAudiencePage({ audience }: { audience: Audience }) {
         </Container>
       </section>
 
-      <section className="py-14 text-center"><Container><p className="text-[13px] text-muted-foreground">Programme pilote · aucune promesse de volume de leads, de classement ou de vente.</p><Link href="/pro#contact" className="mt-4 inline-flex items-center gap-2 text-[14px] font-extrabold text-bronze-500">Préparer l’activation <ArrowRight size={14} /></Link></Container></section>
+      <section className="py-14 text-center"><Container><p className="text-[13px] text-muted-foreground">Programme pilote · aucune promesse de volume de leads, de classement ou de vente.</p><Link href={copy.activation} className="mt-4 inline-flex items-center gap-2 text-[14px] font-extrabold text-bronze-500">Préparer l’activation <ArrowRight size={14} /></Link></Container></section>
       <SiteFooter />
     </main>
   );
