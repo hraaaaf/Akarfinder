@@ -8,13 +8,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/pro" },
 };
 
-type Props = {
-  searchParams: Promise<{ type?: string; source?: string }>;
-};
-
-export default async function ProPage({ searchParams }: Props) {
-  const { type, source } = await searchParams;
-  const initialType = type === "agence" || type === "promoteur" || type === "exposant" ? type : undefined;
-  const sourcePage = source === "agency" ? "/pro/agences" : source === "promoter" ? "/promoteurs" : "/pro";
-  return <ProPageV2 initialType={initialType} sourcePage={sourcePage} />;
+export default function ProPage() {
+  return <ProPageV2 />;
 }
