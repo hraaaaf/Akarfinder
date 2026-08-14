@@ -23,15 +23,19 @@ try{
         return{
           clientWidth:document.documentElement.clientWidth,
           scrollWidth:document.documentElement.scrollWidth,
-          cards:cards.map(card=>({
-            expected:card.getAttribute("data-expected-district"),
-            resolved:card.querySelector("[data-neighborhood-photo-district]")?.getAttribute("data-neighborhood-photo-district")??null,
-            title:card.querySelector("[data-neighborhood-photo-title]")?.textContent?.trim()??"",
-            credit:card.querySelector("[data-neighborhood-photo-credit]")?.textContent?.trim()??"",
-            disclosure:card.querySelector("[data-neighborhood-photo-disclosure]")?.textContent?.trim()??"",
-            scope:Boolean(card.querySelector("[data-neighborhood-photo-frame]")),
-            illustration:Boolean(card.querySelector("[data-contextual-asset-id]")),
-          })),
+          cards:cards.map(card=>{
+            const image=card.querySelector("[data-neighborhood-photo-id]");
+            return{
+              expected:card.getAttribute("data-expected-district"),
+              resolved:image?.getAttribute("data-neighborhood-photo-district")??null,
+              title:card.querySelector("[data-neighborhood-photo-title]")?.textContent?.trim()??"",
+              credit:card.querySelector("[data-neighborhood-photo-credit]")?.textContent?.trim()??"",
+              disclosure:card.querySelector("[data-neighborhood-photo-disclosure]")?.textContent?.trim()??"",
+              scope:Boolean(card.querySelector("[data-neighborhood-photo-frame]")),
+              illustration:Boolean(card.querySelector("[data-contextual-asset-id]")),
+              imageLoaded:image instanceof HTMLImageElement&&image.complete&&image.naturalWidth>0&&image.naturalHeight>0,
+            };
+          }),
         };
       });
       if(metrics.cards.length!==5)throw new Error(`${name}: expected 5 cards`);
@@ -43,9 +47,10 @@ try{
         if(card.disclosure!=="Photo d’ambiance")throw new Error(`${name}: ${card.expected} disclosure drift`);
         if(!/^Crédit & licence · (Wikimedia Commons|KartaView)$/.test(card.credit))throw new Error(`${name}: ${card.expected} source credit drift ${card.credit}`);
         if(!card.scope||card.illustration)throw new Error(`${name}: ${card.expected} did not use real neighborhood photo`);
+        if(!card.imageLoaded)throw new Error(`${name}: ${card.expected} neighborhood photo did not load`);
       }
       await page.screenshot({path:`${outputDir}/${name}.png`,fullPage:true});
-      results.push({viewport:name,machine_quality_score:10,horizontal_overflow:false,real_photo_cards:5,truth_safe_labels:true,exact_source_credits:true});
+      results.push({viewport:name,machine_quality_score:10,horizontal_overflow:false,real_photo_cards:5,truth_safe_labels:true,exact_source_credits:true,images_loaded:5});
     }catch(error){failure=error;break;}finally{await page.close();}
   }
 }finally{await browser.close();}
