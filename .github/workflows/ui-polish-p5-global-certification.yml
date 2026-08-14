@@ -20,9 +20,9 @@ permissions:
 
 jobs:
   global-certification:
-    name: P5 Chromium 68-shot global certification
+    name: P5 exhaustive all-pages Chromium certification
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 45
     env:
       NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
       BASE_URL: http://127.0.0.1:3199
@@ -69,10 +69,10 @@ jobs:
           cat /tmp/ui-polish-p5.log
           exit 1
 
-      - name: Full global visual matrix
+      - name: Exhaustive all-pages visual matrix
         run: node scripts/audits/ui-polish-p5-global-audit.mjs
 
-      - name: Upload global visual proof
+      - name: Upload exhaustive visual proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
