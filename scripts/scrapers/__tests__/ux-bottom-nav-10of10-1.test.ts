@@ -7,6 +7,7 @@ const ROOT = process.cwd();
 const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 
 const nav = source("components/layout/MobileBottomNav.tsx");
+const designSystem = source("components/ui/design-system.ts");
 const layout = source("app/layout.tsx");
 const alerts = source("app/alerts/page.tsx");
 
@@ -22,12 +23,15 @@ test("UX-BOTTOM-NAV uses the canonical floating AkarFinder glass language", () =
   assert.match(nav, /data-mobile-bottom-nav="exact-light-blue"/);
   assert.match(nav, /data-premium-bottomnav="ux-premium-bottomnav-glass-1"/);
   assert.match(nav, /data-theme="light"/);
-  assert.match(nav, /bg-white\/80/);
-  assert.match(nav, /backdrop-blur-\[20px\]/);
-  assert.match(nav, /rounded-\[24px\]/);
+  assert.match(nav, /ui\.surfaceGlass/);
+  assert.match(designSystem, /surfaceGlass:/);
+  assert.match(designSystem, /bg-white\/80/);
+  assert.match(designSystem, /backdrop-blur-\[20px\]/);
+  assert.match(designSystem, /rounded-\[24px\]/);
+  assert.match(designSystem, /#0B2545/);
   assert.match(nav, /#0B63CE/);
   assert.match(nav, /#0B2545/);
-  assert.doesNotMatch(nav, /#F97316|249,115,22|orange|bronze/i);
+  assert.doesNotMatch(designSystem, /#F97316|249,115,22|orange|bronze/i);
 });
 
 test("UX-BOTTOM-NAV exposes the five destinations locked by the canonical mockup", () => {
