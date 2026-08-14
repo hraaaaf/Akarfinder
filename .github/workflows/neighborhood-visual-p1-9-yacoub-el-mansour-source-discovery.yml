@@ -1,0 +1,78 @@
+name: Neighborhood Visual P1.9 Yacoub El Mansour Source Discovery
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/neighborhood-visual-p1-9-yacoub-el-mansour-source-discovery.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Expanded Hay El Fath and Yacoub El Mansour residential sweep
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="data/audits/neighborhood-visual-p1-9-yacoub-el-mansour/source-discovery"
+          OUT="$ROOT/kartaview"
+          mkdir -p "$OUT" "$ROOT/commons"
+          python3 - <<'PY'
+          import hashlib,json,math,pathlib,urllib.parse,urllib.request
+          out=pathlib.Path('data/audits/neighborhood-visual-p1-9-yacoub-el-mansour/source-discovery/kartaview')
+          ua={'User-Agent':'AkarFinder-P1.9-Yacoub-El-Mansour/3.0','Accept':'application/json'}
+          centers=[
+            ('hay-fath-core',33.96937,-6.89919),('hay-fath-nw',33.9750,-6.9060),('hay-fath-ne',33.9750,-6.8920),
+            ('hay-fath-sw',33.9630,-6.9060),('hay-fath-se',33.9630,-6.8920),('hay-fath-west',33.9690,-6.9120),
+            ('hay-fath-east',33.9690,-6.8860),('yacoub-south',33.9800,-6.8950),('yacoub-core',33.98953,-6.88112),
+            ('yacoub-west',33.9900,-6.8920),('yacoub-north',33.9980,-6.8820),('yacoub-east',33.9890,-6.8710)
+          ]
+          def get(url):
+            return json.load(urllib.request.urlopen(urllib.request.Request(url,headers=ua),timeout=40))
+          def hav(a,b,c,d):
+            R=6371000.;p1,p2=math.radians(a),math.radians(c);dp=math.radians(c-a);dl=math.radians(d-b);x=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2;return 2*R*math.asin(math.sqrt(x))
+          rows={}
+          for label,lat,lng in centers:
+            for zoom in (15,16,17):
+              q=urllib.parse.urlencode({'lat':lat,'lng':lng,'zoomLevel':zoom,'join':'sequence','orderBy':'id','orderDirection':'desc'})
+              try:data=get('https://api.openstreetcam.org/2.0/photo/?'+q).get('result',{}).get('data',[])
+              except Exception:continue
+              for d in data:
+                try:plat=float(d['lat']);plng=float(d['lng'])
+                except:continue
+                urls=[d[k] for k in ('fileurlLTh','fileurlProc','fileurlTh') if isinstance(d.get(k),str) and d[k].startswith('http')]
+                if not urls:continue
+                pid=str(d.get('id'));dist=round(hav(lat,lng,plat,plng),1)
+                row=rows.get(pid,{'id':d.get('id'),'lat':plat,'lng':plng,'heading':d.get('heading'),'sequence_id':(d.get('sequence') or {}).get('id'),'urls':urls,'hits':[]})
+                row['hits'].append({'label':label,'distance_m':dist,'zoom':zoom});rows[pid]=row
+          vals=list(rows.values())
+          for r in vals:r['best_distance_m']=min(h['distance_m'] for h in r['hits'])
+          vals.sort(key=lambda r:r['best_distance_m'])
+          n=0
+          for r in vals:
+            if n>=60 or r['best_distance_m']>2500:continue
+            try:
+              b=urllib.request.urlopen(urllib.request.Request(r['urls'][0],headers=ua),timeout=40).read()
+              if len(b)<5000:continue
+              p=out/f"{n+1:02d}_{round(r['best_distance_m']):04d}m_{r['id']}.jpg";p.write_bytes(b)
+              r['downloaded_file']=p.name;r['sha1']=hashlib.sha1(b).hexdigest();r['bytes']=len(b);n+=1
+            except Exception as e:r['error']=str(e)
+          (out/'candidates.json').write_text(json.dumps(vals,ensure_ascii=False,indent=2),encoding='utf-8')
+          print(f'YACOUB_P1_9_V3 candidates={len(vals)} downloaded={n}')
+          PY
+          BEACH_URL='https://upload.wikimedia.org/wikipedia/commons/d/d0/%D8%A7%D8%AD%D8%AF_%D8%B4%D9%88%D8%A7%D8%B7%D8%A6_%D9%85%D8%AF%D9%8A%D9%86%D8%A9_%D8%A7%D9%84%D8%B1%D8%A8%D8%A7%D8%B7_%D8%A7%D9%84%D9%85%D8%B7%D8%A9_%D8%B9%D9%84%D9%89_%D8%A7%D9%84%D9%85%D8%AD%D9%8A%D8%B7_%D8%A7%D9%84%D8%A7%D8%B7%D9%84%D8%B3%D9%8A_-_%D9%85%D9%86%D8%B7%D9%82%D8%A9_%D8%AD%D9%8A_%D9%8A%D8%B9%D9%82%D9%88%D8%A8_%D8%A7%D9%84%D9%85%D9%86%D8%B5%D9%88%D8%B1.jpg'
+          curl --fail --location --retry 5 --user-agent 'AkarFinder-P1.9/1.0' "$BEACH_URL" -o "$ROOT/commons/yacoub-beach.jpg"
+          sha1sum "$ROOT/commons/yacoub-beach.jpg" > "$ROOT/commons/sha1.txt"
+          wc -c "$ROOT/commons/yacoub-beach.jpg" > "$ROOT/commons/bytes.txt"
+          file "$ROOT/commons/yacoub-beach.jpg" > "$ROOT/commons/file.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-visual-p1-9-yacoub-el-mansour-source-discovery
+          path: data/audits/neighborhood-visual-p1-9-yacoub-el-mansour/source-discovery
+          if-no-files-found: error
+          retention-days: 7
