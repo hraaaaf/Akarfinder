@@ -79,6 +79,8 @@ async function main() {
       .from("source_offer_seeds")
       .select("source_domain,canonical_url")
       .in("source_domain", [...EXPECTED_DOMAINS])
+      .order("source_domain", { ascending: true })
+      .order("canonical_url", { ascending: true })
       .range(from, from + pageSize - 1);
     if (error) throw error;
     for (const row of data ?? []) {
