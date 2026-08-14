@@ -8,6 +8,7 @@ import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButto
 import { useFavoriteSelection } from "@/components/favorites/useFavoriteSelection";
 import { ListingVisual } from "@/components/listings/ListingVisual";
 import { ReliabilityBadge } from "@/components/ui/ReliabilityBadge";
+import { ui } from "@/components/ui/design-system";
 import {
   clearFavoriteIds,
   dispatchFavoritesUpdated,
@@ -28,20 +29,17 @@ function getReliabilityLevel(score: number): "high" | "medium" | "low" {
 
 function EmptyState() {
   return (
-    <section className="rounded-[1.6rem] border border-dashed border-[#d8c8a3] bg-white p-10 text-center shadow-[0_8px_24px_rgba(7,27,51,0.04)]">
-      <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#fff0f0]">
-        <Heart size={24} strokeWidth={2} className="text-red-400" aria-hidden="true" />
+    <section className={ui.emptyState}>
+      <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-blue-50">
+        <Heart size={24} strokeWidth={2} className="text-primary" aria-hidden="true" />
       </span>
-      <h1 className="mt-4 text-[1.5rem] font-extrabold tracking-[-0.04em] text-deepblue">
+      <h1 className="mt-4 text-[1.5rem] font-extrabold tracking-[-0.04em] text-[#0B1F3A]">
         Aucun favori sauvegardé
       </h1>
-      <p className="mt-2 text-[14px] leading-7 text-gray-500">
-        Cliquez sur le cœur d&apos;une annonce pour la sauvegarder ici avant de la comparer ou de contacter.
+      <p className="mx-auto mt-2 max-w-xl text-[14px] leading-7 text-slate-500">
+        Cliquez sur le cœur d&apos;une annonce pour la sauvegarder ici avant de la comparer ou de demander une visite.
       </p>
-      <Link
-        href="/search"
-        className="mt-5 inline-flex items-center justify-center rounded-full bg-deepblue px-5 py-3 text-[13px] font-extrabold text-white transition hover:bg-deepblue-700"
-      >
+      <Link href="/search" className={`mt-5 ${ui.primaryActionPill}`}>
         Explorer les biens
       </Link>
     </section>
@@ -53,7 +51,7 @@ function FavoriteCard({ listing, onRemove }: { listing: Listing; onRemove: (id: 
   const reliabilityLevel = getReliabilityLevel(listing.reliability_score);
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-[1.4rem] border border-[#eadfca] bg-white shadow-[0_8px_28px_rgba(7,27,51,0.07)]">
+    <article className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_28px_rgba(24,56,96,0.07)] transition-shadow hover:shadow-[0_12px_34px_rgba(24,56,96,0.11)]">
       <Link href={`/listings/${listing.id}`} className="relative block h-[200px] overflow-hidden sm:h-[210px]">
         {imageMode !== "fallback_visual" && listing.main_image_url ? (
           <Image
@@ -66,73 +64,70 @@ function FavoriteCard({ listing, onRemove }: { listing: Listing; onRemove: (id: 
         ) : (
           <ListingVisual listing={listing} className="h-full w-full" />
         )}
-        <div className="absolute left-3 top-3 rounded-full bg-deepblue/90 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.08em] text-white">
+        <div className="absolute left-3 top-3 rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.08em] text-[#0B2545] shadow-sm backdrop-blur">
           {listing.property_type}
         </div>
       </Link>
 
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-[1.5rem] font-extrabold leading-none tracking-[-0.04em] text-deepblue">
+          <p className="text-[1.45rem] font-extrabold leading-none tracking-[-0.04em] text-[#0B1F3A]">
             {formatPrice(listing.price, listing.currency)}
           </p>
           <FavoriteToggleButton listingId={listing.id} variant="icon" />
         </div>
 
-        {listing.price_per_m2 != null && (
-          <p className="mt-1 text-[12px] font-bold text-bronze-700">
+        {listing.price_per_m2 != null ? (
+          <p className="mt-1 text-[12px] font-bold text-primary">
             {listing.price_per_m2.toLocaleString("fr-FR")} DH/m²
           </p>
-        )}
+        ) : null}
 
         <Link href={`/listings/${listing.id}`} className="mt-2 block">
-          <h2 className="line-clamp-2 text-[0.97rem] font-extrabold leading-snug text-gray-950">
+          <h2 className="line-clamp-2 text-[0.97rem] font-extrabold leading-snug text-slate-950">
             {listing.title}
           </h2>
-          <p className="mt-1 text-[13px] text-gray-500">
+          <p className="mt-1 text-[13px] text-slate-500">
             {listing.neighborhood ? `${listing.city}, ${listing.neighborhood}` : listing.city}
           </p>
         </Link>
 
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] font-bold text-gray-600">
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] font-bold text-slate-600">
           <span>{formatSurface(listing.surface_m2)}</span>
           {listing.bedrooms > 0 ? <span>{listing.bedrooms} ch.</span> : null}
-          <span className="text-gray-400">·</span>
+          <span className="text-slate-300">·</span>
           {listing.reliability_available !== false ? (
-            <ReliabilityBadge level={reliabilityLevel} label={
-              reliabilityLevel === "high" ? "Informations complètes" :
-              reliabilityLevel === "medium" ? "Infos limitées" : "Doublon possible"
-            } />
+            <ReliabilityBadge
+              level={reliabilityLevel}
+              label={
+                reliabilityLevel === "high"
+                  ? "Informations complètes"
+                  : reliabilityLevel === "medium"
+                    ? "Infos limitées"
+                    : "Doublon possible"
+              }
+            />
           ) : null}
         </div>
 
         <div className="mt-4 flex flex-col gap-2">
-          <Link
-            href={`/listings/${listing.id}`}
-            className="flex items-center justify-center gap-2 rounded-xl bg-deepblue px-4 py-2.5 text-[13px] font-extrabold text-white transition hover:bg-deepblue-700"
-          >
+          <Link href={`/listings/${listing.id}`} className={`${ui.primaryActionPill} gap-2`}>
             Voir le bien
             <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
           </Link>
           <div className="grid grid-cols-2 gap-2">
-            <Link
-              href={`/compare?add=${listing.id}`}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-[#d8c8a3] bg-[#fffdf8] px-3 py-2.5 text-[12px] font-extrabold text-deepblue transition hover:bg-[#f7f3ea]"
-            >
+            <Link href={`/compare?add=${listing.id}`} className={`${ui.secondaryActionPill} gap-1.5 px-3 text-[12px]`}>
               <Scale size={13} strokeWidth={2.4} aria-hidden="true" />
               Comparer
             </Link>
-            <Link
-              href={`/listings/${listing.id}#visite`}
-              className="flex items-center justify-center rounded-xl border border-[#d8c8a3] bg-[#fffdf8] px-3 py-2.5 text-[12px] font-extrabold text-deepblue transition hover:bg-[#f7f3ea]"
-            >
+            <Link href={`/listings/${listing.id}#visite`} className={`${ui.secondaryActionPill} px-3 text-[12px]`}>
               Visite
             </Link>
           </div>
           <button
             type="button"
             onClick={() => onRemove(listing.id)}
-            className="flex items-center justify-center gap-1.5 rounded-xl border border-[#eadfca] px-3 py-2 text-[12px] font-bold text-gray-500 transition hover:bg-[#f7f3ea] hover:text-deepblue"
+            className="flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-[12px] font-bold text-slate-500 transition hover:bg-slate-50 hover:text-[#0B2545]"
           >
             <Trash2 size={13} strokeWidth={2.3} aria-hidden="true" />
             Retirer
@@ -166,14 +161,16 @@ export function FavoritesPageShell() {
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const favoriteListings = useMemo(() => {
-    const byId = new Map(availableListings.map((l) => [l.id, l]));
+    const byId = new Map(availableListings.map((listing) => [listing.id, listing]));
     return ids
-      .map((id) => byId.get(id) ?? mockListings.find((l) => l.id === id))
-      .filter((l): l is Listing => Boolean(l));
+      .map((id) => byId.get(id) ?? mockListings.find((listing) => listing.id === id))
+      .filter((listing): listing is Listing => Boolean(listing));
   }, [availableListings, ids]);
 
   function handleRemove(id: string) {
@@ -189,32 +186,39 @@ export function FavoritesPageShell() {
   }
 
   return (
-    <section className="pb-16 pt-8 lg:pt-10">
-      <div className="rounded-[1.7rem] border border-[#eadfca] bg-deepblue px-6 py-7 text-white shadow-[0_18px_42px_rgba(7,27,51,0.16)]">
-        <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-bronze-400">
-          P15B — Favoris
-        </p>
-        <h1 className="mt-2 text-[2rem] font-extrabold tracking-[-0.05em] sm:text-[2.6rem]">
-          Ma shortlist
-        </h1>
-        <p className="mt-3 max-w-3xl text-[14px] leading-7 text-white/72">
-          Sauvegardez les biens qui vous intéressent pour les retrouver, les comparer ou demander une visite.
-        </p>
+    <section className="pb-24 pt-5 sm:pt-7 lg:pt-8">
+      <div className={`${ui.surfacePremium} px-5 py-6 sm:px-7 sm:py-7`}>
+        <p className={ui.eyebrow}>Favoris</p>
+        <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-[1.9rem] font-extrabold tracking-[-0.05em] text-[#0B1F3A] sm:text-[2.35rem]">
+              Ma shortlist
+            </h1>
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-slate-500">
+              Retrouvez les biens que vous avez sauvegardés, comparez-les et revenez rapidement à leur fiche.
+            </p>
+          </div>
+          {favoriteListings.length > 0 ? (
+            <span className="inline-flex w-fit rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-[11px] font-extrabold text-primary">
+              {favoriteListings.length} bien{favoriteListings.length > 1 ? "s" : ""}
+            </span>
+          ) : null}
+        </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-5">
         {favoriteListings.length === 0 ? (
           <EmptyState />
         ) : (
           <>
-            <div className="mb-4 flex items-center justify-between">
-              <p className="text-[14px] font-bold text-gray-600">
-                {favoriteListings.length} bien{favoriteListings.length > 1 ? "s" : ""} sauvegardé{favoriteListings.length > 1 ? "s" : ""}
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <p className="text-[13px] font-semibold text-slate-500">
+                {favoriteListings.length} sauvegardé{favoriteListings.length > 1 ? "s" : ""}
               </p>
               <button
                 type="button"
                 onClick={handleClear}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#eadfca] bg-white px-4 py-2 text-[12px] font-extrabold text-gray-600 transition hover:bg-[#f7f3ea] hover:text-deepblue"
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-[12px] font-extrabold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-[#0B2545]"
               >
                 <Trash2 size={13} strokeWidth={2.3} aria-hidden="true" />
                 Tout vider
@@ -228,9 +232,7 @@ export function FavoritesPageShell() {
           </>
         )}
         {isLoading ? (
-          <p className="mt-4 text-[12px] font-medium text-gray-400">
-            Chargement des biens…
-          </p>
+          <p className="mt-4 text-[12px] font-medium text-slate-400">Chargement des biens…</p>
         ) : null}
       </div>
     </section>
