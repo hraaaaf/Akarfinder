@@ -4,6 +4,7 @@ import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "n
 import { basename, dirname, join, resolve } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 
+const EXPECTED_ARTIFACT_FILES = 10;
 const EXPECTED_DOMAINS = new Set([
   "avito.ma",
   "mubawab.ma",
@@ -54,13 +55,15 @@ async function main() {
   if (!supabaseUrl || !serviceRoleKey) throw new Error("Missing Supabase read credentials");
 
   const files = findReservoirFiles(artifactRoot);
-  if (files.length !== 4) throw new Error(`Expected exactly 4 X4C reservoir files, found ${files.length}`);
+  if (files.length !== EXPECTED_ARTIFACT_FILES) {
+    throw new Error(`Expected exactly ${EXPECTED_ARTIFACT_FILES} reservoir files, found ${files.length}`);
+  }
 
   const candidates = new Set<string>();
   const artifactRows: Record<string, number> = {};
   for (const file of files) {
     const rows = readFileSync(file, "utf8").split(/\r?\n/).map((v) => v.trim()).filter(Boolean);
-    artifactRows[basename(dirname(file))] = rows.length;
+    artifactRows[file.replace(`${artifactRoot}/`, "")] = rows.length;
     for (const url of rows) {
       const domain = domainOf(url);
       if (!domain || !EXPECTED_DOMAINS.has(domain)) throw new Error(`Unexpected candidate domain: ${url}`);
@@ -74,11 +77,12 @@ async function main() {
 
   const existing = new Set<string>();
   const pageSize = 1000;
+  const orderedDomains = [...EXPECTED_DOMAINS].sort();
   for (let from = 0; ; from += pageSize) {
     const { data, error } = await supabase
       .from("source_offer_seeds")
       .select("source_domain,canonical_url")
-      .in("source_domain", [...EXPECTED_DOMAINS])
+      .in("source_domain", orderedDomains)
       .order("source_domain", { ascending: true })
       .order("canonical_url", { ascending: true })
       .range(from, from + pageSize - 1);
@@ -94,7 +98,7 @@ async function main() {
   const netNew = sortedCandidates.filter((url) => !existing.has(url));
 
   const byDomain: Record<string, { candidate: number; overlap: number; net_new: number; existing_seed_rows: number }> = {};
-  for (const domain of [...EXPECTED_DOMAINS].sort()) {
+  for (const domain of orderedDomains) {
     byDomain[domain] = { candidate: 0, overlap: 0, net_new: 0, existing_seed_rows: 0 };
   }
   for (const url of sortedCandidates) {
