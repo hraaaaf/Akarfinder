@@ -1,0 +1,28 @@
+name: SEARCH Ranking v2
+
+on:
+  pull_request:
+    paths:
+      - 'lib/search-gateway/public-search-cursor.ts'
+      - 'supabase/migrations/20260814170500_search_ranking_v2.sql'
+      - 'scripts/scrapers/__tests__/search-ranking-v2-contract.test.ts'
+      - '.github/workflows/search-ranking-v2.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Ranking v2 contract
+        run: npx tsx --test scripts/scrapers/__tests__/search-ranking-v2-contract.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
