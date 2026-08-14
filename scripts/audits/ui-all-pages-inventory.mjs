@@ -4,11 +4,18 @@ import path from "node:path";
 const appDir = path.resolve("app");
 const outputDir = path.resolve(process.env.AUDIT_OUTPUT_DIR ?? "data/audits/ui-all-pages-inventory");
 
-const fixtureByPattern = new Map([
-  ["/listings/[id]", "/listings/casablanca-finance-city-terrasse"],
-  ["/immobilier/[city]", "/immobilier/rabat"],
-  ["/immobilier/[city]/[district]", "/immobilier/rabat/agdal"],
-  ["/quartiers/[citySlug]/[neighborhoodSlug]", "/quartiers/rabat/agdal"],
+const dynamicAuditByPattern = new Map([
+  ["/listings/[id]", { fixtureUrl: "/listings/casablanca-finance-city-terrasse", auditMode: "render" }],
+  ["/immobilier/[city]", { fixtureUrl: "/immobilier/rabat", auditMode: "render" }],
+  ["/immobilier/[city]/[district]", { fixtureUrl: "/immobilier/rabat/agdal", auditMode: "render" }],
+  ["/quartiers/[citySlug]/[neighborhoodSlug]", { fixtureUrl: "/quartiers/rabat/agdal", auditMode: "render" }],
+  ["/projets/[slug]", { fixtureUrl: "/projets/residence-demo-akarfinder?preview=demo", auditMode: "render-demo" }],
+  ["/promoteurs/[slug]", { fixtureUrl: "/promoteurs/promoteur-demo-akarfinder?preview=demo", auditMode: "render-demo" }],
+  ["/professionnels/[slug]", {
+    fixtureUrl: null,
+    auditMode: "data-fixture-required",
+    blocker: "No deterministic local public professional exists: the page requires a validated + public professional_organizations row.",
+  }],
 ]);
 
 async function collectPageFiles(dir, relative = "") {
@@ -49,16 +56,20 @@ const pageFiles = (await collectPageFiles(appDir)).sort();
 const pages = pageFiles.map((sourcePath) => {
   const routePattern = fileToRoutePattern(sourcePath);
   const dynamic = isDynamicRoute(routePattern);
+  const dynamicAudit = dynamic ? dynamicAuditByPattern.get(routePattern) ?? null : null;
   return {
     sourcePath: `app/${sourcePath}`,
     routePattern,
     dynamic,
-    fixtureUrl: dynamic ? fixtureByPattern.get(routePattern) ?? null : routePattern,
+    fixtureUrl: dynamic ? dynamicAudit?.fixtureUrl ?? null : routePattern,
+    auditMode: dynamic ? dynamicAudit?.auditMode ?? null : "render",
+    blocker: dynamicAudit?.blocker ?? null,
     family: routeFamily(routePattern),
   };
 });
 
-const unresolvedDynamic = pages.filter((page) => page.dynamic && !page.fixtureUrl);
+const unclassifiedDynamic = pages.filter((page) => page.dynamic && !page.auditMode);
+const dataBlocked = pages.filter((page) => page.auditMode === "data-fixture-required");
 const duplicateRoutes = Object.entries(
   pages.reduce((acc, page) => {
     acc[page.routePattern] = (acc[page.routePattern] ?? 0) + 1;
@@ -72,10 +83,13 @@ const report = {
   pageCount: pages.length,
   dynamicPageCount: pages.filter((page) => page.dynamic).length,
   staticPageCount: pages.filter((page) => !page.dynamic).length,
-  unresolvedDynamicCount: unresolvedDynamic.length,
+  renderablePageCount: pages.filter((page) => Boolean(page.fixtureUrl)).length,
+  dataBlockedPageCount: dataBlocked.length,
+  unclassifiedDynamicCount: unclassifiedDynamic.length,
   duplicateRouteCount: duplicateRoutes.length,
   pages,
-  unresolvedDynamic,
+  dataBlocked,
+  unclassifiedDynamic,
   duplicateRoutes,
 };
 
@@ -86,12 +100,14 @@ console.log(JSON.stringify({
   pageCount: report.pageCount,
   staticPageCount: report.staticPageCount,
   dynamicPageCount: report.dynamicPageCount,
-  unresolvedDynamic: unresolvedDynamic.map((page) => page.routePattern),
+  renderablePageCount: report.renderablePageCount,
+  dataBlocked: dataBlocked.map((page) => page.routePattern),
+  unclassifiedDynamic: unclassifiedDynamic.map((page) => page.routePattern),
 }, null, 2));
 
 if (duplicateRoutes.length > 0) {
   throw new Error(`Duplicate App Router page patterns: ${duplicateRoutes.map(([route]) => route).join(", ")}`);
 }
-if (unresolvedDynamic.length > 0) {
-  throw new Error(`Dynamic page fixtures required: ${unresolvedDynamic.map((page) => page.routePattern).join(", ")}`);
+if (unclassifiedDynamic.length > 0) {
+  throw new Error(`Dynamic page classification required: ${unclassifiedDynamic.map((page) => page.routePattern).join(", ")}`);
 }
