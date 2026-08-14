@@ -7,7 +7,14 @@ on:
       - 'scripts/scrapers/daragadir-long-term-price-enrichment.ts'
       - 'scripts/scrapers/__tests__/price-detail-v2-safety.test.ts'
       - 'scripts/scrapers/__tests__/daragadir-long-term-price-enrichment.test.ts'
+      - 'supabase/migrations/20260814205500_guard_daragadir_short_stay_price_without_cadence.sql'
       - '.github/workflows/price-detail-enrichment-v2.yml'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Bounded DarAgadir long-term batch size'
+        required: false
+        default: '120'
 
 permissions:
   contents: read
@@ -28,7 +35,7 @@ jobs:
 
   daragadir-long-term-expansion:
     needs: certify
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -36,7 +43,7 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
       PRICE_DETAIL_ENRICH_WRITE: 'true'
-      PRICE_DETAIL_LIMIT: '120'
+      PRICE_DETAIL_LIMIT: ${{ inputs.limit || '120' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
