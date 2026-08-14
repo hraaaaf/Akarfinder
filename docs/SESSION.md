@@ -32,6 +32,19 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 - **Hotfix navigation post-closeout ✅ — PR #625**, merge `ad98a9cc3afddb3ee096c478fd990cc05ddddacc` : accès explicite `Ouvrir le comparateur` ajouté dans l’en-tête Favoris, visible même sans favori ; P3/P5 et tous gates exact-head verts ; inspection 390 / 430 / 768 / 1280 PASS.
 - La lane UI n'a pas modifié DATA, ranking, Registry, persistance, géographie ou moteur listing hors de son périmètre.
 
+
+<!-- SEARCH-RANKING-V2-CURRENT-START -->
+## Search Ranking v2 — état courant
+
+- **PR #629 ✅ MERGED** — merge `7d20556a610c69b0898b21e3ccf2baa3bb50a580`, exact head certifié `f7565350d91651706e8aaea76fd9f25ed7c1c45f`.
+- Gates exact-head : `SEARCH Ranking v2`, ODM-09B, ODM-09C, ODM-09E, Search Truth, canonical compile/validation et design accessibility **SUCCESS**. UX Gate 0 a échoué uniquement sur un fetch Google Fonts externe ; ses contrats/TypeScript étaient verts.
+- Migration production `search_ranking_v2` appliquée avec succès. Audit DB : **15 438** résultats, **101/101 URL distinctes** sur le lookahead, stock actuel **lane 3 externe** faute d'entitlement business actif ; pagination 100 + 100 avec **0 overlap** et total stable 15 438.
+- Hiérarchie codée : `premium_promoter` → `partner_agency` → owner AkarFinder → externe. Aucun entitlement commercial n'est inventé.
+- Intra-lane : pertinence texte + quality boost + fraîcheur + complétude ; dédup URL canonique ; diversification applicative max 1 source consécutive quand une alternative existe.
+- **Déploiement applicatif production BLOQUÉ** : le dernier déploiement Vercel reste sur `aa75e7c6f584a6180933c70f9550f1efdf7025e0`; le workflow de déploiement contrôlé a confirmé que `VERCEL_TOKEN` est absent/vide dans GitHub Actions. Le RPC v2 est actif en base, mais l'interleaving applicatif de `main` n'est pas encore servi par Vercel.
+- Prochaine action exacte : restaurer un canal de déploiement Vercel authentifié, déployer `main`, vérifier `/api/search` et `/search` en production, puis marquer Ranking v2 CLOSED.
+<!-- SEARCH-RANKING-V2-CURRENT-END -->
+
 ## Audit Toutes Pages — nouveau chantier
 
 - **Progression stricte : 2/5 jalons CLOSED = 40 %** — seuls les jalons certifiés + mergés comptent.
