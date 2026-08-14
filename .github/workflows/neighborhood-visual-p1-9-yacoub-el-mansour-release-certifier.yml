@@ -1,0 +1,41 @@
+name: Neighborhood Visual P1.9 Yacoub El Mansour Independent Certifier
+on:
+  pull_request:
+    paths:
+      - "lib/contextual-illustrations/yacoub-el-mansour-neighborhood-visuals.ts"
+      - "app/visual-qa/yacoub-el-mansour/**"
+      - "components/search/YacoubElMansourNeighborhoodVisualQAFixture.tsx"
+      - "scripts/audits/neighborhood-visual-p1-9-yacoub-el-mansour-visual-qa.mjs"
+      - ".github/workflows/neighborhood-visual-p1-9-yacoub-el-mansour-release-certifier.yml"
+permissions: { contents: read }
+env: { NEIGHBORHOOD_VISUAL_QA: "1", NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false" }
+jobs:
+  certifier:
+    name: Independent Release Certifier — Yacoub El Mansour 3-scene QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - name: Materialize exact reusable sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/__qa
+          curl -fL --retry 5 'https://storage8.openstreetcam.org/files/photo/2018/6/6/lth/1224845_e3040_891.jpg' -o public/__qa/yacoub-signature.jpg
+          curl -fL --retry 5 'https://storage8.openstreetcam.org/files/photo/2018/6/6/lth/1224845_e3040_1574.jpg' -o public/__qa/yacoub-immobilier.jpg
+          curl -fL --retry 5 'https://commons.wikimedia.org/wiki/Special:Redirect/file/%D8%A7%D8%AD%D8%AF%20%D8%B4%D9%88%D8%A7%D8%B7%D8%A6%20%D9%85%D8%AF%D9%8A%D9%86%D8%A9%20%D8%A7%D9%84%D8%B1%D8%A8%D8%A7%D8%B7%20%D8%A7%D9%84%D9%85%D8%B7%D8%A9%20%D8%B9%D9%84%D9%89%20%D8%A7%D9%84%D9%85%D8%AD%D9%8A%D8%B7%20%D8%A7%D9%84%D8%A7%D8%B7%D9%84%D8%B3%D9%8A%20-%20%D9%85%D9%86%D8%B7%D9%82%D8%A9%20%D8%AD%D9%8A%20%D9%8A%D8%B9%D9%82%D9%88%D8%A8%20%D8%A7%D9%84%D9%85%D9%86%D8%B5%D9%88%D8%B1.jpg' -o public/__qa/yacoub-lifestyle.jpg
+          printf '%s  %s\n' '18a08e3074db9881953a8ad348f29fb33d5c5743' 'public/__qa/yacoub-signature.jpg' '531354e2a02ddf5e936aa5eb3754643b129154d4' 'public/__qa/yacoub-immobilier.jpg' 'e9951191d89fcba47159bd021143ab9be76145a2' 'public/__qa/yacoub-lifestyle.jpg' | sha1sum -c -
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: |
+          npm run start -- -p 3182 > /tmp/yacoub-release.log 2>&1 &
+          for i in {1..40}; do if curl -fsS http://127.0.0.1:3182/visual-qa/yacoub-el-mansour >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/yacoub-release.log; exit 1
+      - env: { BASE_URL: "http://127.0.0.1:3182", AUDIT_VARIANT: release-certifier }
+        run: node scripts/audits/neighborhood-visual-p1-9-yacoub-el-mansour-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: neighborhood-visual-p1-9-yacoub-el-mansour-release-proof, path: data/audits/neighborhood-visual-p1-9-yacoub-el-mansour/release-certifier, if-no-files-found: error, retention-days: 14 }
