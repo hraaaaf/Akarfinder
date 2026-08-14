@@ -6,7 +6,7 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 
 ## UI polish / mockup v1
 
-- **Progression stricte : 8/10 jalons CLOSED = 80 %** — seuls les lots certifiés + mergés comptent.
+- **Progression stricte : 9/10 jalons CLOSED = 90 %** — seuls les lots certifiés + mergés comptent.
 - **P0 Search ✅ CLOSED** — Search v1 reste la référence visuelle figée.
 - **P1 Audit réel mobile ✅ CLOSED — PR #597** — 12/12 captures réelles sur `/search`, `/favorites`, `/map`, `/alerts`, `/compare`, `/mon-projet` en 390×844 / 430×932, 0 overflow horizontal.
 - **P2 Design system transversal ✅ CLOSED — PR #615**, merge `993adff175e156eb3d159e63b687a6f992203b1d`.
@@ -19,7 +19,11 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
   - certification P3 `31810201144` ✅ ; Canonical `31810201062` ✅ ; Compile `31810201036` ✅ ; A11y `31810200972` ✅ ; User Journey `31810200977` ✅ ; Gate0 `31810201001` ✅ ;
   - inspection humaine 390 / 430 / 768 / 1280 PASS : wizard 8 étapes préservé, accès projets enregistrés visible, mobile scrollable et desktop équilibré ; artefact `9222864023`, digest `sha256:b1aba03a7d615571ab4a7f63a984fd98a90a6cdb242a7ff8cac88e45e670fb38`.
 - **P3 ✅ CLOSED** — cinq pages prioritaires harmonisées et visuellement certifiées.
-- **P4 🔄 ACTIVE** — audit puis harmonisation des routes publiques secondaires existantes ; P5 certification globale ensuite.
+- **P4 pages secondaires ✅ CLOSED — PR #623**, merge `4b69ca81b88961db17230cb1d7fccf2b503483a1`, exact head `9f16043ce3d31fac3d7d2003f0bb3a8fed2f1868`.
+  - baseline 40-shot `31811601185` ✅ ; after-state 40-shot `31812334242` ✅ ; Search Final `31812334233` ✅ ; Canonical `31812334751` ✅ ; Compile `31812334387` ✅ ; A11y `31812334223` ✅ ; P3 regression `31812334278` ✅ ;
+  - 10 routes secondaires couvertes sur 390 / 430 / 768 / 1280 ; 7 pages réellement dérivantes migrées vers `SecondaryPageShell`; `/acheter`, `/accompagnement`, `/compagnon` préservés car aucune anomalie structurelle nécessitant refonte ;
+  - inspection humaine after-state PASS ; safe zone mobile `pb-28` vérifiée ; artefact `9223686303`, digest `sha256:f254721a672c1a4acd35786ed2528ddf2180e7dc858bf7d720c4a2147a645885`.
+- **P5 🔄 NEXT** — certification globale unique de toutes les surfaces prioritaires + secondaires, puis closeout final.
 - La lane UI ne doit pas écraser DATA ni la bibliothèque visuelle.
 
 ## Bibliothèque visuelle quartiers — Rabat
@@ -45,4 +49,4 @@ Doctrine verrouillée : photos réelles uniquement, provenance/licence défendab
 
 ## Reprise exacte
 
-**UI polish : P0 → P3 ✅ CLOSED, progression stricte 80 %. Prochaine action exacte : P4, auditer les routes publiques secondaires existantes sur le main courant, harmoniser les dérives réelles, certifier puis merger. Ensuite P5 certification globale.**
+**UI polish : P0 → P4 ✅ CLOSED, progression stricte 90 %. Prochaine action exacte : P5 certification globale sur le main courant, inspection humaine finale, correction de toute régression mesurée, merge puis closeout canonique.**
