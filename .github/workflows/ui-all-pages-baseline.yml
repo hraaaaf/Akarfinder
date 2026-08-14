@@ -7,6 +7,7 @@ on:
       - "app/**"
       - "components/**"
       - "scripts/audits/ui-all-pages-*.mjs"
+      - "scripts/scrapers/__tests__/ui-all-pages-*.test.ts"
       - ".github/workflows/ui-all-pages-*.yml"
   workflow_dispatch:
 
@@ -34,6 +35,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Source remediation contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ui-all-pages-remediation.test.ts
       - name: Exhaustive page inventory
         env:
           AUDIT_OUTPUT_DIR: data/audits/ui-all-pages-inventory
