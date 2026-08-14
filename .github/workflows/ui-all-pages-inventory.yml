@@ -1,0 +1,38 @@
+name: UI All Pages Inventory
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "scripts/audits/ui-all-pages-inventory.mjs"
+      - ".github/workflows/ui-all-pages-inventory.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    name: Exhaustive App Router page inventory
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Discover every page.tsx
+        run: node scripts/audits/ui-all-pages-inventory.mjs
+      - name: Upload inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-all-pages-inventory-${{ github.run_id }}
+          path: data/audits/ui-all-pages-inventory/inventory.json
+          if-no-files-found: error
+          retention-days: 14
