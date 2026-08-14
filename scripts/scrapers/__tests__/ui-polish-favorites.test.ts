@@ -16,6 +16,9 @@ test("UI-POLISH-P3 Favoris uses transverse premium primitives", () => {
   assert.match(shell, /removeFavoriteId/);
   assert.match(shell, /clearFavoriteIds/);
   assert.match(shell, /\/compare\?add=/);
+  assert.match(shell, /href="\/compare"/);
+  assert.match(shell, /data-favorites-compare-entry/);
+  assert.match(shell, /Ouvrir le comparateur/);
   assert.match(shell, /#visite/);
 
   assert.doesNotMatch(shell, /bronze/i);

@@ -189,7 +189,7 @@ export function FavoritesPageShell() {
     <section className="pb-24 pt-5 sm:pt-7 lg:pt-8">
       <div className={`${ui.surfacePremium} px-5 py-6 sm:px-7 sm:py-7`}>
         <p className={ui.eyebrow}>Favoris</p>
-        <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-[1.9rem] font-extrabold tracking-[-0.05em] text-[#0B1F3A] sm:text-[2.35rem]">
               Ma shortlist
@@ -198,11 +198,17 @@ export function FavoritesPageShell() {
               Retrouvez les biens que vous avez sauvegardés, comparez-les et revenez rapidement à leur fiche.
             </p>
           </div>
-          {favoriteListings.length > 0 ? (
-            <span className="inline-flex w-fit rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-[11px] font-extrabold text-primary">
-              {favoriteListings.length} bien{favoriteListings.length > 1 ? "s" : ""}
-            </span>
-          ) : null}
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href="/compare" className={`${ui.secondaryActionPill} gap-2`} data-favorites-compare-entry>
+              <Scale size={15} strokeWidth={2.4} aria-hidden="true" />
+              Ouvrir le comparateur
+            </Link>
+            {favoriteListings.length > 0 ? (
+              <span className="inline-flex w-fit rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-[11px] font-extrabold text-primary">
+                {favoriteListings.length} bien{favoriteListings.length > 1 ? "s" : ""}
+              </span>
+            ) : null}
+          </div>
         </div>
       </div>
 
