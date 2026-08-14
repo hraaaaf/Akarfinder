@@ -34,10 +34,12 @@ export default async function VendreDossierPage({
       <SiteHeader compact />
       <section className="pb-20 pt-8 sm:pt-12">
         <Container>
-          <SellerSecurePublishForm
-            initialPropertyType={initialPropertyType}
-            initialIntent={initialIntent}
-          />
+          <div className="min-w-0 [&>div]:min-w-0 [&>div>section]:min-w-0">
+            <SellerSecurePublishForm
+              initialPropertyType={initialPropertyType}
+              initialIntent={initialIntent}
+            />
+          </div>
         </Container>
       </section>
       <SiteFooter />

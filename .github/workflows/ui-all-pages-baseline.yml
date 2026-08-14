@@ -19,12 +19,13 @@ permissions:
 
 jobs:
   baseline:
-    name: Chromium 252-shot all-pages baseline
+    name: Chromium exhaustive all-pages audit
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
       BASE_URL: http://127.0.0.1:3200
       AUDIT_OUTPUT_DIR: data/audits/ui-all-pages-baseline
+      NEIGHBORHOOD_VISUAL_QA: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
