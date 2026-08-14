@@ -30,6 +30,7 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 before, tail = text.split(start, 1)
 _, after = tail.split(end, 1)
 updated = before + replacement + after
+updated = updated.replace('**Version : 2026-08-13**  ', '**Version : 2026-08-14**', 1)
 updated = updated.replace('**Version : 2026-08-13**', '**Version : 2026-08-14**', 1)
 path.write_text(updated, encoding='utf-8')
 
