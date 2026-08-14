@@ -1,0 +1,82 @@
+name: UI Polish P5 Global Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "components/**"
+      - "scripts/audits/ui-polish-p5-global-audit.mjs"
+      - "scripts/scrapers/__tests__/ui-polish-*.test.ts"
+      - ".github/workflows/ui-polish-p5-global-certification.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  global-certification:
+    name: P5 Chromium 68-shot global certification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+      BASE_URL: http://127.0.0.1:3199
+      AUDIT_OUTPUT_DIR: data/audits/ui-polish-p5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: UI polish source contracts
+        shell: bash
+        run: |
+          mapfile -t tests < <(find scripts/scrapers/__tests__ -maxdepth 1 -name 'ui-polish-*.test.ts' -print | sort)
+          if ((${#tests[@]} > 0)); then
+            npx tsx --test "${tests[@]}"
+          fi
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Production build
+        run: npm run build
+
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3199 > /tmp/ui-polish-p5.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3199/search >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/ui-polish-p5.log
+          exit 1
+
+      - name: Full global visual matrix
+        run: node scripts/audits/ui-polish-p5-global-audit.mjs
+
+      - name: Upload global visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-polish-p5-global-proof-${{ github.run_id }}
+          path: data/audits/ui-polish-p5
+          if-no-files-found: error
+          retention-days: 14
