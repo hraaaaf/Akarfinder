@@ -1,0 +1,10 @@
+export const MASS_X5_SOURCE_FACTORY_EVIDENCE = {
+  runId: 31688558028,
+  artifactId: 9177360550,
+  artifactDigest: 'sha256:04a2b83396abb89c7990bf0a9abc8c673450645b23ffe193f14ce49cb6ecf0c3',
+  expectedDomains: 107,
+} as const;
+
+export const MASS_X5_SOURCE_FACTORY_DOMAINS = [
+  'marocannonces.com','domio.ma','1000-annonces.com','yakeey.com','2p.ma','sakane.ma','milkiya.ma','ma.afribaba.com','dabaannonce.ma','immo.mitula.ma','immobilier.trovit.ma','housing.place','portail-immobilier.ma','souqcity.ma','nuroa.ma','darkom.ma','annoncesmaroc.ma','flaha.ma','expat.com','sekna.ma','fazwaz.fr','capalmrabat.com','immobilier.cari.ma','toutypasse.com','logic-immo.com','luxuryestate.com','lyz-marrakech-immobilier.com','holprop.fr','fadlimmo.com','annonces-express.com','properstar.fr','maroc.realigro.fr','maisons-maroc.com','acropole-immo.net','immobakkali.com','souika.ma','bakimmo.com','kensingtonmorocco.com','2ememain.be','paruvendu.fr','chridari.ma','baytchamal.com','kaynly.com','abicapital.ma','proprietes.lefigaro.fr','mbi-maroc.com','emilegarcin.com','dardar.ma','mbi-invest.com','quicherchequoi.com','majesticimmo.com','marrakesh-opportunity.com','swimmobilier.com','tanger-private-estate.com','damaneimmo.ma','belmaimmobilier.com','all-estate.ma','rabat.repimmo.com','castleagency.ma','jibril.immo','marocgest.com','kna.ma','agencekna.com','nador.immo','sogarab.ma','loco.ma','immo.hespress.com','feelhome.ma','rents.ma','hmazina.com','immobilier-maroc-villart.com','proptekme.co','muretprestige.com','fesimmo.com','accesimmotanger.com','idrissimmobilier.site','ma.green-acres.com','immobily.ma','lotti.ma','mouhim.ma','baytibayti.ma','marocaffaires.com','lecomptoirdelimmobilier.com','finehomes.ma','en.limmobiliersansfrontieres.com','real-dreamhouse.com','alerteimmo.ma','louervendreaumaroc.com','immohub.ma','360annonces.com','mozi.ma','fendary.ma','century21casa.immo','house.ma','essaouira.immo','capitalparc.com','sunlife.ma','sefiani-khadamat.com','m2maroc.com','inmarrakechimmo.com','century21tanger.com','valeurssuresagadir.net','nourreska.com','atlantide-immobilier.net','mri-immo.com','le-25.com','pap.fr'
+] as const;
