@@ -3,6 +3,20 @@ name: Phase 1 P1 User Journey Gate
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "app/compagnon/**"
+      - "app/mon-projet/**"
+      - "app/profil-recherche/**"
+      - "app/onboarding/**"
+      - "components/companion/**"
+      - "components/account/UserContinuityWorkspace.tsx"
+      - "components/home/SearchEntryOrchestrator.tsx"
+      - "lib/companion-v1/**"
+      - "lib/search-profile-v2/**"
+      - "scripts/scrapers/__tests__/companion-revision-ux.test.ts"
+      - "scripts/scrapers/__tests__/mon-projet-workspace-ux.test.ts"
+      - "scripts/scrapers/__tests__/home-search-entry-orchestration-v1.test.ts"
+      - ".github/workflows/phase1-p1-user-journey.yml"
   workflow_dispatch:
 
 concurrency:
