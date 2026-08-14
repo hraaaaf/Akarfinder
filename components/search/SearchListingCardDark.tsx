@@ -7,7 +7,7 @@ import { ArrowRight, ExternalLink, MapPin } from "lucide-react";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
 import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
-import { resolveRabatRealPhoto } from "@/lib/contextual-illustrations/rabat-real-photo-library";
+import { resolveRealNeighborhoodPhoto } from "@/lib/contextual-illustrations/real-neighborhood-photo-resolver";
 import { resolveContextualIllustration } from "@/lib/contextual-illustrations/resolver";
 import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-policy";
 import type { Listing } from "@/lib/listings/types";
@@ -69,7 +69,7 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   );
   const neighborhoodPhoto =
     imageMode === "fallback_visual" && !neighborhoodPhotoError
-      ? resolveRabatRealPhoto({
+      ? resolveRealNeighborhoodPhoto({
           stableKey: listing.listing_url ?? listing.id,
           city: listing.city,
           district: listing.neighborhood,
