@@ -34,14 +34,18 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 
 ## Audit Toutes Pages — nouveau chantier
 
-- **Progression stricte : 1/5 jalons CLOSED = 20 %** — seuls les jalons certifiés + mergés comptent.
+- **Progression stricte : 2/5 jalons CLOSED = 40 %** — seuls les jalons certifiés + mergés comptent.
 - **A1 Inventaire exhaustif ✅ CLOSED — PR #626**, merge `34ab649e2571303972d7791ea0738c6560dde3b6`, exact head `a9268f10ed615f8793bc977916566a44a79a7ee4`.
   - inventaire automatique `app/**/page.tsx` : **64 pages = 57 statiques + 7 dynamiques** ;
   - **63 rendables immédiatement**, **1 `DATA_FIXTURE_REQUIRED`** : `/professionnels/[slug]` faute de profil public déterministe validé ;
   - **0 route dynamique non classée, 0 doublon** ; artefact inventory `9225353414`, digest `sha256:22a5b55a92c412c843bff1afc9aa32164c9d5ed2772cd19e3e5c0cd119a864e9` ;
   - Gate0 rerun ✅ après un premier échec réseau Google Fonts ; 94/94 contrats UX + TypeScript + build final PASS.
-- **A2 Baseline exhaustive ⏳ ACTIVE — PR #630** : 63 pages rendables × 4 viewports = **252 captures Chromium** ; collecte HTTP, redirect, H1, overflow, console, nav et full-page screenshots sans masquer les findings.
-- A3 Remédiation structurée : à définir uniquement à partir des findings A2 réels.
+- **A2 Baseline exhaustive ✅ CLOSED — PR #630**, merge `598d778915dad3f326872e11f41cc26071a4aee4`, exact head `6cdd456abe99de64a9ad022ac91f390c5818f78e`.
+  - run `31818373848` ✅ ; **252/252 captures** sur 63 pages × 4 viewports ; artefact `9226367149`, digest `sha256:d5b7bf69c2f74b5099334c199e6bcfa2cfa496cdd2081d4a042bb69bfa249bae` ;
+  - **120 findings sur 19 routes** : 64 console, 32 HTTP, 20 redirects, 4 overflow ;
+  - seul défaut structurel certain détecté : `/vendre/dossier` déborde horizontalement aux 4 viewports (882 px de largeur utile sur 390/430 mobile) ;
+  - redirects `/compagnon`, `/onboarding`, `/profil-recherche`, `/pro/leads`, `/quartiers` observés et à classifier comme attendus ou à corriger selon contrat ; plusieurs 404/console proviennent de fixtures QA/dynamiques et doivent être distingués des défauts produit avant remédiation.
+- **A3 Remédiation structurée ⏳ ACTIVE** : priorité 1 = corriger l’overflow `/vendre/dossier`; priorité 2 = corriger/classifier fixtures HTTP/console/redirect sans masquer de défaut réel ; ne pas retoucher les pages déjà conformes.
 - A4 Recertification exhaustive : after-state de toutes les pages rendables.
 - A5 Certification finale / dette data : résolution ou traitement explicite de la page bloquée puis closeout global.
 - Doctrine : chaque vraie page App Router compte, y compris routes dynamiques, redirections, pages auth et pages demo/QA ; les `route.ts` API ne comptent pas comme pages.
@@ -57,7 +61,7 @@ Doctrine verrouillée : photos réelles uniquement, provenance/licence défendab
 
 - **MASS-1 → MASS-6 ✅ CLOSED**.
 - **MASS-X5 ✅ CLOSED — PR #609**.
-- Toute activation ou mutation production reste hors scope et exige un gate humain explicite.
+- Toute activation ou mutation production reste hors scope et exige un gate humain explicite préalable.
 
 ## Invariants opérationnels
 
@@ -70,4 +74,4 @@ Doctrine verrouillée : photos réelles uniquement, provenance/licence défendab
 
 ## Reprise exacte
 
-**UI polish / mockup v1 ✅ CLOSED 100 % + hotfix Compare #625 ✅. Chantier actif : Audit Toutes Pages — 20 %. A1 inventaire ✅ CLOSED. A2 ACTIVE via PR #630 : produire 252 captures réelles, classifier les findings route × viewport, puis lancer les remédiations A3 sans retoucher les pages déjà conformes.**
+**UI polish / mockup v1 ✅ CLOSED 100 % + hotfix Compare #625 ✅. Chantier actif : Audit Toutes Pages — 40 %. A1 + A2 CLOSED. A3 ACTIVE : corriger `/vendre/dossier`, classifier/corriger les fixtures HTTP/console/redirect, puis lancer la recertification exhaustive A4.**
