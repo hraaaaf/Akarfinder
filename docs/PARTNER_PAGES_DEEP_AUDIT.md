@@ -135,6 +135,15 @@ Le problème principal n’est pas un bug CSS. C’est une **asymétrie produit*
 
 Résultat : AkarFinder promet plus dans les démonstrations qu’il ne matérialise encore dans le profil agence public.
 
+### Dette d’architecture promoteur
+
+Deux modèles de données peuvent aujourd’hui représenter un promoteur :
+
+1. `professional_organizations` avec `organization_type="promoter"`, utilisé par `/professionnels/[slug]` et le workspace professionnel ;
+2. le modèle local legacy `PROMOTERS / PROJECTS`, utilisé par `/promoteurs/[slug]` et `/projets/[slug]`.
+
+Cette duplication peut produire à terme deux URLs, deux états de visibilité et deux règles de contact pour la même entité. **Aucune fusion implicite n’est autorisée dans P3.** P4 doit converger les surfaces ; P5 doit décider et documenter la source de vérité canonique avant toute migration de données réelles.
+
 ## Cible produit
 
 Une page partenaire publique doit répondre en moins de 10 secondes à cinq questions :
@@ -169,6 +178,7 @@ Priorité :
 - 1 CTA primaire + 1 secondaire maximum par zone ;
 - harmoniser agence/promoteur sur les primitives Search ;
 - ajouter preuves de portefeuille/projets plutôt que blocs pédagogiques répétitifs ;
+- converger les deux surfaces promoteur sans modifier les données réelles ;
 - recertifier 390 / 430 / 768 / 1280 avec captures exact-head.
 
 ### P5 — Certification / closeout
@@ -176,6 +186,7 @@ Priorité :
 - tests fonctionnels + TypeScript + build ;
 - screenshots après remédiation ;
 - inspection humaine ;
+- décider/documenter la source de vérité promoteur canonique avant données réelles ;
 - canonical docs ;
 - merge puis contrôle `main`.
 
