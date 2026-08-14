@@ -1,0 +1,35 @@
+name: UI All Pages Roadmap Sync
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/UI_ALL_PAGES_V1_CERTIFICATION.md"
+      - "docs/SESSION.md"
+      - "scripts/closeouts/ui-all-pages-v1-roadmap-sync.mjs"
+      - ".github/workflows/ui-all-pages-roadmap-sync.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Synchronize all-pages roadmap closeout
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - name: Update canonical roadmap block
+        run: node scripts/closeouts/ui-all-pages-v1-roadmap-sync.mjs
+      - name: Commit synchronized roadmap if changed
+        shell: bash
+        run: |
+          if ! git diff --quiet -- docs/ROADMAP.md; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add docs/ROADMAP.md
+            git commit -m "docs(ui): synchronize all-pages roadmap closeout"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
