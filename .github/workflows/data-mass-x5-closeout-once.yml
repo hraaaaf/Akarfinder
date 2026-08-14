@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   closeout:
-    if: github.head_ref == 'docs/data-mass-x5-closeout'
+    if: github.head_ref == 'docs/data-mass-x5-closeout-run'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
