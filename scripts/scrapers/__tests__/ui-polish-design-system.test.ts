@@ -30,4 +30,5 @@ test("UI-POLISH-P2 transverse design primitives exist", () => {
 test("Compare keeps the Favoris mobile destination active", () => {
   const source = fs.readFileSync("components/layout/MobileBottomNav.tsx", "utf8");
   assert.match(source, /activePrefixes: \["\/favorites", "\/compare"\]/);
+  assert.match(source, /ui\.surfaceGlass/);
 });
