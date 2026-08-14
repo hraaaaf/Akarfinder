@@ -1,0 +1,34 @@
+name: DATA MASS-X4B Common Crawl Fast Shadow
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/data-mass-x4b-commoncrawl-fast-shadow.yml'
+permissions:
+  contents: read
+jobs:
+  fast-shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Tune existing metadata-only harvester locally
+        run: |
+          sed -i 's/const CDX_REQUEST_PACING_MS = 2_500/const CDX_REQUEST_PACING_MS = 250/' scripts/openserp/commoncrawl-reservoir-harvest.ts
+          sed -i 's/const CDX_MAX_ATTEMPTS = 6/const CDX_MAX_ATTEMPTS = 2/' scripts/openserp/commoncrawl-reservoir-harvest.ts
+          sed -i 's/const CDX_RETRY_BASE_MS = 3_000/const CDX_RETRY_BASE_MS = 1_000/' scripts/openserp/commoncrawl-reservoir-harvest.ts
+      - name: Harvest 14 Common Crawl indexes metadata only
+        run: timeout 22m npx tsx scripts/openserp/commoncrawl-reservoir-harvest.ts 'CC-MAIN-2026-25,CC-MAIN-2026-21,CC-MAIN-2026-17,CC-MAIN-2026-13,CC-MAIN-2026-09,CC-MAIN-2026-05,CC-MAIN-2025-51,CC-MAIN-2025-43,CC-MAIN-2025-30,CC-MAIN-2025-26,CC-MAIN-2025-18,CC-MAIN-2025-13,CC-MAIN-2025-08,CC-MAIN-2025-05' | tee /tmp/mass-x4b.log
+      - name: Verify read-only result
+        run: test -s data/audits/raw-results/commoncrawl-reservoir-canonical-urls.txt && grep -q 'RESERVOIR SUMMARY' /tmp/mass-x4b.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-x4b-commoncrawl-fast-shadow
+          path: |
+            data/audits/raw-results/commoncrawl-reservoir-canonical-urls.txt
+            /tmp/mass-x4b.log
+          retention-days: 30
