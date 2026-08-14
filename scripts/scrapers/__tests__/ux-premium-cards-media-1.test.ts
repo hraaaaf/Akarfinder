@@ -5,6 +5,7 @@ import test from "node:test";
 test("UX-PREMIUM-CARDS-MEDIA-1 source contract", () => {
   const css = fs.readFileSync("app/search/search-density.css", "utf8");
   const card = fs.readFileSync("components/search/SearchListingCardDark.tsx", "utf8");
+  const realPhotoResolver = fs.readFileSync("lib/contextual-illustrations/real-neighborhood-photo-resolver.ts", "utf8");
 
   assert.match(css, /UX-PREMIUM-CARDS-MEDIA-1/);
   assert.match(css, /\[data-mobile-compact-card\] \[data-card-image\]/);
@@ -15,7 +16,9 @@ test("UX-PREMIUM-CARDS-MEDIA-1 source contract", () => {
 
   assert.match(card, /getListingImageMode\(listing\)/);
   assert.match(card, /getImageAttribution\(listing\)/);
-  assert.match(card, /resolveRabatRealPhoto/);
+  assert.match(card, /resolveRealNeighborhoodPhoto/);
+  assert.match(realPhotoResolver, /resolveRabatRealPhoto/);
+  assert.match(realPhotoResolver, /resolveCasablancaRealPhoto/);
   assert.match(card, /resolveContextualIllustration/);
   assert.match(card, /data-visual-inventory-class=/);
   assert.match(card, /data-card-image/);
