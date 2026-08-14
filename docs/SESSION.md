@@ -28,6 +28,7 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
   - Comparer populated-state recertifié avec 2 biens sur 390 / 430 / 768 / 1280 ; inspection humaine finale PASS ; artefact `9224380594`, digest `sha256:d177d5faf18e7c930c626686bde74a2da9fa24299e3460ad228acb0810b6d424` ;
   - run initial `31813395364` conservé comme preuve superseded : 68 captures produites mais faux négatif du harness sur deux sélecteurs Compare inexistants ; aucun défaut produit associé.
 - **UI polish / mockup v1 ✅ CLOSED — 100 %** — P0 → P5 certifiés et mergés.
+- **Archive de certification : `docs/UI_POLISH_V1_CERTIFICATION.md`**.
 - La lane UI n'a pas modifié DATA, ranking, Registry, persistance, géographie ou moteur listing hors de son périmètre.
 
 ## Bibliothèque visuelle quartiers — Rabat
