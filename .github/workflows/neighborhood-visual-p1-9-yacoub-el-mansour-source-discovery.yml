@@ -12,10 +12,10 @@ permissions:
 jobs:
   discover:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Sweep Hay Al Fath and Yacoub El Mansour residential context
+      - name: Expanded Hay El Fath and Yacoub El Mansour residential sweep
         shell: bash
         run: |
           set -euo pipefail
@@ -24,13 +24,20 @@ jobs:
           python3 - <<'PY'
           import hashlib,json,math,pathlib,urllib.parse,urllib.request
           out=pathlib.Path('data/audits/neighborhood-visual-p1-9-yacoub-el-mansour/source-discovery/kartaview')
-          ua={'User-Agent':'AkarFinder-P1.9-Yacoub-El-Mansour/1.0','Accept':'application/json'}
+          ua={'User-Agent':'AkarFinder-P1.9-Yacoub-El-Mansour/2.0','Accept':'application/json'}
           centers=[
-            ('hay-al-fath-core',33.96937,-6.89919),
-            ('hay-al-fath-avenue',33.96482,-6.90372),
-            ('hay-al-fath-north',33.9740,-6.8970),
+            ('hay-fath-core',33.96937,-6.89919),
+            ('hay-fath-nw',33.9750,-6.9060),
+            ('hay-fath-ne',33.9750,-6.8920),
+            ('hay-fath-sw',33.9630,-6.9060),
+            ('hay-fath-se',33.9630,-6.8920),
+            ('hay-fath-west',33.9690,-6.9120),
+            ('hay-fath-east',33.9690,-6.8860),
+            ('yacoub-south',33.9800,-6.8950),
             ('yacoub-core',33.98953,-6.88112),
-            ('yacoub-southwest',33.9800,-6.8910)
+            ('yacoub-west',33.9900,-6.8920),
+            ('yacoub-north',33.9980,-6.8820),
+            ('yacoub-east',33.9890,-6.8710)
           ]
           def get(url):
             return json.load(urllib.request.urlopen(urllib.request.Request(url,headers=ua),timeout=40))
@@ -38,21 +45,24 @@ jobs:
             R=6371000.;p1,p2=math.radians(a),math.radians(c);dp=math.radians(c-a);dl=math.radians(d-b);x=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2;return 2*R*math.asin(math.sqrt(x))
           rows={}
           for label,lat,lng in centers:
-            q=urllib.parse.urlencode({'lat':lat,'lng':lng,'zoomLevel':17,'join':'sequence','orderBy':'id','orderDirection':'desc'})
-            for d in get('https://api.openstreetcam.org/2.0/photo/?'+q).get('result',{}).get('data',[]):
-              try: plat=float(d['lat']);plng=float(d['lng'])
-              except: continue
-              urls=[d[k] for k in ('fileurlLTh','fileurlProc','fileurlTh') if isinstance(d.get(k),str) and d[k].startswith('http')]
-              if not urls: continue
-              pid=str(d.get('id'));dist=round(hav(lat,lng,plat,plng),1)
-              row=rows.get(pid,{'id':d.get('id'),'lat':plat,'lng':plng,'heading':d.get('heading'),'sequence_id':(d.get('sequence') or {}).get('id'),'urls':urls,'hits':[]})
-              row['hits'].append({'label':label,'distance_m':dist});rows[pid]=row
+            for zoom in (15,16,17):
+              q=urllib.parse.urlencode({'lat':lat,'lng':lng,'zoomLevel':zoom,'join':'sequence','orderBy':'id','orderDirection':'desc'})
+              try: data=get('https://api.openstreetcam.org/2.0/photo/?'+q).get('result',{}).get('data',[])
+              except Exception: continue
+              for d in data:
+                try: plat=float(d['lat']);plng=float(d['lng'])
+                except: continue
+                urls=[d[k] for k in ('fileurlLTh','fileurlProc','fileurlTh') if isinstance(d.get(k),str) and d[k].startswith('http')]
+                if not urls: continue
+                pid=str(d.get('id'));dist=round(hav(lat,lng,plat,plng),1)
+                row=rows.get(pid,{'id':d.get('id'),'lat':plat,'lng':plng,'heading':d.get('heading'),'sequence_id':(d.get('sequence') or {}).get('id'),'urls':urls,'hits':[]})
+                row['hits'].append({'label':label,'distance_m':dist,'zoom':zoom});rows[pid]=row
           vals=list(rows.values())
           for r in vals:r['best_distance_m']=min(h['distance_m'] for h in r['hits'])
           vals.sort(key=lambda r:r['best_distance_m'])
           n=0
           for r in vals:
-            if n>=30 or r['best_distance_m']>900: continue
+            if n>=60 or r['best_distance_m']>2500: continue
             try:
               b=urllib.request.urlopen(urllib.request.Request(r['urls'][0],headers=ua),timeout=40).read()
               if len(b)<5000: continue
@@ -60,7 +70,7 @@ jobs:
               r['downloaded_file']=p.name;r['sha1']=hashlib.sha1(b).hexdigest();r['bytes']=len(b);n+=1
             except Exception as e:r['error']=str(e)
           (out/'candidates.json').write_text(json.dumps(vals,ensure_ascii=False,indent=2),encoding='utf-8')
-          print(f'YACOUB_P1_9 candidates={len(vals)} downloaded={n}')
+          print(f'YACOUB_P1_9_V2 candidates={len(vals)} downloaded={n}')
           PY
       - uses: actions/upload-artifact@v4
         with:
