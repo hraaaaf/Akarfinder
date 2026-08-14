@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Bell, Search } from "lucide-react";
+import { Bell, CheckCircle2, Search, SlidersHorizontal } from "lucide-react";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Container } from "@/components/ui/Container";
+import { ui } from "@/components/ui/design-system";
 
 export const metadata = {
   title: "Alertes immobilières — AkarFinder",
@@ -11,30 +12,52 @@ export const metadata = {
 
 export default function AlertsPage() {
   return (
-    <main className="min-h-screen bg-[#f8f9fa] text-[#0B2545]">
-      <SiteHeader />
+    <main className={`min-h-screen ${ui.pageLight}`}>
+      <SiteHeader searchMode fluid />
       <Container>
-        <section className="mx-auto flex min-h-[62vh] max-w-xl items-center justify-center py-12">
-          <div className="w-full rounded-3xl border border-slate-200 bg-white p-7 text-center shadow-sm sm:p-10">
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-[#0B63CE]">
-              <Bell aria-hidden="true" size={26} strokeWidth={2} />
+        <section className="mx-auto flex min-h-[64vh] max-w-3xl items-center justify-center py-8 sm:py-12">
+          <div className={`${ui.surfacePremium} w-full overflow-hidden`}>
+            <div className="border-b border-slate-200 px-5 py-6 sm:px-8 sm:py-8">
+              <div className="flex items-start gap-4">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-blue-50 text-primary">
+                  <Bell aria-hidden="true" size={23} strokeWidth={2} />
+                </div>
+                <div>
+                  <p className={ui.eyebrow}>Alertes</p>
+                  <h1 className="mt-1.5 text-[1.8rem] font-extrabold tracking-[-0.045em] text-[#0B1F3A] sm:text-[2.15rem]">
+                    Préparez vos critères maintenant
+                  </h1>
+                  <p className="mt-2 max-w-xl text-[14px] leading-6 text-slate-500">
+                    Les notifications automatiques ne sont pas encore activées. Votre profil de recherche peut déjà être préparé sans laisser croire qu’une alerte sera envoyée.
+                  </p>
+                </div>
+              </div>
             </div>
-            <h1 className="mt-5 text-2xl font-bold tracking-tight">Alertes immobilières</h1>
-            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-600">
-              Les notifications automatiques ne sont pas encore activées. Configurez votre profil de recherche pour préparer vos critères sans fausse promesse de notification.
-            </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <Link
-                href="/profil-recherche"
-                className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-[#0B63CE] px-5 text-sm font-semibold text-white transition hover:bg-[#0958b8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE] focus-visible:ring-offset-2"
-              >
+
+            <div className="grid gap-3 px-5 py-5 sm:grid-cols-3 sm:px-8 sm:py-6">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                <SlidersHorizontal size={18} className="text-primary" aria-hidden="true" />
+                <p className="mt-3 text-[13px] font-extrabold text-[#0B1F3A]">1. Définir vos critères</p>
+                <p className="mt-1 text-[11.5px] leading-5 text-slate-500">Ville, budget, type de bien et priorités.</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                <Search size={18} className="text-primary" aria-hidden="true" />
+                <p className="mt-3 text-[13px] font-extrabold text-[#0B1F3A]">2. Explorer maintenant</p>
+                <p className="mt-1 text-[11.5px] leading-5 text-slate-500">Utilisez la recherche actuelle avec ces critères.</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                <CheckCircle2 size={18} className="text-primary" aria-hidden="true" />
+                <p className="mt-3 text-[13px] font-extrabold text-[#0B1F3A]">3. Activation future</p>
+                <p className="mt-1 text-[11.5px] leading-5 text-slate-500">Aucune notification n’est promise tant que la fonction n’est pas active.</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 border-t border-slate-200 px-5 py-5 sm:flex-row sm:px-8">
+              <Link href="/profil-recherche" className={ui.primaryActionPill}>
                 Configurer mon profil
               </Link>
-              <Link
-                href="/search"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 text-sm font-semibold text-[#0B2545] transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE] focus-visible:ring-offset-2"
-              >
-                <Search aria-hidden="true" size={17} />
+              <Link href="/search" className={`${ui.secondaryActionPill} gap-2`}>
+                <Search aria-hidden="true" size={16} />
                 Explorer les annonces
               </Link>
             </div>
