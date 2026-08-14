@@ -2,7 +2,25 @@ name: Phase 1 P1 Geo Productization Gate
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "app/map/**"
+      - "app/api/geo/**"
+      - "components/map/**"
+      - "components/search/SearchMapNeighborhoodDock.tsx"
+      - "components/search/CasablancaNeighborhoodChoropleth.tsx"
+      - "lib/map/**"
+      - "lib/geo/**"
+      - "data/geo/**"
+      - "scripts/scrapers/__tests__/phase1-p1-geo-productization.test.ts"
+      - "scripts/scrapers/__tests__/p1a3-map-navigation.test.ts"
+      - "scripts/scrapers/__tests__/p1a4-map-design-system.test.ts"
+      - "scripts/scrapers/__tests__/p1a5-territorial-explorer.test.ts"
+      - "scripts/scrapers/__tests__/p10b-map.test.ts"
+      - ".github/workflows/phase1-p1-geo-productization-gate.yml"
   workflow_dispatch: {}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:

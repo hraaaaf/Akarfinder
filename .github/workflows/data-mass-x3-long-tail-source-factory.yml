@@ -1,7 +1,19 @@
 name: DATA MASS-X3 Long-tail Source Factory
-on: [pull_request]
+
+on:
+  pull_request:
+    paths:
+      - "data/data-mass-x3/**"
+      - "docs/data/DATA-MASS-X3-LONG-TAIL-SOURCE-FACTORY.md"
+      - ".github/workflows/data-mass-x3-long-tail-source-factory.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
+
 jobs:
   contract:
     runs-on: ubuntu-latest

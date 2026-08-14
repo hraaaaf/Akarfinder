@@ -11,6 +11,10 @@ on:
       - ".github/workflows/ux-p1-design-system-convergence.yml"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   design-system-convergence:
     runs-on: ubuntu-24.04

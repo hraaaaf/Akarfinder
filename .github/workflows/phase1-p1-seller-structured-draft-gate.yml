@@ -2,7 +2,18 @@ name: Phase 1 P1 Seller Structured Draft Gate
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "lib/seller/**"
+      - "app/api/leads/route.ts"
+      - "supabase/migrations/20260723050000_seller_property_draft_v1.sql"
+      - "app/vendre/dossier/**"
+      - "components/vendre/**"
+      - "scripts/scrapers/__tests__/phase1-p1-seller-structured-draft.test.ts"
+      - ".github/workflows/phase1-p1-seller-structured-draft-gate.yml"
   workflow_dispatch: {}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
