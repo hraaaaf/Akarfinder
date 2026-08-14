@@ -1,0 +1,25 @@
+name: SEARCH Price Recovery 1
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260814194500_backfill_strong_evidence_listing_prices.sql'
+      - 'scripts/scrapers/__tests__/search-price-recovery-1.test.ts'
+      - '.github/workflows/search-price-recovery-1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/search-price-recovery-1.test.ts
+      - run: npx tsc --noEmit
