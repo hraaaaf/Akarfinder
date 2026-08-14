@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-14  
 **Scope:** every `app/**/page.tsx` route discovered automatically from the App Router filesystem.  
-**Status:** A1–A4 certified; A5 governance closeout.
+**Status:** **A1–A5 CLOSED — 100 %**.
 
 ## Accounting
 
@@ -84,6 +84,8 @@ Therefore **64 / 64 page patterns are accounted for**. This does **not** claim t
 2. **A2 Baseline** — CLOSED — PR #630
 3. **A3 Remediation** — CLOSED — PR #631
 4. **A4 Strict recertification** — CLOSED — PR #633
-5. **A5 Governance / closeout** — closes only after this document is merged and canonical session state is updated.
+5. **A5 Governance / closeout** — CLOSED — PR #635, merge `1e429371fe6a0abef5dc440f647bdb06ccc51cd5`
+
+Canonical closeout completed on `main`: `docs/SESSION.md` records **5/5 = 100 %**, `docs/ROADMAP.md` records **Audit Toutes Pages — v1 ✅ CLOSED**, and issue #634 retains the explicit fixture debt without falsifying rendered coverage.
 
 No DATA, ranking, Registry, persistence, geography, commercial ordering, or listing-engine behavior was changed by A4/A5 certification work.
