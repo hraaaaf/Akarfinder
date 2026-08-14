@@ -5,7 +5,7 @@ import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { mapSeedToThinIndexResult } from "@/lib/search-gateway/seed-thin-index";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
-const CURSOR_VERSION = 1 as const;
+const CURSOR_VERSION = 2 as const;
 const MAX_PAGE_SIZE = 100;
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -149,7 +149,7 @@ export async function searchPublicRepresentations(input: PublicSearchInput): Pro
   const cursor = decodePublicSearchCursor(input.cursor);
   const pageSize = Math.max(1, Math.min(Math.trunc(input.limit ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE));
   const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase.rpc("search_public_representations_v1", {
+  const { data, error } = await supabase.rpc("search_public_representations_v2", {
     p_query: input.q?.trim() || null,
     p_city: input.city?.trim() || null,
     p_property_type: input.propertyType?.trim() || null,
@@ -164,7 +164,7 @@ export async function searchPublicRepresentations(input: PublicSearchInput): Pro
     p_after_updated_at: cursor?.updatedAt ?? null,
     p_after_representation_id: cursor?.representationId ?? null,
   });
-  if (error) throw new Error(`public_search_rpc_failed:${error.message}`);
+  if (error) throw new Error(`public_search_rpc_v2_failed:${error.message}`);
 
   const rows = (data ?? []) as PublicSearchRpcRow[];
   const hasMore = rows.length > pageSize;
