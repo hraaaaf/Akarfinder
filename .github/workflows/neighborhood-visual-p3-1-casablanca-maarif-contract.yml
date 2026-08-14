@@ -1,0 +1,29 @@
+name: Neighborhood Visual P3.1 Casablanca Maârif Contract
+
+on:
+  pull_request:
+    paths:
+      - "lib/contextual-illustrations/maarif-neighborhood-visuals.ts"
+      - "lib/contextual-illustrations/casablanca-real-photo-library.ts"
+      - "lib/contextual-illustrations/real-neighborhood-photo-resolver.ts"
+      - "components/search/SearchListingCardDark.tsx"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p3-1-casablanca-maarif.test.ts"
+      - ".github/workflows/neighborhood-visual-p3-1-casablanca-maarif-contract.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/neighborhood-visual-p3-1-casablanca-maarif.test.ts
+      - run: npx tsc --noEmit
+      - run: npm run build
