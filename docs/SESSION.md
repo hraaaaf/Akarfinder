@@ -16,8 +16,8 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 - Preuves P1 : Product Design artefact `9203817261`, Independent Release Certifier artefact `9203859194`.
 - Scores visuels réels : Favoris **7,5/10** ; Carte **8,0/10** ; Alertes **6,5/10** ; Comparer **7,0/10** ; Mon Projet **8,0/10** ; Search reste la référence certifiée.
 - Findings : `/compare` n'activait aucun item de bottom-nav ; correction engagée dans P2 en rattachant Comparer à Favoris. Le `401` de `/api/me/continuity` sur Mon Projet hors session est conforme au contrat d'authentification et n'est pas un bug produit.
-- **P2 Design system transversal 🔄 ACTIF — PR #598** : primitives premium communes + glass bottom-nav + contrat design system v1.
-- **P3.1 Favoris 🔄 ACTIF — PR #600**, empilée sur #598 : convergence visuelle sans modification du comportement Favoris.
+- **P2 Design system transversal 🔄 ACTIF — PR #601** : primitives premium communes, glass bottom-nav, contrat design system v1 et harness P3 20 captures.
+- **P3 Pages prioritaires 🔄 PRÉPARÉES en parallèle sur #601** : Favoris #602 ; Carte #603 ; Alertes #604 ; Comparer #606 ; Mon Projet #607. Chaque lot reste à certifier visuellement exact-head avant merge.
 - Mockup board = référence visuelle v1 ; Carte verrouillée sur **quartiers colorés + légende + pins prix + sélection quartier + card/bottom-sheet**.
 - La lane DATA et la bibliothèque visuelle quartiers restent indépendantes et ne doivent pas être écrasées par la reprise UI.
 <!-- UI-POLISH-SEARCH-V1-END -->
@@ -40,8 +40,8 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 
 - **P0 Search closeout ✅ CLOSED** — baseline Search persistée ; aucun redesign sans finding mesuré.
 - **P1 Audit réel mobile ✅ CLOSED — PR #597** — 12/12 captures réelles, 390 / 430 px, 0 overflow, scores et findings persistés dans `docs/UI_POLISH_P1_AUDIT.md`.
-- **P2 Design system transversal 🔄 ACTIF — PR #598** — étendre l'existant ; header/chrome, glass bottom-nav, surfaces/cards, radius/shadows/blur, typo, chips/boutons, toolbar, spacing, loading/empty/error.
-- **P3 Pages prioritaires 🔄 ACTIF** — P3.1 Favoris #600 → Carte → Alertes → Comparer → Mon projet/Compte.
+- **P2 Design system transversal 🔄 ACTIF — PR #601** — primitives partagées + navigation glass + correction active state `/compare` + harness P3 390 / 430 / 768 / 1280.
+- **P3 Pages prioritaires 🔄 PRÉPARÉES** — Favoris #602 → Carte #603 → Alertes #604 → Comparer #606 → Mon Projet #607 ; certification visuelle requise avant chaque merge.
 - **P4 Pages secondaires ⏳** — seulement routes publiques réellement actives.
 - **P5 Certification globale ⏳** — 390 / 430 / 768 / 1280, FR + AR si concerné, zéro overflow, accessibilité, navigation/bottom-nav cohérentes, aucun conflit DATA/search/ranking.
 
@@ -110,7 +110,7 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 
 ## Reprise exacte
 
-**UI polish : P1 Audit réel mobile est CLOSED. P2 Design System (#598) et P3.1 Favoris (#600, empilée sur #598) sont les lanes actives.** Search v1 reste la référence visuelle figée.
+**UI polish : P1 Audit réel mobile est CLOSED. P2 Design System #601 est le chemin critique. Les cinq lots P3 sont préparés en parallèle : #602 Favoris, #603 Carte, #604 Alertes, #606 Comparer, #607 Mon Projet.** Search v1 reste la référence visuelle figée.
 
 **Bibliothèque visuelle : P1.1 → P1.9 ✅ CLOSED. Prochaine action exacte : P2 Visual Resolver integration.** Search généralisé reste fail-closed tant que P2 n’a pas été certifié.
 
