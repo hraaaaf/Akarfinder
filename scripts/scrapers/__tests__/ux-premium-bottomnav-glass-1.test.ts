@@ -4,11 +4,15 @@ import test from "node:test";
 
 test("UX-PREMIUM-BOTTOMNAV-GLASS-1 canonical mockup contract", () => {
   const nav = fs.readFileSync("components/layout/MobileBottomNav.tsx", "utf8");
+  const designSystem = fs.readFileSync("components/ui/design-system.ts", "utf8");
   const alerts = fs.readFileSync("app/alerts/page.tsx", "utf8");
 
   assert.match(nav, /data-premium-bottomnav="ux-premium-bottomnav-glass-1"/);
-  assert.match(nav, /backdrop-blur-\[20px\]/);
-  assert.match(nav, /rounded-\[24px\]/);
+  assert.match(nav, /ui\.surfaceGlass/);
+  assert.match(designSystem, /surfaceGlass:/);
+  assert.match(designSystem, /backdrop-blur-\[20px\]/);
+  assert.match(designSystem, /rounded-\[24px\]/);
+  assert.match(designSystem, /bg-white\/80/);
   assert.match(nav, /h-\[66px\]/);
 
   for (const [href, label] of [
