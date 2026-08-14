@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Compass, Heart, Map, UserRound } from "lucide-react";
+import { ui } from "@/components/ui/design-system";
 
 const items = [
   {
@@ -52,7 +53,7 @@ export function MobileBottomNav() {
       data-mobile-bottom-nav="exact-light-blue"
       data-premium-bottomnav="ux-premium-bottomnav-glass-1"
       data-theme="light"
-      className="fixed bottom-[calc(8px+env(safe-area-inset-bottom))] left-[10px] right-[10px] z-[70] overflow-hidden rounded-[24px] border border-white/80 bg-white/80 text-[#0B2545] shadow-[0_10px_28px_rgba(15,23,42,0.12),0_2px_8px_rgba(15,23,42,0.06)] backdrop-blur-[20px] supports-[backdrop-filter]:bg-white/74 md:hidden"
+      className={`${ui.surfaceGlass} fixed bottom-[calc(8px+env(safe-area-inset-bottom))] left-[10px] right-[10px] z-[70] overflow-hidden md:hidden`}
     >
       <div className="mx-auto grid h-[66px] max-w-lg grid-cols-5 px-1.5 py-1">
         {items.map(({ href, label, icon: Icon, activePrefixes }) => {
