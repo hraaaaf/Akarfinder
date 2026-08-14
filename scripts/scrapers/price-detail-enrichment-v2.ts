@@ -32,6 +32,12 @@ function inferIntent(row: Candidate): "sale" | "rent" | null {
   return null;
 }
 
+export function isUnsupportedPriceCadence(domain: string, url: string): boolean {
+  if (domain !== "daragadir.com") return false;
+  const u = decodeURIComponent(url).toLowerCase();
+  return /location-de-vacances|par[-_ ]jour|journalier|quotidien|nuit/.test(u);
+}
+
 export function isRecognizedDetailUrl(domain: string, url: string): boolean {
   try {
     const path = new URL(url).pathname;
@@ -132,6 +138,7 @@ async function main() {
 
   const candidates = ((data ?? []) as Candidate[])
     .filter((row) => isRecognizedDetailUrl(row.source_domain, row.canonical_url))
+    .filter((row) => !isUnsupportedPriceCadence(row.source_domain, row.canonical_url))
     .slice(0, limit);
 
   let fetched = 0;
