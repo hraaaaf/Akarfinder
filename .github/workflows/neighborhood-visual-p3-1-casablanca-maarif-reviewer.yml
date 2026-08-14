@@ -1,0 +1,54 @@
+name: Neighborhood Visual P3.1 Casablanca Maârif Reviewer
+
+on:
+  pull_request:
+    paths:
+      - "lib/contextual-illustrations/maarif-neighborhood-visuals.ts"
+      - "lib/contextual-illustrations/casablanca-real-photo-library.ts"
+      - "lib/contextual-illustrations/real-neighborhood-photo-resolver.ts"
+      - "components/search/SearchListingCardDark.tsx"
+      - "components/search/CasablancaMaarifP3QAFixture.tsx"
+      - "app/visual-qa/casablanca-maarif-p3/**"
+      - "scripts/audits/neighborhood-visual-p3-1-casablanca-maarif-visual-qa.mjs"
+      - ".github/workflows/neighborhood-visual-p3-1-casablanca-maarif-reviewer.yml"
+
+permissions:
+  contents: read
+
+env:
+  NEIGHBORHOOD_VISUAL_QA: "1"
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  reviewer:
+    name: Product Design Reviewer — P3.1 Maârif
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: |
+          npm run start -- -p 3195 > /tmp/p3-maarif-reviewer.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3195/visual-qa/casablanca-maarif-p3 >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/p3-maarif-reviewer.log
+          exit 1
+      - env:
+          BASE_URL: "http://127.0.0.1:3195"
+          AUDIT_VARIANT: product-design
+        run: node scripts/audits/neighborhood-visual-p3-1-casablanca-maarif-visual-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p3-1-casablanca-maarif-product-design-proof
+          path: data/audits/neighborhood-visual-p3-1-casablanca-maarif/product-design
+          if-no-files-found: error
+          retention-days: 14
