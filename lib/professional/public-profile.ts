@@ -22,6 +22,30 @@ export type PublicProfessionalProfileView = {
   };
 };
 
+const DEMO_AGENCY_PROFILE: PublicProfessionalProfileView = {
+  id: "demo-agency-profile",
+  slug: "agence-demo-akarfinder",
+  organization_type: "agency",
+  display_name: "Agence Démo AkarFinder",
+  description:
+    "Exemple de profil agence partenaire destiné uniquement à la démonstration interne et à la certification visuelle. Les vraies données publiques seront celles explicitement fournies et validées par l’agence partenaire.",
+  logo_url: null,
+  website_url: null,
+  city: "Rabat",
+  public_email: null,
+  public_phone: null,
+  commercial_tier: "partner",
+  commercial_badge_label: commercialTierBadgeLabel("partner"),
+  portfolio: {
+    verified_listings: 12,
+    published_projects: 0,
+  },
+};
+
+export function getDemoProfessionalProfileView(slug: string): PublicProfessionalProfileView | null {
+  return slug === DEMO_AGENCY_PROFILE.slug ? DEMO_AGENCY_PROFILE : null;
+}
+
 /**
  * Public profile projection only.
  *
