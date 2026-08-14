@@ -10,6 +10,8 @@ test("UI-POLISH-P3 Alertes stays truthful while converging visually", () => {
   assert.match(source, /ui\.surfacePremium/);
   assert.match(source, /ui\.primaryActionPill/);
   assert.match(source, /ui\.secondaryActionPill/);
+  assert.match(source, /pb-28/);
+  assert.match(source, /md:pb-12/);
   assert.match(source, /notifications automatiques ne sont pas encore activées/i);
   assert.match(source, /Aucune notification n’est promise/);
   assert.match(source, /href="\/profil-recherche"/);
