@@ -29,6 +29,9 @@ test("UI-POLISH-P5 global certification covers the final public surface", () => 
 
   assert.match(audit, /compare-populated/);
   assert.match(audit, /akarfinder:compare:listings/);
+  assert.match(audit, /data-compare-mobile-identity/);
+  assert.match(audit, /compareCardCount/);
+  assert.match(audit, /querySelector\("table"\)/);
   assert.match(audit, /UI_POLISH_P5_GLOBAL_AUDIT_V1/);
   assert.match(workflow, /P5 Chromium 68-shot global certification/);
   assert.match(workflow, /cancel-in-progress: true/);
