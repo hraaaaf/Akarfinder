@@ -34,15 +34,22 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 
 ## Audit Toutes Pages — nouveau chantier
 
-- **ACTIVE — inventaire exhaustif en cours ; pourcentage volontairement non déterminé avant comptage automatique des `app/**/page.tsx` et résolution des fixtures dynamiques.**
+- **Progression stricte : 1/5 jalons CLOSED = 20 %** — seuls les jalons certifiés + mergés comptent.
+- **A1 Inventaire exhaustif ✅ CLOSED — PR #626**, merge `34ab649e2571303972d7791ea0738c6560dde3b6`, exact head `a9268f10ed615f8793bc977916566a44a79a7ee4`.
+  - inventaire automatique `app/**/page.tsx` : **64 pages = 57 statiques + 7 dynamiques** ;
+  - **63 rendables immédiatement**, **1 `DATA_FIXTURE_REQUIRED`** : `/professionnels/[slug]` faute de profil public déterministe validé ;
+  - **0 route dynamique non classée, 0 doublon** ; artefact inventory `9225353414`, digest `sha256:22a5b55a92c412c843bff1afc9aa32164c9d5ed2772cd19e3e5c0cd119a864e9` ;
+  - Gate0 rerun ✅ après un premier échec réseau Google Fonts ; 94/94 contrats UX + TypeScript + build final PASS.
+- **A2 Baseline exhaustive ⏳ ACTIVE — PR #630** : 63 pages rendables × 4 viewports = **252 captures Chromium** ; collecte HTTP, redirect, H1, overflow, console, nav et full-page screenshots sans masquer les findings.
+- A3 Remédiation structurée : à définir uniquement à partir des findings A2 réels.
+- A4 Recertification exhaustive : after-state de toutes les pages rendables.
+- A5 Certification finale / dette data : résolution ou traitement explicite de la page bloquée puis closeout global.
 - Doctrine : chaque vraie page App Router compte, y compris routes dynamiques, redirections, pages auth et pages demo/QA ; les `route.ts` API ne comptent pas comme pages.
-- Le futur harness découvre les `page.tsx` depuis le filesystem, exige un fixture explicite pour chaque route dynamique et fail-close sur toute page non classée.
 - Viewports cibles : 390×844 / 430×932 / 768×900 / 1280×900.
-- Mesures minimales : statut/redirect attendu, H1 quand applicable, overflow horizontal, navigation mobile/desktop, erreurs console diagnostiques et capture full-page.
 
 ## Bibliothèque visuelle quartiers — Rabat
 
-Doctrine verrouillée : photos réelles uniquement, provenance/licence défendables, aucune photo d’ambiance présentée comme photo du bien, aucune géographie inventée.
+Doctrine verrouillée : photos réelles uniquement, provenance/licence défendables, aucune photo d'ambiance présentée comme photo du bien, aucune géographie inventée.
 - **P0 Souissi → P2 Visual Resolver integration ✅ CLOSED**.
 - **P3 national rollout ⏳ NEXT**.
 
@@ -63,4 +70,4 @@ Doctrine verrouillée : photos réelles uniquement, provenance/licence défendab
 
 ## Reprise exacte
 
-**UI polish / mockup v1 ✅ CLOSED 100 % + hotfix Compare #625 ✅. Chantier actif : Audit Toutes Pages. Prochaine action exacte : générer l’inventaire exhaustif depuis `app/**/page.tsx`, résoudre les fixtures dynamiques/redirect/auth, fixer la métrique de progression, puis lancer la baseline Chromium réelle de toutes les pages.**
+**UI polish / mockup v1 ✅ CLOSED 100 % + hotfix Compare #625 ✅. Chantier actif : Audit Toutes Pages — 20 %. A1 inventaire ✅ CLOSED. A2 ACTIVE via PR #630 : produire 252 captures réelles, classifier les findings route × viewport, puis lancer les remédiations A3 sans retoucher les pages déjà conformes.**
