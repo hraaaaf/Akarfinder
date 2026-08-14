@@ -1,7 +1,24 @@
 name: DATA P0 Owner Listing Integration
+
 on:
   pull_request:
+    paths:
+      - "supabase/migrations/20260805203000_owner_listing_integration_v1.sql"
+      - "supabase/migrations/20260805203100_owner_listing_integration_triggers_v1.sql"
+      - "app/api/seller-drafts/[draftId]/publication/route.ts"
+      - "lib/seller/owner-listing-projection.ts"
+      - "lib/search-gateway/public-search-with-owner.ts"
+      - "app/api/search/route.ts"
+      - "app/search/page.tsx"
+      - "app/listings/[id]/page.tsx"
+      - "scripts/scrapers/__tests__/data-p0-owner-listing-integration.test.ts"
+      - ".github/workflows/data-p0-owner-listing-integration.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   owner-listing-integration:
     runs-on: ubuntu-24.04
