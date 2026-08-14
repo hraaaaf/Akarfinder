@@ -4,8 +4,16 @@ import path from "node:path";
 const appDir = path.resolve("app");
 const outputDir = path.resolve(process.env.AUDIT_OUTPUT_DIR ?? "data/audits/ui-all-pages-inventory");
 
+const expectedContinuity401 = [{ path: "/api/me/continuity", status: 401 }];
+const expectedAuthSession401 = [{ path: "/api/auth/session", status: 401 }];
+const visualQaBlocker = "Visual-QA page requires certified /__qa image assets that are not committed or materialized by this CI lane.";
+
 const dynamicAuditByPattern = new Map([
-  ["/listings/[id]", { fixtureUrl: "/listings/casablanca-finance-city-terrasse", auditMode: "render" }],
+  ["/listings/[id]", {
+    fixtureUrl: null,
+    auditMode: "data-fixture-required",
+    blocker: "No deterministic local listing id is guaranteed: the page requires a database-backed listing visible under the current source-access registry.",
+  }],
   ["/immobilier/[city]", { fixtureUrl: "/immobilier/rabat", auditMode: "render" }],
   ["/immobilier/[city]/[district]", { fixtureUrl: "/immobilier/rabat/agdal", auditMode: "render" }],
   ["/quartiers/[citySlug]/[neighborhoodSlug]", { fixtureUrl: "/quartiers/rabat/agdal", auditMode: "render" }],
@@ -16,6 +24,28 @@ const dynamicAuditByPattern = new Map([
     auditMode: "data-fixture-required",
     blocker: "No deterministic local public professional exists: the page requires a validated + public professional_organizations row.",
   }],
+]);
+
+const staticAuditByPattern = new Map([
+  ["/compagnon", { expectedFinalPath: "/mon-projet", expectedResourceFailures: expectedContinuity401 }],
+  ["/onboarding", { expectedFinalPath: "/mon-projet", expectedResourceFailures: expectedContinuity401 }],
+  ["/profil-recherche", { expectedFinalPath: "/mon-projet", expectedResourceFailures: expectedContinuity401 }],
+  ["/mon-projet", { expectedResourceFailures: expectedContinuity401 }],
+  ["/mon-projet/espace", { expectedResourceFailures: [...expectedContinuity401, ...expectedAuthSession401] }],
+  ["/pro/leads", { expectedFinalPath: "/pro" }],
+  ["/quartiers", { expectedFinalPath: "/immobilier" }],
+  ...[
+    "/visual-qa/agdal",
+    "/visual-qa/akkari",
+    "/visual-qa/aviation",
+    "/visual-qa/hassan",
+    "/visual-qa/hay-riad",
+    "/visual-qa/les-orangers",
+    "/visual-qa/medina",
+    "/visual-qa/ocean",
+    "/visual-qa/souissi",
+    "/visual-qa/yacoub-el-mansour",
+  ].map((route) => [route, { fixtureUrl: null, auditMode: "qa-fixture-required", blocker: visualQaBlocker }]),
 ]);
 
 async function collectPageFiles(dir, relative = "") {
@@ -57,19 +87,27 @@ const pages = pageFiles.map((sourcePath) => {
   const routePattern = fileToRoutePattern(sourcePath);
   const dynamic = isDynamicRoute(routePattern);
   const dynamicAudit = dynamic ? dynamicAuditByPattern.get(routePattern) ?? null : null;
+  const staticAudit = !dynamic ? staticAuditByPattern.get(routePattern) ?? null : null;
+  const auditMode = dynamic ? dynamicAudit?.auditMode ?? null : staticAudit?.auditMode ?? "render";
+  const fixtureUrl = dynamic
+    ? dynamicAudit?.fixtureUrl ?? null
+    : auditMode === "qa-fixture-required" ? null : routePattern;
   return {
     sourcePath: `app/${sourcePath}`,
     routePattern,
     dynamic,
-    fixtureUrl: dynamic ? dynamicAudit?.fixtureUrl ?? null : routePattern,
-    auditMode: dynamic ? dynamicAudit?.auditMode ?? null : "render",
-    blocker: dynamicAudit?.blocker ?? null,
+    fixtureUrl,
+    auditMode,
+    blocker: dynamicAudit?.blocker ?? staticAudit?.blocker ?? null,
     family: routeFamily(routePattern),
+    expectedFinalPath: staticAudit?.expectedFinalPath ?? null,
+    expectedResourceFailures: staticAudit?.expectedResourceFailures ?? [],
   };
 });
 
 const unclassifiedDynamic = pages.filter((page) => page.dynamic && !page.auditMode);
 const dataBlocked = pages.filter((page) => page.auditMode === "data-fixture-required");
+const qaBlocked = pages.filter((page) => page.auditMode === "qa-fixture-required");
 const duplicateRoutes = Object.entries(
   pages.reduce((acc, page) => {
     acc[page.routePattern] = (acc[page.routePattern] ?? 0) + 1;
@@ -78,17 +116,20 @@ const duplicateRoutes = Object.entries(
 ).filter(([, count]) => count > 1);
 
 const report = {
-  schemaVersion: "UI_ALL_PAGES_INVENTORY_V1",
+  schemaVersion: "UI_ALL_PAGES_INVENTORY_V3",
   generatedAt: new Date().toISOString(),
   pageCount: pages.length,
   dynamicPageCount: pages.filter((page) => page.dynamic).length,
   staticPageCount: pages.filter((page) => !page.dynamic).length,
   renderablePageCount: pages.filter((page) => Boolean(page.fixtureUrl)).length,
   dataBlockedPageCount: dataBlocked.length,
+  qaBlockedPageCount: qaBlocked.length,
+  blockedPageCount: dataBlocked.length + qaBlocked.length,
   unclassifiedDynamicCount: unclassifiedDynamic.length,
   duplicateRouteCount: duplicateRoutes.length,
   pages,
   dataBlocked,
+  qaBlocked,
   unclassifiedDynamic,
   duplicateRoutes,
 };
@@ -102,6 +143,7 @@ console.log(JSON.stringify({
   dynamicPageCount: report.dynamicPageCount,
   renderablePageCount: report.renderablePageCount,
   dataBlocked: dataBlocked.map((page) => page.routePattern),
+  qaBlocked: qaBlocked.map((page) => page.routePattern),
   unclassifiedDynamic: unclassifiedDynamic.map((page) => page.routePattern),
 }, null, 2));
 
