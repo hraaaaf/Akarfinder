@@ -25,7 +25,6 @@ jobs:
     env:
       BASE_URL: http://127.0.0.1:3200
       AUDIT_OUTPUT_DIR: data/audits/ui-all-pages-baseline
-      NEIGHBORHOOD_VISUAL_QA: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
