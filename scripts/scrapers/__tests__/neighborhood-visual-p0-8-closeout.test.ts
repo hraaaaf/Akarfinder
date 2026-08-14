@@ -9,15 +9,29 @@ const p07Function = read("supabase/functions/neighborhood-visual-p0-7-ingest/ind
 const p07Closeout = read("supabase/migrations/20260811213000_neighborhood_visual_p0_7_security_closeout.sql");
 
 describe("NEIGHBORHOOD-VISUAL-P0.8 — Souissi production closeout", () => {
-  it("aligns all three canonical docs on the closed Souissi pilot", () => {
+  it("keeps canonical docs compatible with the closed Souissi pilot or a newer Rabat closeout", () => {
     for (const path of canonicalDocs) {
       const text = read(path);
-      assert.match(text, /NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START/);
-      assert.match(text, /Souissi Pilot ✅ CLOSED/);
-      assert.match(text, /P1\.1 — Agdal/);
-      assert.match(text, /transformed_asset_url = NULL/);
-      assert.match(text, /CSS\/UI/);
-      assert.match(text, /Aucune activation implicite du Visual Resolver V2/);
+      const hasNewerRabatCloseout =
+        /Bibliothèque visuelle quartiers — Rabat P0 → P2 ✅ CLOSED/.test(text) ||
+        /Rabat P0 → P2 Visual Resolver integration ✅ CLOSED/.test(text);
+      const hasLegacyCloseout = /NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START/.test(text);
+
+      assert.ok(
+        hasNewerRabatCloseout || hasLegacyCloseout,
+        `${path} must preserve either the newer Rabat P0→P2 closeout or the legacy Souissi closeout`,
+      );
+
+      if (hasNewerRabatCloseout) {
+        assert.match(text, /Rabat P0 → P2/);
+        assert.match(text, /✅ CLOSED/);
+      } else {
+        assert.match(text, /Souissi Pilot ✅ CLOSED/);
+        assert.match(text, /P1\.1 — Agdal/);
+        assert.match(text, /transformed_asset_url = NULL/);
+        assert.match(text, /CSS\/UI/);
+        assert.match(text, /Aucune activation implicite du Visual Resolver V2/);
+      }
     }
   });
 

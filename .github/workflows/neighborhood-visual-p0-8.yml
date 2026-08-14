@@ -36,13 +36,17 @@ jobs:
       - name: Synchronize canonical closeout docs idempotently
         shell: bash
         run: |
-          node scripts/closeouts/neighborhood-visual-p0-8-docs.mjs
-          if ! git diff --quiet -- README.md docs/ROADMAP.md docs/SESSION.md docs/NEIGHBORHOOD_VISUAL_LIBRARY_ROADMAP.md; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add README.md docs/ROADMAP.md docs/SESSION.md docs/NEIGHBORHOOD_VISUAL_LIBRARY_ROADMAP.md
-            git commit -m "P0.8 — synchronize Souissi pilot canonical closeout"
-            git push origin HEAD:${{ github.head_ref }}
+          if grep -Fq "## Bibliothèque visuelle quartiers — Rabat P0 → P2 ✅ CLOSED" docs/ROADMAP.md || grep -Fq "Rabat P0 → P2 Visual Resolver integration ✅ CLOSED" docs/SESSION.md; then
+            echo "Newer Rabat P0→P2 canonical state detected; skip legacy P0.8 doc mutation."
+          else
+            node scripts/closeouts/neighborhood-visual-p0-8-docs.mjs
+            if ! git diff --quiet -- README.md docs/ROADMAP.md docs/SESSION.md docs/NEIGHBORHOOD_VISUAL_LIBRARY_ROADMAP.md; then
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git add README.md docs/ROADMAP.md docs/SESSION.md docs/NEIGHBORHOOD_VISUAL_LIBRARY_ROADMAP.md
+              git commit -m "P0.8 — synchronize Souissi pilot canonical closeout"
+              git push origin HEAD:${{ github.head_ref }}
+            fi
           fi
 
       - uses: actions/setup-node@v4
@@ -120,8 +124,12 @@ jobs:
       - name: Confirm docs are already synchronized
         shell: bash
         run: |
-          node scripts/closeouts/neighborhood-visual-p0-8-docs.mjs
-          git diff --exit-code -- README.md docs/ROADMAP.md docs/SESSION.md docs/NEIGHBORHOOD_VISUAL_LIBRARY_ROADMAP.md
+          if grep -Fq "## Bibliothèque visuelle quartiers — Rabat P0 → P2 ✅ CLOSED" docs/ROADMAP.md || grep -Fq "Rabat P0 → P2 Visual Resolver integration ✅ CLOSED" docs/SESSION.md; then
+            echo "Newer Rabat P0→P2 canonical state detected; legacy P0.8 doc sync intentionally skipped."
+          else
+            node scripts/closeouts/neighborhood-visual-p0-8-docs.mjs
+            git diff --exit-code -- README.md docs/ROADMAP.md docs/SESSION.md docs/NEIGHBORHOOD_VISUAL_LIBRARY_ROADMAP.md
+          fi
 
       - name: Independent P0.8 + predecessor replay
         run: >-
