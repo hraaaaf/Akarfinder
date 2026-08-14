@@ -4,6 +4,18 @@
 **Scope :** acquisition Agence `/pro/agences`, acquisition Promoteur `/promoteurs`, démonstrations `/demo/agence` + `/demo/promoteur`, formulaire `/pro#contact`, profils publics professionnels et promoteurs.  
 **Méthode :** code + contrats data/auth + inspection visuelle des captures certifiées 390×844 / 430×932 / 768×900 / 1280×900.
 
+## Progression stricte
+
+Le chantier utilise **5 jalons binaires de poids égal** ; seuls les jalons prouvés comptent :
+
+1. **B1 Inventaire / architecture ✅ CLOSED** — routes, composants, démos, formulaire et profils publics cartographiés.
+2. **B2 Baseline visuelle ✅ CLOSED** — agence, promoteur et démos inspectés sur 390 / 430 / 768 / 1280 à partir de l’artefact All Pages certifié.
+3. **B3 Truth / data / sécurité ✅ CLOSED** — modèle canonique, legacy promoteur, activation, consentement et validation analysés ; dettes #641 et #643 isolées.
+4. **B4 Remédiation sûre + recertification ⏳ ACTIVE** — correctifs P1/P2 posés ; exact-head et captures post-correctif requis avant fermeture.
+5. **B5 Merge + closeout canonique ⏳ PENDING**.
+
+**Progression actuelle : 3/5 = 60 %.**
+
 ## Résumé
 
 Les surfaces sont techniquement propres et truth-safe dans leur mode démo, mais le produit B2B présente trois faiblesses principales :
@@ -84,7 +96,7 @@ Manquent notamment sur les landings :
 
 **Correctif dans ce lot :** activation du submit uniquement pour 8 à 15 chiffres, tout en conservant les séparateurs usuels dans la saisie et `inputMode="tel"` / `autoComplete="tel"`.
 
-**Dette :** le serveur `/api/leads` reste plus permissif et doit être durci dans un lot API transverse si l’on veut une garantie anti-déchet indépendante du client.
+**Dette :** le serveur `/api/leads` reste plus permissif et doit être durci dans un lot API transverse ; issue #643.
 
 ### P2 — démo promoteur : lisibilité des plans à vérifier
 
@@ -108,13 +120,14 @@ Sur la capture 768×900, les zones `Plan 2D` occupent beaucoup de hauteur et app
 - canonical `/pro/agences` + `/promoteurs` ;
 - landing `/promoteurs` rendue statique ;
 - filtre téléphone client 8–15 chiffres ;
-- test de régression B2B dédié ;
-- issue #641 pour la suppression de la double source de vérité promoteur.
+- test de régression B2B dédié branché dans le gate B2B officiel ;
+- issue #641 pour la suppression de la double source de vérité promoteur ;
+- issue #643 pour le durcissement serveur transverse des leads.
 
 ## Gates de sortie du chantier
 
 1. inventaire + code/data/truth audit ;
-2. inspection visuelle 4 viewports des 4 surfaces acquisition/démo ;
-3. correctifs P1/P2 réversibles + tests ;
+2. inspection visuelle 4 viewports des surfaces acquisition/démo ;
+3. truth/security audit + dettes explicitement gouvernées ;
 4. CI exact-head + recertification ciblée des pages modifiées ;
-5. closeout canonique + dette legacy explicitement suivie.
+5. merge + closeout canonique.
