@@ -11,7 +11,64 @@ permissions:
   actions: read
 
 jobs:
+  rescue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - key: daragadir
+            domain: daragadir.com
+          - key: mouldar
+            domain: mouldar.com
+          - key: masaken
+            domain: masaken.ma
+          - key: soukimmobilier
+            domain: soukimmobilier.com
+          - key: barnes-marrakech
+            domain: barnes-marrakech.com
+          - key: 1immo
+            domain: 1immo.ma
+          - key: kawtarimmobilier
+            domain: kawtarimmobilier.com
+          - key: marrakechrealty
+            domain: marrakechrealty.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Restrict local registry to one domain and tune fail-soft CDX
+        env:
+          DOMAIN: ${{ matrix.domain }}
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='data/openserp/source-domain-registry.json';
+          const r=JSON.parse(fs.readFileSync(p,'utf8'));
+          r.domains=r.domains.filter(x=>x.domain===process.env.DOMAIN);
+          if (r.domains.length !== 1) throw new Error(`registry domain missing: ${process.env.DOMAIN}`);
+          fs.writeFileSync(p,JSON.stringify(r));
+          NODE
+          sed -i 's/const CDX_REQUEST_PACING_MS = 2_500/const CDX_REQUEST_PACING_MS = 150/' scripts/openserp/commoncrawl-reservoir-harvest.ts
+          sed -i 's/const CDX_MAX_ATTEMPTS = 6/const CDX_MAX_ATTEMPTS = 1/' scripts/openserp/commoncrawl-reservoir-harvest.ts
+          sed -i 's/const CDX_RETRY_BASE_MS = 3_000/const CDX_RETRY_BASE_MS = 500/' scripts/openserp/commoncrawl-reservoir-harvest.ts
+      - name: Harvest one domain metadata only
+        run: timeout 8m npx tsx scripts/openserp/commoncrawl-reservoir-harvest.ts 'CC-MAIN-2026-25,CC-MAIN-2026-21,CC-MAIN-2026-17,CC-MAIN-2026-13,CC-MAIN-2026-09,CC-MAIN-2026-05,CC-MAIN-2025-51,CC-MAIN-2025-43,CC-MAIN-2025-30,CC-MAIN-2025-26,CC-MAIN-2025-18,CC-MAIN-2025-13,CC-MAIN-2025-08,CC-MAIN-2025-05'
+      - name: Verify artifact
+        run: test -s data/audits/raw-results/commoncrawl-reservoir-canonical-urls.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-x5-rescue-${{ matrix.key }}
+          path: data/audits/raw-results/commoncrawl-reservoir-canonical-urls.txt
+          if-no-files-found: error
+          retention-days: 30
+
   exact-reconciliation:
+    needs: rescue
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -20,45 +77,44 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
-
       - run: npm ci
-
-      - name: Download the four certified X4C shard artifacts
+      - name: Download certified X4C A and C
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          mkdir -p data/audits/raw-results/x4c-artifacts
-          for shard in a b c d; do
-            mkdir -p "data/audits/raw-results/x4c-artifacts/$shard"
+          mkdir -p data/audits/raw-results/x4c-artifacts/a data/audits/raw-results/x4c-artifacts/c
+          for shard in a c; do
             gh run download "$SOURCE_RUN_ID" \
               --repo "${{ github.repository }}" \
               --name "data-mass-x4c-$shard" \
               --dir "data/audits/raw-results/x4c-artifacts/$shard"
           done
-          test "$(find data/audits/raw-results/x4c-artifacts -name commoncrawl-reservoir-canonical-urls.txt | wc -l)" -eq 4
-
+      - name: Download eight rescue artifacts from this run
+        uses: actions/download-artifact@v4
+        with:
+          pattern: data-mass-x5-rescue-*
+          path: data/audits/raw-results/x4c-artifacts/rescue
+      - name: Verify ten reservoir files
+        run: test "$(find data/audits/raw-results/x4c-artifacts -name commoncrawl-reservoir-canonical-urls.txt | wc -l)" -eq 10
       - name: Reconcile candidates against production seeds read-only
         run: |
-          set -euo pipefail
           npx tsx scripts/data-mass/commoncrawl-exact-reconcile.ts \
             data/audits/raw-results/x4c-artifacts \
             data/audits/raw-results/mass-x5-exact-reconciliation.json
-
       - name: Verify fail-closed invariants
         run: |
-          set -euo pipefail
           node - <<'NODE'
           const fs = require('fs');
           const p = JSON.parse(fs.readFileSync('data/audits/raw-results/mass-x5-exact-reconciliation.json','utf8'));
           if (p.schema_version !== 'MASS_X5_EXACT_RECONCILIATION_SHADOW_V1') throw new Error('schema');
           if (p.mode !== 'shadow_read_only') throw new Error('mode');
           if (p.domains !== 16) throw new Error('domain count');
+          if (p.x4c_artifact_files.length !== 10) throw new Error('artifact count');
           for (const key of ['database_writes','registry_writes','search_activations','source_page_fetches','warc_fetches','permission_inference']) {
             if (p.invariants[key] !== 0) throw new Error(`${key} invariant`);
           }
@@ -66,7 +122,6 @@ jobs:
           if (p.candidate_unique !== p.exact_overlap + p.exact_net_new) throw new Error('accounting');
           console.log('MASS-X5 EXACT RECONCILIATION: PASS');
           NODE
-
       - uses: actions/upload-artifact@v4
         if: always()
         with:
