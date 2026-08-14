@@ -21,7 +21,7 @@ export const ui = {
   primaryAction:
     "inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 py-3 font-extrabold text-primary-foreground shadow-[0_6px_18px_rgba(11,99,206,0.2)] transition hover:bg-primary/90",
   primaryActionPill:
-    "inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 font-extrabold text-white shadow-[0_6px_18px_rgba(11,99,206,0.18)] transition hover:bg-primary/90",
+    "inline-flex min-h-11 items-center justify-center rounded-full bg-[#0B63CE] px-5 font-extrabold text-white shadow-[0_6px_18px_rgba(11,99,206,0.18)] transition hover:bg-[#0959B8]",
   secondaryAction:
     "inline-flex min-h-11 items-center justify-center rounded-xl border border-border/25 bg-surface px-4 font-bold text-foreground transition hover:border-primary/40 dark:border-white/12",
   secondaryActionPill:
