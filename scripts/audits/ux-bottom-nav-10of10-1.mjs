@@ -112,3 +112,5 @@ fs.writeFileSync(path.join(outDir, "report.json"), JSON.stringify(report, null, 
 console.log(JSON.stringify(report, null, 2));
 if (failures.length > 0) process.exit(1);
 console.log("UX-BOTTOM-NAV-10OF10-1 canonical premium glass certification passed at 10/10.");
+
+await import("./ui-polish-p1-mobile-audit.mjs");
