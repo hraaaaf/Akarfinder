@@ -2,6 +2,14 @@ name: Phase 1 P1 Intent Hubs Gate
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "app/acheter/page.tsx"
+      - "app/louer/page.tsx"
+      - "app/neuf/page.tsx"
+      - "components/intent/**"
+      - "components/neuf/**"
+      - "scripts/scrapers/__tests__/phase1-p1-intent-hubs.test.ts"
+      - ".github/workflows/phase1-p1-intent-hubs-gate.yml"
   workflow_dispatch: {}
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
