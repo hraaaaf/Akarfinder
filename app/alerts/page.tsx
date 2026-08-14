@@ -15,7 +15,7 @@ export default function AlertsPage() {
     <main className={`min-h-screen ${ui.pageLight}`}>
       <SiteHeader searchMode fluid />
       <Container>
-        <section className="mx-auto flex min-h-[64vh] max-w-3xl items-center justify-center py-8 sm:py-12">
+        <section className="mx-auto flex min-h-[64vh] max-w-3xl items-center justify-center py-8 pb-28 sm:py-12 md:pb-12">
           <div className={`${ui.surfacePremium} w-full overflow-hidden`}>
             <div className="border-b border-slate-200 px-5 py-6 sm:px-8 sm:py-8">
               <div className="flex items-start gap-4">
