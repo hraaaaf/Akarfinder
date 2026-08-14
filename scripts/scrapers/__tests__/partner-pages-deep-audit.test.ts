@@ -15,7 +15,7 @@ test("public professional profile stays validated, public and truth-bounded", ()
   assert.match(publicProfileRepository, /professional_projects[\s\S]*status[\s\S]*published/);
   assert.match(publicProfileRepository, /public_email/);
   assert.match(publicProfileRepository, /public_phone/);
-  assert.doesNotMatch(publicProfileRepository, /scrap/i);
+  assert.doesNotMatch(publicProfileRepository, /source_offer_seeds|listing_sources/);
 });
 
 test("public professional page exposes only explicit public contact and useful SEO", () => {
