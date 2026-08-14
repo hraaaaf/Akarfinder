@@ -15,13 +15,22 @@ test("seller dossier constrains its visual selector inside the viewport", () => 
   );
 });
 
-test("all-pages inventory models data-backed and redirect contracts explicitly", () => {
+test("all-pages inventory models data-backed, auth and redirect contracts explicitly", () => {
   assert.match(inventory, /\/listings\/\[id\][\s\S]*data-fixture-required/);
   assert.match(inventory, /\/professionnels\/\[slug\][\s\S]*data-fixture-required/);
   assert.match(inventory, /\/compagnon[\s\S]*expectedFinalPath: "\/mon-projet"/);
   assert.match(inventory, /\/pro\/leads[\s\S]*expectedFinalPath: "\/pro"/);
   assert.match(inventory, /\/quartiers[\s\S]*expectedFinalPath: "\/immobilier"/);
   assert.match(inventory, /\/api\/me\/continuity[\s\S]*status: 401/);
+  assert.match(inventory, /\/api\/auth\/session[\s\S]*status: 401/);
+});
+
+test("visual QA routes stay blocked until their certified assets are materialized", () => {
+  assert.match(inventory, /\/visual-qa\/agdal/);
+  assert.match(inventory, /qa-fixture-required/);
+  assert.match(inventory, /qaBlockedPageCount/);
+  assert.match(inventory, /Visual-QA page requires certified \/__qa image assets/);
+  assert.doesNotMatch(workflow, /NEIGHBORHOOD_VISUAL_QA/);
 });
 
 test("all-pages audit separates expected resource failures from real findings", () => {
@@ -29,8 +38,4 @@ test("all-pages audit separates expected resource failures from real findings", 
   assert.match(baseline, /unexpectedConsoleErrors/);
   assert.match(baseline, /UNEXPECTED_FINAL_PATH/);
   assert.match(baseline, /UI_ALL_PAGES_BASELINE_V2/);
-});
-
-test("all-pages workflow enables the canonical neighborhood visual QA lane", () => {
-  assert.match(workflow, /NEIGHBORHOOD_VISUAL_QA: "1"/);
 });
