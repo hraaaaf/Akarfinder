@@ -2,7 +2,7 @@
 
 **Mise à jour : 2026-08-14**
 
-Handover opérationnel court. `README.md` porte l’identité/doctrine. `docs/ROADMAP.md` reste la roadmap canonique. Les preuves détaillées vivent dans les archives de certification dédiées.
+Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
 
 ## Audit Toutes Pages — chantier actif
 
