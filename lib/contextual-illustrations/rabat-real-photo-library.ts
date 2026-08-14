@@ -83,7 +83,7 @@ function certifiedPool(
     id: visual.id,
     city: "Rabat" as const,
     district,
-    label: `Rabat • ${district}`,
+    label: `Rabat • contexte ${district}`,
     fileName: visual.source.fileName,
     asset: visual.source.asset,
     sourcePage: visual.source.sourcePage,
