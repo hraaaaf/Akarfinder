@@ -1,0 +1,78 @@
+name: DATA MASS-X5 Exact Reconciliation Shadow
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/data-mass-x5-exact-reconciliation-shadow.yml'
+      - 'scripts/data-mass/commoncrawl-exact-reconcile.ts'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  exact-reconciliation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SOURCE_RUN_ID: '31758221520'
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Download the four certified X4C shard artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p data/audits/raw-results/x4c-artifacts
+          for shard in a b c d; do
+            mkdir -p "data/audits/raw-results/x4c-artifacts/$shard"
+            gh run download "$SOURCE_RUN_ID" \
+              --repo "${{ github.repository }}" \
+              --name "data-mass-x4c-$shard" \
+              --dir "data/audits/raw-results/x4c-artifacts/$shard"
+          done
+          test "$(find data/audits/raw-results/x4c-artifacts -name commoncrawl-reservoir-canonical-urls.txt | wc -l)" -eq 4
+
+      - name: Reconcile candidates against production seeds read-only
+        run: |
+          set -euo pipefail
+          npx tsx scripts/data-mass/commoncrawl-exact-reconcile.ts \
+            data/audits/raw-results/x4c-artifacts \
+            data/audits/raw-results/mass-x5-exact-reconciliation.json
+
+      - name: Verify fail-closed invariants
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('data/audits/raw-results/mass-x5-exact-reconciliation.json','utf8'));
+          if (p.schema_version !== 'MASS_X5_EXACT_RECONCILIATION_SHADOW_V1') throw new Error('schema');
+          if (p.mode !== 'shadow_read_only') throw new Error('mode');
+          if (p.domains !== 16) throw new Error('domain count');
+          for (const key of ['database_writes','registry_writes','search_activations','source_page_fetches','warc_fetches','permission_inference']) {
+            if (p.invariants[key] !== 0) throw new Error(`${key} invariant`);
+          }
+          if (p.invariants.candidate_grants_authorization !== false) throw new Error('authorization invariant');
+          if (p.candidate_unique !== p.exact_overlap + p.exact_net_new) throw new Error('accounting');
+          console.log('MASS-X5 EXACT RECONCILIATION: PASS');
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: data-mass-x5-exact-reconciliation
+          path: |
+            data/audits/raw-results/mass-x5-exact-reconciliation.json
+            data/audits/raw-results/mass-x5-exact-reconciliation-net-new.txt
+          if-no-files-found: warn
+          retention-days: 30
