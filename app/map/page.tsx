@@ -20,8 +20,8 @@ export default async function MapPage({ searchParams }: MapPageProps) {
   const initialState = parseMapNavigationState(params);
 
   return (
-    <main className="flex flex-col" style={{ minHeight: "100svh" }}>
-      <SiteHeader />
+    <main className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]">
+      <SiteHeader searchMode fluid />
       <div className="flex-1">
         <MapNeighborhoodClient initialState={initialState} />
       </div>

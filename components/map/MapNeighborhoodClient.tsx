@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { MapLegend } from "@/components/map/MapLegend";
 import { TerritorialExplorer } from "@/components/map/TerritorialExplorer";
 import {
   resolveCityEntity,
@@ -85,6 +86,7 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
         navigationState={navigationState}
         onNavigationChange={handleNavigationChange}
       />
+      <MapLegend />
       {unmappedDistrict ? (
         <div className="pointer-events-none absolute left-1/2 top-[210px] z-30 w-[min(92vw,430px)] -translate-x-1/2 sm:top-[232px]">
           <div className="rounded-xl border border-amber-200/80 bg-white/95 px-3.5 py-2.5 text-center shadow-[0_8px_24px_rgba(7,27,51,0.14)] backdrop-blur">
