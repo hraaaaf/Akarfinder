@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import type { LeadApiResponse } from "@/lib/leads/types";
@@ -29,11 +29,29 @@ type State = {
 };
 
 const INITIAL: State = { name: "", company: "", phone: "", type: "", city: "", message: "", addons: [], consent: false };
+const PROFESSIONAL_TYPES = new Set(TYPES.map((type) => type.value));
+
+function activationContextFromLocation() {
+  if (typeof window === "undefined") return { type: "", sourcePage: "/pro" };
+  const params = new URLSearchParams(window.location.search);
+  const type = params.get("type") ?? "";
+  const source = params.get("source");
+  return {
+    type: PROFESSIONAL_TYPES.has(type as (typeof TYPES)[number]["value"]) ? type : "",
+    sourcePage: source === "agency" ? "/pro/agences" : source === "promoter" ? "/promoteurs" : "/pro",
+  };
+}
 
 export function ProActivationForm() {
   const [form, setForm] = useState<State>(INITIAL);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; error?: string } | null>(null);
+
+  useEffect(() => {
+    const context = activationContextFromLocation();
+    if (!context.type) return;
+    setForm((current) => current.type ? current : { ...current, type: context.type });
+  }, []);
 
   function set<K extends keyof State>(key: K, value: State[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -43,7 +61,8 @@ export function ProActivationForm() {
     set("addons", form.addons.includes(value) ? form.addons.filter((item) => item !== value) : [...form.addons, value]);
   }
 
-  const phoneOk = form.phone.replace(/[\s\-().]/g, "").length >= 8;
+  const phoneDigits = form.phone.replace(/\D/g, "");
+  const phoneOk = phoneDigits.length >= 8 && phoneDigits.length <= 15;
   const canSubmit = phoneOk && Boolean(form.company.trim()) && Boolean(form.type) && form.consent && !busy;
 
   async function submit() {
@@ -51,6 +70,7 @@ export function ProActivationForm() {
     setBusy(true);
     setResult(null);
     try {
+      const context = activationContextFromLocation();
       const response = await fetch("/api/leads", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -71,7 +91,7 @@ export function ProActivationForm() {
             requestedAddons: form.addons,
           },
           source_channel: "promoter",
-          source_page: "/pro",
+          source_page: context.sourcePage,
         }),
       });
       const payload = await response.json() as LeadApiResponse;
@@ -104,7 +124,7 @@ export function ProActivationForm() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-white/55">Nom<input value={form.name} onChange={(e) => set("name", e.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-white/[0.07] px-4 py-3 text-sm normal-case tracking-normal text-white outline-none focus:border-bronze-500/60" /></label>
                 <label className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-white/55">Société *<input value={form.company} onChange={(e) => set("company", e.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-white/[0.07] px-4 py-3 text-sm normal-case tracking-normal text-white outline-none focus:border-bronze-500/60" /></label>
-                <label className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-white/55">Téléphone *<input value={form.phone} onChange={(e) => set("phone", e.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-white/[0.07] px-4 py-3 text-sm normal-case tracking-normal text-white outline-none focus:border-bronze-500/60" /></label>
+                <label className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-white/55">Téléphone *<input inputMode="tel" autoComplete="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-white/[0.07] px-4 py-3 text-sm normal-case tracking-normal text-white outline-none focus:border-bronze-500/60" /></label>
                 <label className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-white/55">Profil *<select value={form.type} onChange={(e) => set("type", e.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-[#102744] px-4 py-3 text-sm normal-case tracking-normal text-white outline-none focus:border-bronze-500/60"><option value="">Sélectionner…</option>{TYPES.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}</select></label>
                 <label className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-white/55 sm:col-span-2">Ville<input value={form.city} onChange={(e) => set("city", e.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-white/[0.07] px-4 py-3 text-sm normal-case tracking-normal text-white outline-none focus:border-bronze-500/60" /></label>
               </div>
