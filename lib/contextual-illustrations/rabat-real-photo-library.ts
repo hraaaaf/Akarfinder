@@ -1,9 +1,20 @@
+import { AKKARI_NEIGHBORHOOD_VISUALS } from "./akkari-neighborhood-visuals";
+import { AVIATION_NEIGHBORHOOD_VISUALS } from "./aviation-neighborhood-visuals";
+import { LES_ORANGERS_NEIGHBORHOOD_VISUALS } from "./les-orangers-neighborhood-visuals";
+import { MEDINA_NEIGHBORHOOD_VISUALS } from "./medina-neighborhood-visuals";
+import { YACOUB_EL_MANSOUR_NEIGHBORHOOD_VISUALS } from "./yacoub-el-mansour-neighborhood-visuals";
+
 export type RabatNeighborhood =
   | "Agdal"
+  | "Akkari"
+  | "Aviation"
   | "Hay Riad"
   | "Souissi"
   | "Océan"
-  | "Hassan";
+  | "Hassan"
+  | "Les Orangers"
+  | "Médina"
+  | "Yacoub El Mansour";
 
 export type RabatRealPhotoAsset = {
   id: string;
@@ -13,7 +24,7 @@ export type RabatRealPhotoAsset = {
   fileName: string;
   asset: string;
   sourcePage: string;
-  sourceName: "Wikimedia Commons";
+  sourceName: "Wikimedia Commons" | "KartaView";
 };
 
 export type ResolvedRabatRealPhotoAsset = RabatRealPhotoAsset & {
@@ -54,6 +65,32 @@ function photo(
   };
 }
 
+type CertifiedNeighborhoodVisual = {
+  id: string;
+  source: {
+    fileName: string;
+    asset: string;
+    sourcePage: string;
+    sourceName: "Wikimedia Commons" | "KartaView";
+  };
+};
+
+function certifiedPool(
+  district: RabatNeighborhood,
+  visuals: readonly CertifiedNeighborhoodVisual[],
+): readonly RabatRealPhotoAsset[] {
+  return visuals.map((visual) => ({
+    id: visual.id,
+    city: "Rabat" as const,
+    district,
+    label: `Rabat • ${district}`,
+    fileName: visual.source.fileName,
+    asset: visual.source.asset,
+    sourcePage: visual.source.sourcePage,
+    sourceName: visual.source.sourceName,
+  }));
+}
+
 export const RABAT_REAL_PHOTO_LIBRARY: Readonly<Record<RabatNeighborhood, readonly RabatRealPhotoAsset[]>> = {
   Agdal: [
     photo("Agdal", "agdal", 1, "Rabat Agdal.jpg"),
@@ -65,6 +102,8 @@ export const RABAT_REAL_PHOTO_LIBRARY: Readonly<Record<RabatNeighborhood, readon
     photo("Agdal", "agdal", 7, "Rabat-Agdal railway station in 2026.01.jpg"),
     photo("Agdal", "agdal", 8, "محطة الرباط أكدال.jpg"),
   ],
+  Akkari: certifiedPool("Akkari", AKKARI_NEIGHBORHOOD_VISUALS),
+  Aviation: certifiedPool("Aviation", AVIATION_NEIGHBORHOOD_VISUALS),
   "Hay Riad": [
     photo("Hay Riad", "hay-riad", 1, "Hay riad.jpg"),
     photo("Hay Riad", "hay-riad", 2, "Hay Riad (335665610).jpg"),
@@ -105,26 +144,19 @@ export const RABAT_REAL_PHOTO_LIBRARY: Readonly<Record<RabatNeighborhood, readon
     photo("Hassan", "hassan", 7, "Hassan Tower Rabat 1.jpg"),
     photo("Hassan", "hassan", 8, "PIcture of Hassan Tower during a sunny day in Rabat.jpg"),
   ],
+  "Les Orangers": certifiedPool("Les Orangers", LES_ORANGERS_NEIGHBORHOOD_VISUALS),
+  "Médina": certifiedPool("Médina", MEDINA_NEIGHBORHOOD_VISUALS),
+  "Yacoub El Mansour": certifiedPool("Yacoub El Mansour", YACOUB_EL_MANSOUR_NEIGHBORHOOD_VISUALS),
 };
 
 export const RABAT_REAL_PHOTO_ASSETS = Object.values(RABAT_REAL_PHOTO_LIBRARY).flat();
 
-/**
- * Search may use a stricter subset than the historical source library. The
- * Souissi pool deliberately excludes event/fanzone/performer imagery so the
- * listing inventory reads as residential neighbourhood context.
- */
 const RABAT_SEARCH_DISTRICT_POOLS: Readonly<Record<RabatNeighborhood, readonly RabatRealPhotoAsset[]>> = {
   ...RABAT_REAL_PHOTO_LIBRARY,
   Souissi: RABAT_REAL_PHOTO_LIBRARY.Souissi.slice(0, 5),
 };
 
-/**
- * Curated city-wide ambience pool for Rabat listings whose district has no
- * certified exact photo pool yet. Avoid event/fanzone imagery and keep the
- * public label city-only so a city fallback can never imply a district match.
- */
-const RABAT_CITY_AMBIENCE_IDS = new Set([
+const LEGACY_CITY_AMBIENCE_IDS = new Set([
   "rabat-agdal-photo-01",
   "rabat-agdal-photo-02",
   "rabat-agdal-photo-05",
@@ -149,12 +181,15 @@ const RABAT_CITY_AMBIENCE_IDS = new Set([
   "rabat-hassan-photo-05",
 ]);
 
+/** Keep city-wide fallback stable; P2 only activates exact normalized district pools. */
 export const RABAT_CITY_AMBIENCE_POOL = RABAT_REAL_PHOTO_ASSETS.filter((asset) =>
-  RABAT_CITY_AMBIENCE_IDS.has(asset.id),
+  LEGACY_CITY_AMBIENCE_IDS.has(asset.id),
 );
 
 const DISTRICT_ALIASES: Readonly<Record<string, RabatNeighborhood>> = {
   agdal: "Agdal",
+  akkari: "Akkari",
+  aviation: "Aviation",
   "hay riad": "Hay Riad",
   "hay ryad": "Hay Riad",
   souissi: "Souissi",
@@ -162,6 +197,14 @@ const DISTRICT_ALIASES: Readonly<Record<string, RabatNeighborhood>> = {
   "l ocean": "Océan",
   "quartier ocean": "Océan",
   hassan: "Hassan",
+  "les orangers": "Les Orangers",
+  orangers: "Les Orangers",
+  medina: "Médina",
+  "medina de rabat": "Médina",
+  "yacoub el mansour": "Yacoub El Mansour",
+  "yaacoub el mansour": "Yacoub El Mansour",
+  "hay el fath": "Yacoub El Mansour",
+  "hay al fath": "Yacoub El Mansour",
 };
 
 function normalizeStructuredValue(value?: string | null): string {
