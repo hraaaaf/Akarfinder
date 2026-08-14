@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 
-const sellerPage = await readFile("app/vendre/dossier/page.tsx", "utf8");
-const inventory = await readFile("scripts/audits/ui-all-pages-inventory.mjs", "utf8");
-const baseline = await readFile("scripts/audits/ui-all-pages-baseline.mjs", "utf8");
-const workflow = await readFile(".github/workflows/ui-all-pages-baseline.yml", "utf8");
+const sellerPage = readFileSync("app/vendre/dossier/page.tsx", "utf8");
+const inventory = readFileSync("scripts/audits/ui-all-pages-inventory.mjs", "utf8");
+const baseline = readFileSync("scripts/audits/ui-all-pages-baseline.mjs", "utf8");
+const workflow = readFileSync(".github/workflows/ui-all-pages-baseline.yml", "utf8");
 
 test("seller dossier constrains its visual selector inside the viewport", () => {
   assert.match(
