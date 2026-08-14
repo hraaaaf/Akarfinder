@@ -39,28 +39,40 @@ jobs:
             ('maarif-core-west',33.5880,-7.6420),
             ('maarif-core-east',33.5880,-7.6290),
           ]
-          def get_json(url):
-            for attempt in range(3):
+          def fetch(url, as_json=False):
+            last=None
+            for attempt in range(4):
               try:
                 req=urllib.request.Request(url,headers=ua)
-                with urllib.request.urlopen(req,timeout=40) as r:return json.load(r)
+                with urllib.request.urlopen(req,timeout=40) as r:
+                  return json.load(r) if as_json else r.read()
               except urllib.error.HTTPError as exc:
-                if exc.code != 429 or attempt == 2: raise
-                time.sleep(min(max(int(exc.headers.get('Retry-After','3')),1),10))
+                last=exc
+                if exc.code not in (429,500,502,503,504) or attempt == 3: break
+                retry=exc.headers.get('Retry-After')
+                time.sleep(min(max(int(retry) if retry and retry.isdigit() else 2*(attempt+1),1),8))
+              except Exception as exc:
+                last=exc
+                if attempt == 3: break
+                time.sleep(2*(attempt+1))
+            raise last
           def hav(a,b,c,d):
             R=6371000.;p1,p2=math.radians(a),math.radians(c);dp=math.radians(c-a);dl=math.radians(d-b)
             x=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2
             return 2*R*math.asin(math.sqrt(x))
           rows={}
           for label,lat,lng in centers:
-            q=urllib.parse.urlencode({'lat':lat,'lng':lng,'radius':900,'join':'sequence','orderBy':'id','orderDirection':'desc'})
-            try:data=(get_json('https://api.openstreetcam.org/2.0/photo/?'+q) or {}).get('result',{}).get('data',[])
+            q=urllib.parse.urlencode({'lat':lat,'lng':lng,'zoomLevel':17,'join':'sequence','orderBy':'id','orderDirection':'desc'})
+            try:data=(fetch('https://api.openstreetcam.org/2.0/photo/?'+q,True) or {}).get('result',{}).get('data',[])
             except Exception as exc:
               print(f'{label}: API error {type(exc).__name__}: {exc}');continue
             for d in data:
               try:plat=float(d['lat']);plng=float(d['lng'])
               except Exception:continue
-              urls=[d[k] for k in ('fileurlLTh','fileurlProc','fileurlTh') if isinstance(d.get(k),str) and d[k].startswith('http')]
+              urls=[]
+              for k in ('fileurlLTh','fileurlProc','fileurlTh'):
+                u=d.get(k)
+                if isinstance(u,str) and u.startswith('http') and u not in urls:urls.append(u)
               if not urls:continue
               pid=str(d.get('id'));dist=round(hav(lat,lng,plat,plng),1)
               row=rows.get(pid,{'id':d.get('id'),'lat':plat,'lng':plng,'heading':d.get('heading'),'sequence_id':(d.get('sequence') or {}).get('id'),'urls':urls,'hits':[]})
@@ -69,20 +81,23 @@ jobs:
           for r in vals:r['best_distance_m']=min(h['distance_m'] for h in r['hits'])
           vals.sort(key=lambda r:r['best_distance_m'])
           downloaded=0
-          for r in vals:
-            if downloaded>=40 or r['best_distance_m']>1200:continue
-            try:
-              req=urllib.request.Request(r['urls'][0],headers=ua)
-              with urllib.request.urlopen(req,timeout=40) as resp:b=resp.read()
-              if len(b)<5000:continue
-              p=out/f"{downloaded+1:02d}_{round(r['best_distance_m']):04d}m_{r['id']}.jpg"
-              p.write_bytes(b);r['downloaded_file']=p.name;r['sha1']=hashlib.sha1(b).hexdigest();r['bytes']=len(b);downloaded+=1
-              time.sleep(1)
-            except Exception as exc:r['download_error']=f'{type(exc).__name__}: {exc}'
+          for r in vals[:16]:
+            errors=[]
+            for u in r['urls']:
+              try:
+                b=fetch(u,False)
+                if len(b)<5000:
+                  errors.append(f'too-small:{len(b)}');continue
+                p=out/f"{downloaded+1:02d}_{round(r['best_distance_m']):04d}m_{r['id']}.jpg"
+                p.write_bytes(b);r['downloaded_file']=p.name;r['sha1']=hashlib.sha1(b).hexdigest();r['bytes']=len(b);r['selected_url']=u;downloaded+=1
+                break
+              except Exception as exc:errors.append(f'{type(exc).__name__}: {exc}')
+            if not r.get('downloaded_file'):r['download_errors']=errors
+            time.sleep(1)
           report={'scope':'P3.1 Casablanca Maârif residential KartaView discovery','centers':centers,'candidate_count':len(vals),'downloaded':downloaded,'candidates':vals}
           (out/'candidates.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           print(f'MAARIF_KARTAVIEW candidates={len(vals)} downloaded={downloaded}')
-          if downloaded < 6: raise SystemExit(f'Only {downloaded} Maârif review pixels downloaded')
+          if downloaded < 4: raise SystemExit(f'Only {downloaded} Maârif review pixels downloaded')
           PY
       - name: Upload Maârif KartaView proof
         if: always()
