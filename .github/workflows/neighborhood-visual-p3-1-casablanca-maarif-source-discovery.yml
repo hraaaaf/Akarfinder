@@ -14,7 +14,7 @@ permissions:
 jobs:
   discover:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -39,7 +39,7 @@ jobs:
           ]
           params={'action':'query','format':'json','formatversion':'2','prop':'imageinfo|categories','iiprop':'url|size|sha1|mime|extmetadata','iiurlwidth':'1280','cllimit':'max','titles':'|'.join(titles)}
           url='https://commons.wikimedia.org/w/api.php?'+urllib.parse.urlencode(params)
-          req=urllib.request.Request(url,headers={'User-Agent':'AkarFinder/1.0 (P3.1 Maarif metadata-only discovery)'})
+          req=urllib.request.Request(url,headers={'User-Agent':'AkarFinder/1.0 (P3.1 Maarif metadata discovery)'})
           payload=None
           for attempt in range(3):
             try:
@@ -47,24 +47,44 @@ jobs:
               break
             except urllib.error.HTTPError as exc:
               if exc.code != 429 or attempt == 2: raise
-              delay=int(exc.headers.get('Retry-After','3'))
-              time.sleep(min(max(delay,1),10))
+              time.sleep(min(max(int(exc.headers.get('Retry-After','4')),1),12))
           rows=[]
           for page in (payload or {}).get('query',{}).get('pages',[]):
             ii=(page.get('imageinfo') or [{}])[0]; ext=ii.get('extmetadata') or {}; cats=[c.get('title','') for c in page.get('categories',[])]
-            rows.append({
-              'title':page.get('title',''),'pageid':page.get('pageid'),'missing':page.get('missing',False),
-              'width':ii.get('width'),'height':ii.get('height'),'bytes':ii.get('size'),'sha1':ii.get('sha1'),'mime':ii.get('mime'),
-              'thumburl':ii.get('thumburl'),'original_url':ii.get('url'),'license':(ext.get('LicenseShortName') or {}).get('value'),
-              'license_url':(ext.get('LicenseUrl') or {}).get('value'),'artist':re.sub('<[^>]+>',' ',(ext.get('Artist') or {}).get('value','')).strip(),
-              'description':re.sub('<[^>]+>',' ',(ext.get('ImageDescription') or {}).get('value','')).strip(),
-              'date_time_original':(ext.get('DateTimeOriginal') or {}).get('value'),'categories':cats,
-              'no_fop_morocco':any('NoFoP-Morocco' in c for c in cats),
-            })
-          report={'scope':'P3.1 Casablanca Maârif metadata-only source discovery','candidate_count':len(rows),'candidates':rows}
+            rows.append({'title':page.get('title',''),'pageid':page.get('pageid'),'missing':page.get('missing',False),'width':ii.get('width'),'height':ii.get('height'),'bytes':ii.get('size'),'sha1':ii.get('sha1'),'mime':ii.get('mime'),'thumburl':ii.get('thumburl'),'original_url':ii.get('url'),'license':(ext.get('LicenseShortName') or {}).get('value'),'license_url':(ext.get('LicenseUrl') or {}).get('value'),'artist':re.sub('<[^>]+>',' ',(ext.get('Artist') or {}).get('value','')).strip(),'description':re.sub('<[^>]+>',' ',(ext.get('ImageDescription') or {}).get('value','')).strip(),'date_time_original':(ext.get('DateTimeOriginal') or {}).get('value'),'categories':cats,'no_fop_morocco':any('NoFoP-Morocco' in c for c in cats)})
+          report={'scope':'P3.1 Casablanca Maârif source discovery','candidate_count':len(rows),'candidates':rows}
           (OUT/'candidates.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           if len(rows)!=len(titles): raise SystemExit(f'Expected {len(titles)} candidates, got {len(rows)}')
-          print(json.dumps(report,ensure_ascii=False,indent=2))
+          PY
+      - name: Fetch review pixels with rate limiting
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib, json, pathlib, time, urllib.error, urllib.request
+          OUT=pathlib.Path('data/audits/neighborhood-visual-p3-1-casablanca-maarif-source-discovery')
+          data=json.loads((OUT/'candidates.json').read_text(encoding='utf-8'))
+          pix=OUT/'review-pixels'; pix.mkdir(exist_ok=True)
+          successes=0
+          for index,row in enumerate(data['candidates'],1):
+            url=row.get('thumburl')
+            if not url: continue
+            for attempt in range(3):
+              try:
+                req=urllib.request.Request(url,headers={'User-Agent':'AkarFinder/1.0 (P3.1 Maarif visual review; rate limited)'})
+                with urllib.request.urlopen(req,timeout=45) as r: body=r.read()
+                dest=pix/f'{index:02d}.jpg'; dest.write_bytes(body)
+                row['review_file']=str(dest.relative_to(OUT)); row['review_sha1']=hashlib.sha1(body).hexdigest(); row['review_bytes']=len(body)
+                successes+=1
+                break
+              except urllib.error.HTTPError as exc:
+                if exc.code != 429 or attempt == 2: row['review_error']=f'HTTP {exc.code}'; break
+                time.sleep(min(max(int(exc.headers.get('Retry-After','5')),2),15))
+              except Exception as exc:
+                row['review_error']=type(exc).__name__; break
+            time.sleep(4)
+          data['review_pixels_downloaded']=successes
+          (OUT/'candidates.json').write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          if successes < 6: raise SystemExit(f'Only {successes}/8 review pixels downloaded')
           PY
       - name: Upload discovery proof
         if: always()
