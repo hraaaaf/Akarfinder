@@ -1,8 +1,21 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-13**
+**Mise à jour : 2026-08-14**
 
 Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
+
+<!-- UI-POLISH-SEARCH-V1-START -->
+## UI polish — Search v1 figé, reprise globale active
+
+- **P0 Search ✅ TECHNIQUEMENT CLOSED** — PR #582 mergée (`599a85aa31da435faa23a4c81f1a549058b2f602`) ; ancienne #578 fermée sans merge.
+- Head Search final certifié : `af8cd4106abaeda62faa3e95d9fe1a4de858c95e`.
+- Workflow exact-head `31752327411` : **SUCCESS** avec Product Design Reviewer + Independent Release Certifier.
+- Matrice réelle certifiée : **360×800 / 390×844 / 768×900 / 1024×800 / 1280×900 / 1440×900**.
+- Référence persistante : `docs/UX_SEARCH_V1_REFERENCE.md`.
+- **P1 NEXT** : audit réel mobile 390 / 430 px de `/search`, `/favorites`, `/map`, `/alerts`, `/compare`, `/mon-projet`, puis routes secondaires actives.
+- Mockup board = référence visuelle v1 ; Carte verrouillée sur **quartiers colorés + légende + pins prix + sélection quartier + card/bottom-sheet**.
+- La lane DATA et la bibliothèque visuelle quartiers restent indépendantes et ne doivent pas être écrasées par la reprise UI.
+<!-- UI-POLISH-SEARCH-V1-END -->
 
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->
 ## Bibliothèque visuelle quartiers — Souissi Pilot ✅ CLOSED
@@ -17,6 +30,15 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-END -->
 
 ## Priorité d’exécution
+
+### UI polish / mockup v1
+
+- **P0 Search closeout ✅** — baseline Search persistée ; aucun redesign sans finding mesuré.
+- **P1 Audit réel mobile 🔄 ACTIF** — `/search`, `/favorites`, `/map`, `/alerts`, `/compare`, `/mon-projet` ; 390 / 430 px ; score, écarts, composants réutilisables et composants à harmoniser.
+- **P2 Design system transversal ⏳** — header, glass bottom-nav, surfaces/cards, radius/shadows/blur, typo, chips/boutons, toolbar, spacing, loading/empty/error.
+- **P3 Pages prioritaires ⏳** — Favoris → Carte → Alertes → Comparer → Mon projet/Compte.
+- **P4 Pages secondaires ⏳** — seulement routes publiques réellement actives.
+- **P5 Certification globale ⏳** — 390 / 430 / 768 / 1280, FR + AR si concerné, zéro overflow, accessibilité, navigation/bottom-nav cohérentes, aucun conflit DATA/search/ranking.
 
 ### Bibliothèque visuelle quartiers — Rabat
 
@@ -63,7 +85,7 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 
 - Convergence **UX-SEARCH-1 → UX-SEARCH-7 ✅ COMPLETE**.
 - Header, Search controls, results toolbar, cards, visual inventory, mobile precision et bottom-nav disposent de gates exact-head dédiés.
-- Toute réouverture exige un finding mesuré ; ne pas casser les predecessor gates pour accélérer une lane indépendante.
+- La baseline finale de reprise est documentée dans `docs/UX_SEARCH_V1_REFERENCE.md` et ne se rouvre qu’avec un finding mesuré.
 
 ## Invariants opérationnels
 
@@ -77,6 +99,8 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 
 ## Reprise exacte
 
+**UI polish : P1 Audit réel mobile 390 / 430 px est la lane active de cette conversation.** P0 Search est clos et sert de référence visuelle v1.
+
 **DATA MASS : MASS-1 → MASS-6 ✅ CLOSED.** Aucun MASS-7 canonique n’est défini. Le National Mass Engine reste shadow/read-only et fail-closed à POLICY tant que le Source Registry ne contient aucune autorisation positive. Toute écriture DB/Registry/Search ou activation exige un feu vert humain explicite préalable.
 
-En parallèle, **P1.8 Océan** reste une lane indépendante et ne doit pas être cassée par le lot DATA.
+En parallèle, **P1.8 Océan** reste une lane indépendante et ne doit pas être cassée par le lot UI.
