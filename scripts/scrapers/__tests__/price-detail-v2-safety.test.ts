@@ -4,6 +4,7 @@ import {
   extractStrictDetailPrice,
   isRecognizedDetailUrl,
   isUnsupportedPriceCadence,
+  parseMoneyAmount,
 } from "../price-detail-enrichment-v2";
 
 test("recognized detail URLs exclude category/search pages", () => {
@@ -19,6 +20,12 @@ test("DarAgadir short-stay cadence is rejected before fetch", () => {
   assert.equal(isUnsupportedPriceCadence("daragadir.com", "https://daragadir.com/annonces/annonces-immobilieres/location-de-vacances/a-1400-dh.html"), true);
   assert.equal(isUnsupportedPriceCadence("daragadir.com", "https://daragadir.com/annonces/annonces-immobilieres/location/appartement-a-louer-5500-dh.html"), false);
   assert.equal(isUnsupportedPriceCadence("mubawab.ma", "https://mubawab.ma/fr/a/123/x"), false);
+});
+
+test("money parser never concatenates surface digits with price", () => {
+  assert.equal(parseMoneyAmount("Villa 333 m² à vendre 3 400 000 DH"), 3_400_000);
+  assert.equal(parseMoneyAmount("Surface 74 m² Prix 850 000 DH"), 850_000);
+  assert.equal(parseMoneyAmount("Loyer 5 500 DH par mois"), 5_500);
 });
 
 test("strict detail price accepts explicit total price", () => {
