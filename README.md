@@ -24,12 +24,14 @@ Ordre de vérité :
 - **MASS-2 ✅ CLOSED / 100 %** — 101/101 audités ; 43 `PERMISSION_REQUIRED`, 58 `HOLD`, 0 permission positive/activation inférée.
 - **MASS-3 ✅ CLOSED — PR #566** — Minimal Listing Index fail-closed ; 35 Registry rows, 0 admissible, 0 canary, 0 mutation.
 - **MASS-4 ✅ CLOSED — PR #568** — Mass Reclassification read-only ; 5 284 sources actives, 0 admissible ; `Quality ≠ Eligibility ≠ Permission`.
-- **MASS-5 ✅ CLOSED — PR #569** — Discovery Expansion Shadow ; 109 domaines live au run final MASS-6, les ajouts restent non autorisés/non activables.
-- **MASS-6 ✅ CLOSED — PR #572** — National Mass Engine shadow ; merge `471e792f0ea14b6a0bf54ef7fad09eff0d341030` ; exact head `b50e6275393043b736f35c783415b393b86751f9` ; run `31731327963` SUCCESS ; artefact `9196734887`, digest `sha256:48c0a4cdf3bf83dc9f8f4f1d9a7a37c48dc4ad636412a0a3b83817e49e0bc9e0` ; pipeline `DISCOVER → CLASSIFY → POLICY → INDEX → FRESHNESS → DEDUP → RANK` fail-closed, bloqué à `POLICY` ; 209 109 discovery rows, 109 domaines Source Factory, 8 nouveaux domaines post-baseline, 0 Registry admissible ; preuves MASS-1/4/5 read-only vérifiées ; 0 write/fetch/activation/permission inférée.
+- **MASS-5 ✅ CLOSED — PR #569** — Discovery Expansion Shadow ; nouveaux domaines mesurés sans autorisation implicite.
+- **MASS-6 ✅ CLOSED — PR #572** — National Mass Engine shadow ; pipeline national fail-closed bloqué à `POLICY`, 0 Registry admissible.
+- **MASS-X5 ✅ CLOSED — PR #609** — Exact Reconciliation Shadow v2 ; merge `3f1724faf03fd3c93fdafc2f522d61465d377e5b` ; exact head certifié `f66c5578c433df52da37a00dc36d9a39010846ae` ; run `31762998799` SUCCESS ; artefact `9205427369`, digest `sha256:d3aeb0f481e985c8a7662553ee3e5e589148af724586ad1ed68122dc2f126d43` ; 51 169 candidats uniques, 36 732 overlaps exacts, 14 437 net-new exacts ; `candidate = overlap + net-new` vérifié ; invariants : 0 DB write, 0 Registry write, 0 Search activation, 0 source-page fetch, 0 WARC fetch, 0 permission inference ; `candidate_grants_authorization=false`.
+- Preuve historique superseded #599/run `31759264360` conservée : 50 200 candidats, 35 764 overlaps, 14 436 net-new, digest `sha256:4986e891418b43aad6bceb2354bef25af61c28af1279212dd5b7c4584229415d`. #599 a été close après divergence ; #609 est la recertification canonique sur `main` courant.
 
 Doctrine : attribution ≠ permission ; robots/sitemap/capability ≠ permission ; candidate ≠ authorization ; Source Registry autoritaire ; no-bypass.
 
-**PROGRAMME MASS-1 → MASS-6 ✅ CLOSED. Aucun MASS-7 canonique n’est défini. Toute mutation/activation production reste soumise à un gate humain explicite séparé.**
+**PROGRAMME DATA MASS ✅ CLOSED. MASS-X5 clôt la série de mesure/réconciliation shadow. Aucune activation ni mutation production n'est autorisée par ces preuves ; tout write DB/Registry/Search reste soumis à un gate humain explicite séparé.**
 <!-- DATA-MASS-CURRENT-END -->
 
 
