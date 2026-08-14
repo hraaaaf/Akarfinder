@@ -1,0 +1,25 @@
+name: SEARCH Ranking v2.1 Data Richness
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260814200500_search_ranking_v2_1_data_richness.sql'
+      - 'scripts/scrapers/__tests__/search-ranking-v2-1-data-richness.test.ts'
+      - '.github/workflows/search-ranking-v2-1-data-richness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/search-ranking-v2-1-data-richness.test.ts
+      - run: npx tsc --noEmit
