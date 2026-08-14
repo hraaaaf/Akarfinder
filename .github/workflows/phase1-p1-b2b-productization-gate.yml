@@ -2,6 +2,17 @@ name: Phase 1 P1 B2B Productization Gate
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "lib/professional/**"
+      - "app/api/leads/route.ts"
+      - "supabase/migrations/20260723070000_professional_activation_requests_v1.sql"
+      - "app/pro/**"
+      - "app/promoteurs/**"
+      - "components/pro/**"
+      - "app/demo/**"
+      - "components/demo/**"
+      - "scripts/scrapers/__tests__/phase1-p1-b2b-productization.test.ts"
+      - ".github/workflows/phase1-p1-b2b-productization-gate.yml"
   workflow_dispatch: {}
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
