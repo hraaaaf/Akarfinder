@@ -1,0 +1,56 @@
+name: DATA MASS-X4C Common Crawl Sharded Shadow
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/data-mass-x4c-commoncrawl-sharded-shadow.yml'
+permissions:
+  contents: read
+jobs:
+  shard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: a
+            domains: 'avito.ma,mubawab.ma,agenz.ma,sarouty.ma'
+          - shard: b
+            domains: 'daragadir.com,mouldar.com,masaken.ma,soukimmobilier.com'
+          - shard: c
+            domains: 'promoimmomarrakech.com,limmobiliersansfrontieres.com,atlasimmobilier.com,aykana.ma'
+          - shard: d
+            domains: 'barnes-marrakech.com,1immo.ma,kawtarimmobilier.com,marrakechrealty.com'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Restrict local registry to shard
+        env:
+          DOMAINS: ${{ matrix.domains }}
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='data/openserp/source-domain-registry.json';
+          const r=JSON.parse(fs.readFileSync(p,'utf8'));
+          const keep=new Set(process.env.DOMAINS.split(','));
+          r.domains=r.domains.filter(x=>keep.has(x.domain));
+          fs.writeFileSync(p,JSON.stringify(r));
+          NODE
+          sed -i 's/const CDX_REQUEST_PACING_MS = 2_500/const CDX_REQUEST_PACING_MS = 250/' scripts/openserp/commoncrawl-reservoir-harvest.ts
+          sed -i 's/const CDX_MAX_ATTEMPTS = 6/const CDX_MAX_ATTEMPTS = 2/' scripts/openserp/commoncrawl-reservoir-harvest.ts
+          sed -i 's/const CDX_RETRY_BASE_MS = 3_000/const CDX_RETRY_BASE_MS = 1_000/' scripts/openserp/commoncrawl-reservoir-harvest.ts
+      - name: Harvest shard metadata only
+        run: timeout 18m npx tsx scripts/openserp/commoncrawl-reservoir-harvest.ts 'CC-MAIN-2026-25,CC-MAIN-2026-21,CC-MAIN-2026-17,CC-MAIN-2026-13,CC-MAIN-2026-09,CC-MAIN-2026-05,CC-MAIN-2025-51,CC-MAIN-2025-43,CC-MAIN-2025-30,CC-MAIN-2025-26,CC-MAIN-2025-18,CC-MAIN-2025-13,CC-MAIN-2025-08,CC-MAIN-2025-05'
+      - name: Verify result
+        run: test -s data/audits/raw-results/commoncrawl-reservoir-canonical-urls.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: data-mass-x4c-${{ matrix.shard }}
+          path: data/audits/raw-results/commoncrawl-reservoir-canonical-urls.txt
+          if-no-files-found: warn
+          retention-days: 30
