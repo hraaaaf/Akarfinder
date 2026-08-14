@@ -2,6 +2,7 @@ import { Buffer } from "node:buffer";
 import { createHash, timingSafeEqual } from "node:crypto";
 
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { diversifySearchGatewayResults } from "@/lib/search-gateway/search-gateway-diversify";
 import { mapSeedToThinIndexResult } from "@/lib/search-gateway/seed-thin-index";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
@@ -145,6 +146,20 @@ function toSeedRow(row: PublicSearchRpcRow) {
   };
 }
 
+function mapAndDiversifyWithinBusinessLanes(rows: PublicSearchRpcRow[]): SearchGatewayNormalizedResult[] {
+  const laneOrder = [...new Set(rows.map((row) => row.lane_weight))].sort((a, b) => a - b);
+  const diversified: SearchGatewayNormalizedResult[] = [];
+
+  for (const lane of laneOrder) {
+    const laneResults = rows
+      .filter((row) => row.lane_weight === lane)
+      .map((row) => mapSeedToThinIndexResult(toSeedRow(row) as never));
+    diversified.push(...diversifySearchGatewayResults(laneResults, 1));
+  }
+
+  return diversified;
+}
+
 export async function searchPublicRepresentations(input: PublicSearchInput): Promise<PublicSearchPage> {
   const cursor = decodePublicSearchCursor(input.cursor);
   const pageSize = Math.max(1, Math.min(Math.trunc(input.limit ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE));
@@ -171,7 +186,7 @@ export async function searchPublicRepresentations(input: PublicSearchInput): Pro
   const pageRows = rows.slice(0, pageSize);
   const tail = pageRows.at(-1);
   return {
-    results: pageRows.map((row) => mapSeedToThinIndexResult(toSeedRow(row) as never)),
+    results: mapAndDiversifyWithinBusinessLanes(pageRows),
     results_count: pageRows.length,
     total_count: Number(pageRows[0]?.total_count ?? 0),
     has_more: hasMore,
