@@ -1,0 +1,37 @@
+name: DATA MASS-X4 Common Crawl Deep Reservoir Shadow
+on:
+  pull_request:
+    paths:
+      - "data/data-mass-x4/**"
+      - "docs/data/DATA-MASS-X4-COMMONCRAWL-DEEP-RESERVOIR.md"
+      - ".github/workflows/data-mass-x4-commoncrawl-deep-reservoir-shadow.yml"
+permissions:
+  contents: read
+jobs:
+  deep-reservoir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Enforce read-only contract
+        run: node -e "const c=require('./data/data-mass-x4/commoncrawl-deep-reservoir-contract.json');if(c.mode!=='shadow_read_only'||c.commonCrawlIndexes!==14||!c.metadataOnly||c.warcDownloads||c.sourcePageFetches||c.databaseAccess||c.databaseWrites||c.registryWrites||c.searchActivations||c.permissionsInferred)process.exit(1)"
+      - name: Confirm Common Crawl index API
+        run: curl -fsS -m 20 -o /dev/null https://index.commoncrawl.org/collinfo.json
+      - name: Harvest 14-index reservoir metadata only
+        run: |
+          mkdir -p data/audits/raw-results
+          npx tsx scripts/openserp/commoncrawl-reservoir-harvest.ts "CC-MAIN-2026-25,CC-MAIN-2026-21,CC-MAIN-2026-17,CC-MAIN-2026-13,CC-MAIN-2026-09,CC-MAIN-2026-05,CC-MAIN-2025-51,CC-MAIN-2025-43,CC-MAIN-2025-30,CC-MAIN-2025-26,CC-MAIN-2025-18,CC-MAIN-2025-13,CC-MAIN-2025-08,CC-MAIN-2025-05" | tee data/audits/raw-results/mass-x4-summary.log
+      - name: Verify artifact exists
+        run: test -s data/audits/raw-results/commoncrawl-reservoir-canonical-urls.txt && grep -q 'RESERVOIR SUMMARY' data/audits/raw-results/mass-x4-summary.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-x4-commoncrawl-deep-reservoir
+          path: |
+            data/audits/raw-results/commoncrawl-reservoir-canonical-urls.txt
+            data/audits/raw-results/mass-x4-summary.log
+          retention-days: 30
