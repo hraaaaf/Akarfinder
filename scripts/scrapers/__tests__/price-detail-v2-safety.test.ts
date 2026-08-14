@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   extractStrictDetailPrice,
   isRecognizedDetailUrl,
+  isUnsupportedPriceCadence,
 } from "../price-detail-enrichment-v2";
 
 test("recognized detail URLs exclude category/search pages", () => {
@@ -12,6 +13,12 @@ test("recognized detail URLs exclude category/search pages", () => {
   assert.equal(isRecognizedDetailUrl("mubawab.ma", "https://mubawab.ma/fr/a/8353597/appartement-x"), true);
   assert.equal(isRecognizedDetailUrl("mubawab.ma", "https://mubawab.ma/fr/is/appartement-location-rabat"), false);
   assert.equal(isRecognizedDetailUrl("mouldar.com", "https://mouldar.com/en/rent/studio/marrakech"), false);
+});
+
+test("DarAgadir short-stay cadence is rejected before fetch", () => {
+  assert.equal(isUnsupportedPriceCadence("daragadir.com", "https://daragadir.com/annonces/annonces-immobilieres/location-de-vacances/a-1400-dh.html"), true);
+  assert.equal(isUnsupportedPriceCadence("daragadir.com", "https://daragadir.com/annonces/annonces-immobilieres/location/appartement-a-louer-5500-dh.html"), false);
+  assert.equal(isUnsupportedPriceCadence("mubawab.ma", "https://mubawab.ma/fr/a/123/x"), false);
 });
 
 test("strict detail price accepts explicit total price", () => {
