@@ -29,7 +29,16 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
   - run initial `31813395364` conservé comme preuve superseded : 68 captures produites mais faux négatif du harness sur deux sélecteurs Compare inexistants ; aucun défaut produit associé.
 - **UI polish / mockup v1 ✅ CLOSED — 100 %** — P0 → P5 certifiés et mergés.
 - **Archive de certification : `docs/UI_POLISH_V1_CERTIFICATION.md`**.
+- **Hotfix navigation post-closeout ✅ — PR #625**, merge `ad98a9cc3afddb3ee096c478fd990cc05ddddacc` : accès explicite `Ouvrir le comparateur` ajouté dans l’en-tête Favoris, visible même sans favori ; P3/P5 et tous gates exact-head verts ; inspection 390 / 430 / 768 / 1280 PASS.
 - La lane UI n'a pas modifié DATA, ranking, Registry, persistance, géographie ou moteur listing hors de son périmètre.
+
+## Audit Toutes Pages — nouveau chantier
+
+- **ACTIVE — inventaire exhaustif en cours ; pourcentage volontairement non déterminé avant comptage automatique des `app/**/page.tsx` et résolution des fixtures dynamiques.**
+- Doctrine : chaque vraie page App Router compte, y compris routes dynamiques, redirections, pages auth et pages demo/QA ; les `route.ts` API ne comptent pas comme pages.
+- Le futur harness découvre les `page.tsx` depuis le filesystem, exige un fixture explicite pour chaque route dynamique et fail-close sur toute page non classée.
+- Viewports cibles : 390×844 / 430×932 / 768×900 / 1280×900.
+- Mesures minimales : statut/redirect attendu, H1 quand applicable, overflow horizontal, navigation mobile/desktop, erreurs console diagnostiques et capture full-page.
 
 ## Bibliothèque visuelle quartiers — Rabat
 
@@ -54,4 +63,4 @@ Doctrine verrouillée : photos réelles uniquement, provenance/licence défendab
 
 ## Reprise exacte
 
-**UI polish / mockup v1 : P0 → P5 ✅ CLOSED, progression stricte 100 %. Aucun lot UI de cette roadmap ne reste ouvert. Prochaine reprise UI uniquement sur nouveau finding mesuré ou nouvelle roadmap explicitement définie.**
+**UI polish / mockup v1 ✅ CLOSED 100 % + hotfix Compare #625 ✅. Chantier actif : Audit Toutes Pages. Prochaine action exacte : générer l’inventaire exhaustif depuis `app/**/page.tsx`, résoudre les fixtures dynamiques/redirect/auth, fixer la métrique de progression, puis lancer la baseline Chromium réelle de toutes les pages.**
