@@ -59,16 +59,8 @@ const listings = Array.from({ length: 8 }, (_, index) => ({
   origin_type: "first_party_user",
 }));
 
-const rect = (element) => {
-  if (!element) return null;
-  const box = element.getBoundingClientRect();
-  return {
-    top: Math.round(box.top),
-    left: Math.round(box.left),
-    width: Math.round(box.width),
-    height: Math.round(box.height),
-    bottom: Math.round(box.bottom),
-  };
+const assert = (condition, message) => {
+  if (!condition) throw new Error(message);
 };
 
 await mkdir(outputDir, { recursive: true });
@@ -87,17 +79,13 @@ try {
       });
     });
     await page.route("**/api/search/gateway?**", async (requestRoute) => {
-      await requestRoute.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ results: [], total_count: 0, next_cursor: null, has_more: false }),
-      });
+      await requestRoute.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ results: [], total_count: 0, next_cursor: null, has_more: false }) });
     });
 
     try {
       const response = await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded", timeout: 45_000 });
-      if (!response || response.status() >= 400) throw new Error(`${viewport.name}: route returned ${response?.status() ?? "no response"}`);
-      await page.waitForFunction(() => document.querySelectorAll('article[data-property-active]').length >= 8, null, { timeout: 20_000 });
+      assert(response && response.status() < 400, `${viewport.name}: route returned ${response?.status() ?? "no response"}`);
+      await page.waitForFunction(() => document.querySelectorAll("article[data-property-active]").length >= 8, null, { timeout: 20_000 });
       await page.waitForTimeout(250);
 
       const metrics = await page.evaluate(() => {
@@ -106,39 +94,33 @@ try {
           const r = element.getBoundingClientRect();
           return { top: Math.round(r.top), left: Math.round(r.left), width: Math.round(r.width), height: Math.round(r.height), bottom: Math.round(r.bottom) };
         };
-        const grid = document.querySelector('[data-search-continuous-flow] > div.grid');
-        const cards = Array.from(document.querySelectorAll('article[data-property-active]'));
-        const gridStyle = grid ? getComputedStyle(grid) : null;
-        const columnTemplate = gridStyle?.gridTemplateColumns ?? "";
-        const columnCount = columnTemplate ? columnTemplate.split(" ").filter(Boolean).length : 0;
+        const grid = document.querySelector("[data-search-continuous-flow] > div.grid");
+        const cards = Array.from(document.querySelectorAll("article[data-property-active]"));
+        const columnTemplate = grid ? getComputedStyle(grid).gridTemplateColumns : "";
         const cardRects = cards.slice(0, 8).map(box).filter(Boolean);
         const firstRowTop = cardRects[0]?.top ?? null;
-        const firstRowCount = firstRowTop == null ? 0 : cardRects.filter((item) => Math.abs(item.top - firstRowTop) <= 2).length;
-        const searchInput = document.querySelector('#property-search');
-        const filterTrigger = document.querySelector('[data-search-filter-trigger]');
-        const primaryRow = document.querySelector('[data-search-primary-filter-row]');
-        const quickFilters = document.querySelector('[data-search-quick-filters]');
-        const toolbar = document.querySelector('[data-search-results-toolbar]');
-        const mobileView = document.querySelector('[data-search-mobile-view-select]');
-        const desktopView = document.querySelector('[data-search-desktop-view-switcher]');
-        const sort = document.querySelector('[data-search-sort-select]');
-        const desktopTransactions = document.querySelector('[data-search-desktop-transaction-tabs]');
+        const searchInput = document.querySelector("#property-search");
+        const filterTrigger = document.querySelector("[data-search-filter-trigger]");
+        const primaryRow = document.querySelector("[data-search-primary-filter-row]");
+        const quickFilters = document.querySelector("[data-premium-quickfilters-row]");
+        const toolbar = document.querySelector("[data-search-results-toolbar]");
+        const mobileView = document.querySelector("[data-search-mobile-view-select]");
+        const desktopView = document.querySelector("[data-search-desktop-view-switcher]");
+        const sort = document.querySelector("[data-search-sort-select]");
+        const desktopTransactions = document.querySelector("[data-search-desktop-transaction-tabs]");
         const searchRect = box(searchInput);
         const filterRect = box(filterTrigger);
-        const mobileViewRect = box(mobileView);
-        const sortRect = box(sort);
         return {
-          column_template: columnTemplate,
-          column_count: columnCount,
-          first_row_count: firstRowCount,
+          column_count: columnTemplate ? columnTemplate.split(" ").filter(Boolean).length : 0,
+          first_row_count: firstRowTop == null ? 0 : cardRects.filter((item) => Math.abs(item.top - firstRowTop) <= 2).length,
           first_card_top: cardRects[0]?.top ?? null,
           primary_row: box(primaryRow),
           quick_filters: box(quickFilters),
           results_toolbar: box(toolbar),
           search_input: searchRect,
           filter_trigger: filterRect,
-          mobile_view: mobileViewRect,
-          sort_select: sortRect,
+          mobile_view: box(mobileView),
+          sort_select: box(sort),
           search_filter_same_row: Boolean(searchRect && filterRect && Math.abs(searchRect.top - filterRect.top) <= 2),
           desktop_transaction_display: desktopTransactions ? getComputedStyle(desktopTransactions).display : null,
           mobile_view_display: mobileView ? getComputedStyle(mobileView).display : null,
@@ -146,35 +128,34 @@ try {
           horizontal_overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
           client_width: document.documentElement.clientWidth,
           scroll_width: document.documentElement.scrollWidth,
-          view_mode: document.querySelector('[data-search-view-layout]')?.getAttribute('data-search-view-layout') ?? null,
+          view_mode: document.querySelector("[data-search-view-layout]")?.getAttribute("data-search-view-layout") ?? null,
         };
       });
 
-      const measured = { name: viewport.name, expected_columns: viewport.expectedColumns, ...metrics };
-      results.push(measured);
+      results.push({ name: viewport.name, expected_columns: viewport.expectedColumns, ...metrics });
       await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });
 
-      if (metrics.view_mode !== "list") throw new Error(`${viewport.name}: expected list view, got ${metrics.view_mode}`);
-      if (metrics.horizontal_overflow) throw new Error(`${viewport.name}: horizontal overflow ${metrics.scroll_width}/${metrics.client_width}`);
-      if (metrics.column_count !== viewport.expectedColumns || metrics.first_row_count !== viewport.expectedColumns) {
-        throw new Error(`${viewport.name}: density regression ${metrics.column_count}/${metrics.first_row_count}, expected ${viewport.expectedColumns}`);
-      }
-      if (!metrics.search_filter_same_row) throw new Error(`${viewport.name}: primary search and filter trigger are not on one row`);
-      if ((metrics.quick_filters?.height ?? 999) > 56) throw new Error(`${viewport.name}: closed quick filters too tall at ${metrics.quick_filters?.height}px`);
-      if ((metrics.results_toolbar?.height ?? 999) > 62) throw new Error(`${viewport.name}: results toolbar too tall at ${metrics.results_toolbar?.height}px`);
+      assert(metrics.view_mode === "list", `${viewport.name}: expected list view, got ${metrics.view_mode}`);
+      assert(!metrics.horizontal_overflow, `${viewport.name}: horizontal overflow ${metrics.scroll_width}/${metrics.client_width}`);
+      assert(metrics.column_count === viewport.expectedColumns && metrics.first_row_count === viewport.expectedColumns, `${viewport.name}: density regression ${metrics.column_count}/${metrics.first_row_count}, expected ${viewport.expectedColumns}`);
+      assert(metrics.search_filter_same_row, `${viewport.name}: primary search and filter trigger are not on one row`);
+      assert((metrics.quick_filters?.height ?? 999) <= 56, `${viewport.name}: premium quick-filter row too tall at ${metrics.quick_filters?.height}px`);
+      assert((metrics.results_toolbar?.height ?? 999) <= 62, `${viewport.name}: results toolbar too tall at ${metrics.results_toolbar?.height}px`);
 
       if (viewport.width < 640) {
-        if (metrics.desktop_transaction_display !== "none") throw new Error(`${viewport.name}: desktop transaction tabs should be hidden`);
-        if (metrics.mobile_view_display === "none") throw new Error(`${viewport.name}: compact mobile view selector missing`);
-        for (const [name, target] of [["search", metrics.search_input], ["filter", metrics.filter_trigger], ["view", metrics.mobile_view], ["sort", metrics.sort_select]]) {
-          if ((target?.height ?? 0) < 48) throw new Error(`${viewport.name}: ${name} touch target below 48px`);
+        assert(metrics.desktop_transaction_display === "none", `${viewport.name}: desktop transaction tabs should be hidden`);
+        assert(metrics.mobile_view_display === "none", `${viewport.name}: legacy mobile view selector should stay hidden in final Search baseline`);
+        assert(metrics.desktop_view_display === "none", `${viewport.name}: desktop view switcher should be hidden`);
+        for (const [name, target] of [["search", metrics.search_input], ["filter", metrics.filter_trigger]]) {
+          assert((target?.height ?? 0) >= 48, `${viewport.name}: ${name} touch target below 48px`);
         }
-        if ((metrics.first_card_top ?? 999) > 305) throw new Error(`${viewport.name}: first result starts too low at ${metrics.first_card_top}px`);
+        assert((metrics.sort_select?.height ?? 0) >= 43.5, `${viewport.name}: sort touch target below final 44px contract`);
+        assert((metrics.first_card_top ?? 999) <= 305, `${viewport.name}: first result starts too low at ${metrics.first_card_top}px`);
       }
 
       if (viewport.width >= 1024) {
-        if (metrics.desktop_transaction_display === "none") throw new Error(`${viewport.name}: desktop transaction tabs unexpectedly hidden`);
-        if ((metrics.first_card_top ?? 999) > 270) throw new Error(`${viewport.name}: first result starts too low at ${metrics.first_card_top}px`);
+        assert(metrics.desktop_transaction_display !== "none", `${viewport.name}: desktop transaction tabs unexpectedly hidden`);
+        assert((metrics.first_card_top ?? 999) <= 270, `${viewport.name}: first result starts too low at ${metrics.first_card_top}px`);
       }
     } catch (error) {
       failure = error;
@@ -187,11 +168,6 @@ try {
   await browser.close();
 }
 
-await writeFile(
-  `${outputDir}/metrics.json`,
-  `${JSON.stringify({ route, fixture_count: listings.length, generated_at: new Date().toISOString(), results, failure: failure instanceof Error ? failure.message : null }, null, 2)}\n`,
-  "utf8",
-);
-
+await writeFile(`${outputDir}/metrics.json`, `${JSON.stringify({ route, fixture_count: listings.length, generated_at: new Date().toISOString(), results, failure: failure instanceof Error ? failure.message : null }, null, 2)}\n`, "utf8");
 console.log(JSON.stringify(results, null, 2));
 if (failure) throw failure;
