@@ -1,8 +1,22 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-13**
+**Mise à jour : 2026-08-14**
 
 Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
+
+<!-- UI-POLISH-SEARCH-V1-START -->
+## UI polish — Search v1 figé, reprise globale active
+
+- **P0 Search ✅ TECHNIQUEMENT CLOSED** — PR #582 mergée (`599a85aa31da435faa23a4c81f1a549058b2f602`) ; ancienne #578 fermée sans merge.
+- Head Search final certifié : `af8cd4106abaeda62faa3e95d9fe1a4de858c95e`.
+- Workflow exact-head `31752327411` : **SUCCESS** avec `Product Design Reviewer — Full Search 10/10` + `Independent Release Certifier — Full Search 10/10`.
+- Matrice réelle certifiée : **360×800 / 390×844 / 768×900 / 1024×800 / 1280×900 / 1440×900**.
+- Preuves : artefact Product Design `9201430551`, digest `sha256:f2a2e5307dd61c97c1cde5fc7997f7a6fb65168a321cfc10bff656abfbcf4c74` ; artefact Release Certifier `9201481181`, digest `sha256:5c35ee26ce6595cecfa09601f6e8bc29c83c81e716b82a07fb57983ef55da1aa`.
+- Référence persistante : `docs/UX_SEARCH_V1_REFERENCE.md`.
+- **P1 NEXT : audit réel mobile 390 / 430 px** de `/search`, `/favorites`, `/map`, `/alerts`, `/compare`, `/mon-projet`, puis routes secondaires actives ; matrice Avant → Cible avant extraction du design system transversal.
+- Mockup board = référence visuelle v1 ; Carte verrouillée sur **quartiers colorés + légende + pins prix + sélection quartier + card/bottom-sheet**.
+- Ne pas rouvrir Search sans finding mesuré et ne pas modifier la lane DATA pour accélérer la reprise UI.
+<!-- UI-POLISH-SEARCH-V1-END -->
 
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-START -->
 ## Bibliothèque visuelle quartiers — Souissi Pilot ✅ CLOSED
@@ -17,6 +31,15 @@ Ce fichier est le handover opérationnel court. `README.md` porte l'identité/do
 <!-- NEIGHBORHOOD-VISUAL-P0-CLOSEOUT-END -->
 
 ## Priorité d’exécution
+
+### UI polish / mockup v1
+
+- **P0 Search closeout 🔄** — preuve persistante + canoniques + PR de closeout en cours ; Search ne doit plus être redessiné sans finding mesuré.
+- **P1 Audit réel mobile ⏳ NEXT** — `/search`, `/favorites`, `/map`, `/alerts`, `/compare`, `/mon-projet`, puis routes secondaires utiles ; 390 / 430 px ; score, écarts, composants réutilisables, composants à harmoniser.
+- **P2 Design system transversal ⏳** — header, glass bottom-nav, surfaces/cards, radius/shadows/blur, typo, chips/boutons, toolbar, spacing, loading/empty/error.
+- **P3 Pages prioritaires ⏳** — Favoris → Carte → Alertes → Comparer → Mon projet/Compte.
+- **P4 Pages secondaires ⏳** — seulement routes publiques réellement actives.
+- **P5 Certification globale ⏳** — 390 / 430 / 768 / 1280, FR + AR si concerné, zéro overflow, accessibilité, navigation/bottom-nav cohérentes, aucun conflit DATA/search/ranking.
 
 ### Bibliothèque visuelle quartiers — Rabat
 
@@ -63,7 +86,7 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 
 - Convergence **UX-SEARCH-1 → UX-SEARCH-7 ✅ COMPLETE**.
 - Header, Search controls, results toolbar, cards, visual inventory, mobile precision et bottom-nav disposent de gates exact-head dédiés.
-- Toute réouverture exige un finding mesuré ; ne pas casser les predecessor gates pour accélérer une lane indépendante.
+- La baseline finale de reprise est documentée dans `docs/UX_SEARCH_V1_REFERENCE.md` et ne se rouvre qu’avec un finding mesuré.
 
 ## Invariants opérationnels
 
@@ -77,6 +100,6 @@ Doctrine verrouillée : **photos réelles uniquement**, provenance/licence défe
 
 ## Reprise exacte
 
-**DATA MASS : MASS-1 → MASS-6 ✅ CLOSED.** Aucun MASS-7 canonique n’est défini. Le National Mass Engine reste shadow/read-only et fail-closed à POLICY tant que le Source Registry ne contient aucune autorisation positive. Toute écriture DB/Registry/Search ou activation exige un feu vert humain explicite préalable.
+**UI polish : terminer le closeout documentaire Search, puis lancer P1 Audit réel mobile 390 / 430 px.** La lane DATA reste indépendante et ne doit pas être écrasée par cette reprise UI.
 
-En parallèle, **P1.8 Océan** reste une lane indépendante et ne doit pas être cassée par le lot DATA.
+**DATA MASS : MASS-1 → MASS-6 ✅ CLOSED.** Le National Mass Engine reste shadow/read-only et fail-closed à POLICY tant que le Source Registry ne contient aucune autorisation positive. Toute écriture DB/Registry/Search ou activation exige un feu vert humain explicite préalable.
