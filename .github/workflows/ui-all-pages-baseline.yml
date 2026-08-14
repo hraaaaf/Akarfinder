@@ -59,6 +59,8 @@ jobs:
           exit 1
       - name: Capture every renderable page
         run: node scripts/audits/ui-all-pages-baseline.mjs
+      - name: Strict certification assertion
+        run: node scripts/audits/ui-all-pages-certify.mjs
       - name: Upload all-pages baseline
         if: always()
         uses: actions/upload-artifact@v4
