@@ -6,8 +6,8 @@ const BASE_URL = process.env.BASE_URL ?? "http://127.0.0.1:3199";
 const variant = process.env.AUDIT_VARIANT ?? "local";
 const outDir = path.join("data", "audits", "ux-premium-cards-media-1", variant);
 const viewports = [
-  { name: "mobile-360x800", width: 360, height: 800, expectedMediaHeight: 160, view: null },
-  { name: "mobile-390x844", width: 390, height: 844, expectedMediaHeight: 160, view: null },
+  { name: "mobile-360x800", width: 360, height: 800, expectedMediaHeight: 128, view: null },
+  { name: "mobile-390x844", width: 390, height: 844, expectedMediaHeight: 128, view: null },
   { name: "tablet-768x900", width: 768, height: 900, expectedMediaHeight: 190, view: null },
   { name: "desktop-1440x900", width: 1440, height: 900, expectedMediaHeight: 188, view: "split" },
 ];
