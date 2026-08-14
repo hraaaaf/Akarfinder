@@ -13,6 +13,14 @@ const routes = [
   ["mon-projet", "/mon-projet"],
 ].filter(([key, route]) => !routeFilter || routeFilter === key || routeFilter === route);
 
+const expectedMobileActiveHref = {
+  "/favorites": "/favorites",
+  "/map": "/map",
+  "/alerts": "/alerts",
+  "/compare": "/favorites",
+  "/mon-projet": "/mon-projet",
+};
+
 const viewports = [
   ["390x844", 390, 844],
   ["430x932", 430, 932],
@@ -48,12 +56,16 @@ try {
           const bottomNav = document.querySelector("[data-mobile-bottom-nav]");
           const activeBottomNav = document.querySelector('[data-mobile-bottom-nav-active="true"]');
           const h1 = document.querySelector("h1");
+          const bottomNavVisible = bottomNav instanceof HTMLElement
+            && getComputedStyle(bottomNav).display !== "none"
+            && bottomNav.getClientRects().length > 0;
           return {
             clientWidth: root.clientWidth,
             scrollWidth: root.scrollWidth,
             scrollHeight: root.scrollHeight,
             headerHeight: header ? Math.round(header.getBoundingClientRect().height * 10) / 10 : null,
             bottomNavPresent: Boolean(bottomNav),
+            bottomNavVisible,
             activeBottomNavHref: activeBottomNav?.getAttribute("data-mobile-bottom-nav-item") ?? null,
             heading: h1?.textContent?.trim() ?? null,
           };
@@ -61,8 +73,11 @@ try {
 
         const horizontalOverflow = metrics.scrollWidth > metrics.clientWidth + 1;
         if (horizontalOverflow) failures.push(`${route} @ ${viewportKey}: overflow ${metrics.scrollWidth} > ${metrics.clientWidth}`);
-        if (width < 768 && !metrics.bottomNavPresent) failures.push(`${route} @ ${viewportKey}: mobile bottom nav missing`);
-        if (width >= 768 && metrics.bottomNavPresent) failures.push(`${route} @ ${viewportKey}: mobile bottom nav visible at md+`);
+        if (width < 768 && !metrics.bottomNavVisible) failures.push(`${route} @ ${viewportKey}: mobile bottom nav missing or hidden`);
+        if (width < 768 && metrics.activeBottomNavHref !== expectedMobileActiveHref[route]) {
+          failures.push(`${route} @ ${viewportKey}: expected active mobile destination ${expectedMobileActiveHref[route]}, got ${metrics.activeBottomNavHref ?? "none"}`);
+        }
+        if (width >= 768 && metrics.bottomNavVisible) failures.push(`${route} @ ${viewportKey}: mobile bottom nav visible at md+`);
 
         const screenshot = `${routeKey}-${viewportKey}.png`;
         await page.screenshot({ path: `${outputDir}/${screenshot}`, fullPage: true });
