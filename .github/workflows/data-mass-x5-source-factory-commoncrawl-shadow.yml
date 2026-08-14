@@ -1,0 +1,40 @@
+name: DATA MASS-X5 Source Factory Common Crawl Shadow
+
+on:
+  pull_request:
+    paths:
+      - "scripts/data-mass/source-factory-certified-snapshot.ts"
+      - "scripts/data-mass/source-factory-commoncrawl-shadow-v2.ts"
+      - ".github/workflows/data-mass-x5-source-factory-commoncrawl-shadow.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Confirm Common Crawl index API
+        run: curl -fsS -m 20 -o /dev/null https://index.commoncrawl.org/collinfo.json
+      - name: Run Source Factory metadata-only shadow
+        run: npx tsx scripts/data-mass/source-factory-commoncrawl-shadow-v2.ts
+      - name: Enforce zero-activation proof
+        run: node -e "const s=require('./.tmp/data-mass-x5/summary.json');if(s.mode!=='shadow_read_only'||s.sourceFactoryDomains!==107||s.databaseAccess!==0||s.databaseWrites!==0||s.sourcePageFetches!==0||s.warcDownloads!==0||s.permissionsInferred!==0||s.publicActivableNow!==false)process.exit(1)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: data-mass-x5-source-factory-commoncrawl-shadow
+          path: |
+            .tmp/data-mass-x5/summary.json
+            .tmp/data-mass-x5/candidates.jsonl
+          if-no-files-found: warn
+          retention-days: 30
