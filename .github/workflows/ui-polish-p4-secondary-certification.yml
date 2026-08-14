@@ -1,0 +1,92 @@
+name: UI Polish P4 Secondary Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/a-propos/**"
+      - "app/accompagnement/**"
+      - "app/acheter/**"
+      - "app/comment-ca-marche/**"
+      - "app/compagnon/**"
+      - "app/conditions-utilisation/**"
+      - "app/contact/**"
+      - "app/credit/**"
+      - "app/demande-retrait/**"
+      - "app/faq/**"
+      - "components/ui/**"
+      - "components/layout/**"
+      - "components/landing/**"
+      - "scripts/audits/ui-polish-p4-secondary-audit.mjs"
+      - "scripts/scrapers/__tests__/ui-polish-p4-secondary.test.ts"
+      - ".github/workflows/ui-polish-p4-secondary-certification.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  visual-certification:
+    name: P4 Chromium 40-shot certification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+      BASE_URL: http://127.0.0.1:3199
+      AUDIT_OUTPUT_DIR: data/audits/ui-polish-p4
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: P4 source contract
+        shell: bash
+        run: |
+          if [[ -f scripts/scrapers/__tests__/ui-polish-p4-secondary.test.ts ]]; then
+            npx tsx --test scripts/scrapers/__tests__/ui-polish-p4-secondary.test.ts
+          fi
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Production build
+        run: npm run build
+
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3199 > /tmp/ui-polish-p4.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3199/a-propos >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/ui-polish-p4.log
+          exit 1
+
+      - name: Full P4 visual matrix
+        run: node scripts/audits/ui-polish-p4-secondary-audit.mjs
+
+      - name: Upload P4 visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-polish-p4-secondary-proof-${{ github.run_id }}
+          path: data/audits/ui-polish-p4
+          if-no-files-found: error
+          retention-days: 14

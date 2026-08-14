@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { SiteFooter } from "@/components/landing/SiteFooter";
-import { SiteHeader } from "@/components/layout/SiteHeader";
-import { Container } from "@/components/ui/Container";
+
+import { SecondaryPageShell } from "@/components/layout/SecondaryPageShell";
+import { ui } from "@/components/ui/design-system";
 
 export const metadata = {
   title: "Comment ça marche — AkarFinder",
@@ -25,30 +25,22 @@ const STEPS = [
 
 export default function CommentCaMarchePage() {
   return (
-    <main className="flex flex-col" style={{ minHeight: "100svh" }}>
-      <SiteHeader />
-      <div className="flex-1 py-14 sm:py-20">
-        <Container className="max-w-2xl">
-          <h1 className="text-[2rem] font-extrabold tracking-[-0.04em] text-foreground sm:text-[2.4rem]">
-            Comment ça marche
-          </h1>
-          <div className="mt-8 space-y-6">
-            {STEPS.map((step) => (
-              <div key={step.title} className="rounded-[1.2rem] border border-border/20 bg-card p-5">
-                <h2 className="text-[1rem] font-extrabold text-foreground">{step.title}</h2>
-                <p className="mt-2 text-[14px] leading-6 text-muted-foreground">{step.text}</p>
-              </div>
-            ))}
-          </div>
-          <Link
-            href="/"
-            className="mt-8 inline-flex items-center gap-2 text-[13.5px] font-extrabold text-deepblue transition hover:gap-2.5"
-          >
-            <span aria-hidden="true">←</span> Retour à l&apos;accueil
-          </Link>
-        </Container>
+    <SecondaryPageShell
+      eyebrow="Mode d'emploi"
+      title="Comment ça marche"
+      intro="Trois étapes simples pour rechercher, comparer et revenir vers la source d'origine avec davantage de contexte."
+    >
+      <div className="grid gap-3 sm:grid-cols-3">
+        {STEPS.map((step) => (
+          <article key={step.title} className="rounded-[1.2rem] border border-slate-200/80 bg-slate-50/80 p-5">
+            <h2 className="text-[1rem] font-extrabold text-[#0B1F3A]">{step.title}</h2>
+            <p className="mt-2 text-[13.5px] leading-6 text-slate-600">{step.text}</p>
+          </article>
+        ))}
       </div>
-      <SiteFooter />
-    </main>
+      <Link href="/search" className={`${ui.primaryActionPill} mt-7 min-h-11 px-5`}>
+        Commencer une recherche
+      </Link>
+    </SecondaryPageShell>
   );
 }
