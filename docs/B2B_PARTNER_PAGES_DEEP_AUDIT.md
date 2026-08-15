@@ -1,133 +1,94 @@
 # AkarFinder — Audit profond pages partenaires B2B
 
-**Date :** 2026-08-14  
-**Scope :** acquisition Agence `/pro/agences`, acquisition Promoteur `/promoteurs`, démonstrations `/demo/agence` + `/demo/promoteur`, formulaire `/pro#contact`, profils publics professionnels et promoteurs.  
-**Méthode :** code + contrats data/auth + inspection visuelle des captures certifiées 390×844 / 430×932 / 768×900 / 1280×900.
+**Date :** 2026-08-15  
+**Scope :** `/pro/agences`, `/promoteurs`, `/pro#contact`, `/demo/agence`, `/demo/promoteur`, profils publics professionnels/promoteurs.  
+**Méthode :** code + contrats data/auth + inspection visuelle 390×844 / 430×932 / 768×900 / 1280×900 + recertification exact-head.
 
 ## Progression stricte
 
-Le chantier utilise **5 jalons binaires de poids égal** ; seuls les jalons prouvés comptent :
+5 jalons binaires de poids égal :
 
-1. **B1 Inventaire / architecture ✅ CLOSED** — routes, composants, démos, formulaire et profils publics cartographiés.
-2. **B2 Baseline visuelle ✅ CLOSED** — agence, promoteur et démos inspectés sur 390 / 430 / 768 / 1280 à partir de l’artefact All Pages certifié.
-3. **B3 Truth / data / sécurité ✅ CLOSED** — modèle canonique, legacy promoteur, activation, consentement et validation analysés ; dettes #641 et #643 isolées.
-4. **B4 Remédiation sûre + recertification ⏳ ACTIVE** — correctifs P1/P2 posés ; exact-head et captures post-correctif requis avant fermeture.
-5. **B5 Merge + closeout canonique ⏳ PENDING**.
+1. **B1 Inventaire / architecture ✅ CLOSED**
+2. **B2 Baseline visuelle ✅ CLOSED**
+3. **B3 Truth / data / sécurité ✅ CLOSED**
+4. **B4 Remédiation sûre + recertification ✅ CLOSED**
+5. **B5 Merge + closeout canonique ✅ CLOSED**
 
-**Progression actuelle : 3/5 = 60 %.**
+**Progression finale : 5/5 = 100 %.**
 
-## Résumé
+## Résultat
 
-Les surfaces sont techniquement propres et truth-safe dans leur mode démo, mais le produit B2B présente trois faiblesses principales :
+Les surfaces Agence/Promoteur sont techniquement stables et truth-safe dans le périmètre audité. Les correctifs sûrs ont été mergés sans activation de partenaire réel, sans permission inventée et sans mutation DATA/ranking/Registry.
 
-1. **double source de vérité promoteur** entre `professional_organizations` et le legacy local `lib/promoters/*` ;
-2. **funnel d’activation qui perdait le contexte agence/promoteur** et réutilisait un choix de profil inutilement ;
-3. **landing pages trop génériques par rapport à la richesse réelle des démonstrations**, donc proposition de valeur commerciale insuffisamment concrète.
+### Correctifs mergés
 
-Aucun vrai promoteur n’est actuellement actif dans le dataset legacy, donc aucune fausse revendication publique de partenariat n’a été constatée sur ce chemin au moment de l’audit.
+- contexte agence/promoteur conservé jusqu’au formulaire ;
+- pré-sélection automatique du profil ;
+- `source_page` métier conservée ;
+- canonical explicite `/pro/agences` et `/promoteurs` ;
+- `/promoteurs` rendu statique ;
+- validation téléphone client 8–15 chiffres + `inputMode="tel"` / `autoComplete="tel"` ;
+- test de régression B2B branché dans le gate officiel.
 
-## Inventaire vérifié
+## Preuves finales
 
-### Acquisition
-- `/pro/agences` → `ProfessionalAudiencePage audience="agency"`
-- `/promoteurs` → `ProfessionalAudiencePage audience="promoter"`
-- `/pro` → page mère + formulaire `ProActivationForm`
+- PR initiale **#642** supersédée proprement après dérive orthogonale de `main`.
+- Replay propre **PR #646**, exact head `f280d69ac2f0304d06e58fc28de2700235452f6a`.
+- Merge #646 : `d44e4d7145dae9c04f5ad6bd413175183e15f14e`.
+- Gate B2B run `31855231126` : **13/13 tests**, TypeScript ✅, production build ✅.
+- UI All Pages Certification run `31855231168` : **64 routes comptabilisées = 52 rendables + 12 blockers explicites**, **208/208 captures**, **0 finding**, **0 route en défaut**.
+- Artefact UI : `9238878207`, digest `sha256:b65527fcb38e8120b3529c0dfa9e757ccf790dc4b69f9dac59db63d9350114d5`.
+- Tous les workflows globaux du head #646 observés en **SUCCESS**.
+- Inspection post-correctif des landings `/pro/agences` et `/promoteurs` sur 390 / 430 / 768 / 1280 : hiérarchie stable, CTA lisibles, aucun overflow observé.
 
-### Démonstrations
-- `/demo/agence` — robots `noindex,nofollow`, données fictives, bannière Mode démo persistante
-- `/demo/promoteur` — robots `noindex,nofollow`, données fictives, bannière Mode démo persistante
-- les CTA démo sont visuels uniquement et n’écrivent aucun lead réel
+## Findings structurants
 
-### Profils publics
-- `/professionnels/[slug]` — source canonique Supabase ; exige `validation_status=validated` + `public_visibility=public` ; badge dérivé de `commercial_tier`
-- `/promoteurs/[slug]` — ancien modèle local, `visibility_status=active` suffit à rendre le profil ; dette de migration suivie par issue #641
+### P0 avant premier vrai promoteur — double source de vérité
 
-## Findings
+Le profil public canonique `/professionnels/[slug]` exige `professional_organizations.validation_status="validated"` + `public_visibility="public"` et dérive le badge du `commercial_tier`.
 
-### P0 avant premier vrai promoteur — double source de vérité partenaire
+Le chemin legacy `/promoteurs/[slug]` repose encore sur `lib/promoters/*` et peut produire des labels partenaire à partir de `visibility_status="active"` sans consulter le modèle canonique.
 
-**Vérifié.** Le modèle canonique protège correctement la visibilité et le badge commercial. Le modèle legacy `/promoteurs/[slug]` peut, lui, produire le titre `Promoteur partenaire AkarFinder` et le badge `Projet partenaire` à partir d’une entrée locale active, sans consulter le modèle professionnel canonique.
+**État vérifié lors de l’audit :** aucun vrai promoteur legacy actif. Aucune fausse revendication publique observée.  
+**Dette bloquante avant première activation réelle :** issue **#641**. Ne pas activer un partenaire réel via le dataset legacy.
 
-**État actuel :** aucun objet legacy `visibility_status="active"`.  
-**Action :** issue #641 ; interdire tout onboarding réel via ce dataset avant migration/retrait du chemin legacy.
+### P1 — attribution `source_channel="promoter"`
 
-### P1 — contexte perdu dans le funnel d’activation
+L’API historique utilise `promoter` comme canal générique de demande Pro, y compris pour une agence. Le type métier reste préservé séparément via `requested_type`, mais l’analytics du canal est sémantiquement imparfaite.
 
-**Avant correctif :** les deux landing pages renvoyaient vers `/pro#contact`. Le prospect devait re-sélectionner son profil et la provenance de la landing était perdue.
+**Recommandation :** migration transverse vers un canal `professional`, avec compatibilité historique ; hors scope de cet audit UI.
 
-**Correctif dans ce lot :** liens contextuels :
-- agence → `/pro?type=agence&source=agency#contact`
-- promoteur → `/pro?type=promoteur&source=promoter#contact`
+### P1 — proposition de valeur trop abstraite
 
-Le formulaire préremplit désormais le profil et conserve `source_page` = `/pro/agences` ou `/promoteurs`.
+Les landings sont propres mais nettement moins riches que les démos. Elles restent presque isomorphes et expliquent surtout le schéma de données.
 
-### P1 — attribution interne `source_channel="promoter"` pour toute activation Pro
-
-**Vérifié.** Le backend utilise historiquement le canal `promoter` comme déclencheur générique de `professional_activation_requests`, y compris lorsque `requested_type=agency`.
-
-La donnée métier agence/promoteur n’est pas perdue car `requested_type` est normalisé séparément, mais l’analytics `source_channel` reste sémantiquement trompeuse.
-
-**Recommandation :** migration séparée vers un canal `professional` en préservant la compatibilité historique. Ne pas modifier silencieusement les dashboards/queries existants dans un audit UI.
-
-### P1 — landing pages trop abstraites
-
-**Inspection visuelle :** les deux pages sont lisibles, sans overflow, avec CTA visibles sur les quatre viewports. En revanche elles sont presque isomorphes et très courtes : elles expliquent surtout la donnée, les droits et le schéma, alors que les démos montrent une proposition beaucoup plus forte.
-
-Manquent notamment sur les landings :
+Prochain lot UX recommandé :
 - aperçu concret du résultat final ;
 - étapes d’onboarding ;
-- formats d’intégration acceptés ;
-- exemples de livrables agence vs promoteur ;
-- preuve de ce que reçoit le professionnel côté demandes/reporting ;
+- formats d’intégration ;
+- livrables distincts agence/promoteur ;
+- aperçu demandes/reporting ;
 - FAQ commerciale courte ;
-- différence nette entre agence et promoteur au-delà des champs de données.
+- différenciation métier plus nette.
 
-**Recommandation :** prochain lot UX B2B dédié, sans inventer de partenaire ni de métrique commerciale.
+Aucune métrique commerciale ou partenaire fictif ne doit être inventé pour remplir ces sections.
 
-### P2 — SEO / rendu acquisition
+### P2 — API leads transverse
 
-**Avant correctif :** `/pro/agences` et `/promoteurs` n’avaient pas de canonical explicite ; `/promoteurs` forçait inutilement le rendu dynamique alors que la landing est statique.
+Le client Pro est désormais plus strict, mais `/api/leads` conserve une validation serveur plus permissive et aucun rate-limit dédié n’a été identifié dans ce chemin pendant l’audit.
 
-**Correctif dans ce lot :** canonical explicite sur les deux routes ; suppression du `force-dynamic` de la landing promoteur.
-
-### P2 — validation téléphone côté formulaire
-
-**Avant correctif :** huit caractères quelconques suffisaient côté client.
-
-**Correctif dans ce lot :** activation du submit uniquement pour 8 à 15 chiffres, tout en conservant les séparateurs usuels dans la saisie et `inputMode="tel"` / `autoComplete="tel"`.
-
-**Dette :** le serveur `/api/leads` reste plus permissif et doit être durci dans un lot API transverse ; issue #643.
-
-### P2 — démo promoteur : lisibilité des plans à vérifier
-
-Sur la capture 768×900, les zones `Plan 2D` occupent beaucoup de hauteur et apparaissent visuellement très vides à l’échelle de la page. L’asset existe dans `public/demo/floorplans`, donc ce n’est pas classé comme ressource absente. Il faut néanmoins vérifier son contraste/cadrage à taille réelle lors de la recertification ciblée.
+**Dette transverse :** issue **#643** pour validation téléphone serveur + anti-abus + tests de tous les funnels.
 
 ## Points forts vérifiés
 
-- marquage démo extrêmement explicite : bannière sticky, badge, footer et `noindex,nofollow` ;
-- aucun CTA démo ne crée réellement un lead ;
-- aucune promesse de volume, classement ou vente sur les landings ;
-- séparation claire sponsorisé / pertinence organique ;
-- activation Pro ne crée pas automatiquement organisation publique, badge ou publication ;
-- profil public canonique fail-closed sur validation + visibilité publique ;
-- responsive sans overflow sur les quatre captures certifiées du programme All Pages.
+- démos explicitement fictives : bannière persistante, badges, footer, `noindex,nofollow` ;
+- CTA démo sans écriture de lead réel ;
+- aucune promesse de volume, classement ou vente ;
+- sponsorisé séparé de la pertinence organique ;
+- activation Pro ne crée automatiquement ni organisation publique, ni badge, ni publication ;
+- profil public canonique fail-closed ;
+- responsive certifié sur les quatre viewports.
 
-## Correctifs inclus dans la branche d’audit
+## Statut
 
-- contexte agence/promoteur conservé jusqu’au formulaire ;
-- pré-sélection automatique du type professionnel ;
-- `source_page` métier conservée ;
-- canonical `/pro/agences` + `/promoteurs` ;
-- landing `/promoteurs` rendue statique ;
-- filtre téléphone client 8–15 chiffres ;
-- test de régression B2B dédié branché dans le gate B2B officiel ;
-- issue #641 pour la suppression de la double source de vérité promoteur ;
-- issue #643 pour le durcissement serveur transverse des leads.
-
-## Gates de sortie du chantier
-
-1. inventaire + code/data/truth audit ;
-2. inspection visuelle 4 viewports des surfaces acquisition/démo ;
-3. truth/security audit + dettes explicitement gouvernées ;
-4. CI exact-head + recertification ciblée des pages modifiées ;
-5. merge + closeout canonique.
+**CLOSED.** Le lot d’audit/remédiation des pages Agence partenaire et Promoteur partenaire est mergé et recertifié. Les deux dettes restantes sont explicitement gouvernées par **#641** et **#643** et ne sont pas masquées par cette certification.
