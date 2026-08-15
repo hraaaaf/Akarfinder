@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import type { LeadApiResponse } from "@/lib/leads/types";
+import { isValidPhone } from "@/lib/leads/validate";
 
 const TYPES = [
   { value: "agence", label: "Agence immobilière" },
@@ -61,8 +62,7 @@ export function ProActivationForm() {
     set("addons", form.addons.includes(value) ? form.addons.filter((item) => item !== value) : [...form.addons, value]);
   }
 
-  const phoneDigits = form.phone.replace(/\D/g, "");
-  const phoneOk = phoneDigits.length >= 8 && phoneDigits.length <= 15;
+  const phoneOk = isValidPhone(form.phone);
   const canSubmit = phoneOk && Boolean(form.company.trim()) && Boolean(form.type) && form.consent && !busy;
 
   async function submit() {
