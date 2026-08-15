@@ -46,7 +46,7 @@ jobs:
 
           osmium tags-filter \
             /tmp/rabat.osm.pbf \
-            'a/name,name:fr,alt_name=Agdal,Aguedal,Hay Riad,Hay Ryad,Hay Riyad,Souissi,Rabat Centre,Centre Ville,Centre-Ville' \
+            a/name a/name:fr a/alt_name \
             --output=/tmp/c1e-candidates.osm.pbf
 
           osmium export \
