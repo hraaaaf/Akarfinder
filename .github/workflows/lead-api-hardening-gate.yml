@@ -1,0 +1,41 @@
+name: Lead API Hardening Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/api/leads/**"
+      - "components/pro/ProActivationForm.tsx"
+      - "lib/leads/**"
+      - "db/supabase-leads-migration.sql"
+      - "scripts/scrapers/__tests__/lead-api-hardening.test.ts"
+      - ".github/workflows/lead-api-hardening-gate.yml"
+  workflow_dispatch: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lead-api-hardening:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Lead API hardening contracts
+        run: npx tsx --test scripts/scrapers/__tests__/lead-api-hardening.test.ts scripts/scrapers/__tests__/p11d-leads.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
