@@ -52,6 +52,23 @@ test("canonical JSON-LD Offer in MAD is reliable", () => {
   });
 });
 
+test("canonical identity treats www and apex host as the same listing", () => {
+  const target = "https://www.mubawab.ma/fr/a/8322921/appartement-a-louer";
+  const canonical = "https://mubawab.ma/fr/a/8322921/appartement-a-louer";
+  const html = page(
+    canonical,
+    "<h1>Appartement à louer</h1>",
+    `<script type="application/ld+json">${JSON.stringify({
+      "@type": "Apartment",
+      url: canonical,
+      offers: { "@type": "Offer", price: "8500", priceCurrency: "MAD" },
+    })}</script>`,
+  );
+  const audited = auditPriceV5Html(html, row({ canonical_url: target }));
+  assert.equal(audited.canonical_identity, true);
+  assert.deepEqual(audited.reliable, { amount: 8500, signal: "jsonld_canonical_offer" });
+});
+
 test("JSON-LD wrong currency or wrong node URL is rejected", () => {
   const url = "https://www.mubawab.ma/fr/a/8322921/appartement-a-louer";
   const html = page(
