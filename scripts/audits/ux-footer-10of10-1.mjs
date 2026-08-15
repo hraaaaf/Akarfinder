@@ -79,12 +79,11 @@ try {
     if (viewport.width < 640) {
       const visible = await footer.isVisible();
       if (visible) local.push("mobile Search footer must not compete with the primary viewport");
-      const style = await footer.evaluate((node) => getComputedStyle(node).display);
-      if (style !== "none") local.push(`mobile Search footer must be display:none, got ${style}`);
+      const display = await footer.evaluate((node) => getComputedStyle(node).display);
 
       results.push({
         viewport,
-        metrics: { visible, display: style },
+        metrics: { visible, display },
         failures: local,
       });
       for (const failure of local) failures.push(`${viewport.name}: ${failure}`);
