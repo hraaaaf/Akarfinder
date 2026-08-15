@@ -15,7 +15,7 @@
 
 ## DarAgadir
 
-- **1 676** représentations publiques avec prix au snapshot live observé.
+- **1 660** représentations publiques avec prix au snapshot live vérifié.
 - **0** URL short-stay publiée avec prix.
 - La garde short-stay reste fail-closed.
 
