@@ -12,6 +12,7 @@ on:
       - "app/demo/**"
       - "components/demo/**"
       - "scripts/scrapers/__tests__/phase1-p1-b2b-productization.test.ts"
+      - "scripts/scrapers/__tests__/b2b-partner-pages-deep-audit.test.ts"
       - ".github/workflows/phase1-p1-b2b-productization-gate.yml"
   workflow_dispatch: {}
 concurrency:
@@ -34,7 +35,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: B2B productization contracts
-        run: npx tsx --test scripts/scrapers/__tests__/phase1-p1-b2b-productization.test.ts
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/phase1-p1-b2b-productization.test.ts
+          scripts/scrapers/__tests__/b2b-partner-pages-deep-audit.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build rehearsal
