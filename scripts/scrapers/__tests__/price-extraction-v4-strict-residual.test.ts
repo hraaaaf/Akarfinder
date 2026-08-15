@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  type Candidate,
   extractResidualPriceV4,
   parseMoneyAmountV4,
 } from "../price-extraction-v4-strict-residual";
 
-function row(overrides: Record<string, unknown> = {}) {
+function row(overrides: Partial<Candidate> = {}): Candidate {
   return {
     seed_id: "00000000-0000-0000-0000-000000000001",
     canonical_url: "https://example.com/x",
@@ -16,7 +17,7 @@ function row(overrides: Record<string, unknown> = {}) {
     snippet: null,
     normalized_intent: null,
     ...overrides,
-  } as never;
+  };
 }
 
 test("money parser handles spaced and punctuated thousands", () => {
