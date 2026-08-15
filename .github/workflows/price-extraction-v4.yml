@@ -1,0 +1,88 @@
+name: SEARCH Price Extraction v4
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/scrapers/price-extraction-v4-strict-residual.ts'
+      - 'scripts/scrapers/__tests__/price-extraction-v4-strict-residual.test.ts'
+      - '.github/workflows/price-extraction-v4.yml'
+      - 'docs/PRICE_EXTRACTION_V4_AUDIT.md'
+  workflow_dispatch:
+    inputs:
+      write:
+        description: 'Apply the bounded strict residual matches after read-only audit'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/price-extraction-v4-strict-residual.test.ts scripts/scrapers/__tests__/price-extraction-v2.test.ts
+      - run: npx tsc --noEmit
+
+  production-audit:
+    needs: certify
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+      PRICE_V4_WRITE: 'false'
+      PRICE_V4_MAX_MATCHES: '25'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify Supabase credentials
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Audit strict residual matches without writes
+        run: npx tsx scripts/scrapers/price-extraction-v4-strict-residual.ts
+
+  production-apply:
+    needs:
+      - certify
+      - production-audit
+    if: github.event_name == 'workflow_dispatch' && inputs.write == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+      PRICE_V4_WRITE: 'true'
+      PRICE_V4_MAX_MATCHES: '25'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify Supabase credentials
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Apply bounded strict residual matches
+        run: npx tsx scripts/scrapers/price-extraction-v4-strict-residual.ts
