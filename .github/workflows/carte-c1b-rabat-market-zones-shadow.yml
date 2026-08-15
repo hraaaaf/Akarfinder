@@ -1,0 +1,46 @@
+name: Carte C1B Rabat Market Zones Shadow Gate
+
+on:
+  pull_request:
+    paths:
+      - "data/geo/rabat-market-zones-v1.geojson"
+      - "data/geo/rabat-market-zone-source-containers-v1.geojson"
+      - "lib/geo/rabat-market-zones-shadow.ts"
+      - "lib/geo/market-zone-registry.ts"
+      - "lib/geo/geometry-area.ts"
+      - "scripts/scrapers/__tests__/rabat-market-zones-shadow.test.ts"
+      - "scripts/audits/carte-c1b-market-zones-topology.py"
+      - ".github/workflows/carte-c1b-rabat-market-zones-shadow.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-rabat-market-zones-shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Shadow record contracts
+        run: npx tsx --test scripts/scrapers/__tests__/rabat-market-zones-shadow.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install topology audit dependencies
+        run: python -m pip install --disable-pip-version-check shapely==2.1.2 pyproj==3.7.2
+      - name: Deterministic topology audit
+        run: python scripts/audits/carte-c1b-market-zones-topology.py
+      - name: Production build
+        run: npm run build
+      - name: Upload topology evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-c1b-rabat-market-zones-shadow-${{ github.run_id }}
+          path: data/audits/runtime/carte-c1b-market-zones-topology.json
+          if-no-files-found: warn
+          retention-days: 30
