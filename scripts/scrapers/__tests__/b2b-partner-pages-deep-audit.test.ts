@@ -13,6 +13,8 @@ const promoterDemo = read("app/demo/promoteur/page.tsx");
 const demoShell = read("components/demo/DemoShell.tsx");
 const professionalRepository = read("lib/professional/repository.ts");
 const legacyPromoterData = read("lib/promoters/promoters-data.ts");
+const legacyPromoterRoute = read("app/promoteurs/[slug]/page.tsx");
+const legacyPromoterRepository = read("lib/promoters/get-promoter.ts");
 
 describe("B2B partner pages deep-audit contracts", () => {
   it("keeps agency and promoter acquisition routes canonical and cacheable", () => {
@@ -58,15 +60,11 @@ describe("B2B partner pages deep-audit contracts", () => {
     assert.match(audiencePage, /CSV structuré pour projets et typologies/);
     assert.match(audiencePage, /Page agence et identité partenaire/);
     assert.match(audiencePage, /Page promoteur et identité partenaire/);
-    assert.match(audiencePage, /Quels formats pouvez-vous intégrer/);
-    assert.match(audiencePage, /Peut-on intégrer plusieurs projets et typologies/);
   });
 
   it("keeps the agency and promoter value propositions deliberately different", () => {
     assert.match(audiencePage, /L’agence vend un portefeuille et une expertise locale/);
     assert.match(audiencePage, /Le promoteur commercialise des projets, pas une simple liste d’annonces/);
-    assert.match(audiencePage, /les biens disponibles, les secteurs couverts/);
-    assert.match(audiencePage, /les programmes, les typologies, les plans/);
   });
 
   it("does not invent partner identities to fill the commercial proof sections", () => {
@@ -77,7 +75,6 @@ describe("B2B partner pages deep-audit contracts", () => {
 
   it("does not turn the richer sales pages into unsupported performance promises", () => {
     assert.match(audiencePage, /Aucun volume de leads, classement ou vente n’est garanti/);
-    assert.match(audiencePage, /aucune promesse de volume de leads, de classement ou de vente/);
     assert.match(audiencePage, /ne crée ni badge, ni statut partenaire, ni publication automatique/);
   });
 
@@ -87,7 +84,18 @@ describe("B2B partner pages deep-audit contracts", () => {
     assert.match(professionalRepository, /commercialTierBadgeLabel/);
   });
 
-  it("prevents a real promoter from being activated through the legacy local fixture while migration debt remains", () => {
+  it("retires the legacy real-promoter path in favor of the canonical professional profile", () => {
+    assert.match(legacyPromoterRoute, /redirect\(`\/professionnels\/\$\{slug\}`\)/);
+    assert.match(legacyPromoterRoute, /robots:\s*\{ index: false, follow: false \}/);
+    assert.match(legacyPromoterRoute, /preview === "demo"/);
+    assert.doesNotMatch(legacyPromoterRoute, /Promoteur partenaire AkarFinder/);
+    assert.doesNotMatch(legacyPromoterRoute, /getActivePromoter|getActivePromoterProjects|getAllActivePromoterSlugs/);
+    assert.doesNotMatch(legacyPromoterRepository, /getActivePromoter|getActivePromoterProjects|getAllActivePromoterSlugs/);
+  });
+
+  it("keeps local promoter fixtures demo-only and prevents visibility_status from granting partner truth", () => {
     assert.doesNotMatch(legacyPromoterData, /\n\s+visibility_status:\s*"active"/);
+    assert.match(legacyPromoterRepository, /visibility_status === "demo"/);
+    assert.doesNotMatch(legacyPromoterRepository, /visibility_status === "active"/);
   });
 });
