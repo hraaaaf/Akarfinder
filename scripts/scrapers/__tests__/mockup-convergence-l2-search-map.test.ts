@@ -33,4 +33,11 @@ describe("Mockup convergence L2 Search + Map contracts", () => {
     assert.match(mapCss, /max-height: 43vh/);
     assert.match(mapCss, /border-radius: 22px/);
   });
+
+  it("keeps the secondary footer out of the primary mobile Search and Map viewport", () => {
+    assert.match(searchPage, /className="l2-secondary-footer"/);
+    assert.match(mapPage, /className="l2-secondary-footer"/);
+    assert.match(searchCss, /\.l2-secondary-footer\s*\{\s*display: none;/s);
+    assert.match(mapCss, /\.l2-secondary-footer\s*\{\s*display: none;/s);
+  });
 });
