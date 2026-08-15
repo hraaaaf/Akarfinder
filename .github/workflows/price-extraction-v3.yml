@@ -1,0 +1,25 @@
+name: SEARCH Price Extraction v3
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260815081500_price_extraction_v3_daragadir_url_ratio_backfill.sql'
+      - 'scripts/scrapers/__tests__/price-extraction-v3-daragadir-url-ratio.test.ts'
+      - '.github/workflows/price-extraction-v3.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/price-extraction-v3-daragadir-url-ratio.test.ts
+      - run: npx tsc --noEmit
