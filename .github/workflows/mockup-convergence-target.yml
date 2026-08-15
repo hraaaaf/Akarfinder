@@ -1,0 +1,39 @@
+name: Mockup Convergence Target Gate
+
+on:
+  pull_request:
+    paths:
+      - "docs/MOCKUP_CONVERGENCE_TARGET.md"
+      - "scripts/scrapers/__tests__/mockup-convergence-target.test.ts"
+      - ".github/workflows/mockup-convergence-target.yml"
+      - "components/ui/design-system.ts"
+      - "app/search/**"
+      - "app/favorites/**"
+      - "app/map/**"
+      - "app/alerts/**"
+      - "app/compare/**"
+      - "app/mon-projet/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  target-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run mockup convergence target contract
+        run: npx tsx --test scripts/scrapers/__tests__/mockup-convergence-target.test.ts
