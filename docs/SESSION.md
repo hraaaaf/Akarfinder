@@ -1,8 +1,22 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-15**
+**Mise à jour : 2026-08-16**
 
 Ce fichier est le handover opérationnel court. `README.md` porte l’identité/doctrine et `docs/ROADMAP.md` reste l’unique roadmap canonique.
+
+## SEARCH Price Extraction v5 — closeout final
+
+- **PR #669** — bounded reliable price write.
+- Bounded write production : run `31904092395` SUCCESS, **planned = 92 / written = 92**.
+- Attribution prouvée v5 : **33 Mubawab + 59 Masaken = 92 écritures**.
+- Chaque page a été re-fetchée avant write ; update uniquement sur `seed_id + source_domain` avec `normalized_price_mad IS NULL`.
+- Plafond dur **100** ; aucun write PR/push automatique : toute écriture future exige `workflow_dispatch` + `execute_write=true` explicite.
+- Exact-head précédent `bbd222d8aafd1711ec2356c77b62d9e8354d2d4e` : run `31912148653` SUCCESS, tests v5 + TypeScript + read-only + compteur exact verts, bounded write SKIPPED.
+- Dernier snapshot production observé : **2 838 / 15 438 = 18,38 %**, contre baseline **2 703 / 15 438 = 17,51 %**.
+- Gain global observé : **+135 / +0,87 point** ; seules les **92 écritures** du run v5 sont directement attribuées au lot. Le reste est une variation concurrente non attribuée.
+- Mouldar reste HOLD sur HTTP 403 ; Agenz respecte HTTP 429 et ses 44 valeurs indicatives restent hors couverture fiable ; aucun bypass.
+- Preuve détaillée : `docs/PRICE_EXTRACTION_V5_AUDIT.md`.
+- Étape restante avant CLOSED : exact-head final après synchronisation documentaire → merge #669 → vérification `main` post-merge.
 
 ## SEARCH — Prix indicatifs à vérifier sur la source ✅ CLOSED
 
@@ -83,4 +97,4 @@ Ce fichier est le handover opérationnel court. `README.md` porte l’identité/
 
 ## Reprise exacte
 
-**SEARCH prix : #661 CLOSED techniquement. Couverture fiable de référence : 2 703 / 15 438 = 17,51 %. Les 44 prix indicatifs Agenz sont affichables avec avertissement mais exclus de cette métrique. Prochaine action Search prix : poursuivre l’acquisition de prix fiables source par source, sans bypass ni inférence faible.**
+**SEARCH Price Extraction v5 : 92 écritures fiables attribuées au lot, dernier snapshot observé 2 838 / 15 438 = 18,38 %. Reprendre par exact-head final, merge #669 puis vérification post-merge `main`. Toute future écriture v5 reste manuelle, bornée et fail-closed.**
