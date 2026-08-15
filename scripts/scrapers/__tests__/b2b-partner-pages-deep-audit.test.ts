@@ -6,6 +6,7 @@ const read = (path: string) => readFileSync(path, "utf8");
 
 const agencyLanding = read("app/pro/agences/page.tsx");
 const promoterLanding = read("app/promoteurs/page.tsx");
+const legacyPromoterProfile = read("app/promoteurs/[slug]/page.tsx");
 const audiencePage = read("components/pro/ProfessionalAudiencePage.tsx");
 const activationForm = read("components/pro/ProActivationForm.tsx");
 const agencyDemo = read("app/demo/agence/page.tsx");
@@ -87,7 +88,17 @@ describe("B2B partner pages deep-audit contracts", () => {
     assert.match(professionalRepository, /commercialTierBadgeLabel/);
   });
 
-  it("prevents a real promoter from being activated through the legacy local fixture while migration debt remains", () => {
+  it("retires the legacy promoter public truth path in favor of the canonical professional profile", () => {
+    assert.match(legacyPromoterProfile, /permanentRedirect\(`\/professionnels\/\$\{encodeURIComponent\(slug\)\}`\)/);
+    assert.match(legacyPromoterProfile, /alternates:\s*\{ canonical: `\/professionnels\/\$\{slug\}` \}/);
+    assert.match(legacyPromoterProfile, /robots:\s*\{ index: false, follow: true \}/);
+    assert.doesNotMatch(legacyPromoterProfile, /getActivePromoter/);
+    assert.doesNotMatch(legacyPromoterProfile, /Promoteur partenaire AkarFinder/);
+  });
+
+  it("keeps legacy promoter fixtures demo-only while canonical migration is enforced", () => {
     assert.doesNotMatch(legacyPromoterData, /\n\s+visibility_status:\s*"active"/);
+    assert.match(legacyPromoterProfile, /preview === "demo"/);
+    assert.match(legacyPromoterProfile, /robots:\s*\{ index: false, follow: false \}/);
   });
 });
