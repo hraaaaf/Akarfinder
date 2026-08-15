@@ -1,7 +1,7 @@
 import { getSupabaseServerClient } from "../../lib/db/supabase-client";
 import { getThirdPartyIngestionGuard } from "./utils/motor-purity-guard";
 
-type Candidate = {
+export type Candidate = {
   seed_id: string;
   canonical_url: string;
   source_domain: string;
@@ -15,6 +15,11 @@ type Candidate = {
 export type ResidualPriceMatch = {
   amount: number;
   source: "masaken_title" | "mouldar_strong_phrase" | "mubawab_exact_prefix";
+};
+
+type PlannedUpdate = {
+  row: Candidate;
+  match: ResidualPriceMatch;
 };
 
 const SOURCES = ["masaken.ma", "mouldar.com", "mubawab.ma"] as const;
@@ -169,10 +174,11 @@ async function main() {
   if (guard.blocked) throw new Error(guard.message);
 
   const write = process.env.PRICE_V4_WRITE === "true";
+  const maxMatches = Math.max(1, Math.min(Number(process.env.PRICE_V4_MAX_MATCHES ?? 25), 100));
   const supabase = getSupabaseServerClient();
   const bySource: Record<string, { scanned: number; matched: number; updated: number }> = {};
+  const planned: PlannedUpdate[] = [];
   let scanned = 0;
-  let matched = 0;
   let updated = 0;
 
   for (const source of SOURCES) {
@@ -184,10 +190,17 @@ async function main() {
     for (const row of rows) {
       const match = extractResidualPriceV4(row);
       if (!match) continue;
-      matched += 1;
       stat.matched += 1;
+      planned.push({ row, match });
+    }
+  }
 
-      if (!write) continue;
+  if (planned.length > maxMatches) {
+    throw new Error(`price-v4 fail-closed: ${planned.length} matches exceeds ceiling ${maxMatches}`);
+  }
+
+  if (write) {
+    for (const { row, match } of planned) {
       const { data, error } = await supabase
         .from("thin_index_search_documents")
         .update({ normalized_price_mad: match.amount })
@@ -197,12 +210,12 @@ async function main() {
       if (error) throw new Error(error.message);
       if ((data ?? []).length > 0) {
         updated += 1;
-        stat.updated += 1;
+        bySource[row.source_domain].updated += 1;
       }
     }
   }
 
-  console.log(JSON.stringify({ write, scanned, matched, updated, bySource }, null, 2));
+  console.log(JSON.stringify({ write, maxMatches, scanned, matched: planned.length, updated, bySource }, null, 2));
 }
 
 if (process.argv[1]?.includes("price-extraction-v4-strict-residual")) {
