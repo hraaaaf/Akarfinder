@@ -4,7 +4,7 @@
 - **PR #649 ✅ MERGED** — merge `95132b751d0000be140d84fcfbf1f17ad84a2a5e`, head technique `ce13b5326cf82cdcfdf7323e3044d48ccd7e05f4`.
 - Snapshot enregistré dans #649 : **2 690 / 15 438 = 17,42 %** ; snapshot live observé après merge : **2 694 / 15 438 = 17,45 %**.
 - Baseline avant chantier prix : **915 / 15 438 = 5,93 %** ; couverture actuelle ≈ **2,94×** cette baseline.
-- DarAgadir live : **1 676** prix publics ; **0** short-stay publié avec prix ; garde fail-closed conservée.
+- DarAgadir live : **1 660** prix publics ; **0** short-stay publié avec prix ; garde fail-closed conservée.
 - PromoImmo : `HOLD`, aucune extraction suffisamment fiable. Avito : `HOLD`, HTTP 403, aucun bypass.
 - Drift live `2690 → 2694` consigné sans causalité inventée.
 - Preuve : `docs/PRICE_EXTRACTION_V3_CLOSEOUT.md`.
