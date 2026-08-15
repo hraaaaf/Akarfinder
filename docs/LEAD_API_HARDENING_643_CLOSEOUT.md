@@ -2,7 +2,7 @@
 
 ## Statut
 
-**#643 ✅ CLOSED (code + CI).**
+**#643 ✅ CLOSED (code + CI + optimisation DB production).**
 
 Issue: `Lead API: harden server-side phone validation and abuse controls`.
 
@@ -12,6 +12,7 @@ Issue: `Lead API: harden server-side phone validation and abuse controls`.
 - Merge : `4eac716b8fb25ed1578addb366f132078596c545`.
 - Exact head certifié : `c524e65f8f26f693e7cde08d33ead4cf52de15b2`.
 - Issue **#643** fermée avec raison `completed`.
+- Closeout documentaire **#662** mergé : `49c185543c320c1b4d03c04300f1c14038b54817`.
 
 ## Contrat téléphone
 
@@ -31,21 +32,23 @@ Issue: `Lead API: harden server-side phone validation and abuse controls`.
 - aucune IP ni nouvelle PII ajoutée ; la garde réutilise `buyer_leads.phone_whatsapp` ;
 - client Supabase serveur utilise `SUPABASE_SERVICE_ROLE_KEY`, donc le comptage n’est pas neutralisé par RLS.
 
-## Performance DB
+## Performance DB production
 
-`db/supabase-leads-migration.sql` définit l’index :
+Index composite appliqué sur Supabase production `AqarFinder` (`kusfiyimwvxblvsrhaes`) via migration :
+
+`20260815173028 add_buyer_leads_phone_created_at_idx`
+
+DDL appliqué :
 
 `buyer_leads_phone_created_at_idx (phone_whatsapp, created_at DESC)`
 
-Le garde fonctionnel ne dépend pas de la présence de cet index, mais l’index borne efficacement la requête sous charge.
+Vérifications post-migration :
 
-### Vérification production
-
-Contrôle read-only effectué sur le projet Supabase production `AqarFinder` (`kusfiyimwvxblvsrhaes`) via `pg_indexes` : **0 ligne retournée** pour `buyer_leads_phone_created_at_idx`.
-
-**Fait vérifié : l’index n’est pas appliqué actuellement en production.** Le garde anti-abus reste fonctionnel, mais sa requête n’est pas encore optimisée par cet index composite.
-
-L’application de l’index est une mutation DDL production distincte et n’est pas revendiquée comme effectuée dans ce closeout.
+- `pg_indexes` retourne bien `buyer_leads_phone_created_at_idx` ;
+- définition vérifiée : B-tree `(phone_whatsapp, created_at DESC)` ;
+- le planner peut utiliser cet index pour la requête `phone_whatsapp + created_at >= cutoff` ; sur la table actuelle minuscule, PostgreSQL choisit naturellement un seq scan par coût, ce qui est attendu ;
+- migration présente dans l’historique Supabase ;
+- table `buyer_leads` observée à **1 ligne**, table **8 KB**, relation totale **296 KB** au moment de l’activation.
 
 ## Certification exacte
 
@@ -75,6 +78,15 @@ Le premier passage B2B avait échoué uniquement parce qu’un contrat de test e
 - aucune promesse commerciale, badge ou statut partenaire modifié ;
 - aucune nouvelle donnée personnelle stockée.
 
-## Dette restante
+## Advisors post-DDL
 
-**Human gate production :** appliquer l’index composite `buyer_leads_phone_created_at_idx` sur Supabase production, puis revérifier sa présence et les advisors. Cette étape n’est pas requise pour le fonctionnement logique du garde, mais elle est recommandée avant de qualifier la protection comme optimisée sous charge production.
+Aucun finding advisor n’est attribué à la création de cet index.
+
+Dettes existantes observées, hors scope #643 :
+- plusieurs index dupliqués historiques sur `buyer_leads` ;
+- advisor sécurité `RLS enabled, no policy` sur `buyer_leads`, cohérent avec un accès réservé au client serveur service-role actuel, à auditer séparément avant toute exposition publique différente ;
+- autres warnings globaux Supabase préexistants hors scope.
+
+## Dette restante #643
+
+**Aucune.** Le code, les tests, le build, le merge, le closeout et l’optimisation DB production sont vérifiés.
