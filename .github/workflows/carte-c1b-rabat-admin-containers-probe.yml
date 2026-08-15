@@ -1,0 +1,56 @@
+name: Carte C1B Rabat Admin Containers Probe
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/carte-c1b-rabat-admin-containers-probe.mjs"
+      - ".github/workflows/carte-c1b-rabat-admin-containers-probe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe-rabat-admin-containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Osmium
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq osmium-tool
+          osmium --version
+      - name: Download Morocco snapshot
+        run: |
+          curl --fail --location --retry 2 --retry-delay 2 \
+            https://download.geofabrik.de/africa/morocco-latest.osm.pbf \
+            --output /tmp/morocco.osm.pbf
+          test -s /tmp/morocco.osm.pbf
+      - name: Extract Rabat administrative polygons
+        run: |
+          osmium extract \
+            --bbox=-6.95,33.90,-6.75,34.08 \
+            --strategy=complete_ways \
+            /tmp/morocco.osm.pbf \
+            --output=/tmp/rabat.osm.pbf
+          osmium tags-filter \
+            /tmp/rabat.osm.pbf \
+            r/boundary=administrative \
+            --output=/tmp/rabat-admin.osm.pbf
+          osmium export \
+            --attributes=type,id \
+            /tmp/rabat-admin.osm.pbf \
+            --output=/tmp/rabat-admin.geojson
+          mkdir -p data/audits/runtime
+          cp /tmp/rabat-admin.geojson data/audits/runtime/carte-c1b-rabat-admin-containers.geojson
+          node scripts/audits/carte-c1b-rabat-admin-containers-probe.mjs
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-c1b-rabat-admin-containers-${{ github.run_id }}
+          path: |
+            data/audits/runtime/carte-c1b-rabat-admin-containers-probe.json
+            data/audits/runtime/carte-c1b-rabat-admin-containers.geojson
+          if-no-files-found: warn
+          retention-days: 14
