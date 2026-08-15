@@ -1,0 +1,27 @@
+name: Carte C2 Metrics Contract Gate
+
+on:
+  pull_request:
+    paths:
+      - "docs/CARTE_INTELLIGENCE_METRICS_CONTRACT.md"
+      - "scripts/scrapers/__tests__/carte-c2-metrics-contract.test.ts"
+      - ".github/workflows/carte-c2-metrics-contract.yml"
+      - "supabase/migrations/20260810130500_p1c1_neighborhood_offer_shadow.sql"
+      - "supabase/migrations/20260810133000_p1c2_neighborhood_offer_reliability.sql"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-c2-metrics-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/carte-c2-metrics-contract.test.ts
+      - run: npx tsc --noEmit
