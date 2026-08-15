@@ -106,7 +106,21 @@ Statut : **SUCCESS**, strictement read-only sur le head de sécurité.
 - `production-bounded-write` : **SKIPPED** sur PR, conformément au nouveau gate manuel ;
 - comptage production exact : **2 793 / 15 438 = 18,09 %**.
 
-Écart de métrique : le bounded write a confirmé **92 écritures**, tandis que le gain net mesuré par rapport à la baseline v4 est **+90** (2 793 - 2 703). La cause exacte de cet écart de deux lignes n'est pas prouvée par les artefacts v5 ; il est donc traité comme une variation concurrente/non attribuable et non comme une erreur du write. Le dénominateur est resté stable à 15 438.
+Écart de métrique : le bounded write a confirmé **92 écritures**, tandis que le gain net mesuré par rapport à la baseline v4 était **+90** au moment de ce snapshot. La cause exacte de cet écart de deux lignes n'est pas prouvée par les artefacts v5 ; il reste traité comme une variation concurrente/non attribuable et non comme une erreur du write.
+
+## Re-certification compteur durci — run 31912148653
+
+Statut : **SUCCESS**, strictement read-only sur le head `bbd222d8aafd1711ec2356c77b62d9e8354d2d4e`.
+
+- tests v5 : SUCCESS ;
+- TypeScript : SUCCESS ;
+- audit public : SUCCESS ;
+- cohorte structurée : **35** lignes encore éligibles détectées, **0 write** ;
+- `production-bounded-write` : **SKIPPED** sur PR ;
+- compteur production séquentiel durci : SUCCESS ;
+- dernier snapshot observé : **2 838 / 15 438 = 18,38 %**.
+
+La hausse de **2 793 à 2 838** entre deux snapshots read-only ne provient pas d'un write v5 automatique, puisque le bounded write est resté SKIPPED. Elle est donc explicitement consignée comme variation concurrente de production, sans attribution inventée.
 
 ## Sources non promues
 
@@ -116,8 +130,9 @@ Statut : **SUCCESS**, strictement read-only sur le head de sécurité.
 
 ## État de closeout
 
-- bounded write : **92 / 92 écritures confirmées** ;
-- couverture production post-write : **2 793 / 15 438 = 18,09 %**, soit **+90 net / +0,58 point** vs baseline ;
+- bounded write v5 : **92 / 92 écritures confirmées** ;
+- dernier snapshot production observé : **2 838 / 15 438 = 18,38 %** ;
+- gain global observé vs baseline v4 : **+135 / +0,87 point**, dont seulement les **92 écritures du bounded write v5** sont directement attribuables au lot ;
 - write automatique sur PR : neutralisé ;
 - toute écriture future : `workflow_dispatch` + `execute_write=true` + plafond <= 100 ;
-- dernière étape avant clôture : exact-head CI vert puis merge PR #669 et vérification post-merge.
+- dernière étape avant clôture : exact-head CI vert sur ce closeout final, merge PR #669 et vérification post-merge.
