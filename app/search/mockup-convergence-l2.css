@@ -1,0 +1,66 @@
+/* L2 — Search convergence. Presentation-only layer over existing product contracts. */
+
+[data-search-results-section] {
+  background: #f8fafc;
+}
+
+[data-search-results-toolbar] {
+  min-height: 48px;
+  border-bottom-color: rgb(226 232 240 / 0.9);
+  background: #fff;
+}
+
+[data-search-results-toolbar] h1 {
+  color: #0b1f3a;
+  letter-spacing: -0.02em;
+}
+
+[data-search-sort-select] {
+  border-color: #dbe4ee !important;
+  background: #fff !important;
+  color: #0b2545 !important;
+  box-shadow: 0 2px 8px rgb(24 56 96 / 0.04);
+}
+
+[data-search-continuous-flow] {
+  gap: 14px !important;
+}
+
+[data-search-continuous-flow] > div:first-child {
+  gap: 14px !important;
+}
+
+[data-search-results-section] button[class*="rounded-full"] {
+  border-color: #dbe4ee;
+}
+
+[data-search-results-section] button[class*="rounded-full"]:hover {
+  border-color: rgb(11 99 206 / 0.4);
+}
+
+[data-search-map-pane] {
+  gap: 12px !important;
+}
+
+@media (max-width: 639px) {
+  [data-search-results-section] {
+    padding-top: 6px !important;
+  }
+
+  [data-search-results-toolbar] {
+    min-height: 44px;
+    padding-bottom: 6px !important;
+  }
+
+  [data-search-view-layout] {
+    margin-top: 8px !important;
+  }
+
+  [data-search-continuous-flow] > div:first-child {
+    gap: 12px !important;
+  }
+
+  .l2-secondary-footer {
+    display: none;
+  }
+}

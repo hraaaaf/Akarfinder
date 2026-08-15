@@ -2,6 +2,7 @@ import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MapNeighborhoodClient } from "@/components/map/MapNeighborhoodClient";
 import { parseMapNavigationState } from "@/lib/map/map-navigation-state";
+import "./mockup-convergence-l2.css";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,9 @@ export default async function MapPage({ searchParams }: MapPageProps) {
       <div className="flex-1">
         <MapNeighborhoodClient initialState={initialState} />
       </div>
-      <SiteFooter />
+      <div className="l2-secondary-footer">
+        <SiteFooter />
+      </div>
     </main>
   );
 }

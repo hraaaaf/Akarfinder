@@ -74,6 +74,24 @@ try {
     if (!response || response.status() >= 400) local.push(`/search returned ${response?.status() ?? "no response"}`);
 
     const footer = page.locator('[data-search-footer="compact"]');
+    await footer.waitFor({ state: "attached", timeout: 15_000 });
+
+    if (viewport.width < 640) {
+      const visible = await footer.isVisible();
+      if (visible) local.push("mobile Search footer must not compete with the primary viewport");
+      const display = await footer.evaluate((node) => getComputedStyle(node).display);
+
+      results.push({
+        viewport,
+        metrics: { visible, display },
+        failures: local,
+      });
+      for (const failure of local) failures.push(`${viewport.name}: ${failure}`);
+      await page.screenshot({ path: path.join(outDir, `${viewport.name}.png`), fullPage: false });
+      await context.close();
+      continue;
+    }
+
     await footer.waitFor({ state: "visible", timeout: 15_000 });
     await footer.scrollIntoViewIfNeeded();
     await page.waitForTimeout(200);
@@ -91,7 +109,6 @@ try {
         const s = getComputedStyle(group);
         return r.width > 0 && r.height > 0 && s.display !== "none" && s.visibility !== "hidden";
       });
-      const summaries = visibleMobileGroups.map((group) => group.querySelector("summary")).filter(Boolean);
       const desktopLinks = [...footer.querySelectorAll("[data-footer-link]")]
         .filter((link) => !link.closest("[data-footer-mobile-group]"))
         .filter((link) => {
@@ -111,8 +128,6 @@ try {
         background: style.backgroundColor,
         logoHeight: logoRect?.height ?? 0,
         mobileGroupCount: visibleMobileGroups.length,
-        mobileOpenCount: visibleMobileGroups.filter((group) => group.open).length,
-        summaries: summaries.map((summary) => summary.getBoundingClientRect().height),
         visibleDesktopLinkCount: desktopLinks.length,
         trustVisible: Boolean(trustRect && trustRect.width > 0 && trustRect.height > 0),
         trustText: trust?.textContent ?? "",
@@ -132,33 +147,9 @@ try {
       if (!metrics.trustText.includes("AkarFinder.ma") || !metrics.trustText.includes("sources")) local.push("trust/legal disclosure incomplete");
       const badColors = [...new Set(metrics.renderedColors.filter(isOrangeOrBronze))];
       if (badColors.length > 0) local.push(`orange/bronze rendered inside footer: ${badColors.join(", ")}`);
-
-      if (viewport.width < 640) {
-        if (metrics.mobileGroupCount !== 3) local.push(`expected 3 mobile groups, got ${metrics.mobileGroupCount}`);
-        if (metrics.mobileOpenCount !== 0) local.push(`mobile footer must start collapsed, got ${metrics.mobileOpenCount} open groups`);
-        if (metrics.summaries.some((height) => height < 44)) local.push(`mobile summary touch target below 44px: ${JSON.stringify(metrics.summaries)}`);
-        if (metrics.visibleDesktopLinkCount !== 0) local.push(`desktop link grid must be hidden on mobile, got ${metrics.visibleDesktopLinkCount} visible links`);
-        if (Math.abs(metrics.logoHeight - 32) > 0.5) local.push(`mobile logo must be 32px high, got ${metrics.logoHeight}px`);
-      } else {
-        if (metrics.mobileGroupCount !== 0) local.push("mobile accordion groups must be hidden at sm and above");
-        if (metrics.visibleDesktopLinkCount !== 15) local.push(`expected 15 visible desktop/tablet links, got ${metrics.visibleDesktopLinkCount}`);
-        if (Math.abs(metrics.logoHeight - 36) > 0.5) local.push(`tablet/desktop logo must be 36px high, got ${metrics.logoHeight}px`);
-      }
-    }
-
-    if (viewport.width < 640) {
-      const groups = page.locator("[data-footer-mobile-group]");
-      for (let index = 0; index < (await groups.count()); index += 1) {
-        const group = groups.nth(index);
-        await group.locator("summary").click();
-        const isOpen = await group.evaluate((node) => node.open);
-        if (!isOpen) local.push(`mobile group ${index} did not open`);
-        const linkHeights = await group.locator("[data-footer-link]").evaluateAll((links) =>
-          links.map((link) => link.getBoundingClientRect().height),
-        );
-        if (linkHeights.some((height) => height < 44)) local.push(`expanded mobile link below 44px in group ${index}: ${JSON.stringify(linkHeights)}`);
-        await group.locator("summary").click();
-      }
+      if (metrics.mobileGroupCount !== 0) local.push("mobile accordion groups must be hidden at sm and above");
+      if (metrics.visibleDesktopLinkCount !== 15) local.push(`expected 15 visible desktop/tablet links, got ${metrics.visibleDesktopLinkCount}`);
+      if (Math.abs(metrics.logoHeight - 36) > 0.5) local.push(`tablet/desktop logo must be 36px high, got ${metrics.logoHeight}px`);
     }
 
     const compactMetrics = metrics
@@ -168,8 +159,6 @@ try {
           background: metrics.background,
           logoHeight: metrics.logoHeight,
           mobileGroupCount: metrics.mobileGroupCount,
-          mobileOpenCount: metrics.mobileOpenCount,
-          summaries: metrics.summaries,
           visibleDesktopLinkCount: metrics.visibleDesktopLinkCount,
           trustVisible: metrics.trustVisible,
           overflowX: metrics.overflowX,

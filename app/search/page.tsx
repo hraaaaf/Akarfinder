@@ -28,6 +28,7 @@ import "./search-controls-10of10.css";
 import "./search-premium-card-content.css";
 import "./search-premium-grid.css";
 import "./search-premium-card-density.css";
+import "./mockup-convergence-l2.css";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -157,7 +158,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         />
         <SearchPriceExplorerDock />
       </PropertySelectionProvider>
-      <SiteFooter variant="search" />
+      <div className="l2-secondary-footer">
+        <SiteFooter variant="search" />
+      </div>
     </main>
   );
 }

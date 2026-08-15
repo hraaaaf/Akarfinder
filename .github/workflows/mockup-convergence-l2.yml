@@ -1,0 +1,26 @@
+name: Mockup Convergence L2 Search Map Gate
+
+on:
+  pull_request:
+    paths:
+      - "app/search/**"
+      - "app/map/**"
+      - "scripts/scrapers/__tests__/mockup-convergence-l2-search-map.test.ts"
+      - ".github/workflows/mockup-convergence-l2.yml"
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: L2 Search + Map contracts
+        run: npx tsx --test scripts/scrapers/__tests__/mockup-convergence-l2-search-map.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
