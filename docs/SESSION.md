@@ -1,3 +1,17 @@
+<!-- PRICE-EXTRACTION-V2-CLOSEOUT-START -->
+## SEARCH Price Extraction v2 ✅ CLOSED
+
+- **PR #647 ✅ MERGED** — merge `7b5612fecb399c4a7af4d52d9bf3259f5d711f91`, exact head certifié `a706b6c002f98e04f034eeb83642e303f4add5d9`, **9/9 workflows SUCCESS**.
+- Snapshot production final : **15 438** représentations publiques, **1 351** avec prix sûr = **8,75 %**, contre **915 / 15 438 = 5,93 %** avant le lot ; gain observé **+436 prix sûrs**.
+- Backfill texte strict : **+124** prix ; extraction source-spécifique, URL de fiche uniquement, aucun prix inventé, aucun prix/m² converti en prix total.
+- DarAgadir : **319 prix publics** ; QA min **1 600 DH**, médiane **850 000 DH**, max **31 000 000 DH** ; **0 short-stay/journalier tarifé**, **0 vente < 10 000 DH**, **0 suspicion prix/m²** sur le contrôle ciblé.
+- PromoImmo Marrakech : **0/30** extraction suffisamment sûre → `HOLD`.
+- Avito : **30/30 HTTP 403** → `HOLD`, aucun contournement anti-bot/login/captcha/API privée.
+- Garde production DarAgadir short-stay fail-closed active ; CI PR read-only ; tout futur write détail exige un `workflow_dispatch` explicite.
+- `15 438` = représentations publiques, **pas** un nombre garanti de biens uniques ; ce closeout ne prétend pas une couverture prix complète ni une autorisation tierce.
+- Preuve détaillée : `docs/PRICE_EXTRACTION_V2_CLOSEOUT.md`.
+<!-- PRICE-EXTRACTION-V2-CLOSEOUT-END -->
+
 # AkarFinder — Session courante
 
 **Mise à jour : 2026-08-14**
