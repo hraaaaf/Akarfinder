@@ -1,3 +1,16 @@
+<!-- PRICE-EXTRACTION-V3-CLOSEOUT-START -->
+## SEARCH Price Extraction v3 ✅ CLOSED
+
+- **PR #649 ✅ MERGED** — merge `95132b751d0000be140d84fcfbf1f17ad84a2a5e`, head technique `ce13b5326cf82cdcfdf7323e3044d48ccd7e05f4`.
+- Snapshot enregistré dans #649 : **2 690 / 15 438 = 17,42 %** ; snapshot live observé après merge : **2 694 / 15 438 = 17,45 %**.
+- Baseline avant chantier prix : **915 / 15 438 = 5,93 %** ; couverture actuelle ≈ **2,94×** cette baseline.
+- DarAgadir live : **1 660** prix publics ; **0** short-stay publié avec prix ; garde fail-closed conservée.
+- PromoImmo : `HOLD`, aucune extraction suffisamment fiable. Avito : `HOLD`, HTTP 403, aucun bypass.
+- Drift live `2690 → 2694` consigné sans causalité inventée.
+- Preuve : `docs/PRICE_EXTRACTION_V3_CLOSEOUT.md`.
+- Prochain lot Search prix : **Price Extraction v4**, source par source, mêmes garde-fous et canary borné avant write important.
+<!-- PRICE-EXTRACTION-V3-CLOSEOUT-END -->
+
 <!-- B2B-PARTNER-LANDING-PRODUCTIZATION-START -->
 ## B2B Partner Landing Productization ✅ CLOSED
 
@@ -110,4 +123,4 @@ Viewports certifiés : **390×844 / 430×932 / 768×900 / 1280×900**.
 
 ## Reprise exacte
 
-**B2B Partner Landing Productization ✅ CLOSED via PR #650, merge `32c0b3635f9f8aec2fe92722eef09f0484dfec1b`. Dettes B2B séparées encore ouvertes : #641 puis #643.**
+**SEARCH Price Extraction v3 ✅ CLOSED techniquement via #649 ; closeout documentaire #652 en cours. Snapshot live consigné : 2 694 / 15 438 = 17,45 %. Prochaine action : v4 source par source, sans bypass ni inférence faible.**
