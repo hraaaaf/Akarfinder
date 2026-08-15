@@ -1,0 +1,31 @@
+name: Carte C1D OSM Polygon Probe
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/carte-c1d-osm-polygon-probe.mjs"
+      - ".github/workflows/carte-c1d-osm-polygon-probe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe-osm-polygons:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Read-only OSM polygon discovery
+        run: node scripts/audits/carte-c1d-osm-polygon-probe.mjs
+      - name: Upload polygon discovery report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-c1d-osm-polygon-probe-${{ github.run_id }}
+          path: data/audits/runtime/carte-c1d-osm-polygon-probe.json
+          retention-days: 14
