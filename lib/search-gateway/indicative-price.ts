@@ -1,5 +1,6 @@
 export type IndicativePriceInput = {
   domain: string;
+  url?: string | null;
   title?: string | null;
   snippet?: string | null;
   intent?: string | null;
@@ -14,9 +15,13 @@ function parseAmount(raw: string): number | null {
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 
-function normalizedIntent(intent?: string | null): "sale" | "rent" | null {
-  if (["buy", "sale", "new", "achat", "neuf"].includes(intent ?? "")) return "sale";
-  if (["rent", "location"].includes(intent ?? "")) return "rent";
+function inferIntent(input: IndicativePriceInput): "sale" | "rent" | null {
+  const url = (input.url ?? "").toLowerCase();
+  const title = (input.title ?? "").toLowerCase();
+  if (url.includes("/vente-") || /(?:à vendre|a vendre|for sale)/i.test(title)) return "sale";
+  if (url.includes("/location-") || /(?:à louer|a louer|for rent)/i.test(title)) return "rent";
+  if (["buy", "sale", "new", "achat", "neuf"].includes(input.intent ?? "")) return "sale";
+  if (["rent", "location"].includes(input.intent ?? "")) return "rent";
   return null;
 }
 
@@ -33,7 +38,7 @@ export function deriveIndicativePriceMad(input: IndicativePriceInput): number | 
   const text = `${input.title ?? ""} ${input.snippet ?? ""}`.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
   if (!text || PER_M2_PATTERN.test(text) || SHORT_STAY_PATTERN.test(text)) return null;
 
-  const intent = normalizedIntent(input.intent);
+  const intent = inferIntent(input);
   const unique = new Set<number>();
   for (const match of text.matchAll(MONEY_PATTERN)) {
     const amount = parseAmount(match[1] ?? "");
