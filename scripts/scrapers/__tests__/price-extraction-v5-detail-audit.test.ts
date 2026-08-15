@@ -69,6 +69,14 @@ test("canonical identity treats www and apex host as the same listing", () => {
   assert.deepEqual(audited.reliable, { amount: 8500, signal: "jsonld_canonical_offer" });
 });
 
+test("resolved fetch URL can prove listing identity when page omits canonical metadata", () => {
+  const target = "https://www.mubawab.ma/fr/a/8322921/appartement-a-louer";
+  const html = "<!doctype html><html><head></head><body><main><div class='price'>8 500 DH</div></main></body></html>";
+  const audited = auditPriceV5Html(html, row({ canonical_url: target }), target);
+  assert.equal(audited.canonical_identity, true);
+  assert.equal(audited.generic_high_amount, 8500);
+});
+
 test("JSON-LD wrong currency or wrong node URL is rejected", () => {
   const url = "https://www.mubawab.ma/fr/a/8322921/appartement-a-louer";
   const html = page(
