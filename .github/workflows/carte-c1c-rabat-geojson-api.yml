@@ -1,0 +1,33 @@
+name: Carte C1C Rabat GeoJSON API Gate
+
+on:
+  pull_request:
+    paths:
+      - "app/api/geo/rabat-market-zones/route.ts"
+      - "lib/geo/rabat-market-zones-geojson.ts"
+      - "lib/geo/rabat-market-zones-shadow.ts"
+      - "lib/geo/market-zone-registry.ts"
+      - "data/geo/rabat-market-zones-v1.json"
+      - "scripts/scrapers/__tests__/rabat-market-zones-geojson.test.ts"
+      - ".github/workflows/carte-c1c-rabat-geojson-api.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-rabat-market-zones-geojson:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: GeoJSON publication contracts
+        run: npx tsx --test scripts/scrapers/__tests__/rabat-market-zones-geojson.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
