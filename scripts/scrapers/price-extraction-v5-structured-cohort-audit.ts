@@ -57,7 +57,7 @@ function intent(row: CohortRow): "sale" | "rent" | null {
 function amount(raw: string | null, tx: "sale" | "rent" | null): number | null {
   if (!raw || !tx) return null;
   if (!/(?:\bmad\b|\bdhs?\b|dirhams?)/i.test(raw)) return null;
-  if (/(?:\/|par|le)\s*m(?:²|2)\b|par[-_ ]?jour|par\s+nuit|nuit[eé]e|journalier|quotidien|prix\s+sur\s+demande/i.test(raw)) return null;
+  if (/(?:\/|par|le)\s*m(?:²|2)(?=\s|$|[^\p{L}\p{N}_])|par[-_ ]?jour|par\s+nuit|nuit[eé]e|journalier|quotidien|prix\s+sur\s+demande/iu.test(raw)) return null;
   const digits = raw.replace(/([.,])00\b/, "").replace(/[^0-9]/g, "");
   if (!digits) return null;
   const n = Number(digits);
