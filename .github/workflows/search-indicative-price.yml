@@ -1,0 +1,27 @@
+name: SEARCH Indicative Price Source Check
+
+on:
+  pull_request:
+    paths:
+      - 'components/search/ExternalIndexedResultCard.tsx'
+      - 'lib/search-gateway/indicative-price.ts'
+      - 'scripts/scrapers/__tests__/indicative-price-source-check.test.ts'
+      - '.github/workflows/search-indicative-price.yml'
+      - 'docs/INDICATIVE_PRICE_SOURCE_CHECK.md'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/indicative-price-source-check.test.ts
+      - run: npx tsc --noEmit
