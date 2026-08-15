@@ -5,6 +5,7 @@ on:
     paths:
       - "app/favorites/**"
       - "components/favorites/**"
+      - "scripts/audits/mockup-convergence-l3-favorites.mjs"
       - "scripts/scrapers/__tests__/mockup-convergence-l3-favorites.test.ts"
       - ".github/workflows/mockup-convergence-l3-favorites.yml"
 
@@ -22,5 +23,25 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/mockup-convergence-l3-favorites.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
       - name: Production build
         run: npm run build
+      - name: Start production server
+        run: |
+          npm run start -- -p 3195 > /tmp/mockup-l3-favorites.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3195/favorites >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/mockup-l3-favorites.log
+          exit 1
+      - name: Populated Favorites visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3195
+        run: node scripts/audits/mockup-convergence-l3-favorites.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mockup-convergence-l3-favorites-proof
+          path: data/audits/mockup-convergence-l3-favorites
+          retention-days: 14
