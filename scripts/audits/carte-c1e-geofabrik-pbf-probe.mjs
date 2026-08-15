@@ -12,6 +12,11 @@ const targetOf = (name) => {
   if (/^(rabat centre|centre ville)$/.test(n)) return "rabat_centre";
   return null;
 };
+const labelsOf = (properties = {}) => [
+  properties.name,
+  properties["name:fr"],
+  ...(typeof properties.alt_name === "string" ? properties.alt_name.split(";") : []),
+].filter((value) => typeof value === "string" && value.trim());
 
 await mkdir("data/audits/runtime", { recursive: true });
 let sourceBytes = 0;
@@ -26,19 +31,27 @@ try {
 
 const allFeatures = Array.isArray(geojson?.features) ? geojson.features : [];
 const polygonFeatures = allFeatures.filter((feature) => ["Polygon", "MultiPolygon"].includes(feature?.geometry?.type));
-const candidates = polygonFeatures.map((feature) => ({
-  target: targetOf(feature?.properties?.name ?? ""),
-  name: feature?.properties?.name ?? null,
-  geometry_type: feature?.geometry?.type ?? null,
-  osm_type: feature?.properties?.["@type"] ?? null,
-  osm_id: feature?.properties?.["@id"] ?? null,
-  place: feature?.properties?.place ?? null,
-  boundary: feature?.properties?.boundary ?? null,
-  admin_level: feature?.properties?.admin_level ?? null,
-  type_tag: feature?.properties?.type ?? null,
-  tags: feature?.properties ?? {},
-  geometry: feature?.geometry ?? null,
-})).filter((candidate) => candidate.target);
+const candidates = polygonFeatures.flatMap((feature) => {
+  const labels = labelsOf(feature?.properties);
+  const matched = labels.map((label) => ({ label, target: targetOf(label) })).find((entry) => entry.target);
+  if (!matched) return [];
+  return [{
+    target: matched.target,
+    matched_name: matched.label,
+    name: feature?.properties?.name ?? null,
+    name_fr: feature?.properties?.["name:fr"] ?? null,
+    alt_name: feature?.properties?.alt_name ?? null,
+    geometry_type: feature?.geometry?.type ?? null,
+    osm_type: feature?.properties?.["@type"] ?? null,
+    osm_id: feature?.properties?.["@id"] ?? null,
+    place: feature?.properties?.place ?? null,
+    boundary: feature?.properties?.boundary ?? null,
+    admin_level: feature?.properties?.admin_level ?? null,
+    type_tag: feature?.properties?.type ?? null,
+    tags: feature?.properties ?? {},
+    geometry: feature?.geometry ?? null,
+  }];
+});
 
 const byTarget = Object.fromEntries(["agdal", "hay_riad", "souissi", "rabat_centre"].map((target) => [target, candidates.filter((candidate) => candidate.target === target)]));
 const report = {
