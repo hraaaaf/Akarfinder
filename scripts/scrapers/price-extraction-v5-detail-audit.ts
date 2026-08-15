@@ -84,11 +84,13 @@ export function isRecognizedDetailUrlV5(domain: string, rawUrl: string): boolean
   }
 }
 
-function canonicalIdentity(html: string, targetUrl: string): boolean {
+function canonicalIdentity(html: string, targetUrl: string, resolvedUrl?: string | null): boolean {
   try {
     const $ = loadHtml(html);
     const target = identityUrl(targetUrl);
     if (!target) return false;
+    const resolved = identityUrl(resolvedUrl);
+    if (resolved === target) return true;
     const canonical = identityUrl($("link[rel='canonical']").attr("href"));
     const ogUrl = identityUrl($("meta[property='og:url']").attr("content"));
     return canonical === target || ogUrl === target;
@@ -166,9 +168,9 @@ function masakenH1Price(html: string, intent: "sale" | "rent" | null): number | 
   }
 }
 
-export function auditPriceV5Html(html: string, row: PriceV5Candidate): PriceV5Audit {
+export function auditPriceV5Html(html: string, row: PriceV5Candidate, resolvedUrl?: string | null): PriceV5Audit {
   const intent = inferIntent(row);
-  const identity = canonicalIdentity(html, row.canonical_url);
+  const identity = canonicalIdentity(html, row.canonical_url, resolvedUrl);
   if (!intent) return { reliable: null, generic_high_amount: null, canonical_identity: identity };
 
   const jsonld = jsonLdCanonicalOffer(html, row, intent, identity);
@@ -230,7 +232,7 @@ async function main() {
         }
         const res = await fetchHtml(row.canonical_url, { timeoutMs: 15_000 });
         stat.fetched += 1;
-        const audit = auditPriceV5Html(res.html, row);
+        const audit = auditPriceV5Html(res.html, row, res.url);
         if (!audit.canonical_identity) stat.canonical_mismatch += 1;
         if (audit.reliable) {
           stat.reliable += 1;
