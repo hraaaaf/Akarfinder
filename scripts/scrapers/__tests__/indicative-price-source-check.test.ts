@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { deriveIndicativePriceMad } from "../../../lib/search-gateway/indicative-price";
 
@@ -52,4 +53,12 @@ test("intent floors reject implausible totals", () => {
     intent: "rent",
     snippet: "Appartement 500 DH",
   }), null);
+});
+
+test("external card keeps trusted price first and labels indicative fallback", () => {
+  const card = readFileSync("components/search/ExternalIndexedResultCard.tsx", "utf8");
+  assert.match(card, /const indicativePrice = hasTrustedPrice\s*\? null/);
+  assert.match(card, /const displayedPrice = hasTrustedPrice \? result\.normalized_price_mad : indicativePrice/);
+  assert.match(card, /Prix indicatif · à vérifier sur la source/);
+  assert.match(card, /data-price-confidence=/);
 });
