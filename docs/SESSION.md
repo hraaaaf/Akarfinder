@@ -1,15 +1,16 @@
 <!-- B2B-PARTNER-LANDING-PRODUCTIZATION-START -->
-## B2B Partner Landing Productization — certifié avant merge
+## B2B Partner Landing Productization ✅ CLOSED
 
-- **PR #650** — branche `agent/b2b-partner-landing-proof`.
+- **PR #650 ✅ MERGED** — merge `32c0b3635f9f8aec2fe92722eef09f0484dfec1b`, final head `8c149a73e3e4b0c4da0c09326b34f10be6dc7699`.
 - Objectif : rendre `/pro/agences` et `/promoteurs` commercialement concrets sans modifier activation, publication, ranking, DATA ou Registry.
 - Ajouts : aperçu basé sur les démos existantes, onboarding 3 étapes, formats d’intégration, livrables, reporting truth-safe, FAQ courte et différenciation Agence/Promoteur.
 - Aucun faux partenaire créé ; aucune promesse de volume, vente, ranking ou statut partenaire.
-- Head applicatif certifié `0cb53e589be45bff61449e56a08004dbb3e0ec03` : **11/11 workflows SUCCESS**.
-- UI All Pages run `31890674154` : **208/208 captures, 0 finding, 0 route en défaut** ; artefact `9248515094`, digest `sha256:c62174a05664ad0695fa02971a9757e99c5e24a691b306aebffd9718f2c7f11f`.
+- Gate B2B final `31891405851` : contrats + TypeScript + production build **SUCCESS**.
+- UI All Pages final `31891405842` : capture exhaustive + zero unexpected findings **SUCCESS** ; artefact `9248716663`, digest `sha256:5b9223953cbfab597923601be2e88b49f1c1589ad662aa6e2da3fbeeb2cb4a3c`.
+- Accessibilité finale + canonical baseline/compile : **SUCCESS**.
+- Incidents orthogonaux : P0 build Google Fonts externe ; DATA MASS-1 live-audit timeout Supabase. Aucun n’est causé par le diff B2B.
 - Closeout : `docs/B2B_PARTNER_LANDING_PRODUCTIZATION_CLOSEOUT.md`.
 - Dettes séparées inchangées : **#641** double source promoteur ; **#643** validation téléphone serveur + anti-abus `/api/leads`.
-- Prochaine action : recertifier le head documentaire final, puis merger #650 si tous les gates restent verts.
 <!-- B2B-PARTNER-LANDING-PRODUCTIZATION-END -->
 
 <!-- PRICE-EXTRACTION-V2-CLOSEOUT-START -->
@@ -109,4 +110,4 @@ Viewports certifiés : **390×844 / 430×932 / 768×900 / 1280×900**.
 
 ## Reprise exacte
 
-**B2B Partner Landing Productization — PR #650 techniquement certifiée sur le head applicatif `0cb53e589be45bff61449e56a08004dbb3e0ec03`; closeout et SESSION ajoutés. Prochaine action exacte : recertification du head documentaire final → merge #650 si vert → contrôle post-merge. Dettes #641 et #643 inchangées.**
+**B2B Partner Landing Productization ✅ CLOSED via PR #650, merge `32c0b3635f9f8aec2fe92722eef09f0484dfec1b`. Dettes B2B séparées encore ouvertes : #641 puis #643.**
