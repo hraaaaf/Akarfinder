@@ -1,0 +1,26 @@
+name: Mockup Convergence L3 Favorites Gate
+
+on:
+  pull_request:
+    paths:
+      - "app/favorites/**"
+      - "components/favorites/**"
+      - "scripts/scrapers/__tests__/mockup-convergence-l3-favorites.test.ts"
+      - ".github/workflows/mockup-convergence-l3-favorites.yml"
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: L3 Favorites contracts
+        run: npx tsx --test scripts/scrapers/__tests__/mockup-convergence-l3-favorites.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
