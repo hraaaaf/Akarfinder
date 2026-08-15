@@ -1,0 +1,26 @@
+name: Carte C1 Geometry Area Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/geo/geometry-area.ts"
+      - "scripts/scrapers/__tests__/geometry-area.test.ts"
+      - ".github/workflows/carte-c1-area-calculator.yml"
+      - "lib/geo/neighborhood-geometry-registry.ts"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-geometry-area:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/geometry-area.test.ts
+      - run: npx tsc --noEmit
