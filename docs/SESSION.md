@@ -1,20 +1,22 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-15**
+**Mise à jour : 2026-08-16**
 
 Ce fichier est le handover opérationnel court. `README.md` porte l’identité/doctrine et `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
-## Mockup Convergence — L2 Search + Map ✅ CLOSED
+## SEARCH Price Extraction v5 — closeout final
 
-- **PR #667 ✅ MERGED** — merge `c77621b35ca84b498b4744d9b8f9583fc1f45057`.
-- Head exact certifié : `4ddb561567c107c4ebaf8f9c097fc17f3c9b6b9d`.
-- Gate L2 `31900627982` SUCCESS ; Footer `31900627973` SUCCESS ; Search Final `31900627924` SUCCESS ; UI All Pages `31900627981` SUCCESS.
-- Certification globale : **208/208 captures, 0 finding** sur 390×844 / 430×932 / 768×900 / 1280×900.
-- Artefact UI `9251044397`, digest `sha256:de80ac7da0424f6a101eb046555ce4307eee17505fbee8bda496f0b1f116b6b4`.
-- Search/Map rapprochés de la cible mockup sans modifier ranking, DATA, Registry, entitlement ou publication ; aucune géographie/prix inventé.
-- Footer secondaire Search/Map masqué du viewport mobile ; bottom-nav canonique conservée.
-- Progression stricte de ce chantier : **2 lots CLOSED / 6 = 33,3 %**. L1 et L2 CLOSED ; **L3 Favoris NEXT**.
-- Preuve : `docs/MOCKUP_CONVERGENCE_L2_CLOSEOUT.md`.
+- **PR #669** — bounded reliable price write.
+- Bounded write production : run `31904092395` SUCCESS, **planned = 92 / written = 92**.
+- Attribution prouvée v5 : **33 Mubawab + 59 Masaken = 92 écritures**.
+- Chaque page a été re-fetchée avant write ; update uniquement sur `seed_id + source_domain` avec `normalized_price_mad IS NULL`.
+- Plafond dur **100** ; aucun write PR/push automatique : toute écriture future exige `workflow_dispatch` + `execute_write=true` explicite.
+- Exact-head précédent `bbd222d8aafd1711ec2356c77b62d9e8354d2d4e` : run `31912148653` SUCCESS, tests v5 + TypeScript + read-only + compteur exact verts, bounded write SKIPPED.
+- Dernier snapshot production observé : **2 838 / 15 438 = 18,38 %**, contre baseline **2 703 / 15 438 = 17,51 %**.
+- Gain global observé : **+135 / +0,87 point** ; seules les **92 écritures** du run v5 sont directement attribuées au lot. Le reste est une variation concurrente non attribuée.
+- Mouldar reste HOLD sur HTTP 403 ; Agenz respecte HTTP 429 et ses 44 valeurs indicatives restent hors couverture fiable ; aucun bypass.
+- Preuve détaillée : `docs/PRICE_EXTRACTION_V5_AUDIT.md`.
+- Étape restante avant CLOSED : exact-head final après synchronisation documentaire → merge #669 → vérification `main` post-merge.
 
 ## SEARCH — Prix indicatifs à vérifier sur la source ✅ CLOSED
 
@@ -95,4 +97,4 @@ Ce fichier est le handover opérationnel court. `README.md` porte l’identité/
 
 ## Reprise exacte
 
-**Mockup Convergence : L1 + L2 CLOSED, progression stricte 2/6 = 33,3 %. Prochaine action : L3 Favoris. Conserver le stockage/fetch/suppression/comparaison et l’état vide réels ; converger uniquement la vue peuplée vers la densité du mockup, avec segmentation seulement si les données réelles la supportent.**
+**SEARCH Price Extraction v5 : 92 écritures fiables attribuées au lot, dernier snapshot observé 2 838 / 15 438 = 18,38 %. Reprendre par exact-head final, merge #669 puis vérification post-merge `main`. Toute future écriture v5 reste manuelle, bornée et fail-closed.**
