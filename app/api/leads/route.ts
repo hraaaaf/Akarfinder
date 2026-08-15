@@ -1,6 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { validateLeadPayload, extractLeadPayload, normalizePhone } from "@/lib/leads/validate";
+import {
+  LEAD_RATE_LIMIT_RETRY_AFTER_SECONDS,
+  isLeadRateLimited,
+  leadRateLimitCutoff,
+} from "@/lib/leads/abuse";
 import { computeLeadTemperature } from "@/lib/onboarding/lead-temperature";
 import { prepareProfessionalActivationRequest } from "@/lib/professional/professional-activation-request";
 import { createSellerUploadToken } from "@/lib/seller/photo-upload";
@@ -31,6 +36,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { profile, source_channel, source_page, listing_id } = payload;
+  const normalizedPhone = normalizePhone(profile.phone!);
   const rawBody = body && typeof body === "object" && !Array.isArray(body)
     ? body as Record<string, unknown>
     : {};
@@ -128,7 +134,7 @@ export async function POST(request: NextRequest) {
     is_mre: profile.project === "mre",
     residence_country: profile.country?.trim() ?? null,
     full_name: profile.name?.trim() ?? null,
-    phone_whatsapp: normalizePhone(profile.phone!),
+    phone_whatsapp: normalizedPhone,
     message: profile.message?.trim() ?? null,
     consent_contact: true,
     consent_indicative: true,
@@ -140,6 +146,31 @@ export async function POST(request: NextRequest) {
 
   try {
     const supabase = getSupabaseServerClient();
+    const cutoff = leadRateLimitCutoff();
+    const { count: recentLeadCount, error: rateLimitError } = await supabase
+      .from("buyer_leads")
+      .select("id", { count: "exact", head: true })
+      .eq("phone_whatsapp", normalizedPhone)
+      .gte("created_at", cutoff);
+
+    if (rateLimitError) {
+      console.error("[api/leads] anti-abuse lookup error:", rateLimitError.message);
+      return NextResponse.json(
+        { ok: false, error: "Service temporairement indisponible. Veuillez réessayer." },
+        { status: 503 },
+      );
+    }
+
+    if (isLeadRateLimited(recentLeadCount ?? 0)) {
+      return NextResponse.json(
+        { ok: false, error: "Trop de demandes récentes. Veuillez réessayer plus tard." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(LEAD_RATE_LIMIT_RETRY_AFTER_SECONDS) },
+        },
+      );
+    }
+
     const { data, error } = await supabase
       .from("buyer_leads")
       .insert(row)
