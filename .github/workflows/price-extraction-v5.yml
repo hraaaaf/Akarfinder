@@ -40,6 +40,7 @@ jobs:
       PRICE_V5_PER_SOURCE_LIMIT: '60'
       PRICE_V5_SOURCES: 'mubawab.ma,masaken.ma,mouldar.com,agenz.ma'
       PRICE_V5_COHORT_LIMIT: '120'
+      PRICE_V5_MAX_WRITES: '100'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -54,4 +55,29 @@ jobs:
       - name: Audit public detail price signals without writes
         run: npx tsx scripts/scrapers/price-extraction-v5-detail-audit.ts
       - name: Audit Mubawab and Masaken structured cohort without writes
+        run: npx tsx scripts/scrapers/price-extraction-v5-structured-cohort-audit.ts
+
+  production-bounded-write:
+    needs: production-canary-read-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+      PRICE_V5_WRITE: 'true'
+      PRICE_V5_COHORT_LIMIT: '120'
+      PRICE_V5_MAX_WRITES: '100'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify production write credentials
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Re-fetch proven cohort and write only bounded null prices
         run: npx tsx scripts/scrapers/price-extraction-v5-structured-cohort-audit.ts
