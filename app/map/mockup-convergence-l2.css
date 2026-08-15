@@ -44,4 +44,8 @@ aside[aria-label^="Fiche repère quartier"] button[aria-label^="Fermer"] {
   aside[aria-label^="Fiche repère quartier"] > div + div {
     margin-top: 10px !important;
   }
+
+  .l2-secondary-footer {
+    display: none;
+  }
 }
