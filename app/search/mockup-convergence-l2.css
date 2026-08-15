@@ -59,4 +59,8 @@
   [data-search-continuous-flow] > div:first-child {
     gap: 12px !important;
   }
+
+  .l2-secondary-footer {
+    display: none;
+  }
 }
