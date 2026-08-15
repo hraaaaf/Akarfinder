@@ -39,7 +39,13 @@ Issue: `Lead API: harden server-side phone validation and abuse controls`.
 
 Le garde fonctionnel ne dépend pas de la présence de cet index, mais l’index borne efficacement la requête sous charge.
 
-**Incertitude explicite : l’application de cet index sur la base de production n’a pas été vérifiée dans ce lot.** Aucune affirmation de migration production effectuée n’est faite ici.
+### Vérification production
+
+Contrôle read-only effectué sur le projet Supabase production `AqarFinder` (`kusfiyimwvxblvsrhaes`) via `pg_indexes` : **0 ligne retournée** pour `buyer_leads_phone_created_at_idx`.
+
+**Fait vérifié : l’index n’est pas appliqué actuellement en production.** Le garde anti-abus reste fonctionnel, mais sa requête n’est pas encore optimisée par cet index composite.
+
+L’application de l’index est une mutation DDL production distincte et n’est pas revendiquée comme effectuée dans ce closeout.
 
 ## Certification exacte
 
@@ -71,4 +77,4 @@ Le premier passage B2B avait échoué uniquement parce qu’un contrat de test e
 
 ## Dette restante
 
-Une seule vérification opérationnelle reste distincte du closeout code : confirmer l’existence de `buyer_leads_phone_created_at_idx` sur la base de production avant de qualifier la protection comme optimisée sous charge production.
+**Human gate production :** appliquer l’index composite `buyer_leads_phone_created_at_idx` sur Supabase production, puis revérifier sa présence et les advisors. Cette étape n’est pas requise pour le fonctionnement logique du garde, mais elle est recommandée avant de qualifier la protection comme optimisée sous charge production.
