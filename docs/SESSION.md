@@ -12,9 +12,24 @@
 - Preuve détaillée : `docs/PRICE_EXTRACTION_V2_CLOSEOUT.md`.
 <!-- PRICE-EXTRACTION-V2-CLOSEOUT-END -->
 
+## Audit pages partenaires B2B ✅ CLOSED
+
+- **Progression stricte : 5/5 jalons CLOSED = 100 %**.
+- Scope : `/pro/agences`, `/promoteurs`, `/pro#contact`, `/demo/agence`, `/demo/promoteur`, profils publics professionnels/promoteurs.
+- PR initiale **#642** supersédée après dérive orthogonale de `main`; replay propre **PR #646 ✅ MERGED**.
+- Exact head #646 : `f280d69ac2f0304d06e58fc28de2700235452f6a`; merge : `d44e4d7145dae9c04f5ad6bd413175183e15f14e`.
+- Gate B2B run `31855231126` ✅ : **13/13 tests**, TypeScript ✅, production build ✅.
+- UI certification run `31855231168` ✅ : **208/208 captures**, **0 finding**, 52 pages rendables + 12 blockers explicites.
+- Artefact `9238878207`, digest `sha256:b65527fcb38e8120b3529c0dfa9e757ccf790dc4b69f9dac59db63d9350114d5`.
+- Landings `/pro/agences` et `/promoteurs` inspectées post-correctif en 390 / 430 / 768 / 1280 : hiérarchie stable, CTA lisibles, aucun overflow observé.
+- Correctifs : contexte agence/promoteur conservé jusqu’au formulaire, pré-sélection du profil, `source_page` conservée, canonicals explicites, `/promoteurs` statique, téléphone client 8–15 chiffres, test dédié branché au gate B2B officiel.
+- Dette **#641** : retirer/migrer la double source de vérité promoteur legacy avant toute première activation réelle.
+- Dette **#643** : durcir validation téléphone serveur + anti-abus de `/api/leads` dans un lot transverse.
+- Archive : `docs/B2B_PARTNER_PAGES_DEEP_AUDIT.md`.
+
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-14**
+**Mise à jour : 2026-08-15**
 
 Ce fichier est le handover opérationnel court. `README.md` porte l'identité/doctrine et `docs/ROADMAP.md` reste l'unique roadmap canonique.
 
@@ -80,4 +95,4 @@ Viewports certifiés : **390×844 / 430×932 / 768×900 / 1280×900**.
 
 ## Reprise exacte
 
-**Audit Toutes Pages — 100 %. A1→A5 CLOSED. PR #635 mergée sur `1e429371fe6a0abef5dc440f647bdb06ccc51cd5`. Issue #634 conserve la dette des 12 fixtures sans falsifier la certification.**
+**Audit pages partenaires B2B — 100 %. PR #646 mergée sur `d44e4d7145dae9c04f5ad6bd413175183e15f14e`, recertifiée 208/208 avec 0 finding. Prochain travail B2B utile : lot UX de différenciation agence/promoteur ; dettes structurelles #641 et #643 restent explicitement ouvertes.**
