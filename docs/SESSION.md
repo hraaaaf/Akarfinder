@@ -4,6 +4,18 @@
 
 Ce fichier est le handover opérationnel court. `README.md` porte l’identité/doctrine et `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
+## Mockup Convergence — L2 Search + Map ✅ CLOSED
+
+- **PR #667 ✅ MERGED** — merge `c77621b35ca84b498b4744d9b8f9583fc1f45057`.
+- Head exact certifié : `4ddb561567c107c4ebaf8f9c097fc17f3c9b6b9d`.
+- Gate L2 `31900627982` SUCCESS ; Footer `31900627973` SUCCESS ; Search Final `31900627924` SUCCESS ; UI All Pages `31900627981` SUCCESS.
+- Certification globale : **208/208 captures, 0 finding** sur 390×844 / 430×932 / 768×900 / 1280×900.
+- Artefact UI `9251044397`, digest `sha256:de80ac7da0424f6a101eb046555ce4307eee17505fbee8bda496f0b1f116b6b4`.
+- Search/Map rapprochés de la cible mockup sans modifier ranking, DATA, Registry, entitlement ou publication ; aucune géographie/prix inventé.
+- Footer secondaire Search/Map masqué du viewport mobile ; bottom-nav canonique conservée.
+- Progression stricte de ce chantier : **2 lots CLOSED / 6 = 33,3 %**. L1 et L2 CLOSED ; **L3 Favoris NEXT**.
+- Preuve : `docs/MOCKUP_CONVERGENCE_L2_CLOSEOUT.md`.
+
 ## SEARCH — Prix indicatifs à vérifier sur la source ✅ CLOSED
 
 - **PR #661 ✅ MERGED**.
@@ -83,4 +95,4 @@ Ce fichier est le handover opérationnel court. `README.md` porte l’identité/
 
 ## Reprise exacte
 
-**SEARCH prix : #661 CLOSED techniquement. Couverture fiable de référence : 2 703 / 15 438 = 17,51 %. Les 44 prix indicatifs Agenz sont affichables avec avertissement mais exclus de cette métrique. Prochaine action Search prix : poursuivre l’acquisition de prix fiables source par source, sans bypass ni inférence faible.**
+**Mockup Convergence : L1 + L2 CLOSED, progression stricte 2/6 = 33,3 %. Prochaine action : L3 Favoris. Conserver le stockage/fetch/suppression/comparaison et l’état vide réels ; converger uniquement la vue peuplée vers la densité du mockup, avec segmentation seulement si les données réelles la supportent.**
