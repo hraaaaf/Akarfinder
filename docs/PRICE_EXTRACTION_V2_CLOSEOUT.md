@@ -55,6 +55,6 @@ Un canary initial avait extrait 11 tarifs de location de vacances. Ils ont été
 
 - #639 : canary initial, fermé comme superseded.
 - #640 : replay intermédiaire, fermé comme superseded après drift de `main`.
-- #647 : recertification exact-current-main ; merge requis avant closeout canonique final.
+- #647 : recertification exact-current-main **MERGED** — merge `7b5612fecb399c4a7af4d52d9bf3259f5d711f91`, exact head `a706b6c002f98e04f034eeb83642e303f4add5d9`, **9/9 workflows SUCCESS**.
 
 Ce document ne prétend ni une couverture prix complète, ni une autorisation de tiers. La publication des représentations externes reste le choix de risque produit déjà acté, avec provenance et URL source conservées.
