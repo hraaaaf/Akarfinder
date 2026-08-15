@@ -1,0 +1,47 @@
+/* L2 — Map convergence. Presentation-only layer over canonical map contracts. */
+
+aside[aria-label^="Fiche repère quartier"] {
+  border-color: #dbe4ee !important;
+  background: rgb(255 255 255 / 0.97) !important;
+  color: #0b1f3a !important;
+  box-shadow: 0 18px 44px rgb(11 37 69 / 0.18) !important;
+}
+
+aside[aria-label^="Fiche repère quartier"] h2 {
+  color: #0b1f3a !important;
+  letter-spacing: -0.03em;
+}
+
+aside[aria-label^="Fiche repère quartier"] a[href^="/search"] {
+  border-radius: 999px !important;
+  background: #0b63ce !important;
+}
+
+aside[aria-label^="Fiche repère quartier"] button[aria-label^="Fermer"] {
+  border-radius: 999px !important;
+  background: #fff !important;
+}
+
+.maplibre-neighborhood-marker {
+  border-radius: 999px !important;
+  box-shadow: 0 6px 18px rgb(11 37 69 / 0.16) !important;
+}
+
+.maplibre-cluster-marker {
+  border-color: #dbe4ee !important;
+  box-shadow: 0 6px 18px rgb(11 37 69 / 0.14) !important;
+}
+
+@media (max-width: 767px) {
+  aside[aria-label^="Fiche repère quartier"] {
+    inset-inline: 10px !important;
+    bottom: 10px !important;
+    max-height: 43vh !important;
+    border-radius: 22px !important;
+    padding: 14px !important;
+  }
+
+  aside[aria-label^="Fiche repère quartier"] > div + div {
+    margin-top: 10px !important;
+  }
+}

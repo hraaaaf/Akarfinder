@@ -2,6 +2,7 @@ import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MapNeighborhoodClient } from "@/components/map/MapNeighborhoodClient";
 import { parseMapNavigationState } from "@/lib/map/map-navigation-state";
+import "./mockup-convergence-l2.css";
 
 export const dynamic = "force-dynamic";
 
