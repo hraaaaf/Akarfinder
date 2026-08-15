@@ -1,50 +1,42 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { PromoterPageShell } from "@/components/promoters/PromoterPageShell";
+import { getDemoPromoter, getDemoPromoterProjects } from "@/lib/promoters/get-promoter";
+import { normalizeProfessionalSlug } from "@/lib/professional/validation";
 
 export const dynamic = "force-dynamic";
-import { PromoterPageShell } from "@/components/promoters/PromoterPageShell";
-import {
-  getActivePromoter,
-  getActivePromoterProjects,
-  getAllActivePromoterSlugs,
-  getDemoPromoter,
-  getDemoPromoterProjects,
-} from "@/lib/promoters/get-promoter";
 
 type Props = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ preview?: string }>;
 };
 
-export async function generateStaticParams() {
-  return getAllActivePromoterSlugs().map((slug) => ({ slug }));
-}
-
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
   const { preview } = await searchParams;
+  const slug = normalizeProfessionalSlug(rawSlug);
 
   if (preview === "demo") {
-    const promoter = getDemoPromoter(slug);
-    if (!promoter) return { title: "Promoteur introuvable — AkarFinder" };
+    const promoter = slug ? getDemoPromoter(slug) : null;
+    if (!promoter) return { title: "Promoteur introuvable — AkarFinder", robots: { index: false, follow: false } };
     return {
       title: `${promoter.name} — Exemple de page promoteur AkarFinder`,
       robots: { index: false, follow: false },
     };
   }
 
-  const promoter = getActivePromoter(slug);
-  if (!promoter) return { title: "Promoteur introuvable — AkarFinder" };
   return {
-    title: `${promoter.name} — Promoteur partenaire AkarFinder`,
-    description: `${promoter.description.slice(0, 155)}`,
-    robots: { index: true, follow: true },
+    title: "Profil professionnel — AkarFinder",
+    robots: { index: false, follow: false },
+    alternates: slug ? { canonical: `/professionnels/${slug}` } : undefined,
   };
 }
 
 export default async function PromoterPage({ params, searchParams }: Props) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
   const { preview } = await searchParams;
+  const slug = normalizeProfessionalSlug(rawSlug);
+  if (!slug) notFound();
 
   if (preview === "demo") {
     const promoter = getDemoPromoter(slug);
@@ -53,8 +45,5 @@ export default async function PromoterPage({ params, searchParams }: Props) {
     return <PromoterPageShell promoter={promoter} projects={projects} isDemo />;
   }
 
-  const promoter = getActivePromoter(slug);
-  if (!promoter) notFound();
-  const projects = getActivePromoterProjects(promoter.id);
-  return <PromoterPageShell promoter={promoter} projects={projects} />;
+  redirect(`/professionnels/${slug}`);
 }
