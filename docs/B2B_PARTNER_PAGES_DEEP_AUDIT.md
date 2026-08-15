@@ -29,7 +29,8 @@ Les surfaces Agence/Promoteur sont techniquement stables et truth-safe dans le p
 - `/promoteurs` rendu statique ;
 - validation téléphone client 8–15 chiffres + `inputMode="tel"` / `autoComplete="tel"` ;
 - test de régression B2B branché dans le gate officiel ;
-- proposition de valeur rendue concrète par #650 : aperçu visuel, onboarding, formats d’intégration, livrables, reporting truth-safe, FAQ et différenciation nette Agence/Promoteur.
+- proposition de valeur rendue concrète par #650 : aperçu visuel, onboarding, formats d’intégration, livrables, reporting truth-safe, FAQ et différenciation nette Agence/Promoteur ;
+- **#641 résolu** : `professional_organizations` est désormais l’unique vérité pour identité, visibilité publique et tier commercial des promoteurs réels ; le dataset `lib/promoters/*` est limité aux démos.
 
 ## Preuves finales
 
@@ -52,16 +53,26 @@ Les surfaces Agence/Promoteur sont techniquement stables et truth-safe dans le p
 - Artefact `9248515094`, digest `sha256:c62174a05664ad0695fa02971a9757e99c5e24a691b306aebffd9718f2c7f11f`.
 - Les contrats B2B couvrent désormais aussi la preuve visuelle, l’onboarding, les formats d’intégration, les livrables, le reporting, la FAQ, la différenciation métier et l’absence de promesses commerciales non prouvées.
 
+### Source unique Promoteur — #641 ✅ RÉSOLU
+- PR **#654** mergée : `fac9345711fb110280d41dadaa7bd97213ea7ec8`.
+- Exact head certifié : `ac56858d00e14575e22135db6f654dbd86018f1e`.
+- **12/12 workflows observés SUCCESS**.
+- B2B Productization `31897007825` : contrats + TypeScript + production build **SUCCESS**.
+- UI All Pages Certification `31897007792` : capture exhaustive + **zero unexpected findings SUCCESS**.
+- Artefact `9250153402`, digest `sha256:db4a7ce057abc98affe7471903eab8a31d943be8cc7191824d569d6010a4d3df`.
+- `/promoteurs/[slug]` hors démo redirige vers `/professionnels/[slug]` ; metadata legacy non-demo `noindex` + canonical professionnel.
+- `getActivePromoter`, `getActivePromoterProjects` et `getAllActivePromoterSlugs` retirés ; les fixtures locales promoteur sont demo-only.
+- Les tests P17 ont été migrés vers ce contrat sans retirer les contrôles données/projets encore valides.
+
 ## Findings structurants
 
-### P0 avant premier vrai promoteur — double source de vérité
+### P0 avant premier vrai promoteur — double source de vérité ✅ RÉSOLU
 
 Le profil public canonique `/professionnels/[slug]` exige `professional_organizations.validation_status="validated"` + `public_visibility="public"` et dérive le badge du `commercial_tier`.
 
-Le chemin legacy `/promoteurs/[slug]` repose encore sur `lib/promoters/*` et peut produire des labels partenaire à partir de `visibility_status="active"` sans consulter le modèle canonique.
+**Résolution #641 :** le chemin réel `/promoteurs/[slug]` ne publie plus depuis `lib/promoters/*`. Il redirige vers le profil canonique `/professionnels/[slug]`. Le dataset legacy ne sert plus qu’au mode `?preview=demo`, explicitement `noindex`.
 
-**État vérifié lors de l’audit :** aucun vrai promoteur legacy actif. Aucune fausse revendication publique observée.  
-**Dette bloquante avant première activation réelle :** issue **#641**. Ne pas activer un partenaire réel via le dataset legacy.
+**État final :** aucune activation réelle ou badge partenaire ne peut être accordé à partir de `visibility_status` du dataset legacy.
 
 ### P1 — attribution `source_channel="promoter"`
 
@@ -86,7 +97,7 @@ Les deux landings exposent maintenant :
 
 Le client Pro est désormais plus strict, mais `/api/leads` conserve une validation serveur plus permissive et aucun rate-limit dédié n’a été identifié dans ce chemin pendant l’audit.
 
-**Dette transverse :** issue **#643** pour validation téléphone serveur + anti-abus + tests de tous les funnels.
+**Dette transverse restante :** issue **#643** pour validation téléphone serveur + anti-abus + tests de tous les funnels.
 
 ## Points forts vérifiés
 
@@ -96,9 +107,10 @@ Le client Pro est désormais plus strict, mais `/api/leads` conserve une validat
 - sponsorisé séparé de la pertinence organique ;
 - activation Pro ne crée automatiquement ni organisation publique, ni badge, ni publication ;
 - profil public canonique fail-closed ;
+- source de vérité promoteur unique pour les profils réels ;
 - landing pages maintenant concrètes et différenciées sans faux social proof ;
 - responsive certifié sur les quatre viewports.
 
 ## Statut
 
-**CLOSED.** Le chantier d’audit/remédiation des pages Agence partenaire et Promoteur partenaire est mergé, recertifié et complété par la productisation #650. Les deux dettes restantes sont explicitement gouvernées par **#641** et **#643** et ne sont pas masquées par cette certification.
+**CLOSED.** Le chantier d’audit/remédiation des pages Agence partenaire et Promoteur partenaire est mergé, recertifié et complété par la productisation #650. La dette P0 **#641 est résolue et mergée via #654**. La dette transverse restante est **#643** sur la validation serveur et l’anti-abus de `/api/leads`.
