@@ -1,18 +1,16 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, test } from "node:test";
 import { PROMOTERS, PROJECTS } from "../../../lib/promoters/promoters-data.js";
-import {
-  getActivePromoter,
-  getActivePromoterProjects,
-  getAllActivePromoterSlugs,
-} from "../../../lib/promoters/get-promoter.js";
 import {
   getActiveProject,
   getProjectPromoter,
   getAllActiveProjectSlugs,
 } from "../../../lib/promoters/get-project.js";
 
-// ── Wording interdit ──────────────────────────────────────────────────────────
+const promoterRepositorySource = readFileSync("lib/promoters/get-promoter.ts", "utf8");
+const promoterRouteSource = readFileSync("app/promoteurs/[slug]/page.tsx", "utf8");
+
 const FORBIDDEN_TERMS = [
   "projet vérifié",
   "promoteur vérifié",
@@ -34,8 +32,6 @@ function checkNoForbiddenTerms(text: string, label: string) {
   }
 }
 
-// ── Données ───────────────────────────────────────────────────────────────────
-
 describe("P17A-1 — Données promoteurs", () => {
   test("PROMOTERS est un tableau", () => {
     assert.ok(Array.isArray(PROMOTERS));
@@ -52,140 +48,92 @@ describe("P17A-1 — Données promoteurs", () => {
       assert.ok(p.name, `Promoteur sans name`);
       assert.ok(p.city, `Promoteur sans city`);
       assert.ok(p.description, `Promoteur sans description`);
-      assert.ok(
-        ["none", "partner", "featured"].includes(p.partner_status),
-        `partner_status invalide: ${p.partner_status}`
-      );
-      assert.ok(
-        ["draft", "demo", "active"].includes(p.visibility_status),
-        `visibility_status invalide: ${p.visibility_status}`
-      );
-      assert.equal(
-        p.source_note,
-        "Données fournies par le promoteur",
-        `source_note incorrect pour ${p.name}`
-      );
+      assert.ok(["none", "partner", "featured"].includes(p.partner_status));
+      assert.ok(["draft", "demo", "active"].includes(p.visibility_status));
+      assert.equal(p.source_note, "Données fournies par le promoteur");
     }
   });
 
   test("Chaque projet a les champs obligatoires", () => {
     for (const p of PROJECTS) {
-      assert.ok(p.id, `Projet sans id`);
-      assert.ok(p.slug, `Projet sans slug`);
-      assert.ok(p.promoter_id, `Projet sans promoter_id`);
-      assert.ok(p.name, `Projet sans name`);
-      assert.ok(p.city, `Projet sans city`);
-      assert.ok(p.price_from > 0, `price_from invalide pour ${p.name}`);
-      assert.equal(p.currency, "MAD", `currency invalide pour ${p.name}`);
-      assert.ok(Array.isArray(p.property_types), `property_types non-array`);
-      assert.ok(Array.isArray(p.typologies), `typologies non-array`);
-      assert.ok(
-        ["none", "partner_full"].includes(p.source_access_level) ||
-          p.source_access_level === "public",
-        `source_access_level invalide: ${p.source_access_level}`
-      );
-      assert.ok(
-        ["draft", "demo", "active"].includes(p.visibility_status),
-        `visibility_status invalide: ${p.visibility_status}`
-      );
+      assert.ok(p.id);
+      assert.ok(p.slug);
+      assert.ok(p.promoter_id);
+      assert.ok(p.name);
+      assert.ok(p.city);
+      assert.ok(p.price_from > 0);
+      assert.equal(p.currency, "MAD");
+      assert.ok(Array.isArray(p.property_types));
+      assert.ok(Array.isArray(p.typologies));
+      assert.ok(["none", "partner_full", "public"].includes(p.source_access_level));
+      assert.ok(["draft", "demo", "active"].includes(p.visibility_status));
     }
   });
 
   test("Les slugs promoteurs sont uniques", () => {
     const slugs = PROMOTERS.map((p) => p.slug);
-    const unique = new Set(slugs);
-    assert.equal(unique.size, slugs.length, "Slugs promoteurs non-uniques");
+    assert.equal(new Set(slugs).size, slugs.length);
   });
 
   test("Les slugs projets sont uniques", () => {
     const slugs = PROJECTS.map((p) => p.slug);
-    const unique = new Set(slugs);
-    assert.equal(unique.size, slugs.length, "Slugs projets non-uniques");
+    assert.equal(new Set(slugs).size, slugs.length);
   });
 
   test("Chaque projet référence un promoteur existant", () => {
     const promoterIds = new Set(PROMOTERS.map((p) => p.id));
     for (const proj of PROJECTS) {
-      assert.ok(
-        promoterIds.has(proj.promoter_id),
-        `Projet "${proj.name}" référence un promoter_id inexistant: ${proj.promoter_id}`
-      );
+      assert.ok(promoterIds.has(proj.promoter_id));
     }
   });
 });
 
-// ── Visibilité ─────────────────────────────────────────────────────────────────
+describe("P17A-1 — Vérité publique promoteur", () => {
+  test("aucune fixture promoteur locale active ne peut porter un profil public réel", () => {
+    assert.equal(PROMOTERS.filter((p) => p.visibility_status === "active").length, 0);
+  });
 
-describe("P17A-1 — Visibilité active/demo/draft", () => {
-  test("getActivePromoter retourne null pour un slug demo", () => {
-    const demoPromoter = PROMOTERS.find((p) => p.visibility_status === "demo");
-    if (demoPromoter) {
-      const result = getActivePromoter(demoPromoter.slug);
-      assert.equal(result, null, "Une entrée demo ne doit pas être accessible publiquement");
-    }
+  test("le repository promoteur legacy n'expose plus d'API active", () => {
+    assert.doesNotMatch(
+      promoterRepositorySource,
+      /getActivePromoter|getActivePromoterProjects|getAllActivePromoterSlugs/
+    );
+    assert.match(promoterRepositorySource, /visibility_status === "demo"/);
+    assert.doesNotMatch(promoterRepositorySource, /visibility_status === "active"/);
+  });
+
+  test("la route promoteur legacy réelle redirige vers la vérité professionnelle canonique", () => {
+    assert.match(promoterRouteSource, /redirect\(`\/professionnels\/\$\{slug\}`\)/);
+    assert.doesNotMatch(promoterRouteSource, /Promoteur partenaire AkarFinder/);
   });
 
   test("getActiveProject retourne null pour un slug demo", () => {
     const demoProject = PROJECTS.find((p) => p.visibility_status === "demo");
     if (demoProject) {
-      const result = getActiveProject(demoProject.slug);
-      assert.equal(result, null, "Un projet demo ne doit pas être accessible publiquement");
+      assert.equal(getActiveProject(demoProject.slug), null);
     }
-  });
-
-  test("getActivePromoter retourne null pour un slug inexistant", () => {
-    const result = getActivePromoter("slug-inexistant-xyz");
-    assert.equal(result, null);
   });
 
   test("getActiveProject retourne null pour un slug inexistant", () => {
-    const result = getActiveProject("slug-inexistant-xyz");
-    assert.equal(result, null);
-  });
-
-  test("getAllActivePromoterSlugs exclut demo/draft", () => {
-    const slugs = getAllActivePromoterSlugs();
-    for (const slug of slugs) {
-      const p = PROMOTERS.find((x) => x.slug === slug);
-      assert.equal(p?.visibility_status, "active", `Slug non-active dans la liste: ${slug}`);
-    }
+    assert.equal(getActiveProject("slug-inexistant-xyz"), null);
   });
 
   test("getAllActiveProjectSlugs exclut demo/draft", () => {
     const slugs = getAllActiveProjectSlugs();
     for (const slug of slugs) {
       const p = PROJECTS.find((x) => x.slug === slug);
-      assert.equal(p?.visibility_status, "active", `Slug non-active dans la liste: ${slug}`);
-    }
-  });
-
-  test("getActivePromoterProjects exclut les projets demo/draft", () => {
-    for (const promoter of PROMOTERS) {
-      const projects = getActivePromoterProjects(promoter.id);
-      for (const proj of projects) {
-        assert.equal(
-          proj.visibility_status,
-          "active",
-          `Projet non-active retourné pour promoteur ${promoter.name}: ${proj.slug}`
-        );
-      }
+      assert.equal(p?.visibility_status, "active");
     }
   });
 
   test("getProjectPromoter résout le promoteur depuis un projet", () => {
     for (const proj of PROJECTS) {
       const promoter = getProjectPromoter(proj.promoter_id);
-      assert.ok(promoter, `Promoteur non résolu pour projet ${proj.name}`);
-      assert.equal(
-        promoter.id,
-        proj.promoter_id,
-        `Mauvais promoteur retourné pour projet ${proj.name}`
-      );
+      assert.ok(promoter);
+      assert.equal(promoter.id, proj.promoter_id);
     }
   });
 });
-
-// ── Wording ────────────────────────────────────────────────────────────────────
 
 describe("P17A-1 — Wording interdit", () => {
   test("Descriptions promoteurs sans wording interdit", () => {
@@ -200,10 +148,7 @@ describe("P17A-1 — Wording interdit", () => {
       checkNoForbiddenTerms(p.name, `Projet.name (${p.name})`);
       checkNoForbiddenTerms(p.disclaimer, `Projet.disclaimer (${p.name})`);
       if (p.delivery_date_label) {
-        checkNoForbiddenTerms(
-          p.delivery_date_label,
-          `Projet.delivery_date_label (${p.name})`
-        );
+        checkNoForbiddenTerms(p.delivery_date_label, `Projet.delivery_date_label (${p.name})`);
       }
     }
   });
@@ -215,22 +160,12 @@ describe("P17A-1 — Wording interdit", () => {
   });
 });
 
-// ── Pas de PII scrappées ───────────────────────────────────────────────────────
-
 describe("P17A-1 — Contrôle PII", () => {
   test("Les contacts WhatsApp/email ne sont jamais dans des entrées public/none", () => {
     for (const p of PROMOTERS) {
       if (p.partner_status === "none") {
-        assert.equal(
-          p.contact_whatsapp,
-          undefined,
-          `Promoteur partner_status=none ne doit pas avoir contact_whatsapp: ${p.name}`
-        );
-        assert.equal(
-          p.contact_email,
-          undefined,
-          `Promoteur partner_status=none ne doit pas avoir contact_email: ${p.name}`
-        );
+        assert.equal(p.contact_whatsapp, undefined);
+        assert.equal(p.contact_email, undefined);
       }
     }
   });
