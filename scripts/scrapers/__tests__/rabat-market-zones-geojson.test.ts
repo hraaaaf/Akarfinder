@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { GET } from "../../../app/api/geo/rabat-market-zones/route";
 import { decideRabatMarketZonesGeoJson } from "../../../lib/geo/rabat-market-zones-geojson";
 import { RABAT_MARKET_ZONES_SHADOW } from "../../../lib/geo/rabat-market-zones-shadow";
 import type { MarketZoneRecord } from "../../../lib/geo/market-zone-registry";
@@ -16,6 +17,17 @@ describe("Rabat market-zone GeoJSON publication gate", () => {
   it("fails closed for the current Shadow-only pilot", () => {
     assert.deepEqual(decideRabatMarketZonesGeoJson(), {
       enabled: false,
+      reason: "shadow_or_unreviewed",
+    });
+  });
+
+  it("keeps the public route disabled while the pilot is Shadow-only", async () => {
+    const response = await GET();
+    assert.equal(response.status, 404);
+    assert.equal(response.headers.get("x-akarfinder-geometry-semantic-type"), "market_zone");
+    assert.equal(response.headers.get("x-akarfinder-official-boundary"), "false");
+    assert.deepEqual(await response.json(), {
+      status: "disabled",
       reason: "shadow_or_unreviewed",
     });
   });
