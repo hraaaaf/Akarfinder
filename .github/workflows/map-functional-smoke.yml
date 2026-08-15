@@ -1,0 +1,51 @@
+name: Map Functional Smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/map/**"
+      - "components/map/**"
+      - "lib/map/**"
+      - "scripts/audits/map-functional-smoke.mjs"
+      - ".github/workflows/map-functional-smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      BASE_URL: http://127.0.0.1:3203
+      AUDIT_OUTPUT_DIR: data/audits/map-functional-smoke
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3203 > /tmp/map-functional.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3203/map >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/map-functional.log
+          exit 1
+      - name: Functional map interactions
+        run: node scripts/audits/map-functional-smoke.mjs
+      - name: Upload proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-functional-smoke-${{ github.run_id }}
+          path: data/audits/map-functional-smoke
+          if-no-files-found: error
+          retention-days: 14
