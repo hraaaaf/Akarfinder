@@ -5,11 +5,18 @@ on:
     paths:
       - 'scripts/scrapers/price-extraction-v5-detail-audit.ts'
       - 'scripts/scrapers/price-extraction-v5-structured-cohort-audit.ts'
+      - 'scripts/scrapers/price-extraction-v5-production-count.ts'
       - 'scripts/scrapers/__tests__/price-extraction-v5-detail-audit.test.ts'
       - 'scripts/scrapers/__tests__/price-extraction-v5-structured-cohort-audit.test.ts'
       - '.github/workflows/price-extraction-v5.yml'
       - 'docs/PRICE_EXTRACTION_V5_AUDIT.md'
   workflow_dispatch:
+    inputs:
+      execute_write:
+        description: 'Run the bounded production write after read-only certification'
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -56,8 +63,11 @@ jobs:
         run: npx tsx scripts/scrapers/price-extraction-v5-detail-audit.ts
       - name: Audit Mubawab and Masaken structured cohort without writes
         run: npx tsx scripts/scrapers/price-extraction-v5-structured-cohort-audit.ts
+      - name: Count exact production price coverage
+        run: npx tsx scripts/scrapers/price-extraction-v5-production-count.ts
 
   production-bounded-write:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.execute_write == true }}
     needs: production-canary-read-only
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -81,3 +91,5 @@ jobs:
           test -n "$SUPABASE_SERVICE_ROLE_KEY"
       - name: Re-fetch proven cohort and write only bounded null prices
         run: npx tsx scripts/scrapers/price-extraction-v5-structured-cohort-audit.ts
+      - name: Count exact production price coverage after write
+        run: npx tsx scripts/scrapers/price-extraction-v5-production-count.ts
