@@ -1,0 +1,69 @@
+name: Carte C1E Geofabrik PBF Polygon Probe
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/carte-c1e-geofabrik-pbf-probe.mjs"
+      - ".github/workflows/carte-c1e-geofabrik-pbf-probe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe-geofabrik-pbf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Install Osmium
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq osmium-tool
+          osmium --version
+
+      - name: Download immutable Morocco OSM snapshot
+        run: |
+          curl --fail --location --retry 2 --retry-delay 2 \
+            https://download.geofabrik.de/africa/morocco-260727.osm.pbf \
+            --output /tmp/morocco.osm.pbf
+          test -s /tmp/morocco.osm.pbf
+          mkdir -p data/audits/runtime
+          sha256sum /tmp/morocco.osm.pbf | tee data/audits/runtime/carte-c1e-geofabrik-source.sha256
+
+      - name: Extract Rabat and named area candidates offline
+        run: |
+          osmium extract \
+            --bbox=-6.95,33.90,-6.75,34.05 \
+            --strategy=complete_ways \
+            /tmp/morocco.osm.pbf \
+            --output=/tmp/rabat.osm.pbf
+
+          osmium tags-filter \
+            /tmp/rabat.osm.pbf \
+            'a/name,name:fr,alt_name=Agdal,Aguedal,Hay Riad,Hay Ryad,Hay Riyad,Souissi,Rabat Centre,Centre Ville,Centre-Ville' \
+            --output=/tmp/c1e-candidates.osm.pbf
+
+          osmium export \
+            --attributes=type,id \
+            /tmp/c1e-candidates.osm.pbf \
+            --output=/tmp/c1e-candidates.geojson
+
+          node scripts/audits/carte-c1e-geofabrik-pbf-probe.mjs
+
+      - name: Upload offline discovery evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-c1e-geofabrik-pbf-probe-${{ github.run_id }}
+          path: |
+            data/audits/runtime/carte-c1e-geofabrik-pbf-probe.json
+            data/audits/runtime/carte-c1e-geofabrik-source.sha256
+            /tmp/c1e-candidates.geojson
+          if-no-files-found: warn
+          retention-days: 14
