@@ -1,17 +1,19 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, test } from "node:test";
 import { PROMOTERS, PROJECTS } from "../../../lib/promoters/promoters-data.js";
 import {
   getDemoPromoter,
   getDemoPromoterProjects,
-  getActivePromoter,
 } from "../../../lib/promoters/get-promoter.js";
 import {
   getDemoProject,
   getActiveProject,
 } from "../../../lib/promoters/get-project.js";
 
-// ── Wording interdit ──────────────────────────────────────────────────────────
+const promoterRepositorySource = readFileSync("lib/promoters/get-promoter.ts", "utf8");
+const promoterRouteSource = readFileSync("app/promoteurs/[slug]/page.tsx", "utf8");
+
 const FORBIDDEN_TERMS = [
   "projet vérifié",
   "promoteur vérifié",
@@ -26,24 +28,16 @@ const FORBIDDEN_TERMS = [
 
 function checkNoForbiddenTerms(text: string, label: string) {
   for (const term of FORBIDDEN_TERMS) {
-    assert.ok(
-      !text.toLowerCase().includes(term),
-      `"${label}" contains forbidden term: "${term}"`
-    );
+    assert.ok(!text.toLowerCase().includes(term), `"${label}" contains forbidden term: "${term}"`);
   }
 }
-
-// ── Accès demo ────────────────────────────────────────────────────────────────
 
 describe("P17A-2 — Accès demo via getDemoPromoter/getDemoProject", () => {
   test("getDemoPromoter retourne une entrée demo existante", () => {
     const demoPromoter = PROMOTERS.find((p) => p.visibility_status === "demo");
-    if (!demoPromoter) {
-      // Si aucune entrée demo, le test passe (état acceptable)
-      return;
-    }
+    if (!demoPromoter) return;
     const result = getDemoPromoter(demoPromoter.slug);
-    assert.ok(result, "getDemoPromoter doit retourner l'entrée demo");
+    assert.ok(result);
     assert.equal(result.slug, demoPromoter.slug);
     assert.equal(result.visibility_status, "demo");
   });
@@ -52,45 +46,46 @@ describe("P17A-2 — Accès demo via getDemoPromoter/getDemoProject", () => {
     const demoProject = PROJECTS.find((p) => p.visibility_status === "demo");
     if (!demoProject) return;
     const result = getDemoProject(demoProject.slug);
-    assert.ok(result, "getDemoProject doit retourner le projet demo");
+    assert.ok(result);
     assert.equal(result.slug, demoProject.slug);
     assert.equal(result.visibility_status, "demo");
   });
 
   test("getDemoPromoter retourne null pour un slug inexistant", () => {
-    const result = getDemoPromoter("slug-inexistant-xyz");
-    assert.equal(result, null);
+    assert.equal(getDemoPromoter("slug-inexistant-xyz"), null);
   });
 
   test("getDemoProject retourne null pour un slug inexistant", () => {
-    const result = getDemoProject("slug-inexistant-xyz");
-    assert.equal(result, null);
+    assert.equal(getDemoProject("slug-inexistant-xyz"), null);
   });
 });
 
-// ── Isolation demo / public ───────────────────────────────────────────────────
-
 describe("P17A-2 — Isolation demo vs public", () => {
-  test("getActivePromoter ne retourne PAS les entrées demo", () => {
-    const demoPromoter = PROMOTERS.find((p) => p.visibility_status === "demo");
-    if (!demoPromoter) return;
-    const result = getActivePromoter(demoPromoter.slug);
-    assert.equal(result, null, "Une entrée demo ne doit pas être accessible publiquement");
+  test("le repository promoteur legacy est strictement demo-only", () => {
+    assert.match(promoterRepositorySource, /visibility_status === "demo"/);
+    assert.doesNotMatch(promoterRepositorySource, /visibility_status === "active"/);
+    assert.doesNotMatch(
+      promoterRepositorySource,
+      /getActivePromoter|getActivePromoterProjects|getAllActivePromoterSlugs/
+    );
+  });
+
+  test("la route legacy ne publie les fixtures que sous preview=demo", () => {
+    assert.match(promoterRouteSource, /preview === "demo"/);
+    assert.match(promoterRouteSource, /robots:\s*\{ index: false, follow: false \}/);
+    assert.match(promoterRouteSource, /redirect\(`\/professionnels\/\$\{slug\}`\)/);
   });
 
   test("getActiveProject ne retourne PAS les projets demo", () => {
     const demoProject = PROJECTS.find((p) => p.visibility_status === "demo");
     if (!demoProject) return;
-    const result = getActiveProject(demoProject.slug);
-    assert.equal(result, null, "Un projet demo ne doit pas être accessible publiquement");
+    assert.equal(getActiveProject(demoProject.slug), null);
   });
 
   test("getDemoPromoter ne retourne PAS les entrées active", () => {
     const activePromoter = PROMOTERS.find((p) => p.visibility_status === "active");
     if (!activePromoter) return;
-    // Un promoteur active ne doit pas être accessible via la route demo
-    const result = getDemoPromoter(activePromoter.slug);
-    assert.equal(result, null, "Un promoteur active ne doit pas être retourné via getDemoPromoter");
+    assert.equal(getDemoPromoter(activePromoter.slug), null);
   });
 
   test("getDemoPromoterProjects ne retourne que les projets demo", () => {
@@ -98,88 +93,61 @@ describe("P17A-2 — Isolation demo vs public", () => {
     if (!demoPromoter) return;
     const projects = getDemoPromoterProjects(demoPromoter.id);
     for (const proj of projects) {
-      assert.equal(
-        proj.visibility_status,
-        "demo",
-        `Projet non-demo retourné par getDemoPromoterProjects: ${proj.slug}`
-      );
+      assert.equal(proj.visibility_status, "demo");
     }
   });
 });
 
-// ── Données demo ──────────────────────────────────────────────────────────────
-
 describe("P17A-2 — Qualité données demo", () => {
   test("Les entrées demo ont un nom neutre (pas un vrai promoteur commercial)", () => {
-    const demoPromoters = PROMOTERS.filter((p) => p.visibility_status === "demo");
-    for (const p of demoPromoters) {
+    for (const p of PROMOTERS.filter((item) => item.visibility_status === "demo")) {
       assert.ok(
         p.name.toLowerCase().includes("démo") ||
           p.name.toLowerCase().includes("demo") ||
-          p.name.toLowerCase().includes("exemple"),
-        `Le nom du promoteur demo doit indiquer son caractère illustratif: ${p.name}`
+          p.name.toLowerCase().includes("exemple")
       );
     }
   });
 
   test("Les projets demo ont un nom neutre", () => {
-    const demoProjects = PROJECTS.filter((p) => p.visibility_status === "demo");
-    for (const p of demoProjects) {
+    for (const p of PROJECTS.filter((item) => item.visibility_status === "demo")) {
       assert.ok(
         p.name.toLowerCase().includes("démo") ||
           p.name.toLowerCase().includes("demo") ||
           p.name.toLowerCase().includes("exemple") ||
           p.name.toLowerCase().includes("résidence démo") ||
-          p.name.toLowerCase().includes("residence demo"),
-        `Le nom du projet demo doit indiquer son caractère illustratif: ${p.name}`
+          p.name.toLowerCase().includes("residence demo")
       );
     }
   });
 
   test("Les entrées demo n'ont pas de contact_whatsapp/email", () => {
-    const demoPromoters = PROMOTERS.filter((p) => p.visibility_status === "demo");
-    for (const p of demoPromoters) {
-      assert.equal(
-        p.contact_whatsapp,
-        undefined,
-        `Promoteur demo ne doit pas avoir contact_whatsapp: ${p.name}`
-      );
-      assert.equal(
-        p.contact_email,
-        undefined,
-        `Promoteur demo ne doit pas avoir contact_email: ${p.name}`
-      );
+    for (const p of PROMOTERS.filter((item) => item.visibility_status === "demo")) {
+      assert.equal(p.contact_whatsapp, undefined);
+      assert.equal(p.contact_email, undefined);
     }
   });
 
   test("Les entrées demo n'ont pas de logo_url", () => {
-    const demoPromoters = PROMOTERS.filter((p) => p.visibility_status === "demo");
-    for (const p of demoPromoters) {
-      assert.equal(
-        p.logo_url,
-        undefined,
-        `Promoteur demo ne doit pas avoir logo_url: ${p.name}`
-      );
+    for (const p of PROMOTERS.filter((item) => item.visibility_status === "demo")) {
+      assert.equal(p.logo_url, undefined);
     }
   });
 
   test("Wording interdit absent des données demo", () => {
-    const demoPromoters = PROMOTERS.filter((p) => p.visibility_status === "demo");
-    const demoProjects = PROJECTS.filter((p) => p.visibility_status === "demo");
-    for (const p of demoPromoters) {
+    for (const p of PROMOTERS.filter((item) => item.visibility_status === "demo")) {
       checkNoForbiddenTerms(p.name, `DemoPromoter.name (${p.name})`);
       checkNoForbiddenTerms(p.description, `DemoPromoter.description (${p.name})`);
     }
-    for (const p of demoProjects) {
+    for (const p of PROJECTS.filter((item) => item.visibility_status === "demo")) {
       checkNoForbiddenTerms(p.name, `DemoProject.name (${p.name})`);
       checkNoForbiddenTerms(p.disclaimer, `DemoProject.disclaimer (${p.name})`);
     }
   });
 
   test("Les projets demo ont un price_from > 0", () => {
-    const demoProjects = PROJECTS.filter((p) => p.visibility_status === "demo");
-    for (const p of demoProjects) {
-      assert.ok(p.price_from > 0, `price_from invalide pour projet demo: ${p.name}`);
+    for (const p of PROJECTS.filter((item) => item.visibility_status === "demo")) {
+      assert.ok(p.price_from > 0);
     }
   });
 });
