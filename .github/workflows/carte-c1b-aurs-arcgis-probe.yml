@@ -1,0 +1,32 @@
+name: Carte C1B AURS ArcGIS Probe
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/carte-c1b-aurs-arcgis-probe.mjs"
+      - ".github/workflows/carte-c1b-aurs-arcgis-probe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe-aurs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Read-only AURS ArcGIS portal discovery
+        run: node scripts/audits/carte-c1b-aurs-arcgis-probe.mjs
+      - name: Upload discovery report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-c1b-aurs-arcgis-probe-${{ github.run_id }}
+          path: data/audits/runtime/carte-c1b-aurs-arcgis-probe.json
+          if-no-files-found: warn
+          retention-days: 14
