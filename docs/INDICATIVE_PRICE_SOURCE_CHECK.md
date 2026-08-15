@@ -26,8 +26,8 @@ Qualification stricte Agenz :
 
 - **44** représentations avec exactement un montant plausible après exclusions ;
 - **3** représentations avec plusieurs montants plausibles rejetées ;
-- QA finale après correction d'intention par preuve URL/titre : **36 locations**, de **1 000 à 50 000 DH** (médiane **8 000 DH**) ; **8 ventes**, de **1 000 000 à 9 000 000 DH** (médiane **3 235 000 DH**) ;
-- 2 annonces de vente étaient normalisées `rent`; le titre/URL explicites de vente priment désormais sur ce champ pour le seul calcul indicatif ;
+- QA finale après correction d'intention par preuve du titre : **36 locations**, de **1 000 à 50 000 DH** (médiane **8 000 DH**) ; **8 ventes**, de **1 000 000 à 9 000 000 DH** (médiane **3 235 000 DH**) ;
+- 2 annonces de vente étaient normalisées `rent`; le titre explicite de vente prime désormais sur ce champ pour le seul calcul indicatif ;
 - le reste des 79 occurrences est rejeté par les garde-fous ou ne produit pas un montant plausible unique.
 
 ## Règles d'affichage
@@ -36,7 +36,7 @@ Le prix indicatif est dérivé uniquement à l'affichage depuis les données dé
 
 1. source strictement `agenz.ma` ;
 2. prix fiable absent ;
-3. intention explicite du titre/URL prioritaire sur `normalized_intent` si contradiction ;
+3. intention explicite du titre prioritaire sur `normalized_intent` si contradiction ;
 4. exactement un montant DH/MAD plausible ;
 5. vente < 10 000 DH rejetée ;
 6. location < 1 000 DH rejetée ;
