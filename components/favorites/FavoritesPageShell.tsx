@@ -214,7 +214,7 @@ export function FavoritesPageShell() {
 
   return (
     <section className="pb-24 pt-4 sm:pt-6 lg:pt-7" data-favorites-shell>
-      <div className="rounded-[22px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_28px_rgba(24,56,96,0.05)] sm:px-6 sm:py-5" data-favorites-header>
+      <div className={`${ui.surfacePremium} px-4 py-4 sm:px-6 sm:py-5`} data-favorites-header>
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className={ui.eyebrow}>Favoris</p>
