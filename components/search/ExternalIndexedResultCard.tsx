@@ -9,6 +9,7 @@ import { deriveGatewayPublicAttribution } from "@/lib/search/public-attribution"
 import { ContextualListingArtwork } from "@/components/search/ContextualListingArtwork";
 import { buildAkarInfoPassportForGatewayResult } from "@/lib/akarinfo/akarinfo-passport";
 import { isListingPropertyType } from "@/lib/property-types/presentation";
+import { deriveIndicativePriceMad } from "@/lib/search-gateway/indicative-price";
 import type { PublicResultSimilaritySummary } from "@/lib/public-result-similarity/types";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
@@ -28,7 +29,7 @@ function sanitizeVisibleText(value: string | null | undefined) {
     .trim();
 }
 
-function formatIndexedPrice(price?: number) {
+function formatIndexedPrice(price?: number | null) {
   if (price == null || !Number.isFinite(price) || price <= 0) return "Prix non communiqué";
   return `${Math.round(price).toLocaleString("fr-MA")} DH`;
 }
@@ -46,7 +47,17 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
   const sanitizedTitle = sanitizeVisibleText(result.title) || "Annonce immobilière";
   const sanitizedDisplayUrl = sanitizeVisibleText(result.display_url);
   const showThumbnail = THUMBNAILS_ENABLED && result.can_show_thumbnail && !!result.thumbnail_url;
-  const hasPrice = result.normalized_price_mad != null && Number.isFinite(result.normalized_price_mad) && result.normalized_price_mad > 0;
+  const hasTrustedPrice = result.normalized_price_mad != null && Number.isFinite(result.normalized_price_mad) && result.normalized_price_mad > 0;
+  const indicativePrice = hasTrustedPrice
+    ? null
+    : deriveIndicativePriceMad({
+        domain: result.domain,
+        title: result.title,
+        snippet: result.snippet,
+        intent: result.normalized_intent,
+      });
+  const displayedPrice = hasTrustedPrice ? result.normalized_price_mad : indicativePrice;
+  const hasDisplayedPrice = displayedPrice != null && Number.isFinite(displayedPrice) && displayedPrice > 0;
   const safeFallbackPropertyType = isListingPropertyType(result.normalized_property_type)
     ? result.normalized_property_type
     : null;
@@ -116,12 +127,18 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
         <p
           data-mobile-price
           data-card-price
-          className={hasPrice
+          data-price-confidence={hasTrustedPrice ? "trusted" : indicativePrice != null ? "source_check_required" : "missing"}
+          className={hasDisplayedPrice
             ? "truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-deepblue dark:text-white sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-bronze-500 dark:sm:text-bronze-300"
             : "min-h-[2.05em] whitespace-normal text-[0.92rem] font-extrabold leading-[1.05] tracking-[-0.02em] text-deepblue dark:text-white sm:min-h-0 sm:whitespace-nowrap sm:text-[1.25rem] sm:leading-none sm:text-bronze-500 dark:sm:text-bronze-300"}
         >
-          {formatIndexedPrice(result.normalized_price_mad)}
+          {formatIndexedPrice(displayedPrice)}
         </p>
+        {indicativePrice != null ? (
+          <p data-indicative-price-warning className="mt-1 text-[9px] font-bold text-amber-800 dark:text-amber-200 sm:text-[11px]">
+            Prix indicatif · à vérifier sur la source
+          </p>
+        ) : null}
         {result.price_per_m2_mad != null && result.price_per_m2_mad > 0 ? (
           <p className="mt-1 hidden text-[12px] font-bold text-muted-foreground sm:block">
             {Math.round(result.price_per_m2_mad).toLocaleString("fr-MA")} DH/m²
@@ -140,7 +157,6 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
         <div data-card-facts className="mt-1.5 flex min-h-4 items-center gap-x-1.5 overflow-hidden text-[10px] font-bold text-foreground/65 dark:text-white/65 sm:mt-2.5 sm:flex-wrap sm:gap-x-3 sm:gap-y-1.5 sm:text-[12px]">
           {facts.length > 0 ? facts.slice(0, 3).map((fact) => <span key={fact}>{fact}</span>) : <span>Informations à compléter</span>}
         </div>
-
 
         <div data-card-provenance className="mt-2 flex items-center justify-between gap-2 border-t border-border/10 pt-2 text-[9.5px] dark:border-white/8 sm:mt-2.5 sm:gap-3 sm:border-border/12 sm:pt-3 sm:text-[11px]">
           <span data-public-attribution-type className="truncate font-semibold text-muted-foreground">{publicAttribution.typeLabel}</span>
