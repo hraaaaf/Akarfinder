@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   RABAT_MARKET_ZONES_SHADOW,
@@ -21,6 +22,12 @@ const areaRanges = new Map<string, readonly [number, number]>([
 ]);
 
 describe("Rabat AkarFinder market zones Shadow", () => {
+  it("keeps the GIS artifact and TypeScript runtime mirror byte-identical", () => {
+    const geojson = readFileSync("data/geo/rabat-market-zones-v1.geojson");
+    const runtimeJson = readFileSync("data/geo/rabat-market-zones-v1.json");
+    assert.deepEqual(runtimeJson, geojson);
+  });
+
   it("materializes exactly the four approved analytical zones", () => {
     assert.equal(RABAT_MARKET_ZONES_SHADOW.length, 4);
     assert.deepEqual(
