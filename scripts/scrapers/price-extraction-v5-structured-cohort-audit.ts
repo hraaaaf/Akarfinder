@@ -12,6 +12,8 @@ export type CohortRow = {
   normalized_intent: string | null;
 };
 
+type PlannedWrite = CohortRow & { amount: number };
+
 function normalizedHostPath(raw: string | null | undefined): string | null {
   if (!raw) return null;
   try {
@@ -89,14 +91,36 @@ async function loadRows(source: string, limit: number): Promise<CohortRow[]> {
   return (data ?? []) as CohortRow[];
 }
 
+async function applyWrites(plan: PlannedWrite[], maxWrites: number) {
+  if (plan.length > maxWrites) {
+    throw new Error(`price-v5 write fail-closed: planned ${plan.length} exceeds PRICE_V5_MAX_WRITES=${maxWrites}`);
+  }
+  const supabase = getSupabaseServerClient();
+  let written = 0;
+  for (const row of plan) {
+    const { data, error } = await supabase
+      .from("thin_index_search_documents")
+      .update({ normalized_price_mad: row.amount })
+      .eq("seed_id", row.seed_id)
+      .eq("source_domain", row.source_domain)
+      .is("normalized_price_mad", null)
+      .select("seed_id");
+    if (error) throw new Error(`write failed for ${row.seed_id}: ${error.message}`);
+    written += data?.length ?? 0;
+  }
+  return written;
+}
+
 async function main() {
   const guard = getThirdPartyIngestionGuard({ scriptName: "price-extraction-v5-structured-cohort-audit" });
   if (guard.blocked) throw new Error(guard.message);
-  if (process.env.PRICE_V5_WRITE === "true") throw new Error("structured cohort audit is read-only");
 
+  const write = process.env.PRICE_V5_WRITE === "true";
   const limit = Math.max(1, Math.min(Number(process.env.PRICE_V5_COHORT_LIMIT ?? 120), 250));
+  const maxWrites = Math.max(1, Math.min(Number(process.env.PRICE_V5_MAX_WRITES ?? 100), 100));
   const sources = ["mubawab.ma", "masaken.ma"];
   const bySource: Record<string, { candidates: number; fetched: number; identity: number; reliable: number; failed: number }> = {};
+  const plan: PlannedWrite[] = [];
 
   for (const source of sources) {
     const rows = await loadRows(source, limit);
@@ -109,7 +133,10 @@ async function main() {
         stat.fetched += 1;
         const audit = auditStructuredCohortHtml(res.html, row, res.url);
         if (audit.identity) stat.identity += 1;
-        if (audit.amount != null) stat.reliable += 1;
+        if (audit.amount != null) {
+          stat.reliable += 1;
+          plan.push({ ...row, amount: audit.amount });
+        }
       } catch (error) {
         stat.failed += 1;
         console.warn(`[price-v5-cohort] ${source}: ${error instanceof Error ? error.message : String(error)}`);
@@ -118,7 +145,9 @@ async function main() {
     }
   }
 
-  console.log(JSON.stringify({ write: false, limit, bySource }, null, 2));
+  const planned = plan.length;
+  const written = write ? await applyWrites(plan, maxWrites) : 0;
+  console.log(JSON.stringify({ write, limit, max_writes: maxWrites, planned, written, bySource }, null, 2));
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
