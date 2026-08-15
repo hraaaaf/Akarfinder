@@ -120,21 +120,29 @@ try {
   let snapshot = await inspectPhase("initial");
 
   // Read-only interaction: if a select explicitly exposes Rabat, select it and
-  // capture whatever dependent controls/network calls the public app reveals.
+  // dispatch native input/change events so dependent public controls can load.
   for (let round = 0; round < 4; round += 1) {
     let changed = false;
     for (const select of snapshot.selects) {
       const rabatOption = select.options.find((option) => hasRabat(option) && !option.disabled);
       if (!rabatOption || select.value === rabatOption.value || !select.id) continue;
       try {
-        await page.selectOption(`#${CSS.escape(select.id)}`, rabatOption.value);
-        await page.waitForTimeout(1200);
+        const applied = await page.evaluate(({ id, value }) => {
+          const element = document.getElementById(id);
+          if (!(element instanceof HTMLSelectElement)) return false;
+          element.value = value;
+          element.dispatchEvent(new Event("input", { bubbles: true }));
+          element.dispatchEvent(new Event("change", { bubbles: true }));
+          return element.value === value;
+        }, { id: select.id, value: rabatOption.value });
+        if (!applied) continue;
+        await page.waitForTimeout(1500);
         await inspectPhase(`select-rabat-${select.id}-${round + 1}`);
         changed = true;
         break;
       } catch {
-        // Keep discovery fail-soft. The evidence captures the control even if
-        // the site binds a non-standard client handler.
+        // Keep discovery fail-soft. The evidence still captures the control and
+        // scripts even when the site binds a non-standard handler.
       }
     }
     if (!changed) break;
