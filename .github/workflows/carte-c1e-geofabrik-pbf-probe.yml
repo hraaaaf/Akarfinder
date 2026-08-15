@@ -27,10 +27,10 @@ jobs:
           sudo apt-get install -y -qq osmium-tool
           osmium --version
 
-      - name: Download immutable Morocco OSM snapshot
+      - name: Download current Morocco OSM snapshot
         run: |
           curl --fail --location --retry 2 --retry-delay 2 \
-            https://download.geofabrik.de/africa/morocco-260727.osm.pbf \
+            https://download.geofabrik.de/africa/morocco-latest.osm.pbf \
             --output /tmp/morocco.osm.pbf
           test -s /tmp/morocco.osm.pbf
           mkdir -p data/audits/runtime
@@ -54,6 +54,8 @@ jobs:
             /tmp/c1e-candidates.osm.pbf \
             --output=/tmp/c1e-candidates.geojson
 
+          mkdir -p data/audits/runtime
+          cp /tmp/c1e-candidates.geojson data/audits/runtime/carte-c1e-geofabrik-candidates.geojson
           node scripts/audits/carte-c1e-geofabrik-pbf-probe.mjs
 
       - name: Upload offline discovery evidence
@@ -64,6 +66,6 @@ jobs:
           path: |
             data/audits/runtime/carte-c1e-geofabrik-pbf-probe.json
             data/audits/runtime/carte-c1e-geofabrik-source.sha256
-            /tmp/c1e-candidates.geojson
+            data/audits/runtime/carte-c1e-geofabrik-candidates.geojson
           if-no-files-found: warn
           retention-days: 14
