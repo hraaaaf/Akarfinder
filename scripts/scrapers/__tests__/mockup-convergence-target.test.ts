@@ -19,7 +19,7 @@ describe("Mockup convergence target contracts", () => {
   it("keeps the current product as functional truth and the mockup as composition reference", () => {
     assert.match(target, /functional and data source of truth/);
     assert.match(target, /composition, density and premium-perception reference/);
-    assert.match(target, /hybrid target, not a pixel-copy program/);
+    assert.match(target, /hybrid target\*\*, not a pixel-copy program/);
   });
 
   it("governs all six key product routes", () => {
