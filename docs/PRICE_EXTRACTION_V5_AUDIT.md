@@ -13,24 +13,6 @@ Baseline de départ vérifiée par le closeout précédent : **2 703 / 15 438 = 
 3. Agenz : promotion uniquement si un signal de fiche plus fort que le fallback indicatif est observé.
 4. PromoImmo / Avito / DarAgadir résiduel : hors chemin critique v5 tant qu'aucune voie robuste nouvelle n'est prouvée.
 
-## Canary read-only
-
-Le script `scripts/scrapers/price-extraction-v5-detail-audit.ts` :
-
-- ne possède aucune voie d'écriture ; `PRICE_V5_WRITE=true` échoue explicitement ;
-- ne cible que Mubawab, Masaken, Mouldar et Agenz ;
-- exige une URL de fiche reconnue par source ;
-- respecte `robots.txt` avant fetch ;
-- accepte comme prix fiable uniquement :
-  - offre JSON-LD de fiche avec devise MAD et identité de fiche prouvée ;
-  - méta prix de fiche avec devise MAD et identité de fiche prouvée ;
-  - phrase primaire Mouldar explicitement liée au prix/loyer ;
-  - montant terminal du H1 Masaken ;
-- rejette prix/m², courte durée, prix sur demande et montants hors bornes vente/location ;
-- comptabilise séparément les prix structurés génériques de haute confiance qui ne satisfont pas encore la preuve v5.
-
-Le workflow PR échantillonne au maximum **60 fiches par source**.
-
 ## Canary production #1 — run 31901019200
 
 Statut : **SUCCESS**, strictement read-only.
@@ -51,11 +33,77 @@ Par source :
 - Mouldar : 0/60 fetchée, 60 HTTP 403.
 - Agenz : 18/60 fetchées, 11 prix high-confidence, 42 HTTP 429, 6 mismatches d'identité.
 
-Conclusion : le rendement brut existe surtout sur Mubawab et Masaken, mais le premier gate d'identité était trop strict car il ignorait l'URL finale effectivement retournée par `fetch()` après redirection. Le code utilise désormais cette URL résolue comme preuve d'identité lorsqu'elle correspond exactement à la fiche cible après normalisation `www`/apex. Cette correction reste read-only jusqu'au prochain canary.
+## Canary post-correction — run 31901424574
+
+Statut : **SUCCESS**, strictement read-only.
+
+- 10 prix fiables, tous Mubawab via `jsonld_canonical_offer` ;
+- 80 signaux génériques high-confidence conservés hors promotion ;
+- Mouldar : 60/60 HTTP 403 ;
+- Agenz : forte limitation HTTP 429 ;
+- Masaken : identité corrigée mais aucun signal suffisamment fort avec le parseur H1 initial.
+
+## Cohorte structurée Mubawab + Masaken — run 31901840973
+
+Statut : **SUCCESS**, strictement read-only.
+
+Sur 120 candidats par source :
+
+- Mubawab : 120 fetchées, 40 identités prouvées, **33 prix fiables**, 0 échec ;
+- Masaken : 104 fetchées, 104 identités prouvées, **59 prix fiables**, 16 HTTP 410 ;
+- total fiable structuré : **92 / 240 = 38,3 %**.
+
+La cohorte exige :
+
+- identité de fiche prouvée ;
+- confiance prix `high` ;
+- devise DH/MAD explicite ;
+- rejet prix/m², courte durée, prix sur demande et montants hors bornes ;
+- identité Mubawab par ID stable `/a/<id>/`, indépendamment du slug.
+
+## Bounded write production — run 31904092395
+
+Statut global : **SUCCESS**.
+
+Pipeline :
+
+- `certify` : SUCCESS ;
+- `production-canary-read-only` : SUCCESS ;
+- `production-bounded-write` : SUCCESS.
+
+Résultat du write :
+
+- `PRICE_V5_COHORT_LIMIT=120` ;
+- `PRICE_V5_MAX_WRITES=100` ;
+- **planned = 92** ;
+- **written = 92** ;
+- Mubawab : 33 prix fiables ;
+- Masaken : 59 prix fiables ;
+- chaque page a été re-fetchée avant écriture ;
+- chaque update exigeait `seed_id + source_domain` et `normalized_price_mad IS NULL` ;
+- le plan entier devait rester <= 100 avant le premier update.
+
+## Correction de sécurité post-write
+
+Le workflow initial pouvait réexécuter le bounded write lors d'un nouveau push PR. Aucun write supplémentaire n'est volontairement autorisé par ce mécanisme.
+
+Le workflow est désormais corrigé :
+
+- les pushes / PR exécutent uniquement certification + audits read-only + comptage exact ;
+- `production-bounded-write` ne peut s'exécuter que via `workflow_dispatch` ;
+- `execute_write=true` doit être explicitement fourni ;
+- le plafond dur reste **100** ;
+- le comptage production exact est assuré par `price-extraction-v5-production-count.ts`.
+
+## Sources non promues
+
+- Mouldar : HOLD, HTTP 403 systématique observé sur la cohorte testée ; aucune tentative de contournement.
+- Agenz : les 44 valeurs indicatives restent hors couverture fiable ; les HTTP 429 sont respectés, sans bypass.
+- Les signaux génériques high-confidence non couverts par une preuve de fiche suffisante ne sont pas promus.
 
 ## État
 
-- Implémentation initiale : certifiée sur le premier run.
-- Canary production #1 : **SUCCESS**, 0 write.
-- Correction identité via URL résolue : implémentée, nouvelle certification en cours.
-- Write borné : **non implémenté** tant qu'un canary post-correction n'a pas démontré une cohorte fiable suffisante.
+- +92 prix fiables ont été effectivement écrits en production lors du run 31904092395.
+- Le comptage exact post-write est en cours de recertification read-only sur le head corrigé.
+- Le write automatique sur PR est neutralisé ; toute écriture future exige un dispatch explicite.
+- Le lot n'est pas déclaré clos avant comptage exact, exact-head CI vert et merge de la PR #669.
