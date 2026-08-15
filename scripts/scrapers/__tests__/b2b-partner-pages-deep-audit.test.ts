@@ -38,6 +38,49 @@ describe("B2B partner pages deep-audit contracts", () => {
     assert.match(demoShell, /Une démonstration ne crée aucun statut partenaire actif/);
   });
 
+  it("makes the acquisition pages demonstrate the actual partner experience instead of only describing the data contract", () => {
+    assert.match(audiencePage, /Aperçu réel du rendu/);
+    assert.match(audiencePage, /PropertyVisual/);
+    assert.match(audiencePage, /villa-premium/);
+    assert.match(audiencePage, /project-facade/);
+    assert.match(audiencePage, /\/demo\/agence/);
+    assert.match(audiencePage, /\/demo\/promoteur/);
+    assert.match(audiencePage, /Aperçu de démonstration/);
+  });
+
+  it("explains onboarding, integration formats, deliverables, reporting and a short FAQ for both audiences", () => {
+    assert.match(audiencePage, /Un onboarding pilote en trois étapes/);
+    assert.match(audiencePage, /Formats d’intégration/);
+    assert.match(audiencePage, /Livrables du pilote/);
+    assert.match(audiencePage, /Reporting opérationnel/);
+    assert.match(audiencePage, /Questions commerciales fréquentes/);
+    assert.match(audiencePage, /CSV structuré pour démarrer simplement/);
+    assert.match(audiencePage, /CSV structuré pour projets et typologies/);
+    assert.match(audiencePage, /Page agence et identité partenaire/);
+    assert.match(audiencePage, /Page promoteur et identité partenaire/);
+    assert.match(audiencePage, /Quels formats pouvez-vous intégrer/);
+    assert.match(audiencePage, /Peut-on intégrer plusieurs projets et typologies/);
+  });
+
+  it("keeps the agency and promoter value propositions deliberately different", () => {
+    assert.match(audiencePage, /L’agence vend un portefeuille et une expertise locale/);
+    assert.match(audiencePage, /Le promoteur commercialise des projets, pas une simple liste d’annonces/);
+    assert.match(audiencePage, /les biens disponibles, les secteurs couverts/);
+    assert.match(audiencePage, /les programmes, les typologies, les plans/);
+  });
+
+  it("does not invent partner identities to fill the commercial proof sections", () => {
+    assert.match(audiencePage, /Aperçu page agence/);
+    assert.match(audiencePage, /Aperçu page promoteur/);
+    assert.doesNotMatch(audiencePage, /Rabat Select Immobilier|Atlas Résidences/);
+  });
+
+  it("does not turn the richer sales pages into unsupported performance promises", () => {
+    assert.match(audiencePage, /Aucun volume de leads, classement ou vente n’est garanti/);
+    assert.match(audiencePage, /aucune promesse de volume de leads, de classement ou de vente/);
+    assert.match(audiencePage, /ne crée ni badge, ni statut partenaire, ni publication automatique/);
+  });
+
   it("keeps the canonical public professional profile fail-closed", () => {
     assert.match(professionalRepository, /\.eq\("validation_status", "validated"\)/);
     assert.match(professionalRepository, /\.eq\("public_visibility", "public"\)/);
