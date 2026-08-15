@@ -12,6 +12,15 @@ test("Agenz exposes one plausible amount as indicative", () => {
   }), 8500);
 });
 
+test("explicit sale title overrides a wrong normalized rent intent", () => {
+  assert.equal(deriveIndicativePriceMad({
+    domain: "agenz.ma",
+    intent: "rent",
+    title: "Terrain à vendre à Quartier Des Ambassades",
+    snippet: "Terrain à vendre 9 000 000 DH 1 500 m²",
+  }), 9_000_000);
+});
+
 test("Agenz rejects multiple amounts instead of guessing", () => {
   assert.equal(deriveIndicativePriceMad({
     domain: "agenz.ma",
