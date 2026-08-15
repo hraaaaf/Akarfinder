@@ -1,0 +1,26 @@
+name: Carte C1A Geometry Source Qualification Gate
+
+on:
+  pull_request:
+    paths:
+      - "docs/CARTE_C1A_GEOMETRY_SOURCE_QUALIFICATION.md"
+      - "scripts/scrapers/__tests__/carte-c1a-geometry-source-qualification.test.ts"
+      - ".github/workflows/carte-c1a-geometry-source-qualification.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-c1a:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: C1A source qualification contract
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c1a-geometry-source-qualification.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
