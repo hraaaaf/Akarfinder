@@ -26,7 +26,9 @@ export default async function MapPage({ searchParams }: MapPageProps) {
       <div className="flex-1">
         <MapNeighborhoodClient initialState={initialState} />
       </div>
-      <SiteFooter />
+      <div className="l2-secondary-footer">
+        <SiteFooter />
+      </div>
     </main>
   );
 }
