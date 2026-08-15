@@ -25,7 +25,13 @@ describe("geometryArea", () => {
 
   it("subtracts interior holes independently of ring orientation", () => {
     const outer = square(0, 0, 2, 2)[0];
-    const hole = [...square(0.5, 0.5, 1.5, 1.5)[0]].reverse() as typeof outer;
+    const hole = [
+      [0.5, 0.5],
+      [0.5, 1.5],
+      [1.5, 1.5],
+      [1.5, 0.5],
+      [0.5, 0.5],
+    ] as const;
     const geometry = { type: "Polygon" as const, coordinates: [outer, hole] };
     const expected = rectangleArea(0, 0, 2, 2) - rectangleArea(0.5, 0.5, 1.5, 1.5);
     const actual = geometryAreaM2(geometry);
