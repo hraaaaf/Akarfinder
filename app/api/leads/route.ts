@@ -11,6 +11,9 @@ import type { BuyerProfile } from "@/lib/onboarding/types";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const LEAD_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const LEAD_RATE_LIMIT_MAX = 5;
+
 export async function POST(request: NextRequest) {
   let body: unknown;
 
@@ -31,6 +34,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { profile, source_channel, source_page, listing_id } = payload;
+  const normalizedPhone = normalizePhone(profile.phone!);
   const rawBody = body && typeof body === "object" && !Array.isArray(body)
     ? body as Record<string, unknown>
     : {};
@@ -128,7 +132,7 @@ export async function POST(request: NextRequest) {
     is_mre: profile.project === "mre",
     residence_country: profile.country?.trim() ?? null,
     full_name: profile.name?.trim() ?? null,
-    phone_whatsapp: normalizePhone(profile.phone!),
+    phone_whatsapp: normalizedPhone,
     message: profile.message?.trim() ?? null,
     consent_contact: true,
     consent_indicative: true,
@@ -140,6 +144,28 @@ export async function POST(request: NextRequest) {
 
   try {
     const supabase = getSupabaseServerClient();
+    const rateLimitWindowStart = new Date(Date.now() - LEAD_RATE_LIMIT_WINDOW_MS).toISOString();
+    const { count: recentLeadCount, error: rateLimitError } = await supabase
+      .from("buyer_leads")
+      .select("id", { count: "exact", head: true })
+      .eq("phone_whatsapp", normalizedPhone)
+      .gte("created_at", rateLimitWindowStart);
+
+    if (rateLimitError) {
+      console.error("[api/leads] rate-limit check error:", rateLimitError.message);
+      return NextResponse.json(
+        { ok: false, error: "Vérification anti-abus indisponible. Veuillez réessayer." },
+        { status: 503 },
+      );
+    }
+
+    if ((recentLeadCount ?? 0) >= LEAD_RATE_LIMIT_MAX) {
+      return NextResponse.json(
+        { ok: false, error: "Trop de demandes récentes pour ce numéro. Veuillez réessayer plus tard." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(LEAD_RATE_LIMIT_WINDOW_MS / 1000)) } },
+      );
+    }
+
     const { data, error } = await supabase
       .from("buyer_leads")
       .insert(row)
