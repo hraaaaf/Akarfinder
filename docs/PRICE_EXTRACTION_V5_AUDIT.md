@@ -95,15 +95,29 @@ Le workflow est désormais corrigé :
 - le plafond dur reste **100** ;
 - le comptage production exact est assuré par `price-extraction-v5-production-count.ts`.
 
+## Re-certification post-write — run 31905858824
+
+Statut : **SUCCESS**, strictement read-only sur le head de sécurité.
+
+- tests v5 : SUCCESS ;
+- TypeScript : SUCCESS ;
+- audit public : SUCCESS ;
+- cohorte structurée : SUCCESS, **53** nouvelles lignes encore éligibles détectées mais **0 write** ;
+- `production-bounded-write` : **SKIPPED** sur PR, conformément au nouveau gate manuel ;
+- comptage production exact : **2 793 / 15 438 = 18,09 %**.
+
+Écart de métrique : le bounded write a confirmé **92 écritures**, tandis que le gain net mesuré par rapport à la baseline v4 est **+90** (2 793 - 2 703). La cause exacte de cet écart de deux lignes n'est pas prouvée par les artefacts v5 ; il est donc traité comme une variation concurrente/non attribuable et non comme une erreur du write. Le dénominateur est resté stable à 15 438.
+
 ## Sources non promues
 
 - Mouldar : HOLD, HTTP 403 systématique observé sur la cohorte testée ; aucune tentative de contournement.
 - Agenz : les 44 valeurs indicatives restent hors couverture fiable ; les HTTP 429 sont respectés, sans bypass.
 - Les signaux génériques high-confidence non couverts par une preuve de fiche suffisante ne sont pas promus.
 
-## État
+## État de closeout
 
-- +92 prix fiables ont été effectivement écrits en production lors du run 31904092395.
-- Le comptage exact post-write est en cours de recertification read-only sur le head corrigé.
-- Le write automatique sur PR est neutralisé ; toute écriture future exige un dispatch explicite.
-- Le lot n'est pas déclaré clos avant comptage exact, exact-head CI vert et merge de la PR #669.
+- bounded write : **92 / 92 écritures confirmées** ;
+- couverture production post-write : **2 793 / 15 438 = 18,09 %**, soit **+90 net / +0,58 point** vs baseline ;
+- write automatique sur PR : neutralisé ;
+- toute écriture future : `workflow_dispatch` + `execute_write=true` + plafond <= 100 ;
+- dernière étape avant clôture : exact-head CI vert puis merge PR #669 et vérification post-merge.
