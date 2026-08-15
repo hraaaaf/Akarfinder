@@ -1,0 +1,52 @@
+name: SEARCH Price Extraction v5
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/scrapers/price-extraction-v5-detail-audit.ts'
+      - 'scripts/scrapers/__tests__/price-extraction-v5-detail-audit.test.ts'
+      - '.github/workflows/price-extraction-v5.yml'
+      - 'docs/PRICE_EXTRACTION_V5_AUDIT.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/price-extraction-v5-detail-audit.test.ts scripts/scrapers/__tests__/price-extraction-v4-strict-residual.test.ts
+      - run: npx tsc --noEmit
+
+  production-canary-read-only:
+    needs: certify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+      PRICE_V5_WRITE: 'false'
+      PRICE_V5_PER_SOURCE_LIMIT: '60'
+      PRICE_V5_SOURCES: 'mubawab.ma,masaken.ma,mouldar.com,agenz.ma'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify production read credentials
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Audit public detail price signals without writes
+        run: npx tsx scripts/scrapers/price-extraction-v5-detail-audit.ts
