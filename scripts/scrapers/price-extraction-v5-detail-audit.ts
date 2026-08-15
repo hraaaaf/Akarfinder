@@ -1,3 +1,4 @@
+import { pathToFileURL } from "node:url";
 import { getSupabaseServerClient } from "../../lib/db/supabase-client";
 import { extractDetail, getJsonLd, loadHtml } from "./utils/extract";
 import { fetchHtml, isAllowedByRobots } from "./utils/fetch-html";
@@ -252,7 +253,7 @@ async function main() {
   console.log(JSON.stringify({ write: false, per_source_limit: perSourceLimit, totals, bySource }, null, 2));
 }
 
-if (process.argv[1]?.includes("price-extraction-v5-detail-audit")) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
     console.error(error);
     process.exitCode = 1;
