@@ -1,3 +1,17 @@
+<!-- B2B-PARTNER-LANDING-PRODUCTIZATION-START -->
+## B2B Partner Landing Productization — certifié avant merge
+
+- **PR #650** — branche `agent/b2b-partner-landing-proof`.
+- Objectif : rendre `/pro/agences` et `/promoteurs` commercialement concrets sans modifier activation, publication, ranking, DATA ou Registry.
+- Ajouts : aperçu basé sur les démos existantes, onboarding 3 étapes, formats d’intégration, livrables, reporting truth-safe, FAQ courte et différenciation Agence/Promoteur.
+- Aucun faux partenaire créé ; aucune promesse de volume, vente, ranking ou statut partenaire.
+- Head applicatif certifié `0cb53e589be45bff61449e56a08004dbb3e0ec03` : **11/11 workflows SUCCESS**.
+- UI All Pages run `31890674154` : **208/208 captures, 0 finding, 0 route en défaut** ; artefact `9248515094`, digest `sha256:c62174a05664ad0695fa02971a9757e99c5e24a691b306aebffd9718f2c7f11f`.
+- Closeout : `docs/B2B_PARTNER_LANDING_PRODUCTIZATION_CLOSEOUT.md`.
+- Dettes séparées inchangées : **#641** double source promoteur ; **#643** validation téléphone serveur + anti-abus `/api/leads`.
+- Prochaine action : recertifier le head documentaire final, puis merger #650 si tous les gates restent verts.
+<!-- B2B-PARTNER-LANDING-PRODUCTIZATION-END -->
+
 <!-- PRICE-EXTRACTION-V2-CLOSEOUT-START -->
 ## SEARCH Price Extraction v2 ✅ CLOSED
 
@@ -95,4 +109,4 @@ Viewports certifiés : **390×844 / 430×932 / 768×900 / 1280×900**.
 
 ## Reprise exacte
 
-**Audit pages partenaires B2B — 100 %. PR #646 mergée sur `d44e4d7145dae9c04f5ad6bd413175183e15f14e`, recertifiée 208/208 avec 0 finding. Prochain travail B2B utile : lot UX de différenciation agence/promoteur ; dettes structurelles #641 et #643 restent explicitement ouvertes.**
+**B2B Partner Landing Productization — PR #650 techniquement certifiée sur le head applicatif `0cb53e589be45bff61449e56a08004dbb3e0ec03`; closeout et SESSION ajoutés. Prochaine action exacte : recertification du head documentaire final → merge #650 si vert → contrôle post-merge. Dettes #641 et #643 inchangées.**
