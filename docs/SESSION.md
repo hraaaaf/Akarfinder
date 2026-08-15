@@ -1,8 +1,19 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-15**
+**Mise à jour : 2026-08-16**
 
 Ce fichier est le handover opérationnel court. `README.md` porte l’identité/doctrine et `docs/ROADMAP.md` reste l’unique roadmap canonique.
+
+## Carte intelligence marché — C1 Market Zones ✅ CLOSED
+
+- **C0 + C1 CLOSED = 2/8 = 25 %**.
+- PR #686 ✅ MERGED — géométries Rabat Market Zones + packaging runtime ; merge `23199b1ad88b7d23419dba95b0bbaaca0a785ba0`.
+- PR #689 ✅ MERGED — API `/api/geo/rabat-market-zones` fail-closed ; merge `165907bc2af02342e07a4ed57d1bce2a00062f94`.
+- Head exact C1C : `f2a71d51e50ad58de1b221f0a052217d6f86587a`.
+- Gate C1C `31914475822` SUCCESS ; 16/16 workflows PR observés SUCCESS sur l’exact head.
+- 4 zones pilote Rabat ; état Shadow conservé ; aucune activation Canary/Published, aucun write DATA/Registry, aucun changement ranking.
+- Preuve : `docs/MARKET_ZONES_C1_CLOSEOUT.md`.
+- **Next : C2 métriques réelles par zone** (`listing_count`, médiane prix/m², densité), sans inventer de cinquième zone.
 
 ## Mockup Convergence — L2 Search + Map ✅ CLOSED
 
@@ -95,4 +106,4 @@ Ce fichier est le handover opérationnel court. `README.md` porte l’identité/
 
 ## Reprise exacte
 
-**Mockup Convergence : L1 + L2 CLOSED, progression stricte 2/6 = 33,3 %. Prochaine action : L3 Favoris. Conserver le stockage/fetch/suppression/comparaison et l’état vide réels ; converger uniquement la vue peuplée vers la densité du mockup, avec segmentation seulement si les données réelles la supportent.**
+**Carte intelligence marché : C0 + C1 CLOSED, progression stricte 2/8 = 25 %. Prochaine action : C2 métriques réelles par zone en Shadow. En parallèle, les échecs GitHub rouges récents ne proviennent pas d’une panne générale des runners : SEARCH Price Extraction v5 échoue sur le comptage Supabase production, tandis qu’un audit UX a échoué sur le téléchargement externe Google Fonts.**
