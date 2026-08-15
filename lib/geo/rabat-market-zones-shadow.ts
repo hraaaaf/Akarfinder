@@ -1,4 +1,4 @@
-import rabatMarketZones from "@/data/geo/rabat-market-zones-v1.geojson";
+import rabatMarketZones from "@/data/geo/rabat-market-zones-v1.json";
 import { geometryAreaKm2 } from "@/lib/geo/geometry-area";
 import type { MarketZoneRecord } from "@/lib/geo/market-zone-registry";
 import type { NeighborhoodGeometry } from "@/lib/geo/neighborhood-geometry-registry";
