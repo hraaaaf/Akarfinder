@@ -2,8 +2,8 @@
 
 **Date :** 2026-08-15  
 **Scope :** `/pro/agences` + `/promoteurs` uniquement, avec réutilisation des démos existantes `/demo/agence` et `/demo/promoteur`.  
-**PR :** #650  
-**Branche :** `agent/b2b-partner-landing-proof`
+**PR fonctionnelle :** #650 ✅ MERGED  
+**Merge :** `32c0b3635f9f8aec2fe92722eef09f0484dfec1b`
 
 ## Objectif
 
@@ -31,24 +31,28 @@ Rendre les landing pages Agence partenaire et Promoteur partenaire commercialeme
 - les droits médias restent une condition d’intégration ;
 - les dettes #641 et #643 restent hors scope et ouvertes.
 
-## Preuves techniques exact-head
+## Preuves exact-head finales
 
-Head applicatif certifié : `0cb53e589be45bff61449e56a08004dbb3e0ec03`.
+Head final PR #650 : `8c149a73e3e4b0c4da0c09326b34f10be6dc7699`.
 
-- 11/11 workflows exact-head : **SUCCESS** ;
-- `Phase 1 P1 B2B Productization Gate` : SUCCESS ;
-- contrats B2B : SUCCESS ;
-- TypeScript : SUCCESS ;
-- production build : SUCCESS ;
-- `UI All Pages Certification` run `31890674154` : SUCCESS ;
-- inventaire : 64 pages ;
-- 52 routes rendables ;
-- 12 blockers explicitement gouvernés ;
-- 208/208 captures produites ;
-- 0 finding ;
-- 0 route en défaut ;
-- artefact `9248515094` ;
-- digest `sha256:c62174a05664ad0695fa02971a9757e99c5e24a691b306aebffd9718f2c7f11f`.
+- `Phase 1 P1 B2B Productization Gate` run `31891405851` : **SUCCESS** ;
+- contrats B2B : **SUCCESS** ;
+- TypeScript : **SUCCESS** ;
+- production build rehearsal : **SUCCESS** ;
+- `UI All Pages Certification` run `31891405842` : **SUCCESS** ;
+- production build + serveur : **SUCCESS** ;
+- capture exhaustive + zero unexpected findings : **SUCCESS** ;
+- artefact final-head `9248716663` ;
+- digest `sha256:5b9223953cbfab597923601be2e88b49f1c1589ad662aa6e2da3fbeeb2cb4a3c` ;
+- `Phase 1 Final Design Accessibility Gate` : **SUCCESS** ;
+- `Canonical Baseline Validation` + compile : **SUCCESS**.
+
+Incidents CI orthogonaux observés sur ce head :
+- `Phase 1 P0 Closure Gate` : contrats **16/16** + TypeScript SUCCESS, build échoué uniquement sur téléchargement externe `Plus Jakarta Sans` depuis Google Fonts ;
+- `DATA MASS-1 Reservoir Qualification` : contrat/tests/build SUCCESS, live-audit échoué sur `HTTP 500 / statement timeout` Supabase ;
+- `DATA MASS-2A` a initialement subi le même incident Google Fonts puis son rerun a terminé **SUCCESS**.
+
+Aucun de ces incidents n’est causé par le diff B2B de #650.
 
 ## Dettes séparées
 
@@ -57,4 +61,4 @@ Head applicatif certifié : `0cb53e589be45bff61449e56a08004dbb3e0ec03`.
 
 ## Statut
 
-Le lot fonctionnel est techniquement certifié sur le head applicatif ci-dessus. Le présent closeout documentaire doit lui-même être recertifié sur son head final avant merge de #650.
+**B2B Partner Landing Productization ✅ CLOSED.** PR #650 fusionnée sur `main` au merge `32c0b3635f9f8aec2fe92722eef09f0484dfec1b`, avec certification B2B et UI exhaustive exact-head réussies avant merge.
