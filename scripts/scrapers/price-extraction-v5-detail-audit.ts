@@ -13,11 +13,7 @@ export type PriceV5Candidate = {
 
 export type PriceV5Signal = {
   amount: number;
-  signal:
-    | "jsonld_canonical_offer"
-    | "meta_canonical_price"
-    | "mouldar_primary_phrase"
-    | "masaken_h1_price";
+  signal: "jsonld_canonical_offer" | "meta_canonical_price" | "mouldar_primary_phrase" | "masaken_h1_price";
 };
 
 export type PriceV5Audit = {
@@ -29,14 +25,13 @@ export type PriceV5Audit = {
 const SOURCES = ["mubawab.ma", "masaken.ma", "mouldar.com", "agenz.ma"] as const;
 const SOURCE_SET = new Set<string>(SOURCES);
 
-function normalizeUrl(raw: string | null | undefined): string | null {
+function identityUrl(raw: string | null | undefined): string | null {
   if (!raw) return null;
   try {
-    const url = new URL(raw);
-    url.hash = "";
-    url.search = "";
-    url.pathname = url.pathname.replace(/\/+$/, "") || "/";
-    return url.toString().replace(/\/$/, "").toLowerCase();
+    const u = new URL(raw);
+    const host = u.hostname.toLowerCase().replace(/^www\./, "");
+    const path = decodeURIComponent(u.pathname).replace(/\/+$/, "") || "/";
+    return `${host}${path}`.toLowerCase();
   } catch {
     return null;
   }
@@ -55,15 +50,9 @@ export function parseMoneyAmountV5(raw: unknown): number | null {
   return Number.isFinite(amount) ? amount : null;
 }
 
-function normalizedIntent(value: string | null | undefined): "sale" | "rent" | null {
-  if (["buy", "sale", "new"].includes(value ?? "")) return "sale";
-  if (["rent", "location"].includes(value ?? "")) return "rent";
-  return null;
-}
-
 function inferIntent(row: PriceV5Candidate): "sale" | "rent" | null {
-  const known = normalizedIntent(row.normalized_intent);
-  if (known) return known;
+  if (["buy", "sale", "new"].includes(row.normalized_intent ?? "")) return "sale";
+  if (["rent", "location"].includes(row.normalized_intent ?? "")) return "rent";
   const url = decodeURIComponent(row.canonical_url).toLowerCase();
   if (/vente|vendre|achat|a-vendre|à-vendre|\/achat\//.test(url)) return "sale";
   if (/location|louer|a-louer|à-louer|\/rent\//.test(url)) return "rent";
@@ -77,8 +66,8 @@ function plausible(amount: number | null, intent: "sale" | "rent" | null): numbe
   return amount;
 }
 
-function hasUnsafeCadence(text: string): boolean {
-  return /(?:dh|dhs|mad|dirhams?)\s*(?:\/|par|le)\s*m(?:²|2)\b|(?:per day|daily|par[-_ ]?jour|par\s+nuit|nuit[eé]e|journalier|journali[eè]re|quotidien|vacances)|prix\s+(?:sur\s+demande|à\s+consulter|a\s+consulter)/i.test(text);
+function unsafePriceText(text: string): boolean {
+  return /(?:dh|dhs|mad|dirhams?)\s*(?:\/|par|le)\s*m(?:²|2)\b|(?:per day|daily|par[-_ ]?jour|par\s+nuit|nuit[eé]e|journalier|journali[eè]re|quotidien)|prix\s+(?:sur\s+demande|à\s+consulter|a\s+consulter)/i.test(text);
 }
 
 export function isRecognizedDetailUrlV5(domain: string, rawUrl: string): boolean {
@@ -97,10 +86,10 @@ export function isRecognizedDetailUrlV5(domain: string, rawUrl: string): boolean
 function canonicalIdentity(html: string, targetUrl: string): boolean {
   try {
     const $ = loadHtml(html);
-    const target = normalizeUrl(targetUrl);
+    const target = identityUrl(targetUrl);
     if (!target) return false;
-    const canonical = normalizeUrl($("link[rel='canonical']").attr("href"));
-    const ogUrl = normalizeUrl($("meta[property='og:url']").attr("content"));
+    const canonical = identityUrl($("link[rel='canonical']").attr("href"));
+    const ogUrl = identityUrl($("meta[property='og:url']").attr("content"));
     return canonical === target || ogUrl === target;
   } catch {
     return false;
@@ -108,28 +97,21 @@ function canonicalIdentity(html: string, targetUrl: string): boolean {
 }
 
 function currencyIsMad(raw: unknown): boolean {
-  if (typeof raw !== "string") return false;
-  return /^(?:mad|dh|dhs|dirham|dirhams)$/i.test(raw.trim());
+  return typeof raw === "string" && /^(?:mad|dh|dhs|dirham|dirhams)$/i.test(raw.trim());
 }
 
-function jsonLdCanonicalOffer(
-  html: string,
-  row: PriceV5Candidate,
-  intent: "sale" | "rent" | null,
-  identity: boolean,
-): number | null {
+function jsonLdCanonicalOffer(html: string, row: PriceV5Candidate, intent: "sale" | "rent" | null, identity: boolean): number | null {
   if (!identity) return null;
   try {
     const $ = loadHtml(html);
+    const target = identityUrl(row.canonical_url);
     for (const node of getJsonLd($)) {
       if (!node || typeof node !== "object") continue;
       const type = Array.isArray(node["@type"]) ? node["@type"].join(",") : String(node["@type"] ?? "");
-      if (!/Residence|Apartment|House|RealEstate|Product|Offer|Accommodation/i.test(type)) continue;
-
-      const nodeUrl = normalizeUrl(node.url ?? node["@id"] ?? null);
-      if (nodeUrl && nodeUrl !== normalizeUrl(row.canonical_url)) continue;
-
-      const offers = node.offers ? (Array.isArray(node.offers) ? node.offers : [node.offers]) : /Offer/i.test(type) ? [node] : [];
+      if (!/Residence|Apartment|House|RealEstate|Product|Accommodation/i.test(type)) continue;
+      const nodeUrl = identityUrl(node.url ?? node["@id"] ?? null);
+      if (nodeUrl && nodeUrl !== target) continue;
+      const offers = node.offers ? (Array.isArray(node.offers) ? node.offers : [node.offers]) : [];
       for (const offer of offers) {
         if (!offer || typeof offer !== "object") continue;
         const spec = offer.priceSpecification && typeof offer.priceSpecification === "object" ? offer.priceSpecification : null;
@@ -145,24 +127,12 @@ function jsonLdCanonicalOffer(
   return null;
 }
 
-function metaCanonicalPrice(
-  html: string,
-  intent: "sale" | "rent" | null,
-  identity: boolean,
-): number | null {
+function metaCanonicalPrice(html: string, intent: "sale" | "rent" | null, identity: boolean): number | null {
   if (!identity) return null;
   try {
     const $ = loadHtml(html);
-    const amountRaw =
-      $("meta[property='product:price:amount']").attr("content") ??
-      $("meta[property='og:price:amount']").attr("content") ??
-      $("meta[itemprop='price']").attr("content") ??
-      null;
-    const currency =
-      $("meta[property='product:price:currency']").attr("content") ??
-      $("meta[property='og:price:currency']").attr("content") ??
-      $("meta[itemprop='priceCurrency']").attr("content") ??
-      null;
+    const amountRaw = $("meta[property='product:price:amount']").attr("content") ?? $("meta[property='og:price:amount']").attr("content") ?? $("meta[itemprop='price']").attr("content") ?? null;
+    const currency = $("meta[property='product:price:currency']").attr("content") ?? $("meta[property='og:price:currency']").attr("content") ?? $("meta[itemprop='priceCurrency']").attr("content") ?? null;
     if (!currencyIsMad(currency)) return null;
     return plausible(parseMoneyAmountV5(amountRaw), intent);
   } catch {
@@ -174,9 +144,10 @@ function mouldarPrimaryPhrase(html: string, intent: "sale" | "rent" | null): num
   try {
     const $ = loadHtml(html);
     const primary = clean($("main, article, [role='main']").first().text());
-    if (!primary || hasUnsafeCadence(primary)) return null;
-    const match = primary.match(/(?:ce bien est proposé au prix de|ce bien est propose au prix de|le loyer est de|loyer est de)\s*([0-9][0-9 .]{2,18})\s*(?:dh|dhs|mad|dirhams?)/i);
-    return plausible(parseMoneyAmountV5(match?.[1]), intent);
+    if (!primary) return null;
+    const match = primary.match(/(?:ce bien est proposé au prix de|ce bien est propose au prix de|le loyer est de|loyer est de)\s*([0-9][0-9 .]{2,18})\s*(?:dh|dhs|mad|dirhams?)([^.]*)/i);
+    if (!match || unsafePriceText(`${match[1]} DH ${match[2] ?? ""}`)) return null;
+    return plausible(parseMoneyAmountV5(match[1]), intent);
   } catch {
     return null;
   }
@@ -186,7 +157,7 @@ function masakenH1Price(html: string, intent: "sale" | "rent" | null): number | 
   try {
     const $ = loadHtml(html);
     const h1 = clean($("h1").first().text());
-    if (!h1 || hasUnsafeCadence(h1)) return null;
+    if (!h1 || unsafePriceText(h1)) return null;
     const match = h1.match(/([0-9][0-9 .]{2,18})\s*(?:dh|dhs|mad|dirhams?)\s*$/i);
     return plausible(parseMoneyAmountV5(match?.[1]), intent);
   } catch {
@@ -197,38 +168,28 @@ function masakenH1Price(html: string, intent: "sale" | "rent" | null): number | 
 export function auditPriceV5Html(html: string, row: PriceV5Candidate): PriceV5Audit {
   const intent = inferIntent(row);
   const identity = canonicalIdentity(html, row.canonical_url);
-  const unsafe = hasUnsafeCadence(clean(loadHtml(html)("body").text()));
-
-  if (!intent || unsafe) {
-    return { reliable: null, generic_high_amount: null, canonical_identity: identity };
-  }
+  if (!intent) return { reliable: null, generic_high_amount: null, canonical_identity: identity };
 
   const jsonld = jsonLdCanonicalOffer(html, row, intent, identity);
-  if (jsonld != null) {
-    return { reliable: { amount: jsonld, signal: "jsonld_canonical_offer" }, generic_high_amount: null, canonical_identity: identity };
-  }
+  if (jsonld != null) return { reliable: { amount: jsonld, signal: "jsonld_canonical_offer" }, generic_high_amount: null, canonical_identity: identity };
 
   const meta = metaCanonicalPrice(html, intent, identity);
-  if (meta != null) {
-    return { reliable: { amount: meta, signal: "meta_canonical_price" }, generic_high_amount: null, canonical_identity: identity };
-  }
+  if (meta != null) return { reliable: { amount: meta, signal: "meta_canonical_price" }, generic_high_amount: null, canonical_identity: identity };
 
   if (row.source_domain === "mouldar.com") {
     const amount = mouldarPrimaryPhrase(html, intent);
-    if (amount != null) {
-      return { reliable: { amount, signal: "mouldar_primary_phrase" }, generic_high_amount: null, canonical_identity: identity };
-    }
+    if (amount != null) return { reliable: { amount, signal: "mouldar_primary_phrase" }, generic_high_amount: null, canonical_identity: identity };
   }
 
   if (row.source_domain === "masaken.ma") {
     const amount = masakenH1Price(html, intent);
-    if (amount != null) {
-      return { reliable: { amount, signal: "masaken_h1_price" }, generic_high_amount: null, canonical_identity: identity };
-    }
+    if (amount != null) return { reliable: { amount, signal: "masaken_h1_price" }, generic_high_amount: null, canonical_identity: identity };
   }
 
   const detail = extractDetail(html);
-  const generic = detail._confidence.price === "high" ? plausible(parseMoneyAmountV5(detail.price_raw), intent) : null;
+  const generic = detail._confidence.price === "high" && !unsafePriceText(detail.price_raw ?? "")
+    ? plausible(parseMoneyAmountV5(detail.price_raw), intent)
+    : null;
   return { reliable: null, generic_high_amount: generic, canonical_identity: identity };
 }
 
@@ -260,7 +221,6 @@ async function main() {
     const rows = await loadCandidates(source, perSourceLimit);
     const stat = { candidates: rows.length, robots_skipped: 0, fetched: 0, reliable: 0, generic_high_only: 0, canonical_mismatch: 0, failed: 0, signals: {} as Record<string, number> };
     bySource[source] = stat;
-
     for (const row of rows) {
       try {
         if (!(await isAllowedByRobots(row.canonical_url))) {
@@ -286,18 +246,9 @@ async function main() {
   }
 
   const totals = Object.values(bySource).reduce(
-    (acc, stat) => ({
-      candidates: acc.candidates + stat.candidates,
-      fetched: acc.fetched + stat.fetched,
-      reliable: acc.reliable + stat.reliable,
-      generic_high_only: acc.generic_high_only + stat.generic_high_only,
-      robots_skipped: acc.robots_skipped + stat.robots_skipped,
-      canonical_mismatch: acc.canonical_mismatch + stat.canonical_mismatch,
-      failed: acc.failed + stat.failed,
-    }),
+    (acc, stat) => ({ candidates: acc.candidates + stat.candidates, fetched: acc.fetched + stat.fetched, reliable: acc.reliable + stat.reliable, generic_high_only: acc.generic_high_only + stat.generic_high_only, robots_skipped: acc.robots_skipped + stat.robots_skipped, canonical_mismatch: acc.canonical_mismatch + stat.canonical_mismatch, failed: acc.failed + stat.failed }),
     { candidates: 0, fetched: 0, reliable: 0, generic_high_only: 0, robots_skipped: 0, canonical_mismatch: 0, failed: 0 },
   );
-
   console.log(JSON.stringify({ write: false, per_source_limit: perSourceLimit, totals, bySource }, null, 2));
 }
 
