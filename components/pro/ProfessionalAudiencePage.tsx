@@ -34,7 +34,7 @@ const COPY = {
       description:
         "La démo utilise le même langage visuel que l’expérience partenaire cible : identité agence, portefeuille structuré, repères quartier et demande qualifiée.",
       visual: "villa-premium" as const,
-      cardTitle: "Rabat Select Immobilier",
+      cardTitle: "Aperçu page agence",
       cardMeta: "Biens structurés · quartiers · demandes qualifiées",
       badges: ["Page agence", "Fiches enrichies", "Leads qualifiés"],
     },
@@ -71,6 +71,20 @@ const COPY = {
       title: "L’agence vend un portefeuille et une expertise locale.",
       body: "L’expérience met donc l’accent sur les biens disponibles, les secteurs couverts, la qualité des fiches et la qualification des demandes.",
     },
+    faq: [
+      [
+        "Quels formats pouvez-vous intégrer ?",
+        "On démarre avec un CSV structuré. Un flux ou une API peut ensuite être cadré si votre outil métier le justifie.",
+      ],
+      [
+        "Mes annonces sont-elles publiées automatiquement ?",
+        "Non. Source, droits média, qualité et éligibilité sont vérifiés avant publication.",
+      ],
+      [
+        "Que reçoit mon agence pendant le pilote ?",
+        "Une page agence, des fiches structurées et un parcours de demande contextualisé selon les données réellement disponibles.",
+      ],
+    ],
     icon: Users,
   },
   promoter: {
@@ -87,7 +101,7 @@ const COPY = {
       description:
         "La démo montre la cible concrète : identité promoteur, projets, typologies, plans 2D, tranches de livraison et expérience quartier.",
       visual: "project-facade" as const,
-      cardTitle: "Atlas Résidences",
+      cardTitle: "Aperçu page promoteur",
       cardMeta: "Projets · typologies · plans 2D · livraisons",
       badges: ["Page promoteur", "Projets structurés", "Plans & typologies"],
     },
@@ -124,6 +138,20 @@ const COPY = {
       title: "Le promoteur commercialise des projets, pas une simple liste d’annonces.",
       body: "L’expérience met donc l’accent sur les programmes, les typologies, les plans, les jalons de livraison et le contexte de chaque demande.",
     },
+    faq: [
+      [
+        "Peut-on intégrer plusieurs projets et typologies ?",
+        "Oui, après validation d’un projet pilote représentatif et du schéma de données retenu.",
+      ],
+      [
+        "Plans et brochures sont-ils obligatoires ?",
+        "Non. Ils sont intégrés lorsqu’ils sont fournis avec les droits nécessaires ; leur absence reste explicite.",
+      ],
+      [
+        "Que reçoit le promoteur pendant le pilote ?",
+        "Une page promoteur, des pages projets structurées et un parcours de contact rattaché au projet, selon les données disponibles.",
+      ],
+    ],
     icon: Building2,
   },
 } as const;
@@ -201,7 +229,7 @@ export function ProfessionalAudiencePage({ audience }: { audience: Audience }) {
               <div className="relative overflow-hidden rounded-2xl">
                 <PropertyVisual type={copy.proof.visual} ratio="16:10" className="rounded-2xl" />
                 <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-white/95 p-4 text-[#0B1F3A] shadow-[0_10px_28px_rgba(15,35,65,0.16)] backdrop-blur-sm sm:inset-x-5 sm:bottom-5">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">Démo partenaire fictive</p>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">Aperçu de démonstration</p>
                   <h3 className="mt-1 text-[17px] font-extrabold">{copy.proof.cardTitle}</h3>
                   <p className="mt-1 text-[11.5px] font-semibold text-slate-500">{copy.proof.cardMeta}</p>
                 </div>
@@ -328,7 +356,26 @@ export function ProfessionalAudiencePage({ audience }: { audience: Audience }) {
         </Container>
       </section>
 
-      <section className="border-y border-border/12 bg-surface py-14 dark:border-white/8">
+      <section className="border-y border-border/12 bg-surface py-14 dark:border-white/8" aria-labelledby="partner-faq-title">
+        <Container>
+          <div className="mx-auto max-w-5xl">
+            <Search size={21} className="text-bronze-500" />
+            <h2 id="partner-faq-title" className="mt-4 text-3xl font-extrabold tracking-[-0.035em]">
+              Questions commerciales fréquentes
+            </h2>
+            <div className="mt-7 grid gap-4 md:grid-cols-3">
+              {copy.faq.map(([question, answer]) => (
+                <article key={question} className="rounded-3xl border border-border/15 bg-card p-6 dark:border-white/10 dark:bg-white/[0.04]">
+                  <h3 className="text-[15px] font-extrabold leading-5">{question}</h3>
+                  <p className="mt-3 text-[12.5px] leading-5 text-muted-foreground">{answer}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      <section className="py-14 lg:py-18">
         <Container>
           <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-2">
             <article className="rounded-3xl border border-border/15 bg-card p-7 dark:border-white/10 dark:bg-white/[0.04]">
