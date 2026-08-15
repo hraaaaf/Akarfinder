@@ -13,6 +13,8 @@ const promoterDemo = read("app/demo/promoteur/page.tsx");
 const demoShell = read("components/demo/DemoShell.tsx");
 const professionalRepository = read("lib/professional/repository.ts");
 const legacyPromoterData = read("lib/promoters/promoters-data.ts");
+const legacyPromoterRoute = read("app/promoteurs/[slug]/page.tsx");
+const legacyPromoterRepository = read("lib/promoters/get-promoter.ts");
 
 describe("B2B partner pages deep-audit contracts", () => {
   it("keeps agency and promoter acquisition routes canonical and cacheable", () => {
@@ -87,7 +89,18 @@ describe("B2B partner pages deep-audit contracts", () => {
     assert.match(professionalRepository, /commercialTierBadgeLabel/);
   });
 
-  it("prevents a real promoter from being activated through the legacy local fixture while migration debt remains", () => {
+  it("retires the legacy real-promoter path in favor of the canonical professional profile", () => {
+    assert.match(legacyPromoterRoute, /redirect\(`\/professionnels\/\$\{slug\}`\)/);
+    assert.match(legacyPromoterRoute, /robots:\s*\{ index: false, follow: false \}/);
+    assert.match(legacyPromoterRoute, /preview === "demo"/);
+    assert.doesNotMatch(legacyPromoterRoute, /Promoteur partenaire AkarFinder/);
+    assert.doesNotMatch(legacyPromoterRoute, /getActivePromoter|getActivePromoterProjects|getAllActivePromoterSlugs/);
+    assert.doesNotMatch(legacyPromoterRepository, /getActivePromoter|getActivePromoterProjects|getAllActivePromoterSlugs/);
+  });
+
+  it("keeps local promoter fixtures demo-only and prevents visibility_status from granting partner truth", () => {
     assert.doesNotMatch(legacyPromoterData, /\n\s+visibility_status:\s*"active"/);
+    assert.match(legacyPromoterRepository, /visibility_status === "demo"/);
+    assert.doesNotMatch(legacyPromoterRepository, /visibility_status === "active"/);
   });
 });
