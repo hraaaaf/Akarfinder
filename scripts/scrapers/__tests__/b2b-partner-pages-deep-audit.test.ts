@@ -60,11 +60,15 @@ describe("B2B partner pages deep-audit contracts", () => {
     assert.match(audiencePage, /CSV structuré pour projets et typologies/);
     assert.match(audiencePage, /Page agence et identité partenaire/);
     assert.match(audiencePage, /Page promoteur et identité partenaire/);
+    assert.match(audiencePage, /Quels formats pouvez-vous intégrer/);
+    assert.match(audiencePage, /Peut-on intégrer plusieurs projets et typologies/);
   });
 
   it("keeps the agency and promoter value propositions deliberately different", () => {
     assert.match(audiencePage, /L’agence vend un portefeuille et une expertise locale/);
     assert.match(audiencePage, /Le promoteur commercialise des projets, pas une simple liste d’annonces/);
+    assert.match(audiencePage, /les biens disponibles, les secteurs couverts/);
+    assert.match(audiencePage, /les programmes, les typologies, les plans/);
   });
 
   it("does not invent partner identities to fill the commercial proof sections", () => {
@@ -75,6 +79,7 @@ describe("B2B partner pages deep-audit contracts", () => {
 
   it("does not turn the richer sales pages into unsupported performance promises", () => {
     assert.match(audiencePage, /Aucun volume de leads, classement ou vente n’est garanti/);
+    assert.match(audiencePage, /aucune promesse de volume de leads, de classement ou de vente/);
     assert.match(audiencePage, /ne crée ni badge, ni statut partenaire, ni publication automatique/);
   });
 
