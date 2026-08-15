@@ -33,13 +33,8 @@ function checkNoForbiddenTerms(text: string, label: string) {
 }
 
 describe("P17A-1 — Données promoteurs", () => {
-  test("PROMOTERS est un tableau", () => {
-    assert.ok(Array.isArray(PROMOTERS));
-  });
-
-  test("PROJECTS est un tableau", () => {
-    assert.ok(Array.isArray(PROJECTS));
-  });
+  test("PROMOTERS est un tableau", () => assert.ok(Array.isArray(PROMOTERS)));
+  test("PROJECTS est un tableau", () => assert.ok(Array.isArray(PROJECTS)));
 
   test("Chaque promoteur a les champs obligatoires", () => {
     for (const p of PROMOTERS) {
@@ -48,42 +43,61 @@ describe("P17A-1 — Données promoteurs", () => {
       assert.ok(p.name, `Promoteur sans name`);
       assert.ok(p.city, `Promoteur sans city`);
       assert.ok(p.description, `Promoteur sans description`);
-      assert.ok(["none", "partner", "featured"].includes(p.partner_status));
-      assert.ok(["draft", "demo", "active"].includes(p.visibility_status));
-      assert.equal(p.source_note, "Données fournies par le promoteur");
+      assert.ok(
+        ["none", "partner", "featured"].includes(p.partner_status),
+        `partner_status invalide: ${p.partner_status}`
+      );
+      assert.ok(
+        ["draft", "demo", "active"].includes(p.visibility_status),
+        `visibility_status invalide: ${p.visibility_status}`
+      );
+      assert.equal(
+        p.source_note,
+        "Données fournies par le promoteur",
+        `source_note incorrect pour ${p.name}`
+      );
     }
   });
 
   test("Chaque projet a les champs obligatoires", () => {
     for (const p of PROJECTS) {
-      assert.ok(p.id);
-      assert.ok(p.slug);
-      assert.ok(p.promoter_id);
-      assert.ok(p.name);
-      assert.ok(p.city);
-      assert.ok(p.price_from > 0);
-      assert.equal(p.currency, "MAD");
-      assert.ok(Array.isArray(p.property_types));
-      assert.ok(Array.isArray(p.typologies));
-      assert.ok(["none", "partner_full", "public"].includes(p.source_access_level));
-      assert.ok(["draft", "demo", "active"].includes(p.visibility_status));
+      assert.ok(p.id, `Projet sans id`);
+      assert.ok(p.slug, `Projet sans slug`);
+      assert.ok(p.promoter_id, `Projet sans promoter_id`);
+      assert.ok(p.name, `Projet sans name`);
+      assert.ok(p.city, `Projet sans city`);
+      assert.ok(p.price_from > 0, `price_from invalide pour ${p.name}`);
+      assert.equal(p.currency, "MAD", `currency invalide pour ${p.name}`);
+      assert.ok(Array.isArray(p.property_types), `property_types non-array`);
+      assert.ok(Array.isArray(p.typologies), `typologies non-array`);
+      assert.ok(
+        ["none", "partner_full"].includes(p.source_access_level) || p.source_access_level === "public",
+        `source_access_level invalide: ${p.source_access_level}`
+      );
+      assert.ok(
+        ["draft", "demo", "active"].includes(p.visibility_status),
+        `visibility_status invalide: ${p.visibility_status}`
+      );
     }
   });
 
   test("Les slugs promoteurs sont uniques", () => {
     const slugs = PROMOTERS.map((p) => p.slug);
-    assert.equal(new Set(slugs).size, slugs.length);
+    assert.equal(new Set(slugs).size, slugs.length, "Slugs promoteurs non-uniques");
   });
 
   test("Les slugs projets sont uniques", () => {
     const slugs = PROJECTS.map((p) => p.slug);
-    assert.equal(new Set(slugs).size, slugs.length);
+    assert.equal(new Set(slugs).size, slugs.length, "Slugs projets non-uniques");
   });
 
   test("Chaque projet référence un promoteur existant", () => {
     const promoterIds = new Set(PROMOTERS.map((p) => p.id));
     for (const proj of PROJECTS) {
-      assert.ok(promoterIds.has(proj.promoter_id));
+      assert.ok(
+        promoterIds.has(proj.promoter_id),
+        `Projet "${proj.name}" référence un promoter_id inexistant: ${proj.promoter_id}`
+      );
     }
   });
 });
@@ -94,10 +108,7 @@ describe("P17A-1 — Vérité publique promoteur", () => {
   });
 
   test("le repository promoteur legacy n'expose plus d'API active", () => {
-    assert.doesNotMatch(
-      promoterRepositorySource,
-      /getActivePromoter|getActivePromoterProjects|getAllActivePromoterSlugs/
-    );
+    assert.doesNotMatch(promoterRepositorySource, /getActivePromoter|getActivePromoterProjects|getAllActivePromoterSlugs/);
     assert.match(promoterRepositorySource, /visibility_status === "demo"/);
     assert.doesNotMatch(promoterRepositorySource, /visibility_status === "active"/);
   });
@@ -110,7 +121,7 @@ describe("P17A-1 — Vérité publique promoteur", () => {
   test("getActiveProject retourne null pour un slug demo", () => {
     const demoProject = PROJECTS.find((p) => p.visibility_status === "demo");
     if (demoProject) {
-      assert.equal(getActiveProject(demoProject.slug), null);
+      assert.equal(getActiveProject(demoProject.slug), null, "Un projet demo ne doit pas être accessible publiquement");
     }
   });
 
@@ -122,15 +133,15 @@ describe("P17A-1 — Vérité publique promoteur", () => {
     const slugs = getAllActiveProjectSlugs();
     for (const slug of slugs) {
       const p = PROJECTS.find((x) => x.slug === slug);
-      assert.equal(p?.visibility_status, "active");
+      assert.equal(p?.visibility_status, "active", `Slug non-active dans la liste: ${slug}`);
     }
   });
 
   test("getProjectPromoter résout le promoteur depuis un projet", () => {
     for (const proj of PROJECTS) {
       const promoter = getProjectPromoter(proj.promoter_id);
-      assert.ok(promoter);
-      assert.equal(promoter.id, proj.promoter_id);
+      assert.ok(promoter, `Promoteur non résolu pour projet ${proj.name}`);
+      assert.equal(promoter.id, proj.promoter_id, `Mauvais promoteur retourné pour projet ${proj.name}`);
     }
   });
 });
@@ -164,8 +175,8 @@ describe("P17A-1 — Contrôle PII", () => {
   test("Les contacts WhatsApp/email ne sont jamais dans des entrées public/none", () => {
     for (const p of PROMOTERS) {
       if (p.partner_status === "none") {
-        assert.equal(p.contact_whatsapp, undefined);
-        assert.equal(p.contact_email, undefined);
+        assert.equal(p.contact_whatsapp, undefined, `Promoteur partner_status=none ne doit pas avoir contact_whatsapp: ${p.name}`);
+        assert.equal(p.contact_email, undefined, `Promoteur partner_status=none ne doit pas avoir contact_email: ${p.name}`);
       }
     }
   });
