@@ -1,0 +1,31 @@
+name: Carte C1C ANCFCC Consultation Probe
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/carte-c1c-ancfcc-consultation-probe.mjs"
+      - ".github/workflows/carte-c1c-ancfcc-consultation-probe.yml"
+
+jobs:
+  probe-ancfcc-consultation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Inspect ANCFCC values consultation
+        run: node scripts/audits/carte-c1c-ancfcc-consultation-probe.mjs
+      - name: Upload consultation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-c1c-ancfcc-consultation-probe-${{ github.run_id }}
+          path: data/audits/runtime/carte-c1c-ancfcc-consultation-probe
+          if-no-files-found: warn
+          retention-days: 14
