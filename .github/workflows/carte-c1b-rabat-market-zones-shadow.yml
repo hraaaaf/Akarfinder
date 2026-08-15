@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "data/geo/rabat-market-zones-v1.geojson"
+      - "data/geo/rabat-market-zones-v1.json"
       - "data/geo/rabat-market-zone-source-containers-v1.geojson"
       - "lib/geo/rabat-market-zones-shadow.ts"
       - "lib/geo/market-zone-registry.ts"
