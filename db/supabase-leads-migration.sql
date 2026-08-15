@@ -3,7 +3,7 @@
 -- Apply with: npm run apply:leads-migration  OR  Supabase Dashboard → SQL Editor
 --
 -- Leads are created via /api/leads and /api/visit-requests (server-side, service role key only).
--- No public SELECT, UPDATE, or DELETE is allowed.
+-- No public SELECT, INSERT, UPDATE, or DELETE is allowed.
 -- Full auth/dashboard to be added in a future phase.
 
 CREATE TABLE IF NOT EXISTS buyer_leads (
@@ -105,20 +105,19 @@ CREATE INDEX IF NOT EXISTS buyer_leads_lead_type_idx ON buyer_leads (lead_type);
 CREATE INDEX IF NOT EXISTS buyer_leads_visit_status_idx ON buyer_leads (visit_status) WHERE visit_status IS NOT NULL;
 CREATE INDEX IF NOT EXISTS buyer_leads_phone_created_at_idx ON buyer_leads (phone_whatsapp, created_at DESC);
 
--- ── Row Level Security ────────────────────────────────────────────────────────
+-- ── Row Level Security / grants ──────────────────────────────────────────────
 
 ALTER TABLE buyer_leads ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies to allow idempotent re-runs
+-- This table is private server-side data. Keep public API roles without table grants.
+REVOKE ALL PRIVILEGES ON TABLE buyer_leads FROM anon, authenticated;
+
+-- service_role is the only application role used by the server routes.
+-- It bypasses RLS by design, so no permissive service-role policy is required.
+GRANT ALL PRIVILEGES ON TABLE buyer_leads TO service_role;
+
+-- Remove the historical permissive policy if this script is re-run on an older database.
 DROP POLICY IF EXISTS "service_role_all" ON buyer_leads;
-
--- Service role: full access (used by /api/leads and the Pro inbox server component)
-CREATE POLICY "service_role_all" ON buyer_leads
-  FOR ALL USING (true);
-
--- No anon SELECT: leads are private internal data.
--- No anon INSERT: inserts happen only via /api/leads server route.
--- No anon UPDATE/DELETE: status updates via future authenticated Pro dashboard.
 
 -- ── updated_at trigger ────────────────────────────────────────────────────────
 
