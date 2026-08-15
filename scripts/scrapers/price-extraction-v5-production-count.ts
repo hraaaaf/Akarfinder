@@ -1,24 +1,32 @@
 import { getSupabaseServerClient } from "../../lib/db/supabase-client";
 
+function describeError(error: unknown): string {
+  if (!error) return "unknown Supabase error";
+  if (error instanceof Error) return error.message || error.name;
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
+
 async function main() {
   const supabase = getSupabaseServerClient();
 
-  const base = supabase
+  const { count: total, error: totalError } = await supabase
     .from("thin_index_search_documents")
     .select("seed_id", { count: "exact", head: true })
     .eq("document_kind", "LISTING")
     .in("display_eligibility", ["eligible_primary", "eligible_secondary"]);
+  if (totalError) throw new Error(`total count failed: ${describeError(totalError)}`);
 
-  const reliableQuery = supabase
+  const { count: reliable, error: reliableError } = await supabase
     .from("thin_index_search_documents")
     .select("seed_id", { count: "exact", head: true })
     .eq("document_kind", "LISTING")
     .in("display_eligibility", ["eligible_primary", "eligible_secondary"])
     .not("normalized_price_mad", "is", null);
-
-  const [{ count: total, error: totalError }, { count: reliable, error: reliableError }] = await Promise.all([base, reliableQuery]);
-  if (totalError) throw new Error(totalError.message);
-  if (reliableError) throw new Error(reliableError.message);
+  if (reliableError) throw new Error(`reliable count failed: ${describeError(reliableError)}`);
 
   const totalCount = total ?? 0;
   const reliableCount = reliable ?? 0;
@@ -28,6 +36,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(error);
+  console.error(error instanceof Error ? error.message : describeError(error));
   process.exitCode = 1;
 });
