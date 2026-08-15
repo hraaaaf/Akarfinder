@@ -30,7 +30,8 @@ describe("B2B partner pages deep-audit contracts", () => {
     assert.match(activationForm, /source === "agency" \? "\/pro\/agences"/);
     assert.match(activationForm, /source === "promoter" \? "\/promoteurs"/);
     assert.match(activationForm, /source_page: context\.sourcePage/);
-    assert.match(activationForm, /phoneDigits\.length >= 8 && phoneDigits\.length <= 15/);
+    assert.match(activationForm, /import \{ isValidPhone \} from "@\/lib\/leads\/validate"/);
+    assert.match(activationForm, /const phoneOk = isValidPhone\(form\.phone\)/);
   });
 
   it("keeps fictive agency and promoter demos explicitly non-indexable and non-contractual", () => {

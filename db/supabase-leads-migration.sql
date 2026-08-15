@@ -103,6 +103,7 @@ CREATE INDEX IF NOT EXISTS buyer_leads_temperature_idx ON buyer_leads (lead_temp
 CREATE INDEX IF NOT EXISTS buyer_leads_created_at_idx ON buyer_leads (created_at DESC);
 CREATE INDEX IF NOT EXISTS buyer_leads_lead_type_idx ON buyer_leads (lead_type);
 CREATE INDEX IF NOT EXISTS buyer_leads_visit_status_idx ON buyer_leads (visit_status) WHERE visit_status IS NOT NULL;
+CREATE INDEX IF NOT EXISTS buyer_leads_phone_created_at_idx ON buyer_leads (phone_whatsapp, created_at DESC);
 
 -- ── Row Level Security ────────────────────────────────────────────────────────
 

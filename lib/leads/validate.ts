@@ -3,6 +3,16 @@ import type { LeadApiPayload } from "./types";
 
 export type ValidationResult = { ok: true } | { ok: false; error: string };
 
+export function normalizePhone(phone: string): string {
+  return phone.trim().replace(/[\s\-().]/g, "");
+}
+
+export function isValidPhone(phone: string): boolean {
+  const trimmed = phone.trim();
+  if (!/^\+?[0-9\s().-]+$/.test(trimmed)) return false;
+  return /^\+?\d{8,15}$/.test(normalizePhone(trimmed));
+}
+
 export function validateLeadPayload(body: unknown): ValidationResult {
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     return { ok: false, error: "Payload invalide." };
@@ -26,8 +36,11 @@ export function validateLeadPayload(body: unknown): ValidationResult {
   }
 
   const phone = p.phone;
-  if (typeof phone !== "string" || normalizePhone(phone).length < 8) {
-    return { ok: false, error: "Numéro de téléphone/WhatsApp requis (8 caractères minimum)." };
+  if (typeof phone !== "string" || !isValidPhone(phone)) {
+    return {
+      ok: false,
+      error: "Numéro de téléphone/WhatsApp invalide (8 à 15 chiffres, + international optionnel).",
+    };
   }
 
   const channel = b.source_channel;
@@ -36,10 +49,6 @@ export function validateLeadPayload(body: unknown): ValidationResult {
   }
 
   return { ok: true };
-}
-
-export function normalizePhone(phone: string): string {
-  return phone.trim().replace(/[\s\-().]/g, "");
 }
 
 // Safe extraction of payload — returns null if structurally invalid
