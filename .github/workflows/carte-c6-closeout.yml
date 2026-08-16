@@ -1,0 +1,26 @@
+name: Carte C6 Canonical Closeout
+
+on:
+  pull_request:
+    paths:
+      - "docs/CARTE_C6_CLOSEOUT.md"
+      - "docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md"
+      - "scripts/scrapers/__tests__/carte-c6-closeout.test.ts"
+      - ".github/workflows/carte-c6-closeout.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-c6-closeout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: C6 canonical closeout
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c6-closeout.test.ts
