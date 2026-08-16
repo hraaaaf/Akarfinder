@@ -85,6 +85,22 @@ describe("ANN-L4 Akar insight projection", () => {
     assert.equal(model.items.some((item) => item.key === "attention"), false);
   });
 
+  it("suppresses both an invalid score and the label attached to it", () => {
+    const model = buildAkarInsightModel(detail({
+      conclusion: {
+        title: "Conclusion AkarFinder",
+        summary: "Valeur hors contrat.",
+        akar_score: 140,
+        akar_score_label: "Excellent dossier",
+        coverage_label: "5/5 dimensions documentaires disponibles",
+        attention_label: null,
+      },
+    }));
+    assert.equal(model.score, null);
+    assert.equal(model.scoreLabel, null);
+    assert.equal(model.coverageLabel, "5/5 dimensions documentaires disponibles");
+  });
+
   it("hides unavailable market and unsupported multisource states", () => {
     const model = buildAkarInsightModel(detail({
       market: { status: "unavailable", label: "Ce texte ne doit pas sortir", price_per_m2: null },
