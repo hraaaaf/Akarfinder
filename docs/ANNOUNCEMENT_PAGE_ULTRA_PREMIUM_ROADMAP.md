@@ -2,8 +2,8 @@
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
 **Version : 2026-08-16**  
-**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 NEXT**  
-**Progression stricte : 18 / 100 %.**
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 NEXT**  
+**Progression stricte : 24 / 100 %.**
 
 > Ce document est la sous-roadmap normative du chantier de refonte de `/listings/[id]`. `docs/ROADMAP.md` reste le registre canonique global AkarFinder. Les pourcentages ci-dessous sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
 
@@ -42,13 +42,27 @@
 - Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L2_CLOSEOUT.md`.
 - **Crédit officiel ANN-L2 : +7 %. Progression cumulée : 18 %. Prochain chemin critique : ANN-L3 Property Core.**
 
+## 0.3 Closeout ANN-L3 — Property Core ✅
+
+- **PR #733 ✅ MERGED** — merge `b9c1a86a74593694d7a92f85cb342509ca2dd679` ; exact head certifié `a87bec0120fa850ac4cd7c946294bb233f7cf3b8`.
+- Gate dédié `Announcement Page L3 Property Core`, run `31939718402` : contrats, TypeScript, production build, Chromium ciblé et upload artefact **SUCCESS**.
+- Artefact visuel `9261693956`, digest `sha256:2beb2d35df3321b83759698e42b1fecc071e0dffb6f6f3d8ce0c36165f037917`.
+- Rapport `ANNOUNCEMENT_PAGE_L3_PROPERTY_CORE_VISUAL_V1` : **10/10 screenshots, 0 finding** sur normal 390/430/768/1280, prix absent 390/1280, titre long 390/1280, sparse 390 et dense 1280 ; H1=1, main=1, overflow=0 et 0 erreur console/ressource.
+- Property Core livré : `Transaction → Prix → Titre → Localisation → Surface / Chambres / SDB / Garage`; prix absent = `Prix non communiqué`, facts absents/0 masqués, titre/localisation absents explicites, longue chaîne non tronquée.
+- Le média est désormais média-only ; description progressive accessible ; groupes de caractéristiques rendus en sections continues avec provenance détaillée conservée.
+- Contrat historique `UX P1 Decision Continuity` migré vers la composition `PropertyDetailV2 + PropertyCore` sans changement runtime ; run `31939718433` **SUCCESS**.
+- Premier P0 rerun nécessaire uniquement à cause d'un fetch externe Google Fonts ; `Phase 1 P0 Closure Gate` finit **SUCCESS** sur le même head.
+- Non-régressions exact-head : L1, L2, mobile decision, design accessibility, canonical compile/validation, Search Truth, P1 sweep et P2 **SUCCESS**.
+- Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L3_CLOSEOUT.md`.
+- **Crédit officiel ANN-L3 : +6 %. Progression cumulée : 24 %. Prochain chemin critique : ANN-L4 Akar Intelligence.**
+
 ## 1. Vision produit
 
 Transformer la fiche actuelle en une expérience immobilière mobile-first, ultra premium, aussi simple à lire qu'une grande fiche Zillow-like mais différenciée par les forces propres d'AkarFinder : vérité des données, provenance, multi-source, fiabilité, intelligence marché Maroc, expérience quartier mesurée et personnalisation `Mon Projet`.
 
 La page ne doit pas être un clone graphique de Zillow. **L'architecture d'information peut reprendre les meilleures conventions du marché ; l'identité visuelle reste celle du Search AkarFinder réel.**
 
-Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell dans une fixture QA versionnée ; ANN-L2 a livré le contrat média et ANN-L3 poursuit la convergence du Property Core.
+Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell ; ANN-L2 a livré le contrat média ; ANN-L3 a livré le Property Core. ANN-L4 poursuit la convergence sur l'intelligence AkarFinder.
 
 ## 2. Doctrine non négociable
 
@@ -309,13 +323,13 @@ Implémentation : `PropertyMediaGallery`, swipe, clavier, fullscreen, compteur, 
 
 Gate CLOSED : exact head `8cad00a6f2ef08f8944b7e1c3cdef93a9f0123fd`, run `31938661694` SUCCESS, **10/10 captures + 0 finding** ; partner_full multi-image, preview single-image, forbidden/unknown fallback, broken URL fallback et galerie 2 photos certifiés. Détails : `docs/ANNOUNCEMENT_PAGE_L2_CLOSEOUT.md`.
 
-### ANN-L3 — Property Core — 6 % — NEXT
+### ANN-L3 — Property Core — 6 % — ✅ CLOSED
 
-Implémentation : prix, titre, quartier, transaction, facts essentiels, description progressive et groupes de caractéristiques. Suppression de la hiérarchie actuelle trop card-heavy sans perdre de facts.
+Implémentation : `PropertyCore` devient la frontière canonique de l'identité du bien ; média séparé, prix/titre/localisation/transaction ordonnés, facts essentiels compacts, description progressive et groupes de caractéristiques continus. Les valeurs absentes restent absentes ou explicitement non communiquées ; aucune donnée n'est synthétisée pour remplir l'UI.
 
-Gate : données nulles/0, prix non communiqué, très long titre, 1/20 caractéristiques, provenance conservée.
+Gate CLOSED : exact head `a87bec0120fa850ac4cd7c946294bb233f7cf3b8`, run `31939718402` SUCCESS, **10/10 captures + 0 finding** ; données nulles/0, prix non communiqué, très long titre, sparse/dense facts, provenance conservée, H1=1, main=1 et overflow=0. Détails : `docs/ANNOUNCEMENT_PAGE_L3_CLOSEOUT.md`.
 
-### ANN-L4 — Akar Intelligence — 9 %
+### ANN-L4 — Akar Intelligence — 9 % — NEXT
 
 Implémentation : nouveau `AkarInsightCard` compact et lisible ; AkarScore /100, couverture, alertes, position marché, multi-source, Property Fit si calculé. Les métriques absentes disparaissent proprement.
 
@@ -439,8 +453,8 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L0 | 4 % | ✅ CLOSED | 4 % |
 | ANN-L1 | 7 % | ✅ CLOSED | 7 % |
 | ANN-L2 | 7 % | ✅ CLOSED | 7 % |
-| ANN-L3 | 6 % | NEXT | 0 % |
-| ANN-L4 | 9 % | NOT_STARTED | 0 % |
+| ANN-L3 | 6 % | ✅ CLOSED | 6 % |
+| ANN-L4 | 9 % | NEXT | 0 % |
 | ANN-L5 | 9 % | NOT_STARTED | 0 % |
 | ANN-L6 | 12 % | NOT_STARTED | 0 % |
 | ANN-L7 | 6 % | NOT_STARTED | 0 % |
@@ -451,4 +465,4 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L12 | 5 % | NOT_STARTED | 0 % |
 | ANN-L13 | 6 % | NOT_STARTED | 0 % |
 
-**Progression officielle actuelle : 18 / 100 %.**
+**Progression officielle actuelle : 24 / 100 %.**
