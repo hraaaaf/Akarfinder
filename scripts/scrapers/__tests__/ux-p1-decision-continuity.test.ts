@@ -6,36 +6,41 @@ function source(path: string) {
   return readFileSync(path, "utf8");
 }
 
-test("listing detail starts with one canonical decision layer", () => {
+test("listing detail keeps one canonical decision flow through the shared announcement shell", () => {
   const page = source("app/listings/[id]/page.tsx");
-  const decision = source("components/listings/PropertyDecisionHeader.tsx");
+  const shell = source("components/listings/AnnouncementPageShell.tsx");
+  const detail = source("components/listings/PropertyDetailV2.tsx");
 
-  assert.ok(page.includes("<PropertyDecisionHeader listing={listing} detail={detail} />"));
-  assert.ok(
-    page.indexOf("<PropertyDecisionHeader") < page.indexOf("<PropertyDetailV2"),
-    "decision layer must precede the detailed dossier",
-  );
-  assert.ok(decision.includes('aria-labelledby="property-decision-title"'));
-  assert.ok(decision.includes("Votre prochaine décision"));
+  assert.ok(page.includes("<AnnouncementPageShell listing={listing} detail={detail} />"));
+  assert.ok(shell.includes("<PropertyDetailV2 listing={listing} detail={detail} />"));
+  assert.ok(shell.includes("<MobilePropertyDecisionBar listingId={listing.id} />"));
+  assert.ok(!shell.includes("PropertyDecisionHeader"), "legacy pre-detail decision hero must not reintroduce a second H1");
+
+  const h1Count = (detail.match(/<h1\b/g) ?? []).length;
+  assert.equal(h1Count, 1, "the active listing detail body must expose exactly one H1 source");
 });
 
 test("decision actions preserve the canonical project, favorite and comparison flows", () => {
-  const decision = source("components/listings/PropertyDecisionHeader.tsx");
+  const bar = source("components/listings/MobilePropertyDecisionBar.tsx");
+  const detail = source("components/listings/PropertyDetailV2.tsx");
 
-  assert.ok(decision.includes('href="/mon-projet"'));
-  assert.ok(decision.includes("Continuer dans Mon Projet"));
-  assert.ok(decision.includes("FavoriteToggleButton"));
-  assert.ok(decision.includes("CompareToggleButton"));
-  assert.ok(!decision.includes("/profil-recherche"));
-  assert.ok(!decision.includes("/onboarding"));
+  assert.ok(bar.includes('href="/mon-projet"'));
+  assert.ok(bar.includes("Continuer dans Mon Projet"));
+  assert.ok(bar.includes("FavoriteToggleButton"));
+  assert.ok(bar.includes("CompareToggleButton"));
+  assert.ok(detail.includes("FavoriteToggleButton"));
+  assert.ok(detail.includes("CompareToggleButton"));
+  assert.ok(!bar.includes("/profil-recherche"));
+  assert.ok(!bar.includes("/onboarding"));
 });
 
-test("decision summary remains evidence-safe", () => {
-  const decision = source("components/listings/PropertyDecisionHeader.tsx");
+test("decision surface remains evidence-safe after the shell migration", () => {
+  const detail = source("components/listings/PropertyDetailV2.tsx");
+  const shell = source("components/listings/AnnouncementPageShell.tsx");
 
-  assert.ok(decision.includes("detail.provenance.fact_provenance_label"));
-  assert.ok(decision.includes("detail.conclusion.attention_label"));
-  assert.ok(decision.includes("il ne certifie ni le bien ni la transaction"));
-  assert.ok(!decision.includes("bien vérifié"));
-  assert.ok(!decision.includes("meilleure affaire"));
+  assert.ok(detail.includes("detail.provenance"));
+  assert.ok(detail.includes("detail.conclusion"));
+  assert.ok(shell.includes("ui.pageLight"));
+  assert.ok(!detail.includes("bien vérifié"));
+  assert.ok(!detail.includes("meilleure affaire"));
 });
