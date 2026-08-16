@@ -94,7 +94,7 @@ export async function listVerifiedProfessionalOwnedListings(
   }
 
   const listingsById = new Map<number, any>(
-    (listingRows ?? []).map((row) => [Number(row.id), row]),
+    (listingRows ?? []).map((row): [number, any] => [Number(row.id), row]),
   );
 
   return ownership.flatMap((row) => {
