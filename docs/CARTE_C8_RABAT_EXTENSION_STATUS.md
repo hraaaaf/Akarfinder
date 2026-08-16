@@ -31,15 +31,32 @@ C0–C7 reste fermé à **8/8 = 100 %**. Ce pourcentage appartient uniquement au
 - géométries étiquetées `analytical_market_zone`, `officialBoundary: false` ;
 - aucune nouvelle activation publique.
 
+### C8D foundation — Publication readiness ✅ MERGED
+
+- PR #747 ;
+- exact head `25419e2b88e1c4b520c7630e222fc9224215fb3c` ;
+- merge `eeb10803eab2cb3131e7a7bf443d130d136c77df` ;
+- exact-head : **15/15 workflows observés SUCCESS** ;
+- gate taxonomie + géométrie + métriques + contexte ;
+- 4 localités satisfont les quatre dimensions mais sont déjà couvertes par C0–C7 ;
+- **19 localités bloquées** ;
+- **0 nouvelle activation C8 éligible** ;
+- aucune mutation DB/Search/ranking/API/UI.
+
 ### C8D — Market-data projection + UI expansion + final certification 🟡 IN PROGRESS
 
-La première fondation C8D est le gate de publication. Son état attendu actuel est :
+Le lot suivant est le **Rabat Resolver Shadow** (#750), encore non public :
 
-- 4 localités satisfont taxonomie + géométrie + métriques + contexte, mais elles sont déjà couvertes par C0–C7 ;
-- 19 localités restent bloquées ;
-- **0 nouvelle activation C8 éligible** avant apport de preuves supplémentaires.
+- resolver déterministe sur le registre C8B ;
+- audit production strictement read-only ;
+- 984 annonces Rabat dédupliquées / 6 sources ;
+- 638 matchs uniques, 6 ambiguës fail-closed, 340 sans signal exact ;
+- 68 matchs uniques sur des localités candidates ;
+- gold set historique : 39/40 corrects, 1 ambigu, 0 mauvais classement ;
+- alias annonce `Kébibat` ajouté à la localité candidate canonique `Kbibat` ;
+- aucune création de `geo_entity`, `geo_alias` ou `geo_resolution_event`.
 
-Océan est la première cible de travail logique : taxonomie et contexte sont déjà présents, la base contient une petite population d’annonces résolues, mais la géométrie certifiée et les échantillons prix/m² manquent encore.
+Océan reste une cible logique pour l'extension marché parce que sa taxonomie et son contexte sont déjà présents, mais sa géométrie certifiée et ses échantillons prix/m² manquent encore.
 
 ## Progression C8
 
@@ -48,7 +65,8 @@ Océan est la première cible de travail logique : taxonomie et contexte sont d�
 ## Chemin critique
 
 1. renforcer l’inventaire jusqu’à exhaustivité source-backed défendable ;
-2. certifier géométrie + métriques + contexte par localité ;
-3. activer uniquement les localités passant le gate C8D ;
-4. certifier API/UI et non-régression ;
-5. fermer C8 seulement lorsque le périmètre et les critères d’exhaustivité sont explicitement verrouillés et satisfaits.
+2. certifier la résolution geo shadow puis proposer une autorité DB bornée sans mutation implicite ;
+3. certifier géométrie + métriques + contexte par localité ;
+4. activer uniquement les localités passant le gate C8D ;
+5. certifier API/UI et non-régression ;
+6. fermer C8 seulement lorsque le périmètre et les critères d’exhaustivité sont explicitement verrouillés et satisfaits.
