@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { buildSnapshotRanges } from "../price-coverage-bounded-write-v6";
+import { buildSnapshotRanges, hasExplicitWriteConfirmation } from "../price-coverage-bounded-write-v6";
 
 describe("price coverage bounded write v6", () => {
   it("captures contiguous non-overlapping ranges", () => {
@@ -17,5 +17,13 @@ describe("price coverage bounded write v6", () => {
     for (let i = 1; i < ranges.length; i += 1) {
       assert.equal(ranges[i - 1].to + 1, ranges[i].from);
     }
+  });
+
+  it("fails closed unless the exact write confirmation phrase is supplied", () => {
+    assert.equal(hasExplicitWriteConfirmation(undefined), false);
+    assert.equal(hasExplicitWriteConfirmation("READ_ONLY"), false);
+    assert.equal(hasExplicitWriteConfirmation("true"), false);
+    assert.equal(hasExplicitWriteConfirmation("WRITE_100_RELIABLE_PRICES "), false);
+    assert.equal(hasExplicitWriteConfirmation("WRITE_100_RELIABLE_PRICES"), true);
   });
 });

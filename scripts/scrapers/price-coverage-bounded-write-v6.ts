@@ -6,11 +6,16 @@ import { getThirdPartyIngestionGuard } from "./utils/motor-purity-guard";
 import { safeDelay } from "./utils/safe-delay";
 
 const SOURCES = ["mubawab.ma", "masaken.ma"] as const;
+const WRITE_CONFIRMATION = "WRITE_100_RELIABLE_PRICES";
 
 type SnapshotRow = CohortRow & { snapshot_page: number };
 
 export function buildSnapshotRanges(pageSize: number, pages: number) {
   return Array.from({ length: pages }, (_, page) => ({ page, from: page * pageSize, to: page * pageSize + pageSize - 1 }));
+}
+
+export function hasExplicitWriteConfirmation(raw: string | undefined) {
+  return raw === WRITE_CONFIRMATION;
 }
 
 async function captureSnapshot(pageSize: number, pages: number): Promise<SnapshotRow[]> {
@@ -60,6 +65,10 @@ async function main() {
   if (guard.blocked) throw new Error(guard.message);
 
   const write = process.env.PRICE_COVERAGE_V6_WRITE === "true";
+  if (write && !hasExplicitWriteConfirmation(process.env.PRICE_COVERAGE_V6_WRITE_CONFIRMATION)) {
+    throw new Error("price coverage v6 write blocked: explicit confirmation missing");
+  }
+
   const pageSize = Math.max(20, Math.min(Number(process.env.PRICE_COVERAGE_V6_PAGE_SIZE ?? 120), 200));
   const pages = Math.max(1, Math.min(Number(process.env.PRICE_COVERAGE_V6_PAGES ?? 4), 8));
   const maxWrites = Math.max(1, Math.min(Number(process.env.PRICE_COVERAGE_V6_MAX_WRITES ?? 100), 100));

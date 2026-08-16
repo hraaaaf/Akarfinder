@@ -8,11 +8,11 @@ on:
       - '.github/workflows/price-coverage-bounded-write-v6.yml'
   workflow_dispatch:
     inputs:
-      execute_write:
-        description: 'Execute the bounded production write after canary certification'
+      write_confirmation:
+        description: 'Type WRITE_100_RELIABLE_PRICES to enable the bounded production write; anything else is read-only'
         required: true
-        type: boolean
-        default: false
+        type: string
+        default: 'READ_ONLY'
 
 permissions:
   contents: read
@@ -59,7 +59,7 @@ jobs:
         run: npx tsx scripts/scrapers/price-coverage-bounded-write-v6.ts
 
   production-bounded-write:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.execute_write == true }}
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.write_confirmation == 'WRITE_100_RELIABLE_PRICES' }}
     needs: production-canary-read-only
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -68,6 +68,7 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
       PRICE_COVERAGE_V6_WRITE: 'true'
+      PRICE_COVERAGE_V6_WRITE_CONFIRMATION: ${{ github.event.inputs.write_confirmation }}
       PRICE_COVERAGE_V6_PAGE_SIZE: '120'
       PRICE_COVERAGE_V6_PAGES: '4'
       PRICE_COVERAGE_V6_MAX_WRITES: '100'
@@ -78,6 +79,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Verify explicit production write confirmation
+        run: test "$PRICE_COVERAGE_V6_WRITE_CONFIRMATION" = 'WRITE_100_RELIABLE_PRICES'
       - name: Verify production write credentials
         run: |
           test -n "$SUPABASE_URL"
