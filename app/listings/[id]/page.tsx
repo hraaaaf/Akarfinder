@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { AnnouncementPageShell } from "@/components/listings/AnnouncementPageShell";
 import { queryListingById } from "@/lib/db/index";
 import { buildLivingHereForListing } from "@/lib/geo/living-here-service";
+import { buildStreetRealityForListing } from "@/lib/geo/street-reality-service";
 import type { Listing } from "@/lib/listings/types";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
 import { buildPublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
@@ -31,12 +32,25 @@ async function renderListing(
   detail: NonNullable<ReturnType<typeof buildPublicPropertyDetailV2>>,
 ) {
   let livingHere = null;
+  let streetReality = null;
   try {
     livingHere = await buildLivingHereForListing(listing);
   } catch (error) {
     console.error("[listings] ANN-L6 living-here failed closed for id:", listing.id, error);
   }
-  return <AnnouncementPageShell listing={listing} detail={detail} livingHere={livingHere} />;
+  try {
+    streetReality = await buildStreetRealityForListing(listing);
+  } catch (error) {
+    console.error("[listings] ANN-L7 street-reality failed closed for id:", listing.id, error);
+  }
+  return (
+    <AnnouncementPageShell
+      listing={listing}
+      detail={detail}
+      livingHere={livingHere}
+      streetReality={streetReality}
+    />
+  );
 }
 
 export default async function ListingDetailPage({ params }: ListingDetailPageProps) {
