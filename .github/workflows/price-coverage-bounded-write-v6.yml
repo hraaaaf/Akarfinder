@@ -1,0 +1,86 @@
+name: SEARCH Price Coverage Bounded Write v6
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/scrapers/price-coverage-bounded-write-v6.ts'
+      - 'scripts/scrapers/__tests__/price-coverage-bounded-write-v6.test.ts'
+      - '.github/workflows/price-coverage-bounded-write-v6.yml'
+  workflow_dispatch:
+    inputs:
+      execute_write:
+        description: 'Execute the bounded production write after canary certification'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/price-coverage-bounded-write-v6.test.ts
+      - run: npx tsc --noEmit
+
+  production-canary-read-only:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: certify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+      PRICE_COVERAGE_V6_WRITE: 'false'
+      PRICE_COVERAGE_V6_PAGE_SIZE: '120'
+      PRICE_COVERAGE_V6_PAGES: '4'
+      PRICE_COVERAGE_V6_MAX_WRITES: '100'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify production read credentials
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Revalidate captured cohort without writes
+        run: npx tsx scripts/scrapers/price-coverage-bounded-write-v6.ts
+
+  production-bounded-write:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.execute_write == true }}
+    needs: production-canary-read-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+      PRICE_COVERAGE_V6_WRITE: 'true'
+      PRICE_COVERAGE_V6_PAGE_SIZE: '120'
+      PRICE_COVERAGE_V6_PAGES: '4'
+      PRICE_COVERAGE_V6_MAX_WRITES: '100'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify production write credentials
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Snapshot, live-revalidate, and write at most 100 null prices
+        run: npx tsx scripts/scrapers/price-coverage-bounded-write-v6.ts
