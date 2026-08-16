@@ -1,5 +1,5 @@
+import { RABAT_MARKET_ZONES_CANARY } from "@/lib/geo/rabat-market-zones-canary";
 import { validateMarketZoneRecord, type MarketZoneRecord } from "@/lib/geo/market-zone-registry";
-import { RABAT_MARKET_ZONES_SHADOW } from "@/lib/geo/rabat-market-zones-shadow";
 
 const EXPECTED_ZONE_IDS = new Set([
   "market_zone_rabat_agdal",
@@ -32,7 +32,7 @@ export type RabatMarketZonesGeoJsonDecision =
   | { enabled: true; reason: "reviewed_market_zones"; collection: RabatMarketZonesGeoJson };
 
 export function decideRabatMarketZonesGeoJson(
-  records: readonly MarketZoneRecord[] = RABAT_MARKET_ZONES_SHADOW,
+  records: readonly MarketZoneRecord[] = RABAT_MARKET_ZONES_CANARY,
 ): RabatMarketZonesGeoJsonDecision {
   const ids = new Set(records.map((zone) => zone.id));
   if (records.length !== EXPECTED_ZONE_IDS.size || ids.size !== EXPECTED_ZONE_IDS.size ||

@@ -1,0 +1,66 @@
+name: Carte C3 Intelligence Scale Gate
+
+on:
+  pull_request:
+    paths:
+      - "app/api/geo/rabat-market-intelligence/route.ts"
+      - "lib/geo/rabat-market-zones-canary.ts"
+      - "lib/geo/rabat-market-zones-geojson.ts"
+      - "lib/map/intelligence-scale.ts"
+      - "lib/map/intelligence-payload.ts"
+      - "lib/map/market-metric-reliability.ts"
+      - "lib/map/rabat-market-intelligence-live.ts"
+      - "scripts/audits/carte-c3-rabat-intelligence-live.ts"
+      - "scripts/scrapers/__tests__/rabat-market-zones-geojson.test.ts"
+      - "scripts/scrapers/__tests__/rabat-market-intelligence-api.test.ts"
+      - "scripts/scrapers/__tests__/intelligence-scale.test.ts"
+      - "scripts/scrapers/__tests__/intelligence-payload.test.ts"
+      - "scripts/scrapers/__tests__/market-metric-reliability.test.ts"
+      - ".github/workflows/carte-c3-intelligence-scales.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-intelligence-scale:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Deterministic scale, payload, reliability, API guard and canary geometry contracts
+        run: npx tsx --test scripts/scrapers/__tests__/intelligence-scale.test.ts scripts/scrapers/__tests__/intelligence-payload.test.ts scripts/scrapers/__tests__/market-metric-reliability.test.ts scripts/scrapers/__tests__/rabat-market-zones-geojson.test.ts scripts/scrapers/__tests__/rabat-market-intelligence-api.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: No hardcoded market thresholds or heavy Shadow view
+        run: |
+          grep -q 'snapshot_quantiles_v1' lib/map/intelligence-scale.ts
+          if grep -Eq '18000|450|120' lib/map/intelligence-scale.ts; then
+            echo 'mockup illustrative values must not define runtime scale thresholds'
+            exit 1
+          fi
+          grep -q 'neutralColor' lib/map/intelligence-payload.ts
+          grep -q 'observedMarketOnly' lib/map/intelligence-payload.ts
+          grep -q 'p1c2-neighborhood-offer-reliability-policy.json' lib/map/market-metric-reliability.ts
+          if grep -q 'odm_neighborhood_offer_shadow' lib/map/rabat-market-intelligence-live.ts; then
+            echo 'C3 live reader must remain on bounded base tables'
+            exit 1
+          fi
+      - name: Live bounded Rabat intelligence proof
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/carte-c3-rabat-intelligence-live.ts
+      - name: Production build
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: carte-c3-intelligence-live-${{ github.run_id }}
+          path: data/audits/runtime/carte-c3-rabat-intelligence-live.json
+          if-no-files-found: warn
+          retention-days: 30
