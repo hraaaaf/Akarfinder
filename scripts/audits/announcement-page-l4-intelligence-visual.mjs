@@ -7,12 +7,14 @@ const outputDir = path.resolve(process.env.AUDIT_OUTPUT_DIR ?? "artifacts/announ
 const route = "/visual-qa/announcement-page-intelligence";
 const scenarios = [
   { name: "full-390", state: "full", width: 390, height: 844, card: true, score: "86/100", items: 3 },
+  { name: "full-430", state: "full", width: 430, height: 932, card: true, score: "86/100", items: 3 },
+  { name: "full-768", state: "full", width: 768, height: 900, card: true, score: "86/100", items: 3 },
   { name: "full-1280", state: "full", width: 1280, height: 900, card: true, score: "86/100", items: 3 },
-  { name: "no-score-390", state: "no-score", width: 390, height: 844, card: true, score: null, items: 0 },
-  { name: "no-score-1280", state: "no-score", width: 1280, height: 900, card: true, score: null, items: 0 },
-  { name: "no-market-390", state: "no-market", width: 390, height: 844, card: true, score: "78/100", items: 1 },
-  { name: "attention-390", state: "attention", width: 390, height: 844, card: true, score: "67/100", items: 2 },
-  { name: "attention-1280", state: "attention", width: 1280, height: 900, card: true, score: "67/100", items: 2 },
+  { name: "no-score-390", state: "no-score", width: 390, height: 844, card: true, score: null, scoreLabel: true, items: 0 },
+  { name: "no-score-1280", state: "no-score", width: 1280, height: 900, card: true, score: null, scoreLabel: true, items: 0 },
+  { name: "no-market-390", state: "no-market", width: 390, height: 844, card: true, score: "78/100", items: 1, market: false },
+  { name: "attention-390", state: "attention", width: 390, height: 844, card: true, score: "67/100", items: 2, market: true, attention: true },
+  { name: "invalid-score-390", state: "invalid-score", width: 390, height: 844, card: true, score: null, scoreLabel: false, items: 0, invalidScore: true },
   { name: "minimal-390", state: "minimal", width: 390, height: 844, card: false, score: null, items: 0 },
 ];
 
@@ -31,9 +33,8 @@ try {
     const localFindings = [];
 
     try {
-      const response = await page.goto(`${baseUrl}${route}?state=${scenario.state}`, { waitUntil: "domcontentloaded", timeout: 60_000 });
+      const response = await page.goto(`${baseUrl}${route}?state=${scenario.state}`, { waitUntil: "networkidle", timeout: 60_000 });
       await page.locator("body").waitFor({ state: "visible", timeout: 15_000 });
-      await page.waitForTimeout(300);
 
       const metrics = await page.evaluate(() => ({
         clientWidth: document.documentElement.clientWidth,
@@ -55,7 +56,10 @@ try {
 
       if (scenario.card && cardCount === 1) {
         const version = await card.getAttribute("data-akar-intelligence-version");
-        if (version !== "1.0") localFindings.push(`VERSION_${version ?? "missing"}`);
+        const truthVersion = await card.getAttribute("data-akar-truth-contract-version");
+        if (version !== "1.0") localFindings.push(`ENGINE_VERSION_${version ?? "missing"}`);
+        if (truthVersion !== "1.0") localFindings.push(`TRUTH_VERSION_${truthVersion ?? "missing"}`);
+
         const score = card.locator("[data-akar-score]");
         const scoreCount = await score.count();
         if (scenario.score == null && scoreCount !== 0) localFindings.push(`UNEXPECTED_SCORE_${await score.first().textContent().catch(() => "")}`);
@@ -66,8 +70,23 @@ try {
             if (!normalized.includes(scenario.score)) localFindings.push(`SCORE_${normalized}_EXPECTED_${scenario.score}`);
           }
         }
+
+        const scoreLabelCount = await card.locator("[data-akar-score-label]").count();
+        if (scenario.scoreLabel === true && scoreLabelCount !== 1) localFindings.push(`SCORE_LABEL_COUNT_${scoreLabelCount}_EXPECTED_1`);
+        if (scenario.scoreLabel === false && scoreLabelCount !== 0) localFindings.push(`SCORE_LABEL_COUNT_${scoreLabelCount}_EXPECTED_0`);
+
         const itemCount = await card.locator("[data-akar-insight-item]").count();
         if (itemCount !== scenario.items) localFindings.push(`ITEM_COUNT_${itemCount}_EXPECTED_${scenario.items}`);
+        const marketCount = await card.locator('[data-akar-insight-item="market"]').count();
+        const attentionCount = await card.locator('[data-akar-insight-item="attention"]').count();
+        if (scenario.market === false && marketCount !== 0) localFindings.push(`UNEXPECTED_MARKET_${marketCount}`);
+        if (scenario.market === true && marketCount !== 1) localFindings.push(`MARKET_COUNT_${marketCount}_EXPECTED_1`);
+        if (scenario.attention === true && attentionCount !== 1) localFindings.push(`ATTENTION_COUNT_${attentionCount}_EXPECTED_1`);
+
+        if (scenario.invalidScore) {
+          const body = await card.innerText();
+          if (body.includes("140") || body.includes("Excellent dossier")) localFindings.push("INVALID_SCORE_COPY_EXPOSED");
+        }
 
         const coreBox = await page.locator('[data-announcement-property-core="ann-l3"]').boundingBox();
         const cardBox = await card.boundingBox();
@@ -77,6 +96,7 @@ try {
       const bodyText = await page.locator("body").innerText();
       if (bodyText.includes("Compatibilité personnalisée non calculée")) localFindings.push("UNCALCULATED_FIT_EXPOSED");
       if (bodyText.includes("Analyse structurée")) localFindings.push("LEGACY_ANALYSIS_CARD_EXPOSED");
+      if (bodyText.includes("Ce repère obsolète ne doit pas être affiché")) localFindings.push("UNCERTIFIED_MARKET_EXPOSED");
       if (scenario.state === "minimal" && bodyText.includes("AkarFinder Intelligence")) localFindings.push("EMPTY_INTELLIGENCE_SHELL_EXPOSED");
 
       const screenshot = `${scenario.name}.png`;
