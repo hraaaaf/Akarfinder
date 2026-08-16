@@ -37,31 +37,17 @@ function base(): Partial<Listing> {
 
 describe("P10IMG — indexed_only listings", () => {
   test("canDisplayRealImage returns false for indexed_only + unknown", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "indexed_only" as const,
-      image_permission_status: "unknown" as const,
-      main_image_url: "/images/test.jpg",
-    } as Listing;
+    const listing = { ...base(), source_access_level: "indexed_only" as const, image_permission_status: "unknown" as const, main_image_url: "/images/test.jpg" } as Listing;
     assert.equal(canDisplayRealImage(listing), false);
   });
 
   test("canDisplayGallery returns false for indexed_only", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "indexed_only" as const,
-      image_permission_status: "allowed" as const,
-      gallery_image_urls: ["/images/a.jpg", "/images/b.jpg"],
-    } as Listing;
+    const listing = { ...base(), source_access_level: "indexed_only" as const, image_permission_status: "allowed" as const, can_show_gallery: true, gallery_image_urls: ["/images/a.jpg", "/images/b.jpg"] } as Listing;
     assert.equal(canDisplayGallery(listing), false);
   });
 
   test("getListingImageMode returns fallback_visual for indexed_only", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "indexed_only" as const,
-      image_permission_status: "unknown" as const,
-    } as Listing;
+    const listing = { ...base(), source_access_level: "indexed_only" as const, image_permission_status: "unknown" as const } as Listing;
     assert.equal(getListingImageMode(listing), "fallback_visual");
   });
 });
@@ -70,22 +56,12 @@ describe("P10IMG — indexed_only listings", () => {
 
 describe("P10IMG — unknown permission status", () => {
   test("canDisplayRealImage returns false when permission is unknown", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "partner_full" as const,
-      image_permission_status: "unknown" as const,
-      main_image_url: "/images/test.jpg",
-    } as Listing;
+    const listing = { ...base(), source_access_level: "partner_full" as const, image_permission_status: "unknown" as const, main_image_url: "/images/test.jpg" } as Listing;
     assert.equal(canDisplayRealImage(listing), false);
   });
 
   test("getListingImageMode returns fallback_visual for unknown permission", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "partner_full" as const,
-      image_permission_status: "unknown" as const,
-      main_image_url: "/images/test.jpg",
-    } as Listing;
+    const listing = { ...base(), source_access_level: "partner_full" as const, image_permission_status: "unknown" as const, main_image_url: "/images/test.jpg" } as Listing;
     assert.equal(getListingImageMode(listing), "fallback_visual");
   });
 });
@@ -94,21 +70,12 @@ describe("P10IMG — unknown permission status", () => {
 
 describe("P10IMG — forbidden permission status", () => {
   test("canDisplayRealImage returns false when permission is forbidden", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "partner_full" as const,
-      image_permission_status: "forbidden" as const,
-      main_image_url: "/images/test.jpg",
-    } as Listing;
+    const listing = { ...base(), source_access_level: "partner_full" as const, image_permission_status: "forbidden" as const, main_image_url: "/images/test.jpg" } as Listing;
     assert.equal(canDisplayRealImage(listing), false);
   });
 
   test("getListingImageMode returns fallback_visual for forbidden permission", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "indexed_only" as const,
-      image_permission_status: "forbidden" as const,
-    } as Listing;
+    const listing = { ...base(), source_access_level: "indexed_only" as const, image_permission_status: "forbidden" as const } as Listing;
     assert.equal(getListingImageMode(listing), "fallback_visual");
   });
 });
@@ -117,32 +84,24 @@ describe("P10IMG — forbidden permission status", () => {
 
 describe("P10IMG — partner_full + allowed", () => {
   test("canDisplayRealImage returns true for partner_full + allowed + url", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "partner_full" as const,
-      image_permission_status: "allowed" as const,
-      main_image_url: "/images/partner.jpg",
-    } as Listing;
+    const listing = { ...base(), source_access_level: "partner_full" as const, image_permission_status: "allowed" as const, main_image_url: "/images/partner.jpg" } as Listing;
     assert.equal(canDisplayRealImage(listing), true);
   });
 
-  test("canDisplayGallery returns true for partner_full + allowed + gallery", () => {
+  test("canDisplayGallery returns true only with explicit gallery capability", () => {
     const listing = {
       ...base(),
       source_access_level: "partner_full" as const,
       image_permission_status: "allowed" as const,
+      can_show_gallery: true,
       gallery_image_urls: ["/images/a.jpg", "/images/b.jpg"],
     } as Listing;
     assert.equal(canDisplayGallery(listing), true);
+    assert.equal(canDisplayGallery({ ...listing, can_show_gallery: false }), false);
   });
 
   test("getListingImageMode returns real_image for partner_full + allowed", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "partner_full" as const,
-      image_permission_status: "allowed" as const,
-      main_image_url: "/images/partner.jpg",
-    } as Listing;
+    const listing = { ...base(), source_access_level: "partner_full" as const, image_permission_status: "allowed" as const, main_image_url: "/images/partner.jpg" } as Listing;
     assert.equal(getListingImageMode(listing), "real_image");
   });
 });
@@ -151,32 +110,17 @@ describe("P10IMG — partner_full + allowed", () => {
 
 describe("P10IMG — preview_allowed + allowed", () => {
   test("canDisplayRealImage returns true for preview_allowed + allowed + url", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "preview_allowed" as const,
-      image_permission_status: "allowed" as const,
-      main_image_url: "/images/preview.jpg",
-    } as Listing;
+    const listing = { ...base(), source_access_level: "preview_allowed" as const, image_permission_status: "allowed" as const, main_image_url: "/images/preview.jpg" } as Listing;
     assert.equal(canDisplayRealImage(listing), true);
   });
 
   test("canDisplayGallery returns false for preview_allowed (gallery is partner_full only)", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "preview_allowed" as const,
-      image_permission_status: "allowed" as const,
-      gallery_image_urls: ["/images/a.jpg"],
-    } as Listing;
+    const listing = { ...base(), source_access_level: "preview_allowed" as const, image_permission_status: "allowed" as const, can_show_gallery: true, gallery_image_urls: ["/images/a.jpg"] } as Listing;
     assert.equal(canDisplayGallery(listing), false);
   });
 
   test("getListingImageMode returns preview_image for preview_allowed + allowed", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "preview_allowed" as const,
-      image_permission_status: "allowed" as const,
-      main_image_url: "/images/preview.jpg",
-    } as Listing;
+    const listing = { ...base(), source_access_level: "preview_allowed" as const, image_permission_status: "allowed" as const, main_image_url: "/images/preview.jpg" } as Listing;
     assert.equal(getListingImageMode(listing), "preview_image");
   });
 });
@@ -185,31 +129,17 @@ describe("P10IMG — preview_allowed + allowed", () => {
 
 describe("P10IMG — missing image URL falls back safely", () => {
   test("canDisplayRealImage returns false when main_image_url is absent", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "partner_full" as const,
-      image_permission_status: "allowed" as const,
-    } as Listing;
+    const listing = { ...base(), source_access_level: "partner_full" as const, image_permission_status: "allowed" as const } as Listing;
     assert.equal(canDisplayRealImage(listing), false);
   });
 
   test("getListingImageMode returns fallback_visual when main_image_url is null", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "partner_full" as const,
-      image_permission_status: "allowed" as const,
-      main_image_url: null,
-    } as Listing;
+    const listing = { ...base(), source_access_level: "partner_full" as const, image_permission_status: "allowed" as const, main_image_url: null } as Listing;
     assert.equal(getListingImageMode(listing), "fallback_visual");
   });
 
   test("canDisplayGallery returns false when gallery_image_urls is empty", () => {
-    const listing = {
-      ...base(),
-      source_access_level: "partner_full" as const,
-      image_permission_status: "allowed" as const,
-      gallery_image_urls: [],
-    } as Listing;
+    const listing = { ...base(), source_access_level: "partner_full" as const, image_permission_status: "allowed" as const, can_show_gallery: true, gallery_image_urls: [] } as Listing;
     assert.equal(canDisplayGallery(listing), false);
   });
 });
@@ -223,10 +153,7 @@ describe("P10IMG — getImageAttribution", () => {
   });
 
   test("returns the image_source string when set", () => {
-    const listing = {
-      ...base(),
-      image_source: "Partenaire AkarFinder (démo)",
-    } as Listing;
+    const listing = { ...base(), image_source: "Partenaire AkarFinder (démo)" } as Listing;
     assert.equal(getImageAttribution(listing), "Partenaire AkarFinder (démo)");
   });
 });
