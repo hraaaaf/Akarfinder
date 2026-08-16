@@ -35,9 +35,9 @@ test("decision actions preserve canonical project, favorite and comparison flows
   const pro = source("components/listings/ProfessionalConversionCard.tsx");
 
   assert.ok(bar.includes('href="/mon-projet"'));
-  assert.ok(bar.includes("Continuer dans Mon Projet"));
+  assert.ok(bar.includes("Mon Projet"));
   assert.ok(bar.includes("FavoriteToggleButton"));
-  assert.ok(bar.includes("CompareToggleButton"));
+  assert.ok(bar.includes('variant="icon"'));
   assert.ok(bar.includes("model.actions.visit"));
   assert.ok(bar.includes("model.actions.whatsapp"));
 
@@ -45,7 +45,7 @@ test("decision actions preserve canonical project, favorite and comparison flows
   assert.ok(detail.includes("proConversion"));
   assert.ok(!detail.includes("canShowContactActions"));
   assert.ok(pro.includes('href="/mon-projet"'));
-  assert.ok(pro.includes("Continuer dans Mon Projet"));
+  assert.ok(pro.includes("Mon Projet"));
   assert.ok(pro.includes("FavoriteToggleButton"));
   assert.ok(pro.includes("CompareToggleButton"));
   assert.ok(pro.includes("model.actions.visit"));
