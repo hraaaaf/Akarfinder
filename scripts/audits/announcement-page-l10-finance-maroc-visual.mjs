@@ -52,12 +52,21 @@ try {
       await page.getByLabel("Apport en dirhams").fill("400000");
       await page.getByLabel("Taux annuel en pourcentage").fill("4.5");
       await page.getByLabel("Durée en années").fill("20");
+      await page.waitForFunction(() => {
+        const node = document.querySelector('[data-finance-maroc="ann-l10"]');
+        const text = node?.textContent ?? "";
+        return text.includes("Mensualité") && text.includes("Intérêts simulés");
+      }, null, { timeout: 10_000 });
       const computedText = await section.evaluate((node) => node.textContent ?? "");
       if (!computedText.includes("1 600 000") && !computedText.includes("1 600 000")) localFindings.push("FINANCED_PRINCIPAL_MISSING");
       if (!computedText.includes("Mensualité")) localFindings.push("MONTHLY_PAYMENT_MISSING");
       if (!computedText.includes("Intérêts simulés")) localFindings.push("INTEREST_LABEL_MISSING");
 
       await page.getByLabel("Taux annuel en pourcentage").fill("0");
+      await page.waitForFunction(() => {
+        const node = document.querySelector('[data-finance-maroc="ann-l10"]');
+        return (node?.textContent ?? "").includes("0 DH");
+      }, null, { timeout: 10_000 });
       const zeroRateText = await section.evaluate((node) => node.textContent ?? "");
       if (!zeroRateText.includes("0 DH")) localFindings.push("ZERO_RATE_STATE_MISSING");
 
