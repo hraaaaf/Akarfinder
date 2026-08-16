@@ -1,0 +1,48 @@
+name: C8C Rabat Geometry Certification
+
+on:
+  pull_request:
+    paths:
+      - "docs/CARTE_C8C_RABAT_GEOMETRY_CERTIFICATION.md"
+      - "lib/geo/rabat-locality-geometry-registry.ts"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "lib/geo/rabat-market-zones-canary.ts"
+      - "lib/geo/rabat-market-zones-shadow.ts"
+      - "lib/geo/market-zone-registry.ts"
+      - "data/geo/rabat-market-zones-v1.json"
+      - "scripts/scrapers/__tests__/carte-c8c-rabat-geometry-certification.test.ts"
+      - ".github/workflows/carte-c8c-rabat-geometry-certification.yml"
+  push:
+    paths:
+      - "docs/CARTE_C8C_RABAT_GEOMETRY_CERTIFICATION.md"
+      - "lib/geo/rabat-locality-geometry-registry.ts"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "lib/geo/rabat-market-zones-canary.ts"
+      - "lib/geo/rabat-market-zones-shadow.ts"
+      - "lib/geo/market-zone-registry.ts"
+      - "data/geo/rabat-market-zones-v1.json"
+      - "scripts/scrapers/__tests__/carte-c8c-rabat-geometry-certification.test.ts"
+      - ".github/workflows/carte-c8c-rabat-geometry-certification.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  c8c-rabat-geometry-certification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: C8C geometry gate
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8c-rabat-geometry-certification.test.ts
+      - name: C8A-C8B non-regression
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8a-rabat-taxonomy-contract.test.ts scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
