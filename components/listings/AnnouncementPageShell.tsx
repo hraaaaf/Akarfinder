@@ -8,13 +8,11 @@ import type { LivingHereModel } from "@/lib/geo/living-here";
 import type { Listing } from "@/lib/listings/types";
 import type { PublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
 
-const DEFAULT_MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
-
 export function AnnouncementPageShell({
   listing,
   detail,
   livingHere = null,
-  mapStyleUrl = DEFAULT_MAP_STYLE_URL,
+  mapStyleUrl = process.env.NEXT_PUBLIC_AKAR_MAP_STYLE_URL ?? null,
   visualQa = false,
 }: {
   listing: Listing;
