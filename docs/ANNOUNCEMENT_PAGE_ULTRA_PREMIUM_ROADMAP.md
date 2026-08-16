@@ -2,8 +2,8 @@
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
 **Version : 2026-08-16**  
-**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 NEXT**  
-**Progression stricte : 42 / 100 %.**
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 NEXT**  
+**Progression stricte : 54 / 100 %.**
 
 > Ce document est la sous-roadmap normative du chantier de refonte de `/listings/[id]`. `docs/ROADMAP.md` reste le registre canonique global AkarFinder. Les pourcentages ci-dessous sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
 
@@ -81,13 +81,25 @@
 - Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L5_CLOSEOUT.md` et `docs/ANNOUNCEMENT_PAGE_L5_PROVIDER_BAKEOFF.md`.
 - **Crédit officiel ANN-L5 : +9 %. Progression cumulée : 42 %. Prochain chemin critique : ANN-L6 Vivre ici.**
 
+## 0.6 Closeout ANN-L6 — Vivre ici ✅
+
+- **PR #743 ✅ MERGED** — merge `2c1cb0650189397c3c350d6bad30b8f8e1d3cecd` ; exact head certifié `29fa58efdf4c25810f32d0be80b5c6bd05521992`.
+- Gate statique/visuel exact-head `Announcement Page L6 Vivre ici`, run `31947615421` : contrats L1→L6, TypeScript, production build, Chromium ciblé et upload artefact **SUCCESS**.
+- Artefact visuel `9263772467`, digest `sha256:890ee0ecd520352cc1a5731f4dace9f76b5d532393d39336ac25123bca8ef756` ; **8/8 captures, 0 finding**, 0 erreur HTTP/console et 0 overflow.
+- Live canary `ANNOUNCEMENT_PAGE_L6_LIVE_INTEGRATION_V2`, run `31947639368` : **SUCCESS** sur relance du même exact head, **3/4 villes end-to-end**, `truthFindingCount=0`, une seule dégradation externe Overpass à Marrakech explicitement conservée.
+- Artefact live `9263872656`, digest `sha256:9c3f1211ded17aadb19c74ee963d315d2cb28e394e5b01e60456f4d6c8aabe1c`.
+- `Vivre ici` livre POI provider-verified, anti-dup, routing exact, isochrones 5/10/15, carte/listes et états exact/context/no-route/hidden fail-closed ; aucune minute n'est inférée depuis un centroïde ou une distance Haversine.
+- Les endpoints publics de certification restent **benchmark-only** ; aucune disponibilité communautaire n'est transformée en SLA ou fallback production implicite.
+- Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L6_CLOSEOUT.md` et `docs/ANNOUNCEMENT_PAGE_L6_HUMAN_SAMPLE.md`.
+- **Crédit officiel ANN-L6 : +12 %. Progression cumulée : 54 %. Prochain chemin critique : ANN-L7 Street Reality.**
+
 ## 1. Vision produit
 
 Transformer la fiche actuelle en une expérience immobilière mobile-first, ultra premium, aussi simple à lire qu'une grande fiche Zillow-like mais différenciée par les forces propres d'AkarFinder : vérité des données, provenance, multi-source, fiabilité, intelligence marché Maroc, expérience quartier mesurée et personnalisation `Mon Projet`.
 
 La page ne doit pas être un clone graphique de Zillow. **L'architecture d'information peut reprendre les meilleures conventions du marché ; l'identité visuelle reste celle du Search AkarFinder réel.**
 
-Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell ; ANN-L2 a livré le contrat média ; ANN-L3 a livré le Property Core ; ANN-L4 a consolidé l'intelligence AkarFinder ; ANN-L5 a livré la fondation géographique provider-agnostic. ANN-L6 ouvre maintenant `Vivre ici`.
+Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell ; ANN-L2 a livré le contrat média ; ANN-L3 a livré le Property Core ; ANN-L4 a consolidé l'intelligence AkarFinder ; ANN-L5 a livré la fondation géographique provider-agnostic ; ANN-L6 a livré `Vivre ici`. ANN-L7 ouvre maintenant `Street Reality`.
 
 ## 2. Doctrine non négociable
 
@@ -373,20 +385,22 @@ Implémentation :
 
 Gate CLOSED : exact head `7cc3b5e2daee88adf2dfce5c0b3298554a932913`, run statique `31943466077` SUCCESS, run live `31943502557` SUCCESS, **139/139 tests PASS**, 32/32 POI réels et 224/224 paires routables ; aucune coordonnée exacte inférée, aucun provider lock-in dans React, failover/fail-closed et cache policy certifiés. Détails : `docs/ANNOUNCEMENT_PAGE_L5_CLOSEOUT.md`.
 
-### ANN-L6 — Vivre ici — 12 % — NEXT
+### ANN-L6 — Vivre ici — 12 % — ✅ CLOSED
 
-Implémentation : pipeline POI réel, taxonomy AkarFinder, ranking de pertinence, routing exact, isochrones 5/10/15, carte interactive et listes rapides.
+Implémentation : pipeline POI provider-verified, taxonomie AkarFinder, ranking/déduplication, routing exact, isochrones 5/10/15, carte interactive et listes rapides, branchés dans la fiche réelle `/listings/[id]`.
 
-Règles :
+Règles certifiées :
 
-- exact GPS → POI + routage possible ;
-- neighborhood centroid → POI de quartier possible mais pas `X min depuis ce bien` ;
-- city centroid → module quartier précis masqué ;
-- provider/routing indisponible → pas de faux résultat.
+- exact GPS → POI + routage possible uniquement avec preuves fraîches ;
+- neighborhood centroid → contexte quartier possible mais pas `X min depuis ce bien` ni isochrone précis ;
+- city centroid / géographie indisponible → module quartier précis masqué ;
+- provider/routing indisponible → pas de faux résultat ;
+- route publiée uniquement si origine/destination et POI concordent ;
+- TTL preuve provider ≤24 h, attribution obligatoire, anti-dup et mesures invalides rejetées.
 
-Gate : échantillon humain de POI et trajets, anti-dup, catégories, attribution, cache policy, tests de cohérence origine/destination.
+Gate CLOSED : exact head `29fa58efdf4c25810f32d0be80b5c6bd05521992`, run statique/visuel `31947615421` SUCCESS, **8/8 captures + 0 finding**, run live `31947639368` SUCCESS avec 3/4 villes end-to-end, 0 finding de vérité et une dégradation externe explicitement tracée ; revue humaine archivée. Détails : `docs/ANNOUNCEMENT_PAGE_L6_CLOSEOUT.md`.
 
-### ANN-L7 — Street Reality — 6 %
+### ANN-L7 — Street Reality — 6 % — NEXT
 
 Implémentation : recherche d'imagerie street-level autour du point admissible, viewer léger, miniatures, distance/date/source. Mapillary est benchmarké mais non hardcodé dans l'UI.
 
@@ -481,8 +495,8 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L3 | 6 % | ✅ CLOSED | 6 % |
 | ANN-L4 | 9 % | ✅ CLOSED | 9 % |
 | ANN-L5 | 9 % | ✅ CLOSED | 9 % |
-| ANN-L6 | 12 % | NEXT | 0 % |
-| ANN-L7 | 6 % | NOT_STARTED | 0 % |
+| ANN-L6 | 12 % | ✅ CLOSED | 12 % |
+| ANN-L7 | 6 % | NEXT | 0 % |
 | ANN-L8 | 10 % | NOT_STARTED | 0 % |
 | ANN-L9 | 6 % | NOT_STARTED | 0 % |
 | ANN-L10 | 7 % | NOT_STARTED | 0 % |
@@ -490,4 +504,4 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L12 | 5 % | NOT_STARTED | 0 % |
 | ANN-L13 | 6 % | NOT_STARTED | 0 % |
 
-**Progression officielle actuelle : 42 / 100 %.**
+**Progression officielle actuelle : 54 / 100 %.**
