@@ -164,8 +164,7 @@ describe("ANN-L4 production composition", () => {
     assert.match(source, /function marketPositionCertified/);
     assert.match(source, /contract_validation\.valid/);
     assert.match(source, /if \(market && marketPositionCertified\(result\)\)/);
-    assert.match(source, /market_position_certified: marketPositionCertified\(result\)/);
-    assert.match(detailSource, /if \(!intelligence\?\.market_position_certified\) return null/);
-    assert.match(detailSource, /certified: publicIntelligence\.market_position_certified && marketLabel != null/);
+    assert.doesNotMatch(source, /market_position_certified:/);
+    assert.match(detailSource, /certified: marketLabel != null/);
   });
 });
