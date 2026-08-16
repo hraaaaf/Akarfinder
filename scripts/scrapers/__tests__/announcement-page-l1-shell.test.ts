@@ -26,11 +26,11 @@ describe("ANN-L1 premium shell", () => {
     const shell = read("components/listings/AnnouncementPageShell.tsx");
     const mainCount = (shell.match(/<main\b/g) ?? []).length;
     assert.equal(mainCount, 1);
-    assert.match(shell, /pb-24 lg:pb-0/);
+    assert.match(shell, /pb-40 lg:pb-0/);
     assert.match(shell, /<PropertyDetailV2\b/);
     assert.match(shell, /listing=\{listing\}/);
     assert.match(shell, /detail=\{detail\}/);
-    assert.match(shell, /<MobilePropertyDecisionBar listingId=\{listing\.id\} \/>/);
+    assert.match(shell, /<MobilePropertyDecisionBar listing=\{listing\} model=\{proConversion\} \/>/);
   });
 
   it("keeps exactly one public H1 across the active detail composition", () => {
