@@ -1,0 +1,60 @@
+name: SEARCH Price Coverage v9 Reservoir Refresh
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/price-coverage-v9-reservoir-refresh.yml'
+      - 'scripts/scrapers/price-coverage-pagination-audit.ts'
+      - 'scripts/scrapers/__tests__/price-coverage-pagination-audit.test.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/price-coverage-pagination-audit.test.ts
+      - run: npx tsc --noEmit
+
+  production-read-only:
+    needs: certify
+    strategy:
+      fail-fast: false
+      matrix:
+        source: ['mubawab.ma', 'masaken.ma']
+        page: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+      PRICE_PAGINATION_WRITE: 'false'
+      PRICE_PAGINATION_PAGE_SIZE: '120'
+      PRICE_PAGINATION_PAGES: '10'
+      PRICE_PAGINATION_SOURCE: ${{ matrix.source }}
+      PRICE_PAGINATION_PAGE_INDEX: ${{ matrix.page }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify production read credentials
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Enforce read-only contract
+        run: test "$PRICE_PAGINATION_WRITE" = 'false'
+      - name: Audit one current null-price cohort shard
+        run: npx tsx scripts/scrapers/price-coverage-pagination-audit.ts
