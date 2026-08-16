@@ -4,21 +4,34 @@ import { dirname, join } from "node:path";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 
 const OUTPUT = join(process.cwd(), "data/audits/runtime/carte-c2b-rabat-price-gap.json");
-const TARGETS = ["agdal", "hay-riad", "souissi", "hassan"];
+const TARGETS = ["agdal", "hay-riad", "souissi", "hassan"] as const;
+const MAX_ROWS_PER_ZONE = 100;
 
 function err(e: any) {
   return JSON.stringify({ message: e?.message, code: e?.code, details: e?.details, hint: e?.hint, status: e?.status });
 }
 
-async function main() {
-  const db: any = getSupabaseServerClient();
+async function readZone(db: any, slug: string): Promise<any[]> {
   const { data, error } = await db
     .from("odm_neighborhood_offer_shadow_listing_v1")
     .select("neighborhood_slug,transaction_type,source_domain,price_per_m2_mad,price_per_m2_source,price_mad,surface_m2,freshness_status")
-    .in("neighborhood_slug", TARGETS);
-  if (error) throw new Error(`C2B bounded read failed: ${err(error)}`);
-
+    .eq("neighborhood_slug", slug)
+    .range(0, MAX_ROWS_PER_ZONE - 1);
+  if (error) throw new Error(`C2B ${slug} bounded read failed: ${err(error)}`);
   const rows = data ?? [];
+  if (rows.length >= MAX_ROWS_PER_ZONE) {
+    throw new Error(`C2B ${slug} safety bound reached: ${rows.length}`);
+  }
+  return rows;
+}
+
+async function main() {
+  const db: any = getSupabaseServerClient();
+  const rows: any[] = [];
+  for (const slug of TARGETS) {
+    rows.push(...await readZone(db, slug));
+  }
+
   const groups = new Map<string, any>();
   for (const row of rows) {
     const key = [row.neighborhood_slug, row.transaction_type ?? "unknown", row.source_domain ?? "unknown"].join("|");
@@ -52,9 +65,9 @@ async function main() {
   const neither = rows.filter((r: any) => !(Number(r.price_mad) > 0) && !(Number(r.surface_m2) > 0)).length;
 
   const report = {
-    contractVersion: "carte_c2b_rabat_price_gap_v1",
+    contractVersion: "carte_c2b_rabat_price_gap_v2",
     readOnly: true,
-    source: "odm_neighborhood_offer_shadow_listing_v1_bounded",
+    source: "odm_neighborhood_offer_shadow_listing_v1_per_zone_bounded",
     targetSlugs: TARGETS,
     totalListings: total,
     withPricePerM2,
