@@ -1,0 +1,44 @@
+name: C8B Rabat Locality Registry
+
+on:
+  pull_request:
+    paths:
+      - "docs/CARTE_C8B_RABAT_LOCALITY_REGISTRY.md"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "lib/geo/geo-entity-registry.ts"
+      - "lib/geo/morocco-centroids.ts"
+      - "lib/geo/resolve-listing-geo.ts"
+      - "app/api/geo/rabat-market-intelligence/route.ts"
+      - "scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts"
+      - ".github/workflows/carte-c8b-rabat-locality-registry.yml"
+  push:
+    paths:
+      - "docs/CARTE_C8B_RABAT_LOCALITY_REGISTRY.md"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "lib/geo/geo-entity-registry.ts"
+      - "lib/geo/morocco-centroids.ts"
+      - "lib/geo/resolve-listing-geo.ts"
+      - "app/api/geo/rabat-market-intelligence/route.ts"
+      - "scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts"
+      - ".github/workflows/carte-c8b-rabat-locality-registry.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  c8b-rabat-locality-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: C8B registry gate
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
