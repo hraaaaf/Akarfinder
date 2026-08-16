@@ -34,18 +34,45 @@ export function inferC8DetailIntent(row: Pick<AuditCandidate, "normalized_intent
   return null;
 }
 
+function extractSingleSurfaceFromPageTitle(value: string): number | null {
+  const matches = [...value.matchAll(/(\d{1,6}(?:[.,]\d+)?)\s*m(?:²|2)\b/gi)];
+  const values = [...new Set(matches.map((match) => normalizeSurface(`${match[1]} m²`)).filter((surface): surface is number => surface != null))];
+  if (values.length !== 1) return null;
+  const valueM2 = values[0];
+  if (valueM2 < 8 || valueM2 > 100_000) return null;
+  return valueM2;
+}
+
+export function extractStrictAgenzTitleSurface(html: string): number | null {
+  const candidates: string[] = [];
+  for (const match of html.matchAll(/<meta\b[^>]*(?:property|name)=["'](?:og:title|twitter:title)["'][^>]*content=["']([^"']+)["'][^>]*>/gi)) {
+    candidates.push(match[1]);
+  }
+  for (const match of html.matchAll(/<meta\b[^>]*content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:title|twitter:title)["'][^>]*>/gi)) {
+    candidates.push(match[1]);
+  }
+  for (const match of html.matchAll(/<title[^>]*>([\s\S]*?)<\/title>/gi)) {
+    candidates.push(match[1].replace(/<[^>]+>/g, " "));
+  }
+
+  const values = [...new Set(candidates.map(extractSingleSurfaceFromPageTitle).filter((surface): surface is number => surface != null))];
+  return values.length === 1 ? values[0] : null;
+}
+
 export function extractStrictDetailSurface(html: string): number | null {
   const detail = extractDetail(html);
   const raw = detail.surface_raw?.replace(/\s+/g, " ").trim() ?? "";
-  // Only JSON-LD currently yields high-confidence surface evidence in extractDetail.
-  // Medium confidence is a whole-body regex and can be polluted by similar listings.
-  if (!raw || detail._confidence.surface !== "high") return null;
-  if (!/m(?:²|2)/i.test(raw)) return null;
-  if (/\b(?:ha|hectare?s?)\b/i.test(raw)) return null;
-  if (/\d+(?:[.,]\d+)?\s*(?:-|–|—|à|a)\s*\d+(?:[.,]\d+)?/i.test(raw)) return null;
-  const value = normalizeSurface(raw);
-  if (value == null || value < 8 || value > 100_000) return null;
-  return value;
+  if (raw && detail._confidence.surface === "high" && /m(?:²|2)/i.test(raw) && !/\b(?:ha|hectare?s?)\b/i.test(raw)) {
+    if (!/\d+(?:[.,]\d+)?\s*(?:-|–|—|à|a)\s*\d+(?:[.,]\d+)?/i.test(raw)) {
+      const value = normalizeSurface(raw);
+      if (value != null && value >= 8 && value <= 100_000) return value;
+    }
+  }
+
+  // Agenz detail pages expose the current listing's surface in page-scoped
+  // title metadata. This is materially safer than a whole-body regex because
+  // body text can contain similar-listing cards with unrelated surfaces.
+  return extractStrictAgenzTitleSurface(html);
 }
 
 export function matchesC8CandidateLocality(
