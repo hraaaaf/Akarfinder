@@ -4,6 +4,7 @@ export const MARKET_COMPARABLE_MAX_PUBLIC = 6;
 export const MARKET_COMPARABLE_MAX_SURFACE_DELTA_RATIO = 0.35;
 
 export type ComparableTransaction = "buy" | "rent" | "new";
+export type CertifiedMarketPosition = "below_distribution" | "within_distribution" | "above_distribution";
 
 export type MarketComparableTarget = {
   listingId: string;
@@ -51,6 +52,9 @@ export type MarketComparableDistribution = {
   medianPricePerM2: number;
   p75PricePerM2: number;
   maxPricePerM2: number;
+  targetPricePerM2: number | null;
+  targetPosition: CertifiedMarketPosition | null;
+  targetGapToMedianPct: number | null;
 };
 
 export type MarketComparableSet = {
@@ -154,16 +158,39 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-function buildDistribution(values: CertifiedComparable[]): MarketComparableDistribution {
+function buildDistribution(
+  values: CertifiedComparable[],
+  target: MarketComparableTarget,
+): MarketComparableDistribution {
   const prices = values.map((item) => item.pricePerM2);
+  const p25PricePerM2 = round2(quantile(prices, 0.25));
+  const medianPricePerM2 = round2(quantile(prices, 0.5));
+  const p75PricePerM2 = round2(quantile(prices, 0.75));
+  const targetPricePerM2 = positiveFinite(target.priceMad) && positiveFinite(target.surfaceM2)
+    ? round2(target.priceMad / target.surfaceM2)
+    : null;
+  const targetPosition: CertifiedMarketPosition | null = targetPricePerM2 == null
+    ? null
+    : targetPricePerM2 < p25PricePerM2
+      ? "below_distribution"
+      : targetPricePerM2 > p75PricePerM2
+        ? "above_distribution"
+        : "within_distribution";
+  const targetGapToMedianPct = targetPricePerM2 == null || medianPricePerM2 <= 0
+    ? null
+    : round2(((targetPricePerM2 - medianPricePerM2) / medianPricePerM2) * 100);
+
   return {
     sampleCount: values.length,
     comparableStockCount: values.length,
     minPricePerM2: round2(Math.min(...prices)),
-    p25PricePerM2: round2(quantile(prices, 0.25)),
-    medianPricePerM2: round2(quantile(prices, 0.5)),
-    p75PricePerM2: round2(quantile(prices, 0.75)),
+    p25PricePerM2,
+    medianPricePerM2,
+    p75PricePerM2,
     maxPricePerM2: round2(Math.max(...prices)),
+    targetPricePerM2,
+    targetPosition,
+    targetGapToMedianPct,
   };
 }
 
@@ -251,7 +278,7 @@ export function buildCertifiedComparableSet(input: {
     scope: chosen.scope,
     observedAt: ranked.reduce((latest, item) => item.observedAt > latest ? item.observedAt : latest, ranked[0]!.observedAt),
     sampleCount: ranked.length,
-    distribution: buildDistribution(ranked),
+    distribution: buildDistribution(ranked, target),
     comparables: publicComparables,
   };
 }
