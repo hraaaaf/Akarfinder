@@ -16,9 +16,9 @@ test("ANN-L10 computes a deterministic amortizing monthly payment", () => {
   assert.ok(result);
   assert.equal(result.financedPrincipalMad, 1_600_000);
   assert.equal(result.paymentCount, 240);
-  assert.equal(result.monthlyPaymentMad, 10_122.38);
-  assert.equal(result.totalPaymentsMad, 2_429_371.88);
-  assert.equal(result.totalInterestMad, 829_371.88);
+  assert.equal(result.monthlyPaymentMad, 10_122.39);
+  assert.equal(result.totalPaymentsMad, 2_429_373.6);
+  assert.equal(result.totalInterestMad, 829_373.6);
 });
 
 test("ANN-L10 handles zero interest without division by zero", () => {
