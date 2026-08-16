@@ -13,6 +13,7 @@ const scenarios = [
 ];
 
 const normalizeWhitespace = (value) => value.replace(/\s+/gu, " ").trim();
+const normalizeAmountText = (value) => value.replace(/[.\s\u00A0\u202F]/gu, "");
 
 await mkdir(outputDir, { recursive: true });
 const browser = await chromium.launch({ headless: true });
@@ -60,7 +61,8 @@ try {
         return text.includes("Mensualité") && text.includes("Intérêts simulés");
       }, null, { timeout: 10_000 });
       const computedText = normalizeWhitespace(await section.evaluate((node) => node.textContent ?? ""));
-      if (!computedText.includes("1 600 000")) localFindings.push("FINANCED_PRINCIPAL_MISSING");
+      const computedAmountText = normalizeAmountText(computedText);
+      if (!computedAmountText.includes("1600000DH")) localFindings.push("FINANCED_PRINCIPAL_MISSING");
       if (!computedText.includes("Mensualité")) localFindings.push("MONTHLY_PAYMENT_MISSING");
       if (!computedText.includes("Intérêts simulés")) localFindings.push("INTEREST_LABEL_MISSING");
 
