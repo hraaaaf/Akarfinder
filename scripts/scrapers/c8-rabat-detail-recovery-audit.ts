@@ -35,7 +35,7 @@ export function inferC8DetailIntent(row: Pick<AuditCandidate, "normalized_intent
 }
 
 function extractSingleSurfaceFromPageTitle(value: string): number | null {
-  const matches = [...value.matchAll(/(\d{1,6}(?:[.,]\d+)?)\s*m(?:²|2)\b/gi)];
+  const matches = [...value.matchAll(/(\d{1,6}(?:[.,]\d+)?)\s*m(?:²|2)(?=$|[^\p{L}\p{N}])/giu)];
   const values = [...new Set(matches.map((match) => normalizeSurface(`${match[1]} m²`)).filter((surface): surface is number => surface != null))];
   if (values.length !== 1) return null;
   const valueM2 = values[0];
