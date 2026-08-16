@@ -17,17 +17,19 @@ export function AnnouncementPageShell({
   visualQa?: boolean;
 }) {
   return (
-    <main
+    <div
       data-announcement-premium-shell="ann-l1"
       data-visual-qa={visualQa ? "announcement-page" : undefined}
-      className={`min-h-screen pb-24 lg:pb-0 ${ui.pageLight}`}
+      className={`min-h-screen ${ui.pageLight}`}
     >
       <SiteHeader searchMode fluid />
-      <Container fluid className="max-w-[1500px] lg:px-8">
-        <PropertyDetailV2 listing={listing} detail={detail} />
-      </Container>
+      <main className="pb-24 lg:pb-0">
+        <Container fluid className="max-w-[1500px] lg:px-8">
+          <PropertyDetailV2 listing={listing} detail={detail} />
+        </Container>
+      </main>
       <SiteFooter />
       <MobilePropertyDecisionBar listingId={listing.id} />
-    </main>
+    </div>
   );
 }
