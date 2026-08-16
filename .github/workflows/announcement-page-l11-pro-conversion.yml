@@ -9,6 +9,8 @@ on:
       - "app/visual-qa/announcement-page-pro-conversion/**"
       - "scripts/audits/announcement-page-l11-visual.mjs"
       - "scripts/scrapers/__tests__/announcement-page-l11-pro-conversion.test.ts"
+      - "scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts"
+      - "scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts"
       - ".github/workflows/announcement-page-l11-pro-conversion.yml"
   push:
     branches:
@@ -21,6 +23,8 @@ on:
       - "app/visual-qa/announcement-page-pro-conversion/**"
       - "scripts/audits/announcement-page-l11-visual.mjs"
       - "scripts/scrapers/__tests__/announcement-page-l11-pro-conversion.test.ts"
+      - "scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts"
+      - "scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts"
       - ".github/workflows/announcement-page-l11-pro-conversion.yml"
 
 permissions:
@@ -29,7 +33,7 @@ permissions:
 jobs:
   pro-conversion-contract:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,3 +51,30 @@ jobs:
           scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start ANN-L11 production server
+        shell: bash
+        run: |
+          npm run start -- -p 3212 > /tmp/ann-l11.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3212/visual-qa/announcement-page-pro-conversion >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ann-l11.log
+          exit 1
+      - name: ANN-L11 targeted visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3212
+          AUDIT_OUTPUT_DIR: artifacts/announcement-page-l11-pro-conversion
+        run: node scripts/audits/announcement-page-l11-visual.mjs
+      - name: Upload ANN-L11 visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: announcement-page-l11-pro-conversion-${{ github.run_id }}
+          path: artifacts/announcement-page-l11-pro-conversion
+          if-no-files-found: error
+          retention-days: 14
