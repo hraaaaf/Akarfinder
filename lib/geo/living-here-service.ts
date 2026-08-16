@@ -29,6 +29,7 @@ const EXACT_RADIUS_METERS = 2_500;
 const NEIGHBORHOOD_RADIUS_METERS = 3_000;
 const MAX_ROUTED_POIS = 12;
 const MAX_ROUTED_PER_CATEGORY = 2;
+const PROVIDER_NETWORK_TIMEOUT_MS = 4_500;
 
 type FetchLike = typeof fetch;
 type RuntimeEnv = Record<string, string | undefined>;
@@ -39,6 +40,11 @@ type ProviderRegistry = {
   routingMatrix: RoutingMatrixProvider[];
   isochrone: IsochroneProvider[];
 };
+
+const timedFetch: FetchLike = (input, init) => fetch(input, {
+  ...init,
+  signal: AbortSignal.timeout(PROVIDER_NETWORK_TIMEOUT_MS),
+});
 
 function valhallaProvider(env: RuntimeEnv, fetchImpl?: FetchLike): ValhallaRoutingProvider {
   return new ValhallaRoutingProvider({
@@ -52,17 +58,18 @@ export function createLivingHereProviderRegistry(
   env: RuntimeEnv = process.env,
   fetchImpl?: FetchLike,
 ): ProviderRegistry {
+  const runtimeFetch = fetchImpl ?? timedFetch;
   const nearby = resolveProviderOrder("nearby", env).flatMap<NearbyProvider>((id) => {
     if (id !== "overpass") return [];
-    return [new OverpassNearbyProvider({ endpoint: env.AKAR_GEO_OVERPASS_ENDPOINT ?? "", fetchImpl })];
+    return [new OverpassNearbyProvider({ endpoint: env.AKAR_GEO_OVERPASS_ENDPOINT ?? "", fetchImpl: runtimeFetch })];
   });
   const routingMatrix = resolveProviderOrder("routing", env).flatMap<RoutingMatrixProvider>((id) => {
     if (id !== "valhalla") return [];
-    return [valhallaProvider(env, fetchImpl)];
+    return [valhallaProvider(env, runtimeFetch)];
   });
   const isochrone = resolveProviderOrder("isochrone", env).flatMap<IsochroneProvider>((id) => {
     if (id !== "valhalla") return [];
-    return [valhallaProvider(env, fetchImpl)];
+    return [valhallaProvider(env, runtimeFetch)];
   });
   return { nearby, routingMatrix, isochrone };
 }
