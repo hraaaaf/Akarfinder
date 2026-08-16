@@ -4,10 +4,11 @@ on:
   pull_request:
     paths:
       - "lib/property-detail/market-comparables.ts"
+      - "lib/property-detail/market-comparables-service.ts"
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
       - "lib/market/**"
       - "lib/market-index/**"
-      - "scripts/scrapers/__tests__/announcement-page-l8-market-comparables.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l8-market-comparables*.test.ts"
       - ".github/workflows/announcement-page-l8-market-comparables.yml"
   push:
     branches:
@@ -15,10 +16,11 @@ on:
       - agent/announcement-page-l8-market-comparables
     paths:
       - "lib/property-detail/market-comparables.ts"
+      - "lib/property-detail/market-comparables-service.ts"
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
       - "lib/market/**"
       - "lib/market-index/**"
-      - "scripts/scrapers/__tests__/announcement-page-l8-market-comparables.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l8-market-comparables*.test.ts"
       - ".github/workflows/announcement-page-l8-market-comparables.yml"
 
 permissions:
@@ -40,6 +42,7 @@ jobs:
         run: >-
           npx tsx --test
           scripts/scrapers/__tests__/announcement-page-l8-market-comparables.test.ts
+          scripts/scrapers/__tests__/announcement-page-l8-market-comparables-service.test.ts
           scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts
           scripts/scrapers/__tests__/p10d-market.test.ts
           scripts/scrapers/__tests__/market-benchmark.test.ts
