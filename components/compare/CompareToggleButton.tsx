@@ -18,7 +18,7 @@ import { getCanonicalPropertyId } from "@/lib/ux/property-selection";
 type CompareToggleButtonProps = {
   listing?: Listing;
   listingId?: string;
-  variant?: "inline" | "block";
+  variant?: "inline" | "block" | "icon";
   className?: string;
 };
 
@@ -100,10 +100,20 @@ export function CompareToggleButton({
   const buttonClasses =
     variant === "block"
       ? "flex w-full items-center justify-center gap-2 rounded-xl border border-[#d8c8a3] px-4 py-3 text-[13.5px] font-extrabold transition duration-150 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none"
-      : "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[12px] font-extrabold transition duration-150 active:scale-[0.97] motion-reduce:transform-none motion-reduce:transition-none";
+      : variant === "icon"
+        ? "grid h-11 w-11 shrink-0 place-items-center rounded-full border transition duration-150 active:scale-95 motion-reduce:transform-none motion-reduce:transition-none"
+        : "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[12px] font-extrabold transition duration-150 active:scale-[0.97] motion-reduce:transform-none motion-reduce:transition-none";
+
+  const label = isCompared
+    ? "Ajouté au comparateur"
+    : canonicalDuplicate
+      ? "Propriété déjà ajoutée"
+      : isFull
+        ? "Comparateur plein"
+        : "Comparer";
 
   return (
-    <div className={variant === "block" ? "space-y-1.5" : "space-y-1"}>
+    <div className={variant === "block" ? "space-y-1.5" : variant === "icon" ? "relative inline-flex" : "space-y-1"}>
       <button
         type="button"
         onClick={handleToggle}
@@ -125,23 +135,21 @@ export function CompareToggleButton({
         disabled={blocked}
       >
         {isCompared ? (
-          <Check size={16} strokeWidth={2.4} className="motion-safe:animate-[heart-pop_300ms_ease]" aria-hidden="true" />
+          <Check size={variant === "icon" ? 18 : 16} strokeWidth={2.4} className="motion-safe:animate-[heart-pop_300ms_ease]" aria-hidden="true" />
         ) : blocked ? (
-          <X size={16} strokeWidth={2.4} aria-hidden="true" />
+          <X size={variant === "icon" ? 18 : 16} strokeWidth={2.4} aria-hidden="true" />
         ) : (
-          <Scale size={16} strokeWidth={2.4} aria-hidden="true" />
+          <Scale size={variant === "icon" ? 18 : 16} strokeWidth={2.4} aria-hidden="true" />
         )}
-        {isCompared
-          ? "Ajouté au comparateur"
-          : canonicalDuplicate
-            ? "Propriété déjà ajoutée"
-            : isFull
-              ? "Comparateur plein"
-              : "Comparer"}
+        {variant === "icon" ? <span className="sr-only">{label}</span> : label}
       </button>
-      <p aria-live="polite" className="min-h-4 text-[11px] font-semibold text-gray-500">
-        {feedback ? <span className={motion.feedbackEnter}>{feedback}</span> : null}
-      </p>
+      {variant === "icon" ? (
+        <span aria-live="polite" className="sr-only">{feedback}</span>
+      ) : (
+        <p aria-live="polite" className="min-h-4 text-[11px] font-semibold text-gray-500">
+          {feedback ? <span className={motion.feedbackEnter}>{feedback}</span> : null}
+        </p>
+      )}
     </div>
   );
 }
