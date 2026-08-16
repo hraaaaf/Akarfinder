@@ -8,6 +8,7 @@ on:
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
       - "scripts/scrapers/__tests__/announcement-page-l7-street-imagery-provider.test.ts"
       - "scripts/scrapers/__tests__/announcement-page-l7-street-reality-model.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l7-street-reality-service.test.ts"
       - ".github/workflows/announcement-page-l7-street-reality.yml"
   push:
     branches:
@@ -19,6 +20,7 @@ on:
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
       - "scripts/scrapers/__tests__/announcement-page-l7-street-imagery-provider.test.ts"
       - "scripts/scrapers/__tests__/announcement-page-l7-street-reality-model.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l7-street-reality-service.test.ts"
       - ".github/workflows/announcement-page-l7-street-reality.yml"
 
 permissions:
@@ -44,6 +46,7 @@ jobs:
           npx tsx --test
           scripts/scrapers/__tests__/announcement-page-l7-street-imagery-provider.test.ts
           scripts/scrapers/__tests__/announcement-page-l7-street-reality-model.test.ts
+          scripts/scrapers/__tests__/announcement-page-l7-street-reality-service.test.ts
           scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts
           scripts/scrapers/__tests__/announcement-page-l5-geo-foundation.test.ts
 
