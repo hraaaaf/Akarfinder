@@ -1,0 +1,67 @@
+name: Announcement Page L5 Geo Foundation
+
+on:
+  pull_request:
+    paths:
+      - "lib/geo/**"
+      - "lib/listings/types.ts"
+      - "scripts/geo/announcement-page-l5-geo-bakeoff.mjs"
+      - "scripts/scrapers/__tests__/announcement-page-l5-geo-foundation.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts"
+      - "scripts/scrapers/__tests__/real-proximity-engine.test.ts"
+      - ".github/workflows/announcement-page-l5-geo-foundation.yml"
+  push:
+    branches:
+      - main
+      - agent/announcement-page-l5-geo-foundation
+    paths:
+      - "lib/geo/**"
+      - "lib/listings/types.ts"
+      - "scripts/geo/announcement-page-l5-geo-bakeoff.mjs"
+      - "scripts/scrapers/__tests__/announcement-page-l5-geo-foundation.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts"
+      - "scripts/scrapers/__tests__/real-proximity-engine.test.ts"
+      - ".github/workflows/announcement-page-l5-geo-foundation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  geo-foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ANN-L5 geo contracts and historical boundaries
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/announcement-page-l5-geo-foundation.test.ts
+          scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts
+          scripts/scrapers/__tests__/real-proximity-engine.test.ts
+          scripts/scrapers/__tests__/listing-detail-boundary.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: ANN-L5 Morocco live provider bake-off
+        env:
+          ANN_L5_OUTPUT_DIR: artifacts/announcement-page-l5-geo
+        run: node scripts/geo/announcement-page-l5-geo-bakeoff.mjs
+
+      - name: Upload ANN-L5 geo proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: announcement-page-l5-geo-${{ github.run_id }}
+          path: artifacts/announcement-page-l5-geo
+          if-no-files-found: warn
+          retention-days: 14
