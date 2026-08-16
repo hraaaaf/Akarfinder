@@ -362,7 +362,7 @@ export function buildLivingHereModel(input: {
       displayMode: exact ? "exact_pin" : "neighborhood_context",
       exact,
     },
-    canShowPreciseRouteTimes: exact,
+    canShowPreciseRouteTimes: exact && pois.some((poi) => poi.routes.length > 0),
     pois,
     isochrones,
     attribution,
