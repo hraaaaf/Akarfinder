@@ -445,7 +445,7 @@ export function PropertyMediaGallery({
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-black/20" />
             <HeroLabels listing={listing} transactionLabel={transactionLabel} priceLabel={priceLabel} location={location} />
           </button>
-          <div className="grid min-w-0 grid-rows-2 gap-1.5">
+          <div className={`grid min-w-0 gap-1.5 ${items.length === 2 ? "grid-rows-1" : "grid-rows-2"}`}>
             {[items[1], items[2]].map((item, index) => item ? (
               <button
                 key={item.id}
