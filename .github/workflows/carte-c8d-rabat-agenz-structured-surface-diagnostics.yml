@@ -1,0 +1,125 @@
+name: C8D Rabat Agenz Structured Surface Diagnostics
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/carte-c8d-rabat-agenz-structured-surface-diagnostics.yml"
+      - "scripts/scrapers/c8-rabat-structured-surface-diagnostics.ts"
+      - "scripts/scrapers/__tests__/c8-rabat-structured-surface-diagnostics.test.ts"
+      - "docs/C8D_AGENZ_STRUCTURED_SURFACE_DIAGNOSTIC_GATE.md"
+  workflow_dispatch:
+    inputs:
+      locality:
+        description: Bounded Rabat candidate locality
+        required: true
+        default: diour-jamaa
+        type: choice
+        options:
+          - diour-jamaa
+      limit:
+        description: Maximum Agenz detail pages to diagnose
+        required: true
+        default: "9"
+        type: choice
+        options:
+          - "9"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: c8d-rabat-agenz-structured-surface-diagnostics
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Structured surface diagnostics contracts
+        run: npx tsx --test scripts/scrapers/__tests__/c8-rabat-structured-surface-diagnostics.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+  live-diagnostics:
+    if: github.event_name == 'workflow_dispatch'
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: "true"
+      C8_RABAT_DETAIL_LOCALITY: ${{ inputs.locality }}
+      C8_RABAT_DETAIL_LIMIT: ${{ inputs.limit }}
+    steps:
+      - name: Validate bounded read-only inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$C8_RABAT_DETAIL_LOCALITY" = "diour-jamaa"
+          test "$C8_RABAT_DETAIL_LIMIT" = "9"
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Execute structured diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx scripts/scrapers/c8-rabat-structured-surface-diagnostics.ts | tee c8d-agenz-structured-surface-diagnostics.json
+
+      - name: Verify zero-write and no-raw-html proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const payload = JSON.parse(fs.readFileSync('c8d-agenz-structured-surface-diagnostics.json', 'utf8'));
+          if (payload.mode !== 'read_only_structured_surface_diagnostics') throw new Error(`unexpected mode: ${payload.mode}`);
+          if (payload.productionWriteCount !== 0) throw new Error(`write invariant violated: ${payload.productionWriteCount}`);
+          if (payload.rawHtmlPersisted !== false) throw new Error('raw HTML persistence invariant violated');
+          if (payload.source !== 'agenz.ma') throw new Error(`unexpected source: ${payload.source}`);
+          if (payload.localitySlug !== 'diour-jamaa') throw new Error(`unexpected locality: ${payload.localitySlug}`);
+          if (payload.limit !== 9) throw new Error(`unexpected limit: ${payload.limit}`);
+          const serialized = JSON.stringify(payload);
+          if (/<html|<script|<body/i.test(serialized)) throw new Error('raw third-party markup leaked into artifact');
+          console.log(JSON.stringify({
+            verdict: 'C8D_AGENZ_STRUCTURED_SURFACE_DIAGNOSTICS_VERIFIED',
+            productionWriteCount: payload.productionWriteCount,
+            fetched: payload.fetched,
+            failed: payload.failed,
+            diagnosticCount: Array.isArray(payload.diagnostics) ? payload.diagnostics.length : 0,
+          }));
+          NODE
+
+      - name: Upload diagnostics proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c8d-rabat-agenz-structured-surface-diagnostics
+          path: c8d-agenz-structured-surface-diagnostics.json
+          if-no-files-found: warn
+          retention-days: 14
