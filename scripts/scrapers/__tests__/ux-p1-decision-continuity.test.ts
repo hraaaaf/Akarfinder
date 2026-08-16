@@ -44,12 +44,18 @@ test("decision actions preserve the canonical project, favorite and comparison f
   assert.ok(!detail.includes("/onboarding"));
 });
 
-test("decision surface remains evidence-safe after the shell migration", () => {
+test("decision surface remains evidence-safe after the intelligence consolidation", () => {
   const detail = source("components/listings/PropertyDetailV2.tsx");
+  const insight = source("components/listings/AkarInsightCard.tsx");
+  const model = source("lib/property-detail/akar-insight.ts");
   const shell = source("components/listings/AnnouncementPageShell.tsx");
 
   assert.ok(detail.includes("detail.provenance"));
-  assert.ok(detail.includes("detail.conclusion"));
+  assert.ok(detail.includes("<AkarInsightCard detail={detail} />"));
+  assert.ok(model.includes("detail.conclusion"));
+  assert.ok(model.includes("detail.market"));
+  assert.ok(model.includes("detail.multisource"));
+  assert.ok(insight.includes("data-akar-intelligence-version"));
   assert.ok(shell.includes("ui.pageLight"));
   assert.ok(!detail.includes("bien vérifié"));
   assert.ok(!detail.includes("meilleure affaire"));

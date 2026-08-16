@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { CompareBar } from "@/components/compare/CompareBar";
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
+import { AkarInsightCard } from "@/components/listings/AkarInsightCard";
 import { ExpandablePropertyDescription } from "@/components/listings/ExpandablePropertyDescription";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { PropertyCore } from "@/components/listings/PropertyCore";
@@ -107,40 +108,8 @@ export function PropertyDetailV2({
             <PropertyCore listing={listing} />
           </div>
 
-          <div className="mt-6 space-y-5">
-            <section className="rounded-[1.4rem] border border-[#d7e5f5] bg-[#f7fbff] p-5 shadow-[0_8px_28px_rgba(7,27,51,0.05)]">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#0B63CE]">Analyse structurée</p>
-                  <h2 className="mt-1 text-[1.35rem] font-extrabold text-deepblue">{detail.conclusion.title}</h2>
-                </div>
-                {detail.conclusion.akar_score != null ? (
-                  <div className="rounded-2xl border border-[#b9d6f2] bg-white px-4 py-2 text-right">
-                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-gray-500">AkarScore</p>
-                    <p className="text-[1.35rem] font-extrabold text-deepblue">{detail.conclusion.akar_score}/100</p>
-                  </div>
-                ) : null}
-              </div>
-              <p className="mt-3 text-[14px] leading-7 text-gray-700">{detail.conclusion.summary}</p>
-              <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold text-gray-600">
-                {detail.conclusion.akar_score_label ? <span className="rounded-full bg-white px-3 py-1 ring-1 ring-[#d7e5f5]">{detail.conclusion.akar_score_label}</span> : null}
-                {detail.conclusion.coverage_label ? <span className="rounded-full bg-white px-3 py-1 ring-1 ring-[#d7e5f5]">{detail.conclusion.coverage_label}</span> : null}
-              </div>
-            </section>
-
-            <section className="rounded-[1.4rem] border border-[#eadfca] bg-white p-5 shadow-[0_6px_22px_rgba(7,27,51,0.04)]">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-gray-500">Compatibilité avec votre projet</p>
-              <h2 className="mt-1 text-[1.2rem] font-extrabold text-deepblue">{detail.fit.label}</h2>
-              <p className="mt-2 text-[13.5px] leading-6 text-gray-600">{detail.fit.explanation}</p>
-            </section>
-
-            {detail.market.status === "available" ? (
-              <section className="rounded-[1.4rem] border border-[#eadfca] bg-white p-5 shadow-[0_6px_22px_rgba(7,27,51,0.04)]">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-bronze-700">Position marché</p>
-                <h2 className="mt-1 text-[1.2rem] font-extrabold text-deepblue">{detail.market.label}</h2>
-                <p className="mt-2 text-[12.5px] leading-6 text-gray-500">Repère indicatif calculé uniquement lorsque le moteur Market Intelligence dispose des données nécessaires.</p>
-              </section>
-            ) : null}
+          <div className="mt-6">
+            <AkarInsightCard detail={detail} />
           </div>
 
           <div data-announcement-property-details="ann-l3" className="mt-6 border-t border-slate-200">
@@ -197,19 +166,6 @@ export function PropertyDetailV2({
                 <p className="text-[13.5px] text-slate-500">Aucun historique vérifiable disponible.</p>
               )}
             </LeanSection>
-
-            {detail.multisource.status === "supported" ? (
-              <LeanSection title="Multi-source">
-                <p className="text-[13.5px] text-slate-600">{detail.multisource.label}</p>
-              </LeanSection>
-            ) : null}
-
-            {detail.conclusion.attention_label ? (
-              <section className="border-b border-amber-200 bg-amber-50/65 px-4 py-6 sm:px-5">
-                <h2 className="text-[1.15rem] font-extrabold text-amber-900">Points à examiner</h2>
-                <p className="mt-2 text-[13.5px] leading-6 text-amber-900/80">{detail.conclusion.attention_label}</p>
-              </section>
-            ) : null}
 
             <LeanSection title="Provenance des informations">
               <dl className="divide-y divide-slate-200 border-y border-slate-200 text-[13px] text-slate-600">

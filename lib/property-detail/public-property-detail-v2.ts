@@ -42,6 +42,7 @@ export type PublicPropertyDetailV2 = {
   };
   market: {
     status: "available" | "unavailable";
+    certified: boolean;
     label: string | null;
     price_per_m2: number | null;
   };
@@ -297,6 +298,7 @@ export function buildPublicPropertyDetailV2(
     },
     market: {
       status: marketLabel ? "available" : "unavailable",
+      certified: marketLabel != null,
       label: marketLabel,
       price_per_m2: listing.price_per_m2 ?? null,
     },

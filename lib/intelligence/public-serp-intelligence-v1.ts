@@ -36,6 +36,12 @@ function multiSourceLabel(level: string, isMultiSource: boolean, contradictions:
   return null;
 }
 
+function marketPositionCertified(result: ReturnType<typeof runStructuredListingIntelligencePipeline>): boolean {
+  return result.market.intelligence_v2.status === "evaluated" &&
+    result.market.intelligence_v2.comparison.position !== "insufficient_data" &&
+    result.market.contract_validation.valid;
+}
+
 function buildSignals(result: ReturnType<typeof runStructuredListingIntelligencePipeline>): PublicSerpIntelligenceSignalV1[] {
   const signals: PublicSerpIntelligenceSignalV1[] = [
     {
@@ -48,8 +54,10 @@ function buildSignals(result: ReturnType<typeof runStructuredListingIntelligence
     signals.push({ code: "freshness", label: result.freshness.public_freshness_label });
   }
 
+  // The proof check stays inside the canonical projector. Public consumers see
+  // only the sanitized market signal, never an internal certification flag.
   const market = marketLabel(result.market.intelligence_v2.comparison.position);
-  if (market && result.market.intelligence_v2.status === "evaluated") {
+  if (market && marketPositionCertified(result)) {
     signals.push({ code: "market_context", label: market });
   }
 

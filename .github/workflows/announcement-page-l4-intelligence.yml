@@ -1,0 +1,97 @@
+name: Announcement Page L4 Akar Intelligence
+
+on:
+  pull_request:
+    paths:
+      - "app/listings/**"
+      - "app/visual-qa/announcement-page-intelligence/**"
+      - "components/listings/AkarInsightCard.tsx"
+      - "components/listings/PropertyDetailV2.tsx"
+      - "lib/property-detail/akar-insight.ts"
+      - "lib/property-detail/announcement-page-truth-contract-v1.ts"
+      - "lib/property-detail/public-property-detail-v2.ts"
+      - "lib/intelligence/public-serp-intelligence-*.ts"
+      - "scripts/audits/announcement-page-l4-intelligence-visual.mjs"
+      - "scripts/scrapers/__tests__/announcement-page-l4-intelligence.test.ts"
+      - "scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts"
+      - ".github/workflows/announcement-page-l4-intelligence.yml"
+  push:
+    branches:
+      - main
+      - agent/announcement-page-l4-akar-intelligence
+    paths:
+      - "app/listings/**"
+      - "app/visual-qa/announcement-page-intelligence/**"
+      - "components/listings/AkarInsightCard.tsx"
+      - "components/listings/PropertyDetailV2.tsx"
+      - "lib/property-detail/akar-insight.ts"
+      - "lib/property-detail/announcement-page-truth-contract-v1.ts"
+      - "lib/property-detail/public-property-detail-v2.ts"
+      - "lib/intelligence/public-serp-intelligence-*.ts"
+      - "scripts/audits/announcement-page-l4-intelligence-visual.mjs"
+      - "scripts/scrapers/__tests__/announcement-page-l4-intelligence.test.ts"
+      - "scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts"
+      - ".github/workflows/announcement-page-l4-intelligence.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  akar-intelligence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ANN-L4 intelligence contracts and historical boundaries
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/announcement-page-l4-intelligence.test.ts
+          scripts/scrapers/__tests__/announcement-page-l3-core.test.ts
+          scripts/scrapers/__tests__/announcement-page-l2-media.test.ts
+          scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts
+          scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts
+          scripts/scrapers/__tests__/listing-detail-boundary.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start ANN-L4 production server
+        shell: bash
+        run: |
+          npm run start -- -p 3205 > /tmp/ann-l4.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3205/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ann-l4.log
+          exit 1
+
+      - name: ANN-L4 targeted visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3205
+          AUDIT_OUTPUT_DIR: artifacts/announcement-page-l4-intelligence
+        run: node scripts/audits/announcement-page-l4-intelligence-visual.mjs
+
+      - name: Upload ANN-L4 visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: announcement-page-l4-intelligence-${{ github.run_id }}
+          path: artifacts/announcement-page-l4-intelligence
+          if-no-files-found: warn
+          retention-days: 14
