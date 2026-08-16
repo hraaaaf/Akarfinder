@@ -36,6 +36,12 @@ function multiSourceLabel(level: string, isMultiSource: boolean, contradictions:
   return null;
 }
 
+function marketPositionCertified(result: ReturnType<typeof runStructuredListingIntelligencePipeline>): boolean {
+  return result.market.intelligence_v2.status === "evaluated" &&
+    result.market.intelligence_v2.comparison.position !== "insufficient_data" &&
+    result.market.contract_validation.valid;
+}
+
 function buildSignals(result: ReturnType<typeof runStructuredListingIntelligencePipeline>): PublicSerpIntelligenceSignalV1[] {
   const signals: PublicSerpIntelligenceSignalV1[] = [
     {
@@ -49,7 +55,7 @@ function buildSignals(result: ReturnType<typeof runStructuredListingIntelligence
   }
 
   const market = marketLabel(result.market.intelligence_v2.comparison.position);
-  if (market && result.market.intelligence_v2.status === "evaluated") {
+  if (market && marketPositionCertified(result)) {
     signals.push({ code: "market_context", label: market });
   }
 
@@ -79,6 +85,7 @@ function project(result: ReturnType<typeof runStructuredListingIntelligencePipel
     attention_label: anomalyCount > 0
       ? `${anomalyCount} point${anomalyCount === 1 ? "" : "s"} à examiner dans les données disponibles`
       : null,
+    market_position_certified: marketPositionCertified(result),
     disclaimer: DISCLAIMER,
   };
 }
