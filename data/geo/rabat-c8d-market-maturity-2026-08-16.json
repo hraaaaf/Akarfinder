@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "c8d-rabat-market-maturity-v1",
+  "snapshotDate": "2026-08-16",
+  "mode": "production_read_only",
+  "publicMetric": false,
+  "productionWriteCount": 0,
+  "method": {
+    "resolver": "c8d_shadow_authority_order",
+    "deduplication": "canonical_url_else_seed_id_latest_updated_at",
+    "population": "Rabat real_estate_likely LISTING eligible_primary|eligible_secondary",
+    "priceField": "normalized_price_m2"
+  },
+  "candidates": [
+    {"slug":"diour-jamaa","listings":16,"sources":3,"saleListings":7,"rentListings":9,"salePriceM2Samples":0,"priceSamples":0,"surfaceSamples":1},
+    {"slug":"kbibat","listings":9,"sources":1,"saleListings":4,"rentListings":5,"salePriceM2Samples":1,"observedSalePriceM2Median":7307.69,"priceSamples":1,"surfaceSamples":2},
+    {"slug":"hay-nahda","listings":8,"sources":2,"saleListings":7,"rentListings":1,"salePriceM2Samples":0,"priceSamples":2,"surfaceSamples":4},
+    {"slug":"yacoub-el-mansour","listings":7,"sources":3,"saleListings":6,"rentListings":1,"salePriceM2Samples":1,"observedSalePriceM2Median":3703.7,"priceSamples":3,"surfaceSamples":3},
+    {"slug":"aviation","listings":6,"sources":2,"saleListings":4,"rentListings":2,"salePriceM2Samples":1,"observedSalePriceM2Median":5389.22,"priceSamples":3,"surfaceSamples":3},
+    {"slug":"les-orangers","listings":6,"sources":1,"saleListings":3,"rentListings":2,"salePriceM2Samples":2,"observedSalePriceM2Median":1509.74,"priceSamples":3,"surfaceSamples":3},
+    {"slug":"medina","listings":6,"sources":2,"saleListings":6,"rentListings":0,"salePriceM2Samples":1,"observedSalePriceM2Median":6756.76,"priceSamples":1,"surfaceSamples":4},
+    {"slug":"youssoufia","listings":4,"sources":2,"saleListings":4,"rentListings":0,"salePriceM2Samples":0,"priceSamples":0,"surfaceSamples":0},
+    {"slug":"oudayas","listings":3,"sources":2,"saleListings":2,"rentListings":1,"salePriceM2Samples":0,"priceSamples":0,"surfaceSamples":1},
+    {"slug":"mabella","listings":2,"sources":1,"saleListings":2,"rentListings":0,"salePriceM2Samples":0,"priceSamples":0,"surfaceSamples":2},
+    {"slug":"akkari","listings":1,"sources":1,"saleListings":1,"rentListings":0,"salePriceM2Samples":0,"priceSamples":0,"surfaceSamples":0},
+    {"slug":"al-boustane","listings":0,"sources":0,"saleListings":0,"rentListings":0,"salePriceM2Samples":0,"priceSamples":0,"surfaceSamples":0},
+    {"slug":"douar-doum","listings":0,"sources":0,"saleListings":0,"rentListings":0,"salePriceM2Samples":0,"priceSamples":0,"surfaceSamples":0},
+    {"slug":"el-garaa","listings":0,"sources":0,"saleListings":0,"rentListings":0,"salePriceM2Samples":0,"priceSamples":0,"surfaceSamples":0},
+    {"slug":"el-kora","listings":0,"sources":0,"saleListings":0,"rentListings":0,"salePriceM2Samples":0,"priceSamples":0,"surfaceSamples":0},
+    {"slug":"mellah","listings":0,"sources":0,"saleListings":0,"rentListings":0,"salePriceM2Samples":0,"priceSamples":0,"surfaceSamples":0},
+    {"slug":"takaddoum","listings":0,"sources":0,"saleListings":0,"rentListings":0,"salePriceM2Samples":0,"priceSamples":0,"surfaceSamples":0},
+    {"slug":"touarga","listings":0,"sources":0,"saleListings":0,"rentListings":0,"salePriceM2Samples":0,"priceSamples":0,"surfaceSamples":0}
+  ],
+  "observations": {
+    "candidateUniqueMatches": 68,
+    "candidatesWithAnyListings": 11,
+    "candidatesWithAtLeastTwoSources": 7,
+    "maxSalePriceM2SampleCountPerCandidate": 2,
+    "publicPriceM2ReadyCount": 0
+  },
+  "notes": [
+    "Observed medians based on one or two samples are diagnostic only and must not be published.",
+    "No publication threshold is invented by this snapshot.",
+    "Geometry and context gates remain separate requirements.",
+    "No DB row or public metric was mutated."
+  ]
+}

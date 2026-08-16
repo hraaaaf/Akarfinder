@@ -1,0 +1,36 @@
+name: C8D Rabat Market Maturity
+
+on:
+  pull_request:
+    paths:
+      - "data/geo/rabat-c8d-market-maturity-2026-08-16.json"
+      - "docs/CARTE_C8D_RABAT_MARKET_MATURITY.md"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-market-maturity.test.ts"
+      - ".github/workflows/carte-c8d-rabat-market-maturity.yml"
+  push:
+    paths:
+      - "data/geo/rabat-c8d-market-maturity-2026-08-16.json"
+      - "docs/CARTE_C8D_RABAT_MARKET_MATURITY.md"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-market-maturity.test.ts"
+      - ".github/workflows/carte-c8d-rabat-market-maturity.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  c8d-rabat-market-maturity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: C8D market maturity gate
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8d-rabat-market-maturity.test.ts
+      - name: C8D authority and shadow non-regression
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8d-rabat-authority-proposal.test.ts scripts/scrapers/__tests__/carte-c8d-rabat-shadow-resolver.test.ts scripts/scrapers/__tests__/carte-c8d-rabat-shadow-audit-manifest.test.ts
