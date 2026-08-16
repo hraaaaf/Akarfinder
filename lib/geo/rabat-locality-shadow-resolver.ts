@@ -1,7 +1,10 @@
 import { RABAT_ALL_PRODUCT_LOCALITIES, type RabatProductLocality } from "@/lib/geo/rabat-locality-registry";
 
+export type RabatShadowDistrictProvenance = "same_record_structured" | "coverage_bridge_shadow";
+
 export type RabatShadowInput = {
   district?: string | null;
+  districtProvenance?: RabatShadowDistrictProvenance | null;
   title?: string | null;
   snippet?: string | null;
   searchText?: string | null;
@@ -125,8 +128,8 @@ function matchTextField(
 
   const matches: Array<{ term: IndexedTerm; evidence: RabatShadowEvidence }> = [];
   for (const term of TERM_INDEX) {
-    // Very short aliases such as "Riad" are accepted as structured exact
-    // values only. In free text they are too weak to be deterministic.
+    // Very short aliases such as "Riad" are accepted as trusted structured
+    // exact values only. In free text they are too weak to be deterministic.
     if (term.matchKind === "explicit_alias" && term.normalizedTerm.length < 5) continue;
     if (!phrasePresent(value, term.normalizedTerm)) continue;
     matches.push({
@@ -147,18 +150,22 @@ function matchTextField(
  * Read-only C8 shadow resolver.
  *
  * Authority order is intentionally strict:
- * 1. exact structured district against canonical names / explicit aliases;
+ * 1. exact district only when provenance is `same_record_structured`;
  * 2. otherwise title exact-phrase signals;
  * 3. then snippet exact-phrase signals;
  * 4. finally searchText exact-phrase signals;
  * 5. ambiguity inside the first field carrying a signal fails closed;
- * 6. never fuzzy-match, infer a parent, create a DB entity, or activate a zone.
+ * 6. coverage-bridge shadow districts never acquire structured authority;
+ * 7. never fuzzy-match, infer a parent, create a DB entity, or activate a zone.
  */
 export function resolveRabatLocalityShadow(input: RabatShadowInput): RabatShadowResolution {
-  const district = normalizeRabatShadowText(input.district ?? "");
-  if (district) {
+  const trustedStructuredDistrict = input.districtProvenance === "same_record_structured"
+    ? normalizeRabatShadowText(input.district ?? "")
+    : "";
+
+  if (trustedStructuredDistrict) {
     const structured = TERM_INDEX
-      .filter((term) => term.normalizedTerm === district)
+      .filter((term) => term.normalizedTerm === trustedStructuredDistrict)
       .map((term) => ({
         term,
         evidence: {
