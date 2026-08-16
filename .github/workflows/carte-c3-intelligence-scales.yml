@@ -1,0 +1,34 @@
+name: Carte C3 Intelligence Scale Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/map/intelligence-scale.ts"
+      - "scripts/scrapers/__tests__/intelligence-scale.test.ts"
+      - ".github/workflows/carte-c3-intelligence-scales.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-intelligence-scale:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Deterministic scale contract
+        run: npx tsx --test scripts/scrapers/__tests__/intelligence-scale.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: No hardcoded market thresholds
+        run: |
+          grep -q 'snapshot_quantiles_v1' lib/map/intelligence-scale.ts
+          if grep -Eq '18000|450|120' lib/map/intelligence-scale.ts; then
+            echo 'mockup illustrative values must not define runtime scale thresholds'
+            exit 1
+          fi
