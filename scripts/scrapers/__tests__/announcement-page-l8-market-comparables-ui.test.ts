@@ -21,6 +21,15 @@ describe("ANN-L8 public wiring", () => {
     assert.match(detail, /StreetRealitySection model=\{streetReality\}[\s\S]*MarketComparablesSection model=\{marketComparables\}/);
   });
 
+  it("keeps Market Index reads fail-closed behind the existing activation flag", async () => {
+    const runtime = await source("lib/property-detail/market-comparables-runtime.ts");
+    const flagIndex = runtime.indexOf("isMarketIndexReadEnabled(env)");
+    const clientIndex = runtime.indexOf("getSupabaseServerClient()");
+    assert.ok(flagIndex >= 0, "Market Index read flag must be checked");
+    assert.ok(clientIndex > flagIndex, "Supabase read must happen only after the activation gate");
+    assert.match(runtime, /if \(!isMarketIndexReadEnabled\(env\)\)/);
+  });
+
   it("keeps distribution math out of React and consumes only the certified model", async () => {
     const ui = await source("components/listings/MarketComparablesSection.tsx");
     assert.match(ui, /model\.status !== "certified"/);
