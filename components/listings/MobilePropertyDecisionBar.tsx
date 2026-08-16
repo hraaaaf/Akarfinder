@@ -20,7 +20,7 @@ export function MobilePropertyDecisionBar({ listing, model }: { listing: Listing
     <aside
       aria-label="Actions rapides pour ce bien"
       data-pro-conversion-mobile="ann-l11"
-      className={`${motion.dockEnter} fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white/95 px-3 pt-2 shadow-[0_-10px_30px_rgba(24,56,96,0.10)] backdrop-blur-xl lg:hidden`}
+      className={`${motion.dockEnter} fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white/95 px-3 pt-2 shadow-[0_-10px_30px_rgba(24,56,96,0.10)] backdrop-blur-xl transition motion-reduce:transition-none lg:hidden`}
       style={{ paddingBottom: "max(0.55rem, env(safe-area-inset-bottom))" }}
     >
       <div className="mx-auto max-w-xl space-y-2">
