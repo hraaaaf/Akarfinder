@@ -43,7 +43,7 @@ C0–C7 reste fermé à **8/8 = 100 %**. Ce pourcentage appartient uniquement au
 - **0 nouvelle activation C8 éligible** ;
 - aucune mutation DB/Search/ranking/API/UI.
 
-### C8D — Resolver shadow + autorité proposée + maturité marché + récupération Agenz ✅ EVIDENCE MERGED / LIVE GATE PENDING
+### C8D — Resolver shadow + autorité proposée + maturité marché + récupération Agenz ✅ LIVE DRY-RUN VERIFIED
 
 #### Rabat Resolver Shadow — PR #750 ✅ MERGED
 
@@ -86,7 +86,13 @@ C0–C7 reste fermé à **8/8 = 100 %**. Ce pourcentage appartient uniquement au
 - récupération prix via extracteur strict existant ; surface acceptée uniquement avec preuve JSON-LD high-confidence ;
 - script strictement read-only, sans mode write ;
 - **0 écriture DB** et **0 métrique marché publiée** ;
-- le dry-run live post-merge sur cohort borné reste à exécuter dans un environnement disposant des credentials et de l’accès réseau ;
+- workflow manuel borné : PR #765, merge `871e61feef19769319d03820c38bdcc1739b7e2a` ;
+- run live `31960247064` : `contract` SUCCESS + `live-dry-run` SUCCESS ;
+- artefact `9267050182`, digest `sha256:35e9e2a94e5fedd084453a1111203616bc240a83f2343f2924786a58c0e5273b` ;
+- dry-run live : 584 lignes interrogées, 9 candidats détail, **9/9 fetch**, 0 robots skip, 0 échec ;
+- prix récupérable : **8/9** ; surface récupérable : **0/9** ; prix + surface : **0/9** ;
+- `productionWriteCount=0` vérifié ;
+- verdict : récupération prix techniquement viable sur la cohorte, mais la surface reste non certifiée ;
 - toute future écriture de prix/surface reste un gate humain séparé après validation valeur par valeur.
 
 ## Invariants C8 actuellement vérifiés
@@ -106,7 +112,7 @@ C0–C7 reste fermé à **8/8 = 100 %**. Ce pourcentage appartient uniquement au
 
 1. renforcer l’inventaire jusqu’à une exhaustivité source-backed défendable ;
 2. poursuivre la certification géométrique des **19/23** localités non résolues ;
-3. exécuter le dry-run live borné Agenz × localité candidate puis valider les valeurs récupérables sans écriture ;
+3. améliorer la preuve de surface sur Agenz/les autres sources puis valider valeur par valeur toute donnée candidate avant écriture ;
 4. augmenter la profondeur structurée prix/surface et multi-source sans publier de statistique sparse ;
 5. ne créer une autorité DB ou écrire des champs récupérés qu’après le gate humain séparé prévu ;
 6. activer uniquement les localités satisfaisant simultanément taxonomie + géométrie + métriques + contexte ;
