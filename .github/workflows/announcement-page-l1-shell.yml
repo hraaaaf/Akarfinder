@@ -1,0 +1,57 @@
+name: Announcement Page L1 Premium Shell
+
+on:
+  pull_request:
+    paths:
+      - "app/listings/[id]/page.tsx"
+      - "app/visual-qa/announcement-page/**"
+      - "components/listings/AnnouncementPageShell.tsx"
+      - "scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts"
+      - "scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts"
+      - "scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts"
+      - ".github/workflows/announcement-page-l1-shell.yml"
+  push:
+    branches:
+      - main
+      - agent/announcement-page-l1-shell-premium
+    paths:
+      - "app/listings/[id]/page.tsx"
+      - "app/visual-qa/announcement-page/**"
+      - "components/listings/AnnouncementPageShell.tsx"
+      - "scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts"
+      - "scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts"
+      - "scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts"
+      - ".github/workflows/announcement-page-l1-shell.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  shell-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ANN-L1 shell contracts
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts
+          scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts
+          scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts
+          scripts/scrapers/__tests__/listing-detail-boundary.test.ts
+          scripts/scrapers/__tests__/p10img-image-policy.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
