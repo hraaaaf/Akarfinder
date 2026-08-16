@@ -5,6 +5,7 @@ import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { AkarInsightCard } from "@/components/listings/AkarInsightCard";
 import { ExpandablePropertyDescription } from "@/components/listings/ExpandablePropertyDescription";
 import { LivingHereSection } from "@/components/listings/LivingHereSection";
+import { MarketComparablesSection } from "@/components/listings/MarketComparablesSection";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { PropertyCore } from "@/components/listings/PropertyCore";
 import { PropertyMediaGallery } from "@/components/listings/PropertyMediaGallery";
@@ -16,6 +17,7 @@ import type { StreetRealityModel } from "@/lib/geo/street-reality";
 import { canShowContactActions } from "@/lib/listings/listing-boundary";
 import { buildPropertyCoreModel } from "@/lib/listings/property-core";
 import type { Listing } from "@/lib/listings/types";
+import type { MarketComparableSet } from "@/lib/property-detail/market-comparables";
 import type {
   PublicDetailFact,
   PublicPropertyDetailV2,
@@ -81,12 +83,14 @@ export function PropertyDetailV2({
   detail,
   livingHere = null,
   streetReality = null,
+  marketComparables = null,
   mapStyleUrl = null,
 }: {
   listing: Listing;
   detail: PublicPropertyDetailV2;
   livingHere?: LivingHereModel | null;
   streetReality?: StreetRealityModel | null;
+  marketComparables?: MarketComparableSet | null;
   mapStyleUrl?: string | null;
 }) {
   const showContactActions = canShowContactActions(listing);
@@ -140,6 +144,7 @@ export function PropertyDetailV2({
 
             <LivingHereSection model={livingHere} mapStyleUrl={mapStyleUrl} />
             <StreetRealitySection model={streetReality} />
+            <MarketComparablesSection model={marketComparables} />
 
             <LeanSection title="Environnement">
               <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">

@@ -1,0 +1,87 @@
+name: Announcement Page L8 Market Comparables
+
+on:
+  pull_request:
+    paths:
+      - "app/listings/[id]/page.tsx"
+      - "app/visual-qa/announcement-page-market-comparables/**"
+      - "components/listings/AnnouncementPageShell.tsx"
+      - "components/listings/PropertyDetailV2.tsx"
+      - "components/listings/MarketComparablesSection.tsx"
+      - "lib/property-detail/market-comparables*.ts"
+      - "lib/property-detail/announcement-page-truth-contract-v1.ts"
+      - "lib/market/**"
+      - "lib/market-index/**"
+      - "scripts/audits/announcement-page-l8-market-comparables-visual.mjs"
+      - "scripts/scrapers/__tests__/announcement-page-l8-*.test.ts"
+      - ".github/workflows/announcement-page-l8-market-comparables.yml"
+  push:
+    branches:
+      - main
+      - agent/announcement-page-l8-market-comparables
+    paths:
+      - "app/listings/[id]/page.tsx"
+      - "app/visual-qa/announcement-page-market-comparables/**"
+      - "components/listings/AnnouncementPageShell.tsx"
+      - "components/listings/PropertyDetailV2.tsx"
+      - "components/listings/MarketComparablesSection.tsx"
+      - "lib/property-detail/market-comparables*.ts"
+      - "lib/property-detail/announcement-page-truth-contract-v1.ts"
+      - "lib/market/**"
+      - "lib/market-index/**"
+      - "scripts/audits/announcement-page-l8-market-comparables-visual.mjs"
+      - "scripts/scrapers/__tests__/announcement-page-l8-*.test.ts"
+      - ".github/workflows/announcement-page-l8-market-comparables.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  market-comparables:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: ANN-L8 certified comparable boundaries
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/announcement-page-l8-*.test.ts
+          scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts
+          scripts/scrapers/__tests__/p10d-market.test.ts
+          scripts/scrapers/__tests__/market-benchmark.test.ts
+          scripts/scrapers/__tests__/market-index-read-activation.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start ANN-L8 production server
+        shell: bash
+        run: |
+          npm run start -- -p 3208 > /tmp/ann-l8.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3208/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ann-l8.log
+          exit 1
+      - name: ANN-L8 targeted visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3208
+          AUDIT_OUTPUT_DIR: artifacts/announcement-page-l8-market-comparables
+        run: node scripts/audits/announcement-page-l8-market-comparables-visual.mjs
+      - name: Upload ANN-L8 visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: announcement-page-l8-market-comparables-${{ github.run_id }}
+          path: artifacts/announcement-page-l8-market-comparables
+          if-no-files-found: warn
+          retention-days: 14
