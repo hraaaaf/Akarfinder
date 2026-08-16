@@ -4,6 +4,19 @@
 
 Ce fichier est le handover opérationnel court. `README.md` porte l’identité/doctrine et `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
+## SEARCH Price Coverage v6 ✅ CLOSED
+
+- Audit paginé read-only : **PR #699 ✅ MERGED** — merge `64c8facdcece5f7956ac709fcc43ddf95de84d89` ; run `31919440782` SUCCESS avec **8/8 shards**.
+- Réservoir mesuré : **412 / 960 prix fiables = 42,92 %** ; Mubawab **137/480 = 28,54 %** ; Masaken **275/480 = 57,29 %** ; 58 HTTP 410 Masaken ; 0 write sur cet audit.
+- Bounded-write v6 : **PR #701 ✅ MERGED** — merge `a7597bf29eb5ee521dce42407db80a7c983a7681`.
+- Run manuel `31921208732` : canary read-only **100 fiables / 0 écrit** puis, malgré l'intention read-only, le job `production-bounded-write` a été exécuté et a écrit **100/100 prix Mubawab** ; aucun write Masaken.
+- Les 100 écritures sont directement prouvées par le log, live-revalidées, identity-proven, bornées à `normalized_price_mad IS NULL`, seule colonne `normalized_price_mad` mutée ; aucun rollback appliqué car supprimer ces prix fiables créerait une régression.
+- Incident de garde : l'ancien input booléen `execute_write` n'a pas empêché le job write dans ce scénario. Cause précise non affirmée faute de preuve suffisante.
+- **Hotfix #704 ✅ MERGED** — merge `311e6088b491e7b4f83166d70a6a7dba45bc7de0` ; run `31922093413` certify SUCCESS, jobs production SKIPPED sur PR.
+- Nouveau garde : phrase exacte `WRITE_100_RELIABLE_PRICES` exigée à la fois par la condition GitHub Actions et indépendamment par le script ; test fail-closed pour valeurs absentes / `READ_ONLY` / `true` / quasi-match.
+- Snapshot Supabase après l'incident : **2 936 / 15 546 = 18,89 %** ; Mubawab **294/1 375 = 21,38 %** ; Masaken **210/754 = 27,85 %**. Le stock total ayant évolué en parallèle, aucune variation globale supplémentaire n'est attribuée aux 100 writes au-delà des 100 écritures loguées.
+- Preuve détaillée : `docs/PRICE_COVERAGE_V6_CLOSEOUT.md`.
+
 ## SEARCH Price Extraction v5 ✅ CLOSED
 
 - **PR #688 ✅ MERGED** — merge `615aaf57bea1288ead1a31d22fb187b95cb6b40b`.
@@ -120,4 +133,4 @@ Ce fichier est le handover opérationnel court. `README.md` porte l’identité/
 
 ## Reprise exacte
 
-**SEARCH Price Extraction v5 est CLOSED : PR #688 mergée, exact-head `4df4c53a5138e021352dbd048dcd034664709981`, run `31917789799` SUCCESS, 92/92 écritures v5 prouvées et dernier snapshot exact observé 2 838 / 15 438 = 18,38 %. Prochaine action Search prix : audit paginé read-only des cohortes Mubawab + Masaken au-delà des 120 plus récents avant tout nouveau write. En parallèle, Carte intelligence marché poursuit C2 en Shadow.**
+**SEARCH Price Coverage v6 est CLOSED : audit paginé #699 = 412/960 fiables ; run manuel `31921208732` a produit un canary 100/0 puis 100 writes Mubawab réels ; hotfix #704 mergé sur `311e6088b491e7b4f83166d70a6a7dba45bc7de0` avec double confirmation exacte ; snapshot production observé 2 936 / 15 546 = 18,89 %. Toute future écriture v6 exige `WRITE_100_RELIABLE_PRICES` au workflow et au script. En parallèle, Carte intelligence marché poursuit sa lane propre.**
