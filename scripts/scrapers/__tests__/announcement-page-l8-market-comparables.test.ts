@@ -58,6 +58,13 @@ describe("ANN-L8 certified comparable set", () => {
     assert.equal(result.comparables.length, 3);
     assert.ok(result.comparables.every((item) => item.pricePerM2 > 0));
     assert.ok(result.observedAt);
+    assert.ok(result.distribution);
+    assert.equal(result.distribution?.sampleCount, 3);
+    assert.equal(result.distribution?.comparableStockCount, 3);
+    assert.ok((result.distribution?.minPricePerM2 ?? 0) <= (result.distribution?.p25PricePerM2 ?? 0));
+    assert.ok((result.distribution?.p25PricePerM2 ?? 0) <= (result.distribution?.medianPricePerM2 ?? 0));
+    assert.ok((result.distribution?.medianPricePerM2 ?? 0) <= (result.distribution?.p75PricePerM2 ?? 0));
+    assert.ok((result.distribution?.p75PricePerM2 ?? 0) <= (result.distribution?.maxPricePerM2 ?? 0));
   });
 
   it("falls back to city scope only when neighborhood sample is insufficient", () => {
@@ -84,6 +91,7 @@ describe("ANN-L8 certified comparable set", () => {
     });
     assert.equal(result.status, "unavailable");
     assert.equal(result.reason, "insufficient_verified_sample");
+    assert.equal(result.distribution, null);
     assert.equal(result.comparables.length, 0);
   });
 
@@ -128,18 +136,22 @@ describe("ANN-L8 certified comparable set", () => {
 
     assert.equal(result.status, "certified");
     assert.equal(result.sampleCount, 3);
+    assert.equal(result.distribution?.comparableStockCount, 3);
     assert.ok(result.comparables.some((item) => item.listingId === "new"));
     assert.ok(!result.comparables.some((item) => item.listingId === "old"));
   });
 
-  it("caps the public set without shrinking the certified sample count", () => {
+  it("computes distribution on the full certified sample before the public card cap", () => {
     const values = Array.from({ length: 9 }, (_, index) => candidate(`c${index}`, {
       propertyClusterId: `cluster-${index}`,
+      displayedPriceMad: (1_500_000 + index * 100_000),
       surfaceM2: 96 + index,
     }));
     const result = buildCertifiedComparableSet({ target: target(), candidates: values, now: NOW });
     assert.equal(result.status, "certified");
     assert.equal(result.sampleCount, 9);
+    assert.equal(result.distribution?.sampleCount, 9);
+    assert.equal(result.distribution?.comparableStockCount, 9);
     assert.equal(result.comparables.length, MARKET_COMPARABLE_MAX_PUBLIC);
   });
 
