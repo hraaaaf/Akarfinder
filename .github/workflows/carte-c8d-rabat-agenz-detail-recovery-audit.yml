@@ -1,0 +1,48 @@
+name: C8D Rabat Agenz Detail Recovery Audit
+
+on:
+  pull_request:
+    paths:
+      - "scripts/scrapers/c8-rabat-detail-recovery-audit.ts"
+      - "scripts/scrapers/__tests__/c8-rabat-detail-recovery-audit.test.ts"
+      - "docs/CARTE_C8D_RABAT_AGENZ_DETAIL_RECOVERY_AUDIT.md"
+      - "lib/geo/rabat-locality-shadow-resolver.ts"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "scripts/scrapers/price-detail-enrichment-v2.ts"
+      - "scripts/scrapers/utils/extract.ts"
+      - "scripts/scrapers/normalizers/normalize-surface.ts"
+      - ".github/workflows/carte-c8d-rabat-agenz-detail-recovery-audit.yml"
+  push:
+    paths:
+      - "scripts/scrapers/c8-rabat-detail-recovery-audit.ts"
+      - "scripts/scrapers/__tests__/c8-rabat-detail-recovery-audit.test.ts"
+      - "docs/CARTE_C8D_RABAT_AGENZ_DETAIL_RECOVERY_AUDIT.md"
+      - "lib/geo/rabat-locality-shadow-resolver.ts"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "scripts/scrapers/price-detail-enrichment-v2.ts"
+      - "scripts/scrapers/utils/extract.ts"
+      - "scripts/scrapers/normalizers/normalize-surface.ts"
+      - ".github/workflows/carte-c8d-rabat-agenz-detail-recovery-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  c8d-rabat-agenz-detail-recovery-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: C8D Agenz detail recovery audit gate
+        run: npx tsx --test scripts/scrapers/__tests__/c8-rabat-detail-recovery-audit.test.ts
+      - name: C8D shadow non-regression
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8d-rabat-shadow-resolver.test.ts scripts/scrapers/__tests__/carte-c8d-rabat-shadow-audit-manifest.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
