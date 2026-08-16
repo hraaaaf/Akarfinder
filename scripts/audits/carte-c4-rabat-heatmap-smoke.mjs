@@ -5,9 +5,6 @@ const baseUrl = process.env.BASE_URL || "http://127.0.0.1:3204";
 const outDir = process.env.AUDIT_OUTPUT_DIR || "data/audits/carte-c4-rabat-heatmap";
 await mkdir(outDir, { recursive: true });
 
-const CENTER = { lng: -6.8416, lat: 34.0209 };
-const ZOOM = 10.2;
-const TILE_SIZE = 512;
 const VALID_DISTRICTS = new Set(["agdal", "hay-riad", "souissi", "hassan"]);
 
 function normalizeSlug(value) {
@@ -20,70 +17,6 @@ function normalizeSlug(value) {
     .replace(/^-+|-+$/g, "");
 }
 
-function mercator(lng, lat) {
-  const x = (lng + 180) / 360;
-  const rad = lat * Math.PI / 180;
-  const y = (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2;
-  return { x, y };
-}
-
-function project(lng, lat, width, height) {
-  const world = TILE_SIZE * 2 ** ZOOM;
-  const p = mercator(lng, lat);
-  const c = mercator(CENTER.lng, CENTER.lat);
-  return { x: (p.x - c.x) * world + width / 2, y: (p.y - c.y) * world + height / 2 };
-}
-
-function pointInRing([x, y], ring) {
-  let inside = false;
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const [xi, yi] = ring[i];
-    const [xj, yj] = ring[j];
-    const intersects = ((yi > y) !== (yj > y)) && (x < ((xj - xi) * (y - yi)) / ((yj - yi) || Number.EPSILON) + xi);
-    if (intersects) inside = !inside;
-  }
-  return inside;
-}
-
-function pointInPolygon(point, coordinates) {
-  if (!coordinates.length || !pointInRing(point, coordinates[0])) return false;
-  return !coordinates.slice(1).some((hole) => pointInRing(point, hole));
-}
-
-function pointInGeometry(point, geometry) {
-  if (geometry.type === "Polygon") return pointInPolygon(point, geometry.coordinates);
-  if (geometry.type === "MultiPolygon") return geometry.coordinates.some((polygon) => pointInPolygon(point, polygon));
-  return false;
-}
-
-function bboxForGeometry(geometry) {
-  const points = geometry.type === "Polygon" ? geometry.coordinates.flat() : geometry.coordinates.flat(2);
-  return points.reduce((box, [lng, lat]) => ({
-    minLng: Math.min(box.minLng, lng), maxLng: Math.max(box.maxLng, lng),
-    minLat: Math.min(box.minLat, lat), maxLat: Math.max(box.maxLat, lat),
-  }), { minLng: Infinity, maxLng: -Infinity, minLat: Infinity, maxLat: -Infinity });
-}
-
-function pickClickableFeature(payload, width, height) {
-  const candidates = [];
-  for (const feature of payload.features) {
-    const box = bboxForGeometry(feature.geometry);
-    for (let ix = 1; ix < 10; ix += 1) {
-      for (let iy = 1; iy < 10; iy += 1) {
-        const lng = box.minLng + (box.maxLng - box.minLng) * ix / 10;
-        const lat = box.minLat + (box.maxLat - box.minLat) * iy / 10;
-        if (!pointInGeometry([lng, lat], feature.geometry)) continue;
-        const pixel = project(lng, lat, width, height);
-        if (pixel.x < 40 || pixel.x > width - 40 || pixel.y < 155 || pixel.y > height - 170) continue;
-        const distance = Math.hypot(pixel.x - width / 2, pixel.y - height / 2);
-        candidates.push({ feature, lng, lat, pixel, distance });
-      }
-    }
-  }
-  candidates.sort((a, b) => a.distance - b.distance);
-  return candidates[0] || null;
-}
-
 async function waitForIntelligence(page, mode, transaction = "sale") {
   const response = await page.waitForResponse((res) => {
     const url = new URL(res.url());
@@ -93,6 +26,29 @@ async function waitForIntelligence(page, mode, transaction = "sale") {
   }, { timeout: 30000 });
   if (response.status() !== 200) throw new Error(`C3 API ${mode}/${transaction} returned HTTP ${response.status()}`);
   return response.json();
+}
+
+async function findRenderedInteractivePoint(page, box, viewport) {
+  const minY = viewport.name === "mobile" ? 245 : 175;
+  const maxY = Math.max(minY + 1, box.height - 175);
+  const minX = 42;
+  const maxX = Math.max(minX + 1, box.width - 42);
+  const step = viewport.name === "mobile" ? 22 : 34;
+  const points = [];
+
+  for (let y = minY; y <= maxY; y += step) {
+    for (let x = minX; x <= maxX; x += step) {
+      points.push({ x, y, distance: Math.hypot(x - box.width / 2, y - box.height / 2) });
+    }
+  }
+  points.sort((a, b) => a.distance - b.distance);
+
+  for (const point of points) {
+    await page.mouse.move(box.x + point.x, box.y + point.y);
+    const pointer = await page.locator(".maplibregl-canvas").evaluate((canvas) => canvas.style.cursor === "pointer");
+    if (pointer) return point;
+  }
+  return null;
 }
 
 const viewports = [
@@ -139,15 +95,10 @@ try {
     const canvas = page.locator(".maplibregl-canvas");
     const box = await canvas.boundingBox();
     if (!box) throw new Error("MapLibre canvas has no bounding box");
-    const target = pickClickableFeature(listingsPayload, box.width, box.height);
-    if (!target) throw new Error(`No clickable polygon interior found for ${viewport.name}`);
+    const interactivePoint = await findRenderedInteractivePoint(page, box, viewport);
+    if (!interactivePoint) throw new Error(`No rendered interactive market-zone polygon found for ${viewport.name}`);
 
-    const clickX = box.x + target.pixel.x;
-    const clickY = box.y + target.pixel.y;
-    await page.mouse.move(clickX, clickY);
-    await page.waitForFunction(() => document.querySelector(".maplibregl-canvas")?.style.cursor === "pointer", null, { timeout: 10000 });
-    await page.mouse.click(clickX, clickY);
-
+    await page.mouse.click(box.x + interactivePoint.x, box.y + interactivePoint.y);
     await page.waitForURL((url) => url.searchParams.get("city") === "rabat" && VALID_DISTRICTS.has(url.searchParams.get("district") ?? ""), { timeout: 10000 });
     const currentUrl = new URL(page.url());
     const district = currentUrl.searchParams.get("district");
@@ -171,7 +122,7 @@ try {
     report.viewports.push({
       ...viewport,
       tabsFit: true,
-      projectedZoneId: target.feature.properties.zoneId,
+      interactivePoint,
       selectedDistrict: district,
       panelLabel,
       searchHref,
