@@ -15,16 +15,27 @@ const OSRM_ENDPOINT = process.env.ANN_L5_OSRM_ENDPOINT || "https://router.projec
 const OUTPUT_DIR = process.env.ANN_L5_OUTPUT_DIR || "artifacts/announcement-page-l5-geo";
 const USER_AGENT = "AkarFinder-ANN-L5-Geo-Bakeoff/1.0 (+https://akarfinder.ma)";
 const SAMPLE_PER_CITY = 8;
-const SEARCH_RADIUS_METERS = 6_000;
-const PREFERRED_CATEGORIES = [
-  "school", "pharmacy", "hospital", "clinic", "supermarket", "bank",
-  "park", "cafe", "restaurant", "place_of_worship", "mall", "public_transport",
+const SEARCH_RADIUS_METERS = 5_000;
+const CATEGORY_QUERIES = [
+  ["amenity", "school", "school"],
+  ["amenity", "pharmacy", "pharmacy"],
+  ["amenity", "hospital", "hospital"],
+  ["amenity", "clinic", "clinic"],
+  ["shop", "supermarket", "supermarket"],
+  ["amenity", "bank", "bank"],
+  ["leisure", "park", "park"],
+  ["amenity", "cafe", "cafe"],
+  ["amenity", "restaurant", "restaurant"],
+  ["amenity", "place_of_worship", "place_of_worship"],
+  ["shop", "mall", "mall"],
+  ["public_transport", "platform", "public_transport"],
 ];
+const PREFERRED_CATEGORIES = CATEGORY_QUERIES.map((entry) => entry[2]);
 const CITIES = ["Rabat", "Casablanca", "Marrakech", "Tanger"];
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function fetchJson(url, init = {}, attempts = 2, timeoutMs = 35_000) {
+async function fetchJson(url, init = {}, attempts = 2, timeoutMs = 30_000) {
   let lastError;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     const controller = new AbortController();
@@ -80,14 +91,10 @@ async function geocodeCity(city) {
 }
 
 function overpassQuery({ latitude, longitude }) {
-  return `[out:json][timeout:25];
-(
-  nwr(around:${SEARCH_RADIUS_METERS},${latitude},${longitude})["amenity"~"^(school|pharmacy|hospital|clinic|bank|cafe|restaurant|place_of_worship)$"];
-  nwr(around:${SEARCH_RADIUS_METERS},${latitude},${longitude})["shop"~"^(supermarket|mall)$"];
-  nwr(around:${SEARCH_RADIUS_METERS},${latitude},${longitude})["leisure"="park"];
-  nwr(around:${SEARCH_RADIUS_METERS},${latitude},${longitude})["public_transport"];
-);
-out center 180;`;
+  const statements = CATEGORY_QUERIES.map(([key, value]) =>
+    `node(around:${SEARCH_RADIUS_METERS},${latitude},${longitude})["${key}"="${value}"];out 2;`,
+  );
+  return `[out:json][timeout:20];\n${statements.join("\n")}`;
 }
 
 async function fetchOverpass(query) {
@@ -101,17 +108,12 @@ async function fetchOverpass(query) {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
         body,
-      }, 1, 35_000);
+      }, 1, 30_000);
       attempts.push({ endpoint, ok: true, latencyMs: Math.round(performance.now() - started) });
       return { payload, endpoint, attempts };
     } catch (error) {
       lastError = error;
-      attempts.push({
-        endpoint,
-        ok: false,
-        latencyMs: Math.round(performance.now() - started),
-        error: error instanceof Error ? error.message : String(error),
-      });
+      attempts.push({ endpoint, ok: false, latencyMs: Math.round(performance.now() - started), error: error instanceof Error ? error.message : String(error) });
     }
   }
   const error = lastError ?? new Error("No Overpass endpoint configured");
@@ -119,19 +121,10 @@ async function fetchOverpass(query) {
   throw error;
 }
 
-function elementCoordinate(element) {
-  const latitude = typeof element.lat === "number" ? element.lat : element.center?.lat;
-  const longitude = typeof element.lon === "number" ? element.lon : element.center?.lon;
-  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
-  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
-  return { latitude, longitude };
-}
-
 function categoryOf(tags = {}) {
-  if (tags.amenity) return tags.amenity;
-  if (tags.shop) return tags.shop;
-  if (tags.leisure) return tags.leisure;
-  if (tags.public_transport) return "public_transport";
+  for (const [key, value, category] of CATEGORY_QUERIES) {
+    if (tags[key] === value) return category;
+  }
   return "other";
 }
 
@@ -139,21 +132,19 @@ function selectPoints(elements) {
   const normalized = [];
   const seenCoordinates = new Set();
   for (const element of elements || []) {
-    const coordinate = elementCoordinate(element);
-    if (!coordinate) continue;
-    const key = `${coordinate.latitude.toFixed(6)},${coordinate.longitude.toFixed(6)}`;
+    if (!Number.isFinite(element.lat) || !Number.isFinite(element.lon)) continue;
+    const key = `${element.lat.toFixed(6)},${element.lon.toFixed(6)}`;
     if (seenCoordinates.has(key)) continue;
     seenCoordinates.add(key);
     normalized.push({
       osmRef: `${element.type}/${element.id}`,
       name: element.tags?.name || element.tags?.["name:fr"] || element.tags?.["name:en"] || `${element.type}/${element.id}`,
       category: categoryOf(element.tags),
-      coordinate,
+      coordinate: { latitude: element.lat, longitude: element.lon },
       named: Boolean(element.tags?.name || element.tags?.["name:fr"] || element.tags?.["name:en"]),
     });
   }
   normalized.sort((a, b) => Number(b.named) - Number(a.named) || a.osmRef.localeCompare(b.osmRef));
-
   const selected = [];
   const selectedRefs = new Set();
   for (const category of PREFERRED_CATEGORIES) {
@@ -194,9 +185,7 @@ async function routeMatrix(points) {
   const started = performance.now();
   const payload = await fetchJson(url, {}, 2, 25_000);
   const latencyMs = Math.round(performance.now() - started);
-  if (payload.code !== "Ok" || !Array.isArray(payload.durations)) {
-    throw new Error(`OSRM table failed: ${payload.code || "unknown"}`);
-  }
+  if (payload.code !== "Ok" || !Array.isArray(payload.durations)) throw new Error(`OSRM table failed: ${payload.code || "unknown"}`);
   let reachable = 0;
   let total = 0;
   for (let row = 0; row < payload.durations.length; row += 1) {
@@ -219,7 +208,6 @@ async function main() {
   await mkdir(OUTPUT_DIR, { recursive: true });
   const generatedAt = new Date().toISOString();
   const cities = [];
-
   try {
     for (const city of CITIES) {
       const nearby = await sampleCity(city);
@@ -227,18 +215,11 @@ async function main() {
       if (nearby.categoryCount < 4) throw new Error(`${city}: category diversity too low (${nearby.categoryCount}/4 required)`);
       const routing = await routeMatrix(nearby.points);
       cities.push({ city, nearby, routing });
-      await writeReport({ schema: "ANNOUNCEMENT_PAGE_L5_GEO_BAKEOFF_PROGRESS_V1", generatedAt, status: "running", cities });
+      await writeReport({ schema: "ANNOUNCEMENT_PAGE_L5_GEO_BAKEOFF_PROGRESS_V2", generatedAt, status: "running", cities });
       await sleep(1_100);
     }
   } catch (error) {
-    await writeReport({
-      schema: "ANNOUNCEMENT_PAGE_L5_GEO_BAKEOFF_FAILURE_V1",
-      generatedAt,
-      status: "failed",
-      error: error instanceof Error ? error.message : String(error),
-      overpassAttempts: error?.overpassAttempts || null,
-      cities,
-    });
+    await writeReport({ schema: "ANNOUNCEMENT_PAGE_L5_GEO_BAKEOFF_FAILURE_V2", generatedAt, status: "failed", error: error instanceof Error ? error.message : String(error), overpassAttempts: error?.overpassAttempts || null, cities });
     throw error;
   }
 
@@ -250,10 +231,10 @@ async function main() {
   if (routingReachableRatio < 0.75) throw new Error(`ANN-L5 routing coverage too low: ${(routingReachableRatio * 100).toFixed(1)}%`);
 
   const report = {
-    schema: "ANNOUNCEMENT_PAGE_L5_GEO_BAKEOFF_V2",
+    schema: "ANNOUNCEMENT_PAGE_L5_GEO_BAKEOFF_V3",
     generatedAt,
     status: "success",
-    scope: { cities: CITIES, requiredPoints: 32, samplePerCity: SAMPLE_PER_CITY, minimumCategoriesPerCity: 4, searchRadiusMeters: SEARCH_RADIUS_METERS },
+    scope: { cities: CITIES, requiredPoints: 32, samplePerCity: SAMPLE_PER_CITY, minimumCategoriesPerCity: 4, searchRadiusMeters: SEARCH_RADIUS_METERS, maxCandidatesPerCategory: 2 },
     providers: {
       geocoding: { id: "nominatim-public-benchmark", endpoint: NOMINATIM_ENDPOINT, productionApproved: false },
       nearby: { id: "overpass-public-benchmark", endpoints: OVERPASS_ENDPOINTS, attribution: "© OpenStreetMap contributors", productionApproved: false },
@@ -265,23 +246,16 @@ async function main() {
   await writeReport(report);
 
   const lines = [
-    "# ANN-L5 Morocco Geo Bake-off",
-    "",
-    `Generated: ${generatedAt}`,
+    "# ANN-L5 Morocco Geo Bake-off", "", `Generated: ${generatedAt}`,
     `Real OSM sample points: ${totalPoints}`,
-    `OSRM reachable matrix pairs: ${totalReachable}/${totalPairs} (${(routingReachableRatio * 100).toFixed(1)}%)`,
-    "",
+    `OSRM reachable matrix pairs: ${totalReachable}/${totalPairs} (${(routingReachableRatio * 100).toFixed(1)}%)`, "",
     "| City | Points | Categories | Geocode | Overpass | OSRM | Reachable |",
     "|---|---:|---:|---:|---:|---:|---:|",
     ...cities.map((entry) => `| ${entry.city} | ${entry.nearby.points.length} | ${entry.nearby.categoryCount} | ${entry.nearby.geocode.latencyMs} ms | ${entry.nearby.latencyMs} ms | ${entry.routing.latencyMs} ms | ${entry.routing.reachablePairs}/${entry.routing.totalPairs} |`),
-    "",
-    "Nominatim, public Overpass and OSRM demo endpoints are benchmark-only and are not approved as AkarFinder production dependencies.",
+    "", "Nominatim, public Overpass and OSRM demo endpoints are benchmark-only and are not approved as AkarFinder production dependencies.",
   ];
   await writeFile(`${OUTPUT_DIR}/benchmark.md`, `${lines.join("\n")}\n`, "utf8");
   console.log(JSON.stringify({ totalPoints, routingReachableRatio, cities: cities.map((entry) => ({ city: entry.city, points: entry.nearby.points.length, categories: entry.nearby.categoryCount, overpassHost: new URL(entry.nearby.endpoint).host })) }, null, 2));
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.stack || error.message : error);
-  process.exitCode = 1;
-});
+main().catch((error) => { console.error(error instanceof Error ? error.stack || error.message : error); process.exitCode = 1; });
