@@ -2,7 +2,7 @@
 
 **Lot : ANN-L5 — Geo Foundation**  
 **Date de vérification documentaire : 2026-08-16**  
-**Statut : EN COURS — métriques live exact-head à injecter après gate CI**
+**Statut : EN COURS — métriques live exact-head à injecter après certification**
 
 ## Objectif
 
@@ -16,17 +16,23 @@ Aucun endpoint public communautaire n'est autorisé comme dépendance production
 
 ## Bake-off live exact-head
 
-Le gate `Announcement Page L5 Geo Foundation` exécute un benchmark léger et borné :
+Le workflow `Announcement Page L5 Geo Foundation` exécute les contrats statiques et TypeScript à chaque PR/push pertinent. Le benchmark réseau live est volontairement isolé à une branche de certification pointant sur **le même SHA que le head final** :
+
+`agent/announcement-page-l5-geo-certification`
+
+Le live est borné :
 
 - 4 villes : Rabat, Casablanca, Marrakech, Tanger ;
 - 8 POI OpenStreetMap réels par ville ;
 - **32 points minimum** ;
-- 1 requête Overpass par ville ;
+- **>= 4 catégories différentes par ville** ;
+- au plus une requête Overpass réussie par ville ;
+- fallback entre deux instances publiques globales documentées par OSM si la première refuse la requête ;
 - 1 matrice OSRM par ville ;
 - latence observée et connectivité routée enregistrées dans l'artefact CI ;
 - seuil de sortie : 32 points minimum et ratio de paires routables >= 75 %.
 
-Les métriques live ne sont jamais codées en dur dans ce document. Elles proviennent uniquement de l'artefact du head certifié.
+Cette séparation évite de transformer un service public communautaire en dépendance de CI à chaque commit. Les métriques live ne sont jamais codées en dur dans ce document : elles proviennent uniquement de l'artefact du SHA certifié.
 
 ## Candidats et contraintes documentées
 
@@ -59,9 +65,9 @@ Les métriques live ne sont jamais codées en dur dans ce document. Elles provie
 
 ## Décision d'architecture ANN-L5
 
-1. **Provider-neutral obligatoire** : aucun nom fournisseur dans les composants React.
+1. **Provider-neutral obligatoire** : aucun nom fournisseur dans la surface React de la fiche.
 2. **Sélection runtime réversible** : ordre piloté par `AKAR_GEO_NEARBY_PROVIDERS`, `AKAR_GEO_ROUTING_PROVIDERS`, `AKAR_GEO_ISOCHRONE_PROVIDERS`, `AKAR_GEO_STREET_IMAGERY_PROVIDERS`.
-3. **Fail-closed** : preuve sans attribution, future ou expirée = inutilisable ; panne provider = failover ordonné ; tous les providers indisponibles = état explicite `unavailable`.
+3. **Fail-closed** : preuve sans attribution, future, sans `expiresAt` explicite ou expirée = inutilisable ; panne provider = failover ordonné ; tous les providers indisponibles = état explicite `unavailable`.
 4. **Routing / isochrone** : origine typée `ExactGeoTruth` uniquement.
 5. **Public OSM/OSRM** : utilisés pour le bake-off borné, jamais considérés comme SLA de production.
 6. **Production** : préférer un adapter OSM/self-hosted ou credentialed dont les droits de cache/rendu sont compatibles avec la fiche AkarFinder. La décision finale de provider concret ne doit pas être simulée en l'absence de credentials et de mesure live.
@@ -70,8 +76,8 @@ Les métriques live ne sont jamais codées en dur dans ce document. Elles provie
 
 Aucun human gate produit n'est requis. Le lot reste techniquement ouvert jusqu'à :
 
-- gate exact-head vert ;
-- artefact bake-off >= 32 points inspecté ;
+- gate statique du head final vert ;
+- branche de certification créée sur ce SHA exact ;
+- live bake-off vert et artefact >= 32 points inspecté ;
 - métriques live reportées dans le closeout ;
-- décision production explicitement bornée par les droits observés ;
-- merge + closeout canonique + progression 42/100.
+- merge runtime + closeout canonique + progression 42/100.
