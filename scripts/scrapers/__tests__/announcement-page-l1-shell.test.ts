@@ -39,6 +39,19 @@ describe("ANN-L1 premium shell", () => {
     assert.doesNotMatch(shell, /PropertyDecisionHeader/);
   });
 
+  it("ships truthful loading and unavailable states with the same Search chrome", () => {
+    const loading = read("app/listings/[id]/loading.tsx");
+    const notFound = read("app/listings/[id]/not-found.tsx");
+
+    assert.match(loading, /<SiteHeader searchMode fluid \/>/);
+    assert.match(loading, /aria-busy="true"/);
+    assert.match(loading, /data-announcement-loading="ann-l1"/);
+    assert.match(notFound, /<SiteHeader searchMode fluid \/>/);
+    assert.match(notFound, /Annonce indisponible/);
+    assert.match(notFound, /ne plus être publiable sur AkarFinder/);
+    assert.doesNotMatch(notFound, /vendu|réservé|supprimé par le vendeur/i);
+  });
+
   it("provides a deterministic noindex visual QA route using the same shell", () => {
     const qa = read("app/visual-qa/announcement-page/page.tsx");
     assert.match(qa, /robots:\s*\{ index: false, follow: false \}/);
