@@ -88,11 +88,16 @@ describe("ANN-L0 media truth", () => {
     assert.equal(evaluateAnnouncementFeature("full_gallery", evidence).allowed, false);
   });
 
-  it("requires at least two authorized assets for a gallery", () => {
+  it("requires both image display permission and at least two assets for a gallery", () => {
     const evidence = allowedBase();
     evidence.media.gallery_allowed = true;
+    evidence.media.usable_image_count = 2;
+    assert.equal(evaluateAnnouncementFeature("full_gallery", evidence).allowed, false);
+
+    evidence.media.image_display_allowed = true;
     evidence.media.usable_image_count = 1;
     assert.equal(evaluateAnnouncementFeature("full_gallery", evidence).allowed, false);
+
     evidence.media.usable_image_count = 2;
     assert.equal(evaluateAnnouncementFeature("full_gallery", evidence).allowed, true);
   });
@@ -107,12 +112,21 @@ describe("ANN-L0 geographic truth", () => {
     assert.equal(decision.reason, "exact_geo_required");
   });
 
-  it("allows neighborhood POIs from exact or neighborhood precision only when provider-verified", () => {
+  it("requires usable geo, verified POI provider and a valid observation timestamp", () => {
     const evidence = allowedBase();
     evidence.geo.precision = "neighborhood_centroid";
     evidence.nearby.poi_count = 8;
     assert.equal(evaluateAnnouncementFeature("neighborhood_pois", evidence).allowed, false);
+
     evidence.nearby.provider_verified = true;
+    let decision = evaluateAnnouncementFeature("neighborhood_pois", evidence);
+    assert.equal(decision.allowed, false);
+    assert.equal(decision.reason, "fresh_poi_observation_required");
+
+    evidence.nearby.observed_at = "not-a-date";
+    assert.equal(evaluateAnnouncementFeature("neighborhood_pois", evidence).allowed, false);
+
+    evidence.nearby.observed_at = "2026-08-16T03:55:00Z";
     assert.equal(evaluateAnnouncementFeature("neighborhood_pois", evidence).allowed, true);
   });
 
@@ -121,6 +135,7 @@ describe("ANN-L0 geographic truth", () => {
     evidence.geo.precision = "city_centroid";
     evidence.nearby.provider_verified = true;
     evidence.nearby.poi_count = 20;
+    evidence.nearby.observed_at = "2026-08-16T03:55:00Z";
     const decision = evaluateAnnouncementFeature("neighborhood_pois", evidence);
     assert.equal(decision.allowed, false);
     assert.equal(decision.reason, "neighborhood_geo_required");
@@ -152,19 +167,44 @@ describe("ANN-L0 geographic truth", () => {
 });
 
 describe("ANN-L0 street imagery truth", () => {
-  it("requires a verified provider and attributable asset", () => {
+  it("rejects street context at city precision even with a provider asset", () => {
     const evidence = allowedBase();
+    evidence.geo.precision = "city_centroid";
+    evidence.street_imagery.provider_verified = true;
+    evidence.street_imagery.attributable_asset_available = true;
+    evidence.street_imagery.observed_at = "2026-08-16T03:55:00Z";
+    const decision = evaluateAnnouncementFeature("street_imagery", evidence);
+    assert.equal(decision.allowed, false);
+    assert.equal(decision.reason, "street_context_geo_required");
+  });
+
+  it("requires a verified attributable asset and a valid observation timestamp", () => {
+    const evidence = allowedBase();
+    evidence.geo.precision = "exact";
     evidence.street_imagery.provider_verified = true;
     assert.equal(evaluateAnnouncementFeature("street_imagery", evidence).allowed, false);
+
     evidence.street_imagery.attributable_asset_available = true;
+    let decision = evaluateAnnouncementFeature("street_imagery", evidence);
+    assert.equal(decision.allowed, false);
+    assert.equal(decision.reason, "street_observation_required");
+
+    evidence.street_imagery.observed_at = "2026-08-16T03:55:00Z";
     assert.equal(evaluateAnnouncementFeature("street_imagery", evidence).allowed, true);
   });
 });
 
 describe("ANN-L0 intelligence truth", () => {
-  it("renders AkarScore only when a real score exists", () => {
+  it("renders AkarScore only when a score exists inside the canonical 0..100 range", () => {
     const evidence = allowedBase();
     assert.equal(evaluateAnnouncementFeature("akar_score", evidence).allowed, false);
+
+    evidence.intelligence.akar_score = -1;
+    assert.equal(evaluateAnnouncementFeature("akar_score", evidence).allowed, false);
+
+    evidence.intelligence.akar_score = 101;
+    assert.equal(evaluateAnnouncementFeature("akar_score", evidence).allowed, false);
+
     evidence.intelligence.akar_score = 82;
     assert.equal(evaluateAnnouncementFeature("akar_score", evidence).allowed, true);
   });
@@ -181,7 +221,7 @@ describe("ANN-L0 intelligence truth", () => {
     assert.equal(evaluateAnnouncementFeature("comparables", evidence).allowed, true);
   });
 
-  it("does not fabricate price history from a single non-price observation", () => {
+  it("does not fabricate price history from a non-price observation", () => {
     const evidence = allowedBase();
     evidence.history.observation_count = 3;
     assert.equal(evaluateAnnouncementFeature("price_history", evidence).allowed, false);
@@ -189,12 +229,15 @@ describe("ANN-L0 intelligence truth", () => {
     assert.equal(evaluateAnnouncementFeature("price_history", evidence).allowed, true);
   });
 
-  it("requires certified estimate with an internally valid range", () => {
+  it("requires certified estimate with a positive internally valid range", () => {
     const evidence = allowedBase();
     evidence.intelligence.estimate_certified = true;
     evidence.intelligence.estimate_value = 2_000_000;
     evidence.intelligence.estimate_low = 2_100_000;
     evidence.intelligence.estimate_high = 2_300_000;
+    assert.equal(evaluateAnnouncementFeature("akar_estimate", evidence).allowed, false);
+
+    evidence.intelligence.estimate_low = -1;
     assert.equal(evaluateAnnouncementFeature("akar_estimate", evidence).allowed, false);
 
     evidence.intelligence.estimate_low = 1_800_000;
