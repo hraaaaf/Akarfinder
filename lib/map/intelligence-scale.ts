@@ -31,7 +31,7 @@ export type IntelligenceScaleResult = {
 
 function isUsable(input: IntelligenceScaleInput, mode: IntelligenceMode): boolean {
   if (input.value == null || !Number.isFinite(input.value) || input.value < 0) return false;
-  if (mode === "price" && (!input.reliability || input.reliability === "insufficient")) return false;
+  if (mode === "price" && (input.value <= 0 || !input.reliability || input.reliability === "insufficient")) return false;
   return true;
 }
 
