@@ -54,6 +54,20 @@ test("density payload uses one reproducible scale for legend and fills", () => {
   }
 });
 
+test("every mode carries the same transaction-scoped defensible KPI summary", () => {
+  for (const mode of ["price", "density", "listings"] as const) {
+    const payload = buildRabatIntelligenceGeoJson({ geometry, metrics, mode, transaction: "sale" });
+    const agdal = payload.features.find((feature) => feature.properties.slug === "agdal")!;
+    assert.deepEqual(agdal.properties.marketMetrics, {
+      priceMedianMadM2: 12_000,
+      priceSampleCount: 1,
+      priceReliability: "insufficient",
+      listingCount: 2,
+      listingDensityKm2: 2,
+    });
+  }
+});
+
 test("price payload keeps insufficient zones neutral without hiding real samples", () => {
   const payload = buildRabatIntelligenceGeoJson({ geometry, metrics, mode: "price", transaction: "sale" });
   const agdal = payload.features.find((feature) => feature.properties.slug === "agdal")!;
@@ -72,4 +86,6 @@ test("transaction scope never mixes rows", () => {
   assert.equal(payload.properties.legend.availableCount, 0);
   assert.ok(payload.features.every((feature) => feature.properties.neutral));
   assert.ok(payload.features.every((feature) => feature.properties.metricValue === null));
+  assert.ok(payload.features.every((feature) => feature.properties.marketMetrics.priceMedianMadM2 === null));
+  assert.ok(payload.features.every((feature) => feature.properties.marketMetrics.listingCount === 0));
 });
