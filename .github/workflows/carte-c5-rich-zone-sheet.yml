@@ -1,0 +1,30 @@
+name: Carte C5 Rich Zone Sheet
+
+on:
+  pull_request:
+    paths:
+      - "components/map/RabatMarketIntelligenceExperience.tsx"
+      - "components/map/RabatMarketZoneSheet.tsx"
+      - "scripts/scrapers/__tests__/carte-c5-rich-zone-sheet.test.ts"
+      - ".github/workflows/carte-c5-rich-zone-sheet.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-c5-sheet:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: C5 rich zone sheet contracts
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c5-rich-zone-sheet.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
