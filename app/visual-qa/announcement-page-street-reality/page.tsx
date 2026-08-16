@@ -83,8 +83,8 @@ function model(state: QaState): StreetRealityModel {
     visibility: context ? "context" : "full",
     referenceKind: context ? "neighborhood" : "property",
     referenceLabel: context ? "Vue de rue à proximité — Agdal" : "Vue de rue à proximité du bien",
-    providerId: "qa-street-provider",
-    attribution: "Fixture QA Street Provider",
+    providerId: "mapillary",
+    attribution: "Mapillary",
     observedAt: "2026-08-16T12:00:00.000Z",
     maxDistanceMeters: context ? 600 : 250,
     assets: [
@@ -95,6 +95,7 @@ function model(state: QaState): StreetRealityModel {
         capturedAt: "2026-07-01T10:00:00.000Z",
         thumbnailUrl: fallback ? null : "/visual-qa/announcement-page-street-reality/street-thumb",
         viewerUrl: "https://www.mapillary.com/app/?pKey=qa-street-1",
+        creatorUsername: "qa_mapper_one",
       },
       {
         id: `qa-street-${state}-2`,
@@ -103,6 +104,7 @@ function model(state: QaState): StreetRealityModel {
         capturedAt: null,
         thumbnailUrl: "/visual-qa/announcement-page-street-reality/street-thumb",
         viewerUrl: "https://www.mapillary.com/app/?pKey=qa-street-2",
+        creatorUsername: "qa_mapper_two",
       },
     ],
   };
