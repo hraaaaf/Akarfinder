@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight, Info, MapPin, Search, X } from "lucide-react";
 import { getNeighborhoodBySlug } from "@/lib/map/canonical-neighborhood-data";
 import type { RabatIntelligenceGeoJson } from "@/lib/map/intelligence-payload";
-import type { IntelligenceMode } from "@/lib/map/intelligence-scale";
+import type { IntelligenceMode, ReliabilityState } from "@/lib/map/intelligence-scale";
 import { withMapLocation, type MapNavigationState } from "@/lib/map/map-navigation-state";
 
 type IntelligenceFeature = RabatIntelligenceGeoJson["features"][number];
@@ -18,6 +18,33 @@ type RabatMarketZoneSheetProps = {
   navigationState: MapNavigationState;
   onNavigationChange: (nextState: MapNavigationState) => void;
 };
+
+function reliabilityLabel(value: ReliabilityState) {
+  if (value === "strong") return "Forte";
+  if (value === "moderate") return "Modérée";
+  if (value === "limited") return "Limitée";
+  return "Insuffisante";
+}
+
+function zonePolygonPoints(geometry: IntelligenceFeature["geometry"]): string | null {
+  const ring = geometry.type === "Polygon" ? geometry.coordinates[0] : geometry.coordinates[0]?.[0];
+  if (!ring || ring.length < 3) return null;
+  const xs = ring.map(([x]) => x);
+  const ys = ring.map(([, y]) => y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const spanX = Math.max(maxX - minX, Number.EPSILON);
+  const spanY = Math.max(maxY - minY, Number.EPSILON);
+  return ring
+    .map(([x, y]) => {
+      const px = 8 + ((x - minX) / spanX) * 84;
+      const py = 8 + (1 - (y - minY) / spanY) * 44;
+      return `${px.toFixed(2)},${py.toFixed(2)}`;
+    })
+    .join(" ");
+}
 
 export function RabatMarketZoneSheet({
   feature,
@@ -35,6 +62,14 @@ export function RabatMarketZoneSheet({
     : null;
   const proximityHighlights = neighborhood?.proximityHighlights.slice(0, 2) ?? [];
   const lifestyleTags = neighborhood?.lifestyleTags.slice(0, 3) ?? [];
+  const metrics = feature.properties.marketMetrics;
+  const previewPoints = zonePolygonPoints(feature.geometry);
+  const priceLabel = metrics.priceMedianMadM2 == null
+    ? "Données insuff."
+    : `${Math.round(metrics.priceMedianMadM2).toLocaleString("fr-FR")} DH/m²`;
+  const densityLabel = metrics.listingDensityKm2 == null
+    ? "Données insuff."
+    : `${metrics.listingDensityKm2.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}/km²`;
 
   return (
     <aside
@@ -57,18 +92,62 @@ export function RabatMarketZoneSheet({
         </button>
       </div>
 
-      <div className="mt-3 rounded-xl border border-brand-primary/15 bg-brand-primary-soft/55 p-3" data-akarfinder-live-zone-metric>
-        <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-brand-primary">{modeLabel}</p>
-        <p className="mt-1 text-[17px] font-extrabold text-foreground">{metricLabel}</p>
-        <div className="mt-2 flex flex-wrap gap-1.5 text-[9px] font-bold text-muted-foreground">
-          <span className="rounded-full bg-surface px-2 py-1">n={feature.properties.sampleCount}</span>
-          {mode === "price" ? (
-            <span className="rounded-full bg-surface px-2 py-1">Fiabilité {feature.properties.reliability ?? "insufficient"}</span>
-          ) : null}
-          <span className="rounded-full bg-surface px-2 py-1">
-            {feature.properties.areaKm2.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} km²
-          </span>
+      <div className="mt-3 grid grid-cols-[92px_1fr] gap-3 rounded-xl border border-brand-primary/15 bg-brand-primary-soft/40 p-2.5" data-akarfinder-zone-polygon-preview>
+        <div className="grid h-16 place-items-center overflow-hidden rounded-lg bg-surface">
+          {previewPoints ? (
+            <svg viewBox="0 0 100 60" className="h-full w-full" role="img" aria-label={`Polygone de la zone ${feature.properties.displayName}`}>
+              <polygon points={previewPoints} className="fill-brand-primary/20 stroke-brand-primary" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+            </svg>
+          ) : (
+            <MapPin size={22} className="text-brand-primary" aria-hidden="true" />
+          )}
         </div>
+        <div className="flex min-w-0 flex-col justify-center">
+          <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground">Zone sélectionnée</p>
+          <p className="mt-1 text-[11px] font-extrabold text-foreground">{feature.properties.displayName}</p>
+          <p className="mt-1 text-[9px] font-semibold leading-4 text-muted-foreground">
+            {feature.properties.areaKm2.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} km² · géométrie certifiée
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 grid grid-cols-3 gap-2" data-akarfinder-zone-kpi-grid>
+        <div className={`rounded-xl border p-2 ${mode === "price" ? "border-brand-primary/45 bg-brand-primary-soft/55" : "border-border bg-surface/85"}`}>
+          <p className="text-[8px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">Prix médian / m²</p>
+          <p className="mt-1 break-words text-[11px] font-extrabold leading-4 text-foreground">{priceLabel}</p>
+        </div>
+        <div className={`rounded-xl border p-2 ${mode === "density" ? "border-brand-primary/45 bg-brand-primary-soft/55" : "border-border bg-surface/85"}`}>
+          <p className="text-[8px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">Densité</p>
+          <p className="mt-1 break-words text-[11px] font-extrabold leading-4 text-foreground">{densityLabel}</p>
+        </div>
+        <div className={`rounded-xl border p-2 ${mode === "listings" ? "border-brand-primary/45 bg-brand-primary-soft/55" : "border-border bg-surface/85"}`}>
+          <p className="text-[8px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">Annonces</p>
+          <p className="mt-1 text-[11px] font-extrabold leading-4 text-foreground">{metrics.listingCount.toLocaleString("fr-FR")}</p>
+        </div>
+      </div>
+
+      <div className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-surface-muted/70 px-2.5 py-2 text-[9px]" data-akarfinder-live-zone-metric>
+        <span className="font-extrabold text-brand-primary">Vue {modeLabel}</span>
+        <span className="truncate font-bold text-foreground">{metricLabel}</span>
+        <span className="shrink-0 font-semibold text-muted-foreground">n={feature.properties.sampleCount}</span>
+      </div>
+
+      <div className="mt-2 grid grid-cols-2 gap-2 text-[9px]" data-akarfinder-zone-data-quality>
+        <div className="rounded-lg border border-border bg-surface/85 p-2">
+          <p className="font-extrabold uppercase tracking-[0.08em] text-muted-foreground">Confiance des données</p>
+          <p className="mt-1 font-extrabold text-foreground">{reliabilityLabel(metrics.priceReliability)}</p>
+          <p className="mt-0.5 font-semibold text-muted-foreground">n prix={metrics.priceSampleCount}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-surface/85 p-2">
+          <p className="font-extrabold uppercase tracking-[0.08em] text-muted-foreground">Tendance 6 mois</p>
+          <p className="mt-1 font-bold text-muted-foreground">Indisponible</p>
+          <p className="mt-0.5 leading-3.5 text-muted-foreground">Historique insuffisant</p>
+        </div>
+      </div>
+
+      <div className="mt-2 rounded-lg border border-border bg-surface/85 p-2 text-[9px]" data-akarfinder-dominant-categories>
+        <p className="font-extrabold uppercase tracking-[0.08em] text-muted-foreground">Catégories dominantes</p>
+        <p className="mt-1 font-bold text-muted-foreground">Données insuffisantes pour une classification certifiée</p>
       </div>
 
       {neighborhood && (lifestyleTags.length > 0 || proximityHighlights.length > 0) ? (
