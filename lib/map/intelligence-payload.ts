@@ -49,6 +49,13 @@ export type RabatIntelligenceGeoJson = {
       fillColor: string;
       freshnessStatus: string | null;
       snapshotVersion: string | null;
+      marketMetrics: {
+        priceMedianMadM2: number | null;
+        priceSampleCount: number;
+        priceReliability: ReliabilityState;
+        listingCount: number;
+        listingDensityKm2: number | null;
+      };
     };
   }>;
 };
@@ -137,6 +144,13 @@ export function buildRabatIntelligenceGeoJson(input: {
           fillColor: neutral || classIndex == null ? INTELLIGENCE_PALETTES.neutral : colors[classIndex],
           freshnessStatus: row?.freshnessStatus ?? null,
           snapshotVersion: row?.snapshotVersion ?? null,
+          marketMetrics: {
+            priceMedianMadM2: row?.medianPricePerM2Mad ?? null,
+            priceSampleCount: row?.pricePerM2SampleCount ?? 0,
+            priceReliability: row?.priceReliability ?? "insufficient",
+            listingCount: row?.listingCount ?? 0,
+            listingDensityKm2: row?.observedListingDensityPerKm2 ?? null,
+          },
         },
       };
     }),
