@@ -120,6 +120,12 @@ try {
     await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 20000 });
     await page.locator("[data-akarfinder-intelligence-legend]").waitFor({ state: "visible", timeout: 20000 });
 
+    for (const tabName of ["Prix", "Densité", "Annonces"]) {
+      const tab = page.getByRole("tab", { name: tabName });
+      const fits = await tab.evaluate((element) => element.scrollWidth <= element.clientWidth + 1);
+      if (!fits) throw new Error(`C4 ${viewport.name} tab overflow: ${tabName}`);
+    }
+
     const densityPromise = waitForIntelligence(page, "density");
     await page.getByRole("tab", { name: "Densité" }).click();
     const densityPayload = await densityPromise;
@@ -164,6 +170,7 @@ try {
     await page.screenshot({ path: `${outDir}/c4-${viewport.name}-${viewport.width}x${viewport.height}.png`, fullPage: true });
     report.viewports.push({
       ...viewport,
+      tabsFit: true,
       projectedZoneId: target.feature.properties.zoneId,
       selectedDistrict: district,
       panelLabel,
