@@ -2,8 +2,8 @@
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
 **Version : 2026-08-16**  
-**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 NEXT**  
-**Progression stricte : 24 / 100 %.**
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 NEXT**  
+**Progression stricte : 33 / 100 %.**
 
 > Ce document est la sous-roadmap normative du chantier de refonte de `/listings/[id]`. `docs/ROADMAP.md` reste le registre canonique global AkarFinder. Les pourcentages ci-dessous sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
 
@@ -56,13 +56,26 @@
 - Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L3_CLOSEOUT.md`.
 - **Crédit officiel ANN-L3 : +6 %. Progression cumulée : 24 %. Prochain chemin critique : ANN-L4 Akar Intelligence.**
 
+## 0.4 Closeout ANN-L4 — Akar Intelligence ✅
+
+- **PR #735 ✅ MERGED** — merge `40393e76678789f5eb96a67aa595e292a255f229` ; exact head certifié `530ac0840349188a2445edac382ef4f4bc39bee3`.
+- Gate dédié `Announcement Page L4 Akar Intelligence`, run `31941210544` : contrats, TypeScript, production build, Chromium ciblé et upload artefact **SUCCESS**.
+- Artefact visuel `9262090123`, digest `sha256:2cd46cd802ee0d940366e60b34c9b8534400be8e6ef259c70e6d20d4cd2def8d`.
+- Rapport `ANNOUNCEMENT_PAGE_L4_AKAR_INTELLIGENCE_VISUAL_V1` : **11/11 captures, 0 finding** sur full 390/430/768/1280, no-score 390/1280, no-market, uncertified-market, attention, invalid-score et minimal ; H1=1, main=1, overflow=0, 0 erreur console/ressource.
+- Un seul `AkarInsightCard` projette AkarScore, couverture, marché admissible, multi-source et alertes ; aucun calcul d'intelligence nouveau n'est effectué dans React.
+- Score hors `[0,100]` : score et label valorisant masqués. Marché : affiché uniquement avec preuve explicite `market.certified`; `status=available` seul ne suffit pas. Property Fit `not_calculated` reste absent.
+- La preuve marché reste fail-closed sans fuite du marqueur interne `market_position_certified` dans le payload SERP public.
+- Non-régressions exact-head : L1, L2, L3, Decision Continuity, Mobile Decision, Canonical Compile, Gate 0, P0, P2 et Final Sweep **SUCCESS**.
+- Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L4_CLOSEOUT.md`.
+- **Crédit officiel ANN-L4 : +9 %. Progression cumulée : 33 %. Prochain chemin critique : ANN-L5 Geo Foundation.**
+
 ## 1. Vision produit
 
 Transformer la fiche actuelle en une expérience immobilière mobile-first, ultra premium, aussi simple à lire qu'une grande fiche Zillow-like mais différenciée par les forces propres d'AkarFinder : vérité des données, provenance, multi-source, fiabilité, intelligence marché Maroc, expérience quartier mesurée et personnalisation `Mon Projet`.
 
 La page ne doit pas être un clone graphique de Zillow. **L'architecture d'information peut reprendre les meilleures conventions du marché ; l'identité visuelle reste celle du Search AkarFinder réel.**
 
-Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell ; ANN-L2 a livré le contrat média ; ANN-L3 a livré le Property Core. ANN-L4 poursuit la convergence sur l'intelligence AkarFinder.
+Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell ; ANN-L2 a livré le contrat média ; ANN-L3 a livré le Property Core ; ANN-L4 a livré le bloc Intelligence truth-safe. ANN-L5 ouvre désormais le socle géographique provider-agnostic.
 
 ## 2. Doctrine non négociable
 
@@ -329,13 +342,13 @@ Implémentation : `PropertyCore` devient la frontière canonique de l'identité 
 
 Gate CLOSED : exact head `a87bec0120fa850ac4cd7c946294bb233f7cf3b8`, run `31939718402` SUCCESS, **10/10 captures + 0 finding** ; données nulles/0, prix non communiqué, très long titre, sparse/dense facts, provenance conservée, H1=1, main=1 et overflow=0. Détails : `docs/ANNOUNCEMENT_PAGE_L3_CLOSEOUT.md`.
 
-### ANN-L4 — Akar Intelligence — 9 % — NEXT
+### ANN-L4 — Akar Intelligence — 9 % — ✅ CLOSED
 
-Implémentation : nouveau `AkarInsightCard` compact et lisible ; AkarScore /100, couverture, alertes, position marché, multi-source, Property Fit si calculé. Les métriques absentes disparaissent proprement.
+Implémentation : `AkarInsightCard` compact et lisible ; projection truth-safe de l'AkarScore /100, couverture, alertes, position marché admissible et multi-source. Property Fit reste absent tant qu'il n'est pas calculé. Aucun nouveau moteur d'intelligence n'est introduit dans React.
 
-Gate : aucun score ou fit synthétique ; labels non trompeurs ; version intelligence visible en debug/QA.
+Gate CLOSED : exact head `530ac0840349188a2445edac382ef4f4bc39bee3`, run `31941210544` SUCCESS, **11/11 captures + 0 finding** ; score absent/hors contrat, marché absent/non certifié, attention, minimal et responsive certifiés. Détails : `docs/ANNOUNCEMENT_PAGE_L4_CLOSEOUT.md`.
 
-### ANN-L5 — Geo Foundation — 9 %
+### ANN-L5 — Geo Foundation — 9 % — NEXT
 
 Implémentation :
 
@@ -454,8 +467,8 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L1 | 7 % | ✅ CLOSED | 7 % |
 | ANN-L2 | 7 % | ✅ CLOSED | 7 % |
 | ANN-L3 | 6 % | ✅ CLOSED | 6 % |
-| ANN-L4 | 9 % | NEXT | 0 % |
-| ANN-L5 | 9 % | NOT_STARTED | 0 % |
+| ANN-L4 | 9 % | ✅ CLOSED | 9 % |
+| ANN-L5 | 9 % | NEXT | 0 % |
 | ANN-L6 | 12 % | NOT_STARTED | 0 % |
 | ANN-L7 | 6 % | NOT_STARTED | 0 % |
 | ANN-L8 | 10 % | NOT_STARTED | 0 % |
@@ -465,4 +478,4 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L12 | 5 % | NOT_STARTED | 0 % |
 | ANN-L13 | 6 % | NOT_STARTED | 0 % |
 
-**Progression officielle actuelle : 24 / 100 %.**
+**Progression officielle actuelle : 33 / 100 %.**
