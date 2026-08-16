@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   buildPropertyMediaModel,
@@ -155,5 +156,33 @@ describe("ANN-L2 owner Storage boundary", () => {
     assert.equal(isSafeOwnerMediaStoragePath(draftId, `${draftId}/../secret.webp`), false);
     assert.equal(isSafeOwnerMediaStoragePath(draftId, `${draftId}/nested/photo.webp`), false);
     assert.equal(isSafeOwnerMediaStoragePath(draftId, ""), false);
+  });
+});
+
+describe("ANN-L2 production wiring", () => {
+  it("routes the active detail hero through PropertyMediaGallery", () => {
+    const detail = readFileSync("components/listings/PropertyDetailV2.tsx", "utf8");
+    assert.match(detail, /PropertyMediaGallery/);
+    assert.doesNotMatch(detail, /getListingImageMode/);
+    assert.doesNotMatch(detail, /<DbProviderThumbnail/);
+    assert.doesNotMatch(detail, /<ListingVisual/);
+  });
+
+  it("hydrates owner media from live representation draft_id using signed URLs", () => {
+    const owner = readFileSync("lib/seller/owner-listing-detail.ts", "utf8");
+    const media = readFileSync("lib/seller/owner-listing-media.ts", "utf8");
+    assert.match(owner, /draft_id/);
+    assert.match(owner, /queryOwnerListingMedia\(data\.draft_id, supabase\)/);
+    assert.match(owner, /main_image_url: mainImageUrl/);
+    assert.match(owner, /gallery_image_urls: galleryImageUrls/);
+    assert.match(owner, /can_show_gallery: mediaUrls\.length > 1/);
+    assert.match(media, /createSignedUrls/);
+    assert.match(media, /OWNER_LISTING_MEDIA_SIGNED_URL_TTL_SECONDS = 15 \* 60/);
+    assert.doesNotMatch(owner, /storage_path:/);
+  });
+
+  it("keeps listing detail request-dynamic so signed media is never statically frozen", () => {
+    const page = readFileSync("app/listings/[id]/page.tsx", "utf8");
+    assert.match(page, /export const dynamic = "force-dynamic"/);
   });
 });
