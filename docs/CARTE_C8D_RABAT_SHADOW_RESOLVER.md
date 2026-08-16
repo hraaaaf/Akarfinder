@@ -71,6 +71,8 @@ Principales cohortes uniques candidates observées :
 
 Aucun chiffre de cette section n'est une métrique marché publiée ni une résolution geo production.
 
+Le snapshot machine-readable est archivé dans `data/geo/rabat-shadow-audit-2026-08-16.json` et sa cohérence interne est couverte par un test dédié.
+
 ## Validation croisée sur vérités geo existantes
 
 Gold set disponible dans le corpus : **40 annonces** dont le dernier `geo_resolution_event` est `resolved` vers Agdal, Hay Riad, Hassan, Souissi ou Océan.
@@ -108,4 +110,6 @@ L'inventaire structuré `property_listings` Rabat ne révèle aucun district hor
 
 ## Gate suivant
 
-Après CI exact-head, le prochain lot sûr est un **audit shadow reproductible**/manifesté par source et localité, puis une proposition d'autorité DB bornée. Toute création de `geo_entity`/`geo_alias` ou écriture de `geo_resolution_event` production reste un human gate séparé.
+Le corpus audit et son manifest sont maintenant produits. Après CI exact-head de ce lot, la prochaine étape sûre est une **proposition d'autorité DB bornée et read-only** : définir exactement les `geo_entity`/aliases qui seraient nécessaires, leur parent, leur provenance, le cohort impacté et les conflits attendus, sans les créer.
+
+Toute création de `geo_entity`/`geo_alias` ou écriture de `geo_resolution_event` production reste un human gate séparé.
