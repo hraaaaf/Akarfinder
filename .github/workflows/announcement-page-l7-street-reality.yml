@@ -1,0 +1,48 @@
+name: Announcement Page L7 Street Reality
+
+on:
+  pull_request:
+    paths:
+      - ".env.local.example"
+      - "lib/geo/**"
+      - "lib/property-detail/announcement-page-truth-contract-v1.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l7-street-imagery-provider.test.ts"
+      - ".github/workflows/announcement-page-l7-street-reality.yml"
+  push:
+    branches:
+      - main
+      - agent/announcement-page-l7-street-reality
+    paths:
+      - ".env.local.example"
+      - "lib/geo/**"
+      - "lib/property-detail/announcement-page-truth-contract-v1.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l7-street-imagery-provider.test.ts"
+      - ".github/workflows/announcement-page-l7-street-reality.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  street-reality-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ANN-L7 Mapillary provider truth boundaries
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/announcement-page-l7-street-imagery-provider.test.ts
+          scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts
+          scripts/scrapers/__tests__/announcement-page-l5-geo-foundation.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
