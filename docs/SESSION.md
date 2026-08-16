@@ -4,6 +4,20 @@
 
 Ce fichier est le handover opérationnel court. `README.md` porte l’identité/doctrine et `docs/ROADMAP.md` reste l’unique roadmap canonique.
 
+## SEARCH Price Extraction v5 ✅ CLOSED
+
+- **PR #688 ✅ MERGED** — merge `615aaf57bea1288ead1a31d22fb187b95cb6b40b`.
+- Head exact certifié : `4df4c53a5138e021352dbd048dcd034664709981`.
+- Gate v5 finale : run `31917789799` — `certify` SUCCESS + `production-canary-read-only` SUCCESS ; `production-bounded-write` SKIPPED sur PR.
+- Bounded write historique v5 : run `31904092395` — **92 planned / 92 written**, dont **33 Mubawab + 59 Masaken** directement attribués au lot.
+- Baseline fiable : **2 703 / 15 438 = 17,51 %**.
+- Dernier snapshot production exact observé avant closeout : **2 838 / 15 438 = 18,38 %** ; gain global observé **+135 / +0,87 point**, sans attribuer à v5 la variation concurrente au-delà des 92 écritures prouvées.
+- Le `COUNT exact` Supabase reste un observateur non bloquant après erreurs intermittentes vides ; tests, TypeScript et audits read-only restent les gates fonctionnels.
+- Toute future écriture prix v5 reste manuelle via `workflow_dispatch` + `execute_write=true`, plafond <= 100 ; aucun write automatique sur PR/push.
+- Mouldar reste HOLD HTTP 403 ; Agenz HTTP 429 respecté ; 44 prix indicatifs Agenz restent hors métrique fiable ; aucun bypass.
+- Preuve détaillée : `docs/PRICE_EXTRACTION_V5_AUDIT.md`.
+- Suite Search prix : mesurer read-only des cohortes paginées au-delà des 120 plus récents avant tout nouveau bounded write ; ne pas relâcher les règles de fiabilité pour atteindre un objectif numérique.
+
 ## Carte intelligence marché — C1 Market Zones ✅ CLOSED
 
 - **C0 + C1 CLOSED = 2/8 = 25 %**.
@@ -106,4 +120,4 @@ Ce fichier est le handover opérationnel court. `README.md` porte l’identité/
 
 ## Reprise exacte
 
-**Carte intelligence marché : C0 + C1 CLOSED, progression stricte 2/8 = 25 %. Prochaine action : C2 métriques réelles par zone en Shadow. En parallèle, les échecs GitHub rouges récents ne proviennent pas d’une panne générale des runners : SEARCH Price Extraction v5 échoue sur le comptage Supabase production, tandis qu’un audit UX a échoué sur le téléchargement externe Google Fonts.**
+**SEARCH Price Extraction v5 est CLOSED : PR #688 mergée, exact-head `4df4c53a5138e021352dbd048dcd034664709981`, run `31917789799` SUCCESS, 92/92 écritures v5 prouvées et dernier snapshot exact observé 2 838 / 15 438 = 18,38 %. Prochaine action Search prix : audit paginé read-only des cohortes Mubawab + Masaken au-delà des 120 plus récents avant tout nouveau write. En parallèle, Carte intelligence marché poursuit C2 en Shadow.**
