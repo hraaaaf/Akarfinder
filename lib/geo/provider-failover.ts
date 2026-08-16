@@ -25,25 +25,38 @@ export async function executeProviderFailover<P extends ProviderWithId, T extend
   now = new Date(),
 ): Promise<FailoverResult<T>> {
   const attemptedProviderIds: string[] = [];
+  let lastFailure: GeoProviderUnavailable | null = null;
 
   for (const provider of providers) {
     attemptedProviderIds.push(provider.id);
     try {
       const result = await execute(provider);
-      if (result.status === "available" && hasFreshProviderEvidence(result.evidence, now)) {
-        return { result, attemptedProviderIds };
+      if (result.status === "available") {
+        if (hasFreshProviderEvidence(result.evidence, now)) {
+          return { result, attemptedProviderIds };
+        }
+        lastFailure = {
+          status: "unavailable",
+          providerId: provider.id,
+          reason: "invalid_evidence",
+        };
+        continue;
       }
+      lastFailure = result;
     } catch {
-      // Provider failures are isolated. The public layer receives an explicit
-      // unavailable result if all configured providers fail.
+      lastFailure = {
+        status: "unavailable",
+        providerId: provider.id,
+        reason: "upstream_error",
+      };
     }
   }
 
   return {
-    result: {
+    result: lastFailure ?? {
       status: "unavailable",
-      providerId: attemptedProviderIds.at(-1) ?? "none",
-      reason: providers.length === 0 ? "not_configured" : "upstream_error",
+      providerId: "none",
+      reason: "not_configured",
     },
     attemptedProviderIds,
   };
