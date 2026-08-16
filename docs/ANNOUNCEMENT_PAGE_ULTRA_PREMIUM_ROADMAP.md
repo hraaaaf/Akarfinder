@@ -2,8 +2,8 @@
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
 **Version : 2026-08-16**  
-**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 NEXT**  
-**Progression stricte : 54 / 100 %.**
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 NEXT**  
+**Progression stricte : 60 / 100 %.**
 
 > Ce document est la sous-roadmap normative du chantier de refonte de `/listings/[id]`. `docs/ROADMAP.md` reste le registre canonique global AkarFinder. Les pourcentages ci-dessous sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
 
@@ -93,13 +93,24 @@
 - Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L6_CLOSEOUT.md` et `docs/ANNOUNCEMENT_PAGE_L6_HUMAN_SAMPLE.md`.
 - **Crédit officiel ANN-L6 : +12 %. Progression cumulée : 54 %. Prochain chemin critique : ANN-L7 Street Reality.**
 
+## 0.7 Closeout ANN-L7 — Street Reality ✅
+
+- **PR #749 ✅ MERGED** — merge `737e490efbe671920f63f1b22e2591934fc28d27` ; exact head certifié `d46ba0dde69bb7c183998deb08f3ff96c4a780be`.
+- Gate dédié `Announcement Page L7 Street Reality`, run `31950387903` : **64/64 tests PASS**, TypeScript, production build, Chromium ciblé et upload artefact **SUCCESS**.
+- Artefact visuel `9264498215`, digest `sha256:e3e160b3074d1f1ac725f87e433e721fe6227ed9e0eaf01777dce6f7e47abb00` ; **8/8 captures, 0 finding**.
+- `Street Reality` reste fail-closed : exact ou contexte quartier uniquement ; city-centroid/unknown masqués ; seuils publics **250 m exact / 600 m quartier** ; aucune image présentée comme photo du logement.
+- Adapter Mapillary provider-agnostic, credentials server-only, preuve TTL ≤24 h, attribution Mapillary + auteur, miniatures éphémères non persistées.
+- Aucune couverture live Mapillary n'est revendiquée sans credential de certification accessible.
+- Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L7_CLOSEOUT.md`.
+- **Crédit officiel ANN-L7 : +6 %. Progression cumulée : 60 %. Prochain chemin critique : ANN-L8 Marché & comparables.**
+
 ## 1. Vision produit
 
 Transformer la fiche actuelle en une expérience immobilière mobile-first, ultra premium, aussi simple à lire qu'une grande fiche Zillow-like mais différenciée par les forces propres d'AkarFinder : vérité des données, provenance, multi-source, fiabilité, intelligence marché Maroc, expérience quartier mesurée et personnalisation `Mon Projet`.
 
 La page ne doit pas être un clone graphique de Zillow. **L'architecture d'information peut reprendre les meilleures conventions du marché ; l'identité visuelle reste celle du Search AkarFinder réel.**
 
-Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell ; ANN-L2 a livré le contrat média ; ANN-L3 a livré le Property Core ; ANN-L4 a consolidé l'intelligence AkarFinder ; ANN-L5 a livré la fondation géographique provider-agnostic ; ANN-L6 a livré `Vivre ici`. ANN-L7 ouvre maintenant `Street Reality`.
+Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell ; ANN-L2 a livré le contrat média ; ANN-L3 a livré le Property Core ; ANN-L4 a consolidé l'intelligence AkarFinder ; ANN-L5 a livré la fondation géographique provider-agnostic ; ANN-L6 a livré `Vivre ici`. ANN-L7 a livré `Street Reality`. ANN-L8 ouvre maintenant `Marché & comparables`.
 
 ## 2. Doctrine non négociable
 
@@ -400,11 +411,11 @@ Règles certifiées :
 
 Gate CLOSED : exact head `29fa58efdf4c25810f32d0be80b5c6bd05521992`, run statique/visuel `31947615421` SUCCESS, **8/8 captures + 0 finding**, run live `31947639368` SUCCESS avec 3/4 villes end-to-end, 0 finding de vérité et une dégradation externe explicitement tracée ; revue humaine archivée. Détails : `docs/ANNOUNCEMENT_PAGE_L6_CLOSEOUT.md`.
 
-### ANN-L7 — Street Reality — 6 % — NEXT
+### ANN-L7 — Street Reality — 6 % — ✅ CLOSED
 
 Implémentation : recherche d'imagerie street-level autour du point admissible, viewer léger, miniatures, distance/date/source. Mapillary est benchmarké mais non hardcodé dans l'UI.
 
-Gate : aucune image présentée comme le bien, seuil de distance explicite, attribution, état `non disponible` élégant.
+Gate CLOSED : exact head `d46ba0dde69bb7c183998deb08f3ff96c4a780be`, run `31950387903` SUCCESS, **64/64 tests PASS**, production build vert et **8/8 captures, 0 finding**. Détails : `docs/ANNOUNCEMENT_PAGE_L7_CLOSEOUT.md`.
 
 ### ANN-L8 — Marché & comparables — 10 %
 
@@ -496,8 +507,8 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L4 | 9 % | ✅ CLOSED | 9 % |
 | ANN-L5 | 9 % | ✅ CLOSED | 9 % |
 | ANN-L6 | 12 % | ✅ CLOSED | 12 % |
-| ANN-L7 | 6 % | NEXT | 0 % |
-| ANN-L8 | 10 % | NOT_STARTED | 0 % |
+| ANN-L7 | 6 % | ✅ CLOSED | 6 % |
+| ANN-L8 | 10 % | NEXT | 0 % |
 | ANN-L9 | 6 % | NOT_STARTED | 0 % |
 | ANN-L10 | 7 % | NOT_STARTED | 0 % |
 | ANN-L11 | 6 % | NOT_STARTED | 0 % |
