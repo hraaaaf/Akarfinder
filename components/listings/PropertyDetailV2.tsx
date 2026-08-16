@@ -297,6 +297,12 @@ export function PropertyDetailV2({
               {showContactActions ? <VisitRequestPanel listing={listing} /> : null}
               <CompareToggleButton listingId={listing.id} variant="block" />
               <FavoriteToggleButton listingId={listing.id} variant="block" />
+              <Link
+                href="/mon-projet"
+                className="hidden min-h-11 w-full items-center justify-center rounded-xl border border-[#d8c8a3] px-4 py-3 text-[13px] font-extrabold text-deepblue transition hover:border-[#0B63CE]/45 hover:bg-slate-50 lg:flex"
+              >
+                Continuer dans Mon Projet
+              </Link>
               {listing.listing_url ? (
                 <a href={listing.listing_url} target="_blank" rel="noopener noreferrer" className="flex w-full items-center justify-center rounded-xl border border-[#d8c8a3] px-4 py-3 text-[13px] font-extrabold text-deepblue">
                   Voir la source d’origine
