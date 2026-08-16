@@ -27,13 +27,15 @@ export function canDisplayRealImage(listing: Listing): boolean {
 }
 
 /**
- * Returns true only for partner_full listings with a gallery array.
- * preview_allowed partners may not host the full gallery.
+ * Returns true only for partner_full listings with an explicit public gallery
+ * capability and at least one gallery asset. preview_allowed partners may not
+ * host the full gallery even if extra URLs accidentally exist on the object.
  */
 export function canDisplayGallery(listing: Listing): boolean {
   return (
     listing.image_permission_status === "allowed" &&
     listing.source_access_level === "partner_full" &&
+    listing.can_show_gallery === true &&
     Array.isArray(listing.gallery_image_urls) &&
     listing.gallery_image_urls.length > 0
   );
@@ -41,9 +43,10 @@ export function canDisplayGallery(listing: Listing): boolean {
 
 /**
  * Determines how to render the listing's visual:
- * - "real_image"     → <Image src={listing.main_image_url} />
- * - "preview_image"  → <Image src={listing.main_image_url} /> with attribution
- * - "fallback_visual"→ <ListingVisual />
+ * - "real_image"     → real authorized property image
+ * - "preview_image"  → authorized preview only
+ * - "db_provider_thumbnail" → single risk-accepted provider preview
+ * - "fallback_visual"→ deterministic local visual
  */
 export function getListingImageMode(listing: Listing): ListingImageMode {
   const permission = listing.image_permission_status ?? "unknown";
