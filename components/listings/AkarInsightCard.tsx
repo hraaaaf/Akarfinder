@@ -10,6 +10,8 @@ const ICONS: Record<AkarInsightKey, typeof ChartNoAxesCombined> = {
 
 export function AkarInsightCard({ detail }: { detail: PublicPropertyDetailV2 }) {
   const model = buildAkarInsightModel(detail);
+  const hasContent = model.score != null || model.scoreLabel != null || model.coverageLabel != null || model.items.length > 0;
+  if (!hasContent) return null;
 
   return (
     <section
