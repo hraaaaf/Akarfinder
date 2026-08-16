@@ -16,8 +16,9 @@ export type FailoverResult<T extends ProviderResult> = {
 
 /**
  * Ordered, deterministic failover. Provider results only win when their
- * evidence is attributable and fresh. Invalid/empty/upstream results fail
- * closed and allow the next configured provider to try.
+ * evidence is attributable, fresh, and bound to the provider that produced
+ * the result. Invalid/empty/upstream results fail closed and allow the next
+ * configured provider to try.
  */
 export async function executeProviderFailover<P extends ProviderWithId, T extends ProviderResult>(
   providers: readonly P[],
@@ -32,7 +33,7 @@ export async function executeProviderFailover<P extends ProviderWithId, T extend
     try {
       const result = await execute(provider);
       if (result.status === "available") {
-        if (hasFreshProviderEvidence(result.evidence, now)) {
+        if (result.evidence.providerId === provider.id && hasFreshProviderEvidence(result.evidence, now)) {
           return { result, attemptedProviderIds };
         }
         lastFailure = {
