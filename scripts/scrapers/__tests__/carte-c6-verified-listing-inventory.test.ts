@@ -46,13 +46,17 @@ describe("Carte C6 — verified professional listing inventory", () => {
     assert.equal(resolveVerifiedListingMarketZone(null, null).market_zone_id, null);
   });
 
-  it("reads verified ownership only and remains read-only", () => {
+  it("reads verified ownership and trusted partner authority only, remaining read-only", () => {
     assert.ok(source.includes('.from("professional_listing_ownership")'));
     assert.ok(source.includes('.eq("status", "verified")'));
     assert.ok(source.includes('.eq("organization_id", organizationId)'));
     assert.ok(source.includes('.limit(boundedLimit)'));
+    assert.ok(source.includes('.from("professional_organizations")'));
+    assert.ok(source.includes("validation_status,activation_status,source_authorization_status"));
+    assert.ok(source.includes("classifyVerifiedInventoryProvenance"));
     assert.ok(source.includes('.from("property_listings")'));
     assert.ok(source.includes('resolveListingGeo(city, district)'));
+    assert.equal(source.includes("commercial_tier"), false);
 
     for (const forbidden of [".insert(", ".update(", ".upsert(", ".delete("]) {
       assert.equal(source.includes(forbidden), false, `unexpected write path: ${forbidden}`);
