@@ -7,17 +7,18 @@ Contrat métriques : `docs/CARTE_INTELLIGENCE_METRICS_CONTRACT.md`.
 Closeout C1 : `docs/MARKET_ZONES_C1_CLOSEOUT.md`.
 Closeout C2 : `docs/CARTE_C2_CLOSEOUT.md`.
 Closeout C3 : `docs/CARTE_C3_CLOSEOUT.md`.
+Closeout C4 : `docs/CARTE_C4_CLOSEOUT.md`.
 
 ## Progression stricte
 
-Lots CLOSED / 8 : **4 / 8 = 50 %**.
+Lots CLOSED / 8 : **5 / 8 = 62,5 %**.
 
 - C0 — Référentiel + audit de récupération : ✅ CLOSED
 - C1 — Géométrie quartier certifiée : ✅ CLOSED
 - C2 — Dataset métriques quartier v2 : ✅ CLOSED
 - C3 — API publique fail-closed + échelles : ✅ CLOSED
-- C4 — Heat map interactive conforme au mockup : 🟠 CURRENT
-- C5 — Fiche quartier riche : ⏭️
+- C4 — Heat map interactive conforme au mockup : ✅ CLOSED
+- C5 — Fiche quartier riche : 🟠 CURRENT
 - C6 — Fondation « nos annonces » : ⏭️
 - C7 — Certification 10/10 + closeout : ⏭️
 
@@ -98,17 +99,42 @@ Preuves :
 
 Limite conservée : la couverture Prix Rabat reste faible. Le mode Prix doit donc afficher des zones neutres lorsque la policy les classe `insufficient`; volume et densité ne doivent pas être confondus avec une preuve de représentativité nationale.
 
-## C4 — CURRENT
+## C4 — heat map interactive certifiée
 
-Objectif : remplacer l'expérience par repères/markers par la heat map polygonale conforme au référentiel cible, sans casser les parcours Carte déjà utiles.
+La vue Rabat de `/map` utilise désormais la heat map polygonale MapLibre C4, tout en conservant l'expérience historique pour les autres villes.
 
-Livrables requis :
-- trois tabs réels `Prix / Densité / Annonces` ;
-- consommation de l'API C3 ;
-- fills polygonaux issus du payload API ;
-- légende visible et contextuelle ;
-- état neutre explicite pour données insuffisantes ;
-- clic/tap polygonal → sélection stable de zone ;
-- CTA Search filtré sur la zone sélectionnée ;
-- conservation du comportement fail-closed et des autres parcours Carte ;
-- validation mobile + desktop + interaction MapLibre réelle avant fermeture C4.
+Contrats certifiés :
+- trois modes `Prix / Densité / Annonces` ;
+- séparation Vente / Location ;
+- fills et légende issus de C3 ;
+- état neutre explicite pour données absentes ou `insufficient` ;
+- aucun fallback chiffré ou coloré inventé ;
+- clic/tap réel sur un polygone → district canonique → panneau zone ;
+- CTA Search filtré sur la sélection et la transaction ;
+- cockpit mobile sans overflow des tabs ;
+- H1 sémantique présent ;
+- audit Responsive compatible avec les expériences legacy et intelligence.
+
+Preuves exact-head PR #703 `17a027bef93239355cb614251668e63fff05e71e` :
+- C4 Heatmap Gate `31922357603` : SUCCESS ;
+- P1A.6 Responsive Hardening `31922357579` : SUCCESS ;
+- Final Design Accessibility `31922357533` : SUCCESS ;
+- C4 Browser Smoke `31922357584` : SUCCESS ;
+- artefact `9256782867` ; digest `sha256:f9fba92e71d1a75aa261f612f9cc0cda1421d330b5e06e465558416cbc5d827a` ;
+- merge #703 : `97d1b070d4a8cd7eb9cce18de76d12b35b167b05`.
+
+Inspection browser : mobile 390 px et desktop 1280 px certifiés avec interaction MapLibre réelle, panneau/CTA fonctionnels et 0 page error / 0 échec de requête C3 dans le rapport final.
+
+## C5 — CURRENT
+
+Objectif : enrichir la fiche de zone sans modifier la vérité statistique C2/C3.
+
+Contrat préparé :
+- métriques live exclusivement C3 ;
+- contexte quartier canonique séparé des métriques ;
+- Agdal / Hay Riad / Hassan peuvent réutiliser les repères et tags déjà présents ;
+- Souissi ne reçoit aucun contexte inventé si le référentiel canonique ne le fournit pas ;
+- Search CTA et disclaimer `market_zone` conservés ;
+- fiche compacte mobile, sans masquer la navigation basse.
+
+PR de préparation empilée : #706, contrat gate `31922460927` : SUCCESS. Elle ne doit être mergée qu'après retarget/synchronisation sur le `main` contenant le closeout C4.
