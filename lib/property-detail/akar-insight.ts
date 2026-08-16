@@ -32,9 +32,7 @@ export function buildAkarInsightModel(detail: PublicPropertyDetailV2): AkarInsig
   const evidence = createEmptyAnnouncementTruthEvidence();
   evidence.page_access_allowed = true;
   evidence.intelligence.akar_score = detail.conclusion.akar_score;
-  // `available` is produced only when the canonical public intelligence projector
-  // emitted a market_context signal after its internal certification checks.
-  evidence.intelligence.market_position_certified = detail.market.status === "available";
+  evidence.intelligence.market_position_certified = detail.market.certified === true;
 
   const scoreAllowed = evaluateAnnouncementFeature("akar_score", evidence).allowed;
   const marketAllowed = evaluateAnnouncementFeature("market_position", evidence).allowed;
