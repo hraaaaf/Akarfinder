@@ -6,6 +6,20 @@ const OSRM_ENDPOINT = process.env.ANN_L5_OSRM_ENDPOINT || "https://router.projec
 const OUTPUT_DIR = process.env.ANN_L5_OUTPUT_DIR || "artifacts/announcement-page-l5-geo";
 const USER_AGENT = "AkarFinder-ANN-L5-Geo-Bakeoff/1.0 (+https://akarfinder.ma)";
 const SAMPLE_PER_CITY = 8;
+const PREFERRED_CATEGORIES = [
+  "school",
+  "pharmacy",
+  "hospital",
+  "clinic",
+  "supermarket",
+  "bank",
+  "park",
+  "cafe",
+  "restaurant",
+  "place_of_worship",
+  "mall",
+  "public_transport",
+];
 
 const CITIES = [
   { id: "rabat", label: "Rabat", aliases: ["Rabat", "الرباط"] },
@@ -77,18 +91,22 @@ function elementCoordinate(element) {
 }
 
 function categoryOf(tags = {}) {
-  return tags.amenity || tags.shop || tags.leisure || tags.public_transport || "other";
+  if (tags.amenity) return tags.amenity;
+  if (tags.shop) return tags.shop;
+  if (tags.leisure) return tags.leisure;
+  if (tags.public_transport) return "public_transport";
+  return "other";
 }
 
 function selectPoints(elements) {
   const normalized = [];
-  const seen = new Set();
+  const seenCoordinates = new Set();
   for (const element of elements || []) {
     const coordinate = elementCoordinate(element);
     if (!coordinate) continue;
     const key = `${coordinate.latitude.toFixed(6)},${coordinate.longitude.toFixed(6)}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
+    if (seenCoordinates.has(key)) continue;
+    seenCoordinates.add(key);
     normalized.push({
       osmRef: `${element.type}/${element.id}`,
       name: element.tags?.name || element.tags?.["name:fr"] || element.tags?.["name:en"] || `${element.type}/${element.id}`,
@@ -97,8 +115,29 @@ function selectPoints(elements) {
       named: Boolean(element.tags?.name || element.tags?.["name:fr"] || element.tags?.["name:en"]),
     });
   }
+
   normalized.sort((a, b) => Number(b.named) - Number(a.named) || a.osmRef.localeCompare(b.osmRef));
-  return normalized.slice(0, SAMPLE_PER_CITY).map(({ named, ...point }) => point);
+
+  const selected = [];
+  const selectedRefs = new Set();
+  for (const category of PREFERRED_CATEGORIES) {
+    const point = normalized.find((candidate) => candidate.category === category && !selectedRefs.has(candidate.osmRef));
+    if (!point) continue;
+    selected.push(point);
+    selectedRefs.add(point.osmRef);
+    if (selected.length >= SAMPLE_PER_CITY) break;
+  }
+
+  if (selected.length < SAMPLE_PER_CITY) {
+    for (const point of normalized) {
+      if (selectedRefs.has(point.osmRef)) continue;
+      selected.push(point);
+      selectedRefs.add(point.osmRef);
+      if (selected.length >= SAMPLE_PER_CITY) break;
+    }
+  }
+
+  return selected.map(({ named, ...point }) => point);
 }
 
 async function sampleCity(city) {
@@ -111,7 +150,12 @@ async function sampleCity(city) {
   });
   const latencyMs = Math.round(performance.now() - started);
   const points = selectPoints(payload.elements);
-  return { points, latencyMs, sourceTimestamp: payload.osm3s?.timestamp_osm_base || null };
+  return {
+    points,
+    categoryCount: new Set(points.map((point) => point.category)).size,
+    latencyMs,
+    sourceTimestamp: payload.osm3s?.timestamp_osm_base || null,
+  };
 }
 
 async function routeMatrix(points) {
@@ -150,6 +194,9 @@ async function main() {
     if (nearby.points.length < SAMPLE_PER_CITY) {
       throw new Error(`${city.label}: only ${nearby.points.length}/${SAMPLE_PER_CITY} real OSM points found`);
     }
+    if (nearby.categoryCount < 4) {
+      throw new Error(`${city.label}: category diversity too low (${nearby.categoryCount}/4 required)`);
+    }
     const routing = await routeMatrix(nearby.points);
     cities.push({ city: city.label, nearby, routing });
     await new Promise((resolve) => setTimeout(resolve, 750));
@@ -167,6 +214,7 @@ async function main() {
       cities: CITIES.map((city) => city.label),
       requiredPoints: CITIES.length * SAMPLE_PER_CITY,
       samplePerCity: SAMPLE_PER_CITY,
+      minimumCategoriesPerCity: 4,
     },
     providers: {
       nearby: {
@@ -203,15 +251,25 @@ async function main() {
     `Real OSM sample points: ${totalPoints}`,
     `OSRM reachable matrix pairs: ${totalReachable}/${totalPairs} (${(routingReachableRatio * 100).toFixed(1)}%)`,
     "",
-    "| City | Points | Overpass latency | OSRM latency | Reachable pairs |",
-    "|---|---:|---:|---:|---:|",
-    ...cities.map((entry) => `| ${entry.city} | ${entry.nearby.points.length} | ${entry.nearby.latencyMs} ms | ${entry.routing.latencyMs} ms | ${entry.routing.reachablePairs}/${entry.routing.totalPairs} |`),
+    "| City | Points | Categories | Overpass latency | OSRM latency | Reachable pairs |",
+    "|---|---:|---:|---:|---:|---:|",
+    ...cities.map((entry) => `| ${entry.city} | ${entry.nearby.points.length} | ${entry.nearby.categoryCount} | ${entry.nearby.latencyMs} ms | ${entry.routing.latencyMs} ms | ${entry.routing.reachablePairs}/${entry.routing.totalPairs} |`),
     "",
     "Public Overpass and OSRM demo endpoints are benchmark-only and are not approved as AkarFinder production dependencies.",
   ];
   await writeFile(`${OUTPUT_DIR}/benchmark.md`, `${lines.join("\n")}\n`, "utf8");
 
-  console.log(JSON.stringify({ totalPoints, routingReachableRatio, cities: cities.map((entry) => ({ city: entry.city, points: entry.nearby.points.length, overpassMs: entry.nearby.latencyMs, osrmMs: entry.routing.latencyMs })) }, null, 2));
+  console.log(JSON.stringify({
+    totalPoints,
+    routingReachableRatio,
+    cities: cities.map((entry) => ({
+      city: entry.city,
+      points: entry.nearby.points.length,
+      categories: entry.nearby.categoryCount,
+      overpassMs: entry.nearby.latencyMs,
+      osrmMs: entry.routing.latencyMs,
+    })),
+  }, null, 2));
 }
 
 main().catch((error) => {
