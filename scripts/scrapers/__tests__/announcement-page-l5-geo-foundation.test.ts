@@ -87,12 +87,14 @@ describe("ANN-L5 GeoTruth", () => {
 describe("ANN-L5 provider evidence and failover", () => {
   const now = new Date("2026-08-16T10:00:00.000Z");
 
-  it("requires attribution and explicit non-expired freshness", () => {
+  it("requires attribution, explicit freshness and a maximum 24h evidence TTL", () => {
     assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-16T12:00:00Z" }, now), false);
     assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T11:00:00Z", expiresAt: "2026-08-16T12:00:00Z" }, now), false);
     assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: null }, now), false);
     assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T08:00:00Z", expiresAt: "2026-08-16T09:00:00Z" }, now), false);
     assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-16T12:00:00Z" }, now), true);
+    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-17T09:00:00Z" }, now), true);
+    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-17T09:00:01Z" }, now), false);
   });
 
   it("fails over deterministically when evidence is invalid or a provider throws", async () => {
@@ -140,7 +142,7 @@ describe("ANN-L5 provider runtime policy", () => {
     assert.deepEqual(resolveProviderOrder("routing", { AKAR_GEO_ROUTING_PROVIDERS: "osrm,mapbox" }), ["osrm", "mapbox"]);
   });
 
-  it("fails closed on unsafe cache policies", () => {
+  it("fails closed on unsafe cache policies and caps ephemeral cache at 24h", () => {
     assert.deepEqual(validateGeoProviderRuntimePolicy({
       providerId: "google-places",
       kind: "nearby",
@@ -149,6 +151,24 @@ describe("ANN-L5 provider runtime policy", () => {
       attributionRequired: true,
       persistentStorageAllowed: false,
     }), []);
+
+    assert.deepEqual(validateGeoProviderRuntimePolicy({
+      providerId: "ephemeral-safe",
+      kind: "nearby",
+      cacheMode: "ephemeral",
+      maxCacheSeconds: 86_400,
+      attributionRequired: true,
+      persistentStorageAllowed: false,
+    }), []);
+
+    assert.ok(validateGeoProviderRuntimePolicy({
+      providerId: "ephemeral-too-long",
+      kind: "nearby",
+      cacheMode: "ephemeral",
+      maxCacheSeconds: 86_401,
+      attributionRequired: true,
+      persistentStorageAllowed: false,
+    }).includes("ephemeral_ttl_exceeds_24h"));
 
     const unsafe = {
       providerId: "x",
