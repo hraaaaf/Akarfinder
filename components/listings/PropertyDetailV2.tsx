@@ -4,11 +4,13 @@ import { CompareBar } from "@/components/compare/CompareBar";
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { AkarInsightCard } from "@/components/listings/AkarInsightCard";
 import { ExpandablePropertyDescription } from "@/components/listings/ExpandablePropertyDescription";
+import { LivingHereSection } from "@/components/listings/LivingHereSection";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { PropertyCore } from "@/components/listings/PropertyCore";
 import { PropertyMediaGallery } from "@/components/listings/PropertyMediaGallery";
 import { VisitRequestPanel } from "@/components/listings/VisitRequestPanel";
 import { WhatsAppCTA } from "@/components/listings/WhatsAppCTA";
+import type { LivingHereModel } from "@/lib/geo/living-here";
 import { canShowContactActions } from "@/lib/listings/listing-boundary";
 import { buildPropertyCoreModel } from "@/lib/listings/property-core";
 import type { Listing } from "@/lib/listings/types";
@@ -63,13 +65,7 @@ function FactGroup({ title, facts }: { title: string; facts: PublicDetailFact[] 
   );
 }
 
-function LeanSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
+function LeanSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="border-b border-slate-200 py-6">
       <h2 className="text-[1.15rem] font-extrabold tracking-[-0.03em] text-deepblue">{title}</h2>
@@ -81,9 +77,13 @@ function LeanSection({
 export function PropertyDetailV2({
   listing,
   detail,
+  livingHere = null,
+  mapStyleUrl = null,
 }: {
   listing: Listing;
   detail: PublicPropertyDetailV2;
+  livingHere?: LivingHereModel | null;
+  mapStyleUrl?: string | null;
 }) {
   const showContactActions = canShowContactActions(listing);
   const core = buildPropertyCoreModel(listing);
@@ -133,6 +133,8 @@ export function PropertyDetailV2({
                 <p className="text-[13.5px] text-slate-500">Aucune caractéristique détaillée n’est renseignée pour cette annonce.</p>
               </LeanSection>
             )}
+
+            <LivingHereSection model={livingHere} mapStyleUrl={mapStyleUrl} />
 
             <LeanSection title="Environnement">
               <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
@@ -196,10 +198,7 @@ export function PropertyDetailV2({
               {showContactActions ? <VisitRequestPanel listing={listing} /> : null}
               <CompareToggleButton listingId={listing.id} variant="block" />
               <FavoriteToggleButton listingId={listing.id} variant="block" />
-              <Link
-                href="/mon-projet"
-                className="hidden min-h-11 w-full items-center justify-center rounded-xl border border-[#d8c8a3] px-4 py-3 text-[13px] font-extrabold text-deepblue transition hover:border-[#0B63CE]/45 hover:bg-slate-50 lg:flex"
-              >
+              <Link href="/mon-projet" className="hidden min-h-11 w-full items-center justify-center rounded-xl border border-[#d8c8a3] px-4 py-3 text-[13px] font-extrabold text-deepblue transition hover:border-[#0B63CE]/45 hover:bg-slate-50 lg:flex">
                 Continuer dans Mon Projet
               </Link>
               {listing.listing_url ? (

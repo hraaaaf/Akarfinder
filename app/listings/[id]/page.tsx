@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { AnnouncementPageShell } from "@/components/listings/AnnouncementPageShell";
 import { queryListingById } from "@/lib/db/index";
+import { buildLivingHereForListing } from "@/lib/geo/living-here-service";
 import type { Listing } from "@/lib/listings/types";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
 import { buildPublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
@@ -25,8 +26,17 @@ type ListingDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
-function renderListing(listing: Listing, detail: NonNullable<ReturnType<typeof buildPublicPropertyDetailV2>>) {
-  return <AnnouncementPageShell listing={listing} detail={detail} />;
+async function renderListing(
+  listing: Listing,
+  detail: NonNullable<ReturnType<typeof buildPublicPropertyDetailV2>>,
+) {
+  let livingHere = null;
+  try {
+    livingHere = await buildLivingHereForListing(listing);
+  } catch (error) {
+    console.error("[listings] ANN-L6 living-here failed closed for id:", listing.id, error);
+  }
+  return <AnnouncementPageShell listing={listing} detail={detail} livingHere={livingHere} />;
 }
 
 export default async function ListingDetailPage({ params }: ListingDetailPageProps) {
@@ -42,7 +52,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         created_at: new Date().toISOString(),
       });
       if (!ownerDetail) notFound();
-      return renderListing(ownerListing, ownerDetail);
+      return await renderListing(ownerListing, ownerDetail);
     }
 
     const dbListing = await queryListingById(id);
@@ -70,7 +80,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     });
 
     if (!detail) notFound();
-    return renderListing(listing, detail);
+    return await renderListing(listing, detail);
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     console.error("[listings] unexpected error loading listing:", id, error);

@@ -41,6 +41,14 @@ export type RoutingProviderResult =
   | { status: "available"; evidence: GeoProviderEvidence; route: RouteMeasurement }
   | GeoProviderUnavailable;
 
+export type RouteMatrixMeasurement = RouteMeasurement & {
+  destination: GeoCoordinate;
+};
+
+export type RoutingMatrixProviderResult =
+  | { status: "available"; evidence: GeoProviderEvidence; routes: RouteMatrixMeasurement[] }
+  | GeoProviderUnavailable;
+
 export type IsochroneProviderResult =
   | { status: "available"; evidence: GeoProviderEvidence; geojson: unknown; minutes: number; mode: GeoTravelMode }
   | GeoProviderUnavailable;
@@ -65,6 +73,11 @@ export interface NearbyProvider {
 export interface RoutingProvider {
   readonly id: string;
   route(input: { origin: ExactGeoTruth; destination: GeoCoordinate; mode: GeoTravelMode }): Promise<RoutingProviderResult>;
+}
+
+export interface RoutingMatrixProvider {
+  readonly id: string;
+  matrix(input: { origin: ExactGeoTruth; destinations: GeoCoordinate[]; mode: GeoTravelMode }): Promise<RoutingMatrixProviderResult>;
 }
 
 export interface IsochroneProvider {

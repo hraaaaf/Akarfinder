@@ -12,8 +12,12 @@ test("listing detail keeps one canonical decision flow through the shared announ
   const detail = source("components/listings/PropertyDetailV2.tsx");
   const core = source("components/listings/PropertyCore.tsx");
 
-  assert.ok(page.includes("<AnnouncementPageShell listing={listing} detail={detail} />"));
-  assert.ok(shell.includes("<PropertyDetailV2 listing={listing} detail={detail} />"));
+  assert.ok(page.includes("<AnnouncementPageShell"));
+  assert.ok(page.includes("listing={listing}"));
+  assert.ok(page.includes("detail={detail}"));
+  assert.ok(shell.includes("<PropertyDetailV2"));
+  assert.ok(shell.includes("listing={listing}"));
+  assert.ok(shell.includes("detail={detail}"));
   assert.ok(shell.includes("<MobilePropertyDecisionBar listingId={listing.id} />"));
   assert.ok(!shell.includes("PropertyDecisionHeader"), "legacy pre-detail decision hero must not reintroduce a second H1");
   assert.ok(detail.includes("<PropertyCore listing={listing} />"), "the active listing detail body must delegate identity to PropertyCore");
