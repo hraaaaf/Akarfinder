@@ -32,7 +32,7 @@ function listing(overrides: Partial<Listing> = {}): Listing {
     reliability_explanation: "Test",
     source_name: "AkarFinder",
     image_permission_status: "unknown",
-    source_access_level: "discovery_only",
+    source_access_level: "indexed_only",
     can_show_gallery: false,
     can_show_contact: false,
     can_show_thumbnail: false,
@@ -133,7 +133,7 @@ describe("ANN-L2 fail-closed media projection", () => {
         thumbnail_url: "https://provider.example/preview.jpg",
         can_show_thumbnail: true,
         image_permission_status: "unknown",
-        source_access_level: "discovery_only",
+        source_access_level: "indexed_only",
         can_show_gallery: false,
       }));
       assert.equal(value.mode, "provider_preview");
