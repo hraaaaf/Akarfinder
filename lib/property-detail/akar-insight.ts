@@ -1,4 +1,9 @@
 import { PUBLIC_SERP_INTELLIGENCE_VERSION } from "@/lib/intelligence/public-serp-intelligence-types";
+import {
+  ANNOUNCEMENT_PAGE_TRUTH_CONTRACT_VERSION,
+  createEmptyAnnouncementTruthEvidence,
+  evaluateAnnouncementFeature,
+} from "@/lib/property-detail/announcement-page-truth-contract-v1";
 import type { PublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
 
 export type AkarInsightKey = "market" | "multisource" | "attention";
@@ -11,10 +16,12 @@ export type AkarInsightItem = {
 
 export type AkarInsightModel = {
   version: typeof PUBLIC_SERP_INTELLIGENCE_VERSION;
+  truthContractVersion: typeof ANNOUNCEMENT_PAGE_TRUTH_CONTRACT_VERSION;
   score: number | null;
   scoreLabel: string | null;
   coverageLabel: string | null;
   items: AkarInsightItem[];
+  disclaimer: string;
 };
 
 function nonEmpty(value: string | null | undefined): string | null {
@@ -23,8 +30,18 @@ function nonEmpty(value: string | null | undefined): string | null {
 }
 
 export function buildAkarInsightModel(detail: PublicPropertyDetailV2): AkarInsightModel {
+  const evidence = createEmptyAnnouncementTruthEvidence();
+  evidence.page_access_allowed = true;
+  evidence.intelligence.akar_score = detail.conclusion.akar_score;
+  // Production PublicPropertyDetailV2 only exposes an available market label when
+  // public-serp projection has a validated analysis contract.
+  evidence.intelligence.market_position_certified = detail.market.status === "available";
+
+  const scoreAllowed = evaluateAnnouncementFeature("akar_score", evidence).allowed;
+  const marketAllowed = evaluateAnnouncementFeature("market_position", evidence).allowed;
+  const score = scoreAllowed ? detail.conclusion.akar_score : null;
   const items: AkarInsightItem[] = [];
-  const market = detail.market.status === "available" ? nonEmpty(detail.market.label) : null;
+  const market = marketAllowed ? nonEmpty(detail.market.label) : null;
   const multisource = detail.multisource.status === "supported" ? nonEmpty(detail.multisource.label) : null;
   const attention = nonEmpty(detail.conclusion.attention_label);
 
@@ -34,9 +51,11 @@ export function buildAkarInsightModel(detail: PublicPropertyDetailV2): AkarInsig
 
   return {
     version: PUBLIC_SERP_INTELLIGENCE_VERSION,
-    score: detail.conclusion.akar_score,
+    truthContractVersion: ANNOUNCEMENT_PAGE_TRUTH_CONTRACT_VERSION,
+    score,
     scoreLabel: nonEmpty(detail.conclusion.akar_score_label),
     coverageLabel: nonEmpty(detail.conclusion.coverage_label),
     items,
+    disclaimer: detail.disclaimer,
   };
 }
