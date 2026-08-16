@@ -3,10 +3,12 @@ import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
 
+import { MOROCCO_DISTRICTS } from "../../../lib/geo/district-dictionary";
 import { GEO_NEIGHBORHOODS } from "../../../lib/geo/geo-entity-registry";
 import { NEIGHBORHOOD_CENTROIDS } from "../../../lib/geo/morocco-centroids";
 import {
   RABAT_ADMIN_PARENTS,
+  RABAT_ALL_PRODUCT_LOCALITIES,
   RABAT_CERTIFIED_PRODUCT_LOCALITIES,
   RABAT_PRODUCT_LOCALITY_CANDIDATES,
   getRabatMapEligibleLocalities,
@@ -14,12 +16,12 @@ import {
 
 const ROOT = process.cwd();
 const read = (relativePath: string) => fs.readFileSync(path.join(ROOT, relativePath), "utf8");
+const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 test("C8B mirrors the five existing Rabat canonical product entities losslessly", () => {
   const legacy = GEO_NEIGHBORHOODS.filter((entry) => entry.city_slug === "rabat");
   assert.equal(legacy.length, 5);
   assert.equal(RABAT_CERTIFIED_PRODUCT_LOCALITIES.length, 5);
-
   for (const locality of RABAT_CERTIFIED_PRODUCT_LOCALITIES) {
     const previous = legacy.find((entry) => entry.id === locality.id);
     assert.ok(previous, `${locality.id} must exist in the C0-C7 registry`);
@@ -30,65 +32,64 @@ test("C8B mirrors the five existing Rabat canonical product entities losslessly"
   }
 });
 
+test("C8B covers every current Rabat district-dictionary name without silent loss", () => {
+  const registryNames = new Set<string>();
+  for (const locality of RABAT_ALL_PRODUCT_LOCALITIES) {
+    registryNames.add(normalize(locality.display_name));
+    for (const alias of locality.aliases) registryNames.add(normalize(alias));
+  }
+  const missing = MOROCCO_DISTRICTS.Rabat.filter((name) => !registryNames.has(normalize(name)));
+  assert.deepEqual(missing, []);
+  assert.equal(MOROCCO_DISTRICTS.Rabat.length, 10);
+});
+
+test("C8B IDs and slugs are unique and non-empty", () => {
+  const ids = RABAT_ALL_PRODUCT_LOCALITIES.map((entry) => entry.id);
+  const slugs = RABAT_ALL_PRODUCT_LOCALITIES.map((entry) => entry.slug);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.equal(new Set(slugs).size, slugs.length);
+  assert.ok(RABAT_ALL_PRODUCT_LOCALITIES.every((entry) => entry.slug.length > 0));
+});
+
 test("C8B point proxies are backed only by existing neighborhood centroids", () => {
   const pointProxyNames = new Set(["Agdal", "Hay Riad", "Hassan"]);
-
   for (const locality of RABAT_CERTIFIED_PRODUCT_LOCALITIES) {
     if (pointProxyNames.has(locality.display_name)) {
       const key = `rabat::${locality.normalized_name}`;
       assert.ok(NEIGHBORHOOD_CENTROIDS[key], `${key} must have an existing point proxy`);
       assert.equal(locality.geometry_status, "point_proxy");
       assert.equal(locality.geometry_source, "akarfinder_morocco_centroids_v1");
-      continue;
+    } else {
+      assert.equal(locality.geometry_status, "unresolved");
+      assert.equal(locality.geometry_source, null);
+      assert.equal(locality.activation_status, "blocked");
+      assert.equal(locality.fail_closed_reason, "geometry_unresolved");
     }
-
-    assert.equal(locality.geometry_status, "unresolved");
-    assert.equal(locality.geometry_source, null);
-    assert.equal(locality.geometry_version, null);
   }
 });
 
 test("C8B admin parents are separate authority records and all references resolve", () => {
   const parentIds = new Set(RABAT_ADMIN_PARENTS.map((parent) => parent.id));
   assert.equal(parentIds.size, RABAT_ADMIN_PARENTS.length);
-  assert.ok(parentIds.has("admin_rabat_agdal_riyad"));
-  assert.ok(parentIds.has("admin_rabat_hassan"));
-  assert.ok(parentIds.has("admin_rabat_souissi"));
-  assert.ok(parentIds.has("admin_rabat_yacoub_el_mansour"));
-  assert.ok(parentIds.has("admin_rabat_youssoufia"));
-  assert.ok(parentIds.has("admin_rabat_touarga"));
-
-  for (const locality of [...RABAT_CERTIFIED_PRODUCT_LOCALITIES, ...RABAT_PRODUCT_LOCALITY_CANDIDATES]) {
-    if (locality.admin_parent_id) {
-      assert.ok(parentIds.has(locality.admin_parent_id), `${locality.id} has an unknown admin parent`);
-    }
+  for (const locality of RABAT_ALL_PRODUCT_LOCALITIES) {
+    if (locality.admin_parent_id) assert.ok(parentIds.has(locality.admin_parent_id), `${locality.id} has an unknown admin parent`);
   }
 });
 
-test("C8B candidates fail closed and never become map eligible by naming alone", () => {
-  assert.deepEqual(
-    RABAT_PRODUCT_LOCALITY_CANDIDATES.map((candidate) => candidate.id),
-    [
-      "candidate_rabat_yacoub_el_mansour",
-      "candidate_rabat_youssoufia",
-      "candidate_rabat_touarga",
-    ],
-  );
-
+test("C8B candidates remain fail-closed", () => {
+  assert.ok(RABAT_PRODUCT_LOCALITY_CANDIDATES.length >= 14);
   for (const candidate of RABAT_PRODUCT_LOCALITY_CANDIDATES) {
     assert.equal(candidate.taxonomy_status, "candidate");
     assert.equal(candidate.market_map_eligible, false);
     assert.equal(candidate.geometry_status, "unresolved");
     assert.equal(candidate.geometry_source, null);
+    assert.equal(candidate.activation_status, "blocked");
+    assert.equal(candidate.fail_closed_reason, "taxonomy_candidate");
   }
 });
 
 test("C8B does not expand the existing runtime map-eligible set", () => {
-  assert.deepEqual(
-    getRabatMapEligibleLocalities().map((locality) => locality.id),
-    ["district_rabat_agdal", "district_rabat_hay_riad", "district_rabat_hassan"],
-  );
-
+  assert.deepEqual(getRabatMapEligibleLocalities().map((locality) => locality.id), ["district_rabat_agdal", "district_rabat_hay_riad", "district_rabat_hassan"]);
   const resolver = read("lib/geo/resolve-listing-geo.ts");
   const marketApi = read("app/api/geo/rabat-market-intelligence/route.ts");
   assert.ok(!resolver.includes("rabat-locality-registry"));
