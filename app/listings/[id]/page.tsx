@@ -5,6 +5,7 @@ import { buildLivingHereForListing } from "@/lib/geo/living-here-service";
 import { buildStreetRealityForListing } from "@/lib/geo/street-reality-service";
 import type { Listing } from "@/lib/listings/types";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
+import { buildAkarEstimateHistoryRuntime } from "@/lib/property-detail/akar-estimate-history-runtime";
 import { buildMarketComparablesRuntime } from "@/lib/property-detail/market-comparables-runtime";
 import { buildPublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
 import { queryOwnerListingDetail } from "@/lib/seller/owner-listing-detail";
@@ -35,6 +36,7 @@ async function renderListing(
   let livingHere = null;
   let streetReality = null;
   let marketComparables = null;
+  let akarEstimateHistory = null;
   try {
     livingHere = await buildLivingHereForListing(listing);
   } catch (error) {
@@ -52,6 +54,13 @@ async function renderListing(
   } catch (error) {
     console.error("[listings] ANN-L8 market-comparables orchestration failed closed for id:", listing.id, error);
   }
+  try {
+    akarEstimateHistory = await buildAkarEstimateHistoryRuntime(listing, {
+      onError: (error) => console.error("[listings] ANN-L9 history failed closed for id:", listing.id, error),
+    });
+  } catch (error) {
+    console.error("[listings] ANN-L9 history orchestration failed closed for id:", listing.id, error);
+  }
   return (
     <AnnouncementPageShell
       listing={listing}
@@ -59,6 +68,7 @@ async function renderListing(
       livingHere={livingHere}
       streetReality={streetReality}
       marketComparables={marketComparables}
+      akarEstimateHistory={akarEstimateHistory}
     />
   );
 }
