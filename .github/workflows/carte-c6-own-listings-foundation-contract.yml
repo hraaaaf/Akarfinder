@@ -1,0 +1,25 @@
+name: Carte C6 Own Listings Foundation Contract
+
+on:
+  pull_request:
+    paths:
+      - "docs/CARTE_C6_OWN_LISTINGS_FOUNDATION_CONTRACT.md"
+      - "scripts/scrapers/__tests__/carte-c6-own-listings-foundation-contract.test.ts"
+      - ".github/workflows/carte-c6-own-listings-foundation-contract.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-c6-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: C6 own-listings foundation contract
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c6-own-listings-foundation-contract.test.ts
