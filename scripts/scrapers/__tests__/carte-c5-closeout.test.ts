@@ -29,10 +29,9 @@ describe("Carte C5 — canonical closeout", () => {
     assert.ok(closeout.includes("bottom-[90px]"));
   });
 
-  it("advances strict roadmap to C6", () => {
-    assert.ok(status.includes("6 / 8 = 75 %"));
+  it("keeps the historical C5 closeout valid after later roadmap progress", () => {
+    assert.ok(closeout.includes("## Handoff C6"));
     assert.ok(status.includes("C5 — Fiche quartier riche : ✅ CLOSED"));
-    assert.ok(status.includes("C6 — Fondation « nos annonces » : 🟠 CURRENT"));
     assert.ok(status.includes("Closeout C5 : `docs/CARTE_C5_CLOSEOUT.md`"));
   });
 });
