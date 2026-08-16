@@ -61,15 +61,20 @@ try {
           const canvasCount = await section.locator("canvas.maplibregl-canvas").count();
           if (canvasCount !== 1) localFindings.push(`MAP_CANVAS_COUNT_${canvasCount}_EXPECTED_1`);
         }
+
         const hasRouteCopy = /\d+ min (à pied|en voiture)/.test(text);
+        const hasRoutedDistance = /\d+(?:,\d+)? (?:m|km)/.test(text);
         if (scenario.routes && !hasRouteCopy) localFindings.push("MEASURED_ROUTE_COPY_MISSING");
+        if (scenario.routes && !hasRoutedDistance) localFindings.push("ROUTED_DISTANCE_COPY_MISSING");
         if (!scenario.routes && hasRouteCopy) localFindings.push("UNMEASURED_ROUTE_COPY_EXPOSED");
+
         const isochroneButtons = await section.locator('[aria-label="Isochrones à pied"] button').count();
         if (scenario.isochrones && isochroneButtons !== 4) localFindings.push(`ISOCHRONE_BUTTON_COUNT_${isochroneButtons}_EXPECTED_4`);
         if (!scenario.isochrones && isochroneButtons !== 0) localFindings.push(`UNEXPECTED_ISOCHRONE_BUTTONS_${isochroneButtons}`);
         const verifiedPlaces = await section.locator("li").count();
         if (verifiedPlaces !== 4) localFindings.push(`POI_COUNT_${verifiedPlaces}_EXPECTED_4`);
         if (!text.includes("Fixture QA interne")) localFindings.push("ATTRIBUTION_MISSING");
+        if (!text.includes("observé le 16/08/2026")) localFindings.push("POI_FRESHNESS_MISSING");
         if (scenario.state === "context" && !text.includes("aucun temps de trajet depuis ce bien")) localFindings.push("CONTEXT_DISCLAIMER_MISSING");
       }
 
