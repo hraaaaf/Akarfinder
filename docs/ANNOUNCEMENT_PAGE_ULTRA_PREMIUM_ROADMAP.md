@@ -2,8 +2,8 @@
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
 **Version : 2026-08-16**  
-**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 ✅ CLOSED ; ANN-L9 NEXT**  
-**Progression stricte : 70 / 100 %.**
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 ✅ CLOSED ; ANN-L9 ✅ CLOSED ; ANN-L10 NEXT**  
+**Progression stricte : 76 / 100 %.**
 
 > Ce document est la sous-roadmap normative du chantier de refonte de `/listings/[id]`. `docs/ROADMAP.md` reste le registre canonique global AkarFinder. Les pourcentages ci-dessous sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
 
@@ -115,6 +115,17 @@
 - Le premier audit visuel a produit un faux négatif à cause de `innerText()` + `text-transform: uppercase`; correction vers `textContent()` puis certification 8/8 sans finding.
 - Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L8_CLOSEOUT.md`.
 - **Crédit officiel ANN-L8 : +10 %. Progression cumulée : 70 %. Prochain chemin critique : ANN-L9 AkarEstimate & historique.**
+
+## 0.9 Closeout ANN-L9 — AkarEstimate & historique ✅
+
+- **PR #761 ✅ MERGED** — merge `60cbf7d30430c2f7e951c3288073272b00fff980` ; exact head certifié `eddf2c3de5f6eca538ec940d39c141c9d769bed0`.
+- Gate dédié `Announcement Page L9 AkarEstimate History`, run `31953346300` : tests, Truth Contract, TypeScript, production build, Chromium ciblé et upload artefact **SUCCESS**.
+- Artefact `9265339960`, digest `sha256:3870e5b58284276117ccff2a1eabab2bb48c95bce64e152b0c5252aefe79aee1` ; **6/6 captures, 0 finding**.
+- Historique public = observations réelles de prix affichés, attribuées et horodatées ; aucune interpolation.
+- Audit DB réel : 5 683 annonces, 5 544 clusters vérifiés, 1 162 observations de prix valides, mais aucune colonne de vérité transactionnelle/finale/notariée.
+- Conséquence fail-closed : `AkarEstimate` reste masqué ; aucune reproduction de prix demandé n'est présentée comme valeur du bien.
+- Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L9_CLOSEOUT.md` et `docs/ANNOUNCEMENT_PAGE_L9_CALIBRATION_GATE.md`.
+- **Crédit officiel ANN-L9 : +6 %. Progression cumulée : 76 %. Prochain chemin critique : ANN-L10 Finance Maroc.**
 
 ## 1. Vision produit
 
@@ -435,11 +446,11 @@ Implémentation : service canonique de comparables basé sur type, transaction, 
 
 Gate CLOSED : exact head `5208f5dcf306babedecdfcf571f71421384511fa`, run `31952276940` SUCCESS, **97/97 tests PASS**, production build vert, **8/8 captures + 0 finding**, aucun comparable synthétique/non traçable, minimum 3, fraîcheur ≤90 jours, clusters vérifiés, provenance obligatoire, distribution sur l'échantillon complet et activation Market Index fail-closed. Détails : `docs/ANNOUNCEMENT_PAGE_L8_CLOSEOUT.md`.
 
-### ANN-L9 — AkarEstimate & historique — 6 %
+### ANN-L9 — AkarEstimate & historique — 6 % — ✅ CLOSED
 
-Implémentation : modèle d'estimation séparé de l'AkarScore. Sortie obligatoire : estimate, borne basse, borne haute, confidence, modèle/version, date, taille/qualité échantillon. Timeline = observations réelles uniquement.
+Implémentation : historique public fondé uniquement sur les observations réelles Market Index. AkarEstimate reste séparé de l'AkarScore et fail-closed : aucune estimation publique sans vérité transactionnelle, calibration et holdout défendables.
 
-Gate : backtest holdout, métriques d'erreur par ville/segment, seuils de publication ; si seuil non atteint, estimation masquée.
+Gate CLOSED : exact head `eddf2c3de5f6eca538ec940d39c141c9d769bed0`, run `31953346300` SUCCESS, artefact `9265339960`, digest `sha256:3870e5b58284276117ccff2a1eabab2bb48c95bce64e152b0c5252aefe79aee1`, **6/6 captures + 0 finding**. Audit DB : aucune cible de prix de transaction/final/notarié disponible ; AkarEstimate reste donc masqué conformément au fail-closed. Détails : `docs/ANNOUNCEMENT_PAGE_L9_CLOSEOUT.md`.
 
 ### ANN-L10 — Finance Maroc — 7 %
 
@@ -521,10 +532,10 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L6 | 12 % | ✅ CLOSED | 12 % |
 | ANN-L7 | 6 % | ✅ CLOSED | 6 % |
 | ANN-L8 | 10 % | ✅ CLOSED | 10 % |
-| ANN-L9 | 6 % | NEXT | 0 % |
-| ANN-L10 | 7 % | NOT_STARTED | 0 % |
+| ANN-L9 | 6 % | ✅ CLOSED | 6 % |
+| ANN-L10 | 7 % | NEXT | 0 % |
 | ANN-L11 | 6 % | NOT_STARTED | 0 % |
 | ANN-L12 | 5 % | NOT_STARTED | 0 % |
 | ANN-L13 | 6 % | NOT_STARTED | 0 % |
 
-**Progression officielle actuelle : 70 / 100 %.**
+**Progression officielle actuelle : 76 / 100 %.**
