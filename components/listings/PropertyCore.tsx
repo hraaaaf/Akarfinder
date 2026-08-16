@@ -29,14 +29,14 @@ export function PropertyCore({ listing }: { listing: Listing }) {
 
       <h1
         data-property-core-title
-        className="mt-3 max-w-[52rem] text-[1.55rem] font-extrabold leading-[1.12] tracking-[-0.04em] text-deepblue sm:text-[2rem]"
+        className="mt-3 max-w-[52rem] break-words text-[1.55rem] font-extrabold leading-[1.12] tracking-[-0.04em] text-deepblue sm:text-[2rem]"
       >
         {model.title}
       </h1>
 
-      <p className="mt-3 inline-flex max-w-full items-center gap-1.5 text-[13.5px] font-semibold text-slate-600 sm:text-[14.5px]">
-        <MapPin size={16} aria-hidden="true" className="shrink-0 text-[#0B63CE]" />
-        <span className="truncate sm:whitespace-normal">{model.location}</span>
+      <p className="mt-3 inline-flex max-w-full items-start gap-1.5 text-[13.5px] font-semibold text-slate-600 sm:text-[14.5px]">
+        <MapPin size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-[#0B63CE]" />
+        <span className="min-w-0 break-words">{model.location}</span>
       </p>
 
       {model.facts.length > 0 ? (
@@ -53,7 +53,7 @@ export function PropertyCore({ listing }: { listing: Listing }) {
               <dt className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-slate-500">
                 {fact.label}
               </dt>
-              <dd className="mt-1 truncate text-[15px] font-extrabold text-deepblue sm:text-[16px]">
+              <dd className="mt-1 break-words text-[15px] font-extrabold text-deepblue sm:text-[16px]">
                 {fact.value}
               </dd>
             </div>
