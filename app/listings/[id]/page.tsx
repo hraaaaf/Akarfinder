@@ -30,7 +30,12 @@ async function renderListing(
   listing: Listing,
   detail: NonNullable<ReturnType<typeof buildPublicPropertyDetailV2>>,
 ) {
-  const livingHere = await buildLivingHereForListing(listing);
+  let livingHere = null;
+  try {
+    livingHere = await buildLivingHereForListing(listing);
+  } catch (error) {
+    console.error("[listings] ANN-L6 living-here failed closed for id:", listing.id, error);
+  }
   return <AnnouncementPageShell listing={listing} detail={detail} livingHere={livingHere} />;
 }
 
