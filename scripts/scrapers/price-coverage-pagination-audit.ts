@@ -7,12 +7,32 @@ import { safeDelay } from "./utils/safe-delay";
 
 const SOURCES = ["mubawab.ma", "masaken.ma"] as const;
 
+type Source = (typeof SOURCES)[number];
+
 export function buildPageRanges(pageSize: number, pages: number) {
   return Array.from({ length: pages }, (_, page) => ({
     page,
     from: page * pageSize,
     to: page * pageSize + pageSize - 1,
   }));
+}
+
+function selectedSources(): Source[] {
+  const raw = process.env.PRICE_PAGINATION_SOURCE?.trim();
+  if (!raw) return [...SOURCES];
+  if (!SOURCES.includes(raw as Source)) throw new Error(`unsupported PRICE_PAGINATION_SOURCE=${raw}`);
+  return [raw as Source];
+}
+
+function selectedRanges(pageSize: number, pages: number) {
+  const ranges = buildPageRanges(pageSize, pages);
+  const raw = process.env.PRICE_PAGINATION_PAGE_INDEX?.trim();
+  if (!raw) return ranges;
+  const page = Number(raw);
+  if (!Number.isInteger(page) || page < 0 || page >= pages) {
+    throw new Error(`invalid PRICE_PAGINATION_PAGE_INDEX=${raw}; expected 0..${pages - 1}`);
+  }
+  return [ranges[page]];
 }
 
 async function loadPage(source: string, from: number, to: number): Promise<CohortRow[]> {
@@ -38,10 +58,11 @@ async function main() {
 
   const pageSize = Math.max(20, Math.min(Number(process.env.PRICE_PAGINATION_PAGE_SIZE ?? 120), 200));
   const pages = Math.max(1, Math.min(Number(process.env.PRICE_PAGINATION_PAGES ?? 4), 8));
-  const ranges = buildPageRanges(pageSize, pages);
+  const ranges = selectedRanges(pageSize, pages);
+  const sources = selectedSources();
   const bySource: Record<string, { candidates: number; fetched: number; identity: number; reliable: number; failed: number; pages: Array<{ page: number; candidates: number; reliable: number }> }> = {};
 
-  for (const source of SOURCES) {
+  for (const source of sources) {
     const stat = { candidates: 0, fetched: 0, identity: 0, reliable: 0, failed: 0, pages: [] as Array<{ page: number; candidates: number; reliable: number }> };
     bySource[source] = stat;
     for (const range of ranges) {
@@ -66,7 +87,6 @@ async function main() {
         await safeDelay(300, 700);
       }
       stat.pages.push({ page: range.page, candidates: rows.length, reliable });
-      if (rows.length < pageSize) break;
     }
   }
 
@@ -78,7 +98,15 @@ async function main() {
     failed: acc.failed + s.failed,
   }), { candidates: 0, fetched: 0, identity: 0, reliable: 0, failed: 0 });
 
-  console.log(JSON.stringify({ write: false, page_size: pageSize, pages_requested: pages, totals, bySource }, null, 2));
+  console.log(JSON.stringify({
+    write: false,
+    page_size: pageSize,
+    pages_requested: pages,
+    selected_sources: sources,
+    selected_pages: ranges.map((r) => r.page),
+    totals,
+    bySource,
+  }, null, 2));
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
