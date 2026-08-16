@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 import { buildGeoTruth, isExactGeoTruth } from "@/lib/geo/geo-truth";
 import { executeProviderFailover } from "@/lib/geo/provider-failover";
@@ -23,6 +24,16 @@ function listing(overrides: Record<string, unknown> = {}) {
     geo_label: "Coordonnées déclarées par la source",
     ...overrides,
   };
+}
+
+function collectTsxFiles(root: string): string[] {
+  const files: string[] = [];
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    const path = join(root, entry.name);
+    if (entry.isDirectory()) files.push(...collectTsxFiles(path));
+    else if (entry.isFile() && path.endsWith(".tsx")) files.push(path);
+  }
+  return files;
 }
 
 describe("ANN-L5 GeoTruth", () => {
@@ -76,9 +87,10 @@ describe("ANN-L5 GeoTruth", () => {
 describe("ANN-L5 provider evidence and failover", () => {
   const now = new Date("2026-08-16T10:00:00.000Z");
 
-  it("rejects missing attribution, future fetches and expired evidence", () => {
-    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: null }, now), false);
-    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T11:00:00Z", expiresAt: null }, now), false);
+  it("requires attribution and explicit non-expired freshness", () => {
+    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-16T12:00:00Z" }, now), false);
+    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T11:00:00Z", expiresAt: "2026-08-16T12:00:00Z" }, now), false);
+    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: null }, now), false);
     assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T08:00:00Z", expiresAt: "2026-08-16T09:00:00Z" }, now), false);
     assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-16T12:00:00Z" }, now), true);
   });
@@ -90,12 +102,12 @@ describe("ANN-L5 provider evidence and failover", () => {
       if (provider.id === "second") {
         return {
           status: "available" as const,
-          evidence: { providerId: "second", attribution: "", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: null },
+          evidence: { providerId: "second", attribution: "", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-16T12:00:00Z" },
         };
       }
       return {
         status: "available" as const,
-        evidence: { providerId: "third", attribution: "Provider Three", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: null },
+        evidence: { providerId: "third", attribution: "Provider Three", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-16T12:00:00Z" },
       };
     }, now);
     assert.equal(result.result.status, "available");
@@ -106,7 +118,7 @@ describe("ANN-L5 provider evidence and failover", () => {
   it("preserves invalid evidence as the final failure reason", async () => {
     const result = await executeProviderFailover([{ id: "bad" }], async () => ({
       status: "available" as const,
-      evidence: { providerId: "bad", attribution: "", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: null },
+      evidence: { providerId: "bad", attribution: "Provider", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: null },
     }), now);
     assert.equal(result.result.status, "unavailable");
     if (result.result.status === "unavailable") assert.equal(result.result.reason, "invalid_evidence");
@@ -152,16 +164,16 @@ describe("ANN-L5 provider runtime policy", () => {
 });
 
 describe("ANN-L5 architectural boundaries", () => {
-  it("keeps concrete geo providers out of listing React components", () => {
+  it("keeps concrete geo providers out of the whole listing React surface", () => {
     const files = [
-      "components/listings/AnnouncementPageShell.tsx",
-      "components/listings/PropertyDetailV2.tsx",
-      "components/listings/PropertyCore.tsx",
+      ...collectTsxFiles("components/listings"),
+      ...collectTsxFiles("app/listings"),
     ];
+    assert.ok(files.length > 0);
     for (const file of files) {
       const source = readFileSync(file, "utf8");
-      assert.doesNotMatch(source, /lib\/geo\/(?:providers|provider-implementations)\//);
-      assert.doesNotMatch(source, /\b(?:Mapbox|GooglePlaces|GoogleRoutes|Nominatim|Overpass|OSRM|Valhalla|Mapillary)\b/);
+      assert.doesNotMatch(source, /lib\/geo\/(?:providers|provider-implementations)\//, file);
+      assert.doesNotMatch(source, /\b(?:Mapbox|GooglePlaces|GoogleRoutes|Nominatim|Overpass|OSRM|Valhalla|Mapillary)\b/, file);
     }
   });
 
