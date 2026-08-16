@@ -4,6 +4,7 @@ import path from "node:path";
 
 const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3212";
 const outputDir = path.resolve(process.env.AUDIT_OUTPUT_DIR ?? "artifacts/announcement-page-l11-pro-conversion");
+const AKAR_PRIMARY_RGB = "rgb(11, 99, 206)";
 const scenarios = [
   { name: "partner-390", route: "/visual-qa/announcement-page-pro-conversion", width: 390, height: 844, partner: true },
   { name: "partner-430", route: "/visual-qa/announcement-page-pro-conversion", width: 430, height: 932, partner: true },
@@ -63,10 +64,25 @@ try {
           if (!bodyText.includes("Signaler cette annonce")) localFindings.push("REPORT_ACTION_MISSING");
           const duplicatedPriceHeader = await proCard.locator('[class~="bg-[#0B63CE]"]').count();
           if (duplicatedPriceHeader > 0) localFindings.push("DUPLICATED_PRICE_BANNER_PRESENT");
+          const visitButton = proCard.getByRole("button", { name: "Demander une visite", exact: true });
+          if (await visitButton.count() !== 1) {
+            localFindings.push("DESKTOP_VISIT_BUTTON_MISSING");
+          } else {
+            const visitBg = await visitButton.evaluate((element) => getComputedStyle(element).backgroundColor);
+            if (visitBg !== AKAR_PRIMARY_RGB) localFindings.push(`DESKTOP_VISIT_NOT_AKAR_PRIMARY_${visitBg}`);
+          }
         } else {
-          if (await page.locator('[data-pro-conversion-mobile="ann-l11"]').count() !== 1) localFindings.push("MOBILE_CONVERSION_DOCK_MISSING");
-          const dockText = await page.locator('[data-pro-conversion-mobile="ann-l11"]').innerText();
+          const mobileDock = page.locator('[data-pro-conversion-mobile="ann-l11"]');
+          if (await mobileDock.count() !== 1) localFindings.push("MOBILE_CONVERSION_DOCK_MISSING");
+          const dockText = await mobileDock.innerText();
           if (dockText.includes("Continuer dans Mon Projet")) localFindings.push("MOBILE_PROJECT_COPY_TOO_LONG");
+          const visitButton = mobileDock.locator('button[aria-label="Demander une visite"]');
+          if (await visitButton.count() !== 1) {
+            localFindings.push("MOBILE_VISIT_BUTTON_MISSING");
+          } else {
+            const visitBg = await visitButton.evaluate((element) => getComputedStyle(element).backgroundColor);
+            if (visitBg !== AKAR_PRIMARY_RGB) localFindings.push(`MOBILE_VISIT_NOT_AKAR_PRIMARY_${visitBg}`);
+          }
         }
       } else {
         if (whatsappLinks !== 0) localFindings.push(`SOURCE_ONLY_WHATSAPP_LEAK_${whatsappLinks}`);
@@ -92,7 +108,7 @@ try {
 }
 
 const report = {
-  schemaVersion: "ANNOUNCEMENT_PAGE_L11_PRO_CONVERSION_VISUAL_V2_PREMIUM_AKARFINDER",
+  schemaVersion: "ANNOUNCEMENT_PAGE_L11_PRO_CONVERSION_VISUAL_V3_PREMIUM_AKARFINDER",
   generatedAt: new Date().toISOString(),
   scenarioCount: scenarios.length,
   screenshotCount: results.filter((item) => item.screenshot).length,
