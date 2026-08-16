@@ -20,7 +20,7 @@ test("listing detail keeps one canonical decision flow through the shared announ
   assert.equal(h1Count, 1, "the active listing detail body must expose exactly one H1 source");
 });
 
-test("decision actions preserve the canonical project, favorite and comparison flows", () => {
+test("decision actions preserve the canonical project, favorite and comparison flows on mobile and desktop", () => {
   const bar = source("components/listings/MobilePropertyDecisionBar.tsx");
   const detail = source("components/listings/PropertyDetailV2.tsx");
 
@@ -28,10 +28,17 @@ test("decision actions preserve the canonical project, favorite and comparison f
   assert.ok(bar.includes("Continuer dans Mon Projet"));
   assert.ok(bar.includes("FavoriteToggleButton"));
   assert.ok(bar.includes("CompareToggleButton"));
+
+  assert.ok(detail.includes('href="/mon-projet"'));
+  assert.ok(detail.includes("Continuer dans Mon Projet"));
+  assert.ok(detail.includes("lg:flex"), "desktop Mon Projet action must be visible from the sticky action rail");
   assert.ok(detail.includes("FavoriteToggleButton"));
   assert.ok(detail.includes("CompareToggleButton"));
+
   assert.ok(!bar.includes("/profil-recherche"));
   assert.ok(!bar.includes("/onboarding"));
+  assert.ok(!detail.includes("/profil-recherche"));
+  assert.ok(!detail.includes("/onboarding"));
 });
 
 test("decision surface remains evidence-safe after the shell migration", () => {
