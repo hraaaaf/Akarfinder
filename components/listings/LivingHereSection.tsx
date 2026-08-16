@@ -9,9 +9,23 @@ import {
   type LivingHereRoute,
 } from "@/lib/geo/living-here";
 
+function formatDistance(distanceMeters: number): string {
+  if (distanceMeters < 1000) return `${Math.max(1, Math.round(distanceMeters))} m`;
+  return `${(distanceMeters / 1000).toFixed(distanceMeters >= 10_000 ? 0 : 1).replace(".", ",")} km`;
+}
+
 function routeLabel(route: LivingHereRoute): string {
   const minutes = Math.max(1, Math.round(route.durationSeconds / 60));
-  return route.mode === "walking" ? `${minutes} min à pied` : `${minutes} min en voiture`;
+  const mode = route.mode === "walking" ? `${minutes} min à pied` : `${minutes} min en voiture`;
+  return `${mode} · ${formatDistance(route.distanceMeters)}`;
+}
+
+function observedLabel(value: string): string | null {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  const day = String(parsed.getUTCDate()).padStart(2, "0");
+  const month = String(parsed.getUTCMonth() + 1).padStart(2, "0");
+  return `${day}/${month}/${parsed.getUTCFullYear()}`;
 }
 
 export function LivingHereSection({
@@ -35,7 +49,9 @@ export function LivingHereSection({
 
   if (!model || model.visibility === "hidden" || model.pois.length === 0) return null;
 
-  const availableIsochrones = Array.from(new Set(model.isochrones.filter((item) => item.mode === "walking").map((item) => item.minutes)));
+  const availableIsochrones = Array.from(
+    new Set(model.isochrones.filter((item) => item.mode === "walking").map((item) => item.minutes)),
+  );
 
   return (
     <section data-announcement-living-here="ann-l6" className="border-b border-slate-200 py-7">
@@ -45,7 +61,7 @@ export function LivingHereSection({
           <h2 className="mt-1 text-[1.35rem] font-extrabold tracking-[-0.035em] text-deepblue">Vivre ici</h2>
           <p className="mt-1 max-w-2xl text-[13px] leading-5 text-slate-500">
             {model.origin.exact
-              ? "Lieux réels autour du bien. Les durées affichées proviennent uniquement d’un routage mesuré."
+              ? "Lieux réels autour du bien. Les durées et distances affichées proviennent uniquement d’un routage mesuré."
               : "Contexte du quartier. La position du bien n’étant pas exacte, aucun temps de trajet depuis ce bien n’est affiché."}
           </p>
         </div>
@@ -91,32 +107,38 @@ export function LivingHereSection({
 
         <div className="max-h-[440px] overflow-y-auto rounded-2xl border border-slate-200 bg-white">
           <ul className="divide-y divide-slate-200">
-            {visiblePois.map((poi) => (
-              <li key={poi.id} className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-[14px] font-extrabold text-deepblue">{poi.name}</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-500">{poi.categoryLabel}</p>
+            {visiblePois.map((poi) => {
+              const observed = observedLabel(poi.observedAt);
+              return (
+                <li key={poi.id} className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-[14px] font-extrabold text-deepblue">{poi.name}</p>
+                      <p className="mt-1 text-[11px] font-bold text-slate-500">{poi.categoryLabel}</p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Vérifié</span>
                   </div>
-                  <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Vérifié</span>
-                </div>
-                {model.canShowPreciseRouteTimes && poi.routes.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {poi.routes.map((route) => (
-                      <span key={`${poi.id}-${route.mode}`} className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-[#0B63CE]">
-                        {routeLabel(route)}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-              </li>
-            ))}
+                  {model.canShowPreciseRouteTimes && poi.routes.length > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {poi.routes.map((route) => (
+                        <span key={`${poi.id}-${route.mode}`} className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-[#0B63CE]">
+                          {routeLabel(route)}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  <p className="mt-2 text-[10.5px] leading-4 text-slate-400">
+                    {poi.attribution}{observed ? ` · observé le ${observed}` : ""}
+                  </p>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>
 
       {model.attribution.length > 0 ? (
-        <p className="mt-3 text-[10.5px] leading-4 text-slate-400">Sources : {model.attribution.join(" · ")}</p>
+        <p className="mt-3 text-[10.5px] leading-4 text-slate-400">Sources cartographiques : {model.attribution.join(" · ")}</p>
       ) : null}
     </section>
   );
