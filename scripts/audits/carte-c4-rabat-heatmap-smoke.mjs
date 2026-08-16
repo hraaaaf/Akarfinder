@@ -56,9 +56,7 @@ function pointInGeometry(point, geometry) {
 }
 
 function bboxForGeometry(geometry) {
-  const points = geometry.type === "Polygon"
-    ? geometry.coordinates.flat()
-    : geometry.coordinates.flat(2);
+  const points = geometry.type === "Polygon" ? geometry.coordinates.flat() : geometry.coordinates.flat(2);
   return points.reduce((box, [lng, lat]) => ({
     minLng: Math.min(box.minLng, lng), maxLng: Math.max(box.maxLng, lng),
     minLat: Math.min(box.minLat, lat), maxLat: Math.max(box.maxLat, lat),
@@ -137,7 +135,12 @@ try {
     const target = pickClickableFeature(listingsPayload, box.width, box.height);
     if (!target) throw new Error(`No clickable polygon interior found for ${viewport.name}`);
 
-    await page.mouse.click(box.x + target.pixel.x, box.y + target.pixel.y);
+    const clickX = box.x + target.pixel.x;
+    const clickY = box.y + target.pixel.y;
+    await page.mouse.move(clickX, clickY);
+    await page.waitForFunction(() => document.querySelector(".maplibregl-canvas")?.style.cursor === "pointer", null, { timeout: 10000 });
+    await page.mouse.click(clickX, clickY);
+
     const district = {
       market_zone_rabat_agdal: "agdal",
       market_zone_rabat_hay_riad: "hay-riad",
