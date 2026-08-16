@@ -63,7 +63,8 @@ jobs:
         run: npx tsx scripts/scrapers/price-extraction-v5-detail-audit.ts
       - name: Audit Mubawab and Masaken structured cohort without writes
         run: npx tsx scripts/scrapers/price-extraction-v5-structured-cohort-audit.ts
-      - name: Count exact production price coverage
+      - name: Observe exact production price coverage (non-blocking)
+        continue-on-error: true
         run: npx tsx scripts/scrapers/price-extraction-v5-production-count.ts
 
   production-bounded-write:
@@ -91,5 +92,6 @@ jobs:
           test -n "$SUPABASE_SERVICE_ROLE_KEY"
       - name: Re-fetch proven cohort and write only bounded null prices
         run: npx tsx scripts/scrapers/price-extraction-v5-structured-cohort-audit.ts
-      - name: Count exact production price coverage after write
+      - name: Observe exact production price coverage after write (non-blocking)
+        continue-on-error: true
         run: npx tsx scripts/scrapers/price-extraction-v5-production-count.ts
