@@ -8,22 +8,28 @@ export type ProviderWithId = { readonly id: string };
 
 type AvailableWithEvidence = { status: "available"; evidence: GeoProviderEvidence };
 type ProviderResult = AvailableWithEvidence | GeoProviderUnavailable;
+type Clock = Date | (() => Date);
 
 export type FailoverResult<T extends ProviderResult> = {
   result: T | GeoProviderUnavailable;
   attemptedProviderIds: string[];
 };
 
+function clockNow(clock: Clock): Date {
+  return typeof clock === "function" ? clock() : clock;
+}
+
 /**
  * Ordered, deterministic failover. Provider results only win when their
  * evidence is attributable, fresh, and bound to the provider that produced
- * the result. Invalid/empty/upstream results fail closed and allow the next
- * configured provider to try.
+ * the result. A fixed Date keeps deterministic tests; runtime uses a clock
+ * evaluated after each provider response so newly created evidence is not
+ * rejected as future-dated by milliseconds.
  */
 export async function executeProviderFailover<P extends ProviderWithId, T extends ProviderResult>(
   providers: readonly P[],
   execute: (provider: P) => Promise<T>,
-  now = new Date(),
+  now: Clock = () => new Date(),
 ): Promise<FailoverResult<T>> {
   const attemptedProviderIds: string[] = [];
   let lastFailure: GeoProviderUnavailable | null = null;
@@ -33,7 +39,10 @@ export async function executeProviderFailover<P extends ProviderWithId, T extend
     try {
       const result = await execute(provider);
       if (result.status === "available") {
-        if (result.evidence.providerId === provider.id && hasFreshProviderEvidence(result.evidence, now)) {
+        if (
+          result.evidence.providerId === provider.id &&
+          hasFreshProviderEvidence(result.evidence, clockNow(now))
+        ) {
           return { result, attemptedProviderIds };
         }
         lastFailure = {
