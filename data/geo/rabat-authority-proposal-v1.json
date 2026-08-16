@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "c8d-rabat-authority-proposal-v1",
+  "mode": "proposal_only",
+  "productionWriteCount": 0,
+  "parentEntityId": "city_rabat",
+  "defaults": {
+    "entity_type": "neighborhood",
+    "validation_status": "pending_review",
+    "seo_eligible": false,
+    "map_eligible": false,
+    "source_version": "c8d_authority_proposal_v1"
+  },
+  "existingValidatedEntitiesExcluded": [
+    "district_rabat_agdal",
+    "district_rabat_hay_riad",
+    "district_rabat_hassan",
+    "district_rabat_souissi",
+    "district_rabat_ocean"
+  ],
+  "proposedEntities": [
+    {"id":"district_rabat_yacoub_el_mansour","slug":"yacoub-el-mansour","canonical_name":"Yacoub El Mansour","normalized_name":"yacoub el mansour","registry_id":"candidate_rabat_yacoub_el_mansour","aliases":[{"alias":"Yacoub El Mansour","normalized_alias":"yacoub el mansour"},{"alias":"Yaacoub El Mansour","normalized_alias":"yaacoub el mansour"}]},
+    {"id":"district_rabat_youssoufia","slug":"youssoufia","canonical_name":"Youssoufia","normalized_name":"youssoufia","registry_id":"candidate_rabat_youssoufia","aliases":[{"alias":"Youssoufia","normalized_alias":"youssoufia"}]},
+    {"id":"district_rabat_touarga","slug":"touarga","canonical_name":"Touarga","normalized_name":"touarga","registry_id":"candidate_rabat_touarga","aliases":[{"alias":"Touarga","normalized_alias":"touarga"}]},
+    {"id":"district_rabat_les_orangers","slug":"les-orangers","canonical_name":"Les Orangers","normalized_name":"les orangers","registry_id":"candidate_rabat_les_orangers","aliases":[{"alias":"Les Orangers","normalized_alias":"les orangers"}]},
+    {"id":"district_rabat_aviation","slug":"aviation","canonical_name":"Aviation","normalized_name":"aviation","registry_id":"candidate_rabat_aviation","aliases":[{"alias":"Aviation","normalized_alias":"aviation"}]},
+    {"id":"district_rabat_akkari","slug":"akkari","canonical_name":"Akkari","normalized_name":"akkari","registry_id":"candidate_rabat_akkari","aliases":[{"alias":"Akkari","normalized_alias":"akkari"}]},
+    {"id":"district_rabat_medina","slug":"medina","canonical_name":"Medina","normalized_name":"medina","registry_id":"candidate_rabat_medina","aliases":[{"alias":"Médina","normalized_alias":"medina"}]},
+    {"id":"district_rabat_mabella","slug":"mabella","canonical_name":"Mabella","normalized_name":"mabella","registry_id":"candidate_rabat_mabella","aliases":[{"alias":"Mabella","normalized_alias":"mabella"}]},
+    {"id":"district_rabat_takaddoum","slug":"takaddoum","canonical_name":"Takaddoum","normalized_name":"takaddoum","registry_id":"candidate_rabat_takaddoum","aliases":[{"alias":"Takaddoum","normalized_alias":"takaddoum"}]},
+    {"id":"district_rabat_kbibat","slug":"kbibat","canonical_name":"Kbibat","normalized_name":"kbibat","registry_id":"candidate_rabat_kbibat","aliases":[{"alias":"Kbibat","normalized_alias":"kbibat"},{"alias":"Kébibat","normalized_alias":"kebibat"}]},
+    {"id":"district_rabat_douar_doum","slug":"douar-doum","canonical_name":"Douar Doum","normalized_name":"douar doum","registry_id":"candidate_rabat_douar_doum","aliases":[{"alias":"Douar Doum","normalized_alias":"douar doum"},{"alias":"Douars Doum","normalized_alias":"douars doum"}]},
+    {"id":"district_rabat_el_kora","slug":"el-kora","canonical_name":"El Kora","normalized_name":"el kora","registry_id":"candidate_rabat_el_kora","aliases":[{"alias":"El Kora","normalized_alias":"el kora"}]},
+    {"id":"district_rabat_el_garaa","slug":"el-garaa","canonical_name":"El Garaa","normalized_name":"el garaa","registry_id":"candidate_rabat_el_garaa","aliases":[{"alias":"El Garaa","normalized_alias":"el garaa"}]},
+    {"id":"district_rabat_al_boustane","slug":"al-boustane","canonical_name":"Al Boustane","normalized_name":"al boustane","registry_id":"candidate_rabat_al_boustane","aliases":[{"alias":"Al Boustane","normalized_alias":"al boustane"}]},
+    {"id":"district_rabat_hay_nahda","slug":"hay-nahda","canonical_name":"Hay Nahda","normalized_name":"hay nahda","registry_id":"candidate_rabat_hay_nahda","aliases":[{"alias":"Hay Nahda","normalized_alias":"hay nahda"},{"alias":"Hay Nahda I","normalized_alias":"hay nahda i"}]},
+    {"id":"district_rabat_diour_jamaa","slug":"diour-jamaa","canonical_name":"Diour Jamaa","normalized_name":"diour jamaa","registry_id":"candidate_rabat_diour_jamaa","aliases":[{"alias":"Diour Jamaa","normalized_alias":"diour jamaa"},{"alias":"Diour Jemaa","normalized_alias":"diour jemaa"},{"alias":"Habous Diour Jamaa","normalized_alias":"habous diour jamaa"}]},
+    {"id":"district_rabat_oudayas","slug":"oudayas","canonical_name":"Oudayas","normalized_name":"oudayas","registry_id":"candidate_rabat_oudayas","aliases":[{"alias":"Oudayas","normalized_alias":"oudayas"},{"alias":"Casbah des Oudayas","normalized_alias":"casbah des oudayas"},{"alias":"Kasbah des Oudayas","normalized_alias":"kasbah des oudayas"}]},
+    {"id":"district_rabat_mellah","slug":"mellah","canonical_name":"Mellah","normalized_name":"mellah","registry_id":"candidate_rabat_mellah","aliases":[{"alias":"Mellah","normalized_alias":"mellah"}]}
+  ],
+  "collisionAudit": {
+    "existingGeoAliasNormalizedCollisions": 0,
+    "internalNormalizedAliasesDeduplicated": [
+      {"entity":"district_rabat_medina","kept":"Médina","omittedEquivalent":"Medina","normalized_alias":"medina"},
+      {"entity":"district_rabat_diour_jamaa","kept":"Diour Jamaa","omittedEquivalent":"Diour Jamaâ","normalized_alias":"diour jamaa"}
+    ]
+  },
+  "productionDryRun": {
+    "snapshotDate": "2026-08-16",
+    "entityRowsProposed": 18,
+    "entityRowsNew": 18,
+    "entityIdConflicts": 0,
+    "entitySlugConflicts": 0,
+    "aliasRowsProposed": 26,
+    "aliasRowsNew": 26,
+    "aliasRowsExisting": 0,
+    "writesExecuted": 0
+  },
+  "guardrails": [
+    "No entity in this manifest is validated by this proposal.",
+    "No entity is SEO-eligible or map-eligible by this proposal.",
+    "No production SQL write is included or authorized.",
+    "Any future INSERT/UPDATE requires a separate controlled human gate and exact-head certification."
+  ]
+}
