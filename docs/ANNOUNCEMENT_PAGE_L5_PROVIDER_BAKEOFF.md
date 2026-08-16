@@ -34,9 +34,12 @@ Le live est borné :
 
 Cette séparation évite de transformer un service public communautaire en dépendance de CI à chaque commit. Les métriques live ne sont jamais codées en dur dans ce document : elles proviennent uniquement de l'artefact du SHA certifié.
 
-## Contrat de fraîcheur et cache ANN-L5
+## Contrat de vérité, fraîcheur et cache ANN-L5
 
+- une origine `exact` exige des coordonnées finies/in-range, `geo_precision=exact` et une source compatible (`scraped_coordinates` ou `manual_import`) ;
+- un centroïde n'est accepté qu'en `context_only` avec un couple précision/source cohérent ; tout couple contradictoire est `unavailable` ;
 - toute preuve provider doit porter `fetchedAt`, `expiresAt`, `providerId` et une attribution non vide ;
+- le `providerId` de la preuve doit correspondre à l'adapter qui a réellement exécuté la requête ;
 - une preuve future, expirée, sans `expiresAt` ou dont `expiresAt - fetchedAt > 24 h` est invalide et provoque un fail-closed / failover ;
 - le cache runtime `ephemeral` est plafonné à **86 400 secondes (24 h)** ;
 - `no_store` impose un TTL de `0` ;
@@ -76,11 +79,13 @@ Cette séparation évite de transformer un service public communautaire en dépe
 
 1. **Provider-neutral obligatoire** : aucun nom fournisseur dans la surface React de la fiche.
 2. **Sélection runtime réversible** : ordre piloté par `AKAR_GEO_NEARBY_PROVIDERS`, `AKAR_GEO_ROUTING_PROVIDERS`, `AKAR_GEO_ISOCHRONE_PROVIDERS`, `AKAR_GEO_STREET_IMAGERY_PROVIDERS`.
-3. **Fail-closed** : preuve sans attribution, future, sans `expiresAt`, expirée ou dont le TTL dépasse 24 h = inutilisable ; panne provider = failover ordonné ; tous les providers indisponibles = état explicite `unavailable`.
-4. **Cache** : `ephemeral <= 24 h`, `no_store = 0`, persistance uniquement sous policy `provider_defined` valide et jamais au-delà des droits fournisseur.
-5. **Routing / isochrone** : origine typée `ExactGeoTruth` uniquement.
-6. **Public OSM/OSRM** : utilisés pour le bake-off borné, jamais considérés comme SLA de production.
-7. **Production** : préférer un adapter OSM/self-hosted ou credentialed dont les droits de cache/rendu sont compatibles avec la fiche AkarFinder. La décision finale de provider concret ne doit pas être simulée en l'absence de credentials et de mesure live.
+3. **GeoTruth fail-closed** : un couple précision/source contradictoire ne peut jamais promouvoir un centroïde ou une source inconnue en origine exacte.
+4. **Preuve provider liée à l'adapter** : une réponse `available` dont `evidence.providerId` ne correspond pas au provider exécuté est invalide et déclenche le failover.
+5. **Fraîcheur fail-closed** : preuve sans attribution, future, sans `expiresAt`, expirée ou dont le TTL dépasse 24 h = inutilisable ; panne provider = failover ordonné ; tous les providers indisponibles = état explicite `unavailable`.
+6. **Cache** : `ephemeral <= 24 h`, `no_store = 0`, persistance uniquement sous policy `provider_defined` valide et jamais au-delà des droits fournisseur.
+7. **Routing / isochrone** : origine typée `ExactGeoTruth` uniquement.
+8. **Public OSM/OSRM** : utilisés pour le bake-off borné, jamais considérés comme SLA de production.
+9. **Production** : préférer un adapter OSM/self-hosted ou credentialed dont les droits de cache/rendu sont compatibles avec la fiche AkarFinder. La décision finale de provider concret ne doit pas être simulée en l'absence de credentials et de mesure live.
 
 ## Human gate restant avant CLOSED
 
