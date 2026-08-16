@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   ANNOUNCEMENT_PAGE_LOT_WEIGHTS,
@@ -35,6 +36,28 @@ describe("ANN-L0 roadmap accounting", () => {
       "ANN-L12",
       "ANN-L13",
     ]);
+  });
+
+  it("keeps the canonical roadmap present and aligned with every LOT weight", () => {
+    const roadmap = readFileSync("docs/ANNOUNCEMENT_PAGE_ULTRA_PREMIUM_ROADMAP.md", "utf8");
+    for (const [lot, weight] of Object.entries(ANNOUNCEMENT_PAGE_LOT_WEIGHTS)) {
+      assert.ok(
+        roadmap.includes(`| ${lot} | ${weight} % |`),
+        `Canonical roadmap must retain ${lot} at ${weight} %`,
+      );
+    }
+
+    for (const requiredSection of [
+      "Vivre ici",
+      "Street Reality",
+      "AkarEstimate",
+      "Finance Maroc",
+      "Mon Projet",
+      "Architecture providers cible",
+      "Contrat de preuve public",
+    ]) {
+      assert.ok(roadmap.includes(requiredSection), `Canonical roadmap lost required section: ${requiredSection}`);
+    }
   });
 });
 
