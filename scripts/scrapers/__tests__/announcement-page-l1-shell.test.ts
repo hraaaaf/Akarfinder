@@ -31,11 +31,14 @@ describe("ANN-L1 premium shell", () => {
     assert.match(shell, /<MobilePropertyDecisionBar listingId=\{listing\.id\} \/>/);
   });
 
-  it("has a single public H1 source after removing the legacy decision header from composition", () => {
+  it("keeps exactly one public H1 across the active detail composition", () => {
     const shell = read("components/listings/AnnouncementPageShell.tsx");
     const detail = read("components/listings/PropertyDetailV2.tsx");
-    const h1Count = (detail.match(/<h1\b/g) ?? []).length;
+    const core = read("components/listings/PropertyCore.tsx");
+    const h1Count = (detail.match(/<h1\b/g) ?? []).length + (core.match(/<h1\b/g) ?? []).length;
     assert.equal(h1Count, 1);
+    assert.match(detail, /<PropertyCore listing=\{listing\} \/>/);
+    assert.match(core, /data-property-core-title/);
     assert.doesNotMatch(shell, /PropertyDecisionHeader/);
   });
 
