@@ -250,8 +250,9 @@ export function buildLivingHereModel(input: {
   const exact = isExactGeoTruth(geo);
   const visibility: LivingHereModel["visibility"] = exact ? "full" : "context";
   const baseReason: LivingHereModel["reason"] = exact ? "exact_verified" : "neighborhood_context_only";
+  const nearby = input.nearby;
 
-  if (input.nearby?.status !== "available" || !hasFreshProviderEvidence(input.nearby.evidence, now)) {
+  if (nearby?.status !== "available" || !hasFreshProviderEvidence(nearby.evidence, now)) {
     return {
       ...hidden("provider_unavailable"),
       visibility,
@@ -263,7 +264,7 @@ export function buildLivingHereModel(input: {
     };
   }
 
-  const rawPois = input.nearby.pois
+  const rawPois = nearby.pois
     .filter((poi) => poi.id.trim() && poi.name.trim() && finiteCoordinate(poi.coordinate))
     .map((poi) => {
       const category = classifyLivingHereCategory(poi.category);
@@ -288,9 +289,9 @@ export function buildLivingHereModel(input: {
         categoryLabel: LIVING_HERE_CATEGORY_LABELS[category],
         coordinate: poi.coordinate,
         confidence: "provider_verified" as const,
-        providerId: input.nearby.evidence.providerId,
-        attribution: input.nearby.evidence.attribution,
-        observedAt: input.nearby.evidence.fetchedAt,
+        providerId: nearby.evidence.providerId,
+        attribution: nearby.evidence.attribution,
+        observedAt: nearby.evidence.fetchedAt,
         routes,
         internalDistanceMeters: haversineMeters(geo.coordinate!, poi.coordinate),
       };
@@ -311,7 +312,7 @@ export function buildLivingHereModel(input: {
       canShowPreciseRouteTimes: false,
       pois: [],
       isochrones: [],
-      attribution: [input.nearby.evidence.attribution],
+      attribution: [nearby.evidence.attribution],
     };
   }
 
@@ -341,7 +342,7 @@ export function buildLivingHereModel(input: {
 
   const attribution = Array.from(
     new Set([
-      input.nearby.evidence.attribution,
+      nearby.evidence.attribution,
       ...pois.flatMap((poi) => poi.routes.map((route) => route.attribution)),
       ...isochrones.map((isochrone) => isochrone.attribution),
     ].filter(Boolean)),
