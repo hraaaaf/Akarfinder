@@ -9,6 +9,16 @@ const CENTER = { lng: -6.8416, lat: 34.0209 };
 const ZOOM = 10.2;
 const TILE_SIZE = 512;
 
+function normalizeSlug(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function mercator(lng, lat) {
   const x = (lng + 180) / 360;
   const rad = lat * Math.PI / 180;
@@ -65,7 +75,6 @@ function pickClickableFeature(payload, width, height) {
         const lat = box.minLat + (box.maxLat - box.minLat) * iy / 10;
         if (!pointInGeometry([lng, lat], feature.geometry)) continue;
         const pixel = project(lng, lat, width, height);
-        // Avoid top controls, bottom legend and extreme canvas edges.
         if (pixel.x < 40 || pixel.x > width - 40 || pixel.y < 155 || pixel.y > height - 170) continue;
         const distance = Math.hypot(pixel.x - width / 2, pixel.y - height / 2);
         candidates.push({ feature, lng, lat, pixel, distance });
@@ -141,7 +150,9 @@ try {
     await panel.waitFor({ state: "visible", timeout: 10000 });
     await page.waitForURL((url) => url.searchParams.get("city") === "rabat" && url.searchParams.get("district") === district, { timeout: 10000 });
     const searchHref = await panel.getByRole("link", { name: /Rechercher dans cette zone/i }).getAttribute("href");
-    if (!searchHref || !searchHref.startsWith("/search") || !searchHref.includes("city=rabat") || !searchHref.includes(`district=${district}`)) {
+    if (!searchHref) throw new Error("Missing zone Search href");
+    const searchUrl = new URL(searchHref, baseUrl);
+    if (searchUrl.pathname !== "/search" || normalizeSlug(searchUrl.searchParams.get("city")) !== "rabat" || normalizeSlug(searchUrl.searchParams.get("district")) !== district) {
       throw new Error(`Unexpected zone search href: ${searchHref}`);
     }
 
