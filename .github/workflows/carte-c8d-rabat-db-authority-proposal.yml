@@ -1,0 +1,40 @@
+name: C8D Rabat DB Authority Proposal
+
+on:
+  pull_request:
+    paths:
+      - "data/geo/rabat-db-authority-proposal-v1.json"
+      - "docs/CARTE_C8D_RABAT_DB_AUTHORITY_PROPOSAL.md"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-db-authority-proposal.test.ts"
+      - ".github/workflows/carte-c8d-rabat-db-authority-proposal.yml"
+  push:
+    paths:
+      - "data/geo/rabat-db-authority-proposal-v1.json"
+      - "docs/CARTE_C8D_RABAT_DB_AUTHORITY_PROPOSAL.md"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-db-authority-proposal.test.ts"
+      - ".github/workflows/carte-c8d-rabat-db-authority-proposal.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  c8d-rabat-db-authority-proposal:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: C8D DB authority proposal gate
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8d-rabat-db-authority-proposal.test.ts
+      - name: C8D shadow non-regression
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8d-rabat-shadow-resolver.test.ts scripts/scrapers/__tests__/carte-c8d-rabat-shadow-audit-manifest.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
