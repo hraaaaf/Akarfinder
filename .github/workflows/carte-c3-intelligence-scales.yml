@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - "lib/map/intelligence-scale.ts"
+      - "lib/map/intelligence-payload.ts"
       - "scripts/scrapers/__tests__/intelligence-scale.test.ts"
+      - "scripts/scrapers/__tests__/intelligence-payload.test.ts"
       - ".github/workflows/carte-c3-intelligence-scales.yml"
 
 permissions:
@@ -21,8 +23,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Deterministic scale contract
-        run: npx tsx --test scripts/scrapers/__tests__/intelligence-scale.test.ts
+      - name: Deterministic scale and payload contracts
+        run: npx tsx --test scripts/scrapers/__tests__/intelligence-scale.test.ts scripts/scrapers/__tests__/intelligence-payload.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: No hardcoded market thresholds
@@ -32,3 +34,5 @@ jobs:
             echo 'mockup illustrative values must not define runtime scale thresholds'
             exit 1
           fi
+          grep -q 'neutralColor' lib/map/intelligence-payload.ts
+          grep -q 'observedMarketOnly' lib/map/intelligence-payload.ts
