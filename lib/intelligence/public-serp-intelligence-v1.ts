@@ -54,6 +54,8 @@ function buildSignals(result: ReturnType<typeof runStructuredListingIntelligence
     signals.push({ code: "freshness", label: result.freshness.public_freshness_label });
   }
 
+  // The proof check stays inside the canonical projector. Public consumers see
+  // only the sanitized market signal, never an internal certification flag.
   const market = marketLabel(result.market.intelligence_v2.comparison.position);
   if (market && marketPositionCertified(result)) {
     signals.push({ code: "market_context", label: market });
@@ -85,7 +87,6 @@ function project(result: ReturnType<typeof runStructuredListingIntelligencePipel
     attention_label: anomalyCount > 0
       ? `${anomalyCount} point${anomalyCount === 1 ? "" : "s"} à examiner dans les données disponibles`
       : null,
-    market_position_certified: marketPositionCertified(result),
     disclaimer: DISCLAIMER,
   };
 }
