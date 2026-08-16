@@ -159,7 +159,11 @@ export function PropertyMediaGallery({
   }, []);
 
   useEffect(() => {
-    if (!fullscreen) return;
+    if (fullscreen && !active) closeFullscreen();
+  }, [active, closeFullscreen, fullscreen]);
+
+  useEffect(() => {
+    if (!fullscreen || !active) return;
     closeRef.current?.focus();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -200,7 +204,7 @@ export function PropertyMediaGallery({
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
     };
-  }, [closeFullscreen, fullscreen, items.length]);
+  }, [active, closeFullscreen, fullscreen, items.length]);
 
   const fail = (url: string) => setFailedUrls((current) => new Set([...current, url]));
   const previous = () => {
@@ -237,16 +241,16 @@ export function PropertyMediaGallery({
     else previous();
   };
 
+  const shareLabel = shareState === "copied" ? "Lien copié" : "Partager cette annonce";
   const controls = (
     <div className="absolute right-3 top-3 z-20 flex gap-2 sm:right-4 sm:top-4">
       <button
         type="button"
         onClick={share}
-        aria-label="Partager cette annonce"
+        aria-label={shareLabel}
         className="grid h-11 min-w-11 place-items-center rounded-full bg-white/95 px-3 text-[#0B2545] shadow-lg backdrop-blur transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]"
       >
         <Share2 size={19} strokeWidth={2} />
-        <span className="sr-only">{shareState === "copied" ? "Lien copié" : "Partager"}</span>
       </button>
       <div className="grid h-11 min-w-11 place-items-center rounded-full bg-white/95 shadow-lg backdrop-blur">
         <FavoriteToggleButton listingId={listing.id} variant="icon" />
@@ -269,7 +273,7 @@ export function PropertyMediaGallery({
             type="button"
             onClick={share}
             className="grid h-11 w-11 place-items-center rounded-full bg-white/10 hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            aria-label="Partager cette annonce"
+            aria-label={shareLabel}
           >
             <Share2 size={20} />
           </button>
