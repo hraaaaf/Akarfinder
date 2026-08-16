@@ -18,19 +18,30 @@ function errorText(error: any): string {
   return JSON.stringify({ message: error.message, code: error.code, details: error.details, hint: error.hint, status: error.status });
 }
 
+function median(values: number[]): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  const value = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  return Number(value.toFixed(2));
+}
+
 async function main() {
   const db: any = getSupabaseServerClient();
   const slugs = Object.values(METRIC_SLUG_BY_ZONE);
   const { data, error } = await db
-    .from("odm_neighborhood_offer_shadow_segment_v1")
-    .select("neighborhood_slug,transaction_type,listing_count,price_per_m2_sample_count,median_price_per_m2_mad,metric_state,public_activation,metric_layers_activated")
-    .in("neighborhood_slug", slugs);
-  if (error) throw new Error(`C2 bounded Shadow read failed: ${errorText(error)}`);
+    .from("odm_neighborhood_offer_shadow_listing_v1")
+    .select("neighborhood_slug,transaction_type,price_per_m2_mad,metric_state,public_activation,metric_layers_activated")
+    .in("neighborhood_slug", slugs)
+    .limit(5000);
+  if (error) throw new Error(`C2 bounded Shadow listing read failed: ${errorText(error)}`);
 
-  const segments = data ?? [];
+  const listingRows = data ?? [];
+  if (listingRows.length >= 5000) throw new Error("C2 bounded Shadow listing safety limit reached; narrow the audit before trusting totals");
+
   const rows = RABAT_MARKET_ZONES_SHADOW.flatMap((zone) => {
     const slug = METRIC_SLUG_BY_ZONE[zone.id];
-    const matches = segments.filter((row: any) => row.neighborhood_slug === slug);
+    const matches = listingRows.filter((row: any) => row.neighborhood_slug === slug);
     if (matches.length === 0) {
       return [buildMarketZoneMetricRow({
         zoneId: zone.id,
@@ -42,18 +53,30 @@ async function main() {
         medianPricePerM2Mad: null,
       })];
     }
-    return matches.map((row: any) => {
+
+    const byTransaction = new Map<string, any[]>();
+    for (const row of matches) {
       if (row.metric_state !== "shadow" || row.public_activation !== false || row.metric_layers_activated !== false) {
-        throw new Error(`C2 Shadow boundary drift for ${zone.id}/${row.transaction_type}`);
+        throw new Error(`C2 Shadow boundary drift for ${zone.id}`);
       }
+      const transactionType = String(row.transaction_type ?? "unknown").trim() || "unknown";
+      const bucket = byTransaction.get(transactionType) ?? [];
+      bucket.push(row);
+      byTransaction.set(transactionType, bucket);
+    }
+
+    return [...byTransaction.entries()].map(([transactionType, bucket]) => {
+      const prices = bucket
+        .map((row: any) => Number(row.price_per_m2_mad))
+        .filter((value: number) => Number.isFinite(value) && value > 0);
       return buildMarketZoneMetricRow({
         zoneId: zone.id,
         displayName: zone.displayName,
-        transactionType: String(row.transaction_type ?? "unknown"),
+        transactionType,
         areaKm2: zone.areaKm2,
-        listingCount: Number(row.listing_count ?? 0),
-        pricePerM2SampleCount: Number(row.price_per_m2_sample_count ?? 0),
-        medianPricePerM2Mad: row.median_price_per_m2_mad == null ? null : Number(row.median_price_per_m2_mad),
+        listingCount: bucket.length,
+        pricePerM2SampleCount: prices.length,
+        medianPricePerM2Mad: median(prices),
       });
     });
   });
@@ -64,6 +87,8 @@ async function main() {
     state: "shadow",
     publicActivation: false,
     marketRepresentativenessCertified: false,
+    source: "odm_neighborhood_offer_shadow_listing_v1_bounded",
+    sourceListingRows: listingRows.length,
     zoneCount: RABAT_MARKET_ZONES_SHADOW.length,
     observedZoneCount: observedZones.size,
     dataGapZoneCount: RABAT_MARKET_ZONES_SHADOW.length - observedZones.size,
