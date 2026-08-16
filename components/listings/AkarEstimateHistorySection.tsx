@@ -1,4 +1,5 @@
 import type { AkarEstimateHistoryRuntime } from "@/lib/property-detail/akar-estimate-history-runtime";
+import { canPublishObservedPriceHistory } from "@/lib/property-detail/akar-estimate-history-truth";
 
 function formatMad(value: number): string {
   return `${new Intl.NumberFormat("fr-MA", { maximumFractionDigits: 0 }).format(value)} DH`;
@@ -15,7 +16,7 @@ function formatDate(value: string): string {
 }
 
 export function AkarEstimateHistorySection({ model }: { model?: AkarEstimateHistoryRuntime | null }) {
-  if (!model || model.history.status !== "available" || model.history.points.length === 0) return null;
+  if (!model || !canPublishObservedPriceHistory(model)) return null;
 
   return (
     <section data-price-history="ann-l9" className="border-b border-slate-200 py-6">
