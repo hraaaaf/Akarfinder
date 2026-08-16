@@ -13,6 +13,7 @@ const scenarios = [
   { name: "no-score-390", state: "no-score", width: 390, height: 844, card: true, score: null, scoreLabel: true, items: 0 },
   { name: "no-score-1280", state: "no-score", width: 1280, height: 900, card: true, score: null, scoreLabel: true, items: 0 },
   { name: "no-market-390", state: "no-market", width: 390, height: 844, card: true, score: "78/100", items: 1, market: false },
+  { name: "uncertified-market-390", state: "uncertified-market", width: 390, height: 844, card: true, score: "80/100", items: 0, market: false, uncertifiedMarket: true },
   { name: "attention-390", state: "attention", width: 390, height: 844, card: true, score: "67/100", items: 2, market: true, attention: true },
   { name: "invalid-score-390", state: "invalid-score", width: 390, height: 844, card: true, score: null, scoreLabel: false, items: 0, invalidScore: true },
   { name: "minimal-390", state: "minimal", width: 390, height: 844, card: false, score: null, items: 0 },
@@ -87,6 +88,10 @@ try {
           const body = await card.innerText();
           if (body.includes("140") || body.includes("Excellent dossier")) localFindings.push("INVALID_SCORE_COPY_EXPOSED");
         }
+        if (scenario.uncertifiedMarket) {
+          const body = await card.innerText();
+          if (body.includes("Repère marché non certifié à masquer")) localFindings.push("EXPLICIT_UNCERTIFIED_MARKET_EXPOSED");
+        }
 
         const coreBox = await page.locator('[data-announcement-property-core="ann-l3"]').boundingBox();
         const cardBox = await card.boundingBox();
@@ -97,6 +102,7 @@ try {
       if (bodyText.includes("Compatibilité personnalisée non calculée")) localFindings.push("UNCALCULATED_FIT_EXPOSED");
       if (bodyText.includes("Analyse structurée")) localFindings.push("LEGACY_ANALYSIS_CARD_EXPOSED");
       if (bodyText.includes("Ce repère obsolète ne doit pas être affiché")) localFindings.push("UNCERTIFIED_MARKET_EXPOSED");
+      if (bodyText.includes("Repère marché non certifié à masquer")) localFindings.push("EXPLICIT_UNCERTIFIED_MARKET_COPY_EXPOSED");
       if (scenario.state === "minimal" && bodyText.includes("AkarFinder Intelligence")) localFindings.push("EMPTY_INTELLIGENCE_SHELL_EXPOSED");
 
       const screenshot = `${scenario.name}.png`;
