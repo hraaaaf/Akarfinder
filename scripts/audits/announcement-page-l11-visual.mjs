@@ -52,16 +52,20 @@ try {
       if (scenario.partner) {
         if (!bodyText.includes("Agence Atlas QA")) localFindings.push("PRO_NAME_MISSING");
         if (!bodyText.includes("Agence Gold")) localFindings.push("AUTHORIZED_BADGE_MISSING");
-        if (!bodyText.includes("Demander une visite")) localFindings.push("VISIT_CTA_MISSING");
+        if (!bodyText.includes("Demander une visite") && !bodyText.includes("Visite")) localFindings.push("VISIT_CTA_MISSING");
         if (!bodyText.includes("WhatsApp")) localFindings.push("WHATSAPP_CTA_MISSING");
         if (whatsappLinks < 1) localFindings.push("WHATSAPP_LINK_MISSING");
         if (!bodyText.includes("Voir la source d’origine")) localFindings.push("ORIGINAL_SOURCE_CTA_MISSING");
-        if (!bodyText.includes("Continuer dans Mon Projet")) localFindings.push("PROJECT_ACTION_MISSING");
+        if (!bodyText.includes("Mon Projet")) localFindings.push("PROJECT_ACTION_MISSING");
         if (scenario.width >= 1024) {
           if (await page.locator('[data-pro-conversion="ann-l11"]').count() !== 1) localFindings.push("DESKTOP_PRO_CARD_MISSING");
           if (!bodyText.includes("Signaler cette annonce")) localFindings.push("REPORT_ACTION_MISSING");
-        } else if (await page.locator('[data-pro-conversion-mobile="ann-l11"]').count() !== 1) {
-          localFindings.push("MOBILE_CONVERSION_DOCK_MISSING");
+          const duplicatedPriceHeader = await page.locator('[data-pro-conversion="ann-l11"] .bg-\[\#0B63CE\]').count();
+          if (duplicatedPriceHeader > 0) localFindings.push("DUPLICATED_PRICE_BANNER_PRESENT");
+        } else {
+          if (await page.locator('[data-pro-conversion-mobile="ann-l11"]').count() !== 1) localFindings.push("MOBILE_CONVERSION_DOCK_MISSING");
+          const dockText = await page.locator('[data-pro-conversion-mobile="ann-l11"]').innerText();
+          if (dockText.includes("Continuer dans Mon Projet")) localFindings.push("MOBILE_PROJECT_COPY_TOO_LONG");
         }
       } else {
         if (whatsappLinks !== 0) localFindings.push(`SOURCE_ONLY_WHATSAPP_LEAK_${whatsappLinks}`);
@@ -87,7 +91,7 @@ try {
 }
 
 const report = {
-  schemaVersion: "ANNOUNCEMENT_PAGE_L11_PRO_CONVERSION_VISUAL_V1",
+  schemaVersion: "ANNOUNCEMENT_PAGE_L11_PRO_CONVERSION_VISUAL_V2_PREMIUM_AKARFINDER",
   generatedAt: new Date().toISOString(),
   scenarioCount: scenarios.length,
   screenshotCount: results.filter((item) => item.screenshot).length,
