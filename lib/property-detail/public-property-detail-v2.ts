@@ -42,6 +42,7 @@ export type PublicPropertyDetailV2 = {
   };
   market: {
     status: "available" | "unavailable";
+    certified: boolean;
     label: string | null;
     price_per_m2: number | null;
   };
@@ -161,7 +162,8 @@ function compact<T>(values: Array<T | null>): T[] {
 function getMarketSignal(
   intelligence: ReturnType<typeof buildPublicSerpIntelligenceForListing>,
 ): string | null {
-  return intelligence?.signals.find((signal) => signal.code === "market_context")?.label ?? null;
+  if (!intelligence?.market_position_certified) return null;
+  return intelligence.signals.find((signal) => signal.code === "market_context")?.label ?? null;
 }
 
 function getMultiSourceSignal(
@@ -221,55 +223,58 @@ export function buildPublicPropertyDetailV2(
       ? fact("surface_built", "Surface construite", `${formatNumber(listing.built_surface_m2)} m²`, sourceProvenance)
       : null,
     listing.plot_surface_m2 && listing.plot_surface_m2 > 0
-      ? fact("surface_land", "Terrain", `${formatNumber(listing.plot_surface_m2)} m²`, sourceProvenance)
+      ? fact("surface_plot", "Terrain", `${formatNumber(listing.plot_surface_m2)} m²`, sourceProvenance)
       : null,
     listing.terrace_m2 && listing.terrace_m2 > 0
-      ? fact("terrace", "Terrasse", `${formatNumber(listing.terrace_m2)} m²`, sourceProvenance)
+      ? fact("surface_terrace", "Terrasse", `${formatNumber(listing.terrace_m2)} m²`, sourceProvenance)
       : null,
     listing.garden_m2 && listing.garden_m2 > 0
-      ? fact("garden", "Jardin", `${formatNumber(listing.garden_m2)} m²`, sourceProvenance)
+      ? fact("surface_garden", "Jardin", `${formatNumber(listing.garden_m2)} m²`, sourceProvenance)
       : null,
   ]);
 
   const layout = compact([
-    (listing.rooms_count ?? 0) > 0 ? fact("rooms", "Pièces", String(listing.rooms_count), sourceProvenance) : null,
-    listing.bedrooms > 0 ? fact("bedrooms", "Chambres", String(listing.bedrooms), sourceProvenance) : null,
-    listing.bathrooms > 0 ? fact("bathrooms", "Salles de bain", String(listing.bathrooms), sourceProvenance) : null,
+    listing.rooms_count && listing.rooms_count > 0
+      ? fact("rooms", "Pièces", formatNumber(listing.rooms_count), sourceProvenance)
+      : null,
+    listing.bedrooms && listing.bedrooms > 0
+      ? fact("bedrooms", "Chambres", formatNumber(listing.bedrooms), sourceProvenance)
+      : null,
+    listing.bathrooms && listing.bathrooms > 0
+      ? fact("bathrooms", "Salles de bain", formatNumber(listing.bathrooms), sourceProvenance)
+      : null,
   ]);
 
   const building = compact([
     fact("condition", "État", listing.condition, sourceProvenance),
-    fact("property_age", "Âge du bien", listing.property_age_range, sourceProvenance),
+    fact("age", "Âge du bien", listing.property_age_range, sourceProvenance),
     fact("orientation", "Orientation", listing.orientation, sourceProvenance),
     fact("floor_type", "Type de sol", listing.floor_type, sourceProvenance),
-    (listing.floors_count ?? 0) > 0 ? fact("floors", "Nombre d’étages", String(listing.floors_count), sourceProvenance) : null,
+    listing.floors_count && listing.floors_count > 0
+      ? fact("floors", "Étages", formatNumber(listing.floors_count), sourceProvenance)
+      : null,
   ]);
 
   const features = compact([
-    (listing.garage_spaces ?? 0) > 0 ? fact("garage", "Garage", `${listing.garage_spaces} place${listing.garage_spaces === 1 ? "" : "s"}`, sourceProvenance) : null,
+    listing.garage_spaces && listing.garage_spaces > 0
+      ? fact("garage_spaces", "Garage", `${formatNumber(listing.garage_spaces)} place${listing.garage_spaces === 1 ? "" : "s"}`, sourceProvenance)
+      : null,
     booleanFact("pool", "Piscine", listing.has_pool, sourceProvenance),
     booleanFact("concierge", "Concierge", listing.has_concierge, sourceProvenance),
     booleanFact("equipped_kitchen", "Cuisine équipée", listing.has_equipped_kitchen, sourceProvenance),
-    booleanFact("moroccan_living", "Salon marocain", listing.has_moroccan_living_room, sourceProvenance),
-    booleanFact("european_living", "Salon européen", listing.has_european_living_room, sourceProvenance),
+    booleanFact("moroccan_living_room", "Salon marocain", listing.has_moroccan_living_room, sourceProvenance),
+    booleanFact("european_living_room", "Salon européen", listing.has_european_living_room, sourceProvenance),
+    ...(listing.premium_features ?? []).map((value, index) => fact(`premium_${index}`, "Caractéristique", value, sourceProvenance)),
   ]);
 
   const history: PublicDetailHistoryItem[] = [];
   const createdAt = formatDate(context.created_at);
   const observedAt = formatDate(context.observed_at);
   if (createdAt) {
-    history.push({
-      label: "Première présence enregistrée dans AkarFinder",
-      value: createdAt,
-      kind: "akarfinder_observation",
-    });
+    history.push({ label: "Première observation AkarFinder", value: createdAt, kind: "akarfinder_observation" });
   }
   if (observedAt && observedAt !== createdAt) {
-    history.push({
-      label: "Dernière observation AkarFinder",
-      value: observedAt,
-      kind: "akarfinder_observation",
-    });
+    history.push({ label: "Dernière observation AkarFinder", value: observedAt, kind: "akarfinder_observation" });
   }
   if (listing.listed_at_label && !/indisponible/i.test(listing.listed_at_label)) {
     history.unshift({ label: "Publication indiquée par la source", value: listing.listed_at_label, kind: "source" });
@@ -297,6 +302,7 @@ export function buildPublicPropertyDetailV2(
     },
     market: {
       status: marketLabel ? "available" : "unavailable",
+      certified: publicIntelligence.market_position_certified && marketLabel != null,
       label: marketLabel,
       price_per_m2: listing.price_per_m2 ?? null,
     },
