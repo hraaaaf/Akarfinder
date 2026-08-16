@@ -1,0 +1,53 @@
+name: Carte C5 Rich Zone Sheet Browser
+
+on:
+  pull_request:
+    paths:
+      - "components/map/RabatMarketIntelligenceExperience.tsx"
+      - "components/map/RabatMarketZoneSheet.tsx"
+      - "scripts/audits/carte-c5-rich-zone-sheet-smoke.mjs"
+      - ".github/workflows/carte-c5-rich-zone-sheet-browser.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-c5-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BASE_URL: http://127.0.0.1:3205
+      AUDIT_OUTPUT_DIR: data/audits/carte-c5-rich-zone-sheet
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3205 > /tmp/carte-c5-rich-zone-sheet.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3205/map?city=rabat&district=agdal' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-c5-rich-zone-sheet.log
+          exit 1
+      - name: Rich zone sheet interactions and responsive proof
+        run: node scripts/audits/carte-c5-rich-zone-sheet-smoke.mjs
+      - name: Upload C5 browser proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-c5-rich-zone-sheet-${{ github.run_id }}
+          path: data/audits/carte-c5-rich-zone-sheet
+          if-no-files-found: error
+          retention-days: 30
