@@ -8,6 +8,7 @@ await mkdir(outDir, { recursive: true });
 const CENTER = { lng: -6.8416, lat: 34.0209 };
 const ZOOM = 10.2;
 const TILE_SIZE = 512;
+const VALID_DISTRICTS = new Set(["agdal", "hay-riad", "souissi", "hassan"]);
 
 function normalizeSlug(value) {
   return String(value ?? "")
@@ -141,17 +142,14 @@ try {
     await page.waitForFunction(() => document.querySelector(".maplibregl-canvas")?.style.cursor === "pointer", null, { timeout: 10000 });
     await page.mouse.click(clickX, clickY);
 
-    const district = {
-      market_zone_rabat_agdal: "agdal",
-      market_zone_rabat_hay_riad: "hay-riad",
-      market_zone_rabat_souissi: "souissi",
-      market_zone_rabat_centre: "hassan",
-    }[target.feature.properties.zoneId];
-    if (!district) throw new Error(`Unexpected zone ${target.feature.properties.zoneId}`);
+    await page.waitForURL((url) => url.searchParams.get("city") === "rabat" && VALID_DISTRICTS.has(url.searchParams.get("district") ?? ""), { timeout: 10000 });
+    const currentUrl = new URL(page.url());
+    const district = currentUrl.searchParams.get("district");
+    if (!district || !VALID_DISTRICTS.has(district)) throw new Error(`Unexpected selected district after polygon click: ${district}`);
 
-    const panel = page.locator(`aside[aria-label="Zone ${target.feature.properties.displayName}"]`);
+    const panel = page.locator('aside[aria-label^="Zone "]').first();
     await panel.waitFor({ state: "visible", timeout: 10000 });
-    await page.waitForURL((url) => url.searchParams.get("city") === "rabat" && url.searchParams.get("district") === district, { timeout: 10000 });
+    const panelLabel = await panel.getAttribute("aria-label");
     const searchHref = await panel.getByRole("link", { name: /Rechercher dans cette zone/i }).getAttribute("href");
     if (!searchHref) throw new Error("Missing zone Search href");
     const searchUrl = new URL(searchHref, baseUrl);
@@ -166,8 +164,9 @@ try {
     await page.screenshot({ path: `${outDir}/c4-${viewport.name}-${viewport.width}x${viewport.height}.png`, fullPage: true });
     report.viewports.push({
       ...viewport,
-      zoneId: target.feature.properties.zoneId,
-      district,
+      projectedZoneId: target.feature.properties.zoneId,
+      selectedDistrict: district,
+      panelLabel,
       searchHref,
       priceAvailableCount: pricePayload.properties?.legend?.availableCount ?? null,
       densityAvailableCount: densityPayload.properties?.legend?.availableCount ?? null,
