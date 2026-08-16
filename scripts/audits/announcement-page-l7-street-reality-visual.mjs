@@ -66,7 +66,9 @@ try {
         const text = await section.innerText();
         if (!text.includes("Vue de rue à proximité")) localFindings.push("NEARBY_STREET_LABEL_MISSING");
         if (text.includes("Photo du bien")) localFindings.push("PROPERTY_PHOTO_CLAIM_EXPOSED");
-        if (!text.includes("Fixture QA Street Provider")) localFindings.push("ATTRIBUTION_MISSING");
+        if (!text.includes("Mapillary")) localFindings.push("PROVIDER_ATTRIBUTION_MISSING");
+        if (!text.includes("@qa_mapper_one") || !text.includes("@qa_mapper_two")) localFindings.push("CREATOR_ATTRIBUTION_MISSING");
+        if (!text.includes("CC BY-SA")) localFindings.push("LICENSE_ATTRIBUTION_MISSING");
         if (!/À \d+ m du point de référence/.test(text)) localFindings.push("DISTANCE_MISSING");
         if (!text.includes("Capture juil. 2026")) localFindings.push("CAPTURE_DATE_MISSING");
         const cards = await section.locator("article").count();
