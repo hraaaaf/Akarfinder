@@ -135,7 +135,7 @@ export const RABAT_PRODUCT_LOCALITY_CANDIDATES: readonly RabatProductLocality[] 
   candidate("candidate_rabat_medina", "medina", "Medina", "medina", ["Médina"], null, ["akarfinder_district_dictionary_v1", "aurs_rabat_first_party", "commune_rabat_first_party"], "first_party_available"),
   candidate("candidate_rabat_mabella", "mabella", "Mabella", "mabella", [], null, ["aurs_rabat_first_party"], "first_party_available"),
   candidate("candidate_rabat_takaddoum", "takaddoum", "Takaddoum", "takaddoum", [], null, ["aurs_rabat_first_party"], "first_party_available"),
-  candidate("candidate_rabat_kbibat", "kbibat", "Kbibat", "kbibat", [], null, ["aurs_rabat_first_party"], "first_party_available"),
+  candidate("candidate_rabat_kbibat", "kbibat", "Kbibat", "kbibat", ["Kébibat"], null, ["aurs_rabat_first_party"], "first_party_available"),
   candidate("candidate_rabat_douar_doum", "douar-doum", "Douar Doum", "douar doum", ["Douars Doum"], null, ["aurs_rabat_first_party"], "first_party_available"),
   candidate("candidate_rabat_el_kora", "el-kora", "El Kora", "el kora", [], null, ["aurs_rabat_first_party"], "first_party_available"),
   candidate("candidate_rabat_el_garaa", "el-garaa", "El Garaa", "el garaa", [], null, ["aurs_rabat_first_party"], "first_party_available"),

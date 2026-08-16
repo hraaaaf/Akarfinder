@@ -1,0 +1,44 @@
+name: C8D Rabat Shadow Resolver
+
+on:
+  pull_request:
+    paths:
+      - "docs/CARTE_C8D_RABAT_SHADOW_RESOLVER.md"
+      - "data/geo/rabat-shadow-audit-2026-08-16.json"
+      - "lib/geo/rabat-locality-shadow-resolver.ts"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-shadow-resolver.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-shadow-audit-manifest.test.ts"
+      - ".github/workflows/carte-c8d-rabat-shadow-resolver.yml"
+  push:
+    paths:
+      - "docs/CARTE_C8D_RABAT_SHADOW_RESOLVER.md"
+      - "data/geo/rabat-shadow-audit-2026-08-16.json"
+      - "lib/geo/rabat-locality-shadow-resolver.ts"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-shadow-resolver.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-shadow-audit-manifest.test.ts"
+      - ".github/workflows/carte-c8d-rabat-shadow-resolver.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  c8d-rabat-shadow-resolver:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: C8D shadow resolver and manifest gates
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8d-rabat-shadow-resolver.test.ts scripts/scrapers/__tests__/carte-c8d-rabat-shadow-audit-manifest.test.ts
+      - name: C8A-C8D readiness non-regression
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8a-rabat-taxonomy-contract.test.ts scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts scripts/scrapers/__tests__/carte-c8c-rabat-geometry-certification.test.ts scripts/scrapers/__tests__/carte-c8d-rabat-publication-readiness.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit

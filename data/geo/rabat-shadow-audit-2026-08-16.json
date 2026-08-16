@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "c8d-rabat-shadow-audit-v1",
+  "snapshotDate": "2026-08-16",
+  "mode": "production_read_only",
+  "publicMetric": false,
+  "productionWriteCount": 0,
+  "corpus": {
+    "city": "Rabat",
+    "verticalClassification": "real_estate_likely",
+    "documentKind": "LISTING",
+    "displayEligibility": ["eligible_primary", "eligible_secondary"],
+    "deduplication": "canonical_url_else_seed_id_latest_updated_at",
+    "sourceCount": 6,
+    "listingCount": 984
+  },
+  "resolver": {
+    "authorityOrder": ["district_exact", "title_phrase", "snippet_phrase", "searchText_phrase"],
+    "fuzzyMatching": false,
+    "parentInference": false,
+    "centroidInference": false,
+    "shortAliasFreeText": false,
+    "ambiguousPolicy": "fail_closed"
+  },
+  "result": {
+    "matchedUnique": 638,
+    "ambiguous": 6,
+    "unmatched": 340,
+    "certifiedOrHistoricalMatches": 570,
+    "candidateMatches": 68
+  },
+  "bySource": {
+    "1immo.ma": { "matchedUnique": 10, "ambiguous": 0, "unmatched": 12, "total": 22 },
+    "agenz.ma": { "matchedUnique": 360, "ambiguous": 5, "unmatched": 219, "total": 584 },
+    "avito.ma": { "matchedUnique": 3, "ambiguous": 0, "unmatched": 0, "total": 3 },
+    "masaken.ma": { "matchedUnique": 1, "ambiguous": 0, "unmatched": 28, "total": 29 },
+    "mouldar.com": { "matchedUnique": 78, "ambiguous": 1, "unmatched": 14, "total": 93 },
+    "mubawab.ma": { "matchedUnique": 186, "ambiguous": 0, "unmatched": 67, "total": 253 }
+  },
+  "byLocalityUniqueMatches": {
+    "agdal": 151,
+    "hay-riad": 122,
+    "hassan": 53,
+    "souissi": 211,
+    "ocean": 33,
+    "yacoub-el-mansour": 7,
+    "youssoufia": 4,
+    "touarga": 0,
+    "les-orangers": 6,
+    "aviation": 6,
+    "akkari": 1,
+    "medina": 6,
+    "mabella": 2,
+    "takaddoum": 0,
+    "kbibat": 9,
+    "douar-doum": 0,
+    "el-kora": 0,
+    "el-garaa": 0,
+    "al-boustane": 0,
+    "hay-nahda": 8,
+    "diour-jamaa": 16,
+    "oudayas": 3,
+    "mellah": 0
+  },
+  "historicalTruthCrossValidation": {
+    "goldSetSize": 40,
+    "matchedCorrect": 39,
+    "ambiguous": 1,
+    "matchedWrong": 0,
+    "unmatched": 0,
+    "observedUniqueDecisionPrecision": 1,
+    "decisiveCoverage": 0.975,
+    "scope": ["agdal", "hay-riad", "hassan", "souissi", "ocean"],
+    "statisticalCertification": false
+  },
+  "observedListingAliases": {
+    "kbibat": {
+      "canonical": "Kbibat",
+      "observedAlias": "Kébibat",
+      "rawDeduplicatedOccurrences": 10,
+      "uniqueShadowMatchesAfterAmbiguityHandling": 9,
+      "sourceCount": 1
+    }
+  },
+  "notes": [
+    "This snapshot is diagnostic evidence, not a public market metric or production geo resolution.",
+    "Candidate matches remain blocked and map-ineligible.",
+    "Any geo_entity, geo_alias, geo_resolution_event or property_listing mutation requires a separate controlled production gate."
+  ]
+}
