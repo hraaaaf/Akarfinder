@@ -79,10 +79,9 @@ export function hasFreshProviderEvidence(
   evidence: GeoProviderEvidence | null | undefined,
   now = new Date(),
 ): boolean {
-  if (!evidence?.providerId.trim() || !evidence.attribution.trim()) return false;
+  if (!evidence?.providerId.trim() || !evidence.attribution.trim() || evidence.expiresAt == null) return false;
   const fetched = Date.parse(evidence.fetchedAt);
   if (Number.isNaN(fetched) || fetched > now.getTime()) return false;
-  if (evidence.expiresAt == null) return true;
   const expires = Date.parse(evidence.expiresAt);
   return !Number.isNaN(expires) && expires >= now.getTime() && expires >= fetched;
 }
