@@ -26,7 +26,7 @@ export function LivingHereMap({ model, pois, selectedMinutes, styleUrl }: Living
         style: styleUrl,
         center: [model.origin.coordinate.longitude, model.origin.coordinate.latitude],
         zoom: model.origin.exact ? 14.2 : 13.2,
-        attributionControl: true,
+        attributionControl: {},
       });
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
