@@ -12,6 +12,8 @@ const scenarios = [
   { name: "default-1280", width: 1280, height: 900 },
 ];
 
+const normalizeWhitespace = (value) => value.replace(/\s+/gu, " ").trim();
+
 await mkdir(outputDir, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const results = [];
@@ -57,8 +59,8 @@ try {
         const text = node?.textContent ?? "";
         return text.includes("Mensualité") && text.includes("Intérêts simulés");
       }, null, { timeout: 10_000 });
-      const computedText = await section.evaluate((node) => node.textContent ?? "");
-      if (!computedText.includes("1 600 000") && !computedText.includes("1 600 000")) localFindings.push("FINANCED_PRINCIPAL_MISSING");
+      const computedText = normalizeWhitespace(await section.evaluate((node) => node.textContent ?? ""));
+      if (!computedText.includes("1 600 000")) localFindings.push("FINANCED_PRINCIPAL_MISSING");
       if (!computedText.includes("Mensualité")) localFindings.push("MONTHLY_PAYMENT_MISSING");
       if (!computedText.includes("Intérêts simulés")) localFindings.push("INTEREST_LABEL_MISSING");
 
@@ -67,7 +69,7 @@ try {
         const node = document.querySelector('[data-finance-maroc="ann-l10"]');
         return (node?.textContent ?? "").includes("0 DH");
       }, null, { timeout: 10_000 });
-      const zeroRateText = await section.evaluate((node) => node.textContent ?? "");
+      const zeroRateText = normalizeWhitespace(await section.evaluate((node) => node.textContent ?? ""));
       if (!zeroRateText.includes("0 DH")) localFindings.push("ZERO_RATE_STATE_MISSING");
 
       const screenshot = `${scenario.name}.png`;
