@@ -7,14 +7,17 @@ const read = (path: string) => fs.readFileSync(path, "utf8");
 test("P1 LOT 3 mobile decision ergonomics", async (t) => {
   await t.test("ships a safe-area aware property decision dock", () => {
     const bar = read("components/listings/MobilePropertyDecisionBar.tsx");
+    const shell = read("components/listings/AnnouncementPageShell.tsx");
     const page = read("app/listings/[id]/page.tsx");
+
     assert.ok(bar.includes('aria-label="Actions rapides pour ce bien"'));
     assert.ok(bar.includes("env(safe-area-inset-bottom)"));
     assert.ok(bar.includes("FavoriteToggleButton"));
     assert.ok(bar.includes("CompareToggleButton"));
     assert.ok(bar.includes("Continuer dans Mon Projet"));
-    assert.ok(page.includes("pb-24 lg:pb-0"));
-    assert.ok(page.includes("MobilePropertyDecisionBar"));
+    assert.ok(shell.includes("pb-24 lg:pb-0"));
+    assert.ok(shell.includes("MobilePropertyDecisionBar"));
+    assert.ok(page.includes("AnnouncementPageShell"));
   });
 
   await t.test("uses a modal mobile filter bottom sheet without losing search context", () => {
