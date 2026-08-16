@@ -20,6 +20,15 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Base-table-only query contract
+        run: |
+          if grep -q 'odm_neighborhood_offer_shadow_listing_v1' scripts/audits/carte-c2b-rabat-price-gap.ts; then
+            echo 'C2B must not query the heavy Shadow listing view; use bounded latest-event-first base tables'
+            exit 1
+          fi
+          grep -q 'geo_resolution_events' scripts/audits/carte-c2b-rabat-price-gap.ts
+          grep -q 'thin_index_search_documents' scripts/audits/carte-c2b-rabat-price-gap.ts
+          grep -q 'source_offer_seeds' scripts/audits/carte-c2b-rabat-price-gap.ts
       - run: npx tsc --noEmit
       - name: Live bounded price-gap audit
         env:
@@ -32,6 +41,7 @@ jobs:
           const r=require('./data/audits/runtime/carte-c2b-rabat-price-gap.json');
           if(r.readOnly!==true) throw new Error('read-only boundary drift');
           if(r.targetSlugs.length!==4) throw new Error('expected 4 target slugs');
+          if(r.source!=='bounded_base_tables_latest_event_first') throw new Error(`unexpected source ${r.source}`);
           if(!['C2B_PRICE_COVERAGE_REVIEWABLE','C2B_PRICE_COVERAGE_INSUFFICIENT'].includes(r.verdict)) throw new Error(`unexpected verdict ${r.verdict}`);
           NODE
       - uses: actions/upload-artifact@v4
