@@ -4,7 +4,12 @@ import { Container } from "@/components/ui/Container";
 import { ui } from "@/components/ui/design-system";
 
 function Pulse({ className }: { className: string }) {
-  return <div aria-hidden="true" className={`animate-pulse rounded-xl bg-slate-200/75 ${className}`} />;
+  return (
+    <div
+      aria-hidden="true"
+      className={`animate-pulse rounded-xl bg-slate-200/75 motion-reduce:animate-none ${className}`}
+    />
+  );
 }
 
 export default function ListingDetailLoading() {
