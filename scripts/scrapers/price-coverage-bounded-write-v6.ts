@@ -72,7 +72,7 @@ async function main() {
   let reliable = 0;
   let written = 0;
   for (const row of snapshot) {
-    if (write && written >= maxWrites) break;
+    if ((write && written >= maxWrites) || (!write && reliable >= maxWrites)) break;
     const stat = bySource[row.source_domain];
     try {
       if (!(await isAllowedByRobots(row.canonical_url))) continue;
