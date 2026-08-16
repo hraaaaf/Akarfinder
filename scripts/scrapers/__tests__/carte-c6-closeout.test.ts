@@ -28,10 +28,9 @@ describe("Carte C6 — canonical closeout", () => {
     assert.ok(closeout.includes("source_authorization_status"));
   });
 
-  it("advances strict roadmap to C7", () => {
-    assert.ok(status.includes("7 / 8 = 87,5 %"));
+  it("preserves C6 closed state after later roadmap progress", () => {
     assert.ok(status.includes("C6 — Fondation « nos annonces » : ✅ CLOSED"));
-    assert.ok(status.includes("C7 — Certification 10/10 + closeout : 🟠 CURRENT"));
     assert.ok(status.includes("Closeout C6 : `docs/CARTE_C6_CLOSEOUT.md`"));
+    assert.match(status, /Lots CLOSED \/ 8 : \*\*[78] \/ 8 = (87,5|100) %\*\*/);
   });
 });
