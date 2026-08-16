@@ -8,29 +8,32 @@ function source(path: string) {
 
 test("shared semantic primitives exist", () => {
   const designSystem = source("components/ui/design-system.ts");
-  for (const token of ["page", "surface", "surfaceMuted", "field", "primaryAction", "secondaryAction", "status"]) {
+  for (const token of ["page", "pageLight", "surface", "surfaceMuted", "field", "primaryAction", "secondaryAction", "status"]) {
     assert.ok(designSystem.includes(token), `missing semantic primitive ${token}`);
   }
 });
 
-test("search filters and decision header consume shared primitives", () => {
+test("search filters and active announcement shell consume shared primitives", () => {
   const filters = source("components/search/QuickFilters.tsx");
+  const shell = source("components/listings/AnnouncementPageShell.tsx");
   const decision = source("components/listings/PropertyDecisionHeader.tsx");
   const page = source("app/listings/[id]/page.tsx");
 
   assert.ok(filters.includes('from "@/components/ui/design-system"'));
+  assert.ok(shell.includes('from "@/components/ui/design-system"'));
   assert.ok(decision.includes('from "@/components/ui/design-system"'));
-  assert.ok(page.includes('from "@/components/ui/design-system"'));
+  assert.ok(page.includes("AnnouncementPageShell"));
   assert.ok(filters.includes("ui.field"));
   assert.ok(decision.includes("ui.primaryAction"));
-  assert.ok(page.includes("ui.page"));
+  assert.ok(shell.includes("ui.pageLight"));
 });
 
-test("non-frozen migrated surfaces no longer carry local brand hex colors", () => {
-  // QuickFilters is now an explicitly frozen premium Search surface whose exact
+test("non-frozen migrated announcement surfaces no longer carry local brand hex colors", () => {
+  // QuickFilters remains an explicitly frozen premium Search surface whose exact
   // mockup palette is certified by dedicated Search controls / full-page gates.
+  // PropertyDetailV2 is intentionally deferred to ANN-L3 and is not part of this gate.
   const migrated = [
-    source("components/listings/PropertyDecisionHeader.tsx"),
+    source("components/listings/AnnouncementPageShell.tsx"),
     source("app/listings/[id]/page.tsx"),
   ].join("\n");
 
