@@ -18,7 +18,9 @@ test("listing detail keeps one canonical decision flow through the shared announ
   assert.ok(shell.includes("<PropertyDetailV2"));
   assert.ok(shell.includes("listing={listing}"));
   assert.ok(shell.includes("detail={detail}"));
-  assert.ok(shell.includes("<MobilePropertyDecisionBar listingId={listing.id} />"));
+  assert.ok(shell.includes("buildProConversionModel(listing)"));
+  assert.ok(shell.includes("proConversion={proConversion}"));
+  assert.ok(shell.includes("<MobilePropertyDecisionBar listing={listing} model={proConversion} />"));
   assert.ok(!shell.includes("PropertyDecisionHeader"), "legacy pre-detail decision hero must not reintroduce a second H1");
   assert.ok(detail.includes("<PropertyCore listing={listing} />"), "the active listing detail body must delegate identity to PropertyCore");
 
@@ -27,25 +29,32 @@ test("listing detail keeps one canonical decision flow through the shared announ
   assert.ok(core.includes("data-property-core-title"), "PropertyCore must remain the canonical public title boundary");
 });
 
-test("decision actions preserve the canonical project, favorite and comparison flows on mobile and desktop", () => {
+test("decision actions preserve canonical project, favorite and comparison flows while contact uses one authority", () => {
   const bar = source("components/listings/MobilePropertyDecisionBar.tsx");
   const detail = source("components/listings/PropertyDetailV2.tsx");
+  const pro = source("components/listings/ProfessionalConversionCard.tsx");
 
   assert.ok(bar.includes('href="/mon-projet"'));
   assert.ok(bar.includes("Continuer dans Mon Projet"));
   assert.ok(bar.includes("FavoriteToggleButton"));
   assert.ok(bar.includes("CompareToggleButton"));
+  assert.ok(bar.includes("model.actions.visit"));
+  assert.ok(bar.includes("model.actions.whatsapp"));
 
-  assert.ok(detail.includes('href="/mon-projet"'));
-  assert.ok(detail.includes("Continuer dans Mon Projet"));
-  assert.ok(detail.includes("lg:flex"), "desktop Mon Projet action must be visible from the sticky action rail");
-  assert.ok(detail.includes("FavoriteToggleButton"));
-  assert.ok(detail.includes("CompareToggleButton"));
+  assert.ok(detail.includes("ProfessionalConversionCard"));
+  assert.ok(detail.includes("proConversion"));
+  assert.ok(!detail.includes("canShowContactActions"));
+  assert.ok(pro.includes('href="/mon-projet"'));
+  assert.ok(pro.includes("Continuer dans Mon Projet"));
+  assert.ok(pro.includes("FavoriteToggleButton"));
+  assert.ok(pro.includes("CompareToggleButton"));
+  assert.ok(pro.includes("model.actions.visit"));
+  assert.ok(pro.includes("model.actions.whatsapp"));
 
   assert.ok(!bar.includes("/profil-recherche"));
   assert.ok(!bar.includes("/onboarding"));
-  assert.ok(!detail.includes("/profil-recherche"));
-  assert.ok(!detail.includes("/onboarding"));
+  assert.ok(!pro.includes("/profil-recherche"));
+  assert.ok(!pro.includes("/onboarding"));
 });
 
 test("decision surface remains evidence-safe after the intelligence consolidation", () => {
