@@ -2,10 +2,19 @@
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
 **Version : 2026-08-16**  
-**Statut : ANN-L0 ACTIVE**  
-**Progression stricte : 0 % tant que ANN-L0 n'est pas certifié et CLOSED.**
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 NEXT**  
+**Progression stricte : 4 / 100 %.**
 
 > Ce document est la source de vérité du chantier de refonte de `/listings/[id]`. Les pourcentages sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
+
+## 0. Closeout ANN-L0 — Contrat vérité ✅
+
+- **PR #716 ✅ MERGED** — merge `f0ffaa18b6774631ce25251b845cca9d7162913e` ; exact head `4cd12a96e9b7fccbcc359c6ff034fd4d5a22bb2d`.
+- Gate dédié exact-head `Announcement Page L0 Truth Contract`, run `31925462743` : tests du nouveau contrat, régression `listing-detail-boundary`, `P10IMG`, `REAL-PROXIMITY-ENGINE-1` et TypeScript **SUCCESS**.
+- Diff runtime public : **0**. Scope merge : roadmap dédiée, contrat fail-closed, tests, workflow CI.
+- Contrat verrouillé : aucun pin exact sans geo `exact` ; aucun POI premium sans provider vérifié + observation horodatée ; aucun temps précis sans route mesurée depuis une origine exacte ; aucune Street Reality sans contexte geo admissible + asset attribuable ; aucune galerie sans permissions ; aucun score/estimate/comparable/contact/fit sans preuve correspondante.
+- Dette explicitement contenue : les `walking_minutes` historiques dérivés de GPS/centroïdes par `REAL-PROXIMITY-ENGINE-1` ne valent **pas** preuve de routage pour la nouvelle fiche.
+- **Crédit officiel ANN-L0 : +4 %.** Prochain chemin critique : ANN-L1 Shell premium.
 
 ## 1. Vision produit
 
@@ -234,7 +243,7 @@ La progression officielle est la somme des poids des LOTS `CLOSED` seulement.
 
 ## 8. Détail des LOTS et critères de sortie
 
-### ANN-L0 — Contrat vérité — 4 % — ACTIVE
+### ANN-L0 — Contrat vérité — 4 % — ✅ CLOSED
 
 **But** : empêcher la refonte premium de transformer des approximations existantes en affirmations visuellement convaincantes mais fausses.
 
@@ -258,11 +267,11 @@ Critères CLOSED :
 - comparables/market impossible sans service certifié ;
 - direct contact impossible sans permission ;
 - fit impossible sans profil + calcul ;
-- targeted tests PASS ; TypeScript PASS ; CI exacte verte.
+- targeted tests PASS ; TypeScript PASS ; exact-head gate vert ; merge et présence sur `main` vérifiés.
 
 **Aucun changement UI public dans L0.**
 
-### ANN-L1 — Shell premium — 7 %
+### ANN-L1 — Shell premium — 7 % — NEXT
 
 Implémentation : nouvelle composition mobile-first de `/listings/[id]`, tokens visuels du vrai `/search`, H1 unique, spacing, sections continues, skeletons et states. Créer fixture QA data-backed/noindex pour rendre une fiche stable à 390/430/768/1280.
 
@@ -401,8 +410,8 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 
 | LOT | Poids | État | Crédit officiel |
 |---|---:|---|---:|
-| ANN-L0 | 4 % | ACTIVE | 0 % |
-| ANN-L1 | 7 % | NOT_STARTED | 0 % |
+| ANN-L0 | 4 % | ✅ CLOSED | 4 % |
+| ANN-L1 | 7 % | NEXT | 0 % |
 | ANN-L2 | 7 % | NOT_STARTED | 0 % |
 | ANN-L3 | 6 % | NOT_STARTED | 0 % |
 | ANN-L4 | 9 % | NOT_STARTED | 0 % |
@@ -416,4 +425,4 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L12 | 5 % | NOT_STARTED | 0 % |
 | ANN-L13 | 6 % | NOT_STARTED | 0 % |
 
-**Progression officielle actuelle : 0 / 100 %.**
+**Progression officielle actuelle : 4 / 100 %.**
