@@ -1,0 +1,45 @@
+name: Carte C2C Rabat Mubawab Price Canary
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/carte-c2c-rabat-mubawab-price-canary.ts"
+      - ".github/workflows/carte-c2c-rabat-mubawab-price-canary.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit-rabat-mubawab-prices:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - name: Audit targeted Rabat Mubawab price recovery
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+        run: npx tsx scripts/audits/carte-c2c-rabat-mubawab-price-canary.ts
+      - name: Enforce read-only canary contract
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/carte-c2c-rabat-mubawab-price-canary.json');
+          if(r.readOnly!==true) throw new Error('read-only boundary drift');
+          if(r.source!=='mubawab_v5_targeted_refetch') throw new Error(`unexpected source ${r.source}`);
+          if(r.candidateCount>30) throw new Error(`candidate bound exceeded ${r.candidateCount}`);
+          if(!['C2C_TARGETED_PRICE_RECOVERY_REVIEWABLE','C2C_TARGETED_PRICE_RECOVERY_INSUFFICIENT'].includes(r.verdict)) throw new Error(`unexpected verdict ${r.verdict}`);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: carte-c2c-rabat-mubawab-price-canary-${{ github.run_id }}
+          path: data/audits/runtime/carte-c2c-rabat-mubawab-price-canary.json
+          if-no-files-found: warn
+          retention-days: 30
