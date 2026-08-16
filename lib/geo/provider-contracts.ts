@@ -3,6 +3,8 @@ import type { ExactGeoTruth, GeoTruth } from "@/lib/geo/geo-truth";
 export type GeoProviderKind = "nearby" | "routing" | "isochrone" | "street_imagery";
 export type GeoTravelMode = "walking" | "driving";
 
+export const GEO_PROVIDER_EVIDENCE_MAX_TTL_MS = 24 * 60 * 60 * 1000;
+
 export type GeoProviderEvidence = {
   providerId: string;
   attribution: string;
@@ -83,5 +85,6 @@ export function hasFreshProviderEvidence(
   const fetched = Date.parse(evidence.fetchedAt);
   if (Number.isNaN(fetched) || fetched > now.getTime()) return false;
   const expires = Date.parse(evidence.expiresAt);
-  return !Number.isNaN(expires) && expires >= now.getTime() && expires >= fetched;
+  if (Number.isNaN(expires) || expires < now.getTime() || expires < fetched) return false;
+  return expires - fetched <= GEO_PROVIDER_EVIDENCE_MAX_TTL_MS;
 }
