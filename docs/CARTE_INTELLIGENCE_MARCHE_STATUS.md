@@ -5,14 +5,13 @@ Statut global : **CLOSED**
 
 Référentiel cible : `docs/CARTE_INTELLIGENCE_MARCHE_TARGET.md`.
 Contrat métriques : `docs/CARTE_INTELLIGENCE_METRICS_CONTRACT.md`.
-Closeouts :
-- C1 : `docs/MARKET_ZONES_C1_CLOSEOUT.md`
-- C2 : `docs/CARTE_C2_CLOSEOUT.md`
-- C3 : `docs/CARTE_C3_CLOSEOUT.md`
-- C4 : `docs/CARTE_C4_CLOSEOUT.md`
-- C5 : `docs/CARTE_C5_CLOSEOUT.md`
-- C6 : `docs/CARTE_C6_CLOSEOUT.md`
-- C7 : `docs/CARTE_C7_CLOSEOUT.md`
+Closeout C1 : `docs/MARKET_ZONES_C1_CLOSEOUT.md`.
+Closeout C2 : `docs/CARTE_C2_CLOSEOUT.md`.
+Closeout C3 : `docs/CARTE_C3_CLOSEOUT.md`.
+Closeout C4 : `docs/CARTE_C4_CLOSEOUT.md`.
+Closeout C5 : `docs/CARTE_C5_CLOSEOUT.md`.
+Closeout C6 : `docs/CARTE_C6_CLOSEOUT.md`.
+Closeout C7 : `docs/CARTE_C7_CLOSEOUT.md`.
 
 ## Progression stricte
 
@@ -22,7 +21,7 @@ Lots CLOSED / 8 : **8 / 8 = 100 %**.
 - C1 — Géométrie quartier certifiée : ✅ CLOSED
 - C2 — Dataset métriques quartier v2 : ✅ CLOSED
 - C3 — API publique fail-closed + échelles : ✅ CLOSED
-- C4 — Heat map interactive conforme au contrat cible : ✅ CLOSED
+- C4 — Heat map interactive conforme au mockup : ✅ CLOSED
 - C5 — Fiche quartier riche : ✅ CLOSED
 - C6 — Fondation « nos annonces » : ✅ CLOSED
 - C7 — Certification finale + closeout : ✅ CLOSED
@@ -66,33 +65,15 @@ Invariants :
 
 ## C4 — heat map interactive
 
-Certifié :
-- trois modes Prix / Densité / Annonces ;
-- Vente / Location séparés ;
-- MapLibre polygonal ;
-- clic/tap zone → district canonique → fiche ;
-- CTA Search avec contexte ;
-- états neutres explicites ;
-- expérience legacy préservée hors Rabat.
+Certifié : trois modes Prix / Densité / Annonces, Vente / Location séparés, MapLibre polygonal, clic/tap zone vers district canonique et fiche, CTA Search avec contexte, états neutres explicites, expérience legacy préservée hors Rabat.
 
 ## C5 — fiche zone riche
 
-Certifié :
-- contexte quartier uniquement depuis le référentiel canonique ;
-- Search CTA filtré ;
-- disclaimer `market_zone` permanent ;
-- layout mobile borné et scrollable ;
-- aucune métrique ou contexte inventé.
+Certifié : contexte quartier uniquement depuis le référentiel canonique, Search CTA filtré, disclaimer `market_zone` permanent, layout mobile borné et scrollable, aucune métrique ou contexte inventé.
 
 ## C6 — fondation « nos annonces »
 
-Certifié :
-- ownership vérifié uniquement ;
-- vraies `property_listings` ;
-- projection market-zone via autorité géographique existante ;
-- provenance `market / AkarFinder-owned / partner` ;
-- partenaire uniquement avec validation + activation + autorisation source explicites ;
-- 0 write DB, 0 ranking mutation, 0 activation implicite.
+Certifié : ownership vérifié uniquement, vraies `property_listings`, projection market-zone via autorité géographique existante, provenance `market / AkarFinder-owned / partner`, partenaire uniquement avec validation + activation + autorisation source explicites, 0 write DB, 0 ranking mutation, 0 activation implicite.
 
 ## C7 — certification finale
 
@@ -106,27 +87,13 @@ Certification finale :
 - artefact `9261452732` ;
 - digest `sha256:6bffb4749dad4d27c02ba3047ee3a97443b3a5b35a753ddb9126bf3f549596a5`.
 
-Le run final certifie :
-- 56 tests critiques C0→C6 ;
-- identité de la cible ;
-- TypeScript ;
-- production build ;
-- MapLibre navigateur réel ;
-- 390×844 / 430×932 / 768×900 / 1280×900 ;
-- trois KPI Prix / Densité / Annonces ;
-- confiance + taille d'échantillon Prix ;
-- mini-polygone de zone ;
-- CTA Search ;
-- report final `ok: true` ;
-- 0 erreur navigateur / 0 requête C3 en échec dans le rapport certifié.
+Le run final certifie : 56 tests critiques C0→C6, identité cible, TypeScript, production build, MapLibre navigateur réel, 390×844 / 430×932 / 768×900 / 1280×900, trois KPI Prix / Densité / Annonces, confiance + taille d'échantillon Prix, mini-polygone, CTA Search, report `ok: true`, 0 erreur navigateur et 0 requête C3 en échec.
 
 Les gates Canonical Baseline, Compile, UX Gate 0, P0, P1 Final Sweep, P2 Residual et Final Design Accessibility sont également **SUCCESS** sur le même exact-head.
 
 ## Position visuelle finale
 
-L'artefact final a été inspecté humainement sur les quatre viewports.
-
-La certification porte sur le contrat canonique : structure, hiérarchie, interactions, données défendables, états fail-closed et accessibilité. Elle **ne prétend pas** une copie pixel-perfect du mockup illustratif.
+L'artefact final a été inspecté humainement sur les quatre viewports. La certification porte sur le contrat canonique : structure, hiérarchie, interactions, données défendables, états fail-closed et accessibilité. Elle **ne prétend pas** une copie pixel-perfect du mockup illustratif.
 
 ## Conclusion
 
