@@ -49,6 +49,7 @@ test("C8D documents the current C3 four-slug metric boundary", () => {
 test("C8 status does not invent a completion percentage or close C8D prematurely", () => {
   const status = read("docs/CARTE_C8_RABAT_EXTENSION_STATUS.md");
   assert.match(status, /Aucun pourcentage C8 n’est publié/);
-  assert.match(status, /C8D — Market-data projection \+ UI expansion \+ final certification 🟡 IN PROGRESS/);
-  assert.match(status, /0 nouvelle activation C8 éligible/);
+  assert.match(status, /C8D — Resolver shadow \+ autorité proposée \+ maturité marché \+ récupération Agenz ✅ EVIDENCE MERGED \/ LIVE GATE PENDING/);
+  assert.match(status, /dry-run live post-merge[^\n]*reste à exécuter/);
+  assert.match(status, /nouvelles activations publiques C8 : \*\*0\*\*/);
 });
