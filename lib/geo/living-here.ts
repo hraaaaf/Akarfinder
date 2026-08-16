@@ -1,4 +1,4 @@
-import type { ExactGeoTruth, GeoTruth } from "@/lib/geo/geo-truth";
+import { isExactGeoTruth, type GeoTruth } from "@/lib/geo/geo-truth";
 import {
   hasFreshProviderEvidence,
   type GeoCoordinate,
@@ -178,7 +178,7 @@ function routeIsUsable(
   observation: LivingHereRouteObservation,
   now: Date,
 ): observation is LivingHereRouteObservation & { result: Extract<RoutingProviderResult, { status: "available" }> } {
-  if (geo.availability !== "exact" || !geo.exactOriginAllowed) return false;
+  if (!isExactGeoTruth(geo)) return false;
   if (observation.poiId !== poi.id || !sameDestination(observation.destination, poi.coordinate)) return false;
   if (observation.result.status !== "available") return false;
   if (!hasFreshProviderEvidence(observation.result.evidence, now)) return false;
@@ -186,16 +186,11 @@ function routeIsUsable(
   return Number.isFinite(distanceMeters) && distanceMeters >= 0 && Number.isFinite(durationSeconds) && durationSeconds > 0;
 }
 
-function isExactTruth(value: GeoTruth): value is ExactGeoTruth {
-  return value.availability === "exact" && value.exactOriginAllowed && value.coordinate != null && value.precision === "exact";
-}
-
 function validIsochroneMinutes(value: number): value is 5 | 10 | 15 {
   return LIVING_HERE_ISOCHRONE_MINUTES.includes(value as 5 | 10 | 15);
 }
 
 function dedupePois(
-  origin: GeoCoordinate,
   pois: Array<LivingHerePoi & { internalDistanceMeters: number }>,
 ): LivingHerePoi[] {
   const accepted: Array<LivingHerePoi & { internalDistanceMeters: number }> = [];
@@ -252,7 +247,7 @@ export function buildLivingHereModel(input: {
   }
   if (geo.precision === "city_centroid") return hidden("geo_too_coarse");
 
-  const exact = isExactTruth(geo);
+  const exact = isExactGeoTruth(geo);
   const visibility: LivingHereModel["visibility"] = exact ? "full" : "context";
   const baseReason: LivingHereModel["reason"] = exact ? "exact_verified" : "neighborhood_context_only";
 
@@ -301,7 +296,7 @@ export function buildLivingHereModel(input: {
       };
     });
 
-  const pois = dedupePois(geo.coordinate, rawPois);
+  const pois = dedupePois(rawPois);
   if (pois.length === 0) {
     return {
       version: LIVING_HERE_VERSION,
