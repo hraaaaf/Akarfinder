@@ -34,15 +34,29 @@ Ces nombres sont un diagnostic ponctuel read-only, pas des métriques publiques.
 Règles :
 
 1. normalisation déterministe des accents, casse, apostrophes, tirets, ponctuation et espaces ;
-2. priorité à `district` quand sa valeur correspond exactement à un nom canonique ou alias explicite C8B ;
-3. sinon, hiérarchie de signaux `title` → `snippet` → `searchText` ;
-4. le premier champ qui porte au moins un signal fait autorité ; plusieurs localités dans ce même champ => `ambiguous` ;
-5. aliases très courts comme `Riad` interdits en free text, mais acceptés comme valeur structurée exacte ;
-6. aucune correspondance => `unresolved` ;
-7. aucun fuzzy matching, aucune inférence par parent administratif, aucun centroïde, aucun write DB ;
-8. une localité candidate reste `blocked` et non publiable même si le shadow resolver la reconnaît.
+2. priorité à `district` uniquement si sa provenance est explicitement `same_record_structured` et sa valeur correspond exactement à un nom canonique ou alias explicite C8B ;
+3. un `district` provenant d'un `coverage_bridge_shadow` n'acquiert jamais cette autorité structurée ;
+4. sinon, hiérarchie de signaux `title` → `snippet` → `searchText` ;
+5. le premier champ qui porte au moins un signal fait autorité ; plusieurs localités dans ce même champ => `ambiguous` ;
+6. aliases très courts comme `Riad` interdits en free text, mais acceptés comme valeur structurée exacte de même record ;
+7. aucune correspondance => `unresolved` ;
+8. aucun fuzzy matching, aucune inférence par parent administratif, aucun centroïde, aucun write DB ;
+9. une localité candidate reste `blocked` et non publiable même si le shadow resolver la reconnaît.
 
 Cette hiérarchie évite notamment de promouvoir une localité citée seulement comme proximité lorsque le titre fournit déjà une localisation explicite.
+
+## Audit de provenance du district structuré
+
+Un replay read-only des bridges Rabat a mesuré le risque d'utiliser `coverage_bridge.property_listing.district` comme s'il appartenait au même record source :
+
+- **44** bridges ont un district structuré correspondant exactement à une localité connue ;
+- **42** concordent avec le premier signal textuel unique du seed ;
+- **1** entre en conflit avec le document source ;
+- **1** tombe sur un document textuellement ambigu.
+
+Le conflit observé est matériel : le seed `0bb029cf-68e0-48b4-8be8-1965d67d8daa` a un bridge marqué `shadow_only` vers un `property_listing` mis à jour le **2026-08-13** avec `district = Hay Riad`, alors que son événement geo du **2026-08-08** porte `raw_neighborhood = Agdal` et que le document source observé contient Agdal. Le `property_listing` bridgé mélange par ailleurs plusieurs signaux de quartier.
+
+Conclusion : un coverage bridge peut être utile comme indice de travail, mais **il ne constitue pas une preuve de provenance same-record**. Le resolver refuse donc désormais de lui donner priorité sur `title/snippet/searchText`.
 
 ## Audit corpus borné — snapshot read-only 2026-08-16
 
@@ -54,6 +68,8 @@ Avec les règles exactes du resolver et l'alias annonce `Kébibat` :
 - **6** ambiguës, conservées fail-closed ;
 - **340** sans signal exact ;
 - parmi les matchs uniques, **570** concernent les localités historiques/certifiées et **68** des localités candidates C8.
+
+Ces comptes n'injectent pas un `coverage_bridge.property_listing.district` comme autorité same-record. Un district structuré ne peut être prioritaire que si sa provenance au même document est établie.
 
 Principales cohortes uniques candidates observées :
 
