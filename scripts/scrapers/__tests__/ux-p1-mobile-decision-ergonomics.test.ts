@@ -15,7 +15,7 @@ test("P1 LOT 3 mobile decision ergonomics", async (t) => {
     assert.ok(bar.includes("FavoriteToggleButton"));
     assert.ok(bar.includes("CompareToggleButton"));
     assert.ok(bar.includes("Continuer dans Mon Projet"));
-    assert.ok(shell.includes("pb-24 lg:pb-0"));
+    assert.ok(shell.includes("pb-40 lg:pb-0"));
     assert.ok(shell.includes("MobilePropertyDecisionBar"));
     assert.ok(page.includes("AnnouncementPageShell"));
   });
