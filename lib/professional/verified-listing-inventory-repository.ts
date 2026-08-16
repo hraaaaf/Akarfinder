@@ -7,7 +7,6 @@ const MAX_VERIFIED_LISTINGS = 100;
 const RABAT_MARKET_ZONE_BY_DISTRICT: ReadonlyMap<string, string> = new Map([
   ["agdal", "market_zone_rabat_agdal"],
   ["hay riad", "market_zone_rabat_hay_riad"],
-  ["souissi", "market_zone_rabat_souissi"],
   ["hassan", "market_zone_rabat_centre"],
 ]);
 
