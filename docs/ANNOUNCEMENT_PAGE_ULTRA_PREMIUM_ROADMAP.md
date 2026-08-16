@@ -2,8 +2,8 @@
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
 **Version : 2026-08-16**  
-**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 NEXT**  
-**Progression stricte : 33 / 100 %.**
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 NEXT**  
+**Progression stricte : 42 / 100 %.**
 
 > Ce document est la sous-roadmap normative du chantier de refonte de `/listings/[id]`. `docs/ROADMAP.md` reste le registre canonique global AkarFinder. Les pourcentages ci-dessous sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
 
@@ -69,13 +69,25 @@
 - Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L4_CLOSEOUT.md`.
 - **Crédit officiel ANN-L4 : +9 %. Progression cumulée : 33 %. Prochain chemin critique : ANN-L5 Geo Foundation.**
 
+## 0.5 Closeout ANN-L5 — Geo Foundation ✅
+
+- **PR #739 ✅ MERGED** — merge `b44bd5d04299a18e778f7e42251cdcb07b364a77` ; exact head certifié `7cc3b5e2daee88adf2dfce5c0b3298554a932913`.
+- Gate statique `Announcement Page L5 Geo Foundation`, run `31943466077` : contrats, tests ciblés et TypeScript **SUCCESS**.
+- Certification live exact-head, run `31943502557` : **SUCCESS**.
+- Tests : **139/139 PASS** ; artefact `9262665086`, digest `sha256:72268cfebb277208ff8ec7b5789ff1d9ac3df297b32a1630f929a788586cfd94`.
+- Bake-off Maroc : **32/32 POI réels**, 8 catégories par ville et **224/224 paires routables** sur Rabat, Casablanca, Marrakech et Tanger.
+- `GeoTruth` sépare strictement exact / contexte / indisponible ; routing et isochrones exigent `ExactGeoTruth` ; preuve provider, attribution, fraîcheur, cache ≤24 h et failover sont fail-closed.
+- Nominatim, Overpass public et OSRM demo restent explicitement **benchmark-only**, jamais production-ready par implication.
+- Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L5_CLOSEOUT.md` et `docs/ANNOUNCEMENT_PAGE_L5_PROVIDER_BAKEOFF.md`.
+- **Crédit officiel ANN-L5 : +9 %. Progression cumulée : 42 %. Prochain chemin critique : ANN-L6 Vivre ici.**
+
 ## 1. Vision produit
 
 Transformer la fiche actuelle en une expérience immobilière mobile-first, ultra premium, aussi simple à lire qu'une grande fiche Zillow-like mais différenciée par les forces propres d'AkarFinder : vérité des données, provenance, multi-source, fiabilité, intelligence marché Maroc, expérience quartier mesurée et personnalisation `Mon Projet`.
 
 La page ne doit pas être un clone graphique de Zillow. **L'architecture d'information peut reprendre les meilleures conventions du marché ; l'identité visuelle reste celle du Search AkarFinder réel.**
 
-Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell ; ANN-L2 a livré le contrat média ; ANN-L3 a livré le Property Core ; ANN-L4 a consolidé l'intelligence AkarFinder. ANN-L5 ouvre la fondation géographique provider-agnostic.
+Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell ; ANN-L2 a livré le contrat média ; ANN-L3 a livré le Property Core ; ANN-L4 a consolidé l'intelligence AkarFinder ; ANN-L5 a livré la fondation géographique provider-agnostic. ANN-L6 ouvre maintenant `Vivre ici`.
 
 ## 2. Doctrine non négociable
 
@@ -103,7 +115,7 @@ La refonte ne repart pas de zéro. Le code actuel fournit déjà :
 
 ### Dette explicitement reconnue
 
-Le champ historique `nearby_places?: { label, time, icon }[]` et les `walking_minutes` calculés à partir d'une géométrie non routée **ne sont pas une preuve suffisante pour l'expérience premium**. Ils ne doivent pas être utilisés comme temps de trajet précis par la nouvelle fiche. ANN-L5/L6 introduiront un contrat provider + routage mesuré.
+Le champ historique `nearby_places?: { label, time, icon }[]` et les `walking_minutes` calculés à partir d'une géométrie non routée **ne sont pas une preuve suffisante pour l'expérience premium**. Ils ne doivent pas être utilisés comme temps de trajet précis par la nouvelle fiche. ANN-L5/L6 introduisent le contrat provider + routage mesuré.
 
 ## 4. Architecture fonctionnelle cible
 
@@ -246,7 +258,7 @@ GeoTruthProvider
         └── StreetImageryProvider→ contexte street-level
 ```
 
-ANN-L5 réalise un bake-off réel Maroc avant choix production. Candidats à comparer :
+ANN-L5 a réalisé un bake-off réel Maroc avant intégration production. Candidats comparés/documentés :
 
 - POI : OpenStreetMap/Overpass, Mapbox Search, Google Places ou autre provider conforme ;
 - Routing/Isochrone : Mapbox, Google Routes, moteur OSM/OSRM/Valhalla ou autre ;
@@ -348,7 +360,7 @@ Implémentation : `AkarInsightCard` compact et lisible ; AkarScore /100, couvert
 
 Gate CLOSED : exact head `530ac0840349188a2445edac382ef4f4bc39bee3`, run `31941210544` SUCCESS, **11/11 captures + 0 finding** ; score absent/invalide, marché absent/non certifié, attention, état minimal, versions moteur/Truth Contract et non-régression L1-L3 certifiés. Détails : `docs/ANNOUNCEMENT_PAGE_L4_CLOSEOUT.md`.
 
-### ANN-L5 — Geo Foundation — 9 % — NEXT
+### ANN-L5 — Geo Foundation — 9 % — ✅ CLOSED
 
 Implémentation :
 
@@ -359,9 +371,9 @@ Implémentation :
 - rapport couverture/coût/latence/droits ;
 - choix provider(s) réversible par configuration.
 
-Gate : aucune coordonnée exacte inférée ; aucun provider lock-in dans React ; test failover/fail-closed.
+Gate CLOSED : exact head `7cc3b5e2daee88adf2dfce5c0b3298554a932913`, run statique `31943466077` SUCCESS, run live `31943502557` SUCCESS, **139/139 tests PASS**, 32/32 POI réels et 224/224 paires routables ; aucune coordonnée exacte inférée, aucun provider lock-in dans React, failover/fail-closed et cache policy certifiés. Détails : `docs/ANNOUNCEMENT_PAGE_L5_CLOSEOUT.md`.
 
-### ANN-L6 — Vivre ici — 12 %
+### ANN-L6 — Vivre ici — 12 % — NEXT
 
 Implémentation : pipeline POI réel, taxonomy AkarFinder, ranking de pertinence, routing exact, isochrones 5/10/15, carte interactive et listes rapides.
 
@@ -468,8 +480,8 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L2 | 7 % | ✅ CLOSED | 7 % |
 | ANN-L3 | 6 % | ✅ CLOSED | 6 % |
 | ANN-L4 | 9 % | ✅ CLOSED | 9 % |
-| ANN-L5 | 9 % | NEXT | 0 % |
-| ANN-L6 | 12 % | NOT_STARTED | 0 % |
+| ANN-L5 | 9 % | ✅ CLOSED | 9 % |
+| ANN-L6 | 12 % | NEXT | 0 % |
 | ANN-L7 | 6 % | NOT_STARTED | 0 % |
 | ANN-L8 | 10 % | NOT_STARTED | 0 % |
 | ANN-L9 | 6 % | NOT_STARTED | 0 % |
@@ -478,4 +490,4 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L12 | 5 % | NOT_STARTED | 0 % |
 | ANN-L13 | 6 % | NOT_STARTED | 0 % |
 
-**Progression officielle actuelle : 33 / 100 %.**
+**Progression officielle actuelle : 42 / 100 %.**
