@@ -7,6 +7,8 @@ import { safeDelay } from "./utils/safe-delay";
 
 const SOURCES = ["mubawab.ma", "masaken.ma"] as const;
 
+export const MAX_PRICE_PAGINATION_PAGES = 10;
+
 type Source = (typeof SOURCES)[number];
 
 export function buildPageRanges(pageSize: number, pages: number) {
@@ -57,7 +59,7 @@ async function main() {
   if (process.env.PRICE_PAGINATION_WRITE === "true") throw new Error("pagination audit is strictly read-only");
 
   const pageSize = Math.max(20, Math.min(Number(process.env.PRICE_PAGINATION_PAGE_SIZE ?? 120), 200));
-  const pages = Math.max(1, Math.min(Number(process.env.PRICE_PAGINATION_PAGES ?? 4), 8));
+  const pages = Math.max(1, Math.min(Number(process.env.PRICE_PAGINATION_PAGES ?? 4), MAX_PRICE_PAGINATION_PAGES));
   const ranges = selectedRanges(pageSize, pages);
   const sources = selectedSources();
   const bySource: Record<string, { candidates: number; fetched: number; identity: number; reliable: number; failed: number; pages: Array<{ page: number; candidates: number; reliable: number }> }> = {};
