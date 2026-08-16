@@ -6,10 +6,11 @@ const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3203";
 const outputDir = path.resolve(process.env.AUDIT_OUTPUT_DIR ?? "artifacts/announcement-page-l2-media");
 const route = "/visual-qa/announcement-page-media";
 const scenarios = [
-  { name: "gallery-390", state: "gallery", width: 390, height: 844, expectedMode: "gallery", interaction: true },
-  { name: "gallery-430", state: "gallery", width: 430, height: 932, expectedMode: "gallery" },
-  { name: "gallery-768", state: "gallery", width: 768, height: 900, expectedMode: "gallery" },
-  { name: "gallery-1280", state: "gallery", width: 1280, height: 900, expectedMode: "gallery" },
+  { name: "gallery-390", state: "gallery", width: 390, height: 844, expectedMode: "gallery", galleryCount: 4, interaction: true },
+  { name: "gallery-430", state: "gallery", width: 430, height: 932, expectedMode: "gallery", galleryCount: 4 },
+  { name: "gallery-768", state: "gallery", width: 768, height: 900, expectedMode: "gallery", galleryCount: 4 },
+  { name: "gallery-1280", state: "gallery", width: 1280, height: 900, expectedMode: "gallery", galleryCount: 4 },
+  { name: "gallery2-1280", state: "gallery2", width: 1280, height: 900, expectedMode: "gallery", galleryCount: 2, expectTwoPhotoDesktop: true },
   { name: "preview-390", state: "preview", width: 390, height: 844, expectedMode: "single_real" },
   { name: "preview-1280", state: "preview", width: 1280, height: 900, expectedMode: "single_real", expectSingleDesktop: true },
   { name: "forbidden-390", state: "forbidden", width: 390, height: 844, expectedMode: "fallback" },
@@ -49,10 +50,7 @@ try {
       await page.locator("body").waitFor({ state: "visible", timeout: 15_000 });
 
       if (scenario.allowBrokenAsset) {
-        await page.locator('[data-property-media-mode="fallback"]').waitFor({
-          state: "visible",
-          timeout: 10_000,
-        });
+        await page.locator('[data-property-media-mode="fallback"]').waitFor({ state: "visible", timeout: 10_000 });
       } else {
         await page.waitForTimeout(500);
       }
@@ -73,9 +71,11 @@ try {
       if (metrics.h1Count !== 1) localFindings.push(`H1_COUNT_${metrics.h1Count}`);
       if (metrics.mainCount !== 1) localFindings.push(`MAIN_COUNT_${metrics.mainCount}`);
 
-      if (scenario.state === "gallery") {
-        const expectedCount = scenario.width >= 1024 ? "Voir les 4 photos" : "Ouvrir les 4 photos en plein écran";
-        const openGallery = page.getByRole("button", { name: new RegExp(expectedCount) }).first();
+      if (scenario.galleryCount) {
+        const expectedLabel = scenario.width >= 1024
+          ? `Voir les ${scenario.galleryCount} photos`
+          : `Ouvrir les ${scenario.galleryCount} photos en plein écran`;
+        const openGallery = page.getByRole("button", { name: new RegExp(expectedLabel) }).first();
         await openGallery.waitFor({ state: "visible", timeout: 10_000 });
         const box = await openGallery.boundingBox();
         if (!box || box.height < 44) localFindings.push(`GALLERY_TRIGGER_LT44_${Math.round(box?.height ?? 0)}`);
@@ -87,16 +87,28 @@ try {
           await page.keyboard.press("ArrowRight");
           await page.waitForTimeout(100);
           const counter = await dialog.locator("p").first().textContent();
-          if (!counter?.includes("2 / 4")) localFindings.push(`KEYBOARD_NEXT_FAILED_${counter ?? "missing"}`);
+          if (!counter?.includes(`2 / ${scenario.galleryCount}`)) localFindings.push(`KEYBOARD_NEXT_FAILED_${counter ?? "missing"}`);
           await page.keyboard.press("Escape");
           if (await dialog.isVisible().catch(() => false)) localFindings.push("ESCAPE_CLOSE_FAILED");
           await page.waitForTimeout(50);
           const restoredLabel = await page.evaluate(() => document.activeElement?.getAttribute("aria-label") ?? document.activeElement?.textContent?.trim() ?? "");
-          if (!restoredLabel.includes("Ouvrir les 4 photos")) localFindings.push(`FOCUS_RESTORE_FAILED_${restoredLabel || "missing"}`);
+          if (!restoredLabel.includes(`Ouvrir les ${scenario.galleryCount} photos`)) localFindings.push(`FOCUS_RESTORE_FAILED_${restoredLabel || "missing"}`);
         }
       } else {
         const galleryButtons = await page.getByRole("button", { name: /Ouvrir les .*photos|Voir les .*photos/ }).count();
         if (galleryButtons > 0) localFindings.push(`UNEXPECTED_GALLERY_TRIGGER_${galleryButtons}`);
+      }
+
+      if (scenario.expectTwoPhotoDesktop) {
+        const side = page.getByRole("button", { name: "Ouvrir la photo 2" });
+        const sideBox = await side.boundingBox();
+        if (!sideBox || sideBox.height < 490) localFindings.push(`TWO_PHOTO_SIDE_HEIGHT_${Math.round(sideBox?.height ?? 0)}`);
+        const visibleImages = await media.locator("img").evaluateAll((nodes) => nodes.filter((node) => {
+          const rect = node.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          return rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden";
+        }).length);
+        if (visibleImages !== 2) localFindings.push(`TWO_PHOTO_VISIBLE_IMAGES_${visibleImages}`);
       }
 
       if (scenario.expectSingleDesktop) {
