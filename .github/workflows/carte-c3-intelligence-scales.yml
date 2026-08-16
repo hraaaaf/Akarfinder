@@ -12,6 +12,7 @@ on:
       - "lib/map/rabat-market-intelligence-live.ts"
       - "scripts/audits/carte-c3-rabat-intelligence-live.ts"
       - "scripts/scrapers/__tests__/rabat-market-zones-geojson.test.ts"
+      - "scripts/scrapers/__tests__/rabat-market-intelligence-api.test.ts"
       - "scripts/scrapers/__tests__/intelligence-scale.test.ts"
       - "scripts/scrapers/__tests__/intelligence-payload.test.ts"
       - "scripts/scrapers/__tests__/market-metric-reliability.test.ts"
@@ -31,8 +32,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Deterministic scale, payload, reliability and canary geometry contracts
-        run: npx tsx --test scripts/scrapers/__tests__/intelligence-scale.test.ts scripts/scrapers/__tests__/intelligence-payload.test.ts scripts/scrapers/__tests__/market-metric-reliability.test.ts scripts/scrapers/__tests__/rabat-market-zones-geojson.test.ts
+      - name: Deterministic scale, payload, reliability, API guard and canary geometry contracts
+        run: npx tsx --test scripts/scrapers/__tests__/intelligence-scale.test.ts scripts/scrapers/__tests__/intelligence-payload.test.ts scripts/scrapers/__tests__/market-metric-reliability.test.ts scripts/scrapers/__tests__/rabat-market-zones-geojson.test.ts scripts/scrapers/__tests__/rabat-market-intelligence-api.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: No hardcoded market thresholds or heavy Shadow view
