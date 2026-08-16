@@ -9,6 +9,7 @@ on:
       - "scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts"
       - "scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts"
       - "scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts"
+      - "scripts/scrapers/__tests__/ux-p1-design-system-convergence.test.ts"
       - ".github/workflows/announcement-page-l1-shell.yml"
   push:
     branches:
@@ -21,6 +22,7 @@ on:
       - "scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts"
       - "scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts"
       - "scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts"
+      - "scripts/scrapers/__tests__/ux-p1-design-system-convergence.test.ts"
       - ".github/workflows/announcement-page-l1-shell.yml"
 
 permissions:
@@ -47,6 +49,7 @@ jobs:
           scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts
           scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts
           scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts
+          scripts/scrapers/__tests__/ux-p1-design-system-convergence.test.ts
           scripts/scrapers/__tests__/listing-detail-boundary.test.ts
           scripts/scrapers/__tests__/p10img-image-policy.test.ts
 
