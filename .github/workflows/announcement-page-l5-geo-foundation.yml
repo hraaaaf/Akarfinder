@@ -15,6 +15,7 @@ on:
     branches:
       - main
       - agent/announcement-page-l5-geo-foundation
+      - agent/announcement-page-l5-geo-certification
     paths:
       - "docs/ANNOUNCEMENT_PAGE_L5_PROVIDER_BAKEOFF.md"
       - "lib/geo/**"
@@ -55,15 +56,16 @@ jobs:
         run: npx tsc --noEmit
 
       - name: ANN-L5 Morocco live provider bake-off
+        if: github.event_name == 'push' && github.ref == 'refs/heads/agent/announcement-page-l5-geo-certification'
         env:
           ANN_L5_OUTPUT_DIR: artifacts/announcement-page-l5-geo
         run: node scripts/geo/announcement-page-l5-geo-bakeoff.mjs
 
       - name: Upload ANN-L5 geo proof
-        if: always()
+        if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/agent/announcement-page-l5-geo-certification' }}
         uses: actions/upload-artifact@v4
         with:
           name: announcement-page-l5-geo-${{ github.run_id }}
           path: artifacts/announcement-page-l5-geo
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14
