@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - "lib/professional/verified-listing-inventory-repository.ts"
+      - "lib/map/listing-inventory-provenance.ts"
       - "scripts/scrapers/__tests__/carte-c6-verified-listing-inventory.test.ts"
+      - "scripts/scrapers/__tests__/carte-c6-listing-inventory-provenance.test.ts"
       - ".github/workflows/carte-c6-verified-listing-inventory.yml"
 
 permissions:
@@ -21,8 +23,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: C6 verified inventory tests
-        run: npx tsx --test scripts/scrapers/__tests__/carte-c6-verified-listing-inventory.test.ts
+      - name: C6 verified inventory and provenance tests
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c6-verified-listing-inventory.test.ts scripts/scrapers/__tests__/carte-c6-listing-inventory-provenance.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build
