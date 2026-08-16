@@ -14,6 +14,10 @@ export function buildSnapshotRanges(pageSize: number, pages: number) {
   return Array.from({ length: pages }, (_, page) => ({ page, from: page * pageSize, to: page * pageSize + pageSize - 1 }));
 }
 
+export function hasExplicitWriteConfirmation(raw: string | undefined) {
+  return raw === WRITE_CONFIRMATION;
+}
+
 async function captureSnapshot(pageSize: number, pages: number): Promise<SnapshotRow[]> {
   const db = getSupabaseServerClient();
   const snapshot: SnapshotRow[] = [];
@@ -61,7 +65,7 @@ async function main() {
   if (guard.blocked) throw new Error(guard.message);
 
   const write = process.env.PRICE_COVERAGE_V6_WRITE === "true";
-  if (write && process.env.PRICE_COVERAGE_V6_WRITE_CONFIRMATION !== WRITE_CONFIRMATION) {
+  if (write && !hasExplicitWriteConfirmation(process.env.PRICE_COVERAGE_V6_WRITE_CONFIRMATION)) {
     throw new Error("price coverage v6 write blocked: explicit confirmation missing");
   }
 
