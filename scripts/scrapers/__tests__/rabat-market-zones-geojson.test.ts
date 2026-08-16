@@ -1,39 +1,45 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { GET } from "../../../app/api/geo/rabat-market-zones/route";
+import { RABAT_MARKET_ZONES_CANARY, rabatMarketZonesCanaryAreValid } from "../../../lib/geo/rabat-market-zones-canary";
 import { decideRabatMarketZonesGeoJson } from "../../../lib/geo/rabat-market-zones-geojson";
 import { RABAT_MARKET_ZONES_SHADOW } from "../../../lib/geo/rabat-market-zones-shadow";
 import type { MarketZoneRecord } from "../../../lib/geo/market-zone-registry";
 
-function reviewedCanaryRecords(): MarketZoneRecord[] {
-  return RABAT_MARKET_ZONES_SHADOW.map((zone) => ({
-    ...zone,
-    publicationStatus: "canary" as const,
-    reviewed: true,
-  }));
-}
-
 describe("Rabat market-zone GeoJSON publication gate", () => {
-  it("fails closed for the current Shadow-only pilot", () => {
-    assert.deepEqual(decideRabatMarketZonesGeoJson(), {
+  it("promotes exactly the four reviewed market zones to Canary", () => {
+    assert.equal(rabatMarketZonesCanaryAreValid(), true);
+    assert.equal(RABAT_MARKET_ZONES_CANARY.length, 4);
+    for (const zone of RABAT_MARKET_ZONES_CANARY) {
+      assert.equal(zone.publicationStatus, "canary");
+      assert.equal(zone.reviewed, true);
+      assert.equal(zone.officialBoundary, false);
+    }
+  });
+
+  it("serves the reviewed Canary pilot by default", async () => {
+    const decision = decideRabatMarketZonesGeoJson();
+    assert.equal(decision.enabled, true);
+    if (!decision.enabled) return;
+    assert.equal(decision.collection.features.length, 4);
+
+    const response = await GET();
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("x-akarfinder-geometry-semantic-type"), "market_zone");
+    assert.equal(response.headers.get("x-akarfinder-official-boundary"), "false");
+    const body = await response.json();
+    assert.equal(body.features.length, 4);
+  });
+
+  it("still fails closed when explicitly given Shadow/unreviewed records", () => {
+    assert.deepEqual(decideRabatMarketZonesGeoJson(RABAT_MARKET_ZONES_SHADOW), {
       enabled: false,
       reason: "shadow_or_unreviewed",
     });
   });
 
-  it("keeps the public route disabled while the pilot is Shadow-only", async () => {
-    const response = await GET();
-    assert.equal(response.status, 404);
-    assert.equal(response.headers.get("x-akarfinder-geometry-semantic-type"), "market_zone");
-    assert.equal(response.headers.get("x-akarfinder-official-boundary"), "false");
-    assert.deepEqual(await response.json(), {
-      status: "disabled",
-      reason: "shadow_or_unreviewed",
-    });
-  });
-
   it("fails closed when the four-zone pilot is incomplete", () => {
-    const records = reviewedCanaryRecords().slice(0, 3);
+    const records = RABAT_MARKET_ZONES_CANARY.slice(0, 3);
     assert.deepEqual(decideRabatMarketZonesGeoJson(records), {
       enabled: false,
       reason: "incomplete_pilot",
@@ -41,7 +47,7 @@ describe("Rabat market-zone GeoJSON publication gate", () => {
   });
 
   it("fails closed when a reviewed candidate violates the market-zone contract", () => {
-    const records = reviewedCanaryRecords();
+    const records: MarketZoneRecord[] = RABAT_MARKET_ZONES_CANARY.map((zone) => ({ ...zone }));
     records[0] = { ...records[0], areaKm2: 0 };
     assert.deepEqual(decideRabatMarketZonesGeoJson(records), {
       enabled: false,
@@ -49,8 +55,8 @@ describe("Rabat market-zone GeoJSON publication gate", () => {
     });
   });
 
-  it("emits all four reviewed market zones as non-official GeoJSON features", () => {
-    const decision = decideRabatMarketZonesGeoJson(reviewedCanaryRecords());
+  it("emits all four reviewed zones as explicitly non-official GeoJSON features", () => {
+    const decision = decideRabatMarketZonesGeoJson(RABAT_MARKET_ZONES_CANARY);
     assert.equal(decision.enabled, true);
     if (!decision.enabled) return;
 
