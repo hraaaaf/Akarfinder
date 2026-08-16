@@ -5,6 +5,7 @@ import { PropertyDetailV2 } from "@/components/listings/PropertyDetailV2";
 import { Container } from "@/components/ui/Container";
 import { ui } from "@/components/ui/design-system";
 import type { LivingHereModel } from "@/lib/geo/living-here";
+import type { StreetRealityModel } from "@/lib/geo/street-reality";
 import type { Listing } from "@/lib/listings/types";
 import type { PublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
 
@@ -12,12 +13,14 @@ export function AnnouncementPageShell({
   listing,
   detail,
   livingHere = null,
+  streetReality = null,
   mapStyleUrl = process.env.NEXT_PUBLIC_AKAR_MAP_STYLE_URL ?? null,
   visualQa = false,
 }: {
   listing: Listing;
   detail: PublicPropertyDetailV2;
   livingHere?: LivingHereModel | null;
+  streetReality?: StreetRealityModel | null;
   mapStyleUrl?: string | null;
   visualQa?: boolean;
 }) {
@@ -30,7 +33,13 @@ export function AnnouncementPageShell({
       <SiteHeader searchMode fluid />
       <main>
         <Container fluid className="max-w-[1500px] lg:px-8">
-          <PropertyDetailV2 listing={listing} detail={detail} livingHere={livingHere} mapStyleUrl={mapStyleUrl} />
+          <PropertyDetailV2
+            listing={listing}
+            detail={detail}
+            livingHere={livingHere}
+            streetReality={streetReality}
+            mapStyleUrl={mapStyleUrl}
+          />
         </Container>
       </main>
       <SiteFooter />
