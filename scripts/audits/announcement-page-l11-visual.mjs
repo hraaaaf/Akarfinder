@@ -58,7 +58,10 @@ try {
         if (!bodyText.includes("Voir la source d’origine")) localFindings.push("ORIGINAL_SOURCE_CTA_MISSING");
         if (!bodyText.includes("Mon Projet")) localFindings.push("PROJECT_ACTION_MISSING");
 
-        const visitButton = page.getByRole("button", { name: /Demander une visite|Visite/ }).first();
+        const visitSurface = scenario.width >= 1024
+          ? page.locator('[data-pro-conversion="ann-l11"]')
+          : page.locator('[data-pro-conversion-mobile="ann-l11"]');
+        const visitButton = visitSurface.getByRole("button", { name: /Demander une visite/ }).first();
         if (await visitButton.count() !== 1) {
           localFindings.push("VISIT_BUTTON_NOT_UNIQUE");
         } else {
@@ -100,7 +103,7 @@ try {
 }
 
 const report = {
-  schemaVersion: "ANNOUNCEMENT_PAGE_L11_PRO_CONVERSION_VISUAL_V3_PREMIUM_AKARFINDER",
+  schemaVersion: "ANNOUNCEMENT_PAGE_L11_PRO_CONVERSION_VISUAL_V4_SCOPED_CTA",
   generatedAt: new Date().toISOString(),
   scenarioCount: scenarios.length,
   screenshotCount: results.filter((item) => item.screenshot).length,
