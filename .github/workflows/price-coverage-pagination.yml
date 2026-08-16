@@ -27,8 +27,13 @@ jobs:
 
   production-read-only:
     needs: certify
+    strategy:
+      fail-fast: false
+      matrix:
+        source: ['mubawab.ma', 'masaken.ma']
+        page: [0, 1, 2, 3]
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 12
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -36,6 +41,8 @@ jobs:
       PRICE_PAGINATION_WRITE: 'false'
       PRICE_PAGINATION_PAGE_SIZE: '120'
       PRICE_PAGINATION_PAGES: '4'
+      PRICE_PAGINATION_SOURCE: ${{ matrix.source }}
+      PRICE_PAGINATION_PAGE_INDEX: ${{ matrix.page }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,5 +54,5 @@ jobs:
         run: |
           test -n "$SUPABASE_URL"
           test -n "$SUPABASE_SERVICE_ROLE_KEY"
-      - name: Audit paginated Mubawab and Masaken null-price cohorts
+      - name: Audit one paginated null-price cohort shard
         run: npx tsx scripts/scrapers/price-coverage-pagination-audit.ts
