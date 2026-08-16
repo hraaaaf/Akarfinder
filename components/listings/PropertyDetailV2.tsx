@@ -4,6 +4,7 @@ import { CompareBar } from "@/components/compare/CompareBar";
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { AkarInsightCard } from "@/components/listings/AkarInsightCard";
 import { ExpandablePropertyDescription } from "@/components/listings/ExpandablePropertyDescription";
+import { FinanceMarocSection } from "@/components/listings/FinanceMarocSection";
 import { LivingHereSection } from "@/components/listings/LivingHereSection";
 import { MarketComparablesSection } from "@/components/listings/MarketComparablesSection";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
@@ -145,6 +146,7 @@ export function PropertyDetailV2({
             <LivingHereSection model={livingHere} mapStyleUrl={mapStyleUrl} />
             <StreetRealitySection model={streetReality} />
             <MarketComparablesSection model={marketComparables} />
+            <FinanceMarocSection propertyPriceMad={listing.price} />
 
             <LeanSection title="Environnement">
               <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">

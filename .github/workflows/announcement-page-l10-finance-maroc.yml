@@ -1,0 +1,70 @@
+name: Announcement Page L10 Finance Maroc
+
+on:
+  pull_request:
+    paths:
+      - "lib/property-detail/finance-maroc*.ts"
+      - "components/listings/FinanceMaroc*.tsx"
+      - "components/listings/PropertyDetailV2.tsx"
+      - "app/visual-qa/announcement-page-finance-maroc/**"
+      - "scripts/audits/announcement-page-l10-finance-maroc-visual.mjs"
+      - "scripts/scrapers/__tests__/announcement-page-l10-*.test.ts"
+      - ".github/workflows/announcement-page-l10-finance-maroc.yml"
+  push:
+    branches:
+      - main
+      - agent/announcement-page-l10-finance-maroc
+    paths:
+      - "lib/property-detail/finance-maroc*.ts"
+      - "components/listings/FinanceMaroc*.tsx"
+      - "components/listings/PropertyDetailV2.tsx"
+      - "app/visual-qa/announcement-page-finance-maroc/**"
+      - "scripts/audits/announcement-page-l10-finance-maroc-visual.mjs"
+      - "scripts/scrapers/__tests__/announcement-page-l10-*.test.ts"
+      - ".github/workflows/announcement-page-l10-finance-maroc.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  finance-maroc-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: ANN-L10 deterministic finance contracts
+        run: npx tsx --test scripts/scrapers/__tests__/announcement-page-l10-*.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start ANN-L10 production server
+        run: |
+          npm run start -- -p 3210 > /tmp/ann-l10-server.log 2>&1 &
+          echo $! > /tmp/ann-l10-server.pid
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:3210/visual-qa/announcement-page-finance-maroc >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ann-l10-server.log
+          exit 1
+      - name: ANN-L10 targeted visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3210
+        run: node scripts/audits/announcement-page-l10-finance-maroc-visual.mjs
+      - name: Upload ANN-L10 visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: announcement-page-l10-finance-maroc-${{ github.run_id }}
+          path: artifacts/announcement-page-l10-finance-maroc
+          if-no-files-found: warn
+          retention-days: 14
