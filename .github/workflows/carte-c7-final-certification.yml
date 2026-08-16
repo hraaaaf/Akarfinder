@@ -77,6 +77,8 @@ jobs:
           if(!Array.isArray(r.cases)||r.cases.length!==4) throw new Error('C7 requires exactly four certified viewports');
           for(const width of [390,430,768,1280]) if(!r.cases.some(x=>x.width===width)) throw new Error(`missing viewport ${width}`);
           NODE
+      - name: Bundle canonical visual reference
+        run: cp docs/assets/carte-intelligence-marche-reference.webp data/audits/carte-c7-final/reference.webp
       - name: Upload C7 exact-head visual proof
         if: always()
         uses: actions/upload-artifact@v4
