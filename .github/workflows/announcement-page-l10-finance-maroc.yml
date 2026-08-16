@@ -1,0 +1,38 @@
+name: Announcement Page L10 Finance Maroc
+
+on:
+  pull_request:
+    paths:
+      - "lib/property-detail/finance-maroc*.ts"
+      - "components/listings/FinanceMaroc*.tsx"
+      - "scripts/scrapers/__tests__/announcement-page-l10-*.test.ts"
+      - ".github/workflows/announcement-page-l10-finance-maroc.yml"
+  push:
+    branches:
+      - main
+      - agent/announcement-page-l10-finance-maroc
+    paths:
+      - "lib/property-detail/finance-maroc*.ts"
+      - "components/listings/FinanceMaroc*.tsx"
+      - "scripts/scrapers/__tests__/announcement-page-l10-*.test.ts"
+      - ".github/workflows/announcement-page-l10-finance-maroc.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  finance-maroc-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: ANN-L10 deterministic finance contracts
+        run: npx tsx --test scripts/scrapers/__tests__/announcement-page-l10-*.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
