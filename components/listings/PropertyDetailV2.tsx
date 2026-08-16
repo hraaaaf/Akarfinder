@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { CompareBar } from "@/components/compare/CompareBar";
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
@@ -40,12 +41,12 @@ function FactGroup({ title, facts }: { title: string; facts: PublicDetailFact[] 
   return (
     <section data-property-characteristics-group className="border-b border-slate-200 py-6">
       <h2 className="text-[1.15rem] font-extrabold tracking-[-0.03em] text-deepblue">{title}</h2>
-      <dl className="mt-2 grid sm:grid-cols-2 lg:grid-cols-3">
+      <dl className="mt-2 grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
         {facts.map((fact) => (
           <div
             key={fact.key}
             data-detail-fact={fact.key}
-            className="min-w-0 border-t border-slate-200 py-3.5 pr-4 sm:odd:border-r sm:even:pl-4 lg:border-r lg:px-4 lg:first:pl-0 lg:nth-[3n]:border-r-0"
+            className="min-w-0 border-t border-slate-200 py-3.5"
           >
             <dt className="text-[10px] font-extrabold uppercase tracking-[0.11em] text-slate-500">
               {fact.label}
@@ -66,7 +67,7 @@ function LeanSection({
   children,
 }: {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="border-b border-slate-200 py-6">
