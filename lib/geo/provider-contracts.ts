@@ -59,6 +59,7 @@ export type StreetImageryAsset = {
   capturedAt: string | null;
   thumbnailUrl: string | null;
   viewerUrl: string | null;
+  creatorUsername?: string | null;
 };
 
 export type StreetImageryProviderResult =
