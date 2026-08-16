@@ -54,7 +54,7 @@ try {
           return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
         };
 
-        const mobileDock = document.querySelector('nav[aria-label="Actions rapides pour ce bien"]');
+        const mobileDock = document.querySelector('[aria-label="Actions rapides pour ce bien"]');
         const dockInteractive = mobileDock
           ? Array.from(mobileDock.querySelectorAll("a[href], button")).filter(visible)
           : [];
