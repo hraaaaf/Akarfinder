@@ -1,5 +1,6 @@
 "use client";
 
+import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef } from "react";
 import type { LivingHereModel, LivingHerePoi } from "@/lib/geo/living-here";
 
@@ -30,16 +31,18 @@ export function LivingHereMap({ model, pois, selectedMinutes, styleUrl }: Living
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
       map.on("load", () => {
-        if (!map) return;
-        const poiData = {
-          type: "FeatureCollection" as const,
-          features: pois.map((poi) => ({
-            type: "Feature" as const,
-            properties: { id: poi.id, name: poi.name, category: poi.category },
-            geometry: { type: "Point" as const, coordinates: [poi.coordinate.longitude, poi.coordinate.latitude] },
-          })),
-        };
-        map.addSource("ann-l6-pois", { type: "geojson", data: poiData });
+        if (!map || !model.origin.coordinate) return;
+        map.addSource("ann-l6-pois", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: pois.map((poi) => ({
+              type: "Feature",
+              properties: { id: poi.id, name: poi.name, category: poi.category },
+              geometry: { type: "Point", coordinates: [poi.coordinate.longitude, poi.coordinate.latitude] },
+            })),
+          },
+        });
         map.addLayer({
           id: "ann-l6-pois",
           type: "circle",
@@ -53,7 +56,7 @@ export function LivingHereMap({ model, pois, selectedMinutes, styleUrl }: Living
             data: {
               type: "Feature",
               properties: { kind: "listing" },
-              geometry: { type: "Point", coordinates: [model.origin.coordinate!.longitude, model.origin.coordinate!.latitude] },
+              geometry: { type: "Point", coordinates: [model.origin.coordinate.longitude, model.origin.coordinate.latitude] },
             },
           });
           map.addLayer({
@@ -67,7 +70,7 @@ export function LivingHereMap({ model, pois, selectedMinutes, styleUrl }: Living
         if (selectedMinutes != null) {
           const isochrone = model.isochrones.find((item) => item.minutes === selectedMinutes && item.mode === "walking");
           if (isochrone?.geojson && typeof isochrone.geojson === "object") {
-            map.addSource("ann-l6-isochrone", { type: "geojson", data: isochrone.geojson as GeoJSON.GeoJSON });
+            map.addSource("ann-l6-isochrone", { type: "geojson", data: isochrone.geojson as never });
             map.addLayer({
               id: "ann-l6-isochrone-fill",
               type: "fill",
