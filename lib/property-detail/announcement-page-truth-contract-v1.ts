@@ -114,9 +114,12 @@ export type AnnouncementFeatureDecision = {
     | "exact_geo_required"
     | "neighborhood_geo_required"
     | "verified_poi_provider_required"
+    | "fresh_poi_observation_required"
     | "measured_route_required"
+    | "street_context_geo_required"
     | "street_asset_required"
-    | "akar_score_missing"
+    | "street_observation_required"
+    | "akar_score_invalid_or_missing"
     | "market_certification_required"
     | "history_missing"
     | "comparables_certification_required"
@@ -133,6 +136,10 @@ function allow(): AnnouncementFeatureDecision {
 
 function deny(reason: Exclude<AnnouncementFeatureDecision["reason"], "allowed">): AnnouncementFeatureDecision {
   return { allowed: false, reason };
+}
+
+function hasValidObservationTimestamp(value: string | null): boolean {
+  return value != null && value.trim().length > 0 && !Number.isNaN(Date.parse(value));
 }
 
 /**
@@ -156,7 +163,9 @@ export function evaluateAnnouncementFeature(
         : deny("image_not_authorized");
 
     case "full_gallery":
-      return evidence.media.gallery_allowed && evidence.media.usable_image_count > 1
+      return evidence.media.image_display_allowed &&
+        evidence.media.gallery_allowed &&
+        evidence.media.usable_image_count > 1
         ? allow()
         : deny("gallery_not_authorized");
 
@@ -170,6 +179,9 @@ export function evaluateAnnouncementFeature(
       if (!evidence.nearby.provider_verified || evidence.nearby.poi_count <= 0) {
         return deny("verified_poi_provider_required");
       }
+      if (!hasValidObservationTimestamp(evidence.nearby.observed_at)) {
+        return deny("fresh_poi_observation_required");
+      }
       return allow();
     }
 
@@ -181,14 +193,28 @@ export function evaluateAnnouncementFeature(
         ? allow()
         : deny("measured_route_required");
 
-    case "street_imagery":
-      return evidence.street_imagery.provider_verified &&
-        evidence.street_imagery.attributable_asset_available
-        ? allow()
-        : deny("street_asset_required");
+    case "street_imagery": {
+      const geoIsUsable =
+        evidence.geo.precision === "exact" || evidence.geo.precision === "neighborhood_centroid";
+      if (!geoIsUsable) return deny("street_context_geo_required");
+      if (
+        !evidence.street_imagery.provider_verified ||
+        !evidence.street_imagery.attributable_asset_available
+      ) {
+        return deny("street_asset_required");
+      }
+      if (!hasValidObservationTimestamp(evidence.street_imagery.observed_at)) {
+        return deny("street_observation_required");
+      }
+      return allow();
+    }
 
     case "akar_score":
-      return evidence.intelligence.akar_score != null ? allow() : deny("akar_score_missing");
+      return evidence.intelligence.akar_score != null &&
+        evidence.intelligence.akar_score >= 0 &&
+        evidence.intelligence.akar_score <= 100
+        ? allow()
+        : deny("akar_score_invalid_or_missing");
 
     case "market_position":
       return evidence.intelligence.market_position_certified
@@ -208,6 +234,8 @@ export function evaluateAnnouncementFeature(
         evidence.intelligence.estimate_value != null &&
         evidence.intelligence.estimate_low != null &&
         evidence.intelligence.estimate_high != null &&
+        evidence.intelligence.estimate_low >= 0 &&
+        evidence.intelligence.estimate_high > 0 &&
         evidence.intelligence.estimate_low <= evidence.intelligence.estimate_value &&
         evidence.intelligence.estimate_value <= evidence.intelligence.estimate_high;
       return evidence.intelligence.estimate_certified && hasRange
