@@ -21,17 +21,8 @@ import { OverpassNearbyProvider } from "@/lib/geo/providers/overpass-nearby";
 import { ValhallaRoutingProvider } from "@/lib/geo/providers/valhalla-routing";
 
 export const LIVING_HERE_PROVIDER_CATEGORIES = [
-  "education",
-  "groceries",
-  "health",
-  "transport",
-  "food",
-  "green_sport",
-  "worship",
-  "banking",
-  "parking",
-  "shopping",
-  "coast",
+  "education", "groceries", "health", "transport", "food", "green_sport",
+  "worship", "banking", "parking", "shopping", "coast",
 ] as const;
 
 const EXACT_RADIUS_METERS = 2_500;
@@ -41,6 +32,7 @@ const MAX_ROUTED_PER_CATEGORY = 2;
 
 type FetchLike = typeof fetch;
 type RuntimeEnv = Record<string, string | undefined>;
+type Clock = () => Date;
 
 type ProviderRegistry = {
   nearby: NearbyProvider[];
@@ -64,17 +56,14 @@ export function createLivingHereProviderRegistry(
     if (id !== "overpass") return [];
     return [new OverpassNearbyProvider({ endpoint: env.AKAR_GEO_OVERPASS_ENDPOINT ?? "", fetchImpl })];
   });
-
   const routingMatrix = resolveProviderOrder("routing", env).flatMap<RoutingMatrixProvider>((id) => {
     if (id !== "valhalla") return [];
     return [valhallaProvider(env, fetchImpl)];
   });
-
   const isochrone = resolveProviderOrder("isochrone", env).flatMap<IsochroneProvider>((id) => {
     if (id !== "valhalla") return [];
     return [valhallaProvider(env, fetchImpl)];
   });
-
   return { nearby, routingMatrix, isochrone };
 }
 
@@ -100,14 +89,14 @@ async function collectMatrixRoutes(
   candidates: LivingHerePoi[],
   origin: Parameters<RoutingMatrixProvider["matrix"]>[0]["origin"],
   mode: "walking" | "driving",
-  now: Date,
+  clock: Clock,
 ): Promise<LivingHereRouteObservation[]> {
   if (providers.length === 0 || candidates.length === 0) return [];
   const destinations = candidates.map((poi) => poi.coordinate);
   const outcome = await executeProviderFailover(
     providers,
     (provider) => provider.matrix({ origin, destinations, mode }),
-    now,
+    clock,
   );
   if (outcome.result.status !== "available") return [];
 
@@ -118,11 +107,7 @@ async function collectMatrixRoutes(
     const result: RoutingProviderResult = {
       status: "available",
       evidence: outcome.result.evidence,
-      route: {
-        distanceMeters: route.distanceMeters,
-        durationSeconds: route.durationSeconds,
-        mode: route.mode,
-      },
+      route: { distanceMeters: route.distanceMeters, durationSeconds: route.durationSeconds, mode: route.mode },
     };
     observations.push({ poiId: poi.id, destination: poi.coordinate, result });
   }
@@ -132,7 +117,7 @@ async function collectMatrixRoutes(
 async function collectIsochrones(
   providers: IsochroneProvider[],
   origin: Parameters<IsochroneProvider["isochrone"]>[0]["origin"],
-  now: Date,
+  clock: Clock,
 ): Promise<LivingHereIsochroneObservation[]> {
   if (providers.length === 0) return [];
   const observations: LivingHereIsochroneObservation[] = [];
@@ -140,7 +125,7 @@ async function collectIsochrones(
     const outcome = await executeProviderFailover(
       providers,
       (provider) => provider.isochrone({ origin, minutes, mode: "walking" }),
-      now,
+      clock,
     );
     observations.push({ result: outcome.result });
   }
@@ -149,39 +134,35 @@ async function collectIsochrones(
 
 export async function buildLivingHereForListing(
   listing: Listing,
-  options: { env?: RuntimeEnv; fetchImpl?: FetchLike; now?: Date } = {},
+  options: { env?: RuntimeEnv; fetchImpl?: FetchLike } = {},
 ): Promise<LivingHereModel> {
-  const now = options.now ?? new Date();
+  const clock: Clock = () => new Date();
   const geo = buildGeoTruth(listing);
 
   if (geo.availability === "unavailable" || geo.precision === "city_centroid") {
-    return buildLivingHereModel({ geo, nearby: null, now });
+    return buildLivingHereModel({ geo, nearby: null, now: clock() });
   }
 
   const registry = createLivingHereProviderRegistry(options.env ?? process.env, options.fetchImpl);
   const radiusMeters = isExactGeoTruth(geo) ? EXACT_RADIUS_METERS : NEIGHBORHOOD_RADIUS_METERS;
   const nearbyOutcome = await executeProviderFailover(
     registry.nearby,
-    (provider) => provider.nearby({
-      origin: geo,
-      categories: [...LIVING_HERE_PROVIDER_CATEGORIES],
-      radiusMeters,
-    }),
-    now,
+    (provider) => provider.nearby({ origin: geo, categories: [...LIVING_HERE_PROVIDER_CATEGORIES], radiusMeters }),
+    clock,
   );
 
   if (nearbyOutcome.result.status !== "available") {
-    return buildLivingHereModel({ geo, nearby: nearbyOutcome.result, now });
+    return buildLivingHereModel({ geo, nearby: nearbyOutcome.result, now: clock() });
   }
 
-  const baseModel = buildLivingHereModel({ geo, nearby: nearbyOutcome.result, now });
+  const baseModel = buildLivingHereModel({ geo, nearby: nearbyOutcome.result, now: clock() });
   if (!isExactGeoTruth(geo) || baseModel.pois.length === 0) return baseModel;
 
   const candidates = selectRoutingCandidates(baseModel.pois);
   const [walkingRoutes, drivingRoutes, isochrones] = await Promise.all([
-    collectMatrixRoutes(registry.routingMatrix, candidates, geo, "walking", now),
-    collectMatrixRoutes(registry.routingMatrix, candidates, geo, "driving", now),
-    collectIsochrones(registry.isochrone, geo, now),
+    collectMatrixRoutes(registry.routingMatrix, candidates, geo, "walking", clock),
+    collectMatrixRoutes(registry.routingMatrix, candidates, geo, "driving", clock),
+    collectIsochrones(registry.isochrone, geo, clock),
   ]);
 
   return buildLivingHereModel({
@@ -189,6 +170,6 @@ export async function buildLivingHereForListing(
     nearby: nearbyOutcome.result,
     routes: [...walkingRoutes, ...drivingRoutes],
     isochrones,
-    now,
+    now: clock(),
   });
 }
