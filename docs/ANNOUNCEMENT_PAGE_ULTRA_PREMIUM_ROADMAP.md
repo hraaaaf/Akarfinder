@@ -2,8 +2,8 @@
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
 **Version : 2026-08-16**  
-**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 NEXT**  
-**Progression stricte : 11 / 100 %.**
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 NEXT**  
+**Progression stricte : 18 / 100 %.**
 
 > Ce document est la sous-roadmap normative du chantier de refonte de `/listings/[id]`. `docs/ROADMAP.md` reste le registre canonique global AkarFinder. Les pourcentages ci-dessous sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
 
@@ -29,13 +29,26 @@
 - Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L1_CLOSEOUT.md`.
 - **Crédit officiel ANN-L1 : +7 %. Progression cumulée : 11 %. Prochain chemin critique : ANN-L2 Galerie média.**
 
+## 0.2 Closeout ANN-L2 — Galerie média ✅
+
+- **PR #725 ✅ MERGED** — merge `5664f699b7f51d06f368331d6e0e5a1c51cce83c` ; exact head certifié `8cad00a6f2ef08f8944b7e1c3cdef93a9f0123fd`.
+- Gate dédié `Announcement Page L2 Media Gallery`, run `31938661694` : contrats, TypeScript, production build et Chromium ciblé **SUCCESS**.
+- Artefact visuel `9261410081`, digest `sha256:7cf154d5bf8c09f1f15f304d681ba265b2477c3e9b5d27e9ef55e1d36cf31d16`.
+- Rapport `ANNOUNCEMENT_PAGE_L2_MEDIA_VISUAL_V1` : **10/10 screenshots, 0 finding** ; galerie 390/430/768/1280, 2 photos desktop, preview mobile/desktop, forbidden, unknown et broken.
+- Broken : exactement **1×404 attendu** sur l'asset volontairement absent puis fallback, sans erreur HTTP inattendue ; H1=1, main=1 et overflow=0 sur tous les scénarios.
+- Galerie fail-closed : multi-image seulement avec `allowed + partner_full + can_show_gallery` ; preview = 1 image ; forbidden/unknown = fallback ; photos owner servies via URLs Storage signées depuis bucket privé.
+- Anomalie importante corrigée : un 404 pouvait terminer avant hydratation et avant l'attachement de `onError` ; `MediaImage` récupère désormais `complete && naturalWidth === 0` et déduplique le signal d'erreur.
+- Aucun feed CSV partenaire multi-image n'existe encore ; le contrat est prêt sans prétendre à une alimentation partenaire inexistante.
+- Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L2_CLOSEOUT.md`.
+- **Crédit officiel ANN-L2 : +7 %. Progression cumulée : 18 %. Prochain chemin critique : ANN-L3 Property Core.**
+
 ## 1. Vision produit
 
 Transformer la fiche actuelle en une expérience immobilière mobile-first, ultra premium, aussi simple à lire qu'une grande fiche Zillow-like mais différenciée par les forces propres d'AkarFinder : vérité des données, provenance, multi-source, fiabilité, intelligence marché Maroc, expérience quartier mesurée et personnalisation `Mon Projet`.
 
 La page ne doit pas être un clone graphique de Zillow. **L'architecture d'information peut reprendre les meilleures conventions du marché ; l'identité visuelle reste celle du Search AkarFinder réel.**
 
-Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell dans une fixture QA versionnée ; ANN-L2/L3 poursuivent la convergence média et Property Core.
+Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell dans une fixture QA versionnée ; ANN-L2 a livré le contrat média et ANN-L3 poursuit la convergence du Property Core.
 
 ## 2. Doctrine non négociable
 
@@ -290,13 +303,13 @@ Implémentation : nouvelle composition mobile-first de `/listings/[id]`, tokens 
 
 Gate CLOSED : comparaison mockup/rendu pour le scope L1, aucune régression header/nav, overflow 0, touch targets conformes, exact-head Chromium 4/4 + 0 finding. Détails : `docs/ANNOUNCEMENT_PAGE_L1_CLOSEOUT.md`.
 
-### ANN-L2 — Galerie média — 7 % — NEXT
+### ANN-L2 — Galerie média — 7 % — ✅ CLOSED
 
-Implémentation : `PropertyMediaGallery`, swipe, clavier, fullscreen, compteur, attribution, favori/partage. Le composant consomme uniquement le résultat du contrat média ; fallback `ListingVisual` si non autorisé.
+Implémentation : `PropertyMediaGallery`, swipe, clavier, fullscreen, compteur, attribution, favori/partage. Le composant consomme uniquement le résultat du contrat média ; fallback `ListingVisual` si non autorisé. Owner : URLs Storage signées serveur depuis bucket privé ; aucune permission élargie.
 
-Gate : partner_full multi-image, preview single-image, forbidden/unknown fallback, broken URL fallback, performance image.
+Gate CLOSED : exact head `8cad00a6f2ef08f8944b7e1c3cdef93a9f0123fd`, run `31938661694` SUCCESS, **10/10 captures + 0 finding** ; partner_full multi-image, preview single-image, forbidden/unknown fallback, broken URL fallback et galerie 2 photos certifiés. Détails : `docs/ANNOUNCEMENT_PAGE_L2_CLOSEOUT.md`.
 
-### ANN-L3 — Property Core — 6 %
+### ANN-L3 — Property Core — 6 % — NEXT
 
 Implémentation : prix, titre, quartier, transaction, facts essentiels, description progressive et groupes de caractéristiques. Suppression de la hiérarchie actuelle trop card-heavy sans perdre de facts.
 
@@ -425,8 +438,8 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 |---|---:|---|---:|
 | ANN-L0 | 4 % | ✅ CLOSED | 4 % |
 | ANN-L1 | 7 % | ✅ CLOSED | 7 % |
-| ANN-L2 | 7 % | NEXT | 0 % |
-| ANN-L3 | 6 % | NOT_STARTED | 0 % |
+| ANN-L2 | 7 % | ✅ CLOSED | 7 % |
+| ANN-L3 | 6 % | NEXT | 0 % |
 | ANN-L4 | 9 % | NOT_STARTED | 0 % |
 | ANN-L5 | 9 % | NOT_STARTED | 0 % |
 | ANN-L6 | 12 % | NOT_STARTED | 0 % |
@@ -438,4 +451,4 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L12 | 5 % | NOT_STARTED | 0 % |
 | ANN-L13 | 6 % | NOT_STARTED | 0 % |
 
-**Progression officielle actuelle : 11 / 100 %.**
+**Progression officielle actuelle : 18 / 100 %.**
