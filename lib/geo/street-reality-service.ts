@@ -28,6 +28,7 @@ const timedFetch: FetchLike = (input, init) => fetch(input, {
 export function createStreetRealityProviderRegistry(
   env: RuntimeEnv = process.env,
   fetchImpl?: FetchLike,
+  clock: Clock = () => new Date(),
 ): StreetRealityProviderRegistry {
   const runtimeFetch = fetchImpl ?? timedFetch;
   const streetImagery = resolveProviderOrder("street_imagery", env).flatMap<StreetImageryProvider>((id) => {
@@ -36,6 +37,7 @@ export function createStreetRealityProviderRegistry(
       endpoint: env.AKAR_GEO_MAPILLARY_ENDPOINT ?? "",
       accessToken: env.AKAR_GEO_MAPILLARY_ACCESS_TOKEN ?? "",
       fetchImpl: runtimeFetch,
+      now: clock,
     })];
   });
   return { streetImagery };
@@ -55,7 +57,7 @@ export async function buildStreetRealityForListing(
     return buildStreetRealityModel({ geo, imagery: null, now: clock() });
   }
 
-  const registry = createStreetRealityProviderRegistry(options.env ?? process.env, options.fetchImpl);
+  const registry = createStreetRealityProviderRegistry(options.env ?? process.env, options.fetchImpl, clock);
   const radiusMeters = geo.precision === "exact"
     ? STREET_REALITY_EXACT_MAX_DISTANCE_METERS
     : STREET_REALITY_NEIGHBORHOOD_MAX_DISTANCE_METERS;
