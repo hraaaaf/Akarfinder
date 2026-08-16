@@ -62,6 +62,7 @@ describe("ANN-L7 Mapillary street imagery adapter", () => {
       assert.equal(new Headers(init?.headers).get("authorization"), "OAuth server-token");
       assert.equal(init?.cache, "no-store");
       assert.match(url.searchParams.get("fields") ?? "", /captured_at/);
+      assert.match(url.searchParams.get("fields") ?? "", /creator/);
       assert.match(url.searchParams.get("bbox") ?? "", /^-?\d+\.\d+,-?\d+\.\d+,-?\d+\.\d+,-?\d+\.\d+$/);
       return response({
         data: [
@@ -70,17 +71,20 @@ describe("ANN-L7 Mapillary street imagery adapter", () => {
             computed_geometry: { type: "Point", coordinates: [-6.8479, 33.9909] },
             captured_at: 1_754_000_000_000,
             thumb_1024_url: "https://images.example.test/123.jpg",
+            creator: { id: "user-1", username: "mapper_one" },
           },
           {
             id: "outside",
             computed_geometry: { type: "Point", coordinates: [-6.80, 34.04] },
             captured_at: "2026-07-01T10:00:00Z",
             thumb_1024_url: "https://images.example.test/outside.jpg",
+            creator: { id: "user-2", username: "mapper_two" },
           },
           {
             id: "bad-geometry",
             computed_geometry: { type: "LineString", coordinates: [] },
             captured_at: "2026-07-01T10:00:00Z",
+            creator: { id: "user-3", username: "mapper_three" },
           },
         ],
       });
@@ -103,6 +107,7 @@ describe("ANN-L7 Mapillary street imagery adapter", () => {
     assert.equal(result.assets[0]?.id, "mapillary:123");
     assert.equal(result.assets[0]?.thumbnailUrl, "https://images.example.test/123.jpg");
     assert.equal(result.assets[0]?.viewerUrl, "https://www.mapillary.com/app/?pKey=123");
+    assert.equal(result.assets[0]?.creatorUsername, "mapper_one");
     assert.match(result.assets[0]?.capturedAt ?? "", /^2025-/);
   });
 
@@ -116,6 +121,7 @@ describe("ANN-L7 Mapillary street imagery adapter", () => {
           geometry: { type: "Point", coordinates: [-6.8480, 33.9909] },
           captured_at: "2026-07-01T10:00:00Z",
           thumb_1024_url: "https://images.example.test/context.jpg",
+          creator: { id: "user-context", username: "context_mapper" },
         }],
       });
     });
@@ -154,7 +160,7 @@ describe("ANN-L7 Mapillary street imagery adapter", () => {
     assert.equal(calls, 0);
   });
 
-  it("fails closed on upstream errors, empty payloads and assets outside the requested radius", async () => {
+  it("fails closed on upstream errors, empty payloads, missing creator attribution and assets outside the requested radius", async () => {
     const origin = buildGeoTruth(listing());
 
     const upstream = await provider(async () => response({}, 503)).nearbyImagery({ origin, radiusMeters: 150 });
@@ -165,11 +171,22 @@ describe("ANN-L7 Mapillary street imagery adapter", () => {
     assert.equal(empty.status, "unavailable");
     if (empty.status === "unavailable") assert.equal(empty.reason, "empty");
 
+    const missingCreator = await provider(async () => response({
+      data: [{
+        id: "no-creator",
+        computed_geometry: { type: "Point", coordinates: [-6.8480, 33.9909] },
+        captured_at: "2026-07-01T10:00:00Z",
+      }],
+    })).nearbyImagery({ origin, radiusMeters: 150 });
+    assert.equal(missingCreator.status, "unavailable");
+    if (missingCreator.status === "unavailable") assert.equal(missingCreator.reason, "empty");
+
     const outside = await provider(async () => response({
       data: [{
         id: "far",
         computed_geometry: { type: "Point", coordinates: [-6.80, 34.04] },
         captured_at: "2026-07-01T10:00:00Z",
+        creator: { id: "far-user", username: "far_mapper" },
       }],
     })).nearbyImagery({ origin, radiusMeters: 150 });
     assert.equal(outside.status, "unavailable");
@@ -182,6 +199,7 @@ describe("ANN-L7 Mapillary street imagery adapter", () => {
         id: "ttl",
         computed_geometry: { type: "Point", coordinates: [-6.8480, 33.9909] },
         captured_at: "2026-07-01T10:00:00Z",
+        creator: { id: "ttl-user", username: "ttl_mapper" },
       }],
     }), { evidenceTtlMs: 7 * 24 * 60 * 60 * 1000 });
 
