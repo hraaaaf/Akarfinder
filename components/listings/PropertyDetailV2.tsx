@@ -15,7 +15,6 @@ import { ProfessionalConversionCard } from "@/components/listings/ProfessionalCo
 import type { LivingHereModel } from "@/lib/geo/living-here";
 import type { StreetRealityModel } from "@/lib/geo/street-reality";
 import type { ProConversionModel } from "@/lib/listings/pro-conversion";
-import { buildPropertyCoreModel } from "@/lib/listings/property-core";
 import type { Listing } from "@/lib/listings/types";
 import type { MarketComparableSet } from "@/lib/property-detail/market-comparables";
 import type {
@@ -95,7 +94,6 @@ export function PropertyDetailV2({
   proConversion: ProConversionModel;
   mapStyleUrl?: string | null;
 }) {
-  const core = buildPropertyCoreModel(listing);
   const allDetails = [
     ...detail.facts.surfaces,
     ...detail.facts.layout,
@@ -125,8 +123,6 @@ export function PropertyDetailV2({
             <ProfessionalConversionCard
               listing={listing}
               model={proConversion}
-              priceLabel={core.priceLabel}
-              location={core.location}
               mobileIdentityOnly
             />
           </div>
@@ -212,8 +208,6 @@ export function PropertyDetailV2({
           <ProfessionalConversionCard
             listing={listing}
             model={proConversion}
-            priceLabel={core.priceLabel}
-            location={core.location}
           />
         </aside>
       </div>
