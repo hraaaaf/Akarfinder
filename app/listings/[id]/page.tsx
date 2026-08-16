@@ -5,6 +5,7 @@ import { buildLivingHereForListing } from "@/lib/geo/living-here-service";
 import { buildStreetRealityForListing } from "@/lib/geo/street-reality-service";
 import type { Listing } from "@/lib/listings/types";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
+import { buildMarketComparablesRuntime } from "@/lib/property-detail/market-comparables-runtime";
 import { buildPublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
 import { queryOwnerListingDetail } from "@/lib/seller/owner-listing-detail";
 import { canShowInternalListingDetail } from "@/lib/sources/source-access-registry";
@@ -33,6 +34,7 @@ async function renderListing(
 ) {
   let livingHere = null;
   let streetReality = null;
+  let marketComparables = null;
   try {
     livingHere = await buildLivingHereForListing(listing);
   } catch (error) {
@@ -43,12 +45,20 @@ async function renderListing(
   } catch (error) {
     console.error("[listings] ANN-L7 street-reality failed closed for id:", listing.id, error);
   }
+  try {
+    marketComparables = await buildMarketComparablesRuntime(listing, {
+      onError: (error) => console.error("[listings] ANN-L8 market-comparables failed closed for id:", listing.id, error),
+    });
+  } catch (error) {
+    console.error("[listings] ANN-L8 market-comparables orchestration failed closed for id:", listing.id, error);
+  }
   return (
     <AnnouncementPageShell
       listing={listing}
       detail={detail}
       livingHere={livingHere}
       streetReality={streetReality}
+      marketComparables={marketComparables}
     />
   );
 }
