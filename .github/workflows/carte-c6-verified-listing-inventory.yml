@@ -1,0 +1,27 @@
+name: Carte C6 Verified Listing Inventory
+
+on:
+  pull_request:
+    paths:
+      - "lib/professional/verified-listing-inventory-repository.ts"
+      - "scripts/scrapers/__tests__/carte-c6-verified-listing-inventory.test.ts"
+      - ".github/workflows/carte-c6-verified-listing-inventory.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-c6-inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: C6 verified inventory tests
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c6-verified-listing-inventory.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
