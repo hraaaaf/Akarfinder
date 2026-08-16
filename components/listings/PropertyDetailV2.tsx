@@ -8,9 +8,11 @@ import { LivingHereSection } from "@/components/listings/LivingHereSection";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { PropertyCore } from "@/components/listings/PropertyCore";
 import { PropertyMediaGallery } from "@/components/listings/PropertyMediaGallery";
+import { StreetRealitySection } from "@/components/listings/StreetRealitySection";
 import { VisitRequestPanel } from "@/components/listings/VisitRequestPanel";
 import { WhatsAppCTA } from "@/components/listings/WhatsAppCTA";
 import type { LivingHereModel } from "@/lib/geo/living-here";
+import type { StreetRealityModel } from "@/lib/geo/street-reality";
 import { canShowContactActions } from "@/lib/listings/listing-boundary";
 import { buildPropertyCoreModel } from "@/lib/listings/property-core";
 import type { Listing } from "@/lib/listings/types";
@@ -78,11 +80,13 @@ export function PropertyDetailV2({
   listing,
   detail,
   livingHere = null,
+  streetReality = null,
   mapStyleUrl = null,
 }: {
   listing: Listing;
   detail: PublicPropertyDetailV2;
   livingHere?: LivingHereModel | null;
+  streetReality?: StreetRealityModel | null;
   mapStyleUrl?: string | null;
 }) {
   const showContactActions = canShowContactActions(listing);
@@ -135,6 +139,7 @@ export function PropertyDetailV2({
             )}
 
             <LivingHereSection model={livingHere} mapStyleUrl={mapStyleUrl} />
+            <StreetRealitySection model={streetReality} />
 
             <LeanSection title="Environnement">
               <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
