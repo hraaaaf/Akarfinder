@@ -47,7 +47,15 @@ try {
         timeout: 60_000,
       });
       await page.locator("body").waitFor({ state: "visible", timeout: 15_000 });
-      await page.waitForTimeout(scenario.allowBrokenAsset ? 1200 : 500);
+
+      if (scenario.allowBrokenAsset) {
+        await page.locator('[data-property-media-mode="fallback"]').waitFor({
+          state: "visible",
+          timeout: 10_000,
+        });
+      } else {
+        await page.waitForTimeout(500);
+      }
 
       const media = page.locator("[data-property-media-mode]").first();
       await media.waitFor({ state: "visible", timeout: 15_000 });
@@ -103,12 +111,14 @@ try {
       }
 
       if (scenario.allowBrokenAsset) {
+        const expectedBroken = failedResponses.filter((item) => item.url.includes("does-not-exist.jpg"));
         const unexpected = failedResponses.filter((item) => !item.url.includes("does-not-exist.jpg"));
+        if (expectedBroken.length !== 1) localFindings.push(`BROKEN_ASSET_REQUEST_COUNT_${expectedBroken.length}`);
         if (unexpected.length > 0) localFindings.push(`UNEXPECTED_HTTP_ERRORS_${unexpected.length}`);
-      } else if (failedResponses.length > 0) {
-        localFindings.push(`RESOURCE_HTTP_ERRORS_${failedResponses.length}`);
+      } else {
+        if (failedResponses.length > 0) localFindings.push(`RESOURCE_HTTP_ERRORS_${failedResponses.length}`);
+        if (consoleErrors.length > 0) localFindings.push(`CONSOLE_ERRORS_${consoleErrors.length}`);
       }
-      if (!scenario.allowBrokenAsset && consoleErrors.length > 0) localFindings.push(`CONSOLE_ERRORS_${consoleErrors.length}`);
 
       const screenshot = `${scenario.name}.png`;
       await page.screenshot({ path: path.join(outputDir, screenshot), fullPage: true });
