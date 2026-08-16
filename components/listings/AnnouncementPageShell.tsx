@@ -20,10 +20,10 @@ export function AnnouncementPageShell({
     <div
       data-announcement-premium-shell="ann-l1"
       data-visual-qa={visualQa ? "announcement-page" : undefined}
-      className={`min-h-screen ${ui.pageLight}`}
+      className={`min-h-screen pb-24 lg:pb-0 ${ui.pageLight}`}
     >
       <SiteHeader searchMode fluid />
-      <main className="pb-24 lg:pb-0">
+      <main>
         <Container fluid className="max-w-[1500px] lg:px-8">
           <PropertyDetailV2 listing={listing} detail={detail} />
         </Container>
