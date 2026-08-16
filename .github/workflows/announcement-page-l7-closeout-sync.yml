@@ -1,0 +1,64 @@
+name: ANN-L7 Closeout Roadmap Sync
+
+on:
+  push:
+    branches:
+      - docs/announcement-page-l7-closeout
+    paths:
+      - ".github/workflows/announcement-page-l7-closeout-sync.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: docs/announcement-page-l7-closeout
+
+      - name: Reconcile ANN-L7 canonical roadmap
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('docs/ANNOUNCEMENT_PAGE_ULTRA_PREMIUM_ROADMAP.md')
+          s = p.read_text()
+          replacements = [
+            ('**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 NEXT**',
+             '**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 NEXT**'),
+            ('**Progression stricte : 54 / 100 %.**', '**Progression stricte : 60 / 100 %.**'),
+            ('ANN-L7 ouvre maintenant `Street Reality`.', 'ANN-L7 a livré `Street Reality`. ANN-L8 ouvre maintenant `Marché & comparables`.'),
+            ('### ANN-L7 — Street Reality — 6 % — NEXT', '### ANN-L7 — Street Reality — 6 % — ✅ CLOSED'),
+            ('| ANN-L7 | 6 % | NEXT | 0 % |', '| ANN-L7 | 6 % | ✅ CLOSED | 6 % |'),
+            ('| ANN-L8 | 10 % | NOT_STARTED | 0 % |', '| ANN-L8 | 10 % | NEXT | 0 % |'),
+          ]
+          for old, new in replacements:
+              count = s.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected exactly 1 occurrence for {old!r}, found {count}')
+              s = s.replace(old, new)
+          anchor = '- **Crédit officiel ANN-L6 : +12 %. Progression cumulée : 54 %. Prochain chemin critique : ANN-L7 Street Reality.**\n'
+          closeout = '''\n## 0.7 Closeout ANN-L7 — Street Reality ✅\n\n- **PR #749 ✅ MERGED** — merge `737e490efbe671920f63f1b22e2591934fc28d27` ; exact head certifié `d46ba0dde69bb7c183998deb08f3ff96c4a780be`.\n- Gate dédié `Announcement Page L7 Street Reality`, run `31950387903` : **64/64 tests PASS**, TypeScript, production build, Chromium ciblé et upload artefact **SUCCESS**.\n- Artefact visuel `9264498215`, digest `sha256:e3e160b3074d1f1ac725f87e433e721fe6227ed9e0eaf01777dce6f7e47abb00` ; **8/8 captures, 0 finding**.\n- `Street Reality` reste fail-closed : exact ou contexte quartier uniquement ; city-centroid/unknown masqués ; seuils publics **250 m exact / 600 m quartier** ; aucune image présentée comme photo du logement.\n- Adapter Mapillary provider-agnostic, credentials server-only, preuve TTL ≤24 h, attribution Mapillary + auteur, miniatures éphémères non persistées.\n- Aucune couverture live Mapillary n'est revendiquée sans credential de certification accessible.\n- Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L7_CLOSEOUT.md`.\n- **Crédit officiel ANN-L7 : +6 %. Progression cumulée : 60 %. Prochain chemin critique : ANN-L8 Marché & comparables.**\n'''
+          if s.count(anchor) != 1:
+              raise SystemExit('ANN-L6 closeout anchor not unique')
+          s = s.replace(anchor, anchor + closeout)
+          # Update L7 gate paragraph with certified evidence.
+          old_gate = 'Gate : aucune image présentée comme le bien, seuil de distance explicite, attribution, état `non disponible` élégant.'
+          new_gate = 'Gate CLOSED : exact head `d46ba0dde69bb7c183998deb08f3ff96c4a780be`, run `31950387903` SUCCESS, **64/64 tests PASS**, production build vert et **8/8 captures, 0 finding**. Détails : `docs/ANNOUNCEMENT_PAGE_L7_CLOSEOUT.md`.'
+          if s.count(old_gate) != 1:
+              raise SystemExit('ANN-L7 gate paragraph not unique')
+          s = s.replace(old_gate, new_gate)
+          p.write_text(s)
+          PY
+
+      - name: Commit canonical reconciliation
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/ANNOUNCEMENT_PAGE_ULTRA_PREMIUM_ROADMAP.md
+          git diff --cached --check
+          git commit -m "docs(listing): close ANN-L7 and advance ANN-L8"
+          git push origin HEAD:docs/announcement-page-l7-closeout
