@@ -11,6 +11,7 @@ on:
       - "scripts/scrapers/__tests__/announcement-page-l11-pro-conversion.test.ts"
       - "scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts"
       - "scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts"
+      - ".github/workflows/announcement-page-l11-baseline.yml"
       - ".github/workflows/announcement-page-l11-pro-conversion.yml"
   push:
     branches:
@@ -25,6 +26,7 @@ on:
       - "scripts/scrapers/__tests__/announcement-page-l11-pro-conversion.test.ts"
       - "scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts"
       - "scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts"
+      - ".github/workflows/announcement-page-l11-baseline.yml"
       - ".github/workflows/announcement-page-l11-pro-conversion.yml"
 
 permissions:
