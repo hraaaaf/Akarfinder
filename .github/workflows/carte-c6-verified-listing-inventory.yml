@@ -13,7 +13,7 @@ permissions:
 jobs:
   certify-c6-inventory:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,3 +25,5 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/carte-c6-verified-listing-inventory.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
