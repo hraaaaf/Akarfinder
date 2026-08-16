@@ -34,12 +34,14 @@ jobs:
       - name: C0-C6 critical contracts
         run: >-
           npx tsx --test
+          scripts/scrapers/__tests__/carte-c1a-geometry-source-qualification.test.ts
+          scripts/scrapers/__tests__/market-zone-registry.test.ts
+          scripts/scrapers/__tests__/rabat-market-zones-geojson.test.ts
           scripts/scrapers/__tests__/carte-c2-rabat-market-zone-metrics.test.ts
           scripts/scrapers/__tests__/carte-c2-metrics-contract.test.ts
           scripts/scrapers/__tests__/intelligence-scale.test.ts
           scripts/scrapers/__tests__/intelligence-payload.test.ts
           scripts/scrapers/__tests__/market-metric-reliability.test.ts
-          scripts/scrapers/__tests__/rabat-market-zones-geojson.test.ts
           scripts/scrapers/__tests__/rabat-market-intelligence-api.test.ts
           scripts/scrapers/__tests__/rabat-market-intelligence-experience.test.ts
           scripts/scrapers/__tests__/carte-c5-rich-zone-sheet.test.ts
