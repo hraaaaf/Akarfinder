@@ -2,12 +2,20 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { buildGeoTruth, isExactGeoTruth } from "@/lib/geo/geo-truth";
 import { buildLivingHereModel, type LivingHereRouteObservation } from "@/lib/geo/living-here";
-import type { RoutingProviderResult } from "@/lib/geo/provider-contracts";
+import type { NearbyProviderResult, RoutingProviderResult } from "@/lib/geo/provider-contracts";
 import { OverpassNearbyProvider } from "@/lib/geo/providers/overpass-nearby";
 import { ValhallaRoutingProvider } from "@/lib/geo/providers/valhalla-routing";
 
 const outputDir = path.resolve(process.env.AUDIT_OUTPUT_DIR ?? "artifacts/announcement-page-l6-live");
-const overpassEndpoint = process.env.LIVE_OVERPASS_ENDPOINT ?? "https://overpass-api.de/api/interpreter";
+const DEFAULT_OVERPASS_ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
+];
+const overpassEndpoints = (
+  process.env.LIVE_OVERPASS_ENDPOINTS ??
+  process.env.LIVE_OVERPASS_ENDPOINT ??
+  DEFAULT_OVERPASS_ENDPOINTS.join(",")
+).split(",").map((value) => value.trim()).filter(Boolean);
 const valhallaEndpoint = process.env.LIVE_VALHALLA_ENDPOINT ?? "https://valhalla1.openstreetmap.de";
 const clientId = process.env.LIVE_GEO_CLIENT_ID ?? "akarfinder.ma-ann-l6-certification";
 
@@ -35,6 +43,14 @@ function coordinateKey(value: { latitude: number; longitude: number }): string {
   return `${value.latitude.toFixed(6)},${value.longitude.toFixed(6)}`;
 }
 
+function endpointHost(endpoint: string): string {
+  try {
+    return new URL(endpoint).host;
+  } catch {
+    return endpoint;
+  }
+}
+
 async function main(): Promise<void> {
   await mkdir(outputDir, { recursive: true });
   const results: unknown[] = [];
@@ -57,26 +73,57 @@ async function main(): Promise<void> {
       continue;
     }
 
-    const nearbyProvider = new OverpassNearbyProvider({
-      endpoint: overpassEndpoint,
-      fetchImpl: liveFetch,
-    });
+    const overpassAttempts: Array<{
+      host: string;
+      status: "available" | "unavailable";
+      poiCount: number;
+      reason?: string;
+    }> = [];
+    let nearby: Extract<NearbyProviderResult, { status: "available" }> | null = null;
+    let overpassHost: string | null = null;
+
+    for (const endpoint of overpassEndpoints) {
+      const nearbyProvider = new OverpassNearbyProvider({ endpoint, fetchImpl: liveFetch });
+      const candidate = await nearbyProvider.nearby({
+        origin: geo,
+        categories,
+        radiusMeters: 1_800,
+      });
+      const host = endpointHost(endpoint);
+      if (candidate.status === "available") {
+        overpassAttempts.push({ host, status: "available", poiCount: candidate.pois.length });
+        if (candidate.pois.length >= 2) {
+          nearby = candidate;
+          overpassHost = host;
+          break;
+        }
+      } else {
+        overpassAttempts.push({
+          host,
+          status: "unavailable",
+          poiCount: 0,
+          reason: candidate.reason,
+        });
+      }
+    }
+
+    if (!nearby || !overpassHost) {
+      findings.push(`${origin.city}: fewer than 2 live named POIs across configured Overpass endpoints`);
+      results.push({
+        city: origin.city,
+        neighborhood: origin.neighborhood,
+        origin: geo.coordinate,
+        overpassHost: null,
+        overpassAttempts,
+        nearbyStatus: "unavailable",
+      });
+      continue;
+    }
+
     const routingProvider = new ValhallaRoutingProvider({
       endpoint: valhallaEndpoint,
       fetchImpl: liveFetch,
     });
-
-    const nearby = await nearbyProvider.nearby({
-      origin: geo,
-      categories,
-      radiusMeters: 1_800,
-    });
-
-    if (nearby.status !== "available" || nearby.pois.length < 2) {
-      findings.push(`${origin.city}: fewer than 2 live named POIs`);
-      results.push({ city: origin.city, nearbyStatus: nearby.status, nearby });
-      continue;
-    }
 
     const selectedPois = nearby.pois.slice(0, 4);
     const matrix = await routingProvider.matrix({
@@ -138,6 +185,8 @@ async function main(): Promise<void> {
       city: origin.city,
       neighborhood: origin.neighborhood,
       origin: geo.coordinate,
+      overpassHost,
+      overpassAttempts,
       poiCount: selectedPois.length,
       pois: model.pois.map((poi) => ({
         id: poi.id,
@@ -167,8 +216,8 @@ async function main(): Promise<void> {
     productionProviderClaim: false,
     benchmarkOnly: true,
     endpoints: {
-      overpass: new URL(overpassEndpoint).host,
-      valhalla: new URL(valhallaEndpoint).host,
+      overpass: overpassEndpoints.map(endpointHost),
+      valhalla: endpointHost(valhallaEndpoint),
     },
     cityCount: origins.length,
     resultCount: results.length,
