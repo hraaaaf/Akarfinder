@@ -21,6 +21,5 @@ export interface PublicSerpIntelligenceSummaryV1 {
   coverage_label: string;
   signals: PublicSerpIntelligenceSignalV1[];
   attention_label: string | null;
-  market_position_certified: boolean;
   disclaimer: string;
 }
