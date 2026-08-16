@@ -1,0 +1,97 @@
+name: Announcement Page L3 Property Core
+
+on:
+  pull_request:
+    paths:
+      - "app/listings/**"
+      - "app/visual-qa/announcement-page-core/**"
+      - "components/listings/AnnouncementPageShell.tsx"
+      - "components/listings/ExpandablePropertyDescription.tsx"
+      - "components/listings/PropertyCore.tsx"
+      - "components/listings/PropertyDetailV2.tsx"
+      - "components/listings/PropertyMediaGallery.tsx"
+      - "lib/listings/property-core.ts"
+      - "scripts/audits/announcement-page-l3-core-visual.mjs"
+      - "scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l2-media.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l3-core.test.ts"
+      - ".github/workflows/announcement-page-l3-core.yml"
+  push:
+    branches:
+      - main
+      - agent/announcement-page-l3-property-core
+    paths:
+      - "app/listings/**"
+      - "app/visual-qa/announcement-page-core/**"
+      - "components/listings/AnnouncementPageShell.tsx"
+      - "components/listings/ExpandablePropertyDescription.tsx"
+      - "components/listings/PropertyCore.tsx"
+      - "components/listings/PropertyDetailV2.tsx"
+      - "components/listings/PropertyMediaGallery.tsx"
+      - "lib/listings/property-core.ts"
+      - "scripts/audits/announcement-page-l3-core-visual.mjs"
+      - "scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l2-media.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l3-core.test.ts"
+      - ".github/workflows/announcement-page-l3-core.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  property-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ANN-L3 core contracts and historical boundaries
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/announcement-page-l3-core.test.ts
+          scripts/scrapers/__tests__/announcement-page-l2-media.test.ts
+          scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts
+          scripts/scrapers/__tests__/listing-detail-boundary.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start ANN-L3 production server
+        shell: bash
+        run: |
+          npm run start -- -p 3204 > /tmp/ann-l3.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3204/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ann-l3.log
+          exit 1
+
+      - name: ANN-L3 targeted visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3204
+          AUDIT_OUTPUT_DIR: artifacts/announcement-page-l3-core
+        run: node scripts/audits/announcement-page-l3-core-visual.mjs
+
+      - name: Upload ANN-L3 visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: announcement-page-l3-core-${{ github.run_id }}
+          path: artifacts/announcement-page-l3-core
+          if-no-files-found: warn
+          retention-days: 14

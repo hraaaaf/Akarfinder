@@ -57,37 +57,6 @@ function MediaImage({
   );
 }
 
-function HeroLabels({
-  listing,
-  transactionLabel,
-  priceLabel,
-  location,
-}: {
-  listing: Listing;
-  transactionLabel: string;
-  priceLabel: string;
-  location: string;
-}) {
-  return (
-    <>
-      <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
-        <span className="rounded-full bg-white px-3 py-1.5 text-[11px] font-extrabold text-[#0B2545] shadow">
-          {transactionLabel}
-        </span>
-        <span className="rounded-full bg-black/55 px-3 py-1.5 text-[11px] font-bold text-white backdrop-blur-sm">
-          {listing.property_type}
-        </span>
-      </div>
-      <div className="pointer-events-none absolute bottom-5 left-5 right-5 z-10 pr-24">
-        <p className="text-[2rem] font-extrabold tracking-[-0.05em] text-white sm:text-[3rem]">
-          {priceLabel}
-        </p>
-        <p className="mt-2 text-[14px] font-bold text-white/90 sm:text-[17px]">{location}</p>
-      </div>
-    </>
-  );
-}
-
 function GalleryNav({
   count,
   activeIndex,
@@ -131,17 +100,7 @@ function GalleryNav({
   );
 }
 
-export function PropertyMediaGallery({
-  listing,
-  priceLabel,
-  location,
-  transactionLabel,
-}: {
-  listing: Listing;
-  priceLabel: string;
-  location: string;
-  transactionLabel: string;
-}) {
+export function PropertyMediaGallery({ listing }: { listing: Listing }) {
   const model = useMemo(() => buildPropertyMediaModel(listing), [listing]);
   const [failedUrls, setFailedUrls] = useState<Set<string>>(() => new Set());
   const [activeIndex, setActiveIndex] = useState(0);
@@ -351,10 +310,8 @@ export function PropertyMediaGallery({
             className="absolute inset-0 h-full w-full"
             imgClassName="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/20" />
           {controls}
-          <HeroLabels listing={listing} transactionLabel={transactionLabel} priceLabel={priceLabel} location={location} />
-          <span className="absolute bottom-3 right-4 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white/85 backdrop-blur-sm">
+          <span className="absolute bottom-3 left-4 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white/85 backdrop-blur-sm">
             Aperçu source
           </span>
         </div>
@@ -370,10 +327,8 @@ export function PropertyMediaGallery({
       >
         <div className="relative h-[280px] sm:h-[460px]">
           <ListingVisual listing={listing} className="absolute inset-0 h-full w-full" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/20" />
           {controls}
-          <HeroLabels listing={listing} transactionLabel={transactionLabel} priceLabel={priceLabel} location={location} />
-          <span className="absolute bottom-3 right-4 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white/80 backdrop-blur-sm">
+          <span className="absolute bottom-3 left-4 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white/80 backdrop-blur-sm">
             Visuel illustratif
           </span>
         </div>
@@ -395,11 +350,9 @@ export function PropertyMediaGallery({
               className="absolute inset-0 h-full w-full object-cover"
               onError={() => fail(active.url)}
             />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-black/20" />
             {controls}
-            <HeroLabels listing={listing} transactionLabel={transactionLabel} priceLabel={priceLabel} location={location} />
             {model.attribution ? (
-              <span className="absolute bottom-16 right-4 z-10 max-w-[60%] rounded-full bg-black/50 px-2.5 py-1 text-right text-[10px] font-semibold text-white/80 backdrop-blur-sm lg:max-w-[45%]">
+              <span className="absolute bottom-4 left-4 z-10 max-w-[55%] rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white/80 backdrop-blur-sm lg:max-w-[45%]">
                 {model.attribution}
               </span>
             ) : null}
@@ -432,9 +385,12 @@ export function PropertyMediaGallery({
               className="absolute inset-0 h-full w-full object-cover"
               onError={() => fail(active.url)}
             />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-black/20" />
             {controls}
-            <HeroLabels listing={listing} transactionLabel={transactionLabel} priceLabel={priceLabel} location={location} />
+            {model.attribution ? (
+              <span className="absolute bottom-4 left-4 z-10 max-w-[45%] rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white/80 backdrop-blur-sm">
+                {model.attribution}
+              </span>
+            ) : null}
             <GalleryNav
               count={items.length}
               activeIndex={activeIndex}
@@ -458,8 +414,6 @@ export function PropertyMediaGallery({
               className="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-[1.01]"
               onError={() => fail(items[0].url)}
             />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-black/20" />
-            <HeroLabels listing={listing} transactionLabel={transactionLabel} priceLabel={priceLabel} location={location} />
           </button>
           <div className={`grid min-w-0 gap-1.5 ${items.length === 2 ? "grid-rows-1" : "grid-rows-2"}`}>
             {[items[1], items[2]].map((item, index) => item ? (
@@ -480,7 +434,7 @@ export function PropertyMediaGallery({
           </div>
           {controls}
           {model.attribution ? (
-            <span className="absolute bottom-16 right-4 z-20 max-w-[45%] rounded-full bg-black/50 px-2.5 py-1 text-right text-[10px] font-semibold text-white/80 backdrop-blur-sm">
+            <span className="absolute bottom-16 left-4 z-20 max-w-[45%] rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white/80 backdrop-blur-sm">
               {model.attribution}
             </span>
           ) : null}

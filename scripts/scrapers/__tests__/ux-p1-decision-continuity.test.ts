@@ -10,14 +10,17 @@ test("listing detail keeps one canonical decision flow through the shared announ
   const page = source("app/listings/[id]/page.tsx");
   const shell = source("components/listings/AnnouncementPageShell.tsx");
   const detail = source("components/listings/PropertyDetailV2.tsx");
+  const core = source("components/listings/PropertyCore.tsx");
 
   assert.ok(page.includes("<AnnouncementPageShell listing={listing} detail={detail} />"));
   assert.ok(shell.includes("<PropertyDetailV2 listing={listing} detail={detail} />"));
   assert.ok(shell.includes("<MobilePropertyDecisionBar listingId={listing.id} />"));
   assert.ok(!shell.includes("PropertyDecisionHeader"), "legacy pre-detail decision hero must not reintroduce a second H1");
+  assert.ok(detail.includes("<PropertyCore listing={listing} />"), "the active listing detail body must delegate identity to PropertyCore");
 
-  const h1Count = (detail.match(/<h1\b/g) ?? []).length;
-  assert.equal(h1Count, 1, "the active listing detail body must expose exactly one H1 source");
+  const h1Count = (detail.match(/<h1\b/g) ?? []).length + (core.match(/<h1\b/g) ?? []).length;
+  assert.equal(h1Count, 1, "the active listing detail composition must expose exactly one H1 source");
+  assert.ok(core.includes("data-property-core-title"), "PropertyCore must remain the canonical public title boundary");
 });
 
 test("decision actions preserve the canonical project, favorite and comparison flows on mobile and desktop", () => {
