@@ -59,6 +59,24 @@ describe("ANN-L5 GeoTruth", () => {
     }
   });
 
+  it("rejects contradictory precision/source pairs instead of promoting centroids to exact", () => {
+    const cases = [
+      { geo_precision: "exact", geo_source: "city_centroid" },
+      { geo_precision: "exact", geo_source: "neighborhood_centroid" },
+      { geo_precision: "exact", geo_source: "unknown" },
+      { geo_precision: "city_centroid", geo_source: "scraped_coordinates" },
+      { geo_precision: "neighborhood_centroid", geo_source: "manual_import" },
+    ] as const;
+    for (const entry of cases) {
+      const truth = buildGeoTruth(listing(entry));
+      assert.equal(truth.availability, "unavailable");
+      assert.equal(truth.coordinate, null);
+      assert.equal(truth.exactOriginAllowed, false);
+      assert.equal(isExactGeoTruth(truth), false);
+      assert.equal(truth.reason, "precision_source_mismatch");
+    }
+  });
+
   it("fails closed on missing, NaN and out-of-range coordinates", () => {
     const cases = [
       { latitude: null, longitude: null, reason: "coordinates_missing" },
@@ -115,6 +133,22 @@ describe("ANN-L5 provider evidence and failover", () => {
     assert.equal(result.result.status, "available");
     assert.deepEqual(result.attemptedProviderIds, ["first", "second", "third"]);
     if (result.result.status === "available") assert.equal(result.result.evidence.providerId, "third");
+  });
+
+  it("rejects evidence whose provider id does not match the executing adapter", async () => {
+    const providers = [{ id: "first" }, { id: "second" }] as const;
+    const result = await executeProviderFailover(providers, async (provider) => ({
+      status: "available" as const,
+      evidence: {
+        providerId: provider.id === "first" ? "spoofed-second" : "second",
+        attribution: "Provider",
+        fetchedAt: "2026-08-16T09:00:00Z",
+        expiresAt: "2026-08-16T12:00:00Z",
+      },
+    }), now);
+    assert.deepEqual(result.attemptedProviderIds, ["first", "second"]);
+    assert.equal(result.result.status, "available");
+    if (result.result.status === "available") assert.equal(result.result.evidence.providerId, "second");
   });
 
   it("preserves invalid evidence as the final failure reason", async () => {
