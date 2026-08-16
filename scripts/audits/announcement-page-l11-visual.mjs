@@ -58,9 +58,10 @@ try {
         if (!bodyText.includes("Voir la source d’origine")) localFindings.push("ORIGINAL_SOURCE_CTA_MISSING");
         if (!bodyText.includes("Mon Projet")) localFindings.push("PROJECT_ACTION_MISSING");
         if (scenario.width >= 1024) {
-          if (await page.locator('[data-pro-conversion="ann-l11"]').count() !== 1) localFindings.push("DESKTOP_PRO_CARD_MISSING");
+          const proCard = page.locator('[data-pro-conversion="ann-l11"]');
+          if (await proCard.count() !== 1) localFindings.push("DESKTOP_PRO_CARD_MISSING");
           if (!bodyText.includes("Signaler cette annonce")) localFindings.push("REPORT_ACTION_MISSING");
-          const duplicatedPriceHeader = await page.locator('[data-pro-conversion="ann-l11"] .bg-\[\#0B63CE\]').count();
+          const duplicatedPriceHeader = await proCard.locator('[class~="bg-[#0B63CE]"]').count();
           if (duplicatedPriceHeader > 0) localFindings.push("DUPLICATED_PRICE_BANNER_PRESENT");
         } else {
           if (await page.locator('[data-pro-conversion-mobile="ann-l11"]').count() !== 1) localFindings.push("MOBILE_CONVERSION_DOCK_MISSING");
