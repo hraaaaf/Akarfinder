@@ -1,0 +1,85 @@
+name: Carte C7 Final Certification
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/carte-c7-final-certification.mjs"
+      - ".github/workflows/carte-c7-final-certification.yml"
+      - "docs/CARTE_INTELLIGENCE_MARCHE_TARGET.md"
+      - "docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md"
+      - "lib/geo/**"
+      - "lib/map/**"
+      - "lib/professional/verified-listing-inventory-repository.ts"
+      - "components/map/**"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-c7-final:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      BASE_URL: http://127.0.0.1:3207
+      AUDIT_OUTPUT_DIR: data/audits/carte-c7-final
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: C0-C6 critical contracts
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/carte-c2-rabat-market-zone-metrics.test.ts
+          scripts/scrapers/__tests__/carte-c2-metrics-contract.test.ts
+          scripts/scrapers/__tests__/intelligence-scale.test.ts
+          scripts/scrapers/__tests__/intelligence-payload.test.ts
+          scripts/scrapers/__tests__/market-metric-reliability.test.ts
+          scripts/scrapers/__tests__/rabat-market-zones-geojson.test.ts
+          scripts/scrapers/__tests__/rabat-market-intelligence-api.test.ts
+          scripts/scrapers/__tests__/rabat-market-intelligence-experience.test.ts
+          scripts/scrapers/__tests__/carte-c5-rich-zone-sheet.test.ts
+          scripts/scrapers/__tests__/carte-c6-verified-listing-inventory.test.ts
+          scripts/scrapers/__tests__/carte-c6-listing-inventory-provenance.test.ts
+      - name: Target reference identity
+        run: |
+          grep -q '4b6912480c5ce7dce6b04c5d0f8848b0be319955d220db84d8365a76ca66eac7' docs/CARTE_INTELLIGENCE_MARCHE_TARGET.md
+          test -s docs/assets/carte-intelligence-marche-reference.webp
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3207 > /tmp/carte-c7.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3207/map?city=rabat' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-c7.log
+          exit 1
+      - name: Four-viewport real MapLibre certification
+        run: node scripts/audits/carte-c7-final-certification.mjs
+      - name: C7 report contract
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/carte-c7-final/report.json');
+          if(r.ok!==true) throw new Error('C7 browser report not ok');
+          if(!Array.isArray(r.cases)||r.cases.length!==4) throw new Error('C7 requires exactly four certified viewports');
+          for(const width of [390,430,768,1280]) if(!r.cases.some(x=>x.width===width)) throw new Error(`missing viewport ${width}`);
+          NODE
+      - name: Upload C7 exact-head visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-c7-final-${{ github.run_id }}
+          path: data/audits/carte-c7-final
+          if-no-files-found: error
+          retention-days: 30
