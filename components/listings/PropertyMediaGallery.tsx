@@ -26,16 +26,32 @@ function MediaImage({
   onError: () => void;
   eager?: boolean;
 }) {
+  const imageRef = useRef<HTMLImageElement>(null);
+  const reportedErrorUrl = useRef<string | null>(null);
+  const reportError = useCallback(() => {
+    if (reportedErrorUrl.current === item.url) return;
+    reportedErrorUrl.current = item.url;
+    onError();
+  }, [item.url, onError]);
+
+  useEffect(() => {
+    const image = imageRef.current;
+    // A fast 404 can finish before React hydration attaches onError. Recover
+    // that state deterministically once the client owns the server-rendered img.
+    if (image?.complete && image.naturalWidth === 0) reportError();
+  }, [reportError]);
+
   return (
     // Signed private-storage URLs are intentionally served directly instead of
     // through Next Image optimization so optimizer caches never outlive URL TTL.
     // eslint-disable-next-line @next/next/no-img-element
     <img
+      ref={imageRef}
       src={item.url}
       alt={item.alt}
       loading={eager ? "eager" : "lazy"}
       decoding="async"
-      onError={onError}
+      onError={reportError}
       className={className}
     />
   );
