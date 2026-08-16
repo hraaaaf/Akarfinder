@@ -9,9 +9,9 @@ on:
       - "app/visual-qa/announcement-page-pro-conversion/**"
       - "scripts/audits/announcement-page-l11-visual.mjs"
       - "scripts/scrapers/__tests__/announcement-page-l11-pro-conversion.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts"
       - "scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts"
       - "scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts"
-      - ".github/workflows/announcement-page-l11-baseline.yml"
       - ".github/workflows/announcement-page-l11-pro-conversion.yml"
   push:
     branches:
@@ -24,9 +24,9 @@ on:
       - "app/visual-qa/announcement-page-pro-conversion/**"
       - "scripts/audits/announcement-page-l11-visual.mjs"
       - "scripts/scrapers/__tests__/announcement-page-l11-pro-conversion.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts"
       - "scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts"
       - "scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts"
-      - ".github/workflows/announcement-page-l11-baseline.yml"
       - ".github/workflows/announcement-page-l11-pro-conversion.yml"
 
 permissions:
@@ -48,6 +48,7 @@ jobs:
         run: >-
           npx tsx --test
           scripts/scrapers/__tests__/announcement-page-l11-pro-conversion.test.ts
+          scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts
           scripts/scrapers/__tests__/listing-detail-boundary.test.ts
           scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts
           scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts
