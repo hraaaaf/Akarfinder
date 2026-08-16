@@ -5,6 +5,7 @@ on:
     paths:
       - "components/map/RabatMarketIntelligenceExperience.tsx"
       - "components/map/MapNeighborhoodClient.tsx"
+      - "scripts/scrapers/__tests__/rabat-market-intelligence-experience.test.ts"
       - "scripts/audits/carte-c4-rabat-heatmap-smoke.mjs"
       - ".github/workflows/carte-c4-rabat-browser-smoke.yml"
 
@@ -27,6 +28,10 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: C4 heatmap contracts
+        run: npx tsx --test scripts/scrapers/__tests__/rabat-market-intelligence-experience.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Production build
