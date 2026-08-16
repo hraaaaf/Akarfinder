@@ -1,0 +1,50 @@
+name: Temporary ANN-L9 roadmap reconcile
+
+on:
+  push:
+    branches:
+      - agent/announcement-page-l9-roadmap-reconcile
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/announcement-page-l9-roadmap-reconcile
+      - name: Reconcile canonical announcement roadmap
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('docs/ANNOUNCEMENT_PAGE_ULTRA_PREMIUM_ROADMAP.md')
+          s = p.read_text()
+          replacements = [
+            ('**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 ✅ CLOSED ; ANN-L9 NEXT**', '**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 ✅ CLOSED ; ANN-L9 ✅ CLOSED ; ANN-L10 NEXT**'),
+            ('**Progression stricte : 70 / 100 %.**', '**Progression stricte : 76 / 100 %.**'),
+            ('### ANN-L9 — AkarEstimate & historique — 6 %\n\nImplémentation : modèle d\'estimation séparé de l\'AkarScore. Sortie obligatoire : estimate, borne basse, borne haute, confidence, modèle/version, date, taille/qualité échantillon. Timeline = observations réelles uniquement.\n\nGate : backtest holdout, métriques d\'erreur par ville/segment, seuils de publication ; si seuil non atteint, estimation masquée.', '### ANN-L9 — AkarEstimate & historique — 6 % — ✅ CLOSED\n\nImplémentation : historique public fondé uniquement sur les observations réelles Market Index. AkarEstimate reste séparé de l\'AkarScore et fail-closed : aucune estimation publique sans vérité transactionnelle, calibration et holdout défendables.\n\nGate CLOSED : exact head `eddf2c3de5f6eca538ec940d39c141c9d769bed0`, run `31953346300` SUCCESS, artefact `9265339960`, digest `sha256:3870e5b58284276117ccff2a1eabab2bb48c95bce64e152b0c5252aefe79aee1`, **6/6 captures + 0 finding**. Audit DB : aucune cible de prix de transaction/final/notarié disponible ; AkarEstimate reste donc masqué conformément au fail-closed. Détails : `docs/ANNOUNCEMENT_PAGE_L9_CLOSEOUT.md`.'),
+            ('| ANN-L9 | 6 % | NEXT | 0 % |\n| ANN-L10 | 7 % | NOT_STARTED | 0 % |', '| ANN-L9 | 6 % | ✅ CLOSED | 6 % |\n| ANN-L10 | 7 % | NEXT | 0 % |'),
+            ('**Progression officielle actuelle : 70 / 100 %.**', '**Progression officielle actuelle : 76 / 100 %.**'),
+          ]
+          for old, new in replacements:
+              if old not in s:
+                  raise SystemExit(f'missing expected roadmap fragment: {old[:80]!r}')
+              s = s.replace(old, new, 1)
+          marker = '- **Crédit officiel ANN-L8 : +10 %. Progression cumulée : 70 %. Prochain chemin critique : ANN-L9 AkarEstimate & historique.**\n'
+          block = '''\n## 0.9 Closeout ANN-L9 — AkarEstimate & historique ✅\n\n- **PR #761 ✅ MERGED** — merge `60cbf7d30430c2f7e951c3288073272b00fff980` ; exact head certifié `eddf2c3de5f6eca538ec940d39c141c9d769bed0`.\n- Gate dédié `Announcement Page L9 AkarEstimate History`, run `31953346300` : tests, Truth Contract, TypeScript, production build, Chromium ciblé et upload artefact **SUCCESS**.\n- Artefact `9265339960`, digest `sha256:3870e5b58284276117ccff2a1eabab2bb48c95bce64e152b0c5252aefe79aee1` ; **6/6 captures, 0 finding**.\n- Historique public = observations réelles de prix affichés, attribuées et horodatées ; aucune interpolation.\n- Audit DB réel : 5 683 annonces, 5 544 clusters vérifiés, 1 162 observations de prix valides, mais aucune colonne de vérité transactionnelle/finale/notariée.\n- Conséquence fail-closed : `AkarEstimate` reste masqué ; aucune reproduction de prix demandé n'est présentée comme valeur du bien.\n- Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L9_CLOSEOUT.md` et `docs/ANNOUNCEMENT_PAGE_L9_CALIBRATION_GATE.md`.\n- **Crédit officiel ANN-L9 : +6 %. Progression cumulée : 76 %. Prochain chemin critique : ANN-L10 Finance Maroc.**\n'''
+          if block.strip() not in s:
+              if marker not in s:
+                  raise SystemExit('missing ANN-L8 closeout marker')
+              s = s.replace(marker, marker + block, 1)
+          p.write_text(s)
+          PY
+      - name: Commit reconciliation if changed
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/ANNOUNCEMENT_PAGE_ULTRA_PREMIUM_ROADMAP.md
+          git commit -m "docs(announcement): reconcile ANN-L9 at 76%"
+          git push origin HEAD:agent/announcement-page-l9-roadmap-reconcile
