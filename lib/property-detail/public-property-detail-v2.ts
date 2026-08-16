@@ -162,7 +162,8 @@ function compact<T>(values: Array<T | null>): T[] {
 function getMarketSignal(
   intelligence: ReturnType<typeof buildPublicSerpIntelligenceForListing>,
 ): string | null {
-  return intelligence?.signals.find((signal) => signal.code === "market_context")?.label ?? null;
+  if (!intelligence?.market_position_certified) return null;
+  return intelligence.signals.find((signal) => signal.code === "market_context")?.label ?? null;
 }
 
 function getMultiSourceSignal(
@@ -298,7 +299,7 @@ export function buildPublicPropertyDetailV2(
     },
     market: {
       status: marketLabel ? "available" : "unavailable",
-      certified: marketLabel != null,
+      certified: publicIntelligence.market_position_certified && marketLabel != null,
       label: marketLabel,
       price_per_m2: listing.price_per_m2 ?? null,
     },
