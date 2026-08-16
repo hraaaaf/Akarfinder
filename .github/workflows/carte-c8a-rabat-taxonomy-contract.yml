@@ -1,0 +1,38 @@
+name: C8A Rabat Taxonomy Contract
+
+on:
+  pull_request:
+    paths:
+      - "docs/CARTE_C8A_RABAT_TAXONOMY_CONTRACT.md"
+      - "docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md"
+      - "lib/geo/geo-entity-registry.ts"
+      - "scripts/scrapers/__tests__/carte-c8a-rabat-taxonomy-contract.test.ts"
+      - ".github/workflows/carte-c8a-rabat-taxonomy-contract.yml"
+  push:
+    paths:
+      - "docs/CARTE_C8A_RABAT_TAXONOMY_CONTRACT.md"
+      - "docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md"
+      - "lib/geo/geo-entity-registry.ts"
+      - "scripts/scrapers/__tests__/carte-c8a-rabat-taxonomy-contract.test.ts"
+      - ".github/workflows/carte-c8a-rabat-taxonomy-contract.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  c8a-rabat-taxonomy-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: C8A contract gate
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8a-rabat-taxonomy-contract.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
