@@ -1,5 +1,6 @@
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import type { Listing, ListingPropertyType } from "@/lib/listings/types";
+import { queryOwnerListingMedia } from "@/lib/seller/owner-listing-media";
 
 function propertyType(value: string | null): ListingPropertyType {
   switch (value) {
@@ -18,13 +19,18 @@ export async function queryOwnerListingDetail(representationId: string): Promise
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase
     .from("owner_listing_representations")
-    .select("id, normalized_city, normalized_neighborhood, normalized_property_type, normalized_price_mad, normalized_surface_m2, price_per_m2_mad, bedrooms_count, condition_label, photo_count, quality_score, display_eligibility, display_eligibility_reason, lifecycle_status, provenance_label, updated_at")
+    .select("id, draft_id, normalized_city, normalized_neighborhood, normalized_property_type, normalized_price_mad, normalized_surface_m2, price_per_m2_mad, bedrooms_count, condition_label, photo_count, quality_score, display_eligibility, display_eligibility_reason, lifecycle_status, provenance_label, updated_at")
     .eq("id", representationId)
     .eq("lifecycle_status", "live")
     .in("display_eligibility", ["eligible_primary", "eligible_secondary"])
     .single();
 
   if (error || !data) return null;
+
+  const mediaUrls = await queryOwnerListingMedia(data.draft_id, supabase);
+  const mainImageUrl = mediaUrls[0];
+  const galleryImageUrls = mediaUrls.slice(1);
+
   return {
     id: `owner-${data.id}`,
     title: `${propertyType(data.normalized_property_type)} à vendre${data.normalized_neighborhood ? ` à ${data.normalized_neighborhood}` : data.normalized_city ? ` à ${data.normalized_city}` : ""}`,
@@ -47,7 +53,10 @@ export async function queryOwnerListingDetail(representationId: string): Promise
     description: data.condition_label
       ? `Bien déclaré en état : ${data.condition_label}. Dossier structuré et validé avant publication.`
       : "Dossier structuré et validé avant publication.",
-    image_url: "",
+    image_url: mainImageUrl ?? "",
+    main_image_url: mainImageUrl,
+    gallery_image_urls: galleryImageUrls,
+    image_source: mediaUrls.length > 0 ? "Photos fournies par le propriétaire" : undefined,
     reliability_explanation: data.display_eligibility_reason ?? "Annonce propriétaire validée.",
     listing_url: `/listings/owner-${data.id}`,
     source_name: "Propriétaire",
@@ -58,13 +67,13 @@ export async function queryOwnerListingDetail(representationId: string): Promise
     can_show_result: true,
     can_show_thumbnail: false,
     can_show_contact: false,
-    can_show_gallery: false,
+    can_show_gallery: mediaUrls.length > 1,
     production_allowed: true,
     primary_cta: "view_full_listing",
     original_source_required: false,
     source_access_level: "partner_full",
     image_permission_status: "allowed",
-    images_count: data.photo_count,
+    images_count: mediaUrls.length,
     updated_at_label: "Mise à jour récente",
   };
 }
