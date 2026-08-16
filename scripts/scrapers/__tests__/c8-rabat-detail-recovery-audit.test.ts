@@ -5,6 +5,7 @@ import {
   C8_RABAT_DETAIL_AUDIT_SOURCE,
   C8_RABAT_DETAIL_SOURCE_SCAN_CAP,
   c8DetailAuditDedupKey,
+  extractStrictAgenzTitleSurface,
   extractStrictDetailSurface,
   inferC8DetailIntent,
   matchesC8CandidateLocality,
@@ -33,16 +34,27 @@ test("C8 detail audit resolves only candidate localities from source-record text
   );
 });
 
-test("C8 detail audit accepts only high-confidence JSON-LD surface evidence", () => {
+test("C8 detail audit accepts high-confidence JSON-LD or page-scoped title surface evidence", () => {
   const jsonLd = `<html><body><script type="application/ld+json">${JSON.stringify({
     "@type": "Apartment",
     name: "Appartement",
     floorSize: { "@type": "QuantitativeValue", value: 120 },
   })}</script></body></html>`;
   assert.equal(extractStrictDetailSurface(jsonLd), 120);
+
+  const agenzTitle = '<html><head><meta property="og:title" content="Appartement à vendre 3 200 000 dh 130 m², 3 chambres - Diour Jamaa Rabat"><title>Appartement à vendre 3 200 000 dh 130 m², 3 chambres - Diour Jamaa Rabat</title></head><body></body></html>';
+  assert.equal(extractStrictAgenzTitleSurface(agenzTitle), 130);
+  assert.equal(extractStrictDetailSurface(agenzTitle), 130);
+
   assert.equal(extractStrictDetailSurface('<html><body><p>Surface totale 120 m²</p></body></html>'), null);
-  assert.equal(extractStrictDetailSurface('<html><body><div class="surface">80 - 120 m²</div></body></html>'), null);
-  assert.equal(extractStrictDetailSurface('<html><body><div class="surface">2 ha</div></body></html>'), null);
+  assert.equal(extractStrictDetailSurface('<html><head><title>Appartement 80 m² ou 120 m²</title></head></html>'), null);
+  assert.equal(extractStrictDetailSurface('<html><head><title>Terrain 2 ha</title></head></html>'), null);
+  assert.equal(extractStrictDetailSurface('<html><head><title>Appartement 5 m²</title></head></html>'), null);
+});
+
+test("C8 detail audit refuses conflicting page-scoped title surfaces", () => {
+  const html = '<html><head><meta property="og:title" content="Appartement 130 m²"><title>Appartement 259 m²</title></head></html>';
+  assert.equal(extractStrictAgenzTitleSurface(html), null);
 });
 
 test("C8 detail audit reuses strict price extraction", () => {
