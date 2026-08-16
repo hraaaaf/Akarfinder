@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { Info, RotateCcw, Search, X } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
+import { RabatMarketZoneSheet } from "@/components/map/RabatMarketZoneSheet";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { getNeighborhoodCities } from "@/lib/map/canonical-neighborhood-data";
 import type { RabatIntelligenceGeoJson } from "@/lib/map/intelligence-payload";
@@ -413,39 +413,15 @@ export function RabatMarketIntelligenceExperience({
       ) : null}
 
       {selectedFeature ? (
-        <aside className="absolute inset-x-3 bottom-3 z-30 rounded-2xl border border-border-strong/70 bg-card/96 p-4 shadow-panel backdrop-blur-xl sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-4 sm:w-[340px]" aria-label={`Zone ${selectedFeature.properties.displayName}`}>
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-brand-primary">Market zone AkarFinder · Rabat</p>
-              <h2 className="mt-1 text-[18px] font-extrabold tracking-[-0.02em] text-foreground">{selectedFeature.properties.displayName}</h2>
-            </div>
-            <button
-              type="button"
-              onClick={() => onNavigationChange(withMapLocation(navigationState, "rabat"))}
-              className="grid h-9 w-9 place-items-center rounded-xl border border-border bg-surface text-muted-foreground"
-              aria-label="Fermer la zone"
-            >
-              <X size={15} aria-hidden="true" />
-            </button>
-          </div>
-          <div className="mt-3 rounded-xl border border-brand-primary/15 bg-brand-primary-soft/55 p-3">
-            <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-brand-primary">{MODE_META[mode].label}</p>
-            <p className="mt-1 text-[17px] font-extrabold text-foreground">{formatIntelligenceMetric(selectedFeature.properties.metricValue, mode)}</p>
-            <div className="mt-2 flex flex-wrap gap-1.5 text-[9px] font-bold text-muted-foreground">
-              <span className="rounded-full bg-surface px-2 py-1">n={selectedFeature.properties.sampleCount}</span>
-              {mode === "price" ? <span className="rounded-full bg-surface px-2 py-1">Fiabilité {selectedFeature.properties.reliability ?? "insufficient"}</span> : null}
-              <span className="rounded-full bg-surface px-2 py-1">{selectedFeature.properties.areaKm2.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} km²</span>
-            </div>
-          </div>
-          <Link href={searchHref} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-primary px-4 py-2.5 text-[12px] font-extrabold text-white shadow-accent hover:bg-brand-primary-hover">
-            <Search size={14} aria-hidden="true" />
-            Rechercher dans cette zone
-          </Link>
-          <div className="mt-3 flex items-start gap-2 border-t border-border pt-3 text-[9px] leading-4 text-muted-foreground">
-            <Info size={12} className="mt-0.5 shrink-0 text-brand-primary" aria-hidden="true" />
-            <p>Zone analytique immobilière AkarFinder, non frontière administrative officielle. Les valeurs sont observées, jamais interpolées.</p>
-          </div>
-        </aside>
+        <RabatMarketZoneSheet
+          feature={selectedFeature}
+          mode={mode}
+          modeLabel={MODE_META[mode].label}
+          metricLabel={formatIntelligenceMetric(selectedFeature.properties.metricValue, mode)}
+          searchHref={searchHref}
+          navigationState={navigationState}
+          onNavigationChange={onNavigationChange}
+        />
       ) : null}
     </div>
   );
