@@ -4,6 +4,12 @@ import { describe, it } from "node:test";
 import { buildGeoTruth, isExactGeoTruth } from "@/lib/geo/geo-truth";
 import { executeProviderFailover } from "@/lib/geo/provider-failover";
 import { hasFreshProviderEvidence } from "@/lib/geo/provider-contracts";
+import {
+  canPersistProviderPayload,
+  parseProviderOrder,
+  resolveProviderOrder,
+  validateGeoProviderRuntimePolicy,
+} from "@/lib/geo/provider-policy";
 
 function listing(overrides: Record<string, unknown> = {}) {
   return {
@@ -97,6 +103,15 @@ describe("ANN-L5 provider evidence and failover", () => {
     if (result.result.status === "available") assert.equal(result.result.evidence.providerId, "third");
   });
 
+  it("preserves invalid evidence as the final failure reason", async () => {
+    const result = await executeProviderFailover([{ id: "bad" }], async () => ({
+      status: "available" as const,
+      evidence: { providerId: "bad", attribution: "", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: null },
+    }), now);
+    assert.equal(result.result.status, "unavailable");
+    if (result.result.status === "unavailable") assert.equal(result.result.reason, "invalid_evidence");
+  });
+
   it("returns explicit unavailable when no provider is configured", async () => {
     const result = await executeProviderFailover([], async () => {
       throw new Error("unreachable");
@@ -104,6 +119,35 @@ describe("ANN-L5 provider evidence and failover", () => {
     assert.equal(result.result.status, "unavailable");
     if (result.result.status === "unavailable") assert.equal(result.result.reason, "not_configured");
     assert.deepEqual(result.attemptedProviderIds, []);
+  });
+});
+
+describe("ANN-L5 provider runtime policy", () => {
+  it("parses reversible ordered provider configuration without duplicates", () => {
+    assert.deepEqual(parseProviderOrder(" Overpass, mapbox,OVERPASS, google "), ["overpass", "mapbox", "google"]);
+    assert.deepEqual(resolveProviderOrder("routing", { AKAR_GEO_ROUTING_PROVIDERS: "osrm,mapbox" }), ["osrm", "mapbox"]);
+  });
+
+  it("fails closed on unsafe cache policies", () => {
+    assert.deepEqual(validateGeoProviderRuntimePolicy({
+      providerId: "google-places",
+      kind: "nearby",
+      cacheMode: "no_store",
+      maxCacheSeconds: 0,
+      attributionRequired: true,
+      persistentStorageAllowed: false,
+    }), []);
+
+    const unsafe = {
+      providerId: "x",
+      kind: "nearby" as const,
+      cacheMode: "ephemeral" as const,
+      maxCacheSeconds: null,
+      attributionRequired: false,
+      persistentStorageAllowed: true,
+    };
+    assert.ok(validateGeoProviderRuntimePolicy(unsafe).length >= 3);
+    assert.equal(canPersistProviderPayload(unsafe), false);
   });
 });
 
@@ -119,6 +163,12 @@ describe("ANN-L5 architectural boundaries", () => {
       assert.doesNotMatch(source, /lib\/geo\/(?:providers|provider-implementations)\//);
       assert.doesNotMatch(source, /\b(?:Mapbox|GooglePlaces|GoogleRoutes|Nominatim|Overpass|OSRM|Valhalla|Mapillary)\b/);
     }
+  });
+
+  it("requires exact GeoTruth at the routing and isochrone type boundary", () => {
+    const source = readFileSync("lib/geo/provider-contracts.ts", "utf8");
+    assert.match(source, /RoutingProvider[\s\S]*origin: ExactGeoTruth/);
+    assert.match(source, /IsochroneProvider[\s\S]*origin: ExactGeoTruth/);
   });
 
   it("does not trust legacy nearby place time strings as routed evidence", () => {
