@@ -1,4 +1,4 @@
-import type { GeoTruth } from "@/lib/geo/geo-truth";
+import type { ExactGeoTruth, GeoTruth } from "@/lib/geo/geo-truth";
 
 export type GeoProviderKind = "nearby" | "routing" | "isochrone" | "street_imagery";
 export type GeoTravelMode = "walking" | "driving";
@@ -62,12 +62,12 @@ export interface NearbyProvider {
 
 export interface RoutingProvider {
   readonly id: string;
-  route(input: { origin: GeoTruth; destination: GeoCoordinate; mode: GeoTravelMode }): Promise<RoutingProviderResult>;
+  route(input: { origin: ExactGeoTruth; destination: GeoCoordinate; mode: GeoTravelMode }): Promise<RoutingProviderResult>;
 }
 
 export interface IsochroneProvider {
   readonly id: string;
-  isochrone(input: { origin: GeoTruth; minutes: number; mode: GeoTravelMode }): Promise<IsochroneProviderResult>;
+  isochrone(input: { origin: ExactGeoTruth; minutes: number; mode: GeoTravelMode }): Promise<IsochroneProviderResult>;
 }
 
 export interface StreetImageryProvider {
