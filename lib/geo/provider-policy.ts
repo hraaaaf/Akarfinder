@@ -1,5 +1,7 @@
 import type { GeoProviderKind } from "@/lib/geo/provider-contracts";
 
+export const GEO_EPHEMERAL_CACHE_MAX_SECONDS = 24 * 60 * 60;
+
 export type GeoCacheMode = "no_store" | "ephemeral" | "provider_defined";
 
 export type GeoProviderRuntimePolicy = {
@@ -48,6 +50,9 @@ export function validateGeoProviderRuntimePolicy(policy: GeoProviderRuntimePolic
   if (policy.cacheMode === "no_store" && policy.maxCacheSeconds !== 0) errors.push("no_store_ttl_must_be_zero");
   if (policy.cacheMode === "ephemeral" && (policy.maxCacheSeconds == null || policy.maxCacheSeconds <= 0)) {
     errors.push("ephemeral_ttl_required");
+  }
+  if (policy.cacheMode === "ephemeral" && policy.maxCacheSeconds != null && policy.maxCacheSeconds > GEO_EPHEMERAL_CACHE_MAX_SECONDS) {
+    errors.push("ephemeral_ttl_exceeds_24h");
   }
   if (policy.persistentStorageAllowed && policy.cacheMode !== "provider_defined") {
     errors.push("persistent_storage_requires_provider_defined_policy");
