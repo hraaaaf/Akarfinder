@@ -1,0 +1,41 @@
+name: Announcement Page L9 AkarEstimate History
+
+on:
+  pull_request:
+    paths:
+      - "lib/property-detail/akar-estimate-history.ts"
+      - "lib/property-detail/announcement-page-truth-contract-v1.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l9-*.test.ts"
+      - ".github/workflows/announcement-page-l9-akar-estimate-history.yml"
+  push:
+    branches:
+      - main
+      - agent/announcement-page-l9-akar-estimate-history
+    paths:
+      - "lib/property-detail/akar-estimate-history.ts"
+      - "lib/property-detail/announcement-page-truth-contract-v1.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l9-*.test.ts"
+      - ".github/workflows/announcement-page-l9-akar-estimate-history.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  akar-estimate-history-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: ANN-L9 observed history and estimate certification contracts
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/announcement-page-l9-*.test.ts
+          scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
