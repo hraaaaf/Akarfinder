@@ -21,7 +21,6 @@ export type AkarInsightModel = {
   scoreLabel: string | null;
   coverageLabel: string | null;
   items: AkarInsightItem[];
-  disclaimer: string;
 };
 
 function nonEmpty(value: string | null | undefined): string | null {
@@ -39,7 +38,9 @@ export function buildAkarInsightModel(detail: PublicPropertyDetailV2): AkarInsig
 
   const scoreAllowed = evaluateAnnouncementFeature("akar_score", evidence).allowed;
   const marketAllowed = evaluateAnnouncementFeature("market_position", evidence).allowed;
-  const score = scoreAllowed ? detail.conclusion.akar_score : null;
+  const rawScore = detail.conclusion.akar_score;
+  const score = scoreAllowed ? rawScore : null;
+  const invalidPublishedScore = rawScore != null && !scoreAllowed;
   const items: AkarInsightItem[] = [];
   const market = marketAllowed ? nonEmpty(detail.market.label) : null;
   const multisource = detail.multisource.status === "supported" ? nonEmpty(detail.multisource.label) : null;
@@ -53,9 +54,8 @@ export function buildAkarInsightModel(detail: PublicPropertyDetailV2): AkarInsig
     version: PUBLIC_SERP_INTELLIGENCE_VERSION,
     truthContractVersion: ANNOUNCEMENT_PAGE_TRUTH_CONTRACT_VERSION,
     score,
-    scoreLabel: nonEmpty(detail.conclusion.akar_score_label),
+    scoreLabel: invalidPublishedScore ? null : nonEmpty(detail.conclusion.akar_score_label),
     coverageLabel: nonEmpty(detail.conclusion.coverage_label),
     items,
-    disclaimer: detail.disclaimer,
   };
 }
