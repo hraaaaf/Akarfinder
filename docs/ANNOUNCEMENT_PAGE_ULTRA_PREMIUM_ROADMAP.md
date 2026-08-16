@@ -2,8 +2,8 @@
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
 **Version : 2026-08-16**  
-**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 ✅ CLOSED ; ANN-L9 ✅ CLOSED ; ANN-L10 NEXT**  
-**Progression stricte : 76 / 100 %.**
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 ✅ CLOSED ; ANN-L9 ✅ CLOSED ; ANN-L10 ✅ CLOSED ; ANN-L11 NEXT**  
+**Progression stricte : 83 / 100 %.**
 
 > Ce document est la sous-roadmap normative du chantier de refonte de `/listings/[id]`. `docs/ROADMAP.md` reste le registre canonique global AkarFinder. Les pourcentages ci-dessous sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
 
@@ -452,11 +452,11 @@ Implémentation : historique public fondé uniquement sur les observations réel
 
 Gate CLOSED : exact head `eddf2c3de5f6eca538ec940d39c141c9d769bed0`, run `31953346300` SUCCESS, artefact `9265339960`, digest `sha256:3870e5b58284276117ccff2a1eabab2bb48c95bce64e152b0c5252aefe79aee1`, **6/6 captures + 0 finding**. Audit DB : aucune cible de prix de transaction/final/notarié disponible ; AkarEstimate reste donc masqué conformément au fail-closed. Détails : `docs/ANNOUNCEMENT_PAGE_L9_CLOSEOUT.md`.
 
-### ANN-L10 — Finance Maroc — 7 %
+### ANN-L10 — Finance Maroc — 7 % — ✅ CLOSED
 
-Implémentation : calculateur client déterministe ; taux/apport/durée modifiables ; hypothèses datées ; frais uniquement si sourcés/versionnés. Ne jamais présenter une simulation comme offre de crédit.
+Implémentation : calculateur client déterministe ; taux/apport/durée modifiables ; hypothèses explicites ; frais uniquement si sourcés/versionnés. Ne jamais présenter une simulation comme offre de crédit.
 
-Gate : tests calculs, arrondis, taux 0/limites, disclaimer, aucune constante réglementaire silencieuse.
+Gate CLOSED : exact head `787416614a4de1de8fa0805d0d553396b4152547`, run `31960358141` SUCCESS, **5/5 tests PASS**, TypeScript, production build et Chromium ciblé SUCCESS, **4/4 captures + 0 finding**, artefact `9267110347`, digest `sha256:8bd4180e1a4e2c1cc15fd390689c8573ce751d9cdaeed0b996fb563853f84995`. Aucun taux bancaire/frais réglementaire silencieux ; taux vide par défaut ; simulation explicitement indicative. Détails : `docs/ANNOUNCEMENT_PAGE_L10_CLOSEOUT.md`.
 
 ### ANN-L11 — Pro & conversion — 6 %
 
@@ -533,9 +533,9 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L7 | 6 % | ✅ CLOSED | 6 % |
 | ANN-L8 | 10 % | ✅ CLOSED | 10 % |
 | ANN-L9 | 6 % | ✅ CLOSED | 6 % |
-| ANN-L10 | 7 % | NEXT | 0 % |
-| ANN-L11 | 6 % | NOT_STARTED | 0 % |
+| ANN-L10 | 7 % | ✅ CLOSED | 7 % |
+| ANN-L11 | 6 % | NEXT | 0 % |
 | ANN-L12 | 5 % | NOT_STARTED | 0 % |
 | ANN-L13 | 6 % | NOT_STARTED | 0 % |
 
-**Progression officielle actuelle : 76 / 100 %.**
+**Progression officielle actuelle : 83 / 100 %.**
