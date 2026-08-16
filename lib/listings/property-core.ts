@@ -42,7 +42,7 @@ function locationLabel(listing: Listing): string {
 }
 
 export function buildPropertyCoreModel(listing: Listing): PropertyCoreModel {
-  const priceAvailable = positiveFinite(listing.price);
+  const priceValue = positiveFinite(listing.price) ? listing.price : null;
   const facts: PropertyCoreFact[] = [];
 
   if (positiveFinite(listing.surface_m2)) {
@@ -65,8 +65,8 @@ export function buildPropertyCoreModel(listing: Listing): PropertyCoreModel {
   return {
     transactionLabel: transactionLabel(listing.transaction_type),
     propertyType: listing.property_type,
-    priceLabel: priceAvailable ? `${formatInteger(listing.price)} ${listing.currency}` : "Prix non communiqué",
-    priceAvailable,
+    priceLabel: priceValue != null ? `${formatInteger(priceValue)} ${listing.currency}` : "Prix non communiqué",
+    priceAvailable: priceValue != null,
     title: listing.title.trim() || "Titre non renseigné",
     location: locationLabel(listing),
     facts,
