@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { PUBLIC_SERP_INTELLIGENCE_VERSION } from "@/lib/intelligence/public-serp-intelligence-types";
 import { buildAkarInsightModel } from "@/lib/property-detail/akar-insight";
+import { ANNOUNCEMENT_PAGE_TRUTH_CONTRACT_VERSION } from "@/lib/property-detail/announcement-page-truth-contract-v1";
 import type { PublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
 
 function detail(overrides: Partial<PublicPropertyDetailV2> = {}): PublicPropertyDetailV2 {
@@ -55,9 +56,10 @@ function detail(overrides: Partial<PublicPropertyDetailV2> = {}): PublicProperty
 }
 
 describe("ANN-L4 Akar insight projection", () => {
-  it("projects the canonical score, coverage and supported signals without recomputing them", () => {
+  it("projects canonical score, coverage and supported signals without recomputing them", () => {
     const model = buildAkarInsightModel(detail());
     assert.equal(model.version, PUBLIC_SERP_INTELLIGENCE_VERSION);
+    assert.equal(model.truthContractVersion, ANNOUNCEMENT_PAGE_TRUTH_CONTRACT_VERSION);
     assert.equal(model.score, 82);
     assert.equal(model.scoreLabel, "Dossier bien documenté");
     assert.equal(model.coverageLabel, "4/5 dimensions documentaires disponibles");
@@ -135,10 +137,21 @@ describe("ANN-L4 production composition", () => {
     assert.doesNotMatch(source, /Points à examiner/);
   });
 
-  it("exposes the canonical intelligence version for QA and debug", () => {
+  it("exposes intelligence and truth-contract versions for QA and debug", () => {
     const source = readFileSync("components/listings/AkarInsightCard.tsx", "utf8");
     assert.match(source, /data-akar-intelligence-version=\{model\.version\}/);
+    assert.match(source, /data-akar-truth-contract-version=\{model\.truthContractVersion\}/);
+    assert.match(source, /Intelligence v\{model\.version\}/);
+    assert.match(source, /Contrat v\{model\.truthContractVersion\}/);
     assert.match(source, /data-akar-score/);
     assert.match(source, /data-akar-coverage/);
+  });
+
+  it("publishes market context only from a validated market contract", () => {
+    const source = readFileSync("lib/intelligence/public-serp-intelligence-v1.ts", "utf8");
+    assert.match(source, /function marketPositionCertified/);
+    assert.match(source, /contract_validation\.valid/);
+    assert.match(source, /if \(market && marketPositionCertified\(result\)\)/);
+    assert.match(source, /market_position_certified: marketPositionCertified\(result\)/);
   });
 });
