@@ -67,7 +67,7 @@ export function buildPropertyCoreModel(listing: Listing): PropertyCoreModel {
     propertyType: listing.property_type,
     priceLabel: priceAvailable ? `${formatInteger(listing.price)} ${listing.currency}` : "Prix non communiqué",
     priceAvailable,
-    title: listing.title.trim() || "Annonce immobilière",
+    title: listing.title.trim() || "Titre non renseigné",
     location: locationLabel(listing),
     facts,
   };
