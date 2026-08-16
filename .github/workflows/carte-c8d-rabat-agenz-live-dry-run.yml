@@ -1,0 +1,128 @@
+name: C8D Rabat Agenz Live Dry Run
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/carte-c8d-rabat-agenz-live-dry-run.yml"
+      - "scripts/scrapers/c8-rabat-detail-recovery-audit.ts"
+      - "scripts/scrapers/__tests__/c8-rabat-detail-recovery-audit.test.ts"
+  workflow_dispatch:
+    inputs:
+      locality:
+        description: Bounded Rabat candidate locality
+        required: true
+        default: diour-jamaa
+        type: choice
+        options:
+          - diour-jamaa
+      limit:
+        description: Maximum Agenz detail pages to audit
+        required: true
+        default: "9"
+        type: choice
+        options:
+          - "3"
+          - "5"
+          - "9"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: c8d-rabat-agenz-live-dry-run
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: C8D read-only audit contracts
+        run: npx tsx --test scripts/scrapers/__tests__/c8-rabat-detail-recovery-audit.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+  live-dry-run:
+    if: github.event_name == 'workflow_dispatch'
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: "true"
+      C8_RABAT_DETAIL_LOCALITY: ${{ inputs.locality }}
+      C8_RABAT_DETAIL_LIMIT: ${{ inputs.limit }}
+    steps:
+      - name: Validate bounded read-only inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$C8_RABAT_DETAIL_LOCALITY" = "diour-jamaa"
+          case "$C8_RABAT_DETAIL_LIMIT" in 3|5|9) ;; *) exit 1 ;; esac
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Execute bounded Agenz dry-run
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx scripts/scrapers/c8-rabat-detail-recovery-audit.ts | tee c8d-agenz-live-dry-run.json
+
+      - name: Verify zero-write proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const payload = JSON.parse(fs.readFileSync('c8d-agenz-live-dry-run.json', 'utf8'));
+          if (payload.mode !== 'read_only_audit') throw new Error(`unexpected mode: ${payload.mode}`);
+          if (payload.productionWriteCount !== 0) throw new Error(`write invariant violated: ${payload.productionWriteCount}`);
+          if (payload.source !== 'agenz.ma') throw new Error(`unexpected source: ${payload.source}`);
+          if (payload.localitySlug !== 'diour-jamaa') throw new Error(`unexpected locality: ${payload.localitySlug}`);
+          if (![3, 5, 9].includes(payload.limit)) throw new Error(`unexpected limit: ${payload.limit}`);
+          if (!Array.isArray(payload.evidence)) throw new Error('missing evidence array');
+          console.log(JSON.stringify({
+            verdict: 'C8D_AGENZ_READ_ONLY_DRY_RUN_VERIFIED',
+            productionWriteCount: payload.productionWriteCount,
+            detailCandidates: payload.detailCandidates,
+            fetched: payload.fetched,
+            robotsSkipped: payload.robotsSkipped,
+            failed: payload.failed,
+            recoverablePrice: payload.recoverablePrice,
+            recoverableSurface: payload.recoverableSurface,
+            recoverableBoth: payload.recoverableBoth,
+          }));
+          NODE
+
+      - name: Upload dry-run proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c8d-rabat-agenz-live-dry-run
+          path: c8d-agenz-live-dry-run.json
+          if-no-files-found: warn
+          retention-days: 14
