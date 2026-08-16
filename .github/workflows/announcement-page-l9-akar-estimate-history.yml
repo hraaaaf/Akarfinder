@@ -3,6 +3,9 @@ name: Announcement Page L9 AkarEstimate History
 on:
   pull_request:
     paths:
+      - "app/listings/[id]/page.tsx"
+      - "components/listings/AnnouncementPageShell.tsx"
+      - "components/listings/AkarEstimateHistorySection.tsx"
       - "lib/property-detail/akar-estimate-history*.ts"
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
       - "scripts/scrapers/__tests__/announcement-page-l9-*.test.ts"
@@ -12,6 +15,9 @@ on:
       - main
       - agent/announcement-page-l9-akar-estimate-history
     paths:
+      - "app/listings/[id]/page.tsx"
+      - "components/listings/AnnouncementPageShell.tsx"
+      - "components/listings/AkarEstimateHistorySection.tsx"
       - "lib/property-detail/akar-estimate-history*.ts"
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
       - "scripts/scrapers/__tests__/announcement-page-l9-*.test.ts"
