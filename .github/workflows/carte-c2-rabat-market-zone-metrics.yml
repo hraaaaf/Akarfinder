@@ -1,0 +1,55 @@
+name: Carte C2 Rabat Market Zone Metrics Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/map/rabat-market-zone-metrics.ts"
+      - "scripts/audits/carte-c2-rabat-market-zone-metrics.ts"
+      - "scripts/scrapers/__tests__/carte-c2-rabat-market-zone-metrics.test.ts"
+      - "lib/geo/rabat-market-zones-shadow.ts"
+      - "docs/CARTE_INTELLIGENCE_METRICS_CONTRACT.md"
+      - ".github/workflows/carte-c2-rabat-market-zone-metrics.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-c2-rabat-metrics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Metric math and C1 dependency contracts
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c2-rabat-market-zone-metrics.test.ts scripts/scrapers/__tests__/carte-c2-metrics-contract.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Live bounded Shadow metrics audit
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/carte-c2-rabat-market-zone-metrics.ts
+      - name: Enforce non-public C2 boundary
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/carte-c2-rabat-market-zone-metrics.json');
+          if(r.zoneCount!==4) throw new Error(`expected 4 zones, got ${r.zoneCount}`);
+          if(r.state!=='shadow'||r.publicActivation!==false||r.marketRepresentativenessCertified!==false) throw new Error('C2 boundary drift');
+          if(!['C2_RABAT_METRICS_SHADOW_OBSERVED','C2_RABAT_METRICS_DATA_GAP'].includes(r.verdict)) throw new Error(`unexpected verdict ${r.verdict}`);
+          for(const row of r.rows){
+            if(!(row.areaKm2>0)) throw new Error(`invalid area ${row.zoneId}`);
+            if(row.observedListingDensityPerKm2==null) throw new Error(`density unavailable despite certified area ${row.zoneId}`);
+            if(row.medianPricePerM2Mad===0) throw new Error(`missing price encoded as zero ${row.zoneId}`);
+          }
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: carte-c2-rabat-market-zone-metrics-${{ github.run_id }}
+          path: data/audits/runtime/carte-c2-rabat-market-zone-metrics.json
+          if-no-files-found: warn
+          retention-days: 30
