@@ -21,12 +21,14 @@ export type GeoTruth = {
     | "context_centroid_only"
     | "coordinates_missing"
     | "coordinates_invalid"
-    | "precision_unknown";
+    | "precision_unknown"
+    | "precision_source_mismatch";
 };
 
 export type ExactGeoTruth = GeoTruth & {
   availability: "exact";
   precision: "exact";
+  source: "scraped_coordinates" | "manual_import";
   coordinate: { latitude: number; longitude: number };
   exactOriginAllowed: true;
   reason: "exact_source_coordinates";
@@ -37,6 +39,13 @@ function finiteCoordinate(latitude: unknown, longitude: unknown): { latitude: nu
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
   if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
   return { latitude, longitude };
+}
+
+function sourceMatchesPrecision(precision: GeoPrecision, source: GeoSource): boolean {
+  if (precision === "exact") return source === "scraped_coordinates" || source === "manual_import";
+  if (precision === "neighborhood_centroid") return source === "neighborhood_centroid";
+  if (precision === "city_centroid") return source === "city_centroid";
+  return precision === "unknown" && source === "unknown";
 }
 
 export function buildGeoTruth(listing: Pick<
@@ -70,9 +79,32 @@ export function buildGeoTruth(listing: Pick<
     };
   }
 
+  if (precision === "unknown") {
+    return {
+      ...common,
+      precision,
+      availability: "unavailable",
+      coordinate: null,
+      exactOriginAllowed: false,
+      reason: "precision_unknown",
+    };
+  }
+
+  if (!sourceMatchesPrecision(precision, source)) {
+    return {
+      ...common,
+      precision,
+      availability: "unavailable",
+      coordinate: null,
+      exactOriginAllowed: false,
+      reason: "precision_source_mismatch",
+    };
+  }
+
   if (precision === "exact") {
     return {
       ...common,
+      source: source as "scraped_coordinates" | "manual_import",
       precision: "exact",
       availability: "exact",
       coordinate,
@@ -104,6 +136,7 @@ export function buildGeoTruth(listing: Pick<
 
 export function isExactGeoTruth(value: GeoTruth): value is ExactGeoTruth {
   return value.precision === "exact" &&
+    (value.source === "scraped_coordinates" || value.source === "manual_import") &&
     value.availability === "exact" &&
     value.exactOriginAllowed &&
     value.coordinate != null &&
