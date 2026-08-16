@@ -3,6 +3,7 @@ name: Announcement Page L5 Geo Foundation
 on:
   pull_request:
     paths:
+      - "docs/ANNOUNCEMENT_PAGE_L5_PROVIDER_BAKEOFF.md"
       - "lib/geo/**"
       - "lib/listings/types.ts"
       - "scripts/geo/announcement-page-l5-geo-bakeoff.mjs"
@@ -15,6 +16,7 @@ on:
       - main
       - agent/announcement-page-l5-geo-foundation
     paths:
+      - "docs/ANNOUNCEMENT_PAGE_L5_PROVIDER_BAKEOFF.md"
       - "lib/geo/**"
       - "lib/listings/types.ts"
       - "scripts/geo/announcement-page-l5-geo-bakeoff.mjs"
