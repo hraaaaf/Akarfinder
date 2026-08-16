@@ -35,7 +35,7 @@ const listing: Listing = {
   description: "Fixture QA ANN-L11 non indexée pour certifier la matrice professionnelle et les CTA autorisés.",
   image_url: "",
   reliability_explanation: "Fixture QA interne.",
-  source_name: "Agence Atlas QA",
+  source_name: "AkarFinder",
   seller_name: "Agence Atlas QA",
   listing_url: "https://example.com/annonce-qa",
   whatsapp: "+212600000000",
@@ -60,7 +60,7 @@ const listing: Listing = {
 
 function buildQaDetail(): PublicPropertyDetailV2 {
   const value = buildPublicPropertyDetailV2(listing, {
-    source_name: "Agence Atlas QA",
+    source_name: "AkarFinder",
     observed_at: NOW,
     created_at: "2026-08-01T00:00:00.000Z",
     generated_at: NOW,
