@@ -36,6 +36,7 @@ export function StreetRealitySection({ model }: { model?: StreetRealityModel | n
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {model.assets.map((asset, index) => {
           const capturedAt = formatCapturedAt(asset.capturedAt);
+          const creator = asset.creatorUsername ? `@${asset.creatorUsername}` : null;
           const card = (
             <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_5px_18px_rgba(7,27,51,0.05)]">
               <div className="aspect-[16/10] bg-slate-100">
@@ -55,14 +56,19 @@ export function StreetRealitySection({ model }: { model?: StreetRealityModel | n
                   </div>
                 )}
               </div>
-              <div className="flex items-center justify-between gap-3 p-3.5">
-                <div className="min-w-0">
-                  <p className="text-[12.5px] font-extrabold text-deepblue">À {formatDistance(asset.distanceMeters)} du point de référence</p>
-                  <p className="mt-0.5 text-[10.5px] font-semibold text-slate-400">
-                    {capturedAt ? `Capture ${capturedAt}` : "Date de capture non fournie"}
-                  </p>
+              <div className="p-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[12.5px] font-extrabold text-deepblue">À {formatDistance(asset.distanceMeters)} du point de référence</p>
+                    <p className="mt-0.5 text-[10.5px] font-semibold text-slate-400">
+                      {capturedAt ? `Capture ${capturedAt}` : "Date de capture non fournie"}
+                    </p>
+                  </div>
+                  {asset.viewerUrl ? <span aria-hidden="true" className="shrink-0 text-lg text-[#0B63CE]">↗</span> : null}
                 </div>
-                {asset.viewerUrl ? <span aria-hidden="true" className="shrink-0 text-lg text-[#0B63CE]">↗</span> : null}
+                <p className="mt-2 text-[10px] font-semibold text-slate-400">
+                  {model.attribution}{creator ? ` · ${creator}` : ""}{model.providerId === "mapillary" ? " · CC BY-SA" : ""}
+                </p>
               </div>
             </article>
           );
@@ -73,7 +79,7 @@ export function StreetRealitySection({ model }: { model?: StreetRealityModel | n
               href={asset.viewerUrl}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`Ouvrir la vue de rue à proximité ${index + 1} chez ${model.attribution ?? "le provider"}`}
+              aria-label={`Ouvrir la vue de rue à proximité ${index + 1} chez ${model.attribution ?? "le provider"}${creator ? ` par ${creator}` : ""}`}
               className="block rounded-2xl outline-none ring-[#0B63CE] focus-visible:ring-2 focus-visible:ring-offset-2"
             >
               {card}
