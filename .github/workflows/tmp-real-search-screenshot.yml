@@ -1,0 +1,62 @@
+name: TEMP Real Search Screenshot
+
+on:
+  push:
+    branches:
+      - capture/real-search-20260816
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Capture real /search
+        run: |
+          mkdir -p artifacts
+          node <<'NODE'
+          const fs = require('fs');
+          const { chromium } = require('playwright');
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1440, height: 1200 }, deviceScaleFactor: 1 });
+            const target = 'https://akarfinder.vercel.app/search';
+            const response = await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 90000 });
+            await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
+            await page.waitForTimeout(5000);
+
+            const meta = {
+              requestedUrl: target,
+              finalUrl: page.url(),
+              status: response ? response.status() : null,
+              title: await page.title(),
+              capturedAt: new Date().toISOString(),
+              viewport: { width: 1440, height: 1200 },
+            };
+
+            fs.writeFileSync('artifacts/search-real-meta.json', JSON.stringify(meta, null, 2));
+            fs.writeFileSync('artifacts/search-real.html', await page.content());
+            await page.screenshot({ path: 'artifacts/search-real-desktop.png', fullPage: true });
+            console.log(JSON.stringify(meta, null, 2));
+            await browser.close();
+          })();
+          NODE
+      - name: Upload screenshot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: real-search-screenshot
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 7
