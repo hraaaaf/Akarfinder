@@ -7,6 +7,7 @@ on:
       - "lib/geo/**"
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
       - "scripts/scrapers/__tests__/announcement-page-l7-street-imagery-provider.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l7-street-reality-model.test.ts"
       - ".github/workflows/announcement-page-l7-street-reality.yml"
   push:
     branches:
@@ -17,6 +18,7 @@ on:
       - "lib/geo/**"
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
       - "scripts/scrapers/__tests__/announcement-page-l7-street-imagery-provider.test.ts"
+      - "scripts/scrapers/__tests__/announcement-page-l7-street-reality-model.test.ts"
       - ".github/workflows/announcement-page-l7-street-reality.yml"
 
 permissions:
@@ -37,10 +39,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: ANN-L7 Mapillary provider truth boundaries
+      - name: ANN-L7 street imagery truth boundaries
         run: >-
           npx tsx --test
           scripts/scrapers/__tests__/announcement-page-l7-street-imagery-provider.test.ts
+          scripts/scrapers/__tests__/announcement-page-l7-street-reality-model.test.ts
           scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts
           scripts/scrapers/__tests__/announcement-page-l5-geo-foundation.test.ts
 
