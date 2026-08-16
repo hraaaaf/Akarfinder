@@ -1,0 +1,246 @@
+import assert from "node:assert/strict";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, it } from "node:test";
+import { buildGeoTruth, isExactGeoTruth } from "@/lib/geo/geo-truth";
+import { executeProviderFailover } from "@/lib/geo/provider-failover";
+import { hasFreshProviderEvidence } from "@/lib/geo/provider-contracts";
+import {
+  canPersistProviderPayload,
+  parseProviderOrder,
+  resolveProviderOrder,
+  validateGeoProviderRuntimePolicy,
+} from "@/lib/geo/provider-policy";
+
+function listing(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "geo-test",
+    city: "Rabat",
+    neighborhood: "Agdal",
+    latitude: 33.9908,
+    longitude: -6.8481,
+    geo_precision: "exact" as const,
+    geo_source: "scraped_coordinates" as const,
+    geo_label: "Coordonnées déclarées par la source",
+    ...overrides,
+  };
+}
+
+function collectTsxFiles(root: string): string[] {
+  const files: string[] = [];
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    const path = join(root, entry.name);
+    if (entry.isDirectory()) files.push(...collectTsxFiles(path));
+    else if (entry.isFile() && path.endsWith(".tsx")) files.push(path);
+  }
+  return files;
+}
+
+describe("ANN-L5 GeoTruth", () => {
+  it("admits an exact origin only for finite in-range coordinates explicitly marked exact", () => {
+    const truth = buildGeoTruth(listing());
+    assert.equal(truth.availability, "exact");
+    assert.equal(truth.exactOriginAllowed, true);
+    assert.deepEqual(truth.coordinate, { latitude: 33.9908, longitude: -6.8481 });
+    assert.equal(isExactGeoTruth(truth), true);
+    assert.equal(truth.legacyNearbyTimesTrusted, false);
+  });
+
+  it("keeps neighborhood and city centroids as context only, never exact origins", () => {
+    for (const precision of ["neighborhood_centroid", "city_centroid"] as const) {
+      const truth = buildGeoTruth(listing({
+        geo_precision: precision,
+        geo_source: precision,
+      }));
+      assert.equal(truth.availability, "context_only");
+      assert.equal(truth.exactOriginAllowed, false);
+      assert.equal(isExactGeoTruth(truth), false);
+      assert.ok(truth.coordinate);
+    }
+  });
+
+  it("rejects contradictory precision/source pairs instead of promoting centroids to exact", () => {
+    const cases = [
+      { geo_precision: "exact", geo_source: "city_centroid" },
+      { geo_precision: "exact", geo_source: "neighborhood_centroid" },
+      { geo_precision: "exact", geo_source: "unknown" },
+      { geo_precision: "city_centroid", geo_source: "scraped_coordinates" },
+      { geo_precision: "neighborhood_centroid", geo_source: "manual_import" },
+    ] as const;
+    for (const entry of cases) {
+      const truth = buildGeoTruth(listing(entry));
+      assert.equal(truth.availability, "unavailable");
+      assert.equal(truth.coordinate, null);
+      assert.equal(truth.exactOriginAllowed, false);
+      assert.equal(isExactGeoTruth(truth), false);
+      assert.equal(truth.reason, "precision_source_mismatch");
+    }
+  });
+
+  it("fails closed on missing, NaN and out-of-range coordinates", () => {
+    const cases = [
+      { latitude: null, longitude: null, reason: "coordinates_missing" },
+      { latitude: Number.NaN, longitude: -6.8, reason: "coordinates_invalid" },
+      { latitude: 91, longitude: -6.8, reason: "coordinates_invalid" },
+      { latitude: 33.9, longitude: -181, reason: "coordinates_invalid" },
+    ];
+    for (const entry of cases) {
+      const truth = buildGeoTruth(listing(entry));
+      assert.equal(truth.availability, "unavailable");
+      assert.equal(truth.coordinate, null);
+      assert.equal(truth.exactOriginAllowed, false);
+      assert.equal(truth.reason, entry.reason);
+    }
+  });
+
+  it("does not promote valid coordinates with unknown precision", () => {
+    const truth = buildGeoTruth(listing({ geo_precision: "unknown", geo_source: "unknown" }));
+    assert.equal(truth.availability, "unavailable");
+    assert.equal(truth.coordinate, null);
+    assert.equal(truth.exactOriginAllowed, false);
+    assert.equal(truth.reason, "precision_unknown");
+  });
+});
+
+describe("ANN-L5 provider evidence and failover", () => {
+  const now = new Date("2026-08-16T10:00:00.000Z");
+
+  it("requires attribution, explicit freshness and a maximum 24h evidence TTL", () => {
+    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-16T12:00:00Z" }, now), false);
+    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T11:00:00Z", expiresAt: "2026-08-16T12:00:00Z" }, now), false);
+    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: null }, now), false);
+    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T08:00:00Z", expiresAt: "2026-08-16T09:00:00Z" }, now), false);
+    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-16T12:00:00Z" }, now), true);
+    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-17T09:00:00Z" }, now), true);
+    assert.equal(hasFreshProviderEvidence({ providerId: "a", attribution: "A", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-17T09:00:01Z" }, now), false);
+  });
+
+  it("fails over deterministically when evidence is invalid or a provider throws", async () => {
+    const providers = [{ id: "first" }, { id: "second" }, { id: "third" }] as const;
+    const result = await executeProviderFailover(providers, async (provider) => {
+      if (provider.id === "first") throw new Error("upstream");
+      if (provider.id === "second") {
+        return {
+          status: "available" as const,
+          evidence: { providerId: "second", attribution: "", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-16T12:00:00Z" },
+        };
+      }
+      return {
+        status: "available" as const,
+        evidence: { providerId: "third", attribution: "Provider Three", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: "2026-08-16T12:00:00Z" },
+      };
+    }, now);
+    assert.equal(result.result.status, "available");
+    assert.deepEqual(result.attemptedProviderIds, ["first", "second", "third"]);
+    if (result.result.status === "available") assert.equal(result.result.evidence.providerId, "third");
+  });
+
+  it("rejects evidence whose provider id does not match the executing adapter", async () => {
+    const providers = [{ id: "first" }, { id: "second" }] as const;
+    const result = await executeProviderFailover(providers, async (provider) => ({
+      status: "available" as const,
+      evidence: {
+        providerId: provider.id === "first" ? "spoofed-second" : "second",
+        attribution: "Provider",
+        fetchedAt: "2026-08-16T09:00:00Z",
+        expiresAt: "2026-08-16T12:00:00Z",
+      },
+    }), now);
+    assert.deepEqual(result.attemptedProviderIds, ["first", "second"]);
+    assert.equal(result.result.status, "available");
+    if (result.result.status === "available") assert.equal(result.result.evidence.providerId, "second");
+  });
+
+  it("preserves invalid evidence as the final failure reason", async () => {
+    const result = await executeProviderFailover([{ id: "bad" }], async () => ({
+      status: "available" as const,
+      evidence: { providerId: "bad", attribution: "Provider", fetchedAt: "2026-08-16T09:00:00Z", expiresAt: null },
+    }), now);
+    assert.equal(result.result.status, "unavailable");
+    if (result.result.status === "unavailable") assert.equal(result.result.reason, "invalid_evidence");
+  });
+
+  it("returns explicit unavailable when no provider is configured", async () => {
+    const result = await executeProviderFailover([], async () => {
+      throw new Error("unreachable");
+    }, now);
+    assert.equal(result.result.status, "unavailable");
+    if (result.result.status === "unavailable") assert.equal(result.result.reason, "not_configured");
+    assert.deepEqual(result.attemptedProviderIds, []);
+  });
+});
+
+describe("ANN-L5 provider runtime policy", () => {
+  it("parses reversible ordered provider configuration without duplicates", () => {
+    assert.deepEqual(parseProviderOrder(" Overpass, mapbox,OVERPASS, google "), ["overpass", "mapbox", "google"]);
+    assert.deepEqual(resolveProviderOrder("routing", { AKAR_GEO_ROUTING_PROVIDERS: "osrm,mapbox" }), ["osrm", "mapbox"]);
+  });
+
+  it("fails closed on unsafe cache policies and caps ephemeral cache at 24h", () => {
+    assert.deepEqual(validateGeoProviderRuntimePolicy({
+      providerId: "google-places",
+      kind: "nearby",
+      cacheMode: "no_store",
+      maxCacheSeconds: 0,
+      attributionRequired: true,
+      persistentStorageAllowed: false,
+    }), []);
+
+    assert.deepEqual(validateGeoProviderRuntimePolicy({
+      providerId: "ephemeral-safe",
+      kind: "nearby",
+      cacheMode: "ephemeral",
+      maxCacheSeconds: 86_400,
+      attributionRequired: true,
+      persistentStorageAllowed: false,
+    }), []);
+
+    assert.ok(validateGeoProviderRuntimePolicy({
+      providerId: "ephemeral-too-long",
+      kind: "nearby",
+      cacheMode: "ephemeral",
+      maxCacheSeconds: 86_401,
+      attributionRequired: true,
+      persistentStorageAllowed: false,
+    }).includes("ephemeral_ttl_exceeds_24h"));
+
+    const unsafe = {
+      providerId: "x",
+      kind: "nearby" as const,
+      cacheMode: "ephemeral" as const,
+      maxCacheSeconds: null,
+      attributionRequired: false,
+      persistentStorageAllowed: true,
+    };
+    assert.ok(validateGeoProviderRuntimePolicy(unsafe).length >= 3);
+    assert.equal(canPersistProviderPayload(unsafe), false);
+  });
+});
+
+describe("ANN-L5 architectural boundaries", () => {
+  it("keeps concrete geo providers out of the whole listing React surface", () => {
+    const files = [
+      ...collectTsxFiles("components/listings"),
+      ...collectTsxFiles("app/listings"),
+    ];
+    assert.ok(files.length > 0);
+    for (const file of files) {
+      const source = readFileSync(file, "utf8");
+      assert.doesNotMatch(source, /lib\/geo\/(?:providers|provider-implementations)\//, file);
+      assert.doesNotMatch(source, /\b(?:Mapbox|GooglePlaces|GoogleRoutes|Nominatim|Overpass|OSRM|Valhalla|Mapillary)\b/, file);
+    }
+  });
+
+  it("requires exact GeoTruth at the routing and isochrone type boundary", () => {
+    const source = readFileSync("lib/geo/provider-contracts.ts", "utf8");
+    assert.match(source, /RoutingProvider[\s\S]*origin: ExactGeoTruth/);
+    assert.match(source, /IsochroneProvider[\s\S]*origin: ExactGeoTruth/);
+  });
+
+  it("does not trust legacy nearby place time strings as routed evidence", () => {
+    const source = readFileSync("lib/geo/geo-truth.ts", "utf8");
+    assert.match(source, /legacyNearbyTimesTrusted: false/);
+    assert.doesNotMatch(source, /nearby_places/);
+    assert.doesNotMatch(source, /walking_minutes/);
+  });
+});
