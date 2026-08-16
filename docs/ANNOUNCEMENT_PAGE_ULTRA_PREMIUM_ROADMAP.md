@@ -2,10 +2,10 @@
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
 **Version : 2026-08-16**  
-**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 NEXT**  
-**Progression stricte : 4 / 100 %.**
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 NEXT**  
+**Progression stricte : 11 / 100 %.**
 
-> Ce document est la source de vérité du chantier de refonte de `/listings/[id]`. Les pourcentages sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
+> Ce document est la sous-roadmap normative du chantier de refonte de `/listings/[id]`. `docs/ROADMAP.md` reste le registre canonique global AkarFinder. Les pourcentages ci-dessous sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
 
 ## 0. Closeout ANN-L0 — Contrat vérité ✅
 
@@ -14,7 +14,20 @@
 - Diff runtime public : **0**. Scope merge : roadmap dédiée, contrat fail-closed, tests, workflow CI.
 - Contrat verrouillé : aucun pin exact sans geo `exact` ; aucun POI premium sans provider vérifié + observation horodatée ; aucun temps précis sans route mesurée depuis une origine exacte ; aucune Street Reality sans contexte geo admissible + asset attribuable ; aucune galerie sans permissions ; aucun score/estimate/comparable/contact/fit sans preuve correspondante.
 - Dette explicitement contenue : les `walking_minutes` historiques dérivés de GPS/centroïdes par `REAL-PROXIMITY-ENGINE-1` ne valent **pas** preuve de routage pour la nouvelle fiche.
-- **Crédit officiel ANN-L0 : +4 %.** Prochain chemin critique : ANN-L1 Shell premium.
+- **Crédit officiel ANN-L0 : +4 %.**
+
+## 0.1 Closeout ANN-L1 — Shell premium ✅
+
+- **PR #719 ✅ MERGED** — merge `f2e2c3db29b63d87eedff4c4e00e5e85f374c7f9` ; exact head certifié `a99e8987df287d2ed36a0eea4966aad1080edb87`.
+- Gate dédié `Announcement Page L1 Premium Shell`, run `31926548546` : contrats, régressions, TypeScript, production build et Chromium ciblé **SUCCESS**.
+- Artefact visuel `9258022426`, digest `sha256:565c3b1d91eb0f2023eb4b9dff399604c4e3a006d4b3d05c7fee14af5c22e1ff`.
+- Fixture `/visual-qa/announcement-page` : **4/4 screenshots, 0 finding** sur 390×844 / 430×932 / 768×900 / 1280×900 ; HTTP 200 ; H1=1 ; main=1 ; overflow=0 ; 0 erreur console/ressource.
+- Mobile/tablette : dock décision présent, touch targets 44/48/48 px. Desktop : Mon Projet présent dans le rail d'actions, 46 px.
+- Shell livré : vrai `SiteHeader searchMode`, surface `pageLight`, largeur max 1500 px, H1 unique, loading reduced-motion, not-found fail-honest et fixture QA noindex.
+- Régression détectée pendant le lot : retrait involontaire de Mon Projet desktop après suppression de `PropertyDecisionHeader`; corrigée et désormais couverte par test mobile + desktop.
+- Dette volontaire : galerie = ANN-L2 ; densité/card hierarchy = ANN-L3 ; intelligence = ANN-L4.
+- Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L1_CLOSEOUT.md`.
+- **Crédit officiel ANN-L1 : +7 %. Progression cumulée : 11 %. Prochain chemin critique : ANN-L2 Galerie média.**
 
 ## 1. Vision produit
 
@@ -22,7 +35,7 @@ Transformer la fiche actuelle en une expérience immobilière mobile-first, ultr
 
 La page ne doit pas être un clone graphique de Zillow. **L'architecture d'information peut reprendre les meilleures conventions du marché ; l'identité visuelle reste celle du Search AkarFinder réel.**
 
-Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 matérialisera cette référence dans une fixture QA versionnée.
+Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell dans une fixture QA versionnée ; ANN-L2/L3 poursuivent la convergence média et Property Core.
 
 ## 2. Doctrine non négociable
 
@@ -271,13 +284,13 @@ Critères CLOSED :
 
 **Aucun changement UI public dans L0.**
 
-### ANN-L1 — Shell premium — 7 % — NEXT
+### ANN-L1 — Shell premium — 7 % — ✅ CLOSED
 
-Implémentation : nouvelle composition mobile-first de `/listings/[id]`, tokens visuels du vrai `/search`, H1 unique, spacing, sections continues, skeletons et states. Créer fixture QA data-backed/noindex pour rendre une fiche stable à 390/430/768/1280.
+Implémentation : nouvelle composition mobile-first de `/listings/[id]`, tokens visuels du vrai `/search`, H1 unique, spacing, sections continues, skeletons et states. Fixture QA data-backed/noindex stable à 390/430/768/1280.
 
-Gate : comparaison mockup/rendu, aucune régression header/nav, overflow 0, contrastes et touch targets conformes.
+Gate CLOSED : comparaison mockup/rendu pour le scope L1, aucune régression header/nav, overflow 0, touch targets conformes, exact-head Chromium 4/4 + 0 finding. Détails : `docs/ANNOUNCEMENT_PAGE_L1_CLOSEOUT.md`.
 
-### ANN-L2 — Galerie média — 7 %
+### ANN-L2 — Galerie média — 7 % — NEXT
 
 Implémentation : `PropertyMediaGallery`, swipe, clavier, fullscreen, compteur, attribution, favori/partage. Le composant consomme uniquement le résultat du contrat média ; fallback `ListingVisual` si non autorisé.
 
@@ -411,8 +424,8 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | LOT | Poids | État | Crédit officiel |
 |---|---:|---|---:|
 | ANN-L0 | 4 % | ✅ CLOSED | 4 % |
-| ANN-L1 | 7 % | NEXT | 0 % |
-| ANN-L2 | 7 % | NOT_STARTED | 0 % |
+| ANN-L1 | 7 % | ✅ CLOSED | 7 % |
+| ANN-L2 | 7 % | NEXT | 0 % |
 | ANN-L3 | 6 % | NOT_STARTED | 0 % |
 | ANN-L4 | 9 % | NOT_STARTED | 0 % |
 | ANN-L5 | 9 % | NOT_STARTED | 0 % |
@@ -425,4 +438,4 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L12 | 5 % | NOT_STARTED | 0 % |
 | ANN-L13 | 6 % | NOT_STARTED | 0 % |
 
-**Progression officielle actuelle : 4 / 100 %.**
+**Progression officielle actuelle : 11 / 100 %.**
