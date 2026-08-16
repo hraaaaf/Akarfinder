@@ -1,0 +1,43 @@
+name: Carte C2B Rabat Price Gap Gate
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/carte-c2b-rabat-price-gap.ts"
+      - ".github/workflows/carte-c2b-rabat-price-gap.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-rabat-price-gap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - name: Live bounded price-gap audit
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/carte-c2b-rabat-price-gap.ts
+      - name: Enforce read-only qualification contract
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/carte-c2b-rabat-price-gap.json');
+          if(r.readOnly!==true) throw new Error('read-only boundary drift');
+          if(r.targetSlugs.length!==4) throw new Error('expected 4 target slugs');
+          if(!['C2B_PRICE_COVERAGE_REVIEWABLE','C2B_PRICE_COVERAGE_INSUFFICIENT'].includes(r.verdict)) throw new Error(`unexpected verdict ${r.verdict}`);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: carte-c2b-rabat-price-gap-${{ github.run_id }}
+          path: data/audits/runtime/carte-c2b-rabat-price-gap.json
+          if-no-files-found: warn
+          retention-days: 30
