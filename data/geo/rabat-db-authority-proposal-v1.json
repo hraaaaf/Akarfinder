@@ -1,0 +1,179 @@
+{
+  "schemaVersion": "c8d-rabat-db-authority-proposal-v1",
+  "mode": "proposal_only",
+  "productionMutationAllowed": false,
+  "sqlIncluded": false,
+  "parentEntityId": "city_rabat",
+  "sourceVersion": "c8_rabat_authority_proposal_v1",
+  "requiredPreWriteGates": [
+    "explicit_human_approval",
+    "exact_head_ci_success",
+    "recheck_entity_id_and_slug_conflicts",
+    "recheck_cross_entity_normalized_alias_collisions",
+    "candidate_taxonomy_review",
+    "bounded_impact_recount"
+  ],
+  "databaseConstraintsObserved": {
+    "entityPrimaryKey": "geo_entities.id",
+    "entitySlugUniqueWithinParent": ["entity_type", "parent_id", "slug"],
+    "aliasUniqueWithinEntity": ["geo_entity_id", "normalized_alias"],
+    "crossEntityAliasUniquenessEnforced": false,
+    "validationStatuses": ["validated", "pending_review", "rejected"],
+    "aliasConfidenceRange": [0, 1]
+  },
+  "entities": [
+    {
+      "candidateId": "candidate_rabat_yacoub_el_mansour",
+      "proposedDbEntity": {
+        "id": "district_rabat_yacoub_el_mansour",
+        "entity_type": "neighborhood",
+        "parent_id": "city_rabat",
+        "slug": "yacoub-el-mansour",
+        "canonical_name": "Yacoub El Mansour",
+        "normalized_name": "yacoub el mansour",
+        "validation_status": "pending_review",
+        "seo_eligible": false,
+        "map_eligible": false,
+        "source_version": "c8_rabat_authority_proposal_v1"
+      },
+      "proposedAliases": [
+        {"alias": "Yacoub El Mansour", "normalized_alias": "yacoub el mansour", "confidence": 1},
+        {"alias": "Yaacoub El Mansour", "normalized_alias": "yaacoub el mansour", "confidence": 1}
+      ],
+      "evidence": {
+        "firstPartySources": ["hcp_rabat_admin_statistical_nomenclature", "aurs_rabat_first_party"],
+        "structuredPropertyListings": 19,
+        "bridgedSeeds": 1,
+        "bridgedNoEvent": 1,
+        "bridgedResolved": 0,
+        "shadowUniqueMatches": 7,
+        "shadowSources": ["agenz.ma", "mouldar.com", "mubawab.ma"],
+        "shadowAmbiguousRows": 0,
+        "existingEntityConflict": false,
+        "existingConfidenceOneAliasCollision": false
+      },
+      "reviewTier": "A",
+      "recommendation": "authority_review_candidate"
+    },
+    {
+      "candidateId": "candidate_rabat_medina",
+      "proposedDbEntity": {
+        "id": "district_rabat_medina",
+        "entity_type": "neighborhood",
+        "parent_id": "city_rabat",
+        "slug": "medina",
+        "canonical_name": "Medina",
+        "normalized_name": "medina",
+        "validation_status": "pending_review",
+        "seo_eligible": false,
+        "map_eligible": false,
+        "source_version": "c8_rabat_authority_proposal_v1"
+      },
+      "proposedAliases": [
+        {"alias": "Medina", "normalized_alias": "medina", "confidence": 1}
+      ],
+      "suppressedAliasVariants": [
+        {"alias": "Médina", "reason": "normalizes_to_existing_proposed_alias_medina"}
+      ],
+      "evidence": {
+        "firstPartySources": ["aurs_rabat_first_party", "commune_rabat_first_party"],
+        "structuredPropertyListings": 12,
+        "bridgedSeeds": 1,
+        "bridgedNoEvent": 1,
+        "bridgedResolved": 0,
+        "shadowUniqueMatches": 6,
+        "shadowSources": ["agenz.ma", "mubawab.ma"],
+        "shadowAmbiguousRows": 0,
+        "existingEntityConflict": false,
+        "existingConfidenceOneAliasCollision": false
+      },
+      "reviewTier": "A",
+      "recommendation": "authority_review_candidate"
+    },
+    {
+      "candidateId": "candidate_rabat_aviation",
+      "proposedDbEntity": {
+        "id": "district_rabat_aviation",
+        "entity_type": "neighborhood",
+        "parent_id": "city_rabat",
+        "slug": "aviation",
+        "canonical_name": "Aviation",
+        "normalized_name": "aviation",
+        "validation_status": "pending_review",
+        "seo_eligible": false,
+        "map_eligible": false,
+        "source_version": "c8_rabat_authority_proposal_v1"
+      },
+      "proposedAliases": [
+        {"alias": "Aviation", "normalized_alias": "aviation", "confidence": 1}
+      ],
+      "evidence": {
+        "firstPartySources": ["aurs_rabat_first_party"],
+        "structuredPropertyListings": 23,
+        "bridgedSeeds": 2,
+        "bridgedNoEvent": 2,
+        "bridgedResolved": 0,
+        "shadowUniqueMatches": 6,
+        "shadowSources": ["1immo.ma", "mubawab.ma"],
+        "shadowAmbiguousRows": 4,
+        "shadowAmbiguityWith": ["mabella"],
+        "existingEntityConflict": false,
+        "existingConfidenceOneAliasCollision": false
+      },
+      "reviewTier": "A",
+      "recommendation": "structured_authority_review_free_text_stays_fail_closed"
+    },
+    {
+      "candidateId": "candidate_rabat_akkari",
+      "proposedDbEntity": {
+        "id": "district_rabat_akkari",
+        "entity_type": "neighborhood",
+        "parent_id": "city_rabat",
+        "slug": "akkari",
+        "canonical_name": "Akkari",
+        "normalized_name": "akkari",
+        "validation_status": "pending_review",
+        "seo_eligible": false,
+        "map_eligible": false,
+        "source_version": "c8_rabat_authority_proposal_v1"
+      },
+      "proposedAliases": [
+        {"alias": "Akkari", "normalized_alias": "akkari", "confidence": 1}
+      ],
+      "evidence": {
+        "firstPartySources": ["aurs_rabat_first_party"],
+        "structuredPropertyListings": 5,
+        "bridgedSeeds": 0,
+        "bridgedNoEvent": 0,
+        "bridgedResolved": 0,
+        "shadowUniqueMatches": 1,
+        "shadowSources": ["agenz.ma"],
+        "shadowAmbiguousRows": 0,
+        "existingEntityConflict": false,
+        "existingConfidenceOneAliasCollision": false
+      },
+      "reviewTier": "B",
+      "recommendation": "hold_for_secondary_evidence_or_manual_sample"
+    }
+  ],
+  "aggregateImpact": {
+    "proposedEntities": 4,
+    "tierA": 3,
+    "tierB": 1,
+    "structuredPropertyListings": 59,
+    "bridgedSeeds": 4,
+    "bridgedNoEvent": 4,
+    "bridgedResolved": 0,
+    "shadowUniqueMatches": 20,
+    "productionWrites": 0
+  },
+  "nonGoals": [
+    "no_geo_entity_insert",
+    "no_geo_alias_insert",
+    "no_geo_resolution_event_insert",
+    "no_property_listing_update",
+    "no_candidate_taxonomy_promotion",
+    "no_map_or_seo_activation",
+    "no_public_api_or_ui_change"
+  ]
+}
