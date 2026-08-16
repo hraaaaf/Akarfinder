@@ -10,42 +10,17 @@ const OSM_ATTRIBUTION = "© OpenStreetMap contributors";
 const DEFAULT_EVIDENCE_TTL_MS = 60 * 60 * 1000;
 
 const CATEGORY_SELECTORS: Record<string, string[]> = {
-  education: [
-    '[amenity~"^(school|kindergarten|college|university)$"]',
-  ],
-  groceries: [
-    '[shop~"^(supermarket|convenience|greengrocer|grocery)$"]',
-    '[amenity="marketplace"]',
-  ],
-  health: [
-    '[amenity~"^(pharmacy|clinic|hospital|doctors)$"]',
-  ],
-  transport: [
-    '[highway="bus_stop"]',
-    '[public_transport~"^(platform|station)$"]',
-    '[railway~"^(station|halt|tram_stop)$"]',
-  ],
-  food: [
-    '[amenity~"^(cafe|restaurant|fast_food)$"]',
-  ],
-  green_sport: [
-    '[leisure~"^(park|playground|fitness_centre|sports_centre|pitch)$"]',
-  ],
-  worship: [
-    '[amenity="place_of_worship"][religion="muslim"]',
-  ],
-  banking: [
-    '[amenity~"^(bank|atm)$"]',
-  ],
-  parking: [
-    '[amenity="parking"]',
-  ],
-  shopping: [
-    '[shop~"^(mall|department_store)$"]',
-  ],
-  coast: [
-    '[natural="beach"]',
-  ],
+  education: ['[amenity~"^(school|kindergarten|college|university)$"]'],
+  groceries: ['[shop~"^(supermarket|convenience|greengrocer|grocery)$"]', '[amenity="marketplace"]'],
+  health: ['[amenity~"^(pharmacy|clinic|hospital|doctors)$"]'],
+  transport: ['[highway="bus_stop"]', '[public_transport~"^(platform|station)$"]', '[railway~"^(station|halt|tram_stop)$"]'],
+  food: ['[amenity~"^(cafe|restaurant|fast_food)$"]'],
+  green_sport: ['[leisure~"^(park|playground|fitness_centre|sports_centre|pitch)$"]'],
+  worship: ['[amenity="place_of_worship"][religion="muslim"]'],
+  banking: ['[amenity~"^(bank|atm)$"]'],
+  parking: ['[amenity="parking"]'],
+  shopping: ['[shop~"^(mall|department_store)$"]'],
+  coast: ['[natural="beach"]'],
 };
 
 type OverpassElement = {
@@ -58,7 +33,6 @@ type OverpassElement = {
 };
 
 type OverpassResponse = { elements?: OverpassElement[] };
-
 type FetchLike = typeof fetch;
 
 export type OverpassNearbyProviderOptions = {
@@ -66,6 +40,7 @@ export type OverpassNearbyProviderOptions = {
   fetchImpl?: FetchLike;
   evidenceTtlMs?: number;
   attribution?: string;
+  now?: () => Date;
 };
 
 function finiteCoordinate(latitude: unknown, longitude: unknown): GeoCoordinate | null {
@@ -94,23 +69,14 @@ function providerCategory(tags: Record<string, string>): string {
 }
 
 function buildOverpassQuery(origin: GeoCoordinate, categories: string[], radiusMeters: number): string | null {
-  const selectors = Array.from(
-    new Set(categories.flatMap((category) => CATEGORY_SELECTORS[category] ?? [])),
-  );
+  const selectors = Array.from(new Set(categories.flatMap((category) => CATEGORY_SELECTORS[category] ?? [])));
   if (selectors.length === 0) return null;
-
   const radius = Math.max(50, Math.min(Math.round(radiusMeters), 10_000));
   const around = `(around:${radius},${origin.latitude},${origin.longitude})`;
-  const clauses = selectors.map((selector) => `nwr${selector}${around};`).join("\n");
-  return `[out:json][timeout:20];(\n${clauses}\n);out center tags;`;
+  return `[out:json][timeout:20];(\n${selectors.map((selector) => `nwr${selector}${around};`).join("\n")}\n);out center tags;`;
 }
 
-function evidence(
-  providerId: string,
-  attribution: string,
-  ttlMs: number,
-  now: Date,
-): GeoProviderEvidence {
+function evidence(providerId: string, attribution: string, ttlMs: number, now: Date): GeoProviderEvidence {
   return {
     providerId,
     attribution,
@@ -125,12 +91,14 @@ export class OverpassNearbyProvider implements NearbyProvider {
   private readonly fetchImpl: FetchLike;
   private readonly evidenceTtlMs: number;
   private readonly attribution: string;
+  private readonly now: () => Date;
 
   constructor(options: OverpassNearbyProviderOptions) {
     this.endpoint = options.endpoint.trim();
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.evidenceTtlMs = options.evidenceTtlMs ?? DEFAULT_EVIDENCE_TTL_MS;
     this.attribution = options.attribution?.trim() || OSM_ATTRIBUTION;
+    this.now = options.now ?? (() => new Date());
   }
 
   async nearby(input: {
@@ -138,31 +106,20 @@ export class OverpassNearbyProvider implements NearbyProvider {
     categories: string[];
     radiusMeters: number;
   }): Promise<NearbyProviderResult> {
-    if (!this.endpoint) {
-      return { status: "unavailable", providerId: this.id, reason: "not_configured" };
-    }
-    if (!input.origin.coordinate) {
-      return { status: "unavailable", providerId: this.id, reason: "unsupported_origin" };
-    }
+    if (!this.endpoint) return { status: "unavailable", providerId: this.id, reason: "not_configured" };
+    if (!input.origin.coordinate) return { status: "unavailable", providerId: this.id, reason: "unsupported_origin" };
 
     const query = buildOverpassQuery(input.origin.coordinate, input.categories, input.radiusMeters);
-    if (!query) {
-      return { status: "unavailable", providerId: this.id, reason: "empty" };
-    }
+    if (!query) return { status: "unavailable", providerId: this.id, reason: "empty" };
 
     try {
       const response = await this.fetchImpl(this.endpoint, {
         method: "POST",
-        headers: {
-          "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
-          accept: "application/json",
-        },
+        headers: { "content-type": "application/x-www-form-urlencoded;charset=UTF-8", accept: "application/json" },
         body: `data=${encodeURIComponent(query)}`,
         cache: "no-store",
       });
-      if (!response.ok) {
-        return { status: "unavailable", providerId: this.id, reason: "upstream_error" };
-      }
+      if (!response.ok) return { status: "unavailable", providerId: this.id, reason: "upstream_error" };
 
       const payload = (await response.json()) as OverpassResponse;
       const pois: NearbyPoi[] = [];
@@ -170,23 +127,14 @@ export class OverpassNearbyProvider implements NearbyProvider {
         const coordinate = elementCoordinate(element);
         const tags = element.tags ?? {};
         const name = (tags.name ?? tags["name:fr"] ?? tags["name:ar"] ?? "").trim();
-        if (!coordinate || !name || !element.type || !Number.isFinite(element.id)) continue;
-        pois.push({
-          id: `osm:${element.type}:${element.id}`,
-          name,
-          category: providerCategory(tags),
-          coordinate,
-        });
+        if (!coordinate || !name || !element.type || typeof element.id !== "number" || !Number.isFinite(element.id)) continue;
+        pois.push({ id: `osm:${element.type}:${element.id}`, name, category: providerCategory(tags), coordinate });
       }
+      if (pois.length === 0) return { status: "unavailable", providerId: this.id, reason: "empty" };
 
-      if (pois.length === 0) {
-        return { status: "unavailable", providerId: this.id, reason: "empty" };
-      }
-
-      const now = new Date();
       return {
         status: "available",
-        evidence: evidence(this.id, this.attribution, this.evidenceTtlMs, now),
+        evidence: evidence(this.id, this.attribution, this.evidenceTtlMs, this.now()),
         pois,
       };
     } catch {
