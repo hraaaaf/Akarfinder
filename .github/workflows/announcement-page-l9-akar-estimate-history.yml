@@ -3,7 +3,7 @@ name: Announcement Page L9 AkarEstimate History
 on:
   pull_request:
     paths:
-      - "lib/property-detail/akar-estimate-history.ts"
+      - "lib/property-detail/akar-estimate-history*.ts"
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
       - "scripts/scrapers/__tests__/announcement-page-l9-*.test.ts"
       - ".github/workflows/announcement-page-l9-akar-estimate-history.yml"
@@ -12,7 +12,7 @@ on:
       - main
       - agent/announcement-page-l9-akar-estimate-history
     paths:
-      - "lib/property-detail/akar-estimate-history.ts"
+      - "lib/property-detail/akar-estimate-history*.ts"
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
       - "scripts/scrapers/__tests__/announcement-page-l9-*.test.ts"
       - ".github/workflows/announcement-page-l9-akar-estimate-history.yml"
