@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 };
 
 const QA_NOW = "2026-08-16T00:00:00.000Z";
-type IntelligenceState = "full" | "no-score" | "no-market" | "attention" | "minimal";
+type IntelligenceState = "full" | "no-score" | "no-market" | "attention" | "invalid-score" | "minimal";
 
 function normalizeState(value: string | string[] | undefined): IntelligenceState {
   const first = Array.isArray(value) ? value[0] : value;
-  if (first === "no-score" || first === "no-market" || first === "attention" || first === "minimal") return first;
+  if (first === "no-score" || first === "no-market" || first === "attention" || first === "invalid-score" || first === "minimal") return first;
   return "full";
 }
 
@@ -106,7 +106,7 @@ function detailForState(value: Listing, state: IntelligenceState): PublicPropert
     return {
       ...detail,
       conclusion: { ...detail.conclusion, akar_score: 78, akar_score_label: "Lecture documentaire disponible", coverage_label: "4/5 dimensions documentaires disponibles", attention_label: null },
-      market: { status: "unavailable", label: null, price_per_m2: null },
+      market: { status: "unavailable", label: "Ce repère obsolète ne doit pas être affiché", price_per_m2: null },
       multisource: { status: "supported", label: "Plusieurs offres rapprochées à comparer" },
     };
   }
@@ -115,6 +115,20 @@ function detailForState(value: Listing, state: IntelligenceState): PublicPropert
       ...detail,
       conclusion: { ...detail.conclusion, akar_score: 67, akar_score_label: "Dossier à examiner", coverage_label: "3/5 dimensions documentaires disponibles", attention_label: "2 points à examiner dans les données disponibles" },
       market: { status: "available", label: "Prix demandé au-dessus du repère indicatif", price_per_m2: 18_560 },
+      multisource: { status: "not_shown", label: null },
+    };
+  }
+  if (state === "invalid-score") {
+    return {
+      ...detail,
+      conclusion: {
+        ...detail.conclusion,
+        akar_score: 140,
+        akar_score_label: "Excellent dossier",
+        coverage_label: "5/5 dimensions documentaires disponibles",
+        attention_label: null,
+      },
+      market: { status: "unavailable", label: null, price_per_m2: null },
       multisource: { status: "not_shown", label: null },
     };
   }
