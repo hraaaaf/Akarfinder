@@ -1,5 +1,9 @@
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { resolveListingGeo } from "@/lib/geo/resolve-listing-geo";
+import {
+  classifyVerifiedInventoryProvenance,
+  type ListingInventoryProvenance,
+} from "@/lib/map/listing-inventory-provenance";
 import type { GeoPrecision } from "@/lib/listings/types";
 
 const MAX_VERIFIED_LISTINGS = 100;
@@ -14,6 +18,7 @@ export type VerifiedProfessionalListingInventoryItem = {
   property_listing_id: number;
   organization_id: string;
   verified_at: string | null;
+  provenance: Exclude<ListingInventoryProvenance, "market">;
   title: string | null;
   city: string | null;
   district: string | null;
@@ -68,20 +73,40 @@ export async function listVerifiedProfessionalOwnedListings(
   const boundedLimit = clampVerifiedListingInventoryLimit(limit);
   const db = getSupabaseServerClient();
 
-  const { data: ownershipRows, error: ownershipError } = await db
-    .from("professional_listing_ownership")
-    .select("property_listing_id,organization_id,verified_at")
-    .eq("organization_id", organizationId)
-    .eq("status", "verified")
-    .order("verified_at", { ascending: false, nullsFirst: false })
-    .limit(boundedLimit);
+  const [ownershipResult, organizationResult] = await Promise.all([
+    db
+      .from("professional_listing_ownership")
+      .select("property_listing_id,organization_id,verified_at")
+      .eq("organization_id", organizationId)
+      .eq("status", "verified")
+      .order("verified_at", { ascending: false, nullsFirst: false })
+      .limit(boundedLimit),
+    db
+      .from("professional_organizations")
+      .select("id,validation_status,activation_status,source_authorization_status")
+      .eq("id", organizationId)
+      .maybeSingle(),
+  ]);
 
-  if (ownershipError) {
-    throw new Error(`[professional] verified listing inventory ownership read: ${ownershipError.message}`);
+  if (ownershipResult.error) {
+    throw new Error(`[professional] verified listing inventory ownership read: ${ownershipResult.error.message}`);
+  }
+  if (organizationResult.error) {
+    throw new Error(`[professional] verified listing inventory organization read: ${organizationResult.error.message}`);
   }
 
-  const ownership = ownershipRows ?? [];
+  const ownership = ownershipResult.data ?? [];
   if (ownership.length === 0) return [];
+
+  const provenance = classifyVerifiedInventoryProvenance({
+    ownership_verified: true,
+    partner_authority: organizationResult.data ? {
+      validation_status: organizationResult.data.validation_status,
+      activation_status: organizationResult.data.activation_status,
+      source_authorization_status: organizationResult.data.source_authorization_status,
+    } : null,
+  });
+  if (!provenance) return [];
 
   const listingIds = ownership.map((row) => Number(row.property_listing_id));
   const { data: listingRows, error: listingError } = await db
@@ -107,6 +132,7 @@ export async function listVerifiedProfessionalOwnedListings(
       property_listing_id: propertyListingId,
       organization_id: String(row.organization_id),
       verified_at: row.verified_at ? String(row.verified_at) : null,
+      provenance,
       title: listing.title == null ? null : String(listing.title),
       city: listing.city == null ? null : String(listing.city),
       district: listing.district == null ? null : String(listing.district),
