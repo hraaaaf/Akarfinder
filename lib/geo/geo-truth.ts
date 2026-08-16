@@ -24,6 +24,14 @@ export type GeoTruth = {
     | "precision_unknown";
 };
 
+export type ExactGeoTruth = GeoTruth & {
+  availability: "exact";
+  precision: "exact";
+  coordinate: { latitude: number; longitude: number };
+  exactOriginAllowed: true;
+  reason: "exact_source_coordinates";
+};
+
 function finiteCoordinate(latitude: unknown, longitude: unknown): { latitude: number; longitude: number } | null {
   if (typeof latitude !== "number" || typeof longitude !== "number") return null;
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
@@ -41,7 +49,6 @@ export function buildGeoTruth(listing: Pick<
   const common = {
     version: GEO_TRUTH_VERSION,
     listingId: listing.id,
-    precision,
     source,
     label: listing.geo_label?.trim() || null,
     city: listing.city?.trim() || null,
@@ -52,6 +59,7 @@ export function buildGeoTruth(listing: Pick<
   if (!coordinate) {
     return {
       ...common,
+      precision,
       availability: "unavailable",
       coordinate: null,
       exactOriginAllowed: false,
@@ -65,6 +73,7 @@ export function buildGeoTruth(listing: Pick<
   if (precision === "exact") {
     return {
       ...common,
+      precision: "exact",
       availability: "exact",
       coordinate,
       exactOriginAllowed: true,
@@ -75,6 +84,7 @@ export function buildGeoTruth(listing: Pick<
   if (precision === "neighborhood_centroid" || precision === "city_centroid") {
     return {
       ...common,
+      precision,
       availability: "context_only",
       coordinate,
       exactOriginAllowed: false,
@@ -84,6 +94,7 @@ export function buildGeoTruth(listing: Pick<
 
   return {
     ...common,
+    precision,
     availability: "unavailable",
     coordinate: null,
     exactOriginAllowed: false,
@@ -91,10 +102,10 @@ export function buildGeoTruth(listing: Pick<
   };
 }
 
-export function isExactGeoTruth(value: GeoTruth): value is GeoTruth & {
-  availability: "exact";
-  coordinate: { latitude: number; longitude: number };
-  exactOriginAllowed: true;
-} {
-  return value.availability === "exact" && value.exactOriginAllowed && value.coordinate != null;
+export function isExactGeoTruth(value: GeoTruth): value is ExactGeoTruth {
+  return value.precision === "exact" &&
+    value.availability === "exact" &&
+    value.exactOriginAllowed &&
+    value.coordinate != null &&
+    value.reason === "exact_source_coordinates";
 }
