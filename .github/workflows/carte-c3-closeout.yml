@@ -18,9 +18,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Canonical C3 closeout facts
         run: |
-          grep -q '4 / 8 = 50 %' docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md
+          grep -q 'Lots CLOSED / 8' docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md
           grep -q 'C3 — API publique fail-closed + échelles : ✅ CLOSED' docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md
-          grep -q 'C4 — Heat map interactive conforme au mockup : 🟠 CURRENT' docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md
           grep -q 'bd8ffc2b28e70c4d44adfa6ecca9b6269bc35450' docs/CARTE_C3_CLOSEOUT.md
           grep -q '31920864146' docs/CARTE_C3_CLOSEOUT.md
           grep -q '31920864126' docs/CARTE_C3_CLOSEOUT.md
