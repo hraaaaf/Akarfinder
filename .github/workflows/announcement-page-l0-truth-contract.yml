@@ -1,0 +1,49 @@
+name: Announcement Page L0 Truth Contract
+
+on:
+  pull_request:
+    paths:
+      - "docs/ANNOUNCEMENT_PAGE_ULTRA_PREMIUM_ROADMAP.md"
+      - "lib/property-detail/announcement-page-truth-contract-v1.ts"
+      - "scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts"
+      - ".github/workflows/announcement-page-l0-truth-contract.yml"
+  push:
+    branches:
+      - main
+      - agent/announcement-page-l0-truth-contract
+    paths:
+      - "docs/ANNOUNCEMENT_PAGE_ULTRA_PREMIUM_ROADMAP.md"
+      - "lib/property-detail/announcement-page-truth-contract-v1.ts"
+      - "scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts"
+      - ".github/workflows/announcement-page-l0-truth-contract.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  truth-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ANN-L0 targeted truth-contract tests
+        run: npx tsx --test scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts
+
+      - name: Existing listing truth boundaries
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/listing-detail-boundary.test.ts
+          scripts/scrapers/__tests__/p10img-image-policy.test.ts
+          scripts/scrapers/__tests__/real-proximity-engine.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
