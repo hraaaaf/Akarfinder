@@ -220,7 +220,7 @@ export class SupabaseMarketComparableCandidateRepository implements MarketCompar
         .select("id, source_name")
         .in("id", sourceOfferIds),
       this.client
-        .from("property_observations")
+        .from("source_offer_observations")
         .select("source_offer_id, observed_at, displayed_price, surface_m2")
         .in("source_offer_id", sourceOfferIds)
         .order("observed_at", { ascending: false })
