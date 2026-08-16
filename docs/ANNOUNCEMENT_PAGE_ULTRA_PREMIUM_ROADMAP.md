@@ -2,8 +2,8 @@
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
 **Version : 2026-08-16**  
-**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 NEXT**  
-**Progression stricte : 60 / 100 %.**
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 ✅ CLOSED ; ANN-L9 NEXT**  
+**Progression stricte : 70 / 100 %.**
 
 > Ce document est la sous-roadmap normative du chantier de refonte de `/listings/[id]`. `docs/ROADMAP.md` reste le registre canonique global AkarFinder. Les pourcentages ci-dessous sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
 
@@ -104,13 +104,25 @@
 - Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L7_CLOSEOUT.md`.
 - **Crédit officiel ANN-L7 : +6 %. Progression cumulée : 60 %. Prochain chemin critique : ANN-L8 Marché & comparables.**
 
+## 0.8 Closeout ANN-L8 — Marché & comparables ✅
+
+- **PR #757 ✅ MERGED** — merge `32208e647fb599a72f5efd46951a4e5aa2b366ed` ; exact head certifié `5208f5dcf306babedecdfcf571f71421384511fa`.
+- Gate dédié `Announcement Page L8 Market Comparables`, run `31952276940` : **97/97 tests PASS**, TypeScript, production build, Chromium ciblé et upload artefact **SUCCESS**.
+- Artefact visuel `9265006536`, digest `sha256:c1cced5e80f1f932159518d18a3a7c98402756a0aa71b400376987bfc665f5f3` ; **8/8 captures, 0 finding**.
+- `MarketComparableSet` reste fail-closed : minimum 3 comparables vérifiés, données ≤90 jours, même ville/type/transaction, surface ±35 % si connue, déduplication par cluster et provenance obligatoire.
+- Distribution calculée sur tout l'échantillon certifié avant cap public : P25 / médiane / P75, nombre de comparables observés et position du prix demandé contre la distribution.
+- Repository Market Index read-only, `MARKET_INDEX_READ_ENABLED` false par défaut ; ancien benchmark Yakeey maintenu distinct comme référence indicative, jamais promu en comparable réel.
+- Le premier audit visuel a produit un faux négatif à cause de `innerText()` + `text-transform: uppercase`; correction vers `textContent()` puis certification 8/8 sans finding.
+- Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L8_CLOSEOUT.md`.
+- **Crédit officiel ANN-L8 : +10 %. Progression cumulée : 70 %. Prochain chemin critique : ANN-L9 AkarEstimate & historique.**
+
 ## 1. Vision produit
 
 Transformer la fiche actuelle en une expérience immobilière mobile-first, ultra premium, aussi simple à lire qu'une grande fiche Zillow-like mais différenciée par les forces propres d'AkarFinder : vérité des données, provenance, multi-source, fiabilité, intelligence marché Maroc, expérience quartier mesurée et personnalisation `Mon Projet`.
 
 La page ne doit pas être un clone graphique de Zillow. **L'architecture d'information peut reprendre les meilleures conventions du marché ; l'identité visuelle reste celle du Search AkarFinder réel.**
 
-Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell ; ANN-L2 a livré le contrat média ; ANN-L3 a livré le Property Core ; ANN-L4 a consolidé l'intelligence AkarFinder ; ANN-L5 a livré la fondation géographique provider-agnostic ; ANN-L6 a livré `Vivre ici`. ANN-L7 a livré `Street Reality`. ANN-L8 ouvre maintenant `Marché & comparables`.
+Référence visuelle validée : mockup mobile avec hero immobilier, prix/titre/facts, bloc AkarScore, description, localisation et dock `Demander une visite / WhatsApp`. ANN-L1 a matérialisé la référence de shell ; ANN-L2 a livré le contrat média ; ANN-L3 a livré le Property Core ; ANN-L4 a consolidé l'intelligence AkarFinder ; ANN-L5 a livré la fondation géographique provider-agnostic ; ANN-L6 a livré `Vivre ici` ; ANN-L7 a livré `Street Reality` ; ANN-L8 a livré `Marché & comparables`. ANN-L9 ouvre maintenant `AkarEstimate & historique`.
 
 ## 2. Doctrine non négociable
 
@@ -417,11 +429,11 @@ Implémentation : recherche d'imagerie street-level autour du point admissible, 
 
 Gate CLOSED : exact head `d46ba0dde69bb7c183998deb08f3ff96c4a780be`, run `31950387903` SUCCESS, **64/64 tests PASS**, production build vert et **8/8 captures, 0 finding**. Détails : `docs/ANNOUNCEMENT_PAGE_L7_CLOSEOUT.md`.
 
-### ANN-L8 — Marché & comparables — 10 %
+### ANN-L8 — Marché & comparables — 10 % — ✅ CLOSED
 
-Implémentation : service canonique de comparables basé sur type, transaction, zone, surface, fraîcheur et déduplication. Sorties : comparables, distribution prix/m², médiane, percentile, taille échantillon et fenêtre temporelle.
+Implémentation : service canonique de comparables basé sur type, transaction, zone, surface, fraîcheur et déduplication. Sorties : comparables, distribution prix/m², médiane, position du bien, taille échantillon et fenêtre temporelle. React consomme uniquement le modèle certifié.
 
-Gate : pas de `mockListings`, pas de comparable non traçable, minimum statistique versionné, contrôle outliers.
+Gate CLOSED : exact head `5208f5dcf306babedecdfcf571f71421384511fa`, run `31952276940` SUCCESS, **97/97 tests PASS**, production build vert, **8/8 captures + 0 finding**, aucun comparable synthétique/non traçable, minimum 3, fraîcheur ≤90 jours, clusters vérifiés, provenance obligatoire, distribution sur l'échantillon complet et activation Market Index fail-closed. Détails : `docs/ANNOUNCEMENT_PAGE_L8_CLOSEOUT.md`.
 
 ### ANN-L9 — AkarEstimate & historique — 6 %
 
@@ -508,11 +520,11 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L5 | 9 % | ✅ CLOSED | 9 % |
 | ANN-L6 | 12 % | ✅ CLOSED | 12 % |
 | ANN-L7 | 6 % | ✅ CLOSED | 6 % |
-| ANN-L8 | 10 % | NEXT | 0 % |
-| ANN-L9 | 6 % | NOT_STARTED | 0 % |
+| ANN-L8 | 10 % | ✅ CLOSED | 10 % |
+| ANN-L9 | 6 % | NEXT | 0 % |
 | ANN-L10 | 7 % | NOT_STARTED | 0 % |
 | ANN-L11 | 6 % | NOT_STARTED | 0 % |
 | ANN-L12 | 5 % | NOT_STARTED | 0 % |
 | ANN-L13 | 6 % | NOT_STARTED | 0 % |
 
-**Progression officielle actuelle : 54 / 100 %.**
+**Progression officielle actuelle : 70 / 100 %.**
