@@ -67,6 +67,7 @@ describe("ANN-L7 Street Reality server orchestration", () => {
           computed_geometry: { type: "Point", coordinates: [-6.8480, 33.9909] },
           captured_at: "2026-07-01T10:00:00Z",
           thumb_1024_url: "https://images.example.test/123.jpg",
+          creator: { id: "user-123", username: "service_mapper" },
         }] });
       },
     });
@@ -76,6 +77,7 @@ describe("ANN-L7 Street Reality server orchestration", () => {
     assert.equal(model.referenceKind, "property");
     assert.equal(model.providerId, "mapillary");
     assert.equal(model.assets.length, 1);
+    assert.equal(model.assets[0]?.creatorUsername, "service_mapper");
   });
 
   it("returns hidden without provider config and never invents fallback imagery", async () => {
