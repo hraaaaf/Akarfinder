@@ -7,6 +7,10 @@ import { buildPublicPropertyDetailV2 } from "@/lib/property-detail/public-proper
 import { queryOwnerListingDetail } from "@/lib/seller/owner-listing-detail";
 import { canShowInternalListingDetail } from "@/lib/sources/source-access-registry";
 
+// Owner media uses short-lived signed Storage URLs. Never freeze a listing detail
+// response into a static artifact that could outlive those credentials.
+export const dynamic = "force-dynamic";
+
 function isSafeHttpUrl(value: string | null | undefined): value is string {
   if (!value) return false;
   try {

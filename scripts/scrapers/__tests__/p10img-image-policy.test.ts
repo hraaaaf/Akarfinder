@@ -51,6 +51,7 @@ describe("P10IMG — indexed_only listings", () => {
       ...base(),
       source_access_level: "indexed_only" as const,
       image_permission_status: "allowed" as const,
+      can_show_gallery: true,
       gallery_image_urls: ["/images/a.jpg", "/images/b.jpg"],
     } as Listing;
     assert.equal(canDisplayGallery(listing), false);
@@ -126,14 +127,16 @@ describe("P10IMG — partner_full + allowed", () => {
     assert.equal(canDisplayRealImage(listing), true);
   });
 
-  test("canDisplayGallery returns true for partner_full + allowed + gallery", () => {
+  test("canDisplayGallery returns true for partner_full + allowed + explicit gallery capability", () => {
     const listing = {
       ...base(),
       source_access_level: "partner_full" as const,
       image_permission_status: "allowed" as const,
+      can_show_gallery: true,
       gallery_image_urls: ["/images/a.jpg", "/images/b.jpg"],
     } as Listing;
     assert.equal(canDisplayGallery(listing), true);
+    assert.equal(canDisplayGallery({ ...listing, can_show_gallery: false }), false);
   });
 
   test("getListingImageMode returns real_image for partner_full + allowed", () => {
@@ -165,6 +168,7 @@ describe("P10IMG — preview_allowed + allowed", () => {
       ...base(),
       source_access_level: "preview_allowed" as const,
       image_permission_status: "allowed" as const,
+      can_show_gallery: true,
       gallery_image_urls: ["/images/a.jpg"],
     } as Listing;
     assert.equal(canDisplayGallery(listing), false);
@@ -208,6 +212,7 @@ describe("P10IMG — missing image URL falls back safely", () => {
       ...base(),
       source_access_level: "partner_full" as const,
       image_permission_status: "allowed" as const,
+      can_show_gallery: true,
       gallery_image_urls: [],
     } as Listing;
     assert.equal(canDisplayGallery(listing), false);

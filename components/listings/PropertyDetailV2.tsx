@@ -1,13 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
 import { CompareBar } from "@/components/compare/CompareBar";
 import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
-import { DbProviderThumbnail } from "@/components/listings/DbProviderThumbnail";
-import { ListingVisual } from "@/components/listings/ListingVisual";
+import { PropertyMediaGallery } from "@/components/listings/PropertyMediaGallery";
 import { VisitRequestPanel } from "@/components/listings/VisitRequestPanel";
 import { WhatsAppCTA } from "@/components/listings/WhatsAppCTA";
-import { getListingImageMode, getImageAttribution } from "@/lib/listings/image-policy";
 import { canShowContactActions } from "@/lib/listings/listing-boundary";
 import type { Listing } from "@/lib/listings/types";
 import { formatPrice, formatSurface } from "@/lib/listings/utils";
@@ -68,8 +65,6 @@ export function PropertyDetailV2({
   listing: Listing;
   detail: PublicPropertyDetailV2;
 }) {
-  const imageMode = getListingImageMode(listing);
-  const attribution = getImageAttribution(listing);
   const showContactActions = canShowContactActions(listing);
   const location = listing.neighborhood ? `${listing.city}, ${listing.neighborhood}` : listing.city;
   const allDetails = [
@@ -87,53 +82,12 @@ export function PropertyDetailV2({
 
       <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         <div className="space-y-5">
-          <section className="overflow-hidden rounded-[1.6rem] border border-[#eadfca] bg-white shadow-[0_18px_54px_rgba(7,27,51,0.16)]">
-            <div className="relative h-[280px] sm:h-[460px]">
-              {imageMode === "db_provider_thumbnail" ? (
-                <DbProviderThumbnail
-                  listing={listing}
-                  thumbnailUrl={listing.thumbnail_url!}
-                  className="absolute inset-0 h-full w-full"
-                  imgClassName="absolute inset-0 h-full w-full object-cover"
-                />
-              ) : imageMode !== "fallback_visual" ? (
-                <Image
-                  src={listing.main_image_url!}
-                  alt={listing.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 800px"
-                  priority
-                />
-              ) : (
-                <ListingVisual listing={listing} className="absolute inset-0 h-full w-full" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/25" />
-              <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-                <span className="rounded-full bg-white px-3 py-1.5 text-[11px] font-extrabold text-deepblue shadow">
-                  {transactionLabel(listing.transaction_type)}
-                </span>
-                <span className="rounded-full bg-black/55 px-3 py-1.5 text-[11px] font-bold text-white backdrop-blur-sm">
-                  {listing.property_type}
-                </span>
-              </div>
-              <div className="absolute bottom-5 left-5 right-5">
-                <p className="text-[2rem] font-extrabold tracking-[-0.05em] text-white sm:text-[3rem]">
-                  {formatPrice(listing.price, listing.currency)}
-                </p>
-                <p className="mt-2 text-[14px] font-bold text-white/90 sm:text-[17px]">{location}</p>
-              </div>
-              {imageMode === "fallback_visual" ? (
-                <span className="absolute bottom-3 right-4 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-medium text-white/75 backdrop-blur-sm">
-                  Visuel illustratif
-                </span>
-              ) : attribution ? (
-                <span className="absolute bottom-3 right-4 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-medium text-white/75 backdrop-blur-sm">
-                  {attribution}
-                </span>
-              ) : null}
-            </div>
-          </section>
+          <PropertyMediaGallery
+            listing={listing}
+            priceLabel={formatPrice(listing.price, listing.currency)}
+            location={location}
+            transactionLabel={transactionLabel(listing.transaction_type)}
+          />
 
           <section className="rounded-[1.4rem] border border-[#eadfca] bg-white p-5 shadow-[0_8px_28px_rgba(7,27,51,0.06)]">
             <h1 className="text-[1.7rem] font-extrabold leading-tight tracking-[-0.04em] text-deepblue sm:text-[2.3rem]">
