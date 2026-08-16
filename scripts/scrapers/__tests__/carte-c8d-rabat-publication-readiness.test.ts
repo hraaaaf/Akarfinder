@@ -46,10 +46,12 @@ test("C8D documents the current C3 four-slug metric boundary", () => {
   for (const slug of ["agdal", "hay-riad", "souissi", "hassan"]) assert.ok(metricsReader.includes(`\"${slug}\"`));
 });
 
-test("C8 status does not invent a completion percentage or close C8D prematurely", () => {
+test("C8 status records the verified live dry-run without inventing readiness", () => {
   const status = read("docs/CARTE_C8_RABAT_EXTENSION_STATUS.md");
   assert.match(status, /Aucun pourcentage C8 n’est publié/);
-  assert.match(status, /C8D — Resolver shadow \+ autorité proposée \+ maturité marché \+ récupération Agenz ✅ EVIDENCE MERGED \/ LIVE GATE PENDING/);
-  assert.match(status, /dry-run live post-merge[^\n]*reste à exécuter/);
+  assert.match(status, /C8D — Resolver shadow \+ autorité proposée \+ maturité marché \+ récupération Agenz ✅ LIVE DRY-RUN VERIFIED/);
+  assert.match(status, /run live `31960247064`/);
+  assert.match(status, /prix récupérable : \*\*8\/9\*\* ; surface récupérable : \*\*0\/9\*\*/);
   assert.match(status, /nouvelles activations publiques C8 : \*\*0\*\*/);
+  assert.match(status, /mutations DB C8 : \*\*0\*\*/);
 });
