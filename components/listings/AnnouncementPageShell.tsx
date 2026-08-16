@@ -7,6 +7,7 @@ import { ui } from "@/components/ui/design-system";
 import type { LivingHereModel } from "@/lib/geo/living-here";
 import type { StreetRealityModel } from "@/lib/geo/street-reality";
 import type { Listing } from "@/lib/listings/types";
+import type { MarketComparableSet } from "@/lib/property-detail/market-comparables";
 import type { PublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
 
 export function AnnouncementPageShell({
@@ -14,6 +15,7 @@ export function AnnouncementPageShell({
   detail,
   livingHere = null,
   streetReality = null,
+  marketComparables = null,
   mapStyleUrl = process.env.NEXT_PUBLIC_AKAR_MAP_STYLE_URL ?? null,
   visualQa = false,
 }: {
@@ -21,6 +23,7 @@ export function AnnouncementPageShell({
   detail: PublicPropertyDetailV2;
   livingHere?: LivingHereModel | null;
   streetReality?: StreetRealityModel | null;
+  marketComparables?: MarketComparableSet | null;
   mapStyleUrl?: string | null;
   visualQa?: boolean;
 }) {
@@ -38,6 +41,7 @@ export function AnnouncementPageShell({
             detail={detail}
             livingHere={livingHere}
             streetReality={streetReality}
+            marketComparables={marketComparables}
             mapStyleUrl={mapStyleUrl}
           />
         </Container>
