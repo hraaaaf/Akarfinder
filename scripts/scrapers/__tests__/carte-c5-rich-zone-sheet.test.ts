@@ -13,10 +13,24 @@ describe("Carte C5 — rich zone sheet runtime", () => {
 
   it("keeps live metrics supplied by C3 and outlaws the historical benchmark path", () => {
     assert.ok(sheet.includes("feature.properties.sampleCount"));
+    assert.ok(sheet.includes("feature.properties.marketMetrics"));
     assert.ok(sheet.includes("metricLabel"));
     assert.equal(sheet.includes("MARKET_DATA"), false);
     assert.equal(sheet.includes("benchmark"), false);
     assert.equal(sheet.includes("priceSignal"), false);
+  });
+
+  it("matches the locked rich-sheet structure without inventing unavailable data", () => {
+    assert.ok(sheet.includes("data-akarfinder-zone-polygon-preview"));
+    assert.ok(sheet.includes("data-akarfinder-zone-kpi-grid"));
+    assert.ok(sheet.includes("Prix médian / m²"));
+    assert.ok(sheet.includes("Densité"));
+    assert.ok(sheet.includes("Annonces"));
+    assert.ok(sheet.includes("Confiance des données"));
+    assert.ok(sheet.includes("Catégories dominantes"));
+    assert.ok(sheet.includes("Tendance 6 mois"));
+    assert.ok(sheet.includes("Historique insuffisant"));
+    assert.ok(sheet.includes("Données insuffisantes pour une classification certifiée"));
   });
 
   it("enriches context only through the canonical neighborhood registry", () => {
