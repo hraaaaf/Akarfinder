@@ -1,0 +1,51 @@
+name: Carte C2D Rabat Mouldar Offline Price Gate
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/carte-c2d-rabat-mouldar-offline.ts"
+      - ".github/workflows/carte-c2d-rabat-mouldar-offline.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit-rabat-mouldar-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - name: Enforce offline-only contract
+        run: |
+          if grep -q 'fetchHtml\|isAllowedByRobots' scripts/audits/carte-c2d-rabat-mouldar-offline.ts; then
+            echo 'C2D must remain offline-only'
+            exit 1
+          fi
+          grep -q 'extractResidualPriceV4' scripts/audits/carte-c2d-rabat-mouldar-offline.ts
+      - name: Audit stored Mouldar price evidence
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/carte-c2d-rabat-mouldar-offline.ts
+      - name: Enforce read-only contract
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/carte-c2d-rabat-mouldar-offline.json');
+          if(r.readOnly!==true) throw new Error('read-only drift');
+          if(r.thirdPartyFetches!==0) throw new Error('third-party fetch drift');
+          if(r.source!=='mouldar_v4_stored_evidence_only') throw new Error(`unexpected source ${r.source}`);
+          if(!['C2D_OFFLINE_RECOVERY_REVIEWABLE','C2D_OFFLINE_RECOVERY_INSUFFICIENT'].includes(r.verdict)) throw new Error(`unexpected verdict ${r.verdict}`);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: carte-c2d-rabat-mouldar-offline-${{ github.run_id }}
+          path: data/audits/runtime/carte-c2d-rabat-mouldar-offline.json
+          if-no-files-found: warn
+          retention-days: 30
