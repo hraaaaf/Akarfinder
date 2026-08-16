@@ -11,10 +11,9 @@ describe("Carte C4 — canonical closeout", () => {
   const status = source("docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md");
   const closeout = source("docs/CARTE_C4_CLOSEOUT.md");
 
-  it("advances strict roadmap to 5/8 with C5 current", () => {
-    assert.ok(status.includes("**5 / 8 = 62,5 %**"));
+  it("preserves C4 closed state after later lots advance", () => {
+    assert.ok(status.includes("Lots CLOSED / 8"));
     assert.ok(status.includes("C4 — Heat map interactive conforme au mockup : ✅ CLOSED"));
-    assert.ok(status.includes("C5 — Fiche quartier riche : 🟠 CURRENT"));
   });
 
   it("records exact C4 merge and browser evidence", () => {
@@ -32,10 +31,9 @@ describe("Carte C4 — canonical closeout", () => {
     }
   });
 
-  it("keeps C5 handoff truth-safe", () => {
+  it("preserves the historical C5 handoff contract", () => {
     assert.ok(closeout.includes("métriques live exclusivement C3"));
     assert.ok(closeout.includes("Souissi"));
     assert.ok(closeout.includes("aucun contexte inventé"));
-    assert.ok(status.includes("PR de préparation empilée : #706"));
   });
 });

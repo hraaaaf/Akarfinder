@@ -1,0 +1,26 @@
+name: Carte C5 Canonical Closeout
+
+on:
+  pull_request:
+    paths:
+      - "docs/CARTE_C5_CLOSEOUT.md"
+      - "docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md"
+      - "scripts/scrapers/__tests__/carte-c5-closeout.test.ts"
+      - ".github/workflows/carte-c5-closeout.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-c5-closeout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: C5 canonical closeout
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c5-closeout.test.ts

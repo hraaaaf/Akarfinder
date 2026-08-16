@@ -8,18 +8,19 @@ Closeout C1 : `docs/MARKET_ZONES_C1_CLOSEOUT.md`.
 Closeout C2 : `docs/CARTE_C2_CLOSEOUT.md`.
 Closeout C3 : `docs/CARTE_C3_CLOSEOUT.md`.
 Closeout C4 : `docs/CARTE_C4_CLOSEOUT.md`.
+Closeout C5 : `docs/CARTE_C5_CLOSEOUT.md`.
 
 ## Progression stricte
 
-Lots CLOSED / 8 : **5 / 8 = 62,5 %**.
+Lots CLOSED / 8 : **6 / 8 = 75 %**.
 
 - C0 — Référentiel + audit de récupération : ✅ CLOSED
 - C1 — Géométrie quartier certifiée : ✅ CLOSED
 - C2 — Dataset métriques quartier v2 : ✅ CLOSED
 - C3 — API publique fail-closed + échelles : ✅ CLOSED
 - C4 — Heat map interactive conforme au mockup : ✅ CLOSED
-- C5 — Fiche quartier riche : 🟠 CURRENT
-- C6 — Fondation « nos annonces » : ⏭️
+- C5 — Fiche quartier riche : ✅ CLOSED
+- C6 — Fondation « nos annonces » : 🟠 CURRENT
 - C7 — Certification 10/10 + closeout : ⏭️
 
 ## C0 — référentiel verrouillé
@@ -125,16 +126,41 @@ Preuves exact-head PR #703 `17a027bef93239355cb614251668e63fff05e71e` :
 
 Inspection browser : mobile 390 px et desktop 1280 px certifiés avec interaction MapLibre réelle, panneau/CTA fonctionnels et 0 page error / 0 échec de requête C3 dans le rapport final.
 
-## C5 — CURRENT
+## C5 — fiche zone riche certifiée
 
-Objectif : enrichir la fiche de zone sans modifier la vérité statistique C2/C3.
+La fiche de zone Rabat est désormais enrichie sans modifier la vérité statistique C2/C3.
 
-Contrat préparé :
-- métriques live exclusivement C3 ;
-- contexte quartier canonique séparé des métriques ;
-- Agdal / Hay Riad / Hassan peuvent réutiliser les repères et tags déjà présents ;
-- Souissi ne reçoit aucun contexte inventé si le référentiel canonique ne le fournit pas ;
-- Search CTA et disclaimer `market_zone` conservés ;
-- fiche compacte mobile, sans masquer la navigation basse.
+Contrats certifiés :
+- métrique active issue exclusivement de la feature C3 sélectionnée ;
+- contexte canonique visuellement séparé de la métrique ;
+- Agdal / Hay Riad / Hassan réutilisent uniquement tags et repères déjà présents ;
+- Souissi n'affiche aucun contexte ni lien quartier inventé ;
+- Search CTA filtré sur ville, district et transaction ;
+- disclaimer `market_zone` permanent ;
+- fiche mobile scrollable et hors bottom-nav ;
+- changement Prix → Densité conserve le contexte mais remplace la métrique via C3.
 
-PR de préparation empilée : #706, contrat gate `31922460927` : SUCCESS. Elle ne doit être mergée qu'après retarget/synchronisation sur le `main` contenant le closeout C4.
+Preuves exact-head PR #708 `43f402031155873ff48abb2c279f341c53a5819b` :
+- C5 runtime/build `31923996230` : SUCCESS ;
+- C5 browser `31923996206` : SUCCESS ;
+- artefact `9257273391` ; digest `sha256:809b78c251096551c5e9e456807069ece2988685ea05e2556fd5fb2ca2d1add7` ;
+- 12 captures : 4 zones × 390 / 430 / 1280 ;
+- report `ok: true`, 0 page error, 0 échec C3 ;
+- merge #708 : `5b36197304bcb3c8c8cd94c5432ce6d3111c476c`.
+
+La collision mobile a été corrigée à partir d'une mesure réelle : bas de fiche 772 px, haut de nav 768 px sur viewport 390 ; offset final `bottom-[90px]` et assertion stricte conservée.
+
+## C6 — CURRENT
+
+Objectif : poser la fondation « nos annonces » sans créer de second modèle d'ownership.
+
+Direction verrouillée en préparation :
+- réutiliser `professional_listing_ownership` et le cycle existant `claimed / verified / revoked` ;
+- exposition Carte uniquement pour ownership explicitement `verified` ;
+- `claimed`, absent ou inconnu reste fail-closed ;
+- ajouter un reader borné read-only des annonces verified réelles ;
+- réutiliser la résolution géographique certifiée pour toute projection vers `market_zone` ;
+- garder l'inventaire propre séparé de Prix / `listing_count` / `listing_density_km2` C2/C3 ;
+- aucun write, ranking mutation ou activation publique implicite.
+
+PR de préparation : #712, gate contrat `31923952370` : SUCCESS. Elle reste à intégrer après le closeout C5.
