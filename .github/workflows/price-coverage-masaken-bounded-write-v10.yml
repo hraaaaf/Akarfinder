@@ -1,0 +1,91 @@
+name: SEARCH Price Coverage Masaken Bounded Write v10
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/scrapers/price-coverage-masaken-bounded-write-v10.ts'
+      - 'scripts/scrapers/__tests__/price-coverage-masaken-bounded-write-v10.test.ts'
+      - '.github/workflows/price-coverage-masaken-bounded-write-v10.yml'
+  workflow_dispatch:
+    inputs:
+      write_confirmation:
+        description: 'Type WRITE_100_MASAKEN_RELIABLE_PRICES_V10 to enable the bounded production write; anything else is read-only'
+        required: true
+        type: string
+        default: 'READ_ONLY'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/price-coverage-masaken-bounded-write-v10.test.ts
+      - run: npx tsc --noEmit
+
+  production-canary-read-only:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: certify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+      PRICE_COVERAGE_V10_WRITE: 'false'
+      PRICE_COVERAGE_V10_PAGE_SIZE: '120'
+      PRICE_COVERAGE_V10_PAGES: '4'
+      PRICE_COVERAGE_V10_MAX_WRITES: '100'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify production read credentials
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Enforce read-only canary
+        run: test "$PRICE_COVERAGE_V10_WRITE" = 'false'
+      - name: Revalidate Masaken cohort without writes
+        run: npx tsx scripts/scrapers/price-coverage-masaken-bounded-write-v10.ts
+
+  production-bounded-write:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.write_confirmation == 'WRITE_100_MASAKEN_RELIABLE_PRICES_V10' }}
+    needs: production-canary-read-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+      PRICE_COVERAGE_V10_WRITE: 'true'
+      PRICE_COVERAGE_V10_WRITE_CONFIRMATION: ${{ github.event.inputs.write_confirmation }}
+      PRICE_COVERAGE_V10_PAGE_SIZE: '120'
+      PRICE_COVERAGE_V10_PAGES: '4'
+      PRICE_COVERAGE_V10_MAX_WRITES: '100'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify exact production write confirmation
+        run: test "$PRICE_COVERAGE_V10_WRITE_CONFIRMATION" = 'WRITE_100_MASAKEN_RELIABLE_PRICES_V10'
+      - name: Verify production write credentials
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Execute Masaken bounded write
+        run: npx tsx scripts/scrapers/price-coverage-masaken-bounded-write-v10.ts
