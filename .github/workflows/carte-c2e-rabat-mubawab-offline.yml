@@ -1,0 +1,51 @@
+name: Carte C2E Rabat Mubawab Offline Price Gate
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audits/carte-c2e-rabat-mubawab-offline.ts"
+      - ".github/workflows/carte-c2e-rabat-mubawab-offline.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit-rabat-mubawab-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - name: Enforce offline-only contract
+        run: |
+          if grep -q 'fetchHtml\|isAllowedByRobots' scripts/audits/carte-c2e-rabat-mubawab-offline.ts; then
+            echo 'C2E must remain offline-only'
+            exit 1
+          fi
+          grep -q 'extractResidualPriceV4' scripts/audits/carte-c2e-rabat-mubawab-offline.ts
+      - name: Audit stored Mubawab price evidence
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/audits/carte-c2e-rabat-mubawab-offline.ts
+      - name: Enforce read-only contract
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/runtime/carte-c2e-rabat-mubawab-offline.json');
+          if(r.readOnly!==true) throw new Error('read-only drift');
+          if(r.thirdPartyFetches!==0) throw new Error('third-party fetch drift');
+          if(r.source!=='mubawab_v4_stored_evidence_only') throw new Error(`unexpected source ${r.source}`);
+          if(!['C2E_OFFLINE_RECOVERY_REVIEWABLE','C2E_OFFLINE_RECOVERY_INSUFFICIENT'].includes(r.verdict)) throw new Error(`unexpected verdict ${r.verdict}`);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: carte-c2e-rabat-mubawab-offline-${{ github.run_id }}
+          path: data/audits/runtime/carte-c2e-rabat-mubawab-offline.json
+          if-no-files-found: warn
+          retention-days: 30
