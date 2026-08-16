@@ -1,0 +1,67 @@
+name: ANN-L11 UI Patch
+
+on:
+  push:
+    branches:
+      - agent/announcement-page-l11-pro-conversion
+    paths:
+      - ".github/workflows/announcement-page-l11-ui-patch.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/announcement-page-l11-pro-conversion
+          fetch-depth: 0
+      - name: Patch ANN-L11 composition
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('components/listings/PropertyDetailV2.tsx')
+          text = p.read_text()
+
+          replacements = [
+            ('import { VisitRequestPanel } from "@/components/listings/VisitRequestPanel";\nimport { WhatsAppCTA } from "@/components/listings/WhatsAppCTA";\n', 'import { ProfessionalConversionCard } from "@/components/listings/ProfessionalConversionCard";\n'),
+            ('import { canShowContactActions } from "@/lib/listings/listing-boundary";\n', 'import type { ProConversionModel } from "@/lib/listings/pro-conversion";\n'),
+            ('  marketComparables = null,\n  mapStyleUrl = null,\n', '  marketComparables = null,\n  proConversion,\n  mapStyleUrl = null,\n'),
+            ('  marketComparables?: MarketComparableSet | null;\n  mapStyleUrl?: string | null;\n', '  marketComparables?: MarketComparableSet | null;\n  proConversion: ProConversionModel;\n  mapStyleUrl?: string | null;\n'),
+            ('  const showContactActions = canShowContactActions(listing);\n', ''),
+            ('          <div className="mt-6">\n            <AkarInsightCard detail={detail} />\n          </div>\n', '          <div className="mt-6">\n            <AkarInsightCard detail={detail} />\n          </div>\n\n          <div className="mt-4 lg:hidden">\n            <ProfessionalConversionCard\n              listing={listing}\n              model={proConversion}\n              priceLabel={core.priceLabel}\n              location={core.location}\n              mobileIdentityOnly\n            />\n          </div>\n'),
+          ]
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'Expected exactly one PropertyDetailV2 occurrence, got {count}: {old[:80]!r}')
+              text = text.replace(old, new)
+
+          pattern = re.compile(r'\n        <aside className="space-y-4 lg:sticky lg:top-6">.*?\n        </aside>', re.S)
+          replacement = '''\n        <aside className="hidden lg:block lg:sticky lg:top-6">\n          <ProfessionalConversionCard\n            listing={listing}\n            model={proConversion}\n            priceLabel={core.priceLabel}\n            location={core.location}\n          />\n        </aside>'''
+          text, count = pattern.subn(replacement, text, count=1)
+          if count != 1:
+              raise SystemExit(f'Expected exactly one legacy sidebar, got {count}')
+          p.write_text(text)
+
+          t = Path('scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts')
+          test_text = t.read_text()
+          old = 'assert.ok(shell.includes("pb-24 lg:pb-0"));'
+          new = 'assert.ok(shell.includes("pb-40 lg:pb-0"));'
+          if test_text.count(old) != 1:
+              raise SystemExit('Expected legacy shell padding assertion exactly once')
+          t.write_text(test_text.replace(old, new))
+          PY
+          git diff -- components/listings/PropertyDetailV2.tsx scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts
+      - name: Commit ANN-L11 composition
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add components/listings/PropertyDetailV2.tsx scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts
+          git commit -m 'feat(listing): compose ANN-L11 professional conversion surfaces'
+          git push origin HEAD:agent/announcement-page-l11-pro-conversion
