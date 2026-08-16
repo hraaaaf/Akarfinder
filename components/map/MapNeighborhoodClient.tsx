@@ -89,6 +89,7 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
     <div className="relative">
       {rabatIntelligenceActive ? (
         <>
+          <h1 className="sr-only">Carte intelligence marché à Rabat</h1>
           <style>{`
             @media (max-width: 639px) {
               [data-akarfinder-market-intelligence-map] section[aria-label="Contrôles intelligence marché"] > div:first-child {
