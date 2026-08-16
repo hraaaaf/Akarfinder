@@ -104,7 +104,7 @@ try {
         const nav = await mobileNavRect(page);
         if (!nav) throw new Error(`${district.slug}/${viewport.name}: mobile bottom navigation missing`);
         if (sheetBox.y + sheetBox.height > nav.top + 2) {
-          throw new Error(`${district.slug}/${viewport.name}: rich sheet overlaps mobile navigation`);
+          throw new Error(`${district.slug}/${viewport.name}: rich sheet overlaps mobile navigation ${JSON.stringify({ sheetBox, nav })}`);
         }
       }
 
