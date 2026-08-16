@@ -18,6 +18,7 @@ export type StreetRealityAsset = {
   capturedAt: string | null;
   thumbnailUrl: string | null;
   viewerUrl: string | null;
+  creatorUsername: string | null;
 };
 
 export type StreetRealityModel = {
@@ -79,6 +80,9 @@ function normalizedAsset(
   const capturedAt = asset.capturedAt && !Number.isNaN(Date.parse(asset.capturedAt))
     ? new Date(asset.capturedAt).toISOString()
     : null;
+  const creatorUsername = typeof asset.creatorUsername === "string" && asset.creatorUsername.trim().length > 0
+    ? asset.creatorUsername.trim()
+    : null;
 
   return {
     id: asset.id,
@@ -87,6 +91,7 @@ function normalizedAsset(
     capturedAt,
     thumbnailUrl,
     viewerUrl,
+    creatorUsername,
   };
 }
 
