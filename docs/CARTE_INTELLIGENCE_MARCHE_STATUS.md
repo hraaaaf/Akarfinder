@@ -1,185 +1,135 @@
 # Carte intelligence marché — statut canonique
 
 Date : 2026-08-16
+Statut global : **CLOSED**
 
 Référentiel cible : `docs/CARTE_INTELLIGENCE_MARCHE_TARGET.md`.
 Contrat métriques : `docs/CARTE_INTELLIGENCE_METRICS_CONTRACT.md`.
-Closeout C1 : `docs/MARKET_ZONES_C1_CLOSEOUT.md`.
-Closeout C2 : `docs/CARTE_C2_CLOSEOUT.md`.
-Closeout C3 : `docs/CARTE_C3_CLOSEOUT.md`.
-Closeout C4 : `docs/CARTE_C4_CLOSEOUT.md`.
-Closeout C5 : `docs/CARTE_C5_CLOSEOUT.md`.
-Closeout C6 : `docs/CARTE_C6_CLOSEOUT.md`.
+Closeouts :
+- C1 : `docs/MARKET_ZONES_C1_CLOSEOUT.md`
+- C2 : `docs/CARTE_C2_CLOSEOUT.md`
+- C3 : `docs/CARTE_C3_CLOSEOUT.md`
+- C4 : `docs/CARTE_C4_CLOSEOUT.md`
+- C5 : `docs/CARTE_C5_CLOSEOUT.md`
+- C6 : `docs/CARTE_C6_CLOSEOUT.md`
+- C7 : `docs/CARTE_C7_CLOSEOUT.md`
 
 ## Progression stricte
 
-Lots CLOSED / 8 : **7 / 8 = 87,5 %**.
+Lots CLOSED / 8 : **8 / 8 = 100 %**.
 
 - C0 — Référentiel + audit de récupération : ✅ CLOSED
 - C1 — Géométrie quartier certifiée : ✅ CLOSED
 - C2 — Dataset métriques quartier v2 : ✅ CLOSED
 - C3 — API publique fail-closed + échelles : ✅ CLOSED
-- C4 — Heat map interactive conforme au mockup : ✅ CLOSED
+- C4 — Heat map interactive conforme au contrat cible : ✅ CLOSED
 - C5 — Fiche quartier riche : ✅ CLOSED
 - C6 — Fondation « nos annonces » : ✅ CLOSED
-- C7 — Certification 10/10 + closeout : 🟠 CURRENT
+- C7 — Certification finale + closeout : ✅ CLOSED
 
 ## C0 — référentiel verrouillé
 
-- source produit validée : 1448×1086 ; SHA-256 `4b6912480c5ce7dce6b04c5d0f8848b0be319955d220db84d8365a76ca66eac7` ;
+- référence 1448×1086 ;
+- SHA-256 `4b6912480c5ce7dce6b04c5d0f8848b0be319955d220db84d8365a76ca66eac7` ;
 - aperçu repo : `docs/assets/carte-intelligence-marche-reference.webp` ;
-- PR #673 mergée ;
-- gate cible `31903971043` : SUCCESS ;
-- le résultat final doit reproduire structure, hiérarchie, modes, interactions, palettes et états du mockup sans hardcoder ses chiffres illustratifs.
+- aucune valeur illustrative du mockup n'est autorisée comme donnée runtime.
 
-## C1 — Market Zones Rabat certifiées
+## C1 — zones marché Rabat
 
-Décision produit : utiliser des **AkarFinder market zones** explicitement non administratives lorsque les limites officielles de quartier ne sont pas automatiquement exploitables.
+Pilote certifié : Agdal, Hay Riad, Souissi, Centre Rabat / Hassan.
 
-Pilote Rabat :
-- Agdal ≈ 7,51 km² ;
-- Hay Riad ≈ 14,87 km² ;
-- Souissi ≈ 56,49 km² ;
-- Centre Rabat / Hassan ≈ 8,25 km².
+Invariants :
+- `market_zone` explicitement non administrative ;
+- géométrie et `area_km2` recomputables ;
+- API fail-closed ;
+- aucune frontière officielle inventée.
 
-Sources de conteneurs OSM :
-- Agdal-Riyad relation `2799211` ;
-- Souissi `2799203` ;
-- Hassan `4743369`.
-
-Contrôles :
-- 0 m² d'overlap incohérent entre les quatre zones ;
-- Agdal + Hay Riad partitionnent Agdal-Riyad à l'erreur numérique près ;
-- Souissi et Centre restent confinés à leurs conteneurs sources ;
-- `area_km2` calculée depuis Polygon/MultiPolygon ;
-- API GeoJSON C1 fail-closed ;
-- aucune market zone présentée comme frontière administrative officielle.
-
-Preuves principales : PR #686 géométrie Shadow ; PR #689 API fail-closed, merge `165907bc2af02342e07a4ed57d1bce2a00062f94`.
-
-## C2 — métriques réelles certifiées
+## C2 — métriques réelles
 
 Contrat :
-- Prix = médiane observée DH/m², séparée par transaction ;
+- Prix = médiane observée DH/m² par transaction ;
 - Annonces = volume observé ;
-- Densité = volume observé / `area_km2` certifiée ;
+- Densité = volume / surface certifiée ;
 - absence de prix = `NULL`, jamais `0` ;
 - fiabilité statistique distincte de la représentativité marché.
 
-Snapshot pilote Rabat vérifié :
-- 32 listings current-resolved ;
-- 4/4 zones avec volume et densité calculables ;
-- couverture prix faible et explicitement `insufficient` lorsqu'elle ne satisfait pas la policy de fiabilité ;
-- aucun chiffre manquant n'est maquillé en valeur marché.
+## C3 — API intelligence marché
 
-Preuves principales : PR #690, #691, #693, #695 ; closeout C2 PR #697 mergée `ef611357bc29a5d2210183a089bf576337fd805f`.
+Endpoint : `/api/geo/rabat-market-intelligence?mode=<price|density|listings>&transaction=<sale|rent>`.
 
-## C3 — API intelligence marché certifiée
-
-Endpoint canary read-only :
-`/api/geo/rabat-market-intelligence?mode=<price|density|listings>&transaction=<sale|rent>`.
-
-Contrats certifiés :
-- géométrie `market_zone` Canary, `reviewed=true`, `officialBoundary=false` ;
-- `price`, `density`, `listings` réels et transaction-scopés ;
-- lecture live bornée depuis les tables de base avec résolution Geo latest-event-first ;
-- déduplication par URL canonique ;
-- Reliability Prix réutilise la policy P1C.2 versionnée ;
-- Price `insufficient` = fill neutre ;
-- échelle `snapshot_quantiles_v1` dérivée du snapshot ;
+Invariants :
+- échelles dérivées du snapshot ;
 - légende et fills issus du même calcul ;
-- invalid request, géométrie non publiable ou métriques indisponibles restent fail-closed ;
-- aucun seuil illustratif du mockup n'est utilisé comme seuil runtime.
+- Prix `insufficient` = neutre ;
+- invalid request / données indisponibles = fail-closed ;
+- aucun seuil illustratif du mockup dans le runtime.
 
-Preuves :
-- PR #698 mergée `bd8ffc2b28e70c4d44adfa6ecca9b6269bc35450` ;
-- exact head certifié `a980c829ff37239c9a39c1927682453dcdcc3e35` ;
-- C3 gate `31920864146` : SUCCESS ;
-- C1C GeoJSON compatibility gate `31920864126` : SUCCESS ;
-- artefact live `9256321998` ; digest `sha256:fe5a1dcc2de3ab17022fc2933b9cccb39724c38a0f4c62559a31b560adb438c0` ;
-- tests, TypeScript, preuve live et production build : SUCCESS.
+## C4 — heat map interactive
 
-Limite conservée : la couverture Prix Rabat reste faible. Le mode Prix doit donc afficher des zones neutres lorsque la policy les classe `insufficient`; volume et densité ne doivent pas être confondus avec une preuve de représentativité nationale.
+Certifié :
+- trois modes Prix / Densité / Annonces ;
+- Vente / Location séparés ;
+- MapLibre polygonal ;
+- clic/tap zone → district canonique → fiche ;
+- CTA Search avec contexte ;
+- états neutres explicites ;
+- expérience legacy préservée hors Rabat.
 
-## C4 — heat map interactive certifiée
+## C5 — fiche zone riche
 
-La vue Rabat de `/map` utilise désormais la heat map polygonale MapLibre C4, tout en conservant l'expérience historique pour les autres villes.
-
-Contrats certifiés :
-- trois modes `Prix / Densité / Annonces` ;
-- séparation Vente / Location ;
-- fills et légende issus de C3 ;
-- état neutre explicite pour données absentes ou `insufficient` ;
-- aucun fallback chiffré ou coloré inventé ;
-- clic/tap réel sur un polygone → district canonique → panneau zone ;
-- CTA Search filtré sur la sélection et la transaction ;
-- cockpit mobile sans overflow des tabs ;
-- H1 sémantique présent ;
-- audit Responsive compatible avec les expériences legacy et intelligence.
-
-Preuves exact-head PR #703 `17a027bef93239355cb614251668e63fff05e71e` :
-- C4 Heatmap Gate `31922357603` : SUCCESS ;
-- P1A.6 Responsive Hardening `31922357579` : SUCCESS ;
-- Final Design Accessibility `31922357533` : SUCCESS ;
-- C4 Browser Smoke `31922357584` : SUCCESS ;
-- artefact `9256782867` ; digest `sha256:f9fba92e71d1a75aa261f612f9cc0cda1421d330b5e06e465558416cbc5d827a` ;
-- merge #703 : `97d1b070d4a8cd7eb9cce18de76d12b35b167b05`.
-
-Inspection browser : mobile 390 px et desktop 1280 px certifiés avec interaction MapLibre réelle, panneau/CTA fonctionnels et 0 page error / 0 échec de requête C3 dans le rapport final.
-
-## C5 — fiche zone riche certifiée
-
-La fiche de zone Rabat est désormais enrichie sans modifier la vérité statistique C2/C3.
-
-Contrats certifiés :
-- métrique active issue exclusivement de la feature C3 sélectionnée ;
-- contexte canonique visuellement séparé de la métrique ;
-- Agdal / Hay Riad / Hassan réutilisent uniquement tags et repères déjà présents ;
-- Souissi n'affiche aucun contexte ni lien quartier inventé ;
-- Search CTA filtré sur ville, district et transaction ;
+Certifié :
+- contexte quartier uniquement depuis le référentiel canonique ;
+- Search CTA filtré ;
 - disclaimer `market_zone` permanent ;
-- fiche mobile scrollable et hors bottom-nav ;
-- changement Prix → Densité conserve le contexte mais remplace la métrique via C3.
+- layout mobile borné et scrollable ;
+- aucune métrique ou contexte inventé.
 
-Preuves exact-head PR #708 `43f402031155873ff48abb2c279f341c53a5819b` :
-- C5 runtime/build `31923996230` : SUCCESS ;
-- C5 browser `31923996206` : SUCCESS ;
-- artefact `9257273391` ; digest `sha256:809b78c251096551c5e9e456807069ece2988685ea05e2556fd5fb2ca2d1add7` ;
-- 12 captures : 4 zones × 390 / 430 / 1280 ;
-- report `ok: true`, 0 page error, 0 échec C3 ;
-- merge #708 : `5b36197304bcb3c8c8cd94c5432ce6d3111c476c`.
+## C6 — fondation « nos annonces »
 
-La collision mobile a été corrigée à partir d'une mesure réelle : bas de fiche 772 px, haut de nav 768 px sur viewport 390 ; offset final `bottom-[90px]` et assertion stricte conservée.
+Certifié :
+- ownership vérifié uniquement ;
+- vraies `property_listings` ;
+- projection market-zone via autorité géographique existante ;
+- provenance `market / AkarFinder-owned / partner` ;
+- partenaire uniquement avec validation + activation + autorisation source explicites ;
+- 0 write DB, 0 ranking mutation, 0 activation implicite.
 
-## C6 — fondation « nos annonces » certifiée
+## C7 — certification finale
 
-C6 expose un inventaire propre vérifié, borné et read-only, sans créer de second modèle d'ownership et sans contaminer les métriques marché C2/C3.
+Dernière remédiation produit : PR #723, merge `c7b5b264e4e7980bb51609f04e3607fd56b02927`.
 
-Contrats certifiés :
-- `professional_listing_ownership` reste l'autorité d'ownership ;
-- seul `status = verified` entre dans l'inventaire propre ;
-- les vraies lignes `property_listings` sont lues, jamais reconstruites depuis des compteurs ;
-- projection vers `market_zone` uniquement via l'autorité Geo existante ;
-- Souissi reste fail-closed lorsque la précision listing est insuffisante ;
-- provenance canonique `market / AkarFinder-owned / partner` ;
-- `partner` exige `validation_status = validated`, `activation_status = active` et `source_authorization_status = confirmed` ;
-- tier commercial sans autorité de provenance ;
-- 0 write DB, 0 ranking mutation, 0 activation publique implicite.
+Certification finale :
+- PR #726 ;
+- exact head `6d6f98218eb34b720226b7d46813b27aa1352eff` ;
+- merge `c6982af61c3694dbcc703808e0eaf0bbb81d22d7` ;
+- run `31938793693` : **SUCCESS** ;
+- artefact `9261452732` ;
+- digest `sha256:6bffb4749dad4d27c02ba3047ee3a97443b3a5b35a753ddb9126bf3f549596a5`.
 
-Preuves exact-head PR #715 `f810c0be6d111262da5a37bdc9816925823f58cf` :
-- `Carte C6 Verified Listing Inventory` run `31925367009` : SUCCESS ;
-- tests ciblés inventory/provenance, TypeScript et production build : SUCCESS ;
-- schéma partenaire vérifié dans `20260722003000_partner_commercial_activation_v1.sql` ;
-- merge #715 : `ee8adf999e2f82590f834c1f80d125d441de34cc`.
+Le run final certifie :
+- 56 tests critiques C0→C6 ;
+- identité de la cible ;
+- TypeScript ;
+- production build ;
+- MapLibre navigateur réel ;
+- 390×844 / 430×932 / 768×900 / 1280×900 ;
+- trois KPI Prix / Densité / Annonces ;
+- confiance + taille d'échantillon Prix ;
+- mini-polygone de zone ;
+- CTA Search ;
+- report final `ok: true` ;
+- 0 erreur navigateur / 0 requête C3 en échec dans le rapport certifié.
 
-## C7 — CURRENT
+Les gates Canonical Baseline, Compile, UX Gate 0, P0, P1 Final Sweep, P2 Residual et Final Design Accessibility sont également **SUCCESS** sur le même exact-head.
 
-Objectif : certification finale 10/10 et closeout global de la Carte intelligence marché.
+## Position visuelle finale
 
-C7 doit :
-- rejouer les contrats critiques C0→C6 sur le `main` courant ;
-- vérifier que métriques marché et inventaire propre restent séparés ;
-- conserver tous les comportements fail-closed ;
-- vérifier les interactions Map et la fiche zone sur les viewports certifiés ;
-- vérifier cohérence docs / roadmap / preuves ;
-- ne déclarer 100 % qu'après exact-head SUCCESS et closeout canonique final.
+L'artefact final a été inspecté humainement sur les quatre viewports.
+
+La certification porte sur le contrat canonique : structure, hiérarchie, interactions, données défendables, états fail-closed et accessibilité. Elle **ne prétend pas** une copie pixel-perfect du mockup illustratif.
+
+## Conclusion
+
+**Carte intelligence marché — CLOSED — 8/8 = 100 %.**
+
+Toute extension nationale, historique 6 mois, catégories dominantes certifiées ou enrichissement de l'inventaire constitue un nouveau chantier séparé.
