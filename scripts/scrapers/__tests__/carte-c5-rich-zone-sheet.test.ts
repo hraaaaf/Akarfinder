@@ -28,7 +28,7 @@ describe("Carte C5 — rich zone sheet runtime", () => {
   });
 
   it("omits context and neighborhood link naturally when no canonical point exists", () => {
-    assert.ok(sheet.includes("neighborhood ?"));
+    assert.ok(sheet.includes("neighborhood && (lifestyleTags.length > 0 || proximityHighlights.length > 0)"));
     assert.ok(sheet.includes("neighborhoodHref ?"));
     assert.ok(sheet.includes("proximityHighlights.length > 0"));
     assert.ok(sheet.includes("lifestyleTags.length > 0"));
