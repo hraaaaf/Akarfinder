@@ -18,11 +18,13 @@ describe("P1A.6 — Responsive hardening", () => {
     ]) assert.ok(audit.includes(expected));
   });
 
-  it("audits Morocco, city and selected district states", () => {
+  it("audits Morocco, city and selected district states across legacy and intelligence experiences", () => {
     const audit = source("scripts/audits/p1a6-map-responsive-smoke.ts");
-    assert.ok(audit.includes('{ path: "/map", slug: "map" }'));
-    assert.ok(audit.includes('/map?city=Rabat'));
-    assert.ok(audit.includes('/map?city=Rabat&district=Agdal'));
+    assert.ok(audit.includes('{ path: "/map", slug: "map", experience: "legacy" }'));
+    assert.ok(audit.includes('{ path: "/map?city=Rabat", slug: "map-rabat", experience: "intelligence" }'));
+    assert.ok(audit.includes('{ path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal", experience: "intelligence" }'));
+    assert.ok(audit.includes('route.experience === "intelligence"'));
+    assert.ok(audit.includes('[data-akarfinder-market-intelligence-map]'));
   });
 
   it("certifies real viewport composition rather than full-page screenshots", () => {

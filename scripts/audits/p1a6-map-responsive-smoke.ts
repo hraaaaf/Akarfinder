@@ -6,9 +6,9 @@ const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 const outputDir = join(process.cwd(), "artifacts", "p1a6-map-responsive");
 
 const routes = [
-  { path: "/map", slug: "map" },
-  { path: "/map?city=Rabat", slug: "map-rabat" },
-  { path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal" },
+  { path: "/map", slug: "map", experience: "legacy" },
+  { path: "/map?city=Rabat", slug: "map-rabat", experience: "intelligence" },
+  { path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal", experience: "intelligence" },
 ] as const;
 
 const viewports = [
@@ -73,10 +73,17 @@ async function main() {
         }
 
         const documentWidth = await page.locator("html").evaluate((element) => element.scrollWidth);
-        const cockpit = toRect(await page.locator('[aria-label="Contrôles de la carte immobilière"]').boundingBox());
-        const explorer = toRect(await page.locator('[aria-label="Exploration territoriale"]').boundingBox());
-        const panelLocator = page.locator('[aria-label^="Fiche repère quartier"]');
-        const panel = (await panelLocator.count()) > 0 ? toRect(await panelLocator.boundingBox()) : null;
+        const cockpitSelector = route.experience === "intelligence"
+          ? '[aria-label="Contrôles intelligence marché"]'
+          : '[aria-label="Contrôles de la carte immobilière"]';
+        const cockpitLocator = page.locator(cockpitSelector);
+        const cockpit = (await cockpitLocator.count()) > 0 ? toRect(await cockpitLocator.boundingBox()) : null;
+        const explorerLocator = page.locator('[aria-label="Exploration territoriale"]');
+        const explorer = (await explorerLocator.count()) > 0 ? toRect(await explorerLocator.boundingBox()) : null;
+        const panelLocator = route.experience === "intelligence"
+          ? page.locator('aside[aria-label^="Zone "]')
+          : page.locator('[aria-label^="Fiche repère quartier"]');
+        const panel = (await panelLocator.count()) > 0 ? toRect(await panelLocator.first().boundingBox()) : null;
 
         const explorerButtons = page.locator('[aria-label="Exploration territoriale"] button');
         const targetCount = await explorerButtons.count();
@@ -100,29 +107,51 @@ async function main() {
             detail: `${documentWidth}px document for ${viewport.width}px viewport`,
           });
         }
-        if (!cockpit || !explorer) {
+
+        if (!cockpit) {
           findings.push({
             route: route.path,
             viewport: viewport.label,
             check: "map-controls",
-            detail: "Cockpit or territorial explorer missing",
-          });
-        } else if (overlaps(cockpit, explorer)) {
-          findings.push({
-            route: route.path,
-            viewport: viewport.label,
-            check: "cockpit-explorer-overlap",
-            detail: JSON.stringify({ cockpit, explorer }),
+            detail: route.experience === "intelligence" ? "Intelligence cockpit missing" : "Legacy cockpit missing",
           });
         }
 
-        if (panel && explorer && overlaps(panel, explorer, 6)) {
-          findings.push({
-            route: route.path,
-            viewport: viewport.label,
-            check: "explorer-panel-overlap",
-            detail: JSON.stringify({ explorer, panel }),
-          });
+        if (route.experience === "legacy") {
+          if (!explorer) {
+            findings.push({
+              route: route.path,
+              viewport: viewport.label,
+              check: "map-controls",
+              detail: "Territorial explorer missing",
+            });
+          } else if (cockpit && overlaps(cockpit, explorer)) {
+            findings.push({
+              route: route.path,
+              viewport: viewport.label,
+              check: "cockpit-explorer-overlap",
+              detail: JSON.stringify({ cockpit, explorer }),
+            });
+          }
+
+          if (panel && explorer && overlaps(panel, explorer, 6)) {
+            findings.push({
+              route: route.path,
+              viewport: viewport.label,
+              check: "explorer-panel-overlap",
+              detail: JSON.stringify({ explorer, panel }),
+            });
+          }
+        } else {
+          const mapCanvas = page.locator('[data-akarfinder-market-intelligence-map]');
+          if ((await mapCanvas.count()) === 0) {
+            findings.push({
+              route: route.path,
+              viewport: viewport.label,
+              check: "market-intelligence-map",
+              detail: "Rabat intelligence map container missing",
+            });
+          }
         }
 
         for (const target of targets) {

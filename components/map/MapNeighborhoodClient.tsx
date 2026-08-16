@@ -15,22 +15,29 @@ import {
   type MapNavigationState,
 } from "@/lib/map/map-navigation-state";
 
+const loadingFallback = (
+  <div className="flex h-[calc(100svh-64px)] items-center justify-center bg-[#eef3f8] dark:bg-[#06162d]">
+    <div className="rounded-2xl border border-border-strong/70 bg-card/95 px-5 py-4 text-center text-card-foreground shadow-card backdrop-blur-xl">
+      <div className="mx-auto mb-2.5 h-6 w-6 animate-spin rounded-full border-2 border-brand-primary/20 border-t-brand-primary" />
+      <p className="text-[11px] font-extrabold text-foreground">Chargement de la carte…</p>
+    </div>
+  </div>
+);
+
 const MapNeighborhoodExperienceDynamic = dynamic(
   () =>
     import("@/components/map/MapNeighborhoodExperience").then((mod) => ({
       default: mod.MapNeighborhoodExperience,
     })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex h-[calc(100svh-64px)] items-center justify-center bg-[#eef3f8] dark:bg-[#06162d]">
-        <div className="rounded-2xl border border-border-strong/70 bg-card/95 px-5 py-4 text-center text-card-foreground shadow-card backdrop-blur-xl">
-          <div className="mx-auto mb-2.5 h-6 w-6 animate-spin rounded-full border-2 border-brand-primary/20 border-t-brand-primary" />
-          <p className="text-[11px] font-extrabold text-foreground">Chargement de la carte…</p>
-        </div>
-      </div>
-    ),
-  },
+  { ssr: false, loading: () => loadingFallback },
+);
+
+const RabatMarketIntelligenceExperienceDynamic = dynamic(
+  () =>
+    import("@/components/map/RabatMarketIntelligenceExperience").then((mod) => ({
+      default: mod.RabatMarketIntelligenceExperience,
+    })),
+  { ssr: false, loading: () => loadingFallback },
 );
 
 type MapNeighborhoodClientProps = {
@@ -76,17 +83,50 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
     [router],
   );
 
+  const rabatIntelligenceActive = navigationState.city === "rabat";
+
   return (
     <div className="relative">
-      <MapNeighborhoodExperienceDynamic
-        navigationState={navigationState}
-        onNavigationChange={handleNavigationChange}
-      />
-      <TerritorialExplorer
-        navigationState={navigationState}
-        onNavigationChange={handleNavigationChange}
-      />
-      <MapLegend />
+      {rabatIntelligenceActive ? (
+        <>
+          <h1 className="sr-only">Carte intelligence marché à Rabat</h1>
+          <style>{`
+            @media (max-width: 639px) {
+              [data-akarfinder-market-intelligence-map] section[aria-label="Contrôles intelligence marché"] > div:first-child {
+                flex-wrap: wrap;
+              }
+              [data-akarfinder-market-intelligence-map] section[aria-label="Contrôles intelligence marché"] > div:first-child > label {
+                order: 1;
+                flex: 1 1 calc(100% - 48px);
+              }
+              [data-akarfinder-market-intelligence-map] section[aria-label="Contrôles intelligence marché"] > div:first-child > [role="tablist"] {
+                order: 3;
+                flex: 1 0 100%;
+                width: 100%;
+              }
+              [data-akarfinder-market-intelligence-map] section[aria-label="Contrôles intelligence marché"] > div:first-child > button[aria-label="Revenir à la carte du Maroc"] {
+                order: 2;
+              }
+            }
+          `}</style>
+          <RabatMarketIntelligenceExperienceDynamic
+            navigationState={navigationState}
+            onNavigationChange={handleNavigationChange}
+          />
+        </>
+      ) : (
+        <>
+          <MapNeighborhoodExperienceDynamic
+            navigationState={navigationState}
+            onNavigationChange={handleNavigationChange}
+          />
+          <TerritorialExplorer
+            navigationState={navigationState}
+            onNavigationChange={handleNavigationChange}
+          />
+          <MapLegend />
+        </>
+      )}
       {unmappedDistrict ? (
         <div className="pointer-events-none absolute left-1/2 top-[210px] z-30 w-[min(92vw,430px)] -translate-x-1/2 sm:top-[232px]">
           <div className="rounded-xl border border-amber-200/80 bg-white/95 px-3.5 py-2.5 text-center shadow-[0_8px_24px_rgba(7,27,51,0.14)] backdrop-blur">

@@ -1,0 +1,37 @@
+name: Carte C4 Rabat Heatmap Gate
+
+on:
+  pull_request:
+    paths:
+      - "components/map/RabatMarketIntelligenceExperience.tsx"
+      - "components/map/MapNeighborhoodClient.tsx"
+      - "scripts/scrapers/__tests__/rabat-market-intelligence-experience.test.ts"
+      - ".github/workflows/carte-c4-rabat-heatmap.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-c4-heatmap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: C4 heatmap contracts
+        run: npx tsx --test scripts/scrapers/__tests__/rabat-market-intelligence-experience.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Product contract guards
+        run: |
+          grep -q '/api/geo/rabat-market-intelligence' components/map/RabatMarketIntelligenceExperience.tsx
+          grep -q 'data-akarfinder-intelligence-mode' components/map/RabatMarketIntelligenceExperience.tsx
+          grep -q 'data-akarfinder-intelligence-legend' components/map/RabatMarketIntelligenceExperience.tsx
+          grep -q 'fillColor' components/map/RabatMarketIntelligenceExperience.tsx
+          grep -q 'navigationState.city === "rabat"' components/map/MapNeighborhoodClient.tsx
+      - name: Production build
+        run: npm run build
