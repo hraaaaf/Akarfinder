@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { AnnouncementPageShell } from "@/components/listings/AnnouncementPageShell";
 import type { Listing } from "@/lib/listings/types";
-import { buildPublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
+import {
+  buildPublicPropertyDetailV2,
+  type PublicPropertyDetailV2,
+} from "@/lib/property-detail/public-property-detail-v2";
 
 export const metadata: Metadata = {
   title: "QA — ANN-L11 Pro & conversion",
@@ -55,14 +58,18 @@ const listing: Listing = {
   production_allowed: false,
 };
 
-const detail = buildPublicPropertyDetailV2(listing, {
-  source_name: "Agence Atlas QA",
-  observed_at: NOW,
-  created_at: "2026-08-01T00:00:00.000Z",
-  generated_at: NOW,
-});
+function buildQaDetail(): PublicPropertyDetailV2 {
+  const value = buildPublicPropertyDetailV2(listing, {
+    source_name: "Agence Atlas QA",
+    observed_at: NOW,
+    created_at: "2026-08-01T00:00:00.000Z",
+    generated_at: NOW,
+  });
+  if (!value) throw new Error("ANN-L11 QA fixture must remain publishable.");
+  return value;
+}
 
-if (!detail) throw new Error("ANN-L11 QA fixture must remain publishable.");
+const detail = buildQaDetail();
 
 export default function AnnouncementPageProConversionQa() {
   return <AnnouncementPageShell listing={listing} detail={detail} visualQa />;
