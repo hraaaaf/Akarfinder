@@ -4,10 +4,12 @@ on:
   pull_request:
     paths:
       - "app/listings/[id]/page.tsx"
+      - "app/visual-qa/announcement-page-akar-estimate-history/**"
       - "components/listings/AnnouncementPageShell.tsx"
       - "components/listings/AkarEstimateHistorySection.tsx"
       - "lib/property-detail/akar-estimate-history*.ts"
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
+      - "scripts/audits/announcement-page-l9-akar-estimate-history-visual.mjs"
       - "scripts/scrapers/__tests__/announcement-page-l9-*.test.ts"
       - ".github/workflows/announcement-page-l9-akar-estimate-history.yml"
   push:
@@ -16,10 +18,12 @@ on:
       - agent/announcement-page-l9-akar-estimate-history
     paths:
       - "app/listings/[id]/page.tsx"
+      - "app/visual-qa/announcement-page-akar-estimate-history/**"
       - "components/listings/AnnouncementPageShell.tsx"
       - "components/listings/AkarEstimateHistorySection.tsx"
       - "lib/property-detail/akar-estimate-history*.ts"
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
+      - "scripts/audits/announcement-page-l9-akar-estimate-history-visual.mjs"
       - "scripts/scrapers/__tests__/announcement-page-l9-*.test.ts"
       - ".github/workflows/announcement-page-l9-akar-estimate-history.yml"
 
@@ -29,7 +33,7 @@ permissions:
 jobs:
   akar-estimate-history-contract:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,3 +49,30 @@ jobs:
           scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start ANN-L9 production server
+        shell: bash
+        run: |
+          npm run start -- -p 3209 > /tmp/ann-l9.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3209/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ann-l9.log
+          exit 1
+      - name: ANN-L9 targeted visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3209
+          AUDIT_OUTPUT_DIR: artifacts/announcement-page-l9-akar-estimate-history
+        run: node scripts/audits/announcement-page-l9-akar-estimate-history-visual.mjs
+      - name: Upload ANN-L9 visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: announcement-page-l9-akar-estimate-history-${{ github.run_id }}
+          path: artifacts/announcement-page-l9-akar-estimate-history
+          if-no-files-found: warn
+          retention-days: 14
