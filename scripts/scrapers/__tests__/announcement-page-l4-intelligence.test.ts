@@ -25,6 +25,7 @@ function detail(overrides: Partial<PublicPropertyDetailV2> = {}): PublicProperty
     },
     market: {
       status: "available",
+      certified: true,
       label: "Prix demandé proche du repère indicatif",
       price_per_m2: 18_560,
     },
@@ -103,9 +104,19 @@ describe("ANN-L4 Akar insight projection", () => {
     assert.equal(model.coverageLabel, "5/5 dimensions documentaires disponibles");
   });
 
-  it("hides unavailable market and unsupported multisource states", () => {
-    const model = buildAkarInsightModel(detail({
-      market: { status: "unavailable", label: "Ce texte ne doit pas sortir", price_per_m2: null },
+  it("hides market output unless its certification evidence is explicitly true", () => {
+    const uncertified = buildAkarInsightModel(detail({
+      market: {
+        status: "available",
+        certified: false,
+        label: "Ce repère ne doit pas sortir",
+        price_per_m2: 18_560,
+      },
+    }));
+    assert.equal(uncertified.items.some((item) => item.key === "market"), false);
+
+    const unavailable = buildAkarInsightModel(detail({
+      market: { status: "unavailable", certified: false, label: "Ce texte ne doit pas sortir", price_per_m2: null },
       multisource: { status: "not_shown", label: "Ce texte non plus" },
       conclusion: {
         title: "Conclusion AkarFinder",
@@ -116,7 +127,7 @@ describe("ANN-L4 Akar insight projection", () => {
         attention_label: null,
       },
     }));
-    assert.deepEqual(model.items, []);
+    assert.deepEqual(unavailable.items, []);
   });
 
   it("does not project the current not-calculated Property Fit as an intelligence result", () => {
@@ -147,11 +158,13 @@ describe("ANN-L4 production composition", () => {
     assert.match(source, /data-akar-coverage/);
   });
 
-  it("publishes market context only from a validated market contract", () => {
+  it("publishes market context only from a validated market contract and carries explicit evidence to detail", () => {
     const source = readFileSync("lib/intelligence/public-serp-intelligence-v1.ts", "utf8");
+    const detailSource = readFileSync("lib/property-detail/public-property-detail-v2.ts", "utf8");
     assert.match(source, /function marketPositionCertified/);
     assert.match(source, /contract_validation\.valid/);
     assert.match(source, /if \(market && marketPositionCertified\(result\)\)/);
     assert.match(source, /market_position_certified: marketPositionCertified\(result\)/);
+    assert.match(detailSource, /certified: publicIntelligence\.market_position_certified && marketLabel != null/);
   });
 });
