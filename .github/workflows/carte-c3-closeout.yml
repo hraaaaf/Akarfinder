@@ -1,0 +1,28 @@
+name: Carte C3 Closeout Gate
+
+on:
+  pull_request:
+    paths:
+      - "docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md"
+      - "docs/CARTE_C3_CLOSEOUT.md"
+      - ".github/workflows/carte-c3-closeout.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-c3-closeout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Canonical C3 closeout facts
+        run: |
+          grep -q '4 / 8 = 50 %' docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md
+          grep -q 'C3 — API publique fail-closed + échelles : ✅ CLOSED' docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md
+          grep -q 'C4 — Heat map interactive conforme au mockup : 🟠 CURRENT' docs/CARTE_INTELLIGENCE_MARCHE_STATUS.md
+          grep -q 'bd8ffc2b28e70c4d44adfa6ecca9b6269bc35450' docs/CARTE_C3_CLOSEOUT.md
+          grep -q '31920864146' docs/CARTE_C3_CLOSEOUT.md
+          grep -q '31920864126' docs/CARTE_C3_CLOSEOUT.md
+          grep -q '9256321998' docs/CARTE_C3_CLOSEOUT.md
+          grep -q 'fe5a1dcc2de3ab17022fc2933b9cccb39724c38a0f4c62559a31b560adb438c0' docs/CARTE_C3_CLOSEOUT.md

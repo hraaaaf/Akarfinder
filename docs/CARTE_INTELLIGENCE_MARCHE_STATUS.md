@@ -6,16 +6,17 @@ Référentiel cible : `docs/CARTE_INTELLIGENCE_MARCHE_TARGET.md`.
 Contrat métriques : `docs/CARTE_INTELLIGENCE_METRICS_CONTRACT.md`.
 Closeout C1 : `docs/MARKET_ZONES_C1_CLOSEOUT.md`.
 Closeout C2 : `docs/CARTE_C2_CLOSEOUT.md`.
+Closeout C3 : `docs/CARTE_C3_CLOSEOUT.md`.
 
 ## Progression stricte
 
-Lots CLOSED / 8 : **3 / 8 = 37,5 %**.
+Lots CLOSED / 8 : **4 / 8 = 50 %**.
 
 - C0 — Référentiel + audit de récupération : ✅ CLOSED
 - C1 — Géométrie quartier certifiée : ✅ CLOSED
 - C2 — Dataset métriques quartier v2 : ✅ CLOSED
-- C3 — API publique fail-closed + échelles : 🟠 CURRENT
-- C4 — Heat map interactive conforme au mockup : ⏭️
+- C3 — API publique fail-closed + échelles : ✅ CLOSED
+- C4 — Heat map interactive conforme au mockup : 🟠 CURRENT
 - C5 — Fiche quartier riche : ⏭️
 - C6 — Fondation « nos annonces » : ⏭️
 - C7 — Certification 10/10 + closeout : ⏭️
@@ -49,7 +50,7 @@ Contrôles :
 - Souissi et Centre restent confinés à leurs conteneurs sources ;
 - `area_km2` calculée depuis Polygon/MultiPolygon ;
 - API GeoJSON C1 fail-closed ;
-- aucune zone Shadow présentée comme frontière administrative officielle.
+- aucune market zone présentée comme frontière administrative officielle.
 
 Preuves principales : PR #686 géométrie Shadow ; PR #689 API fail-closed, merge `165907bc2af02342e07a4ed57d1bce2a00062f94`.
 
@@ -65,34 +66,49 @@ Contrat :
 Snapshot pilote Rabat vérifié :
 - 32 listings current-resolved ;
 - 4/4 zones avec volume et densité calculables ;
-- 2/32 avec prix/m² dans le snapshot C2B = 6,25 % ;
-- 26/32 avec surface mais prix absent ;
-- Price reste donc largement `insufficient` et devra être neutre lorsque la preuve manque.
+- couverture prix faible et explicitement `insufficient` lorsqu'elle ne satisfait pas la policy de fiabilité ;
+- aucun chiffre manquant n'est maquillé en valeur marché.
+
+Preuves principales : PR #690, #691, #693, #695 ; closeout C2 PR #697 mergée `ef611357bc29a5d2210183a089bf576337fd805f`.
+
+## C3 — API intelligence marché certifiée
+
+Endpoint canary read-only :
+`/api/geo/rabat-market-intelligence?mode=<price|density|listings>&transaction=<sale|rent>`.
+
+Contrats certifiés :
+- géométrie `market_zone` Canary, `reviewed=true`, `officialBoundary=false` ;
+- `price`, `density`, `listings` réels et transaction-scopés ;
+- lecture live bornée depuis les tables de base avec résolution Geo latest-event-first ;
+- déduplication par URL canonique ;
+- Reliability Prix réutilise la policy P1C.2 versionnée ;
+- Price `insufficient` = fill neutre ;
+- échelle `snapshot_quantiles_v1` dérivée du snapshot ;
+- légende et fills issus du même calcul ;
+- invalid request, géométrie non publiable ou métriques indisponibles restent fail-closed ;
+- aucun seuil illustratif du mockup n'est utilisé comme seuil runtime.
 
 Preuves :
-- C2A PR #690 mergée `6e5bf85984392938ed0bd8c70474cd8a25c64956` ;
-- C2B PR #691 mergée `501f6dbbce3904a0358df00f1938d2f66f0ce7ab`, run `31918145727` SUCCESS, artefact `9255534356` ;
-- C2C PR #693 mergée `61ff4ce71ab86808eb9dffa173328d553eefa6b9`, run `31918552226` SUCCESS : 3 prix fiables supplémentaires prouvés en canary live Mubawab, aucun write automatique ;
-- C2D PR #695 mergée `9c20c1b86055222880010a3cf6b6c6a06d266f8f`, run `31918737456` SUCCESS : 0/7 Mouldar offline ;
-- C2E PR #696 fermée non mergée après drift, run `31918780371` SUCCESS : 0/19 Mubawab offline.
+- PR #698 mergée `bd8ffc2b28e70c4d44adfa6ecca9b6269bc35450` ;
+- exact head certifié `a980c829ff37239c9a39c1927682453dcdcc3e35` ;
+- C3 gate `31920864146` : SUCCESS ;
+- C1C GeoJSON compatibility gate `31920864126` : SUCCESS ;
+- artefact live `9256321998` ; digest `sha256:fe5a1dcc2de3ab17022fc2933b9cccb39724c38a0f4c62559a31b560adb438c0` ;
+- tests, TypeScript, preuve live et production build : SUCCESS.
 
-Les seuils exploratoires utilisés dans C2B/C2C ne sont pas des critères de fermeture produit. Le gate canonique C2 exige la vérité des métriques, le maintien des NULL et la reliability explicite, pas un nombre arbitraire de prix. C2 est donc CLOSED sans prétendre à une couverture prix représentative.
+Limite conservée : la couverture Prix Rabat reste faible. Le mode Prix doit donc afficher des zones neutres lorsque la policy les classe `insufficient`; volume et densité ne doivent pas être confondus avec une preuve de représentativité nationale.
 
-## C3 — CURRENT
+## C4 — CURRENT
 
-Objectif : GeoJSON public read-only consommable par la Carte avec trois modes :
-- `price` ;
-- `density` ;
-- `listings`.
+Objectif : remplacer l'expérience par repères/markers par la heat map polygonale conforme au référentiel cible, sans casser les parcours Carte déjà utiles.
 
 Livrables requis :
-- classification de couleurs déterministe ;
-- zones Price insuffisantes = neutres ;
-- légende issue exactement de la même échelle que les fills ;
-- palette Prix conforme au mockup ;
-- palette Densité bleue ;
-- palette Annonces verte ;
-- cache/fraîcheur explicites ;
-- aucun chiffre ou seuil de couleur inventé pour imiter le mockup.
-
-Gate C3 : la couleur de chaque polygone doit être reproductible depuis le payload API et sa légende.
+- trois tabs réels `Prix / Densité / Annonces` ;
+- consommation de l'API C3 ;
+- fills polygonaux issus du payload API ;
+- légende visible et contextuelle ;
+- état neutre explicite pour données insuffisantes ;
+- clic/tap polygonal → sélection stable de zone ;
+- CTA Search filtré sur la zone sélectionnée ;
+- conservation du comportement fail-closed et des autres parcours Carte ;
+- validation mobile + desktop + interaction MapLibre réelle avant fermeture C4.
