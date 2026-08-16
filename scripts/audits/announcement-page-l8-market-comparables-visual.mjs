@@ -52,7 +52,9 @@ try {
       if (!scenario.section && sectionCount !== 0) localFindings.push(`SECTION_COUNT_${sectionCount}_EXPECTED_0`);
 
       if (scenario.section && sectionCount === 1) {
-        const text = await section.innerText();
+        // Validate authored copy rather than CSS-transformed presentation text.
+        // innerText uppercases metric labels because the UI intentionally uses text-transform.
+        const text = (await section.textContent()) ?? "";
         if (!text.includes("Marché & comparables")) localFindings.push("TITLE_MISSING");
         if (!text.includes("Médiane observée")) localFindings.push("MEDIAN_MISSING");
         if (!text.includes("Zone centrale P25–P75")) localFindings.push("P25_P75_MISSING");
