@@ -13,11 +13,11 @@ export const metadata: Metadata = {
 
 const QA_NOW = "2026-08-16T00:00:00.000Z";
 
-type MediaState = "gallery" | "preview" | "forbidden" | "unknown" | "broken";
+type MediaState = "gallery" | "gallery2" | "preview" | "forbidden" | "unknown" | "broken";
 
 function normalizeState(value: string | string[] | undefined): MediaState {
   const first = Array.isArray(value) ? value[0] : value;
-  if (first === "preview" || first === "forbidden" || first === "unknown" || first === "broken") return first;
+  if (first === "gallery2" || first === "preview" || first === "forbidden" || first === "unknown" || first === "broken") return first;
   return "gallery";
 }
 
@@ -73,6 +73,14 @@ function createListing(state: MediaState): Listing {
     ],
     images_count: 4,
   };
+
+  if (state === "gallery2") {
+    return {
+      ...base,
+      gallery_image_urls: ["/demo/properties/gallery/apartment-modern-salon.jpg"],
+      images_count: 2,
+    };
+  }
 
   if (state === "preview") {
     return {
