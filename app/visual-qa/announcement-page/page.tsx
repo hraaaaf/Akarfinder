@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { AnnouncementPageShell } from "@/components/listings/AnnouncementPageShell";
 import type { Listing } from "@/lib/listings/types";
-import { buildPublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
+import {
+  buildPublicPropertyDetailV2,
+  type PublicPropertyDetailV2,
+} from "@/lib/property-detail/public-property-detail-v2";
 
 export const metadata: Metadata = {
   title: "QA — Page annonce ultra premium",
@@ -68,16 +71,22 @@ const listing: Listing = {
   production_allowed: false,
 };
 
-const detail = buildPublicPropertyDetailV2(listing, {
-  source_name: "AkarFinder",
-  observed_at: QA_NOW,
-  created_at: "2026-08-01T00:00:00.000Z",
-  generated_at: QA_NOW,
-});
+function buildQaDetail(): PublicPropertyDetailV2 {
+  const value = buildPublicPropertyDetailV2(listing, {
+    source_name: "AkarFinder",
+    observed_at: QA_NOW,
+    created_at: "2026-08-01T00:00:00.000Z",
+    generated_at: QA_NOW,
+  });
 
-if (!detail) {
-  throw new Error("Announcement page visual QA fixture must remain publishable as first-party QA data.");
+  if (!value) {
+    throw new Error("Announcement page visual QA fixture must remain publishable as first-party QA data.");
+  }
+
+  return value;
 }
+
+const detail = buildQaDetail();
 
 export default function AnnouncementPageVisualQa() {
   return <AnnouncementPageShell listing={listing} detail={detail} visualQa />;
