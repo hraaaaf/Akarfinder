@@ -3,7 +3,7 @@ name: Announcement Page L1 Premium Shell
 on:
   pull_request:
     paths:
-      - "app/listings/[id]/page.tsx"
+      - "app/listings/**"
       - "app/visual-qa/announcement-page/**"
       - "components/listings/AnnouncementPageShell.tsx"
       - "scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts"
@@ -15,7 +15,7 @@ on:
       - main
       - agent/announcement-page-l1-shell-premium
     paths:
-      - "app/listings/[id]/page.tsx"
+      - "app/listings/**"
       - "app/visual-qa/announcement-page/**"
       - "components/listings/AnnouncementPageShell.tsx"
       - "scripts/scrapers/__tests__/announcement-page-l1-shell.test.ts"
