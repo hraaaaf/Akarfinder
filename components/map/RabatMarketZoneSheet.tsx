@@ -38,7 +38,7 @@ export function RabatMarketZoneSheet({
 
   return (
     <aside
-      className="absolute inset-x-3 bottom-[76px] z-30 max-h-[min(68svh,540px)] overflow-y-auto rounded-2xl border border-border-strong/70 bg-card/96 p-4 shadow-panel backdrop-blur-xl sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-4 sm:w-[360px]"
+      className="absolute inset-x-3 bottom-[90px] z-30 max-h-[min(68svh,540px)] overflow-y-auto rounded-2xl border border-border-strong/70 bg-card/96 p-4 shadow-panel backdrop-blur-xl sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-4 sm:w-[360px]"
       aria-label={`Zone ${feature.properties.displayName}`}
       data-akarfinder-rich-zone-sheet
     >
