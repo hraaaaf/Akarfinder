@@ -111,14 +111,14 @@ export function VisitRequestPanel({
   }
 
   const wrapperClass = compact
-    ? "rounded-[1.25rem] border border-[#eadfca] bg-white p-4 shadow-[0_6px_22px_rgba(7,27,51,0.05)]"
-    : "rounded-[1.25rem] border border-[#e3d1aa] bg-[#fffaf0] p-4";
+    ? "rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-[0_6px_22px_rgba(24,56,96,0.06)]"
+    : "rounded-[1.25rem] border border-slate-200 bg-white p-4";
 
   return (
     <>
       {/* Compact trigger block — always visible in sidebar / mobile inline */}
       <div className={wrapperClass}>
-        <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-bronze-700">
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-primary">
           Demande de visite
         </p>
 
@@ -154,7 +154,7 @@ export function VisitRequestPanel({
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="mt-3 w-full rounded-xl bg-gradient-to-r from-[#9b7838] to-[#b08942] px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_10px_22px_rgba(155,120,56,0.24)] transition hover:brightness-105"
+              className="mt-3 w-full rounded-xl bg-[#0B63CE] px-4 py-3 text-[13.5px] font-extrabold text-white shadow-[0_8px_20px_rgba(11,99,206,0.22)] transition hover:bg-[#0959B8]"
             >
               Demander une visite
             </button>
@@ -170,11 +170,11 @@ export function VisitRequestPanel({
             onClick={handleClose}
           />
 
-          <div className="relative z-10 w-full max-h-[92dvh] overflow-y-auto rounded-t-[1.8rem] bg-[#fffdf8] shadow-[0_-8px_40px_rgba(7,27,51,0.18)] sm:max-w-[560px] sm:rounded-[1.8rem] sm:shadow-[0_20px_60px_rgba(7,27,51,0.22)]">
+          <div className="relative z-10 w-full max-h-[92dvh] overflow-y-auto rounded-t-[1.8rem] bg-white shadow-[0_-8px_40px_rgba(7,27,51,0.18)] sm:max-w-[560px] sm:rounded-[1.8rem] sm:shadow-[0_20px_60px_rgba(7,27,51,0.22)]">
             {/* Modal header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#eadfca] bg-[#fffdf8] px-6 py-4">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
               <div>
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-bronze-700">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-primary">
                   Demande de visite
                 </p>
                 <p className="mt-0.5 line-clamp-1 text-[12.5px] text-gray-500">
@@ -184,7 +184,7 @@ export function VisitRequestPanel({
               <button
                 type="button"
                 onClick={handleClose}
-                className="ml-3 shrink-0 rounded-full bg-[#f0ebe0] p-2 text-deepblue transition hover:bg-[#e8e0d0]"
+                className="ml-3 shrink-0 rounded-full bg-slate-100 p-2 text-deepblue transition hover:bg-slate-200"
                 aria-label="Fermer"
               >
                 <svg
@@ -221,7 +221,7 @@ export function VisitRequestPanel({
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="mt-2 w-full rounded-xl border border-[#d8c8a3] bg-white px-4 py-3.5 text-[14px] text-deepblue outline-none transition focus:border-deepblue focus:ring-2 focus:ring-deepblue/10"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-[14px] text-deepblue outline-none transition focus:border-deepblue focus:ring-2 focus:ring-deepblue/10"
                     placeholder="Votre nom"
                   />
                 </label>
@@ -235,7 +235,7 @@ export function VisitRequestPanel({
                     type="tel"
                     value={phoneWhatsApp}
                     onChange={(e) => setPhoneWhatsApp(e.target.value)}
-                    className="mt-2 w-full rounded-xl border border-[#d8c8a3] bg-white px-4 py-3.5 text-[14px] text-deepblue outline-none transition focus:border-deepblue focus:ring-2 focus:ring-deepblue/10"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-[14px] text-deepblue outline-none transition focus:border-deepblue focus:ring-2 focus:ring-deepblue/10"
                     placeholder="+212 6XX XXX XXX"
                   />
                 </label>
@@ -252,7 +252,7 @@ export function VisitRequestPanel({
                     value={preferredSlot1}
                     min={toDatetimeLocalValue(new Date())}
                     onChange={(e) => setPreferredSlot1(e.target.value)}
-                    className="mt-2 w-full rounded-xl border border-[#d8c8a3] bg-white px-4 py-3.5 text-[14px] text-deepblue outline-none transition focus:border-deepblue focus:ring-2 focus:ring-deepblue/10"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-[14px] text-deepblue outline-none transition focus:border-deepblue focus:ring-2 focus:ring-deepblue/10"
                   />
                   {preferredSlot1 ? (
                     <p className="mt-1 text-[11.5px] font-medium text-gray-400">
@@ -273,7 +273,7 @@ export function VisitRequestPanel({
                     value={preferredSlot2}
                     min={toDatetimeLocalValue(new Date())}
                     onChange={(e) => setPreferredSlot2(e.target.value)}
-                    className="mt-2 w-full rounded-xl border border-[#d8c8a3] bg-white px-4 py-3.5 text-[14px] text-deepblue outline-none transition focus:border-deepblue focus:ring-2 focus:ring-deepblue/10"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-[14px] text-deepblue outline-none transition focus:border-deepblue focus:ring-2 focus:ring-deepblue/10"
                   />
                   {preferredSlot2 ? (
                     <p className="mt-1 text-[11.5px] font-medium text-gray-400">
@@ -297,7 +297,7 @@ export function VisitRequestPanel({
                       className={`rounded-xl px-4 py-2.5 text-[13px] font-bold transition ${
                         daypart === item
                           ? "bg-deepblue text-white"
-                          : "border border-[#d8c8a3] bg-white text-deepblue hover:bg-[#f7f3ea]"
+                          : "border border-slate-200 bg-white text-deepblue hover:bg-slate-50"
                       }`}
                     >
                       {item}
@@ -318,20 +318,20 @@ export function VisitRequestPanel({
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows={3}
-                  className="mt-2 w-full rounded-xl border border-[#d8c8a3] bg-white px-4 py-3 text-[14px] text-deepblue outline-none transition focus:border-deepblue focus:ring-2 focus:ring-deepblue/10"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-[14px] text-deepblue outline-none transition focus:border-deepblue focus:ring-2 focus:ring-deepblue/10"
                   placeholder="Précisez vos disponibilités ou une demande particulière."
                 />
               </label>
 
               {/* Consentement */}
-              <div className="rounded-2xl border border-[#efe3cc] bg-white px-5 py-4">
+              <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4">
                 <label className="flex cursor-pointer items-start gap-3">
                   <input
                     type="checkbox"
                     required
                     checked={consent}
                     onChange={(e) => setConsent(e.target.checked)}
-                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-[#d8c8a3] accent-deepblue"
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-200 accent-[#0B63CE]"
                   />
                   <span className="text-[13.5px] leading-5 text-gray-700">
                     J&apos;accepte d&apos;être recontacté au sujet de cette
@@ -348,7 +348,7 @@ export function VisitRequestPanel({
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex flex-1 items-center justify-center rounded-xl bg-gradient-to-r from-[#9b7838] to-[#b08942] px-5 py-3.5 text-[14px] font-extrabold text-white shadow-[0_10px_24px_rgba(155,120,56,0.22)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-65"
+                  className="inline-flex flex-1 items-center justify-center rounded-xl bg-[#0B63CE] px-5 py-3.5 text-[14px] font-extrabold text-white shadow-[0_8px_20px_rgba(11,99,206,0.22)] transition hover:bg-[#0959B8] disabled:cursor-not-allowed disabled:opacity-65"
                 >
                   {submitting
                     ? "Envoi en cours…"
@@ -357,7 +357,7 @@ export function VisitRequestPanel({
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="inline-flex items-center justify-center rounded-xl border border-[#d8c8a3] bg-white px-5 py-3.5 text-[13.5px] font-bold text-deepblue transition hover:bg-[#f7f3ea]"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-[13.5px] font-bold text-deepblue transition hover:bg-slate-50"
                 >
                   Fermer
                 </button>
