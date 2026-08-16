@@ -9,10 +9,11 @@ Closeout C2 : `docs/CARTE_C2_CLOSEOUT.md`.
 Closeout C3 : `docs/CARTE_C3_CLOSEOUT.md`.
 Closeout C4 : `docs/CARTE_C4_CLOSEOUT.md`.
 Closeout C5 : `docs/CARTE_C5_CLOSEOUT.md`.
+Closeout C6 : `docs/CARTE_C6_CLOSEOUT.md`.
 
 ## Progression stricte
 
-Lots CLOSED / 8 : **6 / 8 = 75 %**.
+Lots CLOSED / 8 : **7 / 8 = 87,5 %**.
 
 - C0 — Référentiel + audit de récupération : ✅ CLOSED
 - C1 — Géométrie quartier certifiée : ✅ CLOSED
@@ -20,8 +21,8 @@ Lots CLOSED / 8 : **6 / 8 = 75 %**.
 - C3 — API publique fail-closed + échelles : ✅ CLOSED
 - C4 — Heat map interactive conforme au mockup : ✅ CLOSED
 - C5 — Fiche quartier riche : ✅ CLOSED
-- C6 — Fondation « nos annonces » : 🟠 CURRENT
-- C7 — Certification 10/10 + closeout : ⏭️
+- C6 — Fondation « nos annonces » : ✅ CLOSED
+- C7 — Certification 10/10 + closeout : 🟠 CURRENT
 
 ## C0 — référentiel verrouillé
 
@@ -150,17 +151,35 @@ Preuves exact-head PR #708 `43f402031155873ff48abb2c279f341c53a5819b` :
 
 La collision mobile a été corrigée à partir d'une mesure réelle : bas de fiche 772 px, haut de nav 768 px sur viewport 390 ; offset final `bottom-[90px]` et assertion stricte conservée.
 
-## C6 — CURRENT
+## C6 — fondation « nos annonces » certifiée
 
-Objectif : poser la fondation « nos annonces » sans créer de second modèle d'ownership.
+C6 expose un inventaire propre vérifié, borné et read-only, sans créer de second modèle d'ownership et sans contaminer les métriques marché C2/C3.
 
-Direction verrouillée en préparation :
-- réutiliser `professional_listing_ownership` et le cycle existant `claimed / verified / revoked` ;
-- exposition Carte uniquement pour ownership explicitement `verified` ;
-- `claimed`, absent ou inconnu reste fail-closed ;
-- ajouter un reader borné read-only des annonces verified réelles ;
-- réutiliser la résolution géographique certifiée pour toute projection vers `market_zone` ;
-- garder l'inventaire propre séparé de Prix / `listing_count` / `listing_density_km2` C2/C3 ;
-- aucun write, ranking mutation ou activation publique implicite.
+Contrats certifiés :
+- `professional_listing_ownership` reste l'autorité d'ownership ;
+- seul `status = verified` entre dans l'inventaire propre ;
+- les vraies lignes `property_listings` sont lues, jamais reconstruites depuis des compteurs ;
+- projection vers `market_zone` uniquement via l'autorité Geo existante ;
+- Souissi reste fail-closed lorsque la précision listing est insuffisante ;
+- provenance canonique `market / AkarFinder-owned / partner` ;
+- `partner` exige `validation_status = validated`, `activation_status = active` et `source_authorization_status = confirmed` ;
+- tier commercial sans autorité de provenance ;
+- 0 write DB, 0 ranking mutation, 0 activation publique implicite.
 
-PR de préparation : #712, gate contrat `31923952370` : SUCCESS. Elle reste à intégrer après le closeout C5.
+Preuves exact-head PR #715 `f810c0be6d111262da5a37bdc9816925823f58cf` :
+- `Carte C6 Verified Listing Inventory` run `31925367009` : SUCCESS ;
+- tests ciblés inventory/provenance, TypeScript et production build : SUCCESS ;
+- schéma partenaire vérifié dans `20260722003000_partner_commercial_activation_v1.sql` ;
+- merge #715 : `ee8adf999e2f82590f834c1f80d125d441de34cc`.
+
+## C7 — CURRENT
+
+Objectif : certification finale 10/10 et closeout global de la Carte intelligence marché.
+
+C7 doit :
+- rejouer les contrats critiques C0→C6 sur le `main` courant ;
+- vérifier que métriques marché et inventaire propre restent séparés ;
+- conserver tous les comportements fail-closed ;
+- vérifier les interactions Map et la fiche zone sur les viewports certifiés ;
+- vérifier cohérence docs / roadmap / preuves ;
+- ne déclarer 100 % qu'après exact-head SUCCESS et closeout canonique final.
