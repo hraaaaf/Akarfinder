@@ -28,7 +28,7 @@ jobs:
 
       - name: ANN-L6 low-traffic live integration certification
         env:
-          LIVE_OVERPASS_ENDPOINT: https://overpass-api.de/api/interpreter
+          LIVE_OVERPASS_ENDPOINTS: https://overpass-api.de/api/interpreter,https://overpass.private.coffee/api/interpreter
           LIVE_VALHALLA_ENDPOINT: https://valhalla1.openstreetmap.de
           LIVE_GEO_CLIENT_ID: akarfinder.ma-ann-l6-certification
           AUDIT_OUTPUT_DIR: artifacts/announcement-page-l6-live
