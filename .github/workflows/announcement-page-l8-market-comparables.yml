@@ -5,6 +5,7 @@ on:
     paths:
       - "lib/property-detail/market-comparables.ts"
       - "lib/property-detail/market-comparables-service.ts"
+      - "lib/property-detail/market-comparables-repository.ts"
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
       - "lib/market/**"
       - "lib/market-index/**"
@@ -17,6 +18,7 @@ on:
     paths:
       - "lib/property-detail/market-comparables.ts"
       - "lib/property-detail/market-comparables-service.ts"
+      - "lib/property-detail/market-comparables-repository.ts"
       - "lib/property-detail/announcement-page-truth-contract-v1.ts"
       - "lib/market/**"
       - "lib/market-index/**"
@@ -43,6 +45,7 @@ jobs:
           npx tsx --test
           scripts/scrapers/__tests__/announcement-page-l8-market-comparables.test.ts
           scripts/scrapers/__tests__/announcement-page-l8-market-comparables-service.test.ts
+          scripts/scrapers/__tests__/announcement-page-l8-market-comparables-repository.test.ts
           scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts
           scripts/scrapers/__tests__/p10d-market.test.ts
           scripts/scrapers/__tests__/market-benchmark.test.ts
