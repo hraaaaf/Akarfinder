@@ -1,11 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { SiteFooter } from "@/components/landing/SiteFooter";
-import { MobilePropertyDecisionBar } from "@/components/listings/MobilePropertyDecisionBar";
-import { PropertyDecisionHeader } from "@/components/listings/PropertyDecisionHeader";
-import { PropertyDetailV2 } from "@/components/listings/PropertyDetailV2";
-import { SiteHeader } from "@/components/layout/SiteHeader";
-import { Container } from "@/components/ui/Container";
-import { ui } from "@/components/ui/design-system";
+import { AnnouncementPageShell } from "@/components/listings/AnnouncementPageShell";
 import { queryListingById } from "@/lib/db/index";
 import type { Listing } from "@/lib/listings/types";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
@@ -28,17 +22,7 @@ type ListingDetailPageProps = {
 };
 
 function renderListing(listing: Listing, detail: NonNullable<ReturnType<typeof buildPublicPropertyDetailV2>>) {
-  return (
-    <main className={`min-h-screen pb-24 lg:pb-0 ${ui.page}`}>
-      <SiteHeader />
-      <Container>
-        <PropertyDecisionHeader listing={listing} detail={detail} />
-        <PropertyDetailV2 listing={listing} detail={detail} />
-      </Container>
-      <SiteFooter />
-      <MobilePropertyDecisionBar listingId={listing.id} />
-    </main>
-  );
+  return <AnnouncementPageShell listing={listing} detail={detail} />;
 }
 
 export default async function ListingDetailPage({ params }: ListingDetailPageProps) {
