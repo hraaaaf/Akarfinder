@@ -38,5 +38,12 @@ jobs:
       - name: ANN-L0 targeted truth-contract tests
         run: npx tsx --test scripts/scrapers/__tests__/announcement-page-truth-contract-v1.test.ts
 
+      - name: Existing listing truth boundaries
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/listing-detail-boundary.test.ts
+          scripts/scrapers/__tests__/p10img-image-policy.test.ts
+          scripts/scrapers/__tests__/real-proximity-engine.test.ts
+
       - name: TypeScript
         run: npx tsc --noEmit
