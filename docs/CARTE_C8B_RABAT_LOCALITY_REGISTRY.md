@@ -38,9 +38,16 @@ C8B exige désormais que **100 % des noms du dictionnaire `MOROCCO_DISTRICTS.Rab
 
 Aucun de ces noms ne peut disparaître silencieusement lors des lots suivants.
 
-## Extension first-party AURS
+## Extension first-party AURS / Commune de Rabat
 
-Des noms explicitement utilisés par l'Agence Urbaine de Rabat-Salé sont conservés comme candidats sans fusion automatique : Mabella, Takaddoum, Kbibat, Douar Doum, El Kora, El Garaa et Al Boustane. Akkari/Océan sont également documentés par l'AURS ; la Médina dispose d'un document d'urbanisme dédié.
+Des noms explicitement utilisés par des sources first-party sont conservés comme candidats sans fusion automatique : Mabella, Takaddoum, Kbibat, Douar Doum, El Kora, El Garaa, Al Boustane, Hay Nahda, Diour Jamaa, Oudayas et Mellah. Akkari/Océan sont documentés par l'AURS ; la Médina dispose d'un document d'urbanisme dédié.
+
+Sources de cadrage :
+
+- AURS, `Aire urbaine de Rabat` : Aviation, Agdal, Mabella, Takaddoum, Kbibat, Douars Doum, El Kora, El Garaa ;
+- AURS, `Etudes générales` : Al Boustane explicitement qualifié de nouveau quartier ;
+- AURS, plan d'aménagement et sauvegarde de la Médina : Médina, Kasbah des Oudayas et Mellah comme composantes explicitement identifiées ;
+- Commune de Rabat : adresse institutionnelle à Hay Nahda I et patrimoine urbain citant le quartier Habous Diour Jamaa et la Casbah des Oudayas.
 
 Ces candidats restent :
 
@@ -58,7 +65,7 @@ Ces candidats restent :
 
 ## Limite importante
 
-Le registre compte actuellement **19 localités produit/candidates** et couvre **10/10 du dictionnaire Rabat interne**. Cela constitue un plancher vérifié, **pas encore une revendication exhaustive de tous les quartiers de la commune de Rabat**. L'exhaustivité finale nécessite un recensement source-backed supplémentaire et reste ouverte dans C8.
+Le registre compte actuellement **23 localités produit/candidates** et couvre **10/10 du dictionnaire Rabat interne**. Cela constitue un plancher vérifié, **pas encore une revendication exhaustive de tous les quartiers de la commune de Rabat**. L'exhaustivité finale nécessite un recensement source-backed supplémentaire et reste ouverte dans C8.
 
 ## Non-activation runtime
 
