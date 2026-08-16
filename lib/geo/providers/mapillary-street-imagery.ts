@@ -20,12 +20,18 @@ type MapillaryGeometry = {
   coordinates?: unknown;
 };
 
+type MapillaryCreator = {
+  id?: string | number;
+  username?: string | null;
+};
+
 type MapillaryImage = {
   id?: string | number;
   computed_geometry?: MapillaryGeometry;
   geometry?: MapillaryGeometry;
   captured_at?: string | number | null;
   thumb_1024_url?: string | null;
+  creator?: MapillaryCreator | null;
 };
 
 type MapillaryResponse = {
@@ -68,9 +74,14 @@ function validHttpUrl(value: unknown): string | null {
   }
 }
 
+function creatorUsername(image: MapillaryImage): string | null {
+  const username = image.creator?.username;
+  return typeof username === "string" && username.trim().length > 0 ? username.trim() : null;
+}
+
 function capturedAtIso(value: MapillaryImage["captured_at"]): string | null {
   if (value == null) return null;
-  const date = typeof value === "number" ? new Date(value) : new Date(value);
+  const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
@@ -112,7 +123,8 @@ function evidence(providerId: string, attribution: string, ttlMs: number, now: D
 function imageAsset(image: MapillaryImage, origin: GeoCoordinate, radiusMeters: number): StreetImageryAsset | null {
   const id = image.id == null ? "" : String(image.id).trim();
   const coordinate = geometryCoordinate(image);
-  if (!id || !coordinate) return null;
+  const username = creatorUsername(image);
+  if (!id || !coordinate || !username) return null;
   const radius = Math.max(25, Math.min(Math.round(radiusMeters), MAX_RADIUS_METERS));
   if (distanceMeters(origin, coordinate) > radius) return null;
 
@@ -122,6 +134,7 @@ function imageAsset(image: MapillaryImage, origin: GeoCoordinate, radiusMeters: 
     capturedAt: capturedAtIso(image.captured_at),
     thumbnailUrl: validHttpUrl(image.thumb_1024_url),
     viewerUrl: `https://www.mapillary.com/app/?pKey=${encodeURIComponent(id)}`,
+    creatorUsername: username,
   };
 }
 
@@ -161,7 +174,7 @@ export class MapillaryStreetImageryProvider implements StreetImageryProvider {
     const radius = Math.max(25, Math.min(Math.round(input.radiusMeters), MAX_RADIUS_METERS));
     const url = new URL(`${this.endpoint}/images`);
     url.searchParams.set("bbox", boundingBox(input.origin.coordinate, radius));
-    url.searchParams.set("fields", "id,computed_geometry,geometry,captured_at,thumb_1024_url");
+    url.searchParams.set("fields", "id,computed_geometry,geometry,captured_at,thumb_1024_url,creator");
     url.searchParams.set("limit", String(MAX_RESULTS));
 
     try {
