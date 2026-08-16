@@ -5,8 +5,10 @@ on:
     paths:
       - "lib/map/intelligence-scale.ts"
       - "lib/map/intelligence-payload.ts"
+      - "lib/map/market-metric-reliability.ts"
       - "scripts/scrapers/__tests__/intelligence-scale.test.ts"
       - "scripts/scrapers/__tests__/intelligence-payload.test.ts"
+      - "scripts/scrapers/__tests__/market-metric-reliability.test.ts"
       - ".github/workflows/carte-c3-intelligence-scales.yml"
 
 permissions:
@@ -23,8 +25,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Deterministic scale and payload contracts
-        run: npx tsx --test scripts/scrapers/__tests__/intelligence-scale.test.ts scripts/scrapers/__tests__/intelligence-payload.test.ts
+      - name: Deterministic scale, payload and reliability contracts
+        run: npx tsx --test scripts/scrapers/__tests__/intelligence-scale.test.ts scripts/scrapers/__tests__/intelligence-payload.test.ts scripts/scrapers/__tests__/market-metric-reliability.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: No hardcoded market thresholds
@@ -36,3 +38,4 @@ jobs:
           fi
           grep -q 'neutralColor' lib/map/intelligence-payload.ts
           grep -q 'observedMarketOnly' lib/map/intelligence-payload.ts
+          grep -q 'p1c2-neighborhood-offer-reliability-policy.json' lib/map/market-metric-reliability.ts
