@@ -43,11 +43,12 @@ C0–C7 reste fermé à **8/8 = 100 %**. Ce pourcentage appartient uniquement au
 - **0 nouvelle activation C8 éligible** ;
 - aucune mutation DB/Search/ranking/API/UI.
 
-### C8D — Market-data projection + UI expansion + final certification 🟡 IN PROGRESS
+### C8D — Resolver shadow + autorité proposée + maturité marché + récupération Agenz ✅ EVIDENCE MERGED / LIVE GATE PENDING
 
-Le lot suivant est le **Rabat Resolver Shadow** (#750), encore non public :
+#### Rabat Resolver Shadow — PR #750 ✅ MERGED
 
-- resolver déterministe sur le registre C8B ;
+- merge `9b365bc8d671f58e20c9c33b0509f419f5f58771` ;
+- resolver déterministe sur le registre C8B, non branché au runtime public ;
 - audit production strictement read-only ;
 - 984 annonces Rabat dédupliquées / 6 sources ;
 - 638 matchs uniques, 6 ambiguës fail-closed, 340 sans signal exact ;
@@ -56,7 +57,46 @@ Le lot suivant est le **Rabat Resolver Shadow** (#750), encore non public :
 - alias annonce `Kébibat` ajouté à la localité candidate canonique `Kbibat` ;
 - aucune création de `geo_entity`, `geo_alias` ou `geo_resolution_event`.
 
-Océan reste une cible logique pour l'extension marché parce que sa taxonomie et son contexte sont déjà présents, mais sa géométrie certifiée et ses échantillons prix/m² manquent encore.
+#### Rabat Authority Proposal — PR #753 ✅ MERGED
+
+- merge `fbbf4c1904c640364f16303f27f6a35f047c7798` ;
+- 18 autorités candidates proposées en `proposal_only`, hors 5 entités Rabat déjà validées ;
+- toutes restent `pending_review`, `seo_eligible=false`, `map_eligible=false` ;
+- dry-run de contraintes production : 18/18 entités nouvelles, 26/26 aliases nouveaux, 0 conflit ID/slug/alias, **0 écriture** ;
+- aucune migration ni mutation DB ; toute création d’autorité production reste un gate humain séparé.
+
+#### Rabat Market Maturity — PR #754 ✅ MERGED
+
+- merge `95fe4274ac217a4dde926f76c8f287a1dcb02109` ;
+- **11/11 checks observés SUCCESS** ;
+- 68 matchs candidats uniques répartis sur 11 localités non vides ;
+- 7 localités disposent d’au moins 2 sources ;
+- profondeur maximale observée : **2 échantillons** `normalized_price_m2` vente pour une candidate ;
+- **0 candidate** déclarée prête pour une métrique prix/m² publique ;
+- aucun seuil statistique inventé, aucune médiane sparse publiée, aucune mutation DB.
+
+#### Agenz Detail Recovery Audit — PR #758 ✅ MERGED
+
+- exact head `6492e843989fa6d8e22b6af1da2844df7677c051` ;
+- merge `dfd227e5050b76abb14967a0d0ef98374c113009` ;
+- **8/8 workflows observés SUCCESS**, dont le gate dédié C8D Rabat Agenz Detail Recovery Audit ;
+- cible bornée initiale : Agenz × Diour Jamaa ;
+- 12 URLs Agenz Diour Jamaa canoniques, dédupliquées en 9 IDs d’annonces uniques avant fetch ;
+- source verrouillée à `agenz.ma`, localité restreinte à un slug candidat C8B, robots.txt vérifié, limites fail-closed ;
+- récupération prix via extracteur strict existant ; surface acceptée uniquement avec preuve JSON-LD high-confidence ;
+- script strictement read-only, sans mode write ;
+- **0 écriture DB** et **0 métrique marché publiée** ;
+- le dry-run live post-merge sur cohort borné reste à exécuter dans un environnement disposant des credentials et de l’accès réseau ;
+- toute future écriture de prix/surface reste un gate humain séparé après validation valeur par valeur.
+
+## Invariants C8 actuellement vérifiés
+
+- registre actuel : **23 localités produit/candidates**, toujours qualifié de plancher et non d’inventaire exhaustif ;
+- géométrie défendable : **4/23 certifiées**, **19/23 non résolues** ;
+- nouvelles activations publiques C8 : **0** ;
+- mutations DB C8 : **0** ;
+- nouvelle métrique prix/m² publique issue de C8 : **0** ;
+- les propositions d’autorité, audits shadow et audits de récupération restent non publics et fail-closed.
 
 ## Progression C8
 
@@ -64,9 +104,11 @@ Océan reste une cible logique pour l'extension marché parce que sa taxonomie e
 
 ## Chemin critique
 
-1. renforcer l’inventaire jusqu’à exhaustivité source-backed défendable ;
-2. certifier la résolution geo shadow puis proposer une autorité DB bornée sans mutation implicite ;
-3. certifier géométrie + métriques + contexte par localité ;
-4. activer uniquement les localités passant le gate C8D ;
-5. certifier API/UI et non-régression ;
-6. fermer C8 seulement lorsque le périmètre et les critères d’exhaustivité sont explicitement verrouillés et satisfaits.
+1. renforcer l’inventaire jusqu’à une exhaustivité source-backed défendable ;
+2. poursuivre la certification géométrique des **19/23** localités non résolues ;
+3. exécuter le dry-run live borné Agenz × localité candidate puis valider les valeurs récupérables sans écriture ;
+4. augmenter la profondeur structurée prix/surface et multi-source sans publier de statistique sparse ;
+5. ne créer une autorité DB ou écrire des champs récupérés qu’après le gate humain séparé prévu ;
+6. activer uniquement les localités satisfaisant simultanément taxonomie + géométrie + métriques + contexte ;
+7. certifier API/UI et non-régression sur les localités effectivement éligibles ;
+8. fermer C8 seulement lorsque le périmètre et les critères d’exhaustivité sont explicitement verrouillés et satisfaits.

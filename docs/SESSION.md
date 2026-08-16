@@ -31,16 +31,20 @@ Ce fichier est le handover opérationnel court. `README.md` porte l’identité/
 - Preuve détaillée : `docs/PRICE_EXTRACTION_V5_AUDIT.md`.
 - Suite Search prix : mesurer read-only des cohortes paginées au-delà des 120 plus récents avant tout nouveau bounded write ; ne pas relâcher les règles de fiabilité pour atteindre un objectif numérique.
 
-## Carte intelligence marché — C1 Market Zones ✅ CLOSED
+## Carte intelligence marché — C8 Extension Rabat tous quartiers ⏳ EN COURS
 
-- **C0 + C1 CLOSED = 2/8 = 25 %**.
-- PR #686 ✅ MERGED — géométries Rabat Market Zones + packaging runtime ; merge `23199b1ad88b7d23419dba95b0bbaaca0a785ba0`.
-- PR #689 ✅ MERGED — API `/api/geo/rabat-market-zones` fail-closed ; merge `165907bc2af02342e07a4ed57d1bce2a00062f94`.
-- Head exact C1C : `f2a71d51e50ad58de1b221f0a052217d6f86587a`.
-- Gate C1C `31914475822` SUCCESS ; 16/16 workflows PR observés SUCCESS sur l’exact head.
-- 4 zones pilote Rabat ; état Shadow conservé ; aucune activation Canary/Published, aucun write DATA/Registry, aucun changement ranking.
-- Preuve : `docs/MARKET_ZONES_C1_CLOSEOUT.md`.
-- **Next : C2 métriques réelles par zone** (`listing_count`, médiane prix/m², densité), sans inventer de cinquième zone.
+- **C0–C7 = 8/8 CLOSED = 100 % historique uniquement** ; ce pourcentage ne mesure pas C8.
+- C8A #744, C8B #745, C8C #746 et C8D foundation #747 sont mergés ; registre actuel **23 localités produit/candidates**, explicitement qualifié de plancher non exhaustif.
+- Géométrie : **4/23 certifiées** (Agdal, Hay Riad, Hassan, Souissi) ; **19/23 non résolues** ; aucune géométrie candidate promue par inférence.
+- Resolver shadow #750 ✅ merge `9b365bc8d671f58e20c9c33b0509f419f5f58771` : 984 annonces Rabat / 6 sources, 638 matchs uniques, 6 ambiguës fail-closed, 340 sans signal exact ; 68 matchs candidats.
+- Authority Proposal #753 ✅ merge `fbbf4c1904c640364f16303f27f6a35f047c7798` : 18 autorités `proposal_only`, 26 aliases proposés, 0 conflit observé, **0 write**.
+- Market Maturity #754 ✅ merge `95fe4274ac217a4dde926f76c8f287a1dcb02109` : maximum **2** échantillons vente `normalized_price_m2` par candidate, **0 candidate** prête pour métrique prix/m² publique.
+- Agenz Detail Recovery #758 ✅ exact head `6492e843989fa6d8e22b6af1da2844df7677c051`, merge `dfd227e5050b76abb14967a0d0ef98374c113009`, **8/8 workflows SUCCESS** ; cible initiale Agenz × Diour Jamaa, 12 URLs canoniques → 9 IDs uniques ; audit strictement read-only.
+- Invariants C8 : **0 mutation DB**, **0 nouvelle activation publique**, **0 nouvelle métrique prix/m² publique**.
+- Dry-run live Agenz post-merge : **PENDING**. Le workflow actuel n’expose pas `workflow_dispatch` et le connecteur GitHub courant n’expose pas d’action dispatch ; ne pas prétendre qu’il a été exécuté.
+- Progression globale C8 : **non chiffrable** tant que le dénominateur exhaustif des quartiers/localités produit de Rabat n’est pas prouvé.
+- Preuve canonique : `docs/CARTE_C8_RABAT_EXTENSION_STATUS.md`.
+- Next : dry-run live borné Agenz sans écriture dès qu’un environnement réseau/credentials permet l’exécution, poursuite de l’inventaire exhaustif et certification des 19 géométries restantes.
 
 ## Mockup Convergence — L2 Search + Map ✅ CLOSED
 
@@ -133,4 +137,4 @@ Ce fichier est le handover opérationnel court. `README.md` porte l’identité/
 
 ## Reprise exacte
 
-**SEARCH Price Coverage v6 est CLOSED : audit paginé #699 = 412/960 fiables ; run manuel `31921208732` a produit un canary 100/0 puis 100 writes Mubawab réels ; hotfix #704 mergé sur `311e6088b491e7b4f83166d70a6a7dba45bc7de0` avec double confirmation exacte ; snapshot production observé 2 936 / 15 546 = 18,89 %. Toute future écriture v6 exige `WRITE_100_RELIABLE_PRICES` au workflow et au script. En parallèle, Carte intelligence marché poursuit sa lane propre.**
+**C8 Extension Rabat tous quartiers est le chantier Carte courant. #750/#753/#754/#758 sont mergés ; registre actuel 23 localités non exhaustif ; géométrie 4/23 certifiée et 19/23 unresolved ; 0 mutation DB, 0 nouvelle activation C8, 0 métrique prix/m² candidate publiée. Le dry-run live Agenz × Diour Jamaa reste pending et non dispatchable via le connecteur/workflow actuels. Reprendre par la certification/merge du closeout canonique, puis exécuter ce dry-run dans un environnement adapté avant toute écriture.**
