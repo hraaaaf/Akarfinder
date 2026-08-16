@@ -88,10 +88,31 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
   return (
     <div className="relative">
       {rabatIntelligenceActive ? (
-        <RabatMarketIntelligenceExperienceDynamic
-          navigationState={navigationState}
-          onNavigationChange={handleNavigationChange}
-        />
+        <>
+          <style>{`
+            @media (max-width: 639px) {
+              [data-akarfinder-market-intelligence-map] section[aria-label="Contrôles intelligence marché"] > div:first-child {
+                flex-wrap: wrap;
+              }
+              [data-akarfinder-market-intelligence-map] section[aria-label="Contrôles intelligence marché"] > div:first-child > label {
+                order: 1;
+                flex: 1 1 calc(100% - 48px);
+              }
+              [data-akarfinder-market-intelligence-map] section[aria-label="Contrôles intelligence marché"] > div:first-child > [role="tablist"] {
+                order: 3;
+                flex: 1 0 100%;
+                width: 100%;
+              }
+              [data-akarfinder-market-intelligence-map] section[aria-label="Contrôles intelligence marché"] > div:first-child > button[aria-label="Revenir à la carte du Maroc"] {
+                order: 2;
+              }
+            }
+          `}</style>
+          <RabatMarketIntelligenceExperienceDynamic
+            navigationState={navigationState}
+            onNavigationChange={handleNavigationChange}
+          />
+        </>
       ) : (
         <>
           <MapNeighborhoodExperienceDynamic
