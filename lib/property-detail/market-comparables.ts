@@ -43,6 +43,16 @@ export type CertifiedComparable = {
   surfaceDeltaRatio: number | null;
 };
 
+export type MarketComparableDistribution = {
+  sampleCount: number;
+  comparableStockCount: number;
+  minPricePerM2: number;
+  p25PricePerM2: number;
+  medianPricePerM2: number;
+  p75PricePerM2: number;
+  maxPricePerM2: number;
+};
+
 export type MarketComparableSet = {
   status: "certified" | "unavailable";
   reason:
@@ -52,6 +62,7 @@ export type MarketComparableSet = {
   scope: "neighborhood" | "city" | null;
   observedAt: string | null;
   sampleCount: number;
+  distribution: MarketComparableDistribution | null;
   comparables: CertifiedComparable[];
 };
 
@@ -129,6 +140,33 @@ function median(values: number[]): number | null {
     : sorted[middle]!;
 }
 
+function quantile(values: number[], percentile: number): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const position = (sorted.length - 1) * percentile;
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+  const weight = position - lower;
+  if (lower === upper) return sorted[lower]!;
+  return sorted[lower]! * (1 - weight) + sorted[upper]! * weight;
+}
+
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+function buildDistribution(values: CertifiedComparable[]): MarketComparableDistribution {
+  const prices = values.map((item) => item.pricePerM2);
+  return {
+    sampleCount: values.length,
+    comparableStockCount: values.length,
+    minPricePerM2: round2(Math.min(...prices)),
+    p25PricePerM2: round2(quantile(prices, 0.25)),
+    medianPricePerM2: round2(quantile(prices, 0.5)),
+    p75PricePerM2: round2(quantile(prices, 0.75)),
+    maxPricePerM2: round2(Math.max(...prices)),
+  };
+}
+
 function rankComparables(target: MarketComparableTarget, values: CertifiedComparable[]): CertifiedComparable[] {
   const targetPricePerM2 = positiveFinite(target.priceMad) && positiveFinite(target.surfaceM2)
     ? target.priceMad / target.surfaceM2
@@ -147,6 +185,21 @@ function rankComparables(target: MarketComparableTarget, values: CertifiedCompar
   });
 }
 
+function unavailable(
+  reason: "target_invalid" | "insufficient_verified_sample",
+  sampleCount: number,
+): MarketComparableSet {
+  return {
+    status: "unavailable",
+    reason,
+    scope: null,
+    observedAt: null,
+    sampleCount,
+    distribution: null,
+    comparables: [],
+  };
+}
+
 export function buildCertifiedComparableSet(input: {
   target: MarketComparableTarget;
   candidates: MarketComparableCandidate[];
@@ -159,14 +212,7 @@ export function buildCertifiedComparableSet(input: {
     !normalize(target.city) ||
     !normalize(target.propertyType)
   ) {
-    return {
-      status: "unavailable",
-      reason: "target_invalid",
-      scope: null,
-      observedAt: null,
-      sampleCount: 0,
-      comparables: [],
-    };
+    return unavailable("target_invalid", 0);
   }
 
   const targetNeighborhood = normalize(target.neighborhood);
@@ -195,14 +241,7 @@ export function buildCertifiedComparableSet(input: {
   }
   const ranked = rankComparables(target, [...dedupedByCluster.values()]);
   if (ranked.length < MARKET_COMPARABLE_MIN_SAMPLE) {
-    return {
-      status: "unavailable",
-      reason: "insufficient_verified_sample",
-      scope: null,
-      observedAt: null,
-      sampleCount: ranked.length,
-      comparables: [],
-    };
+    return unavailable("insufficient_verified_sample", ranked.length);
   }
 
   const publicComparables = ranked.slice(0, MARKET_COMPARABLE_MAX_PUBLIC);
@@ -210,8 +249,9 @@ export function buildCertifiedComparableSet(input: {
     status: "certified",
     reason: "certified",
     scope: chosen.scope,
-    observedAt: publicComparables.reduce((latest, item) => item.observedAt > latest ? item.observedAt : latest, publicComparables[0]!.observedAt),
+    observedAt: ranked.reduce((latest, item) => item.observedAt > latest ? item.observedAt : latest, ranked[0]!.observedAt),
     sampleCount: ranked.length,
+    distribution: buildDistribution(ranked),
     comparables: publicComparables,
   };
 }
