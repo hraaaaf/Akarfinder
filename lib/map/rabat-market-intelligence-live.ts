@@ -8,7 +8,7 @@ const TARGETS = ["agdal", "hay-riad", "souissi", "hassan"] as const;
 const CHUNK_SIZE = 100;
 const MAX_TARGET_EVENTS = 1000;
 
-const ZONE_BY_NEIGHBORHOOD = new Map([
+const ZONE_BY_NEIGHBORHOOD: ReadonlyMap<string, string> = new Map<string, string>([
   ["agdal", "market_zone_rabat_agdal"],
   ["hay-riad", "market_zone_rabat_hay_riad"],
   ["souissi", "market_zone_rabat_souissi"],
@@ -89,10 +89,12 @@ export async function readRabatMarketIntelligenceMetrics(): Promise<readonly Int
     .in("slug", [...TARGETS]);
   if (neighborhoodError) throw new Error(`C3 neighborhoods read failed: ${errorDetails(neighborhoodError)}`);
 
-  const neighborhoodById = new Map((neighborhoodRows ?? []).map((row: any) => [String(row.id), String(row.slug)]));
-  const foundSlugs = new Set(neighborhoodById.values());
+  const neighborhoodById = new Map<string, string>(
+    (neighborhoodRows ?? []).map((row: any): [string, string] => [String(row.id), String(row.slug)]),
+  );
+  const foundSlugs = new Set<string>(neighborhoodById.values());
   for (const slug of TARGETS) if (!foundSlugs.has(slug)) throw new Error(`C3 missing validated Rabat neighborhood: ${slug}`);
-  const targetNeighborhoodIds = [...neighborhoodById.keys()];
+  const targetNeighborhoodIds: string[] = [...neighborhoodById.keys()];
 
   const { data: targetEvents, error: targetEventsError } = await db
     .from("geo_resolution_events")
@@ -104,7 +106,9 @@ export async function readRabatMarketIntelligenceMetrics(): Promise<readonly Int
   if (targetEventsError) throw new Error(`C3 target resolution event read failed: ${errorDetails(targetEventsError)}`);
   if ((targetEvents ?? []).length >= MAX_TARGET_EVENTS) throw new Error("C3 target resolution event safety bound reached");
 
-  const candidateSeedIds = [...new Set((targetEvents ?? []).map((row: any) => String(row.source_record_id)).filter(Boolean))];
+  const candidateSeedIds: string[] = [...new Set<string>(
+    (targetEvents ?? []).map((row: any) => String(row.source_record_id)).filter((value: string) => value.length > 0),
+  )];
   const allCandidateEvents = await readByIds(
     db,
     "geo_resolution_events",
@@ -125,7 +129,7 @@ export async function readRabatMarketIntelligenceMetrics(): Promise<readonly Int
     neighborhoodById.has(String(event.resolved_neighborhood_id)) &&
     (!event.resolved_city_id || String(event.resolved_city_id) === rabatCityId),
   );
-  const currentSeedIds = currentEvents.map((event: any) => String(event.source_record_id));
+  const currentSeedIds: string[] = currentEvents.map((event: any) => String(event.source_record_id));
 
   const docsRows = await readByIds(
     db,
@@ -135,21 +139,23 @@ export async function readRabatMarketIntelligenceMetrics(): Promise<readonly Int
     currentSeedIds,
   );
   const seedRows = await readByIds(db, "source_offer_seeds", "id,source_domain", "id", currentSeedIds);
-  const docs = new Map(docsRows.map((row: any) => [String(row.seed_id), row]));
-  const seeds = new Map(seedRows.map((row: any) => [String(row.id), row]));
+  const docs = new Map<string, any>(docsRows.map((row: any): [string, any] => [String(row.seed_id), row]));
+  const seeds = new Map<string, any>(seedRows.map((row: any): [string, any] => [String(row.id), row]));
 
-  const eventBySeed = new Map(currentEvents.map((event: any) => [String(event.source_record_id), event]));
+  const eventBySeed = new Map<string, any>(
+    currentEvents.map((event: any): [string, any] => [String(event.source_record_id), event]),
+  );
   const eligible = currentSeedIds.flatMap((seedId) => {
-    const doc: any = docs.get(seedId);
-    const seed: any = seeds.get(seedId);
-    const event: any = eventBySeed.get(seedId);
+    const doc = docs.get(seedId);
+    const seed = seeds.get(seedId);
+    const event = eventBySeed.get(seedId);
     if (!doc || !seed || !event) return [];
     if (doc.vertical_classification !== "real_estate_likely" || doc.document_kind !== "LISTING") return [];
     if (!["eligible_primary", "eligible_secondary"].includes(doc.display_eligibility)) return [];
     const transaction = normalizeTransaction(doc.normalized_intent);
     if (!transaction) return [];
     const neighborhoodSlug = neighborhoodById.get(String(event.resolved_neighborhood_id));
-    const zoneId = neighborhoodSlug ? ZONE_BY_NEIGHBORHOOD.get(neighborhoodSlug) : null;
+    const zoneId = neighborhoodSlug ? ZONE_BY_NEIGHBORHOOD.get(neighborhoodSlug) : undefined;
     if (!zoneId) return [];
     const normalizedPriceM2 = Number(doc.normalized_price_m2) > 0 ? Number(doc.normalized_price_m2) : null;
     const price = Number(doc.normalized_price_mad) > 0 ? Number(doc.normalized_price_mad) : null;
@@ -176,7 +182,9 @@ export async function readRabatMarketIntelligenceMetrics(): Promise<readonly Int
   const snapshotTimestamp = rows.reduce((max, row) => String(row.updatedAt ?? "") > max ? String(row.updatedAt ?? "") : max, "");
   const snapshotVersion = `rabat-observed-v1:${snapshotTimestamp || "no-updated-at"}:${rows.length}`;
 
-  const zoneById = new Map(RABAT_MARKET_ZONES_SHADOW.map((zone) => [zone.id, zone]));
+  const zoneById = new Map<string, (typeof RABAT_MARKET_ZONES_SHADOW)[number]>(
+    RABAT_MARKET_ZONES_SHADOW.map((zone): [string, (typeof RABAT_MARKET_ZONES_SHADOW)[number]] => [zone.id, zone]),
+  );
   const output: IntelligenceMetricInput[] = [];
   for (const zoneId of ZONE_BY_NEIGHBORHOOD.values()) {
     const zone = zoneById.get(zoneId);
