@@ -1,7 +1,18 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { performance } from "node:perf_hooks";
 
-const OVERPASS_ENDPOINT = process.env.ANN_L5_OVERPASS_ENDPOINT || "https://overpass-api.de/api/interpreter";
+const DEFAULT_OVERPASS_ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
+];
+const OVERPASS_ENDPOINTS = (
+  process.env.ANN_L5_OVERPASS_ENDPOINTS ||
+  process.env.ANN_L5_OVERPASS_ENDPOINT ||
+  DEFAULT_OVERPASS_ENDPOINTS.join(",")
+)
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
 const OSRM_ENDPOINT = process.env.ANN_L5_OSRM_ENDPOINT || "https://router.project-osrm.org";
 const OUTPUT_DIR = process.env.ANN_L5_OUTPUT_DIR || "artifacts/announcement-page-l5-geo";
 const USER_AGENT = "AkarFinder-ANN-L5-Geo-Bakeoff/1.0 (+https://akarfinder.ma)";
@@ -70,7 +81,11 @@ async function fetchJson(url, init = {}, attempts = 3) {
           ...(init.headers || {}),
         },
       });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) {
+        const error = new Error(`HTTP ${response.status}`);
+        error.status = response.status;
+        throw error;
+      }
       return await response.json();
     } catch (error) {
       lastError = error;
@@ -80,6 +95,24 @@ async function fetchJson(url, init = {}, attempts = 3) {
     }
   }
   throw lastError;
+}
+
+async function fetchOverpass(query) {
+  const body = new URLSearchParams({ data: query }).toString();
+  let lastError;
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const payload = await fetchJson(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+        body,
+      }, 1);
+      return { payload, endpoint };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError ?? new Error("No Overpass endpoint configured");
 }
 
 function elementCoordinate(element) {
@@ -142,18 +175,14 @@ function selectPoints(elements) {
 
 async function sampleCity(city) {
   const started = performance.now();
-  const body = new URLSearchParams({ data: overpassQuery(city) }).toString();
-  const payload = await fetchJson(OVERPASS_ENDPOINT, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-    body,
-  });
+  const { payload, endpoint } = await fetchOverpass(overpassQuery(city));
   const latencyMs = Math.round(performance.now() - started);
   const points = selectPoints(payload.elements);
   return {
     points,
     categoryCount: new Set(points.map((point) => point.category)).size,
     latencyMs,
+    endpoint,
     sourceTimestamp: payload.osm3s?.timestamp_osm_base || null,
   };
 }
@@ -186,6 +215,7 @@ async function routeMatrix(points) {
 }
 
 async function main() {
+  if (OVERPASS_ENDPOINTS.length === 0) throw new Error("No Overpass endpoint configured");
   const generatedAt = new Date().toISOString();
   const cities = [];
 
@@ -219,7 +249,7 @@ async function main() {
     providers: {
       nearby: {
         id: "overpass-public-benchmark",
-        endpoint: OVERPASS_ENDPOINT,
+        endpoints: OVERPASS_ENDPOINTS,
         attribution: "© OpenStreetMap contributors",
         productionApproved: false,
         purpose: "ANN-L5 coverage/latency benchmark only",
@@ -251,9 +281,9 @@ async function main() {
     `Real OSM sample points: ${totalPoints}`,
     `OSRM reachable matrix pairs: ${totalReachable}/${totalPairs} (${(routingReachableRatio * 100).toFixed(1)}%)`,
     "",
-    "| City | Points | Categories | Overpass latency | OSRM latency | Reachable pairs |",
-    "|---|---:|---:|---:|---:|---:|",
-    ...cities.map((entry) => `| ${entry.city} | ${entry.nearby.points.length} | ${entry.nearby.categoryCount} | ${entry.nearby.latencyMs} ms | ${entry.routing.latencyMs} ms | ${entry.routing.reachablePairs}/${entry.routing.totalPairs} |`),
+    "| City | Points | Categories | Overpass endpoint | Overpass latency | OSRM latency | Reachable pairs |",
+    "|---|---:|---:|---|---:|---:|---:|",
+    ...cities.map((entry) => `| ${entry.city} | ${entry.nearby.points.length} | ${entry.nearby.categoryCount} | ${new URL(entry.nearby.endpoint).host} | ${entry.nearby.latencyMs} ms | ${entry.routing.latencyMs} ms | ${entry.routing.reachablePairs}/${entry.routing.totalPairs} |`),
     "",
     "Public Overpass and OSRM demo endpoints are benchmark-only and are not approved as AkarFinder production dependencies.",
   ];
@@ -266,6 +296,7 @@ async function main() {
       city: entry.city,
       points: entry.nearby.points.length,
       categories: entry.nearby.categoryCount,
+      overpassHost: new URL(entry.nearby.endpoint).host,
       overpassMs: entry.nearby.latencyMs,
       osrmMs: entry.routing.latencyMs,
     })),
