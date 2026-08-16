@@ -1,0 +1,46 @@
+name: C8D Rabat Publication Readiness
+
+on:
+  pull_request:
+    paths:
+      - "docs/CARTE_C8_RABAT_EXTENSION_STATUS.md"
+      - "docs/CARTE_C8D_RABAT_PUBLICATION_READINESS.md"
+      - "lib/geo/rabat-locality-publication-readiness.ts"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "lib/geo/rabat-locality-geometry-registry.ts"
+      - "lib/map/rabat-market-intelligence-live.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-publication-readiness.test.ts"
+      - ".github/workflows/carte-c8d-rabat-publication-readiness.yml"
+  push:
+    paths:
+      - "docs/CARTE_C8_RABAT_EXTENSION_STATUS.md"
+      - "docs/CARTE_C8D_RABAT_PUBLICATION_READINESS.md"
+      - "lib/geo/rabat-locality-publication-readiness.ts"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "lib/geo/rabat-locality-geometry-registry.ts"
+      - "lib/map/rabat-market-intelligence-live.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-publication-readiness.test.ts"
+      - ".github/workflows/carte-c8d-rabat-publication-readiness.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  c8d-rabat-publication-readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: C8D readiness gate
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8d-rabat-publication-readiness.test.ts
+      - name: C8A-C8C non-regression
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8a-rabat-taxonomy-contract.test.ts scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts scripts/scrapers/__tests__/carte-c8c-rabat-geometry-certification.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
