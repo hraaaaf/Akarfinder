@@ -21,7 +21,7 @@ describe("Carte C6 — verified professional listing inventory", () => {
     assert.equal(clampVerifiedListingInventoryLimit(Number.NaN), 50);
   });
 
-  it("projects only resolved Rabat neighborhoods to certified market zones", () => {
+  it("projects only neighborhoods resolved by the existing listing geo authority", () => {
     assert.deepEqual(resolveVerifiedListingMarketZone("Rabat", "Agdal"), {
       market_zone_id: "market_zone_rabat_agdal",
       geo_precision: "neighborhood_centroid",
@@ -30,17 +30,17 @@ describe("Carte C6 — verified professional listing inventory", () => {
       market_zone_id: "market_zone_rabat_hay_riad",
       geo_precision: "neighborhood_centroid",
     });
-    assert.deepEqual(resolveVerifiedListingMarketZone("Rabat", "Souissi"), {
-      market_zone_id: "market_zone_rabat_souissi",
-      geo_precision: "neighborhood_centroid",
-    });
     assert.deepEqual(resolveVerifiedListingMarketZone("Rabat", "Hassan"), {
       market_zone_id: "market_zone_rabat_centre",
       geo_precision: "neighborhood_centroid",
     });
   });
 
-  it("fails closed for unresolved or non-target geography", () => {
+  it("fails closed for unresolved, including Souissi until listing geo authority resolves it", () => {
+    assert.deepEqual(resolveVerifiedListingMarketZone("Rabat", "Souissi"), {
+      market_zone_id: null,
+      geo_precision: "city_centroid",
+    });
     assert.equal(resolveVerifiedListingMarketZone("Rabat", "Quartier inconnu").market_zone_id, null);
     assert.equal(resolveVerifiedListingMarketZone("Casablanca", "Maârif").market_zone_id, null);
     assert.equal(resolveVerifiedListingMarketZone(null, null).market_zone_id, null);
