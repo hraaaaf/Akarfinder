@@ -1,0 +1,70 @@
+name: Announcement Page L13 Certification 10of10
+# Exact-head trigger after canonical rail convergence and temporary workflow cleanup.
+
+on:
+  pull_request:
+    paths:
+      - 'components/listings/**'
+      - 'app/listings/**'
+      - 'app/visual-qa/announcement-page-mon-projet/**'
+      - 'lib/property-detail/**'
+      - 'lib/geo/**'
+      - 'lib/listings/**'
+      - 'docs/ANNOUNCEMENT_PAGE_*'
+      - 'scripts/audits/announcement-page-l12-visual.mjs'
+      - 'scripts/scrapers/__tests__/announcement-page-*.test.ts'
+      - '.github/workflows/announcement-page-l13-certification.yml'
+  push:
+    branches:
+      - 'agent/announcement-page-l13-certification-10of10'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: ANN-L0 to ANN-L12 regression contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t tests < <(find scripts/scrapers/__tests__ -maxdepth 1 -type f -name 'announcement-page-*.test.ts' -print | sort)
+          test "${#tests[@]}" -gt 0
+          npx tsx --test "${tests[@]}"
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start ANN-L13 production server
+        shell: bash
+        run: |
+          npm run start -- -p 3215 > /tmp/ann-l13.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3215/visual-qa/announcement-page-mon-projet >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ann-l13.log
+          exit 1
+      - name: ANN-L13 canonical convergence visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3215
+          AUDIT_OUTPUT_DIR: artifacts/announcement-page-l13-certification
+        run: node scripts/audits/announcement-page-l12-visual.mjs
+      - name: Upload ANN-L13 visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: announcement-page-l13-certification-${{ github.run_id }}
+          path: artifacts/announcement-page-l13-certification
+          if-no-files-found: error
+          retention-days: 14
