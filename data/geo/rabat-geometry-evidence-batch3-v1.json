@@ -1,0 +1,36 @@
+{
+  "version": "c8_geometry_evidence_batch3_v1",
+  "scope": "Rabat C8 geometry evidence for Douar Doum, El Kora and El Garaa",
+  "publicActivation": false,
+  "productionWriteCount": 0,
+  "decisions": [
+    {
+      "localityId": "candidate_rabat_douar_doum",
+      "decision": "geometry_unresolved_taxonomy_source_not_spatial",
+      "reason": "The AURS source establishes Douars Doum as a Rabat quartier but provides no directly reusable polygon or complete boundary geometry for the product locality."
+    },
+    {
+      "localityId": "candidate_rabat_el_kora",
+      "decision": "geometry_unresolved_taxonomy_source_not_spatial",
+      "reason": "The AURS source establishes El Kora as a Rabat quartier but provides no directly reusable polygon or complete boundary geometry for the product locality."
+    },
+    {
+      "localityId": "candidate_rabat_el_garaa",
+      "decision": "geometry_unresolved_taxonomy_source_not_spatial",
+      "reason": "The AURS source establishes El Garaa as a Rabat quartier but provides no directly reusable polygon or complete boundary geometry for the product locality."
+    }
+  ],
+  "source": {
+    "provider": "Agence Urbaine de Rabat-Sale",
+    "title": "Aire urbaine de Rabat",
+    "url": "https://aurs.org.ma/fr/le-territoire/aire-urbaine-de-rabat/",
+    "evidenceKind": "first_party_taxonomy_semantics_without_polygon"
+  },
+  "guardrails": [
+    "This verdict concerns the currently certified taxonomy source only; it does not claim that no geometry exists in any other dataset.",
+    "No point, centroid, buffer, Voronoi split or name-derived contour is accepted as a polygon.",
+    "No administrative boundary is substituted without explicit semantic equivalence proof.",
+    "No production write is executed.",
+    "No public map eligibility is changed."
+  ]
+}
