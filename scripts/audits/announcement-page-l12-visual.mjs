@@ -91,7 +91,8 @@ try {
     try {
       const response = await page.goto(`${baseUrl}${scenario.route}`, { waitUntil: "networkidle", timeout: 60_000 });
       await page.locator("body").waitFor({ state: "visible", timeout: 15_000 });
-      if (scenario.personalized) await page.locator('[data-project-personalization="ann-l12"]').waitFor({ state: "visible", timeout: 15_000 });
+      const visibleCard = page.locator('[data-project-personalization="ann-l12"]:visible');
+      if (scenario.personalized) await visibleCard.waitFor({ state: "visible", timeout: 15_000 });
       const metrics = await page.evaluate(() => ({
         clientWidth: document.documentElement.clientWidth,
         scrollWidth: document.documentElement.scrollWidth,
@@ -107,26 +108,29 @@ try {
 
       const bodyText = await page.locator("body").innerText();
       const normalizedBodyText = bodyText.toLocaleLowerCase("fr");
-      const cardCount = await page.locator('[data-project-personalization="ann-l12"]').count();
+      const visibleCardCount = await visibleCard.count();
       if (scenario.personalized) {
-        if (cardCount !== 1) localFindings.push(`PROJECT_CARD_COUNT_${cardCount}`);
+        if (visibleCardCount !== 1) localFindings.push(`VISIBLE_PROJECT_CARD_COUNT_${visibleCardCount}`);
+        const visibleAsideCardCount = await page.locator('aside [data-project-personalization="ann-l12"]:visible').count();
+        if (scenario.width >= 1024 && visibleAsideCardCount !== 1) localFindings.push(`DESKTOP_PROJECT_RAIL_COUNT_${visibleAsideCardCount}`);
+        if (scenario.width < 1024 && visibleAsideCardCount !== 0) localFindings.push(`MOBILE_PROJECT_RAIL_LEAK_${visibleAsideCardCount}`);
         for (const required of ["Mon Projet", "Projet Rabat famille", "Ce bien face à vos critères", "83/100", "Surface", "12 m² sous votre minimum", "Vos trajets", "Travail", "École", "15 min en voiture", "12 min en voiture", "Modifier Mon Projet"]) {
           if (!normalizedBodyText.includes(required.toLocaleLowerCase("fr"))) localFindings.push(`MISSING_${required.replace(/\s+/g, "_")}`);
         }
-        const edit = page.getByRole("link", { name: "Modifier Mon Projet" });
+        const edit = visibleCard.getByRole("link", { name: "Modifier Mon Projet" });
         if (await edit.count() !== 1) localFindings.push("EDIT_PROJECT_CTA_MISSING");
         else {
           const color = await edit.evaluate((element) => getComputedStyle(element).color);
           if (color !== "rgb(11, 99, 206)") localFindings.push(`EDIT_PROJECT_COLOR_${color}`);
         }
       } else {
-        if (cardCount !== 0) localFindings.push(`PROJECT_CARD_LEAK_${cardCount}`);
+        if (visibleCardCount !== 0) localFindings.push(`PROJECT_CARD_LEAK_${visibleCardCount}`);
         if (normalizedBodyText.includes("ce bien face à vos critères")) localFindings.push("PROJECT_COPY_LEAK");
       }
 
       const screenshot = `${scenario.name}.png`;
       await page.screenshot({ path: path.join(outputDir, screenshot), fullPage: true });
-      results.push({ ...scenario, screenshot, findings: localFindings, failedResponses, consoleErrors, ...metrics });
+      results.push({ ...scenario, screenshot, findings: localFindings, failedResponses, consoleErrors, visibleCardCount, ...metrics });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       localFindings.push(`AUDIT_ERROR_${message}`);
@@ -141,7 +145,7 @@ try {
 }
 
 const report = {
-  schemaVersion: "ANNOUNCEMENT_PAGE_L12_MON_PROJET_VISUAL_V2_CASE_SAFE",
+  schemaVersion: "ANNOUNCEMENT_PAGE_L12_MON_PROJET_VISUAL_V3_RESPONSIVE_TARGET",
   generatedAt: new Date().toISOString(),
   scenarioCount: scenarios.length,
   screenshotCount: results.filter((item) => item.screenshot).length,
