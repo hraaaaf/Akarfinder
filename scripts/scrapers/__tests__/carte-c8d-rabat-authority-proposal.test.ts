@@ -51,11 +51,11 @@ test("C8D authority proposal remains proposal-only and fail-closed", () => {
   assert.equal(manifest.defaults.map_eligible, false);
 });
 
-test("C8D authority proposal covers every C8B candidate exactly once", () => {
+test("C8D authority proposal still covers every provisional C8B registry entry exactly once", () => {
   assert.equal(manifest.proposedEntities.length, RABAT_PRODUCT_LOCALITY_CANDIDATES.length);
   const proposedRegistryIds = manifest.proposedEntities.map((entity) => entity.registry_id).sort();
-  const candidateIds = RABAT_PRODUCT_LOCALITY_CANDIDATES.map((entity) => entity.id).sort();
-  assert.deepEqual(proposedRegistryIds, candidateIds);
+  const registryIds = RABAT_PRODUCT_LOCALITY_CANDIDATES.map((entity) => entity.id).sort();
+  assert.deepEqual(proposedRegistryIds, registryIds);
 });
 
 test("C8D proposed ids and slugs are unique and use the production namespace", () => {
@@ -88,10 +88,14 @@ test("C8D production dry-run reports only new non-conflicting rows and zero writ
   assert.equal(dryRun.writesExecuted, 0);
 });
 
-test("C8D proposal does not silently promote candidate taxonomy", () => {
-  for (const candidate of RABAT_PRODUCT_LOCALITY_CANDIDATES) {
-    assert.equal(candidate.taxonomy_status, "candidate");
-    assert.equal(candidate.activation_status, "blocked");
-    assert.equal(candidate.market_map_eligible, false);
+test("taxonomy certification does not imply DB validation or activation", () => {
+  const promoted = RABAT_PRODUCT_LOCALITY_CANDIDATES.filter((entry) => entry.taxonomy_status === "certified");
+  assert.deepEqual(promoted.map((entry) => entry.id).sort(), ["candidate_rabat_akkari", "candidate_rabat_al_boustane"].sort());
+  for (const entry of RABAT_PRODUCT_LOCALITY_CANDIDATES) {
+    assert.equal(entry.activation_status, "blocked");
+    assert.equal(entry.market_map_eligible, false);
   }
+  assert.equal(manifest.defaults.validation_status, "pending_review");
+  assert.equal(manifest.defaults.map_eligible, false);
+  assert.equal(manifest.productionWriteCount, 0);
 });
