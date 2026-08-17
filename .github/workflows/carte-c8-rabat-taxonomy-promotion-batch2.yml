@@ -1,0 +1,43 @@
+name: C8 Rabat Taxonomy Promotion Batch 2
+
+on:
+  pull_request:
+    paths:
+      - "lib/geo/rabat-locality-registry.ts"
+      - "scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8c-rabat-geometry-blocker-matrix.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-authority-proposal.test.ts"
+      - "docs/CARTE_C8_RABAT_TAXONOMY_PROMOTION_BATCH2.md"
+      - ".github/workflows/carte-c8-rabat-taxonomy-promotion-batch2.yml"
+  push:
+    branches: [main]
+    paths:
+      - "lib/geo/rabat-locality-registry.ts"
+      - "scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8c-rabat-geometry-blocker-matrix.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-authority-proposal.test.ts"
+      - "docs/CARTE_C8_RABAT_TAXONOMY_PROMOTION_BATCH2.md"
+      - ".github/workflows/carte-c8-rabat-taxonomy-promotion-batch2.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  taxonomy-promotion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: C8B locality registry
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts
+      - name: C8C geometry blocker matrix
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8c-rabat-geometry-blocker-matrix.test.ts
+      - name: C8D authority proposal
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8d-rabat-authority-proposal.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
