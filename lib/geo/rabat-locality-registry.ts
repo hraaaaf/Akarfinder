@@ -115,13 +115,16 @@ function candidate(
   admin_parent_id: string | null,
   data_sources: RabatAuthoritySourceId[],
   context_availability: RabatContextAvailability = "not_assessed",
+  taxonomy_status: RabatTaxonomyStatus = "candidate",
 ): RabatProductLocality {
   return {
     id, slug, city: "Rabat", display_name, normalized_name, aliases, admin_parent_id,
-    taxonomy_status: "candidate", market_map_eligible: false,
+    taxonomy_status, market_map_eligible: false,
     geometry_status: "unresolved", geometry_source: null, geometry_version: null,
     metrics_availability: "not_assessed", context_availability,
-    activation_status: "blocked", fail_closed_reason: "taxonomy_candidate", data_sources,
+    activation_status: "blocked",
+    fail_closed_reason: taxonomy_status === "certified" ? "geometry_unresolved" : "taxonomy_candidate",
+    data_sources,
   };
 }
 
@@ -131,7 +134,7 @@ export const RABAT_PRODUCT_LOCALITY_CANDIDATES: readonly RabatProductLocality[] 
   candidate("candidate_rabat_touarga", "touarga", "Touarga", "touarga", [], "admin_rabat_touarga", ["hcp_rabat_admin_statistical_nomenclature"]),
   candidate("candidate_rabat_les_orangers", "les-orangers", "Les Orangers", "les orangers", [], null, ["akarfinder_district_dictionary_v1"]),
   candidate("candidate_rabat_aviation", "aviation", "Aviation", "aviation", [], null, ["akarfinder_district_dictionary_v1", "aurs_rabat_first_party"], "first_party_available"),
-  candidate("candidate_rabat_akkari", "akkari", "Akkari", "akkari", [], "admin_rabat_hassan", ["akarfinder_district_dictionary_v1", "aurs_rabat_first_party"], "first_party_available"),
+  candidate("candidate_rabat_akkari", "akkari", "Akkari", "akkari", [], "admin_rabat_hassan", ["akarfinder_district_dictionary_v1", "aurs_rabat_first_party"], "first_party_available", "certified"),
   candidate("candidate_rabat_medina", "medina", "Medina", "medina", ["Médina"], null, ["akarfinder_district_dictionary_v1", "aurs_rabat_first_party", "commune_rabat_first_party"], "first_party_available"),
   candidate("candidate_rabat_mabella", "mabella", "Mabella", "mabella", [], null, ["aurs_rabat_first_party"], "first_party_available"),
   candidate("candidate_rabat_takaddoum", "takaddoum", "Takaddoum", "takaddoum", [], null, ["aurs_rabat_first_party"], "first_party_available"),
@@ -139,7 +142,7 @@ export const RABAT_PRODUCT_LOCALITY_CANDIDATES: readonly RabatProductLocality[] 
   candidate("candidate_rabat_douar_doum", "douar-doum", "Douar Doum", "douar doum", ["Douars Doum"], null, ["aurs_rabat_first_party"], "first_party_available"),
   candidate("candidate_rabat_el_kora", "el-kora", "El Kora", "el kora", [], null, ["aurs_rabat_first_party"], "first_party_available"),
   candidate("candidate_rabat_el_garaa", "el-garaa", "El Garaa", "el garaa", [], null, ["aurs_rabat_first_party"], "first_party_available"),
-  candidate("candidate_rabat_al_boustane", "al-boustane", "Al Boustane", "al boustane", [], null, ["aurs_rabat_first_party"], "first_party_available"),
+  candidate("candidate_rabat_al_boustane", "al-boustane", "Al Boustane", "al boustane", [], null, ["aurs_rabat_first_party"], "first_party_available", "certified"),
   candidate("candidate_rabat_hay_nahda", "hay-nahda", "Hay Nahda", "hay nahda", ["Hay Nahda I"], "admin_rabat_youssoufia", ["commune_rabat_first_party"], "first_party_available"),
   candidate("candidate_rabat_diour_jamaa", "diour-jamaa", "Diour Jamaa", "diour jamaa", ["Diour Jamaâ", "Diour Jemaa", "Habous Diour Jamaa"], null, ["commune_rabat_first_party"], "first_party_available"),
   candidate("candidate_rabat_oudayas", "oudayas", "Oudayas", "oudayas", ["Casbah des Oudayas", "Kasbah des Oudayas"], null, ["commune_rabat_first_party", "aurs_rabat_first_party"], "first_party_available"),
