@@ -7,6 +7,7 @@ import { ExpandablePropertyDescription } from "@/components/listings/ExpandableP
 import { FinanceMarocSection } from "@/components/listings/FinanceMarocSection";
 import { LivingHereSection } from "@/components/listings/LivingHereSection";
 import { MarketComparablesSection } from "@/components/listings/MarketComparablesSection";
+import { MarketComparablesSummaryCard } from "@/components/listings/MarketComparablesSummaryCard";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { PropertyCore } from "@/components/listings/PropertyCore";
 import { PropertyMediaGallery } from "@/components/listings/PropertyMediaGallery";
@@ -217,6 +218,7 @@ export function PropertyDetailV2({
             model={proConversion}
           />
           <ProjectPersonalizationCard listing={listing} projectId={projectId} />
+          <MarketComparablesSummaryCard model={marketComparables} />
         </aside>
       </div>
 

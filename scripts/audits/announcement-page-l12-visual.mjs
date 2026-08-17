@@ -114,6 +114,15 @@ try {
         const visibleAsideCardCount = await page.locator('aside [data-project-personalization="ann-l12"]:visible').count();
         if (scenario.width >= 1024 && visibleAsideCardCount !== 1) localFindings.push(`DESKTOP_PROJECT_RAIL_COUNT_${visibleAsideCardCount}`);
         if (scenario.width < 1024 && visibleAsideCardCount !== 0) localFindings.push(`MOBILE_PROJECT_RAIL_LEAK_${visibleAsideCardCount}`);
+        const visibleMarketSummaryCount = await page.locator('aside [data-market-comparables-summary="ann-l13"]:visible').count();
+        if (scenario.width >= 1024 && visibleMarketSummaryCount !== 1) localFindings.push(`DESKTOP_MARKET_SUMMARY_COUNT_${visibleMarketSummaryCount}`);
+        if (scenario.width < 1024 && visibleMarketSummaryCount !== 0) localFindings.push(`MOBILE_MARKET_SUMMARY_LEAK_${visibleMarketSummaryCount}`);
+        if (scenario.width >= 1024) {
+          const proBox = await page.locator('aside [data-pro-conversion="ann-l11"]:visible').boundingBox();
+          const projectBox = await page.locator('aside [data-project-personalization="ann-l12"]:visible').boundingBox();
+          const marketBox = await page.locator('aside [data-market-comparables-summary="ann-l13"]:visible').boundingBox();
+          if (!proBox || !projectBox || !marketBox || !(proBox.y < projectBox.y && projectBox.y < marketBox.y)) localFindings.push('DESKTOP_RAIL_ORDER_INVALID');
+        }
         for (const required of ["Mon Projet", "Projet Rabat famille", "Ce bien face à vos critères", "83/100", "Surface", "12 m² sous votre minimum", "Vos trajets", "Travail", "École", "15 min en voiture", "12 min en voiture", "Modifier Mon Projet"]) {
           if (!normalizedBodyText.includes(required.toLocaleLowerCase("fr"))) localFindings.push(`MISSING_${required.replace(/\s+/g, "_")}`);
         }
@@ -145,7 +154,7 @@ try {
 }
 
 const report = {
-  schemaVersion: "ANNOUNCEMENT_PAGE_L12_MON_PROJET_VISUAL_V3_RESPONSIVE_TARGET",
+  schemaVersion: "ANNOUNCEMENT_PAGE_L13_CANONICAL_CONVERGENCE_V1",
   generatedAt: new Date().toISOString(),
   scenarioCount: scenarios.length,
   screenshotCount: results.filter((item) => item.screenshot).length,
@@ -155,5 +164,5 @@ const report = {
 };
 await writeFile(path.join(outputDir, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify({ scenarioCount: report.scenarioCount, screenshotCount: report.screenshotCount, findingCount: report.findingCount, findings }, null, 2));
-if (report.screenshotCount !== scenarios.length) throw new Error(`ANN-L12 capture incomplete: ${report.screenshotCount}/${scenarios.length}`);
-if (findings.length > 0) throw new Error(`ANN-L12 visual certification failed with ${findings.length} finding(s)`);
+if (report.screenshotCount !== scenarios.length) throw new Error(`ANN-L13 capture incomplete: ${report.screenshotCount}/${scenarios.length}`);
+if (findings.length > 0) throw new Error(`ANN-L13 visual certification failed with ${findings.length} finding(s)`);
