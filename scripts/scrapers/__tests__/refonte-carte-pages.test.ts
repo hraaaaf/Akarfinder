@@ -3,20 +3,47 @@ import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
 
-const matrix = fs.readFileSync(path.join(process.cwd(), "docs", "refonte-carte-pages.md"), "utf8");
+const root = process.cwd();
+const matrix = fs.readFileSync(path.join(root, "docs", "refonte-carte-pages.md"), "utf8");
 
-const publicTopLevelRoutes = [
-  "/", "/a-propos", "/accompagnement", "/acheter", "/alerts", "/comment-ca-marche", "/compagnon",
-  "/compare", "/conditions-utilisation", "/contact", "/credit", "/demande-retrait", "/demo", "/faq",
-  "/favorites", "/immobilier", "/investir", "/listings", "/louer", "/map", "/mon-projet", "/mre", "/neuf",
-  "/onboarding", "/politique-confidentialite", "/pro", "/professionnels", "/profil-recherche", "/projets",
-  "/promoteurs", "/quartiers", "/search", "/vendre", "/visual-qa",
-];
-
-test("every audited top-level UI route has an explicit premium reference", () => {
-  for (const route of publicTopLevelRoutes) {
-    assert.ok(matrix.includes(`\`${route}\``), `missing route reference: ${route}`);
+function collectPages(dir: string): string[] {
+  const pages: string[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const absolute = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (absolute === path.join(root, "app", "api")) continue;
+      pages.push(...collectPages(absolute));
+      continue;
+    }
+    if (entry.isFile() && entry.name === "page.tsx") pages.push(absolute);
   }
+  return pages;
+}
+
+function pagePathToRoute(file: string): string {
+  const relativeDir = path.relative(path.join(root, "app"), path.dirname(file));
+  if (!relativeDir) return "/";
+
+  const segments = relativeDir
+    .split(path.sep)
+    .filter(Boolean)
+    .filter((segment) => !(segment.startsWith("(") && segment.endsWith(")")))
+    .filter((segment) => !segment.startsWith("@"));
+
+  return `/${segments.join("/")}`;
+}
+
+const auditedRoutes = [...new Set(collectPages(path.join(root, "app")).map(pagePathToRoute))].sort();
+
+test("every real app UI page has an explicit premium reference", () => {
+  const missing = auditedRoutes.filter((route) => !matrix.includes(`\`${route}\``));
+  assert.deepEqual(missing, [], `missing route references: ${missing.join(", ")}`);
+});
+
+test("route inventory is substantial and source-derived", () => {
+  assert.ok(auditedRoutes.length >= 30, `unexpectedly small UI route inventory: ${auditedRoutes.length}`);
+  assert.ok(auditedRoutes.includes("/"));
+  assert.ok(auditedRoutes.includes("/search"));
 });
 
 test("dynamic page families and visual proof are locked", () => {
